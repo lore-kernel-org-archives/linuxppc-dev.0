@@ -1,19 +1,21 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.22])
- by ozlabs.org (Postfix) with SMTP id 7C19BB6F9A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 02:45:09 +1000 (EST)
-Content-Type: text/plain; charset="utf-8"
-Date: Mon, 23 Apr 2012 18:45:04 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1335174966.5989.529.camel@thor.local>
-Message-ID: <20120423164504.235670@gmx.net>
-MIME-Version: 1.0
-References: <20120420111527.190290@gmx.net>	
- <1334927896.5989.463.camel@thor.local> <20120420161407.190300@gmx.net>
- <1335174966.5989.529.camel@thor.local>
-Subject: Re: PowerPC radeon KMS - is it possible?
-To: =?iso-8859-1?Q?=22Michel_D=E4nzer=22?= <michel@daenzer.net>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
+ [209.85.210.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2B843B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 03:32:31 +1000 (EST)
+Received: by dang27 with SMTP id g27so19977266dan.15
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2012 10:32:30 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/3] powerpc/mpic: Fix confusion between hw_irq and virq
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1334892574.31646.0.camel@pasglop>
+References: <1334892574.31646.0.camel@pasglop>
+Date: Mon, 23 Apr 2012 11:32:28 -0600
+Message-Id: <20120423173228.BA05A3E089A@localhost>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,89 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
--------- Original-Nachricht --------
-> Datum: Mon, 23 Apr 2012 11:56:06 +0200
-> Von: "Michel Dänzer" <michel@daenzer.net>
-> An: Gerhard Pircher <gerhard_pircher@gmx.net>
-> CC: linuxppc-dev@lists.ozlabs.org
-> Betreff: Re: PowerPC radeon KMS - is it possible?
-
-> On Fre, 2012-04-20 at 18:14 +0200, Gerhard Pircher wrote: 
-> > > Von: "Michel Dänzer" <michel@daenzer.net>
-> > > On Fre, 2012-04-20 at 13:15 +0200, Gerhard Pircher wrote: 
-> > > > > Von: "Michel Dänzer" <michel@daenzer.net>
-> > > > > On Don, 2012-04-19 at 13:48 +0200, Gerhard Pircher wrote: 
-> > > > > > 
-> > > > > > The "former case" is an explanation, why I see data corruption
-> > > > > > with my< AGPGART driver (more or less a copy of the uninorth
-> > > > > > driver) on my non-coherent platform. There are no cache
-> > > > > > flushes done for writes to already mapped pages.
-> > > > > 
-> > > > > As I said, the radeon driver always maps AGP memory uncacheable
-> > > > > for the CPU, so no such CPU cache flushes should be necessary.
-> > > > I know. We also discussed this topic over two years ago. :-)
-> > > > 
-> > > > What I didn't understand yet is how this uncacheable memory is
-> > > > allocated (well, I never took the time to look at this again). The
-> > > > functions in ttm_page_alloc.c seem to allocate normal cacheable
-> > > > memory and try to set the page flags with set_pages_array_uc(),
-> > > > which is more or less a no-op on powerpc. ttm_page_alloc_dma.c on
-> > > > the other side is only used with SWIOTLB!?
-> > > [...] 
-> > > > Could it be that the memory is finally mapped uncacheable by
-> > > radeon_bo_kmap()/
-> > > > ttm_bo_kmap()/..some other TTM functions../vmap()?
-> > > 
-> > > Yeah, AFAICT, basically ttm_io_prot() defines the mapping
-> > > attributes, and vmap() is used to enforce them for kernel mappings.
-> > Okay, that sounds like the approach used by arch/powerpc/mm/dma-
-> > noncoherent.c in my ("green") ears. What about the PCIGART mode?
-> > Is the driver free to use cached memory in this mode?
+On Fri, 20 Apr 2012 13:29:34 +1000, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> mpic_is_ipi() takes a virq and immediately converts it to a hw_irq.
 > 
-> Yes, it assumes PCI(e) GART to be CPU cache coherent.
-Okay. I guess it should be possible to modify it so that it makes use
-of uncacheable memory - just for testing!?
-PCIGART was working "somehow" on my platform up to the ~2.6.39 kernel,
-i.e. I could login to GNOME and open a program until the machine
-locked-up. :-)
-
-> > > > [    5.878809] [drm:radeon_test_moves] *ERROR* Incorrect VRAM->GTT copy 0: Got 0xf1416ec0, expected 0xf1570ec0 (VRAM map 0xf1480000-0xf1580000)
-> > > [...]
-> > > > The VRAM->GTT copy totally puzzles me, as it returns a wrong page
-> > > > address, but the offset is fine!?
-> > > 
-> > > Maybe it's still the values from the GTT->VRAM test, i.e. either
-> > > the GPU writes didn't make it to the memory mapped into the AGP
-That's indeed the case. I changed the code so that gtt_map is
-reinitialized with some magic value before the VRAM->GTT copy and the
-debug output shows that the GPU writes don't make it to the memory -
-or they are going to the wrong memory location, but that's harder to
-track.
-
-> > > GART (some AGP bridges are known to have issues with that) or the
-> > > CPU doesn't see it.
-> > What is the workaround for such an AGP bridge? If there is one at
-> > all...
+> However, one of the two call sites calls it with a ... hw_irq. The
+> other call site also happens to have the hw_irq at hand, so let's
+> change it to just take that as an argument. Also change mpic_is_tm()
+> for consistency.
 > 
-> The only workaround short of not using AGP would be not doing GPU->AGP
-> transfers, but that's not implemented or even planned at all.
-Okay.
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-> > > BTW, does your driver set cant_use_aperture, or is the linear
-> > > aperture accessible by the CPU?
-> > The driver sets cant_use_aperture. I couldn't get it working at all
-> > without it.
-> 
-> Does the hardware really not allow the CPU to access the linear aperture
-> though? Because if it does, I wonder if that might be more reliable.
-I'm afraid no, but I could try it out again.
+Looks good to me.  Are you pushing these up to Linus for v3.4?
 
-BTW: I see that the uninorth driver defines needs_scratch_page. What
-is this actually good for?
-
-Thanks!
-Gerhard
--- 
-Empfehlen Sie GMX DSL Ihren Freunden und Bekannten und wir
-belohnen Sie mit bis zu 50,- Euro! https://freundschaftswerbung.gmx.de
+g.
