@@ -1,24 +1,19 @@
-Return-Path: <B08248@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CCC10B6EEB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 01:48:54 +1000 (EST)
-From: Yoder Stuart-B08248 <B08248@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: RE: pci node question
-Date: Mon, 23 Apr 2012 15:48:37 +0000
-Message-ID: <9F6FE96B71CF29479FF1CDC8046E150334747D@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <9F6FE96B71CF29479FF1CDC8046E1503346013@039-SN1MPN1-002.039d.mgd.msft.net>
- <D04C6167-5286-4675-A6D8-32BA63305424@kernel.crashing.org>
- <1334956286.3197.16.camel@pasglop>
-In-Reply-To: <1334956286.3197.16.camel@pasglop>
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.22])
+ by ozlabs.org (Postfix) with SMTP id 7C19BB6F9A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 02:45:09 +1000 (EST)
 Content-Type: text/plain; charset="utf-8"
+Date: Mon, 23 Apr 2012 18:45:04 +0200
+From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
+In-Reply-To: <1335174966.5989.529.camel@thor.local>
+Message-ID: <20120423164504.235670@gmx.net>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <20120420111527.190290@gmx.net>	
+ <1334927896.5989.463.camel@thor.local> <20120420161407.190300@gmx.net>
+ <1335174966.5989.529.camel@thor.local>
+Subject: Re: PowerPC radeon KMS - is it possible?
+To: =?iso-8859-1?Q?=22Michel_D=E4nzer=22?= <michel@daenzer.net>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,60 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogRnJpZGF5
-LCBBcHJpbCAyMCwgMjAxMiA0OjExIFBNDQo+IFRvOiBLdW1hciBHYWxhDQo+IENjOiBZb2RlciBT
-dHVhcnQtQjA4MjQ4OyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0OiBS
-ZTogcGNpIG5vZGUgcXVlc3Rpb24NCj4gDQo+IE9uIEZyaSwgMjAxMi0wNC0yMCBhdCAxMzo1MyAt
-MDUwMCwgS3VtYXIgR2FsYSB3cm90ZToNCj4gPiBPbiBBcHIgMjAsIDIwMTIsIGF0IDE6MzcgUE0s
-IFlvZGVyIFN0dWFydC1CMDgyNDggd3JvdGU6DQo+ID4NCj4gPiA+IFRoZXJlIHdhcyByZWZhY3Rv
-cmluZyBjaGFuZ2UgYSB3aGlsZSBiYWNrIHRoYXQgbW92ZWQNCj4gPiA+IHRoZSBpbnRlcnJ1cHQg
-bWFwIGRvd24gaW50byB0aGUgdmlydHVhbCBwY2kgYnJpZGdlLg0KPiA+ID4NCj4gPiA+IGV4YW1w
-bGU6DQo+ID4gPiA0MiAvKiBjb250cm9sbGVyIGF0IDB4MjAwMDAwICovDQo+ID4gPiA0MyAmcGNp
-MCB7DQo+ID4gPiA0NCAgICAgICAgIGNvbXBhdGlibGUgPSAiZnNsLHAyMDQxLXBjaWUiLCAiZnNs
-LHFvcmlxLXBjaWUtdjIuMiI7DQo+ID4gPiA0NSAgICAgICAgIGRldmljZV90eXBlID0gInBjaSI7
-DQo+ID4gPiA0NiAgICAgICAgICNzaXplLWNlbGxzID0gPDI+Ow0KPiA+ID4gNDcgICAgICAgICAj
-YWRkcmVzcy1jZWxscyA9IDwzPjsNCj4gPiA+IDQ4ICAgICAgICAgYnVzLXJhbmdlID0gPDB4MCAw
-eGZmPjsNCj4gPiA+IDQ5ICAgICAgICAgY2xvY2stZnJlcXVlbmN5ID0gPDMzMzMzMzMzPjsNCj4g
-PiA+IDUwICAgICAgICAgaW50ZXJydXB0cyA9IDwxNiAyIDEgMTU+Ow0KPiA+ID4gNTEgICAgICAg
-ICBwY2llQDAgew0KPiA+ID4gNTIgICAgICAgICAgICAgICAgIHJlZyA9IDwwIDAgMCAwIDA+Ow0K
-PiA+ID4gNTMgICAgICAgICAgICAgICAgICNpbnRlcnJ1cHQtY2VsbHMgPSA8MT47DQo+ID4gPiA1
-NCAgICAgICAgICAgICAgICAgI3NpemUtY2VsbHMgPSA8Mj47DQo+ID4gPiA1NSAgICAgICAgICAg
-ICAgICAgI2FkZHJlc3MtY2VsbHMgPSA8Mz47DQo+ID4gPiA1NiAgICAgICAgICAgICAgICAgZGV2
-aWNlX3R5cGUgPSAicGNpIjsNCj4gPiA+IDU3ICAgICAgICAgICAgICAgICBpbnRlcnJ1cHRzID0g
-PDE2IDIgMSAxNT47DQo+ID4gPiA1OCAgICAgICAgICAgICAgICAgaW50ZXJydXB0LW1hcC1tYXNr
-ID0gPDB4ZjgwMCAwIDAgNz47DQo+ID4gPiA1OSAgICAgICAgICAgICAgICAgaW50ZXJydXB0LW1h
-cCA9IDwNCj4gPiA+IDYwICAgICAgICAgICAgICAgICAgICAgICAgIC8qIElEU0VMIDB4MCAqLw0K
-PiA+ID4gNjEgICAgICAgICAgICAgICAgICAgICAgICAgMDAwMCAwIDAgMSAmbXBpYyA0MCAxIDAg
-MA0KPiA+ID4gNjIgICAgICAgICAgICAgICAgICAgICAgICAgMDAwMCAwIDAgMiAmbXBpYyAxIDEg
-MCAwDQo+ID4gPiA2MyAgICAgICAgICAgICAgICAgICAgICAgICAwMDAwIDAgMCAzICZtcGljIDIg
-MSAwIDANCj4gPiA+IDY0ICAgICAgICAgICAgICAgICAgICAgICAgIDAwMDAgMCAwIDQgJm1waWMg
-MyAxIDAgMA0KPiA+ID4gNjUgICAgICAgICAgICAgICAgICAgICAgICAgPjsNCj4gPiA+IDY2ICAg
-ICAgICAgfTsNCj4gPiA+IDY3IH07DQo+ID4gPg0KPiA+ID4gV2h5IHdhcyB0aGUgaW50ZXJydXB0
-LW1hcCBtb3ZlZCBoZXJlPw0KPiA+DQo+ID4gSXRzIGJlZW4gYSB3aGlsZSwgYnV0IEkgdGhpbmsg
-aSBtb3ZlZCBpdCBkb3duIGJlY2F1c2Ugb2Ygd2hpY2ggbm9kZSBpcyB1c2VkIGZvciBpbnRlcnJ1
-cHQgaGFuZGxpbmcgaW4NCj4gbGludXguDQo+IA0KPiBZZWFoLCBpdCB3b3VsZCBzd2l6emxlIGlm
-IGdvaW5nIGFjY3Jvc3MgdGhlIHZpcnR1YWwgUDJQIGJyaWRnZS4gT24gdGhlDQo+IG90aGVyIGhh
-bmQsIGlmIGl0J3MgUENJZSwgdGhlIGNoaWxkcmVuIG9mIHRoZSB2UDJQIHNob3VsZCBhbHdheXMg
-YmUgYXQNCj4gZGV2aWNlIDAgYW5kIHRodXMgdGhlIHN3aXp6bGluZyBzaG91bGQgYmUgYSBOT1Ag
-bm8gPyBTbyB3ZSAtY291bGQtIGxlYXZlDQo+IGl0IGluIHRoZSBQSEIgdW5sZXNzIEknbSBtaXN0
-YWtlbi4uLg0KPiANCj4gT24gdGhlIG90aGVyIGhhbmQsIHdlIHByb2JhYmx5IHdhbnQgdG8gZml4
-IHRoZSBtYXBwaW5nIGNvZGUgdG8gaGFuZGxlDQo+IHRoaW5ncyBsaWtlIFNSLUlPViBQRnMgd2l0
-aCBkaWZmZXJlbnQgZGV2aWNlIG51bWJlcnMuLi4gZG8gdGhvc2UgZ2V0DQo+IHN3aXp6bGVkID8g
-SW4gdGhhdCBjYXNlIHdlIG1pZ2h0IHdhbnQgdG8ga2VlcCB0aGluZ3MgZG93biB0aGUgdmlydHVh
-bA0KPiBicmlkZ2UuDQo+IA0KPiA+ID4gRG8gd2UgcmVhbGx5IG5lZWQgdGhlIGVycm9yIGludGVy
-cnVwdCBzcGVjaWZpZWQgdHdpY2U/DQo+ID4NCj4gPiBJIHB1dCBpdCB0d2ljZSBiZWNhdXNlIGl0
-IGhhcyBtdWx0aXBsZSBwdXJwb3Nlcywgb25lIGhhcyB0byBkbyB3aXRoIGludGVycnVwdHMgZGVm
-aW5lZCBieSB0aGUgUENJIHNwZWMNCj4gdnMgb25lcyBkZWZpbmVkIHZpYSBGU0wgY29udHJvbGxl
-ci4NCj4gPg0KPiA+ID4gV2h5IGlzIHRoZXJlIGEgemVyb2VkIG91dCByZWcgcHJvcGVydHk6IHJl
-ZyA9IDwwIDAgMCAwIDA+ID8/DQo+ID4NCj4gPiBzY3JhdGNoaW5nIG15IGhlYWQsIHdoYXQgaGFw
-cGVucyBpZiB5b3UgcmVtb3ZlIGl0Pw0KPiANCj4gSWYgeW91IHJlbW92ZSBpdCwgdGhlIGtlcm5l
-bCB3aWxsIGZhaWwgdG8gbWF0Y2ggdGhlIHZQMlAgd2l0aCB0aGUNCj4gY29ycmVzcG9uZGluZyBz
-dHJ1Y3QgcGNpX2Rldi4uLi4gSXQncyBub3QgInplcm9lZCBvdXQiLiBJdCBjb250YWlucyBhDQo+
-IHZhbGlkIGJ1cy9kZXYvZm4gLi4uIG9mIDAsMCwwIDotKQ0KDQpIbW1tLi4uIEkgdmFndWVseSB1
-bmRlcnN0YW5kIHdoYXQgeW91IGFyZSBzYXlpbmcuICAgQnV0IHdoeSBpcyB0aGUNCmxlbmd0aCB6
-ZXJvLCB0aGF0IGlzIHdoYXQgZG9lc24ndCBtYWtlIHNlbnNlIG9uIHRoZSBzdXJmYWNlPw0KDQpX
-ZSByZWFsbHkgc2hvdWxkIHB1dCBhIGNvbW1lbnQgb24gdGhhdCByZWcgcHJvcGVydHktLSBjYW4g
-eW91IHN1Z2dlc3QNCmEgc2hvcnQgY29tbWVudCB0aGF0IHdvdWxkIGNhcHR1cmUgd2hhdCB0aGUg
-cmVnIHdpdGggYWxsIHplcm9zIA0KaXMgZm9yPyAgLi4uSSdsbCBzdWJtaXQgYSBwYXRjaC4NCg0K
-VGhhbmtzLA0KU3R1YXJ0DQo=
+
+-------- Original-Nachricht --------
+> Datum: Mon, 23 Apr 2012 11:56:06 +0200
+> Von: "Michel Dänzer" <michel@daenzer.net>
+> An: Gerhard Pircher <gerhard_pircher@gmx.net>
+> CC: linuxppc-dev@lists.ozlabs.org
+> Betreff: Re: PowerPC radeon KMS - is it possible?
+
+> On Fre, 2012-04-20 at 18:14 +0200, Gerhard Pircher wrote: 
+> > > Von: "Michel Dänzer" <michel@daenzer.net>
+> > > On Fre, 2012-04-20 at 13:15 +0200, Gerhard Pircher wrote: 
+> > > > > Von: "Michel Dänzer" <michel@daenzer.net>
+> > > > > On Don, 2012-04-19 at 13:48 +0200, Gerhard Pircher wrote: 
+> > > > > > 
+> > > > > > The "former case" is an explanation, why I see data corruption
+> > > > > > with my< AGPGART driver (more or less a copy of the uninorth
+> > > > > > driver) on my non-coherent platform. There are no cache
+> > > > > > flushes done for writes to already mapped pages.
+> > > > > 
+> > > > > As I said, the radeon driver always maps AGP memory uncacheable
+> > > > > for the CPU, so no such CPU cache flushes should be necessary.
+> > > > I know. We also discussed this topic over two years ago. :-)
+> > > > 
+> > > > What I didn't understand yet is how this uncacheable memory is
+> > > > allocated (well, I never took the time to look at this again). The
+> > > > functions in ttm_page_alloc.c seem to allocate normal cacheable
+> > > > memory and try to set the page flags with set_pages_array_uc(),
+> > > > which is more or less a no-op on powerpc. ttm_page_alloc_dma.c on
+> > > > the other side is only used with SWIOTLB!?
+> > > [...] 
+> > > > Could it be that the memory is finally mapped uncacheable by
+> > > radeon_bo_kmap()/
+> > > > ttm_bo_kmap()/..some other TTM functions../vmap()?
+> > > 
+> > > Yeah, AFAICT, basically ttm_io_prot() defines the mapping
+> > > attributes, and vmap() is used to enforce them for kernel mappings.
+> > Okay, that sounds like the approach used by arch/powerpc/mm/dma-
+> > noncoherent.c in my ("green") ears. What about the PCIGART mode?
+> > Is the driver free to use cached memory in this mode?
+> 
+> Yes, it assumes PCI(e) GART to be CPU cache coherent.
+Okay. I guess it should be possible to modify it so that it makes use
+of uncacheable memory - just for testing!?
+PCIGART was working "somehow" on my platform up to the ~2.6.39 kernel,
+i.e. I could login to GNOME and open a program until the machine
+locked-up. :-)
+
+> > > > [    5.878809] [drm:radeon_test_moves] *ERROR* Incorrect VRAM->GTT copy 0: Got 0xf1416ec0, expected 0xf1570ec0 (VRAM map 0xf1480000-0xf1580000)
+> > > [...]
+> > > > The VRAM->GTT copy totally puzzles me, as it returns a wrong page
+> > > > address, but the offset is fine!?
+> > > 
+> > > Maybe it's still the values from the GTT->VRAM test, i.e. either
+> > > the GPU writes didn't make it to the memory mapped into the AGP
+That's indeed the case. I changed the code so that gtt_map is
+reinitialized with some magic value before the VRAM->GTT copy and the
+debug output shows that the GPU writes don't make it to the memory -
+or they are going to the wrong memory location, but that's harder to
+track.
+
+> > > GART (some AGP bridges are known to have issues with that) or the
+> > > CPU doesn't see it.
+> > What is the workaround for such an AGP bridge? If there is one at
+> > all...
+> 
+> The only workaround short of not using AGP would be not doing GPU->AGP
+> transfers, but that's not implemented or even planned at all.
+Okay.
+
+> > > BTW, does your driver set cant_use_aperture, or is the linear
+> > > aperture accessible by the CPU?
+> > The driver sets cant_use_aperture. I couldn't get it working at all
+> > without it.
+> 
+> Does the hardware really not allow the CPU to access the linear aperture
+> though? Because if it does, I wonder if that might be more reliable.
+I'm afraid no, but I could try it out again.
+
+BTW: I see that the uninorth driver defines needs_scratch_page. What
+is this actually good for?
+
+Thanks!
+Gerhard
+-- 
+Empfehlen Sie GMX DSL Ihren Freunden und Bekannten und wir
+belohnen Sie mit bis zu 50,- Euro! https://freundschaftswerbung.gmx.de
