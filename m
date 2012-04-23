@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 75AC3B6FD3
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2012 12:04:24 +1000 (EST)
-Message-ID: <1335146650.21619.3.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 23 Apr 2012 12:04:10 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <B38951@freescale.com>
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Jia Hongtao-B38951 <B38951@freescale.com>, Kumar Gala
+ <galak@kernel.crashing.org>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: RE: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property for
+ Freescale PCI
+Date: Mon, 23 Apr 2012 03:34:37 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D019E746D@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1333263396-23932-1-git-send-email-B38951@freescale.com>
+ <E3DD739D-1EC3-4BCA-AE26-1EAE7A086A1E@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D019DBE90@039-SN1MPN1-002.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D019DEA96@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D019DEA96@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,67 +27,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
-
-Here are a few fixes for powerpc. Note the addition to the generic
-irq.h. This is part of a 3-patches regression fix for mpic due to
-changes in how IRQ_TYPE_NONE is being handled. Thomas agreed to the
-addition of the new IRQ_TYPE_DEFAULT contant, however he hasn't
-replied with an Ack to the actual patch yet. I don't to wait much
-longer with these patches tho.
-
-Cheers,
-Ben.
-
-The following changes since commit 932e9f352b5d685725076f21b237f7c7d804b29c:
-
-  Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/linux-security (2012-04-18 20:16:02 -0700)
-
-are available in the git repository at:
 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+> -----Original Message-----
+> From: Jia Hongtao-B38951
+> Sent: Tuesday, April 10, 2012 5:17 PM
+> To: Kumar Gala
+> Cc: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@lists.ozlabs.org;
+> Li Yang-R58472; Jia Hongtao-B38951
+> Subject: RE: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property
+> for Freescale PCI
+>=20
+>=20
+> > -----Original Message-----
+> > From: linuxppc-dev-bounces+b38951=3Dfreescale.com@lists.ozlabs.org
+> > [mailto:linuxppc-dev-bounces+b38951=3Dfreescale.com@lists.ozlabs.org] O=
+n
+> > Behalf Of Jia Hongtao-B38951
+> > Sent: Friday, April 06, 2012 11:05 AM
+> > To: Kumar Gala
+> > Cc: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@lists.ozlabs.org;
+> > Li Yang-R58472
+> > Subject: RE: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa" property
+> > for Freescale PCI
+> >
+> >
+> > > -----Original Message-----
+> > > From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> > > Sent: Wednesday, April 04, 2012 9:09 PM
+> > > To: Jia Hongtao-B38951
+> > > Cc: linuxppc-dev@lists.ozlabs.org; Li Yang-R58472; devicetree-
+> > > discuss@lists.ozlabs.org
+> > > Subject: Re: [RFC] powerpc/fsl-pci: Document the "fsl,has-isa"
+> property
+> > > for Freescale PCI
+> > >
+> > >
+> > > On Apr 1, 2012, at 1:56 AM, Jia Hongtao wrote:
+> > >
+> > > > If PCI is primary bus we should set isa_io/mem_base when parsing
+> PCI
+> > > bridge
+> > > > resources from device tree. The previous way to check the primary
+> bus
+> > > based
+> > > > on a hard-coded address named primary_phb_addr. Now we add a
+> property
+> > > named
+> > > > "fsl,has-isa" into device tree. In kernel we use this property to
+> > find
+> > > out
+> > > > the bus is primary or not. This way is more flexible.
+> > > >
+> > > > Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> > > > Signed-off-by: Li Yang <leoli@freescale.com>
+> > > > ---
+> > > > .../devicetree/bindings/powerpc/fsl/pci.txt        |   36
+> > > ++++++++++++++++++++
+> > > > 1 files changed, 36 insertions(+), 0 deletions(-)
+> > > > create mode 100644
+> > > Documentation/devicetree/bindings/powerpc/fsl/pci.txt
+> > >
+> > > This isn't freescale specific, its linux specific.  If anything the
+> > > property should be linux,has-isa.
+> > >
+> > > But in general I dont think this is a good idea.  In truth one could
+> > > search the device tree for:
+> > >
+> > > 	device_type =3D "isa";
+> > >
+> > > to try and set this dynamically.
+> > >
+> > > - k
+> > >
+> >
+> > Yes, it's not Freescale specific, but it's only used by Freescale now
+> in
+> > the kernel. This is why I named the property as "fsl,has-isa".
+> >
+> > To indicate PCI bus is primary we have three ways to go and we now like
+> > the 2nd solution:
+> >
+> > 1. As this patch said, we add a property to device tree manually.
+> >
+> > 2. Set this property dynamically in uboot when scanning PCI bridge.
+> > Actually we have already done this. The problem is users should update
+> > uboot and kernel together or it's not work. To support old uboot we
+> > decide
+> > to add this property into device tree too temporarily. We will remove
+> it
+> > from device tree at an appropriate future.
+> >
+> > 3. Just as you said we could search the device tree by device_type =3D
+> > "isa".
+> >    There are two problems here:
+> > 	* There is no OF API for searching just in PCI node now. That means
+> > 	  we can't easily find whether there is "isa" bridge or not under
+> > 	  this PCI controller while scanning it.
+> > 	* Boards MPC8541CDS and MPC8555CDS has no "isa" node in device tree
+> > 	  but has ISA bridge under PCI controller.
+> >
+> > - Jia Hongtao
+> >
+>=20
+> Hi Kumar,
+>=20
+> I agree with the name change from "fsl,has-isa" to "linux,has-isa".
+> If this is ok I will update this patch and send the patches based on this
+> new property.
+>=20
+> Also, I have a question about "isa" node in dts. Is this node being used
+> by kernel? If not we can remove it from all boards and check the primary
+> bus by uboot. If "isa" is useful why MPC8541CDS and MPC8555CDS has no
+> "isa" node in device tree but has ISA bridge under PCI controller?
+>=20
+> Thanks.
+> - Jia Hongtao
 
-for you to fetch changes up to 446f6d06fab0b49c61887ecbe8286d6aaa796637:
+Hi Kumar and Ben,
 
-  powerpc/mpic: Properly set default triggers (2012-04-23 11:04:30 +1000)
+Do you have any idea on this?
+Thanks.
 
-----------------------------------------------------------------
-Baruch Siach (1):
-      powerpc: fix build when CONFIG_BOOKE_WDT is enabled
-
-Benjamin Herrenschmidt (5):
-      Merge remote-tracking branch 'kumar/merge' into merge
-      powerpc/pmac: Don't add_timer() twice
-      powerpc/mpic: Fix confusion between hw_irq and virq
-      irq: Add IRQ_TYPE_DEFAULT for use by PIC drivers
-      powerpc/mpic: Properly set default triggers
-
-Gavin Shan (1):
-      powerpc/eeh: Fix crash caused by null eeh_dev
-
-Mingkai Hu (4):
-      powerpc/mpic_msgr: fix compile error when SMP disabled
-      powerpc/mpic_msgr: add lock for MPIC message global variable
-      powerpc/mpic_msgr: fix offset error when setting mer register
-      powerpc/mpc85xx: add MPIC message dts node
-
-Timur Tabi (1):
-      powerpc/85xx: don't call of_platform_bus_probe() twice
-
- arch/powerpc/boot/dts/fsl/pq3-mpic-message-B.dtsi |   43 ++++++++++++++++
- arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi           |   10 ++++
- arch/powerpc/include/asm/mpic.h                   |   18 -------
- arch/powerpc/include/asm/mpic_msgr.h              |    1 +
- arch/powerpc/include/asm/reg_booke.h              |    5 --
- arch/powerpc/kernel/setup_32.c                    |    3 ++
- arch/powerpc/platforms/85xx/common.c              |    6 +++
- arch/powerpc/platforms/85xx/mpc85xx_mds.c         |   11 +----
- arch/powerpc/platforms/85xx/p1022_ds.c            |   13 +----
- arch/powerpc/platforms/powermac/low_i2c.c         |    9 ++++
- arch/powerpc/platforms/pseries/eeh.c              |    2 +-
- arch/powerpc/sysdev/mpic.c                        |   54 +++++++++++++--------
- arch/powerpc/sysdev/mpic_msgr.c                   |   12 ++---
- include/linux/irq.h                               |    7 +++
- 14 files changed, 122 insertions(+), 72 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/pq3-mpic-message-B.dtsi
+ - Jia Hongtao
