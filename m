@@ -3,15 +3,15 @@ Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
  [209.85.214.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D58FAB6F13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2012 17:09:54 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1E793B705D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2012 17:10:05 +1000 (EST)
 Received: by mail-ob0-f179.google.com with SMTP id uo19so7505922obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2012 00:09:54 -0700 (PDT)
-Date: Mon, 23 Apr 2012 00:08:38 -0700
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Apr 2012 00:10:05 -0700 (PDT)
+Date: Mon, 23 Apr 2012 00:08:49 -0700
 From: Anton Vorontsov <anton.vorontsov@linaro.org>
 To: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
-Subject: [PATCH 3/9] powerpc: Use clear_tasks_mm_cpumask()
-Message-ID: <20120423070838.GC30752@lizard>
+Subject: [PATCH 4/9] sh: Use clear_tasks_mm_cpumask()
+Message-ID: <20120423070849.GD30752@lizard>
 References: <20120423070641.GA27702@lizard>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -35,59 +35,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current CPU hotplug code has some task->mm handling issues:
+Checking for process->mm is not enough because process' main
+thread may exit or detach its mm via use_mm(), but other threads
+may still have a valid mm.
 
-1. Working with task->mm w/o getting mm or grabing the task lock is
-   dangerous as ->mm might disappear (exit_mm() assigns NULL under
-   task_lock(), so tasklist lock is not enough).
+To fix this we would need to use find_lock_task_mm(), which would
+walk up all threads and returns an appropriate task (with task
+lock held).
 
-   We can't use get_task_mm()/mmput() pair as mmput() might sleep,
-   so we must take the task lock while handle its mm.
-
-2. Checking for process->mm is not enough because process' main
-   thread may exit or detach its mm via use_mm(), but other threads
-   may still have a valid mm.
-
-   To fix this we would need to use find_lock_task_mm(), which would
-   walk up all threads and returns an appropriate task (with task
-   lock held).
-
-clear_tasks_mm_cpumask() has all the issues fixed, so let's use it.
+clear_tasks_mm_cpumask() has the issue fixed, so let's use it.
 
 Suggested-by: Oleg Nesterov <oleg@redhat.com>
 Signed-off-by: Anton Vorontsov <anton.vorontsov@linaro.org>
 ---
- arch/powerpc/mm/mmu_context_nohash.c |   11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
+ arch/sh/kernel/smp.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
-index 5b63bd3..e779642 100644
---- a/arch/powerpc/mm/mmu_context_nohash.c
-+++ b/arch/powerpc/mm/mmu_context_nohash.c
-@@ -333,9 +333,7 @@ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
- 					    unsigned long action, void *hcpu)
+diff --git a/arch/sh/kernel/smp.c b/arch/sh/kernel/smp.c
+index eaebdf6..4664f76 100644
+--- a/arch/sh/kernel/smp.c
++++ b/arch/sh/kernel/smp.c
+@@ -123,7 +123,6 @@ void native_play_dead(void)
+ int __cpu_disable(void)
  {
- 	unsigned int cpu = (unsigned int)(long)hcpu;
--#ifdef CONFIG_HOTPLUG_CPU
+ 	unsigned int cpu = smp_processor_id();
 -	struct task_struct *p;
--#endif
-+
- 	/* We don't touch CPU 0 map, it's allocated at aboot and kept
- 	 * around forever
- 	 */
-@@ -358,12 +356,7 @@ static int __cpuinit mmu_context_cpu_notify(struct notifier_block *self,
- 		stale_map[cpu] = NULL;
+ 	int ret;
  
- 		/* We also clear the cpu_vm_mask bits of CPUs going away */
--		read_lock(&tasklist_lock);
--		for_each_process(p) {
--			if (p->mm)
--				cpumask_clear_cpu(cpu, mm_cpumask(p->mm));
--		}
--		read_unlock(&tasklist_lock);
-+		clear_tasks_mm_cpumask(cpu);
- 	break;
- #endif /* CONFIG_HOTPLUG_CPU */
- 	}
+ 	ret = mp_ops->cpu_disable(cpu);
+@@ -153,11 +152,7 @@ int __cpu_disable(void)
+ 	flush_cache_all();
+ 	local_flush_tlb_all();
+ 
+-	read_lock(&tasklist_lock);
+-	for_each_process(p)
+-		if (p->mm)
+-			cpumask_clear_cpu(cpu, mm_cpumask(p->mm));
+-	read_unlock(&tasklist_lock);
++	clear_tasks_mm_cpumask(cpu);
+ 
+ 	return 0;
+ }
 -- 
 1.7.9.2
