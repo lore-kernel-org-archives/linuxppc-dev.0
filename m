@@ -1,26 +1,22 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8D574B6FBB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2012 08:05:25 +1000 (EST)
-Message-ID: <4F972380.6030202@freescale.com>
-Date: Tue, 24 Apr 2012 17:04:48 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <larry.finger@gmail.com>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+ [209.85.213.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0F66CB6FE5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2012 08:58:59 +1000 (EST)
+Received: by yhnn12 with SMTP id n12so880848yhn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 15:58:56 -0700 (PDT)
+Sender: Larry Finger <larry.finger@gmail.com>
+Message-ID: <4F973026.3020103@lwfinger.net>
+Date: Tue, 24 Apr 2012 17:58:46 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 1/2] powerpc/8xx: Fix NR_IRQ bugs and refactor 8xx
- interrupt controller
-References: <1335220202-32533-1-git-send-email-grant.likely@secretlab.ca>
- <1335220202-32533-2-git-send-email-grant.likely@secretlab.ca>
- <1335237195.24897.0.camel@pasglop>
- <OF4123672B.F86C969F-ONC12579EA.002A2C1F-C12579EA.002A48C2@transmode.se>
- <1335266570
-In-Reply-To: <1335266570.15830.11.camel@pasglop>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: Regression in 32-bit ppc kernel
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/24/2012 06:22 AM, Benjamin Herrenschmidt wrote:
-> On Tue, 2012-04-24 at 09:41 +0200, Joakim Tjernlund wrote:
->> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 2012/04/24 05:13:15:
->>>
->>> On Mon, 2012-04-23 at 16:30 -0600, Grant Likely wrote:
->>>> The mpc8xx driver uses a reference to NR_IRQS that is buggy.  It uses
->>>> NR_IRQs for the array size of the ppc_cached_irq_mask bitmap, but
->>>> NR_IRQs could be smaller than the number of hardware irqs that
->>>> ppc_cached_irq_mask tracks.
->>>
->>> Joakim, any chance you can test this ASAP ? :-)
->>
->> Sorry, but no.  We have not moved our 8xx boards to 3.x as it in maintenance
->> and takes too much space.
-> 
-> Ah ok... Anybody else on the list who still has some 8xx gear ?
+Hi,
 
-Boots OK on ep88xc.
+Somewhere between v3.2 and v3.3, the kernel in my Powerbook G4 started issuing 
+the following traceback on bootup:
 
--Scott
+[   40.264006] irq 23: nobody cared (try booting with the "irqpoll" option)
+[   40.264031] Call Trace:
+[   40.264070] [dfff3f00] [c000984c] show_stack+0x7c/0x194 (unreliable)
+[   40.264102] [dfff3f40] [c00a6840] __report_bad_irq+0x44/0xf4
+[   40.264119] [dfff3f60] [c00a6adc] note_interrupt+0x1ec/0x2ac
+[   40.264135] [dfff3f80] [c00a48a8] handle_irq_event_percpu+0x250/0x2b8
+[   40.264152] [dfff3fd0] [c00a4944] handle_irq_event+0x34/0x54
+[   40.264169] [dfff3fe0] [c00a7514] handle_fasteoi_irq+0xb4/0x124
+[   40.264192] [dfff3ff0] [c000f5bc] call_handle_irq+0x18/0x28
+[   40.264208] [dec85ce0] [c000719c] do_IRQ+0x114/0x1cc
+[   40.264226] [dec85d10] [c0015868] ret_from_except+0x0/0x1c
+[   40.264254] --- Exception: 501 at find_vma+0x10/0x80
+[   40.264259]     LR = do_page_fault+0x26c/0x6ac
+[   40.264272] [dec85dd0] [c03f0128] do_page_fault+0x25c/0x6ac (unreliable)
+[   40.264289] [dec85f40] [c00155e4] handle_page_fault+0xc/0x80
+[   40.264327] --- Exception: 301 at 0x4800a174
+
+The problem still exists in v3.4-rc3. I am currently doing a bisection of this 
+problem, but it will take a long time to complete.
+
+Note: IRQ 23 is not active in v3.2.
+
+Thanks,
+
+Larry
