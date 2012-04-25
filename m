@@ -1,16 +1,35 @@
-Return-Path: <geoff@infradead.org>
-Message-ID: <1335316761.4634.5.camel@smoke>
-Subject: [PATCH] drivers/ps3: Fix checkpatch warnings in ps3av.c
-From: Geoff Levand <geoff@infradead.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 24 Apr 2012 18:19:21 -0700
-In-Reply-To: <CAMuHMdUQmTzjVfb=fwKJCmov+OuFYDHU-wW4T2kEXigpVxeGPg@mail.gmail.com>
-References: <1334661361-3699-1-git-send-email-valentin.ilie@gmail.com>
- <CAMuHMdUQmTzjVfb=fwKJCmov+OuFYDHU-wW4T2kEXigpVxeGPg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- Valentin Ilie <valentin.ilie@gmail.com>, linux-kernel@vger.kernel.org
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E9E7DB6FA3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2012 11:51:30 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 25 Apr 2012 01:43:31 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q3P1pGjC33620214
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2012 11:51:16 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q3P1pFHg005996
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2012 11:51:16 +1000
+Date: Wed, 25 Apr 2012 09:50:44 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Ryan Wang <openspace.wang@gmail.com>
+Subject: Re: 3.4-rc3 compile failed on IBM Power6
+Message-ID: <20120425015044.GA4637@shangw>
+References: <CAPxxNQmfkJLPHq0BvzxOnLFO-e0FRmaF1VqLhP-jMqF-ziM2tA@mail.gmail.com>
+ <20120425005432.GA14663@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120425005432.GA14663@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,139 +39,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Nish,
 
-From: Valentin Ilie <valentin.ilie@gmail.com>
+>> # gcc --version
+>> gcc (GCC) 4.4.6 20110731 (Red Hat 4.4.6-3)
+>> Copyright (C) 2010 Free Software Foundation, Inc.
+>> This is free software; see the source for copying conditions.  There is NO
+>> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+>> 
+>> platform    : pSeries
+>> model        : IBM,9117-MMA
+>> machine        : CHRP IBM,9117-MMA
+>
+><snip>
+>
+>>   CC      arch/powerpc/platforms/pseries/iommu.o
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c: In function
+>> ?query_ddw?:
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:823: error:
+>> implicit declaration of function ?pci_dev_to_eeh_dev?
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:823: warning:
+>> assignment makes pointer from integer without a cast
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:824: error:
+>> dereferencing pointer to incomplete type
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:825: error:
+>> dereferencing pointer to incomplete type
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:826: error:
+>> dereferencing pointer to incomplete type
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:827: error:
+>> dereferencing pointer to incomplete type
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c: In function
+>> ?create_ddw?:
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:852: warning:
+>> assignment makes pointer from integer without a cast
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:853: error:
+>> dereferencing pointer to incomplete type
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:854: error:
+>> dereferencing pointer to incomplete type
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:855: error:
+>> dereferencing pointer to incomplete type
+>> /usr/src/kernels/linux/arch/powerpc/platforms/pseries/iommu.c:856: error:
+>> dereferencing pointer to incomplete type
+>> make[3]: *** [arch/powerpc/platforms/pseries/iommu.o] Error 1
+>> make[2]: *** [arch/powerpc/platforms/pseries] Error 2
+>> make[1]: *** [arch/powerpc/platforms] Error 2
+>> make: *** [sub-make] Error 2
+>
+>Do you have CONFIG_EEH set in your .config? I'm guessing not, and that
+>causes pci.h to not define pci_dev_to_eeh_dev().
+>
+>Gavin, I think this is broken by your
+>39baadbf36cee3ede5fdb8a34006d9109e5e2570. Probably need a wrapper for
+>pci_dev_to_eeh_dev() when !CONFIG_EEH?
+>
+>Actually, looking at it more, eeh_dev, which is protected by CONFIG_EEH
+>in arch/powerpc/include/asm/eeh.h won't be defined in such situations
+>and is the type of the return from pci_dev_to_eeh_dev(). So that's going
+>to be broken completely if !CONFIG_EEH as above.
+>
 
-Signed-off-by: Valentin Ilie <valentin.ilie@gmail.com>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Geoff Levand <geoff@infradead.org>
----
+I think it's because iommu.c depends on CONFIG_EEH heavily anyway with
+or without the fix 39baadbf36cee3ede5fdb8a34006d9109e5e2570. That means
+without CONFIG_EEH, iommu.c won't work properly even it can be compiled
+successfully :-)
 
-Hi Geert,
+The story behind is that the PCI device is expected to be PE sensitive.
+While setting up its DMA (through IOMMU), the number of the PE to which
+the PCI device belongs to is passed to the related RTAS call. So the
+PE number of the PCI device is expected if possible. As I knew, the PE
+number of the PCI device is -ONLY- figured out by EEH.
+ 
+>So maybe the callers should be EEH-unaware (as they were before) and the
+>callee becomes of the EEH variety (at compile-time) if CONFIG_EEH is
+>set?
+>
 
-Here's what I queued for v3.5, let me know if you have any concerns.
+In order to make iommu.c irrelative to CONFIG_EEH, we might figure out
+the PE number of the PCI device during PCI probe time. Here're some
+rough thoughts about the rework.
 
--Geoff
+	- Introduce additional field "int pe_num" to "struct dev_archdata".
+	  That would be traced like: (struct pci_dev)->(struct device dev)
+	  ->(struct dev_archdata archdata).
+	- During the PCI probe time (maybe pci_fixup_early), we can figure
+	  out the PE number.
 
- drivers/ps3/ps3av.c |   24 +++++++++---------------
- 1 file changed, 9 insertions(+), 15 deletions(-)
+Then we can retrieve the PE number of PCI device from "int pe_num" and needn't
+care CONFIG_EEH has been turned on or off. I'm not sure Ben has any comments
+on the idea? 
 
-diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
-index a409fa0..93d0a8b 100644
---- a/drivers/ps3/ps3av.c
-+++ b/drivers/ps3/ps3av.c
-@@ -338,7 +338,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, size_t usr_buf_size,
- 	mutex_unlock(&ps3av->mutex);
- 	return 0;
+Thanks,
+Gavin
  
--      err:
-+err:
- 	mutex_unlock(&ps3av->mutex);
- 	printk(KERN_ERR "%s: failed cid:%x res:%d\n", __func__, cid, res);
- 	return res;
-@@ -477,7 +477,6 @@ int ps3av_set_audio_mode(u32 ch, u32 fs, u32 word_bits, u32 format, u32 source)
- 
- 	return 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_set_audio_mode);
- 
- static int ps3av_set_videomode(void)
-@@ -501,7 +500,7 @@ static void ps3av_set_videomode_packet(u32 id)
- 
- 	video_mode = &video_mode_table[id & PS3AV_MODE_MASK];
- 
--	avb_param.num_of_video_pkt = PS3AV_AVB_NUM_VIDEO;	/* num of head */
-+	avb_param.num_of_video_pkt = PS3AV_AVB_NUM_VIDEO; /* num of head */
- 	avb_param.num_of_audio_pkt = 0;
- 	avb_param.num_of_av_video_pkt = ps3av->av_hw_conf.num_of_hdmi +
- 					ps3av->av_hw_conf.num_of_avmulti;
-@@ -521,7 +520,7 @@ static void ps3av_set_videomode_packet(u32 id)
- #ifndef PS3AV_HDMI_YUV
- 		if (ps3av->av_port[i] == PS3AV_CMD_AVPORT_HDMI_0 ||
- 		    ps3av->av_port[i] == PS3AV_CMD_AVPORT_HDMI_1)
--			av_video_cs = RGB8;	/* use RGB for HDMI */
-+			av_video_cs = RGB8; /* use RGB for HDMI */
- #endif
- 		len += ps3av_cmd_set_av_video_cs(&avb_param.buf[len],
- 						 ps3av->av_port[i],
-@@ -590,8 +589,8 @@ static void ps3avd(struct work_struct *work)
- #define SHIFT_VESA	8
- 
- static const struct {
--	unsigned mask : 19;
--	unsigned id :  4;
-+	unsigned mask:19;
-+	unsigned id:4;
- } ps3av_preferred_modes[] = {
- 	{ PS3AV_RESBIT_WUXGA      << SHIFT_VESA, PS3AV_MODE_WUXGA   },
- 	{ PS3AV_RESBIT_1920x1080P << SHIFT_60,   PS3AV_MODE_1080P60 },
-@@ -667,7 +666,8 @@ static enum ps3av_mode_num ps3av_hdmi_get_id(struct ps3av_info_monitor *info)
- 	return id;
- }
- 
--static void ps3av_monitor_info_dump(const struct ps3av_pkt_av_get_monitor_info *monitor_info)
-+static void ps3av_monitor_info_dump(
-+	const struct ps3av_pkt_av_get_monitor_info *monitor_info)
- {
- 	const struct ps3av_info_monitor *info = &monitor_info->info;
- 	const struct ps3av_info_audio *audio = info->audio;
-@@ -717,8 +717,8 @@ static void ps3av_monitor_info_dump(const struct ps3av_pkt_av_get_monitor_info *
- 
- 	/* audio block */
- 	for (i = 0; i < info->num_of_audio_block; i++) {
--		pr_debug("audio[%d] type: %02x max_ch: %02x fs: %02x sbit: "
--			 "%02x\n",
-+		pr_debug(
-+			"audio[%d] type: %02x max_ch: %02x fs: %02x sbit: %02x\n",
- 			 i, audio->type, audio->max_num_of_ch, audio->fs,
- 			 audio->sbit);
- 		audio++;
-@@ -870,21 +870,18 @@ int ps3av_set_video_mode(int id)
- 
- 	return 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_set_video_mode);
- 
- int ps3av_get_auto_mode(void)
- {
- 	return ps3av_auto_videomode(&ps3av->av_hw_conf);
- }
--
- EXPORT_SYMBOL_GPL(ps3av_get_auto_mode);
- 
- int ps3av_get_mode(void)
- {
- 	return ps3av ? ps3av->ps3av_mode : 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_get_mode);
- 
- /* get resolution by video_mode */
-@@ -902,7 +899,6 @@ int ps3av_video_mode2res(u32 id, u32 *xres, u32 *yres)
- 	*yres = video_mode_table[id].y;
- 	return 0;
- }
--
- EXPORT_SYMBOL_GPL(ps3av_video_mode2res);
- 
- /* mute */
-@@ -911,7 +907,6 @@ int ps3av_video_mute(int mute)
- 	return ps3av_set_av_video_mute(mute ? PS3AV_CMD_MUTE_ON
- 					    : PS3AV_CMD_MUTE_OFF);
- }
--
- EXPORT_SYMBOL_GPL(ps3av_video_mute);
- 
- /* mute analog output only */
-@@ -935,7 +930,6 @@ int ps3av_audio_mute(int mute)
- 	return ps3av_set_audio_mute(mute ? PS3AV_CMD_MUTE_ON
- 					 : PS3AV_CMD_MUTE_OFF);
- }
--
- EXPORT_SYMBOL_GPL(ps3av_audio_mute);
- 
- static int __devinit ps3av_probe(struct ps3_system_bus_device *dev)
--- 
-1.7.9.5
