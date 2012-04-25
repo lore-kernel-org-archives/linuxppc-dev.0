@@ -1,20 +1,23 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:32:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F41ACB6FC4
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2012 20:29:35 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 00/15] PowerMac i2c API conversions & windfarm updates
-References: <1334823416-9138-1-git-send-email-benh__1987.51832726902$1334826600$gmane$org@kernel.crashing.org>
- <m2397sz1er.fsf@igel.home> <1335343125.21961.33.camel@pasglop>
-Date: Wed, 25 Apr 2012 12:29:32 +0200
-Message-ID: <m2sjfs85pv.fsf@igel.home>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
+ [209.85.216.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E8E81B6FBD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2012 23:07:21 +1000 (EST)
+Received: by qaea16 with SMTP id a16so853532qae.17
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2012 06:07:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: khali@linux-fr.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <4F97C243.80806@in.ibm.com>
+References: <20120416082449.27331.12488.stgit@suzukikp.in.ibm.com>
+ <4F97C243.80806@in.ibm.com>
+Date: Wed, 25 Apr 2012 09:07:17 -0400
+Message-ID: <CA+5PVA7wS7nWMZwVMjVRMuL81dpjGz1r82SekTyYX3NioKivMg@mail.gmail.com>
+Subject: Re: [PATCH 0/2] Kdump support for 47x
+From: Josh Boyer <jwboyer@gmail.com>
+To: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Wed, Apr 25, 2012 at 5:22 AM, Suzuki K. Poulose <suzuki@in.ibm.com> wrot=
+e:
+> On 04/16/2012 01:56 PM, Suzuki K. Poulose wrote:
+>>
+>> The following series implements Kexec/Kdump support for
+>> PPC_47x based platforms. Doesn't support SMP yet.
+>>
+>> I have tested these patches on the following simulators:
+>> =A0 =A0 =A0 =A0 1) simics
+>> =A0 =A0 =A0 =A0 2) IBM ISS for ppc476.
+>>
+>> Changes since V1:
+>> =A0* Initialize the SPRN_PID to kernel pid (0) before the TLB operations=
+ in
+>> =A0 =A0setup_map_47x
+>>
+>>
+>
+> Josh,
+>
+> Did you get a chance to look at this ?
 
-> Also, does the new driver properly react to load ?
+Not yet.  I'll try to get to this and some other patches APM submitted
+before the end of the week.  Apologies for the delay.
 
-The old driver keeps the cpu fans running at 300 rpm (lowest speed?)
-for much longer when the cpus are put busy.  Only when the cpus are back
-idle it speeds them up to 1200 rpm or more for some time depending on
-how long the cpus were busy.  The new driver is faster at speeding up
-the fans to around 800 rpm when cpus get busy, and keeps them running
-longer at that speed, but doesn't appear to select much higher speeds.
-
-The old driver appears to be better suited to desktops, whereas the new
-driver is probably better for servers.
-
-But the most annoying sound appears to be coming from the slots fan.
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+josh
