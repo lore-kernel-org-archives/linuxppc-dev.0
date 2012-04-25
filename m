@@ -1,24 +1,22 @@
-Return-Path: <larry.finger@gmail.com>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
- [209.85.210.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 29860B6F6E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2012 12:37:13 +1000 (EST)
-Received: by iakh37 with SMTP id h37so2066082iak.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Apr 2012 19:37:11 -0700 (PDT)
-Sender: Larry Finger <larry.finger@gmail.com>
-Message-ID: <4F976352.4060001@lwfinger.net>
-Date: Tue, 24 Apr 2012 21:37:06 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Regression in 32-bit ppc kernel
-References: <4F973026.3020103@lwfinger.net> <1335311621.15830.42.camel@pasglop>
-In-Reply-To: <1335311621.15830.42.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- LKML <linux-kernel@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9179CB6FAA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Apr 2012 14:10:53 +1000 (EST)
+Message-ID: <1335327042.21961.27.camel@pasglop>
+Subject: Re: 3.4-rc3 compile failed on IBM Power6
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Date: Wed, 25 Apr 2012 14:10:42 +1000
+In-Reply-To: <20120425015044.GA4637@shangw>
+References: <CAPxxNQmfkJLPHq0BvzxOnLFO-e0FRmaF1VqLhP-jMqF-ziM2tA@mail.gmail.com>
+ <20120425005432.GA14663@linux.vnet.ibm.com> <20120425015044.GA4637@shangw>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Ryan Wang <openspace.wang@gmail.com>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,20 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/24/2012 06:53 PM, Benjamin Herrenschmidt wrote:
-> On Tue, 2012-04-24 at 17:58 -0500, Larry Finger wrote:
->> Hi,
->>
->> Somewhere between v3.2 and v3.3, the kernel in my Powerbook G4 started issuing
->> the following traceback on bootup:
->
-> Does it continue working afterward or not at all ?
->
-> Are you using the old IDE driver or the newer libata based pata_macio ?
+On Wed, 2012-04-25 at 09:50 +0800, Gavin Shan wrote:
+> In order to make iommu.c irrelative to CONFIG_EEH, we might figure out
+> the PE number of the PCI device during PCI probe time. Here're some
+> rough thoughts about the rework.
+> 
+>         - Introduce additional field "int pe_num" to "struct dev_archdata".
+>           That would be traced like: (struct pci_dev)->(struct device dev)
+>           ->(struct dev_archdata archdata).
+>         - During the PCI probe time (maybe pci_fixup_early), we can figure
+>           out the PE number.
+> 
+> Then we can retrieve the PE number of PCI device from "int pe_num" and needn't
+> care CONFIG_EEH has been turned on or off. I'm not sure Ben has any comments
+> on the idea? 
 
-Yes, it finishes the boot, and appears to work correctly. If a device is 
-missing, I do not know what it is.
+Just select EEH from pseries Kconfig, no point in keeping that a user visible option.
 
-I think I am using the old IDE driver.
-
-Larry
+Cheers,
+Ben.
