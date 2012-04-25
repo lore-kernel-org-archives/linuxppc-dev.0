@@ -1,13 +1,14 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <07c044c86e05818c2d5e99b8ff881e2e4543c6ad.1335379330.git.geoff@infradead.org>
+Message-Id: <f02777b4c0047e75b0b6db9a67aa49d29ae57965.1335379330.git.geoff@infradead.org>
 In-Reply-To: <cover.1335379330.git.geoff@infradead.org>
 References: <cover.1335379330.git.geoff@infradead.org>
-From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 02/10] powerpc/ps3: Add PS3 repository write support
+From: Valentin Ilie <valentin.ilie@gmail.com>
+Subject: [PATCH 09/10] drivers/ps3: Fix checkpatch warnings in ps3av.c
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 25 Apr 2012 19:19:34 +0000
-Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Nathan Whitehorn <nwhitehorn@freebsd.org>
+Sender: Geoff Levand <geoff@infradead.org>
+Date: Wed, 25 Apr 2012 19:19:35 +0000
+Cc: cbe-oss-dev@lists.ozlabs.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+ linuxppc-dev@lists.ozlabs.org, Valentin Ilie <valentin.ilie@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,111 +18,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a new config option CONFIG_PS3_REPOSITORY_WRITE that
-conditionally builds in support to create, write and delete
-nodes in the PS3 system repository.
-
-This support will allow Linux based bootloaders to manage data
-in the system repository for use by later boot stages,
-
+Signed-off-by: Valentin Ilie <valentin.ilie@gmail.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/platforms/ps3/Kconfig      |   13 +++++++
- arch/powerpc/platforms/ps3/repository.c |   58 +++++++++++++++++++++++++++++++
- 2 files changed, 71 insertions(+)
+ drivers/ps3/ps3av.c |   24 +++++++++---------------
+ 1 file changed, 9 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
-index 476d9d9..4210aaa 100644
---- a/arch/powerpc/platforms/ps3/Kconfig
-+++ b/arch/powerpc/platforms/ps3/Kconfig
-@@ -88,6 +88,19 @@ config PS3_SYS_MANAGER
- 	  This support is required for system control.  In
- 	  general, all users will say Y or M.
+diff --git a/drivers/ps3/ps3av.c b/drivers/ps3/ps3av.c
+index a409fa0..93d0a8b 100644
+--- a/drivers/ps3/ps3av.c
++++ b/drivers/ps3/ps3av.c
+@@ -338,7 +338,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, size_t usr_buf_size,
+ 	mutex_unlock(&ps3av->mutex);
+ 	return 0;
  
-+config PS3_REPOSITORY_WRITE
-+	bool "PS3 Repository write support" if PS3_ADVANCED
-+	depends on PPC_PS3
-+	default n
-+	help
-+	  Enables support for writing to the PS3 System Repository.
-+
-+	  This support is intended for bootloaders that need to store data
-+	  in the repository for later boot stages.
-+
-+	  If in doubt, say N here and reduce the size of the kernel by a
-+	  small amount.
-+
- config PS3_STORAGE
- 	depends on PPC_PS3
- 	tristate
-diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
-index 7bdfea3..b31142c 100644
---- a/arch/powerpc/platforms/ps3/repository.c
-+++ b/arch/powerpc/platforms/ps3/repository.c
-@@ -1002,6 +1002,64 @@ int ps3_repository_read_lpm_privileges(unsigned int be_index, u64 *lpar,
- 			    lpar, rights);
+-      err:
++err:
+ 	mutex_unlock(&ps3av->mutex);
+ 	printk(KERN_ERR "%s: failed cid:%x res:%d\n", __func__, cid, res);
+ 	return res;
+@@ -477,7 +477,6 @@ int ps3av_set_audio_mode(u32 ch, u32 fs, u32 word_bits, u32 format, u32 source)
+ 
+ 	return 0;
+ }
+-
+ EXPORT_SYMBOL_GPL(ps3av_set_audio_mode);
+ 
+ static int ps3av_set_videomode(void)
+@@ -501,7 +500,7 @@ static void ps3av_set_videomode_packet(u32 id)
+ 
+ 	video_mode = &video_mode_table[id & PS3AV_MODE_MASK];
+ 
+-	avb_param.num_of_video_pkt = PS3AV_AVB_NUM_VIDEO;	/* num of head */
++	avb_param.num_of_video_pkt = PS3AV_AVB_NUM_VIDEO; /* num of head */
+ 	avb_param.num_of_audio_pkt = 0;
+ 	avb_param.num_of_av_video_pkt = ps3av->av_hw_conf.num_of_hdmi +
+ 					ps3av->av_hw_conf.num_of_avmulti;
+@@ -521,7 +520,7 @@ static void ps3av_set_videomode_packet(u32 id)
+ #ifndef PS3AV_HDMI_YUV
+ 		if (ps3av->av_port[i] == PS3AV_CMD_AVPORT_HDMI_0 ||
+ 		    ps3av->av_port[i] == PS3AV_CMD_AVPORT_HDMI_1)
+-			av_video_cs = RGB8;	/* use RGB for HDMI */
++			av_video_cs = RGB8; /* use RGB for HDMI */
+ #endif
+ 		len += ps3av_cmd_set_av_video_cs(&avb_param.buf[len],
+ 						 ps3av->av_port[i],
+@@ -590,8 +589,8 @@ static void ps3avd(struct work_struct *work)
+ #define SHIFT_VESA	8
+ 
+ static const struct {
+-	unsigned mask : 19;
+-	unsigned id :  4;
++	unsigned mask:19;
++	unsigned id:4;
+ } ps3av_preferred_modes[] = {
+ 	{ PS3AV_RESBIT_WUXGA      << SHIFT_VESA, PS3AV_MODE_WUXGA   },
+ 	{ PS3AV_RESBIT_1920x1080P << SHIFT_60,   PS3AV_MODE_1080P60 },
+@@ -667,7 +666,8 @@ static enum ps3av_mode_num ps3av_hdmi_get_id(struct ps3av_info_monitor *info)
+ 	return id;
  }
  
-+#if defined(CONFIG_PS3_REPOSITORY_WRITE)
-+
-+static int create_node(u64 n1, u64 n2, u64 n3, u64 n4, u64 v1, u64 v2)
-+{
-+	int result;
-+
-+	dump_node(0, n1, n2, n3, n4, v1, v2);
-+
-+	result = lv1_create_repository_node(n1, n2, n3, n4, v1, v2);
-+
-+	if (result) {
-+		pr_devel("%s:%d: lv1_create_repository_node failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+		return -ENOENT;
-+	}
-+
-+	return 0;
-+}
-+
-+static int delete_node(u64 n1, u64 n2, u64 n3, u64 n4)
-+{
-+	int result;
-+
-+	dump_node(0, n1, n2, n3, n4, 0, 0);
-+
-+	result = lv1_delete_repository_node(n1, n2, n3, n4);
-+
-+	if (result) {
-+		pr_devel("%s:%d: lv1_delete_repository_node failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+		return -ENOENT;
-+	}
-+
-+	return 0;
-+}
-+
-+static int write_node(u64 n1, u64 n2, u64 n3, u64 n4, u64 v1, u64 v2)
-+{
-+	int result;
-+
-+	result = create_node(n1, n2, n3, n4, v1, v2);
-+
-+	if (!result)
-+		return 0;
-+
-+	result = lv1_write_repository_node(n1, n2, n3, n4, v1, v2);
-+
-+	if (result) {
-+		pr_devel("%s:%d: lv1_write_repository_node failed: %s\n",
-+			__func__, __LINE__, ps3_result(result));
-+		return -ENOENT;
-+	}
-+
-+	return 0;
-+}
-+
-+#endif /* defined(CONFIG_PS3_WRITE_REPOSITORY) */
-+
- #if defined(DEBUG)
+-static void ps3av_monitor_info_dump(const struct ps3av_pkt_av_get_monitor_info *monitor_info)
++static void ps3av_monitor_info_dump(
++	const struct ps3av_pkt_av_get_monitor_info *monitor_info)
+ {
+ 	const struct ps3av_info_monitor *info = &monitor_info->info;
+ 	const struct ps3av_info_audio *audio = info->audio;
+@@ -717,8 +717,8 @@ static void ps3av_monitor_info_dump(const struct ps3av_pkt_av_get_monitor_info *
  
- int ps3_repository_dump_resource_info(const struct ps3_repository_device *repo)
+ 	/* audio block */
+ 	for (i = 0; i < info->num_of_audio_block; i++) {
+-		pr_debug("audio[%d] type: %02x max_ch: %02x fs: %02x sbit: "
+-			 "%02x\n",
++		pr_debug(
++			"audio[%d] type: %02x max_ch: %02x fs: %02x sbit: %02x\n",
+ 			 i, audio->type, audio->max_num_of_ch, audio->fs,
+ 			 audio->sbit);
+ 		audio++;
+@@ -870,21 +870,18 @@ int ps3av_set_video_mode(int id)
+ 
+ 	return 0;
+ }
+-
+ EXPORT_SYMBOL_GPL(ps3av_set_video_mode);
+ 
+ int ps3av_get_auto_mode(void)
+ {
+ 	return ps3av_auto_videomode(&ps3av->av_hw_conf);
+ }
+-
+ EXPORT_SYMBOL_GPL(ps3av_get_auto_mode);
+ 
+ int ps3av_get_mode(void)
+ {
+ 	return ps3av ? ps3av->ps3av_mode : 0;
+ }
+-
+ EXPORT_SYMBOL_GPL(ps3av_get_mode);
+ 
+ /* get resolution by video_mode */
+@@ -902,7 +899,6 @@ int ps3av_video_mode2res(u32 id, u32 *xres, u32 *yres)
+ 	*yres = video_mode_table[id].y;
+ 	return 0;
+ }
+-
+ EXPORT_SYMBOL_GPL(ps3av_video_mode2res);
+ 
+ /* mute */
+@@ -911,7 +907,6 @@ int ps3av_video_mute(int mute)
+ 	return ps3av_set_av_video_mute(mute ? PS3AV_CMD_MUTE_ON
+ 					    : PS3AV_CMD_MUTE_OFF);
+ }
+-
+ EXPORT_SYMBOL_GPL(ps3av_video_mute);
+ 
+ /* mute analog output only */
+@@ -935,7 +930,6 @@ int ps3av_audio_mute(int mute)
+ 	return ps3av_set_audio_mute(mute ? PS3AV_CMD_MUTE_ON
+ 					 : PS3AV_CMD_MUTE_OFF);
+ }
+-
+ EXPORT_SYMBOL_GPL(ps3av_audio_mute);
+ 
+ static int __devinit ps3av_probe(struct ps3_system_bus_device *dev)
 -- 
 1.7.9.5
