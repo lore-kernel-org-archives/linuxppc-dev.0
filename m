@@ -1,14 +1,15 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <6750edbd8d6d1d72365e29e58b05f164bc23755a.1335379330.git.geoff@infradead.org>
+Message-Id: <8ac5fd118cd137db5ca8c786778ba600f87111a0.1335379330.git.geoff@infradead.org>
 In-Reply-To: <cover.1335379330.git.geoff@infradead.org>
 References: <cover.1335379330.git.geoff@infradead.org>
-From: Andre Heider <a.heider@gmail.com>
-Subject: [PATCH 04/10] powerpc/ps3: Add highmem repository read routines
+From: Hector Martin <hector@marcansoft.com>
+Subject: [PATCH 06/10] powerpc/ps3: Add highmem region memory early
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Sender: Geoff Levand <geoff@infradead.org>
 Date: Wed, 25 Apr 2012 19:19:34 +0000
 Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Nathan Whitehorn <nwhitehorn@freebsd.org>
+ linuxppc-dev@lists.ozlabs.org, Nathan Whitehorn <nwhitehorn@freebsd.org>,
+ Hector Martin <hector@marcansoft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,115 +19,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add repository helper routines to read highmem region info.
+Real mode memory can be limited and runs out quickly as memory is allocated
+during kernel startup.  Having the highmem available sooner fixes this.
 
-Bootloaders that preallocate highmem regions must place the
-region info into the repository at these well known nodes.
-These routines allow second stage kernles to read the region
-info from those nodes.
+This change simplifies the memory management code by converting from hotplug
+memory to logical memory blocks.
 
+Signed-off-by: Hector Martin <hector@marcansoft.com>
 Signed-off-by: Andre Heider <a.heider@gmail.com>
-CC: Nathan Whitehorn <nwhitehorn@freebsd.org>
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/platforms/ps3/platform.h   |    7 ++++
- arch/powerpc/platforms/ps3/repository.c |   66 +++++++++++++++++++++++++++++++
- 2 files changed, 73 insertions(+)
+ arch/powerpc/platforms/ps3/mm.c |   66 ++++++---------------------------------
+ 1 file changed, 10 insertions(+), 56 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
-index 4012a86..d71329a 100644
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -188,6 +188,13 @@ int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size);
- int ps3_repository_read_region_total(u64 *region_total);
- int ps3_repository_read_mm_info(u64 *rm_base, u64 *rm_size,
- 	u64 *region_total);
-+int ps3_repository_read_highmem_region_count(unsigned int *region_count);
-+int ps3_repository_read_highmem_base(unsigned int region_index,
-+	u64 *highmem_base);
-+int ps3_repository_read_highmem_size(unsigned int region_index,
-+	u64 *highmem_size);
-+int ps3_repository_read_highmem_info(unsigned int region_index,
-+	u64 *highmem_base, u64 *highmem_size);
+diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
+index 05a2bcb..0c9f643 100644
+--- a/arch/powerpc/platforms/ps3/mm.c
++++ b/arch/powerpc/platforms/ps3/mm.c
+@@ -20,7 +20,6 @@
  
- int ps3_repository_write_highmem_region_count(unsigned int region_count);
- int ps3_repository_write_highmem_base(unsigned int region_index,
-diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
-index c73f3a6..9b47ba7 100644
---- a/arch/powerpc/platforms/ps3/repository.c
-+++ b/arch/powerpc/platforms/ps3/repository.c
-@@ -779,6 +779,72 @@ int ps3_repository_read_mm_info(u64 *rm_base, u64 *rm_size, u64 *region_total)
+ #include <linux/kernel.h>
+ #include <linux/export.h>
+-#include <linux/memory_hotplug.h>
+ #include <linux/memblock.h>
+ #include <linux/slab.h>
+ 
+@@ -98,7 +97,7 @@ struct mem_region {
+  * The HV virtual address space (vas) allows for hotplug memory regions.
+  * Memory regions can be created and destroyed in the vas at runtime.
+  * @rm: real mode (bootmem) region
+- * @r1: hotplug memory region(s)
++ * @r1: highmem region(s)
+  *
+  * ps3 addresses
+  * virt_addr: a cpu 'translated' effective address
+@@ -224,10 +223,6 @@ void ps3_mm_vas_destroy(void)
+ 	}
  }
  
+-/*============================================================================*/
+-/* memory hotplug routines                                                    */
+-/*============================================================================*/
+-
  /**
-+ * ps3_repository_read_highmem_region_count - Read the number of highmem regions
-+ *
-+ * Bootloaders must arrange the repository nodes such that regions are indexed
-+ * with a region_index from 0 to region_count-1.
-+ */
+  * ps3_mm_region_create - create a memory region in the vas
+  * @r: pointer to a struct mem_region to accept initialized values
+@@ -328,56 +323,6 @@ zero_region:
+ 	return result;
+ }
+ 
+-/**
+- * ps3_mm_add_memory - hot add memory
+- */
+-
+-static int __init ps3_mm_add_memory(void)
+-{
+-	int result;
+-	unsigned long start_addr;
+-	unsigned long start_pfn;
+-	unsigned long nr_pages;
+-
+-	if (!firmware_has_feature(FW_FEATURE_PS3_LV1))
+-		return -ENODEV;
+-
+-	BUG_ON(!mem_init_done);
+-
+-	if (!map.r1.size) {
+-		DBG("%s:%d: No region 1, not adding memory\n",
+-		    __func__, __LINE__);
+-		return 0;
+-	}
+-
+-	start_addr = map.rm.size;
+-	start_pfn = start_addr >> PAGE_SHIFT;
+-	nr_pages = (map.r1.size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+-
+-	DBG("%s:%d: start_addr %lxh, start_pfn %lxh, nr_pages %lxh\n",
+-		__func__, __LINE__, start_addr, start_pfn, nr_pages);
+-
+-	result = add_memory(0, start_addr, map.r1.size);
+-
+-	if (result) {
+-		pr_err("%s:%d: add_memory failed: (%d)\n",
+-			__func__, __LINE__, result);
+-		return result;
+-	}
+-
+-	memblock_add(start_addr, map.r1.size);
+-
+-	result = online_pages(start_pfn, nr_pages);
+-
+-	if (result)
+-		pr_err("%s:%d: online_pages failed: (%d)\n",
+-			__func__, __LINE__, result);
+-
+-	return result;
+-}
+-
+-device_initcall(ps3_mm_add_memory);
+-
+ /*============================================================================*/
+ /* dma routines                                                               */
+ /*============================================================================*/
+@@ -1271,6 +1216,15 @@ void __init ps3_mm_init(void)
+ 	/* correct map.total for the real total amount of memory we use */
+ 	map.total = map.rm.size + map.r1.size;
+ 
++	if (!map.r1.size) {
++		DBG("%s:%d: No highmem region found\n", __func__, __LINE__);
++	} else {
++		DBG("%s:%d: Adding highmem region: %llxh %llxh\n",
++			__func__, __LINE__, map.rm.size,
++			map.total - map.rm.size);
++		memblock_add(map.rm.size, map.total - map.rm.size);
++	}
 +
-+int ps3_repository_read_highmem_region_count(unsigned int *region_count)
-+{
-+	int result;
-+	u64 v1 = 0;
-+
-+	result = read_node(PS3_LPAR_ID_CURRENT,
-+		make_first_field("highmem", 0),
-+		make_field("region", 0),
-+		make_field("count", 0),
-+		0,
-+		&v1, NULL);
-+	*region_count = v1;
-+	return result;
-+}
-+
-+
-+int ps3_repository_read_highmem_base(unsigned int region_index,
-+	u64 *highmem_base)
-+{
-+	return read_node(PS3_LPAR_ID_CURRENT,
-+		make_first_field("highmem", 0),
-+		make_field("region", region_index),
-+		make_field("base", 0),
-+		0,
-+		highmem_base, NULL);
-+}
-+
-+int ps3_repository_read_highmem_size(unsigned int region_index,
-+	u64 *highmem_size)
-+{
-+	return read_node(PS3_LPAR_ID_CURRENT,
-+		make_first_field("highmem", 0),
-+		make_field("region", region_index),
-+		make_field("size", 0),
-+		0,
-+		highmem_size, NULL);
-+}
-+
-+/**
-+ * ps3_repository_read_highmem_info - Read high memory region info
-+ * @region_index: Region index, {0,..,region_count-1}.
-+ * @highmem_base: High memory base address.
-+ * @highmem_size: High memory size.
-+ *
-+ * Bootloaders that preallocate highmem regions must place the
-+ * region info into the repository at these well known nodes.
-+ */
-+
-+int ps3_repository_read_highmem_info(unsigned int region_index,
-+	u64 *highmem_base, u64 *highmem_size)
-+{
-+	int result;
-+
-+	*highmem_base = 0;
-+	result = ps3_repository_read_highmem_base(region_index, highmem_base);
-+	return result ? result
-+		: ps3_repository_read_highmem_size(region_index, highmem_size);
-+}
-+
-+/**
-  * ps3_repository_read_num_spu_reserved - Number of physical spus reserved.
-  * @num_spu: Number of physical spus.
-  */
+ 	DBG(" <- %s:%d\n", __func__, __LINE__);
+ }
+ 
 -- 
 1.7.9.5
