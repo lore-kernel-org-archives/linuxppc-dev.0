@@ -1,13 +1,21 @@
-Return-Path: <geoff@infradead.org>
-Message-Id: <02ec92b3f312b7201928dc6d3225ed51635211b4.1335379330.git.geoff@infradead.org>
-In-Reply-To: <cover.1335379330.git.geoff@infradead.org>
-References: <cover.1335379330.git.geoff@infradead.org>
-From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 08/10] powerpc/ps3: Minor Kconfig cleanup
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 25 Apr 2012 19:19:35 +0000
-Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AE394B6FE6
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2012 07:14:39 +1000 (EST)
+Message-ID: <1335388465.21961.35.camel@pasglop>
+Subject: Re: [PATCH 00/15] PowerMac i2c API conversions & windfarm updates
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Thu, 26 Apr 2012 07:14:25 +1000
+In-Reply-To: <m2sjfs85pv.fsf@igel.home>
+References: <1334823416-9138-1-git-send-email-benh__1987.51832726902$1334826600$gmane$org@kernel.crashing.org>
+ <m2397sz1er.fsf@igel.home> <1335343125.21961.33.camel@pasglop>
+ <m2sjfs85pv.fsf@igel.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: khali@linux-fr.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,50 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Geoff Levand <geoff@infradead.org>
----
- arch/powerpc/platforms/ps3/Kconfig |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+On Wed, 2012-04-25 at 12:29 +0200, Andreas Schwab wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > Also, does the new driver properly react to load ?
+> 
+> The old driver keeps the cpu fans running at 300 rpm (lowest speed?)
+> for much longer when the cpus are put busy.  Only when the cpus are back
+> idle it speeds them up to 1200 rpm or more for some time depending on
+> how long the cpus were busy.  The new driver is faster at speeding up
+> the fans to around 800 rpm when cpus get busy, and keeps them running
+> longer at that speed, but doesn't appear to select much higher speeds.
+> 
+> The old driver appears to be better suited to desktops, whereas the new
+> driver is probably better for servers.
 
-diff --git a/arch/powerpc/platforms/ps3/Kconfig b/arch/powerpc/platforms/ps3/Kconfig
-index b72425a..46b7f02 100644
---- a/arch/powerpc/platforms/ps3/Kconfig
-+++ b/arch/powerpc/platforms/ps3/Kconfig
-@@ -73,7 +73,7 @@ config PS3_PS3AV
- 	help
- 	  Include support for the PS3 AV Settings driver.
- 
--	  This support is required for graphics and sound. In
-+	  This support is required for PS3 graphics and sound. In
- 	  general, all users will say Y or M.
- 
- config PS3_SYS_MANAGER
-@@ -84,7 +84,7 @@ config PS3_SYS_MANAGER
- 	help
- 	  Include support for the PS3 System Manager.
- 
--	  This support is required for system control.  In
-+	  This support is required for PS3 system control.  In
- 	  general, all users will say Y or M.
- 
- config PS3_REPOSITORY_WRITE
-@@ -134,7 +134,7 @@ config PS3_FLASH
- 
- 	  This support is required to access the PS3 FLASH ROM, which
- 	  contains the boot loader and some boot options.
--	  In general, all users will say Y or M.
-+	  In general, PS3 OtherOS users will say Y or M.
- 
- 	  As this driver needs a fixed buffer of 256 KiB of memory, it can
- 	  be disabled on the kernel command line using "ps3flash=off", to
-@@ -168,7 +168,7 @@ config PS3GELIC_UDBG
- 	  via the Ethernet port (UDP port number 18194).
- 
- 	  This driver uses a trivial implementation and is independent
--	  from the main network driver.
-+	  from the main PS3 gelic network driver.
- 
- 	  If in doubt, say N here.
- 
--- 
-1.7.9.5
+That's odd... as I said, the algorithm is supposed to be the same...
+
+> But the most annoying sound appears to be coming from the slots fan.
+
+Constant or changing ? The slots fan is set to a fixed speed, which I
+thought was constant (well, I "tickle" it a bit but roughly it's
+constant). Or is that not the case for you ?
+
+Darwin has an algorithm for it based on getting some data from the video
+driver in the AGP slot, but I don't have that.
+
+Cheers,
+Ben.
