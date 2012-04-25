@@ -1,10 +1,11 @@
 Return-Path: <geoff@infradead.org>
-Message-Id: <08a6b25631b5f1984a963fd7cf9771898ebb07e5.1335379330.git.geoff@infradead.org>
+Message-Id: <6750edbd8d6d1d72365e29e58b05f164bc23755a.1335379330.git.geoff@infradead.org>
 In-Reply-To: <cover.1335379330.git.geoff@infradead.org>
 References: <cover.1335379330.git.geoff@infradead.org>
-From: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 01/10] powerpc/ps3: Correct lv1 repository routine names
+From: Andre Heider <a.heider@gmail.com>
+Subject: [PATCH 04/10] powerpc/ps3: Add highmem repository read routines
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Sender: Geoff Levand <geoff@infradead.org>
 Date: Wed, 25 Apr 2012 19:19:34 +0000
 Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
  linuxppc-dev@lists.ozlabs.org, Nathan Whitehorn <nwhitehorn@freebsd.org>
@@ -17,30 +18,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rename these repo routines:
+Add repository helper routines to read highmem region info.
 
-  modify_repository_node_value => write_repository_node
-  remove_repository_node => delete_repository_node
+Bootloaders that preallocate highmem regions must place the
+region info into the repository at these well known nodes.
+These routines allow second stage kernles to read the region
+info from those nodes.
 
+Signed-off-by: Andre Heider <a.heider@gmail.com>
+CC: Nathan Whitehorn <nwhitehorn@freebsd.org>
 Signed-off-by: Geoff Levand <geoff@infradead.org>
 ---
- arch/powerpc/include/asm/lv1call.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/ps3/platform.h   |    7 ++++
+ arch/powerpc/platforms/ps3/repository.c |   66 +++++++++++++++++++++++++++++++
+ 2 files changed, 73 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/lv1call.h b/arch/powerpc/include/asm/lv1call.h
-index 233f9ec..f511767 100644
---- a/arch/powerpc/include/asm/lv1call.h
-+++ b/arch/powerpc/include/asm/lv1call.h
-@@ -265,8 +265,8 @@ LV1_CALL(get_spe_irq_outlet,                            2, 1,  78 )
- LV1_CALL(set_spe_privilege_state_area_1_register,       3, 0,  79 )
- LV1_CALL(create_repository_node,                        6, 0,  90 )
- LV1_CALL(read_repository_node,                          5, 2,  91 )
--LV1_CALL(modify_repository_node_value,                  6, 0,  92 )
--LV1_CALL(remove_repository_node,                        4, 0,  93 )
-+LV1_CALL(write_repository_node,                         6, 0,  92 )
-+LV1_CALL(delete_repository_node,                        4, 0,  93 )
- LV1_CALL(read_htab_entries,                             2, 5,  95 )
- LV1_CALL(set_dabr,                                      2, 0,  96 )
- LV1_CALL(get_total_execution_time,                      2, 1, 103 )
+diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
+index 4012a86..d71329a 100644
+--- a/arch/powerpc/platforms/ps3/platform.h
++++ b/arch/powerpc/platforms/ps3/platform.h
+@@ -188,6 +188,13 @@ int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size);
+ int ps3_repository_read_region_total(u64 *region_total);
+ int ps3_repository_read_mm_info(u64 *rm_base, u64 *rm_size,
+ 	u64 *region_total);
++int ps3_repository_read_highmem_region_count(unsigned int *region_count);
++int ps3_repository_read_highmem_base(unsigned int region_index,
++	u64 *highmem_base);
++int ps3_repository_read_highmem_size(unsigned int region_index,
++	u64 *highmem_size);
++int ps3_repository_read_highmem_info(unsigned int region_index,
++	u64 *highmem_base, u64 *highmem_size);
+ 
+ int ps3_repository_write_highmem_region_count(unsigned int region_count);
+ int ps3_repository_write_highmem_base(unsigned int region_index,
+diff --git a/arch/powerpc/platforms/ps3/repository.c b/arch/powerpc/platforms/ps3/repository.c
+index c73f3a6..9b47ba7 100644
+--- a/arch/powerpc/platforms/ps3/repository.c
++++ b/arch/powerpc/platforms/ps3/repository.c
+@@ -779,6 +779,72 @@ int ps3_repository_read_mm_info(u64 *rm_base, u64 *rm_size, u64 *region_total)
+ }
+ 
+ /**
++ * ps3_repository_read_highmem_region_count - Read the number of highmem regions
++ *
++ * Bootloaders must arrange the repository nodes such that regions are indexed
++ * with a region_index from 0 to region_count-1.
++ */
++
++int ps3_repository_read_highmem_region_count(unsigned int *region_count)
++{
++	int result;
++	u64 v1 = 0;
++
++	result = read_node(PS3_LPAR_ID_CURRENT,
++		make_first_field("highmem", 0),
++		make_field("region", 0),
++		make_field("count", 0),
++		0,
++		&v1, NULL);
++	*region_count = v1;
++	return result;
++}
++
++
++int ps3_repository_read_highmem_base(unsigned int region_index,
++	u64 *highmem_base)
++{
++	return read_node(PS3_LPAR_ID_CURRENT,
++		make_first_field("highmem", 0),
++		make_field("region", region_index),
++		make_field("base", 0),
++		0,
++		highmem_base, NULL);
++}
++
++int ps3_repository_read_highmem_size(unsigned int region_index,
++	u64 *highmem_size)
++{
++	return read_node(PS3_LPAR_ID_CURRENT,
++		make_first_field("highmem", 0),
++		make_field("region", region_index),
++		make_field("size", 0),
++		0,
++		highmem_size, NULL);
++}
++
++/**
++ * ps3_repository_read_highmem_info - Read high memory region info
++ * @region_index: Region index, {0,..,region_count-1}.
++ * @highmem_base: High memory base address.
++ * @highmem_size: High memory size.
++ *
++ * Bootloaders that preallocate highmem regions must place the
++ * region info into the repository at these well known nodes.
++ */
++
++int ps3_repository_read_highmem_info(unsigned int region_index,
++	u64 *highmem_base, u64 *highmem_size)
++{
++	int result;
++
++	*highmem_base = 0;
++	result = ps3_repository_read_highmem_base(region_index, highmem_base);
++	return result ? result
++		: ps3_repository_read_highmem_size(region_index, highmem_size);
++}
++
++/**
+  * ps3_repository_read_num_spu_reserved - Number of physical spus reserved.
+  * @num_spu: Number of physical spus.
+  */
 -- 
 1.7.9.5
