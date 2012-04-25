@@ -1,22 +1,21 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B2E2DB6FEA
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2012 07:54:18 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id 49D3AB6FEA
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2012 07:58:58 +1000 (EST)
+Message-ID: <1335391128.21961.55.camel@pasglop>
 Subject: Re: [PATCH 00/15] PowerMac i2c API conversions & windfarm updates
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Thu, 26 Apr 2012 07:58:48 +1000
+In-Reply-To: <m2aa1zxyt7.fsf@igel.home>
 References: <1334823416-9138-1-git-send-email-benh__1987.51832726902$1334826600$gmane$org@kernel.crashing.org>
  <m2397sz1er.fsf@igel.home> <1335343125.21961.33.camel@pasglop>
  <m2sjfs85pv.fsf@igel.home> <1335388465.21961.35.camel@pasglop>
-Date: Wed, 25 Apr 2012 23:54:12 +0200
-In-Reply-To: <1335388465.21961.35.camel@pasglop> (Benjamin Herrenschmidt's
- message of "Thu, 26 Apr 2012 07:14:25 +1000")
-Message-ID: <m2aa1zxyt7.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
+ <m2aa1zxyt7.fsf@igel.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: khali@linux-fr.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,17 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Wed, 2012-04-25 at 23:54 +0200, Andreas Schwab wrote:
+> 
+> This fuzzing is what makes it much more annoying.
+> 
+Interesting, I didn't think that couple of percent of pwm would be
+noticable (there's probably too much ambiant noise in the lab here for
+me to notice).
 
-> Constant or changing ? The slots fan is set to a fixed speed, which I
-> thought was constant (well, I "tickle" it a bit but roughly it's
-> constant).
+What if you just comment out the tickle code ?
 
-This fuzzing is what makes it much more annoying.
+In theory it's only needed if we haven't changed any fan speed for a
+long time (the FCU can then timeout and assume we aren't driving it,
+ramping up all fans to full speed). I could implement that a bit more
+intelligently.
 
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Cheers,
+Ben.
