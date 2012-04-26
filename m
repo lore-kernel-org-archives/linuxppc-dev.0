@@ -1,28 +1,13 @@
-Return-Path: <r58472@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2DDC7B6FF1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2012 12:59:24 +1000 (EST)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Shi Xuelin-B29237 <B29237@freescale.com>, "dan.j.williams@intel.com"
- <dan.j.williams@intel.com>, "vinod.koul@intel.com" <vinod.koul@intel.com>
-Subject: RE: [PATCH]     fsldma: fix performance degradation by optimizing
- spinlock use.
-Date: Thu, 26 Apr 2012 02:59:15 +0000
-Message-ID: <94F013E7935FF44C83EBE7784D62AD3F092D8457@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1324879263-11845-1-git-send-email-b29237@freescale.com>
- <DBB740589CE8814680DECFE34BE197AB1665A3@039-SN1MPN1-006.039d.mgd.msft.net>
- <20120111161347.GA1430@ovro.caltech.edu>
- <00ACF084E0EED647B22C27725E03EAFD06D7E2@039-SN2MPN1-011.039d.mgd.msft.net>
-In-Reply-To: <00ACF084E0EED647B22C27725E03EAFD06D7E2@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <freeman_ma@yahoo.com>
+Received: from nm16.bullet.mail.bf1.yahoo.com (nm16.bullet.mail.bf1.yahoo.com
+ [98.139.212.175]) by ozlabs.org (Postfix) with SMTP id 93D48B6FF4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2012 13:49:35 +1000 (EST)
+Message-ID: <1335412173.63382.YahooMailClassic@web162001.mail.bf1.yahoo.com>
+Date: Wed, 25 Apr 2012 20:49:33 -0700 (PDT)
+From: Jessica Wang <freeman_ma@yahoo.com>
+To: Linuxppc-dev@lists.ozlabs.org
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Ira W.
- Snyder" <iws@ovro.caltech.edu>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,59 +17,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgRGFuIGFuZCBWaW5vZCwNCg0KUGxlYXNlIGhlbHAgdG8gcGljayB0aGlzIHBhdGNoIHVwLiAg
-SXQgYWRkcmVzc2VzIGEgZ3JlYXQgcGVyZm9ybWFuY2UgcmVncmVzc2lvbiBmb3IgUkFJRCBvZmZs
-b2FkaW5nLg0KDQpBY2tlZC1ieTogTGkgWWFuZyA8bGVvbGlAZnJlZXNjYWxlLmNvbT4NCg0KLSBM
-ZW8NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTaGkgWHVlbGluLUIy
-OTIzNw0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgMjYsIDIwMTIgMTA6MDQgQU0NCj4gVG86IGRh
-bi5qLndpbGxpYW1zQGludGVsLmNvbQ0KPiBDYzogdmlub2Qua291bEBpbnRlbC5jb207IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC0NCj4ga2VybmVsQHZnZXIua2VybmVsLm9y
-ZzsgSXJhIFcuIFNueWRlcjsgTGkgWWFuZy1SNTg0NzINCj4gU3ViamVjdDogUkU6IFtQQVRDSF0g
-ZnNsZG1hOiBmaXggcGVyZm9ybWFuY2UgZGVncmFkYXRpb24gYnkgb3B0aW1pemluZw0KPiBzcGlu
-bG9jayB1c2UuDQo+IA0KPiBIaSBEYW4gV2lsbGlhbXMsDQo+IA0KPiBEbyB5b3UgaGF2ZSBhbnkg
-Y29tbWVudCBhYm91dCB0aGlzIHBhdGNoPw0KPiANCj4gVGhhbmtzLA0KPiBGb3JyZXN0DQo+IA0K
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBJcmEgVy4gU255ZGVyIFttYWls
-dG86aXdzQG92cm8uY2FsdGVjaC5lZHVdDQo+IFNlbnQ6IDIwMTLlubQx5pyIMTLml6UgMDoxNA0K
-PiBUbzogU2hpIFh1ZWxpbi1CMjkyMzcNCj4gQ2M6IHZpbm9kLmtvdWxAaW50ZWwuY29tOyBkYW4u
-ai53aWxsaWFtc0BpbnRlbC5jb207IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsg
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBmc2xk
-bWE6IGZpeCBwZXJmb3JtYW5jZSBkZWdyYWRhdGlvbiBieSBvcHRpbWl6aW5nDQo+IHNwaW5sb2Nr
-IHVzZS4NCj4gDQo+IE9uIFdlZCwgSmFuIDExLCAyMDEyIGF0IDA3OjU0OjU1QU0gKzAwMDAsIFNo
-aSBYdWVsaW4tQjI5MjM3IHdyb3RlOg0KPiA+IEhlbGxvIElyaXMsDQo+ID4NCj4gPiBBcyB3ZSBk
-aXNjdXNzZWQgaW4gdGhlIHByZXZpb3VzIHBhdGNoLCBJIGFkZCBvbmUgc21wX21iKCkgaW4NCj4g
-ZnNsX3R4X3N0YXR1cy4NCj4gPiBJbiBteSB0ZXN0aW5nIHdpdGggaW96b25lLCB0aGlzIHNtcF9t
-YigpIGNvdWxkIGNhdXNlIDElfjIlIHBlcmZvcm1hbmNlDQo+IGRlZ3JhZGF0aW9uLg0KPiA+IEFu
-eXdheSBpdCBpcyBhY2NlcHRhYmxlIGZvciBtZS4gRG8geW91IGhhdmUgYW55IG90aGVyIGNvbW1l
-bnRzPw0KPiA+DQo+IA0KPiBUaGlzIHBhdGNoIGxvb2tzIGZpbmUgdG8gbWUuDQo+IA0KPiBJcmEN
-Cj4gDQo+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiBGcm9tOiBTaGkgWHVlbGlu
-LUIyOTIzNw0KPiA+IFNlbnQ6IDIwMTHlubQxMuaciDI25pelIDE0OjAxDQo+ID4gVG86IGl3c0Bv
-dnJvLmNhbHRlY2guZWR1OyB2aW5vZC5rb3VsQGludGVsLmNvbTsNCj4gZGFuLmoud2lsbGlhbXNA
-aW50ZWwuY29tOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgbGludXgtDQo+IGtlcm5l
-bEB2Z2VyLmtlcm5lbC5vcmcNCj4gPiBDYzogU2hpIFh1ZWxpbi1CMjkyMzcNCj4gPiBTdWJqZWN0
-OiBbUEFUQ0hdIGZzbGRtYTogZml4IHBlcmZvcm1hbmNlIGRlZ3JhZGF0aW9uIGJ5IG9wdGltaXpp
-bmcNCj4gc3BpbmxvY2sgdXNlLg0KPiA+DQo+ID4gRnJvbTogRm9ycmVzdCBzaGkgPGIyOTIzN0Bm
-cmVlc2NhbGUuY29tPg0KPiA+DQo+ID4gICAgIGRtYSBzdGF0dXMgY2hlY2sgZnVuY3Rpb24gZnNs
-X3R4X3N0YXR1cyBpcyBoZWF2aWx5IGNhbGxlZCBpbg0KPiA+ICAgICBhIHRpZ2h0IGxvb3AgYW5k
-IHRoZSBkZXNjIGxvY2sgaW4gZnNsX3R4X3N0YXR1cyBjb250ZW5kZWQgYnkNCj4gPiAgICAgdGhl
-IGRtYSBzdGF0dXMgdXBkYXRlIGZ1bmN0aW9uLiB0aGlzIGNhdXNlZCB0aGUgZG1hIHBlcmZvcm1h
-bmNlDQo+ID4gICAgIGRlZ3JhZGVzIG11Y2guDQo+ID4NCj4gPiAgICAgdGhpcyBwYXRjaCByZWxl
-YXNlcyB0aGUgbG9jayBpbiB0aGUgZnNsX3R4X3N0YXR1cyBmdW5jdGlvbiwgYW5kDQo+ID4gICAg
-IGludHJvZHVjZSB0aGUgc21wX21iKCkgdG8gYXZvaWQgcG9zc2libGUgbWVtb3J5IGluY29uc2lz
-dGVuY3kuDQo+ID4NCj4gPiAgICAgU2lnbmVkLW9mZi1ieTogRm9ycmVzdCBTaGkgPHh1ZWxpbi5z
-aGlAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgZHJpdmVycy9kbWEvZnNsZG1hLmMgfCAg
-ICA2ICstLS0tLQ0KPiA+ICAxIGZpbGVzIGNoYW5nZWQsIDEgaW5zZXJ0aW9ucygrKSwgNSBkZWxl
-dGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL2RtYS9mc2xkbWEuYyBiL2Ry
-aXZlcnMvZG1hL2ZzbGRtYS5jIGluZGV4DQo+IDhhNzgxNTQuLjAwOGZiNWUgMTAwNjQ0DQo+ID4g
-LS0tIGEvZHJpdmVycy9kbWEvZnNsZG1hLmMNCj4gPiArKysgYi9kcml2ZXJzL2RtYS9mc2xkbWEu
-Yw0KPiA+IEBAIC05ODYsMTUgKzk4NiwxMSBAQCBzdGF0aWMgZW51bSBkbWFfc3RhdHVzIGZzbF90
-eF9zdGF0dXMoc3RydWN0DQo+IGRtYV9jaGFuICpkY2hhbiwNCj4gPiAgCXN0cnVjdCBmc2xkbWFf
-Y2hhbiAqY2hhbiA9IHRvX2ZzbF9jaGFuKGRjaGFuKTsNCj4gPiAgCWRtYV9jb29raWVfdCBsYXN0
-X2NvbXBsZXRlOw0KPiA+ICAJZG1hX2Nvb2tpZV90IGxhc3RfdXNlZDsNCj4gPiAtCXVuc2lnbmVk
-IGxvbmcgZmxhZ3M7DQo+ID4gLQ0KPiA+IC0Jc3Bpbl9sb2NrX2lycXNhdmUoJmNoYW4tPmRlc2Nf
-bG9jaywgZmxhZ3MpOw0KPiA+DQo+ID4gCWxhc3RfY29tcGxldGUgPSBjaGFuLT5jb21wbGV0ZWRf
-Y29va2llOw0KPiA+ICsJc21wX21iKCk7DQo+ID4gCWxhc3RfdXNlZCA9IGRjaGFuLT5jb29raWU7
-DQo+ID4NCj4gPiAtCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmNoYW4tPmRlc2NfbG9jaywgZmxh
-Z3MpOw0KPiA+IC0NCj4gPiAgCWRtYV9zZXRfdHhfc3RhdGUodHhzdGF0ZSwgbGFzdF9jb21wbGV0
-ZSwgbGFzdF91c2VkLCAwKTsNCj4gPiAgCXJldHVybiBkbWFfYXN5bmNfaXNfY29tcGxldGUoY29v
-a2llLCBsYXN0X2NvbXBsZXRlLCBsYXN0X3VzZWQpOyB9DQo+ID4gLS0NCj4gPiAxLjcuMC40DQo+
-ID4NCj4gPg0KDQo=
+please remove me from the list... thanks
