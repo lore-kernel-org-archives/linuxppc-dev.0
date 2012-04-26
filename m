@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 49D3AB6FEA
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2012 07:58:58 +1000 (EST)
-Message-ID: <1335391128.21961.55.camel@pasglop>
-Subject: Re: [PATCH 00/15] PowerMac i2c API conversions & windfarm updates
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Thu, 26 Apr 2012 07:58:48 +1000
-In-Reply-To: <m2aa1zxyt7.fsf@igel.home>
-References: <1334823416-9138-1-git-send-email-benh__1987.51832726902$1334826600$gmane$org@kernel.crashing.org>
- <m2397sz1er.fsf@igel.home> <1335343125.21961.33.camel@pasglop>
- <m2sjfs85pv.fsf@igel.home> <1335388465.21961.35.camel@pasglop>
- <m2aa1zxyt7.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: khali@linux-fr.org, linuxppc-dev@ozlabs.org
+Return-Path: <B29237@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 554F3B6FEF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Apr 2012 12:04:04 +1000 (EST)
+From: Shi Xuelin-B29237 <B29237@freescale.com>
+To: "dan.j.williams@intel.com" <dan.j.williams@intel.com>
+Subject: RE: [PATCH]     fsldma: fix performance degradation by optimizing
+ spinlock use.
+Date: Thu, 26 Apr 2012 02:03:54 +0000
+Message-ID: <00ACF084E0EED647B22C27725E03EAFD06D7E2@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1324879263-11845-1-git-send-email-b29237@freescale.com>
+ <DBB740589CE8814680DECFE34BE197AB1665A3@039-SN1MPN1-006.039d.mgd.msft.net>
+ <20120111161347.GA1430@ovro.caltech.edu>
+In-Reply-To: <20120111161347.GA1430@ovro.caltech.edu>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "vinod.koul@intel.com" <vinod.koul@intel.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Ira W.
+ Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,20 +32,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-04-25 at 23:54 +0200, Andreas Schwab wrote:
-> 
-> This fuzzing is what makes it much more annoying.
-> 
-Interesting, I didn't think that couple of percent of pwm would be
-noticable (there's probably too much ambiant noise in the lab here for
-me to notice).
-
-What if you just comment out the tickle code ?
-
-In theory it's only needed if we haven't changed any fan speed for a
-long time (the FCU can then timeout and assume we aren't driving it,
-ramping up all fans to full speed). I could implement that a bit more
-intelligently.
-
-Cheers,
-Ben.
+SGkgRGFuIFdpbGxpYW1zLA0KDQpEbyB5b3UgaGF2ZSBhbnkgY29tbWVudCBhYm91dCB0aGlzIHBh
+dGNoPw0KDQpUaGFua3MsDQpGb3JyZXN0DQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpG
+cm9tOiBJcmEgVy4gU255ZGVyIFttYWlsdG86aXdzQG92cm8uY2FsdGVjaC5lZHVdIA0KU2VudDog
+MjAxMuW5tDHmnIgxMuaXpSAwOjE0DQpUbzogU2hpIFh1ZWxpbi1CMjkyMzcNCkNjOiB2aW5vZC5r
+b3VsQGludGVsLmNvbTsgZGFuLmoud2lsbGlhbXNAaW50ZWwuY29tOyBsaW51eHBwYy1kZXZAbGlz
+dHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KU3ViamVjdDogUmU6
+IFtQQVRDSF0gZnNsZG1hOiBmaXggcGVyZm9ybWFuY2UgZGVncmFkYXRpb24gYnkgb3B0aW1pemlu
+ZyBzcGlubG9jayB1c2UuDQoNCk9uIFdlZCwgSmFuIDExLCAyMDEyIGF0IDA3OjU0OjU1QU0gKzAw
+MDAsIFNoaSBYdWVsaW4tQjI5MjM3IHdyb3RlOg0KPiBIZWxsbyBJcmlzLA0KPiANCj4gQXMgd2Ug
+ZGlzY3Vzc2VkIGluIHRoZSBwcmV2aW91cyBwYXRjaCwgSSBhZGQgb25lIHNtcF9tYigpIGluIGZz
+bF90eF9zdGF0dXMuDQo+IEluIG15IHRlc3Rpbmcgd2l0aCBpb3pvbmUsIHRoaXMgc21wX21iKCkg
+Y291bGQgY2F1c2UgMSV+MiUgcGVyZm9ybWFuY2UgZGVncmFkYXRpb24uDQo+IEFueXdheSBpdCBp
+cyBhY2NlcHRhYmxlIGZvciBtZS4gRG8geW91IGhhdmUgYW55IG90aGVyIGNvbW1lbnRzPw0KPiAN
+Cg0KVGhpcyBwYXRjaCBsb29rcyBmaW5lIHRvIG1lLg0KDQpJcmENCg0KPiAtLS0tLU9yaWdpbmFs
+IE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBTaGkgWHVlbGluLUIyOTIzNyANCj4gU2VudDogMjAxMeW5
+tDEy5pyIMjbml6UgMTQ6MDENCj4gVG86IGl3c0BvdnJvLmNhbHRlY2guZWR1OyB2aW5vZC5rb3Vs
+QGludGVsLmNvbTsgZGFuLmoud2lsbGlhbXNAaW50ZWwuY29tOyBsaW51eHBwYy1kZXZAbGlzdHMu
+b3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiBDYzogU2hpIFh1ZWxp
+bi1CMjkyMzcNCj4gU3ViamVjdDogW1BBVENIXSBmc2xkbWE6IGZpeCBwZXJmb3JtYW5jZSBkZWdy
+YWRhdGlvbiBieSBvcHRpbWl6aW5nIHNwaW5sb2NrIHVzZS4NCj4gDQo+IEZyb206IEZvcnJlc3Qg
+c2hpIDxiMjkyMzdAZnJlZXNjYWxlLmNvbT4NCj4gDQo+ICAgICBkbWEgc3RhdHVzIGNoZWNrIGZ1
+bmN0aW9uIGZzbF90eF9zdGF0dXMgaXMgaGVhdmlseSBjYWxsZWQgaW4NCj4gICAgIGEgdGlnaHQg
+bG9vcCBhbmQgdGhlIGRlc2MgbG9jayBpbiBmc2xfdHhfc3RhdHVzIGNvbnRlbmRlZCBieQ0KPiAg
+ICAgdGhlIGRtYSBzdGF0dXMgdXBkYXRlIGZ1bmN0aW9uLiB0aGlzIGNhdXNlZCB0aGUgZG1hIHBl
+cmZvcm1hbmNlDQo+ICAgICBkZWdyYWRlcyBtdWNoLg0KPiANCj4gICAgIHRoaXMgcGF0Y2ggcmVs
+ZWFzZXMgdGhlIGxvY2sgaW4gdGhlIGZzbF90eF9zdGF0dXMgZnVuY3Rpb24sIGFuZA0KPiAgICAg
+aW50cm9kdWNlIHRoZSBzbXBfbWIoKSB0byBhdm9pZCBwb3NzaWJsZSBtZW1vcnkgaW5jb25zaXN0
+ZW5jeS4NCj4gDQo+ICAgICBTaWduZWQtb2ZmLWJ5OiBGb3JyZXN0IFNoaSA8eHVlbGluLnNoaUBm
+cmVlc2NhbGUuY29tPg0KPiAtLS0NCj4gIGRyaXZlcnMvZG1hL2ZzbGRtYS5jIHwgICAgNiArLS0t
+LS0NCj4gIDEgZmlsZXMgY2hhbmdlZCwgMSBpbnNlcnRpb25zKCspLCA1IGRlbGV0aW9ucygtKQ0K
+PiANCj4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvZG1hL2ZzbGRtYS5jIGIvZHJpdmVycy9kbWEvZnNs
+ZG1hLmMgaW5kZXggOGE3ODE1NC4uMDA4ZmI1ZSAxMDA2NDQNCj4gLS0tIGEvZHJpdmVycy9kbWEv
+ZnNsZG1hLmMNCj4gKysrIGIvZHJpdmVycy9kbWEvZnNsZG1hLmMNCj4gQEAgLTk4NiwxNSArOTg2
+LDExIEBAIHN0YXRpYyBlbnVtIGRtYV9zdGF0dXMgZnNsX3R4X3N0YXR1cyhzdHJ1Y3QgZG1hX2No
+YW4gKmRjaGFuLA0KPiAgCXN0cnVjdCBmc2xkbWFfY2hhbiAqY2hhbiA9IHRvX2ZzbF9jaGFuKGRj
+aGFuKTsNCj4gIAlkbWFfY29va2llX3QgbGFzdF9jb21wbGV0ZTsNCj4gIAlkbWFfY29va2llX3Qg
+bGFzdF91c2VkOw0KPiAtCXVuc2lnbmVkIGxvbmcgZmxhZ3M7DQo+IC0NCj4gLQlzcGluX2xvY2tf
+aXJxc2F2ZSgmY2hhbi0+ZGVzY19sb2NrLCBmbGFncyk7DQo+ICANCj4gCWxhc3RfY29tcGxldGUg
+PSBjaGFuLT5jb21wbGV0ZWRfY29va2llOw0KPiArCXNtcF9tYigpOw0KPiAJbGFzdF91c2VkID0g
+ZGNoYW4tPmNvb2tpZTsNCj4gIA0KPiAtCXNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmNoYW4tPmRl
+c2NfbG9jaywgZmxhZ3MpOw0KPiAtDQo+ICAJZG1hX3NldF90eF9zdGF0ZSh0eHN0YXRlLCBsYXN0
+X2NvbXBsZXRlLCBsYXN0X3VzZWQsIDApOw0KPiAgCXJldHVybiBkbWFfYXN5bmNfaXNfY29tcGxl
+dGUoY29va2llLCBsYXN0X2NvbXBsZXRlLCBsYXN0X3VzZWQpOyB9DQo+IC0tDQo+IDEuNy4wLjQN
+Cj4gDQo+IA0KDQo=
