@@ -1,9 +1,9 @@
 Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C8BC5B6FA8
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2012 21:42:03 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C7640B6FA5
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2012 21:43:41 +1000 (EST)
 From: Andreas Schwab <schwab@linux-m68k.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 00/15] PowerMac i2c API conversions & windfarm updates
@@ -12,10 +12,10 @@ References: <1334823416-9138-1-git-send-email-benh__1987.51832726902$1334826600$
  <m2sjfs85pv.fsf@igel.home> <1335388465.21961.35.camel@pasglop>
  <m2aa1zxyt7.fsf@igel.home> <1335391128.21961.55.camel@pasglop>
  <m2liliam9w.fsf@igel.home> <1335431975.21961.75.camel@pasglop>
-Date: Thu, 26 Apr 2012 13:41:58 +0200
+Date: Thu, 26 Apr 2012 13:43:38 +0200
 In-Reply-To: <1335431975.21961.75.camel@pasglop> (Benjamin Herrenschmidt's
  message of "Thu, 26 Apr 2012 19:19:35 +1000")
-Message-ID: <m2ehra67p5.fsf@igel.home>
+Message-ID: <m2aa1y67md.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: khali@linux-fr.org, linuxppc-dev@ozlabs.org
@@ -30,13 +30,18 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> In fact, can you change that define around and see if it makes it behave
-> more like therm_pm72 overall ? IE That's the only -known- difference
-> between the old and new driver (+/- a bug / typo / etc..)
+> On Thu, 2012-04-26 at 11:13 +0200, Andreas Schwab wrote:
+>> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+>> 
+>> > What if you just comment out the tickle code ?
+>> 
+>> I haven't tried it yet, but I suspect it won't tickle the fcu any more
+>> since wf_control_set avoids writing an unchanged value (unlike the old
+>> driver).
+>
+> Sure, the question is whether that fixes the "annoyance" :-)
 
-Yes, that's make the difference for the cpu fan control.  Note that
-MacOS (at least 10.3, which is the only one I have) drives the fans the
-same way as the old driver.
+Removing the tickling removes much of the annoyance.
 
 Andreas.
 
