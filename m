@@ -1,21 +1,19 @@
 Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C7640B6FA5
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2012 21:43:41 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C4F43B6FA5
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2012 21:46:20 +1000 (EST)
 From: Andreas Schwab <schwab@linux-m68k.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 00/15] PowerMac i2c API conversions & windfarm updates
 References: <1334823416-9138-1-git-send-email-benh__1987.51832726902$1334826600$gmane$org@kernel.crashing.org>
  <m2397sz1er.fsf@igel.home> <1335343125.21961.33.camel@pasglop>
  <m2sjfs85pv.fsf@igel.home> <1335388465.21961.35.camel@pasglop>
- <m2aa1zxyt7.fsf@igel.home> <1335391128.21961.55.camel@pasglop>
- <m2liliam9w.fsf@igel.home> <1335431975.21961.75.camel@pasglop>
-Date: Thu, 26 Apr 2012 13:43:38 +0200
-In-Reply-To: <1335431975.21961.75.camel@pasglop> (Benjamin Herrenschmidt's
- message of "Thu, 26 Apr 2012 19:19:35 +1000")
-Message-ID: <m2aa1y67md.fsf@igel.home>
+Date: Thu, 26 Apr 2012 13:46:19 +0200
+In-Reply-To: <1335388465.21961.35.camel@pasglop> (Benjamin Herrenschmidt's
+ message of "Thu, 26 Apr 2012 07:14:25 +1000")
+Message-ID: <m262cm67hw.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: khali@linux-fr.org, linuxppc-dev@ozlabs.org
@@ -30,18 +28,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> On Thu, 2012-04-26 at 11:13 +0200, Andreas Schwab wrote:
->> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->> 
->> > What if you just comment out the tickle code ?
->> 
->> I haven't tried it yet, but I suspect it won't tickle the fcu any more
->> since wf_control_set avoids writing an unchanged value (unlike the old
->> driver).
->
-> Sure, the question is whether that fixes the "annoyance" :-)
+> Darwin has an algorithm for it based on getting some data from the video
+> driver in the AGP slot, but I don't have that.
 
-Removing the tickling removes much of the annoyance.
+Perhaps the slots fan should be programmable from user space.  For my
+use case I'm pretty sure I would never need to set it to more than the
+minimum speed.
 
 Andreas.
 
