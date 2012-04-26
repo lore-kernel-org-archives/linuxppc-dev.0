@@ -1,24 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E2FB5B6FAF
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Apr 2012 08:06:53 +1000 (EST)
-Message-ID: <1335477999.21961.85.camel@pasglop>
-Subject: Re: [PATCH 00/15] PowerMac i2c API conversions & windfarm updates
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Fri, 27 Apr 2012 08:06:39 +1000
-In-Reply-To: <m2ehra67p5.fsf@igel.home>
-References: <1334823416-9138-1-git-send-email-benh__1987.51832726902$1334826600$gmane$org@kernel.crashing.org>
- <m2397sz1er.fsf@igel.home> <1335343125.21961.33.camel@pasglop>
- <m2sjfs85pv.fsf@igel.home> <1335388465.21961.35.camel@pasglop>
- <m2aa1zxyt7.fsf@igel.home> <1335391128.21961.55.camel@pasglop>
- <m2liliam9w.fsf@igel.home> <1335431975.21961.75.camel@pasglop>
- <m2ehra67p5.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 434EDB6FBE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2012 09:59:16 +1000 (EST)
+Date: Thu, 26 Apr 2012 16:59:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Anton Vorontsov <anton.vorontsov@linaro.org>
+Subject: Re: [PATCH 1/9] cpu: Introduce clear_tasks_mm_cpumask() helper
+Message-Id: <20120426165911.00cebd31.akpm@linux-foundation.org>
+In-Reply-To: <20120423070736.GA30752@lizard>
+References: <20120423070641.GA27702@lizard>
+	<20120423070736.GA30752@lizard>
 Mime-Version: 1.0
-Cc: khali@linux-fr.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linaro-kernel@lists.linaro.org, Mike Frysinger <vapier@gentoo.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ Richard Weinberger <richard@nod.at>, linuxppc-dev@lists.ozlabs.org,
+ Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
+ linux-mm@kvack.org, Paul Mundt <lethal@linux-sh.org>,
+ John Stultz <john.stultz@linaro.org>, patches@linaro.org,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ Russell King <linux@arm.linux.org.uk>, uclinux-dist-devel@blackfin.uclinux.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +31,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-04-26 at 13:41 +0200, Andreas Schwab wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Mon, 23 Apr 2012 00:07:36 -0700
+Anton Vorontsov <anton.vorontsov@linaro.org> wrote:
+
+> Many architectures clear tasks' mm_cpumask like this:
 > 
-> > In fact, can you change that define around and see if it makes it behave
-> > more like therm_pm72 overall ? IE That's the only -known- difference
-> > between the old and new driver (+/- a bug / typo / etc..)
+> 	read_lock(&tasklist_lock);
+> 	for_each_process(p) {
+> 		if (p->mm)
+> 			cpumask_clear_cpu(cpu, mm_cpumask(p->mm));
+> 	}
+> 	read_unlock(&tasklist_lock);
 > 
-> Yes, that's make the difference for the cpu fan control.  Note that
-> MacOS (at least 10.3, which is the only one I have) drives the fans the
-> same way as the old driver.
+> Depending on the context, the code above may have several problems,
+> such as:
+> 
+> 1. Working with task->mm w/o getting mm or grabing the task lock is
+>    dangerous as ->mm might disappear (exit_mm() assigns NULL under
+>    task_lock(), so tasklist lock is not enough).
+> 
+> 2. Checking for process->mm is not enough because process' main
+>    thread may exit or detach its mm via use_mm(), but other threads
+>    may still have a valid mm.
+> 
+> This patch implements a small helper function that does things
+> correctly, i.e.:
+> 
+> 1. We take the task's lock while whe handle its mm (we can't use
+>    get_task_mm()/mmput() pair as mmput() might sleep);
+> 
+> 2. To catch exited main thread case, we use find_lock_task_mm(),
+>    which walks up all threads and returns an appropriate task
+>    (with task lock held).
+> 
+> Also, Per Peter Zijlstra's idea, now we don't grab tasklist_lock in
+> the new helper, instead we take the rcu read lock. We can do this
+> because the function is called after the cpu is taken down and marked
+> offline, so no new tasks will get this cpu set in their mm mask.
+> 
 
-Ok, I'll switch that back then. It seemed more sensible to read the
-actual fan values rather than the programmed ones (in fact I wonder if I
-can just skip the read alltogether then and use a cached value but that
-means I won't be able to detect failed fans...), but if you say it
-behaves better, let's keep it the way it was.
+Seems reasonable.
 
-As for the tickle, I'm not sure yet how to proceed. I'll look into it,
-try various things. We can maybe just remove the tickle but that means
-that a completely idle machine might start ramping up as the FCU times
-out.
+> --- a/include/linux/cpu.h
+> +++ b/include/linux/cpu.h
+> @@ -179,6 +179,7 @@ extern void put_online_cpus(void);
+>  #define hotcpu_notifier(fn, pri)	cpu_notifier(fn, pri)
+>  #define register_hotcpu_notifier(nb)	register_cpu_notifier(nb)
+>  #define unregister_hotcpu_notifier(nb)	unregister_cpu_notifier(nb)
+> +void clear_tasks_mm_cpumask(int cpu);
+>  int cpu_down(unsigned int cpu);
+>  
+>  #ifdef CONFIG_ARCH_CPU_PROBE_RELEASE
+> diff --git a/kernel/cpu.c b/kernel/cpu.c
+> index 2060c6e..ecdf499 100644
+> --- a/kernel/cpu.c
+> +++ b/kernel/cpu.c
+> @@ -10,6 +10,8 @@
+>  #include <linux/sched.h>
+>  #include <linux/unistd.h>
+>  #include <linux/cpu.h>
+> +#include <linux/oom.h>
+> +#include <linux/rcupdate.h>
+>  #include <linux/export.h>
+>  #include <linux/kthread.h>
+>  #include <linux/stop_machine.h>
+> @@ -171,6 +173,30 @@ void __ref unregister_cpu_notifier(struct notifier_block *nb)
+>  }
+>  EXPORT_SYMBOL(unregister_cpu_notifier);
+>  
+> +void clear_tasks_mm_cpumask(int cpu)
 
-Finally, setting the slot fan from sysfs should be doable reasonably
-easily. Stay tuned and thanks a lot for testing ! :-)
+The operation of this function was presumably obvious to you at the
+time you wrote it, but that isn't true of other people at later times.
 
-Cheers,
-Ben.
+Please document it?
+
+
+> +{
+> +	struct task_struct *p;
+> +
+> +	/*
+> +	 * This function is called after the cpu is taken down and marked
+> +	 * offline,
+
+hm, well.  Who said that this function will only ever be called
+after that CPU was taken down?  There is nothing in the function name
+nor in the (absent) documentation which enforces this precondition.
+
+If someone tries to use this function for a different purpose, or
+copies-and-modifies it for a different purpose, we just shot them in
+the foot.
+
+They'd be pretty dumb to do that without reading the local comment,
+but still...
+
+> 	 so its not like new tasks will ever get this cpu set in
+> +	 * their mm mask. -- Peter Zijlstra
+> +	 * Thus, we may use rcu_read_lock() here, instead of grabbing
+> +	 * full-fledged tasklist_lock.
+> +	 */
+> +	rcu_read_lock();
+> +	for_each_process(p) {
+> +		struct task_struct *t;
+> +
+> +		t = find_lock_task_mm(p);
+> +		if (!t)
+> +			continue;
+> +		cpumask_clear_cpu(cpu, mm_cpumask(t->mm));
+> +		task_unlock(t);
+> +	}
+> +	rcu_read_unlock();
+> +}
+
+It is good that this code exists under CONFIG_HOTPLUG_CPU.  Did you
+check that everything works correctly with CONFIG_HOTPLUG_CPU=n?
