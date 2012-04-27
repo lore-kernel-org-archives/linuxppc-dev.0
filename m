@@ -1,27 +1,34 @@
-Return-Path: <larry.finger@gmail.com>
-Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 77A67B6FB4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 01:38:25 +1000 (EST)
-Received: by obbup19 with SMTP id up19so1230026obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Apr 2012 08:38:22 -0700 (PDT)
-Sender: Larry Finger <larry.finger@gmail.com>
-Message-ID: <4F9ABD67.3060704@lwfinger.net>
-Date: Fri, 27 Apr 2012 10:38:15 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
+Return-Path: <mchehab@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 430D9B6FA7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 02:08:28 +1000 (EST)
+Message-ID: <4F9AC44A.5000509@redhat.com>
+Date: Fri, 27 Apr 2012 13:07:38 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Regression in 32-bit ppc kernel
-References: <4F973026.3020103@lwfinger.net>
- <1335311621.15830.42.camel@pasglop> <4F976352.4060001@lwfinger.net>
- <1335327081.21961.28.camel@pasglop> <4F98117C.7080309@lwfinger.net>
- <1335390257.21961.53.camel@pasglop>
-In-Reply-To: <1335390257.21961.53.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- LKML <linux-kernel@vger.kernel.org>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to work
+ with layers
+References: <1335289087-11337-1-git-send-email-mchehab@redhat.com>
+ <1335291342-14922-1-git-send-email-mchehab@redhat.com>
+ <20120427133304.GE9626@aftab.osrc.amd.com>
+ <1335535895.25521.7.camel@joe2Laptop>
+In-Reply-To: <1335535895.25521.7.camel@joe2Laptop>
+Content-Type: text/plain; charset=UTF-8
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
+ Hitoshi Mitake <h.mitake@gmail.com>, Mark Gross <mark.gross@intel.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Ranganathan Desikan <ravi@jetztechnologies.com>,
+ Borislav Petkov <bp@amd64.org>, Egor Martovetsky <egor@pasemi.com>,
+ =?UTF-8?B?TmlrbGFzIFPDtmRlcmx1bmQ=?= <niklas.soderlund@ericsson.com>,
+ Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Doug Thompson <norsk5@yahoo.com>,
+ Linux Edac Mailing List <linux-edac@vger.kernel.org>,
+ Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +38,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/25/2012 04:44 PM, Benjamin Herrenschmidt wrote:
->
-> Do we know what the bad interrupt maps to ? Also what is the value of
-> NR_IRQ and do you have SPARSE_IRQ enabled ? Can you try with the latter
-> disabled and NR_IRQ set to something large, such as 128 ?
->
-> (You may be able to check the interrupt mapping in debugfs)
+Em 27-04-2012 11:11, Joe Perches escreveu:
+> On Fri, 2012-04-27 at 15:33 +0200, Borislav Petkov wrote:
+>> this patch gives
+>>
+>> [    8.278399] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 0: dimm0 (0:0:0): row 0, chan 0
+> 
+> One too many __func__'s in some combination of the
+> pr_fmt and/or dbg call and/or the actual call site?
 
-Sorry, I was unable to find anything in debugfs to help me learn about interrupt 
-mapping. The value of CONFIG_NR_IRQS is already 512. I have not tried reducing 
-it to 128. The setting for CONFIG_SPARSE_IRQ was on, and changing it to off did 
-not make any difference.
+Yes. This is a common issue at the EDAC core: on several places, it calls the
+edac debug macros (DEBUGF0...DEBUGF4) passing a __func__ as an argument, while
+the debug macros already handles that. I suspect that, in the past, the __func__
+were not at the macros, but some patch added it there, and forgot to fix the
+occurrences of its call.
 
-I finished the bisection, which led to
+This is something that needs to be reviewed at the entire EDAC core (and likely
+at the drivers).
 
-commit a79dd5ae5a8f49688d65b89a859f2b98a7ee5538
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Thu Dec 15 11:13:03 2011 +1100
+I opted to not touch on this at the existing debug logic, as I think that the
+better is to address all those issues on one separate patch, after fixing the
+EDAC core bugs.
+> 
+>>> diff --git a/drivers/edac/edac_core.h b/drivers/edac/edac_core.h
+> []
+>>> @@ -447,8 +447,13 @@ static inline void pci_write_bits32(struct pci_dev *pdev, int offset,
+>>>  
+>>>  #endif				/* CONFIG_PCI */
+>>>  
+>>> -extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+>>> -					  unsigned nr_chans, int edac_index);
+>>> +struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+>>> +				   unsigned nr_chans, int edac_index);
+>>
+>> Why not "extern"?
+> 
+> Using extern function prototypes in .h files
+> isn't generally necessary nor is extern the
+> more common kernel style.
 
-     tty/serial/pmac_zilog: Fix suspend & resume
+Yes. I never add extern on the code I write.
 
-As this seemed to be an improbable result, I did the full test by checking out 
-the previous commit (43ca5d3). That resulted in a "good" result. Then I used 
-quilt to add commit a79dd5a as a patch and the fault returned. I then noticed 
-that you said in the commit message that "I removed some code for handling 
-unexpected interrupt which should never be hit...". It appears that my box does 
-indeed hit such an unexpected interrupt.
+While CodingStyle doesn't explicitly say anything about that, its spirit
+seem to indicate to that the right thing is avoid using it, like, for 
+example:
+	"Chapter 4: Naming
 
-I could always get rid of the fault by disabling CONFIG_SERIAL_PMACZILOG, but I 
-would like to fix the problem if possible.
+	C is a Spartan language, and so should your naming be."
 
-Thanks,
+(also on other places, like avoiding to use {} for single-statement if's).
 
-Larry
+So, useless clauses like "extern" doesn't seem to be the best choice.
+
+Regards,
+Mauro
