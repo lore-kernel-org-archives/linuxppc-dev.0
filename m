@@ -1,36 +1,35 @@
-Return-Path: <joe@perches.com>
-Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
- (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0064EB6FA3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 00:11:50 +1000 (EST)
-Message-ID: <1335535895.25521.7.camel@joe2Laptop>
-Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to
- work with layers
-From: Joe Perches <joe@perches.com>
-To: Borislav Petkov <bp@amd64.org>
-Date: Fri, 27 Apr 2012 10:11:35 -0400
-In-Reply-To: <20120427133304.GE9626@aftab.osrc.amd.com>
+Return-Path: <bp@amd64.org>
+Received: from mail.x86-64.org (s15943758.onlinehome-server.info
+ [217.160.130.188]) by ozlabs.org (Postfix) with ESMTP id BE7FCB6F6E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 01:12:41 +1000 (EST)
+Date: Fri, 27 Apr 2012 17:12:30 +0200
+From: Borislav Petkov <bp@amd64.org>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to work
+ with layers
+Message-ID: <20120427151230.GB18798@aftab.osrc.amd.com>
 References: <1335289087-11337-1-git-send-email-mchehab@redhat.com>
  <1335291342-14922-1-git-send-email-mchehab@redhat.com>
  <20120427133304.GE9626@aftab.osrc.amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1335535895.25521.7.camel@joe2Laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1335535895.25521.7.camel@joe2Laptop>
 Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
  Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
  Hitoshi Mitake <h.mitake@gmail.com>, Shaohui Xie <Shaohui.Xie@freescale.com>,
  Mark Gross <mark.gross@intel.com>,
  Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
  Ranganathan Desikan <ravi@jetztechnologies.com>,
- Egor Martovetsky <egor@pasemi.com>,
- Niklas =?ISO-8859-1?Q?S=F6derlund?= <niklas.soderlund@ericsson.com>,
+ Borislav Petkov <bp@amd64.org>, Egor Martovetsky <egor@pasemi.com>,
+ Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ericsson.com>,
  Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>,
  Chris Metcalf <cmetcalf@tilera.com>, Doug Thompson <norsk5@yahoo.com>,
- Andrew Morton <akpm@linux-foundation.org>,
  Linux Edac Mailing List <linux-edac@vger.kernel.org>,
  Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
+ Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,51 +39,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-04-27 at 15:33 +0200, Borislav Petkov wrote:
-> this patch gives
+On Fri, Apr 27, 2012 at 10:11:35AM -0400, Joe Perches wrote:
+> > > -extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+> > > -					  unsigned nr_chans, int edac_index);
+> > > +struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
+> > > +				   unsigned nr_chans, int edac_index);
+> > 
+> > Why not "extern"?
 > 
-> [    8.278399] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 0: dimm0 (0:0:0): row 0, chan 0
+> Using extern function prototypes in .h files
+> isn't generally necessary nor is extern the
+> more common kernel style.
 
-One too many __func__'s in some combination of the
-pr_fmt and/or dbg call and/or the actual call site?
+Searching for it, there's this discussion, for example:
+http://gcc.gnu.org/ml/gcc/2009-04/msg00812.html
 
-> > diff --git a/drivers/edac/edac_core.h b/drivers/edac/edac_core.h
-[]
-> > @@ -447,8 +447,13 @@ static inline void pci_write_bits32(struct pci_dev *pdev, int offset,
-> >  
-> >  #endif				/* CONFIG_PCI */
-> >  
-> > -extern struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
-> > -					  unsigned nr_chans, int edac_index);
-> > +struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
-> > +				   unsigned nr_chans, int edac_index);
-> 
-> Why not "extern"?
+Maybe we should put a small note in Documentation/CodingStyle what the
+kernel preference is and hold people to it.
 
-Using extern function prototypes in .h files
-isn't generally necessary nor is extern the
-more common kernel style.
+-- 
+Regards/Gruss,
+Boris.
 
-> > +static inline void edac_mc_handle_ce(struct mem_ctl_info *mci,
-> >  			      unsigned long page_frame_number,
-> >  			      unsigned long offset_in_page,
-> >  			      unsigned long syndrome, int row, int channel,
-> > -			      const char *msg);
-> 
-> Strange alignment, pls do
-> 
-> static inline void edac_mc_handle_ce(struct...,
-> 				     unsigned...,
-> 				     ...,
-> 				     ...);
-> 
-
-or
-
-static inline
-void edac_mc_handle_ce(struct ..., etc)
-
-or
-
-static inline void
-edac_mc_handle_ce(...)
+Advanced Micro Devices GmbH
+Einsteinring 24, 85609 Dornach
+GM: Alberto Bozzo
+Reg: Dornach, Landkreis Muenchen
+HRB Nr. 43632 WEEE Registernr: 129 19551
