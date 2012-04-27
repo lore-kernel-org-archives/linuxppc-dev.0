@@ -1,35 +1,23 @@
-Return-Path: <mchehab@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 60384B701C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 05:25:44 +1000 (EST)
-Message-ID: <4F9AF26C.9030808@redhat.com>
-Date: Fri, 27 Apr 2012 16:24:28 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to work
- with layers
-References: <1335289087-11337-1-git-send-email-mchehab@redhat.com>
- <1335291342-14922-1-git-send-email-mchehab@redhat.com>
- <20120427133304.GE9626@aftab.osrc.amd.com> <4F9ADCE3.2030506@redhat.com>
- <3908561D78D1C84285E8C5FCA982C28F170F4A4C@ORSMSX104.amr.corp.intel.com>
-In-Reply-To: <3908561D78D1C84285E8C5FCA982C28F170F4A4C@ORSMSX104.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
- Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
- Hitoshi Mitake <h.mitake@gmail.com>, "Gross, Mark" <mark.gross@intel.com>,
- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Ranganathan Desikan <ravi@jetztechnologies.com>,
- Borislav Petkov <bp@amd64.org>, Egor Martovetsky <egor@pasemi.com>,
- =?ISO-8859-1?Q?Niklas_S=F6d?= =?ISO-8859-1?Q?erlund?=
- <niklas.soderlund@ericsson.com>, Tim Small <tim@buttersideup.com>,
- "Arvind R." <arvino55@gmail.com>, Chris Metcalf <cmetcalf@tilera.com>,
- Olof Johansson <olof@lixom.net>, Doug Thompson <norsk5@yahoo.com>,
- Linux Edac Mailing List <linux-edac@vger.kernel.org>,
- Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AF532B6FCA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 08:26:23 +1000 (EST)
+Message-ID: <1335565573.20866.7.camel@pasglop>
+Subject: Re: Regression in 32-bit ppc kernel
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Date: Sat, 28 Apr 2012 08:26:13 +1000
+In-Reply-To: <4F9ABD67.3060704@lwfinger.net>
+References: <4F973026.3020103@lwfinger.net>
+ <1335311621.15830.42.camel@pasglop> <4F976352.4060001@lwfinger.net>
+ <1335327081.21961.28.camel@pasglop> <4F98117C.7080309@lwfinger.net>
+ <1335390257.21961.53.camel@pasglop> <4F9ABD67.3060704@lwfinger.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,34 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em 27-04-2012 15:11, Luck, Tony escreveu:
->>>> +	for (i = 0; i < dimm->mci->n_layers; i++) {
->>>> +		printk(KERN_CONT "%d", dimm->location[i]);
->>>> +		if (i < dimm->mci->n_layers - 1)
->>>> +			printk(KERN_CONT ".");
->>>> +	}
->>>> +	printk(KERN_CONT "\n");
->>>
->>> This looks hacky but I don't have a good suggestion what to do instead
->>> here. Maybe snprintf into a complete string which you can issue with
->>> debugf4()...
->>
->> This is not hacky. There are several places at the Kernel doing loops like
->> that. Look, for example, at lib/hexdump.c (without KERN_CONT, as this
->> macro was added later - probably to avoid checkpatch.pl complains).
+On Fri, 2012-04-27 at 10:38 -0500, Larry Finger wrote:
+
+> Sorry, I was unable to find anything in debugfs to help me learn about interrupt 
+> mapping. The value of CONFIG_NR_IRQS is already 512. I have not tried reducing 
+> it to 128. The setting for CONFIG_SPARSE_IRQ was on, and changing it to off did 
+> not make any difference.
 > 
-> There is some benefit to "one printk == one output line" ... it means
-> that console output will not be (as) jumbled if multiple cpus are
-> printk'ing at the same time.
+> I finished the bisection, which led to
+> 
+> commit a79dd5ae5a8f49688d65b89a859f2b98a7ee5538
+> Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date:   Thu Dec 15 11:13:03 2011 +1100
+> 
+>      tty/serial/pmac_zilog: Fix suspend & resume
+> 
+> As this seemed to be an improbable result, I did the full test by checking out 
+> the previous commit (43ca5d3). That resulted in a "good" result. Then I used 
+> quilt to add commit a79dd5a as a patch and the fault returned. I then noticed 
+> that you said in the commit message that "I removed some code for handling 
+> unexpected interrupt which should never be hit...". It appears that my box does 
+> indeed hit such an unexpected interrupt.
+> 
+> I could always get rid of the fault by disabling CONFIG_SERIAL_PMACZILOG, but I 
+> would like to fix the problem if possible.
 
-Ok, but this message only appears when all the conditions below are met:
-	- the driver is compiled with EDAC_DEBUG;
-	- the edac_core is modprobed with edac_debug_level=4;
-	- during the driver modprobe, when the EDAC driver is being registered.
+Right, it should be fixed. I need to understand where the unexpected
+interrupt comes from. Can you tell me (or remind me) what specific
+machine model you are using ? Are you putting the console on the serial
+port ?
 
-Even on several-core machines, those messages won't mangle, in practice.
-
-Let's not over-design a simple debug message.
-
-Regards,
-Mauro
+Cheers,
+Ben.
