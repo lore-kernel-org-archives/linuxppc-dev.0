@@ -1,23 +1,23 @@
 Return-Path: <bp@amd64.org>
 Received: from mail.x86-64.org (s15943758.onlinehome-server.info
- [217.160.130.188]) by ozlabs.org (Postfix) with ESMTP id B8F77B6FD4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 18:58:39 +1000 (EST)
-Date: Sat, 28 Apr 2012 10:58:30 +0200
+ [217.160.130.188]) by ozlabs.org (Postfix) with ESMTP id 59F39B6FD7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 19:05:31 +1000 (EST)
+Date: Sat, 28 Apr 2012 11:05:23 +0200
 From: Borislav Petkov <bp@amd64.org>
 To: Mauro Carvalho Chehab <mchehab@redhat.com>
 Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to work
  with layers
-Message-ID: <20120428085830.GC26065@aftab.osrc.amd.com>
+Message-ID: <20120428090523.GD26065@aftab.osrc.amd.com>
 References: <1335289087-11337-1-git-send-email-mchehab@redhat.com>
  <1335291342-14922-1-git-send-email-mchehab@redhat.com>
  <20120427133304.GE9626@aftab.osrc.amd.com>
- <4F9ADCE3.2030506@redhat.com> <4F9AF26C.9030808@redhat.com>
+ <4F9ABCEC.9090807@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4F9AF26C.9030808@redhat.com>
+In-Reply-To: <4F9ABCEC.9090807@redhat.com>
 Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
  Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
- Hitoshi Mitake <h.mitake@gmail.com>, "Gross, Mark" <mark.gross@intel.com>,
+ Hitoshi Mitake <h.mitake@gmail.com>, Mark Gross <mark.gross@intel.com>,
  Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
  Ranganathan Desikan <ravi@jetztechnologies.com>,
  Egor Martovetsky <egor@pasemi.com>,
@@ -26,11 +26,10 @@ Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
  Chris Metcalf <cmetcalf@tilera.com>, Olof Johansson <olof@lixom.net>,
  Doug Thompson <norsk5@yahoo.com>,
  Linux Edac Mailing List <linux-edac@vger.kernel.org>,
- Michal Marek <mmarek@suse.cz>, "Luck, Tony" <tony.luck@intel.com>,
- Jiri Kosina <jkosina@suse.cz>,
+ Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
  Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,45 +39,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 27, 2012 at 04:24:28PM -0300, Mauro Carvalho Chehab wrote:
-> Em 27-04-2012 15:11, Luck, Tony escreveu:
-> >>>> +	for (i = 0; i < dimm->mci->n_layers; i++) {
-> >>>> +		printk(KERN_CONT "%d", dimm->location[i]);
-> >>>> +		if (i < dimm->mci->n_layers - 1)
-> >>>> +			printk(KERN_CONT ".");
-> >>>> +	}
-> >>>> +	printk(KERN_CONT "\n");
-> >>>
-> >>> This looks hacky but I don't have a good suggestion what to do instead
-> >>> here. Maybe snprintf into a complete string which you can issue with
-> >>> debugf4()...
-> >>
-> >> This is not hacky. There are several places at the Kernel doing loops like
-> >> that. Look, for example, at lib/hexdump.c (without KERN_CONT, as this
-> >> macro was added later - probably to avoid checkpatch.pl complains).
-> > 
-> > There is some benefit to "one printk == one output line" ... it means
-> > that console output will not be (as) jumbled if multiple cpus are
-> > printk'ing at the same time.
-> 
-> Ok, but this message only appears when all the conditions below are met:
-> 	- the driver is compiled with EDAC_DEBUG;
-> 	- the edac_core is modprobed with edac_debug_level=4;
-> 	- during the driver modprobe, when the EDAC driver is being registered.
+On Fri, Apr 27, 2012 at 12:36:12PM -0300, Mauro Carvalho Chehab wrote:
+> The fix for it were in another patch[1], as calling them as "rank" is
+> needed also at the sysfs API.
 
-That means nothing.
+No, this doesn't fix it either:
 
-> Even on several-core machines, those messages won't mangle, in practice.
-> 
-> Let's not over-design a simple debug message.
+[   10.486440] EDAC MC: DCT0 chip selects:
+[   10.486443] EDAC amd64: MC: 0:  2048MB 1:  2048MB
+[   10.486445] EDAC amd64: MC: 2:  2048MB 3:  2048MB
+[   10.486448] EDAC amd64: MC: 4:     0MB 5:     0MB
+[   10.486450] EDAC amd64: MC: 6:     0MB 7:     0MB
+[   10.486453] EDAC DEBUG: amd64_debug_display_dimm_sizes: F2x180 (DRAM Bank Address Mapping): 0x00000088
+[   10.486455] EDAC MC: DCT1 chip selects:
+[   10.486458] EDAC amd64: MC: 0:  2048MB 1:  2048MB
+[   10.486460] EDAC amd64: MC: 2:  2048MB 3:  2048MB
+[   10.486463] EDAC amd64: MC: 4:     0MB 5:     0MB
+[   10.486465] EDAC amd64: MC: 6:     0MB 7:     0MB
+[   10.486467] EDAC amd64: using x8 syndromes.
+[   10.486469] EDAC DEBUG: amd64_dump_dramcfg_low: F2x190 (DRAM Cfg Low): 0x00083100
+[   10.486472] EDAC DEBUG: amd64_dump_dramcfg_low:   DIMM type: buffered; all DIMMs support ECC: yes
+[   10.486475] EDAC DEBUG: amd64_dump_dramcfg_low:   PAR/ERR parity: enabled
+[   10.486478] EDAC DEBUG: amd64_dump_dramcfg_low:   DCT 128bit mode width: 64b
+[   10.486481] EDAC DEBUG: amd64_dump_dramcfg_low:   x4 logical DIMMs present: L0: yes L1: yes L2: no L3: no
+[   10.486485] EDAC DEBUG: f1x_early_channel_count: Data width is not 128 bits - need more decoding
+[   10.486488] EDAC amd64: MCT channel count: 2
+[   10.486493] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc(): allocating 3692 bytes for mci data (16 ranks, 16 csrows/channels)
+[   10.486501] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 0: rank0 (0:0:0): row 0, chan 0
+[   10.486506] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 1: rank1 (0:1:0): row 0, chan 1
+[   10.486510] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 2: rank2 (1:0:0): row 1, chan 0
+[   10.486514] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 3: rank3 (1:1:0): row 1, chan 1
+[   10.486518] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 4: rank4 (2:0:0): row 2, chan 0
+[   10.486522] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 5: rank5 (2:1:0): row 2, chan 1
+[   10.486526] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 6: rank6 (3:0:0): row 3, chan 0
+[   10.486530] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 7: rank7 (3:1:0): row 3, chan 1
+[   10.486534] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 8: rank8 (4:0:0): row 4, chan 0
+[   10.486538] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 9: rank9 (4:1:0): row 4, chan 1
+[   10.486542] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 10: rank10 (5:0:0): row 5, chan 0
+[   10.486546] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 11: rank11 (5:1:0): row 5, chan 1
+[   10.486550] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 12: rank12 (6:0:0): row 6, chan 0
+[   10.486554] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 13: rank13 (6:1:0): row 6, chan 1
+[   10.486558] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 14: rank14 (7:0:0): row 7, chan 0
+[   10.486562] EDAC DEBUG: new_edac_mc_alloc: new_edac_mc_alloc: 15: rank15 (7:1:0): row 7, chan 1
 
-No, let's design a simple debug message correctly, regardless of when it
-appears.
+DCT0 has 4 ranks + DCT1 also 4 ranks = 8 ranks total.
 
-> 
-> Regards,
-> Mauro
-> 
+Now your change is showing 16 ranks. Still b0rked.
 
 -- 
 Regards/Gruss,
