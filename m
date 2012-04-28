@@ -1,24 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 140F7B6FCB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 10:42:45 +1000 (EST)
-Message-ID: <1335573757.20866.12.camel@pasglop>
-Subject: Re: Regression in 32-bit ppc kernel
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Date: Sat, 28 Apr 2012 10:42:37 +1000
-In-Reply-To: <4F9B3398.9060701@lwfinger.net>
-References: <4F973026.3020103@lwfinger.net>
- <1335311621.15830.42.camel@pasglop> <4F976352.4060001@lwfinger.net>
- <1335327081.21961.28.camel@pasglop> <4F98117C.7080309@lwfinger.net>
- <1335390257.21961.53.camel@pasglop> <4F9ABD67.3060704@lwfinger.net>
- <1335565573.20866.7.camel@pasglop> <4F9B3398.9060701@lwfinger.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- LKML <linux-kernel@vger.kernel.org>
+Return-Path: <bp@amd64.org>
+Received: from mail.x86-64.org (s15943758.onlinehome-server.info
+ [217.160.130.188]) by ozlabs.org (Postfix) with ESMTP id 69CF3B6FD4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 18:52:32 +1000 (EST)
+Date: Sat, 28 Apr 2012 10:52:23 +0200
+From: Borislav Petkov <bp@amd64.org>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to work
+ with layers
+Message-ID: <20120428085223.GB26065@aftab.osrc.amd.com>
+References: <1335289087-11337-1-git-send-email-mchehab@redhat.com>
+ <1335291342-14922-1-git-send-email-mchehab@redhat.com>
+ <20120427133304.GE9626@aftab.osrc.amd.com>
+ <1335535895.25521.7.camel@joe2Laptop> <4F9AC44A.5000509@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4F9AC44A.5000509@redhat.com>
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
+ Hitoshi Mitake <h.mitake@gmail.com>, Mark Gross <mark.gross@intel.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Ranganathan Desikan <ravi@jetztechnologies.com>,
+ Borislav Petkov <bp@amd64.org>, Egor Martovetsky <egor@pasemi.com>,
+ Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ericsson.com>,
+ Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Joe Perches <joe@perches.com>,
+ Doug Thompson <norsk5@yahoo.com>,
+ Linux Edac Mailing List <linux-edac@vger.kernel.org>,
+ Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-04-27 at 19:02 -0500, Larry Finger wrote:
+On Fri, Apr 27, 2012 at 01:07:38PM -0300, Mauro Carvalho Chehab wrote:
+> Yes. This is a common issue at the EDAC core: on several places, it calls the
+> edac debug macros (DEBUGF0...DEBUGF4) passing a __func__ as an argument, while
+> the debug macros already handles that. I suspect that, in the past, the __func__
+> were not at the macros, but some patch added it there, and forgot to fix the
+> occurrences of its call.
 
-> It is a 15" Powerbook G4. I think they call it a Titanium. The console is not on 
-> a serial port. In fact, the reason that I did not think this patch was a problem 
-> is because the serial port does not appear to be connected to an external port. 
-> I was unaware that there was a serial port on the motherboard. There is a modem 
-> jack, but no 9 or 25-pin connectors that would indicate a standard serial port.
-> 
-> There are two stack dumps with the same trace. I posted the first, but the 
-> second is preceded by the lines
-> 
-> [<c02adca0] pmz_interrupt
-> Disabling IRQ #23
-> ttyPZ1: IrDA setup for 57600 bps, dongle version: 4
-> ttyPZ1: IrDA setup for 115200 bps, dongle version: 4
-> irq23: nobody cared (try booting with the "irqpoll" option
-> 
-> As I am not sure how to put options in with yaboot, I have not tried that.
+The patch that added it is d357cbb445208 and you reviewed it.
 
-Ok, so you do have a serial port, probably two even :-) One of them is
-connected to the infra red transceiver and the other one is probably
-connected to the internal modem.
+> This is something that needs to be reviewed at the entire EDAC core (and likely
+> at the drivers).
 
-(The modem itself might not use it, some of these machines use an
-i2s/i2c modem, some use a usb modem, but the serial port is wired to the
-connector regardless).
+Looks like a job for a newbie to get her/his feet wet with kernel work.
 
-Cheers,
-Ben.
+> I opted to not touch on this at the existing debug logic, as I think that the
+> better is to address all those issues on one separate patch, after fixing the
+> EDAC core bugs.
+
+No,
+
+you simply need to remove the __func__ argument in your newly added debug call:
+
+                debugf2("%s: %d: dimm%zd (%d:%d:%d): row %d, chan %d\n", __func__,
+                        i, (dimm - mci->dimms),
+                        pos[0], pos[1], pos[2], row, chn);
+
+And while you're at it, remove the rest of the __func__ arguments from
+your newly added debugfX calls.
+
+-- 
+Regards/Gruss,
+Boris.
+
+Advanced Micro Devices GmbH
+Einsteinring 24, 85609 Dornach
+GM: Alberto Bozzo
+Reg: Dornach, Landkreis Muenchen
+HRB Nr. 43632 WEEE Registernr: 129 19551
