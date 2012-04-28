@@ -1,37 +1,29 @@
-Return-Path: <joe@perches.com>
-Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
- (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 05012B6FDA
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Apr 2012 03:07:59 +1000 (EST)
-Message-ID: <1335632874.4191.8.camel@joe2Laptop>
-Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to
- work with layers
-From: Joe Perches <joe@perches.com>
-To: Borislav Petkov <bp@amd64.org>
-Date: Sat, 28 Apr 2012 13:07:54 -0400
-In-Reply-To: <20120428091621.GE26065@aftab.osrc.amd.com>
-References: <1335289087-11337-1-git-send-email-mchehab@redhat.com>
- <1335291342-14922-1-git-send-email-mchehab@redhat.com>
- <20120427133304.GE9626@aftab.osrc.amd.com> <4F9ADCE3.2030506@redhat.com>
- <20120428091621.GE26065@aftab.osrc.amd.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
- Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
- Hitoshi Mitake <h.mitake@gmail.com>, Shaohui Xie <Shaohui.Xie@freescale.com>,
- Mark Gross <mark.gross@intel.com>,
- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Ranganathan Desikan <ravi@jetztechnologies.com>,
- Egor Martovetsky <egor@pasemi.com>,
- Niklas =?ISO-8859-1?Q?S=F6derlund?= <niklas.soderlund@ericsson.com>,
- Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Doug Thompson <norsk5@yahoo.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Edac Mailing List <linux-edac@vger.kernel.org>,
- Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <larry.finger@gmail.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+ [209.85.210.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D1B47B6FEB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Apr 2012 04:09:33 +1000 (EST)
+Received: by iakh37 with SMTP id h37so2813907iak.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Apr 2012 11:09:30 -0700 (PDT)
+Sender: Larry Finger <larry.finger@gmail.com>
+Message-ID: <4F9C3252.7020508@lwfinger.net>
+Date: Sat, 28 Apr 2012 13:09:22 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Regression in 32-bit ppc kernel
+References: <4F973026.3020103@lwfinger.net>
+ <1335311621.15830.42.camel@pasglop> <4F976352.4060001@lwfinger.net>
+ <1335327081.21961.28.camel@pasglop> <4F98117C.7080309@lwfinger.net>
+ <1335390257.21961.53.camel@pasglop> <4F9ABD67.3060704@lwfinger.net>
+ <1335565573.20866.7.camel@pasglop> <4F9B3398.9060701@lwfinger.net>
+ <1335573757.20866.12.camel@pasglop>
+In-Reply-To: <1335573757.20866.12.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,23 +33,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-04-28 at 11:16 +0200, Borislav Petkov wrote:
-> On Fri, Apr 27, 2012 at 02:52:35PM -0300, Mauro Carvalho Chehab wrote:
-> > > All those local variables should be sorted in a reverse christmas tree
-> > > order:
-> > > 
-> > > 	u32 this_is_the_longest_array_name[LENGTH];
-> > > 	void *shorter_named_variable;
-> > > 	unsigned long size;
-> > > 	int i;
-> > > 
-> > > 	...
-> > 
-> > Why? There's nothing at the CodingStyle saying about how the vars should
-> > be ordered. If you want to enforce some particular order, please do it
-> > yourself, but apply it consistently among the entire subsystem.
-> 
-> First of all, this way it is more readable.
+On 04/27/2012 07:42 PM, Benjamin Herrenschmidt wrote:
+>
+> Ok, so you do have a serial port, probably two even :-) One of them is
+> connected to the infra red transceiver and the other one is probably
+> connected to the internal modem.
+>
+> (The modem itself might not use it, some of these machines use an
+> i2s/i2c modem, some use a usb modem, but the serial port is wired to the
+> connector regardless).
 
-Not in my opinion, and blindly using "reverse christmas tree"
-can separate variables that should be declared together.
+I have done a little more debugging. The problem is definitely coming from 
+drivers/tty/serial/pmac_zilog.c. I am getting ChanB interrupts while open, which 
+causes the following code segment to return IRQ_NONE:
+
+        if (r3 & (CHBEXT | CHBTxIP | CHBRxIP)) {
+                if (!ZS_IS_OPEN(uap_a)) {
+                        pmz_debug("ChanB interrupt while open !\n");
+                        goto skip_b;
+                }
+                write_zsreg(uap_b, R0, RES_H_IUS);
+                zssync(uap_b);
+                if (r3 & CHBEXT)
+
+When this section is entered, r3 == 0x2 (CHBTxIP).
+
+Larry
