@@ -1,38 +1,25 @@
-Return-Path: <joe@perches.com>
-Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
- (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CC836B6FE9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Apr 2012 06:38:44 +1000 (EST)
-Message-ID: <1335645521.4191.13.camel@joe2Laptop>
-Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to
- work with layers
-From: Joe Perches <joe@perches.com>
-To: Borislav Petkov <bp@amd64.org>
-Date: Sat, 28 Apr 2012 13:38:41 -0700
-In-Reply-To: <20120428085223.GB26065@aftab.osrc.amd.com>
-References: <1335289087-11337-1-git-send-email-mchehab@redhat.com>
- <1335291342-14922-1-git-send-email-mchehab@redhat.com>
- <20120427133304.GE9626@aftab.osrc.amd.com>
- <1335535895.25521.7.camel@joe2Laptop> <4F9AC44A.5000509@redhat.com>
- <20120428085223.GB26065@aftab.osrc.amd.com>
+ by ozlabs.org (Postfix) with ESMTPS id 74FA7B6FD1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Apr 2012 08:41:19 +1000 (EST)
+Message-ID: <1335652870.20866.13.camel@pasglop>
+Subject: Re: Regression in 32-bit ppc kernel
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Date: Sun, 29 Apr 2012 08:41:10 +1000
+In-Reply-To: <4F9C3252.7020508@lwfinger.net>
+References: <4F973026.3020103@lwfinger.net>
+ <1335311621.15830.42.camel@pasglop> <4F976352.4060001@lwfinger.net>
+ <1335327081.21961.28.camel@pasglop> <4F98117C.7080309@lwfinger.net>
+ <1335390257.21961.53.camel@pasglop> <4F9ABD67.3060704@lwfinger.net>
+ <1335565573.20866.7.camel@pasglop> <4F9B3398.9060701@lwfinger.net>
+ <1335573757.20866.12.camel@pasglop> <4F9C3252.7020508@lwfinger.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
- Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
- Hitoshi Mitake <h.mitake@gmail.com>, Shaohui Xie <Shaohui.Xie@freescale.com>,
- Mark Gross <mark.gross@intel.com>,
- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Ranganathan Desikan <ravi@jetztechnologies.com>,
- Egor Martovetsky <egor@pasemi.com>,
- Niklas =?ISO-8859-1?Q?S=F6derlund?= <niklas.soderlund@ericsson.com>,
- Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Doug Thompson <norsk5@yahoo.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Edac Mailing List <linux-edac@vger.kernel.org>,
- Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,20 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-04-28 at 10:52 +0200, Borislav Petkov wrote:
-> On Fri, Apr 27, 2012 at 01:07:38PM -0300, Mauro Carvalho Chehab wrote:
-> > Yes. This is a common issue at the EDAC core: on several places, it calls the
-> > edac debug macros (DEBUGF0...DEBUGF4) passing a __func__ as an argument, while
-> > the debug macros already handles that. I suspect that, in the past, the __func__
-> > were not at the macros, but some patch added it there, and forgot to fix the
-> > occurrences of its call.
+On Sat, 2012-04-28 at 13:09 -0500, Larry Finger wrote:
+> I have done a little more debugging. The problem is definitely coming
+> from 
+> drivers/tty/serial/pmac_zilog.c. I am getting ChanB interrupts while
+> open, which 
+> causes the following code segment to return IRQ_NONE:
 > 
-> The patch that added it is d357cbb445208 and you reviewed it.
+>         if (r3 & (CHBEXT | CHBTxIP | CHBRxIP)) {
+>                 if (!ZS_IS_OPEN(uap_a)) {
+>                         pmz_debug("ChanB interrupt while open !\n");
+>                         goto skip_b;
+>                 }
+>                 write_zsreg(uap_b, R0, RES_H_IUS);
+>                 zssync(uap_b);
+>                 if (r3 & CHBEXT)
 > 
-> > This is something that needs to be reviewed at the entire EDAC core (and likely
-> > at the drivers).
+> When this section is entered, r3 == 0x2 (CHBTxIP).
 > 
-> Looks like a job for a newbie to get her/his feet wet with kernel work.
+> 
+Ok. The debug code was meant to spell "while not open" btw :-)
 
-Looks to me more like a lazy maintainer/developer who doesn't
-want to bother with a few minutes work.
+I have some ideas what's going on. I think the irda stuff can trigger
+interrupts during the open/close sequence before ZS_IS_OPEN is true.
+
+I'll send a fix.
+
+Cheers,
+Ben.
