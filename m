@@ -1,25 +1,38 @@
-Return-Path: <larry.finger@gmail.com>
-Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
- [209.85.210.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 97B94B6FFA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2012 01:47:10 +1000 (EST)
-Received: by iakh37 with SMTP id h37so3557312iak.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Apr 2012 08:47:08 -0700 (PDT)
-Sender: Larry Finger <larry.finger@gmail.com>
-Message-ID: <4F9D6277.9080402@lwfinger.net>
-Date: Sun, 29 Apr 2012 10:47:03 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-MIME-Version: 1.0
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: [PATCH] tty/serial/pmac_zilog: Fix "nobody cared" IRQ message
-References: <4F9C830D.8040906@lwfinger.net>
- <20120429090520.GA26740@visitor2.iram.es>
-In-Reply-To: <20120429090520.GA26740@visitor2.iram.es>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Andreas Schwab <schwab@linux-m68k.org>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Return-Path: <joe@perches.com>
+Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
+ (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4DABAB6FE9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2012 02:03:33 +1000 (EST)
+Message-ID: <1335715408.12022.7.camel@joe2Laptop>
+Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to
+ work with layers
+From: Joe Perches <joe@perches.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Date: Sun, 29 Apr 2012 09:03:28 -0700
+In-Reply-To: <4F9D5A2E.2030506@redhat.com>
+References: <1335289087-11337-1-git-send-email-mchehab@redhat.com>
+ <1335291342-14922-1-git-send-email-mchehab@redhat.com>
+ <20120427133304.GE9626@aftab.osrc.amd.com>
+ <1335535895.25521.7.camel@joe2Laptop> <4F9AC44A.5000509@redhat.com>
+ <20120428085223.GB26065@aftab.osrc.amd.com> <4F9D4F6E.4070106@redhat.com>
+ <4F9D5A2E.2030506@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
+ Hitoshi Mitake <h.mitake@gmail.com>, Mark Gross <mark.gross@intel.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Borislav Petkov <bp@amd64.org>,
+ Egor Martovetsky <egor@pasemi.com>,
+ Niklas =?ISO-8859-1?Q?S=F6derlund?= <niklas.soderlund@ericsson.com>,
+ Tim Small <tim@buttersideup.com>, "Arvind
+ R." <arvino55@gmail.com>, Chris Metcalf <cmetcalf@tilera.com>,
+ Doug Thompson <norsk5@yahoo.com>,
+ Linux Edac Mailing List <linux-edac@vger.kernel.org>,
+ Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/29/2012 04:05 AM, Gabriel Paubert wrote:
-> On Sat, Apr 28, 2012 at 06:53:49PM -0500, Larry Finger wrote:
->
-> Hmm, I'm not a native english speaker, but I have the feeling that
-> it would be more grammatically correct to use "opened" instead of "open".
->
-> Of course if the message never triggers, it's less of concern :-)
+On Sun, 2012-04-29 at 12:11 -0300, Mauro Carvalho Chehab wrote:
+> Em 29-04-2012 11:25, Mauro Carvalho Chehab escreveu:
+> > Em 28-04-2012 05:52, Borislav Petkov escreveu:
+> >> On Fri, Apr 27, 2012 at 01:07:38PM -0300, Mauro Carvalho Chehab wrote:
+> >>> Yes. This is a common issue at the EDAC core: on several places, it calls the
+> >>> edac debug macros (DEBUGF0...DEBUGF4) passing a __func__ as an argument, while
+> >>> the debug macros already handles that. I suspect that, in the past, the __func__
+> >>> were not at the macros, but some patch added it there, and forgot to fix the
+> >>> occurrences of its call.
+> >> The patch that added it is d357cbb445208 and you reviewed it.
+> > And you wrote the patch that caused it.
 
-English is my native language, but that might not help. :)
+And Boris should have also written the follow-on patches that
+removed most/all of the debugfX and __func__ uses.
 
-I would say "the device has not been opened", but "it is not open". More 
-generally, to me "opened" denotes past tense, and "open" is used in the present.
+> > A single patch fixing this everywhere at drivers/edac is better and clearer than adding 
+> > an unrelated fix on this patch. This is already complex enough to add more unrelated
+> > things there.
+> > 
+> > Also, a simple perl/coccinelle script can replace all such __func__ occurrences 
+> > on one shot.
 
-Even with the other bug, the message never triggered as I did not have debugging 
-enabled. Given the relative rarity of PPC-based boxes running Linux, the message 
-may never print.
+You make it sound simple, but it'd be a pretty complicated
+cocci script.  Some of the changes would have to be inspected
+or changed by hand in any case.
 
-Thanks for the comment.
+[]
 
-Larry
+> Most of the issues can be solved with the above script-based patch. 
+> 
+> There are still 171 places (12 places at the core, the rest are on the drivers)
+> that will require a more sophisticated patch or that requires a manual fix.
+[]
+> From: Mauro Carvalho Chehab <mchehab@redhat.com>
+> Date: Sun, 29 Apr 2012 11:59:14 -0300
+> Subject: [PATCH] edac: Don't add __func__ or __FILE__ for debugf[0-9] msgs
+
+Thanks Mauro, you shouldn't have had to do this.
