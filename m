@@ -1,21 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B62EAB6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2012 15:57:44 +1000 (EST)
-Message-ID: <1335765454.20866.41.camel@pasglop>
-Subject: Re: [PATCH 3/4] powerpc: Add 64-bit CPU targets for gcc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Date: Mon, 30 Apr 2012 15:57:34 +1000
-In-Reply-To: <7A78BE77-1D97-4E8D-B8F3-026E2B3B2EEA@kernel.crashing.org>
-References: <20120418144254.3286ce94@kryten> <20120418144528.65b70fbb@kryten>
- <7A78BE77-1D97-4E8D-B8F3-026E2B3B2EEA@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- Anton Blanchard <anton@samba.org>
+Return-Path: <bp@amd64.org>
+Received: from mail.x86-64.org (s15943758.onlinehome-server.info
+ [217.160.130.188]) by ozlabs.org (Postfix) with ESMTP id DC51FB6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2012 17:59:52 +1000 (EST)
+Date: Mon, 30 Apr 2012 09:59:40 +0200
+From: Borislav Petkov <bp@amd64.org>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to work
+ with layers
+Message-ID: <20120430075940.GC8182@aftab.osrc.amd.com>
+References: <1335289087-11337-1-git-send-email-mchehab@redhat.com>
+ <1335291342-14922-1-git-send-email-mchehab@redhat.com>
+ <20120427133304.GE9626@aftab.osrc.amd.com>
+ <4F9ADCE3.2030506@redhat.com>
+ <20120428091621.GE26065@aftab.osrc.amd.com>
+ <4F9D4D55.9070705@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4F9D4D55.9070705@redhat.com>
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
+ Hitoshi Mitake <h.mitake@gmail.com>, Mark Gross <mark.gross@intel.com>,
+ Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
+ Ranganathan Desikan <ravi@jetztechnologies.com>,
+ Egor Martovetsky <egor@pasemi.com>,
+ Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ericsson.com>,
+ Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>,
+ Chris Metcalf <cmetcalf@tilera.com>, Olof Johansson <olof@lixom.net>,
+ Doug Thompson <norsk5@yahoo.com>,
+ Linux Edac Mailing List <linux-edac@vger.kernel.org>,
+ Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,115 +41,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-04-18 at 09:33 -0500, Kumar Gala wrote:
-> On Apr 17, 2012, at 11:45 PM, Anton Blanchard wrote:
+On Sun, Apr 29, 2012 at 11:16:53AM -0300, Mauro Carvalho Chehab wrote:
+> > Hey, are you looking at compiled code or at source code? Because I'm
+> > looking at source code, and it is a pretty safe bet the majority of the
+> > people here do that too.
+> 
+> What I said is that, from source code POV, a code where the loop variables are
+> initialized just before the loop is easier to read it when the initialization
+> of those vars are on another part of the code.
+> 
+> That's basically why the "for" syntax starts with a var initialization clause.
+> 
+> The tot_dimms & friends are loop vars: their value is calculated within the loop.
+> 
+> At the object code, this won't bring any difference.
 > 
 > > 
-> > Add a menu to select various 64-bit CPU targets for gcc. We
-> > default to -mtune=power7 and if gcc doesn't understand that we
-> > fallback to -mtune=power4.
+> >> it, either by using registers for those vars or by moving the initialization
+> >> to the top of the function.
+> >>
+> >> This function is too complex, so it is better to initialize those vars
+> >> just before the loops that are calculating those totals.
 > > 
-> > Signed-off-by: Anton Blanchard <anton@samba.org>
-> > ---
+> > Simply initialize those variables at declaration time and that's it.
+> > Initializing them before the loop doesn't make the function less complex
+> > - splitting it and sanitizing it does.
 > 
-> Can you add a target for e5500 cpu.
+> Initializing loop-calculated vars just before the loop makes the code easier
+> to read, and may avoid issues that might happen during code lifecycle.
 
-I'm going to put Anton patch in, can you send an add-on for e5500 ?
+This is getting ridiculous: the variable declaration and initialization
+are on the same screen as the loop (unless one uses a screen which can
+only show less than 40ish lines).
 
-Cheers,
-Ben.
+So the argument about making the code easier to read is bogus.
 
-> - k
-> 
-> > 
-> > Index: linux-build/arch/powerpc/Makefile
-> > ===================================================================
-> > --- linux-build.orig/arch/powerpc/Makefile	2012-04-18 14:31:31.614666419 +1000
-> > +++ linux-build/arch/powerpc/Makefile	2012-04-18 14:37:08.680708678 +1000
-> > @@ -69,6 +69,16 @@ LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
-> > 
-> > CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=no -mcall-aixdesc
-> > CFLAGS-$(CONFIG_PPC32)	:= -ffixed-r2 -mmultiple
-> > +
-> > +CFLAGS-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=power7,-mtune=power4)
-> > +CFLAGS-$(CONFIG_CELL_CPU) += $(call cc-option,-mcpu=cell)
-> > +CFLAGS-$(CONFIG_POWER4_CPU) += $(call cc-option,-mcpu=power4)
-> > +CFLAGS-$(CONFIG_POWER5_CPU) += $(call cc-option,-mcpu=power5)
-> > +CFLAGS-$(CONFIG_POWER6_CPU) += $(call cc-option,-mcpu=power6)
-> > +CFLAGS-$(CONFIG_POWER7_CPU) += $(call cc-option,-mcpu=power7)
-> > +
-> > +CFLAGS-$(CONFIG_TUNE_CELL) += $(call cc-option,-mtune=cell)
-> > +
-> > KBUILD_CPPFLAGS	+= -Iarch/$(ARCH)
-> > KBUILD_AFLAGS	+= -Iarch/$(ARCH)
-> > KBUILD_CFLAGS	+= -msoft-float -pipe -Iarch/$(ARCH) $(CFLAGS-y)
-> > @@ -76,22 +86,11 @@ CPP		= $(CC) -E $(KBUILD_CFLAGS)
-> > 
-> > CHECKFLAGS	+= -m$(CONFIG_WORD_SIZE) -D__powerpc__ -D__powerpc$(CONFIG_WORD_SIZE)__
-> > 
-> > -ifeq ($(CONFIG_PPC64),y)
-> > -ifeq ($(CONFIG_POWER4_ONLY),y)
-> > -	KBUILD_CFLAGS += $(call cc-option,-mcpu=power4)
-> > -else
-> > -	KBUILD_CFLAGS += $(call cc-option,-mtune=power4)
-> > -endif
-> > -endif
-> > -
-> > KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
-> > 
-> > -ifeq ($(CONFIG_TUNE_CELL),y)
-> > -	KBUILD_CFLAGS += $(call cc-option,-mtune=cell)
-> > -endif
-> > -
-> > -# No AltiVec instruction when building kernel
-> > +# No AltiVec or VSX instructions when building kernel
-> > KBUILD_CFLAGS += $(call cc-option,-mno-altivec)
-> > +KBUILD_CFLAGS += $(call cc-option,-mno-vsx)
-> > 
-> > # No SPE instruction when building kernel
-> > # (We use all available options to help semi-broken compilers)
-> > Index: linux-build/arch/powerpc/platforms/Kconfig.cputype
-> > ===================================================================
-> > --- linux-build.orig/arch/powerpc/platforms/Kconfig.cputype	2012-04-18 14:31:25.134549903 +1000
-> > +++ linux-build/arch/powerpc/platforms/Kconfig.cputype	2012-04-18 14:36:40.576207829 +1000
-> > @@ -78,6 +78,36 @@ config PPC_BOOK3E_64
-> > 
-> > endchoice
-> > 
-> > +choice
-> > +	prompt "CPU selection"
-> > +	depends on PPC64
-> > +	default GENERIC_CPU
-> > +	help
-> > +	  This will create a kernel which is optimised for a particular CPU.
-> > +	  The resulting kernel may not run on other CPUs, so use this with care.
-> > +
-> > +	  If unsure, select Generic.
-> > +
-> > +config GENERIC_CPU
-> > +	bool "Generic"
-> > +
-> > +config CELL_CPU
-> > +	bool "Cell Broadband Engine"
-> > +
-> > +config POWER4_CPU
-> > +	bool "POWER4"
-> > +
-> > +config POWER5_CPU
-> > +	bool "POWER5"
-> > +
-> > +config POWER6_CPU
-> > +	bool "POWER6"
-> > +
-> > +config POWER7_CPU
-> > +	bool "POWER7"
-> > +
-> > +endchoice
-> > +
-> > config PPC_BOOK3S
-> > 	def_bool y
-> > 	depends on PPC_BOOK3S_32 || PPC_BOOK3S_64
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+This function is already cluttered with a lot of crap, and is very large
+so adding more lines which can simply be stashed away at declaration
+time is better readability.
+
+Besides, every modern editor can jump to the declaration of a local
+variable so that the user can see to what it is initialized to.
+
+> +struct mem_ctl_info *new_edac_mc_alloc(unsigned edac_index,
+> +                                    unsigned n_layers,
+> +                                    struct edac_mc_layer *layers,
+> +                                    bool rev_order,
+> +                                    unsigned sz_pvt)
+>  {
+>       void *ptr = NULL;
+>       struct mem_ctl_info *mci;
+> -     struct csrow_info *csi, *csrow;
+> +     struct edac_mc_layer *layer;
+> +     struct csrow_info *csi, *csr;
+>       struct rank_info *chi, *chp, *chan;
+>       struct dimm_info *dimm;
+> +     u32 *ce_per_layer[EDAC_MAX_LAYERS], *ue_per_layer[EDAC_MAX_LAYERS];
+>       void *pvt;
+> -     unsigned size;
+> -     int row, chn;
+> +     unsigned size, tot_dimms, count, pos[EDAC_MAX_LAYERS];
+> +     unsigned tot_csrows, tot_channels, tot_errcount = 0;
+> +     int i, j;
+>       int err;
+> +     int row, chn;
+> +     bool per_rank = false;
+> +
+> +     BUG_ON(n_layers > EDAC_MAX_LAYERS || n_layers == 0);
+> +     /*
+> +      * Calculate the total amount of dimms and csrows/cschannels while
+> +      * in the old API emulation mode
+> +      */
+> +     tot_dimms = 1;
+> +     tot_channels = 1;
+> +     tot_csrows = 1;
+> +     for (i = 0; i < n_layers; i++) {
+> +             tot_dimms *= layers[i].size;
+> +             if (layers[i].is_virt_csrow)
+> +                     tot_csrows *= layers[i].size;
+> +             else
+> +                     tot_channels *= layers[i].size;
+> +
+> +             if (layers[i].type == EDAC_MC_LAYER_CHIP_SELECT)
+> +                     per_rank = true;
+
+
+-- 
+Regards/Gruss,
+Boris.
+
+Advanced Micro Devices GmbH
+Einsteinring 24, 85609 Dornach
+GM: Alberto Bozzo
+Reg: Dornach, Landkreis Muenchen
+HRB Nr. 43632 WEEE Registernr: 129 19551
