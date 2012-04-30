@@ -2,18 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 59AA3B6FC2
- for <linuxppc-dev@ozlabs.org>; Mon, 30 Apr 2012 11:44:54 +1000 (EST)
-Message-ID: <1335750286.20866.25.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
+ by ozlabs.org (Postfix) with ESMTPS id 5C4BDB6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2012 12:43:54 +1000 (EST)
+Message-ID: <1335753820.20866.27.camel@pasglop>
+Subject: Re: [REGRESSION][PATCH V4 3/3] bpf jit: Let the powerpc jit handle
+ negative offsets
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 30 Apr 2012 11:44:46 +1000
+To: David Miller <davem@davemloft.net>
+Date: Mon, 30 Apr 2012 12:43:40 +1000
+In-Reply-To: <1333491102.3040.12.camel@pasglop>
+References: <4F75CA89.4010709@googlemail.com> <4F75D2A5.7060407@googlemail.com>
+ <20120403.180302.342779808900865443.davem@davemloft.net>
+ <1333491102.3040.12.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: kaffeemonster@googlemail.com, eric.dumazet@gmail.com, matt@ozlabs.org,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,46 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Wed, 2012-04-04 at 08:11 +1000, Benjamin Herrenschmidt wrote:
+> On Tue, 2012-04-03 at 18:03 -0400, David Miller wrote:
+> 
+> > > Signed-off-by: Jan Seiffert <kaffeemonster@googlemail.com>
+> > > 
+> > > I have only compile tested this, -ENOHARDWARE.
+> > > Can someone with more powerpc kung-fu review and maybe test this?
+> > > Esp. powerpc asm is not my strong point. I think i botched the
+> > > stack frame in the call setup. Help?
+> > 
+> > I'm not applying this until a powerpc person tests it.
+> > 
+> > Also, we have an ARM JIT in the tree which probably needs to
+> > be fixed similarly.
+> 
+> Matt's having a look at powerpc
 
-Here are a handful more fixes for powerpc. The irq stuff are all
-regression fixes, and Gavin's patch is a simple compile fix.
+Ok, he hasn't so I'll dig a bit.
+
+No obvious wrongness (but I'm not very familiar with bpf), though I do
+have a comment: sk_negative_common() and bpf_slow_path_common() should
+be made one and single macro which takes the fallback function as an
+argument.
+
+I'll mess around & try to test using Jan test case & will come back
+with an updated patch.
 
 Cheers,
 Ben.
-
-The following changes since commit 69964ea4c7b68c9399f7977aa5b9aa6539a6a98a:
-
-  Linux 3.4-rc5 (2012-04-29 15:19:10 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 810b4de25e53459323ff48957b0162b48d6cbd57:
-
-  tty/serial/pmac_zilog: Fix "nobody cared" IRQ message (2012-04-30 10:59:58 +1000)
-
-----------------------------------------------------------------
-Gavin Shan (1):
-      powerpc/pseries: Rivet CONFIG_EEH for pSeries platform
-
-Grant Likely (2):
-      powerpc/8xx: Fix NR_IRQ bugs and refactor 8xx interrupt controller
-      powerpc/irqdomain: Fix broken NR_IRQ references
-
-Larry Finger (1):
-      tty/serial/pmac_zilog: Fix "nobody cared" IRQ message
-
- arch/powerpc/include/asm/irq.h               |    4 --
- arch/powerpc/kernel/irq.c                    |    6 +--
- arch/powerpc/kernel/machine_kexec.c          |    7 +--
- arch/powerpc/platforms/cell/axon_msi.c       |    8 ++--
- arch/powerpc/platforms/cell/beat_interrupt.c |    2 +-
- arch/powerpc/platforms/powermac/pic.c        |    6 +--
- arch/powerpc/platforms/pseries/Kconfig       |    4 +-
- arch/powerpc/sysdev/cpm2_pic.c               |    3 +-
- arch/powerpc/sysdev/mpc8xx_pic.c             |   61 +++++++++-----------------
- arch/powerpc/sysdev/xics/xics-common.c       |    7 ++-
- drivers/tty/serial/pmac_zilog.c              |    6 +--
- 11 files changed, 39 insertions(+), 75 deletions(-)
