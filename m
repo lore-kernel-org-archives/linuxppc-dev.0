@@ -1,25 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CDAC0B6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2012 07:57:38 +1000 (EST)
-Message-ID: <1335823049.20866.48.camel@pasglop>
-Subject: Re: [REGRESSION][PATCH V4 3/3] bpf jit: Let the powerpc jit handle
- negative offsets
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-Date: Tue, 01 May 2012 07:57:29 +1000
-In-Reply-To: <1335822926.20866.47.camel@pasglop>
-References: <1335760199.20866.33.camel@pasglop>
- <4F9E188E.80503@googlemail.com> <1335763568.20866.37.camel@pasglop>
- <20120430.134140.1738751315208907289.davem@davemloft.net>
- <1335822926.20866.47.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kaffeemonster@googlemail.com, eric.dumazet@gmail.com, matt@ozlabs.org,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <hughd@google.com>
+Received: from mail-iy0-f179.google.com (mail-iy0-f179.google.com
+ [209.85.210.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 47B94B6FA5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2012 08:37:31 +1000 (EST)
+Received: by iakh37 with SMTP id h37so5333280iak.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2012 15:37:28 -0700 (PDT)
+Date: Mon, 30 Apr 2012 15:37:10 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+To: "Paul E. McKenney" <paul.mckenney@linaro.org>
+Subject: linux-next ppc64: RCU mods cause __might_sleep BUGs
+Message-ID: <alpine.LSU.2.00.1204301451270.2986@eggly.anvils>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +24,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-05-01 at 07:55 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2012-04-30 at 13:41 -0400, David Miller wrote:
-> > From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > Date: Mon, 30 Apr 2012 15:26:08 +1000
-> > 
-> > > David, what's the right way to fix that ?
-> > 
-> > There is no doubt that sock_fprog is the correct datastructure to use.
-> 
-> Ok, so the right fix is to email anybody who posted code using struct
-> bpf_program to fix their code ? :-)
+Hi Paul,
 
-Actually, the right fix is for anybody using pcap-bpf.h to not
-use SO_ATTACH_FILTER directly but to use pcap_setfilter() which
-handles the compatibility.
+On 3.4.0-rc4-next-20120427 and preceding linux-nexts (I've not tried
+rc5-next-20120430 but expect it's the same), on PowerPC G5 quad with
+CONFIG_PREEMPT=y and CONFIG_DEBUG_ATOMIC_SLEEP=y, I'm getting spurious
+"BUG: sleeping function called from invalid context" messages from
+__might_sleep().
 
-I'll start spamming web sites who tell people to do the wrong thing.
+Just once I saw such a message during startup.  Once I saw such a
+message when rebuilding the machine's kernel.  Usually I see them
+when I'm running a swapping load of kernel builds under memory
+pressure (but that's what I'm habitually running there): perhaps
+after a few minutes a flurry comes, then goes away, comes back
+again later, and after perhaps a couple of hours of that I see
+"INFO: rcu_preempt detected stalls" messages too, and soon it
+freezes (or perhaps it's still running, but I'm so flooded by
+messages that I reboot anyway).
 
-Cheers,
-Ben.
+Rather like from before you fixed schedule_tail() for your per-cpu
+RCU mods, but not so easy to reproduce.  I did a bisection and indeed
+it converged as expected on the RCU changes.  No such problem seen on
+x86: it looks as if there's some further tweak required on PowerPC.
+
+Here are my RCU config options (I don't usually have the TORTURE_TEST
+in, but tried that for half an hour this morning, in the hope that it
+would generate the issue: but it did not).
+
+# RCU Subsystem
+CONFIG_TREE_PREEMPT_RCU=y
+CONFIG_PREEMPT_RCU=y
+CONFIG_RCU_FANOUT=64
+# CONFIG_RCU_FANOUT_EXACT is not set
+CONFIG_TREE_RCU_TRACE=y
+# CONFIG_RCU_BOOST is not set
+CONFIG_HAVE_RCU_TABLE_FREE=y
+# CONFIG_SPARSE_RCU_POINTER is not set
+CONFIG_RCU_TORTURE_TEST=m
+CONFIG_RCU_CPU_STALL_TIMEOUT=60
+# CONFIG_RCU_CPU_STALL_VERBOSE is not set
+# CONFIG_RCU_CPU_STALL_INFO is not set
+CONFIG_RCU_TRACE=y
+
+Here's the message when I was rebuilding the G5's kernel:
+
+BUG: sleeping function called from invalid context at include/linux/pagemap.h:354
+in_atomic(): 0, irqs_disabled(): 0, pid: 6886, name: cc1
+Call Trace:
+[c0000001a99f78e0] [c00000000000f34c] .show_stack+0x6c/0x16c (unreliable)
+[c0000001a99f7990] [c000000000077b40] .__might_sleep+0x11c/0x134
+[c0000001a99f7a10] [c0000000000c6228] .filemap_fault+0x1fc/0x494
+[c0000001a99f7af0] [c0000000000e7c9c] .__do_fault+0x120/0x684
+[c0000001a99f7c00] [c000000000025790] .do_page_fault+0x458/0x664
+[c0000001a99f7e30] [c000000000005868] handle_page_fault+0x10/0x30
+
+I've plenty more examples, most of them from page faults or from kswapd;
+but I don't think there's any more useful information in them.
+
+Anything I can try later on?
+
+Thanks!
+Hugh
