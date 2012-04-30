@@ -1,27 +1,20 @@
-Return-Path: <kaffeemonster@googlemail.com>
-Received: from uhura.skim.hs-owl.de (uhura.skim.hs-owl.de [193.174.118.81])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8DC78B6EEC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2012 14:44:11 +1000 (EST)
-Message-ID: <4F9E188E.80503@googlemail.com>
-Date: Mon, 30 Apr 2012 06:43:58 +0200
-From: Jan Seiffert <kaffeemonster@googlemail.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [REGRESSION][PATCH V4 3/3] bpf jit: Let the powerpc jit handle
- negative offsets
-References: <4F75CA89.4010709@googlemail.com> <4F75D2A5.7060407@googlemail.com>
- <20120403.180302.342779808900865443.davem@davemloft.net>
- <1333491102.3040.12.camel@pasglop> <1335753820.20866.27.camel@pasglop>
- <1335759088.20866.32.camel@pasglop> <4F9E1496.9060603@googlemail.com>
- <1335760199.20866.33.camel@pasglop>
-In-Reply-To: <1335760199.20866.33.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 33871B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Apr 2012 15:00:14 +1000 (EST)
+Message-ID: <1335762005.20866.35.camel@pasglop>
+Subject: Re: [PATCH] Disable /dev/port interface on powerpc systems
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Date: Mon, 30 Apr 2012 15:00:05 +1000
+In-Reply-To: <1332314613.2982.38.camel@pasglop>
+References: <1332308237.23222.49.camel@hbabu-laptop>
+ <1332314613.2982.38.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Cc: eric.dumazet@gmail.com, matt@ozlabs.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
-Reply-To: kaffeemonster@googlemail.com
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,46 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt schrieb:
-> On Mon, 2012-04-30 at 06:27 +0200, Jan Seiffert wrote:
->> Benjamin Herrenschmidt schrieb:
->>> On Mon, 2012-04-30 at 12:43 +1000, Benjamin Herrenschmidt wrote:
->>>
->>>>> Matt's having a look at powerpc
->>>>
->>>> Ok, he hasn't so I'll dig a bit.
->>>>
->>>> No obvious wrongness (but I'm not very familiar with bpf), though I do
->>>> have a comment: sk_negative_common() and bpf_slow_path_common() should
->>>> be made one and single macro which takes the fallback function as an
->>>> argument.
->>>
->>> Ok, with the compile fix below it seems to work for me:
->>>
->>> (Feel free to fold that into the original patch)
->>>
->>
->> Should i resend the complete patch with the compile fix?
+On Wed, 2012-03-21 at 18:23 +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2012-03-20 at 22:37 -0700, Haren Myneni wrote:
+> > Some power systems do not have legacy ISA devices. So, /dev/port is not
+> > a valid interface on these systems. User level tools such as kbdrate is
+> > trying to access the device using this interface which is causing the
+> > system crash. 
+> > 
+> > This patch will fix this issue by not creating this interface on these
+> > powerpc systems. 
 > 
-> Won't hurt...
+> Doesn't fix 32-bit... not a big deal for now I suppose... But I'd rather
+> you change the patch a tiny bit to change legacy_isa_device_found() to
+> arch_has_dev_port() instead. There may be other reason than legacy ISA
+> to enable dev/port or not so let's make the arch hook more generic.
 > 
+> Another approach which might be even better is to filter per-access,
+> ie for each read/write to /dev/port, have a hook to check if that
+> specific port is valid, but that may be overkill for what is
+> essentially a legacy interface that should have died a long time ago :)
 
-Ok
+The more I think about this the less I like it ...
 
-> BTW. Any idea about that bpf_program vs. sock_fprog issue I mentioned
-> earlier ?
-> 
+At the end of the day, the bug is in kbdrate (or the distro, whatever)
 
-No idea, i was going by the old saying:
-"Thou shall not include kernel header, or you will feel the wrath of angry
-kernel gurus."
+It's just completely broken to have a bit of userspace running as root
+randomly whacking IO ports or MMIO registers based on the assumption
+that there must be some kind of ISA kbd controller there... It's going
+to break on more than just powerpc (ARM anyone ?).
 
-> Cheers,
-> Ben.
-> 
+So kbdrate is busted and needs to be either fixed or removed.
 
-Greetings
-	Jan
-
--- 
-The OO-Hype keeps on spinning, C stays.
+Cheers,
+Ben.
