@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 78ECAB6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2012 10:33:46 +1000 (EST)
-Message-ID: <1335832418.20866.95.camel@pasglop>
-Subject: Re: linux-next ppc64: RCU mods cause __might_sleep BUGs
+ by ozlabs.org (Postfix) with ESMTPS id 6939CB6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 May 2012 13:09:00 +1000 (EST)
+Message-ID: <1335841603.3621.8.camel@pasglop>
+Subject: Re: [PATCH v3 03/17] powerpc: Add PFO support to the VIO bus
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hughd@google.com>
-Date: Tue, 01 May 2012 10:33:38 +1000
-In-Reply-To: <alpine.LSU.2.00.1204301451270.2986@eggly.anvils>
-References: <alpine.LSU.2.00.1204301451270.2986@eggly.anvils>
+To: Kent Yoder <key@linux.vnet.ibm.com>
+Date: Tue, 01 May 2012 13:06:43 +1000
+In-Reply-To: <1334243302.18090.10.camel@key-ThinkPad-W510>
+References: <1334242825.18090.4.camel@key-ThinkPad-W510>
+ <1334243302.18090.10.camel@key-ThinkPad-W510>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: "Paul E. McKenney" <paul.mckenney@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-04-30 at 15:37 -0700, Hugh Dickins wrote:
-> 
-> BUG: sleeping function called from invalid context at include/linux/pagemap.h:354
-> in_atomic(): 0, irqs_disabled(): 0, pid: 6886, name: cc1
+Hrm... I don't like that much:
 
-Hrm ... in_atomic and irqs_disabled are both 0 ... so yeah it smells
-like a preempt count problem... odd.
+> +	if (op->timeout)
+> +		deadline = jiffies + msecs_to_jiffies(op->timeout);
+> +
+> +	while (true) {
+> +		hret = plpar_hcall_norets(H_COP, op->flags,
+> +				vdev->resource_id,
+> +				op->in, op->inlen, op->out,
+> +				op->outlen, op->csbcpb);
+> +
+> +		if (hret == H_SUCCESS ||
+> +		    (hret != H_NOT_ENOUGH_RESOURCES &&
+> +		     hret != H_BUSY && hret != H_RESOURCE) ||
+> +		    (op->timeout && time_after(deadline, jiffies)))
+> +			break;
+> +
+> +		dev_dbg(dev, "%s: hcall ret(%ld), retrying.\n", __func__, hret);
+> +	}
+> +
 
-Did you get a specific bisect target yet ?
+Is this meant to be called in atomic context ? If not, maybe it should
+at the very least do a cond_resched() ?
+
+Else, what about ceding the processor ? Or at the very least reducing
+the thread priority for a bit ?
+
+Shouldn't we also enforce to always have a timeout ? IE. Something like
+30s or so if nothing specified to avoid having the kernel just hard
+lock...
+
+In general I don't like that sort of synchronous code, I'd rather return
+the busy status up the chain which gives a chance to the caller to take
+more appropriate measures depending on what it's doing, but that really
+depends what you use that synchronous call for. I suppose if it's for
+configuration type operations, it's ok...
 
 Cheers,
 Ben.
-
-> Call Trace:
-> [c0000001a99f78e0] [c00000000000f34c] .show_stack+0x6c/0x16c (unreliable)
-> [c0000001a99f7990] [c000000000077b40] .__might_sleep+0x11c/0x134
-> [c0000001a99f7a10] [c0000000000c6228] .filemap_fault+0x1fc/0x494
-> [c0000001a99f7af0] [c0000000000e7c9c] .__do_fault+0x120/0x684
-> [c0000001a99f7c00] [c000000000025790] .do_page_fault+0x458/0x664
-> [c0000001a99f7e30] [c000000000005868] handle_page_fault+0x10/0x30
-> 
-> I've plenty more examples, most of them from page faults or from kswapd;
-> but I don't think there's any more useful information in them.
-> 
-> Anything I can try later on? 
