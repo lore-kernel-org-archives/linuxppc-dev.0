@@ -1,14 +1,11 @@
 Return-Path: <jwboyer@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1333956052-25319-5-git-send-email-tinamdar@apm.com>
+In-Reply-To: <1333956052-25319-2-git-send-email-tinamdar@apm.com>
 References: <1333956052-25319-1-git-send-email-tinamdar@apm.com>
  <1333956052-25319-2-git-send-email-tinamdar@apm.com>
- <1333956052-25319-3-git-send-email-tinamdar@apm.com>
- <1333956052-25319-4-git-send-email-tinamdar@apm.com>
- <1333956052-25319-5-git-send-email-tinamdar@apm.com>
-Date: Wed, 2 May 2012 09:38:14 -0400
-Message-ID: <CA+5PVA4sjX_Dk6ecySG4ZZoM=xhaWu2jGrQ=LtFgxGL88G=-Nw@mail.gmail.com>
-Subject: Re: [V2 5/5] powerpc: kernel: 16650 UART reg-shift support
+Date: Wed, 2 May 2012 09:41:37 -0400
+Message-ID: <CA+5PVA4HGVGRbnLCMOAbO1mYnFCgHhh1_ErLdKq5YhMdV0VhQw@mail.gmail.com>
+Subject: Re: [V2 2/5] powerpc: 40x: Add AHB, APB of_device_ids
 From: Josh Boyer <jwboyer@gmail.com>
 To: Tanmay Inamdar <tinamdar@apm.com>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -24,103 +21,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Mon, Apr 9, 2012 at 3:20 AM, Tanmay Inamdar <tinamdar@apm.com> wrote:
-> In APM8018X SOC, UART register address space has been relocated to 32-bit
-> data boundaries for APB bus implementation.
-> Current legacy_serial driver ignores the reg-shift property. This patch
-> modifies legacy_serial.c and udbg_16550.c to work with above mentioned UA=
-RTs.
+> Adding of_device_id's for AHB and APB buses used in klondike (APM8018X) in
+> platforms/40x/ppc40x_simple.c file
 >
 > Signed-off-by: Tanmay Inamdar <tinamdar@apm.com>
-> ---
-> :100644 100644 8338aef... f5fc106... M =A0arch/powerpc/include/asm/udbg.h
-> :100644 100644 bedd12e... d523b7d... M =A0arch/powerpc/kernel/legacy_seri=
-al.c
-> :100644 100644 6837f83... e0cb7dc... M =A0arch/powerpc/kernel/udbg_16550.=
-c
-> =A0arch/powerpc/include/asm/udbg.h =A0 =A0 | =A0 =A02 +-
-> =A0arch/powerpc/kernel/legacy_serial.c | =A0 16 +++++---
-> =A0arch/powerpc/kernel/udbg_16550.c =A0 =A0| =A0 64 +++++++++++++++++++++=
-+------------
-> =A03 files changed, 52 insertions(+), 30 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/u=
-dbg.h
-> index 8338aef..f5fc106 100644
-> --- a/arch/powerpc/include/asm/udbg.h
-> +++ b/arch/powerpc/include/asm/udbg.h
-> @@ -29,7 +29,7 @@ extern void udbg_printf(const char *fmt, ...)
-> =A0extern void udbg_progress(char *s, unsigned short hex);
->
-> =A0extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unsigned int clock);
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unsigned int clock, =
-=A0unsigned int regshift);
-> =A0extern unsigned int udbg_probe_uart_speed(void __iomem *comport,
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0unsigned int clock);
->
-> diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/le=
-gacy_serial.c
-> index bedd12e..d523b7d 100644
-> --- a/arch/powerpc/kernel/legacy_serial.c
-> +++ b/arch/powerpc/kernel/legacy_serial.c
-> @@ -33,6 +33,7 @@ static struct legacy_serial_info {
-> =A0 =A0 =A0 =A0unsigned int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0clock;
-> =A0 =A0 =A0 =A0int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 irq_check_parent;
-> =A0 =A0 =A0 =A0phys_addr_t =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 taddr;
-> + =A0 =A0 =A0 unsigned int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0regshif=
-t;
-> =A0} legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
->
-> =A0static struct __initdata of_device_id legacy_serial_parents[] =3D {
-> @@ -42,6 +43,7 @@ static struct __initdata of_device_id legacy_serial_par=
-ents[] =3D {
-> =A0 =A0 =A0 =A0{.compatible =3D "ibm,opb",},
-> =A0 =A0 =A0 =A0{.compatible =3D "simple-bus",},
-> =A0 =A0 =A0 =A0{.compatible =3D "wrs,epld-localbus",},
-> + =A0 =A0 =A0 {.compatible =3D "apm,apb",},
-> =A0 =A0 =A0 =A0{},
-> =A0};
->
-> @@ -163,11 +165,6 @@ static int __init add_legacy_soc_port(struct device_=
-node *np,
-> =A0 =A0 =A0 =A0if (of_get_property(np, "clock-frequency", NULL) =3D=3D NU=
-LL)
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -1;
->
-> - =A0 =A0 =A0 /* if reg-shift or offset, don't try to use it */
-> - =A0 =A0 =A0 if ((of_get_property(np, "reg-shift", NULL) !=3D NULL) ||
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 (of_get_property(np, "reg-offset", NULL) !=
-=3D NULL))
-> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -1;
-> -
 
-So we explicitly didn't support reg-shift before.  I'm guessing there is
-a reason for that, but I don't recall what.  Ben?
-
-Also, why do you need to use the legacy serial driver at all for this
-SOC?  As far as I remember, the OF serial driver should be sufficient.
-
-> +static unsigned int reg_shift;
-> +#define ns16550_offset(addr) (addr - (unsigned char *)udbg_comport)
-> +
-> =A0static struct NS16550 __iomem *udbg_comport;
->
-> +static inline u8 serial_read(unsigned char *addr)
-> +{
-> + =A0 =A0 =A0 u32 offset =3D ns16550_offset(addr) << reg_shift;
-> + =A0 =A0 =A0 return readb(udbg_comport + offset);
-> +}
-> +
-> +static inline void serial_write(unsigned char *addr, char val)
-> +{
-> + =A0 =A0 =A0 u32 offset =3D ns16550_offset(addr) << reg_shift;
-> + =A0 =A0 =A0 writeb(val, udbg_comport + offset);
-> +}
-> +
-
-I don't think readb/writeb are correct here.  Why did you switch to
-using those instead of sticking with in_8/out_8?
+You should probably combine the first 3 patches in this series into one
+patch.  Otherwise you run the risk of changing the DTS to something the
+kernel can't support.  At the least, this change should be patch 1 in
+the series, and you can probably combine the two DTS changes.
 
 josh
