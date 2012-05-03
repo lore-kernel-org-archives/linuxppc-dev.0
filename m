@@ -1,18 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 7CECBB6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 14:34:59 +1000 (EST)
-Date: Thu, 3 May 2012 14:34:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <shhuiw@gmail.com>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 608A6B6FBE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 15:51:39 +1000 (EST)
+Received: by obbup19 with SMTP id up19so2097205obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2012 22:51:36 -0700 (PDT)
+Message-ID: <4FA21CD8.4060800@gmail.com>
+Date: Thu, 03 May 2012 13:51:20 +0800
+From: Wang Sheng-Hui <shhuiw@gmail.com>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/windfarm: fix compiler warning
-Message-Id: <20120503143452.4231b1cc17101df8e0772b95@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__3_May_2012_14_34_52_+1000_y+siRNjPp__GuYCK"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] powerpc: use local var instead of local_paca->irq_happened
+ directly in __check_irq_replay
+References: <4FA1E527.1090807@gmail.com> <1336011306.2653.3.camel@pasglop>
+ <1336018961.2653.11.camel@pasglop>
+In-Reply-To: <1336018961.2653.11.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,69 +30,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__3_May_2012_14_34_52_+1000_y+siRNjPp__GuYCK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 2012年05月03日 12:22, Benjamin Herrenschmidt wrote:
+> 
+>> It should not as __check_irq_replay() should always be called
+>> with interrupts hard disabled... Do you see any code path
+>> where that is not the case ?
+> 
+> More specifically, your backtrace seems to indicate that
+> __check_irq_repay() was called from arch_local_irq_restore() which
+> should have done this before calling __check_irq_replay():
+> 
+> 	if (unlikely(irq_happened != PACA_IRQ_HARD_DIS))
+> 		__hard_irq_disable();
+> 
+> Now, the only possibility that I can see for an interrupt to come in
+> and trip the problem you observed would be if for some reason we
+> had irq_happened set to PACA_IRQ_HARD_DIS while interrupts were
+> not hard disabled.
 
-Fixes this warning:
+I have a chance to notice that the value is 0x05, not just 0x01.
+So I think this is not the case.
 
-drivers/macintosh/windfarm_pm91.c: In function 'wf_smu_cpu_fans_tick':
-drivers/macintosh/windfarm_pm91.c:237:2: warning: passing argument 1 of 'wf=
-_sensor_get' from incompatible pointer type
-drivers/macintosh/windfarm.h:124:19: note: expected 'struct wf_sensor *' bu=
-t argument is of type 'struct wf_sensor **'
-
-Introduced by commit 33e6820b767a ("powerpc/windfarm: Add useful
-accessors").
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- drivers/macintosh/windfarm_pm91.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/macintosh/windfarm_pm91.c b/drivers/macintosh/windfarm=
-_pm91.c
-index e18002b..7653603 100644
---- a/drivers/macintosh/windfarm_pm91.c
-+++ b/drivers/macintosh/windfarm_pm91.c
-@@ -234,7 +234,7 @@ static void wf_smu_cpu_fans_tick(struct wf_smu_cpu_fans=
-_state *st)
- 		return;
- 	}
-=20
--	rc =3D wf_sensor_get(&sensor_cpu_power, &power);
-+	rc =3D wf_sensor_get(sensor_cpu_power, &power);
- 	if (rc) {
- 		printk(KERN_WARNING "windfarm: CPU power sensor error %d\n",
- 		       rc);
---=20
-1.7.10.280.gaa39
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__3_May_2012_14_34_52_+1000_y+siRNjPp__GuYCK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPogrsAAoJEECxmPOUX5FEF2kP+wfjpZ0kf4ZidMxhlLcalwHX
-jrt6l2e4izw7t2WLSK9YX5SOJdCxI7FRV1EH4zF9rDD6H4zSdFjezPStWVHpiuEE
-LXDSOWI6aOATqTP//NF8g9uAoUGESlIkOcXljsK/TAfz/rpw9pzA4r5vtqeuSbvi
-sIOEw+w14yYVBPuYA3w+OaYmG7pY2G5tDBz9IC5WWHiGHzAtksY4/LJjS6q8FjfS
-g8rOQyn48AMTWTLl+JNv5OdjtBhFVaOfzv3Ou/cpIDPKIr0kTUfDjcyREJweU195
-4hZngCEpOdD5n0UVCvf5OsaozZLMuqwaGPFAn/1tcMsEa6d6WQ/Qs4GcYsutTk0Z
-gWR8+JfWkdFDqVbE0MNuKuIupZ8u0MHytahC8afIt+1WY3r+uxI1iB2sKJ/DSYUF
-35TDqybaB7+VT6iCwv3VLkarUSNqjXapYFt5SrrLhDsYVX/CgxRFZ/Kg2QeE9gP1
-LTH0v90GaW3cGe32yifXK9fPHQFgibMxPWfu3H4IHHL/DNKyrw5XdjPrUld7kptg
-7YTdWi8X9cjWAC4SfA2mj0XSLucBEJrptCkb+ngecJwomzZyExV5nw+KzA9iw9J/
-F51JaMkD2gijjYAUGHz41YQjY0PxV5e5f+o76DWFsuHl6pDzSvs/YFUN8jEKY7eI
-HMYHd9wSvPyvFwnjY1y7
-=rHJq
------END PGP SIGNATURE-----
-
---Signature=_Thu__3_May_2012_14_34_52_+1000_y+siRNjPp__GuYCK--
+> 
+> Can you try if removing the test (and thus unconditionally calling
+> __hard_irq_disable()) fixes the problem for you ?
+> 
+> If that is the case, then we need to audit the code to figure out how we
+> can end up with that bit in irq_happened set and interrupts hard
+> enabled.
+> 
+> Something like may_hard_irq_enable() shouldn't cause it since it should
+> only be called while hard disabled but adding a check in there might be
+> worth it (something like WARN_ON(mfmsr() & MSR_EE)).
+> 
+> Cheers,
+> Ben.
+> 
+>> Cheers,
+>> Ben.
+>>
+>>> Signed-off-by: Wang Sheng-Hui <shhuiw@gmail.com>
+>>> ---
+>>>  arch/powerpc/kernel/irq.c |   46 +++++++++++++++++++++++++++++---------------
+>>>  1 files changed, 30 insertions(+), 16 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+>>> index 5ec1b23..3d48b23 100644
+>>> --- a/arch/powerpc/kernel/irq.c
+>>> +++ b/arch/powerpc/kernel/irq.c
+>>> @@ -137,15 +137,17 @@ static inline notrace int decrementer_check_overflow(void)
+>>>   */
+>>>  notrace unsigned int __check_irq_replay(void)
+>>>  {
+>>> +	unsigned int ret_val;
+>>>  	/*
+>>>  	 * We use local_paca rather than get_paca() to avoid all
+>>>  	 * the debug_smp_processor_id() business in this low level
+>>>  	 * function
+>>>  	 */
+>>> -	unsigned char happened = local_paca->irq_happened;
+>>> +	unsigned char happened, irq_happened;
+>>> +	happened = irq_happened = local_paca->irq_happened;
+>>>  
+>>>  	/* Clear bit 0 which we wouldn't clear otherwise */
+>>> -	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
+>>> +	irq_happened &= ~PACA_IRQ_HARD_DIS;
+>>>  
+>>>  	/*
+>>>  	 * Force the delivery of pending soft-disabled interrupts on PS3.
+>>> @@ -161,33 +163,45 @@ notrace unsigned int __check_irq_replay(void)
+>>>  	 * decrementer itself rather than the paca irq_happened field
+>>>  	 * in case we also had a rollover while hard disabled
+>>>  	 */
+>>> -	local_paca->irq_happened &= ~PACA_IRQ_DEC;
+>>> -	if (decrementer_check_overflow())
+>>> -		return 0x900;
+>>> +	irq_happened &= ~PACA_IRQ_DEC;
+>>> +	if (decrementer_check_overflow()) {
+>>> +		ret_val = 0x900;
+>>> +		goto replay;
+>>> +	}
+>>>  
+>>>  	/* Finally check if an external interrupt happened */
+>>> -	local_paca->irq_happened &= ~PACA_IRQ_EE;
+>>> -	if (happened & PACA_IRQ_EE)
+>>> -		return 0x500;
+>>> +	irq_happened &= ~PACA_IRQ_EE;
+>>> +	if (happened & PACA_IRQ_EE) {
+>>> +		ret_val = 0x500;
+>>> +		goto replay;
+>>> +	}
+>>>  
+>>>  #ifdef CONFIG_PPC_BOOK3E
+>>>  	/* Finally check if an EPR external interrupt happened
+>>>  	 * this bit is typically set if we need to handle another
+>>>  	 * "edge" interrupt from within the MPIC "EPR" handler
+>>>  	 */
+>>> -	local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
+>>> -	if (happened & PACA_IRQ_EE_EDGE)
+>>> -		return 0x500;
+>>> +	irq_happened &= ~PACA_IRQ_EE_EDGE;
+>>> +	if (happened & PACA_IRQ_EE_EDGE) {
+>>> +		ret_val = 0x500;
+>>> +		goto replay;
+>>> +	}
+>>>  
+>>> -	local_paca->irq_happened &= ~PACA_IRQ_DBELL;
+>>> -	if (happened & PACA_IRQ_DBELL)
+>>> -		return 0x280;
+>>> +	irq_happened &= ~PACA_IRQ_DBELL;
+>>> +	if (happened & PACA_IRQ_DBELL) {
+>>> +		ret_val = 0x280;
+>>> +		goto replay;
+>>> +	}
+>>>  #endif /* CONFIG_PPC_BOOK3E */
+>>>  
+>>>  	/* There should be nothing left ! */
+>>> -	BUG_ON(local_paca->irq_happened != 0);
+>>> +	BUG_ON(irq_happened != 0);
+>>> +	ret_val = 0;
+>>>  
+>>> -	return 0;
+>>> +replay:
+>>> +	local_paca->irq_happened = irq_happened;
+>>> +
+>>> +	return ret_val;
+>>>  }
+>>>  
+>>>  notrace void arch_local_irq_restore(unsigned long en)
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
