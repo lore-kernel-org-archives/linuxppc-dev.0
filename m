@@ -1,22 +1,19 @@
-Return-Path: <shhuiw@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 351CBB6FA9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 12:32:24 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so2336677pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2012 19:32:23 -0700 (PDT)
-Message-ID: <4FA1EE2C.6050201@gmail.com>
-Date: Thu, 03 May 2012 10:32:12 +0800
-From: Wang Sheng-Hui <shhuiw@gmail.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: use local var instead of local_paca->irq_happened
- directly in __check_irq_replay
-References: <4FA1E527.1090807@gmail.com> <1336011306.2653.3.camel@pasglop>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8ADFBB6FA8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 14:22:57 +1000 (EST)
+Message-ID: <1336018961.2653.11.camel@pasglop>
+Subject: Re: [PATCH] powerpc: use local var instead of
+ local_paca->irq_happened directly in __check_irq_replay
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wang Sheng-Hui <shhuiw@gmail.com>
+Date: Thu, 03 May 2012 14:22:41 +1000
 In-Reply-To: <1336011306.2653.3.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
+References: <4FA1E527.1090807@gmail.com> <1336011306.2653.3.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
  Milton Miller <miltonm@bga.com>, Anton Blanchard <anton@samba.org>,
  linuxppc-dev@lists.ozlabs.org
@@ -29,122 +26,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2012年05月03日 10:15, Benjamin Herrenschmidt wrote:
-> On Thu, 2012-05-03 at 09:53 +0800, Wang Sheng-Hui wrote:
->> local_paca->irq_happened may be changed asychronously. 
->>
->> In my test env (IBM Power 9117-MMA), I installed the RHEL6.2 with the shipped
->> oprofile. Then I run into kernel v3.4-rc4, setup/start oprofile and start the
->> LTP test suite.
->>
->> In a short while, the system would crash. Seems that oprofile may change
->> the irq_happened.
-> 
->  .../...
-> 
->> Use local var instead of local_paca->irq_happened directly in this function here.
->>
->> Please check this patch. Any comments are welcome.
-> 
+
 > It should not as __check_irq_replay() should always be called
 > with interrupts hard disabled... Do you see any code path
 > where that is not the case ?
 
-Since __check_irq_replay() should always be called with interrupts hard disabled,
-I think it's harmless to use local var here.
+More specifically, your backtrace seems to indicate that
+__check_irq_repay() was called from arch_local_irq_restore() which
+should have done this before calling __check_irq_replay():
 
-> 
+	if (unlikely(irq_happened != PACA_IRQ_HARD_DIS))
+		__hard_irq_disable();
+
+Now, the only possibility that I can see for an interrupt to come in
+and trip the problem you observed would be if for some reason we
+had irq_happened set to PACA_IRQ_HARD_DIS while interrupts were
+not hard disabled.
+
+Can you try if removing the test (and thus unconditionally calling
+__hard_irq_disable()) fixes the problem for you ?
+
+If that is the case, then we need to audit the code to figure out how we
+can end up with that bit in irq_happened set and interrupts hard
+enabled.
+
+Something like may_hard_irq_enable() shouldn't cause it since it should
+only be called while hard disabled but adding a check in there might be
+worth it (something like WARN_ON(mfmsr() & MSR_EE)).
+
+Cheers,
+Ben.
+
 > Cheers,
 > Ben.
 > 
->> Signed-off-by: Wang Sheng-Hui <shhuiw@gmail.com>
->> ---
->>  arch/powerpc/kernel/irq.c |   46 +++++++++++++++++++++++++++++---------------
->>  1 files changed, 30 insertions(+), 16 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
->> index 5ec1b23..3d48b23 100644
->> --- a/arch/powerpc/kernel/irq.c
->> +++ b/arch/powerpc/kernel/irq.c
->> @@ -137,15 +137,17 @@ static inline notrace int decrementer_check_overflow(void)
->>   */
->>  notrace unsigned int __check_irq_replay(void)
->>  {
->> +	unsigned int ret_val;
->>  	/*
->>  	 * We use local_paca rather than get_paca() to avoid all
->>  	 * the debug_smp_processor_id() business in this low level
->>  	 * function
->>  	 */
->> -	unsigned char happened = local_paca->irq_happened;
->> +	unsigned char happened, irq_happened;
->> +	happened = irq_happened = local_paca->irq_happened;
->>  
->>  	/* Clear bit 0 which we wouldn't clear otherwise */
->> -	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
->> +	irq_happened &= ~PACA_IRQ_HARD_DIS;
->>  
->>  	/*
->>  	 * Force the delivery of pending soft-disabled interrupts on PS3.
->> @@ -161,33 +163,45 @@ notrace unsigned int __check_irq_replay(void)
->>  	 * decrementer itself rather than the paca irq_happened field
->>  	 * in case we also had a rollover while hard disabled
->>  	 */
->> -	local_paca->irq_happened &= ~PACA_IRQ_DEC;
->> -	if (decrementer_check_overflow())
->> -		return 0x900;
->> +	irq_happened &= ~PACA_IRQ_DEC;
->> +	if (decrementer_check_overflow()) {
->> +		ret_val = 0x900;
->> +		goto replay;
->> +	}
->>  
->>  	/* Finally check if an external interrupt happened */
->> -	local_paca->irq_happened &= ~PACA_IRQ_EE;
->> -	if (happened & PACA_IRQ_EE)
->> -		return 0x500;
->> +	irq_happened &= ~PACA_IRQ_EE;
->> +	if (happened & PACA_IRQ_EE) {
->> +		ret_val = 0x500;
->> +		goto replay;
->> +	}
->>  
->>  #ifdef CONFIG_PPC_BOOK3E
->>  	/* Finally check if an EPR external interrupt happened
->>  	 * this bit is typically set if we need to handle another
->>  	 * "edge" interrupt from within the MPIC "EPR" handler
->>  	 */
->> -	local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
->> -	if (happened & PACA_IRQ_EE_EDGE)
->> -		return 0x500;
->> +	irq_happened &= ~PACA_IRQ_EE_EDGE;
->> +	if (happened & PACA_IRQ_EE_EDGE) {
->> +		ret_val = 0x500;
->> +		goto replay;
->> +	}
->>  
->> -	local_paca->irq_happened &= ~PACA_IRQ_DBELL;
->> -	if (happened & PACA_IRQ_DBELL)
->> -		return 0x280;
->> +	irq_happened &= ~PACA_IRQ_DBELL;
->> +	if (happened & PACA_IRQ_DBELL) {
->> +		ret_val = 0x280;
->> +		goto replay;
->> +	}
->>  #endif /* CONFIG_PPC_BOOK3E */
->>  
->>  	/* There should be nothing left ! */
->> -	BUG_ON(local_paca->irq_happened != 0);
->> +	BUG_ON(irq_happened != 0);
->> +	ret_val = 0;
->>  
->> -	return 0;
->> +replay:
->> +	local_paca->irq_happened = irq_happened;
->> +
->> +	return ret_val;
->>  }
->>  
->>  notrace void arch_local_irq_restore(unsigned long en)
+> > Signed-off-by: Wang Sheng-Hui <shhuiw@gmail.com>
+> > ---
+> >  arch/powerpc/kernel/irq.c |   46 +++++++++++++++++++++++++++++---------------
+> >  1 files changed, 30 insertions(+), 16 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> > index 5ec1b23..3d48b23 100644
+> > --- a/arch/powerpc/kernel/irq.c
+> > +++ b/arch/powerpc/kernel/irq.c
+> > @@ -137,15 +137,17 @@ static inline notrace int decrementer_check_overflow(void)
+> >   */
+> >  notrace unsigned int __check_irq_replay(void)
+> >  {
+> > +	unsigned int ret_val;
+> >  	/*
+> >  	 * We use local_paca rather than get_paca() to avoid all
+> >  	 * the debug_smp_processor_id() business in this low level
+> >  	 * function
+> >  	 */
+> > -	unsigned char happened = local_paca->irq_happened;
+> > +	unsigned char happened, irq_happened;
+> > +	happened = irq_happened = local_paca->irq_happened;
+> >  
+> >  	/* Clear bit 0 which we wouldn't clear otherwise */
+> > -	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
+> > +	irq_happened &= ~PACA_IRQ_HARD_DIS;
+> >  
+> >  	/*
+> >  	 * Force the delivery of pending soft-disabled interrupts on PS3.
+> > @@ -161,33 +163,45 @@ notrace unsigned int __check_irq_replay(void)
+> >  	 * decrementer itself rather than the paca irq_happened field
+> >  	 * in case we also had a rollover while hard disabled
+> >  	 */
+> > -	local_paca->irq_happened &= ~PACA_IRQ_DEC;
+> > -	if (decrementer_check_overflow())
+> > -		return 0x900;
+> > +	irq_happened &= ~PACA_IRQ_DEC;
+> > +	if (decrementer_check_overflow()) {
+> > +		ret_val = 0x900;
+> > +		goto replay;
+> > +	}
+> >  
+> >  	/* Finally check if an external interrupt happened */
+> > -	local_paca->irq_happened &= ~PACA_IRQ_EE;
+> > -	if (happened & PACA_IRQ_EE)
+> > -		return 0x500;
+> > +	irq_happened &= ~PACA_IRQ_EE;
+> > +	if (happened & PACA_IRQ_EE) {
+> > +		ret_val = 0x500;
+> > +		goto replay;
+> > +	}
+> >  
+> >  #ifdef CONFIG_PPC_BOOK3E
+> >  	/* Finally check if an EPR external interrupt happened
+> >  	 * this bit is typically set if we need to handle another
+> >  	 * "edge" interrupt from within the MPIC "EPR" handler
+> >  	 */
+> > -	local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
+> > -	if (happened & PACA_IRQ_EE_EDGE)
+> > -		return 0x500;
+> > +	irq_happened &= ~PACA_IRQ_EE_EDGE;
+> > +	if (happened & PACA_IRQ_EE_EDGE) {
+> > +		ret_val = 0x500;
+> > +		goto replay;
+> > +	}
+> >  
+> > -	local_paca->irq_happened &= ~PACA_IRQ_DBELL;
+> > -	if (happened & PACA_IRQ_DBELL)
+> > -		return 0x280;
+> > +	irq_happened &= ~PACA_IRQ_DBELL;
+> > +	if (happened & PACA_IRQ_DBELL) {
+> > +		ret_val = 0x280;
+> > +		goto replay;
+> > +	}
+> >  #endif /* CONFIG_PPC_BOOK3E */
+> >  
+> >  	/* There should be nothing left ! */
+> > -	BUG_ON(local_paca->irq_happened != 0);
+> > +	BUG_ON(irq_happened != 0);
+> > +	ret_val = 0;
+> >  
+> > -	return 0;
+> > +replay:
+> > +	local_paca->irq_happened = irq_happened;
+> > +
+> > +	return ret_val;
+> >  }
+> >  
+> >  notrace void arch_local_irq_restore(unsigned long en)
 > 
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
