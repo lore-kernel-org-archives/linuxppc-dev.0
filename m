@@ -1,19 +1,21 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1F86DB6FB7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 10:57:21 +1000 (EST)
-Date: Wed, 02 May 2012 20:53:12 -0400 (EDT)
-Message-Id: <20120502.205312.1917428334537687075.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Subject: Re: [PATCH] net/pasemi: fix compiler warning
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20120503105146.83f0a4a074dafad0443b875d@canb.auug.org.au>
-References: <20120503105146.83f0a4a074dafad0443b875d@canb.auug.org.au>
+ by ozlabs.org (Postfix) with ESMTPS id 9AB11B6FB9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 12:15:27 +1000 (EST)
+Message-ID: <1336011306.2653.3.camel@pasglop>
+Subject: Re: [PATCH] powerpc: use local var instead of
+ local_paca->irq_happened directly in __check_irq_replay
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wang Sheng-Hui <shhuiw@gmail.com>
+Date: Thu, 03 May 2012 12:15:06 +1000
+In-Reply-To: <4FA1E527.1090807@gmail.com>
+References: <4FA1E527.1090807@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: olof@lixom.net, netdev@vger.kernel.org, netdev@pradeepdalvi.com,
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Anton Blanchard <anton@samba.org>,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,18 +26,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Thu, 3 May 2012 10:51:46 +1000
-
-> Fix this compiler warning (on PowerPC) by not marking a parameter as
-> const:
+On Thu, 2012-05-03 at 09:53 +0800, Wang Sheng-Hui wrote:
+> local_paca->irq_happened may be changed asychronously. 
 > 
-> drivers/net/ethernet/pasemi/pasemi_mac.c: In function 'pasemi_mac_replenish_rx_ring':
-> drivers/net/ethernet/pasemi/pasemi_mac.c:646:3: warning: passing argument 1 of 'netdev_alloc_skb' discards qualifiers from pointer target type
-> include/linux/skbuff.h:1706:31: note: expected 'struct net_device *' but argument is of type 'const struct net_device *'
+> In my test env (IBM Power 9117-MMA), I installed the RHEL6.2 with the shipped
+> oprofile. Then I run into kernel v3.4-rc4, setup/start oprofile and start the
+> LTP test suite.
 > 
-> Cc: Olof Johansson <olof@lixom.net>
-> Cc: Pradeep A. Dalvi <netdev@pradeepdalvi.com>
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> In a short while, the system would crash. Seems that oprofile may change
+> the irq_happened.
 
-Applied, thanks.
+ .../...
+
+> Use local var instead of local_paca->irq_happened directly in this function here.
+> 
+> Please check this patch. Any comments are welcome.
+
+It should not as __check_irq_replay() should always be called
+with interrupts hard disabled... Do you see any code path
+where that is not the case ?
+
+Cheers,
+Ben.
+
+> Signed-off-by: Wang Sheng-Hui <shhuiw@gmail.com>
+> ---
+>  arch/powerpc/kernel/irq.c |   46 +++++++++++++++++++++++++++++---------------
+>  1 files changed, 30 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 5ec1b23..3d48b23 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -137,15 +137,17 @@ static inline notrace int decrementer_check_overflow(void)
+>   */
+>  notrace unsigned int __check_irq_replay(void)
+>  {
+> +	unsigned int ret_val;
+>  	/*
+>  	 * We use local_paca rather than get_paca() to avoid all
+>  	 * the debug_smp_processor_id() business in this low level
+>  	 * function
+>  	 */
+> -	unsigned char happened = local_paca->irq_happened;
+> +	unsigned char happened, irq_happened;
+> +	happened = irq_happened = local_paca->irq_happened;
+>  
+>  	/* Clear bit 0 which we wouldn't clear otherwise */
+> -	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
+> +	irq_happened &= ~PACA_IRQ_HARD_DIS;
+>  
+>  	/*
+>  	 * Force the delivery of pending soft-disabled interrupts on PS3.
+> @@ -161,33 +163,45 @@ notrace unsigned int __check_irq_replay(void)
+>  	 * decrementer itself rather than the paca irq_happened field
+>  	 * in case we also had a rollover while hard disabled
+>  	 */
+> -	local_paca->irq_happened &= ~PACA_IRQ_DEC;
+> -	if (decrementer_check_overflow())
+> -		return 0x900;
+> +	irq_happened &= ~PACA_IRQ_DEC;
+> +	if (decrementer_check_overflow()) {
+> +		ret_val = 0x900;
+> +		goto replay;
+> +	}
+>  
+>  	/* Finally check if an external interrupt happened */
+> -	local_paca->irq_happened &= ~PACA_IRQ_EE;
+> -	if (happened & PACA_IRQ_EE)
+> -		return 0x500;
+> +	irq_happened &= ~PACA_IRQ_EE;
+> +	if (happened & PACA_IRQ_EE) {
+> +		ret_val = 0x500;
+> +		goto replay;
+> +	}
+>  
+>  #ifdef CONFIG_PPC_BOOK3E
+>  	/* Finally check if an EPR external interrupt happened
+>  	 * this bit is typically set if we need to handle another
+>  	 * "edge" interrupt from within the MPIC "EPR" handler
+>  	 */
+> -	local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
+> -	if (happened & PACA_IRQ_EE_EDGE)
+> -		return 0x500;
+> +	irq_happened &= ~PACA_IRQ_EE_EDGE;
+> +	if (happened & PACA_IRQ_EE_EDGE) {
+> +		ret_val = 0x500;
+> +		goto replay;
+> +	}
+>  
+> -	local_paca->irq_happened &= ~PACA_IRQ_DBELL;
+> -	if (happened & PACA_IRQ_DBELL)
+> -		return 0x280;
+> +	irq_happened &= ~PACA_IRQ_DBELL;
+> +	if (happened & PACA_IRQ_DBELL) {
+> +		ret_val = 0x280;
+> +		goto replay;
+> +	}
+>  #endif /* CONFIG_PPC_BOOK3E */
+>  
+>  	/* There should be nothing left ! */
+> -	BUG_ON(local_paca->irq_happened != 0);
+> +	BUG_ON(irq_happened != 0);
+> +	ret_val = 0;
+>  
+> -	return 0;
+> +replay:
+> +	local_paca->irq_happened = irq_happened;
+> +
+> +	return ret_val;
+>  }
+>  
+>  notrace void arch_local_irq_restore(unsigned long en)
