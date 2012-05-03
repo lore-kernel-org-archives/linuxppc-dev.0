@@ -1,26 +1,18 @@
-Return-Path: <shhuiw@gmail.com>
-Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 608A6B6FBE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 15:51:39 +1000 (EST)
-Received: by obbup19 with SMTP id up19so2097205obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2012 22:51:36 -0700 (PDT)
-Message-ID: <4FA21CD8.4060800@gmail.com>
-Date: Thu, 03 May 2012 13:51:20 +0800
-From: Wang Sheng-Hui <shhuiw@gmail.com>
-MIME-Version: 1.0
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id AC374B6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 16:19:51 +1000 (EST)
+Date: Thu, 3 May 2012 16:19:43 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: use local var instead of local_paca->irq_happened
- directly in __check_irq_replay
-References: <4FA1E527.1090807@gmail.com> <1336011306.2653.3.camel@pasglop>
- <1336018961.2653.11.camel@pasglop>
-In-Reply-To: <1336018961.2653.11.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/windfarm: don't pass const strings to snprintf
+Message-Id: <20120503161943.7d71d02e7d0aae6b9c0306bf@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__3_May_2012_16_19_43_+1000_dUfjXYtQ1ATA1OJA"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,140 +22,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2012年05月03日 12:22, Benjamin Herrenschmidt wrote:
-> 
->> It should not as __check_irq_replay() should always be called
->> with interrupts hard disabled... Do you see any code path
->> where that is not the case ?
-> 
-> More specifically, your backtrace seems to indicate that
-> __check_irq_repay() was called from arch_local_irq_restore() which
-> should have done this before calling __check_irq_replay():
-> 
-> 	if (unlikely(irq_happened != PACA_IRQ_HARD_DIS))
-> 		__hard_irq_disable();
-> 
-> Now, the only possibility that I can see for an interrupt to come in
-> and trip the problem you observed would be if for some reason we
-> had irq_happened set to PACA_IRQ_HARD_DIS while interrupts were
-> not hard disabled.
+--Signature=_Thu__3_May_2012_16_19_43_+1000_dUfjXYtQ1ATA1OJA
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I have a chance to notice that the value is 0x05, not just 0x01.
-So I think this is not the case.
+Fixes these build warnings:
 
-> 
-> Can you try if removing the test (and thus unconditionally calling
-> __hard_irq_disable()) fixes the problem for you ?
-> 
-> If that is the case, then we need to audit the code to figure out how we
-> can end up with that bit in irq_happened set and interrupts hard
-> enabled.
-> 
-> Something like may_hard_irq_enable() shouldn't cause it since it should
-> only be called while hard disabled but adding a check in there might be
-> worth it (something like WARN_ON(mfmsr() & MSR_EE)).
-> 
-> Cheers,
-> Ben.
-> 
->> Cheers,
->> Ben.
->>
->>> Signed-off-by: Wang Sheng-Hui <shhuiw@gmail.com>
->>> ---
->>>  arch/powerpc/kernel/irq.c |   46 +++++++++++++++++++++++++++++---------------
->>>  1 files changed, 30 insertions(+), 16 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
->>> index 5ec1b23..3d48b23 100644
->>> --- a/arch/powerpc/kernel/irq.c
->>> +++ b/arch/powerpc/kernel/irq.c
->>> @@ -137,15 +137,17 @@ static inline notrace int decrementer_check_overflow(void)
->>>   */
->>>  notrace unsigned int __check_irq_replay(void)
->>>  {
->>> +	unsigned int ret_val;
->>>  	/*
->>>  	 * We use local_paca rather than get_paca() to avoid all
->>>  	 * the debug_smp_processor_id() business in this low level
->>>  	 * function
->>>  	 */
->>> -	unsigned char happened = local_paca->irq_happened;
->>> +	unsigned char happened, irq_happened;
->>> +	happened = irq_happened = local_paca->irq_happened;
->>>  
->>>  	/* Clear bit 0 which we wouldn't clear otherwise */
->>> -	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
->>> +	irq_happened &= ~PACA_IRQ_HARD_DIS;
->>>  
->>>  	/*
->>>  	 * Force the delivery of pending soft-disabled interrupts on PS3.
->>> @@ -161,33 +163,45 @@ notrace unsigned int __check_irq_replay(void)
->>>  	 * decrementer itself rather than the paca irq_happened field
->>>  	 * in case we also had a rollover while hard disabled
->>>  	 */
->>> -	local_paca->irq_happened &= ~PACA_IRQ_DEC;
->>> -	if (decrementer_check_overflow())
->>> -		return 0x900;
->>> +	irq_happened &= ~PACA_IRQ_DEC;
->>> +	if (decrementer_check_overflow()) {
->>> +		ret_val = 0x900;
->>> +		goto replay;
->>> +	}
->>>  
->>>  	/* Finally check if an external interrupt happened */
->>> -	local_paca->irq_happened &= ~PACA_IRQ_EE;
->>> -	if (happened & PACA_IRQ_EE)
->>> -		return 0x500;
->>> +	irq_happened &= ~PACA_IRQ_EE;
->>> +	if (happened & PACA_IRQ_EE) {
->>> +		ret_val = 0x500;
->>> +		goto replay;
->>> +	}
->>>  
->>>  #ifdef CONFIG_PPC_BOOK3E
->>>  	/* Finally check if an EPR external interrupt happened
->>>  	 * this bit is typically set if we need to handle another
->>>  	 * "edge" interrupt from within the MPIC "EPR" handler
->>>  	 */
->>> -	local_paca->irq_happened &= ~PACA_IRQ_EE_EDGE;
->>> -	if (happened & PACA_IRQ_EE_EDGE)
->>> -		return 0x500;
->>> +	irq_happened &= ~PACA_IRQ_EE_EDGE;
->>> +	if (happened & PACA_IRQ_EE_EDGE) {
->>> +		ret_val = 0x500;
->>> +		goto replay;
->>> +	}
->>>  
->>> -	local_paca->irq_happened &= ~PACA_IRQ_DBELL;
->>> -	if (happened & PACA_IRQ_DBELL)
->>> -		return 0x280;
->>> +	irq_happened &= ~PACA_IRQ_DBELL;
->>> +	if (happened & PACA_IRQ_DBELL) {
->>> +		ret_val = 0x280;
->>> +		goto replay;
->>> +	}
->>>  #endif /* CONFIG_PPC_BOOK3E */
->>>  
->>>  	/* There should be nothing left ! */
->>> -	BUG_ON(local_paca->irq_happened != 0);
->>> +	BUG_ON(irq_happened != 0);
->>> +	ret_val = 0;
->>>  
->>> -	return 0;
->>> +replay:
->>> +	local_paca->irq_happened = irq_happened;
->>> +
->>> +	return ret_val;
->>>  }
->>>  
->>>  notrace void arch_local_irq_restore(unsigned long en)
->>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+drivers/macintosh/windfarm_smu_sat.c: In function 'wf_sat_probe':
+drivers/macintosh/windfarm_smu_sat.c:290:3: warning: passing argument 1 of =
+'snprintf' discards qualifiers from pointer target type
+include/linux/kernel.h:323:5: note: expected 'char *' but argument is of ty=
+pe 'const char *'
+drivers/macintosh/windfarm_smu_sat.c:317:3: warning: passing argument 1 of =
+'snprintf' discards qualifiers from pointer target type
+include/linux/kernel.h:323:5: note: expected 'char *' but argument is of ty=
+pe 'const char *'
+
+Introduced by commit e074d08e2b98 ("powerpc/windfarm: const'ify and add
+"priv" field to controls & sensors").
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/macintosh/windfarm_smu_sat.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windf=
+arm_smu_sat.c
+index 72dfe19..e2989ce 100644
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -287,7 +287,7 @@ static int wf_sat_probe(struct i2c_client *client,
+ 		sens->sat =3D sat;
+ 		sens->sens.ops =3D &wf_sat_ops;
+ 		sens->sens.name =3D (char *) (sens + 1);
+-		snprintf(sens->sens.name, 16, "%s-%d", name, cpu);
++		snprintf((char *)sens->sens.name, 16, "%s-%d", name, cpu);
+=20
+ 		if (wf_register_sensor(&sens->sens))
+ 			kfree(sens);
+@@ -314,7 +314,7 @@ static int wf_sat_probe(struct i2c_client *client,
+ 		sens->sat =3D sat;
+ 		sens->sens.ops =3D &wf_sat_ops;
+ 		sens->sens.name =3D (char *) (sens + 1);
+-		snprintf(sens->sens.name, 16, "cpu-power-%d", cpu);
++		snprintf((char *)sens->sens.name, 16, "cpu-power-%d", cpu);
+=20
+ 		if (wf_register_sensor(&sens->sens))
+ 			kfree(sens);
+--=20
+1.7.10.280.gaa39
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Thu__3_May_2012_16_19_43_+1000_dUfjXYtQ1ATA1OJA
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPoiN/AAoJEECxmPOUX5FEZnsP/38gdtCQVtGRBBIh4tdQEfqL
+FdkHCq2pdBONWYxd5031CwmBVP1+Oc1jkOYK4EDTvYmaLWNpWy6HzCAO/+5t1H9T
+Cf9KXxo9yKPWA2GRkSsjcA/s41JyO1zUa3LyH0gz4kbdQ+dkIdrBaEurC6fSh4wJ
+tgtOOYfHp9sRMOfKnyy/2BcIsgzVHye2a1A4P5fq8RKTIkuFwUGaJpsTuccQhEV2
+5yz9/fOWD9Vgu6MF063bMR9tbqCojPKaNAXY6kJl1zq0zWMtDu2rRZoREB+pL/DD
+++fB5F5x/ZRWmfMawDZgg0tsf57as47cJNUyUbm3VrfOZF4K2tf2yViPH+q1RAWd
+ceIMD4vPZ7+jmVnSE0rGq8zs8KkrIV9bE6G1aApHyIgNPwFXXMGhsZUSAAjVbCvL
+EuscOxUDXaMTmxjpY0uhE+mlTmBU5zXGbJSgVbGxJp+e8u0yMbFh1/8EdX+ht827
+AkOhuIIG8croDzQQy0BGsOJK1mxihFexdgMD3yre2JHC5+5rgMaGtj6kNZ14Iv0D
+utzgkxVgyquVHfO/4ioMRuInlFYdoMGmLz/xKOILmr/jfVFhw8wZslk8AAf+Cd2k
+ldG9XgjRFmx/W3bDibdx/Nhr8pzCW0F2eT/5+AmhSTV1b9Ex4YjdJiXWKw/8ZvN+
+QaLyj6OUoIHv36Mz6Kj9
+=ceUc
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__3_May_2012_16_19_43_+1000_dUfjXYtQ1ATA1OJA--
