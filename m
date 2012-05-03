@@ -1,23 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DDDECB6FA8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 14:26:26 +1000 (EST)
-Message-ID: <1336019173.2653.12.camel@pasglop>
-Subject: Re: [PATCH] powerpc: use local var instead of
- local_paca->irq_happened directly in __check_irq_replay
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wang Sheng-Hui <shhuiw@gmail.com>
-Date: Thu, 03 May 2012 14:26:13 +1000
-In-Reply-To: <4FA1EE2C.6050201@gmail.com>
-References: <4FA1E527.1090807@gmail.com> <1336011306.2653.3.camel@pasglop>
- <4FA1EE2C.6050201@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 7CECBB6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 14:34:59 +1000 (EST)
+Date: Thu, 3 May 2012 14:34:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc/windfarm: fix compiler warning
+Message-Id: <20120503143452.4231b1cc17101df8e0772b95@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__3_May_2012_14_34_52_+1000_y+siRNjPp__GuYCK"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +22,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-05-03 at 10:32 +0800, Wang Sheng-Hui wrote:
-> > It should not as __check_irq_replay() should always be called
-> > with interrupts hard disabled... Do you see any code path
-> > where that is not the case ?
-> 
-> Since __check_irq_replay() should always be called with interrupts
-> hard disabled, I think it's harmless to use local var here.
+--Signature=_Thu__3_May_2012_14_34_52_+1000_y+siRNjPp__GuYCK
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No, that would be papering over the real problem. All oprofile does is
-trigger perfmon interrupts (which act as some kind of NMI when
-soft-disabled but should be masked by MSR:EE when hard disabled).
+Fixes this warning:
 
-So there's a deeper issue here that we need to understand before we can
-propose a fix. IE. It should not have happened.
+drivers/macintosh/windfarm_pm91.c: In function 'wf_smu_cpu_fans_tick':
+drivers/macintosh/windfarm_pm91.c:237:2: warning: passing argument 1 of 'wf=
+_sensor_get' from incompatible pointer type
+drivers/macintosh/windfarm.h:124:19: note: expected 'struct wf_sensor *' bu=
+t argument is of type 'struct wf_sensor **'
 
+Introduced by commit 33e6820b767a ("powerpc/windfarm: Add useful
+accessors").
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/macintosh/windfarm_pm91.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/macintosh/windfarm_pm91.c b/drivers/macintosh/windfarm=
+_pm91.c
+index e18002b..7653603 100644
+--- a/drivers/macintosh/windfarm_pm91.c
++++ b/drivers/macintosh/windfarm_pm91.c
+@@ -234,7 +234,7 @@ static void wf_smu_cpu_fans_tick(struct wf_smu_cpu_fans=
+_state *st)
+ 		return;
+ 	}
+=20
+-	rc =3D wf_sensor_get(&sensor_cpu_power, &power);
++	rc =3D wf_sensor_get(sensor_cpu_power, &power);
+ 	if (rc) {
+ 		printk(KERN_WARNING "windfarm: CPU power sensor error %d\n",
+ 		       rc);
+--=20
+1.7.10.280.gaa39
+
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__3_May_2012_14_34_52_+1000_y+siRNjPp__GuYCK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPogrsAAoJEECxmPOUX5FEF2kP+wfjpZ0kf4ZidMxhlLcalwHX
+jrt6l2e4izw7t2WLSK9YX5SOJdCxI7FRV1EH4zF9rDD6H4zSdFjezPStWVHpiuEE
+LXDSOWI6aOATqTP//NF8g9uAoUGESlIkOcXljsK/TAfz/rpw9pzA4r5vtqeuSbvi
+sIOEw+w14yYVBPuYA3w+OaYmG7pY2G5tDBz9IC5WWHiGHzAtksY4/LJjS6q8FjfS
+g8rOQyn48AMTWTLl+JNv5OdjtBhFVaOfzv3Ou/cpIDPKIr0kTUfDjcyREJweU195
+4hZngCEpOdD5n0UVCvf5OsaozZLMuqwaGPFAn/1tcMsEa6d6WQ/Qs4GcYsutTk0Z
+gWR8+JfWkdFDqVbE0MNuKuIupZ8u0MHytahC8afIt+1WY3r+uxI1iB2sKJ/DSYUF
+35TDqybaB7+VT6iCwv3VLkarUSNqjXapYFt5SrrLhDsYVX/CgxRFZ/Kg2QeE9gP1
+LTH0v90GaW3cGe32yifXK9fPHQFgibMxPWfu3H4IHHL/DNKyrw5XdjPrUld7kptg
+7YTdWi8X9cjWAC4SfA2mj0XSLucBEJrptCkb+ngecJwomzZyExV5nw+KzA9iw9J/
+F51JaMkD2gijjYAUGHz41YQjY0PxV5e5f+o76DWFsuHl6pDzSvs/YFUN8jEKY7eI
+HMYHd9wSvPyvFwnjY1y7
+=rHJq
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__3_May_2012_14_34_52_+1000_y+siRNjPp__GuYCK--
