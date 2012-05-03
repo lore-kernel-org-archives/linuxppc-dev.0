@@ -1,14 +1,14 @@
 Return-Path: <shhuiw@gmail.com>
-Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
- [209.85.214.179])
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E2ABAB6FBA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 12:27:59 +1000 (EST)
-Received: by obbup19 with SMTP id up19so1890581obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2012 19:27:56 -0700 (PDT)
-Message-ID: <4FA1ED1E.9000109@gmail.com>
-Date: Thu, 03 May 2012 10:27:42 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 351CBB6FA9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 12:32:24 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so2336677pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2012 19:32:23 -0700 (PDT)
+Message-ID: <4FA1EE2C.6050201@gmail.com>
+Date: Thu, 03 May 2012 10:32:12 +0800
 From: Wang Sheng-Hui <shhuiw@gmail.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -50,17 +50,8 @@ On 2012年05月03日 10:15, Benjamin Herrenschmidt wrote:
 > with interrupts hard disabled... Do you see any code path
 > where that is not the case ?
 
-This is the only case.
-I have run LTP test suite on my system without oprofile over 24 hours
-with 3.4-rc4 kernel. 
-Then I started oprofile, and the system crashed quickly.
-
-I wonder if oprofile does some special changes with the running.
-But I'm not familiar with the internal of oprofile.
-
-I tried to change BUG_ON to WARN_ON, and got lots of warnning messages
-in dmesg. So I changed it to local var here.
-
+Since __check_irq_replay() should always be called with interrupts hard disabled,
+I think it's harmless to use local var here.
 
 > 
 > Cheers,
