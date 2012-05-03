@@ -1,32 +1,20 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4DC79B6FB7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 10:24:24 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so2193342pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 02 May 2012 17:24:22 -0700 (PDT)
-Date: Wed, 2 May 2012 17:24:04 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: linux-next ppc64: RCU mods cause __might_sleep BUGs
-In-Reply-To: <20120503001433.GO2450@linux.vnet.ibm.com>
-Message-ID: <alpine.LSU.2.00.1205021721350.24869@eggly.anvils>
-References: <alpine.LSU.2.00.1204301451270.2986@eggly.anvils>
- <1335832418.20866.95.camel@pasglop>
- <alpine.LSU.2.00.1204302142310.27208@eggly.anvils>
- <20120501142208.GA2441@linux.vnet.ibm.com>
- <alpine.LSU.2.00.1205011410360.28232@eggly.anvils>
- <20120501232516.GR2441@linux.vnet.ibm.com>
- <alpine.LSU.2.00.1205021324430.24246@eggly.anvils>
- <1335993615.4088.1.camel@pasglop> <20120502215406.GL2450@linux.vnet.ibm.com>
- <CANsGZ6bw4JwMRgUriooDvFB=g-HkpyL8XJa9s47RPfOEPCMcpw@mail.gmail.com>
- <20120503001433.GO2450@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-985873367-1336004652=:24869"
-Cc: linuxppc-dev@lists.ozlabs.org, Christoph Lameter <cl@linux-foundation.org>,
- linux-kernel@vger.kernel.org, "Paul E. McKenney" <paul.mckenney@linaro.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id BB928B6FBB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 May 2012 10:51:57 +1000 (EST)
+Date: Thu, 3 May 2012 10:51:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>, <netdev@vger.kernel.org>
+Subject: [PATCH] net/pasemi: fix compiler warning
+Message-Id: <20120503105146.83f0a4a074dafad0443b875d@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__3_May_2012_10_51_46_+1000_zjNGosqx.hAVI645"
+Cc: Olof Johansson <olof@lixom.net>,
+ "Pradeep A. Dalvi" <netdev@pradeepdalvi.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,77 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+--Signature=_Thu__3_May_2012_10_51_46_+1000_zjNGosqx.hAVI645
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---8323584-985873367-1336004652=:24869
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Fix this compiler warning (on PowerPC) by not marking a parameter as
+const:
 
-On Wed, 2 May 2012, Paul E. McKenney wrote:
-> On Wed, May 02, 2012 at 03:54:24PM -0700, Hugh Dickins wrote:
-> > On Wed, May 2, 2012 at 2:54 PM, Paul E. McKenney
-> > <paulmck@linux.vnet.ibm.com> wrote:
-> > > On Thu, May 03, 2012 at 07:20:15AM +1000, Benjamin Herrenschmidt wrot=
-e:
-> > >> On Wed, 2012-05-02 at 13:25 -0700, Hugh Dickins wrote:
-> > >> > Got it at last. =A0Embarrassingly obvious. =A0__rcu_read_lock() an=
-d
-> > >> > __rcu_read_unlock() are not safe to be using __this_cpu operations=
-,
-> > >> > the cpu may change in between the rmw's read and write: they shoul=
-d
-> > >> > be using this_cpu operations (or, I put preempt_disable/enable in =
-the
-> > >> > __rcu_read_unlock below). =A0__this_cpus there work out fine on x8=
-6,
-> > >> > which was given good instructions to use; but not so well on Power=
-PC.
-> > >> >
-> > >> > I've been running successfully for an hour now with the patch belo=
-w;
-> > >> > but I expect you'll want to consider the tradeoffs, and may choose=
- a
-> > >> > different solution.
-> > >>
-> > >> Didn't Linus recently rant about these __this_cpu vs this_cpu nonsen=
-se ?
-> > >>
-> > >> I thought that was going out..
-> > >
-> > > Linus did rant about __raw_get_cpu_var() because it cannot use the x8=
-6
-> > > %fs segement overrides a bit more than a month ago. =A0The __this_cpu
-> > > stuff is useful if you have preemption disabled -- avoids the extra
-> > > layer of preempt_disable().
-> > >
-> > > Or was this a different rant?
-> >=20
-> > https://lkml.org/lkml/2011/11/29/321
-> >=20
-> > I think it ended up with Christoph removing the more egregious
-> > variants, but this_cpu_that and __this_cpu_the_other remaining.
->=20
-> Ah, thank you for the pointer.
->=20
-> It would be nice to have the CPU transparency of x86 on other
-> architectures, but from what I can see, that would require dedicating
-> a register to this purpose -- and even then requires that the arch
-> have indexed addressing modes.  There are some other approaches, for
-> example, having __this_cpu_that() be located at a special address that
-> the scheduler treated as implicitly preempt_disable().  Or I suppose
-> that the arch-specific trap-handling code could fake it.  A little
-> bit messy, but the ability to access a given CPU's per-CPU variable
-> while running on that CPU does appear to have at least a couple of
-> uses -- inlining RCU and also making preempt_disable() use per-CPU
-> variables.
->=20
-> In any case, I must confess that I feel quite silly about my series
-> of patches.  I have reverted them aside from a couple that did useful
-> optimizations, and they should show up in -next shortly.
+drivers/net/ethernet/pasemi/pasemi_mac.c: In function 'pasemi_mac_replenish=
+_rx_ring':
+drivers/net/ethernet/pasemi/pasemi_mac.c:646:3: warning: passing argument 1=
+ of 'netdev_alloc_skb' discards qualifiers from pointer target type
+include/linux/skbuff.h:1706:31: note: expected 'struct net_device *' but ar=
+gument is of type 'const struct net_device *'
 
-A wee bit sad, but thank you - it was an experiment worth trying,
-and perhaps there will be reason to come back to it future.
+Cc: Olof Johansson <olof@lixom.net>
+Cc: Pradeep A. Dalvi <netdev@pradeepdalvi.com>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/net/ethernet/pasemi/pasemi_mac.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Hugh
---8323584-985873367-1336004652=:24869--
+The warning was introduced by commit dae2e9f430c4 ("netdev: ethernet
+dev_alloc_skb to netdev_alloc_skb").
+
+diff --git a/drivers/net/ethernet/pasemi/pasemi_mac.c b/drivers/net/etherne=
+t/pasemi/pasemi_mac.c
+index ddc95b0..e559dfa 100644
+--- a/drivers/net/ethernet/pasemi/pasemi_mac.c
++++ b/drivers/net/ethernet/pasemi/pasemi_mac.c
+@@ -623,7 +623,7 @@ static void pasemi_mac_free_rx_resources(struct pasemi_=
+mac *mac)
+ 	mac->rx =3D NULL;
+ }
+=20
+-static void pasemi_mac_replenish_rx_ring(const struct net_device *dev,
++static void pasemi_mac_replenish_rx_ring(struct net_device *dev,
+ 					 const int limit)
+ {
+ 	const struct pasemi_mac *mac =3D netdev_priv(dev);
+--=20
+1.7.10.280.gaa39
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Thu__3_May_2012_10_51_46_+1000_zjNGosqx.hAVI645
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPodajAAoJEECxmPOUX5FEpFUP/2OW0IF0jT7U9kd9n5piSJfJ
+MCQIdjCcEpoVS6dCApdJ2hxLQA0ahn7ZLAYvr2YJk7COyidZpJY0Fu6TwBHu7cp2
+PaY/6DpPT4yL2GZR3VqOe9kLXPgbpgpMbPT8DlAlMLnfB6wJ3cQecjp1Nv0V1CwB
+UZgCGtwBUxiRiFBHEJ4dqSF1gei47xfWPB1r75GuCUwtB+2Lhrs7Z8lK86fs9xV8
+HqsS/3YF2aNm0+N3+zwnCZO3sqgxo5YmxKzJx9+wyqpjFZw0BJwU5R54XdG27hoo
+STfG209D39Vrm/gNj7cL6Q4aeVASgwrWbLI+Ej1r9TtzWp0X4+oUmQ5IsPwDscPI
+1pjqwB1YWboIzcsOC/w6SNxGljaatgTYhudoJnPNJfQ+U90dcda82idosGvd1yrq
+8R3ZkufidbJb/PtdDrr4lWbQDxdPfltWsu//u2+wFvt5c2iFyhjVpDX30B4a88Kn
+Z6tbt2HjaCYZ6JigWYdpekLt+EgCS5P9Bh/fyPagzEpgqFRFUNRglC1UurAp5Po+
+cQCMrDLX74Sl0bn5Jk9TIHwlVJrDeAPjSp3nTeJga83yubJlbGiMAsctcXB3c/da
+Mg5nMwZFE9Rb3AzD8RSHZ6Hvq47jNqJnubA3/k+jOVcVdt5eT3RteGgKiDrReCZU
+M/BkF326LHcsfW0FlHG8
+=z+11
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__3_May_2012_10_51_46_+1000_zjNGosqx.hAVI645--
