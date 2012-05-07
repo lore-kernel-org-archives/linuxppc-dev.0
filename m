@@ -1,31 +1,32 @@
-Return-Path: <yinghai@kernel.org>
-Received: from acsinet14.oracle.com (acsinet14.oracle.com [141.146.126.236])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "acsinet14.oracle.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EAC2AB6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2012 06:30:44 +1000 (EST)
-Received: from acsinet15.oracle.com (acsinet15.oracle.com [141.146.126.227])
- by acsinet14.oracle.com (Sentrion-MTA-4.2.2/Sentrion-MTA-4.2.2) with ESMTP id
- q47KUgQo004460
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 7 May 2012 20:30:42 GMT
-From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Tony Luck <tony.luck@intel.com>, David Miller <davem@davemloft.net>,
- x86 <x86@kernel.org>
-Subject: [PATCH 17/21] powerpc/PCI: register busn_res for root buses
-Date: Mon,  7 May 2012 13:30:02 -0700
-Message-Id: <1336422606-4244-18-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1336422606-4244-1-git-send-email-yinghai@kernel.org>
-References: <1336422606-4244-1-git-send-email-yinghai@kernel.org>
-Cc: linux-arch@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Dominik Brodowski <linux@dominikbrodowski.net>,
- Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <hughd@google.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 435F5B6FA9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2012 07:38:46 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so9613644pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2012 14:38:44 -0700 (PDT)
+Date: Mon, 7 May 2012 14:38:24 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: linux-next ppc64: RCU mods cause __might_sleep BUGs
+In-Reply-To: <20120507185017.GA21152@linux.vnet.ibm.com>
+Message-ID: <alpine.LSU.2.00.1205071421130.1920@eggly.anvils>
+References: <20120501142208.GA2441@linux.vnet.ibm.com>
+ <alpine.LSU.2.00.1205011410360.28232@eggly.anvils>
+ <20120501232516.GR2441@linux.vnet.ibm.com>
+ <alpine.LSU.2.00.1205021324430.24246@eggly.anvils>
+ <1335993615.4088.1.camel@pasglop> <20120502215406.GL2450@linux.vnet.ibm.com>
+ <CANsGZ6bw4JwMRgUriooDvFB=g-HkpyL8XJa9s47RPfOEPCMcpw@mail.gmail.com>
+ <20120503001433.GO2450@linux.vnet.ibm.com>
+ <alpine.LSU.2.00.1205021721350.24869@eggly.anvils>
+ <alpine.LSU.2.00.1205070858450.1416@eggly.anvils>
+ <20120507185017.GA21152@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, Christoph Lameter <cl@linux-foundation.org>,
+ linux-kernel@vger.kernel.org, "Paul E. McKenney" <paul.mckenney@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,89 +36,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the host bridge bus number aperture to the resource list.
-Like the MMIO and I/O port apertures, this is used when assigning
-resources to hot-added devices or in the case of conflicts.
+On Mon, 7 May 2012, Paul E. McKenney wrote:
+> On Mon, May 07, 2012 at 09:21:54AM -0700, Hugh Dickins wrote:
+> > 
+> > In 70 hours I got six isolated messages like the below (but from
+> > different __might_sleep callsites) - where before I'd have flurries
+> > of hundreds(?) and freeze within the hour.
+> > 
+> > And the "rcu_nesting" debug line I'd added to the message was different:
+> > where before it was showing ffffffff on some tasks and 1 on others i.e.
+> > increment or decrement had been applied to the wrong task, these messages
+> > now all showed 0s throughout i.e. by the time the message was printed,
+> > there was no longer any justification for the message.
+> > 
+> > As if a memory barrier were missing somewhere, perhaps.
+> 
+> These fields should be updated only by the corresponding CPU, so
+> if memory barriers are needed, it seems to me that the cross-CPU
+> access is the bug, not the lack of a memory barrier.
 
-[bhelgaas: write changelog]
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/pci-bridge.h |    1 +
- arch/powerpc/kernel/pci-common.c      |   17 +++++++++++------
- arch/powerpc/kernel/pci_of_scan.c     |    2 +-
- 3 files changed, 13 insertions(+), 7 deletions(-)
+Yes: the code you added appeared to be using local CPU accesses only
+(very much intentionally), and the context switch should already have
+provided all the memory barriers needed there.
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index ac39e6a..8cccbee 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -30,6 +30,7 @@ struct pci_controller {
- 	int first_busno;
- 	int last_busno;
- 	int self_busno;
-+	struct resource busn;
- 
- 	void __iomem *io_base_virt;
- #ifdef CONFIG_PPC64
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 3532b53..7320f36 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1637,6 +1637,11 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 	/* Wire up PHB bus resources */
- 	pcibios_setup_phb_resources(hose, &resources);
- 
-+	hose->busn.start = hose->first_busno;
-+	hose->busn.end	 = hose->last_busno;
-+	hose->busn.flags = IORESOURCE_BUS;
-+	pci_add_resource(&resources, &hose->busn);
-+
- 	/* Create an empty bus for the toplevel */
- 	bus = pci_create_root_bus(hose->parent, hose->first_busno,
- 				  hose->ops, hose, &resources);
-@@ -1646,7 +1651,6 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 		pci_free_resource_list(&resources);
- 		return;
- 	}
--	bus->busn_res.start = hose->first_busno;
- 	hose->bus = bus;
- 
- 	/* Get probe mode and perform scan */
-@@ -1654,13 +1658,14 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 	if (node && ppc_md.pci_probe_mode)
- 		mode = ppc_md.pci_probe_mode(bus);
- 	pr_debug("    probe mode: %d\n", mode);
--	if (mode == PCI_PROBE_DEVTREE) {
--		bus->busn_res.end = hose->last_busno;
-+	if (mode == PCI_PROBE_DEVTREE)
- 		of_scan_bus(node, bus);
--	}
- 
--	if (mode == PCI_PROBE_NORMAL)
--		hose->last_busno = bus->busn_res.end = pci_scan_child_bus(bus);
-+	if (mode == PCI_PROBE_NORMAL) {
-+		pci_bus_update_busn_res_end(bus, 255);
-+		hose->last_busno = pci_scan_child_bus(bus);
-+		pci_bus_update_busn_res_end(bus, hose->last_busno);
-+	}
- 
- 	/* Platform gets a chance to do some global fixups before
- 	 * we proceed to resource allocation
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index a36281a..ae5ea5e 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -240,7 +240,7 @@ void __devinit of_scan_pci_bridge(struct pci_dev *dev)
- 	}
- 
- 	bus->primary = dev->bus->number;
--	bus->busn_res.end = busrange[1];
-+	pci_bus_insert_busn_res(bus, busrange[0], busrange[1]);
- 	bus->bridge_ctl = 0;
- 
- 	/* parse ranges property */
--- 
-1.7.7
+> 
+> Ah...  Is preemption disabled across the access to RCU's nesting level
+> when printing out the message?  If not, a preeemption at that point
+> could result in the value printed being inaccurate.
+
+Preemption was enabled in the cases I saw.  So you're pointing out that
+#define rcu_preempt_depth() (__this_cpu_read(rcu_read_lock_nesting))
+should have been
+#define rcu_preempt_depth() (this_cpu_read(rcu_read_lock_nesting))
+to avoid the danger of spurious __might_sleep() warnings.
+
+Yes, I believe you've got it - thanks.
+
+Hugh
