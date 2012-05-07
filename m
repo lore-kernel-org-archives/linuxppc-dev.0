@@ -1,30 +1,19 @@
-Return-Path: <bp@amd64.org>
-Received: from mail.x86-64.org (s15943758.onlinehome-server.info
- [217.160.130.188]) by ozlabs.org (Postfix) with ESMTP id D7716B6FAB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 May 2012 23:32:20 +1000 (EST)
-Date: Mon, 7 May 2012 15:32:04 +0200
-From: Borislav Petkov <bp@amd64.org>
-To: Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: Re: [PATCH EDACv16 1/2] edac: Change internal representation to work
- with layers, second version
-Message-ID: <20120507133204.GC11462@aftab.osrc.amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>,
- Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>,
- Hitoshi Mitake <h.mitake@gmail.com>, Mark Gross <mark.gross@intel.com>,
- Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
- Ranganathan Desikan <ravi@jetztechnologies.com>,
- Borislav Petkov <bp@amd64.org>, Egor Martovetsky <egor@pasemi.com>,
- Niklas =?iso-8859-1?Q?S=F6derlund?= <niklas.soderlund@ericsson.com>,
- Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>,
- Chris Metcalf <cmetcalf@tilera.com>, Olof Johansson <olof@lixom.net>,
- Doug Thompson <norsk5@yahoo.com>,
- Linux Edac Mailing List <linux-edac@vger.kernel.org>,
- Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0A78CB6FA5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2012 00:32:45 +1000 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc: fix compile fail in hugetlb cmdline parsing
+Date: Mon,  7 May 2012 10:32:22 -0400
+Message-Id: <1336401142-18733-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: Jim Cromie <jim.cromie@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jason Baron <jbaron@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>, linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,129 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-breaking thread because it grew too big.
+Commit 9fb48c744ba6a4bf58b666f4e6fdac3008ea1bd4
 
-On Fri, May 04, 2012 at 07:48:42AM -0300, Mauro Carvalho Chehab wrote:
+    "params: add 3rd arg to option handler callback signature"
 
-[ … ]
+added an extra arg to the function, but didn't catch all the use
+cases needing it, causing this compile fail in mpc85xx_defconfig:
 
-> +	memset(&pos, 0, sizeof(pos));
-> +	row = 0;
-> +	chn = 0;
-> +	debugf4("%s: initializing %d %s\n", __func__, tot_dimms,
-> +		per_rank ? "ranks" : "dimms");
-> +	for (i = 0; i < tot_dimms; i++) {
-> +		chan = &csi[row].channels[chn];
-> +		dimm = EDAC_DIMM_PTR(layer, mci->dimms, n_layers,
-> +			       pos[0], pos[1], pos[2]);
-> +		dimm->mci = mci;
-> +
-> +		debugf2("%s: %d: %s%zd (%d:%d:%d): row %d, chan %d\n", __func__,
-> +			i, per_rank ? "rank" : "dimm", (dimm - mci->dimms),
-> +			pos[0], pos[1], pos[2], row, chn);
-> +
-> +		/* Copy DIMM location */
-> +		for (j = 0; j < n_layers; j++)
-> +			dimm->location[j] = pos[j];
-> +
-> +		/* Link it to the csrows old API data */
-> +		chan->dimm = dimm;
-> +		dimm->csrow = row;
-> +		dimm->cschannel = chn;
-> +
-> +		/* Increment csrow location */
-> +		for (j = n_layers - 1; j >= 0; j--)
-> +			if (layers[j].is_virt_csrow)
-> +				break;
+ arch/powerpc/mm/hugetlbpage.c:316:4: error: passing argument 7 of
+ 'parse_args' from incompatible pointer type [-Werror]
 
-This looks fishy: the for-loop above iterates over layers[j] to break on
-the first ->is_virt_csrow.
+ include/linux/moduleparam.h:317:12: note: expected
+	 'int (*)(char *, char *, const char *)' but argument is of type
+	 'int (*)(char *, char *)'
 
-> +		row++;
+This function has no need to printk out the "doing" value, so
+just add the arg as an "unused".
 
-And row here gets incremented unconditionally, independent from the loop
-above. And you're not using any results from the loop: j gets reset
-below in the next loop.
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Jim Cromie <jim.cromie@gmail.com>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Becky Bruce <beckyb@kernel.crashing.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-What's going on?
-
-> +		if (row == tot_csrows) {
-> +			row = 0;
-> +			chn++;
-> +		}
-> +
-> +		/* Increment dimm location */
-> +		for (j = n_layers - 1; j >= 0; j--) {
-> +			pos[j]++;
-> +			if (pos[j] < layers[j].size)
-> +				break;
-> +			pos[j] = 0;
->  		}
->  	}
->  
-> @@ -263,6 +373,46 @@ struct mem_ctl_info *edac_mc_alloc(unsigned sz_pvt, unsigned nr_csrows,
->  	 */
->  	return mci;
->  }
-> +EXPORT_SYMBOL_GPL(new_edac_mc_alloc);
-> +
-> +/**
-> + * edac_mc_alloc: Allocate and partially fill a struct mem_ctl_info structure
-> + * @mc_num:		Memory controller number
-> + * @n_layers:		Number of layers at the MC hierarchy
-> + * layers:		Describes each layer as seen by the Memory Controller
-> + * @size_pvt:		Size of private storage needed
-> + *
-> + *
-> + * FIXME: drivers handle multi-rank memories in different ways: some
-> + * drivers map multi-ranked DIMMs as one DIMM while others
-> + * as several DIMMs.
-> + *
-> + * Everything is kmalloc'ed as one big chunk - more efficient.
-> + * It can only be used if all structures have the same lifetime - otherwise
-> + * you have to allocate and initialize your own structures.
-> + *
-> + * Use edac_mc_free() to free mc structures allocated by this function.
-> + *
-> + * Returns:
-> + *	On failure: NULL
-> + *	On success: struct mem_ctl_info pointer
-> + */
-> +
-
-[ … ]
-
-> +void edac_mc_handle_error(const enum hw_event_mc_err_type type,
-> +			  struct mem_ctl_info *mci,
-> +			  const unsigned long page_frame_number,
-> +			  const unsigned long offset_in_page,
-> +			  const unsigned long syndrome,
-> +			  const int layer0,
-> +			  const int layer1,
-> +			  const int layer2,
-> +			  const char *msg,
-> +			  const char *other_detail,
-> +			  const void *mcelog)
->  {
-> -	int len = EDAC_MC_LABEL_LEN * 4;
-> -	char labels[len + 1];
-> -	char *pos = labels;
-> -	int chan;
-> -	int chars;
-> -	char *label = NULL;
-> +	/* FIXME: too much for stack: move it to some pre-alocated area */
-
-I'm assuming all those new FIXMEs are going to be addressed soonish :)
-
-Rest looks ok,
-thanks.
-
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index fb05b12..1a6de0a 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -271,7 +271,8 @@ int alloc_bootmem_huge_page(struct hstate *hstate)
+ 
+ unsigned long gpage_npages[MMU_PAGE_COUNT];
+ 
+-static int __init do_gpage_early_setup(char *param, char *val)
++static int __init do_gpage_early_setup(char *param, char *val,
++				       const char *unused)
+ {
+ 	static phys_addr_t size;
+ 	unsigned long npages;
 -- 
-Regards/Gruss,
-Boris.
-
-Advanced Micro Devices GmbH
-Einsteinring 24, 85609 Dornach
-GM: Alberto Bozzo
-Reg: Dornach, Landkreis Muenchen
-HRB Nr. 43632 WEEE Registernr: 129 19551
+1.7.9.1
