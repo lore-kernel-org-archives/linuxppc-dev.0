@@ -1,32 +1,19 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 435F5B6FA9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2012 07:38:46 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so9613644pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 May 2012 14:38:44 -0700 (PDT)
-Date: Mon, 7 May 2012 14:38:24 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: linux-next ppc64: RCU mods cause __might_sleep BUGs
-In-Reply-To: <20120507185017.GA21152@linux.vnet.ibm.com>
-Message-ID: <alpine.LSU.2.00.1205071421130.1920@eggly.anvils>
-References: <20120501142208.GA2441@linux.vnet.ibm.com>
- <alpine.LSU.2.00.1205011410360.28232@eggly.anvils>
- <20120501232516.GR2441@linux.vnet.ibm.com>
- <alpine.LSU.2.00.1205021324430.24246@eggly.anvils>
- <1335993615.4088.1.camel@pasglop> <20120502215406.GL2450@linux.vnet.ibm.com>
- <CANsGZ6bw4JwMRgUriooDvFB=g-HkpyL8XJa9s47RPfOEPCMcpw@mail.gmail.com>
- <20120503001433.GO2450@linux.vnet.ibm.com>
- <alpine.LSU.2.00.1205021721350.24869@eggly.anvils>
- <alpine.LSU.2.00.1205070858450.1416@eggly.anvils>
- <20120507185017.GA21152@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, Christoph Lameter <cl@linux-foundation.org>,
- linux-kernel@vger.kernel.org, "Paul E. McKenney" <paul.mckenney@linaro.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0BD11B6FAB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2012 10:09:10 +1000 (EST)
+Message-ID: <1336435741.2540.184.camel@pasglop>
+Subject: Re: linux-next oops in windfarm startup
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hugh Dickins <hughd@google.com>
+Date: Tue, 08 May 2012 10:09:01 +1000
+In-Reply-To: <alpine.LSU.2.00.1205070851020.1416@eggly.anvils>
+References: <alpine.LSU.2.00.1205070851020.1416@eggly.anvils>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,40 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 7 May 2012, Paul E. McKenney wrote:
-> On Mon, May 07, 2012 at 09:21:54AM -0700, Hugh Dickins wrote:
-> > 
-> > In 70 hours I got six isolated messages like the below (but from
-> > different __might_sleep callsites) - where before I'd have flurries
-> > of hundreds(?) and freeze within the hour.
-> > 
-> > And the "rcu_nesting" debug line I'd added to the message was different:
-> > where before it was showing ffffffff on some tasks and 1 on others i.e.
-> > increment or decrement had been applied to the wrong task, these messages
-> > now all showed 0s throughout i.e. by the time the message was printed,
-> > there was no longer any justification for the message.
-> > 
-> > As if a memory barrier were missing somewhere, perhaps.
+On Mon, 2012-05-07 at 08:57 -0700, Hugh Dickins wrote:
+> Hi Ben,
 > 
-> These fields should be updated only by the corresponding CPU, so
-> if memory barriers are needed, it seems to me that the cross-CPU
-> access is the bug, not the lack of a memory barrier.
+> 3.4.0-rc5-next-20120504 and 3.4.0-rc6-next-20120507
+> crash while booting the PowerMac G5: I have to revert
+> your commit e326b30fda9985a2e7fda6fb9212b86bf025c39
+> powerpc/pmac: Convert windfarm_smu_sat to new i2c probing
+> to get a working system.
 
-Yes: the code you added appeared to be using local CPU accesses only
-(very much intentionally), and the context switch should already have
-provided all the memory barriers needed there.
+Argh, stoopid me ... and I thought I had tested it .... just
+on the wrong machine. Oh well try this and let me know:
 
-> 
-> Ah...  Is preemption disabled across the access to RCU's nesting level
-> when printing out the message?  If not, a preeemption at that point
-> could result in the value printed being inaccurate.
+powerpc/windfarm: Fix crash on SMU based machine after i2c conversion
 
-Preemption was enabled in the cases I saw.  So you're pointing out that
-#define rcu_preempt_depth() (__this_cpu_read(rcu_read_lock_nesting))
-should have been
-#define rcu_preempt_depth() (this_cpu_read(rcu_read_lock_nesting))
-to avoid the danger of spurious __might_sleep() warnings.
+We no longer get the device node in platform_data but instead
+where it belongs in struct device, so get it from there instead
+of blowing up.
 
-Yes, I believe you've got it - thanks.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Hugh
+diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windfarm_smu_sat.c
+index e2989ce..426e810 100644
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -204,7 +204,7 @@ static struct wf_sensor_ops wf_sat_ops = {
+ static int wf_sat_probe(struct i2c_client *client,
+ 			const struct i2c_device_id *id)
+ {
+-	struct device_node *dev = client->dev.platform_data;
++	struct device_node *dev = client->dev.of_node;
+ 	struct wf_sat *sat;
+ 	struct wf_sat_sensor *sens;
+ 	const u32 *reg;
