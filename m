@@ -1,25 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CE0D7B6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2012 13:46:58 +1000 (EST)
-Message-ID: <1336448796.2540.187.camel@pasglop>
-Subject: Re: [PATCH] powerpc: use local var instead of
- local_paca->irq_happened directly in __check_irq_replay
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wang Sheng-Hui <shhuiw@gmail.com>
-Date: Tue, 08 May 2012 13:46:36 +1000
-In-Reply-To: <1336090207.18712.9.camel@pasglop>
-References: <4FA1E527.1090807@gmail.com> <1336011306.2653.3.camel@pasglop>
- <1336018961.2653.11.camel@pasglop> <4FA226A8.1080903@gmail.com>
- <4FA22CC5.3010107@gmail.com> <1336032561.18712.1.camel@pasglop>
- <4FA31653.5090103@gmail.com> <1336090207.18712.9.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Anton Blanchard <anton@samba.org>,
+Return-Path: <rusty@ozlabs.org>
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>,
  linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc: fix compile fail in hugetlb cmdline parsing
+In-Reply-To: <1336401142-18733-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1336401142-18733-1-git-send-email-paul.gortmaker@windriver.com>
+Date: Tue, 08 May 2012 13:53:24 +0930
+Message-ID: <878vh3cncz.fsf@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Jim Cromie <jim.cromie@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jason Baron <jbaron@redhat.com>, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linux-next@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,88 +22,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wang !
+On Mon,  7 May 2012 10:32:22 -0400, Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+> Commit 9fb48c744ba6a4bf58b666f4e6fdac3008ea1bd4
+> 
+>     "params: add 3rd arg to option handler callback signature"
+> 
+> added an extra arg to the function, but didn't catch all the use
+> cases needing it, causing this compile fail in mpc85xx_defconfig:
+> 
+>  arch/powerpc/mm/hugetlbpage.c:316:4: error: passing argument 7 of
+>  'parse_args' from incompatible pointer type [-Werror]
+> 
+>  include/linux/moduleparam.h:317:12: note: expected
+> 	 'int (*)(char *, char *, const char *)' but argument is of type
+> 	 'int (*)(char *, char *)'
+> 
+> This function has no need to printk out the "doing" value, so
+> just add the arg as an "unused".
+> 
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Jim Cromie <jim.cromie@gmail.com>
+> Cc: Jason Baron <jbaron@redhat.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: Becky Bruce <beckyb@kernel.crashing.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
-Does this patch fixes it for you ?
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
->From 249f8649bf95a4c3e6637284754a165c1d83c394 Mon Sep 17 00:00:00 2001
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 8 May 2012 13:31:59 +1000
-Subject: [PATCH 2/3] powerpc/irq: Fix bug with new lazy IRQ handling code
-
-We had a case where we could turn on hard interrupts while
-leaving the PACA_IRQ_HARD_DIS bit set in the PACA. This can
-in turn cause a BUG_ON() to hit in __check_irq_replay() due
-to interrupt state getting out of sync.
-
-The assembly code was also way too convoluted. Instead, we
-now leave it to the C code to do the right thing which ends
-up being smaller and more readable.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/entry_64.S |   18 ------------------
- arch/powerpc/kernel/irq.c      |    8 +++++++-
- 2 files changed, 7 insertions(+), 19 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index fd46046..29f1357 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -763,16 +763,6 @@ do_work:
- 	SOFT_DISABLE_INTS(r3,r4)
- 1:	bl	.preempt_schedule_irq
- 
--	/* Hard-disable interrupts again (and update PACA) */
--#ifdef CONFIG_PPC_BOOK3E
--	wrteei	0
--#else
--	ld	r10,PACAKMSR(r13) /* Get kernel MSR without EE */
--	mtmsrd	r10,1
--#endif /* CONFIG_PPC_BOOK3E */
--	li	r0,PACA_IRQ_HARD_DIS
--	stb	r0,PACAIRQHAPPENED(r13)
--
- 	/* Re-test flags and eventually loop */
- 	clrrdi	r9,r1,THREAD_SHIFT
- 	ld	r4,TI_FLAGS(r9)
-@@ -783,14 +773,6 @@ do_work:
- user_work:
- #endif /* CONFIG_PREEMPT */
- 
--	/* Enable interrupts */
--#ifdef CONFIG_PPC_BOOK3E
--	wrteei	1
--#else
--	ori	r10,r10,MSR_EE
--	mtmsrd	r10,1
--#endif /* CONFIG_PPC_BOOK3E */
--
- 	andi.	r0,r4,_TIF_NEED_RESCHED
- 	beq	1f
- 	bl	.restore_interrupts
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 5ec1b23..3717fb5 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -260,11 +260,17 @@ EXPORT_SYMBOL(arch_local_irq_restore);
-  * if they are currently disabled. This is typically called before
-  * schedule() or do_signal() when returning to userspace. We do it
-  * in C to avoid the burden of dealing with lockdep etc...
-+ *
-+ * NOTE: This is called with interrupts hard disabled but not marked
-+ * as such in paca->irq_happened, so we need to resync this.
-  */
- void restore_interrupts(void)
- {
--	if (irqs_disabled())
-+	if (irqs_disabled()) {
-+		local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
- 		local_irq_enable();
-+	} else
-+		__hard_irq_enable();
- }
- 
- #endif /* CONFIG_PPC64 */
--- 
-1.7.9.5
+Thanks,
+Rusty.
