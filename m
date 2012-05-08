@@ -1,20 +1,18 @@
-Return-Path: <B21989@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2ADE3B6FF7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2012 16:23:15 +1000 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linux-watchdog@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2] powerpc/watchdog: replace CONFIG_FSL_BOOKE with
- CONFIG_FSL_SOC_BOOKE
-Date: Tue, 8 May 2012 14:07:56 +0800
-Message-ID: <1336457276-32611-1-git-send-email-Shaohui.Xie@freescale.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 160F0B6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 May 2012 21:07:41 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH 1/1] powerpc: remove now unused _TIF_RUNLATCH
+Date: Tue, 8 May 2012 17:26:36 +0800
+Message-ID: <1336469196-18190-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,56 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_FSL_BOOKE is only defined in 32-bit, CONFIG_FSL_SOC_BOOKE is
-defined in both 32-bit and 64-bit, so use CONFIG_FSL_SOC_BOOKE to make
-diver work in 32-bit & 64-bit.
+'TIF_RUNLATCH' is already dropped from
+commit fe1952fc0afb9a2e4c79f103c08aef5d13db1873
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+	powerpc: Rework runlatch code
+
+So '_TIF_RUNLATCH' should be removed as well.
+
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- drivers/watchdog/Kconfig     |    8 ++++----
- drivers/watchdog/booke_wdt.c |    4 ++--
- 2 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/thread_info.h |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
-index 3709624..4373ca0 100644
---- a/drivers/watchdog/Kconfig
-+++ b/drivers/watchdog/Kconfig
-@@ -1094,10 +1094,10 @@ config BOOKE_WDT
- config BOOKE_WDT_DEFAULT_TIMEOUT
- 	int "PowerPC Book-E Watchdog Timer Default Timeout"
- 	depends on BOOKE_WDT
--	default 38 if FSL_BOOKE
--	range 0 63 if FSL_BOOKE
--	default 3 if !FSL_BOOKE
--	range 0 3 if !FSL_BOOKE
-+	default 38 if FSL_SOC_BOOKE
-+	range 0 63 if FSL_SOC_BOOKE
-+	default 3 if !FSL_SOC_BOOKE
-+	range 0 3 if !FSL_SOC_BOOKE
- 	help
- 	  Select the default watchdog timer period to be used by the PowerPC
- 	  Book-E watchdog driver.  A watchdog "event" occurs when the bit
-diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
-index ce0ab44..338a437 100644
---- a/drivers/watchdog/booke_wdt.c
-+++ b/drivers/watchdog/booke_wdt.c
-@@ -37,7 +37,7 @@
- u32 booke_wdt_enabled;
- u32 booke_wdt_period = CONFIG_BOOKE_WDT_DEFAULT_TIMEOUT;
+diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
+index 4a741c7..bcebc75 100644
+--- a/arch/powerpc/include/asm/thread_info.h
++++ b/arch/powerpc/include/asm/thread_info.h
+@@ -126,7 +126,6 @@ static inline struct thread_info *current_thread_info(void)
+ #define _TIF_NOERROR		(1<<TIF_NOERROR)
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+ #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
+-#define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
+ #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
+ 				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
  
--#ifdef	CONFIG_FSL_BOOKE
-+#ifdef	CONFIG_FSL_SOC_BOOKE
- #define WDTP(x)		((((x)&0x3)<<30)|(((x)&0x3c)<<15))
- #define WDTP_MASK	(WDTP(0x3f))
- #else
-@@ -190,7 +190,7 @@ static long booke_wdt_ioctl(struct file *file,
- 	case WDIOC_SETTIMEOUT:
- 		if (get_user(tmp, p))
- 			return -EFAULT;
--#ifdef	CONFIG_FSL_BOOKE
-+#ifdef	CONFIG_FSL_SOC_BOOKE
- 		/* period of 1 gives the largest possible timeout */
- 		if (tmp > period_to_sec(1))
- 			return -EINVAL;
 -- 
-1.6.4
+1.5.6
