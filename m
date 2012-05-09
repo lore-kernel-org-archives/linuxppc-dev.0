@@ -1,23 +1,19 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-yw0-f42.google.com (mail-yw0-f42.google.com
- [209.85.213.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B8DE4B6FA9
- for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2012 05:22:44 +1000 (EST)
-Received: by yhfq11 with SMTP id q11so4027193yhf.15
- for <linuxppc-dev@ozlabs.org>; Tue, 08 May 2012 12:22:42 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1336504803-1951-1-git-send-email-geert@linux-m68k.org>
-References: <1336504803-1951-1-git-send-email-geert@linux-m68k.org>
-Date: Tue, 8 May 2012 21:22:41 +0200
-Message-ID: <CAMuHMdWQFc-5bqnU97+ej81TzUieZ8bt3y6ueXOiX7QX2J_GNw@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.4-rc6
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D84D9B6F6E
+ for <linuxppc-dev@ozlabs.org>; Wed,  9 May 2012 11:12:17 +1000 (EST)
+Message-ID: <1336525930.1714.3.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 09 May 2012 11:12:10 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 8, 2012 at 9:20 PM, Geert Uytterhoeven <geert@linux-m68k.org> w=
-rote:
-> JFYI, when comparing v3.4-rc6 to v3.4-rc5[3], the summaries are:
-> =C2=A0- build errors: +2/-1
+Hi Linus !
 
-2 regressions:
-  + arch/powerpc/sysdev/mpic.c: error: case label does not reduce to
-an integer constant:  =3D> 890:9, 898:9, 886:9, 894:9
-  + error: "set_personality_ia32" [arch/x86/ia32/ia32_aout.ko]
-undefined!:  =3D> N/A
+Here are a couple of last minute fixes for 3.4 for regressions
+introduced by my rewrite of the lazy irq masking code.
 
-The former is from powerpc-randconfig, the latter has been fixed in
-the mean time.
+Cheers,
+Ben.
 
-Gr{oetje,eeting}s,
+The following changes since commit 810b4de25e53459323ff48957b0162b48d6cbd57:
 
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
+  tty/serial/pmac_zilog: Fix "nobody cared" IRQ message (2012-04-30 10:59:58 +1000)
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+are available in the git repository at:
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to a3512b2dd57cb653bb33645ca9c934436e547e3c:
+
+  powerpc/irq: Make alignment & program interrupt behave the same (2012-05-09 09:42:33 +1000)
+
+----------------------------------------------------------------
+Benjamin Herrenschmidt (2):
+      powerpc/irq: Fix bug with new lazy IRQ handling code
+      powerpc/irq: Make alignment & program interrupt behave the same
+
+ arch/powerpc/include/asm/exception-64s.h |    7 -------
+ arch/powerpc/kernel/entry_64.S           |   18 ------------------
+ arch/powerpc/kernel/exceptions-64s.S     |    2 +-
+ arch/powerpc/kernel/irq.c                |    8 +++++++-
+ arch/powerpc/kernel/traps.c              |   10 ++++++++--
+ 5 files changed, 16 insertions(+), 29 deletions(-)
