@@ -1,44 +1,22 @@
-Return-Path: <chf.fritz@googlemail.com>
-Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
- [209.85.212.179])
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-qc0-f179.google.com (mail-qc0-f179.google.com
+ [209.85.216.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A449DB6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 16:04:33 +1000 (EST)
-Received: by wibhr2 with SMTP id hr2so52632wib.14
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2012 23:04:30 -0700 (PDT)
-Date: Wed, 9 May 2012 08:04:24 +0200
-From: Christoph Fritz <chf.fritz@googlemail.com>
-To: Neil Zhang <zhangwm@marvell.com>
-Subject: Re: [RFC] [PATCH] usb: gadget: fix dtd dma confusion
-Message-ID: <20120509060424.GB3910@lovely.krouter>
-References: <20120410001017.GF2640@local>
- <CAOMZO5A=sHeyoQ0PCd=09qGGKb0NjXi-kF5qyG+3U-GhD7rhzg@mail.gmail.com>
- <20120410021151.GB23044@lovely.krouter>
- <20120411073918.GA9180@lovely.krouter>
- <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
- <20120509000221.GA19525@lovely.krouter>
- <175CCF5F49938B4D99B2E3EF7F558EBE1A180E49BA@SC-VEXCH4.marvell.com>
- <F281D0F91ED19E4D8E63A7504E8A649803B91E69@039-SN2MPN1-022.039d.mgd.msft.net>
- <20120509053826.GA3492@lovely.krouter>
- <175CCF5F49938B4D99B2E3EF7F558EBE1A180E49D9@SC-VEXCH4.marvell.com>
+ by ozlabs.org (Postfix) with ESMTPS id 86483B6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 21:42:12 +1000 (EST)
+Received: by qcha6 with SMTP id a6so93014qch.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2012 04:42:09 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <175CCF5F49938B4D99B2E3EF7F558EBE1A180E49D9@SC-VEXCH4.marvell.com>
-Cc: Oliver Neukum <oneukum@suse.de>, Kukjin Kim <kgene.kim@samsung.com>,
- Eric Miao <eric.y.miao@gmail.com>, Li Yang-R58472 <r58472@freescale.com>,
- Chen Peter-B29397 <B29397@freescale.com>,
- Sascha Hauer <s.hauer@pengutronix.de>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- Nicolas Ferre <nicolas.ferre@atmel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Felipe Balbi <balbi@ti.com>, Ido Shayevitz <idos@codeaurora.org>,
- Thomas Dahlmann <dahlmann.thomas@arcor.de>,
- Estevam Fabio-R49496 <r49496@freescale.com>, "Hans J. Koch" <hjk@hansjkoch.de>,
- Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@caiaq.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Russell King <linux@arm.linux.org.uk>, Ben Dooks <ben-linux@fluff.org>,
- Fabio Estevam <festevam@gmail.com>, Chao Xie <cxie4@marvell.com>
+In-Reply-To: <CA+5PVA64YFcVrjwedn2V2pC8P87DXC1SEgbua+ZHF3VQr=FDmA@mail.gmail.com>
+References: <CA+5PVA64YFcVrjwedn2V2pC8P87DXC1SEgbua+ZHF3VQr=FDmA@mail.gmail.com>
+Date: Wed, 9 May 2012 07:42:09 -0400
+Message-ID: <CA+5PVA6BT8vu6cjuXSn_QvGzDSD96r-4+ekkb-ecFmVRM9t4rA@mail.gmail.com>
+Subject: Re: Please pull 'next' branch of 4xx tree
+From: Josh Boyer <jwboyer@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,22 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Neil,
+On Wed, May 2, 2012 at 9:51 AM, Josh Boyer <jwboyer@gmail.com> wrote:
+> Hi Ben,
+>
+> A few patches from Suzie for 47x kexec/kdump support, and some MSI patche=
+s
+> from Mai La.
+>
+> josh
+>
+> The following changes since commit ec34a6814988f17506733c1e8b058ce4660259=
+1d:
+>
+> =A0powerpc: Remove old powerpc specific ptrace getregs/setregs calls
+> (2012-04-30 15:37:28 +1000)
+>
+> are available in the git repository at:
+>
+> =A0git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git =
+next
 
- thanks for you help.
+Bump?  There's also one small addition on top to fix a build error with -We=
+rror.
 
-> > 
-> > What about the fix for mv_udc, shouldn't they have a similar
-> > "limitation"? How do you explain?
-> > Or maybe someone from Marvell has an answer?
-> > 
-> 
-> Yes, we encountered the same issue, and I have answered your question several hours ago.
-> Please have a look.
-
-Thanks for that.
-Relating to the other *udc.c driver, do you think they should implement
-a similar workaround there too or at least check their errataS?
-
-Thanks,
- -- Christoph
+josh
