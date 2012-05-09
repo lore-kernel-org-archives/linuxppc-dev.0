@@ -1,25 +1,38 @@
-Return-Path: <mel@csn.ul.ie>
-Received: from gir.skynet.ie (gir.skynet.ie [193.1.99.77])
+Return-Path: <rcjenn@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 70225B6FB4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2012 23:44:41 +1000 (EST)
-Date: Thu, 10 May 2012 14:34:55 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/1] page_alloc.c: remove argument to
- pageblock_default_order
-Message-ID: <20120510133454.GG9004@csn.ul.ie>
-References: <1336065312-2891-1-git-send-email-rajman.mekaco@gmail.com>
- <20120503163749.d24bf07f.akpm@linux-foundation.org>
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A61DDB6FA0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2012 00:55:33 +1000 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rcjenn@linux.vnet.ibm.com>;
+ Thu, 10 May 2012 08:55:29 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 90C5019D804E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2012 08:55:14 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q4AEtKNK103584
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2012 08:55:22 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q4AEtGg3001488
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2012 08:55:17 -0600
+Date: Wed, 9 May 2012 10:56:39 -0500
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Support lower minimum entitlement for virtual
+ processors
+Message-ID: <20120509155639.GA12000@linux.vnet.ibm.com>
+References: <20120323212213.GB9456@linux.vnet.ibm.com>
+ <1335763810.20866.38.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20120503163749.d24bf07f.akpm@linux-foundation.org>
-Cc: linux-ia64@vger.kernel.org, rajman mekaco <rajman.mekaco@gmail.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Minchan Kim <minchan.kim@gmail.com>, Tejun Heo <tj@kernel.org>,
- linuxppc-dev@lists.ozlabs.org,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1335763810.20866.38.camel@pasglop>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,63 +42,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 03, 2012 at 04:37:49PM -0700, Andrew Morton wrote:
-> On Thu,  3 May 2012 22:45:12 +0530
-> rajman mekaco <rajman.mekaco@gmail.com> wrote:
+* Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
+> On Fri, 2012-03-23 at 16:22 -0500, Robert Jennings wrote:
+> > This patch changes the architecture vector to advertise support for a
+> > lower minimum virtual processor entitled capacity.  The default
+> > minimum without this patch is 10%, this patch specifies 5%.  This will
+> > allow 20 LPARs per CPU rather than only 10.
 > 
-> > When CONFIG_HUGETLB_PAGE_SIZE_VARIABLE is not defined, then
-> > pageblock_default_order has an argument to it.
-> > 
-> > However, free_area_init_core will call it without any argument
-> > anyway.
-> > 
-> > Remove the argument to pageblock_default_order when
-> > CONFIG_HUGETLB_PAGE_SIZE_VARIABLE is not defined.
-> > 
-> > Signed-off-by: rajman mekaco <rajman.mekaco@gmail.com>
+> Any reason why we don't just put 1% in there and thus don't have to
+> change again when pHyp decides to lower their minimum ? :-)
+> 
+> (Can you test that it works, ie, that pHyp doesn't barf if we put 1% and
+> properly uses 5% in that case ?)
+
+Thanks Ben, makes good sense.
+I'm in the process of validating this and I'll post reply or a new
+version of the patch when I get it completed.
+
+--Rob Jennings
+
+> > Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
 > > ---
-> >  mm/page_alloc.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> >  arch/powerpc/kernel/prom_init.c |    8 ++++++--
+> >  1 files changed, 6 insertions(+), 2 deletions(-)
 > > 
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index a712fb9..4b95412 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -4274,7 +4274,7 @@ static inline void __init set_pageblock_order(unsigned int order)
-> >   * at compile-time. See include/linux/pageblock-flags.h for the values of
-> >   * pageblock_order based on the kernel config
-> >   */
-> > -static inline int pageblock_default_order(unsigned int order)
-> > +static inline int pageblock_default_order(void)
-> >  {
-> >  	return MAX_ORDER-1;
-> >  }
+> > diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+> > index eca626e..3d882ea 100644
+> > --- a/arch/powerpc/kernel/prom_init.c
+> > +++ b/arch/powerpc/kernel/prom_init.c
+> > @@ -689,6 +689,9 @@ static void __init early_cmdline_parse(void)
+> >  #define OV3_VMX			0x40	/* VMX/Altivec */
+> >  #define OV3_DFP			0x20	/* decimal FP */
+> >  
+> > +/* Option vector 4: IBM PAPR implementation */
+> > +#define OV4_MIN_ENT_CAP		0x05	/* minimum VP entitled capacity */
+> > +
+> >  /* Option vector 5: PAPR/OF options supported */
+> >  #define OV5_LPAR		0x80	/* logical partitioning supported */
+> >  #define OV5_SPLPAR		0x40	/* shared-processor LPAR supported */
+> > @@ -753,8 +756,9 @@ static unsigned char ibm_architecture_vec[] = {
+> >  	OV3_FP | OV3_VMX | OV3_DFP,
+> >  
+> >  	/* option vector 4: IBM PAPR implementation */
+> > -	2 - 2,				/* length */
+> > +	3 - 2,				/* length */
+> >  	0,				/* don't halt */
+> > +	OV4_MIN_ENT_CAP,		/* minimum VP entitled capacity */
+> >  
+> >  	/* option vector 5: PAPR/OF options */
+> >  	13 - 2,				/* length */
+> > @@ -771,7 +775,7 @@ static unsigned char ibm_architecture_vec[] = {
+> >  	 * must match by the macro below. Update the definition if
+> >  	 * the structure layout changes.
+> >  	 */
+> > -#define IBM_ARCH_VEC_NRCORES_OFFSET	100
+> > +#define IBM_ARCH_VEC_NRCORES_OFFSET	101
+> >  	W(NR_CPUS),			/* number of cores supported */
+> >  
+> >  	/* option vector 6: IBM PAPR hints */
 > 
-> Interesting.  It has been that way since at least 3.1.
 > 
-
-/me slaps self
-
-> It didn't break the build because pageblock_default_order() is only
-> ever invoked by set_pageblock_order(), with:
-> 
-> 	set_pageblock_order(pageblock_default_order());
-> 
-> and set_pageblock_order() is a macro:
-> 
-> #define set_pageblock_order(x)	do {} while (0)
-> 
-> There's yet another reason not to use macros, dammit - they hide bugs.
-> 
-> 
-> Mel, can you have a think about this please?  Can we just kill off
-> pageblock_default_order() and fold its guts into
-> set_pageblock_order(void)?  Only ia64 and powerpc can define
-> CONFIG_HUGETLB_PAGE_SIZE_VARIABLE.
-> 
-
-This looks reasonable to me.
-
--- 
-Mel Gorman
-SUSE Labs
