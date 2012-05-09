@@ -1,22 +1,43 @@
-Return-Path: <tinamdar@apm.com>
-Received: from exprod5og102.obsmtp.com (exprod5og102.obsmtp.com [64.18.0.143])
- by ozlabs.org (Postfix) with SMTP id D261DB710E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 15:28:48 +1000 (EST)
-Received: by yenl2 with SMTP id l2so2846558yen.15
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2012 22:28:46 -0700 (PDT)
+Return-Path: <chf.fritz@googlemail.com>
+Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
+ [209.85.212.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2B14DB6F13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 15:38:36 +1000 (EST)
+Received: by wibhr2 with SMTP id hr2so39425wib.14
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2012 22:38:32 -0700 (PDT)
+Date: Wed, 9 May 2012 07:38:27 +0200
+From: Christoph Fritz <chf.fritz@googlemail.com>
+To: Chen Peter-B29397 <B29397@freescale.com>, Chao Xie <cxie4@marvell.com>
+Subject: Re: [RFC] [PATCH] usb: gadget: fix dtd dma confusion
+Message-ID: <20120509053826.GA3492@lovely.krouter>
+References: <20120409200656.GD2640@local>
+ <CAOMZO5BTrA8G6wwQZ3e6bydJX7UtG7jj2c29Ln7u_3_jyUGB+w@mail.gmail.com>
+ <20120410001017.GF2640@local>
+ <CAOMZO5A=sHeyoQ0PCd=09qGGKb0NjXi-kF5qyG+3U-GhD7rhzg@mail.gmail.com>
+ <20120410021151.GB23044@lovely.krouter>
+ <20120411073918.GA9180@lovely.krouter>
+ <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
+ <20120509000221.GA19525@lovely.krouter>
+ <175CCF5F49938B4D99B2E3EF7F558EBE1A180E49BA@SC-VEXCH4.marvell.com>
+ <F281D0F91ED19E4D8E63A7504E8A649803B91E69@039-SN2MPN1-022.039d.mgd.msft.net>
 MIME-Version: 1.0
-In-Reply-To: <CA+5PVA4HGVGRbnLCMOAbO1mYnFCgHhh1_ErLdKq5YhMdV0VhQw@mail.gmail.com>
-References: <1333956052-25319-1-git-send-email-tinamdar@apm.com>
- <1333956052-25319-2-git-send-email-tinamdar@apm.com>
- <CA+5PVA4HGVGRbnLCMOAbO1mYnFCgHhh1_ErLdKq5YhMdV0VhQw@mail.gmail.com>
-Date: Wed, 9 May 2012 10:58:46 +0530
-Message-ID: <CACoXjcn1H_Jov86a5fmonY-5CtKCcGgBHMwzUf-i-66-VatqJw@mail.gmail.com>
-Subject: Re: [V2 2/5] powerpc: 40x: Add AHB, APB of_device_ids
-From: Tanmay Inamdar <tinamdar@apm.com>
-To: Josh Boyer <jwboyer@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F281D0F91ED19E4D8E63A7504E8A649803B91E69@039-SN2MPN1-022.039d.mgd.msft.net>
+Cc: Oliver Neukum <oneukum@suse.de>, Kukjin Kim <kgene.kim@samsung.com>,
+ Eric Miao <eric.y.miao@gmail.com>, Li Yang-R58472 <r58472@freescale.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ Nicolas Ferre <nicolas.ferre@atmel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Felipe Balbi <balbi@ti.com>, Ido Shayevitz <idos@codeaurora.org>,
+ Estevam Fabio-R49496 <r49496@freescale.com>, "Hans J. Koch" <hjk@hansjkoch.de>,
+ Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@caiaq.de>,
+ Thomas Dahlmann <dahlmann.thomas@arcor.de>,
+ Russell King <linux@arm.linux.org.uk>, Neil Zhang <zhangwm@marvell.com>,
+ Fabio Estevam <festevam@gmail.com>, Ben Dooks <ben-linux@fluff.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +47,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 2, 2012 at 7:11 PM, Josh Boyer <jwboyer@gmail.com> wrote:
-> On Mon, Apr 9, 2012 at 3:20 AM, Tanmay Inamdar <tinamdar@apm.com> wrote:
->> Adding of_device_id's for AHB and APB buses used in klondike (APM8018X) =
-in
->> platforms/40x/ppc40x_simple.c file
->>
->> Signed-off-by: Tanmay Inamdar <tinamdar@apm.com>
->
-> You should probably combine the first 3 patches in this series into one
-> patch. =A0Otherwise you run the risk of changing the DTS to something the
-> kernel can't support. =A0At the least, this change should be patch 1 in
-> the series, and you can probably combine the two DTS changes.
->
+Hi Peter,
 
-I will do it in next version of patches.
+ thanks you for your help.
 
-> josh
+On Wed, May 09, 2012 at 02:11:56AM +0000, Chen Peter-B29397 wrote:
+> 
+>  
+> > >
+> > > after a while of testing and searching I can come up with a patch
+> > > that fixes g_ether <-> iperf for fsl_udc on ARM i.MX35.
+> > >
+> > > The sad part is that this kind of fix is already implemented for
+> > > marvell mv_udc driver since last year but still _not_ in the ~15
+> > > other *udc.c drivers.
+> > >
+>  
+> It is a controller limitation (bug?) for chipidea controller when using
+> dtd list to handle multi-dtds situation. The controller will read dtd's
+> next pointer after this dtd's active bit has already been cleared.
+> 
+> Freescale has an errata for this problem's description and solution.
+> http://cache.freescale.com/files/dsp/doc/errata/IMX23CE.pdf
+> See 2858
+
+I'm hacking here an i.MX35 not an i.MX23. So I already had a look at its
+errata sheet http://cache.freescale.com/files/dsp/doc/errata/IMX35CE.pdf
+but didn't find a similar "limitation" as you now pointed out by errata
+number 2858 for i.MX23.
+
+What about the fix for mv_udc, shouldn't they have a similar
+"limitation"? How do you explain?
+Or maybe someone from Marvell has an answer?
+
 
 Thanks,
-Tanmay
-CONFIDENTIALITY NOTICE: This e-mail message, including any attachments, =
-
-is for the sole use of the intended recipient(s) and contains information=
-=A0
-that is confidential and proprietary to AppliedMicro Corporation or its s=
-ubsidiaries. =
-
-It is to be used solely for the purpose of furthering the parties' busine=
-ss relationship. =
-
-All unauthorized review, use, disclosure or distribution is prohibited. =
-
-If you are not the intended recipient, please contact the sender by reply=
- e-mail =
-
-and destroy all copies of the original message.
-=0D
+ -- Christoph
