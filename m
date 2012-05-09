@@ -1,22 +1,24 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-qc0-f179.google.com (mail-qc0-f179.google.com
- [209.85.216.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 86483B6F9F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 21:42:12 +1000 (EST)
-Received: by qcha6 with SMTP id a6so93014qch.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 May 2012 04:42:09 -0700 (PDT)
+Return-Path: <bigeasy@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:1c35:abcd:42:0:1])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B2CE0B6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2012 05:53:13 +1000 (EST)
+Date: Wed, 9 May 2012 21:53:07 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: powerpc/85xx: p2020rdb - move the NAND address.
+Message-ID: <20120509195307.GA25255@linutronix.de>
+References: <E9CCADB024EDCD44A9C1083605680C42B9053302@ES05CO.wgti.net>
+ <4F740E98.50104@linutronix.de>
+ <9460468D-281C-4960-839A-F8435638DE4B@kernel.crashing.org>
+ <4F75BD6B.30609@linutronix.de>
+ <926BF56B-AA5C-443B-BD52-6844518810DB@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <CA+5PVA64YFcVrjwedn2V2pC8P87DXC1SEgbua+ZHF3VQr=FDmA@mail.gmail.com>
-References: <CA+5PVA64YFcVrjwedn2V2pC8P87DXC1SEgbua+ZHF3VQr=FDmA@mail.gmail.com>
-Date: Wed, 9 May 2012 07:42:09 -0400
-Message-ID: <CA+5PVA6BT8vu6cjuXSn_QvGzDSD96r-4+ekkb-ecFmVRM9t4rA@mail.gmail.com>
-Subject: Re: Please pull 'next' branch of 4xx tree
-From: Josh Boyer <jwboyer@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <926BF56B-AA5C-443B-BD52-6844518810DB@kernel.crashing.org>
+Cc: Bryan Hundven <Bryan.Hundven@watchguard.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 2, 2012 at 9:51 AM, Josh Boyer <jwboyer@gmail.com> wrote:
-> Hi Ben,
->
-> A few patches from Suzie for 47x kexec/kdump support, and some MSI patche=
-s
-> from Mai La.
->
-> josh
->
-> The following changes since commit ec34a6814988f17506733c1e8b058ce4660259=
-1d:
->
-> =A0powerpc: Remove old powerpc specific ptrace getregs/setregs calls
-> (2012-04-30 15:37:28 +1000)
->
-> are available in the git repository at:
->
-> =A0git://git.kernel.org/pub/scm/linux/kernel/git/jwboyer/powerpc-4xx.git =
-next
+* Kumar Gala | 2012-03-31 09:48:18 [-0500]:
 
-Bump?  There's also one small addition on top to fix a build error with -We=
-rror.
+Sorry for the delay Kumar, I though I allready done it.
 
-josh
+>Yes, please do.
+Here it comes.
+
+>From 5b3e09992615e5670fa8e432e50424466fa9ca1a Mon Sep 17 00:00:00 2001
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Date: Wed, 9 May 2012 21:48:42 +0200
+Subject: [PATCH] Revert "powerpc/85xx: p2020rdb - move the NAND address."
+
+This reverts commit 0c00f65653389a408dfbbee7578e671664eea26a.
+The initial commit was my fault. There are two boards out there:
+P2020RDB and P2020RDB-PC. I wasn't aware of that and assumed that I have
+a RDB board in front of me while I the RDB-PC. This patch makes it work
+for the RDB-PC variant and breaks it for the RDB. Now there is a device
+tree file available for the RDB-PC which was not there earlier. So with
+this revert, everything gets back to normal :)
+
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+---
+ arch/powerpc/boot/dts/p2020rdb.dts |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
+index 153bc76..4d52bce 100644
+--- a/arch/powerpc/boot/dts/p2020rdb.dts
++++ b/arch/powerpc/boot/dts/p2020rdb.dts
+@@ -34,7 +34,7 @@
+ 
+ 		/* NOR and NAND Flashes */
+ 		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
+-			  0x1 0x0 0x0 0xff800000 0x00040000
++			  0x1 0x0 0x0 0xffa00000 0x00040000
+ 			  0x2 0x0 0x0 0xffb00000 0x00020000>;
+ 
+ 		nor@0,0 {
+-- 
+1.7.10
+
+>>>> Since both system have the same SoC and the NAND_SPL is always linked
+>>>> against 0xfff00000 I don't see anything wrong to relocate the NAND CS
+>>>> later to 0xff800000 (or to 0xffa00000) and having it consistent among
+>>>> both configs.
+>> 
+>> what about this thing? Should leave it as it or move to the same
+>> location? Since I have no HW *I* would prefer not to touch it :)
+>
+>Hmm, that implies a u-boot change, right?
+
+Yup.
+
+>- k
+
+Sebastian
