@@ -1,17 +1,16 @@
-Return-Path: <chf.fritz@googlemail.com>
-Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
- [209.85.212.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2B14DB6F13
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 15:38:36 +1000 (EST)
-Received: by wibhr2 with SMTP id hr2so39425wib.14
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2012 22:38:32 -0700 (PDT)
-Date: Wed, 9 May 2012 07:38:27 +0200
-From: Christoph Fritz <chf.fritz@googlemail.com>
-To: Chen Peter-B29397 <B29397@freescale.com>, Chao Xie <cxie4@marvell.com>
-Subject: Re: [RFC] [PATCH] usb: gadget: fix dtd dma confusion
-Message-ID: <20120509053826.GA3492@lovely.krouter>
+Return-Path: <B29397@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D464AB6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 15:43:20 +1000 (EST)
+From: Chen Peter-B29397 <B29397@freescale.com>
+To: Christoph Fritz <chf.fritz@googlemail.com>, Chao Xie <cxie4@marvell.com>
+Subject: RE: [RFC] [PATCH] usb: gadget: fix dtd dma confusion
+Date: Wed, 9 May 2012 05:43:11 +0000
+Message-ID: <F281D0F91ED19E4D8E63A7504E8A649803B93001@039-SN2MPN1-022.039d.mgd.msft.net>
 References: <20120409200656.GD2640@local>
  <CAOMZO5BTrA8G6wwQZ3e6bydJX7UtG7jj2c29Ln7u_3_jyUGB+w@mail.gmail.com>
  <20120410001017.GF2640@local>
@@ -22,9 +21,10 @@ References: <20120409200656.GD2640@local>
  <20120509000221.GA19525@lovely.krouter>
  <175CCF5F49938B4D99B2E3EF7F558EBE1A180E49BA@SC-VEXCH4.marvell.com>
  <F281D0F91ED19E4D8E63A7504E8A649803B91E69@039-SN2MPN1-022.039d.mgd.msft.net>
+ <20120509053826.GA3492@lovely.krouter>
+In-Reply-To: <20120509053826.GA3492@lovely.krouter>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F281D0F91ED19E4D8E63A7504E8A649803B91E69@039-SN2MPN1-022.039d.mgd.msft.net>
 Cc: Oliver Neukum <oneukum@suse.de>, Kukjin Kim <kgene.kim@samsung.com>,
  Eric Miao <eric.y.miao@gmail.com>, Li Yang-R58472 <r58472@freescale.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -47,39 +47,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Peter,
+=20
+>=20
+> I'm hacking here an i.MX35 not an i.MX23. So I already had a look at its
+> errata sheet http://cache.freescale.com/files/dsp/doc/errata/IMX35CE.pdf
+> but didn't find a similar "limitation" as you now pointed out by errata
+> number 2858 for i.MX23.
+>
 
- thanks you for your help.
+i.mx35 and i.mx23 uses the same controller.
+=20
+> What about the fix for mv_udc, shouldn't they have a similar
+> "limitation"? How do you explain?
+> Or maybe someone from Marvell has an answer?
+>
+It is probably that others who use chipidea core have the same problem,
+but it needs to get confirm from them. =20
 
-On Wed, May 09, 2012 at 02:11:56AM +0000, Chen Peter-B29397 wrote:
-> 
->  
-> > >
-> > > after a while of testing and searching I can come up with a patch
-> > > that fixes g_ether <-> iperf for fsl_udc on ARM i.MX35.
-> > >
-> > > The sad part is that this kind of fix is already implemented for
-> > > marvell mv_udc driver since last year but still _not_ in the ~15
-> > > other *udc.c drivers.
-> > >
->  
-> It is a controller limitation (bug?) for chipidea controller when using
-> dtd list to handle multi-dtds situation. The controller will read dtd's
-> next pointer after this dtd's active bit has already been cleared.
-> 
-> Freescale has an errata for this problem's description and solution.
-> http://cache.freescale.com/files/dsp/doc/errata/IMX23CE.pdf
-> See 2858
-
-I'm hacking here an i.MX35 not an i.MX23. So I already had a look at its
-errata sheet http://cache.freescale.com/files/dsp/doc/errata/IMX35CE.pdf
-but didn't find a similar "limitation" as you now pointed out by errata
-number 2858 for i.MX23.
-
-What about the fix for mv_udc, shouldn't they have a similar
-"limitation"? How do you explain?
-Or maybe someone from Marvell has an answer?
-
-
-Thanks,
- -- Christoph
+>=20
+> Thanks,
+>  -- Christoph
