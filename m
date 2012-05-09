@@ -1,25 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 288A6B6F9F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 14:03:56 +1000 (EST)
-Date: Wed, 9 May 2012 14:03:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix compile fail in hugetlb cmdline parsing
-Message-Id: <20120509140346.29a2940e18748df49051f599@canb.auug.org.au>
-In-Reply-To: <1336532658.1714.15.camel@pasglop>
-References: <1336401142-18733-1-git-send-email-paul.gortmaker@windriver.com>
- <878vh3cncz.fsf@rustcorp.com.au> <1336532658.1714.15.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__9_May_2012_14_03_46_+1000_3Iji2BOBoHRC8OrQ"
-Cc: Jim Cromie <jim.cromie@gmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jason Baron <jbaron@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
- Paul Gortmaker <paul.gortmaker@windriver.com>, linux-next@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <tinamdar@apm.com>
+Received: from exprod5og105.obsmtp.com (exprod5og105.obsmtp.com [64.18.0.180])
+ by ozlabs.org (Postfix) with SMTP id EA7A2B6F9D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 15:27:53 +1000 (EST)
+Received: by obbup19 with SMTP id up19so7527546obb.24
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 May 2012 22:27:51 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CA+5PVA4sjX_Dk6ecySG4ZZoM=xhaWu2jGrQ=LtFgxGL88G=-Nw@mail.gmail.com>
+References: <1333956052-25319-1-git-send-email-tinamdar@apm.com>
+ <1333956052-25319-2-git-send-email-tinamdar@apm.com>
+ <1333956052-25319-3-git-send-email-tinamdar@apm.com>
+ <1333956052-25319-4-git-send-email-tinamdar@apm.com>
+ <1333956052-25319-5-git-send-email-tinamdar@apm.com>
+ <CA+5PVA4sjX_Dk6ecySG4ZZoM=xhaWu2jGrQ=LtFgxGL88G=-Nw@mail.gmail.com>
+Date: Wed, 9 May 2012 10:57:51 +0530
+Message-ID: <CACoXjcnpVi6n7__6SgdzYUuMuRkdtZpVGkOiEowFsL8Gq2kC7w@mail.gmail.com>
+Subject: Re: [V2 5/5] powerpc: kernel: 16650 UART reg-shift support
+From: Tanmay Inamdar <tinamdar@apm.com>
+To: Josh Boyer <jwboyer@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,76 +29,139 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__9_May_2012_14_03_46_+1000_3Iji2BOBoHRC8OrQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Ben,
-
-On Wed, 09 May 2012 13:04:18 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
-hing.org> wrote:
+On Wed, May 2, 2012 at 7:08 PM, Josh Boyer <jwboyer@gmail.com> wrote:
+> On Mon, Apr 9, 2012 at 3:20 AM, Tanmay Inamdar <tinamdar@apm.com> wrote:
+>> In APM8018X SOC, UART register address space has been relocated to 32-bi=
+t
+>> data boundaries for APB bus implementation.
+>> Current legacy_serial driver ignores the reg-shift property. This patch
+>> modifies legacy_serial.c and udbg_16550.c to work with above mentioned U=
+ARTs.
+>>
+>> Signed-off-by: Tanmay Inamdar <tinamdar@apm.com>
+>> ---
+>> :100644 100644 8338aef... f5fc106... M =A0arch/powerpc/include/asm/udbg.=
+h
+>> :100644 100644 bedd12e... d523b7d... M =A0arch/powerpc/kernel/legacy_ser=
+ial.c
+>> :100644 100644 6837f83... e0cb7dc... M =A0arch/powerpc/kernel/udbg_16550=
+.c
+>> =A0arch/powerpc/include/asm/udbg.h =A0 =A0 | =A0 =A02 +-
+>> =A0arch/powerpc/kernel/legacy_serial.c | =A0 16 +++++---
+>> =A0arch/powerpc/kernel/udbg_16550.c =A0 =A0| =A0 64 ++++++++++++++++++++=
+++------------
+>> =A03 files changed, 52 insertions(+), 30 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/udbg.h b/arch/powerpc/include/asm/=
+udbg.h
+>> index 8338aef..f5fc106 100644
+>> --- a/arch/powerpc/include/asm/udbg.h
+>> +++ b/arch/powerpc/include/asm/udbg.h
+>> @@ -29,7 +29,7 @@ extern void udbg_printf(const char *fmt, ...)
+>> =A0extern void udbg_progress(char *s, unsigned short hex);
+>>
+>> =A0extern void udbg_init_uart(void __iomem *comport, unsigned int speed,
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unsigned int clock)=
+;
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0unsigned int clock,=
+ =A0unsigned int regshift);
+>> =A0extern unsigned int udbg_probe_uart_speed(void __iomem *comport,
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0unsigned int clock);
+>>
+>> diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/l=
+egacy_serial.c
+>> index bedd12e..d523b7d 100644
+>> --- a/arch/powerpc/kernel/legacy_serial.c
+>> +++ b/arch/powerpc/kernel/legacy_serial.c
+>> @@ -33,6 +33,7 @@ static struct legacy_serial_info {
+>> =A0 =A0 =A0 =A0unsigned int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0clock=
+;
+>> =A0 =A0 =A0 =A0int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 irq_check_parent;
+>> =A0 =A0 =A0 =A0phys_addr_t =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 taddr=
+;
+>> + =A0 =A0 =A0 unsigned int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0regshi=
+ft;
+>> =A0} legacy_serial_infos[MAX_LEGACY_SERIAL_PORTS];
+>>
+>> =A0static struct __initdata of_device_id legacy_serial_parents[] =3D {
+>> @@ -42,6 +43,7 @@ static struct __initdata of_device_id legacy_serial_pa=
+rents[] =3D {
+>> =A0 =A0 =A0 =A0{.compatible =3D "ibm,opb",},
+>> =A0 =A0 =A0 =A0{.compatible =3D "simple-bus",},
+>> =A0 =A0 =A0 =A0{.compatible =3D "wrs,epld-localbus",},
+>> + =A0 =A0 =A0 {.compatible =3D "apm,apb",},
+>> =A0 =A0 =A0 =A0{},
+>> =A0};
+>>
+>> @@ -163,11 +165,6 @@ static int __init add_legacy_soc_port(struct device=
+_node *np,
+>> =A0 =A0 =A0 =A0if (of_get_property(np, "clock-frequency", NULL) =3D=3D N=
+ULL)
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0return -1;
+>>
+>> - =A0 =A0 =A0 /* if reg-shift or offset, don't try to use it */
+>> - =A0 =A0 =A0 if ((of_get_property(np, "reg-shift", NULL) !=3D NULL) ||
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 (of_get_property(np, "reg-offset", NULL) !=
+=3D NULL))
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -1;
+>> -
 >
-> On Tue, 2012-05-08 at 13:53 +0930, Rusty Russell wrote:
-> > On Mon,  7 May 2012 10:32:22 -0400, Paul Gortmaker <paul.gortmaker@wind=
-river.com> wrote:
-> > > Commit 9fb48c744ba6a4bf58b666f4e6fdac3008ea1bd4
-> > >=20
-> > >     "params: add 3rd arg to option handler callback signature"
-> > >=20
-> > > added an extra arg to the function, but didn't catch all the use
-> > > cases needing it, causing this compile fail in mpc85xx_defconfig:
-> > >=20
-> > >  arch/powerpc/mm/hugetlbpage.c:316:4: error: passing argument 7 of
-> > >  'parse_args' from incompatible pointer type [-Werror]
-> > >=20
-> > >  include/linux/moduleparam.h:317:12: note: expected
-> > > 	 'int (*)(char *, char *, const char *)' but argument is of type
-> > > 	 'int (*)(char *, char *)'
-> > >=20
-> > > This function has no need to printk out the "doing" value, so
-> > > just add the arg as an "unused".
-> > >=20
-> > > Cc: Rusty Russell <rusty@rustcorp.com.au>
-> > > Cc: Jim Cromie <jim.cromie@gmail.com>
-> > > Cc: Jason Baron <jbaron@redhat.com>
-> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> > > Cc: Becky Bruce <beckyb@kernel.crashing.org>
-> > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> >=20
-> > Acked-by: Rusty Russell <rusty@rustcorp.com.au>
->=20
-> This is for -next right ? IE. I don't seem to have the faulty commit
-> in my tree so I can't carry the fix for now.... or am I missing
-> something ?
+> So we explicitly didn't support reg-shift before. =A0I'm guessing there i=
+s
+> a reason for that, but I don't recall what. =A0Ben?
+>
+> Also, why do you need to use the legacy serial driver at all for this
+> SOC? =A0As far as I remember, the OF serial driver should be sufficient.
+>
 
-This patch has been added to the driver-core tree which contains the
-faulty commit ...
+You are right. There is no need to use legacy serial driver. However I
+realized that when 40x is selected, 'PPC_UDBG_16550' is by default
+selected. This enables legacy serial driver.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Is it now required to enable 'PPC_UDBG_16550' by default for every SOC
+that uses 40x processor?
 
---Signature=_Wed__9_May_2012_14_03_46_+1000_3Iji2BOBoHRC8OrQ
-Content-Type: application/pgp-signature
+>> +static unsigned int reg_shift;
+>> +#define ns16550_offset(addr) (addr - (unsigned char *)udbg_comport)
+>> +
+>> =A0static struct NS16550 __iomem *udbg_comport;
+>>
+>> +static inline u8 serial_read(unsigned char *addr)
+>> +{
+>> + =A0 =A0 =A0 u32 offset =3D ns16550_offset(addr) << reg_shift;
+>> + =A0 =A0 =A0 return readb(udbg_comport + offset);
+>> +}
+>> +
+>> +static inline void serial_write(unsigned char *addr, char val)
+>> +{
+>> + =A0 =A0 =A0 u32 offset =3D ns16550_offset(addr) << reg_shift;
+>> + =A0 =A0 =A0 writeb(val, udbg_comport + offset);
+>> +}
+>> +
+>
+> I don't think readb/writeb are correct here. =A0Why did you switch to
+> using those instead of sticking with in_8/out_8?
+>
+> josh
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Thanks,
+Tanmay
+CONFIDENTIALITY NOTICE: This e-mail message, including any attachments, =
 
-iQIcBAEBCAAGBQJPqeyiAAoJEECxmPOUX5FEFVEP/2ewVYva3bC2/AQZRZZduRgb
-+9snbwFrqGRlRPTjt0H6YqyAo8AFfMnPeG5cCZNyG2dSwiIYg8zzY/Nr9kSoIBph
-tmV6jRRjN1OA3RdbXDVj0VFiGzFE0sJMRIw6TfzzPzXs2AGz+FoR712KjWMtsDKU
-nX3fC9+GDRwerXANlIaG94gMOzQ99U8MmqQMRleBbZz2sINo3NyFsf3fL9WTRqdB
-uMjTGfU6UeTGclqgRN+aA/bmSSzhKQjU5JqZhVb/TeQdtueIubjGXKgVyd3LZXvU
-z/UgSmtT9yWDHbHmaICGgb31ShC88wj8HbfPRxGYYPlcDJ7dZB512Y7kKknBjeBF
-+yw1LOlhPlqy/17LQkOmaX8FSXaQtLxPXLKypuBSi9Wqs0wCfPqgSzCxGPxevIRb
-/JSbcQIQU9VuF2OY2vh+cMBdxfNs0X+70fMTqsZVMUfGew/1lhbGMTlZigKuHftS
-K4/43gVYVeeHUtTqgZGyddZMfA7Jn4URvH6svLKEE8JrU17cVkj3CnBIP2CihIm0
-5O/W60egfcOR89ZfnnLdLktrYcDajtX+vMJKm3OMt5ctDRZRGom55aYLs50cgwfW
-+iTqGf79YhSkjU796Ykf+2iCpd5O7GfxvsTDwklTR8oukQWbDn1uBs+GUFnD/K8B
-nFg+wE7phGmQzrh6TJnb
-=F6nY
------END PGP SIGNATURE-----
+is for the sole use of the intended recipient(s) and contains information=
+=A0
+that is confidential and proprietary to AppliedMicro Corporation or its s=
+ubsidiaries. =
 
---Signature=_Wed__9_May_2012_14_03_46_+1000_3Iji2BOBoHRC8OrQ--
+It is to be used solely for the purpose of furthering the parties' busine=
+ss relationship. =
+
+All unauthorized review, use, disclosure or distribution is prohibited. =
+
+If you are not the intended recipient, please contact the sender by reply=
+ e-mail =
+
+and destroy all copies of the original message.
+=0D
