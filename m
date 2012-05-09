@@ -1,42 +1,25 @@
-Return-Path: <zhangwm@marvell.com>
-Received: from na3sys009aog134.obsmtp.com (na3sys009aog134.obsmtp.com
- [74.125.149.83])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A2E99B6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 11:55:56 +1000 (EST)
-From: Neil Zhang <zhangwm@marvell.com>
-To: Christoph Fritz <chf.fritz@googlemail.com>, Fabio Estevam
- <festevam@gmail.com>, Li Yang <leoli@freescale.com>, Felipe Balbi
- <balbi@ti.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Hans J.
- Koch" <hjk@hansjkoch.de>, Daniel Mack <daniel@caiaq.de>
-Date: Tue, 8 May 2012 18:50:17 -0700
-Subject: RE: [RFC] [PATCH] usb: gadget: fix dtd dma confusion
-Message-ID: <175CCF5F49938B4D99B2E3EF7F558EBE1A180E49BA@SC-VEXCH4.marvell.com>
-References: <1333796272.3450.92.camel@lovely>
- <F281D0F91ED19E4D8E63A7504E8A64980AFFE3@039-SN2MPN1-022.039d.mgd.msft.net>
- <CAOMZO5AjQsNw7_4ETkB38mmuBXj4pnCwJwAsi4zC4b_83=Enfw@mail.gmail.com>
- <20120409200656.GD2640@local>
- <CAOMZO5BTrA8G6wwQZ3e6bydJX7UtG7jj2c29Ln7u_3_jyUGB+w@mail.gmail.com>
- <20120410001017.GF2640@local>
- <CAOMZO5A=sHeyoQ0PCd=09qGGKb0NjXi-kF5qyG+3U-GhD7rhzg@mail.gmail.com>
- <20120410021151.GB23044@lovely.krouter>
- <20120411073918.GA9180@lovely.krouter>
- <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
- <20120509000221.GA19525@lovely.krouter>
-In-Reply-To: <20120509000221.GA19525@lovely.krouter>
-Content-Type: text/plain; charset="gb2312"
-MIME-Version: 1.0
-Cc: Oliver Neukum <oneukum@suse.de>, Kukjin Kim <kgene.kim@samsung.com>,
- Eric Miao <eric.y.miao@gmail.com>, Chen Peter-B29397 <B29397@freescale.com>,
- Sascha Hauer <s.hauer@pengutronix.de>, Nicolas Ferre <nicolas.ferre@atmel.com>,
- Haojian Zhuang <haojian.zhuang@gmail.com>,
- Estevam Fabio-R49496 <r49496@freescale.com>,
- Ido Shayevitz <idos@codeaurora.org>, Ben Dooks <ben-linux@fluff.org>,
- Thomas Dahlmann <dahlmann.thomas@arcor.de>,
- Russell King <linux@arm.linux.org.uk>, Chao Xie <cxie4@marvell.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 288A6B6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 14:03:56 +1000 (EST)
+Date: Wed, 9 May 2012 14:03:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: fix compile fail in hugetlb cmdline parsing
+Message-Id: <20120509140346.29a2940e18748df49051f599@canb.auug.org.au>
+In-Reply-To: <1336532658.1714.15.camel@pasglop>
+References: <1336401142-18733-1-git-send-email-paul.gortmaker@windriver.com>
+ <878vh3cncz.fsf@rustcorp.com.au> <1336532658.1714.15.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__9_May_2012_14_03_46_+1000_3Iji2BOBoHRC8OrQ"
+Cc: Jim Cromie <jim.cromie@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jason Baron <jbaron@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>, linux-next@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,60 +29,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgQ2hyaXN0b3BoLA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IENo
-cmlzdG9waCBGcml0eiBbbWFpbHRvOmNoZi5mcml0ekBnb29nbGVtYWlsLmNvbV0NCj4gU2VudDog
-MjAxMsTqNdTCOcjVIDg6MDINCj4gVG86IEZhYmlvIEVzdGV2YW07IE5laWwgWmhhbmc7IExpIFlh
-bmc7IEZlbGlwZSBCYWxiaTsgR3JlZyBLcm9haC0NCj4gSGFydG1hbjsgbGludXgtdXNiQHZnZXIu
-a2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IEhhbnMNCj4gSi4gS29j
-aDsgRGFuaWVsIE1hY2sNCj4gQ2M6IFRob21hcyBEYWhsbWFubjsgTmljb2xhcyBGZXJyZTsgRXJp
-YyBNaWFvOyBSdXNzZWxsIEtpbmc7IEhhb2ppYW4NCj4gWmh1YW5nOyBCZW4gRG9va3M7IEt1a2pp
-biBLaW07IFNhc2NoYSBIYXVlcjsgT2xpdmVyIE5ldWt1bTsgQ2hlbiBQZXRlci0NCj4gQjI5Mzk3
-OyBJZG8gU2hheWV2aXR6OyBFc3RldmFtIEZhYmlvLVI0OTQ5Ng0KPiBTdWJqZWN0OiBbUkZDXSBb
-UEFUQ0hdIHVzYjogZ2FkZ2V0OiBmaXggZHRkIGRtYSBjb25mdXNpb24NCj4gDQo+IE9uIFdlZCwg
-QXByIDExLCAyMDEyIGF0IDEwOjE1OjQ5QU0gLTAzMDAsIEZhYmlvIEVzdGV2YW0gd3JvdGU6DQo+
-ID4gT24gV2VkLCBBcHIgMTEsIDIwMTIgYXQgNDozOSBBTSwgQ2hyaXN0b3BoIEZyaXR6DQo+ID4g
-PGNoZi5mcml0ekBnb29nbGVtYWlsLmNvbT4gd3JvdGU6DQo+ID4NCj4gPiA+IENhbiB5b3UgYXBw
-cm92ZSB0aGlzIGJlaGF2aW91ciBvZiBnX2V0aGVyL3VzYm5ldCB3aGVuIHVzaW5nIGlwZXJmPw0K
-PiA+DQo+ID4gSSBhbSBub3QgdmVyeSBmYW1pbGlhciB3aXRoIGlwZXJmLCBzbyBJIHdpbGwgbGV0
-IG90aGVycyBjb21tZW50Lg0KPiANCj4gSGkgdG8gQWxsLA0KPiANCj4gYWZ0ZXIgYSB3aGlsZSBv
-ZiB0ZXN0aW5nIGFuZCBzZWFyY2hpbmcgSSBjYW4gY29tZSB1cCB3aXRoIGEgcGF0Y2gNCj4gdGhh
-dCBmaXhlcyBnX2V0aGVyIDwtPiBpcGVyZiBmb3IgZnNsX3VkYyBvbiBBUk0gaS5NWDM1Lg0KPiAN
-Cj4gVGhlIHNhZCBwYXJ0IGlzIHRoYXQgdGhpcyBraW5kIG9mIGZpeCBpcyBhbHJlYWR5IGltcGxl
-bWVudGVkIGZvcg0KPiBtYXJ2ZWxsIG12X3VkYyBkcml2ZXIgc2luY2UgbGFzdCB5ZWFyIGJ1dCBz
-dGlsbCBfbm90XyBpbiB0aGUgfjE1DQo+IG90aGVyICp1ZGMuYyBkcml2ZXJzLg0KPiANCj4gU2Vl
-IGhlcmU6DQo+IGRhZWM3NjVkYTc2N2U0YTZhMzBlMTI5ODg2MmIyOGYyY2FlOWE3M2YNCj4gdXNi
-OiBnYWRnZXQ6IG12X3VkYzogZml4IGR0ZCBkbWEgY29uZnVzaW9uDQo+IA0KPiBTbyBoZXJlYnkg
-SSdtIENDLWluZyBhbGwgKnVkYy5jIG1haW50YWluZXJzIHRvIHBvaW50IG91dCB0aGF0IHRoaXMN
-Cj4gaXNzdWUgbWF5YmUgYWZmZWN0cyB5b3UgdG9vLg0KPiANCj4gQW5kIG1heWJlIHNvbWVvbmUg
-Y2FuIGV4cGxhaW4gaWYgdGhpczoNCj4gKwkJCQlpZiAoY3Vycl90ZC0+bmV4dF90ZF9wdHIgPT0N
-Cj4gRVBfUVVFVUVfSEVBRF9ORVhUX1RFUk1JTkFURSkgew0KPiBpcyBuZWNlc3NhcnkgYW5kIHdo
-eSAocGxlYXNlIHNlZSBiZWxvdykuDQo+IA0KIA0KVGhlIG91dGVyIGxvb3AgaXMgdG8gY2hlY2sg
-d2hldGhlciB0aGUgY29udHJvbGxlciBzdGlsbCBwb2ludCB0byB0aGUgY3VycmVudCBkdGQuDQpJ
-ZiBzbywgd2Ugc2hvdWxkIHdhaXQgaXQgdG8gbW92ZSBvbnRvIHRoZSBuZXh0IGR0ZC4NCkJ1dCB0
-aGVyZSBpcyBhbiBleGNlcHRpb24sIGlmIHRoZSBjdXJyZW50IGR0ZCBpcyB0aGUgbGFzdCBkdGQg
-b24gdGhpcyBlcCBxdWV1ZSwgDQp0aGVuIHRoZSBjb250cm9sbGVyIGNhbiBuZXZlciBtb3ZlIG9u
-Lg0KRm9ydHVuYXRlbHksIHdlIGNhbiBjaGVjayByZWdpc3RlciBlcHN0YXR1cyAob2Zmc2V0OiAw
-eDFiOCkgdG8gc2VlIHdoZXRoZXIgdGhlIGJ1ZmZlciBpcyBmcmVlIGFnYWluLg0KDQo+IFRoYW5r
-cywNCj4gIC0tIENocmlzdG9waA0KPiANCj4gLS0tDQo+IFN1YmplY3Q6IFtQQVRDSF0gdXNiOiBn
-YWRnZXQ6IGZzbF91ZGM6IGZpeCBkdGQgZG1hIGNvbmZ1c2lvbg0KPiANCj4gVGhlIGNvbnRyb2xs
-ZXIgd2lsbCBoYW5nIHdoZW4gZG9pbmcgdGVzdGluZ3Mgd2l0aCBnX2V0aGVyIGFuZCBpcGVyZg0K
-PiAodG9vbCBmb3IgbWVhc3VyaW5nIG1heGltdW0gVENQIGFuZCBVRFAgYmFuZHdpZHRoKS4gIFRo
-aXMgcGF0Y2ggYWRkcyBhDQo+IGRlbGF5IHRvIHdhaXQgZm9yIGNvbnRyb2xsZXIgdG8gcmVsZWFz
-ZSBkdGQgZG1hIGJlZm9yZSBmcmVlaW5nIGl0Lg0KPiANCj4gU2lnbmVkLW9mZi1ieTogQ2hyaXN0
-b3BoIEZyaXR6IDxjaGYuZnJpdHpAZ29vZ2xlbWFpbC5jb20+DQo+IC0tLQ0KPiAgZHJpdmVycy91
-c2IvZ2FkZ2V0L2ZzbF91ZGNfY29yZS5jIHwgICAgOSArKysrKysrKysNCj4gIDEgZmlsZXMgY2hh
-bmdlZCwgOSBpbnNlcnRpb25zKCspLCAwIGRlbGV0aW9ucygtKQ0KPiANCj4gZGlmZiAtLWdpdCBh
-L2RyaXZlcnMvdXNiL2dhZGdldC9mc2xfdWRjX2NvcmUuYw0KPiBiL2RyaXZlcnMvdXNiL2dhZGdl
-dC9mc2xfdWRjX2NvcmUuYw0KPiBpbmRleCA1NWFiZmI2Li5mYzg2MTA4IDEwMDY0NA0KPiAtLS0g
-YS9kcml2ZXJzL3VzYi9nYWRnZXQvZnNsX3VkY19jb3JlLmMNCj4gKysrIGIvZHJpdmVycy91c2Iv
-Z2FkZ2V0L2ZzbF91ZGNfY29yZS5jDQo+IEBAIC0xNjM4LDYgKzE2MzgsMTUgQEAgc3RhdGljIGlu
-dCBwcm9jZXNzX2VwX3JlcShzdHJ1Y3QgZnNsX3VkYyAqdWRjLA0KPiBpbnQgcGlwZSwNCj4gIAkJ
-CXN0YXR1cyA9IFJFUV9VTkNPTVBMRVRFOw0KPiAgCQkJcmV0dXJuIHN0YXR1czsNCj4gIAkJfSBl
-bHNlIGlmIChyZW1haW5pbmdfbGVuZ3RoKSB7DQo+ICsJCQkvKiB3YWl0IGNvbnRyb2xsZXIgcmVs
-ZWFzZSBkdGQgZG1hICovDQo+ICsJCQl3aGlsZSAoKGN1cnJfcWgtPmN1cnJfZHRkX3B0ciA9PSBj
-dXJyX3RkLT50ZF9kbWEpKSB7DQo+ICsJCQkJaWYgKGN1cnJfdGQtPm5leHRfdGRfcHRyID09DQo+
-ICsJCQkJCQlFUF9RVUVVRV9IRUFEX05FWFRfVEVSTUlOQVRFKSB7DQo+ICsJCQkJCXVkZWxheSgx
-MDApOw0KPiArCQkJCQlicmVhazsNCj4gKwkJCQl9DQo+ICsJCQkJdWRlbGF5KDEpOw0KPiArCQkJ
-fQ0KPiAgCQkJaWYgKGRpcmVjdGlvbikgew0KPiAgCQkJCVZEQkcoIlRyYW5zbWl0IGRURCByZW1h
-aW5pbmcgbGVuZ3RoIG5vdCB6ZXJvIik7DQo+ICAJCQkJc3RhdHVzID0gLUVQUk9UTzsNCj4gLS0N
-Cj4gMS43LjIuNQ0KPiANCg0KQmVzdCBSZWdhcmRzLA0KTmVpbCBaaGFuZw0K
+--Signature=_Wed__9_May_2012_14_03_46_+1000_3Iji2BOBoHRC8OrQ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Ben,
+
+On Wed, 09 May 2012 13:04:18 +1000 Benjamin Herrenschmidt <benh@kernel.cras=
+hing.org> wrote:
+>
+> On Tue, 2012-05-08 at 13:53 +0930, Rusty Russell wrote:
+> > On Mon,  7 May 2012 10:32:22 -0400, Paul Gortmaker <paul.gortmaker@wind=
+river.com> wrote:
+> > > Commit 9fb48c744ba6a4bf58b666f4e6fdac3008ea1bd4
+> > >=20
+> > >     "params: add 3rd arg to option handler callback signature"
+> > >=20
+> > > added an extra arg to the function, but didn't catch all the use
+> > > cases needing it, causing this compile fail in mpc85xx_defconfig:
+> > >=20
+> > >  arch/powerpc/mm/hugetlbpage.c:316:4: error: passing argument 7 of
+> > >  'parse_args' from incompatible pointer type [-Werror]
+> > >=20
+> > >  include/linux/moduleparam.h:317:12: note: expected
+> > > 	 'int (*)(char *, char *, const char *)' but argument is of type
+> > > 	 'int (*)(char *, char *)'
+> > >=20
+> > > This function has no need to printk out the "doing" value, so
+> > > just add the arg as an "unused".
+> > >=20
+> > > Cc: Rusty Russell <rusty@rustcorp.com.au>
+> > > Cc: Jim Cromie <jim.cromie@gmail.com>
+> > > Cc: Jason Baron <jbaron@redhat.com>
+> > > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > > Cc: Becky Bruce <beckyb@kernel.crashing.org>
+> > > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> >=20
+> > Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+>=20
+> This is for -next right ? IE. I don't seem to have the faulty commit
+> in my tree so I can't carry the fix for now.... or am I missing
+> something ?
+
+This patch has been added to the driver-core tree which contains the
+faulty commit ...
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Wed__9_May_2012_14_03_46_+1000_3Iji2BOBoHRC8OrQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPqeyiAAoJEECxmPOUX5FEFVEP/2ewVYva3bC2/AQZRZZduRgb
++9snbwFrqGRlRPTjt0H6YqyAo8AFfMnPeG5cCZNyG2dSwiIYg8zzY/Nr9kSoIBph
+tmV6jRRjN1OA3RdbXDVj0VFiGzFE0sJMRIw6TfzzPzXs2AGz+FoR712KjWMtsDKU
+nX3fC9+GDRwerXANlIaG94gMOzQ99U8MmqQMRleBbZz2sINo3NyFsf3fL9WTRqdB
+uMjTGfU6UeTGclqgRN+aA/bmSSzhKQjU5JqZhVb/TeQdtueIubjGXKgVyd3LZXvU
+z/UgSmtT9yWDHbHmaICGgb31ShC88wj8HbfPRxGYYPlcDJ7dZB512Y7kKknBjeBF
++yw1LOlhPlqy/17LQkOmaX8FSXaQtLxPXLKypuBSi9Wqs0wCfPqgSzCxGPxevIRb
+/JSbcQIQU9VuF2OY2vh+cMBdxfNs0X+70fMTqsZVMUfGew/1lhbGMTlZigKuHftS
+K4/43gVYVeeHUtTqgZGyddZMfA7Jn4URvH6svLKEE8JrU17cVkj3CnBIP2CihIm0
+5O/W60egfcOR89ZfnnLdLktrYcDajtX+vMJKm3OMt5ctDRZRGom55aYLs50cgwfW
++iTqGf79YhSkjU796Ykf+2iCpd5O7GfxvsTDwklTR8oukQWbDn1uBs+GUFnD/K8B
+nFg+wE7phGmQzrh6TJnb
+=F6nY
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_May_2012_14_03_46_+1000_3Iji2BOBoHRC8OrQ--
