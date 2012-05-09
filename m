@@ -1,43 +1,23 @@
-Return-Path: <B29397@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1113EB6F9D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 12:12:04 +1000 (EST)
-From: Chen Peter-B29397 <B29397@freescale.com>
-To: Neil Zhang <zhangwm@marvell.com>, Christoph Fritz
- <chf.fritz@googlemail.com>, Fabio Estevam <festevam@gmail.com>, Li
- Yang-R58472 <r58472@freescale.com>, Felipe Balbi <balbi@ti.com>, Greg
- Kroah-Hartman <gregkh@linuxfoundation.org>, "linux-usb@vger.kernel.org"
- <linux-usb@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "Hans J. Koch" <hjk@hansjkoch.de>, Daniel
- Mack <daniel@caiaq.de>
-Subject: RE: [RFC] [PATCH] usb: gadget: fix dtd dma confusion
-Date: Wed, 9 May 2012 02:11:56 +0000
-Message-ID: <F281D0F91ED19E4D8E63A7504E8A649803B91E69@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1333796272.3450.92.camel@lovely>
- <F281D0F91ED19E4D8E63A7504E8A64980AFFE3@039-SN2MPN1-022.039d.mgd.msft.net>
- <CAOMZO5AjQsNw7_4ETkB38mmuBXj4pnCwJwAsi4zC4b_83=Enfw@mail.gmail.com>
- <20120409200656.GD2640@local>
- <CAOMZO5BTrA8G6wwQZ3e6bydJX7UtG7jj2c29Ln7u_3_jyUGB+w@mail.gmail.com>
- <20120410001017.GF2640@local>
- <CAOMZO5A=sHeyoQ0PCd=09qGGKb0NjXi-kF5qyG+3U-GhD7rhzg@mail.gmail.com>
- <20120410021151.GB23044@lovely.krouter>
- <20120411073918.GA9180@lovely.krouter>
- <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
- <20120509000221.GA19525@lovely.krouter>
- <175CCF5F49938B4D99B2E3EF7F558EBE1A180E49BA@SC-VEXCH4.marvell.com>
-In-Reply-To: <175CCF5F49938B4D99B2E3EF7F558EBE1A180E49BA@SC-VEXCH4.marvell.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Oliver Neukum <oneukum@suse.de>, Kukjin Kim <kgene.kim@samsung.com>,
- Eric Miao <eric.y.miao@gmail.com>, Estevam Fabio-R49496 <r49496@freescale.com>,
- Sascha Hauer <s.hauer@pengutronix.de>, Nicolas Ferre <nicolas.ferre@atmel.com>,
- Haojian Zhuang <haojian.zhuang@gmail.com>, Ido Shayevitz <idos@codeaurora.org>,
- Ben Dooks <ben-linux@fluff.org>, Thomas Dahlmann <dahlmann.thomas@arcor.de>,
- Russell King <linux@arm.linux.org.uk>, Chao Xie <cxie4@marvell.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 662CBB6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 May 2012 13:04:33 +1000 (EST)
+Message-ID: <1336532658.1714.15.camel@pasglop>
+Subject: Re: [PATCH] powerpc: fix compile fail in hugetlb cmdline parsing
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Date: Wed, 09 May 2012 13:04:18 +1000
+In-Reply-To: <878vh3cncz.fsf@rustcorp.com.au>
+References: <1336401142-18733-1-git-send-email-paul.gortmaker@windriver.com>
+ <878vh3cncz.fsf@rustcorp.com.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Jim Cromie <jim.cromie@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jason Baron <jbaron@redhat.com>, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,24 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2012-05-08 at 13:53 +0930, Rusty Russell wrote:
+> On Mon,  7 May 2012 10:32:22 -0400, Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+> > Commit 9fb48c744ba6a4bf58b666f4e6fdac3008ea1bd4
+> > 
+> >     "params: add 3rd arg to option handler callback signature"
+> > 
+> > added an extra arg to the function, but didn't catch all the use
+> > cases needing it, causing this compile fail in mpc85xx_defconfig:
+> > 
+> >  arch/powerpc/mm/hugetlbpage.c:316:4: error: passing argument 7 of
+> >  'parse_args' from incompatible pointer type [-Werror]
+> > 
+> >  include/linux/moduleparam.h:317:12: note: expected
+> > 	 'int (*)(char *, char *, const char *)' but argument is of type
+> > 	 'int (*)(char *, char *)'
+> > 
+> > This function has no need to printk out the "doing" value, so
+> > just add the arg as an "unused".
+> > 
+> > Cc: Rusty Russell <rusty@rustcorp.com.au>
+> > Cc: Jim Cromie <jim.cromie@gmail.com>
+> > Cc: Jason Baron <jbaron@redhat.com>
+> > Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> > Cc: Becky Bruce <beckyb@kernel.crashing.org>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> 
+> Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 
-=20
-> >
-> > after a while of testing and searching I can come up with a patch
-> > that fixes g_ether <-> iperf for fsl_udc on ARM i.MX35.
-> >
-> > The sad part is that this kind of fix is already implemented for
-> > marvell mv_udc driver since last year but still _not_ in the ~15
-> > other *udc.c drivers.
-> >
-=20
-It is a controller limitation (bug?) for chipidea controller when using
-dtd list to handle multi-dtds situation. The controller will read dtd's
-next pointer after this dtd's active bit has already been cleared.
+This is for -next right ? IE. I don't seem to have the faulty commit
+in my tree so I can't carry the fix for now.... or am I missing
+something ?
 
-Freescale has an errata for this problem's description and solution.
-http://cache.freescale.com/files/dsp/doc/errata/IMX23CE.pdf
-See 2858
-
-BR,
-Peter
+Cheers,
+Ben.
