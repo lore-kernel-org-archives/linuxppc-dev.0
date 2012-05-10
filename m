@@ -1,24 +1,21 @@
-Return-Path: <bigeasy@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:1c35:abcd:42:0:1])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B2CE0B6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 May 2012 05:53:13 +1000 (EST)
-Date: Wed, 9 May 2012 21:53:07 +0200
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: powerpc/85xx: p2020rdb - move the NAND address.
-Message-ID: <20120509195307.GA25255@linutronix.de>
-References: <E9CCADB024EDCD44A9C1083605680C42B9053302@ES05CO.wgti.net>
- <4F740E98.50104@linutronix.de>
- <9460468D-281C-4960-839A-F8435638DE4B@kernel.crashing.org>
- <4F75BD6B.30609@linutronix.de>
- <926BF56B-AA5C-443B-BD52-6844518810DB@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <926BF56B-AA5C-443B-BD52-6844518810DB@kernel.crashing.org>
-Cc: Bryan Hundven <Bryan.Hundven@watchguard.com>, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 00424B6FA4
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 May 2012 13:50:10 +1000 (EST)
+Message-ID: <1336621805.3881.38.camel@pasglop>
+Subject: Re: [PATCH v2 2/3] ppc32/kprobe: complete kprobe and migrate
+ exception frame
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tiejun Chen <tiejun.chen@windriver.com>
+Date: Thu, 10 May 2012 13:50:05 +1000
+In-Reply-To: <1323946810-4868-3-git-send-email-tiejun.chen@windriver.com>
+References: <1323946810-4868-1-git-send-email-tiejun.chen@windriver.com>
+ <1323946810-4868-3-git-send-email-tiejun.chen@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +25,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Kumar Gala | 2012-03-31 09:48:18 [-0500]:
+On Thu, 2011-12-15 at 19:00 +0800, Tiejun Chen wrote:
+> We can't emulate stwu since that may corrupt current exception stack.
+> So we will have to do real store operation in the exception return code.
+> 
+> Firstly we'll allocate a trampoline exception frame below the kprobed
+> function stack and copy the current exception frame to the trampoline.
+> Then we can do this real store operation to implement 'stwu', and reroute
+> the trampoline frame to r1 to complete this exception migration.
+> 
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> ---
+>  arch/powerpc/kernel/entry_32.S |   35 +++++++++++++++++++++++++++++++++++
+>  1 files changed, 35 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index 56212bc..0cdd27d 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -850,6 +850,41 @@ resume_kernel:
+>  
+>  	/* interrupts are hard-disabled at this point */
+>  restore:
+> +	lwz	r3,_MSR(r1)	/* Returning to user mode? */
+> +	andi.	r0,r3,MSR_PR
+> +	bne	1f	
 
-Sorry for the delay Kumar, I though I allready done it.
+ .../...
 
->Yes, please do.
-Here it comes.
+Wouldn't it be better to use resume_kernel here ?
 
->From 5b3e09992615e5670fa8e432e50424466fa9ca1a Mon Sep 17 00:00:00 2001
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Date: Wed, 9 May 2012 21:48:42 +0200
-Subject: [PATCH] Revert "powerpc/85xx: p2020rdb - move the NAND address."
+IE. We already have restore_user vs. resume_kernel labels, including
+the PR test. In the !PREEMPT case, resume_kernel is empty but it's
+there, so you can just "populate" it, ie, something like:
 
-This reverts commit 0c00f65653389a408dfbbee7578e671664eea26a.
-The initial commit was my fault. There are two boards out there:
-P2020RDB and P2020RDB-PC. I wasn't aware of that and assumed that I have
-a RDB board in front of me while I the RDB-PC. This patch makes it work
-for the RDB-PC variant and breaks it for the RDB. Now there is a device
-tree file available for the RDB-PC which was not there earlier. So with
-this revert, everything gets back to normal :)
+restore_user:
+	... existing dbcr0 stuff ...
+	b restore
 
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
----
- arch/powerpc/boot/dts/p2020rdb.dts |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+resume_kernel: <-- removed the ifdef CONFIG_PREEMPT
 
-diff --git a/arch/powerpc/boot/dts/p2020rdb.dts b/arch/powerpc/boot/dts/p2020rdb.dts
-index 153bc76..4d52bce 100644
---- a/arch/powerpc/boot/dts/p2020rdb.dts
-+++ b/arch/powerpc/boot/dts/p2020rdb.dts
-@@ -34,7 +34,7 @@
- 
- 		/* NOR and NAND Flashes */
- 		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
--			  0x1 0x0 0x0 0xff800000 0x00040000
-+			  0x1 0x0 0x0 0xffa00000 0x00040000
- 			  0x2 0x0 0x0 0xffb00000 0x00020000>;
- 
- 		nor@0,0 {
--- 
-1.7.10
+	... Do the stack store business here...
 
->>>> Since both system have the same SoC and the NAND_SPL is always linked
->>>> against 0xfff00000 I don't see anything wrong to relocate the NAND CS
->>>> later to 0xff800000 (or to 0xffa00000) and having it consistent among
->>>> both configs.
->> 
->> what about this thing? Should leave it as it or move to the same
->> location? Since I have no HW *I* would prefer not to touch it :)
->
->Hmm, that implies a u-boot change, right?
+#ifdef CONFIG_PREEMPT
+	... move the preempt code here...
+#endif
 
-Yup.
+restore:
+	... existing stuff ...
 
->- k
+Also, the added advantage is that the code to calc
+the thread info pointer and load the TI_FLAG can be
+shared now between your stuff and preempt, ie:
 
-Sebastian
+resume_kernel:
+	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
+	lwz	r0,TI_FLAGS(r9)
+	andis.	r0,r0,_TIF_EMULATE_STACK_STORE@h
+	bne-	emulate_stack_store
+#ifdef CONFIG_PREEMPT
+	lwz	r8,TI_PREEMPT(r9) <-- note use of r8 instead of r0,
+                                      I -think- r8 can be clobbered
+                                      here but pls dbl check
+	cmpwi	0,r8,0
+	bne	restore
+	andi.	r0,r0,_TIF_NEED_RESCHED
+	etc...
+ 	
+> +	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+> +	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
+> +	lwz	r0,TI_FLAGS(r9)
+> +	andis.	r0,r0,_TIF_EMULATE_STACK_STORE@h
+> +	beq+	1f	
+> +
+> +	addi	r9,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
+> +
+> +	lwz	r3,GPR1(r1)
+> +	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
+> +	mr	r4,r1			/* src:  current exception frame */
+> +	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
+> +	mr	r1,r3			/* Reroute the trampoline frame to r1 */
+> +	bl	memcpy			/* Copy from the original to the trampoline */
+> +
+> +	/* Do real store operation to complete stwu */
+> +	lwz	r5,GPR1(r1)
+> +	stw	r9,0(r5)
+
+Ok, I think I -finally- understand your trick of using r1 +
+INT_FRAME_SIZE as the value to store :-) It makes sense and it's
+actually a nice hack :-)
+
+I would recommend that in the C code part of the emulation, you
+add some sanity checking to make sure we don't overflow the
+kernel stack etc... it should come in generally handy especially
+if what's your trying to debug with kprobes is a kernel stack
+overflow :-)
+
+> +	/* Clear _TIF_EMULATE_STACK_STORE flag */
+> +	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
+> +	lis	r11,_TIF_EMULATE_STACK_STORE@h
+> +	addi	r9,r9,TI_FLAGS
+> +0:	lwarx	r8,0,r9
+> +	andc	r8,r8,r11
+> +#ifdef CONFIG_IBM405_ERR77
+> +	dcbt	0,r9
+> +#endif
+> +	stwcx.	r8,0,r9
+> +	bne-	0b
+> +1:
+> +
+>  #ifdef CONFIG_44x
+>  BEGIN_MMU_FTR_SECTION
+>  	b	1f
+
+BTW. Are you going to do a ppc64 variant of that patch ?
+
+Cheers,
+Ben.
