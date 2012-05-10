@@ -1,23 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8FC80B6FCB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2012 07:04:53 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Huang Changming-R66093 <r66093@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc/mpc85xx: p1022ds support the MTD for NOR
- and NAND flash
-Date: Thu, 10 May 2012 21:04:44 +0000
-Message-ID: <CAOZdJXUU570dAxiR4u2twJkaPH9yVvsAvFDRTNnLN95F-_3Uew@mail.gmail.com>
-References: <1334626955-8069-1-git-send-email-Chang-Ming.Huang@freescale.com>
-In-Reply-To: <1334626955-8069-1-git-send-email-Chang-Ming.Huang@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0DDD6B6FAA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2012 07:58:25 +1000 (EST)
+Message-ID: <1336687098.3881.63.camel@pasglop>
+Subject: Re: [PATCH v3 03/17] powerpc: Add PFO support to the VIO bus
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Date: Fri, 11 May 2012 07:58:18 +1000
+In-Reply-To: <20120510190835.GB12304@linux.vnet.ibm.com>
+References: <1334242825.18090.4.camel@key-ThinkPad-W510>
+ <1334243302.18090.10.camel@key-ThinkPad-W510>
+ <1335841603.3621.8.camel@pasglop>
+ <20120510190835.GB12304@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Kent Yoder <key@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 16, 2012 at 8:42 PM,  <Chang-Ming.Huang@freescale.com> wrote:
-> From: Jerry Huang <Chang-Ming.Huang@freescale.com>
->
-> The compatilbe 'simple-bus' is removed from the latest DTS for NAND and
-> NOR flash partition, so we must add the new compatilbe support for p1022d=
-s,
-> otherwise, the kernel can't parse the partition of NOR and NAND flash.
->
-> Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> ---
+On Thu, 2012-05-10 at 14:08 -0500, Robert Jennings wrote:
+> * Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
 
-This patch is no longer compatible with the upstream kernel since my
-patch, "powerpc/85xx: don't call of_platform_bus_probe() twice" was
-applied.  This is because my patch removed p1022_ds_ids[].
+> > Is this meant to be called in atomic context ? If not, maybe it should
+> > at the very least do a cond_resched() ?
+> > 
+> > Else, what about ceding the processor ? Or at the very least reducing
+> > the thread priority for a bit ?
+> > 
+> > Shouldn't we also enforce to always have a timeout ? IE. Something like
+> > 30s or so if nothing specified to avoid having the kernel just hard
+> > lock...
+> > 
+> > In general I don't like that sort of synchronous code, I'd rather return
+> > the busy status up the chain which gives a chance to the caller to take
+> > more appropriate measures depending on what it's doing, but that really
+> > depends what you use that synchronous call for. I suppose if it's for
+> > configuration type operations, it's ok...
+> 
+> This function is called in atomic context, it is used by PFO-type device
+> drivers to perform operations with the nest accelerator unit (like
+> crypto acceleration).
+> 
+> Having the timeout and retries in this function is the wrong thing to do.
+> We'll resubmit this without the loop and the caller will be responsible for
+> retrying the operations.
+>
+> I would rather have the caller cede the processor or alter thread
+> priority where appropriate than doing that in this function.  I don't
+> think this should be done in this crypto driver.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+That sounds right indeed... as long as the upper crypto layer has a
+concept of "try again later"... if it doesn't it will result in random
+funny failures :-)
+
+Cheers,
+Ben.
