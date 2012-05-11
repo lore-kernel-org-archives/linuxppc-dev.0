@@ -1,24 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [198.137.202.13])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5F745B703E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2012 08:07:38 +1000 (EST)
-Date: Fri, 11 May 2012 18:03:28 -0400 (EDT)
-Message-Id: <20120511.180328.1412689186292656882.davem@davemloft.net>
-To: ddaney.cavm@gmail.com
-Subject: Re: [PATCH] net: of/phy: fix build error when phylib is built as a
- module
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4FAD532E.401@gmail.com>
+Return-Path: <rdunlap@xenotime.net>
+Received: from oproxy6-pub.bluehost.com (oproxy6.bluehost.com
+ [IPv6:2605:dc00:100:2::a6])
+ by ozlabs.org (Postfix) with SMTP id 630D7B7007
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2012 09:50:05 +1000 (EST)
+Message-ID: <4FADA5B9.1060303@xenotime.net>
+Date: Fri, 11 May 2012 16:50:17 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+MIME-Version: 1.0
+To: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>
+Subject: Re: [PATCH] net: of/phy: fix build error when phylib is built as
+ a module
 References: <20120510.224352.2149006669429730060.davem@davemloft.net>
  <1336751221-19127-1-git-send-email-bjorn@mork.no>
- <4FAD532E.401@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Cc: sfr@canb.auug.org.au, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- paul.gortmaker@windriver.com, rdunlap@xenotime.net, linux-next@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, bjorn@mork.no
+In-Reply-To: <1336751221-19127-1-git-send-email-bjorn@mork.no>
+Content-Type: text/plain; charset=UTF-8
+Cc: sfr@canb.auug.org.au, david.daney@cavium.com, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, paul.gortmaker@windriver.com,
+ linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,26 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: David Daney <ddaney.cavm@gmail.com>
-Date: Fri, 11 May 2012 10:58:06 -0700
+On 05/11/2012 08:47 AM, Bjørn Mork wrote:
 
-> On 05/11/2012 08:47 AM, Bj=F8rn Mork wrote:
->> CONFIG_OF_MDIO is tristate and will be m if PHYLIB is m.  Use
->> IS_ENABLED macro to prevent build error:
->>
->>   ERROR: "of_mdio_find_bus" [drivers/net/phy/mdio-mux.ko] undefined!=
+> CONFIG_OF_MDIO is tristate and will be m if PHYLIB is m.  Use
+> IS_ENABLED macro to prevent build error:
+> 
+>  ERROR: "of_mdio_find_bus" [drivers/net/phy/mdio-mux.ko] undefined!
+> 
+> Reported-by: Randy Dunlap <rdunlap@xenotime.net>
+> Cc: David Daney <david.daney@cavium.com>
+> Signed-off-by: Bjørn Mork <bjorn@mork.no>
 
->>
->> Reported-by: Randy Dunlap<rdunlap@xenotime.net>
->> Cc: David Daney<david.daney@cavium.com>
->> Signed-off-by: Bj=F8rn Mork<bjorn@mork.no>
-> =
 
-> I was able to reproduce the failure, and this patch both fixes it and=
+Acked-by: Randy Dunlap <rdunlap@xenotime.net>
 
-> seems correct, so...
-> =
+Thanks.
 
-> Acked-by: David Daney<david.daney@cavium.com>
 
-Applied.
+> ---
+> I wonder if this could be as banal as this?  Not even build tested...
+> 
+> Should be wrapped into commit 25106022 if it works, to ensure
+> bisectability.
+> 
+> 
+> 
+> Bjørn
+> 
+>  drivers/net/phy/mdio_bus.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
+> index 83d5c9f..683ef1c 100644
+> --- a/drivers/net/phy/mdio_bus.c
+> +++ b/drivers/net/phy/mdio_bus.c
+> @@ -88,7 +88,7 @@ static struct class mdio_bus_class = {
+>  	.dev_release	= mdiobus_release,
+>  };
+>  
+> -#ifdef CONFIG_OF_MDIO
+> +#if IS_ENABLED(CONFIG_OF_MDIO)
+>  /* Helper function for of_mdio_find_bus */
+>  static int of_mdio_bus_match(struct device *dev, void *mdio_bus_np)
+>  {
+
+
+
+-- 
+~Randy
