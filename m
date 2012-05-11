@@ -1,35 +1,19 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8B0FBB6FF8
- for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2012 18:43:57 +1000 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <prasad@linux.vnet.ibm.com>;
- Fri, 11 May 2012 05:43:50 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 16E811DC004B
- for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2012 05:43:42 -0300 (BRT)
-Received: from d24av05.br.ibm.com (d24av05.br.ibm.com [9.18.232.44])
- by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q4B8hNGe48496918
- for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2012 05:43:23 -0300
-Received: from d24av05.br.ibm.com (loopback [127.0.0.1])
- by d24av05.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q4B8hkMX007679
- for <linuxppc-dev@ozlabs.org>; Fri, 11 May 2012 05:43:46 -0300
-Date: Fri, 11 May 2012 14:13:38 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: [Patch][hw-breakpoint] Use generic hw-breakpoint interfaces for new
- PPC ptrace flags
-Message-ID: <20120511084338.GA31696@in.ibm.com>
+Return-Path: <B35336@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 33C98B6FFE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2012 21:53:52 +1000 (EST)
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v5 1/5] powerpc/85xx: implement hardware timebase sync
+Date: Fri, 11 May 2012 19:53:51 +0800
+Message-ID: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, David Gibson <dwg@au1.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+Content-Type: text/plain
+Cc: scottwood@freescale.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,200 +23,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
-	Please find a patch that introduces generic hw-breakpoint
-interfaces for a couple of ptrace flags used by server-class processors.
+Do hardware timebase sync. Firstly, stop all timebases, and transfer
+the timebase value of the boot core to the other core. Finally,
+start all timebases.
 
-This patch has been reviewed by the community and acked-by David Gibson
-last year
-(http://thread.gmane.org/gmane.linux.ports.ppc.embedded/47473/focus=47760)
-but did not get submitted to you for inclusion (the patch
-applies to the latest linux-2.6 tree, with a few line adjustments).
-While originally a patchset of two, I'm submitting only the first (and
-independent) patch due to disagreements over the 2/2 patch.
+Only apply to dual-core chips, such as MPC8572, P2020, etc.
 
-Kindly consider this patch for inclusion into the relevant PowerPC tree.
-
-Thanks,
-K.Prasad
-
-------
-
-PPC_PTRACE_GETHWDBGINFO, PPC_PTRACE_SETHWDEBUG and PPC_PTRACE_DELHWDEBUG are
-PowerPC specific ptrace flags that use the watchpoint register. While they are
-targeted primarily towards BookE users, user-space applications such as GDB
-have started using them for BookS too. This patch enables the use of generic
-hardware breakpoint interfaces for these new flags.
-
-Apart from the usual benefits of using generic hw-breakpoint interfaces, these
-changes allow debuggers (such as GDB) to use a common set of ptrace flags for
-their watchpoint needs and allow more precise breakpoint specification (length
-of the variable can be specified).
-
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- Documentation/powerpc/ptrace.txt |   16 ++++++++
- arch/powerpc/kernel/ptrace.c     |   77 +++++++++++++++++++++++++++++++++++---
- 2 files changed, 87 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/fsl_guts.h |    2 +
+ arch/powerpc/platforms/85xx/smp.c   |   93 +++++++++++++++++++++++++++++++++--
+ 2 files changed, 91 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/powerpc/ptrace.txt b/Documentation/powerpc/ptrace.txt
-index f4a5499..f2a7a39 100644
---- a/Documentation/powerpc/ptrace.txt
-+++ b/Documentation/powerpc/ptrace.txt
-@@ -127,6 +127,22 @@ Some examples of using the structure to:
-   p.addr2           = (uint64_t) end_range;
-   p.condition_value = 0;
+diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
+index aa4c488..dd5ba2c 100644
+--- a/arch/powerpc/include/asm/fsl_guts.h
++++ b/arch/powerpc/include/asm/fsl_guts.h
+@@ -48,6 +48,8 @@ struct ccsr_guts {
+         __be32  dmuxcr;		/* 0x.0068 - DMA Mux Control Register */
+         u8	res06c[0x70 - 0x6c];
+ 	__be32	devdisr;	/* 0x.0070 - Device Disable Control */
++#define CCSR_GUTS_DEVDISR_TB1	0x00001000
++#define CCSR_GUTS_DEVDISR_TB0	0x00004000
+ 	__be32	devdisr2;	/* 0x.0074 - Device Disable Control 2 */
+ 	u8	res078[0x7c - 0x78];
+ 	__be32  pmjcr;		/* 0x.007c - 4 Power Management Jog Control Register */
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index ff42490..6862dda 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -24,6 +24,7 @@
+ #include <asm/mpic.h>
+ #include <asm/cacheflush.h>
+ #include <asm/dbell.h>
++#include <asm/fsl_guts.h>
  
-+- set a watchpoint in server processors (BookS)
-+
-+  p.version         = 1;
-+  p.trigger_type    = PPC_BREAKPOINT_TRIGGER_RW;
-+  p.addr_mode       = PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE;
-+  or
-+  p.addr_mode       = PPC_BREAKPOINT_MODE_EXACT;
-+
-+  p.condition_mode  = PPC_BREAKPOINT_CONDITION_NONE;
-+  p.addr            = (uint64_t) begin_range;
-+  /* For PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE addr2 needs to be specified, where
-+   * addr2 - addr <= 8 Bytes.
-+   */
-+  p.addr2           = (uint64_t) end_range;
-+  p.condition_value = 0;
-+
- 3. PTRACE_DELHWDEBUG
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/mpic.h>
+@@ -115,13 +116,70 @@ smp_85xx_kick_cpu(int nr)
  
- Takes an integer which identifies an existing breakpoint or watchpoint
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 05b7dd2..cd41c78 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1339,6 +1339,12 @@ static int set_dac_range(struct task_struct *child,
- static long ppc_set_hwdebug(struct task_struct *child,
- 		     struct ppc_hw_breakpoint *bp_info)
- {
-+#ifdef CONFIG_HAVE_HW_BREAKPOINT
-+	int ret, len = 0;
-+	struct thread_struct *thread = &(child->thread);
-+	struct perf_event *bp;
-+	struct perf_event_attr attr;
-+#endif /* CONFIG_HAVE_HW_BREAKPOINT */
- #ifndef CONFIG_PPC_ADV_DEBUG_REGS
- 	unsigned long dabr;
- #endif
-@@ -1382,13 +1388,9 @@ static long ppc_set_hwdebug(struct task_struct *child,
- 	 */
- 	if ((bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_RW) == 0 ||
- 	    (bp_info->trigger_type & ~PPC_BREAKPOINT_TRIGGER_RW) != 0 ||
--	    bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT ||
- 	    bp_info->condition_mode != PPC_BREAKPOINT_CONDITION_NONE)
- 		return -EINVAL;
+ struct smp_ops_t smp_85xx_ops = {
+ 	.kick_cpu = smp_85xx_kick_cpu,
+-#ifdef CONFIG_KEXEC
+-	.give_timebase	= smp_generic_give_timebase,
+-	.take_timebase	= smp_generic_take_timebase,
+-#endif
+ };
  
--	if (child->thread.dabr)
--		return -ENOSPC;
--
- 	if ((unsigned long)bp_info->addr >= TASK_SIZE)
- 		return -EIO;
+ #ifdef CONFIG_KEXEC
++static struct ccsr_guts __iomem *guts;
++static u64 timebase;
++static int tb_req;
++static int tb_valid;
++
++static void mpc85xx_timebase_freeze(int freeze)
++{
++	unsigned int mask;
++
++	if (!guts)
++		return;
++
++	mask = CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR_TB1;
++	if (freeze)
++		setbits32(&guts->devdisr, mask);
++	else
++		clrbits32(&guts->devdisr, mask);
++
++	in_be32(&guts->devdisr);
++}
++
++static void mpc85xx_give_timebase(void)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++
++	while (!tb_req)
++		barrier();
++	tb_req = 0;
++
++	mpc85xx_timebase_freeze(1);
++	timebase = get_tb();
++	mb();
++	tb_valid = 1;
++
++	while (tb_valid)
++		barrier();
++
++	mpc85xx_timebase_freeze(0);
++
++	local_irq_restore(flags);
++}
++
++static void mpc85xx_take_timebase(void)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++
++	tb_req = 1;
++	while (!tb_valid)
++		barrier();
++
++	set_tb(timebase >> 32, timebase & 0xffffffff);
++	mb();
++	tb_valid = 0;
++
++	local_irq_restore(flags);
++}
++
+ atomic_t kexec_down_cpus = ATOMIC_INIT(0);
  
-@@ -1398,15 +1400,63 @@ static long ppc_set_hwdebug(struct task_struct *child,
- 		dabr |= DABR_DATA_READ;
- 	if (bp_info->trigger_type & PPC_BREAKPOINT_TRIGGER_WRITE)
- 		dabr |= DABR_DATA_WRITE;
-+#ifdef CONFIG_HAVE_HW_BREAKPOINT
-+	if (ptrace_get_breakpoints(child) < 0)
-+		return -ESRCH;
- 
--	child->thread.dabr = dabr;
-+	/*
-+	 * Check if the request is for 'range' breakpoints. We can
-+	 * support it if range < 8 bytes.
-+	 */
-+	if (bp_info->addr_mode == PPC_BREAKPOINT_MODE_RANGE_INCLUSIVE) {
-+		len = bp_info->addr2 - bp_info->addr;
-+	} else if (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT) {
-+		ptrace_put_breakpoints(child);
-+		return -EINVAL;
-+	}
-+	bp = thread->ptrace_bps[0];
-+	if (bp) {
-+		ptrace_put_breakpoints(child);
-+		return -ENOSPC;
-+	}
-+
-+	/* Create a new breakpoint request if one doesn't exist already */
-+	hw_breakpoint_init(&attr);
-+	attr.bp_addr = (unsigned long)bp_info->addr & ~HW_BREAKPOINT_ALIGN;
-+	attr.bp_len = len;
-+	arch_bp_generic_fields(dabr & (DABR_DATA_WRITE | DABR_DATA_READ),
-+								&attr.bp_type);
-+
-+	thread->ptrace_bps[0] = bp = register_user_hw_breakpoint(&attr,
-+					       ptrace_triggered, NULL, child);
-+	if (IS_ERR(bp)) {
-+		thread->ptrace_bps[0] = NULL;
-+		ptrace_put_breakpoints(child);
-+		return PTR_ERR(bp);
-+	}
- 
-+	ptrace_put_breakpoints(child);
-+	return 1;
-+#endif /* CONFIG_HAVE_HW_BREAKPOINT */
-+
-+	if (bp_info->addr_mode != PPC_BREAKPOINT_MODE_EXACT)
-+		return -EINVAL;
-+
-+	if (child->thread.dabr)
-+		return -ENOSPC;
-+
-+	child->thread.dabr = dabr;
- 	return 1;
- #endif /* !CONFIG_PPC_ADV_DEBUG_DVCS */
+ void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
+@@ -228,6 +286,20 @@ smp_85xx_setup_cpu(int cpu_nr)
+ 		doorbell_setup_this_cpu();
  }
  
- static long ppc_del_hwdebug(struct task_struct *child, long addr, long data)
++#ifdef CONFIG_KEXEC
++static const struct of_device_id guts_ids[] = {
++	{ .compatible = "fsl,mpc8572-guts", },
++	{ .compatible = "fsl,mpc8560-guts", },
++	{ .compatible = "fsl,mpc8536-guts", },
++	{ .compatible = "fsl,p1020-guts", },
++	{ .compatible = "fsl,p1021-guts", },
++	{ .compatible = "fsl,p1022-guts", },
++	{ .compatible = "fsl,p1023-guts", },
++	{ .compatible = "fsl,p2020-guts", },
++	{},
++};
++#endif
++
+ void __init mpc85xx_smp_init(void)
  {
-+#ifdef CONFIG_HAVE_HW_BREAKPOINT
-+	int ret = 0;
-+	struct thread_struct *thread = &(child->thread);
-+	struct perf_event *bp;
-+#endif /* CONFIG_HAVE_HW_BREAKPOINT */
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
- 	int rc;
+ 	struct device_node *np;
+@@ -249,6 +321,19 @@ void __init mpc85xx_smp_init(void)
+ 		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
+ 	}
  
-@@ -1426,10 +1476,25 @@ static long ppc_del_hwdebug(struct task_struct *child, long addr, long data)
- #else
- 	if (data != 1)
- 		return -EINVAL;
++#ifdef CONFIG_KEXEC
++	np = of_find_matching_node(NULL, guts_ids);
++	if (np) {
++		guts = of_iomap(np, 0);
++		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
++		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
++		of_node_put(np);
++	} else {
++		smp_85xx_ops.give_timebase = smp_generic_give_timebase;
++		smp_85xx_ops.take_timebase = smp_generic_take_timebase;
++	}
++#endif
 +
-+#ifdef CONFIG_HAVE_HW_BREAKPOINT
-+	if (ptrace_get_breakpoints(child) < 0)
-+		return -ESRCH;
-+
-+	bp = thread->ptrace_bps[0];
-+	if (bp) {
-+		unregister_hw_breakpoint(bp);
-+		thread->ptrace_bps[0] = NULL;
-+	} else
-+		ret = -ENOENT;
-+	ptrace_put_breakpoints(child);
-+	return ret;
-+#else /* CONFIG_HAVE_HW_BREAKPOINT */
- 	if (child->thread.dabr == 0)
- 		return -ENOENT;
+ 	smp_ops = &smp_85xx_ops;
  
- 	child->thread.dabr = 0;
-+#endif /* CONFIG_HAVE_HW_BREAKPOINT */
- 
- 	return 0;
- #endif
-@@ -1560,7 +1625,7 @@ long arch_ptrace(struct task_struct *child, long request,
- 		dbginfo.data_bp_alignment = 4;
- #endif
- 		dbginfo.sizeof_condition = 0;
--		dbginfo.features = 0;
-+		dbginfo.features = PPC_DEBUG_FEATURE_DATA_BP_RANGE;
- #endif /* CONFIG_PPC_ADV_DEBUG_REGS */
- 
- 		if (!access_ok(VERIFY_WRITE, datavp,
+ #ifdef CONFIG_KEXEC
 -- 
-1.7.4.1
+1.6.4.1
