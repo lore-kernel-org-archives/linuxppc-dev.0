@@ -1,23 +1,19 @@
-Return-Path: <rdunlap@xenotime.net>
-Received: from oproxy6-pub.bluehost.com (oproxy6.bluehost.com
- [IPv6:2605:dc00:100:2::a6])
- by ozlabs.org (Postfix) with SMTP id 630D7B7007
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2012 09:50:05 +1000 (EST)
-Message-ID: <4FADA5B9.1060303@xenotime.net>
-Date: Fri, 11 May 2012 16:50:17 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-MIME-Version: 1.0
-To: =?UTF-8?B?QmrDuHJuIE1vcms=?= <bjorn@mork.no>
-Subject: Re: [PATCH] net: of/phy: fix build error when phylib is built as
- a module
-References: <20120510.224352.2149006669429730060.davem@davemloft.net>
- <1336751221-19127-1-git-send-email-bjorn@mork.no>
-In-Reply-To: <1336751221-19127-1-git-send-email-bjorn@mork.no>
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, david.daney@cavium.com, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, paul.gortmaker@windriver.com,
- linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 60EA7B7002
+ for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2012 09:52:04 +1000 (EST)
+Message-ID: <1336780315.31450.3.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 12 May 2012 09:51:55 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/11/2012 08:47 AM, Bjørn Mork wrote:
+Hi Linus !
 
-> CONFIG_OF_MDIO is tristate and will be m if PHYLIB is m.  Use
-> IS_ENABLED macro to prevent build error:
-> 
->  ERROR: "of_mdio_find_bus" [drivers/net/phy/mdio-mux.ko] undefined!
-> 
-> Reported-by: Randy Dunlap <rdunlap@xenotime.net>
-> Cc: David Daney <david.daney@cavium.com>
-> Signed-off-by: Bjørn Mork <bjorn@mork.no>
+It looks like my previous fix for the lazy irq masking problem wasn't
+quite enough. There was another problem related to performance monitor
+interrupts acting as NMIs leaving the flags in an incorrect state.
+Here's a fix that finally seems to make perf solid again.
 
+The following changes since commit 4e25651b70b8d6ded7229ead8181619e121b648d:
 
-Acked-by: Randy Dunlap <rdunlap@xenotime.net>
+  Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu (2012-05-11 09:28:35 -0700)
 
-Thanks.
+are available in the git repository at:
 
 
-> ---
-> I wonder if this could be as banal as this?  Not even build tested...
-> 
-> Should be wrapped into commit 25106022 if it works, to ensure
-> bisectability.
-> 
-> 
-> 
-> Bjørn
-> 
->  drivers/net/phy/mdio_bus.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-> index 83d5c9f..683ef1c 100644
-> --- a/drivers/net/phy/mdio_bus.c
-> +++ b/drivers/net/phy/mdio_bus.c
-> @@ -88,7 +88,7 @@ static struct class mdio_bus_class = {
->  	.dev_release	= mdiobus_release,
->  };
->  
-> -#ifdef CONFIG_OF_MDIO
-> +#if IS_ENABLED(CONFIG_OF_MDIO)
->  /* Helper function for of_mdio_find_bus */
->  static int of_mdio_bus_match(struct device *dev, void *mdio_bus_np)
->  {
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
 
+for you to fetch changes up to 7c0482e3d055e5de056d3c693b821e39205b99ae:
 
+  powerpc/irq: Fix another case of lazy IRQ state getting out of sync (2012-05-12 09:40:41 +1000)
 
--- 
-~Randy
+----------------------------------------------------------------
+Benjamin Herrenschmidt (1):
+      powerpc/irq: Fix another case of lazy IRQ state getting out of sync
+
+ arch/powerpc/kernel/entry_64.S |   44 ++++++++++++++++++++++++++++------------
+ arch/powerpc/kernel/irq.c      |   13 ++++++++++++
+ 2 files changed, 44 insertions(+), 13 deletions(-)
