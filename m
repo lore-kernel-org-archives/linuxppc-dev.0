@@ -1,22 +1,29 @@
-Return-Path: <bjorn@mork.no>
-Received: from canardo.mork.no (canardo.mork.no [IPv6:2001:4620:9::1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "canardo.mork.no", Issuer "Mork CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CF39BB700C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2012 01:53:13 +1000 (EST)
-From: =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
-To: David Miller <davem@davemloft.net>
-Subject: [PATCH] net: of/phy: fix build error when phylib is built as a module
-Date: Fri, 11 May 2012 17:47:01 +0200
-Message-Id: <1336751221-19127-1-git-send-email-bjorn@mork.no>
-In-Reply-To: <20120510.224352.2149006669429730060.davem@davemloft.net>
-References: <20120510.224352.2149006669429730060.davem@davemloft.net>
+Return-Path: <ddaney.cavm@gmail.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0449FB6FF5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2012 02:15:04 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so4623720pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2012 09:15:02 -0700 (PDT)
+Message-ID: <4FAD3B03.3070109@gmail.com>
+Date: Fri, 11 May 2012 09:14:59 -0700
+From: David Daney <ddaney.cavm@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: sfr@canb.auug.org.au, david.daney@cavium.com, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, paul.gortmaker@windriver.com,
- rdunlap@xenotime.net, linux-next@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
+To: David Miller <davem@davemloft.net>
+Subject: Re: linux-next: Tree for May 10 (net/phy)
+References: <20120510192635.c6f3a55196bbf65f13956e44@canb.auug.org.au>	<4FAC35E2.4060900@xenotime.net>	<CAP=VYLon7XRoh9s==wGYjUPNAYaTk8QQx7FGRnaDR97v+O-zXA@mail.gmail.com>
+ <20120510.224352.2149006669429730060.davem@davemloft.net>
+In-Reply-To: <20120510.224352.2149006669429730060.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "sfr@canb.auug.org.au" <sfr@canb.auug.org.au>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "paul.gortmaker@windriver.com" <paul.gortmaker@windriver.com>,
+ "rdunlap@xenotime.net" <rdunlap@xenotime.net>,
+ "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ =?ISO-8859-1?Q?Bj=F8rn_Mork?= <bjorn@mork.no>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,39 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_OF_MDIO is tristate and will be m if PHYLIB is m.  Use
-IS_ENABLED macro to prevent build error:
+On 05/10/2012 07:43 PM, David Miller wrote:
+> From: Paul Gortmaker<paul.gortmaker@windriver.com>
+> Date: Thu, 10 May 2012 22:36:55 -0400
+>
+>> On Thu, May 10, 2012 at 5:40 PM, Randy Dunlap<rdunlap@xenotime.net>  wrote:
+>>> On 05/10/2012 02:26 AM, Stephen Rothwell wrote:
+>>>
+>>>> Hi all,
+>>>>
+>>>> Changes since 20120508:
+>>>
+>>>
+>>>
+>>> ERROR: "of_mdio_find_bus" [drivers/net/phy/mdio-mux.ko] undefined!
+>>
+>> Not just randconfig, but also powerpc allmodconfig:
+>>
+>> http://kisskb.ellerman.id.au/kisskb/buildresult/6291463/
+>>
+>> Adding ppc ML to cc.
+>
+> Adding the guilty party to the CC:.  This really stinks, especially
+> after I did give the patch submitter a hard time about getting the
+> dependencies right. :-/
 
- ERROR: "of_mdio_find_bus" [drivers/net/phy/mdio-mux.ko] undefined!
+Indeed, how embarrassing.
 
-Reported-by: Randy Dunlap <rdunlap@xenotime.net>
-Cc: David Daney <david.daney@cavium.com>
-Signed-off-by: Bjørn Mork <bjorn@mork.no>
----
-I wonder if this could be as banal as this?  Not even build tested...
+It looks like Bj�rn may have already posted a fix.  I will try to verify 
+that it works, and take appropriate action.
 
-Should be wrapped into commit 25106022 if it works, to ensure
-bisectability.
-
-
-
-Bjørn
-
- drivers/net/phy/mdio_bus.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/phy/mdio_bus.c b/drivers/net/phy/mdio_bus.c
-index 83d5c9f..683ef1c 100644
---- a/drivers/net/phy/mdio_bus.c
-+++ b/drivers/net/phy/mdio_bus.c
-@@ -88,7 +88,7 @@ static struct class mdio_bus_class = {
- 	.dev_release	= mdiobus_release,
- };
- 
--#ifdef CONFIG_OF_MDIO
-+#if IS_ENABLED(CONFIG_OF_MDIO)
- /* Helper function for of_mdio_find_bus */
- static int of_mdio_bus_match(struct device *dev, void *mdio_bus_np)
- {
--- 
-1.7.10
+Sorry about the screw up,
+David Daney
