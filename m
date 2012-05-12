@@ -1,19 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 60EA7B7002
- for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2012 09:52:04 +1000 (EST)
-Message-ID: <1336780315.31450.3.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Sat, 12 May 2012 09:51:55 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+ [209.85.210.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D132B6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2012 10:09:01 +1000 (EST)
+Received: by dajt11 with SMTP id t11so4934663daj.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2012 17:08:59 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] gpiolib/arches: Centralise bolierplate asm/gpio.h
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+ Linus Walleij <linus.walleij@linaro.org>
+In-Reply-To: <20120416081532.GA3238@opensource.wolfsonmicro.com>
+References: <1334483574-3997-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <CACRpkdZ8yH1ZSG-nQ9dLm0TipHS-jZDuxwqohUC=LGH9V-5q4w@mail.gmail.com>
+ <20120416081532.GA3238@opensource.wolfsonmicro.com>
+Date: Fri, 11 May 2012 18:08:53 -0600
+Message-Id: <20120512000853.A96353E0791@localhost>
+Cc: linux-arch@vger.kernel.org, Grant Likely <grant@secretlab.ca>,
+ linux-ia64@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>,
+ Chris Zankel <chris@zankel.net>, microblaze-uclinux@itee.uq.edu.au,
+ linux@lists.openrisc.net, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+On Mon, 16 Apr 2012 09:15:32 +0100, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
+> On Mon, Apr 16, 2012 at 09:21:58AM +0200, Linus Walleij wrote:
+> 
+> > This looks good but I think we need to page the alpha, ia64, m68k, microblaze,
+> > openrisc etc subarch maintainers on this patch so they have their say.
+> 
+> That's why I CCed linux-arch, to get all the architecture maintainers
+> included.  vger would get upset if I CCed everyone individually.
 
-It looks like my previous fix for the lazy irq masking problem wasn't
-quite enough. There was another problem related to performance monitor
-interrupts acting as NMIs leaving the flags in an incorrect state.
-Here's a fix that finally seems to make perf solid again.
+Meh; it's been long enough.  I'll build the major ones and then throw it into linux-next.
 
-The following changes since commit 4e25651b70b8d6ded7229ead8181619e121b648d:
+g.
 
-  Merge branch 'for-linus' of git://git.kernel.org/pub/scm/linux/kernel/git/gerg/m68knommu (2012-05-11 09:28:35 -0700)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 7c0482e3d055e5de056d3c693b821e39205b99ae:
-
-  powerpc/irq: Fix another case of lazy IRQ state getting out of sync (2012-05-12 09:40:41 +1000)
-
-----------------------------------------------------------------
-Benjamin Herrenschmidt (1):
-      powerpc/irq: Fix another case of lazy IRQ state getting out of sync
-
- arch/powerpc/kernel/entry_64.S |   44 ++++++++++++++++++++++++++++------------
- arch/powerpc/kernel/irq.c      |   13 ++++++++++++
- 2 files changed, 44 insertions(+), 13 deletions(-)
+-- 
+Grant Likely, B.Sc, P.Eng.
+Secret Lab Technologies, Ltd.
