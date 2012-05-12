@@ -1,28 +1,22 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
+ [209.85.160.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D132B6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 May 2012 10:09:01 +1000 (EST)
-Received: by dajt11 with SMTP id t11so4934663daj.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 May 2012 17:08:59 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] gpiolib/arches: Centralise bolierplate asm/gpio.h
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>,
- Linus Walleij <linus.walleij@linaro.org>
-In-Reply-To: <20120416081532.GA3238@opensource.wolfsonmicro.com>
-References: <1334483574-3997-1-git-send-email-broonie@opensource.wolfsonmicro.com>
- <CACRpkdZ8yH1ZSG-nQ9dLm0TipHS-jZDuxwqohUC=LGH9V-5q4w@mail.gmail.com>
- <20120416081532.GA3238@opensource.wolfsonmicro.com>
-Date: Fri, 11 May 2012 18:08:53 -0600
-Message-Id: <20120512000853.A96353E0791@localhost>
-Cc: linux-arch@vger.kernel.org, Grant Likely <grant@secretlab.ca>,
- linux-ia64@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>,
- Chris Zankel <chris@zankel.net>, microblaze-uclinux@itee.uq.edu.au,
- linux@lists.openrisc.net, linux-kernel@vger.kernel.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id C05F6B701F
+ for <linuxppc-dev@ozlabs.org>; Sun, 13 May 2012 01:50:58 +1000 (EST)
+Received: by pbbrp12 with SMTP id rp12so3872898pbb.15
+ for <linuxppc-dev@ozlabs.org>; Sat, 12 May 2012 08:50:56 -0700 (PDT)
+Date: Sat, 12 May 2012 08:50:53 -0700
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Rupjyoti Sarmah <rsarmah@amcc.com>
+Subject: Re: [PATCH v16 01/10]USB/ppc4xx: Add Synopsys DWC OTG Register
+ definitions
+Message-ID: <20120512155053.GB6023@kroah.com>
+References: <201205031223.q43CN3LN022598@amcc.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <201205031223.q43CN3LN022598@amcc.com>
+Cc: linuxppc-dev@ozlabs.org, rsarmah@apm.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,19 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 16 Apr 2012 09:15:32 +0100, Mark Brown <broonie@opensource.wolfsonmicro.com> wrote:
-> On Mon, Apr 16, 2012 at 09:21:58AM +0200, Linus Walleij wrote:
+On Thu, May 03, 2012 at 05:53:03PM +0530, Rupjyoti Sarmah wrote:
 > 
-> > This looks good but I think we need to page the alpha, ia64, m68k, microblaze,
-> > openrisc etc subarch maintainers on this patch so they have their say.
+> Add Synopsys Design Ware core register definitions.
 > 
-> That's why I CCed linux-arch, to get all the architecture maintainers
-> included.  vger would get upset if I CCed everyone individually.
+> Signed-off-by: Rupjyoti Sarmah <rsarmah@apm.com>
+> Signed-off-by: Tirumala R Marri <tmarri@apm.com>
+> Signed-off-by: Fushen Chen <fchen@apm.com>
+> Signed-off-by: Mark Miesfeld <mmiesfeld@apm.com>
+> ---
+>  drivers/usb/dwc/regs.h | 1326 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 1326 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/usb/dwc/regs.h
 
-Meh; it's been long enough.  I'll build the major ones and then throw it into linux-next.
+Why are you not cc: the linux-usb mailing list, and the proper
+maintainers, for this patchset?
 
-g.
+I'm guessing you aren't wanting to get these applied :)
 
--- 
-Grant Likely, B.Sc, P.Eng.
-Secret Lab Technologies, Ltd.
+greg k-h
