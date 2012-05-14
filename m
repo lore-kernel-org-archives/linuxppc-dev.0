@@ -1,24 +1,17 @@
-Return-Path: <B29397@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 14E4CB7005
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2012 11:11:17 +1000 (EST)
-From: Chen Peter-B29397 <B29397@freescale.com>
-To: Christoph Fritz <chf.fritz@googlemail.com>, Fabio Estevam
- <festevam@gmail.com>, Neil Zhang <zhangwm@marvell.com>, Li Yang-R58472
- <r58472@freescale.com>, Felipe Balbi <balbi@ti.com>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, "linux-usb@vger.kernel.org"
- <linux-usb@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "Hans J. Koch" <hjk@hansjkoch.de>, Daniel
- Mack <daniel@caiaq.de>
-Subject: RE: [RFC] [PATCH] usb: gadget: fix dtd dma confusion
-Date: Mon, 14 May 2012 01:11:10 +0000
-Message-ID: <F281D0F91ED19E4D8E63A7504E8A649803BA8168@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <F281D0F91ED19E4D8E63A7504E8A64980AFFE3@039-SN2MPN1-022.039d.mgd.msft.net>
- <CAOMZO5AjQsNw7_4ETkB38mmuBXj4pnCwJwAsi4zC4b_83=Enfw@mail.gmail.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7BF7CB7028
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2012 14:21:49 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so7906044pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 May 2012 21:21:47 -0700 (PDT)
+Date: Sun, 13 May 2012 21:21:42 -0700
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: Christoph Fritz <chf.fritz@googlemail.com>
+Subject: Re: [RFC] [PATCH] usb: gadget: fix dtd dma confusion
+Message-ID: <20120514042142.GD9750@kroah.com>
+References: <CAOMZO5AjQsNw7_4ETkB38mmuBXj4pnCwJwAsi4zC4b_83=Enfw@mail.gmail.com>
  <20120409200656.GD2640@local>
  <CAOMZO5BTrA8G6wwQZ3e6bydJX7UtG7jj2c29Ln7u_3_jyUGB+w@mail.gmail.com>
  <20120410001017.GF2640@local>
@@ -28,15 +21,19 @@ References: <F281D0F91ED19E4D8E63A7504E8A64980AFFE3@039-SN2MPN1-022.039d.mgd.msf
  <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
  <20120509000221.GA19525@lovely.krouter>
  <20120513225126.GA3683@lovely.krouter>
-In-Reply-To: <20120513225126.GA3683@lovely.krouter>
-Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Oliver Neukum <oneukum@suse.de>, Kukjin Kim <kgene.kim@samsung.com>,
- Eric Miao <eric.y.miao@gmail.com>, Estevam Fabio-R49496 <r49496@freescale.com>,
- Sascha Hauer <s.hauer@pengutronix.de>, Nicolas Ferre <nicolas.ferre@atmel.com>,
- Haojian Zhuang <haojian.zhuang@gmail.com>, Ido Shayevitz <idos@codeaurora.org>,
- Ben Dooks <ben-linux@fluff.org>, Thomas Dahlmann <dahlmann.thomas@arcor.de>,
- Russell King <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120513225126.GA3683@lovely.krouter>
+Cc: Oliver Neukum <oneukum@suse.de>, Eric Miao <eric.y.miao@gmail.com>,
+ Ben Dooks <ben-linux@fluff.org>, linuxppc-dev@lists.ozlabs.org,
+ Sascha Hauer <s.hauer@pengutronix.de>, linux-usb@vger.kernel.org,
+ Nicolas Ferre <nicolas.ferre@atmel.com>, Felipe Balbi <balbi@ti.com>,
+ Ido Shayevitz <idos@codeaurora.org>, Chen Peter-B29397 <B29397@freescale.com>,
+ Estevam Fabio-R49496 <r49496@freescale.com>, "Hans J. Koch" <hjk@hansjkoch.de>,
+ Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@caiaq.de>,
+ Thomas Dahlmann <dahlmann.thomas@arcor.de>,
+ Russell King <linux@arm.linux.org.uk>, Neil Zhang <zhangwm@marvell.com>,
+ Fabio Estevam <festevam@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,43 +43,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-
-
-=20
+On Mon, May 14, 2012 at 12:51:26AM +0200, Christoph Fritz wrote:
+> On Wed, May 09, 2012 at 02:02:22AM +0200, Christoph Fritz wrote:
+> > 
+> > Hi to All,
+> > 
+> > after a while of testing and searching I can come up with a patch
+> > that fixes g_ether <-> iperf for fsl_udc on ARM i.MX35.
+> > 
+> > The sad part is that this kind of fix is already implemented for
+> > marvell mv_udc driver since last year but still _not_ in the ~15
+> > other *udc.c drivers.
+> > 
 > > See here:
 > > daec765da767e4a6a30e1298862b28f2cae9a73f
 > > usb: gadget: mv_udc: fix dtd dma confusion
-> >
+> > 
 > > So hereby I'm CC-ing all *udc.c maintainers to point out that this
 > > issue maybe affects you too.
-> >
-> >
+> > 
+> > 
 > > ---
 > > Subject: [PATCH] usb: gadget: fsl_udc: fix dtd dma confusion
-> >
+> > 
 > > The controller will hang when doing testings with g_ether and iperf
 > > (tool for measuring maximum TCP and UDP bandwidth).  This patch adds a
 > > delay to wait for controller to release dtd dma before freeing it.
-> >
+> > 
 > > Signed-off-by: Christoph Fritz <chf.fritz@googlemail.com>
 > > ---
 > >  drivers/usb/gadget/fsl_udc_core.c |    9 +++++++++
 > >  1 files changed, 9 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/drivers/usb/gadget/fsl_udc_core.c
-> b/drivers/usb/gadget/fsl_udc_core.c
+> > 
+> > diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
 > > index 55abfb6..fc86108 100644
 > > --- a/drivers/usb/gadget/fsl_udc_core.c
 > > +++ b/drivers/usb/gadget/fsl_udc_core.c
-> > @@ -1638,6 +1638,15 @@ static int process_ep_req(struct fsl_udc *udc,
-> int pipe,
-> >  			status =3D REQ_UNCOMPLETE;
+> > @@ -1638,6 +1638,15 @@ static int process_ep_req(struct fsl_udc *udc, int pipe,
+> >  			status = REQ_UNCOMPLETE;
 > >  			return status;
 > >  		} else if (remaining_length) {
 > > +			/* wait controller release dtd dma */
-> > +			while ((curr_qh->curr_dtd_ptr =3D=3D curr_td->td_dma)) {
-> > +				if (curr_td->next_td_ptr =3D=3D
+> > +			while ((curr_qh->curr_dtd_ptr == curr_td->td_dma)) {
+> > +				if (curr_td->next_td_ptr ==
 > > +						EP_QUEUE_HEAD_NEXT_TERMINATE) {
 > > +					udelay(100);
 > > +					break;
@@ -91,21 +94,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 > > +			}
 > >  			if (direction) {
 > >  				VDBG("Transmit dTD remaining length not zero");
-> >  				status =3D -EPROTO;
-> > --
+> >  				status = -EPROTO;
+> > -- 
 > > 1.7.2.5
->=20
+> 
 >  ping  -  what about this patch? Will it be applied?
->=20
-Christoph, it is better use errata suggests workaround (postpone free dtd m=
-emory),
-and you can find related code at:=20
 
-http://git.freescale.com/git/cgit.cgi/imx/linux-2.6-imx.git/tree/
-drivers/usb/gadget/arcotg_udc.c?h=3Dimx_3.0.15
+RFC patches are never applied, as you are asking for comments, not for
+the patch to actually be applied...
 
-The code is defined with POSTPONE_FREE_LAST_DTD
+Submit it properly if you wish it to be accepted.
 
-> Thanks,
->  -- Christoph
->=20
+thanks,
+
+greg k-h
