@@ -1,41 +1,24 @@
-Return-Path: <chf.fritz@googlemail.com>
-Received: from mail-wg0-f45.google.com (mail-wg0-f45.google.com [74.125.82.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D29D8B7010
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2012 08:51:36 +1000 (EST)
-Received: by wgbdt14 with SMTP id dt14so3840265wgb.14
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 May 2012 15:51:32 -0700 (PDT)
-Date: Mon, 14 May 2012 00:51:26 +0200
-From: Christoph Fritz <chf.fritz@googlemail.com>
-To: Fabio Estevam <festevam@gmail.com>, Neil Zhang <zhangwm@marvell.com>,
- Li Yang <leoli@freescale.com>, Felipe Balbi <balbi@ti.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "Hans J. Koch" <hjk@hansjkoch.de>, Daniel Mack <daniel@caiaq.de>
-Subject: Re: [RFC] [PATCH] usb: gadget: fix dtd dma confusion
-Message-ID: <20120513225126.GA3683@lovely.krouter>
-References: <F281D0F91ED19E4D8E63A7504E8A64980AFFE3@039-SN2MPN1-022.039d.mgd.msft.net>
- <CAOMZO5AjQsNw7_4ETkB38mmuBXj4pnCwJwAsi4zC4b_83=Enfw@mail.gmail.com>
- <20120409200656.GD2640@local>
- <CAOMZO5BTrA8G6wwQZ3e6bydJX7UtG7jj2c29Ln7u_3_jyUGB+w@mail.gmail.com>
- <20120410001017.GF2640@local>
- <CAOMZO5A=sHeyoQ0PCd=09qGGKb0NjXi-kF5qyG+3U-GhD7rhzg@mail.gmail.com>
- <20120410021151.GB23044@lovely.krouter>
- <20120411073918.GA9180@lovely.krouter>
- <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
- <20120509000221.GA19525@lovely.krouter>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120509000221.GA19525@lovely.krouter>
-Cc: Oliver Neukum <oneukum@suse.de>, Kukjin Kim <kgene.kim@samsung.com>,
- Eric Miao <eric.y.miao@gmail.com>, Chen Peter-B29397 <B29397@freescale.com>,
- Sascha Hauer <s.hauer@pengutronix.de>, Nicolas Ferre <nicolas.ferre@atmel.com>,
- Haojian Zhuang <haojian.zhuang@gmail.com>,
- Estevam Fabio-R49496 <r49496@freescale.com>,
- Ido Shayevitz <idos@codeaurora.org>, Ben Dooks <ben-linux@fluff.org>,
- Thomas Dahlmann <dahlmann.thomas@arcor.de>,
- Russell King <linux@arm.linux.org.uk>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 12D4EB7012
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2012 10:32:15 +1000 (EST)
+Message-ID: <1336955527.6727.2.camel@pasglop>
+Subject: Re: [PATCH v3 03/17] powerpc: Add PFO support to the VIO bus
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Robert Jennings <rcj@linux.vnet.ibm.com>
+Date: Mon, 14 May 2012 10:32:07 +1000
+In-Reply-To: <1336687098.3881.63.camel@pasglop>
+References: <1334242825.18090.4.camel@key-ThinkPad-W510>
+ <1334243302.18090.10.camel@key-ThinkPad-W510>
+ <1335841603.3621.8.camel@pasglop>
+ <20120510190835.GB12304@linux.vnet.ibm.com>
+ <1336687098.3881.63.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Kent Yoder <key@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,62 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 09, 2012 at 02:02:22AM +0200, Christoph Fritz wrote:
+On Fri, 2012-05-11 at 07:58 +1000, Benjamin Herrenschmidt wrote:
+> > 
+> > Having the timeout and retries in this function is the wrong thing to do.
+> > We'll resubmit this without the loop and the caller will be responsible for
+> > retrying the operations.
+> >
+> > I would rather have the caller cede the processor or alter thread
+> > priority where appropriate than doing that in this function.  I don't
+> > think this should be done in this crypto driver.
 > 
-> Hi to All,
-> 
-> after a while of testing and searching I can come up with a patch
-> that fixes g_ether <-> iperf for fsl_udc on ARM i.MX35.
-> 
-> The sad part is that this kind of fix is already implemented for
-> marvell mv_udc driver since last year but still _not_ in the ~15
-> other *udc.c drivers.
-> 
-> See here:
-> daec765da767e4a6a30e1298862b28f2cae9a73f
-> usb: gadget: mv_udc: fix dtd dma confusion
-> 
-> So hereby I'm CC-ing all *udc.c maintainers to point out that this
-> issue maybe affects you too.
-> 
-> 
-> ---
-> Subject: [PATCH] usb: gadget: fsl_udc: fix dtd dma confusion
-> 
-> The controller will hang when doing testings with g_ether and iperf
-> (tool for measuring maximum TCP and UDP bandwidth).  This patch adds a
-> delay to wait for controller to release dtd dma before freeing it.
-> 
-> Signed-off-by: Christoph Fritz <chf.fritz@googlemail.com>
-> ---
->  drivers/usb/gadget/fsl_udc_core.c |    9 +++++++++
->  1 files changed, 9 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-> index 55abfb6..fc86108 100644
-> --- a/drivers/usb/gadget/fsl_udc_core.c
-> +++ b/drivers/usb/gadget/fsl_udc_core.c
-> @@ -1638,6 +1638,15 @@ static int process_ep_req(struct fsl_udc *udc, int pipe,
->  			status = REQ_UNCOMPLETE;
->  			return status;
->  		} else if (remaining_length) {
-> +			/* wait controller release dtd dma */
-> +			while ((curr_qh->curr_dtd_ptr == curr_td->td_dma)) {
-> +				if (curr_td->next_td_ptr ==
-> +						EP_QUEUE_HEAD_NEXT_TERMINATE) {
-> +					udelay(100);
-> +					break;
-> +				}
-> +				udelay(1);
-> +			}
->  			if (direction) {
->  				VDBG("Transmit dTD remaining length not zero");
->  				status = -EPROTO;
-> -- 
-> 1.7.2.5
+> That sounds right indeed... as long as the upper crypto layer has a
+> concept of "try again later"... if it doesn't it will result in random
+> funny failures :-)
 
- ping  -  what about this patch? Will it be applied?
+Ping ?
 
-Thanks,
- -- Christoph
- 
+So I'm merging 1 to 5 (ie, up to and including the hwrng driver). I will
+still merge the rest if you send a fix for that in the next day or so
+but not much longer.
+
+Cheers,
+Ben.
