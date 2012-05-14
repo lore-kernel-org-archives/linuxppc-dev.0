@@ -1,38 +1,30 @@
-Return-Path: <prasad@linux.vnet.ibm.com>
-Received: from e24smtp01.br.ibm.com (e24smtp01.br.ibm.com [32.104.18.85])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp01.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7D8FCB7010
- for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2012 20:25:01 +1000 (EST)
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A669FB703B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2012 01:32:10 +1000 (EST)
 Received: from /spool/local
- by e24smtp01.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <prasad@linux.vnet.ibm.com>;
- Mon, 14 May 2012 07:24:53 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 04DF4352004A
- for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2012 07:24:45 -0300 (BRT)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay03.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q4EAONt057999620
- for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2012 07:24:24 -0300
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q4E8OfrH005735
- for <linuxppc-dev@ozlabs.org>; Mon, 14 May 2012 05:24:41 -0300
-Date: Mon, 14 May 2012 15:54:38 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Patch][hw-breakpoint] Use generic hw-breakpoint interfaces for
- new PPC ptrace flags
-Message-ID: <20120514102438.GA31573@in.ibm.com>
-References: <20120511084338.GA31696@in.ibm.com>
- <1336956822.6727.4.camel@pasglop>
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 14 May 2012 21:02:06 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q4EFW3w411403584
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2012 21:02:03 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q4EL2Wh9024573
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2012 07:02:32 +1000
+Message-ID: <4FB12570.9090503@linux.vnet.ibm.com>
+Date: Mon, 14 May 2012 21:02:00 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1336956822.6727.4.camel@pasglop>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <dwg@au1.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
+To: linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Fixing a cputhread code documentation
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,25 +34,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 14, 2012 at 10:53:42AM +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2012-05-11 at 14:13 +0530, K.Prasad wrote:
-> 
-> > +#ifdef CONFIG_HAVE_HW_BREAKPOINT
-> > +	int ret, len = 0;
-> > +	struct thread_struct *thread = &(child->thread);
-> > +	struct perf_event *bp;
-> > +	struct perf_event_attr attr;
-> > +#endif /* CONFIG_HAVE_HW_BREAKPOINT */
-> 
-> "ret" is unused in that function, causing a warning which breaks the
-> build since we have -Werror. I'm fixing that locally but be more careful
-> next time please.
-> 
-> Ben.
+diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
+index ce516e5..ac3eedb 100644
+--- a/arch/powerpc/include/asm/cputhreads.h
++++ b/arch/powerpc/include/asm/cputhreads.h
+@@ -9,7 +9,7 @@
+  * Note: This implementation is limited to a power of 2 number of
+  * threads per core and the same number for each core in the system
+  * (though it would work if some processors had less threads as long
+- * as the CPU numbers are still allocated, just not brought offline).
++ * as the CPU numbers are still allocated, just not brought online).
+  *
+  * However, the API allows for a different implementation in the future
+  * if needed, as long as you only use the functions and not the variables
 
-Sorry about that warning, I clearly missed that. I guess you
-do a custom build with -Werror flag enabled, unlike what the normal
-Makefile does?
-
-Thanks,
-K.Prasad
+--
+Anshuman Khandual
