@@ -1,37 +1,26 @@
-Return-Path: <key@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <dan.carpenter@oracle.com>
+Received: from acsinet14.oracle.com (acsinet14.oracle.com [141.146.126.236])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5C0E5B704A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2012 07:05:13 +1000 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Mon, 14 May 2012 17:05:10 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D7B6538C8056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2012 17:05:05 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q4EL56FO096916
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2012 17:05:06 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q4F2ZvwQ028619
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 May 2012 22:35:58 -0400
-Message-ID: <1337029591.5614.20.camel@key-ThinkPad-W510>
-Subject: [PATCH v4 14/17] powerpc: crypto: SHA512 hash routines for nx
- encryption
-From: Kent Yoder <key@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Date: Mon, 14 May 2012 16:06:31 -0500
-In-Reply-To: <1336955527.6727.2.camel@pasglop>
-References: <1336955527.6727.2.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+ (Client CN "acsinet14.oracle.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2CD5FB6FA7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2012 18:48:09 +1000 (EST)
+Received: from acsinet15.oracle.com (acsinet15.oracle.com [141.146.126.227])
+ by acsinet14.oracle.com (Sentrion-MTA-4.2.2/Sentrion-MTA-4.2.2) with ESMTP id
+ q4F8m7LZ032668
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 May 2012 08:48:07 GMT
+Date: Tue, 15 May 2012 11:47:47 +0300
+From: Dan Carpenter <dan.carpenter@oracle.com>
+To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Subject: [patch] hvc_xen: NULL dereference on allocation failure
+Message-ID: <20120515084746.GC30265@elgon.mountain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Stefano Stabellini <stefano.stabellini@eu.citrix.com>,
+ kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Alan Cox <alan@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,285 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These routines add support for SHA-512 hashing on the Power7+ CPU's
-in-Nest accelerator driver.
+If kzalloc() returns a NULL here, we pass a NULL to
+xencons_disconnect_backend() which will cause an Oops.
 
-Signed-off-by: Kent Yoder <key@linux.vnet.ibm.com>
----
- drivers/crypto/nx/nx-sha512.c |  265 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 265 insertions(+), 0 deletions(-)
- create mode 100644 drivers/crypto/nx/nx-sha512.c
+Also I removed the __GFP_ZERO while I was at it since kzalloc() implies
+__GFP_ZERO.
 
-diff --git a/drivers/crypto/nx/nx-sha512.c b/drivers/crypto/nx/nx-sha512.c
-new file mode 100644
-index 0000000..3177b8c
---- /dev/null
-+++ b/drivers/crypto/nx/nx-sha512.c
-@@ -0,0 +1,265 @@
-+/**
-+ * SHA-512 routines supporting the Power 7+ Nest Accelerators driver
-+ *
-+ * Copyright (C) 2011-2012 International Business Machines Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; version 2 only.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ *
-+ * Author: Kent Yoder <yoder1@us.ibm.com>
-+ */
-+
-+#include <crypto/internal/hash.h>
-+#include <crypto/sha.h>
-+#include <linux/module.h>
-+#include <asm/vio.h>
-+
-+#include "nx_csbcpb.h"
-+#include "nx.h"
-+
-+
-+static int nx_sha512_init(struct shash_desc *desc)
-+{
-+	struct sha512_state *sctx = shash_desc_ctx(desc);
-+	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
-+	struct nx_sg *out_sg;
-+
-+	nx_ctx_init(nx_ctx, HCOP_FC_SHA);
-+
-+	memset(sctx, 0, sizeof *sctx);
-+
-+	nx_ctx->ap = &nx_ctx->props[NX_PROPS_SHA512];
-+
-+	NX_CPB_SET_DIGEST_SIZE(nx_ctx->csbcpb, NX_DS_SHA512);
-+	out_sg = nx_build_sg_list(nx_ctx->out_sg, (u8 *)sctx->state,
-+				  SHA512_DIGEST_SIZE, nx_ctx->ap->sglen);
-+	nx_ctx->op.outlen = (nx_ctx->out_sg - out_sg) * sizeof(struct nx_sg);
-+
-+	return 0;
-+}
-+
-+static int nx_sha512_update(struct shash_desc *desc, const u8 *data,
-+			    unsigned int len)
-+{
-+	struct sha512_state *sctx = shash_desc_ctx(desc);
-+	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
-+	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
-+	struct nx_sg *in_sg;
-+	u64 to_process, leftover, spbc_bits;
-+	int rc = 0;
-+
-+	if (NX_CPB_FDM(csbcpb) & NX_FDM_CONTINUATION) {
-+		/* we've hit the nx chip previously and we're updating again,
-+		 * so copy over the partial digest */
-+		memcpy(csbcpb->cpb.sha512.input_partial_digest,
-+		       csbcpb->cpb.sha512.message_digest, SHA512_DIGEST_SIZE);
-+	}
-+
-+	/* 2 cases for total data len:
-+	 *  1: <= SHA512_BLOCK_SIZE: copy into state, return 0
-+	 *  2: > SHA512_BLOCK_SIZE: process X blocks, copy in leftover
-+	 */
-+	if ((u64)len + sctx->count[0] <= SHA512_BLOCK_SIZE) {
-+		memcpy(sctx->buf + sctx->count[0], data, len);
-+		sctx->count[0] += len;
-+		goto out;
-+	}
-+
-+	/* to_process: the SHA512_BLOCK_SIZE data chunk to process in this
-+	 * update */
-+	to_process = (sctx->count[0] + len) & ~(SHA512_BLOCK_SIZE - 1);
-+	leftover = (sctx->count[0] + len) & (SHA512_BLOCK_SIZE - 1);
-+
-+	if (sctx->count[0]) {
-+		in_sg = nx_build_sg_list(nx_ctx->in_sg, (u8 *)sctx->buf,
-+					 sctx->count[0], nx_ctx->ap->sglen);
-+		in_sg = nx_build_sg_list(in_sg, (u8 *)data,
-+					 to_process - sctx->count[0],
-+					 nx_ctx->ap->sglen);
-+		nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) *
-+					sizeof(struct nx_sg);
-+	} else {
-+		in_sg = nx_build_sg_list(nx_ctx->in_sg, (u8 *)data,
-+					 to_process, nx_ctx->ap->sglen);
-+		nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) *
-+					sizeof(struct nx_sg);
-+	}
-+
-+	NX_CPB_FDM(csbcpb) |= NX_FDM_INTERMEDIATE;
-+
-+	if (!nx_ctx->op.inlen || !nx_ctx->op.outlen) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op,
-+			   desc->flags & CRYPTO_TFM_REQ_MAY_SLEEP);
-+	if (rc)
-+		goto out;
-+
-+	atomic_inc(&(nx_ctx->stats->sha512_ops));
-+
-+	/* copy the leftover back into the state struct */
-+	memcpy(sctx->buf, data + len - leftover, leftover);
-+	sctx->count[0] = leftover;
-+
-+	spbc_bits = csbcpb->cpb.sha512.spbc * 8;
-+	csbcpb->cpb.sha512.message_bit_length_lo += spbc_bits;
-+	if (csbcpb->cpb.sha512.message_bit_length_lo < spbc_bits)
-+		csbcpb->cpb.sha512.message_bit_length_hi++;
-+
-+	/* everything after the first update is continuation */
-+	NX_CPB_FDM(csbcpb) |= NX_FDM_CONTINUATION;
-+out:
-+	return rc;
-+}
-+
-+static int nx_sha512_final(struct shash_desc *desc, u8 *out)
-+{
-+	struct sha512_state *sctx = shash_desc_ctx(desc);
-+	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
-+	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
-+	struct nx_sg *in_sg, *out_sg;
-+	u64 count0;
-+	int rc;
-+
-+	if (NX_CPB_FDM(csbcpb) & NX_FDM_CONTINUATION) {
-+		/* we've hit the nx chip previously, now we're finalizing,
-+		 * so copy over the partial digest */
-+		memcpy(csbcpb->cpb.sha512.input_partial_digest,
-+		       csbcpb->cpb.sha512.message_digest, SHA512_DIGEST_SIZE);
-+	}
-+
-+	/* final is represented by continuing the operation and indicating that
-+	 * this is not an intermediate operation */
-+	NX_CPB_FDM(csbcpb) &= ~NX_FDM_INTERMEDIATE;
-+
-+	count0 = sctx->count[0] * 8;
-+
-+	csbcpb->cpb.sha512.message_bit_length_lo += count0;
-+	if (csbcpb->cpb.sha512.message_bit_length_lo < count0)
-+		csbcpb->cpb.sha512.message_bit_length_hi++;
-+
-+	in_sg = nx_build_sg_list(nx_ctx->in_sg, sctx->buf, sctx->count[0],
-+				 nx_ctx->ap->sglen);
-+	out_sg = nx_build_sg_list(nx_ctx->out_sg, out, SHA512_DIGEST_SIZE,
-+				  nx_ctx->ap->sglen);
-+	nx_ctx->op.inlen = (nx_ctx->in_sg - in_sg) * sizeof(struct nx_sg);
-+	nx_ctx->op.outlen = (nx_ctx->out_sg - out_sg) * sizeof(struct nx_sg);
-+
-+	if (!nx_ctx->op.outlen) {
-+		rc = -EINVAL;
-+		goto out;
-+	}
-+
-+	rc = nx_hcall_sync(nx_ctx, &nx_ctx->op,
-+			   desc->flags & CRYPTO_TFM_REQ_MAY_SLEEP);
-+	if (rc)
-+		goto out;
-+
-+	atomic_inc(&(nx_ctx->stats->sha512_ops));
-+	atomic64_add(csbcpb->cpb.sha512.message_bit_length_lo,
-+		     &(nx_ctx->stats->sha512_bytes));
-+
-+	memcpy(out, csbcpb->cpb.sha512.message_digest, SHA512_DIGEST_SIZE);
-+out:
-+	return rc;
-+}
-+
-+static int nx_sha512_export(struct shash_desc *desc, void *out)
-+{
-+	struct sha512_state *sctx = shash_desc_ctx(desc);
-+	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
-+	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
-+	struct sha512_state *octx = out;
-+
-+	/* move message_bit_length (128 bits) into count and convert its value
-+	 * to bytes */
-+	octx->count[0] = csbcpb->cpb.sha512.message_bit_length_lo >> 3 |
-+			 ((csbcpb->cpb.sha512.message_bit_length_hi & 7) << 61);
-+	octx->count[1] = csbcpb->cpb.sha512.message_bit_length_hi >> 3;
-+
-+	octx->count[0] += sctx->count[0];
-+	if (octx->count[0] < sctx->count[0])
-+		octx->count[1]++;
-+
-+	memcpy(octx->buf, sctx->buf, sizeof(octx->buf));
-+
-+	/* if no data has been processed yet, we need to export SHA512's
-+	 * initial data, in case this context gets imported into a software
-+	 * context */
-+	if (csbcpb->cpb.sha512.message_bit_length_hi ||
-+	    csbcpb->cpb.sha512.message_bit_length_lo)
-+		memcpy(octx->state, csbcpb->cpb.sha512.message_digest,
-+		       SHA512_DIGEST_SIZE);
-+	else {
-+		octx->state[0] = SHA512_H0;
-+		octx->state[1] = SHA512_H1;
-+		octx->state[2] = SHA512_H2;
-+		octx->state[3] = SHA512_H3;
-+		octx->state[4] = SHA512_H4;
-+		octx->state[5] = SHA512_H5;
-+		octx->state[6] = SHA512_H6;
-+		octx->state[7] = SHA512_H7;
-+	}
-+
-+	return 0;
-+}
-+
-+static int nx_sha512_import(struct shash_desc *desc, const void *in)
-+{
-+	struct sha512_state *sctx = shash_desc_ctx(desc);
-+	struct nx_crypto_ctx *nx_ctx = crypto_tfm_ctx(&desc->tfm->base);
-+	struct nx_csbcpb *csbcpb = (struct nx_csbcpb *)nx_ctx->csbcpb;
-+	const struct sha512_state *ictx = in;
-+
-+	memcpy(sctx->buf, ictx->buf, sizeof(ictx->buf));
-+	sctx->count[0] = ictx->count[0] & 0x3f;
-+	csbcpb->cpb.sha512.message_bit_length_lo = (ictx->count[0] & ~0x3f)
-+							<< 3;
-+	csbcpb->cpb.sha512.message_bit_length_hi = ictx->count[1] << 3 |
-+						   ictx->count[0] >> 61;
-+
-+	if (csbcpb->cpb.sha512.message_bit_length_hi ||
-+	    csbcpb->cpb.sha512.message_bit_length_lo) {
-+		memcpy(csbcpb->cpb.sha512.message_digest, ictx->state,
-+		       SHA512_DIGEST_SIZE);
-+
-+		NX_CPB_FDM(csbcpb) |= NX_FDM_CONTINUATION;
-+		NX_CPB_FDM(csbcpb) |= NX_FDM_INTERMEDIATE;
-+	}
-+
-+	return 0;
-+}
-+
-+struct shash_alg nx_shash_sha512_alg = {
-+	.digestsize = SHA512_DIGEST_SIZE,
-+	.init       = nx_sha512_init,
-+	.update     = nx_sha512_update,
-+	.final      = nx_sha512_final,
-+	.export     = nx_sha512_export,
-+	.import     = nx_sha512_import,
-+	.descsize   = sizeof(struct sha512_state),
-+	.statesize  = sizeof(struct sha512_state),
-+	.base       = {
-+		.cra_name        = "sha512",
-+		.cra_driver_name = "sha512-nx",
-+		.cra_priority    = 300,
-+		.cra_flags       = CRYPTO_ALG_TYPE_SHASH,
-+		.cra_blocksize   = SHA512_BLOCK_SIZE,
-+		.cra_module      = THIS_MODULE,
-+		.cra_ctxsize     = sizeof(struct nx_crypto_ctx),
-+		.cra_init        = nx_crypto_ctx_sha_init,
-+		.cra_exit        = nx_crypto_ctx_exit,
-+	}
-+};
--- 
-1.7.5.4
+Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+
+diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
+index 83d5c88..d3d91da 100644
+--- a/drivers/tty/hvc/hvc_xen.c
++++ b/drivers/tty/hvc/hvc_xen.c
+@@ -430,9 +430,9 @@ static int __devinit xencons_probe(struct xenbus_device *dev,
+ 	if (devid == 0)
+ 		return -ENODEV;
+ 
+-	info = kzalloc(sizeof(struct xencons_info), GFP_KERNEL | __GFP_ZERO);
++	info = kzalloc(sizeof(struct xencons_info), GFP_KERNEL);
+ 	if (!info)
+-		goto error_nomem;
++		return -ENOMEM;
+ 	dev_set_drvdata(&dev->dev, info);
+ 	info->xbdev = dev;
+ 	info->vtermno = xenbus_devid_to_vtermno(devid);
