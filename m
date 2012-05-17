@@ -1,30 +1,27 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
- [209.85.160.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BDA3DB6F86
- for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2012 04:42:11 +1000 (EST)
-Received: by pbbrp12 with SMTP id rp12so2578056pbb.15
- for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2012 11:42:09 -0700 (PDT)
+Return-Path: <B04825@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D9A12B6FDE
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2012 04:42:56 +1000 (EST)
+Message-ID: <4FB546A4.7090502@freescale.com>
+Date: Thu, 17 May 2012 13:42:44 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <CAOZdJXW2jmFG8hkBRMAsO-CJ3ruMd28LqS0b-BGZTU7FnpRi3Q@mail.gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Re: Build regressions/improvements in v3.4-rc7
 References: <1337157034-22773-1-git-send-email-geert@linux-m68k.org>
  <CAMuHMdUtL4_mv-e-EQAZmNcb9dAT=PXB59i7Vuj2vf8NnaBFzQ@mail.gmail.com>
  <1337212281.30558.17.camel@pasglop>
- <4FB535D3.7000106@freescale.com>
- <CAOZdJXW2jmFG8hkBRMAsO-CJ3ruMd28LqS0b-BGZTU7FnpRi3Q@mail.gmail.com>
-Date: Thu, 17 May 2012 20:42:08 +0200
-Message-ID: <CAMuHMdVszy2sk6f045krqr=PPQFnd-GrtJYJMQCCPzkq-65psg@mail.gmail.com>
-Subject: Re: Re: Build regressions/improvements in v3.4-rc7
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Parisc List <linux-parisc@vger.kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linuxppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1337212281.30558.17.camel@pasglop>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Parisc List <linux-parisc@vger.kernel.org>,
+ the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org,
+ Linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>,
+ Scott Wood <scottwood@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,29 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 17, 2012 at 7:52 PM, Tabi Timur-B04825 <B04825@freescale.com> w=
-rote:
-> On Thu, May 17, 2012 at 12:30 PM, Timur Tabi <timur@freescale.com> wrote:
->
->> Anyway, I think I see what the problem is, but it does appear when I use
->> the normal defconfigs. =C2=A0What .config was being used?
->
-> I meant to say that it does NOT appear.
+Benjamin Herrenschmidt wrote:
+>   + arch/powerpc/platforms/512x/mpc512x_shared.c: error: 'enum
+>> fsl_diu_monitor_port' declared inside parameter list [-Werror]:  =>
+>> 70:9, 84:9, 88:36
+>>   + arch/powerpc/platforms/512x/mpc512x_shared.c: error: 'return' with
+>> a value, in function returning void [-Werror]:  => 189:2
+>>   + arch/powerpc/platforms/512x/mpc512x_shared.c: error: function
+>> declaration isn't a prototype [-Werror=strict-prototypes]:  => 69:5,
+>> 88:6, 83:6, 187:1
+>>   + arch/powerpc/platforms/512x/mpc512x_shared.c: error: its scope is
+>> only this definition or declaration, which is probably not what you
+>> want [-Werror]:  => 70:9
 
-powerpc randconfig.
+So I think I have a fix for these, but I still would like the actual
+.config so that I can be sure.
 
-Gr{oetje,eeting}s,
+>>   + drivers/virt/fsl_hypervisor.c: error: 'MSR_GS' undeclared (first
+>> use in this function):  => 799:80
 
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
+I can't reproduce this one.  MSR_GS is defined in reg_booke.h.
+fsl_hypervisor.c should not be compiled on a non-booke platform.  I don't
+know if the fix is to add this to fsl_hypervisor.c:
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
+	#include <asm/reg_booke.h>
 
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+or if I should update the Kconfig:
+
+config FSL_HV_MANAGER
+	tristate "Freescale hypervisor management driver"
+	depends on FSL_SOC
+
+to
+
+	depends on FSL_BOOKE
+
+or maybe
+
+	depends on FSL_BOOKE && FSL_SOC
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
