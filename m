@@ -1,30 +1,20 @@
-Return-Path: <frank.svendsboe@gmail.com>
-Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
- [209.85.216.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 28E21B6FC3
- for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2012 00:37:51 +1000 (EST)
-Received: by qaea16 with SMTP id a16so2021927qae.3
- for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2012 07:37:49 -0700 (PDT)
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (unknown
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7CED1B6FC3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2012 03:15:32 +1000 (EST)
+To: linuxppc-dev@lists.ozlabs.org
+Subject: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
+From: Anthony Foiani <tkil@scrye.com>
+Date: Thu, 17 May 2012 11:08:18 -0600
+Message-ID: <ghave7n25.fsf@dworkin.scrye.com>
 MIME-Version: 1.0
-In-Reply-To: <4FA68C98.5070209@gmail.com>
-References: <4F69C553.6070409@gmail.com>
- <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
- <20120321162549.8C1D0202A4D@gemini.denx.de>
- <1332633218.2882.16.camel@pasglop>
- <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
- <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
- <1333152184.30734.3.camel@pasglop> <20120401221359.GA31730@gnubox>
- <1333332115.30734.27.camel@pasglop>
- <20120402062826.GC2129@thor.bakeyournoodle.com>
- <4FA68C98.5070209@gmail.com>
-Date: Thu, 17 May 2012 16:37:48 +0200
-Message-ID: <CADNf2swvQ2gRSjyPpvR5cU+F4WbFTtorw2W3=sFetqgznYLHKg@mail.gmail.com>
-Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
-From: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>
-To: robert.karl.berger@gmail.com, Tony Breeds <tony@bakeyournoodle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Wolfgang Denk <wd@denx.de>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>, Jeff Garzik <jeff@garzik.org>,
+ ashish kalra <ashish.kalra@freescale.com>, Adrian Bunk <bunk@stusta.de>
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,26 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 6, 2012 at 4:37 PM, Robert Berger
-<robert.karl.berger@gmail.com> wrote:
-> On 04/02/2012 09:28 AM, Tony Breeds wrote:
->> On Mon, Apr 02, 2012 at 12:01:55PM +1000, Benjamin Herrenschmidt wrote:
->>
->>> Ok, I've asked Tony to have a look at splitting the build decision
->>> in arch/powerpc/boot along the same lines as the CPU families... ie onl=
-y
->>> wrappers for platforms potentially supported by the built kernel. That
->>> should fix it.
->>
->> Please try this patch. =A0Only lightly tested here. =A0I haven't "split =
-up"
->> src-wlib yet as I wanted to verify I'm on the right track.
->
-> I can confirm that it fixes the kilauea problem. Builds and runs so far.
-> Are you going to push this upstream?
->
 
-I can confirm this too (applied to 3.4-rc7). Tony?
+Greetings.
 
-Best regards,
-Frank
+I was occasionally running into problems at boot time on an
+MPC8315-based board (derived from the MPC831xRDB, apparently), using
+SATA to talk to an SSD.  My vendor suggested that I enable
+CONFIG_MPC8315_DS.
+
+That symbol is only found once in the entire kernel codebase:
+
+  $ git checkout v3.4-rc7
+  HEAD is now at 36be505... Linux 3.4-rc7
+
+  $ git grep -nH CONFIG_MPC8315_DS
+  drivers/ata/sata_fsl.c:729:#ifdef CONFIG_MPC8315_DS
+
+There is no kconfig support for it at all.
+
+It was added in 2007; further, this is the only commit in the entire
+git history that contains this string:
+
+   commit e7eac96e8f0e57a6e9f94943557bc2b23be31471
+   Author: ashish kalra <ashish.kalra@freescale.com>
+   Date:   Wed Oct 31 19:28:02 2007 +0800
+
+       ata/sata_fsl: Move MPC8315DS link speed limit workaround to specific ifdef
+       
+       Signed-off-by: ashish kalra <ashish.kalra@freescale.com>
+       Signed-off-by: Li Yang <leoli@freescale.com>
+       Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+   diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+   index 5892472..e076e1f 100644
+   --- a/drivers/ata/sata_fsl.c
+   +++ b/drivers/ata/sata_fsl.c
+   @@ -652,6 +652,7 @@ static int sata_fsl_port_start(struct ata_port *ap)
+           VPRINTK("HControl = 0x%x\n", ioread32(hcr_base + HCONTROL));
+           VPRINTK("CHBA  = 0x%x\n", ioread32(hcr_base + CHBA));
+    
+   +#ifdef CONFIG_MPC8315_DS
+           /*
+            * Workaround for 8315DS board 3gbps link-up issue,
+            * currently limit SATA port to GEN1 speed
+   @@ -664,6 +665,7 @@ static int sata_fsl_port_start(struct ata_port *ap)
+           sata_fsl_scr_read(ap, SCR_CONTROL, &temp);
+           dev_printk(KERN_WARNING, dev, "scr_control, speed limited to %x\n",
+                           temp);
+   +#endif
+    
+           return 0;
+    }
+
+This otherwise-unsupported variable was noted by Robert Day in 2008;
+Adrian Bunk suggested a patch, but the Freescale folks said that it
+was for a not-yet-mainlined board, so the patch was dropped:
+
+   http://marc.info/?l=linux-ide&m=121783965216004&w=2
+
+As Robert notied again in 2010, it still wasn't mainlined:
+
+   http://marc.info/?l=linux-ide&m=121783965216004&w=2
+
+And, obviously, it still isn't today.
+
+Can the Freescale people tell us exactly what we should be testing to
+determine when to enforce this restriction?  A config variable that
+points to a non-existent board doesn't seem much help.
+
+Thanks,
+Tony
