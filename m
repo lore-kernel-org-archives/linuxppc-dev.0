@@ -1,31 +1,20 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0BB6AB6F9D
- for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2012 04:51:56 +1000 (EST)
-Message-ID: <4FB548C2.3070405@freescale.com>
-Date: Thu, 17 May 2012 13:51:46 -0500
-From: Timur Tabi <b04825@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: Build regressions/improvements in v3.4-rc7
-References: <1337157034-22773-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdUtL4_mv-e-EQAZmNcb9dAT=PXB59i7Vuj2vf8NnaBFzQ@mail.gmail.com>
- <1337212281.30558.17.camel@pasglop> <4FB535D3.7000106@freescale.com>
- <CAOZdJXW2jmFG8hkBRMAsO-CJ3ruMd28LqS0b-BGZTU7FnpRi3Q@mail.gmail.com>
- <CAMuHMdVszy2sk6f045krqr=PPQFnd-GrtJYJMQCCPzkq-65psg@mail.gmail.com>
- <4FB546FB.807@freescale.com> <4FB547F9.7000804@freescale.com>
-In-Reply-To: <4FB547F9.7000804@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Parisc List <linux-parisc@vger.kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>
+Return-Path: <frank.svendsboe@gmail.com>
+Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
+ [209.85.217.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CCDF8B6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2012 06:43:45 +1000 (EST)
+Received: by lban1 with SMTP id n1so1639214lba.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2012 13:43:40 -0700 (PDT)
+From: Frank Svendsboe <frank.svendsboe@gmail.com>
+To: linux-mtd@lists.infradead.org
+Subject: [PATCH] mtd: Fix typo in Kconfig
+Date: Thu, 17 May 2012 22:43:09 +0200
+Message-Id: <1337287389-28386-1-git-send-email-frank.svendsboe@gmail.com>
+Cc: dbaryshkov@gmail.com, randy.dunlap@oracle.com,
+ linuxppc-dev@lists.ozlabs.org, Frank Svendsboe <frank.svendsboe@gmail.com>,
+ dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,12 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Regardless of the config that shows this, the MSR[GS] check should go
-> away.  If you have a /hypervisor node, you already know you're a guest.
+MTD_OF_PARTS and the default setting is not working due to using 'Y'
+instead of 'y', introduced in commit
+d6137badeff1ef64b4e0092ec249ebdeaeb3ff37. This made our board, and
+possibly other boards using DTS defined partitions and not having
+CONFIG_MTD_OF_PARTS=y defined in the defconfig, fail to mount root
+after v3.1.
 
-Fair enough.
+Signed-off-by: Frank Svendsboe <frank.svendsboe@gmail.com>
+---
+ drivers/mtd/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/drivers/mtd/Kconfig b/drivers/mtd/Kconfig
+index 5760c1a..27143e0 100644
+--- a/drivers/mtd/Kconfig
++++ b/drivers/mtd/Kconfig
+@@ -128,7 +128,7 @@ config MTD_AFS_PARTS
+ 
+ config MTD_OF_PARTS
+ 	tristate "OpenFirmware partitioning information support"
+-	default Y
++	default y
+ 	depends on OF
+ 	help
+ 	  This provides a partition parsing function which derives
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.7.5.4
