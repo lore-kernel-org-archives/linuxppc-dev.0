@@ -1,36 +1,30 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B6DC8B6FB9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2012 20:22:49 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Thu, 17 May 2012 15:52:09 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q4HAM6fI62128326
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2012 15:52:06 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q4HFqYIg021542
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2012 01:52:36 +1000
-Message-ID: <4FB4D14A.20903@linux.vnet.ibm.com>
-Date: Thu, 17 May 2012 15:52:02 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Return-Path: <frank.svendsboe@gmail.com>
+Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
+ [209.85.216.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 28E21B6FC3
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 May 2012 00:37:51 +1000 (EST)
+Received: by qaea16 with SMTP id a16so2021927qae.3
+ for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2012 07:37:49 -0700 (PDT)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH powerpc] fix a lockdep complaint in start_secondary
-References: <1337227263.24471.23.camel@ThinkPad-T420>
- <1337228910.30558.46.camel@pasglop>
-In-Reply-To: <1337228910.30558.46.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, LKML <linux-kernel@vger.kernel.org>,
- Li Zhong <zhong@linux.vnet.ibm.com>
+In-Reply-To: <4FA68C98.5070209@gmail.com>
+References: <4F69C553.6070409@gmail.com>
+ <CA+5PVA7+vPZmLBzkXOFwTM+kLMYHPDgVW4Jcm91XSxW=Ng-Y6g@mail.gmail.com>
+ <20120321162549.8C1D0202A4D@gemini.denx.de>
+ <1332633218.2882.16.camel@pasglop>
+ <CA+5PVA4pGhbrM1P8Dbjaxw_1_ZgEweimLCSc1xrw0Rombr_2rg@mail.gmail.com>
+ <CADNf2swF2EVO2u-yPziF2z6HyF6jRBvVsQC2nbY=W2sXJpp2hQ@mail.gmail.com>
+ <1333152184.30734.3.camel@pasglop> <20120401221359.GA31730@gnubox>
+ <1333332115.30734.27.camel@pasglop>
+ <20120402062826.GC2129@thor.bakeyournoodle.com>
+ <4FA68C98.5070209@gmail.com>
+Date: Thu, 17 May 2012 16:37:48 +0200
+Message-ID: <CADNf2swvQ2gRSjyPpvR5cU+F4WbFTtorw2W3=sFetqgznYLHKg@mail.gmail.com>
+Subject: Re: kilauea compilation breaks with v3.3 kernel and ELDK 4.2
+From: =?ISO-8859-1?Q?Frank_Svendsb=F8e?= <frank.svendsboe@gmail.com>
+To: robert.karl.berger@gmail.com, Tony Breeds <tony@bakeyournoodle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Wolfgang Denk <wd@denx.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,87 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/17/2012 09:58 AM, Benjamin Herrenschmidt wrote:
-
-> On Thu, 2012-05-17 at 12:01 +0800, Li Zhong wrote:
->> This patch tries to fix following lockdep complaints:
-> 
->  .../...
-> 
->> pseries_notify_cpu_idle_add_cpu() actually does
->> cpuidle_disable_device(), and then cpuidle_enable_device(), which
->> releases and allocates the resources respectively. ( Also, all the data
->> are cleared and reinitialized after this cycle). The problem here is:
->> something like kzalloc(GFP_KERNEL), wait_for_completion() would have
->> problems running here where irqs are still disabled. 
-
-
-This is true when the system is booting up.
-
-> 
-> So yes, it looks definitely fishy. I don't have time to study cpuidle
-> today to check whether that's correct or not so I'm CCing Deepthi
-> Dharwar who did all that cpuidle work for pseries.
-> 
-> Deepthi, can you check whether that patch is correct ?
-
-
-pseries_notify_cpu_idle_add_cpu() is essential to be called for
-hotplug event. So by removing this call completely wouldn't
-support cpus registering under cpuidle on hotplug and default idle is
-executed on those with do not give much powersavings. Ideal way it to
-have a notifier in pseries backend driver for hotplug notification and
-then remove this function from here.
-I am currently working on this patch, will post it out soon.
-
-> 
->> Actually, cpuidle_enable_device() is called for each possible cpu when
->> the driver is registered. So I don't think the resources needed to be
->> released and allocated each time cpu becomes online. Something like
->> cpuidle_reset_device() would be enough to clear and reinitialize the
->> data.
+On Sun, May 6, 2012 at 4:37 PM, Robert Berger
+<robert.karl.berger@gmail.com> wrote:
+> On 04/02/2012 09:28 AM, Tony Breeds wrote:
+>> On Mon, Apr 02, 2012 at 12:01:55PM +1000, Benjamin Herrenschmidt wrote:
 >>
->> However, after some studying of the data to be cleared, I think it's
->> also reasonable to keep the previous data. For example: 
+>>> Ok, I've asked Tony to have a look at splitting the build decision
+>>> in arch/powerpc/boot along the same lines as the CPU families... ie onl=
+y
+>>> wrappers for platforms potentially supported by the built kernel. That
+>>> should fix it.
 >>
->> /sys/devices/system/cpu/cpu#/cpuidle/state#/usage 
->>         the number of times this idle state has been entered
->> /sys/devices/system/cpu/cpu#/cpuidle/state#/time
->>         the amount of time spent in this idle state
->>
->> So I think we could just remove the function call doing the
->> disable/enable cycle:
->>
->> Please correct me if I missed anything.
+>> Please try this patch. =A0Only lightly tested here. =A0I haven't "split =
+up"
+>> src-wlib yet as I wanted to verify I'm on the right track.
+>
+> I can confirm that it fixes the kilauea problem. Builds and runs so far.
+> Are you going to push this upstream?
+>
 
+I can confirm this too (applied to 3.4-rc7). Tony?
 
-If removed, this would not handle cpu hotplug events for cpuidle.
-
- 
->>
->> Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
->> Tested-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/platforms/pseries/smp.c |    1 -
->>  1 files changed, 0 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/powerpc/platforms/pseries/smp.c
->> b/arch/powerpc/platforms/pseries/smp.c
->> index e16bb8d..71706bc 100644
->> --- a/arch/powerpc/platforms/pseries/smp.c
->> +++ b/arch/powerpc/platforms/pseries/smp.c
->> @@ -147,7 +147,6 @@ static void __devinit smp_xics_setup_cpu(int cpu)
->>  	set_cpu_current_state(cpu, CPU_STATE_ONLINE);
->>  	set_default_offline_state(cpu);
->>  #endif
->> -	pseries_notify_cpuidle_add_cpu(cpu);
->>  }
->>  
->>  static int __devinit smp_pSeries_kick_cpu(int nr)
-> 
-> 
-> 
-
-Cheers,
-Deepthi
+Best regards,
+Frank
