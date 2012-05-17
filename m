@@ -1,23 +1,21 @@
-Return-Path: <dave.anglin@bell.net>
-Received: from blu0-omc4-s8.blu0.hotmail.com (blu0-omc4-s8.blu0.hotmail.com
- [65.55.111.147]) by ozlabs.org (Postfix) with ESMTP id D819FB6FB9
- for <linuxppc-dev@ozlabs.org>; Thu, 17 May 2012 10:27:54 +1000 (EST)
-Message-ID: <BLU0-SMTP3215D3E80BA82F3C6A654197190@phx.gbl>
-From: John David Anglin <dave.anglin@bell.net>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-In-Reply-To: <1337179563.2985.80.camel@dabdike.int.hansenpartnership.com>
-Subject: Re: Build regressions/improvements in v3.4-rc7
-References: <1337157034-22773-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdUtL4_mv-e-EQAZmNcb9dAT=PXB59i7Vuj2vf8NnaBFzQ@mail.gmail.com>
- <1337179563.2985.80.camel@dabdike.int.hansenpartnership.com>
-Content-Type: text/plain; charset="US-ASCII"; format=flowed; delsp=yes
-MIME-Version: 1.0 (Apple Message framework v936)
-Date: Wed, 16 May 2012 20:27:35 -0400
-Cc: Parisc List <linux-parisc@vger.kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org,
- James Morris <jmorris@namei.org>, Linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Dmitry Kasatkin <dmitry.kasatkin@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id B4057B6FAF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 May 2012 13:21:24 +1000 (EST)
+Date: Thu, 17 May 2012 13:21:16 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: linux-next: manual merge of the crypto tree with the powerpc tree
+Message-Id: <20120517132116.8a5378bce254fc39d20cb08a@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__17_May_2012_13_21_16_+1000_/sEcRREOlI8vjD_8"
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>,
+ Andreas Westin <andreas.westin@stericsson.com>,
+ Kent Yoder <key@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +25,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 16-May-12, at 10:46 AM, James Bottomley wrote:
+--Signature=_Thu__17_May_2012_13_21_16_+1000_/sEcRREOlI8vjD_8
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Wow, lib/mpi/ is a complete horror: it's full of hand crafted asm  
-> code.
-> The error in this case appears to be that umul_ppm() is implemented as
-> an xmpyu instruction.  That's a floating point instruction.  We
-> deliberately compile the kernel with floating point disabled because  
-> we
-> don't want to save and restore the floating point register file on  
-> each
-> context switch, hence the operand constraints are unsatisfiable.
+Hi Herbert,
 
-I haven't tried this but I think the parisc implementation of umul_ppmm
-can be deleted.  There is a generic version in the file.
+Today's linux-next merge of the crypto tree got a conflict in
+drivers/crypto/Kconfig between commit aef7b31c8833 ("powerpc/crypto:
+Build files for the nx device driver") from the powerpc tree and commit
+2789c08fffea ("crypto: ux500 - Add driver for CRYP hardware") from the
+crypto tree.
 
-Dave
---
-John David Anglin	dave.anglin@bell.net
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc drivers/crypto/Kconfig
+index f1ceeef,69fdf18..0000000
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@@ -296,21 -295,15 +296,32 @@@ config CRYPTO_DEV_TEGRA_AE
+  	  To compile this driver as a module, choose M here: the module
+  	  will be called tegra-aes.
+ =20
+ +config CRYPTO_DEV_NX
+ +	tristate "Support for Power7+ in-Nest cryptographic accleration"
+ +	depends on PPC64 && IBMVIO
+ +	select CRYPTO_AES
+ +	select CRYPTO_CBC
+ +	select CRYPTO_ECB
+ +	select CRYPTO_CCM
+ +	select CRYPTO_GCM
+ +	select CRYPTO_AUTHENC
+ +	select CRYPTO_XCBC
+ +	select CRYPTO_SHA256
+ +	select CRYPTO_SHA512
+ +	help
+ +	  Support for Power7+ in-Nest cryptographic acceleration. This
+ +	  module supports acceleration for AES and SHA2 algorithms. If you
+ +	  choose 'M' here, this module will be called nx_crypto.
+ +
++ config CRYPTO_DEV_UX500
++ 	tristate "Driver for ST-Ericsson UX500 crypto hardware acceleration"
++ 	depends on ARCH_U8500
++ 	select CRYPTO_ALGAPI
++ 	help
++ 	  Driver for ST-Ericsson UX500 crypto engine.
++=20
++ if CRYPTO_DEV_UX500
++ 	source "drivers/crypto/ux500/Kconfig"
++ endif # if CRYPTO_DEV_UX500
++=20
+  endif # CRYPTO_HW
+
+--Signature=_Thu__17_May_2012_13_21_16_+1000_/sEcRREOlI8vjD_8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPtG6sAAoJEECxmPOUX5FEFEgQAI1qOAHHihjLGrD8PfMXzsrr
+g+RdMp/oFMunkyeMRH/o3f9zPg+UNanbMAbZRpwMl/x13kgDNQd+XnJecmioy6Q3
+W0uqga3+G+9nCPyQQxl2cHrOeLx3O+kuG4DTAr7JY8An6S6JV1EdkaXvFaqHnwDJ
+qv6TaHQuenPFTwwJ2i7Qn9cZfP0EHpFyA0YHaNdKjEV2HOTO3B/TPRRxrrdzxIGL
+R+Q8oUwhW9fWYweXvu4MTr8BMKPuAtFzNjIgJvqHDj0xbUXwN7u9jH9ccKFlPfMa
+k1e1/jQ75Pywv3h08b427d4gRnrsX4ejCaoOfzNSUjdNlxonmVntEX2cVvrrFQud
+wXibRUXuaKdDxtw36zvyDM9oL6BsWmjIxvgsRKK5/3H+o6zxRhYzwq8nP4yXczb7
+rIv9I0HR15Az+Nc0cylpVHK1ptliRHZNR6W0J9PQrfB/s1+Yjr7vaPmMcFwmiARp
+Sc1FoCrJ0it4sCyegiP8W/yhPOfCWp4zbxZePAiuVz3f+v5JtNfZgYz6sfQEXLQa
+j+EwCvmROMRIAeqju9GaDwq43oFOZsKmM4DFpX9IFeqnCFvw4M2bVrnw55WZARqS
+gRQHxwOkuu100cJYqGLT+6Cxj72qZPlqAKS60anCMcw3twSZeDmXv6LKIR/qROHK
+fhdMdjWx7yY675EvIfFR
+=MUwW
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__17_May_2012_13_21_16_+1000_/sEcRREOlI8vjD_8--
