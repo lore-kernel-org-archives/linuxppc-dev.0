@@ -1,24 +1,21 @@
-Return-Path: <frank.svendsboe@gmail.com>
-Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
- [209.85.217.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1E7C8B6FBA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2012 23:57:39 +1000 (EST)
-Received: by lban1 with SMTP id n1so2112207lba.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2012 06:57:36 -0700 (PDT)
-Date: Fri, 18 May 2012 15:57:29 +0200
-From: Frank Svendsboe <frank.svendsboe@gmail.com>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Subject: Re: [PATCH] mtd: Fix typo in Kconfig
-Message-ID: <20120518135729.GA11703@gnubox>
-References: <1337287389-28386-1-git-send-email-frank.svendsboe@gmail.com>
- <1337338834.2483.21.camel@sauron.fi.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1337338834.2483.21.camel@sauron.fi.intel.com>
-Cc: dbaryshkov@gmail.com, linuxppc-dev@lists.ozlabs.org,
- randy.dunlap@oracle.com, linux-mtd@lists.infradead.org
+Return-Path: <mchehab@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id C15C9B6FAF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2012 02:33:04 +1000 (EST)
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: 
+Subject: [PATCH EDAC v26 27/66] pasemi_edac: convert driver to use the new
+ edac ABI
+Date: Fri, 18 May 2012 13:32:14 -0300
+Message-Id: <1337358773-6919-28-git-send-email-mchehab@redhat.com>
+In-Reply-To: <1337358773-6919-1-git-send-email-mchehab@redhat.com>
+References: <1337358773-6919-1-git-send-email-mchehab@redhat.com>
+Sender: Mauro Carvalho Chehab <mchehab@pedra>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ Egor Martovetsky <egor@pasemi.com>, Olof Johansson <olof@lixom.net>,
+ linuxppc-dev@lists.ozlabs.org,
+ Linux Edac Mailing List <linux-edac@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +25,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 18, 2012 at 02:00:34PM +0300, Artem Bityutskiy wrote:
-> On Thu, 2012-05-17 at 22:43 +0200, Frank Svendsboe wrote:
-> > MTD_OF_PARTS and the default setting is not working due to using 'Y'
-> > instead of 'y', introduced in commit
-> > d6137badeff1ef64b4e0092ec249ebdeaeb3ff37. This made our board, and
-> > possibly other boards using DTS defined partitions and not having
-> > CONFIG_MTD_OF_PARTS=y defined in the defconfig, fail to mount root
-> > after v3.1.
-> 
-> The commit was released in v3.2, so it not v3.1 probably?
->
+The legacy edac ABI is going to be removed. Port the driver to use
+and benefit from the new API functionality.
 
-It was committed between 3.1 and 3.2-rc1. I said _after_ 3.1, so it is
-not completely wrong either. Feel free to change to commit message, or
-I can resend the patch if you want me to.
+Cc: Olof Johansson <olof@lixom.net>
+Cc: Egor Martovetsky <egor@pasemi.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+---
+ drivers/edac/pasemi_edac.c |   25 ++++++++++++++++---------
+ 1 files changed, 16 insertions(+), 9 deletions(-)
 
-> > Signed-off-by: Frank Svendsboe <frank.svendsboe@gmail.com>
-> 
-> I've amended the subject to make it look scarier than just a fix of a
-> typo, added a tag for the stable tree, and pushed to l2-mtd.git, thanks!
-> 
-> commit aa2465b2d5d44defb269ac66a2d2b6e6b8feb399
-> Author: Frank Svendsboe <frank.svendsboe@gmail.com>
-> Date:   Thu May 17 22:43:09 2012 +0200
-> 
->     mtd: of_parts: fix breakage in Kconfig
->     
->     MTD_OF_PARTS and the default setting is not working due to using 'Y'
->     instead of 'y', introduced in commit
->     d6137badeff1ef64b4e0092ec249ebdeaeb3ff37. This made our board, and
->     possibly other boards using DTS defined partitions and not having
->     CONFIG_MTD_OF_PARTS=y defined in the defconfig, fail to mount root.
->     
->     Signed-off-by: Frank Svendsboe <frank.svendsboe@gmail.com>
->     Cc: stable@kernel.org [3.2+]
->     Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-> 
-
-Great. Thanks!
-
+diff --git a/drivers/edac/pasemi_edac.c b/drivers/edac/pasemi_edac.c
+index 3fcefda..46aed62 100644
+--- a/drivers/edac/pasemi_edac.c
++++ b/drivers/edac/pasemi_edac.c
+@@ -110,15 +110,16 @@ static void pasemi_edac_process_error_info(struct mem_ctl_info *mci, u32 errsta)
+ 	/* uncorrectable/multi-bit errors */
+ 	if (errsta & (MCDEBUG_ERRSTA_MBE_STATUS |
+ 		      MCDEBUG_ERRSTA_RFL_STATUS)) {
+-		edac_mc_handle_ue(mci, mci->csrows[cs].first_page, 0,
+-				  cs, mci->ctl_name);
++		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci,
++				     mci->csrows[cs].first_page, 0, 0,
++				     cs, 0, -1, mci->ctl_name, "", NULL);
+ 	}
+ 
+ 	/* correctable/single-bit errors */
+-	if (errsta & MCDEBUG_ERRSTA_SBE_STATUS) {
+-		edac_mc_handle_ce(mci, mci->csrows[cs].first_page, 0,
+-				  0, cs, 0, mci->ctl_name);
+-	}
++	if (errsta & MCDEBUG_ERRSTA_SBE_STATUS)
++		edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci,
++				     mci->csrows[cs].first_page, 0, 0,
++				     cs, 0, -1, mci->ctl_name, "", NULL);
+ }
+ 
+ static void pasemi_edac_check(struct mem_ctl_info *mci)
+@@ -191,6 +192,7 @@ static int __devinit pasemi_edac_probe(struct pci_dev *pdev,
+ 		const struct pci_device_id *ent)
+ {
+ 	struct mem_ctl_info *mci = NULL;
++	struct edac_mc_layer layers[2];
+ 	u32 errctl1, errcor, scrub, mcen;
+ 
+ 	pci_read_config_dword(pdev, MCCFG_MCEN, &mcen);
+@@ -207,9 +209,14 @@ static int __devinit pasemi_edac_probe(struct pci_dev *pdev,
+ 		MCDEBUG_ERRCTL1_RFL_LOG_EN;
+ 	pci_write_config_dword(pdev, MCDEBUG_ERRCTL1, errctl1);
+ 
+-	mci = edac_mc_alloc(0, PASEMI_EDAC_NR_CSROWS, PASEMI_EDAC_NR_CHANS,
+-				system_mmc_id++);
+-
++	layers[0].type = EDAC_MC_LAYER_CHIP_SELECT;
++	layers[0].size = PASEMI_EDAC_NR_CSROWS;
++	layers[0].is_virt_csrow = true;
++	layers[1].type = EDAC_MC_LAYER_CHANNEL;
++	layers[1].size = PASEMI_EDAC_NR_CHANS;
++	layers[1].is_virt_csrow = false;
++	mci = new_edac_mc_alloc(system_mmc_id++, ARRAY_SIZE(layers), layers,
++			    0);
+ 	if (mci == NULL)
+ 		return -ENOMEM;
+ 
 -- 
-Best regards,
-Frank
+1.7.8
