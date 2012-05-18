@@ -1,35 +1,24 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B99DBB6FC2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2012 23:29:11 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Fri, 18 May 2012 18:59:02 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q4IDT03a11141530
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2012 18:59:01 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q4IIwmuB000969
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2012 04:58:48 +1000
-Message-ID: <4FB64E9A.3060100@linux.vnet.ibm.com>
-Date: Fri, 18 May 2012 18:58:58 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Return-Path: <frank.svendsboe@gmail.com>
+Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
+ [209.85.217.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1E7C8B6FBA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2012 23:57:39 +1000 (EST)
+Received: by lban1 with SMTP id n1so2112207lba.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 May 2012 06:57:36 -0700 (PDT)
+Date: Fri, 18 May 2012 15:57:29 +0200
+From: Frank Svendsboe <frank.svendsboe@gmail.com>
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Subject: Re: [PATCH] mtd: Fix typo in Kconfig
+Message-ID: <20120518135729.GA11703@gnubox>
+References: <1337287389-28386-1-git-send-email-frank.svendsboe@gmail.com>
+ <1337338834.2483.21.camel@sauron.fi.intel.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Li Zhong <zhong@linux.vnet.ibm.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] cpuidle: (POWER) Replace pseries_notify_cpuidle_add call
- with a elegant notifier to fix lockdep problem in start_secondary
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1337338834.2483.21.camel@sauron.fi.intel.com>
+Cc: dbaryshkov@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ randy.dunlap@oracle.com, linux-mtd@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,108 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, May 18, 2012 at 02:00:34PM +0300, Artem Bityutskiy wrote:
+> On Thu, 2012-05-17 at 22:43 +0200, Frank Svendsboe wrote:
+> > MTD_OF_PARTS and the default setting is not working due to using 'Y'
+> > instead of 'y', introduced in commit
+> > d6137badeff1ef64b4e0092ec249ebdeaeb3ff37. This made our board, and
+> > possibly other boards using DTS defined partitions and not having
+> > CONFIG_MTD_OF_PARTS=y defined in the defconfig, fail to mount root
+> > after v3.1.
+> 
+> The commit was released in v3.2, so it not v3.1 probably?
+>
 
-The following patch is to remove the pseries_notify_add_cpu() call
-and replace it by a hot plug notifier.
-This would prevent cpuidle resources being
-released and allocated each time cpu comes online on pseries.
-The earlier design was causing a lockdep problem
-in start_secondary as reported on this thread
-        -https://lkml.org/lkml/2012/5/17/2
+It was committed between 3.1 and 3.2-rc1. I said _after_ 3.1, so it is
+not completely wrong either. Feel free to change to commit message, or
+I can resend the patch if you want me to.
 
-This applies on 3.4-rc7
+> > Signed-off-by: Frank Svendsboe <frank.svendsboe@gmail.com>
+> 
+> I've amended the subject to make it look scarier than just a fix of a
+> typo, added a tag for the stable tree, and pushed to l2-mtd.git, thanks!
+> 
+> commit aa2465b2d5d44defb269ac66a2d2b6e6b8feb399
+> Author: Frank Svendsboe <frank.svendsboe@gmail.com>
+> Date:   Thu May 17 22:43:09 2012 +0200
+> 
+>     mtd: of_parts: fix breakage in Kconfig
+>     
+>     MTD_OF_PARTS and the default setting is not working due to using 'Y'
+>     instead of 'y', introduced in commit
+>     d6137badeff1ef64b4e0092ec249ebdeaeb3ff37. This made our board, and
+>     possibly other boards using DTS defined partitions and not having
+>     CONFIG_MTD_OF_PARTS=y defined in the defconfig, fail to mount root.
+>     
+>     Signed-off-by: Frank Svendsboe <frank.svendsboe@gmail.com>
+>     Cc: stable@kernel.org [3.2+]
+>     Signed-off-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+> 
 
-Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/processor.h            |    2 --
- arch/powerpc/platforms/pseries/processor_idle.c |   25
-+++++++++++++++++------
- arch/powerpc/platforms/pseries/smp.c            |    1 -
- 3 files changed, 19 insertions(+), 9 deletions(-)
+Great. Thanks!
 
-diff --git a/arch/powerpc/include/asm/processor.h
-b/arch/powerpc/include/asm/processor.h
-index 8e2d037..c6bc22b 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -390,10 +390,8 @@ void cpu_idle_wait(void);
-
- #ifdef CONFIG_PSERIES_IDLE
- extern void update_smt_snooze_delay(int snooze);
--extern int pseries_notify_cpuidle_add_cpu(int cpu);
- #else
- static inline void update_smt_snooze_delay(int snooze) {}
--static inline int pseries_notify_cpuidle_add_cpu(int cpu) { return 0; }
- #endif
-
- extern void flush_instruction_cache(void);
-diff --git a/arch/powerpc/platforms/pseries/processor_idle.c
-b/arch/powerpc/platforms/pseries/processor_idle.c
-index 41a34bc..d1a7dc0 100644
---- a/arch/powerpc/platforms/pseries/processor_idle.c
-+++ b/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -11,6 +11,7 @@
- #include <linux/moduleparam.h>
- #include <linux/cpuidle.h>
- #include <linux/cpu.h>
-+#include <linux/notifier.h>
-
- #include <asm/paca.h>
- #include <asm/reg.h>
-@@ -186,17 +187,28 @@ static struct cpuidle_state
-shared_states[MAX_IDLE_STATE_COUNT] = {
- 		.enter = &shared_cede_loop },
- };
-
--int pseries_notify_cpuidle_add_cpu(int cpu)
-+static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
-+			unsigned long action, void *hcpu)
- {
-+	int hotcpu = (unsigned long)hcpu;
- 	struct cpuidle_device *dev =
--			per_cpu_ptr(pseries_cpuidle_devices, cpu);
--	if (dev && cpuidle_get_driver()) {
--		cpuidle_disable_device(dev);
--		cpuidle_enable_device(dev);
-+			per_cpu_ptr(pseries_cpuidle_devices, hotcpu);
-+
-+	switch (action & 0xf) {
-+	case CPU_ONLINE:
-+		if (dev && cpuidle_get_driver()) {
-+			cpuidle_disable_device(dev);
-+			cpuidle_enable_device(dev);
-+		}
-+		break;
- 	}
--	return 0;
-+	return NOTIFY_OK;
- }
-
-+static struct notifier_block setup_hotplug_notifier = {
-+	.notifier_call = pseries_cpuidle_add_cpu_notifier,
-+};
-+
- /*
-  * pseries_cpuidle_driver_init()
-  */
-@@ -321,6 +333,7 @@ static int __init pseries_processor_idle_init(void)
- 		return retval;
- 	}
-
-+	register_cpu_notifier(&setup_hotplug_notifier);
- 	printk(KERN_DEBUG "pseries_idle_driver registered\n");
-
- 	return 0;
-diff --git a/arch/powerpc/platforms/pseries/smp.c
-b/arch/powerpc/platforms/pseries/smp.c
-index e16bb8d..71706bc 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -147,7 +147,6 @@ static void __devinit smp_xics_setup_cpu(int cpu)
- 	set_cpu_current_state(cpu, CPU_STATE_ONLINE);
- 	set_default_offline_state(cpu);
- #endif
--	pseries_notify_cpuidle_add_cpu(cpu);
- }
-
- static int __devinit smp_pSeries_kick_cpu(int nr)
+-- 
+Best regards,
+Frank
