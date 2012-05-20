@@ -1,28 +1,42 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Return-Path: <chf.fritz@googlemail.com>
+Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
+ [74.125.82.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C0ED9B6FAB
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2012 16:08:05 +1000 (EST)
-Received: by dajt11 with SMTP id t11so6917095daj.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2012 23:08:03 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/3] of: Add prefix parameter to of_modalias_node().
-To: David Daney <ddaney.cavm@gmail.com>, devicetree-discuss@lists.ozlabs.org,
- Rob Herring <rob.herring@calxeda.com>, spi-devel-general@lists.sourceforge.net
-In-Reply-To: <20120520055436.13AF03E03B8@localhost>
-References: <1336773923-17866-1-git-send-email-ddaney.cavm@gmail.com>
- <1336773923-17866-2-git-send-email-ddaney.cavm@gmail.com>
- <20120520055436.13AF03E03B8@localhost>
-Date: Sun, 20 May 2012 00:08:01 -0600
-Message-Id: <20120520060802.03CE73E03B8@localhost>
-Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org,
- Mark Brown <broonie@opensource.wolfsonmicro.com>,
- David Daney <david.daney@cavium.com>, Takashi Iwai <tiwai@suse.de>,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Liam Girdwood <lrg@ti.com>, Jaroslav Kysela <perex@perex.cz>,
- linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id C6DD6B6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2012 09:17:34 +1000 (EST)
+Received: by werh12 with SMTP id h12so2981658wer.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2012 16:17:30 -0700 (PDT)
+Date: Mon, 21 May 2012 01:17:24 +0200
+From: Christoph Fritz <chf.fritz@googlemail.com>
+To: Li Yang <leoli@freescale.com>, Felipe Balbi <balbi@ti.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Chen Peter-B29397 <B29397@freescale.com>
+Subject: [PATCH] usb: fsl_udc: errata - postpone freeing current dTD
+Message-ID: <20120520231724.GA7941@mars>
+References: <20120409200656.GD2640@local>
+ <CAOMZO5BTrA8G6wwQZ3e6bydJX7UtG7jj2c29Ln7u_3_jyUGB+w@mail.gmail.com>
+ <20120410001017.GF2640@local>
+ <CAOMZO5A=sHeyoQ0PCd=09qGGKb0NjXi-kF5qyG+3U-GhD7rhzg@mail.gmail.com>
+ <20120410021151.GB23044@lovely.krouter>
+ <20120411073918.GA9180@lovely.krouter>
+ <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
+ <20120509000221.GA19525@lovely.krouter>
+ <20120513225126.GA3683@lovely.krouter>
+ <20120514042142.GD9750@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120514042142.GD9750@kroah.com>
+Cc: Oliver Neukum <oneukum@suse.de>, Kukjin Kim <kgene.kim@samsung.com>,
+ Eric Miao <eric.y.miao@gmail.com>, Ben Dooks <ben-linux@fluff.org>,
+ Fabio Estevam <festevam@gmail.com>, Sascha Hauer <s.hauer@pengutronix.de>,
+ linux-usb@vger.kernel.org, Nicolas Ferre <nicolas.ferre@atmel.com>,
+ Haojian Zhuang <haojian.zhuang@gmail.com>, Ido Shayevitz <idos@codeaurora.org>,
+ Thomas Dahlmann <dahlmann.thomas@arcor.de>,
+ Estevam Fabio-R49496 <r49496@freescale.com>, "Hans J. Koch" <hjk@hansjkoch.de>,
+ Daniel Mack <daniel@caiaq.de>, Christian Hemp <c.hemp@phytec.de>,
+ Russell King <linux@arm.linux.org.uk>, Neil Zhang <zhangwm@marvell.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +46,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 19 May 2012 23:54:36 -0600, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On Fri, 11 May 2012 15:05:21 -0700, David Daney <ddaney.cavm@gmail.com> wrote:
-> > From: David Daney <david.daney@cavium.com>
-> > 
-> > When generating MODALIASes, it is convenient to add things like "spi:"
-> > or "i2c:" to the front of the strings.  This allows the standard
-> > modprobe to find the right driver when automatically populating bus
-> > children from the device tree structure.
-> > 
-> > Add a prefix parameter, and adjust callers.  For
-> > of_register_spi_devices() use the "spi:" prefix.
-> > 
-> > Signed-off-by: David Daney <david.daney@cavium.com>
-> 
-> Applied, thanks.  Some notes below...
+USB controller may access a wrong address for the dTD (endpoint transfer
+descriptor) and then hang. This happens a lot when doing tests with
+g_ether module and iperf, a tool for measuring maximum TCP and UDP
+bandwidth.
 
-Wait... why is this necessary?  The module type prefix isn't stored in
-the modalias value for any other bus type as far as I can see, and
-with this series it appears that the "spi:" prefix may or may not be
-present in the modalias.  That doesn't look right.
+This hardware bug is explained in detail by errata number 2858 for i.MX23:
+http://cache.freescale.com/files/dsp/doc/errata/IMX23CE.pdf
 
-Why isn't prefixing spi: at uevent time sufficient?  IIUC, modprobe
-depends on either UEVENT or the modalias attribute to know which
-driver to probe.  It does look like the attribute is missing the spi:
-prefix though.  Does the following change work instead of these two
-patches?
+mv_udc_core fixes this bug by commit daec765. There still may be unfixed
+drivers.
 
-diff --git a/drivers/spi/spi.c b/drivers/spi/spi.c
-index 3d8f662..da8aac7 100644
---- a/drivers/spi/spi.c
-+++ b/drivers/spi/spi.c
-@@ -51,7 +51,7 @@ modalias_show(struct device *dev, struct device_attribute *a, char *buf)
- {
-        const struct spi_device *spi = to_spi_device(dev);
+Signed-off-by: Christoph Fritz <chf.fritz@googlemail.com>
+Signed-off-by: Christian Hemp <c.hemp@phytec.de>
+---
+ drivers/usb/gadget/fsl_udc_core.c |   22 ++++++++++++++++++++++
+ drivers/usb/gadget/fsl_usb2_udc.h |    6 ++++++
+ 2 files changed, 28 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+index 55abfb6..f9bfafd 100644
+--- a/drivers/usb/gadget/fsl_udc_core.c
++++ b/drivers/usb/gadget/fsl_udc_core.c
+@@ -65,6 +65,9 @@ static struct usb_sys_interface *usb_sys_regs;
+ /* it is initialized in probe()  */
+ static struct fsl_udc *udc_controller = NULL;
  
--       return sprintf(buf, "%s\n", spi->modalias);
-+       return sprintf(buf, "%s%s\n", SPI_MODULE_PREFIX, spi->modalias);
- }
-
-So, I've dropped this patch from my tree.  If the change above works
-for you then I'll push it out.
-
-g.
++#ifdef POSTPONE_FREE_LAST_DTD
++static struct ep_td_struct *last_free_td;
++#endif
+ static const struct usb_endpoint_descriptor
+ fsl_ep0_desc = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+@@ -180,8 +183,18 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
+ 		curr_td = next_td;
+ 		if (j != req->dtd_count - 1) {
+ 			next_td = curr_td->next_td_virt;
++#ifdef POSTPONE_FREE_LAST_DTD
++			dma_pool_free(udc->td_pool, curr_td, curr_td->td_dma);
++		} else {
++			if (last_free_td != NULL)
++				dma_pool_free(udc->td_pool, last_free_td,
++						last_free_td->td_dma);
++			last_free_td = curr_td;
++		}
++#else
+ 		}
+ 		dma_pool_free(udc->td_pool, curr_td, curr_td->td_dma);
++#endif
+ 	}
+ 
+ 	if (req->mapped) {
+@@ -2579,6 +2592,10 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
+ 		goto err_unregister;
+ 	}
+ 
++#ifdef POSTPONE_FREE_LAST_DTD
++	last_free_td = NULL;
++#endif
++
+ 	ret = usb_add_gadget_udc(&pdev->dev, &udc_controller->gadget);
+ 	if (ret)
+ 		goto err_del_udc;
+@@ -2633,6 +2650,11 @@ static int __exit fsl_udc_remove(struct platform_device *pdev)
+ 	kfree(udc_controller->status_req);
+ 	kfree(udc_controller->eps);
+ 
++#ifdef POSTPONE_FREE_LAST_DTD
++	if (last_free_td != NULL)
++		dma_pool_free(udc_controller->td_pool, last_free_td,
++				last_free_td->td_dma);
++#endif
+ 	dma_pool_destroy(udc_controller->td_pool);
+ 	free_irq(udc_controller->irq, udc_controller);
+ 	iounmap(dr_regs);
+diff --git a/drivers/usb/gadget/fsl_usb2_udc.h b/drivers/usb/gadget/fsl_usb2_udc.h
+index e651469..03ae07f 100644
+--- a/drivers/usb/gadget/fsl_usb2_udc.h
++++ b/drivers/usb/gadget/fsl_usb2_udc.h
+@@ -4,6 +4,12 @@
+ #ifndef __FSL_USB2_UDC_H
+ #define __FSL_USB2_UDC_H
+ 
++#if defined CONFIG_ARCH_MX51 || defined CONFIG_SOC_IMX35
++#define POSTPONE_FREE_LAST_DTD
++#else
++#undef POSTPONE_FREE_LAST_DTD
++#endif
++
+ /* ### define USB registers here
+  */
+ #define USB_MAX_CTRL_PAYLOAD		64
+-- 
+1.7.2.5
