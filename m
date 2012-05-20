@@ -1,19 +1,27 @@
-Return-Path: <ddaney.cavm@gmail.com>
-Message-ID: <4FB6CBF1.40300@gmail.com>
-Date: Fri, 18 May 2012 15:23:45 -0700
-From: David Daney <ddaney.cavm@gmail.com>
-MIME-Version: 1.0
-To: Timur Tabi <b04825@freescale.com>
-Subject: Re: [PATCH v6 0/3] netdev/of/phy: MDIO bus multiplexer support.
-References: <1336007799-31016-1-git-send-email-ddaney.cavm@gmail.com>
- <CAOZdJXWVCu+aNxcQRkcSSDsWWxnn8B9X5Y6=8oVgFwJ9SZTTGQ@mail.gmail.com>
- <4FB6C728.3090507@gmail.com> <4FB6C886.3050105@freescale.com>
-In-Reply-To: <4FB6C886.3050105@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A0EC2B6FAB
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 20 May 2012 15:54:40 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so7041780pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 19 May 2012 22:54:38 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/3] of: Add prefix parameter to of_modalias_node().
+To: David Daney <ddaney.cavm@gmail.com>, devicetree-discuss@lists.ozlabs.org,
+ Rob Herring <rob.herring@calxeda.com>, spi-devel-general@lists.sourceforge.net
+In-Reply-To: <1336773923-17866-2-git-send-email-ddaney.cavm@gmail.com>
+References: <1336773923-17866-1-git-send-email-ddaney.cavm@gmail.com>
+ <1336773923-17866-2-git-send-email-ddaney.cavm@gmail.com>
+Date: Sat, 19 May 2012 23:54:36 -0600
+Message-Id: <20120520055436.13AF03E03B8@localhost>
+Cc: linux-mips@linux-mips.org, alsa-devel@alsa-project.org,
+ Mark Brown <broonie@opensource.wolfsonmicro.com>,
+ David Daney <david.daney@cavium.com>, Takashi Iwai <tiwai@suse.de>,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Liam Girdwood <lrg@ti.com>, Jaroslav Kysela <perex@perex.cz>,
+ linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/18/2012 03:09 PM, Timur Tabi wrote:
-> David Daney wrote:
->>>> I'm not sure what the "parent" MDIO bus node is supposed to represent.
->>>>    Is that that device that actually controls the muxing hardware
->
->> No.  It is the device that implements the master 802.3 clause {22,45}
->> MDIO Station Management (STA) protocol.
->
-> Ah, I think I get it.  It is *the* MDIO node that would normally exist if
-> muxing we're necessary on the board.  From the looks of it, that node
-> would look exactly the same if you didn't need muxing?
->
+On Fri, 11 May 2012 15:05:21 -0700, David Daney <ddaney.cavm@gmail.com> wrote:
+> From: David Daney <david.daney@cavium.com>
+> 
+> When generating MODALIASes, it is convenient to add things like "spi:"
+> or "i2c:" to the front of the strings.  This allows the standard
+> modprobe to find the right driver when automatically populating bus
+> children from the device tree structure.
+> 
+> Add a prefix parameter, and adjust callers.  For
+> of_register_spi_devices() use the "spi:" prefix.
+> 
+> Signed-off-by: David Daney <david.daney@cavium.com>
 
-Yes.  You may note in the DTS file I attached in the parent (sorry for 
-the fubar mime types), that there are two, almost identical, MDIO 
-masters.  smi0 has two directly attached PHYs.  smi1 goes to the mux, 
-and each child of the mux has four attached PHYs.
+Applied, thanks.  Some notes below...
 
-This is a fairly complex configuration as the GPIOs controlling the MDIO 
-mux are on I2C GPIO expanders which are themselves behind an I2C mux...
+> Cc: Liam Girdwood <lrg@ti.com>
+> Cc: Timur Tabi <timur@freescale.com>
+> Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Cc: Jaroslav Kysela <perex@perex.cz>
+> Cc: Takashi Iwai <tiwai@suse.de>
+> Cc: alsa-devel@alsa-project.org
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  drivers/of/base.c            |   22 ++++++++++++++++------
+>  drivers/of/of_i2c.c          |    2 +-
+>  drivers/of/of_spi.c          |    2 +-
+>  include/linux/of.h           |    3 ++-
+>  sound/soc/fsl/mpc8610_hpcd.c |    2 +-
+>  sound/soc/fsl/p1022_ds.c     |    2 +-
+>  6 files changed, 22 insertions(+), 11 deletions(-)
+> 
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index 5806449..f05a520 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -575,26 +575,36 @@ EXPORT_SYMBOL(of_find_matching_node);
+>  /**
+>   * of_modalias_node - Lookup appropriate modalias for a device node
+>   * @node:	pointer to a device tree node
+> + * @prefix:	prefix to be added to the compatible property, may be NULL
+>   * @modalias:	Pointer to buffer that modalias value will be copied into
+>   * @len:	Length of modalias value
+>   *
+> - * Based on the value of the compatible property, this routine will attempt
+> - * to choose an appropriate modalias value for a particular device tree node.
+> - * It does this by stripping the manufacturer prefix (as delimited by a ',')
+> - * from the first entry in the compatible list property.
+> + * Based on the value of the compatible property, this routine will
+> + * attempt to choose an appropriate modalias value for a particular
+> + * device tree node.  It does this by stripping the manufacturer
+> + * prefix (as delimited by a ',') from the first entry in the
+> + * compatible list property, and appending it to the prefix.
 
-The nice thing about this is that the Linux I2C and MDIO infrastructure 
-is all configured dynamically from the device tree and everything works 
-well together with no locking issues.  The addition of the deferred 
-driver probe mechanism was the last part of the puzzle (I think... 
-actually I don't know if all my I2C things are merged yet...).
+Not sure why this text block was reformatted.  I've formatted it back
+to the way it was so the diff shows specifically what has changed in
+the content.
 
-David Daney
+I don't want to discourage cleanups, but I need to be careful that
+cleanups don't obscure important changes when looking at the diff.
+
+g.
