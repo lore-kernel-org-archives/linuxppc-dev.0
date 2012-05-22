@@ -1,31 +1,25 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 31865B6FAB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2012 12:58:36 +1000 (EST)
-Received: by dajt11 with SMTP id t11so9646543daj.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 May 2012 19:58:35 -0700 (PDT)
-Date: Mon, 21 May 2012 19:58:33 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Michael Neuling <mikey@neuling.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 3EEA2B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2012 13:03:59 +1000 (EST)
+Date: Tue, 22 May 2012 13:03:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Rientjes <rientjes@google.com>
 Subject: Re: linux-next: PowerPC boot failures in next-20120521
-In-Reply-To: <3120.1337655100@neuling.org>
-Message-ID: <alpine.DEB.2.00.1205211954340.13522@chino.kir.corp.google.com>
+Message-Id: <20120522130354.fdb335eb294f4206b4b2fed5@canb.auug.org.au>
+In-Reply-To: <alpine.DEB.2.00.1205211846120.20916@chino.kir.corp.google.com>
 References: <20120522114051.0c9db9a7c2d660bc9e0e1be2@canb.auug.org.au>
- <328.1337652722@neuling.org>
- <alpine.DEB.2.00.1205211924390.13682@chino.kir.corp.google.com>
- <2182.1337654352@neuling.org> <2246.1337654423@neuling.org>
- <alpine.DEB.2.00.1205211942540.29814@chino.kir.corp.google.com>
- <3120.1337655100@neuling.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+ <alpine.DEB.2.00.1205211846120.20916@chino.kir.corp.google.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__22_May_2012_13_03_54_+1000_haxAE.AciyWA7TxE"
 Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Peter Zijlstra <peterz@infradead.org>,
- Linus <torvalds@linux-foundation.org>, LKML <linux-kernel@vger.kernel.org>,
- linux-next@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ingo Molnar <mingo@elte.hu>
+ Peter Zijlstra <peterz@infradead.org>, Linus <torvalds@linux-foundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, linux-next@vger.kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,23 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 22 May 2012, Michael Neuling wrote:
+--Signature=_Tue__22_May_2012_13_03_54_+1000_haxAE.AciyWA7TxE
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Sorry, got it... CONFIG_DEBUG_VM enabled below...
-> 
-> pid_max: default: 32768 minimum: 301
-> Dentry cache hash table entries: 262144 (order: 5, 2097152 bytes)
-> Inode-cache hash table entries: 131072 (order: 4, 1048576 bytes)
-> Mount-cache hash table entries: 4096
-> Initializing cgroup subsys cpuacct
-> Initializing cgroup subsys devices
-> Initializing cgroup subsys freezer
-> POWER7 performance monitor hardware support registered
-> ------------[ cut here ]------------
-> kernel BUG at /scratch/mikey/src/linux-next/include/linux/gfp.h:318!
+Hi David,
 
-Yeah, this is what I was expecting, it's tripping on
+On Mon, 21 May 2012 18:53:37 -0700 (PDT) David Rientjes <rientjes@google.co=
+m> wrote:
+>
+> Yeah, it's sched/numa since that's what introduced numa_init().  It does=
+=20
+> for_each_node() for each node and does a kmalloc_node() even though that=
+=20
+> node may not be online.  Slub ends up passing this node to the page=20
+> allocator through alloc_pages_exact_node().  CONFIG_DEBUG_VM would have=20
+> caught this and your config confirms its not enabled.
+>=20
+> sched/numa either needs a memory hotplug notifier or it needs to pass=20
+> NUMA_NO_NODE for nodes that aren't online.  Until we get the former, the=
+=20
+> following should fix it.
+>=20
+>=20
+> sched, numa: Allocate node_queue on any node for offline nodes
+>=20
+> struct node_queue must be allocated with NUMA_NO_NODE for nodes that are=
+=20
+> not (yet) online, otherwise the page allocator has a bad zonelist.
+>=20
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-	VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES || !node_online(nid));
+Thanks, that fixes it.
 
-and slub won't pass nid < 0.  You're sure my patch is applied? :)
+Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__22_May_2012_13_03_54_+1000_haxAE.AciyWA7TxE
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPuwIaAAoJEECxmPOUX5FEoj8P/izwzpFzKBIxDEt4t+Nx8b5a
+KEHdgnB0XA7jd6W5O5cr+QikpYBqoZso1iSzO72bLcDgG3hSiX2yuXexFNCerVfI
+nKFZtsbyZ2G5NhZKaQFdglMtTpAraUBVoJevEF3bB/miijBgK4cnDgwVpX0mKlFd
+QL3SBgEoUVBF7Qdy8HQD204fqO015ykQyTn6flsWA/S7eVEQ07eOhsFCY5NhwDHb
+V8h++WCvdrdSd/HyiIlgJMM3SOIjcd0SrbklIaR0wk2mAXyj7Tvz96WOwad4WR4Z
+SMt3DityCY6oS/QR1Bd5zcNTDz8FKd8adPM8JyyGSx9AwLu6tSAf8toEadncRLTp
+LdMm+aoysJCX9fEJNwC9n8w14ubTSyvP0135MZythF3RW27yKuOgaJ5P3BgGhn/I
+8ZpukpHLfMlWWT2jrSCJt63fjyCi4++SSFk7lZPHZTvgNns/LQjBeVkwZH3IJUux
+NXzqpGFlgrjpiS/mYRZyL6tY9Z71cI141PUPPfPUwBLi8F2So9dAHRM6krsKjvY4
+9FMzW+ax5Slnt1Q/7+ajcODC+UFfYDAtanwszAdKYfTRQxTIj9Gnmx8WhdBkFdz9
+UtKsxXe5yyo2t4s/kyPX3aOIRmzZYp6xgcRpkLblcXf6mNVd2vGj/ozR7KNTSH/2
+JinIuO9RyoOq4VwvtALM
+=BcqL
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__22_May_2012_13_03_54_+1000_haxAE.AciyWA7TxE--
