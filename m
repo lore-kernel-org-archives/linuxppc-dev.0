@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9AFCBB6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2012 14:41:03 +1000 (EST)
-Message-ID: <1337661655.2779.167.camel@pasglop>
-Subject: Re: powerpc -next rebase WARNING
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 22 May 2012 14:40:55 +1000
-In-Reply-To: <1337651473.2779.140.camel@pasglop>
-References: <1337651473.2779.140.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <B06378@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EDC4AB6F9A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2012 19:17:21 +1000 (EST)
+From: Jiajun Wu <b06378@freescale.com>
+To: <netdev@vger.kernel.org>, <davem@davemloft.net>
+Subject: [PATCH] gianfar:don't add FCB length to hard_header_len
+Date: Tue, 22 May 2012 17:00:48 +0800
+Message-ID: <1337677248-27792-1-git-send-email-b06378@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Jiajun Wu <b06378@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-05-22 at 11:51 +1000, Benjamin Herrenschmidt wrote:
-> Folks, bad news ... my fault.
-> 
-> I accidentally forgot a --signoff on a git am command last week, meaning
-> that a pair of patches are in -next and not signed off by me.
-> 
-> For various (legal) reasons that cannot go into Linus tree as-is, so I
-> have to rebase the tree to fix it.
-> 
-> Sorry about that ...
+FCB(Frame Control Block) isn't the part of netdev hard header.
+Add FCB to hard_header_len will make GRO fail at MAC comparision stage.
 
-Note that the rebase only affects the top 3 commits, so if your
-tree is based on something older you're fine (Kumar, you seem to
-be ok, I haven't checked Josh).
+Signed-off-by: Jiajun Wu <b06378@freescale.com>
+---
+ drivers/net/ethernet/freescale/gianfar.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Cheers,
-Ben.
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index 1adb024..0741ade 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -1082,7 +1082,7 @@ static int gfar_probe(struct platform_device *ofdev)
+ 
+ 	if (dev->features & NETIF_F_IP_CSUM ||
+ 			priv->device_flags & FSL_GIANFAR_DEV_HAS_TIMER)
+-		dev->hard_header_len += GMAC_FCB_LEN;
++		dev->needed_headroom = GMAC_FCB_LEN;
+ 
+ 	/* Program the isrg regs only if number of grps > 1 */
+ 	if (priv->num_grps > 1) {
+-- 
+1.5.6.5
