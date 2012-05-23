@@ -1,28 +1,13 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 01FCBB6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2012 14:18:06 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so11665896pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 May 2012 21:18:04 -0700 (PDT)
-Date: Tue, 22 May 2012 21:17:56 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- Peter Zijlstra <peterz@infradead.org>
-Subject: [patch] sched, numa: Allocate node_queue on any node for offline nodes
-In-Reply-To: <20120522130354.fdb335eb294f4206b4b2fed5@canb.auug.org.au>
-Message-ID: <alpine.DEB.2.00.1205222116160.32649@chino.kir.corp.google.com>
-References: <20120522114051.0c9db9a7c2d660bc9e0e1be2@canb.auug.org.au>
- <alpine.DEB.2.00.1205211846120.20916@chino.kir.corp.google.com>
- <20120522130354.fdb335eb294f4206b4b2fed5@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Wed, 23 May 2012 14:47:48 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: tracing: Avoid tracepoint duplication with
+ DECLARE_EVENT_CLASS
+Message-ID: <20120523144748.288d2e4a@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +17,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-struct node_queue must be allocated with NUMA_NO_NODE for nodes that are 
-not (yet) online, otherwise the page allocator has a bad zonelist and 
-results in an early crash.
 
-Tested-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: David Rientjes <rientjes@google.com>
+irq_entry, irq_exit, timer_interrupt_entry and timer_interrupt_exit
+all do the same thing so use DECLARE_EVENT_CLASS to avoid duplicating
+everything 4 times.
+
+This saves quite a lot of space in both instruction text and data:
+
+   text    data     bss     dec     hex filename
+   9265   19622      16   28903    70e7 arch/powerpc/kernel/irq.o
+   6817   19019      16   25852    64fc arch/powerpc/kernel/irq.o
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- kernel/sched/numa.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/sched/numa.c b/kernel/sched/numa.c
---- a/kernel/sched/numa.c
-+++ b/kernel/sched/numa.c
-@@ -885,7 +885,8 @@ static __init int numa_init(void)
+Index: linux-build/arch/powerpc/include/asm/trace.h
+===================================================================
+--- linux-build.orig/arch/powerpc/include/asm/trace.h	2012-05-23 13:30:51.235534219 +1000
++++ linux-build/arch/powerpc/include/asm/trace.h	2012-05-23 14:10:44.406639628 +1000
+@@ -8,7 +8,7 @@
  
- 	for_each_node(node) {
- 		struct node_queue *nq = kmalloc_node(sizeof(*nq),
--				GFP_KERNEL | __GFP_ZERO, node);
-+				GFP_KERNEL | __GFP_ZERO,
-+				node_online(node) ? node : NUMA_NO_NODE);
- 		BUG_ON(!nq);
+ struct pt_regs;
  
- 		spin_lock_init(&nq->lock);
+-TRACE_EVENT(irq_entry,
++DECLARE_EVENT_CLASS(ppc64_interrupt_class,
+ 
+ 	TP_PROTO(struct pt_regs *regs),
+ 
+@@ -25,55 +25,32 @@ TRACE_EVENT(irq_entry,
+ 	TP_printk("pt_regs=%p", __entry->regs)
+ );
+ 
+-TRACE_EVENT(irq_exit,
++DEFINE_EVENT(ppc64_interrupt_class, irq_entry,
+ 
+ 	TP_PROTO(struct pt_regs *regs),
+ 
+-	TP_ARGS(regs),
+-
+-	TP_STRUCT__entry(
+-		__field(struct pt_regs *, regs)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->regs = regs;
+-	),
+-
+-	TP_printk("pt_regs=%p", __entry->regs)
++	TP_ARGS(regs)
+ );
+ 
+-TRACE_EVENT(timer_interrupt_entry,
++DEFINE_EVENT(ppc64_interrupt_class, irq_exit,
+ 
+ 	TP_PROTO(struct pt_regs *regs),
+ 
+-	TP_ARGS(regs),
+-
+-	TP_STRUCT__entry(
+-		__field(struct pt_regs *, regs)
+-	),
+-
+-	TP_fast_assign(
+-		__entry->regs = regs;
+-	),
+-
+-	TP_printk("pt_regs=%p", __entry->regs)
++	TP_ARGS(regs)
+ );
+ 
+-TRACE_EVENT(timer_interrupt_exit,
++DEFINE_EVENT(ppc64_interrupt_class, timer_interrupt_entry,
+ 
+ 	TP_PROTO(struct pt_regs *regs),
+ 
+-	TP_ARGS(regs),
++	TP_ARGS(regs)
++);
+ 
+-	TP_STRUCT__entry(
+-		__field(struct pt_regs *, regs)
+-	),
++DEFINE_EVENT(ppc64_interrupt_class, timer_interrupt_exit,
+ 
+-	TP_fast_assign(
+-		__entry->regs = regs;
+-	),
++	TP_PROTO(struct pt_regs *regs),
+ 
+-	TP_printk("pt_regs=%p", __entry->regs)
++	TP_ARGS(regs)
+ );
+ 
+ #ifdef CONFIG_PPC_PSERIES
