@@ -1,15 +1,12 @@
-Return-Path: <benh@ozlabs.org>
-Message-ID: <1337744607.3038.29.camel@pasglop>
-Subject: powerc tree maintainership status
-From: Benjamin Herrenschmidt <benh@ozlabs.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 23 May 2012 13:43:27 +1000
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <anton@samba.org>
+Date: Wed, 23 May 2012 13:58:41 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au
+Subject: [PATCH] powerpc: Enable jump label support
+Message-ID: <20120523135841.22e9dac4@kryten>
 Mime-Version: 1.0
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- Anatolij Gustschin <agust@denx.de>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@au1.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,15 +16,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Folks !
 
-I'm going to be getting some surgery next week. In the good case, I
-should be officially back to work 2 weeks later, but I might end
-up being unavailable for longer.
+When looking through some instruction traces I noticed our tracepoint
+checks were inline. It turns out we don't have CONFIG_JUMP_LABEL
+enabled.
 
-So while I'm away, Michael Ellerman and Paul Mackerras are going to take
-care of the powerpc tree. I'll make sure Paul and I sign Michael's PGP
-key before I leave.
+By enabling CONFIG_JUMP_LABEL we replace a load/compare/branch with
+a nop at every tracepoint call. For example in do_IRQ:
 
-Cheers,
-Ben.
+CONFIG_JUMP_LABEL disabled:
+        stdx 3,11,9
+        lwz 0,8(29)
+        cmpwi 7,0,0
+        bne- 7,.L124
+        bl .irq_enter
+
+CONFIG_JUMP_LABEL enabled:
+        stdx 3,11,9     
+        nop
+        bl .irq_enter  
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux-build/arch/powerpc/configs/ppc64_defconfig
+===================================================================
+--- linux-build.orig/arch/powerpc/configs/ppc64_defconfig	2012-04-05 13:47:45.691857096 +1000
++++ linux-build/arch/powerpc/configs/ppc64_defconfig	2012-05-23 13:14:04.254270594 +1000
+@@ -16,6 +16,7 @@ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_PROFILING=y
+ CONFIG_OPROFILE=y
+ CONFIG_KPROBES=y
++CONFIG_JUMP_LABEL=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ CONFIG_MODVERSIONS=y
+Index: linux-build/arch/powerpc/configs/pseries_defconfig
+===================================================================
+--- linux-build.orig/arch/powerpc/configs/pseries_defconfig	2012-04-05 13:47:45.691857096 +1000
++++ linux-build/arch/powerpc/configs/pseries_defconfig	2012-05-23 13:14:59.783222304 +1000
+@@ -24,6 +24,7 @@ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_PROFILING=y
+ CONFIG_OPROFILE=y
+ CONFIG_KPROBES=y
++CONFIG_JUMP_LABEL=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ CONFIG_MODVERSIONS=y
