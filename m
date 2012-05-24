@@ -1,20 +1,21 @@
-Return-Path: <jan.ceuleers@computer.org>
-Received: from mailrelay007.isp.belgacom.be (mailrelay007.isp.belgacom.be
- [195.238.6.173]) by ozlabs.org (Postfix) with ESMTP id 7F52AB6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2012 04:07:54 +1000 (EST)
-Message-ID: <4FBE77E1.4010103@computer.org>
-Date: Thu, 24 May 2012 20:03:13 +0200
-From: Jan Ceuleers <jan.ceuleers@computer.org>
+Return-Path: <ddaney.cavm@gmail.com>
+Message-ID: <4FBE89D9.2090307@gmail.com>
+Date: Thu, 24 May 2012 12:19:53 -0700
+From: David Daney <ddaney.cavm@gmail.com>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] gianfar:don't add FCB length to hard_header_len
-References: <1337677248-27792-1-git-send-email-b06378@freescale.com>
- <20120522.151830.2018953337014839778.davem@davemloft.net>
- <4FBE4E02.1070306@computer.org> <1337876210.5070.4.camel@joe2Laptop>
-In-Reply-To: <1337876210.5070.4.camel@joe2Laptop>
-Content-Type: text/plain; charset=UTF-8
-Cc: netdev@vger.kernel.org, b06378@freescale.com, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
+To: Timur Tabi <b04825@freescale.com>
+Subject: Re: [PATCH v6 0/3] netdev/of/phy: MDIO bus multiplexer support.
+References: <1336007799-31016-1-git-send-email-ddaney.cavm@gmail.com>
+ <CAOZdJXWVCu+aNxcQRkcSSDsWWxnn8B9X5Y6=8oVgFwJ9SZTTGQ@mail.gmail.com>
+ <4FB6C728.3090507@gmail.com> <4FB6C886.3050105@freescale.com>
+ <4FB6CBF1.40300@gmail.com> <4FBE7DD8.509@freescale.com>
+ <4FBE82F2.6080100@gmail.com> <4FBE8605.2020507@freescale.com>
+In-Reply-To: <4FBE8605.2020507@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/24/2012 06:16 PM, Joe Perches wrote:
-> On Thu, 2012-05-24 at 17:04 +0200, Jan Ceuleers wrote:
->> On 05/22/2012 09:18 PM, David Miller wrote:
->>> Someone needs to go through this driver when net-next opens up
->>> and fix all of the indentation in this driver.
+On 05/24/2012 12:03 PM, Timur Tabi wrote:
+> David Daney wrote:
+>
+>> Well, the MDIO bus must have an associated device tree node.
 >>
->> May I give that a go?
-> 
-> I have scripts that automate most of this.
-> I don't have the card though.
-> 
-> Maybe this is a starting point?
-> It doesn't fix most 80 column warnings.
+>> For my OCTEON code, the MDIO bus device is created as a result of the
+>> call to of_platform_bus_probe(), which takes care of filling in all the
+>> device tree nodes of the devices it finds and creates.
+>
+> Ok, let me give you some background.  We actually already have MDIO muxing
+> code in-house, but it's different from yours.  So now I'm rewriting it to
+> use your design instead.
+>
+> So our current code looks for "virtual MDIO nodes", and we call
+> mdiobus_alloc() and then of_mdiobus_register().  I think this is what I'm
+> missing now.
+>
+> I just don't know what to do next.
 
-Thanks Joe.
+You will have to debug it and find out why the device match is failing, 
+then fix it.
 
-I also don't have the card; the kinds of changes I was proposing to make
-are code-neutral, whose correctness I was intending to prove by a binary
-compare of the before-and-after .o.
-
-Still happy to do that taking your contribution as a starting point.
-
-Thanks, Jan
+David Daney
