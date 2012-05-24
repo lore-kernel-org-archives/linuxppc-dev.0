@@ -1,26 +1,33 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-vb0-f73.google.com (mail-vb0-f73.google.com
- [209.85.212.73])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1B812B706B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2012 08:37:09 +1000 (EST)
-Received: by vbbfd1 with SMTP id fd1so951747vbb.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 May 2012 15:37:06 -0700 (PDT)
-Subject: [PATCH v3 2/2] microblaze/PCI: move DMA & IRQ init to device_add()
- notification path
-To: Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 23 May 2012 16:37:05 -0600
-Message-ID: <20120523223705.24276.20161.stgit@bhelgaas.mtv.corp.google.com>
-In-Reply-To: <20120523222635.24276.80023.stgit@bhelgaas.mtv.corp.google.com>
-References: <20120523222635.24276.80023.stgit@bhelgaas.mtv.corp.google.com>
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DC7FFB6FC3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2012 16:10:10 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
+ Thu, 24 May 2012 11:40:02 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q4O6A0Tr9175386
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2012 11:40:00 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q4OBdmc9008740
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2012 21:39:48 +1000
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Subject: [PATCH] [ppc] Do not reserve cpu spin-table for crash kernel
+To: kexec@lists.infradead.org
+Date: Thu, 24 May 2012 11:39:45 +0530
+Message-ID: <20120524060933.14035.42732.stgit@suzukikp.in.ibm.com>
+In-Reply-To: <CAEsOVNeg2aogCwCy-v3ez4cC4VPF79A4PWRaO2ohDj_ypqCWmg@mail.gmail.com>
+References: <CAEsOVNeg2aogCwCy-v3ez4cC4VPF79A4PWRaO2ohDj_ypqCWmg@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au,
- Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
- Jesse Larrew <jlarrew@linux.vnet.ibm.com>, jbarnes@virtuousgeek.org,
- linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: B29882@freescale.com, Simon Horman <horms@verge.net.au>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,129 +37,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+As of now, the kexec reserves the spin-table for all the CPUs
+on an SMP machine. The spin-table is pointed to by the 
+cpu-release-addr property in the device-tree. Reserving the
+spin-table in the crash kernel will cause a BUG(), if the table
+lies outside the memory reserved for the crashkernel.
 
-Microblaze initialized DMA and IRQ information in the pci_scan_child_bus()
--> pcibios_fixup_bus() path.  Some hotplug drivers use that path, but
-others don't, e.g., pciehp, so sometimes hot-added devices are only
-partly initialized.
+Disable reserving the spin-table regions and use maxcpus=1 to 
+use only the crashing CPU to boot the crash kernel.
 
-This patch moves that initialization from pcibios_fixup_bus() to a new
-pci_bus_notify() called in the pci_bus_add_device() -> device_add() path.
-That means the initialization happens the same way for all PCI devices,
-whether they are present at boot or hot-added later.
-
-[bhelgaas: changelog, notifier name, inline registration]
-Signed-off-by: Hiroo MATSUMOTO <matsumoto.hiroo@jp.fujitsu.com>
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
 ---
- arch/microblaze/include/asm/pci.h |    1 -
- arch/microblaze/pci/pci-common.c  |   62 ++++++++++++++++++++-----------------
- 2 files changed, 34 insertions(+), 29 deletions(-)
 
-diff --git a/arch/microblaze/include/asm/pci.h b/arch/microblaze/include/asm/pci.h
-index a0da88b..2aa97fd 100644
---- a/arch/microblaze/include/asm/pci.h
-+++ b/arch/microblaze/include/asm/pci.h
-@@ -141,7 +141,6 @@ extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
- 				 const struct resource *rsrc,
- 				 resource_size_t *start, resource_size_t *end);
- 
--extern void pcibios_setup_bus_devices(struct pci_bus *bus);
- extern void pcibios_setup_bus_self(struct pci_bus *bus);
- 
- /* This part of code was originally in xilinx-pci.h */
-diff --git a/arch/microblaze/pci/pci-common.c b/arch/microblaze/pci/pci-common.c
-index 9b32483..6487ed0 100644
---- a/arch/microblaze/pci/pci-common.c
-+++ b/arch/microblaze/pci/pci-common.c
-@@ -983,31 +983,6 @@ void __devinit pcibios_setup_bus_self(struct pci_bus *bus)
- 		pcibios_fixup_bridge(bus);
+ kexec/arch/ppc/crashdump-powerpc.c |   19 +++++++++++++------
+ kexec/arch/ppc/fixup_dtb.c         |    4 ++++
+ 2 files changed, 17 insertions(+), 6 deletions(-)
+
+diff --git a/kexec/arch/ppc/crashdump-powerpc.c b/kexec/arch/ppc/crashdump-powerpc.c
+index 1bef69b..4c8c75d 100644
+--- a/kexec/arch/ppc/crashdump-powerpc.c
++++ b/kexec/arch/ppc/crashdump-powerpc.c
+@@ -262,10 +262,19 @@ static void ulltoa(unsigned long long i, char *str)
+ 	}
  }
  
--void __devinit pcibios_setup_bus_devices(struct pci_bus *bus)
--{
--	struct pci_dev *dev;
--
--	pr_debug("PCI: Fixup bus devices %d (%s)\n",
--		 bus->number, bus->self ? pci_name(bus->self) : "PHB");
--
--	list_for_each_entry(dev, &bus->devices, bus_list) {
--		/* Setup OF node pointer in archdata */
--		dev->dev.of_node = pci_device_to_OF_node(dev);
--
--		/* Fixup NUMA node as it may not be setup yet by the generic
--		 * code and is needed by the DMA init
--		 */
--		set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
--
--		/* Hook up default DMA ops */
--		set_dma_ops(&dev->dev, pci_dma_ops);
--		dev->dev.archdata.dma_data = (void *)PCI_DRAM_OFFSET;
--
--		/* Read default IRQs and fixup if necessary */
--		pci_read_irq_line(dev);
--	}
--}
--
- void __devinit pcibios_fixup_bus(struct pci_bus *bus)
- {
- 	/* When called from the generic PCI probe, read PCI<->PCI bridge
-@@ -1019,9 +994,6 @@ void __devinit pcibios_fixup_bus(struct pci_bus *bus)
- 
- 	/* Now fixup the bus bus */
- 	pcibios_setup_bus_self(bus);
--
--	/* Now fixup devices on that bus */
--	pcibios_setup_bus_devices(bus);
- }
- EXPORT_SYMBOL(pcibios_fixup_bus);
- 
-@@ -1512,6 +1484,38 @@ static void __devinit pcibios_scan_phb(struct pci_controller *hose)
- 	hose->last_busno = bus->busn_res.end;
- }
- 
-+static int pci_bus_notify(struct notifier_block *nb, unsigned long action,
-+			  void *data)
++/* Append str to cmdline */
++static void add_cmdline(char *cmdline, char *str)
 +{
-+	struct pci_dev *dev = to_pci_dev(data);
-+
-+	switch (action) {
-+	case BUS_NOTIFY_ADD_DEVICE:
-+		/* Setup OF node pointer in archdata */
-+		dev->dev.of_node = pci_device_to_OF_node(dev);
-+
-+		/* Fixup NUMA node as it may not be setup yet by the generic
-+		 * code and is needed by the DMA init
-+		 */
-+		set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
-+
-+		/* Hook up default DMA ops */
-+		set_dma_ops(&dev->dev, pci_dma_ops);
-+		dev->dev.archdata.dma_data = (void *)PCI_DRAM_OFFSET;
-+
-+		/* Read default IRQs and fixup if necessary */
-+		pci_read_irq_line(dev);
-+
-+		break;
-+	}
-+
-+	return 0;
++	int cmdlen = strlen(cmdline) + strlen(str);
++	if (cmdlen > (COMMAND_LINE_SIZE - 1))
++		die("Command line overflow\n");
++	strcat(cmdline, str);
 +}
 +
-+static struct notifier_block device_nb = {
-+	.notifier_call = pci_bus_notify,
-+};
-+
- static int __init pcibios_init(void)
+ static int add_cmdline_param(char *cmdline, unsigned long long addr,
+ 				char *cmdstr, char *byte)
  {
- 	struct pci_controller *hose, *tmp;
-@@ -1519,6 +1523,8 @@ static int __init pcibios_init(void)
+-	int cmdlen, len, align = 1024;
++	int align = 1024;
+ 	char str[COMMAND_LINE_SIZE], *ptr;
  
- 	printk(KERN_INFO "PCI: Probing PCI hardware\n");
- 
-+	bus_register_notifier(&pci_bus_type, &device_nb);
+ 	/* Passing in =xxxK / =xxxM format. Saves space required in cmdline.*/
+@@ -284,11 +293,8 @@ static int add_cmdline_param(char *cmdline, unsigned long long addr,
+ 	ptr += strlen(str);
+ 	ulltoa(addr, ptr);
+ 	strcat(str, byte);
+-	len = strlen(str);
+-	cmdlen = strlen(cmdline) + len;
+-	if (cmdlen > (COMMAND_LINE_SIZE - 1))
+-		die("Command line overflow\n");
+-	strcat(cmdline, str);
 +
- 	/* Scan all of the recorded PCI controllers.  */
- 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
- 		hose->last_busno = 0xff;
++	add_cmdline(cmdline, str);
+ 
+ 	dbgprintf("Command line after adding elfcorehdr: %s\n", cmdline);
+ 
+@@ -365,6 +371,7 @@ int load_crashdump_segments(struct kexec_info *info, char *mod_cmdline,
+ 	 */
+ 	add_cmdline_param(mod_cmdline, elfcorehdr, " elfcorehdr=", "K");
+ 	add_cmdline_param(mod_cmdline, saved_max_mem, " savemaxmem=", "M");
++	add_cmdline(mod_cmdline, " maxcpus=1");
+ 	return 0;
+ }
+ 
+diff --git a/kexec/arch/ppc/fixup_dtb.c b/kexec/arch/ppc/fixup_dtb.c
+index e9890a4..f832026 100644
+--- a/kexec/arch/ppc/fixup_dtb.c
++++ b/kexec/arch/ppc/fixup_dtb.c
+@@ -172,6 +172,9 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf)
+ 		}
+ 	}
+ 
++#if 0
++	/* XXX: Do not reserve spin-table for CPUs. */
++
+ 	/* Add reserve regions for cpu-release-addr */
+ 	nodeoffset = fdt_node_offset_by_prop_value(blob_buf, -1, "device_type", "cpu", 4);
+ 	while (nodeoffset != -FDT_ERR_NOTFOUND) {
+@@ -201,6 +204,7 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf)
+ 		nodeoffset = fdt_node_offset_by_prop_value(blob_buf, nodeoffset,
+ 				"device_type", "cpu", 4);
+ 	}
++#endif
+ 
+ out:
+ 	print_fdt_reserve_regions(blob_buf);
