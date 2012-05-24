@@ -1,20 +1,13 @@
-Return-Path: <Dmitry_Eremin@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "relay1.mentorg.com",
- Issuer "Entrust Certification Authority - L1B" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 92835B6FC5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 May 2012 16:46:15 +1000 (EST)
-Message-ID: <4FBDD2CF.5060008@mentor.com>
-Date: Thu, 24 May 2012 10:18:55 +0400
-From: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
+Return-Path: <B29983@freescale.com>
+From: <b29983@freescale.com>
+To: <galak@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/85xx: Add P1024rdb dts support
+Date: Thu, 24 May 2012 17:08:27 +0800
+Message-ID: <1337850508-31827-1-git-send-email-b29983@freescale.com>
 MIME-Version: 1.0
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Oops with Radeon/Uninorth on Maple
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: David Airlie <airlied@linux.ie>, Paul Mackerras <paulus@samba.org>,
- =?ISO-8859-1?Q?Michel_D=E4nzer?= <daenzer@vmware.com>,
- dri-devel@lists.freedesktop.org
+Content-Type: text/plain
+Cc: Tang Yuantian <Yuantian.Tang@freescale.com>,
+ devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,121 +17,439 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, colleagues,
+From: Tang Yuantian <Yuantian.Tang@freescale.com>
 
-I'm trying to enable an AGP slot (again) on my Maple board (dual 
-PPC970FX board, with CPC925 (U3H) north bridge).
+Signed-off-by: Jin Qing <b24347@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+---
+ arch/powerpc/boot/dts/p1024rdb.dtsi    |  228 ++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/p1024rdb_32b.dts |   87 ++++++++++++
+ arch/powerpc/boot/dts/p1024rdb_36b.dts |   87 ++++++++++++
+ 3 files changed, 402 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/p1024rdb.dtsi
+ create mode 100644 arch/powerpc/boot/dts/p1024rdb_32b.dts
+ create mode 100644 arch/powerpc/boot/dts/p1024rdb_36b.dts
 
-  For now I'm stuck with a problem: I use radeon card, drm-radeon driver 
-with KMS.
-
-If I force drm-radeon to think about a card as about PCI card (by 
-commenting corresponding lines in drm_radeon_kms.c), everything works, I 
-get framebuffer, working X11, etc. If I enable agpgart-uninorth driver
-and RADEON_IS_AGP flag in drm driver, I get an Oops early during the 
-bootstrap. Relevant part of the log (I can send full dmesg of normal 
-bootstrap or this oops on request, if that would help).
-
-[    2.820647] Linux agpgart interface v0.103
-[    2.824909] agpgart-uninorth 0000:f0:0b.0: Apple U3H chipset
-[    2.830668] agpgart-uninorth 0000:f0:0b.0: Found device u3, rev 35
-[    2.843611] agpgart-uninorth 0000:f0:0b.0: configuring for size idx: 64
-[    2.850638] agpgart-uninorth 0000:f0:0b.0: AGP aperture is 256M @ 0x0
-[    2.857646] [drm] Initialized drm 1.1.0 20060810
-[    2.862567] [drm] radeon defaulting to kernel modesetting.
-[    2.868091] [drm] radeon kernel modesetting enabled.
-[    2.873222] radeon 0000:f0:10.0: enabling device (0000 -> 0003)
-[    2.880311] radeon 0000:f0:10.0: enabling bus mastering
-[    2.885591] [drm] initializing kernel modesetting (RV350 
-0x1002:0x4152 0x18BC:0x0416).
-[    2.893629] [drm] register mmio base: 0xD0020000
-[    2.898260] [drm] register mmio size: 65536
-[    2.947112] [drm] GPU not posted. posting now...
-[    3.051033] agpgart-uninorth 0000:f0:0b.0: putting AGP V3 device into 
-8x mode
-[    3.058197] radeon 0000:f0:10.0: putting AGP V3 device into 8x mode
-[    3.064666] radeon 0000:f0:10.0: GTT: 256M 0x00000000 - 0x0FFFFFFF
-[    3.070864] [drm] Generation 2 PCI interface, using max accessible memory
-[    3.077672] radeon 0000:f0:10.0: VRAM: 128M 0x00000000C0000000 - 
-0x00000000C7FFFFFF (128M used)
-[    3.086487] [drm] Supports vblank timestamp caching Rev 1 (10.10.2010).
-[    3.093126] [drm] Driver supports precise vblank timestamp query.
-[    3.099291] [drm] radeon: irq initialized.
-[    3.103404] [drm] Detected VRAM RAM=128M, BAR=128M
-[    3.108214] [drm] RAM width 128bits DDR
-[    3.112263] [TTM] Zone  kernel: Available graphics memory: 496682 kiB
-[    3.118732] [TTM] Initializing pool allocator
-[    3.123346] [drm] radeon: 128M of VRAM memory ready
-[    3.128256] [drm] radeon: 256M of GTT memory ready.
-[    3.133295] [drm] radeon: ib pool ready.
-[    3.137708] [drm] radeon: 1 quad pipes, 1 Z pipes initialized.
-[    3.144018] radeon 0000:f0:10.0: WB disabled
-[    3.148326] [drm] fence driver on ring 0 use gpu addr 0x00000000 and 
-cpu addr 0xd000000000066000
-[    3.157474] [drm] Loading R300 Microcode
-[    3.162480] [drm] radeon: ring at 0x0000000000001000
-[    3.167569] [drm] ring test succeeded in 0 usecs
-cpu 0x0: Vector: 200 (Machine Check) at [c000000000d63aa0]
-     pc: c0000000000cc07c: .trace_hardirqs_on_caller+0x6c/0x190
-     lr: c0000000000152f4: .cpu_idle+0x1a4/0x220
-     sp: c000000000d63d20
-    msr: 9000000000009032
-   current = 0xc000000000c4db30
-   paca    = 0xc00000000ffff000   softe: 0        irq_happened: 0x01
-     pid   = 0, comm = swapper/0
-enter ? for help
-[c000000000d63db0] c0000000000152f4 .cpu_idle+0x1a4/0x220
-[c000000000d63e50] c000000000008fb8 .rest_init+0xe8/0x110
-[c000000000d63ee0] c000000000ba2998 .start_kernel+0x3e4/0x408
-[c000000000d63f90] c000000000007558 .start_here_common+0x20/0x48
-0:mon> x
-[  843.783295] Oops: Machine check, sig: 7 [#1]
-[  843.787589] SMP NR_CPUS=4 Maple
-[  843.790768] Modules linked in:
-[  843.793855] NIP: c0000000000cc07c LR: c0000000000152f4 CTR: 
-c000000000023eac
-[  843.800920] REGS: c000000000d63aa0 TRAP: 0200   Not tainted  (3.4.0+)
-[  843.807376] MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR: 
-24222222  XER: 00000006
-[  843.815412] SOFTE: 0
-[  843.817607] TASK = c000000000c4db30[0] 'swapper/0' THREAD: 
-c000000000d60000 CPU: 0
-[  843.825035] GPR00: 0000000000000000 c000000000d63d20 c000000000d63280 
-c0000000000152f4
-[  843.833169] GPR04: 0000000000000000 c000000000099d10 0000000000000001 
-0000000000000002
-[  843.841302] GPR08: 0100000000000000 c000000000e828e8 0140000000000000 
-0000000000000000
-[  843.849436] GPR12: 0000000044222282 c00000000ffff000 0000000000000000 
-0000000000000000
-[  843.857570] GPR16: 0000000000ff8750 0000000000cdc890 00000000010001e0 
-0000000000000000
-[  843.865702] GPR20: 0000000000000000 0000000000000000 000000001dcd6500 
-0000000000000000
-[  843.873835] GPR24: 0000000000000000 0000000000ec7b00 9000000000009032 
-c000000000d7b178
-[  843.881979] GPR28: c000000000d7b278 0000000000000008 c000000000c970f8 
-c0000000000152f4
-[  843.890314] NIP [c0000000000cc07c] .trace_hardirqs_on_caller+0x6c/0x190
-[  843.896942] LR [c0000000000152f4] .cpu_idle+0x1a4/0x220
-[  843.902181] Call Trace:
-[  843.904640] [c000000000d63d20] [c000000000d63db0] 
-init_thread_union+0x3db0/0x4000 (unreliable)
-[  843.913317] [c000000000d63db0] [c0000000000152f4] .cpu_idle+0x1a4/0x220
-[  843.919964] [c000000000d63e50] [c000000000008fb8] .rest_init+0xe8/0x110
-[  843.926615] [c000000000d63ee0] [c000000000ba2998] 
-.start_kernel+0x3e4/0x408
-[  843.933611] [c000000000d63f90] [c000000000007558] 
-.start_here_common+0x20/0x48
-[  843.940866] Instruction dump:
-[  843.943868] 40de00a4 e92d01c8 800908e8 2f800000 40de0094 e93e8098 
-80090000 2f800000
-[  843.951829] 409e0030 880d01f2 2fa00000 40de00b0 <e93e84e8> 88090000 
-2f800000 40de00c8
-
-
-Looking for any suggestions on this.
-
+diff --git a/arch/powerpc/boot/dts/p1024rdb.dtsi b/arch/powerpc/boot/dts/p1024rdb.dtsi
+new file mode 100644
+index 0000000..b05dcb4
+--- /dev/null
++++ b/arch/powerpc/boot/dts/p1024rdb.dtsi
+@@ -0,0 +1,228 @@
++/*
++ * P1024 RDB Device Tree Source stub (no addresses or top-level ranges)
++ *
++ * Copyright 2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++&lbc {
++	nor@0,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "cfi-flash";
++		reg = <0x0 0x0 0x1000000>;
++		bank-width = <2>;
++		device-width = <1>;
++
++		partition@0 {
++			/* This location must not be altered  */
++			/* 256KB for Vitesse 7385 Switch firmware */
++			reg = <0x0 0x00040000>;
++			label = "NOR Vitesse-7385 Firmware";
++			read-only;
++		};
++
++		partition@40000 {
++			/* 256KB for DTB Image */
++			reg = <0x00040000 0x00040000>;
++			label = "NOR DTB Image";
++		};
++
++		partition@80000 {
++			/* 3.5 MB for Linux Kernel Image */
++			reg = <0x00080000 0x00380000>;
++			label = "NOR Linux Kernel Image";
++		};
++
++		partition@400000 {
++			/* 11MB for JFFS2 based Root file System */
++			reg = <0x00400000 0x00b00000>;
++			label = "NOR JFFS2 Root File System";
++		};
++
++		partition@f00000 {
++			/* This location must not be altered  */
++			/* 512KB for u-boot Bootloader Image */
++			/* 512KB for u-boot Environment Variables */
++			reg = <0x00f00000 0x00100000>;
++			label = "NOR U-Boot Image";
++			read-only;
++		};
++	};
++
++	nand@1,0 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,p1020-fcm-nand",
++				 "fsl,elbc-fcm-nand";
++		reg = <0x1 0x0 0x40000>;
++
++		partition@0 {
++			/* This location must not be altered  */
++			/* 1MB for u-boot Bootloader Image */
++			reg = <0x0 0x00100000>;
++			label = "NAND U-Boot Image";
++			read-only;
++		};
++
++		partition@100000 {
++			/* 1MB for DTB Image */
++			reg = <0x00100000 0x00100000>;
++			label = "NAND DTB Image";
++		};
++
++		partition@200000 {
++			/* 4MB for Linux Kernel Image */
++			reg = <0x00200000 0x00400000>;
++			label = "NAND Linux Kernel Image";
++		};
++
++		partition@600000 {
++			/* 4MB for Compressed Root file System Image */
++			reg = <0x00600000 0x00400000>;
++			label = "NAND Compressed RFS Image";
++		};
++
++		partition@a00000 {
++			/* 15MB for JFFS2 based Root file System */
++			reg = <0x00a00000 0x00f00000>;
++			label = "NAND JFFS2 Root File System";
++		};
++
++		partition@1900000 {
++			/* 7MB for User Writable Area */
++			reg = <0x01900000 0x00700000>;
++			label = "NAND Writable User area";
++		};
++	};
++};
++
++&soc {
++	spi@7000 {
++		flash@0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "spansion,m25p80";
++			reg = <0>;
++			spi-max-frequency = <40000000>;
++
++			partition@0 {
++				/* 512KB for u-boot Bootloader Image */
++				reg = <0x0 0x00080000>;
++				label = "SPI U-Boot Image";
++				read-only;
++			};
++
++			partition@80000 {
++				/* 512KB for DTB Image */
++				reg = <0x00080000 0x00080000>;
++				label = "SPI DTB Image";
++			};
++
++			partition@100000 {
++				/* 4MB for Linux Kernel Image */
++				reg = <0x00100000 0x00400000>;
++				label = "SPI Linux Kernel Image";
++			};
++
++			partition@500000 {
++				/* 4MB for Compressed RFS Image */
++				reg = <0x00500000 0x00400000>;
++				label = "SPI Compressed RFS Image";
++			};
++
++			partition@900000 {
++				/* 7MB for JFFS2 based RFS */
++				reg = <0x00900000 0x00700000>;
++				label = "SPI JFFS2 RFS";
++			};
++		};
++	};
++
++	i2c@3000 {
++		rtc@68 {
++			compatible = "dallas,ds1339";
++			reg = <0x68>;
++		};
++	};
++
++	usb@22000 {
++		phy_type = "ulpi";
++	};
++
++	usb@23000 {
++		status = "disabled";
++	};
++
++	mdio@24000 {
++		phy0: ethernet-phy@0 {
++			interrupts = <3 1 0 0>;
++			reg = <0x0>;
++		};
++		phy1: ethernet-phy@1 {
++			interrupts = <2 1 0 0>;
++			reg = <0x1>;
++		};
++		phy2: ethernet-phy@2 {
++			interrupts = <1 1 0 0>;
++			reg = <0x2>;
++		};
++	};
++
++	mdio@25000 {
++		tbi0: tbi-phy@11 {
++			reg = <0x11>;
++			device_type = "tbi-phy";
++		};
++	};
++
++	mdio@26000 {
++		tbi1: tbi-phy@11 {
++			reg = <0x11>;
++			device_type = "tbi-phy";
++		};
++	};
++
++	ethernet@b0000 {
++		phy-handle = <&phy2>;
++		phy-connection-type = "rgmii-id";
++	};
++
++	ethernet@b1000 {
++		phy-handle = <&phy0>;
++		tbi-handle = <&tbi0>;
++		phy-connection-type = "sgmii";
++	};
++
++	ethernet@b2000 {
++		phy-handle = <&phy1>;
++		phy-connection-type = "rgmii-id";
++	};
++};
+diff --git a/arch/powerpc/boot/dts/p1024rdb_32b.dts b/arch/powerpc/boot/dts/p1024rdb_32b.dts
+new file mode 100644
+index 0000000..90e803e
+--- /dev/null
++++ b/arch/powerpc/boot/dts/p1024rdb_32b.dts
+@@ -0,0 +1,87 @@
++/*
++ * P1024 RDB 32Bit Physical Address Map Device Tree Source
++ *
++ * Copyright 2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/include/ "fsl/p1020si-pre.dtsi"
++/ {
++	model = "fsl,P1024RDB";
++	compatible = "fsl,P1024RDB";
++
++	memory {
++		device_type = "memory";
++	};
++
++	lbc: localbus@ffe05000 {
++		reg = <0x0 0xffe05000 0 0x1000>;
++		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
++			  0x1 0x0 0x0 0xff800000 0x00040000>;
++	};
++
++	soc: soc@ffe00000 {
++		ranges = <0x0 0x0 0xffe00000 0x100000>;
++	};
++
++	pci0: pcie@ffe09000 {
++		reg = <0x0 0xffe09000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0x0 0xa0000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0x0 0xffc10000 0x0 0x10000>;
++		pcie@0 {
++			ranges = <0x2000000 0x0 0xe0000000
++				  0x2000000 0x0 0xe0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
++
++	pci1: pcie@ffe0a000 {
++		reg = <0x0 0xffe0a000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0x0 0x80000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0x0 0xffc00000 0x0 0x10000>;
++		pcie@0 {
++			reg = <0x0 0x0 0x0 0x0 0x0>;
++			ranges = <0x2000000 0x0 0xe0000000
++				  0x2000000 0x0 0xe0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
++};
++
++/include/ "p1024rdb.dtsi"
++/include/ "fsl/p1020si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/p1024rdb_36b.dts b/arch/powerpc/boot/dts/p1024rdb_36b.dts
+new file mode 100644
+index 0000000..3656825
+--- /dev/null
++++ b/arch/powerpc/boot/dts/p1024rdb_36b.dts
+@@ -0,0 +1,87 @@
++/*
++ * P1024 RDB 36Bit Physical Address Map Device Tree Source
++ *
++ * Copyright 2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/include/ "fsl/p1020si-pre.dtsi"
++/ {
++	model = "fsl,P1024RDB";
++	compatible = "fsl,P1024RDB";
++
++	memory {
++		device_type = "memory";
++	};
++
++	lbc: localbus@fffe05000 {
++		reg = <0xf 0xffe05000 0 0x1000>;
++		ranges = <0x0 0x0 0xf 0xef000000 0x01000000
++			  0x1 0x0 0xf 0xff800000 0x00040000>;
++	};
++
++	soc: soc@fffe00000 {
++		ranges = <0x0 0xf 0xffe00000 0x100000>;
++	};
++
++	pci0: pcie@fffe09000 {
++		reg = <0xf 0xffe09000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0xc 0x20000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
++		pcie@0 {
++			ranges = <0x2000000 0x0 0xe0000000
++				  0x2000000 0x0 0xe0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
++
++	pci1: pcie@fffe0a000 {
++		reg = <0xf 0xffe0a000 0 0x1000>;
++		ranges = <0x2000000 0x0 0xe0000000 0xc 0x00000000 0x0 0x20000000
++			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
++		pcie@0 {
++			reg = <0x0 0x0 0x0 0x0 0x0>;
++			ranges = <0x2000000 0x0 0xe0000000
++				  0x2000000 0x0 0xe0000000
++				  0x0 0x20000000
++
++				  0x1000000 0x0 0x0
++				  0x1000000 0x0 0x0
++				  0x0 0x100000>;
++		};
++	};
++};
++
++/include/ "p1024rdb.dtsi"
++/include/ "fsl/p1020si-post.dtsi"
 -- 
-With best wishes
-Dmitry
+1.6.4
