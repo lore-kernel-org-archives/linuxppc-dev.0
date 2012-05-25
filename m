@@ -1,24 +1,23 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7306CB6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2012 05:03:23 +1000 (EST)
-Date: Fri, 25 May 2012 11:58:20 -0400
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] gianfar:don't add FCB length to hard_header_len
-Message-ID: <20120525155820.GA25102@windriver.com>
-References: <1337677248-27792-1-git-send-email-b06378@freescale.com>
- <20120522.151830.2018953337014839778.davem@davemloft.net>
- <4FBE4E02.1070306@computer.org>
- <1337876210.5070.4.camel@joe2Laptop>
+Return-Path: <alexdeucher@gmail.com>
+Received: from mail-qc0-f179.google.com (mail-qc0-f179.google.com
+ [209.85.216.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BBA46B6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2012 01:06:27 +1000 (EST)
+Received: by qcha6 with SMTP id a6so637312qch.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2012 08:06:23 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1337876210.5070.4.camel@joe2Laptop>
-Cc: netdev@vger.kernel.org, b06378@freescale.com, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>, Jan Ceuleers <jan.ceuleers@computer.org>
+In-Reply-To: <4FBDD2CF.5060008@mentor.com>
+References: <4FBDD2CF.5060008@mentor.com>
+Date: Fri, 25 May 2012 11:06:23 -0400
+Message-ID: <CADnq5_MFu8Z0aLON9ohr0gFLLoCVwB3oppxsiON6gk-W2-49NA@mail.gmail.com>
+Subject: Re: Oops with Radeon/Uninorth on Maple
+From: Alex Deucher <alexdeucher@gmail.com>
+To: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Paul@freedesktop.org, Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
+ =?ISO-8859-1?Q?Michel_D=E4nzer?= <daenzer@vmware.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,69 +27,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[Re: [PATCH] gianfar:don't add FCB length to hard_header_len] On 24/05/2012 (Thu 09:16) Joe Perches wrote:
+On Thu, May 24, 2012 at 2:18 AM, Dmitry Eremin-Solenikov
+<dmitry_eremin@mentor.com> wrote:
+> Hello, colleagues,
+>
+> I'm trying to enable an AGP slot (again) on my Maple board (dual PPC970FX
+> board, with CPC925 (U3H) north bridge).
+>
+> =A0For now I'm stuck with a problem: I use radeon card, drm-radeon driver=
+ with
+> KMS.
+>
+> If I force drm-radeon to think about a card as about PCI card (by comment=
+ing
+> corresponding lines in drm_radeon_kms.c), everything works, I get
+> framebuffer, working X11, etc. If I enable agpgart-uninorth driver
+> and RADEON_IS_AGP flag in drm driver, I get an Oops early during the
+> bootstrap. Relevant part of the log (I can send full dmesg of normal
+> bootstrap or this oops on request, if that would help).
 
-> On Thu, 2012-05-24 at 17:04 +0200, Jan Ceuleers wrote:
-> > On 05/22/2012 09:18 PM, David Miller wrote:
-> > > From: Jiajun Wu <b06378@freescale.com>
-> > > Date: Tue, 22 May 2012 17:00:48 +0800
-> > > 
-> > >> FCB(Frame Control Block) isn't the part of netdev hard header.
-> > >> Add FCB to hard_header_len will make GRO fail at MAC comparision stage.
-> > >>
-> > >> Signed-off-by: Jiajun Wu <b06378@freescale.com>
-> > > 
-> > > Applied, thanks.
-> > > 
-> > > Someone needs to go through this driver when net-next opens up
-> > > and fix all of the indentation in this driver.
-> > 
-> > May I give that a go?
-> 
-> I have scripts that automate most of this.
-> I don't have the card though.
+For future reference, you can disable AGP by loading radeon with the
+agpmode parameter set to -1, e.g., radeon.agpmode=3D-1
 
-There is no card.  The gianfar is a SOC for freescale 83xx, 85xx, 86xx
-CPUs.  If need be, I can test just as I did for your name overrun fix
-in commit 0015e551e.
+No need to edit the source.
 
-But you really shouldn't need the hardware to validate this kind of
-patch anyways -- aside from your code flow change in the irq routine of
-gianfar_ptp, you should have been simply able to check for object file
-equivalence before and after your change.
-
-Paul.
-
-> 
-> Maybe this is a starting point?
-> It doesn't fix most 80 column warnings.
-> 
->  drivers/net/ethernet/freescale/gianfar.c         |  299 +++++++++++-----------
->  drivers/net/ethernet/freescale/gianfar_ethtool.c |  131 +++++-----
->  drivers/net/ethernet/freescale/gianfar_ptp.c     |    8 +-
->  drivers/net/ethernet/freescale/gianfar_sysfs.c   |    2 +-
->  4 files changed, 225 insertions(+), 215 deletions(-)
-> 
-
-[...]
-
-> diff --git a/drivers/net/ethernet/freescale/gianfar_ptp.c b/drivers/net/ethernet/freescale/gianfar_ptp.c
-> index c08e5d4..3f7b81d 100644
-> --- a/drivers/net/ethernet/freescale/gianfar_ptp.c
-> +++ b/drivers/net/ethernet/freescale/gianfar_ptp.c
-> @@ -268,11 +268,11 @@ static irqreturn_t isr(int irq, void *priv)
->  		ptp_clock_event(etsects->clock, &event);
->  	}
->  
-> -	if (ack) {
-> -		gfar_write(&etsects->regs->tmr_tevent, ack);
-> -		return IRQ_HANDLED;
-> -	} else
-> +	if (!ack)
->  		return IRQ_NONE;
-> +
-> +	gfar_write(&etsects->regs->tmr_tevent, ack);
-> +	return IRQ_HANDLED;
->  }
->  
->  /*
+Alex
