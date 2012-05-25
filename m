@@ -1,19 +1,24 @@
-Return-Path: <paubert@iram.es>
-Received: from torres.puc.rediris.es (unknown [IPv6:2001:720:418:ca00::9])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ED4D4B6EEB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2012 03:06:28 +1000 (EST)
-Date: Fri, 25 May 2012 18:45:51 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: David Laight <David.Laight@ACULAB.COM>
-Subject: Re: pread() and pwrite() system calls
-Message-ID: <20120525164550.GA32406@visitor2.iram.es>
-References: <AE90C24D6B3A694183C094C60CF0A2F6026B6F26@saturn3.aculab.com>
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7306CB6EE7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2012 05:03:23 +1000 (EST)
+Date: Fri, 25 May 2012 11:58:20 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] gianfar:don't add FCB length to hard_header_len
+Message-ID: <20120525155820.GA25102@windriver.com>
+References: <1337677248-27792-1-git-send-email-b06378@freescale.com>
+ <20120522.151830.2018953337014839778.davem@davemloft.net>
+ <4FBE4E02.1070306@computer.org>
+ <1337876210.5070.4.camel@joe2Laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6F26@saturn3.aculab.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1337876210.5070.4.camel@joe2Laptop>
+Cc: netdev@vger.kernel.org, b06378@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, Jan Ceuleers <jan.ceuleers@computer.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 25, 2012 at 02:29:06PM +0100, David Laight wrote:
-> We have a system with linux 2.6.32 and the somewhat archaic
-> uClibc 0.9.27 (but I'm not sure the current version is
-> any better, and I think there are binary compatibility
-> if we update).
-> 
-> I've just discovered that pread() is 'implemented'
-> by using 3 lseek() system calls and read().
-> (the same is true for the 64bit versions).
-> 
-> I thought that pread() was supposed to be atomic
-> (so usable concurrently by multiple threads) which
-> means that this implementation is completely broken.
-> 
-> I've not looked to see what glibc does.
-> 
-> I can see that part of the problem is the alignment
-> of the 64bit value on the argument list of syscall()
-> (when the register save area is cast to a sycall
-> argument structure).
-> But it also looks as though the uClibc syscall()
-> stub can only pass 5 arguments in registers, and
-> pread() (with an aligned 64bit offset) requires 6.
-> 
-> The ucLibc source seems to be predicated by __NR_pread,
-> but if that were defined it would try to call
-> __syscall_pread() and I can't find that anywhere.
-> 
-> A special pread/pwrite asm stub that just copies
-> r7 to r0 could be used.
-> 
-> Would it be enough to do:
-> syscall_pread_pwrite:
-> 	mov 0,7
-> 	sc
-> 	blr
-> and handle the -ve -> errno in C?
+[Re: [PATCH] gianfar:don't add FCB length to hard_header_len] On 24/05/2012 (Thu 09:16) Joe Perches wrote:
 
-Huh? Won't fly, r0 is used for the system call number!
+> On Thu, 2012-05-24 at 17:04 +0200, Jan Ceuleers wrote:
+> > On 05/22/2012 09:18 PM, David Miller wrote:
+> > > From: Jiajun Wu <b06378@freescale.com>
+> > > Date: Tue, 22 May 2012 17:00:48 +0800
+> > > 
+> > >> FCB(Frame Control Block) isn't the part of netdev hard header.
+> > >> Add FCB to hard_header_len will make GRO fail at MAC comparision stage.
+> > >>
+> > >> Signed-off-by: Jiajun Wu <b06378@freescale.com>
+> > > 
+> > > Applied, thanks.
+> > > 
+> > > Someone needs to go through this driver when net-next opens up
+> > > and fix all of the indentation in this driver.
+> > 
+> > May I give that a go?
+> 
+> I have scripts that automate most of this.
+> I don't have the card though.
 
-On the other hand, I believed PPC had no problems passing
-up to 8 32 bit arguments in registers (r3 to r10), but
-I may be confusing with the standard ABI for function calls.
+There is no card.  The gianfar is a SOC for freescale 83xx, 85xx, 86xx
+CPUs.  If need be, I can test just as I did for your name overrun fix
+in commit 0015e551e.
 
-Hmm, a quick look at kernel/entry_32.s shows that it should 
-be able to use at least r3 to r8, which should be sufficient.
+But you really shouldn't need the hardware to validate this kind of
+patch anyways -- aside from your code flow change in the irq routine of
+gianfar_ptp, you should have been simply able to check for object file
+equivalence before and after your change.
 
-I think that it is an uClibc problem.
+Paul.
 
-	Gabriel
+> 
+> Maybe this is a starting point?
+> It doesn't fix most 80 column warnings.
+> 
+>  drivers/net/ethernet/freescale/gianfar.c         |  299 +++++++++++-----------
+>  drivers/net/ethernet/freescale/gianfar_ethtool.c |  131 +++++-----
+>  drivers/net/ethernet/freescale/gianfar_ptp.c     |    8 +-
+>  drivers/net/ethernet/freescale/gianfar_sysfs.c   |    2 +-
+>  4 files changed, 225 insertions(+), 215 deletions(-)
+> 
+
+[...]
+
+> diff --git a/drivers/net/ethernet/freescale/gianfar_ptp.c b/drivers/net/ethernet/freescale/gianfar_ptp.c
+> index c08e5d4..3f7b81d 100644
+> --- a/drivers/net/ethernet/freescale/gianfar_ptp.c
+> +++ b/drivers/net/ethernet/freescale/gianfar_ptp.c
+> @@ -268,11 +268,11 @@ static irqreturn_t isr(int irq, void *priv)
+>  		ptp_clock_event(etsects->clock, &event);
+>  	}
+>  
+> -	if (ack) {
+> -		gfar_write(&etsects->regs->tmr_tevent, ack);
+> -		return IRQ_HANDLED;
+> -	} else
+> +	if (!ack)
+>  		return IRQ_NONE;
+> +
+> +	gfar_write(&etsects->regs->tmr_tevent, ack);
+> +	return IRQ_HANDLED;
+>  }
+>  
+>  /*
