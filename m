@@ -1,23 +1,23 @@
-Return-Path: <alexdeucher@gmail.com>
-Received: from mail-qc0-f179.google.com (mail-qc0-f179.google.com
- [209.85.216.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BBA46B6F62
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2012 01:06:27 +1000 (EST)
-Received: by qcha6 with SMTP id a6so637312qch.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 May 2012 08:06:23 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <4FBDD2CF.5060008@mentor.com>
-References: <4FBDD2CF.5060008@mentor.com>
-Date: Fri, 25 May 2012 11:06:23 -0400
-Message-ID: <CADnq5_MFu8Z0aLON9ohr0gFLLoCVwB3oppxsiON6gk-W2-49NA@mail.gmail.com>
-Subject: Re: Oops with Radeon/Uninorth on Maple
-From: Alex Deucher <alexdeucher@gmail.com>
-To: Dmitry Eremin-Solenikov <dmitry_eremin@mentor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Paul@freedesktop.org, Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
- =?ISO-8859-1?Q?Michel_D=E4nzer?= <daenzer@vmware.com>
+Return-Path: <joe@perches.com>
+Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
+ (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 27968B6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2012 05:51:09 +1000 (EST)
+Message-ID: <1337975465.30100.4.camel@joe2Laptop>
+Subject: Re: [PATCH] gianfar:don't add FCB length to hard_header_len
+From: Joe Perches <joe@perches.com>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Date: Fri, 25 May 2012 12:51:05 -0700
+In-Reply-To: <20120525155820.GA25102@windriver.com>
+References: <1337677248-27792-1-git-send-email-b06378@freescale.com>
+ <20120522.151830.2018953337014839778.davem@davemloft.net>
+ <4FBE4E02.1070306@computer.org> <1337876210.5070.4.camel@joe2Laptop>
+ <20120525155820.GA25102@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, b06378@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>, Jan Ceuleers <jan.ceuleers@computer.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 24, 2012 at 2:18 AM, Dmitry Eremin-Solenikov
-<dmitry_eremin@mentor.com> wrote:
-> Hello, colleagues,
->
-> I'm trying to enable an AGP slot (again) on my Maple board (dual PPC970FX
-> board, with CPC925 (U3H) north bridge).
->
-> =A0For now I'm stuck with a problem: I use radeon card, drm-radeon driver=
- with
-> KMS.
->
-> If I force drm-radeon to think about a card as about PCI card (by comment=
-ing
-> corresponding lines in drm_radeon_kms.c), everything works, I get
-> framebuffer, working X11, etc. If I enable agpgart-uninorth driver
-> and RADEON_IS_AGP flag in drm driver, I get an Oops early during the
-> bootstrap. Relevant part of the log (I can send full dmesg of normal
-> bootstrap or this oops on request, if that would help).
+On Fri, 2012-05-25 at 11:58 -0400, Paul Gortmaker wrote:
+> But you really shouldn't need the hardware to validate this kind of
+> patch anyways -- aside from your code flow change in the irq routine of
+> gianfar_ptp, you should have been simply able to check for object file
+> equivalence before and after your change.
 
-For future reference, you can disable AGP by loading radeon with the
-agpmode parameter set to -1, e.g., radeon.agpmode=3D-1
+No cross compiler either, and I'm lazy 'bout that...
 
-No need to edit the source.
-
-Alex
+cheers, Joe
