@@ -1,24 +1,26 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (unknown
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 486ECB6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2012 07:49:00 +1000 (EST)
-Date: Fri, 25 May 2012 22:48:45 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [git pull] signals, the first series
-Message-ID: <20120525214845.GQ11775@ZenIV.linux.org.uk>
-References: <20120522043525.GI11775@ZenIV.linux.org.uk>
- <20120522180635.93ba83a63481b2364bd8f425@canb.auug.org.au>
- <20120523151405.f264a88ca4edf8d22c08c86c@canb.auug.org.au>
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 43550B6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 May 2012 16:53:26 +1000 (EST)
+To: Li Yang-R58472 <r58472@freescale.com>
+Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
+From: Anthony Foiani <tkil@scrye.com>
+References: <ghave7n25.fsf@dworkin.scrye.com>
+ <94F013E7935FF44C83EBE7784D62AD3F0930B855@039-SN2MPN1-022.039d.mgd.msft.net>
+Date: Sat, 26 May 2012 00:53:20 -0600
+In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F0930B855@039-SN2MPN1-022.039d.mgd.msft.net>
+ (Li Yang-R's message of "Mon, 21 May 2012 06:31:48 +0000")
+Message-ID: <g7gvzbfhb.fsf@dworkin.scrye.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120523151405.f264a88ca4edf8d22c08c86c@canb.auug.org.au>
-Sender: Al Viro <viro@ftp.linux.org.uk>
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, linux-kernel@vger.kernel.org
+Cc: "Robert P.J.Day" <rpjday@crashcourse.ca>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ ashish kalra <ashish.kalra@freescale.com>, Jeff Garzik <jeff@garzik.org>,
+ Adrian Bunk <bunk@stusta.de>
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 23, 2012 at 03:14:05PM +1000, Stephen Rothwell wrote:
-> OK, it seem that most of this has been in Andrew's tree for a while,
-> sorry about that.
+Li Yang-R58472 <r58472@freescale.com> writes:
 
-Grr...  *Another* missing prereq for task_work_add() series, this time on
-ppc64.  Could somebody familiar with that beast take a look at this and
-tell if the change is sane?  What we want is
-	r0 = r3 & MSR_PR ?
-		_TIF_NEED_RESCHED | _TIF_NOTIFY_RESUME | _TIF_SIGPENDING :
-		_TIF_NEED_RESCHED;
-and when Roland re-added NOTIFY_RESUME he'd missed that hack (non-PREEMPT
-variant and 32bit code all just check _TIF_USER_WORK_MASK, so updating
-it had been enough in those cases).  I don't have the hardware in
-question; the same instructions in userland on ppc32 box produce the
-right value.  Unless NAKed I'm going to throw that one into the second
-pull request from signal.git, so if anyone has objections, please yell.
+> Thanks for bringing [CONFIG_MPC8315_DS] up again.  Looks like we do
+> have a problem here.
 
-I'll gladly replace that with better solution if one shows up (or, better
-yet, goes via ppc tree).  AFAICS the diff below should work, but whether
-it's the best variant or not... No idea.
+My impression is that the simplest fix is Adrian's patch, which simply
+keys off CONFIG_MPC831x_RDB.  It's not very satisfying, but I'll take
+"working" vs. "rare lockups at boot".
 
-Back to massaging VFS queue for pull...
+If there is some other defining characteristic of boards that require
+this patch, then a simple KConfig snippit with a description would be
+even better.  Without any KConfig support for this variable, I lost it
+even after using an oldconfig from my vendor.
 
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index ed1718f..e4fd9bb 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -563,9 +563,10 @@ _GLOBAL(ret_from_except_lite)
- 	li	r0,_TIF_NEED_RESCHED	/* bits to check */
- 	ld	r3,_MSR(r1)
- 	ld	r4,TI_FLAGS(r9)
--	/* Move MSR_PR bit in r3 to _TIF_SIGPENDING position in r0 */
-+	/* Add MSR_PR bit in r3 in _TIF_SIGPENDING and _TIF_NOTIFY_RESUME positions in r0 */
- 	rlwimi	r0,r3,32+TIF_SIGPENDING-MSR_PR_LG,_TIF_SIGPENDING
--	and.	r0,r4,r0	/* check NEED_RESCHED and maybe SIGPENDING */
-+	rlwimi	r0,r3,32+TIF_NOTIFY_RESUME-MSR_PR_LG,_TIF_NOTIFY_RESUME
-+	and.	r0,r4,r0	/* check NEED_RESCHED and maybe SIGPENDING/NOTIFY_RESUME */
- 	bne	do_work
- 
- #else /* !CONFIG_PREEMPT */
+(Or, if it was preserved, I might have removed it when trying to
+optimize the kernel for support for our hardware, and I had no way of
+knowing that the MPC8315_DS had any impact on my system at all...)
+
+If it's actually a CPU/SOC-level problem, then an ideal situation
+would conditionalize the fix by examining CPU version or stepping.
+That would allow us to get rid of the config variable entirely.
+
+> Btw, did it help with your problem by enabling it?
+
+Possibly.  :)
+
+I only saw the problem (failure to SATA handshake at 3Gbps?) very
+rarely, maybe one in 100 warm boot cycles.
+
+I've added the patch to my current project, and have not seen the
+problem since then, but until I'm problem free for another few weeks,
+I can't sign off on it.
+
+It certainly does look like a reasonable band-aid fix.  In our case,
+we don't need anywhere near the higher bandwidth, so it's acceptable
+from that point of view.
+
+A clear statement or reference to a CPU / SOC errata would be
+preferred, though.  It's a 4-year-old design, so even a brown paper
+bag bug isn't all that embarrassing anymore.  :)
+
+Thanks,
+Tony
+
+p.s. This board also seems to suffer from occasionaly USB lockups on
+     boot; if you end up digging through errata on 8315-based boards,
+     please keep an eye out for that as well.  Thanks!  Link:
+
+        http://patchwork.ozlabs.org/patch/152755/
+
+     I'm currently using that patch as well as a 10ms delay to try to
+     avoid the hang.  Successfully, so far, but a "blessed" solution
+     from FSL would be awesome.
