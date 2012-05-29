@@ -1,23 +1,14 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-gg0-f179.google.com (mail-gg0-f179.google.com
- [209.85.161.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4E15EB6FAC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2012 17:30:53 +1000 (EST)
-Received: by ggnk3 with SMTP id k3so2320860ggn.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2012 00:30:49 -0700 (PDT)
-MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
-References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
-Date: Tue, 29 May 2012 15:30:49 +0800
-Message-ID: <CADRPPNRL7s6adxJyotCRJ6_KmXnxrqKdcj-Hrg8MXoAAYR7Txg@mail.gmail.com>
-Subject: Re: [PATCH v5 1/5] powerpc/85xx: implement hardware timebase sync
-From: Li Yang <leoli@freescale.com>
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <anton@samba.org>
+Date: Tue, 29 May 2012 18:14:32 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
+ amodra@bigpond.net.au
+Subject: [PATCH] powerpc: Use enhanced touch instructions in POWER7
+ copy_to_user/copy_from_user
+Message-ID: <20120529181432.2038c1a3@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,201 +18,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
 
-Thanks for the valuable comment raised before and we have updated the
-patches accordingly.  Please review the updated patch set and ACK if
-they are good to you.  We hope it can be applied in this window.
+Version 2.06 of the POWER ISA introduced enhanced touch instructions,
+allowing us to specify a number of attributes including the length of
+a stream.
 
-Leo
+This patch adds a software stream for both loads and stores in the
+POWER7 copy_tofrom_user loop. Since the setup is quite complicated
+and we have to use an eieio to ensure correct ordering of the "GO"
+command we only do this for copies above 4kB.
 
-On Fri, May 11, 2012 at 7:53 PM, Zhao Chenhui
-<chenhui.zhao@freescale.com> wrote:
-> Do hardware timebase sync. Firstly, stop all timebases, and transfer
-> the timebase value of the boot core to the other core. Finally,
-> start all timebases.
->
-> Only apply to dual-core chips, such as MPC8572, P2020, etc.
->
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> =C2=A0arch/powerpc/include/asm/fsl_guts.h | =C2=A0 =C2=A02 +
-> =C2=A0arch/powerpc/platforms/85xx/smp.c =C2=A0 | =C2=A0 93 ++++++++++++++=
-+++++++++++++++++++--
-> =C2=A02 files changed, 91 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/a=
-sm/fsl_guts.h
-> index aa4c488..dd5ba2c 100644
-> --- a/arch/powerpc/include/asm/fsl_guts.h
-> +++ b/arch/powerpc/include/asm/fsl_guts.h
-> @@ -48,6 +48,8 @@ struct ccsr_guts {
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 __be32 =C2=A0dmuxcr; =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* 0x.0068 - DMA Mux Control Register */
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 u8 =C2=A0 =C2=A0 res06c[0x70 - 0x6c];
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 =C2=A0devdisr; =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0/* 0x.0070 - Device Disable Control */
-> +#define CCSR_GUTS_DEVDISR_TB1 =C2=A00x00001000
-> +#define CCSR_GUTS_DEVDISR_TB0 =C2=A00x00004000
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 =C2=A0devdisr2; =C2=A0 =C2=A0 =C2=A0 /*=
- 0x.0074 - Device Disable Control 2 */
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0u8 =C2=A0 =C2=A0 =C2=A0res078[0x7c - 0x78];
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 =C2=A0pmjcr; =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0/* 0x.007c - 4 Power Management Jog Control Register */
-> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/8=
-5xx/smp.c
-> index ff42490..6862dda 100644
-> --- a/arch/powerpc/platforms/85xx/smp.c
-> +++ b/arch/powerpc/platforms/85xx/smp.c
-> @@ -24,6 +24,7 @@
-> =C2=A0#include <asm/mpic.h>
-> =C2=A0#include <asm/cacheflush.h>
-> =C2=A0#include <asm/dbell.h>
-> +#include <asm/fsl_guts.h>
->
-> =C2=A0#include <sysdev/fsl_soc.h>
-> =C2=A0#include <sysdev/mpic.h>
-> @@ -115,13 +116,70 @@ smp_85xx_kick_cpu(int nr)
->
-> =C2=A0struct smp_ops_t smp_85xx_ops =3D {
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0.kick_cpu =3D smp_85xx_kick_cpu,
-> -#ifdef CONFIG_KEXEC
-> - =C2=A0 =C2=A0 =C2=A0 .give_timebase =C2=A0=3D smp_generic_give_timebase=
-,
-> - =C2=A0 =C2=A0 =C2=A0 .take_timebase =C2=A0=3D smp_generic_take_timebase=
-,
-> -#endif
-> =C2=A0};
->
-> =C2=A0#ifdef CONFIG_KEXEC
-> +static struct ccsr_guts __iomem *guts;
-> +static u64 timebase;
-> +static int tb_req;
-> +static int tb_valid;
-> +
-> +static void mpc85xx_timebase_freeze(int freeze)
-> +{
-> + =C2=A0 =C2=A0 =C2=A0 unsigned int mask;
-> +
-> + =C2=A0 =C2=A0 =C2=A0 if (!guts)
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return;
-> +
-> + =C2=A0 =C2=A0 =C2=A0 mask =3D CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR=
-_TB1;
-> + =C2=A0 =C2=A0 =C2=A0 if (freeze)
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 setbits32(&guts->devdi=
-sr, mask);
-> + =C2=A0 =C2=A0 =C2=A0 else
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 clrbits32(&guts->devdi=
-sr, mask);
-> +
-> + =C2=A0 =C2=A0 =C2=A0 in_be32(&guts->devdisr);
-> +}
-> +
-> +static void mpc85xx_give_timebase(void)
-> +{
-> + =C2=A0 =C2=A0 =C2=A0 unsigned long flags;
-> +
-> + =C2=A0 =C2=A0 =C2=A0 local_irq_save(flags);
-> +
-> + =C2=A0 =C2=A0 =C2=A0 while (!tb_req)
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 barrier();
-> + =C2=A0 =C2=A0 =C2=A0 tb_req =3D 0;
-> +
-> + =C2=A0 =C2=A0 =C2=A0 mpc85xx_timebase_freeze(1);
-> + =C2=A0 =C2=A0 =C2=A0 timebase =3D get_tb();
-> + =C2=A0 =C2=A0 =C2=A0 mb();
-> + =C2=A0 =C2=A0 =C2=A0 tb_valid =3D 1;
-> +
-> + =C2=A0 =C2=A0 =C2=A0 while (tb_valid)
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 barrier();
-> +
-> + =C2=A0 =C2=A0 =C2=A0 mpc85xx_timebase_freeze(0);
-> +
-> + =C2=A0 =C2=A0 =C2=A0 local_irq_restore(flags);
-> +}
-> +
-> +static void mpc85xx_take_timebase(void)
-> +{
-> + =C2=A0 =C2=A0 =C2=A0 unsigned long flags;
-> +
-> + =C2=A0 =C2=A0 =C2=A0 local_irq_save(flags);
-> +
-> + =C2=A0 =C2=A0 =C2=A0 tb_req =3D 1;
-> + =C2=A0 =C2=A0 =C2=A0 while (!tb_valid)
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 barrier();
-> +
-> + =C2=A0 =C2=A0 =C2=A0 set_tb(timebase >> 32, timebase & 0xffffffff);
-> + =C2=A0 =C2=A0 =C2=A0 mb();
-> + =C2=A0 =C2=A0 =C2=A0 tb_valid =3D 0;
-> +
-> + =C2=A0 =C2=A0 =C2=A0 local_irq_restore(flags);
-> +}
-> +
-> =C2=A0atomic_t kexec_down_cpus =3D ATOMIC_INIT(0);
->
-> =C2=A0void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
-> @@ -228,6 +286,20 @@ smp_85xx_setup_cpu(int cpu_nr)
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0doorbell_setup_thi=
-s_cpu();
-> =C2=A0}
->
-> +#ifdef CONFIG_KEXEC
-> +static const struct of_device_id guts_ids[] =3D {
-> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,mpc8572-guts", },
-> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,mpc8560-guts", },
-> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,mpc8536-guts", },
-> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p1020-guts", },
-> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p1021-guts", },
-> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p1022-guts", },
-> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p1023-guts", },
-> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p2020-guts", },
-> + =C2=A0 =C2=A0 =C2=A0 {},
-> +};
-> +#endif
-> +
-> =C2=A0void __init mpc85xx_smp_init(void)
-> =C2=A0{
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node *np;
-> @@ -249,6 +321,19 @@ void __init mpc85xx_smp_init(void)
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0smp_85xx_ops.cause=
-_ipi =3D doorbell_cause_ipi;
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0}
->
-> +#ifdef CONFIG_KEXEC
-> + =C2=A0 =C2=A0 =C2=A0 np =3D of_find_matching_node(NULL, guts_ids);
-> + =C2=A0 =C2=A0 =C2=A0 if (np) {
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 guts =3D of_iomap(np, =
-0);
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 smp_85xx_ops.give_time=
-base =3D mpc85xx_give_timebase;
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 smp_85xx_ops.take_time=
-base =3D mpc85xx_take_timebase;
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 of_node_put(np);
-> + =C2=A0 =C2=A0 =C2=A0 } else {
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 smp_85xx_ops.give_time=
-base =3D smp_generic_give_timebase;
-> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 smp_85xx_ops.take_time=
-base =3D smp_generic_take_timebase;
-> + =C2=A0 =C2=A0 =C2=A0 }
-> +#endif
-> +
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0smp_ops =3D &smp_85xx_ops;
->
-> =C2=A0#ifdef CONFIG_KEXEC
-> --
-> 1.6.4.1
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" i=
-n
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at =C2=A0http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at =C2=A0http://www.tux.org/lkml/
+To quantify any performance improvements we need a working set
+bigger than the caches so we operate on a 1GB file:
 
+# dd if=/dev/zero of=/tmp/foo bs=1M count=1024
 
+And we compare how fast we can read the file:
 
---=20
-- Leo
+# dd if=/tmp/foo of=/dev/null bs=1M
+
+before: 7.7 GB/s
+after:  9.6 GB/s
+
+A 25% improvement.
+
+The worst case for this patch will be a completely L1 cache contained
+copy of just over 4kB. We can test this with the copy_to_user
+testcase we used to tune copy_tofrom_user originally:
+
+http://ozlabs.org/~anton/junkcode/copy_to_user.c
+
+# time ./copy_to_user2 -l 4224 -i 10000000
+
+before: 6.807 s
+after:  6.946 s
+
+A 2% slowdown, which seems reasonable considering our data is unlikely
+to be completely L1 contained.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>  
+---
+
+Index: linux-build/arch/powerpc/lib/copyuser_power7.S
+===================================================================
+--- linux-build.orig/arch/powerpc/lib/copyuser_power7.S	2012-03-01 16:15:31.073813523 +1100
++++ linux-build/arch/powerpc/lib/copyuser_power7.S	2012-05-29 16:14:44.129704887 +1000
+@@ -298,6 +298,37 @@ err1;	stb	r0,0(r3)
+ 	ld	r5,STACKFRAMESIZE+64(r1)
+ 	mtlr	r0
+ 
++	/*
++	 * We prefetch both the source and destination using enhanced touch
++	 * instructions. We use a stream ID of 0 for the load side and
++	 * 1 for the store side.
++	 */
++	clrrdi	r6,r4,7
++	clrrdi	r9,r3,7
++	ori	r9,r9,1		/* stream=1 */
++
++	srdi	r7,r5,7		/* length in cachelines, capped at 0x3FF */
++	cmpldi	r7,0x3FF
++	ble	1f
++	li	r7,0x3FF
++1:	lis	r0,0x0E00	/* depth=7 */
++	sldi	r7,r7,7
++	or	r7,r7,r0
++	ori	r10,r7,1	/* stream=1 */
++
++	lis	r8,0x8000	/* GO=1 */
++	clrldi	r8,r8,32
++
++.machine push
++.machine "power4"
++	dcbt	r0,r6,0b01000
++	dcbt	r0,r7,0b01010
++	dcbtst	r0,r9,0b01000
++	dcbtst	r0,r10,0b01010
++	eieio
++	dcbt	r0,r8,0b01010	/* GO */
++.machine pop
++
+ 	beq	.Lunwind_stack_nonvmx_copy
+ 
+ 	/*
