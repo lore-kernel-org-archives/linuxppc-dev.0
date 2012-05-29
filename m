@@ -1,25 +1,23 @@
-Return-Path: <yong.zhang0@gmail.com>
-Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
- [209.85.212.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-gg0-f179.google.com (mail-gg0-f179.google.com
+ [209.85.161.179]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5D4F6B6EEB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2012 17:18:12 +1000 (EST)
-Received: by vbip1 with SMTP id p1so2362122vbi.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2012 00:18:08 -0700 (PDT)
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 09/10] POWERPC: smp: remove call to
- ipi_call_lock()/ipi_call_unlock()
-Date: Tue, 29 May 2012 15:16:04 +0800
-Message-Id: <1338275765-3217-10-git-send-email-yong.zhang0@gmail.com>
-In-Reply-To: <1338275765-3217-1-git-send-email-yong.zhang0@gmail.com>
-References: <1338275765-3217-1-git-send-email-yong.zhang0@gmail.com>
-Cc: axboe@kernel.dk, sshtylyov@mvista.com, nikunj@linux.vnet.ibm.com,
- david.daney@cavium.com, peterz@infradead.org, akpm@linux-foundation.org,
- ralf@linux-mips.org, Paul Mackerras <paulus@samba.org>,
- srivatsa.bhat@linux.vnet.ibm.com, tglx@linutronix.de,
- paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 4E15EB6FAC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2012 17:30:53 +1000 (EST)
+Received: by ggnk3 with SMTP id k3so2320860ggn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2012 00:30:49 -0700 (PDT)
+MIME-Version: 1.0
+Sender: pku.leo@gmail.com
+In-Reply-To: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
+References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
+Date: Tue, 29 May 2012 15:30:49 +0800
+Message-ID: <CADRPPNRL7s6adxJyotCRJ6_KmXnxrqKdcj-Hrg8MXoAAYR7Txg@mail.gmail.com>
+Subject: Re: [PATCH v5 1/5] powerpc/85xx: implement hardware timebase sync
+From: Li Yang <leoli@freescale.com>
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,46 +27,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yong Zhang <yong.zhang@windriver.com>
+Hi Scott,
 
-1) call_function.lock used in smp_call_function_many() is just to protect
-   call_function.queue and &data->refs, cpu_online_mask is outside of the
-   lock. And it's not necessary to protect cpu_online_mask,
-   because data->cpumask is pre-calculate and even if a cpu is brougt up
-   when calling arch_send_call_function_ipi_mask(), it's harmless because
-   validation test in generic_smp_call_function_interrupt() will take care
-   of it.
+Thanks for the valuable comment raised before and we have updated the
+patches accordingly.  Please review the updated patch set and ACK if
+they are good to you.  We hope it can be applied in this window.
 
-2) For cpu down issue, stop_machine() will guarantee that no concurrent
-   smp_call_fuction() is processing.
+Leo
 
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/smp.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+On Fri, May 11, 2012 at 7:53 PM, Zhao Chenhui
+<chenhui.zhao@freescale.com> wrote:
+> Do hardware timebase sync. Firstly, stop all timebases, and transfer
+> the timebase value of the boot core to the other core. Finally,
+> start all timebases.
+>
+> Only apply to dual-core chips, such as MPC8572, P2020, etc.
+>
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> =C2=A0arch/powerpc/include/asm/fsl_guts.h | =C2=A0 =C2=A02 +
+> =C2=A0arch/powerpc/platforms/85xx/smp.c =C2=A0 | =C2=A0 93 ++++++++++++++=
++++++++++++++++++++--
+> =C2=A02 files changed, 91 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/a=
+sm/fsl_guts.h
+> index aa4c488..dd5ba2c 100644
+> --- a/arch/powerpc/include/asm/fsl_guts.h
+> +++ b/arch/powerpc/include/asm/fsl_guts.h
+> @@ -48,6 +48,8 @@ struct ccsr_guts {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 __be32 =C2=A0dmuxcr; =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0/* 0x.0068 - DMA Mux Control Register */
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 u8 =C2=A0 =C2=A0 res06c[0x70 - 0x6c];
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 =C2=A0devdisr; =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0/* 0x.0070 - Device Disable Control */
+> +#define CCSR_GUTS_DEVDISR_TB1 =C2=A00x00001000
+> +#define CCSR_GUTS_DEVDISR_TB0 =C2=A00x00004000
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 =C2=A0devdisr2; =C2=A0 =C2=A0 =C2=A0 /*=
+ 0x.0074 - Device Disable Control 2 */
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0u8 =C2=A0 =C2=A0 =C2=A0res078[0x7c - 0x78];
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0__be32 =C2=A0pmjcr; =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0/* 0x.007c - 4 Power Management Jog Control Register */
+> diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/8=
+5xx/smp.c
+> index ff42490..6862dda 100644
+> --- a/arch/powerpc/platforms/85xx/smp.c
+> +++ b/arch/powerpc/platforms/85xx/smp.c
+> @@ -24,6 +24,7 @@
+> =C2=A0#include <asm/mpic.h>
+> =C2=A0#include <asm/cacheflush.h>
+> =C2=A0#include <asm/dbell.h>
+> +#include <asm/fsl_guts.h>
+>
+> =C2=A0#include <sysdev/fsl_soc.h>
+> =C2=A0#include <sysdev/mpic.h>
+> @@ -115,13 +116,70 @@ smp_85xx_kick_cpu(int nr)
+>
+> =C2=A0struct smp_ops_t smp_85xx_ops =3D {
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0.kick_cpu =3D smp_85xx_kick_cpu,
+> -#ifdef CONFIG_KEXEC
+> - =C2=A0 =C2=A0 =C2=A0 .give_timebase =C2=A0=3D smp_generic_give_timebase=
+,
+> - =C2=A0 =C2=A0 =C2=A0 .take_timebase =C2=A0=3D smp_generic_take_timebase=
+,
+> -#endif
+> =C2=A0};
+>
+> =C2=A0#ifdef CONFIG_KEXEC
+> +static struct ccsr_guts __iomem *guts;
+> +static u64 timebase;
+> +static int tb_req;
+> +static int tb_valid;
+> +
+> +static void mpc85xx_timebase_freeze(int freeze)
+> +{
+> + =C2=A0 =C2=A0 =C2=A0 unsigned int mask;
+> +
+> + =C2=A0 =C2=A0 =C2=A0 if (!guts)
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 return;
+> +
+> + =C2=A0 =C2=A0 =C2=A0 mask =3D CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR=
+_TB1;
+> + =C2=A0 =C2=A0 =C2=A0 if (freeze)
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 setbits32(&guts->devdi=
+sr, mask);
+> + =C2=A0 =C2=A0 =C2=A0 else
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 clrbits32(&guts->devdi=
+sr, mask);
+> +
+> + =C2=A0 =C2=A0 =C2=A0 in_be32(&guts->devdisr);
+> +}
+> +
+> +static void mpc85xx_give_timebase(void)
+> +{
+> + =C2=A0 =C2=A0 =C2=A0 unsigned long flags;
+> +
+> + =C2=A0 =C2=A0 =C2=A0 local_irq_save(flags);
+> +
+> + =C2=A0 =C2=A0 =C2=A0 while (!tb_req)
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 barrier();
+> + =C2=A0 =C2=A0 =C2=A0 tb_req =3D 0;
+> +
+> + =C2=A0 =C2=A0 =C2=A0 mpc85xx_timebase_freeze(1);
+> + =C2=A0 =C2=A0 =C2=A0 timebase =3D get_tb();
+> + =C2=A0 =C2=A0 =C2=A0 mb();
+> + =C2=A0 =C2=A0 =C2=A0 tb_valid =3D 1;
+> +
+> + =C2=A0 =C2=A0 =C2=A0 while (tb_valid)
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 barrier();
+> +
+> + =C2=A0 =C2=A0 =C2=A0 mpc85xx_timebase_freeze(0);
+> +
+> + =C2=A0 =C2=A0 =C2=A0 local_irq_restore(flags);
+> +}
+> +
+> +static void mpc85xx_take_timebase(void)
+> +{
+> + =C2=A0 =C2=A0 =C2=A0 unsigned long flags;
+> +
+> + =C2=A0 =C2=A0 =C2=A0 local_irq_save(flags);
+> +
+> + =C2=A0 =C2=A0 =C2=A0 tb_req =3D 1;
+> + =C2=A0 =C2=A0 =C2=A0 while (!tb_valid)
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 barrier();
+> +
+> + =C2=A0 =C2=A0 =C2=A0 set_tb(timebase >> 32, timebase & 0xffffffff);
+> + =C2=A0 =C2=A0 =C2=A0 mb();
+> + =C2=A0 =C2=A0 =C2=A0 tb_valid =3D 0;
+> +
+> + =C2=A0 =C2=A0 =C2=A0 local_irq_restore(flags);
+> +}
+> +
+> =C2=A0atomic_t kexec_down_cpus =3D ATOMIC_INIT(0);
+>
+> =C2=A0void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
+> @@ -228,6 +286,20 @@ smp_85xx_setup_cpu(int cpu_nr)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0doorbell_setup_thi=
+s_cpu();
+> =C2=A0}
+>
+> +#ifdef CONFIG_KEXEC
+> +static const struct of_device_id guts_ids[] =3D {
+> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,mpc8572-guts", },
+> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,mpc8560-guts", },
+> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,mpc8536-guts", },
+> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p1020-guts", },
+> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p1021-guts", },
+> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p1022-guts", },
+> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p1023-guts", },
+> + =C2=A0 =C2=A0 =C2=A0 { .compatible =3D "fsl,p2020-guts", },
+> + =C2=A0 =C2=A0 =C2=A0 {},
+> +};
+> +#endif
+> +
+> =C2=A0void __init mpc85xx_smp_init(void)
+> =C2=A0{
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0struct device_node *np;
+> @@ -249,6 +321,19 @@ void __init mpc85xx_smp_init(void)
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0smp_85xx_ops.cause=
+_ipi =3D doorbell_cause_ipi;
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0}
+>
+> +#ifdef CONFIG_KEXEC
+> + =C2=A0 =C2=A0 =C2=A0 np =3D of_find_matching_node(NULL, guts_ids);
+> + =C2=A0 =C2=A0 =C2=A0 if (np) {
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 guts =3D of_iomap(np, =
+0);
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 smp_85xx_ops.give_time=
+base =3D mpc85xx_give_timebase;
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 smp_85xx_ops.take_time=
+base =3D mpc85xx_take_timebase;
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 of_node_put(np);
+> + =C2=A0 =C2=A0 =C2=A0 } else {
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 smp_85xx_ops.give_time=
+base =3D smp_generic_give_timebase;
+> + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 smp_85xx_ops.take_time=
+base =3D smp_generic_take_timebase;
+> + =C2=A0 =C2=A0 =C2=A0 }
+> +#endif
+> +
+> =C2=A0 =C2=A0 =C2=A0 =C2=A0smp_ops =3D &smp_85xx_ops;
+>
+> =C2=A0#ifdef CONFIG_KEXEC
+> --
+> 1.6.4.1
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" i=
+n
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at =C2=A0http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at =C2=A0http://www.tux.org/lkml/
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index e4cb343..e1417c4 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -571,7 +571,6 @@ void __devinit start_secondary(void *unused)
- 	if (system_state == SYSTEM_RUNNING)
- 		vdso_data->processorCount++;
- #endif
--	ipi_call_lock();
- 	notify_cpu_starting(cpu);
- 	set_cpu_online(cpu, true);
- 	/* Update sibling maps */
-@@ -601,7 +600,6 @@ void __devinit start_secondary(void *unused)
- 		of_node_put(np);
- 	}
- 	of_node_put(l2_cache);
--	ipi_call_unlock();
- 
- 	local_irq_enable();
- 
--- 
-1.7.5.4
+
+
+--=20
+- Leo
