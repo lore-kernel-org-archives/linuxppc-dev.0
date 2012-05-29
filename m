@@ -1,13 +1,20 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 29 May 2012 18:14:32 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
- amodra@bigpond.net.au
-Subject: [PATCH] powerpc: Use enhanced touch instructions in POWER7
- copy_to_user/copy_from_user
-Message-ID: <20120529181432.2038c1a3@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 47112B6FA9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 May 2012 18:29:51 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 10709-01 for <linuxppc-dev@lists.ozlabs.org>;
+ Tue, 29 May 2012 09:29:40 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: pread() and pwrite() system calls
+Date: Tue, 29 May 2012 09:28:55 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6F29@saturn3.aculab.com>
+In-Reply-To: <20120525164550.GA32406@visitor2.iram.es>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Gabriel Paubert" <paubert@iram.es>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -18,86 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> > A special pread/pwrite asm stub that just copies
+> > r7 to r0 could be used.
+> >=20
+> > Would it be enough to do:
+> > syscall_pread_pwrite:
+> > 	mov 0,7
+> > 	sc
+> > 	blr
+> > and handle the -ve -> errno in C?
+>=20
+> Huh? Won't fly, r0 is used for the system call number!
 
-Version 2.06 of the POWER ISA introduced enhanced touch instructions,
-allowing us to specify a number of attributes including the length of
-a stream.
+I was copying that from r7!
+Actually I have a much better stub by copying the one
+used for mmap().
+The system call itself is fine.
+Using the system call almost halved the time taken
+for a 4-byte read.
 
-This patch adds a software stream for both loads and stores in the
-POWER7 copy_tofrom_user loop. Since the setup is quite complicated
-and we have to use an eieio to ensure correct ordering of the "GO"
-command we only do this for copies above 4kB.
+> On the other hand, I believed PPC had no problems passing
+> up to 8 32 bit arguments in registers (r3 to r10), but
+> I may be confusing with the standard ABI for function calls.
+>=20
+> Hmm, a quick look at kernel/entry_32.s shows that it should=20
+> be able to use at least r3 to r8, which should be sufficient.
+>=20
+> I think that it is an uClibc problem.
 
-To quantify any performance improvements we need a working set
-bigger than the caches so we operate on a 1GB file:
+True, in that it isn't a kernel bug.
+OTOH the kernel is likely to get blamed for non-atomic pread.
+I've found the same user-space code in newlib as well.
+glibc may be ok, some code I've found implies it only
+uses the 'emulation' when the system call returns ENOSYS.
 
-# dd if=/dev/zero of=/tmp/foo bs=1M count=1024
-
-And we compare how fast we can read the file:
-
-# dd if=/tmp/foo of=/dev/null bs=1M
-
-before: 7.7 GB/s
-after:  9.6 GB/s
-
-A 25% improvement.
-
-The worst case for this patch will be a completely L1 cache contained
-copy of just over 4kB. We can test this with the copy_to_user
-testcase we used to tune copy_tofrom_user originally:
-
-http://ozlabs.org/~anton/junkcode/copy_to_user.c
-
-# time ./copy_to_user2 -l 4224 -i 10000000
-
-before: 6.807 s
-after:  6.946 s
-
-A 2% slowdown, which seems reasonable considering our data is unlikely
-to be completely L1 contained.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>  
----
-
-Index: linux-build/arch/powerpc/lib/copyuser_power7.S
-===================================================================
---- linux-build.orig/arch/powerpc/lib/copyuser_power7.S	2012-03-01 16:15:31.073813523 +1100
-+++ linux-build/arch/powerpc/lib/copyuser_power7.S	2012-05-29 16:14:44.129704887 +1000
-@@ -298,6 +298,37 @@ err1;	stb	r0,0(r3)
- 	ld	r5,STACKFRAMESIZE+64(r1)
- 	mtlr	r0
- 
-+	/*
-+	 * We prefetch both the source and destination using enhanced touch
-+	 * instructions. We use a stream ID of 0 for the load side and
-+	 * 1 for the store side.
-+	 */
-+	clrrdi	r6,r4,7
-+	clrrdi	r9,r3,7
-+	ori	r9,r9,1		/* stream=1 */
-+
-+	srdi	r7,r5,7		/* length in cachelines, capped at 0x3FF */
-+	cmpldi	r7,0x3FF
-+	ble	1f
-+	li	r7,0x3FF
-+1:	lis	r0,0x0E00	/* depth=7 */
-+	sldi	r7,r7,7
-+	or	r7,r7,r0
-+	ori	r10,r7,1	/* stream=1 */
-+
-+	lis	r8,0x8000	/* GO=1 */
-+	clrldi	r8,r8,32
-+
-+.machine push
-+.machine "power4"
-+	dcbt	r0,r6,0b01000
-+	dcbt	r0,r7,0b01010
-+	dcbtst	r0,r9,0b01000
-+	dcbtst	r0,r10,0b01010
-+	eieio
-+	dcbt	r0,r8,0b01010	/* GO */
-+.machine pop
-+
- 	beq	.Lunwind_stack_nonvmx_copy
- 
- 	/*
+	David
