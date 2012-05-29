@@ -1,22 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B1707B6FBA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2012 04:07:22 +1000 (EST)
-Message-ID: <4FC5104E.1000504@freescale.com>
-Date: Tue, 29 May 2012 13:07:10 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 20BBEB6FA3
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2012 04:29:59 +1000 (EST)
+In-Reply-To: <4FC511C1.4050007@mindchasers.com>
+References: <OF00FC5182.FED0E75C-ONC1257A0D.003AA532-C1257A0D.0041F687@transmode.se>
+ <4FC511C1.4050007@mindchasers.com>
+Subject: Re: MSR loses DE bit in 3.3, BDI2000 cant handle breakpoints?
+To: Bob Cochran <ppc@mindchasers.com>
+Message-ID: <OF5076A83F.4EC6EBD3-ONC1257A0D.0064D589-C1257A0D.00659D47@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 29 May 2012 20:29:53 +0200
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: Clear RI and EE at the same time in system call
- exit
-References: <20120529212010.0152a083@kryten>
-In-Reply-To: <20120529212010.0152a083@kryten>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: michael@ellerman.id.au, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, support@abatron.ch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,67 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/29/2012 06:20 AM, Anton Blanchard wrote:
-> 
-> In system call exit we currently clear RI and EE separately. An
-> mtmsrd is a slow operation and we can save cycles by doing it all
-> in one go.
-> 
-> This does complicate things a bit - we have to be careful to restore
-> RI if we branch out before returning to userspace.
-> 
-> On a POWER7 with virtual cputime disabled this patch improves the
-> null system call by 7%.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> Index: linux-build/arch/powerpc/kernel/entry_64.S
-> ===================================================================
-> --- linux-build.orig/arch/powerpc/kernel/entry_64.S	2012-05-28 18:23:33.374451416 +1000
-> +++ linux-build/arch/powerpc/kernel/entry_64.S	2012-05-29 21:18:22.280934940 +1000
-> @@ -197,7 +197,16 @@ syscall_exit:
->  	wrteei	0
->  #else
->  	ld	r10,PACAKMSR(r13)
-> -	mtmsrd	r10,1
-> +	/*
-> +	 * For performance reasons we clear RI the same time that we
-> +	 * clear EE. We only need to clear RI just before we restore r13
-> +	 * below, but batching it with EE saves us one expensive mtmsrd call.
-> +	 * We have to be careful to restore RI if we branch anywhere from
-> +	 * here (eg syscall_exit_work).
-> +	 */
-> +	li	r9,MSR_RI
-> +	andc	r11,r10,r9
-> +	mtmsrd	r11,1
->  #endif /* CONFIG_PPC_BOOK3E */
->  
->  	ld	r9,TI_FLAGS(r12)
-> @@ -214,17 +223,6 @@ BEGIN_FTR_SECTION
->  END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
->  	andi.	r6,r8,MSR_PR
->  	ld	r4,_LINK(r1)
-> -	/*
-> -	 * Clear RI before restoring r13.  If we are returning to
-> -	 * userspace and we take an exception after restoring r13,
-> -	 * we end up corrupting the userspace r13 value.
-> -	 */
-> -#ifdef CONFIG_PPC_BOOK3S
-> -	/* No MSR:RI on BookE */
-> -	li	r12,MSR_RI
-> -	andc	r11,r10,r12
-> -	mtmsrd	r11,1			/* clear MSR.RI */
-> -#endif /* CONFIG_PPC_BOOK3S */
->  
->  	beq-	1f
->  	ACCOUNT_CPU_USER_EXIT(r11, r12)
-> @@ -271,6 +269,7 @@ syscall_enosys:
->  	b	syscall_exit
->  	
->  syscall_exit_work:
-> +	mtmsrd	r10,1		/* Restore RI */
+Bob Cochran <ppc@mindchasers.com> wrote on 2012/05/29 20:13:21:
+>
+> On 05/29/2012 08:00 AM, Joakim Tjernlund wrote:
+> >
+> > I cannot make simple break points using BDI2000 work in 3.3, abatro suggests that it
+> > depends on MSR[DE] is cleared by the kernel. With the emulator I can see that
+> > MSR[DE] is off quite often by just stopping at random times and looking at MSR so
+> > it seems like the kernel is turning MSR[DE] off most of the time.
+> > Anyone else having success debugging 3.3 with BDI2000?
+> >
+> > This is on a P2010(E500/BOOKE) CPU.
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> >
+>
+> I debug using Freescale CodeWarrior and a USB tap, which also rely on
+> MSR[DE] being set.  I develop from the mainline & have a patch set that
+> I just recently re-tweaked to support kernel debugging.
+>
+> If you want, I'll send you my set of patches for the kernel.  They might
+> be useful (not sure since I don't use BDI).
 
-That mtmsrd needs an #ifdef CONFIG_PPC_BOOK3S
+Thanks, that could be useful, however I just figured something out.
+Changing
+diff --git a/arch/powerpc/include/asm/reg_booke.h b/arch/powerpc/include/asm/reg_booke.h
+index 500fe1d..0cb259b 100644
+--- a/arch/powerpc/include/asm/reg_booke.h
++++ b/arch/powerpc/include/asm/reg_booke.h
+@@ -37,7 +37,7 @@
+ #define MSR_KERNEL     (MSR_ME|MSR_RI|MSR_IR|MSR_DR|MSR_CE)
+ #define MSR_USER       (MSR_KERNEL|MSR_PR|MSR_EE)
+ #else
+-#define MSR_KERNEL     (MSR_ME|MSR_RI|MSR_CE)
++#define MSR_KERNEL     (MSR_ME|MSR_RI|MSR_CE|MSR_DE)
+ #define MSR_USER       (MSR_KERNEL|MSR_PR|MSR_EE)
+ #endif
 
--Scott
+Made it work(possible one should change MSR_USER too?)
+
+Question now is why MSR_DE is not on by default? Especially since
+BDI2000 is supported by the kernel(CONFIG_BDI_SWITCH=y) is on in my kernel?
+
+ Jocke
