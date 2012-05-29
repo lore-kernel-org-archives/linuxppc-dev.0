@@ -1,21 +1,27 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:32:0:1:25:1])
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (unknown
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8ECB6B6FBD
- for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2012 06:14:03 +1000 (EST)
-To: Bob Cochran <ppc@mindchasers.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: MSR loses DE bit in 3.3, BDI2000 cant handle breakpoints?
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 56755B6FB6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2012 08:07:22 +1000 (EST)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
+From: Anthony Foiani <tkil@scrye.com>
+References: <ghave7n25.fsf@dworkin.scrye.com>
+ <94F013E7935FF44C83EBE7784D62AD3F0930B855@039-SN2MPN1-022.039d.mgd.msft.net>
+ <g7gvzbfhb.fsf@dworkin.scrye.com> <4FC50F22.2040404@freescale.com>
+Date: Tue, 29 May 2012 16:07:16 -0600
+In-Reply-To: <4FC50F22.2040404@freescale.com> (Scott Wood's message of "Tue,
+ 29 May 2012 13:02:10 -0500")
+Message-ID: <gvcjetze3.fsf@dworkin.scrye.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=UTF-8
-In-reply-to: <4FC511C1.4050007@mindchasers.com>
-References: <OF00FC5182.FED0E75C-ONC1257A0D.003AA532-C1257A0D.0041F687@transmode.se>
- <4FC511C1.4050007@mindchasers.com>
-Date: Tue, 29 May 2012 22:13:56 +0200
-Message-Id: <20120529201356.3133F2073AD@gemini.denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: "Robert P.J.Day" <rpjday@crashcourse.ca>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>, Jeff Garzik <jeff@garzik.org>,
+ Adrian Bunk <bunk@stusta.de>
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +31,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Bob,
+Scott Wood <scottwood@freescale.com> writes:
 
-In message <4FC511C1.4050007@mindchasers.com> you wrote:
->
-> I debug using Freescale CodeWarrior and a USB tap, which also rely on 
-> MSR[DE] being set.  I develop from the mainline & have a patch set that 
-> I just recently re-tweaked to support kernel debugging.
-> 
-> If you want, I'll send you my set of patches for the kernel.  They might 
-> be useful (not sure since I don't use BDI).
+> CONFIG_MPC831x_RDB doesn't mean that you're running on such a board,
+> only that the kernel supports those boards.  It should be a runtime
+> test.
 
-Please rather submit as a patch on the mailing list.
+Point taken.
 
-Thanks.
+If that SATA check is CPU/SOC-based, then it should be easy enough to
+test.  The cpuinfo for my board is:
 
-Best regards,
+  # cat /proc/cpuinfo
+  processor       : 0
+  cpu             : e300c3
+  clock           : 266.666664MHz
+  revision        : 2.0 (pvr 8085 0020)
+  bogomips        : 66.66
+  timebase        : 33333333
 
-Wolfgang Denk
+On the other hand, if the problem is actually caused by board trace
+routing (or other hardware that's outside the control of the CPU/SOC),
+then I don't know how possible a runtime check will be.
 
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-egrep patterns are full regular expressions; it uses a fast  determi-
-nistic algorithm that sometimes needs exponential space.
-- unix manuals
+Do you know if there is a specific errata that the MPC8315_DS ran
+across that required this fix, or was it a band-aid in the first
+place?
+
+Either way, thanks for looking into this.
+
+Thanks,
+Tony
