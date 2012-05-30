@@ -1,20 +1,30 @@
-Return-Path: <ppc6dev@digitaldans.com>
-Received: from digitaldans.com (digitaldans.com [69.36.177.99])
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5786CB7032
- for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2012 18:16:03 +1000 (EST)
-Message-Id: <6F7E3816-E71B-466A-9C6F-9928E1CFD7B1@digitaldans.com>
-From: Dan Malek <ppc6dev@digitaldans.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-In-Reply-To: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
-Date: Wed, 30 May 2012 00:59:06 -0700
-References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
-Cc: linuxppc-dev@ozlabs.org, Bob Cochran <ppc@mindchasers.com>,
- support@abatron.ch
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AB834B7042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2012 19:32:07 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Wed, 30 May 2012 15:02:03 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q4U9W0cN63176762
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2012 15:02:01 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q4UF2cRJ017198
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2012 01:02:38 +1000
+Message-ID: <1338370318.3637.12.camel@ThinkPad-T420>
+Subject: [RFC PATCH powerpc] make CONFIG_NUMA depends on CONFIG_SMP
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+Date: Wed, 30 May 2012 17:31:58 +0800
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,22 +34,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+I'm not sure whether it makes sense to add this dependency to avoid
+CONFI_NUMA && !CONFIG_SMP. 
 
-Hi Joakim.
+I want to do this because I saw some build errors on next-tree when
+compiling with CONFIG_SMP disabled, and it seems they are caused by some
+codes under the CONFIG_NUMA #ifdefs.  
 
-On May 30, 2012, at 12:43 AM, Joakim Tjernlund wrote:
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+---
+ arch/powerpc/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> I have tested this briefly with BDI2000 on P2010(e500) and
-> it works for me. I don't know if there are any bad side effects,  
-> therfore
-> this RFC.
-
-We used to have MSR_DE surrounded by CONFIG_something
-to ensure it wasn't set under normal operation.  IIRC, if MSR_DE
-is set, you will have problems with software debuggers that
-utilize the the debugging registers in the chip itself.  You only want
-to force this to be set when using the BDI, not at other times.
-
-Thanks.
-
-	-- Dan
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 050cb37..b2aa74b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -394,7 +394,7 @@ config IRQ_ALL_CPUS
+ 
+ config NUMA
+ 	bool "NUMA support"
+-	depends on PPC64
++	depends on PPC64 && SMP
+ 	default y if SMP && PPC_PSERIES
+ 
+ config NODES_SHIFT
+-- 
+1.7.1
