@@ -1,29 +1,14 @@
-Return-Path: <tkil@scrye.com>
-Received: from mail.scrye.com (unknown
- [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 05CF1B7032
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2012 06:52:12 +1000 (EST)
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
-From: Anthony Foiani <tkil@scrye.com>
-References: <ghave7n25.fsf@dworkin.scrye.com>
- <94F013E7935FF44C83EBE7784D62AD3F0930B855@039-SN2MPN1-022.039d.mgd.msft.net>
- <g7gvzbfhb.fsf@dworkin.scrye.com> <4FC50F22.2040404@freescale.com>
- <gvcjetze3.fsf@dworkin.scrye.com> <4FC5546A.4090506@freescale.com>
- <gd35lbf55.fsf@dworkin.scrye.com> <4FC68109.3030607@freescale.com>
-Date: Wed, 30 May 2012 14:52:09 -0600
-In-Reply-To: <4FC68109.3030607@freescale.com> (Scott Wood's message of "Wed,
- 30 May 2012 15:20:25 -0500")
-Message-ID: <g8vg9bddy.fsf@dworkin.scrye.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: "Robert P.J.Day" <rpjday@crashcourse.ca>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>, Jeff Garzik <jeff@garzik.org>,
- Adrian Bunk <bunk@stusta.de>
-Reply-To: Anthony Foiani <tkil@scrye.com>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1338420242.27402.2.camel@concordia>
+Subject: Re: kernel panic during kernel module load (powerpc specific part)
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Steffen Rumler <steffen.rumler.ext@nsn.com>
+Date: Thu, 31 May 2012 09:24:02 +1000
+In-Reply-To: <4FC62FB9.8010701@nsn.com>
+References: <4FC62FB9.8010701@nsn.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,31 +18,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> writes:
+On Wed, 2012-05-30 at 16:33 +0200, Steffen Rumler wrote:
+> Hi,
+> 
+> The system crashes inside the return of the init entry point of the kernel module.
+> 
+> I've found the following root cause:
+> 
+>      (6) Unfortunately, the trampoline code (do_plt_call()) is using register r11 to setup the jump.
+>            It looks like the prologue and epilogue are using also the register r11, in order to point to the previous stack frame.
+>            This is a conflict !!! The trampoline code is damaging the content of r11.
 
-> We currently support building one kernel that supports a bunch of
-> different boards.  The hardcoding of this workaround was harmless so
-> far because it was conditional on a symbol that was never defined,
-> but now you'll be enabling this workaround on any kernel that simply
-> has support for mpc8315erdb.  That is not acceptable unless you show
-> it's harmless on all those other boards.
+Hi Steffen,
 
-Ok, I see your point now.  Sorry for being dense.
+Great bug report!
 
-At the moment, I'm building a kernel that is only going to run on this
-particular board, so the kconfig solution works *for me*.
+I can't quite work out what the standards say, the versions I'm looking
+at are probably old anyway.
 
-Unfortunately, I'm not sure I can help develop a more generic
-solution.  I can't reliably reproduce the problem, so I can't even
-offer to help test for it.
+Have you tried the obvious fix?
 
-Even more unfortunately, I don't currently have the bandwidth to do
-any more investigation or experimenting with the devtree option (as
-much as I would like to!).  At this point in my project, I probably
-can't even justify trying to switch to a more current kernel, so I
-couldn't try out a new release regardless.
+cheers
 
-Sorry I can't be more help.
 
-Thanks again,
-Tony
+diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
+index 0b6d796..989d79a 100644
+--- a/arch/powerpc/kernel/module_32.c
++++ b/arch/powerpc/kernel/module_32.c
+@@ -205,9 +205,9 @@ static uint32_t do_plt_call(void *location,
+        }
+ 
+        /* Stolen from Paul Mackerras as well... */
+-       entry->jump[0] = 0x3d600000+((val+0x8000)>>16); /* lis r11,sym@ha */
+-       entry->jump[1] = 0x396b0000 + (val&0xffff);     /* addi r11,r11,sym@l*/
+-       entry->jump[2] = 0x7d6903a6;                    /* mtctr r11 */
++       entry->jump[0] = 0x3d800000+((val+0x8000)>>16); /* lis r12,sym@ha */
++       entry->jump[1] = 0x398c0000 + (val&0xffff);     /* addi r12,r12,sym@l*/
++       entry->jump[2] = 0x7d8903a6;                    /* mtctr r12 */
+        entry->jump[3] = 0x4e800420;                    /* bctr */
+ 
+        DEBUGP("Initialized plt for 0x%x at %p\n", val, entry);
