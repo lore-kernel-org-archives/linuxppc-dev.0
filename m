@@ -1,30 +1,21 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AB834B7042
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2012 19:32:07 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Wed, 30 May 2012 15:02:03 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q4U9W0cN63176762
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2012 15:02:01 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q4UF2cRJ017198
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2012 01:02:38 +1000
-Message-ID: <1338370318.3637.12.camel@ThinkPad-T420>
-Subject: [RFC PATCH powerpc] make CONFIG_NUMA depends on CONFIG_SMP
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-Date: Wed, 30 May 2012 17:31:58 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 8289CB702A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 May 2012 20:57:20 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 24082-06 for <linuxppc-dev@lists.ozlabs.org>;
+ Wed, 30 May 2012 11:57:10 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: pread() and pwrite() system calls
+Date: Wed, 30 May 2012 11:56:21 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6F32@saturn3.aculab.com>
+In-reply-to: <20120525164550.GA32406@visitor2.iram.es>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Gabriel Paubert" <paubert@iram.es>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,30 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm not sure whether it makes sense to add this dependency to avoid
-CONFI_NUMA && !CONFIG_SMP. 
+> > We have a system with linux 2.6.32 and the somewhat archaic
+> > uClibc 0.9.27 (but I'm not sure the current version is
+> > any better, and I think there are binary compatibility
+> > if we update).
+> >=20
+> > I've just discovered that pread() is 'implemented'
+> > by using 3 lseek() system calls and read().
+> > (the same is true for the 64bit versions).
+...
+> I think that it is an uClibc problem.
 
-I want to do this because I saw some build errors on next-tree when
-compiling with CONFIG_SMP disabled, and it seems they are caused by some
-codes under the CONFIG_NUMA #ifdefs.  
+It seems that uClibc hadn't been changed when the
+names of the constants used for the system calls
+were changed from __NR_pread to __NR_pread64.
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 050cb37..b2aa74b 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -394,7 +394,7 @@ config IRQ_ALL_CPUS
- 
- config NUMA
- 	bool "NUMA support"
--	depends on PPC64
-+	depends on PPC64 && SMP
- 	default y if SMP && PPC_PSERIES
- 
- config NODES_SHIFT
--- 
-1.7.1
+	David
