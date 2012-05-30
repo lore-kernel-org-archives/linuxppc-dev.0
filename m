@@ -1,19 +1,29 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id 0EC1DB704F
- for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2012 01:18:48 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 14761-03 for <linuxppc-dev@ozlabs.org>;
- Wed, 30 May 2012 16:11:23 +0100 (BST)
+Return-Path: <tkil@scrye.com>
+Received: from mail.scrye.com (unknown
+ [IPv6:2001:470:b8bc:cafe:5054:ff:fedc:793f])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.scrye.com", Issuer "mail.scrye.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 20EACB707F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2012 06:07:50 +1000 (EST)
+To: Li Yang <leoli@freescale.com>
+Subject: Re: ppc/sata-fsl: orphan config value: CONFIG_MPC8315_DS
+From: Anthony Foiani <tkil@scrye.com>
+References: <ghave7n25.fsf@dworkin.scrye.com>
+ <94F013E7935FF44C83EBE7784D62AD3F0930B855@039-SN2MPN1-022.039d.mgd.msft.net>
+ <g7gvzbfhb.fsf@dworkin.scrye.com> <4FC50F22.2040404@freescale.com>
+ <gvcjetze3.fsf@dworkin.scrye.com> <4FC5546A.4090506@freescale.com>
+ <CADRPPNQ9Dk2OJuQQZm0WdSskW3D1mAqPq21d=h=JEf1nHszDDQ@mail.gmail.com>
+Date: Wed, 30 May 2012 14:07:44 -0600
+In-Reply-To: <CADRPPNQ9Dk2OJuQQZm0WdSskW3D1mAqPq21d=h=JEf1nHszDDQ@mail.gmail.com> (Li
+ Yang's message of "Wed, 30 May 2012 18:59:05 +0800")
+Message-ID: <gipfdbffz.fsf@dworkin.scrye.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: MPC8315 PCI express lockup
-Date: Wed, 30 May 2012 16:10:37 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6F33@saturn3.aculab.com>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: Li Yang-R58472 <r58472@freescale.com>, Jeff Garzik <jeff@garzik.org>,
+ Adrian Bunk <bunk@stusta.de>, Scott Wood <scottwood@freescale.com>,
+ "Robert P.J.Day" <rpjday@crashcourse.ca>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: Anthony Foiani <tkil@scrye.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,49 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(I apologise for this not having much to do with linux...)
+Li Yang <leoli@freescale.com> writes:
 
-We have a system with an MPC8315 ppc running linux 2.6.32
-that uses the PCI express interface in RC mode to interface
-to an Altera FPGA.
-This uses both PIO and the PEX DMA interfaces (locally
-written dma driver).
-Under normal circumstances this all works fine.
+> The original code was there before I touched the driver.  So
+> unfortunately I also don't know the history of the problem.
 
-However under some circumstances (eg DMA reads from
-addresses that don't have actual slaves on the fpga [1])
-the dma transfer requests don't complete.
-There are no obvious error bits set in the hisr or csmisr
-registers and the csb_status shows 'dma in progress'.
-The dma transfer itself can be cancelled (by setting the
-SUS bit in the dma_ctrl register), and the relevant
-status bit are set to show the transfer has been aborted.
+Alas.
 
-Once in this state all further PCI express transfers fail.
-DMA requests timeout (driver gives up waiting for completion)
-and PIO requests fault (Oops: Machine check, sig 7 [#1])
-locking the kernel solid.
+> Judging from the comment in code and current test result I guess it
+> is a board related issue.
 
-This looks very much like the MPC8315's errata PEX7
-except that I don't see the CSMISR[RST] bit set.
-I'm not at all sure the recovery for that errata is
-actually writable! I'm certainly not going to write it
-just to find out if it would help.
-In any case it is quite likely that the driver's ISR will
-try to do a PIO read while a dma transfer is timing out.
+I wonder if anyone on the 8315_DS project knows where the limitation
+came from, since that's the origin of the workaround...
 
-We can look at the fpga side and possibly find out
-what it is doing, but it would be useful to know more
-about the status on the ppc side.
+Regardless, it's recommended by at least one vendor who based their
+design on the 8315 RDB.  If it's board-related, then that seems a
+reasonable conditional.
 
-I presume there is a way of doing a 'probe' type memory
-cycle that won't panic on a fault?
-Although that may not help me keep linux running as the
-ISR needs to to a PCIe write to remove the level-sensitive
-interrupt.
+> I agree with Anthony that the best action for now is to remove the
+> workaround completely.
 
-Any thought on ways to progress?
+Eeek.
 
-	David
+I'm pretty sure that it needs to stay.  (I can't guarantee that it has
+fixed my problem, but it's been a week or two without the hang, so I'm
+becoming more confident).
 
-[1] PIO reads are ok and just return 0xffffffff.
+I think the question is how to best conditionalize it.  The options
+seem to be:
+
+  1. at compile time, via kconfig bits;
+  2. at runtime via probing / discovery; or
+  3. at runtime via device tree.
+
+Given that this is a relatively old platform, and only 2-3 of us have
+run into this issue in 5 years, I'm inclined to just go with option 1.
+
+That's exactly what Adrian's patch (from 2008!) does:
+
+  http://old.nabble.com/-2.6-patch--sata_fsl.c%3A-fix-8315DS-workaround-td18807647.html
+
+Using CONFIG_831x_RDB seems like a reasonable choice.
+
+Anyway.  To be clear, my project is currently in good shape (by
+adopting Adrian's patch) so I don't have any actual urgency for fixing
+this.
+
+I was hoping that someone might know the "correct" answer offhand, but
+I honestly think that this isn't worth spending too much time on.
+(But I do think that Adrian's patch is an improvement over the current
+state of affairs.)
+
+Thanks again to everyone that's chimed in.
+
+Best regards,
+Anthony Foiani
