@@ -1,27 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5B814B6FB9
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2012 03:48:14 +1000 (EST)
-Message-ID: <4FC7AEC9.5050203@freescale.com>
-Date: Thu, 31 May 2012 12:47:53 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
-References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <6F7E3816-E71B-466A-9C6F-9928E1CFD7B1@digitaldans.com>
- <10126984030.20120530140826@abatron.ch>
- <OF53CDE18C.59DD377E-ONC1257A0F.0031C7A0-C1257A0F.0031EA81@transmode.se>
- <13517672561.20120531113057@abatron.ch>
- <OF1016B1AA.DF19B646-ONC1257A0F.003647EF-C1257A0F.003699E5@transmode.se>
-In-Reply-To: <OF1016B1AA.DF19B646-ONC1257A0F.003647EF-C1257A0F.003699E5@transmode.se>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org, Dan Malek <ppc6dev@digitaldans.com>,
- Bob Cochran <ppc@mindchasers.com>, Support <support@abatron.ch>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D37EEB6FBD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2012 05:51:09 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 31 May 2012 19:30:55 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q4VJhisY56164414
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jun 2012 05:43:46 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q4VJoveH016089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jun 2012 05:50:57 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
+ anton@samba.org
+Subject: [Early RFC 0/6] arch/powerpc: Add 64TB support to ppc64
+Date: Fri,  1 Jun 2012 01:20:35 +0530
+Message-Id: <1338493841-9926-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,45 +33,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/31/2012 04:56 AM, Joakim Tjernlund wrote:
-> Abatron Support <support@abatron.ch> wrote on 2012/05/31 11:30:57:
->>
->>
->>> Abatron Support <support@abatron.ch> wrote on 2012/05/30 14:08:26:
->>>>
->>>>>> I have tested this briefly with BDI2000 on P2010(e500) and
->>>>>> it works for me. I don't know if there are any bad side effects,
->>>>>> therfore
->>>>>> this RFC.
->>>>
->>>>> We used to have MSR_DE surrounded by CONFIG_something
->>>>> to ensure it wasn't set under normal operation.  IIRC, if MSR_DE
->>>>> is set, you will have problems with software debuggers that
->>>>> utilize the the debugging registers in the chip itself.  You only want
->>>>> to force this to be set when using the BDI, not at other times.
->>>>
->>>> This MSR_DE is also of interest and used for software debuggers that
->>>> make use of the debug registers. Only if MSR_DE is set then debug
->>>> interrupts are generated. If a debug event leads to a debug interrupt
->>>> handled by a software debugger or if it leads to a debug halt handled
->>>> by a JTAG tool is selected with DBCR0_EDM / DBCR0_IDM.
->>>>
->>>> The "e500 Core Family Reference Manual" chapter "Chapter 8
->>>> Debug Support" explains in detail the effect of MSR_DE.
->>
->>> So what is the verdict on this? I don't buy into Dan argument without some
->>> hard data.
->>
->> What I tried to mention is that handling the MSR_DE correct is not only
->> an emulator (JTAG debugger) requirement. Also a software debugger may
->> depend on a correct handled MSR_DE bit.
-> 
-> Yes, that made sense to me too. How would SW debuggers work if the kernel keeps
-> turning off MSR_DE first chance it gets?
+Hi,
 
-The kernel selectively enables MSR_DE when it wants to debug.  I'm not
-sure if anything will be bothered by leaving it on all the time.  This
-is something we need for virtualization as well, so a hypervisor can
-debug the guest.
+This patchset include preparatory patches for supporting 64TB with ppc64. I haven't
+completed the actual patch that bump the USER_ESID bits. I wanted the share the
+changes early so that I can get feedback on the approach. The changes itself
+contains few FIXME!! which I will be addressing in the later updates.
 
--Scott
+Thanks,
+-aneesh
