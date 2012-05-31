@@ -1,13 +1,22 @@
-Return-Path: <anton@samba.org>
-Date: Thu, 31 May 2012 16:22:09 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au
-Subject: [PATCH] powerpc: POWER7 optimised memcpy using VMX and enhanced
- prefetch
-Message-ID: <20120531162209.04bd9bdc@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <r39252@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2CBADB7000
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2012 17:04:50 +1000 (EST)
+From: Wrobel Heinz-R39252 <r39252@freescale.com>
+To: Michael Ellerman <michael@ellerman.id.au>, Steffen Rumler
+ <steffen.rumler.ext@nsn.com>
+Subject: RE: kernel panic during kernel module load (powerpc specific part)
+Date: Thu, 31 May 2012 07:04:42 +0000
+Message-ID: <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
+In-Reply-To: <1338420242.27402.2.camel@concordia>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,724 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Michael,
 
-Implement a POWER7 optimised memcpy using VMX and enhanced prefetch
-instructions.
+> On Wed, 2012-05-30 at 16:33 +0200, Steffen Rumler wrote:
+> > I've found the following root cause:
+> >
+> >      (6) Unfortunately, the trampoline code (do_plt_call()) is using
+> register r11 to setup the jump.
+> >            It looks like the prologue and epilogue are using also the
+> register r11, in order to point to the previous stack frame.
+> >            This is a conflict !!! The trampoline code is damaging the
+> content of r11.
+>=20
+> Hi Steffen,
+>=20
+> Great bug report!
+>=20
+> I can't quite work out what the standards say, the versions I'm looking
+> at are probably old anyway.
 
-This is a copy of the POWER7 optimised copy_to_user/copy_from_user
-loop. Detailed implementation and performance details can be found in
-commit a66086b8197d (powerpc: POWER7 optimised
-copy_to_user/copy_from_user using VMX).
+The ABI supplement from https://www.power.org/resources/downloads/ is expli=
+cit about r11 being a requirement for the statically lined save/restore fun=
+ctions in section 3.3.4 on page 59.
 
-I noticed memcpy issues when profiling a RAID6 workload:
+This means that any trampoline code must not ever use r11 or it can't be us=
+ed to get to such save/restore functions safely from far away.
 
-	.memcpy
-	.async_memcpy
-	.async_copy_data
-	.__raid_run_ops
-	.handle_stripe
-	.raid5d
-	.md_thread
+Unfortunately the same doc and predecessors show r11 in all basic examples =
+for PLT/trampoline code AFAICS, which is likely why all trampoline code use=
+s r11 in any known case.
 
-I created a simplified testcase by building a RAID6 array with 4 1GB
-ramdisks (booting with brd.rd_size=1048576):
+I would guess that it was never envisioned that compiler generated code wou=
+ld be in a different section than save/restore functions, i.e., the Linux m=
+odule "__init" assumptions for Power break the ABI. Or does the ABI break t=
+he __init concept?!
 
-# mdadm -CR -e 1.2 /dev/md0 --level=6 -n4 /dev/ram[0-3]
+Using r12 in the trampoline seems to be the obvious solution for module loa=
+ding.
 
-I then timed how long it took to write to the entire array:
+But what about other code loading done? If, e.g., a user runs any app from =
+bash it gets loaded and relocated and trampolines might get set up somehow.
 
-# dd if=/dev/zero of=/dev/md0 bs=1M
+Wouldn't we have to find fix ANY trampoline code generator remotely related=
+ to a basic Power Architecture Linux?
+Or is it a basic assumption for anything but modules that compiler generate=
+d code may never ever be outside the .text section? I am not sure that woul=
+d be a safe assumption.
 
-Before: 892 MB/s
-After:  999 MB/s
+Isn't this problem going beyond just module loading for Power Architecture =
+Linux?
 
-A 12% improvement.
+Regards,
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: linux-build/arch/powerpc/lib/Makefile
-===================================================================
---- linux-build.orig/arch/powerpc/lib/Makefile	2012-05-30 15:27:30.000000000 +1000
-+++ linux-build/arch/powerpc/lib/Makefile	2012-05-31 09:12:27.574372864 +1000
-@@ -17,7 +17,8 @@ obj-$(CONFIG_HAS_IOMEM)	+= devres.o
- obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
- 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
- 			   checksum_wrappers_64.o hweight_64.o \
--			   copyuser_power7.o string_64.o copypage_power7.o
-+			   copyuser_power7.o string_64.o copypage_power7.o \
-+			   memcpy_power7.o
- obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
- obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
-Index: linux-build/arch/powerpc/lib/memcpy_64.S
-===================================================================
---- linux-build.orig/arch/powerpc/lib/memcpy_64.S	2012-05-30 09:39:59.000000000 +1000
-+++ linux-build/arch/powerpc/lib/memcpy_64.S	2012-05-31 09:12:00.093876936 +1000
-@@ -11,7 +11,11 @@
- 
- 	.align	7
- _GLOBAL(memcpy)
-+BEGIN_FTR_SECTION
- 	std	r3,48(r1)	/* save destination pointer for return value */
-+FTR_SECTION_ELSE
-+	b	memcpy_power7
-+ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
- 	PPC_MTOCRF(0x01,r5)
- 	cmpldi	cr1,r5,16
- 	neg	r6,r3		# LS 3 bits = # bytes to 8-byte dest bdry
-Index: linux-build/arch/powerpc/lib/memcpy_power7.S
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-build/arch/powerpc/lib/memcpy_power7.S	2012-05-31 15:28:03.495781127 +1000
-@@ -0,0 +1,650 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2012
-+ *
-+ * Author: Anton Blanchard <anton@au.ibm.com>
-+ */
-+#include <asm/ppc_asm.h>
-+
-+#define STACKFRAMESIZE	256
-+#define STK_REG(i)	(112 + ((i)-14)*8)
-+
-+_GLOBAL(memcpy_power7)
-+#ifdef CONFIG_ALTIVEC
-+	cmpldi	r5,16
-+	cmpldi	cr1,r5,4096
-+
-+	std	r3,48(r1)
-+
-+	blt	.Lshort_copy
-+	bgt	cr1,.Lvmx_copy
-+#else
-+	cmpldi	r5,16
-+
-+	std	r3,48(r1)
-+
-+	blt	.Lshort_copy
-+#endif
-+
-+.Lnonvmx_copy:
-+	/* Get the source 8B aligned */
-+	neg	r6,r4
-+	mtocrf	0x01,r6
-+	clrldi	r6,r6,(64-3)
-+
-+	bf	cr7*4+3,1f
-+	lbz	r0,0(r4)
-+	addi	r4,r4,1
-+	stb	r0,0(r3)
-+	addi	r3,r3,1
-+
-+1:	bf	cr7*4+2,2f
-+	lhz	r0,0(r4)
-+	addi	r4,r4,2
-+	sth	r0,0(r3)
-+	addi	r3,r3,2
-+
-+2:	bf	cr7*4+1,3f
-+	lwz	r0,0(r4)
-+	addi	r4,r4,4
-+	stw	r0,0(r3)
-+	addi	r3,r3,4
-+
-+3:	sub	r5,r5,r6
-+	cmpldi	r5,128
-+	blt	5f
-+
-+	mflr	r0
-+	stdu	r1,-STACKFRAMESIZE(r1)
-+	std	r14,STK_REG(r14)(r1)
-+	std	r15,STK_REG(r15)(r1)
-+	std	r16,STK_REG(r16)(r1)
-+	std	r17,STK_REG(r17)(r1)
-+	std	r18,STK_REG(r18)(r1)
-+	std	r19,STK_REG(r19)(r1)
-+	std	r20,STK_REG(r20)(r1)
-+	std	r21,STK_REG(r21)(r1)
-+	std	r22,STK_REG(r22)(r1)
-+	std	r0,STACKFRAMESIZE+16(r1)
-+
-+	srdi	r6,r5,7
-+	mtctr	r6
-+
-+	/* Now do cacheline (128B) sized loads and stores. */
-+	.align	5
-+4:
-+	ld	r0,0(r4)
-+	ld	r6,8(r4)
-+	ld	r7,16(r4)
-+	ld	r8,24(r4)
-+	ld	r9,32(r4)
-+	ld	r10,40(r4)
-+	ld	r11,48(r4)
-+	ld	r12,56(r4)
-+	ld	r14,64(r4)
-+	ld	r15,72(r4)
-+	ld	r16,80(r4)
-+	ld	r17,88(r4)
-+	ld	r18,96(r4)
-+	ld	r19,104(r4)
-+	ld	r20,112(r4)
-+	ld	r21,120(r4)
-+	addi	r4,r4,128
-+	std	r0,0(r3)
-+	std	r6,8(r3)
-+	std	r7,16(r3)
-+	std	r8,24(r3)
-+	std	r9,32(r3)
-+	std	r10,40(r3)
-+	std	r11,48(r3)
-+	std	r12,56(r3)
-+	std	r14,64(r3)
-+	std	r15,72(r3)
-+	std	r16,80(r3)
-+	std	r17,88(r3)
-+	std	r18,96(r3)
-+	std	r19,104(r3)
-+	std	r20,112(r3)
-+	std	r21,120(r3)
-+	addi	r3,r3,128
-+	bdnz	4b
-+
-+	clrldi	r5,r5,(64-7)
-+
-+	ld	r14,STK_REG(r14)(r1)
-+	ld	r15,STK_REG(r15)(r1)
-+	ld	r16,STK_REG(r16)(r1)
-+	ld	r17,STK_REG(r17)(r1)
-+	ld	r18,STK_REG(r18)(r1)
-+	ld	r19,STK_REG(r19)(r1)
-+	ld	r20,STK_REG(r20)(r1)
-+	ld	r21,STK_REG(r21)(r1)
-+	ld	r22,STK_REG(r22)(r1)
-+	addi	r1,r1,STACKFRAMESIZE
-+
-+	/* Up to 127B to go */
-+5:	srdi	r6,r5,4
-+	mtocrf	0x01,r6
-+
-+6:	bf	cr7*4+1,7f
-+	ld	r0,0(r4)
-+	ld	r6,8(r4)
-+	ld	r7,16(r4)
-+	ld	r8,24(r4)
-+	ld	r9,32(r4)
-+	ld	r10,40(r4)
-+	ld	r11,48(r4)
-+	ld	r12,56(r4)
-+	addi	r4,r4,64
-+	std	r0,0(r3)
-+	std	r6,8(r3)
-+	std	r7,16(r3)
-+	std	r8,24(r3)
-+	std	r9,32(r3)
-+	std	r10,40(r3)
-+	std	r11,48(r3)
-+	std	r12,56(r3)
-+	addi	r3,r3,64
-+
-+	/* Up to 63B to go */
-+7:	bf	cr7*4+2,8f
-+	ld	r0,0(r4)
-+	ld	r6,8(r4)
-+	ld	r7,16(r4)
-+	ld	r8,24(r4)
-+	addi	r4,r4,32
-+	std	r0,0(r3)
-+	std	r6,8(r3)
-+	std	r7,16(r3)
-+	std	r8,24(r3)
-+	addi	r3,r3,32
-+
-+	/* Up to 31B to go */
-+8:	bf	cr7*4+3,9f
-+	ld	r0,0(r4)
-+	ld	r6,8(r4)
-+	addi	r4,r4,16
-+	std	r0,0(r3)
-+	std	r6,8(r3)
-+	addi	r3,r3,16
-+
-+9:	clrldi	r5,r5,(64-4)
-+
-+	/* Up to 15B to go */
-+.Lshort_copy:
-+	mtocrf	0x01,r5
-+	bf	cr7*4+0,12f
-+	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
-+	lwz	r6,4(r4)
-+	addi	r4,r4,8
-+	stw	r0,0(r3)
-+	stw	r6,4(r3)
-+	addi	r3,r3,8
-+
-+12:	bf	cr7*4+1,13f
-+	lwz	r0,0(r4)
-+	addi	r4,r4,4
-+	stw	r0,0(r3)
-+	addi	r3,r3,4
-+
-+13:	bf	cr7*4+2,14f
-+	lhz	r0,0(r4)
-+	addi	r4,r4,2
-+	sth	r0,0(r3)
-+	addi	r3,r3,2
-+
-+14:	bf	cr7*4+3,15f
-+	lbz	r0,0(r4)
-+	stb	r0,0(r3)
-+
-+15:	ld	r3,48(r1)
-+	blr
-+
-+.Lunwind_stack_nonvmx_copy:
-+	addi	r1,r1,STACKFRAMESIZE
-+	b	.Lnonvmx_copy
-+
-+#ifdef CONFIG_ALTIVEC
-+.Lvmx_copy:
-+	mflr	r0
-+	std	r4,56(r1)
-+	std	r5,64(r1)
-+	std	r0,16(r1)
-+	stdu	r1,-STACKFRAMESIZE(r1)
-+	bl	.enter_vmx_copy
-+	cmpwi	r3,0
-+	ld	r0,STACKFRAMESIZE+16(r1)
-+	ld	r3,STACKFRAMESIZE+48(r1)
-+	ld	r4,STACKFRAMESIZE+56(r1)
-+	ld	r5,STACKFRAMESIZE+64(r1)
-+	mtlr	r0
-+
-+	/*
-+	 * We prefetch both the source and destination using enhanced touch
-+	 * instructions. We use a stream ID of 0 for the load side and
-+	 * 1 for the store side.
-+	 */
-+	clrrdi	r6,r4,7
-+	clrrdi	r9,r3,7
-+	ori	r9,r9,1		/* stream=1 */
-+
-+	srdi	r7,r5,7		/* length in cachelines, capped at 0x3FF */
-+	cmpldi	cr1,r7,0x3FF
-+	ble	cr1,1f
-+	li	r7,0x3FF
-+1:	lis	r0,0x0E00	/* depth=7 */
-+	sldi	r7,r7,7
-+	or	r7,r7,r0
-+	ori	r10,r7,1	/* stream=1 */
-+
-+	lis	r8,0x8000	/* GO=1 */
-+	clrldi	r8,r8,32
-+
-+.machine push
-+.machine "power4"
-+	dcbt	r0,r6,0b01000
-+	dcbt	r0,r7,0b01010
-+	dcbtst	r0,r9,0b01000
-+	dcbtst	r0,r10,0b01010
-+	eieio
-+	dcbt	r0,r8,0b01010	/* GO */
-+.machine pop
-+
-+	beq	.Lunwind_stack_nonvmx_copy
-+
-+	/*
-+	 * If source and destination are not relatively aligned we use a
-+	 * slower permute loop.
-+	 */
-+	xor	r6,r4,r3
-+	rldicl.	r6,r6,0,(64-4)
-+	bne	.Lvmx_unaligned_copy
-+
-+	/* Get the destination 16B aligned */
-+	neg	r6,r3
-+	mtocrf	0x01,r6
-+	clrldi	r6,r6,(64-4)
-+
-+	bf	cr7*4+3,1f
-+	lbz	r0,0(r4)
-+	addi	r4,r4,1
-+	stb	r0,0(r3)
-+	addi	r3,r3,1
-+
-+1:	bf	cr7*4+2,2f
-+	lhz	r0,0(r4)
-+	addi	r4,r4,2
-+	sth	r0,0(r3)
-+	addi	r3,r3,2
-+
-+2:	bf	cr7*4+1,3f
-+	lwz	r0,0(r4)
-+	addi	r4,r4,4
-+	stw	r0,0(r3)
-+	addi	r3,r3,4
-+
-+3:	bf	cr7*4+0,4f
-+	ld	r0,0(r4)
-+	addi	r4,r4,8
-+	std	r0,0(r3)
-+	addi	r3,r3,8
-+
-+4:	sub	r5,r5,r6
-+
-+	/* Get the desination 128B aligned */
-+	neg	r6,r3
-+	srdi	r7,r6,4
-+	mtocrf	0x01,r7
-+	clrldi	r6,r6,(64-7)
-+
-+	li	r9,16
-+	li	r10,32
-+	li	r11,48
-+
-+	bf	cr7*4+3,5f
-+	lvx	vr1,r0,r4
-+	addi	r4,r4,16
-+	stvx	vr1,r0,r3
-+	addi	r3,r3,16
-+
-+5:	bf	cr7*4+2,6f
-+	lvx	vr1,r0,r4
-+	lvx	vr0,r4,r9
-+	addi	r4,r4,32
-+	stvx	vr1,r0,r3
-+	stvx	vr0,r3,r9
-+	addi	r3,r3,32
-+
-+6:	bf	cr7*4+1,7f
-+	lvx	vr3,r0,r4
-+	lvx	vr2,r4,r9
-+	lvx	vr1,r4,r10
-+	lvx	vr0,r4,r11
-+	addi	r4,r4,64
-+	stvx	vr3,r0,r3
-+	stvx	vr2,r3,r9
-+	stvx	vr1,r3,r10
-+	stvx	vr0,r3,r11
-+	addi	r3,r3,64
-+
-+7:	sub	r5,r5,r6
-+	srdi	r6,r5,7
-+
-+	std	r14,STK_REG(r14)(r1)
-+	std	r15,STK_REG(r15)(r1)
-+	std	r16,STK_REG(r16)(r1)
-+
-+	li	r12,64
-+	li	r14,80
-+	li	r15,96
-+	li	r16,112
-+
-+	mtctr	r6
-+
-+	/*
-+	 * Now do cacheline sized loads and stores. By this stage the
-+	 * cacheline stores are also cacheline aligned.
-+	 */
-+	.align	5
-+8:
-+	lvx	vr7,r0,r4
-+	lvx	vr6,r4,r9
-+	lvx	vr5,r4,r10
-+	lvx	vr4,r4,r11
-+	lvx	vr3,r4,r12
-+	lvx	vr2,r4,r14
-+	lvx	vr1,r4,r15
-+	lvx	vr0,r4,r16
-+	addi	r4,r4,128
-+	stvx	vr7,r0,r3
-+	stvx	vr6,r3,r9
-+	stvx	vr5,r3,r10
-+	stvx	vr4,r3,r11
-+	stvx	vr3,r3,r12
-+	stvx	vr2,r3,r14
-+	stvx	vr1,r3,r15
-+	stvx	vr0,r3,r16
-+	addi	r3,r3,128
-+	bdnz	8b
-+
-+	ld	r14,STK_REG(r14)(r1)
-+	ld	r15,STK_REG(r15)(r1)
-+	ld	r16,STK_REG(r16)(r1)
-+
-+	/* Up to 127B to go */
-+	clrldi	r5,r5,(64-7)
-+	srdi	r6,r5,4
-+	mtocrf	0x01,r6
-+
-+	bf	cr7*4+1,9f
-+	lvx	vr3,r0,r4
-+	lvx	vr2,r4,r9
-+	lvx	vr1,r4,r10
-+	lvx	vr0,r4,r11
-+	addi	r4,r4,64
-+	stvx	vr3,r0,r3
-+	stvx	vr2,r3,r9
-+	stvx	vr1,r3,r10
-+	stvx	vr0,r3,r11
-+	addi	r3,r3,64
-+
-+9:	bf	cr7*4+2,10f
-+	lvx	vr1,r0,r4
-+	lvx	vr0,r4,r9
-+	addi	r4,r4,32
-+	stvx	vr1,r0,r3
-+	stvx	vr0,r3,r9
-+	addi	r3,r3,32
-+
-+10:	bf	cr7*4+3,11f
-+	lvx	vr1,r0,r4
-+	addi	r4,r4,16
-+	stvx	vr1,r0,r3
-+	addi	r3,r3,16
-+
-+	/* Up to 15B to go */
-+11:	clrldi	r5,r5,(64-4)
-+	mtocrf	0x01,r5
-+	bf	cr7*4+0,12f
-+	ld	r0,0(r4)
-+	addi	r4,r4,8
-+	std	r0,0(r3)
-+	addi	r3,r3,8
-+
-+12:	bf	cr7*4+1,13f
-+	lwz	r0,0(r4)
-+	addi	r4,r4,4
-+	stw	r0,0(r3)
-+	addi	r3,r3,4
-+
-+13:	bf	cr7*4+2,14f
-+	lhz	r0,0(r4)
-+	addi	r4,r4,2
-+	sth	r0,0(r3)
-+	addi	r3,r3,2
-+
-+14:	bf	cr7*4+3,15f
-+	lbz	r0,0(r4)
-+	stb	r0,0(r3)
-+
-+15:	addi	r1,r1,STACKFRAMESIZE
-+	ld	r3,48(r1)
-+	b	.exit_vmx_copy		/* tail call optimise */
-+
-+.Lvmx_unaligned_copy:
-+	/* Get the destination 16B aligned */
-+	neg	r6,r3
-+	mtocrf	0x01,r6
-+	clrldi	r6,r6,(64-4)
-+
-+	bf	cr7*4+3,1f
-+	lbz	r0,0(r4)
-+	addi	r4,r4,1
-+	stb	r0,0(r3)
-+	addi	r3,r3,1
-+
-+1:	bf	cr7*4+2,2f
-+	lhz	r0,0(r4)
-+	addi	r4,r4,2
-+	sth	r0,0(r3)
-+	addi	r3,r3,2
-+
-+2:	bf	cr7*4+1,3f
-+	lwz	r0,0(r4)
-+	addi	r4,r4,4
-+	stw	r0,0(r3)
-+	addi	r3,r3,4
-+
-+3:	bf	cr7*4+0,4f
-+	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
-+	lwz	r7,4(r4)
-+	addi	r4,r4,8
-+	stw	r0,0(r3)
-+	stw	r7,4(r3)
-+	addi	r3,r3,8
-+
-+4:	sub	r5,r5,r6
-+
-+	/* Get the desination 128B aligned */
-+	neg	r6,r3
-+	srdi	r7,r6,4
-+	mtocrf	0x01,r7
-+	clrldi	r6,r6,(64-7)
-+
-+	li	r9,16
-+	li	r10,32
-+	li	r11,48
-+
-+	lvsl	vr16,0,r4	/* Setup permute control vector */
-+	lvx	vr0,0,r4
-+	addi	r4,r4,16
-+
-+	bf	cr7*4+3,5f
-+	lvx	vr1,r0,r4
-+	vperm	vr8,vr0,vr1,vr16
-+	addi	r4,r4,16
-+	stvx	vr8,r0,r3
-+	addi	r3,r3,16
-+	vor	vr0,vr1,vr1
-+
-+5:	bf	cr7*4+2,6f
-+	lvx	vr1,r0,r4
-+	vperm	vr8,vr0,vr1,vr16
-+	lvx	vr0,r4,r9
-+	vperm	vr9,vr1,vr0,vr16
-+	addi	r4,r4,32
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
-+	addi	r3,r3,32
-+
-+6:	bf	cr7*4+1,7f
-+	lvx	vr3,r0,r4
-+	vperm	vr8,vr0,vr3,vr16
-+	lvx	vr2,r4,r9
-+	vperm	vr9,vr3,vr2,vr16
-+	lvx	vr1,r4,r10
-+	vperm	vr10,vr2,vr1,vr16
-+	lvx	vr0,r4,r11
-+	vperm	vr11,vr1,vr0,vr16
-+	addi	r4,r4,64
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
-+	stvx	vr10,r3,r10
-+	stvx	vr11,r3,r11
-+	addi	r3,r3,64
-+
-+7:	sub	r5,r5,r6
-+	srdi	r6,r5,7
-+
-+	std	r14,STK_REG(r14)(r1)
-+	std	r15,STK_REG(r15)(r1)
-+	std	r16,STK_REG(r16)(r1)
-+
-+	li	r12,64
-+	li	r14,80
-+	li	r15,96
-+	li	r16,112
-+
-+	mtctr	r6
-+
-+	/*
-+	 * Now do cacheline sized loads and stores. By this stage the
-+	 * cacheline stores are also cacheline aligned.
-+	 */
-+	.align	5
-+8:
-+	lvx	vr7,r0,r4
-+	vperm	vr8,vr0,vr7,vr16
-+	lvx	vr6,r4,r9
-+	vperm	vr9,vr7,vr6,vr16
-+	lvx	vr5,r4,r10
-+	vperm	vr10,vr6,vr5,vr16
-+	lvx	vr4,r4,r11
-+	vperm	vr11,vr5,vr4,vr16
-+	lvx	vr3,r4,r12
-+	vperm	vr12,vr4,vr3,vr16
-+	lvx	vr2,r4,r14
-+	vperm	vr13,vr3,vr2,vr16
-+	lvx	vr1,r4,r15
-+	vperm	vr14,vr2,vr1,vr16
-+	lvx	vr0,r4,r16
-+	vperm	vr15,vr1,vr0,vr16
-+	addi	r4,r4,128
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
-+	stvx	vr10,r3,r10
-+	stvx	vr11,r3,r11
-+	stvx	vr12,r3,r12
-+	stvx	vr13,r3,r14
-+	stvx	vr14,r3,r15
-+	stvx	vr15,r3,r16
-+	addi	r3,r3,128
-+	bdnz	8b
-+
-+	ld	r14,STK_REG(r14)(r1)
-+	ld	r15,STK_REG(r15)(r1)
-+	ld	r16,STK_REG(r16)(r1)
-+
-+	/* Up to 127B to go */
-+	clrldi	r5,r5,(64-7)
-+	srdi	r6,r5,4
-+	mtocrf	0x01,r6
-+
-+	bf	cr7*4+1,9f
-+	lvx	vr3,r0,r4
-+	vperm	vr8,vr0,vr3,vr16
-+	lvx	vr2,r4,r9
-+	vperm	vr9,vr3,vr2,vr16
-+	lvx	vr1,r4,r10
-+	vperm	vr10,vr2,vr1,vr16
-+	lvx	vr0,r4,r11
-+	vperm	vr11,vr1,vr0,vr16
-+	addi	r4,r4,64
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
-+	stvx	vr10,r3,r10
-+	stvx	vr11,r3,r11
-+	addi	r3,r3,64
-+
-+9:	bf	cr7*4+2,10f
-+	lvx	vr1,r0,r4
-+	vperm	vr8,vr0,vr1,vr16
-+	lvx	vr0,r4,r9
-+	vperm	vr9,vr1,vr0,vr16
-+	addi	r4,r4,32
-+	stvx	vr8,r0,r3
-+	stvx	vr9,r3,r9
-+	addi	r3,r3,32
-+
-+10:	bf	cr7*4+3,11f
-+	lvx	vr1,r0,r4
-+	vperm	vr8,vr0,vr1,vr16
-+	addi	r4,r4,16
-+	stvx	vr8,r0,r3
-+	addi	r3,r3,16
-+
-+	/* Up to 15B to go */
-+11:	clrldi	r5,r5,(64-4)
-+	addi	r4,r4,-16	/* Unwind the +16 load offset */
-+	mtocrf	0x01,r5
-+	bf	cr7*4+0,12f
-+	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
-+	lwz	r6,4(r4)
-+	addi	r4,r4,8
-+	stw	r0,0(r3)
-+	stw	r6,4(r3)
-+	addi	r3,r3,8
-+
-+12:	bf	cr7*4+1,13f
-+	lwz	r0,0(r4)
-+	addi	r4,r4,4
-+	stw	r0,0(r3)
-+	addi	r3,r3,4
-+
-+13:	bf	cr7*4+2,14f
-+	lhz	r0,0(r4)
-+	addi	r4,r4,2
-+	sth	r0,0(r3)
-+	addi	r3,r3,2
-+
-+14:	bf	cr7*4+3,15f
-+	lbz	r0,0(r4)
-+	stb	r0,0(r3)
-+
-+15:	addi	r1,r1,STACKFRAMESIZE
-+	ld	r3,48(r1)
-+	b	.exit_vmx_copy		/* tail call optimise */
-+#endif /* CONFiG_ALTIVEC */
+Heinz
