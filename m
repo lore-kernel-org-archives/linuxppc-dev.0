@@ -2,8 +2,8 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1B96EB6FFC
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2012 08:33:45 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E926DB6EEB
+ for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2012 08:35:45 +1000 (EST)
 In-Reply-To: <4FC7EDD5.8090302@freescale.com>
 References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
  <6F7E3816-E71B-466A-9C6F-9928E1CFD7B1@digitaldans.com>
@@ -18,9 +18,9 @@ References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
  <4FC7EDD5.8090302@freescale.com>
 Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
 To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OFBB70CDF9.F7E08C48-ONC1257A0F.007BB724-C1257A0F.007BEF26@transmode.se>
+Message-ID: <OFDC3DAEDA.27E0B532-ONC1257A0F.007BF637-C1257A0F.007C1E26@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Fri, 1 Jun 2012 00:33:41 +0200
+Date: Fri, 1 Jun 2012 00:35:41 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org, Dan Malek <ppc6dev@digitaldans.com>,
@@ -95,4 +95,6 @@ Scott Wood <scottwood@freescale.com> wrote on 2012/06/01 00:16:53:
 > the relevant parts of the code confirming that it's really OK, not just
 > testing that it doesn't blow up in my face.
 
-Still needs a test run, just throw it in :)
+It just occurred to me that you guys have this already in your Linux SDK so it can't be that bad.
+
+ Jocke
