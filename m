@@ -1,34 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 43CF4B7332
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2012 05:58:56 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 1 Jun 2012 01:28:51 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q4VJwnXF35127458
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jun 2012 01:28:50 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q511TKkG007878
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jun 2012 11:29:21 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
- anton@samba.org
-Subject: Re: [Early RFC 0/6] arch/powerpc: Add 64TB support to ppc64
-In-Reply-To: <1338493841-9926-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1338493841-9926-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>User-Agent: Notmuch/0.11.1+346~g13d19c3
- (http://notmuchmail.org) Emacs/23.3.1 (x86_64-pc-linux-gnu)
-Date: Fri, 01 Jun 2012 01:28:45 +0530
-Message-ID: <874nqwyvey.fsf@skywalker.in.ibm.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 07F6CB6FE0
+ for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2012 07:38:10 +1000 (EST)
+In-Reply-To: <4FC7AEC9.5050203@freescale.com>
+References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
+ <6F7E3816-E71B-466A-9C6F-9928E1CFD7B1@digitaldans.com>
+ <10126984030.20120530140826@abatron.ch>
+ <OF53CDE18C.59DD377E-ONC1257A0F.0031C7A0-C1257A0F.0031EA81@transmode.se>
+ <13517672561.20120531113057@abatron.ch>
+ <OF1016B1AA.DF19B646-ONC1257A0F.003647EF-C1257A0F.003699E5@transmode.se>
+ <4FC7AEC9.5050203@freescale.com>
+Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <OF3AA5925F.E17EF6A4-ONC1257A0F.0076C23F-C1257A0F.0076D836@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Thu, 31 May 2012 23:38:05 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Dan Malek <ppc6dev@digitaldans.com>,
+ Bob Cochran <ppc@mindchasers.com>, Support <support@abatron.ch>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,99 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
-
-> Hi,
+Scott Wood <scottwood@freescale.com> wrote on 2012/05/31 19:47:53:
 >
-> This patchset include preparatory patches for supporting 64TB with ppc64. I haven't
-> completed the actual patch that bump the USER_ESID bits. I wanted the share the
-> changes early so that I can get feedback on the approach. The changes itself
-> contains few FIXME!! which I will be addressing in the later updates.
+> On 05/31/2012 04:56 AM, Joakim Tjernlund wrote:
+> > Abatron Support <support@abatron.ch> wrote on 2012/05/31 11:30:57:
+> >>
+> >>
+> >>> Abatron Support <support@abatron.ch> wrote on 2012/05/30 14:08:26:
+> >>>>
+> >>>>>> I have tested this briefly with BDI2000 on P2010(e500) and
+> >>>>>> it works for me. I don't know if there are any bad side effects,
+> >>>>>> therfore
+> >>>>>> this RFC.
+> >>>>
+> >>>>> We used to have MSR_DE surrounded by CONFIG_something
+> >>>>> to ensure it wasn't set under normal operation.  IIRC, if MSR_DE
+> >>>>> is set, you will have problems with software debuggers that
+> >>>>> utilize the the debugging registers in the chip itself.  You only want
+> >>>>> to force this to be set when using the BDI, not at other times.
+> >>>>
+> >>>> This MSR_DE is also of interest and used for software debuggers that
+> >>>> make use of the debug registers. Only if MSR_DE is set then debug
+> >>>> interrupts are generated. If a debug event leads to a debug interrupt
+> >>>> handled by a software debugger or if it leads to a debug halt handled
+> >>>> by a JTAG tool is selected with DBCR0_EDM / DBCR0_IDM.
+> >>>>
+> >>>> The "e500 Core Family Reference Manual" chapter "Chapter 8
+> >>>> Debug Support" explains in detail the effect of MSR_DE.
+> >>
+> >>> So what is the verdict on this? I don't buy into Dan argument without some
+> >>> hard data.
+> >>
+> >> What I tried to mention is that handling the MSR_DE correct is not only
+> >> an emulator (JTAG debugger) requirement. Also a software debugger may
+> >> depend on a correct handled MSR_DE bit.
+> >
+> > Yes, that made sense to me too. How would SW debuggers work if the kernel keeps
+> > turning off MSR_DE first chance it gets?
 >
+> The kernel selectively enables MSR_DE when it wants to debug.  I'm not
+> sure if anything will be bothered by leaving it on all the time.  This
+> is something we need for virtualization as well, so a hypervisor can
+> debug the guest.
 
-Here is the patch that update USER_ESID_BITS. I get a machine check
-exception with this changes. That is why I didn't include this in the patch
-series. 
-
-commit 5fff8ff606bc136c510350a40528431196f60001
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date:   Wed May 23 16:59:36 2012 +0530
-
-    arch/powerpc: Add 64TB support
-    
-    Increase max addressable range to 64TB. This is not tested on
-    real hardware yet.
-    
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 0f8b10d..9f9a2a1 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -375,8 +375,8 @@ extern void slb_set_size(u16 size);
- #define VSID_MODULUS_1T		((1UL<<VSID_BITS_1T)-1)
- 
- #define CONTEXT_BITS		19
--#define USER_ESID_BITS		16
--#define USER_ESID_BITS_1T	4
-+#define USER_ESID_BITS		18
-+#define USER_ESID_BITS_1T	6
- 
- #define USER_VSID_RANGE	(1UL << (USER_ESID_BITS + SID_SHIFT))
- 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-4k.h b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-index 6eefdcf..b3eccf2 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-@@ -7,7 +7,7 @@
-  */
- #define PTE_INDEX_SIZE  9
- #define PMD_INDEX_SIZE  7
--#define PUD_INDEX_SIZE  7
-+#define PUD_INDEX_SIZE  9
- #define PGD_INDEX_SIZE  9
- 
- #ifndef __ASSEMBLY__
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-index 90533dd..be4e287 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-@@ -7,7 +7,7 @@
- #define PTE_INDEX_SIZE  12
- #define PMD_INDEX_SIZE  12
- #define PUD_INDEX_SIZE	0
--#define PGD_INDEX_SIZE  4
-+#define PGD_INDEX_SIZE  6
- 
- #ifndef __ASSEMBLY__
- #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 8e2d037..426ed13 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -100,8 +100,8 @@ extern struct task_struct *last_task_used_spe;
- #endif
- 
- #ifdef CONFIG_PPC64
--/* 64-bit user address space is 44-bits (16TB user VM) */
--#define TASK_SIZE_USER64 (0x0000100000000000UL)
-+/* 64-bit user address space is 46-bits (64TB user VM) */
-+#define TASK_SIZE_USER64 (0x0000400000000000UL)
- 
- /* 
-  * 32-bit user address space is 4GB - 1 page 
-diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-index 0c5fa31..f6fc0ee 100644
---- a/arch/powerpc/include/asm/sparsemem.h
-+++ b/arch/powerpc/include/asm/sparsemem.h
-@@ -10,8 +10,8 @@
-  */
- #define SECTION_SIZE_BITS       24
- 
--#define MAX_PHYSADDR_BITS       44
--#define MAX_PHYSMEM_BITS        44
-+#define MAX_PHYSADDR_BITS       46
-+#define MAX_PHYSMEM_BITS        46
- 
- #endif /* CONFIG_SPARSEMEM */
- 
+hmm, I read that as you as in favour of the patch?
