@@ -1,14 +1,32 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1338420242.27402.2.camel@concordia>
-Subject: Re: kernel panic during kernel module load (powerpc specific part)
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Steffen Rumler <steffen.rumler.ext@nsn.com>
-Date: Thu, 31 May 2012 09:24:02 +1000
-In-Reply-To: <4FC62FB9.8010701@nsn.com>
-References: <4FC62FB9.8010701@nsn.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e32.co.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B60EBB7031
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2012 13:07:45 +1000 (EST)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 30 May 2012 21:07:42 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C48CEC40005
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2012 03:07:40 +0000 (WET)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q4V37djX203464
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2012 21:07:39 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q4V37bKK015967
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 May 2012 21:07:39 -0600
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/mm: dereference OF node "/chosen"
+Date: Thu, 31 May 2012 11:07:29 +0800
+Message-Id: <1338433650-19599-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: michael@ellerman.id.au, Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,43 +36,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-05-30 at 16:33 +0200, Steffen Rumler wrote:
-> Hi,
-> 
-> The system crashes inside the return of the init entry point of the kernel module.
-> 
-> I've found the following root cause:
-> 
->      (6) Unfortunately, the trampoline code (do_plt_call()) is using register r11 to setup the jump.
->            It looks like the prologue and epilogue are using also the register r11, in order to point to the previous stack frame.
->            This is a conflict !!! The trampoline code is damaging the content of r11.
+The form affinity for NUMA is set to 1 if the firmware supports
+OPAL. Otherwise, we have to retrieve that from OF node "/chosen".
+For the latter case, OF node "/chosen" was referred without
+dereferencing.
 
-Hi Steffen,
+The patch dereference OF node "/chosen" if necessary.
 
-Great bug report!
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-I can't quite work out what the standards say, the versions I'm looking
-at are probably old anyway.
-
-Have you tried the obvious fix?
-
-cheers
-
-
-diff --git a/arch/powerpc/kernel/module_32.c b/arch/powerpc/kernel/module_32.c
-index 0b6d796..989d79a 100644
---- a/arch/powerpc/kernel/module_32.c
-+++ b/arch/powerpc/kernel/module_32.c
-@@ -205,9 +205,9 @@ static uint32_t do_plt_call(void *location,
-        }
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index b6edbb3..5ca3a15 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -340,6 +340,8 @@ static int __init find_min_common_depth(void)
+ 				dbg("Using form 1 affinity\n");
+ 				form1_affinity = 1;
+ 			}
++
++			of_node_put(chosen);
+ 		}
+ 	}
  
-        /* Stolen from Paul Mackerras as well... */
--       entry->jump[0] = 0x3d600000+((val+0x8000)>>16); /* lis r11,sym@ha */
--       entry->jump[1] = 0x396b0000 + (val&0xffff);     /* addi r11,r11,sym@l*/
--       entry->jump[2] = 0x7d6903a6;                    /* mtctr r11 */
-+       entry->jump[0] = 0x3d800000+((val+0x8000)>>16); /* lis r12,sym@ha */
-+       entry->jump[1] = 0x398c0000 + (val&0xffff);     /* addi r12,r12,sym@l*/
-+       entry->jump[2] = 0x7d8903a6;                    /* mtctr r12 */
-        entry->jump[3] = 0x4e800420;                    /* bctr */
- 
-        DEBUGP("Initialized plt for 0x%x at %p\n", val, entry);
+-- 
+1.7.9.5
