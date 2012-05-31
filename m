@@ -1,22 +1,22 @@
-Return-Path: <support@abatron.ch>
-Received: from vm-3.internezzo.ch (vm-3.internezzo.ch [195.234.43.35])
- by ozlabs.org (Postfix) with SMTP id BDB42B6FA4
- for <linuxppc-dev@ozlabs.org>; Thu, 31 May 2012 19:31:13 +1000 (EST)
-Date: Thu, 31 May 2012 11:30:57 +0200
-From: Abatron Support <support@abatron.ch>
-Message-ID: <13517672561.20120531113057@abatron.ch>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Subject: Re[4]: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
-In-Reply-To: <OF53CDE18C.59DD377E-ONC1257A0F.0031C7A0-C1257A0F.0031EA81@transmode.se>
-References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <6F7E3816-E71B-466A-9C6F-9928E1CFD7B1@digitaldans.com>
- <10126984030.20120530140826@abatron.ch>
- <OF53CDE18C.59DD377E-ONC1257A0F.0031C7A0-C1257A0F.0031EA81@transmode.se>
+Return-Path: <paubert@iram.es>
+Received: from torres.puc.rediris.es (unknown [IPv6:2001:720:418:ca00::9])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 58F18B6F9A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2012 21:05:00 +1000 (EST)
+Date: Thu, 31 May 2012 13:04:39 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Wrobel Heinz-R39252 <r39252@freescale.com>
+Subject: Re: kernel panic during kernel module load (powerpc specific part)
+Message-ID: <20120531110439.GA17373@visitor2.iram.es>
+References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
+ <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Dan Malek <ppc6dev@digitaldans.com>,
- Bob Cochran <ppc@mindchasers.com>
-Reply-To: Support <support@abatron.ch>
+In-Reply-To: <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+ Steffen Rumler <steffen.rumler.ext@nsn.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +26,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, May 31, 2012 at 07:04:42AM +0000, Wrobel Heinz-R39252 wrote:
+> Michael,
+> 
+> > On Wed, 2012-05-30 at 16:33 +0200, Steffen Rumler wrote:
+> > > I've found the following root cause:
+> > >
+> > >      (6) Unfortunately, the trampoline code (do_plt_call()) is using
+> > register r11 to setup the jump.
+> > >            It looks like the prologue and epilogue are using also the
+> > register r11, in order to point to the previous stack frame.
+> > >            This is a conflict !!! The trampoline code is damaging the
+> > content of r11.
+> > 
+> > Hi Steffen,
+> > 
+> > Great bug report!
+> > 
+> > I can't quite work out what the standards say, the versions I'm looking
+> > at are probably old anyway.
+> 
+> The ABI supplement from https://www.power.org/resources/downloads/ is explicit about r11 being a requirement for the statically lined save/restore functions in section 3.3.4 on page 59.
+> 
+> This means that any trampoline code must not ever use r11 or it can't be used to get to such save/restore functions safely from far away.
 
-> Abatron Support <support@abatron.ch> wrote on 2012/05/30 14:08:26:
->>
->> >> I have tested this briefly with BDI2000 on P2010(e500) and
->> >> it works for me. I don't know if there are any bad side effects,
->> >> therfore
->> >> this RFC.
->>
->> > We used to have MSR_DE surrounded by CONFIG_something
->> > to ensure it wasn't set under normal operation.  IIRC, if MSR_DE
->> > is set, you will have problems with software debuggers that
->> > utilize the the debugging registers in the chip itself.  You only want
->> > to force this to be set when using the BDI, not at other times.
->>
->> This MSR_DE is also of interest and used for software debuggers that
->> make use of the debug registers. Only if MSR_DE is set then debug
->> interrupts are generated. If a debug event leads to a debug interrupt
->> handled by a software debugger or if it leads to a debug halt handled
->> by a JTAG tool is selected with DBCR0_EDM / DBCR0_IDM.
->>
->> The "e500 Core Family Reference Manual" chapter "Chapter 8
->> Debug Support" explains in detail the effect of MSR_DE.
+I believe that the basic premise is that you should provide a directly reachable copy 
+of the save/rstore functions, even if this means that you need several copies of the functions.
 
-> So what is the verdict on this? I don't buy into Dan argument without some
-> hard data.
+> 
+> Unfortunately the same doc and predecessors show r11 in all basic examples for PLT/trampoline code AFAICS, which is likely why all trampoline code uses r11 in any known case.
+> 
+> I would guess that it was never envisioned that compiler generated code would be in a different section than save/restore functions, i.e., the Linux module "__init" assumptions for Power break the ABI. Or does the ABI break the __init concept?!
+> 
+> Using r12 in the trampoline seems to be the obvious solution for module loading.
+> 
+> But what about other code loading done? If, e.g., a user runs any app from bash it gets loaded and relocated and trampolines might get set up somehow.
 
-What I tried to mention is that handling the MSR_DE correct is not only
-an emulator (JTAG debugger) requirement. Also a software debugger may
-depend on a correct handled MSR_DE bit.
+I don't think so. The linker/whatever should generate a copy of the save/restore functions for every
+executable code area (shared library), and probably more than one copy if the text becomes too large.
 
-Ruedi
+For 64 bit code, these functions are actually inserted by the linker.
+
+[Ok, I just recompiled my 64 bit kernel with -Os and I see that vmlinux gets one copy
+of the save/restore functions and every module also gets its copy.]
+
+This makes sense, really these functions are there for a compromise between locality 
+and performance, there should be one per code section, otherwise the cache line 
+used by the trampoline negates a large part of their advantage.
+
+> 
+> Wouldn't we have to find fix ANY trampoline code generator remotely related to a basic Power Architecture Linux?
+> Or is it a basic assumption for anything but modules that compiler generated code may never ever be outside the .text section? I am not sure that would be a safe assumption.
+> 
+> Isn't this problem going beyond just module loading for Power Architecture Linux?
+
+I don't think so. It really seems to be a 32 bit kernel problem.
+
+	Regards,
+	Gabriel
