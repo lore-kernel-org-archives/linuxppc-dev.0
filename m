@@ -1,13 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Fri, 1 Jun 2012 20:01:02 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc/time: Sanity check of decrementer expiration is
- necessary
-Message-ID: <20120601100102.GA11714@pale.ozlabs.ibm.com>
+Return-Path: <B35336@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9CD16B7015
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2012 20:29:46 +1000 (EST)
+From: Zhao Chenhui-B35336 <B35336@freescale.com>
+To: "benh@kernel.crashing.org" <benh@kernel.crashing.org>, "paulus@samba.org"
+ <paulus@samba.org>
+Subject: power management patch set for mpc85xx
+Date: Fri, 1 Jun 2012 10:29:35 +0000
+Message-ID: <7AA2FF042C086D469F577FA6723434DA058123@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Anton Blanchard <anton@samba.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,62 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts 68568add2c ("powerpc/time: Remove unnecessary sanity check
-of decrementer expiration").  We do need to check whether we have reached
-the expiration time of the next event, because we sometimes get an early
-decrementer interrupt, most notably when we set the decrementer to 1 in
-arch_irq_work_raise().  The effect of not having the sanity check is that
-if timer_interrupt() gets called early, we leave the decrementer set to
-its maximum value, which means we then don't get any more decrementer
-interrupts for about 4 seconds (or longer, depending on timebase
-frequency).  I saw these pauses as a consequence of getting a stray
-hypervisor decrementer interrupt left over from exiting a KVM guest.
+Hi Ben and Paul,
 
-This isn't quite a straight revert because of changes to the surrounding
-code, but it restores the same algorithm as was previously used.
+I am sorry to trouble you. It seems that Kumar is busy recently.
 
-Cc: stable@kernel.org
-Cc: Anton Blanchard <anton@samba.org>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-If there are no objections, I'll send this to Linus shortly.  This
-regression is present in 3.3 and 3.4 as well as current upstream.
+Could you have a review on the following patches? These patches
+implement the power management support on MPC85xx platform.
 
- arch/powerpc/kernel/time.c |   14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+http://patchwork.ozlabs.org/patch/158484/
+http://patchwork.ozlabs.org/patch/158485/
+http://patchwork.ozlabs.org/patch/158487/
+http://patchwork.ozlabs.org/patch/158486/
+http://patchwork.ozlabs.org/patch/158488/
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 99a995c..be171ee 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -475,6 +475,7 @@ void timer_interrupt(struct pt_regs * regs)
- 	struct pt_regs *old_regs;
- 	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
- 	struct clock_event_device *evt = &__get_cpu_var(decrementers);
-+	u64 now;
- 
- 	/* Ensure a positive value is written to the decrementer, or else
- 	 * some CPUs will continue to take decrementer exceptions.
-@@ -509,9 +510,16 @@ void timer_interrupt(struct pt_regs * regs)
- 		irq_work_run();
- 	}
- 
--	*next_tb = ~(u64)0;
--	if (evt->event_handler)
--		evt->event_handler(evt);
-+	now = get_tb_or_rtc();
-+	if (now >= *next_tb) {
-+		*next_tb = ~(u64)0;
-+		if (evt->event_handler)
-+			evt->event_handler(evt);
-+	} else {
-+		now = *next_tb - now;
-+		if (now <= DECREMENTER_MAX)
-+			set_dec((int)now);
-+	}
- 
- #ifdef CONFIG_PPC64
- 	/* collect purr register values often, for accurate calculations */
--- 
-1.7.10
+Thanks.
+
+Best Regards,
+Chenhui
