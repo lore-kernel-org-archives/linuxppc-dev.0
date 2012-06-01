@@ -1,38 +1,13 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CC2BEB7004
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2012 19:42:53 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Fri, 1 Jun 2012 09:06:44 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q519861Y32899208
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jun 2012 19:08:06 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q519F9wC018933
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Jun 2012 19:15:10 +1000
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH 18/27] powerpc, smpboot: Use generic SMP booting infrastructure
-To: tglx@linutronix.de, peterz@infradead.org, paulmck@linux.vnet.ibm.com
-Date: Fri, 01 Jun 2012 14:44:23 +0530
-Message-ID: <20120601091417.31979.6433.stgit@srivatsabhat.in.ibm.com>
-In-Reply-To: <20120601090952.31979.24799.stgit@srivatsabhat.in.ibm.com>
-References: <20120601090952.31979.24799.stgit@srivatsabhat.in.ibm.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Fri, 1 Jun 2012 20:01:02 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/time: Sanity check of decrementer expiration is
+ necessary
+Message-ID: <20120601100102.GA11714@pale.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-arch@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- "Nikunj A. Dadhania" <nikunj@linux.vnet.ibm.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>, rusty@rustcorp.com.au,
- vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, rjw@sisk.pl,
- Yong Zhang <yong.zhang0@gmail.com>, Paul Mackerras <paulus@samba.org>,
- srivatsa.bhat@linux.vnet.ibm.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,78 +17,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Nikunj A. Dadhania <nikunj@linux.vnet.ibm.com>
+This reverts 68568add2c ("powerpc/time: Remove unnecessary sanity check
+of decrementer expiration").  We do need to check whether we have reached
+the expiration time of the next event, because we sometimes get an early
+decrementer interrupt, most notably when we set the decrementer to 1 in
+arch_irq_work_raise().  The effect of not having the sanity check is that
+if timer_interrupt() gets called early, we leave the decrementer set to
+its maximum value, which means we then don't get any more decrementer
+interrupts for about 4 seconds (or longer, depending on timebase
+frequency).  I saw these pauses as a consequence of getting a stray
+hypervisor decrementer interrupt left over from exiting a KVM guest.
 
-Convert powerpc to use the generic framework to boot secondary CPUs.
+This isn't quite a straight revert because of changes to the surrounding
+code, but it restores the same algorithm as was previously used.
 
-Signed-off-by: Nikunj A. Dadhania <nikunj@linux.vnet.ibm.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Yong Zhang <yong.zhang0@gmail.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
+Cc: stable@kernel.org
+Cc: Anton Blanchard <anton@samba.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
+If there are no objections, I'll send this to Linus shortly.  This
+regression is present in 3.3 and 3.4 as well as current upstream.
 
- arch/powerpc/kernel/smp.c |   26 +++++++++++++++-----------
- 1 files changed, 15 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/time.c |   14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index 1928058a..96c3718 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -544,16 +544,18 @@ static struct device_node *cpu_to_l2cache(int cpu)
- /* Activate a secondary processor. */
- void __devinit start_secondary(void *unused)
- {
-+	smpboot_start_secondary(unused);
-+}
-+
-+void __cpuinit __cpu_pre_starting(void *unused)
-+{
- 	unsigned int cpu = smp_processor_id();
--	struct device_node *l2_cache;
--	int i, base;
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 99a995c..be171ee 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -475,6 +475,7 @@ void timer_interrupt(struct pt_regs * regs)
+ 	struct pt_regs *old_regs;
+ 	u64 *next_tb = &__get_cpu_var(decrementers_next_tb);
+ 	struct clock_event_device *evt = &__get_cpu_var(decrementers);
++	u64 now;
  
- 	atomic_inc(&init_mm.mm_count);
- 	current->active_mm = &init_mm;
- 
- 	smp_store_cpu_info(cpu);
- 	set_dec(tb_ticks_per_jiffy);
--	preempt_disable();
- 	cpu_callin_map[cpu] = 1;
- 
- 	if (smp_ops->setup_cpu)
-@@ -567,8 +569,16 @@ void __devinit start_secondary(void *unused)
- 	if (system_state == SYSTEM_RUNNING)
- 		vdso_data->processorCount++;
- #endif
--	notify_cpu_starting(cpu);
--	set_cpu_online(cpu, true);
-+}
-+
-+void __cpuinit __cpu_post_online(void *unused)
-+{
-+	unsigned int cpu;
-+	struct device_node *l2_cache;
-+	int i, base;
-+
-+	cpu = smp_processor_id();
-+
- 	/* Update sibling maps */
- 	base = cpu_first_thread_sibling(cpu);
- 	for (i = 0; i < threads_per_core; i++) {
-@@ -596,12 +606,6 @@ void __devinit start_secondary(void *unused)
- 		of_node_put(np);
+ 	/* Ensure a positive value is written to the decrementer, or else
+ 	 * some CPUs will continue to take decrementer exceptions.
+@@ -509,9 +510,16 @@ void timer_interrupt(struct pt_regs * regs)
+ 		irq_work_run();
  	}
- 	of_node_put(l2_cache);
--
--	local_irq_enable();
--
--	cpu_idle();
--
--	BUG();
- }
  
- int setup_profiling_timer(unsigned int multiplier)
+-	*next_tb = ~(u64)0;
+-	if (evt->event_handler)
+-		evt->event_handler(evt);
++	now = get_tb_or_rtc();
++	if (now >= *next_tb) {
++		*next_tb = ~(u64)0;
++		if (evt->event_handler)
++			evt->event_handler(evt);
++	} else {
++		now = *next_tb - now;
++		if (now <= DECREMENTER_MAX)
++			set_dec((int)now);
++	}
+ 
+ #ifdef CONFIG_PPC64
+ 	/* collect purr register values often, for accurate calculations */
+-- 
+1.7.10
