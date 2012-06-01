@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 05E95B7004
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2012 00:02:06 +1000 (EST)
-Subject: Re: power management patch set for mpc85xx
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <7AA2FF042C086D469F577FA6723434DA058123@039-SN1MPN1-002.039d.mgd.msft.net>
-Date: Fri, 1 Jun 2012 09:01:57 -0500
-Message-Id: <23A05C65-5E2B-46A3-90AE-4CC8D1387D1F@kernel.crashing.org>
-References: <7AA2FF042C086D469F577FA6723434DA058123@039-SN1MPN1-002.039d.mgd.msft.net>
-To: Zhao Chenhui-B35336 <B35336@freescale.com>
-Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <B07421@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9644CB7006
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2012 01:40:14 +1000 (EST)
+Message-ID: <4FC8E250.9090000@freescale.com>
+Date: Fri, 1 Jun 2012 10:40:00 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH v5 1/5] powerpc/85xx: implement hardware timebase sync
+References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +25,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
+>  #ifdef CONFIG_KEXEC
+> +static struct ccsr_guts __iomem *guts;
+> +static u64 timebase;
+> +static int tb_req;
+> +static int tb_valid;
+> +
+> +static void mpc85xx_timebase_freeze(int freeze)
 
-On Jun 1, 2012, at 5:29 AM, Zhao Chenhui-B35336 wrote:
+Why is this under CONFIG_KEXEC?  It'll also be needed for CPU hotplug.
 
-> Hi Ben and Paul,
-> 
-> I am sorry to trouble you. It seems that Kumar is busy recently.
-> 
-> Could you have a review on the following patches? These patches
-> implement the power management support on MPC85xx platform.
-> 
-> http://patchwork.ozlabs.org/patch/158484/
-> http://patchwork.ozlabs.org/patch/158485/
-> http://patchwork.ozlabs.org/patch/158487/
-> http://patchwork.ozlabs.org/patch/158486/
-> http://patchwork.ozlabs.org/patch/158488/
+> +{
+> +	unsigned int mask;
+> +
+> +	if (!guts)
+> +		return;
+> +
+> +	mask = CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR_TB1;
+> +	if (freeze)
+> +		setbits32(&guts->devdisr, mask);
+> +	else
+> +		clrbits32(&guts->devdisr, mask);
+> +
+> +	in_be32(&guts->devdisr);
+> +}
+> +
+> +static void mpc85xx_give_timebase(void)
+> +{
+> +	unsigned long flags;
+> +
+> +	local_irq_save(flags);
+> +
+> +	while (!tb_req)
+> +		barrier();
+> +	tb_req = 0;
+> +
+> +	mpc85xx_timebase_freeze(1);
+> +	timebase = get_tb();
+> +	mb();
+> +	tb_valid = 1;
+> +
+> +	while (tb_valid)
+> +		barrier();
+> +
+> +	mpc85xx_timebase_freeze(0);
+> +
+> +	local_irq_restore(flags);
+> +}
+> +
+> +static void mpc85xx_take_timebase(void)
+> +{
+> +	unsigned long flags;
+> +
+> +	local_irq_save(flags);
+> +
+> +	tb_req = 1;
+> +	while (!tb_valid)
+> +		barrier();
+> +
+> +	set_tb(timebase >> 32, timebase & 0xffffffff);
+> +	mb();
+> +	tb_valid = 0;
+> +
+> +	local_irq_restore(flags);
+> +}
 
-I have been, but was looking for Scott's Ack on these.
+I know you say this is for dual-core chips only, but it would be nice if
+you'd write this in a way that doesn't assume that (even if the
+corenet-specific timebase freezing comes later).
 
-- k
+Do we need an isync after setting the timebase, to ensure it's happened
+before we enable the timebase?  Likewise, do we need a readback after
+disabling the timebase to ensure it's disabled before we read the
+timebase in give_timebase?
+
+>  atomic_t kexec_down_cpus = ATOMIC_INIT(0);
+>  
+>  void mpc85xx_smp_kexec_cpu_down(int crash_shutdown, int secondary)
+> @@ -228,6 +286,20 @@ smp_85xx_setup_cpu(int cpu_nr)
+>  		doorbell_setup_this_cpu();
+>  }
+>  
+> +#ifdef CONFIG_KEXEC
+> +static const struct of_device_id guts_ids[] = {
+> +	{ .compatible = "fsl,mpc8572-guts", },
+> +	{ .compatible = "fsl,mpc8560-guts", },
+> +	{ .compatible = "fsl,mpc8536-guts", },
+> +	{ .compatible = "fsl,p1020-guts", },
+> +	{ .compatible = "fsl,p1021-guts", },
+> +	{ .compatible = "fsl,p1022-guts", },
+> +	{ .compatible = "fsl,p1023-guts", },
+> +	{ .compatible = "fsl,p2020-guts", },
+> +	{},
+> +};
+> +#endif
+
+MPC8560 and MPC8536 are single-core...
+
+Also please use a more specific name, such as e500v2_smp_guts_ids or
+mpc85xx_smp_guts_ids -- when corenet support is added it will likely be
+in the same file.
+
+>  void __init mpc85xx_smp_init(void)
+>  {
+>  	struct device_node *np;
+> @@ -249,6 +321,19 @@ void __init mpc85xx_smp_init(void)
+>  		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
+>  	}
+>  
+> +#ifdef CONFIG_KEXEC
+> +	np = of_find_matching_node(NULL, guts_ids);
+> +	if (np) {
+> +		guts = of_iomap(np, 0);
+> +		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
+> +		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
+> +		of_node_put(np);
+> +	} else {
+> +		smp_85xx_ops.give_timebase = smp_generic_give_timebase;
+> +		smp_85xx_ops.take_timebase = smp_generic_take_timebase;
+> +	}
+
+Do not use smp_generic_give/take_timebase, ever.  If you don't have the
+guts node, then just assume the timebase is already synced.
+
+-Scott
