@@ -1,30 +1,33 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E926DB6EEB
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2012 08:35:45 +1000 (EST)
-In-Reply-To: <4FC7EDD5.8090302@freescale.com>
-References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <6F7E3816-E71B-466A-9C6F-9928E1CFD7B1@digitaldans.com>
- <10126984030.20120530140826@abatron.ch>
- <OF53CDE18C.59DD377E-ONC1257A0F.0031C7A0-C1257A0F.0031EA81@transmode.se>
- <13517672561.20120531113057@abatron.ch>
- <OF1016B1AA.DF19B646-ONC1257A0F.003647EF-C1257A0F.003699E5@transmode.se>
- <4FC7AEC9.5050203@freescale.com>
- <OF3AA5925F.E17EF6A4-ONC1257A0F.0076C23F-C1257A0F.0076D836@transmode.se>
- <4FC7E606.1070205@freescale.com>
- <OF43D61D1E.31CC8410-ONC1257A0F.0079F3A4-C1257A0F.007A237A@transmode.se>
- <4FC7EDD5.8090302@freescale.com>
-Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OFDC3DAEDA.27E0B532-ONC1257A0F.007BF637-C1257A0F.007C1E26@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Fri, 1 Jun 2012 00:35:41 +0200
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D60AB6FFE
+ for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2012 11:25:44 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Fri, 1 Jun 2012 06:55:42 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q511PHxF57999450
+ for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2012 06:55:18 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q516ttRf011180
+ for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2012 16:55:55 +1000
+Date: Fri, 1 Jun 2012 09:25:15 +0800
+From: Richard Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/pci: cleanup on duplicate assignment
+Message-ID: <20120601012515.GA7503@richard>
+References: <1338445049-20520-1-git-send-email-shangw@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Dan Malek <ppc6dev@digitaldans.com>,
- Bob Cochran <ppc@mindchasers.com>, Support <support@abatron.ch>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1338445049-20520-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org
+Reply-To: Richard Yang <weiyang@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,67 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood <scottwood@freescale.com> wrote on 2012/06/01 00:16:53:
->
-> On 05/31/2012 05:14 PM, Joakim Tjernlund wrote:
-> > Scott Wood <scottwood@freescale.com> wrote on 2012/05/31 23:43:34:
-> >>
-> >> On 05/31/2012 04:38 PM, Joakim Tjernlund wrote:
-> >>> Scott Wood <scottwood@freescale.com> wrote on 2012/05/31 19:47:53:
-> >>>>
-> >>>> On 05/31/2012 04:56 AM, Joakim Tjernlund wrote:
-> >>>>> Abatron Support <support@abatron.ch> wrote on 2012/05/31 11:30:57:
-> >>>>>>
-> >>>>>>
-> >>>>>>> Abatron Support <support@abatron.ch> wrote on 2012/05/30 14:08:26:
-> >>>>>>>>
-> >>>>>>>>>> I have tested this briefly with BDI2000 on P2010(e500) and
-> >>>>>>>>>> it works for me. I don't know if there are any bad side effects,
-> >>>>>>>>>> therfore
-> >>>>>>>>>> this RFC.
-> >>>>>>>>
-> >>>>>>>>> We used to have MSR_DE surrounded by CONFIG_something
-> >>>>>>>>> to ensure it wasn't set under normal operation.  IIRC, if MSR_DE
-> >>>>>>>>> is set, you will have problems with software debuggers that
-> >>>>>>>>> utilize the the debugging registers in the chip itself.  You only want
-> >>>>>>>>> to force this to be set when using the BDI, not at other times.
-> >>>>>>>>
-> >>>>>>>> This MSR_DE is also of interest and used for software debuggers that
-> >>>>>>>> make use of the debug registers. Only if MSR_DE is set then debug
-> >>>>>>>> interrupts are generated. If a debug event leads to a debug interrupt
-> >>>>>>>> handled by a software debugger or if it leads to a debug halt handled
-> >>>>>>>> by a JTAG tool is selected with DBCR0_EDM / DBCR0_IDM.
-> >>>>>>>>
-> >>>>>>>> The "e500 Core Family Reference Manual" chapter "Chapter 8
-> >>>>>>>> Debug Support" explains in detail the effect of MSR_DE.
-> >>>>>>
-> >>>>>>> So what is the verdict on this? I don't buy into Dan argument without some
-> >>>>>>> hard data.
-> >>>>>>
-> >>>>>> What I tried to mention is that handling the MSR_DE correct is not only
-> >>>>>> an emulator (JTAG debugger) requirement. Also a software debugger may
-> >>>>>> depend on a correct handled MSR_DE bit.
-> >>>>>
-> >>>>> Yes, that made sense to me too. How would SW debuggers work if the kernel keeps
-> >>>>> turning off MSR_DE first chance it gets?
-> >>>>
-> >>>> The kernel selectively enables MSR_DE when it wants to debug.  I'm not
-> >>>> sure if anything will be bothered by leaving it on all the time.  This
-> >>>> is something we need for virtualization as well, so a hypervisor can
-> >>>> debug the guest.
-> >>>
-> >>> hmm, I read that as you as in favour of the patch?
-> >>
-> >> I'd want some confirmation that it doesn't break anything, and that
-> >> there aren't any other places that need MSR_DE that this doesn't cover,
-> >> but in general yes.
-> >
-> > Then you need to test drive the patch :)
->
-> I was thinking more along the lines of someone who's more familiar with
-> the relevant parts of the code confirming that it's really OK, not just
-> testing that it doesn't blow up in my face.
+Agree, this is a duplication.
 
-It just occurred to me that you guys have this already in your Linux SDK so it can't be that bad.
+On Thu, May 31, 2012 at 02:17:29PM +0800, Gavin Shan wrote:
+>While creating the PCI root bus through function pci_create_root_bus()
+>of PCI core, it should have assigned the secondary bus number for the
+>newly created PCI root bus. Thus we needn't do the explicit assignment
+>for the secondary bus number again in pcibios_scan_phb().
+>
+>Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+>---
+> arch/powerpc/kernel/pci-common.c |    1 -
+> 1 file changed, 1 deletion(-)
+>
+>diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+>index 8e78e93..0f75bd5 100644
+>--- a/arch/powerpc/kernel/pci-common.c
+>+++ b/arch/powerpc/kernel/pci-common.c
+>@@ -1646,7 +1646,6 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
+> 		pci_free_resource_list(&resources);
+> 		return;
+> 	}
+>-	bus->secondary = hose->first_busno;
+> 	hose->bus = bus;
+>
+> 	/* Get probe mode and perform scan */
+>-- 
+>1.7.9.5
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
 
- Jocke
+-- 
+Richard Yang
+Help you, Help me
