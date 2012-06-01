@@ -1,29 +1,19 @@
-Return-Path: <vapier@gentoo.org>
-Received: from smtp.gentoo.org (smtp.gentoo.org [140.211.166.183])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1C327B6FBA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2012 14:45:12 +1000 (EST)
-From: Mike Frysinger <vapier@gentoo.org>
-To: Anton Vorontsov <anton.vorontsov@linaro.org>
-Subject: Re: [PATCH 5/9] blackfin: A couple of task->mm handling fixes
-Date: Fri, 1 Jun 2012 00:36:35 -0400
-References: <20120423070641.GA27702@lizard> <20120423070901.GE30752@lizard>
-In-Reply-To: <20120423070901.GE30752@lizard>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart4094434.0m95qSk5yE";
- protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <201206010036.40468.vapier@gentoo.org>
-Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>,
- user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
- patches@linaro.org, Oleg Nesterov <oleg@redhat.com>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Paul Mundt <lethal@linux-sh.org>, John Stultz <john.stultz@linaro.org>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- Richard Weinberger <richard@nod.at>, uclinux-dist-devel@blackfin.uclinux.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id F1A87B6FD4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2012 16:59:26 +1000 (EST)
+Date: Fri, 1 Jun 2012 16:59:19 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Subject: linux-next: boot failuresfor next-20120601
+Message-Id: <20120601165919.4693f733078c7214d7caac1e@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Fri__1_Jun_2012_16_59_19_+1000_KqtXe32Gk_TTH_Oo"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,59 +23,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---nextPart4094434.0m95qSk5yE
-Content-Type: Text/Plain;
-  charset="utf-8"
+--Signature=_Fri__1_Jun_2012_16_59_19_+1000_KqtXe32Gk_TTH_Oo
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Monday 23 April 2012 03:09:01 Anton Vorontsov wrote:
-> 1. Working with task->mm w/o getting mm or grabing the task lock is
->    dangerous as ->mm might disappear (exit_mm() assigns NULL under
->    task_lock(), so tasklist lock is not enough).
+Hi all,
 
-that isn't a problem for this code as it specifically checks if it's in an=
-=20
-atomic section.  if it is, then task->mm can't go away on us.
+Today's linux-next fails to boot on my PowerPC boxes like this (one
+example):
 
->    We can't use get_task_mm()/mmput() pair as mmput() might sleep,
->    so we have to take the task lock while handle its mm.
+calling  .ipr_init+0x0/0x68 @ 1
+ipr: IBM Power RAID SCSI Device Driver version: 2.5.3 (March 10, 2012)
+ipr 0000:01:01.0: Found IOA with IRQ: 26
+ipr 0000:01:01.0: Starting IOA initialization sequence.
+ipr 0000:01:01.0: Adapter firmware version: 06160039
+ipr 0000:01:01.0: IOA initialized.
+scsi0 : IBM 572E Storage Adapter
+async_waiting @ 1
+async_continuing @ 1 after 0 usec
+scsi 0:0:1:0: Direct-Access     IBM-ESXS MAY2036RC        T106 PQ: 0 ANSI: 5
+async_waiting @ 1
+async_continuing @ 1 after 0 usec
+async_waiting @ 1
+async_continuing @ 1 after 0 usec
+	.
+	.	(lots and lots of these)
+	.
+async_waiting @ 1
+async_continuing @ 1 after 0 usec
+scsi: unknown device type 31
+scsi 0:255:255:255: No Device         IBM      572E001          0150 PQ: 0 =
+ANSI: 0
+initcall .ipr_init+0x0/0x68 returned 0 after 967815 usecs
+	.
+	.
+	.
+initcall 1_.sd_probe_async+0x0/0x1d0 returned 0 after 220331 usecs
+INFO: rcu_sched self-detected stall on CPU { 2}  (t=3D6001 jiffies)
+Call Trace:
+[c00000007897b2a0] [c000000000013b40] .show_stack+0x70/0x1c0 (unreliable)
+[c00000007897b350] [c00000000012937c] .__rcu_pending+0x20c/0x580
+[c00000007897b410] [c000000000129844] .rcu_check_callbacks+0x154/0x250
+[c00000007897b4b0] [c0000000000b1e64] .update_process_times+0x44/0xa0
+[c00000007897b540] [c0000000000fbc6c] .tick_sched_timer+0x7c/0x100
+[c00000007897b5e0] [c0000000000cee88] .__run_hrtimer+0xb8/0x270
+[c00000007897b690] [c0000000000cf3a8] .hrtimer_interrupt+0x128/0x2c0
+[c00000007897b7a0] [c00000000001cc98] .timer_interrupt+0x108/0x290
+[c00000007897b850] [c000000000003b80] decrementer_common+0x180/0x200
+--- Exception: 901 at .arch_local_irq_restore+0x74/0x90
+    LR =3D .arch_local_irq_restore+0x74/0x90
+[c00000007897bb40] [c000000000010108] .arch_local_irq_restore+0x38/0x90 (un=
+reliable)
+[c00000007897bbb0] [c00000000009de30] .console_unlock+0x370/0x460
+[c00000007897bca0] [c00000000041c1ec] .fb_flashcursor+0x7c/0x180
+[c00000007897bd50] [c0000000000c30ec] .process_one_work+0x19c/0x590
+[c00000007897be10] [c0000000000c3a48] .worker_thread+0x188/0x4b0
+[c00000007897bed0] [c0000000000c9cdc] .kthread+0xbc/0xd0
+[c00000007897bf90] [c000000000020eb8] .kernel_thread+0x54/0x70
+	.
+	.=09
+	.
+calling  .initialize_hashrnd+0x0/0x40 @ 1
+initcall .initialize_hashrnd+0x0/0x40 returned 0 after 1 usecs
+async_waiting @ 1
+async_continuing @ 1 after 0 usec
+Freeing unused kernel memory: 468k freed
+/init: 71: mknod: Permission denied
+/init: 88: mknod: Permission denied
+/init: 88: mknod: Permission denied
+/init: 88: mknod: Permission denied
+/init: 88: mknod: Permission denied
+/init: 99: cannot open /proc/cmdline: No such file
+/init: 103: mkdir: Permission denied
+/init: 104: mkdir: Permission denied
+/init: 108: udevadm: Permission denied
+dracut: FATAL: No or empty root=3D argument
+dracut: Refusing to continue
 
-if we're not in an atomic section, then sleeping is fine.
 
-> 2. Checking for process->mm is not enough because process' main
->    thread may exit or detach its mm via use_mm(), but other threads
->    may still have a valid mm.
+Signal caught!
 
-i don't think it matters for this code (per the reasons above).
+Boot has failed, sleeping forever.
+/init: 1: sleep: Permission denied
+/init: 1: sleep: Permission denied
+/init: 1: sleep: Permission denied
+	.
+	.
+	.
 
->    To catch this we use find_lock_task_mm(), which walks up all
->    threads and returns an appropriate task (with task lock held).
+Another machine did not use the ipr device and only got the init problems
+at the end.
 
-certainly fine for the non-atomic code path.  i guess we'll notice in crash=
-es=20
-if it causes a problem in atomic code paths as well.
-=2Dmike
+Anyone got any ideas?
 
---nextPart4094434.0m95qSk5yE
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Fri__1_Jun_2012_16_59_19_+1000_KqtXe32Gk_TTH_Oo
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (GNU/Linux)
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAABAgAGBQJPyEbYAAoJEEFjO5/oN/WBjkMP/jWhBHloIwNx3O8WdCb7Jkeb
-oKrprqZwAeiXIZdZz4ENCnxaVidCjzIhkmuRyCyqTGK89Qwz2EDP7mwmIstn88eQ
-XZn77Psp8Qa4F8ZmycV2u+rhqrZK+zybSNNuk05V7K5NrSXPDBSFCYnN0K0svApX
-bG4nRGqPE7gOfHDh62h+r7MIfdCavXgp66xm3cUJ8gDzWCsN8+epSJK/Oh/J8L9b
-FESfd6zyN25ij8+j6K8pY1n0HFBsSCgWFKgz41DDALeNxAspC9Fsn4fjeA8NnpQ6
-6K1COIvAcaQ6zcZlzjcn1igjGCpvkLoXT1nLGuN9cFr/H2JJ5kxxGhQ25I25Voxx
-cPiGjGqTAsl5+PavwNlt6q+dUHT04hdKcJmFad3LJneDmKVw9D/UGY21WWzu7vTP
-ZLotT0ntVjr/Cuqt0J3iBMxUdq2tncWrpXD4cr/TJvvALKXgLQTaO6iVMiptDYVq
-HtSnThyOfplo8vu/l7kYiYPzlGO/uccOrw5kk6lOCokzzzwGZwV+urrDffvH2iWz
-+OimgpLcSg8qoqDBQqb3qg5elIbroAcbSfHRDMs6c4Ld9iUcyNyjxJPQDvdU9Hyl
-qJve50YbbUEgcxGQTsVKuzWkrajjeCCQCabGiiHIlLPOSr5nK10WTGTXQVUTivt2
-bZv1rSS6aLk4w6YM4TVm
-=GWQm
+iQIcBAEBCAAGBQJPyGhHAAoJEECxmPOUX5FEsR8P/0dPK7B2eYBJsyYiL+6WX4sm
+GgRin/WPyoMtl+2Xzv/z36T1cDi+DK/PLfnwFPyZB80mkmhIk65zVTWdXe7XZEza
+srb3arlvKf6zN1XJmF2zIr2DorPbJUuzSogThedm3gFfNmpwqnHQxOfxQRpCecE7
+1Q0wLo01Oza90IcNOtUnJ716WNgZlPhUV7GLFgDvRGUrZoO1cvbIMD+EN5QlvGzj
+JoYPuPc3y/S9gvbuUIlc1dZOq3lDvvXvRkwlNLG4aB/EGrVNATrAT0gtPpCryyM6
+oPgiQypv0skHuJ6Zy4PlEzxRn2aZrNTRmAY+9xVZxW+rXarDwr/Z3fXsxx0hX4bu
+ux5Rs3RfN6zHmwjdnvKrVL2umPkIEKzQbEFKxTqOOyiIobt0G5I4vS7Bb874qpth
+QydExgtGvp6JbDJp7fU1k4WS2pDf6lHadDfSGHgfd3kesL1Osn3ZAD9oaNMLYbnu
+jiCuiVoQGCd592lP1NMKLlHu65KfRFHCP4Vir+m3EEZZMR6rIDCIb8oU07gF6Spj
+LAQ02njY2soXe64n4YPTtm9NMImgNH6kvhpSwgGQb5Fr/93cD/idgzJqh9tng/UX
+hvnc1xkKADcb86lYzGaGDSnx5A40MNoEf6y93suelw+MEQSq5Cy2WjkgL7y8/9Ad
+n7w3lQKEs/Dx70J/zZcl
+=LY0h
 -----END PGP SIGNATURE-----
 
---nextPart4094434.0m95qSk5yE--
+--Signature=_Fri__1_Jun_2012_16_59_19_+1000_KqtXe32Gk_TTH_Oo--
