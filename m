@@ -1,20 +1,21 @@
 Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9749DB7007
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2012 07:54:45 +1000 (EST)
-Message-ID: <4FC93A1B.8060209@freescale.com>
-Date: Fri, 1 Jun 2012 16:54:35 -0500
+ by ozlabs.org (Postfix) with ESMTPS id F141DB6FD3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2012 08:09:03 +1000 (EST)
+Message-ID: <4FC93D74.3090200@freescale.com>
+Date: Fri, 1 Jun 2012 17:08:52 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH v5 3/5] powerpc/85xx: add sleep and deep sleep support
+Subject: Re: [PATCH v5 4/5] fsl_pmc: Add API to enable device as wakeup event
+ source
 References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
- <1336737235-15370-3-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1336737235-15370-3-git-send-email-chenhui.zhao@freescale.com>
+ <1336737235-15370-4-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1336737235-15370-4-git-send-email-chenhui.zhao@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,142 +28,96 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
-> From: Li Yang <leoli@freescale.com>
-> 
-> In sleep PM mode, the clocks of e500 core and unused IP blocks is
-> turned off. IP blocks which are allowed to wake up the processor
-> are still running.
-> 
-> Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
-> in addtion to the sleep PM mode.
-> 
-> While in deep sleep PM mode, additionally, the power supply is
-> removed from e500 core and most IP blocks. Only the blocks needed
-> to wake up the chip out of deep sleep are ON.
-> 
-> This patch supports 32-bit and 36-bit address space.
-> 
-> The sleep mode is equal to the Standby state in Linux. The deep sleep
-> mode is equal to the Suspend-to-RAM state of Linux Power Management.
-> 
-> Command to enter sleep mode.
->   echo standby > /sys/power/state
-> Command to enter deep sleep mode.
->   echo mem > /sys/power/state
+> Add APIs for setting wakeup source and lossless Ethernet in low power modes.
+> These APIs can be used by wake-on-packet feature.
 > 
 > Signed-off-by: Dave Liu <daveliu@freescale.com>
 > Signed-off-by: Li Yang <leoli@freescale.com>
 > Signed-off-by: Jin Qing <b24347@freescale.com>
-> Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> Cc: Scott Wood <scottwood@freescale.com>
 > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 > ---
-> Changes for v5:
->  * Rename flush_disable_L1 to __flush_disable_L1.
+>  arch/powerpc/sysdev/fsl_pmc.c |   71 ++++++++++++++++++++++++++++++++++++++++-
+>  arch/powerpc/sysdev/fsl_soc.h |    9 +++++
+>  2 files changed, 79 insertions(+), 1 deletions(-)
 > 
->  arch/powerpc/Kconfig                  |    2 +-
->  arch/powerpc/include/asm/cacheflush.h |    5 +
->  arch/powerpc/kernel/Makefile          |    3 +
->  arch/powerpc/kernel/l2cache_85xx.S    |   53 +++
->  arch/powerpc/platforms/85xx/Makefile  |    3 +
->  arch/powerpc/platforms/85xx/sleep.S   |  609 +++++++++++++++++++++++++++++++++
->  arch/powerpc/sysdev/fsl_pmc.c         |   91 ++++-
->  arch/powerpc/sysdev/fsl_soc.h         |    5 +
->  8 files changed, 752 insertions(+), 19 deletions(-)
->  create mode 100644 arch/powerpc/kernel/l2cache_85xx.S
->  create mode 100644 arch/powerpc/platforms/85xx/sleep.S
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index d65ae35..039f0a6 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -673,7 +673,7 @@ config FSL_PCI
->  config FSL_PMC
->  	bool
->  	default y
-> -	depends on SUSPEND && (PPC_85xx || PPC_86xx)
-> +	depends on SUSPEND && (PPC_85xx || PPC_86xx) && !PPC_E500MC
->  	help
->  	  Freescale MPC85xx/MPC86xx power management controller support
->  	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
-> diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-> index 94ec20a..baa000c 100644
-> --- a/arch/powerpc/include/asm/cacheflush.h
-> +++ b/arch/powerpc/include/asm/cacheflush.h
-> @@ -33,6 +33,11 @@ extern void flush_dcache_page(struct page *page);
->  #if defined(CONFIG_FSL_BOOKE) || defined(CONFIG_6xx)
->  extern void __flush_disable_L1(void);
->  #endif
-> +#if defined(CONFIG_FSL_BOOKE)
-> +extern void flush_dcache_L1(void);
-> +#else
-> +#define flush_dcache_L1()	do { } while (0)
-> +#endif
-
-It doesn't seem right to no-op this on other platforms.
-
->  extern void __flush_icache_range(unsigned long, unsigned long);
->  static inline void flush_icache_range(unsigned long start, unsigned long stop)
-> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> index f5808a3..cb70dba 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -64,6 +64,9 @@ obj-$(CONFIG_FA_DUMP)		+= fadump.o
->  ifeq ($(CONFIG_PPC32),y)
->  obj-$(CONFIG_E500)		+= idle_e500.o
->  endif
-> +ifneq ($(CONFIG_PPC_E500MC),y)
-> +obj-$(CONFIG_PPC_85xx)		+= l2cache_85xx.o
-> +endif
-
-Can we introduce a symbol that specifically means pre-e500mc e500,
-rather than using negative logic?
-
-I think something like CONFIG_PPC_E500_V1_V2 has been proposed before.
-
-> -static int pmc_probe(struct platform_device *ofdev)
-> +static int pmc_probe(struct platform_device *pdev)
->  {
-> -	pmc_regs = of_iomap(ofdev->dev.of_node, 0);
-> +	struct device_node *np = pdev->dev.of_node;
-> +
-> +	pmc_regs = of_iomap(np, 0);
->  	if (!pmc_regs)
->  		return -ENOMEM;
+> diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
+> index 1dc6e9e..c1170f7 100644
+> --- a/arch/powerpc/sysdev/fsl_pmc.c
+> +++ b/arch/powerpc/sysdev/fsl_pmc.c
+> @@ -34,6 +34,7 @@ struct pmc_regs {
+>  	__be32 powmgtcsr;
+>  #define POWMGTCSR_SLP		0x00020000
+>  #define POWMGTCSR_DPSLP		0x00100000
+> +#define POWMGTCSR_LOSSLESS	0x00400000
+>  	__be32 res3[2];
+>  	__be32 pmcdr;
+>  };
+> @@ -43,6 +44,74 @@ static unsigned int pmc_flag;
 >  
-> -	pmc_dev = &ofdev->dev;
-> +	pmc_flag = PMC_SLEEP;
-> +	if (of_device_is_compatible(np, "fsl,mpc8536-pmc"))
-> +		pmc_flag |= PMC_DEEP_SLEEP;
+>  #define PMC_SLEEP	0x1
+>  #define PMC_DEEP_SLEEP	0x2
+> +#define PMC_LOSSLESS	0x4
 > +
-> +	if (of_device_is_compatible(np, "fsl,p1022-pmc"))
-> +		pmc_flag |= PMC_DEEP_SLEEP;
-> +
->  	suspend_set_ops(&pmc_suspend_ops);
-> +
-> +	pr_info("Freescale PMC driver\n");
-
-If you're going to be noisy on probe, at least provide some useful info
-like whether deep sleep or jog are supported.
-
->  	return 0;
->  }
->  
-> diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-> index c6d0073..949377d 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.h
-> +++ b/arch/powerpc/sysdev/fsl_soc.h
-> @@ -48,5 +48,10 @@ extern struct platform_diu_data_ops diu_ops;
->  void fsl_hv_restart(char *cmd);
->  void fsl_hv_halt(void);
->  
-> +/*
-> + * Cast the ccsrbar to 64-bit parameter so that the assembly
-> + * code can be compatible with both 32-bit & 36-bit.
+> +/**
+> + * mpc85xx_pmc_set_wake - enable devices as wakeup event source
+> + * @pdev: platform device affected
+> + * @enable: True to enable event generation; false to disable
+> + *
+> + * This enables the device as a wakeup event source, or disables it.
+> + *
+> + * RETURN VALUE:
+> + * 0 is returned on success
+> + * -EINVAL is returned if device is not supposed to wake up the system
+> + * Error code depending on the platform is returned if both the platform and
+> + * the native mechanism fail to enable the generation of wake-up events
 > + */
-> +extern void mpc85xx_enter_deep_sleep(u64 ccsrbar, u32 powmgtreq);
+> +int mpc85xx_pmc_set_wake(struct platform_device *pdev, bool enable)
 
-s/Cast the ccsrbar to 64-bit parameter/ccsrbar is u64 rather than
-phys_addr_t/
+Why does it have to be a platform_device?  Would a bare device_node work
+here?  If it's for stuff like device_may_wakeup() that could be in a
+platform_device wrapper function.
 
--Scott
+Where does this get called from?  I don't see an example user in this
+patchset.
+
+> +{
+> +	int ret = 0;
+> +	struct device_node *clk_np;
+> +	u32 *prop;
+> +	u32 pmcdr_mask;
+> +
+> +	if (!pmc_regs) {
+> +		pr_err("%s: PMC is unavailable\n", __func__);
+> +		return -ENODEV;
+> +	}
+> +
+> +	if (enable && !device_may_wakeup(&pdev->dev))
+> +		return -EINVAL;
+
+Who is setting can_wakeup for these devices?
+
+> +	clk_np = of_parse_phandle(pdev->dev.of_node, "fsl,pmc-handle", 0);
+> +	if (!clk_np)
+> +		return -EINVAL;
+> +
+> +	prop = (u32 *)of_get_property(clk_np, "fsl,pmcdr-mask", NULL);
+
+Don't cast the const away.
+
+> +	if (!prop) {
+> +		ret = -EINVAL;
+> +		goto out;
+> +	}
+> +	pmcdr_mask = be32_to_cpup(prop);
+> +
+> +	if (enable)
+> +		/* clear to enable clock in low power mode */
+> +		clrbits32(&pmc_regs->pmcdr, pmcdr_mask);
+> +	else
+> +		setbits32(&pmc_regs->pmcdr, pmcdr_mask);
+
+What is the default PMCDR if this function is never called?  Should init
+to all bits set on PM driver probe (or maybe limit it to defined bits
+only, though that's a little harder to do generically).
+
+-Scot
