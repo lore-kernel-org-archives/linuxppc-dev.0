@@ -1,22 +1,20 @@
-Return-Path: <r39252@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Return-Path: <B25806@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2CBADB7000
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2012 17:04:50 +1000 (EST)
-From: Wrobel Heinz-R39252 <r39252@freescale.com>
-To: Michael Ellerman <michael@ellerman.id.au>, Steffen Rumler
- <steffen.rumler.ext@nsn.com>
-Subject: RE: kernel panic during kernel module load (powerpc specific part)
-Date: Thu, 31 May 2012 07:04:42 +0000
-Message-ID: <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
-In-Reply-To: <1338420242.27402.2.camel@concordia>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 8622CB700D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 May 2012 18:19:30 +1000 (EST)
+From: Chunhe Lan <Chunhe.Lan@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2] edac: Use ccsr_pci structure instead of hardcoded define
+Date: Fri, 1 Jun 2012 16:16:57 +0800
+Message-ID: <1338538618-26939-1-git-send-email-Chunhe.Lan@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Doug Thompson <dougthompson@xmission.com>,
+ Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,56 +24,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael,
+There are some differences of register offset and definition between
+pci and pcie error management registers. While, some other pci/pcie
+error management registers are nearly the same.
 
-> On Wed, 2012-05-30 at 16:33 +0200, Steffen Rumler wrote:
-> > I've found the following root cause:
-> >
-> >      (6) Unfortunately, the trampoline code (do_plt_call()) is using
-> register r11 to setup the jump.
-> >            It looks like the prologue and epilogue are using also the
-> register r11, in order to point to the previous stack frame.
-> >            This is a conflict !!! The trampoline code is damaging the
-> content of r11.
->=20
-> Hi Steffen,
->=20
-> Great bug report!
->=20
-> I can't quite work out what the standards say, the versions I'm looking
-> at are probably old anyway.
+To merge pci and pcie edac code into one, it is easier to use ccsr_pci
+structure than the hardcoded define. So remove the hardcoded define and
+add pci/pcie error management register in ccsr_pci structure.
 
-The ABI supplement from https://www.power.org/resources/downloads/ is expli=
-cit about r11 being a requirement for the statically lined save/restore fun=
-ctions in section 3.3.4 on page 59.
+Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: Doug Thompson <dougthompson@xmission.com>
+---
+ arch/powerpc/sysdev/fsl_pci.h |   46 +++++++++++++++++++++++++++++++++-------
+ drivers/edac/mpc85xx_edac.h   |   13 +---------
+ 2 files changed, 40 insertions(+), 19 deletions(-)
 
-This means that any trampoline code must not ever use r11 or it can't be us=
-ed to get to such save/restore functions safely from far away.
-
-Unfortunately the same doc and predecessors show r11 in all basic examples =
-for PLT/trampoline code AFAICS, which is likely why all trampoline code use=
-s r11 in any known case.
-
-I would guess that it was never envisioned that compiler generated code wou=
-ld be in a different section than save/restore functions, i.e., the Linux m=
-odule "__init" assumptions for Power break the ABI. Or does the ABI break t=
-he __init concept?!
-
-Using r12 in the trampoline seems to be the obvious solution for module loa=
-ding.
-
-But what about other code loading done? If, e.g., a user runs any app from =
-bash it gets loaded and relocated and trampolines might get set up somehow.
-
-Wouldn't we have to find fix ANY trampoline code generator remotely related=
- to a basic Power Architecture Linux?
-Or is it a basic assumption for anything but modules that compiler generate=
-d code may never ever be outside the .text section? I am not sure that woul=
-d be a safe assumption.
-
-Isn't this problem going beyond just module loading for Power Architecture =
-Linux?
-
-Regards,
-
-Heinz
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index a39ed5c..5378a47 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -1,7 +1,7 @@
+ /*
+  * MPC85xx/86xx PCI Express structure define
+  *
+- * Copyright 2007,2011 Freescale Semiconductor, Inc
++ * Copyright 2007,2011,2012 Freescale Semiconductor, Inc
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -14,6 +14,8 @@
+ #ifndef __POWERPC_FSL_PCI_H
+ #define __POWERPC_FSL_PCI_H
+ 
++#include <asm/pci-bridge.h>
++
+ #define PCIE_LTSSM	0x0404		/* PCIE Link Training and Status */
+ #define PCIE_LTSSM_L0	0x16		/* L0 state */
+ #define PIWAR_EN		0x80000000	/* Enable */
+@@ -74,13 +76,41 @@ struct ccsr_pci {
+  */
+ 	struct pci_inbound_window_regs piw[4];
+ 
+-	__be32	pex_err_dr;		/* 0x.e00 - PCI/PCIE error detect register */
+-	u8	res21[4];
+-	__be32	pex_err_en;		/* 0x.e08 - PCI/PCIE error interrupt enable register */
+-	u8	res22[4];
+-	__be32	pex_err_disr;		/* 0x.e10 - PCI/PCIE error disable register */
+-	u8	res23[12];
+-	__be32	pex_err_cap_stat;	/* 0x.e20 - PCI/PCIE error capture status register */
++/* Merge PCI Express/PCI error management registers */
++	__be32	pex_err_dr;	  /* 0x.e00
++				   * - PCI/PCIE error detect register
++				   */
++	__be32	pex_err_cap_dr;	  /* 0x.e04
++				   * - PCI error capture disabled register
++				   * - PCIE has no this register
++				   */
++	__be32	pex_err_en;	  /* 0x.e08
++				   * - PCI/PCIE error interrupt enable register
++				   */
++	__be32	pex_err_attrib;	  /* 0x.e0c
++				   * - PCI error attributes capture register
++				   * - PCIE has no this register
++				   */
++	__be32	pex_err_disr;	  /* 0x.e10
++				   * - PCI error address capture register
++				   * - PCIE error disable register
++				   */
++	__be32	pex_err_ext_addr; /* 0x.e14
++				   * - PCI error extended addr capture register
++				   * - PCIE has no this register
++				   */
++	__be32	pex_err_dl;	  /* 0x.e18
++				   * - PCI error data low capture register
++				   * - PCIE has no this register
++				   */
++	__be32	pex_err_dh;	  /* 0x.e1c
++				   * - PCI error data high capture register
++				   * - PCIE has no this register
++				   */
++	__be32	pex_err_cap_stat; /* 0x.e20
++				   * - PCI gasket timer register
++				   * - PCIE error capture status register
++				   */
+ 	u8	res24[4];
+ 	__be32	pex_err_cap_r0;		/* 0x.e28 - PCIE error capture register 0 */
+ 	__be32	pex_err_cap_r1;		/* 0x.e2c - PCIE error capture register 0 */
+diff --git a/drivers/edac/mpc85xx_edac.h b/drivers/edac/mpc85xx_edac.h
+index 932016f..8ba4152 100644
+--- a/drivers/edac/mpc85xx_edac.h
++++ b/drivers/edac/mpc85xx_edac.h
+@@ -1,5 +1,7 @@
+ /*
+  * Freescale MPC85xx Memory Controller kenel module
++ * Copyright (c) 2012 Freescale Semiconductor, Inc.
++ *
+  * Author: Dave Jiang <djiang@mvista.com>
+  *
+  * 2006-2007 (c) MontaVista Software, Inc. This file is licensed under
+@@ -131,17 +133,6 @@
+ #define PCI_EDE_PERR_MASK	(PCI_EDE_TGT_PERR | PCI_EDE_MST_PERR | \
+ 				PCI_EDE_ADDR_PERR)
+ 
+-#define MPC85XX_PCI_ERR_DR		0x0000
+-#define MPC85XX_PCI_ERR_CAP_DR		0x0004
+-#define MPC85XX_PCI_ERR_EN		0x0008
+-#define MPC85XX_PCI_ERR_ATTRIB		0x000c
+-#define MPC85XX_PCI_ERR_ADDR		0x0010
+-#define MPC85XX_PCI_ERR_EXT_ADDR	0x0014
+-#define MPC85XX_PCI_ERR_DL		0x0018
+-#define MPC85XX_PCI_ERR_DH		0x001c
+-#define MPC85XX_PCI_GAS_TIMR		0x0020
+-#define MPC85XX_PCI_PCIX_TIMR		0x0024
+-
+ struct mpc85xx_mc_pdata {
+ 	char *name;
+ 	int edac_idx;
+-- 
+1.5.6.5
