@@ -1,23 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F141DB6FD3
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2012 08:09:03 +1000 (EST)
-Message-ID: <4FC93D74.3090200@freescale.com>
-Date: Fri, 1 Jun 2012 17:08:52 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH v5 4/5] fsl_pmc: Add API to enable device as wakeup event
- source
-References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
- <1336737235-15370-4-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1336737235-15370-4-git-send-email-chenhui.zhao@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 39392B6FD3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Jun 2012 08:17:52 +1000 (EST)
+Message-ID: <1338589068.16119.54.camel@pasglop>
+Subject: Re: power management patch set for mpc85xx
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Zhao Chenhui-B35336 <B35336@freescale.com>
+Date: Sat, 02 Jun 2012 08:17:48 +1000
+In-Reply-To: <7AA2FF042C086D469F577FA6723434DA058123@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <7AA2FF042C086D469F577FA6723434DA058123@039-SN1MPN1-002.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "paulus@samba.org" <paulus@samba.org>, Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,97 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
-> Add APIs for setting wakeup source and lossless Ethernet in low power modes.
-> These APIs can be used by wake-on-packet feature.
+On Fri, 2012-06-01 at 10:29 +0000, Zhao Chenhui-B35336 wrote:
+> Hi Ben and Paul,
 > 
-> Signed-off-by: Dave Liu <daveliu@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Jin Qing <b24347@freescale.com>
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> ---
->  arch/powerpc/sysdev/fsl_pmc.c |   71 ++++++++++++++++++++++++++++++++++++++++-
->  arch/powerpc/sysdev/fsl_soc.h |    9 +++++
->  2 files changed, 79 insertions(+), 1 deletions(-)
+> I am sorry to trouble you. It seems that Kumar is busy recently.
 > 
-> diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
-> index 1dc6e9e..c1170f7 100644
-> --- a/arch/powerpc/sysdev/fsl_pmc.c
-> +++ b/arch/powerpc/sysdev/fsl_pmc.c
-> @@ -34,6 +34,7 @@ struct pmc_regs {
->  	__be32 powmgtcsr;
->  #define POWMGTCSR_SLP		0x00020000
->  #define POWMGTCSR_DPSLP		0x00100000
-> +#define POWMGTCSR_LOSSLESS	0x00400000
->  	__be32 res3[2];
->  	__be32 pmcdr;
->  };
-> @@ -43,6 +44,74 @@ static unsigned int pmc_flag;
->  
->  #define PMC_SLEEP	0x1
->  #define PMC_DEEP_SLEEP	0x2
-> +#define PMC_LOSSLESS	0x4
-> +
-> +/**
-> + * mpc85xx_pmc_set_wake - enable devices as wakeup event source
-> + * @pdev: platform device affected
-> + * @enable: True to enable event generation; false to disable
-> + *
-> + * This enables the device as a wakeup event source, or disables it.
-> + *
-> + * RETURN VALUE:
-> + * 0 is returned on success
-> + * -EINVAL is returned if device is not supposed to wake up the system
-> + * Error code depending on the platform is returned if both the platform and
-> + * the native mechanism fail to enable the generation of wake-up events
-> + */
-> +int mpc85xx_pmc_set_wake(struct platform_device *pdev, bool enable)
+> Could you have a review on the following patches? These patches
+> implement the power management support on MPC85xx platform.
 
-Why does it have to be a platform_device?  Would a bare device_node work
-here?  If it's for stuff like device_may_wakeup() that could be in a
-platform_device wrapper function.
+At this point, I don't have the bandwidth for that and I suspect Paul
+doesn't either.
 
-Where does this get called from?  I don't see an example user in this
-patchset.
+If Kumar isn't able to maintain the FSL stuff anymore then somebody else
+needs to step up, maybe Scott Wood ?
 
-> +{
-> +	int ret = 0;
-> +	struct device_node *clk_np;
-> +	u32 *prop;
-> +	u32 pmcdr_mask;
-> +
-> +	if (!pmc_regs) {
-> +		pr_err("%s: PMC is unavailable\n", __func__);
-> +		return -ENODEV;
-> +	}
-> +
-> +	if (enable && !device_may_wakeup(&pdev->dev))
-> +		return -EINVAL;
+I haven't heard from Kumar in a while so I'm not sure what's up.
 
-Who is setting can_wakeup for these devices?
-
-> +	clk_np = of_parse_phandle(pdev->dev.of_node, "fsl,pmc-handle", 0);
-> +	if (!clk_np)
-> +		return -EINVAL;
-> +
-> +	prop = (u32 *)of_get_property(clk_np, "fsl,pmcdr-mask", NULL);
-
-Don't cast the const away.
-
-> +	if (!prop) {
-> +		ret = -EINVAL;
-> +		goto out;
-> +	}
-> +	pmcdr_mask = be32_to_cpup(prop);
-> +
-> +	if (enable)
-> +		/* clear to enable clock in low power mode */
-> +		clrbits32(&pmc_regs->pmcdr, pmcdr_mask);
-> +	else
-> +		setbits32(&pmc_regs->pmcdr, pmcdr_mask);
-
-What is the default PMCDR if this function is never called?  Should init
-to all bits set on PM driver probe (or maybe limit it to defined bits
-only, though that's a little harder to do generically).
-
--Scot
+Cheers,
+Ben.
