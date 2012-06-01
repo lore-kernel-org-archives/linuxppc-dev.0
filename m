@@ -1,33 +1,29 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D60AB6FFE
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Jun 2012 11:25:44 +1000 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 1 Jun 2012 06:55:42 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q511PHxF57999450
- for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2012 06:55:18 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q516ttRf011180
- for <linuxppc-dev@ozlabs.org>; Fri, 1 Jun 2012 16:55:55 +1000
-Date: Fri, 1 Jun 2012 09:25:15 +0800
-From: Richard Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/pci: cleanup on duplicate assignment
-Message-ID: <20120601012515.GA7503@richard>
-References: <1338445049-20520-1-git-send-email-shangw@linux.vnet.ibm.com>
+Return-Path: <vapier@gentoo.org>
+Received: from smtp.gentoo.org (smtp.gentoo.org [140.211.166.183])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1C327B6FBA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Jun 2012 14:45:12 +1000 (EST)
+From: Mike Frysinger <vapier@gentoo.org>
+To: Anton Vorontsov <anton.vorontsov@linaro.org>
+Subject: Re: [PATCH 5/9] blackfin: A couple of task->mm handling fixes
+Date: Fri, 1 Jun 2012 00:36:35 -0400
+References: <20120423070641.GA27702@lizard> <20120423070901.GE30752@lizard>
+In-Reply-To: <20120423070901.GE30752@lizard>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1338445049-20520-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: michael@ellerman.id.au, linuxppc-dev@ozlabs.org
-Reply-To: Richard Yang <weiyang@linux.vnet.ibm.com>
+Content-Type: multipart/signed; boundary="nextPart4094434.0m95qSk5yE";
+ protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <201206010036.40468.vapier@gentoo.org>
+Cc: linaro-kernel@lists.linaro.org, Russell King <linux@arm.linux.org.uk>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ user-mode-linux-devel@lists.sourceforge.net, linux-sh@vger.kernel.org,
+ patches@linaro.org, Oleg Nesterov <oleg@redhat.com>,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Paul Mundt <lethal@linux-sh.org>, John Stultz <john.stultz@linaro.org>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ Richard Weinberger <richard@nod.at>, uclinux-dist-devel@blackfin.uclinux.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,39 +33,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Agree, this is a duplication.
+--nextPart4094434.0m95qSk5yE
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 31, 2012 at 02:17:29PM +0800, Gavin Shan wrote:
->While creating the PCI root bus through function pci_create_root_bus()
->of PCI core, it should have assigned the secondary bus number for the
->newly created PCI root bus. Thus we needn't do the explicit assignment
->for the secondary bus number again in pcibios_scan_phb().
->
->Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
->---
-> arch/powerpc/kernel/pci-common.c |    1 -
-> 1 file changed, 1 deletion(-)
->
->diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->index 8e78e93..0f75bd5 100644
->--- a/arch/powerpc/kernel/pci-common.c
->+++ b/arch/powerpc/kernel/pci-common.c
->@@ -1646,7 +1646,6 @@ void __devinit pcibios_scan_phb(struct pci_controller *hose)
-> 		pci_free_resource_list(&resources);
-> 		return;
-> 	}
->-	bus->secondary = hose->first_busno;
-> 	hose->bus = bus;
->
-> 	/* Get probe mode and perform scan */
->-- 
->1.7.9.5
->
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-dev
+On Monday 23 April 2012 03:09:01 Anton Vorontsov wrote:
+> 1. Working with task->mm w/o getting mm or grabing the task lock is
+>    dangerous as ->mm might disappear (exit_mm() assigns NULL under
+>    task_lock(), so tasklist lock is not enough).
 
--- 
-Richard Yang
-Help you, Help me
+that isn't a problem for this code as it specifically checks if it's in an=
+=20
+atomic section.  if it is, then task->mm can't go away on us.
+
+>    We can't use get_task_mm()/mmput() pair as mmput() might sleep,
+>    so we have to take the task lock while handle its mm.
+
+if we're not in an atomic section, then sleeping is fine.
+
+> 2. Checking for process->mm is not enough because process' main
+>    thread may exit or detach its mm via use_mm(), but other threads
+>    may still have a valid mm.
+
+i don't think it matters for this code (per the reasons above).
+
+>    To catch this we use find_lock_task_mm(), which walks up all
+>    threads and returns an appropriate task (with task lock held).
+
+certainly fine for the non-atomic code path.  i guess we'll notice in crash=
+es=20
+if it causes a problem in atomic code paths as well.
+=2Dmike
+
+--nextPart4094434.0m95qSk5yE
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.17 (GNU/Linux)
+
+iQIcBAABAgAGBQJPyEbYAAoJEEFjO5/oN/WBjkMP/jWhBHloIwNx3O8WdCb7Jkeb
+oKrprqZwAeiXIZdZz4ENCnxaVidCjzIhkmuRyCyqTGK89Qwz2EDP7mwmIstn88eQ
+XZn77Psp8Qa4F8ZmycV2u+rhqrZK+zybSNNuk05V7K5NrSXPDBSFCYnN0K0svApX
+bG4nRGqPE7gOfHDh62h+r7MIfdCavXgp66xm3cUJ8gDzWCsN8+epSJK/Oh/J8L9b
+FESfd6zyN25ij8+j6K8pY1n0HFBsSCgWFKgz41DDALeNxAspC9Fsn4fjeA8NnpQ6
+6K1COIvAcaQ6zcZlzjcn1igjGCpvkLoXT1nLGuN9cFr/H2JJ5kxxGhQ25I25Voxx
+cPiGjGqTAsl5+PavwNlt6q+dUHT04hdKcJmFad3LJneDmKVw9D/UGY21WWzu7vTP
+ZLotT0ntVjr/Cuqt0J3iBMxUdq2tncWrpXD4cr/TJvvALKXgLQTaO6iVMiptDYVq
+HtSnThyOfplo8vu/l7kYiYPzlGO/uccOrw5kk6lOCokzzzwGZwV+urrDffvH2iWz
++OimgpLcSg8qoqDBQqb3qg5elIbroAcbSfHRDMs6c4Ld9iUcyNyjxJPQDvdU9Hyl
+qJve50YbbUEgcxGQTsVKuzWkrajjeCCQCabGiiHIlLPOSr5nK10WTGTXQVUTivt2
+bZv1rSS6aLk4w6YM4TVm
+=GWQm
+-----END PGP SIGNATURE-----
+
+--nextPart4094434.0m95qSk5yE--
