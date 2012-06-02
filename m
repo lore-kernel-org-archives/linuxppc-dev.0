@@ -1,22 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Sat, 2 Jun 2012 16:14:27 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 18/27] powerpc, smpboot: Use generic SMP booting
- infrastructure
-Message-ID: <20120602061427.GA14048@pale.ozlabs.ibm.com>
-References: <20120601090952.31979.24799.stgit@srivatsabhat.in.ibm.com>
- <20120601091417.31979.6433.stgit@srivatsabhat.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120601091417.31979.6433.stgit@srivatsabhat.in.ibm.com>
-Cc: linux-arch@vger.kernel.org,
- "Nikunj A. Dadhania" <nikunj@linux.vnet.ibm.com>,
- Yong Zhang <yong.zhang0@gmail.com>, peterz@infradead.org,
- rusty@rustcorp.com.au, vatsa@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- rjw@sisk.pl, Paul Gortmaker <paul.gortmaker@windriver.com>, mingo@kernel.org,
- tglx@linutronix.de, paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org
+Return-Path: <anton@samba.org>
+Date: Sat, 2 Jun 2012 21:34:52 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
+ viro@zeniv.linux.org.uk
+Subject: [PATCH] powerpc: Fix size of st_nlink on 64bit
+Message-ID: <20120602213452.66ba4cbb@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,11 +17,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 01, 2012 at 02:44:23PM +0530, Srivatsa S. Bhat wrote:
-> From: Nikunj A. Dadhania <nikunj@linux.vnet.ibm.com>
-> 
-> Convert powerpc to use the generic framework to boot secondary CPUs.
-> 
-> Signed-off-by: Nikunj A. Dadhania <nikunj@linux.vnet.ibm.com>
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+commit e57f93cc53b7 (powerpc: get rid of nlink_t uses, switch to
+explicitly-sized type) changed the size of st_nlink on ppc64 from
+a long to a short, resulting in boot failures.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+Index: linux-build/arch/powerpc/include/asm/stat.h
+===================================================================
+--- linux-build.orig/arch/powerpc/include/asm/stat.h	2012-06-02 21:25:50.322275743 +1000
++++ linux-build/arch/powerpc/include/asm/stat.h	2012-06-02 21:26:35.183130538 +1000
+@@ -30,7 +30,7 @@ struct stat {
+ 	unsigned long	st_dev;
+ 	ino_t		st_ino;
+ #ifdef __powerpc64__
+-	unsigned short	st_nlink;
++	unsigned long	st_nlink;
+ 	mode_t		st_mode;
+ #else
+ 	mode_t		st_mode;
