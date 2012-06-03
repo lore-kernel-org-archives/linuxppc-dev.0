@@ -1,15 +1,18 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 96C0DB6FC3
- for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2012 15:09:22 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C9334B6FC4
+ for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2012 15:09:23 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v3 PATCH 1/3] powerpc/kprobe: introduce a new thread flag
-Date: Sun, 3 Jun 2012 13:07:40 +0800
-Message-ID: <1338700063-30670-1-git-send-email-tiejun.chen@windriver.com>
+Subject: [v3 PATCH 2/3] ppc32/kprobe: complete kprobe and migrate exception
+ frame
+Date: Sun, 3 Jun 2012 13:07:41 +0800
+Message-ID: <1338700063-30670-2-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1338700063-30670-1-git-send-email-tiejun.chen@windriver.com>
+References: <1338700063-30670-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@ozlabs.org
@@ -22,34 +25,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to add a new thread flag, TIF_EMULATE_STACK_STORE,
-for emulating stack store operation while exiting exception.
+We can't emulate stwu since that may corrupt current exception stack.
+So we will have to do real store operation in the exception return code.
+
+Firstly we'll allocate a trampoline exception frame below the kprobed
+function stack and copy the current exception frame to the trampoline.
+Then we can do this real store operation to implement 'stwu', and reroute
+the trampoline frame to r1 to complete this exception migration.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/include/asm/thread_info.h |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/entry_32.S |   43 +++++++++++++++++++++++++++++++++------
+ 1 files changed, 36 insertions(+), 7 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index bcebc75..45d098c 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -110,6 +110,8 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_NOERROR		12	/* Force successful syscall return */
- #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
- #define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
-+#define	TIF_EMULATE_STACK_STORE	17	/* Is an instruction emulation
-+						for stack store? */
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index ba3aeb4..e7eefdf 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -829,19 +829,50 @@ restore_user:
+ 	bnel-	load_dbcr0
+ #endif
  
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -126,6 +128,7 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_NOERROR		(1<<TIF_NOERROR)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
- #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
-+#define	_TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
- 				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
+-#ifdef CONFIG_PREEMPT
+ 	b	restore
  
+ /* N.B. the only way to get here is from the beq following ret_from_except. */
+ resume_kernel:
+-	/* check current_thread_info->preempt_count */
++	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+ 	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
+-	lwz	r0,TI_PREEMPT(r9)
+-	cmpwi	0,r0,0		/* if non-zero, just restore regs and return */
+-	bne	restore
+ 	lwz	r0,TI_FLAGS(r9)
++	andis.	r0,r0,_TIF_EMULATE_STACK_STORE@h
++	beq+	1f
++
++	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
++
++	lwz	r3,GPR1(r1)
++	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
++	mr	r4,r1			/* src:  current exception frame */
++	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
++	mr	r1,r3			/* Reroute the trampoline frame to r1 */
++	bl	memcpy			/* Copy from the original to the trampoline */
++
++	/* Do real store operation to complete stwu */
++	lwz	r5,GPR1(r1)
++	stw	r8,0(r5)
++
++	/* Clear _TIF_EMULATE_STACK_STORE flag */
++	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
++	lis	r11,_TIF_EMULATE_STACK_STORE@h
++	addi	r5,r9,TI_FLAGS
++0:	lwarx	r8,0,r5
++	andc	r8,r8,r11
++#ifdef CONFIG_IBM405_ERR77
++	dcbt	0,r5
++#endif
++	stwcx.	r8,0,r5
++	bne-	0b
++1:
++
++#ifdef CONFIG_PREEMPT
++	/* check current_thread_info->preempt_count */
++	lwz	r8,TI_PREEMPT(r9)
++	cmpwi	0,r8,0		/* if non-zero, just restore regs and return */
++	bne	restore
+ 	andi.	r0,r0,_TIF_NEED_RESCHED
+ 	beq+	restore
++	lwz	r3,_MSR(r1)	
+ 	andi.	r0,r3,MSR_EE	/* interrupts off? */
+ 	beq	restore		/* don't schedule if so */
+ #ifdef CONFIG_TRACE_IRQFLAGS
+@@ -862,8 +893,6 @@ resume_kernel:
+ 	 */
+ 	bl	trace_hardirqs_on
+ #endif
+-#else
+-resume_kernel:
+ #endif /* CONFIG_PREEMPT */
+ 
+ 	/* interrupts are hard-disabled at this point */
 -- 
 1.5.6
