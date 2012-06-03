@@ -1,23 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 613CFB7037
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jun 2012 15:30:57 +1000 (EST)
-Date: Sun, 3 Jun 2012 15:30:54 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc: Fix size of st_nlink on 64bit
-Message-Id: <20120603153054.336bf492346c51e4ecbc33af@canb.auug.org.au>
-In-Reply-To: <20120603134836.4ffbd73d@kryten>
-References: <20120602213452.66ba4cbb@kryten>
- <20120603122850.3c5142767e429f34eb8a921e@canb.auug.org.au>
- <20120603134836.4ffbd73d@kryten>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Sun__3_Jun_2012_15_30_54_+1000_NlZWqCyWpJKIJ_l="
-Cc: michael@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
- viro@zeniv.linux.org.uk
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D4F6DB6F9F
+ for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2012 17:01:01 +1000 (EST)
+Message-ID: <4FCB0B47.5080500@windriver.com>
+Date: Sun, 3 Jun 2012 14:59:19 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: <benh@kernel.crashing.org>
+Subject: Re: [v3 PATCH 3/3] ppc32/kprobe: don't emulate store when kprobe
+ stwu r1
+References: <1338700063-30670-1-git-send-email-tiejun.chen@windriver.com>
+ <1338700063-30670-3-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1338700063-30670-3-git-send-email-tiejun.chen@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +26,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Sun__3_Jun_2012_15_30_54_+1000_NlZWqCyWpJKIJ_l=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 06/03/2012 01:07 PM, Tiejun Chen wrote:
+> We don't do the real store operation for kprobing 'stwu Rx,(y)R1'
+> since this may corrupt the exception frame, now we will do this
+> operation safely in exception return code after migrate current
+> exception frame below the kprobed function stack.
+> 
+> So we only update gpr[1] here and trigger a thread flag to mask
+> this.
+> 
+> Note we should make sure if we trigger kernel stack over flow.
+> 
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> ---
+>  arch/powerpc/lib/sstep.c |   37 +++++++++++++++++++++++++++++++++++--
+>  1 files changed, 35 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+> index 9a52349..a4ce463 100644
+> --- a/arch/powerpc/lib/sstep.c
+> +++ b/arch/powerpc/lib/sstep.c
+> @@ -566,7 +566,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+>  	unsigned long int ea;
+>  	unsigned int cr, mb, me, sh;
+>  	int err;
+> -	unsigned long old_ra;
+> +	unsigned long old_ra, val3, r1;
+>  	long ival;
+>  
+>  	opcode = instr >> 26;
+> @@ -1486,11 +1486,44 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+>  		goto ldst_done;
+>  
+>  	case 36:	/* stw */
+> -	case 37:	/* stwu */
+>  		val = regs->gpr[rd];
+>  		err = write_mem(val, dform_ea(instr, regs), 4, regs);
+>  		goto ldst_done;
+>  
+> +	case 37:	/* stwu */
+> +		__asm__ __volatile__("mr %0,1" : "=r" (r1) :);
 
-Hi Anton,
+I'll remove this line, please see below.
 
-On Sun, 3 Jun 2012 13:48:36 +1000 Anton Blanchard <anton@samba.org> wrote:
->
-> > > commit e57f93cc53b7 (powerpc: get rid of nlink_t uses, switch to
-> > > explicitly-sized type) changed the size of st_nlink on ppc64 from
-> > > a long to a short, resulting in boot failures.
-> > >=20
-> > > Signed-off-by: Anton Blanchard <anton@samba.org>
-> >=20
-> > Would this affect my (early user mode) boot problems reported
-> > yesterday;
-> >=20
-> > /init: 71: mknod: Permission denied
-> > /init: 88: mknod: Permission denied
-> > /init: 88: mknod: Permission denied
->=20
-> Very similar to the errors I was seeing so I think the patch will fix
-> it.
+> +
+> +		val = regs->gpr[rd];
+> +		val3 = dform_ea(instr, regs);
+> +		/*
+> +		 * For PPC32 we always use stwu to change stack point with r1. So
+> +		 * this emulated store may corrupt the exception frame, now we
+> +		 * have to provide the exception frame trampoline, which is pushed
+> +		 * below the kprobed function stack. So we only update gpr[1] but
+> +		 * don't emulate the real store operation. We will do real store
+> +		 * operation safely in exception return code by checking this flag.
+> +		 */
+> +		if ((ra == 1) && !(regs->msr & MSR_PR) && (val3 >= r1)) {
+> +			/*
+> +			 * Check if we will touch kernel sack overflow
+> +			 */
+> +			if (r1 - STACK_INT_FRAME_SIZE <= current->thread.ksp_limit) {
 
-Great.  One less thing to bisect tomorrow :-)
+OOPS. This line should be:
+			
+		if (val3 - STACK_INT_FRAME_SIZE <= current->thread.ksp_limit) {
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Tiejun
 
---Signature=_Sun__3_Jun_2012_15_30_54_+1000_NlZWqCyWpJKIJ_l=
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJPyvaOAAoJEECxmPOUX5FECrwP/1ElGFRTGOadPb/tfBblbfXl
-EC7PMUcEFM9CivyjR7Bu0trDs6qsnifDJay8r2LlQxeIVAeq4/lPRuKX+B2zHwjP
-mw+DjUr4ndoa6xntWbsLZktKmvi4furVv3h5dPc92mRaNKtez8ltX70ah8SDWjdV
-enGEKnNHxbwVD4qr7Z0Utyj7qr/W2ah6k/F4thfCJyzwKyv/3omq72QXPlZWCHWL
-1c+xiu900ve1qQ6CT9L2uM7ewTaxgphQWuonLFIFqj11ADuNLeLEm3LhCGsbF743
-vU5mpk2m2qoLhKgrtkyD2JtjXWmn1X79OXQkzFgUd9MXH8y4n3esqvdwAvW+VKor
-JAljzSMX9KJNu6ThE9G/8Ydwrr17n5midGJwAftb3XW/B4AbvZ269VzXbyYY3Lm9
-GWUXwNgv0fuFY05quBewwfnZt7qsA9PzbJ5lhzw0gKe2K0vUNiaXOIGGorPI0+jq
-Xyst/26clgio8CYLmkz5jnCRqnIwmyt38b6VbNyhOBCJ9JbLWJJHrESGbofbud1T
-KSyp8TdxoFJhpXAX6HNynQVG0q90I4r4o5ves9yyT9qS21zquFzLAzsJdCL2ugzb
-0XV0N2dLZfv1HzxWJlbInWjP4txaZlkLPo2GQwDC/SNwnWhgV3gRKtKdTyLWs3Xx
-NOREtNlhj+B1ewvN1AJd
-=QZK1
------END PGP SIGNATURE-----
-
---Signature=_Sun__3_Jun_2012_15_30_54_+1000_NlZWqCyWpJKIJ_l=--
+> +				printk(KERN_CRIT "Can't kprobe this since Kernel stack overflow.\n");
+> +				err = -EINVAL;
+> +				break;
+> +			}
+> +
+> +			/*
+> +			 * Check if we already set since that means we'll
+> +			 * lose the previous value.
+> +			 */
+> +			WARN_ON(test_thread_flag(TIF_EMULATE_STACK_STORE));
+> +			set_thread_flag(TIF_EMULATE_STACK_STORE);
+> +			err = 0;
+> +		} else
+> +			err = write_mem(val, val3, 4, regs);
+> +		goto ldst_done;
+> +
+>  	case 38:	/* stb */
+>  	case 39:	/* stbu */
+>  		val = regs->gpr[rd];
