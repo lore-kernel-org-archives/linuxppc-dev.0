@@ -1,21 +1,23 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B9A06B6FFA
- for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2012 15:16:01 +1000 (EST)
-Message-ID: <4FCAF2AD.4040500@windriver.com>
-Date: Sun, 3 Jun 2012 13:14:21 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: <benh@kernel.crashing.org>
-Subject: Re: [v3 PATCH 0/3] ppc32/kprobe: Fix a bug for kprobe stwu r1
-References: <1338700063-30670-1-git-send-email-tiejun.chen@windriver.com>
- <1338700063-30670-4-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1338700063-30670-4-git-send-email-tiejun.chen@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 613CFB7037
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jun 2012 15:30:57 +1000 (EST)
+Date: Sun, 3 Jun 2012 15:30:54 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc: Fix size of st_nlink on 64bit
+Message-Id: <20120603153054.336bf492346c51e4ecbc33af@canb.auug.org.au>
+In-Reply-To: <20120603134836.4ffbd73d@kryten>
+References: <20120602213452.66ba4cbb@kryten>
+ <20120603122850.3c5142767e429f34eb8a921e@canb.auug.org.au>
+ <20120603134836.4ffbd73d@kryten>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Sun__3_Jun_2012_15_30_54_+1000_NlZWqCyWpJKIJ_l="
+Cc: michael@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ viro@zeniv.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/03/2012 01:07 PM, Tiejun Chen wrote:
-> Changes from V2:
-> 
-> * populate those existed codes to reorganize codes
-> * add check if we'll trigger kernel stack over flow
+--Signature=_Sun__3_Jun_2012_15_30_54_+1000_NlZWqCyWpJKIJ_l=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-BTW, I always validate this on mpc8536ds(UP)/mpc8572ds(SMP) with/without
-CONFIG_PREEMPT.
+Hi Anton,
 
-Tiejun
+On Sun, 3 Jun 2012 13:48:36 +1000 Anton Blanchard <anton@samba.org> wrote:
+>
+> > > commit e57f93cc53b7 (powerpc: get rid of nlink_t uses, switch to
+> > > explicitly-sized type) changed the size of st_nlink on ppc64 from
+> > > a long to a short, resulting in boot failures.
+> > >=20
+> > > Signed-off-by: Anton Blanchard <anton@samba.org>
+> >=20
+> > Would this affect my (early user mode) boot problems reported
+> > yesterday;
+> >=20
+> > /init: 71: mknod: Permission denied
+> > /init: 88: mknod: Permission denied
+> > /init: 88: mknod: Permission denied
+>=20
+> Very similar to the errors I was seeing so I think the patch will fix
+> it.
 
-> 
-> Changes from V1:
-> 
-> * use memcpy simply to withdraw copy_exc_stack
-> * add !(regs->msr & MSR_PR)) and
-> 	WARN_ON(test_thread_flag(TIF_EMULATE_STACK_STORE));
->   to make sure we're in goot path.
-> * move this migration process inside 'restore'
-> * clear TIF flag atomically 
-> 
-> Tiejun Chen (3):
->       powerpc/kprobe: introduce a new thread flag
->       ppc32/kprobe: complete kprobe and migrate exception frame
->       ppc32/kprobe: don't emulate store when kprobe stwu r1
-> 
->  arch/powerpc/include/asm/thread_info.h |    3 ++
->  arch/powerpc/kernel/entry_32.S         |   43 ++++++++++++++++++++++++++-----
->  arch/powerpc/lib/sstep.c               |   37 ++++++++++++++++++++++++++-
->  3 files changed, 74 insertions(+), 9 deletions(-)
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> 
+Great.  One less thing to bisect tomorrow :-)
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Sun__3_Jun_2012_15_30_54_+1000_NlZWqCyWpJKIJ_l=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPyvaOAAoJEECxmPOUX5FECrwP/1ElGFRTGOadPb/tfBblbfXl
+EC7PMUcEFM9CivyjR7Bu0trDs6qsnifDJay8r2LlQxeIVAeq4/lPRuKX+B2zHwjP
+mw+DjUr4ndoa6xntWbsLZktKmvi4furVv3h5dPc92mRaNKtez8ltX70ah8SDWjdV
+enGEKnNHxbwVD4qr7Z0Utyj7qr/W2ah6k/F4thfCJyzwKyv/3omq72QXPlZWCHWL
+1c+xiu900ve1qQ6CT9L2uM7ewTaxgphQWuonLFIFqj11ADuNLeLEm3LhCGsbF743
+vU5mpk2m2qoLhKgrtkyD2JtjXWmn1X79OXQkzFgUd9MXH8y4n3esqvdwAvW+VKor
+JAljzSMX9KJNu6ThE9G/8Ydwrr17n5midGJwAftb3XW/B4AbvZ269VzXbyYY3Lm9
+GWUXwNgv0fuFY05quBewwfnZt7qsA9PzbJ5lhzw0gKe2K0vUNiaXOIGGorPI0+jq
+Xyst/26clgio8CYLmkz5jnCRqnIwmyt38b6VbNyhOBCJ9JbLWJJHrESGbofbud1T
+KSyp8TdxoFJhpXAX6HNynQVG0q90I4r4o5ves9yyT9qS21zquFzLAzsJdCL2ugzb
+0XV0N2dLZfv1HzxWJlbInWjP4txaZlkLPo2GQwDC/SNwnWhgV3gRKtKdTyLWs3Xx
+NOREtNlhj+B1ewvN1AJd
+=QZK1
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__3_Jun_2012_15_30_54_+1000_NlZWqCyWpJKIJ_l=--
