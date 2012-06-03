@@ -1,24 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A9389B6FA5
- for <linuxppc-dev@ozlabs.org>; Sun,  3 Jun 2012 07:21:36 +1000 (EST)
-Message-ID: <1338672076.7150.2.camel@pasglop>
-Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sun, 03 Jun 2012 07:21:16 +1000
-In-Reply-To: <OFF2E739FE.A96EBAF2-ONC1257A11.00655546-C1257A11.0065978F@transmode.se>
-References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <4FC62018.3040404@mindchasers.com> <1338542089.16119.48.camel@pasglop>
- <4FC8EDC4.2050704@freescale.com> <1338589800.16119.58.camel@pasglop>
- <4FC9456B.8090400@freescale.com> <1338593099.16119.60.camel@pasglop>
- <OFF2E739FE.A96EBAF2-ONC1257A11.00655546-C1257A11.0065978F@transmode.se>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 09DE7B6FAC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Jun 2012 12:28:59 +1000 (EST)
+Date: Sun, 3 Jun 2012 12:28:50 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc: Fix size of st_nlink on 64bit
+Message-Id: <20120603122850.3c5142767e429f34eb8a921e@canb.auug.org.au>
+In-Reply-To: <20120602213452.66ba4cbb@kryten>
+References: <20120602213452.66ba4cbb@kryten>
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
- Bob Cochran <ppc@mindchasers.com>, support@abatron.ch
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Sun__3_Jun_2012_12_28_50_+1000_woiBprM3m9tS6IhH"
+Cc: michael@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ viro@zeniv.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +25,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-06-02 at 20:29 +0200, Joakim Tjernlund wrote:
-> 
-> hmm, where does this go w.r.t the patch? Got the feeling that the
-> best thing is to just turn MSR:DE on and be done with it? 
+--Signature=_Sun__3_Jun_2012_12_28_50_+1000_woiBprM3m9tS6IhH
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Not unconditionally, we need to have a close look, that might be ok
-specifically for BookE 32-bit, it's certainly not ok for BookE 64-bit at
-this point.
+Hi Anton,
 
-For now, I'm ok with a debug CONFIG_* option.
+On Sat, 2 Jun 2012 21:34:52 +1000 Anton Blanchard <anton@samba.org> wrote:
+>
+> commit e57f93cc53b7 (powerpc: get rid of nlink_t uses, switch to
+> explicitly-sized type) changed the size of st_nlink on ppc64 from
+> a long to a short, resulting in boot failures.
+>=20
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 
-Also do we know if MSR:DE has any performance impact on any CPU ? I know
-having DACs enabled has a major impact on some for example.
+Would this affect my (early user mode) boot problems reported yesterday;
 
-Ben.
+/init: 71: mknod: Permission denied
+/init: 88: mknod: Permission denied
+/init: 88: mknod: Permission denied
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Sun__3_Jun_2012_12_28_50_+1000_woiBprM3m9tS6IhH
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJPysviAAoJEECxmPOUX5FEPIgP/0/U8Xpy3vaHHm0d77waUJ9f
+NG/iWoj86rIHmzZJ0AGsTL1eziWMbW29HjKJiAZRMYGBmS93ZaalpytItyHnOZuY
+2L1hoTaUVHeUjFVFk3dvxGeHax9DLaqAHOERhI57hu4Y5rZEiqXWqzzqChdpqe2z
+1+w5Ti+gsS9aOccgfowQ/9jzcvcY2qpvqwtW+ZvrW2nBpd3Zksfx+tvOZr0UnWzX
+ONQN12WhCq2bQdoW+sHqn+DP5HyYS0bIcQQJ5x9ucWW9izgqPcIKvo4fwewJtfpB
+LpcTpI2W/ulbw/5Xs5cS4riaIuVOBPuXQCezrjAYXluM7PBoFcTEMwZYMcrlcMQ7
+eYWLa8U9gc+PNgZpQLSmN3Ija8RlwroMdzcnKmL/IEQN4EHf25MLVaDK6SWv4alz
+yq3uAoCGAE57ZAZw9iYRu8EBWtxlz0/JXY5/q+cBa+Cw/2NHYW8TPNgzcTIOHLj5
+e+RychGnQU6DZK+yo1R0qGsqUZUs9TvZCN/++yE3SdDxwUFUzhAUw/Ub/l7oZZK1
+QDV8GvXZsIT5iRW17ZleEv82uvjL6T6r6SGLMLDDkJDL1pYt2VVp4/S0K3LgVK3o
+epsHM4xW0H6lWk318ied6QCSJrvu87bRHvJXFumbt3lJjSEfsvRgNJkbw075Q7ig
+te4dNHSnSCixknt6zaEU
+=Fs7L
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__3_Jun_2012_12_28_50_+1000_woiBprM3m9tS6IhH--
