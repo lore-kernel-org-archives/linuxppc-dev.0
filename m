@@ -1,13 +1,32 @@
-Return-Path: <anton@samba.org>
-Date: Mon, 4 Jun 2012 17:58:58 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
- mikey@neuling.org
-Subject: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
-Message-ID: <20120604175858.38dac554@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e36.co.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CB49DB6FA3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 18:15:52 +1000 (EST)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Mon, 4 Jun 2012 02:15:47 -0600
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 73BB7C9005A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 04:15:28 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q548FSQV154742
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2012 04:15:28 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q548FS1Q013100
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2012 05:15:28 -0300
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pci: save P2P bridge resource if possible
+Date: Mon,  4 Jun 2012 16:15:25 +0800
+Message-Id: <1338797725-2231-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: michael@ellerman.id.au, paulus@samba.org,
+ Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,111 +36,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When PCI probe flag PCI_REASSIGN_ALL_RSRC has been passed into PCI
+core, it's hoped that all resources to be reassigned by PCI core.
+As to particular P2P (PCI-to-PCI) bridge, the size of the corresponding
+BAR (I/O, MMIO, prefetchable MMIO) is calculated by the resources
+required by the PCI devices behind the P2P bridge. That means that
+the information like start/end address retrieved from the hardware
+registers of the P2P bridge is meainingless in the case. However,
+we still count that in and the BARs might have been configured by
+firmware with non-zero size. That leads to space waste.
 
-I blame Mikey for this. He elevated my slightly dubious testcase:
+The patch explicitly sets the size of P2P bridge BARs to zero in
+case that resource reassignment is expected with PCI probe flag
+PCI_REASSIGN_ALL_RSRC. In the result, it will save overall resource
+required by the system without waste.
 
-# dd if=/dev/zero of=/dev/null bs=1M count=10000
-
-to benchmark status. And naturally we need to be number 1 at creating
-zeros. So lets improve __clear_user some more.
-
-As Paul suggests we can use dcbz for large lengths. This patch gets
-the destination 128 byte aligned then uses dcbz on whole cachelines.
-
-Before:
-10485760000 bytes (10 GB) copied, 0.414744 s, 25.3 GB/s
-
-After:
-10485760000 bytes (10 GB) copied, 0.268597 s, 39.0 GB/s
-
-39 GB/s, a new record.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
+ arch/powerpc/kernel/pci-common.c |   16 ++++++++++++----
+ 1 file changed, 12 insertions(+), 4 deletions(-)
 
-Index: linux-build/arch/powerpc/lib/string_64.S
-===================================================================
---- linux-build.orig/arch/powerpc/lib/string_64.S	2012-06-04 16:18:56.351604302 +1000
-+++ linux-build/arch/powerpc/lib/string_64.S	2012-06-04 16:47:10.538500871 +1000
-@@ -78,7 +78,7 @@ _GLOBAL(__clear_user)
- 	blt	.Lshort_clear
- 	mr	r8,r3
- 	mtocrf	0x01,r6
--	clrldi	r6,r6,(64-3)
-+	clrldi	r7,r6,(64-3)
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 8e78e93..0fe214d 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -966,13 +966,14 @@ static void __devinit pcibios_fixup_bridge(struct pci_bus *bus)
+ 		if (i >= 3 && bus->self->transparent)
+ 			continue;
  
- 	/* Get the destination 8 byte aligned */
- 	bf	cr7*4+3,1f
-@@ -93,11 +93,16 @@ err1;	sth	r0,0(r3)
- err1;	stw	r0,0(r3)
- 	addi	r3,r3,4
+-		/* If we are going to re-assign everything, mark the resource
+-		 * as unset and move it down to 0
++		/* If we're going to reassign everything, we can
++		 * shrink the P2P resource to have size as being
++		 * of 0 in order to save space.
+ 		 */
+ 		if (pci_has_flag(PCI_REASSIGN_ALL_RSRC)) {
+ 			res->flags |= IORESOURCE_UNSET;
+-			res->end -= res->start;
+ 			res->start = 0;
++			res->end = -1;
+ 			continue;
+ 		}
  
--3:	sub	r4,r4,r6
--	srdi	r6,r4,5
-+3:	sub	r4,r4,r7
-+
- 	cmpdi	r4,32
-+	cmpdi	cr1,r4,512
- 	blt	.Lshort_clear
--	mtctr	r6
-+	bgt	cr1,.Llong_clear
-+
-+.Lmedium_clear:
-+	srdi	r7,r4,5
-+	mtctr	r7
+@@ -1234,7 +1235,14 @@ void pcibios_allocate_bus_resources(struct pci_bus *bus)
+ 		pr_warning("PCI: Cannot allocate resource region "
+ 			   "%d of PCI bridge %d, will remap\n", i, bus->number);
+ 	clear_resource:
+-		res->start = res->end = 0;
++		/* The resource might be figured out when doing
++		 * reassignment based on the resources required
++		 * by the downstream PCI devices. Here we set
++		 * the size of the resource to be 0 in order to
++		 * save more space.
++		 */
++		res->start = 0;
++		res->end = -1;
+ 		res->flags = 0;
+ 	}
  
- 	/* Do 32 byte chunks */
- 4:
-@@ -139,3 +144,52 @@ err1;	stb	r0,0(r3)
- 
- 10:	li	r3,0
- 	blr
-+
-+.Llong_clear:
-+	/* Destination is 8 byte aligned, need to get it 128 byte aligned */
-+	bf	cr7*4+0,11f
-+err2;	std	r0,0(r3)
-+	addi	r3,r3,8
-+	addi	r4,r4,-8
-+
-+11:	srdi	r6,r6,4
-+	mtocrf	0x01,r6
-+
-+	bf	cr7*4+3,12f
-+err2;	std	r0,0(r3)
-+err2;	std	r0,8(r3)
-+	addi	r3,r3,16
-+	addi	r4,r4,-16
-+
-+12:	bf	cr7*4+2,13f
-+err2;	std	r0,0(r3)
-+err2;	std	r0,8(r3)
-+err2;	std	r0,16(r3)
-+err2;	std	r0,24(r3)
-+	addi	r3,r3,32
-+	addi	r4,r4,-32
-+
-+13:	bf	cr7*4+1,14f
-+err2;	std	r0,0(r3)
-+err2;	std	r0,8(r3)
-+err2;	std	r0,16(r3)
-+err2;	std	r0,24(r3)
-+err2;	std	r0,32(r3)
-+err2;	std	r0,40(r3)
-+err2;	std	r0,48(r3)
-+err2;	std	r0,56(r3)
-+	addi	r3,r3,64
-+	addi	r4,r4,-64
-+
-+14:	srdi	r6,r4,7
-+	mtctr	r6
-+
-+15:
-+err2;	dcbz	r0,r3
-+	addi	r3,r3,128
-+	addi	r4,r4,-128
-+	bdnz	15b
-+
-+	cmpdi	r4,32
-+	blt	.Lshort_clear
-+	b	.Lmedium_clear
+-- 
+1.7.9.5
