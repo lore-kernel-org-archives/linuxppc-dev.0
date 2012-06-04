@@ -1,25 +1,13 @@
-Return-Path: <steffen.rumler.ext@nsn.com>
-Received: from demumfd001.nsn-inter.net (demumfd001.nsn-inter.net
- [93.183.12.32])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "demumfd001.nsn-inter.net",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C60BAB6FCA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 17:43:26 +1000 (EST)
-Message-ID: <4FCC6705.1070604@nsn.com>
-Date: Mon, 04 Jun 2012 09:43:01 +0200
-From: Steffen Rumler <steffen.rumler.ext@nsn.com>
-MIME-Version: 1.0
-To: ext Wrobel Heinz-R39252 <r39252@freescale.com>
-Subject: Re: kernel panic during kernel module load (powerpc specific part)
-References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
- <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
- <20120531110439.GA17373@visitor2.iram.es> <1338542315.16119.50.camel@pasglop>
- <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
-In-Reply-To: <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Michael Ellerman <michael@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <anton@samba.org>
+Date: Mon, 4 Jun 2012 17:58:58 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
+ mikey@neuling.org
+Subject: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
+Message-ID: <20120604175858.38dac554@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,127 +18,110 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
->>> I believe that the basic premise is that you should provide a directly
->>> reachable copy of the save/rstore functions, even if this means that
->> you need several copies of the functions.
->>
->> I just fixed a very similar problem with grub2 in fact. It was using r0
->> and trashing the saved LR that way.
->>
->> The real fix is indeed to statically link those gcc "helpers", we
->> shouldn't generate things like cross-module calls inside function prologs
->> and epilogues, when stackframes aren't even guaranteed to be reliable.
->>
->> However, in the grub2 case, it was easier to just use r12 :-)
-> For not just the module loading case, I believe r12 is the only real solution now. I checked one debugger capable of doing ELF download. It also uses r12 for trampoline code. I am guessing for the reason that prompted this discussion.
->
-> Without r12 we'd have to change standard libraries to automagically link in gcc helpers for any conceivable non-.text section, which I am not sure is feasible. How would you write section independent helper functions which link to any section needing them?!
-> Asking users to create their own section specific copy of helper functions is definitely not portable if the module or other code is not architecture dependent.
-> It is a normal gcc feature that you can assign specific code to non-.text sections and it is not documented that it may crash depending on the OS arch the ELF is built for, so asking for a Power Architecture specific change on tool libs to make Power Architecture Linux happy seems a bit much to ask.
->
-> Using r12 in any Linux related trampoline code seems a reachable goal, and it would eliminate the conflict to the ABI.
->
-> Regards,
->
-> Heinz
-Hi,
+I blame Mikey for this. He elevated my slightly dubious testcase:
 
-I've tried the fix using register r12 for the trampoline code, instead of register r11.
-I'd to adapt entry_matches() too:
+# dd if=/dev/zero of=/dev/null bs=1M count=10000
 
---- arch/powerpc/kernel/module_32.c    (revision 1898)
-+++ arch/powerpc/kernel/module_32.c    (working copy)
-@@ -187,8 +187,8 @@
+to benchmark status. And naturally we need to be number 1 at creating
+zeros. So lets improve __clear_user some more.
 
-  static inline int entry_matches(struct ppc_plt_entry *entry, Elf32_Addr val)
-  {
--    if (entry->jump[0] == 0x3d600000 + ((val + 0x8000) >> 16)
-- && entry->jump[1] == 0x396b0000 + (val & 0xffff))
-+    if (entry->jump[0] == 0x3d800000 + ((val + 0x8000) >> 16)
-+ && entry->jump[1] == 0x398c0000 + (val & 0xffff))
-          return 1;
-      return 0;
-  }
-@@ -215,10 +215,9 @@
-          entry++;
-      }
+As Paul suggests we can use dcbz for large lengths. This patch gets
+the destination 128 byte aligned then uses dcbz on whole cachelines.
 
--    /* Stolen from Paul Mackerras as well... */
--    entry->jump[0] = 0x3d600000+((val+0x8000)>>16);    /* lis r11,sym@ha */
--    entry->jump[1] = 0x396b0000 + (val&0xffff);    /* addi r11,r11,sym@l*/
--    entry->jump[2] = 0x7d6903a6;            /* mtctr r11 */
-+    entry->jump[0] = 0x3d800000+((val+0x8000)>>16); /* lis r12,sym@ha */
-+    entry->jump[1] = 0x398c0000 + (val&0xffff);     /* addi r12,r12,sym@l*/
-+    entry->jump[2] = 0x7d8903a6;                    /* mtctr r12 */
-      entry->jump[3] = 0x4e800420;            /* bctr */
+Before:
+10485760000 bytes (10 GB) copied, 0.414744 s, 25.3 GB/s
 
-      DEBUGP("Initialized plt for 0x%x at %p\n", val, entry);
+After:
+10485760000 bytes (10 GB) copied, 0.268597 s, 39.0 GB/s
 
+39 GB/s, a new record.
 
-It looks working, also in the case the trampoline code is used.
-Please see also the debug session below.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Let me summarize the situation:
-
-    + According to Freescale, EABI assigns a dedicated function to register r11.
-    + The ELF sections .text and .init.text may trigger the usage of the trampoline code.
-    + The trampoline code must not user register r11, too.
-    + We must not depend on addresses returned by vmalloc during kernel module loading.
-
-I think the bug must be fixed !!!
-
-Regards
-Steffen
-
---
-
-
-(gdb) bt
-#0  0xd54990f0 in ?? ()
-#1  0xd5499088 in ?? ()
-#2  0xc0001d9c in do_one_initcall (fn=0xd76e26ac) at init/main.c:716
-#3  0xc0059630 in sys_init_module (umod=0x4802f008, len=<value optimized out>, uargs=0x10012008 "") at kernel/module.c:2470
-#4  0xc000dff8 in syscall_dotrace_cont () at arch/powerpc/kernel/entry_32.S:331
-Backtrace stopped: frame did not save the PC
-
-<-- we are returning from the driver init entry point
-
-(gdb) info reg r11
-r11            0xcbb57f00    3417669376
-(gdb) x/2x 0xcbb57f00
-0xcbb57f00:    0xcbb57f20    0xc0001d9c
-
-<-- register r11 is fine here
-
-0xd54990f0:     lis     r12,-10386
-0xd54990f4:     addi    r12,r12,-20268
-0xd54990f8:     mtctr   r12
-
-<-- this is the trampoline code using now r12, instead of r11
-
-(gdb) info reg r12
-r12            0xd76db0d4    3614290132
-(gdb) info reg ctr
-ctr            0xd76db0d4    3614290132
-0xd54990fc:     bctr
-
-<-- we are jumping to the epilogue
-
-0xd76db0d4:     lwz     r29,-12(r11)
-0xd76db0d8:     lwz     r30,-8(r11)
-0xd76db0dc:     lwz     r0,4(r11)
-0xd76db0e0:     lwz     r31,-4(r11)
-0xd76db0e4:     mtlr    r0
-0xd76db0e8:     mr      r1,r11
-
-<- the epilogue
-
-(gdb) info reg lr
-lr             0xc0001d9c    0xc0001d9c <do_one_initcall+100>
-0xc0001d9c <do_one_initcall+100>:       lis     r9,-16330
-0xc0001da0 <do_one_initcall+104>:       lwz     r0,12296(r9)
-0xc0001da4 <do_one_initcall+108>:       lis     r9,-16330
-0xd76db0ec:     blr
-
-<-- the jump back to do_one_initcall()
-<-- no crash
+Index: linux-build/arch/powerpc/lib/string_64.S
+===================================================================
+--- linux-build.orig/arch/powerpc/lib/string_64.S	2012-06-04 16:18:56.351604302 +1000
++++ linux-build/arch/powerpc/lib/string_64.S	2012-06-04 16:47:10.538500871 +1000
+@@ -78,7 +78,7 @@ _GLOBAL(__clear_user)
+ 	blt	.Lshort_clear
+ 	mr	r8,r3
+ 	mtocrf	0x01,r6
+-	clrldi	r6,r6,(64-3)
++	clrldi	r7,r6,(64-3)
+ 
+ 	/* Get the destination 8 byte aligned */
+ 	bf	cr7*4+3,1f
+@@ -93,11 +93,16 @@ err1;	sth	r0,0(r3)
+ err1;	stw	r0,0(r3)
+ 	addi	r3,r3,4
+ 
+-3:	sub	r4,r4,r6
+-	srdi	r6,r4,5
++3:	sub	r4,r4,r7
++
+ 	cmpdi	r4,32
++	cmpdi	cr1,r4,512
+ 	blt	.Lshort_clear
+-	mtctr	r6
++	bgt	cr1,.Llong_clear
++
++.Lmedium_clear:
++	srdi	r7,r4,5
++	mtctr	r7
+ 
+ 	/* Do 32 byte chunks */
+ 4:
+@@ -139,3 +144,52 @@ err1;	stb	r0,0(r3)
+ 
+ 10:	li	r3,0
+ 	blr
++
++.Llong_clear:
++	/* Destination is 8 byte aligned, need to get it 128 byte aligned */
++	bf	cr7*4+0,11f
++err2;	std	r0,0(r3)
++	addi	r3,r3,8
++	addi	r4,r4,-8
++
++11:	srdi	r6,r6,4
++	mtocrf	0x01,r6
++
++	bf	cr7*4+3,12f
++err2;	std	r0,0(r3)
++err2;	std	r0,8(r3)
++	addi	r3,r3,16
++	addi	r4,r4,-16
++
++12:	bf	cr7*4+2,13f
++err2;	std	r0,0(r3)
++err2;	std	r0,8(r3)
++err2;	std	r0,16(r3)
++err2;	std	r0,24(r3)
++	addi	r3,r3,32
++	addi	r4,r4,-32
++
++13:	bf	cr7*4+1,14f
++err2;	std	r0,0(r3)
++err2;	std	r0,8(r3)
++err2;	std	r0,16(r3)
++err2;	std	r0,24(r3)
++err2;	std	r0,32(r3)
++err2;	std	r0,40(r3)
++err2;	std	r0,48(r3)
++err2;	std	r0,56(r3)
++	addi	r3,r3,64
++	addi	r4,r4,-64
++
++14:	srdi	r6,r4,7
++	mtctr	r6
++
++15:
++err2;	dcbz	r0,r3
++	addi	r3,r3,128
++	addi	r4,r4,-128
++	bdnz	15b
++
++	cmpdi	r4,32
++	blt	.Lshort_clear
++	b	.Lmedium_clear
