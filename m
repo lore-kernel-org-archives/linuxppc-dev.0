@@ -1,34 +1,25 @@
-Return-Path: <zch@tx30smr01.freescale.net>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 04F1FB6FFE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 21:11:32 +1000 (EST)
-Received: from mail115-ch1 (localhost [127.0.0.1])	by
- mail115-ch1-R.bigfish.com (Postfix) with ESMTP id 7273680275	for
- <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 11:10:48 +0000 (UTC)
-Received: from CH1EHSMHS018.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.245])	by mail115-ch1.bigfish.com (Postfix) with ESMTP id
- E755A2A004A	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 11:10:45
- +0000 (UTC)
-Received: from localhost.localdomain ([10.213.130.145])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q54BBL9n012131	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2012 04:11:22 -0700
-Date: Mon, 4 Jun 2012 19:12:06 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v5 3/5] powerpc/85xx: add sleep and deep sleep support
-Message-ID: <20120604111206.GB20676@localhost.localdomain>
-References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
- <1336737235-15370-3-git-send-email-chenhui.zhao@freescale.com>
- <4FC93A1B.8060209@freescale.com>
+Return-Path: <paubert@iram.es>
+Received: from rudy.puc.rediris.es (unknown [IPv6:2001:720:418:ca01::132])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B3ADCB6FBB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 21:28:50 +1000 (EST)
+Date: Mon, 4 Jun 2012 13:03:05 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Wrobel Heinz-R39252 <r39252@freescale.com>
+Subject: Re: kernel panic during kernel module load (powerpc specific part)
+Message-ID: <20120604110305.GA16707@visitor2.iram.es>
+References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
+ <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
+ <20120531110439.GA17373@visitor2.iram.es>
+ <1338542315.16119.50.camel@pasglop>
+ <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <4FC93A1B.8060209@freescale.com>
-Sender: <zch@tx30smr01.freescale.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
+Cc: Michael Ellerman <michael@ellerman.id.au>,
+ Steffen Rumler <steffen.rumler.ext@nsn.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,143 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 01, 2012 at 04:54:35PM -0500, Scott Wood wrote:
-> On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
-> > From: Li Yang <leoli@freescale.com>
+On Fri, Jun 01, 2012 at 11:33:37AM +0000, Wrobel Heinz-R39252 wrote:
+> > > I believe that the basic premise is that you should provide a directly
+> > > reachable copy of the save/rstore functions, even if this means that
+> > you need several copies of the functions.
 > > 
-> > In sleep PM mode, the clocks of e500 core and unused IP blocks is
-> > turned off. IP blocks which are allowed to wake up the processor
-> > are still running.
+> > I just fixed a very similar problem with grub2 in fact. It was using r0
+> > and trashing the saved LR that way.
 > > 
-> > Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
-> > in addtion to the sleep PM mode.
+> > The real fix is indeed to statically link those gcc "helpers", we
+> > shouldn't generate things like cross-module calls inside function prologs
+> > and epilogues, when stackframes aren't even guaranteed to be reliable.
 > > 
-> > While in deep sleep PM mode, additionally, the power supply is
-> > removed from e500 core and most IP blocks. Only the blocks needed
-> > to wake up the chip out of deep sleep are ON.
-> > 
-> > This patch supports 32-bit and 36-bit address space.
-> > 
-> > The sleep mode is equal to the Standby state in Linux. The deep sleep
-> > mode is equal to the Suspend-to-RAM state of Linux Power Management.
-> > 
-> > Command to enter sleep mode.
-> >   echo standby > /sys/power/state
-> > Command to enter deep sleep mode.
-> >   echo mem > /sys/power/state
-> > 
-> > Signed-off-by: Dave Liu <daveliu@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > Signed-off-by: Jin Qing <b24347@freescale.com>
-> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> > Cc: Scott Wood <scottwood@freescale.com>
-> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> > ---
-> > Changes for v5:
-> >  * Rename flush_disable_L1 to __flush_disable_L1.
-> > 
-> >  arch/powerpc/Kconfig                  |    2 +-
-> >  arch/powerpc/include/asm/cacheflush.h |    5 +
-> >  arch/powerpc/kernel/Makefile          |    3 +
-> >  arch/powerpc/kernel/l2cache_85xx.S    |   53 +++
-> >  arch/powerpc/platforms/85xx/Makefile  |    3 +
-> >  arch/powerpc/platforms/85xx/sleep.S   |  609 +++++++++++++++++++++++++++++++++
-> >  arch/powerpc/sysdev/fsl_pmc.c         |   91 ++++-
-> >  arch/powerpc/sysdev/fsl_soc.h         |    5 +
-> >  8 files changed, 752 insertions(+), 19 deletions(-)
-> >  create mode 100644 arch/powerpc/kernel/l2cache_85xx.S
-> >  create mode 100644 arch/powerpc/platforms/85xx/sleep.S
-> > 
-> > diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-> > index 94ec20a..baa000c 100644
-> > --- a/arch/powerpc/include/asm/cacheflush.h
-> > +++ b/arch/powerpc/include/asm/cacheflush.h
-> > @@ -33,6 +33,11 @@ extern void flush_dcache_page(struct page *page);
-> >  #if defined(CONFIG_FSL_BOOKE) || defined(CONFIG_6xx)
-> >  extern void __flush_disable_L1(void);
-> >  #endif
-> > +#if defined(CONFIG_FSL_BOOKE)
-> > +extern void flush_dcache_L1(void);
-> > +#else
-> > +#define flush_dcache_L1()	do { } while (0)
-> > +#endif
+> > However, in the grub2 case, it was easier to just use r12 :-)
 > 
-> It doesn't seem right to no-op this on other platforms.
+> For not just the module loading case, I believe r12 is the only real solution now. I checked one debugger capable of doing ELF download. It also uses r12 for trampoline code. I am guessing for the reason that prompted this discussion.
+> 
 
-The pmc_suspend_enter() in fsl_pmc.c used by mpc85xx and mpc86xx,
-but flush_dcache_L1() have no definition in mpc86xx platform.
-I will write flush_dcache_L1() for mpc86xx platform.
+I disagree. Look carefully at Be's answer: cross-module calls
+are intrinsically dangerous when stack frames are in a transient
+state.
 
-> 
-> >  extern void __flush_icache_range(unsigned long, unsigned long);
-> >  static inline void flush_icache_range(unsigned long start, unsigned long stop)
-> > diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> > index f5808a3..cb70dba 100644
-> > --- a/arch/powerpc/kernel/Makefile
-> > +++ b/arch/powerpc/kernel/Makefile
-> > @@ -64,6 +64,9 @@ obj-$(CONFIG_FA_DUMP)		+= fadump.o
-> >  ifeq ($(CONFIG_PPC32),y)
-> >  obj-$(CONFIG_E500)		+= idle_e500.o
-> >  endif
-> > +ifneq ($(CONFIG_PPC_E500MC),y)
-> > +obj-$(CONFIG_PPC_85xx)		+= l2cache_85xx.o
-> > +endif
-> 
-> Can we introduce a symbol that specifically means pre-e500mc e500,
-> rather than using negative logic?
-> 
-> I think something like CONFIG_PPC_E500_V1_V2 has been proposed before.
+> Without r12 we'd have to change standard libraries to automagically link in gcc helpers for any conceivable non-.text section, which I am not sure is feasible. How would you write section independent helper functions which link to any section needing them?!
 
-Agree. But CONFIG_PPC_E500_V1_V2 haven't been merged.
+I don't thnk that it is tha bad: the helpers should be linked to the default .text section
+when needed, typically the init code and so on are mapped within the reach of that 
+section (otherwise you'll end up with the linker complaining that it finds overflowing
+branch offsets between .text and .init.text).
 
-> 
-> > -static int pmc_probe(struct platform_device *ofdev)
-> > +static int pmc_probe(struct platform_device *pdev)
-> >  {
-> > -	pmc_regs = of_iomap(ofdev->dev.of_node, 0);
-> > +	struct device_node *np = pdev->dev.of_node;
-> > +
-> > +	pmc_regs = of_iomap(np, 0);
-> >  	if (!pmc_regs)
-> >  		return -ENOMEM;
-> >  
-> > -	pmc_dev = &ofdev->dev;
-> > +	pmc_flag = PMC_SLEEP;
-> > +	if (of_device_is_compatible(np, "fsl,mpc8536-pmc"))
-> > +		pmc_flag |= PMC_DEEP_SLEEP;
-> > +
-> > +	if (of_device_is_compatible(np, "fsl,p1022-pmc"))
-> > +		pmc_flag |= PMC_DEEP_SLEEP;
-> > +
-> >  	suspend_set_ops(&pmc_suspend_ops);
-> > +
-> > +	pr_info("Freescale PMC driver\n");
-> 
-> If you're going to be noisy on probe, at least provide some useful info
-> like whether deep sleep or jog are supported.
-> 
-> >  	return 0;
-> >  }
-> >  
-> > diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
-> > index c6d0073..949377d 100644
-> > --- a/arch/powerpc/sysdev/fsl_soc.h
-> > +++ b/arch/powerpc/sysdev/fsl_soc.h
-> > @@ -48,5 +48,10 @@ extern struct platform_diu_data_ops diu_ops;
-> >  void fsl_hv_restart(char *cmd);
-> >  void fsl_hv_halt(void);
-> >  
-> > +/*
-> > + * Cast the ccsrbar to 64-bit parameter so that the assembly
-> > + * code can be compatible with both 32-bit & 36-bit.
-> > + */
-> > +extern void mpc85xx_enter_deep_sleep(u64 ccsrbar, u32 powmgtreq);
-> 
-> s/Cast the ccsrbar to 64-bit parameter/ccsrbar is u64 rather than
-> phys_addr_t/
-> 
-> -Scott
+> Asking users to create their own section specific copy of helper functions is definitely not portable if the module or other code is not architecture dependent.
 
-OK. Thanks.
+Well, it automagically works on 64 bit. There is is performed by magic built into the linker.
 
--Chenhui
+> It is a normal gcc feature that you can assign specific code to non-.text sections and it is not documented that it may crash depending on the OS arch the ELF is built for, so asking for a Power Architecture specific change on tool libs to make Power Architecture Linux happy seems a bit much to ask.
+> 
+
+Once again I disagree.
+
+> Using r12 in any Linux related trampoline code seems a reachable goal, and it would eliminate the conflict to the ABI.
+> 
+
+There is no conflict to the ABI. These functions are supposed to be directly reachable from whatever code
+section may need them.
+
+Now I have a question: how did you get the need for this?
+
+None of my kernels uses them:
+- if I compile with -O2, the compiler simply expands epilogue and prologue to series of lwz and stw
+- if I compile with -Os, the compiler generates lmw/stmw which give the smallest possible cache footprint
+
+Neither did I find a single reference to these functions in several systems that I grepped for.
+
+	Regards,
+	Gabriel
