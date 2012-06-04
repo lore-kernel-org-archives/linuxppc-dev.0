@@ -1,33 +1,33 @@
-Return-Path: <zch@az84smr01.freescale.net>
+Return-Path: <zch@tx30smr01.freescale.net>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C812BB6FC4
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 21:04:20 +1000 (EST)
-Received: from mail81-ch1 (localhost [127.0.0.1])	by mail81-ch1-R.bigfish.com
- (Postfix) with ESMTP id 7F934100310	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2012 11:03:35 +0000 (UTC)
-Received: from CH1EHSMHS017.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.245])	by mail81-ch1.bigfish.com (Postfix) with ESMTP id
- 5D5D4420048
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 11:03:31 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 04F1FB6FFE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 21:11:32 +1000 (EST)
+Received: from mail115-ch1 (localhost [127.0.0.1])	by
+ mail115-ch1-R.bigfish.com (Postfix) with ESMTP id 7273680275	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 11:10:48 +0000 (UTC)
+Received: from CH1EHSMHS018.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.245])	by mail115-ch1.bigfish.com (Postfix) with ESMTP id
+ E755A2A004A	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 11:10:45
+ +0000 (UTC)
 Received: from localhost.localdomain ([10.213.130.145])	by
- az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q54B465V027085	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2012 04:04:07 -0700
-Date: Mon, 4 Jun 2012 19:04:44 +0800
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q54BBL9n012131	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2012 04:11:22 -0700
+Date: Mon, 4 Jun 2012 19:12:06 +0800
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v5 2/5] powerpc/85xx: add HOTPLUG_CPU support
-Message-ID: <20120604110444.GA20676@localhost.localdomain>
+Subject: Re: [PATCH v5 3/5] powerpc/85xx: add sleep and deep sleep support
+Message-ID: <20120604111206.GB20676@localhost.localdomain>
 References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
- <1336737235-15370-2-git-send-email-chenhui.zhao@freescale.com>
- <4FC933BF.1020901@freescale.com>
+ <1336737235-15370-3-git-send-email-chenhui.zhao@freescale.com>
+ <4FC93A1B.8060209@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <4FC933BF.1020901@freescale.com>
-Sender: <zch@az84smr01.freescale.net>
+In-Reply-To: <4FC93A1B.8060209@freescale.com>
+Sender: <zch@tx30smr01.freescale.net>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,74 +38,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 01, 2012 at 04:27:27PM -0500, Scott Wood wrote:
+On Fri, Jun 01, 2012 at 04:54:35PM -0500, Scott Wood wrote:
 > On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
-> \> +#if defined(CONFIG_FSL_BOOKE) || defined(CONFIG_6xx)
-> > +extern void __flush_disable_L1(void);
+> > From: Li Yang <leoli@freescale.com>
+> > 
+> > In sleep PM mode, the clocks of e500 core and unused IP blocks is
+> > turned off. IP blocks which are allowed to wake up the processor
+> > are still running.
+> > 
+> > Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
+> > in addtion to the sleep PM mode.
+> > 
+> > While in deep sleep PM mode, additionally, the power supply is
+> > removed from e500 core and most IP blocks. Only the blocks needed
+> > to wake up the chip out of deep sleep are ON.
+> > 
+> > This patch supports 32-bit and 36-bit address space.
+> > 
+> > The sleep mode is equal to the Standby state in Linux. The deep sleep
+> > mode is equal to the Suspend-to-RAM state of Linux Power Management.
+> > 
+> > Command to enter sleep mode.
+> >   echo standby > /sys/power/state
+> > Command to enter deep sleep mode.
+> >   echo mem > /sys/power/state
+> > 
+> > Signed-off-by: Dave Liu <daveliu@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > Signed-off-by: Jin Qing <b24347@freescale.com>
+> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> > Cc: Scott Wood <scottwood@freescale.com>
+> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > ---
+> > Changes for v5:
+> >  * Rename flush_disable_L1 to __flush_disable_L1.
+> > 
+> >  arch/powerpc/Kconfig                  |    2 +-
+> >  arch/powerpc/include/asm/cacheflush.h |    5 +
+> >  arch/powerpc/kernel/Makefile          |    3 +
+> >  arch/powerpc/kernel/l2cache_85xx.S    |   53 +++
+> >  arch/powerpc/platforms/85xx/Makefile  |    3 +
+> >  arch/powerpc/platforms/85xx/sleep.S   |  609 +++++++++++++++++++++++++++++++++
+> >  arch/powerpc/sysdev/fsl_pmc.c         |   91 ++++-
+> >  arch/powerpc/sysdev/fsl_soc.h         |    5 +
+> >  8 files changed, 752 insertions(+), 19 deletions(-)
+> >  create mode 100644 arch/powerpc/kernel/l2cache_85xx.S
+> >  create mode 100644 arch/powerpc/platforms/85xx/sleep.S
+> > 
+> > diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+> > index 94ec20a..baa000c 100644
+> > --- a/arch/powerpc/include/asm/cacheflush.h
+> > +++ b/arch/powerpc/include/asm/cacheflush.h
+> > @@ -33,6 +33,11 @@ extern void flush_dcache_page(struct page *page);
+> >  #if defined(CONFIG_FSL_BOOKE) || defined(CONFIG_6xx)
+> >  extern void __flush_disable_L1(void);
+> >  #endif
+> > +#if defined(CONFIG_FSL_BOOKE)
+> > +extern void flush_dcache_L1(void);
+> > +#else
+> > +#define flush_dcache_L1()	do { } while (0)
 > > +#endif
 > 
-> Prototypes aren't normally guarded by ifdefs.
+> It doesn't seem right to no-op this on other platforms.
 
-OK. Thanks.
-
-> 
-> > +static void __cpuinit smp_85xx_mach_cpu_die(void)
-> > +{
-> > +	unsigned int cpu = smp_processor_id();
-> > +	u32 tmp;
-> > +
-> > +	local_irq_disable();
-> > +	idle_task_exit();
-> > +	generic_set_cpu_dead(cpu);
-> > +	mb();
-> > +
-> > +	mtspr(SPRN_TCR, 0);
-> > +
-> > +	__flush_disable_L1();
-> > +	tmp = (mfspr(SPRN_HID0) & ~(HID0_DOZE|HID0_SLEEP)) | HID0_NAP;
-> > +	mtspr(SPRN_HID0, tmp);
-> > +
-> > +	/* Enter NAP mode. */
-> > +	tmp = mfmsr();
-> > +	tmp |= MSR_WE;
-> > +	mb();
-> > +	mtmsr(tmp);
-> > +	isync();
-> 
-> Need isync after writing to HID0.
-> 
-> > +		/*
-> > +		 * We don't set the BPTR register here upon it points
-> > +		 * to the boot page properly.
-> > +		 */
-> > +		mpic_reset_core(hw_cpu);
-> 
-> That comment's wording is hard to follow -- maybe s/upon it points/since
-> it already points/
-> 
-> > +		/* wait until core is ready... */
-> > +		if (!spin_event_timeout(in_be32(&spin_table->addr_l) == 1,
-> > +						10000, 100)) {
-> > +			pr_err("%s: timeout waiting for core %d to reset\n",
-> > +							__func__, hw_cpu);
-> > +			ret = -ENOENT;
-> > +			goto out;
-> > +		}
-> 
-> We need to fix U-Boot to write addr_l last (with an msync beforehand).
-
-I agree.
+The pmc_suspend_enter() in fsl_pmc.c used by mpc85xx and mpc86xx,
+but flush_dcache_L1() have no definition in mpc86xx platform.
+I will write flush_dcache_L1() for mpc86xx platform.
 
 > 
-> > -#ifdef CONFIG_KEXEC
-> > +#if defined(CONFIG_KEXEC) || defined(CONFIG_HOTPLUG_CPU)
+> >  extern void __flush_icache_range(unsigned long, unsigned long);
+> >  static inline void flush_icache_range(unsigned long start, unsigned long stop)
+> > diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> > index f5808a3..cb70dba 100644
+> > --- a/arch/powerpc/kernel/Makefile
+> > +++ b/arch/powerpc/kernel/Makefile
+> > @@ -64,6 +64,9 @@ obj-$(CONFIG_FA_DUMP)		+= fadump.o
+> >  ifeq ($(CONFIG_PPC32),y)
+> >  obj-$(CONFIG_E500)		+= idle_e500.o
+> >  endif
+> > +ifneq ($(CONFIG_PPC_E500MC),y)
+> > +obj-$(CONFIG_PPC_85xx)		+= l2cache_85xx.o
+> > +endif
 > 
-> Let's not grow lists like this.  Is there any harm in building it
-> unconditionally?
+> Can we introduce a symbol that specifically means pre-e500mc e500,
+> rather than using negative logic?
+> 
+> I think something like CONFIG_PPC_E500_V1_V2 has been proposed before.
+
+Agree. But CONFIG_PPC_E500_V1_V2 haven't been merged.
+
+> 
+> > -static int pmc_probe(struct platform_device *ofdev)
+> > +static int pmc_probe(struct platform_device *pdev)
+> >  {
+> > -	pmc_regs = of_iomap(ofdev->dev.of_node, 0);
+> > +	struct device_node *np = pdev->dev.of_node;
+> > +
+> > +	pmc_regs = of_iomap(np, 0);
+> >  	if (!pmc_regs)
+> >  		return -ENOMEM;
+> >  
+> > -	pmc_dev = &ofdev->dev;
+> > +	pmc_flag = PMC_SLEEP;
+> > +	if (of_device_is_compatible(np, "fsl,mpc8536-pmc"))
+> > +		pmc_flag |= PMC_DEEP_SLEEP;
+> > +
+> > +	if (of_device_is_compatible(np, "fsl,p1022-pmc"))
+> > +		pmc_flag |= PMC_DEEP_SLEEP;
+> > +
+> >  	suspend_set_ops(&pmc_suspend_ops);
+> > +
+> > +	pr_info("Freescale PMC driver\n");
+> 
+> If you're going to be noisy on probe, at least provide some useful info
+> like whether deep sleep or jog are supported.
+> 
+> >  	return 0;
+> >  }
+> >  
+> > diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+> > index c6d0073..949377d 100644
+> > --- a/arch/powerpc/sysdev/fsl_soc.h
+> > +++ b/arch/powerpc/sysdev/fsl_soc.h
+> > @@ -48,5 +48,10 @@ extern struct platform_diu_data_ops diu_ops;
+> >  void fsl_hv_restart(char *cmd);
+> >  void fsl_hv_halt(void);
+> >  
+> > +/*
+> > + * Cast the ccsrbar to 64-bit parameter so that the assembly
+> > + * code can be compatible with both 32-bit & 36-bit.
+> > + */
+> > +extern void mpc85xx_enter_deep_sleep(u64 ccsrbar, u32 powmgtreq);
+> 
+> s/Cast the ccsrbar to 64-bit parameter/ccsrbar is u64 rather than
+> phys_addr_t/
 > 
 > -Scott
 
-We need this ifdef. We only set give_timebase/take_timebase
-when CONFIG_KEXEC or CONFIG_HOTPLUG_CPU is defined.
+OK. Thanks.
 
 -Chenhui
