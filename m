@@ -1,18 +1,21 @@
-Return-Path: <cedric.maussire@cassidian.com>
-Received: from mail-dotnet4.eads.net (mail-dotnet4.eads.net [193.56.40.77])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "IronPort Appliance Demo Certificate",
- Issuer "IronPort Appliance Demo Certificate" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A26D0B6F9F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2012 01:18:02 +1000 (EST)
+Return-Path: <msteckly@ixiacom.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BDFBAB6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2012 07:43:24 +1000 (EST)
+Message-ID: <4FCD2BEB.3000900@ixiacom.com>
+Date: Mon, 4 Jun 2012 17:43:07 -0400
+From: Michael Steckly <msteckly@ixiacom.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----_=_NextPart_001_01CD4263.995974B9"
-Subject: Cannot boot an kernel version other than 2.6.35 on P2020RDB-PCA
-Date: Mon, 4 Jun 2012 17:06:20 +0200
-Message-ID: <2A5271086BF5EA4A891F3804135DEA820795A3B5@TLSEVS01.ts.eads.lcl>
-From: "MAUSSIRE Cedric" <cedric.maussire@cassidian.com>
 To: <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: Serial RAPID IO kernel hang on maintenance read transaction
+References: <15E2FEE7DC073B4FA1F33D10F5FAAFB1098F8EED@ECS-EXG-P-MB01.win.lanl.gov>
+In-Reply-To: <15E2FEE7DC073B4FA1F33D10F5FAAFB1098F8EED@ECS-EXG-P-MB01.win.lanl.gov>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: mcp@lanl.gov
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,120 +25,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On 06/01/2012 04:40 PM, Proicou, Mike wrote:
+>
+> I've been struggling with a kernel hang during bootup + enumeration of
+> a Rapid IO system.
+>
+> My current system contains a N.A.T MCH (using the IDT/Tundra Tsi 578
+> switch) and a Vadatech AMC719 card using the Freescale P4080
+> processor.  There will be other cards added to the system, but I'm
+> testing with just this for now.
+>
+> I'm using a Linux kernel version 2.6.34.6.  I've set riohdid=0 on the
+> kernel command line, and I'm expecting Linux to fully enumerate and
+> configure the Rapid IO fabric. (This may be a bad assumption on my part.)
+>
+> After lots of tracing, I've determined that the kernel is hanging on
+> the first maintenance transaction to the switch.  The hang will often
+> be followed by a "machine check in kernel mode" exception and panic.
+>
+Though we're running the 3.0.6 kernel we encountered an almost identical
+situation and the crash/traceback also appears to be the same.
 
+In our case, the lock-up was due to a bug in the Freescale machine check
+exception handler and the trigger for this was an AckID mis-match on our
+switch ports.
 
-------_=_NextPart_001_01CD4263.995974B9
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Specifically, the AckID mis-matched triggered an sRIO error.  This
+triggers a machine check via the routine machine_check_e500mc.  This
+routine checks to see if the MCSR_BUS_RBERR flag in SPRN_MCSR is set to
+determine if it should run the fsl_rio_mcheck_exception code which will
+handle the fixups to keep the machine check from crashing the system.
 
-Hello all,
+However, what I found out was the MCSR_BUS_RBERR is a BookE architecture
+bit that isn't implemented on the powerPC architecture--or at least on
+the p4080/e500MC processor/core specifically.  In fact, as near as I can
+determine, the only clue you have that this is a rapidio error is the
+fact that you've received a machine check error--though I'm sure there's
+something clever that could be done to narrow it down a bit better.
 
-I am currently working on the Freescale P2020RDB-PCA Board, which has =
-been delivred with the linux-2.6.35 kernel. I succeed in re-generating =
-my own uImage in 2.6.35 thanks to ELDK, but when I want to move on to a =
-newer or older version of linux, the system does not respond any longer =
-just after the boot whith the nfsboot command, the logs are :
+So basically, you have to modify the machine check handler to decide
+whether or not to call the fsl_rio_mcheck_exception code based on the
+rapidIO error registers (SRIO_LTLEDCSR and SRIO_PxESCSR) rather than on
+the SPRN_MCSR register. 
 
-## Booting kernel from Legacy Image at 01000000 ...
-   Image Name:   Linux-2.6.39
-   Created:      2012-05-29   8:24:54 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    3514882 Bytes =3D 3.4 MiB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-## Flattened Device Tree blob at 00c00000
-   Booting using the fdt blob at 0xc00000
-   Uncompressing Kernel Image ... OK
-   Loading Device Tree to 00ffa000, end 00fffd4a ... OK
+I handled this by hacking the machine check handler to always call the
+fsl_rio_mcheck_exception routine for any load/guarded load error--we
+weren't having issues with writes--and then modified the
+fsl_rio_mcheck_exception routine to do the fixups if there was a pending
+rapidio error and return the "recoverable" bit to the top level handler
+or "0" if a rapidio error wasn't detected; It's crude but it worked.
 
-NB : nfsboot=3Dsetenv bootargs root=3D/dev/nfs rw =
-nfsroot=3D192.168.1.1:$rootpath =
-ip=3D192.168.1.2:192.168.1.1:192.168.1.1:255.255.255.0:P2020RDB-PC:eth0:o=
-ff console=3DttyS0,115200
+Now, this didn't solve our whole problem in that the exception handler
+doesn't perform or setup any bus-recovery code, this just keeps the
+error from crashing your kernel.
 
-I have unsuccessfully tried to rebuild the device tree blob and use the =
-default kernel configuration "mpc85xx_defconfig" that comes with the =
-mainline code.=20
+In the end, we disabled the default enumeration/discovery code and added
+our own code layered on top of the Freescale rio driver code--nothing
+that can or even should be submitted to a general code tree.  It's
+messy, but we were tight on time, already had an existing driver that
+implemented custom functions for our stuff and didn't have to time to
+work out the proper kernel internals  to change.
 
-My systems seems to be linux-2.6.35 dependent, I do not known how it can =
-be possible, because I can use the kernel.org source of the 2.6.35 whith =
-no problems but when I use the 3.0, for example, with the same =
-configuration but it does not work.
+I'm sorry I cannot give you anything more useful, but hopefully this
+will help a bit.
 
-
-Best regards,
-
-
-Cedric MAUSSIRE
-
-
-------_=_NextPart_001_01CD4263.995974B9
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
-<HTML>
-<HEAD>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1">
-<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
-6.5.7638.1">
-<TITLE>Cannot boot an kernel version other than 2.6.35 on =
-P2020RDB-PCA</TITLE>
-</HEAD>
-<BODY>
-<!-- Converted from text/plain format -->
-
-<P><FONT SIZE=3D2>Hello all,<BR>
-<BR>
-I am currently working on the Freescale P2020RDB-PCA Board, which has =
-been delivred with the linux-2.6.35 kernel. I succeed in re-generating =
-my own uImage in 2.6.35 thanks to ELDK, but when I want to move on to a =
-newer or older version of linux, the system does not respond any longer =
-just after the boot whith the nfsboot command, the logs are :<BR>
-<BR>
-## Booting kernel from Legacy Image at 01000000 ...<BR>
-&nbsp;&nbsp; Image Name:&nbsp;&nbsp; Linux-2.6.39<BR>
-&nbsp;&nbsp; Created:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
-2012-05-29&nbsp;&nbsp; 8:24:54 UTC<BR>
-&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC Linux Kernel Image (gzip =
-compressed)<BR>
-&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 3514882 Bytes =3D 3.4 MiB<BR>
-&nbsp;&nbsp; Load Address: 00000000<BR>
-&nbsp;&nbsp; Entry Point:&nbsp; 00000000<BR>
-&nbsp;&nbsp; Verifying Checksum ... OK<BR>
-## Flattened Device Tree blob at 00c00000<BR>
-&nbsp;&nbsp; Booting using the fdt blob at 0xc00000<BR>
-&nbsp;&nbsp; Uncompressing Kernel Image ... OK<BR>
-&nbsp;&nbsp; Loading Device Tree to 00ffa000, end 00fffd4a ... OK<BR>
-<BR>
-NB : nfsboot=3Dsetenv bootargs root=3D/dev/nfs rw =
-nfsroot=3D192.168.1.1:$rootpath =
-ip=3D192.168.1.2:192.168.1.1:192.168.1.1:255.255.255.0:P2020RDB-PC:eth0:o=
-ff console=3DttyS0,115200<BR>
-<BR>
-I have unsuccessfully tried to rebuild the device tree blob and use the =
-default kernel configuration &quot;mpc85xx_defconfig&quot; that comes =
-with the mainline code.<BR>
-<BR>
-My systems seems to be linux-2.6.35 dependent, I do not known how it can =
-be possible, because I can use the kernel.org source of the 2.6.35 whith =
-no problems but when I use the 3.0, for example, with the same =
-configuration but it does not work.<BR>
-<BR>
-<BR>
-Best regards,<BR>
-<BR>
-<BR>
-Cedric MAUSSIRE<BR>
-<BR>
-</FONT>
-</P>
-
-</BODY>
-</HTML>
-------_=_NextPart_001_01CD4263.995974B9--
+    Mike
