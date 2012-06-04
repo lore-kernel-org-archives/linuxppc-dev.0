@@ -1,21 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Mon, 4 Jun 2012 20:53:55 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Steffen Rumler <steffen.rumler.ext@nsn.com>
-Subject: Re: kernel panic during kernel module load (powerpc specific part)
-Message-ID: <20120604105355.GA23189@pale.ozlabs.ibm.com>
-References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
- <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
- <20120531110439.GA17373@visitor2.iram.es>
- <1338542315.16119.50.camel@pasglop>
- <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
- <4FCC6705.1070604@nsn.com>
+Return-Path: <olof@lixom.net>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BDAD9B6FCA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 23:12:35 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so7180722pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2012 06:12:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4FCC6705.1070604@nsn.com>
-Cc: ext Wrobel Heinz-R39252 <r39252@freescale.com>,
- Michael Ellerman <michael@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <20120604175858.38dac554@kryten>
+References: <20120604175858.38dac554@kryten>
+Date: Mon, 4 Jun 2012 06:12:33 -0700
+Message-ID: <CAOesGMjm9fZs26pjGOvaUks+=_2N=v_CBeY89iVpXZcKkccMdg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
+From: Olof Johansson <olof@lixom.net>
+To: Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: michael@ellerman.id.au, mikey@neuling.org, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,18 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 04, 2012 at 09:43:01AM +0200, Steffen Rumler wrote:
-> Let me summarize the situation:
-> 
->    + According to Freescale, EABI assigns a dedicated function to register r11.
->    + The ELF sections .text and .init.text may trigger the usage of the trampoline code.
->    + The trampoline code must not user register r11, too.
->    + We must not depend on addresses returned by vmalloc during kernel module loading.
-> 
-> I think the bug must be fixed !!!
+Hi,
 
-I agree.  If you submit your patch with a nice description of the
-problem and how the patch fixes it, along with your Signed-off-by,
-I'll send it upstream.
+On Mon, Jun 4, 2012 at 12:58 AM, Anton Blanchard <anton@samba.org> wrote:
+>
+> I blame Mikey for this. He elevated my slightly dubious testcase:
+>
+> # dd if=3D/dev/zero of=3D/dev/null bs=3D1M count=3D10000
+>
+> to benchmark status. And naturally we need to be number 1 at creating
+> zeros. So lets improve __clear_user some more.
+>
+> As Paul suggests we can use dcbz for large lengths. This patch gets
+> the destination 128 byte aligned then uses dcbz on whole cachelines.
+>
+> Before:
+> 10485760000 bytes (10 GB) copied, 0.414744 s, 25.3 GB/s
+>
+> After:
+> 10485760000 bytes (10 GB) copied, 0.268597 s, 39.0 GB/s
+>
+> 39 GB/s, a new record.
+>
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+>
+> Index: linux-build/arch/powerpc/lib/string_64.S
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-build.orig/arch/powerpc/lib/string_64.S =A0 =A0 =A0 2012-06-04 =
+16:18:56.351604302 +1000
+> +++ linux-build/arch/powerpc/lib/string_64.S =A0 =A02012-06-04 16:47:10.5=
+38500871 +1000
+> @@ -78,7 +78,7 @@ _GLOBAL(__clear_user)
+[..]
 
-Paul.
+> +15:
+> +err2; =A0dcbz =A0 =A0r0,r3
+> + =A0 =A0 =A0 addi =A0 =A0r3,r3,128
+> + =A0 =A0 =A0 addi =A0 =A0r4,r4,-128
+> + =A0 =A0 =A0 bdnz =A0 =A015b
+
+This breaks architecture spec (and at least one implementation); cache
+lines are not guaranteed to be 128 bytes.
+
+
+-Olof
