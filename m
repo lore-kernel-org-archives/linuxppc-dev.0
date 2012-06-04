@@ -1,45 +1,34 @@
-Return-Path: <chf.fritz@googlemail.com>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2F0A4B6FBA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 21:30:33 +1000 (EST)
-Received: by bkcjg15 with SMTP id jg15so3509521bkc.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Jun 2012 04:30:30 -0700 (PDT)
-Subject: Re: [PATCH v2] usb: fsl_udc: errata - postpone freeing current dTD
-From: Christoph Fritz <chf.fritz@googlemail.com>
-To: Felipe Balbi <balbi@ti.com>
-In-Reply-To: <20120521190450.GA27492@arwen.pp.htv.fi>
-References: <20120410021151.GB23044@lovely.krouter>
- <20120411073918.GA9180@lovely.krouter>
- <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
- <20120509000221.GA19525@lovely.krouter>
- <20120513225126.GA3683@lovely.krouter> <20120514042142.GD9750@kroah.com>
- <20120520231724.GA7941@mars>
- <F281D0F91ED19E4D8E63A7504E8A649803BB1E25@039-SN2MPN1-023.039d.mgd.msft.net>
- <1337583221.3394.21.camel@mars> <20120521065722.GA4363@mars>
- <20120521190450.GA27492@arwen.pp.htv.fi>
-Content-Type: text/plain; charset="iso-8859-7"
-Date: Mon, 04 Jun 2012 13:30:24 +0200
-Message-ID: <1338809424.3371.20.camel@mars>
-Mime-Version: 1.0
-Cc: Ben Dooks <ben-linux@fluff.org>, Chen Peter-B29397 <B29397@freescale.com>,
- Nicolas Ferre <nicolas.ferre@atmel.com>, "Hans J. Koch" <hjk@hansjkoch.de>,
- Fabio Estevam <festevam@gmail.com>, Kukjin Kim <kgene.kim@samsung.com>,
- Russell King <linux@arm.linux.org.uk>,
- Thomas Dahlmann <dahlmann.thomas@arcor.de>,
- Sascha Hauer <s.hauer@pengutronix.de>, Christian Hemp <c.hemp@phytec.de>,
- Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@caiaq.de>,
- Neil Zhang <zhangwm@marvell.com>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Oliver Neukum <oneukum@suse.de>, Eric Miao <eric.y.miao@gmail.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- Ido Shayevitz <idos@codeaurora.org>,
- Estevam Fabio-R49496 <r49496@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <zch@az84smr01.freescale.net>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D81C5B6FBB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 21:35:40 +1000 (EST)
+Received: from mail213-va3 (localhost [127.0.0.1])	by
+ mail213-va3-R.bigfish.com (Postfix) with ESMTP id 810DC560147	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 11:34:56 +0000 (UTC)
+Received: from VA3EHSMHS031.bigfish.com (unknown [10.7.14.239])	by
+ mail213-va3.bigfish.com (Postfix) with ESMTP id 33D89780045	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Jun 2012 11:34:54 +0000 (UTC)
+Received: from localhost.localdomain ([10.213.130.145])	by
+ az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q54BZPgh003008	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 4 Jun 2012 04:35:25 -0700
+Date: Mon, 4 Jun 2012 19:36:09 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v5 4/5] fsl_pmc: Add API to enable device as wakeup event
+ source
+Message-ID: <20120604113609.GC20676@localhost.localdomain>
+References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
+ <1336737235-15370-4-git-send-email-chenhui.zhao@freescale.com>
+ <4FC93D74.3090200@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <4FC93D74.3090200@freescale.com>
+Sender: <zch@az84smr01.freescale.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,111 +38,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Mon, 2012-05-21 at 22:04 +0300, Felipe Balbi wrote:
-> On Mon, May 21, 2012 at 08:57:22AM +0200, Christoph Fritz wrote:
-> > USB controller may access a wrong address for the dTD (endpoint transfer
-> > descriptor) and then hang. This happens a lot when doing tests with
-> > g_ether module and iperf, a tool for measuring maximum TCP and UDP
-> > bandwidth.
+On Fri, Jun 01, 2012 at 05:08:52PM -0500, Scott Wood wrote:
+> On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
+> > Add APIs for setting wakeup source and lossless Ethernet in low power modes.
+> > These APIs can be used by wake-on-packet feature.
 > > 
-> > This hardware bug is explained in detail by errata number 2858 for i.MX23:
-> > http://cache.freescale.com/files/dsp/doc/errata/IMX23CE.pdf
-> > 
-> > All (?) SOCs with an IP from chipidea suffer from this problem.
-> > mv_udc_core fixes this bug by commit daec765.  There still may be
-> > unfixed drivers.
-> > 
-> > Signed-off-by: Christoph Fritz <chf.fritz@googlemail.com>
-> > Signed-off-by: Christian Hemp <c.hemp@phytec.de>
+> > Signed-off-by: Dave Liu <daveliu@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > Signed-off-by: Jin Qing <b24347@freescale.com>
+> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 > > ---
-> >  drivers/usb/gadget/fsl_udc_core.c |   15 ++++++++++++++-
-> >  1 files changed, 14 insertions(+), 1 deletions(-)
+> >  arch/powerpc/sysdev/fsl_pmc.c |   71 ++++++++++++++++++++++++++++++++++++++++-
+> >  arch/powerpc/sysdev/fsl_soc.h |    9 +++++
+> >  2 files changed, 79 insertions(+), 1 deletions(-)
 > > 
-> > diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-> > index 55abfb6..72f2139 100644
-> > --- a/drivers/usb/gadget/fsl_udc_core.c
-> > +++ b/drivers/usb/gadget/fsl_udc_core.c
-> > @@ -65,6 +65,8 @@ static struct usb_sys_interface *usb_sys_regs;
-> >  /* it is initialized in probe()  */
-> >  static struct fsl_udc *udc_controller = NULL;
+> > diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
+> > index 1dc6e9e..c1170f7 100644
+> > --- a/arch/powerpc/sysdev/fsl_pmc.c
+> > +++ b/arch/powerpc/sysdev/fsl_pmc.c
+> > @@ -34,6 +34,7 @@ struct pmc_regs {
+> >  	__be32 powmgtcsr;
+> >  #define POWMGTCSR_SLP		0x00020000
+> >  #define POWMGTCSR_DPSLP		0x00100000
+> > +#define POWMGTCSR_LOSSLESS	0x00400000
+> >  	__be32 res3[2];
+> >  	__be32 pmcdr;
+> >  };
+> > @@ -43,6 +44,74 @@ static unsigned int pmc_flag;
 > >  
-> > +static struct ep_td_struct *last_free_td;
+> >  #define PMC_SLEEP	0x1
+> >  #define PMC_DEEP_SLEEP	0x2
+> > +#define PMC_LOSSLESS	0x4
+> > +
+> > +/**
+> > + * mpc85xx_pmc_set_wake - enable devices as wakeup event source
+> > + * @pdev: platform device affected
+> > + * @enable: True to enable event generation; false to disable
+> > + *
+> > + * This enables the device as a wakeup event source, or disables it.
+> > + *
+> > + * RETURN VALUE:
+> > + * 0 is returned on success
+> > + * -EINVAL is returned if device is not supposed to wake up the system
+> > + * Error code depending on the platform is returned if both the platform and
+> > + * the native mechanism fail to enable the generation of wake-up events
+> > + */
+> > +int mpc85xx_pmc_set_wake(struct platform_device *pdev, bool enable)
 > 
-> I don't want to see global variables anymore. In fact, please convert
-> this to the new udc_start()/udc_stop() calls and use the generic
-> map/unmap routines.
+> Why does it have to be a platform_device?  Would a bare device_node work
+> here?  If it's for stuff like device_may_wakeup() that could be in a
+> platform_device wrapper function.
+
+It does not have to be a platform_device. I think it can be a struct device.
+
 > 
-> That'll help you get rid of a bunch of useless code on the driver. After
-> that you should remove all <asm/*> header includes and drop the ARCH
-> dependency.
+> Where does this get called from?  I don't see an example user in this
+> patchset.
+
+It will be used by a gianfar related patch. I plan to submit that patch
+after these patches accepted.
+
 > 
-> You can also drop the big-/little-endian helpers as you can make use of
-> generic writel()/readl() routines.
+> > +{
+> > +	int ret = 0;
+> > +	struct device_node *clk_np;
+> > +	u32 *prop;
+> > +	u32 pmcdr_mask;
+> > +
+> > +	if (!pmc_regs) {
+> > +		pr_err("%s: PMC is unavailable\n", __func__);
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	if (enable && !device_may_wakeup(&pdev->dev))
+> > +		return -EINVAL;
 > 
-> Please make sure these series comes in with enough time to reach v3.6
-> merge window in about 3 months.
+> Who is setting can_wakeup for these devices?
+
+The device driver is responsible to set can_wakeup.
+
 > 
-> You can put this fix together on that series after you drop the global.
+> > +	clk_np = of_parse_phandle(pdev->dev.of_node, "fsl,pmc-handle", 0);
+> > +	if (!clk_np)
+> > +		return -EINVAL;
+> > +
+> > +	prop = (u32 *)of_get_property(clk_np, "fsl,pmcdr-mask", NULL);
+> 
+> Don't cast the const away.
 
-Before I came to do the proposed changes, I stumbled upon this:
+OK.
 
-In file included from drivers/usb/gadget/fsl_udc_core.c:49:
-drivers/usb/gadget/fsl_usb2_udc.h: In function ¡get_qh_by_ep¢:
-drivers/usb/gadget/fsl_usb2_udc.h:585: error: ¡struct fsl_ep¢ has no member named ¡desc¢
-drivers/usb/gadget/fsl_udc_core.c: In function ¡done¢:
-drivers/usb/gadget/fsl_udc_core.c:187: error: ¡struct fsl_ep¢ has no member named ¡desc¢
-drivers/usb/gadget/fsl_udc_core.c:187: error: ¡struct fsl_ep¢ has no member named ¡desc¢
-<snip>
+> 
+> > +	if (!prop) {
+> > +		ret = -EINVAL;
+> > +		goto out;
+> > +	}
+> > +	pmcdr_mask = be32_to_cpup(prop);
+> > +
+> > +	if (enable)
+> > +		/* clear to enable clock in low power mode */
+> > +		clrbits32(&pmc_regs->pmcdr, pmcdr_mask);
+> > +	else
+> > +		setbits32(&pmc_regs->pmcdr, pmcdr_mask);
+> 
+> What is the default PMCDR if this function is never called?  Should init
+> to all bits set on PM driver probe (or maybe limit it to defined bits
+> only, though that's a little harder to do generically).
+> 
+> -Scot
 
-my proposed regression patch:
----
-From: Christoph Fritz <chf.fritz@googlemail.com>
-Date: Mon, 4 Jun 2012 12:58:21 +0200
-Subject: [PATCH] usb: gadget: regression fix - useage of usb_ep
+The default PMCDR is defined separately by individual chip.
+I agree with you. I will have a try.
 
-This patch removes redundant pointer to struct usb_endpoint_descriptor which
-were missed in commit 79149b8:
-
- usb: gadget: Update fsl_udc_core to use usb_endpoint_descriptor inside the
- struct usb_ep
-
-Signed-off-by: Christoph Fritz <chf.fritz@googlemail.com>
----
- drivers/usb/gadget/fsl_udc_core.c |    2 +-
- drivers/usb/gadget/fsl_usb2_udc.h |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-index 2831685..678ec4d 100644
---- a/drivers/usb/gadget/fsl_udc_core.c
-+++ b/drivers/usb/gadget/fsl_udc_core.c
-@@ -2575,7 +2575,7 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
- 	/* for ep0: the desc defined here;
- 	 * for other eps, gadget layer called ep_enable with defined desc
- 	 */
--	udc_controller->eps[0].desc = &fsl_ep0_desc;
-+	udc_controller->eps[0].ep.desc = &fsl_ep0_desc;
- 	udc_controller->eps[0].ep.maxpacket = USB_MAX_CTRL_PAYLOAD;
- 
- 	/* setup the udc->eps[] for non-control endpoints and link
-diff --git a/drivers/usb/gadget/fsl_usb2_udc.h b/drivers/usb/gadget/fsl_usb2_udc.h
-index 5cd7b7e..f61a967 100644
---- a/drivers/usb/gadget/fsl_usb2_udc.h
-+++ b/drivers/usb/gadget/fsl_usb2_udc.h
-@@ -568,10 +568,10 @@ static void dump_msg(const char *label, const u8 * buf, unsigned int length)
- /*
-  * ### internal used help routines.
-  */
--#define ep_index(EP)		((EP)->desc->bEndpointAddress&0xF)
-+#define ep_index(EP)		((EP)->ep.desc->bEndpointAddress&0xF)
- #define ep_maxpacket(EP)	((EP)->ep.maxpacket)
- #define ep_is_in(EP)	( (ep_index(EP) == 0) ? (EP->udc->ep0_dir == \
--			USB_DIR_IN ):((EP)->desc->bEndpointAddress \
-+			USB_DIR_IN) : ((EP)->ep.desc->bEndpointAddress \
- 			& USB_DIR_IN)==USB_DIR_IN)
- #define get_ep_by_pipe(udc, pipe)	((pipe == 1)? &udc->eps[0]: \
- 					&udc->eps[pipe])
--- 
-1.7.2.5
+-Chenhui
