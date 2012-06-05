@@ -1,35 +1,28 @@
-Return-Path: <zch@tx30smr01.freescale.net>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B020DB6FAB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2012 21:17:57 +1000 (EST)
-Received: from mail36-db3 (localhost [127.0.0.1])	by mail36-db3-R.bigfish.com
- (Postfix) with ESMTP id B46EA3406B4	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jun 2012 11:17:09 +0000 (UTC)
-Received: from DB3EHSMHS002.bigfish.com (unknown [10.3.81.238])	by
- mail36-db3.bigfish.com (Postfix) with ESMTP id 863A4480045	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2012 11:17:07 +0000 (UTC)
-Received: from localhost.localdomain ([10.213.130.145])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q55BHiKF017962	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 5 Jun 2012 04:17:44 -0700
-Date: Tue, 5 Jun 2012 19:18:23 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v5 2/5] powerpc/85xx: add HOTPLUG_CPU support
-Message-ID: <20120605111823.GB22427@localhost.localdomain>
-References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
- <1336737235-15370-2-git-send-email-chenhui.zhao@freescale.com>
- <4FC933BF.1020901@freescale.com>
- <20120604110444.GA20676@localhost.localdomain>
- <4FCCE32F.1060301@freescale.com>
+Return-Path: <paubert@iram.es>
+Received: from rudy.puc.rediris.es (unknown [IPv6:2001:720:418:ca01::132])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 9DAA1B6FA3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2012 21:32:39 +1000 (EST)
+Date: Tue, 5 Jun 2012 13:32:25 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: kernel panic during kernel module load (powerpc specific part)
+Message-ID: <20120605113225.GA11215@visitor2.iram.es>
+References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
+ <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
+ <20120531110439.GA17373@visitor2.iram.es>
+ <1338542315.16119.50.camel@pasglop>
+ <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
+ <20120604110305.GA16707@visitor2.iram.es>
+ <1338847242.7150.83.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <4FCCE32F.1060301@freescale.com>
-Sender: <zch@tx30smr01.freescale.net>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1338847242.7150.83.camel@pasglop>
+Cc: Wrobel Heinz-R39252 <r39252@freescale.com>,
+ Michael Ellerman <michael@ellerman.id.au>,
+ Steffen Rumler <steffen.rumler.ext@nsn.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,29 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 04, 2012 at 11:32:47AM -0500, Scott Wood wrote:
-> On 06/04/2012 06:04 AM, Zhao Chenhui wrote:
-> > On Fri, Jun 01, 2012 at 04:27:27PM -0500, Scott Wood wrote:
-> >> On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
-> >>> -#ifdef CONFIG_KEXEC
-> >>> +#if defined(CONFIG_KEXEC) || defined(CONFIG_HOTPLUG_CPU)
-> >>
-> >> Let's not grow lists like this.  Is there any harm in building it
-> >> unconditionally?
-> >>
-> >> -Scott
+On Tue, Jun 05, 2012 at 08:00:42AM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2012-06-04 at 13:03 +0200, Gabriel Paubert wrote:
+> > There is no conflict to the ABI. These functions are supposed to be
+> > directly reachable from whatever code
+> > section may need them.
 > > 
-> > We need this ifdef. We only set give_timebase/take_timebase
-> > when CONFIG_KEXEC or CONFIG_HOTPLUG_CPU is defined.
+> > Now I have a question: how did you get the need for this?
+> > 
+> > None of my kernels uses them:
+> > - if I compile with -O2, the compiler simply expands epilogue and
+> > prologue to series of lwz and stw
+> > - if I compile with -Os, the compiler generates lmw/stmw which give
+> > the smallest possible cache footprint
+> > 
+> > Neither did I find a single reference to these functions in several
+> > systems that I grepped for.
 > 
-> If we really need this to be a compile-time decision, make a new symbol
-> for it, but I really think this should be decided at runtime.  Just
-> because we have kexec or hotplug support enabled doesn't mean that's
-> actually what we're doing at the moment.
-> 
-> -Scott
+> Newer gcc's ... even worse, with -Os, it does it for a single register
+> spill afaik. At least that's how I hit it with grub2 using whatever gcc
+> is in fc17.
 
-If user does not enable kexec or hotplug, these codes are redundant.
-So use CONFIG_KEXEC and CONFIG_HOTPLUG_CPU to gard them.
+Well, I've not yet been able to make it call the save/restore routines,
+but here on a machine with Debian testing and several gcc installed:
 
--Chenhui
+- gcc-4.4 never generates lmw/stmw, it always uses individual
+ lwz/stw whatever options are set (-Os -mmultiple).
+
+- gcc-4.6 and gcc-4.7 behave identically, if -Os is set, they
+  generate by default lmw/stmw. But if I combine -Os with 
+  -mno-multiple, they call the helper functions.
+
+In other words, on this system, gcc-4.4 is broken but should not
+cause any harm. gcc-4.6 and gcc-4.7 look correct, but are there
+any processors on which -mno-multiple is worth setting?
+
+	Regards,
+	Gabriel
