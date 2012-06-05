@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F235DB6F13
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 08:17:51 +1000 (EST)
-Message-ID: <1338934659.7150.113.camel@pasglop>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [149.20.54.216])
+ by ozlabs.org (Postfix) with ESMTP id E48FCB6F9A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 08:30:06 +1000 (EST)
+Date: Tue, 05 Jun 2012 15:20:58 -0700 (PDT)
+Message-Id: <20120605.152058.828742127223799137.davem@davemloft.net>
+To: benh@kernel.crashing.org
 Subject: Re: [PATCH] powerpc: Fix assmption of end_of_DRAM() returns end
  address
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bharat Bhushan <r65777@freescale.com>
-Date: Wed, 06 Jun 2012 08:17:39 +1000
-In-Reply-To: <1338904504-2750-1-git-send-email-bharat.bhushan@freescale.com>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1338934659.7150.113.camel@pasglop>
 References: <1338904504-2750-1-git-send-email-bharat.bhushan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ <1338934659.7150.113.camel@pasglop>
 Mime-Version: 1.0
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: bharat.bhushan@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, r65777@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,133 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-06-05 at 19:25 +0530, Bharat Bhushan wrote:
-> memblock_end_of_DRAM() returns end_address + 1, not end address.
-> While some code assumes that it returns end address.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 06 Jun 2012 08:17:39 +1000
 
-Shouldn't we instead fix it the other way around ? IE, make
-memblock_end_of_DRAM() does what the name implies, which is to return
-the last byte of DRAM, and fix the -other- callers not to make bad
-assumptions ?
-
-Cheers,
-Ben.
-
-> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
-> ---
-> This patch is based on next branch of https://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
+> On Tue, 2012-06-05 at 19:25 +0530, Bharat Bhushan wrote:
+>> memblock_end_of_DRAM() returns end_address + 1, not end address.
+>> While some code assumes that it returns end address.
 > 
->  arch/powerpc/platforms/44x/currituck.c     |    2 +-
->  arch/powerpc/platforms/85xx/corenet_ds.c   |    2 +-
->  arch/powerpc/platforms/85xx/ge_imp3a.c     |    2 +-
->  arch/powerpc/platforms/85xx/mpc8536_ds.c   |    2 +-
->  arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    2 +-
->  arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    2 +-
->  arch/powerpc/platforms/85xx/p1022_ds.c     |    2 +-
->  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
->  8 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/44x/currituck.c b/arch/powerpc/platforms/44x/currituck.c
-> index 583e67f..9f6c33d 100644
-> --- a/arch/powerpc/platforms/44x/currituck.c
-> +++ b/arch/powerpc/platforms/44x/currituck.c
-> @@ -160,7 +160,7 @@ static void __init ppc47x_setup_arch(void)
->  	/* No need to check the DMA config as we /know/ our windows are all of
->   	 * RAM.  Lets hope that doesn't change */
->  #ifdef CONFIG_SWIOTLB
-> -	if (memblock_end_of_DRAM() > 0xffffffff) {
-> +	if ((memblock_end_of_DRAM() - 1) > 0xffffffff) {
->  		ppc_swiotlb_enable = 1;
->  		set_pci_dma_ops(&swiotlb_dma_ops);
->  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-> diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c b/arch/powerpc/platforms/85xx/corenet_ds.c
-> index dd3617c..925b028 100644
-> --- a/arch/powerpc/platforms/85xx/corenet_ds.c
-> +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
-> @@ -77,7 +77,7 @@ void __init corenet_ds_setup_arch(void)
->  #endif
->  
->  #ifdef CONFIG_SWIOTLB
-> -	if (memblock_end_of_DRAM() > max) {
-> +	if ((memblock_end_of_DRAM() - 1) > max) {
->  		ppc_swiotlb_enable = 1;
->  		set_pci_dma_ops(&swiotlb_dma_ops);
->  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-> diff --git a/arch/powerpc/platforms/85xx/ge_imp3a.c b/arch/powerpc/platforms/85xx/ge_imp3a.c
-> index 1801462..b6a728b 100644
-> --- a/arch/powerpc/platforms/85xx/ge_imp3a.c
-> +++ b/arch/powerpc/platforms/85xx/ge_imp3a.c
-> @@ -125,7 +125,7 @@ static void __init ge_imp3a_setup_arch(void)
->  	mpc85xx_smp_init();
->  
->  #ifdef CONFIG_SWIOTLB
-> -	if (memblock_end_of_DRAM() > max) {
-> +	if ((memblock_end_of_DRAM() - 1) > max) {
->  		ppc_swiotlb_enable = 1;
->  		set_pci_dma_ops(&swiotlb_dma_ops);
->  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-> diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-> index 585bd22..767c7cf 100644
-> --- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-> @@ -75,7 +75,7 @@ static void __init mpc8536_ds_setup_arch(void)
->  #endif
->  
->  #ifdef CONFIG_SWIOTLB
-> -	if (memblock_end_of_DRAM() > max) {
-> +	if ((memblock_end_of_DRAM() - 1) > max) {
->  		ppc_swiotlb_enable = 1;
->  		set_pci_dma_ops(&swiotlb_dma_ops);
->  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> index 1fd91e9..d30f6c4 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> @@ -173,7 +173,7 @@ static void __init mpc85xx_ds_setup_arch(void)
->  	mpc85xx_smp_init();
->  
->  #ifdef CONFIG_SWIOTLB
-> -	if (memblock_end_of_DRAM() > max) {
-> +	if ((memblock_end_of_DRAM() - 1) > max) {
->  		ppc_swiotlb_enable = 1;
->  		set_pci_dma_ops(&swiotlb_dma_ops);
->  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> index d208ebc..8e4b094 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-> @@ -359,7 +359,7 @@ static void __init mpc85xx_mds_setup_arch(void)
->  	mpc85xx_mds_qe_init();
->  
->  #ifdef CONFIG_SWIOTLB
-> -	if (memblock_end_of_DRAM() > max) {
-> +	if ((memblock_end_of_DRAM() - 1) > max) {
->  		ppc_swiotlb_enable = 1;
->  		set_pci_dma_ops(&swiotlb_dma_ops);
->  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-> diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-> index f700c81..74e310b 100644
-> --- a/arch/powerpc/platforms/85xx/p1022_ds.c
-> +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-> @@ -450,7 +450,7 @@ static void __init p1022_ds_setup_arch(void)
->  	mpc85xx_smp_init();
->  
->  #ifdef CONFIG_SWIOTLB
-> -	if (memblock_end_of_DRAM() > max) {
-> +	if ((memblock_end_of_DRAM() - 1) > max) {
->  		ppc_swiotlb_enable = 1;
->  		set_pci_dma_ops(&swiotlb_dma_ops);
->  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> index 3755e61..817245b 100644
-> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-> @@ -102,7 +102,7 @@ mpc86xx_hpcn_setup_arch(void)
->  #endif
->  
->  #ifdef CONFIG_SWIOTLB
-> -	if (memblock_end_of_DRAM() > max) {
-> +	if ((memblock_end_of_DRAM() - 1) > max) {
->  		ppc_swiotlb_enable = 1;
->  		set_pci_dma_ops(&swiotlb_dma_ops);
->  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> Shouldn't we instead fix it the other way around ? IE, make
+> memblock_end_of_DRAM() does what the name implies, which is to return
+> the last byte of DRAM, and fix the -other- callers not to make bad
+> assumptions ?
+
+That was my impression too when I saw this patch.
