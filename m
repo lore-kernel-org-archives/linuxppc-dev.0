@@ -1,24 +1,29 @@
 Return-Path: <B07421@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3409DB6F77
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 02:07:53 +1000 (EST)
-Message-ID: <4FCE2ECD.4050107@freescale.com>
-Date: Tue, 5 Jun 2012 11:07:41 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 0A9A7B6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 02:11:49 +1000 (EST)
+Message-ID: <4FCE2FB8.9080307@freescale.com>
+Date: Tue, 5 Jun 2012 11:11:36 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH v5 1/5] powerpc/85xx: implement hardware timebase sync
+To: Li Yang-R58472 <r58472@freescale.com>
+Subject: Re: [PATCH v5 4/5] fsl_pmc: Add API to enable device as wakeup event
+ source
 References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
- <4FC8E250.9090000@freescale.com>
- <20120605090831.GA21929@localhost.localdomain>
-In-Reply-To: <20120605090831.GA21929@localhost.localdomain>
+ <1336737235-15370-4-git-send-email-chenhui.zhao@freescale.com>
+ <4FC93D74.3090200@freescale.com>
+ <20120604113609.GC20676@localhost.localdomain> <4FCD3E8B.30805@freescale.com>
+ <94F013E7935FF44C83EBE7784D62AD3F09335D27@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F09335D27@039-SN2MPN1-022.039d.mgd.msft.net>
 Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Matthew McClintock <msm@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,55 +33,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/05/2012 04:08 AM, Zhao Chenhui wrote:
-> On Fri, Jun 01, 2012 at 10:40:00AM -0500, Scott Wood wrote:
->> I know you say this is for dual-core chips only, but it would be nice if
->> you'd write this in a way that doesn't assume that (even if the
->> corenet-specific timebase freezing comes later).
+On 06/04/2012 11:08 PM, Li Yang-R58472 wrote:
 > 
-> At this point, I have not thought about how to implement the cornet-specific timebase freezing.
-
-I wasn't asking you to.  I was asking you to not have logic that breaks
-with more than 2 CPUs.
-
->> Do we need an isync after setting the timebase, to ensure it's happened
->> before we enable the timebase?  Likewise, do we need a readback after
->> disabling the timebase to ensure it's disabled before we read the
->> timebase in give_timebase?
 > 
-> I checked the e500 core manual (Chapter 2.16 Synchronization Requirements for SPRs).
-> Only some SPR registers need an isync. The timebase registers do not.
-
-I don't trust that, and the consequences of having the sync be imperfect
-are too unpleasant to chance it.
-
-> I did a readback in mpc85xx_timebase_freeze().
-
-Sorry, missed that somehow.
-
->>> +#ifdef CONFIG_KEXEC
->>> +	np = of_find_matching_node(NULL, guts_ids);
->>> +	if (np) {
->>> +		guts = of_iomap(np, 0);
->>> +		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
->>> +		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
->>> +		of_node_put(np);
->>> +	} else {
->>> +		smp_85xx_ops.give_timebase = smp_generic_give_timebase;
->>> +		smp_85xx_ops.take_timebase = smp_generic_take_timebase;
->>> +	}
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Tuesday, June 05, 2012 7:03 AM
+>> To: Zhao Chenhui-B35336
+>> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
+>> galak@kernel.crashing.org; Li Yang-R58472
+>> Subject: Re: [PATCH v5 4/5] fsl_pmc: Add API to enable device as wakeup
+>> event source
 >>
->> Do not use smp_generic_give/take_timebase, ever.  If you don't have the
->> guts node, then just assume the timebase is already synced.
+>> On 06/04/2012 06:36 AM, Zhao Chenhui wrote:
+>>> On Fri, Jun 01, 2012 at 05:08:52PM -0500, Scott Wood wrote:
+>>>> On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
+>>>>> +int mpc85xx_pmc_set_wake(struct platform_device *pdev, bool enable)
+>>>>
+>>>> Why does it have to be a platform_device?  Would a bare device_node
+>> work
+>>>> here?  If it's for stuff like device_may_wakeup() that could be in a
+>>>> platform_device wrapper function.
+>>>
+>>> It does not have to be a platform_device. I think it can be a struct
+>> device.
 >>
->> -Scott
+>> Why does it even need that?  The low level mechanism for influencing
+>> PMCDR should only need a device node, not a Linux device struct.
 > 
-> smp_generic_give/take_timebase is the default in KEXEC before.
+> It does no harm to pass the device structure and makes more sense for object oriented interface design. 
 
-That was a mistake.
+It does do harm if you don't have a device structure to pass, if for
+some reason you found the device by directly looking for it rather than
+going through the device model.
 
-> If do not set them, it may make KEXEC fail on other platforms.
+>>>> Who is setting can_wakeup for these devices?
+>>>
+>>> The device driver is responsible to set can_wakeup.
+>>
+>> How would the device driver know how to set it?  Wouldn't this depend on
+>> the particular SoC and low power mode?
+> 
+> It is based on the "fsl,magic-packet" and "fsl,wake-on-filer" device tree properties.
 
-What platforms?
+fsl,magic-packet was a mistake.  It is equivalent to checking the
+compatible for etsec.  It does not convey any information about whether
+the eTSEC is still active in a given low power mode.
+
+How is fsl,wake-os-filer relevant to this decision?  When will it be set
+but not fsl,magic-packet?
+
+What about devices other than ethernet?  What about differences between
+ordinary sleep and deep sleep?
 
 -Scott
