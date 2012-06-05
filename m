@@ -2,19 +2,28 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C6F85B6FA3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 08:43:26 +1000 (EST)
-Message-ID: <1338936198.7150.138.camel@pasglop>
-Subject: Re: [PATCH] perf: Don't use SIAR for user addresses
+ by ozlabs.org (Postfix) with ESMTPS id 5D82CB6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 08:47:20 +1000 (EST)
+Message-ID: <1338936422.7150.139.camel@pasglop>
+Subject: Re: kernel panic during kernel module load (powerpc specific part)
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Wed, 06 Jun 2012 08:43:18 +1000
-In-Reply-To: <20120605203247.GA1525@us.ibm.com>
-References: <20120605203247.GA1525@us.ibm.com>
+To: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 06 Jun 2012 08:47:02 +1000
+In-Reply-To: <20120605104449.GA32032@visitor2.iram.es>
+References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
+ <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
+ <20120531110439.GA17373@visitor2.iram.es>
+ <1338542315.16119.50.camel@pasglop>
+ <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
+ <20120604110305.GA16707@visitor2.iram.es>
+ <1338847242.7150.83.camel@pasglop>
+ <20120605104449.GA32032@visitor2.iram.es>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: mpjohn@us.ibm.com, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
+Cc: Wrobel Heinz-R39252 <r39252@freescale.com>,
+ Michael Ellerman <michael@ellerman.id.au>,
+ Steffen Rumler <steffen.rumler.ext@nsn.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,151 +33,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-06-05 at 13:32 -0700, Sukadev Bhattiprolu wrote:
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Fri, 1 Jun 2012 20:56:02 -0400
-> Subject: [PATCH] perf: Don't use SIAR for user-space addresses
+On Tue, 2012-06-05 at 12:44 +0200, Gabriel Paubert wrote:
+> On Tue, Jun 05, 2012 at 08:00:42AM +1000, Benjamin Herrenschmidt wrote:
+> > On Mon, 2012-06-04 at 13:03 +0200, Gabriel Paubert wrote:
+> > > There is no conflict to the ABI. These functions are supposed to be
+> > > directly reachable from whatever code
+> > > section may need them.
+> > > 
+> > > Now I have a question: how did you get the need for this?
+> > > 
+> > > None of my kernels uses them:
+> > > - if I compile with -O2, the compiler simply expands epilogue and
+> > > prologue to series of lwz and stw
+> > > - if I compile with -Os, the compiler generates lmw/stmw which give
+> > > the smallest possible cache footprint
+> > > 
+> > > Neither did I find a single reference to these functions in several
+> > > systems that I grepped for.
+> > 
+> > Newer gcc's ... even worse, with -Os, it does it for a single register
+> > spill afaik. At least that's how I hit it with grub2 using whatever gcc
+> > is in fc17.
 > 
-> With the pipelining on Power7, the SIAR can be off by several instructions
-> leading to incorrect callgraphs. For user space code at least we can be more
-> accurate by just using the next instruction pointer.
-> 
-> Based on code/input from Anton Blanchard.
+> Ok, it's beyond stupid, and at this point must be considered a gcc bug.
 
-Had a chat with him, we still want to use SIAR for marked events, which
-I think off the top of my head is mmcra & MMCRA_SAMPLE_ENABLE.
+Probably, I haven't had a chance to report it...
 
-There's a few more considerations we discussed, such as wanting also
-more precise backtraces in kernel space, but still capture in pHyp when
-SIHV is set and have maybe some kind of sysfs option to revert back to
-SIAR kernel-wide if we are trying to track down hard irq off stuff.
-
-I'll let Anton followup. I'm still technically not working for a couple
-of weeks :-)
+It would make more sense if the out of line functions also handled
+creating the stack frame & disposing of it (ie, maybe a tail call for
+return) but they don't even do that so yes it's quite gross.
 
 Cheers,
 Ben.
-
-> Before this fon Power7, we see callgraphs like:
-> 
->      1.90%  sprintft  sprintft           [.] do_my_sprintf
->                |
->                --- 00000011.plt_call.strlen@@GLIBC_2.3+0
->                    do_my_sprintf
->                    main
->                    generic_start_main
->                    __libc_start_main
->                    (nil)
->         ...snip...
-> 
->               |
->                --- __random
->                    rand
->                   |
->                   |--63.16%-- do_my_sprintf
->                   |          main
->                   |          generic_start_main
->                   |          __libc_start_main
->                   |          (nil)
->                   |
->                    --36.84%-- rand
->                              do_my_sprintf
->                              main
->                              generic_start_main
->                              __libc_start_main
->                              (nil)
-> 
-> which seems to indicate the libc __random() calls do_my_sprintf(), instead
-> of the other way around.
-> 
-> After the fix, the same trace looks like this:
-> 
->      4.08%  sprintft  sprintft           [.] do_my_sprintf
->             |
->             --- do_my_sprintf
->                 do_my_sprintf
->                 main
->                 generic_start_main
->                 __libc_start_main
->                 (nil)
-> 
-> Cc: Anton Blanchard <anton@samba.org>
-> Reported-by: Maynard Johnson <mpjohn@us.ibm.com>
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/core-book3s.c |   39 ++++++++++++++++++++++++++++++---------
->  1 files changed, 30 insertions(+), 9 deletions(-)
-> 
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 8f84bcb..846bd68 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -116,6 +116,26 @@ static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp)
->  		*addrp = mfspr(SPRN_SDAR);
->  }
->  
-> +static bool mmcra_sihv(unsigned long mmcra)
-> +{
-> +	unsigned long sihv = MMCRA_SIHV;
-> +
-> +	if (ppmu->flags & PPMU_ALT_SIPR)
-> +		sihv = POWER6_MMCRA_SIHV;
-> +
-> +	return !!(mmcra & sihv);
-> +}
-> +
-> +static bool mmcra_sipr(unsigned long mmcra)
-> +{
-> +	unsigned long sipr = MMCRA_SIPR;
-> +
-> +	if (ppmu->flags & PPMU_ALT_SIPR)
-> +		sipr = POWER6_MMCRA_SIPR;
-> +
-> +	return !!(mmcra & sipr);
-> +}
-> +
->  static inline u32 perf_flags_from_msr(struct pt_regs *regs)
->  {
->  	if (regs->msr & MSR_PR)
-> @@ -128,8 +148,6 @@ static inline u32 perf_flags_from_msr(struct pt_regs *regs)
->  static inline u32 perf_get_misc_flags(struct pt_regs *regs)
->  {
->  	unsigned long mmcra = regs->dsisr;
-> -	unsigned long sihv = MMCRA_SIHV;
-> -	unsigned long sipr = MMCRA_SIPR;
->  
->  	/* Not a PMU interrupt: Make up flags from regs->msr */
->  	if (TRAP(regs) != 0xf00)
-> @@ -156,15 +174,10 @@ static inline u32 perf_get_misc_flags(struct pt_regs *regs)
->  		return PERF_RECORD_MISC_USER;
->  	}
->  
-> -	if (ppmu->flags & PPMU_ALT_SIPR) {
-> -		sihv = POWER6_MMCRA_SIHV;
-> -		sipr = POWER6_MMCRA_SIPR;
-> -	}
-> -
->  	/* PR has priority over HV, so order below is important */
-> -	if (mmcra & sipr)
-> +	if (mmcra_sipr(mmcra))
->  		return PERF_RECORD_MISC_USER;
-> -	if ((mmcra & sihv) && (freeze_events_kernel != MMCR0_FCHV))
-> +	if (mmcra_sihv(mmcra) && (freeze_events_kernel != MMCR0_FCHV))
->  		return PERF_RECORD_MISC_HYPERVISOR;
->  	return PERF_RECORD_MISC_KERNEL;
->  }
-> @@ -1340,6 +1353,14 @@ unsigned long perf_instruction_pointer(struct pt_regs *regs)
->  	    !(mmcra & MMCRA_SAMPLE_ENABLE))
->  		return regs->nip;
->  
-> +	/*
-> +	 * With pipelining on P7, addresses in the SIAR can be off by several
-> +	 * instructions. For user space use the next instruction pointer as
-> +	 * that will be more accurate.
-> +	 */
-> +	if (mmcra_sipr(mmcra))
-> +		return regs->nip;
-> +
->  	return mfspr(SPRN_SIAR) + perf_ip_adjust(regs);
->  }
->  
