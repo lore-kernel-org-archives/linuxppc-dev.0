@@ -1,15 +1,16 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 5 Jun 2012 12:02:22 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
- mikey@neuling.org, galak@kernel.crashing.org, olof@lixom.net
-Subject: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
-Message-ID: <20120605120222.6722a3e3@kryten>
-In-Reply-To: <20120604175858.38dac554@kryten>
-References: <20120604175858.38dac554@kryten>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id DDAA5B6EEC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2012 12:27:58 +1000 (EST)
+Message-ID: <1338863274.13348.530.camel@gandalf.stny.rr.com>
+Subject: [PATCH] powerpc/ftrace: Do not trace restore_interrupts()
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 04 Jun 2012 22:27:54 -0400
+Content-Type: text/plain; charset="ISO-8859-15"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: stable@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,114 +20,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+As I was adding code that affects all archs, I started testing function
+tracer against PPC64 and found that it currently locks up with 3.4
+kernel. I figured it was due to tracing a function that shouldn't be, so
+I went through the following process to bisect to find the culprit:
 
-I blame Mikey for this. He elevated my slightly dubious testcase:
+ cat /debug/tracing/available_filter_functions > t
+ num=`wc -l t`
+ sed -ne "1,${num}p" t > t1
+ let num=num+1
+ sed -ne "${num},$p" t > t2
+ cat t1 > /debug/tracing/set_ftrace_filter
+ echo function /debug/tracing/current_tracer
+ <failed? bisect t1, if not bisect t2>
 
-# dd if=/dev/zero of=/dev/null bs=1M count=10000
+It finally came down to this function: restore_interrupts()
 
-to benchmark status. And naturally we need to be number 1 at creating
-zeros. So lets improve __clear_user some more.
+I'm not sure why this locks up the system. It just seems to prevent
+scheduling from occurring. Interrupts seem to still work, as I can ping
+the box. But all user processes freeze.
 
-As Paul suggests we can use dcbz for large lengths. This patch gets
-the destination cacheline aligned then uses dcbz on whole cachelines.
+When restore_interrupts() is not traced, function tracing works fine.
 
-Before:
-10485760000 bytes (10 GB) copied, 0.414744 s, 25.3 GB/s
+Cc: stable@kernel.org
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-After:
-10485760000 bytes (10 GB) copied, 0.268597 s, 39.0 GB/s
-
-39 GB/s, a new record.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-v2: handle any cacheline size
-
-Index: linux-build/arch/powerpc/lib/string_64.S
-===================================================================
---- linux-build.orig/arch/powerpc/lib/string_64.S	2012-06-04 16:18:56.351604302 +1000
-+++ linux-build/arch/powerpc/lib/string_64.S	2012-06-05 11:42:10.044654851 +1000
-@@ -19,6 +19,12 @@
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 641da9e..64eec59 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -277,7 +277,7 @@ EXPORT_SYMBOL(arch_local_irq_restore);
+  * NOTE: This is called with interrupts hard disabled but not marked
+  * as such in paca->irq_happened, so we need to resync this.
   */
- 
- #include <asm/ppc_asm.h>
-+#include <asm/asm-offsets.h>
-+
-+	.section	".toc","aw"
-+PPC64_CACHES:
-+	.tc		ppc64_caches[TC],ppc64_caches
-+	.section	".text"
- 
- /**
-  * __clear_user: - Zero a block of memory in user space, with less checking.
-@@ -94,9 +100,14 @@ err1;	stw	r0,0(r3)
- 	addi	r3,r3,4
- 
- 3:	sub	r4,r4,r6
--	srdi	r6,r4,5
-+
- 	cmpdi	r4,32
-+	cmpdi	cr1,r4,512
- 	blt	.Lshort_clear
-+	bgt	cr1,.Llong_clear
-+
-+.Lmedium_clear:
-+	srdi	r6,r4,5
- 	mtctr	r6
- 
- 	/* Do 32 byte chunks */
-@@ -139,3 +150,53 @@ err1;	stb	r0,0(r3)
- 
- 10:	li	r3,0
- 	blr
-+
-+.Llong_clear:
-+	ld	r5,PPC64_CACHES@toc(r2)
-+
-+	bf	cr7*4+0,11f
-+err2;	std	r0,0(r3)
-+	addi	r3,r3,8
-+	addi	r4,r4,-8
-+
-+	/* Destination is 16 byte aligned, need to get it cacheline aligned */
-+11:	lwz	r7,DCACHEL1LOGLINESIZE(r5)
-+	lwz	r9,DCACHEL1LINESIZE(r5)
-+
-+	/*
-+	 * With worst case alignment the long clear loop takes a minimum
-+	 * of 1 byte less than 2 cachelines.
-+	 */
-+	sldi	r10,r9,2
-+	cmpd	r4,r10
-+	blt	.Lmedium_clear
-+
-+	neg	r6,r3
-+	addi	r10,r9,-1
-+	and.	r5,r6,r10
-+	beq	13f
-+
-+	srdi	r6,r5,4
-+	mtctr	r6
-+	mr	r8,r3
-+12:
-+err1;	std	r0,0(r3)
-+err1;	std	r0,8(r3)
-+	addi	r3,r3,16
-+	bdnz	12b
-+
-+	sub	r4,r4,r5
-+
-+13:	srd	r6,r4,r7
-+	mtctr	r6
-+	mr	r8,r3
-+14:
-+err1;	dcbz	r0,r3
-+	add	r3,r3,r9
-+	bdnz	14b
-+
-+	and	r4,r4,r10
-+
-+	cmpdi	r4,32
-+	blt	.Lshort_clear
-+	b	.Lmedium_clear
+-void restore_interrupts(void)
++void notrace restore_interrupts(void)
+ {
+ 	if (irqs_disabled()) {
+ 		local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
