@@ -1,27 +1,22 @@
-Return-Path: <r58472@freescale.com>
+Return-Path: <B29983@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 17F4AB6F77
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2012 14:08:33 +1000 (EST)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Zhao Chenhui-B35336
- <B35336@freescale.com>
-Subject: RE: [PATCH v5 4/5] fsl_pmc: Add API to enable device as wakeup
- event source
-Date: Tue, 5 Jun 2012 04:08:25 +0000
-Message-ID: <94F013E7935FF44C83EBE7784D62AD3F09335D27@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
- <1336737235-15370-4-git-send-email-chenhui.zhao@freescale.com>
- <4FC93D74.3090200@freescale.com>
- <20120604113609.GC20676@localhost.localdomain> <4FCD3E8B.30805@freescale.com>
-In-Reply-To: <4FCD3E8B.30805@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id A5AB3B7017
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2012 12:28:40 +1000 (EST)
+From: Tang Yuantian-B29983 <B29983@freescale.com>
+To: MAUSSIRE Cedric <cedric.maussire@cassidian.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: Cannot boot an kernel version other than 2.6.35 on P2020RDB-PCA
+Date: Tue, 5 Jun 2012 02:28:30 +0000
+Message-ID: <D07C73A334FF604B95B3CBD2A545D07B079A63F1@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <2A5271086BF5EA4A891F3804135DEA820795A3B5@TLSEVS01.ts.eads.lcl>
+In-Reply-To: <2A5271086BF5EA4A891F3804135DEA820795A3B5@TLSEVS01.ts.eads.lcl>
+Content-Type: multipart/alternative;
+ boundary="_000_D07C73A334FF604B95B3CBD2A545D07B079A63F1039SN2MPN101203_"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,116 +26,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--_000_D07C73A334FF604B95B3CBD2A545D07B079A63F1039SN2MPN101203_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 
+SGkgIENlZHJpYyBNQVVTU0lSRSwNCg0KUDIwMjBSREItUENBIEJvYXJkIGdldHMgc3VwcG9ydGVk
+IHNpbmNlIGtlcm5lbCAzLjMgaW4gbWFpbmxpbmUgY29kZS4NCkFyZSB5b3Ugc3VyZSB0aGUgYm9h
+cmQgd29ya3Mgb24ga2VybmVsIDIuNi4zNT8NCg0KUmVnYXJkcywNCll1YW50aWFuDQoNCkZyb206
+IGxpbnV4cHBjLWRldi1ib3VuY2VzK2IyOTk4Mz1mcmVlc2NhbGUuY29tQGxpc3RzLm96bGFicy5v
+cmcgW21haWx0bzpsaW51eHBwYy1kZXYtYm91bmNlcytiMjk5ODM9ZnJlZXNjYWxlLmNvbUBsaXN0
+cy5vemxhYnMub3JnXSBPbiBCZWhhbGYgT2YgTUFVU1NJUkUgQ2VkcmljDQpTZW50OiAyMDEyxOo2
+1MI0yNUgMjM6MDYNClRvOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KU3ViamVjdDog
+Q2Fubm90IGJvb3QgYW4ga2VybmVsIHZlcnNpb24gb3RoZXIgdGhhbiAyLjYuMzUgb24gUDIwMjBS
+REItUENBDQoNCg0KSGVsbG8gYWxsLA0KDQpJIGFtIGN1cnJlbnRseSB3b3JraW5nIG9uIHRoZSBG
+cmVlc2NhbGUgUDIwMjBSREItUENBIEJvYXJkLCB3aGljaCBoYXMgYmVlbiBkZWxpdnJlZCB3aXRo
+IHRoZSBsaW51eC0yLjYuMzUga2VybmVsLiBJIHN1Y2NlZWQgaW4gcmUtZ2VuZXJhdGluZyBteSBv
+d24gdUltYWdlIGluIDIuNi4zNSB0aGFua3MgdG8gRUxESywgYnV0IHdoZW4gSSB3YW50IHRvIG1v
+dmUgb24gdG8gYSBuZXdlciBvciBvbGRlciB2ZXJzaW9uIG9mIGxpbnV4LCB0aGUgc3lzdGVtIGRv
+ZXMgbm90IHJlc3BvbmQgYW55IGxvbmdlciBqdXN0IGFmdGVyIHRoZSBib290IHdoaXRoIHRoZSBu
+ZnNib290IGNvbW1hbmQsIHRoZSBsb2dzIGFyZSA6DQoNCiMjIEJvb3Rpbmcga2VybmVsIGZyb20g
+TGVnYWN5IEltYWdlIGF0IDAxMDAwMDAwIC4uLg0KICAgSW1hZ2UgTmFtZTogICBMaW51eC0yLjYu
+MzkNCiAgIENyZWF0ZWQ6ICAgICAgMjAxMi0wNS0yOSAgIDg6MjQ6NTQgVVRDDQogICBJbWFnZSBU
+eXBlOiAgIFBvd2VyUEMgTGludXggS2VybmVsIEltYWdlIChnemlwIGNvbXByZXNzZWQpDQogICBE
+YXRhIFNpemU6ICAgIDM1MTQ4ODIgQnl0ZXMgPSAzLjQgTWlCDQogICBMb2FkIEFkZHJlc3M6IDAw
+MDAwMDAwDQogICBFbnRyeSBQb2ludDogIDAwMDAwMDAwDQogICBWZXJpZnlpbmcgQ2hlY2tzdW0g
+Li4uIE9LDQojIyBGbGF0dGVuZWQgRGV2aWNlIFRyZWUgYmxvYiBhdCAwMGMwMDAwMA0KICAgQm9v
+dGluZyB1c2luZyB0aGUgZmR0IGJsb2IgYXQgMHhjMDAwMDANCiAgIFVuY29tcHJlc3NpbmcgS2Vy
+bmVsIEltYWdlIC4uLiBPSw0KICAgTG9hZGluZyBEZXZpY2UgVHJlZSB0byAwMGZmYTAwMCwgZW5k
+IDAwZmZmZDRhIC4uLiBPSw0KDQpOQiA6IG5mc2Jvb3Q9c2V0ZW52IGJvb3RhcmdzIHJvb3Q9L2Rl
+di9uZnMgcncgbmZzcm9vdD0xOTIuMTY4LjEuMTokcm9vdHBhdGggaXA9MTkyLjE2OC4xLjI6MTky
+LjE2OC4xLjE6MTkyLjE2OC4xLjE6MjU1LjI1NS4yNTUuMDpQMjAyMFJEQi1QQzpldGgwOm9mZiBj
+b25zb2xlPXR0eVMwLDExNTIwMA0KDQpJIGhhdmUgdW5zdWNjZXNzZnVsbHkgdHJpZWQgdG8gcmVi
+dWlsZCB0aGUgZGV2aWNlIHRyZWUgYmxvYiBhbmQgdXNlIHRoZSBkZWZhdWx0IGtlcm5lbCBjb25m
+aWd1cmF0aW9uICJtcGM4NXh4X2RlZmNvbmZpZyIgdGhhdCBjb21lcyB3aXRoIHRoZSBtYWlubGlu
+ZSBjb2RlLg0KDQpNeSBzeXN0ZW1zIHNlZW1zIHRvIGJlIGxpbnV4LTIuNi4zNSBkZXBlbmRlbnQs
+IEkgZG8gbm90IGtub3duIGhvdyBpdCBjYW4gYmUgcG9zc2libGUsIGJlY2F1c2UgSSBjYW4gdXNl
+IHRoZSBrZXJuZWwub3JnIHNvdXJjZSBvZiB0aGUgMi42LjM1IHdoaXRoIG5vIHByb2JsZW1zIGJ1
+dCB3aGVuIEkgdXNlIHRoZSAzLjAsIGZvciBleGFtcGxlLCB3aXRoIHRoZSBzYW1lIGNvbmZpZ3Vy
+YXRpb24gYnV0IGl0IGRvZXMgbm90IHdvcmsuDQoNCg0KQmVzdCByZWdhcmRzLA0KDQoNCkNlZHJp
+YyBNQVVTU0lSRQ0K
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Tuesday, June 05, 2012 7:03 AM
-> To: Zhao Chenhui-B35336
-> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org;
-> galak@kernel.crashing.org; Li Yang-R58472
-> Subject: Re: [PATCH v5 4/5] fsl_pmc: Add API to enable device as wakeup
-> event source
->=20
-> On 06/04/2012 06:36 AM, Zhao Chenhui wrote:
-> > On Fri, Jun 01, 2012 at 05:08:52PM -0500, Scott Wood wrote:
-> >> On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
-> >>> Add APIs for setting wakeup source and lossless Ethernet in low power
-> modes.
-> >>> These APIs can be used by wake-on-packet feature.
-> >>>
-> >>> Signed-off-by: Dave Liu <daveliu@freescale.com>
-> >>> Signed-off-by: Li Yang <leoli@freescale.com>
-> >>> Signed-off-by: Jin Qing <b24347@freescale.com>
-> >>> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> >>> ---
-> >>>  arch/powerpc/sysdev/fsl_pmc.c |   71
-> ++++++++++++++++++++++++++++++++++++++++-
-> >>>  arch/powerpc/sysdev/fsl_soc.h |    9 +++++
-> >>>  2 files changed, 79 insertions(+), 1 deletions(-)
-> >>>
-> >>> diff --git a/arch/powerpc/sysdev/fsl_pmc.c
-> b/arch/powerpc/sysdev/fsl_pmc.c
-> >>> index 1dc6e9e..c1170f7 100644
-> >>> --- a/arch/powerpc/sysdev/fsl_pmc.c
-> >>> +++ b/arch/powerpc/sysdev/fsl_pmc.c
-> >>> @@ -34,6 +34,7 @@ struct pmc_regs {
-> >>>  	__be32 powmgtcsr;
-> >>>  #define POWMGTCSR_SLP		0x00020000
-> >>>  #define POWMGTCSR_DPSLP		0x00100000
-> >>> +#define POWMGTCSR_LOSSLESS	0x00400000
-> >>>  	__be32 res3[2];
-> >>>  	__be32 pmcdr;
-> >>>  };
-> >>> @@ -43,6 +44,74 @@ static unsigned int pmc_flag;
-> >>>
-> >>>  #define PMC_SLEEP	0x1
-> >>>  #define PMC_DEEP_SLEEP	0x2
-> >>> +#define PMC_LOSSLESS	0x4
-> >>> +
-> >>> +/**
-> >>> + * mpc85xx_pmc_set_wake - enable devices as wakeup event source
-> >>> + * @pdev: platform device affected
-> >>> + * @enable: True to enable event generation; false to disable
-> >>> + *
-> >>> + * This enables the device as a wakeup event source, or disables it.
-> >>> + *
-> >>> + * RETURN VALUE:
-> >>> + * 0 is returned on success
-> >>> + * -EINVAL is returned if device is not supposed to wake up the
-> system
-> >>> + * Error code depending on the platform is returned if both the
-> platform and
-> >>> + * the native mechanism fail to enable the generation of wake-up
-> events
-> >>> + */
-> >>> +int mpc85xx_pmc_set_wake(struct platform_device *pdev, bool enable)
-> >>
-> >> Why does it have to be a platform_device?  Would a bare device_node
-> work
-> >> here?  If it's for stuff like device_may_wakeup() that could be in a
-> >> platform_device wrapper function.
-> >
-> > It does not have to be a platform_device. I think it can be a struct
-> device.
->=20
-> Why does it even need that?  The low level mechanism for influencing
-> PMCDR should only need a device node, not a Linux device struct.
+--_000_D07C73A334FF604B95B3CBD2A545D07B079A63F1039SN2MPN101203_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: quoted-printable
 
-It does no harm to pass the device structure and makes more sense for objec=
-t oriented interface design.=20
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dgb2312">
+<meta name=3D"Generator" content=3D"Microsoft Word 12 (filtered medium)">
+<title>Cannot boot an kernel version other than 2.6.35 on P2020RDB-PCA</tit=
+le>
+<style><!--
+/* Font Definitions */
+@font-face
+	{font-family:=CB=CE=CC=E5;
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+@font-face
+	{font-family:"\@=CB=CE=CC=E5";
+	panose-1:2 1 6 0 3 1 1 1 1 1;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+p
+	{mso-style-priority:99;
+	mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman","serif";}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:"Calibri","sans-serif";
+	color:#1F497D;}
+.MsoChpDefault
+	{mso-style-type:export-only;
+	font-size:10.0pt;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal" style=3D"margin-left:5.25pt"><span style=3D"font-siz=
+e:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;">Hi &nbsp;Ce=
+dric MAUSSIRE,<o:p></o:p></span></p>
+<p class=3D"MsoNormal" style=3D"margin-left:5.25pt"><span style=3D"font-siz=
+e:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;"><o:p>&nbsp;=
+</o:p></span></p>
+<div>
+<p class=3D"MsoNormal" style=3D"margin-left:5.25pt"><span style=3D"font-siz=
+e:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;">P2020RDB-PC=
+A Board gets supported since kernel 3.3 in mainline code.<span style=3D"col=
+or:#1F497D"><o:p></o:p></span></span></p>
+<p class=3D"MsoNormal" style=3D"margin-left:5.25pt"><span style=3D"font-siz=
+e:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;">Are you sur=
+e the board works on kernel 2.6.35?<o:p></o:p></span></p>
+<p class=3D"MsoNormal" style=3D"margin-left:5.25pt"><span style=3D"font-siz=
+e:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;;color:#1F497=
+D"><o:p>&nbsp;</o:p></span></p>
+<p class=3D"MsoNormal" style=3D"margin-left:5.25pt"><span style=3D"font-siz=
+e:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;;color:#1F497=
+D">Regards,<o:p></o:p></span></p>
+<p class=3D"MsoNormal" style=3D"margin-left:5.25pt"><span style=3D"font-siz=
+e:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;;color:#1F497=
+D">Yuantian<o:p></o:p></span></p>
+</div>
+<p class=3D"MsoNormal" style=3D"margin-left:5.25pt"><span style=3D"font-siz=
+e:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;"><o:p>&nbsp;=
+</o:p></span></p>
+<div style=3D"border:none;border-left:solid blue 1.5pt;padding:0in 0in 0in =
+4.0pt">
+<div>
+<div style=3D"border:none;border-top:solid #B5C4DF 1.0pt;padding:3.0pt 0in =
+0in 0in">
+<p class=3D"MsoNormal"><span style=3D"font-size:10.0pt;font-family:&quot;Ta=
+homa&quot;,&quot;sans-serif&quot;">From: linuxppc-dev-bounces&#43;b29983=3D=
+freescale.com@lists.ozlabs.org [mailto:linuxppc-dev-bounces&#43;b29983=3Dfr=
+eescale.com@lists.ozlabs.org]
+<b>On Behalf Of </b>MAUSSIRE Cedric<br>
+<b>Sent:</b> 2012</span><span lang=3D"ZH-CN" style=3D"font-size:10.0pt;font=
+-family:=CB=CE=CC=E5">=C4=EA</span><span style=3D"font-size:10.0pt;font-fam=
+ily:&quot;Tahoma&quot;,&quot;sans-serif&quot;">6</span><span lang=3D"ZH-CN"=
+ style=3D"font-size:10.0pt;font-family:=CB=CE=CC=E5">=D4=C2</span><span sty=
+le=3D"font-size:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot=
+;">4</span><span lang=3D"ZH-CN" style=3D"font-size:10.0pt;font-family:=CB=
+=CE=CC=E5">=C8=D5</span><span style=3D"font-size:10.0pt;font-family:&quot;T=
+ahoma&quot;,&quot;sans-serif&quot;">
+ 23:06<br>
+<b>To:</b> linuxppc-dev@lists.ozlabs.org<br>
+<b>Subject:</b> Cannot boot an kernel version other than 2.6.35 on P2020RDB=
+-PCA<o:p></o:p></span></p>
+</div>
+</div>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
+<p style=3D"margin-bottom:12.0pt"><span style=3D"font-size:10.0pt">Hello al=
+l,<br>
+<br>
+I am currently working on the Freescale P2020RDB-PCA Board, which has been =
+delivred with the linux-2.6.35 kernel. I succeed in re-generating my own uI=
+mage in 2.6.35 thanks to ELDK, but when I want to move on to a newer or old=
+er version of linux, the system
+ does not respond any longer just after the boot whith the nfsboot command,=
+ the logs are :<br>
+<br>
+## Booting kernel from Legacy Image at 01000000 ...<br>
+&nbsp;&nbsp; Image Name:&nbsp;&nbsp; Linux-2.6.39<br>
+&nbsp;&nbsp; Created:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2012-05-29&nbsp;&nbsp; =
+8:24:54 UTC<br>
+&nbsp;&nbsp; Image Type:&nbsp;&nbsp; PowerPC Linux Kernel Image (gzip compr=
+essed)<br>
+&nbsp;&nbsp; Data Size:&nbsp;&nbsp;&nbsp; 3514882 Bytes =3D 3.4 MiB<br>
+&nbsp;&nbsp; Load Address: 00000000<br>
+&nbsp;&nbsp; Entry Point:&nbsp; 00000000<br>
+&nbsp;&nbsp; Verifying Checksum ... OK<br>
+## Flattened Device Tree blob at 00c00000<br>
+&nbsp;&nbsp; Booting using the fdt blob at 0xc00000<br>
+&nbsp;&nbsp; Uncompressing Kernel Image ... OK<br>
+&nbsp;&nbsp; Loading Device Tree to 00ffa000, end 00fffd4a ... OK<br>
+<br>
+NB : nfsboot=3Dsetenv bootargs root=3D/dev/nfs rw nfsroot=3D192.168.1.1:$ro=
+otpath ip=3D192.168.1.2:192.168.1.1:192.168.1.1:255.255.255.0:P2020RDB-PC:e=
+th0:off console=3DttyS0,115200<br>
+<br>
+I have unsuccessfully tried to rebuild the device tree blob and use the def=
+ault kernel configuration &quot;mpc85xx_defconfig&quot; that comes with the=
+ mainline code.<br>
+<br>
+My systems seems to be linux-2.6.35 dependent, I do not known how it can be=
+ possible, because I can use the kernel.org source of the 2.6.35 whith no p=
+roblems but when I use the 3.0, for example, with the same configuration bu=
+t it does not work.<br>
+<br>
+<br>
+Best regards,<br>
+<br>
+<br>
+Cedric MAUSSIRE</span><o:p></o:p></p>
+</div>
+</div>
+</body>
+</html>
 
->=20
-> >> Where does this get called from?  I don't see an example user in this
-> >> patchset.
-> >
-> > It will be used by a gianfar related patch. I plan to submit that patch
-> > after these patches accepted.
->=20
-> It would be nice to see how this is used when reviewing this.
->=20
-> >>> +{
-> >>> +	int ret =3D 0;
-> >>> +	struct device_node *clk_np;
-> >>> +	u32 *prop;
-> >>> +	u32 pmcdr_mask;
-> >>> +
-> >>> +	if (!pmc_regs) {
-> >>> +		pr_err("%s: PMC is unavailable\n", __func__);
-> >>> +		return -ENODEV;
-> >>> +	}
-> >>> +
-> >>> +	if (enable && !device_may_wakeup(&pdev->dev))
-> >>> +		return -EINVAL;
-> >>
-> >> Who is setting can_wakeup for these devices?
-> >
-> > The device driver is responsible to set can_wakeup.
->=20
-> How would the device driver know how to set it?  Wouldn't this depend on
-> the particular SoC and low power mode?
-
-It is based on the "fsl,magic-packet" and "fsl,wake-on-filer" device tree p=
-roperties.
-
-Leo
+--_000_D07C73A334FF604B95B3CBD2A545D07B079A63F1039SN2MPN101203_--
