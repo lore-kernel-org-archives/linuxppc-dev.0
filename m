@@ -1,25 +1,15 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 97AB3B6FA9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Jun 2012 09:02:45 +1000 (EST)
-Message-ID: <4FCD3E8B.30805@freescale.com>
-Date: Mon, 4 Jun 2012 18:02:35 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Subject: Re: [PATCH v5 4/5] fsl_pmc: Add API to enable device as wakeup event
- source
-References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
- <1336737235-15370-4-git-send-email-chenhui.zhao@freescale.com>
- <4FC93D74.3090200@freescale.com>
- <20120604113609.GC20676@localhost.localdomain>
-In-Reply-To: <20120604113609.GC20676@localhost.localdomain>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <anton@samba.org>
+Date: Tue, 5 Jun 2012 12:02:22 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
+ mikey@neuling.org, galak@kernel.crashing.org, olof@lixom.net
+Subject: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
+Message-ID: <20120605120222.6722a3e3@kryten>
+In-Reply-To: <20120604175858.38dac554@kryten>
+References: <20120604175858.38dac554@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,90 +19,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/04/2012 06:36 AM, Zhao Chenhui wrote:
-> On Fri, Jun 01, 2012 at 05:08:52PM -0500, Scott Wood wrote:
->> On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
->>> Add APIs for setting wakeup source and lossless Ethernet in low power modes.
->>> These APIs can be used by wake-on-packet feature.
->>>
->>> Signed-off-by: Dave Liu <daveliu@freescale.com>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> Signed-off-by: Jin Qing <b24347@freescale.com>
->>> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
->>> ---
->>>  arch/powerpc/sysdev/fsl_pmc.c |   71 ++++++++++++++++++++++++++++++++++++++++-
->>>  arch/powerpc/sysdev/fsl_soc.h |    9 +++++
->>>  2 files changed, 79 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
->>> index 1dc6e9e..c1170f7 100644
->>> --- a/arch/powerpc/sysdev/fsl_pmc.c
->>> +++ b/arch/powerpc/sysdev/fsl_pmc.c
->>> @@ -34,6 +34,7 @@ struct pmc_regs {
->>>  	__be32 powmgtcsr;
->>>  #define POWMGTCSR_SLP		0x00020000
->>>  #define POWMGTCSR_DPSLP		0x00100000
->>> +#define POWMGTCSR_LOSSLESS	0x00400000
->>>  	__be32 res3[2];
->>>  	__be32 pmcdr;
->>>  };
->>> @@ -43,6 +44,74 @@ static unsigned int pmc_flag;
->>>  
->>>  #define PMC_SLEEP	0x1
->>>  #define PMC_DEEP_SLEEP	0x2
->>> +#define PMC_LOSSLESS	0x4
->>> +
->>> +/**
->>> + * mpc85xx_pmc_set_wake - enable devices as wakeup event source
->>> + * @pdev: platform device affected
->>> + * @enable: True to enable event generation; false to disable
->>> + *
->>> + * This enables the device as a wakeup event source, or disables it.
->>> + *
->>> + * RETURN VALUE:
->>> + * 0 is returned on success
->>> + * -EINVAL is returned if device is not supposed to wake up the system
->>> + * Error code depending on the platform is returned if both the platform and
->>> + * the native mechanism fail to enable the generation of wake-up events
->>> + */
->>> +int mpc85xx_pmc_set_wake(struct platform_device *pdev, bool enable)
->>
->> Why does it have to be a platform_device?  Would a bare device_node work
->> here?  If it's for stuff like device_may_wakeup() that could be in a
->> platform_device wrapper function.
-> 
-> It does not have to be a platform_device. I think it can be a struct device.
 
-Why does it even need that?  The low level mechanism for influencing
-PMCDR should only need a device node, not a Linux device struct.
+I blame Mikey for this. He elevated my slightly dubious testcase:
 
->> Where does this get called from?  I don't see an example user in this
->> patchset.
-> 
-> It will be used by a gianfar related patch. I plan to submit that patch
-> after these patches accepted.
+# dd if=/dev/zero of=/dev/null bs=1M count=10000
 
-It would be nice to see how this is used when reviewing this.
+to benchmark status. And naturally we need to be number 1 at creating
+zeros. So lets improve __clear_user some more.
 
->>> +{
->>> +	int ret = 0;
->>> +	struct device_node *clk_np;
->>> +	u32 *prop;
->>> +	u32 pmcdr_mask;
->>> +
->>> +	if (!pmc_regs) {
->>> +		pr_err("%s: PMC is unavailable\n", __func__);
->>> +		return -ENODEV;
->>> +	}
->>> +
->>> +	if (enable && !device_may_wakeup(&pdev->dev))
->>> +		return -EINVAL;
->>
->> Who is setting can_wakeup for these devices?
-> 
-> The device driver is responsible to set can_wakeup.
+As Paul suggests we can use dcbz for large lengths. This patch gets
+the destination cacheline aligned then uses dcbz on whole cachelines.
 
-How would the device driver know how to set it?  Wouldn't this depend on
-the particular SoC and low power mode?
+Before:
+10485760000 bytes (10 GB) copied, 0.414744 s, 25.3 GB/s
 
--Scott
+After:
+10485760000 bytes (10 GB) copied, 0.268597 s, 39.0 GB/s
+
+39 GB/s, a new record.
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+
+v2: handle any cacheline size
+
+Index: linux-build/arch/powerpc/lib/string_64.S
+===================================================================
+--- linux-build.orig/arch/powerpc/lib/string_64.S	2012-06-04 16:18:56.351604302 +1000
++++ linux-build/arch/powerpc/lib/string_64.S	2012-06-05 11:42:10.044654851 +1000
+@@ -19,6 +19,12 @@
+  */
+ 
+ #include <asm/ppc_asm.h>
++#include <asm/asm-offsets.h>
++
++	.section	".toc","aw"
++PPC64_CACHES:
++	.tc		ppc64_caches[TC],ppc64_caches
++	.section	".text"
+ 
+ /**
+  * __clear_user: - Zero a block of memory in user space, with less checking.
+@@ -94,9 +100,14 @@ err1;	stw	r0,0(r3)
+ 	addi	r3,r3,4
+ 
+ 3:	sub	r4,r4,r6
+-	srdi	r6,r4,5
++
+ 	cmpdi	r4,32
++	cmpdi	cr1,r4,512
+ 	blt	.Lshort_clear
++	bgt	cr1,.Llong_clear
++
++.Lmedium_clear:
++	srdi	r6,r4,5
+ 	mtctr	r6
+ 
+ 	/* Do 32 byte chunks */
+@@ -139,3 +150,53 @@ err1;	stb	r0,0(r3)
+ 
+ 10:	li	r3,0
+ 	blr
++
++.Llong_clear:
++	ld	r5,PPC64_CACHES@toc(r2)
++
++	bf	cr7*4+0,11f
++err2;	std	r0,0(r3)
++	addi	r3,r3,8
++	addi	r4,r4,-8
++
++	/* Destination is 16 byte aligned, need to get it cacheline aligned */
++11:	lwz	r7,DCACHEL1LOGLINESIZE(r5)
++	lwz	r9,DCACHEL1LINESIZE(r5)
++
++	/*
++	 * With worst case alignment the long clear loop takes a minimum
++	 * of 1 byte less than 2 cachelines.
++	 */
++	sldi	r10,r9,2
++	cmpd	r4,r10
++	blt	.Lmedium_clear
++
++	neg	r6,r3
++	addi	r10,r9,-1
++	and.	r5,r6,r10
++	beq	13f
++
++	srdi	r6,r5,4
++	mtctr	r6
++	mr	r8,r3
++12:
++err1;	std	r0,0(r3)
++err1;	std	r0,8(r3)
++	addi	r3,r3,16
++	bdnz	12b
++
++	sub	r4,r4,r5
++
++13:	srd	r6,r4,r7
++	mtctr	r6
++	mr	r8,r3
++14:
++err1;	dcbz	r0,r3
++	add	r3,r3,r9
++	bdnz	14b
++
++	and	r4,r4,r10
++
++	cmpdi	r4,32
++	blt	.Lshort_clear
++	b	.Lmedium_clear
