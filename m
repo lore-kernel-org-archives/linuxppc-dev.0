@@ -2,28 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 19234B6F86
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 08:15:24 +1000 (EST)
-Message-ID: <1338934495.7150.112.camel@pasglop>
-Subject: Re: kernel panic during kernel module load (powerpc specific part)
+ by ozlabs.org (Postfix) with ESMTPS id F235DB6F13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 08:17:51 +1000 (EST)
+Message-ID: <1338934659.7150.113.camel@pasglop>
+Subject: Re: [PATCH] powerpc: Fix assmption of end_of_DRAM() returns end
+ address
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-Date: Wed, 06 Jun 2012 08:14:55 +1000
-In-Reply-To: <20120605113225.GA11215@visitor2.iram.es>
-References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
- <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
- <20120531110439.GA17373@visitor2.iram.es>
- <1338542315.16119.50.camel@pasglop>
- <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
- <20120604110305.GA16707@visitor2.iram.es>
- <1338847242.7150.83.camel@pasglop>
- <20120605113225.GA11215@visitor2.iram.es>
+To: Bharat Bhushan <r65777@freescale.com>
+Date: Wed, 06 Jun 2012 08:17:39 +1000
+In-Reply-To: <1338904504-2750-1-git-send-email-bharat.bhushan@freescale.com>
+References: <1338904504-2750-1-git-send-email-bharat.bhushan@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Wrobel Heinz-R39252 <r39252@freescale.com>,
- Michael Ellerman <michael@ellerman.id.au>,
- Steffen Rumler <steffen.rumler.ext@nsn.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +25,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-06-05 at 13:32 +0200, Gabriel Paubert wrote:
-> - gcc-4.6 and gcc-4.7 behave identically, if -Os is set, they
->   generate by default lmw/stmw. But if I combine -Os with 
->   -mno-multiple, they call the helper functions.
-> 
-> In other words, on this system, gcc-4.4 is broken but should not
-> cause any harm. gcc-4.6 and gcc-4.7 look correct, but are there
-> any processors on which -mno-multiple is worth setting?
+On Tue, 2012-06-05 at 19:25 +0530, Bharat Bhushan wrote:
+> memblock_end_of_DRAM() returns end_address + 1, not end address.
+> While some code assumes that it returns end address.
 
-It could be an artifact of the -mtune we use, dunno. And yes, I'm pretty
-sure some embedded processors don't like multiple load/store.
+Shouldn't we instead fix it the other way around ? IE, make
+memblock_end_of_DRAM() does what the name implies, which is to return
+the last byte of DRAM, and fix the -other- callers not to make bad
+assumptions ?
 
 Cheers,
 Ben.
+
+> Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+> ---
+> This patch is based on next branch of https://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
+> 
+>  arch/powerpc/platforms/44x/currituck.c     |    2 +-
+>  arch/powerpc/platforms/85xx/corenet_ds.c   |    2 +-
+>  arch/powerpc/platforms/85xx/ge_imp3a.c     |    2 +-
+>  arch/powerpc/platforms/85xx/mpc8536_ds.c   |    2 +-
+>  arch/powerpc/platforms/85xx/mpc85xx_ds.c   |    2 +-
+>  arch/powerpc/platforms/85xx/mpc85xx_mds.c  |    2 +-
+>  arch/powerpc/platforms/85xx/p1022_ds.c     |    2 +-
+>  arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    2 +-
+>  8 files changed, 8 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/44x/currituck.c b/arch/powerpc/platforms/44x/currituck.c
+> index 583e67f..9f6c33d 100644
+> --- a/arch/powerpc/platforms/44x/currituck.c
+> +++ b/arch/powerpc/platforms/44x/currituck.c
+> @@ -160,7 +160,7 @@ static void __init ppc47x_setup_arch(void)
+>  	/* No need to check the DMA config as we /know/ our windows are all of
+>   	 * RAM.  Lets hope that doesn't change */
+>  #ifdef CONFIG_SWIOTLB
+> -	if (memblock_end_of_DRAM() > 0xffffffff) {
+> +	if ((memblock_end_of_DRAM() - 1) > 0xffffffff) {
+>  		ppc_swiotlb_enable = 1;
+>  		set_pci_dma_ops(&swiotlb_dma_ops);
+>  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c b/arch/powerpc/platforms/85xx/corenet_ds.c
+> index dd3617c..925b028 100644
+> --- a/arch/powerpc/platforms/85xx/corenet_ds.c
+> +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+> @@ -77,7 +77,7 @@ void __init corenet_ds_setup_arch(void)
+>  #endif
+>  
+>  #ifdef CONFIG_SWIOTLB
+> -	if (memblock_end_of_DRAM() > max) {
+> +	if ((memblock_end_of_DRAM() - 1) > max) {
+>  		ppc_swiotlb_enable = 1;
+>  		set_pci_dma_ops(&swiotlb_dma_ops);
+>  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> diff --git a/arch/powerpc/platforms/85xx/ge_imp3a.c b/arch/powerpc/platforms/85xx/ge_imp3a.c
+> index 1801462..b6a728b 100644
+> --- a/arch/powerpc/platforms/85xx/ge_imp3a.c
+> +++ b/arch/powerpc/platforms/85xx/ge_imp3a.c
+> @@ -125,7 +125,7 @@ static void __init ge_imp3a_setup_arch(void)
+>  	mpc85xx_smp_init();
+>  
+>  #ifdef CONFIG_SWIOTLB
+> -	if (memblock_end_of_DRAM() > max) {
+> +	if ((memblock_end_of_DRAM() - 1) > max) {
+>  		ppc_swiotlb_enable = 1;
+>  		set_pci_dma_ops(&swiotlb_dma_ops);
+>  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+> index 585bd22..767c7cf 100644
+> --- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+> @@ -75,7 +75,7 @@ static void __init mpc8536_ds_setup_arch(void)
+>  #endif
+>  
+>  #ifdef CONFIG_SWIOTLB
+> -	if (memblock_end_of_DRAM() > max) {
+> +	if ((memblock_end_of_DRAM() - 1) > max) {
+>  		ppc_swiotlb_enable = 1;
+>  		set_pci_dma_ops(&swiotlb_dma_ops);
+>  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> index 1fd91e9..d30f6c4 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> @@ -173,7 +173,7 @@ static void __init mpc85xx_ds_setup_arch(void)
+>  	mpc85xx_smp_init();
+>  
+>  #ifdef CONFIG_SWIOTLB
+> -	if (memblock_end_of_DRAM() > max) {
+> +	if ((memblock_end_of_DRAM() - 1) > max) {
+>  		ppc_swiotlb_enable = 1;
+>  		set_pci_dma_ops(&swiotlb_dma_ops);
+>  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> index d208ebc..8e4b094 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+> @@ -359,7 +359,7 @@ static void __init mpc85xx_mds_setup_arch(void)
+>  	mpc85xx_mds_qe_init();
+>  
+>  #ifdef CONFIG_SWIOTLB
+> -	if (memblock_end_of_DRAM() > max) {
+> +	if ((memblock_end_of_DRAM() - 1) > max) {
+>  		ppc_swiotlb_enable = 1;
+>  		set_pci_dma_ops(&swiotlb_dma_ops);
+>  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+> index f700c81..74e310b 100644
+> --- a/arch/powerpc/platforms/85xx/p1022_ds.c
+> +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+> @@ -450,7 +450,7 @@ static void __init p1022_ds_setup_arch(void)
+>  	mpc85xx_smp_init();
+>  
+>  #ifdef CONFIG_SWIOTLB
+> -	if (memblock_end_of_DRAM() > max) {
+> +	if ((memblock_end_of_DRAM() - 1) > max) {
+>  		ppc_swiotlb_enable = 1;
+>  		set_pci_dma_ops(&swiotlb_dma_ops);
+>  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+> diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> index 3755e61..817245b 100644
+> --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+> @@ -102,7 +102,7 @@ mpc86xx_hpcn_setup_arch(void)
+>  #endif
+>  
+>  #ifdef CONFIG_SWIOTLB
+> -	if (memblock_end_of_DRAM() > max) {
+> +	if ((memblock_end_of_DRAM() - 1) > max) {
+>  		ppc_swiotlb_enable = 1;
+>  		set_pci_dma_ops(&swiotlb_dma_ops);
+>  		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
