@@ -1,29 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5D82CB6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 08:47:20 +1000 (EST)
-Message-ID: <1338936422.7150.139.camel@pasglop>
-Subject: Re: kernel panic during kernel module load (powerpc specific part)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gabriel Paubert <paubert@iram.es>
-Date: Wed, 06 Jun 2012 08:47:02 +1000
-In-Reply-To: <20120605104449.GA32032@visitor2.iram.es>
-References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
- <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
- <20120531110439.GA17373@visitor2.iram.es>
- <1338542315.16119.50.camel@pasglop>
- <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
- <20120604110305.GA16707@visitor2.iram.es>
- <1338847242.7150.83.camel@pasglop>
- <20120605104449.GA32032@visitor2.iram.es>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Wrobel Heinz-R39252 <r39252@freescale.com>,
- Michael Ellerman <michael@ellerman.id.au>,
- Steffen Rumler <steffen.rumler.ext@nsn.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <R65777@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0561CB6F9F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 10:46:26 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: David Miller <davem@davemloft.net>, "benh@kernel.crashing.org"
+ <benh@kernel.crashing.org>, Andrea Arcangeli <aarcange@redhat.com>
+Subject: RE: [PATCH] powerpc: Fix assmption of end_of_DRAM() returns end
+ address
+Date: Wed, 6 Jun 2012 00:46:17 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D03D68F08@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1338904504-2750-1-git-send-email-bharat.bhushan@freescale.com>
+ <1338934659.7150.113.camel@pasglop>
+ <20120605.152058.828742127223799137.davem@davemloft.net>
+In-Reply-To: <20120605.152058.828742127223799137.davem@davemloft.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,35 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-06-05 at 12:44 +0200, Gabriel Paubert wrote:
-> On Tue, Jun 05, 2012 at 08:00:42AM +1000, Benjamin Herrenschmidt wrote:
-> > On Mon, 2012-06-04 at 13:03 +0200, Gabriel Paubert wrote:
-> > > There is no conflict to the ABI. These functions are supposed to be
-> > > directly reachable from whatever code
-> > > section may need them.
-> > > 
-> > > Now I have a question: how did you get the need for this?
-> > > 
-> > > None of my kernels uses them:
-> > > - if I compile with -O2, the compiler simply expands epilogue and
-> > > prologue to series of lwz and stw
-> > > - if I compile with -Os, the compiler generates lmw/stmw which give
-> > > the smallest possible cache footprint
-> > > 
-> > > Neither did I find a single reference to these functions in several
-> > > systems that I grepped for.
-> > 
-> > Newer gcc's ... even worse, with -Os, it does it for a single register
-> > spill afaik. At least that's how I hit it with grub2 using whatever gcc
-> > is in fc17.
-> 
-> Ok, it's beyond stupid, and at this point must be considered a gcc bug.
 
-Probably, I haven't had a chance to report it...
 
-It would make more sense if the out of line functions also handled
-creating the stack frame & disposing of it (ie, maybe a tail call for
-return) but they don't even do that so yes it's quite gross.
+> -----Original Message-----
+> From: David Miller [mailto:davem@davemloft.net]
+> Sent: Wednesday, June 06, 2012 3:51 AM
+> To: benh@kernel.crashing.org
+> Cc: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; galak@kernel.crashing.org; Bhushan Bharat-R65777
+> Subject: Re: [PATCH] powerpc: Fix assmption of end_of_DRAM() returns end =
+address
+>=20
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Wed, 06 Jun 2012 08:17:39 +1000
+>=20
+> > On Tue, 2012-06-05 at 19:25 +0530, Bharat Bhushan wrote:
+> >> memblock_end_of_DRAM() returns end_address + 1, not end address.
+> >> While some code assumes that it returns end address.
+> >
+> > Shouldn't we instead fix it the other way around ? IE, make
+> > memblock_end_of_DRAM() does what the name implies, which is to return
+> > the last byte of DRAM, and fix the -other- callers not to make bad
+> > assumptions ?
+>=20
+> That was my impression too when I saw this patch.
 
-Cheers,
-Ben.
+Initially I also intended to do so. I initiated a email on linux-mm@  subje=
+ct "memblock_end_of_DRAM()  return end address + 1" and the only response I=
+ received from Andrea was:
+
+"
+It's normal that "end" means "first byte offset out of the range". End =3D =
+not ok.
+end =3D start+size.
+This is true for vm_end too. So it's better to keep it that way.
+My suggestion is to just fix point 1 below and audit the rest :)
+"
+
+Thanks
+-Bharat
