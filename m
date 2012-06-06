@@ -1,21 +1,26 @@
-Return-Path: <oleg@redhat.com>
+Return-Path: <aarcange@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 6DA9EB6F77
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2012 01:11:14 +1000 (EST)
-Date: Wed, 6 Jun 2012 17:08:48 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH 1/2] uprobes: Pass probed vaddr to
- arch_uprobe_analyze_insn()
-Message-ID: <20120606150848.GA24641@redhat.com>
-References: <20120606091950.GB6745@in.ibm.com>
+ by ozlabs.org (Postfix) with ESMTP id 3F4A9B6F13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 23:14:54 +1000 (EST)
+Date: Wed, 6 Jun 2012 15:14:42 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix assmption of end_of_DRAM() returns end
+ address
+Message-ID: <20120606131442.GN21339@redhat.com>
+References: <1338904504-2750-1-git-send-email-bharat.bhushan@freescale.com>
+ <1338934659.7150.113.camel@pasglop>
+ <20120605.152058.828742127223799137.davem@davemloft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D03D68F08@039-SN2MPN1-022.039d.mgd.msft.net>
+ <1338960617.7150.163.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120606091950.GB6745@in.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
- lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1338960617.7150.163.camel@pasglop>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,19 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06, Ananth N Mavinakayanahalli wrote:
->
-> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
->
-> On RISC architectures like powerpc, instructions are fixed size.
-> Instruction analysis on such platforms is just a matter of (insn % 4).
-> Pass the vaddr at which the uprobe is to be inserted so that
-> arch_uprobe_analyze_insn() can flag misaligned registration requests.
+Hi,
 
-And the next patch checks "vaddr & 0x03".
+On Wed, Jun 06, 2012 at 03:30:17PM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2012-06-06 at 00:46 +0000, Bhushan Bharat-R65777 wrote:
+> 
+> > > >> memblock_end_of_DRAM() returns end_address + 1, not end address.
+> > > >> While some code assumes that it returns end address.
+> > > >
+> > > > Shouldn't we instead fix it the other way around ? IE, make
+> > > > memblock_end_of_DRAM() does what the name implies, which is to
+> > return
+> > > > the last byte of DRAM, and fix the -other- callers not to make bad
+> > > > assumptions ?
+> > > 
+> > > That was my impression too when I saw this patch.
+> > 
+> > Initially I also intended to do so. I initiated a email on linux-mm@
+> > subject "memblock_end_of_DRAM()  return end address + 1" and the only
+> > response I received from Andrea was:
+> > 
+> > "
+> > It's normal that "end" means "first byte offset out of the range". End
+> > = not ok.
+> > end = start+size.
+> > This is true for vm_end too. So it's better to keep it that way.
+> > My suggestion is to just fix point 1 below and audit the rest :)
+> > "
+> 
+> Oh well, I don't care enough to fight this battle in my current state so
 
-But why do you need this new arg? arch_uprobe_analyze_insn() could
-check "container_of(auprobe, struct uprobe, arch)->offset & 0x3" with
-the same effect, no? vm_start/vm_pgoff are obviously page-aligned.
+I wish you to get well soon Ben!
 
-Oleg.
+> unless Dave has more stamina than I have today, I'm ok with the patch.
+
+Well it doesn't really matter in the end what is decided as long as
+something is decided :). I was asked through a forward so I only
+expressed my preference...
