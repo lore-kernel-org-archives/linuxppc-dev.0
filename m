@@ -2,20 +2,26 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B38FCB6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 15:27:11 +1000 (EST)
-Message-ID: <1338960416.7150.160.camel@pasglop>
-Subject: Re: [PATCH v2 0/2] Add pcibios_device_change_notifier
+ by ozlabs.org (Postfix) with ESMTPS id 4647F1007D8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 15:30:42 +1000 (EST)
+Message-ID: <1338960617.7150.163.camel@pasglop>
+Subject: RE: [PATCH] powerpc: Fix assmption of end_of_DRAM() returns end
+ address
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
-Date: Wed, 06 Jun 2012 15:26:56 +1000
-In-Reply-To: <4FBC4C86.9050206@jp.fujitsu.com>
-References: <4FBC4C86.9050206@jp.fujitsu.com>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>
+Date: Wed, 06 Jun 2012 15:30:17 +1000
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D03D68F08@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1338904504-2750-1-git-send-email-bharat.bhushan@freescale.com>
+ <1338934659.7150.113.camel@pasglop>
+ <20120605.152058.828742127223799137.davem@davemloft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D03D68F08@039-SN2MPN1-022.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, jbarnes@virtuousgeek.org,
- Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-05-23 at 11:33 +0900, Hiroo Matsumoto wrote:
-> This patchset is for PCI hotplug.
+On Wed, 2012-06-06 at 00:46 +0000, Bhushan Bharat-R65777 wrote:
+
+> > >> memblock_end_of_DRAM() returns end_address + 1, not end address.
+> > >> While some code assumes that it returns end address.
+> > >
+> > > Shouldn't we instead fix it the other way around ? IE, make
+> > > memblock_end_of_DRAM() does what the name implies, which is to
+> return
+> > > the last byte of DRAM, and fix the -other- callers not to make bad
+> > > assumptions ?
+> > 
+> > That was my impression too when I saw this patch.
 > 
+> Initially I also intended to do so. I initiated a email on linux-mm@
+> subject "memblock_end_of_DRAM()  return end address + 1" and the only
+> response I received from Andrea was:
 > 
-> pcibios_setup_bus_devices which sets DMA and IRQs of PCI device is called
-> only when boot. DMA setting in probe for PCI driver, like dma_set_mask,
-> does not work on powerpc platform. So it is need to set DMA and IRQs of
-> PCI device when hotplug.
-> 
-> 1. Moving pcibios_setup_bus_devices code to pcibios_device_change_notifier
->    which is registered to bus notifier in pcibios_init.
-> 2. Removing caller and callee of pcibios_setup_bus_devices bus notifier
->    works instead of pcibios_setup_bus_devices.
-> 3. Using this bus notifier for microblaze because microblaze/PCI is similer
->    with powerpc/PCI.
+> "
+> It's normal that "end" means "first byte offset out of the range". End
+> = not ok.
+> end = start+size.
+> This is true for vm_end too. So it's better to keep it that way.
+> My suggestion is to just fix point 1 below and audit the rest :)
+> "
 
-This makes me a bit nervous (that doesn't mean it's not right, but
-we need some careful auditing & testing here, which I won't be
-able to do until I'm back from leave). Mostly due to the change in when
-we do the work. 
-
-pcibios_fixup_bus() used to be called early on in the initial scan pass.
-
-Your code causes the code to be called -much- later when registering the
-device with the device model. Are we 100% certain nothing will happen in
-between that might rely on the stuff being setup already ? It might well
-be ok, but I want us to triple check that.
-
-Now, if we are ok to do the setup that late (basically right before the
-driver probe() routine gets called), would it make sense to simplify
-things even further ... and do it from pcibios_enable_device() ? Thus
-avoiding the notifier business completely or is that pushing it too
-far ?
-
-Also you seem to add:
-
-+               /* Setup OF node pointer in the device */
-+               dev->dev.of_node = pci_device_to_OF_node(dev);
-
-This shouldn't be needed anymore, the device node should be setup by the
-core nowadays. Is this just a remnant of you rebasing an old patch or do
-you have a good reason to add this statement ?
+Oh well, I don't care enough to fight this battle in my current state so
+unless Dave has more stamina than I have today, I'm ok with the patch.
 
 Cheers,
 Ben.
