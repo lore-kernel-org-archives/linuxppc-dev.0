@@ -1,40 +1,38 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F00B0B6EEB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 19:37:54 +1000 (EST)
-Received: from /spool/local
- by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Wed, 6 Jun 2012 05:37:52 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C0EE338C8026
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 05:37:49 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q569bnFB147636
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jun 2012 05:37:49 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q569blpD004891
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jun 2012 06:37:49 -0300
-Date: Wed, 6 Jun 2012 15:07:44 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 1/2] uprobes: Pass probed vaddr to
- arch_uprobe_analyze_insn()
-Message-ID: <20120606093744.GB29580@in.ibm.com>
-References: <20120606091950.GB6745@in.ibm.com> <1338974632.2749.87.camel@twins>
+Return-Path: <zch@tx30smr01.freescale.net>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 32EDFB6FBB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 19:58:36 +1000 (EST)
+Received: from mail153-ch1 (localhost [127.0.0.1])	by
+ mail153-ch1-R.bigfish.com (Postfix) with ESMTP id F2F851802F4	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 09:57:46 +0000 (UTC)
+Received: from CH1EHSMHS025.bigfish.com (snatpool2.int.messaging.microsoft.com
+ [10.43.68.230])	by mail153-ch1.bigfish.com (Postfix) with ESMTP id
+ 6E23C260046	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 09:57:45
+ +0000 (UTC)
+Received: from localhost.localdomain ([10.213.130.145])	by
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q569wRev009346	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 6 Jun 2012 02:58:27 -0700
+Date: Wed, 6 Jun 2012 17:59:10 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v5 2/5] powerpc/85xx: add HOTPLUG_CPU support
+Message-ID: <20120606095910.GB23505@localhost.localdomain>
+References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
+ <1336737235-15370-2-git-send-email-chenhui.zhao@freescale.com>
+ <4FC933BF.1020901@freescale.com>
+ <20120604110444.GA20676@localhost.localdomain>
+ <4FCCE32F.1060301@freescale.com>
+ <20120605111823.GB22427@localhost.localdomain>
+ <4FCE30B8.2070902@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1338974632.2749.87.camel@twins>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- lkml <linux-kernel@vger.kernel.org>, oleg@redhat.com,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
-Reply-To: ananth@in.ibm.com
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <4FCE30B8.2070902@freescale.com>
+Sender: <zch@tx30smr01.freescale.net>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,13 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 06, 2012 at 11:23:52AM +0200, Peter Zijlstra wrote:
-> On Wed, 2012-06-06 at 14:49 +0530, Ananth N Mavinakayanahalli wrote:
-> > +int arch_uprobe_analyze_insn(struct arch_uprobe *auprobe, struct mm_struct *mm, loff_t vaddr)
+On Tue, Jun 05, 2012 at 11:15:52AM -0500, Scott Wood wrote:
+> On 06/05/2012 06:18 AM, Zhao Chenhui wrote:
+> > On Mon, Jun 04, 2012 at 11:32:47AM -0500, Scott Wood wrote:
+> >> On 06/04/2012 06:04 AM, Zhao Chenhui wrote:
+> >>> On Fri, Jun 01, 2012 at 04:27:27PM -0500, Scott Wood wrote:
+> >>>> On 05/11/2012 06:53 AM, Zhao Chenhui wrote:
+> >>>>> -#ifdef CONFIG_KEXEC
+> >>>>> +#if defined(CONFIG_KEXEC) || defined(CONFIG_HOTPLUG_CPU)
+> >>>>
+> >>>> Let's not grow lists like this.  Is there any harm in building it
+> >>>> unconditionally?
+> >>>>
+> >>>> -Scott
+> >>>
+> >>> We need this ifdef. We only set give_timebase/take_timebase
+> >>> when CONFIG_KEXEC or CONFIG_HOTPLUG_CPU is defined.
+> >>
+> >> If we really need this to be a compile-time decision, make a new symbol
+> >> for it, but I really think this should be decided at runtime.  Just
+> >> because we have kexec or hotplug support enabled doesn't mean that's
+> >> actually what we're doing at the moment.
+> >>
+> >> -Scott
+> > 
+> > If user does not enable kexec or hotplug, these codes are redundant.
+> > So use CONFIG_KEXEC and CONFIG_HOTPLUG_CPU to gard them.
 > 
-> Don't we traditionally use unsigned long to pass vaddrs?
+> My point is that these lists tend to grow and be a maintenance pain.
+> For small things it's often better to not worry about saving a few
+> bytes.  For larger things that need to be conditional, define a new
+> symbol rather than growing ORed lists like this.
+> 
+> -Scott
 
-Right. But the vaddr we pass here is vma_info->vaddr which is loff_t.
-I guess I should've made that clear in the patch description.
+I agree with you in principle. But there are only two config options
+in this patch, and it is unlikely to grow. 
 
-Ananth
+-Chenhui
