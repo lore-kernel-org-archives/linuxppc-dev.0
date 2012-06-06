@@ -1,27 +1,24 @@
-Return-Path: <steffen.rumler.ext@nsn.com>
-Received: from demumfd001.nsn-inter.net (demumfd001.nsn-inter.net
- [93.183.12.32])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "demumfd001.nsn-inter.net",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E0224B6EF3
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 17:37:24 +1000 (EST)
-Message-ID: <4FCF0897.2060405@nsn.com>
-Date: Wed, 06 Jun 2012 09:36:55 +0200
-From: Steffen Rumler <steffen.rumler.ext@nsn.com>
-MIME-Version: 1.0
-To: ext Gabriel Paubert <paubert@iram.es>
-Subject: Re: kernel panic during kernel module load (powerpc specific part)
-References: <4FC62FB9.8010701@nsn.com> <1338420242.27402.2.camel@concordia>
- <192298D25D96A042975E372855100DB70FEA87@039-SN2MPN1-011.039d.mgd.msft.net>
- <20120531110439.GA17373@visitor2.iram.es> <1338542315.16119.50.camel@pasglop>
- <192298D25D96A042975E372855100DB70FF0E2@039-SN2MPN1-011.039d.mgd.msft.net>
- <20120604110305.GA16707@visitor2.iram.es>
-In-Reply-To: <20120604110305.GA16707@visitor2.iram.es>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Wrobel Heinz-R39252 <r39252@freescale.com>,
- Michael Ellerman <michael@ellerman.id.au>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <alex.shi@intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by ozlabs.org (Postfix) with ESMTP id 03328B6F9A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Jun 2012 16:54:46 +1000 (EST)
+From: Alex Shi <alex.shi@intel.com>
+To: a.p.zijlstra@chello.nl
+Subject: [RFC PATCH] sched/numa: do load balance between remote nodes
+Date: Wed,  6 Jun 2012 14:52:51 +0800
+Message-Id: <1338965571-9812-1-git-send-email-alex.shi@intel.com>
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-sh@vger.kernel.org, dhowells@redhat.com, paulus@samba.org, hpa@zytor.com,
+ sparclinux@vger.kernel.org, mingo@kernel.org, sivanich@sgi.com, x86@kernel.org,
+ greg.pearson@hp.com, chris.mason@oracle.com, arjan.van.de.ven@intel.com,
+ mattst88@gmail.com, pjt@google.com, fenghua.yu@intel.com,
+ seto.hidetoshi@jp.fujitsu.com, cmetcalf@tilera.com, ak@linux.intel.com,
+ ink@jurassic.park.msu.ru, anton@samba.org, tglx@linutronix.de,
+ kamezawa.hiroyu@jp.fujitsu.com, rth@twiddle.net, tony.luck@intel.com,
+ torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+ ralf@linux-mips.org, lethal@linux-sh.org, linux-alpha@vger.kernel.org,
+ bob.picco@oracle.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,63 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+commit cb83b629b remove the NODE sched domain and check if the node
+distance in SLIT table is farther than REMOTE_DISTANCE, if so, it will
+lose the load balance chance at exec/fork/wake_affine points.
 
-> On Fri, Jun 01, 2012 at 11:33:37AM +0000, Wrobel Heinz-R39252 wrote:
->>>> I believe that the basic premise is that you should provide a directly
->>>> reachable copy of the save/rstore functions, even if this means that
->>> you need several copies of the functions.
->>>
->>> I just fixed a very similar problem with grub2 in fact. It was using r0
->>> and trashing the saved LR that way.
->>>
->>> The real fix is indeed to statically link those gcc "helpers", we
->>> shouldn't generate things like cross-module calls inside function prologs
->>> and epilogues, when stackframes aren't even guaranteed to be reliable.
->>>
->>> However, in the grub2 case, it was easier to just use r12 :-)
->> For not just the module loading case, I believe r12 is the only real solution now. I checked one debugger capable of doing ELF download. It also uses r12 for trampoline code. I am guessing for the reason that prompted this discussion.
->>
-> I disagree. Look carefully at Be's answer: cross-module calls
-> are intrinsically dangerous when stack frames are in a transient
-> state.
->
->> Without r12 we'd have to change standard libraries to automagically link in gcc helpers for any conceivable non-.text section, which I am not sure is feasible. How would you write section independent helper functions which link to any section needing them?!
-> I don't thnk that it is tha bad: the helpers should be linked to the default .text section
-> when needed, typically the init code and so on are mapped within the reach of that
-> section (otherwise you'll end up with the linker complaining that it finds overflowing
-> branch offsets between .text and .init.text).
->
->> Asking users to create their own section specific copy of helper functions is definitely not portable if the module or other code is not architecture dependent.
-> Well, it automagically works on 64 bit. There is is performed by magic built into the linker.
->
->> It is a normal gcc feature that you can assign specific code to non-.text sections and it is not documented that it may crash depending on the OS arch the ELF is built for, so asking for a Power Architecture specific change on tool libs to make Power Architecture Linux happy seems a bit much to ask.
->>
-> Once again I disagree.
->
->> Using r12 in any Linux related trampoline code seems a reachable goal, and it would eliminate the conflict to the ABI.
->>
-> There is no conflict to the ABI. These functions are supposed to be directly reachable from whatever code
-> section may need them.
->
-> Now I have a question: how did you get the need for this?
->
-> None of my kernels uses them:
-> - if I compile with -O2, the compiler simply expands epilogue and prologue to series of lwz and stw
-> - if I compile with -Os, the compiler generates lmw/stmw which give the smallest possible cache footprint
->
-> Neither did I find a single reference to these functions in several systems that I grepped for.
->
-> 	Regards,
-> 	Gabriel
->
-Hi,
+But actually, even the node distance is farther than REMOTE_DISTANCE,
+Modern CPUs also has QPI like connections, that make memory access is
+not too slow between nodes. So above losing on NUMA machine make a
+huge performance regression on benchmark: hackbench, tbench, netperf
+and oltp etc.
 
-how should we continue here ?
-There is the kernel panic, I've described.
+This patch will recover the scheduler behavior to old mode on all my
+Intel platforms: NHM EP/EX, WSM EP, SNB EP/EP4S, and so remove the
+perfromance regressions. (all of them just has 2 kinds distance, 10 21)
 
-Technically, there is an conflict between the code generated by the compiler and the loader in module_32.c, at least by using -Os.
-Because the prologue/epilogue is part of the .text and init_module() is part of .init.text (in the case __init is applied, as usual),
-a directly reachable call is not always possible.
+Signed-off-by: Alex Shi <alex.shi@intel.com>
+---
+ kernel/sched/core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Thanks
-Steffen
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 39eb601..b2ee41a 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -6286,7 +6286,7 @@ static int sched_domains_curr_level;
+ 
+ static inline int sd_local_flags(int level)
+ {
+-	if (sched_domains_numa_distance[level] > REMOTE_DISTANCE)
++	if (sched_domains_numa_distance[level] > RECLAIM_DISTANCE)
+ 		return 0;
+ 
+ 	return SD_BALANCE_EXEC | SD_BALANCE_FORK | SD_WAKE_AFFINE;
+-- 
+1.7.5.4
