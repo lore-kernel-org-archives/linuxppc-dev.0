@@ -1,34 +1,22 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 521C3B6F86
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2012 04:30:23 +1000 (EST)
-Message-ID: <4FCFA17F.3050207@freescale.com>
-Date: Wed, 6 Jun 2012 13:29:19 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 10D58B6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2012 07:15:40 +1000 (EST)
+Message-ID: <4FCFC870.40004@freescale.com>
+Date: Wed, 6 Jun 2012 16:15:28 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH v5 4/5] fsl_pmc: Add API to enable device as wakeup event
- source
-References: <1336737235-15370-1-git-send-email-chenhui.zhao@freescale.com>
- <1336737235-15370-4-git-send-email-chenhui.zhao@freescale.com>
- <4FC93D74.3090200@freescale.com>
- <20120604113609.GC20676@localhost.localdomain> <4FCD3E8B.30805@freescale.com>
- <94F013E7935FF44C83EBE7784D62AD3F09335D27@039-SN2MPN1-022.039d.mgd.msft.net>
- <4FCE2FB8.9080307@freescale.com>
- <94F013E7935FF44C83EBE7784D62AD3F093360C1@039-SN2MPN1-022.039d.mgd.msft.net>
- <4FCE4A5A.3020603@freescale.com>
- <CADRPPNSzTNPkNExBnNu1iD2hqyRG=Cw+y+PnjTRWxjP_ib1Kww@mail.gmail.com>
-In-Reply-To: <CADRPPNSzTNPkNExBnNu1iD2hqyRG=Cw+y+PnjTRWxjP_ib1Kww@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Zhao Chenhui-B35336 <B35336@freescale.com>
+To: Ben Collins <ben.c@servergy.com>
+Subject: Re: [PATCH] PPC: PCI: Fix pcibios_io_space_offset() so it works for
+ 32-bit ptr/64-bit rsrcs
+References: <4DC27253-67FC-4A55-8C78-7782D9D0CF53@servergy.com>
+In-Reply-To: <4DC27253-67FC-4A55-8C78-7782D9D0CF53@servergy.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,12 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/05/2012 11:06 PM, Li Yang wrote:
-> On Wed, Jun 6, 2012 at 2:05 AM, Scott Wood <scottwood@freescale.com> wrote:
->> You ignored "what about devices other than ethernet".
-> 
-> No, I haven't.  Other devices are so at least for now.
+On 06/05/2012 10:50 PM, Ben Collins wrote:
+> The commit introducing pcibios_io_space_offset() was ignoring 32-bit to
+> 64-bit sign extention, which is the case on ppc32 with 64-bit resource
+> addresses. This only seems to have shown up while running under QEMU for
+> e500mc target. It may or may be suboptimal that QEMU has an IO base
+> address > 32-bits for the e500-pci implementation, but 1) it's still a
+> regression and 2) it's more correct to handle things this way.
 
-I don't understand that last sentence.  Other devices are what?
+Where do you see addresses over 32 bits in QEMU's e500-pci, at least
+with current mainline QEMU and the mpc8544ds model?
+
+I/O space should be at 0xe1000000.
+
+I'm also not sure what this has to do with the virtual address returned
+by ioremap().
+
+> Signed-off-by: Ben Collins <bcollins@ubuntu.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/kernel/pci-common.c |    8 +++++++-
+>  1 file changed, 7 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index 8e78e93..be9ced7 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -1477,9 +1477,15 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+>  	return pci_enable_resources(dev, mask);
+>  }
+>  
+> +/* Before assuming too much here, take care to realize that we need sign
+> + * extension from 32-bit pointers to 64-bit resource addresses to work.
+> + */
+>  resource_size_t pcibios_io_space_offset(struct pci_controller *hose)
+>  {
+> -	return (unsigned long) hose->io_base_virt - _IO_BASE;
+> +	long vbase = (long)hose->io_base_virt;
+> +	long io_base = _IO_BASE;
+> +
+> +	return (resource_size_t)(vbase - io_base);
+
+Why do we want sign extension here?
+
+If we do want it, there are a lot of other places in this file where the
+same calculation is done.
 
 -Scott
