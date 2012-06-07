@@ -1,23 +1,22 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
- by ozlabs.org (Postfix) with SMTP id AD52DB6FE0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2012 18:46:11 +1000 (EST)
-Received: from mx0.aculab.com ([127.0.0.1])
- by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
- id 20980-08 for <linuxppc-dev@lists.ozlabs.org>;
- Thu,  7 Jun 2012 09:45:59 +0100 (BST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
-Date: Thu, 7 Jun 2012 09:41:35 +0100
-Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6F3B@saturn3.aculab.com>
-In-Reply-To: <1339051173.24838.10.camel@pasglop>
-From: "David Laight" <David.Laight@ACULAB.COM>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
- "Michael Neuling" <mikey@neuling.org>
-Cc: michael@ellerman.id.au, olof@lixom.net, linuxppc-dev@lists.ozlabs.org,
- paulus@samba.org, Anton Blanchard <anton@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1FC49B6FC8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2012 19:30:40 +1000 (EST)
+Message-ID: <1339061428.24838.24.camel@pasglop>
+Subject: Re: [PATCH] PPC: PCI: Fix pcibios_io_space_offset() so it works for
+ 32-bit ptr/64-bit rsrcs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ben Collins <ben.c@servergy.com>
+Date: Thu, 07 Jun 2012 19:30:28 +1000
+In-Reply-To: <16AB27C3-8709-4A7C-AFFE-42A0B658AC1D@servergy.com>
+References: <4DC27253-67FC-4A55-8C78-7782D9D0CF53@servergy.com>
+ <4FCFC870.40004@freescale.com>
+ <16AB27C3-8709-4A7C-AFFE-42A0B658AC1D@servergy.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
+On Wed, 2012-06-06 at 19:35 -0400, Ben Collins wrote:
+> 
+> pci_bus 0000:00: root bus resource [io  0xffbed000-0xffbfcfff] (bus
+> address [0x100000000-0x10000ffff])
+> 
+> Without the fix that I sent, it ends up looking like:
+> 
+> pci_bus 0000:00: root bus resource [io  0xffbed000-0xffbfcfff] (bus
+> address [0x0000-0xffff])
+> 
+> And that's when some devices fail to be assigned valid bar 0's and the
+> kernel complains because of it.
 
-> -----Original Message-----
-> From: Linuxppc-dev=20
-> [mailto:linuxppc-dev-bounces+david.laight=3Daculab.com@lists.ozl
-abs.org] On Behalf Of Benjamin Herrenschmidt
-> Sent: 07 June 2012 07:40
-> To: Michael Neuling
-> Cc: michael@ellerman.id.au; paulus@samba.org; Anton=20
-> Blanchard; olof@lixom.net; linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH] powerpc: Optimise the 64bit optimised=20
-> __clear_user
->=20
-> On Thu, 2012-06-07 at 16:05 +1000, Michael Neuling wrote:
->=20
-> > One problem with this is when we construct the=20
-> instructions, like using
-> > anything from ppc-opcode.h.  eg. using PPC_POPCNTB would=20
-> need to go from:
-> >     PPC_POPCNTB(r3,r3)=20
-> > to:
-> >     PPC_POPCNTB(3,3)=20
-> > Which is less readable IMHO.
->=20
-> Yes, I know. Not much to do about this, but it might still be=20
-> worth it,
-> how much time wasted due to mixing up or with ori in asm somewhere ?
->=20
-> One option would be to #define R3 (or _r3) for use in those macros so
-> we still have something nicer than just "3"... oh well.
+Note that oddly, the second range of bus addresses looks -more- correct
+than the first one...
 
-You then need to catch all the other bugs where a register
-is being used instead of a constant.
-Time to make the assembler require %r0 (etc)
-
-	David
+Cheers,
+Ben.
