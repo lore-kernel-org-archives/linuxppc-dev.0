@@ -1,20 +1,17 @@
-Return-Path: <R1AAHA@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 38283B6FAC
- for <linuxppc-dev@ozlabs.org>; Thu,  7 Jun 2012 10:51:42 +1000 (EST)
-Date: Wed, 6 Jun 2012 19:49:42 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: <linux-edac@vger.kernel.org>
-Subject: [PATCH] mpc85xx_edac: fix error: too few arguments to function
- 'edac_mc_alloc'
-Message-ID: <20120606194942.1c25679a3062ba90ef53307f@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 7 Jun 2012 13:04:23 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
+Message-ID: <20120607030423.GA30053@drongo>
+References: <20120604175858.38dac554@kryten> <20120605120222.6722a3e3@kryten>
+ <178E3BC0-C6E2-4E33-BA66-8144F192A151@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, Mauro Carvalho Chehab <mchehab@redhat.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <178E3BC0-C6E2-4E33-BA66-8144F192A151@kernel.crashing.org>
+Cc: mikey@neuling.org, michael@ellerman.id.au,
+ Anton Blanchard <anton@samba.org>, olof@lixom.net,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,32 +21,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-commit ca0907b "edac: Remove the legacy EDAC ABI" broke mpc85xx_edac
-in the following manner:
+On Wed, Jun 06, 2012 at 06:40:54PM +0200, Segher Boessenkool wrote:
+> >+err1;	dcbz	r0,r3
+> 
+> There is no such instruction, you probably meant "dcbz 0,r3"?
 
-mpc85xx_edac.c:983:35: error: too few arguments to function 'edac_mc_alloc'
+There certainly is such an instruction, though it doesn't do exactly
+what a naive reader might expect.  Using 0 rather than r0 or %r0
+improves readability but makes no difference to the assembler or the
+cpu.
 
-this patch puts back the missing 'layers' argument.
-
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- drivers/edac/mpc85xx_edac.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 4c40235..0e37462 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -980,7 +980,8 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
- 	layers[1].type = EDAC_MC_LAYER_CHANNEL;
- 	layers[1].size = 1;
- 	layers[1].is_virt_csrow = false;
--	mci = edac_mc_alloc(edac_mc_idx, ARRAY_SIZE(layers), sizeof(*pdata));
-+	mci = edac_mc_alloc(edac_mc_idx, ARRAY_SIZE(layers), layers,
-+			    sizeof(*pdata));
- 	if (!mci) {
- 		devres_release_group(&op->dev, mpc85xx_mc_err_probe);
- 		return -ENOMEM;
--- 
-1.7.10.2
+Paul.
