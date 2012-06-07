@@ -1,29 +1,23 @@
-Return-Path: <alex.shi@intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by ozlabs.org (Postfix) with ESMTP id E0FF8B6FB4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2012 10:35:24 +1000 (EST)
-Message-ID: <4FCFF6D8.70507@intel.com>
-Date: Thu, 07 Jun 2012 08:33:28 +0800
-From: Alex Shi <alex.shi@intel.com>
+Return-Path: <B07421@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7255110089C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 Jun 2012 10:37:22 +1000 (EST)
+Message-ID: <4FCFF7B4.7070608@freescale.com>
+Date: Wed, 6 Jun 2012 19:37:08 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [RFC PATCH] sched/numa: do load balance between remote nodes
-References: <1338965571-9812-1-git-send-email-alex.shi@intel.com>
- <1338973295.2749.81.camel@twins>
-In-Reply-To: <1338973295.2749.81.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
- linux-sh@vger.kernel.org, dhowells@redhat.com, paulus@samba.org, hpa@zytor.com,
- sparclinux@vger.kernel.org, mingo@kernel.org, sivanich@sgi.com, x86@kernel.org,
- greg.pearson@hp.com, chris.mason@oracle.com, arjan.van.de.ven@intel.com,
- mattst88@gmail.com, pjt@google.com, fenghua.yu@intel.com,
- seto.hidetoshi@jp.fujitsu.com, cmetcalf@tilera.com, ak@linux.intel.com,
- ink@jurassic.park.msu.ru, anton@samba.org, tglx@linutronix.de,
- kamezawa.hiroyu@jp.fujitsu.com, rth@twiddle.net, tony.luck@intel.com,
- torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
- ralf@linux-mips.org, lethal@linux-sh.org, linux-alpha@vger.kernel.org,
- bob.picco@oracle.com, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] PPC: PCI: Fix pcibios_io_space_offset() so it works for
+ 32-bit ptr/64-bit rsrcs
+References: <4DC27253-67FC-4A55-8C78-7782D9D0CF53@servergy.com>
+ <4FCFC870.40004@freescale.com> <1339021310.7150.181.camel@pasglop>
+In-Reply-To: <1339021310.7150.181.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@lists.ozlabs.org, Ben Collins <ben.c@servergy.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,21 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06/2012 05:01 PM, Peter Zijlstra wrote:
-
-> On Wed, 2012-06-06 at 14:52 +0800, Alex Shi wrote:
->> -       if (sched_domains_numa_distance[level] > REMOTE_DISTANCE)
->> +       if (sched_domains_numa_distance[level] > RECLAIM_DISTANCE) 
+On 06/06/2012 05:21 PM, Benjamin Herrenschmidt wrote:
+> Now that means that we can end up with funky arithmetic in a couple of
+> cases:
 > 
-> I actually considered this.. I just felt a little uneasy re-purposing
-> the RECLAIM_DISTANCE for this, but I guess its all the same anyway. Both
-> mean expensive-away-distance.
+>  - If the bus address of the IO space is larger than the virtual address
+> returned by ioremap (it's a bit silly to use large IO addresses but it's
+> technically possible, normally IO windows start at 0 bus-side though).
+> In fact I wouldn't be surprised if we have various other bugs if IO
+> windows don't start at 0 (you may want to double check your dts setup
+> here).
+
+The dts does show the I/O beginning at bus address zero:
+
+                 ranges = <0x2000000 0x0 0xc0000000 0xc0000000 0x0
+0x20000000
+                           0x1000000 0x0 0x0 0xe1000000 0x0 0x10000>;
+
+>  - If the ioremap'ed address of the IO space of another domain is lower
+> than the ioremap'ed address of the first domain, in which case the
+> calculation:
 > 
-
-
-I understand you, the BIOS guys don't have a good alignment with us on
-this.
-
-> So I've taken this.
+> 	host->io_base_virt - _IO_BASE
 > 
-> thanks!
+> results in a negative offset.
+
+There should have been only one PCI domain in the QEMU case.
+
+-Scott
