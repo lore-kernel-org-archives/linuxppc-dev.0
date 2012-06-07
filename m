@@ -1,25 +1,22 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4F0A7B6FB4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2012 03:51:17 +1000 (EST)
-Message-ID: <4FD0EA08.7040903@freescale.com>
-Date: Thu, 7 Jun 2012 12:51:04 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
-References: <20120604175858.38dac554@kryten> <20120605120222.6722a3e3@kryten>
- <178E3BC0-C6E2-4E33-BA66-8144F192A151@kernel.crashing.org>
- <20120607030423.GA30053@drongo>
-In-Reply-To: <20120607030423.GA30053@drongo>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: mikey@neuling.org, michael@ellerman.id.au,
- Anton Blanchard <anton@samba.org>, olof@lixom.net,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 961B0B6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2012 07:32:06 +1000 (EST)
+Message-ID: <1339104711.24838.29.camel@pasglop>
+Subject: Re: [PATCH v2 0/2] Add pcibios_device_change_notifier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+Date: Fri, 08 Jun 2012 07:31:51 +1000
+In-Reply-To: <4FD0A257.4070506@jp.fujitsu.com>
+References: <4FBC4C86.9050206@jp.fujitsu.com>
+ <1338960416.7150.160.camel@pasglop> <4FD0A257.4070506@jp.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, jbarnes@virtuousgeek.org,
+ Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/06/2012 10:04 PM, Paul Mackerras wrote:
-> On Wed, Jun 06, 2012 at 06:40:54PM +0200, Segher Boessenkool wrote:
->>> +err1;	dcbz	r0,r3
->>
->> There is no such instruction, you probably meant "dcbz 0,r3"?
+On Thu, 2012-06-07 at 21:45 +0900, Hiroo Matsumoto wrote:
 > 
-> There certainly is such an instruction, though it doesn't do exactly
-> what a naive reader might expect.  Using 0 rather than r0 or %r0
-> improves readability but makes no difference to the assembler or the
-> cpu.
+> > Also you seem to add:
+> > 
+> > +               /* Setup OF node pointer in the device */
+> > +               dev->dev.of_node = pci_device_to_OF_node(dev);
+> > 
+> > This shouldn't be needed anymore, the device node should be setup by the
+> > core nowadays. Is this just a remnant of you rebasing an old patch or do
+> > you have a good reason to add this statement ?
+> 
+> No, I don't have a good reason to add this statement.
+> I just tried to make this code be same with pcibios_setup_bus_devices.
+> Thanks for your review and comment. 
 
-The assembler can't tell that you used r0 rather than 0, because that's
-handled by the preprocessor, but it seems like a bug (or at least lax
-error checking) that it accepts %r0 there, and that objdump decodes it
-as "dcbz r0,r3" rather than "dcbz 0,r3".
+Unless I'm mistaken, this statement was removed from
+pcibios_setup_bus_devices() recently so I'd say it's a leftover from
+your patch having been originally done on top of an older kernel.
 
-It's also odd that objdump produces output containing "r3" (not %r3)
-when the assembler won't directly accept it.
+I won't be back for another week or so but I'll see if I can get things
+tested in the meantime.
 
--Scott
+Cheers,
+Ben.
