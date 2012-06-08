@@ -2,22 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8465BB6FA5
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2012 10:19:49 +1000 (EST)
-Message-ID: <1339114777.24838.31.camel@pasglop>
-Subject: Re: [PATCH] powerpc: Fix sldi to take literal not register name
+ by ozlabs.org (Postfix) with ESMTPS id B4D3EB6EF1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2012 10:51:53 +1000 (EST)
+Message-ID: <1339116697.24838.36.camel@pasglop>
+Subject: Re: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-Date: Fri, 08 Jun 2012 10:19:37 +1000
-In-Reply-To: <9666.1339113149@neuling.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Fri, 08 Jun 2012 10:51:37 +1000
+In-Reply-To: <4FD0EA08.7040903@freescale.com>
 References: <20120604175858.38dac554@kryten> <20120605120222.6722a3e3@kryten>
  <178E3BC0-C6E2-4E33-BA66-8144F192A151@kernel.crashing.org>
- <1339017602.7150.174.camel@pasglop> <4725.1339049104@neuling.org>
- <1339049235.2215.2.camel@concordia> <5626.1339049529@neuling.org>
- <1339049882.2215.10.camel@concordia> <9666.1339113149@neuling.org>
+ <20120607030423.GA30053@drongo> <4FD0EA08.7040903@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Michael Ellerman <michael@ellerman.id.au>,
+Cc: mikey@neuling.org, michael@ellerman.id.au,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
  olof@lixom.net, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,42 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-06-08 at 09:52 +1000, Michael Neuling wrote:
-> Fix sldi to take literal not register name.
+On Thu, 2012-06-07 at 12:51 -0500, Scott Wood wrote:
 > 
-> Was introduced by:
->  commit 19ccb76a1938ab364a412253daec64613acbf3df
->  Author: Paul Mackerras <paulus@samba.org>
->  Date:   Sat Jul 23 17:42:46 2011 +1000
-> 
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> ---
-> I got sick off the bike-shedding in a vacuum and started doing the
-> conversion.  Found this as a result.
-> 
-> I'll post the full conversion at some point, but this fix is useful
-> now.  
+> The assembler can't tell that you used r0 rather than 0, because
+> that's
+> handled by the preprocessor, but it seems like a bug (or at least lax
+> error checking) that it accepts %r0 there, and that objdump decodes it
+> as "dcbz r0,r3" rather than "dcbz 0,r3".
 
-Euh... except that:
+Well, this is the domain of bike shed painting :-) the syntax of the
+instruction is:
 
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index a84aafc..969caeb 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -810,7 +810,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_201)
->  	lwz	r3,VCORE_NAPPING_THREADS(r5)
->  	lwz	r4,VCPU_PTID(r9)
->  	li	r0,1
-> -	sldi	r0,r0,r4
-> +	sldi	r0,r0,4
+	dcbz RA,RB
 
-Isn't the right fix s/sldi/sld and keep r4 ?
+Now, of course, like other RA,RB pairs it has the semantic that
 
-IE. I think Paul meant to shift 1 by the TID not shift 1 by 4
+if RA = 0 then b <- 0
+else           b <- (RA)
+EA <- b + (RB)
+
+If we were to be pendantic and our assembly could also enforce the use
+of % for registers, I suppose it would make sense to require 0 rather
+than %0 for those "RA" forms to make it absolutely clear that we are
+talking about 0 and not r0 in this specific case, I agree, but in the
+current shape of the asm, I don't think that's something to expect.
 
 Cheers,
 Ben.
-
->  	andc.	r3,r3,r0		/* no sense IPI'ing ourselves */
->  	beq	43f
->  	mulli	r4,r4,PACA_SIZE		/* get paca for thread 0 */
