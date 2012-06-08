@@ -4,9 +4,9 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
 Date: Fri, 08 Jun 2012 21:36:05 +1000
-Subject: [PATCH 11/15] powerpc: fix VSX macros so register names aren't wrapped
+Subject: [PATCH 13/15] powerpc: start using ___PPC_RA/B/S/T where necessary
 In-Reply-To: <1339155365.316308.981577666228.qpush@ale>
-Message-Id: <20120608113605.97E60D43B30@localhost.localdomain>
+Message-Id: <20120608113605.A410DD43B39@localhost.localdomain>
 Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org,
  Anton Blanchard <anton@samba.org>, Olof Johannsson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,31 +18,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to do this so we can enforce the name of a and b in called
-macros PPC_RA/B later.
+Now have ___PPC_RA/B/S/T we can use it in some places.  These are
+places where we can't use the existing defines which will soon enforce
+R0-R31 usage.  
+
+The macros being changed here are being used in inline asm, which
+can't convert to enforce the R0-R31 usage.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/include/asm/ppc-opcode.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 Index: clone3/arch/powerpc/include/asm/ppc-opcode.h
 ===================================================================
 --- clone3.orig/arch/powerpc/include/asm/ppc-opcode.h
 +++ clone3/arch/powerpc/include/asm/ppc-opcode.h
-@@ -201,11 +201,11 @@
- #define VSX_XX1(s, a, b)	(__PPC_XS(s) | __PPC_RA(a) | __PPC_RB(b))
- #define VSX_XX3(t, a, b)	(__PPC_XT(t) | __PPC_XA(a) | __PPC_XB(b))
- #define STXVD2X(s, a, b)	stringify_in_c(.long PPC_INST_STXVD2X | \
--					       VSX_XX1((s), (a), (b)))
-+					       VSX_XX1((s), a, b))
- #define LXVD2X(s, a, b)		stringify_in_c(.long PPC_INST_LXVD2X | \
--					       VSX_XX1((s), (a), (b)))
-+					       VSX_XX1((s), a, b))
- #define XXLOR(t, a, b)		stringify_in_c(.long PPC_INST_XXLOR | \
--					       VSX_XX3((t), (a), (b)))
-+					       VSX_XX3((t), a, b))
- 
- #define PPC_NAP			stringify_in_c(.long PPC_INST_NAP)
- #define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
+@@ -147,13 +147,13 @@
+ #define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_INST_DCBZL | \
+ 					__PPC_RA(a) | __PPC_RB(b))
+ #define PPC_LDARX(t, a, b, eh)	stringify_in_c(.long PPC_INST_LDARX | \
+-					__PPC_RT(t) | __PPC_RA(a) | \
+-					__PPC_RB(b) | __PPC_EH(eh))
++					___PPC_RT(t) | ___PPC_RA(a) | \
++					___PPC_RB(b) | __PPC_EH(eh))
+ #define PPC_LWARX(t, a, b, eh)	stringify_in_c(.long PPC_INST_LWARX | \
+-					__PPC_RT(t) | __PPC_RA(a) | \
+-					__PPC_RB(b) | __PPC_EH(eh))
++					___PPC_RT(t) | ___PPC_RA(a) | \
++					___PPC_RB(b) | __PPC_EH(eh))
+ #define PPC_MSGSND(b)		stringify_in_c(.long PPC_INST_MSGSND | \
+-					__PPC_RB(b))
++					___PPC_RB(b))
+ #define PPC_POPCNTB(a, s)	stringify_in_c(.long PPC_INST_POPCNTB | \
+ 					__PPC_RA(a) | __PPC_RS(s))
+ #define PPC_POPCNTD(a, s)	stringify_in_c(.long PPC_INST_POPCNTD | \
+@@ -171,7 +171,7 @@
+ #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
+ 					__PPC_WC(w))
+ #define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
+-					       __PPC_RB(a) | __PPC_RS(lp))
++					       ___PPC_RB(a) | ___PPC_RS(lp))
+ #define PPC_TLBSRX_DOT(a,b)	stringify_in_c(.long PPC_INST_TLBSRX_DOT | \
+ 					__PPC_RA(a) | __PPC_RB(b))
+ #define PPC_TLBIVAX(a,b)	stringify_in_c(.long PPC_INST_TLBIVAX | \
