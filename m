@@ -1,24 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1339137497.25573.9.camel@concordia>
-Subject: Re: [PATCH 2/2] [POWERPC] uprobes: powerpc port
-From: Michael Ellerman <michael@ellerman.id.au>
-To: ananth@in.ibm.com
-Date: Fri, 08 Jun 2012 16:38:17 +1000
-In-Reply-To: <20120608061954.GE13409@in.ibm.com>
-References: <20120606091950.GB6745@in.ibm.com>
- <20120606092150.GC6745@in.ibm.com> <1338974822.2749.89.camel@twins>
- <20120606093541.GA29580@in.ibm.com> <1339006084.3458.25.camel@localhost>
- <20120608043605.GB13409@in.ibm.com> <1339134714.25573.4.camel@concordia>
- <20120608060104.GD13409@in.ibm.com> <1339136264.25573.7.camel@concordia>
- <20120608061954.GE13409@in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jim Keniston <jkenisto@linux.vnet.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
- Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>,
- oleg@redhat.com, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 55EC9B6FC5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Jun 2012 17:34:42 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: Optimise the 64bit optimised __clear_user
+References: <20120604175858.38dac554@kryten> <20120605120222.6722a3e3@kryten>
+ <178E3BC0-C6E2-4E33-BA66-8144F192A151@kernel.crashing.org>
+ <20120607030423.GA30053@drongo> <4FD0EA08.7040903@freescale.com>
+Date: Fri, 08 Jun 2012 09:34:33 +0200
+In-Reply-To: <4FD0EA08.7040903@freescale.com> (Scott Wood's message of "Thu, 7
+ Jun 2012 12:51:04 -0500")
+Message-ID: <m2bokuuuie.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: mikey@neuling.org, michael@ellerman.id.au,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ olof@lixom.net, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-06-08 at 11:49 +0530, Ananth N Mavinakayanahalli wrote:
-> On Fri, Jun 08, 2012 at 04:17:44PM +1000, Michael Ellerman wrote:
-> > On Fri, 2012-06-08 at 11:31 +0530, Ananth N Mavinakayanahalli wrote:
-> > > On Fri, Jun 08, 2012 at 03:51:54PM +1000, Michael Ellerman wrote:
-> > > > On Fri, 2012-06-08 at 10:06 +0530, Ananth N Mavinakayanahalli wrote:
-> > > 
-> > > But MSR_PR=1 and hence emulate_step() will return -1 and hence we will
-> > > end up single-stepping using user_enable_single_step(). Same with rfid.
-> > 
-> > Right. But that was exactly Jim's point, you may be asked to emulate
-> > those instructions even though you wouldn't expect to see them in
-> > userspace code, so you need to handle it.
-> > 
-> > Luckily it looks like emulate_step() will do the right thing for you.
-> > It'd be good to test it to make 100% sure.
-> 
-> Sure. Will add that check and send v2.
+Scott Wood <scottwood@freescale.com> writes:
 
-Sorry I didn't mean add a test in the code, I meant construct a test
-case to confirm that it works as expected.
+> and that objdump decodes it as "dcbz r0,r3" rather than "dcbz 0,r3".
 
-cheers
+<http://permalink.gmane.org/gmane.comp.gnu.binutils/57870>
+
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
