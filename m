@@ -4,9 +4,9 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
 Date: Fri, 08 Jun 2012 21:36:05 +1000
-Subject: [PATCH 6/15] powerpc/pasemi: move lbz/stbciz to ppc-opcode.h
+Subject: [PATCH 5/15] powerpc: convert to %r for all GPR usage
 In-Reply-To: <1339155365.316308.981577666228.qpush@ale>
-Message-Id: <20120608113605.78D97D43B2A@localhost.localdomain>
+Message-Id: <20120608113605.75BD5D43B26@localhost.localdomain>
 Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org,
  Anton Blanchard <anton@samba.org>, Olof Johannsson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,53 +18,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-move lbz/stbciz to ppc-opcode.h.
+Now all the fixes are in place, let's rock-n-roll!
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/include/asm/ppc-opcode.h |    7 +++++++
- arch/powerpc/kernel/misc_64.S         |    5 -----
- 2 files changed, 7 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/ppc_asm.h |   72 ++++++++++++++++++++-----------------
+ 1 file changed, 39 insertions(+), 33 deletions(-)
 
-Index: clone3/arch/powerpc/include/asm/ppc-opcode.h
+Index: clone3/arch/powerpc/include/asm/ppc_asm.h
 ===================================================================
---- clone3.orig/arch/powerpc/include/asm/ppc-opcode.h
-+++ clone3/arch/powerpc/include/asm/ppc-opcode.h
-@@ -107,6 +107,8 @@
- #define PPC_INST_NEG			0x7c0000d0
- #define PPC_INST_BRANCH			0x48000000
- #define PPC_INST_BRANCH_COND		0x40800000
-+#define PPC_INST_LBZCIX			0x7c0006aa
-+#define PPC_INST_STBCIX			0x7c0007aa
+--- clone3.orig/arch/powerpc/include/asm/ppc_asm.h
++++ clone3/arch/powerpc/include/asm/ppc_asm.h
+@@ -490,40 +490,46 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ #define	cr7	7
  
- /* macros to insert fields into opcodes */
- #define __PPC_RA(a)	(((a) & 0x1f) << 16)
-@@ -186,6 +188,11 @@
- 					__PPC_RS(t) | __PPC_RA(a) | __PPC_RB(b))
- #define PPC_SLBFEE_DOT(t, b)	stringify_in_c(.long PPC_INST_SLBFEE | \
- 					__PPC_RT(t) | __PPC_RB(b))
-+/* PASemi instructions */
-+#define LBZCIX(t,a,b)		stringify_in_c(.long PPC_INST_LBZCIX | \
-+				       __PPC_RT(t) | __PPC_RA(a) | __PPC_RB(b))
-+#define STBCIX(s,a,b)		stringify_in_c(.long PPC_INST_STBCIX | \
-+				       __PPC_RS(s) | __PPC_RA(a) | __PPC_RB(b))
  
- /*
-  * Define what the VSX XX1 form instructions will look like, then add
-Index: clone3/arch/powerpc/kernel/misc_64.S
-===================================================================
---- clone3.orig/arch/powerpc/kernel/misc_64.S
-+++ clone3/arch/powerpc/kernel/misc_64.S
-@@ -301,11 +301,6 @@ _GLOBAL(real_writeb)
+-/* General Purpose Registers (GPRs) */
++/*
++ * General Purpose Registers (GPRs)
++ *
++ * The lower case r0-r31 should be used in preference to the upper
++ * case R0-R31 as they provide more error checking in the assembler.
++ * Use R0-31 only when really nessesary.
++ */
  
- #ifdef CONFIG_PPC_PASEMI
+-#define	r0	0
+-#define	r1	1
+-#define	r2	2
+-#define	r3	3
+-#define	r4	4
+-#define	r5	5
+-#define	r6	6
+-#define	r7	7
+-#define	r8	8
+-#define	r9	9
+-#define	r10	10
+-#define	r11	11
+-#define	r12	12
+-#define	r13	13
+-#define	r14	14
+-#define	r15	15
+-#define	r16	16
+-#define	r17	17
+-#define	r18	18
+-#define	r19	19
+-#define	r20	20
+-#define	r21	21
+-#define	r22	22
+-#define	r23	23
+-#define	r24	24
+-#define	r25	25
+-#define	r26	26
+-#define	r27	27
+-#define	r28	28
+-#define	r29	29
+-#define	r30	30
+-#define	r31	31
++#define	r0	%r0
++#define	r1	%r1
++#define	r2	%r2
++#define	r3	%r3
++#define	r4	%r4
++#define	r5	%r5
++#define	r6	%r6
++#define	r7	%r7
++#define	r8	%r8
++#define	r9	%r9
++#define	r10	%r10
++#define	r11	%r11
++#define	r12	%r12
++#define	r13	%r13
++#define	r14	%r14
++#define	r15	%r15
++#define	r16	%r16
++#define	r17	%r17
++#define	r18	%r18
++#define	r19	%r19
++#define	r20	%r20
++#define	r21	%r21
++#define	r22	%r22
++#define	r23	%r23
++#define	r24	%r24
++#define	r25	%r25
++#define	r26	%r26
++#define	r27	%r27
++#define	r28	%r28
++#define	r29	%r29
++#define	r30	%r30
++#define	r31	%r31
  
--/* No support in all binutils for these yet, so use defines */
--#define LBZCIX(RT,RA,RB)  .long (0x7c0006aa|(RT<<21)|(RA<<16)|(RB << 11))
--#define STBCIX(RS,RA,RB)  .long (0x7c0007aa|(RS<<21)|(RA<<16)|(RB << 11))
--
--
- _GLOBAL(real_205_readb)
- 	mfmsr	r7
- 	ori	r0,r7,MSR_DR
+ #define	R0	0
+ #define	R1	1
