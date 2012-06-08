@@ -1,19 +1,20 @@
 Return-Path: <whitebox@nefkom.net>
 Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:70:0:1:25:1])
+ [IPv6:2001:a60:0:32:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 92B60B7003
- for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2012 22:13:06 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 51810B6FBC
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 Jun 2012 22:15:22 +1000 (EST)
 From: Andreas Schwab <schwab@linux-m68k.org>
 To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 7/15] powerpc: merge STK_REG/PARAM/FRAMESIZE
+Subject: Re: [PATCH 10/15] powerpc: fixes for instructions not using correct
+ register naming
 References: <1339155365.316308.981577666228.qpush@ale>
- <20120608113605.80B73D43B2B__2857.47079547054$1339155968$gmane$org@localhost.localdomain>
-Date: Fri, 08 Jun 2012 14:12:56 +0200
-In-Reply-To: <20120608113605.80B73D43B2B__2857.47079547054$1339155968$gmane$org@localhost.localdomain>
+ <20120608113605.91B88D43B2F__24549.446340143$1339156128$gmane$org@localhost.localdomain>
+Date: Fri, 08 Jun 2012 14:15:14 +0200
+In-Reply-To: <20120608113605.91B88D43B2F__24549.446340143$1339156128$gmane$org@localhost.localdomain>
  (Michael Neuling's message of "Fri, 08 Jun 2012 21:36:05 +1000")
-Message-ID: <m2wr3it31z.fsf@igel.home>
+Message-ID: <m2sje6t2y5.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
@@ -30,21 +31,11 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Michael Neuling <mikey@neuling.org> writes:
 
-> Index: clone3/arch/powerpc/include/asm/ppc_asm.h
-> ===================================================================
-> --- clone3.orig/arch/powerpc/include/asm/ppc_asm.h
-> +++ clone3/arch/powerpc/include/asm/ppc_asm.h
-> @@ -178,6 +178,11 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLP
->  #define HMT_HIGH	or	3,3,3
->  #define HMT_EXTRA_HIGH	or	7,7,7		# power7 only
->  
-> +#define STACKFRAMESIZE 256
-> +#define STK_REG(i)     (112 + ((i)-14)*8)
-> +
-> +#define STK_PARAM(i)	(48 + ((i)-3)*8)
+>  	/* Invalidate all TLBs */
+> -	PPC_TLBILX_ALL(0,0)
+> +	PPC_TLBILX_ALL(R0,R0)
 
-That should probably be bracketed by CONFIG_PPC64, since it is only
-applicable to 64-bit code.
+The first argument is (RA|0), so 0 is zero, not r0.
 
 Andreas.
 
