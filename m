@@ -1,23 +1,22 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:32:0:1:25:1])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D0435B6FD1
- for <linuxppc-dev@ozlabs.org>; Sat,  9 Jun 2012 16:53:32 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id 176DFB6FCC
+ for <linuxppc-dev@ozlabs.org>; Sat,  9 Jun 2012 17:17:32 +1000 (EST)
+Message-ID: <1339226228.24838.74.camel@pasglop>
 Subject: Re: [PATCH 10/15] powerpc: fixes for instructions not using correct
  register naming
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Sat, 09 Jun 2012 17:17:08 +1000
+In-Reply-To: <m2boktnfh9.fsf@linux-m68k.org>
 References: <1339155365.316308.981577666228.qpush@ale>
  <20120608113605.91B88D43B2F__24549.446340143$1339156128$gmane$org@localhost.localdomain>
  <m2sje6t2y5.fsf@igel.home> <1339195362.24838.50.camel@pasglop>
-Date: Sat, 09 Jun 2012 08:53:22 +0200
-In-Reply-To: <1339195362.24838.50.camel@pasglop> (Benjamin Herrenschmidt's
- message of "Sat, 09 Jun 2012 08:42:42 +1000")
-Message-ID: <m2boktnfh9.fsf@linux-m68k.org>
-MIME-Version: 1.0
-Content-Type: text/plain
+ <m2boktnfh9.fsf@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Michael Neuling <mikey@neuling.org>,
  Michael Ellerman <michael@ellerman.id.au>, linuxppc-dev@ozlabs.org,
  Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
@@ -31,16 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Sat, 2012-06-09 at 08:53 +0200, Andreas Schwab wrote:
+> 
+> > The macro system we use cannot do that (it will prefix with REG_),
+> since
+> > both arguments are registers we must use R0 in this case.
+> 
+> So define a ___PPC_RA0 macro that doesn't do that.
 
-> The macro system we use cannot do that (it will prefix with REG_), since
-> both arguments are registers we must use R0 in this case.
+But then we lose the checking for other instructions :-) Unless we start
+being nasty and defining a different macro form for RA which can be 0...
 
-So define a ___PPC_RA0 macro that doesn't do that.
+I'd rather not go there unless we absolutely have to...
 
-Andreas.
+What would be nice also would be if we had a gas option to enforce the
+use of % for register names. We'd probably have to struggle a little bit
+with gcc inline asm in a case or two though.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Cheers,
+Ben.
