@@ -1,17 +1,20 @@
 Return-Path: <graman@arubanetworks.com>
-Received: from sjcbarracuda01.arubanetworks.com
- (sjcbarracuda01.arubanetworks.com [199.127.104.59])
- by ozlabs.org (Postfix) with ESMTP id D56D3B6FD7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2012 06:49:41 +1000 (EST)
+Received: from sjcbarracuda02.arubanetworks.com
+ (sjcbarracuda02.arubanetworks.com [199.127.104.60])
+ by ozlabs.org (Postfix) with ESMTP id 15787B6FD7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2012 06:52:24 +1000 (EST)
+Received: from DIAMONDPEAK.arubanetworks.com (diamondpeak.arubanetworks.com
+ [10.1.8.23]) by sjcbarracuda02.arubanetworks.com with ESMTP id
+ TtmWSAeEwoNOCFsk for <linuxppc-dev@lists.ozlabs.org>;
+ Sun, 10 Jun 2012 13:52:22 -0700 (PDT)
 From: Gopalakrishnan Raman <graman@arubanetworks.com>
 To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Question about MPIC_SINGLE_DEST_CPU on P1020 (e500 core) SMP
-Date: Sun, 10 Jun 2012 20:37:09 +0000
-Message-ID: <802E1C77E421D345A43385A6BFAC7AC4BE502C@ROYALGORGE.arubanetworks.com>
+Subject: 
+Date: Sun, 10 Jun 2012 20:52:20 +0000
+Message-ID: <802E1C77E421D345A43385A6BFAC7AC4BE5076@ROYALGORGE.arubanetworks.com>
 Content-Type: multipart/alternative;
- boundary="_000_802E1C77E421D345A43385A6BFAC7AC4BE502CROYALGORGEarubane_"
+ boundary="_000_802E1C77E421D345A43385A6BFAC7AC4BE5076ROYALGORGEarubane_"
 MIME-Version: 1.0
-Cc: "rgkwstl@gmail.com" <rgkwstl@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,7 +24,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_000_802E1C77E421D345A43385A6BFAC7AC4BE502CROYALGORGEarubane_
+--_000_802E1C77E421D345A43385A6BFAC7AC4BE5076ROYALGORGEarubane_
 Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
@@ -38,7 +41,8 @@ Any advice appreciated
 Thanks
 -gopal
 
---_000_802E1C77E421D345A43385A6BFAC7AC4BE502CROYALGORGEarubane_
+
+--_000_802E1C77E421D345A43385A6BFAC7AC4BE5076ROYALGORGEarubane_
 Content-Type: text/html; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
@@ -105,8 +109,9 @@ n the destination of the PIC_IIDRn register. This does seem to work. But we=
 <p class=3D"MsoNormal">Any advice appreciated<o:p></o:p></p>
 <p class=3D"MsoNormal">Thanks<o:p></o:p></p>
 <p class=3D"MsoNormal">-gopal<o:p></o:p></p>
+<p class=3D"MsoNormal"><o:p>&nbsp;</o:p></p>
 </div>
 </body>
 </html>
 
---_000_802E1C77E421D345A43385A6BFAC7AC4BE502CROYALGORGEarubane_--
+--_000_802E1C77E421D345A43385A6BFAC7AC4BE5076ROYALGORGEarubane_--
