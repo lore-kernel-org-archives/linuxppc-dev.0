@@ -1,45 +1,17 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9F694B6FD9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2012 04:41:23 +1000 (EST)
-Received: by bkcjg15 with SMTP id jg15so2817704bkc.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 Jun 2012 11:41:20 -0700 (PDT)
+Return-Path: <graman@arubanetworks.com>
+Received: from sjcbarracuda01.arubanetworks.com
+ (sjcbarracuda01.arubanetworks.com [199.127.104.59])
+ by ozlabs.org (Postfix) with ESMTP id D56D3B6FD7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2012 06:49:41 +1000 (EST)
+From: Gopalakrishnan Raman <graman@arubanetworks.com>
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: Question about MPIC_SINGLE_DEST_CPU on P1020 (e500 core) SMP
+Date: Sun, 10 Jun 2012 20:37:09 +0000
+Message-ID: <802E1C77E421D345A43385A6BFAC7AC4BE502C@ROYALGORGE.arubanetworks.com>
+Content-Type: multipart/alternative;
+ boundary="_000_802E1C77E421D345A43385A6BFAC7AC4BE502CROYALGORGEarubane_"
 MIME-Version: 1.0
-In-Reply-To: <1338809853.3371.31.camel@mars>
-References: <20120410021151.GB23044@lovely.krouter>
- <20120411073918.GA9180@lovely.krouter>
- <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
- <20120509000221.GA19525@lovely.krouter>
- <20120513225126.GA3683@lovely.krouter>
- <20120514042142.GD9750@kroah.com> <20120520231724.GA7941@mars>
- <F281D0F91ED19E4D8E63A7504E8A649803BB1E25@039-SN2MPN1-023.039d.mgd.msft.net>
- <1337583221.3394.21.camel@mars> <20120521065722.GA4363@mars>
- <20120521190450.GA27492@arwen.pp.htv.fi>
- <1338809424.3371.20.camel@mars> <1338809853.3371.31.camel@mars>
-Date: Sun, 10 Jun 2012 15:41:19 -0300
-Message-ID: <CAOMZO5B7+Qy06m7O=v1M3vt7to7ciKOhQOihVgAEf+utntvw4w@mail.gmail.com>
-Subject: Re: [PATCH v2] usb: fsl_udc: errata - postpone freeing current dTD
-From: Fabio Estevam <festevam@gmail.com>
-To: Christoph Fritz <chf.fritz@googlemail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Ben Dooks <ben-linux@fluff.org>, Chen Peter-B29397 <B29397@freescale.com>,
- Nicolas Ferre <nicolas.ferre@atmel.com>, "Hans J. Koch" <hjk@hansjkoch.de>,
- Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>,
- Thomas Dahlmann <dahlmann.thomas@arcor.de>,
- Sascha Hauer <s.hauer@pengutronix.de>, Christian Hemp <c.hemp@phytec.de>,
- Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@caiaq.de>,
- Neil Zhang <zhangwm@marvell.com>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Oliver Neukum <oneukum@suse.de>, Eric Miao <eric.y.miao@gmail.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- Felipe Balbi <balbi@ti.com>, Ido Shayevitz <idos@codeaurora.org>,
- Estevam Fabio-R49496 <r49496@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "rgkwstl@gmail.com" <rgkwstl@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,94 +21,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christoph,
+--_000_802E1C77E421D345A43385A6BFAC7AC4BE502CROYALGORGEarubane_
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 4, 2012 at 8:37 AM, Christoph Fritz
-<chf.fritz@googlemail.com> wrote:
+Hi
+The P1020 manual states (in the PIC chapter) that in the "Internal Interrup=
+t Destination" register, only 1 CPU (and not both) can be selected as the I=
+RQ destination. How then can we achieve "interrupt spraying" for the PCI in=
+terrupt (we want interrupts to be sent alternately to CPU0 and CPU1). Also,=
+  we changed the code to ignore the MPIC_SINGLE_DEST_CPU flag and set both =
+CPUs in the destination of the PIC_IIDRn register. This does seem to work. =
+But we're not sure if we can rely on this behavior and whether it will caus=
+e other problems.
+Any advice appreciated
+Thanks
+-gopal
 
-> After that, I stumbled upon this dmesg:
+--_000_802E1C77E421D345A43385A6BFAC7AC4BE502CROYALGORGEarubane_
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" xmlns:o=3D"urn:schemas-micr=
+osoft-com:office:office" xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" xmlns=3D"http:=
+//www.w3.org/TR/REC-html40">
+<head>
+<meta http-equiv=3D"Content-Type" content=3D"text/html; charset=3Dus-ascii"=
 >
-> Freescale High-Speed USB SOC Device Controller driver (Apr 20, 2007)
-> fsl-usb2-udc fsl-usb2-udc: clk_get("usb") failed
-> fsl-usb2-udc: probe of fsl-usb2-udc failed with error -2
->
-> Sascha, could you give me a hint?
+<meta name=3D"Generator" content=3D"Microsoft Word 12 (filtered medium)">
+<style><!--
+/* Font Definitions */
+@font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+/* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page WordSection1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.0in 1.0in 1.0in;}
+div.WordSection1
+	{page:WordSection1;}
+--></style><!--[if gte mso 9]><xml>
+<o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+<o:shapelayout v:ext=3D"edit">
+<o:idmap v:ext=3D"edit" data=3D"1" />
+</o:shapelayout></xml><![endif]-->
+</head>
+<body lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
+<div class=3D"WordSection1">
+<p class=3D"MsoNormal">Hi<o:p></o:p></p>
+<p class=3D"MsoNormal">The P1020 manual states (in the PIC chapter) that in=
+ the &#8220;Internal Interrupt Destination&#8221; register, only 1 CPU (and=
+ not both) can be selected as the IRQ destination. How then can we achieve =
+&#8220;interrupt spraying&#8221; for the PCI interrupt (we
+ want interrupts to be sent alternately to CPU0 and CPU1). Also, &nbsp;we c=
+hanged the code to ignore the MPIC_SINGLE_DEST_CPU flag and set both CPUs i=
+n the destination of the PIC_IIDRn register. This does seem to work. But we=
+&#8217;re not sure if we can rely on this behavior
+ and whether it will cause other problems.<o:p></o:p></p>
+<p class=3D"MsoNormal">Any advice appreciated<o:p></o:p></p>
+<p class=3D"MsoNormal">Thanks<o:p></o:p></p>
+<p class=3D"MsoNormal">-gopal<o:p></o:p></p>
+</div>
+</body>
+</html>
 
-Does the patch below fix your problem?
-
- drivers/usb/gadget/fsl_mxc_udc.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/usb/gadget/fsl_mxc_udc.c b/drivers/usb/gadget/fsl_mxc_udc.c
-index dcbc0a2..c3ade6b 100644
---- a/drivers/usb/gadget/fsl_mxc_udc.c
-+++ b/drivers/usb/gadget/fsl_mxc_udc.c
-@@ -36,21 +36,21 @@ int fsl_udc_clk_init(struct platform_device *pdev)
- 	pdata = pdev->dev.platform_data;
-
- 	if (!cpu_is_mx35() && !cpu_is_mx25()) {
--		mxc_ahb_clk = clk_get(&pdev->dev, "usb_ahb");
-+		mxc_ahb_clk = clk_get(&pdev->dev, "ipg");
- 		if (IS_ERR(mxc_ahb_clk))
- 			return PTR_ERR(mxc_ahb_clk);
-
--		ret = clk_enable(mxc_ahb_clk);
-+		ret = clk_prepare_enable(mxc_ahb_clk);
- 		if (ret < 0) {
--			dev_err(&pdev->dev, "clk_enable(\"usb_ahb\") failed\n");
-+			dev_err(&pdev->dev, "clk_enable(\"ipg\") failed\n");
- 			goto eenahb;
- 		}
- 	}
-
- 	/* make sure USB_CLK is running at 60 MHz +/- 1000 Hz */
--	mxc_usb_clk = clk_get(&pdev->dev, "usb");
-+	mxc_usb_clk = clk_get(&pdev->dev, "per");
- 	if (IS_ERR(mxc_usb_clk)) {
--		dev_err(&pdev->dev, "clk_get(\"usb\") failed\n");
-+		dev_err(&pdev->dev, "clk_get(\"per\") failed\n");
- 		ret = PTR_ERR(mxc_usb_clk);
- 		goto egusb;
- 	}
-@@ -65,7 +65,7 @@ int fsl_udc_clk_init(struct platform_device *pdev)
- 		}
- 	}
-
--	ret = clk_enable(mxc_usb_clk);
-+	ret = clk_prepare_enable(mxc_usb_clk);
- 	if (ret < 0) {
- 		dev_err(&pdev->dev, "clk_enable(\"usb_clk\") failed\n");
- 		goto eenusb;
-@@ -79,7 +79,7 @@ eclkrate:
- 	mxc_usb_clk = NULL;
- egusb:
- 	if (!cpu_is_mx35())
--		clk_disable(mxc_ahb_clk);
-+		clk_disable_unprepare(mxc_ahb_clk);
- eenahb:
- 	if (!cpu_is_mx35())
- 		clk_put(mxc_ahb_clk);
-@@ -104,7 +104,7 @@ void fsl_udc_clk_finalize(struct platform_device *pdev)
-
- 	/* ULPI transceivers don't need usbpll */
- 	if (pdata->phy_mode == FSL_USB2_PHY_ULPI) {
--		clk_disable(mxc_usb_clk);
-+		clk_disable_unprepare(mxc_usb_clk);
- 		clk_put(mxc_usb_clk);
- 		mxc_usb_clk = NULL;
- 	}
-@@ -113,11 +113,11 @@ void fsl_udc_clk_finalize(struct platform_device *pdev)
- void fsl_udc_clk_release(void)
- {
- 	if (mxc_usb_clk) {
--		clk_disable(mxc_usb_clk);
-+		clk_disable_unprepare(mxc_usb_clk);
- 		clk_put(mxc_usb_clk);
- 	}
- 	if (!cpu_is_mx35()) {
--		clk_disable(mxc_ahb_clk);
-+		clk_disable_unprepare(mxc_ahb_clk);
- 		clk_put(mxc_ahb_clk);
- 	}
- }
---
+--_000_802E1C77E421D345A43385A6BFAC7AC4BE502CROYALGORGEarubane_--
