@@ -1,26 +1,23 @@
-Return-Path: <R65777@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+Return-Path: <B07421@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0E857B7005
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Jun 2012 23:26:23 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Jia Hongtao-B38951 <B38951@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "galak@kernel.crashing.org"
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH 0/6] Description for PCI patches using platform driver
-Date: Mon, 11 Jun 2012 13:24:50 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D03D78FAE@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1339148527-16911-1-git-send-email-B38951@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D03D71F38@039-SN2MPN1-022.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0921B@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A0921B@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id E76951007D5
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 Jun 2012 01:12:14 +1000 (EST)
+Message-ID: <4FD60AC1.70202@freescale.com>
+Date: Mon, 11 Jun 2012 10:12:01 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Cc: Li Yang-R58472 <r58472@freescale.com>,
- Wood Scott-B07421 <B07421@freescale.com>
+To: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Subject: Re: P2010 External HW IRQ number?
+References: <OF71CEA252.1CE143D5-ONC1257A17.00329573-C1257A17.003D00D0@transmode.se>
+ <4FD25146.5090108@freescale.com>
+ <OFA31422D6.CC72BDBF-ONC1257A18.0031549A-C1257A18.003183C0@transmode.se>
+In-Reply-To: <OFA31422D6.CC72BDBF-ONC1257A18.0031549A-C1257A18.003183C0@transmode.se>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,111 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 06/09/2012 04:00 AM, Joakim Tjernlund wrote:
+> 
+> 
+> Scott Wood <scottwood@freescale.com> wrote on 2012/06/08 21:23:50:
+> 
+>> From: Scott Wood <scottwood@freescale.com>
+>> To: Joakim Tjernlund <joakim.tjernlund@transmode.se>,
+>> Cc: <linuxppc-dev@ozlabs.org>
+>> Date: 2012/06/08 21:25
+>> Subject: Re: P2010 External HW IRQ number?
+>>
+>> On 06/08/2012 06:06 AM, Joakim Tjernlund wrote:
+>>>
+>>> I have been trying to figure out what irq number to use for external IRQs for
+>>> the P2010. There are no HW IRQ numbers in the ref manual and I cannot find
+>>> any examples in the kernel either.
+>>> How do specify irq numbers in my dts for external IRQs?
+>>
+>> See Documentation/devicetree/bindings/powerpc/fsl/mpic.txt
+> 
+> Ahh, now I see. however I must say that I didn't until I read this older version first:
+>  http://os1a.cs.columbia.edu/lxr/source/Documentation/powerpc/dts-bindings/fsl/mpic.txt?a=x86;v=2.6.34
 
+Yeah, while the information is there in the new version, it's should be
+more prominent and detailed for something that causes so much confusion.
 
-> -----Original Message-----
-> From: Jia Hongtao-B38951
-> Sent: Monday, June 11, 2012 8:03 AM
-> To: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org;
-> galak@kernel.crashing.org
-> Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-B07421
-> Subject: RE: [PATCH 0/6] Description for PCI patches using platform drive=
-r
->=20
-> > -----Original Message-----
-> > From: Bhushan Bharat-R65777
-> > Sent: Friday, June 08, 2012 6:47 PM
-> > To: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org;
-> > galak@kernel.crashing.org
-> > Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-B07421
-> > Subject: RE: [PATCH 0/6] Description for PCI patches using platform
-> > driver
-> >
-> >
-> > > -----Original Message-----
-> > > From: Jia Hongtao-B38951
-> > > Sent: Friday, June 08, 2012 3:12 PM
-> > > To: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
-> > > Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-B07421;
-> > Bhushan Bharat-
-> > > R65777; Jia Hongtao-B38951
-> > > Subject: [PATCH 0/6] Description for PCI patches using platform
-> > > driver
-> > >
-> > > This series of patches are to unify pci initialization code and add
-> > > PM
-> > support
-> > > for all 85xx/86xx powerpc boards. But two side effects are
-> > > introduced
-> > by this
-> > > mechanism which listed below:
-> > >
-> > > 1. of_platform_bus_probe() will be called twice but in some cases
-> > duplication
-> > >    warning occured. We fix this in [PATCH 5/6].
-> > >
-> > > 2. Edac driver failed to register pci nodes as platform devices. We
-> > > fix
-> > this
-> > >    in [PATCH 6/6].
-> >
-> > With these patches will not the SWIOTLB will not be initialized even
-> > if PCI/PCIe demanded?
-> >
-> > Thanks
-> > -Bharat
-> >
->=20
-> These patches still have the swiotlb init problem if "ppc_swiotlb_enable"=
- is
-> only demanded by PCI/PCIe. One of the purposes of sending out these patch=
-es is
-> to let us start a discussion for this problem in upstream.
-
-Ok, I did not find any mention of that, so I thought that you have resolved=
- the issue by some means in these patches which I did not catch.
-
-So, these patches introduces the issue, that SWIOTLB will not be initialize=
-d if requested by pci/pcie. The request is raised by setting the flag ppc_s=
-wiotlb_enable. The swiotlb_init() will be called in mem_init() if ppc_swiot=
-lb_enable is set. Now with these patches, the request is raised after mem_i=
-nit() is called. So request not handled :).
-
-Following are the solutions we have thought of during our internal discussi=
-ons (if I did not missed any):
-
-1. These patches move the code from platform init to device init (arch_init=
-call()). Rather than moving the whole code, let us divide the code into two=
-. First, which is needed to raise the swiotlb init request and second the r=
-est. Define this first as an function in arch/powerpc/sysdev/fsl_pci.c and =
-call this from platform init code of the SOCs.
-
-2. All known devices, the lowest PCIe outbound range starts at 0x80000000, =
-but there's nothing above 0xc0000000. So the inbound of size 0x8000_0000 is=
- always availbe on all devices. Hardcode the check in platform code to chec=
-k memblock_end_of_DRAM() to 0x80000000.
-
-Something like this:
-
-diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c
-b/arch/powerpc/platforms/85xx/corenet_ds.c
-index 1f7028e..ef4e215 100644
---- a/arch/powerpc/platforms/85xx/corenet_ds.c
-+++ b/arch/powerpc/platforms/85xx/corenet_ds.c
-@@ -79,7 +79,7 @@ void __init corenet_ds_setup_arch(void)  #endif
-
-#ifdef CONFIG_SWIOTLB
--       if (memblock_end_of_DRAM() > 0xffffffff)
-+       if (memblock_end_of_DRAM() > 0xff000000)
-                 ppc_swiotlb_enable =3D 1;  #endif
-         pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
-
--------------
-
-3. Always do swiotlb_init() in mem_init() and later after PCI init, if the =
-swiotlb is not needed then free it (swiotlb_free()).=20
-
-4. etc, please provide some other better way.
-
-Thanks
--Bharat
+-Scott
