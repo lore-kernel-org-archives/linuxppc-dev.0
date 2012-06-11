@@ -1,20 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 78C5AB6FC2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 06:15:46 +1000 (EST)
-Message-ID: <4FD65198.7000808@freescale.com>
-Date: Mon, 11 Jun 2012 15:14:16 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kay One <kayone007@gmail.com>
-Subject: Re: [Doubt] PPC Linux Device Tree Update
-References: <CAL3nkH-HAwRngz2Ob7R_AB0YSDbSVGi6AWNEEaiwQXbcHvwGSw@mail.gmail.com>
-In-Reply-To: <CAL3nkH-HAwRngz2Ob7R_AB0YSDbSVGi6AWNEEaiwQXbcHvwGSw@mail.gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A0C99B6FBC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 07:24:46 +1000 (EST)
+Message-ID: <1339449862.9220.13.camel@pasglop>
+Subject: Re: PowerMac PMU programming
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Justin Hibbits <chmeeedalf@gmail.com>
+Date: Tue, 12 Jun 2012 07:24:22 +1000
+In-Reply-To: <20120610233127.1284fec0@narn.knownspace>
+References: <20120610092932.38857c77@narn.knownspace>
+ <1339369393.24838.101.camel@pasglop>
+ <20120610233127.1284fec0@narn.knownspace>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,71 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/11/2012 02:52 AM, Kay One wrote:
-> Hi All,
+On Sun, 2012-06-10 at 23:31 -0400, Justin Hibbits wrote:
+
+> I'll settle on just getting the CPU speed change working, losing 333MHz
+> on my TiBook is a few too many MHz for the poor thing to lose :)  I do
+> have a desktop, but that's my development platform, so needs to be
+> at least somewhat stable, so my TiBook is my guinea pig.
 > 
-> Currently I am working on p1020rdb soc for some kernel bringing up activity.
-> I have come across one requirement to update the memory map (MMAP) of
-> kernel from evaluation board to
-> some other board who is having the same soc.
+> I've googled everything I can think of, but do you know of any
+> definitive PMU documentation?  Or can you give me any hints on what's
+> needed just for that simple operation?
+
+No doco no, Darwin and Linux source code are your best bet.
+
+It works like sleep as in: you send the switch command and the PMU will
+reboot the processor with the new frequency whenever the processor
+enters NAP mode.
+
+This is tricky because there's a loss of cache coherency vs. ongoing
+DMAs, hence tricky bits of code in there to deal with the various
+caches.
+
+> I noticed that you wind down the ADB queue before killing the PMU.  Is
+> this necessary?  I only disable the interrupt by writing 0x10 to the
+> IER, but our interrupt model for the PMU is different from the Linux
+> one. 
+
+Well that will not disable CB1 (or the external GPIO one). You need to
+make sure no other communication with the PMU takes place once you've
+sent the sleep command and until you're back.
+
+>  Is it also necessary to disable the interrupt input, even though
+> the register write should be disabling the PMU's asserting of the
+> line?  There doesn't seem to be much more different than that, and
+> setting the openpic priority, Linux sets it to 0x0f but I didn't see
+> anything in OS X doing that (might that be a problem, too?)
 > 
-> for my eval board I have used the p1020rdb.dts file from 2.6.38 standard
-> kernel source.
+> I would love to get my TiBook using the full 1GHz.
 
-Why not start with the latest version?
+I don't remember what openpic does in Darwin, I think interrupts are all
+masked there as a side effect of the code in KeyLargo.cpp but I'm not
+sure that applies to frequency changes.
 
-> (PFA) which is working almost fine.
-> But, I am really not able to find the following mapping as a part of the
-> attached dts file what I am using.
-> Can anyone please point me out that dts file is the only one to search
-> out following base addresses selected in memory map or is there
-> some specific file of kernel inside which I will be able to search
-> through to find the following base addresses?
-> 
-> FFFF_F000 	4 KB 	.bootpg
-
-This is not expressed in the device tree, though it is marked reserved
-by U-Boot in the reserve map (part of the dtb, but not part of the
-actual tree).
-
-> FFE0_0000 	1 MB 	CCSR
-
-That's the "soc" node.
-
-> EC00_0000 	64 MB 	Flash + alias
-
-/localbus@ffe05000/nor@0,0/
-
-...but it's at 0xef00_0000 according to the tree you attached.
-
-Read the ePAPR spec for a description of how the ranges property works.
-
-> 8000_0000 	1 GB 	PCI[1:2] mem
-> FFC0_0000 	256 KB 	PCI[1:2] I/O
-
-These are encoded in the ranges property of the relevant PCIe node (see
-version 1.0 of the ePAPR spec for how), but I don't see one with those
-specific addresses.  I don't know what the [1:2] is supposed to mean.
-
-> FFB0_0000 	1 MB 	VTSS
-
-/localbus@ffe05000/L2switch@2,0/
-
-> FFA0_0000 	1 MB 	CPLD
-
-Not represented in the device tree.  The device tree shows NAND at this
-address.
-
-> FF80_0000 	1 MB 	NAND
-
-/localbus@ffe05000/nand@1,0/
-
-...but with a different address, as noted above.
-
-> 0000_0000 	1 GB 	DDR
-
-/memory
-
-U-Boot fills in the reg property.
-
--Scott
+Cheers,
+Ben.
