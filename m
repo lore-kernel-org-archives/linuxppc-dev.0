@@ -1,22 +1,22 @@
-Return-Path: <B07421@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 53A8FB6FA9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 01:55:09 +1000 (EST)
-Message-ID: <4FD614AF.70108@freescale.com>
-Date: Mon, 11 Jun 2012 10:54:23 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 7E0671007D5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 02:14:43 +1000 (EST)
+Date: Mon, 11 Jun 2012 18:12:15 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH v2 1/2] uprobes: Pass probed vaddr to
+ arch_uprobe_analyze_insn()
+Message-ID: <20120611161215.GA12116@redhat.com>
+References: <20120608093257.GG13409@in.ibm.com>
 MIME-Version: 1.0
-To: Gopalakrishnan Raman <graman@arubanetworks.com>
-Subject: Re: Question about MPIC_SINGLE_DEST_CPU on P1020 (e500 core) SMP
-References: <802E1C77E421D345A43385A6BFAC7AC4BE502C@ROYALGORGE.arubanetworks.com>
-In-Reply-To: <802E1C77E421D345A43385A6BFAC7AC4BE502C@ROYALGORGE.arubanetworks.com>
-Content-Type: text/plain; charset="windows-1252"
-Cc: "rgkwstl@gmail.com" <rgkwstl@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120608093257.GG13409@in.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
+ antonb@thinktux.localdomain, lkml <linux-kernel@vger.kernel.org>,
+ michael@ellerman.id.au, Jim Keniston <jkenisto@us.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/10/2012 03:37 PM, Gopalakrishnan Raman wrote:
-> Hi
->=20
-> The P1020 manual states (in the PIC chapter) that in the =93Internal
-> Interrupt Destination=94 register, only 1 CPU (and not both) can be
-> selected as the IRQ destination.
+Ananth, Srikar,
 
-Right.
+I think the patch is correct and I am sorry for nit-picking,
+this is really minor.
 
-> How then can we achieve =93interrupt
-> spraying=94 for the PCI interrupt (we want interrupts to be sent
-> alternately to CPU0 and CPU1).
+But,
 
-You'll have to implement it in software by changing the destination each
-time (and be careful to follow the documented sequence for making such
-changes).
+On 06/08, Ananth N Mavinakayanahalli wrote:
+>
+> Changes in V2:
+> Pass (unsigned long)addr
 
-Why do you want to do this?  Won't it cause a bunch of cache misses as
-the IRQ-relevant data structures bounce between CPUs?  Distributing
-different devices' interrupts among multiple CPUs is probably good for
-load balancing, but distributing a single device's interrupts may not be
-so good.
+Well, IMHO, this is confusing.
 
-> Also,  we changed the code to ignore the
-> MPIC_SINGLE_DEST_CPU flag and set both CPUs in the destination of the
-> PIC_IIDRn register. This does seem to work.
+First of all, why do we have this "addr" or even "vaddr"? It should
+not exists. We pass it to copy_insn(), but for what?? copy_insn()
+should simply use uprobe->offset, the virtual address for this
+particular mapping does not matter at all. I am going to send
+the cleanup.
 
-What specifically does it seem to do?
+Note also that we should move this !UPROBE_COPY_INSN from
+install_breakpoint() to somewhere near alloc_uprobe(). This code
+is called only once, it looks a bit strange to use the "random" mm
+(the first mm vma_prio_tree_foreach() finds) and its mapping to
+verify the insn. In fact this is simply not correct and should be
+fixed, note that on x86 arch_uprobe_analyze_insn() checks
+mm->context.ia32_compat.
 
-> But we=92re not sure if we can
-> rely on this behavior and whether it will cause other problems.
+IOW, Perhaps uprobe->offset makes more sense?
 
-You cannot rely on this.  It is not a supported configuration.
+> --- linux-3.5-rc1.orig/kernel/events/uprobes.c
+> +++ linux-3.5-rc1/kernel/events/uprobes.c
+> @@ -697,7 +697,7 @@ install_breakpoint(struct uprobe *uprobe
+>  		if (is_swbp_insn((uprobe_opcode_t *)uprobe->arch.insn))
+>  			return -EEXIST;
+>
+> -		ret = arch_uprobe_analyze_insn(&uprobe->arch, mm);
+> +		ret = arch_uprobe_analyze_insn(&uprobe->arch, mm, addr);
 
--Scott
+Just fyi, this conflicts with
+"[PATCH 1/3] uprobes: install_breakpoint() should fail if is_swbp_insn() == T"
+I sent, but the conflict is trivial.
+
+Oleg.
