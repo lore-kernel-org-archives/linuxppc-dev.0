@@ -1,17 +1,19 @@
 Return-Path: <oleg@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 7E0671007D5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 02:14:43 +1000 (EST)
-Date: Mon, 11 Jun 2012 18:12:15 +0200
+ by ozlabs.org (Postfix) with ESMTP id 5ECCEB6FD3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 05:11:27 +1000 (EST)
+Date: Mon, 11 Jun 2012 21:09:02 +0200
 From: Oleg Nesterov <oleg@redhat.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH v2 1/2] uprobes: Pass probed vaddr to
- arch_uprobe_analyze_insn()
-Message-ID: <20120611161215.GA12116@redhat.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Q: a_ops->readpage() && struct file
+Message-ID: <20120611190902.GA19869@redhat.com>
 References: <20120608093257.GG13409@in.ibm.com>
+ <20120611161215.GA12116@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120608093257.GG13409@in.ibm.com>
+In-Reply-To: <20120611161215.GA12116@redhat.com>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
  antonb@thinktux.localdomain, lkml <linux-kernel@vger.kernel.org>,
  michael@ellerman.id.au, Jim Keniston <jkenisto@us.ibm.com>,
@@ -26,47 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ananth, Srikar,
-
-I think the patch is correct and I am sorry for nit-picking,
-this is really minor.
-
-But,
-
-On 06/08, Ananth N Mavinakayanahalli wrote:
+On 06/11, Oleg Nesterov wrote:
 >
-> Changes in V2:
-> Pass (unsigned long)addr
+> Note also that we should move this !UPROBE_COPY_INSN from
+> install_breakpoint() to somewhere near alloc_uprobe().
 
-Well, IMHO, this is confusing.
+The main problem is, uprobe_register() doesn't have struct file
+for read_mapping_page().
 
-First of all, why do we have this "addr" or even "vaddr"? It should
-not exists. We pass it to copy_insn(), but for what?? copy_insn()
-should simply use uprobe->offset, the virtual address for this
-particular mapping does not matter at all. I am going to send
-the cleanup.
+Stupid question. I'm afraid the answer is "no" but I'll ask anyway.
+Is it safe to pass filp == NULL to mapping->readpage()? In fact
+I do not understand why it needs "struct file*" and I do not see
+any example of actual usage. Yes, I didn't try to grep very much
+and I understand that the filesystem can do something special.
+Say it can use file->private_data...
 
-Note also that we should move this !UPROBE_COPY_INSN from
-install_breakpoint() to somewhere near alloc_uprobe(). This code
-is called only once, it looks a bit strange to use the "random" mm
-(the first mm vma_prio_tree_foreach() finds) and its mapping to
-verify the insn. In fact this is simply not correct and should be
-fixed, note that on x86 arch_uprobe_analyze_insn() checks
-mm->context.ia32_compat.
+However. There is read_cache_page_gfp() which does use
+a_ops->readpage(filp => NULL), and the comment says nothing about
+the riskiness.
 
-IOW, Perhaps uprobe->offset makes more sense?
 
-> --- linux-3.5-rc1.orig/kernel/events/uprobes.c
-> +++ linux-3.5-rc1/kernel/events/uprobes.c
-> @@ -697,7 +697,7 @@ install_breakpoint(struct uprobe *uprobe
->  		if (is_swbp_insn((uprobe_opcode_t *)uprobe->arch.insn))
->  			return -EEXIST;
->
-> -		ret = arch_uprobe_analyze_insn(&uprobe->arch, mm);
-> +		ret = arch_uprobe_analyze_insn(&uprobe->arch, mm, addr);
+If not, is there any other way
+uprobe_register(struct inode *inode, loff_t offset) can read the
+page at this offset?
 
-Just fyi, this conflicts with
-"[PATCH 1/3] uprobes: install_breakpoint() should fail if is_swbp_insn() == T"
-I sent, but the conflict is trivial.
+
+
+And btw, read_mapping_page() accepts "void *data". Why? it uses
+filler == a_ops->readpage, it shouldn't accept anything but file
+pointer?
+
+
+Please help, I know nothing about vfs.
 
 Oleg.
