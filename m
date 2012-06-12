@@ -1,26 +1,24 @@
-Return-Path: <B38951@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 028AEB6FB4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 12:27:54 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 0/6] Description for PCI patches using platform driver
-Date: Tue, 12 Jun 2012 02:27:47 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A09756@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1339148527-16911-1-git-send-email-B38951@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D03D71F38@039-SN2MPN1-022.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0921B@039-SN1MPN1-002.039d.mgd.msft.net>
- <4FD61215.8030608@freescale.com>
-In-Reply-To: <4FD61215.8030608@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Li Yang-R58472 <r58472@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bhushan Bharat-R65777 <R65777@freescale.com>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1339473706.14757.14.camel@concordia>
+Subject: Re: [PATCH 2/2] [POWERPC] uprobes: powerpc port
+From: Michael Ellerman <michael@ellerman.id.au>
+To: ananth@in.ibm.com
+Date: Tue, 12 Jun 2012 14:01:46 +1000
+In-Reply-To: <20120608092104.GF13409@in.ibm.com>
+References: <20120606092150.GC6745@in.ibm.com>
+ <1338974822.2749.89.camel@twins> <20120606093541.GA29580@in.ibm.com>
+ <1339006084.3458.25.camel@localhost> <20120608043605.GB13409@in.ibm.com>
+ <1339134714.25573.4.camel@concordia> <20120608060104.GD13409@in.ibm.com>
+ <1339136264.25573.7.camel@concordia> <20120608061954.GE13409@in.ibm.com>
+ <1339137497.25573.9.camel@concordia> <20120608092104.GF13409@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Jim Keniston <jkenisto@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Peter Zijlstra <peterz@infradead.org>, oleg@redhat.com,
+ lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,74 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2012-06-08 at 14:51 +0530, Ananth N Mavinakayanahalli wrote:
+> On Fri, Jun 08, 2012 at 04:38:17PM +1000, Michael Ellerman wrote:
+> > On Fri, 2012-06-08 at 11:49 +0530, Ananth N Mavinakayanahalli wrote:
+> > > On Fri, Jun 08, 2012 at 04:17:44PM +1000, Michael Ellerman wrote:
+> > > > On Fri, 2012-06-08 at 11:31 +0530, Ananth N Mavinakayanahalli wrote:
+> > > > > On Fri, Jun 08, 2012 at 03:51:54PM +1000, Michael Ellerman wrote:
+> > > > > > On Fri, 2012-06-08 at 10:06 +0530, Ananth N Mavinakayanahalli wrote:
+> > > > > 
+> > > > > But MSR_PR=1 and hence emulate_step() will return -1 and hence we will
+> > > > > end up single-stepping using user_enable_single_step(). Same with rfid.
+> > > > 
+> > > > Right. But that was exactly Jim's point, you may be asked to emulate
+> > > > those instructions even though you wouldn't expect to see them in
+> > > > userspace code, so you need to handle it.
+> > > > 
+> > > > Luckily it looks like emulate_step() will do the right thing for you.
+> > > > It'd be good to test it to make 100% sure.
+> > > 
+> > > Sure. Will add that check and send v2.
+> > 
+> > Sorry I didn't mean add a test in the code, I meant construct a test
+> > case to confirm that it works as expected.
+> 
+> Michael,
+> 
+> I just hand-coded the instr to emulate_step() and here are the results:
+> 
+> MSR_PR is set
+> insn = 7c600124, ret = 0 /* mtmsr */
+> insn = 7c600164, ret = 0 /* mtmsrd */
+> insn = 4c000024, ret = -1 /* rfid */
+> insn = 4c000064, ret = 0 /* rfi */
+> 
+> Also verified that standalone programs with those instructions in inline
+> asm will die with a SIGILL.
+> 
+> So, for mtmsr, mtmsrd and rfi, we have to single-step them which will
+> result in a SIGILL in turn.
 
+What happens in the rfid case? You don't handle -1 from emulate_step()
+any differently AFAICS, so don't we try to single step that too?
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Monday, June 11, 2012 11:43 PM
-> To: Jia Hongtao-B38951
-> Cc: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org;
-> galak@kernel.crashing.org; Li Yang-R58472; benh@kernel.crashing.org; Wood
-> Scott-B07421
-> Subject: Re: [PATCH 0/6] Description for PCI patches using platform
-> driver
->=20
-> On 06/10/2012 09:33 PM, Jia Hongtao-B38951 wrote:
-> >> -----Original Message-----
-> >> From: Bhushan Bharat-R65777
-> >> Sent: Friday, June 08, 2012 6:47 PM
-> >> To: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org;
-> >> galak@kernel.crashing.org
-> >> Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-B07421
-> >> Subject: RE: [PATCH 0/6] Description for PCI patches using platform
-> >> driver
-> >>
-> >>
-> >>> -----Original Message-----
-> >>> From: Jia Hongtao-B38951
-> >>> Sent: Friday, June 08, 2012 3:12 PM
-> >>> To: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
-> >>> Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-B07421;
-> >> Bhushan Bharat-
-> >>> R65777; Jia Hongtao-B38951
-> >>> Subject: [PATCH 0/6] Description for PCI patches using platform
-> driver
-> >>>
-> >>> This series of patches are to unify pci initialization code and add
-> PM
-> >> support
-> >>> for all 85xx/86xx powerpc boards. But two side effects are introduced
-> >> by this
-> >>> mechanism which listed below:
-> >>>
-> >>> 1. of_platform_bus_probe() will be called twice but in some cases
-> >> duplication
-> >>>    warning occured. We fix this in [PATCH 5/6].
-> >>>
-> >>> 2. Edac driver failed to register pci nodes as platform devices. We
-> fix
-> >> this
-> >>>    in [PATCH 6/6].
-> >>
-> >> With these patches will not the SWIOTLB will not be initialized even
-> if
-> >> PCI/PCIe demanded?
-> >>
-> >> Thanks
-> >> -Bharat
-> >>
-> >
-> > These patches still have the swiotlb init problem if
-> "ppc_swiotlb_enable" is
-> > only demanded by PCI/PCIe. One of the purposes of sending out these
-> patches
-> > is to let us start a discussion for this problem in upstream.
->=20
-> When sending out a patchset like that, label it as [RFC PATCH] (request
-> for comments), and mention all known problems to be resolved.
->=20
-> -Scott
-
-I got it.
-Thanks for your remind.
--Jia Hongtao.
+cheers
