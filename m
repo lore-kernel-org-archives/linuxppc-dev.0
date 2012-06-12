@@ -1,23 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 97F87B6F86
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 09:24:55 +1000 (EST)
-Message-ID: <1339457081.9220.35.camel@pasglop>
-Subject: Re: [PATCH v2 0/2] Add pcibios_device_change_notifier
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 12 Jun 2012 09:24:41 +1000
-In-Reply-To: <CAErSpo79RDid=4m+Q8FZxnhThQ9BAJo4HhtZ8ZQ5rGc1nmvH-w@mail.gmail.com>
-References: <4FBC4C86.9050206@jp.fujitsu.com>
- <1338960416.7150.160.camel@pasglop>
- <CAErSpo79RDid=4m+Q8FZxnhThQ9BAJo4HhtZ8ZQ5rGc1nmvH-w@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
- linuxppc-dev@lists.ozlabs.org, jbarnes@virtuousgeek.org,
- Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
+Return-Path: <B38951@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6E22BB6FBA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 12:25:00 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Bhushan Bharat-R65777 <R65777@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "galak@kernel.crashing.org" <galak@kernel.crashing.org>
+Subject: RE: [PATCH 0/6] Description for PCI patches using platform driver
+Date: Tue, 12 Jun 2012 02:24:55 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A0973E@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1339148527-16911-1-git-send-email-B38951@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D03D71F38@039-SN2MPN1-022.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A0921B@039-SN1MPN1-002.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D03D78FAE@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <6A3DF150A5B70D4F9B66A25E3F7C888D03D78FAE@039-SN2MPN1-022.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ Wood Scott-B07421 <B07421@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +31,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-06-11 at 16:51 -0600, Bjorn Helgaas wrote:
 
-> > This makes me a bit nervous (that doesn't mean it's not right, but
-> > we need some careful auditing & testing here, which I won't be
-> > able to do until I'm back from leave). Mostly due to the change in when
-> > we do the work.
+
+> -----Original Message-----
+> From: Bhushan Bharat-R65777
+> Sent: Monday, June 11, 2012 9:25 PM
+> To: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org;
+> galak@kernel.crashing.org
+> Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-B07421
+> Subject: RE: [PATCH 0/6] Description for PCI patches using platform
+> driver
+>=20
+>=20
+>=20
+> > -----Original Message-----
+> > From: Jia Hongtao-B38951
+> > Sent: Monday, June 11, 2012 8:03 AM
+> > To: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org;
+> > galak@kernel.crashing.org
+> > Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-B07421
+> > Subject: RE: [PATCH 0/6] Description for PCI patches using platform
+> driver
 > >
-> > pcibios_fixup_bus() used to be called early on in the initial scan pass.
+> > > -----Original Message-----
+> > > From: Bhushan Bharat-R65777
+> > > Sent: Friday, June 08, 2012 6:47 PM
+> > > To: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org;
+> > > galak@kernel.crashing.org
+> > > Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-B07421
+> > > Subject: RE: [PATCH 0/6] Description for PCI patches using platform
+> > > driver
+> > >
+> > >
+> > > > -----Original Message-----
+> > > > From: Jia Hongtao-B38951
+> > > > Sent: Friday, June 08, 2012 3:12 PM
+> > > > To: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
+> > > > Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-B07421;
+> > > Bhushan Bharat-
+> > > > R65777; Jia Hongtao-B38951
+> > > > Subject: [PATCH 0/6] Description for PCI patches using platform
+> > > > driver
+> > > >
+> > > > This series of patches are to unify pci initialization code and add
+> > > > PM
+> > > support
+> > > > for all 85xx/86xx powerpc boards. But two side effects are
+> > > > introduced
+> > > by this
+> > > > mechanism which listed below:
+> > > >
+> > > > 1. of_platform_bus_probe() will be called twice but in some cases
+> > > duplication
+> > > >    warning occured. We fix this in [PATCH 5/6].
+> > > >
+> > > > 2. Edac driver failed to register pci nodes as platform devices. We
+> > > > fix
+> > > this
+> > > >    in [PATCH 6/6].
+> > >
+> > > With these patches will not the SWIOTLB will not be initialized even
+> > > if PCI/PCIe demanded?
+> > >
+> > > Thanks
+> > > -Bharat
+> > >
 > >
-> > Your code causes the code to be called -much- later when registering the
-> > device with the device model. Are we 100% certain nothing will happen in
-> > between that might rely on the stuff being setup already ? It might well
-> > be ok, but I want us to triple check that.
-> 
-> Here's my theory on this: we're setting up DMA and IRQ stuff.  DMA and
-> IRQ usage is device-specific, so the core can't do anything with them.
->  Only drivers know how to use them.  Drivers can't find the device
-> until it's registered with the device model.  So it seems like it
-> should be safe to move it later.  Subject to thinkos and testing in
-> the real world, of course :)
+> > These patches still have the swiotlb init problem if
+> "ppc_swiotlb_enable" is
+> > only demanded by PCI/PCIe. One of the purposes of sending out these
+> patches is
+> > to let us start a discussion for this problem in upstream.
+>=20
+> Ok, I did not find any mention of that, so I thought that you have
+> resolved the issue by some means in these patches which I did not catch.
+>=20
+> So, these patches introduces the issue, that SWIOTLB will not be
+> initialized if requested by pci/pcie. The request is raised by setting
+> the flag ppc_swiotlb_enable. The swiotlb_init() will be called in
+> mem_init() if ppc_swiotlb_enable is set. Now with these patches, the
+> request is raised after mem_init() is called. So request not handled :).
+>=20
+> Following are the solutions we have thought of during our internal
+> discussions (if I did not missed any):
+>=20
+> 1. These patches move the code from platform init to device init
+> (arch_initcall()). Rather than moving the whole code, let us divide the
+> code into two. First, which is needed to raise the swiotlb init request
+> and second the rest. Define this first as an function in
+> arch/powerpc/sysdev/fsl_pci.c and call this from platform init code of
+> the SOCs.
+>=20
+> 2. All known devices, the lowest PCIe outbound range starts at 0x80000000=
+,
+> but there's nothing above 0xc0000000. So the inbound of size 0x8000_0000
+> is always availbe on all devices. Hardcode the check in platform code to
+> check memblock_end_of_DRAM() to 0x80000000.
+>=20
+> Something like this:
+>=20
+> diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c
+> b/arch/powerpc/platforms/85xx/corenet_ds.c
+> index 1f7028e..ef4e215 100644
+> --- a/arch/powerpc/platforms/85xx/corenet_ds.c
+> +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+> @@ -79,7 +79,7 @@ void __init corenet_ds_setup_arch(void)  #endif
+>=20
+> #ifdef CONFIG_SWIOTLB
+> -       if (memblock_end_of_DRAM() > 0xffffffff)
+> +       if (memblock_end_of_DRAM() > 0xff000000)
+>                  ppc_swiotlb_enable =3D 1;  #endif
+>          pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
+>=20
+> -------------
+>=20
+> 3. Always do swiotlb_init() in mem_init() and later after PCI init, if
+> the swiotlb is not needed then free it (swiotlb_free()).
+>=20
+> 4. etc, please provide some other better way.
+>=20
+> Thanks
+> -Bharat
 
-I am aware of that and that's why I say "might well be ok" :-) But this
-is old code and you know what can happen in there ... might be a quirk
-here or a piece of platform code there trying to fixup the IRQ for
-example ... before we set it up. That sort of thing.
+Thanks.
+In my point of view the 2nd solution is better for it does not treat PCI/PC=
+Ie as
+the special kind of devices from others.
 
-I should be allright, but I want to test, which I won't be able to do
-properly before I'm back at work next week.
-
-> > Now, if we are ok to do the setup that late (basically right before the
-> > driver probe() routine gets called), would it make sense to simplify
-> > things even further ... and do it from pcibios_enable_device() ? Thus
-> > avoiding the notifier business completely or is that pushing it too
-> > far ?
-> 
-> Kenji-san actually suggested using pcibios_enable_device() early on,
-> and I'm the one who suggested the notifiers instead.  I think I
-> suggested that because I was copying the amd_iommu_init_notifier()
-> style.
-> 
-> But I now think that might have been a mistake.  Notifiers are
-> definitely more complicated, and a pcibios_*() hook seems
-> straightforward.  It could be in pcibios_enable_device(), though we
-> only need it to be called once, and the enable_device() path may be
-> called many times, e.g., every time a driver claims it.  My new vote
-> is a pcibios_device_add(), with an empty weak definition in
-> drivers/pci, and a non-empty definition for microblaze and powerpc.
-
-Would it be called before or after the notifiers ? I wonder... if others
-already use the notifiers maybe we should stick to it. I only suggested
-pcibios_enable_device() because it's already there.
-
-> > Also you seem to add:
-> >
-> > +               /* Setup OF node pointer in the device */
-> > +               dev->dev.of_node = pci_device_to_OF_node(dev);
-> >
-> > This shouldn't be needed anymore, the device node should be setup by the
-> > core nowadays. Is this just a remnant of you rebasing an old patch or do
-> > you have a good reason to add this statement ?
-> 
-> It sounds like you want to remove this line in any case, so I'll wait
-> for updated patches.
-
-Cheers,
-Ben.
+-Jia Hongtao.
