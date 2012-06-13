@@ -1,17 +1,19 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id 571AAB6FB9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2012 03:53:45 +1000 (EST)
-Date: Wed, 13 Jun 2012 10:47:35 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-Subject: Re: Replacement to of_register_platform_driver ?
-Message-ID: <20120613174734.GA4846@ovro.caltech.edu>
-References: <4FD8AFF2.6000702@lpsc.in2p3.fr>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4FD8AFF2.6000702@lpsc.in2p3.fr>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <geoff@infradead.org>
+Message-ID: <1339610324.3986.6.camel@clam>
+Subject: Re: [Cbe-oss-dev] [PATCH 05/10] powerpc/ps3: Use highmem region
+ from repository
+From: Geoff Levand <geoff@infradead.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Wed, 13 Jun 2012 10:58:44 -0700
+In-Reply-To: <1339552163.25512.2.camel@concordia>
+References: <cover.1335379330.git.geoff@infradead.org>
+ <1e755c09926de2d9b0e239ba0ce10fdb6835551a.1335379330.git.geoff@infradead.org>
+ <1339552163.25512.2.camel@concordia>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, Andre Heider <a.heider@gmail.com>,
+ Hector Martin <hector@marcansoft.com>,
+ Nathan Whitehorn <nwhitehorn@freebsd.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,58 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 13, 2012 at 05:21:22PM +0200, Guillaume Dargaud wrote:
-> Hello all,
-> I just updated to the most recent kernel and a driver I wrote last year 
-> won't compile:
-> xad.c:534:2: error: implicit declaration of function 
-> 'of_register_platform_driver'
-> 
-> I see references to this function as 'obsolete' but could not find 
-> what's the new recommended way to do things. Here's a bit of the 
-> offending code:
-> 
-> static struct of_platform_driver xad_driver = {
-> 	.probe  = xad_driver_probe,
-> 	.remove = xad_driver_remove,
-> 	.driver = {
-> 		.owner = THIS_MODULE,
-> 		.name = "xad-driver",
-> 		.of_match_table = xad_device_id,
-> 	},
-> };
-> 
-> ...
-> 
-> static int __init xad_init(void) {
-> ...	
-> 	first = MKDEV (my_major, my_minor);
-> 	register_chrdev_region(first, count, DEVNAME);
-> 	my_cdev = cdev_alloc ();
-> 	if (NULL==my_cdev) goto Err;
-> 	
-> 	cdev_init(my_cdev, &fops);
-> 	rc=cdev_add (my_cdev, first, count);
-> ...	
-> 	rc = of_register_platform_driver(&xad_driver);
-> ...
-> }
-> 
-> 
-> -- 
-> Guillaume Dargaud
-> http://www.gdargaud.net/
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Hi Michael,
 
-The history of drivers/misc/carma/carma-fpga.c will show you the code
-changes necessary. Specifically, these two commits perform the
-conversion:
+On Wed, 2012-06-13 at 11:49 +1000, Michael Ellerman wrote:
+> On Wed, 2012-04-25 at 19:19 +0000, Andre Heider wrote:
+> > Use any preallocated highmem region setup by the bootloader.
+> > This implementation only checks for the existance of a single
+> > region at region_index=0.
+> > 
+> > This feature allows the bootloader to preallocate highmem
+> > regions and pass the region locations to the kernel through
+> > the repository.  Preallocated regions can be used to hold the
+> > initrd or other large data.  If no region info exists, the
+> > kernel retains the old behavior and attempts to allocate the
+> > highmem region itself.
+> > 
+> > Based on Hector Martin's patch "Get lv1 high memory region from
+> > devtree".
+> 
+> Apologies if this has been covered before, but why not use the device
+> tree?
 
-493340207 carma-fpga: Missed switch from of_register_platform_driver()
-b00e126ff MISC: convert drivers/misc/* to use module_platform_driver()
+FreeBSD (and other OS's) don't know about the Linux device tree.
 
-Hope it helps,
-Ira
+This mechanism is for the bootloader to tell the OS about a highmem
+region it setup, and we want to support more than just Linux.
+
+-Geoff
