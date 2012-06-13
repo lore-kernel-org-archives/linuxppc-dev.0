@@ -1,20 +1,21 @@
-Return-Path: <MAILER-DAEMON>
-Received: from VA3EHSNDR001.bigfish.com
- (va3outboundsmtppool2.messaging.microsoft.com [157.55.133.164])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E1F8EB6FB9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2012 08:02:50 +1000 (EST)
-Date: Tue, 12 Jun 2012 17:02:32 -0500
-From: Scott Wood <scott@tyr.buserror.net>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/booke-64: fix tlbsrx. path in bolted tlb handler
-Message-ID: <20120612220232.GA17228@tyr.buserror.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 7CBC1B6FC4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2012 10:40:47 +1000 (EST)
+Message-ID: <1339548038.9220.80.camel@pasglop>
+Subject: RE: [PATCH] powerpc/44x: Support OCM(On Chip Memory) for APM821xx
+ SoC and Bluestone board
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Vinh Huu Tuong Nguyen <vhtnguyen@apm.com>
+Date: Wed, 13 Jun 2012 10:40:38 +1000
+In-Reply-To: <da2d8ae5f5008c4695d1898b9e121c1f@mail.gmail.com>
+References: <1336362768-31326-1-git-send-email-vhtnguyen@apm.com>
+ <da2d8ae5f5008c4695d1898b9e121c1f@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
-Reply-To: scott@tyr.buserror.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It was branching to the cleanup part of the non-bolted handler,
-which would have been bad if there were any chips with tlbsrx.
-that use the bolted handler.
+On Tue, 2012-06-12 at 17:26 +0700, Vinh Huu Tuong Nguyen wrote:
+> > -----Original Message-----
+> > From: Vinh Nguyen Huu Tuong [mailto:vhtnguyen@apm.com]
+> > Sent: Monday, May 07, 2012 10:53 AM
+> > To: Benjamin Herrenschmidt; Paul Mackerras; Josh Boyer; Matt Porter;
+> > Grant Likely; Rob Herring; Duc Dang; David S. Miller; Kumar Gala; Li
+> > Yang; Ashish Kalra; Anatolij Gustschin; Liu Gang; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; devicetree-
+> > discuss@lists.ozlabs.org
+> > Cc: Vinh Nguyen Huu Tuong
+> > Subject: [PATCH] powerpc/44x: Support OCM(On Chip Memory) for APM821xx
+> > SoC and Bluestone board
 
-Signed-off-by: Scott Wood <scott@tyr.buserror.net>
----
- arch/powerpc/mm/tlb_low_64e.S |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+Such a CC list won't get you any good will. Send it only to the relevant
+mailing lists with possibly the -one- concerned maintainer on CC. I
+doubt Dave Miller or Matt Porter give any damn about those patches.
 
-diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index ff672bd..efe0f33 100644
---- a/arch/powerpc/mm/tlb_low_64e.S
-+++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -128,7 +128,7 @@ BEGIN_MMU_FTR_SECTION
- 	 */
- 	PPC_TLBSRX_DOT(0,r16)
- 	ldx	r14,r14,r15		/* grab pgd entry */
--	beq	normal_tlb_miss_done	/* tlb exists already, bail */
-+	beq	tlb_miss_done_bolted	/* tlb exists already, bail */
- MMU_FTR_SECTION_ELSE
- 	ldx	r14,r14,r15		/* grab pgd entry */
- ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
-@@ -184,6 +184,7 @@ ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
- 	mtspr	SPRN_MAS7_MAS3,r15
- 	tlbwe
- 
-+tlb_miss_done_bolted:
- 	TLB_MISS_STATS_X(MMSTAT_TLB_MISS_NORM_OK)
- 	tlb_epilog_bolted
- 	rfi
--- 
-1.7.5.4
+As for why it wasn't reviewed yet, well, reviewers are a finite resource
+with limited time dedicated to it. If the patch is properly formed and
+was posted to the linuxppc-dev@ozlabs.org, it should be tracked on
+patchwork.ozlabs.org and won't be lost. Double check it's there (if it's
+not, then the patch was probably corrupt).
+
+Cheers,
+Ben.
