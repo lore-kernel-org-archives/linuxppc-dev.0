@@ -1,47 +1,25 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-qa0-f44.google.com (mail-qa0-f44.google.com
+ [209.85.216.44])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B0BBEB6EE7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2012 11:17:40 +1000 (EST)
-Received: by bkcjg15 with SMTP id jg15so28187bkc.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 18:17:37 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 51772B6F77
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2012 11:22:16 +1000 (EST)
+Received: by qadz3 with SMTP id z3so3488116qad.17
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Jun 2012 18:22:12 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1339530031.3454.16.camel@mars>
-References: <20120410021151.GB23044@lovely.krouter>
- <20120411073918.GA9180@lovely.krouter>
- <CAOMZO5C729Ki0Bequ+s1nnrgt4NZWvwg3Wnjk4kHp=d9BtkeXw@mail.gmail.com>
- <20120509000221.GA19525@lovely.krouter>
- <20120513225126.GA3683@lovely.krouter>
- <20120514042142.GD9750@kroah.com> <20120520231724.GA7941@mars>
- <F281D0F91ED19E4D8E63A7504E8A649803BB1E25@039-SN2MPN1-023.039d.mgd.msft.net>
- <1337583221.3394.21.camel@mars> <20120521065722.GA4363@mars>
- <20120521190450.GA27492@arwen.pp.htv.fi>
- <1338809424.3371.20.camel@mars> <1338809853.3371.31.camel@mars>
- <CAOMZO5B7+Qy06m7O=v1M3vt7to7ciKOhQOihVgAEf+utntvw4w@mail.gmail.com>
- <1339530031.3454.16.camel@mars>
-Date: Tue, 12 Jun 2012 22:17:36 -0300
-Message-ID: <CAOMZO5CitYj+R+r=Z-ovRKO-kWaPPxBedY7WpKj2-SAk5WAS=w@mail.gmail.com>
-Subject: Re: [PATCH v2] usb: fsl_udc: errata - postpone freeing current dTD
-From: Fabio Estevam <festevam@gmail.com>
-To: Christoph Fritz <chf.fritz@googlemail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Ben Dooks <ben-linux@fluff.org>, Chen Peter-B29397 <B29397@freescale.com>,
- Nicolas Ferre <nicolas.ferre@atmel.com>, "Hans J. Koch" <hjk@hansjkoch.de>,
- Kukjin Kim <kgene.kim@samsung.com>, Russell King <linux@arm.linux.org.uk>,
- Thomas Dahlmann <dahlmann.thomas@arcor.de>,
- Sascha Hauer <s.hauer@pengutronix.de>, Christian Hemp <c.hemp@phytec.de>,
- Haojian Zhuang <haojian.zhuang@gmail.com>, Daniel Mack <daniel@caiaq.de>,
- Neil Zhang <zhangwm@marvell.com>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- Oliver Neukum <oneukum@suse.de>, Eric Miao <eric.y.miao@gmail.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- Felipe Balbi <balbi@ti.com>, Ido Shayevitz <idos@codeaurora.org>,
- Estevam Fabio-R49496 <r49496@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <1339548038.9220.80.camel@pasglop>
+References: <1336362768-31326-1-git-send-email-vhtnguyen@apm.com>
+ <da2d8ae5f5008c4695d1898b9e121c1f@mail.gmail.com>
+ <1339548038.9220.80.camel@pasglop>
+Date: Tue, 12 Jun 2012 21:22:12 -0400
+Message-ID: <CA+5PVA5KepDnQMtK7Gav+Hk-jch4t0MQZXUeTj3GG_T0Ld==JA@mail.gmail.com>
+Subject: Re: [PATCH] powerpc/44x: Support OCM(On Chip Memory) for APM821xx SoC
+ and Bluestone board
+From: Josh Boyer <jwboyer@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Vinh Huu Tuong Nguyen <vhtnguyen@apm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,36 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 12, 2012 at 4:40 PM, Christoph Fritz
-<chf.fritz@googlemail.com> wrote:
-
-> Thanks for your patch. It does indeed load
-> "Freescale High-Speed USB SOC Device Controller driver (Apr 20, 2007)"
-> fine - but now when I want to use it:
+On Tue, Jun 12, 2012 at 8:40 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Tue, 2012-06-12 at 17:26 +0700, Vinh Huu Tuong Nguyen wrote:
+>> > -----Original Message-----
+>> > From: Vinh Nguyen Huu Tuong [mailto:vhtnguyen@apm.com]
+>> > Sent: Monday, May 07, 2012 10:53 AM
+>> > To: Benjamin Herrenschmidt; Paul Mackerras; Josh Boyer; Matt Porter;
+>> > Grant Likely; Rob Herring; Duc Dang; David S. Miller; Kumar Gala; Li
+>> > Yang; Ashish Kalra; Anatolij Gustschin; Liu Gang; linuxppc-
+>> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; devicetree-
+>> > discuss@lists.ozlabs.org
+>> > Cc: Vinh Nguyen Huu Tuong
+>> > Subject: [PATCH] powerpc/44x: Support OCM(On Chip Memory) for APM821xx
+>> > SoC and Bluestone board
 >
-> modprobe g_ether
-> [ =C2=A0 17.099363] g_ether gadget: using random self ethernet address
-> [ =C2=A0 17.105316] g_ether gadget: using random host ethernet address
-> [ =C2=A0 17.111974] usb0: MAC 1a:c7:9e:76:cc:45
-> [ =C2=A0 17.115866] usb0: HOST MAC 66:a2:4a:0a:46:17
-> [ =C2=A0 17.120199] g_ether gadget: Ethernet Gadget, version: Memorial Da=
-y 2008
-> [ =C2=A0 17.126861] g_ether gadget: g_ether ready
+> Such a CC list won't get you any good will. Send it only to the relevant
+> mailing lists with possibly the -one- concerned maintainer on CC. I
+> doubt Dave Miller or Matt Porter give any damn about those patches.
 >
-> these are "the last words": System hangs completely. Same behavior with
-> g_serial (these two I've tested).
+> As for why it wasn't reviewed yet, well, reviewers are a finite resource
+> with limited time dedicated to it. If the patch is properly formed and
+> was posted to the linuxppc-dev@ozlabs.org, it should be tracked on
+> patchwork.ozlabs.org and won't be lost. Double check it's there (if it's
+> not, then the patch was probably corrupt).
 
-Ok, I just sent a new patch to the linux-usb mailing list.
+It's there.  I just missed it until today.  My apologies Vinh.  I'll
+do a more formal review tomorrow, but at first glance I'm concerned
+with the sysfs usage.  The files in sysfs are supposed to be one file
+per value, and you see to have something akin to /proc/meminfo in the
+sysfs file being created.  Perhaps that would be better either split
+into unique file names per field in sysfs, or in a debugfs file
+instead?
 
-Tested it on a mx31 and mx51 and it probed g_ether fine. I don't have
-a mx35 handy.
+Again, I'll review more closely tomrorow.
 
->
-> Currently I can't investigate this further, not because of a bug - but a
-> flu.
-
-Hope you get better soon.
-
-Regards,
-
-Fabio Estevam
+josh
