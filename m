@@ -3,10 +3,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
-Date: Thu, 14 Jun 2012 16:15:36 +1000
-Subject: [PATCH 0/18] powerpc: convert GPR usage to %r0-31 and R0-31
-In-Reply-To: <m2y5nwn7s0.fsf@linux-m68k.org>
-Message-Id: <1339654536.159274.140684871779.qpush@ale>
+Date: Thu, 14 Jun 2012 16:15:38 +1000
+Subject: [PATCH 2/18] powerpc: modify macro ready for %r0 register change
+In-Reply-To: <1339654536.159274.140684871779.qpush@ale>
+Message-Id: <20120614061538.3F721D42BEA@localhost.localdomain>
 Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org, schwab@linux-m68k.org,
  Anton Blanchard <anton@samba.org>, Olof Johannsson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,15 +18,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-First 5 patches convert us to %r0-31.
+The assembler doesn't take %r0 register arguments in braces, so remove them.
 
-Next 12 convert make using R0-31 required in macros.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
 
-Last 2 convert instructions where ra = r0 we use 0 rather than the
-register value (as suggested by Andreas).
+ arch/powerpc/include/asm/ppc_asm.h |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-Version 2 adds:
-  ra = 0 idea (as Andreas suggested)
-  Fixes for 32bit KVM (added ppc44x_defconfig to my testing)
-  Based on mpe's next tree which has Antons power7 copy patches which
-    needed fixes for this
+Index: powerpc-test/arch/powerpc/include/asm/ppc_asm.h
+===================================================================
+--- powerpc-test.orig/arch/powerpc/include/asm/ppc_asm.h
++++ powerpc-test/arch/powerpc/include/asm/ppc_asm.h
+@@ -295,14 +295,14 @@ n:
+  */
+ #ifdef __powerpc64__
+ #define LOAD_REG_IMMEDIATE(reg,expr)		\
+-	lis     (reg),(expr)@highest;		\
+-	ori     (reg),(reg),(expr)@higher;	\
+-	rldicr  (reg),(reg),32,31;		\
+-	oris    (reg),(reg),(expr)@h;		\
+-	ori     (reg),(reg),(expr)@l;
++	lis     reg,(expr)@highest;		\
++	ori     reg,reg,(expr)@higher;	\
++	rldicr  reg,reg,32,31;		\
++	oris    reg,reg,(expr)@h;		\
++	ori     reg,reg,(expr)@l;
+ 
+ #define LOAD_REG_ADDR(reg,name)			\
+-	ld	(reg),name@got(r2)
++	ld	reg,name@got(r2)
+ 
+ #define LOAD_REG_ADDRBASE(reg,name)	LOAD_REG_ADDR(reg,name)
+ #define ADDROFF(name)			0
+@@ -313,12 +313,12 @@ n:
+ #else /* 32-bit */
+ 
+ #define LOAD_REG_IMMEDIATE(reg,expr)		\
+-	lis	(reg),(expr)@ha;		\
+-	addi	(reg),(reg),(expr)@l;
++	lis	reg,(expr)@ha;		\
++	addi	reg,reg,(expr)@l;
+ 
+ #define LOAD_REG_ADDR(reg,name)		LOAD_REG_IMMEDIATE(reg, name)
+ 
+-#define LOAD_REG_ADDRBASE(reg, name)	lis	(reg),name@ha
++#define LOAD_REG_ADDRBASE(reg, name)	lis	reg,name@ha
+ #define ADDROFF(name)			name@l
+ 
+ /* offsets for stack frame layout */
