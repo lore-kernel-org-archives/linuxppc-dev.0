@@ -3,10 +3,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
-Date: Thu, 14 Jun 2012 16:15:37 +1000
-Subject: [PATCH 1/18] powerpc: Add defines for R0-R31
+Date: Thu, 14 Jun 2012 16:15:45 +1000
+Subject: [PATCH 9/18] powerpc: change mtcrf to use real register names
 In-Reply-To: <1339654536.159274.140684871779.qpush@ale>
-Message-Id: <20120614061537.38FA3D42BEA@localhost.localdomain>
+Message-Id: <20120614061545.60B01D42BEA@localhost.localdomain>
 Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org, schwab@linux-m68k.org,
  Anton Blanchard <anton@samba.org>, Olof Johannsson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,55 +18,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are going to use these later and convert r0 to %r0 etc.
+mtocrf define is just a wrapper around the real instructions so we can
+just use real register names here (ie. lower case).
+
+Also remove braces in macro so this is possible.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/include/asm/ppc_asm.h |   33 +++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+ arch/powerpc/include/asm/asm-compat.h |    2 +-
+ arch/powerpc/include/asm/ppc_asm.h    |    4 ++--
+ arch/powerpc/lib/copyuser_64.S        |    6 +++---
+ arch/powerpc/lib/mem_64.S             |    6 +++---
+ arch/powerpc/lib/memcpy_64.S          |    6 +++---
+ 5 files changed, 12 insertions(+), 12 deletions(-)
 
+Index: powerpc-test/arch/powerpc/include/asm/asm-compat.h
+===================================================================
+--- powerpc-test.orig/arch/powerpc/include/asm/asm-compat.h
++++ powerpc-test/arch/powerpc/include/asm/asm-compat.h
+@@ -29,7 +29,7 @@
+ #define PPC_LLARX(t, a, b, eh)	PPC_LDARX(t, a, b, eh)
+ #define PPC_STLCX	stringify_in_c(stdcx.)
+ #define PPC_CNTLZL	stringify_in_c(cntlzd)
+-#define PPC_MTOCRF(FXM, RS) MTOCRF((FXM), (RS))
++#define PPC_MTOCRF(FXM, RS) MTOCRF((FXM), RS)
+ #define PPC_LR_STKOFF	16
+ #define PPC_MIN_STKFRM	112
+ #else /* 32-bit */
 Index: powerpc-test/arch/powerpc/include/asm/ppc_asm.h
 ===================================================================
 --- powerpc-test.orig/arch/powerpc/include/asm/ppc_asm.h
 +++ powerpc-test/arch/powerpc/include/asm/ppc_asm.h
-@@ -525,6 +525,39 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
- #define	r30	30
- #define	r31	31
+@@ -384,9 +384,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ #ifdef CONFIG_PPC64
+ #define MTOCRF(FXM, RS)			\
+ 	BEGIN_FTR_SECTION_NESTED(848);	\
+-	mtcrf	(FXM), (RS);		\
++	mtcrf	(FXM), RS;		\
+ 	FTR_SECTION_ELSE_NESTED(848);	\
+-	mtocrf (FXM), (RS);		\
++	mtocrf (FXM), RS;		\
+ 	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_NOEXECUTE, 848)
+ #endif
  
-+#define	R0	0
-+#define	R1	1
-+#define	R2	2
-+#define	R3	3
-+#define	R4	4
-+#define	R5	5
-+#define	R6	6
-+#define	R7	7
-+#define	R8	8
-+#define	R9	9
-+#define	R10	10
-+#define	R11	11
-+#define	R12	12
-+#define	R13	13
-+#define	R14	14
-+#define	R15	15
-+#define	R16	16
-+#define	R17	17
-+#define	R18	18
-+#define	R19	19
-+#define	R20	20
-+#define	R21	21
-+#define	R22	22
-+#define	R23	23
-+#define	R24	24
-+#define	R25	25
-+#define	R26	26
-+#define	R27	27
-+#define	R28	28
-+#define	R29	29
-+#define	R30	30
-+#define	R31	31
-+
+Index: powerpc-test/arch/powerpc/lib/copyuser_64.S
+===================================================================
+--- powerpc-test.orig/arch/powerpc/lib/copyuser_64.S
++++ powerpc-test/arch/powerpc/lib/copyuser_64.S
+@@ -30,7 +30,7 @@ _GLOBAL(__copy_tofrom_user_base)
+ 	dcbt	0,r4
+ 	beq	.Lcopy_page_4K
+ 	andi.	r6,r6,7
+-	PPC_MTOCRF(0x01,R5)
++	PPC_MTOCRF(0x01,r5)
+ 	blt	cr1,.Lshort_copy
+ /* Below we want to nop out the bne if we're on a CPU that has the
+  * CPU_FTR_UNALIGNED_LD_STD bit set and the CPU_FTR_CP_USE_DCBTZ bit
+@@ -186,7 +186,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 	blr
  
- /* Floating Point Registers (FPRs) */
+ .Ldst_unaligned:
+-	PPC_MTOCRF(0x01,R6)		/* put #bytes to 8B bdry into cr7 */
++	PPC_MTOCRF(0x01,r6)		/* put #bytes to 8B bdry into cr7 */
+ 	subf	r5,r6,r5
+ 	li	r7,0
+ 	cmpldi	cr1,r5,16
+@@ -201,7 +201,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 2:	bf	cr7*4+1,3f
+ 37:	lwzx	r0,r7,r4
+ 83:	stwx	r0,r7,r3
+-3:	PPC_MTOCRF(0x01,R5)
++3:	PPC_MTOCRF(0x01,r5)
+ 	add	r4,r6,r4
+ 	add	r3,r6,r3
+ 	b	.Ldst_aligned
+Index: powerpc-test/arch/powerpc/lib/mem_64.S
+===================================================================
+--- powerpc-test.orig/arch/powerpc/lib/mem_64.S
++++ powerpc-test/arch/powerpc/lib/mem_64.S
+@@ -19,7 +19,7 @@ _GLOBAL(memset)
+ 	rlwimi	r4,r4,16,0,15
+ 	cmplw	cr1,r5,r0		/* do we get that far? */
+ 	rldimi	r4,r4,32,0
+-	PPC_MTOCRF(1,R0)
++	PPC_MTOCRF(1,r0)
+ 	mr	r6,r3
+ 	blt	cr1,8f
+ 	beq+	3f			/* if already 8-byte aligned */
+@@ -49,7 +49,7 @@ _GLOBAL(memset)
+ 	bdnz	4b
+ 5:	srwi.	r0,r5,3
+ 	clrlwi	r5,r5,29
+-	PPC_MTOCRF(1,R0)
++	PPC_MTOCRF(1,r0)
+ 	beq	8f
+ 	bf	29,6f
+ 	std	r4,0(r6)
+@@ -65,7 +65,7 @@ _GLOBAL(memset)
+ 	std	r4,0(r6)
+ 	addi	r6,r6,8
+ 8:	cmpwi	r5,0
+-	PPC_MTOCRF(1,R5)
++	PPC_MTOCRF(1,r5)
+ 	beqlr+
+ 	bf	29,9f
+ 	stw	r4,0(r6)
+Index: powerpc-test/arch/powerpc/lib/memcpy_64.S
+===================================================================
+--- powerpc-test.orig/arch/powerpc/lib/memcpy_64.S
++++ powerpc-test/arch/powerpc/lib/memcpy_64.S
+@@ -16,7 +16,7 @@ BEGIN_FTR_SECTION
+ FTR_SECTION_ELSE
+ 	b	memcpy_power7
+ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
+-	PPC_MTOCRF(0x01,R5)
++	PPC_MTOCRF(0x01,r5)
+ 	cmpldi	cr1,r5,16
+ 	neg	r6,r3		# LS 3 bits = # bytes to 8-byte dest bdry
+ 	andi.	r6,r6,7
+@@ -158,7 +158,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 	blr
  
+ .Ldst_unaligned:
+-	PPC_MTOCRF(0x01,R6)		# put #bytes to 8B bdry into cr7
++	PPC_MTOCRF(0x01,r6)		# put #bytes to 8B bdry into cr7
+ 	subf	r5,r6,r5
+ 	li	r7,0
+ 	cmpldi	cr1,r5,16
+@@ -173,7 +173,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 2:	bf	cr7*4+1,3f
+ 	lwzx	r0,r7,r4
+ 	stwx	r0,r7,r3
+-3:	PPC_MTOCRF(0x01,R5)
++3:	PPC_MTOCRF(0x01,r5)
+ 	add	r4,r6,r4
+ 	add	r3,r6,r3
+ 	b	.Ldst_aligned
