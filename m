@@ -1,19 +1,25 @@
-Return-Path: <jwboyer@gmail.com>
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 38EC31007D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 04:21:48 +1000 (EST)
+Date: Thu, 14 Jun 2012 20:19:34 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/2] uprobes: Pass probed vaddr to
+ arch_uprobe_analyze_insn()
+Message-ID: <20120614181934.GA9424@redhat.com>
+References: <20120608093257.GG13409@in.ibm.com>
+ <20120611161215.GA12116@redhat.com>
+ <20120612165404.GB30555@linux.vnet.ibm.com>
+ <20120612174305.GA16349@redhat.com> <20120613191519.GA14246@redhat.com>
+ <20120614114514.GA12051@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1336362768-31326-1-git-send-email-vhtnguyen@apm.com>
-References: <1336362768-31326-1-git-send-email-vhtnguyen@apm.com>
-Date: Thu, 14 Jun 2012 13:47:26 -0400
-Message-ID: <CA+5PVA7vnLvqwsDAboR4s-QCLWSDm34N2tE+sFiBMsE2f=qYEg@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/44x: Support OCM(On Chip Memory) for APM821xx SoC
- and Bluestone board
-From: Josh Boyer <jwboyer@gmail.com>
-To: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Anatolij Gustschin <agust@denx.de>, devicetree-discuss@lists.ozlabs.org,
- Duc Dang <dhdang@apm.com>, Rob Herring <rob.herring@calxeda.com>,
- linux-kernel@vger.kernel.org, Liu Gang <Gang.Liu@freescale.com>,
- Paul Mackerras <paulus@samba.org>, Ashish Kalra <ashish.kalra@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120614114514.GA12051@linux.vnet.ibm.com>
+Cc: peterz@infradead.org, antonb@thinktux.localdomain,
+ lkml <linux-kernel@vger.kernel.org>, Jim Keniston <jkenisto@us.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,148 +29,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 6, 2012 at 11:52 PM, Vinh Nguyen Huu Tuong
-<vhtnguyen@apm.com> wrote:
-> This patch consists of:
-> - Add driver for OCM component
-> - Export OCM Information at /sys/class/ocm/ocminfo
-
-Again, apologies for the delay.  Aside from the incorrect sysfs usage
-I pointed out in my other reply, I have just a few comments/questions
-below.
-
-> diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/=
-bluestone.dts
-> index 7bda373..2687c11 100644
-> --- a/arch/powerpc/boot/dts/bluestone.dts
-> +++ b/arch/powerpc/boot/dts/bluestone.dts
-> @@ -107,6 +107,14 @@
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-parent =3D <&UIC0>;
-> =A0 =A0 =A0 =A0};
+On 06/14, Srikar Dronamraju wrote:
 >
-> + =A0 =A0 =A0 OCM1: ocm@400040000 {
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "ibm,ocm";
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 status =3D "ok";
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* configured in U-Boot */
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <4 0x00040000 0x8000>; /* 32K */
-> + =A0 =A0 =A0 };
-> +
-> =A0 =A0 =A0 =A0SDR0: sdr {
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "ibm,sdr-apm821xx";
-> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dcr-reg =3D <0x00e 0x002>;
-> diff --git a/arch/powerpc/include/asm/ppc4xx_ocm.h b/arch/powerpc/include=
-/asm/ppc4xx_ocm.h
-> new file mode 100644
-> index 0000000..ff7f386
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/ppc4xx_ocm.h
-> @@ -0,0 +1,47 @@
-> +/*
-> + * PowerPC 4xx OCM memory allocation support
-> + *
-> + * (C) Copyright 2009, Applied Micro Circuits Corporation
-> + * Victor Gallardo (vgallardo@amcc.com)
-> + *
-> + * See file CREDITS for list of people who contributed to this
-> + * project.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License as
-> + * published by the Free Software Foundation; either version 2 of
-> + * the License, or (at your option) any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-> + * MA 02111-1307 USA
-> + */
-> +
-> +#ifndef __ASM_POWERPC_PPC4xx_OCM_H__
-> +#define __ASM_POWERPC_PPC4xx_OCM_H__
-> +
-> +#include <linux/types.h>
-> +
-> +#define OCM_NON_CACHED 0
-> +#define OCM_CACHED =A0 =A0 1
-> +
-> +#if defined(CONFIG_PPC4xx_OCM)
-> +
-> +void *ocm_alloc(phys_addr_t *phys, int size, int align,
-> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 int flags, const char *owner);
-> +void ocm_free(const void *virt);
-> +
-> +#else
-> +
-> +#define ocm_alloc(phys, size, align, flags, owner) =A0 =A0 NULL
-> +#define ocm_free(addr) ((void)0)
-> +
-> +#endif /* CONFIG_PPC4xx_OCM */
-> +
-> +#endif =A0/* __ASM_POWERPC_PPC4xx_OCM_H__ */
+> * Oleg Nesterov <oleg@redhat.com> [2012-06-13 21:15:19]:
+>
+> > For example. Suppose there is some instruction in /lib64/libc.so which
+> > is valid for 64-bit, but not for 32-bit.
+> >
+> > Suppose that a 32-bit application does mmap("/lib64/libc.so", PROT_EXEC).
+> >
+>
+> How correct is it to have a 32 bit binary link to a 64 bit binary/library?
 
-I don't see any users of this header included in the patch.  I'm going
-to guess that follow-on drivers/users are queued once this is in the
-tree?  Also, you might want to name these 'ppc4xx_ocm_alloc' or
-similar.  The concept of OCM isn't limited to ppc4xx or even SoCs, so
-just using 'ocm' in the global kernel namespace might not be great.
+No, I didn't mean this. I guess you misunderstood my point, see below.
 
-> diff --git a/arch/powerpc/sysdev/ppc4xx_ocm.c b/arch/powerpc/sysdev/ppc4x=
-x_ocm.c
-> new file mode 100644
-> index 0000000..ba3e450
-> --- /dev/null
-> +++ b/arch/powerpc/sysdev/ppc4xx_ocm.c
-> @@ -0,0 +1,420 @@
-> +#include <linux/kernel.h>
-> +#include <linux/errno.h>
-> +#include <linux/proc_fs.h>
+> > Now. If vma_prio_tree_foreach() finds this 32-bit mm first, uprobe_register()
+> > fails even if there are other 64-bit applications which could be traced.
+> >
+> > Or. uprobe_register() succeeds because it finds a 64-bit mm first, and
+> > then that 32-bit application actually executes the invalid insn.
+> >
+> > We can move arch_uprobe_analyze_insn() outside of !UPROBE_COPY_INSN block.
+> >
+> > Or, perhaps, validate_insn_bits() should call both
+> > validate_insn_32bits() and validate_insn_64bits(), and set the
+> > UPROBE_VALID_IF_32 / UPROBE_VALID_IF_64 flags. install_breakpoint()
+> > should do the additinal check before set_swbp() and verify that
+> > .ia32_compat matches UPROBE_VALID_IF_*.
+> >
+>
+> > What do you think?
+> >
+>
+> Lets say we do find a 32 bit app and 64 bit app using the same library
+> and the underlying instruction is valid for tracing in 64 bit and not 32
+> bit. So when we are registering, and failed to insert a breakpoint  for
+> the 32 bit app, should we just bail out or should we return a failure?
 
-Why do you need proc_fs.h?
+I do not really know, I tend to think we should not fail. But this is
+another story...
 
-> +#include <linux/seq_file.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/dma-mapping.h>
-> +#include <linux/list.h>
-> +#include <asm/uaccess.h>
-> +#include <asm/prom.h>
-> +#include <asm/dcr.h>
-> +#include <asm/rheap.h>
-> +#include <asm/mmu.h>
-> +#include <asm/ppc4xx_ocm.h>
-> +#include <linux/export.h>
-> +
-> +#define OCM_DISABLED =A0 0
-> +#define OCM_ENABLED =A0 =A0 =A0 =A0 =A0 =A01
-> +
-> +struct ocm_block {
-> + =A0 =A0 =A0 struct list_head =A0 =A0 =A0 =A0list;
-> + =A0 =A0 =A0 void __iomem =A0 =A0 =A0 =A0 =A0 =A0*addr;
-> + =A0 =A0 =A0 int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 size;
-> + =A0 =A0 =A0 const char =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*owne=
-r;
-> +};
-> +
-> +/* non-cached or cached region */
-> +struct ocm_region {
-> + =A0 =A0 =A0 phys_addr_t =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 phys;
-> + =A0 =A0 =A0 void __iomem =A0 =A0 =A0 =A0 =A0 =A0*virt;
-> +
-> + =A0 =A0 =A0 int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 memtotal;
-> + =A0 =A0 =A0 int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 memfree;
-> +
-> + =A0 =A0 =A0 rh_info_t =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 *rh;
-> + =A0 =A0 =A0 struct list_head =A0 =A0 =A0 =A0list;
-> +};
+Look. Suppose that a 32-bit app starts after uprobe_register() succeeds.
+In this case we have no option, uprobe_mmap()->install_breakpoint()
+should "silently" fail. Currently it doesn't, this is one of the reasons
+why I think the validation logic is wrong.
 
-There's some interesting whitespace usage in these struct definitions.
+And. if install_breakpoint() can fail later anyway (in this case), then
+I think uprobe_register() should not fail.
 
-josh
+But probably this needs more discussion.
+
+
+> I would probably prefer to read the underlying file something similar to
+> what exec does and based on the magic decipher if we should verify for
+> 32 bit instructions or 64 bit instructions.
+
+But this can't protect from the malicious user who does
+mmap(64-bit-code, PROT_EXEC) from a 32-bit app, and this can confuse
+uprobes even if that 32-bit app never tries to actually execute that
+64-bit-code.
+
+That is why I think we need the additional (and arch-dependant) check
+before every set_swbp(), but arch_uprobe_analyze_insn/etc should not
+depend on task/mm/vaddr/whatever.
+
+Oleg.
