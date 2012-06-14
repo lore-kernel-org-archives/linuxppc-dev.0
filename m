@@ -3,10 +3,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
-Date: Thu, 14 Jun 2012 16:15:44 +1000
-Subject: [PATCH 8/18] powerpc: merge VCPU_GPR
+Date: Thu, 14 Jun 2012 16:15:37 +1000
+Subject: [PATCH 1/18] powerpc: Add defines for R0-R31
 In-Reply-To: <1339654536.159274.140684871779.qpush@ale>
-Message-Id: <20120614061544.59FC8D42BEA@localhost.localdomain>
+Message-Id: <20120614061537.38FA3D42BEA@localhost.localdomain>
 Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org, schwab@linux-m68k.org,
  Anton Blanchard <anton@samba.org>, Olof Johannsson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,96 +18,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge the defines of VCPU_GPR from different places.
+We are going to use these later and convert r0 to %r0 etc.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/include/asm/ppc_asm.h      |    7 +++++++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |    3 ---
- arch/powerpc/kvm/book3s_interrupts.S    |    8 --------
- arch/powerpc/kvm/booke_interrupts.S     |    2 --
- arch/powerpc/kvm/bookehv_interrupts.S   |    1 -
- 5 files changed, 7 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/ppc_asm.h |   33 +++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
 Index: powerpc-test/arch/powerpc/include/asm/ppc_asm.h
 ===================================================================
 --- powerpc-test.orig/arch/powerpc/include/asm/ppc_asm.h
 +++ powerpc-test/arch/powerpc/include/asm/ppc_asm.h
-@@ -178,6 +178,13 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLP
- #define HMT_HIGH	or	3,3,3
- #define HMT_EXTRA_HIGH	or	7,7,7		# power7 only
+@@ -525,6 +525,39 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+ #define	r30	30
+ #define	r31	31
  
-+#ifdef CONFIG_PPC64
-+#define ULONG_SIZE 	8
-+#else
-+#define ULONG_SIZE	4
-+#endif
-+#define VCPU_GPR(n)	(VCPU_GPRS + (n * ULONG_SIZE))
++#define	R0	0
++#define	R1	1
++#define	R2	2
++#define	R3	3
++#define	R4	4
++#define	R5	5
++#define	R6	6
++#define	R7	7
++#define	R8	8
++#define	R9	9
++#define	R10	10
++#define	R11	11
++#define	R12	12
++#define	R13	13
++#define	R14	14
++#define	R15	15
++#define	R16	16
++#define	R17	17
++#define	R18	18
++#define	R19	19
++#define	R20	20
++#define	R21	21
++#define	R22	22
++#define	R23	23
++#define	R24	24
++#define	R25	25
++#define	R26	26
++#define	R27	27
++#define	R28	28
++#define	R29	29
++#define	R30	30
++#define	R31	31
 +
- #ifdef __KERNEL__
- #ifdef CONFIG_PPC64
  
-Index: powerpc-test/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-===================================================================
---- powerpc-test.orig/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ powerpc-test/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -72,9 +72,6 @@ _GLOBAL(kvmppc_hv_entry_trampoline)
- 	mtsrr1	r6
- 	RFI
+ /* Floating Point Registers (FPRs) */
  
--#define ULONG_SIZE 		8
--#define VCPU_GPR(n)		(VCPU_GPRS + (n * ULONG_SIZE))
--
- /******************************************************************************
-  *                                                                            *
-  *                               Entry code                                   *
-Index: powerpc-test/arch/powerpc/kvm/book3s_interrupts.S
-===================================================================
---- powerpc-test.orig/arch/powerpc/kvm/book3s_interrupts.S
-+++ powerpc-test/arch/powerpc/kvm/book3s_interrupts.S
-@@ -25,19 +25,11 @@
- #include <asm/exception-64s.h>
- 
- #if defined(CONFIG_PPC_BOOK3S_64)
--
--#define ULONG_SIZE 		8
- #define FUNC(name) 		GLUE(.,name)
--
- #elif defined(CONFIG_PPC_BOOK3S_32)
--
--#define ULONG_SIZE              4
- #define FUNC(name)		name
--
- #endif /* CONFIG_PPC_BOOK3S_XX */
- 
--
--#define VCPU_GPR(n)		(VCPU_GPRS + (n * ULONG_SIZE))
- #define VCPU_LOAD_NVGPRS(vcpu) \
- 	PPC_LL	r14, VCPU_GPR(R14)(vcpu); \
- 	PPC_LL	r15, VCPU_GPR(R15)(vcpu); \
-Index: powerpc-test/arch/powerpc/kvm/booke_interrupts.S
-===================================================================
---- powerpc-test.orig/arch/powerpc/kvm/booke_interrupts.S
-+++ powerpc-test/arch/powerpc/kvm/booke_interrupts.S
-@@ -25,8 +25,6 @@
- #include <asm/page.h>
- #include <asm/asm-offsets.h>
- 
--#define VCPU_GPR(n)     (VCPU_GPRS + (n * 4))
--
- /* The host stack layout: */
- #define HOST_R1         0 /* Implied by stwu. */
- #define HOST_CALLEE_LR  4
-Index: powerpc-test/arch/powerpc/kvm/bookehv_interrupts.S
-===================================================================
---- powerpc-test.orig/arch/powerpc/kvm/bookehv_interrupts.S
-+++ powerpc-test/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -37,7 +37,6 @@
- 
- #define LONGBYTES		(BITS_PER_LONG / 8)
- 
--#define VCPU_GPR(n)     	(VCPU_GPRS + (n * LONGBYTES))
- #define VCPU_GUEST_SPRG(n)	(VCPU_GUEST_SPRGS + (n * LONGBYTES))
- 
- /* The host stack layout: */
