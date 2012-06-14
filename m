@@ -1,16 +1,38 @@
-Return-Path: <mikey@neuling.org>
-Received: from localhost.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 96D86B7008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2012 13:25:29 +1000 (EST)
-From: Michael Neuling <mikey@neuling.org>
-To: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/15] powerpc: convert to %r for all GPR usage
-In-reply-to: <4FD274AF.8080700@linux.vnet.ibm.com>
-References: <20120608113605.75BD5D43B26@localhost.localdomain>
- <4FD274AF.8080700@linux.vnet.ibm.com>
-Date: Thu, 14 Jun 2012 13:25:28 +1000
-Message-ID: <3125.1339644328@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8C4B3B7022
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2012 14:40:09 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so3667434pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Jun 2012 21:40:07 -0700 (PDT)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] i2c: let the core register devices from devicetree
+To: Wolfram Sang <w.sang@pengutronix.de>, linux-i2c@vger.kernel.org
+In-Reply-To: <1339622215-4733-1-git-send-email-w.sang@pengutronix.de>
+References: <1339622215-4733-1-git-send-email-w.sang@pengutronix.de>
+Date: Wed, 13 Jun 2012 22:40:00 -0600
+Message-Id: <20120614044000.63E583E3FA3@localhost>
+Cc: Viresh Kumar <viresh.kumar@st.com>,
+ Mauro Carvalho Chehab <mchehab@redhat.com>, Tony Lindgren <tony@atomide.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Laxman Dewangan <ldewangan@nvidia.com>, Kukjin Kim <kgene.kim@samsung.com>,
+ S tephen Warren <swarren@nvidia.com>, Olof Johansson <olof@lixom.net>,
+ Barry Song <21cnbao@gmail.com>, Haojian Zhuang <haojian.zhuang@marvell.com>,
+ Deepak Sikri <deepak.sikri@st.com>, Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ Pawel Moll <pawel.moll@arm.com>, Wolfram Sang <wolfram@the-dreams.de>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Rusty Russell <rusty@rustcorp.com.au>,
+ Tang Yuantian <B29983@freescale.com>, "Jean Delvare \(PC drivers,
+ core\)" <khali@linux-fr.org>, Magnus Damm <damm@opensource.se>,
+ Lars-Peter Clausen <lars@metafoo.de>,
+ "Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
+ linux-arm-kernel@lists.infradead.org, Jiri Kosina <jkosina@suse.cz>,
+ Wolfram Sang <w.sang@pengutronix.de>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Karol Lewandowski <k.lewandowsk@samsung.com>,
+ Dirk Brandewie <dirk.brandewie@gmail.com>, Shawn Guo <shawn.guo@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,90 +42,280 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jesse Larrew <jlarrew@linux.vnet.ibm.com> wrote:
-> On 06/08/2012 06:36 AM, Michael Neuling wrote:
+On Wed, 13 Jun 2012 23:12:10 +0200, Wolfram Sang <w.sang@pengutronix.de> wrote:
+> Currently, every driver has to do it on its own, but it should be done
+> in the core, like we already do with board_info structs.
 > 
-> 
-> > -/* General Purpose Registers (GPRs) */
-> > +/*
-> > + * General Purpose Registers (GPRs)
-> > + *
-> > + * The lower case r0-r31 should be used in preference to the upper
-> > + * case R0-R31 as they provide more error checking in the assembler.
-> > + * Use R0-31 only when really nessesary.
-> > + */
-> > 
-> > -#define	r0	0
-> > -#define	r1	1
-> > -#define	r2	2
-> > -#define	r3	3
-> > -#define	r4	4
-> > -#define	r5	5
-> > -#define	r6	6
-> > -#define	r7	7
-> > -#define	r8	8
-> > -#define	r9	9
-> > -#define	r10	10
-> > -#define	r11	11
-> > -#define	r12	12
-> > -#define	r13	13
-> > -#define	r14	14
-> > -#define	r15	15
-> > -#define	r16	16
-> > -#define	r17	17
-> > -#define	r18	18
-> > -#define	r19	19
-> > -#define	r20	20
-> > -#define	r21	21
-> > -#define	r22	22
-> > -#define	r23	23
-> > -#define	r24	24
-> > -#define	r25	25
-> > -#define	r26	26
-> > -#define	r27	27
-> > -#define	r28	28
-> > -#define	r29	29
-> > -#define	r30	30
-> > -#define	r31	31
-> > +#define	r0	%r0
-> > +#define	r1	%r1
-> > +#define	r2	%r2
-> > +#define	r3	%r3
-> > +#define	r4	%r4
-> > +#define	r5	%r5
-> > +#define	r6	%r6
-> > +#define	r7	%r7
-> > +#define	r8	%r8
-> > +#define	r9	%r9
-> > +#define	r10	%r10
-> > +#define	r11	%r11
-> > +#define	r12	%r12
-> > +#define	r13	%r13
-> > +#define	r14	%r14
-> > +#define	r15	%r15
-> > +#define	r16	%r16
-> > +#define	r17	%r17
-> > +#define	r18	%r18
-> > +#define	r19	%r19
-> > +#define	r20	%r20
-> > +#define	r21	%r21
-> > +#define	r22	%r22
-> > +#define	r23	%r23
-> > +#define	r24	%r24
-> > +#define	r25	%r25
-> > +#define	r26	%r26
-> > +#define	r27	%r27
-> > +#define	r28	%r28
-> > +#define	r29	%r29
-> > +#define	r30	%r30
-> > +#define	r31	%r31
-> > 
-> >  #define	R0	0
-> >  #define	R1	1
-> 
-> 
-> I think your patch was truncated somehow.
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
 
-How so?
+FWIW, and without any actual compiling or testing:
 
-Mikey
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+
+On this topic, I'd also like to see all of drivers/of/of_i2c.c move
+into drivers/i2c.  I've done the same for spi and gpio and I think the
+result is cleaner.
+
+g.
+
+> ---
+> 
+> Based on v3.5-rc2. Only build tested, I don't have a OF based device
+> around at the moment.
+> 
+> @Peter: Why does ocores do the device registration manually via
+> platform_data instead of using board_info?
+> 
+>  drivers/i2c/busses/i2c-cpm.c                |    5 -----
+>  drivers/i2c/busses/i2c-designware-platdrv.c |    1 -
+>  drivers/i2c/busses/i2c-gpio.c               |    2 --
+>  drivers/i2c/busses/i2c-ibm_iic.c            |    3 ---
+>  drivers/i2c/busses/i2c-imx.c                |    2 --
+>  drivers/i2c/busses/i2c-mpc.c                |    1 -
+>  drivers/i2c/busses/i2c-mxs.c                |    2 --
+>  drivers/i2c/busses/i2c-ocores.c             |    2 --
+>  drivers/i2c/busses/i2c-omap.c               |    2 --
+>  drivers/i2c/busses/i2c-pnx.c                |    2 --
+>  drivers/i2c/busses/i2c-pxa.c                |    1 -
+>  drivers/i2c/busses/i2c-s3c2410.c            |    1 -
+>  drivers/i2c/busses/i2c-sh_mobile.c          |    1 -
+>  drivers/i2c/busses/i2c-tegra.c              |    2 --
+>  drivers/i2c/busses/i2c-versatile.c          |    1 -
+>  drivers/i2c/busses/i2c-xiic.c               |    2 --
+>  drivers/i2c/i2c-core.c                      |    3 +++
+>  17 files changed, 3 insertions(+), 30 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+> index c1e1096..749e63c 100644
+> --- a/drivers/i2c/busses/i2c-cpm.c
+> +++ b/drivers/i2c/busses/i2c-cpm.c
+> @@ -673,11 +673,6 @@ static int __devinit cpm_i2c_probe(struct platform_device *ofdev)
+>  	dev_dbg(&ofdev->dev, "hw routines for %s registered.\n",
+>  		cpm->adap.name);
+>  
+> -	/*
+> -	 * register OF I2C devices
+> -	 */
+> -	of_i2c_register_devices(&cpm->adap);
+> -
+>  	return 0;
+>  out_shut:
+>  	cpm_i2c_shutdown(cpm);
+> diff --git a/drivers/i2c/busses/i2c-designware-platdrv.c b/drivers/i2c/busses/i2c-designware-platdrv.c
+> index 0506fef..cf3b23c 100644
+> --- a/drivers/i2c/busses/i2c-designware-platdrv.c
+> +++ b/drivers/i2c/busses/i2c-designware-platdrv.c
+> @@ -147,7 +147,6 @@ static int __devinit dw_i2c_probe(struct platform_device *pdev)
+>  		dev_err(&pdev->dev, "failure adding adapter\n");
+>  		goto err_free_irq;
+>  	}
+> -	of_i2c_register_devices(adap);
+>  
+>  	return 0;
+>  
+> diff --git a/drivers/i2c/busses/i2c-gpio.c b/drivers/i2c/busses/i2c-gpio.c
+> index e62d2d9..75e26b9 100644
+> --- a/drivers/i2c/busses/i2c-gpio.c
+> +++ b/drivers/i2c/busses/i2c-gpio.c
+> @@ -195,8 +195,6 @@ static int __devinit i2c_gpio_probe(struct platform_device *pdev)
+>  	if (ret)
+>  		goto err_add_bus;
+>  
+> -	of_i2c_register_devices(adap);
+> -
+>  	platform_set_drvdata(pdev, priv);
+>  
+>  	dev_info(&pdev->dev, "using pins %u (SDA) and %u (SCL%s)\n",
+> diff --git a/drivers/i2c/busses/i2c-ibm_iic.c b/drivers/i2c/busses/i2c-ibm_iic.c
+> index 806e225..8894ab6 100644
+> --- a/drivers/i2c/busses/i2c-ibm_iic.c
+> +++ b/drivers/i2c/busses/i2c-ibm_iic.c
+> @@ -759,9 +759,6 @@ static int __devinit iic_probe(struct platform_device *ofdev)
+>  	dev_info(&ofdev->dev, "using %s mode\n",
+>  		 dev->fast_mode ? "fast (400 kHz)" : "standard (100 kHz)");
+>  
+> -	/* Now register all the child nodes */
+> -	of_i2c_register_devices(adap);
+> -
+>  	return 0;
+>  
+>  error_cleanup:
+> diff --git a/drivers/i2c/busses/i2c-imx.c b/drivers/i2c/busses/i2c-imx.c
+> index 8d6b504..16d9356 100644
+> --- a/drivers/i2c/busses/i2c-imx.c
+> +++ b/drivers/i2c/busses/i2c-imx.c
+> @@ -568,8 +568,6 @@ static int __init i2c_imx_probe(struct platform_device *pdev)
+>  		goto fail5;
+>  	}
+>  
+> -	of_i2c_register_devices(&i2c_imx->adapter);
+> -
+>  	/* Set up platform driver data */
+>  	platform_set_drvdata(pdev, i2c_imx);
+>  
+> diff --git a/drivers/i2c/busses/i2c-mpc.c b/drivers/i2c/busses/i2c-mpc.c
+> index b76731e..a86049a 100644
+> --- a/drivers/i2c/busses/i2c-mpc.c
+> +++ b/drivers/i2c/busses/i2c-mpc.c
+> @@ -675,7 +675,6 @@ static int __devinit fsl_i2c_probe(struct platform_device *op)
+>  		dev_err(i2c->dev, "failed to add adapter\n");
+>  		goto fail_add;
+>  	}
+> -	of_i2c_register_devices(&i2c->adap);
+>  
+>  	return result;
+>  
+> diff --git a/drivers/i2c/busses/i2c-mxs.c b/drivers/i2c/busses/i2c-mxs.c
+> index 04eb441..2bc0ec6 100644
+> --- a/drivers/i2c/busses/i2c-mxs.c
+> +++ b/drivers/i2c/busses/i2c-mxs.c
+> @@ -379,8 +379,6 @@ static int __devinit mxs_i2c_probe(struct platform_device *pdev)
+>  		return err;
+>  	}
+>  
+> -	of_i2c_register_devices(adap);
+> -
+>  	return 0;
+>  }
+>  
+> diff --git a/drivers/i2c/busses/i2c-ocores.c b/drivers/i2c/busses/i2c-ocores.c
+> index 75194c5..a6a11cb 100644
+> --- a/drivers/i2c/busses/i2c-ocores.c
+> +++ b/drivers/i2c/busses/i2c-ocores.c
+> @@ -344,8 +344,6 @@ static int __devinit ocores_i2c_probe(struct platform_device *pdev)
+>  	if (pdata) {
+>  		for (i = 0; i < pdata->num_devices; i++)
+>  			i2c_new_device(&i2c->adap, pdata->devices + i);
+> -	} else {
+> -		of_i2c_register_devices(&i2c->adap);
+>  	}
+>  
+>  	return 0;
+> diff --git a/drivers/i2c/busses/i2c-omap.c b/drivers/i2c/busses/i2c-omap.c
+> index 801df60..c290091 100644
+> --- a/drivers/i2c/busses/i2c-omap.c
+> +++ b/drivers/i2c/busses/i2c-omap.c
+> @@ -1121,8 +1121,6 @@ omap_i2c_probe(struct platform_device *pdev)
+>  		goto err_free_irq;
+>  	}
+>  
+> -	of_i2c_register_devices(adap);
+> -
+>  	return 0;
+>  
+>  err_free_irq:
+> diff --git a/drivers/i2c/busses/i2c-pnx.c b/drivers/i2c/busses/i2c-pnx.c
+> index 99389d2..c64d960 100644
+> --- a/drivers/i2c/busses/i2c-pnx.c
+> +++ b/drivers/i2c/busses/i2c-pnx.c
+> @@ -730,8 +730,6 @@ static int __devinit i2c_pnx_probe(struct platform_device *pdev)
+>  		goto out_irq;
+>  	}
+>  
+> -	of_i2c_register_devices(&alg_data->adapter);
+> -
+>  	dev_dbg(&pdev->dev, "%s: Master at %#8x, irq %d.\n",
+>  		alg_data->adapter.name, res->start, alg_data->irq);
+>  
+> diff --git a/drivers/i2c/busses/i2c-pxa.c b/drivers/i2c/busses/i2c-pxa.c
+> index a997c7d..9475235 100644
+> --- a/drivers/i2c/busses/i2c-pxa.c
+> +++ b/drivers/i2c/busses/i2c-pxa.c
+> @@ -1194,7 +1194,6 @@ static int i2c_pxa_probe(struct platform_device *dev)
+>  		printk(KERN_INFO "I2C: Failed to add bus\n");
+>  		goto eadapt;
+>  	}
+> -	of_i2c_register_devices(&i2c->adap);
+>  
+>  	platform_set_drvdata(dev, i2c);
+>  
+> diff --git a/drivers/i2c/busses/i2c-s3c2410.c b/drivers/i2c/busses/i2c-s3c2410.c
+> index 0195915..ad3a79b 100644
+> --- a/drivers/i2c/busses/i2c-s3c2410.c
+> +++ b/drivers/i2c/busses/i2c-s3c2410.c
+> @@ -1058,7 +1058,6 @@ static int s3c24xx_i2c_probe(struct platform_device *pdev)
+>  		goto err_cpufreq;
+>  	}
+>  
+> -	of_i2c_register_devices(&i2c->adap);
+>  	platform_set_drvdata(pdev, i2c);
+>  
+>  	pm_runtime_enable(&pdev->dev);
+> diff --git a/drivers/i2c/busses/i2c-sh_mobile.c b/drivers/i2c/busses/i2c-sh_mobile.c
+> index 8110ca4..9acd286 100644
+> --- a/drivers/i2c/busses/i2c-sh_mobile.c
+> +++ b/drivers/i2c/busses/i2c-sh_mobile.c
+> @@ -670,7 +670,6 @@ static int sh_mobile_i2c_probe(struct platform_device *dev)
+>  	dev_info(&dev->dev, "I2C adapter %d with bus speed %lu Hz\n",
+>  		 adap->nr, pd->bus_speed);
+>  
+> -	of_i2c_register_devices(adap);
+>  	return 0;
+>  
+>   err_all:
+> diff --git a/drivers/i2c/busses/i2c-tegra.c b/drivers/i2c/busses/i2c-tegra.c
+> index 8b2e555..67388cc 100644
+> --- a/drivers/i2c/busses/i2c-tegra.c
+> +++ b/drivers/i2c/busses/i2c-tegra.c
+> @@ -684,8 +684,6 @@ static int __devinit tegra_i2c_probe(struct platform_device *pdev)
+>  		goto err_free_irq;
+>  	}
+>  
+> -	of_i2c_register_devices(&i2c_dev->adapter);
+> -
+>  	return 0;
+>  err_free_irq:
+>  	free_irq(i2c_dev->irq, i2c_dev);
+> diff --git a/drivers/i2c/busses/i2c-versatile.c b/drivers/i2c/busses/i2c-versatile.c
+> index eec20db..14a1432 100644
+> --- a/drivers/i2c/busses/i2c-versatile.c
+> +++ b/drivers/i2c/busses/i2c-versatile.c
+> @@ -108,7 +108,6 @@ static int i2c_versatile_probe(struct platform_device *dev)
+>  	ret = i2c_bit_add_numbered_bus(&i2c->adap);
+>  	if (ret >= 0) {
+>  		platform_set_drvdata(dev, i2c);
+> -		of_i2c_register_devices(&i2c->adap);
+>  		return 0;
+>  	}
+>  
+> diff --git a/drivers/i2c/busses/i2c-xiic.c b/drivers/i2c/busses/i2c-xiic.c
+> index 641d0e5..d76bb71 100644
+> --- a/drivers/i2c/busses/i2c-xiic.c
+> +++ b/drivers/i2c/busses/i2c-xiic.c
+> @@ -754,8 +754,6 @@ static int __devinit xiic_i2c_probe(struct platform_device *pdev)
+>  			i2c_new_device(&i2c->adap, pdata->devices + i);
+>  	}
+>  
+> -	of_i2c_register_devices(&i2c->adap);
+> -
+>  	return 0;
+>  
+>  add_adapter_failed:
+> diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
+> index a6ad32b..4791833 100644
+> --- a/drivers/i2c/i2c-core.c
+> +++ b/drivers/i2c/i2c-core.c
+> @@ -39,6 +39,7 @@
+>  #include <linux/irqflags.h>
+>  #include <linux/rwsem.h>
+>  #include <linux/pm_runtime.h>
+> +#include <linux/of_i2c.h>
+>  #include <asm/uaccess.h>
+>  
+>  #include "i2c-core.h"
+> @@ -880,6 +881,8 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
+>  #endif
+>  
+>  	/* create pre-declared device nodes */
+> +	of_i2c_register_devices(adap);
+> +
+>  	if (adap->nr < __i2c_first_dynamic_bus_num)
+>  		i2c_scan_static_board_info(adap);
+>  
+> -- 
+> 1.7.10
+> 
+
+-- 
+Grant Likely, B.Sc, P.Eng.
+Secret Lab Technologies, Ltd.
