@@ -1,11 +1,33 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 14 Jun 2012 20:31:12 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] Make hard_irq_disable() actually hard-disable interrupts
-Message-ID: <20120614103112.GA15685@bloggs.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <pawel.moll@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id B321BB7077
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2012 20:38:56 +1000 (EST)
+Message-ID: <1339669732.6598.7.camel@hornet>
+Subject: Re: [PATCH] i2c: let the core register devices from devicetree
+From: Pawel Moll <pawel.moll@arm.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Date: Thu, 14 Jun 2012 11:28:52 +0100
+In-Reply-To: <1339622215-4733-1-git-send-email-w.sang@pengutronix.de>
+References: <1339622215-4733-1-git-send-email-w.sang@pengutronix.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Viresh Kumar <viresh.kumar@st.com>,
+ Mauro Carvalho Chehab <mchehab@redhat.com>, Tony Lindgren <tony@atomide.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Laxman Dewangan <ldewangan@nvidia.com>, linux-i2c@vger.kernel.org,
+ Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@nvidia.com>,
+ Barry Song <21cnbao@gmail.com>, Haojian Zhuang <haojian.zhuang@marvell.com>,
+ Deepak Sikri <deepak.sikri@st.com>, Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ Dirk Brandewie <dirk.brandewie@gmail.com>,
+ Wolfram Sang <wolfram@the-dreams.de>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Tang Yuantian <B29983@freescale.com>,
+ "Jean Delvare \(PC drivers, core\)" <khali@linux-fr.org>,
+ Magnus Damm <damm@opensource.se>, Lars-Peter Clausen <lars@metafoo.de>,
+ "Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
+ linux-arm-kernel@lists.infradead.org, Jiri Kosina <jkosina@suse.cz>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Karol Lewandowski <k.lewandowsk@samsung.com>, Olof Johansson <olof@lixom.net>,
+ Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,36 +37,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At present, hard_irq_disable() does nothing because of this code in
-include/linux/interrupt.h:
+On Wed, 2012-06-13 at 23:12 +0200, Wolfram Sang wrote:
+> Currently, every driver has to do it on its own, but it should be done
+> in the core, like we already do with board_info structs.
+>=20
+> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> ---
+>  drivers/i2c/busses/i2c-versatile.c          |    1 -
+>  drivers/i2c/i2c-core.c                      |    3 +++
 
-#ifndef hard_irq_disable
-#define hard_irq_disable()	do { } while(0)
-#endif
+For what it's worth
 
-So we need to make our hard_irq_disable() be a macro.
+Tested-by: Pawel Moll <pawel.moll@arm.com>
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
+on Versatile Express.
 
----
- arch/powerpc/include/asm/hw_irq.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-index c9aac24..d8f873f 100644
---- a/arch/powerpc/include/asm/hw_irq.h
-+++ b/arch/powerpc/include/asm/hw_irq.h
-@@ -93,12 +93,13 @@ static inline bool arch_irqs_disabled(void)
- #define __hard_irq_disable()	__mtmsrd(local_paca->kernel_msr, 1)
- #endif
- 
--static inline void hard_irq_disable(void)
-+static inline void _hard_irq_disable(void)
- {
- 	__hard_irq_disable();
- 	get_paca()->soft_enabled = 0;
- 	get_paca()->irq_happened |= PACA_IRQ_HARD_DIS;
- }
-+#define hard_irq_disable()	_hard_irq_disable()
- 
- /*
-  * This is called by asynchronous interrupts to conditionally
+Regards
+
+Pawe=C5=82
