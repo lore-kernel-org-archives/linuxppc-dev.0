@@ -2,18 +2,35 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9BBAF1007D1
- for <linuxppc-dev@ozlabs.org>; Thu, 14 Jun 2012 21:34:08 +1000 (EST)
-Message-ID: <1339673643.9220.162.camel@pasglop>
-Subject: Re: [PATCH] Make hard_irq_disable() actually hard-disable interrupts
+ by ozlabs.org (Postfix) with ESMTPS id C527DB6F62
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2012 21:36:27 +1000 (EST)
+Message-ID: <1339673724.9220.164.camel@pasglop>
+Subject: Re: [PATCH] i2c: let the core register devices from devicetree
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Date: Thu, 14 Jun 2012 21:34:03 +1000
-In-Reply-To: <20120614103112.GA15685@bloggs.ozlabs.ibm.com>
-References: <20120614103112.GA15685@bloggs.ozlabs.ibm.com>
+To: Wolfram Sang <w.sang@pengutronix.de>
+Date: Thu, 14 Jun 2012 21:35:24 +1000
+In-Reply-To: <20120614091434.GB14419@pengutronix.de>
+References: <1339622215-4733-1-git-send-email-w.sang@pengutronix.de>
+ <1339623217.9220.119.camel@pasglop> <20120614091434.GB14419@pengutronix.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Viresh Kumar <viresh.kumar@st.com>,
+ Mauro Carvalho Chehab <mchehab@redhat.com>, Tony Lindgren <tony@atomide.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Laxman Dewangan <ldewangan@nvidia.com>, linux-i2c@vger.kernel.org,
+ Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@nvidia.com>,
+ Barry Song <21cnbao@gmail.com>, Haojian Zhuang <haojian.zhuang@marvell.com>,
+ Deepak Sikri <deepak.sikri@st.com>, Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ Dirk Brandewie <dirk.brandewie@gmail.com>, Pawel Moll <pawel.moll@arm.com>,
+ Wolfram Sang <wolfram@the-dreams.de>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Tang Yuantian <B29983@freescale.com>,
+ "Jean Delvare \(PC drivers, core\)" <khali@linux-fr.org>,
+ Magnus Damm <damm@opensource.se>, Lars-Peter Clausen <lars@metafoo.de>,
+ "Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
+ linux-arm-kernel@lists.infradead.org, Jiri Kosina <jkosina@suse.cz>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Karol Lewandowski <k.lewandowsk@samsung.com>, Olof Johansson <olof@lixom.net>,
+ Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,47 +40,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-06-14 at 20:31 +1000, Paul Mackerras wrote:
-> At present, hard_irq_disable() does nothing because of this code in
-> include/linux/interrupt.h:
+On Thu, 2012-06-14 at 11:14 +0200, Wolfram Sang wrote:
+> On Thu, Jun 14, 2012 at 07:33:37AM +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2012-06-13 at 23:12 +0200, Wolfram Sang wrote:
+> > > Currently, every driver has to do it on its own, but it should be done
+> > > in the core, like we already do with board_info structs.
+> > > 
+> > > Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+> > > ---
+> > > 
+> > > Based on v3.5-rc2. Only build tested, I don't have a OF based device
+> > > around at the moment.
+> > 
+> > Won't that conflict with i2c-powermac doing it its own way ?
 > 
-> #ifndef hard_irq_disable
-> #define hard_irq_disable()	do { } while(0)
-> #endif
+> Yup :(
 > 
-> So we need to make our hard_irq_disable() be a macro.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> I assume there is no chance that the powermac devicetree can be
+> pre-processed to be compatible with of_i2c_register_devices?
 
-This was broken by my rewrite of the lazy irq stuff when I turned that
-from a macro to a function. So it should be CC'ed to stable 3.4.
+That would be nasty and need a lot of testing on all sort of machines I
+don't have direct access to.
 
-Also I think it's simpler (and we do that commonly) to just do
-
-#define hard_irq_disable hard_irq_disable
+Maybe we can set a flag somewhere to indicate to the core not to run the
+default probing on that controller ?
 
 Cheers,
 Ben.
-
-> ---
->  arch/powerpc/include/asm/hw_irq.h |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-> index c9aac24..d8f873f 100644
-> --- a/arch/powerpc/include/asm/hw_irq.h
-> +++ b/arch/powerpc/include/asm/hw_irq.h
-> @@ -93,12 +93,13 @@ static inline bool arch_irqs_disabled(void)
->  #define __hard_irq_disable()	__mtmsrd(local_paca->kernel_msr, 1)
->  #endif
->  
-> -static inline void hard_irq_disable(void)
-> +static inline void _hard_irq_disable(void)
->  {
->  	__hard_irq_disable();
->  	get_paca()->soft_enabled = 0;
->  	get_paca()->irq_happened |= PACA_IRQ_HARD_DIS;
->  }
-> +#define hard_irq_disable()	_hard_irq_disable()
->  
->  /*
->   * This is called by asynchronous interrupts to conditionally
