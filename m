@@ -1,16 +1,16 @@
 Return-Path: <liwp.linux@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+ [209.85.210.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BD4E8B70BC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 23:21:17 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so5984154pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 06:21:15 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 60C41B7097
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 23:21:58 +1000 (EST)
+Received: by dajt11 with SMTP id t11so4427093daj.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 06:21:56 -0700 (PDT)
 From: Wanpeng Li <liwp.linux@gmail.com>
 To: trivial@kernel.org
-Subject: [PATCH 7/7] mm/memory.c : cleanup the coding style issue
-Date: Fri, 15 Jun 2012 21:20:47 +0800
-Message-Id: <1339766449-7835-1-git-send-email-liwp.linux@gmail.com>
+Subject: [PATCH 0/7][TRIVIAL][resend] trivial patches
+Date: Fri, 15 Jun 2012 21:21:39 +0800
+Message-Id: <1339766499-7891-1-git-send-email-liwp.linux@gmail.com>
 Cc: Christoph Lameter <cl@linux-foundation.org>,
  Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
  Jesse Barnes <jbarnes@virtuousgeek.org>, David Howells <dhowells@redhat.com>,
@@ -44,25 +44,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wanpeng Li <liwp@linux.vnet.ibm.com>
 
+Since these patches has already send more than one week and 
+doesn't get any response, I collect them and send out a patch set.
+
+Wanpeng Li (7)
+
+powerpc: cleanup some kernel doc warning 
+x86/kernel: cleanup some kernel doc warning  
+drivers/pci: cleanup some kernel doc warning
+mm: cleanup on the comments of zone_reclaim_stat
+mm: cleanup some kernel doc warning
+mm: cleanup page relaim comment error
+mm/memory.c: cleanup coding style issue
+
 Signed-off-by: Wanpeng Li <liwp.linux@gmail.com>
-
----
- mm/memory.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/mm/memory.c b/mm/memory.c
-index 1b7dc66..195d6e1 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -2447,7 +2447,8 @@ static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
- 	return same;
- }
- 
--static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
-+static inline void cow_user_page(struct page *dst, struct page *src,
-+		unsigned long va, struct vm_area_struct *vma)
- {
- 	/*
- 	 * If the source page was a PFN mapping, we don't have
--- 
-1.7.9.5
+--
+ arch/powerpc/kernel/pci_of_scan.c |    1 -
+ arch/powerpc/kernel/vio.c         |    6 +++---
+ arch/x86/kernel/kgdb.c            |    8 ++++----
+ arch/x86/kernel/uprobes.c         |    2 +-
+ drivers/pci/setup-bus.c           |    2 +-
+ include/linux/mmzone.h            |    2 +-
+ mm/memblock.c                     |   12 ++++++------
+ mm/memcontrol.c                   |    4 ++--
+ mm/memory.c                       |    3 ++-
+ mm/oom_kill.c                     |    2 +-
+ mm/page_cgroup.c                  |    4 ++--
+ mm/pagewalk.c                     |    1 -
+ mm/percpu-vm.c                    |    1 -
+ mm/vmscan.c                       |    3 ++-
+ 14 files changed, 25 insertions(+), 26 deletions(-)
