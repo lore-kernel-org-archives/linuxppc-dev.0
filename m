@@ -1,25 +1,11 @@
-Return-Path: <vhtnguyen@apm.com>
-Received: from exprod5og114.obsmtp.com (exprod5og114.obsmtp.com [64.18.0.28])
- by ozlabs.org (Postfix) with SMTP id 23D111007D3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 13:19:34 +1000 (EST)
-Received: by vcbfk26 with SMTP id fk26so1335039vcb.25
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Jun 2012 20:19:31 -0700 (PDT)
-From: Vinh Huu Tuong Nguyen <vhtnguyen@apm.com>
-References: <1336362768-31326-1-git-send-email-vhtnguyen@apm.com>
- <CA+5PVA7vnLvqwsDAboR4s-QCLWSDm34N2tE+sFiBMsE2f=qYEg@mail.gmail.com>
-In-Reply-To: <CA+5PVA7vnLvqwsDAboR4s-QCLWSDm34N2tE+sFiBMsE2f=qYEg@mail.gmail.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Fri, 15 Jun 2012 14:51:39 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2] Make hard_irq_disable() actually hard-disable interrupts
+Message-ID: <20120615045139.GA11041@pale.ozlabs.ibm.com>
 MIME-Version: 1.0
-Date: Fri, 15 Jun 2012 10:19:28 +0700
-Message-ID: <6fdd89bf8de637de13a4ed9d0b5b839c@mail.gmail.com>
-Subject: RE: [PATCH] powerpc/44x: Support OCM(On Chip Memory) for APM821xx SoC
- and Bluestone board
-To: Josh Boyer <jwboyer@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Anatolij Gustschin <agust@denx.de>, devicetree-discuss@lists.ozlabs.org,
- Duc Dang <dhdang@apm.com>, Rob Herring <rob.herring@calxeda.com>,
- linux-kernel@vger.kernel.org, Liu Gang <Gang.Liu@freescale.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,178 +15,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Josh Boyer [mailto:jwboyer@gmail.com]
-> Sent: Friday, June 15, 2012 12:47 AM
-> To: Vinh Nguyen Huu Tuong
-> Cc: Benjamin Herrenschmidt; Paul Mackerras; Matt Porter; Grant Likely;
-> Rob Herring; Duc Dang; David S. Miller; Kumar Gala; Li Yang; Ashish
-> Kalra; Anatolij Gustschin; Liu Gang; linuxppc-dev@lists.ozlabs.org;
-> linux-kernel@vger.kernel.org; devicetree-discuss@lists.ozlabs.org
-> Subject: Re: [PATCH] powerpc/44x: Support OCM(On Chip Memory) for
-> APM821xx SoC and Bluestone board
->
-> On Sun, May 6, 2012 at 11:52 PM, Vinh Nguyen Huu Tuong
-> <vhtnguyen@apm.com> wrote:
-> > This patch consists of:
-> > - Add driver for OCM component
-> > - Export OCM Information at /sys/class/ocm/ocminfo
->
-> Again, apologies for the delay.  Aside from the incorrect sysfs usage I
-> pointed out in my other reply, I have just a few comments/questions
-> below.
-[Vinh Nguyen] You're welcome. About the files on sysfs, the first place of
-ocm is in procfs, but procfs is deprecated and replaced by sysfs, then I
-decided to move it to sysfs. With your comments, I think I can move it to
-debugfs.
->
-> > diff --git a/arch/powerpc/boot/dts/bluestone.dts
-> > b/arch/powerpc/boot/dts/bluestone.dts
-> > index 7bda373..2687c11 100644
-> > --- a/arch/powerpc/boot/dts/bluestone.dts
-> > +++ b/arch/powerpc/boot/dts/bluestone.dts
-> > @@ -107,6 +107,14 @@
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0interrupt-parent =3D <&UIC0>;
-> > =A0 =A0 =A0 =A0};
-> >
-> > + =A0 =A0 =A0 OCM1: ocm@400040000 {
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 compatible =3D "ibm,ocm";
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 status =3D "ok";
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 cell-index =3D <1>;
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 /* configured in U-Boot */
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 reg =3D <4 0x00040000 0x8000>; /* 32K */
-> > + =A0 =A0 =A0 };
-> > +
-> > =A0 =A0 =A0 =A0SDR0: sdr {
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0compatible =3D "ibm,sdr-apm821xx";
-> > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0dcr-reg =3D <0x00e 0x002>; diff --git
-> > a/arch/powerpc/include/asm/ppc4xx_ocm.h
-> > b/arch/powerpc/include/asm/ppc4xx_ocm.h
-> > new file mode 100644
-> > index 0000000..ff7f386
-> > --- /dev/null
-> > +++ b/arch/powerpc/include/asm/ppc4xx_ocm.h
-> > @@ -0,0 +1,47 @@
-> > +/*
-> > + * PowerPC 4xx OCM memory allocation support
-> > + *
-> > + * (C) Copyright 2009, Applied Micro Circuits Corporation
-> > + * Victor Gallardo (vgallardo@amcc.com)
-> > + *
-> > + * See file CREDITS for list of people who contributed to this
-> > + * project.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License as
-> > + * published by the Free Software Foundation; either version 2 of
-> > + * the License, or (at your option) any later version.
-> > + *
-> > + * This program is distributed in the hope that it will be useful,
-> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-> > + * GNU General Public License for more details.
-> > + *
-> > + * You should have received a copy of the GNU General Public License
-> > + * along with this program; if not, write to the Free Software
-> > + * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-> > + * MA 02111-1307 USA
-> > + */
-> > +
-> > +#ifndef __ASM_POWERPC_PPC4xx_OCM_H__
-> > +#define __ASM_POWERPC_PPC4xx_OCM_H__
-> > +
-> > +#include <linux/types.h>
-> > +
-> > +#define OCM_NON_CACHED 0
-> > +#define OCM_CACHED =A0 =A0 1
-> > +
-> > +#if defined(CONFIG_PPC4xx_OCM)
-> > +
-> > +void *ocm_alloc(phys_addr_t *phys, int size, int align,
-> > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 int flags, const char *owner); void o=
-cm_free(const
-> > +void *virt);
-> > +
-> > +#else
-> > +
-> > +#define ocm_alloc(phys, size, align, flags, owner) =A0 =A0 NULL #defin=
-e
-> > +ocm_free(addr) ((void)0)
-> > +
-> > +#endif /* CONFIG_PPC4xx_OCM */
-> > +
-> > +#endif =A0/* __ASM_POWERPC_PPC4xx_OCM_H__ */
->
-> I don't see any users of this header included in the patch.  I'm going
-> to guess that follow-on drivers/users are queued once this is in the
-> tree?  Also, you might want to name these 'ppc4xx_ocm_alloc' or
-> similar.  The concept of OCM isn't limited to ppc4xx or even SoCs, so
-> just using 'ocm' in the global kernel namespace might not be great.
->
-[Vinh Nguyen] With our plan, the next submit of IBM NEW EMAC will use it
-for speedup. About the naming convention, I will change as your comments.
+At present, hard_irq_disable() does nothing on powerpc because of
+this code in include/linux/interrupt.h:
 
-> > diff --git a/arch/powerpc/sysdev/ppc4xx_ocm.c
-> > b/arch/powerpc/sysdev/ppc4xx_ocm.c
-> > new file mode 100644
-> > index 0000000..ba3e450
-> > --- /dev/null
-> > +++ b/arch/powerpc/sysdev/ppc4xx_ocm.c
-> > @@ -0,0 +1,420 @@
-> > +#include <linux/kernel.h>
-> > +#include <linux/errno.h>
-> > +#include <linux/proc_fs.h>
->
-> Why do you need proc_fs.h?
-[Vinh Nguyen] I will remove it.
->
-> > +#include <linux/seq_file.h>
-> > +#include <linux/spinlock.h>
-> > +#include <linux/dma-mapping.h>
-> > +#include <linux/list.h>
-> > +#include <asm/uaccess.h>
-> > +#include <asm/prom.h>
-> > +#include <asm/dcr.h>
-> > +#include <asm/rheap.h>
-> > +#include <asm/mmu.h>
-> > +#include <asm/ppc4xx_ocm.h>
-> > +#include <linux/export.h>
-> > +
-> > +#define OCM_DISABLED =A0 0
-> > +#define OCM_ENABLED =A0 =A0 =A0 =A0 =A0 =A01
-> > +
-> > +struct ocm_block {
-> > + =A0 =A0 =A0 struct list_head =A0 =A0 =A0 =A0list;
-> > + =A0 =A0 =A0 void __iomem =A0 =A0 =A0 =A0 =A0 =A0*addr;
-> > + =A0 =A0 =A0 int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 size;
-> > + =A0 =A0 =A0 const char =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0*ow=
-ner; };
-> > +
-> > +/* non-cached or cached region */
-> > +struct ocm_region {
-> > + =A0 =A0 =A0 phys_addr_t =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 phys;
-> > + =A0 =A0 =A0 void __iomem =A0 =A0 =A0 =A0 =A0 =A0*virt;
-> > +
-> > + =A0 =A0 =A0 int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 memtotal;
-> > + =A0 =A0 =A0 int =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 memfree;
-> > +
-> > + =A0 =A0 =A0 rh_info_t =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 *rh=
-;
-> > + =A0 =A0 =A0 struct list_head =A0 =A0 =A0 =A0list;
-> > +};
->
-> There's some interesting whitespace usage in these struct definitions.
-[Vinh Nguyen] I'll check again and remove them. I used the scripts check
-in kernel but it can't remove them all.
->
-> josh
+#ifndef hard_irq_disable
+#define hard_irq_disable()      do { } while(0)
+#endif
 
-I'll update the patch soon but I need send out to internal review first
-before sending out to community. It takes one or two week, please be
-patient for the next review.
+So we need to make our hard_irq_disable be a macro.
 
-Best regards,
-Vinh Nguyen
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+--
+ arch/powerpc/include/asm/hw_irq.h |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
+index c9aac24..32b394f 100644
+--- a/arch/powerpc/include/asm/hw_irq.h
++++ b/arch/powerpc/include/asm/hw_irq.h
+@@ -100,6 +100,9 @@ static inline void hard_irq_disable(void)
+ 	get_paca()->irq_happened |= PACA_IRQ_HARD_DIS;
+ }
+ 
++/* include/linux/interrupt.h needs hard_irq_disable to be a macro */
++#define hard_irq_disable	hard_irq_disable
++
+ /*
+  * This is called by asynchronous interrupts to conditionally
+  * re-enable hard interrupts when soft-disabled after having
