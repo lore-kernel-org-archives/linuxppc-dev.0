@@ -2,15 +2,15 @@ Return-Path: <liwp.linux@gmail.com>
 Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
  [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B1CAEB70AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 23:20:19 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so5983051pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 06:20:17 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id BD4E8B70BC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 23:21:17 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so5984154pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 06:21:15 -0700 (PDT)
 From: Wanpeng Li <liwp.linux@gmail.com>
 To: trivial@kernel.org
-Subject: [PATCH 6/7][TRIVIAL][resend] mm: cleanup page reclaim comment error
-Date: Fri, 15 Jun 2012 21:19:45 +0800
-Message-Id: <1339766387-7740-1-git-send-email-liwp.linux@gmail.com>
+Subject: [PATCH 7/7] mm/memory.c : cleanup the coding style issue
+Date: Fri, 15 Jun 2012 21:20:47 +0800
+Message-Id: <1339766449-7835-1-git-send-email-liwp.linux@gmail.com>
 Cc: Christoph Lameter <cl@linux-foundation.org>,
  Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
  Jesse Barnes <jbarnes@virtuousgeek.org>, David Howells <dhowells@redhat.com>,
@@ -44,34 +44,25 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wanpeng Li <liwp@linux.vnet.ibm.com>
 
-Since there are five lists in LRU cache, the array nr in get_scan_count
-should be:
-
-nr[0] = anon inactive pages to scan; nr[1] = anon active pages to scan
-nr[2] = file inactive pages to scan; nr[3] = file active pages to scan
-
 Signed-off-by: Wanpeng Li <liwp.linux@gmail.com>
-Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Minchan Kim <minchan@kernel.org>
-Reviewed-by: Rik van Riel <riel@redhat.com>
 
 ---
- mm/vmscan.c |    3 ++-
+ mm/memory.c |    3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index eeb3bc9..ed823df 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1567,7 +1567,8 @@ static int vmscan_swappiness(struct scan_control *sc)
-  * by looking at the fraction of the pages scanned we did rotate back
-  * onto the active list instead of evict.
-  *
-- * nr[0] = anon pages to scan; nr[1] = file pages to scan
-+ * nr[0] = anon inactive pages to scan; nr[1] = anon active pages to scan
-+ * nr[2] = file inactive pages to scan; nr[3] = file active pages to scan
-  */
- static void get_scan_count(struct lruvec *lruvec, struct scan_control *sc,
- 			   unsigned long *nr)
+diff --git a/mm/memory.c b/mm/memory.c
+index 1b7dc66..195d6e1 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2447,7 +2447,8 @@ static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
+ 	return same;
+ }
+ 
+-static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
++static inline void cow_user_page(struct page *dst, struct page *src,
++		unsigned long va, struct vm_area_struct *vma)
+ {
+ 	/*
+ 	 * If the source page was a PFN mapping, we don't have
 -- 
 1.7.9.5
