@@ -1,18 +1,41 @@
-Return-Path: <telenn.barz@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A0D88B70B1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 00:43:13 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so6083273pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Jun 2012 07:43:11 -0700 (PDT)
+Return-Path: <hannes@cmpxchg.org>
+Received: from zene.cmpxchg.org (zene.cmpxchg.org
+ [IPv6:2a01:238:4224:fa00:ca1f:9ef3:caee:a2bd])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B0B73B70D3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 02:17:21 +1000 (EST)
+Date: Fri, 15 Jun 2012 16:58:09 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Wanpeng Li <liwp.linux@gmail.com>
+Subject: Re: [PATCH 6/7][TRIVIAL][resend] mm: cleanup page reclaim comment
+ error
+Message-ID: <20120615145809.GA27816@cmpxchg.org>
+References: <1339766387-7740-1-git-send-email-liwp.linux@gmail.com>
 MIME-Version: 1.0
-Date: Fri, 15 Jun 2012 16:43:06 +0200
-Message-ID: <CAE2rjsQpZzMaJQrNQexy7kUSVR6F09Nsuxi6ueKiLAh=Hj-G4Q@mail.gmail.com>
-Subject: Questions on Hugetlb for bookE and PHYS_64BIT
-From: telenn barz <telenn.barz@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=047d7b2ee08d9ae20304c283d5e1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1339766387-7740-1-git-send-email-liwp.linux@gmail.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
+ Jesse Barnes <jbarnes@virtuousgeek.org>, David Howells <dhowells@redhat.com>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Larry Woodman <lwoodman@redhat.com>,
+ Andrea Arcangeli <aarcange@redhat.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>,
+ Gavin Shan <shangw@linux.vnet.ibm.com>, x86@kernel.org,
+ Hugh Dickins <hughd@google.com>, Ingo Molnar <mingo@redhat.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ Jan Kiszka <jan.kiszka@siemens.com>, Nishanth Aravamudan <nacc@us.ibm.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, Mel Gorman <mel@csn.ul.ie>,
+ David Rientjes <rientjes@google.com>, Al Viro <viro@zeniv.linux.org.uk>,
+ Bjorn Helgaas <bhelgaas@google.com>, cgroups@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ Michal Hocko <mhocko@suse.cz>, trivial@kernel.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+ Minchan Kim <minchan@kernel.org>, Li Zefan <lizefan@huawei.com>,
+ Jason Wessel <jason.wessel@windriver.com>, Tejun Heo <tj@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,37 +45,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7b2ee08d9ae20304c283d5e1
-Content-Type: text/plain; charset=ISO-8859-1
+On Fri, Jun 15, 2012 at 09:19:45PM +0800, Wanpeng Li wrote:
+> From: Wanpeng Li <liwp@linux.vnet.ibm.com>
+> 
+> Since there are five lists in LRU cache, the array nr in get_scan_count
+> should be:
+> 
+> nr[0] = anon inactive pages to scan; nr[1] = anon active pages to scan
+> nr[2] = file inactive pages to scan; nr[3] = file active pages to scan
+> 
+> Signed-off-by: Wanpeng Li <liwp.linux@gmail.com>
+> Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Acked-by: Minchan Kim <minchan@kernel.org>
+> Reviewed-by: Rik van Riel <riel@redhat.com>
+> 
+> ---
+>  mm/vmscan.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index eeb3bc9..ed823df 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -1567,7 +1567,8 @@ static int vmscan_swappiness(struct scan_control *sc)
+>   * by looking at the fraction of the pages scanned we did rotate back
+>   * onto the active list instead of evict.
+>   *
+> - * nr[0] = anon pages to scan; nr[1] = file pages to scan
+> + * nr[0] = anon inactive pages to scan; nr[1] = anon active pages to scan
+> + * nr[2] = file inactive pages to scan; nr[3] = file active pages to scan
+>   */
 
-Hi all,
-
-CONFIG_PHYS_64BIT enables kernel support for larger than 32-bit physical
-addresses. Is it this configuration option we have to enable for the
-support of 36-bit real memory (as are capable the Freescale e500v2 or
-e500mc cores family) ?
-
-The Hugetlb patch for BookE (
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2011-June/091315.html)
-seems to be surbordinated to CONFIG_PHYS_64BIT. Is there any good reason
-why it is not supported when CONFIG_PHYS_64BIT is disabled ?
-
-Thanks,
-Telenn
-
---047d7b2ee08d9ae20304c283d5e1
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Hi all,<br><br>CONFIG_PHYS_64BIT enables kernel support for larger than 32-=
-bit physical addresses. Is it this configuration option we have to enable f=
-or the support of 36-bit real memory (as are capable the Freescale e500v2 o=
-r e500mc cores family) ?<br>
-<br>The Hugetlb patch for BookE (<a href=3D"https://lists.ozlabs.org/piperm=
-ail/linuxppc-dev/2011-June/091315.html">https://lists.ozlabs.org/pipermail/=
-linuxppc-dev/2011-June/091315.html</a>) seems to be surbordinated to CONFIG=
-_PHYS_64BIT. Is there any good reason why it is not supported when CONFIG_P=
-HYS_64BIT is disabled ?<br>
-<br>Thanks,<br>Telenn<br>
-
---047d7b2ee08d9ae20304c283d5e1--
+Does including this in the comment have any merit in the first place?
+We never access nr[0] or nr[1] etc. anywhere with magic numbers.  It's
+a local function with one callsite, the passed array is declared and
+accessed exclusively by what is defined in enum lru_list, where is the
+point in repeating the enum items?.  I'd rather the next change to
+this comment would be its removal.
