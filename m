@@ -1,34 +1,21 @@
-Return-Path: <kosaki.motohiro@jp.fujitsu.com>
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BAB45B704C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 05:52:21 +1000 (EST)
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- by fgwmail7.fujitsu.co.jp (Postfix) with ESMTP id CADA3179555C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 04:41:16 +0900 (JST)
-Message-ID: <4FDB8FC9.2020909@jp.fujitsu.com>
-Date: Fri, 15 Jun 2012 15:40:57 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-MIME-Version: 1.0
-To: liwp.linux@gmail.com
-Subject: Re: [PATCH 7/7] mm/memory.c : cleanup the coding style issue
-References: <1339766449-7835-1-git-send-email-liwp.linux@gmail.com>
-In-Reply-To: <1339766449-7835-1-git-send-email-liwp.linux@gmail.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Cc: cl@linux-foundation.org, srikar@linux.vnet.ibm.com,
- linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org, mhocko@suse.cz,
- paul.gortmaker@windriver.com, hpa@zytor.com, lwoodman@redhat.com,
- aarcange@redhat.com, sfr@canb.auug.org.au, shangw@linux.vnet.ibm.com,
- x86@kernel.org, hughd@google.com, mingo@redhat.com,
- kosaki.motohiro@jp.fujitsu.com, jan.kiszka@siemens.com, nacc@us.ibm.com,
- a.p.zijlstra@chello.nl, mel@csn.ul.ie, jason.wessel@windriver.com,
- viro@zeniv.linux.org.uk, bhelgaas@google.com, cgroups@vger.kernel.org,
- tglx@linutronix.de, kamezawa.hiroyu@jp.fujitsu.com, dhowells@redhat.com,
- trivial@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- miltonm@bga.com, minchan@kernel.org, lizefan@huawei.com, hannes@cmpxchg.org,
- tj@kernel.org, rientjes@google.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 84828B705F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 08:02:52 +1000 (EST)
+Message-ID: <1339797753.9220.187.camel@pasglop>
+Subject: Re: [PATCH 2/2] powerpc/e6500: TLB miss handler with hardware
+ tablewalk support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Sat, 16 Jun 2012 08:02:33 +1000
+In-Reply-To: <4FDB67BE.9040000@freescale.com>
+References: <20120614234101.GB17147@tyr.buserror.net>
+ <1339722302.9220.175.camel@pasglop> <4FDB67BE.9040000@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,20 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> diff --git a/mm/memory.c b/mm/memory.c
-> index 1b7dc66..195d6e1 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -2447,7 +2447,8 @@ static inline int pte_unmap_same(struct mm_struct *mm, pmd_t *pmd,
->  	return same;
->  }
->  
-> -static inline void cow_user_page(struct page *dst, struct page *src, unsigned long va, struct vm_area_struct *vma)
-> +static inline void cow_user_page(struct page *dst, struct page *src,
-> +		unsigned long va, struct vm_area_struct *vma)
->  {
->  	/*
->  	 * If the source page was a PFN mapping, we don't have
+On Fri, 2012-06-15 at 11:50 -0500, Scott Wood wrote:
+> On 06/14/2012 08:05 PM, Benjamin Herrenschmidt wrote:
+> >>  - It has threads, but no "tlbsrx." -- so we need a spinlock and
+> >>    a normal "tlbsx".  Because we need this lock, hardware tablewalk
+> >>    is mandatory on e6500 unless we want to add spinlock+tlbsx to
+> >>    the normal bolted TLB miss handler.
+> > 
+> > Isn't this a violation of the architecture ? (Isn't tlbsrx. mandatory ?
+> > in 2.06 MAV2 ?).
+> 
+> I don't think so -- not only does it have a category name, there's a
+> MAV2-specific bit in MMUCSR indicating whether the category is present.
+> 
+> I still don't understand why Freescale omitted it from a chip that has
+> threads, though.
 
-Nowadays, many developers prefer to declare a function in one line. and we don't think
-this is incorrect anymore. so, I think this is intentional.
+Right, especially since from memory, the idea for it came from FSL (Mike
+maybe) during a meeting between the IBM and FSL folks (I was there) :-)
+
+Oh well .... probably a case of HW folks with no clue that didn't
+understand why it would be needed. Did you whack a few heads with a
+cluebat ?
+
+Cheers,
+Ben.
