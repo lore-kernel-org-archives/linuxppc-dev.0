@@ -1,33 +1,43 @@
-Return-Path: <haren@linux.vnet.ibm.com>
+Return-Path: <paulmck@linux.vnet.ibm.com>
 Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e36.co.us.ibm.com", Issuer "Equifax" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 126E6B7110
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 16:42:21 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8DB51B7005
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Jun 2012 02:32:57 +1000 (EST)
 Received: from /spool/local
  by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sat, 16 Jun 2012 00:42:18 -0600
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 0152BC90057
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 02:42:15 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5G6gFNQ181572
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 02:42:15 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5G6gFWl002078
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 02:42:15 -0400
-Subject: [PATCH] Disable /dev/port interface on powerpc systems
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-To: michael@ellerman.id.au
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 15 Jun 2012 23:42:13 -0700
-Message-ID: <1339828933.22619.15.camel@hbabu-laptop>
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Sat, 16 Jun 2012 10:32:55 -0600
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 6E29619D8052
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 16:32:22 +0000 (WET)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5GGWOBx178236
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 10:32:24 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5GGWLqo015210
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 10:32:24 -0600
+Date: Sat, 16 Jun 2012 09:32:19 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Yong Zhang <yong.zhang0@gmail.com>
+Subject: Re: [RFC PATCH 09/10] POWERPC: smp: remove call to
+ ipi_call_lock()/ipi_call_unlock()
+Message-ID: <20120616163219.GI2420@linux.vnet.ibm.com>
+References: <1338275765-3217-1-git-send-email-yong.zhang0@gmail.com>
+ <1338275765-3217-10-git-send-email-yong.zhang0@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1338275765-3217-10-git-send-email-yong.zhang0@gmail.com>
+Cc: axboe@kernel.dk, nikunj@linux.vnet.ibm.com, sshtylyov@mvista.com,
+ david.daney@cavium.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+ ralf@linux-mips.org, akpm@linux-foundation.org,
+ Paul Mackerras <paulus@samba.org>, srivatsa.bhat@linux.vnet.ibm.com,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,89 +47,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael, Thanks for the comment. Here it is the updated patch which
-fixes x86 build.
+On Tue, May 29, 2012 at 03:16:04PM +0800, Yong Zhang wrote:
+> From: Yong Zhang <yong.zhang@windriver.com>
+> 
+> 1) call_function.lock used in smp_call_function_many() is just to protect
+>    call_function.queue and &data->refs, cpu_online_mask is outside of the
+>    lock. And it's not necessary to protect cpu_online_mask,
+>    because data->cpumask is pre-calculate and even if a cpu is brougt up
+>    when calling arch_send_call_function_ipi_mask(), it's harmless because
+>    validation test in generic_smp_call_function_interrupt() will take care
+>    of it.
+> 
+> 2) For cpu down issue, stop_machine() will guarantee that no concurrent
+>    smp_call_fuction() is processing.
 
-Thanks
-Haren
+However, there is an effort to get rid of stop_machine() from the
+CPU-down path...  So something else will be needed.
 
-Some power systems do not have legacy ISA devices. So, /dev/port is not
-a valid interface on these systems. User level tools such as kbdrate is
-trying to access the device using this interface which is causing the
-system crash. 
+							Thanx, Paul
 
-This patch will fix this issue by not creating this interface on these
-powerpc systems. 
-
-Signed-off-by: Haren Myneni <haren@us.ibm.com>
-
-diff -Naurp linux.orig/arch/powerpc/include/asm/io.h linux/arch/powerpc/include/asm/io.h
---- linux.orig/arch/powerpc/include/asm/io.h	2012-06-16 01:15:11.000000000 -0500
-+++ linux/arch/powerpc/include/asm/io.h	2012-06-16 01:15:20.000000000 -0500
-@@ -20,6 +20,14 @@ extern int check_legacy_ioport(unsigned 
- #define _PNPWRP		0xa79
- #define PNPBIOS_BASE	0xf000
- 
-+#ifdef CONFIG_PPC64
-+extern struct pci_dev *isa_bridge_pcidev;
-+/*
-+ * has legacy ISA devices ?
-+ */
-+#define arch_has_dev_port()	(isa_bridge_pcidev != NULL)
-+#endif
-+
- #include <linux/device.h>
- #include <linux/io.h>
- 
-diff -Naurp linux.orig/drivers/char/mem.c linux/drivers/char/mem.c
---- linux.orig/drivers/char/mem.c	2012-06-16 01:15:42.000000000 -0500
-+++ linux/drivers/char/mem.c	2012-06-16 01:15:53.000000000 -0500
-@@ -27,14 +27,16 @@
- #include <linux/splice.h>
- #include <linux/pfn.h>
- #include <linux/export.h>
-+#include <linux/io.h>
- 
- #include <asm/uaccess.h>
--#include <asm/io.h>
- 
- #ifdef CONFIG_IA64
- # include <linux/efi.h>
- #endif
- 
-+#define DEVPORT_MINOR	4
-+
- static inline unsigned long size_inside_page(unsigned long start,
- 					     unsigned long size)
- {
-@@ -894,6 +896,13 @@ static int __init chr_dev_init(void)
- 	for (minor = 1; minor < ARRAY_SIZE(devlist); minor++) {
- 		if (!devlist[minor].name)
- 			continue;
-+
-+		/*
-+		 * Create /dev/port? 
-+		 */
-+		if ((minor == DEVPORT_MINOR) && !arch_has_dev_port())
-+			continue;
-+
- 		device_create(mem_class, NULL, MKDEV(MEM_MAJOR, minor),
- 			      NULL, devlist[minor].name);
- 	}
-diff -Naurp linux.orig/include/linux/io.h linux/include/linux/io.h
---- linux.orig/include/linux/io.h	2012-06-16 01:16:13.000000000 -0500
-+++ linux/include/linux/io.h	2012-06-16 01:16:24.000000000 -0500
-@@ -67,4 +67,13 @@ int check_signature(const volatile void 
- 			const unsigned char *signature, int length);
- void devm_ioremap_release(struct device *dev, void *res);
- 
-+/*
-+ * Some systems do not have legacy ISA devices.
-+ * /dev/port is not a valid interface on these systems.
-+ * So for those archs, <asm/io.h> should define the following symbol.
-+ */
-+#ifndef arch_has_dev_port
-+#define arch_has_dev_port()     (1)
-+#endif
-+
- #endif /* _LINUX_IO_H */
+> Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/powerpc/kernel/smp.c |    2 --
+>  1 files changed, 0 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index e4cb343..e1417c4 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -571,7 +571,6 @@ void __devinit start_secondary(void *unused)
+>  	if (system_state == SYSTEM_RUNNING)
+>  		vdso_data->processorCount++;
+>  #endif
+> -	ipi_call_lock();
+>  	notify_cpu_starting(cpu);
+>  	set_cpu_online(cpu, true);
+>  	/* Update sibling maps */
+> @@ -601,7 +600,6 @@ void __devinit start_secondary(void *unused)
+>  		of_node_put(np);
+>  	}
+>  	of_node_put(l2_cache);
+> -	ipi_call_unlock();
+> 
+>  	local_irq_enable();
+> 
+> -- 
+> 1.7.5.4
+> 
