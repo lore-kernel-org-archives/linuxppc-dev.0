@@ -1,22 +1,33 @@
-Return-Path: <wfg@linux.intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by ozlabs.org (Postfix) with ESMTP id 5B32BB7041
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 11:53:08 +1000 (EST)
-Date: Sat, 16 Jun 2012 09:53:01 +0800
-From: Fengguang Wu <wfg@linux.intel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [driver-core:driver-core-linus 6/6]
- drivers/firmware/iscsi_ibft_find.o: In function `kmsg_dump_rewind':
- (.text+0x18): multiple definition of `kmsg_dump_rewind'
-Message-ID: <20120616015301.GB7847@localhost>
-References: <4fdbcd2f.Ta8kRp58FRzqrqaL%wfg@linux.intel.com>
- <20120616111550.597c8f605fa64fb9789fa506@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120616111550.597c8f605fa64fb9789fa506@canb.auug.org.au>
-Cc: devel@driverdev.osuosl.org, linuxppc-dev@lists.ozlabs.org,
- Kay Sievers <kay@vrfy.org>, linux-mtd@lists.infradead.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e36.co.us.ibm.com", Issuer "Equifax" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 126E6B7110
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 16:42:21 +1000 (EST)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Sat, 16 Jun 2012 00:42:18 -0600
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 0152BC90057
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 02:42:15 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5G6gFNQ181572
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 02:42:15 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5G6gFWl002078
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 Jun 2012 02:42:15 -0400
+Subject: [PATCH] Disable /dev/port interface on powerpc systems
+From: Haren Myneni <haren@linux.vnet.ibm.com>
+To: michael@ellerman.id.au
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 Jun 2012 23:42:13 -0700
+Message-ID: <1339828933.22619.15.camel@hbabu-laptop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +37,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Stephen,
+Michael, Thanks for the comment. Here it is the updated patch which
+fixes x86 build.
 
-On Sat, Jun 16, 2012 at 11:15:50AM +1000, Stephen Rothwell wrote:
-> Hi,
-> 
-> On Sat, 16 Jun 2012 08:02:55 +0800 wfg@linux.intel.com wrote:
-> >
-> > Kernel build failed on
-> > 
-> > tree:   git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git driver-core-linus
-> > head:   e2ae715d66bf4becfb85eb84b7150e23cf27df30
-> > commit: e2ae715d66bf4becfb85eb84b7150e23cf27df30 [6/6] kmsg - kmsg_dump() use iterator to receive log buffer content
-> > config: i386-randconfig-usb1 (attached as .config)
-> 
-> Please have a good look at what you are sending out.  I don't understand
-> why this report has come to linuxppc-dev (the patch touches an
-> arch/powerpc file, but none of the problems reported are in that file).
+Thanks
+Haren
 
-Because I blindly used the lists reported by scripts/get_maintainer.pl ...
+Some power systems do not have legacy ISA devices. So, /dev/port is not
+a valid interface on these systems. User level tools such as kbdrate is
+trying to access the device using this interface which is causing the
+system crash. 
 
-I'll build a "mailing list <=> git tree" mapping based on MAINTAINERS
-and use that to build CC list, rather than depending on the source files
-that the patch randomly touch.
+This patch will fix this issue by not creating this interface on these
+powerpc systems. 
 
-> You should put the .config on a web site somewhere and include the URL and
-> you should not include the whole patch (these were all quite large) -
-> people can find them given a tree and commit (like above).
+Signed-off-by: Haren Myneni <haren@us.ibm.com>
 
-That's a valid option. Unfortunately I don't have a website to run
-this for now. Anyway, I'm still on the way improving the kernel
-testing backend based on your and others' feedback :)
-
-> And you sent out 7 reports for the same patch!
-
-That's where a website could help. Different kconfigs may trigger
-different errors for the same commit. So it's a hard decision whether
-to send emails for all broken kconfigs and risk being a noise, or to
-limit it to the first broken kconfig and risk lose of information.
-
-For now, I can send the patch author all the emails, but CC others
-only on the first one (with an statement that there are actually more
-errors in other kconfigs). So that the author that is responsive for
-fixing the bug get the full information, while the others still can
-keep track of the error situation.
-
-> I approved this bunch, but will not (unless pressured) approve any more.
-> This scatter gun automated approach is like the boy crying wolf.
-> I appreciate the effort, but please tone down the reports considerably.
-
-Heh, thanks! We should be able to reach a polished automated system
-that's fast and accurate in the end :-)
-
-Thanks,
-Fengguang
+diff -Naurp linux.orig/arch/powerpc/include/asm/io.h linux/arch/powerpc/include/asm/io.h
+--- linux.orig/arch/powerpc/include/asm/io.h	2012-06-16 01:15:11.000000000 -0500
++++ linux/arch/powerpc/include/asm/io.h	2012-06-16 01:15:20.000000000 -0500
+@@ -20,6 +20,14 @@ extern int check_legacy_ioport(unsigned 
+ #define _PNPWRP		0xa79
+ #define PNPBIOS_BASE	0xf000
+ 
++#ifdef CONFIG_PPC64
++extern struct pci_dev *isa_bridge_pcidev;
++/*
++ * has legacy ISA devices ?
++ */
++#define arch_has_dev_port()	(isa_bridge_pcidev != NULL)
++#endif
++
+ #include <linux/device.h>
+ #include <linux/io.h>
+ 
+diff -Naurp linux.orig/drivers/char/mem.c linux/drivers/char/mem.c
+--- linux.orig/drivers/char/mem.c	2012-06-16 01:15:42.000000000 -0500
++++ linux/drivers/char/mem.c	2012-06-16 01:15:53.000000000 -0500
+@@ -27,14 +27,16 @@
+ #include <linux/splice.h>
+ #include <linux/pfn.h>
+ #include <linux/export.h>
++#include <linux/io.h>
+ 
+ #include <asm/uaccess.h>
+-#include <asm/io.h>
+ 
+ #ifdef CONFIG_IA64
+ # include <linux/efi.h>
+ #endif
+ 
++#define DEVPORT_MINOR	4
++
+ static inline unsigned long size_inside_page(unsigned long start,
+ 					     unsigned long size)
+ {
+@@ -894,6 +896,13 @@ static int __init chr_dev_init(void)
+ 	for (minor = 1; minor < ARRAY_SIZE(devlist); minor++) {
+ 		if (!devlist[minor].name)
+ 			continue;
++
++		/*
++		 * Create /dev/port? 
++		 */
++		if ((minor == DEVPORT_MINOR) && !arch_has_dev_port())
++			continue;
++
+ 		device_create(mem_class, NULL, MKDEV(MEM_MAJOR, minor),
+ 			      NULL, devlist[minor].name);
+ 	}
+diff -Naurp linux.orig/include/linux/io.h linux/include/linux/io.h
+--- linux.orig/include/linux/io.h	2012-06-16 01:16:13.000000000 -0500
++++ linux/include/linux/io.h	2012-06-16 01:16:24.000000000 -0500
+@@ -67,4 +67,13 @@ int check_signature(const volatile void 
+ 			const unsigned char *signature, int length);
+ void devm_ioremap_release(struct device *dev, void *res);
+ 
++/*
++ * Some systems do not have legacy ISA devices.
++ * /dev/port is not a valid interface on these systems.
++ * So for those archs, <asm/io.h> should define the following symbol.
++ */
++#ifndef arch_has_dev_port
++#define arch_has_dev_port()     (1)
++#endif
++
+ #endif /* _LINUX_IO_H */
