@@ -1,21 +1,23 @@
-Return-Path: <mchehab@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 76696B707C
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2012 06:35:18 +1000 (EST)
-Message-ID: <4FDF90FE.1050809@redhat.com>
-Date: Mon, 18 Jun 2012 17:35:10 -0300
-From: Mauro Carvalho Chehab <mchehab@redhat.com>
-MIME-Version: 1.0
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: Build regressions/improvements in v3.5-rc3
-References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
- <20120618152758.3a0a28c7f68615e9e2599ee3@freescale.com>
-In-Reply-To: <20120618152758.3a0a28c7f68615e9e2599ee3@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
- Chris Zankel <chris@zankel.net>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F2780B70AC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2012 06:40:14 +1000 (EST)
+Message-ID: <1340051997.2372.27.camel@pasglop>
+Subject: Re: [PATCH] PPC: PCI: Fix pcibios_io_space_offset() so it works for
+ 32-bit ptr/64-bit rsrcs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 19 Jun 2012 06:39:57 +1000
+In-Reply-To: <CAErSpo4pDOigbvF3SPzOUqx79d_-8yHWrc8TsWChG9indB+k_A@mail.gmail.com>
+References: <4DC27253-67FC-4A55-8C78-7782D9D0CF53@servergy.com>
+ <1338959744.7150.153.camel@pasglop>
+ <CAErSpo4pDOigbvF3SPzOUqx79d_-8yHWrc8TsWChG9indB+k_A@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@au1.ibm.com>,
+ Ben Collins <ben.c@servergy.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em 18-06-2012 17:27, Kim Phillips escreveu:
-> On Sun, 17 Jun 2012 21:56:59 +0200
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> 
->>    + drivers/edac/mpc85xx_edac.c: error: too few arguments to function
->> 'edac_mc_alloc':  => 983:90
->>
->> powerpc-randconfig
-> 
-> fixed in linux-next commit b9bc5dd, should have been upstreamed by
-> now [1] - Mauro?
+On Mon, 2012-06-18 at 09:23 -0600, Bjorn Helgaas wrote:
+> Ooh, sorry about that.  Who's going to push this fix?  I don't see it
+> in Linus' tree yet.  If you want me to, please forward me the original
+> patch. 
 
-Just sent it a few mins ago. I was waiting for Linus to return back 
-from his trip.
+I want to double check something. We are still printing something wrong
+in the kernel log, so it looks like we have some incorrect carry in some
+arithmetic happening somewhere.
 
-Regards,
-Mauro
-
-> 
-> Kim
-> 
-> [1] http://marc.info/?l=linux-edac&m=133942731507920&w=2
-> 
+Cheers,
+Ben.
