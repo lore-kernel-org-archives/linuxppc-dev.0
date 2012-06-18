@@ -1,22 +1,18 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 84B16B70F8
- for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2012 17:30:17 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] sound/aoa: remove i2c attach_adapter method
-References: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
- <1334823416-9138-2-git-send-email-benh__33169.052625499$1334826821$gmane$org@kernel.crashing.org>
- <m2r4tofuxr.fsf@igel.home> <1339984980.2372.9.camel@pasglop>
-Date: Mon, 18 Jun 2012 09:30:09 +0200
-In-Reply-To: <1339984980.2372.9.camel@pasglop> (Benjamin Herrenschmidt's
- message of "Mon, 18 Jun 2012 12:03:00 +1000")
-Message-ID: <m21uldvzzy.fsf_-_@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id F3CC6B72D3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 20:17:03 +1000 (EST)
+Message-ID: <1340014606.2372.13.camel@pasglop>
+Subject: [RFC/PATCH] i2c/powermac: Improve detection of devices from
+ device-tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Mon, 18 Jun 2012 20:16:46 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,250 +22,231 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since i2c-powermac now creates all i2c devices on its own, remove the
-attach_adapter methods from the TAS and Onyx drivers, and adjust the
-module aliases to match the names used by i2c-powermac.
+This patch adds a number of workarounds for broken Apple device-trees
+mostly around sound chips. It handles creating the missing audio codec
+devices and works around various issues with missing addresses or
+missing compatible properties.
 
-Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- sound/aoa/codecs/onyx.c | 75 ++--------------------------------------------
- sound/aoa/codecs/tas.c  | 80 ++-----------------------------------------------
- 2 files changed, 6 insertions(+), 149 deletions(-)
 
-diff --git a/sound/aoa/codecs/onyx.c b/sound/aoa/codecs/onyx.c
-index 270790d..4cedc69 100644
---- a/sound/aoa/codecs/onyx.c
-+++ b/sound/aoa/codecs/onyx.c
-@@ -997,45 +997,10 @@ static void onyx_exit_codec(struct aoa_codec *codec)
- 	onyx->codec.soundbus_dev->detach_codec(onyx->codec.soundbus_dev, onyx);
+Andreas, this is what I've been cooking up today. Still mostly untested
+though, so handle with care :-) But it gives you the basic premises.
+
+>From there I intend to look into moving over at least some of sound/ppc/pmac
+to aoa (at least the tumbler bits which is the tas3001) which would get rid
+of all i2c gunk in that older driver.
+
+However that means adding a "fabric" module for pre-"layout-id" stuff so
+it will be a bit of work ... but I do have access to a machine (windtunnel G4
+second generation).
+
+Cheers,
+Ben.
+
+ drivers/i2c/busses/i2c-powermac.c |  157 +++++++++++++++++++++++++++++++------
+ 1 file changed, 133 insertions(+), 24 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-powermac.c b/drivers/i2c/busses/i2c-powermac.c
+index 31c47e1..5285f85 100644
+--- a/drivers/i2c/busses/i2c-powermac.c
++++ b/drivers/i2c/busses/i2c-powermac.c
+@@ -227,28 +227,138 @@ static int __devexit i2c_powermac_remove(struct platform_device *dev)
+ 	return 0;
  }
  
--static int onyx_create(struct i2c_adapter *adapter,
--		       struct device_node *node,
--		       int addr)
--{
--	struct i2c_board_info info;
--	struct i2c_client *client;
--
--	memset(&info, 0, sizeof(struct i2c_board_info));
--	strlcpy(info.type, "aoa_codec_onyx", I2C_NAME_SIZE);
--	info.addr = addr;
--	info.platform_data = node;
--	client = i2c_new_device(adapter, &info);
--	if (!client)
--		return -ENODEV;
--
--	/*
--	 * We know the driver is already loaded, so the device should be
--	 * already bound. If not it means binding failed, which suggests
--	 * the device doesn't really exist and should be deleted.
--	 * Ideally this would be replaced by better checks _before_
--	 * instantiating the device.
--	 */
--	if (!client->driver) {
--		i2c_unregister_device(client);
--		return -ENODEV;
--	}
--
--	/*
--	 * Let i2c-core delete that device on driver removal.
--	 * This is safe because i2c-core holds the core_lock mutex for us.
--	 */
--	list_add_tail(&client->detected, &client->driver->clients);
--	return 0;
--}
--
- static int onyx_i2c_probe(struct i2c_client *client,
- 			  const struct i2c_device_id *id)
++static u32 __devinit i2c_powermac_get_addr(struct i2c_adapter *adap,
++					   struct pmac_i2c_bus *bus,
++					   struct device_node *node)
++{
++	const __be32 *prop;
++	int len;
++
++	/* First check for valid "reg" */
++	prop = of_get_property(node, "reg", &len);
++	if (prop && (len >= sizeof(int)))
++		return (be32_to_cpup(prop) & 0xff) >> 1;
++
++	/* Then check old-style "i2c-address" */
++	prop = of_get_property(node, "i2c-address", &len);
++	if (prop && (len >= sizeof(int)))
++		return (be32_to_cpup(prop) & 0xff) >> 1;
++
++	/* Now handle some devices with missing "reg" properties */
++	if (!strcmp(node->name, "cereal"))
++		return 0x60;
++	else if (!strcmp(node->name, "deq"))
++		return 0x34;
++
++	dev_warn(&adap->dev, "No i2c address for %s\n", node->full_name);
++
++	return 0xffffffff;
++}
++
++static void __devinit i2c_powermac_create_one(struct i2c_adapter *adap,
++					      const char *type,
++					      u32 addr)
++{
++	struct i2c_board_info info = {};
++	struct i2c_client *newdev;
++
++	strncpy(info.type, type, sizeof(info.type));
++	info.addr = addr;
++	newdev = i2c_new_device(adap, &info);
++	if (!newdev)
++		dev_err(&adap->dev,
++			"i2c-powermac: Failure to register missing %s\n",
++			type);
++}
++
++static void __devinit i2c_powermac_add_missing(struct i2c_adapter *adap,
++					       struct pmac_i2c_bus *bus,
++					       bool found_onyx)
++{
++	struct device_node *busnode = pmac_i2c_get_bus_node(bus);
++	int rc;
++
++	/* Check for the onyx audio codec */
++#define ONYX_REG_CONTROL		67
++	if (of_device_is_compatible(busnode, "k2-i2c") && !found_onyx) {
++		union i2c_smbus_data data;
++
++		rc = i2c_smbus_xfer(adap, 0x46, 0, I2C_SMBUS_READ,
++				    ONYX_REG_CONTROL, I2C_SMBUS_BYTE_DATA,
++				    &data);
++		if (rc >= 0)
++			i2c_powermac_create_one(adap, "MAC,pcm3052", 0x46);
++
++		rc = i2c_smbus_xfer(adap, 0x47, 0, I2C_SMBUS_READ,
++				    ONYX_REG_CONTROL, I2C_SMBUS_BYTE_DATA,
++				    &data);
++		if (rc >= 0)
++			i2c_powermac_create_one(adap, "MAC,pcm3052", 0x47);
++	}
++}
++
++static bool __devinit i2c_powermac_get_type(struct i2c_adapter *adap,
++					    struct device_node *node,
++					    u32 addr, char *type, int type_size)
++{
++	char tmp[16];
++
++	/* Note: we to _NOT_ want the standard
++	 * i2c drivers to match with any of our powermac stuff
++	 * unless they have been specifically modified to handle
++	 * it on a case by case basis. For example, for thermal
++	 * control, things like lm75 etc... shall match with their
++	 * corresponding windfarm drivers, _NOT_ the generic ones,
++	 * so we force a prefix of AAPL, onto the modalias to
++	 * make that happen
++	 */
++
++	/* First try proper modalias */
++	if (of_modalias_node(node, tmp, sizeof(tmp)) >= 0) {
++		snprintf(type, type_size, "MAC,%s", tmp);
++		return true;
++	}
++
++	/* Now look for known workarounds */
++	if (!strcmp(node->name, "deq")) {
++		/* Apple uses address 0x34 for TAS3001 and 0x35 for TAS3004 */
++		if (addr == 0x34) {
++			snprintf(type, type_size, "MAC,tas3001");
++			return true;
++		} else if (addr == 0x35) {
++			snprintf(type, type_size, "MAC,tas3004");
++			return true;
++		}
++	}
++
++	dev_err(&adap->dev, "i2c-powermac: modalias failure"
++		" on %s\n", node->full_name);
++	return false;
++}
++
+ static void __devinit i2c_powermac_register_devices(struct i2c_adapter *adap,
+ 						    struct pmac_i2c_bus *bus)
  {
--	struct device_node *node = client->dev.platform_data;
-+	struct device_node *node = client->dev.of_node;
- 	struct onyx *onyx;
- 	u8 dummy;
+ 	struct i2c_client *newdev;
+ 	struct device_node *node;
++	bool found_onyx = 0;
++
++	/*
++	 * In some cases we end up with the via-pmu node itself, in this
++	 * case we skip this function completely as the device-tree will
++	 * not contain anything useful.
++	 */
++	if (!strcmp(adap->dev.of_node->name, "via-pmu"))
++		return;
  
-@@ -1071,40 +1036,6 @@ static int onyx_i2c_probe(struct i2c_client *client,
- 	return -ENODEV;
- }
+ 	for_each_child_of_node(adap->dev.of_node, node) {
+ 		struct i2c_board_info info = {};
+-		struct dev_archdata dev_ad = {};
+-		const __be32 *reg;
+-		char tmp[16];
+ 		u32 addr;
+-		int len;
  
--static int onyx_i2c_attach(struct i2c_adapter *adapter)
--{
--	struct device_node *busnode, *dev = NULL;
--	struct pmac_i2c_bus *bus;
--
--	bus = pmac_i2c_adapter_to_bus(adapter);
--	if (bus == NULL)
--		return -ENODEV;
--	busnode = pmac_i2c_get_bus_node(bus);
--
--	while ((dev = of_get_next_child(busnode, dev)) != NULL) {
--		if (of_device_is_compatible(dev, "pcm3052")) {
--			const u32 *addr;
--			printk(KERN_DEBUG PFX "found pcm3052\n");
--			addr = of_get_property(dev, "reg", NULL);
--			if (!addr)
--				return -ENODEV;
--			return onyx_create(adapter, dev, (*addr)>>1);
+ 		/* Get address & channel */
+-		reg = of_get_property(node, "reg", &len);
+-		if (!reg || (len < sizeof(int))) {
+-			dev_err(&adap->dev, "i2c-powermac: invalid reg on %s\n",
+-				node->full_name);
++		addr = i2c_powermac_get_addr(adap, bus, node);
++		if (addr == 0xffffffff)
+ 			continue;
 -		}
--	}
--
--	/* if that didn't work, try desperate mode for older
--	 * machines that have stuff missing from the device tree */
--
--	if (!of_device_is_compatible(busnode, "k2-i2c"))
--		return -ENODEV;
--
--	printk(KERN_DEBUG PFX "found k2-i2c, checking if onyx chip is on it\n");
--	/* probe both possible addresses for the onyx chip */
--	if (onyx_create(adapter, NULL, 0x46) == 0)
--		return 0;
--	return onyx_create(adapter, NULL, 0x47);
--}
--
- static int onyx_i2c_remove(struct i2c_client *client)
- {
- 	struct onyx *onyx = i2c_get_clientdata(client);
-@@ -1117,16 +1048,16 @@ static int onyx_i2c_remove(struct i2c_client *client)
+-		addr = be32_to_cpup(reg);
+ 
+ 		/* Multibus setup, check channel */
+ 		if (!pmac_i2c_match_adapter(node, adap))
+@@ -257,27 +367,23 @@ static void __devinit i2c_powermac_register_devices(struct i2c_adapter *adap,
+ 		dev_dbg(&adap->dev, "i2c-powermac: register %s\n",
+ 			node->full_name);
+ 
+-		/* Make up a modalias. Note: we to _NOT_ want the standard
+-		 * i2c drivers to match with any of our powermac stuff
+-		 * unless they have been specifically modified to handle
+-		 * it on a case by case basis. For example, for thermal
+-		 * control, things like lm75 etc... shall match with their
+-		 * corresponding windfarm drivers, _NOT_ the generic ones,
+-		 * so we force a prefix of AAPL, onto the modalias to
+-		 * make that happen
++		/*
++		 * Keep track of some device existence to handle
++		 * workarounds later.
+ 		 */
+-		if (of_modalias_node(node, tmp, sizeof(tmp)) < 0) {
+-			dev_err(&adap->dev, "i2c-powermac: modalias failure"
+-				" on %s\n", node->full_name);
++		if (of_device_is_compatible(node, "pcm3052"))
++			found_onyx = true;
++
++		/* Make up a modalias */
++		if (!i2c_powermac_get_type(adap, node, addr,
++					   info.type, sizeof(info.type))) {
+ 			continue;
+ 		}
+-		snprintf(info.type, sizeof(info.type), "MAC,%s", tmp);
+ 
+ 		/* Fill out the rest of the info structure */
+-		info.addr = (addr & 0xff) >> 1;
++		info.addr = addr;
+ 		info.irq = irq_of_parse_and_map(node, 0);
+ 		info.of_node = of_node_get(node);
+-		info.archdata = &dev_ad;
+ 
+ 		newdev = i2c_new_device(adap, &info);
+ 		if (!newdev) {
+@@ -292,6 +398,9 @@ static void __devinit i2c_powermac_register_devices(struct i2c_adapter *adap,
+ 			continue;
+ 		}
+ 	}
++
++	/* Additional workarounds */
++	i2c_powermac_add_missing(adap, bus, found_onyx);
  }
  
- static const struct i2c_device_id onyx_i2c_id[] = {
--	{ "aoa_codec_onyx", 0 },
-+	{ "MAC,pcm3052", 0 },
- 	{ }
- };
-+MODULE_DEVICE_TABLE(i2c,onyx_i2c_id);
- 
- static struct i2c_driver onyx_driver = {
- 	.driver = {
- 		.name = "aoa_codec_onyx",
- 		.owner = THIS_MODULE,
- 	},
--	.attach_adapter = onyx_i2c_attach,
- 	.probe = onyx_i2c_probe,
- 	.remove = onyx_i2c_remove,
- 	.id_table = onyx_i2c_id,
-diff --git a/sound/aoa/codecs/tas.c b/sound/aoa/codecs/tas.c
-index 8e63d1f..c491ae0 100644
---- a/sound/aoa/codecs/tas.c
-+++ b/sound/aoa/codecs/tas.c
-@@ -883,43 +883,10 @@ static void tas_exit_codec(struct aoa_codec *codec)
- }
- 
- 
--static int tas_create(struct i2c_adapter *adapter,
--		       struct device_node *node,
--		       int addr)
--{
--	struct i2c_board_info info;
--	struct i2c_client *client;
--
--	memset(&info, 0, sizeof(struct i2c_board_info));
--	strlcpy(info.type, "aoa_codec_tas", I2C_NAME_SIZE);
--	info.addr = addr;
--	info.platform_data = node;
--
--	client = i2c_new_device(adapter, &info);
--	if (!client)
--		return -ENODEV;
--	/*
--	 * We know the driver is already loaded, so the device should be
--	 * already bound. If not it means binding failed, and then there
--	 * is no point in keeping the device instantiated.
--	 */
--	if (!client->driver) {
--		i2c_unregister_device(client);
--		return -ENODEV;
--	}
--
--	/*
--	 * Let i2c-core delete that device on driver removal.
--	 * This is safe because i2c-core holds the core_lock mutex for us.
--	 */
--	list_add_tail(&client->detected, &client->driver->clients);
--	return 0;
--}
--
- static int tas_i2c_probe(struct i2c_client *client,
- 			 const struct i2c_device_id *id)
- {
--	struct device_node *node = client->dev.platform_data;
-+	struct device_node *node = client->dev.of_node;
- 	struct tas *tas;
- 
- 	tas = kzalloc(sizeof(struct tas), GFP_KERNEL);
-@@ -953,47 +920,6 @@ static int tas_i2c_probe(struct i2c_client *client,
- 	return -EINVAL;
- }
- 
--static int tas_i2c_attach(struct i2c_adapter *adapter)
--{
--	struct device_node *busnode, *dev = NULL;
--	struct pmac_i2c_bus *bus;
--
--	bus = pmac_i2c_adapter_to_bus(adapter);
--	if (bus == NULL)
--		return -ENODEV;
--	busnode = pmac_i2c_get_bus_node(bus);
--
--	while ((dev = of_get_next_child(busnode, dev)) != NULL) {
--		if (of_device_is_compatible(dev, "tas3004")) {
--			const u32 *addr;
--			printk(KERN_DEBUG PFX "found tas3004\n");
--			addr = of_get_property(dev, "reg", NULL);
--			if (!addr)
--				continue;
--			return tas_create(adapter, dev, ((*addr) >> 1) & 0x7f);
--		}
--		/* older machines have no 'codec' node with a 'compatible'
--		 * property that says 'tas3004', they just have a 'deq'
--		 * node without any such property... */
--		if (strcmp(dev->name, "deq") == 0) {
--			const u32 *_addr;
--			u32 addr;
--			printk(KERN_DEBUG PFX "found 'deq' node\n");
--			_addr = of_get_property(dev, "i2c-address", NULL);
--			if (!_addr)
--				continue;
--			addr = ((*_addr) >> 1) & 0x7f;
--			/* now, if the address doesn't match any of the two
--			 * that a tas3004 can have, we cannot handle this.
--			 * I doubt it ever happens but hey. */
--			if (addr != 0x34 && addr != 0x35)
--				continue;
--			return tas_create(adapter, dev, addr);
--		}
--	}
--	return -ENODEV;
--}
--
- static int tas_i2c_remove(struct i2c_client *client)
- {
- 	struct tas *tas = i2c_get_clientdata(client);
-@@ -1011,16 +937,16 @@ static int tas_i2c_remove(struct i2c_client *client)
- }
- 
- static const struct i2c_device_id tas_i2c_id[] = {
--	{ "aoa_codec_tas", 0 },
-+	{ "MAC,tas3004", 0 },
- 	{ }
- };
-+MODULE_DEVICE_TABLE(i2c,tas_i2c_id);
- 
- static struct i2c_driver tas_driver = {
- 	.driver = {
- 		.name = "aoa_codec_tas",
- 		.owner = THIS_MODULE,
- 	},
--	.attach_adapter = tas_i2c_attach,
- 	.probe = tas_i2c_probe,
- 	.remove = tas_i2c_remove,
- 	.id_table = tas_i2c_id,
+ static int __devinit i2c_powermac_probe(struct platform_device *dev)
 -- 
-1.7.11
-
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+1.7.10
