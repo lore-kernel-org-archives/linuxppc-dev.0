@@ -1,34 +1,22 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 776AEB7046
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 16:27:57 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Mon, 18 Jun 2012 06:08:29 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5I6KD4G33489138
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 16:20:14 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5I6Rk87029078
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 16:27:47 +1000
-Message-ID: <4FDECA4F.6030905@in.ibm.com>
-Date: Mon, 18 Jun 2012 11:57:27 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 84B16B70F8
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2012 17:30:17 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] sound/aoa: remove i2c attach_adapter method
+References: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
+ <1334823416-9138-2-git-send-email-benh__33169.052625499$1334826821$gmane$org@kernel.crashing.org>
+ <m2r4tofuxr.fsf@igel.home> <1339984980.2372.9.camel@pasglop>
+Date: Mon, 18 Jun 2012 09:30:09 +0200
+In-Reply-To: <1339984980.2372.9.camel@pasglop> (Benjamin Herrenschmidt's
+ message of "Mon, 18 Jun 2012 12:03:00 +1000")
+Message-ID: <m21uldvzzy.fsf_-_@igel.home>
 MIME-Version: 1.0
-To: Simon Horman <horms@verge.net.au>
-Subject: Re: [PATCH] [ppc] Do not reserve cpu spin-table for crash kernel
-References: <CAEsOVNeg2aogCwCy-v3ez4cC4VPF79A4PWRaO2ohDj_ypqCWmg@mail.gmail.com>
- <20120524060933.14035.42732.stgit@suzukikp.in.ibm.com>
-In-Reply-To: <20120524060933.14035.42732.stgit@suzukikp.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: B29882@freescale.com, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,110 +26,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/24/2012 11:39 AM, Suzuki K. Poulose wrote:
-> As of now, the kexec reserves the spin-table for all the CPUs
-> on an SMP machine. The spin-table is pointed to by the
-> cpu-release-addr property in the device-tree. Reserving the
-> spin-table in the crash kernel will cause a BUG(), if the table
-> lies outside the memory reserved for the crashkernel.
->
-> Disable reserving the spin-table regions and use maxcpus=1 to
-> use only the crashing CPU to boot the crash kernel.
->
-> Signed-off-by: Suzuki K. Poulose<suzuki@in.ibm.com>
+Since i2c-powermac now creates all i2c devices on its own, remove the
+attach_adapter methods from the TAS and Onyx drivers, and adjust the
+module aliases to match the names used by i2c-powermac.
 
-Simon,
+Signed-off-by: Andreas Schwab <schwab@linux-m68k.org>
+---
+ sound/aoa/codecs/onyx.c | 75 ++--------------------------------------------
+ sound/aoa/codecs/tas.c  | 80 ++-----------------------------------------------
+ 2 files changed, 6 insertions(+), 149 deletions(-)
 
-Any response on this one ?
+diff --git a/sound/aoa/codecs/onyx.c b/sound/aoa/codecs/onyx.c
+index 270790d..4cedc69 100644
+--- a/sound/aoa/codecs/onyx.c
++++ b/sound/aoa/codecs/onyx.c
+@@ -997,45 +997,10 @@ static void onyx_exit_codec(struct aoa_codec *codec)
+ 	onyx->codec.soundbus_dev->detach_codec(onyx->codec.soundbus_dev, onyx);
+ }
+ 
+-static int onyx_create(struct i2c_adapter *adapter,
+-		       struct device_node *node,
+-		       int addr)
+-{
+-	struct i2c_board_info info;
+-	struct i2c_client *client;
+-
+-	memset(&info, 0, sizeof(struct i2c_board_info));
+-	strlcpy(info.type, "aoa_codec_onyx", I2C_NAME_SIZE);
+-	info.addr = addr;
+-	info.platform_data = node;
+-	client = i2c_new_device(adapter, &info);
+-	if (!client)
+-		return -ENODEV;
+-
+-	/*
+-	 * We know the driver is already loaded, so the device should be
+-	 * already bound. If not it means binding failed, which suggests
+-	 * the device doesn't really exist and should be deleted.
+-	 * Ideally this would be replaced by better checks _before_
+-	 * instantiating the device.
+-	 */
+-	if (!client->driver) {
+-		i2c_unregister_device(client);
+-		return -ENODEV;
+-	}
+-
+-	/*
+-	 * Let i2c-core delete that device on driver removal.
+-	 * This is safe because i2c-core holds the core_lock mutex for us.
+-	 */
+-	list_add_tail(&client->detected, &client->driver->clients);
+-	return 0;
+-}
+-
+ static int onyx_i2c_probe(struct i2c_client *client,
+ 			  const struct i2c_device_id *id)
+ {
+-	struct device_node *node = client->dev.platform_data;
++	struct device_node *node = client->dev.of_node;
+ 	struct onyx *onyx;
+ 	u8 dummy;
+ 
+@@ -1071,40 +1036,6 @@ static int onyx_i2c_probe(struct i2c_client *client,
+ 	return -ENODEV;
+ }
+ 
+-static int onyx_i2c_attach(struct i2c_adapter *adapter)
+-{
+-	struct device_node *busnode, *dev = NULL;
+-	struct pmac_i2c_bus *bus;
+-
+-	bus = pmac_i2c_adapter_to_bus(adapter);
+-	if (bus == NULL)
+-		return -ENODEV;
+-	busnode = pmac_i2c_get_bus_node(bus);
+-
+-	while ((dev = of_get_next_child(busnode, dev)) != NULL) {
+-		if (of_device_is_compatible(dev, "pcm3052")) {
+-			const u32 *addr;
+-			printk(KERN_DEBUG PFX "found pcm3052\n");
+-			addr = of_get_property(dev, "reg", NULL);
+-			if (!addr)
+-				return -ENODEV;
+-			return onyx_create(adapter, dev, (*addr)>>1);
+-		}
+-	}
+-
+-	/* if that didn't work, try desperate mode for older
+-	 * machines that have stuff missing from the device tree */
+-
+-	if (!of_device_is_compatible(busnode, "k2-i2c"))
+-		return -ENODEV;
+-
+-	printk(KERN_DEBUG PFX "found k2-i2c, checking if onyx chip is on it\n");
+-	/* probe both possible addresses for the onyx chip */
+-	if (onyx_create(adapter, NULL, 0x46) == 0)
+-		return 0;
+-	return onyx_create(adapter, NULL, 0x47);
+-}
+-
+ static int onyx_i2c_remove(struct i2c_client *client)
+ {
+ 	struct onyx *onyx = i2c_get_clientdata(client);
+@@ -1117,16 +1048,16 @@ static int onyx_i2c_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id onyx_i2c_id[] = {
+-	{ "aoa_codec_onyx", 0 },
++	{ "MAC,pcm3052", 0 },
+ 	{ }
+ };
++MODULE_DEVICE_TABLE(i2c,onyx_i2c_id);
+ 
+ static struct i2c_driver onyx_driver = {
+ 	.driver = {
+ 		.name = "aoa_codec_onyx",
+ 		.owner = THIS_MODULE,
+ 	},
+-	.attach_adapter = onyx_i2c_attach,
+ 	.probe = onyx_i2c_probe,
+ 	.remove = onyx_i2c_remove,
+ 	.id_table = onyx_i2c_id,
+diff --git a/sound/aoa/codecs/tas.c b/sound/aoa/codecs/tas.c
+index 8e63d1f..c491ae0 100644
+--- a/sound/aoa/codecs/tas.c
++++ b/sound/aoa/codecs/tas.c
+@@ -883,43 +883,10 @@ static void tas_exit_codec(struct aoa_codec *codec)
+ }
+ 
+ 
+-static int tas_create(struct i2c_adapter *adapter,
+-		       struct device_node *node,
+-		       int addr)
+-{
+-	struct i2c_board_info info;
+-	struct i2c_client *client;
+-
+-	memset(&info, 0, sizeof(struct i2c_board_info));
+-	strlcpy(info.type, "aoa_codec_tas", I2C_NAME_SIZE);
+-	info.addr = addr;
+-	info.platform_data = node;
+-
+-	client = i2c_new_device(adapter, &info);
+-	if (!client)
+-		return -ENODEV;
+-	/*
+-	 * We know the driver is already loaded, so the device should be
+-	 * already bound. If not it means binding failed, and then there
+-	 * is no point in keeping the device instantiated.
+-	 */
+-	if (!client->driver) {
+-		i2c_unregister_device(client);
+-		return -ENODEV;
+-	}
+-
+-	/*
+-	 * Let i2c-core delete that device on driver removal.
+-	 * This is safe because i2c-core holds the core_lock mutex for us.
+-	 */
+-	list_add_tail(&client->detected, &client->driver->clients);
+-	return 0;
+-}
+-
+ static int tas_i2c_probe(struct i2c_client *client,
+ 			 const struct i2c_device_id *id)
+ {
+-	struct device_node *node = client->dev.platform_data;
++	struct device_node *node = client->dev.of_node;
+ 	struct tas *tas;
+ 
+ 	tas = kzalloc(sizeof(struct tas), GFP_KERNEL);
+@@ -953,47 +920,6 @@ static int tas_i2c_probe(struct i2c_client *client,
+ 	return -EINVAL;
+ }
+ 
+-static int tas_i2c_attach(struct i2c_adapter *adapter)
+-{
+-	struct device_node *busnode, *dev = NULL;
+-	struct pmac_i2c_bus *bus;
+-
+-	bus = pmac_i2c_adapter_to_bus(adapter);
+-	if (bus == NULL)
+-		return -ENODEV;
+-	busnode = pmac_i2c_get_bus_node(bus);
+-
+-	while ((dev = of_get_next_child(busnode, dev)) != NULL) {
+-		if (of_device_is_compatible(dev, "tas3004")) {
+-			const u32 *addr;
+-			printk(KERN_DEBUG PFX "found tas3004\n");
+-			addr = of_get_property(dev, "reg", NULL);
+-			if (!addr)
+-				continue;
+-			return tas_create(adapter, dev, ((*addr) >> 1) & 0x7f);
+-		}
+-		/* older machines have no 'codec' node with a 'compatible'
+-		 * property that says 'tas3004', they just have a 'deq'
+-		 * node without any such property... */
+-		if (strcmp(dev->name, "deq") == 0) {
+-			const u32 *_addr;
+-			u32 addr;
+-			printk(KERN_DEBUG PFX "found 'deq' node\n");
+-			_addr = of_get_property(dev, "i2c-address", NULL);
+-			if (!_addr)
+-				continue;
+-			addr = ((*_addr) >> 1) & 0x7f;
+-			/* now, if the address doesn't match any of the two
+-			 * that a tas3004 can have, we cannot handle this.
+-			 * I doubt it ever happens but hey. */
+-			if (addr != 0x34 && addr != 0x35)
+-				continue;
+-			return tas_create(adapter, dev, addr);
+-		}
+-	}
+-	return -ENODEV;
+-}
+-
+ static int tas_i2c_remove(struct i2c_client *client)
+ {
+ 	struct tas *tas = i2c_get_clientdata(client);
+@@ -1011,16 +937,16 @@ static int tas_i2c_remove(struct i2c_client *client)
+ }
+ 
+ static const struct i2c_device_id tas_i2c_id[] = {
+-	{ "aoa_codec_tas", 0 },
++	{ "MAC,tas3004", 0 },
+ 	{ }
+ };
++MODULE_DEVICE_TABLE(i2c,tas_i2c_id);
+ 
+ static struct i2c_driver tas_driver = {
+ 	.driver = {
+ 		.name = "aoa_codec_tas",
+ 		.owner = THIS_MODULE,
+ 	},
+-	.attach_adapter = tas_i2c_attach,
+ 	.probe = tas_i2c_probe,
+ 	.remove = tas_i2c_remove,
+ 	.id_table = tas_i2c_id,
+-- 
+1.7.11
 
-I have tested this on a Currituck board (476, SMP) with a UP kernel.
-Without this patch, the secondary kernel hits 'PANIC' in boot while
-trying to reserve a memory(the spin table), outside the memory
-range(crash reserve).
 
+Andreas.
 
-Thanks
-Suzuki
-
-> ---
->
->   kexec/arch/ppc/crashdump-powerpc.c |   19 +++++++++++++------
->   kexec/arch/ppc/fixup_dtb.c         |    4 ++++
->   2 files changed, 17 insertions(+), 6 deletions(-)
->
-> diff --git a/kexec/arch/ppc/crashdump-powerpc.c b/kexec/arch/ppc/crashdump-powerpc.c
-> index 1bef69b..4c8c75d 100644
-> --- a/kexec/arch/ppc/crashdump-powerpc.c
-> +++ b/kexec/arch/ppc/crashdump-powerpc.c
-> @@ -262,10 +262,19 @@ static void ulltoa(unsigned long long i, char *str)
->   	}
->   }
->
-> +/* Append str to cmdline */
-> +static void add_cmdline(char *cmdline, char *str)
-> +{
-> +	int cmdlen = strlen(cmdline) + strlen(str);
-> +	if (cmdlen>  (COMMAND_LINE_SIZE - 1))
-> +		die("Command line overflow\n");
-> +	strcat(cmdline, str);
-> +}
-> +
->   static int add_cmdline_param(char *cmdline, unsigned long long addr,
->   				char *cmdstr, char *byte)
->   {
-> -	int cmdlen, len, align = 1024;
-> +	int align = 1024;
->   	char str[COMMAND_LINE_SIZE], *ptr;
->
->   	/* Passing in =xxxK / =xxxM format. Saves space required in cmdline.*/
-> @@ -284,11 +293,8 @@ static int add_cmdline_param(char *cmdline, unsigned long long addr,
->   	ptr += strlen(str);
->   	ulltoa(addr, ptr);
->   	strcat(str, byte);
-> -	len = strlen(str);
-> -	cmdlen = strlen(cmdline) + len;
-> -	if (cmdlen>  (COMMAND_LINE_SIZE - 1))
-> -		die("Command line overflow\n");
-> -	strcat(cmdline, str);
-> +
-> +	add_cmdline(cmdline, str);
->
->   	dbgprintf("Command line after adding elfcorehdr: %s\n", cmdline);
->
-> @@ -365,6 +371,7 @@ int load_crashdump_segments(struct kexec_info *info, char *mod_cmdline,
->   	 */
->   	add_cmdline_param(mod_cmdline, elfcorehdr, " elfcorehdr=", "K");
->   	add_cmdline_param(mod_cmdline, saved_max_mem, " savemaxmem=", "M");
-> +	add_cmdline(mod_cmdline, " maxcpus=1");
->   	return 0;
->   }
->
-> diff --git a/kexec/arch/ppc/fixup_dtb.c b/kexec/arch/ppc/fixup_dtb.c
-> index e9890a4..f832026 100644
-> --- a/kexec/arch/ppc/fixup_dtb.c
-> +++ b/kexec/arch/ppc/fixup_dtb.c
-> @@ -172,6 +172,9 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf)
->   		}
->   	}
->
-> +#if 0
-> +	/* XXX: Do not reserve spin-table for CPUs. */
-> +
->   	/* Add reserve regions for cpu-release-addr */
->   	nodeoffset = fdt_node_offset_by_prop_value(blob_buf, -1, "device_type", "cpu", 4);
->   	while (nodeoffset != -FDT_ERR_NOTFOUND) {
-> @@ -201,6 +204,7 @@ static void fixup_reserve_regions(struct kexec_info *info, char *blob_buf)
->   		nodeoffset = fdt_node_offset_by_prop_value(blob_buf, nodeoffset,
->   				"device_type", "cpu", 4);
->   	}
-> +#endif
->
->   out:
->   	print_fdt_reserve_regions(blob_buf);
->
->
-> _______________________________________________
-> kexec mailing list
-> kexec@lists.infradead.org
-> http://lists.infradead.org/mailman/listinfo/kexec
->
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
