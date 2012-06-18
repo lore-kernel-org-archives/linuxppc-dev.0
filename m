@@ -1,35 +1,24 @@
-Return-Path: <sjenning@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e4.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 531C9B6FFC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2012 06:55:42 +1000 (EST)
-Received: from /spool/local
- by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sjenning@linux.vnet.ibm.com>;
- Mon, 18 Jun 2012 16:55:38 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D2D4338C801C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 16:55:35 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5IKtZ38139988
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 16:55:35 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5IKtZl8011922
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 16:55:35 -0400
-Message-ID: <4FDF95C5.3090903@linux.vnet.ibm.com>
-Date: Mon, 18 Jun 2012 15:55:33 -0500
-From: Seth Jennings <sjenning@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: CPU-local TLB flushing
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Minchan Kim <minchan@kernel.org>, Robert Jennings <rcj@linux.vnet.ibm.com>,
- Nitin Gupta <ngupta@vflare.org>
+Return-Path: <ben.c@servergy.com>
+Received: from exprod6og108.obsmtp.com (exprod6og108.obsmtp.com [64.18.1.21])
+ by ozlabs.org (Postfix) with SMTP id 9665CB7002
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2012 07:04:19 +1000 (EST)
+Received: by ggnc4 with SMTP id c4so5062786ggn.17
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 14:04:17 -0700 (PDT)
+Subject: Re: [PATCH] PPC: PCI: Fix pcibios_io_space_offset() so it works for
+ 32-bit ptr/64-bit rsrcs
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Ben Collins <ben.c@servergy.com>
+In-Reply-To: <1340051997.2372.27.camel@pasglop>
+Date: Mon, 18 Jun 2012 16:04:14 -0500
+Message-Id: <0F5B9B19-CC65-4DF0-92FB-C34767C42E80@servergy.com>
+References: <4DC27253-67FC-4A55-8C78-7782D9D0CF53@servergy.com>
+ <1338959744.7150.153.camel@pasglop>
+ <CAErSpo4pDOigbvF3SPzOUqx79d_-8yHWrc8TsWChG9indB+k_A@mail.gmail.com>
+ <1340051997.2372.27.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Bjorn Helgaas <bhelgaas@google.com>, Paul Mackerras <paulus@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,58 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a continuation of a thread a few months ago:
 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-February/095775.html
+On Jun 18, 2012, at 3:39 PM, Benjamin Herrenschmidt wrote:
 
-zsmalloc is now in the staging tree and there are patches
-on lkml to convert the x86 only tlb flushing code to arch
-independent code.
+> On Mon, 2012-06-18 at 09:23 -0600, Bjorn Helgaas wrote:
+>> Ooh, sorry about that.  Who's going to push this fix?  I don't see it
+>> in Linus' tree yet.  If you want me to, please forward me the =
+original
+>> patch.=20
+>=20
+> I want to double check something. We are still printing something =
+wrong
+> in the kernel log, so it looks like we have some incorrect carry in =
+some
+> arithmetic happening somewhere.
 
-https://lkml.org/lkml/2012/5/14/55
+Can we at least get this patch in to get things working again? It's =
+still a regression either way.
 
-A quick back story, zsmalloc does some pte/tlb manipulation
-to quickly map a pair of pages into a single VM area.  It
-does this with interrupts disabled in a preallocated per-cpu
-VM area, which means the mapping only exists in the TLB of
-the cpu that does the mapping and, therefore, only needs to
-be flushed on that same cpu during the unmapping process.
-
-Right now, zsmalloc uses __flush_tlb_one() on x86 to do a
-cpu-local single entry tlb flush.  Afaict, there is no such
-call on ppc64.
-
-The patch replaces that x86 call with a call to a new function,
-local_unmap_kernel_range(), which is exactly the same as
-unmap_kernel_range() in mm/vmalloc.c except that it calls
-local_flush_tlb_kernel_range() instead of 
-flush_tlb_kernel_range().
-
-A few archs support local_flush_tlb_kernel_range() already and
-another patch in the patchset above, introduces this function
-for x86; basically a wrapper for __flush_tlb_single().
-
-For PPC_STD_MMU_64, it looked like all the tlb flushing
-functions were just stubs, so I just added a stub for
-local_flush_tlb_kernel_range().  This was stable running
-a single threaded application, bound to one cpu, but crashes
-with even two threads.
-
-With local_flush_tlb_kernel_range() being a stub,
-the new function local_unmap_kernel_range() is exactly
-the same as unmap_kernel_range() since 
-local_flush_tlb_kernel_range() and flush_tlb_kernel_range()
-are both stubs on ppc64.
-
-My knowledge of the ppc64 hashing tlb design is almost
-nothing, but it seems like this should work, albeit slowly
-since it would be a global flush rather than cpu-local.
-
-I was wondering if anyone could tell me why this doesn't work,
-and what needs to be done to make it work.
-
-Thanks in advance for any help!  Let me know if you need
-clarification on something.
+> Cheers,
+> Ben.
+>=20
+>=20
 
 --
-Seth
+Ben Collins
+Servergy, Inc.
+(757) 243-7557
+
+CONFIDENTIALITY NOTICE: This communication contains privileged and/or =
+confidential information; and should be maintained with the strictest =
+confidence. It is intended solely for the use of the person or entity in =
+which it is addressed. If you are not the intended recipient, you are =
+STRICTLY PROHIBITED from disclosing, copying, distributing or using any =
+of this information. If you received this communication in error, please =
+contact the sender immediately and destroy the material in its entirety, =
+whether electronic or hard copy.
