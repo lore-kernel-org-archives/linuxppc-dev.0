@@ -1,21 +1,20 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Return-Path: <beckyb@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0E0CCB70B4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 22:57:17 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] i2c/powermac: Improve detection of devices from
- device-tree
-References: <1340014606.2372.13.camel@pasglop>
-Date: Mon, 18 Jun 2012 14:57:08 +0200
-In-Reply-To: <1340014606.2372.13.camel@pasglop> (Benjamin Herrenschmidt's
- message of "Mon, 18 Jun 2012 20:16:46 +1000")
-Message-ID: <m28vfkvkuz.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id B89D8B72D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2012 00:23:14 +1000 (EST)
+Subject: Re: Questions on Hugetlb for bookE and PHYS_64BIT
+Mime-Version: 1.0 (Apple Message framework v1084)
+Content-Type: text/plain; charset=us-ascii
+From: Becky Bruce <beckyb@kernel.crashing.org>
+In-Reply-To: <4FDB7AEC.2010102@freescale.com>
+Date: Mon, 18 Jun 2012 09:22:59 -0500
+Message-Id: <539824A8-EBAE-44AA-9818-9D4462F25DE2@kernel.crashing.org>
+References: <CAE2rjsQpZzMaJQrNQexy7kUSVR6F09Nsuxi6ueKiLAh=Hj-G4Q@mail.gmail.com>
+ <4FDB7AEC.2010102@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: telenn barz <telenn.barz@gmail.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,30 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> This patch adds a number of workarounds for broken Apple device-trees
-> mostly around sound chips. It handles creating the missing audio codec
-> devices and works around various issues with missing addresses or
-> missing compatible properties.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->
-> Andreas, this is what I've been cooking up today. Still mostly untested
-> though, so handle with care :-) But it gives you the basic premises.
+On Jun 15, 2012, at 1:11 PM, Scott Wood wrote:
 
-Sucessfully tested on PowerBook6,7 and PowerMac7,3 (both tas3004, the
-latter with the deq workaround).
+> On 06/15/2012 09:43 AM, telenn barz wrote:
+>> Hi all,
+>>=20
+>> CONFIG_PHYS_64BIT enables kernel support for larger than 32-bit =
+physical
+>> addresses. Is it this configuration option we have to enable for the
+>> support of 36-bit real memory (as are capable the Freescale e500v2 or
+>> e500mc cores family) ?
+>=20
+> Yes.
+>=20
+>> The Hugetlb patch for BookE
+>> =
+(https://lists.ozlabs.org/pipermail/linuxppc-dev/2011-June/091315.html)
+>> seems to be surbordinated to CONFIG_PHYS_64BIT. Is there any good =
+reason
+>> why it is not supported when CONFIG_PHYS_64BIT is disabled ?
+>=20
+> Because it would be extra work to support that configuration, and
+> nobody's felt enough of a need for it to put in that work.
 
-These are the remaining failures on PowerMac7,3:
+Most of the use-cases we had demanding hugetlb were *also* cases that =
+had large amounts of memory, so this is the model we adopted.  Plus, we =
+need some of the code from the 36-bit implementation, including the part =
+that causes the lowest level of the page table to widen to 64 bits; =
+additionally we did not measure much, if any, of a perf hit when =
+enabling PHYS_64BIT.=20
 
-i2c i2c-5: No i2c address for /ht@0,f2000000/pci@1/mac-io@7/i2c@18000/i2c-modem
-i2c i2c-6: i2c-powermac: modalias failure on /u3@0,f8000000/i2c@f8001000/cereal@1c0
+Obviously, it could be made to work without it, although there are real =
+code changes required. But unless you have a case where you have a =
+noticeable performance drop from enabling CONFIG_PHYS_64BIT, it's not =
+worth the effort.
 
-Andreas.
+-Becky
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+>=20
+> -Scott
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
