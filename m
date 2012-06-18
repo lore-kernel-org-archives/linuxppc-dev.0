@@ -1,35 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1339982188.28108.3.camel@concordia>
-Subject: Re: [PATCH 0/7][TRIVIAL][resend] trivial patches
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Wanpeng Li <liwp.linux@gmail.com>
-Date: Mon, 18 Jun 2012 11:16:28 +1000
-In-Reply-To: <1339766499-7891-1-git-send-email-liwp.linux@gmail.com>
-References: <1339766499-7891-1-git-send-email-liwp.linux@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CF053B72B6
+ for <linuxppc-dev@ozlabs.org>; Mon, 18 Jun 2012 11:27:30 +1000 (EST)
+Message-ID: <1339982830.2372.8.camel@pasglop>
+Subject: Re: [PATCH 01/15] i2c/powermac: Register i2c devices from device-tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Mon, 18 Jun 2012 11:27:10 +1000
+In-Reply-To: <1339312981.24838.98.camel@pasglop>
+References: <1334823416-9138-1-git-send-email-benh@kernel.crashing.org>
+ <1334823416-9138-2-git-send-email-benh__33169.052625499$1334826821$gmane$org@kernel.crashing.org>
+ <m2r4tofuxr.fsf@igel.home> <1339279889.24838.93.camel@pasglop>
+ <m2k3zgf79j.fsf@igel.home> <1339281364.24838.94.camel@pasglop>
+ <m2fwa4f5x5.fsf@igel.home> <1339283422.24838.96.camel@pasglop>
+ <m2zk8br65n.fsf@linux-m68k.org> <1339312981.24838.98.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Christoph Lameter <cl@linux-foundation.org>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-pci@vger.kernel.org,
- Jesse Barnes <jbarnes@virtuousgeek.org>, David Howells <dhowells@redhat.com>,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Larry Woodman <lwoodman@redhat.com>,
- Andrea Arcangeli <aarcange@redhat.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>,
- Gavin Shan <shangw@linux.vnet.ibm.com>, x86@kernel.org,
- Hugh Dickins <hughd@google.com>, Ingo Molnar <mingo@redhat.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- Jan Kiszka <jan.kiszka@siemens.com>, Nishanth Aravamudan <nacc@us.ibm.com>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, Mel Gorman <mel@csn.ul.ie>,
- Johannes Weiner <hannes@cmpxchg.org>, Al Viro <viro@zeniv.linux.org.uk>,
- Bjorn Helgaas <bhelgaas@google.com>, cgroups@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
- Michal Hocko <mhocko@suse.cz>, trivial@kernel.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
- Minchan Kim <minchan@kernel.org>, Li Zefan <lizefan@huawei.com>,
- Jason Wessel <jason.wessel@windriver.com>, Tejun Heo <tj@kernel.org>,
- David Rientjes <rientjes@google.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,18 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-06-15 at 21:21 +0800, Wanpeng Li wrote:
-> From: Wanpeng Li <liwp@linux.vnet.ibm.com>
+On Sun, 2012-06-10 at 17:23 +1000, Benjamin Herrenschmidt wrote:
+
+> Ah, excellent, so a small quirk in i2c_powermac is the way to go then,
+> we can detect it by name and hack up something. Either that or even
+> better, in prom_init, we could add the missing property to the
+> device-tree.
 > 
-> Since these patches has already send more than one week and 
-> doesn't get any response, I collect them and send out a patch set.
+> Any chance you can try that ? (Look at other examples of DT fixups in
+> prom_init.c and don't forget the RELOC() around strings :-)
 
-These patches are all trivial cleanups, so I would not expect to get any
-response. Just look to see if they appear in the -next branches of the
-various maintainers before the next merge window, ie. in the next few
-weeks.
+Ok, don't bother. I've been looking into it more closely and I think
+the best solution here is actually self contained in i2c-powermac.
 
-If they haven't been picked up before the next merge window, then you
-should resend them.
+I found a couple more device-tree oddities in older machines that
+I'm adding workarounds for as well. I'll send a couple of patches
+later today including your original one.
 
-cheers
+Cheers,
+Ben.
