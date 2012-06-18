@@ -1,28 +1,39 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
- [209.85.217.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EB471B6FFD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2012 07:07:06 +1000 (EST)
-Received: by lban1 with SMTP id n1so4466179lba.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 14:07:02 -0700 (PDT)
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e34.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C8619B6FCA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Jun 2012 07:59:10 +1000 (EST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Mon, 18 Jun 2012 15:59:07 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1C63219D8053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 21:59:02 +0000 (WET)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5ILwxaJ120704
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 15:59:01 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5ILwwIL012640
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Jun 2012 15:58:59 -0600
+Date: Mon, 18 Jun 2012 14:58:57 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: RCU stalls on 32-bit pmac SMP
+Message-ID: <20120618215857.GG2400@linux.vnet.ibm.com>
+References: <1339979746.2372.6.camel@pasglop>
+ <20120618170521.GD2400@linux.vnet.ibm.com>
+ <1340052331.2372.32.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <20120523223700.24276.76804.stgit@bhelgaas.mtv.corp.google.com>
-References: <20120523222635.24276.80023.stgit@bhelgaas.mtv.corp.google.com>
- <20120523223700.24276.76804.stgit@bhelgaas.mtv.corp.google.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Mon, 18 Jun 2012 15:06:41 -0600
-Message-ID: <CAErSpo6mbzqMuewBySk5kA8E9RwOVZqOEcnM4Hy541B3pta9SQ@mail.gmail.com>
-Subject: Re: [PATCH v3 1/2] powerpc/PCI: move DMA & IRQ init to device_add()
- notification path
-To: Hiroo Matsumoto <matsumoto.hiroo@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au,
- Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
- Jesse Larrew <jlarrew@linux.vnet.ibm.com>, jbarnes@virtuousgeek.org,
- Dominik Brodowski <linux@dominikbrodowski.net>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1340052331.2372.32.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,50 +43,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm trying to make some progress on these patches, but I'm concerned
-about this bit:
+On Tue, Jun 19, 2012 at 06:45:31AM +1000, Benjamin Herrenschmidt wrote:
+> Hi Paul !
+> 
+> On Mon, 2012-06-18 at 10:05 -0700, Paul E. McKenney wrote:
+> 
+> > > sd 0:0:0:0: Attached scsi generic sg0 type 0
+> > >  sda: [mac] sda1 sda2 sda3 sda4 sda5 sda6 sda7 sda8 sda9 sda10 sda11 sda12 sda13 sda14 sda15
+> > > sd 0:0:0:0: [sda] Attached SCSI disk
+> > > scsi 0:0:1:0: Direct-Access     ATA      ST380021A        3.75 PQ: 0 ANSI: 5
+> > > sd 0:0:1:0: [sdb] 156301488 512-byte logical blocks: (80.0 GB/74.5 GiB)
+> > > sd 0:0:1:0: [sdb] Write Protect is off
+> > > sd 0:0:1:0: Attached scsi generic sg1 type 0
+> > > sd 0:0:1:0: [sdb] Mode Sense: 00 3a 00 00
+> > > sd 0:0:1:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+> > > INFO: rcu_sched self-detected stall on CPU { 0}  (t=16163 jiffies)
+> > > Call Trace:
+> > > INFO: rcu_sched self-detected stall on CPU { 1}  (t=16163 jiffies)
+> > > Call Trace:
+> > > [ef877d30] [c0008d04] show_stack+0x50/0x158 (unreliable)
+> > > [ef877d70] [c0097fe4] __rcu_pending+0x184/0x46c
+> > > [ef877da0] [c00991a0] rcu_check_callbacks+0x7c/0x168
+> > > [ef877dc0] [c0044a40] update_process_times+0x3c/0x70
+> > > [ef877de0] [c0083a3c] tick_sched_timer+0x88/0x100
+> > > [ef877e10] [c005b11c] __run_hrtimer.clone.29+0x54/0x104
+> > > [ef877e30] [c005bf44] hrtimer_interrupt+0x158/0x3f8
+> > > [ef877ea0] [c000b5c4] timer_interrupt+0x1cc/0x204
+> > > [ef877ed0] [c0011b88] ret_from_except+0x0/0x1c
+> > > --- Exception: 901 at cpu_idle+0xe4/0x188
+> > 
+> > Am I reading this correctly?  Did the system really take a scheduling-clock
+> > interrupt from within another scheduling-clock interrupt?
+> 
+> Not that I can see. I see only one interrupt on that CPU. It was idle,
+> took a timer interrupt -> hrtimer ... etc... RCU boom !
+> 
+> > If so, my first question is "Why did the scheduling-clock interrupt
+> > run for so long?"  ;-)
+> 
+> This is still that CPU:
+> 
+> >      LR = cpu_idle+0xc8/0x188
+> > > [ef877f90] [c00097e8] cpu_idle+0x60/0x188 (unreliable)
+> > > [ef877fc0] [c046531c] start_secondary+0x2c8/0x2cc
+> > > [ef877ff0] [00003278] 0x3278
+> 
+> And now we have the other one:
+> 
+> > > [ef873b60] [c0008d04] show_stack+0x50/0x158 (unreliable)
+> > > [ef873ba0] [c0097fe4] __rcu_pending+0x184/0x46c
+> > > [ef873bd0] [c0099240] rcu_check_callbacks+0x11c/0x168
+> > > [ef873bf0] [c0044a40] update_process_times+0x3c/0x70
+> > > [ef873c10] [c0083a3c] tick_sched_timer+0x88/0x100
+> > > [ef873c40] [c005b11c] __run_hrtimer.clone.29+0x54/0x104
+> > > [ef873c60] [c005bf44] hrtimer_interrupt+0x158/0x3f8
+> > > [ef873cd0] [c000b5c4] timer_interrupt+0x1cc/0x204
+> > > [ef873d00] [c0011b88] ret_from_except+0x0/0x1c
+> > > --- Exception: 901 at wake_up_new_task+0x134/0x16c
+> > >     LR = wake_up_new_task+0x134/0x16c
+> > > [ef873dc0] [c0065f08] wake_up_new_task+0xfc/0x16c (unreliable)
+> > > [ef873df0] [c0035530] do_fork+0xe8/0x2bc
+> > > [ef873e30] [c0008a4c] sys_clone+0x50/0x90
+> > > [ef873e50] [c00114b8] ret_from_syscall+0x0/0x40
+> > > --- Exception: c00 at kernel_thread+0x28/0x68
+> > >     LR = __call_usermodehelper+0x40/0xdc
+> > > [ef873f10] [c005f5c8] async_run_entry_fn+0x128/0x1e4 (unreliable)
+> > > [ef873f20] [ef878c00] 0xef878c00
+> > > [ef873f40] [c004e668] process_one_work+0x150/0x3f0
+> > > [ef873f70] [c00514f0] worker_thread+0x18c/0x37c
+> > > [ef873fb0] [c00567bc] kthread+0x84/0x88
+> > > [ef873ff0] [c000f514] kernel_thread+0x4c/0x68
+> 
+> Here what we have is a kernel thread trying to call_usermodehelper
+> (probably the hotplug stuff from discovering the disk) taking a timer
+> interrupt from wake_up_new_task.
+> 
+> Looks like the hang has to be with some RCU stuff update_process_times
+> does vs. taking the interrupt in wake_up_new_task ? Hard to tell...
 
-> diff --git a/drivers/pcmcia/cardbus.c b/drivers/pcmcia/cardbus.c
-> index 24caeaf..a980691 100644
-> --- a/drivers/pcmcia/cardbus.c
-> +++ b/drivers/pcmcia/cardbus.c
-> @@ -85,7 +84,6 @@ int __ref cb_alloc(struct pcmcia_socket *s)
-> =A0 =A0 =A0 =A0 */
-> =A0 =A0 =A0 =A0pci_bus_size_bridges(bus);
-> =A0 =A0 =A0 =A0pci_bus_assign_resources(bus);
-> - =A0 =A0 =A0 cardbus_config_irq_and_cls(bus, s->pci_irq);
->
-> =A0 =A0 =A0 =A0/* socket specific tune function */
-> =A0 =A0 =A0 =A0if (s->tune_bridge)
-> @@ -93,6 +91,7 @@ int __ref cb_alloc(struct pcmcia_socket *s)
->
-> =A0 =A0 =A0 =A0pci_enable_bridges(bus);
-> =A0 =A0 =A0 =A0pci_bus_add_devices(bus);
-> + =A0 =A0 =A0 cardbus_config_irq_and_cls(bus, s->pci_irq);
->
-> =A0 =A0 =A0 =A0return 0;
-> =A0}
+The RCU stuff from update_process_times() is usually the diagnostic.
 
-We're moving the CardBus IRQ config from before pci_bus_add_devices()
-to after.  I see why you did that: we're proposing to do the powerpc
-DMA & IRQ setup in pci_bus_add_devices(), so we don't want to have the
-powerpc IRQ init clobber the CardBus IRQ config.
+> This happens more/less reliably once at boot on this machine, then no
+> more (after the long pause the machine moves on, apparently fine).
 
-But a driver can claim the device as soon as we call
-pci_bus_add_devices(), so we're potentially changing dev->irq after a
-driver has already looked at it, which sounds like a bug.
+What happens if you reduce the stall-warning timeout?  You can use either
+the CONFIG_RCU_CPU_STALL_TIMEOUT kernel config parameter or the
+rcutree.rcu_cpu_stall_timeout boot parameter.
 
-There are only five possibilities for powerpc pci_irq_fixup:
+If you can get two stall-warning messages to appear during the hang,
+comparing the stacks is usually informative.
 
-      ppc47x_pci_irq_fixup
-      mpc85xx_cds_pci_irq_fixup
-      maple_pci_irq_fixup
-      pmac_pci_irq_fixup
-      rtas_msi_pci_irq_fixup
-
-If these were normal PCI header quirks instead, they could run
-earlier, and we wouldn't need to move this
-cardbus_config_irq_and_cls() call.  Is it possible to make these
-quirks, Ben?
-
-Bjorn
+							Thanx, Paul
