@@ -1,26 +1,20 @@
-Return-Path: <tripeaks@gmail.com>
-Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
- [209.85.210.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 78485B6FBA
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2012 16:28:17 +1000 (EST)
-Received: by dalf4 with SMTP id f4so8159051dal.15
- for <linuxppc-dev@ozlabs.org>; Tue, 19 Jun 2012 23:28:15 -0700 (PDT)
-Sender: Yuasa Yoichi <tripeaks@gmail.com>
-Date: Wed, 20 Jun 2012 15:27:59 +0900
-From: Yoichi Yuasa <yuasa@linux-mips.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>, Paul Mundt <lethal@linux-sh.org>
-Subject: [PATCH] MIPS: fix bug.h MIPS build regression
-Message-Id: <20120620152759.2caceb8c.yuasa@linux-mips.org>
-In-Reply-To: <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
-References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id B6C84B6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2012 17:50:21 +1000 (EST)
+Date: Wed, 20 Jun 2012 17:50:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: linux-next: build failure after merge of the final tree (powerpc
+ related)
+Message-Id: <20120620175014.a822a766e0f91f7b44f48fa0@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Chris Zankel <chris@zankel.net>, Linux-sh list <linux-sh@vger.kernel.org>,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>, yuasa@linux-mips.org
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__20_Jun_2012_17_50_14_+1000_267of1xduDZ4C/IM"
+Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,79 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit: 3777808873b0c49c5cf27e44c948dfb02675d578 breaks all MIPS builds.
+--Signature=_Wed__20_Jun_2012_17_50_14_+1000_267of1xduDZ4C/IM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  CC      arch/mips/kernel/machine_kexec.o
-In file included from include/linux/kernel.h:20:0,
-                 from include/asm-generic/bug.h:35,
-                 from /home/yuasa/src/linux/kernel/git/linux-2.6/arch/mips/include/asm/bug.h:41,
-                 from /home/yuasa/src/linux/kernel/git/linux-2.6/arch/mips/include/asm/bitops.h:20,
-                 from include/linux/bitops.h:22,
-                 from include/linux/signal.h:38,
-                 from include/linux/elfcore.h:5,
-                 from include/linux/kexec.h:60,
-                 from arch/mips/kernel/machine_kexec.c:9:
-include/linux/log2.h: In function '__ilog2_u32':
-include/linux/log2.h:34:2: error: implicit declaration of function 'fls' [-Werror=implicit-function-declaration]
-include/linux/log2.h: In function '__ilog2_u64':
-include/linux/log2.h:42:2: error: implicit declaration of function 'fls64' [-Werror=implicit-function-declaration]
-include/linux/log2.h: In function '__roundup_pow_of_two':
-include/linux/log2.h:63:2: error: implicit declaration of function 'fls_long' [-Werror=implicit-function-declaration]
-In file included from include/linux/bitops.h:22:0,
-                 from include/linux/signal.h:38,
-                 from include/linux/elfcore.h:5,
-                 from include/linux/kexec.h:60,
-                 from arch/mips/kernel/machine_kexec.c:9:
-/home/yuasa/src/linux/kernel/git/linux-2.6/arch/mips/include/asm/bitops.h: At top level:
-/home/yuasa/src/linux/kernel/git/linux-2.6/arch/mips/include/asm/bitops.h:615:19: error: static declaration of 'fls' follows non-static declaration
-include/linux/log2.h:34:9: note: previous implicit declaration of 'fls' was here
-In file included from /home/yuasa/src/linux/kernel/git/linux-2.6/arch/mips/include/asm/bitops.h:651:0,
-                 from include/linux/bitops.h:22,
-                 from include/linux/signal.h:38,
-                 from include/linux/elfcore.h:5,
-                 from include/linux/kexec.h:60,
-                 from arch/mips/kernel/machine_kexec.c:9:
-include/asm-generic/bitops/fls64.h:18:28: error: static declaration of 'fls64' follows non-static declaration
-include/linux/log2.h:42:9: note: previous implicit declaration of 'fls64' was here
-In file included from include/linux/signal.h:38:0,
-                 from include/linux/elfcore.h:5,
-                 from include/linux/kexec.h:60,
-                 from arch/mips/kernel/machine_kexec.c:9:
-include/linux/bitops.h:160:24: error: conflicting types for 'fls_long'
-include/linux/log2.h:63:16: note: previous implicit declaration of 'fls_long' was here
-cc1: all warnings being treated as errors
+Hi all,
 
-make[2]: *** [arch/mips/kernel/machine_kexec.o] Error 1
+After merging the final tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
 
-Signed-off-by: Yoichi Yuasa <yuasa@linux-mips.org>
----
- arch/mips/include/asm/bitops.h |    1 -
- arch/mips/include/asm/io.h     |    1 +
- 2 files changed, 1 insertions(+), 1 deletions(-)
+powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path=
+_word':
+(.text+0x90): sibling call optimization to `skb_copy_bits' does not allow a=
+utomatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibli=
+ng-calls, or make `skb_copy_bits' extern
+powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path=
+_half':
+(.text+0xe0): sibling call optimization to `skb_copy_bits' does not allow a=
+utomatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibli=
+ng-calls, or make `skb_copy_bits' extern
+powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path=
+_byte':
+(.text+0x130): sibling call optimization to `skb_copy_bits' does not allow =
+automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibl=
+ing-calls, or make `skb_copy_bits' extern
+powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path=
+_byte_msh':
+(.text+0x180): sibling call optimization to `skb_copy_bits' does not allow =
+automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibl=
+ing-calls, or make `skb_copy_bits' extern
+powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `sk_load_word_=
+negative_offset':
+(.text+0x1dc): sibling call optimization to `bpf_internal_load_pointer_neg_=
+helper' does not allow automatic multiple TOCs; recompile with -mminimal-to=
+c or -fno-optimize-sibling-calls, or make `bpf_internal_load_pointer_neg_he=
+lper' extern
+powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `sk_load_half_=
+negative_offset':
+(.text+0x238): sibling call optimization to `bpf_internal_load_pointer_neg_=
+helper' does not allow automatic multiple TOCs; recompile with -mminimal-to=
+c or -fno-optimize-sibling-calls, or make `bpf_internal_load_pointer_neg_he=
+lper' extern
+powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `sk_load_byte_=
+negative_offset':
+(.text+0x294): sibling call optimization to `bpf_internal_load_pointer_neg_=
+helper' does not allow automatic multiple TOCs; recompile with -mminimal-to=
+c or -fno-optimize-sibling-calls, or make `bpf_internal_load_pointer_neg_he=
+lper' extern
+powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `sk_load_byte_=
+msh_negative_offset':
+(.text+0x2f0): sibling call optimization to `bpf_internal_load_pointer_neg_=
+helper' does not allow automatic multiple TOCs; recompile with -mminimal-to=
+c or -fno-optimize-sibling-calls, or make `bpf_internal_load_pointer_neg_he=
+lper' extern
+powerpc64-linux-ld: final link failed: Bad value
 
-diff --git a/arch/mips/include/asm/bitops.h b/arch/mips/include/asm/bitops.h
-index 2e1ad4c..82ad35c 100644
---- a/arch/mips/include/asm/bitops.h
-+++ b/arch/mips/include/asm/bitops.h
-@@ -17,7 +17,6 @@
- #include <linux/irqflags.h>
- #include <linux/types.h>
- #include <asm/barrier.h>
--#include <asm/bug.h>
- #include <asm/byteorder.h>		/* sigh ... */
- #include <asm/cpu-features.h>
- #include <asm/sgidefs.h>
-diff --git a/arch/mips/include/asm/io.h b/arch/mips/include/asm/io.h
-index 37a8379..100f9a3 100644
---- a/arch/mips/include/asm/io.h
-+++ b/arch/mips/include/asm/io.h
-@@ -17,6 +17,7 @@
- #include <linux/types.h>
- 
- #include <asm/addrspace.h>
-+#include <asm/bug.h>
- #include <asm/byteorder.h>
- #include <asm/cpu.h>
- #include <asm/cpu-features.h>
--- 
-1.7.0.4
+I started building with gcc 4.6.3/binutils 2.22 today.  gcc
+4.6.0/binutils 2.21 do not produce this error, it produces this instead
+(which has been happening for a long time):
+
+powerpc64-linux-ld: TOC section size exceeds 64k
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Wed__20_Jun_2012_17_50_14_+1000_267of1xduDZ4C/IM
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJP4YC2AAoJEECxmPOUX5FEJQQP/ivHbYTDlx+67ASMOUaoCXT4
+eUEdWbgFVOs7JS8QCJdu/kYUWrxnny3gtcgmZH3tzkC74z0mgHe/MFciHAFh7OmY
+YkdMwh5nApiaBoTH00P/f3jCaOVlj7MS4JHq0iVaMhZDVSq4/ti1RrjhclLfRdKU
+865WfyWQBZPYf5AWuSMozx6wupOilXsWjE28TYAeu2prq9MHfw+JncAN75UaffDA
+IVtv8rskdOb6s3LFfdtDJhAKCIsg3ZWj8tqa1OQ4+q77DKjfVgrfZFOcDWBE9VQr
+2OsjNkWnuOHMZCGxcZNA0dKlFz+om2KuberiMIHenTv5/AqOPTtw+ujZI1VjWoy7
+zol94kuRMz+nPyNPn+3Q35lrQOQUw4vMWFAWxkv+t35cHTkoOJQdPVXOiYKqSsmA
+Mjn1HNoiBn8YFiNCFM9/Q378hc7la63v9wBpfXSZaFlR5G3ZzgKwyFAql9NAnbuP
+3cOs3Kkf3T5lJma88DNBZ2HHnPmcjoufm6sorZvTe6ntK+kiErDP44oYKqZbjeNk
+L+9XNDm9MEgZfCMO5ZGsZYIDMQ2iln42yysk36chmgbncGJtN+ZtxuApBotV3Ynh
+AgZh7sgQXbdnA/XZMxlu2DKTy9a5NDDnqKWTDWMd7bgum8qaUEgby7giwS4QdnzB
+HlzCQPV8QC19/GfH5qOK
+=qpp2
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__20_Jun_2012_17_50_14_+1000_267of1xduDZ4C/IM--
