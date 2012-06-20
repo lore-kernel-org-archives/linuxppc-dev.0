@@ -1,23 +1,11 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from linux-sh.org (linux-sh.org [111.68.239.195])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 63704B7000
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2012 14:13:04 +1000 (EST)
-Date: Wed, 20 Jun 2012 12:59:51 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Build regressions/improvements in v3.5-rc3
-Message-ID: <20120620035951.GC5623@linux-sh.org>
-References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org, Jimi Xenidis <jimix@pobox.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
-Cc: Chris Zankel <chris@zankel.net>, Linux-sh list <linux-sh@vger.kernel.org>,
- linux-kernel@vger.kernel.org, Linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Giuseppe Cavallaro <peppe.cavallaro@st.com>
+Subject: [PATCH] powerpc: fix uninitialised error in numa.c
+Date: Wed, 20 Jun 2012 14:17:47 +1000
+Message-ID: <20741.1340165867@neuling.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +15,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jun 17, 2012 at 09:56:59PM +0200, Geert Uytterhoeven wrote:
-> On Sun, Jun 17, 2012 at 9:46 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> > JFYI, when comparing v3.5-rc3 to v3.5-rc2[3], the summaries are:
-> > ??- build errors: +235/-10
-> 
-> Truckloads of powerpc "Unrecognized opcode" breakage, and
-> 
-That was my fault, should be fixed up by 2603efa31a.
+chroma_defconfig currently gives me this with gcc 4.6:
+  arch/powerpc/mm/numa.c:638:13: error: 'dm' may be used uninitialized in this function [-Werror=uninitialized]
 
->   + drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c: error: implicit
-> declaration of function 'pci_iomap'
-> [-Werror=implicit-function-declaration]:  => 90:3
->   + drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c: error: implicit
-> declaration of function 'pci_iounmap'
-> [-Werror=implicit-function-declaration]:  => 142:2
-> 
-Not sure about this one, it should find everything alright via:
+It's a bogus warning since of_get_drconf_memory() only writes it
+anyway.  
 
-	linux/io.h -> asm/io.h -> asm-generic/iomap.h -> asm-generic/pci_iomap.h
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+cc: stable@kernel.org
+---
+Also affects 3.4 and 3.3 stable.
 
-in the case that PCI is enabled. None of allyesconfig/modconfig enable
-PCI for me though, so I'm unsure of how you got in to this configuration
-to begin with?
-
-> xtensa
-> 
->   + error: "__ashrdi3" [fs/ntfs/ntfs.ko] undefined!:  => N/A
->   + error: "__lshrdi3" [fs/ntfs/ntfs.ko] undefined!:  => N/A
-> 
-> sh4/landisk_defconfig
-> 
->   + error: "__ashrdi3" [fs/xfs/xfs.ko] undefined!:  => N/A
->   + error: "__lshrdi3" [drivers/mtd/mtd.ko] undefined!:  => N/A
->   + error: "__lshrdi3" [fs/xfs/xfs.ko] undefined!:  => N/A
-> 
-These seem to be the same issue on both platforms, EXPORT_SYMBOL()
-doesn't work from lib-y. While it's straightforward to fix, I'm not able
-to reproduce __lshrdi3/__ashrdi3 references in any of the above, which
-compiler are you using?
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 5ca3a15..880acde 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -637,7 +637,7 @@ static inline int __init read_usm_ranges(const u32 **usm)
+  */
+ static void __init parse_drconf_memory(struct device_node *memory)
+ {
+-	const u32 *dm, *usm;
++	const u32 *dm = NULL, *usm;
+ 	unsigned int n, rc, ranges, is_kexec_kdump = 0;
+ 	unsigned long lmb_size, base, size, sz;
+ 	int nid;
