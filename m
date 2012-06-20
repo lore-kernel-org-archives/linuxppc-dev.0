@@ -1,25 +1,26 @@
-Return-Path: <peppe.cavallaro@st.com>
-Received: from eu1sys200aog117.obsmtp.com (eu1sys200aog117.obsmtp.com
- [207.126.144.143])
+Return-Path: <ralf@linux-mips.org>
+Received: from h5.dl5rb.org.uk
+ (6.d.2.3.5.8.4.2.8.7.3.5.9.9.5.0.0.0.0.0.a.e.3.0.0.b.8.0.1.0.0.2.ip6.arpa
+ [IPv6:2001:8b0:3ea:0:599:5378:2485:32d6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D7348B6FD4
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2012 23:12:30 +1000 (EST)
-Message-ID: <4FE1C6FF.9070302@st.com>
-Date: Wed, 20 Jun 2012 14:50:07 +0200
-From: Giuseppe CAVALLARO <peppe.cavallaro@st.com>
-MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>
-Subject: Re: Build regressions/improvements in v3.5-rc3
+ by ozlabs.org (Postfix) with ESMTPS id B5D0EB6FAC
+ for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2012 02:36:17 +1000 (EST)
+Date: Wed, 20 Jun 2012 17:12:49 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Yoichi Yuasa <yuasa@linux-mips.org>
+Subject: Re: [PATCH] MIPS: fix bug.h MIPS build regression
+Message-ID: <20120620161249.GB29196@linux-mips.org>
 References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
  <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
- <20120620035951.GC5623@linux-sh.org>
-In-Reply-To: <20120620035951.GC5623@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Chris Zankel <chris@zankel.net>, Linux-sh list <linux-sh@vger.kernel.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- linux-kernel@vger.kernel.org, Linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>
+ <20120620152759.2caceb8c.yuasa@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120620152759.2caceb8c.yuasa@linux-mips.org>
+Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
+ Linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mundt <lethal@linux-sh.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Chris Zankel <chris@zankel.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +30,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Paul
+On Wed, Jun 20, 2012 at 03:27:59PM +0900, Yoichi Yuasa wrote:
 
-On 6/20/2012 5:59 AM, Paul Mundt wrote:
-> On Sun, Jun 17, 2012 at 09:56:59PM +0200, Geert Uytterhoeven wrote:
->> On Sun, Jun 17, 2012 at 9:46 PM, Geert Uytterhoeven
->> <geert@linux-m68k.org> wrote:
->>> JFYI, when comparing v3.5-rc3 to v3.5-rc2[3], the summaries are:
->>> ??- build errors: +235/-10
->>
->> Truckloads of powerpc "Unrecognized opcode" breakage, and
->>
-> That was my fault, should be fixed up by 2603efa31a.
-> 
->>   + drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c: error: implicit
->> declaration of function 'pci_iomap'
->> [-Werror=implicit-function-declaration]:  => 90:3
->>   + drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c: error: implicit
->> declaration of function 'pci_iounmap'
->> [-Werror=implicit-function-declaration]:  => 142:2
->>
-> Not sure about this one, it should find everything alright via:
-> 
-> 	linux/io.h -> asm/io.h -> asm-generic/iomap.h -> asm-generic/pci_iomap.h
-> 
-> in the case that PCI is enabled. None of allyesconfig/modconfig enable
-> PCI for me though, so I'm unsure of how you got in to this configuration
-> to begin with?
+> Commit: 3777808873b0c49c5cf27e44c948dfb02675d578 breaks all MIPS builds.
 
-Trying to reproduce the problem, I've also re-built the mainstream
-kernel 3.5-rc3 for se7724_defconfig platform plus the stmmac (pltf and
-pci) but all compiles fine.
+Thanks, fix applied.
 
-I've also verified that there is the 33d5e332b9c5 commit that is the
-latest one discussed/tested/committed in the network mailing list.
-
-Can you tell me how to reproduce the problem? How can I help?
-
-Pls let me know,
-Peppe
+  Ralf
