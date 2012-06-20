@@ -1,27 +1,21 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-gh0-f170.google.com (mail-gh0-f170.google.com
- [209.85.160.170]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CA196B6FCB
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2012 18:02:51 +1000 (EST)
-Received: by ghbg2 with SMTP id g2so4999112ghb.15
- for <linuxppc-dev@ozlabs.org>; Wed, 20 Jun 2012 01:02:49 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20120620035951.GC5623@linux-sh.org>
-References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
- <20120620035951.GC5623@linux-sh.org>
-Date: Wed, 20 Jun 2012 10:02:48 +0200
-Message-ID: <CAMuHMdUmNgBsvVUGsfwKgVq2CfCnOje_4ZUSoig=vSbhN4vSJA@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.5-rc3
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Paul Mundt <lethal@linux-sh.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Chris Zankel <chris@zankel.net>, Linux-sh list <linux-sh@vger.kernel.org>,
- linux-kernel@vger.kernel.org, Linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Giuseppe Cavallaro <peppe.cavallaro@st.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 68FE1B6FD4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2012 20:09:22 +1000 (EST)
+Message-ID: <1340186951.28143.162.camel@pasglop>
+Subject: Re: linux-next: build failure after merge of the final tree
+ (powerpc related)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 20 Jun 2012 20:09:11 +1000
+In-Reply-To: <20120620175014.a822a766e0f91f7b44f48fa0@canb.auug.org.au>
+References: <20120620175014.a822a766e0f91f7b44f48fa0@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,69 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 20, 2012 at 5:59 AM, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Sun, Jun 17, 2012 at 09:56:59PM +0200, Geert Uytterhoeven wrote:
->> On Sun, Jun 17, 2012 at 9:46 PM, Geert Uytterhoeven
->> <geert@linux-m68k.org> wrote:
->> > JFYI, when comparing v3.5-rc3 to v3.5-rc2[3], the summaries are:
->> > ??- build errors: +235/-10
->>
->> Truckloads of powerpc "Unrecognized opcode" breakage, and
->>
-> That was my fault, should be fixed up by 2603efa31a.
->
->> =C2=A0 + drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c: error: implic=
-it
->> declaration of function 'pci_iomap'
->> [-Werror=3Dimplicit-function-declaration]: =C2=A0=3D> 90:3
->> =C2=A0 + drivers/net/ethernet/stmicro/stmmac/stmmac_pci.c: error: implic=
-it
->> declaration of function 'pci_iounmap'
->> [-Werror=3Dimplicit-function-declaration]: =C2=A0=3D> 142:2
->>
-> Not sure about this one, it should find everything alright via:
->
-> =C2=A0 =C2=A0 =C2=A0 =C2=A0linux/io.h -> asm/io.h -> asm-generic/iomap.h =
--> asm-generic/pci_iomap.h
->
-> in the case that PCI is enabled. None of allyesconfig/modconfig enable
-> PCI for me though, so I'm unsure of how you got in to this configuration
-> to begin with?
+On Wed, 2012-06-20 at 17:50 +1000, Stephen Rothwell wrote:
+> Hi all,
+> 
+> After merging the final tree, today's linux-next build (powerpc
+> allyesconfig) failed like this:
 
-These were xtensa, not sh.
+I hate our ABI is a good answer ? :-)
 
-The ones above ("error: expected expression before 'do'") were sh.
+I'll see what I can do tomorrow. Poke me when I'm in the office.
 
->> =C2=A0 + error: "__ashrdi3" [fs/ntfs/ntfs.ko] undefined!: =C2=A0=3D> N/A
->> =C2=A0 + error: "__lshrdi3" [fs/ntfs/ntfs.ko] undefined!: =C2=A0=3D> N/A
->>
->> sh4/landisk_defconfig
->>
->> =C2=A0 + error: "__ashrdi3" [fs/xfs/xfs.ko] undefined!: =C2=A0=3D> N/A
->> =C2=A0 + error: "__lshrdi3" [drivers/mtd/mtd.ko] undefined!: =C2=A0=3D> =
-N/A
->> =C2=A0 + error: "__lshrdi3" [fs/xfs/xfs.ko] undefined!: =C2=A0=3D> N/A
->>
-> These seem to be the same issue on both platforms, EXPORT_SYMBOL()
-> doesn't work from lib-y. While it's straightforward to fix, I'm not able
-> to reproduce __lshrdi3/__ashrdi3 references in any of the above, which
-> compiler are you using?
+Cheers,
+Ben.
 
-http://kisskb.ellerman.id.au/kisskb/buildresult/6543287/ says
-sh4-linux-gcc (GCC) 4.6.3
-
-Gr{oetje,eeting}s,
-
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+> powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path_word':
+> (.text+0x90): sibling call optimization to `skb_copy_bits' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `skb_copy_bits' extern
+> powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path_half':
+> (.text+0xe0): sibling call optimization to `skb_copy_bits' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `skb_copy_bits' extern
+> powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path_byte':
+> (.text+0x130): sibling call optimization to `skb_copy_bits' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `skb_copy_bits' extern
+> powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path_byte_msh':
+> (.text+0x180): sibling call optimization to `skb_copy_bits' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `skb_copy_bits' extern
+> powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `sk_load_word_negative_offset':
+> (.text+0x1dc): sibling call optimization to `bpf_internal_load_pointer_neg_helper' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `bpf_internal_load_pointer_neg_helper' extern
+> powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `sk_load_half_negative_offset':
+> (.text+0x238): sibling call optimization to `bpf_internal_load_pointer_neg_helper' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `bpf_internal_load_pointer_neg_helper' extern
+> powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `sk_load_byte_negative_offset':
+> (.text+0x294): sibling call optimization to `bpf_internal_load_pointer_neg_helper' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `bpf_internal_load_pointer_neg_helper' extern
+> powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `sk_load_byte_msh_negative_offset':
+> (.text+0x2f0): sibling call optimization to `bpf_internal_load_pointer_neg_helper' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `bpf_internal_load_pointer_neg_helper' extern
+> powerpc64-linux-ld: final link failed: Bad value
+> 
+> I started building with gcc 4.6.3/binutils 2.22 today.  gcc
+> 4.6.0/binutils 2.21 do not produce this error, it produces this instead
+> (which has been happening for a long time):
+> 
+> powerpc64-linux-ld: TOC section size exceeds 64k
+> 
