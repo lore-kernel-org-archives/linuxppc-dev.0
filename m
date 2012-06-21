@@ -3,10 +3,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
-Date: Thu, 21 Jun 2012 12:04:40 +1000
-Subject: [PATCH 13/18] powerpc: introduce new ___PPC_RA/B/S/T macros
+Date: Thu, 21 Jun 2012 12:04:41 +1000
+Subject: [PATCH 14/18] powerpc: start using ___PPC_RA/B/S/T where necessary
 In-Reply-To: <1340244266.960241.475925824909.qpush@ale>
-Message-Id: <20120621020440.5CD55D431D9@localhost.localdomain>
+Message-Id: <20120621020441.5EC7FD431D9@localhost.localdomain>
 Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org, schwab@linux-m68k.org,
  Anton Blanchard <anton@samba.org>, Olof Johannsson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,27 +18,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These are currently the same as __PPC_RA/B/S/T but we'll wrap them
-soon.
+Now have ___PPC_RA/B/S/T we can use it in some places.  These are
+places where we can't use the existing defines which will soon enforce
+R0-R31 usage.  
+
+The macros being changed here are being used in inline asm, which
+can't convert to enforce the R0-R31 usage.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/include/asm/ppc-opcode.h |    4 ++++
- 1 file changed, 4 insertions(+)
+ arch/powerpc/include/asm/ppc-opcode.h |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
 Index: powerpc-test/arch/powerpc/include/asm/ppc-opcode.h
 ===================================================================
 --- powerpc-test.orig/arch/powerpc/include/asm/ppc-opcode.h
 +++ powerpc-test/arch/powerpc/include/asm/ppc-opcode.h
-@@ -144,6 +144,10 @@
- #define PPC_INST_STBCIX			0x7c0007aa
- 
- /* macros to insert fields into opcodes */
-+#define ___PPC_RA(a)	(((a) & 0x1f) << 16)
-+#define ___PPC_RB(b)	(((b) & 0x1f) << 11)
-+#define ___PPC_RS(s)	(((s) & 0x1f) << 21)
-+#define ___PPC_RT(t)	___PPC_RS(t)
- #define __PPC_RA(a)	(((a) & 0x1f) << 16)
- #define __PPC_RB(b)	(((b) & 0x1f) << 11)
- #define __PPC_RS(s)	(((s) & 0x1f) << 21)
+@@ -180,13 +180,13 @@
+ #define	PPC_DCBZL(a, b)		stringify_in_c(.long PPC_INST_DCBZL | \
+ 					__PPC_RA(a) | __PPC_RB(b))
+ #define PPC_LDARX(t, a, b, eh)	stringify_in_c(.long PPC_INST_LDARX | \
+-					__PPC_RT(t) | __PPC_RA(a) | \
+-					__PPC_RB(b) | __PPC_EH(eh))
++					___PPC_RT(t) | ___PPC_RA(a) | \
++					___PPC_RB(b) | __PPC_EH(eh))
+ #define PPC_LWARX(t, a, b, eh)	stringify_in_c(.long PPC_INST_LWARX | \
+-					__PPC_RT(t) | __PPC_RA(a) | \
+-					__PPC_RB(b) | __PPC_EH(eh))
++					___PPC_RT(t) | ___PPC_RA(a) | \
++					___PPC_RB(b) | __PPC_EH(eh))
+ #define PPC_MSGSND(b)		stringify_in_c(.long PPC_INST_MSGSND | \
+-					__PPC_RB(b))
++					___PPC_RB(b))
+ #define PPC_POPCNTB(a, s)	stringify_in_c(.long PPC_INST_POPCNTB | \
+ 					__PPC_RA(a) | __PPC_RS(s))
+ #define PPC_POPCNTD(a, s)	stringify_in_c(.long PPC_INST_POPCNTD | \
+@@ -204,7 +204,7 @@
+ #define PPC_WAIT(w)		stringify_in_c(.long PPC_INST_WAIT | \
+ 					__PPC_WC(w))
+ #define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
+-					       __PPC_RB(a) | __PPC_RS(lp))
++					       ___PPC_RB(a) | ___PPC_RS(lp))
+ #define PPC_TLBSRX_DOT(a,b)	stringify_in_c(.long PPC_INST_TLBSRX_DOT | \
+ 					__PPC_RA(a) | __PPC_RB(b))
+ #define PPC_TLBIVAX(a,b)	stringify_in_c(.long PPC_INST_TLBIVAX | \
