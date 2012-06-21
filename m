@@ -3,10 +3,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
-Date: Thu, 21 Jun 2012 12:04:35 +1000
-Subject: [PATCH 8/18] powerpc: merge VCPU_GPR
+Date: Thu, 21 Jun 2012 12:04:36 +1000
+Subject: [PATCH 9/18] powerpc: change mtcrf to use real register names
 In-Reply-To: <1340244266.960241.475925824909.qpush@ale>
-Message-Id: <20120621020435.3FEE3D431D9@localhost.localdomain>
+Message-Id: <20120621020436.467F8D431D9@localhost.localdomain>
 Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org, schwab@linux-m68k.org,
  Anton Blanchard <anton@samba.org>, Olof Johannsson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,96 +18,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge the defines of VCPU_GPR from different places.
+mtocrf define is just a wrapper around the real instructions so we can
+just use real register names here (ie. lower case).
+
+Also remove braces in macro so this is possible.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/include/asm/ppc_asm.h      |    7 +++++++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |    3 ---
- arch/powerpc/kvm/book3s_interrupts.S    |    8 --------
- arch/powerpc/kvm/booke_interrupts.S     |    2 --
- arch/powerpc/kvm/bookehv_interrupts.S   |    1 -
- 5 files changed, 7 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/asm-compat.h |    2 +-
+ arch/powerpc/include/asm/ppc_asm.h    |    4 ++--
+ arch/powerpc/lib/copyuser_64.S        |    6 +++---
+ arch/powerpc/lib/mem_64.S             |    6 +++---
+ arch/powerpc/lib/memcpy_64.S          |    6 +++---
+ 5 files changed, 12 insertions(+), 12 deletions(-)
 
+Index: powerpc-test/arch/powerpc/include/asm/asm-compat.h
+===================================================================
+--- powerpc-test.orig/arch/powerpc/include/asm/asm-compat.h
++++ powerpc-test/arch/powerpc/include/asm/asm-compat.h
+@@ -29,7 +29,7 @@
+ #define PPC_LLARX(t, a, b, eh)	PPC_LDARX(t, a, b, eh)
+ #define PPC_STLCX	stringify_in_c(stdcx.)
+ #define PPC_CNTLZL	stringify_in_c(cntlzd)
+-#define PPC_MTOCRF(FXM, RS) MTOCRF((FXM), (RS))
++#define PPC_MTOCRF(FXM, RS) MTOCRF((FXM), RS)
+ #define PPC_LR_STKOFF	16
+ #define PPC_MIN_STKFRM	112
+ #else /* 32-bit */
 Index: powerpc-test/arch/powerpc/include/asm/ppc_asm.h
 ===================================================================
 --- powerpc-test.orig/arch/powerpc/include/asm/ppc_asm.h
 +++ powerpc-test/arch/powerpc/include/asm/ppc_asm.h
-@@ -178,6 +178,13 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLP
- #define HMT_HIGH	or	3,3,3
- #define HMT_EXTRA_HIGH	or	7,7,7		# power7 only
- 
-+#ifdef CONFIG_PPC64
-+#define ULONG_SIZE 	8
-+#else
-+#define ULONG_SIZE	4
-+#endif
-+#define VCPU_GPR(n)	(VCPU_GPRS + (n * ULONG_SIZE))
-+
- #ifdef __KERNEL__
+@@ -384,9 +384,9 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
  #ifdef CONFIG_PPC64
+ #define MTOCRF(FXM, RS)			\
+ 	BEGIN_FTR_SECTION_NESTED(848);	\
+-	mtcrf	(FXM), (RS);		\
++	mtcrf	(FXM), RS;		\
+ 	FTR_SECTION_ELSE_NESTED(848);	\
+-	mtocrf (FXM), (RS);		\
++	mtocrf (FXM), RS;		\
+ 	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_NOEXECUTE, 848)
+ #endif
  
-Index: powerpc-test/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+Index: powerpc-test/arch/powerpc/lib/copyuser_64.S
 ===================================================================
---- powerpc-test.orig/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ powerpc-test/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -72,9 +72,6 @@ _GLOBAL(kvmppc_hv_entry_trampoline)
- 	mtsrr1	r6
- 	RFI
+--- powerpc-test.orig/arch/powerpc/lib/copyuser_64.S
++++ powerpc-test/arch/powerpc/lib/copyuser_64.S
+@@ -30,7 +30,7 @@ _GLOBAL(__copy_tofrom_user_base)
+ 	dcbt	0,r4
+ 	beq	.Lcopy_page_4K
+ 	andi.	r6,r6,7
+-	PPC_MTOCRF(0x01,R5)
++	PPC_MTOCRF(0x01,r5)
+ 	blt	cr1,.Lshort_copy
+ /* Below we want to nop out the bne if we're on a CPU that has the
+  * CPU_FTR_UNALIGNED_LD_STD bit set and the CPU_FTR_CP_USE_DCBTZ bit
+@@ -186,7 +186,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 	blr
  
--#define ULONG_SIZE 		8
--#define VCPU_GPR(n)		(VCPU_GPRS + (n * ULONG_SIZE))
--
- /******************************************************************************
-  *                                                                            *
-  *                               Entry code                                   *
-Index: powerpc-test/arch/powerpc/kvm/book3s_interrupts.S
+ .Ldst_unaligned:
+-	PPC_MTOCRF(0x01,R6)		/* put #bytes to 8B bdry into cr7 */
++	PPC_MTOCRF(0x01,r6)		/* put #bytes to 8B bdry into cr7 */
+ 	subf	r5,r6,r5
+ 	li	r7,0
+ 	cmpldi	cr1,r5,16
+@@ -201,7 +201,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 2:	bf	cr7*4+1,3f
+ 37:	lwzx	r0,r7,r4
+ 83:	stwx	r0,r7,r3
+-3:	PPC_MTOCRF(0x01,R5)
++3:	PPC_MTOCRF(0x01,r5)
+ 	add	r4,r6,r4
+ 	add	r3,r6,r3
+ 	b	.Ldst_aligned
+Index: powerpc-test/arch/powerpc/lib/mem_64.S
 ===================================================================
---- powerpc-test.orig/arch/powerpc/kvm/book3s_interrupts.S
-+++ powerpc-test/arch/powerpc/kvm/book3s_interrupts.S
-@@ -25,19 +25,11 @@
- #include <asm/exception-64s.h>
- 
- #if defined(CONFIG_PPC_BOOK3S_64)
--
--#define ULONG_SIZE 		8
- #define FUNC(name) 		GLUE(.,name)
--
- #elif defined(CONFIG_PPC_BOOK3S_32)
--
--#define ULONG_SIZE              4
- #define FUNC(name)		name
--
- #endif /* CONFIG_PPC_BOOK3S_XX */
- 
--
--#define VCPU_GPR(n)		(VCPU_GPRS + (n * ULONG_SIZE))
- #define VCPU_LOAD_NVGPRS(vcpu) \
- 	PPC_LL	r14, VCPU_GPR(R14)(vcpu); \
- 	PPC_LL	r15, VCPU_GPR(R15)(vcpu); \
-Index: powerpc-test/arch/powerpc/kvm/booke_interrupts.S
+--- powerpc-test.orig/arch/powerpc/lib/mem_64.S
++++ powerpc-test/arch/powerpc/lib/mem_64.S
+@@ -19,7 +19,7 @@ _GLOBAL(memset)
+ 	rlwimi	r4,r4,16,0,15
+ 	cmplw	cr1,r5,r0		/* do we get that far? */
+ 	rldimi	r4,r4,32,0
+-	PPC_MTOCRF(1,R0)
++	PPC_MTOCRF(1,r0)
+ 	mr	r6,r3
+ 	blt	cr1,8f
+ 	beq+	3f			/* if already 8-byte aligned */
+@@ -49,7 +49,7 @@ _GLOBAL(memset)
+ 	bdnz	4b
+ 5:	srwi.	r0,r5,3
+ 	clrlwi	r5,r5,29
+-	PPC_MTOCRF(1,R0)
++	PPC_MTOCRF(1,r0)
+ 	beq	8f
+ 	bf	29,6f
+ 	std	r4,0(r6)
+@@ -65,7 +65,7 @@ _GLOBAL(memset)
+ 	std	r4,0(r6)
+ 	addi	r6,r6,8
+ 8:	cmpwi	r5,0
+-	PPC_MTOCRF(1,R5)
++	PPC_MTOCRF(1,r5)
+ 	beqlr+
+ 	bf	29,9f
+ 	stw	r4,0(r6)
+Index: powerpc-test/arch/powerpc/lib/memcpy_64.S
 ===================================================================
---- powerpc-test.orig/arch/powerpc/kvm/booke_interrupts.S
-+++ powerpc-test/arch/powerpc/kvm/booke_interrupts.S
-@@ -25,8 +25,6 @@
- #include <asm/page.h>
- #include <asm/asm-offsets.h>
+--- powerpc-test.orig/arch/powerpc/lib/memcpy_64.S
++++ powerpc-test/arch/powerpc/lib/memcpy_64.S
+@@ -16,7 +16,7 @@ BEGIN_FTR_SECTION
+ FTR_SECTION_ELSE
+ 	b	memcpy_power7
+ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
+-	PPC_MTOCRF(0x01,R5)
++	PPC_MTOCRF(0x01,r5)
+ 	cmpldi	cr1,r5,16
+ 	neg	r6,r3		# LS 3 bits = # bytes to 8-byte dest bdry
+ 	andi.	r6,r6,7
+@@ -158,7 +158,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 	blr
  
--#define VCPU_GPR(n)     (VCPU_GPRS + (n * 4))
--
- /* The host stack layout: */
- #define HOST_R1         0 /* Implied by stwu. */
- #define HOST_CALLEE_LR  4
-Index: powerpc-test/arch/powerpc/kvm/bookehv_interrupts.S
-===================================================================
---- powerpc-test.orig/arch/powerpc/kvm/bookehv_interrupts.S
-+++ powerpc-test/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -37,7 +37,6 @@
- 
- #define LONGBYTES		(BITS_PER_LONG / 8)
- 
--#define VCPU_GPR(n)     	(VCPU_GPRS + (n * LONGBYTES))
- #define VCPU_GUEST_SPRG(n)	(VCPU_GUEST_SPRGS + (n * LONGBYTES))
- 
- /* The host stack layout: */
+ .Ldst_unaligned:
+-	PPC_MTOCRF(0x01,R6)		# put #bytes to 8B bdry into cr7
++	PPC_MTOCRF(0x01,r6)		# put #bytes to 8B bdry into cr7
+ 	subf	r5,r6,r5
+ 	li	r7,0
+ 	cmpldi	cr1,r5,16
+@@ -173,7 +173,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_UNALIGNED_
+ 2:	bf	cr7*4+1,3f
+ 	lwzx	r0,r7,r4
+ 	stwx	r0,r7,r3
+-3:	PPC_MTOCRF(0x01,R5)
++3:	PPC_MTOCRF(0x01,r5)
+ 	add	r4,r6,r4
+ 	add	r3,r6,r3
+ 	b	.Ldst_aligned
