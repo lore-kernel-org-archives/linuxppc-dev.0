@@ -1,27 +1,39 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
- [209.85.217.179])
+Return-Path: <21cnbao@gmail.com>
+Received: from mail-gh0-f179.google.com (mail-gh0-f179.google.com
+ [209.85.160.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8920CB6F6E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2012 10:20:34 +1000 (EST)
-Received: by lban1 with SMTP id n1so1230237lba.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2012 17:20:30 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 5924BB6FBB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2012 11:16:59 +1000 (EST)
+Received: by ghbg24 with SMTP id g24so67276ghb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2012 18:16:56 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <1340051997.2372.27.camel@pasglop>
-References: <4DC27253-67FC-4A55-8C78-7782D9D0CF53@servergy.com>
- <1338959744.7150.153.camel@pasglop>
- <CAErSpo4pDOigbvF3SPzOUqx79d_-8yHWrc8TsWChG9indB+k_A@mail.gmail.com>
- <1340051997.2372.27.camel@pasglop>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 20 Jun 2012 18:20:08 -0600
-Message-ID: <CAErSpo5D60_bD2v99itVgXrqyjvFGAg-tPggfJTJbATE1f0_YQ@mail.gmail.com>
-Subject: Re: [PATCH] PPC: PCI: Fix pcibios_io_space_offset() so it works for
- 32-bit ptr/64-bit rsrcs
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@au1.ibm.com>,
- Ben Collins <ben.c@servergy.com>
+In-Reply-To: <1339622215-4733-1-git-send-email-w.sang@pengutronix.de>
+References: <1339622215-4733-1-git-send-email-w.sang@pengutronix.de>
+From: Barry Song <21cnbao@gmail.com>
+Date: Thu, 21 Jun 2012 09:16:35 +0800
+Message-ID: <CAGsJ_4xZM0DYV6YLLUyQ1fd-s9DOvKAZ94UcNwGaUN3xTR97Yw@mail.gmail.com>
+Subject: Re: [PATCH] i2c: let the core register devices from devicetree
+To: Wolfram Sang <w.sang@pengutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Viresh Kumar <viresh.kumar@st.com>,
+ Mauro Carvalho Chehab <mchehab@redhat.com>, Tony Lindgren <tony@atomide.com>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Haojian Zhuang <haojian.zhuang@marvell.com>,
+ Laxman Dewangan <ldewangan@nvidia.com>, linux-i2c@vger.kernel.org,
+ Kukjin Kim <kgene.kim@samsung.com>, Stephen Warren <swarren@nvidia.com>,
+ Olof Johansson <olof@lixom.net>, Deepak Sikri <deepak.sikri@st.com>,
+ Haavard Skinnemoen <hskinnemoen@gmail.com>, Pawel Moll <pawel.moll@arm.com>,
+ Wolfram Sang <wolfram@the-dreams.de>, Sascha Hauer <s.hauer@pengutronix.de>,
+ Rusty Russell <rusty@rustcorp.com.au>, Tang Yuantian <B29983@freescale.com>,
+ "Jean Delvare \(PC drivers, core\)" <khali@linux-fr.org>,
+ Magnus Damm <damm@opensource.se>, Lars-Peter Clausen <lars@metafoo.de>,
+ "Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
+ linux-arm-kernel@lists.infradead.org, Jiri Kosina <jkosina@suse.cz>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Karol Lewandowski <k.lewandowsk@samsung.com>,
+ Dirk Brandewie <dirk.brandewie@gmail.com>, Shawn Guo <shawn.guo@linaro.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,19 +43,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 18, 2012 at 2:39 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Mon, 2012-06-18 at 09:23 -0600, Bjorn Helgaas wrote:
->> Ooh, sorry about that. =A0Who's going to push this fix? =A0I don't see i=
-t
->> in Linus' tree yet. =A0If you want me to, please forward me the original
->> patch.
->
-> I want to double check something. We are still printing something wrong
-> in the kernel log, so it looks like we have some incorrect carry in some
-> arithmetic happening somewhere.
-
-Probably not related to whatever you're seeing, but just FYI, I think
-the core has a sign-extension bug related to P2P bridge I/O windows:
-
-http://marc.info/?l=3Dlinux-pci&m=3D134023801524895&w=3D2
+MjAxMi82LzE0IFdvbGZyYW0gU2FuZyA8dy5zYW5nQHBlbmd1dHJvbml4LmRlPjoKPiBDdXJyZW50
+bHksIGV2ZXJ5IGRyaXZlciBoYXMgdG8gZG8gaXQgb24gaXRzIG93biwgYnV0IGl0IHNob3VsZCBi
+ZSBkb25lCj4gaW4gdGhlIGNvcmUsIGxpa2Ugd2UgYWxyZWFkeSBkbyB3aXRoIGJvYXJkX2luZm8g
+c3RydWN0cy4KPgo+IFNpZ25lZC1vZmYtYnk6IFdvbGZyYW0gU2FuZyA8dy5zYW5nQHBlbmd1dHJv
+bml4LmRlPgoKQWNrZWQtYnk6IEJhcnJ5IFNvbmcgPGJhcnJ5LnNvbmdAbGlhbmxhYi5vcmc+Cgo+
+IC0tLQo+Cj4gQmFzZWQgb24gdjMuNS1yYzIuIE9ubHkgYnVpbGQgdGVzdGVkLCBJIGRvbid0IGhh
+dmUgYSBPRiBiYXNlZCBkZXZpY2UKPiBhcm91bmQgYXQgdGhlIG1vbWVudC4KPgo+IEBQZXRlcjog
+V2h5IGRvZXMgb2NvcmVzIGRvIHRoZSBkZXZpY2UgcmVnaXN0cmF0aW9uIG1hbnVhbGx5IHZpYQo+
+IHBsYXRmb3JtX2RhdGEgaW5zdGVhZCBvZiB1c2luZyBib2FyZF9pbmZvPwo+Cj4gwqBkcml2ZXJz
+L2kyYy9idXNzZXMvaTJjLWNwbS5jIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfCDCoCDCoDUgLS0t
+LS0KPiDCoGRyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtZGVzaWdud2FyZS1wbGF0ZHJ2LmMgfCDCoCDC
+oDEgLQo+IMKgZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1ncGlvLmMgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgfCDCoCDCoDIgLS0KPiDCoGRyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtaWJtX2lpYy5jIMKgIMKg
+IMKgIMKgIMKgIMKgfCDCoCDCoDMgLS0tCj4gwqBkcml2ZXJzL2kyYy9idXNzZXMvaTJjLWlteC5j
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfCDCoCDCoDIgLS0KPiDCoGRyaXZlcnMvaTJjL2J1c3Nl
+cy9pMmMtbXBjLmMgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqB8IMKgIMKgMSAtCj4gwqBkcml2ZXJz
+L2kyYy9idXNzZXMvaTJjLW14cy5jIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfCDCoCDCoDIgLS0K
+PiDCoGRyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtb2NvcmVzLmMgwqAgwqAgwqAgwqAgwqAgwqAgfCDC
+oCDCoDIgLS0KPiDCoGRyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtb21hcC5jIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIHwgwqAgwqAyIC0tCj4gwqBkcml2ZXJzL2kyYy9idXNzZXMvaTJjLXBueC5jIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgfCDCoCDCoDIgLS0KPiDCoGRyaXZlcnMvaTJjL2J1c3Nlcy9pMmMt
+cHhhLmMgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqB8IMKgIMKgMSAtCj4gwqBkcml2ZXJzL2kyYy9i
+dXNzZXMvaTJjLXMzYzI0MTAuYyDCoCDCoCDCoCDCoCDCoCDCoHwgwqAgwqAxIC0KPiDCoGRyaXZl
+cnMvaTJjL2J1c3Nlcy9pMmMtc2hfbW9iaWxlLmMgwqAgwqAgwqAgwqAgwqB8IMKgIMKgMSAtCj4g
+wqBkcml2ZXJzL2kyYy9idXNzZXMvaTJjLXRlZ3JhLmMgwqAgwqAgwqAgwqAgwqAgwqAgwqB8IMKg
+IMKgMiAtLQo+IMKgZHJpdmVycy9pMmMvYnVzc2VzL2kyYy12ZXJzYXRpbGUuYyDCoCDCoCDCoCDC
+oCDCoHwgwqAgwqAxIC0KPiDCoGRyaXZlcnMvaTJjL2J1c3Nlcy9pMmMteGlpYy5jIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIHwgwqAgwqAyIC0tCj4gwqBkcml2ZXJzL2kyYy9pMmMtY29yZS5jIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfCDCoCDCoDMgKysrCj4gwqAxNyBmaWxlcyBjaGFu
+Z2VkLCAzIGluc2VydGlvbnMoKyksIDMwIGRlbGV0aW9ucygtKQoKLWJhcnJ5Cg==
