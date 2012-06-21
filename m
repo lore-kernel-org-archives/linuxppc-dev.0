@@ -3,10 +3,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
-Date: Thu, 21 Jun 2012 12:04:39 +1000
-Subject: [PATCH 12/18] powerpc: fix VSX macros so register names aren't wrapped
+Date: Thu, 21 Jun 2012 12:04:40 +1000
+Subject: [PATCH 13/18] powerpc: introduce new ___PPC_RA/B/S/T macros
 In-Reply-To: <1340244266.960241.475925824909.qpush@ale>
-Message-Id: <20120621020439.59C98D4325E@localhost.localdomain>
+Message-Id: <20120621020440.5CD55D431D9@localhost.localdomain>
 Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org, schwab@linux-m68k.org,
  Anton Blanchard <anton@samba.org>, Olof Johannsson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,31 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to do this so we can enforce the name of a and b in called
-macros PPC_RA/B later.
+These are currently the same as __PPC_RA/B/S/T but we'll wrap them
+soon.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/include/asm/ppc-opcode.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h |    4 ++++
+ 1 file changed, 4 insertions(+)
 
 Index: powerpc-test/arch/powerpc/include/asm/ppc-opcode.h
 ===================================================================
 --- powerpc-test.orig/arch/powerpc/include/asm/ppc-opcode.h
 +++ powerpc-test/arch/powerpc/include/asm/ppc-opcode.h
-@@ -234,11 +234,11 @@
- #define VSX_XX1(s, a, b)	(__PPC_XS(s) | __PPC_RA(a) | __PPC_RB(b))
- #define VSX_XX3(t, a, b)	(__PPC_XT(t) | __PPC_XA(a) | __PPC_XB(b))
- #define STXVD2X(s, a, b)	stringify_in_c(.long PPC_INST_STXVD2X | \
--					       VSX_XX1((s), (a), (b)))
-+					       VSX_XX1((s), a, b))
- #define LXVD2X(s, a, b)		stringify_in_c(.long PPC_INST_LXVD2X | \
--					       VSX_XX1((s), (a), (b)))
-+					       VSX_XX1((s), a, b))
- #define XXLOR(t, a, b)		stringify_in_c(.long PPC_INST_XXLOR | \
--					       VSX_XX3((t), (a), (b)))
-+					       VSX_XX3((t), a, b))
+@@ -144,6 +144,10 @@
+ #define PPC_INST_STBCIX			0x7c0007aa
  
- #define PPC_NAP			stringify_in_c(.long PPC_INST_NAP)
- #define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
+ /* macros to insert fields into opcodes */
++#define ___PPC_RA(a)	(((a) & 0x1f) << 16)
++#define ___PPC_RB(b)	(((b) & 0x1f) << 11)
++#define ___PPC_RS(s)	(((s) & 0x1f) << 21)
++#define ___PPC_RT(t)	___PPC_RS(t)
+ #define __PPC_RA(a)	(((a) & 0x1f) << 16)
+ #define __PPC_RB(b)	(((b) & 0x1f) << 11)
+ #define __PPC_RS(s)	(((s) & 0x1f) << 21)
