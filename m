@@ -1,25 +1,26 @@
 Return-Path: <amodra@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 10AB8B6FB9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2012 20:48:49 +1000 (EST)
-Received: by dajt11 with SMTP id t11so856480daj.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2012 03:48:47 -0700 (PDT)
-Date: Thu, 21 Jun 2012 20:18:39 +0930
+ by ozlabs.org (Postfix) with ESMTPS id 70D57B6FA1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2012 21:44:03 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so2393296pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2012 04:44:01 -0700 (PDT)
+Date: Thu, 21 Jun 2012 21:13:54 +0930
 From: Alan Modra <amodra@gmail.com>
 To: Michael Ellerman <michael@ellerman.id.au>
 Subject: Re: linux-next: build failure after merge of the final tree (powerpc
  related)
-Message-ID: <20120621104839.GE20973@bubble.grove.modra.org>
+Message-ID: <20120621114354.GG20973@bubble.grove.modra.org>
 References: <20120620175014.a822a766e0f91f7b44f48fa0@canb.auug.org.au>
  <1340256961.1998.11.camel@concordia>
  <1340259896.3942.2.camel@pasglop>
  <1340262473.1998.19.camel@concordia>
  <1340264307.1998.20.camel@concordia>
+ <20120621104839.GE20973@bubble.grove.modra.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1340264307.1998.20.camel@concordia>
+In-Reply-To: <20120621104839.GE20973@bubble.grove.modra.org>
 Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
  linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -31,21 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 21, 2012 at 05:38:27PM +1000, Michael Ellerman wrote:
-> On Thu, 2012-06-21 at 17:07 +1000, Michael Ellerman wrote:
-> > On Thu, 2012-06-21 at 16:24 +1000, Benjamin Herrenschmidt wrote:
-> > > On Thu, 2012-06-21 at 15:36 +1000, Michael Ellerman wrote:
-> > > > 
-> > > > powerpc64-linux-ld: /src/next/net/openvswitch/vport-netdev.c:189:(.text+0x89b990): 
-> > > >         sibling call optimization to `_restgpr0_28' does not allow automatic multiple TOCs;
-> > > >         recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `_restgpr0_28' extern
-> > > > 
+On Thu, Jun 21, 2012 at 08:18:39PM +0930, Alan Modra wrote:
+> Linker bug.  That's not a sibling call, but a normal function return
+> via an out-of-line register restore function.
 
-Linker bug.  That's not a sibling call, but a normal function return
-via an out-of-line register restore function.  Will fix.  I'm a bit
-surprised to see this with gcc-4.6 though.  Or does this gcc-4.6 have
-some of my recent mainline gcc patches enabling out-of-line
-save/restore functions for -Os?
+I couldn't see how this might be occurring, then I remembered the
+kernel has this horrible practise of using ld -r to package object
+files.  So linker generated functions might be munged together with
+other functions.  Does this help?  (It won't if the kernel is
+providing its own save/restore functions.)
+
+Index: bfd/elf64-ppc.c
+===================================================================
+RCS file: /cvs/src/src/bfd/elf64-ppc.c,v
+retrieving revision 1.387
+diff -u -p -r1.387 elf64-ppc.c
+@@ -6494,9 +6494,10 @@ ppc64_elf_func_desc_adjust (bfd *obfd AT
+ 
+   /* Provide any missing _save* and _rest* functions.  */
+   htab->sfpr->size = 0;
+-  for (i = 0; i < sizeof (funcs) / sizeof (funcs[0]); i++)
+-    if (!sfpr_define (info, &funcs[i]))
+-      return FALSE;
++  if (!info->relocatable)
++    for (i = 0; i < sizeof (funcs) / sizeof (funcs[0]); i++)
++      if (!sfpr_define (info, &funcs[i]))
++	return FALSE;
+ 
+   elf_link_hash_traverse (&htab->elf, func_desc_adjust, info);
+ 
+
 
 -- 
 Alan Modra
