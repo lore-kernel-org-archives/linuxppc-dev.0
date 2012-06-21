@@ -1,26 +1,27 @@
-Return-Path: <ralf@linux-mips.org>
-Received: from h5.dl5rb.org.uk
- (6.d.2.3.5.8.4.2.8.7.3.5.9.9.5.0.0.0.0.0.a.e.3.0.0.b.8.0.1.0.0.2.ip6.arpa
- [IPv6:2001:8b0:3ea:0:599:5378:2485:32d6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B5D0EB6FAC
- for <linuxppc-dev@ozlabs.org>; Thu, 21 Jun 2012 02:36:17 +1000 (EST)
-Date: Wed, 20 Jun 2012 17:12:49 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Yoichi Yuasa <yuasa@linux-mips.org>
-Subject: Re: [PATCH] MIPS: fix bug.h MIPS build regression
-Message-ID: <20120620161249.GB29196@linux-mips.org>
-References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
- <20120620152759.2caceb8c.yuasa@linux-mips.org>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
+ [209.85.217.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8920CB6F6E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2012 10:20:34 +1000 (EST)
+Received: by lban1 with SMTP id n1so1230237lba.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Jun 2012 17:20:30 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120620152759.2caceb8c.yuasa@linux-mips.org>
-Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Linux-sh list <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
- Linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mundt <lethal@linux-sh.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Chris Zankel <chris@zankel.net>
+In-Reply-To: <1340051997.2372.27.camel@pasglop>
+References: <4DC27253-67FC-4A55-8C78-7782D9D0CF53@servergy.com>
+ <1338959744.7150.153.camel@pasglop>
+ <CAErSpo4pDOigbvF3SPzOUqx79d_-8yHWrc8TsWChG9indB+k_A@mail.gmail.com>
+ <1340051997.2372.27.camel@pasglop>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 20 Jun 2012 18:20:08 -0600
+Message-ID: <CAErSpo5D60_bD2v99itVgXrqyjvFGAg-tPggfJTJbATE1f0_YQ@mail.gmail.com>
+Subject: Re: [PATCH] PPC: PCI: Fix pcibios_io_space_offset() so it works for
+ 32-bit ptr/64-bit rsrcs
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@au1.ibm.com>,
+ Ben Collins <ben.c@servergy.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,10 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 20, 2012 at 03:27:59PM +0900, Yoichi Yuasa wrote:
+On Mon, Jun 18, 2012 at 2:39 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Mon, 2012-06-18 at 09:23 -0600, Bjorn Helgaas wrote:
+>> Ooh, sorry about that. =A0Who's going to push this fix? =A0I don't see i=
+t
+>> in Linus' tree yet. =A0If you want me to, please forward me the original
+>> patch.
+>
+> I want to double check something. We are still printing something wrong
+> in the kernel log, so it looks like we have some incorrect carry in some
+> arithmetic happening somewhere.
 
-> Commit: 3777808873b0c49c5cf27e44c948dfb02675d578 breaks all MIPS builds.
+Probably not related to whatever you're seeing, but just FYI, I think
+the core has a sign-extension bug related to P2P bridge I/O windows:
 
-Thanks, fix applied.
-
-  Ralf
+http://marc.info/?l=3Dlinux-pci&m=3D134023801524895&w=3D2
