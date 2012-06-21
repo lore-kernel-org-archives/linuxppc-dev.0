@@ -3,11 +3,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
-Date: Thu, 21 Jun 2012 12:04:38 +1000
-Subject: [PATCH 11/18] powerpc: fixes for instructions not using correct
- register naming
+Date: Thu, 21 Jun 2012 12:04:39 +1000
+Subject: [PATCH 12/18] powerpc: fix VSX macros so register names aren't wrapped
 In-Reply-To: <1340244266.960241.475925824909.qpush@ale>
-Message-Id: <20120621020438.5351BD431D9@localhost.localdomain>
+Message-Id: <20120621020439.59C98D4325E@localhost.localdomain>
 Cc: mikey@neuling.org, linuxppc-dev@ozlabs.org, schwab@linux-m68k.org,
  Anton Blanchard <anton@samba.org>, Olof Johannsson <olof@lixom.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,149 +18,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These macros are using integers where they could be using logical
-names since they take registers.
-
-We are going to enforce this soon, so fix these up now.
+We need to do this so we can enforce the name of a and b in called
+macros PPC_RA/B later.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/kernel/exceptions-64e.S |    8 ++++----
- arch/powerpc/kernel/misc_64.S        |    4 ++--
- arch/powerpc/lib/ldstfp.S            |    4 ++--
- arch/powerpc/mm/tlb_nohash_low.S     |   10 +++++-----
- 4 files changed, 13 insertions(+), 13 deletions(-)
+ arch/powerpc/include/asm/ppc-opcode.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Index: powerpc-test/arch/powerpc/kernel/exceptions-64e.S
+Index: powerpc-test/arch/powerpc/include/asm/ppc-opcode.h
 ===================================================================
---- powerpc-test.orig/arch/powerpc/kernel/exceptions-64e.S
-+++ powerpc-test/arch/powerpc/kernel/exceptions-64e.S
-@@ -903,7 +903,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	bne	1b				/* If not, repeat */
+--- powerpc-test.orig/arch/powerpc/include/asm/ppc-opcode.h
++++ powerpc-test/arch/powerpc/include/asm/ppc-opcode.h
+@@ -234,11 +234,11 @@
+ #define VSX_XX1(s, a, b)	(__PPC_XS(s) | __PPC_RA(a) | __PPC_RB(b))
+ #define VSX_XX3(t, a, b)	(__PPC_XT(t) | __PPC_XA(a) | __PPC_XB(b))
+ #define STXVD2X(s, a, b)	stringify_in_c(.long PPC_INST_STXVD2X | \
+-					       VSX_XX1((s), (a), (b)))
++					       VSX_XX1((s), a, b))
+ #define LXVD2X(s, a, b)		stringify_in_c(.long PPC_INST_LXVD2X | \
+-					       VSX_XX1((s), (a), (b)))
++					       VSX_XX1((s), a, b))
+ #define XXLOR(t, a, b)		stringify_in_c(.long PPC_INST_XXLOR | \
+-					       VSX_XX3((t), (a), (b)))
++					       VSX_XX3((t), a, b))
  
- 	/* Invalidate all TLBs */
--	PPC_TLBILX_ALL(0,0)
-+	PPC_TLBILX_ALL(R0,R0)
- 	sync
- 	isync
- 
-@@ -961,7 +961,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	tlbwe
- 
- 	/* Invalidate TLB1 */
--	PPC_TLBILX_ALL(0,0)
-+	PPC_TLBILX_ALL(R0,R0)
- 	sync
- 	isync
- 
-@@ -1020,7 +1020,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	tlbwe
- 
- 	/* Invalidate TLB1 */
--	PPC_TLBILX_ALL(0,0)
-+	PPC_TLBILX_ALL(R0,R0)
- 	sync
- 	isync
- 
-@@ -1138,7 +1138,7 @@ a2_tlbinit_after_iprot_flush:
- 	tlbwe
- #endif /* CONFIG_PPC_EARLY_DEBUG_WSP */
- 
--	PPC_TLBILX(0,0,0)
-+	PPC_TLBILX(0,R0,R0)
- 	sync
- 	isync
- 
-Index: powerpc-test/arch/powerpc/kernel/misc_64.S
-===================================================================
---- powerpc-test.orig/arch/powerpc/kernel/misc_64.S
-+++ powerpc-test/arch/powerpc/kernel/misc_64.S
-@@ -309,7 +309,7 @@ _GLOBAL(real_205_readb)
- 	mtmsrd	r0
- 	sync
- 	isync
--	LBZCIX(R3,0,R3)
-+	LBZCIX(R3,R0,R3)
- 	isync
- 	mtmsrd	r7
- 	sync
-@@ -324,7 +324,7 @@ _GLOBAL(real_205_writeb)
- 	mtmsrd	r0
- 	sync
- 	isync
--	STBCIX(R3,0,R4)
-+	STBCIX(R3,R0,R4)
- 	isync
- 	mtmsrd	r7
- 	sync
-Index: powerpc-test/arch/powerpc/lib/ldstfp.S
-===================================================================
---- powerpc-test.orig/arch/powerpc/lib/ldstfp.S
-+++ powerpc-test/arch/powerpc/lib/ldstfp.S
-@@ -332,7 +332,7 @@ _GLOBAL(do_lxvd2x)
- 	beq	cr7,1f
- 	STXVD2X(0,R1,R8)
- 1:	li	r9,-EFAULT
--2:	LXVD2X(0,0,R4)
-+2:	LXVD2X(0,R0,R4)
- 	li	r9,0
- 3:	beq	cr7,4f
- 	bl	put_vsr
-@@ -361,7 +361,7 @@ _GLOBAL(do_stxvd2x)
- 	STXVD2X(0,R1,R8)
- 	bl	get_vsr
- 1:	li	r9,-EFAULT
--2:	STXVD2X(0,0,R4)
-+2:	STXVD2X(0,R0,R4)
- 	li	r9,0
- 3:	beq	cr7,4f
- 	LXVD2X(0,R1,R8)
-Index: powerpc-test/arch/powerpc/mm/tlb_nohash_low.S
-===================================================================
---- powerpc-test.orig/arch/powerpc/mm/tlb_nohash_low.S
-+++ powerpc-test/arch/powerpc/mm/tlb_nohash_low.S
-@@ -266,7 +266,7 @@ BEGIN_MMU_FTR_SECTION
- 	andi.	r3,r3,MMUCSR0_TLBFI@l
- 	bne	1b
- MMU_FTR_SECTION_ELSE
--	PPC_TLBILX_ALL(0,0)
-+	PPC_TLBILX_ALL(R0,R0)
- ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
- 	msync
- 	isync
-@@ -279,7 +279,7 @@ BEGIN_MMU_FTR_SECTION
- 	wrteei	0
- 	mfspr	r4,SPRN_MAS6	/* save MAS6 */
- 	mtspr	SPRN_MAS6,r3
--	PPC_TLBILX_PID(0,0)
-+	PPC_TLBILX_PID(R0,R0)
- 	mtspr	SPRN_MAS6,r4	/* restore MAS6 */
- 	wrtee	r10
- MMU_FTR_SECTION_ELSE
-@@ -331,7 +331,7 @@ _GLOBAL(_tlbil_pid)
- 	mfmsr	r10
- 	wrteei	0
- 	mtspr	SPRN_MAS6,r4
--	PPC_TLBILX_PID(0,0)
-+	PPC_TLBILX_PID(R0,R0)
- 	wrtee	r10
- 	msync
- 	isync
-@@ -343,14 +343,14 @@ _GLOBAL(_tlbil_pid_noind)
- 	ori	r4,r4,MAS6_SIND
- 	wrteei	0
- 	mtspr	SPRN_MAS6,r4
--	PPC_TLBILX_PID(0,0)
-+	PPC_TLBILX_PID(R0,R0)
- 	wrtee	r10
- 	msync
- 	isync
- 	blr
- 
- _GLOBAL(_tlbil_all)
--	PPC_TLBILX_ALL(0,0)
-+	PPC_TLBILX_ALL(R0,R0)
- 	msync
- 	isync
- 	blr
+ #define PPC_NAP			stringify_in_c(.long PPC_INST_NAP)
+ #define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
