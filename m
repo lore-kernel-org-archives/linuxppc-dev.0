@@ -1,28 +1,19 @@
-Return-Path: <amodra@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 70D57B6FA1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2012 21:44:03 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so2393296pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Jun 2012 04:44:01 -0700 (PDT)
-Date: Thu, 21 Jun 2012 21:13:54 +0930
-From: Alan Modra <amodra@gmail.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: linux-next: build failure after merge of the final tree (powerpc
- related)
-Message-ID: <20120621114354.GG20973@bubble.grove.modra.org>
-References: <20120620175014.a822a766e0f91f7b44f48fa0@canb.auug.org.au>
- <1340256961.1998.11.camel@concordia>
- <1340259896.3942.2.camel@pasglop>
- <1340262473.1998.19.camel@concordia>
- <1340264307.1998.20.camel@concordia>
- <20120621104839.GE20973@bubble.grove.modra.org>
+Return-Path: <blofeldus@yahoo.com>
+Received: from nm39-vm5.bullet.mail.bf1.yahoo.com
+ (nm39-vm5.bullet.mail.bf1.yahoo.com [72.30.239.149])
+ by ozlabs.org (Postfix) with SMTP id F33B2B6FA8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2012 01:27:19 +1000 (EST)
+Message-ID: <1340292434.38149.YahooMailClassic@web161304.mail.bf1.yahoo.com>
+Date: Thu, 21 Jun 2012 08:27:14 -0700 (PDT)
+From: roger blofeld <blofeldus@yahoo.com>
+Subject: Re: [PATCH] kernel panic during kernel module load (powerpc specific
+ part)
+To: ext Benjamin Herrenschmidt <benh@kernel.crashing.org>, paulus@samba.org,
+ Steffen Rumler <steffen.rumler.ext@nsn.com>
+In-Reply-To: <4FCF6B1D.50009@nsn.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120621104839.GE20973@bubble.grove.modra.org>
-Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jun 21, 2012 at 08:18:39PM +0930, Alan Modra wrote:
-> Linker bug.  That's not a sibling call, but a normal function return
-> via an out-of-line register restore function.
-
-I couldn't see how this might be occurring, then I remembered the
-kernel has this horrible practise of using ld -r to package object
-files.  So linker generated functions might be munged together with
-other functions.  Does this help?  (It won't if the kernel is
-providing its own save/restore functions.)
-
-Index: bfd/elf64-ppc.c
-===================================================================
-RCS file: /cvs/src/src/bfd/elf64-ppc.c,v
-retrieving revision 1.387
-diff -u -p -r1.387 elf64-ppc.c
-@@ -6494,9 +6494,10 @@ ppc64_elf_func_desc_adjust (bfd *obfd AT
- 
-   /* Provide any missing _save* and _rest* functions.  */
-   htab->sfpr->size = 0;
--  for (i = 0; i < sizeof (funcs) / sizeof (funcs[0]); i++)
--    if (!sfpr_define (info, &funcs[i]))
--      return FALSE;
-+  if (!info->relocatable)
-+    for (i = 0; i < sizeof (funcs) / sizeof (funcs[0]); i++)
-+      if (!sfpr_define (info, &funcs[i]))
-+	return FALSE;
- 
-   elf_link_hash_traverse (&htab->elf, func_desc_adjust, info);
- 
-
-
--- 
-Alan Modra
-Australia Development Lab, IBM
+--- On Wed, 6/6/12, Steffen Rumler <steffen.rumler.ext@nsn.com> wrote:=0A=
+=0A> From: Steffen Rumler <steffen.rumler.ext@nsn.com>=0A> Subject: [PATCH]=
+ kernel panic during kernel module load (powerpc specific part)=0A> To: "ex=
+t Benjamin Herrenschmidt" <benh@kernel.crashing.org>, paulus@samba.org=0A> =
+Cc: "Wrobel Heinz-R39252" <r39252@freescale.com>, "Michael Ellerman" <micha=
+el@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozl=
+abs.org>=0A> Date: Wednesday, June 6, 2012, 7:37 AM=0A> Hi,=0A> =0A> The pa=
+tch below is intended to fix the following problem.=0A> =0A> According to t=
+he PowerPC EABI specification, the GPR r11 is=0A> assigned=0A> the dedicate=
+d function to point to the previous stack=0A> frame.=0A> In the powerpc-spe=
+cific kernel module loader, do_plt_call()=0A> (in arch/powerpc/kernel/modul=
+e_32.c), the GPR r11 is also=0A> used=0A> to generate trampoline code.=0A> =
+=0A> This combination crashes the kernel, in the following case:=0A> =0A> =
+=A0 + The compiler has been generated the prologue and=0A> epilogue,=0A> =
+=A0 =A0 which is part of the .text section.=0A> =A0 + The compiler has been=
+ generated the code for the=0A> module init entry point,=0A> =A0 =A0 part o=
+f the .init.text section (in the case it=0A> is marked with __init).=0A> =
+=A0 + By returning from the module init entry point, the=0A> epilogue is ca=
+lled by doing=0A> =A0 =A0 a branch instruction.=0A> =A0 + If the epilogue i=
+s too far away, a relative branch=0A> instruction cannot be applied.=0A> =
+=A0 =A0 Instead trampoline code is generated in=0A> do_plt_call(), in order=
+ to jump via register.=0A> =A0 =A0 Unfortunately the code generated by=0A> =
+do_plt_call() destroys the content of GPR r11.=0A> =A0 + Because GPR r11 do=
+es not more keep the right stack=0A> frame pointer,=0A> =A0 =A0 the kernel =
+crashes right after the epilogue.=0A> =0A> The fix just uses GPR r12 instea=
+d of GPR r11 for generating=0A> the trampoline code.=0A> According to the s=
+tatements from Freescale, this is also=0A> save from EABI perspective.=0A> =
+=0A> I've tested the fix for kernel 2.6.33 on MPC8541.=0A> =0A> Signed-off-=
+by: Steffen Rumler <steffen.rumler.ext@nsn.com>=0A> ---=0A> =0A> --- orig/a=
+rch/powerpc/kernel/module_32.c=A0=A0=A0=0A> 2012-06-06 16:04:28.956446788 +=
+0200=0A> +++ new/arch/powerpc/kernel/module_32.c=A0=A0=A0=0A> =A0=A0=A0 201=
+2-06-06 16:04:17.746290683 +0200=0A> @@ -187,8 +187,8 @@=0A> =0A>  static i=
+nline int entry_matches(struct ppc_plt_entry=0A> *entry, Elf32_Addr val)=0A=
+>  {=0A> -=A0=A0=A0 if (entry->jump[0] =3D=3D 0x3d600000 +=0A> ((val + 0x80=
+00) >> 16)=0A> -=A0=A0=A0 =A0 =A0 &&=0A> entry->jump[1] =3D=3D 0x396b0000 +=
+ (val & 0xffff))=0A> +=A0=A0=A0 if (entry->jump[0] =3D=3D 0x3d800000 +=0A> =
+((val + 0x8000) >> 16)=0A> +=A0=A0=A0 =A0 =A0 &&=0A> entry->jump[1] =3D=3D =
+0x398c0000 + (val & 0xffff))=0A>  =A0=A0=A0 =A0=A0=A0 return 1;=0A>  =A0=A0=
+=A0 return 0;=0A>  }=0A> @@ -215,10 +215,9 @@=0A>  =A0=A0=A0 =A0=A0=A0 entr=
+y++;=0A>  =A0=A0=A0 }=0A> =0A> -=A0=A0=A0 /* Stolen from Paul Mackerras as =
+well...=0A> */=0A> -=A0=A0=A0 entry->jump[0] =3D=0A> 0x3d600000+((val+0x800=
+0)>>16);=A0=A0=A0 /*=0A> lis r11,sym@ha */=0A> -=A0=A0=A0 entry->jump[1] =
+=3D 0x396b0000 +=0A> (val&0xffff);=A0=A0=A0 /* addi r11,r11,sym@l*/=0A> -=
+=A0=A0=A0 entry->jump[2] =3D=0A> 0x7d6903a6;=A0=A0=A0 =A0=A0=A0=0A> =A0=A0=
+=A0 /* mtctr r11 */=0A> +=A0=A0=A0 entry->jump[0] =3D=0A> 0x3d800000+((val+=
+0x8000)>>16); /* lis r12,sym@ha */=0A> +=A0=A0=A0 entry->jump[1] =3D 0x398c=
+0000 +=0A> (val&0xffff);=A0 =A0=A0=A0/* addi=0A> r12,r12,sym@l*/=0A> +=A0=
+=A0=A0 entry->jump[2] =3D 0x7d8903a6;=A0=0A> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0=0A> =A0 /* mtctr r12 */=0A>  =A0=A0=A0 entry->jump[3] =3D=0A> 0x4e80042=
+0;=A0=A0=A0 =A0=A0=A0=0A> =A0=A0=A0 /* bctr */=0A> =0A>  =A0=A0=A0 DEBUGP("=
+Initialized plt for 0x%x at=0A> %p\n", val, entry);=0A> ___________________=
+____________________________=0A> Linuxppc-dev mailing list=0A> Linuxppc-dev=
+@lists.ozlabs.org=0A> https://lists.ozlabs.org/listinfo/linuxppc-dev=0A> =
+=0A=0AHi,=0A=0AShouldn't the corresponding ftrace code be updated to match?=
+ Perhaps like the following (untested) patch:=0A=0ASigned-off-by: Roger Blo=
+feld <blofeldus@yahoo.com>=0A---=0A=0A--- a/arch/powerpc/kernel/ftrace.c=0A=
++++ b/arch/powerpc/kernel/ftrace.c=0A@@ -245,9 +245,9 @@ __ftrace_make_nop(=
+struct module *mod,=0A =0A =09/*=0A =09 * On PPC32 the trampoline looks lik=
+e:=0A-=09 *  0x3d, 0x60, 0x00, 0x00  lis r11,sym@ha=0A-=09 *  0x39, 0x6b, 0=
+x00, 0x00  addi r11,r11,sym@l=0A-=09 *  0x7d, 0x69, 0x03, 0xa6  mtctr r11=
+=0A+=09 *  0x3d, 0x80, 0x00, 0x00  lis r12,sym@ha=0A+=09 *  0x39, 0x8c, 0x0=
+0, 0x00  addi r12,r12,sym@l=0A+=09 *  0x7d, 0x89, 0x03, 0xa6  mtctr r12=0A =
+=09 *  0x4e, 0x80, 0x04, 0x20  bctr=0A =09 */=0A =0A@@ -262,9 +262,9 @@ __f=
+trace_make_nop(struct module *mod,=0A =09pr_devel(" %08x %08x ", jmp[0], jm=
+p[1]);=0A =0A =09/* verify that this is what we expect it to be */=0A-=09if=
+ (((jmp[0] & 0xffff0000) !=3D 0x3d600000) ||=0A-=09    ((jmp[1] & 0xffff000=
+0) !=3D 0x396b0000) ||=0A-=09    (jmp[2] !=3D 0x7d6903a6) ||=0A+=09if (((jm=
+p[0] & 0xffff0000) !=3D 0x3d800000) ||=0A+=09    ((jmp[1] & 0xffff0000) !=
+=3D 0x398c0000) ||=0A+=09    (jmp[2] !=3D 0x7d8903a6) ||=0A =09    (jmp[3] =
+!=3D 0x4e800420)) {=0A =09=09printk(KERN_ERR "Not a trampoline\n");=0A =09=
+=09return -EINVAL;=0A
