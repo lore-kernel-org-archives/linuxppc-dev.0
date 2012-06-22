@@ -1,16 +1,28 @@
-Return-Path: <matt@localhost>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Fix =?UTF-8?Q?BPF=5FJIT=20code=20to=20link?=
- =?UTF-8?Q?=20with=20multiple=20TOCs?=
+Return-Path: <David.Daney@caviumnetworks.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4134EB6F62
+ for <linuxppc-dev@ozlabs.org>; Sat, 23 Jun 2012 03:54:18 +1000 (EST)
+Message-ID: <4FE4B13E.10709@caviumnetworks.com>
+Date: Fri, 22 Jun 2012 10:54:06 -0700
+From: David Daney <ddaney@caviumnetworks.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8;
- format=flowed
-Date: Fri, 22 Jun 2012 09:58:43 +0100
-From: matt <matt@localhost>
-In-Reply-To: <1340337027-22110-1-git-send-email-michael@ellerman.id.au>
-References: <1340337027-22110-1-git-send-email-michael@ellerman.id.au>
-Message-ID: <74ade163faf9900aa58cd45d65643012@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, matt@ozlabs.org, amodra@gmail.com
+To: Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: [PATCH] MIPS: fix bug.h MIPS build regression
+References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
+ <20120620152759.2caceb8c.yuasa@linux-mips.org>
+ <20120620161249.GB29196@linux-mips.org>
+In-Reply-To: <20120620161249.GB29196@linux-mips.org>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
+ Linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mundt <lethal@linux-sh.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Chris Zankel <chris@zankel.net>,
+ Yoichi Yuasa <yuasa@linux-mips.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,45 +32,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2012-06-22 04:50, Michael Ellerman wrote:
-> If the kernel is big enough (eg. allyesconfig), the linker may need 
-> to
-> switch TOCs when calling from the BPF JIT code out to the external
-> helpers (skb_copy_bits() & bpf_internal_load_pointer_neg_helper()).
+On 06/20/2012 09:12 AM, Ralf Baechle wrote:
+> On Wed, Jun 20, 2012 at 03:27:59PM +0900, Yoichi Yuasa wrote:
 >
-> In order to do that we need to leave space after the bl for the 
-> linker
-> to insert a reload of our TOC pointer.
+>> Commit: 3777808873b0c49c5cf27e44c948dfb02675d578 breaks all MIPS builds.
 >
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-
-Oops..!
-
-Acked-by: Matt Evans <matt@ozlabs.org>
-
-
-> ---
->  arch/powerpc/net/bpf_jit_64.S |    2 ++
->  1 file changed, 2 insertions(+)
+> Thanks, fix applied.
 >
-> diff --git a/arch/powerpc/net/bpf_jit_64.S 
-> b/arch/powerpc/net/bpf_jit_64.S
-> index 55ba385..7d3a3b5 100644
-> --- a/arch/powerpc/net/bpf_jit_64.S
-> +++ b/arch/powerpc/net/bpf_jit_64.S
-> @@ -105,6 +105,7 @@ sk_load_byte_msh_positive_offset:
->  	mr	r4, r_addr;					\
->  	li	r6, SIZE;					\
->  	bl	skb_copy_bits;					\
-> +	nop;							\
->  	/* R3 = 0 on success */					\
->  	addi	r1, r1, BPF_PPC_SLOWPATH_FRAME;			\
->  	ld	r0, 16(r1);					\
-> @@ -156,6 +157,7 @@ bpf_slow_path_byte_msh:
->  	mr	r4, r_addr;					\
->  	li	r5, SIZE;					\
->  	bl	bpf_internal_load_pointer_neg_helper;		\
-> +	nop;							\
->  	/* R3 != 0 on success */				\
->  	addi	r1, r1, BPF_PPC_SLOWPATH_FRAME;			\
->  	ld	r0, 16(r1);					\
+
+Where was it applied?
+
+It doesn't show up in linux-next for 20120622, which is where it is needed.
+
+David Daney
