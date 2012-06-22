@@ -1,16 +1,16 @@
-Return-Path: <matt@ozlabs.org>
+Return-Path: <matt@localhost>
 To: Michael Ellerman <michael@ellerman.id.au>
 Subject: Re: [PATCH] powerpc: Fix =?UTF-8?Q?BPF=5FJIT=20code=20to=20link?=
  =?UTF-8?Q?=20with=20multiple=20TOCs?=
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8;
  format=flowed
-Date: Fri, 22 Jun 2012 10:01:23 +0100
-From: matt <matt@ozlabs.org>
+Date: Fri, 22 Jun 2012 09:58:43 +0100
+From: matt <matt@localhost>
 In-Reply-To: <1340337027-22110-1-git-send-email-michael@ellerman.id.au>
 References: <1340337027-22110-1-git-send-email-michael@ellerman.id.au>
-Message-ID: <6122e5d280ca5d20a71a1e661cd39d29@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, amodra@gmail.com
+Message-ID: <74ade163faf9900aa58cd45d65643012@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, matt@ozlabs.org, amodra@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,8 +19,6 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-
-Whee!  Let's try that again with MUA configured better...
 
 On 2012-06-22 04:50, Michael Ellerman wrote:
 > If the kernel is big enough (eg. allyesconfig), the linker may need 
@@ -34,11 +32,9 @@ On 2012-06-22 04:50, Michael Ellerman wrote:
 >
 > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 
-Oops, x2, and
+Oops..!
 
 Acked-by: Matt Evans <matt@ozlabs.org>
-
-:-)
 
 
 > ---
