@@ -1,19 +1,16 @@
-Return-Path: <list.mail.for.bill@gmail.com>
-Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 07410B6FA3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2012 05:14:50 +1000 (EST)
-Received: by obbeh20 with SMTP id eh20so2260133obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Jun 2012 12:14:47 -0700 (PDT)
-MIME-Version: 1.0
-Date: Fri, 22 Jun 2012 15:14:47 -0400
-Message-ID: <CAGa5=mPAVTtZuJ998wPdD6aHyZTn9TPRoaNkadh4yMUwvjTkpA@mail.gmail.com>
-Subject: Help with Freescale QE ATM driver (FUA)
-From: Bill F <list.mail.for.bill@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset=ISO-8859-1
+Return-Path: <amwang@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 0A844B6FA4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2012 20:05:04 +1000 (EST)
+From: Cong Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 03/12] powerpc: remove km_type definitions
+Date: Sat, 23 Jun 2012 18:04:14 +0800
+Message-Id: <1340445863-16111-4-git-send-email-amwang@redhat.com>
+In-Reply-To: <1340445863-16111-1-git-send-email-amwang@redhat.com>
+References: <1340445863-16111-1-git-send-email-amwang@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Cong Wang <amwang@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +20,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-Have you used the Freescale QUICC Engine (QE) ATM mode with a Linux
-based product ?
+Signed-off-by: Cong Wang <amwang@redhat.com>
+---
+ arch/powerpc/include/asm/kmap_types.h |   31 +------------------------------
+ 1 files changed, 1 insertions(+), 30 deletions(-)
 
-I am currently using the "fua" driver obtained from Freescale
-MPC8360E_PB_K26_20081112-LTIB.iso CDROM image.  The "fua" driver was
-written for kernel 2.6.22 (2007) and I have ported it forward to
-kernel 3.3 (2012).  My board has an MPC8358 and SUNI PHY.  I am
-testing the fua driver with the atm-tools and aburst, and using a
-loopback cable.
-
-The ported fua driver is able to open an ATM connection and send and
-receive messages.  I can use awrite and aread to send and receive
-ascii characters.
-
-Problems:
-  * If I open three or more ATM connections, all ATM transfers stop,
-and the ethernet driver (ucc_geth) also stops working.  To recover I
-have to reboot. Urg.
-  * UBR transfers seem to be treated as if they are a 100 Mbps CBR
-connection.  I was expecting UBR to fill all of the unused bandwidth.
-  * I'm finding and fixing a lot of minor bugs that crash the driver.
-
-My other reference is the mpc8360 SAR driver
-(http://mpc8360sar.sourceforge.net) which is even older (patches
-against kernel 2.6.11).
-
-If someone on this list is sitting on an updated fua driver or similar
-QE ATM driver, could you send me the code.  Better yet, can I help you
-push it out to a github or similar repo ?
-
-Thanks,
-Bill
+diff --git a/arch/powerpc/include/asm/kmap_types.h b/arch/powerpc/include/asm/kmap_types.h
+index bca8fdc..5acabbd 100644
+--- a/arch/powerpc/include/asm/kmap_types.h
++++ b/arch/powerpc/include/asm/kmap_types.h
+@@ -10,36 +10,7 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
+-enum km_type {
+-	KM_BOUNCE_READ,
+-	KM_SKB_SUNRPC_DATA,
+-	KM_SKB_DATA_SOFTIRQ,
+-	KM_USER0,
+-	KM_USER1,
+-	KM_BIO_SRC_IRQ,
+-	KM_BIO_DST_IRQ,
+-	KM_PTE0,
+-	KM_PTE1,
+-	KM_IRQ0,
+-	KM_IRQ1,
+-	KM_SOFTIRQ0,
+-	KM_SOFTIRQ1,
+-	KM_PPC_SYNC_PAGE,
+-	KM_PPC_SYNC_ICACHE,
+-	KM_KDB,
+-	KM_TYPE_NR
+-};
+-
+-/*
+- * This is a temporary build fix that (so they say on lkml....) should no longer
+- * be required after 2.6.33, because of changes planned to the kmap code.
+- * Let's try to remove this cruft then.
+- */
+-#ifdef CONFIG_DEBUG_HIGHMEM
+-#define KM_NMI		(-1)
+-#define KM_NMI_PTE	(-1)
+-#define KM_IRQ_PTE	(-1)
+-#endif
++#define KM_TYPE_NR 16
+ 
+ #endif	/* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_KMAP_TYPES_H */
+-- 
+1.7.7.6
