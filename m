@@ -1,16 +1,24 @@
-Return-Path: <amwang@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 0A844B6FA4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2012 20:05:04 +1000 (EST)
-From: Cong Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/12] powerpc: remove km_type definitions
-Date: Sat, 23 Jun 2012 18:04:14 +0800
-Message-Id: <1340445863-16111-4-git-send-email-amwang@redhat.com>
-In-Reply-To: <1340445863-16111-1-git-send-email-amwang@redhat.com>
-References: <1340445863-16111-1-git-send-email-amwang@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Cong Wang <amwang@redhat.com>
+Return-Path: <akinobu.mita@gmail.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E996BB6F6E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2012 00:58:56 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so5712159pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2012 07:58:54 -0700 (PDT)
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+Subject: [PATCH -v4 0/6] notifier error injection
+Date: Sat, 23 Jun 2012 23:58:16 +0900
+Message-Id: <1340463502-15341-1-git-send-email-akinobu.mita@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Greg KH <greg@kroah.com>, Akinobu Mita <akinobu.mita@gmail.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
+ =?UTF-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>,
+ linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,52 +28,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Cong Wang <amwang@redhat.com>
----
- arch/powerpc/include/asm/kmap_types.h |   31 +------------------------------
- 1 files changed, 1 insertions(+), 30 deletions(-)
+This provides kernel modules that can be used to test the error handling
+of notifier call chain failures by injecting artifical errors to the
+following notifier chain callbacks.
 
-diff --git a/arch/powerpc/include/asm/kmap_types.h b/arch/powerpc/include/asm/kmap_types.h
-index bca8fdc..5acabbd 100644
---- a/arch/powerpc/include/asm/kmap_types.h
-+++ b/arch/powerpc/include/asm/kmap_types.h
-@@ -10,36 +10,7 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
--enum km_type {
--	KM_BOUNCE_READ,
--	KM_SKB_SUNRPC_DATA,
--	KM_SKB_DATA_SOFTIRQ,
--	KM_USER0,
--	KM_USER1,
--	KM_BIO_SRC_IRQ,
--	KM_BIO_DST_IRQ,
--	KM_PTE0,
--	KM_PTE1,
--	KM_IRQ0,
--	KM_IRQ1,
--	KM_SOFTIRQ0,
--	KM_SOFTIRQ1,
--	KM_PPC_SYNC_PAGE,
--	KM_PPC_SYNC_ICACHE,
--	KM_KDB,
--	KM_TYPE_NR
--};
--
--/*
-- * This is a temporary build fix that (so they say on lkml....) should no longer
-- * be required after 2.6.33, because of changes planned to the kmap code.
-- * Let's try to remove this cruft then.
-- */
--#ifdef CONFIG_DEBUG_HIGHMEM
--#define KM_NMI		(-1)
--#define KM_NMI_PTE	(-1)
--#define KM_IRQ_PTE	(-1)
--#endif
-+#define KM_TYPE_NR 16
- 
- #endif	/* __KERNEL__ */
- #endif	/* _ASM_POWERPC_KMAP_TYPES_H */
+ * CPU notifier
+ * PM notifier
+ * memory hotplug notifier
+ * powerpc pSeries reconfig notifier
+
+Example: Inject CPU offline error (-1 == -EPERM)
+
+	# cd /sys/kernel/debug/notifier-error-inject/cpu
+	# echo -1 > actions/CPU_DOWN_PREPARE/error
+	# echo 0 > /sys/devices/system/cpu/cpu1/online
+	bash: echo: write error: Operation not permitted
+
+There are also handy shell scripts to test CPU and memory hotplug notifier.
+Note that these tests didn't detect error handling bugs on my machine but
+I still think this feature is usefull to test the code path which is rarely
+executed.
+
+Changelog:
+
+* v4 (It is about 11 months since v3)
+- prefix all APIs with notifier_err_inject_*
+- rearrange debugfs interface
+  (e.g. $DEBUGFS/cpu-notifier-error-inject/CPU_DOWN_PREPARE -->
+        $DEBUGFS/notifier-error-inject/cpu/actions/CPU_DOWN_PREPARE/error)
+- update modules to follow new interface
+- add -r option for memory-notifier.sh to specify percent of offlining
+  memory blocks
+
+* v3
+- rewrite to be kernel modules instead of initializing at late_initcall()s
+  (it makes the diffstat look different but most code remains unchanged)
+- export err_inject_notifier_block_{init,cleanup} for modules
+- export pSeries_reconfig_notifier_{,un}register symbols for a module
+- notifier priority can be specified as a module parameter
+- add testing scripts in tools/testing/fault-injection
+
+* v2
+- "PM: Improve error code of pm_notifier_call_chain()" is now in -next
+- "debugfs: add debugfs_create_int" is dropped
+- put a comment in err_inject_notifier_block_init()
+- only allow valid errno to be injected (-MAX_ERRNO <= errno <= 0)
+- improve Kconfig help text
+- make CONFIG_PM_NOTIFIER_ERROR_INJECTION visible even if PM_DEBUG is disabled
+- make CONFIG_PM_NOTIFIER_ERROR_INJECTION default if PM_DEBUG is enabled
+
+Akinobu Mita (6):
+  fault-injection: notifier error injection
+  cpu: rewrite cpu-notifier-error-inject module
+  PM: PM notifier error injection module
+  memory: memory notifier error injection module
+  powerpc: pSeries reconfig notifier error injection module
+  fault-injection: add notifier error injection testing scripts
+
+ lib/Kconfig.debug                                |   91 ++++++++++-
+ lib/Makefile                                     |    5 +
+ lib/cpu-notifier-error-inject.c                  |   63 +++-----
+ lib/memory-notifier-error-inject.c               |   48 ++++++
+ lib/notifier-error-inject.c                      |  112 ++++++++++++++
+ lib/notifier-error-inject.h                      |   24 +++
+ lib/pSeries-reconfig-notifier-error-inject.c     |   51 +++++++
+ lib/pm-notifier-error-inject.c                   |   49 ++++++
+ tools/testing/fault-injection/cpu-notifier.sh    |  169 +++++++++++++++++++++
+ tools/testing/fault-injection/memory-notifier.sh |  176 ++++++++++++++++++++++
+ 10 files changed, 748 insertions(+), 40 deletions(-)
+ create mode 100644 lib/memory-notifier-error-inject.c
+ create mode 100644 lib/notifier-error-inject.c
+ create mode 100644 lib/notifier-error-inject.h
+ create mode 100644 lib/pSeries-reconfig-notifier-error-inject.c
+ create mode 100644 lib/pm-notifier-error-inject.c
+ create mode 100755 tools/testing/fault-injection/cpu-notifier.sh
+ create mode 100755 tools/testing/fault-injection/memory-notifier.sh
+
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org
+Cc: Greg KH <greg@kroah.com>
+Cc: linux-mm@kvack.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Américo Wang <xiyou.wangcong@gmail.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>
+
 -- 
-1.7.7.6
+1.7.10.2
