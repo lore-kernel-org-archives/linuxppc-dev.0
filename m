@@ -3,9 +3,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
-Date: Tue, 26 Jun 2012 09:33:07 +1000
-Subject: [PATCH 0/18] powerpc: convert GPR usage to %r0-31 and R0-31
-Message-Id: <1340667187.357853.615199632713.qpush@ale>
+Date: Tue, 26 Jun 2012 09:33:09 +1000
+Subject: [PATCH 2/18] powerpc: modify macro ready for %r0 register change
+In-Reply-To: <1340667187.357853.615199632713.qpush@ale>
+Message-Id: <20120625233309.68939D43683@localhost.localdomain>
 Cc: mikey@neuling.org, matt@ozlabs.org, linuxppc-dev@ozlabs.org,
  schwab@linux-m68k.org, Anton Blanchard <anton@samba.org>,
  Olof Johannsson <olof@lixom.net>
@@ -18,22 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-First 5 patches convert us to %r0-31.
+The assembler doesn't take %r0 register arguments in braces, so remove them.
 
-Next 12 convert make using R0-31 required in macros.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
 
-Last 2 convert instructions where ra = r0 we use 0 rather than the
-register value (as suggested by Andreas).
+ arch/powerpc/include/asm/ppc_asm.h |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
-Version 4 add:
-  Fixes for bpf_jit code
-
-Version 3 adds:
-  Fixes for chroma (moved some defines ppc_asm.h -> ppc-opcode.h)
-  Fixed comment in sldi patch to reflect new change (thanks Segher)
-
-Version 2 adds:
-  ra = 0 idea (as Andreas suggested)
-  Fixes for 32bit KVM (added ppc44x_defconfig to my testing)
-  Based on mpe's next tree which has Antons power7 copy patches which
-    needed fixes for this
+Index: b/arch/powerpc/include/asm/ppc_asm.h
+===================================================================
+--- a/arch/powerpc/include/asm/ppc_asm.h
++++ b/arch/powerpc/include/asm/ppc_asm.h
+@@ -295,14 +295,14 @@ n:
+  */
+ #ifdef __powerpc64__
+ #define LOAD_REG_IMMEDIATE(reg,expr)		\
+-	lis     (reg),(expr)@highest;		\
+-	ori     (reg),(reg),(expr)@higher;	\
+-	rldicr  (reg),(reg),32,31;		\
+-	oris    (reg),(reg),(expr)@h;		\
+-	ori     (reg),(reg),(expr)@l;
++	lis     reg,(expr)@highest;		\
++	ori     reg,reg,(expr)@higher;	\
++	rldicr  reg,reg,32,31;		\
++	oris    reg,reg,(expr)@h;		\
++	ori     reg,reg,(expr)@l;
+ 
+ #define LOAD_REG_ADDR(reg,name)			\
+-	ld	(reg),name@got(r2)
++	ld	reg,name@got(r2)
+ 
+ #define LOAD_REG_ADDRBASE(reg,name)	LOAD_REG_ADDR(reg,name)
+ #define ADDROFF(name)			0
+@@ -313,12 +313,12 @@ n:
+ #else /* 32-bit */
+ 
+ #define LOAD_REG_IMMEDIATE(reg,expr)		\
+-	lis	(reg),(expr)@ha;		\
+-	addi	(reg),(reg),(expr)@l;
++	lis	reg,(expr)@ha;		\
++	addi	reg,reg,(expr)@l;
+ 
+ #define LOAD_REG_ADDR(reg,name)		LOAD_REG_IMMEDIATE(reg, name)
+ 
+-#define LOAD_REG_ADDRBASE(reg, name)	lis	(reg),name@ha
++#define LOAD_REG_ADDRBASE(reg, name)	lis	reg,name@ha
+ #define ADDROFF(name)			name@l
+ 
+ /* offsets for stack frame layout */
