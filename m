@@ -1,27 +1,28 @@
 Return-Path: <mcaraman@mcaraman-VirtualBox.ea.freescale.net>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C6D251007F7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 22:27:01 +1000 (EST)
-Received: from mail128-co1 (localhost [127.0.0.1])	by
- mail128-co1-R.bigfish.com (Postfix) with ESMTP id 2668F202D5	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 12:25:19 +0000 (UTC)
-Received: from CO1EHSMHS028.bigfish.com (unknown [10.243.78.241])	by
- mail128-co1.bigfish.com (Postfix) with ESMTP id 92A14A80044	for
+ by ozlabs.org (Postfix) with ESMTPS id F13751008AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 22:27:14 +1000 (EST)
+Received: from mail90-db3 (localhost [127.0.0.1])	by mail90-db3-R.bigfish.com
+ (Postfix) with ESMTP id EA6FD3003C8	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,
+ 25 Jun 2012 12:25:31 +0000 (UTC)
+Received: from DB3EHSMHS008.bigfish.com (unknown [10.3.81.234])	by
+ mail90-db3.bigfish.com (Postfix) with ESMTP id CEAA72E0074	for
  <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 12:25:05 +0000 (UTC)
 Received: from mcaraman-VirtualBox.ea.freescale.net ([10.213.130.145])	by
- az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q5PCQeLJ019320	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 05:26:41 -0700
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q5PCQdn6003893	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 05:26:40 -0700
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <qemu-ppc@nongnu.org>
-Subject: [RFC PATCH 11/17] PowerPC: booke64: Fix machine check handler to use
- the right prolog
-Date: Mon, 25 Jun 2012 15:26:29 +0300
-Message-ID: <1340627195-11544-12-git-send-email-mihai.caraman@freescale.com>
+Subject: [RFC PATCH 08/17] KVM: PPC: e500mc: Fix tlbilx emulation for 64-bit
+ guests
+Date: Mon, 25 Jun 2012 15:26:26 +0300
+Message-ID: <1340627195-11544-9-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
 References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -36,27 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Machine check exception handler was using a wrong prolog. Hypervisors, like
-KVM, which are called early from the exception handler rely on the interrupt
-source.
+tlbilxva emulation was using an u32 variable for guest effective address.
+Replace it with gva_t type to handle 64-bit guests.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
- arch/powerpc/kernel/exceptions-64e.S |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/powerpc/kvm/e500mc.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 52aa96b..06f7aec 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -290,7 +290,7 @@ interrupt_end_book3e:
+diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
+index db97ee3..1f89d26 100644
+--- a/arch/powerpc/kvm/e500mc.c
++++ b/arch/powerpc/kvm/e500mc.c
+@@ -57,7 +57,8 @@ void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 			   struct kvm_book3e_206_tlb_entry *gtlbe)
+ {
+ 	unsigned int tid, ts;
+-	u32 val, eaddr, lpid;
++	gva_t eaddr;
++	u32 val, lpid;
+ 	unsigned long flags;
  
- /* Machine Check Interrupt */
- 	START_EXCEPTION(machine_check);
--	CRIT_EXCEPTION_PROLOG(0x200, PROLOG_ADDITION_NONE)
-+	MC_EXCEPTION_PROLOG(0x200, PROLOG_ADDITION_NONE)
- //	EXCEPTION_COMMON(0x200, PACA_EXMC, INTS_DISABLE)
- //	bl	special_reg_save_mc
- //	addi	r3,r1,STACK_FRAME_OVERHEAD
+ 	ts = get_tlb_ts(gtlbe);
 -- 
 1.7.4.1
