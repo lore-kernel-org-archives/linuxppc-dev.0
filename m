@@ -1,15 +1,16 @@
-Return-Path: <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <michael@ellerman.id.au>
-From: Michael Neuling <mikey@neuling.org>
-Date: Tue, 26 Jun 2012 09:33:25 +1000
-Subject: [PATCH 18/18] powerpc: enforce usage of RA 0-R31 where possible
-In-Reply-To: <1340667187.357853.615199632713.qpush@ale>
-Message-Id: <20120625233325.D3077D43683@localhost.localdomain>
-Cc: mikey@neuling.org, matt@ozlabs.org, linuxppc-dev@ozlabs.org,
- schwab@linux-m68k.org, Anton Blanchard <anton@samba.org>,
- Olof Johannsson <olof@lixom.net>
+Return-Path: <robherring2@gmail.com>
+Message-ID: <4FE8F6DA.8070109@gmail.com>
+Date: Mon, 25 Jun 2012 18:40:10 -0500
+From: Rob Herring <robherring2@gmail.com>
+MIME-Version: 1.0
+To: Dong Aisheng <b29396@freescale.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2 1/1] of: reform prom_update_property function
+References: <1340605714-25206-1-git-send-email-b29396@freescale.com>
+In-Reply-To: <1340605714-25206-1-git-send-email-b29396@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+ paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,232 +20,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some macros use RA where when RA=R0 the values is 0, so make this
-the enforced mnemonic in the macro.
+On 06/25/2012 01:28 AM, Dong Aisheng wrote:
+> From: Dong Aisheng <dong.aisheng@linaro.org>
+> 
+> prom_update_property() currently fails if the property doesn't
+> actually exist yet which isn't what we want. Change to add-or-update
+> instead of update-only, then we can remove a lot duplicated lines.
+> 
+> Suggested-by: Grant Likely <grant.likely@secretlab.ca>
+> Signed-off-by: Dong Aisheng <dong.aisheng@linaro.org>
 
-Idea suggested by Andreas Schwab.
+Acked-by: Rob Herring <rob.herring@calxeda.com>
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
+Ben, you can merge this via powerpc.
 
----
-Index: b/arch/powerpc/include/asm/ppc-opcode.h
-===================================================================
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -231,7 +231,7 @@
- #define PPC_RFDI		stringify_in_c(.long PPC_INST_RFDI)
- #define PPC_RFMCI		stringify_in_c(.long PPC_INST_RFMCI)
- #define PPC_TLBILX(t, a, b)	stringify_in_c(.long PPC_INST_TLBILX | \
--					__PPC_T_TLB(t) | __PPC_RA(a) | __PPC_RB(b))
-+					__PPC_T_TLB(t) | __PPC_RA0(a) | __PPC_RB(b))
- #define PPC_TLBILX_ALL(a, b)	PPC_TLBILX(0, a, b)
- #define PPC_TLBILX_PID(a, b)	PPC_TLBILX(1, a, b)
- #define PPC_TLBILX_VA(a, b)	PPC_TLBILX(3, a, b)
-@@ -240,23 +240,23 @@
- #define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
- 					       ___PPC_RB(a) | ___PPC_RS(lp))
- #define PPC_TLBSRX_DOT(a,b)	stringify_in_c(.long PPC_INST_TLBSRX_DOT | \
--					__PPC_RA(a) | __PPC_RB(b))
-+					__PPC_RA0(a) | __PPC_RB(b))
- #define PPC_TLBIVAX(a,b)	stringify_in_c(.long PPC_INST_TLBIVAX | \
--					__PPC_RA(a) | __PPC_RB(b))
-+					__PPC_RA0(a) | __PPC_RB(b))
- 
- #define PPC_ERATWE(s, a, w)	stringify_in_c(.long PPC_INST_ERATWE | \
- 					__PPC_RS(s) | __PPC_RA(a) | __PPC_WS(w))
- #define PPC_ERATRE(s, a, w)	stringify_in_c(.long PPC_INST_ERATRE | \
- 					__PPC_RS(s) | __PPC_RA(a) | __PPC_WS(w))
- #define PPC_ERATILX(t, a, b)	stringify_in_c(.long PPC_INST_ERATILX | \
--					__PPC_T_TLB(t) | __PPC_RA(a) | \
-+					__PPC_T_TLB(t) | __PPC_RA0(a) | \
- 					__PPC_RB(b))
- #define PPC_ERATIVAX(s, a, b)	stringify_in_c(.long PPC_INST_ERATIVAX | \
--					__PPC_RS(s) | __PPC_RA(a) | __PPC_RB(b))
-+					__PPC_RS(s) | __PPC_RA0(a) | __PPC_RB(b))
- #define PPC_ERATSX(t, a, w)	stringify_in_c(.long PPC_INST_ERATSX | \
--					__PPC_RS(t) | __PPC_RA(a) | __PPC_RB(b))
-+					__PPC_RS(t) | __PPC_RA0(a) | __PPC_RB(b))
- #define PPC_ERATSX_DOT(t, a, w)	stringify_in_c(.long PPC_INST_ERATSX_DOT | \
--					__PPC_RS(t) | __PPC_RA(a) | __PPC_RB(b))
-+					__PPC_RS(t) | __PPC_RA0(a) | __PPC_RB(b))
- #define PPC_SLBFEE_DOT(t, b)	stringify_in_c(.long PPC_INST_SLBFEE | \
- 					__PPC_RT(t) | __PPC_RB(b))
- /* PASemi instructions */
-Index: b/arch/powerpc/kernel/cpu_setup_a2.S
-===================================================================
---- a/arch/powerpc/kernel/cpu_setup_a2.S
-+++ b/arch/powerpc/kernel/cpu_setup_a2.S
-@@ -112,7 +112,7 @@ _icswx_skip_guest:
- 	 * a bolted entry though it will be in LRU and so will go away eventually
- 	 * but let's not bother for now
- 	 */
--	PPC_ERATILX(0,R0,R0)
-+	PPC_ERATILX(0,0,R0)
- 1:
- 	blr
- 
-Index: b/arch/powerpc/kernel/exceptions-64e.S
-===================================================================
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -903,7 +903,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	bne	1b				/* If not, repeat */
- 
- 	/* Invalidate all TLBs */
--	PPC_TLBILX_ALL(R0,R0)
-+	PPC_TLBILX_ALL(0,R0)
- 	sync
- 	isync
- 
-@@ -961,7 +961,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	tlbwe
- 
- 	/* Invalidate TLB1 */
--	PPC_TLBILX_ALL(R0,R0)
-+	PPC_TLBILX_ALL(0,R0)
- 	sync
- 	isync
- 
-@@ -1020,7 +1020,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
- 	tlbwe
- 
- 	/* Invalidate TLB1 */
--	PPC_TLBILX_ALL(R0,R0)
-+	PPC_TLBILX_ALL(0,R0)
- 	sync
- 	isync
- 
-@@ -1138,7 +1138,7 @@ a2_tlbinit_after_iprot_flush:
- 	tlbwe
- #endif /* CONFIG_PPC_EARLY_DEBUG_WSP */
- 
--	PPC_TLBILX(0,R0,R0)
-+	PPC_TLBILX(0,0,R0)
- 	sync
- 	isync
- 
-Index: b/arch/powerpc/mm/tlb_low_64e.S
-===================================================================
---- a/arch/powerpc/mm/tlb_low_64e.S
-+++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -126,7 +126,7 @@ BEGIN_MMU_FTR_SECTION
- 	/* Set the TLB reservation and search for existing entry. Then load
- 	 * the entry.
- 	 */
--	PPC_TLBSRX_DOT(R0,R16)
-+	PPC_TLBSRX_DOT(0,R16)
- 	ldx	r14,r14,r15		/* grab pgd entry */
- 	beq	normal_tlb_miss_done	/* tlb exists already, bail */
- MMU_FTR_SECTION_ELSE
-@@ -395,7 +395,7 @@ BEGIN_MMU_FTR_SECTION
- 	/* Set the TLB reservation and search for existing entry. Then load
- 	 * the entry.
- 	 */
--	PPC_TLBSRX_DOT(R0,R16)
-+	PPC_TLBSRX_DOT(0,R16)
- 	ld	r14,0(r10)
- 	beq	normal_tlb_miss_done
- MMU_FTR_SECTION_ELSE
-@@ -528,7 +528,7 @@ BEGIN_MMU_FTR_SECTION
- 	/* Search if we already have a TLB entry for that virtual address, and
- 	 * if we do, bail out.
- 	 */
--	PPC_TLBSRX_DOT(R0,R16)
-+	PPC_TLBSRX_DOT(0,R16)
- 	beq	virt_page_table_tlb_miss_done
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_TLBRSRV)
- 
-@@ -779,7 +779,7 @@ htw_tlb_miss:
- 	 *
- 	 * MAS1:IND should be already set based on MAS4
- 	 */
--	PPC_TLBSRX_DOT(R0,R16)
-+	PPC_TLBSRX_DOT(0,R16)
- 	beq	htw_tlb_miss_done
- 
- 	/* Now, we need to walk the page tables. First check if we are in
-@@ -919,7 +919,7 @@ tlb_load_linear:
- 	mtspr	SPRN_MAS1,r15
- 
- 	/* Already somebody there ? */
--	PPC_TLBSRX_DOT(R0,R16)
-+	PPC_TLBSRX_DOT(0,R16)
- 	beq	tlb_load_linear_done
- 
- 	/* Now we build the remaining MAS. MAS0 and 2 should be fine
-Index: b/arch/powerpc/mm/tlb_nohash_low.S
-===================================================================
---- a/arch/powerpc/mm/tlb_nohash_low.S
-+++ b/arch/powerpc/mm/tlb_nohash_low.S
-@@ -266,7 +266,7 @@ BEGIN_MMU_FTR_SECTION
- 	andi.	r3,r3,MMUCSR0_TLBFI@l
- 	bne	1b
- MMU_FTR_SECTION_ELSE
--	PPC_TLBILX_ALL(R0,R0)
-+	PPC_TLBILX_ALL(0,R0)
- ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
- 	msync
- 	isync
-@@ -279,7 +279,7 @@ BEGIN_MMU_FTR_SECTION
- 	wrteei	0
- 	mfspr	r4,SPRN_MAS6	/* save MAS6 */
- 	mtspr	SPRN_MAS6,r3
--	PPC_TLBILX_PID(R0,R0)
-+	PPC_TLBILX_PID(0,R0)
- 	mtspr	SPRN_MAS6,r4	/* restore MAS6 */
- 	wrtee	r10
- MMU_FTR_SECTION_ELSE
-@@ -313,7 +313,7 @@ BEGIN_MMU_FTR_SECTION
- 	mtspr	SPRN_MAS1,r4
- 	tlbwe
- MMU_FTR_SECTION_ELSE
--	PPC_TLBILX_VA(R0,R3)
-+	PPC_TLBILX_VA(0,R3)
- ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
- 	msync
- 	isync
-@@ -331,7 +331,7 @@ _GLOBAL(_tlbil_pid)
- 	mfmsr	r10
- 	wrteei	0
- 	mtspr	SPRN_MAS6,r4
--	PPC_TLBILX_PID(R0,R0)
-+	PPC_TLBILX_PID(0,R0)
- 	wrtee	r10
- 	msync
- 	isync
-@@ -343,14 +343,14 @@ _GLOBAL(_tlbil_pid_noind)
- 	ori	r4,r4,MAS6_SIND
- 	wrteei	0
- 	mtspr	SPRN_MAS6,r4
--	PPC_TLBILX_PID(R0,R0)
-+	PPC_TLBILX_PID(0,R0)
- 	wrtee	r10
- 	msync
- 	isync
- 	blr
- 
- _GLOBAL(_tlbil_all)
--	PPC_TLBILX_ALL(R0,R0)
-+	PPC_TLBILX_ALL(0,R0)
- 	msync
- 	isync
- 	blr
-@@ -364,7 +364,7 @@ _GLOBAL(_tlbil_va)
- 	beq	1f
- 	rlwimi	r4,r6,MAS6_SIND_SHIFT,MAS6_SIND
- 1:	mtspr	SPRN_MAS6,r4		/* assume AS=0 for now */
--	PPC_TLBILX_VA(R0,R3)
-+	PPC_TLBILX_VA(0,R3)
- 	msync
- 	isync
- 	wrtee	r10
-@@ -379,7 +379,7 @@ _GLOBAL(_tlbivax_bcast)
- 	beq	1f
- 	rlwimi	r4,r6,MAS6_SIND_SHIFT,MAS6_SIND
- 1:	mtspr	SPRN_MAS6,r4		/* assume AS=0 for now */
--	PPC_TLBIVAX(R0,R3)
-+	PPC_TLBIVAX(0,R3)
- 	eieio
- 	tlbsync
- 	sync
+Rob
+
+> ---
+> ChangeLog v1->v2:
+> * keep reconfig.c behavior the same as before after changes
+> ---
+>  arch/powerpc/platforms/85xx/p1022_ds.c    |    8 +-------
+>  arch/powerpc/platforms/pseries/mobility.c |    8 +-------
+>  arch/powerpc/platforms/pseries/reconfig.c |   16 ++++++----------
+>  drivers/of/base.c                         |   15 +++++++++++----
+>  fs/proc/proc_devtree.c                    |    5 +++++
+>  include/linux/of.h                        |    3 +--
+>  6 files changed, 25 insertions(+), 30 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+> index f700c81..d66631c 100644
+> --- a/arch/powerpc/platforms/85xx/p1022_ds.c
+> +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+> @@ -348,13 +348,7 @@ void __init p1022_ds_pic_init(void)
+>   */
+>  static void __init disable_one_node(struct device_node *np, struct property *new)
+>  {
+> -	struct property *old;
+> -
+> -	old = of_find_property(np, new->name, NULL);
+> -	if (old)
+> -		prom_update_property(np, new, old);
+> -	else
+> -		prom_add_property(np, new);
+> +	prom_update_property(np, new);
+>  }
+>  
+>  /* TRUE if there is a "video=fslfb" command-line parameter. */
+> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+> index 029a562..dd30b12 100644
+> --- a/arch/powerpc/platforms/pseries/mobility.c
+> +++ b/arch/powerpc/platforms/pseries/mobility.c
+> @@ -67,7 +67,6 @@ static int update_dt_property(struct device_node *dn, struct property **prop,
+>  			      const char *name, u32 vd, char *value)
+>  {
+>  	struct property *new_prop = *prop;
+> -	struct property *old_prop;
+>  	int more = 0;
+>  
+>  	/* A negative 'vd' value indicates that only part of the new property
+> @@ -117,12 +116,7 @@ static int update_dt_property(struct device_node *dn, struct property **prop,
+>  	}
+>  
+>  	if (!more) {
+> -		old_prop = of_find_property(dn, new_prop->name, NULL);
+> -		if (old_prop)
+> -			prom_update_property(dn, new_prop, old_prop);
+> -		else
+> -			prom_add_property(dn, new_prop);
+> -
+> +		prom_update_property(dn, new_prop);
+>  		new_prop = NULL;
+>  	}
+>  
+> diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
+> index 7b3bf76..db1b7b1 100644
+> --- a/arch/powerpc/platforms/pseries/reconfig.c
+> +++ b/arch/powerpc/platforms/pseries/reconfig.c
+> @@ -432,7 +432,7 @@ static int do_update_property(char *buf, size_t bufsize)
+>  	unsigned char *value;
+>  	char *name, *end, *next_prop;
+>  	int rc, length;
+> -	struct property *newprop, *oldprop;
+> +	struct property *newprop;
+>  	buf = parse_node(buf, bufsize, &np);
+>  	end = buf + bufsize;
+>  
+> @@ -443,6 +443,9 @@ static int do_update_property(char *buf, size_t bufsize)
+>  	if (!next_prop)
+>  		return -EINVAL;
+>  
+> +	if (!strlen(name)
+> +		return -ENODEV;
+> +
+>  	newprop = new_property(name, length, value, NULL);
+>  	if (!newprop)
+>  		return -ENOMEM;
+> @@ -450,18 +453,11 @@ static int do_update_property(char *buf, size_t bufsize)
+>  	if (!strcmp(name, "slb-size") || !strcmp(name, "ibm,slb-size"))
+>  		slb_set_size(*(int *)value);
+>  
+> -	oldprop = of_find_property(np, name,NULL);
+> -	if (!oldprop) {
+> -		if (strlen(name))
+> -			return prom_add_property(np, newprop);
+> -		return -ENODEV;
+> -	}
+> -
+>  	upd_value.node = np;
+>  	upd_value.property = newprop;
+>  	pSeries_reconfig_notify(PSERIES_UPDATE_PROPERTY, &upd_value);
+>  
+> -	rc = prom_update_property(np, newprop, oldprop);
+> +	rc = prom_update_property(np, newprop);
+>  	if (rc)
+>  		return rc;
+>  
+> @@ -486,7 +482,7 @@ static int do_update_property(char *buf, size_t bufsize)
+>  
+>  		rc = pSeries_reconfig_notify(action, value);
+>  		if (rc) {
+> -			prom_update_property(np, oldprop, newprop);
+> +			prom_update_property(np, newprop);
+>  			return rc;
+>  		}
+>  	}
+> diff --git a/drivers/of/base.c b/drivers/of/base.c
+> index d9bfd49..a14f109 100644
+> --- a/drivers/of/base.c
+> +++ b/drivers/of/base.c
+> @@ -1051,7 +1051,8 @@ int prom_remove_property(struct device_node *np, struct property *prop)
+>  }
+>  
+>  /*
+> - * prom_update_property - Update a property in a node.
+> + * prom_update_property - Update a property in a node, if the property does
+> + * not exist, add it.
+>   *
+>   * Note that we don't actually remove it, since we have given out
+>   * who-knows-how-many pointers to the data using get-property.
+> @@ -1059,13 +1060,19 @@ int prom_remove_property(struct device_node *np, struct property *prop)
+>   * and add the new property to the property list
+>   */
+>  int prom_update_property(struct device_node *np,
+> -			 struct property *newprop,
+> -			 struct property *oldprop)
+> +			 struct property *newprop)
+>  {
+> -	struct property **next;
+> +	struct property **next, *oldprop;
+>  	unsigned long flags;
+>  	int found = 0;
+>  
+> +	if (!newprop->name)
+> +		return -EINVAL;
+> +
+> +	oldprop = of_find_property(np, newprop->name, NULL);
+> +	if (!oldprop)
+> +		return prom_add_property(np, newprop);
+> +
+>  	write_lock_irqsave(&devtree_lock, flags);
+>  	next = &np->properties;
+>  	while (*next) {
+> diff --git a/fs/proc/proc_devtree.c b/fs/proc/proc_devtree.c
+> index 927cbd1..df7dd08 100644
+> --- a/fs/proc/proc_devtree.c
+> +++ b/fs/proc/proc_devtree.c
+> @@ -101,6 +101,11 @@ void proc_device_tree_update_prop(struct proc_dir_entry *pde,
+>  {
+>  	struct proc_dir_entry *ent;
+>  
+> +	if (!oldprop) {
+> +		proc_device_tree_add_prop(pde, newprop);
+> +		return;
+> +	}
+> +
+>  	for (ent = pde->subdir; ent != NULL; ent = ent->next)
+>  		if (ent->data == oldprop)
+>  			break;
+> diff --git a/include/linux/of.h b/include/linux/of.h
+> index 2ec1083..b27c871 100644
+> --- a/include/linux/of.h
+> +++ b/include/linux/of.h
+> @@ -260,8 +260,7 @@ extern int of_machine_is_compatible(const char *compat);
+>  extern int prom_add_property(struct device_node* np, struct property* prop);
+>  extern int prom_remove_property(struct device_node *np, struct property *prop);
+>  extern int prom_update_property(struct device_node *np,
+> -				struct property *newprop,
+> -				struct property *oldprop);
+> +				struct property *newprop);
+>  
+>  #if defined(CONFIG_OF_DYNAMIC)
+>  /* For updating the device tree at runtime */
