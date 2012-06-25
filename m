@@ -1,34 +1,22 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 136F3B6FA9
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2012 02:14:33 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 25 Jun 2012 10:14:31 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 945CE19D94D7
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2012 15:43:50 +0000 (WET)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5PFhc5J170692
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2012 09:43:42 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5PFhWRn021091
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2012 09:43:33 -0600
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/8] ppc/pnv: skip check on PE if necessary
-Date: Mon, 25 Jun 2012 23:43:18 +0800
-Message-Id: <1340639001-28152-6-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1340639001-28152-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1340639001-28152-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
+ [209.85.160.42]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 90BDEB6FAF
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2012 03:31:01 +1000 (EST)
+Received: by pbbrp12 with SMTP id rp12so5781044pbb.15
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2012 10:30:59 -0700 (PDT)
+MIME-Version: 1.0
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <1340593821-19011-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1340593821-19011-1-git-send-email-shangw@linux.vnet.ibm.com>
+Date: Mon, 25 Jun 2012 10:30:59 -0700
+Message-ID: <CAE9FiQUE0_niTRmvZ=ROSFKB4HKDFFLjfJC+QeQkTKLMyvxv4g@mail.gmail.com>
+Subject: Re: [PATCH V3 1/2] PCI: retrieve host bridge by PCI bus
+From: Yinghai Lu <yinghai@kernel.org>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,81 +26,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While the device driver or PCI core tries to enable PCI device, the
-platform dependent callback "ppc_md.pcibios_enable_device_hook" will
-be called to check if there has one associated PE for the PCI device.
-If we don't have the associated PE for the PCI device, it's not allowed
-to enable the PCI device. Unfortunately, there might have some cases
-we have to enable the PCI device (e.g. P2P bridge), but the PEs have
-not been created yet.
+On Sun, Jun 24, 2012 at 8:10 PM, Gavin Shan <shangw@linux.vnet.ibm.com> wro=
+te:
+> With current implementation, there is one function to retrieve
+> the corresponding host bridge (struct pci_host_bridge) according
+> to the given PCI device (struct pci_dev) and that function has
+> been declared as "static". Further, we don't have the public
+> function to retrieve host bridge from PCI bus yet. The function
+> is useful somewhere.
+>
+> The additional information like minimal resource alignment for I/O
+> and MMIO bars of p2p bridges will be put into the PCI host bridge.
+> The patch introduces the public function pci_bus_host_bridge() to
+> retrieve the corresponding PCI host bridge according to the specified
+> PCI bus, then accessing the information regarding the minimal resource
+> alignment for I/O and MMIO bars of p2p bridges.
+>
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+> Reviewed-by: Ram Pai <linuxram@us.ibm.com>
+> Reviewed-by: Richard Yang <weiyang@linux.vnet.ibm.com>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> =A0drivers/pci/host-bridge.c | =A0 13 +++++++++++++
+> =A0include/linux/pci.h =A0 =A0 =A0 | =A0 =A02 +-
+> =A02 files changed, 14 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
+> index a68dc61..b95f0ce 100644
+> --- a/drivers/pci/host-bridge.c
+> +++ b/drivers/pci/host-bridge.c
+> @@ -27,6 +27,19 @@ static struct pci_host_bridge *find_pci_host_bridge(st=
+ruct pci_dev *dev)
+> =A0 =A0 =A0 =A0return to_pci_host_bridge(bus->bridge);
+> =A0}
+>
+> +struct pci_host_bridge *pci_bus_host_bridge(struct pci_bus *bus)
+> +{
+> + =A0 =A0 =A0 struct pci_bus *b =3D bus;
+> +
+> + =A0 =A0 =A0 /* Find the PCI root bus */
+> + =A0 =A0 =A0 while (b->parent)
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 b =3D b->parent;
+> +
+> + =A0 =A0 =A0 return to_pci_host_bridge(b->bridge);
+> +}
+> +
+> +EXPORT_SYMBOL(pci_bus_host_bridge);
 
-The patch handles the unfortunate cases. Each PHB (struct pnv_phb)
-has one field "initialized" to trace if the PEs have been created
-and configured or not. When the PEs are not available, we won't check
-the associated PE for the PCI device to be enabled.
+why do you need to export it?
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-Reviewed-by: Ram Pai <linuxram@us.ibm.com>
-Reviewed-by: Richard Yang <weiyang@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c |   19 ++++++++++++++++++-
- arch/powerpc/platforms/powernv/pci.h      |    1 +
- 2 files changed, 19 insertions(+), 1 deletion(-)
+> +
+> =A0void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 void (*re=
+lease_fn)(struct pci_host_bridge *),
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 void *rel=
+ease_data)
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index fefb4e1..6d5bb1c 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -656,7 +656,7 @@ void pcibios_update_irq(struct pci_dev *, int irq);
+> =A0void pci_fixup_cardbus(struct pci_bus *);
+>
+> =A0/* Generic PCI functions used internally */
+> -
+> +struct pci_host_bridge *pci_bus_host_bridge(struct pci_bus *bus);
+> =A0void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_regio=
+n *region,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct resource *=
+res);
+> =A0void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res=
+,
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index f0ae647..052a50f 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1246,9 +1246,14 @@ static void __devinit pnv_pci_ioda_setup_seg(void)
- static void __devinit pnv_pci_ioda_setup_DMA(void)
- {
- 	struct pci_controller *hose, *tmp;
-+	struct pnv_phb *phb;
- 
- 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
- 		pnv_ioda_setup_dma(hose->private_data);
-+
-+		/* Mark the PHB initialization done */
-+		phb = hose->private_data;
-+		phb->initialized = 1;
- 	}
- }
- 
-@@ -1264,10 +1269,22 @@ static void __devinit pnv_pci_ioda_fixup(void)
-  */
- static int __devinit pnv_pci_enable_device_hook(struct pci_dev *dev)
- {
--	struct pci_dn *pdn = pnv_ioda_get_pdn(dev);
-+	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	struct pci_dn *pdn;
- 
-+	/* The function is probably called while the PEs have
-+	 * not be created yet. For example, resource reassignment
-+	 * during PCI probe period. We just skip the check if
-+	 * PEs isn't ready.
-+	 */
-+	if (!phb->initialized)
-+		return 0;
-+
-+	pdn = pnv_ioda_get_pdn(dev);
- 	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
- 		return -EINVAL;
-+
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index b70720b..7cfb7c8 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -69,6 +69,7 @@ struct pnv_phb {
- 	enum pnv_phb_model	model;
- 	u64			opal_id;
- 	void __iomem		*regs;
-+	int			initialized;
- 	spinlock_t		lock;
- 
- #ifdef CONFIG_PCI_MSI
--- 
-1.7.9.5
+have one patch will change parameter all to bus instead of bridge.
+
+http://git.kernel.org/?p=3Dlinux/kernel/git/yinghai/linux-yinghai.git;a=3Dc=
+ommitdiff;h=3D3dc90c8f31e5e6153e1ac9a903189d3013690e80
+
+in that case, we can just make find_pci_host_bridge() global.
+
+Thanks
+
+Yinghai
