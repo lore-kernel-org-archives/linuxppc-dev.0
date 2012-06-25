@@ -1,33 +1,19 @@
-Return-Path: <mcaraman@mcaraman-VirtualBox.ea.freescale.net>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F13751008AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 22:27:14 +1000 (EST)
-Received: from mail90-db3 (localhost [127.0.0.1])	by mail90-db3-R.bigfish.com
- (Postfix) with ESMTP id EA6FD3003C8	for
- <linuxppc-dev@lists.ozlabs.org>; Mon,
- 25 Jun 2012 12:25:31 +0000 (UTC)
-Received: from DB3EHSMHS008.bigfish.com (unknown [10.3.81.234])	by
- mail90-db3.bigfish.com (Postfix) with ESMTP id CEAA72E0074	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 12:25:05 +0000 (UTC)
-Received: from mcaraman-VirtualBox.ea.freescale.net ([10.213.130.145])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q5PCQdn6003893	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 05:26:40 -0700
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <qemu-ppc@nongnu.org>
-Subject: [RFC PATCH 08/17] KVM: PPC: e500mc: Fix tlbilx emulation for 64-bit
- guests
-Date: Mon, 25 Jun 2012 15:26:26 +0300
-Message-ID: <1340627195-11544-9-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
-References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
+Return-Path: <avi@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 1986FB6F86
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 23:00:07 +1000 (EST)
+Message-ID: <4FE860CC.6080903@redhat.com>
+Date: Mon, 25 Jun 2012 15:59:56 +0300
+From: Avi Kivity <avi@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mihai Caraman <mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Subject: Re: [RFC PATCH 03/17] KVM: PPC64: booke: Add EPCR support in sregs
+References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
+ <1340627195-11544-4-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1340627195-11544-4-git-send-email-mihai.caraman@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,27 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-tlbilxva emulation was using an u32 variable for guest effective address.
-Replace it with gva_t type to handle 64-bit guests.
+On 06/25/2012 03:26 PM, Mihai Caraman wrote:
+> Add KVM_SREGS_E_64 feature and EPCR spr support in get/set sregs
+> for 64-bit hosts.
+> 
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+>  arch/powerpc/kvm/booke.c |   14 ++++++++++++++
+>  1 files changed, 14 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> index f9fa260..d15c4b5 100644
+> --- a/arch/powerpc/kvm/booke.c
+> +++ b/arch/powerpc/kvm/booke.c
+> @@ -1052,6 +1052,9 @@ static void get_sregs_base(struct kvm_vcpu *vcpu,
+>  	u64 tb = get_tb();
+>  
+>  	sregs->u.e.features |= KVM_SREGS_E_BASE;
+> +#ifdef CONFIG_64BIT
+> +	sregs->u.e.features |= KVM_SREGS_E_64;
+> +#endif
+>  
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
----
- arch/powerpc/kvm/e500mc.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+This is an ABI, but I see no trace of it in Documentation.
 
-diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-index db97ee3..1f89d26 100644
---- a/arch/powerpc/kvm/e500mc.c
-+++ b/arch/powerpc/kvm/e500mc.c
-@@ -57,7 +57,8 @@ void kvmppc_e500_tlbil_one(struct kvmppc_vcpu_e500 *vcpu_e500,
- 			   struct kvm_book3e_206_tlb_entry *gtlbe)
- {
- 	unsigned int tid, ts;
--	u32 val, eaddr, lpid;
-+	gva_t eaddr;
-+	u32 val, lpid;
- 	unsigned long flags;
- 
- 	ts = get_tlb_ts(gtlbe);
 -- 
-1.7.4.1
+error compiling committee.c: too many arguments to function
