@@ -1,27 +1,12 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C7D0DB6FBE
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 Jun 2012 00:59:10 +1000 (EST)
-Received: by mail-pb0-f51.google.com with SMTP id rp16so5712159pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Jun 2012 07:59:10 -0700 (PDT)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-Subject: [PATCH -v4 6/6] fault-injection: add notifier error injection testing
- scripts
-Date: Sat, 23 Jun 2012 23:58:22 +0900
-Message-Id: <1340463502-15341-7-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1340463502-15341-1-git-send-email-akinobu.mita@gmail.com>
-References: <1340463502-15341-1-git-send-email-akinobu.mita@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: Greg KH <greg@kroah.com>, Akinobu Mita <akinobu.mita@gmail.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- =?UTF-8?q?Am=C3=A9rico=20Wang?= <xiyou.wangcong@gmail.com>,
- linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Mon, 25 Jun 2012 11:55:40 +1000
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Add VDSO version of getcpu
+Message-ID: <20120625115540.2a7ad9c5@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,402 +16,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds two testing scripts with notifier error injection
 
-* tools/testing/fault-injection/cpu-notifier.sh is testing script for
-CPU notifier error handling by using cpu-notifier-error-inject.ko.
+We had a request for a fast method of getting CPU and NUMA node IDs
+from userspace. Ben suggested we use SPRG3 which is userspace
+readable. This is a quick hack to try that out.
 
-1. Offline all hot-pluggable CPUs in preparation for testing
-2. Test CPU hot-add error handling by injecting notifier errors
-3. Online all hot-pluggable CPUs in preparation for testing
-4. Test CPU hot-remove error handling by injecting notifier errors
+I have a glibc patch to implement sched_getcpu using this. Testing
+on a POWER7:
 
-* tools/testing/fault-injection/memory-notifier.sh is doing the similar
-thing for memory hotplug notifier.
+baseline: 538 cycles 
+vdso:      30 cycles
 
-1. Offline 10% of hot-pluggable memory in preparation for testing
-2. Test memory hot-add error handling by injecting notifier errors
-3. Online all hot-pluggable memory in preparation for testing
-4. Test memory hot-remove error handling by injecting notifier errors
-
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Suggested-by: Andrew Morton <akpm@linux-foundation.org>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
-Cc: Greg KH <greg@kroah.com>
-Cc: linux-mm@kvack.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Américo Wang <xiyou.wangcong@gmail.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
-* v4
-- add -r option for memory-notifier.sh to specify percent of offlining
-  memory blocks
 
- tools/testing/fault-injection/cpu-notifier.sh    |  169 +++++++++++++++++++++
- tools/testing/fault-injection/memory-notifier.sh |  176 ++++++++++++++++++++++
- 2 files changed, 345 insertions(+)
- create mode 100755 tools/testing/fault-injection/cpu-notifier.sh
- create mode 100755 tools/testing/fault-injection/memory-notifier.sh
+Outstanding issues:
 
-diff --git a/tools/testing/fault-injection/cpu-notifier.sh b/tools/testing/fault-injection/cpu-notifier.sh
-new file mode 100755
-index 0000000..af93630
---- /dev/null
-+++ b/tools/testing/fault-injection/cpu-notifier.sh
-@@ -0,0 +1,169 @@
-+#!/bin/bash
-+
-+#
-+# list all hot-pluggable CPUs
-+#
-+hotpluggable_cpus()
+- Do we have any KVM issues?
+
+- This will only work with 64 bit kernels for now, do we need to come up
+  with a scheme for 32 bit?
+
+- Implement 32 bit userspace version (running on 64 bit kernels)
+
+Index: linux-build/arch/powerpc/include/asm/reg.h
+===================================================================
+--- linux-build.orig/arch/powerpc/include/asm/reg.h	2012-06-25 10:05:52.193076424 +1000
++++ linux-build/arch/powerpc/include/asm/reg.h	2012-06-25 10:09:02.932316659 +1000
+@@ -491,6 +491,7 @@
+ #define SPRN_SPRG1	0x111	/* Special Purpose Register General 1 */
+ #define SPRN_SPRG2	0x112	/* Special Purpose Register General 2 */
+ #define SPRN_SPRG3	0x113	/* Special Purpose Register General 3 */
++#define SPRN_USPRG3	0x103	/* SPRG3 userspace read */
+ #define SPRN_SPRG4	0x114	/* Special Purpose Register General 4 */
+ #define SPRN_SPRG5	0x115	/* Special Purpose Register General 5 */
+ #define SPRN_SPRG6	0x116	/* Special Purpose Register General 6 */
+@@ -753,14 +754,14 @@
+  * 64-bit server:
+  *	- SPRG0 unused (reserved for HV on Power4)
+  *	- SPRG2 scratch for exception vectors
+- *	- SPRG3 unused (user visible)
++ *	- SPRG3 CPU and NUMA node for VDSO getcpu (user visible)
+  *      - HSPRG0 stores PACA in HV mode
+  *      - HSPRG1 scratch for "HV" exceptions
+  *
+  * 64-bit embedded
+  *	- SPRG0 generic exception scratch
+  *	- SPRG2 TLB exception stack
+- *	- SPRG3 unused (user visible)
++ *	- SPRG3 CPU and NUMA node for VDSO getcpu (user visible)
+  *	- SPRG4 unused (user visible)
+  *	- SPRG6 TLB miss scratch (user visible, sorry !)
+  *	- SPRG7 critical exception scratch
+Index: linux-build/arch/powerpc/kernel/vdso.c
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/vdso.c	2012-06-25 10:05:52.229077036 +1000
++++ linux-build/arch/powerpc/kernel/vdso.c	2012-06-25 10:12:50.256171890 +1000
+@@ -706,6 +706,25 @@ static void __init vdso_setup_syscall_ma
+ 	}
+ }
+ 
++#ifdef CONFIG_PPC64
++int __cpuinit vdso_getcpu_init(void)
 +{
-+	local state=${1:-.\*}
++	unsigned long cpu, node;
 +
-+	for cpu in /sys/devices/system/cpu/cpu*; do
-+		if [ -f $cpu/online ] && grep -q $state $cpu/online; then
-+			echo ${cpu##/*/cpu}
-+		fi
-+	done
++	/*
++	 * SPRG3 contains the CPU in the bottom 32 bits and the NUMA node in the
++	 * top 32 bits.
++	 */
++	cpu = get_cpu();
++	node = cpu_to_node(cpu);
++	mtspr(SPRN_SPRG3, cpu | (node << 32));
++	put_cpu();
++
++	return 0;
 +}
++/* We need to call this before SMP init */
++early_initcall(vdso_getcpu_init);
++#endif
+ 
+ static int __init vdso_init(void)
+ {
+Index: linux-build/arch/powerpc/kernel/vdso64/Makefile
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/vdso64/Makefile	2012-06-25 10:05:52.209076696 +1000
++++ linux-build/arch/powerpc/kernel/vdso64/Makefile	2012-06-25 10:05:53.737102674 +1000
+@@ -1,6 +1,6 @@
+ # List of files in the vdso, has to be asm only for now
+ 
+-obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o
++obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o getcpu.o
+ 
+ # Build rules
+ 
+Index: linux-build/arch/powerpc/kernel/vdso64/vdso64.lds.S
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/vdso64/vdso64.lds.S	2012-06-25 10:05:52.217076832 +1000
++++ linux-build/arch/powerpc/kernel/vdso64/vdso64.lds.S	2012-06-25 10:05:53.737102674 +1000
+@@ -146,6 +146,7 @@ VERSION
+ 		__kernel_sync_dicache;
+ 		__kernel_sync_dicache_p5;
+ 		__kernel_sigtramp_rt64;
++		__kernel_getcpu;
+ 
+ 	local: *;
+ 	};
+Index: linux-build/arch/powerpc/kernel/vdso64/getcpu.S
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-build/arch/powerpc/kernel/vdso64/getcpu.S	2012-06-25 10:09:11.796467121 +1000
+@@ -0,0 +1,44 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Copyright (C) IBM Corporation, 2012
++ *
++ * Author: Anton Blanchard <anton@au.ibm.com>
++ */
++#include <asm/ppc_asm.h>
++#include <asm/vdso.h>
 +
-+hotplaggable_offline_cpus()
-+{
-+	hotpluggable_cpus 0
-+}
++	.text
++/*
++ * Exact prototype of getcpu
++ *
++ * int __kernel_getcpu(unsigned *cpu, unsigned *node);
++ *
++ */
++V_FUNCTION_BEGIN(__kernel_getcpu)
++  .cfi_startproc
++	mfspr	r5,SPRN_USPRG3
++	cmpdi	cr0,r3,0
++	cmpdi	cr1,r4,0
++	srdi	r6,r5,32
++	beq	cr0,1f
++	stw	r5,0(r3)
++1:	beq	cr1,2f
++	stw	r6,0(r4)
++2:	crclr	cr0*4+so
++	li	r3,0			/* always success */
++	blr
++  .cfi_endproc
++V_FUNCTION_END(__kernel_getcpu)
+Index: linux-build/arch/powerpc/kernel/smp.c
+===================================================================
+--- linux-build.orig/arch/powerpc/kernel/smp.c	2012-06-25 10:05:52.197076492 +1000
++++ linux-build/arch/powerpc/kernel/smp.c	2012-06-25 10:13:54.897266908 +1000
+@@ -48,6 +48,7 @@
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
+ #endif
++#include <asm/vdso.h>
+ #include <asm/debug.h>
+ 
+ #ifdef DEBUG
+@@ -570,6 +571,8 @@ void __devinit start_secondary(void *unu
+ #ifdef CONFIG_PPC64
+ 	if (system_state == SYSTEM_RUNNING)
+ 		vdso_data->processorCount++;
 +
-+hotpluggable_online_cpus()
-+{
-+	hotpluggable_cpus 1
-+}
++	vdso_getcpu_init();
+ #endif
+ 	ipi_call_lock();
+ 	notify_cpu_starting(cpu);
+Index: linux-build/arch/powerpc/include/asm/vdso.h
+===================================================================
+--- linux-build.orig/arch/powerpc/include/asm/vdso.h	2012-06-25 10:05:52.181076220 +1000
++++ linux-build/arch/powerpc/include/asm/vdso.h	2012-06-25 10:05:53.737102674 +1000
+@@ -22,6 +22,8 @@ extern unsigned long vdso64_rt_sigtramp;
+ extern unsigned long vdso32_sigtramp;
+ extern unsigned long vdso32_rt_sigtramp;
+ 
++int __cpuinit vdso_getcpu_init(void);
 +
-+cpu_is_online()
-+{
-+	grep -q 1 /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+cpu_is_offline()
-+{
-+	grep -q 0 /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+add_cpu()
-+{
-+	echo 1 > /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+remove_cpu()
-+{
-+	echo 0 > /sys/devices/system/cpu/cpu$1/online
-+}
-+
-+add_cpu_expect_success()
-+{
-+	local cpu=$1
-+
-+	if ! add_cpu $cpu; then
-+		echo $FUNCNAME $cpu: unexpected fail >&2
-+	elif ! cpu_is_online $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+add_cpu_expect_fail()
-+{
-+	local cpu=$1
-+
-+	if add_cpu $cpu 2> /dev/null; then
-+		echo $FUNCNAME $cpu: unexpected success >&2
-+	elif ! cpu_is_offline $cpu; then
-+		echo $FUNCNAME $cpu: unexpected online >&2
-+	fi
-+}
-+
-+remove_cpu_expect_success()
-+{
-+	local cpu=$1
-+
-+	if ! remove_cpu $cpu; then
-+		echo $FUNCNAME $cpu: unexpected fail >&2
-+	elif ! cpu_is_offline $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+remove_cpu_expect_fail()
-+{
-+	local cpu=$1
-+
-+	if remove_cpu $cpu 2> /dev/null; then
-+		echo $FUNCNAME $cpu: unexpected success >&2
-+	elif ! cpu_is_online $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+if [ $UID != 0 ]; then
-+	echo must be run as root >&2
-+	exit 1
-+fi
-+
-+error=-12
-+priority=0
-+
-+while getopts e:hp: opt; do
-+	case $opt in
-+	e)
-+		error=$OPTARG
-+		;;
-+	h)
-+		echo "Usage $0 [ -e errno ] [ -p notifier-priority ]"
-+		exit
-+		;;
-+	p)
-+		priority=$OPTARG
-+		;;
-+	esac
-+done
-+
-+if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
-+	echo "error code must be -4095 <= errno < 0" >&2
-+	exit 1
-+fi
-+
-+DEBUGFS=`mount -t debugfs | head -1 | awk '{ print $3 }'`
-+
-+if [ ! -d "$DEBUGFS" ]; then
-+	echo debugfs is not mounted >&2
-+	exit 1
-+fi
-+
-+/sbin/modprobe -r cpu-notifier-error-inject
-+/sbin/modprobe -q cpu-notifier-error-inject priority=$priority
-+
-+NOTIFIER_ERR_INJECT_DIR=$DEBUGFS/notifier-error-inject/cpu
-+
-+if [ ! -d $NOTIFIER_ERR_INJECT_DIR ]; then
-+	echo cpu-notifier-error-inject module is not available >&2
-+	exit 1
-+fi
-+
-+#
-+# Offline all hot-pluggable CPUs
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_DOWN_PREPARE/error
-+for cpu in `hotpluggable_online_cpus`; do
-+	remove_cpu_expect_success $cpu
-+done
-+
-+#
-+# Test CPU hot-add error handling (offline => online)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_UP_PREPARE/error
-+for cpu in `hotplaggable_offline_cpus`; do
-+	add_cpu_expect_fail $cpu
-+done
-+
-+#
-+# Online all hot-pluggable CPUs
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_UP_PREPARE/error
-+for cpu in `hotplaggable_offline_cpus`; do
-+	add_cpu_expect_success $cpu
-+done
-+
-+#
-+# Test CPU hot-remove error handling (online => offline)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_DOWN_PREPARE/error
-+for cpu in `hotpluggable_online_cpus`; do
-+	remove_cpu_expect_fail $cpu
-+done
-+
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_DOWN_PREPARE/error
-+/sbin/modprobe -r cpu-notifier-error-inject
-diff --git a/tools/testing/fault-injection/memory-notifier.sh b/tools/testing/fault-injection/memory-notifier.sh
-new file mode 100755
-index 0000000..843cba7
---- /dev/null
-+++ b/tools/testing/fault-injection/memory-notifier.sh
-@@ -0,0 +1,176 @@
-+#!/bin/bash
-+
-+#
-+# list all hot-pluggable memory
-+#
-+hotpluggable_memory()
-+{
-+	local state=${1:-.\*}
-+
-+	for memory in /sys/devices/system/memory/memory*; do
-+		if grep -q 1 $memory/removable &&
-+		   grep -q $state $memory/state; then
-+			echo ${memory##/*/memory}
-+		fi
-+	done
-+}
-+
-+hotplaggable_offline_memory()
-+{
-+	hotpluggable_memory offline
-+}
-+
-+hotpluggable_online_memory()
-+{
-+	hotpluggable_memory online
-+}
-+
-+memory_is_online()
-+{
-+	grep -q online /sys/devices/system/memory/memory$1/state
-+}
-+
-+memory_is_offline()
-+{
-+	grep -q offline /sys/devices/system/memory/memory$1/state
-+}
-+
-+add_memory()
-+{
-+	echo online > /sys/devices/system/memory/memory$1/state
-+}
-+
-+remove_memory()
-+{
-+	echo offline > /sys/devices/system/memory/memory$1/state
-+}
-+
-+add_memory_expect_success()
-+{
-+	local memory=$1
-+
-+	if ! add_memory $memory; then
-+		echo $FUNCNAME $memory: unexpected fail >&2
-+	elif ! memory_is_online $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+add_memory_expect_fail()
-+{
-+	local memory=$1
-+
-+	if add_memory $memory 2> /dev/null; then
-+		echo $FUNCNAME $memory: unexpected success >&2
-+	elif ! memory_is_offline $memory; then
-+		echo $FUNCNAME $memory: unexpected online >&2
-+	fi
-+}
-+
-+remove_memory_expect_success()
-+{
-+	local memory=$1
-+
-+	if ! remove_memory $memory; then
-+		echo $FUNCNAME $memory: unexpected fail >&2
-+	elif ! memory_is_offline $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+remove_memory_expect_fail()
-+{
-+	local memory=$1
-+
-+	if remove_memory $memory 2> /dev/null; then
-+		echo $FUNCNAME $memory: unexpected success >&2
-+	elif ! memory_is_online $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+if [ $UID != 0 ]; then
-+	echo must be run as root >&2
-+	exit 1
-+fi
-+
-+error=-12
-+priority=0
-+ratio=10
-+
-+while getopts e:hp:r: opt; do
-+	case $opt in
-+	e)
-+		error=$OPTARG
-+		;;
-+	h)
-+		echo "Usage $0 [ -e errno ] [ -p notifier-priority ] [ -r percent-of-memory-to-offline ]"
-+		exit
-+		;;
-+	p)
-+		priority=$OPTARG
-+		;;
-+	r)
-+		ratio=$OPTARG
-+		;;
-+	esac
-+done
-+
-+if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
-+	echo "error code must be -4095 <= errno < 0" >&2
-+	exit 1
-+fi
-+
-+DEBUGFS=`mount -t debugfs | head -1 | awk '{ print $3 }'`
-+
-+if [ ! -d "$DEBUGFS" ]; then
-+	echo debugfs is not mounted >&2
-+	exit 1
-+fi
-+
-+/sbin/modprobe -r memory-notifier-error-inject
-+/sbin/modprobe -q memory-notifier-error-inject priority=$priority
-+
-+NOTIFIER_ERR_INJECT_DIR=$DEBUGFS/notifier-error-inject/memory
-+
-+if [ ! -d $NOTIFIER_ERR_INJECT_DIR ]; then
-+	echo memory-notifier-error-inject module is not available >&2
-+	exit 1
-+fi
-+
-+#
-+# Offline $ratio percent of hot-pluggable memory
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_OFFLINE/error
-+for memory in `hotpluggable_online_memory`; do
-+	if [ $((RANDOM % 100)) -lt $ratio ]; then
-+		remove_memory_expect_success $memory
-+	fi
-+done
-+
-+#
-+# Test memory hot-add error handling (offline => online)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_ONLINE/error
-+for memory in `hotplaggable_offline_memory`; do
-+	add_memory_expect_fail $memory
-+done
-+
-+#
-+# Online all hot-pluggable memory
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_ONLINE/error
-+for memory in `hotplaggable_offline_memory`; do
-+	add_memory_expect_success $memory
-+done
-+
-+#
-+# Test memory hot-remove error handling (online => offline)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_OFFLINE/error
-+for memory in `hotpluggable_online_memory`; do
-+	remove_memory_expect_fail $memory
-+done
-+
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_OFFLINE/error
-+/sbin/modprobe -r memory-notifier-error-inject
--- 
-1.7.10.2
+ #else /* __ASSEMBLY__ */
+ 
+ #ifdef __VDSO64__
