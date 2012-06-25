@@ -3,10 +3,10 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <michael@ellerman.id.au>
 From: Michael Neuling <mikey@neuling.org>
-Date: Tue, 26 Jun 2012 09:33:24 +1000
-Subject: [PATCH 17/18] powerpc: Add defines for RA 0-R31
+Date: Tue, 26 Jun 2012 09:33:25 +1000
+Subject: [PATCH 18/18] powerpc: enforce usage of RA 0-R31 where possible
 In-Reply-To: <1340667187.357853.615199632713.qpush@ale>
-Message-Id: <20120625233324.CD8CFD43685@localhost.localdomain>
+Message-Id: <20120625233325.D3077D43683@localhost.localdomain>
 Cc: mikey@neuling.org, matt@ozlabs.org, linuxppc-dev@ozlabs.org,
  schwab@linux-m68k.org, Anton Blanchard <anton@samba.org>,
  Olof Johannsson <olof@lixom.net>
@@ -19,63 +19,232 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-R0 is special since it'll be 0.
+Some macros use RA where when RA=R0 the values is 0, so make this
+the enforced mnemonic in the macro.
+
+Idea suggested by Andreas Schwab.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
 
- arch/powerpc/include/asm/ppc-opcode.h |   34 ++++++++++++++++++++++++++++++++++
- 1 file changed, 34 insertions(+)
-
+---
 Index: b/arch/powerpc/include/asm/ppc-opcode.h
 ===================================================================
 --- a/arch/powerpc/include/asm/ppc-opcode.h
 +++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -48,6 +48,39 @@
- #define	__REG_R30	30
- #define	__REG_R31	31
+@@ -231,7 +231,7 @@
+ #define PPC_RFDI		stringify_in_c(.long PPC_INST_RFDI)
+ #define PPC_RFMCI		stringify_in_c(.long PPC_INST_RFMCI)
+ #define PPC_TLBILX(t, a, b)	stringify_in_c(.long PPC_INST_TLBILX | \
+-					__PPC_T_TLB(t) | __PPC_RA(a) | __PPC_RB(b))
++					__PPC_T_TLB(t) | __PPC_RA0(a) | __PPC_RB(b))
+ #define PPC_TLBILX_ALL(a, b)	PPC_TLBILX(0, a, b)
+ #define PPC_TLBILX_PID(a, b)	PPC_TLBILX(1, a, b)
+ #define PPC_TLBILX_VA(a, b)	PPC_TLBILX(3, a, b)
+@@ -240,23 +240,23 @@
+ #define PPC_TLBIE(lp,a) 	stringify_in_c(.long PPC_INST_TLBIE | \
+ 					       ___PPC_RB(a) | ___PPC_RS(lp))
+ #define PPC_TLBSRX_DOT(a,b)	stringify_in_c(.long PPC_INST_TLBSRX_DOT | \
+-					__PPC_RA(a) | __PPC_RB(b))
++					__PPC_RA0(a) | __PPC_RB(b))
+ #define PPC_TLBIVAX(a,b)	stringify_in_c(.long PPC_INST_TLBIVAX | \
+-					__PPC_RA(a) | __PPC_RB(b))
++					__PPC_RA0(a) | __PPC_RB(b))
  
-+#define	__REGA0_0	0
-+#define	__REGA0_R1	1
-+#define	__REGA0_R2	2
-+#define	__REGA0_R3	3
-+#define	__REGA0_R4	4
-+#define	__REGA0_R5	5
-+#define	__REGA0_R6	6
-+#define	__REGA0_R7	7
-+#define	__REGA0_R8	8
-+#define	__REGA0_R9	9
-+#define	__REGA0_R10	10
-+#define	__REGA0_R11	11
-+#define	__REGA0_R12	12
-+#define	__REGA0_R13	13
-+#define	__REGA0_R14	14
-+#define	__REGA0_R15	15
-+#define	__REGA0_R16	16
-+#define	__REGA0_R17	17
-+#define	__REGA0_R18	18
-+#define	__REGA0_R19	19
-+#define	__REGA0_R20	20
-+#define	__REGA0_R21	21
-+#define	__REGA0_R22	22
-+#define	__REGA0_R23	23
-+#define	__REGA0_R24	24
-+#define	__REGA0_R25	25
-+#define	__REGA0_R26	26
-+#define	__REGA0_R27	27
-+#define	__REGA0_R28	28
-+#define	__REGA0_R29	29
-+#define	__REGA0_R30	30
-+#define	__REGA0_R31	31
-+
- /* sorted alphabetically */
- #define PPC_INST_DCBA			0x7c0005ec
- #define PPC_INST_DCBA_MASK		0xfc0007fe
-@@ -149,6 +182,7 @@
- #define ___PPC_RS(s)	(((s) & 0x1f) << 21)
- #define ___PPC_RT(t)	___PPC_RS(t)
- #define __PPC_RA(a)	___PPC_RA(__REG_##a)
-+#define __PPC_RA0(a)	___PPC_RA(__REGA0_##a)
- #define __PPC_RB(b)	___PPC_RB(__REG_##b)
- #define __PPC_RS(s)	___PPC_RS(__REG_##s)
- #define __PPC_RT(t)	___PPC_RT(__REG_##t)
+ #define PPC_ERATWE(s, a, w)	stringify_in_c(.long PPC_INST_ERATWE | \
+ 					__PPC_RS(s) | __PPC_RA(a) | __PPC_WS(w))
+ #define PPC_ERATRE(s, a, w)	stringify_in_c(.long PPC_INST_ERATRE | \
+ 					__PPC_RS(s) | __PPC_RA(a) | __PPC_WS(w))
+ #define PPC_ERATILX(t, a, b)	stringify_in_c(.long PPC_INST_ERATILX | \
+-					__PPC_T_TLB(t) | __PPC_RA(a) | \
++					__PPC_T_TLB(t) | __PPC_RA0(a) | \
+ 					__PPC_RB(b))
+ #define PPC_ERATIVAX(s, a, b)	stringify_in_c(.long PPC_INST_ERATIVAX | \
+-					__PPC_RS(s) | __PPC_RA(a) | __PPC_RB(b))
++					__PPC_RS(s) | __PPC_RA0(a) | __PPC_RB(b))
+ #define PPC_ERATSX(t, a, w)	stringify_in_c(.long PPC_INST_ERATSX | \
+-					__PPC_RS(t) | __PPC_RA(a) | __PPC_RB(b))
++					__PPC_RS(t) | __PPC_RA0(a) | __PPC_RB(b))
+ #define PPC_ERATSX_DOT(t, a, w)	stringify_in_c(.long PPC_INST_ERATSX_DOT | \
+-					__PPC_RS(t) | __PPC_RA(a) | __PPC_RB(b))
++					__PPC_RS(t) | __PPC_RA0(a) | __PPC_RB(b))
+ #define PPC_SLBFEE_DOT(t, b)	stringify_in_c(.long PPC_INST_SLBFEE | \
+ 					__PPC_RT(t) | __PPC_RB(b))
+ /* PASemi instructions */
+Index: b/arch/powerpc/kernel/cpu_setup_a2.S
+===================================================================
+--- a/arch/powerpc/kernel/cpu_setup_a2.S
++++ b/arch/powerpc/kernel/cpu_setup_a2.S
+@@ -112,7 +112,7 @@ _icswx_skip_guest:
+ 	 * a bolted entry though it will be in LRU and so will go away eventually
+ 	 * but let's not bother for now
+ 	 */
+-	PPC_ERATILX(0,R0,R0)
++	PPC_ERATILX(0,0,R0)
+ 1:
+ 	blr
+ 
+Index: b/arch/powerpc/kernel/exceptions-64e.S
+===================================================================
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -903,7 +903,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	bne	1b				/* If not, repeat */
+ 
+ 	/* Invalidate all TLBs */
+-	PPC_TLBILX_ALL(R0,R0)
++	PPC_TLBILX_ALL(0,R0)
+ 	sync
+ 	isync
+ 
+@@ -961,7 +961,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	tlbwe
+ 
+ 	/* Invalidate TLB1 */
+-	PPC_TLBILX_ALL(R0,R0)
++	PPC_TLBILX_ALL(0,R0)
+ 	sync
+ 	isync
+ 
+@@ -1020,7 +1020,7 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	tlbwe
+ 
+ 	/* Invalidate TLB1 */
+-	PPC_TLBILX_ALL(R0,R0)
++	PPC_TLBILX_ALL(0,R0)
+ 	sync
+ 	isync
+ 
+@@ -1138,7 +1138,7 @@ a2_tlbinit_after_iprot_flush:
+ 	tlbwe
+ #endif /* CONFIG_PPC_EARLY_DEBUG_WSP */
+ 
+-	PPC_TLBILX(0,R0,R0)
++	PPC_TLBILX(0,0,R0)
+ 	sync
+ 	isync
+ 
+Index: b/arch/powerpc/mm/tlb_low_64e.S
+===================================================================
+--- a/arch/powerpc/mm/tlb_low_64e.S
++++ b/arch/powerpc/mm/tlb_low_64e.S
+@@ -126,7 +126,7 @@ BEGIN_MMU_FTR_SECTION
+ 	/* Set the TLB reservation and search for existing entry. Then load
+ 	 * the entry.
+ 	 */
+-	PPC_TLBSRX_DOT(R0,R16)
++	PPC_TLBSRX_DOT(0,R16)
+ 	ldx	r14,r14,r15		/* grab pgd entry */
+ 	beq	normal_tlb_miss_done	/* tlb exists already, bail */
+ MMU_FTR_SECTION_ELSE
+@@ -395,7 +395,7 @@ BEGIN_MMU_FTR_SECTION
+ 	/* Set the TLB reservation and search for existing entry. Then load
+ 	 * the entry.
+ 	 */
+-	PPC_TLBSRX_DOT(R0,R16)
++	PPC_TLBSRX_DOT(0,R16)
+ 	ld	r14,0(r10)
+ 	beq	normal_tlb_miss_done
+ MMU_FTR_SECTION_ELSE
+@@ -528,7 +528,7 @@ BEGIN_MMU_FTR_SECTION
+ 	/* Search if we already have a TLB entry for that virtual address, and
+ 	 * if we do, bail out.
+ 	 */
+-	PPC_TLBSRX_DOT(R0,R16)
++	PPC_TLBSRX_DOT(0,R16)
+ 	beq	virt_page_table_tlb_miss_done
+ END_MMU_FTR_SECTION_IFSET(MMU_FTR_USE_TLBRSRV)
+ 
+@@ -779,7 +779,7 @@ htw_tlb_miss:
+ 	 *
+ 	 * MAS1:IND should be already set based on MAS4
+ 	 */
+-	PPC_TLBSRX_DOT(R0,R16)
++	PPC_TLBSRX_DOT(0,R16)
+ 	beq	htw_tlb_miss_done
+ 
+ 	/* Now, we need to walk the page tables. First check if we are in
+@@ -919,7 +919,7 @@ tlb_load_linear:
+ 	mtspr	SPRN_MAS1,r15
+ 
+ 	/* Already somebody there ? */
+-	PPC_TLBSRX_DOT(R0,R16)
++	PPC_TLBSRX_DOT(0,R16)
+ 	beq	tlb_load_linear_done
+ 
+ 	/* Now we build the remaining MAS. MAS0 and 2 should be fine
+Index: b/arch/powerpc/mm/tlb_nohash_low.S
+===================================================================
+--- a/arch/powerpc/mm/tlb_nohash_low.S
++++ b/arch/powerpc/mm/tlb_nohash_low.S
+@@ -266,7 +266,7 @@ BEGIN_MMU_FTR_SECTION
+ 	andi.	r3,r3,MMUCSR0_TLBFI@l
+ 	bne	1b
+ MMU_FTR_SECTION_ELSE
+-	PPC_TLBILX_ALL(R0,R0)
++	PPC_TLBILX_ALL(0,R0)
+ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
+ 	msync
+ 	isync
+@@ -279,7 +279,7 @@ BEGIN_MMU_FTR_SECTION
+ 	wrteei	0
+ 	mfspr	r4,SPRN_MAS6	/* save MAS6 */
+ 	mtspr	SPRN_MAS6,r3
+-	PPC_TLBILX_PID(R0,R0)
++	PPC_TLBILX_PID(0,R0)
+ 	mtspr	SPRN_MAS6,r4	/* restore MAS6 */
+ 	wrtee	r10
+ MMU_FTR_SECTION_ELSE
+@@ -313,7 +313,7 @@ BEGIN_MMU_FTR_SECTION
+ 	mtspr	SPRN_MAS1,r4
+ 	tlbwe
+ MMU_FTR_SECTION_ELSE
+-	PPC_TLBILX_VA(R0,R3)
++	PPC_TLBILX_VA(0,R3)
+ ALT_MMU_FTR_SECTION_END_IFCLR(MMU_FTR_USE_TLBILX)
+ 	msync
+ 	isync
+@@ -331,7 +331,7 @@ _GLOBAL(_tlbil_pid)
+ 	mfmsr	r10
+ 	wrteei	0
+ 	mtspr	SPRN_MAS6,r4
+-	PPC_TLBILX_PID(R0,R0)
++	PPC_TLBILX_PID(0,R0)
+ 	wrtee	r10
+ 	msync
+ 	isync
+@@ -343,14 +343,14 @@ _GLOBAL(_tlbil_pid_noind)
+ 	ori	r4,r4,MAS6_SIND
+ 	wrteei	0
+ 	mtspr	SPRN_MAS6,r4
+-	PPC_TLBILX_PID(R0,R0)
++	PPC_TLBILX_PID(0,R0)
+ 	wrtee	r10
+ 	msync
+ 	isync
+ 	blr
+ 
+ _GLOBAL(_tlbil_all)
+-	PPC_TLBILX_ALL(R0,R0)
++	PPC_TLBILX_ALL(0,R0)
+ 	msync
+ 	isync
+ 	blr
+@@ -364,7 +364,7 @@ _GLOBAL(_tlbil_va)
+ 	beq	1f
+ 	rlwimi	r4,r6,MAS6_SIND_SHIFT,MAS6_SIND
+ 1:	mtspr	SPRN_MAS6,r4		/* assume AS=0 for now */
+-	PPC_TLBILX_VA(R0,R3)
++	PPC_TLBILX_VA(0,R3)
+ 	msync
+ 	isync
+ 	wrtee	r10
+@@ -379,7 +379,7 @@ _GLOBAL(_tlbivax_bcast)
+ 	beq	1f
+ 	rlwimi	r4,r6,MAS6_SIND_SHIFT,MAS6_SIND
+ 1:	mtspr	SPRN_MAS6,r4		/* assume AS=0 for now */
+-	PPC_TLBIVAX(R0,R3)
++	PPC_TLBIVAX(0,R3)
+ 	eieio
+ 	tlbsync
+ 	sync
