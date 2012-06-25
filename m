@@ -4,23 +4,25 @@ Received: from co1outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1E6B2B6FC3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 22:26:49 +1000 (EST)
-Received: from mail216-co1 (localhost [127.0.0.1])	by
- mail216-co1-R.bigfish.com (Postfix) with ESMTP id 9BEE58C0062	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 12:25:07 +0000 (UTC)
-Received: from CO1EHSMHS012.bigfish.com (unknown [10.243.78.249])	by
- mail216-co1.bigfish.com (Postfix) with ESMTP id 7A81B800044	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 12:25:04 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 20C87B6FD9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 22:26:50 +1000 (EST)
+Received: from mail51-co1 (localhost [127.0.0.1])	by mail51-co1-R.bigfish.com
+ (Postfix) with ESMTP id 85F229C010A	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,
+ 25 Jun 2012 12:25:08 +0000 (UTC)
+Received: from CO1EHSMHS028.bigfish.com (unknown [10.243.78.229])	by
+ mail51-co1.bigfish.com (Postfix) with ESMTP id 12AAD3C0048	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 12:25:06 +0000 (UTC)
 Received: from mcaraman-VirtualBox.ea.freescale.net ([10.213.130.145])	by
- az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q5PCQdHR019306	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 05:26:40 -0700
+ az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q5PCQfwg019326	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Jun 2012 05:26:41 -0700
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>, <kvm@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <qemu-ppc@nongnu.org>
-Subject: [RFC PATCH 05/17] KVM: PPC: booke: Extend MAS2 EPN mask for 64-bit
-Date: Mon, 25 Jun 2012 15:26:23 +0300
-Message-ID: <1340627195-11544-6-git-send-email-mihai.caraman@freescale.com>
+Subject: [RFC PATCH 13/17] PowerPC: booke64: Use SPRG0/3 scratch for bolted
+ TLB miss & crit int
+Date: Mon, 25 Jun 2012 15:26:31 +0300
+Message-ID: <1340627195-11544-14-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
 References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -35,40 +37,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Extend MAS2 EPN mask for 64-bit hosts, to retain most significant bits.
-Change get tlb eaddr to use this mask.
+Embedded.Hypervisor category defines GSPRG0..3 physical registers for guests.
+Avoid SPRG4-7 usage as scratch in host exception handlers, otherwise guest
+SPRG4-7 registers will be clobbered.
+For bolted TLB miss exception handlers, which is the version currently
+supported by KVM, use SPRN_SPRG_GEN_SCRATCH (aka SPRG0) instead of
+SPRN_SPRG_TLB_SCRATCH (aka SPRG6) and replace TLB with GEN PACA slots to
+keep consitency.
+For critical exception handler use SPRG3 instead of SPRG7.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
- arch/powerpc/include/asm/mmu-book3e.h |    2 +-
- arch/powerpc/kvm/e500.h               |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/exception-64e.h |   14 +++++++-------
+ arch/powerpc/include/asm/reg.h           |    6 +++---
+ arch/powerpc/mm/tlb_low_64e.S            |   28 ++++++++++++++--------------
+ 3 files changed, 24 insertions(+), 24 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-book3e.h b/arch/powerpc/include/asm/mmu-book3e.h
-index eeabcdb..99d43e0 100644
---- a/arch/powerpc/include/asm/mmu-book3e.h
-+++ b/arch/powerpc/include/asm/mmu-book3e.h
-@@ -59,7 +59,7 @@
- #define MAS1_TSIZE_SHIFT	7
- #define MAS1_TSIZE(x)		(((x) << MAS1_TSIZE_SHIFT) & MAS1_TSIZE_MASK)
+diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
+index ac13add..c90a9a4 100644
+--- a/arch/powerpc/include/asm/exception-64e.h
++++ b/arch/powerpc/include/asm/exception-64e.h
+@@ -38,8 +38,11 @@
+  */
  
--#define MAS2_EPN		0xFFFFF000
-+#define MAS2_EPN		(~0xFFFUL)
- #define MAS2_X0			0x00000040
- #define MAS2_X1			0x00000020
- #define MAS2_W			0x00000010
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index aa8b814..3e31098 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -155,7 +155,7 @@ get_tlb_size(const struct kvm_book3e_206_tlb_entry *tlbe)
  
- static inline gva_t get_tlb_eaddr(const struct kvm_book3e_206_tlb_entry *tlbe)
- {
--	return tlbe->mas2 & 0xfffff000;
-+	return tlbe->mas2 & MAS2_EPN;
- }
+-/* We are out of SPRGs so we save some things in the PACA. The normal
+- * exception frame is smaller than the CRIT or MC one though
++/* We are out of SPRGs so we save some things in the 8 slots available in PACA.
++ * The normal exception frame is smaller than the CRIT or MC one though
++ *
++ * Bolted TLB miss exception variant also uses these slots which in combination
++ * with pgd and kernel_pgd fits in one 64-byte cache line.
+  */
+ #define EX_R1		(0 * 8)
+ #define EX_CR		(1 * 8)
+@@ -47,13 +50,10 @@
+ #define EX_R11		(3 * 8)
+ #define EX_R14		(4 * 8)
+ #define EX_R15		(5 * 8)
++#define EX_R16		(6 * 8)
  
- static inline u64 get_tlb_bytes(const struct kvm_book3e_206_tlb_entry *tlbe)
+ /*
+- * The TLB miss exception uses different slots.
+- *
+- * The bolted variant uses only the first six fields,
+- * which in combination with pgd and kernel_pgd fits in
+- * one 64-byte cache line.
++ * PACA slots offset for standard TLB miss exception.
+  */
+ 
+ #define EX_TLB_R10	( 0 * 8)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index f0cb7f4..51c14a7 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -760,10 +760,10 @@
+  * 64-bit embedded
+  *	- SPRG0 generic exception scratch
+  *	- SPRG2 TLB exception stack
+- *	- SPRG3 unused (user visible)
++ *	- SPRG3 critical exception scratch (user visible)
+  *	- SPRG4 unused (user visible)
+  *	- SPRG6 TLB miss scratch (user visible, sorry !)
+- *	- SPRG7 critical exception scratch
++ *	- SPRG7 unused (user visible)
+  *	- SPRG8 machine check exception scratch
+  *	- SPRG9 debug exception scratch
+  *
+@@ -857,7 +857,7 @@
+ 
+ #ifdef CONFIG_PPC_BOOK3E_64
+ #define SPRN_SPRG_MC_SCRATCH	SPRN_SPRG8
+-#define SPRN_SPRG_CRIT_SCRATCH	SPRN_SPRG7
++#define SPRN_SPRG_CRIT_SCRATCH	SPRN_SPRG3
+ #define SPRN_SPRG_DBG_SCRATCH	SPRN_SPRG9
+ #define SPRN_SPRG_TLB_EXFRAME	SPRN_SPRG2
+ #define SPRN_SPRG_TLB_SCRATCH	SPRN_SPRG6
+diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+index 88feaaa..4192ade 100644
+--- a/arch/powerpc/mm/tlb_low_64e.S
++++ b/arch/powerpc/mm/tlb_low_64e.S
+@@ -40,36 +40,36 @@
+  **********************************************************************/
+ 
+ .macro tlb_prolog_bolted intnum addr
+-	mtspr	SPRN_SPRG_TLB_SCRATCH,r13
++	mtspr	SPRN_SPRG_GEN_SCRATCH,r13
+ 	mfspr	r13,SPRN_SPRG_PACA
+-	std	r10,PACA_EXTLB+EX_TLB_R10(r13)
++	std	r10,PACA_EXGEN+EX_R10(r13)
+ 	mfcr	r10
+-	std	r11,PACA_EXTLB+EX_TLB_R11(r13)
++	std	r11,PACA_EXGEN+EX_R11(r13)
+ #ifdef CONFIG_KVM_BOOKE_HV
+ BEGIN_FTR_SECTION
+ 	mfspr	r11, SPRN_SRR1
+ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ #endif
+ 	DO_KVM	\intnum, SPRN_SRR1
+-	std	r16,PACA_EXTLB+EX_TLB_R16(r13)
++	std	r16,PACA_EXGEN+EX_R16(r13)
+ 	mfspr	r16,\addr		/* get faulting address */
+-	std	r14,PACA_EXTLB+EX_TLB_R14(r13)
++	std	r14,PACA_EXGEN+EX_R14(r13)
+ 	ld	r14,PACAPGD(r13)
+-	std	r15,PACA_EXTLB+EX_TLB_R15(r13)
+-	std	r10,PACA_EXTLB+EX_TLB_CR(r13)
++	std	r15,PACA_EXGEN+EX_R15(r13)
++	std	r10,PACA_EXGEN+EX_CR(r13)
+ 	TLB_MISS_PROLOG_STATS_BOLTED
+ .endm
+ 
+ .macro tlb_epilog_bolted
+-	ld	r14,PACA_EXTLB+EX_TLB_CR(r13)
+-	ld	r10,PACA_EXTLB+EX_TLB_R10(r13)
+-	ld	r11,PACA_EXTLB+EX_TLB_R11(r13)
++	ld	r14,PACA_EXGEN+EX_CR(r13)
++	ld	r10,PACA_EXGEN+EX_R10(r13)
++	ld	r11,PACA_EXGEN+EX_R11(r13)
+ 	mtcr	r14
+-	ld	r14,PACA_EXTLB+EX_TLB_R14(r13)
+-	ld	r15,PACA_EXTLB+EX_TLB_R15(r13)
++	ld	r14,PACA_EXGEN+EX_R14(r13)
++	ld	r15,PACA_EXGEN+EX_R15(r13)
+ 	TLB_MISS_RESTORE_STATS_BOLTED
+-	ld	r16,PACA_EXTLB+EX_TLB_R16(r13)
+-	mfspr	r13,SPRN_SPRG_TLB_SCRATCH
++	ld	r16,PACA_EXGEN+EX_R16(r13)
++	mfspr	r13,SPRN_SPRG_GEN_SCRATCH
+ .endm
+ 
+ /* Data TLB miss */
 -- 
 1.7.4.1
