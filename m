@@ -1,11 +1,13 @@
 Return-Path: <anton@samba.org>
-Date: Mon, 25 Jun 2012 14:23:53 +1000
+Date: Mon, 25 Jun 2012 14:24:44 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
  miltonm@bga.com, nacc@us.ibm.com, brking@linux.vnet.ibm.com,
  rcj@linux.vnet.ibm.com
-Subject: [PATCH 1/4] powerpc: vio: Remove dma not supported warnings
-Message-ID: <20120625142353.0a92791a@kryten>
+Subject: [PATCH 2/4] powerpc: vio: Separate vio bus probe and device probe
+Message-ID: <20120625142444.17caef00@kryten>
+In-Reply-To: <20120625142353.0a92791a@kryten>
+References: <20120625142353.0a92791a@kryten>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -19,56 +21,34 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-During boot we see a number of these warnings:
-
-vio 30000000: Warning: IOMMU dma not supported: mask 0xffffffffffffffff, table unavailable
-
-The reason for this is that we set IOMMU properties for all VIO
-devices even if they are not DMA capable.
-
-Only set DMA ops, table and mask for devices with a DMA window.
+Similar to PCI, separate the bus probe from device probe. This allows
+us to attach bus notifiers for DMA debug and IOMMU fault injection
+before devices have been probed.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>  
 ---
 
 Index: linux-build/arch/powerpc/kernel/vio.c
 ===================================================================
---- linux-build.orig/arch/powerpc/kernel/vio.c	2012-06-08 14:02:05.548512941 +1000
-+++ linux-build/arch/powerpc/kernel/vio.c	2012-06-25 13:49:54.349806390 +1000
-@@ -1397,21 +1397,27 @@ struct vio_dev *vio_register_device_node
- 	viodev->name = of_node->name;
- 	viodev->dev.of_node = of_node_get(of_node);
+--- linux-build.orig/arch/powerpc/kernel/vio.c	2012-06-08 09:14:19.282098456 +1000
++++ linux-build/arch/powerpc/kernel/vio.c	2012-06-08 09:16:53.856359566 +1000
+@@ -1497,12 +1497,18 @@ static int __init vio_bus_init(void)
+ 	if (firmware_has_feature(FW_FEATURE_CMO))
+ 		vio_cmo_bus_init();
  
--	if (firmware_has_feature(FW_FEATURE_CMO))
--		vio_cmo_set_dma_ops(viodev);
--	else
--		set_dma_ops(&viodev->dev, &dma_iommu_ops);
--	set_iommu_table_base(&viodev->dev, vio_build_iommu_table(viodev));
- 	set_dev_node(&viodev->dev, of_node_to_nid(of_node));
++	return 0;
++}
++postcore_initcall(vio_bus_init);
++
++static int __init vio_device_init(void)
++{
+ 	vio_bus_scan_register_devices("vdevice");
+ 	vio_bus_scan_register_devices("ibm,platform-facilities");
  
- 	/* init generic 'struct device' fields: */
- 	viodev->dev.parent = &vio_bus_device.dev;
- 	viodev->dev.bus = &vio_bus_type;
- 	viodev->dev.release = vio_dev_release;
--        /* needed to ensure proper operation of coherent allocations
--         * later, in case driver doesn't set it explicitly */
--        dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
--        dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
-+
-+	if (of_get_property(viodev->dev.of_node, "ibm,my-dma-window", NULL)) {
-+		if (firmware_has_feature(FW_FEATURE_CMO))
-+			vio_cmo_set_dma_ops(viodev);
-+		else
-+			set_dma_ops(&viodev->dev, &dma_iommu_ops);
-+
-+		set_iommu_table_base(&viodev->dev,
-+				     vio_build_iommu_table(viodev));
-+
-+		/* needed to ensure proper operation of coherent allocations
-+		 * later, in case driver doesn't set it explicitly */
-+		dma_set_mask(&viodev->dev, DMA_BIT_MASK(64));
-+		dma_set_coherent_mask(&viodev->dev, DMA_BIT_MASK(64));
-+	}
+ 	return 0;
+ }
+-__initcall(vio_bus_init);
++device_initcall(vio_device_init);
  
- 	/* register with generic device framework */
- 	if (device_register(&viodev->dev)) {
+ static ssize_t name_show(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
