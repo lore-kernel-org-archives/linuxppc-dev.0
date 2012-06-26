@@ -1,22 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 289ACB6FA7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 09:05:08 +1000 (EST)
-Message-ID: <4FEA4013.5030003@freescale.com>
-Date: Tue, 26 Jun 2012 18:04:51 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 4/4] powerpc/perf: Use perf_instruction_pointer in
- callchains
-References: <20120626210013.2fbb9044@kryten> <20120626210420.4e5e7e78@kryten>
-In-Reply-To: <20120626210420.4e5e7e78@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Cc: sukadev@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 6DE0CB6F13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 09:31:50 +1000 (EST)
+Date: Tue, 26 Jun 2012 16:31:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Akinobu Mita <akinobu.mita@gmail.com>
+Subject: Re: [PATCH -v4 6/6] fault-injection: add notifier error injection
+ testing scripts
+Message-Id: <20120626163147.93181e21.akpm@linux-foundation.org>
+In-Reply-To: <1340463502-15341-7-git-send-email-akinobu.mita@gmail.com>
+References: <1340463502-15341-1-git-send-email-akinobu.mita@gmail.com>
+ <1340463502-15341-7-git-send-email-akinobu.mita@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
+ =?ISO-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
+ linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/26/2012 06:04 AM, Anton Blanchard wrote:
-> 
-> We use SIAR or regs->nip for the instruction pointer depending on
-> the PMU configuration, but we always use regs->nip in the callchain.
-> 
-> Use perf_instruction_pointer so the backtrace is consistent.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> Index: linux-build/arch/powerpc/perf/callchain.c
-> ===================================================================
-> --- linux-build.orig/arch/powerpc/perf/callchain.c	2012-04-12 11:36:26.236223786 +1000
-> +++ linux-build/arch/powerpc/perf/callchain.c	2012-06-26 12:49:28.944202712 +1000
-> @@ -57,7 +57,7 @@ perf_callchain_kernel(struct perf_callch
->  
->  	lr = regs->link;
->  	sp = regs->gpr[1];
-> -	perf_callchain_store(entry, regs->nip);
-> +	perf_callchain_store(entry, perf_instruction_pointer(regs));
+On Sat, 23 Jun 2012 23:58:22 +0900
+Akinobu Mita <akinobu.mita@gmail.com> wrote:
 
-Won't this break core-fsl-emb, which doesn't define
-perf_instruction_pointer()?
+> This adds two testing scripts with notifier error injection
 
--Scott
+Can we move these into tools/testing/selftests/, so that a "make
+run_tests" runs these tests?
+
+Also, I don't think it's appropriate that "fault-injection" be in the
+path - that's an implementation detail.  What we're testing here is
+memory hotplug, pm, cpu hotplug, etc.  So each test would go into, say,
+tools/testing/selftests/cpu-hotplug.
+
+Now, your cpu-hotplug test only tests a tiny part of the cpu-hotplug
+code.  But it is a start, and creates the place where additional tests
+will be placed in the future.
+
+
+If the kernel configuration means that the tests cannot be run, the
+attempt should succeed so that other tests are not disrupted.  I guess
+that printing a warning in this case is useful.
+
+Probably the selftests will require root permissions - we haven't
+really thought about that much.  If these tests require root (I assume
+they do?) then a sensible approach would be to check for that and to
+emit a warning and return "success".
+
+My overall take on the fault-injection code is that there has been a
+disappointing amount of uptake: I don't see many developers using them
+for whitebox testing their stuff.  I guess this patchset addresses
+that, in a way.
