@@ -9,10 +9,10 @@ To: Grant Likely <grant.likely@secretlab.ca>,
  devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Roland Stigge <stigge@antcom.de>
-Subject: [PATCH 3/5] usb: gadget: fsl_udc: Propagate devicetree to gadget
+Subject: [PATCH 4/5] usb: gadget: at91_udc: Propagate devicetree to gadget
  drivers
-Date: Tue, 26 Jun 2012 11:27:11 -0300
-Message-Id: <1340720833-781-4-git-send-email-aletes.xgr@gmail.com>
+Date: Tue, 26 Jun 2012 11:27:12 -0300
+Message-Id: <1340720833-781-5-git-send-email-aletes.xgr@gmail.com>
 In-Reply-To: <1340720833-781-1-git-send-email-aletes.xgr@gmail.com>
 References: <1340720833-781-1-git-send-email-aletes.xgr@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,20 +28,20 @@ Fill dev.of_node of gadget drivers, so they can use devicetree
 
 Signed-off-by: Alexandre Pereira da Silva <aletes.xgr@gmail.com>
 ---
- drivers/usb/gadget/fsl_udc_core.c |    1 +
+ drivers/usb/gadget/at91_udc.c |    1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-index bc6f9bb..a65ca0f 100644
---- a/drivers/usb/gadget/fsl_udc_core.c
-+++ b/drivers/usb/gadget/fsl_udc_core.c
-@@ -2560,6 +2560,7 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
- 	dev_set_name(&udc_controller->gadget.dev, "gadget");
- 	udc_controller->gadget.dev.release = fsl_udc_release;
- 	udc_controller->gadget.dev.parent = &pdev->dev;
-+	udc_controller->gadget.dev.of_node = pdev->dev.of_node;
- 	ret = device_register(&udc_controller->gadget.dev);
- 	if (ret < 0)
- 		goto err_free_irq;
+diff --git a/drivers/usb/gadget/at91_udc.c b/drivers/usb/gadget/at91_udc.c
+index 1a4430f..c9e66df 100644
+--- a/drivers/usb/gadget/at91_udc.c
++++ b/drivers/usb/gadget/at91_udc.c
+@@ -1634,6 +1634,7 @@ static int at91_start(struct usb_gadget *gadget,
+ 	udc = container_of(gadget, struct at91_udc, gadget);
+ 	udc->driver = driver;
+ 	udc->gadget.dev.driver = &driver->driver;
++	udc->gadget.dev.of_node = udc->pdev->dev.of_node;
+ 	dev_set_drvdata(&udc->gadget.dev, &driver->driver);
+ 	udc->enabled = 1;
+ 	udc->selfpowered = 1;
 -- 
 1.7.10
