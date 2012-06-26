@@ -1,32 +1,37 @@
-Return-Path: <B38951@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8BB8DB7022
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 12:54:48 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH 0/6] Description for PCI patches using platform driver
-Date: Tue, 26 Jun 2012 02:54:38 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A0EA78@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1339148527-16911-1-git-send-email-B38951@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D03D71F38@039-SN2MPN1-022.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0921B@039-SN1MPN1-002.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D03D78FAE@039-SN2MPN1-022.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0973E@039-SN1MPN1-002.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D03D84C22@039-SN2MPN1-022.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0C2DA@039-SN1MPN1-002.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0EA1F@039-SN1MPN1-002.039d.mgd.msft.net>
- <1340678813.3732.1.camel@pasglop>
-In-Reply-To: <1340678813.3732.1.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bhushan Bharat-R65777 <R65777@freescale.com>
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B3D58B6EF3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 12:58:56 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Tue, 26 Jun 2012 08:28:51 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5Q2wRY25374422
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 08:28:27 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5Q8T5mk017604
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 18:29:05 +1000
+Message-ID: <1340679504.16381.23.camel@ThinkPad-T420>
+Subject: Re: [PATCH SLUB 1/2] duplicate the cache name in saved_alias list
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Glauber Costa <glommer@parallels.com>
+Date: Tue, 26 Jun 2012 10:58:24 +0800
+In-Reply-To: <4FE84741.9000703@parallels.com>
+References: <1340617984.13778.37.camel@ThinkPad-T420>
+ <4FE84741.9000703@parallels.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
+ linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Matt Mackall <mpm@selenic.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,125 +41,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiBNeSBtYWluIGNvbmNlcm4gaXMgdGhhdCBjdXJyZW50bHkgdGhlIFBDSSBjb2RlIGhhcyBzb21l
-IGFzc3VtcHRpb25zDQo+IGFib3V0IG9yZGVyaW5nIG9mIHRoaW5ncyB0aGF0IHdpbGwgZ2V0IHZp
-b2xhdGVkLg0KPiANCj4gRm9yIGV4YW1wbGUsIHRoZSBwY2kgZmluYWwgZml4dXBzIGFyZSBhbiBm
-c19pbml0Y2FsbCBpaXJjLCBvciBzb21ldGhpbmcNCj4gbGlrZSB0aGF0LiBUaGVyZSdzIG90aGVy
-IHNpbWlsYXIgb2RkaXRpZXMgdGhhdCBtaWdodCBiZWNvbWUgcHJvYmxlbWF0aWMuDQo+IEluIGFk
-ZGl0aW9uLCB0aGVyZSBtaWdodCBiZSBsb2NraW5nIGlzc3VlcyBpZiB5b3Ugc3RhcnQgZG9pbmcg
-bXVsdGlwbGUNCj4gUEhCcyBpbiBwYXJhbGxlbC4NCj4gDQo+IE5vdyB3ZSBkbyB3YW50IHRvIGZp
-eCBhbGwgdGhhdCBsb25nIHJ1biBidXQgaXQgbWlnaHQgdGFrZSBhIHdoaWxlLg0KPiANCj4gQ2hl
-ZXJzLA0KPiBCZW4uDQo+IA0KDQpUaGFua3MgZm9yIHlvdXIgYWR2aWNlLiBJIHdpbGwgZG8gc29t
-ZSBpbnZlc3RpZ2F0aW9ucyBvbiB3aGF0IHlvdSBzYWlkLg0KDQotSmlhIEhvbmd0YW8uDQoNCg0K
-DQo+ID4gVGhhbmtzLg0KPiA+IC1KaWEgSG9uZ3Rhby4NCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5h
-bCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IExpbnV4cHBjLWRldiBbbWFpbHRvOmxpbnV4cHBj
-LWRldi0NCj4gPiA+IGJvdW5jZXMrYjM4OTUxPWZyZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9y
-Z10gT24gQmVoYWxmIE9mIEppYQ0KPiBIb25ndGFvLQ0KPiA+ID4gQjM4OTUxDQo+ID4gPiBTZW50
-OiBXZWRuZXNkYXksIEp1bmUgMjAsIDIwMTIgMTA6MzQgQU0NCj4gPiA+IFRvOiBCaHVzaGFuIEJo
-YXJhdC1SNjU3Nzc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4gZ2FsYWtA
-a2VybmVsLmNyYXNoaW5nLm9yZzsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnDQo+ID4gPiBDYzog
-V29vZCBTY290dC1CMDc0MjE7IExpIFlhbmctUjU4NDcyDQo+ID4gPiBTdWJqZWN0OiBSRTogW1BB
-VENIIDAvNl0gRGVzY3JpcHRpb24gZm9yIFBDSSBwYXRjaGVzIHVzaW5nIHBsYXRmb3JtDQo+ID4g
-PiBkcml2ZXINCj4gPiA+DQo+ID4gPiBIZWxsbyBCZW4sIEt1bWFyLCBvdGhlcnM6DQo+ID4gPg0K
-PiA+ID4gVGhpcyBzZXJpZXMgb2YgcGF0Y2hlcyBoYWQgYmVlbiBwZW5kaW5nIGZvciBhIGxvbmcg
-dGltZSBvbiB1cHN0cmVhbS4NCj4gPiA+IFdlIGZpeGVkIHNvbWUgaXNzdWVzIHdlIGZvdW5kIGFu
-ZCB0aGVyZSBzdGlsbCBzb21lIGlzc3VlcyBzaG91bGQgYmUNCj4gPiA+IGRpc2N1c3NlZCBsaWtl
-IHN3aW90bGIgaW5pdCB0aGluZy4gRG8geW91IGhhdmUgdGltZSBmb3IgYSByZXZpZXc/DQo+ID4g
-Pg0KPiA+ID4gVGhhbmtzLg0KPiA+ID4gLUppYSBIb25ndGFvLg0KPiA+ID4NCj4gPiA+ID4gLS0t
-LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+ID4gRnJvbTogQmh1c2hhbiBCaGFyYXQtUjY1
-Nzc3DQo+ID4gPiA+IFNlbnQ6IFRodXJzZGF5LCBKdW5lIDE0LCAyMDEyIDU6NTIgUE0NCj4gPiA+
-ID4gVG86IEppYSBIb25ndGFvLUIzODk1MTsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7
-DQo+ID4gPiA+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IGJlbmhAa2VybmVsLmNyYXNoaW5n
-Lm9yZw0KPiA+ID4gPiBDYzogTGkgWWFuZy1SNTg0NzI7IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4g
-PiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggMC82XSBEZXNjcmlwdGlvbiBmb3IgUENJIHBhdGNoZXMg
-dXNpbmcgcGxhdGZvcm0NCj4gPiA+ID4gZHJpdmVyDQo+ID4gPiA+DQo+ID4gPiA+IEhlbGxvIEJl
-biwgS3VtYXIsIG90aGVycw0KPiA+ID4gPg0KPiA+ID4gPiBQbGVhc2UgcHJvdmlkZSB5b3VyIGNv
-bW1lbnRzL3Rob3VnaHRzIG9uIHRoaXMgPw0KPiA+ID4gPg0KPiA+ID4gPiBUaGFua3MNCj4gPiA+
-ID4gLUJoYXJhdA0KPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiAt
-LS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+ID4gRnJvbTogSmlhIEhv
-bmd0YW8tQjM4OTUxDQo+ID4gPiA+ID4gPiA+ID4gPiBTZW50OiBGcmlkYXksIEp1bmUgMDgsIDIw
-MTIgMzoxMiBQTQ0KPiA+ID4gPiA+ID4gPiA+ID4gVG86IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
-YnMub3JnOw0KPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnDQo+ID4gPiA+ID4gPiA+ID4gPiBD
-YzogTGkgWWFuZy1SNTg0NzI7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgV29vZCBTY290dC0N
-Cj4gPiA+IEIwNzQyMTsNCj4gPiA+ID4gPiA+ID4gPiBCaHVzaGFuIEJoYXJhdC0NCj4gPiA+ID4g
-PiA+ID4gPiA+IFI2NTc3NzsgSmlhIEhvbmd0YW8tQjM4OTUxDQo+ID4gPiA+ID4gPiA+ID4gPiBT
-dWJqZWN0OiBbUEFUQ0ggMC82XSBEZXNjcmlwdGlvbiBmb3IgUENJIHBhdGNoZXMgdXNpbmcNCj4g
-PiA+IHBsYXRmb3JtDQo+ID4gPiA+ID4gPiA+ID4gPiBkcml2ZXINCj4gPiA+ID4gPiA+ID4gPiA+
-DQo+ID4gPiA+ID4gPiA+ID4gPiBUaGlzIHNlcmllcyBvZiBwYXRjaGVzIGFyZSB0byB1bmlmeSBw
-Y2kgaW5pdGlhbGl6YXRpb24NCj4gY29kZQ0KPiA+ID4gYW5kDQo+ID4gPiA+ID4gPiA+ID4gPiBh
-ZGQgUE0NCj4gPiA+ID4gPiA+ID4gPiBzdXBwb3J0DQo+ID4gPiA+ID4gPiA+ID4gPiBmb3IgYWxs
-IDg1eHgvODZ4eCBwb3dlcnBjIGJvYXJkcy4gQnV0IHR3byBzaWRlIGVmZmVjdHMNCj4gYXJlDQo+
-ID4gPiA+ID4gPiA+ID4gPiBpbnRyb2R1Y2VkDQo+ID4gPiA+ID4gPiA+ID4gYnkgdGhpcw0KPiA+
-ID4gPiA+ID4gPiA+ID4gbWVjaGFuaXNtIHdoaWNoIGxpc3RlZCBiZWxvdzoNCj4gPiA+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiAxLiBvZl9wbGF0Zm9ybV9idXNfcHJvYmUoKSB3aWxs
-IGJlIGNhbGxlZCB0d2ljZSBidXQgaW4NCj4gc29tZQ0KPiA+ID4gPiA+ID4gPiA+ID4gY2FzZXMN
-Cj4gPiA+ID4gPiA+ID4gPiBkdXBsaWNhdGlvbg0KPiA+ID4gPiA+ID4gPiA+ID4gICAgd2Fybmlu
-ZyBvY2N1cmVkLiBXZSBmaXggdGhpcyBpbiBbUEFUQ0ggNS82XS4NCj4gPiA+ID4gPiA+ID4gPiA+
-DQo+ID4gPiA+ID4gPiA+ID4gPiAyLiBFZGFjIGRyaXZlciBmYWlsZWQgdG8gcmVnaXN0ZXIgcGNp
-IG5vZGVzIGFzIHBsYXRmb3JtDQo+ID4gPiBkZXZpY2VzLg0KPiA+ID4gPiA+ID4gPiA+ID4gV2Ug
-Zml4DQo+ID4gPiA+ID4gPiA+ID4gdGhpcw0KPiA+ID4gPiA+ID4gPiA+ID4gICAgaW4gW1BBVENI
-IDYvNl0uDQo+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiBXaXRoIHRoZXNlIHBhdGNo
-ZXMgd2lsbCBub3QgdGhlIFNXSU9UTEIgd2lsbCBub3QgYmUNCj4gaW5pdGlhbGl6ZWQNCj4gPiA+
-ID4gPiA+ID4gPiBldmVuIGlmIFBDSS9QQ0llIGRlbWFuZGVkPw0KPiA+ID4gPiA+ID4gPiA+DQo+
-ID4gPiA+ID4gPiA+ID4gVGhhbmtzDQo+ID4gPiA+ID4gPiA+ID4gLUJoYXJhdA0KPiA+ID4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+IFRoZXNlIHBhdGNoZXMgc3RpbGwg
-aGF2ZSB0aGUgc3dpb3RsYiBpbml0IHByb2JsZW0gaWYNCj4gPiA+ID4gPiA+ICJwcGNfc3dpb3Rs
-Yl9lbmFibGUiIGlzDQo+ID4gPiA+ID4gPiA+IG9ubHkgZGVtYW5kZWQgYnkgUENJL1BDSWUuIE9u
-ZSBvZiB0aGUgcHVycG9zZXMgb2Ygc2VuZGluZyBvdXQNCj4gPiA+IHRoZXNlDQo+ID4gPiA+ID4g
-PiBwYXRjaGVzIGlzDQo+ID4gPiA+ID4gPiA+IHRvIGxldCB1cyBzdGFydCBhIGRpc2N1c3Npb24g
-Zm9yIHRoaXMgcHJvYmxlbSBpbiB1cHN0cmVhbS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBP
-aywgSSBkaWQgbm90IGZpbmQgYW55IG1lbnRpb24gb2YgdGhhdCwgc28gSSB0aG91Z2h0IHRoYXQg
-eW91DQo+IGhhdmUNCj4gPiA+ID4gPiA+IHJlc29sdmVkIHRoZSBpc3N1ZSBieSBzb21lIG1lYW5z
-IGluIHRoZXNlIHBhdGNoZXMgd2hpY2ggSSBkaWQNCj4gbm90DQo+ID4gPiA+IGNhdGNoLg0KPiA+
-ID4gPiA+ID4NCj4gPiA+ID4gPiA+IFNvLCB0aGVzZSBwYXRjaGVzIGludHJvZHVjZXMgdGhlIGlz
-c3VlLCB0aGF0IFNXSU9UTEIgd2lsbCBub3QNCj4gYmUNCj4gPiA+ID4gPiA+IGluaXRpYWxpemVk
-IGlmIHJlcXVlc3RlZCBieSBwY2kvcGNpZS4gVGhlIHJlcXVlc3QgaXMgcmFpc2VkIGJ5DQo+ID4g
-PiA+IHNldHRpbmcNCj4gPiA+ID4gPiA+IHRoZSBmbGFnIHBwY19zd2lvdGxiX2VuYWJsZS4gVGhl
-IHN3aW90bGJfaW5pdCgpIHdpbGwgYmUgY2FsbGVkDQo+IGluDQo+ID4gPiA+ID4gPiBtZW1faW5p
-dCgpIGlmIHBwY19zd2lvdGxiX2VuYWJsZSBpcyBzZXQuIE5vdyB3aXRoIHRoZXNlIHBhdGNoZXMs
-DQo+ID4gPiB0aGUNCj4gPiA+ID4gPiA+IHJlcXVlc3QgaXMgcmFpc2VkIGFmdGVyIG1lbV9pbml0
-KCkgaXMgY2FsbGVkLiBTbyByZXF1ZXN0IG5vdA0KPiA+ID4gPiBoYW5kbGVkIDopLg0KPiA+ID4g
-PiA+ID4NCj4gPiA+ID4gPiA+IEZvbGxvd2luZyBhcmUgdGhlIHNvbHV0aW9ucyB3ZSBoYXZlIHRo
-b3VnaHQgb2YgZHVyaW5nIG91cg0KPiBpbnRlcm5hbA0KPiA+ID4gPiA+ID4gZGlzY3Vzc2lvbnMg
-KGlmIEkgZGlkIG5vdCBtaXNzZWQgYW55KToNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiAxLiBU
-aGVzZSBwYXRjaGVzIG1vdmUgdGhlIGNvZGUgZnJvbSBwbGF0Zm9ybSBpbml0IHRvIGRldmljZQ0K
-PiBpbml0DQo+ID4gPiA+ID4gPiAoYXJjaF9pbml0Y2FsbCgpKS4gUmF0aGVyIHRoYW4gbW92aW5n
-IHRoZSB3aG9sZSBjb2RlLCBsZXQgdXMNCj4gZGl2aWRlDQo+ID4gPiA+ID4gPiB0aGUgY29kZSBp
-bnRvIHR3by4gRmlyc3QsIHdoaWNoIGlzIG5lZWRlZCB0byByYWlzZSB0aGUgc3dpb3RsYg0KPiBp
-bml0DQo+ID4gPiA+ID4gPiByZXF1ZXN0IGFuZCBzZWNvbmQgdGhlIHJlc3QuIERlZmluZSB0aGlz
-IGZpcnN0IGFzIGFuIGZ1bmN0aW9uDQo+IGluDQo+ID4gPiA+ID4gPiBhcmNoL3Bvd2VycGMvc3lz
-ZGV2L2ZzbF9wY2kuYyBhbmQgY2FsbCB0aGlzIGZyb20gcGxhdGZvcm0gaW5pdA0KPiBjb2RlDQo+
-ID4gPiA+IG9mDQo+ID4gPiA+ID4gPiB0aGUgU09Dcy4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
-PiAyLiBBbGwga25vd24gZGV2aWNlcywgdGhlIGxvd2VzdCBQQ0llIG91dGJvdW5kIHJhbmdlIHN0
-YXJ0cyBhdA0KPiA+ID4gPiA+ID4gMHg4MDAwMDAwMCwgYnV0IHRoZXJlJ3Mgbm90aGluZyBhYm92
-ZSAweGMwMDAwMDAwLiBTbyB0aGUNCj4gaW5ib3VuZCBvZg0KPiA+ID4gPiA+ID4gc2l6ZSAweDgw
-MDBfMDAwMCBpcyBhbHdheXMgYXZhaWxiZSBvbiBhbGwgZGV2aWNlcy4gSGFyZGNvZGUgdGhlDQo+
-ID4gPiBjaGVjaw0KPiA+ID4gPiA+ID4gaW4gcGxhdGZvcm0gY29kZSB0byBjaGVjayBtZW1ibG9j
-a19lbmRfb2ZfRFJBTSgpIHRvIDB4ODAwMDAwMDAuDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4g
-U29tZXRoaW5nIGxpa2UgdGhpczoNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBkaWZmIC0tZ2l0
-IGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L2NvcmVuZXRfZHMuYw0KPiA+ID4gPiA+ID4g
-Yi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvY29yZW5ldF9kcy5jDQo+ID4gPiA+ID4gPiBp
-bmRleCAxZjcwMjhlLi5lZjRlMjE1IDEwMDY0NA0KPiA+ID4gPiA+ID4gLS0tIGEvYXJjaC9wb3dl
-cnBjL3BsYXRmb3Jtcy84NXh4L2NvcmVuZXRfZHMuYw0KPiA+ID4gPiA+ID4gKysrIGIvYXJjaC9w
-b3dlcnBjL3BsYXRmb3Jtcy84NXh4L2NvcmVuZXRfZHMuYw0KPiA+ID4gPiA+ID4gQEAgLTc5LDcg
-Kzc5LDcgQEAgdm9pZCBfX2luaXQgY29yZW5ldF9kc19zZXR1cF9hcmNoKHZvaWQpDQo+ICNlbmRp
-Zg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ICNpZmRlZiBDT05GSUdfU1dJT1RMQg0KPiA+ID4g
-PiA+ID4gLSAgICAgICBpZiAobWVtYmxvY2tfZW5kX29mX0RSQU0oKSA+IDB4ZmZmZmZmZmYpDQo+
-ID4gPiA+ID4gPiArICAgICAgIGlmIChtZW1ibG9ja19lbmRfb2ZfRFJBTSgpID4gMHhmZjAwMDAw
-MCkNCj4gPiA+ID4gPiA+ICAgICAgICAgICAgICAgICAgcHBjX3N3aW90bGJfZW5hYmxlID0gMTsg
-ICNlbmRpZg0KPiA+ID4gPiA+ID4gICAgICAgICAgcHJfaW5mbygiJXMgYm9hcmQgZnJvbSBGcmVl
-c2NhbGUgU2VtaWNvbmR1Y3RvclxuIiwNCj4gPiA+ID4gPiA+IHBwY19tZC5uYW1lKTsNCj4gPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gPiAtLS0tLS0tLS0tLS0tDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+
-ID4gMy4gQWx3YXlzIGRvIHN3aW90bGJfaW5pdCgpIGluIG1lbV9pbml0KCkgYW5kIGxhdGVyIGFm
-dGVyIFBDSQ0KPiBpbml0LA0KPiA+ID4gPiBpZg0KPiA+ID4gPiA+ID4gdGhlIHN3aW90bGIgaXMg
-bm90IG5lZWRlZCB0aGVuIGZyZWUgaXQgKHN3aW90bGJfZnJlZSgpKS4NCj4gPiA+ID4gPiA+DQo+
-ID4gPiA+ID4gPiA0LiBldGMsIHBsZWFzZSBwcm92aWRlIHNvbWUgb3RoZXIgYmV0dGVyIHdheS4N
-Cj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBUaGFua3MNCj4gPiA+ID4gPiA+IC1CaGFyYXQNCj4g
-PiA+ID4gPg0KPiA+ID4gPiA+IFRoYW5rcy4NCj4gPiA+ID4gPiBJbiBteSBwb2ludCBvZiB2aWV3
-IHRoZSAybmQgc29sdXRpb24gaXMgYmV0dGVyIGZvciBpdCBkb2VzIG5vdA0KPiB0cmVhdA0KPiA+
-ID4gPiBQQ0kvUENJZSBhcw0KPiA+ID4gPiA+IHRoZSBzcGVjaWFsIGtpbmQgb2YgZGV2aWNlcyBm
-cm9tIG90aGVycy4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IC1KaWEgSG9uZ3Rhby4NCj4gPiA+DQo+
-ID4gPiBfX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+
-ID4gTGludXhwcGMtZGV2IG1haWxpbmcgbGlzdA0KPiA+ID4gTGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmcNCj4gPiA+IGh0dHBzOi8vbGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBw
-Yy1kZXYNCj4gPg0KPiANCj4gDQoNCg==
+On Mon, 2012-06-25 at 15:10 +0400, Glauber Costa wrote:
+> On 06/25/2012 01:53 PM, Li Zhong wrote:
+> > SLUB duplicates the cache name in kmem_cache_create(). However if the
+> > cache could be merged to others during early booting, the name pointer
+> > is saved in saved_alias list, and the string needs to be kept valid
+> > before slab_sysfs_init() is called.
+> >
+> > This patch tries to duplicate the cache name in saved_alias list, so
+> > that the cache name could be safely kfreed after calling
+> > kmem_cache_create(), if that name is kmalloced.
+> >
+> > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+> > ---
+> >   mm/slub.c |    6 ++++++
+> >   1 files changed, 6 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/mm/slub.c b/mm/slub.c
+> > index 8c691fa..3dc8ed5 100644
+> > --- a/mm/slub.c
+> > +++ b/mm/slub.c
+> > @@ -5373,6 +5373,11 @@ static int sysfs_slab_alias(struct kmem_cache *s,
+> > const char *name)
+> >
+> >   	al->s = s;
+> >   	al->name = name;
+> > +	al->name = kstrdup(name, GFP_KERNEL);
+> > +	if (!al->name) {
+> > +		kfree(al);
+> > +		return -ENOMEM;
+> > +	}
+> >   	al->next = alias_list;
+> >   	alias_list = al;
+> >   	return 0;
+> > @@ -5409,6 +5414,7 @@ static int __init slab_sysfs_init(void)
+> >   		if (err)
+> >   			printk(KERN_ERR "SLUB: Unable to add boot slab alias"
+> >   					" %s to sysfs\n", s->name);
+> > +		kfree(al->name);
+> >   		kfree(al);
+> >   	}
+> >
+> >
+> 
+> What's unsafe about the current state of affairs ?
+> Whenever we alias, we'll increase the reference counter.
+> kmem_cache_destroy will only actually destroy the structure whenever 
+> that refcnt reaches zero.
+> 
+> This means that kfree shouldn't happen until then. So what is exactly 
+> that you are seeing?
+
+Maybe I didn't describe it clearly ... It is only about the name string
+passed into kmem_cache_create() during early boot. 
+
+kmem_cache_create() checks whether it is mergeable before creating one.
+If not mergeable, the name is duplicated: n = kstrdup(name, GFP_KERNEL);
+
+If it is mergeable, it calls sysfs_slab_alias(). If the sysfs is ready
+(slab_state == SYSFS ), then the name is duplicated (or dropped if no
+SYSFS support ) in sysfs_create_link() for use. 
+
+For the above cases, we could safely kfree the name string after calling
+cache create. 
+
+However, During early boot, before sysfs is ready ( slab_state <
+SYSFS ), the sysfs_slab_alias() saves the pointer of name in the
+alias_list. And those entries in the list are added to sysfs later after
+slab_sysfs_init() is called. So we need to keep the name string valid
+until slab_sysfs_init() is called to set up the sysfs stuff. By
+duplicating the name string here also, we are able to kfree the name
+string after calling the cache create. 
+
+> 
+> Now, if you ask me, keeping the name around in user-visible files like 
+> /proc/slabinfo for caches that are removed already can be a bit 
+> confusing (that is because we don't add aliases to the slab_cache list)
+> 
+> If you want to touch this, one thing you can do is to keep a list of 
+> names bundled in an alias. If an alias is removed, you free that name. 
+> If that name is the representative name of the bundle, you move to the 
+> next one.
+> 
