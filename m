@@ -1,20 +1,24 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 609DB100828
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 05:55:03 +1000 (EST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH 3/3] serial/8250: delete WR SBC850 UART quirk handling
-Date: Tue, 26 Jun 2012 15:54:29 -0400
-Message-Id: <1340740469-31445-4-git-send-email-paul.gortmaker@windriver.com>
-In-Reply-To: <1340740469-31445-1-git-send-email-paul.gortmaker@windriver.com>
-References: <1340740469-31445-1-git-send-email-paul.gortmaker@windriver.com>
-Cc: Paul Gortmaker <paul.gortmaker@windriver.com>,
- linuxppc-dev@lists.ozlabs.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linux-serial@vger.kernel.org, Alan Cox <alan@linux.intel.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
+ [74.125.82.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BFA5AB6EE9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 06:06:32 +1000 (EST)
+Received: by werh12 with SMTP id h12so208168wer.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 13:06:28 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1340740795-19603-1-git-send-email-geert@linux-m68k.org>
+References: <1340740795-19603-1-git-send-email-geert@linux-m68k.org>
+Date: Tue, 26 Jun 2012 22:06:27 +0200
+Message-ID: <CAMuHMdXY1DFNV+jTiJkT99TbX7ZL5eEiKcG0iqZkUa8T7YZG4g@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.5-rc4
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: the arch/x86 maintainers <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We've are dropping the support for the EOL SBC8560, so we can
-also delete this variant of the Alpha quirk support.
+On Tue, Jun 26, 2012 at 9:59 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.5-rc4 to v3.5-rc3[3], the summaries are:
+> =C2=A0- build errors: +11/-219
 
-Cc: Alan Cox <alan@linux.intel.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: linux-serial@vger.kernel.org
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
- drivers/tty/serial/8250/8250.h |    7 -------
- 1 files changed, 0 insertions(+), 7 deletions(-)
+11 regressions:
+  + arch/sh/include/asm/fixmap.h: error: implicit declaration of
+function 'BUG_ON' [-Werror=3Dimplicit-function-declaration]:  =3D> 133:2
+  + arch/sh/include/asm/thread_info.h: error: implicit declaration of
+function 'WARN_ON' [-Werror=3Dimplicit-function-declaration]:  =3D> 172:2
+  + include/linux/huge_mm.h: error: implicit declaration of function
+'BUG' [-Werror=3Dimplicit-function-declaration]:  =3D> 185:2
 
-diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
-index f9719d1..ffd1e6e 100644
---- a/drivers/tty/serial/8250/8250.h
-+++ b/drivers/tty/serial/8250/8250.h
-@@ -119,13 +119,6 @@ static inline void serial_dl_write(struct uart_8250_port *up, int value)
-  * is cleared, the machine locks up with endless interrupts.
-  */
- #define ALPHA_KLUDGE_MCR  (UART_MCR_OUT2 | UART_MCR_OUT1)
--#elif defined(CONFIG_SBC8560)
--/*
-- * WindRiver did something similarly broken on their SBC8560 board. The
-- * UART tristates its IRQ output while OUT2 is clear, but they pulled
-- * the interrupt line _up_ instead of down, so if we register the IRQ
-- * while the UART is in that state, we die in an IRQ storm. */
--#define ALPHA_KLUDGE_MCR (UART_MCR_OUT2)
- #else
- #define ALPHA_KLUDGE_MCR 0
- #endif
--- 
-1.7.9.1
+shmin_defconfig, se7712_defconfig, se7721_defconfig, sh-allnoconfig
+
+  + arch/x86/include/asm/paravirt.h: error: implicit declaration of
+function 'BUG_ON' [-Werror=3Dimplicit-function-declaration]:  =3D> 25:2
+  + arch/x86/include/asm/processor.h: error: implicit declaration of
+function 'WARN_ON_ONCE' [-Werror=3Dimplicit-function-declaration]:  =3D>
+936:2
+  + arch/x86/include/asm/thread_info.h: error: implicit declaration of
+function 'WARN_ON' [-Werror=3Dimplicit-function-declaration]:  =3D> 251:2
+  + include/linux/slub_def.h: error: implicit declaration of function
+'BUG' [-Werror=3Dimplicit-function-declaration]:  =3D> 192:2
+
+i386-randconfig
+
+  + error: of_platform.c: undefined reference to
+`.pcibios_claim_one_bus':  =3D> .devinit.text+0x160)
+
+powerpc-randconfig
+
+  + include/asm-generic/pgtable.h: error: implicit declaration of
+function 'BUG' [-Werror=3Dimplicit-function-declaration]:  =3D> 56:2
+  + include/asm-generic/pgtable.h: error: implicit declaration of
+function 'BUG':  =3D> 56
+  + include/linux/thread_info.h: error: implicit declaration of
+function 'WARN_ON':  =3D> 129
+
+avr32-allnoconfig
+
+Gr{oetje,eeting}s,
+
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
