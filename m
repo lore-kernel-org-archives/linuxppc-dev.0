@@ -1,24 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
- [74.125.82.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BFA5AB6EE9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 06:06:32 +1000 (EST)
-Received: by werh12 with SMTP id h12so208168wer.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 13:06:28 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4CA6AB6FBE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 07:46:10 +1000 (EST)
+Message-ID: <4FEA2D93.3030002@freescale.com>
+Date: Tue, 26 Jun 2012 16:45:55 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1340740795-19603-1-git-send-email-geert@linux-m68k.org>
-References: <1340740795-19603-1-git-send-email-geert@linux-m68k.org>
-Date: Tue, 26 Jun 2012 22:06:27 +0200
-Message-ID: <CAMuHMdXY1DFNV+jTiJkT99TbX7ZL5eEiKcG0iqZkUa8T7YZG4g@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.5-rc4
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Cc: the arch/x86 maintainers <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Linux-sh list <linux-sh@vger.kernel.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
+References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
+ <AB6D43A9-FC54-40D2-A9B0-8B2E785124F9@kernel.crashing.org>
+In-Reply-To: <AB6D43A9-FC54-40D2-A9B0-8B2E785124F9@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@lists.ozlabs.org, Zhao Chenhui <chenhui.zhao@freescale.com>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 26, 2012 at 9:59 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.5-rc4 to v3.5-rc3[3], the summaries are:
-> =C2=A0- build errors: +11/-219
+On 06/26/2012 09:03 AM, Kumar Gala wrote:
+> 
+> On Jun 26, 2012, at 5:25 AM, Zhao Chenhui wrote:
+> 
+>> Do hardware timebase sync. Firstly, stop all timebases, and transfer
+>> the timebase value of the boot core to the other core. Finally,
+>> start all timebases.
+>>
+>> Only apply to dual-core chips, such as MPC8572, P2020, etc.
+>>
+>> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> ---
+>> Changes for v6:
+>> * added 85xx_TB_SYNC
+>> * added isync() after set_tb()
+>> * removed extra entries from mpc85xx_smp_guts_ids
+> 
+> Why only on dual-core chips?  Is this because of something related to
+> 2 cores, or related to corenet vs non-corenet SoCs and how turning
+> on/off the timebase works in the SOC?
 
-11 regressions:
-  + arch/sh/include/asm/fixmap.h: error: implicit declaration of
-function 'BUG_ON' [-Werror=3Dimplicit-function-declaration]:  =3D> 133:2
-  + arch/sh/include/asm/thread_info.h: error: implicit declaration of
-function 'WARN_ON' [-Werror=3Dimplicit-function-declaration]:  =3D> 172:2
-  + include/linux/huge_mm.h: error: implicit declaration of function
-'BUG' [-Werror=3Dimplicit-function-declaration]:  =3D> 185:2
+Some parts are due to corenet versus non-corenet, such as the actual
+register you write to to disable/enable the timebase.
 
-shmin_defconfig, se7712_defconfig, se7721_defconfig, sh-allnoconfig
+There's also a two-core assumption in the synchronization code which
+I've complained about multiple times -- although on closer inspection it
+looks like this is done under cpu_add_remove_lock, and we can assume
+that there's only one core at a time in take_timebase(), regardless of
+how many cores are in the system.
 
-  + arch/x86/include/asm/paravirt.h: error: implicit declaration of
-function 'BUG_ON' [-Werror=3Dimplicit-function-declaration]:  =3D> 25:2
-  + arch/x86/include/asm/processor.h: error: implicit declaration of
-function 'WARN_ON_ONCE' [-Werror=3Dimplicit-function-declaration]:  =3D>
-936:2
-  + arch/x86/include/asm/thread_info.h: error: implicit declaration of
-function 'WARN_ON' [-Werror=3Dimplicit-function-declaration]:  =3D> 251:2
-  + include/linux/slub_def.h: error: implicit declaration of function
-'BUG' [-Werror=3Dimplicit-function-declaration]:  =3D> 192:2
-
-i386-randconfig
-
-  + error: of_platform.c: undefined reference to
-`.pcibios_claim_one_bus':  =3D> .devinit.text+0x160)
-
-powerpc-randconfig
-
-  + include/asm-generic/pgtable.h: error: implicit declaration of
-function 'BUG' [-Werror=3Dimplicit-function-declaration]:  =3D> 56:2
-  + include/asm-generic/pgtable.h: error: implicit declaration of
-function 'BUG':  =3D> 56
-  + include/linux/thread_info.h: error: implicit declaration of
-function 'WARN_ON':  =3D> 129
-
-avr32-allnoconfig
-
-Gr{oetje,eeting}s,
-
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
-.org
-
-In personal conversations with technical people, I call myself a hacker. Bu=
-t
-when I'm talking to journalists I just say "programmer" or something like t=
-hat.
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0=C2=A0 =C2=A0=C2=A0 -- Linus Torvalds
+-Scott
