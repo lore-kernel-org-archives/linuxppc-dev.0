@@ -1,29 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3CD651007D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 12:47:07 +1000 (EST)
-Message-ID: <1340678813.3732.1.camel@pasglop>
-Subject: RE: [PATCH 0/6] Description for PCI patches using platform driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Date: Tue, 26 Jun 2012 12:46:53 +1000
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A0EA1F@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1339148527-16911-1-git-send-email-B38951@freescale.com>
- <6A3DF150A5B70D4F9B66A25E3F7C888D03D71F38@039-SN2MPN1-022.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0921B@039-SN1MPN1-002.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D03D78FAE@039-SN2MPN1-022.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0973E@039-SN1MPN1-002.039d.mgd.msft.net>
- <6A3DF150A5B70D4F9B66A25E3F7C888D03D84C22@039-SN2MPN1-022.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0C2DA@039-SN1MPN1-002.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A0EA1F@039-SN1MPN1-002.039d.mgd.msft.net>
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 91AEBB700E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 12:49:37 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Tue, 26 Jun 2012 08:19:31 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5Q2nS4H13828534
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 08:19:28 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5Q8Ii3i020258
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 18:18:45 +1000
+Message-ID: <1340678964.16381.20.camel@ThinkPad-T420>
+Subject: Re: [PATCH SLUB 1/2] duplicate the cache name in saved_alias list
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: gaowanlong@cn.fujitsu.com
+Date: Tue, 26 Jun 2012 10:49:24 +0800
+In-Reply-To: <4FE84352.8090303@cn.fujitsu.com>
+References: <1340617984.13778.37.camel@ThinkPad-T420>
+ <4FE84352.8090303@cn.fujitsu.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bhushan Bharat-R65777 <R65777@freescale.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
+ linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Matt Mackall <mpm@selenic.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,177 +41,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-06-26 at 02:33 +0000, Jia Hongtao-B38951 wrote:
-> Hello Ben and Kumar,
+On Mon, 2012-06-25 at 18:54 +0800, Wanlong Gao wrote:
+> On 06/25/2012 05:53 PM, Li Zhong wrote:
+> > SLUB duplicates the cache name in kmem_cache_create(). However if the
+> > cache could be merged to others during early booting, the name pointer
+> > is saved in saved_alias list, and the string needs to be kept valid
+> > before slab_sysfs_init() is called. 
+> > 
+> > This patch tries to duplicate the cache name in saved_alias list, so
+> > that the cache name could be safely kfreed after calling
+> > kmem_cache_create(), if that name is kmalloced. 
+> > 
+> > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+> > ---
+> >  mm/slub.c |    6 ++++++
+> >  1 files changed, 6 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/mm/slub.c b/mm/slub.c
+> > index 8c691fa..3dc8ed5 100644
+> > --- a/mm/slub.c
+> > +++ b/mm/slub.c
+> > @@ -5373,6 +5373,11 @@ static int sysfs_slab_alias(struct kmem_cache *s,
+> > const char *name)
+> >  
+> >  	al->s = s;
+> >  	al->name = name;
+> > +	al->name = kstrdup(name, GFP_KERNEL);
 > 
-> Do you have any concerns or comments on these series of patches?
-> Would you please have a review?
-
-My main concern is that currently the PCI code has some assumptions
-about ordering of things that will get violated.
-
-For example, the pci final fixups are an fs_initcall iirc, or something
-like that. There's other similar oddities that might become problematic.
-In addition, there might be locking issues if you start doing multiple
-PHBs in parallel.
-
-Now we do want to fix all that long run but it might take a while.
-
-Cheers,
-Ben.
-
-> Thanks.
-> -Jia Hongtao.
+> dup assigned the al->name ?
 > 
-> > -----Original Message-----
-> > From: Linuxppc-dev [mailto:linuxppc-dev-
-> > bounces+b38951=freescale.com@lists.ozlabs.org] On Behalf Of Jia Hongtao-
-> > B38951
-> > Sent: Wednesday, June 20, 2012 10:34 AM
-> > To: Bhushan Bharat-R65777; linuxppc-dev@lists.ozlabs.org;
-> > galak@kernel.crashing.org; benh@kernel.crashing.org
-> > Cc: Wood Scott-B07421; Li Yang-R58472
-> > Subject: RE: [PATCH 0/6] Description for PCI patches using platform
-> > driver
+
+Ah, yes, there should be a '-' before the line al->name = name;
+
+Thank you, I will update it. 
+
+> Thanks,
+> Wanlong Gao
+> 
+> > +	if (!al->name) {
+> > +		kfree(al);
+> > +		return -ENOMEM;
+> > +	}
+> >  	al->next = alias_list;
+> >  	alias_list = al;
+> >  	return 0;
+> > @@ -5409,6 +5414,7 @@ static int __init slab_sysfs_init(void)
+> >  		if (err)
+> >  			printk(KERN_ERR "SLUB: Unable to add boot slab alias"
+> >  					" %s to sysfs\n", s->name);
+> > +		kfree(al->name);
+> >  		kfree(al);
+> >  	}
+> >  
 > > 
-> > Hello Ben, Kumar, others:
-> > 
-> > This series of patches had been pending for a long time on upstream.
-> > We fixed some issues we found and there still some issues should be
-> > discussed like swiotlb init thing. Do you have time for a review?
-> > 
-> > Thanks.
-> > -Jia Hongtao.
-> > 
-> > > -----Original Message-----
-> > > From: Bhushan Bharat-R65777
-> > > Sent: Thursday, June 14, 2012 5:52 PM
-> > > To: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org;
-> > > galak@kernel.crashing.org; benh@kernel.crashing.org
-> > > Cc: Li Yang-R58472; Wood Scott-B07421
-> > > Subject: RE: [PATCH 0/6] Description for PCI patches using platform
-> > > driver
-> > >
-> > > Hello Ben, Kumar, others
-> > >
-> > > Please provide your comments/thoughts on this ?
-> > >
-> > > Thanks
-> > > -Bharat
-> > >
-> > > > > > >
-> > > > > > > > -----Original Message-----
-> > > > > > > > From: Jia Hongtao-B38951
-> > > > > > > > Sent: Friday, June 08, 2012 3:12 PM
-> > > > > > > > To: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
-> > > > > > > > Cc: Li Yang-R58472; benh@kernel.crashing.org; Wood Scott-
-> > B07421;
-> > > > > > > Bhushan Bharat-
-> > > > > > > > R65777; Jia Hongtao-B38951
-> > > > > > > > Subject: [PATCH 0/6] Description for PCI patches using
-> > platform
-> > > > > > > > driver
-> > > > > > > >
-> > > > > > > > This series of patches are to unify pci initialization code
-> > and
-> > > > > > > > add PM
-> > > > > > > support
-> > > > > > > > for all 85xx/86xx powerpc boards. But two side effects are
-> > > > > > > > introduced
-> > > > > > > by this
-> > > > > > > > mechanism which listed below:
-> > > > > > > >
-> > > > > > > > 1. of_platform_bus_probe() will be called twice but in some
-> > > > > > > > cases
-> > > > > > > duplication
-> > > > > > > >    warning occured. We fix this in [PATCH 5/6].
-> > > > > > > >
-> > > > > > > > 2. Edac driver failed to register pci nodes as platform
-> > devices.
-> > > > > > > > We fix
-> > > > > > > this
-> > > > > > > >    in [PATCH 6/6].
-> > > > > > >
-> > > > > > > With these patches will not the SWIOTLB will not be initialized
-> > > > > > > even if PCI/PCIe demanded?
-> > > > > > >
-> > > > > > > Thanks
-> > > > > > > -Bharat
-> > > > > > >
-> > > > > >
-> > > > > > These patches still have the swiotlb init problem if
-> > > > > "ppc_swiotlb_enable" is
-> > > > > > only demanded by PCI/PCIe. One of the purposes of sending out
-> > these
-> > > > > patches is
-> > > > > > to let us start a discussion for this problem in upstream.
-> > > > >
-> > > > > Ok, I did not find any mention of that, so I thought that you have
-> > > > > resolved the issue by some means in these patches which I did not
-> > > catch.
-> > > > >
-> > > > > So, these patches introduces the issue, that SWIOTLB will not be
-> > > > > initialized if requested by pci/pcie. The request is raised by
-> > > setting
-> > > > > the flag ppc_swiotlb_enable. The swiotlb_init() will be called in
-> > > > > mem_init() if ppc_swiotlb_enable is set. Now with these patches,
-> > the
-> > > > > request is raised after mem_init() is called. So request not
-> > > handled :).
-> > > > >
-> > > > > Following are the solutions we have thought of during our internal
-> > > > > discussions (if I did not missed any):
-> > > > >
-> > > > > 1. These patches move the code from platform init to device init
-> > > > > (arch_initcall()). Rather than moving the whole code, let us divide
-> > > > > the code into two. First, which is needed to raise the swiotlb init
-> > > > > request and second the rest. Define this first as an function in
-> > > > > arch/powerpc/sysdev/fsl_pci.c and call this from platform init code
-> > > of
-> > > > > the SOCs.
-> > > > >
-> > > > > 2. All known devices, the lowest PCIe outbound range starts at
-> > > > > 0x80000000, but there's nothing above 0xc0000000. So the inbound of
-> > > > > size 0x8000_0000 is always availbe on all devices. Hardcode the
-> > check
-> > > > > in platform code to check memblock_end_of_DRAM() to 0x80000000.
-> > > > >
-> > > > > Something like this:
-> > > > >
-> > > > > diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c
-> > > > > b/arch/powerpc/platforms/85xx/corenet_ds.c
-> > > > > index 1f7028e..ef4e215 100644
-> > > > > --- a/arch/powerpc/platforms/85xx/corenet_ds.c
-> > > > > +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
-> > > > > @@ -79,7 +79,7 @@ void __init corenet_ds_setup_arch(void)  #endif
-> > > > >
-> > > > > #ifdef CONFIG_SWIOTLB
-> > > > > -       if (memblock_end_of_DRAM() > 0xffffffff)
-> > > > > +       if (memblock_end_of_DRAM() > 0xff000000)
-> > > > >                  ppc_swiotlb_enable = 1;  #endif
-> > > > >          pr_info("%s board from Freescale Semiconductor\n",
-> > > > > ppc_md.name);
-> > > > >
-> > > > > -------------
-> > > > >
-> > > > > 3. Always do swiotlb_init() in mem_init() and later after PCI init,
-> > > if
-> > > > > the swiotlb is not needed then free it (swiotlb_free()).
-> > > > >
-> > > > > 4. etc, please provide some other better way.
-> > > > >
-> > > > > Thanks
-> > > > > -Bharat
-> > > >
-> > > > Thanks.
-> > > > In my point of view the 2nd solution is better for it does not treat
-> > > PCI/PCIe as
-> > > > the special kind of devices from others.
-> > > >
-> > > > -Jia Hongtao.
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
