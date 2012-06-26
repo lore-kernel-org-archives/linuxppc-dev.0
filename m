@@ -1,16 +1,39 @@
-Return-Path: <robherring2@gmail.com>
-Message-ID: <4FE8F6DA.8070109@gmail.com>
-Date: Mon, 25 Jun 2012 18:40:10 -0500
-From: Rob Herring <robherring2@gmail.com>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 263F7B7011
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2012 10:31:15 +1000 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Mon, 25 Jun 2012 18:31:11 -0600
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 80ECDC40006
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2012 00:30:24 +0000 (WET)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5Q0UPeh170950
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2012 18:30:25 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5Q0UOGO021329
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2012 18:30:24 -0600
+Date: Tue, 26 Jun 2012 08:30:21 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH V3 1/2] PCI: retrieve host bridge by PCI bus
+Message-ID: <20120626003020.GA6307@shangw>
+References: <1340593821-19011-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <CAE9FiQUE0_niTRmvZ=ROSFKB4HKDFFLjfJC+QeQkTKLMyvxv4g@mail.gmail.com>
 MIME-Version: 1.0
-To: Dong Aisheng <b29396@freescale.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 1/1] of: reform prom_update_property function
-References: <1340605714-25206-1-git-send-email-b29396@freescale.com>
-In-Reply-To: <1340605714-25206-1-git-send-email-b29396@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
- paulus@samba.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <CAE9FiQUE0_niTRmvZ=ROSFKB4HKDFFLjfJC+QeQkTKLMyvxv4g@mail.gmail.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ Gavin Shan <shangw@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,195 +43,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/25/2012 01:28 AM, Dong Aisheng wrote:
-> From: Dong Aisheng <dong.aisheng@linaro.org>
-> 
-> prom_update_property() currently fails if the property doesn't
-> actually exist yet which isn't what we want. Change to add-or-update
-> instead of update-only, then we can remove a lot duplicated lines.
-> 
-> Suggested-by: Grant Likely <grant.likely@secretlab.ca>
-> Signed-off-by: Dong Aisheng <dong.aisheng@linaro.org>
+>> With current implementation, there is one function to retrieve
+>> the corresponding host bridge (struct pci_host_bridge) according
+>> to the given PCI device (struct pci_dev) and that function has
+>> been declared as "static". Further, we don't have the public
+>> function to retrieve host bridge from PCI bus yet. The function
+>> is useful somewhere.
+>>
+>> The additional information like minimal resource alignment for I/O
+>> and MMIO bars of p2p bridges will be put into the PCI host bridge.
+>> The patch introduces the public function pci_bus_host_bridge() to
+>> retrieve the corresponding PCI host bridge according to the specified
+>> PCI bus, then accessing the information regarding the minimal resource
+>> alignment for I/O and MMIO bars of p2p bridges.
+>>
+>> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+>> Reviewed-by: Ram Pai <linuxram@us.ibm.com>
+>> Reviewed-by: Richard Yang <weiyang@linux.vnet.ibm.com>
+>> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> ---
+>>  drivers/pci/host-bridge.c |   13 +++++++++++++
+>>  include/linux/pci.h       |    2 +-
+>>  2 files changed, 14 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
+>> index a68dc61..b95f0ce 100644
+>> --- a/drivers/pci/host-bridge.c
+>> +++ b/drivers/pci/host-bridge.c
+>> @@ -27,6 +27,19 @@ static struct pci_host_bridge *find_pci_host_bridge(struct pci_dev *dev)
+>>        return to_pci_host_bridge(bus->bridge);
+>>  }
+>>
+>> +struct pci_host_bridge *pci_bus_host_bridge(struct pci_bus *bus)
+>> +{
+>> +       struct pci_bus *b = bus;
+>> +
+>> +       /* Find the PCI root bus */
+>> +       while (b->parent)
+>> +               b = b->parent;
+>> +
+>> +       return to_pci_host_bridge(b->bridge);
+>> +}
+>> +
+>> +EXPORT_SYMBOL(pci_bus_host_bridge);
 
-Acked-by: Rob Herring <rob.herring@calxeda.com>
+Yinghai, thanks for your time on this :-)
 
-Ben, you can merge this via powerpc.
+>
+>why do you need to export it?
+>
 
-Rob
+The reason is that we have introduced extra fields to "struct pci_host_bridge"
+in [PATCH 2/2] and platform want to access those extra fields.
 
-> ---
-> ChangeLog v1->v2:
-> * keep reconfig.c behavior the same as before after changes
-> ---
->  arch/powerpc/platforms/85xx/p1022_ds.c    |    8 +-------
->  arch/powerpc/platforms/pseries/mobility.c |    8 +-------
->  arch/powerpc/platforms/pseries/reconfig.c |   16 ++++++----------
->  drivers/of/base.c                         |   15 +++++++++++----
->  fs/proc/proc_devtree.c                    |    5 +++++
->  include/linux/of.h                        |    3 +--
->  6 files changed, 25 insertions(+), 30 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-> index f700c81..d66631c 100644
-> --- a/arch/powerpc/platforms/85xx/p1022_ds.c
-> +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-> @@ -348,13 +348,7 @@ void __init p1022_ds_pic_init(void)
->   */
->  static void __init disable_one_node(struct device_node *np, struct property *new)
->  {
-> -	struct property *old;
-> -
-> -	old = of_find_property(np, new->name, NULL);
-> -	if (old)
-> -		prom_update_property(np, new, old);
-> -	else
-> -		prom_add_property(np, new);
-> +	prom_update_property(np, new);
->  }
->  
->  /* TRUE if there is a "video=fslfb" command-line parameter. */
-> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-> index 029a562..dd30b12 100644
-> --- a/arch/powerpc/platforms/pseries/mobility.c
-> +++ b/arch/powerpc/platforms/pseries/mobility.c
-> @@ -67,7 +67,6 @@ static int update_dt_property(struct device_node *dn, struct property **prop,
->  			      const char *name, u32 vd, char *value)
->  {
->  	struct property *new_prop = *prop;
-> -	struct property *old_prop;
->  	int more = 0;
->  
->  	/* A negative 'vd' value indicates that only part of the new property
-> @@ -117,12 +116,7 @@ static int update_dt_property(struct device_node *dn, struct property **prop,
->  	}
->  
->  	if (!more) {
-> -		old_prop = of_find_property(dn, new_prop->name, NULL);
-> -		if (old_prop)
-> -			prom_update_property(dn, new_prop, old_prop);
-> -		else
-> -			prom_add_property(dn, new_prop);
-> -
-> +		prom_update_property(dn, new_prop);
->  		new_prop = NULL;
->  	}
->  
-> diff --git a/arch/powerpc/platforms/pseries/reconfig.c b/arch/powerpc/platforms/pseries/reconfig.c
-> index 7b3bf76..db1b7b1 100644
-> --- a/arch/powerpc/platforms/pseries/reconfig.c
-> +++ b/arch/powerpc/platforms/pseries/reconfig.c
-> @@ -432,7 +432,7 @@ static int do_update_property(char *buf, size_t bufsize)
->  	unsigned char *value;
->  	char *name, *end, *next_prop;
->  	int rc, length;
-> -	struct property *newprop, *oldprop;
-> +	struct property *newprop;
->  	buf = parse_node(buf, bufsize, &np);
->  	end = buf + bufsize;
->  
-> @@ -443,6 +443,9 @@ static int do_update_property(char *buf, size_t bufsize)
->  	if (!next_prop)
->  		return -EINVAL;
->  
-> +	if (!strlen(name)
-> +		return -ENODEV;
-> +
->  	newprop = new_property(name, length, value, NULL);
->  	if (!newprop)
->  		return -ENOMEM;
-> @@ -450,18 +453,11 @@ static int do_update_property(char *buf, size_t bufsize)
->  	if (!strcmp(name, "slb-size") || !strcmp(name, "ibm,slb-size"))
->  		slb_set_size(*(int *)value);
->  
-> -	oldprop = of_find_property(np, name,NULL);
-> -	if (!oldprop) {
-> -		if (strlen(name))
-> -			return prom_add_property(np, newprop);
-> -		return -ENODEV;
-> -	}
-> -
->  	upd_value.node = np;
->  	upd_value.property = newprop;
->  	pSeries_reconfig_notify(PSERIES_UPDATE_PROPERTY, &upd_value);
->  
-> -	rc = prom_update_property(np, newprop, oldprop);
-> +	rc = prom_update_property(np, newprop);
->  	if (rc)
->  		return rc;
->  
-> @@ -486,7 +482,7 @@ static int do_update_property(char *buf, size_t bufsize)
->  
->  		rc = pSeries_reconfig_notify(action, value);
->  		if (rc) {
-> -			prom_update_property(np, oldprop, newprop);
-> +			prom_update_property(np, newprop);
->  			return rc;
->  		}
->  	}
-> diff --git a/drivers/of/base.c b/drivers/of/base.c
-> index d9bfd49..a14f109 100644
-> --- a/drivers/of/base.c
-> +++ b/drivers/of/base.c
-> @@ -1051,7 +1051,8 @@ int prom_remove_property(struct device_node *np, struct property *prop)
->  }
->  
->  /*
-> - * prom_update_property - Update a property in a node.
-> + * prom_update_property - Update a property in a node, if the property does
-> + * not exist, add it.
->   *
->   * Note that we don't actually remove it, since we have given out
->   * who-knows-how-many pointers to the data using get-property.
-> @@ -1059,13 +1060,19 @@ int prom_remove_property(struct device_node *np, struct property *prop)
->   * and add the new property to the property list
->   */
->  int prom_update_property(struct device_node *np,
-> -			 struct property *newprop,
-> -			 struct property *oldprop)
-> +			 struct property *newprop)
->  {
-> -	struct property **next;
-> +	struct property **next, *oldprop;
->  	unsigned long flags;
->  	int found = 0;
->  
-> +	if (!newprop->name)
-> +		return -EINVAL;
-> +
-> +	oldprop = of_find_property(np, newprop->name, NULL);
-> +	if (!oldprop)
-> +		return prom_add_property(np, newprop);
-> +
->  	write_lock_irqsave(&devtree_lock, flags);
->  	next = &np->properties;
->  	while (*next) {
-> diff --git a/fs/proc/proc_devtree.c b/fs/proc/proc_devtree.c
-> index 927cbd1..df7dd08 100644
-> --- a/fs/proc/proc_devtree.c
-> +++ b/fs/proc/proc_devtree.c
-> @@ -101,6 +101,11 @@ void proc_device_tree_update_prop(struct proc_dir_entry *pde,
->  {
->  	struct proc_dir_entry *ent;
->  
-> +	if (!oldprop) {
-> +		proc_device_tree_add_prop(pde, newprop);
-> +		return;
-> +	}
-> +
->  	for (ent = pde->subdir; ent != NULL; ent = ent->next)
->  		if (ent->data == oldprop)
->  			break;
-> diff --git a/include/linux/of.h b/include/linux/of.h
-> index 2ec1083..b27c871 100644
-> --- a/include/linux/of.h
-> +++ b/include/linux/of.h
-> @@ -260,8 +260,7 @@ extern int of_machine_is_compatible(const char *compat);
->  extern int prom_add_property(struct device_node* np, struct property* prop);
->  extern int prom_remove_property(struct device_node *np, struct property *prop);
->  extern int prom_update_property(struct device_node *np,
-> -				struct property *newprop,
-> -				struct property *oldprop);
-> +				struct property *newprop);
->  
->  #if defined(CONFIG_OF_DYNAMIC)
->  /* For updating the device tree at runtime */
+	int io_align_shift;             /* P2P I/O bar minimal alignment shift  */
+	int mem_align_shift;            /* P2P MMIO bar minimal alignment shift */
+	int pmem_align_shift;           /* P2P prefetchable MMIO bar minimal alignment shift */
+
+
+>> +
+>>  void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
+>>                                 void (*release_fn)(struct pci_host_bridge *),
+>>                                 void *release_data)
+>> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> index fefb4e1..6d5bb1c 100644
+>> --- a/include/linux/pci.h
+>> +++ b/include/linux/pci.h
+>> @@ -656,7 +656,7 @@ void pcibios_update_irq(struct pci_dev *, int irq);
+>>  void pci_fixup_cardbus(struct pci_bus *);
+>>
+>>  /* Generic PCI functions used internally */
+>> -
+>> +struct pci_host_bridge *pci_bus_host_bridge(struct pci_bus *bus);
+>>  void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
+>>                             struct resource *res);
+>>  void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+>
+>have one patch will change parameter all to bus instead of bridge.
+>
+>http://git.kernel.org/?p=linux/kernel/git/yinghai/linux-yinghai.git;a=commitdiff;h=3dc90c8f31e5e6153e1ac9a903189d3013690e80
+>
+>in that case, we can just make find_pci_host_bridge() global.
+>
+
+Yeah, I think your patch meets the requirement: access "struct pci_host_bridge",
+and when will you merge your patch into mainline?
+
+By the way, could you please take your a litle bit time to review [PATCH 2/2]?
+
+>Thanks
+>
+>Yinghai
+>
+
+Thanks,
+Gavin
