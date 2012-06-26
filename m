@@ -1,19 +1,25 @@
-Return-Path: <aletes.xgr@gmail.com>
-From: Alexandre Pereira da Silva <aletes.xgr@gmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>,
- Rob Herring <rob.herring@calxeda.com>, Rob Landley <rob@landley.net>,
- Felipe Balbi <balbi@ti.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Li Yang <leoli@freescale.com>,
- Alexandre Pereira da Silva <aletes.xgr@gmail.com>,
- devicetree-discuss@lists.ozlabs.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Roland Stigge <stigge@antcom.de>
-Subject: [PATCH 5/5] usb: gadget: composite: parse dt overrides
-Date: Tue, 26 Jun 2012 11:27:13 -0300
-Message-Id: <1340720833-781-6-git-send-email-aletes.xgr@gmail.com>
-In-Reply-To: <1340720833-781-1-git-send-email-aletes.xgr@gmail.com>
-References: <1340720833-781-1-git-send-email-aletes.xgr@gmail.com>
+Return-Path: <msteckly@ixiacom.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 898051007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 01:21:12 +1000 (EST)
+Received: from mail42-tx2 (localhost [127.0.0.1])	by mail42-tx2-R.bigfish.com
+ (Postfix) with ESMTP id 0746E4E0487	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue,
+ 26 Jun 2012 15:19:27 +0000 (UTC)
+Received: from TX2EHSMHS039.bigfish.com (unknown [10.9.14.254])	by
+ mail42-tx2.bigfish.com (Postfix) with ESMTP id 7E299202E5	for
+ <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 15:19:24 +0000 (UTC)
+Message-ID: <4FE9D35C.7050701@ixiacom.com>
+Date: Tue, 26 Jun 2012 11:21:00 -0400
+From: Michael Steckly <msteckly@ixiacom.com>
+MIME-Version: 1.0
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: Help with Freescale DPAA bug
+Content-Type: text/plain; charset="ISO-8859-1"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,109 +29,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Grab the devicetree node properties to override VendorId, ProductId,
-bcdDevice, Manucacturer, Product and SerialNumber
+I'm hoping someone here can help me.  Several levels of Freescale
+management have assured me that I am authorized to discuss their Linux
+code on public lists--and even explicitly suggested the ozlabs
+linuxppc-dev list.
 
-Signed-off-by: Alexandre Pereira da Silva <aletes.xgr@gmail.com>
----
- Documentation/devicetree/bindings/usb/gadget.txt |   20 +++++++++++
- drivers/usb/gadget/composite.c                   |   39 ++++++++++++++++++++++
- 2 files changed, 59 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/usb/gadget.txt
+I'm using the P4080 processor and the Freescale SDK on a custom board. 
+We've had some stability issues so I've turned on some debugging in the
+DPAA (CONFIG_FSL_DPA_CHECKING) and when I enable multiple cores, the
+system panics with the message:
 
-diff --git a/Documentation/devicetree/bindings/usb/gadget.txt b/Documentation/devicetree/bindings/usb/gadget.txt
-new file mode 100644
-index 0000000..93388d3
---- /dev/null
-+++ b/Documentation/devicetree/bindings/usb/gadget.txt
-@@ -0,0 +1,20 @@
-+Usb Gadget DeviceTree bindings
-+
-+These optional properties inside the usb device controller node are used to
-+change some of the gadget drivers configuration:
-+- vendor-id: Usb vendor id
-+- product-id: Usb product id
-+- release: Version of this device
-+- vendor: Textual description of the vendor
-+- device: Textual description of this device
-+- serial: Textual representation of the device's serial number
-+
-+Binding Example:
-+	usbd@31020000 {
-+		vendor-id = <0x0525>;
-+		product-id = <0xa4a6>;
-+		release = <1>;
-+		vendor = "Some Corp";
-+		device = "Test Device";
-+		serial = "12345";
-+	};
-diff --git a/drivers/usb/gadget/composite.c b/drivers/usb/gadget/composite.c
-index 390749b..b39aef4 100644
---- a/drivers/usb/gadget/composite.c
-+++ b/drivers/usb/gadget/composite.c
-@@ -17,6 +17,7 @@
- #include <linux/module.h>
- #include <linux/device.h>
- #include <linux/utsname.h>
-+#include <linux/of.h>
- 
- #include <linux/usb/composite.h>
- #include <asm/unaligned.h>
-@@ -1419,10 +1420,44 @@ static u8 override_id(struct usb_composite_dev *cdev, u8 *desc)
- 	return *desc;
- }
- 
-+static void composite_parse_dt(struct usb_composite_dev *cdev,
-+	struct device_node *np)
-+{
-+	u32 reg;
-+
-+	if (!idVendor && of_property_read_u32(np, "vendor-id", &reg) == 0)
-+		idVendor = reg;
-+
-+	if (!idProduct && of_property_read_u32(np, "product-id", &reg) == 0)
-+		idProduct = reg;
-+
-+	if (!bcdDevice && of_property_read_u32(np, "release", &reg) == 0)
-+		bcdDevice = reg;
-+
-+	if (!iManufacturer)
-+		if (of_property_read_string(np, "vendor",
-+			&composite->iManufacturer) == 0)
-+			cdev->manufacturer_override = override_id(cdev,
-+				&cdev->desc.iManufacturer);
-+
-+	if (!iProduct)
-+		if (of_property_read_string(np, "device",
-+			&composite->iProduct) == 0)
-+			cdev->product_override = override_id(cdev,
-+				&cdev->desc.iProduct);
-+
-+	if (!iSerialNumber)
-+		if (of_property_read_string(np, "serial",
-+			&composite->iSerialNumber) == 0)
-+			cdev->serial_override = override_id(cdev,
-+				&cdev->desc.iSerialNumber);
-+}
-+
- static int composite_bind(struct usb_gadget *gadget)
- {
- 	struct usb_composite_dev	*cdev;
- 	int				status = -ENOMEM;
-+	struct device_node		*np = gadget->dev.of_node;
- 
- 	cdev = kzalloc(sizeof *cdev, GFP_KERNEL);
- 	if (!cdev)
-@@ -1470,6 +1505,10 @@ static int composite_bind(struct usb_gadget *gadget)
- 
- 	cdev->desc = *composite->dev;
- 
-+	/* grab overrides from devicetree */
-+	if (np)
-+		composite_parse_dt(cdev, np);
-+
- 	/* standardized runtime overrides for device ID data */
- 	if (idVendor)
- 		cdev->desc.idVendor = cpu_to_le16(idVendor);
--- 
-1.7.10
+Parallel attempts to enter bman_released() detected.
+Kernel panic - not syncing: only one instance of bman_released/acquired
+allowed
+Call Trace:
+[ede35de0] [c000812c] show_stack+0x44/0x154 (unreliable)
+[ede35e20] [c0419e28] panic+0xa4/0x1d0
+[ede35e70] [c0301324] bman_release+0x614/0x854
+[ede35ed0] [c02e4dbc] dpa_bp_add_8+0xe0/0x1b4
+[ede35f40] [c02e6eb0] dpaa_eth_poll+0x8c/0x98
+[ede35f60] [c0329fd4] net_rx_action+0xc0/0x178
+[ede35fa0] [c0032f78] __do_softirq+0xe8/0x174
+[ede35ff0] [c000d7fc] call_do_softirq+0x14/0x24
+[e90a9e80] [c00047fc] do_softirq+0x98/0xc4
+[e90a9ea0] [c003328c] irq_exit+0x60/0x70
+[e90a9eb0] [c00044ec] do_IRQ+0x94/0x188
+[e90a9ee0] [c000f29c] ret_from_except+0x0/0x18
+Parallel attempts to enter bman_released() detected.
+--- Exception: 501 at cpu_idle+0x88/0xd8
+    LR = cpu_idle+0x88/0xd8
+Kernel panic - not syncing: only one instance of bman_released/acquired
+allowed
+[e90a9fa0] [c0008bb4] cpu_idle+0xd4/0xd8Call Trace:
+ (unreliable)[ede1dde0] [c000812c] show_stack+0x44/0x154
+ (unreliable)[e90a9fc0] [c041c5b8] start_secondary+0x2b8/0x2bc
+
+[ede1de20] [c0419e28] panic+0xa4/0x1d0[e90a9ff0] [c0001e7c]
+__secondary_start+0x30/0x84
+
+[ede1de70] [c0301324] bman_release+0x614/0x854
+[ede1ded0] [c02e4dbc] dpa_bp_add_8+0xe0/0x1b4
+Rebooting in 180 seconds...
+
+It's fairly easy to reproduce.  I just run 'watch -n1 ping -c64 -l64
+<ip-on-same-subnet>' and leave it run for less than 30 seconds.
+
+I've consulted Freescale on this, but their suggestion was to turn the
+debugging option off.  While this will prevent the kernel panic, it will
+not prevent multiple threads from entering the critical section at the
+same time--which, according to their own code, is bad.
+
+As far as I can tell, disabling the debug option will just turn an
+explicit panic into a mysterious instability with the system that will
+probably result in ethernet related issues.
+
+I've configured the DPAA options like this:
+
+> egrep -i '(bman|dpa)' .config
+CONFIG_HAS_FSL_QBMAN=y
+# CONFIG_FSL_USDPAA_SHMEM is not set
+CONFIG_DPA=y
+CONFIG_DPA_OFFLINE_PORTS=y
+CONFIG_DPA_MAX_FRM_SIZE=1522
+CONFIG_FSL_DPA_1588=m
+# CONFIG_DPAA_ETH_UNIT_TESTS is not set
+CONFIG_FSL_DPA=y
+# Freescale Datapath QMan/BMan options
+CONFIG_FSL_DPA_CHECKING=y
+CONFIG_FSL_DPA_HAVE_IRQ=y
+CONFIG_FSL_DPA_CAN_WAIT=y
+CONFIG_FSL_DPA_CAN_WAIT_SYNC=y
+CONFIG_FSL_DPA_PIRQ_FAST=y
+CONFIG_FSL_DPA_PIRQ_SLOW=y
+CONFIG_FSL_DPA_PORTAL_SHARE=y
+CONFIG_FSL_BMAN=y
+CONFIG_FSL_BMAN_PORTAL=y
+CONFIG_FSL_BMAN_CONFIG=y
+# CONFIG_FSL_BMAN_TEST is not set
+CONFIG_FSL_QMAN_CI_SCHED_CFG_BMAN_W=2
+
+Does anyone have any additional info/suggestions on this?
+
+Any help would be much appreciated.  Thanks in advance.
+
+Mike
