@@ -1,25 +1,19 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
- [209.85.210.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3E9C6B6FBE
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 04:29:06 +1000 (EST)
-Received: by dalf4 with SMTP id f4so217368dal.15
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2012 11:29:04 -0700 (PDT)
+Return-Path: <robherring2@gmail.com>
+Message-ID: <4FEA02B7.3030801@gmail.com>
+Date: Tue, 26 Jun 2012 13:43:03 -0500
+From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <20120626003020.GA6307@shangw>
-References: <1340593821-19011-1-git-send-email-shangw@linux.vnet.ibm.com>
- <CAE9FiQUE0_niTRmvZ=ROSFKB4HKDFFLjfJC+QeQkTKLMyvxv4g@mail.gmail.com>
- <20120626003020.GA6307@shangw>
-Date: Tue, 26 Jun 2012 11:29:04 -0700
-Message-ID: <CAE9FiQWcZTCsdGQmHO6rwL-U07LVH6F0psWQqApzv1mbNg_j4A@mail.gmail.com>
-Subject: Re: [PATCH V3 1/2] PCI: retrieve host bridge by PCI bus
-From: Yinghai Lu <yinghai@kernel.org>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Content-Type: multipart/mixed; boundary=047d7b339cc1f0a6b404c3644519
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: Alexandre Pereira da Silva <aletes.xgr@gmail.com>
+Subject: Re: [PATCH 5/5] usb: gadget: composite: parse dt overrides
+References: <1340720833-781-1-git-send-email-aletes.xgr@gmail.com>
+ <1340720833-781-6-git-send-email-aletes.xgr@gmail.com>
+In-Reply-To: <1340720833-781-6-git-send-email-aletes.xgr@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Roland Stigge <stigge@antcom.de>, linux-doc@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ devicetree-discuss@lists.ozlabs.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Felipe Balbi <balbi@ti.com>,
+ Rob Landley <rob@landley.net>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,101 +23,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7b339cc1f0a6b404c3644519
-Content-Type: text/plain; charset=ISO-8859-1
+On 06/26/2012 09:27 AM, Alexandre Pereira da Silva wrote:
+> Grab the devicetree node properties to override VendorId, ProductId,
+> bcdDevice, Manucacturer, Product and SerialNumber
 
-On Mon, Jun 25, 2012 at 5:30 PM, Gavin Shan <shangw@linux.vnet.ibm.com> wrote:
-> Yeah, I think your patch meets the requirement: access "struct pci_host_bridge",
-> and when will you merge your patch into mainline?
+I'm still confused about what is the order of priority for the 2
+possible sources of these values. The way it is written, the DT value is
+a default, not an override.
 
-not sure.
+Rob
 
-but i extract that patch as attached.
-and with that could make your first patch only make find_pci_host_bridge()
-global.
-
->
-> By the way, could you please take your a litle bit time to review [PATCH 2/2]?
->
-
-ok, will look at that.
-
-Thanks
-
-Yinghai
-
---047d7b339cc1f0a6b404c3644519
-Content-Type: application/octet-stream;
-	name="pcibus_addr_converting_bus.patch"
-Content-Disposition: attachment; filename="pcibus_addr_converting_bus.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_h3xb4yzi0
-
-U3ViamVjdDogW1BBVENIXSBQQ0k6IHBjaWJ1cyBhZGRyZXNzIHRvIHJlc291cmNlIGNvbnZlcnRp
-bmcgdGFrZSBidXMgZGlyZWN0bHkKCkZvciBhbGxvY2F0aW5nIHJlc291cmNlIHVuZGVyIGJ1cyBw
-YXRoLCB3ZSBkbyBoYXZlIGRldiBwYXNzIGFsb25nLCBhbmQgd2UKY291bGQganVzdCB1c2UgYnVz
-IGluc3RlYWQuCgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+
-CgotLS0KIGRyaXZlcnMvcGNpL2hvc3QtYnJpZGdlLmMgfCAgIDM0ICsrKysrKysrKysrKysrKysr
-KysrKy0tLS0tLS0tLS0tLS0KIGluY2x1ZGUvbGludXgvcGNpLmggICAgICAgfCAgICAzICsrKwog
-MiBmaWxlcyBjaGFuZ2VkLCAyNCBpbnNlcnRpb25zKCspLCAxMyBkZWxldGlvbnMoLSkKCkluZGV4
-OiBsaW51eC0yLjYvZHJpdmVycy9wY2kvaG9zdC1icmlkZ2UuYwo9PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51
-eC0yLjYub3JpZy9kcml2ZXJzL3BjaS9ob3N0LWJyaWRnZS5jCisrKyBsaW51eC0yLjYvZHJpdmVy
-cy9wY2kvaG9zdC1icmlkZ2UuYwpAQCAtOSwyMiArOSwxOSBAQAogCiAjaW5jbHVkZSAicGNpLmgi
-CiAKLXN0YXRpYyBzdHJ1Y3QgcGNpX2J1cyAqZmluZF9wY2lfcm9vdF9idXMoc3RydWN0IHBjaV9k
-ZXYgKmRldikKK3N0YXRpYyBzdHJ1Y3QgcGNpX2J1cyAqZmluZF9wY2lfcm9vdF9idXMoc3RydWN0
-IHBjaV9idXMgKmJ1cykKIHsKLQlzdHJ1Y3QgcGNpX2J1cyAqYnVzOwotCi0JYnVzID0gZGV2LT5i
-dXM7CiAJd2hpbGUgKGJ1cy0+cGFyZW50KQogCQlidXMgPSBidXMtPnBhcmVudDsKIAogCXJldHVy
-biBidXM7CiB9CiAKLXN0YXRpYyBzdHJ1Y3QgcGNpX2hvc3RfYnJpZGdlICpmaW5kX3BjaV9ob3N0
-X2JyaWRnZShzdHJ1Y3QgcGNpX2RldiAqZGV2KQorc3RhdGljIHN0cnVjdCBwY2lfaG9zdF9icmlk
-Z2UgKmZpbmRfcGNpX2hvc3RfYnJpZGdlKHN0cnVjdCBwY2lfYnVzICpidXMpCiB7Ci0Jc3RydWN0
-IHBjaV9idXMgKmJ1cyA9IGZpbmRfcGNpX3Jvb3RfYnVzKGRldik7CisJc3RydWN0IHBjaV9idXMg
-KnJvb3RfYnVzID0gZmluZF9wY2lfcm9vdF9idXMoYnVzKTsKIAotCXJldHVybiB0b19wY2lfaG9z
-dF9icmlkZ2UoYnVzLT5icmlkZ2UpOworCXJldHVybiB0b19wY2lfaG9zdF9icmlkZ2Uocm9vdF9i
-dXMtPmJyaWRnZSk7CiB9CiAKIHZvaWQgcGNpX3NldF9ob3N0X2JyaWRnZV9yZWxlYXNlKHN0cnVj
-dCBwY2lfaG9zdF9icmlkZ2UgKmJyaWRnZSwKQEAgLTQwLDEwICszNywxMSBAQCBzdGF0aWMgYm9v
-bCByZXNvdXJjZV9jb250YWlucyhzdHJ1Y3QgcmVzCiAJcmV0dXJuIHJlczEtPnN0YXJ0IDw9IHJl
-czItPnN0YXJ0ICYmIHJlczEtPmVuZCA+PSByZXMyLT5lbmQ7CiB9CiAKLXZvaWQgcGNpYmlvc19y
-ZXNvdXJjZV90b19idXMoc3RydWN0IHBjaV9kZXYgKmRldiwgc3RydWN0IHBjaV9idXNfcmVnaW9u
-ICpyZWdpb24sCi0JCQkgICAgIHN0cnVjdCByZXNvdXJjZSAqcmVzKQordm9pZCBfX3BjaWJpb3Nf
-cmVzb3VyY2VfdG9fYnVzKHN0cnVjdCBwY2lfYnVzICpidXMsCisJCQkJICAgICAgc3RydWN0IHBj
-aV9idXNfcmVnaW9uICpyZWdpb24sCisJCQkJICAgICAgc3RydWN0IHJlc291cmNlICpyZXMpCiB7
-Ci0Jc3RydWN0IHBjaV9ob3N0X2JyaWRnZSAqYnJpZGdlID0gZmluZF9wY2lfaG9zdF9icmlkZ2Uo
-ZGV2KTsKKwlzdHJ1Y3QgcGNpX2hvc3RfYnJpZGdlICpicmlkZ2UgPSBmaW5kX3BjaV9ob3N0X2Jy
-aWRnZShidXMpOwogCXN0cnVjdCBwY2lfaG9zdF9icmlkZ2Vfd2luZG93ICp3aW5kb3c7CiAJcmVz
-b3VyY2Vfc2l6ZV90IG9mZnNldCA9IDA7CiAKQEAgLTYwLDYgKzU4LDExIEBAIHZvaWQgcGNpYmlv
-c19yZXNvdXJjZV90b19idXMoc3RydWN0IHBjaV8KIAlyZWdpb24tPnN0YXJ0ID0gcmVzLT5zdGFy
-dCAtIG9mZnNldDsKIAlyZWdpb24tPmVuZCA9IHJlcy0+ZW5kIC0gb2Zmc2V0OwogfQordm9pZCBw
-Y2liaW9zX3Jlc291cmNlX3RvX2J1cyhzdHJ1Y3QgcGNpX2RldiAqZGV2LCBzdHJ1Y3QgcGNpX2J1
-c19yZWdpb24gKnJlZ2lvbiwKKwkJCSAgICAgc3RydWN0IHJlc291cmNlICpyZXMpCit7CisJX19w
-Y2liaW9zX3Jlc291cmNlX3RvX2J1cyhkZXYtPmJ1cywgcmVnaW9uLCByZXMpOworfQogRVhQT1JU
-X1NZTUJPTChwY2liaW9zX3Jlc291cmNlX3RvX2J1cyk7CiAKIHN0YXRpYyBib29sIHJlZ2lvbl9j
-b250YWlucyhzdHJ1Y3QgcGNpX2J1c19yZWdpb24gKnJlZ2lvbjEsCkBAIC02OCwxMCArNzEsMTAg
-QEAgc3RhdGljIGJvb2wgcmVnaW9uX2NvbnRhaW5zKHN0cnVjdCBwY2lfYgogCXJldHVybiByZWdp
-b24xLT5zdGFydCA8PSByZWdpb24yLT5zdGFydCAmJiByZWdpb24xLT5lbmQgPj0gcmVnaW9uMi0+
-ZW5kOwogfQogCi12b2lkIHBjaWJpb3NfYnVzX3RvX3Jlc291cmNlKHN0cnVjdCBwY2lfZGV2ICpk
-ZXYsIHN0cnVjdCByZXNvdXJjZSAqcmVzLAotCQkJICAgICBzdHJ1Y3QgcGNpX2J1c19yZWdpb24g
-KnJlZ2lvbikKK3N0YXRpYyB2b2lkIF9fcGNpYmlvc19idXNfdG9fcmVzb3VyY2Uoc3RydWN0IHBj
-aV9idXMgKmJ1cywgc3RydWN0IHJlc291cmNlICpyZXMsCisJCQkJICAgICAgc3RydWN0IHBjaV9i
-dXNfcmVnaW9uICpyZWdpb24pCiB7Ci0Jc3RydWN0IHBjaV9ob3N0X2JyaWRnZSAqYnJpZGdlID0g
-ZmluZF9wY2lfaG9zdF9icmlkZ2UoZGV2KTsKKwlzdHJ1Y3QgcGNpX2hvc3RfYnJpZGdlICpicmlk
-Z2UgPSBmaW5kX3BjaV9ob3N0X2JyaWRnZShidXMpOwogCXN0cnVjdCBwY2lfaG9zdF9icmlkZ2Vf
-d2luZG93ICp3aW5kb3c7CiAJcmVzb3VyY2Vfc2l6ZV90IG9mZnNldCA9IDA7CiAKQEAgLTkzLDQg
-Kzk2LDkgQEAgdm9pZCBwY2liaW9zX2J1c190b19yZXNvdXJjZShzdHJ1Y3QgcGNpXwogCXJlcy0+
-c3RhcnQgPSByZWdpb24tPnN0YXJ0ICsgb2Zmc2V0OwogCXJlcy0+ZW5kID0gcmVnaW9uLT5lbmQg
-KyBvZmZzZXQ7CiB9Cit2b2lkIHBjaWJpb3NfYnVzX3RvX3Jlc291cmNlKHN0cnVjdCBwY2lfZGV2
-ICpkZXYsIHN0cnVjdCByZXNvdXJjZSAqcmVzLAorCQkJICAgICBzdHJ1Y3QgcGNpX2J1c19yZWdp
-b24gKnJlZ2lvbikKK3sKKwlfX3BjaWJpb3NfYnVzX3RvX3Jlc291cmNlKGRldi0+YnVzLCByZXMs
-IHJlZ2lvbik7Cit9CiBFWFBPUlRfU1lNQk9MKHBjaWJpb3NfYnVzX3RvX3Jlc291cmNlKTsKSW5k
-ZXg6IGxpbnV4LTIuNi9pbmNsdWRlL2xpbnV4L3BjaS5oCj09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIu
-Ni5vcmlnL2luY2x1ZGUvbGludXgvcGNpLmgKKysrIGxpbnV4LTIuNi9pbmNsdWRlL2xpbnV4L3Bj
-aS5oCkBAIC02ODYsNiArNjg2LDkgQEAgdm9pZCBwY2lfZml4dXBfY2FyZGJ1cyhzdHJ1Y3QgcGNp
-X2J1cyAqKQogCiAvKiBHZW5lcmljIFBDSSBmdW5jdGlvbnMgdXNlZCBpbnRlcm5hbGx5ICovCiAK
-K3ZvaWQgX19wY2liaW9zX3Jlc291cmNlX3RvX2J1cyhzdHJ1Y3QgcGNpX2J1cyAqYnVzLAorCQkJ
-ICAgICAgIHN0cnVjdCBwY2lfYnVzX3JlZ2lvbiAqcmVnaW9uLAorCQkJICAgICAgIHN0cnVjdCBy
-ZXNvdXJjZSAqcmVzKTsKIHZvaWQgcGNpYmlvc19yZXNvdXJjZV90b19idXMoc3RydWN0IHBjaV9k
-ZXYgKmRldiwgc3RydWN0IHBjaV9idXNfcmVnaW9uICpyZWdpb24sCiAJCQkgICAgIHN0cnVjdCBy
-ZXNvdXJjZSAqcmVzKTsKIHZvaWQgcGNpYmlvc19idXNfdG9fcmVzb3VyY2Uoc3RydWN0IHBjaV9k
-ZXYgKmRldiwgc3RydWN0IHJlc291cmNlICpyZXMsCg==
---047d7b339cc1f0a6b404c3644519--
+> 
+> Signed-off-by: Alexandre Pereira da Silva <aletes.xgr@gmail.com>
+> ---
+>  Documentation/devicetree/bindings/usb/gadget.txt |   20 +++++++++++
+>  drivers/usb/gadget/composite.c                   |   39 ++++++++++++++++++++++
+>  2 files changed, 59 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/usb/gadget.txt
+> 
+> diff --git a/Documentation/devicetree/bindings/usb/gadget.txt b/Documentation/devicetree/bindings/usb/gadget.txt
+> new file mode 100644
+> index 0000000..93388d3
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/usb/gadget.txt
+> @@ -0,0 +1,20 @@
+> +Usb Gadget DeviceTree bindings
+> +
+> +These optional properties inside the usb device controller node are used to
+> +change some of the gadget drivers configuration:
+> +- vendor-id: Usb vendor id
+> +- product-id: Usb product id
+> +- release: Version of this device
+> +- vendor: Textual description of the vendor
+> +- device: Textual description of this device
+> +- serial: Textual representation of the device's serial number
+> +
+> +Binding Example:
+> +	usbd@31020000 {
+> +		vendor-id = <0x0525>;
+> +		product-id = <0xa4a6>;
+> +		release = <1>;
+> +		vendor = "Some Corp";
+> +		device = "Test Device";
+> +		serial = "12345";
+> +	};
+> diff --git a/drivers/usb/gadget/composite.c b/drivers/usb/gadget/composite.c
+> index 390749b..b39aef4 100644
+> --- a/drivers/usb/gadget/composite.c
+> +++ b/drivers/usb/gadget/composite.c
+> @@ -17,6 +17,7 @@
+>  #include <linux/module.h>
+>  #include <linux/device.h>
+>  #include <linux/utsname.h>
+> +#include <linux/of.h>
+>  
+>  #include <linux/usb/composite.h>
+>  #include <asm/unaligned.h>
+> @@ -1419,10 +1420,44 @@ static u8 override_id(struct usb_composite_dev *cdev, u8 *desc)
+>  	return *desc;
+>  }
+>  
+> +static void composite_parse_dt(struct usb_composite_dev *cdev,
+> +	struct device_node *np)
+> +{
+> +	u32 reg;
+> +
+> +	if (!idVendor && of_property_read_u32(np, "vendor-id", &reg) == 0)
+> +		idVendor = reg;
+> +
+> +	if (!idProduct && of_property_read_u32(np, "product-id", &reg) == 0)
+> +		idProduct = reg;
+> +
+> +	if (!bcdDevice && of_property_read_u32(np, "release", &reg) == 0)
+> +		bcdDevice = reg;
+> +
+> +	if (!iManufacturer)
+> +		if (of_property_read_string(np, "vendor",
+> +			&composite->iManufacturer) == 0)
+> +			cdev->manufacturer_override = override_id(cdev,
+> +				&cdev->desc.iManufacturer);
+> +
+> +	if (!iProduct)
+> +		if (of_property_read_string(np, "device",
+> +			&composite->iProduct) == 0)
+> +			cdev->product_override = override_id(cdev,
+> +				&cdev->desc.iProduct);
+> +
+> +	if (!iSerialNumber)
+> +		if (of_property_read_string(np, "serial",
+> +			&composite->iSerialNumber) == 0)
+> +			cdev->serial_override = override_id(cdev,
+> +				&cdev->desc.iSerialNumber);
+> +}
+> +
+>  static int composite_bind(struct usb_gadget *gadget)
+>  {
+>  	struct usb_composite_dev	*cdev;
+>  	int				status = -ENOMEM;
+> +	struct device_node		*np = gadget->dev.of_node;
+>  
+>  	cdev = kzalloc(sizeof *cdev, GFP_KERNEL);
+>  	if (!cdev)
+> @@ -1470,6 +1505,10 @@ static int composite_bind(struct usb_gadget *gadget)
+>  
+>  	cdev->desc = *composite->dev;
+>  
+> +	/* grab overrides from devicetree */
+> +	if (np)
+> +		composite_parse_dt(cdev, np);
+> +
+>  	/* standardized runtime overrides for device ID data */
+>  	if (idVendor)
+>  		cdev->desc.idVendor = cpu_to_le16(idVendor);
