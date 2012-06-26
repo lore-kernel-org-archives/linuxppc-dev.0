@@ -1,14 +1,20 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 26 Jun 2012 21:04:20 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, sukadev@linux.vnet.ibm.com
-Subject: [PATCH 4/4] powerpc/perf: Use perf_instruction_pointer in callchains
-Message-ID: <20120626210420.4e5e7e78@kryten>
-In-Reply-To: <20120626210013.2fbb9044@kryten>
-References: <20120626210013.2fbb9044@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8F3FA1007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 00:03:48 +1000 (EST)
+Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
+Date: Tue, 26 Jun 2012 09:03:42 -0500
+Message-Id: <AB6D43A9-FC54-40D2-A9B0-8B2E785124F9@kernel.crashing.org>
+References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,42 +25,24 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-We use SIAR or regs->nip for the instruction pointer depending on
-the PMU configuration, but we always use regs->nip in the callchain.
+On Jun 26, 2012, at 5:25 AM, Zhao Chenhui wrote:
 
-Use perf_instruction_pointer so the backtrace is consistent.
+> Do hardware timebase sync. Firstly, stop all timebases, and transfer
+> the timebase value of the boot core to the other core. Finally,
+> start all timebases.
+>=20
+> Only apply to dual-core chips, such as MPC8572, P2020, etc.
+>=20
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> Changes for v6:
+> * added 85xx_TB_SYNC
+> * added isync() after set_tb()
+> * removed extra entries from mpc85xx_smp_guts_ids
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Why only on dual-core chips?  Is this because of something related to 2 =
+cores, or related to corenet vs non-corenet SoCs and how turning on/off =
+the timebase works in the SOC?
 
-Index: linux-build/arch/powerpc/perf/callchain.c
-===================================================================
---- linux-build.orig/arch/powerpc/perf/callchain.c	2012-04-12 11:36:26.236223786 +1000
-+++ linux-build/arch/powerpc/perf/callchain.c	2012-06-26 12:49:28.944202712 +1000
-@@ -57,7 +57,7 @@ perf_callchain_kernel(struct perf_callch
- 
- 	lr = regs->link;
- 	sp = regs->gpr[1];
--	perf_callchain_store(entry, regs->nip);
-+	perf_callchain_store(entry, perf_instruction_pointer(regs));
- 
- 	if (!validate_sp(sp, current, STACK_FRAME_OVERHEAD))
- 		return;
-@@ -238,7 +238,7 @@ static void perf_callchain_user_64(struc
- 	struct signal_frame_64 __user *sigframe;
- 	unsigned long __user *fp, *uregs;
- 
--	next_ip = regs->nip;
-+	next_ip = perf_instruction_pointer(regs);
- 	lr = regs->link;
- 	sp = regs->gpr[1];
- 	perf_callchain_store(entry, next_ip);
-@@ -444,7 +444,7 @@ static void perf_callchain_user_32(struc
- 	long level = 0;
- 	unsigned int __user *fp, *uregs;
- 
--	next_ip = regs->nip;
-+	next_ip = perf_instruction_pointer(regs);
- 	lr = regs->link;
- 	sp = regs->gpr[1];
- 	perf_callchain_store(entry, next_ip);
+- k=
