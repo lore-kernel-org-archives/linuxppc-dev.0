@@ -1,40 +1,32 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e2.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3D0E3B6EF3
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2012 13:01:20 +1000 (EST)
-Received: from /spool/local
- by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 25 Jun 2012 23:01:18 -0400
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C6F2938C8052
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2012 23:01:15 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5Q31FVt150568
- for <linuxppc-dev@ozlabs.org>; Mon, 25 Jun 2012 23:01:15 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5Q31ELA013609
- for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2012 00:01:15 -0300
-Date: Tue, 26 Jun 2012 11:01:11 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <B38951@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 376321007D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 20:05:54 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH V3 1/2] PCI: retrieve host bridge by PCI bus
-Message-ID: <20120626030111.GA6753@shangw>
-References: <1340593821-19011-1-git-send-email-shangw@linux.vnet.ibm.com>
- <CAE9FiQUE0_niTRmvZ=ROSFKB4HKDFFLjfJC+QeQkTKLMyvxv4g@mail.gmail.com>
- <20120626003020.GA6307@shangw> <1340679045.3732.3.camel@pasglop>
+Subject: RE: [PATCH 0/6] Description for PCI patches using platform driver
+Date: Tue, 26 Jun 2012 10:05:42 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A0EBFC@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1339148527-16911-1-git-send-email-B38951@freescale.com>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D03D71F38@039-SN2MPN1-022.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A0921B@039-SN1MPN1-002.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D03D78FAE@039-SN2MPN1-022.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A0973E@039-SN1MPN1-002.039d.mgd.msft.net>
+ <6A3DF150A5B70D4F9B66A25E3F7C888D03D84C22@039-SN2MPN1-022.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A0C2DA@039-SN1MPN1-002.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A0EA1F@039-SN1MPN1-002.039d.mgd.msft.net>
+ <1340678813.3732.1.camel@pasglop>
+In-Reply-To: <1340678813.3732.1.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1340679045.3732.3.camel@pasglop>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- Yinghai Lu <yinghai@kernel.org>, Gavin Shan <shangw@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Bhushan Bharat-R65777 <R65777@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,32 +36,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> >> +EXPORT_SYMBOL(pci_bus_host_bridge);
->> 
->> Yinghai, thanks for your time on this :-)
->> 
->> >
->> >why do you need to export it?
->> >
->> 
->> The reason is that we have introduced extra fields to "struct
->> pci_host_bridge"
->> in [PATCH 2/2] and platform want to access those extra fields. 
->
->But the platform code is built-in, not modular, so it doesn't need
->EXPORT_SYMBOL (additionally even if we wanted to export it we probably
->also want it _GPL only, so EXPORT_SYMBOL_GPL, but I don't think we need
->to).
->
-
-Ben, thanks for correcting me :-)
-
-Let me remove EXPORT_SYMBOL() is next revision.
-
->Cheers,
->Ben.
->
->
-
-Thanks,
-Gavin
+PiANCj4gTXkgbWFpbiBjb25jZXJuIGlzIHRoYXQgY3VycmVudGx5IHRoZSBQQ0kgY29kZSBoYXMg
+c29tZSBhc3N1bXB0aW9ucw0KPiBhYm91dCBvcmRlcmluZyBvZiB0aGluZ3MgdGhhdCB3aWxsIGdl
+dCB2aW9sYXRlZC4NCj4gDQo+IEZvciBleGFtcGxlLCB0aGUgcGNpIGZpbmFsIGZpeHVwcyBhcmUg
+YW4gZnNfaW5pdGNhbGwgaWlyYywgb3Igc29tZXRoaW5nDQo+IGxpa2UgdGhhdC4gVGhlcmUncyBv
+dGhlciBzaW1pbGFyIG9kZGl0aWVzIHRoYXQgbWlnaHQgYmVjb21lIHByb2JsZW1hdGljLg0KPiBJ
+biBhZGRpdGlvbiwgdGhlcmUgbWlnaHQgYmUgbG9ja2luZyBpc3N1ZXMgaWYgeW91IHN0YXJ0IGRv
+aW5nIG11bHRpcGxlDQo+IFBIQnMgaW4gcGFyYWxsZWwuDQo+IA0KPiBOb3cgd2UgZG8gd2FudCB0
+byBmaXggYWxsIHRoYXQgbG9uZyBydW4gYnV0IGl0IG1pZ2h0IHRha2UgYSB3aGlsZS4NCj4gDQo+
+IENoZWVycywNCj4gQmVuLg0KPiANCg0KSGkgQmVuLA0KDQpUaGUgb3JkZXJpbmcgb2YgdGhpbmdz
+IGlzIGFsc28gdGhlIG1haW4gY29uY2VybnMgb2Ygb3VyIHNlbGYuIFdlIGFsc28NCmRpZCBzb21l
+IHJlc2VhcmNoZXMgYW5kIHRyaWVkIG91ciBiZXN0IHRvIG1ha2Ugb3JkZXJpbmdzIHJpZ2h0LiBZ
+ZXMsDQpwY2kgZmluYWwgZml4dXBzIGFyZSBhbiBmc19pbml0Y2FsbCBidXQgSSBkb24ndCB0aGlu
+ayBpdCdzIGEgcHJvYmxlbQ0KY2F1c2Ugd2UgZGlkIG5vdCBjaGFuZ2UgdGhlIHBjaSBpbml0IHBh
+cnQgYWZ0ZXIgdGhpcy4NCg0KLUppYSBIb25ndGFvLg0KDQo+ID4gVGhhbmtzLg0KPiA+IC1KaWEg
+SG9uZ3Rhby4NCj4gPg0KPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZy
+b206IExpbnV4cHBjLWRldiBbbWFpbHRvOmxpbnV4cHBjLWRldi0NCj4gPiA+IGJvdW5jZXMrYjM4
+OTUxPWZyZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIEppYQ0KPiBI
+b25ndGFvLQ0KPiA+ID4gQjM4OTUxDQo+ID4gPiBTZW50OiBXZWRuZXNkYXksIEp1bmUgMjAsIDIw
+MTIgMTA6MzQgQU0NCj4gPiA+IFRvOiBCaHVzaGFuIEJoYXJhdC1SNjU3Nzc7IGxpbnV4cHBjLWRl
+dkBsaXN0cy5vemxhYnMub3JnOw0KPiA+ID4gZ2FsYWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgYmVu
+aEBrZXJuZWwuY3Jhc2hpbmcub3JnDQo+ID4gPiBDYzogV29vZCBTY290dC1CMDc0MjE7IExpIFlh
+bmctUjU4NDcyDQo+ID4gPiBTdWJqZWN0OiBSRTogW1BBVENIIDAvNl0gRGVzY3JpcHRpb24gZm9y
+IFBDSSBwYXRjaGVzIHVzaW5nIHBsYXRmb3JtDQo+ID4gPiBkcml2ZXINCj4gPiA+DQo+ID4gPiBI
+ZWxsbyBCZW4sIEt1bWFyLCBvdGhlcnM6DQo+ID4gPg0KPiA+ID4gVGhpcyBzZXJpZXMgb2YgcGF0
+Y2hlcyBoYWQgYmVlbiBwZW5kaW5nIGZvciBhIGxvbmcgdGltZSBvbiB1cHN0cmVhbS4NCj4gPiA+
+IFdlIGZpeGVkIHNvbWUgaXNzdWVzIHdlIGZvdW5kIGFuZCB0aGVyZSBzdGlsbCBzb21lIGlzc3Vl
+cyBzaG91bGQgYmUNCj4gPiA+IGRpc2N1c3NlZCBsaWtlIHN3aW90bGIgaW5pdCB0aGluZy4gRG8g
+eW91IGhhdmUgdGltZSBmb3IgYSByZXZpZXc/DQo+ID4gPg0KPiA+ID4gVGhhbmtzLg0KPiA+ID4g
+LUppYSBIb25ndGFvLg0KPiA+ID4NCj4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0N
+Cj4gPiA+ID4gRnJvbTogQmh1c2hhbiBCaGFyYXQtUjY1Nzc3DQo+ID4gPiA+IFNlbnQ6IFRodXJz
+ZGF5LCBKdW5lIDE0LCAyMDEyIDU6NTIgUE0NCj4gPiA+ID4gVG86IEppYSBIb25ndGFvLUIzODk1
+MTsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7DQo+ID4gPiA+IGdhbGFrQGtlcm5lbC5j
+cmFzaGluZy5vcmc7IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZw0KPiA+ID4gPiBDYzogTGkgWWFu
+Zy1SNTg0NzI7IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+IFN1YmplY3Q6IFJFOiBbUEFUQ0gg
+MC82XSBEZXNjcmlwdGlvbiBmb3IgUENJIHBhdGNoZXMgdXNpbmcgcGxhdGZvcm0NCj4gPiA+ID4g
+ZHJpdmVyDQo+ID4gPiA+DQo+ID4gPiA+IEhlbGxvIEJlbiwgS3VtYXIsIG90aGVycw0KPiA+ID4g
+Pg0KPiA+ID4gPiBQbGVhc2UgcHJvdmlkZSB5b3VyIGNvbW1lbnRzL3Rob3VnaHRzIG9uIHRoaXMg
+Pw0KPiA+ID4gPg0KPiA+ID4gPiBUaGFua3MNCj4gPiA+ID4gLUJoYXJhdA0KPiA+ID4gPg0KPiA+
+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0t
+LQ0KPiA+ID4gPiA+ID4gPiA+ID4gRnJvbTogSmlhIEhvbmd0YW8tQjM4OTUxDQo+ID4gPiA+ID4g
+PiA+ID4gPiBTZW50OiBGcmlkYXksIEp1bmUgMDgsIDIwMTIgMzoxMiBQTQ0KPiA+ID4gPiA+ID4g
+PiA+ID4gVG86IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOw0KPiBnYWxha0BrZXJuZWwu
+Y3Jhc2hpbmcub3JnDQo+ID4gPiA+ID4gPiA+ID4gPiBDYzogTGkgWWFuZy1SNTg0NzI7IGJlbmhA
+a2VybmVsLmNyYXNoaW5nLm9yZzsgV29vZCBTY290dC0NCj4gPiA+IEIwNzQyMTsNCj4gPiA+ID4g
+PiA+ID4gPiBCaHVzaGFuIEJoYXJhdC0NCj4gPiA+ID4gPiA+ID4gPiA+IFI2NTc3NzsgSmlhIEhv
+bmd0YW8tQjM4OTUxDQo+ID4gPiA+ID4gPiA+ID4gPiBTdWJqZWN0OiBbUEFUQ0ggMC82XSBEZXNj
+cmlwdGlvbiBmb3IgUENJIHBhdGNoZXMgdXNpbmcNCj4gPiA+IHBsYXRmb3JtDQo+ID4gPiA+ID4g
+PiA+ID4gPiBkcml2ZXINCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiBUaGlz
+IHNlcmllcyBvZiBwYXRjaGVzIGFyZSB0byB1bmlmeSBwY2kgaW5pdGlhbGl6YXRpb24NCj4gY29k
+ZQ0KPiA+ID4gYW5kDQo+ID4gPiA+ID4gPiA+ID4gPiBhZGQgUE0NCj4gPiA+ID4gPiA+ID4gPiBz
+dXBwb3J0DQo+ID4gPiA+ID4gPiA+ID4gPiBmb3IgYWxsIDg1eHgvODZ4eCBwb3dlcnBjIGJvYXJk
+cy4gQnV0IHR3byBzaWRlIGVmZmVjdHMNCj4gYXJlDQo+ID4gPiA+ID4gPiA+ID4gPiBpbnRyb2R1
+Y2VkDQo+ID4gPiA+ID4gPiA+ID4gYnkgdGhpcw0KPiA+ID4gPiA+ID4gPiA+ID4gbWVjaGFuaXNt
+IHdoaWNoIGxpc3RlZCBiZWxvdzoNCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4g
+PiAxLiBvZl9wbGF0Zm9ybV9idXNfcHJvYmUoKSB3aWxsIGJlIGNhbGxlZCB0d2ljZSBidXQgaW4N
+Cj4gc29tZQ0KPiA+ID4gPiA+ID4gPiA+ID4gY2FzZXMNCj4gPiA+ID4gPiA+ID4gPiBkdXBsaWNh
+dGlvbg0KPiA+ID4gPiA+ID4gPiA+ID4gICAgd2FybmluZyBvY2N1cmVkLiBXZSBmaXggdGhpcyBp
+biBbUEFUQ0ggNS82XS4NCj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiAyLiBF
+ZGFjIGRyaXZlciBmYWlsZWQgdG8gcmVnaXN0ZXIgcGNpIG5vZGVzIGFzIHBsYXRmb3JtDQo+ID4g
+PiBkZXZpY2VzLg0KPiA+ID4gPiA+ID4gPiA+ID4gV2UgZml4DQo+ID4gPiA+ID4gPiA+ID4gdGhp
+cw0KPiA+ID4gPiA+ID4gPiA+ID4gICAgaW4gW1BBVENIIDYvNl0uDQo+ID4gPiA+ID4gPiA+ID4N
+Cj4gPiA+ID4gPiA+ID4gPiBXaXRoIHRoZXNlIHBhdGNoZXMgd2lsbCBub3QgdGhlIFNXSU9UTEIg
+d2lsbCBub3QgYmUNCj4gaW5pdGlhbGl6ZWQNCj4gPiA+ID4gPiA+ID4gPiBldmVuIGlmIFBDSS9Q
+Q0llIGRlbWFuZGVkPw0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gVGhhbmtzDQo+
+ID4gPiA+ID4gPiA+ID4gLUJoYXJhdA0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+DQo+
+ID4gPiA+ID4gPiA+IFRoZXNlIHBhdGNoZXMgc3RpbGwgaGF2ZSB0aGUgc3dpb3RsYiBpbml0IHBy
+b2JsZW0gaWYNCj4gPiA+ID4gPiA+ICJwcGNfc3dpb3RsYl9lbmFibGUiIGlzDQo+ID4gPiA+ID4g
+PiA+IG9ubHkgZGVtYW5kZWQgYnkgUENJL1BDSWUuIE9uZSBvZiB0aGUgcHVycG9zZXMgb2Ygc2Vu
+ZGluZyBvdXQNCj4gPiA+IHRoZXNlDQo+ID4gPiA+ID4gPiBwYXRjaGVzIGlzDQo+ID4gPiA+ID4g
+PiA+IHRvIGxldCB1cyBzdGFydCBhIGRpc2N1c3Npb24gZm9yIHRoaXMgcHJvYmxlbSBpbiB1cHN0
+cmVhbS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBPaywgSSBkaWQgbm90IGZpbmQgYW55IG1l
+bnRpb24gb2YgdGhhdCwgc28gSSB0aG91Z2h0IHRoYXQgeW91DQo+IGhhdmUNCj4gPiA+ID4gPiA+
+IHJlc29sdmVkIHRoZSBpc3N1ZSBieSBzb21lIG1lYW5zIGluIHRoZXNlIHBhdGNoZXMgd2hpY2gg
+SSBkaWQNCj4gbm90DQo+ID4gPiA+IGNhdGNoLg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IFNv
+LCB0aGVzZSBwYXRjaGVzIGludHJvZHVjZXMgdGhlIGlzc3VlLCB0aGF0IFNXSU9UTEIgd2lsbCBu
+b3QNCj4gYmUNCj4gPiA+ID4gPiA+IGluaXRpYWxpemVkIGlmIHJlcXVlc3RlZCBieSBwY2kvcGNp
+ZS4gVGhlIHJlcXVlc3QgaXMgcmFpc2VkIGJ5DQo+ID4gPiA+IHNldHRpbmcNCj4gPiA+ID4gPiA+
+IHRoZSBmbGFnIHBwY19zd2lvdGxiX2VuYWJsZS4gVGhlIHN3aW90bGJfaW5pdCgpIHdpbGwgYmUg
+Y2FsbGVkDQo+IGluDQo+ID4gPiA+ID4gPiBtZW1faW5pdCgpIGlmIHBwY19zd2lvdGxiX2VuYWJs
+ZSBpcyBzZXQuIE5vdyB3aXRoIHRoZXNlIHBhdGNoZXMsDQo+ID4gPiB0aGUNCj4gPiA+ID4gPiA+
+IHJlcXVlc3QgaXMgcmFpc2VkIGFmdGVyIG1lbV9pbml0KCkgaXMgY2FsbGVkLiBTbyByZXF1ZXN0
+IG5vdA0KPiA+ID4gPiBoYW5kbGVkIDopLg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+IEZvbGxv
+d2luZyBhcmUgdGhlIHNvbHV0aW9ucyB3ZSBoYXZlIHRob3VnaHQgb2YgZHVyaW5nIG91cg0KPiBp
+bnRlcm5hbA0KPiA+ID4gPiA+ID4gZGlzY3Vzc2lvbnMgKGlmIEkgZGlkIG5vdCBtaXNzZWQgYW55
+KToNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiAxLiBUaGVzZSBwYXRjaGVzIG1vdmUgdGhlIGNv
+ZGUgZnJvbSBwbGF0Zm9ybSBpbml0IHRvIGRldmljZQ0KPiBpbml0DQo+ID4gPiA+ID4gPiAoYXJj
+aF9pbml0Y2FsbCgpKS4gUmF0aGVyIHRoYW4gbW92aW5nIHRoZSB3aG9sZSBjb2RlLCBsZXQgdXMN
+Cj4gZGl2aWRlDQo+ID4gPiA+ID4gPiB0aGUgY29kZSBpbnRvIHR3by4gRmlyc3QsIHdoaWNoIGlz
+IG5lZWRlZCB0byByYWlzZSB0aGUgc3dpb3RsYg0KPiBpbml0DQo+ID4gPiA+ID4gPiByZXF1ZXN0
+IGFuZCBzZWNvbmQgdGhlIHJlc3QuIERlZmluZSB0aGlzIGZpcnN0IGFzIGFuIGZ1bmN0aW9uDQo+
+IGluDQo+ID4gPiA+ID4gPiBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9wY2kuYyBhbmQgY2FsbCB0
+aGlzIGZyb20gcGxhdGZvcm0gaW5pdA0KPiBjb2RlDQo+ID4gPiA+IG9mDQo+ID4gPiA+ID4gPiB0
+aGUgU09Dcy4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiAyLiBBbGwga25vd24gZGV2aWNlcywg
+dGhlIGxvd2VzdCBQQ0llIG91dGJvdW5kIHJhbmdlIHN0YXJ0cyBhdA0KPiA+ID4gPiA+ID4gMHg4
+MDAwMDAwMCwgYnV0IHRoZXJlJ3Mgbm90aGluZyBhYm92ZSAweGMwMDAwMDAwLiBTbyB0aGUNCj4g
+aW5ib3VuZCBvZg0KPiA+ID4gPiA+ID4gc2l6ZSAweDgwMDBfMDAwMCBpcyBhbHdheXMgYXZhaWxi
+ZSBvbiBhbGwgZGV2aWNlcy4gSGFyZGNvZGUgdGhlDQo+ID4gPiBjaGVjaw0KPiA+ID4gPiA+ID4g
+aW4gcGxhdGZvcm0gY29kZSB0byBjaGVjayBtZW1ibG9ja19lbmRfb2ZfRFJBTSgpIHRvIDB4ODAw
+MDAwMDAuDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gU29tZXRoaW5nIGxpa2UgdGhpczoNCj4g
+PiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jt
+cy84NXh4L2NvcmVuZXRfZHMuYw0KPiA+ID4gPiA+ID4gYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1z
+Lzg1eHgvY29yZW5ldF9kcy5jDQo+ID4gPiA+ID4gPiBpbmRleCAxZjcwMjhlLi5lZjRlMjE1IDEw
+MDY0NA0KPiA+ID4gPiA+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L2NvcmVu
+ZXRfZHMuYw0KPiA+ID4gPiA+ID4gKysrIGIvYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L2Nv
+cmVuZXRfZHMuYw0KPiA+ID4gPiA+ID4gQEAgLTc5LDcgKzc5LDcgQEAgdm9pZCBfX2luaXQgY29y
+ZW5ldF9kc19zZXR1cF9hcmNoKHZvaWQpDQo+ICNlbmRpZg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4g
+PiA+ICNpZmRlZiBDT05GSUdfU1dJT1RMQg0KPiA+ID4gPiA+ID4gLSAgICAgICBpZiAobWVtYmxv
+Y2tfZW5kX29mX0RSQU0oKSA+IDB4ZmZmZmZmZmYpDQo+ID4gPiA+ID4gPiArICAgICAgIGlmICht
+ZW1ibG9ja19lbmRfb2ZfRFJBTSgpID4gMHhmZjAwMDAwMCkNCj4gPiA+ID4gPiA+ICAgICAgICAg
+ICAgICAgICAgcHBjX3N3aW90bGJfZW5hYmxlID0gMTsgICNlbmRpZg0KPiA+ID4gPiA+ID4gICAg
+ICAgICAgcHJfaW5mbygiJXMgYm9hcmQgZnJvbSBGcmVlc2NhbGUgU2VtaWNvbmR1Y3RvclxuIiwN
+Cj4gPiA+ID4gPiA+IHBwY19tZC5uYW1lKTsNCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiAtLS0t
+LS0tLS0tLS0tDQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gMy4gQWx3YXlzIGRvIHN3aW90bGJf
+aW5pdCgpIGluIG1lbV9pbml0KCkgYW5kIGxhdGVyIGFmdGVyIFBDSQ0KPiBpbml0LA0KPiA+ID4g
+PiBpZg0KPiA+ID4gPiA+ID4gdGhlIHN3aW90bGIgaXMgbm90IG5lZWRlZCB0aGVuIGZyZWUgaXQg
+KHN3aW90bGJfZnJlZSgpKS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA0LiBldGMsIHBsZWFz
+ZSBwcm92aWRlIHNvbWUgb3RoZXIgYmV0dGVyIHdheS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
+PiBUaGFua3MNCj4gPiA+ID4gPiA+IC1CaGFyYXQNCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFRoYW5r
+cy4NCj4gPiA+ID4gPiBJbiBteSBwb2ludCBvZiB2aWV3IHRoZSAybmQgc29sdXRpb24gaXMgYmV0
+dGVyIGZvciBpdCBkb2VzIG5vdA0KPiB0cmVhdA0KPiA+ID4gPiBQQ0kvUENJZSBhcw0KPiA+ID4g
+PiA+IHRoZSBzcGVjaWFsIGtpbmQgb2YgZGV2aWNlcyBmcm9tIG90aGVycy4NCj4gPiA+ID4gPg0K
+PiA+ID4gPiA+IC1KaWEgSG9uZ3Rhby4NCj4gPiA+DQo+ID4gPiBfX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KPiA+ID4gTGludXhwcGMtZGV2IG1haWxpbmcg
+bGlzdA0KPiA+ID4gTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiA+IGh0dHBzOi8v
+bGlzdHMub3psYWJzLm9yZy9saXN0aW5mby9saW51eHBwYy1kZXYNCj4gPg0KPiANCj4gDQoNCg==
