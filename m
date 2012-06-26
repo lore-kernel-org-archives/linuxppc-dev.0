@@ -1,25 +1,25 @@
-Return-Path: <msteckly@ixiacom.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 898051007D2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 01:21:12 +1000 (EST)
-Received: from mail42-tx2 (localhost [127.0.0.1])	by mail42-tx2-R.bigfish.com
- (Postfix) with ESMTP id 0746E4E0487	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,
- 26 Jun 2012 15:19:27 +0000 (UTC)
-Received: from TX2EHSMHS039.bigfish.com (unknown [10.9.14.254])	by
- mail42-tx2.bigfish.com (Postfix) with ESMTP id 7E299202E5	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Jun 2012 15:19:24 +0000 (UTC)
-Message-ID: <4FE9D35C.7050701@ixiacom.com>
-Date: Tue, 26 Jun 2012 11:21:00 -0400
-From: Michael Steckly <msteckly@ixiacom.com>
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from mail-pz0-f42.google.com (mail-pz0-f42.google.com
+ [209.85.210.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3E9C6B6FBE
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 04:29:06 +1000 (EST)
+Received: by dalf4 with SMTP id f4so217368dal.15
+ for <linuxppc-dev@ozlabs.org>; Tue, 26 Jun 2012 11:29:04 -0700 (PDT)
 MIME-Version: 1.0
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: Help with Freescale DPAA bug
-Content-Type: text/plain; charset="ISO-8859-1"
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <20120626003020.GA6307@shangw>
+References: <1340593821-19011-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <CAE9FiQUE0_niTRmvZ=ROSFKB4HKDFFLjfJC+QeQkTKLMyvxv4g@mail.gmail.com>
+ <20120626003020.GA6307@shangw>
+Date: Tue, 26 Jun 2012 11:29:04 -0700
+Message-ID: <CAE9FiQWcZTCsdGQmHO6rwL-U07LVH6F0psWQqApzv1mbNg_j4A@mail.gmail.com>
+Subject: Re: [PATCH V3 1/2] PCI: retrieve host bridge by PCI bus
+From: Yinghai Lu <yinghai@kernel.org>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Content-Type: multipart/mixed; boundary=047d7b339cc1f0a6b404c3644519
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,87 +29,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm hoping someone here can help me.  Several levels of Freescale
-management have assured me that I am authorized to discuss their Linux
-code on public lists--and even explicitly suggested the ozlabs
-linuxppc-dev list.
+--047d7b339cc1f0a6b404c3644519
+Content-Type: text/plain; charset=ISO-8859-1
 
-I'm using the P4080 processor and the Freescale SDK on a custom board. 
-We've had some stability issues so I've turned on some debugging in the
-DPAA (CONFIG_FSL_DPA_CHECKING) and when I enable multiple cores, the
-system panics with the message:
+On Mon, Jun 25, 2012 at 5:30 PM, Gavin Shan <shangw@linux.vnet.ibm.com> wrote:
+> Yeah, I think your patch meets the requirement: access "struct pci_host_bridge",
+> and when will you merge your patch into mainline?
 
-Parallel attempts to enter bman_released() detected.
-Kernel panic - not syncing: only one instance of bman_released/acquired
-allowed
-Call Trace:
-[ede35de0] [c000812c] show_stack+0x44/0x154 (unreliable)
-[ede35e20] [c0419e28] panic+0xa4/0x1d0
-[ede35e70] [c0301324] bman_release+0x614/0x854
-[ede35ed0] [c02e4dbc] dpa_bp_add_8+0xe0/0x1b4
-[ede35f40] [c02e6eb0] dpaa_eth_poll+0x8c/0x98
-[ede35f60] [c0329fd4] net_rx_action+0xc0/0x178
-[ede35fa0] [c0032f78] __do_softirq+0xe8/0x174
-[ede35ff0] [c000d7fc] call_do_softirq+0x14/0x24
-[e90a9e80] [c00047fc] do_softirq+0x98/0xc4
-[e90a9ea0] [c003328c] irq_exit+0x60/0x70
-[e90a9eb0] [c00044ec] do_IRQ+0x94/0x188
-[e90a9ee0] [c000f29c] ret_from_except+0x0/0x18
-Parallel attempts to enter bman_released() detected.
---- Exception: 501 at cpu_idle+0x88/0xd8
-    LR = cpu_idle+0x88/0xd8
-Kernel panic - not syncing: only one instance of bman_released/acquired
-allowed
-[e90a9fa0] [c0008bb4] cpu_idle+0xd4/0xd8Call Trace:
- (unreliable)[ede1dde0] [c000812c] show_stack+0x44/0x154
- (unreliable)[e90a9fc0] [c041c5b8] start_secondary+0x2b8/0x2bc
+not sure.
 
-[ede1de20] [c0419e28] panic+0xa4/0x1d0[e90a9ff0] [c0001e7c]
-__secondary_start+0x30/0x84
+but i extract that patch as attached.
+and with that could make your first patch only make find_pci_host_bridge()
+global.
 
-[ede1de70] [c0301324] bman_release+0x614/0x854
-[ede1ded0] [c02e4dbc] dpa_bp_add_8+0xe0/0x1b4
-Rebooting in 180 seconds...
+>
+> By the way, could you please take your a litle bit time to review [PATCH 2/2]?
+>
 
-It's fairly easy to reproduce.  I just run 'watch -n1 ping -c64 -l64
-<ip-on-same-subnet>' and leave it run for less than 30 seconds.
+ok, will look at that.
 
-I've consulted Freescale on this, but their suggestion was to turn the
-debugging option off.  While this will prevent the kernel panic, it will
-not prevent multiple threads from entering the critical section at the
-same time--which, according to their own code, is bad.
+Thanks
 
-As far as I can tell, disabling the debug option will just turn an
-explicit panic into a mysterious instability with the system that will
-probably result in ethernet related issues.
+Yinghai
 
-I've configured the DPAA options like this:
+--047d7b339cc1f0a6b404c3644519
+Content-Type: application/octet-stream;
+	name="pcibus_addr_converting_bus.patch"
+Content-Disposition: attachment; filename="pcibus_addr_converting_bus.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_h3xb4yzi0
 
-> egrep -i '(bman|dpa)' .config
-CONFIG_HAS_FSL_QBMAN=y
-# CONFIG_FSL_USDPAA_SHMEM is not set
-CONFIG_DPA=y
-CONFIG_DPA_OFFLINE_PORTS=y
-CONFIG_DPA_MAX_FRM_SIZE=1522
-CONFIG_FSL_DPA_1588=m
-# CONFIG_DPAA_ETH_UNIT_TESTS is not set
-CONFIG_FSL_DPA=y
-# Freescale Datapath QMan/BMan options
-CONFIG_FSL_DPA_CHECKING=y
-CONFIG_FSL_DPA_HAVE_IRQ=y
-CONFIG_FSL_DPA_CAN_WAIT=y
-CONFIG_FSL_DPA_CAN_WAIT_SYNC=y
-CONFIG_FSL_DPA_PIRQ_FAST=y
-CONFIG_FSL_DPA_PIRQ_SLOW=y
-CONFIG_FSL_DPA_PORTAL_SHARE=y
-CONFIG_FSL_BMAN=y
-CONFIG_FSL_BMAN_PORTAL=y
-CONFIG_FSL_BMAN_CONFIG=y
-# CONFIG_FSL_BMAN_TEST is not set
-CONFIG_FSL_QMAN_CI_SCHED_CFG_BMAN_W=2
-
-Does anyone have any additional info/suggestions on this?
-
-Any help would be much appreciated.  Thanks in advance.
-
-Mike
+U3ViamVjdDogW1BBVENIXSBQQ0k6IHBjaWJ1cyBhZGRyZXNzIHRvIHJlc291cmNlIGNvbnZlcnRp
+bmcgdGFrZSBidXMgZGlyZWN0bHkKCkZvciBhbGxvY2F0aW5nIHJlc291cmNlIHVuZGVyIGJ1cyBw
+YXRoLCB3ZSBkbyBoYXZlIGRldiBwYXNzIGFsb25nLCBhbmQgd2UKY291bGQganVzdCB1c2UgYnVz
+IGluc3RlYWQuCgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+
+CgotLS0KIGRyaXZlcnMvcGNpL2hvc3QtYnJpZGdlLmMgfCAgIDM0ICsrKysrKysrKysrKysrKysr
+KysrKy0tLS0tLS0tLS0tLS0KIGluY2x1ZGUvbGludXgvcGNpLmggICAgICAgfCAgICAzICsrKwog
+MiBmaWxlcyBjaGFuZ2VkLCAyNCBpbnNlcnRpb25zKCspLCAxMyBkZWxldGlvbnMoLSkKCkluZGV4
+OiBsaW51eC0yLjYvZHJpdmVycy9wY2kvaG9zdC1icmlkZ2UuYwo9PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci0tLSBsaW51
+eC0yLjYub3JpZy9kcml2ZXJzL3BjaS9ob3N0LWJyaWRnZS5jCisrKyBsaW51eC0yLjYvZHJpdmVy
+cy9wY2kvaG9zdC1icmlkZ2UuYwpAQCAtOSwyMiArOSwxOSBAQAogCiAjaW5jbHVkZSAicGNpLmgi
+CiAKLXN0YXRpYyBzdHJ1Y3QgcGNpX2J1cyAqZmluZF9wY2lfcm9vdF9idXMoc3RydWN0IHBjaV9k
+ZXYgKmRldikKK3N0YXRpYyBzdHJ1Y3QgcGNpX2J1cyAqZmluZF9wY2lfcm9vdF9idXMoc3RydWN0
+IHBjaV9idXMgKmJ1cykKIHsKLQlzdHJ1Y3QgcGNpX2J1cyAqYnVzOwotCi0JYnVzID0gZGV2LT5i
+dXM7CiAJd2hpbGUgKGJ1cy0+cGFyZW50KQogCQlidXMgPSBidXMtPnBhcmVudDsKIAogCXJldHVy
+biBidXM7CiB9CiAKLXN0YXRpYyBzdHJ1Y3QgcGNpX2hvc3RfYnJpZGdlICpmaW5kX3BjaV9ob3N0
+X2JyaWRnZShzdHJ1Y3QgcGNpX2RldiAqZGV2KQorc3RhdGljIHN0cnVjdCBwY2lfaG9zdF9icmlk
+Z2UgKmZpbmRfcGNpX2hvc3RfYnJpZGdlKHN0cnVjdCBwY2lfYnVzICpidXMpCiB7Ci0Jc3RydWN0
+IHBjaV9idXMgKmJ1cyA9IGZpbmRfcGNpX3Jvb3RfYnVzKGRldik7CisJc3RydWN0IHBjaV9idXMg
+KnJvb3RfYnVzID0gZmluZF9wY2lfcm9vdF9idXMoYnVzKTsKIAotCXJldHVybiB0b19wY2lfaG9z
+dF9icmlkZ2UoYnVzLT5icmlkZ2UpOworCXJldHVybiB0b19wY2lfaG9zdF9icmlkZ2Uocm9vdF9i
+dXMtPmJyaWRnZSk7CiB9CiAKIHZvaWQgcGNpX3NldF9ob3N0X2JyaWRnZV9yZWxlYXNlKHN0cnVj
+dCBwY2lfaG9zdF9icmlkZ2UgKmJyaWRnZSwKQEAgLTQwLDEwICszNywxMSBAQCBzdGF0aWMgYm9v
+bCByZXNvdXJjZV9jb250YWlucyhzdHJ1Y3QgcmVzCiAJcmV0dXJuIHJlczEtPnN0YXJ0IDw9IHJl
+czItPnN0YXJ0ICYmIHJlczEtPmVuZCA+PSByZXMyLT5lbmQ7CiB9CiAKLXZvaWQgcGNpYmlvc19y
+ZXNvdXJjZV90b19idXMoc3RydWN0IHBjaV9kZXYgKmRldiwgc3RydWN0IHBjaV9idXNfcmVnaW9u
+ICpyZWdpb24sCi0JCQkgICAgIHN0cnVjdCByZXNvdXJjZSAqcmVzKQordm9pZCBfX3BjaWJpb3Nf
+cmVzb3VyY2VfdG9fYnVzKHN0cnVjdCBwY2lfYnVzICpidXMsCisJCQkJICAgICAgc3RydWN0IHBj
+aV9idXNfcmVnaW9uICpyZWdpb24sCisJCQkJICAgICAgc3RydWN0IHJlc291cmNlICpyZXMpCiB7
+Ci0Jc3RydWN0IHBjaV9ob3N0X2JyaWRnZSAqYnJpZGdlID0gZmluZF9wY2lfaG9zdF9icmlkZ2Uo
+ZGV2KTsKKwlzdHJ1Y3QgcGNpX2hvc3RfYnJpZGdlICpicmlkZ2UgPSBmaW5kX3BjaV9ob3N0X2Jy
+aWRnZShidXMpOwogCXN0cnVjdCBwY2lfaG9zdF9icmlkZ2Vfd2luZG93ICp3aW5kb3c7CiAJcmVz
+b3VyY2Vfc2l6ZV90IG9mZnNldCA9IDA7CiAKQEAgLTYwLDYgKzU4LDExIEBAIHZvaWQgcGNpYmlv
+c19yZXNvdXJjZV90b19idXMoc3RydWN0IHBjaV8KIAlyZWdpb24tPnN0YXJ0ID0gcmVzLT5zdGFy
+dCAtIG9mZnNldDsKIAlyZWdpb24tPmVuZCA9IHJlcy0+ZW5kIC0gb2Zmc2V0OwogfQordm9pZCBw
+Y2liaW9zX3Jlc291cmNlX3RvX2J1cyhzdHJ1Y3QgcGNpX2RldiAqZGV2LCBzdHJ1Y3QgcGNpX2J1
+c19yZWdpb24gKnJlZ2lvbiwKKwkJCSAgICAgc3RydWN0IHJlc291cmNlICpyZXMpCit7CisJX19w
+Y2liaW9zX3Jlc291cmNlX3RvX2J1cyhkZXYtPmJ1cywgcmVnaW9uLCByZXMpOworfQogRVhQT1JU
+X1NZTUJPTChwY2liaW9zX3Jlc291cmNlX3RvX2J1cyk7CiAKIHN0YXRpYyBib29sIHJlZ2lvbl9j
+b250YWlucyhzdHJ1Y3QgcGNpX2J1c19yZWdpb24gKnJlZ2lvbjEsCkBAIC02OCwxMCArNzEsMTAg
+QEAgc3RhdGljIGJvb2wgcmVnaW9uX2NvbnRhaW5zKHN0cnVjdCBwY2lfYgogCXJldHVybiByZWdp
+b24xLT5zdGFydCA8PSByZWdpb24yLT5zdGFydCAmJiByZWdpb24xLT5lbmQgPj0gcmVnaW9uMi0+
+ZW5kOwogfQogCi12b2lkIHBjaWJpb3NfYnVzX3RvX3Jlc291cmNlKHN0cnVjdCBwY2lfZGV2ICpk
+ZXYsIHN0cnVjdCByZXNvdXJjZSAqcmVzLAotCQkJICAgICBzdHJ1Y3QgcGNpX2J1c19yZWdpb24g
+KnJlZ2lvbikKK3N0YXRpYyB2b2lkIF9fcGNpYmlvc19idXNfdG9fcmVzb3VyY2Uoc3RydWN0IHBj
+aV9idXMgKmJ1cywgc3RydWN0IHJlc291cmNlICpyZXMsCisJCQkJICAgICAgc3RydWN0IHBjaV9i
+dXNfcmVnaW9uICpyZWdpb24pCiB7Ci0Jc3RydWN0IHBjaV9ob3N0X2JyaWRnZSAqYnJpZGdlID0g
+ZmluZF9wY2lfaG9zdF9icmlkZ2UoZGV2KTsKKwlzdHJ1Y3QgcGNpX2hvc3RfYnJpZGdlICpicmlk
+Z2UgPSBmaW5kX3BjaV9ob3N0X2JyaWRnZShidXMpOwogCXN0cnVjdCBwY2lfaG9zdF9icmlkZ2Vf
+d2luZG93ICp3aW5kb3c7CiAJcmVzb3VyY2Vfc2l6ZV90IG9mZnNldCA9IDA7CiAKQEAgLTkzLDQg
+Kzk2LDkgQEAgdm9pZCBwY2liaW9zX2J1c190b19yZXNvdXJjZShzdHJ1Y3QgcGNpXwogCXJlcy0+
+c3RhcnQgPSByZWdpb24tPnN0YXJ0ICsgb2Zmc2V0OwogCXJlcy0+ZW5kID0gcmVnaW9uLT5lbmQg
+KyBvZmZzZXQ7CiB9Cit2b2lkIHBjaWJpb3NfYnVzX3RvX3Jlc291cmNlKHN0cnVjdCBwY2lfZGV2
+ICpkZXYsIHN0cnVjdCByZXNvdXJjZSAqcmVzLAorCQkJICAgICBzdHJ1Y3QgcGNpX2J1c19yZWdp
+b24gKnJlZ2lvbikKK3sKKwlfX3BjaWJpb3NfYnVzX3RvX3Jlc291cmNlKGRldi0+YnVzLCByZXMs
+IHJlZ2lvbik7Cit9CiBFWFBPUlRfU1lNQk9MKHBjaWJpb3NfYnVzX3RvX3Jlc291cmNlKTsKSW5k
+ZXg6IGxpbnV4LTIuNi9pbmNsdWRlL2xpbnV4L3BjaS5oCj09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KLS0tIGxpbnV4LTIu
+Ni5vcmlnL2luY2x1ZGUvbGludXgvcGNpLmgKKysrIGxpbnV4LTIuNi9pbmNsdWRlL2xpbnV4L3Bj
+aS5oCkBAIC02ODYsNiArNjg2LDkgQEAgdm9pZCBwY2lfZml4dXBfY2FyZGJ1cyhzdHJ1Y3QgcGNp
+X2J1cyAqKQogCiAvKiBHZW5lcmljIFBDSSBmdW5jdGlvbnMgdXNlZCBpbnRlcm5hbGx5ICovCiAK
+K3ZvaWQgX19wY2liaW9zX3Jlc291cmNlX3RvX2J1cyhzdHJ1Y3QgcGNpX2J1cyAqYnVzLAorCQkJ
+ICAgICAgIHN0cnVjdCBwY2lfYnVzX3JlZ2lvbiAqcmVnaW9uLAorCQkJICAgICAgIHN0cnVjdCBy
+ZXNvdXJjZSAqcmVzKTsKIHZvaWQgcGNpYmlvc19yZXNvdXJjZV90b19idXMoc3RydWN0IHBjaV9k
+ZXYgKmRldiwgc3RydWN0IHBjaV9idXNfcmVnaW9uICpyZWdpb24sCiAJCQkgICAgIHN0cnVjdCBy
+ZXNvdXJjZSAqcmVzKTsKIHZvaWQgcGNpYmlvc19idXNfdG9fcmVzb3VyY2Uoc3RydWN0IHBjaV9k
+ZXYgKmRldiwgc3RydWN0IHJlc291cmNlICpyZXMsCg==
+--047d7b339cc1f0a6b404c3644519--
