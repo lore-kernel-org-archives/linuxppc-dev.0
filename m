@@ -1,33 +1,23 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 54C15B6F86
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 03:38:36 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 27 Jun 2012 11:38:33 -0600
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id DACCDC93A51
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 12:02:06 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5RG28l3145704
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 12:02:08 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5RG27en010687
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 13:02:08 -0300
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 12/21] ppc/eeh: trace error based on PE from beginning
-Date: Thu, 28 Jun 2012 00:01:42 +0800
-Message-Id: <1340812911-6793-13-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1340812911-6793-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1340812911-6793-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-lb0-f170.google.com (mail-lb0-f170.google.com
+ [209.85.217.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 022581007D4
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 04:15:42 +1000 (EST)
+Received: by lbgc1 with SMTP id c1so1769250lbg.15
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 11:15:39 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1340808525-24996-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1340808525-24996-1-git-send-email-shangw@linux.vnet.ibm.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 27 Jun 2012 12:15:17 -0600
+Message-ID: <CAErSpo4u6HKdVqaaiL5=GSWRXiVfyfJ7EsnkAwGz6KvKrqaM=w@mail.gmail.com>
+Subject: Re: [PATCH V4 1/2] PCI: pcibus address to resource converting take
+ bus directly
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-pci@vger.kernel.org, yinghai@kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,176 +27,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There're 2 conditions to trigger EEH error detection: invalid value
-returned from reading I/O or config space. On each case, the function
-eeh_dn_check_failure will be called to initialize EEH event and put
-it into the poll for further processing.
+On Wed, Jun 27, 2012 at 8:48 AM, Gavin Shan <shangw@linux.vnet.ibm.com> wro=
+te:
+> For allocating resource under bus path, we do have dev pass along,
+> and we could just use bus instead. Also, we'd like to make function
+> find_pci_host_bridge() global so that some platforms (e.g. PPC) can
+> access the pci host bridge directly.
 
-The patch changes the function for a little bit so that the EEH error
-will be traced based on PE instead of EEH device any more. Also, the
-function eeh_find_device_pe() has been removed since the eeh device
-is tracing the PE by struct eeh_dev::pe.
+This patch appears to have multiple unrelated changes:
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/ppc-pci.h   |    1 -
- arch/powerpc/platforms/pseries/eeh.c |   51 +++++++++++++---------------------
- arch/powerpc/platforms/pseries/msi.c |    6 +++-
- 3 files changed, 25 insertions(+), 33 deletions(-)
+  - change "struct pci_bus *bus" to "struct pci_bus *root_bus"
+  - change find_pci_host_bridge() argument from dev to bus
+  - fiddle with pcibios_bus_to_resource() and pcibios_resource_to_bus()
 
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index c7e5bd6..3e301b1 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -59,7 +59,6 @@ int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
- int rtas_read_config(struct pci_dn *, int where, int size, u32 *val);
- void eeh_pe_state_mark(struct eeh_pe *pe, int state);
- void eeh_pe_state_clear(struct eeh_pe *pe, int state);
--struct device_node *eeh_find_device_pe(struct device_node *dn);
- 
- void eeh_sysfs_add_device(struct pci_dev *pdev);
- void eeh_sysfs_remove_device(struct pci_dev *pdev);
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index c527c46..341ba1a 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -264,21 +264,6 @@ static inline unsigned long eeh_token_to_phys(unsigned long token)
- }
- 
- /**
-- * eeh_find_device_pe - Retrieve the PE for the given device
-- * @dn: device node
-- *
-- * Return the PE under which this device lies
-- */
--struct device_node *eeh_find_device_pe(struct device_node *dn)
--{
--	while (dn->parent && of_node_to_eeh_dev(dn->parent) &&
--	       (of_node_to_eeh_dev(dn->parent)->mode & EEH_MODE_SUPPORTED)) {
--		dn = dn->parent;
--	}
--	return dn;
--}
--
--/**
-  * eeh_dn_check_failure - Check if all 1's data is due to EEH slot freeze
-  * @dn: device node
-  * @dev: pci device, if known
-@@ -297,6 +282,7 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- {
- 	int ret;
- 	unsigned long flags;
-+	struct eeh_pe *pe;
- 	struct eeh_dev *edev;
- 	int rc = 0;
- 	const char *location;
-@@ -306,23 +292,26 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	if (!eeh_subsystem_enabled)
- 		return 0;
- 
--	if (!dn) {
-+	if (dn) {
-+		edev = of_node_to_eeh_dev(dn);
-+	} else if (dev) {
-+		edev = pci_dev_to_eeh_dev(dev);
-+		dn = pci_device_to_OF_node(dev);
-+	} else {
- 		eeh_stats.no_dn++;
- 		return 0;
- 	}
--	dn = eeh_find_device_pe(dn);
--	edev = of_node_to_eeh_dev(dn);
-+	pe = edev->pe;
- 
- 	/* Access to IO BARs might get this far and still not want checking. */
--	if (!(edev->mode & EEH_MODE_SUPPORTED) ||
--	    edev->mode & EEH_MODE_NOCHECK) {
-+	if (!pe) {
- 		eeh_stats.ignored_check++;
--		pr_debug("EEH: Ignored check (%x) for %s %s\n",
--			edev->mode, eeh_pci_name(dev), dn->full_name);
-+		pr_debug("EEH: Ignored check for %s %s\n",
-+			eeh_pci_name(dev), dn->full_name);
- 		return 0;
- 	}
- 
--	if (!edev->config_addr && !edev->pe_config_addr) {
-+	if (!pe->addr && !pe->config_addr) {
- 		eeh_stats.no_cfg_addr++;
- 		return 0;
- 	}
-@@ -335,13 +324,13 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	 */
- 	raw_spin_lock_irqsave(&confirm_error_lock, flags);
- 	rc = 1;
--	if (edev->mode & EEH_MODE_ISOLATED) {
--		edev->check_count++;
--		if (edev->check_count % EEH_MAX_FAILS == 0) {
-+	if (pe->state & EEH_PE_ISOLATED) {
-+		pe->check_count++;
-+		if (pe->check_count % EEH_MAX_FAILS == 0) {
- 			location = of_get_property(dn, "ibm,loc-code", NULL);
- 			printk(KERN_ERR "EEH: %d reads ignored for recovering device at "
- 				"location=%s driver=%s pci addr=%s\n",
--				edev->check_count, location,
-+				pe->check_count, location,
- 				eeh_driver_name(dev), eeh_pci_name(dev));
- 			printk(KERN_ERR "EEH: Might be infinite loop in %s driver\n",
- 				eeh_driver_name(dev));
-@@ -357,7 +346,7 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	 * function zero of a multi-function device.
- 	 * In any case they must share a common PHB.
- 	 */
--	ret = eeh_ops->get_state(dn, NULL);
-+	ret = eeh_ops->get_state(pe, NULL);
- 
- 	/* Note that config-io to empty slots may fail;
- 	 * they are empty when they don't have children.
-@@ -370,7 +359,7 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
- 	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
- 		eeh_stats.false_positives++;
--		edev->false_positives ++;
-+		pe->false_positives++;
- 		rc = 0;
- 		goto dn_unlock;
- 	}
-@@ -381,10 +370,10 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	 * with other functions on this device, and functions under
- 	 * bridges.
- 	 */
--	eeh_mark_slot(dn, EEH_MODE_ISOLATED);
-+	eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
- 	raw_spin_unlock_irqrestore(&confirm_error_lock, flags);
- 
--	eeh_send_failure_event(edev);
-+	eeh_send_failure_event(pe);
- 
- 	/* Most EEH events are due to device driver bugs.  Having
- 	 * a stack trace will help the device-driver authors figure
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-index 109fdb7..c8534fa 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -210,6 +210,7 @@ static struct device_node *find_pe_total_msi(struct pci_dev *dev, int *total)
- static struct device_node *find_pe_dn(struct pci_dev *dev, int *total)
- {
- 	struct device_node *dn;
-+	struct eeh_dev *edev;
- 
- 	/* Found our PE and assume 8 at that point. */
- 
-@@ -217,7 +218,10 @@ static struct device_node *find_pe_dn(struct pci_dev *dev, int *total)
- 	if (!dn)
- 		return NULL;
- 
--	dn = eeh_find_device_pe(dn);
-+	/* Get the top level device in the PE */
-+	edev = of_node_to_eeh_dev(dn);
-+	edev = list_first_entry(&edev->pe->edevs, struct eeh_dev, list);
-+	dn = eeh_dev_to_of_node(edev);
- 	if (!dn)
- 		return NULL;
- 
--- 
-1.7.9.5
+These should be split out to make your patches easier to review.
+
+What's the rationale for preferring the pci_bus over the pci_dev?
+
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> ---
+> =A0drivers/pci/host-bridge.c | =A0 34 +++++++++++++++++++++-------------
+> =A0include/linux/pci.h =A0 =A0 =A0 | =A0 =A04 ++++
+> =A02 files changed, 25 insertions(+), 13 deletions(-)
+>
+> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
+> index a68dc61..4ccf477 100644
+> --- a/drivers/pci/host-bridge.c
+> +++ b/drivers/pci/host-bridge.c
+> @@ -9,22 +9,19 @@
+>
+> =A0#include "pci.h"
+>
+> -static struct pci_bus *find_pci_root_bus(struct pci_dev *dev)
+> +static struct pci_bus *find_pci_root_bus(struct pci_bus *bus)
+> =A0{
+> - =A0 =A0 =A0 struct pci_bus *bus;
+> -
+> - =A0 =A0 =A0 bus =3D dev->bus;
+> =A0 =A0 =A0 =A0while (bus->parent)
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0bus =3D bus->parent;
+>
+> =A0 =A0 =A0 =A0return bus;
+> =A0}
+>
+> -static struct pci_host_bridge *find_pci_host_bridge(struct pci_dev *dev)
+> +struct pci_host_bridge *find_pci_host_bridge(struct pci_bus *bus)
+> =A0{
+> - =A0 =A0 =A0 struct pci_bus *bus =3D find_pci_root_bus(dev);
+> + =A0 =A0 =A0 struct pci_bus *root_bus =3D find_pci_root_bus(bus);
+>
+> - =A0 =A0 =A0 return to_pci_host_bridge(bus->bridge);
+> + =A0 =A0 =A0 return to_pci_host_bridge(root_bus->bridge);
+> =A0}
+>
+> =A0void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
+> @@ -40,10 +37,11 @@ static bool resource_contains(struct resource *res1, =
+struct resource *res2)
+> =A0 =A0 =A0 =A0return res1->start <=3D res2->start && res1->end >=3D res2=
+->end;
+> =A0}
+>
+> -void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region =
+*region,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct resource =
+*res)
+> +void __pcibios_resource_to_bus(struct pci_bus *bus,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ struct pci_bus_region *region,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ struct resource *res)
+> =A0{
+> - =A0 =A0 =A0 struct pci_host_bridge *bridge =3D find_pci_host_bridge(dev=
+);
+> + =A0 =A0 =A0 struct pci_host_bridge *bridge =3D find_pci_host_bridge(bus=
+);
+> =A0 =A0 =A0 =A0struct pci_host_bridge_window *window;
+> =A0 =A0 =A0 =A0resource_size_t offset =3D 0;
+>
+> @@ -60,6 +58,11 @@ void pcibios_resource_to_bus(struct pci_dev *dev, stru=
+ct pci_bus_region *region,
+> =A0 =A0 =A0 =A0region->start =3D res->start - offset;
+> =A0 =A0 =A0 =A0region->end =3D res->end - offset;
+> =A0}
+> +void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region =
+*region,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct resource =
+*res)
+> +{
+> + =A0 =A0 =A0 __pcibios_resource_to_bus(dev->bus, region, res);
+> +}
+> =A0EXPORT_SYMBOL(pcibios_resource_to_bus);
+>
+> =A0static bool region_contains(struct pci_bus_region *region1,
+> @@ -68,10 +71,10 @@ static bool region_contains(struct pci_bus_region *re=
+gion1,
+> =A0 =A0 =A0 =A0return region1->start <=3D region2->start && region1->end =
+>=3D region2->end;
+> =A0}
+>
+> -void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct pci_bus_r=
+egion *region)
+> +static void __pcibios_bus_to_resource(struct pci_bus *bus, struct resour=
+ce *res,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
+ struct pci_bus_region *region)
+> =A0{
+> - =A0 =A0 =A0 struct pci_host_bridge *bridge =3D find_pci_host_bridge(dev=
+);
+> + =A0 =A0 =A0 struct pci_host_bridge *bridge =3D find_pci_host_bridge(bus=
+);
+> =A0 =A0 =A0 =A0struct pci_host_bridge_window *window;
+> =A0 =A0 =A0 =A0resource_size_t offset =3D 0;
+>
+> @@ -93,4 +96,9 @@ void pcibios_bus_to_resource(struct pci_dev *dev, struc=
+t resource *res,
+> =A0 =A0 =A0 =A0res->start =3D region->start + offset;
+> =A0 =A0 =A0 =A0res->end =3D region->end + offset;
+> =A0}
+> +void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct pci_bus_r=
+egion *region)
+> +{
+> + =A0 =A0 =A0 __pcibios_bus_to_resource(dev->bus, res, region);
+> +}
+> =A0EXPORT_SYMBOL(pcibios_bus_to_resource);
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index fefb4e1..2b559f1 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -385,6 +385,7 @@ struct pci_host_bridge {
+> =A0};
+>
+> =A0#define =A0 =A0 =A0 =A0to_pci_host_bridge(n) container_of(n, struct pc=
+i_host_bridge, dev)
+> +struct pci_host_bridge *find_pci_host_bridge(struct pci_bus *bus);
+> =A0void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 void (*release_fn)(struct pci_hos=
+t_bridge *),
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 void *release_data);
+> @@ -657,6 +658,9 @@ void pci_fixup_cardbus(struct pci_bus *);
+>
+> =A0/* Generic PCI functions used internally */
+>
+> +void __pcibios_resource_to_bus(struct pci_bus *bus,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct pci_b=
+us_region *region,
+> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0struct resou=
+rce *res);
+> =A0void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_regio=
+n *region,
+> =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 struct resource *=
+res);
+> =A0void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res=
+,
+> --
+> 1.7.9.5
+>
