@@ -1,38 +1,36 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2D965B6FBB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 15:59:28 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 83FC43EE0C7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:59:26 +0900 (JST)
-Received: from smail (m4 [127.0.0.1])
- by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 6AA0C45DE54
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:59:26 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
- by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 4F68645DE50
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:59:26 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 2FE23E38003
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:59:26 +0900 (JST)
-Received: from g01jpexchkw06.g01.fujitsu.local
- (g01jpexchkw06.g01.fujitsu.local [10.0.194.45])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id D3F491DB803B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:59:25 +0900 (JST)
-Message-ID: <4FEAA12B.6070906@jp.fujitsu.com>
-Date: Wed, 27 Jun 2012 14:59:07 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+ (Client CN "e4.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 76C03100B63
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 17:09:32 +1000 (EST)
+Received: from /spool/local
+ by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 27 Jun 2012 03:09:29 -0400
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9D9E138C801B
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 03:09:26 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5R79QnL26804276
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 03:09:26 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5R79Pgp008571
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 04:09:26 -0300
+Date: Wed, 27 Jun 2012 15:09:22 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] powerpc: fix whitespace in eeh
+Message-ID: <20120627070922.GA13008@shangw>
+References: <3149.1340770321@neuling.org>
 MIME-Version: 1.0
-To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
-Subject: [RFC PATCH 12/12] memory-hotplug : remove sysfs file of node
-References: <4FEA9C88.1070800@jp.fujitsu.com>
-In-Reply-To: <4FEA9C88.1070800@jp.fujitsu.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-Cc: len.brown@intel.com, wency@cn.fujitsu.com, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
- akpm@linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <3149.1340770321@neuling.org>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,36 +40,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch adds node_set_offline() and unregister_one_node() to remove_memory()
-for removing sysfs file of node.
+>Signed-off-by: Michael Neuling <mikey@neuling.org>
+>
 
-CC: Len Brown <len.brown@intel.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Christoph Lameter <cl@linux.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Wen Congyang <wency@cn.fujitsu.com>
-Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Acked-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 
----
- mm/memory_hotplug.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
-Index: linux-3.5-rc4/mm/memory_hotplug.c
-===================================================================
---- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 14:32:03.630368866 +0900
-+++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 14:39:58.090437374 +0900
-@@ -702,6 +702,11 @@ int remove_memory(int nid, u64 start, u6
- 	/* remove memmap entry */
- 	firmware_map_remove(start, start + size, "System RAM");
-
-+	if (!node_present_pages(nid)) {
-+		node_set_offline(nid);
-+		unregister_one_node(nid);
-+	}
-+
- 	__remove_pages(start >> PAGE_SHIFT, size >> PAGE_SHIFT);
- 	unlock_memory_hotplug();
- 	return 0;
+>diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>index 8752f79..c33360ec 100644
+>--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+>+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>@@ -81,7 +81,7 @@ static int pseries_eeh_init(void)
+> 	ibm_get_config_addr_info2	= rtas_token("ibm,get-config-addr-info2");
+> 	ibm_get_config_addr_info	= rtas_token("ibm,get-config-addr-info");
+> 	ibm_configure_pe		= rtas_token("ibm,configure-pe");
+>-	ibm_configure_bridge		= rtas_token ("ibm,configure-bridge");
+>+	ibm_configure_bridge		= rtas_token("ibm,configure-bridge");
+>
+> 	/* necessary sanity check */
+> 	if (ibm_set_eeh_option == RTAS_UNKNOWN_SERVICE) {
+>@@ -89,7 +89,7 @@ static int pseries_eeh_init(void)
+> 			__func__);
+> 		return -EINVAL;
+> 	} else if (ibm_set_slot_reset == RTAS_UNKNOWN_SERVICE) {
+>-		pr_warning("%s: RTAS service <ibm, set-slot-reset> invalid\n",
+>+		pr_warning("%s: RTAS service <ibm,set-slot-reset> invalid\n",
+> 			__func__);
+> 		return -EINVAL;
+> 	} else if (ibm_read_slot_reset_state2 == RTAS_UNKNOWN_SERVICE &&
