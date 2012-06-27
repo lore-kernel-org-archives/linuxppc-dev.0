@@ -1,27 +1,22 @@
-Return-Path: <B02008@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7984C1007E8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 21:49:21 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [RFC PATCH 10/17] PowerPC: booke64: Refactor exception prolog
- for save/restore regs
-Date: Wed, 27 Jun 2012 11:49:00 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF151D9E@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-11-git-send-email-mihai.caraman@freescale.com>
- <1340748766.3732.29.camel@pasglop>
-In-Reply-To: <1340748766.3732.29.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (lxorguk.ukuu.org.uk [81.2.110.251])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4C5CAB6EE6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 22:19:13 +1000 (EST)
+Date: Wed, 27 Jun 2012 12:52:42 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Paul Gortmaker <paul.gortmaker@windriver.com>
+Subject: Re: [PATCH 3/3] serial/8250: delete WR SBC850 UART quirk handling
+Message-ID: <20120627125242.08a3114e@pyramind.ukuu.org.uk>
+In-Reply-To: <1340740469-31445-4-git-send-email-paul.gortmaker@windriver.com>
+References: <1340740469-31445-1-git-send-email-paul.gortmaker@windriver.com>
+ <1340740469-31445-4-git-send-email-paul.gortmaker@windriver.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-serial@vger.kernel.org,
+ Alan Cox <alan@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,51 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2ht
-aWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBXZWRuZXNkYXks
-IEp1bmUgMjcsIDIwMTIgMToxMyBBTQ0KPiBUbzogQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAw
-OA0KPiBDYzoga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGxp
-bnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgcWVtdS1wcGNAbm9uZ251Lm9yZw0KPiBT
-dWJqZWN0OiBSZTogW1JGQyBQQVRDSCAxMC8xN10gUG93ZXJQQzogYm9va2U2NDogUmVmYWN0b3Ig
-ZXhjZXB0aW9uDQo+IHByb2xvZyBmb3Igc2F2ZS9yZXN0b3JlIHJlZ3MNCj4gDQo+IE9uIE1vbiwg
-MjAxMi0wNi0yNSBhdCAxNToyNiArMDMwMCwgTWloYWkgQ2FyYW1hbiB3cm90ZToNCj4gPiBSZWZh
-Y3RvciBleGNlcHRpb24gcHJvbG9nIHRvIGFsbG93IHNhdmUvcmVzdG9yZSByZWdpc3RlciBwYXJh
-bWV0ZXJzLg0KPiA+IEFkZCBhZGRpdGlvbiBub25lIGRlZmluaXRpb24gZm9yIGV4Y2VwdGlvbiBw
-cm9sb2cgdXNhZ2UuDQo+ID4gVGhpcyBpcyBuZWVkZWQgZm9yIGV4Y2VwdGlvbnMgbGlrZSBHdWVz
-dCBEb29yYmVsbCB0aGF0IHVzZSBHU1JSeA0KPiA+IHJlZ3NpdGVycyB3aGljaCBkbyBub3QgbWFw
-IG9uIGV4Y2VwdGlvbiB0eXBlLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogTWloYWkgQ2FyYW1h
-biA8bWloYWkuY2FyYW1hbkBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2Vy
-cGMva2VybmVsL2V4Y2VwdGlvbnMtNjRlLlMgfCAgIDIzICsrKysrKysrLS0tLS0tLS0tLS0tLS0t
-DQo+ID4gIDEgZmlsZXMgY2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCAxNSBkZWxldGlvbnMoLSkN
-Cj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2VybmVsL2V4Y2VwdGlvbnMtNjRl
-LlMNCj4gPiBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvZXhjZXB0aW9ucy02NGUuUw0KPiA+IGluZGV4
-IDcyMTVjYzIuLjUyYWE5NmIgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9l
-eGNlcHRpb25zLTY0ZS5TDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9leGNlcHRpb25z
-LTY0ZS5TDQo+ID4gQEAgLTM1LDcgKzM1LDcgQEANCj4gPiAgI2RlZmluZQlTUEVDSUFMX0VYQ19G
-UkFNRV9TSVpFCUlOVF9GUkFNRV9TSVpFDQo+ID4NCj4gPiAgLyogRXhjZXB0aW9uIHByb2xvZyBj
-b2RlIGZvciBhbGwgZXhjZXB0aW9ucyAqLw0KPiA+IC0jZGVmaW5lIEVYQ0VQVElPTl9QUk9MT0co
-biwgdHlwZSwgYWRkaXRpb24pCQkJCSAgICBcDQo+ID4gKyNkZWZpbmUgRVhDRVBUSU9OX1BST0xP
-RyhuLCB0eXBlLCBzcnIwLCBzcnIxLCBhZGRpdGlvbikNCj4gXA0KPiA+ICAJbXRzcHIJU1BSTl9T
-UFJHXyMjdHlwZSMjX1NDUkFUQ0gscjEzOwkvKiBnZXQgc3BhcmUgcmVnaXN0ZXJzICovDQo+IFwN
-Cj4gPiAgCW1mc3ByCXIxMyxTUFJOX1NQUkdfUEFDQTsJLyogZ2V0IFBBQ0EgKi8JCQkgICAgXA0K
-PiA+ICAJc3RkCXIxMCxQQUNBX0VYIyN0eXBlK0VYX1IxMChyMTMpOwkJCQkgICAgXA0KPiA+IEBA
-IC00NCw1NCArNDQsNDcgQEANCj4gPiAgCWFkZGl0aW9uOwkJCS8qIGFkZGl0aW9uYWwgY29kZSBm
-b3IgdGhhdCBleGMuICovIFwNCj4gPiAgCXN0ZAlyMSxQQUNBX0VYIyN0eXBlK0VYX1IxKHIxMyk7
-IC8qIHNhdmUgb2xkIHIxIGluIHRoZSBQQUNBICovICBcDQo+ID4gIAlzdHcJcjEwLFBBQ0FfRVgj
-I3R5cGUrRVhfQ1IocjEzKTsgLyogc2F2ZSBvbGQgQ1IgaW4gdGhlIFBBQ0EgKi8gXA0KPiA+IC0J
-bWZzcHIJcjExLFNQUk5fIyN0eXBlIyNfU1JSMTsvKiB3aGF0IGFyZSB3ZSBjb21pbmcgZnJvbSAq
-LwkgICAgXA0KPiA+ICsJbWZzcHIJcjExLHNycjE7Lyogd2hhdCBhcmUgd2UgY29taW5nIGZyb20g
-Ki8JICAgIAkJICAgIFwNCj4gPiAgCXR5cGUjI19TRVRfS1NUQUNLOwkJLyogZ2V0IHNwZWNpYWwg
-c3RhY2sgaWYgbmVjZXNzYXJ5ICovXA0KPiA+ICAJYW5kaS4JcjEwLHIxMSxNU1JfUFI7CQkvKiBz
-YXZlIHN0YWNrIHBvaW50ZXIgKi8JICAgIFwNCj4gPiAgCWJlcQkxZjsJCQkvKiBicmFuY2ggYXJv
-dW5kIGlmIHN1cGVydmlzb3IgKi8gICBcDQo+ID4gIAlsZAlyMSxQQUNBS1NBVkUocjEzKTsJLyog
-Z2V0IGtlcm5lbCBzdGFjayBjb21pbmcgZnJvbSB1c3INCj4gKi9cDQo+ID4gIDE6CWNtcGRpCWNy
-MSxyMSwwOwkJLyogY2hlY2sgaWYgU1AgbWFrZXMgc2Vuc2UgKi8JICAgIFwNCj4gPiAgCWJnZS0J
-Y3IxLGV4Y18jI24jI19iYWRfc3RhY2s7LyogYmFkIHN0YWNrIChUT0RPOiBvdXQgb2YgbGluZSkg
-Ki8gXA0KPiA+IC0JbWZzcHIJcjEwLFNQUk5fIyN0eXBlIyNfU1JSMDsJLyogcmVhZCBTUlIwIGJl
-Zm9yZSB0b3VjaGluZyBzdGFjayAqLw0KPiA+ICsJbWZzcHIJcjEwLHNycjA7CQkvKiByZWFkIFNS
-UjAgYmVmb3JlIHRvdWNoaW5nIHN0YWNrICovDQo+IA0KPiBObywgdXNlIHRoZSBleGlzdGluZyBt
-YWNybywgdXNlIGEgIyN0eXBlIyMgc3BlY2lmaWMgdG8gZ3Vlc3QgZG9vcmJlbGxzLA0KPiB3aXRo
-IGFwcHJvcHJpYXRlIGRlZmluaXRpb25zIG9mIHRoZSBjb3JyZXNwb25kaW5nIFNQUk5fIG1hY3Jv
-cy4NCg0KSSBhc3N1bWUgdGhhdCBzcGVjaWZpYyBQQUNBX0VYLCBTQ1JBVENIIGFuZCBTRVRfS1NU
-QUNLIGRlZmluaXRpb25zIHdpbGwNCmZhbGxiYWNrIHRvIEdFTi4NCg0KQ2hlZXJzLA0KTWlrZQ0K
+On Tue, 26 Jun 2012 15:54:29 -0400
+Paul Gortmaker <paul.gortmaker@windriver.com> wrote:
+
+> We've are dropping the support for the EOL SBC8560, so we can
+> also delete this variant of the Alpha quirk support.
+> 
+> Cc: Alan Cox <alan@linux.intel.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-serial@vger.kernel.org
+> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+> ---
+>  drivers/tty/serial/8250/8250.h |    7 -------
+>  1 files changed, 0 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/tty/serial/8250/8250.h b/drivers/tty/serial/8250/8250.h
+> index f9719d1..ffd1e6e 100644
+> --- a/drivers/tty/serial/8250/8250.h
+> +++ b/drivers/tty/serial/8250/8250.h
+> @@ -119,13 +119,6 @@ static inline void serial_dl_write(struct uart_8250_port *up, int value)
+>   * is cleared, the machine locks up with endless interrupts.
+>   */
+>  #define ALPHA_KLUDGE_MCR  (UART_MCR_OUT2 | UART_MCR_OUT1)
+> -#elif defined(CONFIG_SBC8560)
+> -/*
+> - * WindRiver did something similarly broken on their SBC8560 board. The
+> - * UART tristates its IRQ output while OUT2 is clear, but they pulled
+> - * the interrupt line _up_ instead of down, so if we register the IRQ
+> - * while the UART is in that state, we die in an IRQ storm. */
+> -#define ALPHA_KLUDGE_MCR (UART_MCR_OUT2)
+>  #else
+>  #define ALPHA_KLUDGE_MCR 0
+>  #endif
+
+Would you mind removing all of the crap from this if its going (eg
+8250.c) not just the header so it gets missed ? Kill the symbol entirely ?
+
+Alan
