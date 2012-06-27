@@ -1,22 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 32D9AB6F9F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 21:49:03 +1000 (EST)
-Message-ID: <1340797732.3732.46.camel@pasglop>
-Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Date: Wed, 27 Jun 2012 21:48:52 +1000
-In-Reply-To: <20120627102138.GB10476@localhost.localdomain>
-References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
- <1340748634.3732.27.camel@pasglop>
- <20120627102138.GB10476@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <B02008@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7984C1007E8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 21:49:21 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [RFC PATCH 10/17] PowerPC: booke64: Refactor exception prolog
+ for save/restore regs
+Date: Wed, 27 Jun 2012 11:49:00 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF151D9E@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
+ <1340627195-11544-11-git-send-email-mihai.caraman@freescale.com>
+ <1340748766.3732.29.camel@pasglop>
+In-Reply-To: <1340748766.3732.29.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-06-27 at 18:21 +0800, Zhao Chenhui wrote:
-> > What's that CONFIG option for ?
-> > 
-> > Cheers,
-> > Ben.
-> 
-> This option is to guard the timebase sync routines. It is selected
-> when KEXEC or HOTPLUG_CPU is enabled on Freescale Book-E platforms.
-
-Any reason not to just make it unconditional ? That sort of config
-option tend to just confuse things and make bug reports harder to sort
-out.... Also you decrease your test coverage.
-
-Cheers,
-Ben.
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2ht
+aWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBXZWRuZXNkYXks
+IEp1bmUgMjcsIDIwMTIgMToxMyBBTQ0KPiBUbzogQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAw
+OA0KPiBDYzoga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGxp
+bnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgcWVtdS1wcGNAbm9uZ251Lm9yZw0KPiBT
+dWJqZWN0OiBSZTogW1JGQyBQQVRDSCAxMC8xN10gUG93ZXJQQzogYm9va2U2NDogUmVmYWN0b3Ig
+ZXhjZXB0aW9uDQo+IHByb2xvZyBmb3Igc2F2ZS9yZXN0b3JlIHJlZ3MNCj4gDQo+IE9uIE1vbiwg
+MjAxMi0wNi0yNSBhdCAxNToyNiArMDMwMCwgTWloYWkgQ2FyYW1hbiB3cm90ZToNCj4gPiBSZWZh
+Y3RvciBleGNlcHRpb24gcHJvbG9nIHRvIGFsbG93IHNhdmUvcmVzdG9yZSByZWdpc3RlciBwYXJh
+bWV0ZXJzLg0KPiA+IEFkZCBhZGRpdGlvbiBub25lIGRlZmluaXRpb24gZm9yIGV4Y2VwdGlvbiBw
+cm9sb2cgdXNhZ2UuDQo+ID4gVGhpcyBpcyBuZWVkZWQgZm9yIGV4Y2VwdGlvbnMgbGlrZSBHdWVz
+dCBEb29yYmVsbCB0aGF0IHVzZSBHU1JSeA0KPiA+IHJlZ3NpdGVycyB3aGljaCBkbyBub3QgbWFw
+IG9uIGV4Y2VwdGlvbiB0eXBlLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogTWloYWkgQ2FyYW1h
+biA8bWloYWkuY2FyYW1hbkBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2Vy
+cGMva2VybmVsL2V4Y2VwdGlvbnMtNjRlLlMgfCAgIDIzICsrKysrKysrLS0tLS0tLS0tLS0tLS0t
+DQo+ID4gIDEgZmlsZXMgY2hhbmdlZCwgOCBpbnNlcnRpb25zKCspLCAxNSBkZWxldGlvbnMoLSkN
+Cj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMva2VybmVsL2V4Y2VwdGlvbnMtNjRl
+LlMNCj4gPiBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvZXhjZXB0aW9ucy02NGUuUw0KPiA+IGluZGV4
+IDcyMTVjYzIuLjUyYWE5NmIgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2tlcm5lbC9l
+eGNlcHRpb25zLTY0ZS5TDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2tlcm5lbC9leGNlcHRpb25z
+LTY0ZS5TDQo+ID4gQEAgLTM1LDcgKzM1LDcgQEANCj4gPiAgI2RlZmluZQlTUEVDSUFMX0VYQ19G
+UkFNRV9TSVpFCUlOVF9GUkFNRV9TSVpFDQo+ID4NCj4gPiAgLyogRXhjZXB0aW9uIHByb2xvZyBj
+b2RlIGZvciBhbGwgZXhjZXB0aW9ucyAqLw0KPiA+IC0jZGVmaW5lIEVYQ0VQVElPTl9QUk9MT0co
+biwgdHlwZSwgYWRkaXRpb24pCQkJCSAgICBcDQo+ID4gKyNkZWZpbmUgRVhDRVBUSU9OX1BST0xP
+RyhuLCB0eXBlLCBzcnIwLCBzcnIxLCBhZGRpdGlvbikNCj4gXA0KPiA+ICAJbXRzcHIJU1BSTl9T
+UFJHXyMjdHlwZSMjX1NDUkFUQ0gscjEzOwkvKiBnZXQgc3BhcmUgcmVnaXN0ZXJzICovDQo+IFwN
+Cj4gPiAgCW1mc3ByCXIxMyxTUFJOX1NQUkdfUEFDQTsJLyogZ2V0IFBBQ0EgKi8JCQkgICAgXA0K
+PiA+ICAJc3RkCXIxMCxQQUNBX0VYIyN0eXBlK0VYX1IxMChyMTMpOwkJCQkgICAgXA0KPiA+IEBA
+IC00NCw1NCArNDQsNDcgQEANCj4gPiAgCWFkZGl0aW9uOwkJCS8qIGFkZGl0aW9uYWwgY29kZSBm
+b3IgdGhhdCBleGMuICovIFwNCj4gPiAgCXN0ZAlyMSxQQUNBX0VYIyN0eXBlK0VYX1IxKHIxMyk7
+IC8qIHNhdmUgb2xkIHIxIGluIHRoZSBQQUNBICovICBcDQo+ID4gIAlzdHcJcjEwLFBBQ0FfRVgj
+I3R5cGUrRVhfQ1IocjEzKTsgLyogc2F2ZSBvbGQgQ1IgaW4gdGhlIFBBQ0EgKi8gXA0KPiA+IC0J
+bWZzcHIJcjExLFNQUk5fIyN0eXBlIyNfU1JSMTsvKiB3aGF0IGFyZSB3ZSBjb21pbmcgZnJvbSAq
+LwkgICAgXA0KPiA+ICsJbWZzcHIJcjExLHNycjE7Lyogd2hhdCBhcmUgd2UgY29taW5nIGZyb20g
+Ki8JICAgIAkJICAgIFwNCj4gPiAgCXR5cGUjI19TRVRfS1NUQUNLOwkJLyogZ2V0IHNwZWNpYWwg
+c3RhY2sgaWYgbmVjZXNzYXJ5ICovXA0KPiA+ICAJYW5kaS4JcjEwLHIxMSxNU1JfUFI7CQkvKiBz
+YXZlIHN0YWNrIHBvaW50ZXIgKi8JICAgIFwNCj4gPiAgCWJlcQkxZjsJCQkvKiBicmFuY2ggYXJv
+dW5kIGlmIHN1cGVydmlzb3IgKi8gICBcDQo+ID4gIAlsZAlyMSxQQUNBS1NBVkUocjEzKTsJLyog
+Z2V0IGtlcm5lbCBzdGFjayBjb21pbmcgZnJvbSB1c3INCj4gKi9cDQo+ID4gIDE6CWNtcGRpCWNy
+MSxyMSwwOwkJLyogY2hlY2sgaWYgU1AgbWFrZXMgc2Vuc2UgKi8JICAgIFwNCj4gPiAgCWJnZS0J
+Y3IxLGV4Y18jI24jI19iYWRfc3RhY2s7LyogYmFkIHN0YWNrIChUT0RPOiBvdXQgb2YgbGluZSkg
+Ki8gXA0KPiA+IC0JbWZzcHIJcjEwLFNQUk5fIyN0eXBlIyNfU1JSMDsJLyogcmVhZCBTUlIwIGJl
+Zm9yZSB0b3VjaGluZyBzdGFjayAqLw0KPiA+ICsJbWZzcHIJcjEwLHNycjA7CQkvKiByZWFkIFNS
+UjAgYmVmb3JlIHRvdWNoaW5nIHN0YWNrICovDQo+IA0KPiBObywgdXNlIHRoZSBleGlzdGluZyBt
+YWNybywgdXNlIGEgIyN0eXBlIyMgc3BlY2lmaWMgdG8gZ3Vlc3QgZG9vcmJlbGxzLA0KPiB3aXRo
+IGFwcHJvcHJpYXRlIGRlZmluaXRpb25zIG9mIHRoZSBjb3JyZXNwb25kaW5nIFNQUk5fIG1hY3Jv
+cy4NCg0KSSBhc3N1bWUgdGhhdCBzcGVjaWZpYyBQQUNBX0VYLCBTQ1JBVENIIGFuZCBTRVRfS1NU
+QUNLIGRlZmluaXRpb25zIHdpbGwNCmZhbGxiYWNrIHRvIEdFTi4NCg0KQ2hlZXJzLA0KTWlrZQ0K
