@@ -1,36 +1,32 @@
 Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail8.fujitsu.co.jp (fgwmail8.fujitsu.co.jp [192.51.44.38])
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9471DB6FBA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 15:51:50 +1000 (EST)
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- by fgwmail8.fujitsu.co.jp (Postfix) with ESMTP id 0F0011793B54
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:44:37 +0900 (JST)
+ by ozlabs.org (Postfix) with ESMTPS id 77506B6FA8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 15:52:30 +1000 (EST)
 Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id E37A63EE0AE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:44:34 +0900 (JST)
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id BA9F83EE0BD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:52:28 +0900 (JST)
 Received: from smail (m2 [127.0.0.1])
- by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id CD86045DD78
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:44:34 +0900 (JST)
+ by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 9C83345DE52
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:52:28 +0900 (JST)
 Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
- by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id AD2D245DD74
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:44:34 +0900 (JST)
+ by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 7CFB045DD78
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:52:28 +0900 (JST)
 Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 9F702E18004
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:44:34 +0900 (JST)
-Received: from g01jpexchkw07.g01.fujitsu.local
- (g01jpexchkw07.g01.fujitsu.local [10.0.194.46])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 5B5C21DB802C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:44:34 +0900 (JST)
-Message-ID: <4FEA9DB1.7010303@jp.fujitsu.com>
-Date: Wed, 27 Jun 2012 14:44:17 +0900
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 6B6FBE78001
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:52:28 +0900 (JST)
+Received: from g01jpexchkw02.g01.fujitsu.local
+ (g01jpexchkw02.g01.fujitsu.local [10.0.194.41])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 26983E18001
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:52:28 +0900 (JST)
+Message-ID: <4FEA9F8B.30105@jp.fujitsu.com>
+Date: Wed, 27 Jun 2012 14:52:11 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
-Subject: [RFC PATCH 2/12] memory-hogplug : check memory offline in
- offline_pages
+Subject: [RFC PATCH 6/12] memory-hotplug : remove_memory calls __remove_pages
 References: <4FEA9C88.1070800@jp.fujitsu.com>
 In-Reply-To: <4FEA9C88.1070800@jp.fujitsu.com>
 Content-Type: text/plain; charset="ISO-2022-JP"
@@ -46,9 +42,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When offline_pages() is called to offlined memory, the function fails since
-all memory has been offlined. In this case, the function should succeed.
-The patch adds the check function into offline_pages().
+The patch adds __remove_pages() to remove_memory(). Then the range of
+phys_start_pfn argument and nr_pages argument in __remove_pagse() may
+have different zone. So zone argument is removed from __remove_pages()
+and __remove_pages() caluculates zone in each section.
+
+When CONFIG_SPARSEMEM_VMEMMAP is defined, there is no way to remove a memmap.
+So __remove_section only calls unregister_memory_section().
 
 CC: Len Brown <len.brown@intel.com>
 CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -61,67 +61,108 @@ CC: Wen Congyang <wency@cn.fujitsu.com>
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
 ---
- drivers/base/memory.c  |   20 ++++++++++++++++++++
- include/linux/memory.h |    1 +
- mm/memory_hotplug.c    |    5 +++++
- 3 files changed, 26 insertions(+)
+ arch/powerpc/platforms/pseries/hotplug-memory.c |    5 +----
+ include/linux/memory_hotplug.h                  |    3 +--
+ mm/memory_hotplug.c                             |   20 +++++++++++++-------
+ 3 files changed, 15 insertions(+), 13 deletions(-)
 
-Index: linux-3.5-rc4/drivers/base/memory.c
-===================================================================
---- linux-3.5-rc4.orig/drivers/base/memory.c	2012-06-26 13:28:16.726211752 +0900
-+++ linux-3.5-rc4/drivers/base/memory.c	2012-06-26 13:34:22.423639904 +0900
-@@ -70,6 +70,26 @@ void unregister_memory_isolate_notifier(
- }
- EXPORT_SYMBOL(unregister_memory_isolate_notifier);
-
-+bool memory_is_offline(unsigned long start_pfn, unsigned long end_pfn)
-+{
-+	struct memory_block *mem;
-+	struct mem_section *section;
-+	unsigned long pfn, section_nr;
-+
-+	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
-+		section_nr = pfn_to_section_nr(pfn);
-+		section = __nr_to_section(section_nr);
-+		mem = find_memory_block(section);
-+		if (!mem)
-+			continue;
-+		if (mem->state == MEM_OFFLINE)
-+			continue;
-+		return false;
-+	}
-+
-+	return true;
-+}
-+
- /*
-  * register_memory - Setup a sysfs device for a memory block
-  */
-Index: linux-3.5-rc4/include/linux/memory.h
-===================================================================
---- linux-3.5-rc4.orig/include/linux/memory.h	2012-06-25 04:53:04.000000000 +0900
-+++ linux-3.5-rc4/include/linux/memory.h	2012-06-26 13:34:22.424639891 +0900
-@@ -120,6 +120,7 @@ extern int memory_isolate_notify(unsigne
- extern struct memory_block *find_memory_block_hinted(struct mem_section *,
- 							struct memory_block *);
- extern struct memory_block *find_memory_block(struct mem_section *);
-+extern bool memory_is_offline(unsigned long start_pfn, unsigned long end_pfn);
- #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
- enum mem_add_context { BOOT, HOTPLUG };
- #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
 Index: linux-3.5-rc4/mm/memory_hotplug.c
 ===================================================================
---- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 13:28:16.743211538 +0900
-+++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:48:38.264940468 +0900
-@@ -887,6 +887,11 @@ static int __ref offline_pages(unsigned
-
- 	lock_memory_hotplug();
-
-+	if (memory_is_offline(start_pfn, end_pfn)) {
-+		ret = 0;
-+		goto out;
-+	}
+--- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-27 09:07:49.124709164 +0900
++++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-27 09:08:30.612190446 +0900
+@@ -275,11 +275,14 @@ static int __meminit __add_section(int n
+ #ifdef CONFIG_SPARSEMEM_VMEMMAP
+ static int __remove_section(struct zone *zone, struct mem_section *ms)
+ {
+-	/*
+-	 * XXX: Freeing memmap with vmemmap is not implement yet.
+-	 *      This should be removed later.
+-	 */
+-	return -EBUSY;
++	int ret;
 +
- 	zone = page_zone(pfn_to_page(start_pfn));
- 	node = zone_to_nid(zone);
- 	nr_pages = end_pfn - start_pfn;
++	if (!valid_section(ms))
++		return ret;
++
++	ret = unregister_memory_section(ms);
++
++	return ret;
+ }
+ #else
+ static int __remove_section(struct zone *zone, struct mem_section *ms)
+@@ -346,11 +349,11 @@ EXPORT_SYMBOL_GPL(__add_pages);
+  * sure that pages are marked reserved and zones are adjust properly by
+  * calling offline_pages().
+  */
+-int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
+-		 unsigned long nr_pages)
++int __remove_pages(unsigned long phys_start_pfn, unsigned long nr_pages)
+ {
+ 	unsigned long i, ret = 0;
+ 	int sections_to_remove;
++	struct zone *zone;
+
+ 	/*
+ 	 * We can only remove entire sections
+@@ -363,6 +366,7 @@ int __remove_pages(struct zone *zone, un
+ 	sections_to_remove = nr_pages / PAGES_PER_SECTION;
+ 	for (i = 0; i < sections_to_remove; i++) {
+ 		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
++		zone = page_zone(pfn_to_page(pfn));
+ 		ret = __remove_section(zone, __pfn_to_section(pfn));
+ 		if (ret)
+ 			break;
+@@ -664,6 +668,8 @@ int remove_memory(int nid, u64 start, u6
+ 	lock_memory_hotplug();
+ 	/* remove memmap entry */
+ 	firmware_map_remove(start, start + size, "System RAM");
++
++	__remove_pages(start >> PAGE_SHIFT, size >> PAGE_SHIFT);
+ 	unlock_memory_hotplug();
+ 	return 0;
+
+Index: linux-3.5-rc4/include/linux/memory_hotplug.h
+===================================================================
+--- linux-3.5-rc4.orig/include/linux/memory_hotplug.h	2012-06-27 09:06:35.616628141 +0900
++++ linux-3.5-rc4/include/linux/memory_hotplug.h	2012-06-27 09:08:30.612190446 +0900
+@@ -89,8 +89,7 @@ extern bool is_pageblock_removable_noloc
+ /* reasonably generic interface to expand the physical pages in a zone  */
+ extern int __add_pages(int nid, struct zone *zone, unsigned long start_pfn,
+ 	unsigned long nr_pages);
+-extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
+-	unsigned long nr_pages);
++extern int __remove_pages(unsigned long start_pfn, unsigned long nr_pages);
+
+ #ifdef CONFIG_NUMA
+ extern int memory_add_physaddr_to_nid(u64 start);
+Index: linux-3.5-rc4/arch/powerpc/platforms/pseries/hotplug-memory.c
+===================================================================
+--- linux-3.5-rc4.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-06-27 09:08:25.737248748
++0900
++++ linux-3.5-rc4/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-06-27 09:08:30.613190434 +0900
+@@ -76,7 +76,6 @@ unsigned long memory_block_size_bytes(vo
+ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
+ {
+ 	unsigned long start, start_pfn;
+-	struct zone *zone;
+ 	int i, ret;
+ 	int sections_to_remove;
+
+@@ -87,8 +86,6 @@ static int pseries_remove_memblock(unsig
+ 		return 0;
+ 	}
+
+-	zone = page_zone(pfn_to_page(start_pfn));
+-
+ 	/*
+ 	 * Remove section mappings and sysfs entries for the
+ 	 * section of the memory we are removing.
+@@ -101,7 +98,7 @@ static int pseries_remove_memblock(unsig
+ 	sections_to_remove = (memblock_size >> PAGE_SHIFT) / PAGES_PER_SECTION;
+ 	for (i = 0; i < sections_to_remove; i++) {
+ 		unsigned long pfn = start_pfn + i * PAGES_PER_SECTION;
+-		ret = __remove_pages(zone, start_pfn,  PAGES_PER_SECTION);
++		ret = __remove_pages(start_pfn,  PAGES_PER_SECTION);
+ 		if (ret)
+ 			return ret;
+ 	}
