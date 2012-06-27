@@ -1,35 +1,35 @@
 Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6E875B6FA8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 15:48:50 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 881ED3EE0C0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:48 +0900 (JST)
-Received: from smail (m4 [127.0.0.1])
- by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 6D3CA45DE52
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:48 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
- by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 462D845DE4E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:48 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 328A91DB803E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:48 +0900 (JST)
+ by ozlabs.org (Postfix) with ESMTPS id E0C5FB6F13
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 15:50:14 +1000 (EST)
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+ by fgwmail7.fujitsu.co.jp (Postfix) with ESMTP id 27B8A1792DF2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:40:01 +0900 (JST)
+Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 21F1E3EE0BC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:39:57 +0900 (JST)
+Received: from smail (m3 [127.0.0.1])
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 03D9345DE9E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:39:57 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id DFE7E45DEA6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:39:56 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id D43F71DB803F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:39:56 +0900 (JST)
 Received: from g01jpexchkw04.g01.fujitsu.local
  (g01jpexchkw04.g01.fujitsu.local [10.0.194.43])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id DFFAE1DB8037
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:47 +0900 (JST)
-Message-ID: <4FEA9EAF.1060608@jp.fujitsu.com>
-Date: Wed, 27 Jun 2012 14:48:31 +0900
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 8EF011DB803C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:39:56 +0900 (JST)
+Message-ID: <4FEA9C88.1070800@jp.fujitsu.com>
+Date: Wed, 27 Jun 2012 14:39:20 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
-Subject: [RFC PATCH 5/12] memory-hotplug : does not release memory region
- in PAGES_PER_SECTION chunks
-References: <4FEA9C88.1070800@jp.fujitsu.com>
-In-Reply-To: <4FEA9C88.1070800@jp.fujitsu.com>
+Subject: [RFC PATCH 0/12] memory-hotplug : hot-remove physical memory
 Content-Type: text/plain; charset="ISO-2022-JP"
 Cc: len.brown@intel.com, wency@cn.fujitsu.com, paulus@samba.org,
  minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
@@ -43,77 +43,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since applying a patch(de7f0cba96786c), release_mem_region() has been changed
-as called in PAGES_PER_SECTION chunks because register_memory_resource() is
-called in PAGES_PER_SECTION chunks by add_memory(). But it seems firmware
-dependency. If CRS are written in the PAGES_PER_SECTION chunks in ACPI DSDT
-Table, register_memory_resource() is called in PAGES_PER_SECTION chunks.
-But if CRS are written in the DIMM unit in ACPI DSDT Table,
-register_memory_resource() is called in DIMM unit. So release_mem_region()
-should not be called in PAGES_PER_SECTION chunks. The patch fixes it.
+This patch series aims to support physical memory hot-remove.
 
-CC: Len Brown <len.brown@intel.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Christoph Lameter <cl@linux.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Wen Congyang <wency@cn.fujitsu.com>
-Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+  [RFC PATCH 1/12] memory-hotplug : rename remove_memory to offline_memory
+  [RFC PATCH 2/12] memory-hogplug : check memory offline in offline_pages
+  [RFC PATCH 3/12] memory-hotplug : add physical memory hotplug code to acpi_memory_device_remove
+  [RFC PATCH 4/12] memory-hotplug : remove /sys/firmware/memmap/X sysfs
+  [RFC PATCH 5/12] memory hotplug : does not release memory region in PAGES_PER_SECTION chunks
+  [RFC PATCH 6/12] memory-hotplug : remove_memory calls __remove_pages
+  [RFC PATCH 7/12] memory-hotplug : check page type in get_page_bootmem
+  [RFC PATCH 8/12] memory-hotplug : move register_page_bootmem_info_node and put_page_bootmem for
+sparse-vmemmap
+  [RFC PATCH 9/12] memory-hotplug : implement register_page_bootmem_info_section of sparse-vmemmap
+  [RFC PATCH 10/12] memory-hotplug : free memmap of sparse-vmemmap
+  [RFC PATCH 11/12] memory-hotplug : add node_device_release
+  [RFC PATCH 12/12] memory-hotplug : remove sysfs file of node
+
+Even if you apply these patches, you cannot remove the physical memory
+completely since these patches are still under development. I want you to
+cooperate to improve the physical memory hot-remove. So please review these
+patches and give your comment/idea.
+
+The patches can free/remove following things:
+
+  - acpi_memory_info                          : [RFC PATCH 3/12]
+  - /sys/firmware/memmap/X/{end, start, type} : [RFC PATCH 4/12]
+  - iomem_resource                            : [RFC PATCH 5/12]
+  - mem_section and related sysfs files       : [RFC PATCH 6-10/12]
+  - node and related sysfs files              : [RFC PATCH 11-12/12]
+
+The patches cannot do following things yet:
+
+  - page table of removed memory
+
+If you find lack of function for physical memory hot-remove, please let me
+know.
 
 ---
- arch/powerpc/platforms/pseries/hotplug-memory.c |   13 +++++++++----
- mm/memory_hotplug.c                             |    4 ++--
- 2 files changed, 11 insertions(+), 6 deletions(-)
 
-Index: linux-3.5-rc4/mm/memory_hotplug.c
-===================================================================
---- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 13:50:57.075205100 +0900
-+++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:55:36.152716100 +0900
-@@ -358,11 +358,11 @@ int __remove_pages(struct zone *zone, un
- 	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
- 	BUG_ON(nr_pages % PAGES_PER_SECTION);
-
-+	release_mem_region(phys_start_pfn << PAGE_SHIFT,  nr_pages * PAGE_SIZE);
-+
- 	sections_to_remove = nr_pages / PAGES_PER_SECTION;
- 	for (i = 0; i < sections_to_remove; i++) {
- 		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
--		release_mem_region(pfn << PAGE_SHIFT,
--				   PAGES_PER_SECTION << PAGE_SHIFT);
- 		ret = __remove_section(zone, __pfn_to_section(pfn));
- 		if (ret)
- 			break;
-Index: linux-3.5-rc4/arch/powerpc/platforms/pseries/hotplug-memory.c
-===================================================================
---- linux-3.5-rc4.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-06-26 13:50:57.075205100
-+0900
-+++ linux-3.5-rc4/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-06-26 13:55:36.153716088 +0900
-@@ -77,7 +77,8 @@ static int pseries_remove_memblock(unsig
- {
- 	unsigned long start, start_pfn;
- 	struct zone *zone;
--	int ret;
-+	int i, ret;
-+	int sections_to_remove;
-
- 	start_pfn = base >> PAGE_SHIFT;
-
-@@ -97,9 +98,13 @@ static int pseries_remove_memblock(unsig
- 	 * to sysfs "state" file and we can't remove sysfs entries
- 	 * while writing to it. So we have to defer it to here.
- 	 */
--	ret = __remove_pages(zone, start_pfn, memblock_size >> PAGE_SHIFT);
--	if (ret)
--		return ret;
-+	sections_to_remove = (memblock_size >> PAGE_SHIFT) / PAGES_PER_SECTION;
-+	for (i = 0; i < sections_to_remove; i++) {
-+		unsigned long pfn = start_pfn + i * PAGES_PER_SECTION;
-+		ret = __remove_pages(zone, start_pfn,  PAGES_PER_SECTION);
-+		if (ret)
-+			return ret;
-+	}
-
- 	/*
- 	 * Update memory regions for memory remove
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   16 +-
+ arch/x86/mm/init_64.c                           |  142 ++++++++++++++++++++++++
+ drivers/acpi/acpi_memhotplug.c                  |   25 +++-
+ drivers/base/memory.c                           |   24 +++-
+ drivers/base/node.c                             |    7 +
+ drivers/firmware/memmap.c                       |   71 ++++++++++++
+ include/linux/firmware-map.h                    |    6 +
+ include/linux/memory.h                          |    1
+ include/linux/memory_hotplug.h                  |   17 --
+ include/linux/mm.h                              |    5
+ mm/memory_hotplug.c                             |  101 +++++++++++++----
+ mm/sparse.c                                     |    5
+ 12 files changed, 374 insertions(+), 46 deletions(-)
