@@ -2,30 +2,30 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D5C80B7003
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 02:54:16 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 9011DB70A4
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 02:54:28 +1000 (EST)
 Received: from /spool/local
  by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 27 Jun 2012 10:54:14 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0F5E219D8730
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 16:02:13 +0000 (WET)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5RG27Ku082000
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 10:02:08 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5RG21NM023273
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 10:02:04 -0600
+ Wed, 27 Jun 2012 10:54:25 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CC46519DA3FA
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 16:02:30 +0000 (WET)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5RG2BV2157090
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 10:02:14 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5RG29sW004789
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 10:02:10 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 05/21] ppc/eeh: introduce global mutex
-Date: Thu, 28 Jun 2012 00:01:35 +0800
-Message-Id: <1340812911-6793-6-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 17/21] ppc/eeh: make EEH handler PE sensitive
+Date: Thu, 28 Jun 2012 00:01:47 +0800
+Message-Id: <1340812911-6793-18-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1340812911-6793-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1340812911-6793-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,62 +38,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch introduces global mutex for EEH so that the core data
-structures can be protected by that. Also, 2 inline functions
-are exported for that: eeh_lock() and eeh_unlock().
+Once eeh error is found, eeh event will be created and put it into
+the global linked list. At the mean while, kernel thread will be
+started to process it. The handler for the kernel thread originally
+was eeh device sensitive.
+
+The patch reworks the handler of the kernel thread so that it's PE
+sensitive.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h       |   15 +++++++++++++++
- arch/powerpc/platforms/pseries/eeh.c |    3 +++
- 2 files changed, 18 insertions(+)
+ arch/powerpc/platforms/pseries/eeh_event.c |   24 ++++++++++--------------
+ 1 file changed, 10 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index f77b6d7..248b3d9 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -146,6 +146,17 @@ struct eeh_ops {
+diff --git a/arch/powerpc/platforms/pseries/eeh_event.c b/arch/powerpc/platforms/pseries/eeh_event.c
+index ab8ca18..67c82c2 100644
+--- a/arch/powerpc/platforms/pseries/eeh_event.c
++++ b/arch/powerpc/platforms/pseries/eeh_event.c
+@@ -57,7 +57,7 @@ static int eeh_event_handler(void * dummy)
+ {
+ 	unsigned long flags;
+ 	struct eeh_event *event;
+-	struct eeh_dev *edev;
++	struct eeh_pe *pe;
  
- extern struct eeh_ops *eeh_ops;
- extern int eeh_subsystem_enabled;
-+extern struct mutex eeh_mutex;
-+
-+static inline void eeh_lock(void)
-+{
-+	mutex_lock(&eeh_mutex);
-+}
-+
-+static inline void eeh_unlock(void)
-+{
-+	mutex_unlock(&eeh_mutex);
-+}
+ 	set_task_comm(current, "eehd");
  
- /*
-  * Max number of EEH freezes allowed before we consider the device
-@@ -206,6 +217,10 @@ static inline void eeh_add_device_tree_early(struct device_node *dn) { }
- static inline void eeh_add_device_tree_late(struct pci_bus *bus) { }
+@@ -76,27 +76,23 @@ static int eeh_event_handler(void * dummy)
  
- static inline void eeh_remove_bus_device(struct pci_dev *dev) { }
-+
-+static inline void eeh_lock(void) { }
-+static inline void eeh_unlock(void) { }
-+
- #define EEH_POSSIBLE_ERROR(val, type) (0)
- #define EEH_IO_ERROR_VALUE(size) (-1UL)
- #endif /* CONFIG_EEH */
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index e819448..0ba7e3b 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -92,6 +92,9 @@ struct eeh_ops *eeh_ops = NULL;
- int eeh_subsystem_enabled;
- EXPORT_SYMBOL(eeh_subsystem_enabled);
+ 	/* Serialize processing of EEH events */
+ 	mutex_lock(&eeh_event_mutex);
+-	edev = event->edev;
+-	eeh_mark_slot(eeh_dev_to_of_node(edev), EEH_MODE_RECOVERING);
++	pe = event->pe;
++	eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
++	pr_info("EEH: Detected PCI bus error on PHB#%d-PE#%x\n",
++		pe->phb->global_number, pe->addr);
  
-+/* Global EEH mutex */
-+DEFINE_MUTEX(eeh_mutex);
-+
- /* Lock to avoid races due to multiple reports of an error */
- static DEFINE_RAW_SPINLOCK(confirm_error_lock);
+-	printk(KERN_INFO "EEH: Detected PCI bus error on device %s\n",
+-	       eeh_pci_name(edev->pdev));
++	handle_eeh_events(event);
  
+-	set_current_state(TASK_INTERRUPTIBLE);	/* Don't add to load average */
+-	edev = handle_eeh_events(event);
+-
+-	eeh_clear_slot(eeh_dev_to_of_node(edev), EEH_MODE_RECOVERING);
+-	pci_dev_put(edev->pdev);
++	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+ 
+ 	kfree(event);
+ 	mutex_unlock(&eeh_event_mutex);
+ 
+ 	/* If there are no new errors after an hour, clear the counter. */
+-	if (edev && edev->freeze_count>0) {
++	if (pe && pe->freeze_count > 0) {
+ 		msleep_interruptible(3600*1000);
+-		if (edev->freeze_count>0)
+-			edev->freeze_count--;
+-
++		if (pe->freeze_count > 0)
++			pe->freeze_count--;
+ 	}
+ 
+ 	return 0;
 -- 
 1.7.9.5
