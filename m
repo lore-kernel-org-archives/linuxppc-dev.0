@@ -1,16 +1,16 @@
 Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B6CDC100802
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 09:50:16 +1000 (EST)
-Date: Wed, 27 Jun 2012 18:50:05 -0500
+ by ozlabs.org (Postfix) with ESMTPS id BDDF5100802
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 09:50:17 +1000 (EST)
+Date: Wed, 27 Jun 2012 18:50:07 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: <galak@kernel.crashing.org>
-Subject: [PATCH 2/3] powerpc/e500: add paravirt QEMU platform
-Message-ID: <20120627235005.GB9100@tyr.buserror.net>
+Subject: [PATCH 3/3] powerpc/mpc85xx_ds: convert to unified PCI init
+Message-ID: <20120627235007.GC9100@tyr.buserror.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 In-Reply-To: <20120627234851.GA9071@tyr.buserror.net>
@@ -25,147 +25,173 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This gives the kernel a paravirtualized machine to target, without
-requiring both sides to pretend to be targeting a specific board
-that likely has little to do with the host in KVM scenarios.  This
-avoids the need to add new boards to QEMU just to be able to
-run KVM on new CPUs.
-
-As this is the first platform that can run with either e500v2 or
-e500mc, CONFIG_PPC_E500MC is now a legitimately user configurable
-option, so add a help text.
+Similar to how the primary PCI bridge is identified by looking
+for an isa subnode, we determine whether to apply uli exclusions
+by looking for a uli subnode.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/platforms/85xx/Kconfig     |   16 +++++++
- arch/powerpc/platforms/85xx/Makefile    |    1 +
- arch/powerpc/platforms/85xx/qemu_e500.c |   66 +++++++++++++++++++++++++++++++
- arch/powerpc/platforms/Kconfig.cputype  |    4 ++
- 4 files changed, 87 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/platforms/85xx/qemu_e500.c
+Besides being an example of a real-hardware board to use the new PCI init
+(probably one of the more complicated examples due to the uli device
+exclusion), this fixes PCI under QEMU's mpc8544ds machine.  QEMU was
+only creating one PCI bus, and it wasn't the one Linux had arbitrarily
+deemed primary for mpc8544ds (AFAIK, there's no legacy ISA on this
+board).
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index f000d81..7bbebe5 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -263,6 +263,22 @@ config P5020_DS
- 	help
- 	  This option enables support for the P5020 DS board
+Tested with QEMU mpc8544ds, and real-hardware mpc8572ds (with uli).
+
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c |   97 +++++++++---------------------
+ 1 files changed, 29 insertions(+), 68 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index 1fd91e9..6d3265f 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -114,71 +114,53 @@ void __init mpc85xx_ds_pic_init(void)
+ }
  
-+config PPC_QEMU_E500
-+	bool "QEMU generic e500 platform"
-+	depends on EXPERIMENTAL
-+	select DEFAULT_UIMAGE
-+	help
-+	  This option enables support for running as a QEMU guest using
-+	  QEMU's generic e500 machine.  This is not required if you're
-+	  using a QEMU machine that targets a specific board, such as
-+	  mpc8544ds.
-+
-+	  Unlike most e500 boards that target a specific CPU, this
-+	  platform works with any e500-family CPU that QEMU supports.
-+	  Thus, you'll need to make sure CONFIG_PPC_E500MC is set or
-+	  unset based on the emulated CPU (or actual host CPU in the case
-+	  of KVM).
-+
- endif # FSL_SOC_BOOKE
+ #ifdef CONFIG_PCI
+-static int primary_phb_addr;
+ extern int uli_exclude_device(struct pci_controller *hose,
+ 				u_char bus, u_char devfn);
  
- config TQM85xx
-diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
-index 2125d4c..f841ac8 100644
---- a/arch/powerpc/platforms/85xx/Makefile
-+++ b/arch/powerpc/platforms/85xx/Makefile
-@@ -28,3 +28,4 @@ obj-$(CONFIG_SOCRATES)    += socrates.o socrates_fpga_pic.o
- obj-$(CONFIG_KSI8560)	  += ksi8560.o
- obj-$(CONFIG_XES_MPC85xx) += xes_mpc85xx.o
- obj-$(CONFIG_GE_IMP3A)	  += ge_imp3a.o
-+obj-$(CONFIG_PPC_QEMU_E500) += qemu_e500.o
-diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
-new file mode 100644
-index 0000000..77c8d5d
---- /dev/null
-+++ b/arch/powerpc/platforms/85xx/qemu_e500.c
-@@ -0,0 +1,66 @@
-+/*
-+ * Paravirt target for a generic QEMU e500 machine
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
++static struct device_node *pci_with_uli;
 +
-+#include <linux/kernel.h>
-+#include <linux/of_fdt.h>
-+#include <asm/machdep.h>
-+#include <asm/time.h>
-+#include <asm/udbg.h>
-+#include <asm/mpic.h>
-+#include <sysdev/fsl_soc.h>
-+#include <sysdev/fsl_pci.h>
-+#include "smp.h"
-+#include "mpc85xx.h"
-+
-+void __init qemu_e500_pic_init(void)
-+{
-+	struct mpic *mpic;
-+
-+	mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU,
-+			0, 256, " OpenPIC  ");
-+
-+	BUG_ON(mpic == NULL);
-+	mpic_init(mpic);
-+}
-+
-+static void __init qemu_e500_setup_arch(void)
-+{
-+	ppc_md.progress("qemu_e500_setup_arch()", 0);
-+
+ static int mpc85xx_exclude_device(struct pci_controller *hose,
+ 				   u_char bus, u_char devfn)
+ {
+-	struct device_node* node;
+-	struct resource rsrc;
+-
+-	node = hose->dn;
+-	of_address_to_resource(node, 0, &rsrc);
+-
+-	if ((rsrc.start & 0xfffff) == primary_phb_addr) {
++	if (hose->dn == pci_with_uli)
+ 		return uli_exclude_device(hose, bus, devfn);
+-	}
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ #endif	/* CONFIG_PCI */
+ 
+-/*
+- * Setup the architecture
+- */
+-static void __init mpc85xx_ds_setup_arch(void)
++static void __init mpc85xx_ds_pci_init(void)
+ {
+ #ifdef CONFIG_PCI
+-	struct device_node *np;
+-	struct pci_controller *hose;
+-#endif
+-	dma_addr_t max = 0xffffffff;
++	struct device_node *node;
+ 
+-	if (ppc_md.progress)
+-		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
 +	fsl_pci_init();
-+	mpc85xx_smp_init();
-+}
-+
-+/*
-+ * Called very early, device-tree isn't unflattened
-+ */
-+static int __init qemu_e500_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	return !!of_flat_dt_is_compatible(root, "fsl,qemu-e500");
-+}
-+
-+machine_device_initcall(qemu_e500, mpc85xx_common_publish_devices);
-+
-+define_machine(qemu_e500) {
-+	.name			= "QEMU e500",
-+	.probe			= qemu_e500_probe,
-+	.setup_arch		= qemu_e500_setup_arch,
-+	.init_IRQ		= qemu_e500_pic_init,
-+#ifdef CONFIG_PCI
-+	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
-+#endif
-+	.get_irq		= mpic_get_irq,
-+	.restart		= fsl_rstcr_restart,
-+	.calibrate_decr		= generic_calibrate_decr,
-+	.progress		= udbg_progress,
-+};
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 61c9550..30fd01d 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -159,6 +159,10 @@ config PPC_E500MC
- 	bool "e500mc Support"
- 	select PPC_FPU
- 	depends on E500
-+	help
-+	  This must be enabled for running on e500mc (and derivatives
-+	  such as e5500/e6500), and must be disabled for running on
-+	  e500v1 or e500v2.
  
- config PPC_FPU
- 	bool
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie") ||
+-		    of_device_is_compatible(np, "fsl,p2020-pcie")) {
+-			struct resource rsrc;
+-			of_address_to_resource(np, 0, &rsrc);
+-			if ((rsrc.start & 0xfffff) == primary_phb_addr)
+-				fsl_add_bridge(np, 1);
+-			else
+-				fsl_add_bridge(np, 0);
+-
+-			hose = pci_find_hose_for_OF_device(np);
+-			max = min(max, hose->dma_window_base_cur +
+-					hose->dma_window_size);
++	/* See if we have a ULI under the primary */
++
++	node = of_find_node_by_name(NULL, "uli1575");
++	while ((pci_with_uli = of_get_parent(node))) {
++		of_node_put(node);
++		node = pci_with_uli;
++
++		if (pci_with_uli == fsl_pci_primary) {
++			ppc_md.pci_exclude_device = mpc85xx_exclude_device;
++			break;
+ 		}
+ 	}
+-
+-	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+ #endif
++}
+ 
+-	mpc85xx_smp_init();
++/*
++ * Setup the architecture
++ */
++static void __init mpc85xx_ds_setup_arch(void)
++{
++	if (ppc_md.progress)
++		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if (memblock_end_of_DRAM() > max) {
+-		ppc_swiotlb_enable = 1;
+-		set_pci_dma_ops(&swiotlb_dma_ops);
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-	}
+-#endif
++	mpc85xx_ds_pci_init();
++	mpc85xx_smp_init();
+ 
+ 	printk("MPC85xx DS board from Freescale Semiconductor\n");
+ }
+@@ -190,14 +172,7 @@ static int __init mpc8544_ds_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "MPC8544DS")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0xb000;
+-#endif
+-		return 1;
+-	}
+-
+-	return 0;
++	return !!of_flat_dt_is_compatible(root, "MPC8544DS");
+ }
+ 
+ machine_device_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
+@@ -215,14 +190,7 @@ static int __init mpc8572_ds_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "fsl,MPC8572DS")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0x8000;
+-#endif
+-		return 1;
+-	}
+-
+-	return 0;
++	return !!of_flat_dt_is_compatible(root, "fsl,MPC8572DS");
+ }
+ 
+ /*
+@@ -232,14 +200,7 @@ static int __init p2020_ds_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "fsl,P2020DS")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0x9000;
+-#endif
+-		return 1;
+-	}
+-
+-	return 0;
++	return !!of_flat_dt_is_compatible(root, "fsl,P2020DS");
+ }
+ 
+ define_machine(mpc8544_ds) {
 -- 
 1.7.5.4
