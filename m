@@ -1,33 +1,36 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 957BE100839
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 02:10:39 +1000 (EST)
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AB144100AC9
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 02:11:36 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 27 Jun 2012 12:10:36 -0400
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E3D4E6E8085
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 12:08:41 -0400 (EDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5RG77sm198728
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 12:08:41 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5RG22iq003583
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 10:02:02 -0600
+ Wed, 27 Jun 2012 12:11:34 -0400
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 7352738C86E7
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 12:05:58 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5RG5sme138756
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 12:05:56 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5RG5Stp031631
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 13:05:29 -0300
+Date: Thu, 28 Jun 2012 00:05:25 +0800
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/21] ppc/eeh: Introduce eeh_pe struct
-Date: Thu, 28 Jun 2012 00:01:34 +0800
-Message-Id: <1340812911-6793-5-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1340812911-6793-1-git-send-email-shangw@linux.vnet.ibm.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 00/16] powerpc/eeh: PE support
+Message-ID: <20120627160525.GA7030@shangw>
 References: <1340812911-6793-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1340812911-6793-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,85 +40,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As defined in PAPR 2.4, Partitionable Endpoint (PE) is an I/O subtree
-that can be treated as a unit for the purposes of partitioning and error
-recovery. Therefore, eeh core should be aware of PE. With eeh_pe struct,
-we can support PE explicitly. Further more, it makes all the staff as
-data centralized. Another important reason is for eeh core to support
-multiple platforms. Some of them like pSeries figures out PEs through
-OF nodes while others like powernv have to do that through PCI bus/device
-tree. With explicit PE support, eeh core will be implemented based on
-the centrialized data and platform dependent implementations figure it
-out by their feasible ways.
+I'm sorry that the subject should be:
 
-When the struct is designed, following factors are taken in account:
-  * Reflecting the relationships of PEs. PE might have parent
-    as well children.
-  * Reflecting the association of PE and (eeh) devices.
-  * PEs have PHB boundary.
-  * PE should have unique address assigned in the corresponding
-    PHB domain.
+[PATCH V2 00/21] powerpc/eeh: PE support
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h |   38 ++++++++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+I forgot got change that when pulling it from V1 :-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 06dedff..f77b6d7 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -32,6 +32,42 @@ struct device_node;
- #ifdef CONFIG_EEH
- 
- /*
-+ * The struct is used to trace PE related EEH functionality.
-+ * In theory, there will have one instance of the struct to
-+ * be created against particular PE. In nature, PEs corelate
-+ * to each other. the struct has to reflect that hierarchy in
-+ * order to easily pick up those affected PEs when one particular
-+ * PE has EEH errors.
-+ *
-+ * Also, one particular PE might be composed of PCI device, PCI
-+ * bus and its subordinate components. The struct also need ship
-+ * the information. Further more, one particular PE is only meaingful
-+ * in the corresponding PHB. Therefore, the root PEs should be created
-+ * against existing PHBs in on-to-one fashion.
-+ */
-+#define EEH_PE_PHB	1	/* PHB PE    */
-+#define EEH_PE_DEVICE 	2	/* Device PE */
-+#define EEH_PE_BUS	3	/* Bus PE    */
-+
-+#define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
-+#define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
-+
-+struct eeh_pe {
-+	int type;			/* PE type: PHB/Bus/Device	*/
-+	int state;			/* PE EEH dependent mode	*/
-+	int config_addr;		/* Traditional PCI address	*/
-+	int addr;			/* PE configuration address	*/
-+	struct pci_controller *phb;	/* Associated PHB		*/
-+	int check_count;		/* Times of ignored error	*/
-+	int freeze_count;		/* Times of froze up		*/
-+	int false_positives;		/* Times of reported #ff's	*/
-+	struct eeh_pe *parent;		/* Parent PE			*/
-+	struct list_head child_list;	/* Link PE to the child list	*/
-+	struct list_head edevs;		/* Link list of EEH devices	*/
-+	struct list_head child;		/* Child PEs			*/
-+};
-+
-+/*
-  * The struct is used to trace EEH state for the associated
-  * PCI device node or PCI device. In future, it might
-  * represent PE as well so that the EEH device to form
-@@ -53,6 +89,8 @@ struct eeh_dev {
- 	int freeze_count;		/* Times of froze up		*/
- 	int false_positives;		/* Times of reported #ff's	*/
- 	u32 config_space[16];		/* Saved PCI config space	*/
-+	struct eeh_pe *pe;		/* Associated PE		*/
-+	struct list_head list;		/* Form link list in the PE	*/
- 	struct pci_controller *phb;	/* Associated PHB		*/
- 	struct device_node *dn;		/* Associated device node	*/
- 	struct pci_dev *pdev;		/* Associated PCI device	*/
--- 
-1.7.9.5
+Thanks,
+Gavin
+
+>The series of patches address explicit PE support as well as probe type
+>support. For explicit PE support, struct eeh_pe has been introduced.
+>While designing the struct, following factors have been taken into
+>account.
+>
+>   * For one particular PE, it might be composed of single PCI device,
+>     or multiple PCI devices and its educed children PCI devices (e.g.
+>     by PCIe bridges). The PE struct has included a linked list to refer
+>     the included PCI devices. Also, the linked list of devices has relected
+>     top-to-bottom fasion of the PCI subtree. That's to say, the first device
+>     in the linked list should be the toppest element in the PCI subtree which
+>     is being managed by the PE.
+>   * PEs correlate to each other. So the existing PEs have to form hierarchy
+>     levels. There're some fields in PE struct (e.g. parent/child/silbing)
+>     have been introduced for the purpose.
+>   * For one PE, it's only meaningful in the PHB domain.
+>
+>In addition, the mechniasm used to do memory bars restore, error report have
+>been reworked based on PE. The eeh cache has been reworked for a little bit
+>based on Ben's suggestion to trace eeh device. 
+>
+>In order for explicit probe support, either OF node or pci device, global
+>variable and some inline functions are introduced. For pSeries platform, it's
+>going to support OF node probe and figure out PEs from the corresponding OF
+>nodes. In contrast, powernv platform has to use pci device probe type since
+>the PEs are being constructed at PHB fixup time.
+>
+>The series of patches have been verified on Firebird-L machine using "errinjct"
+>utility. Here's the command used for that.
+>
+>errinjct eeh -v -f 0 -p U78AE.001.WZS00M9-P1-C18-L1-T2 -a 0x0 -m 0x0
+>
+>V1 -> V2
+>	* Rebase to 3.5.RC4.
+>	* Use the link list to trace the relationships of PEs, PE and eeh
+>	  devices according to Ram's suggestion.
+>	* Simplify the PE tranverse function according to Ram's example.
+>	* Move EEH initialization around according to Ben's suggestion so
+>	  that we can do memory allocation through slab.
+>	* Use kzmalloc() to allocate memory chunks for PE and eeh devices.
+>	* More booting messages for EEH initialization functions.
+>	* Introduce global EEH mutex to protect the PEs and eeh devices.
+>	* Added functions to support PE removal.
+>	* Comments cleanup
+>	* Change on the comparison of PE or BDF (Bus/Device/Function)
+>	  address so that code looks more readable.
+>
+>arch/powerpc/include/asm/eeh.h               |  132 ++++--
+>arch/powerpc/include/asm/eeh_event.h         |    6 +-
+>arch/powerpc/include/asm/pci-bridge.h        |    2 +
+>arch/powerpc/include/asm/ppc-pci.h           |   15 +-
+>arch/powerpc/kernel/rtas_pci.c               |    5 +-
+>arch/powerpc/platforms/pseries/Makefile      |    5 +-
+>arch/powerpc/platforms/pseries/eeh.c         |  527 +++++------------------
+>arch/powerpc/platforms/pseries/eeh_cache.c   |   19 +-
+>arch/powerpc/platforms/pseries/eeh_dev.c     |   14 +-
+>arch/powerpc/platforms/pseries/eeh_driver.c  |  235 +++++------
+>arch/powerpc/platforms/pseries/eeh_event.c   |   53 +--
+>arch/powerpc/platforms/pseries/eeh_pe.c      |  583 ++++++++++++++++++++++++++
+>arch/powerpc/platforms/pseries/eeh_pseries.c |  246 +++++++----
+>arch/powerpc/platforms/pseries/eeh_sysfs.c   |    9 -
+>arch/powerpc/platforms/pseries/msi.c         |    6 +-
+>arch/powerpc/platforms/pseries/setup.c       |    2 -
+>16 files changed, 1119 insertions(+), 740 deletions(-)
+>create mode 100644 arch/powerpc/platforms/pseries/eeh_pe.c
+>
+>Thanks,
+>Gavin
+>
