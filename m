@@ -1,21 +1,33 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id A32EEB6FD4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 18:45:04 +1000 (EST)
-Message-ID: <4FEAC916.7030506@cn.fujitsu.com>
-Date: Wed, 27 Jun 2012 16:49:26 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <zch@az84smr01.freescale.net>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 86CD3B7019
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 20:09:30 +1000 (EST)
+Received: from mail154-va3 (localhost [127.0.0.1])	by
+ mail154-va3-R.bigfish.com (Postfix) with ESMTP id 241A01E0286	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 10:07:42 +0000 (UTC)
+Received: from VA3EHSMHS044.bigfish.com (unknown [10.7.14.236])	by
+ mail154-va3.bigfish.com (Postfix) with ESMTP id 7F8B2220257	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 10:07:39 +0000 (UTC)
+Received: from localhost.localdomain ([10.213.130.145])	by
+ az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q5RA9HPG026821	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 03:09:20 -0700
+Date: Wed, 27 Jun 2012 18:10:25 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
+Message-ID: <20120627101025.GA10476@localhost.localdomain>
+References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
+ <AB6D43A9-FC54-40D2-A9B0-8B2E785124F9@kernel.crashing.org>
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH 2/12] memory-hogplug : check memory offline in
- offline_pages
-References: <4FEA9C88.1070800@jp.fujitsu.com> <4FEA9DB1.7010303@jp.fujitsu.com>
-In-Reply-To: <4FEA9DB1.7010303@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <AB6D43A9-FC54-40D2-A9B0-8B2E785124F9@kernel.crashing.org>
+Sender: <zch@az84smr01.freescale.net>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,97 +37,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 06/27/2012 01:44 PM, Yasuaki Ishimatsu Wrote:
-> When offline_pages() is called to offlined memory, the function fails since
-> all memory has been offlined. In this case, the function should succeed.
-> The patch adds the check function into offline_pages().
+On Tue, Jun 26, 2012 at 09:03:42AM -0500, Kumar Gala wrote:
+> 
+> On Jun 26, 2012, at 5:25 AM, Zhao Chenhui wrote:
+> 
+> > Do hardware timebase sync. Firstly, stop all timebases, and transfer
+> > the timebase value of the boot core to the other core. Finally,
+> > start all timebases.
+> > 
+> > Only apply to dual-core chips, such as MPC8572, P2020, etc.
+> > 
+> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > ---
+> > Changes for v6:
+> > * added 85xx_TB_SYNC
+> > * added isync() after set_tb()
+> > * removed extra entries from mpc85xx_smp_guts_ids
+> 
+> Why only on dual-core chips?  Is this because of something related to 2 cores, or related to corenet vs non-corenet SoCs and how turning on/off the timebase works in the SOC?
+> 
+> - k
 
-You miss such case: some pages are online, while some pages are offline.
-offline_pages() will fail too in such case.
+I am working on a timebase sync patch for corenet SoCs which have more than 2 cores.
+It is based on this patch.
 
-Thanks
-Wen Congyang
-
-> 
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> 
-> ---
->  drivers/base/memory.c  |   20 ++++++++++++++++++++
->  include/linux/memory.h |    1 +
->  mm/memory_hotplug.c    |    5 +++++
->  3 files changed, 26 insertions(+)
-> 
-> Index: linux-3.5-rc4/drivers/base/memory.c
-> ===================================================================
-> --- linux-3.5-rc4.orig/drivers/base/memory.c	2012-06-26 13:28:16.726211752 +0900
-> +++ linux-3.5-rc4/drivers/base/memory.c	2012-06-26 13:34:22.423639904 +0900
-> @@ -70,6 +70,26 @@ void unregister_memory_isolate_notifier(
->  }
->  EXPORT_SYMBOL(unregister_memory_isolate_notifier);
-> 
-> +bool memory_is_offline(unsigned long start_pfn, unsigned long end_pfn)
-> +{
-> +	struct memory_block *mem;
-> +	struct mem_section *section;
-> +	unsigned long pfn, section_nr;
-> +
-> +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
-> +		section_nr = pfn_to_section_nr(pfn);
-> +		section = __nr_to_section(section_nr);
-> +		mem = find_memory_block(section);
-> +		if (!mem)
-> +			continue;
-> +		if (mem->state == MEM_OFFLINE)
-> +			continue;
-> +		return false;
-> +	}
-> +
-> +	return true;
-> +}
-> +
->  /*
->   * register_memory - Setup a sysfs device for a memory block
->   */
-> Index: linux-3.5-rc4/include/linux/memory.h
-> ===================================================================
-> --- linux-3.5-rc4.orig/include/linux/memory.h	2012-06-25 04:53:04.000000000 +0900
-> +++ linux-3.5-rc4/include/linux/memory.h	2012-06-26 13:34:22.424639891 +0900
-> @@ -120,6 +120,7 @@ extern int memory_isolate_notify(unsigne
->  extern struct memory_block *find_memory_block_hinted(struct mem_section *,
->  							struct memory_block *);
->  extern struct memory_block *find_memory_block(struct mem_section *);
-> +extern bool memory_is_offline(unsigned long start_pfn, unsigned long end_pfn);
->  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
->  enum mem_add_context { BOOT, HOTPLUG };
->  #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
-> Index: linux-3.5-rc4/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 13:28:16.743211538 +0900
-> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:48:38.264940468 +0900
-> @@ -887,6 +887,11 @@ static int __ref offline_pages(unsigned
-> 
->  	lock_memory_hotplug();
-> 
-> +	if (memory_is_offline(start_pfn, end_pfn)) {
-> +		ret = 0;
-> +		goto out;
-> +	}
-> +
->  	zone = page_zone(pfn_to_page(start_pfn));
->  	node = zone_to_nid(zone);
->  	nr_pages = end_pfn - start_pfn;
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-Chenhui
