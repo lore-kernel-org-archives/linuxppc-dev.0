@@ -2,31 +2,32 @@ Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
 Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2AC74B6FBB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 15:47:29 +1000 (EST)
-Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 640E23EE0BD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:47:27 +0900 (JST)
-Received: from smail (m3 [127.0.0.1])
- by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 4688E45DEA6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:47:27 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
- by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 2E4D845DE9E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:47:27 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 0D33A1DB8040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:47:27 +0900 (JST)
-Received: from g01jpexchkw07.g01.fujitsu.local
- (g01jpexchkw07.g01.fujitsu.local [10.0.194.46])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id BC8541DB803C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:47:26 +0900 (JST)
-Message-ID: <4FEA9E5F.4070205@jp.fujitsu.com>
-Date: Wed, 27 Jun 2012 14:47:11 +0900
+ by ozlabs.org (Postfix) with ESMTPS id 6E875B6FA8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 15:48:50 +1000 (EST)
+Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 881ED3EE0C0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:48 +0900 (JST)
+Received: from smail (m4 [127.0.0.1])
+ by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 6D3CA45DE52
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:48 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
+ by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 462D845DE4E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:48 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 328A91DB803E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:48 +0900 (JST)
+Received: from g01jpexchkw04.g01.fujitsu.local
+ (g01jpexchkw04.g01.fujitsu.local [10.0.194.43])
+ by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id DFFAE1DB8037
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 14:48:47 +0900 (JST)
+Message-ID: <4FEA9EAF.1060608@jp.fujitsu.com>
+Date: Wed, 27 Jun 2012 14:48:31 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
-Subject: [RFC PATCH 4/12] memory-hotplug : remove /sys/firmware/memmap/X sysfs
+Subject: [RFC PATCH 5/12] memory-hotplug : does not release memory region
+ in PAGES_PER_SECTION chunks
 References: <4FEA9C88.1070800@jp.fujitsu.com>
 In-Reply-To: <4FEA9C88.1070800@jp.fujitsu.com>
 Content-Type: text/plain; charset="ISO-2022-JP"
@@ -42,12 +43,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
-sysfs files are created. But there is no code to remove these files. The patch
-implements the function to remove them.
-
-Note : The code does not free firmware_map_entry since there is no way to free
-       memory which is allocated by bootmem.
+Since applying a patch(de7f0cba96786c), release_mem_region() has been changed
+as called in PAGES_PER_SECTION chunks because register_memory_resource() is
+called in PAGES_PER_SECTION chunks by add_memory(). But it seems firmware
+dependency. If CRS are written in the PAGES_PER_SECTION chunks in ACPI DSDT
+Table, register_memory_resource() is called in PAGES_PER_SECTION chunks.
+But if CRS are written in the DIMM unit in ACPI DSDT Table,
+register_memory_resource() is called in DIMM unit. So release_mem_region()
+should not be called in PAGES_PER_SECTION chunks. The patch fixes it.
 
 CC: Len Brown <len.brown@intel.com>
 CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -60,145 +63,57 @@ CC: Wen Congyang <wency@cn.fujitsu.com>
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
 ---
- drivers/firmware/memmap.c    |   71 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/firmware-map.h |    6 +++
- mm/memory_hotplug.c          |    6 +++
- 3 files changed, 82 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   13 +++++++++----
+ mm/memory_hotplug.c                             |    4 ++--
+ 2 files changed, 11 insertions(+), 6 deletions(-)
 
 Index: linux-3.5-rc4/mm/memory_hotplug.c
 ===================================================================
---- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 13:37:30.546288901 +0900
-+++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:44:37.069955820 +0900
-@@ -661,7 +661,11 @@ EXPORT_SYMBOL_GPL(add_memory);
+--- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 13:50:57.075205100 +0900
++++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:55:36.152716100 +0900
+@@ -358,11 +358,11 @@ int __remove_pages(struct zone *zone, un
+ 	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
+ 	BUG_ON(nr_pages % PAGES_PER_SECTION);
 
- int remove_memory(int nid, u64 start, u64 size)
++	release_mem_region(phys_start_pfn << PAGE_SHIFT,  nr_pages * PAGE_SIZE);
++
+ 	sections_to_remove = nr_pages / PAGES_PER_SECTION;
+ 	for (i = 0; i < sections_to_remove; i++) {
+ 		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
+-		release_mem_region(pfn << PAGE_SHIFT,
+-				   PAGES_PER_SECTION << PAGE_SHIFT);
+ 		ret = __remove_section(zone, __pfn_to_section(pfn));
+ 		if (ret)
+ 			break;
+Index: linux-3.5-rc4/arch/powerpc/platforms/pseries/hotplug-memory.c
+===================================================================
+--- linux-3.5-rc4.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-06-26 13:50:57.075205100
++0900
++++ linux-3.5-rc4/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-06-26 13:55:36.153716088 +0900
+@@ -77,7 +77,8 @@ static int pseries_remove_memblock(unsig
  {
--	return -EBUSY;
-+	lock_memory_hotplug();
-+	/* remove memmap entry */
-+	firmware_map_remove(start, start + size, "System RAM");
-+	unlock_memory_hotplug();
-+	return 0;
+ 	unsigned long start, start_pfn;
+ 	struct zone *zone;
+-	int ret;
++	int i, ret;
++	int sections_to_remove;
 
- }
- EXPORT_SYMBOL_GPL(remove_memory);
-Index: linux-3.5-rc4/include/linux/firmware-map.h
-===================================================================
---- linux-3.5-rc4.orig/include/linux/firmware-map.h	2012-06-25 04:53:04.000000000 +0900
-+++ linux-3.5-rc4/include/linux/firmware-map.h	2012-06-26 13:44:37.070955807 +0900
-@@ -25,6 +25,7 @@
+ 	start_pfn = base >> PAGE_SHIFT;
 
- int firmware_map_add_early(u64 start, u64 end, const char *type);
- int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
-+int firmware_map_remove(u64 start, u64 end, const char *type);
+@@ -97,9 +98,13 @@ static int pseries_remove_memblock(unsig
+ 	 * to sysfs "state" file and we can't remove sysfs entries
+ 	 * while writing to it. So we have to defer it to here.
+ 	 */
+-	ret = __remove_pages(zone, start_pfn, memblock_size >> PAGE_SHIFT);
+-	if (ret)
+-		return ret;
++	sections_to_remove = (memblock_size >> PAGE_SHIFT) / PAGES_PER_SECTION;
++	for (i = 0; i < sections_to_remove; i++) {
++		unsigned long pfn = start_pfn + i * PAGES_PER_SECTION;
++		ret = __remove_pages(zone, start_pfn,  PAGES_PER_SECTION);
++		if (ret)
++			return ret;
++	}
 
- #else /* CONFIG_FIRMWARE_MEMMAP */
-
-@@ -38,6 +39,11 @@ static inline int firmware_map_add_hotpl
- 	return 0;
- }
-
-+static inline int firmware_map_remove(u64 start, u64 end, const char *type)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_FIRMWARE_MEMMAP */
-
- #endif /* _LINUX_FIRMWARE_MAP_H */
-Index: linux-3.5-rc4/drivers/firmware/memmap.c
-===================================================================
---- linux-3.5-rc4.orig/drivers/firmware/memmap.c	2012-06-25 04:53:04.000000000 +0900
-+++ linux-3.5-rc4/drivers/firmware/memmap.c	2012-06-26 13:47:17.606948898 +0900
-@@ -123,6 +123,16 @@ static int firmware_map_add_entry(u64 st
- 	return 0;
- }
-
-+/**
-+ * firmware_map_remove_entry() - Does the real work to remove a firmware
-+ * memmap entry.
-+ * @entry: removed entry.
-+ **/
-+static inline void firmware_map_remove_entry(struct firmware_map_entry *entry)
-+{
-+	list_del(&entry->list);
-+}
-+
- /*
-  * Add memmap entry on sysfs
-  */
-@@ -144,6 +154,31 @@ static int add_sysfs_fw_map_entry(struct
- 	return 0;
- }
-
-+/*
-+ * Remove memmap entry on sysfs
-+ */
-+static inline void remove_sysfs_fw_map_entry(struct firmware_map_entry *entry)
-+{
-+	kobject_del(&entry->kobj);
-+}
-+
-+/*
-+ * Search memmap entry
-+ */
-+
-+struct firmware_map_entry * __meminit
-+find_firmware_map_entry(u64 start, u64 end, const char *type)
-+{
-+	struct firmware_map_entry *entry;
-+
-+	list_for_each_entry(entry, &map_entries, list)
-+		if ((entry->start == start) && (entry->end == end) &&
-+		    (!strcmp(entry->type, type)))
-+			return entry;
-+
-+	return NULL;
-+}
-+
- /**
-  * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
-  * memory hotplug.
-@@ -196,6 +231,42 @@ int __init firmware_map_add_early(u64 st
- 	return firmware_map_add_entry(start, end, type, entry);
- }
-
-+void release_firmware_map_entry(struct firmware_map_entry *entry)
-+{
-+	/*
-+	 * FIXME : There is no idea.
-+	 *         How to free the entry which allocated bootmem?
-+	 */
-+}
-+
-+/**
-+ * firmware_map_remove() - remove a firmware mapping entry
-+ * @start: Start of the memory range.
-+ * @end:   End of the memory range (inclusive).
-+ * @type:  Type of the memory range.
-+ *
-+ * removes a firmware mapping entry.
-+ *
-+ * Returns 0 on success, or -EINVAL if no entry.
-+ **/
-+int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
-+{
-+	struct firmware_map_entry *entry;
-+
-+	entry = find_firmware_map_entry(start, end, type);
-+	if (!entry)
-+		return -EINVAL;
-+
-+	/* remove the memmap entry */
-+	remove_sysfs_fw_map_entry(entry);
-+
-+	firmware_map_remove_entry(entry);
-+
-+	release_firmware_map_entry(entry);
-+
-+	return 0;
-+}
-+
- /*
-  * Sysfs functions -------------------------------------------------------------
-  */
+ 	/*
+ 	 * Update memory regions for memory remove
