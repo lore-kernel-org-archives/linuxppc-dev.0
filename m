@@ -1,23 +1,21 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id EE8961007D4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 18:33:58 +1000 (EST)
-Message-ID: <4FEC17F8.1000405@cn.fujitsu.com>
-Date: Thu, 28 Jun 2012 16:38:16 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <lethal@linux-sh.org>
+Received: from linux-sh.org (linux-sh.org [111.68.239.195])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AB8DDB6FA7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 19:13:06 +1000 (EST)
+Date: Thu, 28 Jun 2012 17:20:10 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Build regressions/improvements in v3.5-rc4
+Message-ID: <20120628082009.GC21764@linux-sh.org>
+References: <1340740795-19603-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdXY1DFNV+jTiJkT99TbX7ZL5eEiKcG0iqZkUa8T7YZG4g@mail.gmail.com>
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH 4/12] memory-hotplug : remove /sys/firmware/memmap/X
- sysfs
-References: <4FEA9C88.1070800@jp.fujitsu.com>
- <4FEA9E5F.4070205@jp.fujitsu.com> <4FEBFA8D.5040607@cn.fujitsu.com>
- <4FEC10CB.3060403@jp.fujitsu.com>
-In-Reply-To: <4FEC10CB.3060403@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAMuHMdXY1DFNV+jTiJkT99TbX7ZL5eEiKcG0iqZkUa8T7YZG4g@mail.gmail.com>
+Cc: the arch/x86 maintainers <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,257 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 06/28/2012 04:07 PM, Yasuaki Ishimatsu Wrote:
-> Hi Wen,
+On Tue, Jun 26, 2012 at 10:06:27PM +0200, Geert Uytterhoeven wrote:
+> On Tue, Jun 26, 2012 at 9:59 PM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+> > JFYI, when comparing v3.5-rc4 to v3.5-rc3[3], the summaries are:
+> > ??- build errors: +11/-219
 > 
-> 2012/06/28 15:32, Wen Congyang wrote:
->> At 06/27/2012 01:47 PM, Yasuaki Ishimatsu Wrote:
->>> When (hot)adding memory into system, /sys/firmware/memmap/X/{end,
->>> start, type}
->>> sysfs files are created. But there is no code to remove these files.
->>> The patch
->>> implements the function to remove them.
->>>
->>> Note : The code does not free firmware_map_entry since there is no
->>> way to free
->>>         memory which is allocated by bootmem.
->>>
->>> CC: Len Brown <len.brown@intel.com>
->>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> CC: Paul Mackerras <paulus@samba.org>
->>> CC: Christoph Lameter <cl@linux.com>
->>> Cc: Minchan Kim <minchan.kim@gmail.com>
->>> CC: Andrew Morton <akpm@linux-foundation.org>
->>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->>> CC: Wen Congyang <wency@cn.fujitsu.com>
->>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>>
->>> ---
->>>   drivers/firmware/memmap.c    |   71
->>> +++++++++++++++++++++++++++++++++++++++++++
->>>   include/linux/firmware-map.h |    6 +++
->>>   mm/memory_hotplug.c          |    6 +++
->>>   3 files changed, 82 insertions(+), 1 deletion(-)
->>>
->>> Index: linux-3.5-rc4/mm/memory_hotplug.c
->>> ===================================================================
->>> --- linux-3.5-rc4.orig/mm/memory_hotplug.c    2012-06-26
->>> 13:37:30.546288901 +0900
->>> +++ linux-3.5-rc4/mm/memory_hotplug.c    2012-06-26
->>> 13:44:37.069955820 +0900
->>> @@ -661,7 +661,11 @@ EXPORT_SYMBOL_GPL(add_memory);
->>>
->>>   int remove_memory(int nid, u64 start, u64 size)
->>>   {
->>> -    return -EBUSY;
->>> +    lock_memory_hotplug();
->>> +    /* remove memmap entry */
->>> +    firmware_map_remove(start, start + size, "System RAM");
->>> +    unlock_memory_hotplug();
->>> +    return 0;
->>>
->>>   }
->>>   EXPORT_SYMBOL_GPL(remove_memory);
->>> Index: linux-3.5-rc4/include/linux/firmware-map.h
->>> ===================================================================
->>> --- linux-3.5-rc4.orig/include/linux/firmware-map.h    2012-06-25
->>> 04:53:04.000000000 +0900
->>> +++ linux-3.5-rc4/include/linux/firmware-map.h    2012-06-26
->>> 13:44:37.070955807 +0900
->>> @@ -25,6 +25,7 @@
->>>
->>>   int firmware_map_add_early(u64 start, u64 end, const char *type);
->>>   int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
->>> +int firmware_map_remove(u64 start, u64 end, const char *type);
->>>
->>>   #else /* CONFIG_FIRMWARE_MEMMAP */
->>>
->>> @@ -38,6 +39,11 @@ static inline int firmware_map_add_hotpl
->>>       return 0;
->>>   }
->>>
->>> +static inline int firmware_map_remove(u64 start, u64 end, const char
->>> *type)
->>> +{
->>> +    return 0;
->>> +}
->>> +
->>>   #endif /* CONFIG_FIRMWARE_MEMMAP */
->>>
->>>   #endif /* _LINUX_FIRMWARE_MAP_H */
->>> Index: linux-3.5-rc4/drivers/firmware/memmap.c
->>> ===================================================================
->>> --- linux-3.5-rc4.orig/drivers/firmware/memmap.c    2012-06-25
->>> 04:53:04.000000000 +0900
->>> +++ linux-3.5-rc4/drivers/firmware/memmap.c    2012-06-26
->>> 13:47:17.606948898 +0900
->>> @@ -123,6 +123,16 @@ static int firmware_map_add_entry(u64 st
->>>       return 0;
->>>   }
->>>
->>> +/**
->>> + * firmware_map_remove_entry() - Does the real work to remove a
->>> firmware
->>> + * memmap entry.
->>> + * @entry: removed entry.
->>> + **/
->>> +static inline void firmware_map_remove_entry(struct
->>> firmware_map_entry *entry)
->>> +{
->>> +    list_del(&entry->list);
->>> +}
->>> +
->>>   /*
->>>    * Add memmap entry on sysfs
->>>    */
->>> @@ -144,6 +154,31 @@ static int add_sysfs_fw_map_entry(struct
->>>       return 0;
->>>   }
->>>
->>> +/*
->>> + * Remove memmap entry on sysfs
->>> + */
->>> +static inline void remove_sysfs_fw_map_entry(struct
->>> firmware_map_entry *entry)
->>> +{
->>> +    kobject_del(&entry->kobj);
->>> +}
->>> +
->>> +/*
->>> + * Search memmap entry
->>> + */
->>> +
->>> +struct firmware_map_entry * __meminit
->>> +find_firmware_map_entry(u64 start, u64 end, const char *type)
->>> +{
->>> +    struct firmware_map_entry *entry;
->>> +
->>> +    list_for_each_entry(entry, &map_entries, list)
->>> +        if ((entry->start == start) && (entry->end == end) &&
->>> +            (!strcmp(entry->type, type)))
->>> +            return entry;
->>> +
->>> +    return NULL;
->>> +}
->>> +
->>>   /**
->>>    * firmware_map_add_hotplug() - Adds a firmware mapping entry when
->>> we do
->>>    * memory hotplug.
->>> @@ -196,6 +231,42 @@ int __init firmware_map_add_early(u64 st
->>>       return firmware_map_add_entry(start, end, type, entry);
->>>   }
->>>
->>> +void release_firmware_map_entry(struct firmware_map_entry *entry)
->>> +{
->>> +    /*
->>> +     * FIXME : There is no idea.
->>> +     *         How to free the entry which allocated bootmem?
->>> +     */
->>> +}
->>> +
->>> +/**
->>> + * firmware_map_remove() - remove a firmware mapping entry
->>> + * @start: Start of the memory range.
->>> + * @end:   End of the memory range (inclusive).
->>> + * @type:  Type of the memory range.
->>> + *
->>> + * removes a firmware mapping entry.
->>> + *
->>> + * Returns 0 on success, or -EINVAL if no entry.
->>> + **/
->>> +int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
->>> +{
->>> +    struct firmware_map_entry *entry;
->>> +
->>> +    entry = find_firmware_map_entry(start, end, type);
->>
->> Hmm, we cannot find the entry easily, because the end can be:
->> 1. start + size
->> 2. start + size - 1
->>
->> So, We should fix this bug first.
+> 11 regressions:
+>   + arch/sh/include/asm/fixmap.h: error: implicit declaration of
+> function 'BUG_ON' [-Werror=implicit-function-declaration]:  => 133:2
+>   + arch/sh/include/asm/thread_info.h: error: implicit declaration of
+> function 'WARN_ON' [-Werror=implicit-function-declaration]:  => 172:2
+>   + include/linux/huge_mm.h: error: implicit declaration of function
+> 'BUG' [-Werror=implicit-function-declaration]:  => 185:2
 > 
-> This is not a bug.
+> shmin_defconfig, se7712_defconfig, se7721_defconfig, sh-allnoconfig
 > 
-> start and size arguments of firmware_map_remove() include
-> acpi_memory_info->{start_addr, length}. And when creating a
-> firmware_map_entry,
-> the entry is created by acpi_memory_info->{start_addr, length}. So I don't
-> think that we need care your comment.
-
-If the memory device is hotpluged before the os starts, and the memory
-map is included in e820 map, the entry will be created by firmware_map_add_early().
-
-The function firmware_map_add_early() is called by e820_reserve_resources():
-=====================
-	for (i = 0; i < e820_saved.nr_map; i++) {
-		struct e820entry *entry = &e820_saved.map[i];
-		firmware_map_add_early(entry->addr,
-			entry->addr + entry->size - 1,
-			e820_type_to_string(entry->type));
-	}
-=====================
-
-Note: the end is addr + size - 1, not addr + size.
-
-In such case, you cannot find the entry.
-
-Thanks
-Wen Congyang
-
-> 
->>
->>> +    if (!entry)
->>> +        return -EINVAL;
->>> +
->>> +    /* remove the memmap entry */
->>> +    remove_sysfs_fw_map_entry(entry);
->>> +
->>> +    firmware_map_remove_entry(entry);
->>> +
->>> +    release_firmware_map_entry(entry);
->>
->> I guess you want to free the memory in the above function. But I think
->> it is
->> not a good idea to free it here. We should free it when the
->> entry->kobj's kref
->> is decreased to 0.
-> 
-> Thanks.
-> I'll update your comment at next version.
-> 
-> Thanks,
-> Yasuaki Ishimatsu
-> 
->>
->> Thanks
->> Wen Congyang
->>
->>> +
->>> +    return 0;
->>> +}
->>> +
->>>   /*
->>>    * Sysfs functions
->>> -------------------------------------------------------------
->>>    */
->>>
->>> -- 
->>> To unsubscribe from this list: send the line "unsubscribe
->>> linux-kernel" in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>>
->>
->> -- 
->> To unsubscribe, send a message with 'unsubscribe linux-mm' in
->> the body to majordomo@kvack.org.  For more info on Linux MM,
->> see: http://www.linux-mm.org/ .
->> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->>
-> 
-> 
-> 
-> 
+I'm unable to reproduce any of these, is there some specific compiler
+version or warning flag configuration I'm supposed to be using? I'm
+building with 4.5.1 at the moment.
