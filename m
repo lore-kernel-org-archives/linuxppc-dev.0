@@ -1,40 +1,22 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 35BB5B6FBC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 17:01:24 +1000 (EST)
-Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 461A83EE0BC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 16:01:23 +0900 (JST)
-Received: from smail (m1 [127.0.0.1])
- by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 3071D45DE59
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 16:01:23 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
- by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 057D845DE5A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 16:01:23 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id ECF231DB804D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 16:01:22 +0900 (JST)
-Received: from g01jpexchkw02.g01.fujitsu.local
- (g01jpexchkw02.g01.fujitsu.local [10.0.194.41])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id ABAF31DB8046
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 16:01:22 +0900 (JST)
-Message-ID: <4FEC012E.5030209@jp.fujitsu.com>
-Date: Thu, 28 Jun 2012 16:01:02 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [RFC PATCH 2/12] memory-hogplug : check memory offline in
- offline_pages
-References: <4FEA9C88.1070800@jp.fujitsu.com> <4FEA9DB1.7010303@jp.fujitsu.com>
- <alpine.DEB.2.00.1206262313440.32567@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1206262313440.32567@chino.kir.corp.google.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+ by ozlabs.org (Postfix) with ESMTPS id C3723B7006
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 17:05:19 +1000 (EST)
+Message-ID: <1340866985.20977.62.camel@pasglop>
+Subject: Re: [PATCH V4 1/2] PCI: pcibus address to resource converting take
+ bus directly
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 28 Jun 2012 17:03:05 +1000
+In-Reply-To: <CAErSpo4u6HKdVqaaiL5=GSWRXiVfyfJ7EsnkAwGz6KvKrqaM=w@mail.gmail.com>
+References: <1340808525-24996-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <CAErSpo4u6HKdVqaaiL5=GSWRXiVfyfJ7EsnkAwGz6KvKrqaM=w@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-pci@vger.kernel.org, yinghai@kernel.org,
+ Gavin Shan <shangw@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,44 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi David,
+On Wed, 2012-06-27 at 12:15 -0600, Bjorn Helgaas wrote:
+> 
+> This patch appears to have multiple unrelated changes:
+> 
+>   - change "struct pci_bus *bus" to "struct pci_bus *root_bus"
+>   - change find_pci_host_bridge() argument from dev to bus
+>   - fiddle with pcibios_bus_to_resource() and
+> pcibios_resource_to_bus()
+> 
+> These should be split out to make your patches easier to review.
+> 
+> What's the rationale for preferring the pci_bus over the pci_dev? 
 
-2012/06/27 15:16, David Rientjes wrote:
-> On Wed, 27 Jun 2012, Yasuaki Ishimatsu wrote:
->
->> Index: linux-3.5-rc4/mm/memory_hotplug.c
->> ===================================================================
->> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 13:28:16.743211538 +0900
->> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:48:38.264940468 +0900
->> @@ -887,6 +887,11 @@ static int __ref offline_pages(unsigned
->>
->>   	lock_memory_hotplug();
->>
->> +	if (memory_is_offline(start_pfn, end_pfn)) {
->> +		ret = 0;
->> +		goto out;
->> +	}
->> +
->>   	zone = page_zone(pfn_to_page(start_pfn));
->>   	node = zone_to_nid(zone);
->>   	nr_pages = end_pfn - start_pfn;
->
-> Are there additional prerequisites for this patch?  Otherwise it changes
-> the return value of offline_memory() which will now call
-> acpi_memory_powerdown_device() in the acpi memhotplug case when disabling.
-> Is that a problem?
+We really want to stop doing that crap and put a pointer to the host
+bridge directly in each pci_dev (and maybe pci_bus).
 
-I have understood there is a person who expects "offline_pages()" to fail
-in this case by kosaki's comment. So I'll move memory_is_offline to caller
-side.
+We already do that on powerpc via sysdata (pointing to our private
+structure but the plan is to move that toward struct pci_host_bridge
+eventually).
 
-Thanks,
-Yasuaki Ishimatsu
+We'll need host bridge access to deal with resource "offsets" in a few
+more places and having to do a lookup is just a pain.
 
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+For example, see my earlier email about the issues with the way we
+calculate the minimum address to assign devices. This is currently
+broken when we have an offset and to fix it we'll probably want to deal
+with offsets all the way down in the resource allocation code.
+
+Cheers,
+Ben.
