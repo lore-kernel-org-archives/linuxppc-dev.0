@@ -1,21 +1,24 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from linux-sh.org (linux-sh.org [111.68.239.195])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AB8DDB6FA7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 19:13:06 +1000 (EST)
-Date: Thu, 28 Jun 2012 17:20:10 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Build regressions/improvements in v3.5-rc4
-Message-ID: <20120628082009.GC21764@linux-sh.org>
-References: <1340740795-19603-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdXY1DFNV+jTiJkT99TbX7ZL5eEiKcG0iqZkUa8T7YZG4g@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAMuHMdXY1DFNV+jTiJkT99TbX7ZL5eEiKcG0iqZkUa8T7YZG4g@mail.gmail.com>
-Cc: the arch/x86 maintainers <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Linux-sh list <linux-sh@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 74D32B701F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 20:51:05 +1000 (EST)
+Message-ID: <1340880651.20977.83.camel@pasglop>
+Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+Date: Thu, 28 Jun 2012 20:50:51 +1000
+In-Reply-To: <20120628033815.GA11387@localhost.localdomain>
+References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
+ <1340748634.3732.27.camel@pasglop>
+ <20120627102138.GB10476@localhost.localdomain>
+ <1340797732.3732.46.camel@pasglop>
+ <20120628033815.GA11387@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 26, 2012 at 10:06:27PM +0200, Geert Uytterhoeven wrote:
-> On Tue, Jun 26, 2012 at 9:59 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> > JFYI, when comparing v3.5-rc4 to v3.5-rc3[3], the summaries are:
-> > ??- build errors: +11/-219
+On Thu, 2012-06-28 at 11:38 +0800, Zhao Chenhui wrote:
 > 
-> 11 regressions:
->   + arch/sh/include/asm/fixmap.h: error: implicit declaration of
-> function 'BUG_ON' [-Werror=implicit-function-declaration]:  => 133:2
->   + arch/sh/include/asm/thread_info.h: error: implicit declaration of
-> function 'WARN_ON' [-Werror=implicit-function-declaration]:  => 172:2
->   + include/linux/huge_mm.h: error: implicit declaration of function
-> 'BUG' [-Werror=implicit-function-declaration]:  => 185:2
 > 
-> shmin_defconfig, se7712_defconfig, se7721_defconfig, sh-allnoconfig
-> 
-I'm unable to reproduce any of these, is there some specific compiler
-version or warning flag configuration I'm supposed to be using? I'm
-building with 4.5.1 at the moment.
+> The bootloader have done a timebase sync. If we do not need KEXEC or
+> HOTPLUG_CPU feature, it is unnecessary to do it again at boot time of
+> kernel. I only compile the timebase sync routines
+> when users enable KEXEC or HOTPLUG_CPU. 
+
+Still, how much are you really saving ? Is it worth the added mess and
+loss of test coverage ?
+
+We have too many conditional stuff like that already.
+
+Cheers,
+Ben.
