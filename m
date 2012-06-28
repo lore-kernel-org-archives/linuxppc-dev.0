@@ -1,20 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 487F5B7006
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 17:10:49 +1000 (EST)
-Message-ID: <1340867444.20977.66.camel@pasglop>
-Subject: Re: [PATCH] powerpc: check_and_cede_processor never cedes
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-Date: Thu, 28 Jun 2012 17:10:44 +1000
-In-Reply-To: <20120628091352.48d3859d@kryten>
-References: <20120628084509.4caec81d@kryten>
- <1340837479.3732.90.camel@pasglop> <20120628091352.48d3859d@kryten>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+ by ozlabs.org (Postfix) with ESMTPS id DEED2B6FF8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 18:08:09 +1000 (EST)
+Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 8929C3EE0C2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 17:08:05 +0900 (JST)
+Received: from smail (m3 [127.0.0.1])
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 6E82645DE9E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 17:08:05 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 4B4F645DEBB
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 17:08:05 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 3B6FBE08001
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 17:08:05 +0900 (JST)
+Received: from G01JPEXCHKW08.g01.fujitsu.local
+ (G01JPEXCHKW08.g01.fujitsu.local [10.0.194.47])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id A25F7E08003
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 17:08:04 +0900 (JST)
+Message-ID: <4FEC10CB.3060403@jp.fujitsu.com>
+Date: Thu, 28 Jun 2012 17:07:39 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+MIME-Version: 1.0
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [RFC PATCH 4/12] memory-hotplug : remove /sys/firmware/memmap/X
+ sysfs
+References: <4FEA9C88.1070800@jp.fujitsu.com>
+ <4FEA9E5F.4070205@jp.fujitsu.com> <4FEBFA8D.5040607@cn.fujitsu.com>
+In-Reply-To: <4FEBFA8D.5040607@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,67 +44,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-06-28 at 09:13 +1000, Anton Blanchard wrote:
-> Hi,
-> 
-> > I'd rather add a helper, something like lazy_irq_pending()
-> > and hide the actual check for the bits in irq_happened, in
-> > case we change the scheme again.
-> 
-> Good idea. Look ok?
-> 
+Hi Wen,
+
+2012/06/28 15:32, Wen Congyang wrote:
+> At 06/27/2012 01:47 PM, Yasuaki Ishimatsu Wrote:
+>> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
+>> sysfs files are created. But there is no code to remove these files. The patch
+>> implements the function to remove them.
+>>
+>> Note : The code does not free firmware_map_entry since there is no way to free
+>>         memory which is allocated by bootmem.
+>>
+>> CC: Len Brown <len.brown@intel.com>
+>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> CC: Paul Mackerras <paulus@samba.org>
+>> CC: Christoph Lameter <cl@linux.com>
+>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>> CC: Andrew Morton <akpm@linux-foundation.org>
+>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> CC: Wen Congyang <wency@cn.fujitsu.com>
+>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>
+>> ---
+>>   drivers/firmware/memmap.c    |   71 +++++++++++++++++++++++++++++++++++++++++++
+>>   include/linux/firmware-map.h |    6 +++
+>>   mm/memory_hotplug.c          |    6 +++
+>>   3 files changed, 82 insertions(+), 1 deletion(-)
+>>
+>> Index: linux-3.5-rc4/mm/memory_hotplug.c
+>> ===================================================================
+>> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 13:37:30.546288901 +0900
+>> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:44:37.069955820 +0900
+>> @@ -661,7 +661,11 @@ EXPORT_SYMBOL_GPL(add_memory);
+>>
+>>   int remove_memory(int nid, u64 start, u64 size)
+>>   {
+>> -	return -EBUSY;
+>> +	lock_memory_hotplug();
+>> +	/* remove memmap entry */
+>> +	firmware_map_remove(start, start + size, "System RAM");
+>> +	unlock_memory_hotplug();
+>> +	return 0;
+>>
+>>   }
+>>   EXPORT_SYMBOL_GPL(remove_memory);
+>> Index: linux-3.5-rc4/include/linux/firmware-map.h
+>> ===================================================================
+>> --- linux-3.5-rc4.orig/include/linux/firmware-map.h	2012-06-25 04:53:04.000000000 +0900
+>> +++ linux-3.5-rc4/include/linux/firmware-map.h	2012-06-26 13:44:37.070955807 +0900
+>> @@ -25,6 +25,7 @@
+>>
+>>   int firmware_map_add_early(u64 start, u64 end, const char *type);
+>>   int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
+>> +int firmware_map_remove(u64 start, u64 end, const char *type);
+>>
+>>   #else /* CONFIG_FIRMWARE_MEMMAP */
+>>
+>> @@ -38,6 +39,11 @@ static inline int firmware_map_add_hotpl
+>>   	return 0;
+>>   }
+>>
+>> +static inline int firmware_map_remove(u64 start, u64 end, const char *type)
+>> +{
+>> +	return 0;
+>> +}
+>> +
+>>   #endif /* CONFIG_FIRMWARE_MEMMAP */
+>>
+>>   #endif /* _LINUX_FIRMWARE_MAP_H */
+>> Index: linux-3.5-rc4/drivers/firmware/memmap.c
+>> ===================================================================
+>> --- linux-3.5-rc4.orig/drivers/firmware/memmap.c	2012-06-25 04:53:04.000000000 +0900
+>> +++ linux-3.5-rc4/drivers/firmware/memmap.c	2012-06-26 13:47:17.606948898 +0900
+>> @@ -123,6 +123,16 @@ static int firmware_map_add_entry(u64 st
+>>   	return 0;
+>>   }
+>>
+>> +/**
+>> + * firmware_map_remove_entry() - Does the real work to remove a firmware
+>> + * memmap entry.
+>> + * @entry: removed entry.
+>> + **/
+>> +static inline void firmware_map_remove_entry(struct firmware_map_entry *entry)
+>> +{
+>> +	list_del(&entry->list);
+>> +}
+>> +
+>>   /*
+>>    * Add memmap entry on sysfs
+>>    */
+>> @@ -144,6 +154,31 @@ static int add_sysfs_fw_map_entry(struct
+>>   	return 0;
+>>   }
+>>
+>> +/*
+>> + * Remove memmap entry on sysfs
+>> + */
+>> +static inline void remove_sysfs_fw_map_entry(struct firmware_map_entry *entry)
+>> +{
+>> +	kobject_del(&entry->kobj);
+>> +}
+>> +
+>> +/*
+>> + * Search memmap entry
+>> + */
+>> +
+>> +struct firmware_map_entry * __meminit
+>> +find_firmware_map_entry(u64 start, u64 end, const char *type)
+>> +{
+>> +	struct firmware_map_entry *entry;
+>> +
+>> +	list_for_each_entry(entry, &map_entries, list)
+>> +		if ((entry->start == start) && (entry->end == end) &&
+>> +		    (!strcmp(entry->type, type)))
+>> +			return entry;
+>> +
+>> +	return NULL;
+>> +}
+>> +
+>>   /**
+>>    * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
+>>    * memory hotplug.
+>> @@ -196,6 +231,42 @@ int __init firmware_map_add_early(u64 st
+>>   	return firmware_map_add_entry(start, end, type, entry);
+>>   }
+>>
+>> +void release_firmware_map_entry(struct firmware_map_entry *entry)
+>> +{
+>> +	/*
+>> +	 * FIXME : There is no idea.
+>> +	 *         How to free the entry which allocated bootmem?
+>> +	 */
+>> +}
+>> +
+>> +/**
+>> + * firmware_map_remove() - remove a firmware mapping entry
+>> + * @start: Start of the memory range.
+>> + * @end:   End of the memory range (inclusive).
+>> + * @type:  Type of the memory range.
+>> + *
+>> + * removes a firmware mapping entry.
+>> + *
+>> + * Returns 0 on success, or -EINVAL if no entry.
+>> + **/
+>> +int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
+>> +{
+>> +	struct firmware_map_entry *entry;
+>> +
+>> +	entry = find_firmware_map_entry(start, end, type);
+>
+> Hmm, we cannot find the entry easily, because the end can be:
+> 1. start + size
+> 2. start + size - 1
+>
+> So, We should fix this bug first.
+
+This is not a bug.
+
+start and size arguments of firmware_map_remove() include
+acpi_memory_info->{start_addr, length}. And when creating a firmware_map_entry,
+the entry is created by acpi_memory_info->{start_addr, length}. So I don't
+think that we need care your comment.
+
+>
+>> +	if (!entry)
+>> +		return -EINVAL;
+>> +
+>> +	/* remove the memmap entry */
+>> +	remove_sysfs_fw_map_entry(entry);
+>> +
+>> +	firmware_map_remove_entry(entry);
+>> +
+>> +	release_firmware_map_entry(entry);
+>
+> I guess you want to free the memory in the above function. But I think it is
+> not a good idea to free it here. We should free it when the entry->kobj's kref
+> is decreased to 0.
+
+Thanks.
+I'll update your comment at next version.
+
+Thanks,
+Yasuaki Ishimatsu
+
+>
+> Thanks
+> Wen Congyang
+>
+>> +
+>> +	return 0;
+>> +}
+>> +
+>>   /*
+>>    * Sysfs functions -------------------------------------------------------------
+>>    */
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
 > --
-> 
-> Commit f948501b36c6 ("Make hard_irq_disable() actually hard-disable
-> interrupts") caused check_and_cede_processor to stop working.
-> ->irq_happened will never be zero right after a hard_irq_disable
-> so the compiler removes the call to cede_processor completely.
-> 
-> The bug was introduced back in the lazy interrupt handling rework
-> of 3.4 but was hidden until recently because hard_irq_disable did
-> nothing.
-> 
-> This issue will eventually appear in 3.4 stable since the
-> hard_irq_disable fix is marked stable, so mark this one for stable
-> too.
-
-Yup, looks good, I'll send to Linus tomorrow.
-
-Cheers,
-Ben.
-
-> Signed-off-by: Anton Blanchard <anton@samba.org>  
-> Cc: stable@vger.kernel.org
-> ---
-> 
-> v2: create a helper, suggested by Ben.
-> 
-> Index: linux-build/arch/powerpc/platforms/pseries/processor_idle.c
-> ===================================================================
-> --- linux-build.orig/arch/powerpc/platforms/pseries/processor_idle.c	2012-06-28 08:55:09.422198154 +1000
-> +++ linux-build/arch/powerpc/platforms/pseries/processor_idle.c	2012-06-28 08:57:36.112591023 +1000
-> @@ -106,7 +106,7 @@ static void check_and_cede_processor(voi
->  	 * we first hard disable then check.
->  	 */
->  	hard_irq_disable();
-> -	if (get_paca()->irq_happened == 0)
-> +	if (!lazy_irq_pending())
->  		cede_processor();
->  }
->  
-> Index: linux-build/arch/powerpc/include/asm/hw_irq.h
-> ===================================================================
-> --- linux-build.orig/arch/powerpc/include/asm/hw_irq.h	2012-06-21 09:16:26.265354429 +1000
-> +++ linux-build/arch/powerpc/include/asm/hw_irq.h	2012-06-28 08:59:22.082320381 +1000
-> @@ -103,6 +103,11 @@ static inline void hard_irq_disable(void
->  /* include/linux/interrupt.h needs hard_irq_disable to be a macro */
->  #define hard_irq_disable	hard_irq_disable
->  
-> +static inline bool lazy_irq_pending(void)
-> +{
-> +	return !!(get_paca()->irq_happened & ~PACA_IRQ_HARD_DIS);
-> +}
-> +
->  /*
->   * This is called by asynchronous interrupts to conditionally
->   * re-enable hard interrupts when soft-disabled after having
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
