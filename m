@@ -1,24 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 74D32B701F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 20:51:05 +1000 (EST)
-Message-ID: <1340880651.20977.83.camel@pasglop>
-Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zhao Chenhui <chenhui.zhao@freescale.com>
-Date: Thu, 28 Jun 2012 20:50:51 +1000
-In-Reply-To: <20120628033815.GA11387@localhost.localdomain>
-References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
- <1340748634.3732.27.camel@pasglop>
- <20120627102138.GB10476@localhost.localdomain>
- <1340797732.3732.46.camel@pasglop>
- <20120628033815.GA11387@localhost.localdomain>
+Return-Path: <B07421@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D3A801007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 02:32:00 +1000 (EST)
+Message-ID: <4FEC86CC.90307@freescale.com>
+Date: Thu, 28 Jun 2012 11:31:08 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Subject: Re: [PATCH 0/3] powerpc/fsl: PCI refactoring and QEMU paravirt
+ platform
+References: <20120627234851.GA9071@tyr.buserror.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A10EAB@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A10EAB@039-SN1MPN1-002.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-06-28 at 11:38 +0800, Zhao Chenhui wrote:
+On 06/27/2012 11:06 PM, Jia Hongtao-B38951 wrote:
 > 
 > 
-> The bootloader have done a timebase sync. If we do not need KEXEC or
-> HOTPLUG_CPU feature, it is unnecessary to do it again at boot time of
-> kernel. I only compile the timebase sync routines
-> when users enable KEXEC or HOTPLUG_CPU. 
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Thursday, June 28, 2012 7:49 AM
+>> To: galak@kernel.crashing.org
+>> Cc: agraf@suse.de; linuxppc-dev@lists.ozlabs.org; Jia Hongtao-B38951
+>> Subject: [PATCH 0/3] powerpc/fsl: PCI refactoring and QEMU paravirt
+>> platform
+>>
+>> The QEMU stuff is related to the PCI refactoring because currently
+>> we have a hard time selecting a primary bus under QEMU, and also because
+>> the generic qemu e500 platform wants a full list of FSL PCI compatibles
+>> to check.
+>>
+> 
+> It seems that not all primary bus has "isa" node like 8541 and 8555.
 
-Still, how much are you really saving ? Is it worth the added mess and
-loss of test coverage ?
+Do those boards (it's the boards that matter, not chips...) have legacy
+ISA?  If they do, and it's not in the device tree, then we should fix
+the device tree for consistency, but also retain some sort of hack to
+remain compatible with old device trees.
 
-We have too many conditional stuff like that already.
+A board can refrain from using the new common infrastructure if it has a
+good reason to.
 
-Cheers,
-Ben.
+> Without PM support for pci controllers I totally agree with this refactoring
+> for pci init. But in linux mechanism PM ops should be registered to a driver.
+> Do you have any ideas to add PM support for pci controllers under this patchset?
+
+This isn't meant to be instead of making it a platform device.  It's
+just meant to get us away from board-specific code and primary-bus
+hardcoding now, rather than once we sort out all the issues with
+platform devices.
+
+-Scott
