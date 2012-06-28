@@ -1,38 +1,42 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e2.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8568DB6F77
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 13:54:02 +1000 (EST)
-Received: from /spool/local
- by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <linuxram@us.ibm.com>;
- Wed, 27 Jun 2012 23:54:00 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2F7D338C801A
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 23:53:45 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5S3riYZ165446
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 23:53:44 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5S3riZ5001286
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 00:53:44 -0300
-Date: Thu, 28 Jun 2012 11:53:36 +0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4 2/2] PCI: minimal alignment for bars of P2P bridges
-Message-ID: <20120628035336.GA2423@ram-ThinkPad-T61>
-References: <1340808525-24996-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1340808525-24996-2-git-send-email-shangw@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4BD08B7004
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 14:50:46 +1000 (EST)
+Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id DA25D3EE0C0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 13:50:41 +0900 (JST)
+Received: from smail (m2 [127.0.0.1])
+ by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id BD49A45DE53
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 13:50:41 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
+ by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 9AAF645DE50
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 13:50:41 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 8CD321DB8040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 13:50:41 +0900 (JST)
+Received: from g01jpexchyt07.g01.fujitsu.local
+ (g01jpexchyt07.g01.fujitsu.local [10.128.194.46])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 35E591DB803C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 13:50:41 +0900 (JST)
+Message-ID: <4FEBE280.4060107@jp.fujitsu.com>
+Date: Thu, 28 Jun 2012 13:50:08 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1340808525-24996-2-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, yinghai@kernel.org,
- linuxppc-dev@ozlabs.org
-Reply-To: Ram Pai <linuxram@us.ibm.com>
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [RFC PATCH 1/12] memory-hotplug : rename remove_memory to
+ offline_memory
+References: <4FEA9C88.1070800@jp.fujitsu.com>
+ <4FEA9D5C.1080508@jp.fujitsu.com> <4FEAB2E1.3090200@cn.fujitsu.com>
+ <4FEAC891.7030808@cn.fujitsu.com> <4FEBC8EE.7040207@jp.fujitsu.com>
+ <4FEBCE9C.7030904@cn.fujitsu.com>
+In-Reply-To: <4FEBCE9C.7030904@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,197 +46,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jun 27, 2012 at 10:48:45PM +0800, Gavin Shan wrote:
-> On some powerpc platforms, device BARs need to be assigned to separate
-> "segments" of the address space in order for the error isolation and HW
-> virtualization mechanisms (EEH) to work properly. Those "segments" have
-> a minimum size that can be fairly large (16M). In order to be able to
-> use the generic resource assignment code rather than re-inventing our
-> own, we chose to group devices by bus. That way, a simple change of the
-> minimum alignment requirements of resources assigned to PCI to PCI (P2P)
-> bridges is enough to ensure that all BARs for devices below those bridges
-> will fit into contiguous sets of segments and there will be no overlap.
+Hi Wen,
+
+2012/06/28 12:25, Wen Congyang wrote:
+> At 06/28/2012 11:01 AM, Yasuaki Ishimatsu Wrote:
+>> Hi David and Wen,
+>>
+>> Thank you for reviewing my patch.
+>>
+>> 2012/06/27 17:47, Wen Congyang wrote:
+>>> At 06/27/2012 03:14 PM, Wen Congyang Wrote:
+>>>> At 06/27/2012 01:42 PM, Yasuaki Ishimatsu Wrote:
+>>>>> remove_memory() does not remove memory but just offlines memory. The patch
+>>>>> changes name of it to offline_memory().
+>>>>
+>>>> There are 3 functions in the kernel:
+>>>> 1. add_memory()
+>>>> 2. online_pages()
+>>>> 3. remove_memory()
+>>>>
+>>>> So I think offline_pages() is better than offline_memory().
+>>>
+>>> There is already a function named offline_pages(). So we
+>>> should call offline_pages() instead of remove_memory() in
+>>> memory_block_action(), and there is no need to rename
+>>> remove_memory().
+>>
+>> As Wen says, Linux has 4 functions for memory hotplug already.
+>> In my recognition, these functions are prepared for following purpose.
+>>
+>> 1. add_memory     : add physical memory
+>> 2. online_pages   : online logical memory
+>> 3. remove_memory  : offline logical memory
+>> 4. offline_pages  : offline logical memory
+>>
+>> add_memory() is used for adding physical memory. I think remove_memory()
+>> would rather be used for removing physical memory than be used for removing
+>> logical memory. So I renamed remove_memory() to offline_memory().
+>> How do you think?
 > 
-> This patch provides a way for the host bridge to override the default
-> alignment values used by the resource allocation code for that purpose.
+> Hmm, remove_memory() will revert all things we do in add_memory(), so I think
+
+I think so too.
+
+add_memory() prepares to use physical memory. It prepares some structures
+(pgdat, page table, node, etc) for using the physical memory at the system.
+But it does not online the meomory. For onlining the memory, we use
+online_pages().
+
+So I think that remove_memory() should remove these structures which are
+prepared by add_memory() not offline memory. But current remove_memory() code
+only calls offline_pages() and offlines memory.
+
+The patch series recreates remove_memory() for removing these structures
+after [RFC PATCH 3/12]. The reason to change the name of remove_memory() is a
+preparation to recreate it.
+
+Thanks,
+Yasuaki Ishimatsu
+
+> there is no need to rename it. If we rename it to offline_memory(), we should
+> also rename add_memory() to online_memory().
 > 
-> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> Reviewed-by: Ram Pai <linuxram@us.ibm.com>
-> Reviewed-by: Richard Yang <weiyang@linux.vnet.ibm.com>
-> ---
->  drivers/pci/probe.c     |    5 +++++
->  drivers/pci/setup-bus.c |   28 +++++++++++++++++++++-------
->  include/linux/pci.h     |    8 ++++++++
->  3 files changed, 34 insertions(+), 7 deletions(-)
+> Thanks
+> Wen Congyang
 > 
-> diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-> index 658ac97..a196529 100644
-> --- a/drivers/pci/probe.c
-> +++ b/drivers/pci/probe.c
-> @@ -431,6 +431,11 @@ static struct pci_host_bridge *pci_alloc_host_bridge(struct pci_bus *b)
->  	if (bridge) {
->  		INIT_LIST_HEAD(&bridge->windows);
->  		bridge->bus = b;
-> +
-> +		/* Set minimal alignment shift of P2P bridges */
-> +		bridge->io_align_shift = PCI_DEFAULT_IO_ALIGN_SHIFT;
-> +		bridge->mem_align_shift = PCI_DEFAULT_MEM_ALIGN_SHIFT;
-> +		bridge->pmem_align_shift = PCI_DEFAULT_PMEM_ALIGN_SHIFT;
->  	}
-> 
->  	return bridge;
-> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-> index 8fa2d4b..caebe98 100644
-> --- a/drivers/pci/setup-bus.c
-> +++ b/drivers/pci/setup-bus.c
-> @@ -706,10 +706,12 @@ static resource_size_t calculate_memsize(resource_size_t size,
->  static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size,
->  		resource_size_t add_size, struct list_head *realloc_head)
->  {
-> +	struct pci_host_bridge *phb;
->  	struct pci_dev *dev;
->  	struct resource *b_res = find_free_bus_resource(bus, IORESOURCE_IO);
->  	unsigned long size = 0, size0 = 0, size1 = 0;
->  	resource_size_t children_add_size = 0;
-> +	resource_size_t io_align;
-> 
->  	if (!b_res)
->   		return;
-> @@ -735,13 +737,17 @@ static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size,
->  				children_add_size += get_res_add_size(realloc_head, r);
->  		}
->  	}
-> +
-> +	phb = find_pci_host_bridge(bus);
-> +	io_align = (1 << phb->io_align_shift);
-
-I prefer to see something like
-	io_align = pci_align_boundary(bus, IORESOURCE_IO);
-
-pbus_size_io() and pbus_size_mem() are already quite complicated.
-They need not have to know the host_bridge the bus belongs to, in order
-to determine the alignment boundary. I would rather prefer to hide those details
-in some function.
-
-
-> +
->  	size0 = calculate_iosize(size, min_size, size1,
-> -			resource_size(b_res), 4096);
-> +			resource_size(b_res), io_align);
->  	if (children_add_size > add_size)
->  		add_size = children_add_size;
->  	size1 = (!realloc_head || (realloc_head && !add_size)) ? size0 :
->  		calculate_iosize(size, min_size, add_size + size1,
-> -			resource_size(b_res), 4096);
-> +			resource_size(b_res), io_align);
->  	if (!size0 && !size1) {
->  		if (b_res->start || b_res->end)
->  			dev_info(&bus->self->dev, "disabling bridge window "
-> @@ -751,11 +757,11 @@ static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size,
->  		return;
->  	}
->  	/* Alignment of the IO window is always 4K */
-> -	b_res->start = 4096;
-> +	b_res->start = io_align;
->  	b_res->end = b_res->start + size0 - 1;
->  	b_res->flags |= IORESOURCE_STARTALIGN;
->  	if (size1 > size0 && realloc_head) {
-> -		add_to_list(realloc_head, bus->self, b_res, size1-size0, 4096);
-> +		add_to_list(realloc_head, bus->self, b_res, size1-size0, io_align);
->  		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window "
->  				 "%pR to [bus %02x-%02x] add_size %lx\n", b_res,
->  				 bus->secondary, bus->subordinate, size1-size0);
-> @@ -778,6 +784,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->  			resource_size_t add_size,
->  			struct list_head *realloc_head)
->  {
-> +	struct pci_host_bridge *phb;
->  	struct pci_dev *dev;
->  	resource_size_t min_align, align, size, size0, size1;
->  	resource_size_t aligns[12];	/* Alignments from 1Mb to 2Gb */
-> @@ -785,10 +792,17 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->  	struct resource *b_res = find_free_bus_resource(bus, type);
->  	unsigned int mem64_mask = 0;
->  	resource_size_t children_add_size = 0;
-> +	int mem_align_shift;
-> 
->  	if (!b_res)
->  		return 0;
-> 
-> +	phb = find_pci_host_bridge(bus);
-> +	if (type & IORESOURCE_PREFETCH)
-> +		mem_align_shift = phb->pmem_align_shift;
-
-		mem_align = pci_align_boundary(bus, IORESOURCE_PREFETCH);
-> +	else
-> +		mem_align_shift = phb->mem_align_shift;
-
-		mem_align = pci_align_boundary(bus, IORESOURCE_MEM);
-
-	mem_align_shift = __ffs(mem_align);
-
-
-
-> +
->  	memset(aligns, 0, sizeof(aligns));
->  	max_order = 0;
->  	size = 0;
-> @@ -818,8 +832,8 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->  #endif
->  			/* For bridges size != alignment */
->  			align = pci_resource_alignment(dev, r);
-> -			order = __ffs(align) - 20;
-> -			if (order > 11) {
-> +			order = __ffs(align) - mem_align_shift;
-> +			if (order > (11 - (mem_align_shift - 20))) {
->  				dev_warn(&dev->dev, "disabling BAR %d: %pR "
->  					 "(bad alignment %#llx)\n", i, r,
->  					 (unsigned long long) align);
-> @@ -846,7 +860,7 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
->  	for (order = 0; order <= max_order; order++) {
->  		resource_size_t align1 = 1;
-> 
-> -		align1 <<= (order + 20);
-> +		align1 <<= (order + mem_align_shift);
-> 
->  		if (!align)
->  			min_align = align1;
-
-btw, there is good potential for cleanup here. This entire order/alignment
-calculation has to go in some other function; in a different patch.
-
-
-RP
-
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 2b559f1..879de4e 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -376,9 +376,17 @@ struct pci_host_bridge_window {
->  	resource_size_t offset;		/* bus address + offset = CPU address */
->  };
-> 
-> +/* Default shits for P2P I/O and MMIO bar minimal alignment shifts */
-> +#define PCI_DEFAULT_IO_ALIGN_SHIFT	12	/* 4KB  */
-> +#define PCI_DEFAULT_MEM_ALIGN_SHIFT	20	/* 1MB  */
-> +#define PCI_DEFAULT_PMEM_ALIGN_SHIFT	20	/* 1MB */
-> +
->  struct pci_host_bridge {
->  	struct device dev;
->  	struct pci_bus *bus;		/* root bus */
-> +	int io_align_shift;		/* P2P I/O bar minimal alignment shift  */
-> +	int mem_align_shift;		/* P2P MMIO bar minimal alignment shift */
-> +	int pmem_align_shift;		/* P2P prefetchable MMIO bar minimal alignment shift */
->  	struct list_head windows;	/* pci_host_bridge_windows */
->  	void (*release_fn)(struct pci_host_bridge *);
->  	void *release_data;
-> -- 
-> 1.7.9.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
--- 
-Ram Pai
+>>
+>> Regards,
+>> Yasuaki Ishimatsu
+>>
+>>>
+>>> Thanks
+>>> Wen Congyang
+>>>
+>>>>
+>>>> Thanks
+>>>> Wen Congyang
+>>>>>
