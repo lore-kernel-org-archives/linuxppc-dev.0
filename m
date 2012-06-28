@@ -1,21 +1,39 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BDDF5100802
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 09:50:17 +1000 (EST)
-Date: Wed, 27 Jun 2012 18:50:07 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: <galak@kernel.crashing.org>
-Subject: [PATCH 3/3] powerpc/mpc85xx_ds: convert to unified PCI init
-Message-ID: <20120627235007.GC9100@tyr.buserror.net>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7A797B6F86
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 12:41:01 +1000 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 27 Jun 2012 20:40:59 -0600
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 27FC119D804A
+ for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 02:40:54 +0000 (WET)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5S2evib217852
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 20:40:57 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5S2eu9C017440
+ for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 20:40:57 -0600
+Date: Thu, 28 Jun 2012 10:40:53 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 03/21] ppc/eeh: more logs for EEH initialization
+Message-ID: <20120628024052.GA18670@shangw>
+References: <1340812911-6793-1-git-send-email-shangw@linux.vnet.ibm.com>
+ <1340812911-6793-4-git-send-email-shangw@linux.vnet.ibm.com>
+ <1340840734.23635.8.camel@concordia>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20120627234851.GA9071@tyr.buserror.net>
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de,
- Jia Hongtao <B38951@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1340840734.23635.8.camel@concordia>
+Cc: linuxppc-dev@ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,173 +43,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Similar to how the primary PCI bridge is identified by looking
-for an isa subnode, we determine whether to apply uli exclusions
-by looking for a uli subnode.
+>On Thu, 2012-06-28 at 00:01 +0800, Gavin Shan wrote:
+>> The patch adds more logs to EEH initialization functions for
+>> debugging purpose. Also, the machine type ("pSeries") is checked
+>> in the platform initialization to assure it's the correct platform
+>> to invoke it.
+>
+>Hi Gavin,
+>
+>Our boot logs are full enough. pr_info() is not right for this sort of
+>stuff.
+>
+>For debug use:
+>      * pr_debug() - which can be enabled dynamically.
+>      * pr_devel() - which needs to be built with #define DEBUG
+>      * printk(KERN_DEBUG) - for things you always want printed, but
+>        needn't go to the console by default.
+>
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-Besides being an example of a real-hardware board to use the new PCI init
-(probably one of the more complicated examples due to the uli device
-exclusion), this fixes PCI under QEMU's mpc8544ds machine.  QEMU was
-only creating one PCI bus, and it wasn't the one Linux had arbitrarily
-deemed primary for mpc8544ds (AFAIK, there's no legacy ISA on this
-board).
+Yes, Michael. I'll replace "pr_info" with "pr_debug" in next revision :-)
 
-Tested with QEMU mpc8544ds, and real-hardware mpc8572ds (with uli).
+>> diff --git a/arch/powerpc/platforms/pseries/eeh_dev.c b/arch/powerpc/platforms/pseries/eeh_dev.c
+>> index 8e3443b..a0cee3a 100644
+>> --- a/arch/powerpc/platforms/pseries/eeh_dev.c
+>> +++ b/arch/powerpc/platforms/pseries/eeh_dev.c
+>> @@ -100,6 +100,8 @@ static int __init eeh_dev_phb_init(void)
+>>  	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
+>>  		eeh_dev_phb_init_dynamic(phb);
+>>  
+>> +	pr_info("EEH: devices created\n");
+>
+>That's not actually very informative.
+>
 
- arch/powerpc/platforms/85xx/mpc85xx_ds.c |   97 +++++++++---------------------
- 1 files changed, 29 insertions(+), 68 deletions(-)
+Yep. Let me make it more informative in next revision.
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 1fd91e9..6d3265f 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -114,71 +114,53 @@ void __init mpc85xx_ds_pic_init(void)
- }
- 
- #ifdef CONFIG_PCI
--static int primary_phb_addr;
- extern int uli_exclude_device(struct pci_controller *hose,
- 				u_char bus, u_char devfn);
- 
-+static struct device_node *pci_with_uli;
-+
- static int mpc85xx_exclude_device(struct pci_controller *hose,
- 				   u_char bus, u_char devfn)
- {
--	struct device_node* node;
--	struct resource rsrc;
--
--	node = hose->dn;
--	of_address_to_resource(node, 0, &rsrc);
--
--	if ((rsrc.start & 0xfffff) == primary_phb_addr) {
-+	if (hose->dn == pci_with_uli)
- 		return uli_exclude_device(hose, bus, devfn);
--	}
- 
- 	return PCIBIOS_SUCCESSFUL;
- }
- #endif	/* CONFIG_PCI */
- 
--/*
-- * Setup the architecture
-- */
--static void __init mpc85xx_ds_setup_arch(void)
-+static void __init mpc85xx_ds_pci_init(void)
- {
- #ifdef CONFIG_PCI
--	struct device_node *np;
--	struct pci_controller *hose;
--#endif
--	dma_addr_t max = 0xffffffff;
-+	struct device_node *node;
- 
--	if (ppc_md.progress)
--		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
-+	fsl_pci_init();
- 
--#ifdef CONFIG_PCI
--	for_each_node_by_type(np, "pci") {
--		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
--		    of_device_is_compatible(np, "fsl,mpc8548-pcie") ||
--		    of_device_is_compatible(np, "fsl,p2020-pcie")) {
--			struct resource rsrc;
--			of_address_to_resource(np, 0, &rsrc);
--			if ((rsrc.start & 0xfffff) == primary_phb_addr)
--				fsl_add_bridge(np, 1);
--			else
--				fsl_add_bridge(np, 0);
--
--			hose = pci_find_hose_for_OF_device(np);
--			max = min(max, hose->dma_window_base_cur +
--					hose->dma_window_size);
-+	/* See if we have a ULI under the primary */
-+
-+	node = of_find_node_by_name(NULL, "uli1575");
-+	while ((pci_with_uli = of_get_parent(node))) {
-+		of_node_put(node);
-+		node = pci_with_uli;
-+
-+		if (pci_with_uli == fsl_pci_primary) {
-+			ppc_md.pci_exclude_device = mpc85xx_exclude_device;
-+			break;
- 		}
- 	}
--
--	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
-+}
- 
--	mpc85xx_smp_init();
-+/*
-+ * Setup the architecture
-+ */
-+static void __init mpc85xx_ds_setup_arch(void)
-+{
-+	if (ppc_md.progress)
-+		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
- 
--#ifdef CONFIG_SWIOTLB
--	if (memblock_end_of_DRAM() > max) {
--		ppc_swiotlb_enable = 1;
--		set_pci_dma_ops(&swiotlb_dma_ops);
--		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
--	}
--#endif
-+	mpc85xx_ds_pci_init();
-+	mpc85xx_smp_init();
- 
- 	printk("MPC85xx DS board from Freescale Semiconductor\n");
- }
-@@ -190,14 +172,7 @@ static int __init mpc8544_ds_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
- 
--	if (of_flat_dt_is_compatible(root, "MPC8544DS")) {
--#ifdef CONFIG_PCI
--		primary_phb_addr = 0xb000;
--#endif
--		return 1;
--	}
--
--	return 0;
-+	return !!of_flat_dt_is_compatible(root, "MPC8544DS");
- }
- 
- machine_device_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
-@@ -215,14 +190,7 @@ static int __init mpc8572_ds_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
- 
--	if (of_flat_dt_is_compatible(root, "fsl,MPC8572DS")) {
--#ifdef CONFIG_PCI
--		primary_phb_addr = 0x8000;
--#endif
--		return 1;
--	}
--
--	return 0;
-+	return !!of_flat_dt_is_compatible(root, "fsl,MPC8572DS");
- }
- 
- /*
-@@ -232,14 +200,7 @@ static int __init p2020_ds_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
- 
--	if (of_flat_dt_is_compatible(root, "fsl,P2020DS")) {
--#ifdef CONFIG_PCI
--		primary_phb_addr = 0x9000;
--#endif
--		return 1;
--	}
--
--	return 0;
-+	return !!of_flat_dt_is_compatible(root, "fsl,P2020DS");
- }
- 
- define_machine(mpc8544_ds) {
--- 
-1.7.5.4
+>> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> index bcf0bb8..bb2bd90 100644
+>> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>> @@ -561,7 +561,18 @@ static struct eeh_ops pseries_eeh_ops = {
+>>   */
+>>  static int __init eeh_pseries_init(void)
+>>  {
+>> -	return eeh_ops_register(&pseries_eeh_ops);
+>> +	int ret = -EINVAL;
+>> +
+>> +	if (!machine_is(pseries))
+>> +		return ret;
+>> +
+>> +	ret = eeh_ops_register(&pseries_eeh_ops);
+>> +	if (!ret)
+>> +		pr_info("EEH: pSeries platform initialized\n");
+>> +	else
+>> +		pr_info("EEH: pSeries platform initialization failure\n");
+>> +
+>> +	return ret;
+>>  }
+>>  
+>>  early_initcall(eeh_pseries_init);
+>
+>You can achieve the same with initcall_debug.
+>
+>But if you want to keep it at least print the return code, that's the
+>first thing you will want to know if it fails.
+>
+
+Thanks, Michael. Let me print "ret" for the failure case in next revision.
+Also, I will replace "pr_info" with "pr_debug" as you suggested :-)
+
+Thanks,
+Gavin
+
+>cheers
+>
+>
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
