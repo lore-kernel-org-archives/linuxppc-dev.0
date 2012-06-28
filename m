@@ -1,39 +1,41 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A797B6F86
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 12:41:01 +1000 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 27 Jun 2012 20:40:59 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 27FC119D804A
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 02:40:54 +0000 (WET)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5S2evib217852
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 20:40:57 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5S2eu9C017440
- for <linuxppc-dev@ozlabs.org>; Wed, 27 Jun 2012 20:40:57 -0600
-Date: Thu, 28 Jun 2012 10:40:53 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 03/21] ppc/eeh: more logs for EEH initialization
-Message-ID: <20120628024052.GA18670@shangw>
-References: <1340812911-6793-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1340812911-6793-4-git-send-email-shangw@linux.vnet.ibm.com>
- <1340840734.23635.8.camel@concordia>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2A3BDB6FA0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 13:01:26 +1000 (EST)
+Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id D76AB3EE0C8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 12:01:22 +0900 (JST)
+Received: from smail (m2 [127.0.0.1])
+ by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id BD2FA45DE53
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 12:01:22 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
+ by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 9F2C945DE4D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 12:01:22 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 92C8F1DB802C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 12:01:22 +0900 (JST)
+Received: from g01jpexchkw03.g01.fujitsu.local
+ (g01jpexchkw03.g01.fujitsu.local [10.0.194.42])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 0969C1DB8040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 12:01:22 +0900 (JST)
+Message-ID: <4FEBC8EE.7040207@jp.fujitsu.com>
+Date: Thu, 28 Jun 2012 12:01:02 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1340840734.23635.8.camel@concordia>
-Cc: linuxppc-dev@ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Wen Congyang <wency@cn.fujitsu.com>, <rientjes@google.com>
+Subject: Re: [RFC PATCH 1/12] memory-hotplug : rename remove_memory to
+ offline_memory
+References: <4FEA9C88.1070800@jp.fujitsu.com>
+ <4FEA9D5C.1080508@jp.fujitsu.com> <4FEAB2E1.3090200@cn.fujitsu.com>
+ <4FEAC891.7030808@cn.fujitsu.com>
+In-Reply-To: <4FEAC891.7030808@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,84 +45,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->On Thu, 2012-06-28 at 00:01 +0800, Gavin Shan wrote:
->> The patch adds more logs to EEH initialization functions for
->> debugging purpose. Also, the machine type ("pSeries") is checked
->> in the platform initialization to assure it's the correct platform
->> to invoke it.
->
->Hi Gavin,
->
->Our boot logs are full enough. pr_info() is not right for this sort of
->stuff.
->
->For debug use:
->      * pr_debug() - which can be enabled dynamically.
->      * pr_devel() - which needs to be built with #define DEBUG
->      * printk(KERN_DEBUG) - for things you always want printed, but
->        needn't go to the console by default.
->
+Hi David and Wen,
 
-Yes, Michael. I'll replace "pr_info" with "pr_debug" in next revision :-)
+Thank you for reviewing my patch.
 
->> diff --git a/arch/powerpc/platforms/pseries/eeh_dev.c b/arch/powerpc/platforms/pseries/eeh_dev.c
->> index 8e3443b..a0cee3a 100644
->> --- a/arch/powerpc/platforms/pseries/eeh_dev.c
->> +++ b/arch/powerpc/platforms/pseries/eeh_dev.c
->> @@ -100,6 +100,8 @@ static int __init eeh_dev_phb_init(void)
->>  	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
->>  		eeh_dev_phb_init_dynamic(phb);
->>  
->> +	pr_info("EEH: devices created\n");
->
->That's not actually very informative.
->
+2012/06/27 17:47, Wen Congyang wrote:
+> At 06/27/2012 03:14 PM, Wen Congyang Wrote:
+>> At 06/27/2012 01:42 PM, Yasuaki Ishimatsu Wrote:
+>>> remove_memory() does not remove memory but just offlines memory. The patch
+>>> changes name of it to offline_memory().
+>>
+>> There are 3 functions in the kernel:
+>> 1. add_memory()
+>> 2. online_pages()
+>> 3. remove_memory()
+>>
+>> So I think offline_pages() is better than offline_memory().
+> 
+> There is already a function named offline_pages(). So we
+> should call offline_pages() instead of remove_memory() in
+> memory_block_action(), and there is no need to rename
+> remove_memory().
 
-Yep. Let me make it more informative in next revision.
+As Wen says, Linux has 4 functions for memory hotplug already.
+In my recognition, these functions are prepared for following purpose.
 
->> diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
->> index bcf0bb8..bb2bd90 100644
->> --- a/arch/powerpc/platforms/pseries/eeh_pseries.c
->> +++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
->> @@ -561,7 +561,18 @@ static struct eeh_ops pseries_eeh_ops = {
->>   */
->>  static int __init eeh_pseries_init(void)
->>  {
->> -	return eeh_ops_register(&pseries_eeh_ops);
->> +	int ret = -EINVAL;
->> +
->> +	if (!machine_is(pseries))
->> +		return ret;
->> +
->> +	ret = eeh_ops_register(&pseries_eeh_ops);
->> +	if (!ret)
->> +		pr_info("EEH: pSeries platform initialized\n");
->> +	else
->> +		pr_info("EEH: pSeries platform initialization failure\n");
->> +
->> +	return ret;
->>  }
->>  
->>  early_initcall(eeh_pseries_init);
->
->You can achieve the same with initcall_debug.
->
->But if you want to keep it at least print the return code, that's the
->first thing you will want to know if it fails.
->
+1. add_memory     : add physical memory
+2. online_pages   : online logical memory
+3. remove_memory  : offline logical memory
+4. offline_pages  : offline logical memory
 
-Thanks, Michael. Let me print "ret" for the failure case in next revision.
-Also, I will replace "pr_info" with "pr_debug" as you suggested :-)
+add_memory() is used for adding physical memory. I think remove_memory()
+would rather be used for removing physical memory than be used for removing
+logical memory. So I renamed remove_memory() to offline_memory().
+How do you think?
 
-Thanks,
-Gavin
+Regards,
+Yasuaki Ishimatsu
 
->cheers
->
->
->
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+> 
+> Thanks
+> Wen Congyang
+> 
+>>
+>> Thanks
+>> Wen Congyang
+>>>
+>>> CC: Len Brown <len.brown@intel.com>
+>>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>> CC: Paul Mackerras <paulus@samba.org>
+>>> CC: Christoph Lameter <cl@linux.com>
+>>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>>> CC: Andrew Morton <akpm@linux-foundation.org>
+>>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>>> CC: Wen Congyang <wency@cn.fujitsu.com>
+>>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>>
+>>> ---
+>>>   drivers/acpi/acpi_memhotplug.c |    2 +-
+>>>   drivers/base/memory.c          |    4 ++--
+>>>   include/linux/memory_hotplug.h |    2 +-
+>>>   mm/memory_hotplug.c            |    6 +++---
+>>>   4 files changed, 7 insertions(+), 7 deletions(-)
+>>>
+>>> Index: linux-3.5-rc4/drivers/acpi/acpi_memhotplug.c
+>>> ===================================================================
+>>> --- linux-3.5-rc4.orig/drivers/acpi/acpi_memhotplug.c	2012-06-25 04:53:04.000000000 +0900
+>>> +++ linux-3.5-rc4/drivers/acpi/acpi_memhotplug.c	2012-06-26 13:48:38.263940481 +0900
+>>> @@ -318,7 +318,7 @@ static int acpi_memory_disable_device(st
+>>>   	 */
+>>>   	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
+>>>   		if (info->enabled) {
+>>> -			result = remove_memory(info->start_addr, info->length);
+>>> +			result = offline_memory(info->start_addr, info->length);
+>>>   			if (result)
+>>>   				return result;
+>>>   		}
+>>> Index: linux-3.5-rc4/drivers/base/memory.c
+>>> ===================================================================
+>>> --- linux-3.5-rc4.orig/drivers/base/memory.c	2012-06-25 04:53:04.000000000 +0900
+>>> +++ linux-3.5-rc4/drivers/base/memory.c	2012-06-26 13:48:46.072842803 +0900
+>>> @@ -266,8 +266,8 @@ memory_block_action(unsigned long phys_i
+>>>   			break;
+>>>   		case MEM_OFFLINE:
+>>>   			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
+>>> -			ret = remove_memory(start_paddr,
+>>> -					    nr_pages << PAGE_SHIFT);
+>>> +			ret = offline_memory(start_paddr,
+>>> +					     nr_pages << PAGE_SHIFT);
+>>>   			break;
+>>>   		default:
+>>>   			WARN(1, KERN_WARNING "%s(%ld, %ld) unknown action: "
+>>> Index: linux-3.5-rc4/mm/memory_hotplug.c
+>>> ===================================================================
+>>> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-25 04:53:04.000000000 +0900
+>>> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:48:46.072842803 +0900
+>>> @@ -990,7 +990,7 @@ out:
+>>>   	return ret;
+>>>   }
+>>>
+>>> -int remove_memory(u64 start, u64 size)
+>>> +int offline_memory(u64 start, u64 size)
+>>>   {
+>>>   	unsigned long start_pfn, end_pfn;
+>>>
+>>> @@ -999,9 +999,9 @@ int remove_memory(u64 start, u64 size)
+>>>   	return offline_pages(start_pfn, end_pfn, 120 * HZ);
+>>>   }
+>>>   #else
+>>> -int remove_memory(u64 start, u64 size)
+>>> +int offline_memory(u64 start, u64 size)
+>>>   {
+>>>   	return -EINVAL;
+>>>   }
+>>>   #endif /* CONFIG_MEMORY_HOTREMOVE */
+>>> -EXPORT_SYMBOL_GPL(remove_memory);
+>>> +EXPORT_SYMBOL_GPL(offline_memory);
+>>> Index: linux-3.5-rc4/include/linux/memory_hotplug.h
+>>> ===================================================================
+>>> --- linux-3.5-rc4.orig/include/linux/memory_hotplug.h	2012-06-25 04:53:04.000000000 +0900
+>>> +++ linux-3.5-rc4/include/linux/memory_hotplug.h	2012-06-26 13:48:38.264940468 +0900
+>>> @@ -233,7 +233,7 @@ static inline int is_mem_section_removab
+>>>   extern int mem_online_node(int nid);
+>>>   extern int add_memory(int nid, u64 start, u64 size);
+>>>   extern int arch_add_memory(int nid, u64 start, u64 size);
+>>> -extern int remove_memory(u64 start, u64 size);
+>>> +extern int offline_memory(u64 start, u64 size);
+>>>   extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+>>>   								int nr_pages);
+>>>   extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
+>>>
+>>>
+>>>
+>>> --
+>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>> the body of a message to majordomo@vger.kernel.org
+>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
