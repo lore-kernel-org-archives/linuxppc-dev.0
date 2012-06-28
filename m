@@ -1,23 +1,36 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id A8076B6EF1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 13:20:51 +1000 (EST)
-Message-ID: <4FEBCE9C.7030904@cn.fujitsu.com>
-Date: Thu, 28 Jun 2012 11:25:16 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <zch@az84smr01.freescale.net>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CCB9DB6F77
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 13:37:19 +1000 (EST)
+Received: from mail70-db3 (localhost [127.0.0.1])	by mail70-db3-R.bigfish.com
+ (Postfix) with ESMTP id E459EE02F6	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,
+ 28 Jun 2012 03:35:28 +0000 (UTC)
+Received: from DB3EHSMHS011.bigfish.com (unknown [10.3.81.234])	by
+ mail70-db3.bigfish.com (Postfix) with ESMTP id 32DCC260262	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 03:35:26 +0000 (UTC)
+Received: from localhost.localdomain ([10.213.130.145])	by
+ az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q5S3b5QO005176	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Jun 2012 20:37:06 -0700
+Date: Thu, 28 Jun 2012 11:38:15 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
+Message-ID: <20120628033815.GA11387@localhost.localdomain>
+References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
+ <1340748634.3732.27.camel@pasglop>
+ <20120627102138.GB10476@localhost.localdomain>
+ <1340797732.3732.46.camel@pasglop>
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH 1/12] memory-hotplug : rename remove_memory to
- offline_memory
-References: <4FEA9C88.1070800@jp.fujitsu.com>
- <4FEA9D5C.1080508@jp.fujitsu.com> <4FEAB2E1.3090200@cn.fujitsu.com>
- <4FEAC891.7030808@cn.fujitsu.com> <4FEBC8EE.7040207@jp.fujitsu.com>
-In-Reply-To: <4FEBC8EE.7040207@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1340797732.3732.46.camel@pasglop>
+Sender: <zch@az84smr01.freescale.net>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +40,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 06/28/2012 11:01 AM, Yasuaki Ishimatsu Wrote:
-> Hi David and Wen,
+On Wed, Jun 27, 2012 at 09:48:52PM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2012-06-27 at 18:21 +0800, Zhao Chenhui wrote:
+> > > What's that CONFIG option for ?
+> > > 
+> > > Cheers,
+> > > Ben.
+> > 
+> > This option is to guard the timebase sync routines. It is selected
+> > when KEXEC or HOTPLUG_CPU is enabled on Freescale Book-E platforms.
 > 
-> Thank you for reviewing my patch.
+> Any reason not to just make it unconditional ? That sort of config
+> option tend to just confuse things and make bug reports harder to sort
+> out.... Also you decrease your test coverage.
 > 
-> 2012/06/27 17:47, Wen Congyang wrote:
->> At 06/27/2012 03:14 PM, Wen Congyang Wrote:
->>> At 06/27/2012 01:42 PM, Yasuaki Ishimatsu Wrote:
->>>> remove_memory() does not remove memory but just offlines memory. The patch
->>>> changes name of it to offline_memory().
->>>
->>> There are 3 functions in the kernel:
->>> 1. add_memory()
->>> 2. online_pages()
->>> 3. remove_memory()
->>>
->>> So I think offline_pages() is better than offline_memory().
->>
->> There is already a function named offline_pages(). So we
->> should call offline_pages() instead of remove_memory() in
->> memory_block_action(), and there is no need to rename
->> remove_memory().
-> 
-> As Wen says, Linux has 4 functions for memory hotplug already.
-> In my recognition, these functions are prepared for following purpose.
-> 
-> 1. add_memory     : add physical memory
-> 2. online_pages   : online logical memory
-> 3. remove_memory  : offline logical memory
-> 4. offline_pages  : offline logical memory
-> 
-> add_memory() is used for adding physical memory. I think remove_memory()
-> would rather be used for removing physical memory than be used for removing
-> logical memory. So I renamed remove_memory() to offline_memory().
-> How do you think?
+> Cheers,
+> Ben.
 
-Hmm, remove_memory() will revert all things we do in add_memory(), so I think
-there is no need to rename it. If we rename it to offline_memory(), we should
-also rename add_memory() to online_memory().
+The bootloader have done a timebase sync. If we do not need KEXEC or HOTPLUG_CPU feature,
+it is unnecessary to do it again at boot time of kernel. I only compile the timebase sync routines
+when users enable KEXEC or HOTPLUG_CPU.
 
-Thanks
-Wen Congyang
-
-> 
-> Regards,
-> Yasuaki Ishimatsu
-> 
->>
->> Thanks
->> Wen Congyang
->>
->>>
->>> Thanks
->>> Wen Congyang
->>>>
+-Chenhui
