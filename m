@@ -2,21 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C3723B7006
- for <linuxppc-dev@ozlabs.org>; Thu, 28 Jun 2012 17:05:19 +1000 (EST)
-Message-ID: <1340866985.20977.62.camel@pasglop>
-Subject: Re: [PATCH V4 1/2] PCI: pcibus address to resource converting take
- bus directly
+ by ozlabs.org (Postfix) with ESMTPS id 487F5B7006
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Jun 2012 17:10:49 +1000 (EST)
+Message-ID: <1340867444.20977.66.camel@pasglop>
+Subject: Re: [PATCH] powerpc: check_and_cede_processor never cedes
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 28 Jun 2012 17:03:05 +1000
-In-Reply-To: <CAErSpo4u6HKdVqaaiL5=GSWRXiVfyfJ7EsnkAwGz6KvKrqaM=w@mail.gmail.com>
-References: <1340808525-24996-1-git-send-email-shangw@linux.vnet.ibm.com>
- <CAErSpo4u6HKdVqaaiL5=GSWRXiVfyfJ7EsnkAwGz6KvKrqaM=w@mail.gmail.com>
+To: Anton Blanchard <anton@samba.org>
+Date: Thu, 28 Jun 2012 17:10:44 +1000
+In-Reply-To: <20120628091352.48d3859d@kryten>
+References: <20120628084509.4caec81d@kryten>
+ <1340837479.3732.90.camel@pasglop> <20120628091352.48d3859d@kryten>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, yinghai@kernel.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +24,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-06-27 at 12:15 -0600, Bjorn Helgaas wrote:
+On Thu, 2012-06-28 at 09:13 +1000, Anton Blanchard wrote:
+> Hi,
 > 
-> This patch appears to have multiple unrelated changes:
+> > I'd rather add a helper, something like lazy_irq_pending()
+> > and hide the actual check for the bits in irq_happened, in
+> > case we change the scheme again.
 > 
->   - change "struct pci_bus *bus" to "struct pci_bus *root_bus"
->   - change find_pci_host_bridge() argument from dev to bus
->   - fiddle with pcibios_bus_to_resource() and
-> pcibios_resource_to_bus()
+> Good idea. Look ok?
 > 
-> These should be split out to make your patches easier to review.
+> --
 > 
-> What's the rationale for preferring the pci_bus over the pci_dev? 
+> Commit f948501b36c6 ("Make hard_irq_disable() actually hard-disable
+> interrupts") caused check_and_cede_processor to stop working.
+> ->irq_happened will never be zero right after a hard_irq_disable
+> so the compiler removes the call to cede_processor completely.
+> 
+> The bug was introduced back in the lazy interrupt handling rework
+> of 3.4 but was hidden until recently because hard_irq_disable did
+> nothing.
+> 
+> This issue will eventually appear in 3.4 stable since the
+> hard_irq_disable fix is marked stable, so mark this one for stable
+> too.
 
-We really want to stop doing that crap and put a pointer to the host
-bridge directly in each pci_dev (and maybe pci_bus).
-
-We already do that on powerpc via sysdata (pointing to our private
-structure but the plan is to move that toward struct pci_host_bridge
-eventually).
-
-We'll need host bridge access to deal with resource "offsets" in a few
-more places and having to do a lookup is just a pain.
-
-For example, see my earlier email about the issues with the way we
-calculate the minimum address to assign devices. This is currently
-broken when we have an offset and to fix it we'll probably want to deal
-with offsets all the way down in the resource allocation code.
+Yup, looks good, I'll send to Linus tomorrow.
 
 Cheers,
 Ben.
+
+> Signed-off-by: Anton Blanchard <anton@samba.org>  
+> Cc: stable@vger.kernel.org
+> ---
+> 
+> v2: create a helper, suggested by Ben.
+> 
+> Index: linux-build/arch/powerpc/platforms/pseries/processor_idle.c
+> ===================================================================
+> --- linux-build.orig/arch/powerpc/platforms/pseries/processor_idle.c	2012-06-28 08:55:09.422198154 +1000
+> +++ linux-build/arch/powerpc/platforms/pseries/processor_idle.c	2012-06-28 08:57:36.112591023 +1000
+> @@ -106,7 +106,7 @@ static void check_and_cede_processor(voi
+>  	 * we first hard disable then check.
+>  	 */
+>  	hard_irq_disable();
+> -	if (get_paca()->irq_happened == 0)
+> +	if (!lazy_irq_pending())
+>  		cede_processor();
+>  }
+>  
+> Index: linux-build/arch/powerpc/include/asm/hw_irq.h
+> ===================================================================
+> --- linux-build.orig/arch/powerpc/include/asm/hw_irq.h	2012-06-21 09:16:26.265354429 +1000
+> +++ linux-build/arch/powerpc/include/asm/hw_irq.h	2012-06-28 08:59:22.082320381 +1000
+> @@ -103,6 +103,11 @@ static inline void hard_irq_disable(void
+>  /* include/linux/interrupt.h needs hard_irq_disable to be a macro */
+>  #define hard_irq_disable	hard_irq_disable
+>  
+> +static inline bool lazy_irq_pending(void)
+> +{
+> +	return !!(get_paca()->irq_happened & ~PACA_IRQ_HARD_DIS);
+> +}
+> +
+>  /*
+>   * This is called by asynchronous interrupts to conditionally
+>   * re-enable hard interrupts when soft-disabled after having
