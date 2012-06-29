@@ -1,26 +1,41 @@
-Return-Path: <B38951@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 66931B7005
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 12:36:13 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 0/3] powerpc/fsl: PCI refactoring and QEMU paravirt
- platform
-Date: Fri, 29 Jun 2012 02:36:02 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A13620@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <20120627234851.GA9071@tyr.buserror.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A10EAB@039-SN1MPN1-002.039d.mgd.msft.net>
- <4FEC86CC.90307@freescale.com>
-In-Reply-To: <4FEC86CC.90307@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EDDDAB7006
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 13:09:58 +1000 (EST)
+Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 05B403EE0B6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 12:09:54 +0900 (JST)
+Received: from smail (m1 [127.0.0.1])
+ by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id D9FAE45DE54
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 12:09:53 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
+ by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id C084445DE55
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 12:09:53 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id B16FF1DB8053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 12:09:53 +0900 (JST)
+Received: from g01jpexchyt04.g01.fujitsu.local
+ (g01jpexchyt04.g01.fujitsu.local [10.128.194.43])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 5AEDD1DB8050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 12:09:53 +0900 (JST)
+Message-ID: <4FED1C65.7010902@jp.fujitsu.com>
+Date: Fri, 29 Jun 2012 12:09:25 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
-Cc: "agraf@suse.de" <agraf@suse.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [RFC PATCH 4/12] memory-hotplug : remove /sys/firmware/memmap/X
+ sysfs
+References: <4FEA9C88.1070800@jp.fujitsu.com>
+ <4FEA9E5F.4070205@jp.fujitsu.com> <4FEBFA8D.5040607@cn.fujitsu.com>
+ <4FEC10CB.3060403@jp.fujitsu.com> <4FEC17F8.1000405@cn.fujitsu.com>
+In-Reply-To: <4FEC17F8.1000405@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,42 +45,276 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBKdW5lIDI5LCAyMDEyIDEyOjMxIEFNDQo+IFRvOiBKaWEgSG9u
-Z3Rhby1CMzg5NTENCj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBnYWxha0BrZXJuZWwuY3Jhc2hp
-bmcub3JnOyBMaSBZYW5nLVI1ODQ3MjsNCj4gYWdyYWZAc3VzZS5kZTsgbGludXhwcGMtZGV2QGxp
-c3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzNdIHBvd2VycGMvZnNsOiBQ
-Q0kgcmVmYWN0b3JpbmcgYW5kIFFFTVUgcGFyYXZpcnQNCj4gcGxhdGZvcm0NCj4gDQo+IE9uIDA2
-LzI3LzIwMTIgMTE6MDYgUE0sIEppYSBIb25ndGFvLUIzODk1MSB3cm90ZToNCj4gPg0KPiA+DQo+
-ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IFdvb2QgU2NvdHQtQjA3
-NDIxDQo+ID4+IFNlbnQ6IFRodXJzZGF5LCBKdW5lIDI4LCAyMDEyIDc6NDkgQU0NCj4gPj4gVG86
-IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4gPj4gQ2M6IGFncmFmQHN1c2UuZGU7IGxpbnV4
-cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBKaWEgSG9uZ3Rhby1CMzg5NTENCj4gPj4gU3ViamVj
-dDogW1BBVENIIDAvM10gcG93ZXJwYy9mc2w6IFBDSSByZWZhY3RvcmluZyBhbmQgUUVNVSBwYXJh
-dmlydA0KPiA+PiBwbGF0Zm9ybQ0KPiA+Pg0KPiA+PiBUaGUgUUVNVSBzdHVmZiBpcyByZWxhdGVk
-IHRvIHRoZSBQQ0kgcmVmYWN0b3JpbmcgYmVjYXVzZSBjdXJyZW50bHkNCj4gPj4gd2UgaGF2ZSBh
-IGhhcmQgdGltZSBzZWxlY3RpbmcgYSBwcmltYXJ5IGJ1cyB1bmRlciBRRU1VLCBhbmQgYWxzbw0K
-PiBiZWNhdXNlDQo+ID4+IHRoZSBnZW5lcmljIHFlbXUgZTUwMCBwbGF0Zm9ybSB3YW50cyBhIGZ1
-bGwgbGlzdCBvZiBGU0wgUENJDQo+IGNvbXBhdGlibGVzDQo+ID4+IHRvIGNoZWNrLg0KPiA+Pg0K
-PiA+DQo+ID4gSXQgc2VlbXMgdGhhdCBub3QgYWxsIHByaW1hcnkgYnVzIGhhcyAiaXNhIiBub2Rl
-IGxpa2UgODU0MSBhbmQgODU1NS4NCj4gDQo+IERvIHRob3NlIGJvYXJkcyAoaXQncyB0aGUgYm9h
-cmRzIHRoYXQgbWF0dGVyLCBub3QgY2hpcHMuLi4pIGhhdmUgbGVnYWN5DQo+IElTQT8gIElmIHRo
-ZXkgZG8sIGFuZCBpdCdzIG5vdCBpbiB0aGUgZGV2aWNlIHRyZWUsIHRoZW4gd2Ugc2hvdWxkIGZp
-eA0KPiB0aGUgZGV2aWNlIHRyZWUgZm9yIGNvbnNpc3RlbmN5LCBidXQgYWxzbyByZXRhaW4gc29t
-ZSBzb3J0IG9mIGhhY2sgdG8NCj4gcmVtYWluIGNvbXBhdGlibGUgd2l0aCBvbGQgZGV2aWNlIHRy
-ZWVzLg0KPiANCj4gQSBib2FyZCBjYW4gcmVmcmFpbiBmcm9tIHVzaW5nIHRoZSBuZXcgY29tbW9u
-IGluZnJhc3RydWN0dXJlIGlmIGl0IGhhcyBhDQo+IGdvb2QgcmVhc29uIHRvLg0KDQpJJ20gbm90
-IHN1cmUgdGhhdCBNUEM4NTQxQ0RTIChvciA4NTU1KSBoYXMgbGVnYWN5IElTQS4gSSBqdXN0IGNo
-ZWNrZWQgaW4NCmtlcm5lbCBhbmQgZHRzIHdoaWNoIGltcGxpZXMgdGhlIGJvYXJkIGhhcyBwcmlt
-YXJ5IGJ1cyBhbmQgbm8gImlzYSIgbm9kZS4NCkkgd2lsbCBmaW5kIG91dCB0aGUgZmFjdHMgbGF0
-ZXIuDQoNCg0KPiANCj4gPiBXaXRob3V0IFBNIHN1cHBvcnQgZm9yIHBjaSBjb250cm9sbGVycyBJ
-IHRvdGFsbHkgYWdyZWUgd2l0aCB0aGlzDQo+IHJlZmFjdG9yaW5nDQo+ID4gZm9yIHBjaSBpbml0
-LiBCdXQgaW4gbGludXggbWVjaGFuaXNtIFBNIG9wcyBzaG91bGQgYmUgcmVnaXN0ZXJlZCB0byBh
-DQo+IGRyaXZlci4NCj4gPiBEbyB5b3UgaGF2ZSBhbnkgaWRlYXMgdG8gYWRkIFBNIHN1cHBvcnQg
-Zm9yIHBjaSBjb250cm9sbGVycyB1bmRlciB0aGlzDQo+IHBhdGNoc2V0Pw0KPiANCj4gVGhpcyBp
-c24ndCBtZWFudCB0byBiZSBpbnN0ZWFkIG9mIG1ha2luZyBpdCBhIHBsYXRmb3JtIGRldmljZS4g
-IEl0J3MNCj4ganVzdCBtZWFudCB0byBnZXQgdXMgYXdheSBmcm9tIGJvYXJkLXNwZWNpZmljIGNv
-ZGUgYW5kIHByaW1hcnktYnVzDQo+IGhhcmRjb2Rpbmcgbm93LCByYXRoZXIgdGhhbiBvbmNlIHdl
-IHNvcnQgb3V0IGFsbCB0aGUgaXNzdWVzIHdpdGgNCj4gcGxhdGZvcm0gZGV2aWNlcy4NCj4gDQo+
-IC1TY290dA0KDQpUaGFua3MsIEknbGwgbG9vayBpbnRvIHRoZSBpc3N1ZXMuDQoNCi1KaWEgSG9u
-Z3Rhby4NCg==
+Hi Wen,
+
+2012/06/28 17:38, Wen Congyang wrote:
+> At 06/28/2012 04:07 PM, Yasuaki Ishimatsu Wrote:
+>> Hi Wen,
+>>
+>> 2012/06/28 15:32, Wen Congyang wrote:
+>>> At 06/27/2012 01:47 PM, Yasuaki Ishimatsu Wrote:
+>>>> When (hot)adding memory into system, /sys/firmware/memmap/X/{end,
+>>>> start, type}
+>>>> sysfs files are created. But there is no code to remove these files.
+>>>> The patch
+>>>> implements the function to remove them.
+>>>>
+>>>> Note : The code does not free firmware_map_entry since there is no
+>>>> way to free
+>>>>          memory which is allocated by bootmem.
+>>>>
+>>>> CC: Len Brown <len.brown@intel.com>
+>>>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>> CC: Paul Mackerras <paulus@samba.org>
+>>>> CC: Christoph Lameter <cl@linux.com>
+>>>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>>>> CC: Andrew Morton <akpm@linux-foundation.org>
+>>>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>>>> CC: Wen Congyang <wency@cn.fujitsu.com>
+>>>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>>>
+>>>> ---
+>>>>    drivers/firmware/memmap.c    |   71
+>>>> +++++++++++++++++++++++++++++++++++++++++++
+>>>>    include/linux/firmware-map.h |    6 +++
+>>>>    mm/memory_hotplug.c          |    6 +++
+>>>>    3 files changed, 82 insertions(+), 1 deletion(-)
+>>>>
+>>>> Index: linux-3.5-rc4/mm/memory_hotplug.c
+>>>> ===================================================================
+>>>> --- linux-3.5-rc4.orig/mm/memory_hotplug.c    2012-06-26
+>>>> 13:37:30.546288901 +0900
+>>>> +++ linux-3.5-rc4/mm/memory_hotplug.c    2012-06-26
+>>>> 13:44:37.069955820 +0900
+>>>> @@ -661,7 +661,11 @@ EXPORT_SYMBOL_GPL(add_memory);
+>>>>
+>>>>    int remove_memory(int nid, u64 start, u64 size)
+>>>>    {
+>>>> -    return -EBUSY;
+>>>> +    lock_memory_hotplug();
+>>>> +    /* remove memmap entry */
+>>>> +    firmware_map_remove(start, start + size, "System RAM");
+>>>> +    unlock_memory_hotplug();
+>>>> +    return 0;
+>>>>
+>>>>    }
+>>>>    EXPORT_SYMBOL_GPL(remove_memory);
+>>>> Index: linux-3.5-rc4/include/linux/firmware-map.h
+>>>> ===================================================================
+>>>> --- linux-3.5-rc4.orig/include/linux/firmware-map.h    2012-06-25
+>>>> 04:53:04.000000000 +0900
+>>>> +++ linux-3.5-rc4/include/linux/firmware-map.h    2012-06-26
+>>>> 13:44:37.070955807 +0900
+>>>> @@ -25,6 +25,7 @@
+>>>>
+>>>>    int firmware_map_add_early(u64 start, u64 end, const char *type);
+>>>>    int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
+>>>> +int firmware_map_remove(u64 start, u64 end, const char *type);
+>>>>
+>>>>    #else /* CONFIG_FIRMWARE_MEMMAP */
+>>>>
+>>>> @@ -38,6 +39,11 @@ static inline int firmware_map_add_hotpl
+>>>>        return 0;
+>>>>    }
+>>>>
+>>>> +static inline int firmware_map_remove(u64 start, u64 end, const char
+>>>> *type)
+>>>> +{
+>>>> +    return 0;
+>>>> +}
+>>>> +
+>>>>    #endif /* CONFIG_FIRMWARE_MEMMAP */
+>>>>
+>>>>    #endif /* _LINUX_FIRMWARE_MAP_H */
+>>>> Index: linux-3.5-rc4/drivers/firmware/memmap.c
+>>>> ===================================================================
+>>>> --- linux-3.5-rc4.orig/drivers/firmware/memmap.c    2012-06-25
+>>>> 04:53:04.000000000 +0900
+>>>> +++ linux-3.5-rc4/drivers/firmware/memmap.c    2012-06-26
+>>>> 13:47:17.606948898 +0900
+>>>> @@ -123,6 +123,16 @@ static int firmware_map_add_entry(u64 st
+>>>>        return 0;
+>>>>    }
+>>>>
+>>>> +/**
+>>>> + * firmware_map_remove_entry() - Does the real work to remove a
+>>>> firmware
+>>>> + * memmap entry.
+>>>> + * @entry: removed entry.
+>>>> + **/
+>>>> +static inline void firmware_map_remove_entry(struct
+>>>> firmware_map_entry *entry)
+>>>> +{
+>>>> +    list_del(&entry->list);
+>>>> +}
+>>>> +
+>>>>    /*
+>>>>     * Add memmap entry on sysfs
+>>>>     */
+>>>> @@ -144,6 +154,31 @@ static int add_sysfs_fw_map_entry(struct
+>>>>        return 0;
+>>>>    }
+>>>>
+>>>> +/*
+>>>> + * Remove memmap entry on sysfs
+>>>> + */
+>>>> +static inline void remove_sysfs_fw_map_entry(struct
+>>>> firmware_map_entry *entry)
+>>>> +{
+>>>> +    kobject_del(&entry->kobj);
+>>>> +}
+>>>> +
+>>>> +/*
+>>>> + * Search memmap entry
+>>>> + */
+>>>> +
+>>>> +struct firmware_map_entry * __meminit
+>>>> +find_firmware_map_entry(u64 start, u64 end, const char *type)
+>>>> +{
+>>>> +    struct firmware_map_entry *entry;
+>>>> +
+>>>> +    list_for_each_entry(entry, &map_entries, list)
+>>>> +        if ((entry->start == start) && (entry->end == end) &&
+>>>> +            (!strcmp(entry->type, type)))
+>>>> +            return entry;
+>>>> +
+>>>> +    return NULL;
+>>>> +}
+>>>> +
+>>>>    /**
+>>>>     * firmware_map_add_hotplug() - Adds a firmware mapping entry when
+>>>> we do
+>>>>     * memory hotplug.
+>>>> @@ -196,6 +231,42 @@ int __init firmware_map_add_early(u64 st
+>>>>        return firmware_map_add_entry(start, end, type, entry);
+>>>>    }
+>>>>
+>>>> +void release_firmware_map_entry(struct firmware_map_entry *entry)
+>>>> +{
+>>>> +    /*
+>>>> +     * FIXME : There is no idea.
+>>>> +     *         How to free the entry which allocated bootmem?
+>>>> +     */
+>>>> +}
+>>>> +
+>>>> +/**
+>>>> + * firmware_map_remove() - remove a firmware mapping entry
+>>>> + * @start: Start of the memory range.
+>>>> + * @end:   End of the memory range (inclusive).
+>>>> + * @type:  Type of the memory range.
+>>>> + *
+>>>> + * removes a firmware mapping entry.
+>>>> + *
+>>>> + * Returns 0 on success, or -EINVAL if no entry.
+>>>> + **/
+>>>> +int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
+>>>> +{
+>>>> +    struct firmware_map_entry *entry;
+>>>> +
+>>>> +    entry = find_firmware_map_entry(start, end, type);
+>>>
+>>> Hmm, we cannot find the entry easily, because the end can be:
+>>> 1. start + size
+>>> 2. start + size - 1
+>>>
+>>> So, We should fix this bug first.
+>>
+>> This is not a bug.
+>>
+>> start and size arguments of firmware_map_remove() include
+>> acpi_memory_info->{start_addr, length}. And when creating a
+>> firmware_map_entry,
+>> the entry is created by acpi_memory_info->{start_addr, length}. So I don't
+>> think that we need care your comment.
+>
+> If the memory device is hotpluged before the os starts, and the memory
+> map is included in e820 map, the entry will be created by firmware_map_add_early().
+>
+> The function firmware_map_add_early() is called by e820_reserve_resources():
+> =====================
+> 	for (i = 0; i < e820_saved.nr_map; i++) {
+> 		struct e820entry *entry = &e820_saved.map[i];
+> 		firmware_map_add_early(entry->addr,
+> 			entry->addr + entry->size - 1,
+> 			e820_type_to_string(entry->type));
+> 	}
+> =====================
+>
+> Note: the end is addr + size - 1, not addr + size.
+>
+> In such case, you cannot find the entry.
+
+Thank you for your explanation. I understood it.
+end argument of firmware_map_add_hotplug() has always "addr + size",
+not "addr + size - 1". I think that changing argument of
+firmware_map_add_early() is high risk since the function has been used
+since early times. So, I will unify to "addr + size - 1".
+
+Thanks,
+Yasuaki Ishimatsu
+
+> Thanks
+> Wen Congyang
+>
+>>
+>>>
+>>>> +    if (!entry)
+>>>> +        return -EINVAL;
+>>>> +
+>>>> +    /* remove the memmap entry */
+>>>> +    remove_sysfs_fw_map_entry(entry);
+>>>> +
+>>>> +    firmware_map_remove_entry(entry);
+>>>> +
+>>>> +    release_firmware_map_entry(entry);
+>>>
+>>> I guess you want to free the memory in the above function. But I think
+>>> it is
+>>> not a good idea to free it here. We should free it when the
+>>> entry->kobj's kref
+>>> is decreased to 0.
+>>
+>> Thanks.
+>> I'll update your comment at next version.
+>>
+>> Thanks,
+>> Yasuaki Ishimatsu
+>>
+>>>
+>>> Thanks
+>>> Wen Congyang
+>>>
+>>>> +
+>>>> +    return 0;
+>>>> +}
+>>>> +
+>>>>    /*
+>>>>     * Sysfs functions
+>>>> -------------------------------------------------------------
+>>>>     */
+>>>>
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe
+>>>> linux-kernel" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>
+>>>
+>>> --
+>>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>>> see: http://www.linux-mm.org/ .
+>>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>>>
+>>
+>>
+>>
+>>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
