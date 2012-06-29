@@ -1,26 +1,29 @@
-Return-Path: <B21989@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+Return-Path: <B35336@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 410341007D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 20:01:25 +1000 (EST)
-Received: from mail67-am1 (localhost [127.0.0.1])	by mail67-am1-R.bigfish.com
- (Postfix) with ESMTP id 168CF4A02B7	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 29 Jun 2012 09:59:31 +0000 (UTC)
-Received: from AM1EHSMHS009.bigfish.com (unknown [10.3.201.247])	by
- mail67-am1.bigfish.com (Postfix) with ESMTP id 141EF60043	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 09:59:30 +0000 (UTC)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/p2041rdb: add NAND node in device tree
-Date: Fri, 29 Jun 2012 17:41:11 +0800
-Message-ID: <1340962871-10617-1-git-send-email-Shaohui.Xie@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id AE9B91007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 20:33:53 +1000 (EST)
+From: Zhao Chenhui-B35336 <B35336@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
+Date: Fri, 29 Jun 2012 10:33:45 +0000
+Message-ID: <7AA2FF042C086D469F577FA6723434DA05D87E@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
+ <1340748634.3732.27.camel@pasglop>
+ <20120627102138.GB10476@localhost.localdomain>
+ <1340797732.3732.46.camel@pasglop>
+ <20120628033815.GA11387@localhost.localdomain>
+ <1340880651.20977.83.camel@pasglop>
+ <D2BA086B-6EB3-4853-B901-FA37DCCDC134@kernel.crashing.org>
+In-Reply-To: <D2BA086B-6EB3-4853-B901-FA37DCCDC134@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>, "linuxppc-dev@lists.ozlabs.org
+ list" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,71 +33,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-NAND on p2041 uses CS1 as chip select.
+> -----Original Message-----
+> From: Linuxppc-dev [mailto:linuxppc-dev-bounces+chenhui.zhao=3Dfreescale.=
+com@lists.ozlabs.org] On Behalf
+> Of Kumar Gala
+> Sent: Friday, June 29, 2012 2:30 AM
+> To: Zhao Chenhui-B35336
+> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org list; linux-kernel@v=
+ger.kernel.org list
+> Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase syn=
+c
+>=20
+>=20
+> On Jun 28, 2012, at 5:50 AM, Benjamin Herrenschmidt wrote:
+>=20
+> > On Thu, 2012-06-28 at 11:38 +0800, Zhao Chenhui wrote:
+> >>
+> >>
+> >> The bootloader have done a timebase sync. If we do not need KEXEC or
+> >> HOTPLUG_CPU feature, it is unnecessary to do it again at boot time of
+> >> kernel. I only compile the timebase sync routines
+> >> when users enable KEXEC or HOTPLUG_CPU.
+> >
+> > Still, how much are you really saving ? Is it worth the added mess and
+> > loss of test coverage ?
+> >
+> > We have too many conditional stuff like that already.
+> >
+> > Cheers,
+> > Ben.
+> >
+>=20
+> I'd also be interested to know how long it actually takes to do time base=
+ sync this way.  Since you
+> are freezing the timers for some period how long does it really take betw=
+een the freeze/unfreeze in
+> mpc85xx_give_timebase()
+>=20
+> +	mpc85xx_timebase_freeze(1);
+> ...
+> +	mpc85xx_timebase_freeze(0);
+>=20
+> You can use ATBL/U as a way to see # of cycles taken.
+>=20
+> - k
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
- arch/powerpc/boot/dts/p2041rdb.dts |   41 +++++++++++++++++++++++++++++++++++-
- 1 files changed, 40 insertions(+), 1 deletions(-)
+I measured it using ATBL on MPC8572DS with 1.5GHz core frequency and 600MHz=
+ CCB frequency.
+The average of 10 times is 1019 clock. It seems that most of the time spent=
+ by isync and msync.
 
-diff --git a/arch/powerpc/boot/dts/p2041rdb.dts b/arch/powerpc/boot/dts/p2041rdb.dts
-index 2852139..baab034 100644
---- a/arch/powerpc/boot/dts/p2041rdb.dts
-+++ b/arch/powerpc/boot/dts/p2041rdb.dts
-@@ -121,7 +121,8 @@
- 
- 	lbc: localbus@ffe124000 {
- 		reg = <0xf 0xfe124000 0 0x1000>;
--		ranges = <0 0 0xf 0xe8000000 0x08000000>;
-+		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  1 0 0xf 0xffa00000 0x00040000>;
- 
- 		flash@0,0 {
- 			compatible = "cfi-flash";
-@@ -129,6 +130,44 @@
- 			bank-width = <2>;
- 			device-width = <2>;
- 		};
-+
-+		nand@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,elbc-fcm-nand";
-+			reg = <0x1 0x0 0x40000>;
-+
-+			partition@0 {
-+				label = "NAND U-Boot Image";
-+				reg = <0x0 0x02000000>;
-+				read-only;
-+			};
-+
-+			partition@2000000 {
-+				label = "NAND Root File System";
-+				reg = <0x02000000 0x10000000>;
-+			};
-+
-+			partition@12000000 {
-+				label = "NAND Compressed RFS Image";
-+				reg = <0x12000000 0x08000000>;
-+			};
-+
-+			partition@1a000000 {
-+				label = "NAND Linux Kernel Image";
-+				reg = <0x1a000000 0x04000000>;
-+			};
-+
-+			partition@1e000000 {
-+				label = "NAND DTB Image";
-+				reg = <0x1e000000 0x01000000>;
-+			};
-+
-+			partition@1f000000 {
-+				label = "NAND Writable User area";
-+				reg = <0x1f000000 0x01000000>;
-+			};
-+		};
- 	};
- 
- 	pci0: pcie@ffe200000 {
--- 
-1.6.4
+-Chenhui
