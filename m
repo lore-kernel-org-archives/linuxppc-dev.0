@@ -1,28 +1,28 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 31EFE1007DC
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:18:10 +1000 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A353D1007E6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:18:11 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 29 Jun 2012 14:08:35 +1000
+ Fri, 29 Jun 2012 14:07:05 +1000
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5TEAQ1h57999608
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:10:26 +1000
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5TEI76C786688
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:18:07 +1000
 Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5TEI4pp000395
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:18:04 +1000
+ q5TEI7Qn000463
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:18:07 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
  anton@samba.org
-Subject: [PATCH -V1 7/9] arch/powerpc: Use 50 bits of VSID in slbmte
-Date: Fri, 29 Jun 2012 19:47:35 +0530
-Message-Id: <1340979457-26018-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V1 8/9] arch/powerpc: Use 32bit array for slb cache
+Date: Fri, 29 Jun 2012 19:47:36 +0530
+Message-Id: <1340979457-26018-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1340979457-26018-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1340979457-26018-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -38,35 +38,46 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Increase the number of valid VSID bits in slbmte instruction.
-We will use the new bits when we increase valid VSID bits.
+With larger vsid we need to track more bits of ESID in slb cache
+for slb invalidate.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/slb_low.S |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/paca.h |    2 +-
+ arch/powerpc/mm/slb_low.S       |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index daf813f..3e7abba 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -100,7 +100,7 @@ struct paca_struct {
+ 	/* SLB related definitions */
+ 	u16 vmalloc_sllp;
+ 	u16 slb_cache_ptr;
+-	u16 slb_cache[SLB_CACHE_ENTRIES];
++	u32 slb_cache[SLB_CACHE_ENTRIES];
+ #endif /* CONFIG_PPC_STD_MMU_64 */
+ 
+ #ifdef CONFIG_PPC_BOOK3E
 diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index c355af6..c1fc81c 100644
+index c1fc81c..d522679 100644
 --- a/arch/powerpc/mm/slb_low.S
 +++ b/arch/powerpc/mm/slb_low.S
-@@ -226,7 +226,7 @@ _GLOBAL(slb_allocate_user)
-  */
- slb_finish_load:
- 	ASM_VSID_SCRAMBLE(r10,r9,256M)
--	rldimi	r11,r10,SLB_VSID_SHIFT,16	/* combine VSID and flags */
-+	rldimi	r11,r10,SLB_VSID_SHIFT,2	/* combine VSID and flags */
+@@ -269,10 +269,10 @@ _GLOBAL(slb_compare_rr_to_size)
+ 	bge	1f
  
- 	/* r3 = EA, r11 = VSID data */
- 	/*
-@@ -290,7 +290,7 @@ _GLOBAL(slb_compare_rr_to_size)
- slb_finish_load_1T:
- 	srdi	r10,r10,40-28		/* get 1T ESID */
- 	ASM_VSID_SCRAMBLE(r10,r9,1T)
--	rldimi	r11,r10,SLB_VSID_SHIFT_1T,16	/* combine VSID and flags */
-+	rldimi	r11,r10,SLB_VSID_SHIFT_1T,2	/* combine VSID and flags */
- 	li	r10,MMU_SEGSIZE_1T
- 	rldimi	r11,r10,SLB_VSID_SSIZE_SHIFT,0	/* insert segment size */
- 
+ 	/* still room in the slb cache */
+-	sldi	r11,r3,1		/* r11 = offset * sizeof(u16) */
+-	rldicl	r10,r10,36,28		/* get low 16 bits of the ESID */
+-	add	r11,r11,r13		/* r11 = (u16 *)paca + offset */
+-	sth	r10,PACASLBCACHE(r11)	/* paca->slb_cache[offset] = esid */
++	sldi	r11,r3,2		/* r11 = offset * sizeof(u32) */
++	rldicl	r10,r10,36,28		/* get the 36 bits of the ESID */
++	add	r11,r11,r13		/* r11 = (u32 *)paca + offset */
++	stw	r10,PACASLBCACHE(r11)	/* paca->slb_cache[offset] = esid */
+ 	addi	r3,r3,1			/* offset++ */
+ 	b	2f
+ 1:					/* offset >= SLB_CACHE_ENTRIES */
 -- 
 1.7.10
