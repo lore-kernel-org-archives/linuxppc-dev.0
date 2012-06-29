@@ -1,27 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e2.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 43318B7010
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2012 16:48:00 +1000 (EST)
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 40CF0B700F
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2012 16:48:02 +1000 (EST)
 Received: from /spool/local
- by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Fri, 29 Jun 2012 02:47:57 -0400
+ Fri, 29 Jun 2012 02:47:59 -0400
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5T6ltSh412846
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2012 02:47:55 -0400
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5T6lubJ393544
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2012 02:47:56 -0400
 Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
  by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5T6ls4u006777
- for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2012 02:47:55 -0400
+ q5T6ltcL006825
+ for <linuxppc-dev@ozlabs.org>; Fri, 29 Jun 2012 02:47:56 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH V5 0/7] minimal alignment for p2p bars
-Date: Fri, 29 Jun 2012 14:47:43 +0800
-Message-Id: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/7] pci: argument pci_bus for find_pci_host_bridge
+Date: Fri, 29 Jun 2012 14:47:45 +0800
+Message-Id: <c487a34f0968b5583b5b2e53daad23dc9699f85e.1340949637.git.shangw@linux.vnet.ibm.com>
+In-Reply-To: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
+References: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
+In-Reply-To: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
+References: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, yinghai@kernel.org,
  Gavin Shan <shangw@linux.vnet.ibm.com>, linuxram@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,36 +37,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-v1 -> v2:
-	* Shorten the varaible names so that they looks more short.
-	* Changelog adjustment so that they looks more meaningful.
+The patch changes the argument of find_pci_host_bridge() to pci_bus.
 
-v2 -> v3:
-	* Rebase to 3.5.RC4
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ drivers/pci/host-bridge.c |   13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-v3 -> v4:
-	* Merge Yinghai's patches.
-
-v3 -> v4:
-	* Split patch for easy review.
-	* Add function to retrieve the minimal alignment of p2p bridge. 
-
-Lu Yinghai(3):
-  pci: change variable name for find_pci_host_bridge
-  pci: argument pci_bus for find_pci_host_bridge
-  pci: fiddle with conversion of pci and CPU address
-
-Gavin Shan(4)
-  pci: make find_pci_host_bridge global
-  pci: minimal alignment for bars of P2P bridges
-  pci: function to retrieve alignment of p2p bars
-  pci: resource assignment based on p2p alignment
-
- drivers/pci/host-bridge.c |   59 ++++++++++++++++++++++++++++++++++++---------
- drivers/pci/probe.c       |    5 ++++
- drivers/pci/setup-bus.c   |   22 +++++++++++------
- include/linux/pci.h       |   15 +++++++++++-
- 4 files changed, 81 insertions(+), 20 deletions(-)
-
-Thanks,
-Gavin
+diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
+index c19776a..fc16357 100644
+--- a/drivers/pci/host-bridge.c
++++ b/drivers/pci/host-bridge.c
+@@ -9,20 +9,17 @@
+ 
+ #include "pci.h"
+ 
+-static struct pci_bus *find_pci_root_bus(struct pci_dev *dev)
++static struct pci_bus *find_pci_root_bus(struct pci_bus *bus)
+ {
+-	struct pci_bus *bus;
+-
+-	bus = dev->bus;
+ 	while (bus->parent)
+ 		bus = bus->parent;
+ 
+ 	return bus;
+ }
+ 
+-static struct pci_host_bridge *find_pci_host_bridge(struct pci_dev *dev)
++static struct pci_host_bridge *find_pci_host_bridge(struct pci_bus *bus)
+ {
+-	struct pci_bus *root_bus = find_pci_root_bus(dev);
++	struct pci_bus *root_bus = find_pci_root_bus(bus);
+ 
+ 	return to_pci_host_bridge(root_bus->bridge);
+ }
+@@ -43,7 +40,7 @@ static bool resource_contains(struct resource *res1, struct resource *res2)
+ void pcibios_resource_to_bus(struct pci_dev *dev, struct pci_bus_region *region,
+ 			     struct resource *res)
+ {
+-	struct pci_host_bridge *bridge = find_pci_host_bridge(dev);
++	struct pci_host_bridge *bridge = find_pci_host_bridge(dev->bus);
+ 	struct pci_host_bridge_window *window;
+ 	resource_size_t offset = 0;
+ 
+@@ -71,7 +68,7 @@ static bool region_contains(struct pci_bus_region *region1,
+ void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+ 			     struct pci_bus_region *region)
+ {
+-	struct pci_host_bridge *bridge = find_pci_host_bridge(dev);
++	struct pci_host_bridge *bridge = find_pci_host_bridge(dev->bus);
+ 	struct pci_host_bridge_window *window;
+ 	resource_size_t offset = 0;
+ 
+-- 
+1.7.9.5
