@@ -1,30 +1,28 @@
 Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 41CCAB6EE6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 03:00:15 +1000 (EST)
-Message-ID: <4FEDDF06.10006@freescale.com>
-Date: Fri, 29 Jun 2012 11:59:50 -0500
+ by ozlabs.org (Postfix) with ESMTPS id AC9B4B6F9A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 03:11:56 +1000 (EST)
+Message-ID: <4FEDE184.7070109@freescale.com>
+Date: Fri, 29 Jun 2012 12:10:28 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Li Yang-R58472 <r58472@freescale.com>
-Subject: Re: [PATCH 0/3] powerpc/fsl: PCI refactoring and QEMU paravirt
- platform
-References: <20120627234851.GA9071@tyr.buserror.net>
- <412C8208B4A0464FA894C5F0C278CD5D01A10EAB@039-SN1MPN1-002.039d.mgd.msft.net>
- <4FEC86CC.90307@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A13620@039-SN1MPN1-002.039d.mgd.msft.net>
- <34D617F2-54CD-46DA-A110-E44CE081B99B@kernel.crashing.org>
- <4FEDD15E.10706@freescale.com>
- <94F013E7935FF44C83EBE7784D62AD3F09348F0B@039-SN2MPN1-022.039d.mgd.msft.net>
-In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F09348F0B@039-SN2MPN1-022.039d.mgd.msft.net>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
+References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
+ <CAOZdJXWiGOCtP1iJYR2S48XwR2Wpry8+VswctctdVfY9Z+QTiQ@mail.gmail.com>
+ <4FEDD07D.3090103@freescale.com> <4FEDD1F0.1060000@freescale.com>
+ <4FEDD383.40804@freescale.com> <4FEDD3EB.7090606@freescale.com>
+In-Reply-To: <4FEDD3EB.7090606@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Jia Hongtao-B38951 <B38951@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +32,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/29/2012 11:18 AM, Li Yang-R58472 wrote:
+On 06/29/2012 11:12 AM, Timur Tabi wrote:
+> Scott Wood wrote:
+>> Why is this different from anywhere else where we have a list of
+>> compatibles to match, often based on various SoCs?  Note that we
+>> explicitly want to match only certain SoCs here.
 > 
-> 
->> -----Original Message----- From: Wood Scott-B07421 Sent: Friday,
->> June 29, 2012 11:02 AM To: Kumar Gala Cc: Jia Hongtao-B38951; Wood
->> Scott-B07421; Li Yang-R58472; agraf@suse.de; 
->> linuxppc-dev@lists.ozlabs.org Subject: Re: [PATCH 0/3] powerpc/fsl:
->> PCI refactoring and QEMU paravirt platform
->> 
->> On 06/29/2012 10:57 AM, Kumar Gala wrote:
->>> Pretty sure the boards have ISA, if you see the .dts has
->>> references to
->> 'ISA bridge' & 'i8259' PIC.
->> 
->> OK.  How about looking for an i8259 node as well?
-> 
-> That could work, but looks hackish.  Our proposal for adding a new
-> device tree property is a generic solution. 
+> I was just hoping to find a way to avoid an ever increasing list of
+> compatible strings. 
 
-Yes, all *new* boards should have an isa node.  But we want to remain
-compatible with existing device trees.
+PCI drivers have to put up with it, why should we be different? :-)
 
-> The only problem is that
-> new kernels would work with old device trees.  I think we can use
-> your solution for transitional period.  And go for a well defined
-> device tree binding for this in long run.
+> Other posts on this thread imply that this code could
+> work for all multi-core e500 parts.
 
-The "transitional period" is until we no longer care about these
-specific boards, or any out-of-tree derivatives.
+That list covers all multi-core e500v2 parts that I know of.  Corenet
+based chips will need a slightly different implementation, since the
+registers are different.
 
 -Scott
