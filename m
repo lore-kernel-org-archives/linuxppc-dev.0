@@ -1,28 +1,29 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Return-Path: <r58472@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 01909B7093
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 02:12:36 +1000 (EST)
-Message-ID: <4FEDD3EB.7090606@freescale.com>
-Date: Fri, 29 Jun 2012 11:12:27 -0500
-From: Timur Tabi <timur@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 47F6CB6FBB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 02:18:42 +1000 (EST)
+From: Li Yang-R58472 <r58472@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Kumar Gala
+ <galak@kernel.crashing.org>
+Subject: RE: [PATCH 0/3] powerpc/fsl: PCI refactoring and QEMU paravirt
+ platform
+Date: Fri, 29 Jun 2012 16:18:33 +0000
+Message-ID: <94F013E7935FF44C83EBE7784D62AD3F09348F0B@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <20120627234851.GA9071@tyr.buserror.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A10EAB@039-SN1MPN1-002.039d.mgd.msft.net>
+ <4FEC86CC.90307@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A13620@039-SN1MPN1-002.039d.mgd.msft.net>
+ <34D617F2-54CD-46DA-A110-E44CE081B99B@kernel.crashing.org>
+ <4FEDD15E.10706@freescale.com>
+In-Reply-To: <4FEDD15E.10706@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
-References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
- <CAOZdJXWiGOCtP1iJYR2S48XwR2Wpry8+VswctctdVfY9Z+QTiQ@mail.gmail.com>
- <4FEDD07D.3090103@freescale.com> <4FEDD1F0.1060000@freescale.com>
- <4FEDD383.40804@freescale.com>
-In-Reply-To: <4FEDD383.40804@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "agraf@suse.de" <agraf@suse.de>, Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,15 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Why is this different from anywhere else where we have a list of
-> compatibles to match, often based on various SoCs?  Note that we
-> explicitly want to match only certain SoCs here.
-
-I was just hoping to find a way to avoid an ever increasing list of
-compatible strings.  Other posts on this thread imply that this code could
-work for all multi-core e500 parts.
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBKdW5lIDI5LCAyMDEyIDExOjAyIEFNDQo+IFRvOiBLdW1hciBH
+YWxhDQo+IENjOiBKaWEgSG9uZ3Rhby1CMzg5NTE7IFdvb2QgU2NvdHQtQjA3NDIxOyBMaSBZYW5n
+LVI1ODQ3MjsgYWdyYWZAc3VzZS5kZTsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcN
+Cj4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzNdIHBvd2VycGMvZnNsOiBQQ0kgcmVmYWN0b3Jpbmcg
+YW5kIFFFTVUgcGFyYXZpcnQNCj4gcGxhdGZvcm0NCj4gDQo+IE9uIDA2LzI5LzIwMTIgMTA6NTcg
+QU0sIEt1bWFyIEdhbGEgd3JvdGU6DQo+ID4NCj4gPiBPbiBKdW4gMjgsIDIwMTIsIGF0IDk6MzYg
+UE0sIEppYSBIb25ndGFvLUIzODk1MSB3cm90ZToNCj4gPg0KPiA+Pg0KPiA+Pg0KPiA+Pj4gLS0t
+LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+
+ID4+PiBTZW50OiBGcmlkYXksIEp1bmUgMjksIDIwMTIgMTI6MzEgQU0NCj4gPj4+IFRvOiBKaWEg
+SG9uZ3Rhby1CMzg5NTENCj4gPj4+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgZ2FsYWtAa2VybmVs
+LmNyYXNoaW5nLm9yZzsgTGkgWWFuZy1SNTg0NzI7DQo+ID4+PiBhZ3JhZkBzdXNlLmRlOyBsaW51
+eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+Pj4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzNd
+IHBvd2VycGMvZnNsOiBQQ0kgcmVmYWN0b3JpbmcgYW5kIFFFTVUNCj4gPj4+IHBhcmF2aXJ0IHBs
+YXRmb3JtDQo+ID4+Pg0KPiA+Pj4gT24gMDYvMjcvMjAxMiAxMTowNiBQTSwgSmlhIEhvbmd0YW8t
+QjM4OTUxIHdyb3RlOg0KPiA+Pj4+DQo+ID4+Pj4NCj4gPj4+Pj4gLS0tLS1PcmlnaW5hbCBNZXNz
+YWdlLS0tLS0NCj4gPj4+Pj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPj4+Pj4gU2VudDog
+VGh1cnNkYXksIEp1bmUgMjgsIDIwMTIgNzo0OSBBTQ0KPiA+Pj4+PiBUbzogZ2FsYWtAa2VybmVs
+LmNyYXNoaW5nLm9yZw0KPiA+Pj4+PiBDYzogYWdyYWZAc3VzZS5kZTsgbGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmc7IEppYQ0KPiA+Pj4+PiBIb25ndGFvLUIzODk1MQ0KPiA+Pj4+PiBTdWJq
+ZWN0OiBbUEFUQ0ggMC8zXSBwb3dlcnBjL2ZzbDogUENJIHJlZmFjdG9yaW5nIGFuZCBRRU1VDQo+
+ID4+Pj4+IHBhcmF2aXJ0IHBsYXRmb3JtDQo+ID4+Pj4+DQo+ID4+Pj4+IFRoZSBRRU1VIHN0dWZm
+IGlzIHJlbGF0ZWQgdG8gdGhlIFBDSSByZWZhY3RvcmluZyBiZWNhdXNlIGN1cnJlbnRseQ0KPiA+
+Pj4+PiB3ZSBoYXZlIGEgaGFyZCB0aW1lIHNlbGVjdGluZyBhIHByaW1hcnkgYnVzIHVuZGVyIFFF
+TVUsIGFuZCBhbHNvDQo+ID4+PiBiZWNhdXNlDQo+ID4+Pj4+IHRoZSBnZW5lcmljIHFlbXUgZTUw
+MCBwbGF0Zm9ybSB3YW50cyBhIGZ1bGwgbGlzdCBvZiBGU0wgUENJDQo+ID4+PiBjb21wYXRpYmxl
+cw0KPiA+Pj4+PiB0byBjaGVjay4NCj4gPj4+Pj4NCj4gPj4+Pg0KPiA+Pj4+IEl0IHNlZW1zIHRo
+YXQgbm90IGFsbCBwcmltYXJ5IGJ1cyBoYXMgImlzYSIgbm9kZSBsaWtlIDg1NDEgYW5kIDg1NTUu
+DQo+ID4+Pg0KPiA+Pj4gRG8gdGhvc2UgYm9hcmRzIChpdCdzIHRoZSBib2FyZHMgdGhhdCBtYXR0
+ZXIsIG5vdCBjaGlwcy4uLikgaGF2ZQ0KPiA+Pj4gbGVnYWN5IElTQT8gIElmIHRoZXkgZG8sIGFu
+ZCBpdCdzIG5vdCBpbiB0aGUgZGV2aWNlIHRyZWUsIHRoZW4gd2UNCj4gPj4+IHNob3VsZCBmaXgg
+dGhlIGRldmljZSB0cmVlIGZvciBjb25zaXN0ZW5jeSwgYnV0IGFsc28gcmV0YWluIHNvbWUNCj4g
+Pj4+IHNvcnQgb2YgaGFjayB0byByZW1haW4gY29tcGF0aWJsZSB3aXRoIG9sZCBkZXZpY2UgdHJl
+ZXMuDQo+ID4+Pg0KPiA+Pj4gQSBib2FyZCBjYW4gcmVmcmFpbiBmcm9tIHVzaW5nIHRoZSBuZXcg
+Y29tbW9uIGluZnJhc3RydWN0dXJlIGlmIGl0DQo+ID4+PiBoYXMgYSBnb29kIHJlYXNvbiB0by4N
+Cj4gPj4NCj4gPj4gSSdtIG5vdCBzdXJlIHRoYXQgTVBDODU0MUNEUyAob3IgODU1NSkgaGFzIGxl
+Z2FjeSBJU0EuIEkganVzdCBjaGVja2VkDQo+ID4+IGluIGtlcm5lbCBhbmQgZHRzIHdoaWNoIGlt
+cGxpZXMgdGhlIGJvYXJkIGhhcyBwcmltYXJ5IGJ1cyBhbmQgbm8gImlzYSINCj4gbm9kZS4NCj4g
+Pj4gSSB3aWxsIGZpbmQgb3V0IHRoZSBmYWN0cyBsYXRlci4NCj4gPg0KPiA+IFByZXR0eSBzdXJl
+IHRoZSBib2FyZHMgaGF2ZSBJU0EsIGlmIHlvdSBzZWUgdGhlIC5kdHMgaGFzIHJlZmVyZW5jZXMg
+dG8NCj4gJ0lTQSBicmlkZ2UnICYgJ2k4MjU5JyBQSUMuDQo+IA0KPiBPSy4gIEhvdyBhYm91dCBs
+b29raW5nIGZvciBhbiBpODI1OSBub2RlIGFzIHdlbGw/DQoNClRoYXQgY291bGQgd29yaywgYnV0
+IGxvb2tzIGhhY2tpc2guICBPdXIgcHJvcG9zYWwgZm9yIGFkZGluZyBhIG5ldyBkZXZpY2UgdHJl
+ZSBwcm9wZXJ0eSBpcyBhIGdlbmVyaWMgc29sdXRpb24uICBUaGUgb25seSBwcm9ibGVtIGlzIHRo
+YXQgbmV3IGtlcm5lbHMgd291bGQgd29yayB3aXRoIG9sZCBkZXZpY2UgdHJlZXMuICBJIHRoaW5r
+IHdlIGNhbiB1c2UgeW91ciBzb2x1dGlvbiBmb3IgdHJhbnNpdGlvbmFsIHBlcmlvZC4gIEFuZCBn
+byBmb3IgYSB3ZWxsIGRlZmluZWQgZGV2aWNlIHRyZWUgYmluZGluZyBmb3IgdGhpcyBpbiBsb25n
+IHJ1bi4NCg0KLSBMZW8NCg==
