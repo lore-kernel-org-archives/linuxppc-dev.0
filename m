@@ -1,23 +1,32 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B2618B6FA8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:00:18 +1000 (EST)
-Message-ID: <4FEDB4E6.4090109@windriver.com>
-Date: Fri, 29 Jun 2012 10:00:06 -0400
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-To: <dedekind1@gmail.com>
-Subject: Re: [PATCH 2/3] mtd: delete SBC82xx/SBC8560 MTD mapping support
-References: <1340740469-31445-1-git-send-email-paul.gortmaker@windriver.com>
- <1340740469-31445-3-git-send-email-paul.gortmaker@windriver.com>
- <1340958563.3070.132.camel@sauron.fi.intel.com>
-In-Reply-To: <1340958563.3070.132.camel@sauron.fi.intel.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org, David Woodhouse <David.Woodhouse@intel.com>,
- linux-mtd@lists.infradead.org
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E8688B6FBE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:17:53 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 29 Jun 2012 13:56:31 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q5TE9xe761145340
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:09:59 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q5TEHj9K032592
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:17:46 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, michael@ellerman.id.au,
+ anton@samba.org
+Subject: [PATCH -V1 1/9] arch/powerpc: Use hpt_va to compute virtual address
+Date: Fri, 29 Jun 2012 19:47:29 +0530
+Message-Id: <1340979457-26018-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1340979457-26018-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1340979457-26018-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,41 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12-06-29 04:29 AM, Artem Bityutskiy wrote:
-> On Tue, 2012-06-26 at 15:54 -0400, Paul Gortmaker wrote:
->> The SBC8260 support was dropped back when we moved from ppc to
->> powerpc.  We are now also dropping the support for the EOL SBC8560,
->> so we can also delete this mapping support, as they were the only
->> users of it.
->>
->> Cc: David Woodhouse <David.Woodhouse@intel.com>
->> Cc: linux-mtd@lists.infradead.org
->> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> 
-> You forgot this:
-> 
-> diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-> index 68a9a91..deb43e9 100644
-> --- a/drivers/mtd/maps/Makefile
-> +++ b/drivers/mtd/maps/Makefile
-> @@ -47,7 +47,6 @@ obj-$(CONFIG_MTD_SCB2_FLASH)  += scb2_flash.o
->  obj-$(CONFIG_MTD_H720X)                += h720x-flash.o
->  obj-$(CONFIG_MTD_IXP4XX)       += ixp4xx.o
->  obj-$(CONFIG_MTD_IXP2000)      += ixp2000.o
-> -obj-$(CONFIG_MTD_WRSBC8260)    += wr_sbc82xx_flash.o
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Agreed.  I'd figured that died back in 2.6.2x when the old
-ppc board got removed, and it never even crossed my mind to
-git grep for it.  Funny that some automated orphan CONFIG_
-checker script didn't find it (assuming there is one.)
+Don't open code the same
 
-Thanks,
-Paul.
---
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/cell/beat_htab.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
->  obj-$(CONFIG_MTD_DMV182)       += dmv182.o
->  obj-$(CONFIG_MTD_PLATRAM)      += plat-ram.o
->  obj-$(CONFIG_MTD_INTEL_VR_NOR) += intel_vr_nor.o
-> 
-> I've amended the patch and pushed to l2-mtd.git tree, thanks!
-> 
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+index 943c9d3..b83077e 100644
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ b/arch/powerpc/platforms/cell/beat_htab.c
+@@ -259,7 +259,7 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
+ 	u64 dummy0, dummy1;
+ 
+ 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
+-	va = (vsid << 28) | (ea & 0x0fffffff);
++	va = hpt_va(ea, vsid, MMU_SEGSIZE_256M);
+ 
+ 	raw_spin_lock(&beat_htab_lock);
+ 	slot = beat_lpar_hpte_find(va, psize);
+-- 
+1.7.10
