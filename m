@@ -1,27 +1,28 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3734010096F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 02:04:22 +1000 (EST)
-Message-ID: <4FEDD1F0.1060000@freescale.com>
-Date: Fri, 29 Jun 2012 11:04:00 -0500
-From: Timur Tabi <b04825@freescale.com>
-MIME-Version: 1.0
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id ADA33100985
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 02:04:27 +1000 (EST)
+Subject: Re: [PATCH 0/3] powerpc/fsl: PCI refactoring and QEMU paravirt
+ platform
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <4FEDD15E.10706@freescale.com>
+Date: Fri, 29 Jun 2012 11:04:25 -0500
+Message-Id: <CE271817-FF36-4954-99A1-86DD4C432C22@kernel.crashing.org>
+References: <20120627234851.GA9071@tyr.buserror.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A10EAB@039-SN1MPN1-002.039d.mgd.msft.net>
+ <4FEC86CC.90307@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A13620@039-SN1MPN1-002.039d.mgd.msft.net>
+ <34D617F2-54CD-46DA-A110-E44CE081B99B@kernel.crashing.org>
+ <4FEDD15E.10706@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH v6 1/5] powerpc/85xx: implement hardware timebase sync
-References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
- <CAOZdJXWiGOCtP1iJYR2S48XwR2Wpry8+VswctctdVfY9Z+QTiQ@mail.gmail.com>
- <4FEDD07D.3090103@freescale.com>
-In-Reply-To: <4FEDD07D.3090103@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
+Cc: Wood Scott-B07421 <B07421@freescale.com>, "agraf@suse.de" <agraf@suse.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  Li Yang-R58472 <r58472@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,17 +32,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
 
->> I wonder if it's possible to dynamically generate the compatible
->> string by using the SOC name?
-> 
-> Where are you going to get the SoC name from?
+On Jun 29, 2012, at 11:01 AM, Scott Wood wrote:
 
-Well, that is why I said "I wonder".   I'm disappointed that the "cpus"
-node doesn't help much.  You'd think the name of the CPU would be in the
-CPU node somewhere.
+> On 06/29/2012 10:57 AM, Kumar Gala wrote:
+>>=20
+>> On Jun 28, 2012, at 9:36 PM, Jia Hongtao-B38951 wrote:
+>>=20
+>>>=20
+>>>=20
+>>>> -----Original Message-----
+>>>> From: Wood Scott-B07421
+>>>> Sent: Friday, June 29, 2012 12:31 AM
+>>>> To: Jia Hongtao-B38951
+>>>> Cc: Wood Scott-B07421; galak@kernel.crashing.org; Li Yang-R58472;
+>>>> agraf@suse.de; linuxppc-dev@lists.ozlabs.org
+>>>> Subject: Re: [PATCH 0/3] powerpc/fsl: PCI refactoring and QEMU =
+paravirt
+>>>> platform
+>>>>=20
+>>>> On 06/27/2012 11:06 PM, Jia Hongtao-B38951 wrote:
+>>>>>=20
+>>>>>=20
+>>>>>> -----Original Message-----
+>>>>>> From: Wood Scott-B07421
+>>>>>> Sent: Thursday, June 28, 2012 7:49 AM
+>>>>>> To: galak@kernel.crashing.org
+>>>>>> Cc: agraf@suse.de; linuxppc-dev@lists.ozlabs.org; Jia =
+Hongtao-B38951
+>>>>>> Subject: [PATCH 0/3] powerpc/fsl: PCI refactoring and QEMU =
+paravirt
+>>>>>> platform
+>>>>>>=20
+>>>>>> The QEMU stuff is related to the PCI refactoring because =
+currently
+>>>>>> we have a hard time selecting a primary bus under QEMU, and also
+>>>> because
+>>>>>> the generic qemu e500 platform wants a full list of FSL PCI
+>>>> compatibles
+>>>>>> to check.
+>>>>>>=20
+>>>>>=20
+>>>>> It seems that not all primary bus has "isa" node like 8541 and =
+8555.
+>>>>=20
+>>>> Do those boards (it's the boards that matter, not chips...) have =
+legacy
+>>>> ISA?  If they do, and it's not in the device tree, then we should =
+fix
+>>>> the device tree for consistency, but also retain some sort of hack =
+to
+>>>> remain compatible with old device trees.
+>>>>=20
+>>>> A board can refrain from using the new common infrastructure if it =
+has a
+>>>> good reason to.
+>>>=20
+>>> I'm not sure that MPC8541CDS (or 8555) has legacy ISA. I just =
+checked in
+>>> kernel and dts which implies the board has primary bus and no "isa" =
+node.
+>>> I will find out the facts later.
+>>=20
+>> Pretty sure the boards have ISA, if you see the .dts has references =
+to 'ISA bridge' & 'i8259' PIC.
+>=20
+> OK.  How about looking for an i8259 node as well?
+>=20
+> -Scott
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Works for me, saves us having to waste time on figuring out how to =
+update .dts for the boards.
+
+- k
