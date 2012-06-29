@@ -1,16 +1,19 @@
 Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc/85xx: Add P1024rdb board support
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E414EB700A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 06:03:54 +1000 (EST)
+Subject: Re: [PATCH] powerpc/p2041rdb: add NAND node in device tree
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1337850508-31827-2-git-send-email-b29983@freescale.com>
-Date: Fri, 29 Jun 2012 15:03:45 -0500
-Message-Id: <8BE1E993-90F1-40B5-A438-92EBEE0294FE@kernel.crashing.org>
-References: <1337850508-31827-1-git-send-email-b29983@freescale.com>
- <1337850508-31827-2-git-send-email-b29983@freescale.com>
-To: "<b29983@freescale.com>" <b29983@freescale.com>
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>,
- devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1340962871-10617-1-git-send-email-Shaohui.Xie@freescale.com>
+Date: Fri, 29 Jun 2012 15:03:52 -0500
+Message-Id: <513504D9-43C0-4205-A33E-0C42C2E0AF9E@kernel.crashing.org>
+References: <1340962871-10617-1-git-send-email-Shaohui.Xie@freescale.com>
+To: Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +24,15 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On May 24, 2012, at 4:08 AM, <b29983@freescale.com> =
-<b29983@freescale.com> wrote:
+On Jun 29, 2012, at 4:41 AM, Shaohui Xie wrote:
 
-> From: Tang Yuantian <Yuantian.Tang@freescale.com>
+> NAND on p2041 uses CS1 as chip select.
 >=20
-> The p1024rdb has the similar feature as the p1020rdb. Therefore, =
-p1024rdb use
-> the same platform file as the p1/p2 rdb board.
-> Overview of P2020RDB platform
-> 	- DDR3 1G
-> 	- NOR flash 16M
-> 	- 3 Ethernet interfaces
-> 	- NAND Flash 32M
-> 	- SPI EEPROM 16M
-> 	- SD/MMC
-> 	- 2 USB ports
-> 	- 4 TDM ports
->=20
-> Signed-off-by: Jin Qing <b24347@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 > ---
-> arch/powerpc/platforms/85xx/mpc85xx_rdb.c |   22 =
-++++++++++++++++++++++
-> 1 files changed, 22 insertions(+), 0 deletions(-)
+> arch/powerpc/boot/dts/p2041rdb.dts |   41 =
++++++++++++++++++++++++++++++++++++-
+> 1 files changed, 40 insertions(+), 1 deletions(-)
 
 applied
 
