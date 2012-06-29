@@ -1,22 +1,26 @@
-Return-Path: <dedekind1@gmail.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by ozlabs.org (Postfix) with ESMTP id 4EB75B7016
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 18:25:26 +1000 (EST)
-Message-ID: <1340958563.3070.132.camel@sauron.fi.intel.com>
-Subject: Re: [PATCH 2/3] mtd: delete SBC82xx/SBC8560 MTD mapping support
-From: Artem Bityutskiy <dedekind1@gmail.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Date: Fri, 29 Jun 2012 11:29:23 +0300
-In-Reply-To: <1340740469-31445-3-git-send-email-paul.gortmaker@windriver.com>
-References: <1340740469-31445-1-git-send-email-paul.gortmaker@windriver.com>
- <1340740469-31445-3-git-send-email-paul.gortmaker@windriver.com>
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-9/21tXQP4WOSLufDLbyO"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, David Woodhouse <David.Woodhouse@intel.com>,
- linux-mtd@lists.infradead.org
-Reply-To: dedekind1@gmail.com
+Return-Path: <B21989@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 410341007D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 20:01:25 +1000 (EST)
+Received: from mail67-am1 (localhost [127.0.0.1])	by mail67-am1-R.bigfish.com
+ (Postfix) with ESMTP id 168CF4A02B7	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,
+ 29 Jun 2012 09:59:31 +0000 (UTC)
+Received: from AM1EHSMHS009.bigfish.com (unknown [10.3.201.247])	by
+ mail67-am1.bigfish.com (Postfix) with ESMTP id 141EF60043	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 09:59:30 +0000 (UTC)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/p2041rdb: add NAND node in device tree
+Date: Fri, 29 Jun 2012 17:41:11 +0800
+Message-ID: <1340962871-10617-1-git-send-email-Shaohui.Xie@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,63 +30,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+NAND on p2041 uses CS1 as chip select.
 
---=-9/21tXQP4WOSLufDLbyO
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+---
+ arch/powerpc/boot/dts/p2041rdb.dts |   41 +++++++++++++++++++++++++++++++++++-
+ 1 files changed, 40 insertions(+), 1 deletions(-)
 
-On Tue, 2012-06-26 at 15:54 -0400, Paul Gortmaker wrote:
-> The SBC8260 support was dropped back when we moved from ppc to
-> powerpc.  We are now also dropping the support for the EOL SBC8560,
-> so we can also delete this mapping support, as they were the only
-> users of it.
->=20
-> Cc: David Woodhouse <David.Woodhouse@intel.com>
-> Cc: linux-mtd@lists.infradead.org
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-
-You forgot this:
-
-diff --git a/drivers/mtd/maps/Makefile b/drivers/mtd/maps/Makefile
-index 68a9a91..deb43e9 100644
---- a/drivers/mtd/maps/Makefile
-+++ b/drivers/mtd/maps/Makefile
-@@ -47,7 +47,6 @@ obj-$(CONFIG_MTD_SCB2_FLASH)  +=3D scb2_flash.o
- obj-$(CONFIG_MTD_H720X)                +=3D h720x-flash.o
- obj-$(CONFIG_MTD_IXP4XX)       +=3D ixp4xx.o
- obj-$(CONFIG_MTD_IXP2000)      +=3D ixp2000.o
--obj-$(CONFIG_MTD_WRSBC8260)    +=3D wr_sbc82xx_flash.o
- obj-$(CONFIG_MTD_DMV182)       +=3D dmv182.o
- obj-$(CONFIG_MTD_PLATRAM)      +=3D plat-ram.o
- obj-$(CONFIG_MTD_INTEL_VR_NOR) +=3D intel_vr_nor.o
-
-I've amended the patch and pushed to l2-mtd.git tree, thanks!
-
---=20
-Best Regards,
-Artem Bityutskiy
-
---=-9/21tXQP4WOSLufDLbyO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAABAgAGBQJP7WdkAAoJECmIfjd9wqK0DXgP/RoqujuPnNCIvySfVwtk8vcN
-5k5NAHplUjNsr+3ZfCA7kenCesPZcELtdIcRIoiuEg0FFEyWuZ7h4UUeCRy57MLZ
-HvaWfyLfWn+hVaBhDhVtZ7gqTRTKn0VLjuXeWjiaqn05zTAdOfMLAtmaREIpsVr+
-Zs7OisWrOcndbLmAOmMtz6weTti2j+E0uK2C5VHZvil3igkJHHLfbk4fjqRkuT/c
-ZJhpt03N323Y5BDnej4dqJ1OGTiLj0LuXoWNVtKbgoNXDRFpFhwSWTXRNzkx1o9s
-ocBPBFlsxYiBvEPoZ2E5bznn2s8pJgR53kEnA/ODFht7fV+qZvzRsdoIv2GWMhTU
-Leu3EQIkglok+PgBmH6qI6lTT0b1UT9jUItoZctFTjAC34ZRSIckMeUpKeGZw27u
-Tt8TMxEa3+tLKMJHUC3fod5hd3D+VUvLDdfA7o5ZzfJ8rFpCC+G4KtmggacwC5A5
-NiR9A5y2OuD3tbDRnlUdRJIp3xT3ujXXN01xjfuG9JK1F7IV68EePugylr8+DgZe
-xNjJ3ck46Qac6UrzOgVc7tQ1EQ/fhNOPQsYgEzREhXg+fge73iz/zSiO4yY4V6c2
-sPx0A3CAh43iSFtSXc2oFbkFONy8yRwKJyygv0UsYcESW/H0/eAwC9thJkWUU3so
-SwurOYou0y+83WN3EoKB
-=hFc/
------END PGP SIGNATURE-----
-
---=-9/21tXQP4WOSLufDLbyO--
+diff --git a/arch/powerpc/boot/dts/p2041rdb.dts b/arch/powerpc/boot/dts/p2041rdb.dts
+index 2852139..baab034 100644
+--- a/arch/powerpc/boot/dts/p2041rdb.dts
++++ b/arch/powerpc/boot/dts/p2041rdb.dts
+@@ -121,7 +121,8 @@
+ 
+ 	lbc: localbus@ffe124000 {
+ 		reg = <0xf 0xfe124000 0 0x1000>;
+-		ranges = <0 0 0xf 0xe8000000 0x08000000>;
++		ranges = <0 0 0xf 0xe8000000 0x08000000
++			  1 0 0xf 0xffa00000 0x00040000>;
+ 
+ 		flash@0,0 {
+ 			compatible = "cfi-flash";
+@@ -129,6 +130,44 @@
+ 			bank-width = <2>;
+ 			device-width = <2>;
+ 		};
++
++		nand@1,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,elbc-fcm-nand";
++			reg = <0x1 0x0 0x40000>;
++
++			partition@0 {
++				label = "NAND U-Boot Image";
++				reg = <0x0 0x02000000>;
++				read-only;
++			};
++
++			partition@2000000 {
++				label = "NAND Root File System";
++				reg = <0x02000000 0x10000000>;
++			};
++
++			partition@12000000 {
++				label = "NAND Compressed RFS Image";
++				reg = <0x12000000 0x08000000>;
++			};
++
++			partition@1a000000 {
++				label = "NAND Linux Kernel Image";
++				reg = <0x1a000000 0x04000000>;
++			};
++
++			partition@1e000000 {
++				label = "NAND DTB Image";
++				reg = <0x1e000000 0x01000000>;
++			};
++
++			partition@1f000000 {
++				label = "NAND Writable User area";
++				reg = <0x1f000000 0x01000000>;
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe200000 {
+-- 
+1.6.4
