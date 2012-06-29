@@ -1,38 +1,26 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A74D9B6F59
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 11:42:11 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Fri, 29 Jun 2012 07:12:06 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q5T1fXv310420582
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 07:11:33 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q5T7BK2I002243
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 17:11:20 +1000
-Message-ID: <4FED07CD.6000203@linux.vnet.ibm.com>
-Date: Fri, 29 Jun 2012 09:41:33 +0800
-From: Zhong Li <zhong@linux.vnet.ibm.com>
+Return-Path: <B38951@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 66931B7005
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Jun 2012 12:36:13 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 0/3] powerpc/fsl: PCI refactoring and QEMU paravirt
+ platform
+Date: Fri, 29 Jun 2012 02:36:02 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A13620@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <20120627234851.GA9071@tyr.buserror.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A10EAB@039-SN1MPN1-002.039d.mgd.msft.net>
+ <4FEC86CC.90307@freescale.com>
+In-Reply-To: <4FEC86CC.90307@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
- SLUB is used
-References: <1340617984.13778.37.camel@ThinkPad-T420>
- <1340618099.13778.39.camel@ThinkPad-T420> <1340930720.2563.5.camel@pasglop>
-In-Reply-To: <1340930720.2563.5.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: Christoph Lameter <cl@linux-foundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Matt Mackall <mpm@selenic.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Cc: "agraf@suse.de" <agraf@suse.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,37 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/29/2012 08:45 AM, Benjamin Herrenschmidt wrote:
-> On Mon, 2012-06-25 at 17:54 +0800, Li Zhong wrote:
-> 
->> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
->> index 620b7ac..c9d2a7f 100644
->> --- a/arch/powerpc/mm/init_64.c
->> +++ b/arch/powerpc/mm/init_64.c
->> @@ -130,6 +130,9 @@ void pgtable_cache_add(unsigned shift, void
->> (*ctor)(void *))
->>  	align = max_t(unsigned long, align, minalign);
->>  	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
->>  	new = kmem_cache_create(name, table_size, align, 0, ctor);
->> +#ifdef CONFIG_SLUB
->> +	kfree(name); /* SLUB duplicates the cache name */
->> +#endif
->>  	PGT_CACHE(shift) = new;
->>  
->>  	pr_debug("Allocated pgtable cache for order %d\n", shift);
-> 
-> This is very gross ... and fragile. Also the subtle difference in
-> semantics between SLUB and SLAB is a VERY BAD IDEA.
-
-I agree.
-
-> I reckon you should make the other allocators all copy the name
-> instead.
-
-Thank you for the suggestion. I will do it in the next version.
-
-Thanks, Zhong
-
-> Ben.
-> 
-> 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBKdW5lIDI5LCAyMDEyIDEyOjMxIEFNDQo+IFRvOiBKaWEgSG9u
+Z3Rhby1CMzg5NTENCj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBnYWxha0BrZXJuZWwuY3Jhc2hp
+bmcub3JnOyBMaSBZYW5nLVI1ODQ3MjsNCj4gYWdyYWZAc3VzZS5kZTsgbGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAwLzNdIHBvd2VycGMvZnNsOiBQ
+Q0kgcmVmYWN0b3JpbmcgYW5kIFFFTVUgcGFyYXZpcnQNCj4gcGxhdGZvcm0NCj4gDQo+IE9uIDA2
+LzI3LzIwMTIgMTE6MDYgUE0sIEppYSBIb25ndGFvLUIzODk1MSB3cm90ZToNCj4gPg0KPiA+DQo+
+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IFdvb2QgU2NvdHQtQjA3
+NDIxDQo+ID4+IFNlbnQ6IFRodXJzZGF5LCBKdW5lIDI4LCAyMDEyIDc6NDkgQU0NCj4gPj4gVG86
+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmcNCj4gPj4gQ2M6IGFncmFmQHN1c2UuZGU7IGxpbnV4
+cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBKaWEgSG9uZ3Rhby1CMzg5NTENCj4gPj4gU3ViamVj
+dDogW1BBVENIIDAvM10gcG93ZXJwYy9mc2w6IFBDSSByZWZhY3RvcmluZyBhbmQgUUVNVSBwYXJh
+dmlydA0KPiA+PiBwbGF0Zm9ybQ0KPiA+Pg0KPiA+PiBUaGUgUUVNVSBzdHVmZiBpcyByZWxhdGVk
+IHRvIHRoZSBQQ0kgcmVmYWN0b3JpbmcgYmVjYXVzZSBjdXJyZW50bHkNCj4gPj4gd2UgaGF2ZSBh
+IGhhcmQgdGltZSBzZWxlY3RpbmcgYSBwcmltYXJ5IGJ1cyB1bmRlciBRRU1VLCBhbmQgYWxzbw0K
+PiBiZWNhdXNlDQo+ID4+IHRoZSBnZW5lcmljIHFlbXUgZTUwMCBwbGF0Zm9ybSB3YW50cyBhIGZ1
+bGwgbGlzdCBvZiBGU0wgUENJDQo+IGNvbXBhdGlibGVzDQo+ID4+IHRvIGNoZWNrLg0KPiA+Pg0K
+PiA+DQo+ID4gSXQgc2VlbXMgdGhhdCBub3QgYWxsIHByaW1hcnkgYnVzIGhhcyAiaXNhIiBub2Rl
+IGxpa2UgODU0MSBhbmQgODU1NS4NCj4gDQo+IERvIHRob3NlIGJvYXJkcyAoaXQncyB0aGUgYm9h
+cmRzIHRoYXQgbWF0dGVyLCBub3QgY2hpcHMuLi4pIGhhdmUgbGVnYWN5DQo+IElTQT8gIElmIHRo
+ZXkgZG8sIGFuZCBpdCdzIG5vdCBpbiB0aGUgZGV2aWNlIHRyZWUsIHRoZW4gd2Ugc2hvdWxkIGZp
+eA0KPiB0aGUgZGV2aWNlIHRyZWUgZm9yIGNvbnNpc3RlbmN5LCBidXQgYWxzbyByZXRhaW4gc29t
+ZSBzb3J0IG9mIGhhY2sgdG8NCj4gcmVtYWluIGNvbXBhdGlibGUgd2l0aCBvbGQgZGV2aWNlIHRy
+ZWVzLg0KPiANCj4gQSBib2FyZCBjYW4gcmVmcmFpbiBmcm9tIHVzaW5nIHRoZSBuZXcgY29tbW9u
+IGluZnJhc3RydWN0dXJlIGlmIGl0IGhhcyBhDQo+IGdvb2QgcmVhc29uIHRvLg0KDQpJJ20gbm90
+IHN1cmUgdGhhdCBNUEM4NTQxQ0RTIChvciA4NTU1KSBoYXMgbGVnYWN5IElTQS4gSSBqdXN0IGNo
+ZWNrZWQgaW4NCmtlcm5lbCBhbmQgZHRzIHdoaWNoIGltcGxpZXMgdGhlIGJvYXJkIGhhcyBwcmlt
+YXJ5IGJ1cyBhbmQgbm8gImlzYSIgbm9kZS4NCkkgd2lsbCBmaW5kIG91dCB0aGUgZmFjdHMgbGF0
+ZXIuDQoNCg0KPiANCj4gPiBXaXRob3V0IFBNIHN1cHBvcnQgZm9yIHBjaSBjb250cm9sbGVycyBJ
+IHRvdGFsbHkgYWdyZWUgd2l0aCB0aGlzDQo+IHJlZmFjdG9yaW5nDQo+ID4gZm9yIHBjaSBpbml0
+LiBCdXQgaW4gbGludXggbWVjaGFuaXNtIFBNIG9wcyBzaG91bGQgYmUgcmVnaXN0ZXJlZCB0byBh
+DQo+IGRyaXZlci4NCj4gPiBEbyB5b3UgaGF2ZSBhbnkgaWRlYXMgdG8gYWRkIFBNIHN1cHBvcnQg
+Zm9yIHBjaSBjb250cm9sbGVycyB1bmRlciB0aGlzDQo+IHBhdGNoc2V0Pw0KPiANCj4gVGhpcyBp
+c24ndCBtZWFudCB0byBiZSBpbnN0ZWFkIG9mIG1ha2luZyBpdCBhIHBsYXRmb3JtIGRldmljZS4g
+IEl0J3MNCj4ganVzdCBtZWFudCB0byBnZXQgdXMgYXdheSBmcm9tIGJvYXJkLXNwZWNpZmljIGNv
+ZGUgYW5kIHByaW1hcnktYnVzDQo+IGhhcmRjb2Rpbmcgbm93LCByYXRoZXIgdGhhbiBvbmNlIHdl
+IHNvcnQgb3V0IGFsbCB0aGUgaXNzdWVzIHdpdGgNCj4gcGxhdGZvcm0gZGV2aWNlcy4NCj4gDQo+
+IC1TY290dA0KDQpUaGFua3MsIEknbGwgbG9vayBpbnRvIHRoZSBpc3N1ZXMuDQoNCi1KaWEgSG9u
+Z3Rhby4NCg==
