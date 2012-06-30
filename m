@@ -1,21 +1,26 @@
-Return-Path: <albrecht.dress@arcor.de>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
- [151.189.21.50])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
- (Client CN "mx.arcor.de", Issuer "Thawte SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0B5AB2C01BB
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 06:09:58 +1000 (EST)
-Date: Sat, 30 Jun 2012 22:09:43 +0200
-From: Albrecht =?iso-8859-1?b?RHJl3w==?= <albrecht.dress@arcor.de>
-Subject: Re: MPC5200b jffs2 memcpy alignment problem
-To: stephan@gatzka.org
-In-Reply-To: <4FEF5098.8070602@gatzka.org> (from stephan@gatzka.org on Sat
- Jun 30 21:16:40 2012)
-Message-Id: <1341086991.2252.0@antares>
+Return-Path: <liuj97@gmail.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 26D062C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 01:47:09 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so6714190pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 08:47:07 -0700 (PDT)
+Message-ID: <4FEF1F6A.6090705@gmail.com>
+Date: Sat, 30 Jun 2012 23:46:50 +0800
+From: Jiang Liu <liuj97@gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1;
- protocol="application/pgp-signature"; boundary="=-jVBz458QVqbNat3+qD9u"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH 2/12] memory-hogplug : check memory offline in
+ offline_pages
+References: <4FEA9C88.1070800@jp.fujitsu.com> <4FEA9DB1.7010303@jp.fujitsu.com>
+In-Reply-To: <4FEA9DB1.7010303@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,79 +30,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---=-jVBz458QVqbNat3+qD9u
-Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 06/27/2012 01:44 PM, Yasuaki Ishimatsu wrote:
+> When offline_pages() is called to offlined memory, the function fails since
+> all memory has been offlined. In this case, the function should succeed.
+> The patch adds the check function into offline_pages().
+> 
+> CC: Len Brown <len.brown@intel.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Wen Congyang <wency@cn.fujitsu.com>
+> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> 
+> ---
+>  drivers/base/memory.c  |   20 ++++++++++++++++++++
+>  include/linux/memory.h |    1 +
+>  mm/memory_hotplug.c    |    5 +++++
+>  3 files changed, 26 insertions(+)
+> 
+> Index: linux-3.5-rc4/drivers/base/memory.c
+> ===================================================================
+> --- linux-3.5-rc4.orig/drivers/base/memory.c	2012-06-26 13:28:16.726211752 +0900
+> +++ linux-3.5-rc4/drivers/base/memory.c	2012-06-26 13:34:22.423639904 +0900
+> @@ -70,6 +70,26 @@ void unregister_memory_isolate_notifier(
+>  }
+>  EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+> 
+> +bool memory_is_offline(unsigned long start_pfn, unsigned long end_pfn)
+> +{
+> +	struct memory_block *mem;
+> +	struct mem_section *section;
+> +	unsigned long pfn, section_nr;
+> +
+> +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+> +		section_nr = pfn_to_section_nr(pfn);
+> +		section = __nr_to_section(section_nr);
+Is it possible for __nr_to_section return NULL here?
 
-Hi Stephan:
+> +		mem = find_memory_block(section);
+> +		if (!mem)
+> +			continue;
+> +		if (mem->state == MEM_OFFLINE)
+> +			continue;
+> +		return false;
+> +	}
+> +
+> +	return true;
+> +}
+Need a put_dev(&mem->dev) for the last memory block device handled before return.
 
-Am 30.06.12 21:16 schrieb(en) Stephan Gatzka:
-> I have a problem running jffs2 on an MPC5200b board. I run kernel 3.4, bu=
-t older kernels like 3.1.5 are also affected. Every time I mount jffs2, pre=
-viously written content gets garbled.
->=20
-> The problem was nailed down to memcpy(&fd->name, rd->name, checkedlen); i=
-n jffs2_scan_dirent_node in fs/jffs2/scan.c.
-[snip]
-> 2. use memcpy_fromio in the jffs2 code. memcpy_fromio behaves exactly in =
-the way I described above. This could be also a good solution because flash=
- access via LocalPlus bus is clearly IO.
-
-I don't recall who proposed this patch, but exactly this solution is around=
- for a longer time (mayby you search archives...).  On my board, I have a f=
-lash chip attached to the LocalBus in 16-bit mode.  Based on 3.2.16, the pa=
-tch is:
-
----8<----------------------------------------------------------------------=
-------
---- linux-3.2.16-orig/fs/jffs2/scan.c   2012-04-23 00:31:32.000000000 +0200
-+++ linux-3.2.16/fs/jffs2/scan.c        2012-04-27 13:23:06.000000000 +0200
-@@ -509,7 +509,11 @@
-                                         sumptr =3D kmalloc(sumlen, GFP_KER=
-NEL);
-                                         if (!sumptr)
-                                                 return -ENOMEM;
-+#ifdef CONFIG_PPC_MPC52xx
-+                                       memcpy_fromio(sumptr + sumlen - buf=
-_len, buf + buf_size - buf_len, buf_len);
-+#else
-                                         memcpy(sumptr + sumlen - buf_len, =
-buf + buf_size - buf_len, buf_len);
-+#endif
-                                 }
-                                 if (buf_len < sumlen) {
-                                         /* Need to read more so that the e=
-ntire summary node is present */
-@@ -1039,7 +1043,11 @@
-         if (!fd) {
-                 return -ENOMEM;
-         }
-+#ifdef CONFIG_PPC_MPC52xx
-+       memcpy_fromio(&fd->name, rd->name, checkedlen);
-+#else
-         memcpy(&fd->name, rd->name, checkedlen);
-+#endif
-         fd->name[checkedlen] =3D 0;
-
-         crc =3D crc32(0, fd->name, rd->nsize);
----8<----------------------------------------------------------------------=
-------
-
-Works perfectly with it...
-
-Hope this helps,
-Albrecht.=
-
---=-jVBz458QVqbNat3+qD9u
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.17 (GNU/Linux)
-
-iD8DBQBP710Pn/9unNAn/9ERAugWAKC0lS0DqdqmBXQcv/9kpefzUj5+FACZAUY0
-d+bIZjMseGMzzmCawFU8OuI=
-=+MYE
------END PGP SIGNATURE-----
-
---=-jVBz458QVqbNat3+qD9u--
+> +
+>  /*
+>   * register_memory - Setup a sysfs device for a memory block
+>   */
+> Index: linux-3.5-rc4/include/linux/memory.h
+> ===================================================================
+> --- linux-3.5-rc4.orig/include/linux/memory.h	2012-06-25 04:53:04.000000000 +0900
+> +++ linux-3.5-rc4/include/linux/memory.h	2012-06-26 13:34:22.424639891 +0900
+> @@ -120,6 +120,7 @@ extern int memory_isolate_notify(unsigne
+>  extern struct memory_block *find_memory_block_hinted(struct mem_section *,
+>  							struct memory_block *);
+>  extern struct memory_block *find_memory_block(struct mem_section *);
+> +extern bool memory_is_offline(unsigned long start_pfn, unsigned long end_pfn);
+>  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+>  enum mem_add_context { BOOT, HOTPLUG };
+>  #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+> Index: linux-3.5-rc4/mm/memory_hotplug.c
+> ===================================================================
+> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 13:28:16.743211538 +0900
+> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:48:38.264940468 +0900
+> @@ -887,6 +887,11 @@ static int __ref offline_pages(unsigned
+> 
+>  	lock_memory_hotplug();
+> 
+> +	if (memory_is_offline(start_pfn, end_pfn)) {
+> +		ret = 0;
+> +		goto out;
+> +	}
+> +
+>  	zone = page_zone(pfn_to_page(start_pfn));
+>  	node = zone_to_nid(zone);
+>  	nr_pages = end_pfn - start_pfn;
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
