@@ -1,21 +1,18 @@
 Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51])
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5E6F32C007E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 17:39:56 +1000 (EST)
-Received: by dajt11 with SMTP id t11so6148010daj.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:39:53 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id ED1B42C01BB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 17:49:55 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so6332231pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:49:53 -0700 (PDT)
 From: Akinobu Mita <akinobu.mita@gmail.com>
 To: linux-kernel@vger.kernel.org,
 	akpm@linux-foundation.org
-Subject: [PATCH -v5 6/6] fault-injection: add selftests for cpu and memory
- hotplug
-Date: Sat, 30 Jun 2012 14:59:30 +0900
-Message-Id: <1341035970-20490-7-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1341035970-20490-1-git-send-email-akinobu.mita@gmail.com>
-References: <1341035970-20490-1-git-send-email-akinobu.mita@gmail.com>
+Subject: [PATCH -v5 0/6] notifier error injection
+Date: Sat, 30 Jun 2012 14:59:24 +0900
+Message-Id: <1341035970-20490-1-git-send-email-akinobu.mita@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Cc: Dave Jones <davej@redhat.com>, Greg KH <greg@kroah.com>,
@@ -33,34 +30,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds two selftests
+This provides kernel modules that can be used to test the error handling
+of notifier call chain failures by injecting artifical errors to the
+following notifier chain callbacks.
 
-* tools/testing/selftests/cpu-hotplug/on-off-test.sh is testing script
-for CPU hotplug
+ * CPU notifier
+ * PM notifier
+ * memory hotplug notifier
+ * powerpc pSeries reconfig notifier
 
-1. Online all hot-pluggable CPUs
-2. Offline all hot-pluggable CPUs
-3. Online all hot-pluggable CPUs again
-4. Exit if cpu-notifier-error-inject.ko is not available
-5. Offline all hot-pluggable CPUs in preparation for testing
-6. Test CPU hot-add error handling by injecting notifier errors
-7. Online all hot-pluggable CPUs in preparation for testing
-8. Test CPU hot-remove error handling by injecting notifier errors
+Example: Inject CPU offline error (-1 == -EPERM)
 
-* tools/testing/selftests/memory-hotplug/on-off-test.sh is doing the
-similar thing for memory hotplug.
+	# cd /sys/kernel/debug/notifier-error-inject/cpu
+	# echo -1 > actions/CPU_DOWN_PREPARE/error
+	# echo 0 > /sys/devices/system/cpu/cpu1/online
+	bash: echo: write error: Operation not permitted
 
-1. Online all hot-pluggable memory
-2. Offline 10% of hot-pluggable memory
-3. Online all hot-pluggable memory again
-4. Exit if memory-notifier-error-inject.ko is not available
-5. Offline 10% of hot-pluggable memory in preparation for testing
-6. Test memory hot-add error handling by injecting notifier errors
-7. Online all hot-pluggable memory in preparation for testing
-8. Test memory hot-remove error handling by injecting notifier errors
+This also adds cpu and memory hotplug tests to tools/testing/selftests 
+These tests first do simple online and offline test and then do fault
+injection tests if notifier error injection module is available.
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Suggested-by: Andrew Morton <akpm@linux-foundation.org>
+Changelog:
+
+* v5 (change only testing scripts)
+- make testing scripts a part of tools/testing/selftests
+- do simple on/offline tests even if no notifier error injection support
+
+* v4 (It is about 11 months since v3)
+- prefix all APIs with notifier_err_inject_*
+- rearrange debugfs interface
+  (e.g. $DEBUGFS/cpu-notifier-error-inject/CPU_DOWN_PREPARE -->
+        $DEBUGFS/notifier-error-inject/cpu/actions/CPU_DOWN_PREPARE/error)
+- update modules to follow new interface
+- add -r option for memory-notifier.sh to specify percent of offlining
+  memory blocks
+
+* v3
+- rewrite to be kernel modules instead of initializing at late_initcall()s
+  (it makes the diffstat look different but most code remains unchanged)
+- export err_inject_notifier_block_{init,cleanup} for modules
+- export pSeries_reconfig_notifier_{,un}register symbols for a module
+- notifier priority can be specified as a module parameter
+- add testing scripts in tools/testing/fault-injection
+
+* v2
+- "PM: Improve error code of pm_notifier_call_chain()" is now in -next
+- "debugfs: add debugfs_create_int" is dropped
+- put a comment in err_inject_notifier_block_init()
+- only allow valid errno to be injected (-MAX_ERRNO <= errno <= 0)
+- improve Kconfig help text
+- make CONFIG_PM_NOTIFIER_ERROR_INJECTION visible even if PM_DEBUG is disabled
+- make CONFIG_PM_NOTIFIER_ERROR_INJECTION default if PM_DEBUG is enabled
+
+Akinobu Mita (6):
+  fault-injection: notifier error injection
+  cpu: rewrite cpu-notifier-error-inject module
+  PM: PM notifier error injection module
+  memory: memory notifier error injection module
+  powerpc: pSeries reconfig notifier error injection module
+  fault-injection: add selftests for cpu and memory hotplug
+
+ lib/Kconfig.debug                                  |   91 +++++++-
+ lib/Makefile                                       |    5 +
+ lib/cpu-notifier-error-inject.c                    |   63 +++---
+ lib/memory-notifier-error-inject.c                 |   48 ++++
+ lib/notifier-error-inject.c                        |  112 ++++++++++
+ lib/notifier-error-inject.h                        |   24 ++
+ lib/pSeries-reconfig-notifier-error-inject.c       |   51 +++++
+ lib/pm-notifier-error-inject.c                     |   49 +++++
+ tools/testing/selftests/Makefile                   |    2 +-
+ tools/testing/selftests/cpu-hotplug/Makefile       |    6 +
+ tools/testing/selftests/cpu-hotplug/on-off-test.sh |  221 +++++++++++++++++++
+ tools/testing/selftests/memory-hotplug/Makefile    |    6 +
+ .../selftests/memory-hotplug/on-off-test.sh        |  230 ++++++++++++++++++++
+ 13 files changed, 867 insertions(+), 41 deletions(-)
+ create mode 100644 lib/memory-notifier-error-inject.c
+ create mode 100644 lib/notifier-error-inject.c
+ create mode 100644 lib/notifier-error-inject.h
+ create mode 100644 lib/pSeries-reconfig-notifier-error-inject.c
+ create mode 100644 lib/pm-notifier-error-inject.c
+ create mode 100644 tools/testing/selftests/cpu-hotplug/Makefile
+ create mode 100755 tools/testing/selftests/cpu-hotplug/on-off-test.sh
+ create mode 100644 tools/testing/selftests/memory-hotplug/Makefile
+ create mode 100755 tools/testing/selftests/memory-hotplug/on-off-test.sh
+
 Cc: Pavel Machek <pavel@ucw.cz>
 Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: linux-pm@lists.linux-foundation.org
@@ -70,519 +123,7 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 Cc: Américo Wang <xiyou.wangcong@gmail.com>
+Cc: Michael Ellerman <michael@ellerman.id.au>
 Cc: Dave Jones <davej@redhat.com>
----
-* v5
-- make testing scripts a part of tools/testing/selftests
-- do simple on/offline tests even if no notifier error injection support
-
- tools/testing/selftests/Makefile                   |    2 +-
- tools/testing/selftests/cpu-hotplug/Makefile       |    6 +
- tools/testing/selftests/cpu-hotplug/on-off-test.sh |  221 +++++++++++++++++++
- tools/testing/selftests/memory-hotplug/Makefile    |    6 +
- .../selftests/memory-hotplug/on-off-test.sh        |  230 ++++++++++++++++++++
- 5 files changed, 464 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/cpu-hotplug/Makefile
- create mode 100755 tools/testing/selftests/cpu-hotplug/on-off-test.sh
- create mode 100644 tools/testing/selftests/memory-hotplug/Makefile
- create mode 100755 tools/testing/selftests/memory-hotplug/on-off-test.sh
-
-diff --git a/tools/testing/selftests/Makefile b/tools/testing/selftests/Makefile
-index a4162e1..85baf11 100644
---- a/tools/testing/selftests/Makefile
-+++ b/tools/testing/selftests/Makefile
-@@ -1,4 +1,4 @@
--TARGETS = breakpoints kcmp mqueue vm
-+TARGETS = breakpoints kcmp mqueue vm cpu-hotplug memory-hotplug
- 
- all:
- 	for TARGET in $(TARGETS); do \
-diff --git a/tools/testing/selftests/cpu-hotplug/Makefile b/tools/testing/selftests/cpu-hotplug/Makefile
-new file mode 100644
-index 0000000..7c9c20f
---- /dev/null
-+++ b/tools/testing/selftests/cpu-hotplug/Makefile
-@@ -0,0 +1,6 @@
-+all:
-+
-+run_tests:
-+	./on-off-test.sh
-+
-+clean:
-diff --git a/tools/testing/selftests/cpu-hotplug/on-off-test.sh b/tools/testing/selftests/cpu-hotplug/on-off-test.sh
-new file mode 100755
-index 0000000..bdde7cf
---- /dev/null
-+++ b/tools/testing/selftests/cpu-hotplug/on-off-test.sh
-@@ -0,0 +1,221 @@
-+#!/bin/bash
-+
-+SYSFS=
-+
-+prerequisite()
-+{
-+	msg="skip all tests:"
-+
-+	if [ $UID != 0 ]; then
-+		echo $msg must be run as root >&2
-+		exit 0
-+	fi
-+
-+	SYSFS=`mount -t sysfs | head -1 | awk '{ print $3 }'`
-+
-+	if [ ! -d "$SYSFS" ]; then
-+		echo $msg sysfs is not mounted >&2
-+		exit 0
-+	fi
-+
-+	if ! ls $SYSFS/devices/system/cpu/cpu* > /dev/null 2>&1; then
-+		echo $msg cpu hotplug is not supported >&2
-+		exit 0
-+	fi
-+}
-+
-+#
-+# list all hot-pluggable CPUs
-+#
-+hotpluggable_cpus()
-+{
-+	local state=${1:-.\*}
-+
-+	for cpu in $SYSFS/devices/system/cpu/cpu*; do
-+		if [ -f $cpu/online ] && grep -q $state $cpu/online; then
-+			echo ${cpu##/*/cpu}
-+		fi
-+	done
-+}
-+
-+hotplaggable_offline_cpus()
-+{
-+	hotpluggable_cpus 0
-+}
-+
-+hotpluggable_online_cpus()
-+{
-+	hotpluggable_cpus 1
-+}
-+
-+cpu_is_online()
-+{
-+	grep -q 1 $SYSFS/devices/system/cpu/cpu$1/online
-+}
-+
-+cpu_is_offline()
-+{
-+	grep -q 0 $SYSFS/devices/system/cpu/cpu$1/online
-+}
-+
-+online_cpu()
-+{
-+	echo 1 > $SYSFS/devices/system/cpu/cpu$1/online
-+}
-+
-+offline_cpu()
-+{
-+	echo 0 > $SYSFS/devices/system/cpu/cpu$1/online
-+}
-+
-+online_cpu_expect_success()
-+{
-+	local cpu=$1
-+
-+	if ! online_cpu $cpu; then
-+		echo $FUNCNAME $cpu: unexpected fail >&2
-+	elif ! cpu_is_online $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+online_cpu_expect_fail()
-+{
-+	local cpu=$1
-+
-+	if online_cpu $cpu 2> /dev/null; then
-+		echo $FUNCNAME $cpu: unexpected success >&2
-+	elif ! cpu_is_offline $cpu; then
-+		echo $FUNCNAME $cpu: unexpected online >&2
-+	fi
-+}
-+
-+offline_cpu_expect_success()
-+{
-+	local cpu=$1
-+
-+	if ! offline_cpu $cpu; then
-+		echo $FUNCNAME $cpu: unexpected fail >&2
-+	elif ! cpu_is_offline $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+offline_cpu_expect_fail()
-+{
-+	local cpu=$1
-+
-+	if offline_cpu $cpu 2> /dev/null; then
-+		echo $FUNCNAME $cpu: unexpected success >&2
-+	elif ! cpu_is_online $cpu; then
-+		echo $FUNCNAME $cpu: unexpected offline >&2
-+	fi
-+}
-+
-+error=-12
-+priority=0
-+
-+while getopts e:hp: opt; do
-+	case $opt in
-+	e)
-+		error=$OPTARG
-+		;;
-+	h)
-+		echo "Usage $0 [ -e errno ] [ -p notifier-priority ]"
-+		exit
-+		;;
-+	p)
-+		priority=$OPTARG
-+		;;
-+	esac
-+done
-+
-+if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
-+	echo "error code must be -4095 <= errno < 0" >&2
-+	exit 1
-+fi
-+
-+prerequisite
-+
-+#
-+# Online all hot-pluggable CPUs
-+#
-+for cpu in `hotplaggable_offline_cpus`; do
-+	online_cpu_expect_success $cpu
-+done
-+
-+#
-+# Offline all hot-pluggable CPUs
-+#
-+for cpu in `hotpluggable_online_cpus`; do
-+	offline_cpu_expect_success $cpu
-+done
-+
-+#
-+# Online all hot-pluggable CPUs again
-+#
-+for cpu in `hotplaggable_offline_cpus`; do
-+	online_cpu_expect_success $cpu
-+done
-+
-+#
-+# Test with cpu notifier error injection
-+#
-+
-+DEBUGFS=`mount -t debugfs | head -1 | awk '{ print $3 }'`
-+NOTIFIER_ERR_INJECT_DIR=$DEBUGFS/notifier-error-inject/cpu
-+
-+prerequisite_extra()
-+{
-+	msg="skip extra tests:"
-+
-+	/sbin/modprobe -q -r cpu-notifier-error-inject
-+	/sbin/modprobe -q cpu-notifier-error-inject priority=$priority
-+
-+	if [ ! -d "$DEBUGFS" ]; then
-+		echo $msg debugfs is not mounted >&2
-+		exit 0
-+	fi
-+
-+	if [ ! -d $NOTIFIER_ERR_INJECT_DIR ]; then
-+		echo $msg cpu-notifier-error-inject module is not available >&2
-+		exit 0
-+	fi
-+}
-+
-+prerequisite_extra
-+
-+#
-+# Offline all hot-pluggable CPUs
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_DOWN_PREPARE/error
-+for cpu in `hotpluggable_online_cpus`; do
-+	offline_cpu_expect_success $cpu
-+done
-+
-+#
-+# Test CPU hot-add error handling (offline => online)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_UP_PREPARE/error
-+for cpu in `hotplaggable_offline_cpus`; do
-+	online_cpu_expect_fail $cpu
-+done
-+
-+#
-+# Online all hot-pluggable CPUs
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_UP_PREPARE/error
-+for cpu in `hotplaggable_offline_cpus`; do
-+	online_cpu_expect_success $cpu
-+done
-+
-+#
-+# Test CPU hot-remove error handling (online => offline)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_DOWN_PREPARE/error
-+for cpu in `hotpluggable_online_cpus`; do
-+	offline_cpu_expect_fail $cpu
-+done
-+
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/CPU_DOWN_PREPARE/error
-+/sbin/modprobe -q -r cpu-notifier-error-inject
-diff --git a/tools/testing/selftests/memory-hotplug/Makefile b/tools/testing/selftests/memory-hotplug/Makefile
-new file mode 100644
-index 0000000..7c9c20f
---- /dev/null
-+++ b/tools/testing/selftests/memory-hotplug/Makefile
-@@ -0,0 +1,6 @@
-+all:
-+
-+run_tests:
-+	./on-off-test.sh
-+
-+clean:
-diff --git a/tools/testing/selftests/memory-hotplug/on-off-test.sh b/tools/testing/selftests/memory-hotplug/on-off-test.sh
-new file mode 100755
-index 0000000..a2816f6
---- /dev/null
-+++ b/tools/testing/selftests/memory-hotplug/on-off-test.sh
-@@ -0,0 +1,230 @@
-+#!/bin/bash
-+
-+SYSFS=
-+
-+prerequisite()
-+{
-+	msg="skip all tests:"
-+
-+	if [ $UID != 0 ]; then
-+		echo $msg must be run as root >&2
-+		exit 0
-+	fi
-+
-+	SYSFS=`mount -t sysfs | head -1 | awk '{ print $3 }'`
-+
-+	if [ ! -d "$SYSFS" ]; then
-+		echo $msg sysfs is not mounted >&2
-+		exit 0
-+	fi
-+
-+	if ! ls $SYSFS/devices/system/memory/memory* > /dev/null 2>&1; then
-+		echo $msg memory hotplug is not supported >&2
-+		exit 0
-+	fi
-+}
-+
-+#
-+# list all hot-pluggable memory
-+#
-+hotpluggable_memory()
-+{
-+	local state=${1:-.\*}
-+
-+	for memory in $SYSFS/devices/system/memory/memory*; do
-+		if grep -q 1 $memory/removable &&
-+		   grep -q $state $memory/state; then
-+			echo ${memory##/*/memory}
-+		fi
-+	done
-+}
-+
-+hotplaggable_offline_memory()
-+{
-+	hotpluggable_memory offline
-+}
-+
-+hotpluggable_online_memory()
-+{
-+	hotpluggable_memory online
-+}
-+
-+memory_is_online()
-+{
-+	grep -q online $SYSFS/devices/system/memory/memory$1/state
-+}
-+
-+memory_is_offline()
-+{
-+	grep -q offline $SYSFS/devices/system/memory/memory$1/state
-+}
-+
-+online_memory()
-+{
-+	echo online > $SYSFS/devices/system/memory/memory$1/state
-+}
-+
-+offline_memory()
-+{
-+	echo offline > $SYSFS/devices/system/memory/memory$1/state
-+}
-+
-+online_memory_expect_success()
-+{
-+	local memory=$1
-+
-+	if ! online_memory $memory; then
-+		echo $FUNCNAME $memory: unexpected fail >&2
-+	elif ! memory_is_online $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+online_memory_expect_fail()
-+{
-+	local memory=$1
-+
-+	if online_memory $memory 2> /dev/null; then
-+		echo $FUNCNAME $memory: unexpected success >&2
-+	elif ! memory_is_offline $memory; then
-+		echo $FUNCNAME $memory: unexpected online >&2
-+	fi
-+}
-+
-+offline_memory_expect_success()
-+{
-+	local memory=$1
-+
-+	if ! offline_memory $memory; then
-+		echo $FUNCNAME $memory: unexpected fail >&2
-+	elif ! memory_is_offline $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+offline_memory_expect_fail()
-+{
-+	local memory=$1
-+
-+	if offline_memory $memory 2> /dev/null; then
-+		echo $FUNCNAME $memory: unexpected success >&2
-+	elif ! memory_is_online $memory; then
-+		echo $FUNCNAME $memory: unexpected offline >&2
-+	fi
-+}
-+
-+error=-12
-+priority=0
-+ratio=10
-+
-+while getopts e:hp:r: opt; do
-+	case $opt in
-+	e)
-+		error=$OPTARG
-+		;;
-+	h)
-+		echo "Usage $0 [ -e errno ] [ -p notifier-priority ] [ -r percent-of-memory-to-offline ]"
-+		exit
-+		;;
-+	p)
-+		priority=$OPTARG
-+		;;
-+	r)
-+		ratio=$OPTARG
-+		;;
-+	esac
-+done
-+
-+if ! [ "$error" -ge -4095 -a "$error" -lt 0 ]; then
-+	echo "error code must be -4095 <= errno < 0" >&2
-+	exit 1
-+fi
-+
-+prerequisite
-+
-+#
-+# Online all hot-pluggable memory
-+#
-+for memory in `hotplaggable_offline_memory`; do
-+	online_memory_expect_success $memory
-+done
-+
-+#
-+# Offline $ratio percent of hot-pluggable memory
-+#
-+for memory in `hotpluggable_online_memory`; do
-+	if [ $((RANDOM % 100)) -lt $ratio ]; then
-+		offline_memory_expect_success $memory
-+	fi
-+done
-+
-+#
-+# Online all hot-pluggable memory again
-+#
-+for memory in `hotplaggable_offline_memory`; do
-+	online_memory_expect_success $memory
-+done
-+
-+#
-+# Test with memory notifier error injection
-+#
-+
-+DEBUGFS=`mount -t debugfs | head -1 | awk '{ print $3 }'`
-+NOTIFIER_ERR_INJECT_DIR=$DEBUGFS/notifier-error-inject/memory
-+
-+prerequisite_extra()
-+{
-+	msg="skip extra tests:"
-+
-+	/sbin/modprobe -q -r memory-notifier-error-inject
-+	/sbin/modprobe -q memory-notifier-error-inject priority=$priority
-+
-+	if [ ! -d "$DEBUGFS" ]; then
-+		echo $msg debugfs is not mounted >&2
-+		exit 0
-+	fi
-+
-+	if [ ! -d $NOTIFIER_ERR_INJECT_DIR ]; then
-+		echo $msg memory-notifier-error-inject module is not available >&2
-+		exit 0
-+	fi
-+}
-+
-+prerequisite_extra
-+
-+#
-+# Offline $ratio percent of hot-pluggable memory
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_OFFLINE/error
-+for memory in `hotpluggable_online_memory`; do
-+	if [ $((RANDOM % 100)) -lt $ratio ]; then
-+		offline_memory_expect_success $memory
-+	fi
-+done
-+
-+#
-+# Test memory hot-add error handling (offline => online)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_ONLINE/error
-+for memory in `hotplaggable_offline_memory`; do
-+	online_memory_expect_fail $memory
-+done
-+
-+#
-+# Online all hot-pluggable memory
-+#
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_ONLINE/error
-+for memory in `hotplaggable_offline_memory`; do
-+	online_memory_expect_success $memory
-+done
-+
-+#
-+# Test memory hot-remove error handling (online => offline)
-+#
-+echo $error > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_OFFLINE/error
-+for memory in `hotpluggable_online_memory`; do
-+	offline_memory_expect_fail $memory
-+done
-+
-+echo 0 > $NOTIFIER_ERR_INJECT_DIR/actions/MEM_GOING_OFFLINE/error
-+/sbin/modprobe -q -r memory-notifier-error-inject
 -- 
 1.7.10.4
