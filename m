@@ -1,14 +1,14 @@
 Return-Path: <liuj97@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
+Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
+ [209.85.210.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 26D062C007B
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 01:47:09 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so6714190pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 08:47:07 -0700 (PDT)
-Message-ID: <4FEF1F6A.6090705@gmail.com>
-Date: Sat, 30 Jun 2012 23:46:50 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 0CE1C2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 01:51:33 +1000 (EST)
+Received: by dajt11 with SMTP id t11so6541484daj.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 08:51:31 -0700 (PDT)
+Message-ID: <4FEF2075.2050603@gmail.com>
+Date: Sat, 30 Jun 2012 23:51:17 +0800
 From: Jiang Liu <liuj97@gmail.com>
 MIME-Version: 1.0
 To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
@@ -68,9 +68,9 @@ On 06/27/2012 01:44 PM, Yasuaki Ishimatsu wrote:
 > +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
 > +		section_nr = pfn_to_section_nr(pfn);
 > +		section = __nr_to_section(section_nr);
-Is it possible for __nr_to_section return NULL here?
-
 > +		mem = find_memory_block(section);
+Seems find_memory_block_hinted() is more efficient than find_memory_block() here.
+
 > +		if (!mem)
 > +			continue;
 > +		if (mem->state == MEM_OFFLINE)
@@ -80,8 +80,6 @@ Is it possible for __nr_to_section return NULL here?
 > +
 > +	return true;
 > +}
-Need a put_dev(&mem->dev) for the last memory block device handled before return.
-
 > +
 >  /*
 >   * register_memory - Setup a sysfs device for a memory block
