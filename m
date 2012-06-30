@@ -1,24 +1,19 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A1C92C042B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 17:50:23 +1000 (EST)
-Received: by dajt11 with SMTP id t11so6157157daj.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 00:50:21 -0700 (PDT)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-Subject: [PATCH -v5 1/6] fault-injection: notifier error injection
-Date: Sat, 30 Jun 2012 14:59:25 +0900
-Message-Id: <1341035970-20490-2-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1341035970-20490-1-git-send-email-akinobu.mita@gmail.com>
-References: <1341035970-20490-1-git-send-email-akinobu.mita@gmail.com>
-Cc: Greg KH <greg@kroah.com>, Akinobu Mita <akinobu.mita@gmail.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, linux-mm@kvack.org,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- linux-pm@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <stephan@gatzka.org>
+Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
+ [IPv6:2a01:238:20a:202:5300::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 56DE92C01B8
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 05:28:00 +1000 (EST)
+Message-ID: <4FEF5098.8070602@gatzka.org>
+Date: Sat, 30 Jun 2012 21:16:40 +0200
+From: Stephan Gatzka <stephan@gatzka.org>
+MIME-Version: 1.0
+To: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: MPC5200b jffs2 memcpy alignment problem
+Content-Type: multipart/signed; protocol="application/pkcs7-signature";
+ micalg=sha1; boundary="------------ms000507050709000006090901"
+Reply-To: stephan@gatzka.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,216 +23,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The notifier error injection provides the ability to inject artifical
-errors to specified notifier chain callbacks.  It is useful to test the
-error handling of notifier call chain failures.
+This is a cryptographically signed message in MIME format.
 
-This adds common basic functions to define which type of events can be
-fail and to initialize the debugfs interface to control what error code
-should be returned and which event should be failed.
+--------------ms000507050709000006090901
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org
-Cc: Greg KH <greg@kroah.com>
-Cc: linux-mm@kvack.org
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Michael Ellerman <michael@ellerman.id.au>
----
-No changes since v4
+Hello!
 
- lib/Kconfig.debug           |   11 +++++
- lib/Makefile                |    1 +
- lib/notifier-error-inject.c |  112 +++++++++++++++++++++++++++++++++++++++++++
- lib/notifier-error-inject.h |   24 ++++++++++
- 4 files changed, 148 insertions(+)
- create mode 100644 lib/notifier-error-inject.c
- create mode 100644 lib/notifier-error-inject.h
+First of all, please apologize my cross posting.
 
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index ff5bdee..c848758 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1084,6 +1084,17 @@ config LKDTM
- 	Documentation on how to use the module can be found in
- 	Documentation/fault-injection/provoke-crashes.txt
- 
-+config NOTIFIER_ERROR_INJECTION
-+	tristate "Notifier error injection"
-+	depends on DEBUG_KERNEL
-+	select DEBUG_FS
-+	help
-+	  This option provides the ability to inject artifical errors to
-+	  specified notifier chain callbacks. It is useful to test the error
-+	  handling of notifier call chain failures.
-+
-+	  Say N if unsure.
-+
- config CPU_NOTIFIER_ERROR_INJECT
- 	tristate "CPU notifier error injection module"
- 	depends on HOTPLUG_CPU && DEBUG_KERNEL
-diff --git a/lib/Makefile b/lib/Makefile
-index 8c31a0c..23fba9e 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -90,6 +90,7 @@ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
- obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
- obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
-+obj-$(CONFIG_NOTIFIER_ERROR_INJECTION) += notifier-error-inject.o
- obj-$(CONFIG_CPU_NOTIFIER_ERROR_INJECT) += cpu-notifier-error-inject.o
- 
- lib-$(CONFIG_GENERIC_BUG) += bug.o
-diff --git a/lib/notifier-error-inject.c b/lib/notifier-error-inject.c
-new file mode 100644
-index 0000000..44b92cb
---- /dev/null
-+++ b/lib/notifier-error-inject.c
-@@ -0,0 +1,112 @@
-+#include <linux/module.h>
-+
-+#include "notifier-error-inject.h"
-+
-+static int debugfs_errno_set(void *data, u64 val)
-+{
-+	*(int *)data = clamp_t(int, val, -MAX_ERRNO, 0);
-+	return 0;
-+}
-+
-+static int debugfs_errno_get(void *data, u64 *val)
-+{
-+	*val = *(int *)data;
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_errno, debugfs_errno_get, debugfs_errno_set,
-+			"%lld\n");
-+
-+static struct dentry *debugfs_create_errno(const char *name, mode_t mode,
-+				struct dentry *parent, int *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_errno);
-+}
-+
-+static int notifier_err_inject_callback(struct notifier_block *nb,
-+				unsigned long val, void *p)
-+{
-+	int err = 0;
-+	struct notifier_err_inject *err_inject =
-+		container_of(nb, struct notifier_err_inject, nb);
-+	struct notifier_err_inject_action *action;
-+
-+	for (action = err_inject->actions; action->name; action++) {
-+		if (action->val == val) {
-+			err = action->error;
-+			break;
-+		}
-+	}
-+	if (err)
-+		pr_info("Injecting error (%d) to %s\n", err, action->name);
-+
-+	return notifier_from_errno(err);
-+}
-+
-+struct dentry *notifier_err_inject_dir;
-+EXPORT_SYMBOL_GPL(notifier_err_inject_dir);
-+
-+struct dentry *notifier_err_inject_init(const char *name, struct dentry *parent,
-+			struct notifier_err_inject *err_inject, int priority)
-+{
-+	struct notifier_err_inject_action *action;
-+	mode_t mode = S_IFREG | S_IRUSR | S_IWUSR;
-+	struct dentry *dir;
-+	struct dentry *actions_dir;
-+
-+	err_inject->nb.notifier_call = notifier_err_inject_callback;
-+	err_inject->nb.priority = priority;
-+
-+	dir = debugfs_create_dir(name, parent);
-+	if (!dir)
-+		return ERR_PTR(-ENOMEM);
-+
-+	actions_dir = debugfs_create_dir("actions", dir);
-+	if (!actions_dir)
-+		goto fail;
-+
-+	for (action = err_inject->actions; action->name; action++) {
-+		struct dentry *action_dir;
-+
-+		action_dir = debugfs_create_dir(action->name, actions_dir);
-+		if (!action_dir)
-+			goto fail;
-+
-+		/*
-+		 * Create debugfs r/w file containing action->error. If
-+		 * notifier call chain is called with action->val, it will
-+		 * fail with the error code
-+		 */
-+		if (!debugfs_create_errno("error", mode, action_dir,
-+					&action->error))
-+			goto fail;
-+	}
-+	return dir;
-+fail:
-+	debugfs_remove_recursive(dir);
-+	return ERR_PTR(-ENOMEM);
-+}
-+EXPORT_SYMBOL_GPL(notifier_err_inject_init);
-+
-+static int __init err_inject_init(void)
-+{
-+	notifier_err_inject_dir =
-+		debugfs_create_dir("notifier-error-inject", NULL);
-+
-+	if (!notifier_err_inject_dir)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+static void __exit err_inject_exit(void)
-+{
-+	debugfs_remove_recursive(notifier_err_inject_dir);
-+}
-+
-+module_init(err_inject_init);
-+module_exit(err_inject_exit);
-+
-+MODULE_DESCRIPTION("Notifier error injection module");
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Akinobu Mita <akinobu.mita@gmail.com>");
-diff --git a/lib/notifier-error-inject.h b/lib/notifier-error-inject.h
-new file mode 100644
-index 0000000..99b3b6f
---- /dev/null
-+++ b/lib/notifier-error-inject.h
-@@ -0,0 +1,24 @@
-+#include <linux/atomic.h>
-+#include <linux/debugfs.h>
-+#include <linux/notifier.h>
-+
-+struct notifier_err_inject_action {
-+	unsigned long val;
-+	int error;
-+	const char *name;
-+};
-+
-+#define NOTIFIER_ERR_INJECT_ACTION(action)	\
-+	.name = #action, .val = (action),
-+
-+struct notifier_err_inject {
-+	struct notifier_block nb;
-+	struct notifier_err_inject_action actions[];
-+	/* The last slot must be terminated with zero sentinel */
-+};
-+
-+extern struct dentry *notifier_err_inject_dir;
-+
-+extern struct dentry *notifier_err_inject_init(const char *name,
-+		struct dentry *parent, struct notifier_err_inject *err_inject,
-+		int priority);
--- 
-1.7.10.4
+I have a problem running jffs2 on an MPC5200b board. I run kernel 3.4,=20
+but older kernels like 3.1.5 are also affected. Every time I mount=20
+jffs2, previously written content gets garbled.
+
+The problem was nailed down to memcpy(&fd->name, rd->name, checkedlen);=20
+in jffs2_scan_dirent_node in fs/jffs2/scan.c.
+
+This is a copy directly from the mapped flash.
+
+memcpy from copy_32.S only ensures that the 32 bit stores to the=20
+destination ptr are aligned. And that's the problem with the MPC5200b=20
+because the user manual (Chapter 9.2, LocalPlus bus features) clearly=20
+states that unaligned access is not supported. But the code above=20
+results in unaligned loads from the LocalPlus bus.
+
+I think there are two possible solutions:
+
+1. Rewrite memcpy this way: Only if both src and dst are 32 bit aligned, =
+
+use 32 bit load/store to copy, otherwise use byte load/store=20
+instructions. (btw. is there a reason for not to use the load multiple=20
+and store multiple instructions in memcpy?) This might be the best way=20
+to do because in my opinion the semantics of memcpy put no restrictions=20
+on the alignment of src and dst.
+
+2. use memcpy_fromio in the jffs2 code. memcpy_fromio behaves exactly in =
+
+the way I described above. This could be also a good solution because=20
+flash access via LocalPlus bus is clearly IO.
+
+What is your opinion where to fix this problem?
+
+Regards,
+
+Stephan
+
+
+--------------ms000507050709000006090901
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIO6TCC
+BJ0wggOFoAMCAQICEDQ96SusJzT/j8s0lPvMcFQwDQYJKoZIhvcNAQEFBQAwbzELMAkGA1UE
+BhMCU0UxFDASBgNVBAoTC0FkZFRydXN0IEFCMSYwJAYDVQQLEx1BZGRUcnVzdCBFeHRlcm5h
+bCBUVFAgTmV0d29yazEiMCAGA1UEAxMZQWRkVHJ1c3QgRXh0ZXJuYWwgQ0EgUm9vdDAeFw0w
+NTA2MDcwODA5MTBaFw0yMDA1MzAxMDQ4MzhaMIGuMQswCQYDVQQGEwJVUzELMAkGA1UECBMC
+VVQxFzAVBgNVBAcTDlNhbHQgTGFrZSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5l
+dHdvcmsxITAfBgNVBAsTGGh0dHA6Ly93d3cudXNlcnRydXN0LmNvbTE2MDQGA1UEAxMtVVRO
+LVVTRVJGaXJzdC1DbGllbnQgQXV0aGVudGljYXRpb24gYW5kIEVtYWlsMIIBIjANBgkqhkiG
+9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsjmFpPJ9q0E7YkY3rs3BYHW8OWX5ShpHornMSMxqmNVN
+NRm5pELlzkniii8efNIxB8dOtINknS4p1aJkxIW9hVE1eaROaJB7HHqkkqgX8pgV8pPMyaQy
+lbsMTzC9mKALi+VuG6JG+ni8om+rWV6lL8/K2m2qL+usobNqqrcuZzWLeeEeaYji5kbNoKXq
+vgvOdjp6Dpvq/NonWz1zHyLmSGHGTPNpsaguG7bUMSAsvIKKjqQOpdeJQ/wWWq8dcdcRWdq6
+hw2v+vPhwvCkxWeM1tZUOt4KpLoDd7NlyP0e03RiqhjKaJMeoYV+9Udly/hNVyh00jT/MLbu
+9mIwFIws6wIDAQABo4H0MIHxMB8GA1UdIwQYMBaAFK29mHo0tCb3+sQmVO8DveAky1QaMB0G
+A1UdDgQWBBSJgmd9xJ0mcABLtFBIfN49rgRufTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/
+BAUwAwEB/zARBgNVHSAECjAIMAYGBFUdIAAwRAYDVR0fBD0wOzA5oDegNYYzaHR0cDovL2Ny
+bC51c2VydHJ1c3QuY29tL0FkZFRydXN0RXh0ZXJuYWxDQVJvb3QuY3JsMDUGCCsGAQUFBwEB
+BCkwJzAlBggrBgEFBQcwAYYZaHR0cDovL29jc3AudXNlcnRydXN0LmNvbTANBgkqhkiG9w0B
+AQUFAAOCAQEAAbyc42MosPMxAcLfe91ioAGdIzEPnJJzU1HqH0z61p/Eyi9nfngzD3QWuZGH
+kfWKJvpkcADYHvkLBGJQh5OB1Nr1I9s0u4VWtHA0bniDNx6FHMURFZJfhxe9rGr98cLRzIlf
+sXzwPlHyNfN87GCYazor4O/fs32G67Ub9VvsonyYE9cAULnRLXPeA3h04QWFMV7LmrmdlMa5
+lDd1ctxE+2fo8PolHlKn2iXpR+CgxzygTrEKNvt3SJ/vl4r7tP7jlBSog7xcLT/SYHFg7sJx
+ggzpiDbj2iC0o6BsqpZLuICOdcpJB/Y7FLrf3AXZn9vgsuZNoHgm5+ctbn9fxh6IFTCCBRow
+ggQCoAMCAQICEG0Z6qcZT2ozIuYiMnqqcd4wDQYJKoZIhvcNAQEFBQAwga4xCzAJBgNVBAYT
+AlVTMQswCQYDVQQIEwJVVDEXMBUGA1UEBxMOU2FsdCBMYWtlIENpdHkxHjAcBgNVBAoTFVRo
+ZSBVU0VSVFJVU1QgTmV0d29yazEhMB8GA1UECxMYaHR0cDovL3d3dy51c2VydHJ1c3QuY29t
+MTYwNAYDVQQDEy1VVE4tVVNFUkZpcnN0LUNsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgRW1h
+aWwwHhcNMTEwNDI4MDAwMDAwWhcNMjAwNTMwMTA0ODM4WjCBkzELMAkGA1UEBhMCR0IxGzAZ
+BgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgGA1UEChMR
+Q09NT0RPIENBIExpbWl0ZWQxOTA3BgNVBAMTMENPTU9ETyBDbGllbnQgQXV0aGVudGljYXRp
+b24gYW5kIFNlY3VyZSBFbWFpbCBDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+AJKEhFtLV5jUXi+LpOFAyKNTWF9mZfEyTvefMn1V0HhMVbdClOD5J3EHxcZppLkyxPFAGpDM
+J1Zifxe1cWmu5SAb5MtjXmDKokH2auGj/7jfH0htZUOMKi4rYzh337EXrMLaggLW1DJq1Gdv
+IBOPXDX65VSAr9hxCh03CgJQU2yVHakQFLSZlVkSMf8JotJM3FLb3uJAAVtIaN3FSrTg7SQf
+Oq9xXwfjrL8UO7AlcWg99A/WF1hGFYE8aIuLgw9teiFX5jSw2zJ+40rhpVJyZCaRTqWSD//g
+sWD9Gm9oUZljjRqLpcxCm5t9ImPTqaD8zp6Q30QZ9FxbNboW86eb/8ECAwEAAaOCAUswggFH
+MB8GA1UdIwQYMBaAFImCZ33EnSZwAEu0UEh83j2uBG59MB0GA1UdDgQWBBR6E04AdFvGeGNk
+J8Ev4qBbvHnFezAOBgNVHQ8BAf8EBAMCAQYwEgYDVR0TAQH/BAgwBgEB/wIBADARBgNVHSAE
+CjAIMAYGBFUdIAAwWAYDVR0fBFEwTzBNoEugSYZHaHR0cDovL2NybC51c2VydHJ1c3QuY29t
+L1VUTi1VU0VSRmlyc3QtQ2xpZW50QXV0aGVudGljYXRpb25hbmRFbWFpbC5jcmwwdAYIKwYB
+BQUHAQEEaDBmMD0GCCsGAQUFBzAChjFodHRwOi8vY3J0LnVzZXJ0cnVzdC5jb20vVVROQWRk
+VHJ1c3RDbGllbnRfQ0EuY3J0MCUGCCsGAQUFBzABhhlodHRwOi8vb2NzcC51c2VydHJ1c3Qu
+Y29tMA0GCSqGSIb3DQEBBQUAA4IBAQCF1r54V1VtM39EUv5C1QaoAQOAivsNsv1Kv/avQUn1
+G1rF0q0bc24+6SZ85kyYwTAo38v7QjyhJT4KddbQPTmGZtGhm7VNm2+vKGwdr+XqdFqo2rHA
+8XV6L566k3nK/uKRHlZ0sviN0+BDchvtj/1gOSBH+4uvOmVIPJg9pSW/ve9g4EnlFsjrP0OD
+8ODuDcHTzTNfm9C9YGqzO/761Mk6PB/tm/+bSTO+Qik5g+4zaS6CnUVNqGnagBsePdIaXXxH
+maWbCG0SmYbWXVcHG6cwvktJRLiQfsrReTjrtDP6oDpdJlieYVUYtCHVmdXgQ0BCML7qpeeU
+0rD+83X5f27nMIIFJjCCBA6gAwIBAgIRAOOJ/wM6hj9EB38z0B4mcIEwDQYJKoZIhvcNAQEF
+BQAwgZMxCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNV
+BAcTB1NhbGZvcmQxGjAYBgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMTkwNwYDVQQDEzBDT01P
+RE8gQ2xpZW50IEF1dGhlbnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0EwHhcNMTExMjI3
+MDAwMDAwWhcNMTIxMjI2MjM1OTU5WjAjMSEwHwYJKoZIhvcNAQkBFhJzdGVwaGFuQGdhdHpr
+YS5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9SmO4JMMpgho+o+AFAMC7
+qUkKx1u+eGa3CtZo8dC68qTXT0CbSMRHi6m6/MuB7vrRtqfwhT2jxUHBHhyW9DcWQGkXKMoD
+cseTjLaHJuQkqnouWxJ7qMmkm+Uk1JpZw5fNkDs/frJdsah7/dKm6Ot4q1B0tMeqF5fi61w4
+xy/K2YQrL5h6EMiybWe5l3c0UJcBpjPLMSRWhMOnK+hZAIuR+ayLJ4Cka+3cXEa0coSpKGYV
+eO/7DYdGO3JOz8fREYWDcTdduKswhTdtJJs1Y/LhaB0okNn4iR4XGVDR191Bccj7BPpTTtwb
+73l/bF+G3W7RV6zfgIGgfJtrnkHMfI6XAgMBAAGjggHiMIIB3jAfBgNVHSMEGDAWgBR6E04A
+dFvGeGNkJ8Ev4qBbvHnFezAdBgNVHQ4EFgQUVy6XE8cMII7deU9U5PFJuHMTZ5gwDgYDVR0P
+AQH/BAQDAgWgMAwGA1UdEwEB/wQCMAAwIAYDVR0lBBkwFwYIKwYBBQUHAwQGCysGAQQBsjEB
+AwUCMBEGCWCGSAGG+EIBAQQEAwIFIDBGBgNVHSAEPzA9MDsGDCsGAQQBsjEBAgEBATArMCkG
+CCsGAQUFBwIBFh1odHRwczovL3NlY3VyZS5jb21vZG8ubmV0L0NQUzBXBgNVHR8EUDBOMEyg
+SqBIhkZodHRwOi8vY3JsLmNvbW9kb2NhLmNvbS9DT01PRE9DbGllbnRBdXRoZW50aWNhdGlv
+bmFuZFNlY3VyZUVtYWlsQ0EuY3JsMIGIBggrBgEFBQcBAQR8MHowUgYIKwYBBQUHMAKGRmh0
+dHA6Ly9jcnQuY29tb2RvY2EuY29tL0NPTU9ET0NsaWVudEF1dGhlbnRpY2F0aW9uYW5kU2Vj
+dXJlRW1haWxDQS5jcnQwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmNvbW9kb2NhLmNvbTAd
+BgNVHREEFjAUgRJzdGVwaGFuQGdhdHprYS5vcmcwDQYJKoZIhvcNAQEFBQADggEBAIp2Qi/h
+0sEoZ3OgYr+064wEHb1FdVa4DCJbqdJVJ8TCIF0nOcgi4GW+R5rlDa0voJ/CDRsHwsfBDgrO
+IjBVgff9SXqgkvxeFtHNi4nHZwgLgpsYkYlXtYtt+vQgxFqi3Oi0ke5bA563IaLgLGE9EU10
+uctMF7eYge0f2uFOgvz2W1cIPc+PJmbxMkvjoDONRo4xVsm+Qa0wXQnDlAbiW+2pE7UkANhX
+egKhdAfiC9YGXlOJHCFHjkiMnkdpGNUaWE2yFs+qfUzseQr1GfXWvlD6SVjmyuZfqeDMAfoF
+V2hq7QMgaZ3waxrrYH5BLQIB4yYs895vPSPMnJUvL6zgHhExggQcMIIEGAIBATCBqTCBkzEL
+MAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2Fs
+Zm9yZDEaMBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQxOTA3BgNVBAMTMENPTU9ETyBDbGll
+bnQgQXV0aGVudGljYXRpb24gYW5kIFNlY3VyZSBFbWFpbCBDQQIRAOOJ/wM6hj9EB38z0B4m
+cIEwCQYFKw4DAhoFAKCCAkcwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0B
+CQUxDxcNMTIwNjMwMTkxNjQwWjAjBgkqhkiG9w0BCQQxFgQUSkh0HZr1Z5wtAsqaC4N0Sj9B
+PfwwbAYJKoZIhvcNAQkPMV8wXTALBglghkgBZQMEASowCwYJYIZIAWUDBAECMAoGCCqGSIb3
+DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMCBzANBggqhkiG9w0D
+AgIBKDCBugYJKwYBBAGCNxAEMYGsMIGpMIGTMQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3Jl
+YXRlciBNYW5jaGVzdGVyMRAwDgYDVQQHEwdTYWxmb3JkMRowGAYDVQQKExFDT01PRE8gQ0Eg
+TGltaXRlZDE5MDcGA1UEAxMwQ09NT0RPIENsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgU2Vj
+dXJlIEVtYWlsIENBAhEA44n/AzqGP0QHfzPQHiZwgTCBvAYLKoZIhvcNAQkQAgsxgayggakw
+gZMxCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcT
+B1NhbGZvcmQxGjAYBgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMTkwNwYDVQQDEzBDT01PRE8g
+Q2xpZW50IEF1dGhlbnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0ECEQDjif8DOoY/RAd/
+M9AeJnCBMA0GCSqGSIb3DQEBAQUABIIBABsFQxLq0hxn1qdMqifVuGzyF0S8JY3Ru1oFGJ5g
+NZXTrS9ul2v0QmuezsKM3uBr4cw78IL8uIXuSrgO9sAlDasvS+oRnp13J2VLBsW42BQjS4TV
+ycral2dA+ArXkKR4J3efla2srdc+Iqyy4Q+OLp1HAzoV9KviCCS9ywWkF7GUDDLY6nnDuGmV
+OHtr7uTcXkTef8IsAUHQbPWfOzM+qTcy0CT40OBU7sNjy71UHES7p86W/1mTwGeVUlrN1U0P
+k+FLflnhf+6ZBFooh6EsTVwgoUc7nYYlv2ROAwhgNWZnA1jIhoLbdfHOujB78xnmUGSAv4aW
+hbbob2d+JXTGxI0AAAAAAAA=
+--------------ms000507050709000006090901--
