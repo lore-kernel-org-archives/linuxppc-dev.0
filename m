@@ -1,15 +1,35 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id BE9F52C01BC
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 17:27:09 +1000 (EST)
-Date: Sun, 1 Jul 2012 00:18:31 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: 3.5.0-rc5: BUG: soft lockup - CPU#0 stuck for 22s
-Message-ID: <alpine.DEB.2.01.1207010009270.5568@trent.utfs.org>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A03502C01D9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 17:53:27 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Sun, 1 Jul 2012 13:23:18 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q617rDtd9437622
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Jul 2012 13:23:14 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q61DN1KF012272
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Jul 2012 23:23:01 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH -V1 4/9] arch/powerpc: Use vsid and segment offset to
+ represent virtual address
+In-Reply-To: <1341006336.2563.35.camel@pasglop>
+References: <1340979457-26018-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1340979457-26018-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1341006336.2563.35.camel@pasglop>
+Date: Sun, 01 Jul 2012 13:23:07 +0530
+Message-ID: <87txxror30.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,58 +39,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-while trying to upgrade from 3.4.0 to 3.5.0-rc5 on this Powerbook G4 
-(powerpc 32 bit), this happens during booting:
+> On Fri, 2012-06-29 at 19:47 +0530, Aneesh Kumar K.V wrote:
+>>  
+>> +/* 78 bit power virtual address */
+>>  struct virt_addr {
+>> -       unsigned long addr;
+>> +       unsigned long vsid;
+>> +       unsigned long seg_off;
+>>  };
+>
+> Do we really need to do that ? It's really nasty...
+>
+> We are trying to add only a few bits, we get 12 for free by just using a
+> page number (4k based always, not PAGE_SHIFT based btw) no ? That should
+> get us going for a while....
+>
 
---------------
-usb 2-1: new full-speed USB device number 4 using ohci_hcd
-SCSI subsystem initialized
-scsi0 : SBP-2 IEEE-1394
-scsi1 : SBP-2 IEEE-1394
-firewire_sbp2 fw1.0: logged in to LUN 0000 (0 retries)
-scsi 0:0:0:0: Direct-Access     Ext Hard  Disk            PQ: 0 ANSI: 4
+Ok, will update to vpn in the next iteration.
 
-[25 seconds later]
-
-BUG: soft lockup - CPU#0 stuck for 22s! [modprobe:695]
-Modules linked in: sd_mod arc4 firewire_sbp2 scsi_mod b43 mac80211 cfg80211
-irq event stamp: 56975532
-hardirqs last  enabled at (56975531): <c053aea8>] _raw_spin_unlock_irqrestore+0x40/0x9c
-hardirqs last disabled at (56975532): <c0011688>] reenable_mmu+0x40/0x98
-softirqs last  enabled at (56966080): <c000f3f0>] call_do_softirq+0x14/0x24
-softirqs last disabled at (56966073): <c000f3f0>] call_do_softirq+0x14/0x24
-NIP: c053aeac LR: c053aea8 CTR: c009d510
-REGS: eed1fd40 TRAP: 0901   Not tainted  (3.5.0-rc5)
-MSR: 00009032 ME IR DR RI > CR: 24042484  XER: 00000000
-TASK = eece5c00[695] 'modprobe' THREAD: eed1e000 #012GPR00: 012GPR08: 
-NIP [c053aeac] _raw_spin_unlock_irqrestore+0x44/0x9c
-LR [c053aea8] _raw_spin_unlock_irqrestore+0x40/0x9c
-Call Trace:
-[eed1fdf0] [c053aea8] _raw_spin_unlock_irqrestore+0x40/0x9c (unreliable)
-[eed1fe00] [c005fbd8] lowest_in_progress+0xa8/0xcc
-[eed1fe20] [c005fc5c] async_synchronize_cookie_domain+0x60/0x1f4
-[eed1fe70] [c005fe3c] async_synchronize_full+0x3c/0x74
-[eed1fe90] [c0083908] sys_init_module+0x174/0x1168
-[eed1ff40] [c00117e8] ret_from_syscall+0x0/0x38
---- Exception: c01 at 0xff5d694#012[   36.339234]     LR = 0x100041c0
-Instruction dump:
-38630010 
-73e08000 
---------------
-
-This is what netconsole was able to receive. I've made a screenshot from 
-another boot with the same vanilla 3.5.0-rc5 (today's mainline) and put it 
-(along with some more details) up here: 
-
-  http://nerdbynature.de/bits/3.5.0-rc5/soft_lockup/
-
-Any ideas?
-
-Thanks,
-Christian.
--- 
-BOFH excuse #436:
-
-Daemon escaped from pentagram
+Thanks
+-aneesh
