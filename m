@@ -1,25 +1,22 @@
-Return-Path: <liuj97@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4352F2C01B8
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 01:58:26 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so6724170pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Jun 2012 08:58:24 -0700 (PDT)
-Message-ID: <4FEF2214.4000205@gmail.com>
-Date: Sat, 30 Jun 2012 23:58:12 +0800
-From: Jiang Liu <liuj97@gmail.com>
+Return-Path: <stephan@gatzka.org>
+Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
+ [IPv6:2a01:238:20a:202:5300::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AA3BA2C01BC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 16:47:07 +1000 (EST)
+Message-ID: <4FEFF265.3010102@gatzka.org>
+Date: Sun, 01 Jul 2012 08:47:01 +0200
+From: Stephan Gatzka <stephan@gatzka.org>
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH 10/12] memory-hotplug : free memmap of sparse-vmemmap
-References: <4FEA9C88.1070800@jp.fujitsu.com> <4FEAA09F.5000907@jp.fujitsu.com>
-In-Reply-To: <4FEAA09F.5000907@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+To: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>
+Subject: Re: MPC5200b jffs2 memcpy alignment problem
+References: <1341086991.2252.0@antares>
+In-Reply-To: <1341086991.2252.0@antares>
+Content-Type: multipart/signed; protocol="application/pkcs7-signature";
+ micalg=sha1; boundary="------------ms090800020901090108030007"
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
+Reply-To: stephan@gatzka.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,192 +26,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 06/27/2012 01:56 PM, Yasuaki Ishimatsu wrote:
-> I don't think that all pages of virtual mapping in removed memory can be
-> freed, since page which type is MIX_SECTION_INFO is difficult to free.
-> So, the patch only frees page which type is SECTION_INFO at first.
-> 
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> 
-> ---
->  arch/x86/mm/init_64.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++++++
->  include/linux/mm.h    |    2 +
->  mm/memory_hotplug.c   |    5 ++
->  mm/sparse.c           |    5 +-
->  4 files changed, 99 insertions(+), 2 deletions(-)
-> 
-> Index: linux-3.5-rc4/include/linux/mm.h
-> ===================================================================
-> --- linux-3.5-rc4.orig/include/linux/mm.h	2012-06-27 09:11:13.790150442 +0900
-> +++ linux-3.5-rc4/include/linux/mm.h	2012-06-27 09:11:16.433117400 +0900
-> @@ -1588,6 +1588,8 @@ int vmemmap_populate(struct page *start_
->  void vmemmap_populate_print_last(void);
->  void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
->  				  unsigned long size);
-> +void vmemmap_kfree(struct page *memmpa, unsigned long nr_pages);
-> +void vmemmap_free_bootmem(struct page *memmpa, unsigned long nr_pages);
-> 
->  enum mf_flags {
->  	MF_COUNT_INCREASED = 1 << 0,
-> Index: linux-3.5-rc4/mm/sparse.c
-> ===================================================================
-> --- linux-3.5-rc4.orig/mm/sparse.c	2012-06-27 09:06:35.317631878 +0900
-> +++ linux-3.5-rc4/mm/sparse.c	2012-06-27 09:11:16.434117388 +0900
-> @@ -614,12 +614,13 @@ static inline struct page *kmalloc_secti
->  	/* This will make the necessary allocations eventually. */
->  	return sparse_mem_map_populate(pnum, nid);
->  }
-> -static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
-> +static void __kfree_section_memmap(struct page *page, unsigned long nr_pages)
->  {
-> -	return; /* XXX: Not implemented yet */
-> +	vmemmap_kfree(page, nr_pages);
->  }
->  static void free_map_bootmem(struct page *page, unsigned long nr_pages)
->  {
-> +	vmemmap_free_bootmem(page, nr_pages);
->  }
->  #else
->  static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
-> Index: linux-3.5-rc4/arch/x86/mm/init_64.c
-> ===================================================================
-> --- linux-3.5-rc4.orig/arch/x86/mm/init_64.c	2012-06-27 09:11:13.791150430 +0900
-> +++ linux-3.5-rc4/arch/x86/mm/init_64.c	2012-06-27 09:11:59.254581998 +0900
-> @@ -978,6 +978,95 @@ vmemmap_populate(struct page *start_page
->  	return 0;
->  }
-> 
-> +unsigned long find_and_clear_pte_page(unsigned long addr, unsigned long end,
-> +				      struct page *page)
-I think the third parameter should be "struct page **pp" instead of "struct page *page".
-And "page = pte_page(*pte)" should be "*pp = pte_page(*pte)".
-Otherwise the found page pointer can't be returned to the caller and vmemmap_kfree()
-just sees random value in variable "page".
+This is a cryptographically signed message in MIME format.
 
-> +{
-> +	pgd_t *pgd;
-> +	pud_t *pud;
-> +	pmd_t *pmd;
-> +	pte_t *pte;
-> +	unsigned long next;
-> +
-> +	page = NULL;
-> +
-> +	pgd = pgd_offset_k(addr);
-> +	if (pgd_none(*pgd))
-> +		return PAGE_SIZE;
-> +
-> +	pud = pud_offset(pgd, addr);
-> +	if (pud_none(*pud))
-> +		return PAGE_SIZE;
-> +
-> +	if (!cpu_has_pse) {
-> +		next = (addr + PAGE_SIZE) & PAGE_MASK;
-> +		pmd = pmd_offset(pud, addr);
-> +		if (pmd_none(*pmd))
-> +			return next;
-> +
-> +		pte = pte_offset_kernel(pmd, addr);
-> +		if (pte_none(*pte))
-> +			return next;
-> +
-> +		page = pte_page(*pte);
-> +		pte_clear(&init_mm, addr, pte);
-> +	} else {
-> +		next = pmd_addr_end(addr, end);
-> +
-> +		pmd = pmd_offset(pud, addr);
-> +		if (pmd_none(*pmd))
-> +			return next;
-> +
-> +		page = pmd_page(*pmd);
-> +		pmd_clear(pmd);
-> +	}
-> +
-> +	return next;
-> +}
-> +
-> +void __meminit
-> +vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
-> +{
-> +	unsigned long addr = (unsigned long)memmap;
-> +	unsigned long end = (unsigned long)(memmap + nr_pages);
-> +	unsigned long next;
-> +	unsigned int order;
-> +	struct page *page;
-> +
-> +	for (; addr < end; addr = next) {
-> +		next = find_and_clear_pte_page(addr, end, page);
-> +		if (!page)
-> +			continue;
-> +
-> +		if (is_vmalloc_addr(page))
-> +			vfree(page);
-> +		else {
-> +			order = next - addr;
-> +			free_pages((unsigned long)page,
-> +				   get_order(sizeof(struct page) *  order));
-> +		}
-> +	}
-> +}
-> +
-> +void __meminit
-> +vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
-> +{
-> +	unsigned long addr = (unsigned long)memmap;
-> +	unsigned long end = (unsigned long)(memmap + nr_pages);
-> +	unsigned long next;
-> +	struct page *page;
-> +	unsigned long magic;
-> +
-> +	for (; addr < end; addr = next) {
-> +		next = find_and_clear_pte_page(addr, end, page);
-> +		if (!page)
-> +			continue;
-> +
-> +		magic = (unsigned long) page->lru.next;
-> +		if (magic == SECTION_INFO)
-> +			put_page_bootmem(page);
-> +	}
-> +}
-> +
->  void __meminit
->  register_page_bootmem_memmap(unsigned long section_nr, struct page *start_page,
->  			     unsigned long size)
-> Index: linux-3.5-rc4/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-27 09:11:13.789150454 +0900
-> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-27 09:11:16.436117363 +0900
-> @@ -303,6 +303,8 @@ static int __meminit __add_section(int n
->  #ifdef CONFIG_SPARSEMEM_VMEMMAP
->  static int __remove_section(struct zone *zone, struct mem_section *ms)
->  {
-> +	unsigned long flags;
-> +	struct pglist_data *pgdat = zone->zone_pgdat;
->  	int ret;
-> 
->  	if (!valid_section(ms))
-> @@ -310,6 +312,9 @@ static int __remove_section(struct zone
-> 
->  	ret = unregister_memory_section(ms);
-> 
-> +	pgdat_resize_lock(pgdat, &flags);
-> +	sparse_remove_one_section(zone, ms);
-> +	pgdat_resize_unlock(pgdat, &flags);
->  	return ret;
->  }
->  #else
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+--------------ms090800020901090108030007
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
+
+Hi Albrecht,
+
+ > I don't recall who proposed this patch, but exactly this solution is
+ > around for a longer time (mayby you search archives...).  On my board,=
+ I
+ > have a flash chip attached to the LocalBus in 16-bit mode.  Based on
+ > 3.2.16, the patch is:
+
+Thanks for your answer and yes, this patch will definitely work. But I=20
+want to have a solution in the mainline kernel, that's why I'm asking=20
+how to deal best with this problem.
+
+Regards,
+
+Stephan
+
+
+--------------ms090800020901090108030007
+Content-Type: application/pkcs7-signature; name="smime.p7s"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="smime.p7s"
+Content-Description: S/MIME Cryptographic Signature
+
+MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIO6TCC
+BJ0wggOFoAMCAQICEDQ96SusJzT/j8s0lPvMcFQwDQYJKoZIhvcNAQEFBQAwbzELMAkGA1UE
+BhMCU0UxFDASBgNVBAoTC0FkZFRydXN0IEFCMSYwJAYDVQQLEx1BZGRUcnVzdCBFeHRlcm5h
+bCBUVFAgTmV0d29yazEiMCAGA1UEAxMZQWRkVHJ1c3QgRXh0ZXJuYWwgQ0EgUm9vdDAeFw0w
+NTA2MDcwODA5MTBaFw0yMDA1MzAxMDQ4MzhaMIGuMQswCQYDVQQGEwJVUzELMAkGA1UECBMC
+VVQxFzAVBgNVBAcTDlNhbHQgTGFrZSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5l
+dHdvcmsxITAfBgNVBAsTGGh0dHA6Ly93d3cudXNlcnRydXN0LmNvbTE2MDQGA1UEAxMtVVRO
+LVVTRVJGaXJzdC1DbGllbnQgQXV0aGVudGljYXRpb24gYW5kIEVtYWlsMIIBIjANBgkqhkiG
+9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsjmFpPJ9q0E7YkY3rs3BYHW8OWX5ShpHornMSMxqmNVN
+NRm5pELlzkniii8efNIxB8dOtINknS4p1aJkxIW9hVE1eaROaJB7HHqkkqgX8pgV8pPMyaQy
+lbsMTzC9mKALi+VuG6JG+ni8om+rWV6lL8/K2m2qL+usobNqqrcuZzWLeeEeaYji5kbNoKXq
+vgvOdjp6Dpvq/NonWz1zHyLmSGHGTPNpsaguG7bUMSAsvIKKjqQOpdeJQ/wWWq8dcdcRWdq6
+hw2v+vPhwvCkxWeM1tZUOt4KpLoDd7NlyP0e03RiqhjKaJMeoYV+9Udly/hNVyh00jT/MLbu
+9mIwFIws6wIDAQABo4H0MIHxMB8GA1UdIwQYMBaAFK29mHo0tCb3+sQmVO8DveAky1QaMB0G
+A1UdDgQWBBSJgmd9xJ0mcABLtFBIfN49rgRufTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/
+BAUwAwEB/zARBgNVHSAECjAIMAYGBFUdIAAwRAYDVR0fBD0wOzA5oDegNYYzaHR0cDovL2Ny
+bC51c2VydHJ1c3QuY29tL0FkZFRydXN0RXh0ZXJuYWxDQVJvb3QuY3JsMDUGCCsGAQUFBwEB
+BCkwJzAlBggrBgEFBQcwAYYZaHR0cDovL29jc3AudXNlcnRydXN0LmNvbTANBgkqhkiG9w0B
+AQUFAAOCAQEAAbyc42MosPMxAcLfe91ioAGdIzEPnJJzU1HqH0z61p/Eyi9nfngzD3QWuZGH
+kfWKJvpkcADYHvkLBGJQh5OB1Nr1I9s0u4VWtHA0bniDNx6FHMURFZJfhxe9rGr98cLRzIlf
+sXzwPlHyNfN87GCYazor4O/fs32G67Ub9VvsonyYE9cAULnRLXPeA3h04QWFMV7LmrmdlMa5
+lDd1ctxE+2fo8PolHlKn2iXpR+CgxzygTrEKNvt3SJ/vl4r7tP7jlBSog7xcLT/SYHFg7sJx
+ggzpiDbj2iC0o6BsqpZLuICOdcpJB/Y7FLrf3AXZn9vgsuZNoHgm5+ctbn9fxh6IFTCCBRow
+ggQCoAMCAQICEG0Z6qcZT2ozIuYiMnqqcd4wDQYJKoZIhvcNAQEFBQAwga4xCzAJBgNVBAYT
+AlVTMQswCQYDVQQIEwJVVDEXMBUGA1UEBxMOU2FsdCBMYWtlIENpdHkxHjAcBgNVBAoTFVRo
+ZSBVU0VSVFJVU1QgTmV0d29yazEhMB8GA1UECxMYaHR0cDovL3d3dy51c2VydHJ1c3QuY29t
+MTYwNAYDVQQDEy1VVE4tVVNFUkZpcnN0LUNsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgRW1h
+aWwwHhcNMTEwNDI4MDAwMDAwWhcNMjAwNTMwMTA0ODM4WjCBkzELMAkGA1UEBhMCR0IxGzAZ
+BgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgGA1UEChMR
+Q09NT0RPIENBIExpbWl0ZWQxOTA3BgNVBAMTMENPTU9ETyBDbGllbnQgQXV0aGVudGljYXRp
+b24gYW5kIFNlY3VyZSBFbWFpbCBDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+AJKEhFtLV5jUXi+LpOFAyKNTWF9mZfEyTvefMn1V0HhMVbdClOD5J3EHxcZppLkyxPFAGpDM
+J1Zifxe1cWmu5SAb5MtjXmDKokH2auGj/7jfH0htZUOMKi4rYzh337EXrMLaggLW1DJq1Gdv
+IBOPXDX65VSAr9hxCh03CgJQU2yVHakQFLSZlVkSMf8JotJM3FLb3uJAAVtIaN3FSrTg7SQf
+Oq9xXwfjrL8UO7AlcWg99A/WF1hGFYE8aIuLgw9teiFX5jSw2zJ+40rhpVJyZCaRTqWSD//g
+sWD9Gm9oUZljjRqLpcxCm5t9ImPTqaD8zp6Q30QZ9FxbNboW86eb/8ECAwEAAaOCAUswggFH
+MB8GA1UdIwQYMBaAFImCZ33EnSZwAEu0UEh83j2uBG59MB0GA1UdDgQWBBR6E04AdFvGeGNk
+J8Ev4qBbvHnFezAOBgNVHQ8BAf8EBAMCAQYwEgYDVR0TAQH/BAgwBgEB/wIBADARBgNVHSAE
+CjAIMAYGBFUdIAAwWAYDVR0fBFEwTzBNoEugSYZHaHR0cDovL2NybC51c2VydHJ1c3QuY29t
+L1VUTi1VU0VSRmlyc3QtQ2xpZW50QXV0aGVudGljYXRpb25hbmRFbWFpbC5jcmwwdAYIKwYB
+BQUHAQEEaDBmMD0GCCsGAQUFBzAChjFodHRwOi8vY3J0LnVzZXJ0cnVzdC5jb20vVVROQWRk
+VHJ1c3RDbGllbnRfQ0EuY3J0MCUGCCsGAQUFBzABhhlodHRwOi8vb2NzcC51c2VydHJ1c3Qu
+Y29tMA0GCSqGSIb3DQEBBQUAA4IBAQCF1r54V1VtM39EUv5C1QaoAQOAivsNsv1Kv/avQUn1
+G1rF0q0bc24+6SZ85kyYwTAo38v7QjyhJT4KddbQPTmGZtGhm7VNm2+vKGwdr+XqdFqo2rHA
+8XV6L566k3nK/uKRHlZ0sviN0+BDchvtj/1gOSBH+4uvOmVIPJg9pSW/ve9g4EnlFsjrP0OD
+8ODuDcHTzTNfm9C9YGqzO/761Mk6PB/tm/+bSTO+Qik5g+4zaS6CnUVNqGnagBsePdIaXXxH
+maWbCG0SmYbWXVcHG6cwvktJRLiQfsrReTjrtDP6oDpdJlieYVUYtCHVmdXgQ0BCML7qpeeU
+0rD+83X5f27nMIIFJjCCBA6gAwIBAgIRAOOJ/wM6hj9EB38z0B4mcIEwDQYJKoZIhvcNAQEF
+BQAwgZMxCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNV
+BAcTB1NhbGZvcmQxGjAYBgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMTkwNwYDVQQDEzBDT01P
+RE8gQ2xpZW50IEF1dGhlbnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0EwHhcNMTExMjI3
+MDAwMDAwWhcNMTIxMjI2MjM1OTU5WjAjMSEwHwYJKoZIhvcNAQkBFhJzdGVwaGFuQGdhdHpr
+YS5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9SmO4JMMpgho+o+AFAMC7
+qUkKx1u+eGa3CtZo8dC68qTXT0CbSMRHi6m6/MuB7vrRtqfwhT2jxUHBHhyW9DcWQGkXKMoD
+cseTjLaHJuQkqnouWxJ7qMmkm+Uk1JpZw5fNkDs/frJdsah7/dKm6Ot4q1B0tMeqF5fi61w4
+xy/K2YQrL5h6EMiybWe5l3c0UJcBpjPLMSRWhMOnK+hZAIuR+ayLJ4Cka+3cXEa0coSpKGYV
+eO/7DYdGO3JOz8fREYWDcTdduKswhTdtJJs1Y/LhaB0okNn4iR4XGVDR191Bccj7BPpTTtwb
+73l/bF+G3W7RV6zfgIGgfJtrnkHMfI6XAgMBAAGjggHiMIIB3jAfBgNVHSMEGDAWgBR6E04A
+dFvGeGNkJ8Ev4qBbvHnFezAdBgNVHQ4EFgQUVy6XE8cMII7deU9U5PFJuHMTZ5gwDgYDVR0P
+AQH/BAQDAgWgMAwGA1UdEwEB/wQCMAAwIAYDVR0lBBkwFwYIKwYBBQUHAwQGCysGAQQBsjEB
+AwUCMBEGCWCGSAGG+EIBAQQEAwIFIDBGBgNVHSAEPzA9MDsGDCsGAQQBsjEBAgEBATArMCkG
+CCsGAQUFBwIBFh1odHRwczovL3NlY3VyZS5jb21vZG8ubmV0L0NQUzBXBgNVHR8EUDBOMEyg
+SqBIhkZodHRwOi8vY3JsLmNvbW9kb2NhLmNvbS9DT01PRE9DbGllbnRBdXRoZW50aWNhdGlv
+bmFuZFNlY3VyZUVtYWlsQ0EuY3JsMIGIBggrBgEFBQcBAQR8MHowUgYIKwYBBQUHMAKGRmh0
+dHA6Ly9jcnQuY29tb2RvY2EuY29tL0NPTU9ET0NsaWVudEF1dGhlbnRpY2F0aW9uYW5kU2Vj
+dXJlRW1haWxDQS5jcnQwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmNvbW9kb2NhLmNvbTAd
+BgNVHREEFjAUgRJzdGVwaGFuQGdhdHprYS5vcmcwDQYJKoZIhvcNAQEFBQADggEBAIp2Qi/h
+0sEoZ3OgYr+064wEHb1FdVa4DCJbqdJVJ8TCIF0nOcgi4GW+R5rlDa0voJ/CDRsHwsfBDgrO
+IjBVgff9SXqgkvxeFtHNi4nHZwgLgpsYkYlXtYtt+vQgxFqi3Oi0ke5bA563IaLgLGE9EU10
+uctMF7eYge0f2uFOgvz2W1cIPc+PJmbxMkvjoDONRo4xVsm+Qa0wXQnDlAbiW+2pE7UkANhX
+egKhdAfiC9YGXlOJHCFHjkiMnkdpGNUaWE2yFs+qfUzseQr1GfXWvlD6SVjmyuZfqeDMAfoF
+V2hq7QMgaZ3waxrrYH5BLQIB4yYs895vPSPMnJUvL6zgHhExggQcMIIEGAIBATCBqTCBkzEL
+MAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2Fs
+Zm9yZDEaMBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQxOTA3BgNVBAMTMENPTU9ETyBDbGll
+bnQgQXV0aGVudGljYXRpb24gYW5kIFNlY3VyZSBFbWFpbCBDQQIRAOOJ/wM6hj9EB38z0B4m
+cIEwCQYFKw4DAhoFAKCCAkcwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0B
+CQUxDxcNMTIwNzAxMDY0NzAxWjAjBgkqhkiG9w0BCQQxFgQUSo0AOSgqsvIzoNL6zkbNlW6R
+qS8wbAYJKoZIhvcNAQkPMV8wXTALBglghkgBZQMEASowCwYJYIZIAWUDBAECMAoGCCqGSIb3
+DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMCBzANBggqhkiG9w0D
+AgIBKDCBugYJKwYBBAGCNxAEMYGsMIGpMIGTMQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3Jl
+YXRlciBNYW5jaGVzdGVyMRAwDgYDVQQHEwdTYWxmb3JkMRowGAYDVQQKExFDT01PRE8gQ0Eg
+TGltaXRlZDE5MDcGA1UEAxMwQ09NT0RPIENsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgU2Vj
+dXJlIEVtYWlsIENBAhEA44n/AzqGP0QHfzPQHiZwgTCBvAYLKoZIhvcNAQkQAgsxgayggakw
+gZMxCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcT
+B1NhbGZvcmQxGjAYBgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMTkwNwYDVQQDEzBDT01PRE8g
+Q2xpZW50IEF1dGhlbnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0ECEQDjif8DOoY/RAd/
+M9AeJnCBMA0GCSqGSIb3DQEBAQUABIIBAEpmy4VyDgy54SkgZdUTmLP+Y4m2NoHkQu7qva7S
+N7NcT5pj7zkcSbFHBnSEdVWL42vvsF2+iKq23f/e6kqhEP+ulqE+//MnFz3DfztbwwU55Ba/
+MNNzyWy5Age5yhgaiAcfbsuKOwgCWB9jNqYkoCS91RIdC0mNJmgxEORKAwy5zlUKS3U6Bl2D
+z02KkQp3QIrLk2EGM1J+hmMKuremM0RO9Jdm9KhutNEB097cEBL+lNmVWsMAHvJAWBHEEyf3
+9OriVkebTagVnz3ACUHCHXImjnQgE7x3CkJYlbQm9SH6oADUTLQLUooWXganfkLjRHqVNwD8
+uBkF02ShRkLd8JMAAAAAAAA=
+--------------ms090800020901090108030007--
