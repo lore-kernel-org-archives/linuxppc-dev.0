@@ -2,18 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5B1FE2C01CA
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 14:47:23 +1000 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q624lIvf030865
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Jul 2012 23:47:19 -0500
-Message-ID: <1341204437.2588.21.camel@pasglop>
-Subject: [PATCH] powerpc: Fixup oddity in entry_32.S
+ by ozlabs.org (Postfix) with ESMTPS id 67B562C01BA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 14:50:55 +1000 (EST)
+Message-ID: <1341204649.2588.29.camel@pasglop>
+Subject: Re: 3.5.0-rc5: BUG: soft lockup - CPU#0 stuck for 22s
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Mon, 02 Jul 2012 14:47:17 +1000
+To: Christian Kujau <lists@nerdbynature.de>
+Date: Mon, 02 Jul 2012 14:50:49 +1000
+In-Reply-To: <alpine.DEB.2.01.1207010009270.5568@trent.utfs.org>
+References: <alpine.DEB.2.01.1207010009270.5568@trent.utfs.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +23,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When I "fixed" the CONFIG_TRACE_IRQFLAGS case on interrupt entry,
-I screwed up a little bit with the test for user space vs. kernel.
+On Sun, 2012-07-01 at 00:18 -0700, Christian Kujau wrote:
+> Hi,
+> 
+> while trying to upgrade from 3.4.0 to 3.5.0-rc5 on this Powerbook G4 
+> (powerpc 32 bit), this happens during booting:
+> 
+> --------------
+> usb 2-1: new full-speed USB device number 4 using ohci_hcd
+> SCSI subsystem initialized
+> scsi0 : SBP-2 IEEE-1394
+> scsi1 : SBP-2 IEEE-1394
+> firewire_sbp2 fw1.0: logged in to LUN 0000 (0 retries)
+> scsi 0:0:0:0: Direct-Access     Ext Hard  Disk            PQ: 0 ANSI: 4
 
-The code is fine, there's just some dead code around it. I basically
-removed the test and always create the added stack frame whether
-coming from user or kernel since in any case we do need to save
-a bunch of volatile registers or bad things would happen (we can
-take page faults in the kernel for example).
+Interesting... I observed something roughly similar on a dual G4
+the other day associated with a 30s to 1mn pause during boot. RCU
+was complaining loudly.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+In my case, it did continue booting normally, is that the case for you ?
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index ba3aeb4..477ec2c 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -226,13 +226,7 @@ reenable_mmu:				/* re-enable mmu so we can */
- 	stw	r3,16(r1)
- 	stw	r4,20(r1)
- 	stw	r5,24(r1)
--	andi.	r12,r12,MSR_PR
--	b	11f
- 	bl	trace_hardirqs_off
--	b	12f
--11:
--	bl	trace_hardirqs_off
--12:
- 	lwz	r5,24(r1)
- 	lwz	r4,20(r1)
- 	lwz	r3,16(r1)
+Also if I compile the kernel without CONFIG_SMP, it did go away as well,
+do you observe that too ?
+
+I don't have a spare cycle to investigate this problem this week I'm
+afraid, it might help if you could try a bisection though.
+
+Cheers,
+Ben.
