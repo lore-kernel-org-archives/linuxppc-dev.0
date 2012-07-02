@@ -1,39 +1,19 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 47DE32C01C7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 13:01:44 +1000 (EST)
-Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 00FEF3EE081
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 12:01:42 +0900 (JST)
-Received: from smail (m2 [127.0.0.1])
- by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id CD11245DE50
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 12:01:41 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
- by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id B1A1C45DE4E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 12:01:41 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 835931DB803A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 12:01:41 +0900 (JST)
-Received: from g01jpexchyt07.g01.fujitsu.local
- (g01jpexchyt07.g01.fujitsu.local [10.128.194.46])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 2D2C51DB8038
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 12:01:41 +0900 (JST)
-Message-ID: <4FF10EFF.5050803@jp.fujitsu.com>
-Date: Mon, 2 Jul 2012 12:01:19 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-MIME-Version: 1.0
-To: Jiang Liu <liuj97@gmail.com>
-Subject: Re: [RFC PATCH 10/12] memory-hotplug : free memmap of sparse-vmemmap
-References: <4FEA9C88.1070800@jp.fujitsu.com>
- <4FEAA09F.5000907@jp.fujitsu.com> <4FEF2214.4000205@gmail.com>
-In-Reply-To: <4FEF2214.4000205@gmail.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
+ by ozlabs.org (Postfix) with ESMTPS id 5B1FE2C01CA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 14:47:23 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q624lIvf030865
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 1 Jul 2012 23:47:19 -0500
+Message-ID: <1341204437.2588.21.camel@pasglop>
+Subject: [PATCH] powerpc: Fixup oddity in entry_32.S
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Mon, 02 Jul 2012 14:47:17 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,208 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jiang,
+When I "fixed" the CONFIG_TRACE_IRQFLAGS case on interrupt entry,
+I screwed up a little bit with the test for user space vs. kernel.
 
-2012/07/01 0:58, Jiang Liu wrote:
-> On 06/27/2012 01:56 PM, Yasuaki Ishimatsu wrote:
->> I don't think that all pages of virtual mapping in removed memory can be
->> freed, since page which type is MIX_SECTION_INFO is difficult to free.
->> So, the patch only frees page which type is SECTION_INFO at first.
->>
->> CC: Len Brown <len.brown@intel.com>
->> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> CC: Paul Mackerras <paulus@samba.org>
->> CC: Christoph Lameter <cl@linux.com>
->> Cc: Minchan Kim <minchan.kim@gmail.com>
->> CC: Andrew Morton <akpm@linux-foundation.org>
->> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> CC: Wen Congyang <wency@cn.fujitsu.com>
->> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>
->> ---
->>   arch/x86/mm/init_64.c |   89 ++++++++++++++++++++++++++++++++++++++++++++++++++
->>   include/linux/mm.h    |    2 +
->>   mm/memory_hotplug.c   |    5 ++
->>   mm/sparse.c           |    5 +-
->>   4 files changed, 99 insertions(+), 2 deletions(-)
->>
->> Index: linux-3.5-rc4/include/linux/mm.h
->> ===================================================================
->> --- linux-3.5-rc4.orig/include/linux/mm.h	2012-06-27 09:11:13.790150442 +0900
->> +++ linux-3.5-rc4/include/linux/mm.h	2012-06-27 09:11:16.433117400 +0900
->> @@ -1588,6 +1588,8 @@ int vmemmap_populate(struct page *start_
->>   void vmemmap_populate_print_last(void);
->>   void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
->>   				  unsigned long size);
->> +void vmemmap_kfree(struct page *memmpa, unsigned long nr_pages);
->> +void vmemmap_free_bootmem(struct page *memmpa, unsigned long nr_pages);
->>
->>   enum mf_flags {
->>   	MF_COUNT_INCREASED = 1 << 0,
->> Index: linux-3.5-rc4/mm/sparse.c
->> ===================================================================
->> --- linux-3.5-rc4.orig/mm/sparse.c	2012-06-27 09:06:35.317631878 +0900
->> +++ linux-3.5-rc4/mm/sparse.c	2012-06-27 09:11:16.434117388 +0900
->> @@ -614,12 +614,13 @@ static inline struct page *kmalloc_secti
->>   	/* This will make the necessary allocations eventually. */
->>   	return sparse_mem_map_populate(pnum, nid);
->>   }
->> -static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
->> +static void __kfree_section_memmap(struct page *page, unsigned long nr_pages)
->>   {
->> -	return; /* XXX: Not implemented yet */
->> +	vmemmap_kfree(page, nr_pages);
->>   }
->>   static void free_map_bootmem(struct page *page, unsigned long nr_pages)
->>   {
->> +	vmemmap_free_bootmem(page, nr_pages);
->>   }
->>   #else
->>   static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
->> Index: linux-3.5-rc4/arch/x86/mm/init_64.c
->> ===================================================================
->> --- linux-3.5-rc4.orig/arch/x86/mm/init_64.c	2012-06-27 09:11:13.791150430 +0900
->> +++ linux-3.5-rc4/arch/x86/mm/init_64.c	2012-06-27 09:11:59.254581998 +0900
->> @@ -978,6 +978,95 @@ vmemmap_populate(struct page *start_page
->>   	return 0;
->>   }
->>
->> +unsigned long find_and_clear_pte_page(unsigned long addr, unsigned long end,
->> +				      struct page *page)
-> I think the third parameter should be "struct page **pp" instead of "struct page *page".
-> And "page = pte_page(*pte)" should be "*pp = pte_page(*pte)".
-> Otherwise the found page pointer can't be returned to the caller and vmemmap_kfree()
-> just sees random value in variable "page".
+The code is fine, there's just some dead code around it. I basically
+removed the test and always create the added stack frame whether
+coming from user or kernel since in any case we do need to save
+a bunch of volatile registers or bad things would happen (we can
+take page faults in the kernel for example).
 
-Oh, you are right. I'll update it.
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-Thanks,
-Yasuaki Ishimatsu
-
->> +{
->> +	pgd_t *pgd;
->> +	pud_t *pud;
->> +	pmd_t *pmd;
->> +	pte_t *pte;
->> +	unsigned long next;
->> +
->> +	page = NULL;
->> +
->> +	pgd = pgd_offset_k(addr);
->> +	if (pgd_none(*pgd))
->> +		return PAGE_SIZE;
->> +
->> +	pud = pud_offset(pgd, addr);
->> +	if (pud_none(*pud))
->> +		return PAGE_SIZE;
->> +
->> +	if (!cpu_has_pse) {
->> +		next = (addr + PAGE_SIZE) & PAGE_MASK;
->> +		pmd = pmd_offset(pud, addr);
->> +		if (pmd_none(*pmd))
->> +			return next;
->> +
->> +		pte = pte_offset_kernel(pmd, addr);
->> +		if (pte_none(*pte))
->> +			return next;
->> +
->> +		page = pte_page(*pte);
->> +		pte_clear(&init_mm, addr, pte);
->> +	} else {
->> +		next = pmd_addr_end(addr, end);
->> +
->> +		pmd = pmd_offset(pud, addr);
->> +		if (pmd_none(*pmd))
->> +			return next;
->> +
->> +		page = pmd_page(*pmd);
->> +		pmd_clear(pmd);
->> +	}
->> +
->> +	return next;
->> +}
->> +
->> +void __meminit
->> +vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
->> +{
->> +	unsigned long addr = (unsigned long)memmap;
->> +	unsigned long end = (unsigned long)(memmap + nr_pages);
->> +	unsigned long next;
->> +	unsigned int order;
->> +	struct page *page;
->> +
->> +	for (; addr < end; addr = next) {
->> +		next = find_and_clear_pte_page(addr, end, page);
->> +		if (!page)
->> +			continue;
->> +
->> +		if (is_vmalloc_addr(page))
->> +			vfree(page);
->> +		else {
->> +			order = next - addr;
->> +			free_pages((unsigned long)page,
->> +				   get_order(sizeof(struct page) *  order));
->> +		}
->> +	}
->> +}
->> +
->> +void __meminit
->> +vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
->> +{
->> +	unsigned long addr = (unsigned long)memmap;
->> +	unsigned long end = (unsigned long)(memmap + nr_pages);
->> +	unsigned long next;
->> +	struct page *page;
->> +	unsigned long magic;
->> +
->> +	for (; addr < end; addr = next) {
->> +		next = find_and_clear_pte_page(addr, end, page);
->> +		if (!page)
->> +			continue;
->> +
->> +		magic = (unsigned long) page->lru.next;
->> +		if (magic == SECTION_INFO)
->> +			put_page_bootmem(page);
->> +	}
->> +}
->> +
->>   void __meminit
->>   register_page_bootmem_memmap(unsigned long section_nr, struct page *start_page,
->>   			     unsigned long size)
->> Index: linux-3.5-rc4/mm/memory_hotplug.c
->> ===================================================================
->> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-27 09:11:13.789150454 +0900
->> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-27 09:11:16.436117363 +0900
->> @@ -303,6 +303,8 @@ static int __meminit __add_section(int n
->>   #ifdef CONFIG_SPARSEMEM_VMEMMAP
->>   static int __remove_section(struct zone *zone, struct mem_section *ms)
->>   {
->> +	unsigned long flags;
->> +	struct pglist_data *pgdat = zone->zone_pgdat;
->>   	int ret;
->>
->>   	if (!valid_section(ms))
->> @@ -310,6 +312,9 @@ static int __remove_section(struct zone
->>
->>   	ret = unregister_memory_section(ms);
->>
->> +	pgdat_resize_lock(pgdat, &flags);
->> +	sparse_remove_one_section(zone, ms);
->> +	pgdat_resize_unlock(pgdat, &flags);
->>   	return ret;
->>   }
->>   #else
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
-> 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index ba3aeb4..477ec2c 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -226,13 +226,7 @@ reenable_mmu:				/* re-enable mmu so we can */
+ 	stw	r3,16(r1)
+ 	stw	r4,20(r1)
+ 	stw	r5,24(r1)
+-	andi.	r12,r12,MSR_PR
+-	b	11f
+ 	bl	trace_hardirqs_off
+-	b	12f
+-11:
+-	bl	trace_hardirqs_off
+-12:
+ 	lwz	r5,24(r1)
+ 	lwz	r4,20(r1)
+ 	lwz	r3,16(r1)
