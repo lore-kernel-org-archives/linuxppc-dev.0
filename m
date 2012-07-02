@@ -2,34 +2,34 @@ Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
 Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A39F02C01C7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 12:57:21 +1000 (EST)
-Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 4F02F3EE0C0
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:17 +0900 (JST)
-Received: from smail (m2 [127.0.0.1])
- by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 3524E45DE5A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:17 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
- by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 1B41F45DE4E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:17 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 08DA51DB8043
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:17 +0900 (JST)
-Received: from g01jpexchyt03.g01.fujitsu.local
- (g01jpexchyt03.g01.fujitsu.local [10.128.194.42])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id A911F1DB803C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:16 +0900 (JST)
-Message-ID: <4FF10D1C.3060601@jp.fujitsu.com>
-Date: Mon, 2 Jul 2012 11:53:16 +0900
+ by ozlabs.org (Postfix) with ESMTPS id 98A0C2C0315
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 12:57:27 +1000 (EST)
+Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id C8ABE3EE0BD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:25 +0900 (JST)
+Received: from smail (m1 [127.0.0.1])
+ by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id AEF7F45DE5F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:25 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
+ by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 8976045DE5D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:25 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 706AE1DB8048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:25 +0900 (JST)
+Received: from g01jpexchyt11.g01.fujitsu.local
+ (g01jpexchyt11.g01.fujitsu.local [10.128.194.50])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 1FE12E08001
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:25 +0900 (JST)
+Message-ID: <4FF10DF0.7000508@jp.fujitsu.com>
+Date: Mon, 2 Jul 2012 11:56:48 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: Jiang Liu <liuj97@gmail.com>
 Subject: Re: [RFC PATCH 2/12] memory-hogplug : check memory offline in
  offline_pages
 References: <4FEA9C88.1070800@jp.fujitsu.com>
- <4FEA9DB1.7010303@jp.fujitsu.com> <4FEF1F6A.6090705@gmail.com>
-In-Reply-To: <4FEF1F6A.6090705@gmail.com>
+ <4FEA9DB1.7010303@jp.fujitsu.com> <4FEF2075.2050603@gmail.com>
+In-Reply-To: <4FEF2075.2050603@gmail.com>
 Content-Type: text/plain; charset="ISO-2022-JP"
 Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
@@ -46,9 +46,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Jiang,
 
-Thank you for your feedback.
-
-2012/07/01 0:46, Jiang Liu wrote:
+2012/07/01 0:51, Jiang Liu wrote:
 > On 06/27/2012 01:44 PM, Yasuaki Ishimatsu wrote:
 >> When offline_pages() is called to offlined memory, the function fails since
 >> all memory has been offlined. In this case, the function should succeed.
@@ -87,12 +85,15 @@ Thank you for your feedback.
 >> +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
 >> +		section_nr = pfn_to_section_nr(pfn);
 >> +		section = __nr_to_section(section_nr);
-> Is it possible for __nr_to_section return NULL here?
+>> +		mem = find_memory_block(section);
+> Seems find_memory_block_hinted() is more efficient than find_memory_block() here.
 
-Yes. I'll add NULL check.
+Thanks. I'll update it.
+
+Thanks,
+Yasuaki Ishimatsu
 
 > 
->> +		mem = find_memory_block(section);
 >> +		if (!mem)
 >> +			continue;
 >> +		if (mem->state == MEM_OFFLINE)
@@ -102,16 +103,6 @@ Yes. I'll add NULL check.
 >> +
 >> +	return true;
 >> +}
-> Need a put_dev(&mem->dev) for the last memory block device handled before return.
-
-Thanks.
-I think kobject_put(&mem->dev.kobj) should be handled for all memory block
-devices found by find_memory_block(). I'll update it.
-
-Thanks,
-Yasuaki Ishimatsu
-
-> 
 >> +
 >>   /*
 >>    * register_memory - Setup a sysfs device for a memory block
