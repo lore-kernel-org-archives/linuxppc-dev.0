@@ -1,20 +1,20 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id EAF6E2C008D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 21:58:13 +1000 (EST)
-Date: Mon, 2 Jul 2012 04:58:08 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: 3.5.0-rc5: BUG: soft lockup - CPU#0 stuck for 22s
-In-Reply-To: <1341204649.2588.29.camel@pasglop>
-Message-ID: <alpine.DEB.2.01.1207020442060.5568@trent.utfs.org>
-References: <alpine.DEB.2.01.1207010009270.5568@trent.utfs.org>
- <1341204649.2588.29.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: stern@rowland.harvard.edu, dan.j.williams@intel.com,
- linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- JBottomley@Parallels.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2EED32C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 23:32:39 +1000 (EST)
+Subject: Re: [PATCH 2/2] powerpc/p1022ds/DTS: Add RTC support
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1334626955-8069-2-git-send-email-Chang-Ming.Huang@freescale.com>
+Date: Mon, 2 Jul 2012 08:32:35 -0500
+Message-Id: <F345952A-5248-44C7-B842-1D871E40D562@kernel.crashing.org>
+References: <1334626955-8069-1-git-send-email-Chang-Ming.Huang@freescale.com>
+ <1334626955-8069-2-git-send-email-Chang-Ming.Huang@freescale.com>
+To: "<Chang-Ming.Huang@freescale.com>" <Chang-Ming.Huang@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,70 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2 Jul 2012 at 14:50, Benjamin Herrenschmidt wrote:
-> > while trying to upgrade from 3.4.0 to 3.5.0-rc5 on this Powerbook G4 
-> > (powerpc 32 bit), this happens during booting:
-> > 
-> > --------------
-> > usb 2-1: new full-speed USB device number 4 using ohci_hcd
-> > SCSI subsystem initialized
-> > scsi0 : SBP-2 IEEE-1394
-> > scsi1 : SBP-2 IEEE-1394
-> > firewire_sbp2 fw1.0: logged in to LUN 0000 (0 retries)
-> > scsi 0:0:0:0: Direct-Access     Ext Hard  Disk            PQ: 0 ANSI: 4
-> 
-> Interesting... I observed something roughly similar on a dual G4
-> the other day associated with a 30s to 1mn pause during boot. RCU
-> was complaining loudly.
-> 
-> In my case, it did continue booting normally, is that the case for you ?
-> 
-> Also if I compile the kernel without CONFIG_SMP, it did go away as well,
-> do you observe that too ?
-> 
-> I don't have a spare cycle to investigate this problem this week I'm
-> afraid, it might help if you could try a bisection though.
 
-OK, after a git-bisect, the following commit has been identified as bad:
+On Apr 16, 2012, at 8:42 PM, <Chang-Ming.Huang@freescale.com> =
+<Chang-Ming.Huang@freescale.com> wrote:
 
----------------------------
-a7a20d103994fd760766e6c9d494daa569cbfe06 is the first bad commit
-commit a7a20d103994fd760766e6c9d494daa569cbfe06
-Author: Dan Williams <dan.j.williams@intel.com>
-Date:   Thu Mar 22 17:05:11 2012 -0700
+> From: Jerry Huang <Chang-Ming.Huang@freescale.com>
+>=20
+> Add the RTC support for p1022ds
+>=20
+> Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> ---
+> arch/powerpc/boot/dts/p1022ds.dtsi |    4 ++++
+> 1 files changed, 4 insertions(+), 0 deletions(-)
 
-    [SCSI] sd: limit the scope of the async probe domain
----------------------------
+applied
 
-Unfortunately it's not possible to "git revert" just this single commit:
-
-------------
-$ git revert a7a20d103994fd760766e6c9d494daa569cbfe06
-error: could not revert a7a20d1... [SCSI] sd: limit the scope of the async probe domain
-hint: after resolving the conflicts, mark the corrected paths  
-hint: with 'git add <paths>' or 'git rm <paths>'
-hint: and commit the result with 'git commit'
-------------
-
-I _guess_ this is probably due to:
-
-------------
-commit ea80dadec7a06889562b478cf0b87afbe62b7ac8
-Author: James Bottomley <JBottomley@Parallels.com>
-Date:   Wed Jun 6 14:54:13 2012 +0900
-
-    [SCSI] Fix sd_probe_domain config problem
-------------
-
-The whole git-bisect log, dmesg, .config and so on is here:
-
-  http://nerdbynature.de/bits/3.5.0-rc5/soft_lockup/
-
-Anyone got an idea how to go from here?
-
-Thanks,
-Christian.
--- 
-BOFH excuse #380:
-
-Operators killed when huge stack of backup tapes fell over.
+- k=
