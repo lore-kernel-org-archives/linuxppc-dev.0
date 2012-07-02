@@ -1,24 +1,40 @@
-Return-Path: <william76.sh@gmail.com>
-Received: from mail-gh0-f179.google.com (mail-gh0-f179.google.com
- [209.85.160.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 14E682C01C7
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Jul 2012 23:51:40 +1000 (EST)
-Received: by ghbg24 with SMTP id g24so3553291ghb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 01 Jul 2012 06:51:37 -0700 (PDT)
-Message-ID: <4FF055AC.2070103@gmail.com>
-Date: Sun, 01 Jul 2012 10:50:36 -0300
-From: "William F." <william76.sh@gmail.com>
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A39F02C01C7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 12:57:21 +1000 (EST)
+Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 4F02F3EE0C0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:17 +0900 (JST)
+Received: from smail (m2 [127.0.0.1])
+ by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 3524E45DE5A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:17 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
+ by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 1B41F45DE4E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:17 +0900 (JST)
+Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 08DA51DB8043
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:17 +0900 (JST)
+Received: from g01jpexchyt03.g01.fujitsu.local
+ (g01jpexchyt03.g01.fujitsu.local [10.128.194.42])
+ by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id A911F1DB803C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 11:57:16 +0900 (JST)
+Message-ID: <4FF10D1C.3060601@jp.fujitsu.com>
+Date: Mon, 2 Jul 2012 11:53:16 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
-To: stephan@gatzka.org
-Subject: Re: MPC5200b jffs2 memcpy alignment problem
-References: <1341086991.2252.0@antares> <4FEFF265.3010102@gatzka.org>
-In-Reply-To: <4FEFF265.3010102@gatzka.org>
-Content-Type: multipart/alternative;
- boundary="------------090806030606020404040405"
-Cc: =?ISO-8859-1?Q?Albrecht_Dre=DF?= <albrecht.dress@arcor.de>,
- linuxppc-dev@lists.ozlabs.org, linux-mtd@lists.infradead.org
+To: Jiang Liu <liuj97@gmail.com>
+Subject: Re: [RFC PATCH 2/12] memory-hogplug : check memory offline in
+ offline_pages
+References: <4FEA9C88.1070800@jp.fujitsu.com>
+ <4FEA9DB1.7010303@jp.fujitsu.com> <4FEF1F6A.6090705@gmail.com>
+In-Reply-To: <4FEF1F6A.6090705@gmail.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,89 +44,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------090806030606020404040405
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi Jiang,
 
-(SPAM)
+Thank you for your feedback.
 
+2012/07/01 0:46, Jiang Liu wrote:
+> On 06/27/2012 01:44 PM, Yasuaki Ishimatsu wrote:
+>> When offline_pages() is called to offlined memory, the function fails since
+>> all memory has been offlined. In this case, the function should succeed.
+>> The patch adds the check function into offline_pages().
+>>
+>> CC: Len Brown <len.brown@intel.com>
+>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> CC: Paul Mackerras <paulus@samba.org>
+>> CC: Christoph Lameter <cl@linux.com>
+>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>> CC: Andrew Morton <akpm@linux-foundation.org>
+>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> CC: Wen Congyang <wency@cn.fujitsu.com>
+>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>
+>> ---
+>>   drivers/base/memory.c  |   20 ++++++++++++++++++++
+>>   include/linux/memory.h |    1 +
+>>   mm/memory_hotplug.c    |    5 +++++
+>>   3 files changed, 26 insertions(+)
+>>
+>> Index: linux-3.5-rc4/drivers/base/memory.c
+>> ===================================================================
+>> --- linux-3.5-rc4.orig/drivers/base/memory.c	2012-06-26 13:28:16.726211752 +0900
+>> +++ linux-3.5-rc4/drivers/base/memory.c	2012-06-26 13:34:22.423639904 +0900
+>> @@ -70,6 +70,26 @@ void unregister_memory_isolate_notifier(
+>>   }
+>>   EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+>>
+>> +bool memory_is_offline(unsigned long start_pfn, unsigned long end_pfn)
+>> +{
+>> +	struct memory_block *mem;
+>> +	struct mem_section *section;
+>> +	unsigned long pfn, section_nr;
+>> +
+>> +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+>> +		section_nr = pfn_to_section_nr(pfn);
+>> +		section = __nr_to_section(section_nr);
+> Is it possible for __nr_to_section return NULL here?
 
-Em 01-07-2012 03:47, Stephan Gatzka escreveu:
-> Hi Albrecht,
->
-> > I don't recall who proposed this patch, but exactly this solution is
-> > around for a longer time (mayby you search archives...).  On my 
-> board, I
-> > have a flash chip attached to the LocalBus in 16-bit mode.  Based on
-> > 3.2.16, the patch is:
->
-> Thanks for your answer and yes, this patch will definitely work. But I 
-> want to have a solution in the mainline kernel, that's why I'm asking 
-> how to deal best with this problem.
->
-> Regards,
->
-> Stephan
->
->
->
-> ______________________________________________________
-> Linux MTD discussion mailing list
-> http://lists.infradead.org/mailman/listinfo/linux-mtd/
+Yes. I'll add NULL check.
 
+> 
+>> +		mem = find_memory_block(section);
+>> +		if (!mem)
+>> +			continue;
+>> +		if (mem->state == MEM_OFFLINE)
+>> +			continue;
+>> +		return false;
+>> +	}
+>> +
+>> +	return true;
+>> +}
+> Need a put_dev(&mem->dev) for the last memory block device handled before return.
 
---------------090806030606020404040405
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Thanks.
+I think kobject_put(&mem->dev.kobj) should be handled for all memory block
+devices found by find_memory_block(). I'll update it.
 
-<html>
-  <head>
-    <meta content="text/html; charset=ISO-8859-1"
-      http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    (SPAM)<br>
-    <br>
-    <br>
-    Em 01-07-2012 03:47, Stephan Gatzka escreveu:
-    <blockquote cite="mid:4FEFF265.3010102@gatzka.org" type="cite">Hi
-      Albrecht,
-      <br>
-      <br>
-      &gt; I don't recall who proposed this patch, but exactly this
-      solution is
-      <br>
-      &gt; around for a longer time (mayby you search archives...).&nbsp; On
-      my board, I
-      <br>
-      &gt; have a flash chip attached to the LocalBus in 16-bit mode.&nbsp;
-      Based on
-      <br>
-      &gt; 3.2.16, the patch is:
-      <br>
-      <br>
-      Thanks for your answer and yes, this patch will definitely work.
-      But I want to have a solution in the mainline kernel, that's why
-      I'm asking how to deal best with this problem.
-      <br>
-      <br>
-      Regards,
-      <br>
-      <br>
-      Stephan
-      <br>
-      <br>
-      <br>
-      <fieldset class="mimeAttachmentHeader"></fieldset>
-      <br>
-      <pre wrap="">______________________________________________________
-Linux MTD discussion mailing list
-<a class="moz-txt-link-freetext" href="http://lists.infradead.org/mailman/listinfo/linux-mtd/">http://lists.infradead.org/mailman/listinfo/linux-mtd/</a>
-</pre>
-    </blockquote>
-    <br>
-  </body>
-</html>
+Thanks,
+Yasuaki Ishimatsu
 
---------------090806030606020404040405--
+> 
+>> +
+>>   /*
+>>    * register_memory - Setup a sysfs device for a memory block
+>>    */
+>> Index: linux-3.5-rc4/include/linux/memory.h
+>> ===================================================================
+>> --- linux-3.5-rc4.orig/include/linux/memory.h	2012-06-25 04:53:04.000000000 +0900
+>> +++ linux-3.5-rc4/include/linux/memory.h	2012-06-26 13:34:22.424639891 +0900
+>> @@ -120,6 +120,7 @@ extern int memory_isolate_notify(unsigne
+>>   extern struct memory_block *find_memory_block_hinted(struct mem_section *,
+>>   							struct memory_block *);
+>>   extern struct memory_block *find_memory_block(struct mem_section *);
+>> +extern bool memory_is_offline(unsigned long start_pfn, unsigned long end_pfn);
+>>   #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+>>   enum mem_add_context { BOOT, HOTPLUG };
+>>   #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+>> Index: linux-3.5-rc4/mm/memory_hotplug.c
+>> ===================================================================
+>> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-06-26 13:28:16.743211538 +0900
+>> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-06-26 13:48:38.264940468 +0900
+>> @@ -887,6 +887,11 @@ static int __ref offline_pages(unsigned
+>>
+>>   	lock_memory_hotplug();
+>>
+>> +	if (memory_is_offline(start_pfn, end_pfn)) {
+>> +		ret = 0;
+>> +		goto out;
+>> +	}
+>> +
+>>   	zone = page_zone(pfn_to_page(start_pfn));
+>>   	node = zone_to_nid(zone);
+>>   	nr_pages = end_pfn - start_pfn;
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
