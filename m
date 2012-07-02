@@ -1,31 +1,20 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D82842C0084
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 21:49:36 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Mon, 2 Jul 2012 17:19:28 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q62BnOXf55377950
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Jul 2012 17:19:25 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q62HJwXc009740
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jul 2012 03:19:58 +1000
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH] [powerpc] Export memory limit via device tree
-To: benh@kernel.crashing.org
-Date: Mon, 02 Jul 2012 17:19:00 +0530
-Message-ID: <20120702114855.22333.95335.stgit@suzukikp.in.ibm.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id EAF6E2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 21:58:13 +1000 (EST)
+Date: Mon, 2 Jul 2012 04:58:08 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 3.5.0-rc5: BUG: soft lockup - CPU#0 stuck for 22s
+In-Reply-To: <1341204649.2588.29.camel@pasglop>
+Message-ID: <alpine.DEB.2.01.1207020442060.5568@trent.utfs.org>
+References: <alpine.DEB.2.01.1207010009270.5568@trent.utfs.org>
+ <1341204649.2588.29.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: stern@rowland.harvard.edu, dan.j.williams@intel.com,
+ linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+ JBottomley@Parallels.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,65 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The powerpc kernel doesn't export the memory limit enforced by 'mem='
-kernel parameter. This is required for building the ELF header in
-kexec-tools to limit the vmcore to capture only the used memory. On
-powerpc the kexec-tools depends on the device-tree for memory related
-information, unlike /proc/iomem on the x86.
+On Mon, 2 Jul 2012 at 14:50, Benjamin Herrenschmidt wrote:
+> > while trying to upgrade from 3.4.0 to 3.5.0-rc5 on this Powerbook G4 
+> > (powerpc 32 bit), this happens during booting:
+> > 
+> > --------------
+> > usb 2-1: new full-speed USB device number 4 using ohci_hcd
+> > SCSI subsystem initialized
+> > scsi0 : SBP-2 IEEE-1394
+> > scsi1 : SBP-2 IEEE-1394
+> > firewire_sbp2 fw1.0: logged in to LUN 0000 (0 retries)
+> > scsi 0:0:0:0: Direct-Access     Ext Hard  Disk            PQ: 0 ANSI: 4
+> 
+> Interesting... I observed something roughly similar on a dual G4
+> the other day associated with a 30s to 1mn pause during boot. RCU
+> was complaining loudly.
+> 
+> In my case, it did continue booting normally, is that the case for you ?
+> 
+> Also if I compile the kernel without CONFIG_SMP, it did go away as well,
+> do you observe that too ?
+> 
+> I don't have a spare cycle to investigate this problem this week I'm
+> afraid, it might help if you could try a bisection though.
 
-Without this information, the kexec-tools assumes the entire System
-RAM and vmcore creates an unnecessarily larger dump.
+OK, after a git-bisect, the following commit has been identified as bad:
 
-This patch exports the memory limit, if present, via chosen/linux,memory-limit
-property, so that the vmcore can be limited to the memory limit.
+---------------------------
+a7a20d103994fd760766e6c9d494daa569cbfe06 is the first bad commit
+commit a7a20d103994fd760766e6c9d494daa569cbfe06
+Author: Dan Williams <dan.j.williams@intel.com>
+Date:   Thu Mar 22 17:05:11 2012 -0700
 
-The prom_init seems to export this value in the same node. But doesn't really
-appear there.  Also the memory_limit gets adjusted with the processing of
-crashkernel= parameter. This patch makes sure we get the actual limit.
+    [SCSI] sd: limit the scope of the async probe domain
+---------------------------
 
-The kexec-tools will use the value to limit the 'end' of the memory
-regions.
+Unfortunately it's not possible to "git revert" just this single commit:
 
-Tested this patch on ppc64 and ppc32(ppc440) with a kexec-tools
-patch by Mahesh.
+------------
+$ git revert a7a20d103994fd760766e6c9d494daa569cbfe06
+error: could not revert a7a20d1... [SCSI] sd: limit the scope of the async probe domain
+hint: after resolving the conflicts, mark the corrected paths  
+hint: with 'git add <paths>' or 'git rm <paths>'
+hint: and commit the result with 'git commit'
+------------
 
-Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Tested-by: Mahesh J. Salgaonkar <mahesh@linux.vnet.ibm.com>
----
+I _guess_ this is probably due to:
 
- arch/powerpc/kernel/machine_kexec.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+------------
+commit ea80dadec7a06889562b478cf0b87afbe62b7ac8
+Author: James Bottomley <JBottomley@Parallels.com>
+Date:   Wed Jun 6 14:54:13 2012 +0900
 
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index c957b12..0c9695d 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -207,6 +207,12 @@ static struct property crashk_size_prop = {
- 	.value = &crashk_size,
- };
- 
-+static struct property memory_limit_prop = {
-+	.name = "linux,memory-limit",
-+	.length = sizeof(phys_addr_t),
-+	.value = &memory_limit,
-+};
-+
- static void __init export_crashk_values(struct device_node *node)
- {
- 	struct property *prop;
-@@ -226,6 +232,15 @@ static void __init export_crashk_values(struct device_node *node)
- 		crashk_size = resource_size(&crashk_res);
- 		prom_add_property(node, &crashk_size_prop);
- 	}
-+
-+	/* memory-limit is needed for constructing the crash regions */
-+	prop = of_find_property(node, memory_limit_prop.name, NULL);
-+	if (prop)
-+		prom_remove_property(node, prop);
-+
-+	if (memory_limit)
-+		prom_add_property(node, &memory_limit_prop);
-+
- }
- 
- static int __init kexec_setup(void)
+    [SCSI] Fix sd_probe_domain config problem
+------------
+
+The whole git-bisect log, dmesg, .config and so on is here:
+
+  http://nerdbynature.de/bits/3.5.0-rc5/soft_lockup/
+
+Anyone got an idea how to go from here?
+
+Thanks,
+Christian.
+-- 
+BOFH excuse #380:
+
+Operators killed when huge stack of backup tapes fell over.
