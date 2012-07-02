@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3EEFB2C01BA
- for <linuxppc-dev@ozlabs.org>; Mon,  2 Jul 2012 14:57:47 +1000 (EST)
-Message-ID: <1341205059.2588.30.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 02 Jul 2012 14:57:39 +1000
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 351632C01C7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 16:12:11 +1000 (EST)
+Date: Mon, 2 Jul 2012 16:12:00 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Subject: linux-next: manual merge of the signal tree with Linus' tree
+Message-Id: <20120702161200.10c26ba2b57f9c7e493e85cc@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__2_Jul_2012_16_12_00_+1000_nkTJFC5yUq+xu0Tv"
+Cc: linux-kernel@vger.kernel.org, Tiejun Chen <tiejun.chen@windriver.com>,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus 
+--Signature=_Mon__2_Jul_2012_16_12_00_+1000_nkTJFC5yUq+xu0Tv
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Here are two more fixes that I "missed" when scrubbing patchwork last
-week which are worth still having in 3.5.
+Hi Al,
 
+Today's linux-next merge of the signal tree got a conflict in
+arch/powerpc/kernel/entry_64.S between commit c58ce2b1e3c7 ("ppc64: fix
+missing to check all bits of _TIF_USER_WORK_MASK in preempt") from Linus'
+tree and commit d07644a97726 ("powerpc: missing NOTIFY_RESUME check on
+64bit if CONFIG_PREEMPT is set") from the signal tree.
+
+I *think* that the former is a superset of the latter, so I just used the
+former.
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-The following changes since commit bc6dc752f35488160ffac07ae91bed1bddaea32a:
+--Signature=_Mon__2_Jul_2012_16_12_00_+1000_nkTJFC5yUq+xu0Tv
+Content-Type: application/pgp-signature
 
-  powerpc/pseries: Fix software invalidate TCE (2012-06-29 14:35:37 +1000)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-are available in the git repository at:
+iQIcBAEBCAAGBQJP8TuwAAoJEECxmPOUX5FE4rkP/jfe3fZRzlUs14v2FKKBtsuA
+LTDEQ4D6K+2nCPfoa/icHmA1GoQZGCUqKVhLcxNI5eGQKQPOiVo1AgkC8oKFx8HD
+Sm8qAX6VEEuVQLl2iSU/I7aFy6GCesQHctKl2ENXIOABuWmpLlmJoihXXV55YV7q
+FgAfkZoiJks7OwgF0jq5M7U8eOJsYNsz3cHtR72NsvYZiK8vPDpoS7tFvQVN+cbS
+xsMlekkf5kuVdBVcyLGFmySClqp9wuavwpY+oJXY79Kt/24EKDy4WKiz58CD9F8e
+QtqfXAutKsFYC4CrGy/aQKu4/v1C7lV+I3sN89cEXrdekxn0niRH4ErwSc93q7rG
+UxmeD+PexFMmaty6UZONp16hZULK0XA1H4eZLVV7YN2K7k6eegQbvERZUOgvONb0
+d45o3+8RegkSpmhHRbtxTBhw4b/l3s/zVaZ/kAHzIampMJzVcBOBjCtNvOmIYAh1
+hfuEvPXYNfy4Ceb13QJm3hp7vKR2ADpl0rsrhFW30Q9kdMojlItylQ1mXSMG3Bqt
+G3z+sGDGR0VkA1FVMgmesMeLX2ZybRqUaSO52FKm0nuytwk1pYCFnlIpOD2mHssn
+bIEU36rsY/fIDrrK0+8nf/8ibxnGb7AJNMf+9VCDVK+/6EqAHpiCdDH06y6UH+se
+09bj+vrkc1Q7zbnqk5FN
+=WJ4C
+-----END PGP SIGNATURE-----
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to 2f584a146a2965b82fce89b8d2f95dc5cfe468d0:
-
-  powerpc/kvm: sldi should be sld (2012-07-02 14:30:12 +1000)
-
-----------------------------------------------------------------
-Anton Blanchard (1):
-      powerpc/xmon: Use cpumask iterator to avoid warning
-
-Michael Neuling (1):
-      powerpc/kvm: sldi should be sld
-
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |    2 +-
- arch/powerpc/xmon/xmon.c                |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+--Signature=_Mon__2_Jul_2012_16_12_00_+1000_nkTJFC5yUq+xu0Tv--
