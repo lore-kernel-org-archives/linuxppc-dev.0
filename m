@@ -1,23 +1,39 @@
-Return-Path: <stephan@gatzka.org>
-Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
- [IPv6:2a01:238:20a:202:5300::1])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 77F4A2C0096
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 02:41:56 +1000 (EST)
-Message-ID: <4FF1CF43.70707@gatzka.org>
-Date: Mon, 02 Jul 2012 18:41:39 +0200
-From: Stephan Gatzka <stephan@gatzka.org>
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BC7FF2C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 02:47:55 +1000 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Mon, 2 Jul 2012 10:47:49 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 5BF473E4006D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 16:46:34 +0000 (WET)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q62Gk2oR087428
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Jul 2012 10:46:18 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q62GjkgP028083
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Jul 2012 10:45:47 -0600
+Date: Mon, 2 Jul 2012 09:45:44 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Subject: Re: 3.5.0-rc5: BUG: soft lockup - CPU#0 stuck for 22s
+Message-ID: <20120702164544.GJ2508@linux.vnet.ibm.com>
+References: <alpine.DEB.2.01.1207010009270.5568@trent.utfs.org>
+ <1341204649.2588.29.camel@pasglop>
+ <alpine.DEB.2.01.1207012326110.5568@trent.utfs.org>
 MIME-Version: 1.0
-To: Anatolij Gustschin <agust@denx.de>
-Subject: Re: MPC5200b jffs2 memcpy alignment problem
-References: <1341086991.2252.0@antares> <4FEFF265.3010102@gatzka.org>
- <20120702122134.50340f5f@wker>
-In-Reply-To: <20120702122134.50340f5f@wker>
-Content-Type: multipart/signed; protocol="application/pkcs7-signature";
- micalg=sha1; boundary="------------ms060203020405000005020100"
-Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Reply-To: stephan@gatzka.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.01.1207012326110.5568@trent.utfs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
+Reply-To: paulmck@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,125 +43,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a cryptographically signed message in MIME format.
+On Sun, Jul 01, 2012 at 11:30:40PM -0700, Christian Kujau wrote:
+> On Mon, 2 Jul 2012 at 14:50, Benjamin Herrenschmidt wrote:
+> > Interesting... I observed something roughly similar on a dual G4
+> > the other day associated with a 30s to 1mn pause during boot. RCU
+> > was complaining loudly.
+> > 
+> > In my case, it did continue booting normally, is that the case for you ?
+> 
+> No, in my case it stopped booting, though there was no "panic" message.
+> 
+> > Also if I compile the kernel without CONFIG_SMP, it did go away as well,
+> > do you observe that too ?
+> 
+> This PoweBook G4 is UP anyway and I'm always building w/o CONFIG_SMP.
+> 
+> > I don't have a spare cycle to investigate this problem this week I'm
+> > afraid, it might help if you could try a bisection though.
+> 
+> Yes, I've started a bisection already and will report back.
+> 
+> FYI, I've put a netconsole-log below from another boot (in the 
+> middle of a bisection), the instruction dump is slightly more complete.
 
---------------ms060203020405000005020100
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: quoted-printable
+Li Zhong posted a patch to fix this (async_synchronize_full() below):
 
-Hi!
+	https://lkml.org/lkml/2012/7/2/32
 
-> This problem has been discussed several times [1], [2], but wasn't
-> resolved yet. The clean solution suggested was to implement a custom
-> mapping driver [3].
+This gets rid of this problem on my UP testing.  If it works for you,
+please give Li Zhong a Tested-by.
 
-Then I'll do that. It doesn't look terribly complicated.
+							Thanx, Paul
 
-It would be helpful if someone can test the first version if it's availab=
-le.
-
-Regards,
-
-Stephan
-
-
-
---------------ms060203020405000005020100
-Content-Type: application/pkcs7-signature; name="smime.p7s"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="smime.p7s"
-Content-Description: S/MIME Cryptographic Signature
-
-MIAGCSqGSIb3DQEHAqCAMIACAQExCzAJBgUrDgMCGgUAMIAGCSqGSIb3DQEHAQAAoIIO6TCC
-BJ0wggOFoAMCAQICEDQ96SusJzT/j8s0lPvMcFQwDQYJKoZIhvcNAQEFBQAwbzELMAkGA1UE
-BhMCU0UxFDASBgNVBAoTC0FkZFRydXN0IEFCMSYwJAYDVQQLEx1BZGRUcnVzdCBFeHRlcm5h
-bCBUVFAgTmV0d29yazEiMCAGA1UEAxMZQWRkVHJ1c3QgRXh0ZXJuYWwgQ0EgUm9vdDAeFw0w
-NTA2MDcwODA5MTBaFw0yMDA1MzAxMDQ4MzhaMIGuMQswCQYDVQQGEwJVUzELMAkGA1UECBMC
-VVQxFzAVBgNVBAcTDlNhbHQgTGFrZSBDaXR5MR4wHAYDVQQKExVUaGUgVVNFUlRSVVNUIE5l
-dHdvcmsxITAfBgNVBAsTGGh0dHA6Ly93d3cudXNlcnRydXN0LmNvbTE2MDQGA1UEAxMtVVRO
-LVVTRVJGaXJzdC1DbGllbnQgQXV0aGVudGljYXRpb24gYW5kIEVtYWlsMIIBIjANBgkqhkiG
-9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsjmFpPJ9q0E7YkY3rs3BYHW8OWX5ShpHornMSMxqmNVN
-NRm5pELlzkniii8efNIxB8dOtINknS4p1aJkxIW9hVE1eaROaJB7HHqkkqgX8pgV8pPMyaQy
-lbsMTzC9mKALi+VuG6JG+ni8om+rWV6lL8/K2m2qL+usobNqqrcuZzWLeeEeaYji5kbNoKXq
-vgvOdjp6Dpvq/NonWz1zHyLmSGHGTPNpsaguG7bUMSAsvIKKjqQOpdeJQ/wWWq8dcdcRWdq6
-hw2v+vPhwvCkxWeM1tZUOt4KpLoDd7NlyP0e03RiqhjKaJMeoYV+9Udly/hNVyh00jT/MLbu
-9mIwFIws6wIDAQABo4H0MIHxMB8GA1UdIwQYMBaAFK29mHo0tCb3+sQmVO8DveAky1QaMB0G
-A1UdDgQWBBSJgmd9xJ0mcABLtFBIfN49rgRufTAOBgNVHQ8BAf8EBAMCAQYwDwYDVR0TAQH/
-BAUwAwEB/zARBgNVHSAECjAIMAYGBFUdIAAwRAYDVR0fBD0wOzA5oDegNYYzaHR0cDovL2Ny
-bC51c2VydHJ1c3QuY29tL0FkZFRydXN0RXh0ZXJuYWxDQVJvb3QuY3JsMDUGCCsGAQUFBwEB
-BCkwJzAlBggrBgEFBQcwAYYZaHR0cDovL29jc3AudXNlcnRydXN0LmNvbTANBgkqhkiG9w0B
-AQUFAAOCAQEAAbyc42MosPMxAcLfe91ioAGdIzEPnJJzU1HqH0z61p/Eyi9nfngzD3QWuZGH
-kfWKJvpkcADYHvkLBGJQh5OB1Nr1I9s0u4VWtHA0bniDNx6FHMURFZJfhxe9rGr98cLRzIlf
-sXzwPlHyNfN87GCYazor4O/fs32G67Ub9VvsonyYE9cAULnRLXPeA3h04QWFMV7LmrmdlMa5
-lDd1ctxE+2fo8PolHlKn2iXpR+CgxzygTrEKNvt3SJ/vl4r7tP7jlBSog7xcLT/SYHFg7sJx
-ggzpiDbj2iC0o6BsqpZLuICOdcpJB/Y7FLrf3AXZn9vgsuZNoHgm5+ctbn9fxh6IFTCCBRow
-ggQCoAMCAQICEG0Z6qcZT2ozIuYiMnqqcd4wDQYJKoZIhvcNAQEFBQAwga4xCzAJBgNVBAYT
-AlVTMQswCQYDVQQIEwJVVDEXMBUGA1UEBxMOU2FsdCBMYWtlIENpdHkxHjAcBgNVBAoTFVRo
-ZSBVU0VSVFJVU1QgTmV0d29yazEhMB8GA1UECxMYaHR0cDovL3d3dy51c2VydHJ1c3QuY29t
-MTYwNAYDVQQDEy1VVE4tVVNFUkZpcnN0LUNsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgRW1h
-aWwwHhcNMTEwNDI4MDAwMDAwWhcNMjAwNTMwMTA0ODM4WjCBkzELMAkGA1UEBhMCR0IxGzAZ
-BgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2FsZm9yZDEaMBgGA1UEChMR
-Q09NT0RPIENBIExpbWl0ZWQxOTA3BgNVBAMTMENPTU9ETyBDbGllbnQgQXV0aGVudGljYXRp
-b24gYW5kIFNlY3VyZSBFbWFpbCBDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
-AJKEhFtLV5jUXi+LpOFAyKNTWF9mZfEyTvefMn1V0HhMVbdClOD5J3EHxcZppLkyxPFAGpDM
-J1Zifxe1cWmu5SAb5MtjXmDKokH2auGj/7jfH0htZUOMKi4rYzh337EXrMLaggLW1DJq1Gdv
-IBOPXDX65VSAr9hxCh03CgJQU2yVHakQFLSZlVkSMf8JotJM3FLb3uJAAVtIaN3FSrTg7SQf
-Oq9xXwfjrL8UO7AlcWg99A/WF1hGFYE8aIuLgw9teiFX5jSw2zJ+40rhpVJyZCaRTqWSD//g
-sWD9Gm9oUZljjRqLpcxCm5t9ImPTqaD8zp6Q30QZ9FxbNboW86eb/8ECAwEAAaOCAUswggFH
-MB8GA1UdIwQYMBaAFImCZ33EnSZwAEu0UEh83j2uBG59MB0GA1UdDgQWBBR6E04AdFvGeGNk
-J8Ev4qBbvHnFezAOBgNVHQ8BAf8EBAMCAQYwEgYDVR0TAQH/BAgwBgEB/wIBADARBgNVHSAE
-CjAIMAYGBFUdIAAwWAYDVR0fBFEwTzBNoEugSYZHaHR0cDovL2NybC51c2VydHJ1c3QuY29t
-L1VUTi1VU0VSRmlyc3QtQ2xpZW50QXV0aGVudGljYXRpb25hbmRFbWFpbC5jcmwwdAYIKwYB
-BQUHAQEEaDBmMD0GCCsGAQUFBzAChjFodHRwOi8vY3J0LnVzZXJ0cnVzdC5jb20vVVROQWRk
-VHJ1c3RDbGllbnRfQ0EuY3J0MCUGCCsGAQUFBzABhhlodHRwOi8vb2NzcC51c2VydHJ1c3Qu
-Y29tMA0GCSqGSIb3DQEBBQUAA4IBAQCF1r54V1VtM39EUv5C1QaoAQOAivsNsv1Kv/avQUn1
-G1rF0q0bc24+6SZ85kyYwTAo38v7QjyhJT4KddbQPTmGZtGhm7VNm2+vKGwdr+XqdFqo2rHA
-8XV6L566k3nK/uKRHlZ0sviN0+BDchvtj/1gOSBH+4uvOmVIPJg9pSW/ve9g4EnlFsjrP0OD
-8ODuDcHTzTNfm9C9YGqzO/761Mk6PB/tm/+bSTO+Qik5g+4zaS6CnUVNqGnagBsePdIaXXxH
-maWbCG0SmYbWXVcHG6cwvktJRLiQfsrReTjrtDP6oDpdJlieYVUYtCHVmdXgQ0BCML7qpeeU
-0rD+83X5f27nMIIFJjCCBA6gAwIBAgIRAOOJ/wM6hj9EB38z0B4mcIEwDQYJKoZIhvcNAQEF
-BQAwgZMxCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNV
-BAcTB1NhbGZvcmQxGjAYBgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMTkwNwYDVQQDEzBDT01P
-RE8gQ2xpZW50IEF1dGhlbnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0EwHhcNMTExMjI3
-MDAwMDAwWhcNMTIxMjI2MjM1OTU5WjAjMSEwHwYJKoZIhvcNAQkBFhJzdGVwaGFuQGdhdHpr
-YS5vcmcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQC9SmO4JMMpgho+o+AFAMC7
-qUkKx1u+eGa3CtZo8dC68qTXT0CbSMRHi6m6/MuB7vrRtqfwhT2jxUHBHhyW9DcWQGkXKMoD
-cseTjLaHJuQkqnouWxJ7qMmkm+Uk1JpZw5fNkDs/frJdsah7/dKm6Ot4q1B0tMeqF5fi61w4
-xy/K2YQrL5h6EMiybWe5l3c0UJcBpjPLMSRWhMOnK+hZAIuR+ayLJ4Cka+3cXEa0coSpKGYV
-eO/7DYdGO3JOz8fREYWDcTdduKswhTdtJJs1Y/LhaB0okNn4iR4XGVDR191Bccj7BPpTTtwb
-73l/bF+G3W7RV6zfgIGgfJtrnkHMfI6XAgMBAAGjggHiMIIB3jAfBgNVHSMEGDAWgBR6E04A
-dFvGeGNkJ8Ev4qBbvHnFezAdBgNVHQ4EFgQUVy6XE8cMII7deU9U5PFJuHMTZ5gwDgYDVR0P
-AQH/BAQDAgWgMAwGA1UdEwEB/wQCMAAwIAYDVR0lBBkwFwYIKwYBBQUHAwQGCysGAQQBsjEB
-AwUCMBEGCWCGSAGG+EIBAQQEAwIFIDBGBgNVHSAEPzA9MDsGDCsGAQQBsjEBAgEBATArMCkG
-CCsGAQUFBwIBFh1odHRwczovL3NlY3VyZS5jb21vZG8ubmV0L0NQUzBXBgNVHR8EUDBOMEyg
-SqBIhkZodHRwOi8vY3JsLmNvbW9kb2NhLmNvbS9DT01PRE9DbGllbnRBdXRoZW50aWNhdGlv
-bmFuZFNlY3VyZUVtYWlsQ0EuY3JsMIGIBggrBgEFBQcBAQR8MHowUgYIKwYBBQUHMAKGRmh0
-dHA6Ly9jcnQuY29tb2RvY2EuY29tL0NPTU9ET0NsaWVudEF1dGhlbnRpY2F0aW9uYW5kU2Vj
-dXJlRW1haWxDQS5jcnQwJAYIKwYBBQUHMAGGGGh0dHA6Ly9vY3NwLmNvbW9kb2NhLmNvbTAd
-BgNVHREEFjAUgRJzdGVwaGFuQGdhdHprYS5vcmcwDQYJKoZIhvcNAQEFBQADggEBAIp2Qi/h
-0sEoZ3OgYr+064wEHb1FdVa4DCJbqdJVJ8TCIF0nOcgi4GW+R5rlDa0voJ/CDRsHwsfBDgrO
-IjBVgff9SXqgkvxeFtHNi4nHZwgLgpsYkYlXtYtt+vQgxFqi3Oi0ke5bA563IaLgLGE9EU10
-uctMF7eYge0f2uFOgvz2W1cIPc+PJmbxMkvjoDONRo4xVsm+Qa0wXQnDlAbiW+2pE7UkANhX
-egKhdAfiC9YGXlOJHCFHjkiMnkdpGNUaWE2yFs+qfUzseQr1GfXWvlD6SVjmyuZfqeDMAfoF
-V2hq7QMgaZ3waxrrYH5BLQIB4yYs895vPSPMnJUvL6zgHhExggQcMIIEGAIBATCBqTCBkzEL
-MAkGA1UEBhMCR0IxGzAZBgNVBAgTEkdyZWF0ZXIgTWFuY2hlc3RlcjEQMA4GA1UEBxMHU2Fs
-Zm9yZDEaMBgGA1UEChMRQ09NT0RPIENBIExpbWl0ZWQxOTA3BgNVBAMTMENPTU9ETyBDbGll
-bnQgQXV0aGVudGljYXRpb24gYW5kIFNlY3VyZSBFbWFpbCBDQQIRAOOJ/wM6hj9EB38z0B4m
-cIEwCQYFKw4DAhoFAKCCAkcwGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0B
-CQUxDxcNMTIwNzAyMTY0MTM5WjAjBgkqhkiG9w0BCQQxFgQUqlIyLm7TomdPoswuDqkMM0VI
-QWwwbAYJKoZIhvcNAQkPMV8wXTALBglghkgBZQMEASowCwYJYIZIAWUDBAECMAoGCCqGSIb3
-DQMHMA4GCCqGSIb3DQMCAgIAgDANBggqhkiG9w0DAgIBQDAHBgUrDgMCBzANBggqhkiG9w0D
-AgIBKDCBugYJKwYBBAGCNxAEMYGsMIGpMIGTMQswCQYDVQQGEwJHQjEbMBkGA1UECBMSR3Jl
-YXRlciBNYW5jaGVzdGVyMRAwDgYDVQQHEwdTYWxmb3JkMRowGAYDVQQKExFDT01PRE8gQ0Eg
-TGltaXRlZDE5MDcGA1UEAxMwQ09NT0RPIENsaWVudCBBdXRoZW50aWNhdGlvbiBhbmQgU2Vj
-dXJlIEVtYWlsIENBAhEA44n/AzqGP0QHfzPQHiZwgTCBvAYLKoZIhvcNAQkQAgsxgayggakw
-gZMxCzAJBgNVBAYTAkdCMRswGQYDVQQIExJHcmVhdGVyIE1hbmNoZXN0ZXIxEDAOBgNVBAcT
-B1NhbGZvcmQxGjAYBgNVBAoTEUNPTU9ETyBDQSBMaW1pdGVkMTkwNwYDVQQDEzBDT01PRE8g
-Q2xpZW50IEF1dGhlbnRpY2F0aW9uIGFuZCBTZWN1cmUgRW1haWwgQ0ECEQDjif8DOoY/RAd/
-M9AeJnCBMA0GCSqGSIb3DQEBAQUABIIBADqAOBj+kF/KGOGDmEcHCxHSPaXl+uQbyPK9gYjB
-KKDQfdtk9YEGfuOb4CFspO8V+ZsKXsktn7gsCeE8sak3ShnpnefI54ANcS2cDpHQzfScUfJ4
-qpg0E62Ud4MFXpTw89CGjDZblDKh0TjPIl5LfH+nJ0W2kZNa6rJ3/gjniQahNGva8LVmtP4z
-eMFL0VLGL8dhibpTMiGjPjUnV1AmQb4WZYJrA3F4SwBz0WQ0dkbZ0HtA7V1PVt7ZRyc84a+3
-OVBquy9cnKHrW/l15WIRmLLXKmLGIFAI0WTkTWQCOy3OOsRZabscvIRPEfD6KsjAyGnWBndP
-JC3fYppJofsHoKEAAAAAAAA=
---------------ms060203020405000005020100--
+> Thanks!
+> Christian.
+> 
+> [   40.345973] BUG: soft lockup - CPU#0 stuck for 22s! [modprobe:691]
+> [   40.347737] Modules linked in: sd_mod arc4 firewire_sbp2 scsi_mod b43 mac80211 cfg80211
+> [   40.349443] irq event stamp: 65779272
+> [   40.351156] hardirqs last  enabled at (65779271): [<c052fae8>] _raw_spin_unlock_irqrestore+0x40/0x9c
+> [   40.352911] hardirqs last disabled at (65779272): [<c0011648>] reenable_mmu+0x40/0x98
+> [   40.354649] softirqs last  enabled at (65769864): [<c000f3c0>] call_do_softirq+0x14/0x24
+> [   40.356386] softirqs last disabled at (65769857): [<c000f3c0>] call_do_softirq+0x14/0x24
+> [   40.358098] NIP: c005ee64 LR: c005ee54 CTR: c009c578
+> [   40.359788] REGS: eece3d70 TRAP: 0901   Not tainted  (3.4.0-05609-gc80ddb5)
+> [   40.361517] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 24042482  XER: 00000000
+> [   40.363261] TASK = eec30b80[691] 'modprobe' THREAD: eece2000#012
+> [   40.363261] GPR00: c005ee54 eece3e20 eec30b80 00000000 00000002 c005edd0 00000000 00000000 #012
+> [   40.363261] GPR08: 00000000 eece2000 00000000 00000001 24042488 
+> [   40.368310] NIP [c005ee64] async_synchronize_cookie_domain+0x70/0x1f4
+> [   40.369978] LR [c005ee54] async_synchronize_cookie_domain+0x60/0x1f4
+> [   40.371614] Call Trace:
+> [   40.373226] [eece3e20] [c005ee54] async_synchronize_cookie_domain+0x60/0x1f4 (unreliable)
+> [   40.374884] [eece3e70] [c005f034] async_synchronize_full+0x3c/0x74
+> [   40.376524] [eece3e90] [c0082790] sys_init_module+0x178/0x1164
+> [   40.378151] [eece3f40] [c00117a8] ret_from_syscall+0x0/0x38
+> [   40.379783] --- Exception: c01 at 0xff5d694#012[   40.379783]     LR = 0x100041c0
+> [   40.382928] Instruction dump:
+> [   40.384489] 93a10044 419e0014 3d20c06f 8009d020 2f800000 419e017c 7fc3f378 4bfffed9 
+> [   40.386081] 7f9f1840 419d0060 7f9f1800 419e0050 <881bf008> 2f800000 419e0014 3d20c06f
+> 
+> 
+> -- 
+> BOFH excuse #241:
+> 
+> _Rosin_ core solder? But...
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
