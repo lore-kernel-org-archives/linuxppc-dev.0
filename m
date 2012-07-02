@@ -1,20 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 351632C01C7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 16:12:11 +1000 (EST)
-Date: Mon, 2 Jul 2012 16:12:00 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Subject: linux-next: manual merge of the signal tree with Linus' tree
-Message-Id: <20120702161200.10c26ba2b57f9c7e493e85cc@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__2_Jul_2012_16_12_00_+1000_nkTJFC5yUq+xu0Tv"
-Cc: linux-kernel@vger.kernel.org, Tiejun Chen <tiejun.chen@windriver.com>,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id D29C32C01E6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Jul 2012 16:30:44 +1000 (EST)
+Date: Sun, 1 Jul 2012 23:30:40 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 3.5.0-rc5: BUG: soft lockup - CPU#0 stuck for 22s
+In-Reply-To: <1341204649.2588.29.camel@pasglop>
+Message-ID: <alpine.DEB.2.01.1207012326110.5568@trent.utfs.org>
+References: <alpine.DEB.2.01.1207010009270.5568@trent.utfs.org>
+ <1341204649.2588.29.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +22,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__2_Jul_2012_16_12_00_+1000_nkTJFC5yUq+xu0Tv
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2 Jul 2012 at 14:50, Benjamin Herrenschmidt wrote:
+> Interesting... I observed something roughly similar on a dual G4
+> the other day associated with a 30s to 1mn pause during boot. RCU
+> was complaining loudly.
+> 
+> In my case, it did continue booting normally, is that the case for you ?
 
-Hi Al,
+No, in my case it stopped booting, though there was no "panic" message.
 
-Today's linux-next merge of the signal tree got a conflict in
-arch/powerpc/kernel/entry_64.S between commit c58ce2b1e3c7 ("ppc64: fix
-missing to check all bits of _TIF_USER_WORK_MASK in preempt") from Linus'
-tree and commit d07644a97726 ("powerpc: missing NOTIFY_RESUME check on
-64bit if CONFIG_PREEMPT is set") from the signal tree.
+> Also if I compile the kernel without CONFIG_SMP, it did go away as well,
+> do you observe that too ?
 
-I *think* that the former is a superset of the latter, so I just used the
-former.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+This PoweBook G4 is UP anyway and I'm always building w/o CONFIG_SMP.
 
---Signature=_Mon__2_Jul_2012_16_12_00_+1000_nkTJFC5yUq+xu0Tv
-Content-Type: application/pgp-signature
+> I don't have a spare cycle to investigate this problem this week I'm
+> afraid, it might help if you could try a bisection though.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Yes, I've started a bisection already and will report back.
 
-iQIcBAEBCAAGBQJP8TuwAAoJEECxmPOUX5FE4rkP/jfe3fZRzlUs14v2FKKBtsuA
-LTDEQ4D6K+2nCPfoa/icHmA1GoQZGCUqKVhLcxNI5eGQKQPOiVo1AgkC8oKFx8HD
-Sm8qAX6VEEuVQLl2iSU/I7aFy6GCesQHctKl2ENXIOABuWmpLlmJoihXXV55YV7q
-FgAfkZoiJks7OwgF0jq5M7U8eOJsYNsz3cHtR72NsvYZiK8vPDpoS7tFvQVN+cbS
-xsMlekkf5kuVdBVcyLGFmySClqp9wuavwpY+oJXY79Kt/24EKDy4WKiz58CD9F8e
-QtqfXAutKsFYC4CrGy/aQKu4/v1C7lV+I3sN89cEXrdekxn0niRH4ErwSc93q7rG
-UxmeD+PexFMmaty6UZONp16hZULK0XA1H4eZLVV7YN2K7k6eegQbvERZUOgvONb0
-d45o3+8RegkSpmhHRbtxTBhw4b/l3s/zVaZ/kAHzIampMJzVcBOBjCtNvOmIYAh1
-hfuEvPXYNfy4Ceb13QJm3hp7vKR2ADpl0rsrhFW30Q9kdMojlItylQ1mXSMG3Bqt
-G3z+sGDGR0VkA1FVMgmesMeLX2ZybRqUaSO52FKm0nuytwk1pYCFnlIpOD2mHssn
-bIEU36rsY/fIDrrK0+8nf/8ibxnGb7AJNMf+9VCDVK+/6EqAHpiCdDH06y6UH+se
-09bj+vrkc1Q7zbnqk5FN
-=WJ4C
------END PGP SIGNATURE-----
+FYI, I've put a netconsole-log below from another boot (in the 
+middle of a bisection), the instruction dump is slightly more complete.
 
---Signature=_Mon__2_Jul_2012_16_12_00_+1000_nkTJFC5yUq+xu0Tv--
+Thanks!
+Christian.
+
+[   40.345973] BUG: soft lockup - CPU#0 stuck for 22s! [modprobe:691]
+[   40.347737] Modules linked in: sd_mod arc4 firewire_sbp2 scsi_mod b43 mac80211 cfg80211
+[   40.349443] irq event stamp: 65779272
+[   40.351156] hardirqs last  enabled at (65779271): [<c052fae8>] _raw_spin_unlock_irqrestore+0x40/0x9c
+[   40.352911] hardirqs last disabled at (65779272): [<c0011648>] reenable_mmu+0x40/0x98
+[   40.354649] softirqs last  enabled at (65769864): [<c000f3c0>] call_do_softirq+0x14/0x24
+[   40.356386] softirqs last disabled at (65769857): [<c000f3c0>] call_do_softirq+0x14/0x24
+[   40.358098] NIP: c005ee64 LR: c005ee54 CTR: c009c578
+[   40.359788] REGS: eece3d70 TRAP: 0901   Not tainted  (3.4.0-05609-gc80ddb5)
+[   40.361517] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 24042482  XER: 00000000
+[   40.363261] TASK = eec30b80[691] 'modprobe' THREAD: eece2000#012
+[   40.363261] GPR00: c005ee54 eece3e20 eec30b80 00000000 00000002 c005edd0 00000000 00000000 #012
+[   40.363261] GPR08: 00000000 eece2000 00000000 00000001 24042488 
+[   40.368310] NIP [c005ee64] async_synchronize_cookie_domain+0x70/0x1f4
+[   40.369978] LR [c005ee54] async_synchronize_cookie_domain+0x60/0x1f4
+[   40.371614] Call Trace:
+[   40.373226] [eece3e20] [c005ee54] async_synchronize_cookie_domain+0x60/0x1f4 (unreliable)
+[   40.374884] [eece3e70] [c005f034] async_synchronize_full+0x3c/0x74
+[   40.376524] [eece3e90] [c0082790] sys_init_module+0x178/0x1164
+[   40.378151] [eece3f40] [c00117a8] ret_from_syscall+0x0/0x38
+[   40.379783] --- Exception: c01 at 0xff5d694#012[   40.379783]     LR = 0x100041c0
+[   40.382928] Instruction dump:
+[   40.384489] 93a10044 419e0014 3d20c06f 8009d020 2f800000 419e017c 7fc3f378 4bfffed9 
+[   40.386081] 7f9f1840 419d0060 7f9f1800 419e0050 <881bf008> 2f800000 419e0014 3d20c06f
+
+
+-- 
+BOFH excuse #241:
+
+_Rosin_ core solder? But...
