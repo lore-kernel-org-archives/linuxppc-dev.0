@@ -1,16 +1,18 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.23])
- by ozlabs.org (Postfix) with SMTP id 7E5BD2C00B1
- for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2012 07:45:09 +1000 (EST)
-Content-Type: text/plain; charset="utf-8"
-Date: Mon, 02 Jul 2012 23:38:28 +0200
-From: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-In-Reply-To: <1341205059.2588.30.camel@pasglop>
-Message-ID: <20120702213828.133470@gmx.net>
-MIME-Version: 1.0
-References: <1341205059.2588.30.camel@pasglop>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A13182C00A2
+ for <linuxppc-dev@ozlabs.org>; Tue,  3 Jul 2012 08:20:24 +1000 (EST)
+Message-ID: <1341267617.2588.51.camel@pasglop>
 Subject: Re: [git pull] Please pull powerpc.git merge branch
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerhard Pircher <gerhard_pircher@gmx.net>
+Date: Tue, 03 Jul 2012 08:20:17 +1000
+In-Reply-To: <20120702213828.133470@gmx.net>
+References: <1341205059.2588.30.camel@pasglop> <20120702213828.133470@gmx.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,24 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
--------- Original-Nachricht --------
-> Datum: Mon, 02 Jul 2012 14:57:39 +1000
-> Von: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> An: Linus Torvalds <torvalds@linux-foundation.org>
-> CC: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>, Linux Kernel list <linux-kernel@vger.kernel.org>
-> Betreff: [git pull] Please pull powerpc.git merge branch
-
-> Hi Linus 
+On Mon, 2012-07-02 at 23:38 +0200, Gerhard Pircher wrote:
 > 
-> Here are two more fixes that I "missed" when scrubbing patchwork last
-> week which are worth still having in 3.5.
+> What about this fix:?
+> 
+> http://patchwork.ozlabs.org/patch/166346/
+> 
+> At least I can't see it in the log...
 
-What about this fix:?
+The module fix went in. The ftrace patch, well, it's untested and we
+don't even know if we have a problem with mcount yet, so no, I haven't
+merged it yet.
 
-http://patchwork.ozlabs.org/patch/166346/
-
-At least I can't see it in the log...
-
-br,
-Gerhard
+Cheers,
+Ben.
