@@ -1,31 +1,21 @@
-Return-Path: <B04825@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 263B62C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 04:19:26 +1000 (EST)
-Message-ID: <4FF1E625.9040403@freescale.com>
-Date: Mon, 2 Jul 2012 13:19:17 -0500
-From: Timur Tabi <b04825@freescale.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id CF09C2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 04:46:14 +1000 (EST)
+Date: Mon, 2 Jul 2012 11:46:07 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, zhong@linux.vnet.ibm.com
+Subject: Re: 3.5.0-rc5: BUG: soft lockup - CPU#0 stuck for 22s
+In-Reply-To: <20120702164544.GJ2508@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.01.1207021143350.5568@trent.utfs.org>
+References: <alpine.DEB.2.01.1207010009270.5568@trent.utfs.org>
+ <1341204649.2588.29.camel@pasglop>
+ <alpine.DEB.2.01.1207012326110.5568@trent.utfs.org>
+ <20120702164544.GJ2508@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] P1021: set IReady in QE Microcode Upload
-References: <026483A88B848047A08C3F03E20822D0267B1F4A55@MCHP058A.global-ad.net>
- <4EBD4FB8.2020406@freescale.com>
- <026483A88B848047A08C3F03E20822D0267B1F4BDB@MCHP058A.global-ad.net>
- <CAOZdJXXOrSaUgynqu+CL64SnivtOWHBDMcJK9Fh000M_JBK58Q@mail.gmail.com>
- <DF5BDBFF-A726-4E1C-832E-EF2629F60DC9@kernel.crashing.org>
- <0154F680-D9F4-4CE1-BF5E-11884AD0ED4A@freescale.com>
- <AC087E7A-B7BC-43E5-948F-68AEB8251FD3@kernel.crashing.org>
- <4F63652C.3050108@freescale.com>
- <9508ABD9-607F-4D41-A169-743ADE625F4A@kernel.crashing.org>
-In-Reply-To: <9508ABD9-607F-4D41-A169-743ADE625F4A@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, "Kokoris,
- Ioannis" <ioannis.kokoris@siemens-enterprise.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: arjan@linux.intel.com, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,20 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
->> > No, I forgot all about it.  I'll try it today, assuming the lone 8323
->> > board in the board farm still works.
+On Mon, 2 Jul 2012 at 09:45, Paul E. McKenney wrote:
+> On Sun, Jul 01, 2012 at 11:30:40PM -0700, Christian Kujau wrote:
+> > On Mon, 2 Jul 2012 at 14:50, Benjamin Herrenschmidt wrote:
+> > > Interesting... I observed something roughly similar on a dual G4
+> > > the other day associated with a 30s to 1mn pause during boot. RCU
+> > > was complaining loudly.
+> > > 
+> > > In my case, it did continue booting normally, is that the case for you ?
+> > 
+> > No, in my case it stopped booting, though there was no "panic" message.
+> > 
+> > > Also if I compile the kernel without CONFIG_SMP, it did go away as well,
+> > > do you observe that too ?
+> > 
+> > This PoweBook G4 is UP anyway and I'm always building w/o CONFIG_SMP.
+> > 
+> > > I don't have a spare cycle to investigate this problem this week I'm
+> > > afraid, it might help if you could try a bisection though.
+> > 
+> > Yes, I've started a bisection already and will report back.
+> > 
+> > FYI, I've put a netconsole-log below from another boot (in the 
+> > middle of a bisection), the instruction dump is slightly more complete.
+> 
+> Li Zhong posted a patch to fix this (async_synchronize_full() below):
+> 
+> 	https://lkml.org/lkml/2012/7/2/32
+> 
+> This gets rid of this problem on my UP testing.  If it works for you,
+> please give Li Zhong a Tested-by.
 
-> Do you remember if you ever tested this?
+Great! When applied to -rc5 Li's patch fixes it for my powerpc UP system 
+as well.
 
-Well, I tried to test it.  We have an 83xx board that has a QE UART that
-needs firmware uploaded, but I don't know how to connect that QE to an
-actual RS232 port.  It needs a riser which I don't think we have.
+  Tested-by: Christian Kujau <lists@nerdbynature.de>
 
-I can verify that the QE UART driver does not hang which this patch, and
-that it appears to still be sending data, but I have no way of knowing for
-sure.
+Many thanks!
+Christian.
+
+> > [   40.345973] BUG: soft lockup - CPU#0 stuck for 22s! [modprobe:691]
+> > [   40.347737] Modules linked in: sd_mod arc4 firewire_sbp2 scsi_mod b43 mac80211 cfg80211
+> > [   40.349443] irq event stamp: 65779272
+> > [   40.351156] hardirqs last  enabled at (65779271): [<c052fae8>] _raw_spin_unlock_irqrestore+0x40/0x9c
+> > [   40.352911] hardirqs last disabled at (65779272): [<c0011648>] reenable_mmu+0x40/0x98
+> > [   40.354649] softirqs last  enabled at (65769864): [<c000f3c0>] call_do_softirq+0x14/0x24
+> > [   40.356386] softirqs last disabled at (65769857): [<c000f3c0>] call_do_softirq+0x14/0x24
+> > [   40.358098] NIP: c005ee64 LR: c005ee54 CTR: c009c578
+> > [   40.359788] REGS: eece3d70 TRAP: 0901   Not tainted  (3.4.0-05609-gc80ddb5)
+> > [   40.361517] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 24042482  XER: 00000000
+> > [   40.363261] TASK = eec30b80[691] 'modprobe' THREAD: eece2000#012
+> > [   40.363261] GPR00: c005ee54 eece3e20 eec30b80 00000000 00000002 c005edd0 00000000 00000000 #012
+> > [   40.363261] GPR08: 00000000 eece2000 00000000 00000001 24042488 
+> > [   40.368310] NIP [c005ee64] async_synchronize_cookie_domain+0x70/0x1f4
+> > [   40.369978] LR [c005ee54] async_synchronize_cookie_domain+0x60/0x1f4
+> > [   40.371614] Call Trace:
+> > [   40.373226] [eece3e20] [c005ee54] async_synchronize_cookie_domain+0x60/0x1f4 (unreliable)
+> > [   40.374884] [eece3e70] [c005f034] async_synchronize_full+0x3c/0x74
+> > [   40.376524] [eece3e90] [c0082790] sys_init_module+0x178/0x1164
+> > [   40.378151] [eece3f40] [c00117a8] ret_from_syscall+0x0/0x38
+> > [   40.379783] --- Exception: c01 at 0xff5d694#012[   40.379783]     LR = 0x100041c0
+> > [   40.382928] Instruction dump:
+> > [   40.384489] 93a10044 419e0014 3d20c06f 8009d020 2f800000 419e017c 7fc3f378 4bfffed9 
+> > [   40.386081] 7f9f1840 419d0060 7f9f1800 419e0050 <881bf008> 2f800000 419e0014 3d20c06f
 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+BOFH excuse #280:
+
+Traceroute says that there is a routing problem in the backbone.  It's not our problem.
