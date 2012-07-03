@@ -2,32 +2,31 @@ Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
 Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EC6E32C0096
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 15:58:43 +1000 (EST)
-Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 30BEC3EE0CB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:58:42 +0900 (JST)
-Received: from smail (m1 [127.0.0.1])
- by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id D6C9C45DE5E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:58:41 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
- by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id A054145DE56
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:58:41 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 812E21DB8058
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:58:41 +0900 (JST)
-Received: from g01jpexchyt09.g01.fujitsu.local
- (g01jpexchyt09.g01.fujitsu.local [10.128.194.48])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 08F2D1DB8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:58:41 +0900 (JST)
-Message-ID: <4FF28A02.6060802@jp.fujitsu.com>
-Date: Tue, 3 Jul 2012 14:58:26 +0900
+ by ozlabs.org (Postfix) with ESMTPS id 86A302C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 15:59:52 +1000 (EST)
+Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id CF1C23EE0C0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:59:50 +0900 (JST)
+Received: from smail (m4 [127.0.0.1])
+ by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id AAD6E45DE4F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:59:50 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
+ by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 8A58C45DE4D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:59:50 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 7D3C41DB8037
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:59:50 +0900 (JST)
+Received: from g01jpexchyt04.g01.fujitsu.local
+ (g01jpexchyt04.g01.fujitsu.local [10.128.194.43])
+ by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 2AD761DB802F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:59:50 +0900 (JST)
+Message-ID: <4FF28A46.3040607@jp.fujitsu.com>
+Date: Tue, 3 Jul 2012 14:59:34 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
-Subject: [RFC PATCH v2 5/13] memory-hotplug : does not release memory region
- in PAGES_PER_SECTION chunks
+Subject: [RFC PATCH v2 6/13] memory-hotplug : add memory_block_release
 References: <4FF287C3.4030901@jp.fujitsu.com>
 In-Reply-To: <4FF287C3.4030901@jp.fujitsu.com>
 Content-Type: text/plain; charset="ISO-2022-JP"
@@ -43,14 +42,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since applying a patch(de7f0cba96786c), release_mem_region() has been changed
-as called in PAGES_PER_SECTION chunks because register_memory_resource() is
-called in PAGES_PER_SECTION chunks by add_memory(). But it seems firmware
-dependency. If CRS are written in the PAGES_PER_SECTION chunks in ACPI DSDT
-Table, register_memory_resource() is called in PAGES_PER_SECTION chunks.
-But if CRS are written in the DIMM unit in ACPI DSDT Table,
-register_memory_resource() is called in DIMM unit. So release_mem_region()
-should not be called in PAGES_PER_SECTION chunks. The patch fixes it.
+When calling remove_memory_block(), the function shows following message at
+device_release().
+
+Device 'memory528' does not have a release() function, it is broken and must
+be fixed.
+
+remove_memory_block() calls kfree(mem). I think it shouled be called from
+device_release(). So the patch implements memory_block_release()
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -64,57 +63,41 @@ CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
 ---
- arch/powerpc/platforms/pseries/hotplug-memory.c |   13 +++++++++----
- mm/memory_hotplug.c                             |    4 ++--
- 2 files changed, 11 insertions(+), 6 deletions(-)
+ drivers/base/memory.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-Index: linux-3.5-rc4/mm/memory_hotplug.c
+Index: linux-3.5-rc4/drivers/base/memory.c
 ===================================================================
---- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-07-03 14:22:03.549198802 +0900
-+++ linux-3.5-rc4/mm/memory_hotplug.c	2012-07-03 14:22:05.919169458 +0900
-@@ -358,11 +358,11 @@ int __remove_pages(struct zone *zone, un
- 	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
- 	BUG_ON(nr_pages % PAGES_PER_SECTION);
+--- linux-3.5-rc4.orig/drivers/base/memory.c	2012-07-03 14:21:58.335263984 +0900
++++ linux-3.5-rc4/drivers/base/memory.c	2012-07-03 14:22:08.094141981 +0900
+@@ -108,6 +108,15 @@ bool is_memblk_offline(unsigned long sta
+ }
+ EXPORT_SYMBOL(is_memblk_offline);
 
-+	release_mem_region(phys_start_pfn << PAGE_SHIFT,  nr_pages * PAGE_SIZE);
++#define to_memory_block(device) container_of(device, struct memory_block, dev)
 +
- 	sections_to_remove = nr_pages / PAGES_PER_SECTION;
- 	for (i = 0; i < sections_to_remove; i++) {
- 		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
--		release_mem_region(pfn << PAGE_SHIFT,
--				   PAGES_PER_SECTION << PAGE_SHIFT);
- 		ret = __remove_section(zone, __pfn_to_section(pfn));
- 		if (ret)
- 			break;
-Index: linux-3.5-rc4/arch/powerpc/platforms/pseries/hotplug-memory.c
-===================================================================
---- linux-3.5-rc4.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-07-03 14:21:45.641422678
-+0900
-+++ linux-3.5-rc4/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-07-03 14:22:05.920169437 +0900
-@@ -77,7 +77,8 @@ static int pseries_remove_memblock(unsig
- {
- 	unsigned long start, start_pfn;
- 	struct zone *zone;
--	int ret;
-+	int i, ret;
-+	int sections_to_remove;
++static void release_memory_block(struct device *dev)
++{
++	struct memory_block *mem = to_memory_block(dev);
++
++	kfree(mem);
++}
++
+ /*
+  * register_memory - Setup a sysfs device for a memory block
+  */
+@@ -118,6 +127,7 @@ int register_memory(struct memory_block
 
- 	start_pfn = base >> PAGE_SHIFT;
+ 	memory->dev.bus = &memory_subsys;
+ 	memory->dev.id = memory->start_section_nr / sections_per_block;
++	memory->dev.release = release_memory_block;
 
-@@ -97,9 +98,13 @@ static int pseries_remove_memblock(unsig
- 	 * to sysfs "state" file and we can't remove sysfs entries
- 	 * while writing to it. So we have to defer it to here.
- 	 */
--	ret = __remove_pages(zone, start_pfn, memblock_size >> PAGE_SHIFT);
--	if (ret)
--		return ret;
-+	sections_to_remove = (memblock_size >> PAGE_SHIFT) / PAGES_PER_SECTION;
-+	for (i = 0; i < sections_to_remove; i++) {
-+		unsigned long pfn = start_pfn + i * PAGES_PER_SECTION;
-+		ret = __remove_pages(zone, start_pfn,  PAGES_PER_SECTION);
-+		if (ret)
-+			return ret;
-+	}
-
- 	/*
- 	 * Update memory regions for memory remove
+ 	error = device_register(&memory->dev);
+ 	return error;
+@@ -668,7 +678,6 @@ int remove_memory_block(unsigned long no
+ 		mem_remove_simple_file(mem, phys_device);
+ 		mem_remove_simple_file(mem, removable);
+ 		unregister_memory(mem);
+-		kfree(mem);
+ 	} else
+ 		kobject_put(&mem->dev.kobj);
