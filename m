@@ -1,33 +1,33 @@
 Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B17A02C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 15:52:50 +1000 (EST)
-Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id B499C3EE0AE
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:52:47 +0900 (JST)
-Received: from smail (m1 [127.0.0.1])
- by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 97FC745DE56
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:52:47 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
- by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 76BC345DE55
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:52:47 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 69A8D1DB8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:52:47 +0900 (JST)
-Received: from g01jpexchyt10.g01.fujitsu.local
- (g01jpexchyt10.g01.fujitsu.local [10.128.194.49])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 1825A1DB8048
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:52:47 +0900 (JST)
-Message-ID: <4FF2889C.8030800@jp.fujitsu.com>
-Date: Tue, 3 Jul 2012 14:52:28 +0900
+ by ozlabs.org (Postfix) with ESMTPS id 45BD62C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 15:54:25 +1000 (EST)
+Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 89F013EE0C3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:54:22 +0900 (JST)
+Received: from smail (m4 [127.0.0.1])
+ by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 51A6F45DE4F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:54:22 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
+ by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 1FB1345DE53
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:54:22 +0900 (JST)
+Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 0D76A1DB8040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:54:22 +0900 (JST)
+Received: from g01jpexchyt01.g01.fujitsu.local
+ (g01jpexchyt01.g01.fujitsu.local [10.128.194.40])
+ by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id AB5DB1DB803E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:54:21 +0900 (JST)
+Message-ID: <4FF288FC.8030609@jp.fujitsu.com>
+Date: Tue, 3 Jul 2012 14:54:04 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
-Subject: [RFC PATCH v2 1/13] memory-hotplug : rename remove_memory to
- offline_memory
+Subject: [RFC PATCH v2 2/13] memory-hotplug : add physical memory hotplug
+ code to acpi_memory_device_remove
 References: <4FF287C3.4030901@jp.fujitsu.com>
 In-Reply-To: <4FF287C3.4030901@jp.fujitsu.com>
 Content-Type: text/plain; charset="ISO-2022-JP"
@@ -43,8 +43,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-remove_memory() does not remove memory but just offlines memory. The patch
-changes name of it to offline_memory().
+acpi_memory_device_remove() has been prepared to remove physical memory.
+But, the function only frees acpi_memory_device currentlry.
+
+The patch adds following functions into acpi_memory_device_remove():
+  - offline memory
+  - remove physical memory (only return -EBUSY)
+  - free acpi_memory_device
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -58,75 +63,162 @@ CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
 ---
- drivers/acpi/acpi_memhotplug.c |    2 +-
- drivers/base/memory.c          |    4 ++--
- include/linux/memory_hotplug.h |    2 +-
- mm/memory_hotplug.c            |    6 +++---
- 4 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/acpi/acpi_memhotplug.c |   26 +++++++++++++++++++++++++-
+ drivers/base/memory.c          |   38 ++++++++++++++++++++++++++++++++++++++
+ include/linux/memory.h         |    5 +++++
+ include/linux/memory_hotplug.h |    1 +
+ mm/memory_hotplug.c            |    8 ++++++++
+ 5 files changed, 77 insertions(+), 1 deletion(-)
 
 Index: linux-3.5-rc4/drivers/acpi/acpi_memhotplug.c
 ===================================================================
---- linux-3.5-rc4.orig/drivers/acpi/acpi_memhotplug.c	2012-07-03 14:21:46.102416917 +0900
-+++ linux-3.5-rc4/drivers/acpi/acpi_memhotplug.c	2012-07-03 14:21:49.458374960 +0900
-@@ -318,7 +318,7 @@ static int acpi_memory_disable_device(st
- 	 */
- 	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
- 		if (info->enabled) {
--			result = remove_memory(info->start_addr, info->length);
+--- linux-3.5-rc4.orig/drivers/acpi/acpi_memhotplug.c	2012-07-03 14:21:49.458374960 +0900
++++ linux-3.5-rc4/drivers/acpi/acpi_memhotplug.c	2012-07-03 14:21:58.329264059 +0900
+@@ -29,6 +29,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/types.h>
++#include <linux/memory.h>
+ #include <linux/memory_hotplug.h>
+ #include <linux/slab.h>
+ #include <acpi/acpi_drivers.h>
+@@ -452,12 +453,35 @@ static int acpi_memory_device_add(struct
+ static int acpi_memory_device_remove(struct acpi_device *device, int type)
+ {
+ 	struct acpi_memory_device *mem_device = NULL;
+-
++	struct acpi_memory_info *info, *tmp;
++	int result;
++	int node;
+
+ 	if (!device || !acpi_driver_data(device))
+ 		return -EINVAL;
+
+ 	mem_device = acpi_driver_data(device);
++
++	node = acpi_get_node(mem_device->device->handle);
++
++	list_for_each_entry_safe(info, tmp, &mem_device->res_list, list) {
++		if (!info->enabled)
++			continue;
++
++		if (!is_memblk_offline(info->start_addr, info->length)) {
 +			result = offline_memory(info->start_addr, info->length);
- 			if (result)
- 				return result;
- 		}
-Index: linux-3.5-rc4/drivers/base/memory.c
-===================================================================
---- linux-3.5-rc4.orig/drivers/base/memory.c	2012-07-03 14:21:46.095417003 +0900
-+++ linux-3.5-rc4/drivers/base/memory.c	2012-07-03 14:21:49.459374948 +0900
-@@ -266,8 +266,8 @@ memory_block_action(unsigned long phys_i
- 			break;
- 		case MEM_OFFLINE:
- 			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
--			ret = remove_memory(start_paddr,
--					    nr_pages << PAGE_SHIFT);
-+			ret = offline_memory(start_paddr,
-+					     nr_pages << PAGE_SHIFT);
- 			break;
- 		default:
- 			WARN(1, KERN_WARNING "%s(%ld, %ld) unknown action: "
-Index: linux-3.5-rc4/mm/memory_hotplug.c
-===================================================================
---- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-07-03 14:21:46.102416917 +0900
-+++ linux-3.5-rc4/mm/memory_hotplug.c	2012-07-03 14:21:49.466374860 +0900
-@@ -990,7 +990,7 @@ out:
- 	return ret;
- }
++			if (result)
++				return result;
++		}
++
++		result = remove_memory(node, info->start_addr, info->length);
++		if (result)
++			return result;
++
++		list_del(&info->list);
++		kfree(info);
++	}
++
+ 	kfree(mem_device);
 
--int remove_memory(u64 start, u64 size)
-+int offline_memory(u64 start, u64 size)
- {
- 	unsigned long start_pfn, end_pfn;
-
-@@ -999,9 +999,9 @@ int remove_memory(u64 start, u64 size)
- 	return offline_pages(start_pfn, end_pfn, 120 * HZ);
- }
- #else
--int remove_memory(u64 start, u64 size)
-+int offline_memory(u64 start, u64 size)
- {
- 	return -EINVAL;
- }
- #endif /* CONFIG_MEMORY_HOTREMOVE */
--EXPORT_SYMBOL_GPL(remove_memory);
-+EXPORT_SYMBOL_GPL(offline_memory);
+ 	return 0;
 Index: linux-3.5-rc4/include/linux/memory_hotplug.h
 ===================================================================
---- linux-3.5-rc4.orig/include/linux/memory_hotplug.h	2012-07-03 14:21:46.102416917 +0900
-+++ linux-3.5-rc4/include/linux/memory_hotplug.h	2012-07-03 14:21:49.471374796 +0900
-@@ -233,7 +233,7 @@ static inline int is_mem_section_removab
+--- linux-3.5-rc4.orig/include/linux/memory_hotplug.h	2012-07-03 14:21:49.471374796 +0900
++++ linux-3.5-rc4/include/linux/memory_hotplug.h	2012-07-03 14:21:58.330264047 +0900
+@@ -233,6 +233,7 @@ static inline int is_mem_section_removab
  extern int mem_online_node(int nid);
  extern int add_memory(int nid, u64 start, u64 size);
  extern int arch_add_memory(int nid, u64 start, u64 size);
--extern int remove_memory(u64 start, u64 size);
-+extern int offline_memory(u64 start, u64 size);
++extern int remove_memory(int nid, u64 start, u64 size);
+ extern int offline_memory(u64 start, u64 size);
  extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
  								int nr_pages);
- extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
+Index: linux-3.5-rc4/mm/memory_hotplug.c
+===================================================================
+--- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-07-03 14:21:49.466374860 +0900
++++ linux-3.5-rc4/mm/memory_hotplug.c	2012-07-03 14:21:58.332264022 +0900
+@@ -659,6 +659,14 @@ out:
+ }
+ EXPORT_SYMBOL_GPL(add_memory);
+
++int remove_memory(int nid, u64 start, u64 size)
++{
++	return -EBUSY;
++
++}
++EXPORT_SYMBOL_GPL(remove_memory);
++
++
+ #ifdef CONFIG_MEMORY_HOTREMOVE
+ /*
+  * A free page on the buddy free lists (not the per-cpu lists) has PageBuddy
+Index: linux-3.5-rc4/drivers/base/memory.c
+===================================================================
+--- linux-3.5-rc4.orig/drivers/base/memory.c	2012-07-03 14:21:49.459374948 +0900
++++ linux-3.5-rc4/drivers/base/memory.c	2012-07-03 14:21:58.335263984 +0900
+@@ -70,6 +70,44 @@ void unregister_memory_isolate_notifier(
+ }
+ EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+
++bool is_memblk_offline(unsigned long start, unsigned long size)
++{
++	struct memory_block *mem = NULL;
++	struct mem_section *section;
++	unsigned long start_pfn, end_pfn;
++	unsigned long pfn, section_nr;
++
++	start_pfn = PFN_DOWN(start);
++	end_pfn = start_pfn + PFN_DOWN(start);
++
++	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
++		section_nr = pfn_to_section_nr(pfn);
++		if (!present_section_nr(section_nr));
++			continue;
++
++		section = __nr_to_section(section_nr);
++		/* same memblock? */
++		if (mem)
++			if((section_nr >= mem->start_section_nr) &&
++			   (section_nr <= mem->end_section_nr))
++				continue;
++
++		mem = find_memory_block_hinted(section, mem);
++		if (!mem)
++			continue;
++		if (mem->state == MEM_OFFLINE) {
++			kobject_put(&mem->dev.kobj);
++			continue;
++		}
++
++		kobject_put(&mem->dev.kobj);
++		return false;
++	}
++
++	return true;
++}
++EXPORT_SYMBOL(is_memblk_offline);
++
+ /*
+  * register_memory - Setup a sysfs device for a memory block
+  */
+Index: linux-3.5-rc4/include/linux/memory.h
+===================================================================
+--- linux-3.5-rc4.orig/include/linux/memory.h	2012-07-03 14:21:45.998418215 +0900
++++ linux-3.5-rc4/include/linux/memory.h	2012-07-03 14:21:58.340263922 +0900
+@@ -106,6 +106,10 @@ static inline int memory_isolate_notify(
+ {
+ 	return 0;
+ }
++static inline bool is_memblk_offline(unsigned long start, unsigned long size)
++{
++	return false;
++}
+ #else
+ extern int register_memory_notifier(struct notifier_block *nb);
+ extern void unregister_memory_notifier(struct notifier_block *nb);
+@@ -120,6 +124,7 @@ extern int memory_isolate_notify(unsigne
+ extern struct memory_block *find_memory_block_hinted(struct mem_section *,
+ 							struct memory_block *);
+ extern struct memory_block *find_memory_block(struct mem_section *);
++extern bool is_memblk_offline(unsigned long start, unsigned long size);
+ #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+ enum mem_add_context { BOOT, HOTPLUG };
+ #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
