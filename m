@@ -1,39 +1,26 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 783F72C00F6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 18:20:30 +1000 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Tue, 3 Jul 2012 13:50:23 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q638KJAb64618508
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jul 2012 13:50:19 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q63DnrgL024907
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Jul 2012 19:19:53 +0530
-Message-ID: <4FF2AB40.6050701@linux.vnet.ibm.com>
-Date: Tue, 03 Jul 2012 13:50:16 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-MIME-Version: 1.0
+Return-Path: <vhtnguyen@apm.com>
+Received: from exprod5og106.obsmtp.com (exprod5og106.obsmtp.com [64.18.0.182])
+ by ozlabs.org (Postfix) with SMTP id AAFC52C00FF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 18:53:59 +1000 (EST)
+Received: by yenl8 with SMTP id l8so5917322yen.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2012 01:53:57 -0700 (PDT)
+From: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "Linux PM mailing list <linux-pm@vger.kernel.org>
- \"linux-kernel@vger.kernel.org\"" <linux-kernel@vger.kernel.org>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v3] cpuidle: (POWER) Replace pseries_notify_cpuidle_add _cpu
- call with a notifier to fix lockdep problem in start_secondary
-References: <4FF29219.10608@linux.vnet.ibm.com>
-In-Reply-To: <4FF29219.10608@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Li Zhong <zhong@linux.vnet.ibm.com>,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Linux PM mailing list <linux-pm@vger.kernel.org>
+ Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@gmail.com>,
+ Matt Porter <mporter@kernel.crashing.org>,
+ Grant Likely <grant.likely@secretlab.ca>,
+ Rob Herring <rob.herring@calxeda.com>, Duc Dang <dhdang@apm.com>,
+ "David S. Miller" <davem@davemloft.net>, Mai La <mla@apm.com>,
+ Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoli@freescale.com>,
+ Ashish Kalra <ashish.kalra@freescale.com>,
+ Anatolij Gustschin <agust@denx.de>, Liu Gang <Gang.Liu@freescale.com>,
+ Meador Inge <meador_inge@mentor.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
+Subject: [PATCH] powerpc/44x: Support OCM(On Chip Memory) for APM821xx SoC and
+ Bluestone board
+Date: Tue,  3 Jul 2012 15:52:30 +0700
+Message-Id: <1341305550-15455-1-git-send-email-vhtnguyen@apm.com>
+Cc: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,134 +30,542 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patch consists of:
+- Add driver for OCM component
+- Export OCM Information at /sys/kernel/debug/ppc4xx_ocm/info
 
-cpuidle: (POWER) Replace pseries_notify_cpuidle_add_cpu call with a notifier to fix lockdep problem in start_secondary
-
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-
-Currently the call to pseries_notify_cpuidle_add_cpu(), that takes
-action on the cpuidle front when a cpu is added/removed
-is being made from smp_xics_setup_cpu().
-This caused lockdep issues as
-reported https://lkml.org/lkml/2012/5/17/2
-
-On addition of each cpu, resources are cleared and re-allocated 
-each time, all in critical section as part of start_secondary() 
-call which has interrupts disabled.
-To resolve this issue, the pseries_notify_cpuidle_add_cpu() call is
-is now being replaced by a hotplug notifier which
-would prevent cpuidle resources from being
-released and allocated each time cpu is onlined in the critical code path.
-
-Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Reviewed-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
-
+Signed-off-by: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
 ---
-This patch has in-corporated review comments
-received on the earlier version posted.
-	v1 ->  https://lkml.org/lkml/2012/5/18/174
-	v2 ->  https://lkml.org/lkml/2012/7/3/61
-This applies on 3.5-rc5
+ arch/powerpc/boot/dts/bluestone.dts   |    8 +
+ arch/powerpc/include/asm/ppc4xx_ocm.h |   45 ++++
+ arch/powerpc/platforms/44x/Kconfig    |    8 +
+ arch/powerpc/sysdev/Makefile          |    1 +
+ arch/powerpc/sysdev/ppc4xx_ocm.c      |  415 +++++++++++++++++++++++++++++++++
+ 5 files changed, 477 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/ppc4xx_ocm.h
+ create mode 100644 arch/powerpc/sysdev/ppc4xx_ocm.c
 
- arch/powerpc/include/asm/processor.h            |    2 -
- arch/powerpc/platforms/pseries/processor_idle.c |   35 ++++++++++++++++++++---
- arch/powerpc/platforms/pseries/smp.c            |    1 -
- 3 files changed, 30 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 413a5ea..53b6dfa 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -389,10 +389,8 @@ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
+diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
+index 9d4917a..7daaca3 100644
+--- a/arch/powerpc/boot/dts/bluestone.dts
++++ b/arch/powerpc/boot/dts/bluestone.dts
+@@ -107,6 +107,14 @@
+ 		interrupt-parent = <&UIC0>;
+ 	};
  
- #ifdef CONFIG_PSERIES_IDLE
- extern void update_smt_snooze_delay(int snooze);
--extern int pseries_notify_cpuidle_add_cpu(int cpu);
- #else
- static inline void update_smt_snooze_delay(int snooze) {}
--static inline int pseries_notify_cpuidle_add_cpu(int cpu) { return 0; }
- #endif
- 
- extern void flush_instruction_cache(void);
-diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-index e61483e..da245c0 100644
---- a/arch/powerpc/platforms/pseries/processor_idle.c
-+++ b/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -186,17 +186,40 @@ static struct cpuidle_state shared_states[MAX_IDLE_STATE_COUNT] = {
- 		.enter = &shared_cede_loop },
- };
- 
--int pseries_notify_cpuidle_add_cpu(int cpu)
-+static int pseries_cpuidle_add_cpu_notifier(struct notifier_block *n,
-+			unsigned long action, void *hcpu)
- {
-+	int hotcpu = (unsigned long)hcpu;
- 	struct cpuidle_device *dev =
--			per_cpu_ptr(pseries_cpuidle_devices, cpu);
-+			per_cpu_ptr(pseries_cpuidle_devices, hotcpu);
++	OCM: ocm@400040000 {
++		compatible = "ibm,ocm";
++		status = "ok";
++		cell-index = <1>;
++		/* configured in U-Boot */
++		reg = <4 0x00040000 0x8000>; /* 32K */
++	};
 +
- 	if (dev && cpuidle_get_driver()) {
--		cpuidle_disable_device(dev);
--		cpuidle_enable_device(dev);
-+		switch (action) {
-+		case CPU_ONLINE:
-+		case CPU_ONLINE_FROZEN:
-+			cpuidle_pause_and_lock();
-+			cpuidle_enable_device(dev);
-+			cpuidle_resume_and_unlock();
-+			break;
+ 	SDR0: sdr {
+ 		compatible = "ibm,sdr-apm821xx";
+ 		dcr-reg = <0x00e 0x002>;
+diff --git a/arch/powerpc/include/asm/ppc4xx_ocm.h b/arch/powerpc/include/asm/ppc4xx_ocm.h
+new file mode 100644
+index 0000000..6ce9046
+--- /dev/null
++++ b/arch/powerpc/include/asm/ppc4xx_ocm.h
+@@ -0,0 +1,45 @@
++/*
++ * PowerPC 4xx OCM memory allocation support
++ *
++ * (C) Copyright 2009, Applied Micro Circuits Corporation
++ * Victor Gallardo (vgallardo@amcc.com)
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
 +
-+		case CPU_DEAD:
-+		case CPU_DEAD_FROZEN:
-+			cpuidle_pause_and_lock();
-+			cpuidle_disable_device(dev);
-+			cpuidle_resume_and_unlock();
-+			break;
++#ifndef __ASM_POWERPC_PPC4XX_OCM_H__
++#define __ASM_POWERPC_PPC4XX_OCM_H__
 +
-+		default:
-+			return NOTIFY_DONE;
-+		}
- 	}
--	return 0;
-+	return NOTIFY_OK;
- }
++#define PPC4XX_OCM_NON_CACHED 0
++#define PPC4XX_OCM_CACHED     1
++
++#if defined(CONFIG_PPC4xx_OCM)
++
++void *ppc4xx_ocm_alloc(phys_addr_t *phys, int size, int align,
++		  int flags, const char *owner);
++void ppc4xx_ocm_free(const void *virt);
++
++#else
++
++#define ppc4xx_ocm_alloc(phys, size, align, flags, owner)	NULL
++#define ppc4xx_ocm_free(addr)	((void)0)
++
++#endif /* CONFIG_PPC4xx_OCM */
++
++#endif  /* __ASM_POWERPC_PPC4XX_OCM_H__ */
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 8abf6fb8..0effe9f 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -252,6 +252,14 @@ config PPC4xx_GPIO
+ 	help
+ 	  Enable gpiolib support for ppc440 based boards
  
-+static struct notifier_block setup_hotplug_notifier = {
-+	.notifier_call = pseries_cpuidle_add_cpu_notifier,
++config PPC4xx_OCM
++	bool "PPC4xx On Chip Memory (OCM) support"
++	depends on 4xx
++	select PPC_LIB_RHEAP
++	help
++	  Enable OCM support for PowerPC 4xx platforms with on chip memory,
++	  OCM provides the fast place for memory access to improve performance.
++
+ # 44x specific CPU modules, selected based on the board above.
+ config 440EP
+ 	bool
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 1bd7ecb..6f768e2 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -37,6 +37,7 @@ obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+ obj-$(CONFIG_IPIC)		+= ipic.o
+ obj-$(CONFIG_4xx)		+= uic.o
++obj-$(CONFIG_PPC4xx_OCM)	+= ppc4xx_ocm.o
+ obj-$(CONFIG_4xx_SOC)		+= ppc4xx_soc.o
+ obj-$(CONFIG_XILINX_VIRTEX)	+= xilinx_intc.o
+ obj-$(CONFIG_XILINX_PCI)	+= xilinx_pci.o
+diff --git a/arch/powerpc/sysdev/ppc4xx_ocm.c b/arch/powerpc/sysdev/ppc4xx_ocm.c
+new file mode 100644
+index 0000000..1b15f93
+--- /dev/null
++++ b/arch/powerpc/sysdev/ppc4xx_ocm.c
+@@ -0,0 +1,415 @@
++/*
++ * PowerPC 4xx OCM memory allocation support
++ *
++ * (C) Copyright 2009, Applied Micro Circuits Corporation
++ * Victor Gallardo (vgallardo@amcc.com)
++ *
++ * See file CREDITS for list of people who contributed to this
++ * project.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
++ * MA 02111-1307 USA
++ */
++
++#include <linux/kernel.h>
++#include <linux/dma-mapping.h>
++#include <linux/of.h>
++#include <asm/rheap.h>
++#include <asm/ppc4xx_ocm.h>
++#include <linux/slab.h>
++#include <linux/debugfs.h>
++
++#define OCM_DISABLED	0
++#define OCM_ENABLED		1
++
++struct ocm_block {
++	struct list_head	list;
++	void __iomem		*addr;
++	int					size;
++	const char			*owner;
 +};
 +
- /*
-  * pseries_cpuidle_driver_init()
-  */
-@@ -321,6 +344,7 @@ static int __init pseries_processor_idle_init(void)
- 		return retval;
- 	}
- 
-+	register_cpu_notifier(&setup_hotplug_notifier);
- 	printk(KERN_DEBUG "pseries_idle_driver registered\n");
- 
- 	return 0;
-@@ -329,6 +353,7 @@ static int __init pseries_processor_idle_init(void)
- static void __exit pseries_processor_idle_exit(void)
- {
- 
-+	unregister_cpu_notifier(&setup_hotplug_notifier);
- 	pseries_idle_devices_uninit();
- 	cpuidle_unregister_driver(&pseries_idle_driver);
- 
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index e16bb8d..71706bc 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -147,7 +147,6 @@ static void __devinit smp_xics_setup_cpu(int cpu)
- 	set_cpu_current_state(cpu, CPU_STATE_ONLINE);
- 	set_default_offline_state(cpu);
- #endif
--	pseries_notify_cpuidle_add_cpu(cpu);
- }
- 
- static int __devinit smp_pSeries_kick_cpu(int nr)
-
-Cheers,
-Deepthi
++/* non-cached or cached region */
++struct ocm_region {
++	phys_addr_t			phys;
++	void __iomem		*virt;
++
++	int					memtotal;
++	int					memfree;
++
++	rh_info_t			*rh;
++	struct list_head	list;
++};
++
++struct ocm_info {
++	int					index;
++	int					status;
++	int					ready;
++
++	phys_addr_t			phys;
++
++	int					alignment;
++	int					memtotal;
++	int					cache_size;
++
++	struct ocm_region	nc;	/* non-cached region */
++	struct ocm_region	c;	/* cached region */
++};
++
++static struct ocm_info *ocm_nodes;
++static int ocm_count;
++
++static struct ocm_info *ocm_get_node(unsigned int index)
++{
++	if (index >= ocm_count) {
++		printk(KERN_ERR "PPC4XX OCM: invalid index");
++		return NULL;
++	}
++
++	return &ocm_nodes[index];
++}
++
++static int ocm_free_region(struct ocm_region *ocm_reg, const void *addr)
++{
++	struct ocm_block *blk, *tmp;
++	unsigned long offset;
++
++	if (!ocm_reg->virt)
++		return 0;
++
++	list_for_each_entry_safe(blk, tmp, &ocm_reg->list, list) {
++		if (blk->addr == addr) {
++			offset = addr - ocm_reg->virt;
++			ocm_reg->memfree += blk->size;
++			rh_free(ocm_reg->rh, offset);
++			list_del(&blk->list);
++			kfree(blk);
++			return 1;
++		}
++	}
++
++	return 0;
++}
++
++static void __init ocm_init_node(int count, struct device_node *node)
++{
++	struct ocm_info *ocm;
++
++	const unsigned int *cell_index;
++	const unsigned int *cache_size;
++	int len;
++
++	struct resource rsrc;
++	int ioflags;
++
++	ocm = ocm_get_node(count);
++
++	cell_index = of_get_property(node, "cell-index", &len);
++	if (!cell_index) {
++		printk(KERN_ERR "PPC4XX OCM: missing cell-index property");
++		return;
++	}
++	ocm->index = *cell_index;
++
++	if (of_device_is_available(node))
++		ocm->status = OCM_ENABLED;
++
++	cache_size = of_get_property(node, "cached-region-size", &len);
++	if (cache_size)
++		ocm->cache_size = *cache_size;
++
++	if (of_address_to_resource(node, 0, &rsrc)) {
++		printk(KERN_ERR "PPC4XX OCM%d: could not get resource address\n",
++			ocm->index);
++		return;
++	}
++
++	ocm->phys = rsrc.start;
++	ocm->memtotal = (rsrc.end - rsrc.start + 1);
++
++	printk(KERN_INFO "PPC4XX OCM%d: %d Bytes (%s)\n",
++		ocm->index, ocm->memtotal,
++		(ocm->status == OCM_DISABLED) ? "disabled" : "enabled");
++
++	if (ocm->status == OCM_DISABLED)
++		return;
++
++	/* request region */
++
++	if (!request_mem_region(ocm->phys, ocm->memtotal, "ppc4xx_ocm")) {
++		printk(KERN_ERR "PPC4XX OCM%d: could not request region\n",
++			ocm->index);
++		return;
++	}
++
++	/* Configure non-cached and cached regions */
++
++	ocm->nc.phys = ocm->phys;
++	ocm->nc.memtotal = ocm->memtotal - ocm->cache_size;
++	ocm->nc.memfree = ocm->nc.memtotal;
++
++	ocm->c.phys = ocm->phys + ocm->nc.memtotal;
++	ocm->c.memtotal = ocm->cache_size;
++	ocm->c.memfree = ocm->c.memtotal;
++
++	if (ocm->nc.memtotal == 0)
++		ocm->nc.phys = 0;
++
++	if (ocm->c.memtotal == 0)
++		ocm->c.phys = 0;
++
++	printk(KERN_INFO "PPC4XX OCM%d: %d Bytes (non-cached)\n",
++		ocm->index, ocm->nc.memtotal);
++
++	printk(KERN_INFO "PPC4XX OCM%d: %d Bytes (cached)\n",
++		ocm->index, ocm->c.memtotal);
++
++	/* ioremap the non-cached region */
++	if (ocm->nc.memtotal) {
++		ioflags = _PAGE_NO_CACHE | _PAGE_GUARDED | _PAGE_EXEC;
++		ocm->nc.virt = __ioremap(ocm->nc.phys, ocm->nc.memtotal,
++					  ioflags);
++
++		if (!ocm->nc.virt) {
++			printk(KERN_ERR
++			       "PPC4XX OCM%d: failed to ioremap non-cached memory\n",
++			       ocm->index);
++			ocm->nc.memfree = 0;
++			return;
++		}
++	}
++
++	/* ioremap the cached region */
++
++	if (ocm->c.memtotal) {
++		ioflags = _PAGE_EXEC;
++		ocm->c.virt = __ioremap(ocm->c.phys, ocm->c.memtotal,
++					 ioflags);
++
++		if (!ocm->c.virt) {
++			printk(KERN_ERR
++			       "PPC4XX OCM%d: failed to ioremap cached memory\n",
++			       ocm->index);
++			ocm->c.memfree = 0;
++			return;
++		}
++	}
++
++	/* Create Remote Heaps */
++
++	ocm->alignment = 4; /* default 4 byte alignment */
++
++	if (ocm->nc.virt) {
++		ocm->nc.rh = rh_create(ocm->alignment);
++		rh_attach_region(ocm->nc.rh, 0, ocm->nc.memtotal);
++	}
++
++	if (ocm->c.virt) {
++		ocm->c.rh = rh_create(ocm->alignment);
++		rh_attach_region(ocm->c.rh, 0, ocm->c.memtotal);
++	}
++
++	INIT_LIST_HEAD(&ocm->nc.list);
++	INIT_LIST_HEAD(&ocm->c.list);
++
++	ocm->ready = 1;
++
++	return;
++}
++
++static int ocm_debugfs_show(struct seq_file *m, void *v)
++{
++	struct ocm_block *blk, *tmp;
++	unsigned int i;
++
++	for (i = 0; i < ocm_count; i++) {
++		struct ocm_info *ocm = ocm_get_node(i);
++
++		if (!ocm || !ocm->ready)
++			continue;
++
++		seq_printf(m, "PPC4XX OCM   : %d\n", ocm->index);
++		seq_printf(m, "PhysAddr     : 0x%llx\n", ocm->phys);
++		seq_printf(m, "MemTotal     : %d Bytes\n", ocm->memtotal);
++		seq_printf(m, "MemTotal(NC) : %d Bytes\n", ocm->nc.memtotal);
++		seq_printf(m, "MemTotal(C)  : %d Bytes\n", ocm->c.memtotal);
++
++		seq_printf(m, "\n");
++
++		seq_printf(m, "NC.PhysAddr  : 0x%llx\n", ocm->nc.phys);
++		seq_printf(m, "NC.VirtAddr  : 0x%p\n", ocm->nc.virt);
++		seq_printf(m, "NC.MemTotal  : %d Bytes\n", ocm->nc.memtotal);
++		seq_printf(m, "NC.MemFree   : %d Bytes\n", ocm->nc.memfree);
++
++		list_for_each_entry_safe(blk, tmp, &ocm->nc.list, list) {
++			seq_printf(m, "NC.MemUsed   : %d Bytes (%s)\n",
++							blk->size, blk->owner);
++		}
++
++		seq_printf(m, "\n");
++
++		seq_printf(m, "C.PhysAddr   : 0x%llx\n", ocm->c.phys);
++		seq_printf(m, "C.VirtAddr   : 0x%p\n", ocm->c.virt);
++		seq_printf(m, "C.MemTotal   : %d Bytes\n", ocm->c.memtotal);
++		seq_printf(m, "C.MemFree    : %d Bytes\n", ocm->c.memfree);
++
++		list_for_each_entry_safe(blk, tmp, &ocm->c.list, list) {
++			seq_printf(m, "C.MemUsed    : %d Bytes (%s)\n",
++						blk->size, blk->owner);
++		}
++
++		seq_printf(m, "\n");
++	}
++
++	return 0;
++}
++
++static int ocm_debugfs_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, ocm_debugfs_show, NULL);
++}
++
++static const struct file_operations ocm_debugfs_fops = {
++	.open = ocm_debugfs_open,
++	.read = seq_read,
++	.llseek = seq_lseek,
++	.release = single_release,
++};
++
++static int ocm_debugfs_init(void)
++{
++	struct dentry *junk;
++
++	junk = debugfs_create_dir("ppc4xx_ocm", 0);
++	if (!junk) {
++		printk(KERN_ALERT "debugfs ppc4xx ocm: failed to create dir\n");
++		return -1;
++	}
++
++	if (debugfs_create_file("info", 0644, junk, NULL, &ocm_debugfs_fops)) {
++		printk(KERN_ALERT "debugfs ppc4xx ocm: failed to create file\n");
++		return -1;
++	}
++
++	return 0;
++}
++
++void *ppc4xx_ocm_alloc(phys_addr_t *phys, int size, int align,
++			int flags, const char *owner)
++{
++	void __iomem *addr = NULL;
++	unsigned long offset;
++	struct ocm_info *ocm;
++	struct ocm_region *ocm_reg;
++	struct ocm_block *ocm_blk;
++	int i;
++
++	for (i = 0; i < ocm_count; i++) {
++		ocm = ocm_get_node(i);
++
++		if (!ocm || !ocm->ready)
++			continue;
++
++		if (flags == PPC4XX_OCM_NON_CACHED)
++			ocm_reg = &ocm->nc;
++		else
++			ocm_reg = &ocm->c;
++
++		if (!ocm_reg->virt)
++			continue;
++
++		if (align < ocm->alignment)
++			align = ocm->alignment;
++
++		offset = rh_alloc_align(ocm_reg->rh, size, align, NULL);
++
++		if (IS_ERR_VALUE(offset))
++			continue;
++
++		ocm_blk = kzalloc(sizeof(struct ocm_block *), GFP_KERNEL);
++		if (!ocm_blk) {
++			printk(KERN_ERR "PPC4XX OCM: could not allocate ocm block");
++			rh_free(ocm_reg->rh, offset);
++			break;
++		}
++
++		*phys = ocm_reg->phys + offset;
++		addr = ocm_reg->virt + offset;
++		size = ALIGN(size, align);
++
++		ocm_blk->addr = addr;
++		ocm_blk->size = size;
++		ocm_blk->owner = owner;
++		list_add_tail(&ocm_blk->list, &ocm_reg->list);
++
++		ocm_reg->memfree -= size;
++
++		break;
++	}
++
++	return addr;
++}
++
++void ppc4xx_ocm_free(const void *addr)
++{
++	int i;
++
++	if (!addr)
++		return;
++
++	for (i = 0; i < ocm_count; i++) {
++		struct ocm_info *ocm = ocm_get_node(i);
++
++		if (!ocm || !ocm->ready)
++			continue;
++
++		if (ocm_free_region(&ocm->nc, addr) ||
++			ocm_free_region(&ocm->c, addr))
++			return;
++	}
++}
++
++static int __init ppc4xx_ocm_init(void)
++{
++	struct device_node *np;
++	int count;
++
++	count = 0;
++	for_each_compatible_node(np, NULL, "ibm,ocm")
++		count++;
++
++	if (!count)
++		return 0;
++
++	ocm_nodes = kzalloc((count * sizeof(struct ocm_info)), GFP_KERNEL);
++	if (!ocm_nodes) {
++		printk(KERN_ERR "PPC4XX OCM: failed to allocate OCM nodes!\n");
++		return -ENOMEM;
++	}
++
++	ocm_count = count;
++	count = 0;
++
++	for_each_compatible_node(np, NULL, "ibm,ocm") {
++		ocm_init_node(count, np);
++		count++;
++	}
++
++	ocm_debugfs_init();
++
++	return 0;
++}
++
++arch_initcall(ppc4xx_ocm_init);
+-- 
+1.7.2.5
