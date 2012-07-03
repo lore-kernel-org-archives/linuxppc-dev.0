@@ -1,21 +1,36 @@
-Return-Path: <robherring2@gmail.com>
-Message-ID: <4FF224D5.5090602@gmail.com>
-Date: Mon, 02 Jul 2012 17:46:45 -0500
-From: Rob Herring <robherring2@gmail.com>
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
+ [209.85.220.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A9CA12C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 13:25:04 +1000 (EST)
+Received: by vcbgb23 with SMTP id gb23so4002916vcb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Jul 2012 20:25:01 -0700 (PDT)
 MIME-Version: 1.0
-To: balbi@ti.com
-Subject: Re: [PATCH 5/5] usb: gadget: composite: parse dt overrides
-References: <1340720833-781-1-git-send-email-aletes.xgr@gmail.com>
- <1340720833-781-6-git-send-email-aletes.xgr@gmail.com>
- <20120702073522.GE16670@arwen.pp.htv.fi>
-In-Reply-To: <20120702073522.GE16670@arwen.pp.htv.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Roland Stigge <stigge@antcom.de>, linux-doc@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- devicetree-discuss@lists.ozlabs.org, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, Rob Landley <rob@landley.net>,
- linuxppc-dev@lists.ozlabs.org,
- Alexandre Pereira da Silva <aletes.xgr@gmail.com>
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <4FF25EFA.1080004@huawei.com>
+References: <1341047274-5616-1-git-send-email-jiang.liu@huawei.com>
+ <CAE9FiQWzfLkeQs8O22MUEmuGUx=jPi5s=wZt2fcpFMcwrzt3uA@mail.gmail.com>
+ <4FF100F0.9050501@huawei.com>
+ <CAE9FiQXpeGFfWvUHHW_GjgTg+4Op7agsht5coZbcmn2W=f9bqw@mail.gmail.com>
+ <4FF25EFA.1080004@huawei.com>
+Date: Mon, 2 Jul 2012 20:25:00 -0700
+Message-ID: <CAE9FiQVxY9E3L_xmRj10+9D6NVbKaxaAd2oJ6EFe1D+Gy2971w@mail.gmail.com>
+Subject: Re: [PATCH] mm: setup pageblock_order before it's used by sparse
+From: Yinghai Lu <yinghai@kernel.org>
+To: Jiang Liu <jiang.liu@huawei.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=windows-1252
+Cc: Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ Minchan Kim <minchan@kernel.org>, Keping Chen <chenkeping@huawei.com>,
+ Mel Gorman <mgorman@suse.de>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ David Rientjes <rientjes@google.com>, Xishi Qiu <qiuxishi@huawei.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@lists.ozlabs.org,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ Jiang Liu <liuj97@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +40,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/02/2012 02:35 AM, Felipe Balbi wrote:
-> Hi,
-> 
-> On Tue, Jun 26, 2012 at 11:27:13AM -0300, Alexandre Pereira da Silva wrote:
->> Grab the devicetree node properties to override VendorId, ProductId,
->> bcdDevice, Manucacturer, Product and SerialNumber
+On Mon, Jul 2, 2012 at 7:54 PM, Jiang Liu <jiang.liu@huawei.com> wrote:
+> On 2012-7-3 4:43, Yinghai Lu wrote:
+>> On Sun, Jul 1, 2012 at 7:01 PM, Jiang Liu <jiang.liu@huawei.com> wrote:
+>>> Hi Yinghai,
+>>>         The patch fails compilation as below:
+>>> mm/page_alloc.c:151: error: initializer element is not constant
+>>> mm/page_alloc.c:151: error: expected =91,=92 or =91;=92 before =91__att=
+ribute__=92
+>>>
+>>> On IA64, HUGETLB_PAGE_ORDER has dependency on variable hpage_shift.
+>>> # define HUGETLB_PAGE_ORDER        (HPAGE_SHIFT - PAGE_SHIFT)
+>>> # define HPAGE_SHIFT               hpage_shift
+>>>
+>>> And hpage_shift could be changed by early parameter "hugepagesz".
+>>> So seems will still need to keep function set_pageblock_order().
 >>
->> Signed-off-by: Alexandre Pereira da Silva <aletes.xgr@gmail.com>
-> 
-> I need Grant's acked-by to queue this one.
-> 
+>> ah,  then use use _DEFAULT instead and later could update that in earlyp=
+aram.
+>>
+>> So attached -v2 should  work.
+> Hi Yinghai,
+>
+> I'm afraid the v2 will break powerpc. Currently only IA64 and PowerPC
+> supports variable hugetlb size.
+>
+> HPAGE_SHIFT is a variable default to 0 on powerpc. But seems PowerPC
+> is doing something wrong here, according to it's mm initialization
+> sequence as below:
+> start_kernel()
+>         setup_arch()
+>                 paging_init()
+>                         free_area_init_node()
+>                                 set_pageblock_order()
+>                                         refer to HPAGE_SHIFT (still 0)
+>         init_rest()
+>                 do_initcalls()
+>                         hugetlbpage_init()
+>                                 setup HPAGE_SHIFT
+> That means pageblock_order is always set to "MAX_ORDER - 1", not sure
+> whether this is intended. And it has the same issue as IA64 of wasting
+> memory if CONFIG_SPARSE is enabled.
 
-Grant is pretty much offline for the next 2 months, so:
+adding BenH, need to know if it is powerpc intended.
 
-Acked-by: Rob Herring <rob.herring@calxeda.com>
+>
+> So it would be better to keep function set_pageblock_order(), it will
+> fix the memory wasting on both IA64 and PowerPC.
 
-Rob
+Should setup pageblock_order as early as possible to avoid confusing.
+
+Thanks
+
+Yinghai
