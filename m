@@ -1,26 +1,20 @@
-Return-Path: <vhtnguyen@apm.com>
-Received: from exprod5og106.obsmtp.com (exprod5og106.obsmtp.com [64.18.0.182])
- by ozlabs.org (Postfix) with SMTP id AAFC52C00FF
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 18:53:59 +1000 (EST)
-Received: by yenl8 with SMTP id l8so5917322yen.13
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Jul 2012 01:53:57 -0700 (PDT)
-From: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Josh Boyer <jwboyer@gmail.com>,
- Matt Porter <mporter@kernel.crashing.org>,
- Grant Likely <grant.likely@secretlab.ca>,
- Rob Herring <rob.herring@calxeda.com>, Duc Dang <dhdang@apm.com>,
- "David S. Miller" <davem@davemloft.net>, Mai La <mla@apm.com>,
- Kumar Gala <galak@kernel.crashing.org>, Li Yang <leoli@freescale.com>,
- Ashish Kalra <ashish.kalra@freescale.com>,
- Anatolij Gustschin <agust@denx.de>, Liu Gang <Gang.Liu@freescale.com>,
- Meador Inge <meador_inge@mentor.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH] powerpc/44x: Support OCM(On Chip Memory) for APM821xx SoC and
- Bluestone board
-Date: Tue,  3 Jul 2012 15:52:30 +0700
-Message-Id: <1341305550-15455-1-git-send-email-vhtnguyen@apm.com>
-Cc: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
+Return-Path: <B35336@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3E9F32C00EC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 20:20:06 +1000 (EST)
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
+ <galak@kernel.crashing.org>
+Subject: [PATCH v7 1/5] powerpc/85xx: implement hardware timebase sync
+Date: Tue, 3 Jul 2012 18:21:18 +0800
+Message-ID: <1341310879-5468-1-git-send-email-chenhui.zhao@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,542 +24,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch consists of:
-- Add driver for OCM component
-- Export OCM Information at /sys/kernel/debug/ppc4xx_ocm/info
+Do hardware timebase sync. Firstly, stop all timebases, and transfer
+the timebase value of the boot core to the other core. Finally,
+start all timebases.
 
-Signed-off-by: Vinh Nguyen Huu Tuong <vhtnguyen@apm.com>
+Only apply to dual-core chips, such as MPC8572, P2020, etc.
+
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/boot/dts/bluestone.dts   |    8 +
- arch/powerpc/include/asm/ppc4xx_ocm.h |   45 ++++
- arch/powerpc/platforms/44x/Kconfig    |    8 +
- arch/powerpc/sysdev/Makefile          |    1 +
- arch/powerpc/sysdev/ppc4xx_ocm.c      |  415 +++++++++++++++++++++++++++++++++
- 5 files changed, 477 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/include/asm/ppc4xx_ocm.h
- create mode 100644 arch/powerpc/sysdev/ppc4xx_ocm.c
+v7:
+ * removed CONFIG_85xx_TB_SYNC
+ * incorporated Timur's comments
 
-diff --git a/arch/powerpc/boot/dts/bluestone.dts b/arch/powerpc/boot/dts/bluestone.dts
-index 9d4917a..7daaca3 100644
---- a/arch/powerpc/boot/dts/bluestone.dts
-+++ b/arch/powerpc/boot/dts/bluestone.dts
-@@ -107,6 +107,14 @@
- 		interrupt-parent = <&UIC0>;
- 	};
+ arch/powerpc/include/asm/fsl_guts.h |    2 +
+ arch/powerpc/platforms/85xx/smp.c   |   82 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
+index aa4c488..dd5ba2c 100644
+--- a/arch/powerpc/include/asm/fsl_guts.h
++++ b/arch/powerpc/include/asm/fsl_guts.h
+@@ -48,6 +48,8 @@ struct ccsr_guts {
+         __be32  dmuxcr;		/* 0x.0068 - DMA Mux Control Register */
+         u8	res06c[0x70 - 0x6c];
+ 	__be32	devdisr;	/* 0x.0070 - Device Disable Control */
++#define CCSR_GUTS_DEVDISR_TB1	0x00001000
++#define CCSR_GUTS_DEVDISR_TB0	0x00004000
+ 	__be32	devdisr2;	/* 0x.0074 - Device Disable Control 2 */
+ 	u8	res078[0x7c - 0x78];
+ 	__be32  pmjcr;		/* 0x.007c - 4 Power Management Jog Control Register */
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index ff42490..2e65fe8 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -24,6 +24,7 @@
+ #include <asm/mpic.h>
+ #include <asm/cacheflush.h>
+ #include <asm/dbell.h>
++#include <asm/fsl_guts.h>
  
-+	OCM: ocm@400040000 {
-+		compatible = "ibm,ocm";
-+		status = "ok";
-+		cell-index = <1>;
-+		/* configured in U-Boot */
-+		reg = <4 0x00040000 0x8000>; /* 32K */
-+	};
-+
- 	SDR0: sdr {
- 		compatible = "ibm,sdr-apm821xx";
- 		dcr-reg = <0x00e 0x002>;
-diff --git a/arch/powerpc/include/asm/ppc4xx_ocm.h b/arch/powerpc/include/asm/ppc4xx_ocm.h
-new file mode 100644
-index 0000000..6ce9046
---- /dev/null
-+++ b/arch/powerpc/include/asm/ppc4xx_ocm.h
-@@ -0,0 +1,45 @@
-+/*
-+ * PowerPC 4xx OCM memory allocation support
-+ *
-+ * (C) Copyright 2009, Applied Micro Circuits Corporation
-+ * Victor Gallardo (vgallardo@amcc.com)
-+ *
-+ * See file CREDITS for list of people who contributed to this
-+ * project.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ */
-+
-+#ifndef __ASM_POWERPC_PPC4XX_OCM_H__
-+#define __ASM_POWERPC_PPC4XX_OCM_H__
-+
-+#define PPC4XX_OCM_NON_CACHED 0
-+#define PPC4XX_OCM_CACHED     1
-+
-+#if defined(CONFIG_PPC4xx_OCM)
-+
-+void *ppc4xx_ocm_alloc(phys_addr_t *phys, int size, int align,
-+		  int flags, const char *owner);
-+void ppc4xx_ocm_free(const void *virt);
-+
-+#else
-+
-+#define ppc4xx_ocm_alloc(phys, size, align, flags, owner)	NULL
-+#define ppc4xx_ocm_free(addr)	((void)0)
-+
-+#endif /* CONFIG_PPC4xx_OCM */
-+
-+#endif  /* __ASM_POWERPC_PPC4XX_OCM_H__ */
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 8abf6fb8..0effe9f 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -252,6 +252,14 @@ config PPC4xx_GPIO
- 	help
- 	  Enable gpiolib support for ppc440 based boards
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/mpic.h>
+@@ -42,6 +43,64 @@ extern void __early_start(void);
+ #define NUM_BOOT_ENTRY		8
+ #define SIZE_BOOT_ENTRY		(NUM_BOOT_ENTRY * sizeof(u32))
  
-+config PPC4xx_OCM
-+	bool "PPC4xx On Chip Memory (OCM) support"
-+	depends on 4xx
-+	select PPC_LIB_RHEAP
-+	help
-+	  Enable OCM support for PowerPC 4xx platforms with on chip memory,
-+	  OCM provides the fast place for memory access to improve performance.
++static struct ccsr_guts __iomem *guts;
++static u64 timebase;
++static int tb_req;
++static int tb_valid;
 +
- # 44x specific CPU modules, selected based on the board above.
- config 440EP
- 	bool
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 1bd7ecb..6f768e2 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -37,6 +37,7 @@ obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
- obj-$(CONFIG_IPIC)		+= ipic.o
- obj-$(CONFIG_4xx)		+= uic.o
-+obj-$(CONFIG_PPC4xx_OCM)	+= ppc4xx_ocm.o
- obj-$(CONFIG_4xx_SOC)		+= ppc4xx_soc.o
- obj-$(CONFIG_XILINX_VIRTEX)	+= xilinx_intc.o
- obj-$(CONFIG_XILINX_PCI)	+= xilinx_pci.o
-diff --git a/arch/powerpc/sysdev/ppc4xx_ocm.c b/arch/powerpc/sysdev/ppc4xx_ocm.c
-new file mode 100644
-index 0000000..1b15f93
---- /dev/null
-+++ b/arch/powerpc/sysdev/ppc4xx_ocm.c
-@@ -0,0 +1,415 @@
-+/*
-+ * PowerPC 4xx OCM memory allocation support
-+ *
-+ * (C) Copyright 2009, Applied Micro Circuits Corporation
-+ * Victor Gallardo (vgallardo@amcc.com)
-+ *
-+ * See file CREDITS for list of people who contributed to this
-+ * project.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation; either version 2 of
-+ * the License, or (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
-+ * MA 02111-1307 USA
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/of.h>
-+#include <asm/rheap.h>
-+#include <asm/ppc4xx_ocm.h>
-+#include <linux/slab.h>
-+#include <linux/debugfs.h>
-+
-+#define OCM_DISABLED	0
-+#define OCM_ENABLED		1
-+
-+struct ocm_block {
-+	struct list_head	list;
-+	void __iomem		*addr;
-+	int					size;
-+	const char			*owner;
-+};
-+
-+/* non-cached or cached region */
-+struct ocm_region {
-+	phys_addr_t			phys;
-+	void __iomem		*virt;
-+
-+	int					memtotal;
-+	int					memfree;
-+
-+	rh_info_t			*rh;
-+	struct list_head	list;
-+};
-+
-+struct ocm_info {
-+	int					index;
-+	int					status;
-+	int					ready;
-+
-+	phys_addr_t			phys;
-+
-+	int					alignment;
-+	int					memtotal;
-+	int					cache_size;
-+
-+	struct ocm_region	nc;	/* non-cached region */
-+	struct ocm_region	c;	/* cached region */
-+};
-+
-+static struct ocm_info *ocm_nodes;
-+static int ocm_count;
-+
-+static struct ocm_info *ocm_get_node(unsigned int index)
++static void mpc85xx_timebase_freeze(int freeze)
 +{
-+	if (index >= ocm_count) {
-+		printk(KERN_ERR "PPC4XX OCM: invalid index");
-+		return NULL;
-+	}
++	uint32_t mask;
 +
-+	return &ocm_nodes[index];
++	mask = CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR_TB1;
++	if (freeze)
++		setbits32(&guts->devdisr, mask);
++	else
++		clrbits32(&guts->devdisr, mask);
++
++	in_be32(&guts->devdisr);
 +}
 +
-+static int ocm_free_region(struct ocm_region *ocm_reg, const void *addr)
++static void mpc85xx_give_timebase(void)
 +{
-+	struct ocm_block *blk, *tmp;
-+	unsigned long offset;
++	unsigned long flags;
 +
-+	if (!ocm_reg->virt)
-+		return 0;
++	local_irq_save(flags);
 +
-+	list_for_each_entry_safe(blk, tmp, &ocm_reg->list, list) {
-+		if (blk->addr == addr) {
-+			offset = addr - ocm_reg->virt;
-+			ocm_reg->memfree += blk->size;
-+			rh_free(ocm_reg->rh, offset);
-+			list_del(&blk->list);
-+			kfree(blk);
-+			return 1;
-+		}
-+	}
++	while (!tb_req)
++		barrier();
++	tb_req = 0;
 +
-+	return 0;
++	mpc85xx_timebase_freeze(1);
++	timebase = get_tb();
++	mb();
++	tb_valid = 1;
++
++	while (tb_valid)
++		barrier();
++
++	mpc85xx_timebase_freeze(0);
++
++	local_irq_restore(flags);
 +}
 +
-+static void __init ocm_init_node(int count, struct device_node *node)
++static void mpc85xx_take_timebase(void)
 +{
-+	struct ocm_info *ocm;
++	unsigned long flags;
 +
-+	const unsigned int *cell_index;
-+	const unsigned int *cache_size;
-+	int len;
++	local_irq_save(flags);
 +
-+	struct resource rsrc;
-+	int ioflags;
++	tb_req = 1;
++	while (!tb_valid)
++		barrier();
 +
-+	ocm = ocm_get_node(count);
++	set_tb(timebase >> 32, timebase & 0xffffffff);
++	isync();
++	tb_valid = 0;
 +
-+	cell_index = of_get_property(node, "cell-index", &len);
-+	if (!cell_index) {
-+		printk(KERN_ERR "PPC4XX OCM: missing cell-index property");
-+		return;
-+	}
-+	ocm->index = *cell_index;
++	local_irq_restore(flags);
++}
 +
-+	if (of_device_is_available(node))
-+		ocm->status = OCM_ENABLED;
+ static int __init
+ smp_85xx_kick_cpu(int nr)
+ {
+@@ -228,6 +287,16 @@ smp_85xx_setup_cpu(int cpu_nr)
+ 		doorbell_setup_this_cpu();
+ }
+ 
++static const struct of_device_id mpc85xx_smp_guts_ids[] = {
++	{ .compatible = "fsl,mpc8572-guts", },
++	{ .compatible = "fsl,p1020-guts", },
++	{ .compatible = "fsl,p1021-guts", },
++	{ .compatible = "fsl,p1022-guts", },
++	{ .compatible = "fsl,p1023-guts", },
++	{ .compatible = "fsl,p2020-guts", },
++	{},
++};
 +
-+	cache_size = of_get_property(node, "cached-region-size", &len);
-+	if (cache_size)
-+		ocm->cache_size = *cache_size;
-+
-+	if (of_address_to_resource(node, 0, &rsrc)) {
-+		printk(KERN_ERR "PPC4XX OCM%d: could not get resource address\n",
-+			ocm->index);
-+		return;
-+	}
-+
-+	ocm->phys = rsrc.start;
-+	ocm->memtotal = (rsrc.end - rsrc.start + 1);
-+
-+	printk(KERN_INFO "PPC4XX OCM%d: %d Bytes (%s)\n",
-+		ocm->index, ocm->memtotal,
-+		(ocm->status == OCM_DISABLED) ? "disabled" : "enabled");
-+
-+	if (ocm->status == OCM_DISABLED)
-+		return;
-+
-+	/* request region */
-+
-+	if (!request_mem_region(ocm->phys, ocm->memtotal, "ppc4xx_ocm")) {
-+		printk(KERN_ERR "PPC4XX OCM%d: could not request region\n",
-+			ocm->index);
-+		return;
-+	}
-+
-+	/* Configure non-cached and cached regions */
-+
-+	ocm->nc.phys = ocm->phys;
-+	ocm->nc.memtotal = ocm->memtotal - ocm->cache_size;
-+	ocm->nc.memfree = ocm->nc.memtotal;
-+
-+	ocm->c.phys = ocm->phys + ocm->nc.memtotal;
-+	ocm->c.memtotal = ocm->cache_size;
-+	ocm->c.memfree = ocm->c.memtotal;
-+
-+	if (ocm->nc.memtotal == 0)
-+		ocm->nc.phys = 0;
-+
-+	if (ocm->c.memtotal == 0)
-+		ocm->c.phys = 0;
-+
-+	printk(KERN_INFO "PPC4XX OCM%d: %d Bytes (non-cached)\n",
-+		ocm->index, ocm->nc.memtotal);
-+
-+	printk(KERN_INFO "PPC4XX OCM%d: %d Bytes (cached)\n",
-+		ocm->index, ocm->c.memtotal);
-+
-+	/* ioremap the non-cached region */
-+	if (ocm->nc.memtotal) {
-+		ioflags = _PAGE_NO_CACHE | _PAGE_GUARDED | _PAGE_EXEC;
-+		ocm->nc.virt = __ioremap(ocm->nc.phys, ocm->nc.memtotal,
-+					  ioflags);
-+
-+		if (!ocm->nc.virt) {
-+			printk(KERN_ERR
-+			       "PPC4XX OCM%d: failed to ioremap non-cached memory\n",
-+			       ocm->index);
-+			ocm->nc.memfree = 0;
+ void __init mpc85xx_smp_init(void)
+ {
+ 	struct device_node *np;
+@@ -249,6 +318,19 @@ void __init mpc85xx_smp_init(void)
+ 		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
+ 	}
+ 
++	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
++	if (np) {
++		guts = of_iomap(np, 0);
++		of_node_put(np);
++		if (!guts) {
++			pr_err("%s: Could not map guts node address\n",
++								__func__);
 +			return;
 +		}
++		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
++		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
 +	}
 +
-+	/* ioremap the cached region */
-+
-+	if (ocm->c.memtotal) {
-+		ioflags = _PAGE_EXEC;
-+		ocm->c.virt = __ioremap(ocm->c.phys, ocm->c.memtotal,
-+					 ioflags);
-+
-+		if (!ocm->c.virt) {
-+			printk(KERN_ERR
-+			       "PPC4XX OCM%d: failed to ioremap cached memory\n",
-+			       ocm->index);
-+			ocm->c.memfree = 0;
-+			return;
-+		}
-+	}
-+
-+	/* Create Remote Heaps */
-+
-+	ocm->alignment = 4; /* default 4 byte alignment */
-+
-+	if (ocm->nc.virt) {
-+		ocm->nc.rh = rh_create(ocm->alignment);
-+		rh_attach_region(ocm->nc.rh, 0, ocm->nc.memtotal);
-+	}
-+
-+	if (ocm->c.virt) {
-+		ocm->c.rh = rh_create(ocm->alignment);
-+		rh_attach_region(ocm->c.rh, 0, ocm->c.memtotal);
-+	}
-+
-+	INIT_LIST_HEAD(&ocm->nc.list);
-+	INIT_LIST_HEAD(&ocm->c.list);
-+
-+	ocm->ready = 1;
-+
-+	return;
-+}
-+
-+static int ocm_debugfs_show(struct seq_file *m, void *v)
-+{
-+	struct ocm_block *blk, *tmp;
-+	unsigned int i;
-+
-+	for (i = 0; i < ocm_count; i++) {
-+		struct ocm_info *ocm = ocm_get_node(i);
-+
-+		if (!ocm || !ocm->ready)
-+			continue;
-+
-+		seq_printf(m, "PPC4XX OCM   : %d\n", ocm->index);
-+		seq_printf(m, "PhysAddr     : 0x%llx\n", ocm->phys);
-+		seq_printf(m, "MemTotal     : %d Bytes\n", ocm->memtotal);
-+		seq_printf(m, "MemTotal(NC) : %d Bytes\n", ocm->nc.memtotal);
-+		seq_printf(m, "MemTotal(C)  : %d Bytes\n", ocm->c.memtotal);
-+
-+		seq_printf(m, "\n");
-+
-+		seq_printf(m, "NC.PhysAddr  : 0x%llx\n", ocm->nc.phys);
-+		seq_printf(m, "NC.VirtAddr  : 0x%p\n", ocm->nc.virt);
-+		seq_printf(m, "NC.MemTotal  : %d Bytes\n", ocm->nc.memtotal);
-+		seq_printf(m, "NC.MemFree   : %d Bytes\n", ocm->nc.memfree);
-+
-+		list_for_each_entry_safe(blk, tmp, &ocm->nc.list, list) {
-+			seq_printf(m, "NC.MemUsed   : %d Bytes (%s)\n",
-+							blk->size, blk->owner);
-+		}
-+
-+		seq_printf(m, "\n");
-+
-+		seq_printf(m, "C.PhysAddr   : 0x%llx\n", ocm->c.phys);
-+		seq_printf(m, "C.VirtAddr   : 0x%p\n", ocm->c.virt);
-+		seq_printf(m, "C.MemTotal   : %d Bytes\n", ocm->c.memtotal);
-+		seq_printf(m, "C.MemFree    : %d Bytes\n", ocm->c.memfree);
-+
-+		list_for_each_entry_safe(blk, tmp, &ocm->c.list, list) {
-+			seq_printf(m, "C.MemUsed    : %d Bytes (%s)\n",
-+						blk->size, blk->owner);
-+		}
-+
-+		seq_printf(m, "\n");
-+	}
-+
-+	return 0;
-+}
-+
-+static int ocm_debugfs_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, ocm_debugfs_show, NULL);
-+}
-+
-+static const struct file_operations ocm_debugfs_fops = {
-+	.open = ocm_debugfs_open,
-+	.read = seq_read,
-+	.llseek = seq_lseek,
-+	.release = single_release,
-+};
-+
-+static int ocm_debugfs_init(void)
-+{
-+	struct dentry *junk;
-+
-+	junk = debugfs_create_dir("ppc4xx_ocm", 0);
-+	if (!junk) {
-+		printk(KERN_ALERT "debugfs ppc4xx ocm: failed to create dir\n");
-+		return -1;
-+	}
-+
-+	if (debugfs_create_file("info", 0644, junk, NULL, &ocm_debugfs_fops)) {
-+		printk(KERN_ALERT "debugfs ppc4xx ocm: failed to create file\n");
-+		return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+void *ppc4xx_ocm_alloc(phys_addr_t *phys, int size, int align,
-+			int flags, const char *owner)
-+{
-+	void __iomem *addr = NULL;
-+	unsigned long offset;
-+	struct ocm_info *ocm;
-+	struct ocm_region *ocm_reg;
-+	struct ocm_block *ocm_blk;
-+	int i;
-+
-+	for (i = 0; i < ocm_count; i++) {
-+		ocm = ocm_get_node(i);
-+
-+		if (!ocm || !ocm->ready)
-+			continue;
-+
-+		if (flags == PPC4XX_OCM_NON_CACHED)
-+			ocm_reg = &ocm->nc;
-+		else
-+			ocm_reg = &ocm->c;
-+
-+		if (!ocm_reg->virt)
-+			continue;
-+
-+		if (align < ocm->alignment)
-+			align = ocm->alignment;
-+
-+		offset = rh_alloc_align(ocm_reg->rh, size, align, NULL);
-+
-+		if (IS_ERR_VALUE(offset))
-+			continue;
-+
-+		ocm_blk = kzalloc(sizeof(struct ocm_block *), GFP_KERNEL);
-+		if (!ocm_blk) {
-+			printk(KERN_ERR "PPC4XX OCM: could not allocate ocm block");
-+			rh_free(ocm_reg->rh, offset);
-+			break;
-+		}
-+
-+		*phys = ocm_reg->phys + offset;
-+		addr = ocm_reg->virt + offset;
-+		size = ALIGN(size, align);
-+
-+		ocm_blk->addr = addr;
-+		ocm_blk->size = size;
-+		ocm_blk->owner = owner;
-+		list_add_tail(&ocm_blk->list, &ocm_reg->list);
-+
-+		ocm_reg->memfree -= size;
-+
-+		break;
-+	}
-+
-+	return addr;
-+}
-+
-+void ppc4xx_ocm_free(const void *addr)
-+{
-+	int i;
-+
-+	if (!addr)
-+		return;
-+
-+	for (i = 0; i < ocm_count; i++) {
-+		struct ocm_info *ocm = ocm_get_node(i);
-+
-+		if (!ocm || !ocm->ready)
-+			continue;
-+
-+		if (ocm_free_region(&ocm->nc, addr) ||
-+			ocm_free_region(&ocm->c, addr))
-+			return;
-+	}
-+}
-+
-+static int __init ppc4xx_ocm_init(void)
-+{
-+	struct device_node *np;
-+	int count;
-+
-+	count = 0;
-+	for_each_compatible_node(np, NULL, "ibm,ocm")
-+		count++;
-+
-+	if (!count)
-+		return 0;
-+
-+	ocm_nodes = kzalloc((count * sizeof(struct ocm_info)), GFP_KERNEL);
-+	if (!ocm_nodes) {
-+		printk(KERN_ERR "PPC4XX OCM: failed to allocate OCM nodes!\n");
-+		return -ENOMEM;
-+	}
-+
-+	ocm_count = count;
-+	count = 0;
-+
-+	for_each_compatible_node(np, NULL, "ibm,ocm") {
-+		ocm_init_node(count, np);
-+		count++;
-+	}
-+
-+	ocm_debugfs_init();
-+
-+	return 0;
-+}
-+
-+arch_initcall(ppc4xx_ocm_init);
+ 	smp_ops = &smp_85xx_ops;
+ 
+ #ifdef CONFIG_KEXEC
 -- 
-1.7.2.5
+1.6.4.1
