@@ -1,30 +1,36 @@
-Return-Path: <jiang.liu@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- by ozlabs.org (Postfix) with ESMTP id E4C8B2C00B6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 13:33:50 +1000 (EST)
-Message-ID: <4FF26726.8010904@huawei.com>
-Date: Tue, 3 Jul 2012 11:29:42 +0800
-From: Jiang Liu <jiang.liu@huawei.com>
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 31A212C00B6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 15:49:23 +1000 (EST)
+Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id A2BE33EE0C0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:49:18 +0900 (JST)
+Received: from smail (m3 [127.0.0.1])
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 87F3545DE9E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:49:18 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 64E4445DEAD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:49:18 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 50D9B1DB8045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:49:18 +0900 (JST)
+Received: from g01jpexchyt11.g01.fujitsu.local
+ (g01jpexchyt11.g01.fujitsu.local [10.128.194.50])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id DD12D1DB803F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jul 2012 14:49:17 +0900 (JST)
+Message-ID: <4FF287C3.4030901@jp.fujitsu.com>
+Date: Tue, 3 Jul 2012 14:48:51 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] mm: setup pageblock_order before it's used by sparse
-References: <1341047274-5616-1-git-send-email-jiang.liu@huawei.com>
- <CAE9FiQWzfLkeQs8O22MUEmuGUx=jPi5s=wZt2fcpFMcwrzt3uA@mail.gmail.com>
- <4FF100F0.9050501@huawei.com>
- <CAE9FiQXpeGFfWvUHHW_GjgTg+4Op7agsht5coZbcmn2W=f9bqw@mail.gmail.com>
- <4FF25EFA.1080004@huawei.com>
- <CAE9FiQVxY9E3L_xmRj10+9D6NVbKaxaAd2oJ6EFe1D+Gy2971w@mail.gmail.com>
-In-Reply-To: <CAE9FiQVxY9E3L_xmRj10+9D6NVbKaxaAd2oJ6EFe1D+Gy2971w@mail.gmail.com>
-Content-Type: text/plain; charset="windows-1252"
-Cc: Tony Luck <tony.luck@intel.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- Minchan Kim <minchan@kernel.org>, Keping Chen <chenkeping@huawei.com>,
- Mel Gorman <mgorman@suse.de>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, Xishi Qiu <qiuxishi@huawei.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@lists.ozlabs.org,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
- Jiang Liu <liuj97@gmail.com>
+To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
+Subject: [RFC PATCH v2 0/13] memory-hotplug : hot-remove physical memory
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: len.brown@intel.com, paulus@samba.org, minchan.kim@gmail.com,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
+ akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,38 +40,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Hi Yinghai,
->>
->> I'm afraid the v2 will break powerpc. Currently only IA64 and PowerPC
->> supports variable hugetlb size.
->>
->> HPAGE_SHIFT is a variable default to 0 on powerpc. But seems PowerPC
->> is doing something wrong here, according to it's mm initialization
->> sequence as below:
->> start_kernel()
->>         setup_arch()
->>                 paging_init()
->>                         free_area_init_node()
->>                                 set_pageblock_order()
->>                                         refer to HPAGE_SHIFT (still 0)
->>         init_rest()
->>                 do_initcalls()
->>                         hugetlbpage_init()
->>                                 setup HPAGE_SHIFT
->> That means pageblock_order is always set to "MAX_ORDER - 1", not sure
->> whether this is intended. And it has the same issue as IA64 of wasting
->> memory if CONFIG_SPARSE is enabled.
-> 
-> adding BenH, need to know if it is powerpc intended.
-> 
->>
->> So it would be better to keep function set_pageblock_order(), it will
->> fix the memory wasting on both IA64 and PowerPC.
-> 
-> Should setup pageblock_order as early as possible to avoid confusing.
-OK, waiting response from PPC. If we could find some ways to set HPAGE_SIZE
-early on PPC too, we can setup pageblock_order in arch instead of page_alloc.c
-as early as possible.
+This patch series aims to support physical memory hot-remove.
 
-Thanks!
-Gerry
+  [RFC PATCH v2 1/13] memory-hotplug : rename remove_memory to offline_memory
+  [RFC PATCH v2 2/13] memory-hotplug : add physical memory hotplug code to acpi_memory_device_remove
+  [RFC PATCH v2 3/13] memory-hotplug : unify argument of firmware_map_add_early/hotplug
+  [RFC PATCH v2 4/13] memory-hotplug : remove /sys/firmware/memmap/X sysfs
+  [RFC PATCH v2 5/13] memory-hotplug : does not release memory region in PAGES_PER_SECTION chunks
+  [RFC PATCH v2 6/13] memory-hotplug : add memory_block_release
+  [RFC PATCH v2 7/13] memory-hotplug : remove_memory calls __remove_pages
+  [RFC PATCH v2 8/13] memory-hotplug : check page type in get_page_bootmem
+  [RFC PATCH v2 9/13] memory-hotplug : move register_page_bootmem_info_node and put_page_bootmem for
+sparse-vmemmap
+  [RFC PATCH v2 10/13] memory-hotplug : implement register_page_bootmem_info_section of sparse-vmemmap
+  [RFC PATCH v2 11/13] memory-hotplug : free memmap of sparse-vmemmap
+  [RFC PATCH v2 12/13] memory-hotplug : add node_device_release
+  [RFC PATCH v2 13/13] memory-hotplug : remove sysfs file of node
+
+Even if you apply these patches, you cannot remove the physical memory
+completely since these patches are still under development. I want you to
+cooperate to improve the physical memory hot-remove. So please review these
+patches and give your comment/idea.
+
+The patches can free/remove following things:
+
+  - acpi_memory_info                          : [RFC PATCH 2/13]
+  - /sys/firmware/memmap/X/{end, start, type} : [RFC PATCH 4/13]
+  - iomem_resource                            : [RFC PATCH 5/13]
+  - mem_section and related sysfs files       : [RFC PATCH 6-11/13]
+  - node and related sysfs files              : [RFC PATCH 12-13/13]
+
+The patches cannot do following things yet:
+
+  - page table of removed memory
+
+If you find lack of function for physical memory hot-remove, please let me
+know.
+
+change log of v2:
+ [RFC PATCH v2 2/13]
+   * check whether memory block is offline or not before calling offline_memory()
+   * check whether section is valid or not in is_memblk_offline()
+   * call kobject_put() for each memory_block in is_memblk_offline()
+
+ [RFC PATCH v2 3/13]
+   * unify the end argument of firmware_map_add_early/hotplug
+
+ [RFC PATCH v2 4/13]
+   * add release_firmware_map_entry() for freeing firmware_map_entry
+
+ [RFC PATCH v2 6/13]
+  * add release_memory_block() for freeing memory_block
+
+ [RFC PATCH v2 11/13]
+  * fix wrong arguments of free_pages()
+
+---
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   16 +-
+ arch/x86/mm/init_64.c                           |  144 ++++++++++++++++++++++++
+ drivers/acpi/acpi_memhotplug.c                  |   28 ++++
+ drivers/base/memory.c                           |   53 ++++++++
+ drivers/base/node.c                             |    7 +
+ drivers/firmware/memmap.c                       |   70 +++++++++++
+ include/linux/firmware-map.h                    |    6 +
+ include/linux/memory.h                          |    5
+ include/linux/memory_hotplug.h                  |   17 --
+ include/linux/mm.h                              |    5
+ mm/memory_hotplug.c                             |   98 ++++++++++++----
+ mm/sparse.c                                     |    5
+ 12 files changed, 406 insertions(+), 48 deletions(-)
