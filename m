@@ -1,39 +1,24 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5CA372C01F1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2012 19:00:35 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Wed, 4 Jul 2012 08:40:40 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q648qWIc7995830
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jul 2012 18:52:33 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6490OHR022839
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Jul 2012 19:00:25 +1000
-Message-ID: <1341392420.18505.41.camel@ThinkPad-T420>
-Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
- SLUB is used
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux.com>
-Date: Wed, 04 Jul 2012 17:00:20 +0800
-In-Reply-To: <alpine.DEB.2.00.1207031535330.14703@router.home>
-References: <1340617984.13778.37.camel@ThinkPad-T420>
- <1340618099.13778.39.camel@ThinkPad-T420>
- <alpine.DEB.2.00.1207031344240.14703@router.home>
- <alpine.DEB.2.00.1207031535330.14703@router.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Matt Mackall <mpm@selenic.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 73EF12C01FA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Jul 2012 19:57:22 +1000 (EST)
+Message-ID: <4FF41484.3070806@cn.fujitsu.com>
+Date: Wed, 04 Jul 2012 18:01:40 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
+MIME-Version: 1.0
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v2 4/13] memory-hotplug : remove /sys/firmware/memmap/X
+ sysfs
+References: <4FF287C3.4030901@jp.fujitsu.com> <4FF28996.10702@jp.fujitsu.com>
+ <4FF2929B.7030004@cn.fujitsu.com> <4FF3CA65.1020300@jp.fujitsu.com>
+ <4FF3CFDC.50802@cn.fujitsu.com> <4FF3DA1E.9060505@jp.fujitsu.com>
+In-Reply-To: <4FF3DA1E.9060505@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,120 +28,249 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-07-03 at 15:36 -0500, Christoph Lameter wrote:
-> Looking through the emails it seems that there is an issue with alias
-> strings. 
-
-To be more precise, there seems no big issue currently. I just wanted to
-make following usage of kmem_cache_create (SLUB) possible:
-
-	name = some string kmalloced
-	kmem_cache_create(name, ...)
-	kfree(name);
-
-And from my understanding of the code, the saved_alias list, which is
-used to keep track of the alias entries during early boot (slab_state <
-SYSFS), is a blocker. It needs the name string to be valid until
-slab_sysfs_init() is finished. 
-
-> That can be solved by duping the name of the slab earlier in kmem_cache_create().
-> Does this patch fix the issue?
-
-I'm afraid not...
-
-With the patch below, we still need to kfree the duplicated name in
-slab_sysfs_init().
-
-And I think it would be easier to understand if we duplicate the name
-string when creating one entry for saved_alias list, and kfree it when
-we remove one entry from saved_alias list. 
-
-I'm not sure whether you got the patch #1 of the two I sent previously.
-If not, would you kindly spend some time reviewing it to see if I missed
-anything? Link below for your convenience:
-  https://lkml.org/lkml/2012/6/27/83
-
-Btw, as Ben suggested, I'm now working on duplicating the name string in
-SLAB to make them consistent, so we don't need the #ifdef CONFIG_SLUB
-any more. Will send it out for your review after it is finished.
-
-> Subject: slub: Dup name earlier in kmem_cache_create
+At 07/04/2012 01:52 PM, Yasuaki Ishimatsu Wrote:
+> Hi Wen,
 > 
-> Dup the name earlier in kmem_cache_create so that alias
-> processing is done using the copy of the string and not
-> the string itself.
+> 2012/07/04 14:08, Wen Congyang wrote:
+>> At 07/04/2012 12:45 PM, Yasuaki Ishimatsu Wrote:
+>>> Hi Wen,
+>>>
+>>> 2012/07/03 15:35, Wen Congyang wrote:
+>>>> At 07/03/2012 01:56 PM, Yasuaki Ishimatsu Wrote:
+>>>>> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
+>>>>> sysfs files are created. But there is no code to remove these files. The patch
+>>>>> implements the function to remove them.
+>>>>>
+>>>>> Note : The code does not free firmware_map_entry since there is no way to free
+>>>>>          memory which is allocated by bootmem.
+>>>>>
+>>>>> CC: David Rientjes <rientjes@google.com>
+>>>>> CC: Jiang Liu <liuj97@gmail.com>
+>>>>> CC: Len Brown <len.brown@intel.com>
+>>>>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>>> CC: Paul Mackerras <paulus@samba.org>
+>>>>> CC: Christoph Lameter <cl@linux.com>
+>>>>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>>>>> CC: Andrew Morton <akpm@linux-foundation.org>
+>>>>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>>>>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>>>>
+>>>>> ---
+>>>>>    drivers/firmware/memmap.c    |   70 +++++++++++++++++++++++++++++++++++++++++++
+>>>>>    include/linux/firmware-map.h |    6 +++
+>>>>>    mm/memory_hotplug.c          |    6 +++
+>>>>>    3 files changed, 81 insertions(+), 1 deletion(-)
+>>>>>
+>>>>> Index: linux-3.5-rc4/mm/memory_hotplug.c
+>>>>> ===================================================================
+>>>>> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-07-03 14:22:00.190240794 +0900
+>>>>> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-07-03 14:22:03.549198802 +0900
+>>>>> @@ -661,7 +661,11 @@ EXPORT_SYMBOL_GPL(add_memory);
+>>>>>
+>>>>>    int remove_memory(int nid, u64 start, u64 size)
+>>>>>    {
+>>>>> -	return -EBUSY;
+>>>>> +	lock_memory_hotplug();
+>>>>> +	/* remove memmap entry */
+>>>>> +	firmware_map_remove(start, start + size - 1, "System RAM");
+>>>>> +	unlock_memory_hotplug();
+>>>>> +	return 0;
+>>>>>
+>>>>>    }
+>>>>>    EXPORT_SYMBOL_GPL(remove_memory);
+>>>>> Index: linux-3.5-rc4/include/linux/firmware-map.h
+>>>>> ===================================================================
+>>>>> --- linux-3.5-rc4.orig/include/linux/firmware-map.h	2012-07-03 14:21:45.766421116 +0900
+>>>>> +++ linux-3.5-rc4/include/linux/firmware-map.h	2012-07-03 14:22:03.550198789 +0900
+>>>>> @@ -25,6 +25,7 @@
+>>>>>
+>>>>>    int firmware_map_add_early(u64 start, u64 end, const char *type);
+>>>>>    int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
+>>>>> +int firmware_map_remove(u64 start, u64 end, const char *type);
+>>>>>
+>>>>>    #else /* CONFIG_FIRMWARE_MEMMAP */
+>>>>>
+>>>>> @@ -38,6 +39,11 @@ static inline int firmware_map_add_hotpl
+>>>>>    	return 0;
+>>>>>    }
+>>>>>
+>>>>> +static inline int firmware_map_remove(u64 start, u64 end, const char *type)
+>>>>> +{
+>>>>> +	return 0;
+>>>>> +}
+>>>>> +
+>>>>>    #endif /* CONFIG_FIRMWARE_MEMMAP */
+>>>>>
+>>>>>    #endif /* _LINUX_FIRMWARE_MAP_H */
+>>>>> Index: linux-3.5-rc4/drivers/firmware/memmap.c
+>>>>> ===================================================================
+>>>>> --- linux-3.5-rc4.orig/drivers/firmware/memmap.c	2012-07-03 14:21:45.761421180 +0900
+>>>>> +++ linux-3.5-rc4/drivers/firmware/memmap.c	2012-07-03 14:22:03.569198549 +0900
+>>>>> @@ -79,7 +79,16 @@ static const struct sysfs_ops memmap_att
+>>>>>    	.show = memmap_attr_show,
+>>>>>    };
+>>>>>
+>>>>> +static void release_firmware_map_entry(struct kobject *kobj)
+>>>>> +{
+>>>>> +	/*
+>>>>> +	 * FIXME : There is no idea.
+>>>>> +	 *         How to free the entry which allocated bootmem?
+>>>>> +	 */
+>>>>
+>>>> I find a function free_bootmem(), but I am not sure whether it can work here.
+>>>
+>>> It cannot work here.
+>>>
+>>>> Another problem: how to check whether the entry uses bootmem?
+>>>
+>>> When firmware_map_entry is allocated by kzalloc(), the page has PG_slab.
+>>
+>> This is not true. In my test, I find the page does not have PG_slab sometimes.
 > 
-> Signed-off-by: Christoph Lameter <cl@linux.com>
+> I think that it depends on the allocated size. firmware_map_entry size is
+> smaller than PAGE_SIZE. So the page has PG_Slab.
+
+In my test, I add printk in the function firmware_map_add_hotplug() to display
+page's flags. And sometimes the page is not allocated by slab(I use PageSlab()
+to verify it).
+
+Thanks
+Wen Congyang
+
 > 
-> ---
->  mm/slub.c |   29 ++++++++++++++---------------
->  1 file changed, 14 insertions(+), 15 deletions(-)
+> Thanks,
+> Yasuaki Ishimatsu
 > 
-> Index: linux-2.6/mm/slub.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slub.c	2012-06-11 08:49:56.000000000 -0500
-> +++ linux-2.6/mm/slub.c	2012-07-03 15:17:37.000000000 -0500
-> @@ -3933,8 +3933,12 @@ struct kmem_cache *kmem_cache_create(con
->  	if (WARN_ON(!name))
->  		return NULL;
+>>
+>> Thanks
+>> Wen Congyang.
+>>
+>>> So we can check whether the entry was allocated by bootmem or not.
+>>> If the eantry was allocated by kzalloc(), we can free the entry by kfree().
+>>> But if the entry was allocated by bootmem, we have no way to free the entry.
+>>>
+>>> Thanks,
+>>> Yasuaki Ishimatsu
+>>>
+>>>>
+>>>> Thanks
+>>>> Wen Congyang
+>>>>
+>>>>> +}
+>>>>> +
+>>>>>    static struct kobj_type memmap_ktype = {
+>>>>> +	.release	= release_firmware_map_entry,
+>>>>>    	.sysfs_ops	= &memmap_attr_ops,
+>>>>>    	.default_attrs	= def_attrs,
+>>>>>    };
+>>>>> @@ -123,6 +132,16 @@ static int firmware_map_add_entry(u64 st
+>>>>>    	return 0;
+>>>>>    }
+>>>>>
+>>>>> +/**
+>>>>> + * firmware_map_remove_entry() - Does the real work to remove a firmware
+>>>>> + * memmap entry.
+>>>>> + * @entry: removed entry.
+>>>>> + **/
+>>>>> +static inline void firmware_map_remove_entry(struct firmware_map_entry *entry)
+>>>>> +{
+>>>>> +	list_del(&entry->list);
+>>>>> +}
+>>>>> +
+>>>>>    /*
+>>>>>     * Add memmap entry on sysfs
+>>>>>     */
+>>>>> @@ -144,6 +163,31 @@ static int add_sysfs_fw_map_entry(struct
+>>>>>    	return 0;
+>>>>>    }
+>>>>>
+>>>>> +/*
+>>>>> + * Remove memmap entry on sysfs
+>>>>> + */
+>>>>> +static inline void remove_sysfs_fw_map_entry(struct firmware_map_entry *entry)
+>>>>> +{
+>>>>> +	kobject_put(&entry->kobj);
+>>>>> +}
+>>>>> +
+>>>>> +/*
+>>>>> + * Search memmap entry
+>>>>> + */
+>>>>> +
+>>>>> +struct firmware_map_entry * __meminit
+>>>>> +find_firmware_map_entry(u64 start, u64 end, const char *type)
+>>>>> +{
+>>>>> +	struct firmware_map_entry *entry;
+>>>>> +
+>>>>> +	list_for_each_entry(entry, &map_entries, list)
+>>>>> +		if ((entry->start == start) && (entry->end == end) &&
+>>>>> +		    (!strcmp(entry->type, type)))
+>>>>> +			return entry;
+>>>>> +
+>>>>> +	return NULL;
+>>>>> +}
+>>>>> +
+>>>>>    /**
+>>>>>     * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
+>>>>>     * memory hotplug.
+>>>>> @@ -196,6 +240,32 @@ int __init firmware_map_add_early(u64 st
+>>>>>    	return firmware_map_add_entry(start, end, type, entry);
+>>>>>    }
+>>>>>
+>>>>> +/**
+>>>>> + * firmware_map_remove() - remove a firmware mapping entry
+>>>>> + * @start: Start of the memory range.
+>>>>> + * @end:   End of the memory range (inclusive).
+>>>>> + * @type:  Type of the memory range.
+>>>>> + *
+>>>>> + * removes a firmware mapping entry.
+>>>>> + *
+>>>>> + * Returns 0 on success, or -EINVAL if no entry.
+>>>>> + **/
+>>>>> +int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
+>>>>> +{
+>>>>> +	struct firmware_map_entry *entry;
+>>>>> +
+>>>>> +	entry = find_firmware_map_entry(start, end, type);
+>>>>> +	if (!entry)
+>>>>> +		return -EINVAL;
+>>>>> +
+>>>>> +	/* remove the memmap entry */
+>>>>> +	remove_sysfs_fw_map_entry(entry);
+>>>>> +
+>>>>> +	firmware_map_remove_entry(entry);
+>>>>> +
+>>>>> +	return 0;
+>>>>> +}
+>>>>> +
+>>>>>    /*
+>>>>>     * Sysfs functions -------------------------------------------------------------
+>>>>>     */
+>>>>>
+>>>>> --
+>>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>>>> the body of a message to majordomo@vger.kernel.org
+>>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>>
+>>>>
+>>>> --
+>>>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>>>> the body of a message to majordomo@vger.kernel.org
+>>>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>>> Please read the FAQ at  http://www.tux.org/lkml/
+>>>>
+>>>
+>>>
+>>>
+>>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
 > 
-> +	n = kstrdup(name, GFP_KERNEL);
-> +	if (!n)
-> +		goto out;
-> +
->  	down_write(&slub_lock);
-> -	s = find_mergeable(size, align, flags, name, ctor);
-> +	s = find_mergeable(size, align, flags, n, ctor);
->  	if (s) {
->  		s->refcount++;
->  		/*
-> @@ -3944,7 +3948,7 @@ struct kmem_cache *kmem_cache_create(con
->  		s->objsize = max(s->objsize, (int)size);
->  		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
 > 
-> -		if (sysfs_slab_alias(s, name)) {
-> +		if (sysfs_slab_alias(s, n)) {
->  			s->refcount--;
->  			goto err;
->  		}
-> @@ -3952,31 +3956,26 @@ struct kmem_cache *kmem_cache_create(con
->  		return s;
->  	}
 > 
-> -	n = kstrdup(name, GFP_KERNEL);
-> -	if (!n)
-> -		goto err;
-> -
->  	s = kmalloc(kmem_size, GFP_KERNEL);
->  	if (s) {
->  		if (kmem_cache_open(s, n,
->  				size, align, flags, ctor)) {
->  			list_add(&s->list, &slab_caches);
->  			up_write(&slub_lock);
-> -			if (sysfs_slab_add(s)) {
-> -				down_write(&slub_lock);
-> -				list_del(&s->list);
-> -				kfree(n);
-> -				kfree(s);
-> -				goto err;
-> -			}
-> -			return s;
-> +			if (!sysfs_slab_add(s))
-> +				return s;
-> +
-> +			down_write(&slub_lock);
-> +			list_del(&s->list);
->  		}
->  		kfree(s);
->  	}
-> -	kfree(n);
-> +
->  err:
-> +	kfree(n);
->  	up_write(&slub_lock);
-> 
-> +out:
->  	if (flags & SLAB_PANIC)
->  		panic("Cannot create slabcache %s\n", name);
->  	else
 > 
