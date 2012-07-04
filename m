@@ -1,27 +1,23 @@
-Return-Path: <B02008@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9FCF42C007C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 00:14:13 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: RE: [RFC PATCH 02/17] KVM: PPC64: booke: Add EPCR support in
- mtspr/mfspr emulation
-Date: Wed, 4 Jul 2012 14:14:03 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15A48E@039-SN2MPN1-013.039d.mgd.msft.net>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 72D582C01BC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 00:14:56 +1000 (EST)
+Subject: Re: [Qemu-ppc] [RFC PATCH 09/17] KVM: PPC64: booke: Hard disable
+ interrupts when entering guest
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1340627195-11544-10-git-send-email-mihai.caraman@freescale.com>
+Date: Wed, 4 Jul 2012 16:14:49 +0200
+Message-Id: <10CBFB35-5A18-4EA8-A129-58CCC4CFBB83@suse.de>
 References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-3-git-send-email-mihai.caraman@freescale.com>
- <868ABA98-C55B-435B-BC09-01DC4067A3BE@suse.de>
-In-Reply-To: <868ABA98-C55B-435B-BC09-01DC4067A3BE@suse.de>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+ <1340627195-11544-10-git-send-email-mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: "qemu-ppc@nongnu.org List" <qemu-ppc@nongnu.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, KVM list <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,76 +27,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: kvm-ppc-owner@vger.kernel.org [mailto:kvm-ppc-
-> owner@vger.kernel.org] On Behalf Of Alexander Graf
-> Sent: Wednesday, July 04, 2012 4:22 PM
-> To: Caraman Mihai Claudiu-B02008
-> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; qemu-ppc@nongnu.org
-> Subject: Re: [RFC PATCH 02/17] KVM: PPC64: booke: Add EPCR support in
-> mtspr/mfspr emulation
->=20
->=20
-> On 25.06.2012, at 14:26, Mihai Caraman wrote:
->=20
-> > Add EPCR support in booke mtspr/mfspr emulation. EPCR register is
-> defined
-> > only for 64-bit and HV categories, so it shoud be available only on 64-
-> bit
-> > virtual processors. Undefine the support for 32-bit builds.
-> > Define a reusable setter function for vcpu's EPCR.
-> >
-> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> > ---
-> > arch/powerpc/kvm/booke.c         |   12 +++++++++++-
-> > arch/powerpc/kvm/booke.h         |    6 ++++++
-> > arch/powerpc/kvm/booke_emulate.c |   13 ++++++++++++-
-> > 3 files changed, 29 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> > index 72f13f4..f9fa260 100644
-> > --- a/arch/powerpc/kvm/booke.c
-> > +++ b/arch/powerpc/kvm/booke.c
-> > @@ -13,7 +13,7 @@
-> >  * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
-> USA.
-> >  *
-> >  * Copyright IBM Corp. 2007
-> > - * Copyright 2010-2011 Freescale Semiconductor, Inc.
-> > + * Copyright 2010-2012 Freescale Semiconductor, Inc.
-> >  *
-> >  * Authors: Hollis Blanchard <hollisb@us.ibm.com>
-> >  *          Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
-> > @@ -1243,6 +1243,16 @@ void kvmppc_core_commit_memory_region(struct kvm
-> *kvm,
-> > {
-> > }
-> >
-> > +#ifdef CONFIG_64BIT
-> > +void kvmppc_set_epcr(struct kvm_vcpu *vcpu, u32 new_epcr)
-> > +{
-> > +	vcpu->arch.epcr =3D new_epcr;
-> > +	vcpu->arch.shadow_epcr &=3D ~SPRN_EPCR_GICM;
-> > +	if (vcpu->arch.epcr  & SPRN_EPCR_ICM)
-> > +		vcpu->arch.shadow_epcr |=3D SPRN_EPCR_GICM;
->=20
-> Why would the setter be #ifdef CONFIG_64BIT? EPCR exists on e500mc too,
-> no? Please only #ifdef the GICM bits out.
 
-kvmppc_set_epcr deals with guest EPCR and EPCR does not exist on a virtual =
-e500mc
-as detailed in patch's comment. All callers are also guarded by #ifdef CONF=
-IG_64BIT,
-my assumption was that we will not support a virtual core with 64-bit categ=
-ory
-on a 32-bit host.
+On 25.06.2012, at 14:26, Mihai Caraman wrote:
 
+> 64-bit host runs with lazy interrupt disabling, so local_irq_disable() =
+does
+> not disable interrupts right away and does not protect against =
+preemption
+> required by __kvmppc_vcpu_run(). Define a macro for 64-bit to use
+> hard_irq_disable().
+>=20
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+> arch/powerpc/kvm/booke.c |   14 ++++++++++----
+> 1 files changed, 10 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
+> index 93b48e0..db05692 100644
+> --- a/arch/powerpc/kvm/booke.c
+> +++ b/arch/powerpc/kvm/booke.c
+> @@ -45,6 +45,12 @@ unsigned long kvmppc_booke_handlers;
+> #define VM_STAT(x) offsetof(struct kvm, stat.x), KVM_STAT_VM
+> #define VCPU_STAT(x) offsetof(struct kvm_vcpu, stat.x), KVM_STAT_VCPU
+>=20
+> +#ifdef CONFIG_64BIT
+> +#define _hard_irq_disable() hard_irq_disable()
+> +#else
+> +#define _hard_irq_disable() local_irq_disable()
+> +#endif
+
+So you only swap out the disable bit, but not the enable one? Ben, would =
+this work out?
+
+
+Alex
+
+> +
+> struct kvm_stats_debugfs_item debugfs_entries[] =3D {
+> 	{ "mmio",       VCPU_STAT(mmio_exits) },
+> 	{ "dcr",        VCPU_STAT(dcr_exits) },
+> @@ -456,7 +462,7 @@ int kvmppc_core_prepare_to_enter(struct kvm_vcpu =
+*vcpu)
+> 		local_irq_enable();
+> 		kvm_vcpu_block(vcpu);
+> 		clear_bit(KVM_REQ_UNHALT, &vcpu->requests);
+> -		local_irq_disable();
+> +		_hard_irq_disable();
+>=20
+> 		kvmppc_set_exit_type(vcpu, EMULATED_MTMSRWE_EXITS);
+> 		r =3D 1;
+> @@ -480,7 +486,7 @@ static int kvmppc_prepare_to_enter(struct kvm_vcpu =
+*vcpu)
+> 		if (need_resched()) {
+> 			local_irq_enable();
+> 			cond_resched();
+> -			local_irq_disable();
+> +			_hard_irq_disable();
+> 			continue;
+> 		}
+>=20
+> @@ -515,7 +521,7 @@ int kvmppc_vcpu_run(struct kvm_run *kvm_run, =
+struct kvm_vcpu *vcpu)
+> 		return -EINVAL;
+> 	}
+>=20
+> -	local_irq_disable();
+> +	_hard_irq_disable();
+> 	if (kvmppc_prepare_to_enter(vcpu)) {
+> 		kvm_run->exit_reason =3D KVM_EXIT_INTR;
+> 		ret =3D -EINTR;
+> @@ -955,7 +961,7 @@ int kvmppc_handle_exit(struct kvm_run *run, struct =
+kvm_vcpu *vcpu,
+> 	 * aren't already exiting to userspace for some other reason.
+> 	 */
+> 	if (!(r & RESUME_HOST)) {
+> -		local_irq_disable();
+> +		_hard_irq_disable();
+> 		if (kvmppc_prepare_to_enter(vcpu)) {
+> 			run->exit_reason =3D KVM_EXIT_INTR;
+> 			r =3D (-EINTR << 2) | RESUME_HOST | (r & =
+RESUME_FLAG_NV);
+> --=20
+> 1.7.4.1
 >=20
 >=20
-> Alex
 >=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
