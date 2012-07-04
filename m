@@ -1,26 +1,28 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A2B662C007B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 01:46:16 +1000 (EST)
-Subject: Re: [Qemu-ppc] [RFC PATCH 15/17] KVM: PPC64: bookehv: Add support for
- interrupt handling
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF15A6E8@039-SN2MPN1-013.039d.mgd.msft.net>
-Date: Wed, 4 Jul 2012 17:46:10 +0200
-Message-Id: <5C22DF4D-4F41-4A25-9E01-C69CF02B0C52@suse.de>
+Return-Path: <B02008@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E2EB92C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 04:15:13 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: RE: [Qemu-ppc] [RFC PATCH 12/17] PowerPC: booke64: Add DO_KVM
+ kernel hooks
+Date: Wed, 4 Jul 2012 18:15:03 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15A82E@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-16-git-send-email-mihai.caraman@freescale.com>
- <FB7DFF5C-5E14-4202-9180-7968294F6A56@suse.de>
- <300B73AA675FCE4A93EB4FC1D42459FF15A6E8@039-SN2MPN1-013.039d.mgd.msft.net>
-To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+ <1340627195-11544-13-git-send-email-mihai.caraman@freescale.com>
+ <1B2CBB56-7180-4A73-8E51-6538A725F710@suse.de>
+ <300B73AA675FCE4A93EB4FC1D42459FF15A6C6@039-SN2MPN1-013.039d.mgd.msft.net>,
+ <2526CB9E-4B5A-40EA-9CFC-DFCA4B09F375@suse.de>
+In-Reply-To: <2526CB9E-4B5A-40EA-9CFC-DFCA4B09F375@suse.de>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "qemu-ppc@nongnu.org List" <qemu-ppc@nongnu.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, KVM list <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,131 +32,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 04.07.2012, at 17:37, Caraman Mihai Claudiu-B02008 wrote:
-
->> -----Original Message-----
->> From: kvm-ppc-owner@vger.kernel.org [mailto:kvm-ppc-
->> owner@vger.kernel.org] On Behalf Of Alexander Graf
->> Sent: Wednesday, July 04, 2012 6:14 PM
->> To: Caraman Mihai Claudiu-B02008
->> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
->> dev@lists.ozlabs.org; qemu-ppc@nongnu.org
->> Subject: Re: [Qemu-ppc] [RFC PATCH 15/17] KVM: PPC64: bookehv: Add
->> support for interrupt handling
->>=20
->>=20
->> On 25.06.2012, at 14:26, Mihai Caraman wrote:
->>=20
->>> Add bookehv interrupt handling support for 64-bit hosts. Change =
-common
->> stack
->>> layout to refer PPC_LR_STKOFF kernel constant. Dispatch the 64-bit
->> execution
->>> flow to the existing kvm_handler_common asm macro. Update input
->> register
->>> values documentation.
->>> Only the bolted version of TLB miss exception handlers is supported
->> now.
->>>=20
->>> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
->>> ---
->>> arch/powerpc/include/asm/kvm_booke_hv_asm.h |   12 +++-
->>> arch/powerpc/kvm/bookehv_interrupts.S       |  120
->> +++++++++++++++++++++++++--
->>> 2 files changed, 122 insertions(+), 10 deletions(-)
->>>=20
->>> diff --git a/arch/powerpc/include/asm/kvm_booke_hv_asm.h
->> b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
->>> index 30a600f..8be6f87 100644
->>> --- a/arch/powerpc/include/asm/kvm_booke_hv_asm.h
->>> +++ b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
->>> @@ -1,5 +1,5 @@
->>> /*
->>> - * Copyright 2010-2011 Freescale Semiconductor, Inc.
->>> + * Copyright 2010-2012 Freescale Semiconductor, Inc.
->>> *
->>> * This program is free software; you can redistribute it and/or =
-modify
->>> * it under the terms of the GNU General Public License, version 2, =
-as
->>> @@ -17,6 +17,7 @@
->>> * there are no exceptions for which we fall through directly to
->>> * the normal host handler.
->>> *
->>> + * 32-bit host
->>> * Expected inputs (normal exceptions):
->>> *   SCRATCH0 =3D saved r10
->>> *   r10 =3D thread struct
->>> @@ -33,6 +34,15 @@
->>> *   *(r8 + GPR9) =3D saved r9
->>> *   *(r8 + GPR10) =3D saved r10 (r10 not yet clobbered)
->>> *   *(r8 + GPR11) =3D saved r11
->>> + *
->>> + * 64-bit host
->>> + * Expected inputs (exception types GEN/DBG/CRIT/MC):
->>> + *  r13 =3D PACA_POINTER
->>> + *  r10 =3D saved CR
->>> + *  SPRN_SPRG_##type##_SCRATCH =3D saved r13
->>> + *  *(r13 + PACA_EX##type + EX_R10) =3D saved r10
->>> + *  *(r13 + PACA_EX##type + EX_R11) =3D saved r11
->>> + * Only the bolted version of TLB miss exception handlers is =
-supported
->> now.
->>> */
->>> .macro DO_KVM intno srr1
->>> #ifdef CONFIG_KVM_BOOKE_HV
->>> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S
->> b/arch/powerpc/kvm/bookehv_interrupts.S
->>> index dff8ed4..04097de 100644
->>> --- a/arch/powerpc/kvm/bookehv_interrupts.S
->>> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
->>> @@ -12,10 +12,11 @@
->>> * along with this program; if not, write to the Free Software
->>> * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  =
-02110-1301,
->> USA.
->>> *
->>> - * Copyright (C) 2010-2011 Freescale Semiconductor, Inc.
->>> + * Copyright (C) 2010-2012 Freescale Semiconductor, Inc.
->>> *
->>> * Author: Varun Sethi <varun.sethi@freescale.com>
->>> * Author: Scott Wood <scotwood@freescale.com>
->>> + * Author: Mihai Caraman <mihai.caraman@freescale.com>
->>> *
->>> * This file is derived from arch/powerpc/kvm/booke_interrupts.S
->>> */
->>> @@ -30,7 +31,11 @@
->>> #include <asm/bitsperlong.h>
->>> #include <asm/thread_info.h>
->>>=20
->>> +#ifdef CONFIG_64BIT
->>> +#include <asm/exception-64e.h>
->>> +#else
->>> #include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
->>> +#endif
->>>=20
->>>=20
->>> +#ifdef CONFIG_64BIT
->>> +/*
->>> + * For input register values, see
->> arch/powerpc/include/asm/kvm_booke_hv_asm.h
->>> + */
->>> +.macro kvm_handler intno scratch, paca_ex, ex_r10, ex_r11, srr0, =
-srr1,
->> flags
->>> + _GLOBAL(kvmppc_handler_\intno\()_\srr1)
->>=20
->> Is this code so vastly different from the 32bit variant that they =
-can't
->> be the same with a few simple ifdef's here and there?
->=20
-> As you can see from input register values things are quite different. =
-I strived
-> to keep the code common, the only divergence is in the kvm_handler =
-definitions.
-
-What a shame :(. A lot of it looks very very similar.
-
-
-Alex
+>________________________________________=0A=
+>From: Alexander Graf [agraf@suse.de]=0A=
+>Sent: Wednesday, July 04, 2012 6:45 PM=0A=
+>To: Caraman Mihai Claudiu-B02008=0A=
+>Cc: <kvm-ppc@vger.kernel.org>; KVM list; linuxppc-dev; qemu-ppc@nongnu.org=
+ List; Benjamin Herrenschmidt=0A=
+>Subject: Re: [Qemu-ppc] [RFC PATCH 12/17] PowerPC: booke64: Add DO_KVM ker=
+nel hooks=0A=
+>=0A=
+>On 04.07.2012, at 17:27, Caraman Mihai Claudiu-B02008 wrote:=0A=
+>=0A=
+>>> -----Original Message-----=0A=
+>>> From: Alexander Graf [mailto:agraf@suse.de]=0A=
+>>> Sent: Wednesday, July 04, 2012 5:30 PM=0A=
+>>> To: Caraman Mihai Claudiu-B02008=0A=
+>>> Cc: <kvm-ppc@vger.kernel.org>; KVM list; linuxppc-dev; qemu-=0A=
+>>> ppc@nongnu.org List; Benjamin Herrenschmidt=0A=
+>>> Subject: Re: [Qemu-ppc] [RFC PATCH 12/17] PowerPC: booke64: Add DO_KVM=
+=0A=
+>>> kernel hooks=0A=
+>>>=0A=
+>>>=0A=
+>>> On 25.06.2012, at 14:26, Mihai Caraman wrote:=0A=
+>>>=0A=
+>>>> Hook DO_KVM macro to 64-bit booke in a optimal way similar to 32-bit=
+=0A=
+>>> booke=0A=
+>>>> see head_fsl_booke.S file. Extend interrupt handlers' parameter list=
+=0A=
+>>> with=0A=
+>>>> interrupt vector numbers to accomodate the macro. Rework Guest Doorbel=
+l=0A=
+>>>> handler to use the proper GSRRx save/restore registers.=0A=
+>>>> Only the bolted version of tlb miss handers is addressed now.=0A=
+>>>>=0A=
+>>>> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>=0A=
+>>>> ---=0A=
+>>>> arch/powerpc/kernel/exceptions-64e.S |  114 ++++++++++++++++++++++++--=
+-=0A=
+>>> -------=0A=
+>>>> arch/powerpc/mm/tlb_low_64e.S        |   14 +++-=0A=
+>>>> 2 files changed, 92 insertions(+), 36 deletions(-)=0A=
+>>>>=0A=
+>>>> diff --git a/arch/powerpc/kernel/exceptions-64e.S=0A=
+>>> b/arch/powerpc/kernel/exceptions-64e.S=0A=
+>>>> index 06f7aec..a60f81f 100644=0A=
+>>>> --- a/arch/powerpc/kernel/exceptions-64e.S=0A=
+>>>> +++ b/arch/powerpc/kernel/exceptions-64e.S=0A=
+>>>> @@ -25,6 +25,8 @@=0A=
+>>>> #include <asm/ppc-opcode.h>=0A=
+>>>> #include <asm/mmu.h>=0A=
+>>>> #include <asm/hw_irq.h>=0A=
+>>>> +#include <asm/kvm_asm.h>=0A=
+>>>> +#include <asm/kvm_booke_hv_asm.h>=0A=
+>>>>=0A=
+>>>> /* XXX This will ultimately add space for a special exception save=0A=
+>>>> *     structure used to save things like SRR0/SRR1, SPRGs, MAS, etc...=
+=0A=
+>>>> @@ -34,13 +36,24 @@=0A=
+>>>> */=0A=
+>>>> #define     SPECIAL_EXC_FRAME_SIZE  INT_FRAME_SIZE=0A=
+>>>>=0A=
+>>>> +#ifdef CONFIG_KVM_BOOKE_HV=0A=
+>>>> +#define KVM_BOOKE_HV_MFSPR(reg, spr)                               \=
+=0A=
+>>>> +   BEGIN_FTR_SECTION                                       \=0A=
+>>>> +           mfspr   reg, spr;                               \=0A=
+>>>> +   END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)=0A=
+>>>> +#else=0A=
+>>>> +#define KVM_BOOKE_HV_MFSPR(reg, spr)=0A=
+>>>> +#endif=0A=
+>>>=0A=
+>>> Bleks - this is ugly.=0A=
+>>=0A=
+>> I agree :) But I opted to keep the optimizations done for 32-bit.=0A=
+>>=0A=
+>>> Do we really need to open-code the #ifdef here?=0A=
+>>=0A=
+>> 32-bit implementation fortunately use asm macros, we can't nest defines.=
+=0A=
+>>=0A=
+>>> Can't the feature section code determine that the feature is disabled a=
+nd=0A=
+>>> just always not include the code?=0A=
+>>=0A=
+>> CPU_FTR_EMB_HV is set even if KVM is not configured.=0A=
+>=0A=
+>I don't get the point then. Why not have the whole DO_KVM masked under FTR=
+_SECTION_IFSET(CPU_FTR_EMB_HV)? Are there book3s_64 implementations without=
+ HV? =0A=
+=0A=
+I guess you refer to book3e_64. I don't know all implementations but Embedd=
+ed.HV category is optional.=0A=
+=0A=
+>Can't we just mfspr unconditionally in DO_KVM?=0A=
+=0A=
+I think Scott should better answer this question, I don't know why he opted=
+ for the other approach.=0A=
+=0A=
+>>>> -/* Guest Doorbell */=0A=
+>>>> -   MASKABLE_EXCEPTION(0x2c0, guest_doorbell, .unknown_exception,=0A=
+>>> ACK_NONE)=0A=
+>>>> +/*=0A=
+>>>> + * Guest doorbell interrupt=0A=
+>>>> + * This general exception use GSRRx save/restore registers=0A=
+>>>> + */=0A=
+>>>> +   START_EXCEPTION(guest_doorbell);=0A=
+>>>> +   EXCEPTION_PROLOG(0x2c0, BOOKE_INTERRUPT_GUEST_DBELL, GEN,=0A=
+>>>> +                    SPRN_GSRR0, SPRN_GSRR1, PROLOG_ADDITION_NONE)=0A=
+>>>> +   EXCEPTION_COMMON(0x2c0, PACA_EXGEN, INTS_KEEP)=0A=
+>>>> +   addi    r3,r1,STACK_FRAME_OVERHEAD=0A=
+>>>> +   bl      .save_nvgprs=0A=
+>>>> +   INTS_RESTORE_HARD=0A=
+>>>> +   bl      .unknown_exception=0A=
+>>>> +   b       .ret_from_except=0A=
+>>>=0A=
+>>> This is independent of DO_KVM, right?=0A=
+>>=0A=
+>> Yes, just kvm_handler definitions in bookehv_interrupts.S depends on thi=
+s.=0A=
+>=0A=
+>Then please split it out into a separate patch.=0A=
+=0A=
+Can you be more precise, are you referring to guest_doorbell exception hand=
+ler?=0A=
+=0A=
+>>>> -.macro tlb_prolog_bolted addr=0A=
+>>>> +.macro tlb_prolog_bolted intnum addr=0A=
+>>>>     mtspr   SPRN_SPRG_TLB_SCRATCH,r13=0A=
+>>>>     mfspr   r13,SPRN_SPRG_PACA=0A=
+>>>>     std     r10,PACA_EXTLB+EX_TLB_R10(r13)=0A=
+>>>>     mfcr    r10=0A=
+>>>>     std     r11,PACA_EXTLB+EX_TLB_R11(r13)=0A=
+>>>> +#ifdef CONFIG_KVM_BOOKE_HV=0A=
+>>>> +BEGIN_FTR_SECTION=0A=
+>>>> +   mfspr   r11, SPRN_SRR1=0A=
+>>>> +END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)=0A=
+>>>> +#endif=0A=
+>>>=0A=
+>>> This thing really should vanish behind DO_KVM :)=0A=
+>>=0A=
+>> Then let's do it first for 32-bit ;)=0A=
+>=0A=
+>You could #ifdef it in DO_KVM for 64-bit for now. IIRC it's not done on 32=
+-bit because the register value is used even beyond DO_KVM there.=0A=
+=0A=
+Nope, 32-bit code is also guarded by CONFIG_KVM_BOOKE_HV.=0A=
+=0A=
+-Mike=
