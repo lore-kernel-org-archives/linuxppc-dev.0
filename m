@@ -1,29 +1,25 @@
-Return-Path: <B02008@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DBB592C0088
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 04:22:05 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 916982C01CC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 08:21:19 +1000 (EST)
+Message-ID: <1341440465.16808.38.camel@pasglop>
+Subject: Re: [Qemu-ppc] [RFC PATCH 09/17] KVM: PPC64: booke: Hard disable
+ interrupts when entering guest
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Alexander Graf <agraf@suse.de>
-Subject: RE: [Qemu-ppc] [RFC PATCH 15/17] KVM: PPC64: bookehv: Add support
- for interrupt handling
-Date: Wed, 4 Jul 2012 18:21:52 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15A887@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Thu, 05 Jul 2012 08:21:05 +1000
+In-Reply-To: <10CBFB35-5A18-4EA8-A129-58CCC4CFBB83@suse.de>
 References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-16-git-send-email-mihai.caraman@freescale.com>
- <FB7DFF5C-5E14-4202-9180-7968294F6A56@suse.de>
- <300B73AA675FCE4A93EB4FC1D42459FF15A6E8@039-SN2MPN1-013.039d.mgd.msft.net>,
- <5C22DF4D-4F41-4A25-9E01-C69CF02B0C52@suse.de>
-In-Reply-To: <5C22DF4D-4F41-4A25-9E01-C69CF02B0C52@suse.de>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+ <1340627195-11544-10-git-send-email-mihai.caraman@freescale.com>
+ <10CBFB35-5A18-4EA8-A129-58CCC4CFBB83@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "qemu-ppc@nongnu.org List" <qemu-ppc@nongnu.org>,
+ Mihai Caraman <mihai.caraman@freescale.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, KVM list <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,29 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->On 04.07.2012, at 17:37, Caraman Mihai Claudiu-B02008 wrote:=0A=
->=0A=
->>> -----Original Message-----=0A=
->>> From: kvm-ppc-owner@vger.kernel.org [mailto:kvm-ppc-=0A=
->>> owner@vger.kernel.org] On Behalf Of Alexander Graf=0A=
->>> Sent: Wednesday, July 04, 2012 6:14 PM=0A=
->>> To: Caraman Mihai Claudiu-B02008=0A=
->>> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-=0A=
->>> dev@lists.ozlabs.org; qemu-ppc@nongnu.org=0A=
->>> Subject: Re: [Qemu-ppc] [RFC PATCH 15/17] KVM: PPC64: bookehv: Add=0A=
->>> support for interrupt handling=0A=
->>>=0A=
->>> Is this code so vastly different from the 32bit variant that they can't=
-=0A=
->>> be the same with a few simple ifdef's here and there?=0A=
->>=0A=
->> As you can see from input register values things are quite different. I =
-strived=0A=
->> to keep the code common, the only divergence is in the kvm_handler defin=
-itions.=0A=
->=0A=
->What a shame :(. A lot of it looks very very similar.=0A=
-=0A=
-The Devil is in the details ;)=0A=
-=0A=
--Mike=
+On Wed, 2012-07-04 at 16:14 +0200, Alexander Graf wrote:
+> > +#ifdef CONFIG_64BIT
+> > +#define _hard_irq_disable() hard_irq_disable()
+> > +#else
+> > +#define _hard_irq_disable() local_irq_disable()
+> > +#endif
+> 
+> So you only swap out the disable bit, but not the enable one? Ben,
+> would this work out?
+
+hard_irq_disable() both soft and hard disable. local_irq_enable() will
+see that irqs are hard disabled and will hard enable.
+
+However, there's a nastier discrepancy above: local_irq_disable will
+properly inform lockdep that we are disabling, while hard_irq_disable
+won't.
+
+Arguably we might want to fix that inside hard_irq_disable() itself...
+
+Also you need to be careful. If you are coming with interrupts already
+enabled, it's fine, but if you have interrupts soft disabled, then
+you hard disable, before you enter the guest you probably want to
+check if anything was left "pending" and cancel the entering of the
+guest if that is the case.
+
+Cheers,
+Ben.
