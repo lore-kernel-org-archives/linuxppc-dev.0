@@ -1,41 +1,23 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0015A2C007C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 19:29:54 +1000 (EST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Thu, 5 Jul 2012 14:59:50 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q659Tjs27340464
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 14:59:45 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q65ExWrM008946
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jul 2012 00:59:33 +1000
-Message-ID: <1341480578.23916.7.camel@ThinkPad-T420>
-Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
- SLUB is used
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Glauber Costa <glommer@parallels.com>
-Date: Thu, 05 Jul 2012 17:29:38 +0800
-In-Reply-To: <4FF54F18.50300@parallels.com>
-References: <1340617984.13778.37.camel@ThinkPad-T420>
- <1340618099.13778.39.camel@ThinkPad-T420>
- <alpine.DEB.2.00.1207031344240.14703@router.home>
- <alpine.DEB.2.00.1207031535330.14703@router.home>
- <1341392420.18505.41.camel@ThinkPad-T420> <4FF439D0.1000603@parallels.com>
- <1341452486.18505.49.camel@ThinkPad-T420> <4FF54F18.50300@parallels.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <amodra@gmail.com>
+Received: from mail-gh0-f179.google.com (mail-gh0-f179.google.com
+ [209.85.160.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0225E2C007F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 19:43:58 +1000 (EST)
+Received: by ghbg24 with SMTP id g24so7055296ghb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2012 02:43:56 -0700 (PDT)
+Date: Thu, 5 Jul 2012 19:13:48 +0930
+From: Alan Modra <amodra@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: build failure after merge of the final tree
+Message-ID: <20120705094348.GA5805@bubble.grove.modra.org>
+References: <20120705183345.ee84ec1048a19aa1c7129578@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120705183345.ee84ec1048a19aa1c7129578@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,43 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-07-05 at 12:23 +0400, Glauber Costa wrote:
-> On 07/05/2012 05:41 AM, Li Zhong wrote:
-> > On Wed, 2012-07-04 at 16:40 +0400, Glauber Costa wrote:
-> >> On 07/04/2012 01:00 PM, Li Zhong wrote:
-> >>> On Tue, 2012-07-03 at 15:36 -0500, Christoph Lameter wrote:
-> >>>>> Looking through the emails it seems that there is an issue with alias
-> >>>>> strings. 
-> >>> To be more precise, there seems no big issue currently. I just wanted to
-> >>> make following usage of kmem_cache_create (SLUB) possible:
-> >>>
-> >>> 	name = some string kmalloced
-> >>> 	kmem_cache_create(name, ...)
-> >>> 	kfree(name);
-> >>
-> >> Out of curiosity: Why?
-> >> This is not (currently) possible with the other allocators (may change
-> >> with christoph's unification patches), so you would be making your code
-> >> slub-dependent.
-> >>
-> > 
-> > For slub itself, I think it's not good that: in some cases, the name
-> > string could be kfreed ( if it was kmalloced ) immediately after calling
-> > the cache create; in some other case, the name string needs to be kept
-> > valid until some init calls finished. 
-> > 
-> > I agree with you that it would make the code slub-dependent, so I'm now
-> > working on the consistency of the other allocators regarding this name
-> > string duplicating thing. 
+On Thu, Jul 05, 2012 at 06:33:45PM +1000, Stephen Rothwell wrote:
+> powerpc64-linux-ld: drivers/built-in.o: In function `.gpiochip_is_requested':
+> (.text+0x4): sibling call optimization to `_savegpr0_29' does not allow automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling-calls, or make `_savegpr0_29' extern
 > 
-> If you really need to kfree the string, or even if it is easier for you
-> this way, it can be done. As a matter of fact, this is the case for me.
-> Just that your patch is not enough. Christoph has a patch that makes
-> this behavior consistent over all allocators.
+> I got more than 60000 of these messages before I killed the link. :-(  I
+> am not sure what has changed to do this, but it may have been masked for
+> the past few releases due to other linking problems.
 
-Sorry, I didn't know that. Seems I don't need to continue the half-done
-work in slab. If possible, would you please give me a link of the patch?
-Thank you. 
+Let me guess.  You're using bleeding edge gcc but not binutils.
 
-> This just needs to be pushed again to the tree.
-> 
+a) Recent gcc has fixed prologue and epilogue generation which now
+   properly makes use of out-of-line register save and restore
+   functions when compiling with -Os.
+b) Recent ld doesn't emit out-of-line save/restore function for ld -r,
+   but yours does.  You need my 2012-06-22 patch.
+c) Kernel uses ld -r for packaging.
+
+(b) and (c) together mean you get a definition for _savegpr0_29 munged
+together with other functions.  That's bad.  If _savegpr0_29 wasn't
+emitted until the final link stage then it would be in a code section
+containing just save/restore functions.  ld will analyse that section
+and notice the absense of toc relocations; functions therein don't
+use the toc and can thus be called from any toc group without needing
+a toc adjusting stub.  In your case _savegpr0_29 is in a section that
+has toc relocations (from normal compiled code), so ld decides that
+any function in that section must have a proper value for the toc
+register.  But calls to _savegpr0_29 don't have a following nop to
+overwrite with a toc restore insn, hence the ld error.
+
+Score another black mark for ld -r.
+
+-- 
+Alan Modra
+Australia Development Lab, IBM
