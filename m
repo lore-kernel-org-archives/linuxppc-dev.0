@@ -1,28 +1,28 @@
-Return-Path: <glommer@parallels.com>
-Received: from mx2.parallels.com (mx2.parallels.com [64.131.90.16])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 83D032C0209
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:26:39 +1000 (EST)
-Message-ID: <4FF54F18.50300@parallels.com>
-Date: Thu, 5 Jul 2012 12:23:52 +0400
-From: Glauber Costa <glommer@parallels.com>
-MIME-Version: 1.0
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
- SLUB is used
-References: <1340617984.13778.37.camel@ThinkPad-T420>
- <1340618099.13778.39.camel@ThinkPad-T420>
- <alpine.DEB.2.00.1207031344240.14703@router.home>
- <alpine.DEB.2.00.1207031535330.14703@router.home>
- <1341392420.18505.41.camel@ThinkPad-T420> <4FF439D0.1000603@parallels.com>
- <1341452486.18505.49.camel@ThinkPad-T420>
-In-Reply-To: <1341452486.18505.49.camel@ThinkPad-T420>
-Content-Type: text/plain; charset="UTF-8"
-Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BE5352C01BC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:29:09 +1000 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 5 Jul 2012 09:01:33 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q658EUkc6423030
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:31 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q658EUXL026047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:30 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH -V2 0/9] arch/powerpc: Add 64TB support to ppc64   
+Date: Thu,  5 Jul 2012 13:44:09 +0530
+Message-Id: <1341476058-5405-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +32,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/05/2012 05:41 AM, Li Zhong wrote:
-> On Wed, 2012-07-04 at 16:40 +0400, Glauber Costa wrote:
->> On 07/04/2012 01:00 PM, Li Zhong wrote:
->>> On Tue, 2012-07-03 at 15:36 -0500, Christoph Lameter wrote:
->>>>> Looking through the emails it seems that there is an issue with alias
->>>>> strings. 
->>> To be more precise, there seems no big issue currently. I just wanted to
->>> make following usage of kmem_cache_create (SLUB) possible:
->>>
->>> 	name = some string kmalloced
->>> 	kmem_cache_create(name, ...)
->>> 	kfree(name);
->>
->> Out of curiosity: Why?
->> This is not (currently) possible with the other allocators (may change
->> with christoph's unification patches), so you would be making your code
->> slub-dependent.
->>
-> 
-> For slub itself, I think it's not good that: in some cases, the name
-> string could be kfreed ( if it was kmalloced ) immediately after calling
-> the cache create; in some other case, the name string needs to be kept
-> valid until some init calls finished. 
-> 
-> I agree with you that it would make the code slub-dependent, so I'm now
-> working on the consistency of the other allocators regarding this name
-> string duplicating thing. 
+Hi,
 
-If you really need to kfree the string, or even if it is easier for you
-this way, it can be done. As a matter of fact, this is the case for me.
-Just that your patch is not enough. Christoph has a patch that makes
-this behavior consistent over all allocators.
+This patchset include patches for supporting 64TB with ppc64. I haven't booted
+this on hardware with 64TB memory yet. But they boot fine on real hardware with
+less memory. Changes extend VSID bits to 38 bits for a 256MB segment
+and 26 bits for 1TB segments. 
 
-This just needs to be pushed again to the tree.
+Changes from V1:
+* Drop the usage of structure (struct virt_addr) to carry virtual address.
+  We now represent virtual address via vpn which is virtual address shifted 
+  right 12 bits.
+
+Thanks,
+-aneesh
