@@ -1,40 +1,20 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 19B222C01BC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 11:41:36 +1000 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Thu, 5 Jul 2012 07:11:32 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q651fTdZ000394
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 07:11:29 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q657BGNn028650
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 17:11:17 +1000
-Message-ID: <1341452486.18505.49.camel@ThinkPad-T420>
-Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
- SLUB is used
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Glauber Costa <glommer@parallels.com>
-Date: Thu, 05 Jul 2012 09:41:26 +0800
-In-Reply-To: <4FF439D0.1000603@parallels.com>
-References: <1340617984.13778.37.camel@ThinkPad-T420>
- <1340618099.13778.39.camel@ThinkPad-T420>
- <alpine.DEB.2.00.1207031344240.14703@router.home>
- <alpine.DEB.2.00.1207031535330.14703@router.home>
- <1341392420.18505.41.camel@ThinkPad-T420> <4FF439D0.1000603@parallels.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 17B6C2C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 15:37:41 +1000 (EST)
+Date: Thu, 5 Jul 2012 15:37:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alexander Graf <agraf@suse.de>
+Subject: linux-next: manual merge of the kvm-ppc tree with Linus' tree
+Message-Id: <20120705153728.19e2318efa0cfb0eedecc4f1@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__5_Jul_2012_15_37_28_+1000_YjxlVTSD630I0fVd"
+Cc: linux-kernel@vger.kernel.org, Stuart Yoder <stuart.yoder@freescale.com>,
+ Tiejun Chen <tiejun.chen@windriver.com>, linux-next@vger.kernel.org,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,29 +24,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-07-04 at 16:40 +0400, Glauber Costa wrote:
-> On 07/04/2012 01:00 PM, Li Zhong wrote:
-> > On Tue, 2012-07-03 at 15:36 -0500, Christoph Lameter wrote:
-> >> > Looking through the emails it seems that there is an issue with alias
-> >> > strings. 
-> > To be more precise, there seems no big issue currently. I just wanted to
-> > make following usage of kmem_cache_create (SLUB) possible:
-> > 
-> > 	name = some string kmalloced
-> > 	kmem_cache_create(name, ...)
-> > 	kfree(name);
-> 
-> Out of curiosity: Why?
-> This is not (currently) possible with the other allocators (may change
-> with christoph's unification patches), so you would be making your code
-> slub-dependent.
-> 
+--Signature=_Thu__5_Jul_2012_15_37_28_+1000_YjxlVTSD630I0fVd
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-For slub itself, I think it's not good that: in some cases, the name
-string could be kfreed ( if it was kmalloced ) immediately after calling
-the cache create; in some other case, the name string needs to be kept
-valid until some init calls finished. 
+Hi Alexander,
 
-I agree with you that it would make the code slub-dependent, so I'm now
-working on the consistency of the other allocators regarding this name
-string duplicating thing. 
+Today's linux-next merge of the kvm-ppc tree got a conflict in
+arch/powerpc/kernel/entry_64.S between commit c58ce2b1e3c7 ("ppc64: fix
+missing to check all bits of _TIF_USER_WORK_MASK in preempt") from Linus'
+tree and commit bc8cc4993e19 ("PPC: use CURRENT_THREAD_INFO instead of
+open coded assembly") from the kvm-ppc tree.
+
+Just context changes.  I fixed it up (see below) and can carry the fix as
+necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/powerpc/kernel/entry_64.S
+index cf38a17,ba943b9..0000000
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@@ -559,54 -558,27 +559,54 @@@ _GLOBAL(ret_from_except_lite
+  	mtmsrd	r10,1		  /* Update machine state */
+  #endif /* CONFIG_PPC_BOOK3E */
+ =20
+- 	clrrdi	r9,r1,THREAD_SHIFT	/* current_thread_info() */
+ -#ifdef CONFIG_PREEMPT
++ 	CURRENT_THREAD_INFO(r9, r1)
+ -	li	r0,_TIF_NEED_RESCHED	/* bits to check */
+  	ld	r3,_MSR(r1)
+  	ld	r4,TI_FLAGS(r9)
+ -	/* Move MSR_PR bit in r3 to _TIF_SIGPENDING position in r0 */
+ -	rlwimi	r0,r3,32+TIF_SIGPENDING-MSR_PR_LG,_TIF_SIGPENDING
+ -	and.	r0,r4,r0	/* check NEED_RESCHED and maybe SIGPENDING */
+ -	bne	do_work
+ -
+ -#else /* !CONFIG_PREEMPT */
+ -	ld	r3,_MSR(r1)	/* Returning to user mode? */
+  	andi.	r3,r3,MSR_PR
+ -	beq	restore		/* if not, just restore regs and return */
+ +	beq	resume_kernel
+ =20
+  	/* Check current_thread_info()->flags */
+ +	andi.	r0,r4,_TIF_USER_WORK_MASK
+ +	beq	restore
+ +
+ +	andi.	r0,r4,_TIF_NEED_RESCHED
+ +	beq	1f
+ +	bl	.restore_interrupts
+ +	bl	.schedule
+ +	b	.ret_from_except_lite
+ +
+ +1:	bl	.save_nvgprs
+ +	bl	.restore_interrupts
+ +	addi	r3,r1,STACK_FRAME_OVERHEAD
+ +	bl	.do_notify_resume
+ +	b	.ret_from_except
+ +
+ +resume_kernel:
+ +#ifdef CONFIG_PREEMPT
+ +	/* Check if we need to preempt */
+ +	andi.	r0,r4,_TIF_NEED_RESCHED
+ +	beq+	restore
+ +	/* Check that preempt_count() =3D=3D 0 and interrupts are enabled */
+ +	lwz	r8,TI_PREEMPT(r9)
+ +	cmpwi	cr1,r8,0
+ +	ld	r0,SOFTE(r1)
+ +	cmpdi	r0,0
+ +	crandc	eq,cr1*4+eq,eq
+ +	bne	restore
+ +
+ +	/*
+ +	 * Here we are preempting the current task. We want to make
+ +	 * sure we are soft-disabled first
+ +	 */
+ +	SOFT_DISABLE_INTS(r3,r4)
+ +1:	bl	.preempt_schedule_irq
+ +
+ +	/* Re-test flags and eventually loop */
+- 	clrrdi	r9,r1,THREAD_SHIFT
++ 	CURRENT_THREAD_INFO(r9, r1)
+  	ld	r4,TI_FLAGS(r9)
+ -	andi.	r0,r4,_TIF_USER_WORK_MASK
+ -	bne	do_work
+ -#endif /* !CONFIG_PREEMPT */
+ +	andi.	r0,r4,_TIF_NEED_RESCHED
+ +	bne	1b
+ +#endif /* CONFIG_PREEMPT */
+ =20
+  	.globl	fast_exc_return_irq
+  fast_exc_return_irq:
+
+--Signature=_Thu__5_Jul_2012_15_37_28_+1000_YjxlVTSD630I0fVd
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJP9SgYAAoJEECxmPOUX5FE5TEP/jwozfX4TVhoqhThdEQI8w0W
+oRscf1EedAzupKLj2rLiDZfe2AUlxCVOSY37CcoLBx87zVlXowTcHZkS3J6ihWtO
+YsaZUMmd8fuTBfVppQOflAEzmXjYln8ye/XGgwij4cn8P3hmisPY+NhgudHMmvph
+WES/Or9ZYf4ikAH6A413VivaTM2zy+IghboJ0vhhOx2mXBpMM0wT6fK0vAD7srex
+ZqQ8mnTnSW5yyZ1O/B4hFowMlj2cTsoruxUV5UJ07SlUIvTQUsRb6fcIOQoM21Mu
+e89lMTLy6uFV5wOT6CVFkkNSAOniO7eSGfiMLLFljgWyFU8muPcF2UDuB7d6rUM2
+yQkveN8oTsVhY6GNDukrYARIOgs0PNGVmQDXvBjqm5gRVVsebst3U6kSw2ty7mcD
+kplYcG7g87y2FgcsF5GQJNf8f2r845qY2nS0KlAyqAvcZylZ4nLIiMyI1Gk9bz9T
+ijWmHPMfAtRUPCre81dW96+48RCuT6A6tMTZpOdolsflibHD8urPw1MlxreHKUvH
+hYZx7r7H3bMKSJcIey64GkEv+WRY9vV4hVVoo8+1SpACm/YNO2mCIuW5/9V2RWyL
+SNL18HTlWHWzwp1rFyRORgGeAVg46WRr6VrrI9alhwWsI/ydZPxuUBObjrIVzn6e
+J/jngMB/sS/DMsbVFQyV
+=O7Ve
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__5_Jul_2012_15_37_28_+1000_YjxlVTSD630I0fVd--
