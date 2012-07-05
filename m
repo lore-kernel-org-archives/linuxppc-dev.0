@@ -1,27 +1,27 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4FE622C01FA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:14:57 +1000 (EST)
+ (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A26392C0201
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:15:00 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 5 Jul 2012 08:04:54 +1000
+ Thu, 5 Jul 2012 07:54:46 +1000
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q658EWnh63373464
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:32 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6586nSu58064916
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:06:49 +1000
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q658EVi4026097
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:32 +1000
+ q658EXJH026143
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:33 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 1/9] arch/powerpc: Use hpt_va to compute virtual address
-Date: Thu,  5 Jul 2012 13:44:10 +0530
-Message-Id: <1341476058-5405-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 2/9] arch/powerpc: Simplify hpte_decode
+Date: Thu,  5 Jul 2012 13:44:11 +0530
+Message-Id: <1341476058-5405-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1341476058-5405-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1341476058-5405-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -37,25 +37,88 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Don't open code the same
+This patch simplify hpte_decode for easy switching of virtual address to
+virtual page number in the later patch
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/cell/beat_htab.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/mm/hash_native_64.c |   49 ++++++++++++++++++++++----------------
+ 1 file changed, 28 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
-index 943c9d3..b83077e 100644
---- a/arch/powerpc/platforms/cell/beat_htab.c
-+++ b/arch/powerpc/platforms/cell/beat_htab.c
-@@ -259,7 +259,7 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
- 	u64 dummy0, dummy1;
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 90039bc..660b8bb 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -351,9 +351,10 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long va,
+ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			int *psize, int *ssize, unsigned long *va)
+ {
++	unsigned long avpn, pteg, vpi;
+ 	unsigned long hpte_r = hpte->r;
+ 	unsigned long hpte_v = hpte->v;
+-	unsigned long avpn;
++	unsigned long vsid, seg_off;
+ 	int i, size, shift, penc;
  
- 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
--	va = (vsid << 28) | (ea & 0x0fffffff);
-+	va = hpt_va(ea, vsid, MMU_SEGSIZE_256M);
+ 	if (!(hpte_v & HPTE_V_LARGE))
+@@ -380,32 +381,38 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 	}
  
- 	raw_spin_lock(&beat_htab_lock);
- 	slot = beat_lpar_hpte_find(va, psize);
+ 	/* This works for all page sizes, and for 256M and 1T segments */
++	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ 	shift = mmu_psize_defs[size].shift;
+-	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm) << 23;
+-
+-	if (shift < 23) {
+-		unsigned long vpi, vsid, pteg;
+ 
+-		pteg = slot / HPTES_PER_GROUP;
+-		if (hpte_v & HPTE_V_SECONDARY)
+-			pteg = ~pteg;
+-		switch (hpte_v >> HPTE_V_SSIZE_SHIFT) {
+-		case MMU_SEGSIZE_256M:
+-			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
+-			break;
+-		case MMU_SEGSIZE_1T:
+-			vsid = avpn >> 40;
++	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm);
++	pteg = slot / HPTES_PER_GROUP;
++	if (hpte_v & HPTE_V_SECONDARY)
++		pteg = ~pteg;
++
++	switch (*ssize) {
++	case MMU_SEGSIZE_256M:
++		/* We only have 28 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1f) << 23;
++		vsid    =  avpn >> 5;
++		/* We can find more bits from the pteg value */
++		if (shift < 23) {
++			vpi = (vsid ^ pteg) & htab_hash_mask;
++			seg_off |= vpi << shift;
++		}
++		*va = vsid << SID_SHIFT | seg_off;
++	case MMU_SEGSIZE_1T:
++		/* We only have 40 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1ffff) << 23;
++		vsid    = avpn >> 17;
++		if (shift < 23) {
+ 			vpi = (vsid ^ (vsid << 25) ^ pteg) & htab_hash_mask;
+-			break;
+-		default:
+-			avpn = vpi = size = 0;
++			seg_off |= vpi << shift;
+ 		}
+-		avpn |= (vpi << mmu_psize_defs[size].shift);
++		*va = vsid << SID_SHIFT_1T | seg_off;
++	default:
++		*va = size = 0;
+ 	}
+-
+-	*va = avpn;
+ 	*psize = size;
+-	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ }
+ 
+ /*
 -- 
 1.7.10
