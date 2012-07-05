@@ -1,23 +1,28 @@
-Return-Path: <B04825@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+Return-Path: <B02008@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A5EB62C04B4
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 01:31:37 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Zhao Chenhui-B35336 <B35336@freescale.com>
-Subject: Re: [PATCH v7 1/5] powerpc/85xx: implement hardware timebase sync
-Date: Thu, 5 Jul 2012 15:31:26 +0000
-Message-ID: <CAOZdJXWCMXxre+NaAjbaUJn8tgUfDHkLs868hjdJbHbKcnAvQA@mail.gmail.com>
-References: <1341310879-5468-1-git-send-email-chenhui.zhao@freescale.com>
-In-Reply-To: <1341310879-5468-1-git-send-email-chenhui.zhao@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+ by ozlabs.org (Postfix) with ESMTPS id 075C42C020C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 01:51:37 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [RFC PATCH 13/17] PowerPC: booke64: Use SPRG0/3 scratch for
+ bolted TLB miss & crit int
+Date: Thu, 5 Jul 2012 15:51:27 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15B8B5@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
+ <1340627195-11544-14-git-send-email-mihai.caraman@freescale.com>
+ <1340748983.3732.32.camel@pasglop>
+In-Reply-To: <1340748983.3732.32.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
+Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
+ Anton Blanchard <anton@au1.ibm.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,19 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 3, 2012 at 5:21 AM, Zhao Chenhui <chenhui.zhao@freescale.com> w=
-rote:
-> Do hardware timebase sync. Firstly, stop all timebases, and transfer
-> the timebase value of the boot core to the other core. Finally,
-> start all timebases.
->
-> Only apply to dual-core chips, such as MPC8572, P2020, etc.
->
-> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-
-Acked-by: Timur Tabi <timur@freescale.com>
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2ht
+aWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBXZWRuZXNkYXks
+IEp1bmUgMjcsIDIwMTIgMToxNiBBTQ0KPiBUbzogQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAw
+OA0KPiBDYzoga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGxp
+bnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgcWVtdS1wcGNAbm9uZ251Lm9yZzsgQW50
+b24gQmxhbmNoYXJkDQo+IFN1YmplY3Q6IFJlOiBbUkZDIFBBVENIIDEzLzE3XSBQb3dlclBDOiBi
+b29rZTY0OiBVc2UgU1BSRzAvMyBzY3JhdGNoIGZvcg0KPiBib2x0ZWQgVExCIG1pc3MgJiBjcml0
+IGludA0KPiANCj4gT24gTW9uLCAyMDEyLTA2LTI1IGF0IDE1OjI2ICswMzAwLCBNaWhhaSBDYXJh
+bWFuIHdyb3RlOg0KPiA+IEVtYmVkZGVkLkh5cGVydmlzb3IgY2F0ZWdvcnkgZGVmaW5lcyBHU1BS
+RzAuLjMgcGh5c2ljYWwgcmVnaXN0ZXJzIGZvcg0KPiBndWVzdHMuDQo+ID4gQXZvaWQgU1BSRzQt
+NyB1c2FnZSBhcyBzY3JhdGNoIGluIGhvc3QgZXhjZXB0aW9uIGhhbmRsZXJzLCBvdGhlcndpc2UN
+Cj4gZ3Vlc3QNCj4gPiBTUFJHNC03IHJlZ2lzdGVycyB3aWxsIGJlIGNsb2JiZXJlZC4NCj4gPiBG
+b3IgYm9sdGVkIFRMQiBtaXNzIGV4Y2VwdGlvbiBoYW5kbGVycywgd2hpY2ggaXMgdGhlIHZlcnNp
+b24gY3VycmVudGx5DQo+ID4gc3VwcG9ydGVkIGJ5IEtWTSwgdXNlIFNQUk5fU1BSR19HRU5fU0NS
+QVRDSCAoYWthIFNQUkcwKSBpbnN0ZWFkIG9mDQo+ID4gU1BSTl9TUFJHX1RMQl9TQ1JBVENIIChh
+a2EgU1BSRzYpIGFuZCByZXBsYWNlIFRMQiB3aXRoIEdFTiBQQUNBIHNsb3RzDQo+IHRvDQo+ID4g
+a2VlcCBjb25zaXRlbmN5Lg0KPiA+IEZvciBjcml0aWNhbCBleGNlcHRpb24gaGFuZGxlciB1c2Ug
+U1BSRzMgaW5zdGVhZCBvZiBTUFJHNy4NCj4gDQo+IEJld2FyZSB3aXRoIFNQUkczIHVzYWdlLiBJ
+dCdzIHVzZXIgc3BhY2UgdmlzaWJsZSBhbmQgd2UgcGxhbiB0byB1c2UgaXQNCj4gZm9yIG90aGVy
+IHRoaW5ncyAoc2VlIEFudG9uJ3MgcGF0Y2ggdG8gc3RpY2sgdG9wb2xvZ3kgaW5mb3JtYXRpb24g
+aW4NCj4gdGhlcmUgZm9yIHVzZSBieSB0aGUgdmRzbykuIElmIHlvdSBjbG9iYmVyIGl0LCB5b3Ug
+bWF5IHdhbnQgdG8gcmVzdG9yZQ0KPiBpdCBsYXRlci4NCg0KSW4gYm9va2UzZSBjYXNlIFNQUkcz
+IHdpbGwgbm90IGJlIGNsb2JiZXJlZCBieSB0aGUgZ3Vlc3RzIHdoaWNoIGFjY2VzcyBHU1BSRzMs
+DQpidXQgYnkgdGhlIGhvc3QgZXhjZXB0aW9uIGhhbmRsZXIuIFRoaXMgbWVhbnMgdGhhdCB3ZSB3
+aWxsIGhhdmUgdG8gcmVzdG9yZSBTUFJHMw0KZXZlbiBpbiB0aGUgYWJzZW5jZSBvZiBLVk0uDQoN
+Ck15IHByb3Bvc2FsIGlzIHRvIGFkZCBhIFBBQ0Egc2xvdCBmb3IgcjEzIGFuZCBzYXZlIGl0IGlu
+IHRoZSBzYW1lIHdheSB5b3UgZGlkIHdpdGgNCnIxMiBpbiBUTEJfTUlTU19QUk9MT0cuIFRoZW4g
+d2UgY2FuIHJlc3RvcmUgU1BSRzMgcmlnaHQgaW4gdGhlIHByb2xvZyB0aHVzIGFsc28NCmF2b2lk
+aW5nIHRvIGRlYWwgd2l0aCBpdCBpbiBLVk0uDQoNClRoZSBFWENFUFRJT05fUFJPTE9HIGlzIGEg
+Y29tbW9uIGRlZmluZSBmb3IgR0VOL0RCRy9DUklUL01DLCB3ZSB1c2UgYWRkaXRpb24gZGVmaW5l
+cw0KdG8gc3BlY2lhbGl6ZSBqdXN0IHRoZSBDUklUIGNhc2UuDQoNCj4gSSB0aGluayBBbnRvbidz
+IHBhdGNoIHNob3VsZCBwdXQgdGhlICJwcm9wZXIiIHZhbHVlIHdlIHdhbnQgaW4gdGhlIFBBQ0EN
+Cj4gYW55d2F5IHNpbmNlIHdlIGFsc28gbmVlZCB0byByZXN0b3JlIGl0IG9uIGV4aXQgZnJvbSBL
+Vk0sIHNvIHlvdSBjYW4NCj4gc3RpbGwgdXNlIGl0IGFzIHNjcmF0Y2gsIGp1c3QgcmVzdG9yZSB0
+aGUgdmFsdWUgYmVmb3JlIGdvaW5nIHRvIEMuDQoNCkkganVzdCBzYXcgbGFzdCBpdGVyYXRpb24g
+b2YgQW50b24ncyB2c2RvIHBhdGNoIHRoYXQgbWF0Y2hlcyB5b3VyIGRlc2NyaXB0aW9uLg0KDQpD
+aGVlcnMsDQotTWlrZQ0K
