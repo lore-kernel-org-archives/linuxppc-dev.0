@@ -1,36 +1,27 @@
-Return-Path: <kay@vrfy.org>
-Received: from mail-gg0-f170.google.com (mail-gg0-f170.google.com
- [209.85.161.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 206362C01BC
- for <linuxppc-dev@ozlabs.org>; Thu,  5 Jul 2012 18:54:22 +1000 (EST)
-Received: by ggnf2 with SMTP id f2so6562574ggn.15
- for <linuxppc-dev@ozlabs.org>; Thu, 05 Jul 2012 01:54:19 -0700 (PDT)
+Return-Path: <B02008@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8547A2C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 21:14:40 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: RE: [Qemu-ppc] [RFC PATCH 05/17] KVM: PPC: booke: Extend MAS2 EPN
+ mask for 64-bit
+Date: Thu, 5 Jul 2012 11:14:28 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15B15F@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
+ <1340627195-11544-6-git-send-email-mihai.caraman@freescale.com>
+ <D3F90478-D3C9-4699-ADFD-CE752D9A569F@suse.de>
+In-Reply-To: <D3F90478-D3C9-4699-ADFD-CE752D9A569F@suse.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
-References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
- <20120625150722.8cd4f45d.akpm@linux-foundation.org>
- <20120625235531.GB3652@kroah.com>
- <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
- <20120626002307.GA4389@kroah.com>
- <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
- <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
- <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
- <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
- <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
-From: Kay Sievers <kay@vrfy.org>
-Date: Thu, 5 Jul 2012 10:53:56 +0200
-Message-ID: <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
-Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-To: Michael Neuling <mikey@neuling.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- Wu Fengguang <fengguang.wu@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,54 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 5, 2012 at 10:39 AM, Kay Sievers <kay@vrfy.org> wrote:
-> On Thu, Jul 5, 2012 at 9:03 AM, Michael Neuling <mikey@neuling.org> wrote:
->>> On Mon, 2012-06-25 at 18:40 -0700, Linus Torvalds wrote:
->
->>> > I think it might be a great idea to buffer for logging in order to
->>> > generate one individual buffer record there.
->>> >
->>> > But it needs to be printed as it is generated.
->>>
->>> That's a good idea.
->>>
->>> Something like this could work - only minimally tested at this moment.
->>
->> This breaks some powerpc configs and is in Linus' tree now as
->> 084681d14e.
->>
->> When we have printks without a newline (like show_regs()), it
->> sometimes:
->
-> x86 has that a lot too.
->
->> 1) drops the console output for that line (dmesg is fine).  Patch to fix
->>    this below.
->
-> That doesn't look right. We should already have put that out to the
-> console, and we only want to store it away. Your patch, as expected,
-> duplicates all the continuation lines on the console here:
-> [    0.674957] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
-> [    0.674957] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
->
->> 2) adds a newline unnecessary to both console and dmesg.  I have no fix
->>    for this currently.
->> Reverting this patch fixes both problems.
->
-> Not here. I can't reproduce any of this here, it all looks fine.
->
-> Is that possibly some early printk() or other console trickery on ppc
-> that produces the issue?
 
-Or, are you really sure this isn't just a race with another printk and
-the content got merged with some other line of the output? The added
-newline you mention could suggest that.
 
-With the buffering for the console output removed, I see garbled
-console output here too (like we always had before the new kmsg) when
-continuation printks race against printks from any other process. That
-was all gone with the buffering (only two continuation prints would
-race, not any other), but we needed to skip buffering the console
-output for other, more important reasons.
+> -----Original Message-----
+> From: Alexander Graf [mailto:agraf@suse.de]
+> Sent: Wednesday, July 04, 2012 4:50 PM
+> To: Caraman Mihai Claudiu-B02008
+> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; qemu-ppc@nongnu.org
+> Subject: Re: [Qemu-ppc] [RFC PATCH 05/17] KVM: PPC: booke: Extend MAS2
+> EPN mask for 64-bit
+>=20
+>=20
+> On 25.06.2012, at 14:26, Mihai Caraman wrote:
+>=20
+> > Extend MAS2 EPN mask for 64-bit hosts, to retain most significant bits.
+> > Change get tlb eaddr to use this mask.
+>=20
+> Please see section 6.11.4.8 in the PowerISA 2.06b:
+>=20
+> MMU behavior is largely unaffected by whether the thread is in 32-bit
+> computation mode (MSRCM=3D0) or 64- bit computation mode (MSRCM=3D1). The
+> only differ- ences occur in the EPN field of the TLB entry and the EPN
+> field of MAS2. The differences are summarized here.
+>=20
+> 	*  Executing a tlbwe instruction in 32-bit mode will set bits 0:31
+> of the TLB EPN field to zero unless MAS0ATSEL is set, in which case those
+> bits are not written to zero.
+> 	*  In 32-bit implementations, MAS2U can be used to read or write
+> EPN0:31 of MAS2.
+>=20
+> So if MSR.CM is not set tlbwe should mask the upper 32 bits out - which
+> can happen regardless of CONFIG_64BIT.
 
-Kay
+MAS2_EPN reflects EPN field of MAS2 aka bits 0:51 (for MAV =3D 1.0) accordi=
+ng
+to section 6.10.3.10 in the PowerISA 2.06b.
+
+MAS2_EPN is not used in tlbwe execution emulation, we have MAS2_VAL define
+for this case.
+
+> Also, we need to implement MAS2U, to potentially make the upper 32bits of
+> MAS2 available, right? But that one isn't as important as the first bit.
+
+MAS2U is guest privileged why does it need special care?
+
+Freescale core Manuals and EREF does not mention MAS2U so I think I our cas=
+e
+it is not implemented.
+
+-Mike
