@@ -1,20 +1,19 @@
-Return-Path: <B08248@freescale.com>
+Return-Path: <B04825@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 075302C01FF
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 00:41:46 +1000 (EST)
-From: Stuart Yoder <stuart.yoder@freescale.com>
-To: <agraf@suse.de>, <linuxppc-dev@lists.ozlabs.org>,
- <benh@kernel.crashing.org>
-Subject: [PATCH v4] PPC: use CURRENT_THREAD_INFO instead of open coded assembly
-Date: Thu, 5 Jul 2012 09:41:35 -0500
-Message-ID: <1341499295-10795-1-git-send-email-stuart.yoder@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id B35F52C01FA
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2012 01:08:36 +1000 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/85xx: use the BRx registers to enable indirect mode
+ on the P1022DS
+Date: Thu, 5 Jul 2012 10:08:28 -0500
+Message-ID: <1341500908-22384-1-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: sfr@canb.auug.org.au, Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,447 +23,224 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stuart Yoder <stuart.yoder@freescale.com>
+In order to enable the DIU video controller on the P1022DS, the FPGA needs
+to be switched to "indirect mode", where the localbus is disabled and
+the FPGA is accessed via writes to localbus chip select signals CS0 and CS1.
 
-Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+To obtain the address of CS0 and CS1, the platform driver uses an "indirect
+pixis mode" device tree node.  This node assumes that the localbus 'ranges'
+property is sorted in chip-select order.  That is, reg value 0 maps to
+CS0, reg value 1 maps to CS1, etc.  This is how the 'ranges' property is
+supposed to be arranged.
+
+Unfortunately, the 'ranges' property is often mis-arranged, and not just on
+the P1022DS.  Linux normally does not care, since it does not program the
+localbus.  But the indirect-mode code on the P1022DS does care.
+
+The "proper" fix is to have U-Boot fix the 'ranges' property, but this would
+be too cumbersome.  The names and 'reg' properties of all the localbus
+devices would also need to be updated, and determining which localbus device
+maps to which chip select is board-specific.
+
+Instead, we determine the CS0/CS1 base addresses the same way that U-boot
+does -- by reading the BRx registers directly and mapping them to physical
+addresses.  This code is simpler and more reliable, and it does not require
+a U-boot or device tree change.
+
+Since the indirect pixis device tree node is no longer needed, the node is
+deleted from the DTS.
+
+Signed-off-by: Timur Tabi <timur@freescale.com>
 ---
--v4: fixed build issues in exception-64s.h and exceptions-64s.S
+ arch/powerpc/boot/dts/p1022ds.dtsi     |   16 -----
+ arch/powerpc/platforms/85xx/p1022_ds.c |  106 ++++++++++++++++++++++++++++----
+ 2 files changed, 93 insertions(+), 29 deletions(-)
 
- arch/powerpc/include/asm/exception-64s.h |    4 ++--
- arch/powerpc/include/asm/thread_info.h   |    6 ++++++
- arch/powerpc/kernel/entry_32.S           |   24 ++++++++++++------------
- arch/powerpc/kernel/entry_64.S           |   14 +++++++-------
- arch/powerpc/kernel/exceptions-64e.S     |    2 +-
- arch/powerpc/kernel/exceptions-64s.S     |    2 +-
- arch/powerpc/kernel/head_fsl_booke.S     |    2 +-
- arch/powerpc/kernel/idle_6xx.S           |    4 ++--
- arch/powerpc/kernel/idle_book3e.S        |    2 +-
- arch/powerpc/kernel/idle_e500.S          |    4 ++--
- arch/powerpc/kernel/idle_power4.S        |    2 +-
- arch/powerpc/kernel/misc_32.S            |    4 ++--
- arch/powerpc/kvm/bookehv_interrupts.S    |    6 +-----
- arch/powerpc/mm/hash_low_32.S            |    8 ++++----
- arch/powerpc/sysdev/6xx-suspend.S        |    2 +-
- 15 files changed, 44 insertions(+), 42 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index d58fc4e..a43c147 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -293,7 +293,7 @@ label##_hv:								\
+diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi b/arch/powerpc/boot/dts/p1022ds.dtsi
+index 7cdb505..1b0673e 100644
+--- a/arch/powerpc/boot/dts/p1022ds.dtsi
++++ b/arch/powerpc/boot/dts/p1022ds.dtsi
+@@ -33,22 +33,6 @@
+  */
  
- #define RUNLATCH_ON				\
- BEGIN_FTR_SECTION				\
--	clrrdi	r3,r1,THREAD_SHIFT;		\
-+	CURRENT_THREAD_INFO(r3, r1);		\
- 	ld	r4,TI_LOCAL_FLAGS(r3);		\
- 	andi.	r0,r4,_TLF_RUNLATCH;		\
- 	beql	ppc64_runlatch_on_trampoline;	\
-@@ -332,7 +332,7 @@ label##_common:							\
- #ifdef CONFIG_PPC_970_NAP
- #define FINISH_NAP				\
- BEGIN_FTR_SECTION				\
--	clrrdi	r11,r1,THREAD_SHIFT;		\
-+	CURRENT_THREAD_INFO(r11, r1);		\
- 	ld	r9,TI_LOCAL_FLAGS(r11);		\
- 	andi.	r10,r9,_TLF_NAPPING;		\
- 	bnel	power4_fixup_nap;		\
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 68831e9..faf9352 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -22,6 +22,12 @@
+ &board_lbc {
+-	/*
+-	 * This node is used to access the pixis via "indirect" mode,
+-	 * which is done by writing the pixis register index to chip
+-	 * select 0 and the value to/from chip select 1.  Indirect
+-	 * mode is the only way to access the pixis when DIU video
+-	 * is enabled.  Note that this assumes that the first column
+-	 * of the 'ranges' property above is the chip select number.
+-	 */
+-	board-control@0,0 {
+-		compatible = "fsl,p1022ds-indirect-pixis";
+-		reg = <0x0 0x0 1	/* CS0 */
+-		       0x1 0x0 1>;	/* CS1 */
+-		interrupt-parent = <&mpic>;
+-		interrupts = <8 0 0 0>;
+-	};
+-
+ 	nor@0,0 {
+ 		#address-cells = <1>;
+ 		#size-cells = <1>;
+diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+index f700c81..978330c 100644
+--- a/arch/powerpc/platforms/85xx/p1022_ds.c
++++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+@@ -27,6 +27,7 @@
+ #include <sysdev/fsl_pci.h>
+ #include <asm/udbg.h>
+ #include <asm/fsl_guts.h>
++#include <asm/fsl_lbc.h>
+ #include "smp.h"
  
- #define THREAD_SIZE		(1 << THREAD_SHIFT)
+ #include "mpc85xx.h"
+@@ -142,17 +143,73 @@ static void p1022ds_set_gamma_table(enum fsl_diu_monitor_port port,
+ {
+ }
  
-+#ifdef CONFIG_PPC64
-+#define CURRENT_THREAD_INFO(dest, sp)	clrrdi dest, sp, THREAD_SHIFT
-+#else
-+#define CURRENT_THREAD_INFO(dest, sp)	rlwinm dest, sp, 0, 0, 31-THREAD_SHIFT
-+#endif
++struct fsl_law {
++	u32	lawbar;
++	u32	reserved1;
++	u32	lawar;
++	u32	reserved[5];
++};
 +
- #ifndef __ASSEMBLY__
- #include <linux/cache.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index ba3aeb4..bad42e3 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -92,7 +92,7 @@ crit_transfer_to_handler:
- 	mfspr	r8,SPRN_SPRG_THREAD
- 	lwz	r0,KSP_LIMIT(r8)
- 	stw	r0,SAVED_KSP_LIMIT(r11)
--	rlwimi	r0,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r0, r1)
- 	stw	r0,KSP_LIMIT(r8)
- 	/* fall through */
- #endif
-@@ -112,7 +112,7 @@ crit_transfer_to_handler:
- 	mfspr	r8,SPRN_SPRG_THREAD
- 	lwz	r0,KSP_LIMIT(r8)
- 	stw	r0,saved_ksp_limit@l(0)
--	rlwimi	r0,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r0, r1)
- 	stw	r0,KSP_LIMIT(r8)
- 	/* fall through */
- #endif
-@@ -158,7 +158,7 @@ transfer_to_handler:
- 	tophys(r11,r11)
- 	addi	r11,r11,global_dbcr0@l
- #ifdef CONFIG_SMP
--	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r9, r1)
- 	lwz	r9,TI_CPU(r9)
- 	slwi	r9,r9,3
- 	add	r11,r11,r9
-@@ -179,7 +179,7 @@ transfer_to_handler:
- 	ble-	stack_ovf		/* then the kernel stack overflowed */
- 5:
- #if defined(CONFIG_6xx) || defined(CONFIG_E500)
--	rlwinm	r9,r1,0,0,31-THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r9, r1)
- 	tophys(r9,r9)			/* check local flags */
- 	lwz	r12,TI_LOCAL_FLAGS(r9)
- 	mtcrf	0x01,r12
-@@ -333,7 +333,7 @@ _GLOBAL(DoSyscall)
- 	mtmsr	r11
- 1:
- #endif /* CONFIG_TRACE_IRQFLAGS */
--	rlwinm	r10,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
-+	CURRENT_THREAD_INFO(r10, r1)
- 	lwz	r11,TI_FLAGS(r10)
- 	andi.	r11,r11,_TIF_SYSCALL_T_OR_A
- 	bne-	syscall_dotrace
-@@ -354,7 +354,7 @@ ret_from_syscall:
- 	bl	do_show_syscall_exit
- #endif
- 	mr	r6,r3
--	rlwinm	r12,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
-+	CURRENT_THREAD_INFO(r12, r1)
- 	/* disable interrupts so current_thread_info()->flags can't change */
- 	LOAD_MSR_KERNEL(r10,MSR_KERNEL)	/* doesn't include MSR_EE */
- 	/* Note: We don't bother telling lockdep about it */
-@@ -815,7 +815,7 @@ ret_from_except:
- 
- user_exc_return:		/* r10 contains MSR_KERNEL here */
- 	/* Check current_thread_info()->flags */
--	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r9, r1)
- 	lwz	r9,TI_FLAGS(r9)
- 	andi.	r0,r9,_TIF_USER_WORK_MASK
- 	bne	do_work
-@@ -835,7 +835,7 @@ restore_user:
- /* N.B. the only way to get here is from the beq following ret_from_except. */
- resume_kernel:
- 	/* check current_thread_info->preempt_count */
--	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r9, r1)
- 	lwz	r0,TI_PREEMPT(r9)
- 	cmpwi	0,r0,0		/* if non-zero, just restore regs and return */
- 	bne	restore
-@@ -852,7 +852,7 @@ resume_kernel:
- 	bl	trace_hardirqs_off
- #endif
- 1:	bl	preempt_schedule_irq
--	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r9, r1)
- 	lwz	r3,TI_FLAGS(r9)
- 	andi.	r0,r3,_TIF_NEED_RESCHED
- 	bne-	1b
-@@ -1122,7 +1122,7 @@ ret_from_debug_exc:
- 	lwz	r10,SAVED_KSP_LIMIT(r1)
- 	stw	r10,KSP_LIMIT(r9)
- 	lwz	r9,THREAD_INFO-THREAD(r9)
--	rlwinm	r10,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r10, r1)
- 	lwz	r10,TI_PREEMPT(r10)
- 	stw	r10,TI_PREEMPT(r9)
- 	RESTORE_xSRR(SRR0,SRR1);
-@@ -1156,7 +1156,7 @@ load_dbcr0:
- 	lis	r11,global_dbcr0@ha
- 	addi	r11,r11,global_dbcr0@l
- #ifdef CONFIG_SMP
--	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r9, r1)
- 	lwz	r9,TI_CPU(r9)
- 	slwi	r9,r9,3
- 	add	r11,r11,r9
-@@ -1197,7 +1197,7 @@ recheck:
- 	LOAD_MSR_KERNEL(r10,MSR_KERNEL)
- 	SYNC
- 	MTMSRD(r10)		/* disable interrupts */
--	rlwinm	r9,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r9, r1)
- 	lwz	r9,TI_FLAGS(r9)
- 	andi.	r0,r9,_TIF_NEED_RESCHED
- 	bne-	do_resched
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index ed1718f..ba943b9 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -146,7 +146,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
- 	REST_2GPRS(7,r1)
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
- #endif
--	clrrdi	r11,r1,THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r11, r1)
- 	ld	r10,TI_FLAGS(r11)
- 	andi.	r11,r10,_TIF_SYSCALL_T_OR_A
- 	bne-	syscall_dotrace
-@@ -181,7 +181,7 @@ syscall_exit:
- 	bl	.do_show_syscall_exit
- 	ld	r3,RESULT(r1)
- #endif
--	clrrdi	r12,r1,THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r12, r1)
- 
- 	ld	r8,_MSR(r1)
- #ifdef CONFIG_PPC_BOOK3S
-@@ -262,7 +262,7 @@ syscall_dotrace:
- 	ld	r7,GPR7(r1)
- 	ld	r8,GPR8(r1)
- 	addi	r9,r1,STACK_FRAME_OVERHEAD
--	clrrdi	r10,r1,THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r10, r1)
- 	ld	r10,TI_FLAGS(r10)
- 	b	.Lsyscall_dotrace_cont
- 
-@@ -499,7 +499,7 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 2:
- #endif /* !CONFIG_PPC_BOOK3S */
- 
--	clrrdi	r7,r8,THREAD_SHIFT	/* base of new stack */
-+	CURRENT_THREAD_INFO(r7, r8)  /* base of new stack */
- 	/* Note: this uses SWITCH_FRAME_SIZE rather than INT_FRAME_SIZE
- 	   because we don't need to leave the 288-byte ABI gap at the
- 	   top of the kernel stack. */
-@@ -559,7 +559,7 @@ _GLOBAL(ret_from_except_lite)
- #endif /* CONFIG_PPC_BOOK3E */
- 
- #ifdef CONFIG_PREEMPT
--	clrrdi	r9,r1,THREAD_SHIFT	/* current_thread_info() */
-+	CURRENT_THREAD_INFO(r9, r1)
- 	li	r0,_TIF_NEED_RESCHED	/* bits to check */
- 	ld	r3,_MSR(r1)
- 	ld	r4,TI_FLAGS(r9)
-@@ -574,7 +574,7 @@ _GLOBAL(ret_from_except_lite)
- 	beq	restore		/* if not, just restore regs and return */
- 
- 	/* Check current_thread_info()->flags */
--	clrrdi	r9,r1,THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r9, r1)
- 	ld	r4,TI_FLAGS(r9)
- 	andi.	r0,r4,_TIF_USER_WORK_MASK
- 	bne	do_work
-@@ -782,7 +782,7 @@ do_work:
- 1:	bl	.preempt_schedule_irq
- 
- 	/* Re-test flags and eventually loop */
--	clrrdi	r9,r1,THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r9, r1)
- 	ld	r4,TI_FLAGS(r9)
- 	andi.	r0,r4,_TIF_NEED_RESCHED
- 	bne	1b
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 7215cc2..2f86db6 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -222,7 +222,7 @@ exc_##n##_bad_stack:							    \
-  * interrupts happen before the wait instruction.
++#define LAWBAR_MASK	0x00F00000
++#define LAWBAR_SHIFT	12
++
++#define LAWAR_EN	0x80000000
++#define LAWAR_TGT_MASK	0x01F00000
++#define LAW_TRGT_IF_LBC	(0x04 << 20)
++
++#define LAWAR_MASK	(LAWAR_EN | LAWAR_TGT_MASK)
++#define LAWAR_MATCH	(LAWAR_EN | LAW_TRGT_IF_LBC)
++
++#define BR_BA		0xFFFF8000
++
++/*
++ * Map a BRx value to a physical address
++ *
++ * The localbus BRx registers only store the lower 32 bits of the address.  To
++ * obtain the upper four bits, we need to scan the LAW table.  The entry which
++ * maps to the localbus will contain the upper four bits.
++ */
++static phys_addr_t lbc_br_to_phys(const void *ecm, unsigned int count, u32 br)
++{
++#ifndef CONFIG_PHYS_64BIT
++	/*
++	 * If we only have 32-bit addressing, then the BRx address *is* the
++	 * physical address.
++	 */
++	return br & BR_BA;
++#else
++	const struct fsl_law *law = ecm + 0xc08;
++	unsigned int i;
++
++	for (i = 0; i < count; i++) {
++		u64 lawbar = in_be32(&law[i].lawbar);
++		u32 lawar = in_be32(&law[i].lawar);
++
++		if ((lawar & LAWAR_MASK) == LAWAR_MATCH)
++			/* Extract the upper four bits */
++			return (br & BR_BA) | ((lawbar & LAWBAR_MASK) << 12);
++	}
++
++	return 0;
++#endif
++}
++
+ /**
+  * p1022ds_set_monitor_port: switch the output to a different monitor port
+- *
   */
- #define CHECK_NAPPING()							\
--	clrrdi	r11,r1,THREAD_SHIFT;					\
-+	CURRENT_THREAD_INFO(r11, r1);					\
- 	ld	r10,TI_LOCAL_FLAGS(r11);				\
- 	andi.	r9,r10,_TLF_NAPPING;					\
- 	beq+	1f;							\
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 1c06d29..8ad3468 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -851,7 +851,7 @@ BEGIN_FTR_SECTION
- 	bne-	do_ste_alloc		/* If so handle it */
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_SLB)
+ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
+ {
+ 	struct device_node *guts_node;
+-	struct device_node *indirect_node = NULL;
++	struct device_node *lbc_node = NULL;
++	struct device_node *law_node = NULL;
+ 	struct ccsr_guts __iomem *guts;
++	struct fsl_lbc_regs *lbc = NULL;
++	void *ecm = NULL;
+ 	u8 __iomem *lbc_lcs0_ba = NULL;
+ 	u8 __iomem *lbc_lcs1_ba = NULL;
++	phys_addr_t cs0_addr, cs1_addr;
++	const __be32 *iprop;
++	unsigned int num_laws;
+ 	u8 b;
  
--	clrrdi	r11,r1,THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r11, r1)
- 	lwz	r0,TI_PREEMPT(r11)	/* If we're in an "NMI" */
- 	andis.	r0,r0,NMI_MASK@h	/* (i.e. an irq when soft-disabled) */
- 	bne	77f			/* then don't call hash_page now */
-diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
-index 1f4434a..7e7bd88 100644
---- a/arch/powerpc/kernel/head_fsl_booke.S
-+++ b/arch/powerpc/kernel/head_fsl_booke.S
-@@ -192,7 +192,7 @@ _ENTRY(__early_start)
- 	li	r0,0
- 	stwu	r0,THREAD_SIZE-STACK_FRAME_OVERHEAD(r1)
+ 	/* Map the global utilities registers. */
+@@ -168,25 +225,43 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
+ 		goto exit;
+ 	}
  
--	rlwinm  r22,r1,0,0,31-THREAD_SHIFT      /* current thread_info */
-+	CURRENT_THREAD_INFO(r22, r1)
- 	stw	r24, TI_CPU(r22)
+-	indirect_node = of_find_compatible_node(NULL, NULL,
+-					     "fsl,p1022ds-indirect-pixis");
+-	if (!indirect_node) {
+-		pr_err("p1022ds: missing pixis indirect mode node\n");
++	lbc_node = of_find_compatible_node(NULL, NULL, "fsl,p1022-elbc");
++	if (!lbc_node) {
++		pr_err("p1022ds: missing localbus node\n");
+ 		goto exit;
+ 	}
  
- 	bl	early_init
-diff --git a/arch/powerpc/kernel/idle_6xx.S b/arch/powerpc/kernel/idle_6xx.S
-index 15c611d..1686916 100644
---- a/arch/powerpc/kernel/idle_6xx.S
-+++ b/arch/powerpc/kernel/idle_6xx.S
-@@ -135,7 +135,7 @@ BEGIN_FTR_SECTION
- 	DSSALL
- 	sync
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
--	rlwinm	r9,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
-+	CURRENT_THREAD_INFO(r9, r1)
- 	lwz	r8,TI_LOCAL_FLAGS(r9)	/* set napping bit */
- 	ori	r8,r8,_TLF_NAPPING	/* so when we take an exception */
- 	stw	r8,TI_LOCAL_FLAGS(r9)	/* it will return to our caller */
-@@ -158,7 +158,7 @@ _GLOBAL(power_save_ppc32_restore)
- 	stw	r9,_NIP(r11)		/* make it do a blr */
+-	lbc_lcs0_ba = of_iomap(indirect_node, 0);
+-	if (!lbc_lcs0_ba) {
+-		pr_err("p1022ds: could not map localbus chip select 0\n");
++	lbc = of_iomap(lbc_node, 0);
++	if (!lbc) {
++		pr_err("p1022ds: could not map localbus node\n");
+ 		goto exit;
+ 	}
  
- #ifdef CONFIG_SMP
--	rlwinm	r12,r11,0,0,31-THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r12, r11)
- 	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
- 	slwi	r11,r11,2
- #else
-diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
-index ff007b5..4c7cb400 100644
---- a/arch/powerpc/kernel/idle_book3e.S
-+++ b/arch/powerpc/kernel/idle_book3e.S
-@@ -60,7 +60,7 @@ _GLOBAL(book3e_idle)
- 1:	/* Let's set the _TLF_NAPPING flag so interrupts make us return
- 	 * to the right spot
- 	*/
--	clrrdi	r11,r1,THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r11, r1)
- 	ld	r10,TI_LOCAL_FLAGS(r11)
- 	ori	r10,r10,_TLF_NAPPING
- 	std	r10,TI_LOCAL_FLAGS(r11)
-diff --git a/arch/powerpc/kernel/idle_e500.S b/arch/powerpc/kernel/idle_e500.S
-index 4f0ab85..1544866 100644
---- a/arch/powerpc/kernel/idle_e500.S
-+++ b/arch/powerpc/kernel/idle_e500.S
-@@ -21,7 +21,7 @@
- 	.text
+-	lbc_lcs1_ba = of_iomap(indirect_node, 1);
+-	if (!lbc_lcs1_ba) {
+-		pr_err("p1022ds: could not map localbus chip select 1\n");
++	law_node = of_find_compatible_node(NULL, NULL, "fsl,ecm-law");
++	if (!law_node) {
++		pr_err("p1022ds: missing local access window node\n");
+ 		goto exit;
+ 	}
  
- _GLOBAL(e500_idle)
--	rlwinm	r3,r1,0,0,31-THREAD_SHIFT	/* current thread_info */
-+	CURRENT_THREAD_INFO(r3, r1)
- 	lwz	r4,TI_LOCAL_FLAGS(r3)	/* set napping bit */
- 	ori	r4,r4,_TLF_NAPPING	/* so when we take an exception */
- 	stw	r4,TI_LOCAL_FLAGS(r3)	/* it will return to our caller */
-@@ -96,7 +96,7 @@ _GLOBAL(power_save_ppc32_restore)
- 	stw	r9,_NIP(r11)		/* make it do a blr */
++	ecm = of_iomap(law_node, 0);
++	if (!ecm) {
++		pr_err("p1022ds: could not map local access window node\n");
++		goto exit;
++	}
++
++	iprop = of_get_property(law_node, "fsl,num-laws", 0);
++	if (!iprop) {
++		pr_err("p1022ds: LAW node is missing fsl,num-laws property\n");
++		goto exit;
++	}
++	num_laws = be32_to_cpup(iprop);
++
++	cs0_addr = lbc_br_to_phys(ecm, num_laws, in_be32(&lbc->bank[0].br));
++	cs1_addr = lbc_br_to_phys(ecm, num_laws, in_be32(&lbc->bank[1].br));
++
++	lbc_lcs0_ba = ioremap(cs0_addr, 1);
++	lbc_lcs1_ba = ioremap(cs1_addr, 1);
++
+ 	/* Make sure we're in indirect mode first. */
+ 	if ((in_be32(&guts->pmuxcr) & PMUXCR_ELBCDIU_MASK) !=
+ 	    PMUXCR_ELBCDIU_DIU) {
+@@ -254,10 +329,15 @@ exit:
+ 		iounmap(lbc_lcs1_ba);
+ 	if (lbc_lcs0_ba)
+ 		iounmap(lbc_lcs0_ba);
++	if (lbc)
++		iounmap(lbc);
++	if (ecm)
++		iounmap(ecm);
+ 	if (guts)
+ 		iounmap(guts);
  
- #ifdef CONFIG_SMP
--	rlwinm	r12,r1,0,0,31-THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r12, r1)
- 	lwz	r11,TI_CPU(r12)		/* get cpu number * 4 */
- 	slwi	r11,r11,2
- #else
-diff --git a/arch/powerpc/kernel/idle_power4.S b/arch/powerpc/kernel/idle_power4.S
-index 2c71b0f..e3edaa1 100644
---- a/arch/powerpc/kernel/idle_power4.S
-+++ b/arch/powerpc/kernel/idle_power4.S
-@@ -59,7 +59,7 @@ BEGIN_FTR_SECTION
- 	DSSALL
- 	sync
- END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
--	clrrdi	r9,r1,THREAD_SHIFT	/* current thread_info */
-+	CURRENT_THREAD_INFO(r9, r1)
- 	ld	r8,TI_LOCAL_FLAGS(r9)	/* set napping bit */
- 	ori	r8,r8,_TLF_NAPPING	/* so when we take an exception */
- 	std	r8,TI_LOCAL_FLAGS(r9)	/* it will return to our caller */
-diff --git a/arch/powerpc/kernel/misc_32.S b/arch/powerpc/kernel/misc_32.S
-index 386d57f..407e293 100644
---- a/arch/powerpc/kernel/misc_32.S
-+++ b/arch/powerpc/kernel/misc_32.S
-@@ -179,7 +179,7 @@ _GLOBAL(low_choose_750fx_pll)
- 	mtspr	SPRN_HID1,r4
+-	of_node_put(indirect_node);
++	of_node_put(law_node);
++	of_node_put(lbc_node);
+ 	of_node_put(guts_node);
+ }
  
- 	/* Store new HID1 image */
--	rlwinm	r6,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r6, r1)
- 	lwz	r6,TI_CPU(r6)
- 	slwi	r6,r6,2
- 	addis	r6,r6,nap_save_hid1@ha
-@@ -699,7 +699,7 @@ _GLOBAL(kernel_thread)
- #ifdef CONFIG_SMP
- _GLOBAL(start_secondary_resume)
- 	/* Reset stack */
--	rlwinm	r1,r1,0,0,(31-THREAD_SHIFT)	/* current_thread_info() */
-+	CURRENT_THREAD_INFO(r1, r1)
- 	addi	r1,r1,THREAD_SIZE-STACK_FRAME_OVERHEAD
- 	li	r3,0
- 	stw	r3,0(r1)		/* Zero the stack frame pointer	*/
-diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-index 0fa2ef7..c8c7a04 100644
---- a/arch/powerpc/kvm/bookehv_interrupts.S
-+++ b/arch/powerpc/kvm/bookehv_interrupts.S
-@@ -161,11 +161,7 @@
- 	mtspr	SPRN_EPLC, r8
- 
- 	/* disable preemption, so we are sure we hit the fixup handler */
--#ifdef CONFIG_PPC64
--	clrrdi	r8,r1,THREAD_SHIFT
--#else
--	rlwinm	r8,r1,0,0,31-THREAD_SHIFT       /* current thread_info */
--#endif
-+	CURRENT_THREAD_INFO(r8, r1)
- 	li	r7, 1
- 	stw	r7, TI_PREEMPT(r8)
- 
-diff --git a/arch/powerpc/mm/hash_low_32.S b/arch/powerpc/mm/hash_low_32.S
-index b13d589..115347f 100644
---- a/arch/powerpc/mm/hash_low_32.S
-+++ b/arch/powerpc/mm/hash_low_32.S
-@@ -184,7 +184,7 @@ _GLOBAL(add_hash_page)
- 	add	r3,r3,r0		/* note create_hpte trims to 24 bits */
- 
- #ifdef CONFIG_SMP
--	rlwinm	r8,r1,0,0,(31-THREAD_SHIFT) /* use cpu number to make tag */
-+	CURRENT_THREAD_INFO(r8, r1)	/* use cpu number to make tag */
- 	lwz	r8,TI_CPU(r8)		/* to go in mmu_hash_lock */
- 	oris	r8,r8,12
- #endif /* CONFIG_SMP */
-@@ -545,7 +545,7 @@ _GLOBAL(flush_hash_pages)
- #ifdef CONFIG_SMP
- 	addis	r9,r7,mmu_hash_lock@ha
- 	addi	r9,r9,mmu_hash_lock@l
--	rlwinm	r8,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r8, r1)
- 	add	r8,r8,r7
- 	lwz	r8,TI_CPU(r8)
- 	oris	r8,r8,9
-@@ -639,7 +639,7 @@ _GLOBAL(flush_hash_patch_B)
-  */
- _GLOBAL(_tlbie)
- #ifdef CONFIG_SMP
--	rlwinm	r8,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r8, r1)
- 	lwz	r8,TI_CPU(r8)
- 	oris	r8,r8,11
- 	mfmsr	r10
-@@ -677,7 +677,7 @@ _GLOBAL(_tlbie)
-  */
- _GLOBAL(_tlbia)
- #if defined(CONFIG_SMP)
--	rlwinm	r8,r1,0,0,(31-THREAD_SHIFT)
-+	CURRENT_THREAD_INFO(r8, r1)
- 	lwz	r8,TI_CPU(r8)
- 	oris	r8,r8,10
- 	mfmsr	r10
-diff --git a/arch/powerpc/sysdev/6xx-suspend.S b/arch/powerpc/sysdev/6xx-suspend.S
-index 21cda08..cf48e9c 100644
---- a/arch/powerpc/sysdev/6xx-suspend.S
-+++ b/arch/powerpc/sysdev/6xx-suspend.S
-@@ -29,7 +29,7 @@ _GLOBAL(mpc6xx_enter_standby)
- 	ori	r5, r5, ret_from_standby@l
- 	mtlr	r5
- 
--	rlwinm	r5, r1, 0, 0, 31-THREAD_SHIFT
-+	CURRENT_THREAD_INFO(r5, r1)
- 	lwz	r6, TI_LOCAL_FLAGS(r5)
- 	ori	r6, r6, _TLF_SLEEPING
- 	stw	r6, TI_LOCAL_FLAGS(r5)
 -- 
 1.7.3.4
