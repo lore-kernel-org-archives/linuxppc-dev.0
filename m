@@ -1,27 +1,41 @@
-Return-Path: <B02008@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 08F342C0080
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 19:28:32 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Subject: RE: [Qemu-ppc] [RFC PATCH 04/17] KVM: PPC64: booke: Add guest
- computation mode for irq delivery
-Date: Thu, 5 Jul 2012 09:28:23 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15AF3B@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-5-git-send-email-mihai.caraman@freescale.com>
- <E29E8A28-9993-4E6C-B41A-7C0AA51945F3@suse.de>
-In-Reply-To: <E29E8A28-9993-4E6C-B41A-7C0AA51945F3@suse.de>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0015A2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 19:29:54 +1000 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Thu, 5 Jul 2012 14:59:50 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q659Tjs27340464
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 14:59:45 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q65ExWrM008946
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jul 2012 00:59:33 +1000
+Message-ID: <1341480578.23916.7.camel@ThinkPad-T420>
+Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
+ SLUB is used
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Glauber Costa <glommer@parallels.com>
+Date: Thu, 05 Jul 2012 17:29:38 +0800
+In-Reply-To: <4FF54F18.50300@parallels.com>
+References: <1340617984.13778.37.camel@ThinkPad-T420>
+ <1340618099.13778.39.camel@ThinkPad-T420>
+ <alpine.DEB.2.00.1207031344240.14703@router.home>
+ <alpine.DEB.2.00.1207031535330.14703@router.home>
+ <1341392420.18505.41.camel@ThinkPad-T420> <4FF439D0.1000603@parallels.com>
+ <1341452486.18505.49.camel@ThinkPad-T420> <4FF54F18.50300@parallels.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
+ linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,49 +45,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Alexander Graf [mailto:agraf@suse.de]
-> Sent: Wednesday, July 04, 2012 4:41 PM
-> To: Caraman Mihai Claudiu-B02008
-> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; qemu-ppc@nongnu.org
-> Subject: Re: [Qemu-ppc] [RFC PATCH 04/17] KVM: PPC64: booke: Add guest
-> computation mode for irq delivery
->=20
->=20
-> On 25.06.2012, at 14:26, Mihai Caraman wrote:
->
-> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> > ---
-> > arch/powerpc/kvm/booke.c |    8 +++++++-
-> > 1 files changed, 7 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-> > index d15c4b5..93b48e0 100644
-> > --- a/arch/powerpc/kvm/booke.c
-> > +++ b/arch/powerpc/kvm/booke.c
-> > @@ -287,6 +287,7 @@ static int kvmppc_booke_irqprio_deliver(struct
-> kvm_vcpu *vcpu,
-> > 	bool crit;
-> > 	bool keep_irq =3D false;
-> > 	enum int_class int_class;
-> > +	ulong msr_cm =3D 0;
-> >
-> > 	/* Truncate crit indicators in 32 bit mode */
-> > 	if (!(vcpu->arch.shared->msr & MSR_SF)) {
-> > @@ -299,6 +300,10 @@ static int kvmppc_booke_irqprio_deliver(struct
-> kvm_vcpu *vcpu,
-> > 	/* ... and we're in supervisor mode */
-> > 	crit =3D crit && !(vcpu->arch.shared->msr & MSR_PR);
-> >
-> > +#ifdef CONFIG_64BIT
-> > +	msr_cm =3D vcpu->arch.epcr & SPRN_EPCR_ICM ? MSR_CM : 0;
-> > +#endif
->=20
-> No need for the ifdef, no?. Just mask EPCR_ICM out in the 32-bit host
-> case, then this check is always false on 32-bit hosts.
+On Thu, 2012-07-05 at 12:23 +0400, Glauber Costa wrote:
+> On 07/05/2012 05:41 AM, Li Zhong wrote:
+> > On Wed, 2012-07-04 at 16:40 +0400, Glauber Costa wrote:
+> >> On 07/04/2012 01:00 PM, Li Zhong wrote:
+> >>> On Tue, 2012-07-03 at 15:36 -0500, Christoph Lameter wrote:
+> >>>>> Looking through the emails it seems that there is an issue with alias
+> >>>>> strings. 
+> >>> To be more precise, there seems no big issue currently. I just wanted to
+> >>> make following usage of kmem_cache_create (SLUB) possible:
+> >>>
+> >>> 	name = some string kmalloced
+> >>> 	kmem_cache_create(name, ...)
+> >>> 	kfree(name);
+> >>
+> >> Out of curiosity: Why?
+> >> This is not (currently) possible with the other allocators (may change
+> >> with christoph's unification patches), so you would be making your code
+> >> slub-dependent.
+> >>
+> > 
+> > For slub itself, I think it's not good that: in some cases, the name
+> > string could be kfreed ( if it was kmalloced ) immediately after calling
+> > the cache create; in some other case, the name string needs to be kept
+> > valid until some init calls finished. 
+> > 
+> > I agree with you that it would make the code slub-dependent, so I'm now
+> > working on the consistency of the other allocators regarding this name
+> > string duplicating thing. 
+> 
+> If you really need to kfree the string, or even if it is easier for you
+> this way, it can be done. As a matter of fact, this is the case for me.
+> Just that your patch is not enough. Christoph has a patch that makes
+> this behavior consistent over all allocators.
 
-It will break e500v2. epcr field is declared only for CONFIG_KVM_BOOKE_HV,
-we can limit to this instead of CONFIG_64BIT.
+Sorry, I didn't know that. Seems I don't need to continue the half-done
+work in slab. If possible, would you please give me a link of the patch?
+Thank you. 
 
--Mike
+> This just needs to be pushed again to the tree.
+> 
