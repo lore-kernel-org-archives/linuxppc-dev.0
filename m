@@ -1,12 +1,25 @@
-Return-Path: <anton@samba.org>
-Date: Thu, 5 Jul 2012 16:37:11 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc: Add VDSO version of getcpu
-Message-ID: <20120705163711.2de88b55@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Kay Sievers <kay@vrfy.org>
+Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
+In-reply-to: <1340726856.977.6.camel@mop>
+References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
+ <20120625150722.8cd4f45d.akpm@linux-foundation.org>
+ <20120625235531.GB3652@kroah.com>
+ <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
+ <20120626002307.GA4389@kroah.com>
+ <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
+ <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
+ <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
+ <1340726856.977.6.camel@mop>
+Date: Thu, 05 Jul 2012 17:03:07 +1000
+Message-ID: <22482.1341471787@neuling.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,319 +29,353 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+> On Mon, 2012-06-25 at 18:40 -0700, Linus Torvalds wrote:
+> > On Mon, Jun 25, 2012 at 5:56 PM, Kay Sievers <kay@vrfy.org> wrote:
+> > >
+> > > Buffering has nice effects though:
+> > > It makes continuation lines appear as one record in the buffer, not as
+> > > n individual prints with n headers.
+> > 
+> > As I already mentioned, buffering for *logging* is different from
+> > buffering for *printing*.
+> > 
+> > I think it might be a great idea to buffer for logging in order to
+> > generate one individual buffer record there.
+> > 
+> > But it needs to be printed as it is generated.
+> 
+> That's a good idea.
+> 
+> Something like this could work - only minimally tested at this moment.
 
-We have a request for a fast method of getting CPU and NUMA node IDs
-from userspace. This patch implements a getcpu VDSO function,
-similar to x86.
+This breaks some powerpc configs and is in Linus' tree now as
+084681d14e.
 
-Ben suggested we use SPRG3 which is userspace readable. SPRG3 can be
-modified by a KVM guest, so we save the SPRG3 value in the paca and
-restore it when transitioning from the guest to the host.
+When we have printks without a newline (like show_regs()), it
+sometimes:
+1) drops the console output for that line (dmesg is fine).  Patch to fix
+   this below.
+2) adds a newline unnecessary to both console and dmesg.  I have no fix
+   for this currently.
+Reverting this patch fixes both problems.
 
-I have a glibc patch that implements sched_getcpu on top of this.
-Testing on a POWER7:
+Post rc4 is way to late to be adding largely untested features like
+this.  
 
-baseline: 538 cycles 
-vdso:      30 cycles
+I suggest we revert this until the next merge window.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+Mikey
 
-v2:
-- Fix kvm
-- add vdso32 version on 64bit kernel
+diff --git a/kernel/printk.c b/kernel/printk.c
+index dba1821..91659da 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -1335,7 +1335,7 @@ static void cont_flush(void)
+        if (cont.len == 0)
+                return;
+ 
+-       log_store(cont.facility, cont.level, LOG_NOCONS, cont.ts_nsec,
++       log_store(cont.facility, cont.level, LOG_DEFAULT, cont.ts_nsec,
+                  NULL, 0, cont.buf, cont.len);
+ 
+        cont.flushed = true;
 
-Index: linux-build/arch/powerpc/include/asm/reg.h
-===================================================================
---- linux-build.orig/arch/powerpc/include/asm/reg.h	2012-07-05 16:33:46.191266813 +1000
-+++ linux-build/arch/powerpc/include/asm/reg.h	2012-07-05 16:34:27.036005107 +1000
-@@ -491,6 +491,7 @@
- #define SPRN_SPRG1	0x111	/* Special Purpose Register General 1 */
- #define SPRN_SPRG2	0x112	/* Special Purpose Register General 2 */
- #define SPRN_SPRG3	0x113	/* Special Purpose Register General 3 */
-+#define SPRN_USPRG3	0x103	/* SPRG3 userspace read */
- #define SPRN_SPRG4	0x114	/* Special Purpose Register General 4 */
- #define SPRN_SPRG5	0x115	/* Special Purpose Register General 5 */
- #define SPRN_SPRG6	0x116	/* Special Purpose Register General 6 */
-@@ -753,14 +754,14 @@
-  * 64-bit server:
-  *	- SPRG0 unused (reserved for HV on Power4)
-  *	- SPRG2 scratch for exception vectors
-- *	- SPRG3 unused (user visible)
-+ *	- SPRG3 CPU and NUMA node for VDSO getcpu (user visible)
-  *      - HSPRG0 stores PACA in HV mode
-  *      - HSPRG1 scratch for "HV" exceptions
-  *
-  * 64-bit embedded
-  *	- SPRG0 generic exception scratch
-  *	- SPRG2 TLB exception stack
-- *	- SPRG3 unused (user visible)
-+ *	- SPRG3 CPU and NUMA node for VDSO getcpu (user visible)
-  *	- SPRG4 unused (user visible)
-  *	- SPRG6 TLB miss scratch (user visible, sorry !)
-  *	- SPRG7 critical exception scratch
-Index: linux-build/arch/powerpc/kernel/vdso.c
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/vdso.c	2012-07-05 16:33:46.311268984 +1000
-+++ linux-build/arch/powerpc/kernel/vdso.c	2012-07-05 16:34:27.036005107 +1000
-@@ -706,6 +706,34 @@ static void __init vdso_setup_syscall_ma
- 	}
- }
- 
-+#ifdef CONFIG_PPC64
-+int __cpuinit vdso_getcpu_init(void)
-+{
-+	unsigned long cpu, node, val;
-+
-+	/*
-+	 * SPRG3 contains the CPU in the bottom 16 bits and the NUMA node in
-+	 * the next 16 bits. The VDSO uses this to implement getcpu().
-+	 */
-+	cpu = get_cpu();
-+	WARN_ON_ONCE(cpu > 0xffff);
-+
-+	node = cpu_to_node(cpu);
-+	WARN_ON_ONCE(node > 0xffff);
-+
-+	val = (cpu & 0xfff) | ((node & 0xffff) << 16);
-+	mtspr(SPRN_SPRG3, val);
-+#ifdef CONFIG_KVM_BOOK3S_HANDLER
-+	get_paca()->kvm_hstate.sprg3 = val;
-+#endif
-+
-+	put_cpu();
-+
-+	return 0;
-+}
-+/* We need to call this before SMP init */
-+early_initcall(vdso_getcpu_init);
-+#endif
- 
- static int __init vdso_init(void)
- {
-Index: linux-build/arch/powerpc/kernel/vdso64/Makefile
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/vdso64/Makefile	2012-07-05 16:33:46.279268404 +1000
-+++ linux-build/arch/powerpc/kernel/vdso64/Makefile	2012-07-05 16:34:27.036005107 +1000
-@@ -1,6 +1,6 @@
- # List of files in the vdso, has to be asm only for now
- 
--obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o
-+obj-vdso64 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o getcpu.o
- 
- # Build rules
- 
-Index: linux-build/arch/powerpc/kernel/vdso64/vdso64.lds.S
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/vdso64/vdso64.lds.S	2012-07-05 16:33:46.295268693 +1000
-+++ linux-build/arch/powerpc/kernel/vdso64/vdso64.lds.S	2012-07-05 16:34:27.036005107 +1000
-@@ -146,6 +146,7 @@ VERSION
- 		__kernel_sync_dicache;
- 		__kernel_sync_dicache_p5;
- 		__kernel_sigtramp_rt64;
-+		__kernel_getcpu;
- 
- 	local: *;
- 	};
-Index: linux-build/arch/powerpc/kernel/vdso64/getcpu.S
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-build/arch/powerpc/kernel/vdso64/getcpu.S	2012-07-05 16:34:27.036005107 +1000
-@@ -0,0 +1,45 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2012
-+ *
-+ * Author: Anton Blanchard <anton@au.ibm.com>
-+ */
-+#include <asm/ppc_asm.h>
-+#include <asm/vdso.h>
-+
-+	.text
-+/*
-+ * Exact prototype of getcpu
-+ *
-+ * int __kernel_getcpu(unsigned *cpu, unsigned *node);
-+ *
-+ */
-+V_FUNCTION_BEGIN(__kernel_getcpu)
-+  .cfi_startproc
-+	mfspr	r5,SPRN_USPRG3
-+	cmpdi	cr0,r3,0
-+	cmpdi	cr1,r4,0
-+	clrlwi  r6,r5,16
-+	rlwinm  r7,r5,16,31-15,31-0
-+	beq	cr0,1f
-+	stw	r6,0(r3)
-+1:	beq	cr1,2f
-+	stw	r7,0(r4)
-+2:	crclr	cr0*4+so
-+	li	r3,0			/* always success */
-+	blr
-+  .cfi_endproc
-+V_FUNCTION_END(__kernel_getcpu)
-Index: linux-build/arch/powerpc/kernel/smp.c
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/smp.c	2012-07-05 16:33:46.259268043 +1000
-+++ linux-build/arch/powerpc/kernel/smp.c	2012-07-05 16:34:27.036005107 +1000
-@@ -48,6 +48,7 @@
- #ifdef CONFIG_PPC64
- #include <asm/paca.h>
- #endif
-+#include <asm/vdso.h>
- #include <asm/debug.h>
- 
- #ifdef DEBUG
-@@ -570,6 +571,8 @@ void __devinit start_secondary(void *unu
- #ifdef CONFIG_PPC64
- 	if (system_state == SYSTEM_RUNNING)
- 		vdso_data->processorCount++;
-+
-+	vdso_getcpu_init();
- #endif
- 	ipi_call_lock();
- 	notify_cpu_starting(cpu);
-Index: linux-build/arch/powerpc/include/asm/vdso.h
-===================================================================
---- linux-build.orig/arch/powerpc/include/asm/vdso.h	2012-07-05 16:33:46.179266598 +1000
-+++ linux-build/arch/powerpc/include/asm/vdso.h	2012-07-05 16:34:27.036005107 +1000
-@@ -22,6 +22,8 @@ extern unsigned long vdso64_rt_sigtramp;
- extern unsigned long vdso32_sigtramp;
- extern unsigned long vdso32_rt_sigtramp;
- 
-+int __cpuinit vdso_getcpu_init(void);
-+
- #else /* __ASSEMBLY__ */
- 
- #ifdef __VDSO64__
-Index: linux-build/arch/powerpc/kernel/vdso32/Makefile
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/vdso32/Makefile	2012-07-05 16:33:46.231267536 +1000
-+++ linux-build/arch/powerpc/kernel/vdso32/Makefile	2012-07-05 16:34:27.040005179 +1000
-@@ -1,7 +1,9 @@
- 
- # List of files in the vdso, has to be asm only for now
- 
--obj-vdso32 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o
-+obj-vdso32-$(CONFIG_PPC64) = getcpu.o
-+obj-vdso32 = sigtramp.o gettimeofday.o datapage.o cacheflush.o note.o \
-+		$(obj-vdso32-y)
- 
- # Build rules
- 
-Index: linux-build/arch/powerpc/kernel/vdso32/vdso32.lds.S
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/vdso32/vdso32.lds.S	2012-07-05 16:33:46.247267827 +1000
-+++ linux-build/arch/powerpc/kernel/vdso32/vdso32.lds.S	2012-07-05 16:34:27.040005179 +1000
-@@ -147,6 +147,9 @@ VERSION
- 		__kernel_sync_dicache_p5;
- 		__kernel_sigtramp32;
- 		__kernel_sigtramp_rt32;
-+#ifdef CONFIG_PPC64
-+		__kernel_getcpu;
-+#endif
- 
- 	local: *;
- 	};
-Index: linux-build/arch/powerpc/kernel/vdso32/getcpu.S
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-build/arch/powerpc/kernel/vdso32/getcpu.S	2012-07-05 16:34:27.040005179 +1000
-@@ -0,0 +1,45 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2012
-+ *
-+ * Author: Anton Blanchard <anton@au.ibm.com>
-+ */
-+#include <asm/ppc_asm.h>
-+#include <asm/vdso.h>
-+
-+	.text
-+/*
-+ * Exact prototype of getcpu
-+ *
-+ * int __kernel_getcpu(unsigned *cpu, unsigned *node);
-+ *
-+ */
-+V_FUNCTION_BEGIN(__kernel_getcpu)
-+  .cfi_startproc
-+	mfspr	r5,SPRN_USPRG3
-+	cmpdi	cr0,r3,0
-+	cmpdi	cr1,r4,0
-+	clrlwi  r6,r5,16
-+	rlwinm  r7,r5,16,31-15,31-0
-+	beq	cr0,1f
-+	stw	r6,0(r3)
-+1:	beq	cr1,2f
-+	stw	r7,0(r4)
-+2:	crclr	cr0*4+so
-+	li	r3,0			/* always success */
-+	blr
-+  .cfi_endproc
-+V_FUNCTION_END(__kernel_getcpu)
-Index: linux-build/arch/powerpc/include/asm/kvm_book3s_asm.h
-===================================================================
---- linux-build.orig/arch/powerpc/include/asm/kvm_book3s_asm.h	2012-07-05 16:33:46.163266308 +1000
-+++ linux-build/arch/powerpc/include/asm/kvm_book3s_asm.h	2012-07-05 16:34:27.040005179 +1000
-@@ -74,6 +74,7 @@ struct kvmppc_host_state {
- 	ulong vmhandler;
- 	ulong scratch0;
- 	ulong scratch1;
-+	ulong sprg3;
- 	u8 in_guest;
- 	u8 restore_hid5;
- 	u8 napping;
-Index: linux-build/arch/powerpc/kernel/asm-offsets.c
-===================================================================
---- linux-build.orig/arch/powerpc/kernel/asm-offsets.c	2012-07-05 16:33:46.319269127 +1000
-+++ linux-build/arch/powerpc/kernel/asm-offsets.c	2012-07-05 16:34:27.040005179 +1000
-@@ -533,6 +533,7 @@ int main(void)
- 	HSTATE_FIELD(HSTATE_VMHANDLER, vmhandler);
- 	HSTATE_FIELD(HSTATE_SCRATCH0, scratch0);
- 	HSTATE_FIELD(HSTATE_SCRATCH1, scratch1);
-+	HSTATE_FIELD(HSTATE_SPRG3, sprg3);
- 	HSTATE_FIELD(HSTATE_IN_GUEST, in_guest);
- 	HSTATE_FIELD(HSTATE_RESTORE_HID5, restore_hid5);
- 	HSTATE_FIELD(HSTATE_NAPPING, napping);
-Index: linux-build/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-===================================================================
---- linux-build.orig/arch/powerpc/kvm/book3s_hv_rmhandlers.S	2012-07-05 16:33:46.327269273 +1000
-+++ linux-build/arch/powerpc/kvm/book3s_hv_rmhandlers.S	2012-07-05 16:34:27.040005179 +1000
-@@ -1067,6 +1067,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
- 	mtspr	SPRN_DABR,r5
- 	mtspr	SPRN_DABRX,r6
- 
-+	/* Restore SPRG3 */
-+	ld	r3,HSTATE_SPRG3(r13)
-+	mtspr	SPRN_SPRG3,r3
-+
- 	/*
- 	 * Reload DEC.  HDEC interrupts were disabled when
- 	 * we reloaded the host's LPCR value.
+
+
+> 
+> 
+> From: Kay Sievers <kay@vrfy.org>
+> Subject: printk: flush continuation lines immediately to console
+> 
+> Continuation lines are buffered internally to merge the chunked
+> printk()s into a single record, and to isolate potentially racy
+> continuation users from usual terminated line users.
+> 
+> This though, has the effect that partial lines are not printed to
+> the console in the moment they are emitted. In case the kernel
+> crashes in the meantime, the potentially interesting printed
+> information will never reach the consoles.
+> 
+> Here we share the continuation buffer with the console copy logic,
+> and partial lines are immediately flushed to the consoles, but still
+> buffered internally to improve the integrity of the messages.
+> ---
+> 
+>  kernel/printk.c |  129 +++++++++++++++++++++++++++++++++++++++++++------------
+>  1 file changed, 101 insertions(+), 28 deletions(-)
+> 
+> diff --git a/kernel/printk.c b/kernel/printk.c
+> index a2276b9..92c34bd1 100644
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -193,12 +193,19 @@ static int console_may_schedule;
+>   * separated by ',', and find the message after the ';' character.
+>   */
+>  
+> +enum log_flags {
+> +	LOG_DEFAULT = 0,
+> +	LOG_NOCONS = 1,		/* already flushed, do not print to console */
+> +};
+> +
+>  struct log {
+>  	u64 ts_nsec;		/* timestamp in nanoseconds */
+>  	u16 len;		/* length of entire record */
+>  	u16 text_len;		/* length of text buffer */
+>  	u16 dict_len;		/* length of dictionary buffer */
+> -	u16 level;		/* syslog level + facility */
+> +	u8 facility;		/* syslog facility */
+> +	u8 flags:5;		/* internal record flags */
+> +	u8 level:3;		/* syslog level */
+>  };
+>  
+>  /*
+> @@ -286,6 +293,7 @@ static u32 log_next(u32 idx)
+>  
+>  /* insert record into the buffer, discard old ones, update heads */
+>  static void log_store(int facility, int level,
+> +		      enum log_flags flags, u64 ts_nsec,
+>  		      const char *dict, u16 dict_len,
+>  		      const char *text, u16 text_len)
+>  {
+> @@ -329,8 +337,13 @@ static void log_store(int facility, int level,
+>  	msg->text_len = text_len;
+>  	memcpy(log_dict(msg), dict, dict_len);
+>  	msg->dict_len = dict_len;
+> -	msg->level = (facility << 3) | (level & 7);
+> -	msg->ts_nsec = local_clock();
+> +	msg->facility = facility;
+> +	msg->level = level & 7;
+> +	msg->flags = flags & 0x1f;
+> +	if (ts_nsec > 0)
+> +		msg->ts_nsec = ts_nsec;
+> +	else
+> +		msg->ts_nsec = local_clock();
+>  	memset(log_dict(msg) + dict_len, 0, pad_len);
+>  	msg->len = sizeof(struct log) + text_len + dict_len + pad_len;
+>  
+> @@ -446,7 +459,7 @@ static ssize_t devkmsg_read(struct file *file, char __user *buf,
+>  	ts_usec = msg->ts_nsec;
+>  	do_div(ts_usec, 1000);
+>  	len = sprintf(user->buf, "%u,%llu,%llu;",
+> -		      msg->level, user->seq, ts_usec);
+> +		      (msg->facility << 3) | msg->level, user->seq, ts_usec);
+>  
+>  	/* escape non-printable characters */
+>  	for (i = 0; i < msg->text_len; i++) {
+> @@ -787,6 +800,21 @@ static bool printk_time;
+>  #endif
+>  module_param_named(time, printk_time, bool, S_IRUGO | S_IWUSR);
+>  
+> +static size_t print_time(u64 ts, char *buf)
+> +{
+> +	unsigned long rem_nsec;
+> +
+> +	if (!printk_time)
+> +		return 0;
+> +
+> +	if (!buf)
+> +		return 15;
+> +
+> +	rem_nsec = do_div(ts, 1000000000);
+> +	return sprintf(buf, "[%5lu.%06lu] ",
+> +		       (unsigned long)ts, rem_nsec / 1000);
+> +}
+> +
+>  static size_t print_prefix(const struct log *msg, bool syslog, char *buf)
+>  {
+>  	size_t len = 0;
+> @@ -803,18 +831,7 @@ static size_t print_prefix(const struct log *msg, bool syslog, char *buf)
+>  		}
+>  	}
+>  
+> -	if (printk_time) {
+> -		if (buf) {
+> -			unsigned long long ts = msg->ts_nsec;
+> -			unsigned long rem_nsec = do_div(ts, 1000000000);
+> -
+> -			len += sprintf(buf + len, "[%5lu.%06lu] ",
+> -					 (unsigned long) ts, rem_nsec / 1000);
+> -		} else {
+> -			len += 15;
+> -		}
+> -	}
+> -
+> +	len += print_time(msg->ts_nsec, buf ? buf + len : NULL);
+>  	return len;
+>  }
+>  
+> @@ -1272,15 +1289,25 @@ static inline void printk_delay(void)
+>  	}
+>  }
+>  
+> +/*
+> + * Continuation lines are buffered, and not committed to the record buffer
+> + * until the line is complete, or a race forces a flush. The line fragments
+> + * though, are printed immediately to the consoles to ensure everything has
+> + * reached the console in case of a kernel crash.
+> + */
+> +static char cont_buf[LOG_LINE_MAX];
+> +static size_t cont_len;
+> +static size_t cont_cons;
+> +static size_t cont_cons_len;
+> +static int cont_level;
+> +static u64 cont_ts_nsec;
+> +static struct task_struct *cont_task;
+> +
+>  asmlinkage int vprintk_emit(int facility, int level,
+>  			    const char *dict, size_t dictlen,
+>  			    const char *fmt, va_list args)
+>  {
+>  	static int recursion_bug;
+> -	static char cont_buf[LOG_LINE_MAX];
+> -	static size_t cont_len;
+> -	static int cont_level;
+> -	static struct task_struct *cont_task;
+>  	static char textbuf[LOG_LINE_MAX];
+>  	char *text = textbuf;
+>  	size_t text_len;
+> @@ -1326,7 +1353,8 @@ asmlinkage int vprintk_emit(int facility, int level,
+>  		recursion_bug = 0;
+>  		printed_len += strlen(recursion_msg);
+>  		/* emit KERN_CRIT message */
+> -		log_store(0, 2, NULL, 0, recursion_msg, printed_len);
+> +		log_store(0, 2, LOG_DEFAULT, 0,
+> +			  NULL, 0, recursion_msg, printed_len);
+>  	}
+>  
+>  	/*
+> @@ -1369,13 +1397,17 @@ asmlinkage int vprintk_emit(int facility, int level,
+>  			 * Flush earlier buffer, which is either from a
+>  			 * different thread, or when we got a new prefix.
+>  			 */
+> -			log_store(facility, cont_level, NULL, 0, cont_buf, cont_len);
+> +			log_store(facility, cont_level,
+> +				  LOG_NOCONS, cont_ts_nsec,
+> +				  NULL, 0, cont_buf, cont_len);
+>  			cont_len = 0;
+>  		}
+>  
+>  		if (!cont_len) {
+> +			cont_cons = 0;
+>  			cont_level = level;
+>  			cont_task = current;
+> +			cont_ts_nsec = local_clock();
+>  		}
+>  
+>  		/* buffer or append to earlier buffer from the same thread */
+> @@ -1383,6 +1415,8 @@ asmlinkage int vprintk_emit(int facility, int level,
+>  			text_len = sizeof(cont_buf) - cont_len;
+>  		memcpy(cont_buf + cont_len, text, text_len);
+>  		cont_len += text_len;
+> +		cont_cons_len = cont_len;
+> +		printed_len = text_len;
+>  	} else {
+>  		if (cont_len && cont_task == current) {
+>  			if (prefix) {
+> @@ -1392,6 +1426,7 @@ asmlinkage int vprintk_emit(int facility, int level,
+>  				 * with an interrupt.
+>  				 */
+>  				log_store(facility, cont_level,
+> +					  LOG_NOCONS, cont_ts_nsec,
+>  					  NULL, 0, cont_buf, cont_len);
+>  				cont_len = 0;
+>  			}
+> @@ -1401,14 +1436,15 @@ asmlinkage int vprintk_emit(int facility, int level,
+>  				text_len = sizeof(cont_buf) - cont_len;
+>  			memcpy(cont_buf + cont_len, text, text_len);
+>  			cont_len += text_len;
+> +			cont_cons_len = cont_len;
+>  			log_store(facility, cont_level,
+> +				  LOG_NOCONS, cont_ts_nsec,
+>  				  NULL, 0, cont_buf, cont_len);
+>  			cont_len = 0;
+> -			cont_task = NULL;
+> -			printed_len = cont_len;
+> +			printed_len = text_len;
+>  		} else {
+>  			/* ordinary single and terminated line */
+> -			log_store(facility, level,
+> +			log_store(facility, level, LOG_DEFAULT, 0,
+>  				  dict, dictlen, text, text_len);
+>  			printed_len = text_len;
+>  		}
+> @@ -1795,6 +1831,7 @@ static u32 console_idx;
+>   */
+>  void console_unlock(void)
+>  {
+> +	static char text[LOG_LINE_MAX];
+>  	static u64 seen_seq;
+>  	unsigned long flags;
+>  	bool wake_klogd = false;
+> @@ -1807,10 +1844,37 @@ void console_unlock(void)
+>  
+>  	console_may_schedule = 0;
+>  
+> +	/* flush buffered message fragment immediately to console */
+> +	raw_spin_lock_irqsave(&logbuf_lock, flags);
+> +	if (cont_cons_len && (cont_cons < cont_cons_len || !cont_len)) {
+> +		size_t textlen = 0;
+> +		size_t len;
+> +
+> +		len = cont_cons_len - cont_cons;
+> +		if (!cont_cons)
+> +			textlen = print_time(cont_ts_nsec, text);
+> +		memcpy(text + textlen, cont_buf + cont_cons, len);
+> +		textlen += len;
+> +		cont_cons = cont_cons_len;
+> +
+> +		if (!cont_len) {
+> +			/* last chunk of line; terminate */
+> +			text[textlen++] = '\n';
+> +			cont_cons_len = 0;
+> +		}
+> +		raw_spin_unlock(&logbuf_lock);
+> +
+> +		stop_critical_timings();
+> +		call_console_drivers(cont_level, text, textlen);
+> +		start_critical_timings();
+> +
+> +		local_irq_restore(flags);
+> +	} else
+> +		raw_spin_unlock_irqrestore(&logbuf_lock, flags);
+> +
+>  again:
+>  	for (;;) {
+>  		struct log *msg;
+> -		static char text[LOG_LINE_MAX];
+>  		size_t len;
+>  		int level;
+>  
+> @@ -1825,13 +1889,22 @@ again:
+>  			console_seq = log_first_seq;
+>  			console_idx = log_first_idx;
+>  		}
+> -
+> +skip:
+>  		if (console_seq == log_next_seq)
+>  			break;
+>  
+>  		msg = log_from_idx(console_idx);
+> -		level = msg->level & 7;
+> +		if (msg->flags & LOG_NOCONS) {
+> +			/*
+> +			 * Skip record we have buffered and already printed
+> +			 * directly to the console when we received it.
+> +			 */
+> +			console_idx = log_next(console_idx);
+> +			console_seq++;
+> +			goto skip;
+> +		}
+>  
+> +		level = msg->level;
+>  		len = msg_print_text(msg, false, text, sizeof(text));
+>  
+>  		console_idx = log_next(console_idx);
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
