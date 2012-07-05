@@ -1,27 +1,29 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 741672C01FF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:15:03 +1000 (EST)
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4FE622C01FA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:14:57 +1000 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 5 Jul 2012 13:44:58 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q658EtjY46202912
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 13:44:55 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q65DjTjv030992
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 23:45:29 +1000
+ Thu, 5 Jul 2012 08:04:54 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q658EWnh63373464
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:32 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q658EVi4026097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:32 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
 Subject: [PATCH 1/9] arch/powerpc: Use hpt_va to compute virtual address
-Date: Thu,  5 Jul 2012 13:44:53 +0530
-Message-Id: <1341476093-5496-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Thu,  5 Jul 2012 13:44:10 +0530
+Message-Id: <1341476058-5405-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1341476058-5405-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1341476058-5405-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
