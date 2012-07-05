@@ -1,31 +1,20 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9CBFC2C0D35
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:30:04 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 5 Jul 2012 08:08:16 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6586tOi9044436
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:06:55 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q658EdKl026817
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:40 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 7/9] arch/powerpc: Use 50 bits of VSID in slbmte
-Date: Thu,  5 Jul 2012 13:44:16 +0530
-Message-Id: <1341476058-5405-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1341476058-5405-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1341476058-5405-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 446142C02EF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:33:52 +1000 (EST)
+Date: Thu, 5 Jul 2012 18:33:45 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the final tree
+Message-Id: <20120705183345.ee84ec1048a19aa1c7129578@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__5_Jul_2012_18_33_45_+1000_611tFbWnbaq1mpxy"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Alan Modra <amodra@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,37 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+--Signature=_Thu__5_Jul_2012_18_33_45_+1000_611tFbWnbaq1mpxy
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Increase the number of valid VSID bits in slbmte instruction.
-We will use the new bits when we increase valid VSID bits.
+Hi all,
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/slb_low.S |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+After merging the final tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
 
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index c355af6..c1fc81c 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -226,7 +226,7 @@ _GLOBAL(slb_allocate_user)
-  */
- slb_finish_load:
- 	ASM_VSID_SCRAMBLE(r10,r9,256M)
--	rldimi	r11,r10,SLB_VSID_SHIFT,16	/* combine VSID and flags */
-+	rldimi	r11,r10,SLB_VSID_SHIFT,2	/* combine VSID and flags */
- 
- 	/* r3 = EA, r11 = VSID data */
- 	/*
-@@ -290,7 +290,7 @@ _GLOBAL(slb_compare_rr_to_size)
- slb_finish_load_1T:
- 	srdi	r10,r10,40-28		/* get 1T ESID */
- 	ASM_VSID_SCRAMBLE(r10,r9,1T)
--	rldimi	r11,r10,SLB_VSID_SHIFT_1T,16	/* combine VSID and flags */
-+	rldimi	r11,r10,SLB_VSID_SHIFT_1T,2	/* combine VSID and flags */
- 	li	r10,MMU_SEGSIZE_1T
- 	rldimi	r11,r10,SLB_VSID_SSIZE_SHIFT,0	/* insert segment size */
- 
--- 
-1.7.10
+powerpc64-linux-ld: drivers/built-in.o: In function `.gpiochip_is_requested=
+':
+(.text+0x4): sibling call optimization to `_savegpr0_29' does not allow aut=
+omatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling=
+-calls, or make `_savegpr0_29' extern
+
+I got more than 60000 of these messages before I killed the link. :-(  I
+am not sure what has changed to do this, but it may have been masked for
+the past few releases due to other linking problems.
+
+I have left this broken for today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Thu__5_Jul_2012_18_33_45_+1000_611tFbWnbaq1mpxy
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJP9VFpAAoJEECxmPOUX5FEr/YQAIx9U+6XTE36nEohZEY6fKJL
+hffLwEBbdUk0HWbk5x9oMTltSKK00V+Xgu/IJ7OCpsIbmWvZ10sn7NYqrSYmmO4B
+aArh0od6j/Gd4cLKwfgBzTzMYI74XHHjGCm5t5yOzihFjDZwK9peg81RCqgbQ9YM
+CjQDAuDgoI5Mx05/Bqg8yT70ACBOjsRV0n+0CslLu9+FanqHTvIPPQSQsZ/wbWu2
+O/2v6nv+ZImgDkdUedzm1KGug61s3GJir8OSdcHb0RZYGgd+CAAT3mobtbA563PW
+9r/1AfWJgcXnvDxJ2b/7QrBJ3lej0Wi6y/o5yjdQw80iR7dLKZ7ObonPZ7jHTm96
+oFIXv0fA4SFS9H0pmNN0X2tIKL/ZZVF5Y+Yohzo4pEbSONNZY73/v+U9YYbOV+c1
+w1GHfee6jvTem76IkXgGqotCYtXTa+21c5FaJgg+gU/FlmrSqpSSkdYriEPi+5CC
+hW6/xrt90m1zQ4MSc9bp8yA47IKlPETTtSyymZ1nMjxzgvARo/sABEKNXythN3l2
+X3kmaeK1ZGF8VBz1E/M1jzEOiSEoQupr3O0A3D5bjAQUCDopeaRVMz8xl5qB5Gfy
+hVGCehopZMbW51+q9OHN92DcDFZaKuVi/NDKXMlrXuZNPNFkpdkETk5dM2JmWO33
+XKNmYjZB0RyM7Q/XDY6k
+=qvIb
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__5_Jul_2012_18_33_45_+1000_611tFbWnbaq1mpxy--
