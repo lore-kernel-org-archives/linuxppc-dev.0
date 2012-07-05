@@ -1,20 +1,19 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 17B6C2C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 15:37:41 +1000 (EST)
-Date: Thu, 5 Jul 2012 15:37:28 +1000
+ by ozlabs.org (Postfix) with ESMTP id 8B6952C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 15:49:35 +1000 (EST)
+Date: Thu, 5 Jul 2012 15:49:29 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: Alexander Graf <agraf@suse.de>
-Subject: linux-next: manual merge of the kvm-ppc tree with Linus' tree
-Message-Id: <20120705153728.19e2318efa0cfb0eedecc4f1@canb.auug.org.au>
+Subject: linux-next: build failure after merge of the kvm-ppc tree
+Message-Id: <20120705154929.219789032ef59f9243d0b8a5@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Thu__5_Jul_2012_15_37_28_+1000_YjxlVTSD630I0fVd"
-Cc: linux-kernel@vger.kernel.org, Stuart Yoder <stuart.yoder@freescale.com>,
- Tiejun Chen <tiejun.chen@windriver.com>, linux-next@vger.kernel.org,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>
+ boundary="Signature=_Thu__5_Jul_2012_15_49_29_+1000_=prvsJydXyRidabc"
+Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel@vger.kernel.org, Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,119 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__5_Jul_2012_15_37_28_+1000_YjxlVTSD630I0fVd
+--Signature=_Thu__5_Jul_2012_15_49_29_+1000_=prvsJydXyRidabc
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi Alexander,
 
-Today's linux-next merge of the kvm-ppc tree got a conflict in
-arch/powerpc/kernel/entry_64.S between commit c58ce2b1e3c7 ("ppc64: fix
-missing to check all bits of _TIF_USER_WORK_MASK in preempt") from Linus'
-tree and commit bc8cc4993e19 ("PPC: use CURRENT_THREAD_INFO instead of
-open coded assembly") from the kvm-ppc tree.
+After merging the kvm-ppc tree, today's linux-next build (powerpc
+ppc64_defconfig) failed like this:
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
+arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+arch/powerpc/kernel/exceptions-64s.S:479: Error: wrong number of operands
+arch/powerpc/kernel/exceptions-64s.S:486: Error: wrong number of operands
+arch/powerpc/kernel/exceptions-64s.S:486: Error: wrong number of operands
+arch/powerpc/kernel/exceptions-64s.S:487: Error: wrong number of operands
+arch/powerpc/kernel/exceptions-64s.S:487: Error: wrong number of operands
+arch/powerpc/kernel/exceptions-64s.S:494: Error: wrong number of operands
+arch/powerpc/kernel/exceptions-64s.S:494: Error: wrong number of operands
+
+Caused by commit bc8cc4993e19 ("PPC: use CURRENT_THREAD_INFO instead of
+open coded assembly").  The fact that this patch has problems was already
+pointed out on the linuxppc-dev mailing list and it clearly hasn't been
+build tested.
+
+I have used the version of the kvm-ppc tree from next-20120703 for today.
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --cc arch/powerpc/kernel/entry_64.S
-index cf38a17,ba943b9..0000000
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@@ -559,54 -558,27 +559,54 @@@ _GLOBAL(ret_from_except_lite
-  	mtmsrd	r10,1		  /* Update machine state */
-  #endif /* CONFIG_PPC_BOOK3E */
- =20
-- 	clrrdi	r9,r1,THREAD_SHIFT	/* current_thread_info() */
- -#ifdef CONFIG_PREEMPT
-+ 	CURRENT_THREAD_INFO(r9, r1)
- -	li	r0,_TIF_NEED_RESCHED	/* bits to check */
-  	ld	r3,_MSR(r1)
-  	ld	r4,TI_FLAGS(r9)
- -	/* Move MSR_PR bit in r3 to _TIF_SIGPENDING position in r0 */
- -	rlwimi	r0,r3,32+TIF_SIGPENDING-MSR_PR_LG,_TIF_SIGPENDING
- -	and.	r0,r4,r0	/* check NEED_RESCHED and maybe SIGPENDING */
- -	bne	do_work
- -
- -#else /* !CONFIG_PREEMPT */
- -	ld	r3,_MSR(r1)	/* Returning to user mode? */
-  	andi.	r3,r3,MSR_PR
- -	beq	restore		/* if not, just restore regs and return */
- +	beq	resume_kernel
- =20
-  	/* Check current_thread_info()->flags */
- +	andi.	r0,r4,_TIF_USER_WORK_MASK
- +	beq	restore
- +
- +	andi.	r0,r4,_TIF_NEED_RESCHED
- +	beq	1f
- +	bl	.restore_interrupts
- +	bl	.schedule
- +	b	.ret_from_except_lite
- +
- +1:	bl	.save_nvgprs
- +	bl	.restore_interrupts
- +	addi	r3,r1,STACK_FRAME_OVERHEAD
- +	bl	.do_notify_resume
- +	b	.ret_from_except
- +
- +resume_kernel:
- +#ifdef CONFIG_PREEMPT
- +	/* Check if we need to preempt */
- +	andi.	r0,r4,_TIF_NEED_RESCHED
- +	beq+	restore
- +	/* Check that preempt_count() =3D=3D 0 and interrupts are enabled */
- +	lwz	r8,TI_PREEMPT(r9)
- +	cmpwi	cr1,r8,0
- +	ld	r0,SOFTE(r1)
- +	cmpdi	r0,0
- +	crandc	eq,cr1*4+eq,eq
- +	bne	restore
- +
- +	/*
- +	 * Here we are preempting the current task. We want to make
- +	 * sure we are soft-disabled first
- +	 */
- +	SOFT_DISABLE_INTS(r3,r4)
- +1:	bl	.preempt_schedule_irq
- +
- +	/* Re-test flags and eventually loop */
-- 	clrrdi	r9,r1,THREAD_SHIFT
-+ 	CURRENT_THREAD_INFO(r9, r1)
-  	ld	r4,TI_FLAGS(r9)
- -	andi.	r0,r4,_TIF_USER_WORK_MASK
- -	bne	do_work
- -#endif /* !CONFIG_PREEMPT */
- +	andi.	r0,r4,_TIF_NEED_RESCHED
- +	bne	1b
- +#endif /* CONFIG_PREEMPT */
- =20
-  	.globl	fast_exc_return_irq
-  fast_exc_return_irq:
-
---Signature=_Thu__5_Jul_2012_15_37_28_+1000_YjxlVTSD630I0fVd
+--Signature=_Thu__5_Jul_2012_15_49_29_+1000_=prvsJydXyRidabc
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJP9SgYAAoJEECxmPOUX5FE5TEP/jwozfX4TVhoqhThdEQI8w0W
-oRscf1EedAzupKLj2rLiDZfe2AUlxCVOSY37CcoLBx87zVlXowTcHZkS3J6ihWtO
-YsaZUMmd8fuTBfVppQOflAEzmXjYln8ye/XGgwij4cn8P3hmisPY+NhgudHMmvph
-WES/Or9ZYf4ikAH6A413VivaTM2zy+IghboJ0vhhOx2mXBpMM0wT6fK0vAD7srex
-ZqQ8mnTnSW5yyZ1O/B4hFowMlj2cTsoruxUV5UJ07SlUIvTQUsRb6fcIOQoM21Mu
-e89lMTLy6uFV5wOT6CVFkkNSAOniO7eSGfiMLLFljgWyFU8muPcF2UDuB7d6rUM2
-yQkveN8oTsVhY6GNDukrYARIOgs0PNGVmQDXvBjqm5gRVVsebst3U6kSw2ty7mcD
-kplYcG7g87y2FgcsF5GQJNf8f2r845qY2nS0KlAyqAvcZylZ4nLIiMyI1Gk9bz9T
-ijWmHPMfAtRUPCre81dW96+48RCuT6A6tMTZpOdolsflibHD8urPw1MlxreHKUvH
-hYZx7r7H3bMKSJcIey64GkEv+WRY9vV4hVVoo8+1SpACm/YNO2mCIuW5/9V2RWyL
-SNL18HTlWHWzwp1rFyRORgGeAVg46WRr6VrrI9alhwWsI/ydZPxuUBObjrIVzn6e
-J/jngMB/sS/DMsbVFQyV
-=O7Ve
+iQIcBAEBCAAGBQJP9SrpAAoJEECxmPOUX5FEZZkQAJxNa1Um+xGuhziscd5TI0N5
+NU2ZYiyMZcI0uh7fS2WaOrwop4i70mltOp2fV+z9pamFS8K46Bf/Uxr1jrr265cy
+4M9oXUhbYo7/z8O5BiUzBc+cCtA4BbjGoaux5apuHMHpUFamE1Fty86LtaF9Dauj
+g3DOn0cJMZ+y1Uf0Q1tK72GNt3nmPeU01effqgFLvi+bC//q/OHfBoWwAQcRjEqK
+ncp5ZES5ef4VfQfPal24anUTqxgqTvIWW2kc4JcwgnmkkUxJa4MCVD1vQljJkNWD
+r9SOv2DxW+ZTNZIQrF8nlW6azVgvS/l6Albiyngfr8T7e0Yg7xpyPDlJ4IiKSjst
+1eqC3nyB1A++w/YwEtgRR1An3QGpo3JhduWtxQnabQE5is0EgT93MtfmiQVb+1md
+W7W/MGhkLAb/sHfET1wnpLXJBBx9ua+0TY00bQ66ZgWv44t7mcCkP8nE7FKYom2c
+2vTFc6iCM/J7eCVqEv4I270p/3Gw+D+EekYbEtOmW9UnWfUksRyXrjIaA2XT4fhX
++U8etlZZDtfK9eh6+7MrFHhe+gzj+dcwBRzS70MdbbGndR7lX3SJYBwVtVttfdMy
+Bj9d5w3aZScZeU9BS0XsTfBASw9ImQ8x1HGx6sb1W+qNk2PeD3cW0S4HLQtLJ1EV
+3nq7i8aHGa2f6lP3AKdO
+=95m6
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__5_Jul_2012_15_37_28_+1000_YjxlVTSD630I0fVd--
+--Signature=_Thu__5_Jul_2012_15_49_29_+1000_=prvsJydXyRidabc--
