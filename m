@@ -1,40 +1,27 @@
-Return-Path: <zch@tx30smr01.freescale.net>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4CFDA2C0078
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 20:24:18 +1000 (EST)
-Received: from mail8-co1 (localhost [127.0.0.1])	by mail8-co1-R.bigfish.com
- (Postfix) with ESMTP id 0B6E4B40139	for <linuxppc-dev@lists.ozlabs.org>; Thu,
- 5 Jul 2012 10:22:09 +0000 (UTC)
-Received: from CO1EHSMHS016.bigfish.com (unknown [10.243.78.241])	by
- mail8-co1.bigfish.com (Postfix) with ESMTP id DBF4A88004A	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 10:22:06 +0000 (UTC)
-Received: from localhost.localdomain ([10.213.130.145])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q65AO8Pp018947	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 03:24:09 -0700
-Date: Thu, 5 Jul 2012 18:25:29 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: Re: [PATCH v7 1/5] powerpc/85xx: implement hardware timebase sync
-Message-ID: <20120705102529.GA7982@localhost.localdomain>
-References: <1341310879-5468-1-git-send-email-chenhui.zhao@freescale.com>
- <CAOZdJXUeY-_mmBLoA25_g4eLqwHxYX4c_ECbU+KYqfM307THNQ@mail.gmail.com>
- <20120704031426.GA6133@localhost.localdomain>
- <4FF3B5B6.8090400@freescale.com>
- <20120704034545.GA6196@localhost.localdomain>
- <4FF45F19.2080607@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <4FF45F19.2080607@freescale.com>
-Sender: <zch@tx30smr01.freescale.net>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Zhao Chenhui-B35336 <B35336@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Kay Sievers <kay@vrfy.org>
+Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
+In-reply-to: <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
+References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
+ <20120625150722.8cd4f45d.akpm@linux-foundation.org>
+ <20120625235531.GB3652@kroah.com>
+ <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
+ <20120626002307.GA4389@kroah.com>
+ <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
+ <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
+ <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
+ <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
+ <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
+ <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
+Date: Thu, 05 Jul 2012 20:20:25 +1000
+Message-ID: <16043.1341483625@neuling.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,45 +31,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 04, 2012 at 10:19:54AM -0500, Tabi Timur-B04825 wrote:
-> Zhao Chenhui wrote:
-> > On Tue, Jul 03, 2012 at 10:17:12PM -0500, Tabi Timur-B04825 wrote:
-> >> Zhao Chenhui wrote:
-> >>> If the guts variable is NULL, it indicates there is error in dts or kernel.
-> >>> We should fix the error, rather than ignore it.
-> >>
-> >> And that's why there's a warning message.  Crashing the kernel is not
-> >> going to fix anything.
-> >>
+Kay Sievers <kay@vrfy.org> wrote:
+
+> On Thu, Jul 5, 2012 at 10:39 AM, Kay Sievers <kay@vrfy.org> wrote:
+> > On Thu, Jul 5, 2012 at 9:03 AM, Michael Neuling <mikey@neuling.org> wrote:
+> >>> On Mon, 2012-06-25 at 18:40 -0700, Linus Torvalds wrote:
 > >
-> > This error likely crashes the kenel somewhere.
+> >>> > I think it might be a great idea to buffer for logging in order to
+> >>> > generate one individual buffer record there.
+> >>> >
+> >>> > But it needs to be printed as it is generated.
+> >>>
+> >>> That's a good idea.
+> >>>
+> >>> Something like this could work - only minimally tested at this moment.
+> >>
+> >> This breaks some powerpc configs and is in Linus' tree now as
+> >> 084681d14e.
+> >>
+> >> When we have printks without a newline (like show_regs()), it
+> >> sometimes:
+> >
+> > x86 has that a lot too.
+> >
+> >> 1) drops the console output for that line (dmesg is fine).  Patch to fix
+> >>    this below.
+> >
+> > That doesn't look right. We should already have put that out to the
+> > console, and we only want to store it away. Your patch, as expected,
+> > duplicates all the continuation lines on the console here:
+> > [    0.674957] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+> > [    0.674957] hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+> >
+> >> 2) adds a newline unnecessary to both console and dmesg.  I have no fix
+> >>    for this currently.
+> >> Reverting this patch fixes both problems.
+> >
+> > Not here. I can't reproduce any of this here, it all looks fine.
+> >
+> > Is that possibly some early printk() or other console trickery on ppc
+> > that produces the issue?
 > 
-> Can you test this, please?
-> 
-> The point I'm trying to make is that it's wrong to intentionally halt the 
-> kernel unless you're sure that it's the best option.  A missing device 
-> tree node is supposed to only disable a given feature, not break everything.
-> 
+> Or, are you really sure this isn't just a race with another printk and
+> the content got merged with some other line of the output? The added
+> newline you mention could suggest that.
 
-I think there is some misunderstanding here.
+I can make 1) happen on UP or SMP.
 
-	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
-	if (np) {
-		guts = of_iomap(np, 0);
-		of_node_put(np);
-		if (!guts) {
-			pr_err("%s: Could not map guts node address\n",
-								__func__);
-			return;
-		}
-		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
-		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
-	}
+I can only make 2) happen on SMP.  It's when the second CPU is coming up
+and it's printing something.  The first CPU isn't printing anything at
+this stage (there is no garbled console here) so I don't think it's a
+race.  I see it consistently in show_regs().  Every printk without a
+newline.  ie I get this:
+---
+NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
+REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc5-mikey)
+MSR: 9000000000021032 
+<
+SF
+,HV
+,ME
+,IR
+,DR
+,RI
+>
+  CR: 28000042  XER: 22000000
+SOFTE: 0
+CFAR: c0000000007402f8
+TASK = c00000007e56bb40[0] 'swapper/1' THREAD: c00000007e59c000
+ CPU: 1
+---
 
-If the guts node is missing, this code snippet will be skipped. If the guts node is existed,
-the return value of of_iomap(), namely guts, will be tested. If it is NULL, it shows
-that there is error in dts, or the ioremap() in of_iomap() failed. I think
-these errors are fatal errors, so I print an error info and return.
+It's consistent for printks without newlines in show_regs().  MSR
+through to XER should all be on the same line.
 
--Chenhui
-																													
+Mikey
+
+> With the buffering for the console output removed, I see garbled
+> console output here too (like we always had before the new kmsg) when
+> continuation printks race against printks from any other process. That
+> was all gone with the buffering (only two continuation prints would
+> race, not any other), but we needed to skip buffering the console
+> output for other, more important reasons.
