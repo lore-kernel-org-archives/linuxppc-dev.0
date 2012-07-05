@@ -1,25 +1,29 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Kay Sievers <kay@vrfy.org>
-Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-In-reply-to: <1340726856.977.6.camel@mop>
-References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
- <20120625150722.8cd4f45d.akpm@linux-foundation.org>
- <20120625235531.GB3652@kroah.com>
- <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
- <20120626002307.GA4389@kroah.com>
- <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
- <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
- <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
- <1340726856.977.6.camel@mop>
-Date: Thu, 05 Jul 2012 17:03:07 +1000
-Message-ID: <22482.1341471787@neuling.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- Wu Fengguang <fengguang.wu@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 741672C01FF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:15:03 +1000 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 5 Jul 2012 13:44:58 +0530
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q658EtjY46202912
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 13:44:55 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q65DjTjv030992
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 23:45:29 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH 1/9] arch/powerpc: Use hpt_va to compute virtual address
+Date: Thu,  5 Jul 2012 13:44:53 +0530
+Message-Id: <1341476093-5496-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,353 +33,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Mon, 2012-06-25 at 18:40 -0700, Linus Torvalds wrote:
-> > On Mon, Jun 25, 2012 at 5:56 PM, Kay Sievers <kay@vrfy.org> wrote:
-> > >
-> > > Buffering has nice effects though:
-> > > It makes continuation lines appear as one record in the buffer, not as
-> > > n individual prints with n headers.
-> > 
-> > As I already mentioned, buffering for *logging* is different from
-> > buffering for *printing*.
-> > 
-> > I think it might be a great idea to buffer for logging in order to
-> > generate one individual buffer record there.
-> > 
-> > But it needs to be printed as it is generated.
-> 
-> That's a good idea.
-> 
-> Something like this could work - only minimally tested at this moment.
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This breaks some powerpc configs and is in Linus' tree now as
-084681d14e.
+Don't open code the same
 
-When we have printks without a newline (like show_regs()), it
-sometimes:
-1) drops the console output for that line (dmesg is fine).  Patch to fix
-   this below.
-2) adds a newline unnecessary to both console and dmesg.  I have no fix
-   for this currently.
-Reverting this patch fixes both problems.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/cell/beat_htab.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Post rc4 is way to late to be adding largely untested features like
-this.  
-
-I suggest we revert this until the next merge window.
-
-Mikey
-
-diff --git a/kernel/printk.c b/kernel/printk.c
-index dba1821..91659da 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -1335,7 +1335,7 @@ static void cont_flush(void)
-        if (cont.len == 0)
-                return;
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+index 943c9d3..b83077e 100644
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ b/arch/powerpc/platforms/cell/beat_htab.c
+@@ -259,7 +259,7 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
+ 	u64 dummy0, dummy1;
  
--       log_store(cont.facility, cont.level, LOG_NOCONS, cont.ts_nsec,
-+       log_store(cont.facility, cont.level, LOG_DEFAULT, cont.ts_nsec,
-                  NULL, 0, cont.buf, cont.len);
+ 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
+-	va = (vsid << 28) | (ea & 0x0fffffff);
++	va = hpt_va(ea, vsid, MMU_SEGSIZE_256M);
  
-        cont.flushed = true;
-
-
-
-> 
-> 
-> From: Kay Sievers <kay@vrfy.org>
-> Subject: printk: flush continuation lines immediately to console
-> 
-> Continuation lines are buffered internally to merge the chunked
-> printk()s into a single record, and to isolate potentially racy
-> continuation users from usual terminated line users.
-> 
-> This though, has the effect that partial lines are not printed to
-> the console in the moment they are emitted. In case the kernel
-> crashes in the meantime, the potentially interesting printed
-> information will never reach the consoles.
-> 
-> Here we share the continuation buffer with the console copy logic,
-> and partial lines are immediately flushed to the consoles, but still
-> buffered internally to improve the integrity of the messages.
-> ---
-> 
->  kernel/printk.c |  129 +++++++++++++++++++++++++++++++++++++++++++------------
->  1 file changed, 101 insertions(+), 28 deletions(-)
-> 
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index a2276b9..92c34bd1 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
-> @@ -193,12 +193,19 @@ static int console_may_schedule;
->   * separated by ',', and find the message after the ';' character.
->   */
->  
-> +enum log_flags {
-> +	LOG_DEFAULT = 0,
-> +	LOG_NOCONS = 1,		/* already flushed, do not print to console */
-> +};
-> +
->  struct log {
->  	u64 ts_nsec;		/* timestamp in nanoseconds */
->  	u16 len;		/* length of entire record */
->  	u16 text_len;		/* length of text buffer */
->  	u16 dict_len;		/* length of dictionary buffer */
-> -	u16 level;		/* syslog level + facility */
-> +	u8 facility;		/* syslog facility */
-> +	u8 flags:5;		/* internal record flags */
-> +	u8 level:3;		/* syslog level */
->  };
->  
->  /*
-> @@ -286,6 +293,7 @@ static u32 log_next(u32 idx)
->  
->  /* insert record into the buffer, discard old ones, update heads */
->  static void log_store(int facility, int level,
-> +		      enum log_flags flags, u64 ts_nsec,
->  		      const char *dict, u16 dict_len,
->  		      const char *text, u16 text_len)
->  {
-> @@ -329,8 +337,13 @@ static void log_store(int facility, int level,
->  	msg->text_len = text_len;
->  	memcpy(log_dict(msg), dict, dict_len);
->  	msg->dict_len = dict_len;
-> -	msg->level = (facility << 3) | (level & 7);
-> -	msg->ts_nsec = local_clock();
-> +	msg->facility = facility;
-> +	msg->level = level & 7;
-> +	msg->flags = flags & 0x1f;
-> +	if (ts_nsec > 0)
-> +		msg->ts_nsec = ts_nsec;
-> +	else
-> +		msg->ts_nsec = local_clock();
->  	memset(log_dict(msg) + dict_len, 0, pad_len);
->  	msg->len = sizeof(struct log) + text_len + dict_len + pad_len;
->  
-> @@ -446,7 +459,7 @@ static ssize_t devkmsg_read(struct file *file, char __user *buf,
->  	ts_usec = msg->ts_nsec;
->  	do_div(ts_usec, 1000);
->  	len = sprintf(user->buf, "%u,%llu,%llu;",
-> -		      msg->level, user->seq, ts_usec);
-> +		      (msg->facility << 3) | msg->level, user->seq, ts_usec);
->  
->  	/* escape non-printable characters */
->  	for (i = 0; i < msg->text_len; i++) {
-> @@ -787,6 +800,21 @@ static bool printk_time;
->  #endif
->  module_param_named(time, printk_time, bool, S_IRUGO | S_IWUSR);
->  
-> +static size_t print_time(u64 ts, char *buf)
-> +{
-> +	unsigned long rem_nsec;
-> +
-> +	if (!printk_time)
-> +		return 0;
-> +
-> +	if (!buf)
-> +		return 15;
-> +
-> +	rem_nsec = do_div(ts, 1000000000);
-> +	return sprintf(buf, "[%5lu.%06lu] ",
-> +		       (unsigned long)ts, rem_nsec / 1000);
-> +}
-> +
->  static size_t print_prefix(const struct log *msg, bool syslog, char *buf)
->  {
->  	size_t len = 0;
-> @@ -803,18 +831,7 @@ static size_t print_prefix(const struct log *msg, bool syslog, char *buf)
->  		}
->  	}
->  
-> -	if (printk_time) {
-> -		if (buf) {
-> -			unsigned long long ts = msg->ts_nsec;
-> -			unsigned long rem_nsec = do_div(ts, 1000000000);
-> -
-> -			len += sprintf(buf + len, "[%5lu.%06lu] ",
-> -					 (unsigned long) ts, rem_nsec / 1000);
-> -		} else {
-> -			len += 15;
-> -		}
-> -	}
-> -
-> +	len += print_time(msg->ts_nsec, buf ? buf + len : NULL);
->  	return len;
->  }
->  
-> @@ -1272,15 +1289,25 @@ static inline void printk_delay(void)
->  	}
->  }
->  
-> +/*
-> + * Continuation lines are buffered, and not committed to the record buffer
-> + * until the line is complete, or a race forces a flush. The line fragments
-> + * though, are printed immediately to the consoles to ensure everything has
-> + * reached the console in case of a kernel crash.
-> + */
-> +static char cont_buf[LOG_LINE_MAX];
-> +static size_t cont_len;
-> +static size_t cont_cons;
-> +static size_t cont_cons_len;
-> +static int cont_level;
-> +static u64 cont_ts_nsec;
-> +static struct task_struct *cont_task;
-> +
->  asmlinkage int vprintk_emit(int facility, int level,
->  			    const char *dict, size_t dictlen,
->  			    const char *fmt, va_list args)
->  {
->  	static int recursion_bug;
-> -	static char cont_buf[LOG_LINE_MAX];
-> -	static size_t cont_len;
-> -	static int cont_level;
-> -	static struct task_struct *cont_task;
->  	static char textbuf[LOG_LINE_MAX];
->  	char *text = textbuf;
->  	size_t text_len;
-> @@ -1326,7 +1353,8 @@ asmlinkage int vprintk_emit(int facility, int level,
->  		recursion_bug = 0;
->  		printed_len += strlen(recursion_msg);
->  		/* emit KERN_CRIT message */
-> -		log_store(0, 2, NULL, 0, recursion_msg, printed_len);
-> +		log_store(0, 2, LOG_DEFAULT, 0,
-> +			  NULL, 0, recursion_msg, printed_len);
->  	}
->  
->  	/*
-> @@ -1369,13 +1397,17 @@ asmlinkage int vprintk_emit(int facility, int level,
->  			 * Flush earlier buffer, which is either from a
->  			 * different thread, or when we got a new prefix.
->  			 */
-> -			log_store(facility, cont_level, NULL, 0, cont_buf, cont_len);
-> +			log_store(facility, cont_level,
-> +				  LOG_NOCONS, cont_ts_nsec,
-> +				  NULL, 0, cont_buf, cont_len);
->  			cont_len = 0;
->  		}
->  
->  		if (!cont_len) {
-> +			cont_cons = 0;
->  			cont_level = level;
->  			cont_task = current;
-> +			cont_ts_nsec = local_clock();
->  		}
->  
->  		/* buffer or append to earlier buffer from the same thread */
-> @@ -1383,6 +1415,8 @@ asmlinkage int vprintk_emit(int facility, int level,
->  			text_len = sizeof(cont_buf) - cont_len;
->  		memcpy(cont_buf + cont_len, text, text_len);
->  		cont_len += text_len;
-> +		cont_cons_len = cont_len;
-> +		printed_len = text_len;
->  	} else {
->  		if (cont_len && cont_task == current) {
->  			if (prefix) {
-> @@ -1392,6 +1426,7 @@ asmlinkage int vprintk_emit(int facility, int level,
->  				 * with an interrupt.
->  				 */
->  				log_store(facility, cont_level,
-> +					  LOG_NOCONS, cont_ts_nsec,
->  					  NULL, 0, cont_buf, cont_len);
->  				cont_len = 0;
->  			}
-> @@ -1401,14 +1436,15 @@ asmlinkage int vprintk_emit(int facility, int level,
->  				text_len = sizeof(cont_buf) - cont_len;
->  			memcpy(cont_buf + cont_len, text, text_len);
->  			cont_len += text_len;
-> +			cont_cons_len = cont_len;
->  			log_store(facility, cont_level,
-> +				  LOG_NOCONS, cont_ts_nsec,
->  				  NULL, 0, cont_buf, cont_len);
->  			cont_len = 0;
-> -			cont_task = NULL;
-> -			printed_len = cont_len;
-> +			printed_len = text_len;
->  		} else {
->  			/* ordinary single and terminated line */
-> -			log_store(facility, level,
-> +			log_store(facility, level, LOG_DEFAULT, 0,
->  				  dict, dictlen, text, text_len);
->  			printed_len = text_len;
->  		}
-> @@ -1795,6 +1831,7 @@ static u32 console_idx;
->   */
->  void console_unlock(void)
->  {
-> +	static char text[LOG_LINE_MAX];
->  	static u64 seen_seq;
->  	unsigned long flags;
->  	bool wake_klogd = false;
-> @@ -1807,10 +1844,37 @@ void console_unlock(void)
->  
->  	console_may_schedule = 0;
->  
-> +	/* flush buffered message fragment immediately to console */
-> +	raw_spin_lock_irqsave(&logbuf_lock, flags);
-> +	if (cont_cons_len && (cont_cons < cont_cons_len || !cont_len)) {
-> +		size_t textlen = 0;
-> +		size_t len;
-> +
-> +		len = cont_cons_len - cont_cons;
-> +		if (!cont_cons)
-> +			textlen = print_time(cont_ts_nsec, text);
-> +		memcpy(text + textlen, cont_buf + cont_cons, len);
-> +		textlen += len;
-> +		cont_cons = cont_cons_len;
-> +
-> +		if (!cont_len) {
-> +			/* last chunk of line; terminate */
-> +			text[textlen++] = '\n';
-> +			cont_cons_len = 0;
-> +		}
-> +		raw_spin_unlock(&logbuf_lock);
-> +
-> +		stop_critical_timings();
-> +		call_console_drivers(cont_level, text, textlen);
-> +		start_critical_timings();
-> +
-> +		local_irq_restore(flags);
-> +	} else
-> +		raw_spin_unlock_irqrestore(&logbuf_lock, flags);
-> +
->  again:
->  	for (;;) {
->  		struct log *msg;
-> -		static char text[LOG_LINE_MAX];
->  		size_t len;
->  		int level;
->  
-> @@ -1825,13 +1889,22 @@ again:
->  			console_seq = log_first_seq;
->  			console_idx = log_first_idx;
->  		}
-> -
-> +skip:
->  		if (console_seq == log_next_seq)
->  			break;
->  
->  		msg = log_from_idx(console_idx);
-> -		level = msg->level & 7;
-> +		if (msg->flags & LOG_NOCONS) {
-> +			/*
-> +			 * Skip record we have buffered and already printed
-> +			 * directly to the console when we received it.
-> +			 */
-> +			console_idx = log_next(console_idx);
-> +			console_seq++;
-> +			goto skip;
-> +		}
->  
-> +		level = msg->level;
->  		len = msg_print_text(msg, false, text, sizeof(text));
->  
->  		console_idx = log_next(console_idx);
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+ 	raw_spin_lock(&beat_htab_lock);
+ 	slot = beat_lpar_hpte_find(va, psize);
+-- 
+1.7.10
