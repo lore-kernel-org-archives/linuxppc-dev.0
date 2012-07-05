@@ -1,31 +1,28 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <glommer@parallels.com>
+Received: from mx2.parallels.com (mx2.parallels.com [64.131.90.16])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A49282C049F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:15:41 +1000 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 5 Jul 2012 08:04:05 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q658EfHm1704342
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:41 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q658Eeog026863
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 18:14:41 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 8/9] arch/powerpc: Use 32bit array for slb cache
-Date: Thu,  5 Jul 2012 13:44:17 +0530
-Message-Id: <1341476058-5405-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1341476058-5405-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1341476058-5405-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 83D032C0209
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 18:26:39 +1000 (EST)
+Message-ID: <4FF54F18.50300@parallels.com>
+Date: Thu, 5 Jul 2012 12:23:52 +0400
+From: Glauber Costa <glommer@parallels.com>
+MIME-Version: 1.0
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
+ SLUB is used
+References: <1340617984.13778.37.camel@ThinkPad-T420>
+ <1340618099.13778.39.camel@ThinkPad-T420>
+ <alpine.DEB.2.00.1207031344240.14703@router.home>
+ <alpine.DEB.2.00.1207031535330.14703@router.home>
+ <1341392420.18505.41.camel@ThinkPad-T420> <4FF439D0.1000603@parallels.com>
+ <1341452486.18505.49.camel@ThinkPad-T420>
+In-Reply-To: <1341452486.18505.49.camel@ThinkPad-T420>
+Content-Type: text/plain; charset="UTF-8"
+Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
+ linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,48 +32,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On 07/05/2012 05:41 AM, Li Zhong wrote:
+> On Wed, 2012-07-04 at 16:40 +0400, Glauber Costa wrote:
+>> On 07/04/2012 01:00 PM, Li Zhong wrote:
+>>> On Tue, 2012-07-03 at 15:36 -0500, Christoph Lameter wrote:
+>>>>> Looking through the emails it seems that there is an issue with alias
+>>>>> strings. 
+>>> To be more precise, there seems no big issue currently. I just wanted to
+>>> make following usage of kmem_cache_create (SLUB) possible:
+>>>
+>>> 	name = some string kmalloced
+>>> 	kmem_cache_create(name, ...)
+>>> 	kfree(name);
+>>
+>> Out of curiosity: Why?
+>> This is not (currently) possible with the other allocators (may change
+>> with christoph's unification patches), so you would be making your code
+>> slub-dependent.
+>>
+> 
+> For slub itself, I think it's not good that: in some cases, the name
+> string could be kfreed ( if it was kmalloced ) immediately after calling
+> the cache create; in some other case, the name string needs to be kept
+> valid until some init calls finished. 
+> 
+> I agree with you that it would make the code slub-dependent, so I'm now
+> working on the consistency of the other allocators regarding this name
+> string duplicating thing. 
 
-With larger vsid we need to track more bits of ESID in slb cache
-for slb invalidate.
+If you really need to kfree the string, or even if it is easier for you
+this way, it can be done. As a matter of fact, this is the case for me.
+Just that your patch is not enough. Christoph has a patch that makes
+this behavior consistent over all allocators.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/paca.h |    2 +-
- arch/powerpc/mm/slb_low.S       |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index daf813f..3e7abba 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -100,7 +100,7 @@ struct paca_struct {
- 	/* SLB related definitions */
- 	u16 vmalloc_sllp;
- 	u16 slb_cache_ptr;
--	u16 slb_cache[SLB_CACHE_ENTRIES];
-+	u32 slb_cache[SLB_CACHE_ENTRIES];
- #endif /* CONFIG_PPC_STD_MMU_64 */
- 
- #ifdef CONFIG_PPC_BOOK3E
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index c1fc81c..d522679 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -269,10 +269,10 @@ _GLOBAL(slb_compare_rr_to_size)
- 	bge	1f
- 
- 	/* still room in the slb cache */
--	sldi	r11,r3,1		/* r11 = offset * sizeof(u16) */
--	rldicl	r10,r10,36,28		/* get low 16 bits of the ESID */
--	add	r11,r11,r13		/* r11 = (u16 *)paca + offset */
--	sth	r10,PACASLBCACHE(r11)	/* paca->slb_cache[offset] = esid */
-+	sldi	r11,r3,2		/* r11 = offset * sizeof(u32) */
-+	rldicl	r10,r10,36,28		/* get the 36 bits of the ESID */
-+	add	r11,r11,r13		/* r11 = (u32 *)paca + offset */
-+	stw	r10,PACASLBCACHE(r11)	/* paca->slb_cache[offset] = esid */
- 	addi	r3,r3,1			/* offset++ */
- 	b	2f
- 1:					/* offset >= SLB_CACHE_ENTRIES */
--- 
-1.7.10
+This just needs to be pushed again to the tree.
