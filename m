@@ -1,28 +1,30 @@
-Return-Path: <B02008@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+Return-Path: <B07421@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 075C42C020C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 01:51:37 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [RFC PATCH 13/17] PowerPC: booke64: Use SPRG0/3 scratch for
- bolted TLB miss & crit int
-Date: Thu, 5 Jul 2012 15:51:27 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15B8B5@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-14-git-send-email-mihai.caraman@freescale.com>
- <1340748983.3732.32.camel@pasglop>
-In-Reply-To: <1340748983.3732.32.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 627D52C020A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 03:11:32 +1000 (EST)
+Message-ID: <4FF5CAB5.5090904@freescale.com>
+Date: Thu, 5 Jul 2012 12:11:17 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
- Anton Blanchard <anton@au1.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH v7 1/5] powerpc/85xx: implement hardware timebase sync
+References: <1341310879-5468-1-git-send-email-chenhui.zhao@freescale.com>
+ <CAOZdJXUeY-_mmBLoA25_g4eLqwHxYX4c_ECbU+KYqfM307THNQ@mail.gmail.com>
+ <20120704031426.GA6133@localhost.localdomain>
+ <4FF3B5B6.8090400@freescale.com>
+ <20120704034545.GA6196@localhost.localdomain>
+In-Reply-To: <20120704034545.GA6196@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>,
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,40 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2ht
-aWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBXZWRuZXNkYXks
-IEp1bmUgMjcsIDIwMTIgMToxNiBBTQ0KPiBUbzogQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAw
-OA0KPiBDYzoga3ZtLXBwY0B2Z2VyLmtlcm5lbC5vcmc7IGt2bUB2Z2VyLmtlcm5lbC5vcmc7IGxp
-bnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZzsgcWVtdS1wcGNAbm9uZ251Lm9yZzsgQW50
-b24gQmxhbmNoYXJkDQo+IFN1YmplY3Q6IFJlOiBbUkZDIFBBVENIIDEzLzE3XSBQb3dlclBDOiBi
-b29rZTY0OiBVc2UgU1BSRzAvMyBzY3JhdGNoIGZvcg0KPiBib2x0ZWQgVExCIG1pc3MgJiBjcml0
-IGludA0KPiANCj4gT24gTW9uLCAyMDEyLTA2LTI1IGF0IDE1OjI2ICswMzAwLCBNaWhhaSBDYXJh
-bWFuIHdyb3RlOg0KPiA+IEVtYmVkZGVkLkh5cGVydmlzb3IgY2F0ZWdvcnkgZGVmaW5lcyBHU1BS
-RzAuLjMgcGh5c2ljYWwgcmVnaXN0ZXJzIGZvcg0KPiBndWVzdHMuDQo+ID4gQXZvaWQgU1BSRzQt
-NyB1c2FnZSBhcyBzY3JhdGNoIGluIGhvc3QgZXhjZXB0aW9uIGhhbmRsZXJzLCBvdGhlcndpc2UN
-Cj4gZ3Vlc3QNCj4gPiBTUFJHNC03IHJlZ2lzdGVycyB3aWxsIGJlIGNsb2JiZXJlZC4NCj4gPiBG
-b3IgYm9sdGVkIFRMQiBtaXNzIGV4Y2VwdGlvbiBoYW5kbGVycywgd2hpY2ggaXMgdGhlIHZlcnNp
-b24gY3VycmVudGx5DQo+ID4gc3VwcG9ydGVkIGJ5IEtWTSwgdXNlIFNQUk5fU1BSR19HRU5fU0NS
-QVRDSCAoYWthIFNQUkcwKSBpbnN0ZWFkIG9mDQo+ID4gU1BSTl9TUFJHX1RMQl9TQ1JBVENIIChh
-a2EgU1BSRzYpIGFuZCByZXBsYWNlIFRMQiB3aXRoIEdFTiBQQUNBIHNsb3RzDQo+IHRvDQo+ID4g
-a2VlcCBjb25zaXRlbmN5Lg0KPiA+IEZvciBjcml0aWNhbCBleGNlcHRpb24gaGFuZGxlciB1c2Ug
-U1BSRzMgaW5zdGVhZCBvZiBTUFJHNy4NCj4gDQo+IEJld2FyZSB3aXRoIFNQUkczIHVzYWdlLiBJ
-dCdzIHVzZXIgc3BhY2UgdmlzaWJsZSBhbmQgd2UgcGxhbiB0byB1c2UgaXQNCj4gZm9yIG90aGVy
-IHRoaW5ncyAoc2VlIEFudG9uJ3MgcGF0Y2ggdG8gc3RpY2sgdG9wb2xvZ3kgaW5mb3JtYXRpb24g
-aW4NCj4gdGhlcmUgZm9yIHVzZSBieSB0aGUgdmRzbykuIElmIHlvdSBjbG9iYmVyIGl0LCB5b3Ug
-bWF5IHdhbnQgdG8gcmVzdG9yZQ0KPiBpdCBsYXRlci4NCg0KSW4gYm9va2UzZSBjYXNlIFNQUkcz
-IHdpbGwgbm90IGJlIGNsb2JiZXJlZCBieSB0aGUgZ3Vlc3RzIHdoaWNoIGFjY2VzcyBHU1BSRzMs
-DQpidXQgYnkgdGhlIGhvc3QgZXhjZXB0aW9uIGhhbmRsZXIuIFRoaXMgbWVhbnMgdGhhdCB3ZSB3
-aWxsIGhhdmUgdG8gcmVzdG9yZSBTUFJHMw0KZXZlbiBpbiB0aGUgYWJzZW5jZSBvZiBLVk0uDQoN
-Ck15IHByb3Bvc2FsIGlzIHRvIGFkZCBhIFBBQ0Egc2xvdCBmb3IgcjEzIGFuZCBzYXZlIGl0IGlu
-IHRoZSBzYW1lIHdheSB5b3UgZGlkIHdpdGgNCnIxMiBpbiBUTEJfTUlTU19QUk9MT0cuIFRoZW4g
-d2UgY2FuIHJlc3RvcmUgU1BSRzMgcmlnaHQgaW4gdGhlIHByb2xvZyB0aHVzIGFsc28NCmF2b2lk
-aW5nIHRvIGRlYWwgd2l0aCBpdCBpbiBLVk0uDQoNClRoZSBFWENFUFRJT05fUFJPTE9HIGlzIGEg
-Y29tbW9uIGRlZmluZSBmb3IgR0VOL0RCRy9DUklUL01DLCB3ZSB1c2UgYWRkaXRpb24gZGVmaW5l
-cw0KdG8gc3BlY2lhbGl6ZSBqdXN0IHRoZSBDUklUIGNhc2UuDQoNCj4gSSB0aGluayBBbnRvbidz
-IHBhdGNoIHNob3VsZCBwdXQgdGhlICJwcm9wZXIiIHZhbHVlIHdlIHdhbnQgaW4gdGhlIFBBQ0EN
-Cj4gYW55d2F5IHNpbmNlIHdlIGFsc28gbmVlZCB0byByZXN0b3JlIGl0IG9uIGV4aXQgZnJvbSBL
-Vk0sIHNvIHlvdSBjYW4NCj4gc3RpbGwgdXNlIGl0IGFzIHNjcmF0Y2gsIGp1c3QgcmVzdG9yZSB0
-aGUgdmFsdWUgYmVmb3JlIGdvaW5nIHRvIEMuDQoNCkkganVzdCBzYXcgbGFzdCBpdGVyYXRpb24g
-b2YgQW50b24ncyB2c2RvIHBhdGNoIHRoYXQgbWF0Y2hlcyB5b3VyIGRlc2NyaXB0aW9uLg0KDQpD
-aGVlcnMsDQotTWlrZQ0K
+On 07/03/2012 10:45 PM, Zhao Chenhui wrote:
+> On Tue, Jul 03, 2012 at 10:17:12PM -0500, Tabi Timur-B04825 wrote:
+>> Zhao Chenhui wrote:
+>>> If the guts variable is NULL, it indicates there is error in dts or kernel.
+>>> We should fix the error, rather than ignore it.
+>>
+>> And that's why there's a warning message.  Crashing the kernel is not 
+>> going to fix anything.
+>>
+> 
+> This error likely crashes the kenel somewhere.
+
+Only if you're doing cpu hotplug or kexec.
+
+-Scott
