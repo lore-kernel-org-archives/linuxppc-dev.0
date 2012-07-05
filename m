@@ -1,19 +1,31 @@
 Return-Path: <B04825@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B35F52C01FA
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2012 01:08:36 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/85xx: use the BRx registers to enable indirect mode
- on the P1022DS
-Date: Thu, 5 Jul 2012 10:08:28 -0500
-Message-ID: <1341500908-22384-1-git-send-email-timur@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 114672C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 01:31:02 +1000 (EST)
+Message-ID: <4FF5B329.9090005@freescale.com>
+Date: Thu, 5 Jul 2012 10:30:49 -0500
+From: Timur Tabi <b04825@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+Subject: Re: [PATCH v7 1/5] powerpc/85xx: implement hardware timebase sync
+References: <1341310879-5468-1-git-send-email-chenhui.zhao@freescale.com>
+ <CAOZdJXUeY-_mmBLoA25_g4eLqwHxYX4c_ECbU+KYqfM307THNQ@mail.gmail.com>
+ <20120704031426.GA6133@localhost.localdomain>
+ <4FF3B5B6.8090400@freescale.com>
+ <20120704034545.GA6196@localhost.localdomain>
+ <4FF45F19.2080607@freescale.com>
+ <20120705102529.GA7982@localhost.localdomain>
+In-Reply-To: <20120705102529.GA7982@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Zhao Chenhui-B35336 <B35336@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,224 +35,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to enable the DIU video controller on the P1022DS, the FPGA needs
-to be switched to "indirect mode", where the localbus is disabled and
-the FPGA is accessed via writes to localbus chip select signals CS0 and CS1.
+Zhao Chenhui wrote:
+> If the guts node is missing, this code snippet will be skipped. If the guts node is existed,
+> the return value of of_iomap(), namely guts, will be tested. If it is NULL, it shows
+> that there is error in dts, or the ioremap() in of_iomap() failed. I think
+> these errors are fatal errors, so I print an error info and return.
 
-To obtain the address of CS0 and CS1, the platform driver uses an "indirect
-pixis mode" device tree node.  This node assumes that the localbus 'ranges'
-property is sorted in chip-select order.  That is, reg value 0 maps to
-CS0, reg value 1 maps to CS1, etc.  This is how the 'ranges' property is
-supposed to be arranged.
+Ok, I see your point now.  I'm concerned about what might happen if
+someone else updates mpc85xx_smp_init() in the future, but there's nothing
+actually wrong with your patch today.
 
-Unfortunately, the 'ranges' property is often mis-arranged, and not just on
-the P1022DS.  Linux normally does not care, since it does not program the
-localbus.  But the indirect-mode code on the P1022DS does care.
-
-The "proper" fix is to have U-Boot fix the 'ranges' property, but this would
-be too cumbersome.  The names and 'reg' properties of all the localbus
-devices would also need to be updated, and determining which localbus device
-maps to which chip select is board-specific.
-
-Instead, we determine the CS0/CS1 base addresses the same way that U-boot
-does -- by reading the BRx registers directly and mapping them to physical
-addresses.  This code is simpler and more reliable, and it does not require
-a U-boot or device tree change.
-
-Since the indirect pixis device tree node is no longer needed, the node is
-deleted from the DTS.
-
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/boot/dts/p1022ds.dtsi     |   16 -----
- arch/powerpc/platforms/85xx/p1022_ds.c |  106 ++++++++++++++++++++++++++++----
- 2 files changed, 93 insertions(+), 29 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi b/arch/powerpc/boot/dts/p1022ds.dtsi
-index 7cdb505..1b0673e 100644
---- a/arch/powerpc/boot/dts/p1022ds.dtsi
-+++ b/arch/powerpc/boot/dts/p1022ds.dtsi
-@@ -33,22 +33,6 @@
-  */
- 
- &board_lbc {
--	/*
--	 * This node is used to access the pixis via "indirect" mode,
--	 * which is done by writing the pixis register index to chip
--	 * select 0 and the value to/from chip select 1.  Indirect
--	 * mode is the only way to access the pixis when DIU video
--	 * is enabled.  Note that this assumes that the first column
--	 * of the 'ranges' property above is the chip select number.
--	 */
--	board-control@0,0 {
--		compatible = "fsl,p1022ds-indirect-pixis";
--		reg = <0x0 0x0 1	/* CS0 */
--		       0x1 0x0 1>;	/* CS1 */
--		interrupt-parent = <&mpic>;
--		interrupts = <8 0 0 0>;
--	};
--
- 	nor@0,0 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index f700c81..978330c 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -27,6 +27,7 @@
- #include <sysdev/fsl_pci.h>
- #include <asm/udbg.h>
- #include <asm/fsl_guts.h>
-+#include <asm/fsl_lbc.h>
- #include "smp.h"
- 
- #include "mpc85xx.h"
-@@ -142,17 +143,73 @@ static void p1022ds_set_gamma_table(enum fsl_diu_monitor_port port,
- {
- }
- 
-+struct fsl_law {
-+	u32	lawbar;
-+	u32	reserved1;
-+	u32	lawar;
-+	u32	reserved[5];
-+};
-+
-+#define LAWBAR_MASK	0x00F00000
-+#define LAWBAR_SHIFT	12
-+
-+#define LAWAR_EN	0x80000000
-+#define LAWAR_TGT_MASK	0x01F00000
-+#define LAW_TRGT_IF_LBC	(0x04 << 20)
-+
-+#define LAWAR_MASK	(LAWAR_EN | LAWAR_TGT_MASK)
-+#define LAWAR_MATCH	(LAWAR_EN | LAW_TRGT_IF_LBC)
-+
-+#define BR_BA		0xFFFF8000
-+
-+/*
-+ * Map a BRx value to a physical address
-+ *
-+ * The localbus BRx registers only store the lower 32 bits of the address.  To
-+ * obtain the upper four bits, we need to scan the LAW table.  The entry which
-+ * maps to the localbus will contain the upper four bits.
-+ */
-+static phys_addr_t lbc_br_to_phys(const void *ecm, unsigned int count, u32 br)
-+{
-+#ifndef CONFIG_PHYS_64BIT
-+	/*
-+	 * If we only have 32-bit addressing, then the BRx address *is* the
-+	 * physical address.
-+	 */
-+	return br & BR_BA;
-+#else
-+	const struct fsl_law *law = ecm + 0xc08;
-+	unsigned int i;
-+
-+	for (i = 0; i < count; i++) {
-+		u64 lawbar = in_be32(&law[i].lawbar);
-+		u32 lawar = in_be32(&law[i].lawar);
-+
-+		if ((lawar & LAWAR_MASK) == LAWAR_MATCH)
-+			/* Extract the upper four bits */
-+			return (br & BR_BA) | ((lawbar & LAWBAR_MASK) << 12);
-+	}
-+
-+	return 0;
-+#endif
-+}
-+
- /**
-  * p1022ds_set_monitor_port: switch the output to a different monitor port
-- *
-  */
- static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
- {
- 	struct device_node *guts_node;
--	struct device_node *indirect_node = NULL;
-+	struct device_node *lbc_node = NULL;
-+	struct device_node *law_node = NULL;
- 	struct ccsr_guts __iomem *guts;
-+	struct fsl_lbc_regs *lbc = NULL;
-+	void *ecm = NULL;
- 	u8 __iomem *lbc_lcs0_ba = NULL;
- 	u8 __iomem *lbc_lcs1_ba = NULL;
-+	phys_addr_t cs0_addr, cs1_addr;
-+	const __be32 *iprop;
-+	unsigned int num_laws;
- 	u8 b;
- 
- 	/* Map the global utilities registers. */
-@@ -168,25 +225,43 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
- 		goto exit;
- 	}
- 
--	indirect_node = of_find_compatible_node(NULL, NULL,
--					     "fsl,p1022ds-indirect-pixis");
--	if (!indirect_node) {
--		pr_err("p1022ds: missing pixis indirect mode node\n");
-+	lbc_node = of_find_compatible_node(NULL, NULL, "fsl,p1022-elbc");
-+	if (!lbc_node) {
-+		pr_err("p1022ds: missing localbus node\n");
- 		goto exit;
- 	}
- 
--	lbc_lcs0_ba = of_iomap(indirect_node, 0);
--	if (!lbc_lcs0_ba) {
--		pr_err("p1022ds: could not map localbus chip select 0\n");
-+	lbc = of_iomap(lbc_node, 0);
-+	if (!lbc) {
-+		pr_err("p1022ds: could not map localbus node\n");
- 		goto exit;
- 	}
- 
--	lbc_lcs1_ba = of_iomap(indirect_node, 1);
--	if (!lbc_lcs1_ba) {
--		pr_err("p1022ds: could not map localbus chip select 1\n");
-+	law_node = of_find_compatible_node(NULL, NULL, "fsl,ecm-law");
-+	if (!law_node) {
-+		pr_err("p1022ds: missing local access window node\n");
- 		goto exit;
- 	}
- 
-+	ecm = of_iomap(law_node, 0);
-+	if (!ecm) {
-+		pr_err("p1022ds: could not map local access window node\n");
-+		goto exit;
-+	}
-+
-+	iprop = of_get_property(law_node, "fsl,num-laws", 0);
-+	if (!iprop) {
-+		pr_err("p1022ds: LAW node is missing fsl,num-laws property\n");
-+		goto exit;
-+	}
-+	num_laws = be32_to_cpup(iprop);
-+
-+	cs0_addr = lbc_br_to_phys(ecm, num_laws, in_be32(&lbc->bank[0].br));
-+	cs1_addr = lbc_br_to_phys(ecm, num_laws, in_be32(&lbc->bank[1].br));
-+
-+	lbc_lcs0_ba = ioremap(cs0_addr, 1);
-+	lbc_lcs1_ba = ioremap(cs1_addr, 1);
-+
- 	/* Make sure we're in indirect mode first. */
- 	if ((in_be32(&guts->pmuxcr) & PMUXCR_ELBCDIU_MASK) !=
- 	    PMUXCR_ELBCDIU_DIU) {
-@@ -254,10 +329,15 @@ exit:
- 		iounmap(lbc_lcs1_ba);
- 	if (lbc_lcs0_ba)
- 		iounmap(lbc_lcs0_ba);
-+	if (lbc)
-+		iounmap(lbc);
-+	if (ecm)
-+		iounmap(ecm);
- 	if (guts)
- 		iounmap(guts);
- 
--	of_node_put(indirect_node);
-+	of_node_put(law_node);
-+	of_node_put(lbc_node);
- 	of_node_put(guts_node);
- }
- 
 -- 
-1.7.3.4
+Timur Tabi
+Linux kernel developer at Freescale
