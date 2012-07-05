@@ -1,25 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 676802C0080
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 08:25:44 +1000 (EST)
-Message-ID: <1341440735.16808.42.camel@pasglop>
-Subject: Re: [Qemu-ppc] [RFC PATCH 12/17] PowerPC: booke64: Add DO_KVM
- kernel hooks
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Thu, 05 Jul 2012 08:25:35 +1000
-In-Reply-To: <1B2CBB56-7180-4A73-8E51-6538A725F710@suse.de>
-References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-13-git-send-email-mihai.caraman@freescale.com>
- <1B2CBB56-7180-4A73-8E51-6538A725F710@suse.de>
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 19B222C01BC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jul 2012 11:41:36 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Thu, 5 Jul 2012 07:11:32 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q651fTdZ000394
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 07:11:29 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q657BGNn028650
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 17:11:17 +1000
+Message-ID: <1341452486.18505.49.camel@ThinkPad-T420>
+Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
+ SLUB is used
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Glauber Costa <glommer@parallels.com>
+Date: Thu, 05 Jul 2012 09:41:26 +0800
+In-Reply-To: <4FF439D0.1000603@parallels.com>
+References: <1340617984.13778.37.camel@ThinkPad-T420>
+ <1340618099.13778.39.camel@ThinkPad-T420>
+ <alpine.DEB.2.00.1207031344240.14703@router.home>
+ <alpine.DEB.2.00.1207031535330.14703@router.home>
+ <1341392420.18505.41.camel@ThinkPad-T420> <4FF439D0.1000603@parallels.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: "qemu-ppc@nongnu.org List" <qemu-ppc@nongnu.org>,
- Mihai Caraman <mihai.caraman@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, KVM list <kvm@vger.kernel.org>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
+ linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,63 +44,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-07-04 at 16:29 +0200, Alexander Graf wrote:
- 
-> > +#ifdef CONFIG_KVM_BOOKE_HV
-> > +#define KVM_BOOKE_HV_MFSPR(reg, spr)				\
-> > +	BEGIN_FTR_SECTION					\
-> > +		mfspr	reg, spr;			  	\
-> > +	END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
-> > +#else
-> > +#define KVM_BOOKE_HV_MFSPR(reg, spr)
-> > +#endif
-> 
-> Bleks - this is ugly. Do we really need to open-code the #ifdef here?
-> Can't the feature section code determine that the feature is disabled
-> and just always not include the code?
-
-You can't but in any case I don't see the point of the conditional here,
-we'll eventually have to load srr1 no ? We can move the load up to here
-in all cases or can't we ? If really not, we could have it inside DO_KVM
-and be done with it no ?
-
-> > +
-> > /* Exception prolog code for all exceptions */
-> > -#define EXCEPTION_PROLOG(n, type, srr0, srr1, addition)		     	    \
-> > +#define EXCEPTION_PROLOG(n, intnum, type, srr0, srr1, addition)		    \
-> > 	mtspr	SPRN_SPRG_##type##_SCRATCH,r13;	/* get spare registers */   \
-> > 	mfspr	r13,SPRN_SPRG_PACA;	/* get PACA */			    \
-> > 	std	r10,PACA_EX##type+EX_R10(r13);				    \
-> > 	std	r11,PACA_EX##type+EX_R11(r13);				    \
-> > 	mfcr	r10;			/* save CR */			    \
-> > +	KVM_BOOKE_HV_MFSPR(r11,srr1);			    		    \
-> > +	DO_KVM	intnum,srr1;				    		    \
-> 
-> So if DO_KVM already knows srr1, why explicitly do something with it
-> the line above, and not in DO_KVM itself?
-
-Yeah that or just move things around in the prolog.
-
-> > 	addition;			/* additional code for that exc. */ \
-> > 	std	r1,PACA_EX##type+EX_R1(r13); /* save old r1 in the PACA */  \
-> > 	stw	r10,PACA_EX##type+EX_CR(r13); /* save old CR in the PACA */ \
-> > @@ -69,17 +82,21 @@
-> > 	ld	r1,PACA_MC_STACK(r13);					    \
-> > 	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
+On Wed, 2012-07-04 at 16:40 +0400, Glauber Costa wrote:
+> On 07/04/2012 01:00 PM, Li Zhong wrote:
+> > On Tue, 2012-07-03 at 15:36 -0500, Christoph Lameter wrote:
+> >> > Looking through the emails it seems that there is an issue with alias
+> >> > strings. 
+> > To be more precise, there seems no big issue currently. I just wanted to
+> > make following usage of kmem_cache_create (SLUB) possible:
 > > 
-> > -#define NORMAL_EXCEPTION_PROLOG(n, addition)				    \
-> > -	EXCEPTION_PROLOG(n, GEN, SPRN_SRR0, SPRN_SRR1, addition##_GEN(n))
-> > +#define NORMAL_EXCEPTION_PROLOG(n, intnum, addition)			    \
-> > +	EXCEPTION_PROLOG(n, intnum, GEN, SPRN_SRR0, SPRN_SRR1,		    \
+> > 	name = some string kmalloced
+> > 	kmem_cache_create(name, ...)
+> > 	kfree(name);
 > 
-> We would we want to pass in 2 numbers? Let's please confine this onto
-> a single ID per interrupt vector. Either we use the hardcoded ones
-> available here in the KVM code or we use the KVM ones instead of the
-> hardcoded ones here. But not both please. Just because it's like that
-> on 32bit doesn't count as an excuse :).
+> Out of curiosity: Why?
+> This is not (currently) possible with the other allocators (may change
+> with christoph's unification patches), so you would be making your code
+> slub-dependent.
+> 
 
-Right. Also I already objected to the explicit passing of the srr's
-anyway.
+For slub itself, I think it's not good that: in some cases, the name
+string could be kfreed ( if it was kmalloced ) immediately after calling
+the cache create; in some other case, the name string needs to be kept
+valid until some init calls finished. 
 
-Cheers,
-Ben.
+I agree with you that it would make the code slub-dependent, so I'm now
+working on the consistency of the other allocators regarding this name
+string duplicating thing. 
