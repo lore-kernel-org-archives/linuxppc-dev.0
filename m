@@ -1,26 +1,24 @@
-Return-Path: <r58472@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 13F3C2C01EA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 12:51:51 +1000 (EST)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Vineeth <vneethv@gmail.com>, "linux-embedded@vger.kernel.org"
- <linux-embedded@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "linuxppc-embedded@ozlabs.org"
- <linuxppc-embedded@ozlabs.org>, Wood Scott-B07421 <B07421@freescale.com>,
- "mporter@kernel.crashing.org" <mporter@kernel.crashing.org>
-Subject: RE: rionet driver with MMIO DMA capability
-Date: Fri, 6 Jul 2012 02:51:41 +0000
-Message-ID: <94F013E7935FF44C83EBE7784D62AD3F0934AA59@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <CAFbQSaDWXTg429q-tTRvcgAEsA1OmHzFVhPNOmSRnWjMpSZfpA@mail.gmail.com>
-In-Reply-To: <CAFbQSaDWXTg429q-tTRvcgAEsA1OmHzFVhPNOmSRnWjMpSZfpA@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
- "ranenikhil19@gmail.com" <ranenikhil19@gmail.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 0492B2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 13:01:46 +1000 (EST)
+Date: Fri, 6 Jul 2012 13:01:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Alan Modra <amodra@gmail.com>
+Subject: Re: linux-next: build failure after merge of the final tree
+Message-Id: <20120706130137.6aae96c0072af1f330249c0d@canb.auug.org.au>
+In-Reply-To: <20120706005709.GB5805@bubble.grove.modra.org>
+References: <20120705183345.ee84ec1048a19aa1c7129578@canb.auug.org.au>
+ <20120705094348.GA5805@bubble.grove.modra.org>
+ <20120706102151.fd4f769cf2aa3f753ad178bf@canb.auug.org.au>
+ <20120706005709.GB5805@bubble.grove.modra.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Fri__6_Jul_2012_13_01_37_+1000_s=j1HxjYDcD0K1Na"
+Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,38 +28,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Fri__6_Jul_2012_13_01_37_+1000_s=j1HxjYDcD0K1Na
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Alan,
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-
-> bounces+leoli=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Vineeth
-> Sent: Wednesday, July 04, 2012 1:16 AM
-> To: linux-embedded@vger.kernel.org; linuxppc-dev@lists.ozlabs.org;
-> linuxppc-embedded@ozlabs.org; Wood Scott-B07421;
-> mporter@kernel.crashing.org
-> Cc: ranenikhil19@gmail.com
-> Subject: rionet driver with MMIO DMA capability
+On Fri, 6 Jul 2012 10:27:10 +0930 Alan Modra <amodra@gmail.com> wrote:
+>
+> On Fri, Jul 06, 2012 at 10:21:51AM +1000, Stephen Rothwell wrote:
+> > which have now been fixed.  So would a simple patch that puts the
+> > _savegpr etc functions in their own section (defined how?) fix this for
+> > us?
 >=20
+> Ah, the kernel provides its own save/restore functions, and these get
+> mashed into a .text containing normal functions with toc references by
+> ld -r.  Well, you could stop using ld -r.  Otherwise, try
 >=20
-> Hi,
->=20
-> With kernel mainstream version 3.5.rc-5 there's SRIO low level driver
-> with DMA support for MMIO. But the rionet driver in the same kernel
-> version doesnt support MMIO.
->=20
-> We are trying to find the maximum bandwidth that we can achieve using our
-> custom board's(quad MPC8641 )=A0 4-lane SRIO.
-> Now we are worried how to use this SRIO low level driver effectively ?
->=20
-> The RIOnet driver (with 3.5.-rc5) uses message based communication. This
-> doesnt use the DMA capability of low level driver. with this we are
-> getting a bandwidth of nearly 900Mbps, which is very less.
->=20
-> Is there any example code or modified middle ware driver for rionet/ or
-> any code which uses the low level driver apis with MMIO DMA??
+>  .section ".text.save.restore","ax",@progbits
 
-We provided the support for DMA in the old BSPs but didn't got the luck to =
-make it upstream.  I heard Alex (CCed) is working on an upstream-able versi=
-on of the feature.  Probably he can help to provide some code.
+OK, so that helped a lot.  Now I get this:
 
-Leo
+drivers/built-in.o: In function `.idt77252_init_ubr.isra.10':
+idt77252.c:(.text+0x1ff801c): relocation truncated to fit: R_PPC64_REL24 ag=
+ainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/ent=
+ry_64.o
+drivers/built-in.o: In function `.idt77252_init_tx':
+idt77252.c:(.text+0x1ff8258): relocation truncated to fit: R_PPC64_REL24 ag=
+ainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/ent=
+ry_64.o
+drivers/built-in.o: In function `.idt77252_change_qos':
+idt77252.c:(.text+0x1ff86a0): relocation truncated to fit: R_PPC64_REL24 ag=
+ainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/ent=
+ry_64.o
+drivers/built-in.o: In function `.idt77252_open':
+idt77252.c:(.text+0x1ff898c): relocation truncated to fit: R_PPC64_REL24 ag=
+ainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/ent=
+ry_64.o
+idt77252.c:(.text+0x1ff8f4c): relocation truncated to fit: R_PPC64_REL24 ag=
+ainst symbol `_restgpr0_22' defined in .text.save.restore section in arch/p=
+owerpc/lib/built-in.o
+drivers/built-in.o: In function `.next_string':
+solos-pci.c:(.text+0x1ff8f54): relocation truncated to fit: R_PPC64_REL24 a=
+gainst symbol `_savegpr0_29' defined in .text.save.restore section in arch/=
+powerpc/lib/built-in.o
+solos-pci.c:(.text+0x1ff8f64): relocation truncated to fit: R_PPC64_REL24 a=
+gainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/en=
+try_64.o
+drivers/built-in.o: In function `.print_buffer':
+solos-pci.c:(.text+0x1ff904c): relocation truncated to fit: R_PPC64_REL24 a=
+gainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/en=
+try_64.o
+drivers/built-in.o: In function `.atm_remove':
+solos-pci.c:(.text+0x1ff91d4): relocation truncated to fit: R_PPC64_REL24 a=
+gainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/en=
+try_64.o
+solos-pci.c:(.text+0x1ff923c): relocation truncated to fit: R_PPC64_REL24 a=
+gainst symbol `.sysfs_remove_group' defined in .text section in fs/built-in=
+.o
+drivers/built-in.o: In function `.fpga_tx':
+solos-pci.c:(.text+0x1ff950c): additional relocation overflows omitted from=
+ the output
+
+I assume at this point, we are just too large.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Fri__6_Jul_2012_13_01_37_+1000_s=j1HxjYDcD0K1Na
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJP9lURAAoJEECxmPOUX5FEma8P/jg4rQ4qUlkGZlfPDLcD9vJJ
+zOd832sPOWXowKwYortMlPCQAeyRY/EAAraBa2q2PWx8mkzDU0z2J3wn/l9JJpg0
+U4/La53Z+FkhVf6McFwJ8gA0vR6VtknnPE64xTydWxelLxeBY2rf16DkYWu/1CjS
+dToqMXPu+kGMOoL82xZ/v9KAaTd0fyANp5SUy/sg+5hTvhh0GEd12LPlosQvQV5n
+9byHU7j1VL6TkfrQczmKA7AW6rkE2lxGaan1WmunfcJkvanHE4W7lVlilyerwaRM
+7km8BThZrAqMhXciEG/o3k4uMapr2G0yHaOC5aSxoYDYFJJ0wOFdhigHfiWIQYxN
+uquybpuv1ZFFVUHyKEaFBYImqwx3vANDqerglrnLFBROodptgCcPtOasR0/AZyQI
+M0UE1/iiNCG9rBwfJVkOrbp+0i2NqmO5j7VAYTzcelHI3OExUECLKfKPtNkLjVyw
+T3glwYHo0KMpeytJqiphdY+ug0RxgJhrVPukLzshDFekfAD7lcvcZNGsJoaB224I
+qN5TgEXKdLSgzNWmDBz3uvVkBSaYTuewnxXfavivgaBv2MyKGtNZopAbTN4/T38S
+wUreLkGwGbmvO/MtJ8q8guppqYTWqiW/TvrL3+StTvatuRkX6LNfPRYhKxr9IQcO
+oMI2kByY36wlNhUhS3x+
+=yxvD
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__6_Jul_2012_13_01_37_+1000_s=j1HxjYDcD0K1Na--
