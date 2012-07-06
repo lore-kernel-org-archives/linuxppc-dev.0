@@ -1,28 +1,29 @@
 Return-Path: <B02008@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D35C62C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2012 08:33:40 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 37D072C0201
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2012 09:03:46 +1000 (EST)
 From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alexander Graf
  <agraf@suse.de>
-Subject: RE: [Qemu-ppc] [RFC PATCH 12/17] PowerPC: booke64: Add DO_KVM
- kernel hooks
-Date: Fri, 6 Jul 2012 22:33:31 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15CDE6@039-SN2MPN1-013.039d.mgd.msft.net>
+Subject: RE: [Qemu-ppc] [RFC PATCH 09/17] KVM: PPC64: booke: Hard disable
+ interrupts when entering guest
+Date: Fri, 6 Jul 2012 23:03:38 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15CE0B@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-13-git-send-email-mihai.caraman@freescale.com>
- <1B2CBB56-7180-4A73-8E51-6538A725F710@suse.de>
- <1341440735.16808.42.camel@pasglop>
-In-Reply-To: <1341440735.16808.42.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+ <1340627195-11544-10-git-send-email-mihai.caraman@freescale.com>
+ <10CBFB35-5A18-4EA8-A129-58CCC4CFBB83@suse.de>
+ <1341440465.16808.38.camel@pasglop>
+In-Reply-To: <1341440465.16808.38.camel@pasglop>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: "qemu-ppc@nongnu.org List" <qemu-ppc@nongnu.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, KVM list <kvm@vger.kernel.org>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "qemu-ppc@nongnu.org List" <qemu-ppc@nongnu.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>,
+ KVM list <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +33,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2ht
-aWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBUaHVyc2RheSwg
-SnVseSAwNSwgMjAxMiAxOjI2IEFNDQo+IFRvOiBBbGV4YW5kZXIgR3JhZg0KPiBDYzogQ2FyYW1h
-biBNaWhhaSBDbGF1ZGl1LUIwMjAwODsgPGt2bS1wcGNAdmdlci5rZXJuZWwub3JnPjsgS1ZNIGxp
-c3Q7DQo+IGxpbnV4cHBjLWRldjsgcWVtdS1wcGNAbm9uZ251Lm9yZyBMaXN0DQo+IFN1YmplY3Q6
-IFJlOiBbUWVtdS1wcGNdIFtSRkMgUEFUQ0ggMTIvMTddIFBvd2VyUEM6IGJvb2tlNjQ6IEFkZCBE
-T19LVk0NCj4ga2VybmVsIGhvb2tzDQo+IA0KPiBPbiBXZWQsIDIwMTItMDctMDQgYXQgMTY6Mjkg
-KzAyMDAsIEFsZXhhbmRlciBHcmFmIHdyb3RlOg0KPiANCj4gPiA+ICsjaWZkZWYgQ09ORklHX0tW
-TV9CT09LRV9IVg0KPiA+ID4gKyNkZWZpbmUgS1ZNX0JPT0tFX0hWX01GU1BSKHJlZywgc3ByKQkJ
-CQlcDQo+ID4gPiArCUJFR0lOX0ZUUl9TRUNUSU9OCQkJCQlcDQo+ID4gPiArCQltZnNwcglyZWcs
-IHNwcjsJCQkgIAlcDQo+ID4gPiArCUVORF9GVFJfU0VDVElPTl9JRlNFVChDUFVfRlRSX0VNQl9I
-VikNCj4gPiA+ICsjZWxzZQ0KPiA+ID4gKyNkZWZpbmUgS1ZNX0JPT0tFX0hWX01GU1BSKHJlZywg
-c3ByKQ0KPiA+ID4gKyNlbmRpZg0KPiA+DQo+ID4gQmxla3MgLSB0aGlzIGlzIHVnbHkuIERvIHdl
-IHJlYWxseSBuZWVkIHRvIG9wZW4tY29kZSB0aGUgI2lmZGVmIGhlcmU/DQo+ID4gQ2FuJ3QgdGhl
-IGZlYXR1cmUgc2VjdGlvbiBjb2RlIGRldGVybWluZSB0aGF0IHRoZSBmZWF0dXJlIGlzIGRpc2Fi
-bGVkDQo+ID4gYW5kIGp1c3QgYWx3YXlzIG5vdCBpbmNsdWRlIHRoZSBjb2RlPw0KPiANCj4gWW91
-IGNhbid0IGJ1dCBpbiBhbnkgY2FzZSBJIGRvbid0IHNlZSB0aGUgcG9pbnQgb2YgdGhlIGNvbmRp
-dGlvbmFsIGhlcmUsDQo+IHdlJ2xsIGV2ZW50dWFsbHkgaGF2ZSB0byBsb2FkIHNycjEgbm8gPyBX
-ZSBjYW4gbW92ZSB0aGUgbG9hZCB1cCB0byBoZXJlDQo+IGluIGFsbCBjYXNlcyBvciBjYW4ndCB3
-ZSA/IA0KDQpJIGxpa2UgdGhlIGlkZWEsIGJ1dCB0aGVyZSBpcyBhIHByb2JsZW0gd2l0aCBhZGRp
-dGlvbiBtYWNyb3Mgd2hpY2ggbWF5IGNsb2JiZXINCnIxMSBhbmQgUFJPTE9HX0FERElUSU9OX01B
-U0tBQkxFX0dFTiBpcyBzdWNoIGEgY2FzZS4NCg0KPiBJZiByZWFsbHkgbm90LCB3ZSBjb3VsZCBo
-YXZlIGl0IGluc2lkZSBET19LVk0gYW5kIGJlIGRvbmUgd2l0aCBpdCBubyA/DQoNCjMyLWJpdCBl
-eGNlcHRpb24gcHJvbG9nIGxvYWRzIHNycjEgdW5jb25kaXRpb25hbGx5LCBhcyBBbGV4IGFuZCBT
-Y290dCBtZW50aW9uZWQNCmVhcmxpZXIsIHNvIHdlIHdpbGwgYmUgc3Vib3B0aW1hbCBmb3IgdGhp
-cyBjYXNlLg0KDQotTWlrZQ0K
+> -----Original Message-----
+> From: Linuxppc-dev [mailto:linuxppc-dev-
+> bounces+mihai.caraman=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
+> Benjamin Herrenschmidt
+> Sent: Thursday, July 05, 2012 1:21 AM
+> To: Alexander Graf
+> Cc: qemu-ppc@nongnu.org List; Caraman Mihai Claudiu-B02008; linuxppc-dev;
+> KVM list; <kvm-ppc@vger.kernel.org>
+> Subject: Re: [Qemu-ppc] [RFC PATCH 09/17] KVM: PPC64: booke: Hard disable
+> interrupts when entering guest
+>=20
+> On Wed, 2012-07-04 at 16:14 +0200, Alexander Graf wrote:
+> > > +#ifdef CONFIG_64BIT
+> > > +#define _hard_irq_disable() hard_irq_disable()
+> > > +#else
+> > > +#define _hard_irq_disable() local_irq_disable()
+> > > +#endif
+> >
+> > So you only swap out the disable bit, but not the enable one? Ben,
+> > would this work out?
+>=20
+> hard_irq_disable() both soft and hard disable. local_irq_enable() will
+> see that irqs are hard disabled and will hard enable.
+>=20
+> However, there's a nastier discrepancy above: local_irq_disable will
+> properly inform lockdep that we are disabling, while hard_irq_disable
+> won't.
+>=20
+> Arguably we might want to fix that inside hard_irq_disable() itself...
+>=20
+> Also you need to be careful. If you are coming with interrupts already
+> enabled, it's fine, but if you have interrupts soft disabled, then
+> you hard disable, before you enter the guest you probably want to
+> check if anything was left "pending" and cancel the entering of the
+> guest if that is the case.
+
+On which cases I can find interrupts soft disabled if I call local_irq_enab=
+le()
+ahead? Can this happen when my kernel task is scheduled?=20
+
+I presume that if I call hard_irq_disable() before entering the guest, a gu=
+est exit
+will find interrupts soft disabled.
+
+-Mike
