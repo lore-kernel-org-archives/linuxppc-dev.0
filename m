@@ -1,22 +1,22 @@
-Return-Path: <B04825@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 27B042C0203
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2012 00:44:28 +1000 (EST)
-Message-ID: <4FF6F9BF.2020202@freescale.com>
-Date: Fri, 6 Jul 2012 09:44:15 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Revert "powerpc/p3060qds: Add support for P3060QDS board"
-References: <1341526073-10595-1-git-send-email-timur@freescale.com>
- <B652D6B0-4782-4CC5-9685-95A86FACF60A@kernel.crashing.org>
-In-Reply-To: <B652D6B0-4782-4CC5-9685-95A86FACF60A@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AFA1B2C0203
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2012 00:54:44 +1000 (EST)
+Subject: Re: [RFC PATCH 08/17] KVM: PPC: e500mc: Fix tlbilx emulation for
+ 64-bit guests
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1340627195-11544-9-git-send-email-mihai.caraman@freescale.com>
+Date: Fri, 6 Jul 2012 16:54:37 +0200
+Message-Id: <2AEFDA71-04E2-41C4-8FB0-90467D4BED50@suse.de>
+References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
+ <1340627195-11544-9-git-send-email-mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,11 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> I assume you're sending a similar patch to u-boot.
 
-Yes, but I wanted to see if this one was accepted first.
+On 25.06.2012, at 14:26, Mihai Caraman wrote:
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+> tlbilxva emulation was using an u32 variable for guest effective address.
+> Replace it with gva_t type to handle 64-bit guests.
+> 
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+
+Thanks, applied to kvm-ppc-next.
+
+
+Alex
