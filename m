@@ -1,43 +1,22 @@
-Return-Path: <kay@vrfy.org>
-Received: from mail-yw0-f42.google.com (mail-yw0-f42.google.com
- [209.85.213.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1328D2C0204
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2012 01:12:35 +1000 (EST)
-Received: by yhfq11 with SMTP id q11so9504376yhf.15
- for <linuxppc-dev@ozlabs.org>; Fri, 06 Jul 2012 08:12:33 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C21642C01B4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2012 02:25:18 +1000 (EST)
+Message-ID: <4FF71164.3040501@freescale.com>
+Date: Fri, 6 Jul 2012 11:25:08 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <CAPXgP13_cQUQLE4RSjACTzj28Pn6r3ZaPhjch2U+uwgi7YKcWA@mail.gmail.com>
-References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
- <20120625150722.8cd4f45d.akpm@linux-foundation.org>
- <20120625235531.GB3652@kroah.com>
- <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
- <20120626002307.GA4389@kroah.com>
- <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
- <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
- <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
- <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
- <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
- <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
- <16043.1341483625@neuling.org>
- <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
- <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
- <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
- <29711.1341545979@neuling.org> <30343.1341546469@neuling.org>
- <CAPXgP13_cQUQLE4RSjACTzj28Pn6r3ZaPhjch2U+uwgi7YKcWA@mail.gmail.com>
-From: Kay Sievers <kay@vrfy.org>
-Date: Fri, 6 Jul 2012 17:12:12 +0200
-Message-ID: <CAPXgP10JthGjZyqD6gqn2n1rPu1uP+=mem_T-iOritXAQMstRQ@mail.gmail.com>
-Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-To: Michael Neuling <mikey@neuling.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- Wu Fengguang <fengguang.wu@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+To: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH 2/3] powerpc/e500: add paravirt QEMU platform
+References: <20120627235005.GB9100@tyr.buserror.net>
+ <36624A62-88AD-404A-A7A8-02D62E8700F0@suse.de>
+In-Reply-To: <36624A62-88AD-404A-A7A8-02D62E8700F0@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,54 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 6, 2012 at 12:46 PM, Kay Sievers <kay@vrfy.org> wrote:
-> On Fri, Jul 6, 2012 at 5:47 AM, Michael Neuling <mikey@neuling.org> wrote:
->
->>> 4,89,24561;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
->>> 4,90,24576;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
->>> 4,91,24583;MSR: 9000000000021032
->>> 4,92,24586;<
->>> 4,93,24591;SF
->>> 4,94,24596;,HV
->>> 4,95,24601;,ME
->>> 4,96,24606;,IR
->>> 4,97,24611;,DR
->>> 4,98,24616;,RI
->>> 4,99,24619;>
->>> 4,100,24628;  CR: 28000042  XER: 22000000
+On 07/06/2012 07:29 AM, Alexander Graf wrote:
+> 
+> On 28.06.2012, at 01:50, Scott Wood wrote:
+> 
+>> This gives the kernel a paravirtualized machine to target, without
+>> requiring both sides to pretend to be targeting a specific board
+>> that likely has little to do with the host in KVM scenarios.  This
+>> avoids the need to add new boards to QEMU just to be able to
+>> run KVM on new CPUs.
 >>
->> FWIW, compiling with the parent commit gives this:
+>> As this is the first platform that can run with either e500v2 or
+>> e500mc, CONFIG_PPC_E500MC is now a legitimately user configurable
+>> option, so add a help text.
 >>
->> 4,89,1712;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
->> 4,90,1713;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
->> 4,91,1716;MSR: 9000000000021032 <SF,HV,ME,IR,DR,RI>  CR: 22000082  XER: 02000000
->
-> Hmm, I don't understand, which parent commit do you mean? You maybe
-> mean without 084681d?
->
-> I think it's a race of the two CPUs printing continuation lines, and
-> the continuation buffer is still occupied with data from one CPU and
-> not available to the other one at the same time.
->
-> What you see is likely not the direct output to the console (that
-> would work) but the replay of the stored buffer when the console is
-> registered. Because the cont buffer was still busy with one CPU, the
-> other thread needs to store the continuation line prints in individual
-> records, which leads to the (unwanted) printed newlines when
-> replaying.
->
-> The data we store looks all fine, it just looks needlessly separated
-> when we replay fromt he buffer on a newly registered boot console. We
-> need to merge the lines in the output, so they *look* like they are
-> all in one line. I'll work on a fix for that now.
+>> Signed-off-by: Scott Wood <scottwood@freescale.com>
+>> ---
+>> arch/powerpc/platforms/85xx/Kconfig     |   16 +++++++
+>> arch/powerpc/platforms/85xx/Makefile    |    1 +
+>> arch/powerpc/platforms/85xx/qemu_e500.c |   66 +++++++++++++++++++++++++++++++
+>> arch/powerpc/platforms/Kconfig.cputype  |    4 ++
+> 
+> I really think we should document what exactly this machine expects.
 
-It could be that the console semaphore is still help by the other CPU,
-for whatever reason, when your box runs into this situation.
+Well, the point of this paravirt machine is to avoid such assumptions --
+it's all device-tree driven, at least in theory.  If a certain qemu
+configuration ends up breaking the Linux platform (such as using a
+different PIC), then that's a lack of flexibility on Linux's part that
+should get fixed if someone finds it useful enough to justify the
+effort.  Same with real hardware -- if you care about it, you add
+support -- we just don't have a unique name for every configuration.
+The information is there in the device tree, though.
 
-Mind pasting more context (/dev/kmsg) of the log when this happens,
-not only the one line that get split-up?
+Honestly, even having "qemu" in there is more specific than I'd prefer,
+but I don't want to stir up the "generic platform" argument again
+without at least limiting the scope.
 
-Is this possibly during an oops or backtrace going on when you see
-this? Which code calls show_regs() here?
+>> +void __init qemu_e500_pic_init(void)
+>> +{
+>> +	struct mpic *mpic;
+>> +
+>> +	mpic = mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN | MPIC_SINGLE_DEST_CPU,
+>> +			0, 256, " OpenPIC  ");
+> 
+> Does that mean we're configuring the MPIC regardless of what the
+> guest tells us? So the MPIC is a hard requirement. We can't use UIC
+> or XPIC with this machine, right? This needs to be documented.
 
-Kay
+Then what would we do if we want to add an ePAPR virtual PIC instead?
+Or if something replaces MPIC on future FSL chips?
+
+Better to change the Linux implementation as needed than to change a spec.
+
+-Scott
