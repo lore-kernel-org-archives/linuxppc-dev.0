@@ -1,42 +1,32 @@
-Return-Path: <kay@vrfy.org>
-Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
- [209.85.160.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B46542C01BB
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2012 20:46:38 +1000 (EST)
-Received: by pbbrp12 with SMTP id rp12so12292139pbb.15
- for <linuxppc-dev@ozlabs.org>; Fri, 06 Jul 2012 03:46:36 -0700 (PDT)
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8DFB22C01EA
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2012 21:31:12 +1000 (EST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 6 Jul 2012 17:01:09 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q66BV6QR61734966
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Jul 2012 17:01:06 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q66H0NtY010599
+ for <linuxppc-dev@ozlabs.org>; Sat, 7 Jul 2012 03:00:24 +1000
+Subject: [PATCH] PPC Hardware Breakpoints: Fix incorrect pointer access
+To: fweisbec@gmail.com, benh@kernel.crashing.org, paulus@samba.org,
+ prasad.krishnan@gmail.com
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Date: Fri, 06 Jul 2012 17:00:58 +0530
+Message-ID: <20120706113058.8600.30142.stgit@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <30343.1341546469@neuling.org>
-References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
- <20120625150722.8cd4f45d.akpm@linux-foundation.org>
- <20120625235531.GB3652@kroah.com>
- <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
- <20120626002307.GA4389@kroah.com>
- <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
- <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
- <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
- <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
- <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
- <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
- <16043.1341483625@neuling.org>
- <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
- <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
- <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
- <29711.1341545979@neuling.org> <30343.1341546469@neuling.org>
-From: Kay Sievers <kay@vrfy.org>
-Date: Fri, 6 Jul 2012 12:46:16 +0200
-Message-ID: <CAPXgP13_cQUQLE4RSjACTzj28Pn6r3ZaPhjch2U+uwgi7YKcWA@mail.gmail.com>
-Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-To: Michael Neuling <mikey@neuling.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- Wu Fengguang <fengguang.wu@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ emachado@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,45 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 6, 2012 at 5:47 AM, Michael Neuling <mikey@neuling.org> wrote:
+If arch_validate_hwbkpt_settings() fails, bp->ctx won't be valid and the
+kernel panics. Add a check to fix this.
 
->> 4,89,24561;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
->> 4,90,24576;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
->> 4,91,24583;MSR: 9000000000021032
->> 4,92,24586;<
->> 4,93,24591;SF
->> 4,94,24596;,HV
->> 4,95,24601;,ME
->> 4,96,24606;,IR
->> 4,97,24611;,DR
->> 4,98,24616;,RI
->> 4,99,24619;>
->> 4,100,24628;  CR: 28000042  XER: 22000000
->
-> FWIW, compiling with the parent commit gives this:
->
-> 4,89,1712;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
-> 4,90,1713;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
-> 4,91,1716;MSR: 9000000000021032 <SF,HV,ME,IR,DR,RI>  CR: 22000082  XER: 02000000
+Reported-by: Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/hw_breakpoint.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Hmm, I don't understand, which parent commit do you mean? You maybe
-mean without 084681d?
-
-I think it's a race of the two CPUs printing continuation lines, and
-the continuation buffer is still occupied with data from one CPU and
-not available to the other one at the same time.
-
-What you see is likely not the direct output to the console (that
-would work) but the replay of the stored buffer when the console is
-registered. Because the cont buffer was still busy with one CPU, the
-other thread needs to store the continuation line prints in individual
-records, which leads to the (unwanted) printed newlines when
-replaying.
-
-The data we store looks all fine, it just looks needlessly separated
-when we replay fromt he buffer on a newly registered boot console. We
-need to merge the lines in the output, so they *look* like they are
-all in one line. I'll work on a fix for that now.
-
-Thanks,
-Kay
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index 2bc0584..f3a82dd 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -111,7 +111,7 @@ void arch_unregister_hw_breakpoint(struct perf_event *bp)
+ 	 * and the single_step_dabr_instruction(), then cleanup the breakpoint
+ 	 * restoration variables to prevent dangling pointers.
+ 	 */
+-	if (bp->ctx->task)
++	if (bp->ctx && bp->ctx->task)
+ 		bp->ctx->task->thread.last_hit_ubp = NULL;
+ }
+ 
