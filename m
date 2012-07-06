@@ -1,24 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 0492B2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 13:01:46 +1000 (EST)
-Date: Fri, 6 Jul 2012 13:01:37 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Modra <amodra@gmail.com>
-Subject: Re: linux-next: build failure after merge of the final tree
-Message-Id: <20120706130137.6aae96c0072af1f330249c0d@canb.auug.org.au>
-In-Reply-To: <20120706005709.GB5805@bubble.grove.modra.org>
-References: <20120705183345.ee84ec1048a19aa1c7129578@canb.auug.org.au>
- <20120705094348.GA5805@bubble.grove.modra.org>
- <20120706102151.fd4f769cf2aa3f753ad178bf@canb.auug.org.au>
- <20120706005709.GB5805@bubble.grove.modra.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__6_Jul_2012_13_01_37_+1000_s=j1HxjYDcD0K1Na"
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Kay Sievers <kay@vrfy.org>
+Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
+In-reply-to: <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
+References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
+ <20120625150722.8cd4f45d.akpm@linux-foundation.org>
+ <20120625235531.GB3652@kroah.com>
+ <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
+ <20120626002307.GA4389@kroah.com>
+ <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
+ <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
+ <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
+ <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
+ <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
+ <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
+ <16043.1341483625@neuling.org>
+ <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
+ <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
+ <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
+Date: Fri, 06 Jul 2012 13:39:39 +1000
+Message-ID: <29711.1341545979@neuling.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,93 +35,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__6_Jul_2012_13_01_37_+1000_s=j1HxjYDcD0K1Na
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Kay Sievers <kay@vrfy.org> wrote:
 
-Hi Alan,
+> On Fri, Jul 6, 2012 at 2:41 AM, Michael Neuling <mikey@neuling.org> wrote:
+> 
+> >> > Does this happen only very early during bootup, or also later when the
+> >> > box fully initialized?
+> >
+> > I'm seeing during boot but not later (xmon (ppc kernel debugger) doesn't
+> > see it if I do 'echo x > /proc/sysrq-trigger') .  I wouldn't say
+> > it's "very early boot".  It's a secondary CPU coming up and the primary
+> > is waiting for it.  We've already configured the console when this
+> > happens.
+> 
+> Sounds like an early boot console.
+> 
+> >> > The output of 'dmesg' later looks always correct, right?
+> >
+> > No, dmesg also has the extra new lines: eg
+> >
+> > <4>NIP: c00000000004e234 LR: c00000000004e230 CTR: 0000000000000000
+> > <4>REGS: c00000007c3b7b50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+> > <4>MSR: 9000000000021032
+> > <4><
+> > <4>SF
+> > <4>,HV
+> > <4>,ME
+> > <4>,IR
+> > <4>,DR
+> > <4>,RI
+> > <4>>
+> > <4>  CR: 28000042  XER: 22000000
+> 
+> Can you please paste the output of /dev/kmsg of this section? So we
+> can see the timestamps and what really went into the record buffer.
 
-On Fri, 6 Jul 2012 10:27:10 +0930 Alan Modra <amodra@gmail.com> wrote:
->
-> On Fri, Jul 06, 2012 at 10:21:51AM +1000, Stephen Rothwell wrote:
-> > which have now been fixed.  So would a simple patch that puts the
-> > _savegpr etc functions in their own section (defined how?) fix this for
-> > us?
->=20
-> Ah, the kernel provides its own save/restore functions, and these get
-> mashed into a .text containing normal functions with toc references by
-> ld -r.  Well, you could stop using ld -r.  Otherwise, try
->=20
->  .section ".text.save.restore","ax",@progbits
+Sure.
 
-OK, so that helped a lot.  Now I get this:
+4,89,24561;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
+4,90,24576;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+4,91,24583;MSR: 9000000000021032 
+4,92,24586;<
+4,93,24591;SF
+4,94,24596;,HV
+4,95,24601;,ME
+4,96,24606;,IR
+4,97,24611;,DR
+4,98,24616;,RI
+4,99,24619;>
+4,100,24628;  CR: 28000042  XER: 22000000
 
-drivers/built-in.o: In function `.idt77252_init_ubr.isra.10':
-idt77252.c:(.text+0x1ff801c): relocation truncated to fit: R_PPC64_REL24 ag=
-ainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/ent=
-ry_64.o
-drivers/built-in.o: In function `.idt77252_init_tx':
-idt77252.c:(.text+0x1ff8258): relocation truncated to fit: R_PPC64_REL24 ag=
-ainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/ent=
-ry_64.o
-drivers/built-in.o: In function `.idt77252_change_qos':
-idt77252.c:(.text+0x1ff86a0): relocation truncated to fit: R_PPC64_REL24 ag=
-ainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/ent=
-ry_64.o
-drivers/built-in.o: In function `.idt77252_open':
-idt77252.c:(.text+0x1ff898c): relocation truncated to fit: R_PPC64_REL24 ag=
-ainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/ent=
-ry_64.o
-idt77252.c:(.text+0x1ff8f4c): relocation truncated to fit: R_PPC64_REL24 ag=
-ainst symbol `_restgpr0_22' defined in .text.save.restore section in arch/p=
-owerpc/lib/built-in.o
-drivers/built-in.o: In function `.next_string':
-solos-pci.c:(.text+0x1ff8f54): relocation truncated to fit: R_PPC64_REL24 a=
-gainst symbol `_savegpr0_29' defined in .text.save.restore section in arch/=
-powerpc/lib/built-in.o
-solos-pci.c:(.text+0x1ff8f64): relocation truncated to fit: R_PPC64_REL24 a=
-gainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/en=
-try_64.o
-drivers/built-in.o: In function `.print_buffer':
-solos-pci.c:(.text+0x1ff904c): relocation truncated to fit: R_PPC64_REL24 a=
-gainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/en=
-try_64.o
-drivers/built-in.o: In function `.atm_remove':
-solos-pci.c:(.text+0x1ff91d4): relocation truncated to fit: R_PPC64_REL24 a=
-gainst symbol `._mcount' defined in .text section in arch/powerpc/kernel/en=
-try_64.o
-solos-pci.c:(.text+0x1ff923c): relocation truncated to fit: R_PPC64_REL24 a=
-gainst symbol `.sysfs_remove_group' defined in .text section in fs/built-in=
-.o
-drivers/built-in.o: In function `.fpga_tx':
-solos-pci.c:(.text+0x1ff950c): additional relocation overflows omitted from=
- the output
+> 
+> >> Could you possibly try this patch?
+> >
+> > Sorry, doesn't help.  It also reprints the entire boot log to the
+> > console once the console get inited.
+> 
+> Which is the normal behaviour to do that, right? We should not have
+> touched any of that logic.
 
-I assume at this point, we are just too large.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Not until this patch you asked me to try.  Hence why I noted it.  
 
---Signature=_Fri__6_Jul_2012_13_01_37_+1000_s=j1HxjYDcD0K1Na
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJP9lURAAoJEECxmPOUX5FEma8P/jg4rQ4qUlkGZlfPDLcD9vJJ
-zOd832sPOWXowKwYortMlPCQAeyRY/EAAraBa2q2PWx8mkzDU0z2J3wn/l9JJpg0
-U4/La53Z+FkhVf6McFwJ8gA0vR6VtknnPE64xTydWxelLxeBY2rf16DkYWu/1CjS
-dToqMXPu+kGMOoL82xZ/v9KAaTd0fyANp5SUy/sg+5hTvhh0GEd12LPlosQvQV5n
-9byHU7j1VL6TkfrQczmKA7AW6rkE2lxGaan1WmunfcJkvanHE4W7lVlilyerwaRM
-7km8BThZrAqMhXciEG/o3k4uMapr2G0yHaOC5aSxoYDYFJJ0wOFdhigHfiWIQYxN
-uquybpuv1ZFFVUHyKEaFBYImqwx3vANDqerglrnLFBROodptgCcPtOasR0/AZyQI
-M0UE1/iiNCG9rBwfJVkOrbp+0i2NqmO5j7VAYTzcelHI3OExUECLKfKPtNkLjVyw
-T3glwYHo0KMpeytJqiphdY+ug0RxgJhrVPukLzshDFekfAD7lcvcZNGsJoaB224I
-qN5TgEXKdLSgzNWmDBz3uvVkBSaYTuewnxXfavivgaBv2MyKGtNZopAbTN4/T38S
-wUreLkGwGbmvO/MtJ8q8guppqYTWqiW/TvrL3+StTvatuRkX6LNfPRYhKxr9IQcO
-oMI2kByY36wlNhUhS3x+
-=yxvD
------END PGP SIGNATURE-----
-
---Signature=_Fri__6_Jul_2012_13_01_37_+1000_s=j1HxjYDcD0K1Na--
+Mikey
