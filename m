@@ -1,37 +1,13 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3E2F42C0086
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 17:57:52 +1000 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Fri, 6 Jul 2012 07:48:10 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q667o3je65405132
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jul 2012 17:50:03 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q667vkde018924
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jul 2012 17:57:48 +1000
-Message-ID: <1341561460.24895.12.camel@ThinkPad-T420>
-Subject: [PATCH powerpc 2/2 v3] kfree the cache name of pgtable cache
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Date: Fri, 06 Jul 2012 15:57:40 +0800
-In-Reply-To: <1341561286.24895.9.camel@ThinkPad-T420>
-References: <1341561286.24895.9.camel@ThinkPad-T420>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Christoph Lameter <cl@linux-foundation.org>,
- Glauber Costa <glommer@parallels.com>, Pekka Enberg <penberg@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Matt Mackall <mpm@selenic.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Wanlong Gao <gaowanlong@cn.fujitsu.com>
+Return-Path: <aik@ozlabs.ru>
+Message-ID: <4FF69DDA.6030306@ozlabs.ru>
+Date: Fri, 06 Jul 2012 18:12:10 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Linuxppc-dev@lists.ozlabs.org
+Subject: Re: ptrace and emulated mfspr/mtspr on DSCR
+References: <4FF69404.6090408@ozlabs.ru>
+In-Reply-To: <4FF69404.6090408@ozlabs.ru>
+Content-Type: text/plain; charset=KOI8-R
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,38 +17,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch tries to kfree the cache name of pgtables cache. It depends
-on patch 1/2 -- ([PATCH SLAB 1/2 v3] duplicate the cache name in SLUB's
-saved_alias list, SLAB, and SLOB) in this mail thread. 
 
-For SLUB, as the pgtables cache might be mergeable to other caches.
-During early boot, the name string is saved in the save_alias list. In
-this case, the name could be safely kfreed after calling
-kmem_cache_create() with patch 1.
+ha, forget it, it is all correct actually :)
 
-For SLAB/SLOB, we need the changes in patch 1, which duplicates the name
-strings in cache create.
 
-v3: with patch 1/2 updated to make slab/slob consistent, #ifdef
-CONFIG_SLUB is no longer needed. 
+On 06/07/12 17:30, Alexey Kardashevskiy wrote:
+> Hi!
+> 
+> I am trying to change DSCR's value of a specific process with pid=XXX. For this, I attach by ptrace() to XXX, inject a piece of code which does mfspr/mtspr, "continue" XXX and see how it is changing. So far so good.
+> 
+> The problem is with "continue". The XXX process does not wake up until I press a key (if XXX is waiting on something like scanf() or gets()) OR it exits from sleep() if I change it to run sleep() in a loop.
+> 
+> Not sure if it matters but mfspr/mtspr are privileged instructions and are emulated by the kernel.
+> 
+> How to wake XXX up?
+> 
+> 
+> 
+> #include <sys/ptrace.h>
+> #include <sys/types.h>
+> #include <sys/wait.h>
+> #include <string.h>
+> #include <unistd.h>
+> #include <sys/user.h>
+> #include <stdio.h>
+> #include <stdlib.h>
+> 
+> void getdata(pid_t child, long addr, void *str)
+> {
+> 	unsigned long *ptr = (unsigned long *) str;
+> 	ptr[0] = ptrace(PTRACE_PEEKDATA, child, addr, NULL);
+> }
+> 
+> void putdata(pid_t child, long addr, void *str)
+> {
+> 	unsigned long *ptr = (unsigned long *) str;
+> 	ptrace(PTRACE_POKEDATA, child, addr, ptr[0]);
+> }
+> 
+> int main(int argc, char *argv[])
+> {
+> 	pid_t traced_process;
+> 	struct pt_regs regs, backup_regs;
+> 	unsigned long dscr = -1;
+> /*.set_dscr:
+> * 7f d1 03 a6     mtspr   17,r30
+>   7d 82 10 08     twge    r2,r2     <- set breakpoint */
+> 	unsigned int insert_set[] = { 0x7fd103a6, 0x7d821008 };
+> /*.get_dscr:
+>   7f d1 02 a6     mfspr   r30,17
+>   7d 82 10 08     twge    r2,r2     <- set breakpoint */
+> 	unsigned int insert_get[] = { 0x7fd102a6, 0x7d821008 };
+> 	char backup[8];
+> 	int len = 8;
+> 
+> 	if((argc < 2)||(sizeof(unsigned int)!=4)) {
+> 		printf("Usage: %s <pid to be traced> [dscr value]\n", argv[0], argv[1]);
+> 		exit(1);
+> 	}
+> 	if (argc > 2) {
+> 		dscr = atoi(argv[2]);
+> 	}
+> 
+> 	traced_process = atoi(argv[1]);
+> 	ptrace(PTRACE_ATTACH, traced_process, NULL, NULL);
+> 	wait(NULL);
+> 
+> 	printf("Attached to pid=%u\n", traced_process);
+> 	ptrace(PTRACE_GETREGS, traced_process, NULL, &regs);
+> 	backup_regs = regs;
+> 	getdata(traced_process, regs.nip, backup);
+> 
+> 	if (dscr != -1) {
+> 		regs.gpr[30] = dscr;
+> 		putdata(traced_process, regs.nip, insert_set);
+> 		ptrace(PTRACE_SETREGS, traced_process, NULL, &regs);
+> 		printf("Setting DSCR = %x to gpr0\n", regs.gpr[30]);
+> 	} else {
+> 		putdata(traced_process, regs.nip, insert_get);
+> 		printf("Reading DSCR\n");
+> 	}
+> 
+> 	printf("Continued pid=%u\n", traced_process);
+> 	ptrace(PTRACE_CONT, traced_process, NULL, SIGCONT);
+> 
+> 	printf("waiting...\n");
+> 	wait(NULL);      // <---------------- HERE IS THE PROBLEM
+> 
+> 	if (dscr == -1) {
+> 		printf("DSCR has been read\n");
+> 		ptrace(PTRACE_GETREGS, traced_process, NULL, &regs);
+> 		printf("Reading DSCR from gpr30 = %x\n", regs.gpr[30]);
+> 	}
+> 
+> 	printf("The process stopped, Putting back the original instructions\n");
+> 	putdata(traced_process, backup_regs.nip, backup);
+> 	ptrace(PTRACE_SETREGS, traced_process, NULL, &backup_regs);
+> 	printf("Letting it continue with original flow\n");
+> 	ptrace(PTRACE_DETACH, traced_process, NULL, NULL);
+> 
+> 	return 0;
+> }
+> 
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/mm/init_64.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 620b7ac..bc7f462 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -130,6 +130,7 @@ void pgtable_cache_add(unsigned shift, void
-(*ctor)(void *))
- 	align = max_t(unsigned long, align, minalign);
- 	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
- 	new = kmem_cache_create(name, table_size, align, 0, ctor);
-+	kfree(name);
- 	PGT_CACHE(shift) = new;
- 
- 	pr_debug("Allocated pgtable cache for order %d\n", shift);
 -- 
-1.7.1
+Alexey
