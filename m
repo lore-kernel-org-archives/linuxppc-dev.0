@@ -1,22 +1,43 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AFA1B2C0203
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2012 00:54:44 +1000 (EST)
-Subject: Re: [RFC PATCH 08/17] KVM: PPC: e500mc: Fix tlbilx emulation for
- 64-bit guests
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1340627195-11544-9-git-send-email-mihai.caraman@freescale.com>
-Date: Fri, 6 Jul 2012 16:54:37 +0200
-Message-Id: <2AEFDA71-04E2-41C4-8FB0-90467D4BED50@suse.de>
-References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-9-git-send-email-mihai.caraman@freescale.com>
-To: Mihai Caraman <mihai.caraman@freescale.com>
-Cc: qemu-ppc@nongnu.org, linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Return-Path: <kay@vrfy.org>
+Received: from mail-yw0-f42.google.com (mail-yw0-f42.google.com
+ [209.85.213.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1328D2C0204
+ for <linuxppc-dev@ozlabs.org>; Sat,  7 Jul 2012 01:12:35 +1000 (EST)
+Received: by yhfq11 with SMTP id q11so9504376yhf.15
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Jul 2012 08:12:33 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <CAPXgP13_cQUQLE4RSjACTzj28Pn6r3ZaPhjch2U+uwgi7YKcWA@mail.gmail.com>
+References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
+ <20120625150722.8cd4f45d.akpm@linux-foundation.org>
+ <20120625235531.GB3652@kroah.com>
+ <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
+ <20120626002307.GA4389@kroah.com>
+ <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
+ <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
+ <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
+ <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
+ <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
+ <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
+ <16043.1341483625@neuling.org>
+ <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
+ <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
+ <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
+ <29711.1341545979@neuling.org> <30343.1341546469@neuling.org>
+ <CAPXgP13_cQUQLE4RSjACTzj28Pn6r3ZaPhjch2U+uwgi7YKcWA@mail.gmail.com>
+From: Kay Sievers <kay@vrfy.org>
+Date: Fri, 6 Jul 2012 17:12:12 +0200
+Message-ID: <CAPXgP10JthGjZyqD6gqn2n1rPu1uP+=mem_T-iOritXAQMstRQ@mail.gmail.com>
+Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
+To: Michael Neuling <mikey@neuling.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,15 +47,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jul 6, 2012 at 12:46 PM, Kay Sievers <kay@vrfy.org> wrote:
+> On Fri, Jul 6, 2012 at 5:47 AM, Michael Neuling <mikey@neuling.org> wrote:
+>
+>>> 4,89,24561;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
+>>> 4,90,24576;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+>>> 4,91,24583;MSR: 9000000000021032
+>>> 4,92,24586;<
+>>> 4,93,24591;SF
+>>> 4,94,24596;,HV
+>>> 4,95,24601;,ME
+>>> 4,96,24606;,IR
+>>> 4,97,24611;,DR
+>>> 4,98,24616;,RI
+>>> 4,99,24619;>
+>>> 4,100,24628;  CR: 28000042  XER: 22000000
+>>
+>> FWIW, compiling with the parent commit gives this:
+>>
+>> 4,89,1712;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
+>> 4,90,1713;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+>> 4,91,1716;MSR: 9000000000021032 <SF,HV,ME,IR,DR,RI>  CR: 22000082  XER: 02000000
+>
+> Hmm, I don't understand, which parent commit do you mean? You maybe
+> mean without 084681d?
+>
+> I think it's a race of the two CPUs printing continuation lines, and
+> the continuation buffer is still occupied with data from one CPU and
+> not available to the other one at the same time.
+>
+> What you see is likely not the direct output to the console (that
+> would work) but the replay of the stored buffer when the console is
+> registered. Because the cont buffer was still busy with one CPU, the
+> other thread needs to store the continuation line prints in individual
+> records, which leads to the (unwanted) printed newlines when
+> replaying.
+>
+> The data we store looks all fine, it just looks needlessly separated
+> when we replay fromt he buffer on a newly registered boot console. We
+> need to merge the lines in the output, so they *look* like they are
+> all in one line. I'll work on a fix for that now.
 
-On 25.06.2012, at 14:26, Mihai Caraman wrote:
+It could be that the console semaphore is still help by the other CPU,
+for whatever reason, when your box runs into this situation.
 
-> tlbilxva emulation was using an u32 variable for guest effective address.
-> Replace it with gva_t type to handle 64-bit guests.
-> 
-> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+Mind pasting more context (/dev/kmsg) of the log when this happens,
+not only the one line that get split-up?
 
-Thanks, applied to kvm-ppc-next.
+Is this possibly during an oops or backtrace going on when you see
+this? Which code calls show_regs() here?
 
-
-Alex
+Kay
