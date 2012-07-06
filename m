@@ -1,8 +1,14 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Kay Sievers <kay@vrfy.org>
-Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-In-reply-to: <1341492628.834.3.camel@mop>
+Return-Path: <kay@vrfy.org>
+Received: from mail-gh0-f170.google.com (mail-gh0-f170.google.com
+ [209.85.160.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 473FB2C0084
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2012 10:56:42 +1000 (EST)
+Received: by ghbg2 with SMTP id g2so7389060ghb.15
+ for <linuxppc-dev@ozlabs.org>; Thu, 05 Jul 2012 17:56:40 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <30233.1341535279@neuling.org>
 References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
  <20120625150722.8cd4f45d.akpm@linux-foundation.org>
  <20120625235531.GB3652@kroah.com>
@@ -16,9 +22,13 @@ References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
  <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
  <16043.1341483625@neuling.org>
  <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
- <1341492628.834.3.camel@mop>
-Date: Fri, 06 Jul 2012 10:41:19 +1000
-Message-ID: <30233.1341535279@neuling.org>
+ <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
+From: Kay Sievers <kay@vrfy.org>
+Date: Fri, 6 Jul 2012 02:56:19 +0200
+Message-ID: <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
+Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
+To: Michael Neuling <mikey@neuling.org>
+Content-Type: text/plain; charset=UTF-8
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
  "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
@@ -34,103 +44,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kay Sievers <kay@vrfy.org> wrote:
+On Fri, Jul 6, 2012 at 2:41 AM, Michael Neuling <mikey@neuling.org> wrote:
 
-> On Thu, 2012-07-05 at 13:47 +0200, Kay Sievers wrote:
-> > On Thu, Jul 5, 2012 at 12:20 PM, Michael Neuling <mikey@neuling.org> wrote:
-> > 
-> > > I can only make 2) happen on SMP.  It's when the second CPU is coming up
-> > > and it's printing something.  The first CPU isn't printing anything at
-> > > this stage (there is no garbled console here) so I don't think it's a
-> > > race.  I see it consistently in show_regs().  Every printk without a
-> > > newline.  ie I get this:
-> > > ---
-> > > NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
-> > > REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc5-mikey)
-> > > MSR: 9000000000021032
-> > > <
-> > > SF
-> > > ,HV
-> > > ,ME
-> > > ,IR
-> > > ,DR
-> > > ,RI
-> > >>
-> > >   CR: 28000042  XER: 22000000
-> > > SOFTE: 0
-> > > CFAR: c0000000007402f8
-> > > TASK = c00000007e56bb40[0] 'swapper/1' THREAD: c00000007e59c000
-> > >  CPU: 1
-> > > ---
-> > >
-> > > It's consistent for printks without newlines in show_regs().  MSR
-> > > through to XER should all be on the same line.
-> > 
-> > I see. Something to fix then, I'll have a look.
-> > 
-> > Does this happen only very early during bootup, or also later when the
-> > box fully initialized?
-
-I'm seeing during boot but not later (xmon (ppc kernel debugger) doesn't
-see it if I do 'echo x > /proc/sysrq-trigger') .  I wouldn't say
-it's "very early boot".  It's a secondary CPU coming up and the primary
-is waiting for it.  We've already configured the console when this
-happens.
-
-> > 
-> > The output of 'dmesg' later looks always correct, right?
-
-No, dmesg also has the extra new lines: eg
-
-<4>NIP: c00000000004e234 LR: c00000000004e230 CTR: 0000000000000000
-<4>REGS: c00000007c3b7b50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
-<4>MSR: 9000000000021032 
-<4><
-<4>SF
-<4>,HV
-<4>,ME
-<4>,IR
-<4>,DR
-<4>,RI
-<4>>
-<4>  CR: 28000042  XER: 22000000
-<4>SOFTE: 0
-<4>CFAR: c0000000008139b4
-<4>TASK = c00000007c3a4e00[0] 'swapper/1' THREAD: c00000007c3b4000
-<4> CPU: 1
-<4>
-
-> If it's an early printk issue like it looks like, where stuff got
-> printed before we had any console registered, this might fix the issue
-> you are seeing.
+>> > Does this happen only very early during bootup, or also later when the
+>> > box fully initialized?
 >
-> Could you possibly try this patch?
+> I'm seeing during boot but not later (xmon (ppc kernel debugger) doesn't
+> see it if I do 'echo x > /proc/sysrq-trigger') .  I wouldn't say
+> it's "very early boot".  It's a secondary CPU coming up and the primary
+> is waiting for it.  We've already configured the console when this
+> happens.
 
-Sorry, doesn't help.  It also reprints the entire boot log to the
-console once the console get inited.
+Sounds like an early boot console.
 
-FWIW HVC RTAS is the console.
+>> > The output of 'dmesg' later looks always correct, right?
+>
+> No, dmesg also has the extra new lines: eg
+>
+> <4>NIP: c00000000004e234 LR: c00000000004e230 CTR: 0000000000000000
+> <4>REGS: c00000007c3b7b50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+> <4>MSR: 9000000000021032
+> <4><
+> <4>SF
+> <4>,HV
+> <4>,ME
+> <4>,IR
+> <4>,DR
+> <4>,RI
+> <4>>
+> <4>  CR: 28000042  XER: 22000000
 
-Mikey
+Can you please paste the output of /dev/kmsg of this section? So we
+can see the timestamps and what really went into the record buffer.
 
-> 
-> Thanks,
-> Kay
-> 
-> 
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
-> @@ -1957,6 +1951,12 @@ skip:
->  			 */
->  			console_idx = log_next(console_idx);
->  			console_seq++;
-> +			/*
-> +			 * We will get here again when we register a new
-> +			 * CON_PRINTBUFFER console. Clear the flag so we
-> +			 * will properly dump everything later.
-> +			 */
-> +			msg->flags &= ~LOG_NOCONS;
->  			goto skip;
->  		}
->  
-> 
+>> Could you possibly try this patch?
+>
+> Sorry, doesn't help.  It also reprints the entire boot log to the
+> console once the console get inited.
+
+Which is the normal behaviour to do that, right? We should not have
+touched any of that logic.
+
+Thanks,
+Kay
