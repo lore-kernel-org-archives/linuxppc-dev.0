@@ -1,23 +1,18 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 708D52C01B4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2012 02:59:32 +1000 (EST)
-Subject: Re: [PATCH 2/3] powerpc/e500: add paravirt QEMU platform
+Return-Path: <galak@kernel.crashing.org>
+Subject: Re: [PATCH][v3] powerpc/85xx:Add BSC9131 RDB Support
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <4FF717D3.1020005@freescale.com>
-Date: Fri, 6 Jul 2012 18:59:24 +0200
-Message-Id: <0C067161-2FF3-4EF6-BC4D-B3C93828ED36@suse.de>
-References: <20120627235005.GB9100@tyr.buserror.net>
- <36624A62-88AD-404A-A7A8-02D62E8700F0@suse.de>
- <4FF71164.3040501@freescale.com>
- <D89B244E-C8E0-4CCD-9118-2E84A13B6633@suse.de>
- <4FF717D3.1020005@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1332392055-30112-1-git-send-email-prabhakar@freescale.com>
+Date: Fri, 6 Jul 2012 13:09:35 -0500
+Message-Id: <A44455E7-44B7-425F-9622-CBB4DE39DEBA@kernel.crashing.org>
+References: <1332392055-30112-1-git-send-email-prabhakar@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: Priyanka Jain <Priyanka.Jain@freescale.com>,
+ devicetree-discuss@lists.ozlabs.org,
+ Ramneek Mehresh <ramneek.mehresh@freescale.com>,
+ Rajan Srivastava <rajan.srivastava@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, Akhil Goyal <Akhil.Goyal@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,124 +23,93 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 06.07.2012, at 18:52, Scott Wood wrote:
+On Mar 21, 2012, at 11:54 PM, Prabhakar Kushwaha wrote:
 
-> On 07/06/2012 11:30 AM, Alexander Graf wrote:
->>=20
->> On 06.07.2012, at 18:25, Scott Wood wrote:
->>=20
->>> On 07/06/2012 07:29 AM, Alexander Graf wrote:
->>>> I really think we should document what exactly this machine =
-expects.
->>>=20
->>> Well, the point of this paravirt machine is to avoid such =
-assumptions --
->>> it's all device-tree driven, at least in theory.  If a certain qemu
->>> configuration ends up breaking the Linux platform (such as using a
->>> different PIC), then that's a lack of flexibility on Linux's part =
-that
->>> should get fixed if someone finds it useful enough to justify the
->>> effort.  Same with real hardware -- if you care about it, you add
->>> support -- we just don't have a unique name for every configuration.
->>> The information is there in the device tree, though.
->>>=20
->>> Honestly, even having "qemu" in there is more specific than I'd =
-prefer,
->>> but I don't want to stir up the "generic platform" argument again
->>> without at least limiting the scope.
->>=20
->> Well, can't we note down the assumptions we make to make sure that
->> whoever develops an implementation of it knows what to implement?
->> It's ppc specific for example. I also don't think that plugging a G3
->> in there works, would it?
+> BSC9131RDB is a Freescale reference design board for BSC9131 SoC.The =
+BSC9131
+> is integrated SoC that targets Femto base station market. It combines =
+Power
+> Architecture e500v2 and DSP StarCore SC3850 core technologies with =
+MAPLE-B2F
+> baseband acceleration processing elements.
 >=20
-> Well, it does have "e500" in the name. :-P
+> The BSC9131 SoC includes the following function and features:
+>    . Power Architecture subsystem including a e500 processor with =
+256-Kbyte
+>    shared L2 cache
+>    . StarCore SC3850 DSP subsystem with a 512-Kbyte private L2 cache
+>    . The Multi Accelerator Platform Engine for Femto BaseStation =
+Baseband
+>      Processing (MAPLE-B2F)
+>    . A multi-standard baseband algorithm accelerator for Channel
+>      Decoding/Encoding, Fourier Transforms, UMTS chip rate processing, =
+LTE
+>      UP/DL Channel processing, and CRC algorithms
+>    . Consists of accelerators for Convolution, Filtering, Turbo =
+Encoding,
+>      Turbo Decoding, Viterbi decoding, Chiprate processing, and Matrix
+>      Inversion operations
+>    . DDR3/3L memory interface with 32-bit data width without ECC and =
+16-bit
+>      with ECC, up to 400-MHz clock/800 MHz data rate
+>    . Dedicated security engine featuring trusted boot
+>    . DMA controller
+>    . OCNDMA with four bidirectional channels
+>    . Interfaces
+>    . Two triple-speed Gigabit Ethernet controllers featuring network
+>      acceleration including IEEE 1588. v2 hardware support and
+>      virtualization (eTSEC)
+>    . eTSEC 1 supports RGMII/RMII
+>    . eTSEC 2 supports RGMII
+>    . High-speed USB 2.0 host and device controller with ULPI interface
+>    . Enhanced secure digital (SD/MMC) host controller (eSDHC)
+>    . Antenna interface controller (AIC), supporting three industry =
+standard
+>      JESD207/three custom ADI RF interfaces (two dual port and one =
+single
+>      port) and three MAXIM's MaxPHY serial interfaces
+>    . ADI lanes support both full duplex FDD support and half duplex =
+TDD
+>      support
+>    . Universal Subscriber Identity Module (USIM) interface that =
+facilitates
+>      communication to SIM cards or Eurochip pre-paid phone cards
+>    . TDM with one TDM port
+>    . Two DUART, four eSPI, and two I2C controllers
+>    . Integrated Flash memory controller (IFC)
+>    . TDM with 256 channels
+>    . GPIO
+>    . Sixteen 32-bit timers
 >=20
->>>>> +void __init qemu_e500_pic_init(void)
->>>>> +{
->>>>> +	struct mpic *mpic;
->>>>> +
->>>>> +	mpic =3D mpic_alloc(NULL, 0, MPIC_BIG_ENDIAN | =
-MPIC_SINGLE_DEST_CPU,
->>>>> +			0, 256, " OpenPIC  ");
->>>>=20
->>>> Does that mean we're configuring the MPIC regardless of what the
->>>> guest tells us? So the MPIC is a hard requirement. We can't use UIC
->>>> or XPIC with this machine, right? This needs to be documented.
->>>=20
->>> Then what would we do if we want to add an ePAPR virtual PIC =
-instead?
->>> Or if something replaces MPIC on future FSL chips?
->>=20
->> Then we need a different compatible anyways, because we wouldn't be =
-backwards compatible, no?
+> The DSP portion of the SoC consists of DSP core (SC3850) and various
+> accelerators pertaining to DSP operations.
 >=20
-> No, that's exactly what I'm trying to avoid.  This notion of a =
-toplevel
-> compatible that tells you everything you need to know about the =
-machine
-> (even if Linux chooses to be device-tree-based for some arbitrary =
-subset
-> of that information) is incompatible with a flexible virtual platform.
+> BSC9131RDB Overview
+> ----------------------
+>    BSC9131 SoC
+>    1Gbyte DDR3 (on board DDR)
+>    128Mbyte 2K page size NAND Flash
+>    256 Kbit M24256 I2C EEPROM
+>    128 Mbit SPI Flash memory
+>    USB-ULPI
+>    eTSEC1: Connected to RGMII PHY
+>    eTSEC2: Connected to RGMII PHY
+>    DUART interface: supports one UARTs up to 115200 bps for console =
+display
 >=20
-> All this compatible is saying is "see the rest of the device tree".
-> How well Linux does so is a quality of implementation issue that can =
-be
-> addressed as needed.  The information about what sort of interrupt
-> controller you have is already in the device tree.  The device tree is
-> the machine spec.
+> Linux runs on e500v2 core and access some DSP peripherals like AIC
 >=20
-> Another assumption this patch makes is that it doesn't need SWIOTLB.  =
-Is
-> "has more than 4GiB RAM" a machine attribute that would warrant a
-> separate toplevel compatible?  SWIOTLB for PCI is handled due to the
-> previous patch that provides common PCI code -- but in a previous
-> version of the patch it was not handled.  Is it yet another =
-incompatible
-> machine spec if RAM must be less than 4GiB minus PCICSRBAR (ignoring =
-the
-> QEMU bug that PCICSRBAR is not implemented)?
+> Signed-off-by: Ramneek Mehresh <ramneek.mehresh@freescale.com>
+> Signed-off-by: Priyanka Jain <Priyanka.Jain@freescale.com>
+> Signed-off-by: Akhil Goyal <Akhil.Goyal@freescale.com>
+> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> Signed-off-by: Rajan Srivastava <rajan.srivastava@freescale.com>
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+> ---
 
-Well, the thing that I'm wary of is the following. Imagine we make this =
-the default machine type for all e500 user cases. Which is reasonable. =
-Now we release 3.6 which works awesome with QEMU 1.2. We change =
-something in QEMU. QEMU 1.3 comes out. It can no longer boot your old =
-kernel 3.6.
+applied to next.
 
-That's the type of situation I don't want to be in. We need to be =
-backwards compatible with what we used to be able to run. We can get =
-away with declaring things as experimental for now, until we settled on =
-a reasonable compromise to achieve said compatibility. But it needs to =
-be our goal somewhere.
+(Made some minor changes to match upstream board ports like p1010, also =
+sorted Makefile & Kconfig by Alphabet)
 
-One idea would be to version the machine type according to what Linux =
-implements. If Linux finds a machine type that is newer than what it =
-implements, it spawns a warning. If we want, we can implement backwards =
-compatible machine types in QEMU, similar to how we implement -M pc-0.12 =
-and friends today.
-
-Again, no need to do so as long as we tell users to not use it. As soon =
-as we want them to actually run the machine, we need to have independent =
-upgrade paths in place. New QEMU needs to be able to run old kernels. =
-New kernels need to be run on old QEMU.
-
->=20
->>> Better to change the Linux implementation as needed than to change a =
-spec.
->>=20
->> Why not keep the 2 in sync in the same patch? Just throw a file with =
-a rough outline of the machine in Documentation/.
->=20
-> Because that would give people the wrong impression about what this
-> machine is, and be unlikely to stay in sync or be a complete listing =
-of
-> current assumptions.  You're basically suggesting to use =
-Documentation/
-> as a bug tracker.
-
-I'm just saying that every time we hardcode assumptions, we need to make =
-sure we document it somewhere. And currently we do hardcode assumptions, =
-even though only a few.
-
-
-Alex
+- k=
