@@ -1,28 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 329032C0203
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 17:03:27 +1000 (EST)
-References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-5-git-send-email-mihai.caraman@freescale.com>
- <E29E8A28-9993-4E6C-B41A-7C0AA51945F3@suse.de>
- <4FF62891.9020702@freescale.com>
-In-Reply-To: <4FF62891.9020702@freescale.com>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain;
-	charset=us-ascii
-Message-Id: <54351CA8-0493-474C-B851-69E371E85911@suse.de>
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: [Qemu-ppc] [RFC PATCH 04/17] KVM: PPC64: booke: Add guest
- computation mode for irq delivery
-Date: Fri, 6 Jul 2012 09:03:56 +0200
-To: Scott Wood <scottwood@freescale.com>
-Cc: "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>,
- Mihai Caraman <mihai.caraman@freescale.com>,
- "<qemu-ppc@nongnu.org>" <qemu-ppc@nongnu.org>,
- "<linuxppc-dev@lists.ozlabs.org>" <linuxppc-dev@lists.ozlabs.org>,
- "<kvm@vger.kernel.org>" <kvm@vger.kernel.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id D4C972C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 17:09:46 +1000 (EST)
+Date: Fri, 6 Jul 2012 17:09:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: put the gpr sabe/restore functions in their own
+ section
+Message-Id: <20120706170940.e3457b04a58ddd18d963c14a@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Fri__6_Jul_2012_17_09_40_+1000_R9UkDp27wTR_v4Cy"
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Alan Modra <amodra@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,37 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--Signature=_Fri__6_Jul_2012_17_09_40_+1000_R9UkDp27wTR_v4Cy
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 06.07.2012, at 01:51, Scott Wood <scottwood@freescale.com> wrote:
+This allows the linker to know that calls to them do not need to switch
+TOC and stop errors like the following when linking large configurations:
 
-> On 07/04/2012 08:40 AM, Alexander Graf wrote:
->> On 25.06.2012, at 14:26, Mihai Caraman wrote:
->>> @@ -381,7 +386,8 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_v=
-cpu *vcpu,
->>>            set_guest_esr(vcpu, vcpu->arch.queued_esr);
->>>        if (update_dear =3D=3D true)
->>>            set_guest_dear(vcpu, vcpu->arch.queued_dear);
->>> -        kvmppc_set_msr(vcpu, vcpu->arch.shared->msr & msr_mask);
->>> +        kvmppc_set_msr(vcpu, (vcpu->arch.shared->msr & msr_mask)
->>> +                | msr_cm);
->>=20
->> Please split this computation out into its own variable and apply the mas=
-king regardless. Something like
->>=20
->> ulong new_msr =3D vcpu->arch.shared->msr;
->> if (vcpu->arch.epcr & SPRN_EPCR_ICM)
->>    new_msr |=3D MSR_CM;
->> new_msr &=3D msr_mask;
->> kvmppc_set_msr(vcpu, new_msr);
->=20
-> This will fail to clear MSR[CM] in the odd but legal situation where you
-> have MSR[CM] set but EPCR[ICM] unset.
+powerpc64-linux-ld: drivers/built-in.o: In function `.gpiochip_is_requested=
+':
+(.text+0x4): sibling call optimization to `_savegpr0_29' does not allow aut=
+omatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling=
+-calls, or make `_savegpr0_29' extern
 
-Ah. Good point. Then leave the msr_mask logic as before and only stretch it o=
-ut into its own variable.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/lib/crtsavres.S |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Alex
+diff --git a/arch/powerpc/lib/crtsavres.S b/arch/powerpc/lib/crtsavres.S
+index 1c893f0..b2c68ce 100644
+--- a/arch/powerpc/lib/crtsavres.S
++++ b/arch/powerpc/lib/crtsavres.S
+@@ -41,12 +41,13 @@
+ #include <asm/ppc_asm.h>
+=20
+ 	.file	"crtsavres.S"
+-	.section ".text"
+=20
+ #ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
+=20
+ #ifndef CONFIG_PPC64
+=20
++	.section ".text"
++
+ /* Routines for saving integer registers, called by the compiler.  */
+ /* Called with r11 pointing to the stack header word of the caller of the =
+*/
+ /* function, just beyond the end of the integer save area.  */
+@@ -232,6 +233,8 @@ _GLOBAL(_rest32gpr_31_x)
+=20
+ #else /* CONFIG_PPC64 */
+=20
++	.section ".text.save.restore","ax",@progbits
++
+ .globl	_savegpr0_14
+ _savegpr0_14:
+ 	std	r14,-144(r1)
+--=20
+1.7.10.280.gaa39
 
->=20
-> -Scott
->=20
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Fri__6_Jul_2012_17_09_40_+1000_R9UkDp27wTR_v4Cy
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJP9o80AAoJEECxmPOUX5FEWIcP/13XNygwnHx5rvaBkxhKT8PF
+wnwDooamAc1EDpSrzSkd9T9t1fHq7V1hG20Mp6qw3ZpCkSdylq5Gq5r/v1GbZl0G
+fS+7G5piNRt6s5Vwlc85ljZIiuA2RPKo5nC/Q1AD36evWd2IzegC+1K81DtXiWTl
+uAKXf8oFsqA+4EmafFB/aIlesc/nsYdTxHzBVRZN2gGlQrJRkEyXg0vjU7a3yDE6
+4aAKnixGpPW88hmmLLjUieiYqathY8erKozCQ31K0+/CeGgeBUJGMkCODot+E/av
++znq7R+lhT7MOmwLZgBP8Ggozzm11W9nh0y6EJNMNI9A/jLceKfpvDdOrq4jisgl
+rtM31BHWT3ZV/GhBgMT6psDeHO0HWhHQZS7795XFX7PPsCFAF/JSte4jCdFoVmbr
+9Uhi9WJSzr8l3AfKJKsT3a7LU8AmGPaSEZQZMgmJJFt0DYmk78pqnqTY36b4XrSu
+BEcQjxzobWfmRJ0sOdTaYumn7MP/B2/Phq5EUIIuichCXgwaQIo9LdkxR7eIcm4n
+YEPOywqsVl+TTR8NTkfeRQYJVvwiqszm6CE495L+gk5kCW8mzxtlfcXTMEtzlDDo
+SOJ1bLkEHXEDRu7LSx+ETg4bISJDzl+wyufn1Q3hP9zBQWjChhepB6Ig/z697ucE
+Es18QDXu9MttfU2iwNs7
+=SW8P
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__6_Jul_2012_17_09_40_+1000_R9UkDp27wTR_v4Cy--
