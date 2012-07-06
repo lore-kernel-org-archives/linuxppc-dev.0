@@ -1,32 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Kay Sievers <kay@vrfy.org>
-Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-In-reply-to: <29711.1341545979@neuling.org>
-References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
- <20120625150722.8cd4f45d.akpm@linux-foundation.org>
- <20120625235531.GB3652@kroah.com>
- <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
- <20120626002307.GA4389@kroah.com>
- <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
- <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
- <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
- <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
- <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
- <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
- <16043.1341483625@neuling.org>
- <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
- <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
- <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
- <29711.1341545979@neuling.org>
-Date: Fri, 06 Jul 2012 13:47:49 +1000
-Message-ID: <30343.1341546469@neuling.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
- Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
- Wu Fengguang <fengguang.wu@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Return-Path: <B16395@freescale.com>
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 4/4] powerpc/mpic: FSL MPIC error interrupt support.
+Date: Fri, 6 Jul 2012 04:02:44 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D12D9E5@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1332850633-23661-1-git-send-email-Varun.Sethi@freescale.com>
+ <7F9EFF8D-82E4-414E-BB76-24BE84F2D8BC@kernel.crashing.org>
+ <4F720FE3.7080101@freescale.com>
+ <7376AC30-8A8F-4A3E-A025-C8F92AFE23E5@kernel.crashing.org>
+ <C5ECD7A89D1DC44195F34B25E172658D11E1F1@039-SN2MPN1-012.039d.mgd.msft.net>
+ <4FDF7EBC.8090604@freescale.com>
+ <C5ECD7A89D1DC44195F34B25E172658D11E224@039-SN2MPN1-012.039d.mgd.msft.net>
+ <4FDF8031.3090705@freescale.com>
+In-Reply-To: <4FDF8031.3090705@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "Linuxppc-dev@lists.ozlabs.org" <Linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,76 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> wrote:
 
-> Kay Sievers <kay@vrfy.org> wrote:
-> 
-> > On Fri, Jul 6, 2012 at 2:41 AM, Michael Neuling <mikey@neuling.org> wrote:
-> > 
-> > >> > Does this happen only very early during bootup, or also later when the
-> > >> > box fully initialized?
-> > >
-> > > I'm seeing during boot but not later (xmon (ppc kernel debugger) doesn't
-> > > see it if I do 'echo x > /proc/sysrq-trigger') .  I wouldn't say
-> > > it's "very early boot".  It's a secondary CPU coming up and the primary
-> > > is waiting for it.  We've already configured the console when this
-> > > happens.
-> > 
-> > Sounds like an early boot console.
-> > 
-> > >> > The output of 'dmesg' later looks always correct, right?
-> > >
-> > > No, dmesg also has the extra new lines: eg
-> > >
-> > > <4>NIP: c00000000004e234 LR: c00000000004e230 CTR: 0000000000000000
-> > > <4>REGS: c00000007c3b7b50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
-> > > <4>MSR: 9000000000021032
-> > > <4><
-> > > <4>SF
-> > > <4>,HV
-> > > <4>,ME
-> > > <4>,IR
-> > > <4>,DR
-> > > <4>,RI
-> > > <4>>
-> > > <4>  CR: 28000042  XER: 22000000
-> > 
-> > Can you please paste the output of /dev/kmsg of this section? So we
-> > can see the timestamps and what really went into the record buffer.
-> 
-> Sure.
-> 
-> 4,89,24561;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
-> 4,90,24576;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
-> 4,91,24583;MSR: 9000000000021032 
-> 4,92,24586;<
-> 4,93,24591;SF
-> 4,94,24596;,HV
-> 4,95,24601;,ME
-> 4,96,24606;,IR
-> 4,97,24611;,DR
-> 4,98,24616;,RI
-> 4,99,24619;>
-> 4,100,24628;  CR: 28000042  XER: 22000000
 
-FWIW, compiling with the parent commit gives this:
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Tuesday, June 19, 2012 12:53 AM
+> To: Sethi Varun-B16395
+> Cc: Wood Scott-B07421; Kumar Gala; Linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH 4/4] powerpc/mpic: FSL MPIC error interrupt support.
+>=20
+> On 06/18/2012 02:19 PM, Sethi Varun-B16395 wrote:
+> >
+> >
+> >> -----Original Message-----
+> >> From: Wood Scott-B07421
+> >> Sent: Tuesday, June 19, 2012 12:47 AM
+> >> To: Sethi Varun-B16395
+> >> Cc: Kumar Gala; Wood Scott-B07421; Linuxppc-dev@lists.ozlabs.org
+> >> Subject: Re: [PATCH 4/4] powerpc/mpic: FSL MPIC error interrupt
+> support.
+> >>
+> >> On 06/18/2012 02:12 PM, Sethi Varun-B16395 wrote:
+> >>>
+> >>>
+> >>>>>> +/*
+> >>>>>>> + * Error interrupt registers
+> >>>>>>> + */
+> >>>>>>> +
+> >>>>>>> +#define MPIC_ERR_INT_BASE	0x3900
+> >>>>>>> +#define MPIC_ERR_INT_EISR	0x0000
+> >>>>>>> +#define MPIC_ERR_INT_EIMR	0x0010
+> >>>>>>> +
+> >>>>>>> #define MPIC_MAX_IRQ_SOURCES	2048
+> >>>>>>> #define MPIC_MAX_CPUS		32
+> >>>>>>> #define MPIC_MAX_ISU		32
+> >>>>>>>
+> >>>>>>> #define MPIC_MAX_TIMER    8
+> >>>>>>> #define MPIC_MAX_IPI      4
+> >>>>>>> +#define MPIC_MAX_ERR      32
+> >>>>>>
+> >>>>>> Should probably be 64
+> >>>>>
+> >>>>> This patch supports MPIC 4.1 and EISR0.  When support is added for
+> >>>>> EISR1 (didn't realize this was coming until your comment prompted
+> >>>>> me to check...), this should be updated, but this change alone
+> >>>>> would not make it work.
+> >>>>
+> >>>> Would prefer we handle this now rather than later (T4240 is going
+> >>>> to need
+> >>>> EISR1 support).
+> >>> Hi Kumar,
+> >>> As of now I don't have a proper mechanism to test this functionality.
+> >>> I will submit a follow up patch for EISR1/EIMR1 support once I have
+> >>> a mechanism to test this functionality.
+> >>
+> >> You could still write the code in a way that scales to multiple
+> >> EISRs, and test that it works with EISR0.
+> >>
+> > Yes, but I would like to submit the patch once I have tested it.
+>=20
+> So test it the way I described, and submit. :-P
+There just seem to be 32 error interrupts even in case of T4240, that means=
+ there is no
+need to handle multiple EISRs.
 
-4,89,1712;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
-4,90,1713;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
-4,91,1716;MSR: 9000000000021032 <SF,HV,ME,IR,DR,RI>  CR: 22000082  XER: 02000000
+I have already submitted a revised patch for handling MPIC error interrupts=
+.
+[PATCH 3/3 v2] powerpc/mpic: FSL MPIC error interrupt support
 
-Mikey
-
-> 
-> > 
-> > >> Could you possibly try this patch?
-> > >
-> > > Sorry, doesn't help.  It also reprints the entire boot log to the
-> > > console once the console get inited.
-> > 
-> > Which is the normal behaviour to do that, right? We should not have
-> > touched any of that logic.
-> 
-> Not until this patch you asked me to try.  Hence why I noted it.  
-> 
-> Mikey
+-Varun
