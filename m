@@ -1,29 +1,42 @@
-Return-Path: <glommer@parallels.com>
-Received: from mx2.parallels.com (mx2.parallels.com [64.131.90.16])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 816362C007E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 20:16:00 +1000 (EST)
-Message-ID: <4FF6BA39.4000305@parallels.com>
-Date: Fri, 6 Jul 2012 14:13:13 +0400
-From: Glauber Costa <glommer@parallels.com>
+Return-Path: <kay@vrfy.org>
+Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
+ [209.85.160.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B46542C01BB
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Jul 2012 20:46:38 +1000 (EST)
+Received: by pbbrp12 with SMTP id rp12so12292139pbb.15
+ for <linuxppc-dev@ozlabs.org>; Fri, 06 Jul 2012 03:46:36 -0700 (PDT)
 MIME-Version: 1.0
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
- SLUB is used
-References: <1340617984.13778.37.camel@ThinkPad-T420>
- <1340618099.13778.39.camel@ThinkPad-T420>
- <alpine.DEB.2.00.1207031344240.14703@router.home>
- <alpine.DEB.2.00.1207031535330.14703@router.home>
- <1341392420.18505.41.camel@ThinkPad-T420> <4FF439D0.1000603@parallels.com>
- <1341452486.18505.49.camel@ThinkPad-T420> <4FF54F18.50300@parallels.com>
- <1341480578.23916.7.camel@ThinkPad-T420>
-In-Reply-To: <1341480578.23916.7.camel@ThinkPad-T420>
-Content-Type: text/plain; charset="UTF-8"
-Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+In-Reply-To: <30343.1341546469@neuling.org>
+References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
+ <20120625150722.8cd4f45d.akpm@linux-foundation.org>
+ <20120625235531.GB3652@kroah.com>
+ <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
+ <20120626002307.GA4389@kroah.com>
+ <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
+ <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
+ <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
+ <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
+ <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
+ <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
+ <16043.1341483625@neuling.org>
+ <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
+ <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
+ <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
+ <29711.1341545979@neuling.org> <30343.1341546469@neuling.org>
+From: Kay Sievers <kay@vrfy.org>
+Date: Fri, 6 Jul 2012 12:46:16 +0200
+Message-ID: <CAPXgP13_cQUQLE4RSjACTzj28Pn6r3ZaPhjch2U+uwgi7YKcWA@mail.gmail.com>
+Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
+To: Michael Neuling <mikey@neuling.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,52 +46,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/05/2012 01:29 PM, Li Zhong wrote:
-> On Thu, 2012-07-05 at 12:23 +0400, Glauber Costa wrote:
->> On 07/05/2012 05:41 AM, Li Zhong wrote:
->>> On Wed, 2012-07-04 at 16:40 +0400, Glauber Costa wrote:
->>>> On 07/04/2012 01:00 PM, Li Zhong wrote:
->>>>> On Tue, 2012-07-03 at 15:36 -0500, Christoph Lameter wrote:
->>>>>>> Looking through the emails it seems that there is an issue with alias
->>>>>>> strings. 
->>>>> To be more precise, there seems no big issue currently. I just wanted to
->>>>> make following usage of kmem_cache_create (SLUB) possible:
->>>>>
->>>>> 	name = some string kmalloced
->>>>> 	kmem_cache_create(name, ...)
->>>>> 	kfree(name);
->>>>
->>>> Out of curiosity: Why?
->>>> This is not (currently) possible with the other allocators (may change
->>>> with christoph's unification patches), so you would be making your code
->>>> slub-dependent.
->>>>
->>>
->>> For slub itself, I think it's not good that: in some cases, the name
->>> string could be kfreed ( if it was kmalloced ) immediately after calling
->>> the cache create; in some other case, the name string needs to be kept
->>> valid until some init calls finished. 
->>>
->>> I agree with you that it would make the code slub-dependent, so I'm now
->>> working on the consistency of the other allocators regarding this name
->>> string duplicating thing. 
->>
->> If you really need to kfree the string, or even if it is easier for you
->> this way, it can be done. As a matter of fact, this is the case for me.
->> Just that your patch is not enough. Christoph has a patch that makes
->> this behavior consistent over all allocators.
-> 
-> Sorry, I didn't know that. Seems I don't need to continue the half-done
-> work in slab. If possible, would you please give me a link of the patch?
-> Thank you. 
-> 
+On Fri, Jul 6, 2012 at 5:47 AM, Michael Neuling <mikey@neuling.org> wrote:
 
-Sorry for the delay. In case you haven't found it out yourself yet:
+>> 4,89,24561;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
+>> 4,90,24576;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+>> 4,91,24583;MSR: 9000000000021032
+>> 4,92,24586;<
+>> 4,93,24591;SF
+>> 4,94,24596;,HV
+>> 4,95,24601;,ME
+>> 4,96,24606;,IR
+>> 4,97,24611;,DR
+>> 4,98,24616;,RI
+>> 4,99,24619;>
+>> 4,100,24628;  CR: 28000042  XER: 22000000
+>
+> FWIW, compiling with the parent commit gives this:
+>
+> 4,89,1712;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
+> 4,90,1713;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+> 4,91,1716;MSR: 9000000000021032 <SF,HV,ME,IR,DR,RI>  CR: 22000082  XER: 02000000
 
-http://www.spinics.net/lists/linux-mm/msg36149.html
+Hmm, I don't understand, which parent commit do you mean? You maybe
+mean without 084681d?
 
-Please not this posted patch as is has a bug.
+I think it's a race of the two CPUs printing continuation lines, and
+the continuation buffer is still occupied with data from one CPU and
+not available to the other one at the same time.
 
-I do believe that your take on the aliasing code adds value to it. But
-as I've already said once, might have to dig a bit deeper in that to get
-to end of the rabbit hole.
+What you see is likely not the direct output to the console (that
+would work) but the replay of the stored buffer when the console is
+registered. Because the cont buffer was still busy with one CPU, the
+other thread needs to store the continuation line prints in individual
+records, which leads to the (unwanted) printed newlines when
+replaying.
+
+The data we store looks all fine, it just looks needlessly separated
+when we replay fromt he buffer on a newly registered boot console. We
+need to merge the lines in the output, so they *look* like they are
+all in one line. I'll work on a fix for that now.
+
+Thanks,
+Kay
