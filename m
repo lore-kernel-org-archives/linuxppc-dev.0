@@ -1,22 +1,30 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 93A6B2C01D3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 10:21:57 +1000 (EST)
-Date: Fri, 6 Jul 2012 10:21:51 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alan Modra <amodra@gmail.com>
-Subject: Re: linux-next: build failure after merge of the final tree
-Message-Id: <20120706102151.fd4f769cf2aa3f753ad178bf@canb.auug.org.au>
-In-Reply-To: <20120705094348.GA5805@bubble.grove.modra.org>
-References: <20120705183345.ee84ec1048a19aa1c7129578@canb.auug.org.au>
- <20120705094348.GA5805@bubble.grove.modra.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__6_Jul_2012_10_21_51_+1000_c3i3wsaq89+ttzC2"
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Kay Sievers <kay@vrfy.org>
+Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
+In-reply-to: <1341492628.834.3.camel@mop>
+References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
+ <20120625150722.8cd4f45d.akpm@linux-foundation.org>
+ <20120625235531.GB3652@kroah.com>
+ <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
+ <20120626002307.GA4389@kroah.com>
+ <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
+ <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
+ <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
+ <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
+ <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
+ <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
+ <16043.1341483625@neuling.org>
+ <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
+ <1341492628.834.3.camel@mop>
+Date: Fri, 06 Jul 2012 10:41:19 +1000
+Message-ID: <30233.1341535279@neuling.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+ "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
+ Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+ Wu Fengguang <fengguang.wu@intel.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,95 +34,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__6_Jul_2012_10_21_51_+1000_c3i3wsaq89+ttzC2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Kay Sievers <kay@vrfy.org> wrote:
 
-Hi Alan,
+> On Thu, 2012-07-05 at 13:47 +0200, Kay Sievers wrote:
+> > On Thu, Jul 5, 2012 at 12:20 PM, Michael Neuling <mikey@neuling.org> wrote:
+> > 
+> > > I can only make 2) happen on SMP.  It's when the second CPU is coming up
+> > > and it's printing something.  The first CPU isn't printing anything at
+> > > this stage (there is no garbled console here) so I don't think it's a
+> > > race.  I see it consistently in show_regs().  Every printk without a
+> > > newline.  ie I get this:
+> > > ---
+> > > NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
+> > > REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc5-mikey)
+> > > MSR: 9000000000021032
+> > > <
+> > > SF
+> > > ,HV
+> > > ,ME
+> > > ,IR
+> > > ,DR
+> > > ,RI
+> > >>
+> > >   CR: 28000042  XER: 22000000
+> > > SOFTE: 0
+> > > CFAR: c0000000007402f8
+> > > TASK = c00000007e56bb40[0] 'swapper/1' THREAD: c00000007e59c000
+> > >  CPU: 1
+> > > ---
+> > >
+> > > It's consistent for printks without newlines in show_regs().  MSR
+> > > through to XER should all be on the same line.
+> > 
+> > I see. Something to fix then, I'll have a look.
+> > 
+> > Does this happen only very early during bootup, or also later when the
+> > box fully initialized?
 
-On Thu, 5 Jul 2012 19:13:48 +0930 Alan Modra <amodra@gmail.com> wrote:
+I'm seeing during boot but not later (xmon (ppc kernel debugger) doesn't
+see it if I do 'echo x > /proc/sysrq-trigger') .  I wouldn't say
+it's "very early boot".  It's a secondary CPU coming up and the primary
+is waiting for it.  We've already configured the console when this
+happens.
+
+> > 
+> > The output of 'dmesg' later looks always correct, right?
+
+No, dmesg also has the extra new lines: eg
+
+<4>NIP: c00000000004e234 LR: c00000000004e230 CTR: 0000000000000000
+<4>REGS: c00000007c3b7b50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+<4>MSR: 9000000000021032 
+<4><
+<4>SF
+<4>,HV
+<4>,ME
+<4>,IR
+<4>,DR
+<4>,RI
+<4>>
+<4>  CR: 28000042  XER: 22000000
+<4>SOFTE: 0
+<4>CFAR: c0000000008139b4
+<4>TASK = c00000007c3a4e00[0] 'swapper/1' THREAD: c00000007c3b4000
+<4> CPU: 1
+<4>
+
+> If it's an early printk issue like it looks like, where stuff got
+> printed before we had any console registered, this might fix the issue
+> you are seeing.
 >
-> On Thu, Jul 05, 2012 at 06:33:45PM +1000, Stephen Rothwell wrote:
-> > powerpc64-linux-ld: drivers/built-in.o: In function `.gpiochip_is_reque=
-sted':
-> > (.text+0x4): sibling call optimization to `_savegpr0_29' does not allow=
- automatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sib=
-ling-calls, or make `_savegpr0_29' extern
-> >=20
-> > I got more than 60000 of these messages before I killed the link. :-(  I
-> > am not sure what has changed to do this, but it may have been masked for
-> > the past few releases due to other linking problems.
->=20
-> Let me guess.  You're using bleeding edge gcc but not binutils.
+> Could you possibly try this patch?
 
-powerpc-linux-gcc (GCC) 4.6.3
-GNU ld (GNU Binutils) 2.22
+Sorry, doesn't help.  It also reprints the entire boot log to the
+console once the console get inited.
 
-both built from upstream sources (by Tony).
+FWIW HVC RTAS is the console.
 
-> a) Recent gcc has fixed prologue and epilogue generation which now
->    properly makes use of out-of-line register save and restore
->    functions when compiling with -Os.
-> b) Recent ld doesn't emit out-of-line save/restore function for ld -r,
->    but yours does.  You need my 2012-06-22 patch.
-> c) Kernel uses ld -r for packaging.
->=20
-> (b) and (c) together mean you get a definition for _savegpr0_29 munged
-> together with other functions.  That's bad.  If _savegpr0_29 wasn't
-> emitted until the final link stage then it would be in a code section
-> containing just save/restore functions.  ld will analyse that section
-> and notice the absense of toc relocations; functions therein don't
-> use the toc and can thus be called from any toc group without needing
-> a toc adjusting stub.  In your case _savegpr0_29 is in a section that
-> has toc relocations (from normal compiled code), so ld decides that
-> any function in that section must have a proper value for the toc
-> register.  But calls to _savegpr0_29 don't have a following nop to
-> overwrite with a toc restore insn, hence the ld error.
->=20
-> Score another black mark for ld -r.
+Mikey
 
-OK, the new toolchain may be the problem.  I changed from:
-
-powerpc-linux-gcc (GCC) 4.6.0
-GNU ld (GNU Binutils) 2.21
-
-on June 20 and the current errors may have been masked an early bailout
-after getting theses errors:
-
-powerpc64-linux-ld: arch/powerpc/net/built-in.o: In function `bpf_slow_path=
-_word':
-(.text+0x90): sibling call optimization to `skb_copy_bits' does not allow a=
-utomatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibli=
-ng-calls, or make `skb_copy_bits' extern
-
-which have now been fixed.  So would a simple patch that puts the
-_savegpr etc functions in their own section (defined how?) fix this for
-us?
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Fri__6_Jul_2012_10_21_51_+1000_c3i3wsaq89+ttzC2
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJP9i+fAAoJEECxmPOUX5FEOMgP/ijIt1Lh89k4j0+RLLWWVD91
-c3rFYyfZtZtodbrbVyw0v+rcuKLgzU8iwK2bQy7L0BxUqWCfj6Xhq67WF/DaODqh
-VTPsoHxZvb4bQ+rrkqEC4HE6toO6WpwDSdLr7l7b/zVZgJk2Ld9j1RmA6BOujhd5
-qt7FijVs7aw1971WXQugTkls8nd+eVqiwp/Jfil0pwHjB+lGJU5wLloapogLODLz
-XKHbGb4ZlaKM8q2fYxzQ2hne2a025M3d+KLS7Xv5N4IpjUO8i/YrOyBLBJaLs0EO
-/2ZQLh5d3kMfSYElphmKw63ywGuff+BLm7kRtWW1uXqGzIKKR+nxysy5uHEKhMQT
-dCmcGQ1M3b/WHskV4Jnhb9drEMP0M+VhepHQMTKdXW/ZMJwcXSUlPgS0BEIuDy12
-JAUbQW4E1ZJIEi3BXcJYUwqT+evObMLycJuI56Qh0Y8daGotmBg1zWyQCihhOXpM
-sNCL6Tw7pxEAJNA5ipEPqKxWGs2UjAtkDgqU4+XRWwILmUQrcjV1B+d6YSNQB+Uz
-5OSzeda8gtybOGa3dwlieaYyhRvCed3uNv36XCDLo03BQC6KWrNGlUNl8QfZzPFb
-VJCJJSUENgUierclZQuiN7WPICTFe7eCTqqGokrSzrq672jAkiVvH0tDMSYSbynH
-ARCi3tzHWuLszyWAieNX
-=SZkg
------END PGP SIGNATURE-----
-
---Signature=_Fri__6_Jul_2012_10_21_51_+1000_c3i3wsaq89+ttzC2--
+> 
+> Thanks,
+> Kay
+> 
+> 
+> --- a/kernel/printk.c
+> +++ b/kernel/printk.c
+> @@ -1957,6 +1951,12 @@ skip:
+>  			 */
+>  			console_idx = log_next(console_idx);
+>  			console_seq++;
+> +			/*
+> +			 * We will get here again when we register a new
+> +			 * CON_PRINTBUFFER console. Clear the flag so we
+> +			 * will properly dump everything later.
+> +			 */
+> +			msg->flags &= ~LOG_NOCONS;
+>  			goto skip;
+>  		}
+>  
+> 
