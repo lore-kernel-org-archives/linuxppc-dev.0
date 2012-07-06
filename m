@@ -1,29 +1,26 @@
-Return-Path: <B02008@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 37D072C0201
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2012 09:03:46 +1000 (EST)
-From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Alexander Graf
- <agraf@suse.de>
-Subject: RE: [Qemu-ppc] [RFC PATCH 09/17] KVM: PPC64: booke: Hard disable
- interrupts when entering guest
-Date: Fri, 6 Jul 2012 23:03:38 +0000
-Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF15CE0B@039-SN2MPN1-013.039d.mgd.msft.net>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CC1252C0201
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Jul 2012 09:11:24 +1000 (EST)
+Subject: Re: [Qemu-ppc] [RFC PATCH 12/17] PowerPC: booke64: Add DO_KVM kernel
+ hooks
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF15CDE6@039-SN2MPN1-013.039d.mgd.msft.net>
+Date: Sat, 7 Jul 2012 01:11:16 +0200
+Message-Id: <7305F50A-8E77-4E88-8EB8-4046A7E94DF9@suse.de>
 References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-10-git-send-email-mihai.caraman@freescale.com>
- <10CBFB35-5A18-4EA8-A129-58CCC4CFBB83@suse.de>
- <1341440465.16808.38.camel@pasglop>
-In-Reply-To: <1341440465.16808.38.camel@pasglop>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "qemu-ppc@nongnu.org List" <qemu-ppc@nongnu.org>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>,
- KVM list <kvm@vger.kernel.org>
+ <1340627195-11544-13-git-send-email-mihai.caraman@freescale.com>
+ <1B2CBB56-7180-4A73-8E51-6538A725F710@suse.de>
+ <1341440735.16808.42.camel@pasglop>
+ <300B73AA675FCE4A93EB4FC1D42459FF15CDE6@039-SN2MPN1-013.039d.mgd.msft.net>
+To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+Cc: "qemu-ppc@nongnu.org List" <qemu-ppc@nongnu.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, KVM list <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,48 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-
-> bounces+mihai.caraman=3Dfreescale.com@lists.ozlabs.org] On Behalf Of
-> Benjamin Herrenschmidt
-> Sent: Thursday, July 05, 2012 1:21 AM
-> To: Alexander Graf
-> Cc: qemu-ppc@nongnu.org List; Caraman Mihai Claudiu-B02008; linuxppc-dev;
-> KVM list; <kvm-ppc@vger.kernel.org>
-> Subject: Re: [Qemu-ppc] [RFC PATCH 09/17] KVM: PPC64: booke: Hard disable
-> interrupts when entering guest
->=20
-> On Wed, 2012-07-04 at 16:14 +0200, Alexander Graf wrote:
-> > > +#ifdef CONFIG_64BIT
-> > > +#define _hard_irq_disable() hard_irq_disable()
-> > > +#else
-> > > +#define _hard_irq_disable() local_irq_disable()
-> > > +#endif
-> >
-> > So you only swap out the disable bit, but not the enable one? Ben,
-> > would this work out?
->=20
-> hard_irq_disable() both soft and hard disable. local_irq_enable() will
-> see that irqs are hard disabled and will hard enable.
->=20
-> However, there's a nastier discrepancy above: local_irq_disable will
-> properly inform lockdep that we are disabling, while hard_irq_disable
-> won't.
->=20
-> Arguably we might want to fix that inside hard_irq_disable() itself...
->=20
-> Also you need to be careful. If you are coming with interrupts already
-> enabled, it's fine, but if you have interrupts soft disabled, then
-> you hard disable, before you enter the guest you probably want to
-> check if anything was left "pending" and cancel the entering of the
-> guest if that is the case.
 
-On which cases I can find interrupts soft disabled if I call local_irq_enab=
-le()
-ahead? Can this happen when my kernel task is scheduled?=20
+On 07.07.2012, at 00:33, Caraman Mihai Claudiu-B02008 wrote:
 
-I presume that if I call hard_irq_disable() before entering the guest, a gu=
-est exit
-will find interrupts soft disabled.
+>> -----Original Message-----
+>> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]
+>> Sent: Thursday, July 05, 2012 1:26 AM
+>> To: Alexander Graf
+>> Cc: Caraman Mihai Claudiu-B02008; <kvm-ppc@vger.kernel.org>; KVM =
+list;
+>> linuxppc-dev; qemu-ppc@nongnu.org List
+>> Subject: Re: [Qemu-ppc] [RFC PATCH 12/17] PowerPC: booke64: Add =
+DO_KVM
+>> kernel hooks
+>>=20
+>> On Wed, 2012-07-04 at 16:29 +0200, Alexander Graf wrote:
+>>=20
+>>>> +#ifdef CONFIG_KVM_BOOKE_HV
+>>>> +#define KVM_BOOKE_HV_MFSPR(reg, spr)				=
+\
+>>>> +	BEGIN_FTR_SECTION					\
+>>>> +		mfspr	reg, spr;			  	\
+>>>> +	END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+>>>> +#else
+>>>> +#define KVM_BOOKE_HV_MFSPR(reg, spr)
+>>>> +#endif
+>>>=20
+>>> Bleks - this is ugly. Do we really need to open-code the #ifdef =
+here?
+>>> Can't the feature section code determine that the feature is =
+disabled
+>>> and just always not include the code?
+>>=20
+>> You can't but in any case I don't see the point of the conditional =
+here,
+>> we'll eventually have to load srr1 no ? We can move the load up to =
+here
+>> in all cases or can't we ?=20
+>=20
+> I like the idea, but there is a problem with addition macros which may =
+clobber
+> r11 and PROLOG_ADDITION_MASKABLE_GEN is such a case.
 
--Mike
+Mike -v please :)
+
+
+Alex
