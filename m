@@ -2,7 +2,7 @@ Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Kay Sievers <kay@vrfy.org>
 Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-In-reply-to: <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
+In-reply-to: <29711.1341545979@neuling.org>
 References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
  <20120625150722.8cd4f45d.akpm@linux-foundation.org>
  <20120625235531.GB3652@kroah.com>
@@ -18,8 +18,9 @@ References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
  <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
  <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
  <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
-Date: Fri, 06 Jul 2012 13:39:39 +1000
-Message-ID: <29711.1341545979@neuling.org>
+ <29711.1341545979@neuling.org>
+Date: Fri, 06 Jul 2012 13:47:49 +1000
+Message-ID: <30343.1341546469@neuling.org>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
  "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
@@ -35,65 +36,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Kay Sievers <kay@vrfy.org> wrote:
+Michael Neuling <mikey@neuling.org> wrote:
 
-> On Fri, Jul 6, 2012 at 2:41 AM, Michael Neuling <mikey@neuling.org> wrote:
+> Kay Sievers <kay@vrfy.org> wrote:
 > 
-> >> > Does this happen only very early during bootup, or also later when the
-> >> > box fully initialized?
-> >
-> > I'm seeing during boot but not later (xmon (ppc kernel debugger) doesn't
-> > see it if I do 'echo x > /proc/sysrq-trigger') .  I wouldn't say
-> > it's "very early boot".  It's a secondary CPU coming up and the primary
-> > is waiting for it.  We've already configured the console when this
-> > happens.
+> > On Fri, Jul 6, 2012 at 2:41 AM, Michael Neuling <mikey@neuling.org> wrote:
+> > 
+> > >> > Does this happen only very early during bootup, or also later when the
+> > >> > box fully initialized?
+> > >
+> > > I'm seeing during boot but not later (xmon (ppc kernel debugger) doesn't
+> > > see it if I do 'echo x > /proc/sysrq-trigger') .  I wouldn't say
+> > > it's "very early boot".  It's a secondary CPU coming up and the primary
+> > > is waiting for it.  We've already configured the console when this
+> > > happens.
+> > 
+> > Sounds like an early boot console.
+> > 
+> > >> > The output of 'dmesg' later looks always correct, right?
+> > >
+> > > No, dmesg also has the extra new lines: eg
+> > >
+> > > <4>NIP: c00000000004e234 LR: c00000000004e230 CTR: 0000000000000000
+> > > <4>REGS: c00000007c3b7b50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+> > > <4>MSR: 9000000000021032
+> > > <4><
+> > > <4>SF
+> > > <4>,HV
+> > > <4>,ME
+> > > <4>,IR
+> > > <4>,DR
+> > > <4>,RI
+> > > <4>>
+> > > <4>  CR: 28000042  XER: 22000000
+> > 
+> > Can you please paste the output of /dev/kmsg of this section? So we
+> > can see the timestamps and what really went into the record buffer.
 > 
-> Sounds like an early boot console.
+> Sure.
 > 
-> >> > The output of 'dmesg' later looks always correct, right?
-> >
-> > No, dmesg also has the extra new lines: eg
-> >
-> > <4>NIP: c00000000004e234 LR: c00000000004e230 CTR: 0000000000000000
-> > <4>REGS: c00000007c3b7b50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
-> > <4>MSR: 9000000000021032
-> > <4><
-> > <4>SF
-> > <4>,HV
-> > <4>,ME
-> > <4>,IR
-> > <4>,DR
-> > <4>,RI
-> > <4>>
-> > <4>  CR: 28000042  XER: 22000000
-> 
-> Can you please paste the output of /dev/kmsg of this section? So we
-> can see the timestamps and what really went into the record buffer.
+> 4,89,24561;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
+> 4,90,24576;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+> 4,91,24583;MSR: 9000000000021032 
+> 4,92,24586;<
+> 4,93,24591;SF
+> 4,94,24596;,HV
+> 4,95,24601;,ME
+> 4,96,24606;,IR
+> 4,97,24611;,DR
+> 4,98,24616;,RI
+> 4,99,24619;>
+> 4,100,24628;  CR: 28000042  XER: 22000000
 
-Sure.
+FWIW, compiling with the parent commit gives this:
 
-4,89,24561;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
-4,90,24576;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
-4,91,24583;MSR: 9000000000021032 
-4,92,24586;<
-4,93,24591;SF
-4,94,24596;,HV
-4,95,24601;,ME
-4,96,24606;,IR
-4,97,24611;,DR
-4,98,24616;,RI
-4,99,24619;>
-4,100,24628;  CR: 28000042  XER: 22000000
-
-> 
-> >> Could you possibly try this patch?
-> >
-> > Sorry, doesn't help.  It also reprints the entire boot log to the
-> > console once the console get inited.
-> 
-> Which is the normal behaviour to do that, right? We should not have
-> touched any of that logic.
-
-Not until this patch you asked me to try.  Hence why I noted it.  
+4,89,1712;NIP: c000000000048164 LR: c000000000048160 CTR: 0000000000000000
+4,90,1713;REGS: c00000007e59fb50 TRAP: 0700   Tainted: G        W     (3.5.0-rc4-mikey)
+4,91,1716;MSR: 9000000000021032 <SF,HV,ME,IR,DR,RI>  CR: 22000082  XER: 02000000
 
 Mikey
+
+> 
+> > 
+> > >> Could you possibly try this patch?
+> > >
+> > > Sorry, doesn't help.  It also reprints the entire boot log to the
+> > > console once the console get inited.
+> > 
+> > Which is the normal behaviour to do that, right? We should not have
+> > touched any of that logic.
+> 
+> Not until this patch you asked me to try.  Hence why I noted it.  
+> 
+> Mikey
