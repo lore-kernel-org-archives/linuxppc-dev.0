@@ -1,11 +1,36 @@
-Return-Path: <aik@ozlabs.ru>
-Message-ID: <4FF69404.6090408@ozlabs.ru>
-Date: Fri, 06 Jul 2012 17:30:12 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Linuxppc-dev@lists.ozlabs.org
-Subject: ptrace and emulated mfspr/mtspr on DSCR
-Content-Type: text/plain; charset=KOI8-R
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9EF272C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 17:55:36 +1000 (EST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Fri, 6 Jul 2012 07:45:51 +1000
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q667kv6D60031098
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jul 2012 17:46:57 +1000
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q667spVA019058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Jul 2012 17:54:51 +1000
+Message-ID: <1341561286.24895.9.camel@ThinkPad-T420>
+Subject: [PATCH SLAB 1/2 v3] duplicate the cache name in SLUB's saved_alias
+ list, SLAB, and SLOB
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Date: Fri, 06 Jul 2012 15:54:46 +0800
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+ Glauber Costa <glommer@parallels.com>, Pekka Enberg <penberg@kernel.org>,
+ linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
+ Matt Mackall <mpm@selenic.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ Wanlong Gao <gaowanlong@cn.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,102 +40,181 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi!
+SLUB duplicates the cache name string passed into kmem_cache_create().
+However if the cache could be merged to others during early boot, the
+name pointer is saved in saved_alias list, and the string needs to be
+kept valid before slab_sysfs_init() is finished. With this patch, the
+name string (if kmalloced) could be kfreed after calling
+kmem_cache_create().
 
-I am trying to change DSCR's value of a specific process with pid=XXX. For this, I attach by ptrace() to XXX, inject a piece of code which does mfspr/mtspr, "continue" XXX and see how it is changing. So far so good.
+Some more details:
 
-The problem is with "continue". The XXX process does not wake up until I press a key (if XXX is waiting on something like scanf() or gets()) OR it exits from sleep() if I change it to run sleep() in a loop.
+kmem_cache_create() checks whether it is mergeable before creating one.
+If not mergeable, the name is duplicated: n = kstrdup(name, GFP_KERNEL);
 
-Not sure if it matters but mfspr/mtspr are privileged instructions and are emulated by the kernel.
+If it is mergeable, it calls sysfs_slab_alias(). If the sysfs is ready
+(slab_state == SYSFS), then the name is duplicated (or dropped if no
+SYSFS support) in sysfs_create_link() for use.
 
-How to wake XXX up?
+For the above cases, we could safely kfree the name string after calling
+cache create. 
 
+However, during early boot, before sysfs is ready (slab_state < SYSFS),
+the sysfs_slab_alias() saves the pointer of name in the alias_list.
+Those entries in the list are added to sysfs later in slab_sysfs_init()
+to set up the sysfs stuff, and we need keep the name string passed in
+valid until it finishes. By duplicating the name string here also, we
+are able to safely kfree the name string after calling cache create.
 
+v2: removed an unnecessary assignment in v1; some changes in change log,
+added more details
 
-#include <sys/ptrace.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/user.h>
-#include <stdio.h>
-#include <stdlib.h>
+v3: changed slab/slot to let them also duplicate the name string, so the
+code is not slub-dependent, and in patch 2/2, we could call kfree()
+after cache create without #ifdef slub.
+    for slab, the name of the sizes caches created before
+slab_is_available() is not duplicated, and it is not checked in
+kmem_cache_destroy(), as I think these caches won't be destroyed.
 
-void getdata(pid_t child, long addr, void *str)
-{
-	unsigned long *ptr = (unsigned long *) str;
-	ptr[0] = ptrace(PTRACE_PEEKDATA, child, addr, NULL);
-}
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+---
+ mm/slab.c |   15 ++++++++++++++-
+ mm/slob.c |   17 ++++++++++++++---
+ mm/slub.c |    7 ++++++-
+ 3 files changed, 34 insertions(+), 5 deletions(-)
 
-void putdata(pid_t child, long addr, void *str)
-{
-	unsigned long *ptr = (unsigned long *) str;
-	ptrace(PTRACE_POKEDATA, child, addr, ptr[0]);
-}
-
-int main(int argc, char *argv[])
-{
-	pid_t traced_process;
-	struct pt_regs regs, backup_regs;
-	unsigned long dscr = -1;
-/*.set_dscr:
-* 7f d1 03 a6     mtspr   17,r30
-  7d 82 10 08     twge    r2,r2     <- set breakpoint */
-	unsigned int insert_set[] = { 0x7fd103a6, 0x7d821008 };
-/*.get_dscr:
-  7f d1 02 a6     mfspr   r30,17
-  7d 82 10 08     twge    r2,r2     <- set breakpoint */
-	unsigned int insert_get[] = { 0x7fd102a6, 0x7d821008 };
-	char backup[8];
-	int len = 8;
-
-	if((argc < 2)||(sizeof(unsigned int)!=4)) {
-		printf("Usage: %s <pid to be traced> [dscr value]\n", argv[0], argv[1]);
-		exit(1);
-	}
-	if (argc > 2) {
-		dscr = atoi(argv[2]);
-	}
-
-	traced_process = atoi(argv[1]);
-	ptrace(PTRACE_ATTACH, traced_process, NULL, NULL);
-	wait(NULL);
-
-	printf("Attached to pid=%u\n", traced_process);
-	ptrace(PTRACE_GETREGS, traced_process, NULL, &regs);
-	backup_regs = regs;
-	getdata(traced_process, regs.nip, backup);
-
-	if (dscr != -1) {
-		regs.gpr[30] = dscr;
-		putdata(traced_process, regs.nip, insert_set);
-		ptrace(PTRACE_SETREGS, traced_process, NULL, &regs);
-		printf("Setting DSCR = %x to gpr0\n", regs.gpr[30]);
-	} else {
-		putdata(traced_process, regs.nip, insert_get);
-		printf("Reading DSCR\n");
-	}
-
-	printf("Continued pid=%u\n", traced_process);
-	ptrace(PTRACE_CONT, traced_process, NULL, SIGCONT);
-
-	printf("waiting...\n");
-	wait(NULL);      // <---------------- HERE IS THE PROBLEM
-
-	if (dscr == -1) {
-		printf("DSCR has been read\n");
-		ptrace(PTRACE_GETREGS, traced_process, NULL, &regs);
-		printf("Reading DSCR from gpr30 = %x\n", regs.gpr[30]);
-	}
-
-	printf("The process stopped, Putting back the original instructions\n");
-	putdata(traced_process, backup_regs.nip, backup);
-	ptrace(PTRACE_SETREGS, traced_process, NULL, &backup_regs);
-	printf("Letting it continue with original flow\n");
-	ptrace(PTRACE_DETACH, traced_process, NULL, NULL);
-
-	return 0;
-}
-
+diff --git a/mm/slab.c b/mm/slab.c
+index e901a36..87df7d1 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -2280,6 +2280,7 @@ kmem_cache_create (const char *name, size_t size,
+size_t align,
+ 	size_t left_over, slab_size, ralign;
+ 	struct kmem_cache *cachep = NULL, *pc;
+ 	gfp_t gfp;
++	const char *lname;
+ 
+ 	/*
+ 	 * Sanity checks... these are all serious usage bugs.
+@@ -2291,6 +2292,13 @@ kmem_cache_create (const char *name, size_t size,
+size_t align,
+ 		BUG();
+ 	}
+ 
++	if (slab_is_available()) {
++		lname = kstrdup(name, GFP_KERNEL);
++		if (!lname)
++			goto oops;
++	} else
++		lname = name;
++
+ 	/*
+ 	 * We use cache_chain_mutex to ensure a consistent view of
+ 	 * cpu_online_mask as well.  Please see cpuup_callback
+@@ -2526,7 +2534,7 @@ kmem_cache_create (const char *name, size_t size,
+size_t align,
+ 		BUG_ON(ZERO_OR_NULL_PTR(cachep->slabp_cache));
+ 	}
+ 	cachep->ctor = ctor;
+-	cachep->name = name;
++	cachep->name = lname;
+ 
+ 	if (setup_cpu_cache(cachep, gfp)) {
+ 		__kmem_cache_destroy(cachep);
+@@ -2550,6 +2558,9 @@ oops:
+ 	if (!cachep && (flags & SLAB_PANIC))
+ 		panic("kmem_cache_create(): failed to create slab `%s'\n",
+ 		      name);
++	if (!cachep && lname)
++		kfree(lname);
++
+ 	if (slab_is_available()) {
+ 		mutex_unlock(&cache_chain_mutex);
+ 		put_online_cpus();
+@@ -2752,6 +2763,8 @@ void kmem_cache_destroy(struct kmem_cache *cachep)
+ 	if (unlikely(cachep->flags & SLAB_DESTROY_BY_RCU))
+ 		rcu_barrier();
+ 
++	/* sizes caches will not be destroyed? */
++	kfree(cachep->name);
+ 	__kmem_cache_destroy(cachep);
+ 	mutex_unlock(&cache_chain_mutex);
+ 	put_online_cpus();
+diff --git a/mm/slob.c b/mm/slob.c
+index 8105be4..7bea3a3 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -569,13 +569,18 @@ struct kmem_cache {
+ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
+ 	size_t align, unsigned long flags, void (*ctor)(void *))
+ {
+-	struct kmem_cache *c;
++	struct kmem_cache *c = NULL;
++	const char *lname;
++
++	lname = kstrdup(name, GFP_KERNEL);
++	if (!lname)
++		goto oops;
+ 
+ 	c = slob_alloc(sizeof(struct kmem_cache),
+ 		GFP_KERNEL, ARCH_KMALLOC_MINALIGN, -1);
+ 
+ 	if (c) {
+-		c->name = name;
++		c->name = lname;
+ 		c->size = size;
+ 		if (flags & SLAB_DESTROY_BY_RCU) {
+ 			/* leave room for rcu footer at the end of object */
+@@ -589,9 +594,14 @@ struct kmem_cache *kmem_cache_create(const char
+*name, size_t size,
+ 			c->align = ARCH_SLAB_MINALIGN;
+ 		if (c->align < align)
+ 			c->align = align;
+-	} else if (flags & SLAB_PANIC)
++	}
++oops:
++	if (!c && (flags & SLAB_PANIC))
+ 		panic("Cannot create slab cache %s\n", name);
+ 
++	if (!c && lname)
++		kfree(lname);
++
+ 	kmemleak_alloc(c, sizeof(struct kmem_cache), 1, GFP_KERNEL);
+ 	return c;
+ }
+@@ -602,6 +612,7 @@ void kmem_cache_destroy(struct kmem_cache *c)
+ 	kmemleak_free(c);
+ 	if (c->flags & SLAB_DESTROY_BY_RCU)
+ 		rcu_barrier();
++	kfree(c->name);
+ 	slob_free(c, sizeof(struct kmem_cache));
+ }
+ EXPORT_SYMBOL(kmem_cache_destroy);
+diff --git a/mm/slub.c b/mm/slub.c
+index 8c691fa..ed9f3c5 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -5372,7 +5372,11 @@ static int sysfs_slab_alias(struct kmem_cache *s,
+const char *name)
+ 		return -ENOMEM;
+ 
+ 	al->s = s;
+-	al->name = name;
++	al->name = kstrdup(name, GFP_KERNEL);
++	if (!al->name) {
++		kfree(al);
++		return -ENOMEM;
++	}
+ 	al->next = alias_list;
+ 	alias_list = al;
+ 	return 0;
+@@ -5409,6 +5413,7 @@ static int __init slab_sysfs_init(void)
+ 		if (err)
+ 			printk(KERN_ERR "SLUB: Unable to add boot slab alias"
+ 					" %s to sysfs\n", s->name);
++		kfree(al->name);
+ 		kfree(al);
+ 	}
+ 
 -- 
-Alexey
+1.7.1
