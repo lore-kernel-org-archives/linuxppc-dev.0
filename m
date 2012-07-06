@@ -1,19 +1,11 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id D4C972C0080
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 17:09:46 +1000 (EST)
-Date: Fri, 6 Jul 2012 17:09:40 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: put the gpr sabe/restore functions in their own
- section
-Message-Id: <20120706170940.e3457b04a58ddd18d963c14a@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__6_Jul_2012_17_09_40_+1000_R9UkDp27wTR_v4Cy"
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Alan Modra <amodra@gmail.com>
+Return-Path: <aik@ozlabs.ru>
+Message-ID: <4FF69404.6090408@ozlabs.ru>
+Date: Fri, 06 Jul 2012 17:30:12 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Linuxppc-dev@lists.ozlabs.org
+Subject: ptrace and emulated mfspr/mtspr on DSCR
+Content-Type: text/plain; charset=KOI8-R
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,80 +15,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__6_Jul_2012_17_09_40_+1000_R9UkDp27wTR_v4Cy
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi!
 
-This allows the linker to know that calls to them do not need to switch
-TOC and stop errors like the following when linking large configurations:
+I am trying to change DSCR's value of a specific process with pid=XXX. For this, I attach by ptrace() to XXX, inject a piece of code which does mfspr/mtspr, "continue" XXX and see how it is changing. So far so good.
 
-powerpc64-linux-ld: drivers/built-in.o: In function `.gpiochip_is_requested=
-':
-(.text+0x4): sibling call optimization to `_savegpr0_29' does not allow aut=
-omatic multiple TOCs; recompile with -mminimal-toc or -fno-optimize-sibling=
--calls, or make `_savegpr0_29' extern
+The problem is with "continue". The XXX process does not wake up until I press a key (if XXX is waiting on something like scanf() or gets()) OR it exits from sleep() if I change it to run sleep() in a loop.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/lib/crtsavres.S |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+Not sure if it matters but mfspr/mtspr are privileged instructions and are emulated by the kernel.
 
-diff --git a/arch/powerpc/lib/crtsavres.S b/arch/powerpc/lib/crtsavres.S
-index 1c893f0..b2c68ce 100644
---- a/arch/powerpc/lib/crtsavres.S
-+++ b/arch/powerpc/lib/crtsavres.S
-@@ -41,12 +41,13 @@
- #include <asm/ppc_asm.h>
-=20
- 	.file	"crtsavres.S"
--	.section ".text"
-=20
- #ifdef CONFIG_CC_OPTIMIZE_FOR_SIZE
-=20
- #ifndef CONFIG_PPC64
-=20
-+	.section ".text"
-+
- /* Routines for saving integer registers, called by the compiler.  */
- /* Called with r11 pointing to the stack header word of the caller of the =
-*/
- /* function, just beyond the end of the integer save area.  */
-@@ -232,6 +233,8 @@ _GLOBAL(_rest32gpr_31_x)
-=20
- #else /* CONFIG_PPC64 */
-=20
-+	.section ".text.save.restore","ax",@progbits
-+
- .globl	_savegpr0_14
- _savegpr0_14:
- 	std	r14,-144(r1)
---=20
-1.7.10.280.gaa39
+How to wake XXX up?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Fri__6_Jul_2012_17_09_40_+1000_R9UkDp27wTR_v4Cy
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+#include <sys/ptrace.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/user.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-iQIcBAEBCAAGBQJP9o80AAoJEECxmPOUX5FEWIcP/13XNygwnHx5rvaBkxhKT8PF
-wnwDooamAc1EDpSrzSkd9T9t1fHq7V1hG20Mp6qw3ZpCkSdylq5Gq5r/v1GbZl0G
-fS+7G5piNRt6s5Vwlc85ljZIiuA2RPKo5nC/Q1AD36evWd2IzegC+1K81DtXiWTl
-uAKXf8oFsqA+4EmafFB/aIlesc/nsYdTxHzBVRZN2gGlQrJRkEyXg0vjU7a3yDE6
-4aAKnixGpPW88hmmLLjUieiYqathY8erKozCQ31K0+/CeGgeBUJGMkCODot+E/av
-+znq7R+lhT7MOmwLZgBP8Ggozzm11W9nh0y6EJNMNI9A/jLceKfpvDdOrq4jisgl
-rtM31BHWT3ZV/GhBgMT6psDeHO0HWhHQZS7795XFX7PPsCFAF/JSte4jCdFoVmbr
-9Uhi9WJSzr8l3AfKJKsT3a7LU8AmGPaSEZQZMgmJJFt0DYmk78pqnqTY36b4XrSu
-BEcQjxzobWfmRJ0sOdTaYumn7MP/B2/Phq5EUIIuichCXgwaQIo9LdkxR7eIcm4n
-YEPOywqsVl+TTR8NTkfeRQYJVvwiqszm6CE495L+gk5kCW8mzxtlfcXTMEtzlDDo
-SOJ1bLkEHXEDRu7LSx+ETg4bISJDzl+wyufn1Q3hP9zBQWjChhepB6Ig/z697ucE
-Es18QDXu9MttfU2iwNs7
-=SW8P
------END PGP SIGNATURE-----
+void getdata(pid_t child, long addr, void *str)
+{
+	unsigned long *ptr = (unsigned long *) str;
+	ptr[0] = ptrace(PTRACE_PEEKDATA, child, addr, NULL);
+}
 
---Signature=_Fri__6_Jul_2012_17_09_40_+1000_R9UkDp27wTR_v4Cy--
+void putdata(pid_t child, long addr, void *str)
+{
+	unsigned long *ptr = (unsigned long *) str;
+	ptrace(PTRACE_POKEDATA, child, addr, ptr[0]);
+}
+
+int main(int argc, char *argv[])
+{
+	pid_t traced_process;
+	struct pt_regs regs, backup_regs;
+	unsigned long dscr = -1;
+/*.set_dscr:
+* 7f d1 03 a6     mtspr   17,r30
+  7d 82 10 08     twge    r2,r2     <- set breakpoint */
+	unsigned int insert_set[] = { 0x7fd103a6, 0x7d821008 };
+/*.get_dscr:
+  7f d1 02 a6     mfspr   r30,17
+  7d 82 10 08     twge    r2,r2     <- set breakpoint */
+	unsigned int insert_get[] = { 0x7fd102a6, 0x7d821008 };
+	char backup[8];
+	int len = 8;
+
+	if((argc < 2)||(sizeof(unsigned int)!=4)) {
+		printf("Usage: %s <pid to be traced> [dscr value]\n", argv[0], argv[1]);
+		exit(1);
+	}
+	if (argc > 2) {
+		dscr = atoi(argv[2]);
+	}
+
+	traced_process = atoi(argv[1]);
+	ptrace(PTRACE_ATTACH, traced_process, NULL, NULL);
+	wait(NULL);
+
+	printf("Attached to pid=%u\n", traced_process);
+	ptrace(PTRACE_GETREGS, traced_process, NULL, &regs);
+	backup_regs = regs;
+	getdata(traced_process, regs.nip, backup);
+
+	if (dscr != -1) {
+		regs.gpr[30] = dscr;
+		putdata(traced_process, regs.nip, insert_set);
+		ptrace(PTRACE_SETREGS, traced_process, NULL, &regs);
+		printf("Setting DSCR = %x to gpr0\n", regs.gpr[30]);
+	} else {
+		putdata(traced_process, regs.nip, insert_get);
+		printf("Reading DSCR\n");
+	}
+
+	printf("Continued pid=%u\n", traced_process);
+	ptrace(PTRACE_CONT, traced_process, NULL, SIGCONT);
+
+	printf("waiting...\n");
+	wait(NULL);      // <---------------- HERE IS THE PROBLEM
+
+	if (dscr == -1) {
+		printf("DSCR has been read\n");
+		ptrace(PTRACE_GETREGS, traced_process, NULL, &regs);
+		printf("Reading DSCR from gpr30 = %x\n", regs.gpr[30]);
+	}
+
+	printf("The process stopped, Putting back the original instructions\n");
+	putdata(traced_process, backup_regs.nip, backup);
+	ptrace(PTRACE_SETREGS, traced_process, NULL, &backup_regs);
+	printf("Letting it continue with original flow\n");
+	ptrace(PTRACE_DETACH, traced_process, NULL, NULL);
+
+	return 0;
+}
+
+-- 
+Alexey
