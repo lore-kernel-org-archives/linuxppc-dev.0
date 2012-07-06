@@ -1,25 +1,19 @@
-Return-Path: <amodra@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9600C2C042E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 10:57:19 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so15635983pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jul 2012 17:57:17 -0700 (PDT)
-Date: Fri, 6 Jul 2012 10:27:10 +0930
-From: Alan Modra <amodra@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: build failure after merge of the final tree
-Message-ID: <20120706005709.GB5805@bubble.grove.modra.org>
-References: <20120705183345.ee84ec1048a19aa1c7129578@canb.auug.org.au>
- <20120705094348.GA5805@bubble.grove.modra.org>
- <20120706102151.fd4f769cf2aa3f753ad178bf@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120706102151.fd4f769cf2aa3f753ad178bf@canb.auug.org.au>
-Cc: linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F33962C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jul 2012 12:30:40 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q662UaWE011436
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Jul 2012 21:30:36 -0500
+Message-ID: <1341541833.6330.49.camel@pasglop>
+Subject: [PATCH] powerpc/numa: Avoid stupid uninitialized warning from gcc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 06 Jul 2012 12:30:33 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 06, 2012 at 10:21:51AM +1000, Stephen Rothwell wrote:
-> which have now been fixed.  So would a simple patch that puts the
-> _savegpr etc functions in their own section (defined how?) fix this for
-> us?
+Newer gcc are being a bit blind here (it's pretty obvious we don't
+reach the code path using the array if we haven't initialized the
+pointer) but none of that is performance critical so let's just
+silence it.
 
-Ah, the kernel provides its own save/restore functions, and these get
-mashed into a .text containing normal functions with toc references by
-ld -r.  Well, you could stop using ld -r.  Otherwise, try
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
- .section ".text.save.restore","ax",@progbits
-
--- 
-Alan Modra
-Australia Development Lab, IBM
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 7c28589..39b1597 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -641,7 +641,7 @@ static void __init parse_drconf_memory(struct device_node *memory)
+ 	unsigned int n, rc, ranges, is_kexec_kdump = 0;
+ 	unsigned long lmb_size, base, size, sz;
+ 	int nid;
+-	struct assoc_arrays aa;
++	struct assoc_arrays aa = { .arrays = NULL };
+ 
+ 	n = of_get_drconf_memory(memory, &dm);
+ 	if (!n)
