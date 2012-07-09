@@ -1,15 +1,14 @@
-Return-Path: <joe@perches.com>
-Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
- (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8FA552C007C
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2012 07:42:47 +1000 (EST)
-Message-ID: <1341870165.6118.42.camel@joe2Laptop>
-Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-From: Joe Perches <joe@perches.com>
-To: Kay Sievers <kay@vrfy.org>
-Date: Mon, 09 Jul 2012 14:42:45 -0700
-In-Reply-To: <1341770155.1011.27.camel@mop>
+Return-Path: <kay@vrfy.org>
+Received: from mail-gh0-f170.google.com (mail-gh0-f170.google.com
+ [209.85.160.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8495E2C01FA
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2012 08:10:41 +1000 (EST)
+Received: by ghbg2 with SMTP id g2so9708057ghb.15
+ for <linuxppc-dev@ozlabs.org>; Mon, 09 Jul 2012 15:10:38 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1341870165.6118.42.camel@joe2Laptop>
 References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
  <20120625150722.8cd4f45d.akpm@linux-foundation.org>
  <20120625235531.GB3652@kroah.com>
@@ -26,11 +25,15 @@ References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
  <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
  <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
  <29711.1341545979@neuling.org> <30343.1341546469@neuling.org>
- <CAPXgP13_cQUQLE4RSjACTzj28Pn6r3ZaPhjch2U+uwgi7YKcWA@ma il.gmail.com>
  <CAPXgP10JthGjZyqD6gqn2n1rPu1uP+=mem_T-iOritXAQMstRQ@mail.gmail.com>
  <21892.1341608647@neuling.org> <1341770155.1011.27.camel@mop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1341870165.6118.42.camel@joe2Laptop>
+From: Kay Sievers <kay@vrfy.org>
+Date: Tue, 10 Jul 2012 00:10:17 +0200
+Message-ID: <CAPXgP11Qsj9yGM5nSbRJ_YPFZcr2Km6w4R8wPGU1AytyQChYXQ@mail.gmail.com>
+Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
+To: Joe Perches <joe@perches.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: Michael Neuling <mikey@neuling.org>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
@@ -47,54 +50,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2012-07-08 at 19:55 +0200, Kay Sievers wrote:
+On Mon, Jul 9, 2012 at 11:42 PM, Joe Perches <joe@perches.com> wrote:
+> On Sun, 2012-07-08 at 19:55 +0200, Kay Sievers wrote:
+>
+>> At the same time the CPU#2 prints the same warning with a continuation
+>> line, but the buffer from CPU#1 can not be flushed to the console, nor
+>> can the continuation line printk()s from CPU#2 be merged at this point.
+>> The consoles are still locked and busy with replaying the old log
+>> messages, so the new continuation data is just stored away in the record
+>> buffer as it is coming in.
+>> If the console would be registered a bit earlier, or the warning would
+>> happen a bit later, we would probably not see any of this.
+>>
+>> I can fake something like this just by holding the console semaphore
+>> over a longer time and printing continuation lines with different CPUs
+>> in a row.
+>>
+>> The patch below seems to work for me. It is also here:
+>>   http://git.kernel.org/?p=linux/kernel/git/kay/patches.git;a=blob;f=kmsg-merge-cont.patch;hb=HEAD
+>>
+>> It only applies cleanly on top of this patch:
+>>   http://git.kernel.org/?p=linux/kernel/git/kay/patches.git;a=blob;f=kmsg-syslog-1-byte-read.patch;hb=HEAD
+>>
+>
+> Hi Kay.
+>
+> I just ran a test with what's in Greg's driver-core -for-linus branch.
+>
+> One of the differences in dmesg is timestamping of consecutive
+>         pr_<level>("foo...)
+> followed directly by
+>         pr_cont("bar...")
+>
+> For instance: (dmesg is 3.4, dmesg.0 is 3.5-rc6+)
+>
+> # grep MAP /var/log/dm* -A1
+> dmesg:[    0.781687] ata_piix 0000:00:1f.2: MAP [ P0 P2 P1 P3 ]
+> dmesg-[    0.781707] ata2: port disabled--ignoring
+> --
+> dmesg.0:[    0.948881] ata_piix 0000:00:1f.2: MAP [
+> dmesg.0-[    0.948883]  P0 P2 P1 P3 ]
+>
+> These messages originate starting at
+> drivers/ata/ata_piix.c:1354
+>
+> All the continuations are emitted with pr_cont.
+>
+> I think this output should still be coalesced without
+> timestamp deltas.  Perhaps the timestamping code can
+> still be reworked to avoid too small a delta producing
+> a new timestamp and another dmesg line.
 
-> At the same time the CPU#2 prints the same warning with a continuation
-> line, but the buffer from CPU#1 can not be flushed to the console, nor
-> can the continuation line printk()s from CPU#2 be merged at this point.
-> The consoles are still locked and busy with replaying the old log
-> messages, so the new continuation data is just stored away in the record
-> buffer as it is coming in.
-> If the console would be registered a bit earlier, or the warning would
-> happen a bit later, we would probably not see any of this.
-> 
-> I can fake something like this just by holding the console semaphore
-> over a longer time and printing continuation lines with different CPUs
-> in a row.
-> 
-> The patch below seems to work for me. It is also here:
->   http://git.kernel.org/?p=linux/kernel/git/kay/patches.git;a=blob;f=kmsg-merge-cont.patch;hb=HEAD
-> 
-> It only applies cleanly on top of this patch:
->   http://git.kernel.org/?p=linux/kernel/git/kay/patches.git;a=blob;f=kmsg-syslog-1-byte-read.patch;hb=HEAD
-> 
+Hmm, I don't see that.
 
-Hi Kay.
+If I do:
+  pr_info("[");
+  for (i = 0; i < 4; i++)
+       pr_cont("%i ", i);
+  pr_cont("]\n");
 
-I just ran a test with what's in Greg's driver-core -for-linus branch.
+I get:
+  6,173,0;[0 1 2 3 ]
 
-One of the differences in dmesg is timestamping of consecutive
-	pr_<level>("foo...)
-followed directly by
-	pr_cont("bar...")
+And if I fill the cont buffer and forcefully hold the console sem
+during all that, and we can't merge anymore, I get:
+  6,167,0;[
+  4,168,0;0
+  4,169,0;1
+  4,170,0;2
+  4,171,0;3
+  4,172,0;]
 
-For instance: (dmesg is 3.4, dmesg.0 is 3.5-rc6+)
+But the output is still all fine for both lines:
+  [    0.000000] [0 1 2 3 ]
+  [    0.000000] [0 1 2 3 ]
 
-# grep MAP /var/log/dm* -A1
-dmesg:[    0.781687] ata_piix 0000:00:1f.2: MAP [ P0 P2 P1 P3 ]
-dmesg-[    0.781707] ata2: port disabled--ignoring
---
-dmesg.0:[    0.948881] ata_piix 0000:00:1f.2: MAP [
-dmesg.0-[    0.948883]  P0 P2 P1 P3 ]
+What do I miss?
 
-These messages originate starting at
-drivers/ata/ata_piix.c:1354
-
-All the continuations are emitted with pr_cont.
-
-I think this output should still be coalesced without
-timestamp deltas.  Perhaps the timestamping code can
-still be reworked to avoid too small a delta producing
-a new timestamp and another dmesg line.
-
-cheers, Joe
+Kay
