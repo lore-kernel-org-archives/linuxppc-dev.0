@@ -1,38 +1,32 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D47102C0224
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 12:42:15 +1000 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9065A2C0211
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 14:20:52 +1000 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Mon, 9 Jul 2012 08:12:09 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q692g6nI5046764
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 08:12:06 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q698BOvS021290
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 18:11:25 +1000
-Message-ID: <1341801721.2439.29.camel@ThinkPad-T420>
-Subject: Re: [PATCH SLAB 1/2 v3] duplicate the cache name in SLUB's
- saved_alias list, SLAB, and SLOB
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux.com>
-Date: Mon, 09 Jul 2012 10:42:01 +0800
-In-Reply-To: <alpine.DEB.2.00.1207060855320.26441@router.home>
-References: <1341561286.24895.9.camel@ThinkPad-T420>
- <alpine.DEB.2.00.1207060855320.26441@router.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: LKML <linux-kernel@vger.kernel.org>, Glauber Costa <glommer@parallels.com>,
- Pekka Enberg <penberg@kernel.org>, linux-mm <linux-mm@kvack.org>,
- Paul Mackerras <paulus@samba.org>, Matt Mackall <mpm@selenic.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Wanlong Gao <gaowanlong@cn.fujitsu.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 9 Jul 2012 09:50:48 +0530
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q694KiXp3015106
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 09:50:45 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q699oIoa007564
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 15:20:18 +0530
+Message-ID: <4FFA5C1B.10702@linux.vnet.ibm.com>
+Date: Mon, 09 Jul 2012 09:50:43 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 1/4] powerpc/perf: Create mmcra_sihv/mmcra_sipv helpers
+References: <20120626210013.2fbb9044@kryten>
+In-Reply-To: <20120626210013.2fbb9044@kryten>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: sukadev@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,109 +36,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-07-06 at 08:56 -0500, Christoph Lameter wrote:
-> I thought I posted this a couple of days ago. Would this not fix things
-> without having to change all the allocators?
-
-I was pointed by Glauber to the slab common code patches. I need some
-more time to read the patches. Now I think the slab/slot changes in this
-v3 are not needed, and can be ignored.
-
-But for the SLUB's saved_alias list issue, I don't think the following
-patch helps. Details below: (Maybe I am wrong, as I'm reading the patch
-based on the 3.5-rc6 code ...)
+On Tuesday 26 June 2012 04:30 PM, Anton Blanchard wrote:
 
 > 
+> We want to access the MMCRA_SIHV and MMCRA_SIPR bits elsewhere so 
+> create mmcra_sihv and mmcra_sipr which hide the differences between
+> the old and new layout of the bits.
 > 
-> Subject: slub: Dup name earlier in kmem_cache_create
-> 
-> Dup the name earlier in kmem_cache_create so that alias
-> processing is done using the copy of the string and not
-> the string itself.
-> 
-> Signed-off-by: Christoph Lameter <cl@linux.com>
-> 
+
+
+Hey Anton,
+
+Going further in this direction, we can actually create wrapper functions
+to capture SIHV and SIPR values whether they are based out of MMCRA register or
+not. It would help us decide PERF_RECORD_MISC_USER | PERF_RECORD_MISC_HYPERVISOR
+| PERF_RECORD_MISC_KERNEL hiding the register and related bit details.
+
+> Signed-off-by: Anton Blanchard <anton@samba.org>
 > ---
->  mm/slub.c |   29 ++++++++++++++---------------
->  1 file changed, 14 insertions(+), 15 deletions(-)
 > 
-> Index: linux-2.6/mm/slub.c
+> Index: linux-build/arch/powerpc/perf/core-book3s.c
 > ===================================================================
-> --- linux-2.6.orig/mm/slub.c	2012-06-11 08:49:56.000000000 -0500
-> +++ linux-2.6/mm/slub.c	2012-07-03 15:17:37.000000000 -0500
-> @@ -3933,8 +3933,12 @@ struct kmem_cache *kmem_cache_create(con
->  	if (WARN_ON(!name))
->  		return NULL;
+> --- linux-build.orig/arch/powerpc/perf/core-book3s.c	2012-06-26 10:26:40.695707845 +1000
+> +++ linux-build/arch/powerpc/perf/core-book3s.c	2012-06-26 10:28:53.325958826 +1000
+> @@ -116,6 +116,26 @@ static inline void perf_get_data_addr(st
+>  		*addrp = mfspr(SPRN_SDAR);
+>  }
 > 
-> +	n = kstrdup(name, GFP_KERNEL);
-> +	if (!n)
-> +		goto out;
+> +static bool mmcra_sihv(unsigned long mmcra)
+> +{
+> +	unsigned long sihv = MMCRA_SIHV;
 > +
->  	down_write(&slub_lock);
-> -	s = find_mergeable(size, align, flags, name, ctor);
-> +	s = find_mergeable(size, align, flags, n, ctor);
->  	if (s) {
->  		s->refcount++;
->  		/*
-
-		......
-		up_write(&slub_lock);
-		return s; 
-	}
-
-Here, the function returns without name string n be kfreed. 
-
-But we couldn't kfree n here, because in sysfs_slab_alias(), if
-(slab_state < SYS_FS), the name need to be kept valid until
-slab_sysfs_init() is finished adding the entry into sysfs. 
-		
-> @@ -3944,7 +3948,7 @@ struct kmem_cache *kmem_cache_create(con
->  		s->objsize = max(s->objsize, (int)size);
->  		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
-> 
-> -		if (sysfs_slab_alias(s, name)) {
-> +		if (sysfs_slab_alias(s, n)) {
->  			s->refcount--;
->  			goto err;
->  		}
-> @@ -3952,31 +3956,26 @@ struct kmem_cache *kmem_cache_create(con
->  		return s;
->  	}
-> 
-> -	n = kstrdup(name, GFP_KERNEL);
-> -	if (!n)
-> -		goto err;
-> -
->  	s = kmalloc(kmem_size, GFP_KERNEL);
->  	if (s) {
->  		if (kmem_cache_open(s, n,
->  				size, align, flags, ctor)) {
->  			list_add(&s->list, &slab_caches);
->  			up_write(&slub_lock);
-> -			if (sysfs_slab_add(s)) {
-> -				down_write(&slub_lock);
-> -				list_del(&s->list);
-> -				kfree(n);
-> -				kfree(s);
-> -				goto err;
-> -			}
-> -			return s;
-> +			if (!sysfs_slab_add(s))
-> +				return s;
+> +	if (ppmu->flags & PPMU_ALT_SIPR)
+> +		sihv = POWER6_MMCRA_SIHV;
 > +
-> +			down_write(&slub_lock);
-> +			list_del(&s->list);
->  		}
->  		kfree(s);
->  	}
-> -	kfree(n);
+> +	return !!(mmcra & sihv);
+> +}
 > +
->  err:
-> +	kfree(n);
->  	up_write(&slub_lock);
-> 
-> +out:
->  	if (flags & SLAB_PANIC)
->  		panic("Cannot create slabcache %s\n", name);
->  	else
-> 
+> +static bool mmcra_sipr(unsigned long mmcra)
+> +{
+> +	unsigned long sipr = MMCRA_SIPR;
+> +
+> +	if (ppmu->flags & PPMU_ALT_SIPR)
+> +		sipr = POWER6_MMCRA_SIPR;
+> +
+> +	return !!(mmcra & sipr);
+> +}
