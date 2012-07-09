@@ -1,23 +1,22 @@
-Return-Path: <B16395@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D2FE2C0201
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 00:41:27 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 2/3 v2] powerpc/mpic: Use the MPIC_LARGE_VECTORS flag
- for FSL MPIC.
-Date: Mon, 9 Jul 2012 14:41:18 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D139409@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1341823595-15696-1-git-send-email-Varun.Sethi@freescale.com>
- <179D14E1-CF74-4502-80B7-FC44A28175D2@kernel.crashing.org>
-In-Reply-To: <179D14E1-CF74-4502-80B7-FC44A28175D2@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <cl@linux.com>
+Received: from smtp108.prem.mail.ac4.yahoo.com
+ (smtp108.prem.mail.ac4.yahoo.com [76.13.13.47])
+ by ozlabs.org (Postfix) with SMTP id 0F0712C0203
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 01:19:00 +1000 (EST)
+Date: Mon, 9 Jul 2012 10:18:54 -0500 (CDT)
+From: Christoph Lameter <cl@linux.com>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v3 0/13] memory-hotplug : hot-remove physical
+ memory
+In-Reply-To: <4FFAB0A2.8070304@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.1207091015570.30060@router.home>
+References: <4FFAB0A2.8070304@jp.fujitsu.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +27,19 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+On Mon, 9 Jul 2012, Yasuaki Ishimatsu wrote:
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Monday, July 09, 2012 7:58 PM
-> To: Sethi Varun-B16395
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH 2/3 v2] powerpc/mpic: Use the MPIC_LARGE_VECTORS flag
-> for FSL MPIC.
->=20
->=20
-> On Jul 9, 2012, at 3:46 AM, Varun Sethi wrote:
->=20
-> > We should use the MPIC_LARG_VECTORS flag while intializing the MPIC.
-> > This prevents us from eating in to hardware vector number space (MSIs)
-> > while setting up internal sources.
-> >
-> > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > ---
-> > arch/powerpc/sysdev/mpic.c |    2 +-
-> > 1 files changed, 1 insertions(+), 1 deletions(-)
->=20
-> Can you remind me the issue here w/running into the MSIs?
-Vector numbers for internal interrupt sources like timers/ipis are
-taken from the hardware vector number space. Currently we specify=20
-number of interrupt sources as 256 and extract 12 vectors from here
-for internal interrupt sources. In process we end up eating vector numbers
-meant for MSIs. With this patch we are basically expanding our vector
-number space.
+> Even if you apply these patches, you cannot remove the physical memory
+> completely since these patches are still under development. I want you to
+> cooperate to improve the physical memory hot-remove. So please review these
+> patches and give your comment/idea.
 
--Varun
+Could you at least give a method on how you want to do physical memory
+removal? You would have to remove all objects from the range you want to
+physically remove. That is only possible under special circumstances and
+with a limited set of objects. Even if you exclusively use ZONE_MOVEABLE
+you still may get cases where pages are pinned for a long time.
+
+I am not sure that these patches are useful unless we know where you are
+going with this. If we end up with a situation where we still cannot
+remove physical memory then this patchset is not helpful.
