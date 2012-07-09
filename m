@@ -1,20 +1,44 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 431982C021D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 15:19:33 +1000 (EST)
-Message-ID: <1341811163.3804.2.camel@pasglop>
-Subject: Re: linux-next: boot failure in next-20120705 and 20120706
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 09 Jul 2012 15:19:23 +1000
-In-Reply-To: <20120709144946.ada290480c0edc6a99f9c9c6@canb.auug.org.au>
-References: <20120709144946.ada290480c0edc6a99f9c9c6@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-next@vger.kernel.org, ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 067B52C0210
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 18:19:10 +1000 (EST)
+Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id E50E93EE0B5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
+Received: from smail (m1 [127.0.0.1])
+ by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id C9C1E45DE73
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
+ by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id AA33B45DE66
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 9A6241DB8055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
+Received: from g01jpexchyt04.g01.fujitsu.local
+ (g01jpexchyt04.g01.fujitsu.local [10.128.194.43])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 4374A1DB804D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
+Message-ID: <4FFA93DB.6010403@jp.fujitsu.com>
+Date: Mon, 9 Jul 2012 17:18:35 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+MIME-Version: 1.0
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [RFC PATCH v2 4/13] memory-hotplug : remove /sys/firmware/memmap/X
+ sysfs
+References: <4FF287C3.4030901@jp.fujitsu.com> <4FF28996.10702@jp.fujitsu.com>
+ <4FF2929B.7030004@cn.fujitsu.com> <4FF3CA65.1020300@jp.fujitsu.com>
+ <4FF3CFDC.50802@cn.fujitsu.com> <4FF3DA1E.9060505@jp.fujitsu.com>
+ <4FF41484.3070806@cn.fujitsu.com> <4FF6A17C.6000808@jp.fujitsu.com>
+ <4FF6ADD9.7040600@cn.fujitsu.com>
+In-Reply-To: <4FF6ADD9.7040600@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,51 +48,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-07-09 at 14:49 +1000, Stephen Rothwell wrote:
-> Hi all,
-> 
-> Boot testing next-20120705 and 20120706 one of my PowerPC machines get this BUG:
-> 
-> (this one just after the console login prompt appeared.)
+Hi Wen,
 
-I'll have a look tomorrow. Make sure you keep the .config & machine at
-hand :-) Any chance you can check with just powerpc-next ?
-
-Cheers,
-Ben.
-
-> kernel BUG at arch/powerpc/kernel/irq.c:188!
-> Oops: Exception in kernel mode, sig: 5 [#1]
-> SMP NR_CPUS=32 NUMA pSeries
-> Modules linked in: binfmt_misc dm_mirror dm_region_hash dm_log ibmveth
-> NIP: c00000000000f7d4 LR: c00000000000f838 CTR: c0000000007222a0
-> REGS: c000000000d17a30 TRAP: 0700   Not tainted  (3.5.0-rc5-autokern1)
-> MSR: 8000000000021032 <SF,ME,IR,DR,RI>  CR: 24000048  XER: 00000000
-> SOFTE: 0
-> TASK = c000000000c41a10[0] 'swapper/0' THREAD: c000000000d14000 CPU: 0
-> GPR00: 0000000000000001 c000000000d17cb0 c000000000d12d10 0000000000000500 
-> GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> GPR08: 001752557ab9dd5b c000000007ffb000 0000000000000000 c000000000bf5200 
-> GPR12: 0000000000000000 c000000007ffb000 0000000002b00000 00000000009d7000 
-> GPR16: 0000000000d454f0 00000000027dc6f0 0000000001b5f994 0000000000000060 
-> GPR20: 0000000000000000 ffffffffffffffff ffffffffffffffff 8000000000009032 
-> GPR24: c000000000d14000 c000000000d30290 c000000000d30178 c000000000d30290 
-> GPR28: c0000000008a6180 0000000000000008 c000000000c7e130 0000000000000001 
-> NIP [c00000000000f7d4] .__check_irq_replay+0xc4/0xf0
-> LR [c00000000000f838] .arch_local_irq_restore+0x38/0x90
-> Call Trace:
-> [c000000000d17cb0] [c000000000d17d30] init_thread_union+0x3d30/0x4000 (unreliable)
-> [c000000000d17d40] [c00000000000f838] .arch_local_irq_restore+0x38/0x90
-> [c000000000d17db0] [c000000000015c60] .cpu_idle+0x230/0x2b0
-> [c000000000d17e70] [c00000000000b3f8] .rest_init+0x88/0xa0
-> [c000000000d17ef0] [c000000000b86c0c] .start_kernel+0x478/0x498
-> [c000000000d17f90] [c0000000000096f8] .start_here_common+0x20/0x28
-> Instruction dump:
-> 4e800020 7da96b78 7beaf7e3 880901f3 38600500 5400e87e 5400183e 980901f3 
-> 4082ffcc 880d01f3 7c0000d0 78000fe0 <0b000000> 38600000 4bffffb4 38610070 
+2012/07/06 18:20, Wen Congyang wrote:
+> At 07/06/2012 04:27 PM, Yasuaki Ishimatsu Wrote:
+>> Hi Wen,
+>>
+>> 2012/07/04 19:01, Wen Congyang wrote:
+>>> At 07/04/2012 01:52 PM, Yasuaki Ishimatsu Wrote:
+>>>> Hi Wen,
+>>>>
+>>>> 2012/07/04 14:08, Wen Congyang wrote:
+>>>>> At 07/04/2012 12:45 PM, Yasuaki Ishimatsu Wrote:
+>>>>>> Hi Wen,
+>>>>>>
+>>>>>> 2012/07/03 15:35, Wen Congyang wrote:
+>>>>>>> At 07/03/2012 01:56 PM, Yasuaki Ishimatsu Wrote:
+>>>>>>>> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
+>>>>>>>> sysfs files are created. But there is no code to remove these files. The patch
+>>>>>>>> implements the function to remove them.
+>>>>>>>>
+>>>>>>>> Note : The code does not free firmware_map_entry since there is no way to free
+>>>>>>>>            memory which is allocated by bootmem.
+>>>>>>>>
+>>>>>>>> CC: David Rientjes <rientjes@google.com>
+>>>>>>>> CC: Jiang Liu <liuj97@gmail.com>
+>>>>>>>> CC: Len Brown <len.brown@intel.com>
+>>>>>>>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>>>>>>>> CC: Paul Mackerras <paulus@samba.org>
+>>>>>>>> CC: Christoph Lameter <cl@linux.com>
+>>>>>>>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>>>>>>>> CC: Andrew Morton <akpm@linux-foundation.org>
+>>>>>>>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>>>>>>>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>>>>>>>
+>>>>>>>> ---
+>>>>>>>>      drivers/firmware/memmap.c    |   70 +++++++++++++++++++++++++++++++++++++++++++
+>>>>>>>>      include/linux/firmware-map.h |    6 +++
+>>>>>>>>      mm/memory_hotplug.c          |    6 +++
+>>>>>>>>      3 files changed, 81 insertions(+), 1 deletion(-)
+>>>>>>>>
+>>>>>>>> Index: linux-3.5-rc4/mm/memory_hotplug.c
+>>>>>>>> ===================================================================
+>>>>>>>> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-07-03 14:22:00.190240794 +0900
+>>>>>>>> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-07-03 14:22:03.549198802 +0900
+>>>>>>>> @@ -661,7 +661,11 @@ EXPORT_SYMBOL_GPL(add_memory);
+>>>>>>>>
+>>>>>>>>      int remove_memory(int nid, u64 start, u64 size)
+>>>>>>>>      {
+>>>>>>>> -	return -EBUSY;
+>>>>>>>> +	lock_memory_hotplug();
+>>>>>>>> +	/* remove memmap entry */
+>>>>>>>> +	firmware_map_remove(start, start + size - 1, "System RAM");
+>>>>>>>> +	unlock_memory_hotplug();
+>>>>>>>> +	return 0;
+>>>>>>>>
+>>>>>>>>      }
+>>>>>>>>      EXPORT_SYMBOL_GPL(remove_memory);
+>>>>>>>> Index: linux-3.5-rc4/include/linux/firmware-map.h
+>>>>>>>> ===================================================================
+>>>>>>>> --- linux-3.5-rc4.orig/include/linux/firmware-map.h	2012-07-03 14:21:45.766421116 +0900
+>>>>>>>> +++ linux-3.5-rc4/include/linux/firmware-map.h	2012-07-03 14:22:03.550198789 +0900
+>>>>>>>> @@ -25,6 +25,7 @@
+>>>>>>>>
+>>>>>>>>      int firmware_map_add_early(u64 start, u64 end, const char *type);
+>>>>>>>>      int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
+>>>>>>>> +int firmware_map_remove(u64 start, u64 end, const char *type);
+>>>>>>>>
+>>>>>>>>      #else /* CONFIG_FIRMWARE_MEMMAP */
+>>>>>>>>
+>>>>>>>> @@ -38,6 +39,11 @@ static inline int firmware_map_add_hotpl
+>>>>>>>>      	return 0;
+>>>>>>>>      }
+>>>>>>>>
+>>>>>>>> +static inline int firmware_map_remove(u64 start, u64 end, const char *type)
+>>>>>>>> +{
+>>>>>>>> +	return 0;
+>>>>>>>> +}
+>>>>>>>> +
+>>>>>>>>      #endif /* CONFIG_FIRMWARE_MEMMAP */
+>>>>>>>>
+>>>>>>>>      #endif /* _LINUX_FIRMWARE_MAP_H */
+>>>>>>>> Index: linux-3.5-rc4/drivers/firmware/memmap.c
+>>>>>>>> ===================================================================
+>>>>>>>> --- linux-3.5-rc4.orig/drivers/firmware/memmap.c	2012-07-03 14:21:45.761421180 +0900
+>>>>>>>> +++ linux-3.5-rc4/drivers/firmware/memmap.c	2012-07-03 14:22:03.569198549 +0900
+>>>>>>>> @@ -79,7 +79,16 @@ static const struct sysfs_ops memmap_att
+>>>>>>>>      	.show = memmap_attr_show,
+>>>>>>>>      };
+>>>>>>>>
+>>>>>>>> +static void release_firmware_map_entry(struct kobject *kobj)
+>>>>>>>> +{
+>>>>>>>> +	/*
+>>>>>>>> +	 * FIXME : There is no idea.
+>>>>>>>> +	 *         How to free the entry which allocated bootmem?
+>>>>>>>> +	 */
+>>>>>>>
+>>>>>>> I find a function free_bootmem(), but I am not sure whether it can work here.
+>>>>>>
+>>>>>> It cannot work here.
+>>>>>>
+>>>>>>> Another problem: how to check whether the entry uses bootmem?
+>>>>>>
+>>>>>> When firmware_map_entry is allocated by kzalloc(), the page has PG_slab.
+>>>>>
+>>>>> This is not true. In my test, I find the page does not have PG_slab sometimes.
+>>>>
+>>>> I think that it depends on the allocated size. firmware_map_entry size is
+>>>> smaller than PAGE_SIZE. So the page has PG_Slab.
+>>>
+>>> In my test, I add printk in the function firmware_map_add_hotplug() to display
+>>> page's flags. And sometimes the page is not allocated by slab(I use PageSlab()
+>>> to verify it).
+>>
+>> How did you check it? Could you send your debug patch?
 > 
-> This is:
-> 	BUG_ON(local_paca->irq_happened != 0);
-> in __check_irq_replay().
+> When the memory is not allocated from slab, the flags is 0x10000000008000.
+
+Thank you for sending the patch.
+I think the page to not have PageSlab is a compound page. So we can check
+whether the entry is allocate from bootmem or not as follow:
+
+static void release_firmware_map_entry(struct kobject *kobj)
+{
+	struct firmware_map_entry *entry = to_memmap_entry(kobj);
+	struct page *head_page;
+
+	head_page = virt_to_head_page(entry);
+	if (PageSlab(head_page))
+		kfree(etnry);
+	else
+		/* the entry is allocated from bootmem */
+}
+
+Thanks,
+Yasuaki Ishimatsu
+
 > 
-> This only happens on my Power5+ machine.
+>  From 8dd51368d6c03edf7edc89cab17441e3741c39c7 Mon Sep 17 00:00:00 2001
+> From: Wen Congyang <wency@cn.fujitsu.com>
+> Date: Wed, 4 Jul 2012 16:05:26 +0800
+> Subject: [PATCH] debug
+> 
+> ---
+>   drivers/firmware/memmap.c |    7 +++++++
+>   1 files changed, 7 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
+> index adc0710..993ba3f 100644
+> --- a/drivers/firmware/memmap.c
+> +++ b/drivers/firmware/memmap.c
+> @@ -21,6 +21,7 @@
+>   #include <linux/types.h>
+>   #include <linux/bootmem.h>
+>   #include <linux/slab.h>
+> +#include <linux/mm.h>
+>   
+>   /*
+>    * Data types ------------------------------------------------------------------
+> @@ -160,11 +161,17 @@ static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry)
+>   int __meminit firmware_map_add_hotplug(u64 start, u64 end, const char *type)
+>   {
+>   	struct firmware_map_entry *entry;
+> +	struct page *entry_page;
+>   
+>   	entry = kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
+>   	if (!entry)
+>   		return -ENOMEM;
+>   
+> +	entry_page = virt_to_page(entry);
+> +	printk(KERN_WARNING "flags: %lx\n", entry_page->flags);
+> +	if (PageSlab(entry_page)) {
+> +		printk(KERN_WARNING "page is allocated from slab\n");
+> +	}
+>   	firmware_map_add_entry(start, end, type, entry);
+>   	/* create the memmap entry */
+>   	add_sysfs_fw_map_entry(entry);
+> 
