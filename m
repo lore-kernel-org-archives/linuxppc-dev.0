@@ -1,42 +1,38 @@
 Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 315DB2C021B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 11:49:02 +1000 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D47102C0224
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 12:42:15 +1000 (EST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Mon, 9 Jul 2012 01:42:59 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q691f94G53018670
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 11:41:10 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q691mv3M000617
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 11:48:58 +1000
-Message-ID: <1341798533.2439.13.camel@ThinkPad-T420>
-Subject: Re: [PATCH powerpc 2/2] kfree the cache name  of pgtable cache if
- SLUB is used
+ Mon, 9 Jul 2012 08:12:09 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q692g6nI5046764
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 08:12:06 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q698BOvS021290
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 18:11:25 +1000
+Message-ID: <1341801721.2439.29.camel@ThinkPad-T420>
+Subject: Re: [PATCH SLAB 1/2 v3] duplicate the cache name in SLUB's
+ saved_alias list, SLAB, and SLOB
 From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Glauber Costa <glommer@parallels.com>
-Date: Mon, 09 Jul 2012 09:48:53 +0800
-In-Reply-To: <4FF6BA39.4000305@parallels.com>
-References: <1340617984.13778.37.camel@ThinkPad-T420>
- <1340618099.13778.39.camel@ThinkPad-T420>
- <alpine.DEB.2.00.1207031344240.14703@router.home>
- <alpine.DEB.2.00.1207031535330.14703@router.home>
- <1341392420.18505.41.camel@ThinkPad-T420> <4FF439D0.1000603@parallels.com>
- <1341452486.18505.49.camel@ThinkPad-T420> <4FF54F18.50300@parallels.com>
- <1341480578.23916.7.camel@ThinkPad-T420> <4FF6BA39.4000305@parallels.com>
+To: Christoph Lameter <cl@linux.com>
+Date: Mon, 09 Jul 2012 10:42:01 +0800
+In-Reply-To: <alpine.DEB.2.00.1207060855320.26441@router.home>
+References: <1341561286.24895.9.camel@ThinkPad-T420>
+ <alpine.DEB.2.00.1207060855320.26441@router.home>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: LKML <linux-kernel@vger.kernel.org>, Pekka Enberg <penberg@kernel.org>,
- linux-mm <linux-mm@kvack.org>, Paul Mackerras <paulus@samba.org>,
- Matt Mackall <mpm@selenic.com>, Christoph Lameter <cl@linux.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Glauber Costa <glommer@parallels.com>,
+ Pekka Enberg <penberg@kernel.org>, linux-mm <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, Matt Mackall <mpm@selenic.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ Wanlong Gao <gaowanlong@cn.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,62 +42,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-07-06 at 14:13 +0400, Glauber Costa wrote:
-> On 07/05/2012 01:29 PM, Li Zhong wrote:
-> > On Thu, 2012-07-05 at 12:23 +0400, Glauber Costa wrote:
-> >> On 07/05/2012 05:41 AM, Li Zhong wrote:
-> >>> On Wed, 2012-07-04 at 16:40 +0400, Glauber Costa wrote:
-> >>>> On 07/04/2012 01:00 PM, Li Zhong wrote:
-> >>>>> On Tue, 2012-07-03 at 15:36 -0500, Christoph Lameter wrote:
-> >>>>>>> Looking through the emails it seems that there is an issue with alias
-> >>>>>>> strings. 
-> >>>>> To be more precise, there seems no big issue currently. I just wanted to
-> >>>>> make following usage of kmem_cache_create (SLUB) possible:
-> >>>>>
-> >>>>> 	name = some string kmalloced
-> >>>>> 	kmem_cache_create(name, ...)
-> >>>>> 	kfree(name);
-> >>>>
-> >>>> Out of curiosity: Why?
-> >>>> This is not (currently) possible with the other allocators (may change
-> >>>> with christoph's unification patches), so you would be making your code
-> >>>> slub-dependent.
-> >>>>
-> >>>
-> >>> For slub itself, I think it's not good that: in some cases, the name
-> >>> string could be kfreed ( if it was kmalloced ) immediately after calling
-> >>> the cache create; in some other case, the name string needs to be kept
-> >>> valid until some init calls finished. 
-> >>>
-> >>> I agree with you that it would make the code slub-dependent, so I'm now
-> >>> working on the consistency of the other allocators regarding this name
-> >>> string duplicating thing. 
-> >>
-> >> If you really need to kfree the string, or even if it is easier for you
-> >> this way, it can be done. As a matter of fact, this is the case for me.
-> >> Just that your patch is not enough. Christoph has a patch that makes
-> >> this behavior consistent over all allocators.
-> > 
-> > Sorry, I didn't know that. Seems I don't need to continue the half-done
-> > work in slab. If possible, would you please give me a link of the patch?
-> > Thank you. 
-> > 
-> 
-> Sorry for the delay. In case you haven't found it out yourself yet:
-> 
-> http://www.spinics.net/lists/linux-mm/msg36149.html
+On Fri, 2012-07-06 at 08:56 -0500, Christoph Lameter wrote:
+> I thought I posted this a couple of days ago. Would this not fix things
+> without having to change all the allocators?
 
-Thank you. I think it is better to have these things in the
-slab_common.c. 
+I was pointed by Glauber to the slab common code patches. I need some
+more time to read the patches. Now I think the slab/slot changes in this
+v3 are not needed, and can be ignored.
+
+But for the SLUB's saved_alias list issue, I don't think the following
+patch helps. Details below: (Maybe I am wrong, as I'm reading the patch
+based on the 3.5-rc6 code ...)
 
 > 
-> Please not this posted patch as is has a bug.
 > 
-> I do believe that your take on the aliasing code adds value to it. But
-> as I've already said once, might have to dig a bit deeper in that to get
-> to end of the rabbit hole.
+> Subject: slub: Dup name earlier in kmem_cache_create
+> 
+> Dup the name earlier in kmem_cache_create so that alias
+> processing is done using the copy of the string and not
+> the string itself.
+> 
+> Signed-off-by: Christoph Lameter <cl@linux.com>
+> 
+> ---
+>  mm/slub.c |   29 ++++++++++++++---------------
+>  1 file changed, 14 insertions(+), 15 deletions(-)
+> 
+> Index: linux-2.6/mm/slub.c
+> ===================================================================
+> --- linux-2.6.orig/mm/slub.c	2012-06-11 08:49:56.000000000 -0500
+> +++ linux-2.6/mm/slub.c	2012-07-03 15:17:37.000000000 -0500
+> @@ -3933,8 +3933,12 @@ struct kmem_cache *kmem_cache_create(con
+>  	if (WARN_ON(!name))
+>  		return NULL;
+> 
+> +	n = kstrdup(name, GFP_KERNEL);
+> +	if (!n)
+> +		goto out;
+> +
+>  	down_write(&slub_lock);
+> -	s = find_mergeable(size, align, flags, name, ctor);
+> +	s = find_mergeable(size, align, flags, n, ctor);
+>  	if (s) {
+>  		s->refcount++;
+>  		/*
 
-With slab_common, I think my slab/slob modifications are not needed any
-more. After I understand the common patches, I will check whether the
-aliasing problem in slub still exists, and if yes, try to send a patch
-based on that. 
+		......
+		up_write(&slub_lock);
+		return s; 
+	}
+
+Here, the function returns without name string n be kfreed. 
+
+But we couldn't kfree n here, because in sysfs_slab_alias(), if
+(slab_state < SYS_FS), the name need to be kept valid until
+slab_sysfs_init() is finished adding the entry into sysfs. 
+		
+> @@ -3944,7 +3948,7 @@ struct kmem_cache *kmem_cache_create(con
+>  		s->objsize = max(s->objsize, (int)size);
+>  		s->inuse = max_t(int, s->inuse, ALIGN(size, sizeof(void *)));
+> 
+> -		if (sysfs_slab_alias(s, name)) {
+> +		if (sysfs_slab_alias(s, n)) {
+>  			s->refcount--;
+>  			goto err;
+>  		}
+> @@ -3952,31 +3956,26 @@ struct kmem_cache *kmem_cache_create(con
+>  		return s;
+>  	}
+> 
+> -	n = kstrdup(name, GFP_KERNEL);
+> -	if (!n)
+> -		goto err;
+> -
+>  	s = kmalloc(kmem_size, GFP_KERNEL);
+>  	if (s) {
+>  		if (kmem_cache_open(s, n,
+>  				size, align, flags, ctor)) {
+>  			list_add(&s->list, &slab_caches);
+>  			up_write(&slub_lock);
+> -			if (sysfs_slab_add(s)) {
+> -				down_write(&slub_lock);
+> -				list_del(&s->list);
+> -				kfree(n);
+> -				kfree(s);
+> -				goto err;
+> -			}
+> -			return s;
+> +			if (!sysfs_slab_add(s))
+> +				return s;
+> +
+> +			down_write(&slub_lock);
+> +			list_del(&s->list);
+>  		}
+>  		kfree(s);
+>  	}
+> -	kfree(n);
+> +
+>  err:
+> +	kfree(n);
+>  	up_write(&slub_lock);
+> 
+> +out:
+>  	if (flags & SLAB_PANIC)
+>  		panic("Cannot create slabcache %s\n", name);
+>  	else
+> 
