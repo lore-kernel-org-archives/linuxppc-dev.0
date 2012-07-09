@@ -2,7 +2,7 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CEE872C064C
+ by ozlabs.org (Postfix) with ESMTPS id D20262C058D
  for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 23:14:42 +1000 (EST)
 Received: from /spool/local
  by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -10,18 +10,18 @@ Received: from /spool/local
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Mon, 9 Jul 2012 13:04:55 +1000
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q69D6Kb17405996
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:06:20 +1000
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q69DEE8M64422036
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:14:14 +1000
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q69DEIUv030364
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:14:19 +1000
+ q69DEDnJ030263
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:14:14 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V3 11/11] arch/powerpc: Add 64TB support
-Date: Mon,  9 Jul 2012 18:43:41 +0530
-Message-Id: <1341839621-28332-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V3 09/11] arch/powerpc: Use 50 bits of VSID in slbmte
+Date: Mon,  9 Jul 2012 18:43:39 +0530
+Message-Id: <1341839621-28332-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -37,98 +37,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Increase max addressable range to 64TB. This is not tested on
-real hardware yet.
+Increase the number of valid VSID bits in slbmte instruction.
+We will use the new bits when we increase valid VSID bits.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h        |    8 ++++----
- arch/powerpc/include/asm/pgtable-ppc64-4k.h  |    2 +-
- arch/powerpc/include/asm/pgtable-ppc64-64k.h |    2 +-
- arch/powerpc/include/asm/processor.h         |    4 ++--
- arch/powerpc/include/asm/sparsemem.h         |    4 ++--
- 5 files changed, 10 insertions(+), 10 deletions(-)
+ arch/powerpc/mm/slb_low.S |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index aa0d560..a227ba7 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -374,16 +374,16 @@ extern void slb_set_size(u16 size);
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index c355af6..c1fc81c 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -226,7 +226,7 @@ _GLOBAL(slb_allocate_user)
   */
+ slb_finish_load:
+ 	ASM_VSID_SCRAMBLE(r10,r9,256M)
+-	rldimi	r11,r10,SLB_VSID_SHIFT,16	/* combine VSID and flags */
++	rldimi	r11,r10,SLB_VSID_SHIFT,2	/* combine VSID and flags */
  
- #define VSID_MULTIPLIER_256M	ASM_CONST(200730139)	/* 28-bit prime */
--#define VSID_BITS_256M		36
-+#define VSID_BITS_256M		38
- #define VSID_MODULUS_256M	((1UL<<VSID_BITS_256M)-1)
- 
- #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
--#define VSID_BITS_1T		24
-+#define VSID_BITS_1T		26
- #define VSID_MODULUS_1T		((1UL<<VSID_BITS_1T)-1)
- 
- #define CONTEXT_BITS		19
--#define USER_ESID_BITS		16
--#define USER_ESID_BITS_1T	4
-+#define USER_ESID_BITS		18
-+#define USER_ESID_BITS_1T	6
- 
- #define USER_VSID_RANGE	(1UL << (USER_ESID_BITS + SID_SHIFT))
- 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-4k.h b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-index 6eefdcf..b3eccf2 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-@@ -7,7 +7,7 @@
-  */
- #define PTE_INDEX_SIZE  9
- #define PMD_INDEX_SIZE  7
--#define PUD_INDEX_SIZE  7
-+#define PUD_INDEX_SIZE  9
- #define PGD_INDEX_SIZE  9
- 
- #ifndef __ASSEMBLY__
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-index 90533dd..be4e287 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
-@@ -7,7 +7,7 @@
- #define PTE_INDEX_SIZE  12
- #define PMD_INDEX_SIZE  12
- #define PUD_INDEX_SIZE	0
--#define PGD_INDEX_SIZE  4
-+#define PGD_INDEX_SIZE  6
- 
- #ifndef __ASSEMBLY__
- #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 413a5ea..ac3861b 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -97,8 +97,8 @@ extern struct task_struct *last_task_used_spe;
- #endif
- 
- #ifdef CONFIG_PPC64
--/* 64-bit user address space is 44-bits (16TB user VM) */
--#define TASK_SIZE_USER64 (0x0000100000000000UL)
-+/* 64-bit user address space is 46-bits (64TB user VM) */
-+#define TASK_SIZE_USER64 (0x0000400000000000UL)
- 
- /* 
-  * 32-bit user address space is 4GB - 1 page 
-diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-index 0c5fa31..f6fc0ee 100644
---- a/arch/powerpc/include/asm/sparsemem.h
-+++ b/arch/powerpc/include/asm/sparsemem.h
-@@ -10,8 +10,8 @@
-  */
- #define SECTION_SIZE_BITS       24
- 
--#define MAX_PHYSADDR_BITS       44
--#define MAX_PHYSMEM_BITS        44
-+#define MAX_PHYSADDR_BITS       46
-+#define MAX_PHYSMEM_BITS        46
- 
- #endif /* CONFIG_SPARSEMEM */
+ 	/* r3 = EA, r11 = VSID data */
+ 	/*
+@@ -290,7 +290,7 @@ _GLOBAL(slb_compare_rr_to_size)
+ slb_finish_load_1T:
+ 	srdi	r10,r10,40-28		/* get 1T ESID */
+ 	ASM_VSID_SCRAMBLE(r10,r9,1T)
+-	rldimi	r11,r10,SLB_VSID_SHIFT_1T,16	/* combine VSID and flags */
++	rldimi	r11,r10,SLB_VSID_SHIFT_1T,2	/* combine VSID and flags */
+ 	li	r10,MMU_SEGSIZE_1T
+ 	rldimi	r11,r10,SLB_VSID_SSIZE_SHIFT,0	/* insert segment size */
  
 -- 
 1.7.10
