@@ -1,48 +1,21 @@
-Return-Path: <kay@vrfy.org>
-Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
- [209.85.160.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DC08C2C0218
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2012 08:40:40 +1000 (EST)
-Received: by pbbrp12 with SMTP id rp12so17063335pbb.15
- for <linuxppc-dev@ozlabs.org>; Mon, 09 Jul 2012 15:40:38 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1341872984.6118.54.camel@joe2Laptop>
-References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
- <20120625150722.8cd4f45d.akpm@linux-foundation.org>
- <20120625235531.GB3652@kroah.com>
- <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
- <20120626002307.GA4389@kroah.com>
- <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
- <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
- <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
- <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
- <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
- <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
- <16043.1341483625@neuling.org>
- <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
- <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
- <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
- <29711.1341545979@neuling.org> <30343.1341546469@neuling.org>
- <CAPXgP10JthGjZyqD6gqn2n1rPu1uP+=mem_T-iOritXAQMstRQ@mail.gmail.com>
- <21892.1341608647@neuling.org> <1341770155.1011.27.camel@mop>
- <1341870165.6118.42.camel@joe2Laptop>
- <CAPXgP11Qsj9yGM5nSbRJ_YPFZcr2Km6w4R8wPGU1AytyQChYXQ@mail.gmail.com>
- <1341872984.6118.54.camel@joe2Laptop>
-From: Kay Sievers <kay@vrfy.org>
-Date: Tue, 10 Jul 2012 00:40:08 +0200
-Message-ID: <CAPXgP12wrORpTdzMFW0QKr0j1VqZy_PRBFRM2P=qRqPFMQ=zUA@mail.gmail.com>
-Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-To: Joe Perches <joe@perches.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Michael Neuling <mikey@neuling.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Wu Fengguang <fengguang.wu@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 70D942C0401
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 08:41:34 +1000 (EST)
+Date: Tue, 10 Jul 2012 08:41:28 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V3 03/11] arch/powerpc: Convert virtual address to vpn
+Message-Id: <20120710084128.6fe4a4347719f4445dd12b4f@canb.auug.org.au>
+In-Reply-To: <1341839621-28332-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1341839621-28332-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__10_Jul_2012_08_41_28_+1000_nZUHk7RIXYgmMost"
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,99 +25,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 10, 2012 at 12:29 AM, Joe Perches <joe@perches.com> wrote:
-> On Tue, 2012-07-10 at 00:10 +0200, Kay Sievers wrote:
->> On Mon, Jul 9, 2012 at 11:42 PM, Joe Perches <joe@perches.com> wrote:
->> > On Sun, 2012-07-08 at 19:55 +0200, Kay Sievers wrote:
->> >
->> >> At the same time the CPU#2 prints the same warning with a continuation
->> >> line, but the buffer from CPU#1 can not be flushed to the console, nor
->> >> can the continuation line printk()s from CPU#2 be merged at this point.
->> >> The consoles are still locked and busy with replaying the old log
->> >> messages, so the new continuation data is just stored away in the record
->> >> buffer as it is coming in.
->> >> If the console would be registered a bit earlier, or the warning would
->> >> happen a bit later, we would probably not see any of this.
->> >>
->> >> I can fake something like this just by holding the console semaphore
->> >> over a longer time and printing continuation lines with different CPUs
->> >> in a row.
->> >>
->> >> The patch below seems to work for me. It is also here:
->> >>   http://git.kernel.org/?p=linux/kernel/git/kay/patches.git;a=blob;f=kmsg-merge-cont.patch;hb=HEAD
->> >>
->> >> It only applies cleanly on top of this patch:
->> >>   http://git.kernel.org/?p=linux/kernel/git/kay/patches.git;a=blob;f=kmsg-syslog-1-byte-read.patch;hb=HEAD
->> >>
->> >
->> > Hi Kay.
->> >
->> > I just ran a test with what's in Greg's driver-core -for-linus branch.
->> >
->> > One of the differences in dmesg is timestamping of consecutive
->> >         pr_<level>("foo...)
->> > followed directly by
->> >         pr_cont("bar...")
->> >
->> > For instance: (dmesg is 3.4, dmesg.0 is 3.5-rc6+)
->> >
->> > # grep MAP /var/log/dm* -A1
->> > dmesg:[    0.781687] ata_piix 0000:00:1f.2: MAP [ P0 P2 P1 P3 ]
->> > dmesg-[    0.781707] ata2: port disabled--ignoring
->> > --
->> > dmesg.0:[    0.948881] ata_piix 0000:00:1f.2: MAP [
->> > dmesg.0-[    0.948883]  P0 P2 P1 P3 ]
->> >
->> > These messages originate starting at
->> > drivers/ata/ata_piix.c:1354
->> >
->> > All the continuations are emitted with pr_cont.
->> >
->> > I think this output should still be coalesced without
->> > timestamp deltas.  Perhaps the timestamping code can
->> > still be reworked to avoid too small a delta producing
->> > a new timestamp and another dmesg line.
->>
->> Hmm, I don't see that.
->>
->> If I do:
->>   pr_info("[");
->>   for (i = 0; i < 4; i++)
->>        pr_cont("%i ", i);
->>   pr_cont("]\n");
->>
->> I get:
->>   6,173,0;[0 1 2 3 ]
->>
->> And if I fill the cont buffer and forcefully hold the console sem
->> during all that, and we can't merge anymore, I get:
->>   6,167,0;[
->>   4,168,0;0
->>   4,169,0;1
->>   4,170,0;2
->>   4,171,0;3
->>   4,172,0;]
->>
->> But the output is still all fine for both lines:
->>   [    0.000000] [0 1 2 3 ]
->>   [    0.000000] [0 1 2 3 ]
->>
->> What do I miss?
+--Signature=_Tue__10_Jul_2012_08_41_28_+1000_nZUHk7RIXYgmMost
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Aneesh,
+
+On Mon,  9 Jul 2012 18:43:33 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.v=
+net.ibm.com> wrote:
 >
-> In this case the initial line is dev_info not pr_info
-> so there are the additional dict descriptors output to
-> /dev/kmsg as well.
->
-> Maybe that interferes with continuations.  Dunno.
+> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include=
+/asm/mmu-hash64.h
+> index 1c65a59..1c984a6 100644
+> --- a/arch/powerpc/include/asm/mmu-hash64.h
+> +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> @@ -154,9 +155,25 @@ struct mmu_psize_def
+>  #define MMU_SEGSIZE_256M	0
+>  #define MMU_SEGSIZE_1T		1
+> =20
+> +/*
+> + * encode page number shift.
+> + * Inorder to fit the 78 bit va in a 64 bit variable we shift the va by
+> + * 12 bits. This enable us to address upto 76 bit va.
+> + * For hpt hash from a va we can ignore the page size bits of va and for
+> + * hpte encoding we ignore upto 23 bits of va. So ignoring lower 12 bits=
+ ensure
+> + * we work in all cases including 4k page size.
+> + */
+> +#define VPN_SHIFT	12
+> =20
+> +static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psiz=
+e,
+> +					     int ssize)
+> +{
+> +	unsigned long v;
+> +	/*
+> +	 * The AVA field omits the low-order 23 bits of the 78 bits VA.
+> +	 * These bits are not needed in the PTE, because the
+> +	 * low-order b of these bits are part of the byte offset
+> +	 * into the virtual page and, if b < 23, the high-order
+> +	 * 23-b of these bits are always used in selecting the
+> +	 * PTEGs to be searched
+> +	 */
+> +	BUG_ON(VPN_SHIFT > 23);
 
-Yes, it does. Annotated records dev_printk() must be reliable in the
-data storage and for the consumers. We can not expose them to the racy
-continuation printk()s. We need to be able to trust the data they
-print and not possibly merge unrelated things into it.
+Could/should this be BUILD_BUG_ON()?
 
-If it's needed, we can try to set the flags accordingly, that they
-*look* like a line in the classic byte-stream output, but the
-interface in /dev/kmsg must not export them that way, because
-continuation lines can never be trusted to be correct.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Kay
+--Signature=_Tue__10_Jul_2012_08_41_28_+1000_nZUHk7RIXYgmMost
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJP+14YAAoJEECxmPOUX5FEI94P/iBLdkAAcycdj6aQoJozRTBa
+U+aEsHvZIfEcxzjktkP05qwxwA8dxUssEsZYegnTFNJP8w+QIMyRQSvIuKu8YCM5
+aAWmrLaQyIFRewygYmVBbVV+q9nhOJWCRCfO+oTJ3LaDSNV4KKZZbyhrKAgAKyAO
+4z5+r8iTe5UJX8YmGzLp2mJ7dyaNCpbYk0oar7mHLFuaJiIphZ+PSj0hUQYH+axg
+h6GY4DbGhOLnU742PxYbXcmIf6Tyo0dnKu098PVmA55i+4qQHkT4SsUYGf1giLq3
+g+PTR8UN01j7Aki568oDUOpa6dIDXSmBUGaoH5ctPbae2LfpxQN9kA6OQabcHDC0
+b8J6wdcxp2WgIJlJptDot3JTKFKmkVAG9T3n94ictBYiIlZ8mVBEW9EYGY8XJ77Y
+vJSJLHhrYyqIFPmWzDx1rowl8sVS0JQWH44S1lgWeQ7emHAXijibxarVuAwxP2hd
+rASRQpYmuztAMzEPoxTR0UOpcBZFBgjR7Vn3eOUh1wwihQX4KZ5in1kRLjT6X6DG
+naWLenXBwQ3J6f5cJJYZxuPT7r0qJi+ACktqLRehbUWSNhfjvYF8vABzDrE8MiGC
+VrxfR2rY4v2mUDA2GHf8DajhNjvjuRu4Uhz4/CzQ/xfqYQ0kHx41H4wsAMrFycLu
+BAtPHu9E2oDYaKCc6lZ4
+=fsgr
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__10_Jul_2012_08_41_28_+1000_nZUHk7RIXYgmMost--
