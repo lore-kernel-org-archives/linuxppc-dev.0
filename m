@@ -1,23 +1,23 @@
 Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 45AE32C0201
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 02:39:15 +1000 (EST)
-Message-ID: <4FFB0927.7080406@freescale.com>
-Date: Mon, 9 Jul 2012 11:39:03 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 330972C01FA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 02:43:17 +1000 (EST)
+Message-ID: <4FFB0A17.2030501@freescale.com>
+Date: Mon, 9 Jul 2012 11:43:03 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Subject: Re: [PATCH] PCI: Add pcie_irq=other to enable non MSI/INTx interrupt
- for port service driver
-References: <1341830970-12779-1-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1341830970-12779-1-git-send-email-Shengzhou.Liu@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc/mpic: finish supporting timer group B on
+ Freescale chips
+References: <1341823542-15654-1-git-send-email-Varun.Sethi@freescale.com>
+ <58A5C37E-E2AA-4135-8419-9070FAFE84A2@kernel.crashing.org>
+In-Reply-To: <58A5C37E-E2AA-4135-8419-9070FAFE84A2@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +27,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/09/2012 05:49 AM, Shengzhou Liu wrote:
-> On some platforms, in RC mode, root port has neither MSI/MSI-X nor INTx
-> interrupt generated, which are available only in EP mode on those platform.
-> In this case, we try to use other interrupt if supported (i.e. there is the
-> shared error interrupt on platform P1010, P3041, P4080, etc) to have AER,
-> Hot-plug, etc, services to work.
+On 07/09/2012 09:12 AM, Kumar Gala wrote:
 > 
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> ---
->  Documentation/kernel-parameters.txt |    4 ++++
->  drivers/pci/pcie/portdrv_core.c     |   19 +++++++++++++++++++
->  2 files changed, 23 insertions(+), 0 deletions(-)
+> On Jul 9, 2012, at 3:45 AM, Varun Sethi wrote:
 > 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index a92c5eb..af97c81 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -2218,6 +2218,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->  		nomsi	Do not use MSI for native PCIe PME signaling (this makes
->  			all PCIe root ports use INTx for all services).
->  
-> +	pcie_irq=	[PCIE] Native PCIe root port interrupt options:
-> +		other	Try to use other interrupt when root port has
-> +			neither MSI/MSI-X nor INTx support.
+>> Previously, these interrupts would be mapped, but the offset
+>> calculation was broken, and only the first group was initialized.
+>>
+>> Signed-off-by: Scott Wood <scottwood@freescale.com>
+>> ---
+>> arch/powerpc/include/asm/mpic.h |    5 +++
+>> arch/powerpc/sysdev/mpic.c      |   58 ++++++++++++++++++++++++++++-----------
+>> 2 files changed, 47 insertions(+), 16 deletions(-)
 
-Why does the user need to specify this?  Shouldn't this be a matter of
-communication between kernel internals?
+Varun, where's your signoff?
 
-> @@ -216,6 +227,14 @@ static int init_service_irqs(struct pci_dev *dev, int *irqs, int mask)
->  	if (!pci_enable_msi(dev) || dev->pin)
->  		irq = dev->irq;
->  
-> +	/*
-> +	 * On some platforms, root port has neither MSI/MSI-X nor INTx
-> +	 * interrupt support in RC mode, so try to use other interrupt(i.e.
-> +	 * shared interrupt if supported).
-> +	 */
-> +	else if (port_other_interrupt_enabled && dev->irq)
-> +		irq = dev->irq;
+>> +	if (mpic->flags & MPIC_FSL) {
+>> +		u32 brr1 = _mpic_read(mpic->reg_type, &mpic->thiscpuregs,
+>> +				      MPIC_FSL_BRR1);
+>> +		u32 version = brr1 & MPIC_FSL_BRR1_VER;
+>> +
+>> +		/*
+>> +		 * Timer group B is present at the latest in MPIC 3.1 (e.g.
+>> +		 * mpc8536).  It is not present in MPIC 2.0 (e.g. mpc8544).
+>> +		 * I don't know about the status of intermediate versions (or
+>> +		 * whether they even exist).
+>> +		 */
+>> +		if (version >= 0x0301)
+>> +			num_timers = 8;
+>> +	}
+>> +
+> 
+> Why don't we do this just via the device tree?
 
-Is there any reason to not use dev->irq if it is non-zero?
+Then we'd have to change existing device trees (again), and in general
+there's no reason to put it in the device tree if it's discoverable via
+hardware version registers.
 
 -Scott
