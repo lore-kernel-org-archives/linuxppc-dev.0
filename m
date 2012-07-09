@@ -1,32 +1,18 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9065A2C0211
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 14:20:52 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 9 Jul 2012 09:50:48 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q694KiXp3015106
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 09:50:45 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q699oIoa007564
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 15:20:18 +0530
-Message-ID: <4FFA5C1B.10702@linux.vnet.ibm.com>
-Date: Mon, 09 Jul 2012 09:50:43 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/4] powerpc/perf: Create mmcra_sihv/mmcra_sipv helpers
-References: <20120626210013.2fbb9044@kryten>
-In-Reply-To: <20120626210013.2fbb9044@kryten>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: sukadev@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 8184E2C0207
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 14:49:53 +1000 (EST)
+Date: Mon, 9 Jul 2012 14:49:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: boot failure in next-20120705 and 20120706
+Message-Id: <20120709144946.ada290480c0edc6a99f9c9c6@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__9_Jul_2012_14_49_46_+1000_Y61R0fb_HGnoXJAN"
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,49 +22,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 26 June 2012 04:30 PM, Anton Blanchard wrote:
+--Signature=_Mon__9_Jul_2012_14_49_46_+1000_Y61R0fb_HGnoXJAN
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> We want to access the MMCRA_SIHV and MMCRA_SIPR bits elsewhere so 
-> create mmcra_sihv and mmcra_sipr which hide the differences between
-> the old and new layout of the bits.
-> 
+Hi all,
 
+Boot testing next-20120705 and 20120706 one of my PowerPC machines get this=
+ BUG:
 
-Hey Anton,
+(this one just after the console login prompt appeared.)
 
-Going further in this direction, we can actually create wrapper functions
-to capture SIHV and SIPR values whether they are based out of MMCRA register or
-not. It would help us decide PERF_RECORD_MISC_USER | PERF_RECORD_MISC_HYPERVISOR
-| PERF_RECORD_MISC_KERNEL hiding the register and related bit details.
+kernel BUG at arch/powerpc/kernel/irq.c:188!
+Oops: Exception in kernel mode, sig: 5 [#1]
+SMP NR_CPUS=3D32 NUMA pSeries
+Modules linked in: binfmt_misc dm_mirror dm_region_hash dm_log ibmveth
+NIP: c00000000000f7d4 LR: c00000000000f838 CTR: c0000000007222a0
+REGS: c000000000d17a30 TRAP: 0700   Not tainted  (3.5.0-rc5-autokern1)
+MSR: 8000000000021032 <SF,ME,IR,DR,RI>  CR: 24000048  XER: 00000000
+SOFTE: 0
+TASK =3D c000000000c41a10[0] 'swapper/0' THREAD: c000000000d14000 CPU: 0
+GPR00: 0000000000000001 c000000000d17cb0 c000000000d12d10 0000000000000500=
+=20
+GPR04: 0000000000000000 0000000000000000 0000000000000000 0000000000000000=
+=20
+GPR08: 001752557ab9dd5b c000000007ffb000 0000000000000000 c000000000bf5200=
+=20
+GPR12: 0000000000000000 c000000007ffb000 0000000002b00000 00000000009d7000=
+=20
+GPR16: 0000000000d454f0 00000000027dc6f0 0000000001b5f994 0000000000000060=
+=20
+GPR20: 0000000000000000 ffffffffffffffff ffffffffffffffff 8000000000009032=
+=20
+GPR24: c000000000d14000 c000000000d30290 c000000000d30178 c000000000d30290=
+=20
+GPR28: c0000000008a6180 0000000000000008 c000000000c7e130 0000000000000001=
+=20
+NIP [c00000000000f7d4] .__check_irq_replay+0xc4/0xf0
+LR [c00000000000f838] .arch_local_irq_restore+0x38/0x90
+Call Trace:
+[c000000000d17cb0] [c000000000d17d30] init_thread_union+0x3d30/0x4000 (unre=
+liable)
+[c000000000d17d40] [c00000000000f838] .arch_local_irq_restore+0x38/0x90
+[c000000000d17db0] [c000000000015c60] .cpu_idle+0x230/0x2b0
+[c000000000d17e70] [c00000000000b3f8] .rest_init+0x88/0xa0
+[c000000000d17ef0] [c000000000b86c0c] .start_kernel+0x478/0x498
+[c000000000d17f90] [c0000000000096f8] .start_here_common+0x20/0x28
+Instruction dump:
+4e800020 7da96b78 7beaf7e3 880901f3 38600500 5400e87e 5400183e 980901f3=20
+4082ffcc 880d01f3 7c0000d0 78000fe0 <0b000000> 38600000 4bffffb4 38610070=20
 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> Index: linux-build/arch/powerpc/perf/core-book3s.c
-> ===================================================================
-> --- linux-build.orig/arch/powerpc/perf/core-book3s.c	2012-06-26 10:26:40.695707845 +1000
-> +++ linux-build/arch/powerpc/perf/core-book3s.c	2012-06-26 10:28:53.325958826 +1000
-> @@ -116,6 +116,26 @@ static inline void perf_get_data_addr(st
->  		*addrp = mfspr(SPRN_SDAR);
->  }
-> 
-> +static bool mmcra_sihv(unsigned long mmcra)
-> +{
-> +	unsigned long sihv = MMCRA_SIHV;
-> +
-> +	if (ppmu->flags & PPMU_ALT_SIPR)
-> +		sihv = POWER6_MMCRA_SIHV;
-> +
-> +	return !!(mmcra & sihv);
-> +}
-> +
-> +static bool mmcra_sipr(unsigned long mmcra)
-> +{
-> +	unsigned long sipr = MMCRA_SIPR;
-> +
-> +	if (ppmu->flags & PPMU_ALT_SIPR)
-> +		sipr = POWER6_MMCRA_SIPR;
-> +
-> +	return !!(mmcra & sipr);
-> +}
+This is:
+	BUG_ON(local_paca->irq_happened !=3D 0);
+in __check_irq_replay().
+
+This only happens on my Power5+ machine.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Mon__9_Jul_2012_14_49_46_+1000_Y61R0fb_HGnoXJAN
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJP+mLqAAoJEECxmPOUX5FEXZ0P/1zzVSYQ128dySb3wWQED1mC
+HSC7/d/Z3FK+VSuUUWWpgIHX7qN/MMG20P/TUA+P7Q1s6LfQRGwF6IQXvFVKguOf
+x0CiMpAYhp98VPVLRyVij0/yA69h4ObEDXBi4URPhS/mK7ZscThsFphH86S+X0Zc
+OLm8plD3RfLW+a1yH854Zn1NnvbV80iff77ob+oz4DkJw1D63jIXDdCTohoMLjL7
+AO4is3CKkW5Pt5nJitsnCmJ+OT8z+AWBGfkBPc1TYFi0l3b6nENa3GZyZxce4B/q
+z4c7Y4fgQN3XFtjGLiUzkfk+c0HrNNYj6FfPuWhQ+C75jfPc/4tWPLRAZIc0FkKK
+LDlSJmqVc+YPfYsK3Z4m7ExwTGL+kifpV46CXOxFraCRPKITPO31Ol4rjsBLEIik
+8sKSo4u5aCTQHSngixTn3ixbDb0FrjEu6nYULTWAeyauERGXbUAfAFV7zT3KRQ0n
+ada8jjAhwNWdL8G2i4F4xEMvH16XZLt/sq7NUpWNpTLmHFEey4zDEecwdBncbYIc
+EToZ/zC469K5YxM31tjDi179y02Jw5JvOMapH5tWlmekhqemwpBqnJ1cJYWXhSWg
+Ahybw07ApCwQoxekRw2rZtpsoKVsRfu+ze+exCUY24vEyJ4S4FV/K9ATmTy2HE9R
+1EN1gHotkszo7ydfMght
+=ra6h
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__9_Jul_2012_14_49_46_+1000_Y61R0fb_HGnoXJAN--
