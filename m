@@ -1,30 +1,28 @@
-Return-Path: <varuns@nmglablinux27.zin33.ap.freescale.net>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A01002C0200
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 23:05:45 +1000 (EST)
-Received: from mail217-co1 (localhost [127.0.0.1])	by
- mail217-co1-R.bigfish.com (Postfix) with ESMTP id B53D140300	for
- <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 13:03:24 +0000 (UTC)
-Received: from CO1EHSMHS018.bigfish.com (unknown [10.243.78.226])	by
- mail217-co1.bigfish.com (Postfix) with ESMTP id 778F1B80044	for
- <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 13:03:22 +0000 (UTC)
-Received: from nmglablinux27.zin33.ap.freescale.net ([10.213.130.145])	by
- az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q69D5ZHQ011676	for
- <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 06:05:36 -0700
-From: Varun Sethi <Varun.Sethi@freescale.com>
-To: <agraf@suse.de>, <galak@kernel.crashing.org>, <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>, <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 4/4] powerpc/booke: Add CPU_FTR_EMB_HV check for e5500.
-Date: Mon, 9 Jul 2012 18:34:01 +0530
-Message-ID: <1341839041-17223-1-git-send-email-Varun.Sethi@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Varun Sethi <Varun.Sethi@freescale.com>,
- Mihai Caraman <mihai.caraman@freescale.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2E3512C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 23:13:55 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 9 Jul 2012 13:07:10 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q69DDmkH7602600
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:13:48 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q69DDmBa029762
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:13:48 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH -V3 0/11] arch/powerpc: Add 64TB support to ppc64   
+Date: Mon,  9 Jul 2012 18:43:30 +0530
+Message-Id: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,31 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added CPU_FTR_EMB_HV feature check for e550.
+Hi,
 
-Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
----
- arch/powerpc/kernel/cpu_setup_fsl_booke.S |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+This patchset include patches for supporting 64TB with ppc64. I haven't booted
+this on hardware with 64TB memory yet. But they boot fine on real hardware with
+less memory. Changes extend VSID bits to 38 bits for a 256MB segment
+and 26 bits for 1TB segments. 
 
-diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-index 1345e1b..dcd8819 100644
---- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-+++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-@@ -143,7 +143,13 @@ _GLOBAL(__setup_cpu_e5500)
- 	rlwinm.	r10,r10,0,MMUCFG_LPIDSIZE
- 	beq	1f
- 	bl	.setup_ehv_ivors
-+	b	2f
- 1:
-+	ld	r10,CPU_SPEC_FEATURES(r4)
-+	LOAD_REG_IMMEDIATE(r9,CPU_FTR_EMB_HV)
-+	andc	r10,r10,r9
-+	std	r10,CPU_SPEC_FEATURES(r4)
-+2:
- 	mtlr	r5
- 	blr
- #endif
--- 
-1.7.4.1
+Changes from V2:
+ * Fix few FIXMEs in the patchset. I have added them as separate patch for
+   easier review. That should help us to drop those changes if we don't agree.
+
+Changes from V1:
+* Drop the usage of structure (struct virt_addr) to carry virtual address.
+  We now represent virtual address via vpn which is virtual address shifted 
+  right 12 bits.
+
+Thanks,
+-aneesh
