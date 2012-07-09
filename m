@@ -1,27 +1,28 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CDF5D2C0316
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 23:14:06 +1000 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C84C62C0224
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 23:14:07 +1000 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 9 Jul 2012 12:52:14 +1000
+ Mon, 9 Jul 2012 13:04:30 +1000
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q69DDsL065536004
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:13:54 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q69D6Fje60162240
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:06:16 +1000
 Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q69DDrCT029889
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:13:54 +1000
+ q69DE52D030110
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 23:14:05 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V3 02/11] arch/powerpc: Simplify hpte_decode
-Date: Mon,  9 Jul 2012 18:43:32 +0530
-Message-Id: <1341839621-28332-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V3 06/11] arch/powerpc: Make KERN_VIRT_SIZE not dependend on
+ PGTABLE_RANGE
+Date: Mon,  9 Jul 2012 18:43:36 +0530
+Message-Id: <1341839621-28332-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -37,88 +38,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This patch simplify hpte_decode for easy switching of virtual address to
-virtual page number in the later patch
+As we keep increasing PGTABLE_RANGE we need not increase the virual
+map area for kernel.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/mm/hash_native_64.c |   49 ++++++++++++++++++++++----------------
- 1 file changed, 28 insertions(+), 21 deletions(-)
+ arch/powerpc/include/asm/pgtable-ppc64.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 90039bc..660b8bb 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -351,9 +351,10 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long va,
- static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 			int *psize, int *ssize, unsigned long *va)
- {
-+	unsigned long avpn, pteg, vpi;
- 	unsigned long hpte_r = hpte->r;
- 	unsigned long hpte_v = hpte->v;
--	unsigned long avpn;
-+	unsigned long vsid, seg_off;
- 	int i, size, shift, penc;
- 
- 	if (!(hpte_v & HPTE_V_LARGE))
-@@ -380,32 +381,38 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 	}
- 
- 	/* This works for all page sizes, and for 256M and 1T segments */
-+	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
- 	shift = mmu_psize_defs[size].shift;
--	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm) << 23;
--
--	if (shift < 23) {
--		unsigned long vpi, vsid, pteg;
- 
--		pteg = slot / HPTES_PER_GROUP;
--		if (hpte_v & HPTE_V_SECONDARY)
--			pteg = ~pteg;
--		switch (hpte_v >> HPTE_V_SSIZE_SHIFT) {
--		case MMU_SEGSIZE_256M:
--			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
--			break;
--		case MMU_SEGSIZE_1T:
--			vsid = avpn >> 40;
-+	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm);
-+	pteg = slot / HPTES_PER_GROUP;
-+	if (hpte_v & HPTE_V_SECONDARY)
-+		pteg = ~pteg;
-+
-+	switch (*ssize) {
-+	case MMU_SEGSIZE_256M:
-+		/* We only have 28 - 23 bits of seg_off in avpn */
-+		seg_off = (avpn & 0x1f) << 23;
-+		vsid    =  avpn >> 5;
-+		/* We can find more bits from the pteg value */
-+		if (shift < 23) {
-+			vpi = (vsid ^ pteg) & htab_hash_mask;
-+			seg_off |= vpi << shift;
-+		}
-+		*va = vsid << SID_SHIFT | seg_off;
-+	case MMU_SEGSIZE_1T:
-+		/* We only have 40 - 23 bits of seg_off in avpn */
-+		seg_off = (avpn & 0x1ffff) << 23;
-+		vsid    = avpn >> 17;
-+		if (shift < 23) {
- 			vpi = (vsid ^ (vsid << 25) ^ pteg) & htab_hash_mask;
--			break;
--		default:
--			avpn = vpi = size = 0;
-+			seg_off |= vpi << shift;
- 		}
--		avpn |= (vpi << mmu_psize_defs[size].shift);
-+		*va = vsid << SID_SHIFT_1T | seg_off;
-+	default:
-+		*va = size = 0;
- 	}
--
--	*va = avpn;
- 	*psize = size;
--	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
- }
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index c420561..8af1cf2 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -41,7 +41,7 @@
+ #else
+ #define KERN_VIRT_START ASM_CONST(0xD000000000000000)
+ #endif
+-#define KERN_VIRT_SIZE	PGTABLE_RANGE
++#define KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
  
  /*
+  * The vmalloc space starts at the beginning of that region, and
 -- 
 1.7.10
