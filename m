@@ -1,44 +1,28 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 067B52C0210
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 18:19:10 +1000 (EST)
-Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id E50E93EE0B5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
-Received: from smail (m1 [127.0.0.1])
- by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id C9C1E45DE73
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
- by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id AA33B45DE66
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 9A6241DB8055
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
-Received: from g01jpexchyt04.g01.fujitsu.local
- (g01jpexchyt04.g01.fujitsu.local [10.128.194.43])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 4374A1DB804D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 17:19:07 +0900 (JST)
-Message-ID: <4FFA93DB.6010403@jp.fujitsu.com>
-Date: Mon, 9 Jul 2012 17:18:35 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <varuns@nmglablinux27.zin33.ap.freescale.net>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 695342C02EB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 18:44:29 +1000 (EST)
+Received: from mail1-db3 (localhost [127.0.0.1])	by mail1-db3-R.bigfish.com
+ (Postfix) with ESMTP id 63CE84002C3	for <linuxppc-dev@lists.ozlabs.org>; Mon,
+ 9 Jul 2012 08:42:07 +0000 (UTC)
+Received: from DB3EHSMHS010.bigfish.com (unknown [10.3.81.227])	by
+ mail1-db3.bigfish.com (Postfix) with ESMTP id 5A1B42A0104	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jul 2012 08:42:05 +0000 (UTC)
+Received: from nmglablinux27.zin33.ap.freescale.net ([10.213.130.145])	by
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q698iHGw030993	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Jul 2012 01:44:18 -0700
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 0/3] powerpc/mpic: Enhancements for FSL MPIC. 
+Date: Mon, 9 Jul 2012 14:13:03 +0530
+Message-ID: <1341823383-15510-1-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
-To: Wen Congyang <wency@cn.fujitsu.com>
-Subject: Re: [RFC PATCH v2 4/13] memory-hotplug : remove /sys/firmware/memmap/X
- sysfs
-References: <4FF287C3.4030901@jp.fujitsu.com> <4FF28996.10702@jp.fujitsu.com>
- <4FF2929B.7030004@cn.fujitsu.com> <4FF3CA65.1020300@jp.fujitsu.com>
- <4FF3CFDC.50802@cn.fujitsu.com> <4FF3DA1E.9060505@jp.fujitsu.com>
- <4FF41484.3070806@cn.fujitsu.com> <4FF6A17C.6000808@jp.fujitsu.com>
- <4FF6ADD9.7040600@cn.fujitsu.com>
-In-Reply-To: <4FF6ADD9.7040600@cn.fujitsu.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- liuj97@gmail.com
+Content-Type: text/plain
+Cc: Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,180 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wen,
+This patchset adds/fixes the following functionality specific to the
+FSL MPIC:
+1. Fix support for timer group B interrupts. Previously these were
+not getting initialized.
 
-2012/07/06 18:20, Wen Congyang wrote:
-> At 07/06/2012 04:27 PM, Yasuaki Ishimatsu Wrote:
->> Hi Wen,
->>
->> 2012/07/04 19:01, Wen Congyang wrote:
->>> At 07/04/2012 01:52 PM, Yasuaki Ishimatsu Wrote:
->>>> Hi Wen,
->>>>
->>>> 2012/07/04 14:08, Wen Congyang wrote:
->>>>> At 07/04/2012 12:45 PM, Yasuaki Ishimatsu Wrote:
->>>>>> Hi Wen,
->>>>>>
->>>>>> 2012/07/03 15:35, Wen Congyang wrote:
->>>>>>> At 07/03/2012 01:56 PM, Yasuaki Ishimatsu Wrote:
->>>>>>>> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
->>>>>>>> sysfs files are created. But there is no code to remove these files. The patch
->>>>>>>> implements the function to remove them.
->>>>>>>>
->>>>>>>> Note : The code does not free firmware_map_entry since there is no way to free
->>>>>>>>            memory which is allocated by bootmem.
->>>>>>>>
->>>>>>>> CC: David Rientjes <rientjes@google.com>
->>>>>>>> CC: Jiang Liu <liuj97@gmail.com>
->>>>>>>> CC: Len Brown <len.brown@intel.com>
->>>>>>>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>>>>>>> CC: Paul Mackerras <paulus@samba.org>
->>>>>>>> CC: Christoph Lameter <cl@linux.com>
->>>>>>>> Cc: Minchan Kim <minchan.kim@gmail.com>
->>>>>>>> CC: Andrew Morton <akpm@linux-foundation.org>
->>>>>>>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->>>>>>>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>>>>>>>
->>>>>>>> ---
->>>>>>>>      drivers/firmware/memmap.c    |   70 +++++++++++++++++++++++++++++++++++++++++++
->>>>>>>>      include/linux/firmware-map.h |    6 +++
->>>>>>>>      mm/memory_hotplug.c          |    6 +++
->>>>>>>>      3 files changed, 81 insertions(+), 1 deletion(-)
->>>>>>>>
->>>>>>>> Index: linux-3.5-rc4/mm/memory_hotplug.c
->>>>>>>> ===================================================================
->>>>>>>> --- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-07-03 14:22:00.190240794 +0900
->>>>>>>> +++ linux-3.5-rc4/mm/memory_hotplug.c	2012-07-03 14:22:03.549198802 +0900
->>>>>>>> @@ -661,7 +661,11 @@ EXPORT_SYMBOL_GPL(add_memory);
->>>>>>>>
->>>>>>>>      int remove_memory(int nid, u64 start, u64 size)
->>>>>>>>      {
->>>>>>>> -	return -EBUSY;
->>>>>>>> +	lock_memory_hotplug();
->>>>>>>> +	/* remove memmap entry */
->>>>>>>> +	firmware_map_remove(start, start + size - 1, "System RAM");
->>>>>>>> +	unlock_memory_hotplug();
->>>>>>>> +	return 0;
->>>>>>>>
->>>>>>>>      }
->>>>>>>>      EXPORT_SYMBOL_GPL(remove_memory);
->>>>>>>> Index: linux-3.5-rc4/include/linux/firmware-map.h
->>>>>>>> ===================================================================
->>>>>>>> --- linux-3.5-rc4.orig/include/linux/firmware-map.h	2012-07-03 14:21:45.766421116 +0900
->>>>>>>> +++ linux-3.5-rc4/include/linux/firmware-map.h	2012-07-03 14:22:03.550198789 +0900
->>>>>>>> @@ -25,6 +25,7 @@
->>>>>>>>
->>>>>>>>      int firmware_map_add_early(u64 start, u64 end, const char *type);
->>>>>>>>      int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
->>>>>>>> +int firmware_map_remove(u64 start, u64 end, const char *type);
->>>>>>>>
->>>>>>>>      #else /* CONFIG_FIRMWARE_MEMMAP */
->>>>>>>>
->>>>>>>> @@ -38,6 +39,11 @@ static inline int firmware_map_add_hotpl
->>>>>>>>      	return 0;
->>>>>>>>      }
->>>>>>>>
->>>>>>>> +static inline int firmware_map_remove(u64 start, u64 end, const char *type)
->>>>>>>> +{
->>>>>>>> +	return 0;
->>>>>>>> +}
->>>>>>>> +
->>>>>>>>      #endif /* CONFIG_FIRMWARE_MEMMAP */
->>>>>>>>
->>>>>>>>      #endif /* _LINUX_FIRMWARE_MAP_H */
->>>>>>>> Index: linux-3.5-rc4/drivers/firmware/memmap.c
->>>>>>>> ===================================================================
->>>>>>>> --- linux-3.5-rc4.orig/drivers/firmware/memmap.c	2012-07-03 14:21:45.761421180 +0900
->>>>>>>> +++ linux-3.5-rc4/drivers/firmware/memmap.c	2012-07-03 14:22:03.569198549 +0900
->>>>>>>> @@ -79,7 +79,16 @@ static const struct sysfs_ops memmap_att
->>>>>>>>      	.show = memmap_attr_show,
->>>>>>>>      };
->>>>>>>>
->>>>>>>> +static void release_firmware_map_entry(struct kobject *kobj)
->>>>>>>> +{
->>>>>>>> +	/*
->>>>>>>> +	 * FIXME : There is no idea.
->>>>>>>> +	 *         How to free the entry which allocated bootmem?
->>>>>>>> +	 */
->>>>>>>
->>>>>>> I find a function free_bootmem(), but I am not sure whether it can work here.
->>>>>>
->>>>>> It cannot work here.
->>>>>>
->>>>>>> Another problem: how to check whether the entry uses bootmem?
->>>>>>
->>>>>> When firmware_map_entry is allocated by kzalloc(), the page has PG_slab.
->>>>>
->>>>> This is not true. In my test, I find the page does not have PG_slab sometimes.
->>>>
->>>> I think that it depends on the allocated size. firmware_map_entry size is
->>>> smaller than PAGE_SIZE. So the page has PG_Slab.
->>>
->>> In my test, I add printk in the function firmware_map_add_hotplug() to display
->>> page's flags. And sometimes the page is not allocated by slab(I use PageSlab()
->>> to verify it).
->>
->> How did you check it? Could you send your debug patch?
-> 
-> When the memory is not allocated from slab, the flags is 0x10000000008000.
+2. Use the MPIC_LARGE_VECTORS flag while intializing FSL MPIC.
+This prevents us from eating in to hardware vector number
+space (MSIs) while setting up internal sources.
 
-Thank you for sending the patch.
-I think the page to not have PageSlab is a compound page. So we can check
-whether the entry is allocate from bootmem or not as follow:
+3.Cascaded handling for the MPIC error interrupt. This is possible
+with FSL MPIC version >= 4.1.
 
-static void release_firmware_map_entry(struct kobject *kobj)
-{
-	struct firmware_map_entry *entry = to_memmap_entry(kobj);
-	struct page *head_page;
+The patches are based on "next" branch of Benjamin Herrenschmidt's powerpc
+linux tree.
 
-	head_page = virt_to_head_page(entry);
-	if (PageSlab(head_page))
-		kfree(etnry);
-	else
-		/* the entry is allocated from bootmem */
-}
+Varun Sethi (3):
+  Support time group b on freescale chips.
+  Use MPIC_LARGE_VECTORS flag for Freescale MPIC.
+  Add support for cascaded error interrupt handling.
 
-Thanks,
-Yasuaki Ishimatsu
+ arch/powerpc/include/asm/mpic.h          |   22 ++++
+ arch/powerpc/sysdev/Makefile             |    2 +-
+ arch/powerpc/sysdev/fsl_mpic_err.c       |  157 ++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/mpic.c               |   95 +++++++++++++++----
+ arch/powerpc/sysdev/mpic.h               |   22 ++++
+ 6 files changed, 338 insertions(+), 19 deletions(-)
+ create mode 100644 arch/powerpc/sysdev/fsl_mpic_err.c
 
-> 
->  From 8dd51368d6c03edf7edc89cab17441e3741c39c7 Mon Sep 17 00:00:00 2001
-> From: Wen Congyang <wency@cn.fujitsu.com>
-> Date: Wed, 4 Jul 2012 16:05:26 +0800
-> Subject: [PATCH] debug
-> 
-> ---
->   drivers/firmware/memmap.c |    7 +++++++
->   1 files changed, 7 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-> index adc0710..993ba3f 100644
-> --- a/drivers/firmware/memmap.c
-> +++ b/drivers/firmware/memmap.c
-> @@ -21,6 +21,7 @@
->   #include <linux/types.h>
->   #include <linux/bootmem.h>
->   #include <linux/slab.h>
-> +#include <linux/mm.h>
->   
->   /*
->    * Data types ------------------------------------------------------------------
-> @@ -160,11 +161,17 @@ static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry)
->   int __meminit firmware_map_add_hotplug(u64 start, u64 end, const char *type)
->   {
->   	struct firmware_map_entry *entry;
-> +	struct page *entry_page;
->   
->   	entry = kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
->   	if (!entry)
->   		return -ENOMEM;
->   
-> +	entry_page = virt_to_page(entry);
-> +	printk(KERN_WARNING "flags: %lx\n", entry_page->flags);
-> +	if (PageSlab(entry_page)) {
-> +		printk(KERN_WARNING "page is allocated from slab\n");
-> +	}
->   	firmware_map_add_entry(start, end, type, entry);
->   	/* create the memmap entry */
->   	add_sysfs_fw_map_entry(entry);
-> 
+-- 
+1.7.2.2
