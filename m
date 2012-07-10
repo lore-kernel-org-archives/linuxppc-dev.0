@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D48822C045B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 22:24:09 +1000 (EST)
-Subject: Re: [PATCH 2/2][v2] powerpc/watchdog: replace CONFIG_FSL_BOOKE with
- CONFIG_PPC_FSL_BOOK3E
+ by ozlabs.org (Postfix) with ESMTPS id 4908A2C0527
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 22:24:19 +1000 (EST)
+Subject: Re: [PATCH 1/2] powerpc/mpc8572ds: Fix eTSEC is not available on
+ core1 of AMP boot issue
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1336714420-2394-1-git-send-email-Shaohui.Xie@freescale.com>
-Date: Tue, 10 Jul 2012 07:24:01 -0500
-Message-Id: <811A0EE0-6D65-4903-83E6-3F13E35889A3@kernel.crashing.org>
-References: <1336714420-2394-1-git-send-email-Shaohui.Xie@freescale.com>
-To: Shaohui Xie <Shaohui.Xie@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-watchdog@vger.kernel.org
+In-Reply-To: <1341900506-23401-1-git-send-email-B38951@freescale.com>
+Date: Tue, 10 Jul 2012 07:24:12 -0500
+Message-Id: <9D9B5A65-CABB-4EB8-9901-206970467A9F@kernel.crashing.org>
+References: <1341900506-23401-1-git-send-email-B38951@freescale.com>
+To: Jia Hongtao <B38951@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,20 +25,45 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On May 11, 2012, at 12:33 AM, Shaohui Xie wrote:
+On Jul 10, 2012, at 1:08 AM, Jia Hongtao wrote:
 
-> CONFIG_FSL_BOOKE is only defined in 32-bit, CONFIG_PPC_FSL_BOOK3E is
-> defined in both 32-bit and 64-bit, so use CONFIG_PPC_FSL_BOOK3E to make
-> driver work in 32-bit & 64-bit.
+> The issue log on core1 is:
+> root@mpc8572ds:~# ifconfig eth0 10.192.208.244
+> net eth0: could not attach to PHY
+> SIOCSIFFLAGS: No such device
 > 
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> To attach PHY node mdio@24520 should not be disabled in dts of core1.
+> Because all PHYs are controlled through this node as follows:
+> 
+> mdio@24520 {
+> 	phy0: ethernet-phy@0 {
+> 		interrupts = <10 1 0 0>;
+> 		reg = <0x0>;
+> 	};
+> 	phy1: ethernet-phy@1 {
+> 		interrupts = <10 1 0 0>;
+> 		reg = <0x1>;
+> 	};
+> 	phy2: ethernet-phy@2 {
+> 		interrupts = <10 1 0 0>;
+> 		reg = <0x2>;
+> 	};
+> 	phy3: ethernet-phy@3 {
+> 		interrupts = <10 1 0 0>;
+> 		reg = <0x3>;
+> 	};
+> 
+> 	tbi0: tbi-phy@11 {
+> 		reg = <0x11>;
+> 		device_type = "tbi-phy";
+> 	};
+> };
+> 
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Jia Hongtao <B38951@freescale.com>
 > ---
-> changes for v2:
-> use PPC_FSL_BOOK3E instead of FSL_SOC_BOOKE.
-> 
-> drivers/watchdog/Kconfig     |    8 ++++----
-> drivers/watchdog/booke_wdt.c |    4 ++--
-> 2 files changed, 6 insertions(+), 6 deletions(-)
+> arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |    3 ---
+> 1 files changed, 0 insertions(+), 3 deletions(-)
 
 applied to next
 
