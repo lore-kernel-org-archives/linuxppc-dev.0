@@ -1,21 +1,21 @@
 Return-Path: <B21989@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D1D782C0088
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 20:21:57 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 297B82C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 20:22:37 +1000 (EST)
 From: Xie Shaohui-B21989 <B21989@freescale.com>
 To: Xie Shaohui-B21989 <B21989@freescale.com>,
  "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 1/2] powerpc/watchdog: move booke watchdog param related
- code to prom.c
-Date: Tue, 10 Jul 2012 10:21:50 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C9079802B4@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1336457231-32513-1-git-send-email-Shaohui.Xie@freescale.com>
-In-Reply-To: <1336457231-32513-1-git-send-email-Shaohui.Xie@freescale.com>
+Subject: RE: [PATCH 2/2][v2] powerpc/watchdog: replace CONFIG_FSL_BOOKE with
+ CONFIG_PPC_FSL_BOOK3E
+Date: Tue, 10 Jul 2012 10:22:26 +0000
+Message-ID: <ED492CCEAF882048BC2237DE806547C9079802C6@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1336714420-2394-1-git-send-email-Shaohui.Xie@freescale.com>
+In-Reply-To: <1336714420-2394-1-git-send-email-Shaohui.Xie@freescale.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,89 +39,64 @@ Shaohui Xie=20
 
 >-----Original Message-----
 >From: Xie Shaohui-B21989
->Sent: Tuesday, May 08, 2012 2:07 PM
+>Sent: Friday, May 11, 2012 1:34 PM
 >To: linux-watchdog@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
 >Cc: Xie Shaohui-B21989
->Subject: [PATCH 1/2] powerpc/watchdog: move booke watchdog param related
->code to prom.c
+>Subject: [PATCH 2/2][v2] powerpc/watchdog: replace CONFIG_FSL_BOOKE with
+>CONFIG_PPC_FSL_BOOK3E
 >
->Currently, BOOKE watchdog code for checking "wdt" and "wdt_period" is in
->setup_32.c, it cannot be used in 64-bit, so move it to a common place
->prom.c, which will be shared by 32-bit and 64-bit.
->
->Also, replace the simple_strtoul with kstrtol.
+>CONFIG_FSL_BOOKE is only defined in 32-bit, CONFIG_PPC_FSL_BOOK3E is
+>defined in both 32-bit and 64-bit, so use CONFIG_PPC_FSL_BOOK3E to make
+>driver work in 32-bit & 64-bit.
 >
 >Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 >---
-> arch/powerpc/kernel/prom.c     |   27 +++++++++++++++++++++++++++
-> arch/powerpc/kernel/setup_32.c |   24 ------------------------
-> 2 files changed, 27 insertions(+), 24 deletions(-)
+>changes for v2:
+>use PPC_FSL_BOOK3E instead of FSL_SOC_BOOKE.
 >
->diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c index
->f191bf0..49e1bdf 100644
->--- a/arch/powerpc/kernel/prom.c
->+++ b/arch/powerpc/kernel/prom.c
->@@ -84,6 +84,33 @@ static int __init early_parse_mem(char *p)  }
->early_param("mem", early_parse_mem);
+> drivers/watchdog/Kconfig     |    8 ++++----
+> drivers/watchdog/booke_wdt.c |    4 ++--
+> 2 files changed, 6 insertions(+), 6 deletions(-)
 >
->+#ifdef CONFIG_BOOKE_WDT
->+extern u32 booke_wdt_enabled;
->+extern u32 booke_wdt_period;
->+
->+/* Checks wdt=3Dx and wdt_period=3Dxx command-line option */ notrace int
->+__init early_parse_wdt(char *p) {
->+	if (p && strncmp(p, "0", 1) !=3D 0)
->+		booke_wdt_enabled =3D 1;
->+
->+	return 0;
->+}
->+early_param("wdt", early_parse_wdt);
->+
->+int __init early_parse_wdt_period(char *p) {
->+	unsigned long ret;
->+	if (p) {
->+		if (!kstrtol(p, 0, &ret))
->+			booke_wdt_period =3D ret;
->+	}
->+
->+	return 0;
->+}
->+early_param("wdt_period", early_parse_wdt_period);
->+#endif	/* CONFIG_BOOKE_WDT */
->+
-> /*
->  * overlaps_initrd - check for overlap with page aligned extension of
->  * initrd.
->diff --git a/arch/powerpc/kernel/setup_32.c
->b/arch/powerpc/kernel/setup_32.c index ec8a53f..a8f54ec 100644
->--- a/arch/powerpc/kernel/setup_32.c
->+++ b/arch/powerpc/kernel/setup_32.c
->@@ -149,30 +149,6 @@ notrace void __init machine_init(u64 dt_ptr)
-> 		ppc_md.progress("id mach(): done", 0x200);  }
+>diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig index
+>3709624..4373ca0 100644
+>--- a/drivers/watchdog/Kconfig
+>+++ b/drivers/watchdog/Kconfig
+>@@ -1094,10 +1094,10 @@ config BOOKE_WDT  config BOOKE_WDT_DEFAULT_TIMEOUT
+> 	int "PowerPC Book-E Watchdog Timer Default Timeout"
+> 	depends on BOOKE_WDT
+>-	default 38 if FSL_BOOKE
+>-	range 0 63 if FSL_BOOKE
+>-	default 3 if !FSL_BOOKE
+>-	range 0 3 if !FSL_BOOKE
+>+	default 38 if PPC_FSL_BOOK3E
+>+	range 0 63 if PPC_FSL_BOOK3E
+>+	default 3 if !PPC_FSL_BOOK3E
+>+	range 0 3 if !PPC_FSL_BOOK3E
+> 	help
+> 	  Select the default watchdog timer period to be used by the PowerPC
+> 	  Book-E watchdog driver.  A watchdog "event" occurs when the bit
+>diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+>index ce0ab44..338a437 100644
+>--- a/drivers/watchdog/booke_wdt.c
+>+++ b/drivers/watchdog/booke_wdt.c
+>@@ -37,7 +37,7 @@
+> u32 booke_wdt_enabled;
+> u32 booke_wdt_period =3D CONFIG_BOOKE_WDT_DEFAULT_TIMEOUT;
 >
->-#ifdef CONFIG_BOOKE_WDT
->-extern u32 booke_wdt_enabled;
->-extern u32 booke_wdt_period;
->-
->-/* Checks wdt=3Dx and wdt_period=3Dxx command-line option */ -notrace int
->__init early_parse_wdt(char *p) -{
->-	if (p && strncmp(p, "0", 1) !=3D 0)
->-	       booke_wdt_enabled =3D 1;
->-
->-	return 0;
->-}
->-early_param("wdt", early_parse_wdt);
->-
->-int __init early_parse_wdt_period (char *p) -{
->-	if (p)
->-		booke_wdt_period =3D simple_strtoul(p, NULL, 0);
->-
->-	return 0;
->-}
->-early_param("wdt_period", early_parse_wdt_period);
->-#endif	/* CONFIG_BOOKE_WDT */
->-
-> /* Checks "l2cr=3Dxxxx" command-line option */  int __init
->ppc_setup_l2cr(char *str)  {
+>-#ifdef	CONFIG_FSL_BOOKE
+>+#ifdef	CONFIG_PPC_FSL_BOOK3E
+> #define WDTP(x)		((((x)&0x3)<<30)|(((x)&0x3c)<<15))
+> #define WDTP_MASK	(WDTP(0x3f))
+> #else
+>@@ -190,7 +190,7 @@ static long booke_wdt_ioctl(struct file *file,
+> 	case WDIOC_SETTIMEOUT:
+> 		if (get_user(tmp, p))
+> 			return -EFAULT;
+>-#ifdef	CONFIG_FSL_BOOKE
+>+#ifdef	CONFIG_PPC_FSL_BOOK3E
+> 		/* period of 1 gives the largest possible timeout */
+> 		if (tmp > period_to_sec(1))
+> 			return -EINVAL;
 >--
 >1.6.4
