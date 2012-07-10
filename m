@@ -1,17 +1,20 @@
-Return-Path: <blofeldus@yahoo.com>
-Received: from nm3.bullet.mail.bf1.yahoo.com (nm3.bullet.mail.bf1.yahoo.com
- [98.139.212.162]) by ozlabs.org (Postfix) with SMTP id 0F9552C01FA
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Jul 2012 04:55:32 +1000 (EST)
-Message-ID: <1341946130.68629.YahooMailClassic@web161302.mail.bf1.yahoo.com>
-Date: Tue, 10 Jul 2012 11:48:50 -0700 (PDT)
-From: roger blofeld <blofeldus@yahoo.com>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-To: Gerhard Pircher <gerhard_pircher@gmx.net>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1341267617.2588.51.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <geoff@infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2A9A72C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 05:36:24 +1000 (EST)
+Message-ID: <1341948966.19582.27.camel@smoke>
+Subject: Re: Semantics of lv1_pause()
+From: Geoff Levand <geoff@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 10 Jul 2012 12:36:06 -0700
+In-Reply-To: <1341890402.2561.2.camel@pasglop>
+References: <1341890402.2561.2.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,88 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---- On Mon, 7/2/12, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hi Ben,
 
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Subject: Re: [git pull] Please pull powerpc.git merge branch
-> To: "Gerhard Pircher" <gerhard_pircher@gmx.net>
-> Cc: "linuxppc-dev list" <linuxppc-dev@ozlabs.org>
-> Date: Monday, July 2, 2012, 3:20 PM
-> On Mon, 2012-07-02 at 23:38 +0200,
-> Gerhard Pircher wrote:
-> > 
-> > What about this fix:?
-> > 
-> > http://patchwork.ozlabs.org/patch/166346/
-> > 
-> > At least I can't see it in the log...
+On Tue, 2012-07-10 at 13:20 +1000, Benjamin Herrenschmidt wrote:
+> regarding the precise semantics of lv1_pause() ?
+
+Here's what's in PS3's setup.c:
+
+static void ps3_power_save(void)
+{
+	/*
+	 * lv1_pause() puts the PPE thread into inactive state until an
+	 * irq on an unmasked plug exists. MSR[EE] has no effect.
+	 * flags: 0 = wake on DEC interrupt, 1 = ignore DEC interrupt.
+	 */
+
+	lv1_pause(0);
+}
+
+Just FYI, setup.c is here:
+
+  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=blob;f=arch/powerpc/platforms/ps3/setup.c;hb=HEAD#l72
+
+> I'm fixing various issues with our idle loops, among other things,
+> because we are soft-disabled when we hit ppc_md.powersave() but not
+> hard-disabled, there could be an interrupt marked as pending and not
+> taken yet.
 > 
-> The module fix went in. The ftrace patch, well, it's
-> untested and we
-> don't even know if we have a problem with mcount yet, so no,
-> I haven't
-> merged it yet.
-> 
-> Cheers,
-> Ben.
-> 
-> 
+> Will that work properly ? I have this understanding that it might
+> not ... but heh.
 
-I have had a chance to test this patch. Before it is applied I get the following message when loading a module:
+The (virtual) HW thread that called lv1_pause() should become active
+when any virq that had irq_chip.irq_unmask() called for it occurs.
 
-Not a trampoline
-------------[ cut here ]------------
-WARNING: at /src/git/linux-powerpc/kernel/trace/ftrace.c:1583
-Modules linked in: gpio_w1_transport(O+)
-NIP: c008129c LR: c0082138 CTR: c021d744
-REGS: c532dd80 TRAP: 0700   Tainted: G           O  (3.4.3-00002-g23fc8c3)
-MSR: 00029032 <EE,ME,IR,DR,RI>  CR: 22082282  XER: 20000000
-TASK = c5256900[363] 'insmod' THREAD: c532c000
-GPR00: 00000001 c532de30 c5256900 ffffffea c907b008 00000000 c046befc 20747261
-GPR08: c046be40 c045c862 00008000 00000000 22082224 10019fdc 00000000 100f0000
-GPR16: 100f5678 100dc70c 00000000 eac3ec00 00000000 c0011bb0 c046890c 00000000
-GPR24: c907b008 c70d8f80 c0443d0c 00000000 c5338000 0000000c c907b008 c049a910
-NIP [c008129c] ftrace_bug+0xc0/0x25c
-LR [c0082138] ftrace_process_locs+0x47c/0x608
-Call Trace:
-[c532de30] [c008fe04] ftrace_now+0x38/0x78 (unreliable)
-[c532de50] [c0082138] ftrace_process_locs+0x47c/0x608
-[c532dea0] [c008232c] ftrace_module_notify+0x68/0x7c
-[c532deb0] [c004cd80] notifier_call_chain+0x90/0xe0
-[c532dee0] [c004d27c] __blocking_notifier_call_chain+0x68/0x94
-[c532df10] [c004d2cc] blocking_notifier_call_chain+0x24/0x34
-[c532df20] [c0073b38] sys_init_module+0xa0/0x1e0
-[c532df40] [c0011254] ret_from_syscall+0x0/0x38
---- Exception: c01 at 0xff5d694
-    LR = 0x10000cd4
-Instruction dump:
-90090008 48294b71 3c60c03c 7fc4f378 7fc5f378 3863874c 48294b5d 48000188
-3d20c046 3929c862 88090003 68000001 <0f000000> 2f800000 409e0148 3d20c001
----[ end trace aaa9b56024f9d2b9 ]---
-ftrace failed to modify [<c907b008>] gpio_w1_reset_bus+0x8/0xc0 [gpio_w1_transport]
- actual: 48:00:04:99
+I'm not sure what 'become active' means if that virq is setup to be
+handled by the 'paused' HW thread.  I guess the behavior depends on
+if MSR_EE was set?
+ 
+> Also if I call lv1_pause() with MSR_EE off, will it work ? Will it
+> return with MSR_EE on like H_CEDE does on pseries ?
 
-and the trace file dump results in:
+As above, the value of MSR_EE has no effect on activating the HW
+thread, and I assume MSR_EE will still be off when lv1_pause() returns.
+We can try some experiments if needed.
 
-# tracer: nop
-#
-# WARNING: FUNCTION TRACING IS CORRUPTED
-#          MAY BE MISSING FUNCTION EVENTS        
-# entries-in-buffer/entries-written: 0/0   #P:1
-#
-#                              _-----=> irqs-off
-#                             / _----=> need-resched
-#                            | / _---=> hardirq/softirq
-#                            || / _--=> preempt-depth
-#                            ||| /     delay
-#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
-#              | |       |   ||||       |         |
-
-
-after the patch is applied I get no messages on module loading and ftrace no longer complains, and I can trace my module's functions.
-
-So I can add
-
-Tested-By: Roger Blofeld <blofeldus@yahoo.com>
-
--rb
+-Geoff
