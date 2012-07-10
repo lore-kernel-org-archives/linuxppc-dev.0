@@ -1,18 +1,20 @@
-Return-Path: <B32616@freescale.com>
+Return-Path: <B38951@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 43EDC2C0B69
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 16:21:57 +1000 (EST)
-From: Qiang Liu <qiang.liu@freescale.com>
-To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 0/3] Raid: enable talitos xor offload for improving performance
-Date: Tue, 10 Jul 2012 14:00:35 +0800
-Message-ID: <1341900035-20958-1-git-send-email-qiang.liu@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 94FCE2C0493
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 16:29:40 +1000 (EST)
+From: Jia Hongtao <B38951@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/mpc8572ds: Fix eTSEC is not available on core1 of
+ AMP boot issue
+Date: Tue, 10 Jul 2012 14:08:25 +0800
+Message-ID: <1341900506-23401-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+Cc: b38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following 4 patches enabling fsl-dma and talitos offload raid
-operations for improving raid performance and balancing CPU load.
+The issue log on core1 is:
+root@mpc8572ds:~# ifconfig eth0 10.192.208.244
+net eth0: could not attach to PHY
+SIOCSIFFLAGS: No such device
 
-Write performance will be improved by 40% tested by iozone. CPU load
-will be reduced by 8%.
+To attach PHY node mdio@24520 should not be disabled in dts of core1.
+Because all PHYs are controlled through this node as follows:
 
-Qiang Liu (4):
-      Talitos: move the data structure into header file
-      Talitos: Support for async_tx XOR offload
-      fsl-dma: support attribute of DMA_MEMORY when async_tx enabled
-      Talitos: fix the issue of dma memory leak
+mdio@24520 {
+	phy0: ethernet-phy@0 {
+		interrupts = <10 1 0 0>;
+		reg = <0x0>;
+	};
+	phy1: ethernet-phy@1 {
+		interrupts = <10 1 0 0>;
+		reg = <0x1>;
+	};
+	phy2: ethernet-phy@2 {
+		interrupts = <10 1 0 0>;
+		reg = <0x2>;
+	};
+	phy3: ethernet-phy@3 {
+		interrupts = <10 1 0 0>;
+		reg = <0x3>;
+	};
 
- drivers/crypto/Kconfig   |    9 +
- drivers/crypto/talitos.c |  520 ++++++++++++++++++++++++++++++++++++----------
- drivers/crypto/talitos.h |  161 ++++++++++++++
- drivers/dma/fsldma.c     |   78 +++-----
- 4 files changed, 606 insertions(+), 162 deletions(-)
+	tbi0: tbi-phy@11 {
+		reg = <0x11>;
+		device_type = "tbi-phy";
+	};
+};
+
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Jia Hongtao <B38951@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+index d6a8faf..1932396 100644
+--- a/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
++++ b/arch/powerpc/boot/dts/mpc8572ds_camp_core1.dts
+@@ -67,9 +67,6 @@
+ 		ethernet@24000 {
+ 			status = "disabled";
+ 		};
+-		mdio@24520 {
+-			status = "disabled";
+-		};
+ 		ptp_clock@24e00 {
+ 			status = "disabled";
+ 		};
+-- 
+1.7.5.1
