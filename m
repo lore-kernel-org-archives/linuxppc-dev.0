@@ -4,15 +4,18 @@ Received: from co1outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DBE812C0086
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 19:00:35 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id AF9542C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 19:00:43 +1000 (EST)
 From: Xu Jiucheng <Jiucheng.Xu@freescale.com>
 To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/85xx: Add dts files for P1021RDB-PC board
-Date: Tue, 10 Jul 2012 16:39:20 +0800
-Message-ID: <1341909561-6591-1-git-send-email-Jiucheng.Xu@freescale.com>
+Subject: [PATCH 2/2] powerpc/85xx: Create dts of each core in CAMP mode for
+ P1021RDB-PC
+Date: Tue, 10 Jul 2012 16:39:21 +0800
+Message-ID: <1341909561-6591-2-git-send-email-Jiucheng.Xu@freescale.com>
+In-Reply-To: <1341909561-6591-1-git-send-email-Jiucheng.Xu@freescale.com>
+References: <1341909561-6591-1-git-send-email-Jiucheng.Xu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain
 Cc: Matthew McClintock <msm@freescale.com>,
  Xu Jiucheng <Jiucheng.Xu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,1036 +27,303 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-P1021RDB-PC Overview
------------------
-1Gbyte DDR3 (on board DDR)
-16Mbyte NOR flash
-32Mbyte eSLC NAND Flash
-256 Kbit M24256 I2C EEPROM
-128 Mbit SPI Flash memory
-Real-time clock on I2C bus
-SD/MMC connector to interface with the SD memory card
-PCIex
-	- x1 PCIe slot or x1 PCIe to dual SATA controller
-	- x1 mini-PCIe slot
-USB 2.0
-	- ULPI PHY interface: SMSC USB3300 USB PHY and Genesys Logic=E2=80=99s G=
-L850A
-	- Two USB2.0 Type A receptacles
-	- One USB2.0 signal to Mini PCIe slot
-eTSEC1: Connected to RGMII PHY VSC7385
-eTSEC2: Connected to SGMII PHY VSC8221
-eTSEC3: Connected to SGMII PHY AR8021
-DUART interface: supports two UARTs up to 115200 bps for console display
+Create the dts files for each core and splits the devices between
+the two cores for P1021RDB-PC.
+
+Core0 has l2, serial0, i2c, spi, gpio, tdm,dma, usb, eth0, eth1,
+sdhc, crypto, global-util, message, pci0, pci1, msi, crypto.
+Core1 has l2, serial1, eth2.
 
 Signed-off-by: Xu Jiucheng <Jiucheng.Xu@freescale.com>
 Signed-off-by: Matthew McClintock <msm@freescale.com>
 ---
- arch/powerpc/boot/dts/p1021rdb-pc.dtsi    |  236 +++++++++++++++++++++++=
-++++++
- arch/powerpc/boot/dts/p1021rdb-pc_32b.dts |   96 ++++++++++++
- arch/powerpc/boot/dts/p1021rdb-pc_36b.dts |   96 ++++++++++++
- arch/powerpc/boot/dts/p1021rdb.dts        |   96 ------------
- arch/powerpc/boot/dts/p1021rdb.dtsi       |  236 -----------------------=
-------
- arch/powerpc/boot/dts/p1021rdb_36b.dts    |   96 ------------
- 6 files changed, 428 insertions(+), 428 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/p1021rdb-pc.dtsi
- create mode 100644 arch/powerpc/boot/dts/p1021rdb-pc_32b.dts
- create mode 100644 arch/powerpc/boot/dts/p1021rdb-pc_36b.dts
- delete mode 100644 arch/powerpc/boot/dts/p1021rdb.dts
- delete mode 100644 arch/powerpc/boot/dts/p1021rdb.dtsi
- delete mode 100644 arch/powerpc/boot/dts/p1021rdb_36b.dts
+ arch/powerpc/boot/dts/p1021rdb-pc_camp_core0.dts |   91 +++++++++++
+ arch/powerpc/boot/dts/p1021rdb-pc_camp_core1.dts |  179 ++++++++++++++++++++++
+ 2 files changed, 270 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/p1021rdb-pc_camp_core0.dts
+ create mode 100644 arch/powerpc/boot/dts/p1021rdb-pc_camp_core1.dts
 
-diff --git a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi b/arch/powerpc/boot/d=
-ts/p1021rdb-pc.dtsi
+diff --git a/arch/powerpc/boot/dts/p1021rdb-pc_camp_core0.dts b/arch/powerpc/boot/dts/p1021rdb-pc_camp_core0.dts
 new file mode 100644
-index 0000000..b973461
+index 0000000..199e94e
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-@@ -0,0 +1,236 @@
++++ b/arch/powerpc/boot/dts/p1021rdb-pc_camp_core0.dts
+@@ -0,0 +1,91 @@
 +/*
-+ * P1021 RDB Device Tree Source stub (no addresses or top-level ranges)
++ * P1021 RDB Core0 Device Tree Source in CAMP mode.
 + *
 + * Copyright 2012 Freescale Semiconductor Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions ar=
-e met:
++ * modification, are permitted provided that the following conditions are met:
 + *     * Redistributions of source code must retain the above copyright
 + *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyrig=
-ht
-+ *       notice, this list of conditions and the following disclaimer in=
- the
-+ *       documentation and/or other materials provided with the distribu=
-tion.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
 + *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote pro=
-ducts
-+ *       derived from this software without specific prior written permi=
-ssion.
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
 + *
 + *
-+ * ALTERNATIVELY, this software may be distributed under the terms of th=
-e
++ * ALTERNATIVELY, this software may be distributed under the terms of the
 + * GNU General Public License ("GPL") as published by the Free Software
 + * Foundation, either version 2 of that License or (at your option) any
 + * later version.
 + *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND AN=
-Y
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
-LIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
-E
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
-NY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
-MAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
-RVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
-ED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
- TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
- OF THIS
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
++ * can be shared, all the other devices must be assigned to one core only.
++ * This dts file allows core0 to have memory, l2, serail0, i2c, spi, gpio,
++ * tdm, dma, usb, eth0, eth1, sdhc, crypto, global-util, message, pci0, pci1,
++ * msi.
++ *
++ * Please note to add "-b 0" for core0's dts compiling.
 + */
 +
-+&lbc {
-+	nor@0,0 {
-+		#address-cells =3D <1>;
-+		#size-cells =3D <1>;
-+		compatible =3D "cfi-flash";
-+		reg =3D <0x0 0x0 0x1000000>;
-+		bank-width =3D <2>;
-+		device-width =3D <1>;
++/include/ "p1021rdb-pc_32b.dts"
 +
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 256KB for Vitesse 7385 Switch firmware */
-+			reg =3D <0x0 0x00040000>;
-+			label =3D "NOR Vitesse-7385 Firmware";
-+			read-only;
-+		};
-+
-+		partition@40000 {
-+			/* 256KB for DTB Image */
-+			reg =3D <0x00040000 0x00040000>;
-+			label =3D "NOR DTB Image";
-+		};
-+
-+		partition@80000 {
-+			/* 3.5 MB for Linux Kernel Image */
-+			reg =3D <0x00080000 0x00380000>;
-+			label =3D "NOR Linux Kernel Image";
-+		};
-+
-+		partition@400000 {
-+			/* 11MB for JFFS2 based Root file System */
-+			reg =3D <0x00400000 0x00b00000>;
-+			label =3D "NOR JFFS2 Root File System";
-+		};
-+
-+		partition@f00000 {
-+			/* This location must not be altered  */
-+			/* 512KB for u-boot Bootloader Image */
-+			/* 512KB for u-boot Environment Variables */
-+			reg =3D <0x00f00000 0x00100000>;
-+			label =3D "NOR U-Boot Image";
-+		};
-+	};
-+
-+	nand@1,0 {
-+		#address-cells =3D <1>;
-+		#size-cells =3D <1>;
-+		compatible =3D "fsl,p1021-fcm-nand",
-+			     "fsl,elbc-fcm-nand";
-+		reg =3D <0x1 0x0 0x40000>;
-+
-+		partition@0 {
-+			/* This location must not be altered  */
-+			/* 1MB for u-boot Bootloader Image */
-+			reg =3D <0x0 0x00100000>;
-+			label =3D "NAND U-Boot Image";
-+			read-only;
-+		};
-+
-+		partition@100000 {
-+			/* 1MB for DTB Image */
-+			reg =3D <0x00100000 0x00100000>;
-+			label =3D "NAND DTB Image";
-+		};
-+
-+		partition@200000 {
-+			/* 4MB for Linux Kernel Image */
-+			reg =3D <0x00200000 0x00400000>;
-+			label =3D "NAND Linux Kernel Image";
-+		};
-+
-+		partition@600000 {
-+			/* 4MB for Compressed Root file System Image */
-+			reg =3D <0x00600000 0x00400000>;
-+			label =3D "NAND Compressed RFS Image";
-+		};
-+
-+		partition@a00000 {
-+			/* 7MB for JFFS2 based Root file System */
-+			reg =3D <0x00a00000 0x00700000>;
-+			label =3D "NAND JFFS2 Root File System";
-+		};
-+
-+		partition@1100000 {
-+			/* 15MB for User Writable Area  */
-+			reg =3D <0x01100000 0x00f00000>;
-+			label =3D "NAND Writable User area";
-+		};
-+	};
-+
-+	L2switch@2,0 {
-+		#address-cells =3D <1>;
-+		#size-cells =3D <1>;
-+		compatible =3D "vitesse-7385";
-+		reg =3D <0x2 0x0 0x20000>;
-+	};
-+};
-+
-+&soc {
-+	i2c@3000 {
-+		rtc@68 {
-+			compatible =3D "pericom,pt7c4338";
-+			reg =3D <0x68>;
-+		};
-+	};
-+
-+	spi@7000 {
-+		flash@0 {
-+			#address-cells =3D <1>;
-+			#size-cells =3D <1>;
-+			compatible =3D "spansion,s25sl12801";
-+			reg =3D <0>;
-+			spi-max-frequency =3D <40000000>; /* input clock */
-+
-+			partition@u-boot {
-+				/* 512KB for u-boot Bootloader Image */
-+				reg =3D <0x0 0x00080000>;
-+				label =3D "SPI Flash U-Boot Image";
-+				read-only;
-+			};
-+
-+			partition@dtb {
-+				/* 512KB for DTB Image */
-+				reg =3D <0x00080000 0x00080000>;
-+				label =3D "SPI Flash DTB Image";
-+			};
-+
-+			partition@kernel {
-+				/* 4MB for Linux Kernel Image */
-+				reg =3D <0x00100000 0x00400000>;
-+				label =3D "SPI Flash Linux Kernel Image";
-+			};
-+
-+			partition@fs {
-+				/* 4MB for Compressed RFS Image */
-+				reg =3D <0x00500000 0x00400000>;
-+				label =3D "SPI Flash Compressed RFSImage";
-+			};
-+
-+			partition@jffs-fs {
-+				/* 7MB for JFFS2 based RFS */
-+				reg =3D <0x00900000 0x00700000>;
-+				label =3D "SPI Flash JFFS2 RFS";
-+			};
-+		};
-+	};
-+
-+	usb@22000 {
-+		phy_type =3D "ulpi";
-+	};
-+
-+	mdio@24000 {
-+		phy0: ethernet-phy@0 {
-+			interrupt-parent =3D <&mpic>;
-+			interrupts =3D <3 1 0 0>;
-+			reg =3D <0x0>;
-+		};
-+
-+		phy1: ethernet-phy@1 {
-+			interrupt-parent =3D <&mpic>;
-+			interrupts =3D <2 1 0 0>;
-+			reg =3D <0x1>;
-+		};
-+
-+		tbi0: tbi-phy@11 {
-+			reg =3D <0x11>;
-+			device_type =3D "tbi-phy";
-+		};
-+	};
-+
-+	mdio@25000 {
-+		tbi1: tbi-phy@11 {
-+			reg =3D <0x11>;
-+			device_type =3D "tbi-phy";
-+		};
-+	};
-+
-+	mdio@26000 {
-+		tbi2: tbi-phy@11 {
-+			reg =3D <0x11>;
-+			device_type =3D "tbi-phy";
-+		};
-+	};
-+
-+	enet0: ethernet@b0000 {
-+		fixed-link =3D <1 1 1000 0 0>;
-+		phy-connection-type =3D "rgmii-id";
-+
-+	};
-+
-+	enet1: ethernet@b1000 {
-+		phy-handle =3D <&phy0>;
-+		tbi-handle =3D <&tbi1>;
-+		phy-connection-type =3D "sgmii";
-+	};
-+
-+	enet2: ethernet@b2000 {
-+		phy-handle =3D <&phy1>;
-+		tbi-handle =3D <&tbi2>;
-+		phy-connection-type =3D "rgmii-id";
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts b/arch/powerpc/boo=
-t/dts/p1021rdb-pc_32b.dts
-new file mode 100644
-index 0000000..22534da
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts
-@@ -0,0 +1,96 @@
-+/*
-+ * P1021 RDB Device Tree Source
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions ar=
-e met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyrig=
-ht
-+ *       notice, this list of conditions and the following disclaimer in=
- the
-+ *       documentation and/or other materials provided with the distribu=
-tion.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote pro=
-ducts
-+ *       derived from this software without specific prior written permi=
-ssion.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of th=
-e
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
-LIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
-E
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
-NY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
-MAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
-RVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
-ED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
- TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
- OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1021si-pre.dtsi"
 +/ {
-+	model =3D "fsl,P1021RDB";
-+	compatible =3D "fsl,P1021RDB-PC";
++	model = "fsl,P1021RDB";
++	compatible = "fsl,P1021RDB-PC";
++
++	aliases {
++		ethernet1 = &enet0;
++		ethernet2 = &enet1;
++		serial0 = &serial0;
++		pci0 = &pci0;
++		pci1 = &pci1;
++	};
++
++	cpus {
++		PowerPC,P1021@1 {
++			status = "disabled";
++		};
++	};
 +
 +	memory {
-+		device_type =3D "memory";
++		device_type = "memory";
 +	};
 +
-+	lbc: localbus@ffe05000 {
-+		reg =3D <0 0xffe05000 0 0x1000>;
++	soc@ffe00000 {
++		serial1: serial@4600 {
++			status = "disabled";
++		};
 +
-+		/* NOR, NAND Flashes and Vitesse 5 port L2 switch */
-+		ranges =3D <0x0 0x0 0x0 0xef000000 0x01000000
-+			  0x1 0x0 0x0 0xff800000 0x00040000
-+			  0x2 0x0 0x0 0xffb00000 0x00020000>;
++		mdio@24000 {
++			phy1: ethernet-phy@1 {
++				status = "disabled";
++			};
++		};
++
++		enet2: ethernet@b2000 {
++			status = "disabled";
++		};
++
++		mpic: pic@40000 {
++			protected-sources = <
++			42		/* serial1 */
++			31 32 33	/* enet2-queue-group0 */
++			25 26 27	/* enet2-queue-group1 */
++			>;
++			pic-no-reset;
++		};
++	};
++};
+diff --git a/arch/powerpc/boot/dts/p1021rdb-pc_camp_core1.dts b/arch/powerpc/boot/dts/p1021rdb-pc_camp_core1.dts
+new file mode 100644
+index 0000000..dfc9105
+--- /dev/null
++++ b/arch/powerpc/boot/dts/p1021rdb-pc_camp_core1.dts
+@@ -0,0 +1,179 @@
++/*
++ * P1021 RDB Core1 Device Tree Source in CAMP mode.
++ *
++ * Copyright 2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ *
++ * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
++ * can be shared, all the other devices must be assigned to one core only.
++ * This dts allows core1 to have l2, eth2, serial1, crypto.
++ *
++ * Please note to add "-b 1" for core1's dts compiling.
++ */
++
++/include/ "p1021rdb-pc_32b.dts"
++
++/ {
++	model = "fsl,P1021RDB";
++	compatible = "fsl,P1021RDB-PC";
++
++	aliases {
++		ethernet0 = &enet2;
++		serial0 = &serial1;
++		};
++
++	cpus {
++		PowerPC,P1021@0 {
++			status = "disabled";
++		};
 +	};
 +
-+	soc: soc@ffe00000 {
-+		ranges =3D <0x0 0x0 0xffe00000 0x100000>;
++	memory {
++		device_type = "memory";
++	};
++
++	localbus@ffe05000 {
++		status = "disabled";
++	};
++
++	soc@ffe00000 {
++		ecm-law@0 {
++			status = "disabled";
++		};
++
++		ecm@1000 {
++			status = "disabled";
++		};
++
++		memory-controller@2000 {
++			status = "disabled";
++		};
++
++		i2c@3000 {
++			status = "disabled";
++		};
++
++		i2c@3100 {
++			status = "disabled";
++		};
++
++		serial0: serial@4500 {
++			status = "disabled";
++		};
++
++		spi@7000 {
++			status = "disabled";
++		};
++
++		gpio: gpio-controller@f000 {
++			status = "disabled";
++		};
++
++		dma@21300 {
++			status = "disabled";
++		};
++
++		mdio@24000 {
++			phy0: ethernet-phy@0 {
++				status = "disabled";
++			};
++
++			tbi0: tbi-phy@11 {
++				status = "disabled";
++			};
++		};
++
++		mdio@25000 {
++			status = "disabled";
++		};
++
++		mdio@26000 {
++			status = "disabled";
++		};
++
++		enet0: ethernet@b0000 {
++			status = "disabled";
++		};
++
++		enet1: ethernet@b1000 {
++			status = "disabled";
++		};
++
++		usb@22000 {
++			status = "disabled";
++		};
++
++		sdhci@2e000 {
++			status = "disabled";
++		};
++
++		crypto@30000 {
++                        status = "disabled";
++                };
++
++		mpic: pic@40000 {
++			protected-sources = <
++			16 		/* ecm, mem, L2, pci0, pci1 */
++			43 42 59	/* i2c, serial0, spi */
++			47 63 62 	/* gpio, tdm */
++			20 21 22 23	/* dma */
++			03 02 		/* mdio */
++			29 30 34	/* enet0-queue-group0 */
++			17 18 24	/* enet0-queue-group1 */
++			35 36 40	/* enet1-queue-group0 */
++			51 52 67	/* enet1-queue-group1 */
++			28 72 45 58 	/* usb, sdhci, crypto */
++			0xb0 0xb1 0xb2	/* message */
++			0xb3 0xb4 0xb5
++			0xb6 0xb7
++			0xe0 0xe1 0xe2	/* msi */
++			0xe3 0xe4 0xe5
++			0xe6 0xe7		/* sdhci, crypto , pci */
++			>;
++			pic-no-reset;
++		};
++
++		msi@41600 {
++			status = "disabled";
++		};
++
++		global-utilities@e0000 {	//global utilities block
++			status = "disabled";
++		};
 +	};
 +
 +	pci0: pcie@ffe09000 {
-+		ranges =3D <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
-+		reg =3D <0 0xffe09000 0 0x1000>;
-+		pcie@0 {
-+			ranges =3D <0x2000000 0x0 0xa0000000
-+				  0x2000000 0x0 0xa0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
++		status = "disabled";
 +	};
 +
 +	pci1: pcie@ffe0a000 {
-+		reg =3D <0 0xffe0a000 0 0x1000>;
-+		ranges =3D <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges =3D <0x2000000 0x0 0x80000000
-+				  0x2000000 0x0 0x80000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
++		status = "disabled";
 +	};
-+
-+	qe: qe@ffe80000 {
-+                ranges =3D <0x0 0x0 0xffe80000 0x40000>;
-+                reg =3D <0 0xffe80000 0 0x480>;
-+                brg-frequency =3D <0>;
-+                bus-frequency =3D <0>;
-+        };
 +};
-+
-+/include/ "p1021rdb-pc.dtsi"
-+/include/ "fsl/p1021si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1021rdb-pc_36b.dts b/arch/powerpc/boo=
-t/dts/p1021rdb-pc_36b.dts
-new file mode 100644
-index 0000000..7ffe00a
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1021rdb-pc_36b.dts
-@@ -0,0 +1,96 @@
-+/*
-+ * P1021 RDB Device Tree Source (36-bit address map)
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions ar=
-e met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyrig=
-ht
-+ *       notice, this list of conditions and the following disclaimer in=
- the
-+ *       documentation and/or other materials provided with the distribu=
-tion.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote pro=
-ducts
-+ *       derived from this software without specific prior written permi=
-ssion.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of th=
-e
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
-LIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
-E
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
-NY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
-MAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
-RVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
-ED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
- TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
- OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/p1021si-pre.dtsi"
-+/ {
-+	model =3D "fsl,P1021RDB";
-+	compatible =3D "fsl,P1021RDB-PC";
-+
-+	memory {
-+		device_type =3D "memory";
-+	};
-+
-+	lbc: localbus@fffe05000 {
-+		reg =3D <0xf 0xffe05000 0 0x1000>;
-+
-+		/* NOR, NAND Flashes and Vitesse 5 port L2 switch */
-+		ranges =3D <0x0 0x0 0xf 0xef000000 0x01000000
-+			  0x1 0x0 0xf 0xff800000 0x00040000
-+			  0x2 0x0 0xf 0xffb00000 0x00020000>;
-+	};
-+
-+	soc: soc@fffe00000 {
-+		ranges =3D <0x0 0xf 0xffe00000 0x100000>;
-+	};
-+
-+	pci0: pcie@fffe09000 {
-+		ranges =3D <0x2000000 0x0 0xc0000000 0xc 0x20000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
-+		reg =3D <0xf 0xffe09000 0 0x1000>;
-+		pcie@0 {
-+			ranges =3D <0x2000000 0x0 0xa0000000
-+				  0x2000000 0x0 0xa0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	pci1: pcie@fffe0a000 {
-+		reg =3D <0xf 0xffe0a000 0 0x1000>;
-+		ranges =3D <0x2000000 0x0 0x80000000 0xc 0x00000000 0x0 0x20000000
-+			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
-+		pcie@0 {
-+			ranges =3D <0x2000000 0x0 0xc0000000
-+				  0x2000000 0x0 0xc0000000
-+				  0x0 0x20000000
-+
-+				  0x1000000 0x0 0x0
-+				  0x1000000 0x0 0x0
-+				  0x0 0x100000>;
-+		};
-+	};
-+
-+	qe: qe@fffe80000 {
-+                ranges =3D <0x0 0xf 0xffe80000 0x40000>;
-+                reg =3D <0xf 0xffe80000 0 0x480>;
-+                brg-frequency =3D <0>;
-+                bus-frequency =3D <0>;
-+        };
-+};
-+
-+/include/ "p1021rdb-pc.dtsi"
-+/include/ "fsl/p1021si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1021rdb.dts b/arch/powerpc/boot/dts/p=
-1021rdb.dts
-deleted file mode 100644
-index 90b6b4c..0000000
---- a/arch/powerpc/boot/dts/p1021rdb.dts
-+++ /dev/null
-@@ -1,96 +0,0 @@
--/*
-- * P1021 RDB Device Tree Source
-- *
-- * Copyright 2011 Freescale Semiconductor Inc.
-- *
-- * Redistribution and use in source and binary forms, with or without
-- * modification, are permitted provided that the following conditions ar=
-e met:
-- *     * Redistributions of source code must retain the above copyright
-- *       notice, this list of conditions and the following disclaimer.
-- *     * Redistributions in binary form must reproduce the above copyrig=
-ht
-- *       notice, this list of conditions and the following disclaimer in=
- the
-- *       documentation and/or other materials provided with the distribu=
-tion.
-- *     * Neither the name of Freescale Semiconductor nor the
-- *       names of its contributors may be used to endorse or promote pro=
-ducts
-- *       derived from this software without specific prior written permi=
-ssion.
-- *
-- *
-- * ALTERNATIVELY, this software may be distributed under the terms of th=
-e
-- * GNU General Public License ("GPL") as published by the Free Software
-- * Foundation, either version 2 of that License or (at your option) any
-- * later version.
-- *
-- * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
-LIED
-- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
-E
-- * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
-NY
-- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
-MAGES
-- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
-RVICES;
-- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
-ED AND
-- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
- TORT
-- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
- OF THIS
-- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-- */
--
--/include/ "fsl/p1021si-pre.dtsi"
--/ {
--	model =3D "fsl,P1021RDB";
--	compatible =3D "fsl,P1021RDB-PC";
--
--	memory {
--		device_type =3D "memory";
--	};
--
--	lbc: localbus@ffe05000 {
--		reg =3D <0 0xffe05000 0 0x1000>;
--
--		/* NOR, NAND Flashes and Vitesse 5 port L2 switch */
--		ranges =3D <0x0 0x0 0x0 0xef000000 0x01000000
--			  0x1 0x0 0x0 0xff800000 0x00040000
--			  0x2 0x0 0x0 0xffb00000 0x00020000>;
--	};
--
--	soc: soc@ffe00000 {
--		ranges =3D <0x0 0x0 0xffe00000 0x100000>;
--	};
--
--	pci0: pcie@ffe09000 {
--		ranges =3D <0x2000000 0x0 0xa0000000 0 0xa0000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc10000 0x0 0x10000>;
--		reg =3D <0 0xffe09000 0 0x1000>;
--		pcie@0 {
--			ranges =3D <0x2000000 0x0 0xa0000000
--				  0x2000000 0x0 0xa0000000
--				  0x0 0x20000000
--
--				  0x1000000 0x0 0x0
--				  0x1000000 0x0 0x0
--				  0x0 0x100000>;
--		};
--	};
--
--	pci1: pcie@ffe0a000 {
--		reg =3D <0 0xffe0a000 0 0x1000>;
--		ranges =3D <0x2000000 0x0 0x80000000 0 0x80000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
--		pcie@0 {
--			ranges =3D <0x2000000 0x0 0x80000000
--				  0x2000000 0x0 0x80000000
--				  0x0 0x20000000
--
--				  0x1000000 0x0 0x0
--				  0x1000000 0x0 0x0
--				  0x0 0x100000>;
--		};
--	};
--
--	qe: qe@ffe80000 {
--                ranges =3D <0x0 0x0 0xffe80000 0x40000>;
--                reg =3D <0 0xffe80000 0 0x480>;
--                brg-frequency =3D <0>;
--                bus-frequency =3D <0>;
--        };
--};
--
--/include/ "p1021rdb.dtsi"
--/include/ "fsl/p1021si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/p1021rdb.dtsi b/arch/powerpc/boot/dts/=
-p1021rdb.dtsi
-deleted file mode 100644
-index b973461..0000000
---- a/arch/powerpc/boot/dts/p1021rdb.dtsi
-+++ /dev/null
-@@ -1,236 +0,0 @@
--/*
-- * P1021 RDB Device Tree Source stub (no addresses or top-level ranges)
-- *
-- * Copyright 2011 Freescale Semiconductor Inc.
-- *
-- * Redistribution and use in source and binary forms, with or without
-- * modification, are permitted provided that the following conditions ar=
-e met:
-- *     * Redistributions of source code must retain the above copyright
-- *       notice, this list of conditions and the following disclaimer.
-- *     * Redistributions in binary form must reproduce the above copyrig=
-ht
-- *       notice, this list of conditions and the following disclaimer in=
- the
-- *       documentation and/or other materials provided with the distribu=
-tion.
-- *     * Neither the name of Freescale Semiconductor nor the
-- *       names of its contributors may be used to endorse or promote pro=
-ducts
-- *       derived from this software without specific prior written permi=
-ssion.
-- *
-- *
-- * ALTERNATIVELY, this software may be distributed under the terms of th=
-e
-- * GNU General Public License ("GPL") as published by the Free Software
-- * Foundation, either version 2 of that License or (at your option) any
-- * later version.
-- *
-- * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND AN=
-Y
-- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
-LIED
-- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
-E
-- * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
-NY
-- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
-MAGES
-- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
-RVICES;
-- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
-ED AND
-- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
- TORT
-- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
- OF THIS
-- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-- */
--
--&lbc {
--	nor@0,0 {
--		#address-cells =3D <1>;
--		#size-cells =3D <1>;
--		compatible =3D "cfi-flash";
--		reg =3D <0x0 0x0 0x1000000>;
--		bank-width =3D <2>;
--		device-width =3D <1>;
--
--		partition@0 {
--			/* This location must not be altered  */
--			/* 256KB for Vitesse 7385 Switch firmware */
--			reg =3D <0x0 0x00040000>;
--			label =3D "NOR Vitesse-7385 Firmware";
--			read-only;
--		};
--
--		partition@40000 {
--			/* 256KB for DTB Image */
--			reg =3D <0x00040000 0x00040000>;
--			label =3D "NOR DTB Image";
--		};
--
--		partition@80000 {
--			/* 3.5 MB for Linux Kernel Image */
--			reg =3D <0x00080000 0x00380000>;
--			label =3D "NOR Linux Kernel Image";
--		};
--
--		partition@400000 {
--			/* 11MB for JFFS2 based Root file System */
--			reg =3D <0x00400000 0x00b00000>;
--			label =3D "NOR JFFS2 Root File System";
--		};
--
--		partition@f00000 {
--			/* This location must not be altered  */
--			/* 512KB for u-boot Bootloader Image */
--			/* 512KB for u-boot Environment Variables */
--			reg =3D <0x00f00000 0x00100000>;
--			label =3D "NOR U-Boot Image";
--		};
--	};
--
--	nand@1,0 {
--		#address-cells =3D <1>;
--		#size-cells =3D <1>;
--		compatible =3D "fsl,p1021-fcm-nand",
--			     "fsl,elbc-fcm-nand";
--		reg =3D <0x1 0x0 0x40000>;
--
--		partition@0 {
--			/* This location must not be altered  */
--			/* 1MB for u-boot Bootloader Image */
--			reg =3D <0x0 0x00100000>;
--			label =3D "NAND U-Boot Image";
--			read-only;
--		};
--
--		partition@100000 {
--			/* 1MB for DTB Image */
--			reg =3D <0x00100000 0x00100000>;
--			label =3D "NAND DTB Image";
--		};
--
--		partition@200000 {
--			/* 4MB for Linux Kernel Image */
--			reg =3D <0x00200000 0x00400000>;
--			label =3D "NAND Linux Kernel Image";
--		};
--
--		partition@600000 {
--			/* 4MB for Compressed Root file System Image */
--			reg =3D <0x00600000 0x00400000>;
--			label =3D "NAND Compressed RFS Image";
--		};
--
--		partition@a00000 {
--			/* 7MB for JFFS2 based Root file System */
--			reg =3D <0x00a00000 0x00700000>;
--			label =3D "NAND JFFS2 Root File System";
--		};
--
--		partition@1100000 {
--			/* 15MB for User Writable Area  */
--			reg =3D <0x01100000 0x00f00000>;
--			label =3D "NAND Writable User area";
--		};
--	};
--
--	L2switch@2,0 {
--		#address-cells =3D <1>;
--		#size-cells =3D <1>;
--		compatible =3D "vitesse-7385";
--		reg =3D <0x2 0x0 0x20000>;
--	};
--};
--
--&soc {
--	i2c@3000 {
--		rtc@68 {
--			compatible =3D "pericom,pt7c4338";
--			reg =3D <0x68>;
--		};
--	};
--
--	spi@7000 {
--		flash@0 {
--			#address-cells =3D <1>;
--			#size-cells =3D <1>;
--			compatible =3D "spansion,s25sl12801";
--			reg =3D <0>;
--			spi-max-frequency =3D <40000000>; /* input clock */
--
--			partition@u-boot {
--				/* 512KB for u-boot Bootloader Image */
--				reg =3D <0x0 0x00080000>;
--				label =3D "SPI Flash U-Boot Image";
--				read-only;
--			};
--
--			partition@dtb {
--				/* 512KB for DTB Image */
--				reg =3D <0x00080000 0x00080000>;
--				label =3D "SPI Flash DTB Image";
--			};
--
--			partition@kernel {
--				/* 4MB for Linux Kernel Image */
--				reg =3D <0x00100000 0x00400000>;
--				label =3D "SPI Flash Linux Kernel Image";
--			};
--
--			partition@fs {
--				/* 4MB for Compressed RFS Image */
--				reg =3D <0x00500000 0x00400000>;
--				label =3D "SPI Flash Compressed RFSImage";
--			};
--
--			partition@jffs-fs {
--				/* 7MB for JFFS2 based RFS */
--				reg =3D <0x00900000 0x00700000>;
--				label =3D "SPI Flash JFFS2 RFS";
--			};
--		};
--	};
--
--	usb@22000 {
--		phy_type =3D "ulpi";
--	};
--
--	mdio@24000 {
--		phy0: ethernet-phy@0 {
--			interrupt-parent =3D <&mpic>;
--			interrupts =3D <3 1 0 0>;
--			reg =3D <0x0>;
--		};
--
--		phy1: ethernet-phy@1 {
--			interrupt-parent =3D <&mpic>;
--			interrupts =3D <2 1 0 0>;
--			reg =3D <0x1>;
--		};
--
--		tbi0: tbi-phy@11 {
--			reg =3D <0x11>;
--			device_type =3D "tbi-phy";
--		};
--	};
--
--	mdio@25000 {
--		tbi1: tbi-phy@11 {
--			reg =3D <0x11>;
--			device_type =3D "tbi-phy";
--		};
--	};
--
--	mdio@26000 {
--		tbi2: tbi-phy@11 {
--			reg =3D <0x11>;
--			device_type =3D "tbi-phy";
--		};
--	};
--
--	enet0: ethernet@b0000 {
--		fixed-link =3D <1 1 1000 0 0>;
--		phy-connection-type =3D "rgmii-id";
--
--	};
--
--	enet1: ethernet@b1000 {
--		phy-handle =3D <&phy0>;
--		tbi-handle =3D <&tbi1>;
--		phy-connection-type =3D "sgmii";
--	};
--
--	enet2: ethernet@b2000 {
--		phy-handle =3D <&phy1>;
--		tbi-handle =3D <&tbi2>;
--		phy-connection-type =3D "rgmii-id";
--	};
--};
-diff --git a/arch/powerpc/boot/dts/p1021rdb_36b.dts b/arch/powerpc/boot/d=
-ts/p1021rdb_36b.dts
-deleted file mode 100644
-index ea6d8b5..0000000
---- a/arch/powerpc/boot/dts/p1021rdb_36b.dts
-+++ /dev/null
-@@ -1,96 +0,0 @@
--/*
-- * P1021 RDB Device Tree Source (36-bit address map)
-- *
-- * Copyright 2011 Freescale Semiconductor Inc.
-- *
-- * Redistribution and use in source and binary forms, with or without
-- * modification, are permitted provided that the following conditions ar=
-e met:
-- *     * Redistributions of source code must retain the above copyright
-- *       notice, this list of conditions and the following disclaimer.
-- *     * Redistributions in binary form must reproduce the above copyrig=
-ht
-- *       notice, this list of conditions and the following disclaimer in=
- the
-- *       documentation and/or other materials provided with the distribu=
-tion.
-- *     * Neither the name of Freescale Semiconductor nor the
-- *       names of its contributors may be used to endorse or promote pro=
-ducts
-- *       derived from this software without specific prior written permi=
-ssion.
-- *
-- *
-- * ALTERNATIVELY, this software may be distributed under the terms of th=
-e
-- * GNU General Public License ("GPL") as published by the Free Software
-- * Foundation, either version 2 of that License or (at your option) any
-- * later version.
-- *
-- * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMP=
-LIED
-- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE AR=
-E
-- * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR A=
-NY
-- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DA=
-MAGES
-- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SE=
-RVICES;
-- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUS=
-ED AND
-- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR=
- TORT
-- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE=
- OF THIS
-- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-- */
--
--/include/ "fsl/p1021si-pre.dtsi"
--/ {
--	model =3D "fsl,P1021RDB";
--	compatible =3D "fsl,P1021RDB-PC";
--
--	memory {
--		device_type =3D "memory";
--	};
--
--	lbc: localbus@fffe05000 {
--		reg =3D <0xf 0xffe05000 0 0x1000>;
--
--		/* NOR, NAND Flashes and Vitesse 5 port L2 switch */
--		ranges =3D <0x0 0x0 0xf 0xef000000 0x01000000
--			  0x1 0x0 0xf 0xff800000 0x00040000
--			  0x2 0x0 0xf 0xffb00000 0x00020000>;
--	};
--
--	soc: soc@fffe00000 {
--		ranges =3D <0x0 0xf 0xffe00000 0x100000>;
--	};
--
--	pci0: pcie@fffe09000 {
--		ranges =3D <0x2000000 0x0 0xc0000000 0xc 0x20000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0xf 0xffc10000 0x0 0x10000>;
--		reg =3D <0xf 0xffe09000 0 0x1000>;
--		pcie@0 {
--			ranges =3D <0x2000000 0x0 0xa0000000
--				  0x2000000 0x0 0xa0000000
--				  0x0 0x20000000
--
--				  0x1000000 0x0 0x0
--				  0x1000000 0x0 0x0
--				  0x0 0x100000>;
--		};
--	};
--
--	pci1: pcie@fffe0a000 {
--		reg =3D <0xf 0xffe0a000 0 0x1000>;
--		ranges =3D <0x2000000 0x0 0x80000000 0xc 0x00000000 0x0 0x20000000
--			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
--		pcie@0 {
--			ranges =3D <0x2000000 0x0 0xc0000000
--				  0x2000000 0x0 0xc0000000
--				  0x0 0x20000000
--
--				  0x1000000 0x0 0x0
--				  0x1000000 0x0 0x0
--				  0x0 0x100000>;
--		};
--	};
--
--	qe: qe@fffe80000 {
--                ranges =3D <0x0 0xf 0xffe80000 0x40000>;
--                reg =3D <0xf 0xffe80000 0 0x480>;
--                brg-frequency =3D <0>;
--                bus-frequency =3D <0>;
--        };
--};
--
--/include/ "p1021rdb.dtsi"
--/include/ "fsl/p1021si-post.dtsi"
---=20
+-- 
 1.6.4
