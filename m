@@ -1,19 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9BFF72C007C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 17:49:47 +1000 (EST)
-Message-ID: <1341906580.2561.13.camel@pasglop>
-Subject: Re: [PATCH] More fixes for lazy IRQ vs. idle
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Neuling <mikey@neuling.org>
-Date: Tue, 10 Jul 2012 17:49:40 +1000
-In-Reply-To: <21083.1341900615@neuling.org>
-References: <1341891538.2561.10.camel@pasglop> <21083.1341900615@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 108AE2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:02:55 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH 1/1] powerpc: add "memory" attribute for mfmsr()
+Date: Tue, 10 Jul 2012 15:59:13 +0800
+Message-ID: <1341907153-20516-1-git-send-email-tiejun.chen@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,19 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-07-10 at 16:10 +1000, Michael Neuling wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> 
-> > Looks like we still have issues with pSeries and Cell idle code
-> > vs. the lazy irq state. In fact, the reset fixes that went upstream
-> > are exposing the problem more by causing BUG_ON() to trigger (which
-> > this patch turns into a WARN_ON instead).
-> 
-> Do we need to cc stable for 3.4 or is this new stuff only effecting us
-> since the 3.5 merge window?
+Add "memory" attribute in inline assembly language as a compiler
+barrier to make sure 4.6.x GCC don't reorder mfmsr().
 
-That's probably stable business, I'll check that before I send it to
-Linus.
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/include/asm/reg.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-Cheers,
-Ben.
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 559da19..578e5a0 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -1016,7 +1016,8 @@
+ /* Macros for setting and retrieving special purpose registers */
+ #ifndef __ASSEMBLY__
+ #define mfmsr()		({unsigned long rval; \
+-			asm volatile("mfmsr %0" : "=r" (rval)); rval;})
++			asm volatile("mfmsr %0" : "=r" (rval) : \
++						: "memory"); rval;})
+ #ifdef CONFIG_PPC_BOOK3S_64
+ #define __mtmsrd(v, l)	asm volatile("mtmsrd %0," __stringify(l) \
+ 				     : : "r" (v) : "memory")
+-- 
+1.5.6
