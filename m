@@ -1,16 +1,16 @@
 Return-Path: <B32616@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AE5C42C034B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 16:15:53 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C88B32C020A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 16:17:55 +1000 (EST)
 From: Qiang Liu <qiang.liu@freescale.com>
 To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
 Subject: [PATCH 0/3] Raid: enable talitos xor offload for improving performance
-Date: Tue, 10 Jul 2012 13:54:41 +0800
-Message-ID: <1341899685-18665-1-git-send-email-qiang.liu@freescale.com>
+Date: Tue, 10 Jul 2012 13:56:45 +0800
+Message-ID: <1341899809-20630-1-git-send-email-qiang.liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
