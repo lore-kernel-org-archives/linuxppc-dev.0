@@ -1,34 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D8F9D2C0083
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 16:13:26 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 10 Jul 2012 05:53:20 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6A64pGS66453584
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 16:04:51 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6A6CnJX018226
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 16:12:50 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH -V3 03/11] arch/powerpc: Convert virtual address to vpn
-In-Reply-To: <20120710084128.6fe4a4347719f4445dd12b4f@canb.auug.org.au>
-References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1341839621-28332-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120710084128.6fe4a4347719f4445dd12b4f@canb.auug.org.au>
-Date: Tue, 10 Jul 2012 11:42:47 +0530
-Message-ID: <87a9z8cffk.fsf@skywalker.in.ibm.com>
+Return-Path: <B36685@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7ABEE2C0506
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 16:13:51 +1000 (EST)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] PCI: Add pcie_irq=other to enable non MSI/INTx
+ interrupt for port service driver
+Date: Tue, 10 Jul 2012 06:13:44 +0000
+Message-ID: <3F453DDFF675A64A89321A1F3528102176B4BF@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1341830970-12779-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <4FFB0927.7080406@freescale.com>
+In-Reply-To: <4FFB0927.7080406@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Cc: "bhelgaas@google.com" <bhelgaas@google.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,47 +29,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> writes:
-
-> Hi Aneesh,
->
-> On Mon,  9 Jul 2012 18:43:33 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
->>
->> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
->> index 1c65a59..1c984a6 100644
->> --- a/arch/powerpc/include/asm/mmu-hash64.h
->> +++ b/arch/powerpc/include/asm/mmu-hash64.h
->> @@ -154,9 +155,25 @@ struct mmu_psize_def
->>  #define MMU_SEGSIZE_256M	0
->>  #define MMU_SEGSIZE_1T		1
->>  
->> +/*
->> + * encode page number shift.
->> + * Inorder to fit the 78 bit va in a 64 bit variable we shift the va by
->> + * 12 bits. This enable us to address upto 76 bit va.
->> + * For hpt hash from a va we can ignore the page size bits of va and for
->> + * hpte encoding we ignore upto 23 bits of va. So ignoring lower 12 bits ensure
->> + * we work in all cases including 4k page size.
->> + */
->> +#define VPN_SHIFT	12
->>  
->> +static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
->> +					     int ssize)
->> +{
->> +	unsigned long v;
->> +	/*
->> +	 * The AVA field omits the low-order 23 bits of the 78 bits VA.
->> +	 * These bits are not needed in the PTE, because the
->> +	 * low-order b of these bits are part of the byte offset
->> +	 * into the virtual page and, if b < 23, the high-order
->> +	 * 23-b of these bits are always used in selecting the
->> +	 * PTEGs to be searched
->> +	 */
->> +	BUG_ON(VPN_SHIFT > 23);
->
-> Could/should this be BUILD_BUG_ON()?
->
-
-Yes. Will update.
-
--aneesh
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgSnVseSAxMCwgMjAxMiAxMjozOSBBTQ0KPiBUbzogTGl1IFNo
+ZW5nemhvdS1CMzY2ODUNCj4gQ2M6IGJoZWxnYWFzQGdvb2dsZS5jb207IGxpbnV4LXBjaUB2Z2Vy
+Lmtlcm5lbC5vcmc7IGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJqZWN0
+OiBSZTogW1BBVENIXSBQQ0k6IEFkZCBwY2llX2lycT1vdGhlciB0byBlbmFibGUgbm9uIE1TSS9J
+TlR4IGludGVycnVwdA0KPiBmb3IgcG9ydCBzZXJ2aWNlIGRyaXZlcg0KPiANCj4gT24gMDcvMDkv
+MjAxMiAwNTo0OSBBTSwgU2hlbmd6aG91IExpdSB3cm90ZToNCj4gPiBPbiBzb21lIHBsYXRmb3Jt
+cywgaW4gUkMgbW9kZSwgcm9vdCBwb3J0IGhhcyBuZWl0aGVyIE1TSS9NU0ktWCBub3INCj4gPiBJ
+TlR4IGludGVycnVwdCBnZW5lcmF0ZWQsIHdoaWNoIGFyZSBhdmFpbGFibGUgb25seSBpbiBFUCBt
+b2RlIG9uIHRob3NlDQo+IHBsYXRmb3JtLg0KPiA+IEluIHRoaXMgY2FzZSwgd2UgdHJ5IHRvIHVz
+ZSBvdGhlciBpbnRlcnJ1cHQgaWYgc3VwcG9ydGVkIChpLmUuIHRoZXJlDQo+ID4gaXMgdGhlIHNo
+YXJlZCBlcnJvciBpbnRlcnJ1cHQgb24gcGxhdGZvcm0gUDEwMTAsIFAzMDQxLCBQNDA4MCwgZXRj
+KSB0bw0KPiA+IGhhdmUgQUVSLCBIb3QtcGx1ZywgZXRjLCBzZXJ2aWNlcyB0byB3b3JrLg0KPiA+
+DQo+ID4gU2lnbmVkLW9mZi1ieTogU2hlbmd6aG91IExpdSA8U2hlbmd6aG91LkxpdUBmcmVlc2Nh
+bGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBEb2N1bWVudGF0aW9uL2tlcm5lbC1wYXJhbWV0ZXJzLnR4
+dCB8ICAgIDQgKysrKw0KPiA+ICBkcml2ZXJzL3BjaS9wY2llL3BvcnRkcnZfY29yZS5jICAgICB8
+ICAgMTkgKysrKysrKysrKysrKysrKysrKw0KPiA+ICAyIGZpbGVzIGNoYW5nZWQsIDIzIGluc2Vy
+dGlvbnMoKyksIDAgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRh
+dGlvbi9rZXJuZWwtcGFyYW1ldGVycy50eHQNCj4gPiBiL0RvY3VtZW50YXRpb24va2VybmVsLXBh
+cmFtZXRlcnMudHh0DQo+ID4gaW5kZXggYTkyYzVlYi4uYWY5N2M4MSAxMDA2NDQNCj4gPiAtLS0g
+YS9Eb2N1bWVudGF0aW9uL2tlcm5lbC1wYXJhbWV0ZXJzLnR4dA0KPiA+ICsrKyBiL0RvY3VtZW50
+YXRpb24va2VybmVsLXBhcmFtZXRlcnMudHh0DQo+ID4gQEAgLTIyMTgsNiArMjIxOCwxMCBAQCBi
+eXRlcyByZXNwZWN0aXZlbHkuIFN1Y2ggbGV0dGVyIHN1ZmZpeGVzIGNhbiBhbHNvIGJlDQo+IGVu
+dGlyZWx5IG9taXR0ZWQuDQo+ID4gIAkJbm9tc2kJRG8gbm90IHVzZSBNU0kgZm9yIG5hdGl2ZSBQ
+Q0llIFBNRSBzaWduYWxpbmcgKHRoaXMgbWFrZXMNCj4gPiAgCQkJYWxsIFBDSWUgcm9vdCBwb3J0
+cyB1c2UgSU5UeCBmb3IgYWxsIHNlcnZpY2VzKS4NCj4gPg0KPiA+ICsJcGNpZV9pcnE9CVtQQ0lF
+XSBOYXRpdmUgUENJZSByb290IHBvcnQgaW50ZXJydXB0IG9wdGlvbnM6DQo+ID4gKwkJb3RoZXIJ
+VHJ5IHRvIHVzZSBvdGhlciBpbnRlcnJ1cHQgd2hlbiByb290IHBvcnQgaGFzDQo+ID4gKwkJCW5l
+aXRoZXIgTVNJL01TSS1YIG5vciBJTlR4IHN1cHBvcnQuDQo+IA0KPiBXaHkgZG9lcyB0aGUgdXNl
+ciBuZWVkIHRvIHNwZWNpZnkgdGhpcz8gIFNob3VsZG4ndCB0aGlzIGJlIGEgbWF0dGVyIG9mDQo+
+IGNvbW11bmljYXRpb24gYmV0d2VlbiBrZXJuZWwgaW50ZXJuYWxzPw0KPiANCg0KVGhlICJvdGhl
+ciBpbnRlcnJ1cHQiIGFwcGVhcnMgYSBub24tc3RhbmRhcmQgaW50ZXJydXB0IHdheSBjb21wYXJl
+ZCB0byBNU0kvTVNJLVggYW5kIElOVHggaW4gcG9pbnQgb2YgUENJZSBzcGVjLg0KVGhlIGludGVu
+dCBvZiBzcGVjaWZ5aW5nIHRoaXMgaXMgdG8gaGF2ZSBhbiBpbnRlcnZlbnRpb24gYW5kIGNvbmZp
+cm1hdGlvbiBtYW51YWxseSB0byBhdm9pZCBjYXVzaW5nIHVuZXhwZWN0ZWQgaXNzdWUgb24gc29t
+ZSB1bmtub3duIHBsYXRmb3Jtcy4NCkknbSBnbGFkIHRvIHJlbW92ZSB0aGUgc3BlY2lmaWVkIGtl
+cm5lbCBwYXJhbWV0ZXIgaWYgaXQgd291bGQgYmUgYWNjZXB0ZWQgdXBzdHJlYW0uDQoNCj4gPiBA
+QCAtMjE2LDYgKzIyNywxNCBAQCBzdGF0aWMgaW50IGluaXRfc2VydmljZV9pcnFzKHN0cnVjdCBw
+Y2lfZGV2ICpkZXYsIGludA0KPiAqaXJxcywgaW50IG1hc2spDQo+ID4gIAlpZiAoIXBjaV9lbmFi
+bGVfbXNpKGRldikgfHwgZGV2LT5waW4pDQo+ID4gIAkJaXJxID0gZGV2LT5pcnE7DQo+ID4NCj4g
+PiArCS8qDQo+ID4gKwkgKiBPbiBzb21lIHBsYXRmb3Jtcywgcm9vdCBwb3J0IGhhcyBuZWl0aGVy
+IE1TSS9NU0ktWCBub3IgSU5UeA0KPiA+ICsJICogaW50ZXJydXB0IHN1cHBvcnQgaW4gUkMgbW9k
+ZSwgc28gdHJ5IHRvIHVzZSBvdGhlciBpbnRlcnJ1cHQoaS5lLg0KPiA+ICsJICogc2hhcmVkIGlu
+dGVycnVwdCBpZiBzdXBwb3J0ZWQpLg0KPiA+ICsJICovDQo+ID4gKwllbHNlIGlmIChwb3J0X290
+aGVyX2ludGVycnVwdF9lbmFibGVkICYmIGRldi0+aXJxKQ0KPiA+ICsJCWlycSA9IGRldi0+aXJx
+Ow0KPiANCj4gSXMgdGhlcmUgYW55IHJlYXNvbiB0byBub3QgdXNlIGRldi0+aXJxIGlmIGl0IGlz
+IG5vbi16ZXJvPw0KPiANCj4gLVNjb3R0DQoNCkkgZ3Vlc3MgYSB0aGlua2luZyBvZiB0aGUgb3Jp
+Z2luYWwgYXV0aG9yIGRpZCBzbyBpcyBiYXNlZCBvbiB0aGUgcG9pbnQgb2YgUENJZSBzcGVjLCB3
+aGV0aGVyIElOVHggaXMgc3VwcG9ydGVkIG9yIG5vdCBpcyBkZWNpZGVkIGJ5IHRoZSAiUENJIEV4
+cHJlc3MgSW50ZXJydXB0IFBpbiBSZWdpc3RlcihSZWFkIG9ubHkpIi4NCg0KSXMgdGhlcmUgdGhl
+IGNhc2Ugb24gc29tZSBvdGhlciB1bmtub3duIHBsYXRmb3JtcyB0aGF0IGRldi0+aXJxIGlzIG5v
+bi16ZXJvIGR1ZSB0byBpbmNvcnJlY3QgaW5pdGlhbGl6YXRpb24gb2YgaXJxIGFsbG9jYXRpb24s
+IGJ1dCBhY3R1YWxseSBpdCBkb2Vzbid0IHN1cHBvcnQgTVNJL01TSVgvSU5UeCBvciBhbnkgb3Ro
+ZXIgaW50ZXJydXB0PyAgDQpJZiB3ZSBkb24ndCBuZWVkIHRvIGNvbnNpZGVyIHRoaXMgY2FzZSwg
+d2UgY2FuIHVzZSBkZXYtPmlycSBkaXJlY3RseSBpbnN0ZWFkIG9mIGRldi0+cGluIHRvIHN1cHBv
+cnQgIm90aGVyIGludGVycnVwdCIuDQoNClRoYW5rcywNClNoZW5nemhvdQ0K
