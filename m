@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 35E412C0082
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 22:23:47 +1000 (EST)
-Subject: Re: [PATCH v2 1/2] powerpc/e500: make load_up_spe a normal fuction
+ by ozlabs.org (Postfix) with ESMTPS id 58E332C035A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 22:23:57 +1000 (EST)
+Subject: Re: [PATCH 2/3 v2] powerpc/mpic: Use the MPIC_LARGE_VECTORS flag for
+ FSL MPIC.
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1330564819-11139-1-git-send-email-hong-hua.yin@freescale.com>
-Date: Tue, 10 Jul 2012 07:23:41 -0500
-Message-Id: <F3020031-62AF-49BF-B380-73FDE22A20B3@kernel.crashing.org>
-References: <1330564819-11139-1-git-send-email-hong-hua.yin@freescale.com>
-To: Olivia Yin <hong-hua.yin@freescale.com>
-Cc: Liu Yu <yu.liu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
+In-Reply-To: <1341823595-15696-1-git-send-email-Varun.Sethi@freescale.com>
+Date: Tue, 10 Jul 2012 07:23:51 -0500
+Message-Id: <CDA392CC-F961-44CB-902B-E4AE517B98B5@kernel.crashing.org>
+References: <1341823595-15696-1-git-send-email-Varun.Sethi@freescale.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +25,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Feb 29, 2012, at 7:20 PM, Olivia Yin wrote:
+On Jul 9, 2012, at 3:46 AM, Varun Sethi wrote:
 
-> From: Liu Yu <yu.liu@freescale.com>
->=20
-> So that we can call it when improving SPE switch like book3e did for =
-fp switch.
->=20
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
-> Signed-off-by: Olivia Yin <hong-hua.yin@freescale.com>
+> We should use the MPIC_LARG_VECTORS flag while intializing the MPIC. 
+> This prevents us from eating in to hardware vector number space (MSIs)
+> while setting up internal sources.
+> 
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
 > ---
-> v2: 	add Signed-off-by
->=20
-> arch/powerpc/kernel/head_fsl_booke.S |   23 ++++++-----------------
-> 1 files changed, 6 insertions(+), 17 deletions(-)
+> arch/powerpc/sysdev/mpic.c |    2 +-
+> 1 files changed, 1 insertions(+), 1 deletions(-)
 
 applied to next
 
-- k=
+- k
