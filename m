@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E4B9A2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:20:03 +1000 (EST)
-Message-ID: <1341908398.2561.15.camel@pasglop>
-Subject: Re: [PATCH 1/1] powerpc: add "memory" attribute for mfmsr()
+ by ozlabs.org (Postfix) with ESMTPS id 683802C0205
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:26:34 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q6A8QTk2000502
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 03:26:30 -0500
+Message-ID: <1341908789.2561.16.camel@pasglop>
+Subject: Re: [PATCH] More fixes for lazy IRQ vs. idle
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tiejun Chen <tiejun.chen@windriver.com>
-Date: Tue, 10 Jul 2012 18:19:58 +1000
-In-Reply-To: <1341907153-20516-1-git-send-email-tiejun.chen@windriver.com>
-References: <1341907153-20516-1-git-send-email-tiejun.chen@windriver.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 10 Jul 2012 18:26:29 +1000
+In-Reply-To: <1341891538.2561.10.camel@pasglop>
+References: <1341891538.2561.10.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,32 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-07-10 at 15:59 +0800, Tiejun Chen wrote:
-> Add "memory" attribute in inline assembly language as a compiler
-> barrier to make sure 4.6.x GCC don't reorder mfmsr().
 
-Out of curiosity, did you see a case where it was re-ordered
-improperly ?
+> -	hard_irq_disable();
+> -	if (!lazy_irq_pending())
+> +	if (prep_irq_for_idle()) {
+>  		cede_processor();
+> +#ifdef CONFIG_TRACE_IRQFLAG
 
-Cheers,
-Ben.
-
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->  arch/powerpc/include/asm/reg.h |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
+this is IRQFLAGS (missing "S"). I'll fix it while I commit, the same
+typo is in another place in irq.c as well, I'll commit a fix for that
+too and shoot the whole thing to Linus.
+ 
+> +		/* Ensure that H_CEDE returns with IRQs on */
+> +		WARN_ON(!(mfmsr() & MSR_EE));
+> +#endif
+> +	}
+>  }
+>  
+>  static int dedicated_cede_loop(struct cpuidle_device *dev,
 > 
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index 559da19..578e5a0 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -1016,7 +1016,8 @@
->  /* Macros for setting and retrieving special purpose registers */
->  #ifndef __ASSEMBLY__
->  #define mfmsr()		({unsigned long rval; \
-> -			asm volatile("mfmsr %0" : "=r" (rval)); rval;})
-> +			asm volatile("mfmsr %0" : "=r" (rval) : \
-> +						: "memory"); rval;})
->  #ifdef CONFIG_PPC_BOOK3S_64
->  #define __mtmsrd(v, l)	asm volatile("mtmsrd %0," __stringify(l) \
->  				     : : "r" (v) : "memory")
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
