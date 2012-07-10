@@ -1,16 +1,16 @@
 Return-Path: <B36685@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D7C82C0078
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 20:59:34 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id CE0612C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 21:01:14 +1000 (EST)
 From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 To: <galak@kernel.crashing.org>
 Subject: [PATCH 1/2] powerpc/fsl: Update corenet32_smp_defconfig
-Date: Tue, 10 Jul 2012 18:38:20 +0800
-Message-ID: <1341916701-19551-1-git-send-email-Shengzhou.Liu@freescale.com>
+Date: Tue, 10 Jul 2012 18:40:01 +0800
+Message-ID: <1341916802-19619-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Harninder Rai <harninder.rai@freescale.com>, linuxppc-dev@lists.ozlabs.org,
