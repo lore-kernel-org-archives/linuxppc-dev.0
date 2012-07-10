@@ -1,23 +1,22 @@
-Return-Path: <B21989@freescale.com>
+Return-Path: <B36685@freescale.com>
 Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 297B82C0079
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 20:22:37 +1000 (EST)
-From: Xie Shaohui-B21989 <B21989@freescale.com>
-To: Xie Shaohui-B21989 <B21989@freescale.com>,
- "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 2/2][v2] powerpc/watchdog: replace CONFIG_FSL_BOOKE with
- CONFIG_PPC_FSL_BOOK3E
-Date: Tue, 10 Jul 2012 10:22:26 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C9079802C6@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1336714420-2394-1-git-send-email-Shaohui.Xie@freescale.com>
-In-Reply-To: <1336714420-2394-1-git-send-email-Shaohui.Xie@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 6D7C82C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 20:59:34 +1000 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <galak@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/fsl: Update corenet32_smp_defconfig
+Date: Tue, 10 Jul 2012 18:38:20 +0800
+Message-ID: <1341916701-19551-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Harninder Rai <harninder.rai@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Minghuan Lian <Minghuan.Lian@freescale.com>,
+ Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,76 +26,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, All,
+* Enable NAND, MSI, PAMU,
+* Enable FSL RAID on P5020
+* Enable general RAID features (MD + async-tx)
+* Enable RTC on P2041RDB
+* Enable UIO SRIO & UIO DMA
 
-Is there any concern for this patch, it's been a long time.
-Thanks!
+Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+ arch/powerpc/configs/corenet32_smp_defconfig |   22 +++++++++++++++++++++-
+ 1 files changed, 21 insertions(+), 1 deletions(-)
 
-
-Best Regards,=20
-Shaohui Xie=20
-
-
->-----Original Message-----
->From: Xie Shaohui-B21989
->Sent: Friday, May 11, 2012 1:34 PM
->To: linux-watchdog@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
->Cc: Xie Shaohui-B21989
->Subject: [PATCH 2/2][v2] powerpc/watchdog: replace CONFIG_FSL_BOOKE with
->CONFIG_PPC_FSL_BOOK3E
->
->CONFIG_FSL_BOOKE is only defined in 32-bit, CONFIG_PPC_FSL_BOOK3E is
->defined in both 32-bit and 64-bit, so use CONFIG_PPC_FSL_BOOK3E to make
->driver work in 32-bit & 64-bit.
->
->Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
->---
->changes for v2:
->use PPC_FSL_BOOK3E instead of FSL_SOC_BOOKE.
->
-> drivers/watchdog/Kconfig     |    8 ++++----
-> drivers/watchdog/booke_wdt.c |    4 ++--
-> 2 files changed, 6 insertions(+), 6 deletions(-)
->
->diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig index
->3709624..4373ca0 100644
->--- a/drivers/watchdog/Kconfig
->+++ b/drivers/watchdog/Kconfig
->@@ -1094,10 +1094,10 @@ config BOOKE_WDT  config BOOKE_WDT_DEFAULT_TIMEOUT
-> 	int "PowerPC Book-E Watchdog Timer Default Timeout"
-> 	depends on BOOKE_WDT
->-	default 38 if FSL_BOOKE
->-	range 0 63 if FSL_BOOKE
->-	default 3 if !FSL_BOOKE
->-	range 0 3 if !FSL_BOOKE
->+	default 38 if PPC_FSL_BOOK3E
->+	range 0 63 if PPC_FSL_BOOK3E
->+	default 3 if !PPC_FSL_BOOK3E
->+	range 0 3 if !PPC_FSL_BOOK3E
-> 	help
-> 	  Select the default watchdog timer period to be used by the PowerPC
-> 	  Book-E watchdog driver.  A watchdog "event" occurs when the bit
->diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
->index ce0ab44..338a437 100644
->--- a/drivers/watchdog/booke_wdt.c
->+++ b/drivers/watchdog/booke_wdt.c
->@@ -37,7 +37,7 @@
-> u32 booke_wdt_enabled;
-> u32 booke_wdt_period =3D CONFIG_BOOKE_WDT_DEFAULT_TIMEOUT;
->
->-#ifdef	CONFIG_FSL_BOOKE
->+#ifdef	CONFIG_PPC_FSL_BOOK3E
-> #define WDTP(x)		((((x)&0x3)<<30)|(((x)&0x3c)<<15))
-> #define WDTP_MASK	(WDTP(0x3f))
-> #else
->@@ -190,7 +190,7 @@ static long booke_wdt_ioctl(struct file *file,
-> 	case WDIOC_SETTIMEOUT:
-> 		if (get_user(tmp, p))
-> 			return -EFAULT;
->-#ifdef	CONFIG_FSL_BOOKE
->+#ifdef	CONFIG_PPC_FSL_BOOK3E
-> 		/* period of 1 gives the largest possible timeout */
-> 		if (tmp > period_to_sec(1))
-> 			return -EINVAL;
->--
->1.6.4
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index 91db656..eafb64f 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -34,8 +34,10 @@ CONFIG_BINFMT_MISC=m
+ CONFIG_KEXEC=y
+ CONFIG_FORCE_MAX_ZONEORDER=13
+ CONFIG_FSL_LBC=y
++CONFIG_FSL_PAMU=y
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
++CONFIG_PCI_MSI=y
+ # CONFIG_PCIEASPM is not set
+ CONFIG_RAPIDIO=y
+ CONFIG_FSL_RIO=y
+@@ -76,11 +78,16 @@ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_AMDSTD=y
+ CONFIG_MTD_PHYSMAP_OF=y
++CONFIG_MTD_NAND=y
++CONFIG_MTD_NAND_ECC=y
++CONFIG_MTD_NAND_IDS=y
++CONFIG_MTD_NAND_FSL_IFC=y
++CONFIG_MTD_NAND_FSL_ELBC=y
+ CONFIG_MTD_M25P80=y
+ CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+-CONFIG_BLK_DEV_RAM_SIZE=131072
++CONFIG_BLK_DEV_RAM_SIZE=262144
+ CONFIG_MISC_DEVICES=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_CHR_DEV_ST=y
+@@ -95,6 +102,10 @@ CONFIG_SATA_FSL=y
+ CONFIG_SATA_SIL24=y
+ CONFIG_SATA_SIL=y
+ CONFIG_PATA_SIL680=y
++CONFIG_MD=y
++CONFIG_BLK_DEV_MD=y
++CONFIG_MD_RAID456=y
++CONFIG_MULTICORE_RAID456=y
+ CONFIG_NETDEVICES=y
+ CONFIG_FSL_PQ_MDIO=y
+ CONFIG_E1000=y
+@@ -136,13 +147,21 @@ CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
+ CONFIG_USB_STORAGE=y
+ CONFIG_MMC=y
+ CONFIG_MMC_SDHCI=y
++CONFIG_MMC_SDHCI_OF=y
++CONFIG_MMC_SDHCI_OF_ESDHC=y
+ CONFIG_EDAC=y
+ CONFIG_EDAC_MM_EDAC=y
+ CONFIG_EDAC_MPC85XX=y
+ CONFIG_RTC_CLASS=y
++CONFIG_RTC_DRV_DS1307=y
+ CONFIG_RTC_DRV_DS3232=y
+ CONFIG_RTC_DRV_CMOS=y
++CONFIG_DMADEVICES=y
++CONFIG_FSL_RAID=y
++CONFIG_ASYNC_TX_DMA=y
+ CONFIG_UIO=y
++CONFIG_UIO_FSL_SRIO=y
++CONFIG_UIO_FSL_DMA=y
+ CONFIG_STAGING=y
+ CONFIG_VIRT_DRIVERS=y
+ CONFIG_FSL_HV_MANAGER=y
+@@ -171,6 +190,7 @@ CONFIG_MAC_PARTITION=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=m
+ CONFIG_MAGIC_SYSRQ=y
++CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_SHIRQ=y
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_DEBUG_INFO=y
+-- 
+1.6.4
