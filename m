@@ -1,47 +1,40 @@
-Return-Path: <joe@perches.com>
-Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
- (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 38C712C020A
- for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2012 09:41:04 +1000 (EST)
-Message-ID: <1341877262.6118.73.camel@joe2Laptop>
-Subject: Re: [PATCH v3] printk: Have printk() never buffer its data
-From: Joe Perches <joe@perches.com>
-To: Kay Sievers <kay@vrfy.org>
-Date: Mon, 09 Jul 2012 16:41:02 -0700
-In-Reply-To: <1341876736.6118.70.camel@joe2Laptop>
-References: <1340651142.7037.2.camel@gandalf.stny.rr.com>
- <20120625150722.8cd4f45d.akpm@linux-foundation.org>
- <20120625235531.GB3652@kroah.com>
- <CA+55aFwczZTA=JUahoj_Sw1fQssDwoM2LGJ6g5nPvehTLxnSpg@mail.gmail.com>
- <20120626002307.GA4389@kroah.com>
- <CA+55aFxhYRqcU2EUmcsuLrhgo4FEO6-b+mB57wB3JRiXEp3ZrA@mail.gmail.com>
- <CAPXgP10cPFSmZ5yr6Z4wVtDa+x2J1yQDF57NJXtxjUuxMHm=Lw@mail.gmail.com>
- <CA+55aFzkX=jCC1O6+2oz8meswOqZQ+Q8Ao60q8eAS1G3AuEStQ@mail.gmail.com>
- <1340726856.977.6.camel@mop> <22482.1341471787@neuling.org>
- <CAPXgP11=o5WB4WejaQCSCL-+5e4sL7tfVz_r3Khyrq3SyrMvsA@mail.gmail.com>
- <CAPXgP13u769nSvUdS1iqiVCsxG5nsQd7bNT1=-eNw156U-kPkQ@mail.gmail.com>
- <16043.1341483625@neuling.org>
- <CAPXgP11+j+fDexHHmAZbBBidtrydrpWeh3DGWOhkuoybNj9skA@mail.gmail.com>
- <1341492628.834.3.camel@mop> <30233.1341535279@neuling.org>
- <CAPXgP12_F_H2XPpo2wFmb-u3jBdV__=h67R-LVYbqHuLh7tqLg@mail.gmail.com>
- <29711.1341545979@neuling.org> <30343.1341546469@neuling.org>
- <CAPXgP10JthGjZyqD6gqn2n1rPu1uP+=mem_T-iOritXAQMstRQ@mail.gmail.com>
- <21892.1341608647@neuling.org> <1341770155.1011.27.camel@mop>
- <1341870165.6118.42.camel@joe2Laptop>
- <CAPXgP11Qsj9yGM5nSbRJ_YPFZcr2Km6w4R8wPGU1AytyQChYXQ@mail.gmail.com>
- <1341872984.6118.54.camel@joe2Laptop>
- <CAPXgP12wrORpTdzMFW0QKr0j1VqZy_PRBFRM2P=qRqPFMQ=zUA@mail.gmail.com>
- <1341876736.6118.70.camel@joe2Laptop>
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A8C162C01FA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 11:35:57 +1000 (EST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Tue, 10 Jul 2012 01:29:14 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6A1RnhT50266290
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 11:27:50 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6A1Zlr0015102
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 11:35:48 +1000
+Message-ID: <1341884144.2562.18.camel@ThinkPad-T420>
+Subject: Re: [PATCH SLAB 1/2 v3] duplicate the cache name in SLUB's
+ saved_alias list, SLAB, and SLOB
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux.com>
+Date: Tue, 10 Jul 2012 09:35:44 +0800
+In-Reply-To: <alpine.DEB.2.00.1207090859420.27737@router.home>
+References: <1341561286.24895.9.camel@ThinkPad-T420>
+ <alpine.DEB.2.00.1207060855320.26441@router.home>
+ <1341801721.2439.29.camel@ThinkPad-T420>
+ <alpine.DEB.2.00.1207090859420.27737@router.home>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- "Paul E. McKenney" <paulmck@us.ibm.com>, linuxppc-dev@ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>,
- Wu Fengguang <fengguang.wu@intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, Glauber Costa <glommer@parallels.com>,
+ Pekka Enberg <penberg@kernel.org>, linux-mm <linux-mm@kvack.org>,
+ Paul Mackerras <paulus@samba.org>, Matt Mackall <mpm@selenic.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ Wanlong Gao <gaowanlong@cn.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,24 +44,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-07-09 at 16:32 -0700, Joe Perches wrote:
-> Then you've changed semantics and I think you need to
-> fix it.
+On Mon, 2012-07-09 at 09:01 -0500, Christoph Lameter wrote:
+> > I was pointed by Glauber to the slab common code patches. I need some
+> > more time to read the patches. Now I think the slab/slot changes in this
+> > v3 are not needed, and can be ignored.
 > 
-> A dev_<level> call is not guaranteed to be a complete
-> message.
-> 
-> There are dev_<level> and netdev_<level> calls
-> followed by pr_cont.
-> 
-> Maybe these could be fixed up and then they could be
-> always integral.  There don't look to be too many.
-> 
-> This may be most (all?) of them:
+> That may take some kernel cycles. You have a current issue here that needs
+> to be fixed.
 
-Nah, there's a bunch more:
+I'm a little confused ... and what need I do for the next step? 
 
-$ git grep -E -A10 "\b(netdev|dev)_(info|warn|notice|err|alert|emerg|crit)" drivers | \
-  grep -B10 -E "\bprintk\s*\(\s*(KERN_CONT|)\s*\""
+> 
+> > >  	down_write(&slub_lock);
+> > > -	s = find_mergeable(size, align, flags, name, ctor);
+> > > +	s = find_mergeable(size, align, flags, n, ctor);
+> > >  	if (s) {
+> > >  		s->refcount++;
+> > >  		/*
+> >
+> > 		......
+> > 		up_write(&slub_lock);
+> > 		return s;
+> > 	}
+> >
+> > Here, the function returns without name string n be kfreed.
+> 
+> That is intentional since the string n is still referenced by the entry
+> that sysfs_slab_alias has created.
 
-All of them could be fixed up though.
+I'm not sure whether the "referenced by ..." you mentioned is what I
+understood. From my understanding:
+
+if slab_state == SYS_FS, after 
+	return sysfs_create_link(&slab_kset->kobj, &s->kobj, name); 
+is called, the name string passed in sysfs_slab_alias is no longer
+referenced (sysfs_new_dirent duplicates the string for sysfs to use).
+
+else, the name sting is referenced by 
+	al->name = name;
+temporarily. After slab_sysfs_init is finished, the name is not
+referenced any more.
+
+So in my patch (slub part), the string is duplicated here, and kfreed in
+slab_sysfs_init.
+
+> > But we couldn't kfree n here, because in sysfs_slab_alias(), if
+> > (slab_state < SYS_FS), the name need to be kept valid until
+> > slab_sysfs_init() is finished adding the entry into sysfs.
+> 
+> Right that is why it is not freed and that is what fixes the issue you
+> see.
+> 
