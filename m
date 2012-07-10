@@ -1,21 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B9BB32C062E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 22:24:35 +1000 (EST)
-Subject: Re: [PATCH] P1021: set IReady in QE Microcode Upload 
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <026483A88B848047A08C3F03E20822D0267B1F4A55@MCHP058A.global-ad.net>
-Date: Tue, 10 Jul 2012 07:24:30 -0500
-Message-Id: <22C2B39B-2B20-42F6-A5F6-17E437CC14ED@kernel.crashing.org>
-References: <026483A88B848047A08C3F03E20822D0267B1F4A55@MCHP058A.global-ad.net>
-To: "Kokoris, Ioannis" <ioannis.kokoris@siemens-enterprise.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "timur@freescale.com" <timur@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <B04825@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 948082C0876
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 22:26:30 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Xu Jiucheng-B37781 <B37781@freescale.com>
+Subject: Re: [PATCH 2/2] powerpc/85xx: Create dts of each core in CAMP mode
+ for P1021RDB-PC
+Date: Tue, 10 Jul 2012 12:25:48 +0000
+Message-ID: <CAOZdJXX1+=p3GMccLvCwFpei2igidXuo_U1gSVy56cBAkKxoHg@mail.gmail.com>
+References: <1341909561-6591-1-git-send-email-Jiucheng.Xu@freescale.com>
+ <1341909561-6591-2-git-send-email-Jiucheng.Xu@freescale.com>
+In-Reply-To: <1341909561-6591-2-git-send-email-Jiucheng.Xu@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: McClintock Matthew-B29882 <B29882@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,21 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Jul 10, 2012 at 3:39 AM, Xu Jiucheng <Jiucheng.Xu@freescale.com> wr=
+ote:
+> Create the dts files for each core and splits the devices between
+> the two cores for P1021RDB-PC.
+>
+> Core0 has l2, serial0, i2c, spi, gpio, tdm,dma, usb, eth0, eth1,
+> sdhc, crypto, global-util, message, pci0, pci1, msi, crypto.
+> Core1 has l2, serial1, eth2.
+>
+> Signed-off-by: Xu Jiucheng <Jiucheng.Xu@freescale.com>
+> Signed-off-by: Matthew McClintock <msm@freescale.com>
+> ---
 
-On Nov 11, 2011, at 10:05 AM, Kokoris, Ioannis wrote:
+Do we really want AMP device trees upstream?  They're very
+application-specific, and AMP support has always been a hack.  If
+anything, I think we should be deleting AMP device trees from
+upstream, not adding more.
 
-> Hi,
->=20
-> QE Microcode Initialization using qe_upload_microcode() does not work =
-on P1021 if the IRAM-Ready register is not set after the microcode =
-upload. This patch adds a definition for the "I-RAM Ready" register and =
-sets it uppon microcode upload completion.
->=20
->=20
-> Signed-off-by: Ioannis Kokkoris =
-<ioannis.kokoris@siemens-enterprise.com>
->=20
-
-applied to next
-
-- k=
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
