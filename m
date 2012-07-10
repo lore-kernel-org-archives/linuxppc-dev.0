@@ -1,39 +1,23 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 441A42C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 19:58:39 +1000 (EST)
-Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 0E3973EE0AE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:33 +0900 (JST)
-Received: from smail (m3 [127.0.0.1])
- by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id EAA3A45DEA6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:32 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
- by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id C997D45DE7E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:32 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id BB8581DB803B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:32 +0900 (JST)
-Received: from g01jpexchyt05.g01.fujitsu.local
- (g01jpexchyt05.g01.fujitsu.local [10.128.194.44])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 6BE271DB8038
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:32 +0900 (JST)
-Message-ID: <4FFBFCAC.4010007@jp.fujitsu.com>
-Date: Tue, 10 Jul 2012 18:58:04 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <B21989@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D1D782C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 20:21:57 +1000 (EST)
+From: Xie Shaohui-B21989 <B21989@freescale.com>
+To: Xie Shaohui-B21989 <B21989@freescale.com>,
+ "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 1/2] powerpc/watchdog: move booke watchdog param related
+ code to prom.c
+Date: Tue, 10 Jul 2012 10:21:50 +0000
+Message-ID: <ED492CCEAF882048BC2237DE806547C9079802B4@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1336457231-32513-1-git-send-email-Shaohui.Xie@freescale.com>
+In-Reply-To: <1336457231-32513-1-git-send-email-Shaohui.Xie@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux.com>
-Subject: Re: [RFC PATCH v3 0/13] memory-hotplug : hot-remove physical memory
-References: <4FFAB0A2.8070304@jp.fujitsu.com>
- <alpine.DEB.2.00.1207091015570.30060@router.home>
-In-Reply-To: <alpine.DEB.2.00.1207091015570.30060@router.home>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,63 +27,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Christoph,
+Hi, All,
 
-2012/07/10 0:18, Christoph Lameter wrote:
+Is there any concern for this patch, it's been a long time.
+Thanks!
+
+
+Best Regards,=20
+Shaohui Xie=20
+
+
+>-----Original Message-----
+>From: Xie Shaohui-B21989
+>Sent: Tuesday, May 08, 2012 2:07 PM
+>To: linux-watchdog@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+>Cc: Xie Shaohui-B21989
+>Subject: [PATCH 1/2] powerpc/watchdog: move booke watchdog param related
+>code to prom.c
 >
-> On Mon, 9 Jul 2012, Yasuaki Ishimatsu wrote:
+>Currently, BOOKE watchdog code for checking "wdt" and "wdt_period" is in
+>setup_32.c, it cannot be used in 64-bit, so move it to a common place
+>prom.c, which will be shared by 32-bit and 64-bit.
 >
->> Even if you apply these patches, you cannot remove the physical memory
->> completely since these patches are still under development. I want you to
->> cooperate to improve the physical memory hot-remove. So please review these
->> patches and give your comment/idea.
+>Also, replace the simple_strtoul with kstrtol.
 >
-> Could you at least give a method on how you want to do physical memory
-> removal?
-
-We plan to release a dynamic hardware partitionable system. It will be
-able to hot remove/add a system board which included memory and cpu.
-But as you know, Linux does not support memory hot-remove on x86 box.
-So I try to develop it.
-
-Current plan to hot remove system board is to use container driver.
-Thus I define the system board in ACPI DSDT table as a container device.
-It have supported hot-add a container device. And if container device
-has _EJ0 ACPI method, "eject" file to remove the container device is
-prepared as follow:
-
-# ls -l /sys/bus/acpi/devices/ACPI0004\:01/eject
---w-------. 1 root root 4096 Jul 10 18:19 /sys/bus/acpi/devices/ACPI0004:01/eject
-
-When I hot-remove the container device, I echo 1 to the file as follow:
-
-#echo 1 > /sys/bus/acpi/devices/ACPI0004\:02/eject
-
-Then acpi_bus_trim() is called. And it calls acpi_memory_device_remove()
-for removing memory device. But the code does not do nothing.
-So I developed the continuation of the function.
-
-> You would have to remove all objects from the range you want to
-> physically remove. That is only possible under special circumstances and
-> with a limited set of objects. Even if you exclusively use ZONE_MOVEABLE
-> you still may get cases where pages are pinned for a long time.
-
-I know it. So my memory hot-remove plan is as follows:
-
-1. hot-added a system board
-    All memory which included the system board is offline.
-
-2. online the memory as removable page
-    The function has not supported yet. It is being developed by Lai as follow:
-    http://lkml.indiana.edu/hypermail/linux/kernel/1207.0/01478.html
-    If it is supported, I will be able to create movable memory.
-
-3. hot-remove the memory by container device's eject file
-
-Thanks,
-Yasuaki Ishimatsu
-
+>Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+>---
+> arch/powerpc/kernel/prom.c     |   27 +++++++++++++++++++++++++++
+> arch/powerpc/kernel/setup_32.c |   24 ------------------------
+> 2 files changed, 27 insertions(+), 24 deletions(-)
 >
-> I am not sure that these patches are useful unless we know where you are
-> going with this. If we end up with a situation where we still cannot
-> remove physical memory then this patchset is not helpful.
+>diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c index
+>f191bf0..49e1bdf 100644
+>--- a/arch/powerpc/kernel/prom.c
+>+++ b/arch/powerpc/kernel/prom.c
+>@@ -84,6 +84,33 @@ static int __init early_parse_mem(char *p)  }
+>early_param("mem", early_parse_mem);
+>
+>+#ifdef CONFIG_BOOKE_WDT
+>+extern u32 booke_wdt_enabled;
+>+extern u32 booke_wdt_period;
+>+
+>+/* Checks wdt=3Dx and wdt_period=3Dxx command-line option */ notrace int
+>+__init early_parse_wdt(char *p) {
+>+	if (p && strncmp(p, "0", 1) !=3D 0)
+>+		booke_wdt_enabled =3D 1;
+>+
+>+	return 0;
+>+}
+>+early_param("wdt", early_parse_wdt);
+>+
+>+int __init early_parse_wdt_period(char *p) {
+>+	unsigned long ret;
+>+	if (p) {
+>+		if (!kstrtol(p, 0, &ret))
+>+			booke_wdt_period =3D ret;
+>+	}
+>+
+>+	return 0;
+>+}
+>+early_param("wdt_period", early_parse_wdt_period);
+>+#endif	/* CONFIG_BOOKE_WDT */
+>+
+> /*
+>  * overlaps_initrd - check for overlap with page aligned extension of
+>  * initrd.
+>diff --git a/arch/powerpc/kernel/setup_32.c
+>b/arch/powerpc/kernel/setup_32.c index ec8a53f..a8f54ec 100644
+>--- a/arch/powerpc/kernel/setup_32.c
+>+++ b/arch/powerpc/kernel/setup_32.c
+>@@ -149,30 +149,6 @@ notrace void __init machine_init(u64 dt_ptr)
+> 		ppc_md.progress("id mach(): done", 0x200);  }
+>
+>-#ifdef CONFIG_BOOKE_WDT
+>-extern u32 booke_wdt_enabled;
+>-extern u32 booke_wdt_period;
+>-
+>-/* Checks wdt=3Dx and wdt_period=3Dxx command-line option */ -notrace int
+>__init early_parse_wdt(char *p) -{
+>-	if (p && strncmp(p, "0", 1) !=3D 0)
+>-	       booke_wdt_enabled =3D 1;
+>-
+>-	return 0;
+>-}
+>-early_param("wdt", early_parse_wdt);
+>-
+>-int __init early_parse_wdt_period (char *p) -{
+>-	if (p)
+>-		booke_wdt_period =3D simple_strtoul(p, NULL, 0);
+>-
+>-	return 0;
+>-}
+>-early_param("wdt_period", early_parse_wdt_period);
+>-#endif	/* CONFIG_BOOKE_WDT */
+>-
+> /* Checks "l2cr=3Dxxxx" command-line option */  int __init
+>ppc_setup_l2cr(char *str)  {
+>--
+>1.6.4
