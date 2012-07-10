@@ -1,26 +1,39 @@
-Return-Path: <B16395@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 82A572C01B4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 19:39:37 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH 3/3 v2] powerpc/mpic: FSL MPIC error interrupt support.
-Date: Tue, 10 Jul 2012 09:39:25 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D139C36@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1341823643-15737-1-git-send-email-Varun.Sethi@freescale.com>
- <62D13F27-5E39-450E-953D-102DCA32AA9D@kernel.crashing.org>
- <4FFB3D88.6030106@freescale.com>
- <22EF3A64-2185-4078-B7B9-00E00D32604A@kernel.crashing.org>
-In-Reply-To: <22EF3A64-2185-4078-B7B9-00E00D32604A@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 441A42C00E7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 19:58:39 +1000 (EST)
+Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 0E3973EE0AE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:33 +0900 (JST)
+Received: from smail (m3 [127.0.0.1])
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id EAA3A45DEA6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:32 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id C997D45DE7E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:32 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id BB8581DB803B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:32 +0900 (JST)
+Received: from g01jpexchyt05.g01.fujitsu.local
+ (g01jpexchyt05.g01.fujitsu.local [10.128.194.44])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 6BE271DB8038
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:58:32 +0900 (JST)
+Message-ID: <4FFBFCAC.4010007@jp.fujitsu.com>
+Date: Tue, 10 Jul 2012 18:58:04 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Hamciuc Bogdan-BHAMCIU1 <bhamciu1@freescale.com>
+To: Christoph Lameter <cl@linux.com>
+Subject: Re: [RFC PATCH v3 0/13] memory-hotplug : hot-remove physical memory
+References: <4FFAB0A2.8070304@jp.fujitsu.com>
+ <alpine.DEB.2.00.1207091015570.30060@router.home>
+In-Reply-To: <alpine.DEB.2.00.1207091015570.30060@router.home>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +43,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Christoph,
 
+2012/07/10 0:18, Christoph Lameter wrote:
+>
+> On Mon, 9 Jul 2012, Yasuaki Ishimatsu wrote:
+>
+>> Even if you apply these patches, you cannot remove the physical memory
+>> completely since these patches are still under development. I want you to
+>> cooperate to improve the physical memory hot-remove. So please review these
+>> patches and give your comment/idea.
+>
+> Could you at least give a method on how you want to do physical memory
+> removal?
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Tuesday, July 10, 2012 7:17 AM
-> To: Wood Scott-B07421
-> Cc: Sethi Varun-B16395; Hamciuc Bogdan-BHAMCIU1; linuxppc-
-> dev@lists.ozlabs.org
-> Subject: Re: [PATCH 3/3 v2] powerpc/mpic: FSL MPIC error interrupt
-> support.
->=20
->=20
-> On Jul 9, 2012, at 3:22 PM, Scott Wood wrote:
->=20
-> > On 07/09/2012 02:03 PM, Kumar Gala wrote:
-> >>
-> >> On Jul 9, 2012, at 3:47 AM, Varun Sethi wrote:
-> >>
-> >>> +int mpic_err_int_init(struct mpic *mpic, irq_hw_number_t irqnum) {
-> >>
-> >> Why can't we do this during mpic_init() time?
-> >
-> > Are you willing to hardcode that IRQ 16 is the error interrupt,
-> > without waiting to see an intspec?
->=20
-> I'm torn, but the bit of code in mpic_host_xlate that calls
-> mpic_err_int_init() is just ugly.
->=20
-> We could consider it similar to how we assume IPIs.
-[Sethi Varun-B16395] I don't understand this point.
+We plan to release a dynamic hardware partitionable system. It will be
+able to hot remove/add a system board which included memory and cpu.
+But as you know, Linux does not support memory hot-remove on x86 box.
+So I try to develop it.
 
--Varun
+Current plan to hot remove system board is to use container driver.
+Thus I define the system board in ACPI DSDT table as a container device.
+It have supported hot-add a container device. And if container device
+has _EJ0 ACPI method, "eject" file to remove the container device is
+prepared as follow:
+
+# ls -l /sys/bus/acpi/devices/ACPI0004\:01/eject
+--w-------. 1 root root 4096 Jul 10 18:19 /sys/bus/acpi/devices/ACPI0004:01/eject
+
+When I hot-remove the container device, I echo 1 to the file as follow:
+
+#echo 1 > /sys/bus/acpi/devices/ACPI0004\:02/eject
+
+Then acpi_bus_trim() is called. And it calls acpi_memory_device_remove()
+for removing memory device. But the code does not do nothing.
+So I developed the continuation of the function.
+
+> You would have to remove all objects from the range you want to
+> physically remove. That is only possible under special circumstances and
+> with a limited set of objects. Even if you exclusively use ZONE_MOVEABLE
+> you still may get cases where pages are pinned for a long time.
+
+I know it. So my memory hot-remove plan is as follows:
+
+1. hot-added a system board
+    All memory which included the system board is offline.
+
+2. online the memory as removable page
+    The function has not supported yet. It is being developed by Lai as follow:
+    http://lkml.indiana.edu/hypermail/linux/kernel/1207.0/01478.html
+    If it is supported, I will be able to create movable memory.
+
+3. hot-remove the memory by container device's eject file
+
+Thanks,
+Yasuaki Ishimatsu
+
+>
+> I am not sure that these patches are useful unless we know where you are
+> going with this. If we end up with a situation where we still cannot
+> remove physical memory then this patchset is not helpful.
