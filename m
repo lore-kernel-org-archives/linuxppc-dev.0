@@ -1,21 +1,19 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 165172C0209
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jul 2012 18:30:41 +1000 (EST)
-Message-ID: <4FFBE755.7070403@windriver.com>
-Date: Tue, 10 Jul 2012 16:27:01 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: "tiejun.chen" <tiejun.chen@windriver.com>
-Subject: Re: [PATCH 1/1] powerpc: add "memory" attribute for mfmsr()
-References: <1341907153-20516-1-git-send-email-tiejun.chen@windriver.com>
- <1341908398.2561.15.camel@pasglop> <4FFBE659.10804@windriver.com>
-In-Reply-To: <4FFBE659.10804@windriver.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 807632C0086
+ for <linuxppc-dev@ozlabs.org>; Tue, 10 Jul 2012 19:25:46 +1000 (EST)
+Message-ID: <1341912339.2561.36.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 10 Jul 2012 19:25:39 +1000
 Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,132 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/10/2012 04:22 PM, tiejun.chen wrote:
-> On 07/10/2012 04:19 PM, Benjamin Herrenschmidt wrote:
->> On Tue, 2012-07-10 at 15:59 +0800, Tiejun Chen wrote:
->>> Add "memory" attribute in inline assembly language as a compiler
->>> barrier to make sure 4.6.x GCC don't reorder mfmsr().
->>
->> Out of curiosity, did you see a case where it was re-ordered
->> improperly ?
-> 
-> Yes.
-> 
-> In my scenario, there's one simple wrapper from local_irq_save().
-> ------
-> uint32_t XX_DisableAllIntr(void)
-> {
->     unsigned long flags;
-> 
->     local_irq_save(flags);
-> 
->     return (uint32_t)flags;
-> }
-> 
-> When CONFIG_TRACE_IRQFLAGS_SUPPORT is enabled, kernel would expand
-> local_irq_save(). Firstly, please refer to the follows:
-> 
-> #define local_irq_save(flags)               \
->     do {                        \
->         raw_local_irq_save(flags);      \
->         trace_hardirqs_off();           \
->     } while (0)
-> 
-> #define raw_local_irq_save(flags)           \
->     do {                        \
->         typecheck(unsigned long, flags);    \
->         flags = arch_local_irq_save();      \
->     } while (0)
-> 
-> static inline unsigned long arch_local_irq_save(void)
-> {
->     unsigned long flags = arch_local_save_flags();
-> #ifdef CONFIG_BOOKE
->     asm volatile("wrteei 0" : : : "memory");
-> #else
->     SET_MSR_EE(flags & ~MSR_EE);
-> #endif
->     return flags;
-> }
-> 
-> static inline unsigned long arch_local_save_flags(void)
-> {
->     return mfmsr();
-> }
-> 
-> So local_irq_save(flags) is extended as something like:
-> 
-> {
-> 	#1 flags = mfmsr();
-> 	#2 asm volatile("wrteei 0" : : : "memory");
-> 	#3 trace_hardirqs_off();
-> }
-> 
-> But build kernel with our 5.0 toolchain (with/without
+Hi Linus !
 
-Note here this toolchain is based on 4.6.3.
+It looks like my rewrite of our lazy irq scheme is still exposing
+"interesting" issues left and right. The previous fixes are now
+causing an occasional BUG_ON to trigger (which this patch turns
+into a WARN_ON while at it), due to another issue of disconnect
+of the lazy irq state vs. the processor state in the idle loop
+on pseries and cell.
 
-Tiejun
+This should fix it properly once for all moving the nasty code to a common
+helper function.
 
-> --with-toolchain-dir=wr-toolchain),
-> 
-> (gdb) disassemble XX_DisableAllIntr
-> Dump of assembler code for function XX_DisableAllIntr:
->    0xc04550c0 <+0>:	mflr    r0
->    0xc04550c4 <+4>:	stw     r0,4(r1)
->    0xc04550c8 <+8>:	bl      0xc000f060 <mcount>
->    0xc04550cc <+12>:	stwu    r1,-16(r1)
->    0xc04550d0 <+16>:	mflr    r0
->    0xc04550d4 <+20>:	stw     r0,20(r1)
->    0xc04550d8 <+24>:	wrteei  0
->    0xc04550dc <+28>:	bl      0xc00c6c10 <trace_hardirqs_off>
->    0xc04550e0 <+32>:	mfmsr   r3
->    0xc04550e4 <+36>:	lwz     r0,20(r1)
->    0xc04550e8 <+40>:	mtlr    r0
->    0xc04550ec <+44>:	addi    r1,r1,16
->    0xc04550f0 <+48>:	blr
-> End of assembler dump.
-> 
-> You should notice #2 and #3 is reorganized before #1. This means irq is always
-> disabled before we check irq status via reading msr. Then kernel would work as
-> abnormal sometimes.
-> 
-> But with old toolchain (4.5.x) for this same kernel, everything is fine.
-> 
-> Tiejun
-> 
->>
->> Cheers,
->> Ben.
->>
->>> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
->>> ---
->>>  arch/powerpc/include/asm/reg.h |    3 ++-
->>>  1 files changed, 2 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
->>> index 559da19..578e5a0 100644
->>> --- a/arch/powerpc/include/asm/reg.h
->>> +++ b/arch/powerpc/include/asm/reg.h
->>> @@ -1016,7 +1016,8 @@
->>>  /* Macros for setting and retrieving special purpose registers */
->>>  #ifndef __ASSEMBLY__
->>>  #define mfmsr()		({unsigned long rval; \
->>> -			asm volatile("mfmsr %0" : "=r" (rval)); rval;})
->>> +			asm volatile("mfmsr %0" : "=r" (rval) : \
->>> +						: "memory"); rval;})
->>>  #ifdef CONFIG_PPC_BOOK3S_64
->>>  #define __mtmsrd(v, l)	asm volatile("mtmsrd %0," __stringify(l) \
->>>  				     : : "r" (v) : "memory")
->>
->>
->>
->>
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> 
+There's also couple more fixes for some debug stuff that didn't build
+(and helped resolving those problems so it's worth having), along with
+a compile fix for newer gcc's.
+
+Cheers,
+Ben.
+
+The following changes since commit 2437fccfbfc83bcb868ccc7fdfe2b5310bf07835:
+
+  Merge tag 'regulator-3.5' of git://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator (2012-07-09 13:43:02 -0700)
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 50fb31cfed9218b439360caf7c0399b00042da15:
+
+  tty/hvc_opal: Fix debug function name (2012-07-10 19:16:25 +1000)
+
+----------------------------------------------------------------
+Benjamin Herrenschmidt (4):
+      powerpc: More fixes for lazy IRQ vs. idle
+      powerpc: Fix build of some debug irq code
+      powerpc/numa: Avoid stupid uninitialized warning from gcc
+      tty/hvc_opal: Fix debug function name
+
+ arch/powerpc/include/asm/hw_irq.h               |    6 ++-
+ arch/powerpc/kernel/irq.c                       |   48 ++++++++++++++++++++++-
+ arch/powerpc/mm/numa.c                          |    2 +-
+ arch/powerpc/platforms/cell/pervasive.c         |   11 +++---
+ arch/powerpc/platforms/pseries/processor_idle.c |   17 ++++----
+ drivers/tty/hvc/hvc_opal.c                      |    2 +-
+ 6 files changed, 69 insertions(+), 17 deletions(-)
