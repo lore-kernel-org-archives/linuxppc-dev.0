@@ -1,20 +1,25 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id B1B552C0080
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 02:31:03 +1000 (EST)
-Date: Wed, 11 Jul 2012 09:30:58 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Qiang Liu <qiang.liu@freescale.com>
-Subject: Re: [PATCH v2 3/4] fsl-dma: change the release process of dma
- descriptor
-Message-ID: <20120711163058.GD17539@ovro.caltech.edu>
-References: <1341997285-18459-1-git-send-email-qiang.liu@freescale.com>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6C9CF2C007F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 03:35:49 +1000 (EST)
+Message-ID: <4FFDB968.4080503@freescale.com>
+Date: Wed, 11 Jul 2012 12:35:36 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1341997285-18459-1-git-send-email-qiang.liu@freescale.com>
-Cc: Vinod Koul <vinod.koul@intel.com>, herbert@gondor.hengli.com.au,
- linux-crypto@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc/mpc8572ds: Fix eTSEC is not available on
+ core1 of AMP boot issue
+References: <1341900506-23401-1-git-send-email-B38951@freescale.com>
+ <4FFC7139.3080303@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A218AA@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A218AA@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,99 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 11, 2012 at 05:01:25PM +0800, Qiang Liu wrote:
-> Modify the release process of dma descriptor for avoiding exception when
-> enable config NET_DMA, release dma descriptor from 1st to last second, the
-> last descriptor which is reserved in current descriptor register may not be
-> completed, race condition will be raised if free current descriptor.
+On 07/10/2012 09:07 PM, Jia Hongtao-B38951 wrote:
 > 
-> A race condition which is raised when use both of talitos and dmaengine to
-> offload xor is because napi scheduler (NET_DMA is enabled) will sync all
-> pending requests in dma channels, it affects the process of raid operations.
-> The descriptor is freed which is submitted just now, but async_tx must check
-> whether this depend tx descriptor is acked, there are poison contents in the
-> invalid address, then BUG_ON() is thrown, so this descriptor will be freed
-> in the next time.
 > 
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Wednesday, July 11, 2012 2:15 AM
+>> To: Jia Hongtao-B38951
+>> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
+>> Subject: Re: [PATCH 1/2] powerpc/mpc8572ds: Fix eTSEC is not available on
+>> core1 of AMP boot issue
+>>
+>> On 07/10/2012 01:08 AM, Jia Hongtao wrote:
+>>> The issue log on core1 is:
+>>> root@mpc8572ds:~# ifconfig eth0 10.192.208.244
+>>> net eth0: could not attach to PHY
+>>> SIOCSIFFLAGS: No such device
+>>>
+>>> To attach PHY node mdio@24520 should not be disabled in dts of core1.
+>>> Because all PHYs are controlled through this node as follows:
+>>
+>> So you grant it to both partitions?  How do you deal with synchronization?
+>>
+>> -Scott
+> 
+> PHY nodes are only used by ethernet. Each ethernet is used by only one partition
+> (disabled in the other partition). So I think there is no synchronization issue.
 
-This patch seems to be covering up a bug in the driver, rather than
-actually fixing it.
+I mean for accessing the MDIO bus.
 
-When it was written, it was expected that dma_do_tasklet() would run
-only when the controller was idle.
-
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> Cc: Vinod Koul <vinod.koul@intel.com>
-> Cc: Li Yang <leoli@freescale.com>
-> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
-> ---
->  drivers/dma/fsldma.c |   15 ++++++++++++---
->  1 files changed, 12 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index 4f2f212..0ba3e40 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -1035,14 +1035,22 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
->  static void dma_do_tasklet(unsigned long data)
->  {
->  	struct fsldma_chan *chan = (struct fsldma_chan *)data;
-> -	struct fsl_desc_sw *desc, *_desc;
-> +	struct fsl_desc_sw *desc, *_desc, *prev = NULL;
->  	LIST_HEAD(ld_cleanup);
->  	unsigned long flags;
-> +	dma_addr_t curr_phys = get_cdar(chan);
-> 
->  	chan_dbg(chan, "tasklet entry\n");
-> 
->  	spin_lock_irqsave(&chan->desc_lock, flags);
-> 
-> +	/* find the descriptor which is already completed */
-> +	list_for_each_entry_safe(desc, _desc, &chan->ld_running, node) {
-> +		if (prev && desc->async_tx.phys == curr_phys)
-> +			break;
-> +		prev = desc;
-> +	}
-> +
-
-If the DMA controller was still busy processing transactions, you should
-have gotten the printout "irq: controller not idle!" from
-fsldma_chan_irq() just before it scheduled the dma_do_tasklet() to run.
-If you did not get this printout, how was dma_do_tasklet() entered with
-the controller still busy? I don't understand how it can happen.
-
-If you test without your spin_lock_bh() and spin_unlock_bh() conversion
-patch, do you still hit the error?
-
-What happens if a user submits exactly one DMA transaction, and then
-leaves the system idle? The callback for the last descriptor in the
-chain will never get run, right? That's a bug.
-
->  	/* update the cookie if we have some descriptors to cleanup */
->  	if (!list_empty(&chan->ld_running)) {
->  		dma_cookie_t cookie;
-> @@ -1058,13 +1066,14 @@ static void dma_do_tasklet(unsigned long data)
->  	 * move the descriptors to a temporary list so we can drop the lock
->  	 * during the entire cleanup operation
->  	 */
-> -	list_splice_tail_init(&chan->ld_running, &ld_cleanup);
-> +	list_cut_position(&ld_cleanup, &chan->ld_running, &prev->node);
-> 
->  	/* the hardware is now idle and ready for more */
->  	chan->idle = true;
-> 
->  	/*
-> -	 * Start any pending transactions automatically
-> +	 * Start any pending transactions automatically if current descriptor
-> +	 * list is completed
->  	 *
->  	 * In the ideal case, we keep the DMA controller busy while we go
->  	 * ahead and free the descriptors below.
-> --
-> 1.7.5.1
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+-Scott
