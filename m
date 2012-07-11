@@ -1,42 +1,21 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 701BA2C020E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 10:55:00 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id C35523EE0BC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 09:54:58 +0900 (JST)
-Received: from smail (m4 [127.0.0.1])
- by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id A8EFF45DE55
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 09:54:58 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
- by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 8963045DE51
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 09:54:58 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 796AF1DB8042
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 09:54:58 +0900 (JST)
-Received: from g01jpexchyt12.g01.fujitsu.local
- (g01jpexchyt12.g01.fujitsu.local [10.128.194.51])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 1B0591DB8041
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 09:54:58 +0900 (JST)
-Message-ID: <4FFCCEC3.4050800@jp.fujitsu.com>
-Date: Wed, 11 Jul 2012 09:54:27 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 879DD2C01FA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 11:48:10 +1000 (EST)
+Message-ID: <4FFCDC6A.9070704@cn.fujitsu.com>
+Date: Wed, 11 Jul 2012 09:52:42 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Jiang Liu <liuj97@gmail.com>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 Subject: Re: [RFC PATCH v3 0/13] memory-hotplug : hot-remove physical memory
 References: <4FFAB0A2.8070304@jp.fujitsu.com>
- <alpine.DEB.2.00.1207091015570.30060@router.home>
- <4FFBFCAC.4010007@jp.fujitsu.com> <4FFC5D43.7040206@gmail.com>
- <4FFCC438.4080004@jp.fujitsu.com> <4FFCC6F1.5060908@gmail.com>
-In-Reply-To: <4FFCC6F1.5060908@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+In-Reply-To: <4FFAB0A2.8070304@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
  minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,114 +25,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jiang,
+At 07/09/2012 06:21 PM, Yasuaki Ishimatsu Wrote:
+> This patch series aims to support physical memory hot-remove.
+> 
+>   [RFC PATCH v3 1/13] memory-hotplug : rename remove_memory to offline_memory
+>   [RFC PATCH v3 2/13] memory-hotplug : add physical memory hotplug code to acpi_memory_device_remove
+>   [RFC PATCH v3 3/13] memory-hotplug : unify argument of firmware_map_add_early/hotplug
+>   [RFC PATCH v3 4/13] memory-hotplug : remove /sys/firmware/memmap/X sysfs
+>   [RFC PATCH v3 5/13] memory-hotplug : does not release memory region in PAGES_PER_SECTION chunks
+>   [RFC PATCH v3 6/13] memory-hotplug : add memory_block_release
+>   [RFC PATCH v3 7/13] memory-hotplug : remove_memory calls __remove_pages
+>   [RFC PATCH v3 8/13] memory-hotplug : check page type in get_page_bootmem
+>   [RFC PATCH v3 9/13] memory-hotplug : move register_page_bootmem_info_node and put_page_bootmem for
+> sparse-vmemmap
+>   [RFC PATCH v3 10/13] memory-hotplug : implement register_page_bootmem_info_section of sparse-vmemmap
+>   [RFC PATCH v3 11/13] memory-hotplug : free memmap of sparse-vmemmap
+>   [RFC PATCH v3 12/13] memory-hotplug : add node_device_release
+>   [RFC PATCH v3 13/13] memory-hotplug : remove sysfs file of node
+> 
+> Even if you apply these patches, you cannot remove the physical memory
+> completely since these patches are still under development. I want you to
+> cooperate to improve the physical memory hot-remove. So please review these
+> patches and give your comment/idea.
+> 
+> The patches can free/remove following things:
+> 
+>   - acpi_memory_info                          : [RFC PATCH 2/13]
+>   - /sys/firmware/memmap/X/{end, start, type} : [RFC PATCH 4/13]
+>   - iomem_resource                            : [RFC PATCH 5/13]
+>   - mem_section and related sysfs files       : [RFC PATCH 6-11/13]
+>   - node and related sysfs files              : [RFC PATCH 12-13/13]
+> 
+> The patches cannot do following things yet:
+> 
+>   - page table of removed memory
+> 
+> If you find lack of function for physical memory hot-remove, please let me
+> know.
+> 
+> change log of v3:
+>  * rebase to 3.5.0-rc6
+> 
+>  [RFC PATCH v2 2/13]
+>    * remove extra kobject_put()
+> 
+>    * The patch was commented by Wen. Wen's comment is
+>      "acpi_memory_device_remove() should ignore a return value of
+>      remove_memory() since caller does not care the return value".
+>      But I did not change it since I think caller should care the
+>      return value. And I am trying to fix it as follow:
+> 
+>      https://lkml.org/lkml/2012/7/5/624
 
-2012/07/11 9:21, Jiang Liu wrote:
-> On 07/11/2012 08:09 AM, Yasuaki Ishimatsu wrote:
->> Hi Jiang,
->>
->> 2012/07/11 1:50, Jiang Liu wrote:
->>> On 07/10/2012 05:58 PM, Yasuaki Ishimatsu wrote:
->>>> Hi Christoph,
->>>>
->>>> 2012/07/10 0:18, Christoph Lameter wrote:
->>>>>
->>>>> On Mon, 9 Jul 2012, Yasuaki Ishimatsu wrote:
->>>>>
->>>>>> Even if you apply these patches, you cannot remove the physical memory
->>>>>> completely since these patches are still under development. I want you to
->>>>>> cooperate to improve the physical memory hot-remove. So please review these
->>>>>> patches and give your comment/idea.
->>>>>
->>>>> Could you at least give a method on how you want to do physical memory
->>>>> removal?
->>>>
->>>> We plan to release a dynamic hardware partitionable system. It will be
->>>> able to hot remove/add a system board which included memory and cpu.
->>>> But as you know, Linux does not support memory hot-remove on x86 box.
->>>> So I try to develop it.
->>>>
->>>> Current plan to hot remove system board is to use container driver.
->>>> Thus I define the system board in ACPI DSDT table as a container device.
->>>> It have supported hot-add a container device. And if container device
->>>> has _EJ0 ACPI method, "eject" file to remove the container device is
->>>> prepared as follow:
->>>>
->>>> # ls -l /sys/bus/acpi/devices/ACPI0004\:01/eject
->>>> --w-------. 1 root root 4096 Jul 10 18:19 /sys/bus/acpi/devices/ACPI0004:01/eject
->>>>
->>>> When I hot-remove the container device, I echo 1 to the file as follow:
->>>>
->>>> #echo 1 > /sys/bus/acpi/devices/ACPI0004\:02/eject
->>>>
->>>> Then acpi_bus_trim() is called. And it calls acpi_memory_device_remove()
->>>> for removing memory device. But the code does not do nothing.
->>>> So I developed the continuation of the function.
->>>>
->>>>> You would have to remove all objects from the range you want to
->>>>> physically remove. That is only possible under special circumstances and
->>>>> with a limited set of objects. Even if you exclusively use ZONE_MOVEABLE
->>>>> you still may get cases where pages are pinned for a long time.
->>>>
->>>> I know it. So my memory hot-remove plan is as follows:
->>>>
->>>> 1. hot-added a system board
->>>>      All memory which included the system board is offline.
->>>>
->>>> 2. online the memory as removable page
->>>>      The function has not supported yet. It is being developed by Lai as follow:
->>>>      http://lkml.indiana.edu/hypermail/linux/kernel/1207.0/01478.html
->>>>      If it is supported, I will be able to create movable memory.
->>>>
->>>> 3. hot-remove the memory by container device's eject file
->>> We have implemented a prototype to do physical node (mem + CPU + IOH) hotplug
->>> for Itanium and is now porting it to x86. But with currently solution, memory
->>> hotplug functionality may cause 10-20% performance decrease because we concentrate
->>> all DMA/Normal memory to the first NUMA node, and all other NUMA nodes only
->>> hosts ZONE_MOVABLE. We are working on solution to minimize the performance
->>> drop now.
->>
->> Thank you for your interesting response.
->>
->> I have a question. How do you move all other NUMA nodes to ZONE_MOVABLE?
->> To use ZONE_MOVABLE, we need to use boot options like kernelcore or movablecore.
->> But it is not enough, since the requested amount is spread evenly throughout
->> all nodes in the system. So I think we do not have way to move all other NUMA
->> node to ZONE_MOVABLE.
-> We have modified the ZONE_MOVABLE spreading and bootmem allocation. If the kernelcore
-> or movablecore kernel parameters are present, we follow current behavior. If those
-> parameter are absent and the platform supports physical hotplug, we will concentrate
-> DMA/NORMAL memory to specific nodes.
+acpi_memory_device_remove() will be called not only when we write
+1 to /sys/bus/acpi/devices/PNP0C80:XX/eject. When we unbind it
+from the driver or remove the module acpi_memhotplug, this function
+will be called too.
 
-That's interesting. I want to know more details, if you do not mind.
-Current kernel doesn't do the behavior, does it? So I think you have some
-patches for changing the behavior. Will you merge these patches into
-community kernel?
+I will check whether your patch can work for these two cases.
 
-Thanks,
-Yasuaki Ishimatsu
+Thanks
+Wen Congyang
 
->
->>
->> Thanks,
->> Yasuaki Ishimatsu
->>
->>>
->>>>
->>>> Thanks,
->>>> Yasuaki Ishimatsu
->>>>
->>>>>
->>>>> I am not sure that these patches are useful unless we know where you are
->>>>> going with this. If we end up with a situation where we still cannot
->>>>> remove physical memory then this patchset is not helpful.
->>>>
->>>>
->>>>
->>>
->>>
->>
->>
->>
->
->
+> 
+>  [RFC PATCH v2 4/13]
+>    * remove a firmware_memmap_entry allocated by kzmalloc()
+> 
+> change log of v2:
+>  [RFC PATCH v2 2/13]
+>    * check whether memory block is offline or not before calling offline_memory()
+>    * check whether section is valid or not in is_memblk_offline()
+>    * call kobject_put() for each memory_block in is_memblk_offline()
+> 
+>  [RFC PATCH v2 3/13]
+>    * unify the end argument of firmware_map_add_early/hotplug
+> 
+>  [RFC PATCH v2 4/13]
+>    * add release_firmware_map_entry() for freeing firmware_map_entry
+> 
+>  [RFC PATCH v2 6/13]
+>   * add release_memory_block() for freeing memory_block
+> 
+>  [RFC PATCH v2 11/13]
+>   * fix wrong arguments of free_pages()
+> 
+> ---
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |   16 +-
+>  arch/x86/mm/init_64.c                           |  144 ++++++++++++++++++++++++
+>  drivers/acpi/acpi_memhotplug.c                  |   28 ++++
+>  drivers/base/memory.c                           |   54 ++++++++-
+>  drivers/base/node.c                             |    7 +
+>  drivers/firmware/memmap.c                       |   78 ++++++++++++-
+>  include/linux/firmware-map.h                    |    6 +
+>  include/linux/memory.h                          |    5
+>  include/linux/memory_hotplug.h                  |   17 --
+>  include/linux/mm.h                              |    5
+>  mm/memory_hotplug.c                             |   98 ++++++++++++----
+>  mm/sparse.c                                     |    5
+>  12 files changed, 414 insertions(+), 49 deletions(-)
+> 
+> 
