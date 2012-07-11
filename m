@@ -2,16 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DB80C2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 10:53:23 +1000 (EST)
-Message-ID: <1341967996.18850.20.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id A8F7E2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 10:54:24 +1000 (EST)
+Message-ID: <1341968057.18850.21.camel@pasglop>
 Subject: Re: [PATCH] powerpc/booke: Eliminate rfi from exception entry path.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Scott Wood <scottwood@freescale.com>
-Date: Wed, 11 Jul 2012 10:53:16 +1000
-In-Reply-To: <4FFCCBAD.40504@freescale.com>
+Date: Wed, 11 Jul 2012 10:54:17 +1000
+In-Reply-To: <4FFCCD2D.20407@freescale.com>
 References: <20120711003454.GA22757@tyr.buserror.net>
- <1341967010.18850.19.camel@pasglop> <4FFCCBAD.40504@freescale.com>
+ <E139BF8E-A72C-4977-8FB9-6EED5803AB9A@suse.de>
+ <4FFCCD2D.20407@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>,
@@ -25,24 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-07-10 at 19:41 -0500, Scott Wood wrote:
-> On 07/10/2012 07:36 PM, Benjamin Herrenschmidt wrote:
-> > On Tue, 2012-07-10 at 19:34 -0500, Scott Wood wrote:
-> >> Unlike classic, we don't really need the MSR change to be atomic with the
-> >> branch.  This eliminates a trap as a KVM guest (in the absence of
-> >> hardware hypervisor extensions), where mtmsr is paravirtualized but rfi
-> >> is not.  For a virtualized guest without any paravirtualization, this
-> >> eliminates an additional two traps (SRR0/1).
+On Tue, 2012-07-10 at 19:47 -0500, Scott Wood wrote:
+> On 07/10/2012 07:44 PM, Alexander Graf wrote:
 > > 
-> > In fact, I wonder, what do we write into the MSR at this point that
-> > wasn't already in it in BookE ? RI ? I wonder if we could get away
-> > without the mtmsr alltogether...
+> > On 11.07.2012, at 02:34, Scott Wood wrote:
+> >> +#ifdef CONFIG_BOOKE
+> >> +	/*
+> >> +	 * We're not changing address space on Book E, and the extra rfi
+> >> +	 * can hurt when virtualized without hardware support -- whereas
+> >> +	 * mtmsr can be paravirtualized.
+> > 
+> > We can always paravirtualize RFI as well if it makes sense.
 > 
-> Doesn't EE get set there for some exceptions?
+> I'm not sure that's possible.  We thought about it a while back, but
+> IIRC the difficulty was not leaving a register clobbered.
 
-It does, tho arguably it shouldn't in most cases :-) I'm happy to turn a
-bunch of these into explicit local_irq_enable() in the C code though
-which will turn into a wrteei which is more efficient on BookE.
+Besides mtmsr is slow on real HW as well. Also paravirt as done today
+for complex instructions like mtmsr is racy :-) (I already had a chat
+about that with Alex a while back, we might want to re-consider what
+kind of fix can be done at some point).
 
 Cheers,
 Ben.
