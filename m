@@ -1,27 +1,21 @@
-Return-Path: <B32616@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F20A72C0089
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 12:30:57 +1000 (EST)
-From: Liu Qiang-B32616 <B32616@freescale.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: RE: [linuxppc-release] [PATCH 4/4] Talitos: fix the issue of dma
- memory leak
-Date: Wed, 11 Jul 2012 02:30:48 +0000
-Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70C0296@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1341900014-20915-1-git-send-email-qiang.liu@freescale.com>
- <4FFC9DE1.5060502@freescale.com>
-In-Reply-To: <4FFC9DE1.5060502@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 465EF2C0204
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 12:56:20 +1000 (EST)
+Message-ID: <4FFCE3E6.709@cn.fujitsu.com>
+Date: Wed, 11 Jul 2012 10:24:38 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: Herbert Xu <herbert@gondor.hengli.com.au>,
- "David S. Miller" <davem@davemloft.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- Li Yang-R58472 <r58472@freescale.com>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v3 0/13] memory-hotplug : hot-remove physical memory
+References: <4FFAB0A2.8070304@jp.fujitsu.com> <4FFCDC6A.9070704@cn.fujitsu.com>
+In-Reply-To: <4FFCDC6A.9070704@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +25,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Tabi Timur-B04825
-> Sent: Wednesday, July 11, 2012 5:26 AM
-> To: Liu Qiang-B32616
-> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Herbert
-> Xu; Li Yang-R58472; David S. Miller
-> Subject: Re: [linuxppc-release] [PATCH 4/4] Talitos: fix the issue of dma
-> memory leak
->=20
-> Qiang Liu wrote:
-> > An error will be happened when test with mass data:
->=20
-> Please don't use the phrase "fix the issue" in patch summaries.  It's
-> redundant.
->=20
-> This patch should be titled,
->=20
-> "drivers/crypto: fix memory leak in Talitos driver"
->=20
-> > diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c index
-> > 81f8497..a7da48c 100644
-> > --- a/drivers/crypto/talitos.c
-> > +++ b/drivers/crypto/talitos.c
-> > @@ -264,7 +264,7 @@ static void flush_channel(struct device *dev, int
-> ch, int error, int reset_ch)
-> >  			else
-> >  				status =3D error;
-> >
-> > -		dma_unmap_single(dev, request->dma_desc,
-> > +		 dma_unmap_single(priv->dev, request->dma_desc,
->=20
-> You have an indentation problem here.
-My fault, I will correct it and resend again. Thanks.
+At 07/11/2012 09:52 AM, Wen Congyang Wrote:
+> At 07/09/2012 06:21 PM, Yasuaki Ishimatsu Wrote:
+>> This patch series aims to support physical memory hot-remove.
+>>
+>>   [RFC PATCH v3 1/13] memory-hotplug : rename remove_memory to offline_memory
+>>   [RFC PATCH v3 2/13] memory-hotplug : add physical memory hotplug code to acpi_memory_device_remove
+>>   [RFC PATCH v3 3/13] memory-hotplug : unify argument of firmware_map_add_early/hotplug
+>>   [RFC PATCH v3 4/13] memory-hotplug : remove /sys/firmware/memmap/X sysfs
+>>   [RFC PATCH v3 5/13] memory-hotplug : does not release memory region in PAGES_PER_SECTION chunks
+>>   [RFC PATCH v3 6/13] memory-hotplug : add memory_block_release
+>>   [RFC PATCH v3 7/13] memory-hotplug : remove_memory calls __remove_pages
+>>   [RFC PATCH v3 8/13] memory-hotplug : check page type in get_page_bootmem
+>>   [RFC PATCH v3 9/13] memory-hotplug : move register_page_bootmem_info_node and put_page_bootmem for
+>> sparse-vmemmap
+>>   [RFC PATCH v3 10/13] memory-hotplug : implement register_page_bootmem_info_section of sparse-vmemmap
+>>   [RFC PATCH v3 11/13] memory-hotplug : free memmap of sparse-vmemmap
+>>   [RFC PATCH v3 12/13] memory-hotplug : add node_device_release
+>>   [RFC PATCH v3 13/13] memory-hotplug : remove sysfs file of node
+>>
+>> Even if you apply these patches, you cannot remove the physical memory
+>> completely since these patches are still under development. I want you to
+>> cooperate to improve the physical memory hot-remove. So please review these
+>> patches and give your comment/idea.
+>>
+>> The patches can free/remove following things:
+>>
+>>   - acpi_memory_info                          : [RFC PATCH 2/13]
+>>   - /sys/firmware/memmap/X/{end, start, type} : [RFC PATCH 4/13]
+>>   - iomem_resource                            : [RFC PATCH 5/13]
+>>   - mem_section and related sysfs files       : [RFC PATCH 6-11/13]
+>>   - node and related sysfs files              : [RFC PATCH 12-13/13]
+>>
+>> The patches cannot do following things yet:
+>>
+>>   - page table of removed memory
+>>
+>> If you find lack of function for physical memory hot-remove, please let me
+>> know.
+>>
+>> change log of v3:
+>>  * rebase to 3.5.0-rc6
+>>
+>>  [RFC PATCH v2 2/13]
+>>    * remove extra kobject_put()
+>>
+>>    * The patch was commented by Wen. Wen's comment is
+>>      "acpi_memory_device_remove() should ignore a return value of
+>>      remove_memory() since caller does not care the return value".
+>>      But I did not change it since I think caller should care the
+>>      return value. And I am trying to fix it as follow:
+>>
+>>      https://lkml.org/lkml/2012/7/5/624
+> 
+> acpi_memory_device_remove() will be called not only when we write
+> 1 to /sys/bus/acpi/devices/PNP0C80:XX/eject. When we unbind it
+> from the driver or remove the module acpi_memhotplug, this function
+> will be called too.
+> 
+> I will check whether your patch can work for these two cases.
 
->=20
+I have checked it, and I think your patch can not work for these 2 cases.
+
+When we unbind the device from the driver(write device name to
+/sys/bus/acpi/drivers/acpi_memhotplug/unbind), driver_unbind()
+will be called. This function does not care the return value.
+
+When we remove the module acpi_memhotplug, acpi_memory_device_exit()
+will be called. This function does not care the return value too.
+
+I don't know whether there are some other cases that acpi_memory_device_remove()
+will be called.
+
+Thanks
+Wen Congyang
+
+
+> 
+> Thanks
+> Wen Congyang
+> 
+>>
+>>  [RFC PATCH v2 4/13]
+>>    * remove a firmware_memmap_entry allocated by kzmalloc()
+>>
+>> change log of v2:
+>>  [RFC PATCH v2 2/13]
+>>    * check whether memory block is offline or not before calling offline_memory()
+>>    * check whether section is valid or not in is_memblk_offline()
+>>    * call kobject_put() for each memory_block in is_memblk_offline()
+>>
+>>  [RFC PATCH v2 3/13]
+>>    * unify the end argument of firmware_map_add_early/hotplug
+>>
+>>  [RFC PATCH v2 4/13]
+>>    * add release_firmware_map_entry() for freeing firmware_map_entry
+>>
+>>  [RFC PATCH v2 6/13]
+>>   * add release_memory_block() for freeing memory_block
+>>
+>>  [RFC PATCH v2 11/13]
+>>   * fix wrong arguments of free_pages()
+>>
+>> ---
+>>  arch/powerpc/platforms/pseries/hotplug-memory.c |   16 +-
+>>  arch/x86/mm/init_64.c                           |  144 ++++++++++++++++++++++++
+>>  drivers/acpi/acpi_memhotplug.c                  |   28 ++++
+>>  drivers/base/memory.c                           |   54 ++++++++-
+>>  drivers/base/node.c                             |    7 +
+>>  drivers/firmware/memmap.c                       |   78 ++++++++++++-
+>>  include/linux/firmware-map.h                    |    6 +
+>>  include/linux/memory.h                          |    5
+>>  include/linux/memory_hotplug.h                  |   17 --
+>>  include/linux/mm.h                              |    5
+>>  mm/memory_hotplug.c                             |   98 ++++++++++++----
+>>  mm/sparse.c                                     |    5
+>>  12 files changed, 414 insertions(+), 49 deletions(-)
+>>
+>>
+> 
 > --
-> Timur Tabi
-> Linux kernel developer at Freescale
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
