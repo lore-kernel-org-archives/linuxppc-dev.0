@@ -1,20 +1,19 @@
-Return-Path: <B21989@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+Return-Path: <B36685@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DEC102C0089
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 20:17:21 +1000 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linux-watchdog@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH][v2] powerpc/watchdog: move booke watchdog param related code
- to setup-common.c
-Date: Wed, 11 Jul 2012 17:56:08 +0800
-Message-ID: <1342000568-5605-1-git-send-email-Shaohui.Xie@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 369722C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 21:01:21 +1000 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <galak@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2] powerpc/fsl: Update corenet32_smp_defconfig
+Date: Wed, 11 Jul 2012 18:40:04 +0800
+Message-ID: <1342003205-23378-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,93 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, BOOKE watchdog code for checking "wdt" and "wdt_period" is
-in setup_32.c, it cannot be used in 64-bit, so move it to a common place
-setup-common.c, which will be shared by 32-bit and 64-bit.
+ - Enable NAND support
+ - Enable CONFIG_PCI_MSI and CONFIG_MMC_SDHCI_OF
 
-Also, replace the simple_strtoul with kstrtol.
-
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
-changes for v2:
-use setup-common.c instead of prom.c
+ arch/powerpc/configs/corenet32_smp_defconfig |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
- arch/powerpc/kernel/setup-common.c |   27 +++++++++++++++++++++++++++
- arch/powerpc/kernel/setup_32.c     |   24 ------------------------
- 2 files changed, 27 insertions(+), 24 deletions(-)
-
-diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
-index afd4f05..bdc499c 100644
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -720,6 +720,33 @@ static int powerpc_debugfs_init(void)
- arch_initcall(powerpc_debugfs_init);
- #endif
- 
-+#ifdef CONFIG_BOOKE_WDT
-+extern u32 booke_wdt_enabled;
-+extern u32 booke_wdt_period;
-+
-+/* Checks wdt=x and wdt_period=xx command-line option */
-+notrace int __init early_parse_wdt(char *p)
-+{
-+	if (p && strncmp(p, "0", 1) != 0)
-+		booke_wdt_enabled = 1;
-+
-+	return 0;
-+}
-+early_param("wdt", early_parse_wdt);
-+
-+int __init early_parse_wdt_period(char *p)
-+{
-+	unsigned long ret;
-+	if (p) {
-+		if (!kstrtol(p, 0, &ret))
-+			booke_wdt_period = ret;
-+	}
-+
-+	return 0;
-+}
-+early_param("wdt_period", early_parse_wdt_period);
-+#endif	/* CONFIG_BOOKE_WDT */
-+
- void ppc_printk_progress(char *s, unsigned short hex)
- {
- 	pr_info("%s\n", s);
-diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-index ec8a53f..a8f54ec 100644
---- a/arch/powerpc/kernel/setup_32.c
-+++ b/arch/powerpc/kernel/setup_32.c
-@@ -149,30 +149,6 @@ notrace void __init machine_init(u64 dt_ptr)
- 		ppc_md.progress("id mach(): done", 0x200);
- }
- 
--#ifdef CONFIG_BOOKE_WDT
--extern u32 booke_wdt_enabled;
--extern u32 booke_wdt_period;
--
--/* Checks wdt=x and wdt_period=xx command-line option */
--notrace int __init early_parse_wdt(char *p)
--{
--	if (p && strncmp(p, "0", 1) != 0)
--	       booke_wdt_enabled = 1;
--
--	return 0;
--}
--early_param("wdt", early_parse_wdt);
--
--int __init early_parse_wdt_period (char *p)
--{
--	if (p)
--		booke_wdt_period = simple_strtoul(p, NULL, 0);
--
--	return 0;
--}
--early_param("wdt_period", early_parse_wdt_period);
--#endif	/* CONFIG_BOOKE_WDT */
--
- /* Checks "l2cr=xxxx" command-line option */
- int __init ppc_setup_l2cr(char *str)
- {
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index 91db656..e54d5f0 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -36,6 +36,7 @@ CONFIG_FORCE_MAX_ZONEORDER=13
+ CONFIG_FSL_LBC=y
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
++CONFIG_PCI_MSI=y
+ # CONFIG_PCIEASPM is not set
+ CONFIG_RAPIDIO=y
+ CONFIG_FSL_RIO=y
+@@ -76,6 +77,11 @@ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_AMDSTD=y
+ CONFIG_MTD_PHYSMAP_OF=y
++CONFIG_MTD_NAND=y
++CONFIG_MTD_NAND_ECC=y
++CONFIG_MTD_NAND_IDS=y
++CONFIG_MTD_NAND_FSL_IFC=y
++CONFIG_MTD_NAND_FSL_ELBC=y
+ CONFIG_MTD_M25P80=y
+ CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+@@ -136,6 +142,8 @@ CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
+ CONFIG_USB_STORAGE=y
+ CONFIG_MMC=y
+ CONFIG_MMC_SDHCI=y
++CONFIG_MMC_SDHCI_OF=y
++CONFIG_MMC_SDHCI_OF_ESDHC=y
+ CONFIG_EDAC=y
+ CONFIG_EDAC_MM_EDAC=y
+ CONFIG_EDAC_MPC85XX=y
 -- 
 1.6.4
