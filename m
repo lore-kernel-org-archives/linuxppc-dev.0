@@ -1,22 +1,22 @@
-Return-Path: <B32616@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+Return-Path: <B37781@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 28F152C0217
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 19:23:25 +1000 (EST)
-From: Qiang Liu <qiang.liu@freescale.com>
-To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v2 4/4] fsl-dma: use spin_lock_bh to instead of
- spin_lock_irqsave
-Date: Wed, 11 Jul 2012 17:02:06 +0800
-Message-ID: <1341997326-18495-1-git-send-email-qiang.liu@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 90B742C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 19:53:56 +1000 (EST)
+Subject: Re: [PATCH] powerpc/85xx: Add dts files for P1021RDB-PC board
+From: Jiucheng Xu <Jiucheng.Xu@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <EFC9D38C-4F08-4655-A0DA-9D92A3559C96@kernel.crashing.org>
+References: <1341909561-6591-1-git-send-email-Jiucheng.Xu@freescale.com>
+ <EFC9D38C-4F08-4655-A0DA-9D92A3559C96@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 11 Jul 2012 17:58:09 +0800
+Message-ID: <1342000689.7459.179.camel@glenn-desktop>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Vinod Koul <vinod.koul@intel.com>, Qiang Liu <qiang.liu@freescale.com>,
- herbert@gondor.hengli.com.au, Dan Williams <dan.j.williams@intel.com>,
- davem@davemloft.net
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,133 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use spin_lock_bh to instead of spin_lock_irqsave for improving performance.
 
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Vinod Koul <vinod.koul@intel.com>
-Cc: Li Yang <leoli@freescale.com>
-Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
----
- drivers/dma/fsldma.c |   30 ++++++++++++------------------
- 1 files changed, 12 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 0ba3e40..f2822a8 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -405,10 +405,9 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
- 	struct fsldma_chan *chan = to_fsl_chan(tx->chan);
- 	struct fsl_desc_sw *desc = tx_to_fsl_desc(tx);
- 	struct fsl_desc_sw *child;
--	unsigned long flags;
- 	dma_cookie_t cookie;
+On Tue, 2012-07-10 at 06:48 -0500, Kumar Gala wrote:
+> On Jul 10, 2012, at 3:39 AM, Xu Jiucheng wrote:
+> > ---
+> > arch/powerpc/boot/dts/p1021rdb-pc.dtsi    |  236 +++++++++++++++++++++++++++++
+> > arch/powerpc/boot/dts/p1021rdb-pc_32b.dts |   96 ++++++++++++
+> > arch/powerpc/boot/dts/p1021rdb-pc_36b.dts |   96 ++++++++++++
+> > arch/powerpc/boot/dts/p1021rdb.dts        |   96 ------------
+> > arch/powerpc/boot/dts/p1021rdb.dtsi       |  236 -----------------------------
+> > arch/powerpc/boot/dts/p1021rdb_36b.dts    |   96 ------------
+> > 6 files changed, 428 insertions(+), 428 deletions(-)
+> > create mode 100644 arch/powerpc/boot/dts/p1021rdb-pc.dtsi
+> > create mode 100644 arch/powerpc/boot/dts/p1021rdb-pc_32b.dts
+> > create mode 100644 arch/powerpc/boot/dts/p1021rdb-pc_36b.dts
+> > delete mode 100644 arch/powerpc/boot/dts/p1021rdb.dts
+> > delete mode 100644 arch/powerpc/boot/dts/p1021rdb.dtsi
+> > delete mode 100644 arch/powerpc/boot/dts/p1021rdb_36b.dts
+> 
+> Do we really need a 32 & 36 bit device tree for this board?  Isnt the memory fixed so why not just have 32b?
+> 
+I have no idea, 36 bit is already there in the history release of SDK,
+If it is not necessary for upstream, I can resend a new patch without 36
+bit.
+> Also, why are you removing the dts for the older P1021RDB??
+> 
+> - k
+This dts for the older P1021RDB was committed by me. I just rename these
+files in order to keep uniformity with other platforms, e.g
+"P1020rdb-pc.dtsi  p1020mbg-pc.dtsi". If you think it doesn't matter,
+please ignore this patch.
 
--	spin_lock_irqsave(&chan->desc_lock, flags);
-+	spin_lock_bh(&chan->desc_lock);
+If AMP is a specific application as Timur says, please ignore the AMP
+patch.
 
- 	/*
- 	 * assign cookies to all of the software descriptors
-@@ -421,7 +420,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
- 	/* put this transaction onto the tail of the pending queue */
- 	append_ld_queue(chan, desc);
-
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+	spin_unlock_bh(&chan->desc_lock);
-
- 	return cookie;
- }
-@@ -530,13 +529,12 @@ static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
- static void fsl_dma_free_chan_resources(struct dma_chan *dchan)
- {
- 	struct fsldma_chan *chan = to_fsl_chan(dchan);
--	unsigned long flags;
-
- 	chan_dbg(chan, "free all channel resources\n");
--	spin_lock_irqsave(&chan->desc_lock, flags);
-+	spin_lock_bh(&chan->desc_lock);
- 	fsldma_free_desc_list(chan, &chan->ld_pending);
- 	fsldma_free_desc_list(chan, &chan->ld_running);
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+	spin_unlock_bh(&chan->desc_lock);
-
- 	dma_pool_destroy(chan->desc_pool);
- 	chan->desc_pool = NULL;
-@@ -755,7 +753,6 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
- {
- 	struct dma_slave_config *config;
- 	struct fsldma_chan *chan;
--	unsigned long flags;
- 	int size;
-
- 	if (!dchan)
-@@ -765,7 +762,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
-
- 	switch (cmd) {
- 	case DMA_TERMINATE_ALL:
--		spin_lock_irqsave(&chan->desc_lock, flags);
-+		spin_lock_bh(&chan->desc_lock);
-
- 		/* Halt the DMA engine */
- 		dma_halt(chan);
-@@ -775,7 +772,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
- 		fsldma_free_desc_list(chan, &chan->ld_running);
- 		chan->idle = true;
-
--		spin_unlock_irqrestore(&chan->desc_lock, flags);
-+		spin_unlock_bh(&chan->desc_lock);
- 		return 0;
-
- 	case DMA_SLAVE_CONFIG:
-@@ -935,11 +932,10 @@ static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
- static void fsl_dma_memcpy_issue_pending(struct dma_chan *dchan)
- {
- 	struct fsldma_chan *chan = to_fsl_chan(dchan);
--	unsigned long flags;
-
--	spin_lock_irqsave(&chan->desc_lock, flags);
-+	spin_lock_bh(&chan->desc_lock);
- 	fsl_chan_xfer_ld_queue(chan);
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+	spin_unlock_bh(&chan->desc_lock);
- }
-
- /**
-@@ -952,11 +948,10 @@ static enum dma_status fsl_tx_status(struct dma_chan *dchan,
- {
- 	struct fsldma_chan *chan = to_fsl_chan(dchan);
- 	enum dma_status ret;
--	unsigned long flags;
-
--	spin_lock_irqsave(&chan->desc_lock, flags);
-+	spin_lock_bh(&chan->desc_lock);
- 	ret = dma_cookie_status(dchan, cookie, txstate);
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+	spin_unlock_bh(&chan->desc_lock);
-
- 	return ret;
- }
-@@ -1037,12 +1032,11 @@ static void dma_do_tasklet(unsigned long data)
- 	struct fsldma_chan *chan = (struct fsldma_chan *)data;
- 	struct fsl_desc_sw *desc, *_desc, *prev = NULL;
- 	LIST_HEAD(ld_cleanup);
--	unsigned long flags;
- 	dma_addr_t curr_phys = get_cdar(chan);
-
- 	chan_dbg(chan, "tasklet entry\n");
-
--	spin_lock_irqsave(&chan->desc_lock, flags);
-+	spin_lock_bh(&chan->desc_lock);
-
- 	/* find the descriptor which is already completed */
- 	list_for_each_entry_safe(desc, _desc, &chan->ld_running, node) {
-@@ -1079,7 +1073,7 @@ static void dma_do_tasklet(unsigned long data)
- 	 * ahead and free the descriptors below.
- 	 */
- 	fsl_chan_xfer_ld_queue(chan);
--	spin_unlock_irqrestore(&chan->desc_lock, flags);
-+	spin_unlock_bh(&chan->desc_lock);
-
- 	/* Run the callback for each descriptor, in order */
- 	list_for_each_entry_safe(desc, _desc, &ld_cleanup, node) {
---
-1.7.5.1
+Thanks,
+Jiucheng
