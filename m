@@ -1,30 +1,25 @@
-Return-Path: <liuj97@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CE74F2C01FF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 00:24:34 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so2136935pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 07:24:32 -0700 (PDT)
-Message-ID: <4FFD8C95.4060300@gmail.com>
-Date: Wed, 11 Jul 2012 22:24:21 +0800
-From: Jiang Liu <liuj97@gmail.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 386C32C0200
+ for <linuxppc-dev@ozlabs.org>; Thu, 12 Jul 2012 00:24:35 +1000 (EST)
+In-Reply-To: <OF7810EBD9.B191A242-ONC1257A13.0031E9E3-C1257A13.00320D10@LocalDomain>
+References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>	
+ <4FC62018.3040404@mindchasers.com> <1338542089.16119.48.camel@pasglop>
+ <4FC8EDC4.2050704@freescale.com> <1338589800.16119.58.camel@pasglop>	
+ <4FC9456B.8090400@freescale.com> <1338593099.16119.60.camel@pasglop>
+ <OFF2E739FE.A96EBAF2-ONC1257A11.00655546-C1257A11.0065978F@transmode.se>
+ <1338672076.7150.2.camel@pasglop>
+ <OF7810EBD9.B191A242-ONC1257A13.0031E9E3-C1257A13.00320D10@LocalDomain>
+Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
+Message-ID: <OF96FD460E.639EB713-ONC1257A38.004ECE07-C1257A38.004F2536@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 11 Jul 2012 16:24:28 +0200
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH v3 0/13] memory-hotplug : hot-remove physical memory
-References: <4FFAB0A2.8070304@jp.fujitsu.com>
- <alpine.DEB.2.00.1207091015570.30060@router.home>
- <4FFBFCAC.4010007@jp.fujitsu.com> <4FFC5D43.7040206@gmail.com>
- <4FFCC438.4080004@jp.fujitsu.com> <4FFCC6F1.5060908@gmail.com>
- <4FFCCEC3.4050800@jp.fujitsu.com>
-In-Reply-To: <4FFCCEC3.4050800@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org
+Content-type: text/plain; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, support@abatron.ch,
+ Bob Cochran <ppc@mindchasers.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,95 +29,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/11/2012 08:54 AM, Yasuaki Ishimatsu wrote:
-> Hi Jiang,
-> 
-> 2012/07/11 9:21, Jiang Liu wrote:
->> On 07/11/2012 08:09 AM, Yasuaki Ishimatsu wrote:
->>> Hi Jiang,
->>>
->>> 2012/07/11 1:50, Jiang Liu wrote:
->>>> On 07/10/2012 05:58 PM, Yasuaki Ishimatsu wrote:
->>>>> Hi Christoph,
->>>>>
->>>>> 2012/07/10 0:18, Christoph Lameter wrote:
->>>>>>
->>>>>> On Mon, 9 Jul 2012, Yasuaki Ishimatsu wrote:
->>>>>>
->>>>>>> Even if you apply these patches, you cannot remove the physical memory
->>>>>>> completely since these patches are still under development. I want you to
->>>>>>> cooperate to improve the physical memory hot-remove. So please review these
->>>>>>> patches and give your comment/idea.
->>>>>>
->>>>>> Could you at least give a method on how you want to do physical memory
->>>>>> removal?
->>>>>
->>>>> We plan to release a dynamic hardware partitionable system. It will be
->>>>> able to hot remove/add a system board which included memory and cpu.
->>>>> But as you know, Linux does not support memory hot-remove on x86 box.
->>>>> So I try to develop it.
->>>>>
->>>>> Current plan to hot remove system board is to use container driver.
->>>>> Thus I define the system board in ACPI DSDT table as a container device.
->>>>> It have supported hot-add a container device. And if container device
->>>>> has _EJ0 ACPI method, "eject" file to remove the container device is
->>>>> prepared as follow:
->>>>>
->>>>> # ls -l /sys/bus/acpi/devices/ACPI0004\:01/eject
->>>>> --w-------. 1 root root 4096 Jul 10 18:19 /sys/bus/acpi/devices/ACPI0004:01/eject
->>>>>
->>>>> When I hot-remove the container device, I echo 1 to the file as follow:
->>>>>
->>>>> #echo 1 > /sys/bus/acpi/devices/ACPI0004\:02/eject
->>>>>
->>>>> Then acpi_bus_trim() is called. And it calls acpi_memory_device_remove()
->>>>> for removing memory device. But the code does not do nothing.
->>>>> So I developed the continuation of the function.
->>>>>
->>>>>> You would have to remove all objects from the range you want to
->>>>>> physically remove. That is only possible under special circumstances and
->>>>>> with a limited set of objects. Even if you exclusively use ZONE_MOVEABLE
->>>>>> you still may get cases where pages are pinned for a long time.
->>>>>
->>>>> I know it. So my memory hot-remove plan is as follows:
->>>>>
->>>>> 1. hot-added a system board
->>>>>      All memory which included the system board is offline.
->>>>>
->>>>> 2. online the memory as removable page
->>>>>      The function has not supported yet. It is being developed by Lai as follow:
->>>>>      http://lkml.indiana.edu/hypermail/linux/kernel/1207.0/01478.html
->>>>>      If it is supported, I will be able to create movable memory.
->>>>>
->>>>> 3. hot-remove the memory by container device's eject file
->>>> We have implemented a prototype to do physical node (mem + CPU + IOH) hotplug
->>>> for Itanium and is now porting it to x86. But with currently solution, memory
->>>> hotplug functionality may cause 10-20% performance decrease because we concentrate
->>>> all DMA/Normal memory to the first NUMA node, and all other NUMA nodes only
->>>> hosts ZONE_MOVABLE. We are working on solution to minimize the performance
->>>> drop now.
->>>
->>> Thank you for your interesting response.
->>>
->>> I have a question. How do you move all other NUMA nodes to ZONE_MOVABLE?
->>> To use ZONE_MOVABLE, we need to use boot options like kernelcore or movablecore.
->>> But it is not enough, since the requested amount is spread evenly throughout
->>> all nodes in the system. So I think we do not have way to move all other NUMA
->>> node to ZONE_MOVABLE.
->> We have modified the ZONE_MOVABLE spreading and bootmem allocation. If the kernelcore
->> or movablecore kernel parameters are present, we follow current behavior. If those
->> parameter are absent and the platform supports physical hotplug, we will concentrate
->> DMA/NORMAL memory to specific nodes.
-> 
-> That's interesting. I want to know more details, if you do not mind.
-> Current kernel doesn't do the behavior, does it? So I think you have some
-> patches for changing the behavior. Will you merge these patches into
-> community kernel?
-Yeah, we do have patches for that. But it's still prototype, still much work
-needed before sending them to the community. 
-Currently I'm trying to send out patches for an ACPI based system device
-hotplug framework, which will support processor, memory, IOH and node hotplug
-in a unified way. After that, I will prepare the memory hotplug code.
+Joakim Tjernlund/Transmode wrote on 2012/06/04 11:06:41:
+>
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 2012/06/02 23:21:16:
+> >
+> > On Sat, 2012-06-02 at 20:29 +0200, Joakim Tjernlund wrote:
+> > >
+> > > hmm, where does this go w.r.t the patch? Got the feeling that the
+> > > best thing is to just turn MSR:DE on and be done with it?
+> >
+> > Not unconditionally, we need to have a close look, that might be ok
+> > specifically for BookE 32-bit, it's certainly not ok for BookE 64-bit at
+> > this point.
+> >
+> > For now, I'm ok with a debug CONFIG_* option.
+> >
+> > Also do we know if MSR:DE has any performance impact on any CPU ? I know
+> > having DACs enabled has a major impact on some for example.
+>
+> I just sent a new patch, named
+>   [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
+> which will only add MSR_DE for booke under CONFIG_BDI_SWITCH
 
-Thanks!
-Gerry
+Now I tried running gdb in user space and then I get this(with the MSR_DE patch):
+root@P2020RDB ~ # ./gdb busybox
+GNU gdb 6.8
+Copyright (C) 2008 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+and "show warranty" for details.
+This GDB was configured as "powerpc-softfloat-linux-gnu"...
+(no debugging symbols found)
+(gdb) run
+Starting program: /root/busybox
+(no debugging syOops: Exception in kernel mode, sig: 5 [#1]
+PREEMPT P1010 RDB
+Modules linked in:
+NIP: c00067dc LR: c02d1994 CTR: c004a97c
+REGS: dfef9f10 TRAP: 2002   Not tainted  (3.4.0+)
+MSR: 00021000 <CE,ME>  CR: 42002424  XER: 00000000
+TASK = df9a0b10[429] 'gdb' THREAD: dfb9a000
+GPR00: cc00cc00 dfb9bd70 df9a0b10 df9a0b10 df949ad0 c0396000 00000000 df949b0c
+GPR08: 00000000 40000000 00002786 c03b0000 2b833af6 10493068 10490000 105a62a0
+GPR16: 00000000 10490000 10490000 10490000 10490000 10490000 10490000 dfb2ce40
+GPR24: df949ad0 c02e0000 c02e0000 c03b20a4 00000004 dfb9a000 c0399ce0 df9a0b10
+NIP [c00067dc] __switch_to+0x74/0xc4
+LR [c02d1994] __schedule+0x1a0/0x3c0
+Call Trace:
+[dfb9bd70] [dfb9a000] 0xdfb9a000 (unreliable)
+[dfb9bd80] [c02d1994] __schedule+0x1a0/0x3c0
+[dfb9bdc0] [c02d1cb8] preempt_schedule+0x54/0x74
+[dfb9bdd0] [c0047fe0] try_to_wake_up+0x140/0x144
+[dfb9bdf0] [c002b0bc] ptrace_resume+0x70/0xbc
+[dfb9be00] [c002c044] ptrace_request+0x1e8/0x5f0
+[dfb9bec0] [c00032c4] arch_ptrace+0x30/0x8f8
+[dfb9bf10] [c002ba90] sys_ptrace+0xb4/0x3cc
+[dfb9bf40] [c000cf4c] ret_from_syscall+0x0/0x3c
+--- Exception: c01 at 0xfd607a4
+    LR = 0x101a4900
+Instruction dump:
+41820040 80040234 7c184ba6 80040238 7c194ba6 8004023c 7c1c4ba6 80040240
+7c1d4ba6 80040224 7c144ba6 80040228 <7c154ba6> 8004022c 7c164ba6 7c431378
+---[ end trace 584ab4ed4087571b ]---
+
+note: gdb[429] exited with preempt_count 268435458
+mbols found)
+(nBUG: scheduling while atomic: busybox/430/0x10000004
+o debugging symbModules linked in:ols found)
+
+When I remove the patch it works. I got no idea were it goes wrong,
+any ideas?
+
+ Jocke
