@@ -1,20 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 77BB52C04AB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 22:58:08 +1000 (EST)
-Subject: Re: [PATCH v2 1/3] powerpc/fsl-pci: get PCI init out of board files
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1341966409-22660-2-git-send-email-scottwood@freescale.com>
-Date: Wed, 11 Jul 2012 07:58:01 -0500
-Message-Id: <3031A8CE-6749-4ED8-96BA-54C449A48F31@kernel.crashing.org>
-References: <1341966409-22660-1-git-send-email-scottwood@freescale.com>
- <1341966409-22660-2-git-send-email-scottwood@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Alexander Graf <agraf@suse.de>
+Return-Path: <liuj97@gmail.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CE74F2C01FF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 00:24:34 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so2136935pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jul 2012 07:24:32 -0700 (PDT)
+Message-ID: <4FFD8C95.4060300@gmail.com>
+Date: Wed, 11 Jul 2012 22:24:21 +0800
+From: Jiang Liu <liuj97@gmail.com>
+MIME-Version: 1.0
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v3 0/13] memory-hotplug : hot-remove physical memory
+References: <4FFAB0A2.8070304@jp.fujitsu.com>
+ <alpine.DEB.2.00.1207091015570.30060@router.home>
+ <4FFBFCAC.4010007@jp.fujitsu.com> <4FFC5D43.7040206@gmail.com>
+ <4FFCC438.4080004@jp.fujitsu.com> <4FFCC6F1.5060908@gmail.com>
+ <4FFCCEC3.4050800@jp.fujitsu.com>
+In-Reply-To: <4FFCCEC3.4050800@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +34,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/11/2012 08:54 AM, Yasuaki Ishimatsu wrote:
+> Hi Jiang,
+> 
+> 2012/07/11 9:21, Jiang Liu wrote:
+>> On 07/11/2012 08:09 AM, Yasuaki Ishimatsu wrote:
+>>> Hi Jiang,
+>>>
+>>> 2012/07/11 1:50, Jiang Liu wrote:
+>>>> On 07/10/2012 05:58 PM, Yasuaki Ishimatsu wrote:
+>>>>> Hi Christoph,
+>>>>>
+>>>>> 2012/07/10 0:18, Christoph Lameter wrote:
+>>>>>>
+>>>>>> On Mon, 9 Jul 2012, Yasuaki Ishimatsu wrote:
+>>>>>>
+>>>>>>> Even if you apply these patches, you cannot remove the physical memory
+>>>>>>> completely since these patches are still under development. I want you to
+>>>>>>> cooperate to improve the physical memory hot-remove. So please review these
+>>>>>>> patches and give your comment/idea.
+>>>>>>
+>>>>>> Could you at least give a method on how you want to do physical memory
+>>>>>> removal?
+>>>>>
+>>>>> We plan to release a dynamic hardware partitionable system. It will be
+>>>>> able to hot remove/add a system board which included memory and cpu.
+>>>>> But as you know, Linux does not support memory hot-remove on x86 box.
+>>>>> So I try to develop it.
+>>>>>
+>>>>> Current plan to hot remove system board is to use container driver.
+>>>>> Thus I define the system board in ACPI DSDT table as a container device.
+>>>>> It have supported hot-add a container device. And if container device
+>>>>> has _EJ0 ACPI method, "eject" file to remove the container device is
+>>>>> prepared as follow:
+>>>>>
+>>>>> # ls -l /sys/bus/acpi/devices/ACPI0004\:01/eject
+>>>>> --w-------. 1 root root 4096 Jul 10 18:19 /sys/bus/acpi/devices/ACPI0004:01/eject
+>>>>>
+>>>>> When I hot-remove the container device, I echo 1 to the file as follow:
+>>>>>
+>>>>> #echo 1 > /sys/bus/acpi/devices/ACPI0004\:02/eject
+>>>>>
+>>>>> Then acpi_bus_trim() is called. And it calls acpi_memory_device_remove()
+>>>>> for removing memory device. But the code does not do nothing.
+>>>>> So I developed the continuation of the function.
+>>>>>
+>>>>>> You would have to remove all objects from the range you want to
+>>>>>> physically remove. That is only possible under special circumstances and
+>>>>>> with a limited set of objects. Even if you exclusively use ZONE_MOVEABLE
+>>>>>> you still may get cases where pages are pinned for a long time.
+>>>>>
+>>>>> I know it. So my memory hot-remove plan is as follows:
+>>>>>
+>>>>> 1. hot-added a system board
+>>>>>      All memory which included the system board is offline.
+>>>>>
+>>>>> 2. online the memory as removable page
+>>>>>      The function has not supported yet. It is being developed by Lai as follow:
+>>>>>      http://lkml.indiana.edu/hypermail/linux/kernel/1207.0/01478.html
+>>>>>      If it is supported, I will be able to create movable memory.
+>>>>>
+>>>>> 3. hot-remove the memory by container device's eject file
+>>>> We have implemented a prototype to do physical node (mem + CPU + IOH) hotplug
+>>>> for Itanium and is now porting it to x86. But with currently solution, memory
+>>>> hotplug functionality may cause 10-20% performance decrease because we concentrate
+>>>> all DMA/Normal memory to the first NUMA node, and all other NUMA nodes only
+>>>> hosts ZONE_MOVABLE. We are working on solution to minimize the performance
+>>>> drop now.
+>>>
+>>> Thank you for your interesting response.
+>>>
+>>> I have a question. How do you move all other NUMA nodes to ZONE_MOVABLE?
+>>> To use ZONE_MOVABLE, we need to use boot options like kernelcore or movablecore.
+>>> But it is not enough, since the requested amount is spread evenly throughout
+>>> all nodes in the system. So I think we do not have way to move all other NUMA
+>>> node to ZONE_MOVABLE.
+>> We have modified the ZONE_MOVABLE spreading and bootmem allocation. If the kernelcore
+>> or movablecore kernel parameters are present, we follow current behavior. If those
+>> parameter are absent and the platform supports physical hotplug, we will concentrate
+>> DMA/NORMAL memory to specific nodes.
+> 
+> That's interesting. I want to know more details, if you do not mind.
+> Current kernel doesn't do the behavior, does it? So I think you have some
+> patches for changing the behavior. Will you merge these patches into
+> community kernel?
+Yeah, we do have patches for that. But it's still prototype, still much work
+needed before sending them to the community. 
+Currently I'm trying to send out patches for an ACPI based system device
+hotplug framework, which will support processor, memory, IOH and node hotplug
+in a unified way. After that, I will prepare the memory hotplug code.
 
-On Jul 10, 2012, at 7:26 PM, Scott Wood wrote:
-
-> As an alternative incremental starting point to Jia Hongtao's =
-patchset,
-> get the FSL PCI init out of the board files, but do not yet convert to =
-a
-> platform driver.
->=20
-> Rather than having each board supply a magic register offset for
-> determining the "primary" bus, we look for which PCI host bridge
-> contains an ISA node within its subtree.  If there is no ISA node,
-> normally that would mean there is no primary bus, but until certain
-> bugs are fixed we arbitrarily designate a primary in this case.
->=20
-> Conversion to a platform driver and related improvements can happen
-> after this, as the ordering issues are sorted out.
->=20
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
-> v2: rebased on Kumar's next
->=20
-> arch/powerpc/sysdev/fsl_pci.c |   71 =
-++++++++++++++++++++++++++++++++++++++++-
-> arch/powerpc/sysdev/fsl_pci.h |    8 +++++
-> 2 files changed, 78 insertions(+), 1 deletions(-)
-
-applied to next
-
-- k=
+Thanks!
+Gerry
