@@ -1,27 +1,19 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-gg0-f179.google.com (mail-gg0-f179.google.com
- [209.85.161.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D1A152C0221
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 00:13:21 +1000 (EST)
-Received: by ggnk3 with SMTP id k3so2358982ggn.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 07:13:19 -0700 (PDT)
-MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <56E7FB74-A29A-4658-9AC9-2C87A1A7ED3C@kernel.crashing.org>
-References: <1342085776-13289-1-git-send-email-B38951@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A228F9@039-SN1MPN1-002.039d.mgd.msft.net>
- <56E7FB74-A29A-4658-9AC9-2C87A1A7ED3C@kernel.crashing.org>
-Date: Thu, 12 Jul 2012 22:13:19 +0800
-Message-ID: <CADRPPNT6S7HEm0j=8UnBBqfyxaNUZfbzt1vrE-HGrB=M5_L-yg@mail.gmail.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0D3952C02C1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 01:08:42 +1000 (EST)
 Subject: Re: [PATCH] powerpc/sgmii: Add phy nodes in SGMII mode
-From: Li Yang <leoli@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- Jia Hongtao-B38951 <B38951@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1342085776-13289-1-git-send-email-B38951@freescale.com>
+Date: Thu, 12 Jul 2012 10:08:35 -0500
+Message-Id: <07103950-917A-409B-9C7F-9D10AC8FC996@kernel.crashing.org>
+References: <1342085776-13289-1-git-send-email-B38951@freescale.com>
+To: Jia Hongtao <B38951@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,20 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 12, 2012 at 8:18 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> On Jul 12, 2012, at 5:28 AM, Jia Hongtao-B38951 wrote:
->
->> Note that this patch works with uboot update.
->> Please refer to:
->> http://patchwork.ozlabs.org/patch/170627/
->>
->> -Hongtao.
->
-> Will RGMII still work with this patch if I dont update u-boot?
->
-> I'm assuming yes.
 
-Yes.  We just add new nodes without modifying the original PHY nodes.
+On Jul 12, 2012, at 4:36 AM, Jia Hongtao wrote:
 
-Leo
+> In SGMII riser card different PHY chip are used with different external
+> IRQ from eTSEC. To support PHY link state auto detect in SGMII mode we
+> should add another group of PHY nodes for SGMII mode.
+> 
+> For MPC8572DS IRQ6 is used for PHY0~PHY1, IRQ7 is used for PHY2~PHY3.
+> For MPC8544DS and MPC8536DS IRQ6 is used for PHY0~PHY1.
+> For P2020DS IRQ5 is used for PHY1~PHY2.
+> 
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> ---
+> arch/powerpc/boot/dts/mpc8536ds.dtsi |    8 ++++++++
+> arch/powerpc/boot/dts/mpc8544ds.dtsi |    9 +++++++++
+> arch/powerpc/boot/dts/mpc8572ds.dtsi |   17 +++++++++++++++++
+> arch/powerpc/boot/dts/p2020ds.dtsi   |   10 ++++++++++
+> 4 files changed, 44 insertions(+), 0 deletions(-)
+
+applied to next
+
+- k
