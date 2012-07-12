@@ -1,23 +1,28 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id E80A92C0210
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 16:23:36 +1000 (EST)
-Date: Thu, 12 Jul 2012 16:23:25 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: linux-next: manual merge of the kvm-ppc tree with the powerpc tree
-Message-Id: <20120712162325.624ecd07071801c5ce144f35@canb.auug.org.au>
-In-Reply-To: <B6C6F6EC-BDD9-41DC-9677-4B7A4A52BDF0@suse.de>
-References: <20120712135735.7678a50ffb107e3094af27b8@canb.auug.org.au>
- <B6C6F6EC-BDD9-41DC-9677-4B7A4A52BDF0@suse.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__12_Jul_2012_16_23_25_+1000_ZPoP98noNK2Kty=5"
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Bharat Bhushan <r65777@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B32616@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2CA2F2C0209
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 17:12:21 +1000 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: RE: [PATCH v2 3/4] fsl-dma: change the release process of dma
+ descriptor
+Date: Thu, 12 Jul 2012 07:12:13 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70C0916@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1341997285-18459-1-git-send-email-qiang.liu@freescale.com>
+ <20120711163058.GD17539@ovro.caltech.edu>
+In-Reply-To: <20120711163058.GD17539@ovro.caltech.edu>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+ Vinod Koul <vinod.koul@intel.com>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,60 +32,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__12_Jul_2012_16_23_25_+1000_ZPoP98noNK2Kty=5
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi Alex,
-
-On Thu, 12 Jul 2012 07:56:46 +0200 Alexander Graf <agraf@suse.de> wrote:
->
-> On 12.07.2012, at 05:57, Stephen Rothwell wrote:
+> -----Original Message-----
+> From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]
+> Sent: Thursday, July 12, 2012 12:31 AM
+> To: Liu Qiang-B32616
+> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Vinod
+> Koul; herbert@gondor.hengli.com.au; Dan Williams; davem@davemloft.net
+> Subject: Re: [PATCH v2 3/4] fsl-dma: change the release process of dma
+> descriptor
 >=20
-> > Today's linux-next merge of the kvm-ppc tree got a conflict in
-> > arch/powerpc/kvm/booke_interrupts.S between commit c75df6f96c59
-> > ("powerpc: Fix usage of register macros getting ready for %r0 change")
-> > from the powerpc tree and commit fc372c0843b8 ("booke: Added crit/mc
-> > exception handler for e500v2") from the kvm-ppc tree.
-> >=20
-> > I fixed it up (see below - could do with checking) and can carry the fix
-> > as necessary.
+> On Wed, Jul 11, 2012 at 05:01:25PM +0800, Qiang Liu wrote:
+> > Modify the release process of dma descriptor for avoiding exception
+> when
+> > enable config NET_DMA, release dma descriptor from 1st to last second,
+> the
+> > last descriptor which is reserved in current descriptor register may
+> not be
+> > completed, race condition will be raised if free current descriptor.
+> >
+> > A race condition which is raised when use both of talitos and dmaengine
+> to
+> > offload xor is because napi scheduler (NET_DMA is enabled) will sync
+> all
+> > pending requests in dma channels, it affects the process of raid
+> operations.
+> > The descriptor is freed which is submitted just now, but async_tx must
+> check
+> > whether this depend tx descriptor is acked, there are poison contents
+> in the
+> > invalid address, then BUG_ON() is thrown, so this descriptor will be
+> freed
+> > in the next time.
+> >
 >=20
-> Hrm. Ben already warned me that this will happen, so I did a test merge a=
- few days ago. Back then I also had to change 2 other bits that were not co=
-nflicting, to get to code to actually compile.
+> This patch seems to be covering up a bug in the driver, rather than
+> actually fixing it.
+Yes, it's fine for fsl-dma itself, but it cannot work under complex conditi=
+on.
+For example, we enable NET_DMA and SEC xor offload, if NAPI task is waken u=
+p to
+synchronize pending requests when raid5 dma copy was submitted, the process=
+ order
+of raid5 tx descriptor is not as our expected. Unfortunately, sometime we h=
+ave
+to check this dependent tx descriptor which has was already released.
+
 >=20
-> Could you please do an s/VCPU_GPR(r/VCPU_GPR/R/g in arch/powerpc/kvm/book=
-e_interrupts.S? I'd check if you actually need it myself, but the tree does=
-n't seem to be pushed out yet :).
+> When it was written, it was expected that dma_do_tasklet() would run
+> only when the controller was idle.
+>=20
+> > Cc: Dan Williams <dan.j.williams@intel.com>
+> > Cc: Vinod Koul <vinod.koul@intel.com>
+> > Cc: Li Yang <leoli@freescale.com>
+> > Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+> > ---
+> >  drivers/dma/fsldma.c |   15 ++++++++++++---
+> >  1 files changed, 12 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> > index 4f2f212..0ba3e40 100644
+> > --- a/drivers/dma/fsldma.c
+> > +++ b/drivers/dma/fsldma.c
+> > @@ -1035,14 +1035,22 @@ static irqreturn_t fsldma_chan_irq(int irq,
+> void *data)
+> >  static void dma_do_tasklet(unsigned long data)
+> >  {
+> >  	struct fsldma_chan *chan =3D (struct fsldma_chan *)data;
+> > -	struct fsl_desc_sw *desc, *_desc;
+> > +	struct fsl_desc_sw *desc, *_desc, *prev =3D NULL;
+> >  	LIST_HEAD(ld_cleanup);
+> >  	unsigned long flags;
+> > +	dma_addr_t curr_phys =3D get_cdar(chan);
+> >
+> >  	chan_dbg(chan, "tasklet entry\n");
+> >
+> >  	spin_lock_irqsave(&chan->desc_lock, flags);
+> >
+> > +	/* find the descriptor which is already completed */
+> > +	list_for_each_entry_safe(desc, _desc, &chan->ld_running, node) {
+> > +		if (prev && desc->async_tx.phys =3D=3D curr_phys)
+> > +			break;
+> > +		prev =3D desc;
+> > +	}
+> > +
+>=20
+> If the DMA controller was still busy processing transactions, you should
+> have gotten the printout "irq: controller not idle!" from
+> fsldma_chan_irq() just before it scheduled the dma_do_tasklet() to run.
+> If you did not get this printout, how was dma_do_tasklet() entered with
+> the controller still busy? I don't understand how it can happen.
+Hi ira, this issue should be not related to dma status. The last descriptor
+is left as usb null descriptor, actually, this descriptor is used as usb nu=
+ll
+descriptor, at any case, I believe it has been already completed, but I
+will released it in next chain, it doesn't affect the upper api to use the
+data, and make sure async_tx api won't raise an exception=20
+(BUG_ON(async_tx_test_ack(depend_tx)), this depend_tx is the desc->async_tx=
+).
 
-Thanks for the response.   I checked and I think I got them all.  The
-tree should be available as soon as the kernel.org mirroring gets done.
+>=20
+> If you test without your spin_lock_bh() and spin_unlock_bh() conversion
+> patch, do you still hit the error?
+The error still happened. spin_lock_bh() and spin_unlock_bh() are modified
+after this patch.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+>=20
+> What happens if a user submits exactly one DMA transaction, and then
+> leaves the system idle? The callback for the last descriptor in the
+> chain will never get run, right? That's a bug.
+It won't be happened if use fsl-dma, because the right order is=20
+xor-copy-xor->callback, The callback which you concerned is implemented=20
+in talitos driver, callback should be null in fsl-dma.
 
---Signature=_Thu__12_Jul_2012_16_23_25_+1000_ZPoP98noNK2Kty=5
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJP/m1dAAoJEECxmPOUX5FEag8P/RO0/vo7z7hgTH+iQerBYXNx
-M7q94rQVtphlhDVh/qhOp1K9Mcwn6rXKUXbEnrPJmEJPfCxQt2Fm2Q1+q3nFNTm0
-ZG4RciCOBBBht5ayeGf0cEPobw2M31/9aSp9IhkN3nYVBUD7UQfdioxw95mGJgtn
-HC/FnY+Pgc1kadGvr7IoezEIZvKA6k3S0+gtF3CDkF5lJK/DnmD7JhFt2oYeoM8n
-cTUyo41M3Rz8sJnPiGvre1KEr7KLsoUri+L5SdnrgtHodJQRmn9Ixj3zoOY7NKLj
-t0Ku8TbTKQjL008d2A1Dd/S9gVuEfQaIp8KRmtKDQt1Il0jXkw4Xy6beBpskFdbh
-zSKfSeupHj42Mvt/qQvd9mxD3ZykXtT7xs27GC2BJrg4hMXY/HdHuegzIIoeg63g
-RccycyJlr5crvEanSy6iK+3qhp4J21AEuYjcPfZUrarhS9jTuE6ErpJRrFSFQKK6
-z4Qu+oxDcimGA7YFe0G3a9zEvg5/+aKs/fzuoodErW9cT/1dh98X7/I1bN893Kf7
-T1RBRAGJ8zynYaWNn8eWI2S9X4k9IIrpOc0qanxBHN8wcSB8L1G6gZUaZEDxKvMe
-IkIzPy3hxVtz5QTeVL1mA0bIHDtvii2ySxm9U08rW16h/WhjkBB6xkNAp+Fir9wK
-VTJWWe+u11P6EKQEdXhv
-=XRvH
------END PGP SIGNATURE-----
-
---Signature=_Thu__12_Jul_2012_16_23_25_+1000_ZPoP98noNK2Kty=5--
+>=20
+> >  	/* update the cookie if we have some descriptors to cleanup */
+> >  	if (!list_empty(&chan->ld_running)) {
+> >  		dma_cookie_t cookie;
+> > @@ -1058,13 +1066,14 @@ static void dma_do_tasklet(unsigned long data)
+> >  	 * move the descriptors to a temporary list so we can drop the lock
+> >  	 * during the entire cleanup operation
+> >  	 */
+> > -	list_splice_tail_init(&chan->ld_running, &ld_cleanup);
+> > +	list_cut_position(&ld_cleanup, &chan->ld_running, &prev->node);
+> >
+> >  	/* the hardware is now idle and ready for more */
+> >  	chan->idle =3D true;
+> >
+> >  	/*
+> > -	 * Start any pending transactions automatically
+> > +	 * Start any pending transactions automatically if current
+> descriptor
+> > +	 * list is completed
+> >  	 *
+> >  	 * In the ideal case, we keep the DMA controller busy while we go
+> >  	 * ahead and free the descriptors below.
+> > --
+> > 1.7.5.1
+> >
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
