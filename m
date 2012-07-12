@@ -1,23 +1,21 @@
-Return-Path: <B38951@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E85A22C020B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 20:29:03 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Jia Hongtao-B38951 <B38951@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>, "galak@kernel.crashing.org"
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH] powerpc/sgmii: Add phy nodes in SGMII mode
-Date: Thu, 12 Jul 2012 10:28:55 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A228F9@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1342085776-13289-1-git-send-email-B38951@freescale.com>
-In-Reply-To: <1342085776-13289-1-git-send-email-B38951@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 7EE2A2C020F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 21:23:29 +1000 (EST)
+Message-ID: <1342092201.15597.0.camel@pasglop>
+Subject: Re: [PATCH] powerpc: remove rejected merge file from
+ arch/powerpc/kernel in linux-next
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Gerard Snitselaar <dev@snitselaar.org>
+Date: Thu, 12 Jul 2012 21:23:21 +1000
+In-Reply-To: <1342076734-30996-1-git-send-email-dev@snitselaar.org>
+References: <1342076734-30996-1-git-send-email-dev@snitselaar.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stuart.yoder@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Note that this patch works with uboot update.
-Please refer to:
-http://patchwork.ozlabs.org/patch/170627/
+On Thu, 2012-07-12 at 00:05 -0700, Gerard Snitselaar wrote:
+> Commit 9778b696 (powerpc: Use CURRENT_THREAD_INFO instead of open
+> coded assembly) got a rejected merge file iommu.c.rej committed with
+> it.
 
--Hongtao.
+Oops, that's me having too much coffee & using git citool ... I'll get
+rid of it, thanks.
 
-> -----Original Message-----
-> From: Jia Hongtao-B38951
-> Sent: Thursday, July 12, 2012 5:36 PM
-> To: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
-> Cc: Li Yang-R58472; Jia Hongtao-B38951
-> Subject: [PATCH] powerpc/sgmii: Add phy nodes in SGMII mode
->=20
-> In SGMII riser card different PHY chip are used with different external
-> IRQ from eTSEC. To support PHY link state auto detect in SGMII mode we
-> should add another group of PHY nodes for SGMII mode.
->=20
-> For MPC8572DS IRQ6 is used for PHY0~PHY1, IRQ7 is used for PHY2~PHY3.
-> For MPC8544DS and MPC8536DS IRQ6 is used for PHY0~PHY1.
-> For P2020DS IRQ5 is used for PHY1~PHY2.
->=20
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+Cheers,
+Ben.
+
+> Signed-off-by: Gerard Snitselaar <dev@snitselaar.org>
 > ---
->  arch/powerpc/boot/dts/mpc8536ds.dtsi |    8 ++++++++
->  arch/powerpc/boot/dts/mpc8544ds.dtsi |    9 +++++++++
->  arch/powerpc/boot/dts/mpc8572ds.dtsi |   17 +++++++++++++++++
->  arch/powerpc/boot/dts/p2020ds.dtsi   |   10 ++++++++++
->  4 files changed, 44 insertions(+), 0 deletions(-)
->=20
+>  arch/powerpc/kernel/iommu.c.rej | 22 ----------------------
+>  1 file changed, 22 deletions(-)
+>  delete mode 100644 arch/powerpc/kernel/iommu.c.rej
+> 
+> diff --git a/arch/powerpc/kernel/iommu.c.rej b/arch/powerpc/kernel/iommu.c.rej
+> deleted file mode 100644
+> index 9d10d34..0000000
+> --- a/arch/powerpc/kernel/iommu.c.rej
+> +++ /dev/null
+> @@ -1,22 +0,0 @@
+> ---- arch/powerpc/kernel/iommu.c	2012-06-08 09:01:02.785709100 +1000
+> -+++ arch/powerpc/kernel/iommu.c	2012-06-08 09:01:07.489784856 +1000
+> -@@ -33,7 +33,9 @@
+> - #include <linux/bitmap.h>
+> - #include <linux/iommu-helper.h>
+> - #include <linux/crash_dump.h>
+> -+#include <linux/fault-inject.h>
+> - #include <asm/io.h>
+> -+#include <asm/vio.h>
+> - #include <asm/prom.h>
+> - #include <asm/iommu.h>
+> - #include <asm/pci-bridge.h>
+> -@@ -171,6 +261,9 @@
+> - 		return DMA_ERROR_CODE;
+> - 	}
+> - 
+> -+	if (should_fail_iommu(dev))
+> -+		return DMA_ERROR_CODE;
+> -+
+> - 	if (handle && *handle)
+> - 		start = *handle;
+> - 	else
