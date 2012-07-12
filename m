@@ -1,21 +1,42 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <dave@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C18AE2C0079
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 22:18:55 +1000 (EST)
-Subject: Re: [PATCH] powerpc/sgmii: Add phy nodes in SGMII mode
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A228F9@039-SN1MPN1-002.039d.mgd.msft.net>
-Date: Thu, 12 Jul 2012 07:18:49 -0500
-Message-Id: <56E7FB74-A29A-4658-9AC9-2C87A1A7ED3C@kernel.crashing.org>
-References: <1342085776-13289-1-git-send-email-B38951@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A228F9@039-SN1MPN1-002.039d.mgd.msft.net>
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ (Client CN "e4.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ED8C82C0220
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 23:42:10 +1000 (EST)
+Received: from /spool/local
+ by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <dave@linux.vnet.ibm.com>;
+ Thu, 12 Jul 2012 09:42:07 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 18A5138C80D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 09:40:43 -0400 (EDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6CDee5b390280
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 09:40:41 -0400
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6CDeZto030671
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 07:40:39 -0600
+Message-ID: <4FFED3CE.7030108@linux.vnet.ibm.com>
+Date: Thu, 12 Jul 2012 06:40:30 -0700
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v3 3/13] memory-hotplug : unify argument of
+ firmware_map_add_early/hotplug
+References: <4FFAB0A2.8070304@jp.fujitsu.com>
+ <4FFAB17F.2090209@jp.fujitsu.com> <4FFD9C08.2070502@linux.vnet.ibm.com>
+ <4FFE5816.6070102@jp.fujitsu.com>
+In-Reply-To: <4FFE5816.6070102@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +46,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/11/2012 09:52 PM, Yasuaki Ishimatsu wrote:
+> Does the following patch include your comment? If O.K., I will separate
+> the patch from the series and send it for bug fix.
 
-On Jul 12, 2012, at 5:28 AM, Jia Hongtao-B38951 wrote:
-
-> Note that this patch works with uboot update.
-> Please refer to:
-> http://patchwork.ozlabs.org/patch/170627/
-> 
-> -Hongtao.
-
-Will RGMII still work with this patch if I dont update u-boot?
-
-I'm assuming yes.
-
-- k
-
-> 
->> -----Original Message-----
->> From: Jia Hongtao-B38951
->> Sent: Thursday, July 12, 2012 5:36 PM
->> To: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org
->> Cc: Li Yang-R58472; Jia Hongtao-B38951
->> Subject: [PATCH] powerpc/sgmii: Add phy nodes in SGMII mode
->> 
->> In SGMII riser card different PHY chip are used with different external
->> IRQ from eTSEC. To support PHY link state auto detect in SGMII mode we
->> should add another group of PHY nodes for SGMII mode.
->> 
->> For MPC8572DS IRQ6 is used for PHY0~PHY1, IRQ7 is used for PHY2~PHY3.
->> For MPC8544DS and MPC8536DS IRQ6 is used for PHY0~PHY1.
->> For P2020DS IRQ5 is used for PHY1~PHY2.
->> 
->> Signed-off-by: Li Yang <leoli@freescale.com>
->> Signed-off-by: Jia Hongtao <B38951@freescale.com>
->> ---
->> arch/powerpc/boot/dts/mpc8536ds.dtsi |    8 ++++++++
->> arch/powerpc/boot/dts/mpc8544ds.dtsi |    9 +++++++++
->> arch/powerpc/boot/dts/mpc8572ds.dtsi |   17 +++++++++++++++++
->> arch/powerpc/boot/dts/p2020ds.dtsi   |   10 ++++++++++
->> 4 files changed, 44 insertions(+), 0 deletions(-)
->> 
-> 
+Looks sane to me.  It does now mean that the calling conventions for
+some of the other firmware_map*() functions are different, but I think
+that's OK since they're only used internally to memmap.c.
