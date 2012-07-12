@@ -1,33 +1,28 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D3D4B2C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 08:52:04 +1000 (EST)
-Subject: Re: [Qemu-ppc] [RFC PATCH 12/17] PowerPC: booke64: Add DO_KVM kernel
- hooks
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <1342046584.18850.40.camel@pasglop>
-Date: Thu, 12 Jul 2012 00:51:56 +0200
-Message-Id: <52D81ED1-AEF7-43C8-84A4-98E1D895CD0B@suse.de>
-References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-13-git-send-email-mihai.caraman@freescale.com>
- <1B2CBB56-7180-4A73-8E51-6538A725F710@suse.de>
- <1341440735.16808.42.camel@pasglop>
- <300B73AA675FCE4A93EB4FC1D42459FF15CDE6@039-SN2MPN1-013.039d.mgd.msft.net> ,
- <7305F50A-8E77-4E88-8EB8-4046A7E94DF9@suse.de>
- <300B73AA675FCE4A93EB4FC1D42459FF15CF83@039-SN2MPN1-013.039d.mgd.msft.net>
- <EED22D54-8B0F-4EAE-BA70-C5C086DBB7C1@suse.de>
- <1342045680.18850.39.camel@pasglop>
- <FE8CCAFA-454E-461A-96E8-64E8E3D186EE@suse.de>
- <1342046584.18850.40.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "qemu-ppc@nongnu.org List" <qemu-ppc@nongnu.org>,
- Caraman Mihai Claudiu-B02008 <B02008@freescale.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, KVM list <kvm@vger.kernel.org>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
+Return-Path: <B32616@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 967902C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 12:33:17 +1000 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: RE: [PATCH v2 2/4] fsl-dma: remove attribute DMA_INTERRUPT of
+ dmaengine
+Date: Thu, 12 Jul 2012 02:33:09 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70C07CD@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1341997253-18424-1-git-send-email-qiang.liu@freescale.com>
+ <20120711161713.GC17539@ovro.caltech.edu>
+In-Reply-To: <20120711161713.GC17539@ovro.caltech.edu>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Vinod Koul <vinod.koul@intel.com>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "herbert@gondor.hengli.org.au" <herbert@gondor.hengli.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,24 +32,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 12.07.2012, at 00:43, Benjamin Herrenschmidt wrote:
-
-> On Thu, 2012-07-12 at 00:35 +0200, Alexander Graf wrote:
->>> On Thu, 2012-07-12 at 00:25 +0200, Alexander Graf wrote:
->>>> Or just free up another register early on, like here.
->>>=20
->>> If you're going to do that, you want to measure the impact on null
->>> syscall performance though.
->>=20
->> That should hold true for any change in that code, no?
+> -----Original Message-----
+> From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]
+> Sent: Thursday, July 12, 2012 12:17 AM
+> To: Liu Qiang-B32616
+> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Vinod
+> Koul; herbert@gondor.hengli.com.au; Dan Williams; davem@davemloft.net
+> Subject: Re: [PATCH v2 2/4] fsl-dma: remove attribute DMA_INTERRUPT of
+> dmaengine
 >=20
-> Yes, but adding a gpr save is more invasive (you have to also load it
-> back later on & put it on the stack).
+> On Wed, Jul 11, 2012 at 05:00:53PM +0800, Qiang Liu wrote:
+> > Delete attribute DMA_INTERRUPT because fsl-dma doesn't support this
+> function,
+> > exception will be thrown if talitos is used to offload xor at the same
+> time.
+> >
+>=20
+> Both drivers/misc/carma/carma-fpga.c and
+> drivers/misc/carma/carma-fpga-program.c expect the DMA_INTERRUPT
+> property, though they do not use it. The mask is set for historical
+> reasons. It is safe to delete the line "dma_cap_set(DMA_INTERRUPT,
+> mask);"
+> from both drivers.
+>=20
+> I don't know which other drivers may expect this feature to be present.
+> These are only the ones which I maintain.
+The only place is in async_tx api which the feature is used. But it does no=
+t
+work fine as expected of DMA_INTERRUPT. In fsl-dma, it will raise a program
+error if source or destination address is zero.
 
-What's the usual cache line size like on these boxes? If you align it =
-properly with r10 and r11 on the paca so that all 3 registers are in the =
-same cache line, the load should be almost for free, no?
+>=20
+> Other than that, you can add my:
+> Acked-by: Ira W. Snyder <iws@ovro.caltech.edu>
+Thanks.
 
-
-Alex
+>=20
+> > Cc: Dan Williams <dan.j.williams@intel.com>
+> > Cc: Vinod Koul <vinod.koul@intel.com>
+> > Cc: Li Yang <leoli@freescale.com>
+> > Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+> > ---
+> >  drivers/dma/fsldma.c |   31 -------------------------------
+> >  1 files changed, 0 insertions(+), 31 deletions(-)
+> >
+> > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> > index 8f84761..4f2f212 100644
+> > --- a/drivers/dma/fsldma.c
+> > +++ b/drivers/dma/fsldma.c
+> > @@ -543,35 +543,6 @@ static void fsl_dma_free_chan_resources(struct
+> dma_chan *dchan)
+> >  }
+> >
+> >  static struct dma_async_tx_descriptor *
+> > -fsl_dma_prep_interrupt(struct dma_chan *dchan, unsigned long flags)
+> > -{
+> > -	struct fsldma_chan *chan;
+> > -	struct fsl_desc_sw *new;
+> > -
+> > -	if (!dchan)
+> > -		return NULL;
+> > -
+> > -	chan =3D to_fsl_chan(dchan);
+> > -
+> > -	new =3D fsl_dma_alloc_descriptor(chan);
+> > -	if (!new) {
+> > -		chan_err(chan, "%s\n", msg_ld_oom);
+> > -		return NULL;
+> > -	}
+> > -
+> > -	new->async_tx.cookie =3D -EBUSY;
+> > -	new->async_tx.flags =3D flags;
+> > -
+> > -	/* Insert the link descriptor to the LD ring */
+> > -	list_add_tail(&new->node, &new->tx_list);
+> > -
+> > -	/* Set End-of-link to the last link descriptor of new list */
+> > -	set_ld_eol(chan, new);
+> > -
+> > -	return &new->async_tx;
+> > -}
+> > -
+> > -static struct dma_async_tx_descriptor *
+> >  fsl_dma_prep_memcpy(struct dma_chan *dchan,
+> >  	dma_addr_t dma_dst, dma_addr_t dma_src,
+> >  	size_t len, unsigned long flags)
+> > @@ -1352,12 +1323,10 @@ static int __devinit fsldma_of_probe(struct
+> platform_device *op)
+> >  	fdev->irq =3D irq_of_parse_and_map(op->dev.of_node, 0);
+> >
+> >  	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+> > -	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
+> >  	dma_cap_set(DMA_SG, fdev->common.cap_mask);
+> >  	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+> >  	fdev->common.device_alloc_chan_resources =3D
+> fsl_dma_alloc_chan_resources;
+> >  	fdev->common.device_free_chan_resources =3D
+> fsl_dma_free_chan_resources;
+> > -	fdev->common.device_prep_dma_interrupt =3D fsl_dma_prep_interrupt;
+> >  	fdev->common.device_prep_dma_memcpy =3D fsl_dma_prep_memcpy;
+> >  	fdev->common.device_prep_dma_sg =3D fsl_dma_prep_sg;
+> >  	fdev->common.device_tx_status =3D fsl_tx_status;
+> > --
+> > 1.7.5.1
+> >
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
