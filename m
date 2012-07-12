@@ -1,28 +1,20 @@
-Return-Path: <B32616@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2CA2F2C0209
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 17:12:21 +1000 (EST)
-From: Liu Qiang-B32616 <B32616@freescale.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: RE: [PATCH v2 3/4] fsl-dma: change the release process of dma
- descriptor
-Date: Thu, 12 Jul 2012 07:12:13 +0000
-Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70C0916@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1341997285-18459-1-git-send-email-qiang.liu@freescale.com>
- <20120711163058.GD17539@ovro.caltech.edu>
-In-Reply-To: <20120711163058.GD17539@ovro.caltech.edu>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
- Vinod Koul <vinod.koul@intel.com>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- Dan Williams <dan.j.williams@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Return-Path: <dev@snitselaar.org>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 24E002C0205
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 17:05:49 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so3402087pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jul 2012 00:05:47 -0700 (PDT)
+From: Gerard Snitselaar <dev@snitselaar.org>
+To: linux-next@vger.kernel.org
+Subject: [PATCH] powerpc: remove rejected merge file from arch/powerpc/kernel
+ in linux-next
+Date: Thu, 12 Jul 2012 00:05:34 -0700
+Message-Id: <1342076734-30996-1-git-send-email-dev@snitselaar.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ stuart.yoder@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,145 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]
-> Sent: Thursday, July 12, 2012 12:31 AM
-> To: Liu Qiang-B32616
-> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Vinod
-> Koul; herbert@gondor.hengli.com.au; Dan Williams; davem@davemloft.net
-> Subject: Re: [PATCH v2 3/4] fsl-dma: change the release process of dma
-> descriptor
->=20
-> On Wed, Jul 11, 2012 at 05:01:25PM +0800, Qiang Liu wrote:
-> > Modify the release process of dma descriptor for avoiding exception
-> when
-> > enable config NET_DMA, release dma descriptor from 1st to last second,
-> the
-> > last descriptor which is reserved in current descriptor register may
-> not be
-> > completed, race condition will be raised if free current descriptor.
-> >
-> > A race condition which is raised when use both of talitos and dmaengine
-> to
-> > offload xor is because napi scheduler (NET_DMA is enabled) will sync
-> all
-> > pending requests in dma channels, it affects the process of raid
-> operations.
-> > The descriptor is freed which is submitted just now, but async_tx must
-> check
-> > whether this depend tx descriptor is acked, there are poison contents
-> in the
-> > invalid address, then BUG_ON() is thrown, so this descriptor will be
-> freed
-> > in the next time.
-> >
->=20
-> This patch seems to be covering up a bug in the driver, rather than
-> actually fixing it.
-Yes, it's fine for fsl-dma itself, but it cannot work under complex conditi=
-on.
-For example, we enable NET_DMA and SEC xor offload, if NAPI task is waken u=
-p to
-synchronize pending requests when raid5 dma copy was submitted, the process=
- order
-of raid5 tx descriptor is not as our expected. Unfortunately, sometime we h=
-ave
-to check this dependent tx descriptor which has was already released.
+Commit 9778b696 (powerpc: Use CURRENT_THREAD_INFO instead of open
+coded assembly) got a rejected merge file iommu.c.rej committed with
+it.
 
->=20
-> When it was written, it was expected that dma_do_tasklet() would run
-> only when the controller was idle.
->=20
-> > Cc: Dan Williams <dan.j.williams@intel.com>
-> > Cc: Vinod Koul <vinod.koul@intel.com>
-> > Cc: Li Yang <leoli@freescale.com>
-> > Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
-> > ---
-> >  drivers/dma/fsldma.c |   15 ++++++++++++---
-> >  1 files changed, 12 insertions(+), 3 deletions(-)
-> >
-> > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> > index 4f2f212..0ba3e40 100644
-> > --- a/drivers/dma/fsldma.c
-> > +++ b/drivers/dma/fsldma.c
-> > @@ -1035,14 +1035,22 @@ static irqreturn_t fsldma_chan_irq(int irq,
-> void *data)
-> >  static void dma_do_tasklet(unsigned long data)
-> >  {
-> >  	struct fsldma_chan *chan =3D (struct fsldma_chan *)data;
-> > -	struct fsl_desc_sw *desc, *_desc;
-> > +	struct fsl_desc_sw *desc, *_desc, *prev =3D NULL;
-> >  	LIST_HEAD(ld_cleanup);
-> >  	unsigned long flags;
-> > +	dma_addr_t curr_phys =3D get_cdar(chan);
-> >
-> >  	chan_dbg(chan, "tasklet entry\n");
-> >
-> >  	spin_lock_irqsave(&chan->desc_lock, flags);
-> >
-> > +	/* find the descriptor which is already completed */
-> > +	list_for_each_entry_safe(desc, _desc, &chan->ld_running, node) {
-> > +		if (prev && desc->async_tx.phys =3D=3D curr_phys)
-> > +			break;
-> > +		prev =3D desc;
-> > +	}
-> > +
->=20
-> If the DMA controller was still busy processing transactions, you should
-> have gotten the printout "irq: controller not idle!" from
-> fsldma_chan_irq() just before it scheduled the dma_do_tasklet() to run.
-> If you did not get this printout, how was dma_do_tasklet() entered with
-> the controller still busy? I don't understand how it can happen.
-Hi ira, this issue should be not related to dma status. The last descriptor
-is left as usb null descriptor, actually, this descriptor is used as usb nu=
-ll
-descriptor, at any case, I believe it has been already completed, but I
-will released it in next chain, it doesn't affect the upper api to use the
-data, and make sure async_tx api won't raise an exception=20
-(BUG_ON(async_tx_test_ack(depend_tx)), this depend_tx is the desc->async_tx=
-).
+Signed-off-by: Gerard Snitselaar <dev@snitselaar.org>
+---
+ arch/powerpc/kernel/iommu.c.rej | 22 ----------------------
+ 1 file changed, 22 deletions(-)
+ delete mode 100644 arch/powerpc/kernel/iommu.c.rej
 
->=20
-> If you test without your spin_lock_bh() and spin_unlock_bh() conversion
-> patch, do you still hit the error?
-The error still happened. spin_lock_bh() and spin_unlock_bh() are modified
-after this patch.
-
->=20
-> What happens if a user submits exactly one DMA transaction, and then
-> leaves the system idle? The callback for the last descriptor in the
-> chain will never get run, right? That's a bug.
-It won't be happened if use fsl-dma, because the right order is=20
-xor-copy-xor->callback, The callback which you concerned is implemented=20
-in talitos driver, callback should be null in fsl-dma.
-
->=20
-> >  	/* update the cookie if we have some descriptors to cleanup */
-> >  	if (!list_empty(&chan->ld_running)) {
-> >  		dma_cookie_t cookie;
-> > @@ -1058,13 +1066,14 @@ static void dma_do_tasklet(unsigned long data)
-> >  	 * move the descriptors to a temporary list so we can drop the lock
-> >  	 * during the entire cleanup operation
-> >  	 */
-> > -	list_splice_tail_init(&chan->ld_running, &ld_cleanup);
-> > +	list_cut_position(&ld_cleanup, &chan->ld_running, &prev->node);
-> >
-> >  	/* the hardware is now idle and ready for more */
-> >  	chan->idle =3D true;
-> >
-> >  	/*
-> > -	 * Start any pending transactions automatically
-> > +	 * Start any pending transactions automatically if current
-> descriptor
-> > +	 * list is completed
-> >  	 *
-> >  	 * In the ideal case, we keep the DMA controller busy while we go
-> >  	 * ahead and free the descriptors below.
-> > --
-> > 1.7.5.1
-> >
-> >
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+diff --git a/arch/powerpc/kernel/iommu.c.rej b/arch/powerpc/kernel/iommu.c.rej
+deleted file mode 100644
+index 9d10d34..0000000
+--- a/arch/powerpc/kernel/iommu.c.rej
++++ /dev/null
+@@ -1,22 +0,0 @@
+---- arch/powerpc/kernel/iommu.c	2012-06-08 09:01:02.785709100 +1000
+-+++ arch/powerpc/kernel/iommu.c	2012-06-08 09:01:07.489784856 +1000
+-@@ -33,7 +33,9 @@
+- #include <linux/bitmap.h>
+- #include <linux/iommu-helper.h>
+- #include <linux/crash_dump.h>
+-+#include <linux/fault-inject.h>
+- #include <asm/io.h>
+-+#include <asm/vio.h>
+- #include <asm/prom.h>
+- #include <asm/iommu.h>
+- #include <asm/pci-bridge.h>
+-@@ -171,6 +261,9 @@
+- 		return DMA_ERROR_CODE;
+- 	}
+- 
+-+	if (should_fail_iommu(dev))
+-+		return DMA_ERROR_CODE;
+-+
+- 	if (handle && *handle)
+- 		start = *handle;
+- 	else
+-- 
+1.7.11.1.165.g299666c
