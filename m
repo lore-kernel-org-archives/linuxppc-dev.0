@@ -1,21 +1,19 @@
-Return-Path: <paubert@iram.es>
-Received: from rudy.puc.rediris.es (unknown [IPv6:2001:720:418:ca01::132])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BD7492C0335
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2012 17:06:48 +1000 (EST)
-Date: Fri, 13 Jul 2012 08:46:05 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] power: Define PV_POWER7P
-Message-ID: <20120713064605.GA11030@visitor2.iram.es>
-References: <20120712235912.GA19909@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120712235912.GA19909@us.ibm.com>
-Cc: michaele@au1.ibm.com, Anton Blanchard <anton@au1.ibm.com>,
- sukadev@us.ibm.com, linuxppc-dev@ozlabs.org, cel@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com
+ by ozlabs.org (Postfix) with ESMTPS id B12872C0302
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 18:01:35 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q6D81T8U002034
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 03:01:31 -0500
+Message-ID: <1342166487.15597.15.camel@pasglop>
+Subject: [PATCH] powerpc/iommu: Fix iommu pool initialization
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Fri, 13 Jul 2012 18:01:27 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,46 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 12, 2012 at 04:59:12PM -0700, Sukadev Bhattiprolu wrote:
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Tue, 3 Jul 2012 13:32:46 -0700
-> Subject: [PATCH 1/2] power: Define PV_POWER7P
-> 
-> This change is based on the patch that Carl Love posted to LKML
-> 
-> 	https://lkml.org/lkml/2012/6/22/309
-> 
-> It is included here for completeness and to enable building. When
-> the above patch is merged, this patch can be ignored.
-> 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/reg.h |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index f0cb7f4..b3fc2c1 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -1014,6 +1014,7 @@
->  #define PV_970FX	0x003C
->  #define PV_POWER6	0x003E
->  #define PV_POWER7	0x003F
-> +#define PV_POWER7P	0x004A
->  #define PV_630		0x0040
->  #define PV_630p	0x0041
->  #define PV_970MP	0x0044
+The iommu pool patch has a bug where it would cause a crash when using
+only one pool (based on the size of the DMA window).
 
-Hmm, before this patch the PVR definitions were sorted in ascending
-numerical order, at least for the list of 64 bit processors. Your
-patch breaks this, which is not a good idea IMHO. 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ arch/powerpc/kernel/iommu.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-For example, the 970* processors are already interspersed with other
-processors to maintain numerical order, therefore I don't see why the 
-POWER7P could not be between 970GX and BE.
-
-Another inconsistency is that all other "plus" variants seem to 
-use a lower case "p" suffix. So it would be better to use POWER7p.
-
-	Regards,
-	Gabriel
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index fbefe72..ff5a6ce 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -676,9 +676,9 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+ 		tbl->nr_pools = 1;
+ 
+ 	/* We reserve the top 1/4 of the table for large allocations */
+-	tbl->poolsize = (tbl->it_size * 3 / 4) / IOMMU_NR_POOLS;
++	tbl->poolsize = (tbl->it_size * 3 / 4) / tbl->nr_pools;
+ 
+-	for (i = 0; i < IOMMU_NR_POOLS; i++) {
++	for (i = 0; i < tbl->nr_pools; i++) {
+ 		p = &tbl->pools[i];
+ 		spin_lock_init(&(p->lock));
+ 		p->start = tbl->poolsize * i;
