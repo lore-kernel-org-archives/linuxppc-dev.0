@@ -1,29 +1,22 @@
-Return-Path: <B29983@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 367BB2C02BB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 12:49:07 +1000 (EST)
-Received: from mail43-am1 (localhost [127.0.0.1])	by mail43-am1-R.bigfish.com
- (Postfix) with ESMTP id 896F2600A3	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,
- 13 Jul 2012 02:49:04 +0000 (UTC)
-Received: from AM1EHSMHS003.bigfish.com (unknown [10.3.201.248])	by
- mail43-am1.bigfish.com (Postfix) with ESMTP id 7D63140049	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 02:49:02 +0000 (UTC)
-From: <b29983@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/85xx: Fix pci base address error for p2020rdb-pc in
- dts
-Date: Fri, 13 Jul 2012 10:27:35 +0800
-Message-ID: <1342146455-27729-2-git-send-email-b29983@freescale.com>
-In-Reply-To: <1342146455-27729-1-git-send-email-b29983@freescale.com>
-References: <1342146455-27729-1-git-send-email-b29983@freescale.com>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 02A5D2C030B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 13:22:21 +1000 (EST)
+Message-ID: <4FFF957F.2080504@cn.fujitsu.com>
+Date: Fri, 13 Jul 2012 11:26:55 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v3 2/13] memory-hotplug : add physical memory hotplug
+ code to acpi_memory_device_remove
+References: <4FFAB0A2.8070304@jp.fujitsu.com> <4FFAB148.9000803@jp.fujitsu.com>
+In-Reply-To: <4FFAB148.9000803@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,57 +26,206 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
+At 07/09/2012 06:24 PM, Yasuaki Ishimatsu Wrote:
+> acpi_memory_device_remove() has been prepared to remove physical memory.
+> But, the function only frees acpi_memory_device currentlry.
+> 
+> The patch adds following functions into acpi_memory_device_remove():
+>   - offline memory
+>   - remove physical memory (only return -EBUSY)
+>   - free acpi_memory_device
+> 
+> CC: David Rientjes <rientjes@google.com>
+> CC: Jiang Liu <liuj97@gmail.com>
+> CC: Len Brown <len.brown@intel.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Wen Congyang <wency@cn.fujitsu.com>
+> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> 
+> ---
+>  drivers/acpi/acpi_memhotplug.c |   26 +++++++++++++++++++++++++-
+>  drivers/base/memory.c          |   39 +++++++++++++++++++++++++++++++++++++++
+>  include/linux/memory.h         |    5 +++++
+>  include/linux/memory_hotplug.h |    1 +
+>  mm/memory_hotplug.c            |    8 ++++++++
+>  5 files changed, 78 insertions(+), 1 deletion(-)
+> 
+> Index: linux-3.5-rc6/drivers/acpi/acpi_memhotplug.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/drivers/acpi/acpi_memhotplug.c	2012-07-09 18:08:29.946888653 +0900
+> +++ linux-3.5-rc6/drivers/acpi/acpi_memhotplug.c	2012-07-09 18:08:43.470719531 +0900
+> @@ -29,6 +29,7 @@
+>  #include <linux/module.h>
+>  #include <linux/init.h>
+>  #include <linux/types.h>
+> +#include <linux/memory.h>
+>  #include <linux/memory_hotplug.h>
+>  #include <linux/slab.h>
+>  #include <acpi/acpi_drivers.h>
+> @@ -452,12 +453,35 @@ static int acpi_memory_device_add(struct
+>  static int acpi_memory_device_remove(struct acpi_device *device, int type)
+>  {
+>  	struct acpi_memory_device *mem_device = NULL;
+> -
+> +	struct acpi_memory_info *info, *tmp;
+> +	int result;
+> +	int node;
+> 
+>  	if (!device || !acpi_driver_data(device))
+>  		return -EINVAL;
+> 
+>  	mem_device = acpi_driver_data(device);
+> +
+> +	node = acpi_get_node(mem_device->device->handle);
+> +
+> +	list_for_each_entry_safe(info, tmp, &mem_device->res_list, list) {
+> +		if (!info->enabled)
+> +			continue;
+> +
+> +		if (!is_memblk_offline(info->start_addr, info->length)) {
+> +			result = offline_memory(info->start_addr, info->length);
+> +			if (result)
+> +				return result;
+> +		}
+> +
+> +		result = remove_memory(node, info->start_addr, info->length);
+> +		if (result)
+> +			return result;
+> +
+> +		list_del(&info->list);
+> +		kfree(info);
+> +	}
+> +
+>  	kfree(mem_device);
+> 
+>  	return 0;
+> Index: linux-3.5-rc6/include/linux/memory_hotplug.h
+> ===================================================================
+> --- linux-3.5-rc6.orig/include/linux/memory_hotplug.h	2012-07-09 18:08:29.955888542 +0900
+> +++ linux-3.5-rc6/include/linux/memory_hotplug.h	2012-07-09 18:08:43.471719518 +0900
+> @@ -233,6 +233,7 @@ static inline int is_mem_section_removab
+>  extern int mem_online_node(int nid);
+>  extern int add_memory(int nid, u64 start, u64 size);
+>  extern int arch_add_memory(int nid, u64 start, u64 size);
+> +extern int remove_memory(int nid, u64 start, u64 size);
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
----
- arch/powerpc/boot/dts/p2020rdb-pc_32b.dts |    4 ++--
- arch/powerpc/boot/dts/p2020rdb-pc_36b.dts |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-index 852e5b2..57573bd 100644
---- a/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-+++ b/arch/powerpc/boot/dts/p2020rdb-pc_32b.dts
-@@ -56,7 +56,7 @@
- 		ranges = <0x0 0x0 0xffe00000 0x100000>;
- 	};
- 
--	pci0: pcie@ffe08000 {
-+	pci2: pcie@ffe08000 {
- 		reg = <0 0xffe08000 0 0x1000>;
- 		status = "disabled";
- 	};
-@@ -76,7 +76,7 @@
- 		};
- 	};
- 
--	pci2: pcie@ffe0a000 {
-+	pci0: pcie@ffe0a000 {
- 		reg = <0 0xffe0a000 0 0x1000>;
- 		ranges = <0x2000000 0x0 0xe0000000 0 0x80000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0 0xffc00000 0x0 0x10000>;
-diff --git a/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts b/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
-index b5a56ca..470247e 100644
---- a/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
-+++ b/arch/powerpc/boot/dts/p2020rdb-pc_36b.dts
-@@ -56,7 +56,7 @@
- 		ranges = <0x0 0xf 0xffe00000 0x100000>;
- 	};
- 
--	pci0: pcie@fffe08000 {
-+	pci2: pcie@fffe08000 {
- 		reg = <0xf 0xffe08000 0 0x1000>;
- 		status = "disabled";
- 	};
-@@ -76,7 +76,7 @@
- 		};
- 	};
- 
--	pci2: pcie@fffe0a000 {
-+	pci0: pcie@fffe0a000 {
- 		reg = <0xf 0xffe0a000 0 0x1000>;
- 		ranges = <0x2000000 0x0 0xe0000000 0xc 0x00000000 0x0 0x20000000
- 			  0x1000000 0x0 0x00000000 0xf 0xffc00000 0x0 0x10000>;
--- 
-1.6.4
+Here should be:
+#ifdef CONFIG_MEMORY_HOTREMOVE
+extern int remove_memory(int nid, u64 start, u64 size);
+#else
+static int inline remove_memory(int nid, u64 start, u64 size)
+{
+	return -EBUSY;
+}
+#endif
+
+>  extern int offline_memory(u64 start, u64 size);
+>  extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+>  								int nr_pages);
+> Index: linux-3.5-rc6/mm/memory_hotplug.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/mm/memory_hotplug.c	2012-07-09 18:08:29.953888567 +0900
+> +++ linux-3.5-rc6/mm/memory_hotplug.c	2012-07-09 18:08:43.476719455 +0900
+> @@ -659,6 +659,14 @@ out:
+>  }
+>  EXPORT_SYMBOL_GPL(add_memory);
+> 
+> +int remove_memory(int nid, u64 start, u64 size)
+> +{
+> +	return -EBUSY;
+> +
+> +}
+> +EXPORT_SYMBOL_GPL(remove_memory);
+
+We only need to implement this function when CONFIG_MEMORY_HOTREMOVE
+is defined here.
+
+Thanks
+Wen Congyang
+
+> +
+> +
+>  #ifdef CONFIG_MEMORY_HOTREMOVE
+>  /*
+>   * A free page on the buddy free lists (not the per-cpu lists) has PageBuddy
+> Index: linux-3.5-rc6/drivers/base/memory.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/drivers/base/memory.c	2012-07-09 18:08:29.947888640 +0900
+> +++ linux-3.5-rc6/drivers/base/memory.c	2012-07-09 18:10:54.880076739 +0900
+> @@ -70,6 +70,45 @@ void unregister_memory_isolate_notifier(
+>  }
+>  EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+> 
+> +bool is_memblk_offline(unsigned long start, unsigned long size)
+> +{
+> +	struct memory_block *mem = NULL;
+> +	struct mem_section *section;
+> +	unsigned long start_pfn, end_pfn;
+> +	unsigned long pfn, section_nr;
+> +
+> +	start_pfn = PFN_DOWN(start);
+> +	end_pfn = start_pfn + PFN_DOWN(start);
+> +
+> +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+> +		section_nr = pfn_to_section_nr(pfn);
+> +		if (!present_section_nr(section_nr));
+> +			continue;
+> +
+> +		section = __nr_to_section(section_nr);
+> +		/* same memblock? */
+> +		if (mem)
+> +			if((section_nr >= mem->start_section_nr) &&
+> +			   (section_nr <= mem->end_section_nr))
+> +				continue;
+> +
+> +		mem = find_memory_block_hinted(section, mem);
+> +		if (!mem)
+> +			continue;
+> +		if (mem->state == MEM_OFFLINE)
+> +			continue;
+> +
+> +		kobject_put(&mem->dev.kobj);
+> +		return false;
+> +	}
+> +
+> +	if (mem)
+> +		kobject_put(&mem->dev.kobj);
+> +
+> +	return true;
+> +}
+> +EXPORT_SYMBOL(is_memblk_offline);
+> +
+>  /*
+>   * register_memory - Setup a sysfs device for a memory block
+>   */
+> Index: linux-3.5-rc6/include/linux/memory.h
+> ===================================================================
+> --- linux-3.5-rc6.orig/include/linux/memory.h	2012-07-08 09:23:56.000000000 +0900
+> +++ linux-3.5-rc6/include/linux/memory.h	2012-07-09 18:08:43.484719355 +0900
+> @@ -106,6 +106,10 @@ static inline int memory_isolate_notify(
+>  {
+>  	return 0;
+>  }
+> +static inline bool is_memblk_offline(unsigned long start, unsigned long size)
+> +{
+> +	return false;
+> +}
+>  #else
+>  extern int register_memory_notifier(struct notifier_block *nb);
+>  extern void unregister_memory_notifier(struct notifier_block *nb);
+> @@ -120,6 +124,7 @@ extern int memory_isolate_notify(unsigne
+>  extern struct memory_block *find_memory_block_hinted(struct mem_section *,
+>  							struct memory_block *);
+>  extern struct memory_block *find_memory_block(struct mem_section *);
+> +extern bool is_memblk_offline(unsigned long start, unsigned long size);
+>  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
+>  enum mem_add_context { BOOT, HOTPLUG };
+>  #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+> 
+> 
