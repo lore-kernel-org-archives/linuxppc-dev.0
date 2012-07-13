@@ -1,19 +1,21 @@
-Return-Path: <horms@verge.net.au>
-Received: from kirsty.vergenet.net (kirsty.vergenet.net [202.4.237.240])
- by ozlabs.org (Postfix) with ESMTP id 45F862C02FC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 16:53:28 +1000 (EST)
-Date: Fri, 13 Jul 2012 15:33:10 +0900
-From: Simon Horman <horms@verge.net.au>
-To: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: Re: [PATCH] [ppc] Do not reserve cpu spin-table for crash kernel
-Message-ID: <20120713063309.GF19512@verge.net.au>
-References: <CAEsOVNeg2aogCwCy-v3ez4cC4VPF79A4PWRaO2ohDj_ypqCWmg@mail.gmail.com>
- <20120524060933.14035.42732.stgit@suzukikp.in.ibm.com>
+Return-Path: <paubert@iram.es>
+Received: from rudy.puc.rediris.es (unknown [IPv6:2001:720:418:ca01::132])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BD7492C0335
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2012 17:06:48 +1000 (EST)
+Date: Fri, 13 Jul 2012 08:46:05 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] power: Define PV_POWER7P
+Message-ID: <20120713064605.GA11030@visitor2.iram.es>
+References: <20120712235912.GA19909@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120524060933.14035.42732.stgit@suzukikp.in.ibm.com>
-Cc: B29882@freescale.com, linuxppc-dev@lists.ozlabs.org,
- kexec@lists.infradead.org
+In-Reply-To: <20120712235912.GA19909@us.ibm.com>
+Cc: michaele@au1.ibm.com, Anton Blanchard <anton@au1.ibm.com>,
+ sukadev@us.ibm.com, linuxppc-dev@ozlabs.org, cel@linux.vnet.ibm.com,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,18 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 24, 2012 at 11:39:45AM +0530, Suzuki K. Poulose wrote:
-> As of now, the kexec reserves the spin-table for all the CPUs
-> on an SMP machine. The spin-table is pointed to by the 
-> cpu-release-addr property in the device-tree. Reserving the
-> spin-table in the crash kernel will cause a BUG(), if the table
-> lies outside the memory reserved for the crashkernel.
+On Thu, Jul 12, 2012 at 04:59:12PM -0700, Sukadev Bhattiprolu wrote:
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Date: Tue, 3 Jul 2012 13:32:46 -0700
+> Subject: [PATCH 1/2] power: Define PV_POWER7P
 > 
-> Disable reserving the spin-table regions and use maxcpus=1 to 
-> use only the crashing CPU to boot the crash kernel.
+> This change is based on the patch that Carl Love posted to LKML
 > 
-> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+> 	https://lkml.org/lkml/2012/6/22/309
+> 
+> It is included here for completeness and to enable building. When
+> the above patch is merged, this patch can be ignored.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/reg.h |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> index f0cb7f4..b3fc2c1 100644
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -1014,6 +1014,7 @@
+>  #define PV_970FX	0x003C
+>  #define PV_POWER6	0x003E
+>  #define PV_POWER7	0x003F
+> +#define PV_POWER7P	0x004A
+>  #define PV_630		0x0040
+>  #define PV_630p	0x0041
+>  #define PV_970MP	0x0044
 
-Thanks, applied.
+Hmm, before this patch the PVR definitions were sorted in ascending
+numerical order, at least for the list of 64 bit processors. Your
+patch breaks this, which is not a good idea IMHO. 
 
-Sorry for not seeing this (much) earlier.
+For example, the 970* processors are already interspersed with other
+processors to maintain numerical order, therefore I don't see why the 
+POWER7P could not be between 970GX and BE.
+
+Another inconsistency is that all other "plus" variants seem to 
+use a lower case "p" suffix. So it would be better to use POWER7p.
+
+	Regards,
+	Gabriel
