@@ -1,22 +1,19 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id E29862C0346
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 20:36:24 +1000 (EST)
-Message-ID: <4FFFFB38.7060806@cn.fujitsu.com>
-Date: Fri, 13 Jul 2012 18:40:56 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH v3 2/13] memory-hotplug : add physical memory hotplug
- code to acpi_memory_device_remove
-References: <4FFAB0A2.8070304@jp.fujitsu.com> <4FFAB148.9000803@jp.fujitsu.com>
-In-Reply-To: <4FFAB148.9000803@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- liuj97@gmail.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 72B1A2C0362
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 21:50:21 +1000 (EST)
+Subject: Re: [PATCH] ppc44x/watchdog: Select WATCHDOG_NOWAYOUT option
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1342147473-20231-1-git-send-email-lu.jiang@windriver.com>
+Date: Fri, 13 Jul 2012 06:50:22 -0500
+Message-Id: <D5792F52-7BE6-4B86-A3FD-B756DE3A165D@kernel.crashing.org>
+References: <1342147473-20231-1-git-send-email-lu.jiang@windriver.com>
+To: Jiang Lu <lu.jiang@windriver.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,194 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 07/09/2012 06:24 PM, Yasuaki Ishimatsu Wrote:
-> acpi_memory_device_remove() has been prepared to remove physical memory.
-> But, the function only frees acpi_memory_device currentlry.
+
+On Jul 12, 2012, at 9:44 PM, Jiang Lu wrote:
+
+> On PPC44x core, the WRC(Watchdog-timer Reset Control) field of TCR
+> of timer can not reset by software after set to a non-zero value.
+> Which means software can not reset the timeout behaviour of watchdog timer.
 > 
-> The patch adds following functions into acpi_memory_device_remove():
->   - offline memory
->   - remove physical memory (only return -EBUSY)
->   - free acpi_memory_device
+> This patch selects WATCHDOG_NOWAYOUT option for 44x platforms to
+> indicate the watchdog timer can not be disabled once fired.
 > 
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> 
+> Signed-off-by: Jiang Lu <lu.jiang@windriver.com>
 > ---
->  drivers/acpi/acpi_memhotplug.c |   26 +++++++++++++++++++++++++-
->  drivers/base/memory.c          |   39 +++++++++++++++++++++++++++++++++++++++
->  include/linux/memory.h         |    5 +++++
->  include/linux/memory_hotplug.h |    1 +
->  mm/memory_hotplug.c            |    8 ++++++++
->  5 files changed, 78 insertions(+), 1 deletion(-)
-> 
-> Index: linux-3.5-rc6/drivers/acpi/acpi_memhotplug.c
-> ===================================================================
-> --- linux-3.5-rc6.orig/drivers/acpi/acpi_memhotplug.c	2012-07-09 18:08:29.946888653 +0900
-> +++ linux-3.5-rc6/drivers/acpi/acpi_memhotplug.c	2012-07-09 18:08:43.470719531 +0900
-> @@ -29,6 +29,7 @@
->  #include <linux/module.h>
->  #include <linux/init.h>
->  #include <linux/types.h>
-> +#include <linux/memory.h>
->  #include <linux/memory_hotplug.h>
->  #include <linux/slab.h>
->  #include <acpi/acpi_drivers.h>
-> @@ -452,12 +453,35 @@ static int acpi_memory_device_add(struct
->  static int acpi_memory_device_remove(struct acpi_device *device, int type)
->  {
->  	struct acpi_memory_device *mem_device = NULL;
-> -
-> +	struct acpi_memory_info *info, *tmp;
-> +	int result;
-> +	int node;
-> 
->  	if (!device || !acpi_driver_data(device))
->  		return -EINVAL;
-> 
->  	mem_device = acpi_driver_data(device);
-> +
-> +	node = acpi_get_node(mem_device->device->handle);
+> drivers/watchdog/Kconfig |    1 +
+> 1 files changed, 1 insertions(+), 0 deletions(-)
 
-acpi_get_node() may return -1, and you should call memory_add_physaddr_to_nid()
-to get the node id.
+I believe this is not 44x specific, but how Book-E watchdog is architected.
 
-Thanks
-Wen Congyang
+> 
+> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
+> index 3709624..41f3dff 100644
+> --- a/drivers/watchdog/Kconfig
+> +++ b/drivers/watchdog/Kconfig
+> @@ -1084,6 +1084,7 @@ config PIKA_WDT
+> config BOOKE_WDT
+> 	tristate "PowerPC Book-E Watchdog Timer"
+> 	depends on BOOKE || 4xx
+> +	select WATCHDOG_NOWAYOUT if 44x
 
-> +
-> +	list_for_each_entry_safe(info, tmp, &mem_device->res_list, list) {
-> +		if (!info->enabled)
-> +			continue;
-> +
-> +		if (!is_memblk_offline(info->start_addr, info->length)) {
-> +			result = offline_memory(info->start_addr, info->length);
-> +			if (result)
-> +				return result;
-> +		}
-> +
-> +		result = remove_memory(node, info->start_addr, info->length);
-> +		if (result)
-> +			return result;
-> +
-> +		list_del(&info->list);
-> +		kfree(info);
-> +	}
-> +
->  	kfree(mem_device);
+This should probably be 'select WATCHDOG_NOWAYOUT if BOOKE'
+
+> 	---help---
+> 	  Watchdog driver for PowerPC Book-E chips, such as the Freescale
+> 	  MPC85xx SOCs and the IBM PowerPC 440.
+> -- 
+> 1.7.7
 > 
->  	return 0;
-> Index: linux-3.5-rc6/include/linux/memory_hotplug.h
-> ===================================================================
-> --- linux-3.5-rc6.orig/include/linux/memory_hotplug.h	2012-07-09 18:08:29.955888542 +0900
-> +++ linux-3.5-rc6/include/linux/memory_hotplug.h	2012-07-09 18:08:43.471719518 +0900
-> @@ -233,6 +233,7 @@ static inline int is_mem_section_removab
->  extern int mem_online_node(int nid);
->  extern int add_memory(int nid, u64 start, u64 size);
->  extern int arch_add_memory(int nid, u64 start, u64 size);
-> +extern int remove_memory(int nid, u64 start, u64 size);
->  extern int offline_memory(u64 start, u64 size);
->  extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
->  								int nr_pages);
-> Index: linux-3.5-rc6/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-3.5-rc6.orig/mm/memory_hotplug.c	2012-07-09 18:08:29.953888567 +0900
-> +++ linux-3.5-rc6/mm/memory_hotplug.c	2012-07-09 18:08:43.476719455 +0900
-> @@ -659,6 +659,14 @@ out:
->  }
->  EXPORT_SYMBOL_GPL(add_memory);
-> 
-> +int remove_memory(int nid, u64 start, u64 size)
-> +{
-> +	return -EBUSY;
-> +
-> +}
-> +EXPORT_SYMBOL_GPL(remove_memory);
-> +
-> +
->  #ifdef CONFIG_MEMORY_HOTREMOVE
->  /*
->   * A free page on the buddy free lists (not the per-cpu lists) has PageBuddy
-> Index: linux-3.5-rc6/drivers/base/memory.c
-> ===================================================================
-> --- linux-3.5-rc6.orig/drivers/base/memory.c	2012-07-09 18:08:29.947888640 +0900
-> +++ linux-3.5-rc6/drivers/base/memory.c	2012-07-09 18:10:54.880076739 +0900
-> @@ -70,6 +70,45 @@ void unregister_memory_isolate_notifier(
->  }
->  EXPORT_SYMBOL(unregister_memory_isolate_notifier);
-> 
-> +bool is_memblk_offline(unsigned long start, unsigned long size)
-> +{
-> +	struct memory_block *mem = NULL;
-> +	struct mem_section *section;
-> +	unsigned long start_pfn, end_pfn;
-> +	unsigned long pfn, section_nr;
-> +
-> +	start_pfn = PFN_DOWN(start);
-> +	end_pfn = start_pfn + PFN_DOWN(start);
-> +
-> +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
-> +		section_nr = pfn_to_section_nr(pfn);
-> +		if (!present_section_nr(section_nr));
-> +			continue;
-> +
-> +		section = __nr_to_section(section_nr);
-> +		/* same memblock? */
-> +		if (mem)
-> +			if((section_nr >= mem->start_section_nr) &&
-> +			   (section_nr <= mem->end_section_nr))
-> +				continue;
-> +
-> +		mem = find_memory_block_hinted(section, mem);
-> +		if (!mem)
-> +			continue;
-> +		if (mem->state == MEM_OFFLINE)
-> +			continue;
-> +
-> +		kobject_put(&mem->dev.kobj);
-> +		return false;
-> +	}
-> +
-> +	if (mem)
-> +		kobject_put(&mem->dev.kobj);
-> +
-> +	return true;
-> +}
-> +EXPORT_SYMBOL(is_memblk_offline);
-> +
->  /*
->   * register_memory - Setup a sysfs device for a memory block
->   */
-> Index: linux-3.5-rc6/include/linux/memory.h
-> ===================================================================
-> --- linux-3.5-rc6.orig/include/linux/memory.h	2012-07-08 09:23:56.000000000 +0900
-> +++ linux-3.5-rc6/include/linux/memory.h	2012-07-09 18:08:43.484719355 +0900
-> @@ -106,6 +106,10 @@ static inline int memory_isolate_notify(
->  {
->  	return 0;
->  }
-> +static inline bool is_memblk_offline(unsigned long start, unsigned long size)
-> +{
-> +	return false;
-> +}
->  #else
->  extern int register_memory_notifier(struct notifier_block *nb);
->  extern void unregister_memory_notifier(struct notifier_block *nb);
-> @@ -120,6 +124,7 @@ extern int memory_isolate_notify(unsigne
->  extern struct memory_block *find_memory_block_hinted(struct mem_section *,
->  							struct memory_block *);
->  extern struct memory_block *find_memory_block(struct mem_section *);
-> +extern bool is_memblk_offline(unsigned long start, unsigned long size);
->  #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
->  enum mem_add_context { BOOT, HOTPLUG };
->  #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
-> 
-> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
