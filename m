@@ -1,15 +1,27 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Fri, 13 Jul 2012 08:45:56 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Stuart Yoder <stuart.yoder@freescale.com>
-Subject: Re: [PATCH v4] PPC: use CURRENT_THREAD_INFO instead of open coded
- assembly
-Message-ID: <20120712224556.GA9730@bloggs.ozlabs.ibm.com>
-References: <1341499295-10795-1-git-send-email-stuart.yoder@freescale.com>
-MIME-Version: 1.0
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from plane.gmane.org (plane.gmane.org [80.91.229.3])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E8E382C02F4
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2012 10:30:12 +1000 (EST)
+Received: from list by plane.gmane.org with local (Exim 4.69)
+ (envelope-from <glppe-linuxppc-embedded-2@m.gmane.org>)
+ id 1SpTXF-0002jA-BD
+ for linuxppc-dev@ozlabs.org; Fri, 13 Jul 2012 02:15:05 +0200
+Received: from 190-205-147-85.dyn.dsl.cantv.net ([127.0.0.1])
+ by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+ id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2012 02:15:05 +0200
+Received: from galafel by 190-205-147-85.dyn.dsl.cantv.net with local (Gmexim
+ 0.1 (Debian)) id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Jul 2012 02:15:05 +0200
+To: linuxppc-dev@ozlabs.org
+From: Gal Afel <galafel@gmail.com>
+Subject: Using gpio in MPC8309
+Date: Fri, 13 Jul 2012 00:08:44 +0000 (UTC)
+Message-ID: <loom.20120713T013514-149@post.gmane.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1341499295-10795-1-git-send-email-stuart.yoder@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,34 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jul 05, 2012 at 09:41:35AM -0500, Stuart Yoder wrote:
+Hello,
 
-> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-> index ba3aeb4..bad42e3 100644
-> --- a/arch/powerpc/kernel/entry_32.S
-> +++ b/arch/powerpc/kernel/entry_32.S
-> @@ -92,7 +92,7 @@ crit_transfer_to_handler:
->  	mfspr	r8,SPRN_SPRG_THREAD
->  	lwz	r0,KSP_LIMIT(r8)
->  	stw	r0,SAVED_KSP_LIMIT(r11)
-> -	rlwimi	r0,r1,0,0,(31-THREAD_SHIFT)
-> +	CURRENT_THREAD_INFO(r0, r1)
->  	stw	r0,KSP_LIMIT(r8)
->  	/* fall through */
->  #endif
-> @@ -112,7 +112,7 @@ crit_transfer_to_handler:
->  	mfspr	r8,SPRN_SPRG_THREAD
->  	lwz	r0,KSP_LIMIT(r8)
->  	stw	r0,saved_ksp_limit@l(0)
-> -	rlwimi	r0,r1,0,0,(31-THREAD_SHIFT)
-> +	CURRENT_THREAD_INFO(r0, r1)
->  	stw	r0,KSP_LIMIT(r8)
->  	/* fall through */
->  #endif
+I just got a TWR-MPC8309 from Freescale running Embedded Linux OS. The kernel
+version is Linux 2.6.11+pq3 patches and the kernel preconfig file is
+linux_2.6.11_mpc8548_cds_def.config.
 
-Do you really mean to replace a rlwimi with a rlwinm?  If so, is that
-because the rlwinm is a bug fix, or is it because you know something
-special about KSP_LIMIT(r8) which means that rlwinm and rlwimi are
-equivalent here?
+I'm new to processors running Linux and I'm having a hard time trying to
+understand how can I program the GPIO and use them. Is there a tutorial or any
+documentation you could provide me to get started on accessing the processor
+pins please?
 
-Paul.
+I'm using CodeWarrior Development Studio for Power Architecture version 10.0.2
+and I haven't found a library that includes the functions to access the pins
+functionality. Is there any documentation you could suggest me to do that please?
