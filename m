@@ -1,23 +1,21 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
- [209.85.216.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 852E62C0204
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 22:25:26 +1000 (EST)
-Received: by qaea16 with SMTP id a16so300639qae.17
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 05:25:21 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <D5792F52-7BE6-4B86-A3FD-B756DE3A165D@kernel.crashing.org>
-References: <1342147473-20231-1-git-send-email-lu.jiang@windriver.com>
- <D5792F52-7BE6-4B86-A3FD-B756DE3A165D@kernel.crashing.org>
-Date: Fri, 13 Jul 2012 08:25:21 -0400
-Message-ID: <CA+5PVA6RG1m8c2OUL2g0gBK7dRCrmeu47rZfoqAjxODm1zcNRg@mail.gmail.com>
-Subject: Re: [PATCH] ppc44x/watchdog: Select WATCHDOG_NOWAYOUT option
-From: Josh Boyer <jwboyer@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, Jiang Lu <lu.jiang@windriver.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CADB32C033D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 22:27:31 +1000 (EST)
+Subject: Re: [PATCH v6 3/5] powerpc/85xx: add sleep and deep sleep support
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1340706359-9455-3-git-send-email-chenhui.zhao@freescale.com>
+Date: Fri, 13 Jul 2012 07:27:27 -0500
+Message-Id: <1BDE2369-1130-4EE2-BFA3-4DD38EBC3600@kernel.crashing.org>
+References: <1340706359-9455-1-git-send-email-chenhui.zhao@freescale.com>
+ <1340706359-9455-3-git-send-email-chenhui.zhao@freescale.com>
+To: Zhao Chenhui <chenhui.zhao@freescale.com>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +25,785 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 13, 2012 at 7:50 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> On Jul 12, 2012, at 9:44 PM, Jiang Lu wrote:
->
->> On PPC44x core, the WRC(Watchdog-timer Reset Control) field of TCR
->> of timer can not reset by software after set to a non-zero value.
->> Which means software can not reset the timeout behaviour of watchdog timer.
->>
->> This patch selects WATCHDOG_NOWAYOUT option for 44x platforms to
->> indicate the watchdog timer can not be disabled once fired.
->>
->> Signed-off-by: Jiang Lu <lu.jiang@windriver.com>
->> ---
->> drivers/watchdog/Kconfig |    1 +
->> 1 files changed, 1 insertions(+), 0 deletions(-)
->
-> I believe this is not 44x specific, but how Book-E watchdog is architected.
 
-That is my understanding as well.
+On Jun 26, 2012, at 5:25 AM, Zhao Chenhui wrote:
 
->> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
->> index 3709624..41f3dff 100644
->> --- a/drivers/watchdog/Kconfig
->> +++ b/drivers/watchdog/Kconfig
->> @@ -1084,6 +1084,7 @@ config PIKA_WDT
->> config BOOKE_WDT
->>       tristate "PowerPC Book-E Watchdog Timer"
->>       depends on BOOKE || 4xx
->> +     select WATCHDOG_NOWAYOUT if 44x
->
-> This should probably be 'select WATCHDOG_NOWAYOUT if BOOKE'
+> From: Li Yang <leoli@freescale.com>
+>=20
+> In sleep PM mode, the clocks of e500 core and unused IP blocks is
+> turned off. IP blocks which are allowed to wake up the processor
+> are still running.
+>=20
+> Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
+> in addtion to the sleep PM mode.
+>=20
+> While in deep sleep PM mode, additionally, the power supply is
+> removed from e500 core and most IP blocks. Only the blocks needed
+> to wake up the chip out of deep sleep are ON.
+>=20
+> This patch supports 32-bit and 36-bit address space.
+>=20
+> The sleep mode is equal to the Standby state in Linux. The deep sleep
+> mode is equal to the Suspend-to-RAM state of Linux Power Management.
+>=20
+> Command to enter sleep mode.
+>  echo standby > /sys/power/state
+> Command to enter deep sleep mode.
+>  echo mem > /sys/power/state
+>=20
+> Signed-off-by: Dave Liu <daveliu@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Jin Qing <b24347@freescale.com>
+> Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> Cc: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> ---
+> Changes for v6:
+> * changed the declaration of flush_dcache_L1()
+> * some minor changes
+>=20
+> arch/powerpc/Kconfig                  |    2 +-
+> arch/powerpc/include/asm/cacheflush.h |    2 +
+> arch/powerpc/kernel/Makefile          |    3 +
+> arch/powerpc/kernel/l2cache_85xx.S    |   53 +++
+> arch/powerpc/platforms/85xx/Makefile  |    2 +-
+> arch/powerpc/platforms/85xx/sleep.S   |  609 =
++++++++++++++++++++++++++++++++++
+> arch/powerpc/sysdev/fsl_pmc.c         |   98 +++++-
+> arch/powerpc/sysdev/fsl_soc.h         |    5 +
+> 8 files changed, 754 insertions(+), 20 deletions(-)
+> create mode 100644 arch/powerpc/kernel/l2cache_85xx.S
+> create mode 100644 arch/powerpc/platforms/85xx/sleep.S
+>=20
 
-I kind of disagree with this change.  It's a user selectable option for
-a reason.
 
-Right now, if the option is not set we call booke_wdt_disable which
-indeed does not actually _disable_ the WDT, but it does set the timer
-period to the maxium value.  We could go one step further and implement
-a simple timer that pops and calls booke_wdt_ping if WATCHDOG_NOWAYOUT
-is not set, then rearms itself.  That would leave the user with the
-ability to perform recovery of the userspace process that exited or
-died and was responsible for pinging the watchdog.
+> diff --git a/arch/powerpc/kernel/l2cache_85xx.S =
+b/arch/powerpc/kernel/l2cache_85xx.S
+> new file mode 100644
+> index 0000000..b0b7d1c
+> --- /dev/null
+> +++ b/arch/powerpc/kernel/l2cache_85xx.S
+> @@ -0,0 +1,53 @@
+> +/*
+> + * Copyright (C) 2009-2012 Freescale Semiconductor, Inc. All rights =
+reserved.
+> + *	Scott Wood <scottwood@freescale.com>
+> + *	Dave Liu <daveliu@freescale.com>
+> + * implement the L2 cache operations of e500 based L2 controller
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#include <asm/reg.h>
+> +#include <asm/cputable.h>
+> +#include <asm/ppc_asm.h>
+> +#include <asm/asm-offsets.h>
+> +
+> +	.section .text
+> +
+> +	/* r3 =3D virtual address of L2 controller, WIMG =3D 01xx */
+> +_GLOBAL(flush_disable_L2)
+> +	/* It's a write-through cache, so only invalidation is needed. =
+*/
+> +	mbar
+> +	isync
+> +	lwz	r4, 0(r3)
+> +	li	r5, 1
+> +	rlwimi	r4, r5, 30, 0xc0000000
 
-josh
+Can 0xc0000000 be a #define for what I'm guessing is L2E and L2I?
+
+> +	stw	r4, 0(r3)
+> +
+> +	/* Wait for the invalidate to finish */
+> +1:	lwz	r4, 0(r3)
+> +	andis.	r4, r4, 0x4000
+
+#define for 0x4000 -> L2I@h
+
+> +	bne	1b
+> +	mbar
+> +
+> +	blr
+> +
+> +	/* r3 =3D virtual address of L2 controller, WIMG =3D 01xx */
+> +_GLOBAL(invalidate_enable_L2)
+> +	mbar
+> +	isync
+> +	lwz	r4, 0(r3)
+> +	li	r5, 3
+> +	rlwimi	r4, r5, 30, 0xc0000000
+> +	stw	r4, 0(r3)
+> +
+> +	/* Wait for the invalidate to finish */
+> +1:	lwz	r4, 0(r3)
+> +	andis.	r4, r4, 0x4000
+
+same comments as above about #defines.
+
+> +	bne	1b
+> +	mbar
+> +
+> +	blr
+> diff --git a/arch/powerpc/platforms/85xx/Makefile =
+b/arch/powerpc/platforms/85xx/Makefile
+> index 2125d4c..d154e39 100644
+> --- a/arch/powerpc/platforms/85xx/Makefile
+> +++ b/arch/powerpc/platforms/85xx/Makefile
+> @@ -3,7 +3,7 @@
+> #
+> obj-$(CONFIG_SMP) +=3D smp.o
+>=20
+> -obj-y +=3D common.o
+> +obj-y +=3D common.o sleep.o
+>=20
+> obj-$(CONFIG_MPC8540_ADS) +=3D mpc85xx_ads.o
+> obj-$(CONFIG_MPC8560_ADS) +=3D mpc85xx_ads.o
+> diff --git a/arch/powerpc/platforms/85xx/sleep.S =
+b/arch/powerpc/platforms/85xx/sleep.S
+> new file mode 100644
+> index 0000000..b272f0c
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/85xx/sleep.S
+> @@ -0,0 +1,609 @@
+> +/*
+> + * Enter and leave deep sleep/sleep state on MPC85xx
+> + *
+> + * Author: Scott Wood <scottwood@freescale.com>
+> + *
+> + * Copyright (C) 2006-2012 Freescale Semiconductor, Inc. All rights =
+reserved.
+> + *
+> + * This program is free software; you can redistribute it and/or =
+modify it
+> + * under the terms of the GNU General Public License version 2 as =
+published
+> + * by the Free Software Foundation.
+> + */
+> +
+> +#include <asm/page.h>
+> +#include <asm/ppc_asm.h>
+> +#include <asm/reg.h>
+> +#include <asm/asm-offsets.h>
+> +
+> +#define SS_TB		0x00
+> +#define SS_HID		0x08 /* 2 HIDs */
+> +#define SS_IAC		0x10 /* 2 IACs */
+> +#define SS_DAC		0x18 /* 2 DACs */
+> +#define SS_DBCR		0x20 /* 3 DBCRs */
+> +#define SS_PID		0x2c /* 3 PIDs */
+> +#define SS_SPRG		0x38 /* 8 SPRGs */
+> +#define SS_IVOR		0x58 /* 20 interrupt vectors */
+> +#define SS_TCR		0xa8
+> +#define SS_BUCSR	0xac
+> +#define SS_L1CSR	0xb0 /* 2 L1CSRs */
+> +#define SS_MSR		0xb8
+> +#define SS_USPRG	0xbc
+> +#define SS_GPREG	0xc0 /* r12-r31 */
+> +#define SS_LR		0x110
+> +#define SS_CR		0x114
+> +#define SS_SP		0x118
+> +#define SS_CURRENT	0x11c
+> +#define SS_IVPR		0x120
+> +#define SS_BPTR		0x124
+> +
+> +
+> +#define STATE_SAVE_SIZE 0x128
+> +
+> +	.section .data
+> +	.align	5
+> +mpc85xx_sleep_save_area:
+> +	.space	STATE_SAVE_SIZE
+> +ccsrbase_low:
+> +	.long	0
+> +ccsrbase_high:
+> +	.long	0
+> +powmgtreq:
+> +	.long	0
+> +
+> +	.section .text
+> +	.align	12
+> +
+> +	/*
+> +	 * r3 =3D high word of physical address of CCSR
+> +	 * r4 =3D low word of physical address of CCSR
+> +	 * r5 =3D JOG or deep sleep request
+> +	 *      JOG-0x00200000, deep sleep-0x00100000
+> +	 */
+> +_GLOBAL(mpc85xx_enter_deep_sleep)
+> +	lis	r6, ccsrbase_low@ha
+> +	stw	r4, ccsrbase_low@l(r6)
+> +	lis	r6, ccsrbase_high@ha
+> +	stw	r3, ccsrbase_high@l(r6)
+> +
+> +	lis	r6, powmgtreq@ha
+> +	stw	r5, powmgtreq@l(r6)
+> +
+> +	lis	r10, mpc85xx_sleep_save_area@h
+> +	ori	r10, r10, mpc85xx_sleep_save_area@l
+> +
+> +	mfspr	r5, SPRN_HID0
+> +	mfspr	r6, SPRN_HID1
+> +
+> +	stw	r5, SS_HID+0(r10)
+> +	stw	r6, SS_HID+4(r10)
+> +
+> +	mfspr	r4, SPRN_IAC1
+> +	mfspr	r5, SPRN_IAC2
+> +	mfspr	r6, SPRN_DAC1
+> +	mfspr	r7, SPRN_DAC2
+> +
+> +	stw	r4, SS_IAC+0(r10)
+> +	stw	r5, SS_IAC+4(r10)
+> +	stw	r6, SS_DAC+0(r10)
+> +	stw	r7, SS_DAC+4(r10)
+> +
+> +	mfspr	r4, SPRN_DBCR0
+> +	mfspr	r5, SPRN_DBCR1
+> +	mfspr	r6, SPRN_DBCR2
+> +
+> +	stw	r4, SS_DBCR+0(r10)
+> +	stw	r5, SS_DBCR+4(r10)
+> +	stw	r6, SS_DBCR+8(r10)
+> +
+> +	mfspr	r4, SPRN_PID0
+> +	mfspr	r5, SPRN_PID1
+> +	mfspr	r6, SPRN_PID2
+> +
+> +	stw	r4, SS_PID+0(r10)
+> +	stw	r5, SS_PID+4(r10)
+> +	stw	r6, SS_PID+8(r10)
+> +
+> +	mfspr	r4, SPRN_SPRG0
+> +	mfspr	r5, SPRN_SPRG1
+> +	mfspr	r6, SPRN_SPRG2
+> +	mfspr	r7, SPRN_SPRG3
+> +
+> +	stw	r4, SS_SPRG+0x00(r10)
+> +	stw	r5, SS_SPRG+0x04(r10)
+> +	stw	r6, SS_SPRG+0x08(r10)
+> +	stw	r7, SS_SPRG+0x0c(r10)
+> +
+> +	mfspr	r4, SPRN_SPRG4
+> +	mfspr	r5, SPRN_SPRG5
+> +	mfspr	r6, SPRN_SPRG6
+> +	mfspr	r7, SPRN_SPRG7
+> +
+> +	stw	r4, SS_SPRG+0x10(r10)
+> +	stw	r5, SS_SPRG+0x14(r10)
+> +	stw	r6, SS_SPRG+0x18(r10)
+> +	stw	r7, SS_SPRG+0x1c(r10)
+> +
+> +	mfspr	r4, SPRN_IVPR
+> +	stw	r4, SS_IVPR(r10)
+> +
+> +	mfspr	r4, SPRN_IVOR0
+> +	mfspr	r5, SPRN_IVOR1
+> +	mfspr	r6, SPRN_IVOR2
+> +	mfspr	r7, SPRN_IVOR3
+> +
+> +	stw	r4, SS_IVOR+0x00(r10)
+> +	stw	r5, SS_IVOR+0x04(r10)
+> +	stw	r6, SS_IVOR+0x08(r10)
+> +	stw	r7, SS_IVOR+0x0c(r10)
+> +
+> +	mfspr	r4, SPRN_IVOR4
+> +	mfspr	r5, SPRN_IVOR5
+> +	mfspr	r6, SPRN_IVOR6
+> +	mfspr	r7, SPRN_IVOR7
+> +
+> +	stw	r4, SS_IVOR+0x10(r10)
+> +	stw	r5, SS_IVOR+0x14(r10)
+> +	stw	r6, SS_IVOR+0x18(r10)
+> +	stw	r7, SS_IVOR+0x1c(r10)
+> +
+> +	mfspr	r4, SPRN_IVOR8
+> +	mfspr	r5, SPRN_IVOR9
+> +	mfspr	r6, SPRN_IVOR10
+> +	mfspr	r7, SPRN_IVOR11
+> +
+> +	stw	r4, SS_IVOR+0x20(r10)
+> +	stw	r5, SS_IVOR+0x24(r10)
+> +	stw	r6, SS_IVOR+0x28(r10)
+> +	stw	r7, SS_IVOR+0x2c(r10)
+> +
+> +	mfspr	r4, SPRN_IVOR12
+> +	mfspr	r5, SPRN_IVOR13
+> +	mfspr	r6, SPRN_IVOR14
+> +	mfspr	r7, SPRN_IVOR15
+> +
+> +	stw	r4, SS_IVOR+0x30(r10)
+> +	stw	r5, SS_IVOR+0x34(r10)
+> +	stw	r6, SS_IVOR+0x38(r10)
+> +	stw	r7, SS_IVOR+0x3c(r10)
+> +
+> +	mfspr	r4, SPRN_IVOR32
+> +	mfspr	r5, SPRN_IVOR33
+> +	mfspr	r6, SPRN_IVOR34
+> +	mfspr	r7, SPRN_IVOR35
+> +
+> +	stw	r4, SS_IVOR+0x40(r10)
+> +	stw	r5, SS_IVOR+0x44(r10)
+> +	stw	r6, SS_IVOR+0x48(r10)
+> +	stw	r7, SS_IVOR+0x4c(r10)
+> +
+> +	mfspr	r4, SPRN_TCR
+> +	mfspr	r5, SPRN_BUCSR
+> +	mfspr	r6, SPRN_L1CSR0
+> +	mfspr	r7, SPRN_L1CSR1
+> +	mfspr	r8, SPRN_USPRG0
+> +
+> +	stw	r4, SS_TCR(r10)
+> +	stw	r5, SS_BUCSR(r10)
+> +	stw	r6, SS_L1CSR+0(r10)
+> +	stw	r7, SS_L1CSR+4(r10)
+> +	stw	r8, SS_USPRG+0(r10)
+> +
+> +	stmw	r12, SS_GPREG(r10)
+> +
+> +	mfmsr	r4
+> +	mflr	r5
+> +	mfcr	r6
+> +
+> +	stw	r4, SS_MSR(r10)
+> +	stw	r5, SS_LR(r10)
+> +	stw	r6, SS_CR(r10)
+> +	stw	r1, SS_SP(r10)
+> +	stw	r2, SS_CURRENT(r10)
+> +
+> +1:	mftbu	r4
+> +	mftb	r5
+> +	mftbu	r6
+> +	cmpw	r4, r6
+> +	bne	1b
+> +
+> +	stw	r4, SS_TB+0(r10)
+> +	stw	r5, SS_TB+4(r10)
+> +
+> +	lis	r5, ccsrbase_low@ha
+> +	lwz	r4, ccsrbase_low@l(r5)
+> +	lis	r5, ccsrbase_high@ha
+> +	lwz	r3, ccsrbase_high@l(r5)
+> +
+> +	/* Disable machine checks and critical exceptions */
+> +	mfmsr	r5
+> +	rlwinm	r5, r5, 0, ~MSR_CE
+> +	rlwinm	r5, r5, 0, ~MSR_ME
+> +	mtmsr	r5
+> +	isync
+> +
+> +	/* Use TLB1[15] to map the CCSR at 0xf0000000 */
+> +	lis	r5, 0x100f
+> +	mtspr	SPRN_MAS0, r5
+> +	lis	r5, 0xc000
+> +	ori	r5, r5, 0x0500
+> +	mtspr	SPRN_MAS1, r5
+> +	lis	r5, 0xf000
+> +	ori	r5, r5, 0x000a
+> +	mtspr	SPRN_MAS2, r5
+> +	rlwinm	r5, r4, 0, 0xfffff000
+> +	ori	r5, r5, 0x0005
+
+We have #defines that should be used instead of magic numbers for MAS =
+defines/fields.
+
+> +	mtspr	SPRN_MAS3, r5
+> +	mtspr	SPRN_MAS7, r3
+> +	isync
+> +	tlbwe
+> +	isync
+> +
+> +	lis	r3, 0xf000
+> +	lwz	r4, 0x20(r3)
+> +	stw	r4, SS_BPTR(r10)
+> +
+> +	lis	r3, 0xf002	/* L2 cache controller at CCSR+0x20000 =
+*/
+> +	bl	flush_disable_L2
+> +	bl	__flush_disable_L1
+> +
+> +	/* Enable I-cache, so as not to upset the bus
+> +	 * with our loop.
+> +	 */
+> +
+> +	mfspr	r4, SPRN_L1CSR1
+> +	ori	r4, r4, 1
+> +	mtspr	SPRN_L1CSR1, r4
+> +	isync
+> +
+> +	/* Set boot page translation */
+> +	lis	r3, 0xf000
+> +	lis	r4, (mpc85xx_deep_resume - PAGE_OFFSET)@h
+> +	ori	r4, r4, (mpc85xx_deep_resume - PAGE_OFFSET)@l
+> +	rlwinm	r4, r4, 20, 0x000fffff
+> +	oris	r4, r4, 0x8000
+> +	stw	r4, 0x20(r3)
+> +	lwz	r4, 0x20(r3)		/* read-back to flush write */
+> +	twi	0, r4, 0
+> +	isync
+> +
+> +	/* Disable the decrementer */
+> +	mfspr	r4, SPRN_TCR
+> +	rlwinm	r4, r4, 0, ~TCR_DIE
+> +	mtspr	SPRN_TCR, r4
+> +
+> +	mfspr	r4, SPRN_TSR
+> +	oris	r4, r4, TSR_DIS@h
+> +	mtspr	SPRN_TSR, r4
+> +
+> +	/* set PMRCCR[VRCNT] to wait power stable for 40ms */
+> +	lis	r3, 0xf00e
+> +	lwz	r4, 0x84(r3)
+> +	clrlwi	r4, r4, 16
+> +	oris	r4, r4, 0x12a3
+> +	stw	r4, 0x84(r3)
+> +	lwz	r4, 0x84(r3)
+
+#defines here for magic numbers?
+> +
+> +	/* set deep sleep bit in POWMGTSCR */
+> +	lis	r3, powmgtreq@ha
+> +	lwz	r8, powmgtreq@l(r3)
+> +
+> +	lis	r3, 0xf00e
+> +	lwz	r4, 0x80(r3)
+> +	or	r4, r4, r8
+> +	stw	r4, 0x80(r3)
+> +	lwz	r4, 0x80(r3)		/* read-back to flush write */
+> +	twi	0, r4, 0
+> +	isync
+
+#defines here for magic numbers?
+
+> +
+> +	mftb	r5
+> +1:	/* spin until either we enter deep sleep, or the sleep process =
+is
+> +	 * aborted due to a pending wakeup event.  Wait some time =
+between
+> +	 * accesses, so we don't flood the bus and prevent the pmc from
+> +	 * detecting an idle system.
+> +	 */
+> +
+> +	mftb	r4
+> +	subf	r7, r5, r4
+> +	cmpwi	r7, 1000
+> +	blt	1b
+> +	mr	r5, r4
+> +
+> +	lwz	r6, 0x80(r3)
+> +	andis.	r6, r6, 0x0010
+> +	bne	1b
+> +	b	2f
+
+#defines here for magic numbers?
+
+> +
+> +2:	mfspr	r4, SPRN_PIR
+> +	andi.	r4, r4, 1
+> +99:	bne	99b
+> +
+> +	/* Establish a temporary 64MB 0->0 mapping in TLB1[1]. */
+> +	lis	r4, 0x1001
+> +	mtspr	SPRN_MAS0, r4
+> +	lis	r4, 0xc000
+> +	ori	r4, r4, 0x0800
+> +	mtspr	SPRN_MAS1, r4
+> +	li	r4, 0
+> +	mtspr	SPRN_MAS2, r4
+> +	li	r4, 0x0015
+> +	mtspr	SPRN_MAS3, r4
+> +	li	r4, 0
+> +	mtspr	SPRN_MAS7, r4
+
+Same comment as above about #defines for MAS regs
+
+> +	isync
+> +	tlbwe
+> +	isync
+> +
+> +	lis	r3, (3f - PAGE_OFFSET)@h
+> +	ori	r3, r3, (3f - PAGE_OFFSET)@l
+> +	mtctr	r3
+> +	bctr
+> +
+> +	/* Locate the resume vector in the last word of the current =
+page. */
+> +	. =3D mpc85xx_enter_deep_sleep + 0xffc
+> +mpc85xx_deep_resume:
+> +	b	2b
+> +
+> +3:
+> +	/* Restore the contents of TLB1[0].  It is assumed that it =
+covers
+> +	 * the currently executing code and the sleep save area, and =
+that
+> +	 * it does not alias our temporary mapping (which is at virtual =
+zero).
+> +	 */
+> +	lis	r3, (TLBCAM - PAGE_OFFSET)@h
+> +	ori	r3, r3, (TLBCAM - PAGE_OFFSET)@l
+> +
+> +	lwz	r4, 0(r3)
+> +	lwz	r5, 4(r3)
+> +	lwz	r6, 8(r3)
+> +	lwz	r7, 12(r3)
+> +	lwz	r8, 16(r3)
+> +
+> +	mtspr	SPRN_MAS0, r4
+> +	mtspr	SPRN_MAS1, r5
+> +	mtspr	SPRN_MAS2, r6
+> +	mtspr	SPRN_MAS3, r7
+> +	mtspr	SPRN_MAS7, r8
+> +
+> +	isync
+> +	tlbwe
+> +	isync
+> +
+> +	/* Access the ccsrbase address with TLB1[0] */
+> +	lis	r5, ccsrbase_low@ha
+> +	lwz	r4, ccsrbase_low@l(r5)
+> +	lis	r5, ccsrbase_high@ha
+> +	lwz	r3, ccsrbase_high@l(r5)
+> +
+> +	/* Use TLB1[15] to map the CCSR at 0xf0000000 */
+> +	lis	r5, 0x100f
+> +	mtspr	SPRN_MAS0, r5
+> +	lis	r5, 0xc000
+> +	ori	r5, r5, 0x0500
+> +	mtspr	SPRN_MAS1, r5
+> +	lis	r5, 0xf000
+> +	ori	r5, r5, 0x000a
+> +	mtspr	SPRN_MAS2, r5
+> +	rlwinm	r5, r4, 0, 0xfffff000
+> +	ori	r5, r5, 0x0005
+> +	mtspr	SPRN_MAS3, r5
+> +	mtspr	SPRN_MAS7, r3
+
+Same comment as above about #defines for MAS regs
+
+> +	isync
+> +	tlbwe
+> +	isync
+> +
+> +	lis	r3, 0xf002	/* L2 cache controller at CCSR+0x20000 =
+*/
+> +	bl	invalidate_enable_L2
+> +
+> +	/* Access the MEM(r10) with TLB1[0] */
+> +	lis	r10, mpc85xx_sleep_save_area@h
+> +	ori	r10, r10, mpc85xx_sleep_save_area@l
+> +
+> +	lis	r3, 0xf000
+> +	lwz	r4, SS_BPTR(r10)
+> +	stw	r4, 0x20(r3)		/* restore BPTR */
+> +
+> +	/* Program shift running space to PAGE_OFFSET */
+> +	mfmsr	r3
+> +	lis	r4, 1f@h
+> +	ori	r4, r4, 1f@l
+> +
+> +	mtsrr1	r3
+> +	mtsrr0	r4
+> +	rfi
+> +
+> +1:	/* Restore the rest of TLB1, in ascending order so that
+> +	 * the TLB1[1] gets invalidated first.
+> +	 *
+> +	 * XXX: It's better to invalidate the temporary mapping
+> +	 * TLB1[15] for CCSR before restore any TLB1 entry include 0.
+> +	 */
+> +	lis	r4, 0x100f
+> +	mtspr	SPRN_MAS0, r4
+> +	lis	r4, 0
+> +	mtspr	SPRN_MAS1, r4
+> +	isync
+> +	tlbwe
+> +	isync
+> +
+> +	lis	r3, (TLBCAM + 5*4 - 4)@h
+> +	ori	r3, r3, (TLBCAM + 5*4 - 4)@l
+> +	li	r4, 15
+> +	mtctr	r4
+> +
+> +2:
+> +	lwz	r5, 4(r3)
+> +	lwz	r6, 8(r3)
+> +	lwz	r7, 12(r3)
+> +	lwz	r8, 16(r3)
+> +	lwzu	r9, 20(r3)
+> +
+> +	mtspr	SPRN_MAS0, r5
+> +	mtspr	SPRN_MAS1, r6
+> +	mtspr	SPRN_MAS2, r7
+> +	mtspr	SPRN_MAS3, r8
+> +	mtspr	SPRN_MAS7, r9
+> +
+> +	isync
+> +	tlbwe
+> +	isync
+> +	bdnz	2b
+> +
+> +	lis	r10, mpc85xx_sleep_save_area@h
+> +	ori	r10, r10, mpc85xx_sleep_save_area@l
+> +
+> +	lwz	r5, SS_HID+0(r10)
+> +	lwz	r6, SS_HID+4(r10)
+> +
+> +	isync
+> +	mtspr	SPRN_HID0, r5
+> +	isync
+> +
+> +	msync
+> +	mtspr	SPRN_HID1, r6
+> +	isync
+> +
+> +	lwz	r4, SS_IAC+0(r10)
+> +	lwz	r5, SS_IAC+4(r10)
+> +	lwz	r6, SS_DAC+0(r10)
+> +	lwz	r7, SS_DAC+4(r10)
+> +
+> +	mtspr	SPRN_IAC1, r4
+> +	mtspr	SPRN_IAC2, r5
+> +	mtspr	SPRN_DAC1, r6
+> +	mtspr	SPRN_DAC2, r7
+> +
+> +	lwz	r4, SS_DBCR+0(r10)
+> +	lwz	r5, SS_DBCR+4(r10)
+> +	lwz	r6, SS_DBCR+8(r10)
+> +
+> +	mtspr	SPRN_DBCR0, r4
+> +	mtspr	SPRN_DBCR1, r5
+> +	mtspr	SPRN_DBCR2, r6
+> +
+> +	lwz	r4, SS_PID+0(r10)
+> +	lwz	r5, SS_PID+4(r10)
+> +	lwz	r6, SS_PID+8(r10)
+> +
+> +	mtspr	SPRN_PID0, r4
+> +	mtspr	SPRN_PID1, r5
+> +	mtspr	SPRN_PID2, r6
+> +
+> +	lwz	r4, SS_SPRG+0x00(r10)
+> +	lwz	r5, SS_SPRG+0x04(r10)
+> +	lwz	r6, SS_SPRG+0x08(r10)
+> +	lwz	r7, SS_SPRG+0x0c(r10)
+> +
+> +	mtspr	SPRN_SPRG0, r4
+> +	mtspr	SPRN_SPRG1, r5
+> +	mtspr	SPRN_SPRG2, r6
+> +	mtspr	SPRN_SPRG3, r7
+> +
+> +	lwz	r4, SS_SPRG+0x10(r10)
+> +	lwz	r5, SS_SPRG+0x14(r10)
+> +	lwz	r6, SS_SPRG+0x18(r10)
+> +	lwz	r7, SS_SPRG+0x1c(r10)
+> +
+> +	mtspr	SPRN_SPRG4, r4
+> +	mtspr	SPRN_SPRG5, r5
+> +	mtspr	SPRN_SPRG6, r6
+> +	mtspr	SPRN_SPRG7, r7
+> +
+> +	lwz	r4, SS_IVPR(r10)
+> +	mtspr	SPRN_IVPR, r4
+> +
+> +	lwz	r4, SS_IVOR+0x00(r10)
+> +	lwz	r5, SS_IVOR+0x04(r10)
+> +	lwz	r6, SS_IVOR+0x08(r10)
+> +	lwz	r7, SS_IVOR+0x0c(r10)
+> +
+> +	mtspr	SPRN_IVOR0, r4
+> +	mtspr	SPRN_IVOR1, r5
+> +	mtspr	SPRN_IVOR2, r6
+> +	mtspr	SPRN_IVOR3, r7
+> +
+> +	lwz	r4, SS_IVOR+0x10(r10)
+> +	lwz	r5, SS_IVOR+0x14(r10)
+> +	lwz	r6, SS_IVOR+0x18(r10)
+> +	lwz	r7, SS_IVOR+0x1c(r10)
+> +
+> +	mtspr	SPRN_IVOR4, r4
+> +	mtspr	SPRN_IVOR5, r5
+> +	mtspr	SPRN_IVOR6, r6
+> +	mtspr	SPRN_IVOR7, r7
+> +
+> +	lwz	r4, SS_IVOR+0x20(r10)
+> +	lwz	r5, SS_IVOR+0x24(r10)
+> +	lwz	r6, SS_IVOR+0x28(r10)
+> +	lwz	r7, SS_IVOR+0x2c(r10)
+> +
+> +	mtspr	SPRN_IVOR8, r4
+> +	mtspr	SPRN_IVOR9, r5
+> +	mtspr	SPRN_IVOR10, r6
+> +	mtspr	SPRN_IVOR11, r7
+> +
+> +	lwz	r4, SS_IVOR+0x30(r10)
+> +	lwz	r5, SS_IVOR+0x34(r10)
+> +	lwz	r6, SS_IVOR+0x38(r10)
+> +	lwz	r7, SS_IVOR+0x3c(r10)
+> +
+> +	mtspr	SPRN_IVOR12, r4
+> +	mtspr	SPRN_IVOR13, r5
+> +	mtspr	SPRN_IVOR14, r6
+> +	mtspr	SPRN_IVOR15, r7
+> +
+> +	lwz	r4, SS_IVOR+0x40(r10)
+> +	lwz	r5, SS_IVOR+0x44(r10)
+> +	lwz	r6, SS_IVOR+0x48(r10)
+> +	lwz	r7, SS_IVOR+0x4c(r10)
+> +
+> +	mtspr	SPRN_IVOR32, r4
+> +	mtspr	SPRN_IVOR33, r5
+> +	mtspr	SPRN_IVOR34, r6
+> +	mtspr	SPRN_IVOR35, r7
+> +
+> +	lwz	r4, SS_TCR(r10)
+> +	lwz	r5, SS_BUCSR(r10)
+> +	lwz	r6, SS_L1CSR+0(r10)
+> +	lwz	r7, SS_L1CSR+4(r10)
+> +	lwz	r8, SS_USPRG+0(r10)
+> +
+> +	mtspr	SPRN_TCR, r4
+> +	mtspr	SPRN_BUCSR, r5
+> +
+> +	msync
+> +	isync
+> +	mtspr	SPRN_L1CSR0, r6
+> +	isync
+> +
+> +	mtspr	SPRN_L1CSR1, r7
+> +	isync
+> +
+> +	mtspr	SPRN_USPRG0, r8
+> +
+> +	lmw	r12, SS_GPREG(r10)
+> +
+> +	lwz	r1, SS_SP(r10)
+> +	lwz	r2, SS_CURRENT(r10)
+> +	lwz	r4, SS_MSR(r10)
+> +	lwz	r5, SS_LR(r10)
+> +	lwz	r6, SS_CR(r10)
+> +
+> +	msync
+> +	mtmsr	r4
+> +	isync
+> +
+> +	mtlr	r5
+> +	mtcr	r6
+> +
+> +	li	r4, 0
+> +	mtspr	SPRN_TBWL, r4
+> +
+> +	lwz	r4, SS_TB+0(r10)
+> +	lwz	r5, SS_TB+4(r10)
+> +
+> +	mtspr	SPRN_TBWU, r4
+> +	mtspr	SPRN_TBWL, r5
+> +
+> +	lis	r3, 1
+> +	mtdec	r3
+> +
+> +	blr
