@@ -2,26 +2,26 @@ Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
 Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 900762C0309
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 14:34:48 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 9E0293EE0C0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 13:34:45 +0900 (JST)
-Received: from smail (m4 [127.0.0.1])
- by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 830BA45DE53
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 13:34:45 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
- by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 69AA845DE51
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 13:34:45 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 58FD91DB803B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 13:34:45 +0900 (JST)
-Received: from g01jpexchyt08.g01.fujitsu.local
- (g01jpexchyt08.g01.fujitsu.local [10.128.194.47])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 051EB1DB803F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 13:34:45 +0900 (JST)
-Message-ID: <4FFFA53C.8090707@jp.fujitsu.com>
-Date: Fri, 13 Jul 2012 13:34:04 +0900
+ by ozlabs.org (Postfix) with ESMTPS id 596392C0339
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 15:12:25 +1000 (EST)
+Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 8213F3EE0C7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 14:12:20 +0900 (JST)
+Received: from smail (m1 [127.0.0.1])
+ by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 5D01945DE60
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 14:12:20 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
+ by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 423BC45DE5A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 14:12:20 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 34D51E78008
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 14:12:20 +0900 (JST)
+Received: from g01jpexchkw10.g01.fujitsu.local
+ (g01jpexchkw10.g01.fujitsu.local [10.0.194.49])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id DDC7AE78005
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 14:12:19 +0900 (JST)
+Message-ID: <4FFFAE17.7070400@jp.fujitsu.com>
+Date: Fri, 13 Jul 2012 14:11:51 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: Dave Hansen <dave@linux.vnet.ibm.com>
@@ -57,8 +57,7 @@ Hi Dave,
 > some of the other firmware_map*() functions are different, but I think
 > that's OK since they're only used internally to memmap.c.
 
-Thank you for reviewing my patch.
-I'll send the patch.
+Can I add "Reviewed-by: Dave Hansen" to the patch?
 
 Thanks,
 Yasuaki Ishimatsu
