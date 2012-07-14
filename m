@@ -1,18 +1,23 @@
-Return-Path: <B04825@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BEA502C02FF
- for <linuxppc-dev@ozlabs.org>; Sat, 14 Jul 2012 08:40:50 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/85xx: remove P1020RDB and P2020RDB CAMP device trees
-Date: Fri, 13 Jul 2012 17:40:43 -0500
-Message-ID: <1342219243-8061-1-git-send-email-timur@freescale.com>
+Return-Path: <sarans1987@gmail.com>
+Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
+ [209.85.216.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C9E5A2C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Jul 2012 16:46:43 +1000 (EST)
+Received: by qaea16 with SMTP id a16so798103qae.17
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jul 2012 23:46:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
+In-Reply-To: <8D983423E7EDF846BB3056827B8CC5D10285E9@corpmail1.na.ads.idt.com>
+References: <CAEqOc-QpXcwbLuJXLbGv3VgccKnkMrdGV+ZdwFaFZCzjG3K7Mw@mail.gmail.com>
+ <8D983423E7EDF846BB3056827B8CC5D10285E9@corpmail1.na.ads.idt.com>
+Date: Sat, 14 Jul 2012 11:54:47 +0530
+Message-ID: <CAEqOc-QzeNz0z33yegaa-9FVpbcCUaMix4-Gfkn0P8Y3487YsA@mail.gmail.com>
+Subject: Re: Standalone SRIO Driver for Linux
+From: Saravanan S <sarans1987@gmail.com>
+To: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+Content-Type: multipart/alternative; boundary=00235452e960df204b04c4c440b6
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,459 +27,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We only need two examples of CAMP device trees in the upstream kernel.
+--00235452e960df204b04c4c440b6
+Content-Type: text/plain; charset=ISO-8859-1
 
-Co-operative Asymmetric Multi-Processing (CAMP) is a technique where two
-or more operating systems (typically multiple copies of the same Linux kernel)
-are loaded into memory, and each kernel is given a subset of the available
-cores to execute on.  For example, on a four-core system, one kernel runs on
-cores 0 and 1, and the other runs on cores 2 and 3.
+Hi ,
+     Thanks for the reply . i will try to share some of my code later .
+Looking forward to ur ideas.
 
-The devices are also partitioned among the operating systems, and this is
-done with customized device trees.  Each kernel gets its own device tree
-that has only the devices that it should know about.
+Regards,
 
-Unfortunately, this approach is very hackish.  The kernels are trusted to
-only access devices in their respective device trees, and the partitioning
-only works for devices that can be handled.  Crafting the device trees is a
-tricky process, and getting U-Boot to load and start all kernels is cumbersome.
+S.Saravanan
 
-But most importantly, each CAMP setup is very application-specific, since
-the actual partitioning of resources is done in the DTS by the system
-designer.  Therefore, it doesn't make a lot of sense to have a lot of CAMP
-device trees, since we only expect them to be used as examples.
+On Fri, Jul 13, 2012 at 6:18 PM, Bounine, Alexandre <
+Alexandre.Bounine@idt.com> wrote:
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/boot/dts/p1020rdb_camp_core0.dts |   63 -----------
- arch/powerpc/boot/dts/p1020rdb_camp_core1.dts |  141 -------------------------
- arch/powerpc/boot/dts/p2020rdb_camp_core0.dts |   67 ------------
- arch/powerpc/boot/dts/p2020rdb_camp_core1.dts |  125 ----------------------
- 4 files changed, 0 insertions(+), 396 deletions(-)
- delete mode 100644 arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
- delete mode 100644 arch/powerpc/boot/dts/p1020rdb_camp_core1.dts
- delete mode 100644 arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
- delete mode 100644 arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
+>  This should work. We use similar approach to test our mport HW drivers.**
+> **
+>
+> ** **
+>
+> Alex.****
+>
+> ** **
+>
+> *From:* Linuxppc-dev [mailto:linuxppc-dev-bounces+alexandre.bounine=
+> idt.com@lists.ozlabs.org] *On Behalf Of *Saravanan S
+> *Sent:* Friday, July 13, 2012 2:16 AM
+> *To:* linuxppc-dev@lists.ozlabs.org
+> *Subject:* Standalone SRIO Driver for Linux****
+>
+> ** **
+>
+> Hi ,
+>
+>       Iam currently working on the GE make DSP230 board consisting of Quad
+> PowerPC8640 nodes   interconnected by SRIO with Linux 2.6.34 . However the
+> only way to access the SRIO is through rionet facility . Our requirement is
+> to use the SRIO interconnect without the Ethernet overheads. This would
+> definitely enable higher speeds (though I cant find any throughput figures
+> for SRIO in Linux on the net ??? ).  My query is that whether any attempt
+> has been made  to develop a  standalone driver and API to access the
+> messaging  and doorbell services of SRIO . If no then request you to please
+> provide inputs on the same. From my study I have the following thoughts for
+> the driver :
+>
+> a) Have a character device interface for user .
+> b) Basically use the rio support functions provided in rio.c like
+> rio_add_inb_buffer ,  rio_add_outb_message to transfer and receive messages
+> and add buffers .
+> c) Maintain a dedicated ring of buffers in the driver and transfer  data
+> to and from the buffer to user space .
+>
+>
+> Is this the right direction . Would really appreciate any inputs . thanks
+> in advance.
+>
+> Regards,
+>
+> S.Saravanan****
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
 
-diff --git a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
-deleted file mode 100644
-index 41b4585..0000000
---- a/arch/powerpc/boot/dts/p1020rdb_camp_core0.dts
-+++ /dev/null
-@@ -1,63 +0,0 @@
--/*
-- * P1020 RDB  Core0 Device Tree Source in CAMP mode.
-- *
-- * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-- * can be shared, all the other devices must be assigned to one core only.
-- * This dts file allows core0 to have memory, l2, i2c, spi, gpio, tdm, dma, usb,
-- * eth1, eth2, sdhc, crypto, global-util, message, pci0, pci1, msi.
-- *
-- * Please note to add "-b 0" for core0's dts compiling.
-- *
-- * Copyright 2011 Freescale Semiconductor Inc.
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--/include/ "p1020rdb.dts"
--
--/ {
--	model = "fsl,P1020RDB";
--	compatible = "fsl,P1020RDB", "fsl,MPC85XXRDB-CAMP";
--
--	aliases {
--		ethernet1 = &enet1;
--		ethernet2 = &enet2;
--		serial0 = &serial0;
--		pci0 = &pci0;
--		pci1 = &pci1;
--	};
--
--	cpus {
--		PowerPC,P1020@1 {
--			status = "disabled";
--		};
--	};
--
--	memory {
--		device_type = "memory";
--	};
--
--	localbus@ffe05000 {
--		status = "disabled";
--	};
--
--	soc@ffe00000 {
--		serial1: serial@4600 {
--			status = "disabled";
--		};
--
--		enet0: ethernet@b0000 {
--			status = "disabled";
--		};
--
--		mpic: pic@40000 {
--			protected-sources = <
--			42 29 30 34	/* serial1, enet0-queue-group0 */
--			17 18 24 45	/* enet0-queue-group1, crypto */
--			>;
--		};
--	};
--};
-diff --git a/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts b/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts
-deleted file mode 100644
-index 5174538..0000000
---- a/arch/powerpc/boot/dts/p1020rdb_camp_core1.dts
-+++ /dev/null
-@@ -1,141 +0,0 @@
--/*
-- * P1020 RDB Core1 Device Tree Source in CAMP mode.
-- *
-- * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-- * can be shared, all the other devices must be assigned to one core only.
-- * This dts allows core1 to have l2, eth0, crypto.
-- *
-- * Please note to add "-b 1" for core1's dts compiling.
-- *
-- * Copyright 2011 Freescale Semiconductor Inc.
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--/include/ "p1020rdb.dts"
--
--/ {
--	model = "fsl,P1020RDB";
--	compatible = "fsl,P1020RDB", "fsl,MPC85XXRDB-CAMP";
--
--	aliases {
--		ethernet0 = &enet0;
--		serial0 = &serial1;
--		};
--
--	cpus {
--		PowerPC,P1020@0 {
--			status = "disabled";
--		};
--	};
--
--	memory {
--		device_type = "memory";
--	};
--
--	localbus@ffe05000 {
--		status = "disabled";
--	};
--
--	soc@ffe00000 {
--		ecm-law@0 {
--			status = "disabled";
--		};
--
--		ecm@1000 {
--			status = "disabled";
--		};
--
--		memory-controller@2000 {
--			status = "disabled";
--		};
--
--		i2c@3000 {
--			status = "disabled";
--		};
--
--		i2c@3100 {
--			status = "disabled";
--		};
--
--		serial0: serial@4500 {
--			status = "disabled";
--		};
--
--		spi@7000 {
--			status = "disabled";
--		};
--
--		gpio: gpio-controller@f000 {
--			status = "disabled";
--		};
--
--		dma@21300 {
--			status = "disabled";
--		};
--
--		mdio@24000 {
--			status = "disabled";
--		};
--
--		mdio@25000 {
--			status = "disabled";
--		};
--
--		enet1: ethernet@b1000 {
--			status = "disabled";
--		};
--
--		enet2: ethernet@b2000 {
--			status = "disabled";
--		};
--
--		usb@22000 {
--			status = "disabled";
--		};
--
--		sdhci@2e000 {
--			status = "disabled";
--		};
--
--		mpic: pic@40000 {
--			protected-sources = <
--			16 		/* ecm, mem, L2, pci0, pci1 */
--			43 42 59	/* i2c, serial0, spi */
--			47 63 62 	/* gpio, tdm */
--			20 21 22 23	/* dma */
--			03 02 		/* mdio */
--			35 36 40	/* enet1-queue-group0 */
--			51 52 67	/* enet1-queue-group1 */
--			31 32 33	/* enet2-queue-group0 */
--			25 26 27	/* enet2-queue-group1 */
--			28 72 58 	/* usb, sdhci, crypto */
--			0xb0 0xb1 0xb2	/* message */
--			0xb3 0xb4 0xb5
--			0xb6 0xb7
--			0xe0 0xe1 0xe2	/* msi */
--			0xe3 0xe4 0xe5
--			0xe6 0xe7		/* sdhci, crypto , pci */
--			>;
--		};
--
--		msi@41600 {
--			status = "disabled";
--		};
--
--		global-utilities@e0000 {	//global utilities block
--			status = "disabled";
--		};
--	};
--
--	pci0: pcie@ffe09000 {
--		status = "disabled";
--	};
--
--	pci1: pcie@ffe0a000 {
--		status = "disabled";
--	};
--};
-diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-deleted file mode 100644
-index 66aac86..0000000
---- a/arch/powerpc/boot/dts/p2020rdb_camp_core0.dts
-+++ /dev/null
-@@ -1,67 +0,0 @@
--/*
-- * P2020 RDB  Core0 Device Tree Source in CAMP mode.
-- *
-- * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-- * can be shared, all the other devices must be assigned to one core only.
-- * This dts file allows core0 to have memory, l2, i2c, spi, gpio, dma1, usb,
-- * eth1, eth2, sdhc, crypto, global-util, pci0.
-- *
-- * Copyright 2009-2011 Freescale Semiconductor Inc.
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--/include/ "p2020rdb.dts"
--
--/ {
--	model = "fsl,P2020RDB";
--	compatible = "fsl,P2020RDB", "fsl,MPC85XXRDB-CAMP";
--
--	cpus {
--		PowerPC,P2020@1 {
--			status = "disabled";
--		};
--	};
--
--	localbus@ffe05000 {
--		status = "disabled";
--	};
--
--	soc@ffe00000 {
--		serial1: serial@4600 {
--			status = "disabled";
--		};
--
--		dma@c300 {
--			status = "disabled";
--		};
--
--		enet0: ethernet@24000 {
--			status = "disabled";
--		};
--
--		mpic: pic@40000 {
--			protected-sources = <
--			42 76 77 78 79 /* serial1 , dma2 */
--			29 30 34 26 /* enet0, pci1 */
--			0xe0 0xe1 0xe2 0xe3 /* msi */
--			0xe4 0xe5 0xe6 0xe7
--			>;
--		};
--
--		msi@41600 {
--			status = "disabled";
--		};
--	};
--
--	pci0: pcie@ffe08000 {
--		status = "disabled";
--	};
--
--	pci2: pcie@ffe0a000 {
--		status = "disabled";
--	};
--};
-diff --git a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts b/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
-deleted file mode 100644
-index 9bd8ef4..0000000
---- a/arch/powerpc/boot/dts/p2020rdb_camp_core1.dts
-+++ /dev/null
-@@ -1,125 +0,0 @@
--/*
-- * P2020 RDB Core1 Device Tree Source in CAMP mode.
-- *
-- * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-- * can be shared, all the other devices must be assigned to one core only.
-- * This dts allows core1 to have l2, dma2, eth0, pci1, msi.
-- *
-- * Please note to add "-b 1" for core1's dts compiling.
-- *
-- * Copyright 2009-2011 Freescale Semiconductor Inc.
-- *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-- * Free Software Foundation;  either version 2 of the  License, or (at your
-- * option) any later version.
-- */
--
--/include/ "p2020rdb.dts"
--
--/ {
--	model = "fsl,P2020RDB";
--	compatible = "fsl,P2020RDB", "fsl,MPC85XXRDB-CAMP";
--
--	cpus {
--		PowerPC,P2020@0 {
--			status = "disabled";
--		};
--	};
--
--	localbus@ffe05000 {
--		status = "disabled";
--	};
--
--	soc@ffe00000 {
--		ecm-law@0 {
--			status = "disabled";
--		};
--
--		ecm@1000 {
--			status = "disabled";
--		};
--
--		memory-controller@2000 {
--			status = "disabled";
--		};
--
--		i2c@3000 {
--			status = "disabled";
--		};
--
--		i2c@3100 {
--			status = "disabled";
--		};
--
--		serial0: serial@4500 {
--			status = "disabled";
--		};
--
--		spi@7000 {
--			status = "disabled";
--		};
--
--		gpio: gpio-controller@f000 {
--			status = "disabled";
--		};
--
--		dma@21300 {
--			status = "disabled";
--		};
--
--		usb@22000 {
--			status = "disabled";
--		};
--
--		mdio@24520 {
--			status = "disabled";
--		};
--
--		mdio@25520 {
--			status = "disabled";
--		};
--
--		mdio@26520 {
--			status = "disabled";
--		};
--
--		enet1: ethernet@25000 {
--			status = "disabled";
--		};
--
--		enet2: ethernet@26000 {
--			status = "disabled";
--		};
--
--		sdhci@2e000 {
--			status = "disabled";
--		};
--
--		crypto@30000 {
--			status = "disabled";
--		};
--
--		mpic: pic@40000 {
--			protected-sources = <
--			17 18 43 42 59 47 /*ecm, mem, i2c, serial0, spi,gpio */
--			16 20 21 22 23 28 	/* L2, dma1, USB */
--			03 35 36 40 31 32 33 	/* mdio, enet1, enet2 */
--			72 45 58 25 		/* sdhci, crypto , pci */
--			>;
--		};
--
--		global-utilities@e0000 {	//global utilities block
--			status = "disabled";
--		};
--
--	};
--
--	pci0: pcie@ffe08000 {
--		status = "disabled";
--	};
--
--	pci1: pcie@ffe09000 {
--		status = "disabled";
--	};
--};
--- 
-1.7.3.4
+--00235452e960df204b04c4c440b6
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi ,<div>=A0 =A0 =A0Thanks for the reply . i will try to share some of my c=
+ode later . Looking forward to ur ideas.=A0</div><div><br></div><div>Regard=
+s,</div><div><br></div><div>S.Saravanan<br><br><div class=3D"gmail_quote">O=
+n Fri, Jul 13, 2012 at 6:18 PM, Bounine, Alexandre <span dir=3D"ltr">&lt;<a=
+ href=3D"mailto:Alexandre.Bounine@idt.com" target=3D"_blank">Alexandre.Boun=
+ine@idt.com</a>&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">
+
+
+
+
+
+<div lang=3D"EN-US" link=3D"blue" vlink=3D"purple">
+<div><div class=3D"im">
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d">This should work. We use =
+similar approach to test our mport HW drivers.<u></u><u></u></span></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d"><u></u>=A0<u></u></span><=
+/p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d">Alex.<u></u><u></u></span=
+></p>
+<p class=3D"MsoNormal"><span style=3D"font-size:11.0pt;font-family:&quot;Ca=
+libri&quot;,&quot;sans-serif&quot;;color:#1f497d"><u></u>=A0<u></u></span><=
+/p>
+</div><div style=3D"border:none;border-left:solid blue 1.5pt;padding:0in 0i=
+n 0in 4.0pt"><div class=3D"im">
+<div>
+<div style=3D"border:none;border-top:solid #b5c4df 1.0pt;padding:3.0pt 0in =
+0in 0in">
+<p class=3D"MsoNormal"><b><span style=3D"font-size:10.0pt;font-family:&quot=
+;Tahoma&quot;,&quot;sans-serif&quot;">From:</span></b><span style=3D"font-s=
+ize:10.0pt;font-family:&quot;Tahoma&quot;,&quot;sans-serif&quot;"> Linuxppc=
+-dev [mailto:<a href=3D"mailto:linuxppc-dev-bounces%2Balexandre.bounine" ta=
+rget=3D"_blank">linuxppc-dev-bounces+alexandre.bounine</a>=3D<a href=3D"mai=
+lto:idt.com@lists.ozlabs.org" target=3D"_blank">idt.com@lists.ozlabs.org</a=
+>]
+<b>On Behalf Of </b>Saravanan S<br>
+<b>Sent:</b> Friday, July 13, 2012 2:16 AM<br>
+<b>To:</b> <a href=3D"mailto:linuxppc-dev@lists.ozlabs.org" target=3D"_blan=
+k">linuxppc-dev@lists.ozlabs.org</a><br>
+<b>Subject:</b> Standalone SRIO Driver for Linux<u></u><u></u></span></p>
+</div>
+</div>
+<p class=3D"MsoNormal"><u></u>=A0<u></u></p>
+</div><p class=3D"MsoNormal">Hi ,</p><div><div class=3D"h5"><br>
+=A0=A0=A0=A0=A0 Iam currently working on the GE make DSP230 board consistin=
+g of Quad PowerPC8640 nodes =A0 interconnected by SRIO with Linux 2.6.34 . =
+However the only way to access the SRIO is through rionet facility . Our re=
+quirement is to use the SRIO interconnect without
+ the Ethernet overheads. This would definitely enable higher speeds (though=
+ I cant find any throughput figures for SRIO in Linux on the net ??? ).=A0 =
+My query is that whether any attempt has been made=A0 to develop a=A0 stand=
+alone driver and API to access the messaging=A0
+ and doorbell services of SRIO . If no then request you to please provide i=
+nputs on the same. From my study I have the following thoughts for the driv=
+er :<br>
+<br>
+a) Have a character device interface for user .<br>
+b) Basically use the rio support functions provided in rio.c like=A0 rio_ad=
+d_inb_buffer ,=A0 rio_add_outb_message to transfer and receive messages and=
+ add buffers .<br>
+c) Maintain a dedicated ring of buffers in the driver and transfer=A0 data =
+to and from the buffer to user space .<br>
+<br>
+<br>
+Is this the right direction . Would really appreciate any inputs . thanks i=
+n advance.<br>
+<br>
+Regards,<br>
+<br>
+S.Saravanan<u></u><u></u></div></div><p></p>
+</div>
+</div>
+</div>
+
+<br>_______________________________________________<br>
+Linuxppc-dev mailing list<br>
+<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.=
+org</a><br>
+<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
+">https://lists.ozlabs.org/listinfo/linuxppc-dev</a><br></blockquote></div>=
+<br></div>
+
+--00235452e960df204b04c4c440b6--
