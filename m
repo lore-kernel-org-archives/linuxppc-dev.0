@@ -1,17 +1,17 @@
 Return-Path: <B38951@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4FE812C00E1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2012 13:07:32 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 5DE3A2C00E4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2012 13:21:03 +1000 (EST)
 From: Jia Hongtao <B38951@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
 Subject: [PATCH V3] powerpc/85xx: Add machine check handler to fix PCIe
  erratum on mpc85xx
-Date: Mon, 16 Jul 2012 10:45:50 +0800
-Message-ID: <1342406750-32694-1-git-send-email-B38951@freescale.com>
+Date: Mon, 16 Jul 2012 10:59:18 +0800
+Message-ID: <1342407558-15042-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: b38951@freescale.com
@@ -36,13 +36,15 @@ Signed-off-by: Li Yang <leoli@freescale.com>
 Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
 Signed-off-by: Jia Hongtao <B38951@freescale.com>
 ---
-V3 changed: Just rebase the patch.
+V3 changed:
+1. Rebased the patch.
+2. Only build fsl_pci_mcheck_exception on e500
 
  arch/powerpc/kernel/cpu_setup_fsl_booke.S |    2 +-
  arch/powerpc/kernel/traps.c               |    3 ++
- arch/powerpc/sysdev/fsl_pci.c             |   39 +++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_pci.c             |   41 +++++++++++++++++++++++++++++
  arch/powerpc/sysdev/fsl_pci.h             |    6 ++++
- 4 files changed, 49 insertions(+), 1 deletions(-)
+ 4 files changed, 51 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
 index 69fdd23..9c4b768 100644
@@ -79,7 +81,7 @@ index 1589723..096a1a1 100644
  
  	printk("Machine check in kernel mode.\n");
 diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index a7b2a60..52f3b5d 100644
+index a7b2a60..3a3e9c8 100644
 --- a/arch/powerpc/sysdev/fsl_pci.c
 +++ b/arch/powerpc/sysdev/fsl_pci.c
 @@ -30,6 +30,7 @@
@@ -90,10 +92,11 @@ index a7b2a60..52f3b5d 100644
  #include <asm/machdep.h>
  #include <sysdev/fsl_soc.h>
  #include <sysdev/fsl_pci.h>
-@@ -808,6 +809,44 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose)
+@@ -808,6 +809,46 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose)
  	return 0;
  }
  
++#ifdef CONFIG_E500
 +static int is_in_pci_mem_space(phys_addr_t addr)
 +{
 +	struct pci_controller *hose;
@@ -131,6 +134,7 @@ index a7b2a60..52f3b5d 100644
 +
 +	return 0;
 +}
++#endif
 +
  #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
  static const struct of_device_id pci_ids[] = {
