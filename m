@@ -1,20 +1,31 @@
-Return-Path: <B08248@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 90FBA2C0102
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 05:07:34 +1000 (EST)
-From: Stuart Yoder <stuart.yoder@freescale.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: set stack limit properly in crit_transfer_to_handler
-Date: Mon, 16 Jul 2012 14:06:48 -0500
-Message-ID: <1342465608-20596-1-git-send-email-stuart.yoder@freescale.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-gg0-f170.google.com (mail-gg0-f170.google.com
+ [209.85.161.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 356E42C0102
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 05:27:15 +1000 (EST)
+Received: by ggnf2 with SMTP id f2so4942630ggn.15
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 12:27:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: sfr@canb.auug.org.au, Stuart Yoder <stuart.yoder@freescale.com>,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org, agraf@suse.de
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <4FE4B13E.10709@caviumnetworks.com>
+References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
+ <20120620152759.2caceb8c.yuasa@linux-mips.org>
+ <20120620161249.GB29196@linux-mips.org>
+ <4FE4B13E.10709@caviumnetworks.com>
+Date: Mon, 16 Jul 2012 21:27:12 +0200
+Message-ID: <CAMuHMdXSGgH+M_2+xuzY2t_sGZto24=atv3Kaj+R-dWAUPzW7w@mail.gmail.com>
+Subject: Re: [PATCH] MIPS: fix bug.h MIPS build regression
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: David Daney <ddaney@caviumnetworks.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Paul Mundt <lethal@linux-sh.org>, Chris Zankel <chris@zankel.net>,
+ Yoichi Yuasa <yuasa@linux-mips.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,52 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stuart Yoder <stuart.yoder@freescale.com>
+On Fri, Jun 22, 2012 at 7:54 PM, David Daney <ddaney@caviumnetworks.com> wrote:
+> On 06/20/2012 09:12 AM, Ralf Baechle wrote:
+>>
+>> On Wed, Jun 20, 2012 at 03:27:59PM +0900, Yoichi Yuasa wrote:
+>>
+>>> Commit: 3777808873b0c49c5cf27e44c948dfb02675d578 breaks all MIPS builds.
+>>
+>>
+>> Thanks, fix applied.
+>>
+>
+> Where was it applied?
+>
+> It doesn't show up in linux-next for 20120622, which is where it is needed.
 
-without setting the stack limit like this there is the possibility
-of stack overflow which corrupts the thread info but
-is not detected by stack overflow detection
+It's also desperately needed in mainline for 3.5.
 
-Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
----
- arch/powerpc/kernel/entry_32.S |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+Ralf?
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 5207d5a..ead5016 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -89,10 +89,14 @@ crit_transfer_to_handler:
- 	mfspr	r0,SPRN_SRR1
- 	stw	r0,_SRR1(r11)
- 
-+	/* set the stack limit to the current stack
-+	 * and set the limit to protect the thread_info
-+	 * struct
-+	 */
- 	mfspr	r8,SPRN_SPRG_THREAD
- 	lwz	r0,KSP_LIMIT(r8)
- 	stw	r0,SAVED_KSP_LIMIT(r11)
--	CURRENT_THREAD_INFO(r0, r1)
-+	rlwimi	r0,r1,0,0,(31-THREAD_SHIFT)
- 	stw	r0,KSP_LIMIT(r8)
- 	/* fall through */
- #endif
-@@ -109,10 +113,14 @@ crit_transfer_to_handler:
- 	mfspr	r0,SPRN_SRR1
- 	stw	r0,crit_srr1@l(0)
- 
-+	/* set the stack limit to the current stack
-+	 * and set the limit to protect the thread_info
-+	 * struct
-+	 */
- 	mfspr	r8,SPRN_SPRG_THREAD
- 	lwz	r0,KSP_LIMIT(r8)
- 	stw	r0,saved_ksp_limit@l(0)
--	CURRENT_THREAD_INFO(r0, r1)
-+	rlwimi	r0,r1,0,0,(31-THREAD_SHIFT)
- 	stw	r0,KSP_LIMIT(r8)
- 	/* fall through */
- #endif
--- 
-1.7.3.4
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
