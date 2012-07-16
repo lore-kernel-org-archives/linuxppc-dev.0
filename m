@@ -1,31 +1,30 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-gg0-f170.google.com (mail-gg0-f170.google.com
- [209.85.161.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 356E42C0102
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 05:27:15 +1000 (EST)
-Received: by ggnf2 with SMTP id f2so4942630ggn.15
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 12:27:12 -0700 (PDT)
+Return-Path: <rick.jones2@hp.com>
+Received: from g6t0186.atlanta.hp.com (g6t0186.atlanta.hp.com [15.193.32.63])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4CF2B2C010D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 05:52:19 +1000 (EST)
+Message-ID: <50046EB1.5040909@hp.com>
+Date: Mon, 16 Jul 2012 12:42:41 -0700
+From: Rick Jones <rick.jones2@hp.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <4FE4B13E.10709@caviumnetworks.com>
-References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
- <20120620152759.2caceb8c.yuasa@linux-mips.org>
- <20120620161249.GB29196@linux-mips.org>
- <4FE4B13E.10709@caviumnetworks.com>
-Date: Mon, 16 Jul 2012 21:27:12 +0200
-Message-ID: <CAMuHMdXSGgH+M_2+xuzY2t_sGZto24=atv3Kaj+R-dWAUPzW7w@mail.gmail.com>
-Subject: Re: [PATCH] MIPS: fix bug.h MIPS build regression
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: David Daney <ddaney@caviumnetworks.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Linux-sh list <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Paul Mundt <lethal@linux-sh.org>, Chris Zankel <chris@zankel.net>,
- Yoichi Yuasa <yuasa@linux-mips.org>
+To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Subject: Re: [PATCH] mlx4_en: map entire pages to increase throughput
+References: <1342458113-10384-1-git-send-email-cascardo@linux.vnet.ibm.com>
+ <50044F1D.6000703@hp.com> <20120716190611.GA1023@oc1711230544.ibm.com>
+In-Reply-To: <20120716190611.GA1023@oc1711230544.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "leitao@linux.vnet.ibm.com" <leitao@linux.vnet.ibm.com>,
+ "amirv@mellanox.com" <amirv@mellanox.com>,
+ "yevgenyp@mellanox.co.il" <yevgenyp@mellanox.co.il>,
+ "klebers@linux.vnet.ibm.com" <klebers@linux.vnet.ibm.com>,
+ "anton@samba.org" <anton@samba.org>,
+ "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>,
+ "ogerlitz@mellanox.com" <ogerlitz@mellanox.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,32 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jun 22, 2012 at 7:54 PM, David Daney <ddaney@caviumnetworks.com> wrote:
-> On 06/20/2012 09:12 AM, Ralf Baechle wrote:
->>
->> On Wed, Jun 20, 2012 at 03:27:59PM +0900, Yoichi Yuasa wrote:
->>
->>> Commit: 3777808873b0c49c5cf27e44c948dfb02675d578 breaks all MIPS builds.
->>
->>
->> Thanks, fix applied.
->>
+On 07/16/2012 12:06 PM, Thadeu Lima de Souza Cascardo wrote:
+> On Mon, Jul 16, 2012 at 10:27:57AM -0700, Rick Jones wrote:
 >
-> Where was it applied?
+>> What is the effect on packet-per-second performance?  (eg aggregate,
+>> burst-mode netperf TCP_RR with TCP_NODELAY set or perhaps UDP_RR)
+>>
+> I used uperf with TCP_NODELAY and 16 threads sending from another
+> machine 64000-sized writes for 60 seconds.
 >
-> It doesn't show up in linux-next for 20120622, which is where it is needed.
+> I get 5898op/s (3.02Gb/s) without the patch against 18022ops/s
+> (9.23Gb/s) with the patch.
 
-It's also desperately needed in mainline for 3.5.
+I was thinking more along the lines of an additional comparison, 
+explicitly using netperf TCP_RR or something like it, not just the 
+packets per second from a bulk transfer test.
 
-Ralf?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+rick
