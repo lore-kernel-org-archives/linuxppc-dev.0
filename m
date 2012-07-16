@@ -1,23 +1,25 @@
-Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1952D2C0093
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 00:43:43 +1000 (EST)
-Message-ID: <50042891.20406@freescale.com>
-Date: Mon, 16 Jul 2012 09:43:29 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-lb0-f170.google.com (mail-lb0-f170.google.com
+ [209.85.217.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6D1A42C00FE
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 00:58:44 +1000 (EST)
+Received: by lbgc1 with SMTP id c1so6713461lbg.15
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 07:58:40 -0700 (PDT)
 MIME-Version: 1.0
-To: <lu.jiang@windriver.com>
-Subject: Re: [PATCH] ppc44x/watchdog: Select WATCHDOG_NOWAYOUT option
-References: <1342147473-20231-1-git-send-email-lu.jiang@windriver.com>
- <D5792F52-7BE6-4B86-A3FD-B756DE3A165D@kernel.crashing.org>
- <50037762.4000800@windriver.com>
-In-Reply-To: <50037762.4000800@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20120716035044.GC24203@shangw>
+References: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
+ <878dcc914319fd110ceda936c2ce5b6bb7a449ab.1340949637.git.shangw@linux.vnet.ibm.com>
+ <20120713201250.GB18587@google.com> <20120716035044.GC24203@shangw>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Mon, 16 Jul 2012 08:58:20 -0600
+Message-ID: <CAErSpo5sfBidPhgq942k7DZRfYtemqmMF=Lrph_zu2-g6Pbi0g@mail.gmail.com>
+Subject: Re: [PATCH 5/7] pci: minimal alignment for bars of P2P bridges
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-pci@vger.kernel.org, yinghai@kernel.org, linuxram@us.ibm.com,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +29,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/2012 09:07 PM, Lu.Jiang wrote:
-> =E4=BA=8E 2012=E5=B9=B407=E6=9C=8813=E6=97=A5 19:50, Kumar Gala =E5=86=99=
-=E9=81=93:
->> On Jul 12, 2012, at 9:44 PM, Jiang Lu wrote:
+On Sun, Jul 15, 2012 at 9:50 PM, Gavin Shan <shangw@linux.vnet.ibm.com> wrote:
+> On Fri, Jul 13, 2012 at 02:12:50PM -0600, Bjorn Helgaas wrote:
+>>On Fri, Jun 29, 2012 at 02:47:48PM +0800, Gavin Shan wrote:
+>>> On some powerpc platforms, device BARs need to be assigned to separate
+>>> "segments" of the address space in order for the error isolation and HW
+>>> virtualization mechanisms (EEH) to work properly. Those "segments" have
+>>> a minimum size that can be fairly large (16M). In order to be able to
+>>> use the generic resource assignment code rather than re-inventing our
+>>> own, we chose to group devices by bus. That way, a simple change of the
+>>> minimum alignment requirements of resources assigned to PCI to PCI (P2P)
+>>> bridges is enough to ensure that all BARs for devices below those bridges
+>>> will fit into contiguous sets of segments and there will be no overlap.
+>
+> I send the previous reply in a rush and that missed some
+> necessary information. So I resend it with some makeup.
+>
+>>If I understand correctly, you might have something like this:
 >>
->>> On PPC44x core, the WRC(Watchdog-timer Reset Control) field of TCR
->>> of timer can not reset by software after set to a non-zero value.
->>> Which means software can not reset the timeout behaviour of watchdog
->>> timer.
->>>
->>> This patch selects WATCHDOG_NOWAYOUT option for 44x platforms to
->>> indicate the watchdog timer can not be disabled once fired.
->>>
->>> Signed-off-by: Jiang Lu <lu.jiang@windriver.com>
->>> ---
->>> drivers/watchdog/Kconfig |    1 +
->>> 1 files changed, 1 insertions(+), 0 deletions(-)
->> I believe this is not 44x specific, but how Book-E watchdog is
->> architected.
+>>  PCI host bridge to bus 0000:00
+>>  pci_bus 0000:00: root bus resource [mem 0xc0000000-0xcfffffff]
+>>  0000:00:01.0: PCI bridge to [bus 10-1f]
+>>  0000:00:01.0:   bridge window [mem 0xc1000000-0xc1ffffff]
+>>  0000:00:02.0: PCI bridge to [bus 20-2f]
+>>  0000:00:02.0:   bridge window [mem 0xc2000000-0xc2ffffff]
 >>
->>> diff --git a/drivers/watchdog/Kconfig b/drivers/watchdog/Kconfig
->>> index 3709624..41f3dff 100644
->>> --- a/drivers/watchdog/Kconfig
->>> +++ b/drivers/watchdog/Kconfig
->>> @@ -1084,6 +1084,7 @@ config PIKA_WDT
->>> config BOOKE_WDT
->>>     tristate "PowerPC Book-E Watchdog Timer"
->>>     depends on BOOKE || 4xx
->>> +    select WATCHDOG_NOWAYOUT if 44x
->> This should probably be 'select WATCHDOG_NOWAYOUT if BOOKE'
->=20
-> On ppc44x's processor, if we disabled 'WATCHDOG_NOWAYOUT ' option. The
-> driver's release routine will try to disable the watchdog , by clearing
-> the WIE & WTDP field in TCR.
-> Since the ppc44x's watch dog can not reset by software, such operation
-> only set the timeout value(WDTP) to minimum, and cause the system reboo=
-t
-> immediately.
->=20
-> I checked ppc 476, 405 & 450's manual, these document said the
-> WRC(Watchdog-timer Reset Control) field of TCR of timer
-> can not reset by software after set to a non-zero value. I think all
-> ppc44x core should got same limitation.
+>>where everything under bridge 00:01.0 is in one EEH segment, and
+>>everything under 00:02.0 is in another.  In this case, each EEH
+>>segment is 16MB.
+>>
+>>I think your proposal is basically that when we add up resources required
+>>below the P2P bridges, we round up to the default 1MB (the minimum P2P
+>>bridge memory aperture size per spec) *or* to a larger value, e.g., 16MB,
+>>if the architecture requires it.
+>
+> Yes, you're correct.
+>
+>>That makes sense to me, but I have some implementation questions.
+>>
+>>Your patches make the required alignment a property of the host bridge.
+>>But don't you want to do this rounding up only at certain levels of the
+>>hierarchy?  For example, what if you had another P2P bridge:
+>>
+>>  0000:10:01.0: PCI bridge to [bus 18-1f]
+>>
+>>I assume the devices on bus 0000:18 would still be in the first EEH
+>>segment, and you wouldn't necessarily want to round up the 10:01.0
+>>apertures to 16MB.
+>>
+>>Maybe there should be an interface like this:
+>>
+>>  resource_size_t __weak pcibios_window_alignment(struct pci_bus *bus,
+>>                                                 unsigned long type)
+>>  {
+>>    if (type & IORESOURCE_MEM)
+>>      return 1024*1024;                /* mem windows must be 1MB aligned */
+>>    if (bus->self->io_window_1k)
+>>      return 1024;
+>>    return 4*1024;             /* I/O windows default to 4K alignment */
+>>  }
+>>
+>>that the arch could override?  Then you could return the 16MB alignment
+>>for the top-level P2P bridge leading to an EEH segment, and use the
+>>default alignment for P2P bridges *inside* the segment.
+>>
+>
+> Yes. I think it's good mechanism to apply the minimal resource alignment
+> for P2P bridges. Also, it wouldn't waste more resources if the specific
+> PCI bridge (not PCIe bridge) needn't form separate EEH segment. However,
+> I have some implementation questions for this.
+>
+> 1. I just checked out source code from following link, but it seems that
+>    pci_dev doesn't have field called "io_window_1k", so I'm not sure I
+>    should add that by myself?
+>
+>         git clone git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git linux-pci-next
 
-This is (supposed to be) true on FSL e500 as well.
+No, don't add io_window_1k in your patch.  That was added in a recent
+patch and should already be in my "next" branch:
 
-> While on FSL's platform, we did not met such issue.
+http://git.kernel.org/?p=linux/kernel/git/helgaas/pci.git;a=commitdiff;h=2b28ae1912e5ce5bb0527e352ae6ff04e76183d1
 
-You tested this and were able to clear WRC on an e500-based chip?  Which
-one?
+If there are merge conflicts with your patch, I can resolve them.
 
--Scott
+> 2. With the mechanism (__weak function) you suggested, the alignment of
+>    the specific P2P bridge should be figured out by PowerPC platform. That's
+>    to say, the PPC platform has to introduce function pcibios_window_alignment()
+>    and return the appropriate alignment.
+
+Yes.
+
+> 3. In order to return appropriate alignment from PPC platform, We need
+>    to introduce same function for PPC platform. Also, we probably need
+>    introduce function "ppc_md.pcibios_window_alignment" so that those
+>    specific platforms (e.g. powernv) could override that.
+
+Yes.
