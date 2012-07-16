@@ -1,23 +1,22 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-vb0-f74.google.com (mail-vb0-f74.google.com
- [209.85.212.74])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A49512C0145
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 09:12:13 +1000 (EST)
-Received: by vbnl22 with SMTP id l22so630817vbn.3
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 16:12:11 -0700 (PDT)
-Date: Mon, 16 Jul 2012 17:12:07 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 0/7] minimal alignment for p2p bars
-Message-ID: <20120716231207.GA32203@google.com>
-References: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 19D472C0146
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:20:24 +1000 (EST)
+Message-ID: <5004A1B0.6070004@freescale.com>
+Date: Mon, 16 Jul 2012 18:20:16 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
-Cc: yinghai@kernel.org, linux-pci@vger.kernel.org, linuxram@us.ibm.com,
- linuxppc-dev@ozlabs.org
+To: Jia Hongtao <B38951@freescale.com>
+Subject: Re: [PATCH] powerpc/85xx: workaround for chips with MSI hareware
+ errata to support MSI-X
+References: <1342409730-28340-1-git-send-email-B38951@freescale.com>
+In-Reply-To: <1342409730-28340-1-git-send-email-B38951@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@lists.ozlabs.org, soniccat.liu@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +26,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 16, 2012 at 11:30:23PM +0800, Gavin Shan wrote:
-> v1 -> v2:
-> 	* Shorten the varaible names so that they looks more short.
-> 	* Changelog adjustment so that they looks more meaningful.
+On 07/15/2012 10:35 PM, Jia Hongtao wrote:
+> From: Liu Shuo <soniccat.liu@gmail.com>
 > 
-> v2 -> v3:
-> 	* Rebase to 3.5.RC4
-> 
-> v3 -> v4:
-> 	* Merge Yinghai's patches.
-> 
-> v3 -> v4:
-> 	* Split patch for easy review.
-> 	* Add function to retrieve the minimal alignment of p2p bridge. 
-> 
-> v4 -> v5:
-> 	* Rebase to 3.5.RC7
-> 	* Introduce weak function pcibios_window_alignment() to retrieve
-> 	  I/O and memory alignment for P2P bridges.
-> 	* Introduce pcibios_window_alignment() for ppc to override the
-> 	  PCI function.
-> 	* Add ppc_md.pcibios_window_alignment() for specific platform like
-> 	  powernv can override ppc's pcibios_window_alignment().
+> The MPIC chip with version 2.0 has a MSI errata (errata PIC1 of mpc8544),
+> It causes that neither MSI nor MSI-X can work fine. There is a workaround
+> to allow MSI-X to function properly.
 
-You don't have to rebase your patches -- I can take care of merging
-them with previous patches I've applied -- but if you *do* rebase,
-the most convenient target would be my "next" branch, since it
-already contains the things I would have to merge with.
+s/There is/This is/
 
-> Lu Yinghai(3):
->   pci: change variable name for find_pci_host_bridge
->   pci: argument pci_bus for find_pci_host_bridge
->   pci: fiddle with conversion of pci and CPU address
+There is also a workaround for regular MSI to function properly, though
+this patch does not implement it.
 
-I think the above patches are not needed for the ones below, are they?
+> +/* MPIC chip with 2.0 version has erratum PIC1 */
+> +static int mpic_has_errata(struct platform_device *dev)
+> +{
+> +	struct device_node *mpic_node;
+> +
+> +	mpic_node = of_irq_find_parent(dev->dev.of_node);
+> +	if (mpic_node) {
+> +		u32 *reg_base, brr1 = 0;
+> +		/* Get the PIC reg base */
+> +		reg_base = of_iomap(mpic_node, 0);
+> +		of_node_put(mpic_node);
+> +		if (!reg_base) {
+> +			dev_err(&dev->dev, "ioremap problem failed.\n");
+> +			return -EIO;
+> +		}
+> +
+> +		/* Get the mpic chip version from block revision register 1 */
+> +		brr1 = in_be32(reg_base + MPIC_FSL_BRR1);
+> +		iounmap(reg_base);
+> +		if ((brr1 & MPIC_FSL_BRR1_VER) == 0x0200)
+> +			return 1;
 
-> Gavin Shan(4)
->   pci: weak function returns alignment
->   pci: resource assignment based on p2p alignment
->   ppc/pci: override pcibios_window_alignment
->   ppc/pnv: I/O and memory alignment for p2p bridges
-> 
-> 
-> arch/powerpc/include/asm/machdep.h        |    3 ++
-> arch/powerpc/kernel/pci-common.c          |   20 +++++++++++
-> arch/powerpc/platforms/powernv/pci-ioda.c |   41 ++++++++++++++++++++++
-> drivers/pci/host-bridge.c                 |   52 ++++++++++++++++++++++-------
-> drivers/pci/setup-bus.c                   |   22 ++++++++----
-> include/linux/pci.h                       |    7 +++-
-> 6 files changed, 125 insertions(+), 20 deletions(-)
-> 
-> Thanks,
-> Gavin
-> 
+There's already been a patch posted that includes BRR1 checking:
+http://patchwork.ozlabs.org/patch/169713/
+
+Please coordinate with that.  Have the MPIC code read the version once,
+and expose it to the MSI driver, rather than digging directly into the
+non-MSI MPIC registers from here.
+
+> diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
+> index 8225f86..354d546 100644
+> --- a/arch/powerpc/sysdev/fsl_msi.h
+> +++ b/arch/powerpc/sysdev/fsl_msi.h
+> @@ -25,6 +25,9 @@
+>  #define FSL_PIC_IP_IPIC   0x00000002
+>  #define FSL_PIC_IP_VMPIC  0x00000003
+>  
+> +#define MSI_HW_ERRATA_MASK   0x000000F0
+> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
+
+Why do we need a mask for this?
+
+-Scott
