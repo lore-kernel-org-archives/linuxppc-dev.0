@@ -1,35 +1,23 @@
-Return-Path: <or.gerlitz@gmail.com>
-Received: from mail-gh0-f179.google.com (mail-gh0-f179.google.com
- [209.85.160.179])
+Return-Path: <bhelgaas@google.com>
+Received: from mail-vb0-f74.google.com (mail-vb0-f74.google.com
+ [209.85.212.74])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D0C592C0124
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 06:43:36 +1000 (EST)
-Received: by ghbg24 with SMTP id g24so5289975ghb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2012 13:43:34 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id A49512C0145
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 09:12:13 +1000 (EST)
+Received: by vbnl22 with SMTP id l22so630817vbn.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 16:12:11 -0700 (PDT)
+Date: Mon, 16 Jul 2012 17:12:07 -0600
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 0/7] minimal alignment for p2p bars
+Message-ID: <20120716231207.GA32203@google.com>
+References: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <50046EB1.5040909@hp.com>
-References: <1342458113-10384-1-git-send-email-cascardo@linux.vnet.ibm.com>
- <50044F1D.6000703@hp.com>
- <20120716190611.GA1023@oc1711230544.ibm.com>
- <50046EB1.5040909@hp.com>
-Date: Mon, 16 Jul 2012 23:43:33 +0300
-Message-ID: <CAJZOPZL3F+xdHSFfhg7v9A6DDjT6CPK=kgwyzcE6c0pGYFyupg@mail.gmail.com>
-Subject: Re: [PATCH] mlx4_en: map entire pages to increase throughput
-From: Or Gerlitz <or.gerlitz@gmail.com>
-To: Rick Jones <rick.jones2@hp.com>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "leitao@linux.vnet.ibm.com" <leitao@linux.vnet.ibm.com>,
- "amirv@mellanox.com" <amirv@mellanox.com>,
- "yevgenyp@mellanox.co.il" <yevgenyp@mellanox.co.il>,
- "klebers@linux.vnet.ibm.com" <klebers@linux.vnet.ibm.com>,
- "anton@samba.org" <anton@samba.org>,
- "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>,
- "ogerlitz@mellanox.com" <ogerlitz@mellanox.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
+Cc: yinghai@kernel.org, linux-pci@vger.kernel.org, linuxram@us.ibm.com,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,11 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 16, 2012 at 10:42 PM, Rick Jones <rick.jones2@hp.com> wrote:
+On Mon, Jul 16, 2012 at 11:30:23PM +0800, Gavin Shan wrote:
+> v1 -> v2:
+> 	* Shorten the varaible names so that they looks more short.
+> 	* Changelog adjustment so that they looks more meaningful.
+> 
+> v2 -> v3:
+> 	* Rebase to 3.5.RC4
+> 
+> v3 -> v4:
+> 	* Merge Yinghai's patches.
+> 
+> v3 -> v4:
+> 	* Split patch for easy review.
+> 	* Add function to retrieve the minimal alignment of p2p bridge. 
+> 
+> v4 -> v5:
+> 	* Rebase to 3.5.RC7
+> 	* Introduce weak function pcibios_window_alignment() to retrieve
+> 	  I/O and memory alignment for P2P bridges.
+> 	* Introduce pcibios_window_alignment() for ppc to override the
+> 	  PCI function.
+> 	* Add ppc_md.pcibios_window_alignment() for specific platform like
+> 	  powernv can override ppc's pcibios_window_alignment().
 
-> I was thinking more along the lines of an additional comparison,
-> explicitly using netperf TCP_RR or something like it, not just the packets
-> per second from a bulk transfer test.
+You don't have to rebase your patches -- I can take care of merging
+them with previous patches I've applied -- but if you *do* rebase,
+the most convenient target would be my "next" branch, since it
+already contains the things I would have to merge with.
 
+> Lu Yinghai(3):
+>   pci: change variable name for find_pci_host_bridge
+>   pci: argument pci_bus for find_pci_host_bridge
+>   pci: fiddle with conversion of pci and CPU address
 
-TCP_STREAM from this setup before the patch would be good to know as well
+I think the above patches are not needed for the ones below, are they?
+
+> Gavin Shan(4)
+>   pci: weak function returns alignment
+>   pci: resource assignment based on p2p alignment
+>   ppc/pci: override pcibios_window_alignment
+>   ppc/pnv: I/O and memory alignment for p2p bridges
+> 
+> 
+> arch/powerpc/include/asm/machdep.h        |    3 ++
+> arch/powerpc/kernel/pci-common.c          |   20 +++++++++++
+> arch/powerpc/platforms/powernv/pci-ioda.c |   41 ++++++++++++++++++++++
+> drivers/pci/host-bridge.c                 |   52 ++++++++++++++++++++++-------
+> drivers/pci/setup-bus.c                   |   22 ++++++++----
+> include/linux/pci.h                       |    7 +++-
+> 6 files changed, 125 insertions(+), 20 deletions(-)
+> 
+> Thanks,
+> Gavin
+> 
