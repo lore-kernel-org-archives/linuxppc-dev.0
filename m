@@ -1,38 +1,35 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e2.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2330F2C0203
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 07:29:57 +1000 (EST)
-Received: from /spool/local
- by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 16 Jul 2012 17:29:54 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1B5806E8060
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 17:25:41 -0400 (EDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6GLPeuE171002
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 17:25:40 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6GLPd2e023355
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 15:25:40 -0600
-Date: Mon, 16 Jul 2012 14:25:51 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: [PATCH 1/2] power: Define PV_POWER7P
-Message-ID: <20120716212551.GA14163@us.ibm.com>
-References: <20120712235912.GA19909@us.ibm.com>
- <20120713064605.GA11030@visitor2.iram.es>
+Return-Path: <or.gerlitz@gmail.com>
+Received: from mail-gg0-f179.google.com (mail-gg0-f179.google.com
+ [209.85.161.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AF9E92C010E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 06:36:35 +1000 (EST)
+Received: by ggnk3 with SMTP id k3so5294445ggn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2012 13:36:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120713064605.GA11030@visitor2.iram.es>
-Cc: michaele@au1.ibm.com, Anton Blanchard <anton@au1.ibm.com>,
- sukadev@us.ibm.com, linuxppc-dev@ozlabs.org, cel@linux.vnet.ibm.com,
- khandual@linux.vnet.ibm.com
+In-Reply-To: <50046EB1.5040909@hp.com>
+References: <1342458113-10384-1-git-send-email-cascardo@linux.vnet.ibm.com>
+ <50044F1D.6000703@hp.com>
+ <20120716190611.GA1023@oc1711230544.ibm.com>
+ <50046EB1.5040909@hp.com>
+Date: Mon, 16 Jul 2012 23:36:31 +0300
+Message-ID: <CAJZOPZ+t+bw5u_nLZ21so7X5HeGYm41XFM_AHRihHK23M73a-Q@mail.gmail.com>
+Subject: Re: [PATCH] mlx4_en: map entire pages to increase throughput
+From: Or Gerlitz <or.gerlitz@gmail.com>
+To: Rick Jones <rick.jones2@hp.com>
+Content-Type: multipart/alternative; boundary=bcaec555510099512804c4f86279
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "leitao@linux.vnet.ibm.com" <leitao@linux.vnet.ibm.com>,
+ "amirv@mellanox.com" <amirv@mellanox.com>,
+ "yevgenyp@mellanox.co.il" <yevgenyp@mellanox.co.il>,
+ "klebers@linux.vnet.ibm.com" <klebers@linux.vnet.ibm.com>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>,
+ "ogerlitz@mellanox.com" <ogerlitz@mellanox.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "anton@samba.org" <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,23 +39,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Gabriel Paubert [paubert@iram.es] wrote:
-| > +#define PV_POWER7P	0x004A
-| >  #define PV_630		0x0040
-| >  #define PV_630p	0x0041
-| >  #define PV_970MP	0x0044
-| 
-| Hmm, before this patch the PVR definitions were sorted in ascending
-| numerical order, at least for the list of 64 bit processors. Your
-| patch breaks this, which is not a good idea IMHO. 
-| 
-| For example, the 970* processors are already interspersed with other
-| processors to maintain numerical order, therefore I don't see why the 
-| POWER7P could not be between 970GX and BE.
-| 
-| Another inconsistency is that all other "plus" variants seem to 
-| use a lower case "p" suffix. So it would be better to use POWER7p.
+--bcaec555510099512804c4f86279
+Content-Type: text/plain; charset=ISO-8859-1
 
-Agree with both your points above. I re-sent the patches with updates.
+On Mon, Jul 16, 2012 at 10:42 PM, Rick Jones <rick.jones2@hp.com> wrote:
 
-Sukadev
+> I was thinking more along the lines of an additional comparison,
+> explicitly using netperf TCP_RR or something like it, not just the packets
+> per second from a bulk transfer test.
+>
+
+TCP_STREAM would be good to know here as well
+
+Or.
+
+--bcaec555510099512804c4f86279
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">On Mon, Jul 16, 2012 at 10:42 PM, Rick Jones <span dir=3D"=
+ltr">&lt;<a href=3D"mailto:rick.jones2@hp.com" target=3D"_blank">rick.jones=
+2@hp.com</a>&gt;</span> wrote:<br><div class=3D"gmail_quote"><blockquote cl=
+ass=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;p=
+adding-left:1ex">
+I was thinking more along the lines of an additional comparison, explicitly=
+ using netperf TCP_RR or something like it, not just the packets per second=
+ from a bulk transfer test.<span class=3D"HOEnZb"><font color=3D"#888888"><=
+/font></span><br>
+</blockquote></div><br>TCP_STREAM would be good to know here as well<br><br=
+>Or.<br></div>
+
+--bcaec555510099512804c4f86279--
