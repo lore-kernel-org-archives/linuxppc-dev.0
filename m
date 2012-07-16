@@ -1,22 +1,20 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 8C0702C00DE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2012 12:27:50 +1000 (EST)
-Message-ID: <50037D3A.4090309@cn.fujitsu.com>
-Date: Mon, 16 Jul 2012 10:32:26 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <B38951@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4FE812C00E1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2012 13:07:32 +1000 (EST)
+From: Jia Hongtao <B38951@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH V3] powerpc/85xx: Add machine check handler to fix PCIe
+ erratum on mpc85xx
+Date: Mon, 16 Jul 2012 10:45:50 +0800
+Message-ID: <1342406750-32694-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH v3 4/13] memory-hotplug : remove /sys/firmware/memmap/X
- sysfs
-References: <4FFAB0A2.8070304@jp.fujitsu.com> <4FFAB1BA.9040801@jp.fujitsu.com>
-In-Reply-To: <4FFAB1BA.9040801@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- liuj97@gmail.com
+Content-Type: text/plain
+Cc: b38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,204 +24,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 07/09/2012 06:26 PM, Yasuaki Ishimatsu Wrote:
-> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
-> sysfs files are created. But there is no code to remove these files. The patch
-> implements the function to remove them.
-> 
-> Note : The code does not free firmware_map_entry since there is no way to free
->        memory which is allocated by bootmem.
-> 
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> 
-> ---
->  drivers/firmware/memmap.c    |   78 ++++++++++++++++++++++++++++++++++++++++++-
->  include/linux/firmware-map.h |    6 +++
->  mm/memory_hotplug.c          |    6 ++-
->  3 files changed, 88 insertions(+), 2 deletions(-)
-> 
-> Index: linux-3.5-rc6/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-3.5-rc6.orig/mm/memory_hotplug.c	2012-07-09 18:23:13.323844923 +0900
-> +++ linux-3.5-rc6/mm/memory_hotplug.c	2012-07-09 18:23:19.522767424 +0900
-> @@ -661,7 +661,11 @@ EXPORT_SYMBOL_GPL(add_memory);
-> 
->  int remove_memory(int nid, u64 start, u64 size)
->  {
-> -	return -EBUSY;
-> +	lock_memory_hotplug();
-> +	/* remove memmap entry */
-> +	firmware_map_remove(start, start + size - 1, "System RAM");
-> +	unlock_memory_hotplug();
-> +	return 0;
-> 
->  }
->  EXPORT_SYMBOL_GPL(remove_memory);
-> Index: linux-3.5-rc6/include/linux/firmware-map.h
-> ===================================================================
-> --- linux-3.5-rc6.orig/include/linux/firmware-map.h	2012-07-09 18:23:09.532892314 +0900
-> +++ linux-3.5-rc6/include/linux/firmware-map.h	2012-07-09 18:23:19.523767412 +0900
-> @@ -25,6 +25,7 @@
-> 
->  int firmware_map_add_early(u64 start, u64 end, const char *type);
->  int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
-> +int firmware_map_remove(u64 start, u64 end, const char *type);
-> 
->  #else /* CONFIG_FIRMWARE_MEMMAP */
-> 
-> @@ -38,6 +39,11 @@ static inline int firmware_map_add_hotpl
->  	return 0;
->  }
-> 
-> +static inline int firmware_map_remove(u64 start, u64 end, const char *type)
-> +{
-> +	return 0;
-> +}
-> +
->  #endif /* CONFIG_FIRMWARE_MEMMAP */
-> 
->  #endif /* _LINUX_FIRMWARE_MAP_H */
-> Index: linux-3.5-rc6/drivers/firmware/memmap.c
-> ===================================================================
-> --- linux-3.5-rc6.orig/drivers/firmware/memmap.c	2012-07-09 18:23:09.532892314 +0900
-> +++ linux-3.5-rc6/drivers/firmware/memmap.c	2012-07-09 18:25:46.371931554 +0900
-> @@ -21,6 +21,7 @@
->  #include <linux/types.h>
->  #include <linux/bootmem.h>
->  #include <linux/slab.h>
-> +#include <linux/mm.h>
-> 
->  /*
->   * Data types ------------------------------------------------------------------
-> @@ -79,7 +80,22 @@ static const struct sysfs_ops memmap_att
->  	.show = memmap_attr_show,
->  };
-> 
-> +#define to_memmap_entry(obj) container_of(obj, struct firmware_map_entry, kobj)
-> +
-> +static void release_firmware_map_entry(struct kobject *kobj)
-> +{
-> +	struct firmware_map_entry *entry = to_memmap_entry(kobj);
-> +	struct page *head_page;
-> +
-> +	head_page = virt_to_head_page(entry);
-> +	if (PageSlab(head_page))
-> +		kfree(entry);
-> +
-> +	/* There is no way to free memory allocated from bootmem*/
-> +}
-> +
->  static struct kobj_type memmap_ktype = {
-> +	.release	= release_firmware_map_entry,
->  	.sysfs_ops	= &memmap_attr_ops,
->  	.default_attrs	= def_attrs,
->  };
-> @@ -123,6 +139,16 @@ static int firmware_map_add_entry(u64 st
->  	return 0;
->  }
-> 
-> +/**
-> + * firmware_map_remove_entry() - Does the real work to remove a firmware
-> + * memmap entry.
-> + * @entry: removed entry.
-> + **/
-> +static inline void firmware_map_remove_entry(struct firmware_map_entry *entry)
-> +{
-> +	list_del(&entry->list);
-> +}
-> +
->  /*
->   * Add memmap entry on sysfs
->   */
-> @@ -144,6 +170,31 @@ static int add_sysfs_fw_map_entry(struct
->  	return 0;
->  }
-> 
-> +/*
-> + * Remove memmap entry on sysfs
-> + */
-> +static inline void remove_sysfs_fw_map_entry(struct firmware_map_entry *entry)
-> +{
-> +	kobject_put(&entry->kobj);
-> +}
-> +
-> +/*
-> + * Search memmap entry
-> + */
-> +
-> +struct firmware_map_entry * __meminit
-> +find_firmware_map_entry(u64 start, u64 end, const char *type)
-> +{
-> +	struct firmware_map_entry *entry;
-> +
-> +	list_for_each_entry(entry, &map_entries, list)
-> +		if ((entry->start == start) && (entry->end == end) &&
-> +		    (!strcmp(entry->type, type)))
-> +			return entry;
-> +
-> +	return NULL;
-> +}
-> +
->  /**
->   * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
->   * memory hotplug.
-> @@ -196,6 +247,32 @@ int __init firmware_map_add_early(u64 st
->  	return firmware_map_add_entry(start, end, type, entry);
->  }
-> 
-> +/**
-> + * firmware_map_remove() - remove a firmware mapping entry
-> + * @start: Start of the memory range.
-> + * @end:   End of the memory range (inclusive).
-> + * @type:  Type of the memory range.
-> + *
-> + * removes a firmware mapping entry.
-> + *
-> + * Returns 0 on success, or -EINVAL if no entry.
-> + **/
-> +int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
-> +{
-> +	struct firmware_map_entry *entry;
-> +
-> +	entry = find_firmware_map_entry(start, end, type);
-> +	if (!entry)
-> +		return -EINVAL;
-> +
-> +	/* remove the memmap entry */
-> +	remove_sysfs_fw_map_entry(entry);
-> +
-> +	firmware_map_remove_entry(entry);
+A PCIe erratum of mpc85xx may causes a core hang when a link of PCIe
+goes down. when the link goes down, Non-posted transactions issued
+via the ATMU requiring completion result in an instruction stall.
+At the same time a machine-check exception is generated to the core
+to allow further processing by the handler. We implements the handler
+which skips the instruction caused the stall.
 
-You should call firmware_map_remove_entry() before remove_sysfs_fw_map_entry(),
-otherwise it will cause kernel panicked(entry may be freed in remove_sysfs_fw_map_entry()).
+Signed-off-by: Zhao Chenhui <b35336@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
+Signed-off-by: Jia Hongtao <B38951@freescale.com>
+---
+V3 changed: Just rebase the patch.
 
-Thanks
-Wen Congyang
+ arch/powerpc/kernel/cpu_setup_fsl_booke.S |    2 +-
+ arch/powerpc/kernel/traps.c               |    3 ++
+ arch/powerpc/sysdev/fsl_pci.c             |   39 +++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_pci.h             |    6 ++++
+ 4 files changed, 49 insertions(+), 1 deletions(-)
 
-> +
-> +	return 0;
-> +}
-> +
->  /*
->   * Sysfs functions -------------------------------------------------------------
->   */
-> @@ -218,7 +295,6 @@ static ssize_t type_show(struct firmware
->  }
-> 
->  #define to_memmap_attr(_attr) container_of(_attr, struct memmap_attribute, attr)
-> -#define to_memmap_entry(obj) container_of(obj, struct firmware_map_entry, kobj)
-> 
->  static ssize_t memmap_attr_show(struct kobject *kobj,
->  				struct attribute *attr, char *buf)
-> 
-> 
+diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+index 69fdd23..9c4b768 100644
+--- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
++++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+@@ -64,7 +64,7 @@ _GLOBAL(__setup_cpu_e500v2)
+ 	bl	__e500_icache_setup
+ 	bl	__e500_dcache_setup
+ 	bl	__setup_e500_ivors
+-#ifdef CONFIG_FSL_RIO
++#if defined(CONFIG_FSL_RIO) || defined(CONFIG_FSL_PCI)
+ 	/* Ensure that RFXE is set */
+ 	mfspr	r3,SPRN_HID1
+ 	oris	r3,r3,HID1_RFXE@h
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 1589723..096a1a1 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -59,6 +59,7 @@
+ #include <asm/fadump.h>
+ #include <asm/switch_to.h>
+ #include <asm/debug.h>
++#include <sysdev/fsl_pci.h>
+ 
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+ int (*__debugger)(struct pt_regs *regs) __read_mostly;
+@@ -555,6 +556,8 @@ int machine_check_e500(struct pt_regs *regs)
+ 	if (reason & MCSR_BUS_RBERR) {
+ 		if (fsl_rio_mcheck_exception(regs))
+ 			return 1;
++		if (fsl_pci_mcheck_exception(regs))
++			return 1;
+ 	}
+ 
+ 	printk("Machine check in kernel mode.\n");
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index a7b2a60..52f3b5d 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -30,6 +30,7 @@
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/pci-bridge.h>
++#include <asm/ppc-pci.h>
+ #include <asm/machdep.h>
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/fsl_pci.h>
+@@ -808,6 +809,44 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose)
+ 	return 0;
+ }
+ 
++static int is_in_pci_mem_space(phys_addr_t addr)
++{
++	struct pci_controller *hose;
++	struct resource *res;
++	int i;
++
++	list_for_each_entry(hose, &hose_list, list_node) {
++		if (!early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP))
++			continue;
++
++		for (i = 0; i < 3; i++) {
++			res = &hose->mem_resources[i];
++			if ((res->flags & IORESOURCE_MEM) &&
++				addr >= res->start && addr <= res->end)
++				return 1;
++		}
++	}
++	return 0;
++}
++
++int fsl_pci_mcheck_exception(struct pt_regs *regs)
++{
++	phys_addr_t addr = 0;
++
++#ifdef CONFIG_PHYS_64BIT
++	addr = mfspr(SPRN_MCARU);
++	addr <<= 32;
++#endif
++	addr += mfspr(SPRN_MCAR);
++
++	if (is_in_pci_mem_space(addr)) {
++		regs->nip += 4;
++		return 1;
++	}
++
++	return 0;
++}
++
+ #if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+ static const struct of_device_id pci_ids[] = {
+ 	{ .compatible = "fsl,mpc8540-pci", },
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index baa0fd1..efd1907 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -101,5 +101,11 @@ void fsl_pci_init(void);
+ static inline void fsl_pci_init(void) {}
+ #endif
+ 
++#ifdef CONFIG_FSL_PCI
++extern int fsl_pci_mcheck_exception(struct pt_regs *);
++#else
++static inline int fsl_pci_mcheck_exception(struct pt_regs *regs) {return 0; }
++#endif
++
+ #endif /* __POWERPC_FSL_PCI_H */
+ #endif /* __KERNEL__ */
+-- 
+1.7.5.1
