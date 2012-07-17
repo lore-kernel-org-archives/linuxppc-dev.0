@@ -1,30 +1,23 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-lb0-f170.google.com (mail-lb0-f170.google.com
- [209.85.217.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1026C2C00BD
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2012 03:15:15 +1000 (EST)
-Received: by lbgc1 with SMTP id c1so818053lbg.15
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 10:15:12 -0700 (PDT)
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4B58D2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 03:41:48 +1000 (EST)
+Message-ID: <5005A3D2.5060504@freescale.com>
+Date: Tue, 17 Jul 2012 12:41:38 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <1342521498.3669.7.camel@pasglop>
-References: <1342491799-30303-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1342491799-30303-6-git-send-email-shangw@linux.vnet.ibm.com>
- <20120717050547.GD2369@ram-ThinkPad-T61>
- <20120717052333.GE2369@ram-ThinkPad-T61>
- <20120717053648.GA18497@shangw> <20120717055715.GF2369@ram-ThinkPad-T61>
- <1342516619.3669.5.camel@pasglop> <20120717100314.GB25613@ram-ThinkPad-T61>
- <1342521498.3669.7.camel@pasglop>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 17 Jul 2012 11:14:51 -0600
-Message-ID: <CAErSpo4AS=QCRE3w-QBzuuSSEK8VeQ+PXxyp3mTyDAEvASxQcQ@mail.gmail.com>
-Subject: Re: [PATCH 05/15] pci: resource assignment based on p2p alignment
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: yinghai@kernel.org, linux-pci@vger.kernel.org,
- Ram Pai <linuxram@us.ibm.com>, Gavin Shan <shangw@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org
+To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Subject: Re: [PATCH] PCI: use dev->irq instead of dev->pin to enable non
+ MSI/INTx interrupt
+References: <1342492551-13766-1-git-send-email-Shengzhou.Liu@freescale.com>
+In-Reply-To: <1342492551-13766-1-git-send-email-Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 17, 2012 at 4:38 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2012-07-17 at 18:03 +0800, Ram Pai wrote:
->>         Lets say we passed that 'type' flag to size the minimum
->>         alignment constraints for that b_res.  And window_alignment(bus,
->>         type) of your platform  used that 'type' information to
->>         determine whether to use the alignment constraints of 32-bit
->>         window or 64-bit window.
->>
->>         However, later when the b_res is actually allocated a resource,
->>         the pci_assign_resource() has no idea whether to allocate 32-bit
->>         window resource or 64-bit window resource, because the 'type'
->>         information is not captured anywhere in b_res.
->>
->>         You would basically have a disconnect between what is sized and
->>         what is allocated. Unless offcourse you pass that 'type' to
->>         the b_res->flags, which is currently not the case.
->
-> Right, we ideally would need the core to query the alignment once per
-> "apertures" it tries as a candidate to allocate a given resource... but
-> that's for later.
->
-> For now we can probably live with giving out the max of the minimum
-> alignment we support for M64 and our M32 segment size.
+On 07/16/2012 09:35 PM, Shengzhou Liu wrote:
+> On some platforms, root port has neither MSI/MSI-X nor INTx interrupt
+> generated in RC mode. In this case, we have to use other interrupt(i.e.
+> system shared interrupt) for port service irq to have AER, Hot-plug, etc,
+> services to work.
+> 
+> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> ---
+>  drivers/pci/pcie/portdrv_core.c |    9 +++++++--
+>  1 files changed, 7 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
+> index 75915b3..a855254 100644
+> --- a/drivers/pci/pcie/portdrv_core.c
+> +++ b/drivers/pci/pcie/portdrv_core.c
+> @@ -212,8 +212,13 @@ static int init_service_irqs(struct pci_dev *dev, int *irqs, int mask)
+>  	if (!pcie_port_enable_msix(dev, irqs, mask))
+>  		return 0;
+>  
+> -	/* We're not going to use MSI-X, so try MSI and fall back to INTx */
+> -	if (!pci_enable_msi(dev) || dev->pin)
+> +	/*
+> +	 * We're not going to use MSI-X, so try MSI and fall back to INTx.
+> +	 * If neither MSI/MSI-X nor INTx available, try other interrupt. (On
+> +	 * some platforms, root port doesn't support generating MSI/MSI-X/INTx
+> +	 * in RC mode)
+> +	 */
+> +	if (!pci_enable_msi(dev) || dev->irq)
+>  		irq = dev->irq;
 
-We already know the aperture we're proposing to allocate from (the
-result of find_free_bus_resource()), don't we?  What if we passed it
-to pcibios_window_alignment() along with the struct pci_bus *, e.g.:
+What about the other usage of dev->pin a few lines up?
 
-  resource_size_t pcibios_window_alignment(struct pci_bus *bus, struct
-resource *window)
+-Scott
