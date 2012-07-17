@@ -2,34 +2,34 @@ Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
 Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 808CA2C009B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 10:29:15 +1000 (EST)
-Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id EEE1B3EE0C1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:29:11 +0900 (JST)
-Received: from smail (m3 [127.0.0.1])
- by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 513C745DEBA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:29:11 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
- by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 2C56645DE9E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:29:11 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 10577E08001
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:29:11 +0900 (JST)
-Received: from g01jpexchyt03.g01.fujitsu.local
- (g01jpexchyt03.g01.fujitsu.local [10.128.194.42])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id A59CEE0800A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:29:10 +0900 (JST)
-Message-ID: <5004B1AC.9090409@jp.fujitsu.com>
-Date: Tue, 17 Jul 2012 09:28:28 +0900
+ by ozlabs.org (Postfix) with ESMTPS id 1CC182C0147
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 10:30:33 +1000 (EST)
+Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 5E26D3EE0BC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:30:31 +0900 (JST)
+Received: from smail (m1 [127.0.0.1])
+ by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 40EFA45DE5C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:30:31 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
+ by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 2716E45DE54
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:30:31 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 181321DB804B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:30:31 +0900 (JST)
+Received: from g01jpexchyt10.g01.fujitsu.local
+ (g01jpexchyt10.g01.fujitsu.local [10.128.194.49])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id BAC691DB8044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:30:30 +0900 (JST)
+Message-ID: <5004B213.8010304@jp.fujitsu.com>
+Date: Tue, 17 Jul 2012 09:30:11 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: Wen Congyang <wency@cn.fujitsu.com>
 Subject: Re: [RFC PATCH v3 4/13] memory-hotplug : remove /sys/firmware/memmap/X
  sysfs
 References: <4FFAB0A2.8070304@jp.fujitsu.com>
- <4FFAB1BA.9040801@jp.fujitsu.com> <4FFFE621.8030302@cn.fujitsu.com>
-In-Reply-To: <4FFFE621.8030302@cn.fujitsu.com>
+ <4FFAB1BA.9040801@jp.fujitsu.com> <50037D3A.4090309@cn.fujitsu.com>
+In-Reply-To: <50037D3A.4090309@cn.fujitsu.com>
 Content-Type: text/plain; charset="ISO-2022-JP"
 Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
@@ -47,7 +47,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Wen,
 
-2012/07/13 18:10, Wen Congyang wrote:
+2012/07/16 11:32, Wen Congyang wrote:
 > At 07/09/2012 06:26 PM, Yasuaki Ishimatsu Wrote:
 >> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
 >> sysfs files are created. But there is no code to remove these files. The patch
@@ -86,19 +86,6 @@ Hi Wen,
 >> +	lock_memory_hotplug();
 >> +	/* remove memmap entry */
 >> +	firmware_map_remove(start, start + size - 1, "System RAM");
-> 
-> firmware_map_remove() is in meminit section, so remove_memory() should be in
-> ref section.
-
-I'll add it.
-
-Thanks,
-Yasuaki Ishimatsu
-
-> 
-> Thanks
-> Wen Congyang
-> 
 >> +	unlock_memory_hotplug();
 >> +	return 0;
 >>
@@ -238,6 +225,19 @@ Yasuaki Ishimatsu
 >> +	remove_sysfs_fw_map_entry(entry);
 >> +
 >> +	firmware_map_remove_entry(entry);
+> 
+> You should call firmware_map_remove_entry() before remove_sysfs_fw_map_entry(),
+> otherwise it will cause kernel panicked(entry may be freed in remove_sysfs_fw_map_entry()).
+
+You are right. I'll update it.
+
+Thanks,
+Yasuaki Ishimatsu
+
+> 
+> Thanks
+> Wen Congyang
+> 
 >> +
 >> +	return 0;
 >> +}
