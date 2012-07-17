@@ -1,37 +1,27 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e5.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 070DC2C0175
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 13:40:47 +1000 (EST)
-Received: from /spool/local
- by e5.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <linuxram@us.ibm.com>;
- Mon, 16 Jul 2012 23:40:43 -0400
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 560CF6E804D
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 23:40:31 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6H3eUbC33161246
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 23:40:31 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6H3eUIG005467
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 00:40:30 -0300
-Date: Tue, 17 Jul 2012 11:40:25 +0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH v6 0/7] minimal alignment for p2p bars
-Message-ID: <20120717034025.GC2369@ram-ThinkPad-T61>
-References: <1342491799-30303-1-git-send-email-shangw@linux.vnet.ibm.com>
+Return-Path: <B32616@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 38C712C014A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 14:02:07 +1000 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: Phillips Kim-R1AAHA <R1AAHA@freescale.com>
+Subject: RE: [PATCH v3 0/4] Raid: enable talitos xor offload for improving
+ performance
+Date: Tue, 17 Jul 2012 04:01:57 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70C2735@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1342411636-29770-1-git-send-email-qiang.liu@freescale.com>
+ <20120716200423.830d174e69fc0aafb40d2858@freescale.com>
+In-Reply-To: <20120716200423.830d174e69fc0aafb40d2858@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1342491799-30303-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, linuxram@us.ibm.com, linuxppc-dev@ozlabs.org,
- bhelgaas@google.com, yinghai@kernel.org
-Reply-To: Ram Pai <linuxram@us.ibm.com>
+Cc: "herbert@gondor.hengli.com.au" <herbert@gondor.hengli.com.au>,
+ "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,49 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 17, 2012 at 10:23:12AM +0800, Gavin Shan wrote:
-> v1 -> v2:
-> 	* Shorten the varaible names so that they looks more short.
-> 	* Changelog adjustment so that they looks more meaningful.
-> 
-> v2 -> v3:
-> 	* Rebase to 3.5.RC4
-> 
-> v3 -> v4:
-> 	* Merge Yinghai's patches.
-> 
-> v3 -> v4:
-> 	* Split patch for easy review.
-> 	* Add function to retrieve the minimal alignment of p2p bridge. 
-> 
-> v4 -> v5:
-> 	* Rebase to 3.5.RC7
-> 	* Introduce weak function pcibios_window_alignment() to retrieve
-> 	  I/O and memory alignment for P2P bridges.
-> 	* Introduce pcibios_window_alignment() for ppc to override the
-> 	  PCI function.
-> 	* Add ppc_md.pcibios_window_alignment() for specific platform like
-> 	  powernv can override ppc's pcibios_window_alignment().
-> 
-> v5 -> v6:
-> 	* Refactor pcibios_window_alignment() so the platform-specific
-> 	  implementation needn't return the default alignment according
-> 	  to Bjorn's suggestion.
-> 	* Simplify pbus_size_mem() according to Bjorn's suggestion: Just
-> 	  check the platform required alignment at very end and adjust
-> 	  the "min_align" if necessary.
-> 
-> Lu Yinghai(3):
->   pci: change variable name for find_pci_host_bridge
->   pci: argument pci_bus for find_pci_host_bridge
->   pci: fiddle with conversion of pci and CPU address
+> -----Original Message-----
+> From: Phillips Kim-R1AAHA
+> Sent: Tuesday, July 17, 2012 9:04 AM
+> To: Liu Qiang-B32616
+> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Li Yang-
+> R58472; dan.j.williams@intel.com; herbert@gondor.hengli.com.au
+> Subject: Re: [PATCH v3 0/4] Raid: enable talitos xor offload for
+> improving performance
+>=20
+> On Mon, 16 Jul 2012 12:07:16 +0800
+> Qiang Liu <qiang.liu@freescale.com> wrote:
+>=20
+> >  drivers/crypto/Kconfig   |    9 +
+> >  drivers/crypto/talitos.c |  410
+> +++++++++++++++++++++++++++++++++++++++++++
+> >  drivers/crypto/talitos.h |   53 ++++++
+> >  drivers/dma/fsldma.c     |  436 +++++++++++++++++++++++++-------------
+> --------
+> >  drivers/dma/fsldma.h     |    1 +
+> >  5 files changed, 708 insertions(+), 201 deletions(-)
+>=20
+> Given the pending talitos patches, this patchseries doesn't apply
+> cleanly:  can you rebase onto [1], which is based on Herbert's
+> cryptodev tree and contain's Horia's four patches?  They didn't get
+> any negative comments, so I assume eventually they will be applied,
+> and doing so will make Herbert's life easier.
+>=20
+> I applied the series on Herbert's cryptodev, and while fsldma
+> already had this build warning:
+>=20
+> drivers/dma/fsldma.c: In function 'fsl_dma_tx_submit':
+> drivers/dma/fsldma.c:636:2: warning: 'cookie' may be used uninitialized
+> in this function [-Wuninitialized]
+Kim, I will fix it in an another separate patch.
 
+>=20
+> this patchseries introduces a new one:
+>=20
+> drivers/dma/fsldma.c: In function 'dma_do_tasklet':
+> drivers/dma/fsldma.c:1134:16: warning: unused variable 'flags' [-Wunused-
+> variable]
+Sorry, my bad. I will correct it in v4 5/6 (according to Li Yang's comments=
+,
+v3 3/4 should be split up). Thanks.
 
-Gavin,
-	Do you need Yinghai's first 3 patches to implement your
-	functionality?
+>=20
+> I'll wait for a re-post, after these and Ira's comments are
+> addressed, before trying to test again.
+I agree, I think his comments is very important.
 
-	I dont see those new functions being called from anywhere
-	in your patches.
-
-RP
+>=20
+> Thanks,
+>=20
+> Kim
+>=20
+> [1] git://git.freescale.com/crypto/cryptodev.git
