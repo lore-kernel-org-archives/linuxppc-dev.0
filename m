@@ -1,20 +1,25 @@
 Return-Path: <B36685@freescale.com>
 Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5CC8D2C0159
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 12:57:38 +1000 (EST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <bhelgaas@google.com>, <linux-pci@vger.kernel.org>
-Subject: [PATCH] PCI: use dev->irq instead of dev->pin to enable non MSI/INTx
- interrupt
-Date: Tue, 17 Jul 2012 10:35:51 +0800
-Message-ID: <1342492551-13766-1-git-send-email-Shengzhou.Liu@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 8897D2C014F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 13:01:24 +1000 (EST)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 1/2 v2] PCI: Add PCI_DEV_FLAGS_USE_NON_MSI_INTX_IRQ to
+ enable non MSI/INTx interrupt
+Date: Tue, 17 Jul 2012 03:01:15 +0000
+Message-ID: <3F453DDFF675A64A89321A1F35281021770E00@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1342409487-28256-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <50043790.6090605@freescale.com>
+In-Reply-To: <50043790.6090605@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Cc: "bhelgaas@google.com" <bhelgaas@google.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +29,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On some platforms, root port has neither MSI/MSI-X nor INTx interrupt
-generated in RC mode. In this case, we have to use other interrupt(i.e.
-system shared interrupt) for port service irq to have AER, Hot-plug, etc,
-services to work.
-
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
- drivers/pci/pcie/portdrv_core.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-index 75915b3..a855254 100644
---- a/drivers/pci/pcie/portdrv_core.c
-+++ b/drivers/pci/pcie/portdrv_core.c
-@@ -212,8 +212,13 @@ static int init_service_irqs(struct pci_dev *dev, int *irqs, int mask)
- 	if (!pcie_port_enable_msix(dev, irqs, mask))
- 		return 0;
- 
--	/* We're not going to use MSI-X, so try MSI and fall back to INTx */
--	if (!pci_enable_msi(dev) || dev->pin)
-+	/*
-+	 * We're not going to use MSI-X, so try MSI and fall back to INTx.
-+	 * If neither MSI/MSI-X nor INTx available, try other interrupt. (On
-+	 * some platforms, root port doesn't support generating MSI/MSI-X/INTx
-+	 * in RC mode)
-+	 */
-+	if (!pci_enable_msi(dev) || dev->irq)
- 		irq = dev->irq;
- 
-  no_msi:
--- 
-1.6.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogTW9uZGF5LCBKdWx5IDE2LCAyMDEyIDExOjQ3IFBNDQo+IFRvOiBMaXUgU2hl
+bmd6aG91LUIzNjY4NQ0KPiBDYzogYmhlbGdhYXNAZ29vZ2xlLmNvbTsgbGludXgtcGNpQHZnZXIu
+a2VybmVsLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6
+IFJlOiBbUEFUQ0ggMS8yIHYyXSBQQ0k6IEFkZCBQQ0lfREVWX0ZMQUdTX1VTRV9OT05fTVNJX0lO
+VFhfSVJRIHRvDQo+IGVuYWJsZSBub24gTVNJL0lOVHggaW50ZXJydXB0DQo+IA0KPiBPbiAwNy8x
+NS8yMDEyIDEwOjMxIFBNLCBTaGVuZ3pob3UgTGl1IHdyb3RlOg0KPiA+IE9uIHNvbWUgcGxhdGZv
+cm1zLCBpbiBSQyBtb2RlLCByb290IHBvcnQgaGFzIG5laXRoZXIgTVNJL01TSS1YIG5vcg0KPiA+
+IElOVHggaW50ZXJydXB0IGdlbmVyYXRlZCwgd2hpY2ggYXJlIGF2YWlsYWJsZSBvbmx5IGluIEVQ
+IG1vZGUgb24gdGhvc2UNCj4gcGxhdGZvcm0uDQo+ID4gSW4gdGhpcyBjYXNlLCB3ZSB0cnkgdG8g
+dXNlIG90aGVyIGludGVycnVwdCBmb3IgcG9ydCBzZXJ2aWNlIGRyaXZlciB0bw0KPiA+IGhhdmUg
+QUVSLCBIb3QtcGx1ZywgZXRjLCBzZXJ2aWNlcyB0byB3b3JrLg0KPiA+DQo+ID4gU2lnbmVkLW9m
+Zi1ieTogU2hlbmd6aG91IExpdSA8U2hlbmd6aG91LkxpdUBmcmVlc2NhbGUuY29tPg0KPiA+IC0t
+LQ0KPiA+IHYyOiBzZXBhcmF0ZWQgcGxhdGZvcm0tc3BlY2lmaWMgcGFydCB0byBhcmNoL3Bvd2Vy
+cGMvc3lzZGV2Lg0KPiA+DQo+ID4gIGRyaXZlcnMvcGNpL3BjaWUvcG9ydGRydl9jb3JlLmMgfCAg
+IDEwICsrKysrKysrLS0NCj4gPiAgZHJpdmVycy9wY2kvcXVpcmtzLmMgICAgICAgICAgICB8ICAg
+IDkgKysrKysrKysrDQo+ID4gIGluY2x1ZGUvbGludXgvcGNpLmggICAgICAgICAgICAgfCAgICA1
+ICsrKysrDQo+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMjIgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlv
+bnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3BjaS9wY2llL3BvcnRkcnZfY29y
+ZS5jDQo+ID4gYi9kcml2ZXJzL3BjaS9wY2llL3BvcnRkcnZfY29yZS5jIGluZGV4IDc1OTE1YjMu
+LjgzN2FkMTUgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9wY2kvcGNpZS9wb3J0ZHJ2X2NvcmUu
+Yw0KPiA+ICsrKyBiL2RyaXZlcnMvcGNpL3BjaWUvcG9ydGRydl9jb3JlLmMNCj4gPiBAQCAtMjEy
+LDggKzIxMiwxNCBAQCBzdGF0aWMgaW50IGluaXRfc2VydmljZV9pcnFzKHN0cnVjdCBwY2lfZGV2
+ICpkZXYsIGludA0KPiAqaXJxcywgaW50IG1hc2spDQo+ID4gIAlpZiAoIXBjaWVfcG9ydF9lbmFi
+bGVfbXNpeChkZXYsIGlycXMsIG1hc2spKQ0KPiA+ICAJCXJldHVybiAwOw0KPiA+DQo+ID4gLQkv
+KiBXZSdyZSBub3QgZ29pbmcgdG8gdXNlIE1TSS1YLCBzbyB0cnkgTVNJIGFuZCBmYWxsIGJhY2sg
+dG8gSU5UeCAqLw0KPiA+IC0JaWYgKCFwY2lfZW5hYmxlX21zaShkZXYpIHx8IGRldi0+cGluKQ0K
+PiA+ICsJLyoNCj4gPiArCSAqIFdlJ3JlIG5vdCBnb2luZyB0byB1c2UgTVNJLVgsIHNvIHRyeSBN
+U0kgYW5kIGZhbGwgYmFjayB0byBJTlR4Lg0KPiA+ICsJICogRXZlbnR1YWxseSwgaWYgbmVpdGhl
+ciBNU0kvTVNJLVggbm9yIElOVHggYXZhaWxhYmxlLCB0cnkgb3RoZXINCj4gPiArCSAqIGludGVy
+cnVwdC4gKE9uIHNvbWUgcGxhdGZvcm1zLCByb290IHBvcnQgZG9lc24ndCBzdXBwb3J0IGdlbmVy
+YXRpbmcNCj4gPiArCSAqIE1TSS9NU0ktWC9JTlR4IGluIFJDIG1vZGUpDQo+ID4gKwkgKi8NCj4g
+PiArCWlmICghcGNpX2VuYWJsZV9tc2koZGV2KSB8fCBkZXYtPnBpbiB8fCAoKGRldi0+ZGV2X2Zs
+YWdzICYNCj4gPiArCQkJUENJX0RFVl9GTEFHU19VU0VfTk9OX01TSV9JTlRYX0lSUSkgJiYgZGV2
+LT5pcnEpKQ0KPiA+ICAJCWlycSA9IGRldi0+aXJxOw0KPiANCj4gSSBkaWRuJ3Qgc2VlIGEgcmVz
+cG9uc2Ugb24gdGhlIHF1ZXN0aW9uIGFib3V0IHdoYXQgd291bGQgaGFwcGVuIGlmIHdlIGRpZCB0
+aGlzDQo+IHVuY29uZGl0aW9uYWxseSAoaS5lLiBqdXN0IHMvZGV2LT5waW4vZGV2LT5pcnEvIGlu
+IHRoZSBvcmlnaW5hbCBjb2RlKS4gIFdlDQo+IHNob3VsZCBhdm9pZCBpbnRyb2R1Y2luZyBmbGFn
+cyBsaWtlIHRoaXMgdW5sZXNzIHRoZXJlJ3MgYSBnb29kIHJlYXNvbi4NCj4gDQo+IE1heWJlIHN1
+Ym1pdCBhIHBhdGNoIHRoYXQgZG9lcyBpdCB1bmNvbmRpdGlvbmFsbHksIGFuZCBzZWUgaWYgdGhh
+dCBkcmF3cyBhDQo+IGNvbXBsYWludC4NCj4gDQo+IC1TY290dA0KW1NoZW5nemhvdV0gDQpXZWxs
+LCB0aGUgcGF0Y2ggd2l0aG91dCBmbGFnIGNvbmRpdGlvbiBoYXZlIGJlZW4gcG9zdGVkIHRvIGRy
+YXcgbW9yZSBjb21tZW50cy4NCg==
