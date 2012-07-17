@@ -1,41 +1,24 @@
-Return-Path: <linuxram@us.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2EF882C0180
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 15:57:25 +1000 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <linuxram@us.ibm.com>;
- Mon, 16 Jul 2012 23:57:23 -0600
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 02D34C90052
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 01:57:21 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6H5vKVU422934
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 01:57:20 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6HBSDrJ013541
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 07:28:13 -0400
-Date: Tue, 17 Jul 2012 13:57:15 +0800
-From: Ram Pai <linuxram@us.ibm.com>
-To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: Re: [PATCH 05/15] pci: resource assignment based on p2p alignment
-Message-ID: <20120717055715.GF2369@ram-ThinkPad-T61>
-References: <1342491799-30303-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1342491799-30303-6-git-send-email-shangw@linux.vnet.ibm.com>
- <20120717050547.GD2369@ram-ThinkPad-T61>
- <20120717052333.GE2369@ram-ThinkPad-T61>
- <20120717053648.GA18497@shangw>
+Return-Path: <B38951@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8BDA82C0177
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 16:18:31 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] powerpc/85xx: workaround for chips with MSI hareware
+ errata to support MSI-X
+Date: Tue, 17 Jul 2012 06:18:20 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A242E6@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1342409730-28340-1-git-send-email-B38951@freescale.com>
+ <5004A1B0.6070004@freescale.com>
+In-Reply-To: <5004A1B0.6070004@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120717053648.GA18497@shangw>
-Cc: linux-pci@vger.kernel.org, Ram Pai <linuxram@us.ibm.com>,
- linuxppc-dev@ozlabs.org, bhelgaas@google.com, yinghai@kernel.org
-Reply-To: Ram Pai <linuxram@us.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "soniccat.liu@gmail.com" <soniccat.liu@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,62 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 17, 2012 at 01:36:49PM +0800, Gavin Shan wrote:
-> On Tue, Jul 17, 2012 at 01:23:33PM +0800, Ram Pai wrote:
-> >On Tue, Jul 17, 2012 at 01:05:47PM +0800, Ram Pai wrote:
-> >> On Tue, Jul 17, 2012 at 10:23:17AM +0800, Gavin Shan wrote:
-> >> > The patch changes function pbus_size_io() and pbus_size_mem() to
-> >> > do resource (I/O, memory and prefetchable memory) reassignment
-> >> > based on the minimal alignments for the p2p bridge, which was
-> >> > retrieved by function window_alignment().
-> >> > 
-> >> > Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
-> 
-> [snip]
-> 
-> >> > @@ -772,11 +775,11 @@ static void pbus_size_io(struct pci_bus *bus, resource_size_t min_size,
-> >> >  		return;
-> >> >  	}
-> >> >  	/* Alignment of the IO window is always 4K */
-> >> > -	b_res->start = 4096;
-> >> > +	b_res->start = io_align;
-> >> >  	b_res->end = b_res->start + size0 - 1;
-> >> >  	b_res->flags |= IORESOURCE_STARTALIGN;
-> >> >  	if (size1 > size0 && realloc_head) {
-> >> > -		add_to_list(realloc_head, bus->self, b_res, size1-size0, 4096);
-> >> > +		add_to_list(realloc_head, bus->self, b_res, size1-size0, io_align);
-> >> >  		dev_printk(KERN_DEBUG, &bus->self->dev, "bridge window "
-> >> >  				 "%pR to [bus %02x-%02x] add_size %lx\n", b_res,
-> >> >  				 bus->secondary, bus->subordinate, size1-size0);
-> >> > @@ -875,6 +878,8 @@ static int pbus_size_mem(struct pci_bus *bus, unsigned long mask,
-> >> >  			min_align = align1 >> 1;
-> >> >  		align += aligns[order];
-> >> >  	}
-> >> > +
-> >> > +	min_align = max(min_align, window_alignment(bus, type));
-> >> 
-> >>   'type' can sometimes be (IORESOURCE_MEM | IORESOURCE_PREFETCH), which
-> >>   can lead to unpredictable results depending on how window_alignment()
-> >>   is implemented... Hence to be on the safer side I suggest
-> >> 
-> >> 	min_align = max(min_align, window_alignment(bus, b_res->flags & mask));
-> 
-> Sorry, Ram. I didn't see your concern in last reply. So I have to
-> cover your conver in this reply.
-> 
-> I think it'd better to pass "type" directly because platform (e.g. powernv)
-> expects both IORESOURCE_MEM as well as IORESOURCE_PREFETCH. 
-> In future, powernv platform will return M32 segment size for IORESOURCE_MEM, but
-> might return M64 segment size for (IORESOURCE_MEM | IORESOURCE_PREFETCH).
-
-Hmm.. this code is not about determining what kind of segment the
-platform is returning. This code is about using the right alignment
-constraints for the type of segment from which resource will be
-allocated. right?
-
-b_res is the resource that is being sized. b_res already knows
-what kind of resource it is, i.e IORESOURCE_MEM or IORESOURCE_PREFETCH.
-Hence we should be exactly using the same alignment constraints as
-that dictated by the type of b_res. no?
-
-RP
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IFR1ZXNkYXksIEp1bHkgMTcsIDIwMTIgNzoyMCBBTQ0KPiBUbzogSmlhIEhvbmd0
+YW8tQjM4OTUxDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZ2FsYWtAa2Vy
+bmVsLmNyYXNoaW5nLm9yZzsNCj4gc29uaWNjYXQubGl1QGdtYWlsLmNvbQ0KPiBTdWJqZWN0OiBS
+ZTogW1BBVENIXSBwb3dlcnBjLzg1eHg6IHdvcmthcm91bmQgZm9yIGNoaXBzIHdpdGggTVNJIGhh
+cmV3YXJlDQo+IGVycmF0YSB0byBzdXBwb3J0IE1TSS1YDQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gv
+cG93ZXJwYy9zeXNkZXYvZnNsX21zaS5oDQo+IGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbXNp
+LmgNCj4gPiBpbmRleCA4MjI1Zjg2Li4zNTRkNTQ2IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93
+ZXJwYy9zeXNkZXYvZnNsX21zaS5oDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xf
+bXNpLmgNCj4gPiBAQCAtMjUsNiArMjUsOSBAQA0KPiA+ICAjZGVmaW5lIEZTTF9QSUNfSVBfSVBJ
+QyAgIDB4MDAwMDAwMDINCj4gPiAgI2RlZmluZSBGU0xfUElDX0lQX1ZNUElDICAweDAwMDAwMDAz
+DQo+ID4NCj4gPiArI2RlZmluZSBNU0lfSFdfRVJSQVRBX01BU0sgICAweDAwMDAwMEYwDQo+ID4g
+KyNkZWZpbmUgTVNJX0hXX0VSUkFUQV9FTkRJQU4gMHgwMDAwMDAxMA0KPiANCj4gV2h5IGRvIHdl
+IG5lZWQgYSBtYXNrIGZvciB0aGlzPw0KPiANCg0KSXQgc2VlbXMgdGhpcyBtYXNrIGlzIG5vdCBu
+ZWVkZWQuDQpJIHdpbGwgZml4IHRoaXMgaW4gdGhlIG5leHQgdmVyc2lvbi4NCg0KVGhhbmtzLg0K
+LUhvbmd0YW8uDQo=
