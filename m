@@ -1,24 +1,32 @@
-Return-Path: <B38951@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8BDA82C0177
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 16:18:31 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH] powerpc/85xx: workaround for chips with MSI hareware
- errata to support MSI-X
-Date: Tue, 17 Jul 2012 06:18:20 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A242E6@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1342409730-28340-1-git-send-email-B38951@freescale.com>
- <5004A1B0.6070004@freescale.com>
-In-Reply-To: <5004A1B0.6070004@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-gg0-f179.google.com (mail-gg0-f179.google.com
+ [209.85.161.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 745172C0185
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 16:48:54 +1000 (EST)
+Received: by ggnk3 with SMTP id k3so50182ggn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Jul 2012 23:48:51 -0700 (PDT)
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "soniccat.liu@gmail.com" <soniccat.liu@gmail.com>
+Sender: pku.leo@gmail.com
+In-Reply-To: <BCB48C05FCE8BC4D9E61E841ECBE6DB70C2788@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1342411780-29930-1-git-send-email-qiang.liu@freescale.com>
+ <5004244D.4000106@freescale.com>
+ <BCB48C05FCE8BC4D9E61E841ECBE6DB70C2788@039-SN2MPN1-011.039d.mgd.msft.net>
+Date: Tue, 17 Jul 2012 14:48:51 +0800
+Message-ID: <CADRPPNSHG-Gf=YvaC-WDRjkxrWc8awkoqP+tEVC3FkXVXFdSoA@mail.gmail.com>
+Subject: Re: [linuxppc-release] [PATCH v3 4/4] fsl-dma: use spin_lock_bh to
+ instead of spin_lock_irqsave
+From: Li Yang <leoli@freescale.com>
+To: Liu Qiang-B32616 <B32616@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Li Yang-R58472 <r58472@freescale.com>, Vinod Koul <vinod.koul@intel.com>,
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "herbert@gondor.hengli.com.au" <herbert@gondor.hengli.com.au>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+IFNlbnQ6IFR1ZXNkYXksIEp1bHkgMTcsIDIwMTIgNzoyMCBBTQ0KPiBUbzogSmlhIEhvbmd0
-YW8tQjM4OTUxDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZ2FsYWtAa2Vy
-bmVsLmNyYXNoaW5nLm9yZzsNCj4gc29uaWNjYXQubGl1QGdtYWlsLmNvbQ0KPiBTdWJqZWN0OiBS
-ZTogW1BBVENIXSBwb3dlcnBjLzg1eHg6IHdvcmthcm91bmQgZm9yIGNoaXBzIHdpdGggTVNJIGhh
-cmV3YXJlDQo+IGVycmF0YSB0byBzdXBwb3J0IE1TSS1YDQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gv
-cG93ZXJwYy9zeXNkZXYvZnNsX21zaS5oDQo+IGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbXNp
-LmgNCj4gPiBpbmRleCA4MjI1Zjg2Li4zNTRkNTQ2IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93
-ZXJwYy9zeXNkZXYvZnNsX21zaS5oDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xf
-bXNpLmgNCj4gPiBAQCAtMjUsNiArMjUsOSBAQA0KPiA+ICAjZGVmaW5lIEZTTF9QSUNfSVBfSVBJ
-QyAgIDB4MDAwMDAwMDINCj4gPiAgI2RlZmluZSBGU0xfUElDX0lQX1ZNUElDICAweDAwMDAwMDAz
-DQo+ID4NCj4gPiArI2RlZmluZSBNU0lfSFdfRVJSQVRBX01BU0sgICAweDAwMDAwMEYwDQo+ID4g
-KyNkZWZpbmUgTVNJX0hXX0VSUkFUQV9FTkRJQU4gMHgwMDAwMDAxMA0KPiANCj4gV2h5IGRvIHdl
-IG5lZWQgYSBtYXNrIGZvciB0aGlzPw0KPiANCg0KSXQgc2VlbXMgdGhpcyBtYXNrIGlzIG5vdCBu
-ZWVkZWQuDQpJIHdpbGwgZml4IHRoaXMgaW4gdGhlIG5leHQgdmVyc2lvbi4NCg0KVGhhbmtzLg0K
-LUhvbmd0YW8uDQo=
+On Tue, Jul 17, 2012 at 12:23 PM, Liu Qiang-B32616 <B32616@freescale.com> wrote:
+>> -----Original Message-----
+>> From: Tabi Timur-B04825
+>> Sent: Monday, July 16, 2012 10:25 PM
+>> To: Liu Qiang-B32616
+>> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Vinod
+>> Koul; herbert@gondor.hengli.com.au; Dan Williams; Li Yang-R58472;
+>> davem@davemloft.net
+>> Subject: Re: [linuxppc-release] [PATCH v3 4/4] fsl-dma: use spin_lock_bh
+>> to instead of spin_lock_irqsave
+>>
+>> Qiang Liu wrote:
+>> > Use spin_lock_bh to instead of spin_lock_irqsave for improving
+>> performance.
+>>
+>> You forgot to include the evidence that performance has improved, as well
+>> as an explanation why it's okay to use spin_lock_bh, and why it's faster.
+>>   I told you to respin the patch with that information in the patch
+>> description.
+> I attached the test result in v3 0/4, performance is improved by 2%.
+> For my understanding, there is not any place to access descriptor lists
+> in fsl-dma interrupt service handler except its tasklet, spin_lock_bh()
+> is born for this. Interrupts will be turned off and context will be save in
+> irqsave, there is needless to use irqsave in our case. You can refer to the
+> implement of mv_xor.c or ioap-adma.c.
+> If you think my explanation is ok, I can add it in the patch.
+
+Disabling bottom half is not faster than disabling the interrupt.  But
+by using it we reduce the time when interrupt is disabled.  We can get
+better real time performance in term of interrupt handling latency.
+
+Leo
