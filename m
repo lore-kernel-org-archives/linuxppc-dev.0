@@ -1,22 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 19D472C0146
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Jul 2012 09:20:24 +1000 (EST)
-Message-ID: <5004A1B0.6070004@freescale.com>
-Date: Mon, 16 Jul 2012 18:20:16 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-vb0-f74.google.com (mail-vb0-f74.google.com
+ [209.85.212.74])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 33AAA2C0125
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Jul 2012 10:07:37 +1000 (EST)
+Received: by vbnl22 with SMTP id l22so635312vbn.3
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Jul 2012 17:07:35 -0700 (PDT)
+Date: Mon, 16 Jul 2012 18:07:34 -0600
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Subject: Re: [PATCH 04/15] pci: weak function returns alignment
+Message-ID: <20120717000734.GB32203@google.com>
+References: <cover.1340949637.git.shangw@linux.vnet.ibm.com>
+ <1342452631-21152-4-git-send-email-shangw@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Jia Hongtao <B38951@freescale.com>
-Subject: Re: [PATCH] powerpc/85xx: workaround for chips with MSI hareware
- errata to support MSI-X
-References: <1342409730-28340-1-git-send-email-B38951@freescale.com>
-In-Reply-To: <1342409730-28340-1-git-send-email-B38951@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org, soniccat.liu@gmail.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1342452631-21152-4-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: yinghai@kernel.org, linux-pci@vger.kernel.org, linuxram@us.ibm.com,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/15/2012 10:35 PM, Jia Hongtao wrote:
-> From: Liu Shuo <soniccat.liu@gmail.com>
+On Mon, Jul 16, 2012 at 11:30:27PM +0800, Gavin Shan wrote:
+> The patch implements the weak function to return the default I/O
+> or memory alignment for P2P bridge. Currently, I/O window has 4KiB
+> alignment and memory window is 4MiB aligned by default. On the other
+> hand, those platforms (e.g. powernv) that have special requirements
+> on the alignment could override the function by themselves.
 > 
-> The MPIC chip with version 2.0 has a MSI errata (errata PIC1 of mpc8544),
-> It causes that neither MSI nor MSI-X can work fine. There is a workaround
-> to allow MSI-X to function properly.
-
-s/There is/This is/
-
-There is also a workaround for regular MSI to function properly, though
-this patch does not implement it.
-
-> +/* MPIC chip with 2.0 version has erratum PIC1 */
-> +static int mpic_has_errata(struct platform_device *dev)
-> +{
-> +	struct device_node *mpic_node;
-> +
-> +	mpic_node = of_irq_find_parent(dev->dev.of_node);
-> +	if (mpic_node) {
-> +		u32 *reg_base, brr1 = 0;
-> +		/* Get the PIC reg base */
-> +		reg_base = of_iomap(mpic_node, 0);
-> +		of_node_put(mpic_node);
-> +		if (!reg_base) {
-> +			dev_err(&dev->dev, "ioremap problem failed.\n");
-> +			return -EIO;
-> +		}
-> +
-> +		/* Get the mpic chip version from block revision register 1 */
-> +		brr1 = in_be32(reg_base + MPIC_FSL_BRR1);
-> +		iounmap(reg_base);
-> +		if ((brr1 & MPIC_FSL_BRR1_VER) == 0x0200)
-> +			return 1;
-
-There's already been a patch posted that includes BRR1 checking:
-http://patchwork.ozlabs.org/patch/169713/
-
-Please coordinate with that.  Have the MPIC code read the version once,
-and expose it to the MSI driver, rather than digging directly into the
-non-MSI MPIC registers from here.
-
-> diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-> index 8225f86..354d546 100644
-> --- a/arch/powerpc/sysdev/fsl_msi.h
-> +++ b/arch/powerpc/sysdev/fsl_msi.h
-> @@ -25,6 +25,9 @@
->  #define FSL_PIC_IP_IPIC   0x00000002
->  #define FSL_PIC_IP_VMPIC  0x00000003
+> Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+> ---
+>  drivers/pci/host-bridge.c |   17 +++++++++++++++++
+>  include/linux/pci.h       |    2 ++
+>  2 files changed, 19 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/pci/host-bridge.c b/drivers/pci/host-bridge.c
+> index abcf053..dcbc47d 100644
+> --- a/drivers/pci/host-bridge.c
+> +++ b/drivers/pci/host-bridge.c
+> @@ -105,3 +105,20 @@ void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+>  }
 >  
-> +#define MSI_HW_ERRATA_MASK   0x000000F0
-> +#define MSI_HW_ERRATA_ENDIAN 0x00000010
+>  EXPORT_SYMBOL(pcibios_bus_to_resource);
+> +
+> +/*
+> + * Retrieve the default memory or I/O alignment for the
+> + * specific P2P bridge. The function has been implemented
+> + * as weak so that it can be overrided by platform that
+> + * has special requirments for memory and I/O alignment.
+> + */
+> +resource_size_t __weak pcibios_window_alignment(struct pci_bus *bus,
+> +						unsigned long type)
 
-Why do we need a mask for this?
+This no longer has anything to do with the host bridge, so I think it
+could be moved to setup-bus.c and made static.  We shouldn't have to
+repeat the default 1M and 4K code in the arch versions, so maybe we
+could do something like this:
 
--Scott
+    resource_size_t __weak pcibios_window_alignment(struct pci_bus *bus, unsigned long type)
+    {
+	return 1;
+    }
+
+    static resource_size_t window_alignment(struct pci_bus *bus, unsigned long type)
+    {
+	resource_size_t align = 1, arch_align;
+
+	if (type & IORESOURCE_MEM)
+	    align = 1024*1024;
+	else if (type & IORESOURCE_IO)
+	    align = 4*1024;
+    
+	arch_align = pcibios_window_alignment(bus, type);
+	return max(align, arch_align);
+    }
+
+I made the default 1, thinking of bus number apertures (though we don't use this
+path for bus numbers today).
+
+> +{
+> +	/* Memory windows must be 1MiB aligned */
+> +	if (type & IORESOURCE_MEM)
+> +		return 1024*1024;
+> +
+> +	/* I/O windows have default alignment of 4KiB */
+> +	return 4*1024;
+> +}
+> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> index 9acea4b..283da11 100644
+> --- a/include/linux/pci.h
+> +++ b/include/linux/pci.h
+> @@ -662,6 +662,8 @@ void __pcibios_bus_to_resource(struct pci_bus *bus, struct resource *res,
+>  			       struct pci_bus_region *region);
+>  void pcibios_bus_to_resource(struct pci_dev *dev, struct resource *res,
+>  			     struct pci_bus_region *region);
+> +resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+> +					 unsigned long type);
+>  void pcibios_scan_specific_bus(int busn);
+>  extern struct pci_bus *pci_find_bus(int domain, int busnr);
+>  void pci_bus_add_devices(const struct pci_bus *bus);
+> -- 
+> 1.7.5.4
+> 
