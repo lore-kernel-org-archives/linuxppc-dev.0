@@ -1,23 +1,13 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4B58D2C009C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 03:41:48 +1000 (EST)
-Message-ID: <5005A3D2.5060504@freescale.com>
-Date: Tue, 17 Jul 2012 12:41:38 -0500
+Date: Tue, 17 Jul 2012 20:11:52 -0500
 From: Scott Wood <scottwood@freescale.com>
+To: Thierry Reding <thierry.reding@avionic-design.de>, Rob Herring
+ <rob.herring@calxeda.com>
+Subject: [PATCH] of: require a match on all fields of of_device_id
+Message-ID: <20120718011151.GA6119@tyr.buserror.net>
 MIME-Version: 1.0
-To: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-Subject: Re: [PATCH] PCI: use dev->irq instead of dev->pin to enable non
- MSI/INTx interrupt
-References: <1342492551-13766-1-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1342492551-13766-1-git-send-email-Shengzhou.Liu@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +17,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/16/2012 09:35 PM, Shengzhou Liu wrote:
-> On some platforms, root port has neither MSI/MSI-X nor INTx interrupt
-> generated in RC mode. In this case, we have to use other interrupt(i.e.
-> system shared interrupt) for port service irq to have AER, Hot-plug, etc,
-> services to work.
-> 
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> ---
->  drivers/pci/pcie/portdrv_core.c |    9 +++++++--
->  1 files changed, 7 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_core.c
-> index 75915b3..a855254 100644
-> --- a/drivers/pci/pcie/portdrv_core.c
-> +++ b/drivers/pci/pcie/portdrv_core.c
-> @@ -212,8 +212,13 @@ static int init_service_irqs(struct pci_dev *dev, int *irqs, int mask)
->  	if (!pcie_port_enable_msix(dev, irqs, mask))
->  		return 0;
->  
-> -	/* We're not going to use MSI-X, so try MSI and fall back to INTx */
-> -	if (!pci_enable_msi(dev) || dev->pin)
-> +	/*
-> +	 * We're not going to use MSI-X, so try MSI and fall back to INTx.
-> +	 * If neither MSI/MSI-X nor INTx available, try other interrupt. (On
-> +	 * some platforms, root port doesn't support generating MSI/MSI-X/INTx
-> +	 * in RC mode)
-> +	 */
-> +	if (!pci_enable_msi(dev) || dev->irq)
->  		irq = dev->irq;
+Commit 107a84e61cdd3406c842a0e4be7efffd3a05dba6 ("of: match by compatible
+property first") breaks the gianfar ethernet driver found on various
+Freescale PPC chips.
 
-What about the other usage of dev->pin a few lines up?
+There are, for unfortunate historical reasons, two nodes with a
+compatible of "gianfar".  One has a device_type of "network" and the
+other has device_type of "mdio".  The match entries look like this:
 
--Scott
+>         {
+>                 .type = "mdio",
+>                 .compatible = "gianfar",
+>         },
+
+and
+
+>         {
+>                 .type = "network",
+>                 .compatible = "gianfar",
+>         },
+
+With the above patch, both nodes get probed by the first driver, because
+nothing else in the match struct is looked at if there's a compatible
+match.
+
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ drivers/of/base.c |   44 ++++++++++++++++++++++++++++++++------------
+ 1 file changed, 32 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index bc86ea2..4e707cc 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -511,14 +511,37 @@ out:
+ }
+ EXPORT_SYMBOL(of_find_node_with_property);
+ 
+-static const struct of_device_id *of_match_compat(const struct of_device_id *matches,
+-						  const char *compat)
++/*
++ * Tell if an device_node matches the non-compatible fields of
++ * a specific of_match element.
++ */
++static bool of_match_one_noncompat(const struct of_device_id *match,
++				   const struct device_node *node)
++{
++	bool is_match = true;
++
++	if (match->name[0])
++		is_match &= node->name && !strcmp(match->name, node->name);
++	if (match->type[0])
++		is_match &= node->type && !strcmp(match->type, node->type);
++
++	return is_match;
++}
++
++/*
++ * Find an OF match using the supplied compatible string, rather than
++ * the node's entire string list.
++ */
++static const struct of_device_id *of_match_compat(
++	const struct of_device_id *matches, const char *compat,
++	const struct device_node *node)
+ {
+ 	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
+ 		const char *cp = matches->compatible;
+ 		int len = strlen(cp);
+ 
+-		if (len > 0 && of_compat_cmp(compat, cp, len) == 0)
++		if (len > 0 && of_compat_cmp(compat, cp, len) == 0 &&
++		    of_match_one_noncompat(matches, node))
+ 			return matches;
+ 
+ 		matches++;
+@@ -544,23 +567,20 @@ const struct of_device_id *of_match_node(const struct of_device_id *matches,
+ 		return NULL;
+ 
+ 	of_property_for_each_string(node, "compatible", prop, cp) {
+-		const struct of_device_id *match = of_match_compat(matches, cp);
++		const struct of_device_id *match =
++			of_match_compat(matches, cp, node);
+ 		if (match)
+ 			return match;
+ 	}
+ 
+ 	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
+-		int match = 1;
+-		if (matches->name[0])
+-			match &= node->name
+-				&& !strcmp(matches->name, node->name);
+-		if (matches->type[0])
+-			match &= node->type
+-				&& !strcmp(matches->type, node->type);
+-		if (match && !matches->compatible[0])
++		if (of_match_one_noncompat(matches, node) &&
++		    !matches->compatible[0])
+ 			return matches;
++
+ 		matches++;
+ 	}
++
+ 	return NULL;
+ }
+ EXPORT_SYMBOL(of_match_node);
+-- 
+1.7.9.5
