@@ -3,15 +3,17 @@ Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
  [IPv6:2a01:238:20a:202:5300::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EAC622C024D
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2012 03:00:21 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C30952C038D
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2012 03:00:33 +1000 (EST)
 From: olaf@aepfle.de
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] radeonfb: Add quirk for the graphics adapter in some JSxx
-Date: Wed, 18 Jul 2012 18:49:04 +0200
-Message-Id: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org,
- Olaf Hering <olaf@aepfle.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ "James E.J. Bottomley" <JBottomley@parallels.com>
+Subject: [PATCH] scsi/ibmvscsi: /sys/class/scsi_host/hostX/config doesn't show
+ any information
+Date: Wed, 18 Jul 2012 18:49:17 +0200
+Message-Id: <1342630157-16468-1-git-send-email-olaf@aepfle.de>
+Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
+ Linda Xie <lxiep@us.ibm.com>, linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,70 +23,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tony Breeds <tony@bakeyournoodle.com>
+From: Linda Xie <lxiep@us.ibm.com>
 
-These devices are set to 640x480 by firmware, switch them to 800x600@60
-so that the graphical installer can run on remote console.
+Expected result:
+It should show something like this:
+x1521p4:~ # cat /sys/class/scsi_host/host1/config
+PARTITIONNAME='x1521p4'
+NWSDNAME='X1521P4'
+HOSTNAME='X1521P4'
+DOMAINNAME='RCHLAND.IBM.COM'
+NAMESERVERS='9.10.244.100 9.10.244.200'
 
-Reported by IBM during SLES10 SP2 beta testing:
+Actual result:
+x1521p4:~ # cat /sys/class/scsi_host/host0/config
+x1521p4:~ #
 
-https://bugzilla.novell.com/show_bug.cgi?id=461002
-LTC50817
+This patch changes the size of the buffer used for transfering config
+data to 4K. It was tested against 2.6.19-rc2 tree.
+
+Reported by IBM during SLES11 beta testing:
+
+https://bugzilla.novell.com/show_bug.cgi?id=439970
+LTC49349
 
 Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-diff --git a/drivers/video/aty/radeon_monitor.c b/drivers/video/aty/radeon_monitor.c
-index 9261c91..5c23eac 100644
---- a/drivers/video/aty/radeon_monitor.c
-+++ b/drivers/video/aty/radeon_monitor.c
-@@ -730,6 +730,25 @@ static void radeon_videomode_to_var(struct fb_var_screeninfo *var,
- 	var->vmode = mode->vmode;
+diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+index e580aa4..1513ca8 100644
+--- a/drivers/scsi/ibmvscsi/ibmvscsi.c
++++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+@@ -93,6 +93,8 @@ static int max_requests = IBMVSCSI_MAX_REQUESTS_DEFAULT;
+ static int max_events = IBMVSCSI_MAX_REQUESTS_DEFAULT + 2;
+ static int fast_fail = 1;
+ static int client_reserve = 1;
++/* host data buffer size */
++#define HOST_BUFFER_SIZE 4096
+ 
+ static struct scsi_transport_template *ibmvscsi_transport_template;
+ 
+@@ -1666,7 +1668,7 @@ static ssize_t show_host_srp_version(struct device *dev,
+ 	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+ 	int len;
+ 
+-	len = snprintf(buf, PAGE_SIZE, "%s\n",
++       len = snprintf(buf, HOST_BUFFER_SIZE, "%s\n",
+ 		       hostdata->madapter_info.srp_version);
+ 	return len;
+ }
+@@ -1687,7 +1689,7 @@ static ssize_t show_host_partition_name(struct device *dev,
+ 	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+ 	int len;
+ 
+-	len = snprintf(buf, PAGE_SIZE, "%s\n",
++       len = snprintf(buf, HOST_BUFFER_SIZE, "%s\n",
+ 		       hostdata->madapter_info.partition_name);
+ 	return len;
+ }
+@@ -1708,7 +1710,7 @@ static ssize_t show_host_partition_number(struct device *dev,
+ 	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+ 	int len;
+ 
+-	len = snprintf(buf, PAGE_SIZE, "%d\n",
++       len = snprintf(buf, HOST_BUFFER_SIZE, "%d\n",
+ 		       hostdata->madapter_info.partition_number);
+ 	return len;
+ }
+@@ -1728,7 +1730,7 @@ static ssize_t show_host_mad_version(struct device *dev,
+ 	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+ 	int len;
+ 
+-	len = snprintf(buf, PAGE_SIZE, "%d\n",
++       len = snprintf(buf, HOST_BUFFER_SIZE, "%d\n",
+ 		       hostdata->madapter_info.mad_version);
+ 	return len;
+ }
+@@ -1748,7 +1750,7 @@ static ssize_t show_host_os_type(struct device *dev,
+ 	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+ 	int len;
+ 
+-	len = snprintf(buf, PAGE_SIZE, "%d\n", hostdata->madapter_info.os_type);
++       len = snprintf(buf, HOST_BUFFER_SIZE, "%d\n", hostdata->madapter_info.os_type);
+ 	return len;
  }
  
-+#ifdef CONFIG_PPC_PSERIES
-+static int is_powerblade(const char *model)
-+{
-+	struct device_node *root;
-+	const char* cp;
-+	int len, l, rc = 0;
-+
-+	root = of_find_node_by_path("/");
-+	if (root && model) {
-+		l = strlen(model);
-+		cp = of_get_property(root, "model", &len);
-+		if (cp)
-+			rc = memcmp(model, cp, min(len, l)) == 0;
-+		of_node_put(root);
-+	}
-+	return rc;
-+}
-+#endif
-+
- /*
-  * Build the modedb for head 1 (head 2 will come later), check panel infos
-  * from either BIOS or EDID, and pick up the default mode
-@@ -865,6 +884,22 @@ void __devinit radeon_check_modes(struct radeonfb_info *rinfo, const char *mode_
- 			has_default_mode = 1;
-  	}
+@@ -1767,7 +1769,7 @@ static ssize_t show_host_config(struct device *dev,
+ 	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
  
-+#ifdef CONFIG_PPC_PSERIES
-+	if (!has_default_mode && (
-+		is_powerblade("IBM,8842") || /* JS20 */
-+		is_powerblade("IBM,8844") || /* JS21 */
-+		is_powerblade("IBM,7998") || /* JS12/JS21/JS22 */
-+		is_powerblade("IBM,0792") || /* QS21 */
-+		is_powerblade("IBM,0793")    /* QS22 */
-+	    )) {
-+		printk("Falling back to 800x600 on JSxx hardware\n");
-+		if (fb_find_mode(&info->var, info, "800x600@60",
-+				 info->monspecs.modedb,
-+				 info->monspecs.modedb_len, NULL, 8) != 0)
-+			has_default_mode = 1;
-+	}
-+#endif
-+
- 	/*
- 	 * Still no mode, let's pick up a default from the db
- 	 */
+ 	/* returns null-terminated host config data */
+-	if (ibmvscsi_do_host_config(hostdata, buf, PAGE_SIZE) == 0)
++       if (ibmvscsi_do_host_config(hostdata, buf, HOST_BUFFER_SIZE) == 0)
+ 		return strlen(buf);
+ 	else
+ 		return 0;
 -- 
 1.7.10.4
