@@ -1,33 +1,33 @@
 Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 963DC2C0365
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 20:04:51 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id F1BF02C0382
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 20:05:55 +1000 (EST)
 Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id CDC793EE0C5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:04:47 +0900 (JST)
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 498353EE0C2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:05:54 +0900 (JST)
 Received: from smail (m3 [127.0.0.1])
- by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 97FE145DEBA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:04:47 +0900 (JST)
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 2308945DEBB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:05:54 +0900 (JST)
 Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
- by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 60F3445DEB3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:04:47 +0900 (JST)
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id E9C1545DEAD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:05:53 +0900 (JST)
 Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 4CE4B1DB8044
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:04:47 +0900 (JST)
-Received: from g01jpexchyt07.g01.fujitsu.local
- (g01jpexchyt07.g01.fujitsu.local [10.128.194.46])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id E9CA61DB803E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:04:46 +0900 (JST)
-Message-ID: <50068A2C.2030605@jp.fujitsu.com>
-Date: Wed, 18 Jul 2012 19:04:28 +0900
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id DC1D71DB803B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:05:53 +0900 (JST)
+Received: from g01jpexchyt01.g01.fujitsu.local
+ (g01jpexchyt01.g01.fujitsu.local [10.128.194.40])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 8108A1DB803F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:05:53 +0900 (JST)
+Message-ID: <50068A6E.5050904@jp.fujitsu.com>
+Date: Wed, 18 Jul 2012 19:05:34 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
-Subject: [RFC PATCH 0/13] firmware_map : unify argument of
- firmware_map_add_early/hotplug
+Subject: [RFC PATCH v4 1/13] memory-hotplug : rename remove_memory to
+ offline_memory
 References: <50068974.1070409@jp.fujitsu.com>
 In-Reply-To: <50068974.1070409@jp.fujitsu.com>
 Content-Type: text/plain; charset="ISO-2022-JP"
@@ -43,84 +43,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are two ways to create /sys/firmware/memmap/X sysfs:
+remove_memory() does not remove memory but just offlines memory. The patch
+changes name of it to offline_memory().
 
-  - firmware_map_add_early
-    When the system starts, it is calledd from e820_reserve_resources()
-  - firmware_map_add_hotplug
-    When the memory is hot plugged, it is called from add_memory()
-
-But these functions are called without unifying value of end argument as below:
-
-  - end argument of firmware_map_add_early()   : start + size - 1
-  - end argument of firmware_map_add_hogplug() : start + size
-
-The patch unifies them to "start + size". Even if applying the patch,
-/sys/firmware/memmap/X/end file content does not change.
-
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@kernel.org>
-CC: H. Peter Anvin <hpa@zytor.com>
-CC: Tejun Heo <tj@kernel.org>
+CC: David Rientjes <rientjes@google.com>
+CC: Jiang Liu <liuj97@gmail.com>
+CC: Len Brown <len.brown@intel.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org> 
+CC: Christoph Lameter <cl@linux.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>
 CC: Andrew Morton <akpm@linux-foundation.org>
-Reviewed-by: Dave Hansen <dave@linux.vnet.ibm.com>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> 
+CC: Wen Congyang <wency@cn.fujitsu.com>
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
 ---
- arch/x86/kernel/e820.c    |    2 +-
- drivers/firmware/memmap.c |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/acpi/acpi_memhotplug.c |    2 +-
+ drivers/base/memory.c          |    4 ++--
+ include/linux/memory_hotplug.h |    2 +-
+ mm/memory_hotplug.c            |    6 +++---
+ 4 files changed, 7 insertions(+), 7 deletions(-)
 
-Index: linux-3.5-rc6/arch/x86/kernel/e820.c
+Index: linux-3.5-rc4/drivers/acpi/acpi_memhotplug.c
 ===================================================================
---- linux-3.5-rc6.orig/arch/x86/kernel/e820.c	2012-07-18 17:19:38.391365260 +0900
-+++ linux-3.5-rc6/arch/x86/kernel/e820.c	2012-07-18 17:19:43.616300222 +0900
-@@ -944,7 +944,7 @@ void __init e820_reserve_resources(void)
- 	for (i = 0; i < e820_saved.nr_map; i++) {
- 		struct e820entry *entry = &e820_saved.map[i];
- 		firmware_map_add_early(entry->addr,
--			entry->addr + entry->size - 1,
-+			entry->addr + entry->size,
- 			e820_type_to_string(entry->type));
- 	}
+--- linux-3.5-rc4.orig/drivers/acpi/acpi_memhotplug.c	2012-07-03 14:21:46.102416917 +0900
++++ linux-3.5-rc4/drivers/acpi/acpi_memhotplug.c	2012-07-03 14:21:49.458374960 +0900
+@@ -318,7 +318,7 @@ static int acpi_memory_disable_device(st
+ 	 */
+ 	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
+ 		if (info->enabled) {
+-			result = remove_memory(info->start_addr, info->length);
++			result = offline_memory(info->start_addr, info->length);
+ 			if (result)
+ 				return result;
+ 		}
+Index: linux-3.5-rc4/drivers/base/memory.c
+===================================================================
+--- linux-3.5-rc4.orig/drivers/base/memory.c	2012-07-03 14:21:46.095417003 +0900
++++ linux-3.5-rc4/drivers/base/memory.c	2012-07-03 14:21:49.459374948 +0900
+@@ -266,8 +266,8 @@ memory_block_action(unsigned long phys_i
+ 			break;
+ 		case MEM_OFFLINE:
+ 			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
+-			ret = remove_memory(start_paddr,
+-					    nr_pages << PAGE_SHIFT);
++			ret = offline_memory(start_paddr,
++					     nr_pages << PAGE_SHIFT);
+ 			break;
+ 		default:
+ 			WARN(1, KERN_WARNING "%s(%ld, %ld) unknown action: "
+Index: linux-3.5-rc4/mm/memory_hotplug.c
+===================================================================
+--- linux-3.5-rc4.orig/mm/memory_hotplug.c	2012-07-03 14:21:46.102416917 +0900
++++ linux-3.5-rc4/mm/memory_hotplug.c	2012-07-03 14:21:49.466374860 +0900
+@@ -990,7 +990,7 @@ out:
+ 	return ret;
  }
-Index: linux-3.5-rc6/drivers/firmware/memmap.c
-===================================================================
---- linux-3.5-rc6.orig/drivers/firmware/memmap.c	2012-07-18 17:19:38.388365299 +0900
-+++ linux-3.5-rc6/drivers/firmware/memmap.c	2012-07-18 18:30:47.608390251 +0900
-@@ -98,7 +98,7 @@ static LIST_HEAD(map_entries);
- /**
-  * firmware_map_add_entry() - Does the real work to add a firmware memmap entry.
-  * @start: Start of the memory range.
-- * @end:   End of the memory range (inclusive).
-+ * @end:   End of the memory range.
-  * @type:  Type of the memory range.
-  * @entry: Pre-allocated (either kmalloc() or bootmem allocator), uninitialised
-  *         entry.
-@@ -113,7 +113,7 @@ static int firmware_map_add_entry(u64 st
- 	BUG_ON(start > end);
  
- 	entry->start = start;
--	entry->end = end;
-+	entry->end = end - 1;
- 	entry->type = type;
- 	INIT_LIST_HEAD(&entry->list);
- 	kobject_init(&entry->kobj, &memmap_ktype);
-@@ -148,7 +148,7 @@ static int add_sysfs_fw_map_entry(struct
-  * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
-  * memory hotplug.
-  * @start: Start of the memory range.
-- * @end:   End of the memory range (inclusive).
-+ * @end:   End of the memory range.
-  * @type:  Type of the memory range.
-  *
-  * Adds a firmware mapping entry. This function is for memory hotplug, it is
-@@ -175,7 +175,7 @@ int __meminit firmware_map_add_hotplug(u
- /**
-  * firmware_map_add_early() - Adds a firmware mapping entry.
-  * @start: Start of the memory range.
-- * @end:   End of the memory range (inclusive).
-+ * @end:   End of the memory range.
-  * @type:  Type of the memory range.
-  *
-  * Adds a firmware mapping entry. This function uses the bootmem allocator
+-int remove_memory(u64 start, u64 size)
++int offline_memory(u64 start, u64 size)
+ {
+ 	unsigned long start_pfn, end_pfn;
+ 
+@@ -999,9 +999,9 @@ int remove_memory(u64 start, u64 size)
+ 	return offline_pages(start_pfn, end_pfn, 120 * HZ);
+ }
+ #else
+-int remove_memory(u64 start, u64 size)
++int offline_memory(u64 start, u64 size)
+ {
+ 	return -EINVAL;
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
+-EXPORT_SYMBOL_GPL(remove_memory);
++EXPORT_SYMBOL_GPL(offline_memory);
+Index: linux-3.5-rc4/include/linux/memory_hotplug.h
+===================================================================
+--- linux-3.5-rc4.orig/include/linux/memory_hotplug.h	2012-07-03 14:21:46.102416917 +0900
++++ linux-3.5-rc4/include/linux/memory_hotplug.h	2012-07-03 14:21:49.471374796 +0900
+@@ -233,7 +233,7 @@ static inline int is_mem_section_removab
+ extern int mem_online_node(int nid);
+ extern int add_memory(int nid, u64 start, u64 size);
+ extern int arch_add_memory(int nid, u64 start, u64 size);
+-extern int remove_memory(u64 start, u64 size);
++extern int offline_memory(u64 start, u64 size);
+ extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+ 								int nr_pages);
+ extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
