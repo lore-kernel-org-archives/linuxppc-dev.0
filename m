@@ -1,31 +1,17 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-lb0-f170.google.com (mail-lb0-f170.google.com
- [209.85.217.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B3A892C0092
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2012 03:00:16 +1000 (EST)
-Received: by lbgc1 with SMTP id c1so2148436lbg.15
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Jul 2012 10:00:12 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20120718042512.GA2375@ram-ThinkPad-T61>
-References: <1342491799-30303-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1342491799-30303-6-git-send-email-shangw@linux.vnet.ibm.com>
- <20120717050547.GD2369@ram-ThinkPad-T61>
- <20120717052333.GE2369@ram-ThinkPad-T61>
- <20120717053648.GA18497@shangw> <20120717055715.GF2369@ram-ThinkPad-T61>
- <1342516619.3669.5.camel@pasglop> <20120717100314.GB25613@ram-ThinkPad-T61>
- <1342521498.3669.7.camel@pasglop>
- <CAErSpo4AS=QCRE3w-QBzuuSSEK8VeQ+PXxyp3mTyDAEvASxQcQ@mail.gmail.com>
- <20120718042512.GA2375@ram-ThinkPad-T61>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 18 Jul 2012 10:59:52 -0600
-Message-ID: <CAErSpo79HSj+8o9u6P689UEP9qPTUWrnuNPO3NDjErQa6EbhUg@mail.gmail.com>
-Subject: Re: [PATCH 05/15] pci: resource assignment based on p2p alignment
-To: Ram Pai <linuxram@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, yinghai@kernel.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>, linux-pci@vger.kernel.org
+Return-Path: <olaf@aepfle.de>
+Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
+ [IPv6:2a01:238:20a:202:5300::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EAC622C024D
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2012 03:00:21 +1000 (EST)
+From: olaf@aepfle.de
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] radeonfb: Add quirk for the graphics adapter in some JSxx
+Date: Wed, 18 Jul 2012 18:49:04 +0200
+Message-Id: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
+Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org,
+ Olaf Hering <olaf@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,63 +21,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 17, 2012 at 10:25 PM, Ram Pai <linuxram@us.ibm.com> wrote:
-> On Tue, Jul 17, 2012 at 11:14:51AM -0600, Bjorn Helgaas wrote:
->> On Tue, Jul 17, 2012 at 4:38 AM, Benjamin Herrenschmidt
->> <benh@kernel.crashing.org> wrote:
->> > On Tue, 2012-07-17 at 18:03 +0800, Ram Pai wrote:
->> >>         Lets say we passed that 'type' flag to size the minimum
->> >>         alignment constraints for that b_res.  And window_alignment(bus,
->> >>         type) of your platform  used that 'type' information to
->> >>         determine whether to use the alignment constraints of 32-bit
->> >>         window or 64-bit window.
->> >>
->> >>         However, later when the b_res is actually allocated a resource,
->> >>         the pci_assign_resource() has no idea whether to allocate 32-bit
->> >>         window resource or 64-bit window resource, because the 'type'
->> >>         information is not captured anywhere in b_res.
->> >>
->> >>         You would basically have a disconnect between what is sized and
->> >>         what is allocated. Unless offcourse you pass that 'type' to
->> >>         the b_res->flags, which is currently not the case.
->> >
->> > Right, we ideally would need the core to query the alignment once per
->> > "apertures" it tries as a candidate to allocate a given resource... but
->> > that's for later.
->> >
->> > For now we can probably live with giving out the max of the minimum
->> > alignment we support for M64 and our M32 segment size.
->>
->> We already know the aperture we're proposing to allocate from (the
->> result of find_free_bus_resource()), don't we?  What if we passed it
->> to pcibios_window_alignment() along with the struct pci_bus *, e.g.:
->>
->>   resource_size_t pcibios_window_alignment(struct pci_bus *bus, struct
->> resource *window)
->
-> Hmm..'struct resource *window' may not yet know which aperature it is
-> allocated from. Will it? We are still in the sizing process, the allocation will
-> be done much later.
+From: Tony Breeds <tony@bakeyournoodle.com>
 
-Of course, you're absolutely right; I had this backwards.  In
-pbus_size_io/mem(), we do "b_res = find_free_bus_resource()", so b_res
-is a bus resource that matches the desired type (IO/MEM).  This
-resource represents an aperture of the upstream bridge leading to the
-bus.  I was thinking that b_res->start would contain address
-information that the arch could use to decide alignment.
+These devices are set to 640x480 by firmware, switch them to 800x600@60
+so that the graphical installer can run on remote console.
 
-But at this point, in pbus_size_io/mem(), we set "b_res->start =
-min_align", so obviously b_res contains no information about the
-window base that will eventually be assigned.  I think b_res is
-basically the *container* into which we'll eventually put the P2P
-aperture start/end, but here, we're using that container to hold the
-information about the size and alignment we need for that aperture.
+Reported by IBM during SLES10 SP2 beta testing:
 
-The fact that we deal with alignment in pbus_size_mem() and again in
-__pci_assign_resource() (via pcibios_align_resource) is confusing to
-me -- I don't have a clear idea of what sorts of alignment are done in
-each place.  Could this powerpc alignment be done in
-pcibios_align_resource()?  We do have the actual proposed address
-there, as well as the pci_dev.
+https://bugzilla.novell.com/show_bug.cgi?id=461002
+LTC50817
 
-Bjorn
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
+
+diff --git a/drivers/video/aty/radeon_monitor.c b/drivers/video/aty/radeon_monitor.c
+index 9261c91..5c23eac 100644
+--- a/drivers/video/aty/radeon_monitor.c
++++ b/drivers/video/aty/radeon_monitor.c
+@@ -730,6 +730,25 @@ static void radeon_videomode_to_var(struct fb_var_screeninfo *var,
+ 	var->vmode = mode->vmode;
+ }
+ 
++#ifdef CONFIG_PPC_PSERIES
++static int is_powerblade(const char *model)
++{
++	struct device_node *root;
++	const char* cp;
++	int len, l, rc = 0;
++
++	root = of_find_node_by_path("/");
++	if (root && model) {
++		l = strlen(model);
++		cp = of_get_property(root, "model", &len);
++		if (cp)
++			rc = memcmp(model, cp, min(len, l)) == 0;
++		of_node_put(root);
++	}
++	return rc;
++}
++#endif
++
+ /*
+  * Build the modedb for head 1 (head 2 will come later), check panel infos
+  * from either BIOS or EDID, and pick up the default mode
+@@ -865,6 +884,22 @@ void __devinit radeon_check_modes(struct radeonfb_info *rinfo, const char *mode_
+ 			has_default_mode = 1;
+  	}
+ 
++#ifdef CONFIG_PPC_PSERIES
++	if (!has_default_mode && (
++		is_powerblade("IBM,8842") || /* JS20 */
++		is_powerblade("IBM,8844") || /* JS21 */
++		is_powerblade("IBM,7998") || /* JS12/JS21/JS22 */
++		is_powerblade("IBM,0792") || /* QS21 */
++		is_powerblade("IBM,0793")    /* QS22 */
++	    )) {
++		printk("Falling back to 800x600 on JSxx hardware\n");
++		if (fb_find_mode(&info->var, info, "800x600@60",
++				 info->monspecs.modedb,
++				 info->monspecs.modedb_len, NULL, 8) != 0)
++			has_default_mode = 1;
++	}
++#endif
++
+ 	/*
+ 	 * Still no mode, let's pick up a default from the db
+ 	 */
+-- 
+1.7.10.4
