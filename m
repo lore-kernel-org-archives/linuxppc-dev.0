@@ -1,30 +1,17 @@
-Return-Path: <ogerlitz@mellanox.com>
-Received: from eu1sys200aog105.obsmtp.com (eu1sys200aog105.obsmtp.com
- [207.126.144.119]) by ozlabs.org (Postfix) with SMTP id AA8A62C0327
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 01:05:54 +1000 (EST)
-Message-ID: <5006CF3E.8090903@mellanox.com>
-Date: Wed, 18 Jul 2012 17:59:10 +0300
-From: Or Gerlitz <ogerlitz@mellanox.com>
-MIME-Version: 1.0
-To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>, "Yevgeny
- Petrilin" <yevgenyp@mellanox.com>
-Subject: Re: [PATCH] mlx4_en: map entire pages to increase throughput
-References: <1342458113-10384-1-git-send-email-cascardo@linux.vnet.ibm.com>
- <50044F1D.6000703@hp.com> <20120716190611.GA1023@oc1711230544.ibm.com>
- <50046EB1.5040909@hp.com>
- <CAJZOPZL3F+xdHSFfhg7v9A6DDjT6CPK=kgwyzcE6c0pGYFyupg@mail.gmail.com>
- <20120716205708.GB16137@oc1711230544.ibm.com>
-In-Reply-To: <20120716205708.GB16137@oc1711230544.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Or Gerlitz <or.gerlitz@gmail.com>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Rick Jones <rick.jones2@hp.com>, "amirv@mellanox.com" <amirv@mellanox.com>,
- "leitao@linux.vnet.ibm.com" <leitao@linux.vnet.ibm.com>,
- "klebers@linux.vnet.ibm.com" <klebers@linux.vnet.ibm.com>,
- "anton@samba.org" <anton@samba.org>,
- "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id F120A2C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 08:35:32 +1000 (EST)
+Message-ID: <1342650928.11900.20.camel@gandalf.stny.rr.com>
+Subject: [PATCH] powerpc/ftrace: Trace function graph entry before updating
+ index
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Date: Wed, 18 Jul 2012 18:35:28 -0400
+Content-Type: text/plain; charset="ISO-8859-15"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, Colin Cross <ccross@android.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,21 +21,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 7/16/2012 11:57 PM, Thadeu Lima de Souza Cascardo wrote:
-> On Mon, Jul 16, 2012 at 11:43:33PM +0300, Or Gerlitz wrote:
->>
->>
->> TCP_STREAM from this setup before the patch would be good to know as well
->>
->
-> Does the stream test that I did with uperf using messages of 64000 bytes fit?
+As Colin Cross ported my x86 change to ARM, he also pointed out that
+powerpc is also behind in this fix.
 
-netperf/TCP_STREAM is very common and it would help to better compare 
-the numbers
-you get on your systems before/after the patch which runs done here. As 
-for review for
-the patch itself and the related discussion, Yevgeny Petrilin should be 
-looking on your
-patch, he'll be in by early next week.
+The commit 722b3c746953 "ftrace/graph: Trace function entry before
+updating index" fixes an issue with function graph tracing for x86,
+where if the called entry function decides not to trace interrupts, it
+can fail the check if an interrupt comes in just after the
+curr_ret_stack is updated.
 
-Or.
+The solution is to call the entry function first, then update the
+curr_ret_stack if the entry function wants to be traced.
+
+Cc: Colin Cross <ccross@android.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 91b46b7..1fb7856 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -630,18 +630,17 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 		return;
+ 	}
+ 
+-	if (ftrace_push_return_trace(old, self_addr, &trace.depth, 0) == -EBUSY) {
+-		*parent = old;
+-		return;
+-	}
+-
+ 	trace.func = self_addr;
++	trace.depth = current->curr_ret_stack + 1;
+ 
+ 	/* Only trace if the calling function expects to */
+ 	if (!ftrace_graph_entry(&trace)) {
+-		current->curr_ret_stack--;
+ 		*parent = old;
++		return;
+ 	}
++
++	if (ftrace_push_return_trace(old, self_addr, &trace.depth, 0) == -EBUSY)
++		*parent = old;
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ 
