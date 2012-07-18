@@ -1,39 +1,19 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 01DC22C0F19
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 20:13:17 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 468273EE0BB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:13:16 +0900 (JST)
-Received: from smail (m4 [127.0.0.1])
- by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 2B7D845DE56
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:13:16 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
- by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 11B3045DE52
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:13:16 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 023A51DB803B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:13:16 +0900 (JST)
-Received: from g01jpexchyt02.g01.fujitsu.local
- (g01jpexchyt02.g01.fujitsu.local [10.128.194.41])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id A79DF1DB8041
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:13:15 +0900 (JST)
-Message-ID: <50068C29.2040002@jp.fujitsu.com>
-Date: Wed, 18 Jul 2012 19:12:57 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <xufengzhang.main@gmail.com>
+Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
+ [209.85.212.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A18352C035A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 19:06:29 +1000 (EST)
+Received: by vbip1 with SMTP id p1so901307vbi.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jul 2012 02:06:26 -0700 (PDT)
 MIME-Version: 1.0
-To: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
-Subject: [RFC PATCH v4 8/13] memory-hotplug : check page type in
- get_page_bootmem
-References: <50068974.1070409@jp.fujitsu.com>
-In-Reply-To: <50068974.1070409@jp.fujitsu.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-Cc: len.brown@intel.com, wency@cn.fujitsu.com, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, akpm@linux-foundation.org, liuj97@gmail.com
+Date: Wed, 18 Jul 2012 17:00:29 +0800
+Message-ID: <CA+=dFzhEf12XKxL5=M5vhtoYin9Ct=RucNCh=v-FVQUSPrkOww@mail.gmail.com>
+Subject: mpc85xx_edac.c: Should the mpc85xx_l2_isr be shared irqs?
+From: Xufeng Zhang <xufengzhang.main@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,49 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There is a possibility that get_page_bootmem() is called to the same page many
-times. So when get_page_bootmem is called to the same page, the function only
-increments page->_count.
+Hi All,
 
-CC: David Rientjes <rientjes@google.com>
-CC: Jiang Liu <liuj97@gmail.com>
-CC: Len Brown <len.brown@intel.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org> 
-CC: Christoph Lameter <cl@linux.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> 
-CC: Wen Congyang <wency@cn.fujitsu.com>
-Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+I detected below error when booting p1021mds after enabled EDAC feature:
+EDAC MC: Ver: 2.1.0 Jul 17 2012
+Freescale(R) MPC85xx EDAC driver, (C) 2006 Montavista Software
+EDAC MC0: Giving out device to 'MPC85xx_edac' 'mpc85xx_mc_err': DEV mpc85xx_mc_e
+rr
+IRQ 45/[EDAC] MC err: IRQF_DISABLED is not guaranteed on shared IRQs
+MPC85xx_edac acquired irq 45 for MC
+MPC85xx_edac MC err registered
+EDAC DEVICE0: Giving out device to module 'MPC85xx_edac' controller 'mpc85xx_l2_
+err': DEV 'mpc85xx_l2_err' (INTERRUPT)
+mpc85xx_l2_err_probe: Unable to requiest irq 45 for MPC85xx L2 err
 
----
- mm/memory_hotplug.c |   15 +++++++++++----
- 1 file changed, 11 insertions(+), 4 deletions(-)
+Then kernel hang.
 
-Index: linux-3.5-rc6/mm/memory_hotplug.c
-===================================================================
---- linux-3.5-rc6.orig/mm/memory_hotplug.c	2012-07-18 18:01:02.070712487 +0900
-+++ linux-3.5-rc6/mm/memory_hotplug.c	2012-07-18 18:01:12.586581077 +0900
-@@ -95,10 +95,17 @@ static void release_memory_resource(stru
- static void get_page_bootmem(unsigned long info,  struct page *page,
- 			     unsigned long type)
- {
--	page->lru.next = (struct list_head *) type;
--	SetPagePrivate(page);
--	set_page_private(page, info);
--	atomic_inc(&page->_count);
-+	unsigned long page_type;
-+
-+	page_type = (unsigned long) page->lru.next;
-+	if (type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
-+	    type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
-+		page->lru.next = (struct list_head *) type;
-+		SetPagePrivate(page);
-+		set_page_private(page, info);
-+		atomic_inc(&page->_count);
-+	} else
-+		atomic_inc(&page->_count);
- }
- 
- /* reference to __meminit __free_pages_bootmem is valid
+When request irq for l2-cache, since it share the same irq with memory
+controller,
+I think the code should be:
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -577,7 +577,7 @@ static int __devinit mpc85xx_l2_err_probe(struct
+of_device *op,
+ 	if (edac_op_state == EDAC_OPSTATE_INT) {
+ 		pdata->irq = irq_of_parse_and_map(op->node, 0);
+ 		res = devm_request_irq(&op->dev, pdata->irq,
+-				       mpc85xx_l2_isr, IRQF_DISABLED,
++				       mpc85xx_l2_isr, IRQF_DISABLED | IRQF_SHARED,
+ 				       "[EDAC] L2 err", edac_dev);
+ 		if (res < 0) {
+ 			printk(KERN_ERR
+
+
+
+
+
+Thanks,
+Xufeng Zhang
