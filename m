@@ -1,18 +1,27 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
- [IPv6:2a01:238:20a:202:5300::1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2ED6F2C0355
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2012 03:00:40 +1000 (EST)
-From: olaf@aepfle.de
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "James E.J. Bottomley" <JBottomley@parallels.com>
-Subject: [PATCH] scsi/ibmvscsi: add module alias for ibmvscsic
-Date: Wed, 18 Jul 2012 18:49:18 +0200
-Message-Id: <1342630158-16510-1-git-send-email-olaf@aepfle.de>
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
- linux-scsi@vger.kernel.org
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 049F02C00B7
+ for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2012 07:07:41 +1000 (EST)
+Date: Wed, 18 Jul 2012 14:07:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] MIPS: fix bug.h MIPS build regression
+Message-Id: <20120718140738.ca6f8f5a.akpm@linux-foundation.org>
+In-Reply-To: <CAMuHMdWW=sAff-iw0EiHaejr34Z4u_X7w3nHf6Tfo-c2f=Qijg@mail.gmail.com>
+References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
+ <20120620152759.2caceb8c.yuasa@linux-mips.org>
+ <20120620161249.GB29196@linux-mips.org>
+ <4FE4B13E.10709@caviumnetworks.com>
+ <CAMuHMdXSGgH+M_2+xuzY2t_sGZto24=atv3Kaj+R-dWAUPzW7w@mail.gmail.com>
+ <CAMuHMdWW=sAff-iw0EiHaejr34Z4u_X7w3nHf6Tfo-c2f=Qijg@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Linux-sh list <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, David Daney <ddaney@caviumnetworks.com>,
+ Linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mundt <lethal@linux-sh.org>,
+ Chris Zankel <chris@zankel.net>, Yoichi Yuasa <yuasa@linux-mips.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,57 +31,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Olaf Hering <olaf@aepfle.de>
+On Wed, 18 Jul 2012 10:35:46 +0200
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-The driver is named ibmvscsic, at runtime it its name is advertised as
-ibmvscsi. For this reason mkinitrd wont pickup the driver properly.
-Reported by IBM during SLES11 beta testing:
+> On Mon, Jul 16, 2012 at 9:27 PM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+> > On Fri, Jun 22, 2012 at 7:54 PM, David Daney <ddaney@caviumnetworks.com> wrote:
+> >> On 06/20/2012 09:12 AM, Ralf Baechle wrote:
+> >>>
+> >>> On Wed, Jun 20, 2012 at 03:27:59PM +0900, Yoichi Yuasa wrote:
+> >>>
+> >>>> Commit: 3777808873b0c49c5cf27e44c948dfb02675d578 breaks all MIPS builds.
+> >>>
+> >>>
+> >>> Thanks, fix applied.
+> >>>
+> >>
+> >> Where was it applied?
+> >>
+> >> It doesn't show up in linux-next for 20120622, which is where it is needed.
+> >
+> > It's also desperately needed in mainline for 3.5.
+> >
+> > Ralf?
+> 
+> Andrew? This prevents any green MIPS builds.
+> 
 
-https://bugzilla.novell.com/show_bug.cgi?id=459933
-LTC50724
+The patch is already in linux-next via Ralf's tree.
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
-diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-index 3a6c474..e580aa4 100644
---- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-+++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-@@ -100,6 +100,9 @@ static struct scsi_transport_template *ibmvscsi_transport_template;
- 
- static struct ibmvscsi_ops *ibmvscsi_ops;
- 
-+/* The driver is named ibmvscsic, map ibmvscsi to module name */
-+#define IBMVSCSI_NAME "ibmvscsi"
-+MODULE_ALIAS(IBMVSCSI_NAME);
- MODULE_DESCRIPTION("IBM Virtual SCSI");
- MODULE_AUTHOR("Dave Boutcher");
- MODULE_LICENSE("GPL");
-@@ -1796,7 +1799,7 @@ static struct device_attribute *ibmvscsi_attrs[] = {
- static struct scsi_host_template driver_template = {
- 	.module = THIS_MODULE,
- 	.name = "IBM POWER Virtual SCSI Adapter " IBMVSCSI_VERSION,
--	.proc_name = "ibmvscsi",
-+	.proc_name = IBMVSCSI_NAME,
- 	.queuecommand = ibmvscsi_queuecommand,
- 	.eh_abort_handler = ibmvscsi_eh_abort_handler,
- 	.eh_device_reset_handler = ibmvscsi_eh_device_reset_handler,
-@@ -1936,7 +1939,7 @@ static int ibmvscsi_probe(struct vio_dev *vdev, const struct vio_device_id *id)
- 	}
- 
- 	hostdata->work_thread = kthread_run(ibmvscsi_work, hostdata, "%s_%d",
--					    "ibmvscsi", host->host_no);
-+					    IBMVSCSI_NAME, host->host_no);
- 
- 	if (IS_ERR(hostdata->work_thread)) {
- 		dev_err(&vdev->dev, "couldn't initialize kthread. rc=%ld\n",
-@@ -2061,7 +2064,7 @@ static struct vio_driver ibmvscsi_driver = {
- 	.probe = ibmvscsi_probe,
- 	.remove = ibmvscsi_remove,
- 	.get_desired_dma = ibmvscsi_get_desired_dma,
--	.name = "ibmvscsi",
-+	.name = IBMVSCSI_NAME,
- 	.pm = &ibmvscsi_pm_ops,
- };
- 
--- 
-1.7.10.4
+Perhaps he nodded off - I'll send it at Linus right now.
