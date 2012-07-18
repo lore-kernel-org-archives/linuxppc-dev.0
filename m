@@ -1,27 +1,30 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 049F02C00B7
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2012 07:07:41 +1000 (EST)
-Date: Wed, 18 Jul 2012 14:07:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] MIPS: fix bug.h MIPS build regression
-Message-Id: <20120718140738.ca6f8f5a.akpm@linux-foundation.org>
-In-Reply-To: <CAMuHMdWW=sAff-iw0EiHaejr34Z4u_X7w3nHf6Tfo-c2f=Qijg@mail.gmail.com>
-References: <1339962373-3224-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdVfLjgrtWoPpvbLf12+=ApE6W9dNcweqD-_2Benr-D7NQ@mail.gmail.com>
- <20120620152759.2caceb8c.yuasa@linux-mips.org>
- <20120620161249.GB29196@linux-mips.org>
- <4FE4B13E.10709@caviumnetworks.com>
- <CAMuHMdXSGgH+M_2+xuzY2t_sGZto24=atv3Kaj+R-dWAUPzW7w@mail.gmail.com>
- <CAMuHMdWW=sAff-iw0EiHaejr34Z4u_X7w3nHf6Tfo-c2f=Qijg@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Linux-sh list <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, David Daney <ddaney@caviumnetworks.com>,
- Linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mundt <lethal@linux-sh.org>,
- Chris Zankel <chris@zankel.net>, Yoichi Yuasa <yuasa@linux-mips.org>
+Return-Path: <ogerlitz@mellanox.com>
+Received: from eu1sys200aog105.obsmtp.com (eu1sys200aog105.obsmtp.com
+ [207.126.144.119]) by ozlabs.org (Postfix) with SMTP id AA8A62C0327
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 01:05:54 +1000 (EST)
+Message-ID: <5006CF3E.8090903@mellanox.com>
+Date: Wed, 18 Jul 2012 17:59:10 +0300
+From: Or Gerlitz <ogerlitz@mellanox.com>
+MIME-Version: 1.0
+To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>, "Yevgeny
+ Petrilin" <yevgenyp@mellanox.com>
+Subject: Re: [PATCH] mlx4_en: map entire pages to increase throughput
+References: <1342458113-10384-1-git-send-email-cascardo@linux.vnet.ibm.com>
+ <50044F1D.6000703@hp.com> <20120716190611.GA1023@oc1711230544.ibm.com>
+ <50046EB1.5040909@hp.com>
+ <CAJZOPZL3F+xdHSFfhg7v9A6DDjT6CPK=kgwyzcE6c0pGYFyupg@mail.gmail.com>
+ <20120716205708.GB16137@oc1711230544.ibm.com>
+In-Reply-To: <20120716205708.GB16137@oc1711230544.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Or Gerlitz <or.gerlitz@gmail.com>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Rick Jones <rick.jones2@hp.com>, "amirv@mellanox.com" <amirv@mellanox.com>,
+ "leitao@linux.vnet.ibm.com" <leitao@linux.vnet.ibm.com>,
+ "klebers@linux.vnet.ibm.com" <klebers@linux.vnet.ibm.com>,
+ "anton@samba.org" <anton@samba.org>,
+ "brking@linux.vnet.ibm.com" <brking@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,33 +34,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 18 Jul 2012 10:35:46 +0200
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On 7/16/2012 11:57 PM, Thadeu Lima de Souza Cascardo wrote:
+> On Mon, Jul 16, 2012 at 11:43:33PM +0300, Or Gerlitz wrote:
+>>
+>>
+>> TCP_STREAM from this setup before the patch would be good to know as well
+>>
+>
+> Does the stream test that I did with uperf using messages of 64000 bytes fit?
 
-> On Mon, Jul 16, 2012 at 9:27 PM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> > On Fri, Jun 22, 2012 at 7:54 PM, David Daney <ddaney@caviumnetworks.com> wrote:
-> >> On 06/20/2012 09:12 AM, Ralf Baechle wrote:
-> >>>
-> >>> On Wed, Jun 20, 2012 at 03:27:59PM +0900, Yoichi Yuasa wrote:
-> >>>
-> >>>> Commit: 3777808873b0c49c5cf27e44c948dfb02675d578 breaks all MIPS builds.
-> >>>
-> >>>
-> >>> Thanks, fix applied.
-> >>>
-> >>
-> >> Where was it applied?
-> >>
-> >> It doesn't show up in linux-next for 20120622, which is where it is needed.
-> >
-> > It's also desperately needed in mainline for 3.5.
-> >
-> > Ralf?
-> 
-> Andrew? This prevents any green MIPS builds.
-> 
+netperf/TCP_STREAM is very common and it would help to better compare 
+the numbers
+you get on your systems before/after the patch which runs done here. As 
+for review for
+the patch itself and the related discussion, Yevgeny Petrilin should be 
+looking on your
+patch, he'll be in by early next week.
 
-The patch is already in linux-next via Ralf's tree.
-
-Perhaps he nodded off - I'll send it at Linus right now.
+Or.
