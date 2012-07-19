@@ -1,18 +1,19 @@
-Return-Path: <b08782@zro04cle141.ea.freescale.net>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D98862C02FA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 20:28:28 +1000 (EST)
-From: Claudiu Manoil <claudiu.manoil@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/85xx: Fix sram_offset parameter type
-Date: Thu, 19 Jul 2012 13:28:16 +0300
-Message-ID: <1342693696-29734-1-git-send-email-claudiu.manoil@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4BE292C00D5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 22:08:04 +1000 (EST)
+Subject: Re: [PATCH] powerpc/85xx: Fix sram_offset parameter type
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1342693696-29734-1-git-send-email-claudiu.manoil@freescale.com>
+Date: Thu, 19 Jul 2012 07:07:56 -0500
+Message-Id: <37C94886-3DA3-4389-8A67-F13035D2CEA6@kernel.crashing.org>
+References: <1342693696-29734-1-git-send-email-claudiu.manoil@freescale.com>
+To: Claudiu Manoil <claudiu.manoil@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,122 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The sram_offset parameter represents a physical address
-and should be of type phys_addr_t. As part of this fix,
-the extraction of sram_params is being cleaned-up and
-fixed.
-This patch fixes now the case when the offset value of
-0xfff00000 was being rejected by the driver (returning
--EINVAL), although this is a valid offset value.
 
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
----
- arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h |    4 +-
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   39 ++++++++++------------------
- 2 files changed, 16 insertions(+), 27 deletions(-)
+On Jul 19, 2012, at 5:28 AM, Claudiu Manoil wrote:
 
-diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h b/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
-index 60c9c0b..a4ce9b8 100644
---- a/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
-+++ b/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
-@@ -1,5 +1,5 @@
- /*
-- * Copyright 2009-2010 Freescale Semiconductor, Inc
-+ * Copyright 2009-2010 2012 Freescale Semiconductor, Inc
-  *
-  * QorIQ based Cache Controller Memory Mapped Registers
-  *
-@@ -91,7 +91,7 @@ struct mpc85xx_l2ctlr {
- 
- struct sram_parameters {
- 	unsigned int sram_size;
--	uint64_t sram_offset;
-+	phys_addr_t sram_offset;
- };
- 
- extern int instantiate_cache_sram(struct platform_device *dev,
-diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-index 611bb4b..d65e785 100644
---- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright 2009-2010 Freescale Semiconductor, Inc.
-+ * Copyright 2009-2010 2012 Freescale Semiconductor, Inc.
-  *
-  * QorIQ (P1/P2) L2 controller init for Cache-SRAM instantiation
-  *
-@@ -31,24 +31,21 @@ static char *sram_size;
- static char *sram_offset;
- struct mpc85xx_l2ctlr __iomem *l2ctlr;
- 
--static long get_cache_sram_size(void)
-+static int get_cache_sram_params(struct sram_parameters *sram_params)
- {
--	unsigned long val;
-+	unsigned long long addr;
-+	unsigned int size;
- 
--	if (!sram_size || (strict_strtoul(sram_size, 0, &val) < 0))
-+	if (!sram_size || (kstrtouint(sram_size, 0, &size) < 0))
- 		return -EINVAL;
- 
--	return val;
--}
--
--static long get_cache_sram_offset(void)
--{
--	unsigned long val;
--
--	if (!sram_offset || (strict_strtoul(sram_offset, 0, &val) < 0))
-+	if (!sram_offset || (kstrtoull(sram_offset, 0, &addr) < 0))
- 		return -EINVAL;
- 
--	return val;
-+	sram_params->sram_offset = addr;
-+	sram_params->sram_size = size;
-+
-+	return 0;
- }
- 
- static int __init get_size_from_cmdline(char *str)
-@@ -93,17 +90,9 @@ static int __devinit mpc85xx_l2ctlr_of_probe(struct platform_device *dev)
- 	}
- 	l2cache_size = *prop;
- 
--	sram_params.sram_size  = get_cache_sram_size();
--	if ((int)sram_params.sram_size <= 0) {
--		dev_err(&dev->dev,
--			"Entire L2 as cache, Aborting Cache-SRAM stuff\n");
--		return -EINVAL;
--	}
--
--	sram_params.sram_offset  = get_cache_sram_offset();
--	if ((int64_t)sram_params.sram_offset <= 0) {
-+	if (get_cache_sram_params(&sram_params)) {
- 		dev_err(&dev->dev,
--			"Entire L2 as cache, provide a valid sram offset\n");
-+			"Entire L2 as cache, provide valid sram offset and size\n");
- 		return -EINVAL;
- 	}
- 
-@@ -125,14 +114,14 @@ static int __devinit mpc85xx_l2ctlr_of_probe(struct platform_device *dev)
- 	 * Write bits[0-17] to srbar0
- 	 */
- 	out_be32(&l2ctlr->srbar0,
--		sram_params.sram_offset & L2SRAM_BAR_MSK_LO18);
-+		lower_32_bits(sram_params.sram_offset) & L2SRAM_BAR_MSK_LO18);
- 
- 	/*
- 	 * Write bits[18-21] to srbare0
- 	 */
- #ifdef CONFIG_PHYS_64BIT
- 	out_be32(&l2ctlr->srbarea0,
--		(sram_params.sram_offset >> 32) & L2SRAM_BARE_MSK_HI4);
-+		upper_32_bits(sram_params.sram_offset) & L2SRAM_BARE_MSK_HI4);
- #endif
- 
- 	clrsetbits_be32(&l2ctlr->ctl, L2CR_L2E, L2CR_L2FI);
--- 
-1.6.6
+> The sram_offset parameter represents a physical address
+> and should be of type phys_addr_t. As part of this fix,
+> the extraction of sram_params is being cleaned-up and
+> fixed.
+> This patch fixes now the case when the offset value of
+> 0xfff00000 was being rejected by the driver (returning
+> -EINVAL), although this is a valid offset value.
+>=20
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
+> ---
+> arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h |    4 +-
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   39 =
+++++++++++------------------
+> 2 files changed, 16 insertions(+), 27 deletions(-)
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h =
+b/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+> index 60c9c0b..a4ce9b8 100644
+> --- a/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+> +++ b/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+> @@ -1,5 +1,5 @@
+> /*
+> - * Copyright 2009-2010 Freescale Semiconductor, Inc
+> + * Copyright 2009-2010 2012 Freescale Semiconductor, Inc
+
+we normally do 2009-2010, 2012
+
+>  *
+>  * QorIQ based Cache Controller Memory Mapped Registers
+>  *
+> @@ -91,7 +91,7 @@ struct mpc85xx_l2ctlr {
+>=20
+> struct sram_parameters {
+> 	unsigned int sram_size;
+> -	uint64_t sram_offset;
+> +	phys_addr_t sram_offset;
+> };
+>=20
+>=20
+
+- k
