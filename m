@@ -1,36 +1,17 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 898462C0125
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 19:33:27 +1000 (EST)
-Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id A13E53EE0AE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 18:33:25 +0900 (JST)
-Received: from smail (m1 [127.0.0.1])
- by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 6098845DE56
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 18:33:25 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
- by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 4490545DE59
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 18:33:25 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 35FF7E38003
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 18:33:25 +0900 (JST)
-Received: from g01jpexchkw01.g01.fujitsu.local
- (g01jpexchkw01.g01.fujitsu.local [10.0.194.40])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id E4A69E08003
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 18:33:24 +0900 (JST)
-Message-ID: <5007D44B.6080202@jp.fujitsu.com>
-Date: Thu, 19 Jul 2012 18:32:59 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id A19AB2C0201
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 19:40:26 +1000 (EST)
+Message-ID: <5007D722.1030807@cn.fujitsu.com>
+Date: Thu, 19 Jul 2012 17:45:06 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Wen Congyang <wency@cn.fujitsu.com>
-Subject: Re: [RFC PATCH v4 2/13] memory-hotplug : add physical memory hotplug
- code to acpi_memory_device_remove
-References: <50068974.1070409@jp.fujitsu.com> <50068AB9.20005@jp.fujitsu.com>
- <5007B5E4.1010602@cn.fujitsu.com>
-In-Reply-To: <5007B5E4.1010602@cn.fujitsu.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v4 11/13] memory-hotplug : free memmap of
+ sparse-vmemmap
+References: <50068974.1070409@jp.fujitsu.com> <50068D09.1050704@jp.fujitsu.com>
+In-Reply-To: <50068D09.1050704@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
  minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
@@ -45,240 +26,259 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wen,
-
-2012/07/19 16:23, Wen Congyang wrote:
-> At 07/18/2012 06:06 PM, Yasuaki Ishimatsu Wrote:
->> acpi_memory_device_remove() has been prepared to remove physical memory.
->> But, the function only frees acpi_memory_device currentlry.
->>
->> The patch adds following functions into acpi_memory_device_remove():
->>    - offline memory
->>    - remove physical memory. It only check whether memory is online or not.
->>    - free acpi_memory_device
->>
->> CC: David Rientjes <rientjes@google.com>
->> CC: Jiang Liu <liuj97@gmail.com>
->> CC: Len Brown <len.brown@intel.com>
->> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> CC: Paul Mackerras <paulus@samba.org>
->> CC: Christoph Lameter <cl@linux.com>
->> Cc: Minchan Kim <minchan.kim@gmail.com>
->> CC: Andrew Morton <akpm@linux-foundation.org>
->> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> CC: Wen Congyang <wency@cn.fujitsu.com>
->> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>
->> ---
->>   drivers/acpi/acpi_memhotplug.c |   27 ++++++++++++++++++++++++++-
->>   drivers/base/memory.c          |   39 +++++++++++++++++++++++++++++++++++++++
->>   include/linux/memory.h         |    5 +++++
->>   include/linux/memory_hotplug.h |    5 +++++
->>   mm/memory_hotplug.c            |   22 ++++++++++++++++++++++
->>   5 files changed, 97 insertions(+), 1 deletion(-)
->>
->> Index: linux-3.5-rc6/drivers/acpi/acpi_memhotplug.c
->> ===================================================================
->> --- linux-3.5-rc6.orig/drivers/acpi/acpi_memhotplug.c	2012-07-17 11:20:15.117796971 +0900
->> +++ linux-3.5-rc6/drivers/acpi/acpi_memhotplug.c	2012-07-17 13:36:30.325594022 +0900
->> @@ -29,6 +29,7 @@
->>   #include <linux/module.h>
->>   #include <linux/init.h>
->>   #include <linux/types.h>
->> +#include <linux/memory.h>
->>   #include <linux/memory_hotplug.h>
->>   #include <linux/slab.h>
->>   #include <acpi/acpi_drivers.h>
->> @@ -452,12 +453,36 @@ static int acpi_memory_device_add(struct
->>   static int acpi_memory_device_remove(struct acpi_device *device, int type)
->>   {
->>   	struct acpi_memory_device *mem_device = NULL;
->> -
->> +	struct acpi_memory_info *info, *tmp;
->> +	int result;
->> +	int node;
->>   
->>   	if (!device || !acpi_driver_data(device))
->>   		return -EINVAL;
->>   
->>   	mem_device = acpi_driver_data(device);
->> +
->> +	node = acpi_get_node(mem_device->device->handle);
->> +	list_for_each_entry_safe(info, tmp, &mem_device->res_list, list) {
->> +		if (!info->enabled)
->> +			continue;
->> +
->> +		if (!is_memblk_offline(info->start_addr, info->length)) {
->> +			result = offline_memory(info->start_addr, info->length);
->> +			if (result)
->> +				return result;
->> +		}
->> +		if (node < 0)
->> +			node = memory_add_physaddr_to_nid(info->start_addr);
->> +
->> +		result = remove_memory(node, info->start_addr, info->length);
->> +		if (result)
->> +			return result;
->> +
->> +		list_del(&info->list);
->> +		kfree(info);
->> +	}
->> +
->>   	kfree(mem_device);
->>   
->>   	return 0;
->> Index: linux-3.5-rc6/include/linux/memory_hotplug.h
->> ===================================================================
->> --- linux-3.5-rc6.orig/include/linux/memory_hotplug.h	2012-07-17 11:20:15.133796772 +0900
->> +++ linux-3.5-rc6/include/linux/memory_hotplug.h	2012-07-17 11:29:41.490716352 +0900
->> @@ -221,6 +221,7 @@ static inline void unlock_memory_hotplug
->>   #ifdef CONFIG_MEMORY_HOTREMOVE
->>   
->>   extern int is_mem_section_removable(unsigned long pfn, unsigned long nr_pages);
->> +extern int remove_memory(int nid, u64 start, u64 size);
->>   
->>   #else
->>   static inline int is_mem_section_removable(unsigned long pfn,
->> @@ -228,6 +229,10 @@ static inline int is_mem_section_removab
->>   {
->>   	return 0;
->>   }
->> +static inline int remove_memory(int nid, u64 start, u64 size)
->> +{
->> +	return -EBUSY;
->> +}
->>   #endif /* CONFIG_MEMORY_HOTREMOVE */
->>   
->>   extern int mem_online_node(int nid);
->> Index: linux-3.5-rc6/mm/memory_hotplug.c
->> ===================================================================
->> --- linux-3.5-rc6.orig/mm/memory_hotplug.c	2012-07-17 11:20:15.129796821 +0900
->> +++ linux-3.5-rc6/mm/memory_hotplug.c	2012-07-17 13:25:18.952986069 +0900
->> @@ -998,6 +998,28 @@ int offline_memory(u64 start, u64 size)
->>   	end_pfn = start_pfn + PFN_DOWN(size);
->>   	return offline_pages(start_pfn, end_pfn, 120 * HZ);
->>   }
->> +
->> +int remove_memory(int nid, u64 start, u64 size)
->> +{
->> +	int ret = -EBUSY;
->> +	lock_memory_hotplug();
->> +	/*
->> +	 * The memory might become online by other task, even if you offine it.
->> +	 * So we check whether the cpu has been onlined or not.
->> +	 */
->> +	if (!is_memblk_offline(start, size)) {
->> +		pr_warn("memory removing [mem %#010llx-%#010llx] failed, "
->> +			"because the memmory range is online\n",
->> +			start, start + size);
->> +		ret = -EAGAIN;
->> +	}
->> +
->> +	unlock_memory_hotplug();
->> +	return ret;
->> +
->> +}
->> +EXPORT_SYMBOL_GPL(remove_memory);
->> +
->>   #else
->>   int offline_memory(u64 start, u64 size)
->>   {
->> Index: linux-3.5-rc6/drivers/base/memory.c
->> ===================================================================
->> --- linux-3.5-rc6.orig/drivers/base/memory.c	2012-07-17 11:20:15.120796934 +0900
->> +++ linux-3.5-rc6/drivers/base/memory.c	2012-07-17 11:20:54.626302995 +0900
->> @@ -70,6 +70,45 @@ void unregister_memory_isolate_notifier(
->>   }
->>   EXPORT_SYMBOL(unregister_memory_isolate_notifier);
->>   
->> +bool is_memblk_offline(unsigned long start, unsigned long size)
->> +{
->> +	struct memory_block *mem = NULL;
->> +	struct mem_section *section;
->> +	unsigned long start_pfn, end_pfn;
->> +	unsigned long pfn, section_nr;
->> +
->> +	start_pfn = PFN_DOWN(start);
->> +	end_pfn = start_pfn + PFN_DOWN(start);
+At 07/18/2012 06:16 PM, Yasuaki Ishimatsu Wrote:
+> All pages of virtual mapping in removed memory cannot be freed, since some pages
+> used as PGD/PUD includes not only removed memory but also other memory. So the
+> patch checks whether page can be freed or not.
 > 
-> This line is wrong. I think you want this:
-> end_pfn = start_pfn + PFN_UP(size);
-
-Yes. I'll update it.
-
->> +
->> +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
->> +		section_nr = pfn_to_section_nr(pfn);
->> +		if (!present_section_nr(section_nr));
+> How to check whether page can be freed or not?
+>  1. When removing memory, the page structs of the revmoved memory are filled
+>     with 0FD.
+>  2. All page structs are filled with 0xFD on PT/PMD, PT/PMD can be cleared.
+>     In this case, the page used as PT/PMD can be freed.
 > 
-> The ';' should be removed. Otherwise, this function always return true...
-
-Thanks. I'll update it.
-
-Thanks,
-Yasuaki Ishimatsu
-
-> Thanks
-> Wen Congyang
+> Applying patch, __remove_section() of CONFIG_SPARSEMEM_VMEMMAP is integrated
+> into one. So __remove_section() of CONFIG_SPARSEMEM_VMEMMAP is deleted.
 > 
->> +			continue;
->> +
->> +		section = __nr_to_section(section_nr);
->> +		/* same memblock? */
->> +		if (mem)
->> +			if((section_nr >= mem->start_section_nr) &&
->> +			   (section_nr <= mem->end_section_nr))
->> +				continue;
->> +
->> +		mem = find_memory_block_hinted(section, mem);
->> +		if (!mem)
->> +			continue;
->> +		if (mem->state == MEM_OFFLINE)
->> +			continue;
->> +
->> +		kobject_put(&mem->dev.kobj);
->> +		return false;
->> +	}
->> +
->> +	if (mem)
->> +		kobject_put(&mem->dev.kobj);
->> +
->> +	return true;
->> +}
->> +EXPORT_SYMBOL(is_memblk_offline);
->> +
->>   /*
->>    * register_memory - Setup a sysfs device for a memory block
->>    */
->> Index: linux-3.5-rc6/include/linux/memory.h
->> ===================================================================
->> --- linux-3.5-rc6.orig/include/linux/memory.h	2012-07-17 11:18:00.693477455 +0900
->> +++ linux-3.5-rc6/include/linux/memory.h	2012-07-17 11:20:54.632302919 +0900
->> @@ -106,6 +106,10 @@ static inline int memory_isolate_notify(
->>   {
->>   	return 0;
->>   }
->> +static inline bool is_memblk_offline(unsigned long start, unsigned long size)
->> +{
->> +	return false;
->> +}
->>   #else
->>   extern int register_memory_notifier(struct notifier_block *nb);
->>   extern void unregister_memory_notifier(struct notifier_block *nb);
->> @@ -120,6 +124,7 @@ extern int memory_isolate_notify(unsigne
->>   extern struct memory_block *find_memory_block_hinted(struct mem_section *,
->>   							struct memory_block *);
->>   extern struct memory_block *find_memory_block(struct mem_section *);
->> +extern bool is_memblk_offline(unsigned long start, unsigned long size);
->>   #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
->>   enum mem_add_context { BOOT, HOTPLUG };
->>   #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
->>
->>
+> CC: David Rientjes <rientjes@google.com>
+> CC: Jiang Liu <liuj97@gmail.com>
+> CC: Len Brown <len.brown@intel.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org> 
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> 
+> CC: Wen Congyang <wency@cn.fujitsu.com>
+> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> 
+> ---
+>  arch/x86/mm/init_64.c |  121 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/mm.h    |    2 
+>  mm/memory_hotplug.c   |   19 -------
+>  mm/sparse.c           |    5 +-
+>  4 files changed, 128 insertions(+), 19 deletions(-)
+> 
+> Index: linux-3.5-rc6/include/linux/mm.h
+> ===================================================================
+> --- linux-3.5-rc6.orig/include/linux/mm.h	2012-07-18 18:01:28.000000000 +0900
+> +++ linux-3.5-rc6/include/linux/mm.h	2012-07-18 18:03:05.551168773 +0900
+> @@ -1588,6 +1588,8 @@ int vmemmap_populate(struct page *start_
+>  void vmemmap_populate_print_last(void);
+>  void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
+>  				  unsigned long size);
+> +void vmemmap_kfree(struct page *memmpa, unsigned long nr_pages);
+> +void vmemmap_free_bootmem(struct page *memmpa, unsigned long nr_pages);
+>  
+>  enum mf_flags {
+>  	MF_COUNT_INCREASED = 1 << 0,
+> Index: linux-3.5-rc6/mm/sparse.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/mm/sparse.c	2012-07-18 17:59:25.000000000 +0900
+> +++ linux-3.5-rc6/mm/sparse.c	2012-07-18 18:03:05.553168749 +0900
+> @@ -614,12 +614,13 @@ static inline struct page *kmalloc_secti
+>  	/* This will make the necessary allocations eventually. */
+>  	return sparse_mem_map_populate(pnum, nid);
+>  }
+> -static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
+> +static void __kfree_section_memmap(struct page *page, unsigned long nr_pages)
+>  {
+> -	return; /* XXX: Not implemented yet */
+> +	vmemmap_kfree(page, nr_pages);
+>  }
+>  static void free_map_bootmem(struct page *page, unsigned long nr_pages)
+>  {
+> +	vmemmap_free_bootmem(page, nr_pages);
+>  }
+>  #else
+>  static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
+> Index: linux-3.5-rc6/arch/x86/mm/init_64.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/arch/x86/mm/init_64.c	2012-07-18 18:01:28.000000000 +0900
+> +++ linux-3.5-rc6/arch/x86/mm/init_64.c	2012-07-18 18:03:05.564168611 +0900
+> @@ -978,6 +978,127 @@ vmemmap_populate(struct page *start_page
+>  	return 0;
+>  }
+>  
+> +#define PAGE_INUSE 0xFD
+> +
+> +unsigned long find_and_clear_pte_page(unsigned long addr, unsigned long end,
+> +			    struct page **pp, int *page_size)
+> +{
+> +	pgd_t *pgd;
+> +	pud_t *pud;
+> +	pmd_t *pmd;
+> +	pte_t *pte;
+> +	void *page_addr;
+> +	unsigned long next;
+> +
+> +	*pp = NULL;
+> +
+> +	pgd = pgd_offset_k(addr);
+> +	if (pgd_none(*pgd))
+> +		return pgd_addr_end(addr, end);
+> +
+> +	pud = pud_offset(pgd, addr);
+> +	if (pud_none(*pud))
+> +		return pud_addr_end(addr,end);
+> +
+> +	if (!cpu_has_pse) {
+> +		next = (addr + PAGE_SIZE) & PAGE_MASK;
+> +		pmd = pmd_offset(pud, addr);
+> +		if (pmd_none(*pmd))
+> +			return next;
+> +
+> +		pte = pte_offset_kernel(pmd, addr);
+> +		if (pte_none(*pte))
+> +			return next;
+> +
+> +		*page_size = PAGE_SIZE;
+> +		*pp = pte_page(*pte);
+> +	} else {
+> +		next = pmd_addr_end(addr, end);
+> +
+> +		pmd = pmd_offset(pud, addr);
+> +		if (pmd_none(*pmd))
+> +			return next;
+> +
+> +		*page_size = PMD_SIZE;
+> +		*pp = pmd_page(*pmd);
+> +	}
+> +
+> +	/*
+> +	 * Removed page structs are filled with 0xFD.
+> +	 */
+> +	memset((void *)addr, PAGE_INUSE, next - addr);
+> +
+> +	page_addr = page_address(*pp);
+> +
+> +	/*
+> +	 * Check the page is filled with 0xFD or not.
+> +	 * memchr_inv() returns the address. In this case, we cannot
+> +	 * clear PTE/PUD entry, since the page is used by other.
+> +	 * So we cannot also free the page.
+> +	 *
+> +	 * memchr_inv() returns NULL. In this case, we can clear
+> +	 * PTE/PUD entry, since the page is not used by other.
+> +	 * So we can also free the page.
+> +	 */
+> +	if (memchr_inv(page_addr, PAGE_INUSE, *page_size)) {
+> +		*pp = NULL;
+> +		return next;
+> +	}
+> +
+> +	if (!cpu_has_pse)
+> +		pte_clear(&init_mm, addr, pte);
+> +	else
+> +		pmd_clear(pmd);
+> +
+> +	return next;
+> +}
+> +
+> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
+> +{
+> +	unsigned long addr = (unsigned long)memmap;
+> +	unsigned long end = (unsigned long)(memmap + nr_pages);
+> +	unsigned long next;
+> +	struct page *page;
+> +	int page_size;
+> +
+> +	for (; addr < end; addr = next) {
+> +		page = NULL;
+> +		page_size = 0;
+> +		next = find_and_clear_pte_page(addr, end, &page, &page_size);
+> +		if (!page)
+> +			continue;
+> +
+> +		free_pages((unsigned long)page_address(page),
+> +			    get_order(page_size));
+> +		__flush_tlb_one((unsigned long)page_address(page));
+
+I think you want to free the memory to store struct page.
+So why you free page_address(page)?
+
+Thanks
+Wen Congyang
+
+> +	}
+> +
+> +}
+> +
+> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
+> +{
+> +	unsigned long addr = (unsigned long)memmap;
+> +	unsigned long end = (unsigned long)(memmap + nr_pages);
+> +	unsigned long next;
+> +	struct page *page;
+> +	int page_size;
+> +	unsigned long magic;
+> +
+> +	for (; addr < end; addr = next) {
+> +		page = NULL;
+> +		page_size = 0;
+> +		next = find_and_clear_pte_page(addr, end, &page, &page_size);
+> +		if (!page)
+> +			continue;
+> +
+> +		magic = (unsigned long) page->lru.next;
+> +		if (magic == SECTION_INFO)
+> +			put_page_bootmem(page);
+> +		flush_tlb_kernel_range(addr, end);
+> +	}
+> +
+> +}
+> +
+>  void register_page_bootmem_memmap(unsigned long section_nr,
+>  				  struct page *start_page, unsigned long size)
+>  {
+> Index: linux-3.5-rc6/mm/memory_hotplug.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/mm/memory_hotplug.c	2012-07-18 18:01:28.000000000 +0900
+> +++ linux-3.5-rc6/mm/memory_hotplug.c	2012-07-18 18:25:11.036597977 +0900
+> @@ -300,7 +300,6 @@ static int __meminit __add_section(int n
+>  	return register_new_memory(nid, __pfn_to_section(phys_start_pfn));
+>  }
+>  
+> -#ifdef CONFIG_SPARSEMEM_VMEMMAP
+>  static int __remove_section(struct zone *zone, struct mem_section *ms)
+>  {
+>  	int ret = -EINVAL;
+> @@ -309,29 +308,15 @@ static int __remove_section(struct zone 
+>  		return ret;
+>  
+>  	ret = unregister_memory_section(ms);
+> -
+> -	return ret;
+> -}
+> -#else
+> -static int __remove_section(struct zone *zone, struct mem_section *ms)
+> -{
+> -	unsigned long flags;
+> -	struct pglist_data *pgdat = zone->zone_pgdat;
+> -	int ret = -EINVAL;
+> -
+> -	if (!valid_section(ms))
+> -		return ret;
+> -
+> -	ret = unregister_memory_section(ms);
+>  	if (ret)
+>  		return ret;
+>  
+>  	pgdat_resize_lock(pgdat, &flags);
+>  	sparse_remove_one_section(zone, ms);
+>  	pgdat_resize_unlock(pgdat, &flags);
+> -	return 0;
+> +
+> +	return ret;
+>  }
+> -#endif
+>  
+>  /*
+>   * Reasonably generic function for adding memory.  It is
 > 
 > --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
