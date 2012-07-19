@@ -1,26 +1,18 @@
-Return-Path: <lliubbo@gmail.com>
-Received: from mail-wg0-f45.google.com (mail-wg0-f45.google.com [74.125.82.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 89C4A2C00A1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 18:32:26 +1000 (EST)
-Received: by wgbdt14 with SMTP id dt14so1873407wgb.14
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 01:32:22 -0700 (PDT)
+Return-Path: <b08782@zro04cle141.ea.freescale.net>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D98862C02FA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 20:28:28 +1000 (EST)
+From: Claudiu Manoil <claudiu.manoil@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/85xx: Fix sram_offset parameter type
+Date: Thu, 19 Jul 2012 13:28:16 +0300
+Message-ID: <1342693696-29734-1-git-send-email-claudiu.manoil@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <50068BF4.1080603@jp.fujitsu.com>
-References: <50068974.1070409@jp.fujitsu.com> <50068BF4.1080603@jp.fujitsu.com>
-Date: Thu, 19 Jul 2012 16:32:22 +0800
-Message-ID: <CAA_GA1dPdjO7jwMaQsx+ywWpZe4fyGm+aTeJcjUgJPKuVZd9xA@mail.gmail.com>
-Subject: Re: [RFC PATCH v4 7/13] memory-hotplug : remove_memory calls
- __remove_pages
-From: Bob Liu <lliubbo@gmail.com>
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- liuj97@gmail.com
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,150 +22,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jul 18, 2012 at 6:12 PM, Yasuaki Ishimatsu
-<isimatu.yasuaki@jp.fujitsu.com> wrote:
-> The patch adds __remove_pages() to remove_memory(). Then the range of
-> phys_start_pfn argument and nr_pages argument in __remove_pagse() may
-> have different zone. So zone argument is removed from __remove_pages()
-> and __remove_pages() caluculates zone in each section.
->
-> When CONFIG_SPARSEMEM_VMEMMAP is defined, there is no way to remove a memmap.
-> So __remove_section only calls unregister_memory_section().
->
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->
-> ---
->  arch/powerpc/platforms/pseries/hotplug-memory.c |    5 +----
->  include/linux/memory_hotplug.h                  |    3 +--
->  mm/memory_hotplug.c                             |   19 ++++++++++++-------
->  3 files changed, 14 insertions(+), 13 deletions(-)
->
-> Index: linux-3.5-rc6/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-3.5-rc6.orig/mm/memory_hotplug.c      2012-07-18 18:00:27.440145432 +0900
-> +++ linux-3.5-rc6/mm/memory_hotplug.c   2012-07-18 18:01:02.070712487 +0900
-> @@ -275,11 +275,14 @@ static int __meminit __add_section(int n
->  #ifdef CONFIG_SPARSEMEM_VMEMMAP
->  static int __remove_section(struct zone *zone, struct mem_section *ms)
->  {
-> -       /*
-> -        * XXX: Freeing memmap with vmemmap is not implement yet.
-> -        *      This should be removed later.
-> -        */
-> -       return -EBUSY;
-> +       int ret = -EINVAL;
-> +
-> +       if (!valid_section(ms))
-> +               return ret;
-> +
-> +       ret = unregister_memory_section(ms);
-> +
+The sram_offset parameter represents a physical address
+and should be of type phys_addr_t. As part of this fix,
+the extraction of sram_params is being cleaned-up and
+fixed.
+This patch fixes now the case when the offset value of
+0xfff00000 was being rejected by the driver (returning
+-EINVAL), although this is a valid offset value.
 
-I saw a patch from Jiang Liu "mm/hotplug: free zone->pageset when a
-zone becomes empty" to
-free the zone->pageset and i think there may more cleanup needed when
-a zone becomes empty.
+Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h |    4 +-
+ arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   39 ++++++++++------------------
+ 2 files changed, 16 insertions(+), 27 deletions(-)
 
-We already have __add_zone() in __add_section(), what about add a
-function like __remove_zone()
-to do the cleanup here?
-
-> +       return ret;
->  }
->  #else
->  static int __remove_section(struct zone *zone, struct mem_section *ms)
-> @@ -346,11 +349,11 @@ EXPORT_SYMBOL_GPL(__add_pages);
->   * sure that pages are marked reserved and zones are adjust properly by
->   * calling offline_pages().
->   */
-> -int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
-> -                unsigned long nr_pages)
-> +int __remove_pages(unsigned long phys_start_pfn, unsigned long nr_pages)
->  {
->         unsigned long i, ret = 0;
->         int sections_to_remove;
-> +       struct zone *zone;
->
->         /*
->          * We can only remove entire sections
-> @@ -363,6 +366,7 @@ int __remove_pages(struct zone *zone, un
->         sections_to_remove = nr_pages / PAGES_PER_SECTION;
->         for (i = 0; i < sections_to_remove; i++) {
->                 unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
-> +               zone = page_zone(pfn_to_page(pfn));
->                 ret = __remove_section(zone, __pfn_to_section(pfn));
->                 if (ret)
->                         break;
-> @@ -1031,6 +1035,7 @@ int __ref remove_memory(int nid, u64 sta
->         /* remove memmap entry */
->         firmware_map_remove(start, start + size, "System RAM");
->
-> +       __remove_pages(start >> PAGE_SHIFT, size >> PAGE_SHIFT);
->  out:
->         unlock_memory_hotplug();
->         return ret;
-> Index: linux-3.5-rc6/include/linux/memory_hotplug.h
-> ===================================================================
-> --- linux-3.5-rc6.orig/include/linux/memory_hotplug.h   2012-07-18 18:00:27.445145371 +0900
-> +++ linux-3.5-rc6/include/linux/memory_hotplug.h        2012-07-18 18:00:40.461982690 +0900
-> @@ -89,8 +89,7 @@ extern bool is_pageblock_removable_noloc
->  /* reasonably generic interface to expand the physical pages in a zone  */
->  extern int __add_pages(int nid, struct zone *zone, unsigned long start_pfn,
->         unsigned long nr_pages);
-> -extern int __remove_pages(struct zone *zone, unsigned long start_pfn,
-> -       unsigned long nr_pages);
-> +extern int __remove_pages(unsigned long start_pfn, unsigned long nr_pages);
->
->  #ifdef CONFIG_NUMA
->  extern int memory_add_physaddr_to_nid(u64 start);
-> Index: linux-3.5-rc6/arch/powerpc/platforms/pseries/hotplug-memory.c
-> ===================================================================
-> --- linux-3.5-rc6.orig/arch/powerpc/platforms/pseries/hotplug-memory.c  2012-07-18 18:00:27.442145407 +0900
-> +++ linux-3.5-rc6/arch/powerpc/platforms/pseries/hotplug-memory.c       2012-07-18 18:00:40.470982578 +0900
-> @@ -76,7 +76,6 @@ unsigned long memory_block_size_bytes(vo
->  static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
->  {
->         unsigned long start, start_pfn;
-> -       struct zone *zone;
->         int i, ret;
->         int sections_to_remove;
->
-> @@ -87,8 +86,6 @@ static int pseries_remove_memblock(unsig
->                 return 0;
->         }
->
-> -       zone = page_zone(pfn_to_page(start_pfn));
-> -
->         /*
->          * Remove section mappings and sysfs entries for the
->          * section of the memory we are removing.
-> @@ -101,7 +98,7 @@ static int pseries_remove_memblock(unsig
->         sections_to_remove = (memblock_size >> PAGE_SHIFT) / PAGES_PER_SECTION;
->         for (i = 0; i < sections_to_remove; i++) {
->                 unsigned long pfn = start_pfn + i * PAGES_PER_SECTION;
-> -               ret = __remove_pages(zone, start_pfn,  PAGES_PER_SECTION);
-> +               ret = __remove_pages(start_pfn,  PAGES_PER_SECTION);
->                 if (ret)
->                         return ret;
->         }
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-
-
+diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h b/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+index 60c9c0b..a4ce9b8 100644
+--- a/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
++++ b/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2009-2010 Freescale Semiconductor, Inc
++ * Copyright 2009-2010 2012 Freescale Semiconductor, Inc
+  *
+  * QorIQ based Cache Controller Memory Mapped Registers
+  *
+@@ -91,7 +91,7 @@ struct mpc85xx_l2ctlr {
+ 
+ struct sram_parameters {
+ 	unsigned int sram_size;
+-	uint64_t sram_offset;
++	phys_addr_t sram_offset;
+ };
+ 
+ extern int instantiate_cache_sram(struct platform_device *dev,
+diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+index 611bb4b..d65e785 100644
+--- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
++++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
+@@ -1,5 +1,5 @@
+ /*
+- * Copyright 2009-2010 Freescale Semiconductor, Inc.
++ * Copyright 2009-2010 2012 Freescale Semiconductor, Inc.
+  *
+  * QorIQ (P1/P2) L2 controller init for Cache-SRAM instantiation
+  *
+@@ -31,24 +31,21 @@ static char *sram_size;
+ static char *sram_offset;
+ struct mpc85xx_l2ctlr __iomem *l2ctlr;
+ 
+-static long get_cache_sram_size(void)
++static int get_cache_sram_params(struct sram_parameters *sram_params)
+ {
+-	unsigned long val;
++	unsigned long long addr;
++	unsigned int size;
+ 
+-	if (!sram_size || (strict_strtoul(sram_size, 0, &val) < 0))
++	if (!sram_size || (kstrtouint(sram_size, 0, &size) < 0))
+ 		return -EINVAL;
+ 
+-	return val;
+-}
+-
+-static long get_cache_sram_offset(void)
+-{
+-	unsigned long val;
+-
+-	if (!sram_offset || (strict_strtoul(sram_offset, 0, &val) < 0))
++	if (!sram_offset || (kstrtoull(sram_offset, 0, &addr) < 0))
+ 		return -EINVAL;
+ 
+-	return val;
++	sram_params->sram_offset = addr;
++	sram_params->sram_size = size;
++
++	return 0;
+ }
+ 
+ static int __init get_size_from_cmdline(char *str)
+@@ -93,17 +90,9 @@ static int __devinit mpc85xx_l2ctlr_of_probe(struct platform_device *dev)
+ 	}
+ 	l2cache_size = *prop;
+ 
+-	sram_params.sram_size  = get_cache_sram_size();
+-	if ((int)sram_params.sram_size <= 0) {
+-		dev_err(&dev->dev,
+-			"Entire L2 as cache, Aborting Cache-SRAM stuff\n");
+-		return -EINVAL;
+-	}
+-
+-	sram_params.sram_offset  = get_cache_sram_offset();
+-	if ((int64_t)sram_params.sram_offset <= 0) {
++	if (get_cache_sram_params(&sram_params)) {
+ 		dev_err(&dev->dev,
+-			"Entire L2 as cache, provide a valid sram offset\n");
++			"Entire L2 as cache, provide valid sram offset and size\n");
+ 		return -EINVAL;
+ 	}
+ 
+@@ -125,14 +114,14 @@ static int __devinit mpc85xx_l2ctlr_of_probe(struct platform_device *dev)
+ 	 * Write bits[0-17] to srbar0
+ 	 */
+ 	out_be32(&l2ctlr->srbar0,
+-		sram_params.sram_offset & L2SRAM_BAR_MSK_LO18);
++		lower_32_bits(sram_params.sram_offset) & L2SRAM_BAR_MSK_LO18);
+ 
+ 	/*
+ 	 * Write bits[18-21] to srbare0
+ 	 */
+ #ifdef CONFIG_PHYS_64BIT
+ 	out_be32(&l2ctlr->srbarea0,
+-		(sram_params.sram_offset >> 32) & L2SRAM_BARE_MSK_HI4);
++		upper_32_bits(sram_params.sram_offset) & L2SRAM_BARE_MSK_HI4);
+ #endif
+ 
+ 	clrsetbits_be32(&l2ctlr->ctl, L2CR_L2E, L2CR_L2FI);
 -- 
-Regards,
---Bob
+1.6.6
