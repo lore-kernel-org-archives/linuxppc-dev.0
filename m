@@ -1,27 +1,15 @@
-Return-Path: <jg1.han@samsung.com>
-Received: from mailout3.samsung.com (mailout3.samsung.com [203.254.224.33])
- by ozlabs.org (Postfix) with ESMTP id 8326F2C00BD
- for <linuxppc-dev@ozlabs.org>; Thu, 19 Jul 2012 15:12:35 +1000 (EST)
-Received: from epcpsbgm1.samsung.com (mailout3.samsung.com [203.254.224.33])
- by mailout3.samsung.com
- (Oracle Communications Messaging Server 7u4-24.01(7.0.4.24.0) 64bit (built Nov
- 17 2011)) with ESMTP id <0M7E0053S5YTPBN0@mailout3.samsung.com> for
- linuxppc-dev@ozlabs.org; Thu, 19 Jul 2012 14:02:29 +0900 (KST)
-Received: from DOJG1HAN02 ([12.23.119.56])
- by mmp1.samsung.com (Oracle Communications Messaging Server 7u4-24.01
- (7.0.4.24.0) 64bit (built Nov 17 2011))
- with ESMTPA id <0M7E00IC3605GK00@mmp1.samsung.com> for
- linuxppc-dev@ozlabs.org; Thu, 19 Jul 2012 14:02:29 +0900 (KST)
-From: Jingoo Han <jg1.han@samsung.com>
-To: olaf@aepfle.de, 'Benjamin Herrenschmidt' <benh@kernel.crashing.org>
+Return-Path: <tony@bakeyournoodle.com>
+Date: Thu, 19 Jul 2012 15:48:38 +1000
+From: Tony Breeds <tony@bakeyournoodle.com>
+To: olaf@aepfle.de
+Subject: Re: [PATCH] radeonfb: Add quirk for the graphics adapter in some JSxx
+Message-ID: <20120719054837.GA11960@thor.bakeyournoodle.com>
 References: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
-In-reply-to: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
-Subject: RE: [PATCH] radeonfb: Add quirk for the graphics adapter in some JSxx
-Date: Thu, 19 Jul 2012 14:02:29 +0900
-Message-id: <001201cd656b$b2794350$176bc9f0$%han@samsung.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-fbdev@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
+In-Reply-To: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,82 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, July 19, 2012 1:49 AM, olaf@aepfle.de wrote:
+
+--jRHKVT23PllUwdXP
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, Jul 18, 2012 at 06:49:04PM +0200, olaf@aepfle.de wrote:
+
+Thanks for following this up.
+
 > From: Tony Breeds <tony@bakeyournoodle.com>
-> 
+>=20
 > These devices are set to 640x480 by firmware, switch them to 800x600@60
 > so that the graphical installer can run on remote console.
-> 
+>=20
 > Reported by IBM during SLES10 SP2 beta testing:
-> 
-> https://bugzilla.novell.com/show_bug.cgi?id=461002
+>=20
+> https://bugzilla.novell.com/show_bug.cgi?id=3D461002
 > LTC50817
-> 
+>=20
 > Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-If the author is Tony Breeds, please add 'Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>'.
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-Best regards,
-Jingoo Han
+Yours Tony
 
-> 
-> diff --git a/drivers/video/aty/radeon_monitor.c b/drivers/video/aty/radeon_monitor.c
-> index 9261c91..5c23eac 100644
-> --- a/drivers/video/aty/radeon_monitor.c
-> +++ b/drivers/video/aty/radeon_monitor.c
-> @@ -730,6 +730,25 @@ static void radeon_videomode_to_var(struct fb_var_screeninfo *var,
->  	var->vmode = mode->vmode;
->  }
-> 
-> +#ifdef CONFIG_PPC_PSERIES
-> +static int is_powerblade(const char *model)
-> +{
-> +	struct device_node *root;
-> +	const char* cp;
-> +	int len, l, rc = 0;
-> +
-> +	root = of_find_node_by_path("/");
-> +	if (root && model) {
-> +		l = strlen(model);
-> +		cp = of_get_property(root, "model", &len);
-> +		if (cp)
-> +			rc = memcmp(model, cp, min(len, l)) == 0;
-> +		of_node_put(root);
-> +	}
-> +	return rc;
-> +}
-> +#endif
-> +
->  /*
->   * Build the modedb for head 1 (head 2 will come later), check panel infos
->   * from either BIOS or EDID, and pick up the default mode
-> @@ -865,6 +884,22 @@ void __devinit radeon_check_modes(struct radeonfb_info *rinfo, const char *mode_
->  			has_default_mode = 1;
->   	}
-> 
-> +#ifdef CONFIG_PPC_PSERIES
-> +	if (!has_default_mode && (
-> +		is_powerblade("IBM,8842") || /* JS20 */
-> +		is_powerblade("IBM,8844") || /* JS21 */
-> +		is_powerblade("IBM,7998") || /* JS12/JS21/JS22 */
-> +		is_powerblade("IBM,0792") || /* QS21 */
-> +		is_powerblade("IBM,0793")    /* QS22 */
-> +	    )) {
-> +		printk("Falling back to 800x600 on JSxx hardware\n");
-> +		if (fb_find_mode(&info->var, info, "800x600@60",
-> +				 info->monspecs.modedb,
-> +				 info->monspecs.modedb_len, NULL, 8) != 0)
-> +			has_default_mode = 1;
-> +	}
-> +#endif
-> +
->  	/*
->  	 * Still no mode, let's pick up a default from the db
->  	 */
-> --
-> 1.7.10.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-fbdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--jRHKVT23PllUwdXP
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJQB5+1AAoJEEsCiJRY75GKoVkP/jij3zEa2ly3RoJesbf5CNdi
+LzbxmKfwuiamrEjWHS2+9syu/j51OXLK09rlpzeMPR+LARFKAL3coTK/hIo1o8Io
+AbUgxu17bvCrVHIKD6TcP4nLL9Pru7s2cNx/nBs/vu7YS2xw7v12bGxCKDpZ1Z9h
+y+IivjU65vgdCKxI/S1ojWe88ieDAK3RPHXHUlQq7vkcmwS4qsYXVu5VoNh0wUks
+jKSGhdighzHSURmObfAEua4+Ar/kknHKkghcXzpku3pYoo2Di8E3/zF6gVxa0C39
+/hI0Kjs0NCrtq0VH/vQGdZmUgoDQh1a3p0FU8ktU1TAXQCkHQzgpCC0o3kTTk5/a
+PohXqQ84BHwophsH8sTdteh0vqFFImRx8e9ZWlTh2Y/kb/OYUmkRm/kw+BdwMzbq
+6nDzkLtOtJ4sXeONDtecr00BwxKh22dlVUxP0dm6NoteS51172IpVIhwXMAxDSIU
+z+VROvckjrzONs+VBxG+pV+BRLEsfkApJejOiAjgagb4F5OBGu0oOXKNoA8Mr78d
+xOGV4Cv9Kat6Uq0opbeqAEaNi0lbtKmFNoS9VuzdQR5xRnAFPPWcN9KdncXo42dP
+aZN51dBZZ8khDv+j/9dB5gIFURStlc3knhgcbVi5peORLGjRU4ahXED6VGURoyXt
+cqsFLygSc7RqfIsxt5hr
+=sSrP
+-----END PGP SIGNATURE-----
+
+--jRHKVT23PllUwdXP--
