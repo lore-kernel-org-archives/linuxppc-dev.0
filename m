@@ -1,32 +1,31 @@
 Return-Path: <sjenning@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e1.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0CD2E2C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 00:44:21 +1000 (EST)
+ (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E03602C0108
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 00:46:08 +1000 (EST)
 Received: from /spool/local
- by e1.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sjenning@linux.vnet.ibm.com>;
- Thu, 19 Jul 2012 10:44:12 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id A88FD6E804F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 10:43:25 -0400 (EDT)
+ Thu, 19 Jul 2012 08:45:53 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id EC1313E40055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 14:43:20 +0000 (WET)
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6JEhL39127006
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 10:43:22 -0400
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6JEh33o121882
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 08:43:05 -0600
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
  by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6JEh95t022347
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 08:43:11 -0600
+ q6JEgqV9019957
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 08:42:54 -0600
 From: Seth Jennings <sjenning@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 4/4] powerpc/crypto: add 842 crypto driver
-Date: Thu, 19 Jul 2012 09:42:41 -0500
-Message-Id: <1342708961-28587-5-git-send-email-sjenning@linux.vnet.ibm.com>
-In-Reply-To: <1342708961-28587-1-git-send-email-sjenning@linux.vnet.ibm.com>
-References: <1342708961-28587-1-git-send-email-sjenning@linux.vnet.ibm.com>
+Subject: [PATCH 0/4] powerpc/crypto: IBM Power7+ in-Nest compression support
+Date: Thu, 19 Jul 2012 09:42:37 -0500
+Message-Id: <1342708961-28587-1-git-send-email-sjenning@linux.vnet.ibm.com>
 Cc: Seth Jennings <sjenning@linux.vnet.ibm.com>,
  Kent Yoder <key@linux.vnet.ibm.com>, Herbert Xu <herbert@gondor.apana.org.au>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
@@ -43,247 +42,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch add the 842 cryptographic API driver that
-submits compression requests to the 842 hardware compression
-accelerator driver (nx-compress).
+This is a continuation of support for the Power7+ in-Nest
+hardware accelerator.
 
-If the hardware accelerator goes offline for any reason
-(dynamic disable, migration, etc...), this driver will use LZO
-as a software failover for all future compression requests.
-For decompression requests, the 842 hardware driver contains
-a software implementation of the 842 decompressor to support
-the decompression of data that was compressed before the accelerator
-went offline.
+https://lkml.org/lkml/2012/4/12/223
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
-Signed-off-by: Seth Jennings <sjenning@linux.vnet.ibm.com>
----
- crypto/842.c    |  183 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
- crypto/Kconfig  |    9 +++
- crypto/Makefile |    1 +
- 3 files changed, 193 insertions(+)
+This patchset adds the hardware driver and the cryptographic
+driver for hardware accelerated compression, which uses a
+hardware-optimized algorithm named 842.
+
+The hardware driver has limits on generic compression and is
+geared toward compressing units that are of PAGE_SIZE for
+in-kernel memory compression.
+
+Based on linux-next (20120717)
+
+Seth Jennings (4):
+  powerpc: nx: rework Kconfig
+  powerpc: nx: add compression support to arch vec
+  powerpc: nx: add 842 hardware compression driver
+  crypto: add 842 crypto driver
+
+ MAINTAINERS                     |    6 +
+ arch/powerpc/kernel/prom_init.c |    4 +-
+ crypto/842.c                    |  183 +++++
+ crypto/Kconfig                  |    9 +
+ crypto/Makefile                 |    1 +
+ drivers/crypto/Kconfig          |   20 +-
+ drivers/crypto/nx/Kconfig       |   26 +
+ drivers/crypto/nx/Makefile      |    5 +-
+ drivers/crypto/nx/nx-842.c      | 1615 +++++++++++++++++++++++++++++++++++++++
+ include/linux/nx842.h           |   11 +
+ 10 files changed, 1864 insertions(+), 16 deletions(-)
  create mode 100644 crypto/842.c
+ create mode 100644 drivers/crypto/nx/Kconfig
+ create mode 100644 drivers/crypto/nx/nx-842.c
+ create mode 100644 include/linux/nx842.h
 
-diff --git a/crypto/842.c b/crypto/842.c
-new file mode 100644
-index 0000000..144767d
---- /dev/null
-+++ b/crypto/842.c
-@@ -0,0 +1,183 @@
-+/*
-+ * Cryptographic API for the 842 compression algorithm.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2011
-+ *
-+ * Authors: Robert Jennings <rcj@linux.vnet.ibm.com>
-+ *          Seth Jennings <sjenning@linux.vnet.ibm.com>
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/crypto.h>
-+#include <linux/vmalloc.h>
-+#include <linux/nx842.h>
-+#include <linux/lzo.h>
-+#include <linux/timer.h>
-+
-+static int nx842_uselzo;
-+
-+struct nx842_ctx {
-+	void *nx842_wmem; /* working memory for 842/lzo */
-+};
-+
-+enum nx842_crypto_type {
-+	NX842_CRYPTO_TYPE_842,
-+	NX842_CRYPTO_TYPE_LZO
-+};
-+
-+#define NX842_SENTINEL 0xdeadbeef
-+
-+struct nx842_crypto_header {
-+	unsigned int sentinel; /* debug */
-+	enum nx842_crypto_type type;
-+};
-+
-+static int nx842_init(struct crypto_tfm *tfm)
-+{
-+	struct nx842_ctx *ctx = crypto_tfm_ctx(tfm);
-+	int wmemsize;
-+
-+	wmemsize = max_t(int, nx842_get_workmem_size(), LZO1X_MEM_COMPRESS);
-+	ctx->nx842_wmem = kmalloc(wmemsize, GFP_NOFS);
-+	if (!ctx->nx842_wmem)
-+		return -ENOMEM;
-+
-+	return 0;
-+}
-+
-+static void nx842_exit(struct crypto_tfm *tfm)
-+{
-+	struct nx842_ctx *ctx = crypto_tfm_ctx(tfm);
-+
-+	kfree(ctx->nx842_wmem);
-+}
-+
-+static void nx842_reset_uselzo(unsigned long data)
-+{
-+	nx842_uselzo = 0;
-+}
-+
-+static DEFINE_TIMER(failover_timer, nx842_reset_uselzo, 0, 0);
-+
-+static int nx842_crypto_compress(struct crypto_tfm *tfm, const u8 *src,
-+			    unsigned int slen, u8 *dst, unsigned int *dlen)
-+{
-+	struct nx842_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct nx842_crypto_header *hdr;
-+	unsigned int tmp_len = *dlen;
-+	size_t lzodlen; /* needed for lzo */
-+	int err;
-+
-+	*dlen = 0;
-+	hdr = (struct nx842_crypto_header *)dst;
-+	hdr->sentinel = NX842_SENTINEL; /* debug */
-+	dst += sizeof(struct nx842_crypto_header);
-+	tmp_len -= sizeof(struct nx842_crypto_header);
-+	lzodlen = tmp_len;
-+
-+	if (likely(!nx842_uselzo)) {
-+		err = nx842_compress(src, slen, dst, &tmp_len, ctx->nx842_wmem);
-+
-+		if (likely(!err)) {
-+			hdr->type = NX842_CRYPTO_TYPE_842;
-+			*dlen = tmp_len + sizeof(struct nx842_crypto_header);
-+			return 0;
-+		}
-+
-+		/* hardware failed */
-+		nx842_uselzo = 1;
-+
-+		/* set timer to check for hardware again in 1 second */
-+		mod_timer(&failover_timer, jiffies + msecs_to_jiffies(1000));
-+	}
-+
-+	/* no hardware, use lzo */
-+	err = lzo1x_1_compress(src, slen, dst, &lzodlen, ctx->nx842_wmem);
-+	if (err != LZO_E_OK)
-+		return -EINVAL;
-+
-+	hdr->type = NX842_CRYPTO_TYPE_LZO;
-+	*dlen = lzodlen + sizeof(struct nx842_crypto_header);
-+	return 0;
-+}
-+
-+static int nx842_crypto_decompress(struct crypto_tfm *tfm, const u8 *src,
-+			      unsigned int slen, u8 *dst, unsigned int *dlen)
-+{
-+	struct nx842_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct nx842_crypto_header *hdr;
-+	unsigned int tmp_len = *dlen;
-+	size_t lzodlen; /* needed for lzo */
-+	int err;
-+
-+	*dlen = 0;
-+	hdr = (struct nx842_crypto_header *)src;
-+
-+	if (unlikely(hdr->sentinel != NX842_SENTINEL))
-+		return -EINVAL;
-+
-+	src += sizeof(struct nx842_crypto_header);
-+	slen -= sizeof(struct nx842_crypto_header);
-+
-+	if (likely(hdr->type == NX842_CRYPTO_TYPE_842)) {
-+		err = nx842_decompress(src, slen, dst, &tmp_len,
-+			ctx->nx842_wmem);
-+		if (err)
-+			return -EINVAL;
-+		*dlen = tmp_len;
-+	} else if (hdr->type == NX842_CRYPTO_TYPE_LZO) {
-+		lzodlen = tmp_len;
-+		err = lzo1x_decompress_safe(src, slen, dst, &lzodlen);
-+		if (err != LZO_E_OK)
-+			return -EINVAL;
-+		*dlen = lzodlen;
-+	} else
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static struct crypto_alg alg = {
-+	.cra_name		= "842",
-+	.cra_flags		= CRYPTO_ALG_TYPE_COMPRESS,
-+	.cra_ctxsize		= sizeof(struct nx842_ctx),
-+	.cra_module		= THIS_MODULE,
-+	.cra_list		= LIST_HEAD_INIT(alg.cra_list),
-+	.cra_init		= nx842_init,
-+	.cra_exit		= nx842_exit,
-+	.cra_u			= { .compress = {
-+	.coa_compress		= nx842_crypto_compress,
-+	.coa_decompress		= nx842_crypto_decompress } }
-+};
-+
-+static int __init nx842_mod_init(void)
-+{
-+	del_timer(&failover_timer);
-+	return crypto_register_alg(&alg);
-+}
-+
-+static void __exit nx842_mod_exit(void)
-+{
-+	crypto_unregister_alg(&alg);
-+}
-+
-+module_init(nx842_mod_init);
-+module_exit(nx842_mod_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("842 Compression Algorithm");
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index a323805..7876358 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -1008,6 +1008,15 @@ config CRYPTO_LZO
- 	help
- 	  This is the LZO algorithm.
- 
-+config CRYPTO_842
-+	tristate "842 compression algorithm"
-+	depends on CRYPTO_DEV_NX_COMPRESS
-+	# 842 uses lzo if the hardware becomes unavailable
-+	select LZO_COMPRESS
-+	select LZO_DECOMPRESS
-+	help
-+	  This is the 842 algorithm.
-+
- comment "Random Number Generation"
- 
- config CRYPTO_ANSI_CPRNG
-diff --git a/crypto/Makefile b/crypto/Makefile
-index 30f33d6..5d5675c 100644
---- a/crypto/Makefile
-+++ b/crypto/Makefile
-@@ -82,6 +82,7 @@ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
- obj-$(CONFIG_CRYPTO_CRC32C) += crc32c.o
- obj-$(CONFIG_CRYPTO_AUTHENC) += authenc.o authencesn.o
- obj-$(CONFIG_CRYPTO_LZO) += lzo.o
-+obj-$(CONFIG_CRYPTO_842) += 842.o
- obj-$(CONFIG_CRYPTO_RNG2) += rng.o
- obj-$(CONFIG_CRYPTO_RNG2) += krng.o
- obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
 -- 
 1.7.9.5
