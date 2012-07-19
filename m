@@ -1,15 +1,22 @@
-Return-Path: <tony@bakeyournoodle.com>
-Date: Thu, 19 Jul 2012 15:48:38 +1000
-From: Tony Breeds <tony@bakeyournoodle.com>
-To: olaf@aepfle.de
-Subject: Re: [PATCH] radeonfb: Add quirk for the graphics adapter in some JSxx
-Message-ID: <20120719054837.GA11960@thor.bakeyournoodle.com>
-References: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 1BA652C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 15:54:06 +1000 (EST)
+Message-ID: <5007A217.2060500@cn.fujitsu.com>
+Date: Thu, 19 Jul 2012 13:58:47 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="jRHKVT23PllUwdXP"
-In-Reply-To: <1342630144-16350-1-git-send-email-olaf@aepfle.de>
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v4 11/13] memory-hotplug : free memmap of
+ sparse-vmemmap
+References: <50068974.1070409@jp.fujitsu.com> <50068D09.1050704@jp.fujitsu.com>
+In-Reply-To: <50068D09.1050704@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,51 +26,258 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+At 07/18/2012 06:16 PM, Yasuaki Ishimatsu Wrote:
+> All pages of virtual mapping in removed memory cannot be freed, since some pages
+> used as PGD/PUD includes not only removed memory but also other memory. So the
+> patch checks whether page can be freed or not.
+> 
+> How to check whether page can be freed or not?
+>  1. When removing memory, the page structs of the revmoved memory are filled
+>     with 0FD.
+>  2. All page structs are filled with 0xFD on PT/PMD, PT/PMD can be cleared.
+>     In this case, the page used as PT/PMD can be freed.
+> 
+> Applying patch, __remove_section() of CONFIG_SPARSEMEM_VMEMMAP is integrated
+> into one. So __remove_section() of CONFIG_SPARSEMEM_VMEMMAP is deleted.
+> 
+> CC: David Rientjes <rientjes@google.com>
+> CC: Jiang Liu <liuj97@gmail.com>
+> CC: Len Brown <len.brown@intel.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org> 
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> 
+> CC: Wen Congyang <wency@cn.fujitsu.com>
+> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> 
+> ---
+>  arch/x86/mm/init_64.c |  121 ++++++++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/mm.h    |    2 
+>  mm/memory_hotplug.c   |   19 -------
+>  mm/sparse.c           |    5 +-
+>  4 files changed, 128 insertions(+), 19 deletions(-)
+> 
+> Index: linux-3.5-rc6/include/linux/mm.h
+> ===================================================================
+> --- linux-3.5-rc6.orig/include/linux/mm.h	2012-07-18 18:01:28.000000000 +0900
+> +++ linux-3.5-rc6/include/linux/mm.h	2012-07-18 18:03:05.551168773 +0900
+> @@ -1588,6 +1588,8 @@ int vmemmap_populate(struct page *start_
+>  void vmemmap_populate_print_last(void);
+>  void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
+>  				  unsigned long size);
+> +void vmemmap_kfree(struct page *memmpa, unsigned long nr_pages);
+> +void vmemmap_free_bootmem(struct page *memmpa, unsigned long nr_pages);
+>  
+>  enum mf_flags {
+>  	MF_COUNT_INCREASED = 1 << 0,
+> Index: linux-3.5-rc6/mm/sparse.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/mm/sparse.c	2012-07-18 17:59:25.000000000 +0900
+> +++ linux-3.5-rc6/mm/sparse.c	2012-07-18 18:03:05.553168749 +0900
+> @@ -614,12 +614,13 @@ static inline struct page *kmalloc_secti
+>  	/* This will make the necessary allocations eventually. */
+>  	return sparse_mem_map_populate(pnum, nid);
+>  }
+> -static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
+> +static void __kfree_section_memmap(struct page *page, unsigned long nr_pages)
+>  {
+> -	return; /* XXX: Not implemented yet */
+> +	vmemmap_kfree(page, nr_pages);
+>  }
+>  static void free_map_bootmem(struct page *page, unsigned long nr_pages)
+>  {
+> +	vmemmap_free_bootmem(page, nr_pages);
+>  }
+>  #else
+>  static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
+> Index: linux-3.5-rc6/arch/x86/mm/init_64.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/arch/x86/mm/init_64.c	2012-07-18 18:01:28.000000000 +0900
+> +++ linux-3.5-rc6/arch/x86/mm/init_64.c	2012-07-18 18:03:05.564168611 +0900
+> @@ -978,6 +978,127 @@ vmemmap_populate(struct page *start_page
+>  	return 0;
+>  }
+>  
+> +#define PAGE_INUSE 0xFD
+> +
+> +unsigned long find_and_clear_pte_page(unsigned long addr, unsigned long end,
+> +			    struct page **pp, int *page_size)
+> +{
+> +	pgd_t *pgd;
+> +	pud_t *pud;
+> +	pmd_t *pmd;
+> +	pte_t *pte;
+> +	void *page_addr;
+> +	unsigned long next;
+> +
+> +	*pp = NULL;
+> +
+> +	pgd = pgd_offset_k(addr);
+> +	if (pgd_none(*pgd))
+> +		return pgd_addr_end(addr, end);
+> +
+> +	pud = pud_offset(pgd, addr);
+> +	if (pud_none(*pud))
+> +		return pud_addr_end(addr,end);
+> +
+> +	if (!cpu_has_pse) {
+> +		next = (addr + PAGE_SIZE) & PAGE_MASK;
+> +		pmd = pmd_offset(pud, addr);
+> +		if (pmd_none(*pmd))
+> +			return next;
+> +
+> +		pte = pte_offset_kernel(pmd, addr);
+> +		if (pte_none(*pte))
+> +			return next;
+> +
+> +		*page_size = PAGE_SIZE;
+> +		*pp = pte_page(*pte);
+> +	} else {
+> +		next = pmd_addr_end(addr, end);
+> +
+> +		pmd = pmd_offset(pud, addr);
+> +		if (pmd_none(*pmd))
+> +			return next;
+> +
+> +		*page_size = PMD_SIZE;
+> +		*pp = pmd_page(*pmd);
+> +	}
+> +
+> +	/*
+> +	 * Removed page structs are filled with 0xFD.
+> +	 */
+> +	memset((void *)addr, PAGE_INUSE, next - addr);
+> +
+> +	page_addr = page_address(*pp);
+> +
+> +	/*
+> +	 * Check the page is filled with 0xFD or not.
+> +	 * memchr_inv() returns the address. In this case, we cannot
+> +	 * clear PTE/PUD entry, since the page is used by other.
+> +	 * So we cannot also free the page.
+> +	 *
+> +	 * memchr_inv() returns NULL. In this case, we can clear
+> +	 * PTE/PUD entry, since the page is not used by other.
+> +	 * So we can also free the page.
+> +	 */
+> +	if (memchr_inv(page_addr, PAGE_INUSE, *page_size)) {
+> +		*pp = NULL;
+> +		return next;
+> +	}
+> +
+> +	if (!cpu_has_pse)
+> +		pte_clear(&init_mm, addr, pte);
+> +	else
+> +		pmd_clear(pmd);
+> +
+> +	return next;
+> +}
+> +
+> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
+> +{
+> +	unsigned long addr = (unsigned long)memmap;
+> +	unsigned long end = (unsigned long)(memmap + nr_pages);
+> +	unsigned long next;
+> +	struct page *page;
+> +	int page_size;
+> +
+> +	for (; addr < end; addr = next) {
+> +		page = NULL;
+> +		page_size = 0;
+> +		next = find_and_clear_pte_page(addr, end, &page, &page_size);
+> +		if (!page)
+> +			continue;
+> +
+> +		free_pages((unsigned long)page_address(page),
+> +			    get_order(page_size));
+> +		__flush_tlb_one((unsigned long)page_address(page));
+> +	}
+> +
+> +}
+> +
+> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
+> +{
+> +	unsigned long addr = (unsigned long)memmap;
+> +	unsigned long end = (unsigned long)(memmap + nr_pages);
+> +	unsigned long next;
+> +	struct page *page;
+> +	int page_size;
+> +	unsigned long magic;
+> +
+> +	for (; addr < end; addr = next) {
+> +		page = NULL;
+> +		page_size = 0;
+> +		next = find_and_clear_pte_page(addr, end, &page, &page_size);
+> +		if (!page)
+> +			continue;
+> +
+> +		magic = (unsigned long) page->lru.next;
+> +		if (magic == SECTION_INFO)
+> +			put_page_bootmem(page);
+> +		flush_tlb_kernel_range(addr, end);
+> +	}
+> +
+> +}
+> +
+>  void register_page_bootmem_memmap(unsigned long section_nr,
+>  				  struct page *start_page, unsigned long size)
+>  {
+> Index: linux-3.5-rc6/mm/memory_hotplug.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/mm/memory_hotplug.c	2012-07-18 18:01:28.000000000 +0900
+> +++ linux-3.5-rc6/mm/memory_hotplug.c	2012-07-18 18:25:11.036597977 +0900
+> @@ -300,7 +300,6 @@ static int __meminit __add_section(int n
+>  	return register_new_memory(nid, __pfn_to_section(phys_start_pfn));
+>  }
+>  
+> -#ifdef CONFIG_SPARSEMEM_VMEMMAP
+>  static int __remove_section(struct zone *zone, struct mem_section *ms)
+>  {
+>  	int ret = -EINVAL;
+> @@ -309,29 +308,15 @@ static int __remove_section(struct zone 
+>  		return ret;
+>  
+>  	ret = unregister_memory_section(ms);
+> -
+> -	return ret;
+> -}
+> -#else
+> -static int __remove_section(struct zone *zone, struct mem_section *ms)
+> -{
+> -	unsigned long flags;
+> -	struct pglist_data *pgdat = zone->zone_pgdat;
 
---jRHKVT23PllUwdXP
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This two line should not be removed. Otherwise, we can not build the kernel.
 
-On Wed, Jul 18, 2012 at 06:49:04PM +0200, olaf@aepfle.de wrote:
+Thanks
+Wen Congyang
 
-Thanks for following this up.
-
-> From: Tony Breeds <tony@bakeyournoodle.com>
->=20
-> These devices are set to 640x480 by firmware, switch them to 800x600@60
-> so that the graphical installer can run on remote console.
->=20
-> Reported by IBM during SLES10 SP2 beta testing:
->=20
-> https://bugzilla.novell.com/show_bug.cgi?id=3D461002
-> LTC50817
->=20
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
-
-Yours Tony
-
---jRHKVT23PllUwdXP
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJQB5+1AAoJEEsCiJRY75GKoVkP/jij3zEa2ly3RoJesbf5CNdi
-LzbxmKfwuiamrEjWHS2+9syu/j51OXLK09rlpzeMPR+LARFKAL3coTK/hIo1o8Io
-AbUgxu17bvCrVHIKD6TcP4nLL9Pru7s2cNx/nBs/vu7YS2xw7v12bGxCKDpZ1Z9h
-y+IivjU65vgdCKxI/S1ojWe88ieDAK3RPHXHUlQq7vkcmwS4qsYXVu5VoNh0wUks
-jKSGhdighzHSURmObfAEua4+Ar/kknHKkghcXzpku3pYoo2Di8E3/zF6gVxa0C39
-/hI0Kjs0NCrtq0VH/vQGdZmUgoDQh1a3p0FU8ktU1TAXQCkHQzgpCC0o3kTTk5/a
-PohXqQ84BHwophsH8sTdteh0vqFFImRx8e9ZWlTh2Y/kb/OYUmkRm/kw+BdwMzbq
-6nDzkLtOtJ4sXeONDtecr00BwxKh22dlVUxP0dm6NoteS51172IpVIhwXMAxDSIU
-z+VROvckjrzONs+VBxG+pV+BRLEsfkApJejOiAjgagb4F5OBGu0oOXKNoA8Mr78d
-xOGV4Cv9Kat6Uq0opbeqAEaNi0lbtKmFNoS9VuzdQR5xRnAFPPWcN9KdncXo42dP
-aZN51dBZZ8khDv+j/9dB5gIFURStlc3knhgcbVi5peORLGjRU4ahXED6VGURoyXt
-cqsFLygSc7RqfIsxt5hr
-=sSrP
------END PGP SIGNATURE-----
-
---jRHKVT23PllUwdXP--
+> -	int ret = -EINVAL;
+> -
+> -	if (!valid_section(ms))
+> -		return ret;
+> -
+> -	ret = unregister_memory_section(ms);
+>  	if (ret)
+>  		return ret;
+>  
+>  	pgdat_resize_lock(pgdat, &flags);
+>  	sparse_remove_one_section(zone, ms);
+>  	pgdat_resize_unlock(pgdat, &flags);
+> -	return 0;
+> +
+> +	return ret;
+>  }
+> -#endif
+>  
+>  /*
+>   * Reasonably generic function for adding memory.  It is
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
