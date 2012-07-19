@@ -1,34 +1,15 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C77D62C009B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 18:02:01 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Thu, 19 Jul 2012 07:41:45 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6J7r6Ij64487516
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 17:53:06 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6J81GHw026192
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jul 2012 18:01:16 +1000
-Message-ID: <5007BEB2.5060405@in.ibm.com>
-Date: Thu, 19 Jul 2012 13:30:50 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Return-Path: <Christian.Engelmayer@frequentis.com>
+Date: Thu, 19 Jul 2012 10:39:17 +0200
+From: Christian Engelmayer <christian.engelmayer@frequentis.com>
+To: <grant.likely@secretlab.ca>, <linus.walleij@stericsson.com>,
+ <devicetree-discuss@lists.ozlabs.org>
+Subject: Re: [RFC] Configure GPIO settings via the device tree
+Message-ID: <20120719103917.78e01091@frequentis.com>
+In-Reply-To: <20120713100440.7a80e05f@frequentis.com>
+References: <20120713100440.7a80e05f@frequentis.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [powerpc] Export memory limit via device tree
-References: <20120702114855.22333.95335.stgit@suzukikp.in.ibm.com>
- <1341985013.18850.29.camel@pasglop>
-In-Reply-To: <1341985013.18850.29.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@lists.ozlabs.org, christian.engelmayer@frequentis.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,53 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/11/2012 11:06 AM, Benjamin Herrenschmidt wrote:
->> diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
->> index c957b12..0c9695d 100644
->> --- a/arch/powerpc/kernel/machine_kexec.c
->> +++ b/arch/powerpc/kernel/machine_kexec.c
->> @@ -207,6 +207,12 @@ static struct property crashk_size_prop = {
->>   	.value = &crashk_size,
->>   };
->>
->> +static struct property memory_limit_prop = {
->> +	.name = "linux,memory-limit",
->> +	.length = sizeof(phys_addr_t),
->> +	.value = &memory_limit,
->> +};
->> +
->
-> AFAIK. phys_addr_t can change size, so instead make it point to a known
-> fixes size quantity (a u64).
-Ben,
+Hello,
 
-Sorry for the delay in the response.
+As there was no response to my question I assume that I see it correctly
+that at the moment the only 2 options for setting up GPIO configurations
+is either via platform-specific code by eg. platform_data or via userspace?
 
-Some of the other properties are also of phys_addr_t, (e.g 
-linux,crashkernel-base, linux,kernel-end ). Should we fix them as well ?
+Would there be a common use of defining GPIO configurations via a device
+tree and applying those settings via a generic, platform-unaware driver?
 
-Or
+Regards,
+Christian
 
-Should we leave this also a phys_addr_t and let the userspace handle it ?
 
->
->> +
->> +	/* memory-limit is needed for constructing the crash regions */
->> +	prop = of_find_property(node, memory_limit_prop.name, NULL);
->> +	if (prop)
->> +		prom_remove_property(node, prop);
->> +
->> +	if (memory_limit)
->> +		prom_add_property(node, &memory_limit_prop);
->> +
->
-> There's a patch floating around making prom_update_property properly
-> handle both pre-existing and non-pre-existing props, you should probably
-> base yourself on top of it. I'm about to stick that patch in powerpc
-> -next
->
-OK. I am testing the new patch based on the above commit. I will wait
-for the clarification on the issue of the type, before I post it here.
+On Fri, 13 Jul 2012 10:04:40 +0200
+Christian Engelmayer <christian.engelmayer@frequentis.com> wrote:
 
-Thanks
-Suzuki
+> Hello,
+> 
+> I am looking for a way to configure GPIO initial settings and exports to the
+> userspace via Sysfs in a generic way via a device tree.
+> 
+> The purpose would be to have the same features as when initializing and
+> exporting pins via platform code, eg.
+> 
+> 	static struct gpio leds_gpios[] = {
+> 		{ 32, GPIOF_OUT_INIT_HIGH, "Power LED" }, /* default to ON */
+> 		{ 33, GPIOF_OUT_INIT_LOW,  "Green LED" }, /* default to OFF */
+> 		{ 34, GPIOF_OUT_INIT_LOW,  "Red LED"   }, /* default to OFF */
+> 		{ 35, GPIOF_OUT_INIT_LOW,  "Blue LED"  }, /* default to OFF */
+> 		{ ... },
+> 	};
+> 
+> ,however, with no need for the kernel to know anything more about those pins
+> and their later handling by simple userpsace drivers than the setup information
+> provided in the device tree.
+> 
+> This should also attack the problem of unstable GPIO numbers in the case of
+> daughtercards on different base boards and would help provide a defined API
+> to the userspace based on pin labels with the board specifics hidden in one
+> place in the device tree.
+> 
+> Is there already a way for realizing such a scenario ?
+> 
+> Regards,
+> Christian
