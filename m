@@ -1,26 +1,19 @@
-Return-Path: <B21989@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
+Return-Path: <B35336@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 67B2C2C12BA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 22:46:02 +1000 (EST)
-Received: from mail111-db3 (localhost [127.0.0.1])	by
- mail111-db3-R.bigfish.com (Postfix) with ESMTP id 1743C3801A6	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 12:45:56 +0000 (UTC)
-Received: from DB3EHSMHS002.bigfish.com (unknown [10.3.81.246])	by
- mail111-db3.bigfish.com (Postfix) with ESMTP id 089E9340133	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 12:45:53 +0000 (UTC)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/mm: add ZONE_NORMAL zone for 64 bit kernel
-Date: Fri, 20 Jul 2012 20:21:46 +0800
-Message-ID: <1342786906-12634-1-git-send-email-Shaohui.Xie@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 948002C00AB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 22:51:53 +1000 (EST)
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH] pm: add power node to dts
+Date: Fri, 20 Jul 2012 20:53:24 +0800
+Message-ID: <1342788804-27770-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Mingkai Hu <Mingkai.hu@freescale.com>,
- Shaohui Xie <Shaohui.Xie@freescale.com>, Chen Yuanquan <B41889@freescale.com>
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,74 +23,319 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PowerPC platform only supports ZONE_DMA zone for 64bit kernel, so all the
-memory will be put into this zone. If the memory size is greater than
-the device's DMA capability and device uses dma_alloc_coherent to allocate
-memory, it will get an address which is over the device's DMA addressing,
-the device will fail.
+The Power Management device tree stub indicated that the platform
+supports Power Management feature.
 
-So we split the memory to two zones by adding a zone ZONE_NORMAL, since
-we already allocate PCICSRBAR/PEXCSRBAR right below the 4G boundary (if the
-lowest PCI address is above 4G), so we constrain the DMA zone ZONE_DMA
-to 2GB, also, we clear the flag __GFP_DMA and set it only if the device's
-dma_mask < total memory size. By doing this, devices which cannot DMA all
-the memory will be limited to ZONE_DMA, but devices which can DMA all the
-memory will not be affected by this limitation.
-
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
-Signed-off-by: Chen Yuanquan <B41889@freescale.com>
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
 ---
- arch/powerpc/kernel/dma.c |   13 ++++++++++++-
- arch/powerpc/mm/mem.c     |    4 +++-
- 2 files changed, 15 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi |   14 ++++++-
+ arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi |    2 +
+ arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi |    2 +
+ arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi |    2 +
+ arch/powerpc/boot/dts/fsl/p1010si-post.dtsi   |    8 ++++
+ arch/powerpc/boot/dts/fsl/p1020si-post.dtsi   |    5 +++
+ arch/powerpc/boot/dts/fsl/p1021si-post.dtsi   |    5 +++
+ arch/powerpc/boot/dts/fsl/p1022si-post.dtsi   |   11 ++++--
+ arch/powerpc/boot/dts/fsl/p2020si-post.dtsi   |   14 +++++++
+ arch/powerpc/boot/dts/fsl/pq3-power.dtsi      |   48 +++++++++++++++++++++++++
+ 10 files changed, 106 insertions(+), 5 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-power.dtsi
 
-diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-index b1ec983..8029295 100644
---- a/arch/powerpc/kernel/dma.c
-+++ b/arch/powerpc/kernel/dma.c
-@@ -30,6 +30,7 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
- 				struct dma_attrs *attrs)
- {
- 	void *ret;
-+	phys_addr_t top_ram_pfn = memblock_end_of_DRAM();
- #ifdef CONFIG_NOT_COHERENT_CACHE
- 	ret = __dma_alloc_coherent(dev, size, dma_handle, flag);
- 	if (ret == NULL)
-@@ -40,8 +41,18 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
- 	struct page *page;
- 	int node = dev_to_node(dev);
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
+index c8b2daa..900f117 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8536si-post.dtsi
+@@ -199,6 +199,10 @@
  
-+	/*
-+	 * check for crappy device which has dma_mask < ZONE_DMA, and
-+	 * we are not going to support it, just warn and fail.
-+	 */
-+	if (*dev->dma_mask < DMA_BIT_MASK(31)) {
-+		dev_err(dev, "Unsupported dma_mask 0x%llx\n", *dev->dma_mask);
-+		return NULL;
-+	}
- 	/* ignore region specifiers */
--	flag  &= ~(__GFP_HIGHMEM);
-+	flag  &= ~(__GFP_HIGHMEM | __GFP_DMA);
-+	if (*dev->dma_mask < top_ram_pfn - 1)
-+		flag |= GFP_DMA;
+ /include/ "pq3-dma-0.dtsi"
+ /include/ "pq3-etsec1-0.dtsi"
++	enet0: ethernet@24000 {
++		fsl,wake-on-filer;
++		fsl,pmc-handle = <&etsec1_clk>;
++	};
+ /include/ "pq3-etsec1-timer-0.dtsi"
  
- 	page = alloc_pages_node(node, flag, get_order(size));
- 	if (page == NULL)
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index baaafde..a494555 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -281,7 +281,9 @@ void __init paging_init(void)
- 	max_zone_pfns[ZONE_DMA] = lowmem_end_addr >> PAGE_SHIFT;
- 	max_zone_pfns[ZONE_HIGHMEM] = top_of_ram >> PAGE_SHIFT;
- #else
--	max_zone_pfns[ZONE_DMA] = top_of_ram >> PAGE_SHIFT;
-+	max_zone_pfns[ZONE_DMA] = min_t(phys_addr_t, top_of_ram,
-+					1ull << 31) >> PAGE_SHIFT;
-+	max_zone_pfns[ZONE_NORMAL] = top_of_ram >> PAGE_SHIFT;
- #endif
- 	free_area_init_nodes(max_zone_pfns);
+ 	usb@22000 {
+@@ -222,9 +226,10 @@
+ 	};
  
+ /include/ "pq3-etsec1-2.dtsi"
+-
+-	ethernet@26000 {
++	enet2: ethernet@26000 {
+ 		cell-index = <1>;
++		fsl,wake-on-filer;
++		fsl,pmc-handle = <&etsec3_clk>;
+ 	};
+ 
+ 	usb@2b000 {
+@@ -249,4 +254,9 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
++	power@e0070 {
++		compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc";
++	};
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi
+index b68eb11..ea7416a 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8544si-post.dtsi
+@@ -188,4 +188,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi
+index 579d76c..dddb737 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8548si-post.dtsi
+@@ -156,4 +156,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi b/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
+index d44e25a..7313351 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8572si-post.dtsi
+@@ -193,4 +193,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
+index 0bde9ee..108daa5 100644
+--- a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
+@@ -171,6 +171,8 @@
+ 
+ /include/ "pq3-etsec2-0.dtsi"
+ 	enet0: ethernet@b0000 {
++		fsl,pmc-handle = <&etsec1_clk>;
++
+ 		queue-group@b0000 {
+ 			fsl,rx-bit-map = <0xff>;
+ 			fsl,tx-bit-map = <0xff>;
+@@ -179,6 +181,8 @@
+ 
+ /include/ "pq3-etsec2-1.dtsi"
+ 	enet1: ethernet@b1000 {
++		fsl,pmc-handle = <&etsec2_clk>;
++
+ 		queue-group@b1000 {
+ 			fsl,rx-bit-map = <0xff>;
+ 			fsl,tx-bit-map = <0xff>;
+@@ -187,6 +191,8 @@
+ 
+ /include/ "pq3-etsec2-2.dtsi"
+ 	enet2: ethernet@b2000 {
++		fsl,pmc-handle = <&etsec3_clk>;
++
+ 		queue-group@b2000 {
+ 			fsl,rx-bit-map = <0xff>;
+ 			fsl,tx-bit-map = <0xff>;
+@@ -199,4 +205,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
+index 68cc5e7..410e6e5 100644
+--- a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
+@@ -162,14 +162,17 @@
+ 
+ /include/ "pq3-etsec2-0.dtsi"
+ 	enet0: enet0_grp2: ethernet@b0000 {
++		fsl,pmc-handle = <&etsec1_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-1.dtsi"
+ 	enet1: enet1_grp2: ethernet@b1000 {
++		fsl,pmc-handle = <&etsec2_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-2.dtsi"
+ 	enet2: enet2_grp2: ethernet@b2000 {
++		fsl,pmc-handle = <&etsec3_clk>;
+ 	};
+ 
+ 	global-utilities@e0000 {
+@@ -177,6 +180,8 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+ 
+ /include/ "pq3-etsec2-grp2-0.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
+index adb82fd..02df574 100644
+--- a/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
+@@ -158,14 +158,17 @@
+ 
+ /include/ "pq3-etsec2-0.dtsi"
+ 	enet0: enet0_grp2: ethernet@b0000 {
++		fsl,pmc-handle = <&etsec1_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-1.dtsi"
+ 	enet1: enet1_grp2: ethernet@b1000 {
++		fsl,pmc-handle = <&etsec2_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-2.dtsi"
+ 	enet2: enet2_grp2: ethernet@b2000 {
++		fsl,pmc-handle = <&etsec3_clk>;
+ 	};
+ 
+ 	global-utilities@e0000 {
+@@ -173,6 +176,8 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+ 
+ &qe {
+diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+index 06216b8..e5c0e27 100644
+--- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+@@ -223,10 +223,14 @@
+ 
+ /include/ "pq3-etsec2-0.dtsi"
+ 	enet0: enet0_grp2: ethernet@b0000 {
++		fsl,wake-on-filer;
++		fsl,pmc-handle = <&etsec1_clk>;
+ 	};
+ 
+ /include/ "pq3-etsec2-1.dtsi"
+ 	enet1: enet1_grp2: ethernet@b1000 {
++		fsl,wake-on-filer;
++		fsl,pmc-handle = <&etsec2_clk>;
+ 	};
+ 
+ 	global-utilities@e0000 {
+@@ -235,9 +239,10 @@
+ 		fsl,has-rstcr;
+ 	};
+ 
+-	power@e0070{
+-		compatible = "fsl,mpc8536-pmc", "fsl,mpc8548-pmc";
+-		reg = <0xe0070 0x20>;
++/include/ "pq3-power.dtsi"
++	power@e0070 {
++		compatible = "fsl,p1022-pmc", "fsl,mpc8536-pmc",
++				"fsl,mpc8548-pmc";
+ 	};
+ 
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
+index 884e01b..2c4787c 100644
+--- a/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p2020si-post.dtsi
+@@ -175,6 +175,10 @@
+ 		compatible = "fsl-usb2-dr-v1.6", "fsl-usb2-dr";
+ 	};
+ /include/ "pq3-etsec1-0.dtsi"
++	enet0: ethernet@24000 {
++		fsl,pmc-handle = <&etsec1_clk>;
++
++	};
+ /include/ "pq3-etsec1-timer-0.dtsi"
+ 
+ 	ptp_clock@24e00 {
+@@ -183,7 +187,15 @@
+ 
+ 
+ /include/ "pq3-etsec1-1.dtsi"
++	enet1: ethernet@25000 {
++		fsl,pmc-handle = <&etsec2_clk>;
++	};
++
+ /include/ "pq3-etsec1-2.dtsi"
++	enet2: ethernet@26000 {
++		fsl,pmc-handle = <&etsec3_clk>;
++	};
++
+ /include/ "pq3-esdhc-0.dtsi"
+ 	sdhc@2e000 {
+ 		compatible = "fsl,p2020-esdhc", "fsl,esdhc";
+@@ -198,4 +210,6 @@
+ 		reg = <0xe0000 0x1000>;
+ 		fsl,has-rstcr;
+ 	};
++
++/include/ "pq3-power.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-power.dtsi b/arch/powerpc/boot/dts/fsl/pq3-power.dtsi
+new file mode 100644
+index 0000000..5aa854c
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/pq3-power.dtsi
+@@ -0,0 +1,48 @@
++/*
++ * PQ3 Power Management device tree stub
++ *
++ * Copyright 2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++power@e0070 {
++	compatible = "fsl,mpc8548-pmc";
++	reg = <0xe0070 0x20>;
++
++	etsec1_clk: soc-clk@24 {
++		fsl,pmcdr-mask = <0x00000080>;
++	};
++	etsec2_clk: soc-clk@25 {
++		fsl,pmcdr-mask = <0x00000040>;
++	};
++	etsec3_clk: soc-clk@26 {
++		fsl,pmcdr-mask = <0x00000020>;
++	};
++};
 -- 
-1.6.4
+1.6.4.1
