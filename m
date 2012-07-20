@@ -1,18 +1,17 @@
 Return-Path: <B35336@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 962362C03AA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 22:41:12 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8763C2C04AF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 22:41:20 +1000 (EST)
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
  <galak@kernel.crashing.org>
-Subject: [PATCH v8 1/7] powerpc/smp: use a struct epapr_spin_table to replace
- macros
-Date: Fri, 20 Jul 2012 20:42:33 +0800
-Message-ID: <1342788159-27529-2-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH v8 3/7] powerpc/85xx: implement hardware timebase sync
+Date: Fri, 20 Jul 2012 20:42:35 +0800
+Message-ID: <1342788159-27529-4-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1342788159-27529-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1342788159-27529-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
@@ -27,115 +26,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
----
- arch/powerpc/platforms/85xx/smp.c |   46 ++++++++++++++++++------------------
- 1 files changed, 23 insertions(+), 23 deletions(-)
+Do hardware timebase sync. Firstly, stop all timebases, and transfer
+the timebase value of the boot core to the other core. Finally,
+start all timebases.
 
+Only apply to dual-core chips, such as MPC8572, P2020, etc.
+
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/include/asm/fsl_guts.h |    2 +
+ arch/powerpc/platforms/85xx/smp.c   |   82 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 84 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
+index aa4c488..dd5ba2c 100644
+--- a/arch/powerpc/include/asm/fsl_guts.h
++++ b/arch/powerpc/include/asm/fsl_guts.h
+@@ -48,6 +48,8 @@ struct ccsr_guts {
+         __be32  dmuxcr;		/* 0x.0068 - DMA Mux Control Register */
+         u8	res06c[0x70 - 0x6c];
+ 	__be32	devdisr;	/* 0x.0070 - Device Disable Control */
++#define CCSR_GUTS_DEVDISR_TB1	0x00001000
++#define CCSR_GUTS_DEVDISR_TB0	0x00004000
+ 	__be32	devdisr2;	/* 0x.0074 - Device Disable Control 2 */
+ 	u8	res078[0x7c - 0x78];
+ 	__be32  pmjcr;		/* 0x.007c - 4 Power Management Jog Control Register */
 diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index ff42490..4827709 100644
+index 4827709..7ed52a6 100644
 --- a/arch/powerpc/platforms/85xx/smp.c
 +++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -2,7 +2,7 @@
-  * Author: Andy Fleming <afleming@freescale.com>
-  * 	   Kumar Gala <galak@kernel.crashing.org>
-  *
-- * Copyright 2006-2008, 2011 Freescale Semiconductor Inc.
-+ * Copyright 2006-2008, 2011-2012 Freescale Semiconductor Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -17,6 +17,7 @@
- #include <linux/of.h>
- #include <linux/kexec.h>
- #include <linux/highmem.h>
-+#include <linux/cpu.h>
+@@ -25,6 +25,7 @@
+ #include <asm/mpic.h>
+ #include <asm/cacheflush.h>
+ #include <asm/dbell.h>
++#include <asm/fsl_guts.h>
  
- #include <asm/machdep.h>
- #include <asm/pgtable.h>
-@@ -31,23 +32,21 @@
+ #include <sysdev/fsl_soc.h>
+ #include <sysdev/mpic.h>
+@@ -41,6 +42,64 @@ struct epapr_spin_table {
+ 	u32	pir;
+ };
  
- extern void __early_start(void);
- 
--#define BOOT_ENTRY_ADDR_UPPER	0
--#define BOOT_ENTRY_ADDR_LOWER	1
--#define BOOT_ENTRY_R3_UPPER	2
--#define BOOT_ENTRY_R3_LOWER	3
--#define BOOT_ENTRY_RESV		4
--#define BOOT_ENTRY_PIR		5
--#define BOOT_ENTRY_R6_UPPER	6
--#define BOOT_ENTRY_R6_LOWER	7
--#define NUM_BOOT_ENTRY		8
--#define SIZE_BOOT_ENTRY		(NUM_BOOT_ENTRY * sizeof(u32))
-+struct epapr_spin_table {
-+	u32	addr_h;
-+	u32	addr_l;
-+	u32	r3_h;
-+	u32	r3_l;
-+	u32	reserved;
-+	u32	pir;
-+};
- 
++static struct ccsr_guts __iomem *guts;
++static u64 timebase;
++static int tb_req;
++static int tb_valid;
++
++static void mpc85xx_timebase_freeze(int freeze)
++{
++	uint32_t mask;
++
++	mask = CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR_TB1;
++	if (freeze)
++		setbits32(&guts->devdisr, mask);
++	else
++		clrbits32(&guts->devdisr, mask);
++
++	in_be32(&guts->devdisr);
++}
++
++static void mpc85xx_give_timebase(void)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++
++	while (!tb_req)
++		barrier();
++	tb_req = 0;
++
++	mpc85xx_timebase_freeze(1);
++	timebase = get_tb();
++	mb();
++	tb_valid = 1;
++
++	while (tb_valid)
++		barrier();
++
++	mpc85xx_timebase_freeze(0);
++
++	local_irq_restore(flags);
++}
++
++static void mpc85xx_take_timebase(void)
++{
++	unsigned long flags;
++
++	local_irq_save(flags);
++
++	tb_req = 1;
++	while (!tb_valid)
++		barrier();
++
++	set_tb(timebase >> 32, timebase & 0xffffffff);
++	isync();
++	tb_valid = 0;
++
++	local_irq_restore(flags);
++}
++
  static int __init
  smp_85xx_kick_cpu(int nr)
  {
- 	unsigned long flags;
- 	const u64 *cpu_rel_addr;
--	__iomem u32 *bptr_vaddr;
-+	__iomem struct epapr_spin_table *spin_table;
+@@ -228,6 +287,16 @@ smp_85xx_setup_cpu(int cpu_nr)
+ 		doorbell_setup_this_cpu();
+ }
+ 
++static const struct of_device_id mpc85xx_smp_guts_ids[] = {
++	{ .compatible = "fsl,mpc8572-guts", },
++	{ .compatible = "fsl,p1020-guts", },
++	{ .compatible = "fsl,p1021-guts", },
++	{ .compatible = "fsl,p1022-guts", },
++	{ .compatible = "fsl,p1023-guts", },
++	{ .compatible = "fsl,p2020-guts", },
++	{},
++};
++
+ void __init mpc85xx_smp_init(void)
+ {
  	struct device_node *np;
- 	int n = 0, hw_cpu = get_hard_smp_processor_id(nr);
- 	int ioremappable;
-@@ -75,19 +74,20 @@ smp_85xx_kick_cpu(int nr)
+@@ -249,6 +318,19 @@ void __init mpc85xx_smp_init(void)
+ 		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
+ 	}
  
- 	/* Map the spin table */
- 	if (ioremappable)
--		bptr_vaddr = ioremap(*cpu_rel_addr, SIZE_BOOT_ENTRY);
-+		spin_table = ioremap(*cpu_rel_addr,
-+				sizeof(struct epapr_spin_table));
- 	else
--		bptr_vaddr = phys_to_virt(*cpu_rel_addr);
-+		spin_table = phys_to_virt(*cpu_rel_addr);
++	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
++	if (np) {
++		guts = of_iomap(np, 0);
++		of_node_put(np);
++		if (!guts) {
++			pr_err("%s: Could not map guts node address\n",
++								__func__);
++			return;
++		}
++		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
++		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
++	}
++
+ 	smp_ops = &smp_85xx_ops;
  
- 	local_irq_save(flags);
- 
--	out_be32(bptr_vaddr + BOOT_ENTRY_PIR, hw_cpu);
-+	out_be32(&spin_table->pir, hw_cpu);
- #ifdef CONFIG_PPC32
--	out_be32(bptr_vaddr + BOOT_ENTRY_ADDR_LOWER, __pa(__early_start));
-+	out_be32(&spin_table->addr_l, __pa(__early_start));
- 
- 	if (!ioremappable)
--		flush_dcache_range((ulong)bptr_vaddr,
--				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
-+		flush_dcache_range((ulong)spin_table,
-+			(ulong)spin_table + sizeof(struct epapr_spin_table));
- 
- 	/* Wait a bit for the CPU to ack. */
- 	while ((__secondary_hold_acknowledge != hw_cpu) && (++n < 1000))
-@@ -95,18 +95,18 @@ smp_85xx_kick_cpu(int nr)
- #else
- 	smp_generic_kick_cpu(nr);
- 
--	out_be64((u64 *)(bptr_vaddr + BOOT_ENTRY_ADDR_UPPER),
--		__pa((u64)*((unsigned long long *) generic_secondary_smp_init)));
-+	out_be64((u64 *)(&spin_table->addr_h),
-+	  __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
- 
- 	if (!ioremappable)
--		flush_dcache_range((ulong)bptr_vaddr,
--				(ulong)(bptr_vaddr + SIZE_BOOT_ENTRY));
-+		flush_dcache_range((ulong)spin_table,
-+			(ulong)spin_table + sizeof(struct epapr_spin_table));
- #endif
- 
- 	local_irq_restore(flags);
- 
- 	if (ioremappable)
--		iounmap(bptr_vaddr);
-+		iounmap(spin_table);
- 
- 	pr_debug("waited %d msecs for CPU #%d.\n", n, nr);
- 
+ #ifdef CONFIG_KEXEC
 -- 
 1.6.4.1
