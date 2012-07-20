@@ -1,35 +1,24 @@
-Return-Path: <r61911@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 981BD2C035C
- for <linuxppc-dev@ozlabs.org>; Fri, 20 Jul 2012 18:28:00 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Joakim Tjernlund <joakim.tjernlund@transmode.se>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
-Date: Fri, 20 Jul 2012 08:27:52 +0000
-Message-ID: <3E027F8168735B46AC006B1D0C7BB002079C3290@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1338363814-19565-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <6F7E3816-E71B-466A-9C6F-9928E1CFD7B1@digitaldans.com>
- <10126984030.20120530140826@abatron.ch>
- <OF53CDE18C.59DD377E-ONC1257A0F.0031C7A0-C1257A0F.0031EA81@transmode.se>
- <13517672561.20120531113057@abatron.ch>
- <OF1016B1AA.DF19B646-ONC1257A0F.003647EF-C1257A0F.003699E5@transmode.se>
- <4FC7AEC9.5050203@freescale.com>
- <OF3AA5925F.E17EF6A4-ONC1257A0F.0076C23F-C1257A0F.0076D836@transmode.se>
- <4FC7E606.1070205@freescale.com>
- <OF43D61D1E.31CC8410-ONC1257A0F.0079F3A4-C1257A0F.007A237A@transmode.se>
- <4FC7EDD5.8090302@freescale.com>
- <OFDC3DAEDA.27E0B532-ONC1257A0F.007BF637-C1257A0F.007C1E26@transmode.se>
-In-Reply-To: <OFDC3DAEDA.27E0B532-ONC1257A0F.007BF637-C1257A0F.007C1E26@transmode.se>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id CAF3B2C0369
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 18:34:05 +1000 (EST)
+Message-ID: <50091911.7080303@cn.fujitsu.com>
+Date: Fri, 20 Jul 2012 16:38:41 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Dan Malek <ppc6dev@digitaldans.com>, Bob Cochran <ppc@mindchasers.com>,
- Support <support@abatron.ch>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH 6/8] memory-hotplug: introduce new function
+ arch_remove_memory()
+References: <5009038A.4090001@cn.fujitsu.com>
+ <500904D6.3030109@cn.fujitsu.com> <5009151F.3060903@jp.fujitsu.com>
+In-Reply-To: <5009151F.3060903@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: len.brown@intel.com, linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
+ rientjes@google.com, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,103 +28,240 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+At 07/20/2012 04:21 PM, Yasuaki Ishimatsu Wrote:
+> 2012/07/20 16:12, Wen Congyang wrote:
+>> We don't call __add_pages() directly in the function add_memory()
+>> because some other architecture related thins needs to be done
+>> before or after calling __add_pages(). So we should not call
+>> __remove_pages() directly in the function remove_memory.
+>> Introduce new function arch_remove_memory() to revert the things done
+>> in arch_add_memory().
+>>
+>> Note: the function for x86_64 will be implemented later. And I don't
+>> know how to implement it for s390.
+> 
+> I think you need cc to other arch ML for reviewing the patch.
 
+I forgot to do it.
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+tie-fei.zang=3Dfreescale.com@lists.ozlabs.org
-> [mailto:linuxppc-dev-bounces+tie-fei.zang=3Dfreescale.com@lists.ozlabs.or=
-g]
-> On Behalf Of Joakim Tjernlund
-> Sent: Friday, June 01, 2012 6:36 AM
-> To: Wood Scott-B07421
-> Cc: linuxppc-dev@ozlabs.org; Dan Malek; Bob Cochran; Support
-> Subject: Re: [RFC] [PATCH] powerpc: Add MSR_DE to MSR_KERNEL
->=20
-> Scott Wood <scottwood@freescale.com> wrote on 2012/06/01 00:16:53:
-> >
-> > On 05/31/2012 05:14 PM, Joakim Tjernlund wrote:
-> > > Scott Wood <scottwood@freescale.com> wrote on 2012/05/31 23:43:34:
-> > >>
-> > >> On 05/31/2012 04:38 PM, Joakim Tjernlund wrote:
-> > >>> Scott Wood <scottwood@freescale.com> wrote on 2012/05/31 19:47:53:
-> > >>>>
-> > >>>> On 05/31/2012 04:56 AM, Joakim Tjernlund wrote:
-> > >>>>> Abatron Support <support@abatron.ch> wrote on 2012/05/31 11:30:57=
-:
-> > >>>>>>
-> > >>>>>>
-> > >>>>>>> Abatron Support <support@abatron.ch> wrote on 2012/05/30 14:08:=
-26:
-> > >>>>>>>>
-> > >>>>>>>>>> I have tested this briefly with BDI2000 on P2010(e500) and
-> > >>>>>>>>>> it works for me. I don't know if there are any bad side
-> effects,
-> > >>>>>>>>>> therfore
-> > >>>>>>>>>> this RFC.
-> > >>>>>>>>
-> > >>>>>>>>> We used to have MSR_DE surrounded by CONFIG_something
-> > >>>>>>>>> to ensure it wasn't set under normal operation.  IIRC, if
-> MSR_DE
-> > >>>>>>>>> is set, you will have problems with software debuggers that
-> > >>>>>>>>> utilize the the debugging registers in the chip itself.  You
-> only want
-> > >>>>>>>>> to force this to be set when using the BDI, not at other time=
-s.
-> > >>>>>>>>
-> > >>>>>>>> This MSR_DE is also of interest and used for software debugger=
-s
-> that
-> > >>>>>>>> make use of the debug registers. Only if MSR_DE is set then
-> debug
-> > >>>>>>>> interrupts are generated. If a debug event leads to a debug
-> interrupt
-> > >>>>>>>> handled by a software debugger or if it leads to a debug halt
-> handled
-> > >>>>>>>> by a JTAG tool is selected with DBCR0_EDM / DBCR0_IDM.
-> > >>>>>>>>
-> > >>>>>>>> The "e500 Core Family Reference Manual" chapter "Chapter 8
-> > >>>>>>>> Debug Support" explains in detail the effect of MSR_DE.
-> > >>>>>>
-> > >>>>>>> So what is the verdict on this? I don't buy into Dan argument
-> without some
-> > >>>>>>> hard data.
-> > >>>>>>
-> > >>>>>> What I tried to mention is that handling the MSR_DE correct is n=
-ot
-> only
-> > >>>>>> an emulator (JTAG debugger) requirement. Also a software debugge=
-r
-> may
-> > >>>>>> depend on a correct handled MSR_DE bit.
-> > >>>>>
-> > >>>>> Yes, that made sense to me too. How would SW debuggers work if th=
-e
-> kernel keeps
-> > >>>>> turning off MSR_DE first chance it gets?
-> > >>>>
-> > >>>> The kernel selectively enables MSR_DE when it wants to debug.  I'm
-> not
-> > >>>> sure if anything will be bothered by leaving it on all the time.
-> This
-> > >>>> is something we need for virtualization as well, so a hypervisor c=
-an
-> > >>>> debug the guest.
-> > >>>
-> > >>> hmm, I read that as you as in favour of the patch?
-> > >>
-> > >> I'd want some confirmation that it doesn't break anything, and that
-> > >> there aren't any other places that need MSR_DE that this doesn't cov=
-er,
-> > >> but in general yes.
-> > >
-> > > Then you need to test drive the patch :)
-> >
-> > I was thinking more along the lines of someone who's more familiar with
-> > the relevant parts of the code confirming that it's really OK, not just
-> > testing that it doesn't blow up in my face.
->=20
-> It just occurred to me that you guys have this already in your Linux SDK =
-so
-> it can't be that bad.
-No. MSR_DE is ONLY added when using CW debug in SDK.
-Roy
+> 
+> 
+>> CC: David Rientjes <rientjes@google.com>
+>> CC: Jiang Liu <liuj97@gmail.com>
+>> CC: Len Brown <len.brown@intel.com>
+>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> CC: Paul Mackerras <paulus@samba.org>
+>> CC: Christoph Lameter <cl@linux.com>
+>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>> CC: Andrew Morton <akpm@linux-foundation.org>
+>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+>> ---
+>>   arch/ia64/mm/init.c            |   16 ++++++++++++++++
+>>   arch/powerpc/mm/mem.c          |   14 ++++++++++++++
+>>   arch/s390/mm/init.c            |    8 ++++++++
+>>   arch/sh/mm/init.c              |   15 +++++++++++++++
+>>   arch/tile/mm/init.c            |    8 ++++++++
+>>   arch/x86/mm/init_32.c          |   10 ++++++++++
+>>   arch/x86/mm/init_64.c          |    7 +++++++
+>>   include/linux/memory_hotplug.h |    1 +
+>>   mm/memory_hotplug.c            |    2 +-
+>>   9 files changed, 80 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/arch/ia64/mm/init.c b/arch/ia64/mm/init.c
+>> index 0eab454..1e345ed 100644
+>> --- a/arch/ia64/mm/init.c
+>> +++ b/arch/ia64/mm/init.c
+>> @@ -688,6 +688,22 @@ int arch_add_memory(int nid, u64 start, u64 size)
+>>
+>>       return ret;
+>>   }
+>> +
+>> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>> +int arch_remove_memory(u64 start, u64 size)
+>> +{
+>> +    unsigned long start_pfn = start >> PAGE_SHIFT;
+>> +    unsigned long nr_pages = size >> PAGE_SHIFT;
+>> +    int ret;
+>> +
+>> +    ret = __remove_pages(start_pfn, nr_pages);
+>> +    if (ret)
+>> +        pr_warn("%s: Problem encountered in __remove_pages() as"
+>> +            " ret=%d\n", __func__,  ret);
+>> +
+>> +    return ret;
+>> +}
+>> +#endif
+>>   #endif
+>>
+>>   /*
+>> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+>> index baaafde..249cef4 100644
+>> --- a/arch/powerpc/mm/mem.c
+>> +++ b/arch/powerpc/mm/mem.c
+>> @@ -133,6 +133,20 @@ int arch_add_memory(int nid, u64 start, u64 size)
+>>
+>>       return __add_pages(nid, zone, start_pfn, nr_pages);
+>>   }
+>> +
+>> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>> +int arch_remove_memory(u64 start, u64 size)
+>> +{
+>> +    unsigned long start_pfn = start >> PAGE_SHIFT;
+>> +    unsigned long nr_pages = size >> PAGE_SHIFT;
+>> +
+>> +    start = (unsigned long)__va(start);
+>> +    if (remove_section_mapping(start, start + size))
+>> +        return -EINVAL;
+>> +
+>> +    return __remove_pages(start_pfn, nr_pages);
+>> +}
+>> +#endif
+>>   #endif /* CONFIG_MEMORY_HOTPLUG */
+>>
+>>   /*
+>> diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
+>> index 2bea060..3de0d5b 100644
+>> --- a/arch/s390/mm/init.c
+>> +++ b/arch/s390/mm/init.c
+>> @@ -259,4 +259,12 @@ int arch_add_memory(int nid, u64 start, u64 size)
+>>           vmem_remove_mapping(start, size);
+>>       return rc;
+>>   }
+>> +
+>> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>> +int arch_remove_memory(u64 start, u64 size)
+>> +{
+>> +    /* TODO */
+>> +    return -EBUSY;
+>> +}
+>> +#endif
+>>   #endif /* CONFIG_MEMORY_HOTPLUG */
+>> diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
+>> index 82cc576..fc84491 100644
+>> --- a/arch/sh/mm/init.c
+>> +++ b/arch/sh/mm/init.c
+>> @@ -558,4 +558,19 @@ int memory_add_physaddr_to_nid(u64 addr)
+>>   EXPORT_SYMBOL_GPL(memory_add_physaddr_to_nid);
+>>   #endif
+>>
+>> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>> +int arch_remove_memory(u64 start, u64 size)
+>> +{
+>> +    unsigned long start_pfn = start >> PAGE_SHIFT;
+>> +    unsigned long nr_pages = size >> PAGE_SHIFT;
+>> +    int ret;
+>> +
+>> +    ret = __remove_pages(start_pfn, nr_pages);
+>> +    if (unlikely(ret))
+>> +        pr_warn("%s: Failed, __remove_pages() == %d\n", __func__,
+>> +            ret);
+>> +
+>> +    return ret;
+>> +}
+>> +#endif
+>>   #endif /* CONFIG_MEMORY_HOTPLUG */
+>> diff --git a/arch/tile/mm/init.c b/arch/tile/mm/init.c
+>> index 630dd2c..bdd8a99 100644
+>> --- a/arch/tile/mm/init.c
+>> +++ b/arch/tile/mm/init.c
+>> @@ -947,6 +947,14 @@ int remove_memory(u64 start, u64 size)
+>>   {
+>>       return -EINVAL;
+>>   }
+>> +
+>> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>> +int arch_remove_memory(u64 start, u64 size)
+>> +{
+>> +    /* TODO */
+>> +    return -EBUSY;
+>> +}
+>> +#endif
+>>   #endif
+>>
+>>   struct kmem_cache *pgd_cache;
+>> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+>> index 575d86f..a690153 100644
+>> --- a/arch/x86/mm/init_32.c
+>> +++ b/arch/x86/mm/init_32.c
+>> @@ -842,6 +842,16 @@ int arch_add_memory(int nid, u64 start, u64 size)
+>>
+>>       return __add_pages(nid, zone, start_pfn, nr_pages);
+>>   }
+>> +
+>> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>> +int arch_remove_memory(unsigned long start, unsigned long size)
+>> +{
+>> +    unsigned long start_pfn = start >> PAGE_SHIFT;
+>> +    unsigned long nr_pages = size >> PAGE_SHIFT;
+>> +
+>> +    return __remove_pages(start_pfn, nr_pages);
+>> +}
+>> +#endif
+>>   #endif
+>>
+>>   /*
+>> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+>> index 9e635b3..78b94bc 100644
+>> --- a/arch/x86/mm/init_64.c
+>> +++ b/arch/x86/mm/init_64.c
+>> @@ -675,6 +675,13 @@ int arch_add_memory(int nid, u64 start, u64 size)
+>>   }
+>>   EXPORT_SYMBOL_GPL(arch_add_memory);
+>>
+>> +#ifdef CONFIG_MEMORY_HOTREMOVE
+>> +int arch_remove_memory(unsigned long start, unsigned long size)
+>> +{
+>> +    /* TODO */
+>> +    return -EBUSY;
+>> +}
+>> +#endif
+> 
+> Why does not the function call __remove_pages()?
+
+arch_remove_memory() should clear the page table after remove pages here.
+I implement this function in patch 8.
+
+Thanks
+Wen Congyang
+
+> 
+> Thanks,
+> Yasuaki ishimatsu
+> 
+>>   #endif /* CONFIG_MEMORY_HOTPLUG */
+>>
+>>   static struct kcore_list kcore_vsyscall;
+>> diff --git a/include/linux/memory_hotplug.h
+>> b/include/linux/memory_hotplug.h
+>> index 2ba0a1a..8639799 100644
+>> --- a/include/linux/memory_hotplug.h
+>> +++ b/include/linux/memory_hotplug.h
+>> @@ -84,6 +84,7 @@ extern void __online_page_free(struct page *page);
+>>
+>>   #ifdef CONFIG_MEMORY_HOTREMOVE
+>>   extern bool is_pageblock_removable_nolock(struct page *page);
+>> +extern int arch_remove_memory(unsigned long start, unsigned long size);
+>>   #endif /* CONFIG_MEMORY_HOTREMOVE */
+>>
+>>   /* reasonably generic interface to expand the physical pages in a
+>> zone  */
+>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>> index dccdf71..cc2c8b9 100644
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -1055,7 +1055,7 @@ int __ref remove_memory(int nid, u64 start, u64
+>> size)
+>>           unregister_one_node(nid);
+>>       }
+>>
+>> -    __remove_pages(start >> PAGE_SHIFT, size >> PAGE_SHIFT);
+>> +    arch_remove_memory(start, size);
+>>   out:
+>>       unlock_memory_hotplug();
+>>       return ret;
+>>
+> 
+> 
+> 
