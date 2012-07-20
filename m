@@ -1,17 +1,18 @@
 Return-Path: <B35336@freescale.com>
 Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8763C2C04AF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 22:41:20 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 771682C04E1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jul 2012 22:41:22 +1000 (EST)
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
  <galak@kernel.crashing.org>
-Subject: [PATCH v8 3/7] powerpc/85xx: implement hardware timebase sync
-Date: Fri, 20 Jul 2012 20:42:35 +0800
-Message-ID: <1342788159-27529-4-git-send-email-chenhui.zhao@freescale.com>
+Subject: [PATCH v8 2/7] powerpc/smp: add generic_set_cpu_up() to set cpu_state
+ as CPU_UP_PREPARE
+Date: Fri, 20 Jul 2012 20:42:34 +0800
+Message-ID: <1342788159-27529-3-git-send-email-chenhui.zhao@freescale.com>
 In-Reply-To: <1342788159-27529-1-git-send-email-chenhui.zhao@freescale.com>
 References: <1342788159-27529-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
@@ -26,145 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Do hardware timebase sync. Firstly, stop all timebases, and transfer
-the timebase value of the boot core to the other core. Finally,
-start all timebases.
-
-Only apply to dual-core chips, such as MPC8572, P2020, etc.
+In the case of cpu hotplug, the cpu_state should be set to CPU_UP_PREPARE when kicking cpu.
+Otherwise, the cpu_state is always CPU_DEAD after calling generic_set_cpu_dead(), which
+makes the delay in generic_cpu_die() not happen.
 
 Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/include/asm/fsl_guts.h |    2 +
- arch/powerpc/platforms/85xx/smp.c   |   82 +++++++++++++++++++++++++++++++++++
- 2 files changed, 84 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/smp.h |    1 +
+ arch/powerpc/kernel/smp.c      |   12 +++++++++++-
+ 2 files changed, 12 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/fsl_guts.h b/arch/powerpc/include/asm/fsl_guts.h
-index aa4c488..dd5ba2c 100644
---- a/arch/powerpc/include/asm/fsl_guts.h
-+++ b/arch/powerpc/include/asm/fsl_guts.h
-@@ -48,6 +48,8 @@ struct ccsr_guts {
-         __be32  dmuxcr;		/* 0x.0068 - DMA Mux Control Register */
-         u8	res06c[0x70 - 0x6c];
- 	__be32	devdisr;	/* 0x.0070 - Device Disable Control */
-+#define CCSR_GUTS_DEVDISR_TB1	0x00001000
-+#define CCSR_GUTS_DEVDISR_TB0	0x00004000
- 	__be32	devdisr2;	/* 0x.0074 - Device Disable Control 2 */
- 	u8	res078[0x7c - 0x78];
- 	__be32  pmjcr;		/* 0x.007c - 4 Power Management Jog Control Register */
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 4827709..7ed52a6 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -25,6 +25,7 @@
- #include <asm/mpic.h>
- #include <asm/cacheflush.h>
- #include <asm/dbell.h>
-+#include <asm/fsl_guts.h>
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index ebc24dc..ce8e2bd 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -65,6 +65,7 @@ int generic_cpu_disable(void);
+ void generic_cpu_die(unsigned int cpu);
+ void generic_mach_cpu_die(void);
+ void generic_set_cpu_dead(unsigned int cpu);
++void generic_set_cpu_up(unsigned int cpu);
+ int generic_check_cpu_restart(unsigned int cpu);
+ #endif
  
- #include <sysdev/fsl_soc.h>
- #include <sysdev/mpic.h>
-@@ -41,6 +42,64 @@ struct epapr_spin_table {
- 	u32	pir;
- };
- 
-+static struct ccsr_guts __iomem *guts;
-+static u64 timebase;
-+static int tb_req;
-+static int tb_valid;
-+
-+static void mpc85xx_timebase_freeze(int freeze)
-+{
-+	uint32_t mask;
-+
-+	mask = CCSR_GUTS_DEVDISR_TB0 | CCSR_GUTS_DEVDISR_TB1;
-+	if (freeze)
-+		setbits32(&guts->devdisr, mask);
-+	else
-+		clrbits32(&guts->devdisr, mask);
-+
-+	in_be32(&guts->devdisr);
-+}
-+
-+static void mpc85xx_give_timebase(void)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+
-+	while (!tb_req)
-+		barrier();
-+	tb_req = 0;
-+
-+	mpc85xx_timebase_freeze(1);
-+	timebase = get_tb();
-+	mb();
-+	tb_valid = 1;
-+
-+	while (tb_valid)
-+		barrier();
-+
-+	mpc85xx_timebase_freeze(0);
-+
-+	local_irq_restore(flags);
-+}
-+
-+static void mpc85xx_take_timebase(void)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+
-+	tb_req = 1;
-+	while (!tb_valid)
-+		barrier();
-+
-+	set_tb(timebase >> 32, timebase & 0xffffffff);
-+	isync();
-+	tb_valid = 0;
-+
-+	local_irq_restore(flags);
-+}
-+
- static int __init
- smp_85xx_kick_cpu(int nr)
- {
-@@ -228,6 +287,16 @@ smp_85xx_setup_cpu(int cpu_nr)
- 		doorbell_setup_this_cpu();
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 0321007..fecb038 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -102,7 +102,7 @@ int __devinit smp_generic_kick_cpu(int nr)
+ 	 * Ok it's not there, so it might be soft-unplugged, let's
+ 	 * try to bring it back
+ 	 */
+-	per_cpu(cpu_state, nr) = CPU_UP_PREPARE;
++	generic_set_cpu_up(nr);
+ 	smp_wmb();
+ 	smp_send_reschedule(nr);
+ #endif /* CONFIG_HOTPLUG_CPU */
+@@ -406,6 +406,16 @@ void generic_set_cpu_dead(unsigned int cpu)
+ 	per_cpu(cpu_state, cpu) = CPU_DEAD;
  }
  
-+static const struct of_device_id mpc85xx_smp_guts_ids[] = {
-+	{ .compatible = "fsl,mpc8572-guts", },
-+	{ .compatible = "fsl,p1020-guts", },
-+	{ .compatible = "fsl,p1021-guts", },
-+	{ .compatible = "fsl,p1022-guts", },
-+	{ .compatible = "fsl,p1023-guts", },
-+	{ .compatible = "fsl,p2020-guts", },
-+	{},
-+};
++/*
++ * The cpu_state should be set to CPU_UP_PREPARE in kick_cpu(), otherwise
++ * the cpu_state is always CPU_DEAD after calling generic_set_cpu_dead(),
++ * which makes the delay in generic_cpu_die() not happen.
++ */
++void generic_set_cpu_up(unsigned int cpu)
++{
++	per_cpu(cpu_state, cpu) = CPU_UP_PREPARE;
++}
 +
- void __init mpc85xx_smp_init(void)
+ int generic_check_cpu_restart(unsigned int cpu)
  {
- 	struct device_node *np;
-@@ -249,6 +318,19 @@ void __init mpc85xx_smp_init(void)
- 		smp_85xx_ops.cause_ipi = doorbell_cause_ipi;
- 	}
- 
-+	np = of_find_matching_node(NULL, mpc85xx_smp_guts_ids);
-+	if (np) {
-+		guts = of_iomap(np, 0);
-+		of_node_put(np);
-+		if (!guts) {
-+			pr_err("%s: Could not map guts node address\n",
-+								__func__);
-+			return;
-+		}
-+		smp_85xx_ops.give_timebase = mpc85xx_give_timebase;
-+		smp_85xx_ops.take_timebase = mpc85xx_take_timebase;
-+	}
-+
- 	smp_ops = &smp_85xx_ops;
- 
- #ifdef CONFIG_KEXEC
+ 	return per_cpu(cpu_state, cpu) == CPU_UP_PREPARE;
 -- 
 1.6.4.1
