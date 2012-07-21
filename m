@@ -2,16 +2,16 @@ Return-Path: <joakim.tjernlund@transmode.se>
 Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 960F32C0269
- for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2012 02:11:40 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A924F2C0330
+ for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2012 03:00:09 +1000 (EST)
 In-Reply-To: <EC6BFBB7-DF3B-402A-ACB6-51546C1B6CC9@kernel.crashing.org>
 References: <OFDEF2A72A.01F68496-ONC1257A41.0025B7CE-C1257A41.0028192F@transmode.se>
  <EC6BFBB7-DF3B-402A-ACB6-51546C1B6CC9@kernel.crashing.org>
 Subject: Re: mpc8xxx PCIe hotplug needs fixing, some clues ..
 To: Kumar Gala <galak@kernel.crashing.org>
-Message-ID: <OF85435159.0952793A-ONC1257A42.0058090C-C1257A42.0058F2A6@transmode.se>
+Message-ID: <OFB9E961D6.E5703925-ONC1257A42.005CC202-C1257A42.005D6469@transmode.se>
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sat, 21 Jul 2012 18:11:32 +0200
+Date: Sat, 21 Jul 2012 19:00:05 +0200
 MIME-Version: 1.0
 Content-type: text/plain; charset=US-ASCII
 Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
@@ -24,7 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+
+
 Kumar Gala <galak@kernel.crashing.org> wrote on 2012/07/20 20:53:10:
+
+> From: Kumar Gala <galak@kernel.crashing.org>
+> To: Joakim Tjernlund <joakim.tjernlund@transmode.se>,
+> Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
+> Date: 2012/07/20 20:53
+> Subject: Re: mpc8xxx PCIe hotplug needs fixing, some clues ..
 >
 >
 > On Jul 20, 2012, at 2:17 AM, Joakim Tjernlund wrote:
@@ -83,32 +91,12 @@ Kumar Gala <galak@kernel.crashing.org> wrote on 2012/07/20 20:53:10:
 > > This is a hack, I don't known what other trouble it can cause, I hope you can
 > > sort this out.
 >
-> How are you forcing the re-scan?  We can see if we can add a re-check of the link state in that flow somewhere.
 
-echo 1 > /sys/bus/pci/rescan
+Related, should not all those fsl quirks be __devinit instead of __init?
+See this for motivation
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=85a053fa5f2d67ae5b2968305b16e8d2fe4cdf4d
 
-Why is that check important? Seems like some very ppc specific workaround for something.
-
->
-> Can you do a dump_stack() or something to get a call chain?
-
-here?
-indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
-		     int len, u32 *val)
-{
-	struct pci_controller *hose = pci_bus_to_host(bus);
-	volatile void __iomem *cfg_data;
-	u8 cfg_type = 0;
-	u32 bus_no, reg;
-	static int first_dump;
-
-	if (!first_dump) {
-		dump_stack();
-		first_dump = 1;
-	}
-...
-
-I am not at work and and my board needs a reset button press to recover :(
-Furthermore, my vacation starts next week, not sure I can get it fixed soon enough
+Could quirk_fsl_pcie_header be moved to early fixup time? I recall some code, maybe is was hotplug,
+complaining about not recognising the header because it executed before the header fixup.
 
  Jocke
