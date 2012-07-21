@@ -1,37 +1,20 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2B02F2C023F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2012 19:38:26 +1000 (EST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sat, 21 Jul 2012 03:38:24 -0600
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
- [9.17.195.107])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A90D219D803E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2012 09:38:19 +0000 (WET)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6L9cMOS274614
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2012 03:38:22 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6L9cMD4005101
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Jul 2012 03:38:22 -0600
-Subject: Re: [PATCH] powerpc: SMT priority (PPR) save and restore
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-To: Michael Neuling <mikey@neuling.org>
-In-Reply-To: <31198.1342410079@neuling.org>
-References: <1342259024.11305.38.camel@hbabu-laptop>
- <31198.1342410079@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 21 Jul 2012 02:38:19 -0700
-Message-ID: <1342863499.28370.41.camel@hbabu-laptop>
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, anton@samba.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 960F32C0269
+ for <linuxppc-dev@ozlabs.org>; Sun, 22 Jul 2012 02:11:40 +1000 (EST)
+In-Reply-To: <EC6BFBB7-DF3B-402A-ACB6-51546C1B6CC9@kernel.crashing.org>
+References: <OFDEF2A72A.01F68496-ONC1257A41.0025B7CE-C1257A41.0028192F@transmode.se>
+ <EC6BFBB7-DF3B-402A-ACB6-51546C1B6CC9@kernel.crashing.org>
+Subject: Re: mpc8xxx PCIe hotplug needs fixing, some clues ..
+To: Kumar Gala <galak@kernel.crashing.org>
+Message-ID: <OF85435159.0952793A-ONC1257A42.0058090C-C1257A42.0058F2A6@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Sat, 21 Jul 2012 18:11:32 +0200
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,537 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-07-16 at 13:41 +1000, Michael Neuling wrote:
-> Heaven Myneni <haren@linux.vnet.ibm.com> wrote:
-> 
-> > powerpc: SMT priority (PPR) save and restore
-> >     
-> > On P7 systems, users can define SMT priority levels 2,3 and 4 for
-> > processes so that some can run higher priority than the other ones.
-> > In the current kernel, the default priority is set to 4 which prohibits
-> > processes to use higher priority. Also the kernel boosts the priority to
-> > 4 during exception without saving the user defined priority values when
-> > the task enters the kernel. So we will be loosing the process PPR value
-> > and can not be restored it back when the task exits the kernel.
-> >     
-> > This patch sets the default priority to 3 when tasks are created such
-> > that users can use 4 for higher priority tasks. It also provides to save
-> > and restore the user defined priorities for all tasks.
-> >     
-> > When the task enters in to kernel space, the user defined priority (PPR)
-> > will be saved in to PACA at the beginning of first level exception
-> > vector and then copy from PACA to thread_info in second level vector.
-> > PPR will be restored from thread_info before exits the kernel space.
-> >     
-> > P7 temporarily raises the thread priority to higher level during
-> > exception until the program executes HMT_* calls. But it will not modify
-> > PPR register. So we saves PPR value whenever some register is available
-> > to use and then calls HMT_MEDIUM to increase the priority. This feature
-> > supports on P7 or later processors.
-> >     
-> > Signed-off-by: Haren Myneni <hbabu@us.ibm.com>
-> 
-> Can you break this patch into a few parts that are easier to review than
-> one giant patch.  Start by adding the PPR ftr bits, then the extra space
-> in the paca, then the new macros, then use the new infrastructure.  I'm
-> sure you can get 5 or so patches which will be much easier to review.
-> 
-> Also this has been white space munged.  See here:
->   http://patchwork.ozlabs.org/patch/170993/
-> All the #defines are broken.
-> 
-> Also, do you know what the impacts of this are on null syscall/page
-> faults etc on machines which need the PPR switched?  If it's big, we
-> might want to have this as a CONFIG option for those who don't care and
-> want the speed bump.
+Kumar Gala <galak@kernel.crashing.org> wrote on 2012/07/20 20:53:10:
+>
+>
+> On Jul 20, 2012, at 2:17 AM, Joakim Tjernlund wrote:
+>
+> >
+> > Hi Guys
+> >
+> > I see that you have been hacking Freescale PCI before so I send this to you(and the list)
+> >
+> > We are using PCIe(as RC) on P2010(basically a mpc85xx) and have PCI device that
+> > started from user space (needs advance clock conf) so when linux boots there is
+> > no device at all.
+> > Trying to "hotplug" the device after it is enabled fails, no amount of recan/remove using
+> > either fake or real hotplug makes a difference.
+> >
+> > I found the cause eventually but I can't fix it properly as I known almost nothing about PCI.
+> > Cause:
+> > indirect_pci.c:indirect_read_config() tests for if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)
+> > and returns  PCIBIOS_DEVICE_NOT_FOUND
+> >
+> > PPC_INDIRECT_TYPE_NO_PCIE_LINK get set by fsl_pci.c (look for fsl_pcie_check_link) but is never cleared.
+> > Clearing it as appropriate makes a small difference. If you
+> > remove the RC and do a few of rescan's then the device appears.
+> >
+> > Hacking some more, like so:
+> >
+> > int fsl_pcie_check_link(struct pci_controller *hose)
+> > {
+> >    u32 val;
+> >
+> >    early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
+> >    hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
+> >    if (val < PCIE_LTSSM_L0)
+> >       return 1;
+> >    hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
+> >    return 0;
+> > }
+> > and then using it carefully(it is easy to make linux hang) in indirect_read_config():
+> > indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+> >            int len, u32 *val)
+> > {
+> >    struct pci_controller *hose = pci_bus_to_host(bus);
+> >    volatile void __iomem *cfg_data;
+> >    u8 cfg_type = 0;
+> >    u32 bus_no, reg;
+> >
+> >    if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
+> >       if (bus->number != hose->first_busno ||
+> >           devfn != 0) {
+> >          fsl_pcie_check_link(hose);
+> >          return PCIBIOS_DEVICE_NOT_FOUND;
+> >       }
+> >    }
+> >
+> > Now it works, just one rescan and the device appears!
+> > This is a hack, I don't known what other trouble it can cause, I hope you can
+> > sort this out.
+>
+> How are you forcing the re-scan?  We can see if we can add a re-check of the link state in that flow somewhere.
 
-Thanks for your comments. Sure will split this patch in to 5/6 patches. 
-With Anton's num_syscall test  -
-http://ozlabs.org/~anton/junkcode/null_syscall.c, noticed 6% overhead.
-As you suggested, will add CONFIG option for this feature. 
+echo 1 > /sys/bus/pci/rescan
 
-Sorry, my e-mail client messed-up some tabs. will post next time
-properly.
+Why is that check important? Seems like some very ppc specific workaround for something.
 
-Please see my responses below. 
+>
+> Can you do a dump_stack() or something to get a call chain?
 
-> More comments below.
-> 
-> > 
-> > diff --git a/arch/powerpc/include/asm/cputable.h
-> > b/arch/powerpc/include/asm/cputable.h
-> > index 50d82c8..e7b80d6 100644
-> > --- a/arch/powerpc/include/asm/cputable.h
-> > +++ b/arch/powerpc/include/asm/cputable.h
-> > @@ -203,6 +203,7 @@ extern const char *powerpc_base_platform;
-> >  #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0800000000000000)
-> >  #define CPU_FTR_ICSWX			LONG_ASM_CONST(0x1000000000000000)
-> >  #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x2000000000000000)
-> > +#define CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x4000000000000000)
-> >  
-> >  #ifndef __ASSEMBLY__
-> >  
-> > @@ -432,7 +433,8 @@ extern const char *powerpc_base_platform;
-> >  	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
-> >  	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
-> >  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD |
-> > \
-> > -	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY)
-> > +	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY |
-> > \
-> > +	    CPU_FTR_HAS_PPR)
-> 
-> Add CPU_FTR_HAS_PPR to CPU_FTRS_POSSIBLE as well.
+here?
+indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+		     int len, u32 *val)
+{
+	struct pci_controller *hose = pci_bus_to_host(bus);
+	volatile void __iomem *cfg_data;
+	u8 cfg_type = 0;
+	u32 bus_no, reg;
+	static int first_dump;
 
- CPU_FTRS_POWER7 is already defined to CPU_FTRS_POSSIBLE. So do we still
-need CPU_FTR_HAS_PPR to CPU_FTRS_POSSIBLE?
+	if (!first_dump) {
+		dump_stack();
+		first_dump = 1;
+	}
+...
 
-#define CPU_FTRS_POSSIBLE       \
-            (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |
-\
-            CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |
-\
-            CPU_FTRS_POWER7 | CPU_FTRS_CELL | CPU_FTRS_PA6T |
-\
-            CPU_FTR_VSX)
+I am not at work and and my board needs a reset button press to recover :(
+Furthermore, my vacation starts next week, not sure I can get it fixed soon enough
 
-
-> 
-> 
-> >  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-> >  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-> >  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> > diff --git a/arch/powerpc/include/asm/exception-64s.h
-> > b/arch/powerpc/include/asm/exception-64s.h
-> > index d58fc4e..1fae8aa 100644
-> > --- a/arch/powerpc/include/asm/exception-64s.h
-> > +++ b/arch/powerpc/include/asm/exception-64s.h
-> > @@ -47,6 +47,7 @@
-> >  #define EX_R3		64
-> >  #define EX_LR		72
-> >  #define EX_CFAR		80
-> > +#define EX_PPR		88	/* SMT thread status register (priority) */
-> >  
-> >  /*
-> >   * We're short on space and time in the exception prolog, so we can't
-> > @@ -61,10 +62,46 @@
-> >  #define EXC_HV	H
-> >  #define EXC_STD
-> >  
-> > +/* 
-> > + * PPR save/restore macros - Used only on P7 or later processors
-> > + */
-> > +#define SAVE_PPR(area, ra, rb)
-> > \
-> > +BEGIN_FTR_SECTION_NESTED(940)
-> > \
-> > +       ld      ra,area+EX_PPR(r13);    /* Read PPR from paca */
-> > \
-> > +       clrrdi  rb,r1,THREAD_SHIFT;     /* thread_info struct */
-> > \
-> > +       std     ra,TI_PPR(rb);          /* Save PPR in thread_info */
-> > \
-> > +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,940)
-> > +
-> > +#define RESTORE_PPR(ra,rb)
-> > \
-> > +BEGIN_FTR_SECTION_NESTED(941)
-> > \
-> > +       clrrdi  ra,r1,THREAD_SHIFT;
-> > \
-> > +       ld      rb,TI_PPR(ra);          /* Read PPR from thread_info */
-> > \
-> > +       mtspr   SPRN_PPR,rb;            /* Restore PPR */
-> > \
-> > +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,941)
-> > +
-> > +#define RESTORE_PPR_PACA(area,ra)
-> > \
-> > +BEGIN_FTR_SECTION_NESTED(942)
-> > \
-> > +       ld      ra,area+EX_PPR(r13);
-> > \
-> > +       mtspr   SPRN_PPR,ra;
-> > \
-> > +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,942)
-> > +
-> > +#define HMT_FTR_NO_PPR
-> > \
-> > +BEGIN_FTR_SECTION_NESTED(944)					       \
-> > +       HMT_MEDIUM;
-> > \
-> > +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,0,944) 	/*non P7*/
-> > +
-> > +#define HMT_FTR_HAS_PPR(area, ra)
-> > \
-> > +BEGIN_FTR_SECTION_NESTED(943)
-> > \
-> > +       mfspr   ra,SPRN_PPR;            /* Read PPR */
-> > \
-> > +       std     ra,area+EX_PPR(r13);    /* Save PPR in paca */
-> > \
-> > +       HMT_MEDIUM;
-> > \
-> > +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,943) /* P7 */
-> 
-> all munged.
-> 
-> 
-> 
-> > +
-> >  #define __EXCEPTION_PROLOG_1(area, extra, vec)				\
-> >  	GET_PACA(r13);							\
-> > -	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
-> > -	std	r10,area+EX_R10(r13);					\
-> > +	std	r9,area+EX_R9(r13);	/* save r9 */			\
-> > +	HMT_FTR_HAS_PPR(area,r9); 					\
-> > +	std	r10,area+EX_R10(r13);	/* save r10 - r12 */		\
-> >  	BEGIN_FTR_SECTION_NESTED(66);					\
-> >  	mfspr	r10,SPRN_CFAR;						\
-> >  	std	r10,area+EX_CFAR(r13);					\
-> > @@ -176,8 +213,10 @@ do_kvm_##n:								\
-> >  	std	r10,0(r1);		/* make stack chain pointer	*/ \
-> >  	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
-> >  	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
-> > +	beq	4f;							   \
-> >  	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
-> > -	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
-> > +	SAVE_PPR(area, r9, r10);					   \
-> > +4:	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
-> 
-> why are we no longer doing ACCOUNT_CPU_USER_ENTRY here?
-
-No, we still doing ACCOUNT_CPU_USER_ENTRY for the user level exceptions.
-The existing code (ACCOUNT_CPU_USER_ENTRY macro) has the same branch
-instruction and skipping for exceptions coming from kernel. I just
-removed 'beq' in ACCOUNT_CPU_USER_ENTRY macro and added here since PPR
-saving will be done only for user level exceptions. 
-
-Adding comment for this branch instruction and create a separate patch
-just for the related changes should make it more clear. 
-
-> 
-> 
-> 
-> >  	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
-> >  	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
-> >  	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
-> > @@ -218,7 +257,7 @@ do_kvm_##n:								\
-> >  	. = loc;					\
-> >  	.globl label##_pSeries;				\
-> >  label##_pSeries:					\
-> > -	HMT_MEDIUM;					\
-> > +	HMT_FTR_NO_PPR; 				\
-> >  	SET_SCRATCH0(r13);		/* save r13 */		\
-> >  	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common,	\
-> >  				 EXC_STD, KVMTEST_PR, vec)
-> > @@ -227,7 +266,7 @@ label##_pSeries:					\
-> >  	. = loc;					\
-> >  	.globl label##_hv;				\
-> >  label##_hv:						\
-> > -	HMT_MEDIUM;					\
-> > +	HMT_FTR_NO_PPR; 				\
-> >  	SET_SCRATCH0(r13);	/* save r13 */			\
-> >  	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common,	\
-> >  				 EXC_HV, KVMTEST, vec)
-> > @@ -258,7 +297,7 @@ label##_hv:						\
-> >  	_SOFTEN_TEST(EXC_STD, vec)
-> >  
-> >  #define __MASKABLE_EXCEPTION_PSERIES(vec, label, h, extra)		\
-> > -	HMT_MEDIUM;							\
-> > +	HMT_FTR_NO_PPR;  						\
-> >  	SET_SCRATCH0(r13);    /* save r13 */				\
-> >  	__EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec);		\
-> >  	EXCEPTION_PROLOG_PSERIES_1(label##_common, h);
-> > diff --git a/arch/powerpc/include/asm/paca.h
-> > b/arch/powerpc/include/asm/paca.h
-> > index daf813f..d32b1e5 100644
-> > --- a/arch/powerpc/include/asm/paca.h
-> > +++ b/arch/powerpc/include/asm/paca.h
-> > @@ -93,9 +93,9 @@ struct paca_struct {
-> >  	 * Now, starting in cacheline 2, the exception save areas
-> >  	 */
-> >  	/* used for most interrupts/exceptions */
-> > -	u64 exgen[11] __attribute__((aligned(0x80)));
-> > -	u64 exmc[11];		/* used for machine checks */
-> > -	u64 exslb[11];		/* used for SLB/segment table misses
-> > +	u64 exgen[12] __attribute__((aligned(0x80)));
-> > +	u64 exmc[12];		/* used for machine checks */
-> > +	u64 exslb[12];		/* used for SLB/segment table misses
-> >   				 * on the linear mapping */
-> >  	/* SLB related definitions */
-> >  	u16 vmalloc_sllp;
-> > diff --git a/arch/powerpc/include/asm/ppc_asm.h
-> > b/arch/powerpc/include/asm/ppc_asm.h
-> > index 1544420..b5437a2 100644
-> > --- a/arch/powerpc/include/asm/ppc_asm.h
-> > +++ b/arch/powerpc/include/asm/ppc_asm.h
-> > @@ -30,7 +30,6 @@
-> >  #define ACCOUNT_STOLEN_TIME
-> >  #else
-> >  #define ACCOUNT_CPU_USER_ENTRY(ra, rb)					\
-> > -	beq	2f;			/* if from kernel mode */	\
-> >  	MFTB(ra);			/* get timebase */		\
-> >  	ld	rb,PACA_STARTTIME_USER(r13);				\
-> >  	std	ra,PACA_STARTTIME(r13);					\
-> > @@ -38,7 +37,6 @@
-> >  	ld	ra,PACA_USER_TIME(r13);					\
-> >  	add	ra,ra,rb;		/* add on to user time */	\
-> >  	std	ra,PACA_USER_TIME(r13);					\
-> > -2:
-> 
-> Why are you doing this?
-
-As mentioned above, removing the branch instruction here and adding this
-check before calling ACCOUNT_CPU_USER_ENTRY.
-
-> 
-> >  
-> >  #define ACCOUNT_CPU_USER_EXIT(ra, rb)					\
-> >  	MFTB(ra);			/* get timebase */		\
-> > diff --git a/arch/powerpc/include/asm/reg.h
-> > b/arch/powerpc/include/asm/reg.h
-> > index f0cb7f4..1e61116 100644
-> > --- a/arch/powerpc/include/asm/reg.h
-> > +++ b/arch/powerpc/include/asm/reg.h
-> > @@ -284,6 +284,7 @@
-> >  #define SPRN_DBAT6U	0x23C	/* Data BAT 6 Upper Register */
-> >  #define SPRN_DBAT7L	0x23F	/* Data BAT 7 Lower Register */
-> >  #define SPRN_DBAT7U	0x23E	/* Data BAT 7 Upper Register */
-> > +#define SPRN_PPR	0x380	/* Local SMT Thread status resgiter */
-> 
-> spelling mistake here
-> 
-> >  
-> >  #define SPRN_DEC	0x016		/* Decrement Register */
-> >  #define SPRN_DER	0x095		/* Debug Enable Regsiter */
-> > diff --git a/arch/powerpc/include/asm/thread_info.h
-> > b/arch/powerpc/include/asm/thread_info.h
-> > index 68831e9..618e35c 100644
-> > --- a/arch/powerpc/include/asm/thread_info.h
-> > +++ b/arch/powerpc/include/asm/thread_info.h
-> > @@ -40,10 +40,22 @@ struct thread_info {
-> >  	struct restart_block restart_block;
-> >  	unsigned long	local_flags;		/* private flags for thread */
-> >  
-> > +#ifdef CONFIG_PPC64
-> > +	unsigned long	ppr;			/* SMT Thread status register */
-> > +#endif
-> 
-> 
-> 
-> >  	/* low level flags - has atomic operations done on it */
-> >  	unsigned long	flags ____cacheline_aligned_in_smp;
-> >  };
-> >  
-> > +#ifdef CONFIG_PPC64
-> > +/* Default SMT priority to (11- 13bits). */
-> > +/* .ppr is Used to save/restore only on P7 or later */
-> > +#define INIT_PPR \
-> > +	.ppr =  (3ull << 50),
-> > +#else
-> > +#define INIT_PPR 
-> > +#endif
-> > +
-> 
-> 
-> 
-> 
-> >  /*
-> >   * macros/functions for gaining access to the thread information
-> > structure
-> >   */
-> > @@ -56,6 +68,7 @@ struct thread_info {
-> >  	.restart_block = {			\
-> >  		.fn = do_no_restart_syscall,	\
-> >  	},					\
-> > +	INIT_PPR				\
-> >  	.flags =	0,			\
-> >  }
-> >  
-> > diff --git a/arch/powerpc/kernel/asm-offsets.c
-> > b/arch/powerpc/kernel/asm-offsets.c
-> > index 52c7ad7..0b3a5fe 100644
-> > --- a/arch/powerpc/kernel/asm-offsets.c
-> > +++ b/arch/powerpc/kernel/asm-offsets.c
-> > @@ -127,6 +127,7 @@ int main(void)
-> >  	DEFINE(TI_CPU, offsetof(struct thread_info, cpu));
-> >  
-> >  #ifdef CONFIG_PPC64
-> > +	DEFINE(TI_PPR,  offsetof(struct thread_info, ppr));
-> >  	DEFINE(DCACHEL1LINESIZE, offsetof(struct ppc64_caches, dline_size));
-> >  	DEFINE(DCACHEL1LOGLINESIZE, offsetof(struct ppc64_caches,
-> > log_dline_size));
-> >  	DEFINE(DCACHEL1LINESPERPAGE, offsetof(struct ppc64_caches,
-> > dlines_per_page));
-> > diff --git a/arch/powerpc/kernel/entry_64.S
-> > b/arch/powerpc/kernel/entry_64.S
-> > index 5971c85..671a3db 100644
-> > --- a/arch/powerpc/kernel/entry_64.S
-> > +++ b/arch/powerpc/kernel/entry_64.S
-> > @@ -33,6 +33,7 @@
-> >  #include <asm/irqflags.h>
-> >  #include <asm/ftrace.h>
-> >  #include <asm/hw_irq.h>
-> > +#include <asm/exception-64s.h> /* SAVE_PPR and RESTORE_PPR */
-> 
-> No need for the comment here
-> 
-> >  
-> >  /*
-> >   * System calls.
-> > @@ -62,8 +63,10 @@ system_call_common:
-> >  	std	r12,_MSR(r1)
-> >  	std	r0,GPR0(r1)
-> >  	std	r10,GPR1(r1)
-> > +	beq	2f
-> >  	ACCOUNT_CPU_USER_ENTRY(r10, r11)
-> > -	std	r2,GPR2(r1)
-> > +	SAVE_PPR(PACA_EXGEN, r10, r11)  
-> > +2:	std	r2,GPR2(r1)
-> 
-> anyway, why are we skipping this code
-
-ACCOUNT_CPU_USER_ENTRY is needed only for user level exceptions. As said
-above, we are not changing the current behavior. 
-
-> 
-> >  	std	r3,GPR3(r1)
-> >  	mfcr	r2
-> >  	std	r4,GPR4(r1)
-> > @@ -228,6 +231,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
-> >  
-> >  	beq-	1f
-> >  	ACCOUNT_CPU_USER_EXIT(r11, r12)
-> > +	RESTORE_PPR(r11, r12)		
-> >  	ld	r13,GPR13(r1)	/* only restore r13 if returning to usermode */
-> >  1:	ld	r2,GPR2(r1)
-> >  	ld	r1,GPR1(r1)
-> > @@ -698,6 +702,7 @@ fast_exception_return:
-> >  	andi.	r0,r3,MSR_PR
-> >  	beq	1f
-> >  	ACCOUNT_CPU_USER_EXIT(r2, r4)
-> > +	RESTORE_PPR(r2, r4)		
-> >  	REST_GPR(13, r1)
-> >  1:
-> >  	mtspr	SPRN_SRR1,r3
-> > diff --git a/arch/powerpc/kernel/exceptions-64s.S
-> > b/arch/powerpc/kernel/exceptions-64s.S
-> > index 1c06d29..c3bddf8 100644
-> > --- a/arch/powerpc/kernel/exceptions-64s.S
-> > +++ b/arch/powerpc/kernel/exceptions-64s.S
-> > @@ -40,7 +40,7 @@ __start_interrupts:
-> >  
-> >  	.globl system_reset_pSeries;
-> >  system_reset_pSeries:
-> > -	HMT_MEDIUM;
-> > +	HMT_FTR_NO_PPR  
-> 
-> Can we call this something else like HMT_MEDIUM_NO_PPR?
-
-I will make the change. Similarly HMT_FTR_HAS_PPR should be changed to
-HMT_MEDIUM_HAS_PPR. 
-
-
-> 
-> 
-> 
-> >  	SET_SCRATCH0(r13)
-> >  #ifdef CONFIG_PPC_P7_NAP
-> >  BEGIN_FTR_SECTION
-> > @@ -94,7 +94,7 @@ machine_check_pSeries_1:
-> >  	. = 0x300
-> >  	.globl data_access_pSeries
-> >  data_access_pSeries:
-> > -	HMT_MEDIUM
-> > +	HMT_FTR_NO_PPR
-> >  	SET_SCRATCH0(r13)
-> >  BEGIN_FTR_SECTION
-> >  	b	data_access_check_stab
-> > @@ -106,7 +106,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_SLB)
-> >  	. = 0x380
-> >  	.globl data_access_slb_pSeries
-> >  data_access_slb_pSeries:
-> > -	HMT_MEDIUM
-> > +	HMT_FTR_NO_PPR  
-> >  	SET_SCRATCH0(r13)
-> >  	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST, 0x380)
-> >  	std	r3,PACA_EXSLB+EX_R3(r13)
-> > @@ -137,7 +137,7 @@ data_access_slb_pSeries:
-> >  	. = 0x480
-> >  	.globl instruction_access_slb_pSeries
-> >  instruction_access_slb_pSeries:
-> > -	HMT_MEDIUM
-> > +	HMT_FTR_NO_PPR  
-> >  	SET_SCRATCH0(r13)
-> >  	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x480)
-> >  	std	r3,PACA_EXSLB+EX_R3(r13)
-> > @@ -197,7 +197,7 @@ hardware_interrupt_hv:
-> >  	. = 0xc00
-> >  	.globl	system_call_pSeries
-> >  system_call_pSeries:
-> > -	HMT_MEDIUM
-> > +	HMT_FTR_NO_PPR  
-> >  #ifdef CONFIG_KVM_BOOK3S_64_HANDLER
-> >  	SET_SCRATCH0(r13)
-> >  	GET_PACA(r13)
-> > @@ -213,6 +213,7 @@ BEGIN_FTR_SECTION
-> >  END_FTR_SECTION_IFSET(CPU_FTR_REAL_LE)
-> >  	mr	r9,r13
-> >  	GET_PACA(r13)
-> > +	HMT_FTR_HAS_PPR(PACA_EXGEN,r10)
-> >  	mfspr	r11,SPRN_SRR0
-> >  	mfspr	r12,SPRN_SRR1
-> >  	ld	r10,PACAKBASE(r13)
-> > @@ -295,7 +296,7 @@ vsx_unavailable_pSeries_1:
-> >  machine_check_pSeries:
-> >  	.globl machine_check_fwnmi
-> >  machine_check_fwnmi:
-> > -	HMT_MEDIUM
-> > +	HMT_FTR_NO_PPR  
-> >  	SET_SCRATCH0(r13)		/* save r13 */
-> >  	EXCEPTION_PROLOG_PSERIES(PACA_EXMC, machine_check_common,
-> >  				 EXC_STD, KVMTEST, 0x200)
-> > @@ -417,7 +418,7 @@ _GLOBAL(__replay_interrupt)
-> >  	.globl system_reset_fwnmi
-> >        .align 7
-> >  system_reset_fwnmi:
-> > -	HMT_MEDIUM
-> > +	HMT_FTR_NO_PPR  
-> >  	SET_SCRATCH0(r13)		/* save r13 */
-> >  	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, system_reset_common, EXC_STD,
-> >  				 NOTEST, 0x100)
-> > @@ -717,7 +718,8 @@ _GLOBAL(slb_miss_realmode)
-> >  	mtcrf	0x80,r9
-> >  	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
-> >  .machine	pop
-> > -
-> > +	
-> 
-> Random whitespace change.
-> 
-> > +	RESTORE_PPR_PACA(PACA_EXSLB,r9)		
-> >  	ld	r9,PACA_EXSLB+EX_R9(r13)
-> >  	ld	r10,PACA_EXSLB+EX_R10(r13)
-> >  	ld	r11,PACA_EXSLB+EX_R11(r13)
-> > @@ -1048,7 +1050,7 @@ initial_stab:
-> >  
-> >  #ifdef CONFIG_PPC_POWERNV
-> >  _GLOBAL(opal_mc_secondary_handler)
-> > -	HMT_MEDIUM
-> > +	HMT_FTR_NO_PPR  
-> >  	SET_SCRATCH0(r13)
-> >  	GET_PACA(r13)
-> >  	clrldi	r3,r3,2
-> > 
-> > 
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
-> > 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+ Jocke
