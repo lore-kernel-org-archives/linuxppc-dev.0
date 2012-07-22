@@ -1,14 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
-Date: Mon, 23 Jul 2012 10:00:48 +1000
+Date: Mon, 23 Jul 2012 09:42:03 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V3 07/11] arch/powerpc: Increase the slice range to 64TB
-Message-ID: <20120723000048.GG17790@bloggs.ozlabs.ibm.com>
+Subject: Re: [PATCH -V3 03/11] arch/powerpc: Convert virtual address to vpn
+Message-ID: <20120722234203.GC17790@bloggs.ozlabs.ibm.com>
 References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1341839621-28332-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1341839621-28332-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1341839621-28332-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1341839621-28332-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,70 +19,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 09, 2012 at 06:43:37PM +0530, Aneesh Kumar K.V wrote:
+On Mon, Jul 09, 2012 at 06:43:33PM +0530, Aneesh Kumar K.V wrote:
 > From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 > 
-> This patch makes the high psizes mask as an unsigned char array
-> so that we can have more than 16TB. Currently we support upto
-> 64TB
+> This patch convert different functions to take virtual page number
+> instead of virtual address. Virtual page number is virtual address
+> shifted right by VPN_SHIFT (12) bits. This enable us to have an
+> address range of upto 76 bits.
 
-Some comments inline...
+Some comments inline below...
 
-> @@ -804,16 +804,19 @@ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
->  #ifdef CONFIG_PPC_MM_SLICES
->  unsigned int get_paca_psize(unsigned long addr)
+> +/*
+> + * encode page number shift.
+> + * Inorder to fit the 78 bit va in a 64 bit variable we shift the va by
+      ^ "in order"
+
+> + * 12 bits. This enable us to address upto 76 bit va.
+                                         ^ "up to"
+
+> + * For hpt hash from a va we can ignore the page size bits of va and for
+> + * hpte encoding we ignore upto 23 bits of va. So ignoring lower 12 bits ensure
+> + * we work in all cases including 4k page size.
+> + */
+> +#define VPN_SHIFT	12
+
+This can't be more than 12 bits because we sometimes use 4k pages even
+in a kernel configured for 64k pages (e.g. with the subpage_protection
+system call).
+
+> +static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
+> +					     int ssize)
+> +{
+> +	unsigned long v;
+> +	/*
+> +	 * The AVA field omits the low-order 23 bits of the 78 bits VA.
+> +	 * These bits are not needed in the PTE, because the
+> +	 * low-order b of these bits are part of the byte offset
+> +	 * into the virtual page and, if b < 23, the high-order
+> +	 * 23-b of these bits are always used in selecting the
+> +	 * PTEGs to be searched
+> +	 */
+> +	BUG_ON(VPN_SHIFT > 23);
+
+I don't think we need this.  If VPN_SHIFT was computed by some complex
+expression whose value is not obvious, then BUG_ON (or BUILD_BUG_ON)
+would be appropriate, but since it's just a #define, a comment at the
+site of the definition will suffice.
+
+>  static inline unsigned long hpt_hash(unsigned long va, unsigned int shift,
+>  				     int ssize)
 >  {
-> -	unsigned long index, slices;
-> +	u64 lpsizes;
-> +	unsigned char *hpsizes;
-> +	unsigned long index, mask_index;
+> +	int mask;
+>  	unsigned long hash, vsid;
 >  
->  	if (addr < SLICE_LOW_TOP) {
-> -		slices = get_paca()->context.low_slices_psize;
-> +		lpsizes = get_paca()->context.low_slices_psize;
->  		index = GET_LOW_SLICE_INDEX(addr);
-> -	} else {
-> -		slices = get_paca()->context.high_slices_psize;
-> -		index = GET_HIGH_SLICE_INDEX(addr);
-> +		return (lpsizes >> (index * 4)) & 0xF;
->  	}
-> -	return (slices >> (index * 4)) & 0xF;
-> +	hpsizes = get_paca()->context.high_slices_psize;
-> +	index = GET_HIGH_SLICE_INDEX(addr) >> 1;
-> +	mask_index = GET_HIGH_SLICE_INDEX(addr) - (index << 1);
-> +	return (hpsizes[index] >> (mask_index * 4)) & 0xF;
+> +	BUG_ON(shift < VPN_SHIFT);
 
-The last 3 lines here feel awkward.  How about:
+So VPN_SHIFT can be at most 12, since 12 is the smallest shift value
+possible here.
 
-> +	index = GET_HIGH_SLICE_INDEX(addr);
-> +	mask_index = index & 1;
-> +	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xF;
-
->  static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
+> -static inline void __tlbiel(unsigned long va, int psize, int ssize)
+> +static inline void __tlbiel(unsigned long vpn, int psize, int ssize)
 >  {
-> +	unsigned char *hpsizes;
-> +	int index, mask_index;
->  	struct slice_mask ret = { 0, 0 };
->  	unsigned long i;
-> -	u64 psizes;
-> +	u64 lpsizes;
+> +	unsigned long va;
+>  	unsigned int penc;
 >  
-> -	psizes = mm->context.low_slices_psize;
-> +	lpsizes = mm->context.low_slices_psize;
->  	for (i = 0; i < SLICE_NUM_LOW; i++)
-> -		if (((psizes >> (i * 4)) & 0xf) == psize)
-> +		if (((lpsizes >> (i * 4)) & 0xf) == psize)
->  			ret.low_slices |= 1u << i;
->  
-> -	psizes = mm->context.high_slices_psize;
-> -	for (i = 0; i < SLICE_NUM_HIGH; i++)
-> -		if (((psizes >> (i * 4)) & 0xf) == psize)
-> +	hpsizes = mm->context.high_slices_psize;
-> +	for (i = 0; i < SLICE_NUM_HIGH; i++) {
-> +		index = i >> 1;
-> +		mask_index = i - (index << 1);
+> +	BUG_ON((77 - 65) > VPN_SHIFT);
+> +	va = vpn << VPN_SHIFT;
 
-Again, seems like a complicated way to do mask_index = i & 1 (or
-even i % 2, if you prefer, but then make i an unsigned type).
+So VPN_SHIFT has to be at least 12.  What is the significance of 77
+and 65 here?
 
 Paul.
