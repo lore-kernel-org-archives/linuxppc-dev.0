@@ -1,18 +1,23 @@
 Return-Path: <B07421@freescale.com>
-Message-ID: <500D7356.5080706@freescale.com>
-Date: Mon, 23 Jul 2012 10:52:54 -0500
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 05F6D2C0374
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 02:18:27 +1000 (EST)
+Message-ID: <500D7921.6060804@freescale.com>
+Date: Mon, 23 Jul 2012 11:17:37 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH] of: require a match on all fields of of_device_id
-References: <20120718011151.GA6119@tyr.buserror.net>
- <50062199.7090904@gmail.com> <5006DE87.7020503@freescale.com>
- <500CAF49.1060003@gmail.com>
-In-Reply-To: <500CAF49.1060003@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mm: add ZONE_NORMAL zone for 64 bit kernel
+References: <1342786906-12634-1-git-send-email-Shaohui.Xie@freescale.com>
+ <1343023569.2957.19.camel@pasglop>
+In-Reply-To: <1343023569.2957.19.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Cc: devicetree-discuss@lists.ozlabs.org,
- Thierry Reding <thierry.reding@avionic-design.de>,
- linuxppc-dev@lists.ozlabs.org
+Cc: Mingkai Hu <Mingkai.hu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Shaohui Xie <Shaohui.Xie@freescale.com>, Chen Yuanquan <B41889@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,45 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/22/2012 08:56 PM, Rob Herring wrote:
-> On 07/18/2012 11:04 AM, Scott Wood wrote:
->> On 07/17/2012 09:38 PM, Rob Herring wrote:
->>> On 07/17/2012 08:11 PM, Scott Wood wrote:
->>>> Commit 107a84e61cdd3406c842a0e4be7efffd3a05dba6 ("of: match by compatible
->>>> property first") breaks the gianfar ethernet driver found on various
->>>> Freescale PPC chips.
->>>
->>> You do know this is reverted, right?
+On 07/23/2012 01:06 AM, Benjamin Herrenschmidt wrote:
+> On Fri, 2012-07-20 at 20:21 +0800, Shaohui Xie wrote:
+>> PowerPC platform only supports ZONE_DMA zone for 64bit kernel, so all the
+>> memory will be put into this zone. If the memory size is greater than
+>> the device's DMA capability and device uses dma_alloc_coherent to allocate
+>> memory, it will get an address which is over the device's DMA addressing,
+>> the device will fail.
 >>
->> No, I didn't.  I got it via Kumar's next branch, and saw that it was
->> still in your fixes-for-grant branch, and didn't see any revert-related
->> e-mail activity on the devicetree-discuss list about it.  I now see that
->> it was reverted directly in Linus's tree (I didn't see either the
->> original or the revert in Linus's tree when I checked, but apparently I
->> hadn't fetched that as recently as I thought).
->>
->>> Here's my fix (untested) which is a bit simpler. I'm assuming if we care
->>> about which compatible string we are matching to, then we require name
->>> and type are blank and we only care about compatible strings.
->>
->> Any particular reason for making that assumption?  We should be avoiding
->> the need for .name or .type matching in new bindings, but this seems
->> like unnecessarily inconsistent behavior.
+>> So we split the memory to two zones by adding a zone ZONE_NORMAL, since
+>> we already allocate PCICSRBAR/PEXCSRBAR right below the 4G boundary (if the
+>> lowest PCI address is above 4G), so we constrain the DMA zone ZONE_DMA
+>> to 2GB, also, we clear the flag __GFP_DMA and set it only if the device's
+>> dma_mask < total memory size. By doing this, devices which cannot DMA all
+>> the memory will be limited to ZONE_DMA, but devices which can DMA all the
+>> memory will not be affected by this limitation.
 > 
-> Only to ensure we don't change existing behavior and I think trying to
-> cover all possibilities will be nearly impossible. For example, what if
-> we match on both a specific compatible prop alone and a less specific
-> compatible prop plus name and/or type. Which one do we pick as the
-> better match?
+> This is wrong.
 
-Whichever one has a compatible string that is listed earlier.  Having an
-additional type/name field doesn't necessarily make it a better match --
-it's just there to resolve ambiguity (or sometimes for no good reason at
-all).
+How so?
 
-You're going to change existing behavior in some case no matter what,
-short of a match table flag saying "it's OK to not keep depending on
-link order", or just not making the change.  Might as well change it to
-something sane.
+> Don't you have an iommu do deal with those devices anyway ?
+
+Yes, but we don't yet have DMA API support for it, it would lower
+performance because we'd have to use a lot of subwindows which are
+poorly cached (and even then we wouldn't be able to map more than 256
+pages at once on a given device), and the IOMMU may not be available at
+all if we're being virtualized.
+
+> What about swiotlb ?
+
+That doesn't help with alloc_coherent().
+
+> If you *really* need to honor 32 (or 31 even) bit DMAs,
+
+31-bit is to accommodate PCI, which has PEXCSRBAR that must live under 4
+GiB and can't be disabled.
+
+> what you -may- want to do is create a ZONE_DMA32 like other architectures, do not
+> hijack the historical ZONE_DMA.
+
+Could you point me to somewhere that clearly defines what ZONE_DMA is to
+be used for, such that this counts as hijacking (but using ZONE_DMA32 to
+mean 31-bit wouldn't)?  The only arches I see using ZONE_DMA32 (x86 and
+mips) also have a separate, more restrictive ZONE_DMA.  PowerPC doesn't.
+ It uses ZONE_DMA to point to all of memory (except highmem on 32-bit)
+-- how is that not hijacking, if this is?  We can't have ZONE_DMA be
+less restrictive than ZONE_DMA32, because the fallback rules are
+hardcoded the other way around in generic code.
+
+The exact threshold for ZONE_DMA could be made platform-configurable.
+
+> But even then, I'm dubious this is really needed.
+
+We'd like our drivers to stop crashing with more than 4GiB of RAM on 64-bit.
 
 -Scott
