@@ -1,20 +1,19 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 549182C0267
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:04:39 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id B3F1D2C012C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:06:19 +1000 (EST)
+Message-ID: <1343027168.2957.30.camel@pasglop>
 Subject: Re: [PATCH] powerpc: Update g5_defconfig
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Date: Mon, 23 Jul 2012 17:06:08 +1000
+In-Reply-To: <m2fw8jyn43.fsf@igel.home>
 References: <1343011712.2957.5.camel__22210.4697292254$1343011753$gmane$org@pasglop>
-Date: Mon, 23 Jul 2012 09:04:28 +0200
-In-Reply-To: <1343011712.2957.5.camel__22210.4697292254$1343011753$gmane$org@pasglop>
- (Benjamin Herrenschmidt's message of "Mon, 23 Jul 2012 12:48:32
- +1000")
-Message-ID: <m2fw8jyn43.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
+ <m2fw8jyn43.fsf@igel.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,18 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Mon, 2012-07-23 at 09:04 +0200, Andreas Schwab wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+> 
+> > This updates the g5 defconfig to include nouveau instead of nvidiafb
+> > (which works much better nowadays, in fact the latter crashes on modern
+> > distros),
+> 
+> Does it?  Nvidiafb is super stable here, whereas nouveau has a lot of
+> problems.
 
-> This updates the g5 defconfig to include nouveau instead of nvidiafb
-> (which works much better nowadays, in fact the latter crashes on modern
-> distros),
+nvidiafb crashes solid here when X gets involved.
 
-Does it?  Nvidiafb is super stable here, whereas nouveau has a lot of
-problems.
+What do you mean by "lots of problems" ? I've been using nouveau for a
+long time now on my two quad g5's including 3D, gnome-shell etc...
+without anything more than a glitch or two on the edge of windows...
 
-Andreas.
+Also can you remind me what machine model and what video card variant ?
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Cheers,
+Ben.
