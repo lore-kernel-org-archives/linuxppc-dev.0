@@ -1,20 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 598402C0330
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 16:06:21 +1000 (EST)
-Message-ID: <1343023569.2957.19.camel@pasglop>
-Subject: Re: [PATCH] powerpc/mm: add ZONE_NORMAL zone for 64 bit kernel
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Shaohui Xie <Shaohui.Xie@freescale.com>
-Date: Mon, 23 Jul 2012 16:06:09 +1000
-In-Reply-To: <1342786906-12634-1-git-send-email-Shaohui.Xie@freescale.com>
-References: <1342786906-12634-1-git-send-email-Shaohui.Xie@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Mingkai Hu <Mingkai.hu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Chen Yuanquan <B41889@freescale.com>
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B84A92C0332
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 16:15:02 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 23 Jul 2012 11:44:59 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6N6Euhw4980778
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 11:44:56 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6N6EuJi005053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 16:14:56 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH -V3 04/11] arch/powerpc: Rename va to vpn
+In-Reply-To: <20120722234623.GD17790@bloggs.ozlabs.ibm.com>
+References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1341839621-28332-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20120722234623.GD17790@bloggs.ozlabs.ibm.com>
+Date: Mon, 23 Jul 2012 11:44:55 +0530
+Message-ID: <87fw8jhulc.fsf@skywalker.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +38,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-07-20 at 20:21 +0800, Shaohui Xie wrote:
-> PowerPC platform only supports ZONE_DMA zone for 64bit kernel, so all the
-> memory will be put into this zone. If the memory size is greater than
-> the device's DMA capability and device uses dma_alloc_coherent to allocate
-> memory, it will get an address which is over the device's DMA addressing,
-> the device will fail.
-> 
-> So we split the memory to two zones by adding a zone ZONE_NORMAL, since
-> we already allocate PCICSRBAR/PEXCSRBAR right below the 4G boundary (if the
-> lowest PCI address is above 4G), so we constrain the DMA zone ZONE_DMA
-> to 2GB, also, we clear the flag __GFP_DMA and set it only if the device's
-> dma_mask < total memory size. By doing this, devices which cannot DMA all
-> the memory will be limited to ZONE_DMA, but devices which can DMA all the
-> memory will not be affected by this limitation.
+Paul Mackerras <paulus@samba.org> writes:
 
-This is wrong. Don't you have an iommu do deal with those devices
-anyway ? What about swiotlb ?
+> On Mon, Jul 09, 2012 at 06:43:34PM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> Rename the variable to better reflect the values. No functional change
+>> in this patch.
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>
+> I think you missed a couple: kernel_map_linear_page and
+> kernel_unmap_linear_page are now broken since you change va to vpn in
+> the declaration but not in the uses, and you change host_va to
+> host_vpn in struct hpte_cache but don't fix up the use in
+> kvmppc_mmu_invalidate_pte.
 
-If you *really* need to honor 32 (or 31 even) bit DMAs, what you -may-
-want to do is create a ZONE_DMA32 like other architectures, do not
-hijack the historical ZONE_DMA.
+Will fix.
 
-But even then, I'm dubious this is really needed.
+>  How many configs did you compile-test this
+> with?
 
-Cheers,
-Ben.
+Not much. I will try to do a test build of multiple configs.
+
+Thanks
+-aneesh
