@@ -1,20 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5B4D72C02AD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 08:26:45 +1000 (EST)
-Message-ID: <1343082371.2957.39.camel@pasglop>
-Subject: Re: next/mmotm unbootable on G5: irqdomain
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Date: Tue, 24 Jul 2012 08:26:11 +1000
-In-Reply-To: <CACxGe6uFvtro7iR8FewgChLr_6PnZA-EaRMKQjrFEaEHg7SKRQ@mail.gmail.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7E7562C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 08:31:22 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so11309345pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 15:31:21 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1343082371.2957.39.camel@pasglop>
 References: <alpine.LSU.2.00.1207211911160.1585@eggly.anvils>
  <1343011543.2957.2.camel@pasglop>
  <CACxGe6uFvtro7iR8FewgChLr_6PnZA-EaRMKQjrFEaEHg7SKRQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1343082371.2957.39.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 23 Jul 2012 16:31:00 -0600
+Message-ID: <CACxGe6uo8jx3GQFQpQ5RTHF5JyN2hEgvcvdmSYfGyTQnzK9fOA@mail.gmail.com>
+Subject: Re: next/mmotm unbootable on G5: irqdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Hugh Dickins <hughd@google.com>,
  linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
  Paul Mundt <lethal@linux-sh.org>, Rob Herring <rob.herring@calxeda.com>,
@@ -29,15 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-07-23 at 01:59 -0600, Grant Likely wrote:
-> My tree must be rebased to eliminate bisect breakage. The existing
-> commits in my tree have the breakage, and fiddling with the merge
-> order doesn't affect that. I don't want to rebase though. The safest
-> approach (smallest window of breakage) is to apply that fix onto my
-> irqdomain tree.
+On Mon, Jul 23, 2012 at 4:26 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Mon, 2012-07-23 at 01:59 -0600, Grant Likely wrote:
+>> My tree must be rebased to eliminate bisect breakage. The existing
+>> commits in my tree have the breakage, and fiddling with the merge
+>> order doesn't affect that. I don't want to rebase though. The safest
+>> approach (smallest window of breakage) is to apply that fix onto my
+>> irqdomain tree.
+>
+> With your other breakage on pseries I'm thinking rebasing might be the
+> only option...
 
-With your other breakage on pseries I'm thinking rebasing might be the
-only option...
+Fair enough. I'm not planning to ask Linus to pull for a few days yet
+anyway. I've been pretty useless as a kernel maintainer for the last 3
+months so I want to give a bit more time in linux-next to catch
+fallout before it gets merged.
 
-Cheers,
-Ben.
+As-is I'm backing off from the linear/legacy/tree merge patch as just
+too risky. I've already pulled that stuff out of linux-next.
+
+g.
