@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BFEC62C0334
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:39:27 +1000 (EST)
-Message-ID: <1343029161.2957.35.camel@pasglop>
-Subject: Re: [PATCH] powerpc: Update g5_defconfig
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andreas Schwab <schwab@linux-m68k.org>
-Date: Mon, 23 Jul 2012 17:39:21 +1000
-In-Reply-To: <m2boj7ym24.fsf@igel.home>
-References: <1343011712.2957.5.camel__22210.4697292254$1343011753$gmane$org@pasglop>
- <m2fw8jyn43.fsf@igel.home> <1343027168.2957.30.camel@pasglop>
- <m2boj7ym24.fsf@igel.home>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Ben Skeggs <bskeggs@redhat.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+ [209.85.213.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4D5BA2C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:59:33 +1000 (EST)
+Received: by yhnn12 with SMTP id n12so4927328yhn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 00:59:30 -0700 (PDT)
+MIME-Version: 1.0
+Sender: glikely@secretlab.ca
+In-Reply-To: <1343011543.2957.2.camel@pasglop>
+References: <alpine.LSU.2.00.1207211911160.1585@eggly.anvils>
+ <1343011543.2957.2.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Mon, 23 Jul 2012 01:59:09 -0600
+Message-ID: <CACxGe6uFvtro7iR8FewgChLr_6PnZA-EaRMKQjrFEaEHg7SKRQ@mail.gmail.com>
+Subject: Re: next/mmotm unbootable on G5: irqdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Hugh Dickins <hughd@google.com>,
+ linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+ Paul Mundt <lethal@linux-sh.org>, Rob Herring <rob.herring@calxeda.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +32,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-07-23 at 09:27 +0200, Andreas Schwab wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
-> 
-> > What do you mean by "lots of problems" ?
-> 
-> For example, only half of the screen is drawn.  There is a bug open
-> about this, but no comments.
-> 
-> > Also can you remind me what machine model and what video card variant ?
-> 
-> PowerMac7,3 with NV34 [GeForce FX 5200 Ultra] (rev a1).
+On Sun, Jul 22, 2012 at 8:45 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Sat, 2012-07-21 at 19:47 -0700, Hugh Dickins wrote:
+>> I have to revert the patch below from mmotm 2012-07-20-16-30 or
+>> next-20120720 in order to boot on the PowerPC G5: otherwise it
+>> freezes before switching to the framebuffer console - but I'm
+>> not certain where because that initial console doesn't scroll
+>> (there are mpic messages at bottom and at top of screen, probably
+>> later messages at the top but I don't know the sequence).
+>
+> This fixes it (Grant, how do we avoid bisection breakage here ? I can
+> put that in -powerpc and we can make sure that gets merged before your
+> tree ?)
 
-Ah ok, I haven't seen these problems.
+My tree must be rebased to eliminate bisect breakage. The existing
+commits in my tree have the breakage, and fiddling with the merge
+order doesn't affect that. I don't want to rebase though. The safest
+approach (smallest window of breakage) is to apply that fix onto my
+irqdomain tree.
 
-Ben, any idea ? I was trying to make nouveau the default instead of
-nvidiafb on G5's but it seems like some old G5's with those NV34 aren't
-happy.
+g.
 
-BTW. Are we trying to use AGP on these things ? If yes, I would suggest
-we just blacklist AGP on all powermac unless specifically requested via
-a kernel command line arg. That would be half of the problems solved...
+>
+> powerpc/mpic: Create a revmap with enough entries for IPIs and timers
+>
+> The current mpic code creates a linear revmap just big enough for all
+> the sources, which happens to miss the IPIs and timers on some machines.
+>
+> This will in turn break when the irqdomain code loses the fallback of
+> doing a linear search when the revmap fails (and really slows down IPIs
+> otherwise).
+>
+> This happens for example on the U4 based Apple machines such as the
+> dual core PowerMac G5s.
+>
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 906f29c..bfc6211 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1376,7 +1376,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+>         mpic->isu_mask = (1 << mpic->isu_shift) - 1;
+>
+>         mpic->irqhost = irq_domain_add_linear(mpic->node,
+> -                                      last_irq + 1,
+> +                                      intvec_top,
+>                                        &mpic_host_ops, mpic);
+>
+>         /*
+>
+>
 
-I have access to an iMac G5 with an old 5200 variant as well which I
-could dig out & try if there's anything I can do to help debug that.
 
-(On my G5s it's all PCIe so that problem doesn't happen).
 
-Cheers,
-Ben.
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
