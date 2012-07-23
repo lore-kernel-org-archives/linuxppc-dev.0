@@ -2,22 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1E5452C0131
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 12:46:11 +1000 (EST)
-Message-ID: <1343011543.2957.2.camel@pasglop>
-Subject: Re: next/mmotm unbootable on G5: irqdomain
+ by ozlabs.org (Postfix) with ESMTPS id B44A72C032D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 12:48:36 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q6N2mVlR019651
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Jul 2012 21:48:32 -0500
+Message-ID: <1343011712.2957.5.camel@pasglop>
+Subject: [PATCH] powerpc: Update g5_defconfig
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hughd@google.com>
-Date: Mon, 23 Jul 2012 12:45:43 +1000
-In-Reply-To: <alpine.LSU.2.00.1207211911160.1585@eggly.anvils>
-References: <alpine.LSU.2.00.1207211911160.1585@eggly.anvils>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 23 Jul 2012 12:48:32 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Paul Mundt <lethal@linux-sh.org>,
- Rob Herring <rob.herring@calxeda.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +23,252 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-07-21 at 19:47 -0700, Hugh Dickins wrote:
-> I have to revert the patch below from mmotm 2012-07-20-16-30 or
-> next-20120720 in order to boot on the PowerPC G5: otherwise it
-> freezes before switching to the framebuffer console - but I'm
-> not certain where because that initial console doesn't scroll
-> (there are mpic messages at bottom and at top of screen, probably
-> later messages at the top but I don't know the sequence).
+This updates the g5 defconfig to include nouveau instead of nvidiafb
+(which works much better nowadays, in fact the latter crashes on modern
+distros), and to set CONFIG_VT_HW_CONSOLE_BINDING without which takeover
+from the firmware offb by nouveau doesn't work properly (and leads to
+unexplained black screens for some users).
 
-This fixes it (Grant, how do we avoid bisection breakage here ? I can
-put that in -powerpc and we can make sure that gets merged before your
-tree ?)
-
-powerpc/mpic: Create a revmap with enough entries for IPIs and timers
-
-The current mpic code creates a linear revmap just big enough for all
-the sources, which happens to miss the IPIs and timers on some machines.
-
-This will in turn break when the irqdomain code loses the fallback of
-doing a linear search when the revmap fails (and really slows down IPIs
-otherwise).
-
-This happens for example on the U4 based Apple machines such as the
-dual core PowerMac G5s.
+The rest is churn of going through defconfig / savedefconfig
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 906f29c..bfc6211 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1376,7 +1376,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 	mpic->isu_mask = (1 << mpic->isu_shift) - 1;
- 
- 	mpic->irqhost = irq_domain_add_linear(mpic->node,
--				       last_irq + 1,
-+				       intvec_top,
- 				       &mpic_host_ops, mpic);
- 
- 	/*
+
+diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
+index 07b7f2a..1513006 100644
+--- a/arch/powerpc/configs/g5_defconfig
++++ b/arch/powerpc/configs/g5_defconfig
+@@ -1,10 +1,8 @@
+-CONFIG_PPC64=y
+-CONFIG_ALTIVEC=y
+-CONFIG_SMP=y
+-CONFIG_NR_CPUS=4
+ CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_BLK_DEV_INITRD=y
+@@ -15,16 +13,15 @@ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ CONFIG_MODVERSIONS=y
+ CONFIG_MODULE_SRCVERSION_ALL=y
+-# CONFIG_PPC_PSERIES is not set
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_MAC_PARTITION=y
++CONFIG_SMP=y
++CONFIG_NR_CPUS=4
++CONFIG_KEXEC=y
++# CONFIG_RELOCATABLE is not set
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+ CONFIG_CPU_FREQ_GOV_USERSPACE=y
+-CONFIG_CPU_FREQ_PMAC64=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+-CONFIG_KEXEC=y
+-CONFIG_IRQ_ALL_CPUS=y
+-# CONFIG_MIGRATION is not set
+ CONFIG_PCI_MSI=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+@@ -52,7 +49,6 @@ CONFIG_NF_CT_NETLINK=m
+ CONFIG_NF_CONNTRACK_IPV4=m
+ CONFIG_IP_NF_QUEUE=m
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+-CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_BLK_DEV_RAM=y
+@@ -60,8 +56,6 @@ CONFIG_BLK_DEV_RAM_SIZE=65536
+ CONFIG_CDROM_PKTCDVD=m
+ CONFIG_IDE=y
+ CONFIG_BLK_DEV_IDECD=y
+-CONFIG_BLK_DEV_IDE_PMAC=y
+-CONFIG_BLK_DEV_IDE_PMAC_ATA100FIRST=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_CHR_DEV_ST=y
+ CONFIG_BLK_DEV_SR=y
+@@ -85,33 +79,24 @@ CONFIG_DM_CRYPT=m
+ CONFIG_DM_SNAPSHOT=m
+ CONFIG_DM_MIRROR=m
+ CONFIG_DM_ZERO=m
+-CONFIG_IEEE1394=y
+-CONFIG_IEEE1394_OHCI1394=y
+-CONFIG_IEEE1394_SBP2=m
+-CONFIG_IEEE1394_ETH1394=m
+-CONFIG_IEEE1394_RAWIO=y
+-CONFIG_IEEE1394_VIDEO1394=m
+-CONFIG_IEEE1394_DV1394=m
+-CONFIG_ADB_PMU=y
+-CONFIG_PMAC_SMU=y
++CONFIG_MACINTOSH_DRIVERS=y
+ CONFIG_MAC_EMUMOUSEBTN=y
+-CONFIG_THERM_PM72=y
+-CONFIG_WINDFARM=y
+-CONFIG_WINDFARM_PM81=y
+-CONFIG_WINDFARM_PM91=y
+-CONFIG_WINDFARM_PM112=y
+-CONFIG_WINDFARM_PM121=y
+ CONFIG_NETDEVICES=y
+-CONFIG_DUMMY=m
+ CONFIG_BONDING=m
+-CONFIG_TUN=m
+-CONFIG_NET_ETHERNET=y
++CONFIG_DUMMY=m
+ CONFIG_MII=y
+-CONFIG_SUNGEM=y
++CONFIG_TUN=m
+ CONFIG_ACENIC=m
+ CONFIG_ACENIC_OMIT_TIGON_I=y
+-CONFIG_E1000=y
+ CONFIG_TIGON3=y
++CONFIG_E1000=y
++CONFIG_SUNGEM=y
++CONFIG_PPP=m
++CONFIG_PPP_BSDCOMP=m
++CONFIG_PPP_DEFLATE=m
++CONFIG_PPPOE=m
++CONFIG_PPP_ASYNC=m
++CONFIG_PPP_SYNC_TTY=m
+ CONFIG_USB_CATC=m
+ CONFIG_USB_KAWETH=m
+ CONFIG_USB_PEGASUS=m
+@@ -121,36 +106,24 @@ CONFIG_USB_USBNET=m
+ # CONFIG_USB_NET_NET1080 is not set
+ # CONFIG_USB_NET_CDC_SUBSET is not set
+ # CONFIG_USB_NET_ZAURUS is not set
+-CONFIG_PPP=m
+-CONFIG_PPP_ASYNC=m
+-CONFIG_PPP_SYNC_TTY=m
+-CONFIG_PPP_DEFLATE=m
+-CONFIG_PPP_BSDCOMP=m
+-CONFIG_PPPOE=m
+ # CONFIG_INPUT_MOUSEDEV_PSAUX is not set
+ CONFIG_INPUT_JOYDEV=m
+ CONFIG_INPUT_EVDEV=y
+-# CONFIG_KEYBOARD_ATKBD is not set
+ # CONFIG_MOUSE_PS2 is not set
+-# CONFIG_SERIO_I8042 is not set
+ # CONFIG_SERIO_SERPORT is not set
++CONFIG_VT_HW_CONSOLE_BINDING=y
+ # CONFIG_HW_RANDOM is not set
+ CONFIG_GEN_RTC=y
+ CONFIG_RAW_DRIVER=y
+ CONFIG_I2C_CHARDEV=y
+ # CONFIG_HWMON is not set
+-CONFIG_AGP=m
+-CONFIG_AGP_UNINORTH=m
++CONFIG_AGP=y
++CONFIG_DRM=y
++CONFIG_DRM_NOUVEAU=y
+ CONFIG_VIDEO_OUTPUT_CONTROL=m
+-CONFIG_FB=y
+ CONFIG_FIRMWARE_EDID=y
+ CONFIG_FB_TILEBLITTING=y
+-CONFIG_FB_OF=y
+-CONFIG_FB_NVIDIA=y
+-CONFIG_FB_NVIDIA_I2C=y
+ CONFIG_FB_RADEON=y
+-# CONFIG_VGA_CONSOLE is not set
+-CONFIG_FRAMEBUFFER_CONSOLE=y
+ CONFIG_LOGO=y
+ CONFIG_SOUND=m
+ CONFIG_SND=m
+@@ -158,15 +131,7 @@ CONFIG_SND_SEQUENCER=m
+ CONFIG_SND_MIXER_OSS=m
+ CONFIG_SND_PCM_OSS=m
+ CONFIG_SND_SEQUENCER_OSS=y
+-CONFIG_SND_POWERMAC=m
+-CONFIG_SND_AOA=m
+-CONFIG_SND_AOA_FABRIC_LAYOUT=m
+-CONFIG_SND_AOA_ONYX=m
+-CONFIG_SND_AOA_TAS=m
+-CONFIG_SND_AOA_TOONIE=m
+ CONFIG_SND_USB_AUDIO=m
+-CONFIG_HID_PID=y
+-CONFIG_USB_HIDDEV=y
+ CONFIG_HID_GYRATION=y
+ CONFIG_LOGITECH_FF=y
+ CONFIG_HID_PANTHERLORD=y
+@@ -174,13 +139,12 @@ CONFIG_HID_PETALYNX=y
+ CONFIG_HID_SAMSUNG=y
+ CONFIG_HID_SONY=y
+ CONFIG_HID_SUNPLUS=y
++CONFIG_HID_PID=y
++CONFIG_USB_HIDDEV=y
+ CONFIG_USB=y
+-CONFIG_USB_DEVICEFS=y
+ CONFIG_USB_MON=y
+ CONFIG_USB_EHCI_HCD=y
+-# CONFIG_USB_EHCI_HCD_PPC_OF is not set
+ CONFIG_USB_OHCI_HCD=y
+-CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
+ CONFIG_USB_ACM=m
+ CONFIG_USB_PRINTER=y
+ CONFIG_USB_STORAGE=y
+@@ -244,8 +208,6 @@ CONFIG_REISERFS_FS_POSIX_ACL=y
+ CONFIG_REISERFS_FS_SECURITY=y
+ CONFIG_XFS_FS=m
+ CONFIG_XFS_POSIX_ACL=y
+-CONFIG_INOTIFY=y
+-CONFIG_AUTOFS_FS=m
+ CONFIG_ISO9660_FS=y
+ CONFIG_JOLIET=y
+ CONFIG_ZISOFS=y
+@@ -259,14 +221,12 @@ CONFIG_HFS_FS=m
+ CONFIG_HFSPLUS_FS=m
+ CONFIG_CRAMFS=y
+ CONFIG_NFS_FS=y
+-CONFIG_NFS_V3=y
+ CONFIG_NFS_V3_ACL=y
+ CONFIG_NFS_V4=y
+ CONFIG_NFSD=y
+ CONFIG_NFSD_V3_ACL=y
+ CONFIG_NFSD_V4=y
+ CONFIG_CIFS=m
+-CONFIG_PARTITION_ADVANCED=y
+ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_CODEPAGE_1250=y
+ CONFIG_NLS_CODEPAGE_1251=y
+@@ -274,29 +234,23 @@ CONFIG_NLS_ASCII=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_ISO8859_15=y
+ CONFIG_NLS_UTF8=y
+-CONFIG_CRC_T10DIF=y
+-CONFIG_LIBCRC32C=m
+ CONFIG_MAGIC_SYSRQ=y
++# CONFIG_UNUSED_SYMBOLS is not set
+ CONFIG_DEBUG_FS=y
+ CONFIG_DEBUG_KERNEL=y
+ CONFIG_DEBUG_MUTEXES=y
+-# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+ CONFIG_LATENCYTOP=y
+-CONFIG_SYSCTL_SYSCALL_CHECK=y
+-CONFIG_BOOTX_TEXT=y
++CONFIG_STRICT_DEVMEM=y
+ CONFIG_CRYPTO_NULL=m
+ CONFIG_CRYPTO_TEST=m
+-CONFIG_CRYPTO_ECB=m
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_HMAC=y
+-CONFIG_CRYPTO_MD4=m
+ CONFIG_CRYPTO_MICHAEL_MIC=m
+ CONFIG_CRYPTO_SHA256=m
+ CONFIG_CRYPTO_SHA512=m
+ CONFIG_CRYPTO_WP512=m
+ CONFIG_CRYPTO_AES=m
+ CONFIG_CRYPTO_ANUBIS=m
+-CONFIG_CRYPTO_ARC4=m
+ CONFIG_CRYPTO_BLOWFISH=m
+ CONFIG_CRYPTO_CAST5=m
+ CONFIG_CRYPTO_CAST6=m
+@@ -306,3 +260,6 @@ CONFIG_CRYPTO_TEA=m
+ CONFIG_CRYPTO_TWOFISH=m
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
+ # CONFIG_CRYPTO_HW is not set
++# CONFIG_VIRTUALIZATION is not set
++CONFIG_CRC_T10DIF=y
++CONFIG_LIBCRC32C=m
