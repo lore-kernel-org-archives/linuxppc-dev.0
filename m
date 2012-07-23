@@ -1,18 +1,21 @@
-Return-Path: <B04825@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BC6D92C0333
- for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2012 06:43:43 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/85xx: p1022ds: fix DIU/LBC switching with NAND enabled
-Date: Mon, 23 Jul 2012 15:43:32 -0500
-Message-ID: <1343076212-5236-1-git-send-email-timur@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 57CD22C0351
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 08:20:40 +1000 (EST)
+Message-ID: <1343082030.2957.38.camel@pasglop>
+Subject: Re: [PATCH] powerpc/mm: add ZONE_NORMAL zone for 64 bit kernel
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Tue, 24 Jul 2012 08:20:30 +1000
+In-Reply-To: <500D7921.6060804@freescale.com>
+References: <1342786906-12634-1-git-send-email-Shaohui.Xie@freescale.com>
+ <1343023569.2957.19.camel@pasglop> <500D7921.6060804@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Mingkai Hu <Mingkai.hu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Shaohui Xie <Shaohui.Xie@freescale.com>, Chen Yuanquan <B41889@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,101 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order for indirect mode on the PIXIS to work properly, both chip selects
-need to be set to GPCM mode, otherwise writes to the chip select base
-addresses will not actually post to the local bus -- they'll go to the
-NAND controller instead.  Therefore, we need to set BR0 and BR1 to GPCM
-mode before switching to indirect mode.
+On Mon, 2012-07-23 at 11:17 -0500, Scott Wood wrote:
+> > This is wrong.
+> 
+> How so?
+> 
+> > Don't you have an iommu do deal with those devices anyway ?
+> 
+> Yes, but we don't yet have DMA API support for it, it would lower
+> performance because we'd have to use a lot of subwindows which are
+> poorly cached (and even then we wouldn't be able to map more than 256
+> pages at once on a given device), and the IOMMU may not be available at
+> all if we're being virtualized.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/platforms/85xx/p1022_ds.c |   64 +++++++++++++++++++++++++++++++-
- 1 files changed, 62 insertions(+), 2 deletions(-)
+Ugh ? You mean some designers need to be fired urgently and wasted
+everybody's time implementing an unusable iommu ? Nice one ...
 
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 5ca2823a..3c732ac 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -208,6 +208,7 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
- 	u8 __iomem *lbc_lcs0_ba = NULL;
- 	u8 __iomem *lbc_lcs1_ba = NULL;
- 	phys_addr_t cs0_addr, cs1_addr;
-+	u32 br0, or0, br1, or1;
- 	const __be32 *iprop;
- 	unsigned int num_laws;
- 	u8 b;
-@@ -256,11 +257,70 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
- 	}
- 	num_laws = be32_to_cpup(iprop);
- 
--	cs0_addr = lbc_br_to_phys(ecm, num_laws, in_be32(&lbc->bank[0].br));
--	cs1_addr = lbc_br_to_phys(ecm, num_laws, in_be32(&lbc->bank[1].br));
-+	/*
-+	 * Indirect mode requires both BR0 and BR1 to be set to "GPCM",
-+	 * otherwise writes to these addresses won't actually appear on the
-+	 * local bus, and so the PIXIS won't see them.
-+	 *
-+	 * In FCM mode, writes go to the NAND controller, which does not pass
-+	 * them to the localbus directly.  So we force BR0 and BR1 into GPCM
-+	 * mode, since we don't care about what's behind the localbus any
-+	 * more.
-+	 */
-+	br0 = in_be32(&lbc->bank[0].br);
-+	br1 = in_be32(&lbc->bank[1].br);
-+	or0 = in_be32(&lbc->bank[0].or);
-+	or1 = in_be32(&lbc->bank[1].or);
-+
-+	/* Make sure CS0 and CS1 are programmed */
-+	if (!(br0 & BR_V) || !(br1 & BR_V)) {
-+		pr_err("p1022ds: CS0 and/or CS1 is not programmed\n");
-+		goto exit;
-+	}
-+
-+	/*
-+	 * Use the existing BRx/ORx values if it's already GPCM. Otherwise,
-+	 * force the values to simple 32KB GPCM windows with the most
-+	 * conservative timing.
-+	 */
-+	if ((br0 & BR_MSEL) != BR_MS_GPCM) {
-+		br0 = (br0 & BR_BA) | BR_V;
-+		or0 = 0xFFFF8000 | 0xFF7;
-+		out_be32(&lbc->bank[0].br, br0);
-+		out_be32(&lbc->bank[0].or, or0);
-+	}
-+	if ((br1 & BR_MSEL) != BR_MS_GPCM) {
-+		br1 = (br1 & BR_BA) | BR_V;
-+		or1 = 0xFFFF8000 | 0xFF7;
-+		out_be32(&lbc->bank[1].br, br1);
-+		out_be32(&lbc->bank[1].or, or1);
-+	}
-+
-+	cs0_addr = lbc_br_to_phys(ecm, num_laws, br0);
-+	if (!cs0_addr) {
-+		pr_err("p1022ds: could not determine physical address for CS0"
-+		       " (BR0=%08x)\n", br0);
-+		goto exit;
-+	}
-+	cs1_addr = lbc_br_to_phys(ecm, num_laws, br1);
-+	if (!cs0_addr) {
-+		pr_err("p1022ds: could not determine physical address for CS1"
-+		       " (BR1=%08x)\n", br1);
-+		goto exit;
-+	}
- 
- 	lbc_lcs0_ba = ioremap(cs0_addr, 1);
-+	if (!lbc_lcs0_ba) {
-+		pr_err("p1022ds: could not ioremap CS0 address %llx\n",
-+		       (unsigned long long)cs0_addr);
-+		goto exit;
-+	}
- 	lbc_lcs1_ba = ioremap(cs1_addr, 1);
-+	if (!lbc_lcs1_ba) {
-+		pr_err("p1022ds: could not ioremap CS1 address %llx\n",
-+		       (unsigned long long)cs1_addr);
-+		goto exit;
-+	}
- 
- 	/* Make sure we're in indirect mode first. */
- 	if ((in_be32(&guts->pmuxcr) & PMUXCR_ELBCDIU_MASK) !=
--- 
-1.7.3.4
+> > What about swiotlb ?
+> 
+> That doesn't help with alloc_coherent().
+
+Somewhat... you can use the pool, but it sucks.
+
+> > If you *really* need to honor 32 (or 31 even) bit DMAs,
+> 
+> 31-bit is to accommodate PCI, which has PEXCSRBAR that must live under 4
+> GiB and can't be disabled.
+> 
+> > what you -may- want to do is create a ZONE_DMA32 like other architectures, do not
+> > hijack the historical ZONE_DMA.
+> 
+> Could you point me to somewhere that clearly defines what ZONE_DMA is to
+> be used for, such that this counts as hijacking (but using ZONE_DMA32 to
+> mean 31-bit wouldn't)?
+
+Habit and history. ZONE_DMA used to be about ISA DMA, doesn't apply to
+us, and in general ZONE_NORMAL alias to it iirc. It's old stuff I
+haven't looked for a long time.
+
+However, my understanding is that what you are trying to solve is
+exactly what ZONE_DMA32 was created for.
+
+>   The only arches I see using ZONE_DMA32 (x86 and
+> mips) also have a separate, more restrictive ZONE_DMA.
+
+And ? Who cares ? Drivers who know about a 32-bit limitations use
+GFP_DMA32, that's what is expected, don't mess around with ZONE_DMA.
+
+>   PowerPC doesn't.
+>  It uses ZONE_DMA to point to all of memory (except highmem on 32-bit)
+> -- how is that not hijacking, if this is?  We can't have ZONE_DMA be
+> less restrictive than ZONE_DMA32, because the fallback rules are
+> hardcoded the other way around in generic code.
+> 
+> The exact threshold for ZONE_DMA could be made platform-configurable.
+> 
+> > But even then, I'm dubious this is really needed.
+> 
+> We'd like our drivers to stop crashing with more than 4GiB of RAM on 64-bit.
+
+Fix your HW :-)
+
+Cheers,
+Ben.
