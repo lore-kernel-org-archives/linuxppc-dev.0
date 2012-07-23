@@ -1,23 +1,29 @@
-Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+Return-Path: <B04825@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 05F6D2C0374
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 02:18:27 +1000 (EST)
-Message-ID: <500D7921.6060804@freescale.com>
-Date: Mon, 23 Jul 2012 11:17:37 -0500
-From: Scott Wood <scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id D7B062C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 02:33:39 +1000 (EST)
+Received: from mail142-va3 (localhost [127.0.0.1])	by
+ mail142-va3-R.bigfish.com (Postfix) with ESMTP id E8CBE4C011E	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 16:33:33 +0000 (UTC)
+Received: from VA3EHSMHS031.bigfish.com (unknown [10.7.14.235])	by
+ mail142-va3.bigfish.com (Postfix) with ESMTP id 930C920155	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 16:33:31 +0000 (UTC)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Singh Sandeep-B37400 <B37400@freescale.com>
+Subject: Re: [2/3][PATCH][upstream] TDM Framework
+Date: Mon, 23 Jul 2012 16:33:27 +0000
+Message-ID: <CAOZdJXVnEUEQesyG52pL_jerGDrmJLxdfBNFrj_xvhPs=ue4DA@mail.gmail.com>
+References: <1343040588-16002-1-git-send-email-b37400@freescale.com>
+In-Reply-To: <1343040588-16002-1-git-send-email-b37400@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mm: add ZONE_NORMAL zone for 64 bit kernel
-References: <1342786906-12634-1-git-send-email-Shaohui.Xie@freescale.com>
- <1343023569.2957.19.camel@pasglop>
-In-Reply-To: <1343023569.2957.19.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Mingkai Hu <Mingkai.hu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Shaohui Xie <Shaohui.Xie@freescale.com>, Chen Yuanquan <B41889@freescale.com>
+Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Singh Sandeep-B37400 <B37400@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +33,527 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/23/2012 01:06 AM, Benjamin Herrenschmidt wrote:
-> On Fri, 2012-07-20 at 20:21 +0800, Shaohui Xie wrote:
->> PowerPC platform only supports ZONE_DMA zone for 64bit kernel, so all the
->> memory will be put into this zone. If the memory size is greater than
->> the device's DMA capability and device uses dma_alloc_coherent to allocate
->> memory, it will get an address which is over the device's DMA addressing,
->> the device will fail.
->>
->> So we split the memory to two zones by adding a zone ZONE_NORMAL, since
->> we already allocate PCICSRBAR/PEXCSRBAR right below the 4G boundary (if the
->> lowest PCI address is above 4G), so we constrain the DMA zone ZONE_DMA
->> to 2GB, also, we clear the flag __GFP_DMA and set it only if the device's
->> dma_mask < total memory size. By doing this, devices which cannot DMA all
->> the memory will be limited to ZONE_DMA, but devices which can DMA all the
->> memory will not be affected by this limitation.
-> 
-> This is wrong.
+On Mon, Jul 23, 2012 at 5:49 AM,  <b37400@freescale.com> wrote:
+> From: Sandeep Singh <Sandeep@freescale.com>
 
-How so?
+Please fix your git configuration so that the From: line in your
+emails contains your full name.   This patch was sent with this From:
+line:
 
-> Don't you have an iommu do deal with those devices anyway ?
+From: <b37400@freescale.com>
 
-Yes, but we don't yet have DMA API support for it, it would lower
-performance because we'd have to use a lot of subwindows which are
-poorly cached (and even then we wouldn't be able to map more than 256
-pages at once on a given device), and the IOMMU may not be available at
-all if we're being virtualized.
+It should say:
 
-> What about swiotlb ?
+From: Sandeep Singh <sandeep@freescale.com>
 
-That doesn't help with alloc_coherent().
+Three more things:
 
-> If you *really* need to honor 32 (or 31 even) bit DMAs,
+1) You don't need to add [upstream] to patches that are posted upstream.
 
-31-bit is to accommodate PCI, which has PEXCSRBAR that must live under 4
-GiB and can't be disabled.
+2) This patch needs to be CC'd to linux-kernel@vger.kernel.org and
+devel@driverdev.osuosl.org.
 
-> what you -may- want to do is create a ZONE_DMA32 like other architectures, do not
-> hijack the historical ZONE_DMA.
+3) I'm concerned that there is no "struct device" anywhere in this
+framework.  I think that's a serious omission, and you need to figure
+out where you can put this.
 
-Could you point me to somewhere that clearly defines what ZONE_DMA is to
-be used for, such that this counts as hijacking (but using ZONE_DMA32 to
-mean 31-bit wouldn't)?  The only arches I see using ZONE_DMA32 (x86 and
-mips) also have a separate, more restrictive ZONE_DMA.  PowerPC doesn't.
- It uses ZONE_DMA to point to all of memory (except highmem on 32-bit)
--- how is that not hijacking, if this is?  We can't have ZONE_DMA be
-less restrictive than ZONE_DMA32, because the fallback rules are
-hardcoded the other way around in generic code.
 
-The exact threshold for ZONE_DMA could be made platform-configurable.
+> diff --git a/drivers/tdm/tdm-core.c b/drivers/tdm/tdm-core.c
+> new file mode 100644
+> index 0000000..9973b6b
+> --- /dev/null
+> +++ b/drivers/tdm/tdm-core.c
+> @@ -0,0 +1,1082 @@
+> +/* driver/tdm/tdm-core.c
+> + *
+> + * Copyright (C) 2012 Freescale Semiconductor, Inc, All rights reserved.
 
-> But even then, I'm dubious this is really needed.
+I've been seeing this copyright messages a lot recently, and I don't
+understand why.  This message is incorrectly formatted.  The "(C)" is
+redundant, and the phrase "All rights reserved." is wrong.  This patch
+is licensed under the GPL, so we are NOT reserving all rights, we are
+actually giving up some rights.
 
-We'd like our drivers to stop crashing with more than 4GiB of RAM on 64-bit.
+Please change this to:
 
--Scott
+Copyright 2012 Freescale Semiconductor, Inc.
+
+> + *
+> + * TDM core is the interface between TDM clients and TDM devices.
+> + * It is also intended to serve as an interface for line controlled
+> + * devices later on.
+> + *
+> + * Author:Hemant Agrawal <hemant@freescale.com>
+> + *     Rajesh Gumasta <rajesh.gumasta@freescale.com>
+
+If these two are the authors, why are they not on the signed-off-by lines?
+
+> + *
+> + * Modified by Sandeep Kr Singh <sandeep@freescale.com>
+> + *             Poonam Aggarwal <poonam.aggarwal@freescale.com>
+
+Do not add "modified" by lines to the code.  That's why we have a git histo=
+ry.
+
+
+> + * 1. Added framework based initialization of device.
+> + * 2. All the init/run time configuration is now done by framework.
+> + * 3. Added channel level operations.
+> + * 4. Added sysfs knob to configure use_latest_tdm_data at runtime.
+
+Again, this is not information that belongs in the source file.
+
+> + *
+> + * Note that some parts of this code may have been derived from i2c subs=
+ystem.
+> + *
+> + * This program is free software; you can redistribute  it and/or modify=
+ it
+> + * under  the terms of  the GNU General  Public License as published by =
+the
+> + * Free Software Foundation;  either version 2 of the  License, or (at y=
+our
+> + * option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the  GNU General Public License al=
+ong
+> + * with this program; if not, write  to the Free Software Foundation, In=
+c.,
+> + * 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +
+> +#include <linux/module.h>
+> +#include <linux/kernel.h>
+> +#include <linux/errno.h>
+> +#include <linux/slab.h>
+> +#include <linux/tdm.h>
+> +#include <linux/init.h>
+> +#include <linux/idr.h>
+> +#include <linux/mutex.h>
+> +#include <linux/completion.h>
+> +#include <linux/hardirq.h>
+> +#include <linux/irqflags.h>
+> +#include <linux/list.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/io.h>
+
+Are you sure you need all of these header files?
+
+> +
+> +
+> +static DEFINE_MUTEX(tdm_core_lock);
+> +static DEFINE_IDR(tdm_adapter_idr);
+> +/* List of TDM adapters registered with TDM framework */
+> +LIST_HEAD(adapter_list);
+> +
+> +/* List of TDM clients registered with TDM framework */
+> +LIST_HEAD(driver_list);
+> +
+> +/* In case the previous data is not fetched by the client driver, the
+> + * de-interleaving function will  discard the old data and rewrite the
+> + * new data */
+
+Proper multi-line comment format is like this:
+
+/*
+ * In case the previous data is not fetched by the client driver, the
+ * de-interleaving function will  discard the old data and rewrite the
+ * new data.
+ */
+
+> +static int use_latest_tdm_data =3D 1;
+> +
+> +/* Data structures required for sysfs */
+> +static struct tdm_sysfs attr =3D {
+> +       .attr.name =3D "use_latest_data",
+> +       .attr.mode =3D 0664,
+> +       .cmd_type =3D TDM_LATEST_DATA,
+> +};
+> +
+> +static struct attribute *tdm_attr[] =3D {
+> +       &attr.attr,
+> +       NULL
+> +};
+> +
+> +const struct sysfs_ops tdm_ops =3D {
+> +       .show =3D tdm_show_sysfs,
+> +       .store =3D tdm_store_sysfs,
+> +};
+> +
+> +static struct kobj_type tdm_type =3D {
+> +       .sysfs_ops =3D &tdm_ops,
+> +       .default_attrs =3D tdm_attr,
+> +};
+
+Why are some of these 'const' and some aren't?  They should all be 'const'
+
+> +
+> +/* tries to match client driver with the adapter */
+> +static int tdm_device_match(struct tdm_driver *driver, struct tdm_adapte=
+r *adap)
+> +{
+> +       /* match on an id table if there is one */
+> +       if (driver->id_table && driver->id_table->name[0]) {
+> +               if (!(strcmp(driver->id_table->name, adap->name)))
+> +                       return (int)driver->id_table;
+> +       }
+
+
+> +       return TDM_E_OK;
+
+Get rid of TDM_E_OK.  It's the only error code that you've defined,
+and it's set to 0.  That doesn't mean anything.
+
+> +}
+> +
+> +static int tdm_attach_driver_adap(struct tdm_driver *driver,
+> +               struct tdm_adapter *adap)
+> +{
+> +       int ret =3D TDM_E_OK;
+> +       /* if driver is already attached to any other adapter, return*/
+> +       if (driver->adapter && (driver->adapter !=3D adap))
+> +               return ret;
+> +
+> +       driver->adapter =3D adap;
+> +
+> +       if (driver->attach_adapter) {
+> +               ret =3D driver->attach_adapter(adap);
+> +               if (ret < 0) {
+> +                       pr_err("attach_adapter failed for driver [%s] err=
+:%d\n"
+> +                                       , driver->name, ret);
+> +                       return ret;
+> +               }
+> +       }
+> +       adap->drv_count++;
+> +
+> +       if (!adap->tasklet_conf) {
+> +               tdm_sysfs_init();
+> +               tasklet_init(&adap->tdm_data_tasklet, tdm_data_tasklet_fn=
+,
+> +                               (unsigned long)adap);
+> +               adap->tasklet_conf =3D 1;
+> +       }
+> +
+> +       return ret;
+
+If 'ret' can only be 0, then just return 0.
+
+       return 0;
+
+
+> +/* tdm_adap_send - issue a TDM write
+> + * @adap: Handle to TDM device
+> + * @buf: Data that will be written to the TDM device
+> + * @count: How many bytes to write
+> + *
+> + * Returns negative errno, or else the number of bytes written.
+
+"Returns negative error number, or else the number of bytes written."
+
+You're typing this on a full keyboard, not a smart phone.  Please
+don't use abbreviations unnecessarily.
+
+> + */
+> +int tdm_adap_send(struct tdm_adapter *adap, void **buf, int count)
+> +{
+> +       int res;
+> +
+> +       if (adap->algo->tdm_write)
+> +               res =3D adap->algo->tdm_write(adap, buf, count);
+
+Why does tdm_write() return a u32?  And shouldn't 'res' also be a u32,
+to make tdm_write()?
+
+
+> +/* Port Level APIs of TDM Framework */
+> +int tdm_port_open(struct tdm_driver *driver, struct tdm_port **h_port)
+> +{
+> +       struct tdm_port *port;
+> +       struct tdm_adapter *adap;
+> +       unsigned long           flags;
+> +       int res =3D TDM_E_OK;
+> +
+> +       adap =3D tdm_get_adapter(driver->adapter->id);
+> +       if (!adap)
+> +               return -ENODEV;
+> +
+> +       /* This creates an anonymous tdm_port, which may later be
+> +        * pointed to some slot.
+> +        *
+> +        */
+> +       port =3D kzalloc(sizeof(*port), GFP_KERNEL);
+> +       if (!port) {
+> +               res =3D -ENOMEM;
+> +               goto out;
+> +       }
+
+Just return here.  You don't need to "goto out".  And I think you
+forgot to call tdm_put_adapter(), although it might be easier if you
+call kzalloc() first, and then tdm_get_adapter().
+
+> +
+> +       port->rx_max_frames =3D NUM_SAMPLES_PER_FRAME;
+> +       port->port_cfg.port_mode =3D TDM_PORT_CHANNELIZED;
+> +
+> +       snprintf(driver->name, TDM_NAME_SIZE, "tdm-dev");
+> +       port->driver =3D driver;
+> +       port->adapter =3D adap;
+> +
+> +       spin_lock_irqsave(&adap->portlist_lock, flags);
+> +       list_add_tail(&port->list, &adap->myports);
+> +       spin_unlock_irqrestore(&adap->portlist_lock, flags);
+
+Are you sure you need to disable interrupts?  That seems excessive.
+
+
+> +int tdm_channel_read(struct tdm_port *h_port, struct tdm_channel *h_chan=
+nel,
+> +               void *p_data, u16 *size)
+> +{
+> +       struct tdm_channel *channel;
+> +       struct tdm_bd *rx_bd;
+> +       unsigned long flags;
+> +       int i, res =3D TDM_E_OK;
+> +       unsigned short *buf, *buf1;
+> +       channel =3D h_channel;
+> +
+> +       if (!channel->p_ch_data || !channel->in_use)
+> +               return -EIO;
+> +
+> +       spin_lock_irqsave(&channel->p_ch_data->rx_channel_lock, flags);
+> +       rx_bd =3D channel->p_ch_data->rx_out_data;
+> +
+> +       if (rx_bd->flag) {
+> +               *size =3D rx_bd->length;
+> +               buf =3D (u16 *) p_data;
+> +               buf1 =3D (u16 *)rx_bd->p_data;
+> +               for (i =3D 0; i < NUM_SAMPLES_PER_FRAME; i++)
+> +                       buf[i] =3D buf1[i];
+
+Use memcpy() instead.
+
+
+
+> +int tdm_channel_write(struct tdm_port *h_port, struct tdm_channel *h_cha=
+nnel,
+> +               void *p_data, u16 size)
+> +{
+> +       struct tdm_port *port;
+> +       struct tdm_channel *channel;
+> +       struct tdm_bd *tx_bd;
+> +       unsigned long flags;
+> +       int err =3D TDM_E_OK;
+> +       port =3D h_port;
+> +       channel =3D h_channel;
+> +#ifdef DEBUG
+> +       bool data_flag =3D 0;
+> +#endif
+> +
+> +       if (p_data =3D=3D NULL) { /* invalid data*/
+> +               pr_err("Invalid Data");
+> +               return -EFAULT;
+> +       }
+
+EFAULT is for invalid memory access.  I think you mean EINVAL here.
+
+> +
+> +       if (!channel->p_ch_data || !channel->in_use)
+> +               return -EIO;
+> +
+> +       spin_lock_irqsave(&channel->p_ch_data->tx_channel_lock, flags);
+> +       tx_bd =3D channel->p_ch_data->tx_in_data;
+> +
+> +       if (!tx_bd->flag) {
+> +               tx_bd->length =3D size;
+> +               memcpy(tx_bd->p_data, p_data,
+> +                               size * port->adapter->adapt_cfg.slot_widt=
+h);
+> +               tx_bd->flag =3D 1;
+> +               tx_bd->offset =3D 0;
+> +               channel->p_ch_data->tx_in_data =3D (tx_bd->wrap) ?
+> +                       channel->p_ch_data->tx_data_fifo : tx_bd+1;
+> +               port->port_stat.tx_pkt_count++;
+> +#ifdef DEBUG
+> +               data_flag =3D 1;
+> +#endif
+> +       } else {
+> +               spin_unlock_irqrestore(&channel->p_ch_data->tx_channel_lo=
+ck,
+> +                               flags);
+> +               port->port_stat.tx_pkt_drop_count++;
+> +               pr_err("E_NO_MEMORY -Failed Transmit");
+
+Please review ALL of your error messages, and make sure that have a
+proper prefix ("tdm: ") and all look the same.  Don't use __func__ in
+any of them, and make sure the error messages are clear, English text.
+
+> +               return -ENOMEM;
+
+I'm not sure ENOMEM is appropriate here.
+
+> +       }
+> +       spin_unlock_irqrestore(&channel->p_ch_data->tx_channel_lock, flag=
+s);
+> +
+> +#ifdef DEBUG
+> +       if (data_flag) {
+> +               int k;
+> +               pr_info("\nTX port:%d - Write - Port TX-%d\n",
+> +                               port->port_id, size);
+> +               for (k =3D 0; k < size; k++)
+> +                       pr_info("%x", p_data[k]);
+> +               pr_info("\n");
+> +       }
+> +#endif
+> +       return err;
+> +}
+> +EXPORT_SYMBOL(tdm_channel_write);
+> +
+> +/* Driver Function for select and poll. Based on Channel, it sleeps on
+> + * waitqueue */
+> +int tdm_ch_poll(struct tdm_channel *h_channel, unsigned int wait_time)
+> +{
+> +       struct tdm_channel *channel;
+> +       unsigned long timeout =3D msecs_to_jiffies(wait_time);
+> +       channel =3D h_channel;
+> +
+> +       if (!channel->p_ch_data || !channel->in_use)
+> +               return -EIO;
+> +
+> +       if (channel->p_ch_data->rx_out_data->flag) {
+> +               pr_debug("Data Available");
+> +               return TDM_E_OK;
+> +       }
+> +       if (timeout) {
+> +               wait_event_interruptible_timeout(channel->ch_wait_queue,
+
+It'd be more efficient if you did this:
+
+       if (wait_time) {
+               unsigned long timeout =3D msecs_to_jiffies(wait_time);
+
+               wait_event_interruptible_timeout(channel->ch_wait_queue,
+
+
+> +                               channel->p_ch_data->rx_out_data->flag,
+> +                               timeout);
+> +
+> +               if (channel->p_ch_data->rx_out_data->flag) {
+> +                       pr_debug("Data Available");
+> +                       return TDM_E_OK;
+> +               }
+> +       }
+> +       return -EAGAIN;
+> +}
+> +EXPORT_SYMBOL(tdm_ch_poll);
+> +
+> +unsigned int tdm_port_get_stats(struct tdm_port *h_port,
+> +               struct tdm_port_stats *portStat)
+
+Do not use CamelCase in variable names.
+
+
+
+> diff --git a/include/linux/tdm.h b/include/linux/tdm.h
+> new file mode 100644
+> index 0000000..a2f9628
+> --- /dev/null
+> +++ b/include/linux/tdm.h
+> @@ -0,0 +1,338 @@
+> +/* include/linux/tdm.h
+> + *
+> + * Copyright (C) 2012 Freescale Semiconductor, Inc, All rights reserved.
+> + *
+> + * tdm.h - definitions for the tdm-device framework interface
+> + *
+> + * Author:Hemant Agrawal <hemant@freescale.com>
+> + *     Rajesh Gumasta <rajesh.gumasta@freescale.com>
+> + *
+> + * This program is free software; you can redistribute  it and/or modify=
+ it
+> + * under  the terms of  the GNU General  Public License as published by =
+the
+> + * Free Software Foundation;  either version 2 of the  License, or (at y=
+our
+> + * option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful, but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the  GNU General Public License al=
+ong
+> + * with this program; if not, write  to the Free Software Foundation, In=
+c.,
+> + * 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +
+> +#ifndef _LINUX_TDM_H
+> +#define _LINUX_TDM_H
+> +
+> +#include <linux/types.h>
+> +#include <linux/module.h>
+> +#include <linux/mod_devicetable.h>
+> +#include <linux/device.h>      /* for struct device */
+> +#include <linux/sched.h>       /* for completion */
+> +#include <linux/mutex.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/sysfs.h>
+> +
+> +#define TDM_LATEST_DATA                1
+> +#define CHANNEL_8BIT_LIN       0       /* 8 bit linear */
+> +#define CHANNEL_8BIT_ULAW      1       /* 8 bit Mu-law */
+> +#define CHANNEL_8BIT_ALAW      2       /* 8 bit A-law */
+> +#define CHANNEL_16BIT_LIN      3       /* 16 bit Linear */
+> +
+> +/*
+> + * Default adapter configuration. All the TDM adapters registered with
+> + * framework will be configured with following default configuration.
+> + */
+> +#define NUM_CHANNELS   16
+> +
+> +/* Default configuration for typical voice data sample. These parameters
+> + * will generally not be required to be changed for voice type applicati=
+ons.
+> + */
+> +#define NUM_SAMPLES_PER_MS     8       /* 8 samples per milli sec per
+> +                                        channel. Req for voice data */
+> +#define NUM_MS                 10
+> +#define NUM_SAMPLES_PER_FRAME  (NUM_MS * NUM_SAMPLES_PER_MS) /* Number o=
+f
+> +                                               samples for 1 client buff=
+er */
+> +#define NUM_OF_TDM_BUF         3
+> +
+> +/* General options */
+> +
+> +struct tdm_adapt_algorithm;
+> +struct tdm_adapter;
+> +struct tdm_port;
+> +struct tdm_driver;
+
+I don't think you need "struct tdm_driver;"
+
+
+> +/* tdm_adapter_mode is to define in mode of the device */
+> +enum tdm_adapter_mode {
+> +       TDM_ADAPTER_MODE_NONE =3D 0x00,
+> +       TDM_ADAPTER_MODE_T1 =3D 0x01,
+> +       TDM_ADAPTER_MODE_E1 =3D 0x02,
+> +       TDM_ADAPTER_MODE_T1_RAW =3D 0x10,
+> +       TDM_ADAPTER_MODE_E1_RAW =3D 0x20,
+
+Where did these numbers come from?
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
