@@ -1,22 +1,24 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 869322C0324
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 19:06:14 +1000 (EST)
-Message-ID: <500D1527.7070405@cn.fujitsu.com>
-Date: Mon, 23 Jul 2012 17:11:03 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 081452C0327
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 19:14:10 +1000 (EST)
+From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>, Arnd Bergmann <arnd@arndb.de>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 24/25] macintosh/mediabay: make data used as
+ *of_device_id.data const
+Date: Mon, 23 Jul 2012 11:13:29 +0200
+Message-Id: <1343034810-3386-25-git-send-email-u.kleine-koenig@pengutronix.de>
+In-Reply-To: <1343034810-3386-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1343034810-3386-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH 0/8] memory-hotplug : hot-remove physical memory(clear
- page table)
-References: <5009038A.4090001@cn.fujitsu.com> <5009094B.3090506@jp.fujitsu.com>
-In-Reply-To: <5009094B.3090506@jp.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- liuj97@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ kernel@pengutronix.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,73 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 07/20/2012 03:31 PM, Yasuaki Ishimatsu Wrote:
-> [Hi Wen,
-> 
-> Good news!! I was waiting for this patch to come.
-> Applying the patches, can we hot-remove physical memory completely?
+From: Arnd Bergmann <arnd@arndb.de>
 
-If all functions success, I guess so.
+[ukl: split Arnd's patch by driver]
 
-Thanks
-Wen Congyang
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+---
+ drivers/macintosh/mediabay.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-> 
-> Thanks,
-> Yasuaki Ishimatsu
-> 
-> 2012/07/20 16:06, Wen Congyang wrote:
->> This patch series aims to support physical memory hot-remove(clear
->> page table).
->>
->> This patch series base on ishimatsu's patch series. You can get it here:
->> http://www.spinics.net/lists/linux-acpi/msg36804.html
->>
->> The patches can remove following things:
->>    - page table of removed memory
->>
->> If you find lack of function for physical memory hot-remove, please
->> let me
->> know.
->>
->> Note:
->> * The patch "remove memory info from list before freeing it" is being
->> disccussed
->>    in other thread. But for testing the patch series, the patch is
->> needed.
->>    So I added the patch as [PATCH 0/8].
->> * You need to apply ishimatsu's patch series first before applying
->> this patch
->>    series.
->>
->> Wen Congyang (8):
->>    memory-hotplug: store the node id in acpi_memory_device
->>    memory-hotplug: offline memory only when it is onlined
->>    memory-hotplug: call remove_memory() to cleanup when removing memory
->>      device
->>    memory-hotplug: export the function acpi_bus_remove()
->>    memory-hotplug: call acpi_bus_remove() to remove memory device
->>    memory-hotplug: introduce new function arch_remove_memory()
->>    x86: make __split_large_page() generally avialable
->>    memory-hotplug: implement arch_remove_memory()
->>
->>   arch/ia64/mm/init.c                  |   16 ++++
->>   arch/powerpc/mm/mem.c                |   14 +++
->>   arch/s390/mm/init.c                  |    8 ++
->>   arch/sh/mm/init.c                    |   15 +++
->>   arch/tile/mm/init.c                  |    8 ++
->>   arch/x86/include/asm/pgtable_types.h |    1 +
->>   arch/x86/mm/init_32.c                |   10 ++
->>   arch/x86/mm/init_64.c                |  160
->> ++++++++++++++++++++++++++++++++++
->>   arch/x86/mm/pageattr.c               |   47 +++++-----
->>   drivers/acpi/acpi_memhotplug.c       |   24 ++++--
->>   drivers/acpi/scan.c                  |    3 +-
->>   include/acpi/acpi_bus.h              |    1 +
->>   include/linux/memory_hotplug.h       |    1 +
->>   mm/memory_hotplug.c                  |    2 +-
->>   14 files changed, 280 insertions(+), 30 deletions(-)
->>
-> 
-> 
-> 
+diff --git a/drivers/macintosh/mediabay.c b/drivers/macintosh/mediabay.c
+index 54bf584..3f8d032 100644
+--- a/drivers/macintosh/mediabay.c
++++ b/drivers/macintosh/mediabay.c
+@@ -669,7 +669,7 @@ static int media_bay_resume(struct macio_dev *mdev)
+ 
+ /* Definitions of "ops" structures.
+  */
+-static struct mb_ops ohare_mb_ops = {
++static const struct mb_ops ohare_mb_ops = {
+ 	.name		= "Ohare",
+ 	.content	= ohare_mb_content,
+ 	.power		= ohare_mb_power,
+@@ -678,7 +678,7 @@ static struct mb_ops ohare_mb_ops = {
+ 	.un_reset_ide	= ohare_mb_un_reset_ide,
+ };
+ 
+-static struct mb_ops heathrow_mb_ops = {
++static const struct mb_ops heathrow_mb_ops = {
+ 	.name		= "Heathrow",
+ 	.content	= heathrow_mb_content,
+ 	.power		= heathrow_mb_power,
+@@ -687,7 +687,7 @@ static struct mb_ops heathrow_mb_ops = {
+ 	.un_reset_ide	= heathrow_mb_un_reset_ide,
+ };
+ 
+-static struct mb_ops keylargo_mb_ops = {
++static const struct mb_ops keylargo_mb_ops = {
+ 	.name		= "KeyLargo",
+ 	.init		= keylargo_mb_init,
+ 	.content	= keylargo_mb_content,
+-- 
+1.7.10.4
