@@ -1,34 +1,20 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A9DAF2C0332
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 15:54:45 +1000 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 23 Jul 2012 15:54:34 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6N5kPc350266124
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 15:46:25 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6N5sdbV015442
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 15:54:39 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V3 03/11] arch/powerpc: Convert virtual address to vpn
-In-Reply-To: <20120722234203.GC17790@bloggs.ozlabs.ibm.com>
-References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1341839621-28332-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120722234203.GC17790@bloggs.ozlabs.ibm.com>
-Date: Mon, 23 Jul 2012 11:24:37 +0530
-Message-ID: <87ipdfhvj6.fsf@skywalker.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 598402C0330
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 16:06:21 +1000 (EST)
+Message-ID: <1343023569.2957.19.camel@pasglop>
+Subject: Re: [PATCH] powerpc/mm: add ZONE_NORMAL zone for 64 bit kernel
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Shaohui Xie <Shaohui.Xie@freescale.com>
+Date: Mon, 23 Jul 2012 16:06:09 +1000
+In-Reply-To: <1342786906-12634-1-git-send-email-Shaohui.Xie@freescale.com>
+References: <1342786906-12634-1-git-send-email-Shaohui.Xie@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Mingkai Hu <Mingkai.hu@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Chen Yuanquan <B41889@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,88 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+On Fri, 2012-07-20 at 20:21 +0800, Shaohui Xie wrote:
+> PowerPC platform only supports ZONE_DMA zone for 64bit kernel, so all the
+> memory will be put into this zone. If the memory size is greater than
+> the device's DMA capability and device uses dma_alloc_coherent to allocate
+> memory, it will get an address which is over the device's DMA addressing,
+> the device will fail.
+> 
+> So we split the memory to two zones by adding a zone ZONE_NORMAL, since
+> we already allocate PCICSRBAR/PEXCSRBAR right below the 4G boundary (if the
+> lowest PCI address is above 4G), so we constrain the DMA zone ZONE_DMA
+> to 2GB, also, we clear the flag __GFP_DMA and set it only if the device's
+> dma_mask < total memory size. By doing this, devices which cannot DMA all
+> the memory will be limited to ZONE_DMA, but devices which can DMA all the
+> memory will not be affected by this limitation.
 
-> On Mon, Jul 09, 2012 at 06:43:33PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> This patch convert different functions to take virtual page number
->> instead of virtual address. Virtual page number is virtual address
->> shifted right by VPN_SHIFT (12) bits. This enable us to have an
->> address range of upto 76 bits.
->
-> Some comments inline below...
->
->> +/*
->> + * encode page number shift.
->> + * Inorder to fit the 78 bit va in a 64 bit variable we shift the va by
->       ^ "in order"
->
->> + * 12 bits. This enable us to address upto 76 bit va.
->                                          ^ "up to"
->
->> + * For hpt hash from a va we can ignore the page size bits of va and for
->> + * hpte encoding we ignore upto 23 bits of va. So ignoring lower 12 bits ensure
->> + * we work in all cases including 4k page size.
->> + */
->> +#define VPN_SHIFT	12
->
-> This can't be more than 12 bits because we sometimes use 4k pages even
-> in a kernel configured for 64k pages (e.g. with the subpage_protection
-> system call).
+This is wrong. Don't you have an iommu do deal with those devices
+anyway ? What about swiotlb ?
 
-Yes, I wanted to make that explicit, ie this is not a virtual page
-number and hence all these BUG_ON. I actually updated few of them
-to BUILD_BUG_ON() based of earlier review.
+If you *really* need to honor 32 (or 31 even) bit DMAs, what you -may-
+want to do is create a ZONE_DMA32 like other architectures, do not
+hijack the historical ZONE_DMA.
 
->
->> +static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
->> +					     int ssize)
->> +{
->> +	unsigned long v;
->> +	/*
->> +	 * The AVA field omits the low-order 23 bits of the 78 bits VA.
->> +	 * These bits are not needed in the PTE, because the
->> +	 * low-order b of these bits are part of the byte offset
->> +	 * into the virtual page and, if b < 23, the high-order
->> +	 * 23-b of these bits are always used in selecting the
->> +	 * PTEGs to be searched
->> +	 */
->> +	BUG_ON(VPN_SHIFT > 23);
->
-> I don't think we need this.  If VPN_SHIFT was computed by some complex
-> expression whose value is not obvious, then BUG_ON (or BUILD_BUG_ON)
-> would be appropriate, but since it's just a #define, a comment at the
-> site of the definition will suffice.
->
->>  static inline unsigned long hpt_hash(unsigned long va, unsigned int shift,
->>  				     int ssize)
->>  {
->> +	int mask;
->>  	unsigned long hash, vsid;
->>  
->> +	BUG_ON(shift < VPN_SHIFT);
->
-> So VPN_SHIFT can be at most 12, since 12 is the smallest shift value
-> possible here.
->
->> -static inline void __tlbiel(unsigned long va, int psize, int ssize)
->> +static inline void __tlbiel(unsigned long vpn, int psize, int ssize)
->>  {
->> +	unsigned long va;
->>  	unsigned int penc;
->>  
->> +	BUG_ON((77 - 65) > VPN_SHIFT);
->> +	va = vpn << VPN_SHIFT;
->
-> So VPN_SHIFT has to be at least 12.  What is the significance of 77
-> and 65 here?
->
+But even then, I'm dubious this is really needed.
 
-It is the other way around . I updated that in 77guccfav.fsf@skywalker.in.ibm.com
-
-       BUILD_BUG_ON(VPN_SHIFT > (77 - 65));
-
-tlbiel says we can only ignore bits above 65 of va. hence the math of 77- 65. 
-
--aneesh
+Cheers,
+Ben.
