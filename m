@@ -1,17 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Mon, 23 Jul 2012 19:36:11 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V3 09/11] arch/powerpc: Use 50 bits of VSID in slbmte
-Message-ID: <20120723093611.GA29264@bloggs.ozlabs.ibm.com>
-References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1341839621-28332-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120723000658.GH17790@bloggs.ozlabs.ibm.com>
- <87394ij3aa.fsf@skywalker.in.ibm.com>
+Return-Path: <R65777@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 453C32C0330
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 20:15:11 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
+ <agraf@suse.de>, <scottwood@freescale.com>
+Subject: [PATCH] using get/put_user64 apis on 64bit machine
+Date: Mon, 23 Jul 2012 15:46:37 +0530
+Message-ID: <1343038597-23859-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <87394ij3aa.fsf@skywalker.in.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,45 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 23, 2012 at 01:51:49PM +0530, Aneesh Kumar K.V wrote:
-> Paul Mackerras <paulus@samba.org> writes:
-> 
-> > On Mon, Jul 09, 2012 at 06:43:39PM +0530, Aneesh Kumar K.V wrote:
-> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >> 
-> >> Increase the number of valid VSID bits in slbmte instruction.
-> >> We will use the new bits when we increase valid VSID bits.
-> >> 
-> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >> ---
-> >>  arch/powerpc/mm/slb_low.S |    4 ++--
-> >>  1 file changed, 2 insertions(+), 2 deletions(-)
-> >> 
-> >> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-> >> index c355af6..c1fc81c 100644
-> >> --- a/arch/powerpc/mm/slb_low.S
-> >> +++ b/arch/powerpc/mm/slb_low.S
-> >> @@ -226,7 +226,7 @@ _GLOBAL(slb_allocate_user)
-> >>   */
-> >>  slb_finish_load:
-> >>  	ASM_VSID_SCRAMBLE(r10,r9,256M)
-> >> -	rldimi	r11,r10,SLB_VSID_SHIFT,16	/* combine VSID and flags */
-> >> +	rldimi	r11,r10,SLB_VSID_SHIFT,2	/* combine VSID and flags */
-> >
-> > You can't do that without either changing ASM_VSID_SCRAMBLE or masking
-> > the VSID it generates to 36 bits, since the logic in ASM_VSID_SCRAMBLE
-> > can leave non-zero bits in the high 28 bits of the result.  Similarly
-> > for the 1T case.
-> >
-> 
-> How about change ASM_VSID_SCRAMBLE to clear the high bits ? That would
-> also make it close to vsid_scramble()
+On powerpc64 machine get/put_user64() is same as get/put_user() while
+on powerpc32 machine get_user64 is different. With this patch we can
+use get_user64() and put_user64() on 32 and 64 bit machines.
 
-One more instruction in a hot path - I'd rather not.  How about
-changing the rldimi instruction to:
-	rldimi	r11,r10,SLB_VSID_SHIFT,(64-SLB_VSID_SHIFT-VSID_BITS_256M)
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+---
+ arch/powerpc/include/asm/uaccess.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-and similarly for the 1T case.  That will give the proper masking
-when you change VSID_BITS_256M.
-
-Paul.
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 17bb40c..01743aa 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -114,10 +114,17 @@ struct exception_table_entry {
+ #define __put_user(x, ptr) \
+ 	__put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
+ 
++/*
++ * On powerpc64 machine get/put_user64() is same as get/put_user() while
++ * on powerpc32 machine get_user64 is different.
++ */
+ #ifndef __powerpc64__
+ #define __get_user64(x, ptr) \
+ 	__get_user64_nocheck((x), (ptr), sizeof(*(ptr)))
+ #define __put_user64(x, ptr) __put_user(x, ptr)
++#else
++#define __get_user64(x, ptr) __get_user(x, ptr) 
++#define __put_user64(x, ptr) __put_user(x, ptr)
+ #endif
+ 
+ #define __get_user_inatomic(x, ptr) \
+-- 
+1.7.0.4
