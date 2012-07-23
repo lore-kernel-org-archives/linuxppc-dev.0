@@ -1,27 +1,21 @@
-Return-Path: <hughd@google.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 08D932C0201
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:25:36 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so10192358pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 00:25:34 -0700 (PDT)
-Date: Mon, 23 Jul 2012 00:24:50 -0700 (PDT)
-From: Hugh Dickins <hughd@google.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6799C2C028D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:27:21 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: next/mmotm unbootable on G5: irqdomain
-In-Reply-To: <1343011543.2957.2.camel@pasglop>
-Message-ID: <alpine.LSU.2.00.1207230023380.6948@eggly.anvils>
-References: <alpine.LSU.2.00.1207211911160.1585@eggly.anvils>
- <1343011543.2957.2.camel@pasglop>
+Subject: Re: [PATCH] powerpc: Update g5_defconfig
+References: <1343011712.2957.5.camel__22210.4697292254$1343011753$gmane$org@pasglop>
+ <m2fw8jyn43.fsf@igel.home> <1343027168.2957.30.camel@pasglop>
+Date: Mon, 23 Jul 2012 09:27:15 +0200
+In-Reply-To: <1343027168.2957.30.camel@pasglop> (Benjamin Herrenschmidt's
+ message of "Mon, 23 Jul 2012 17:06:08 +1000")
+Message-ID: <m2boj7ym24.fsf@igel.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- Milton Miller <miltonm@bga.com>, Paul Mundt <lethal@linux-sh.org>,
- Rob Herring <rob.herring@calxeda.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 23 Jul 2012, Benjamin Herrenschmidt wrote:
-> On Sat, 2012-07-21 at 19:47 -0700, Hugh Dickins wrote:
-> > I have to revert the patch below from mmotm 2012-07-20-16-30 or
-> > next-20120720 in order to boot on the PowerPC G5: otherwise it
-> > freezes before switching to the framebuffer console - but I'm
-> > not certain where because that initial console doesn't scroll
-> > (there are mpic messages at bottom and at top of screen, probably
-> > later messages at the top but I don't know the sequence).
-> 
-> This fixes it
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Confirmed: many thanks, Ben.
+> What do you mean by "lots of problems" ?
 
-> (Grant, how do we avoid bisection breakage here ? I can
-> put that in -powerpc and we can make sure that gets merged before your
-> tree ?)
-> 
-> powerpc/mpic: Create a revmap with enough entries for IPIs and timers
-> 
-> The current mpic code creates a linear revmap just big enough for all
-> the sources, which happens to miss the IPIs and timers on some machines.
-> 
-> This will in turn break when the irqdomain code loses the fallback of
-> doing a linear search when the revmap fails (and really slows down IPIs
-> otherwise).
-> 
-> This happens for example on the U4 based Apple machines such as the
-> dual core PowerMac G5s.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index 906f29c..bfc6211 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -1376,7 +1376,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
->  	mpic->isu_mask = (1 << mpic->isu_shift) - 1;
->  
->  	mpic->irqhost = irq_domain_add_linear(mpic->node,
-> -				       last_irq + 1,
-> +				       intvec_top,
->  				       &mpic_host_ops, mpic);
->  
->  	/*
-> 
-> 
-> 
+For example, only half of the screen is drawn.  There is a bug open
+about this, but no comments.
+
+> Also can you remind me what machine model and what video card variant ?
+
+PowerMac7,3 with NV34 [GeForce FX 5200 Ultra] (rev a1).
+
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
