@@ -1,20 +1,34 @@
-Return-Path: <R65777@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 453C32C0330
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 20:15:11 +1000 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
- <agraf@suse.de>, <scottwood@freescale.com>
-Subject: [PATCH] using get/put_user64 apis on 64bit machine
-Date: Mon, 23 Jul 2012 15:46:37 +0530
-Message-ID: <1343038597-23859-1-git-send-email-Bharat.Bhushan@freescale.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 464412C0342
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 20:22:33 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 23 Jul 2012 20:22:01 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6NADrvC27787452
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 20:13:54 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6NAM885005703
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 20:22:08 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH -V3 11/11] arch/powerpc: Add 64TB support
+In-Reply-To: <20120723093951.GB29264@bloggs.ozlabs.ibm.com>
+References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1341839621-28332-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20120723093951.GB29264@bloggs.ozlabs.ibm.com>
+Date: Mon, 23 Jul 2012 15:52:05 +0530
+Message-ID: <87txwyhj5e.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +38,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc64 machine get/put_user64() is same as get/put_user() while
-on powerpc32 machine get_user64 is different. With this patch we can
-use get_user64() and put_user64() on 32 and 64 bit machines.
+Paul Mackerras <paulus@samba.org> writes:
 
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
----
- arch/powerpc/include/asm/uaccess.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+> On Mon, Jul 09, 2012 at 06:43:41PM +0530, Aneesh Kumar K.V wrote:
+>
+>> -#define USER_ESID_BITS		16
+>> -#define USER_ESID_BITS_1T	4
+>> +#define USER_ESID_BITS		18
+>> +#define USER_ESID_BITS_1T	6
+>
+> You also need to change the proto-VSID generation for kernel addresses
+> when you do this.  If you don't you'll end up with some user processes
+> using the same VSIDs as we use for the kernel addresses, meaning that
+> those processes won't run very well...
+>
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 17bb40c..01743aa 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -114,10 +114,17 @@ struct exception_table_entry {
- #define __put_user(x, ptr) \
- 	__put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
- 
-+/*
-+ * On powerpc64 machine get/put_user64() is same as get/put_user() while
-+ * on powerpc32 machine get_user64 is different.
-+ */
- #ifndef __powerpc64__
- #define __get_user64(x, ptr) \
- 	__get_user64_nocheck((x), (ptr), sizeof(*(ptr)))
- #define __put_user64(x, ptr) __put_user(x, ptr)
-+#else
-+#define __get_user64(x, ptr) __get_user(x, ptr) 
-+#define __put_user64(x, ptr) __put_user(x, ptr)
- #endif
- 
- #define __get_user_inatomic(x, ptr) \
--- 
-1.7.0.4
+Can you explain this more. right now we generate vsid as below
+
+vsid_scramble(ea >> SID_SHIFT, 256M) for kernel
+
+vsid_scramble((context << USER_ESID_BITS) | (ea >> SID_SHIFT), 256M);
+for user
+
+what changes are you suggesting ?
+
+-aneesh
