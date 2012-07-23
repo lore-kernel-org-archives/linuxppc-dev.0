@@ -3,7 +3,7 @@ Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
  [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
  (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6352B2C0392
+ by ozlabs.org (Postfix) with ESMTPS id 72DD22C0397
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 19:14:25 +1000 (EST)
 From: =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
 To: Grant Likely <grant.likely@secretlab.ca>, Arnd Bergmann <arnd@arndb.de>,
@@ -11,9 +11,9 @@ To: Grant Likely <grant.likely@secretlab.ca>, Arnd Bergmann <arnd@arndb.de>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Timur Tabi <timur@freescale.com>,
  Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 21/25] powerpc/fsl_msi: drop unneeded cast to non-const pointer
-Date: Mon, 23 Jul 2012 11:13:26 +0200
-Message-Id: <1343034810-3386-22-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 15/25] powerpc/fsl_msi: add a const qualifier
+Date: Mon, 23 Jul 2012 11:13:20 +0200
+Message-Id: <1343034810-3386-16-git-send-email-u.kleine-koenig@pengutronix.de>
 In-Reply-To: <1343034810-3386-1-git-send-email-u.kleine-koenig@pengutronix.de>
 References: <1343034810-3386-1-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
@@ -29,40 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Arnd Bergmann <arnd@arndb.de>
+This prepares *of_device_id.data becoming const. Without this change
+the following warning would occur:
 
-This cast is unneeded since *of_device_id.data became const.
+	arch/powerpc/sysdev/fsl_msi.c: In function 'fsl_of_msi_probe':
+	arch/powerpc/sysdev/fsl_msi.c:379:11: error: assignment discards 'const' qualifier from pointer target type [-Werror]
 
-[ukl: split Arnd's patch by driver and add changelog]
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
 ---
- arch/powerpc/sysdev/fsl_msi.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/fsl_msi.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index a40acd6..51ffafa 100644
+index 6e097de..a40acd6 100644
 --- a/arch/powerpc/sysdev/fsl_msi.c
 +++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -502,15 +502,15 @@ static const struct fsl_msi_feature vmpic_msi_feature = {
- static const struct of_device_id fsl_of_msi_ids[] = {
- 	{
- 		.compatible = "fsl,mpic-msi",
--		.data = (void *)&mpic_msi_feature,
-+		.data = &mpic_msi_feature,
- 	},
- 	{
- 		.compatible = "fsl,ipic-msi",
--		.data = (void *)&ipic_msi_feature,
-+		.data = &ipic_msi_feature,
- 	},
- 	{
- 		.compatible = "fsl,vmpic-msi",
--		.data = (void *)&vmpic_msi_feature,
-+		.data = &vmpic_msi_feature,
- 	},
- 	{}
- };
+@@ -368,7 +368,7 @@ static int __devinit fsl_of_msi_probe(struct platform_device *dev)
+ 	int err, i, j, irq_index, count;
+ 	int rc;
+ 	const u32 *p;
+-	struct fsl_msi_feature *features;
++	const struct fsl_msi_feature *features;
+ 	int len;
+ 	u32 offset;
+ 	static const u32 all_avail[] = { 0, NR_MSI_IRQS };
 -- 
 1.7.10.4
