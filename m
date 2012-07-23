@@ -1,34 +1,27 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2F1132C07AD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:14:17 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 23 Jul 2012 17:14:06 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6N75TAj29425850
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:05:29 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6N7DiHV030687
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:13:44 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V3 07/11] arch/powerpc: Increase the slice range to 64TB
-In-Reply-To: <20120723000048.GG17790@bloggs.ozlabs.ibm.com>
-References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1341839621-28332-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120723000048.GG17790@bloggs.ozlabs.ibm.com>
-Date: Mon, 23 Jul 2012 12:43:41 +0530
-Message-ID: <878vebhrve.fsf@skywalker.in.ibm.com>
+Return-Path: <hughd@google.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 08D932C0201
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 17:25:36 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so10192358pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 00:25:34 -0700 (PDT)
+Date: Mon, 23 Jul 2012 00:24:50 -0700 (PDT)
+From: Hugh Dickins <hughd@google.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: next/mmotm unbootable on G5: irqdomain
+In-Reply-To: <1343011543.2957.2.camel@pasglop>
+Message-ID: <alpine.LSU.2.00.1207230023380.6948@eggly.anvils>
+References: <alpine.LSU.2.00.1207211911160.1585@eggly.anvils>
+ <1343011543.2957.2.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Paul Mundt <lethal@linux-sh.org>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,80 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+On Mon, 23 Jul 2012, Benjamin Herrenschmidt wrote:
+> On Sat, 2012-07-21 at 19:47 -0700, Hugh Dickins wrote:
+> > I have to revert the patch below from mmotm 2012-07-20-16-30 or
+> > next-20120720 in order to boot on the PowerPC G5: otherwise it
+> > freezes before switching to the framebuffer console - but I'm
+> > not certain where because that initial console doesn't scroll
+> > (there are mpic messages at bottom and at top of screen, probably
+> > later messages at the top but I don't know the sequence).
+> 
+> This fixes it
 
-> On Mon, Jul 09, 2012 at 06:43:37PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> This patch makes the high psizes mask as an unsigned char array
->> so that we can have more than 16TB. Currently we support upto
->> 64TB
->
-> Some comments inline...
->
->> @@ -804,16 +804,19 @@ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
->>  #ifdef CONFIG_PPC_MM_SLICES
->>  unsigned int get_paca_psize(unsigned long addr)
->>  {
->> -	unsigned long index, slices;
->> +	u64 lpsizes;
->> +	unsigned char *hpsizes;
->> +	unsigned long index, mask_index;
->>  
->>  	if (addr < SLICE_LOW_TOP) {
->> -		slices = get_paca()->context.low_slices_psize;
->> +		lpsizes = get_paca()->context.low_slices_psize;
->>  		index = GET_LOW_SLICE_INDEX(addr);
->> -	} else {
->> -		slices = get_paca()->context.high_slices_psize;
->> -		index = GET_HIGH_SLICE_INDEX(addr);
->> +		return (lpsizes >> (index * 4)) & 0xF;
->>  	}
->> -	return (slices >> (index * 4)) & 0xF;
->> +	hpsizes = get_paca()->context.high_slices_psize;
->> +	index = GET_HIGH_SLICE_INDEX(addr) >> 1;
->> +	mask_index = GET_HIGH_SLICE_INDEX(addr) - (index << 1);
->> +	return (hpsizes[index] >> (mask_index * 4)) & 0xF;
->
-> The last 3 lines here feel awkward.  How about:
->
-	index = GET_HIGH_SLICE_INDEX(addr);
-	mask_index = index & 1;
-	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xF;
+Confirmed: many thanks, Ben.
 
-
-That is much simpler. I updated the patch, changing to the above format in
-all the location.
-
->
->>  static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
->>  {
->> +	unsigned char *hpsizes;
->> +	int index, mask_index;
->>  	struct slice_mask ret = { 0, 0 };
->>  	unsigned long i;
->> -	u64 psizes;
->> +	u64 lpsizes;
->>  
->> -	psizes = mm->context.low_slices_psize;
->> +	lpsizes = mm->context.low_slices_psize;
->>  	for (i = 0; i < SLICE_NUM_LOW; i++)
->> -		if (((psizes >> (i * 4)) & 0xf) == psize)
->> +		if (((lpsizes >> (i * 4)) & 0xf) == psize)
->>  			ret.low_slices |= 1u << i;
->>  
->> -	psizes = mm->context.high_slices_psize;
->> -	for (i = 0; i < SLICE_NUM_HIGH; i++)
->> -		if (((psizes >> (i * 4)) & 0xf) == psize)
->> +	hpsizes = mm->context.high_slices_psize;
->> +	for (i = 0; i < SLICE_NUM_HIGH; i++) {
->> +		index = i >> 1;
->> +		mask_index = i - (index << 1);
->
-> Again, seems like a complicated way to do mask_index = i & 1 (or
-> even i % 2, if you prefer, but then make i an unsigned type).
->
-> Paul.
-
-
--aneesh
+> (Grant, how do we avoid bisection breakage here ? I can
+> put that in -powerpc and we can make sure that gets merged before your
+> tree ?)
+> 
+> powerpc/mpic: Create a revmap with enough entries for IPIs and timers
+> 
+> The current mpic code creates a linear revmap just big enough for all
+> the sources, which happens to miss the IPIs and timers on some machines.
+> 
+> This will in turn break when the irqdomain code loses the fallback of
+> doing a linear search when the revmap fails (and really slows down IPIs
+> otherwise).
+> 
+> This happens for example on the U4 based Apple machines such as the
+> dual core PowerMac G5s.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index 906f29c..bfc6211 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -1376,7 +1376,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+>  	mpic->isu_mask = (1 << mpic->isu_shift) - 1;
+>  
+>  	mpic->irqhost = irq_domain_add_linear(mpic->node,
+> -				       last_irq + 1,
+> +				       intvec_top,
+>  				       &mpic_host_ops, mpic);
+>  
+>  	/*
+> 
+> 
+> 
