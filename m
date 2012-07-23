@@ -1,23 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BED5B2C0125
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 11:22:16 +1000 (EST)
-Message-ID: <1343006528.29855.25.camel@pasglop>
-Subject: Re: [PATCH -V3 05/11] arch/powerpc: remove masking top 16 bit of va
- in tlb invalidate
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Date: Mon, 23 Jul 2012 11:22:08 +1000
-In-Reply-To: <20120722235610.GE17790@bloggs.ozlabs.ibm.com>
-References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1341839621-28332-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120722235610.GE17790@bloggs.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <robherring2@gmail.com>
+Message-ID: <500CAF49.1060003@gmail.com>
+Date: Sun, 22 Jul 2012 20:56:25 -0500
+From: Rob Herring <robherring2@gmail.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] of: require a match on all fields of of_device_id
+References: <20120718011151.GA6119@tyr.buserror.net>
+ <50062199.7090904@gmail.com> <5006DE87.7020503@freescale.com>
+In-Reply-To: <5006DE87.7020503@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: devicetree-discuss@lists.ozlabs.org,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,20 +21,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-07-23 at 09:56 +1000, Paul Mackerras wrote:
-> > That indicate we should not mask the top 16 bits. So remove the
-> same.
+On 07/18/2012 11:04 AM, Scott Wood wrote:
+> On 07/17/2012 09:38 PM, Rob Herring wrote:
+>> On 07/17/2012 08:11 PM, Scott Wood wrote:
+>>> Commit 107a84e61cdd3406c842a0e4be7efffd3a05dba6 ("of: match by compatible
+>>> property first") breaks the gianfar ethernet driver found on various
+>>> Freescale PPC chips.
+>>
+>> You do know this is reverted, right?
 > 
-> Older versions of the architecture (2.02 and earler) require the
-> masking, so we can't just unconditionally remove it, since that would
-> potentially break POWER5 and PPC970.  People are definitely still
-> running Linux bare-metal on PPC970s (though arguably not on POWER5). 
+> No, I didn't.  I got it via Kumar's next branch, and saw that it was
+> still in your fixes-for-grant branch, and didn't see any revert-related
+> e-mail activity on the devicetree-discuss list about it.  I now see that
+> it was reverted directly in Linus's tree (I didn't see either the
+> original or the revert in Linus's tree when I checked, but apparently I
+> hadn't fetched that as recently as I thought).
+> 
+>> Here's my fix (untested) which is a bit simpler. I'm assuming if we care
+>> about which compatible string we are matching to, then we require name
+>> and type are blank and we only care about compatible strings.
+> 
+> Any particular reason for making that assumption?  We should be avoiding
+> the need for .name or .type matching in new bindings, but this seems
+> like unnecessarily inconsistent behavior.
 
-Are you sure ? I couldn't convince myself ... the old architectures say
-that it only uses some of the bits but it doesn't mark the other ones as
-"reserved" (as in must be 0).
+Only to ensure we don't change existing behavior and I think trying to
+cover all possibilities will be nearly impossible. For example, what if
+we match on both a specific compatible prop alone and a less specific
+compatible prop plus name and/or type. Which one do we pick as the
+better match?
 
-(At least 1.x, I haven't looked at 2.x with x < 03)
-
-Cheers,
-Ben.
+Rob
