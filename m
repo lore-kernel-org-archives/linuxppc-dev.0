@@ -1,17 +1,23 @@
-Return-Path: <robherring2@gmail.com>
-Message-ID: <500CAF49.1060003@gmail.com>
-Date: Sun, 22 Jul 2012 20:56:25 -0500
-From: Rob Herring <robherring2@gmail.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] of: require a match on all fields of of_device_id
-References: <20120718011151.GA6119@tyr.buserror.net>
- <50062199.7090904@gmail.com> <5006DE87.7020503@freescale.com>
-In-Reply-To: <5006DE87.7020503@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: devicetree-discuss@lists.ozlabs.org,
- Thierry Reding <thierry.reding@avionic-design.de>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1E5452C0131
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Jul 2012 12:46:11 +1000 (EST)
+Message-ID: <1343011543.2957.2.camel@pasglop>
+Subject: Re: next/mmotm unbootable on G5: irqdomain
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hugh Dickins <hughd@google.com>
+Date: Mon, 23 Jul 2012 12:45:43 +1000
+In-Reply-To: <alpine.LSU.2.00.1207211911160.1585@eggly.anvils>
+References: <alpine.LSU.2.00.1207211911160.1585@eggly.anvils>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
+ Milton Miller <miltonm@bga.com>, Paul Mundt <lethal@linux-sh.org>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,34 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/18/2012 11:04 AM, Scott Wood wrote:
-> On 07/17/2012 09:38 PM, Rob Herring wrote:
->> On 07/17/2012 08:11 PM, Scott Wood wrote:
->>> Commit 107a84e61cdd3406c842a0e4be7efffd3a05dba6 ("of: match by compatible
->>> property first") breaks the gianfar ethernet driver found on various
->>> Freescale PPC chips.
->>
->> You do know this is reverted, right?
-> 
-> No, I didn't.  I got it via Kumar's next branch, and saw that it was
-> still in your fixes-for-grant branch, and didn't see any revert-related
-> e-mail activity on the devicetree-discuss list about it.  I now see that
-> it was reverted directly in Linus's tree (I didn't see either the
-> original or the revert in Linus's tree when I checked, but apparently I
-> hadn't fetched that as recently as I thought).
-> 
->> Here's my fix (untested) which is a bit simpler. I'm assuming if we care
->> about which compatible string we are matching to, then we require name
->> and type are blank and we only care about compatible strings.
-> 
-> Any particular reason for making that assumption?  We should be avoiding
-> the need for .name or .type matching in new bindings, but this seems
-> like unnecessarily inconsistent behavior.
+On Sat, 2012-07-21 at 19:47 -0700, Hugh Dickins wrote:
+> I have to revert the patch below from mmotm 2012-07-20-16-30 or
+> next-20120720 in order to boot on the PowerPC G5: otherwise it
+> freezes before switching to the framebuffer console - but I'm
+> not certain where because that initial console doesn't scroll
+> (there are mpic messages at bottom and at top of screen, probably
+> later messages at the top but I don't know the sequence).
 
-Only to ensure we don't change existing behavior and I think trying to
-cover all possibilities will be nearly impossible. For example, what if
-we match on both a specific compatible prop alone and a less specific
-compatible prop plus name and/or type. Which one do we pick as the
-better match?
+This fixes it (Grant, how do we avoid bisection breakage here ? I can
+put that in -powerpc and we can make sure that gets merged before your
+tree ?)
 
-Rob
+powerpc/mpic: Create a revmap with enough entries for IPIs and timers
+
+The current mpic code creates a linear revmap just big enough for all
+the sources, which happens to miss the IPIs and timers on some machines.
+
+This will in turn break when the irqdomain code loses the fallback of
+doing a linear search when the revmap fails (and really slows down IPIs
+otherwise).
+
+This happens for example on the U4 based Apple machines such as the
+dual core PowerMac G5s.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 906f29c..bfc6211 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1376,7 +1376,7 @@ struct mpic * __init mpic_alloc(struct device_node *node,
+ 	mpic->isu_mask = (1 << mpic->isu_shift) - 1;
+ 
+ 	mpic->irqhost = irq_domain_add_linear(mpic->node,
+-				       last_irq + 1,
++				       intvec_top,
+ 				       &mpic_host_ops, mpic);
+ 
+ 	/*
