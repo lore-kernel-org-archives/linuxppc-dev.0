@@ -1,13 +1,13 @@
 Return-Path: <B04825@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C5B6E2C0089
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2012 06:45:55 +1000 (EST)
-Message-ID: <500F0978.7010201@freescale.com>
-Date: Tue, 24 Jul 2012 15:45:44 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 5B64B2C0078
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2012 07:19:42 +1000 (EST)
+Message-ID: <500F1165.9040404@freescale.com>
+Date: Tue, 24 Jul 2012 16:19:33 -0500
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
 To: Scott Wood <scottwood@freescale.com>
@@ -27,31 +27,27 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Scott Wood wrote:
->> > +	bus-range = <0x0 0xff>;
+>> > +	compatible = "fsl,p5040-pcie", "fsl,qoriq-pcie-v2.2";
+> p5040 has PCIe v2.4.
+> 
+> Note that there is a version register, so perhaps we should drop the
+> version number from the compatible (and mention the version register in
+> the binding).
+> 
+> Might want to double check the other version numbers in this file too.
 
-> Do we really need this?
+It appears that this compatible string is used by U-Boot to find the nodes
+for fixups:
 
-I can't find any documentation for this property, but it does appear to be
-initialized by U-Boot:
+#elif defined(CONFIG_PPC_P5040)
+#define CONFIG_MAX_CPUS			4
+...
+#define CONFIG_SYS_FSL_PCIE_COMPAT	"fsl,qoriq-pcie-v2.2"
 
-	/* We assume a cfg_addr not being set means we didn't setup the controller */
-	if ((hose == NULL) || (hose->cfg_addr == NULL)) {
-		fdt_del_node(blob, off);
-	} else {
-		bus_range[0] = 0;
-		bus_range[1] = hose->last_busno - hose->first_busno;
-		fdt_setprop(blob, off, "bus-range", &bus_range[0], 2*4);
-		fdt_pci_dma_ranges(blob, off, hose);
-	}
+Which means that I can't just change it from v2.2 to v2.4 without breaking
+U-Boot.  Ugh.
 
-So I have no idea if it's required in the DTS.
-
->> > +	clock-frequency = <33333333>;
-
-> I doubt this is accurate.
-
-Every other DTS sets this property to 33333333, and I don't see any code
-in U-boot that fixes it up.
+How do you know that the P5040 has v2.4?
 
 -- 
 Timur Tabi
