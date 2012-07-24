@@ -1,31 +1,25 @@
-Return-Path: <B04825@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
+Return-Path: <B10812@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0C50B2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 00:43:25 +1000 (EST)
-Received: from mail12-db3 (localhost [127.0.0.1])	by mail12-db3-R.bigfish.com
- (Postfix) with ESMTP id 764E620256	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,
- 24 Jul 2012 14:43:18 +0000 (UTC)
-Received: from DB3EHSMHS008.bigfish.com (unknown [10.3.81.253])	by
- mail12-db3.bigfish.com (Postfix) with ESMTP id 934F4360260	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 14:43:16 +0000 (UTC)
-Message-ID: <500EB47F.1040903@freescale.com>
-Date: Tue, 24 Jul 2012 09:43:11 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Singh Sandeep-B37400 <B37400@freescale.com>
-Subject: Re: [2/3][PATCH][upstream] TDM Framework
+ by ozlabs.org (Postfix) with ESMTPS id B7AD62C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 01:12:40 +1000 (EST)
+From: Aggrwal Poonam-B10812 <B10812@freescale.com>
+To: David Laight <David.Laight@ACULAB.COM>, Singh Sandeep-B37400
+ <B37400@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [1/3][PATCH][upstream]Adding documentation for TDM
+Date: Tue, 24 Jul 2012 15:12:31 +0000
+Message-ID: <ACB6D0C0104CFF42A45A5D82A0DD4F3D079B7B35@039-SN2MPN1-013.039d.mgd.msft.net>
 References: <1343040588-16002-1-git-send-email-b37400@freescale.com>
- <CAOZdJXVnEUEQesyG52pL_jerGDrmJLxdfBNFrj_xvhPs=ue4DA@mail.gmail.com>
- <3F1D9DCAAB49B94D88DBE05911FA4E6E50ED27@039-SN1MPN1-006.039d.mgd.msft.net>
-In-Reply-To: <3F1D9DCAAB49B94D88DBE05911FA4E6E50ED27@039-SN1MPN1-006.039d.mgd.msft.net>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ <1343040588-16002-2-git-send-email-b37400@freescale.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B6FA4@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6FA4@saturn3.aculab.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Singh Sandeep-B37400 <B37400@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,37 +29,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Singh Sandeep-B37400 wrote:
+Thanks David for the comments.
 
->> +int tdm_adap_send(struct tdm_adapter *adap, void **buf, int count) {
->> +       int res;
->> +
->> +       if (adap->algo->tdm_write)
->> +               res = adap->algo->tdm_write(adap, buf, count);
-> 
-> Why does tdm_write() return a u32?  And shouldn't 'res' also be a u32, to make tdm_write()?
-> [Sandeep] tdm_write() returns number of bytes written. You are right, 'res' should be declared as u32
+Response Inline.
 
-Then it should return an unsigned int.  You should used a sized integer
-type only when the size really matters (e.g. hardware registers or packed
-fields in a structure).
+Regards
+Poonam
 
->> +/* tdm_adapter_mode is to define in mode of the device */ enum 
->> +tdm_adapter_mode {
->> +       TDM_ADAPTER_MODE_NONE = 0x00,
->> +       TDM_ADAPTER_MODE_T1 = 0x01,
->> +       TDM_ADAPTER_MODE_E1 = 0x02,
->> +       TDM_ADAPTER_MODE_T1_RAW = 0x10,
->> +       TDM_ADAPTER_MODE_E1_RAW = 0x20,
-> 
-> Where did these numbers come from?
-> [Sandeep] This is not related to any bit definition, just enum values.
+> -----Original Message-----
+> From: David Laight [mailto:David.Laight@ACULAB.COM]
+> Sent: Monday, July 23, 2012 6:02 PM
+> To: Singh Sandeep-B37400; linuxppc-dev@lists.ozlabs.org
+> Cc: Singh Sandeep-B37400; Aggrwal Poonam-B10812
+> Subject: RE: [1/3][PATCH][upstream]Adding documentation for TDM
+>=20
+> > +3. TDM has programmable slot length (8 bits or 16 bits). This can be
+> > +   configured by:
+> > +
+> > +	#define NUM_BYTES_PER_SLOT	8
+>=20
+> I presume you meant NUM_BITS_PER_SLOT ?
+> These constants need name-space protection
+>=20
+> > +or
+> > +	#define NUM_BYTES_PER_SLOT	16
+> > +
+This is a mistake, documentation patch not updated with the update design.
+> > +depending on the type of sample. For example the sample could be 16
+> > +bit linear +or 8bit u-law encoded etc.
+> > +Presently only word length of 16 is supported which is the default
+> > +configuration.
+>=20
+> For flexibility you need to allow for 8bit samples being converted as:
+> 1) 8bit raw ulaw or alaw data (unchanged from line).
+> 2) 8bit raw data, bit reversed, any hdlc protocol
+>    is bit reversed from audio [1].
+> 3) 8bit audio, converted from alaw to ulaw
+> 4) 8bit audio, converted from ulaw to alaw
+> 5) 16bit linear converted to/from alaw or ulaw and on a per-timeslot
+> basis.
+I agree. That we only support very limited samples. But We can add this in =
+second step once the basic framework is in.
+Also right now the testing infrastructure we have, we won't be able to test=
+ all these scenarios.
 
-Yes, but why these particular numbers?  Also, do they really need to be an
-enum?  Since you're defining hard values for each enum, you're not really
-using them as an enum.  Make these into macros.
+>=20
+> [1] most hdlc stuff probably can't stand the 10ms epochs though, so this
+> is limited use for serious work.
+Right now the framework has been customized for voice. We can keep this par=
+ameter as a sysfs knob. Please suggest.
 
-
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+Regards
+Poonam
+>=20
+> 	David
+>=20
+>=20
+>=20
