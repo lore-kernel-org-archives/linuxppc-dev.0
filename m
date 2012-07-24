@@ -1,18 +1,18 @@
 Return-Path: <B38951@freescale.com>
 Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6BA0B2C008D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 20:43:28 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0B2322C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 20:43:32 +1000 (EST)
 From: Jia Hongtao <B38951@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
  <B07421@freescale.com>
-Subject: [PATCH 2/6] powerpc/fsl-pci: Check swiotlb enable at board setup_arch
- stage
-Date: Tue, 24 Jul 2012 18:20:06 +0800
-Message-ID: <1343125210-16720-2-git-send-email-B38951@freescale.com>
+Subject: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by looking for ISA
+ node
+Date: Tue, 24 Jul 2012 18:20:07 +0800
+Message-ID: <1343125210-16720-3-git-send-email-B38951@freescale.com>
 In-Reply-To: <1343125210-16720-1-git-send-email-B38951@freescale.com>
 References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
@@ -27,175 +27,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PCI initialization is called later than swiotlb_init() due to PCI controller is
-a platform driver now. So we provide a function which called at board setup_arch
-stage to address swiotlb enable by parsing pci ranges.
+PCI host bridge is primary bus if it contains an ISA node. But not all boards
+fit this rule. Device tree should be updated for all these boards.
 
 Signed-off-by: Jia Hongtao <B38951@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_pci.c |  125 ++++++++++++++++++++++++++++++++++++-----
- arch/powerpc/sysdev/fsl_pci.h |    6 ++
- 2 files changed, 116 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/pci-bridge.h |    1 +
+ arch/powerpc/sysdev/fsl_pci.c         |   31 ++++++++++++++++++++++++-------
+ arch/powerpc/sysdev/fsl_pci.h         |   12 +++++++++++-
+ 3 files changed, 36 insertions(+), 8 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index ac39e6a..b48fa7f 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -20,6 +20,7 @@ struct device_node;
+ struct pci_controller {
+ 	struct pci_bus *bus;
+ 	char is_dynamic;
++	int is_primary;
+ #ifdef CONFIG_PPC64
+ 	int node;
+ #endif
 diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index feed364..99a3e78 100644
+index 99a3e78..2a369be 100644
 --- a/arch/powerpc/sysdev/fsl_pci.c
 +++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -822,6 +822,116 @@ static const struct of_device_id pci_ids[] = {
- 	{},
- };
+@@ -453,6 +453,7 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
  
-+#ifdef CONFIG_SWIOTLB
-+void pci_check_swiotlb(void)
+ 	hose->first_busno = bus_range ? bus_range[0] : 0x0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
++	hose->is_primary = is_primary;
+ 
+ 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
+ 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
+@@ -932,18 +933,34 @@ void pci_check_swiotlb(void)
+ }
+ #endif
+ 
+-int primary_phb_addr;
++/*
++ * Recursively scan all the children nodes of parent and find out if there
++ * is "isa" node. Return 1 if parent has isa node otherwise return 0.
++ */
++int has_isa_node(struct device_node *parent)
 +{
-+	const u32 *ranges;
-+	int rlen;
-+	int pna;
-+	int np;
-+	struct device_node *node;
-+	int memno;
-+	u32 pci_space;
-+	unsigned long long pci_addr, cpu_addr, pci_next, cpu_next, size;
-+	unsigned long long pci_addr_lo = ULLONG_MAX;
-+	unsigned long long pci_addr_hi = 0x0;
-+	dma_addr_t pci_dma_sz;
++	static int result;
++	struct device_node *cur_child;
 +
-+	for_each_node_by_type(node, "pci") {
-+		if (of_match_node(pci_ids, node)) {
-+			memno = 0;
-+			pna = of_n_addr_cells(node);
-+			np = pna + 5;
-+			/* Get ranges property */
-+			ranges = of_get_property(node, "ranges", &rlen);
-+			if (ranges == NULL)
-+				return;
-+
-+			/* Parse outbound MEM window range */
-+			while ((rlen -= np * 4) >= 0) {
-+				/* Read next ranges element */
-+				pci_space = ranges[0];
-+				if (!((pci_space >> 24) & 0x2)) {
-+					ranges += np;
-+					break;
-+				}
-+				pci_addr = of_read_number(ranges + 1, 2);
-+				cpu_addr = of_translate_address(
-+						node, ranges + 3);
-+				size = of_read_number(ranges + pna + 3, 2);
-+				ranges += np;
-+
-+				/*
-+				 * If we failed translation or got a zero-sized
-+				 * region (some FW try to feed us with non
-+				 * sensical zero sized regions such as power3
-+				 * which look like some kind of attempt at
-+				 * exposing the VGA memory hole)
-+				 */
-+				if (cpu_addr == OF_BAD_ADDR || size == 0)
-+					continue;
-+
-+				/*
-+				 * Now consume following elements while they
-+				 * are contiguous
-+				 */
-+				for (; rlen >= np * sizeof(u32);
-+						ranges += np, rlen -= np * 4) {
-+					if (ranges[0] != pci_space)
-+						break;
-+					pci_next = of_read_number(ranges + 1,
-+							2);
-+					cpu_next = of_translate_address(node,
-+							ranges + 3);
-+					if (pci_next != pci_addr + size ||
-+						cpu_next != cpu_addr + size)
-+						break;
-+					size += of_read_number(
-+							ranges + pna + 3, 2);
-+				}
-+
-+				/* We support only 3 memory ranges */
-+				if (memno >= 3) {
-+					printk(KERN_INFO
-+							" \\--> Skipped (too many) !\n");
-+					continue;
-+				}
-+
-+				pci_addr_lo = min(pci_addr, pci_addr_lo);
-+				pci_addr_hi = max(pci_addr + size, pci_addr_hi);
-+				memno++;
-+			}
-+		}
++	cur_child = NULL;
++	result = 0;
++	while (!result && (cur_child = of_get_next_child(parent, cur_child))) {
++		/* Get "isa" node and return 1 */
++		if (of_node_cmp(cur_child->type, "isa") == 0)
++			return result = 1;
++		has_isa_node(cur_child);
 +	}
 +
-+	/* Get PEXCSRBAR size (equal to CCSR size) */
-+	node = of_find_node_by_type(NULL, "soc");
-+	ranges = of_get_property(node, "ranges", &rlen);
-+	if (ranges == NULL)
-+		return;
-+
-+	size = of_read_number(ranges + 3, 1);
-+	of_node_put(node);
-+
-+	if (pci_addr_hi < (0x100000000ull - size))
-+		pci_dma_sz = pci_addr_lo;
-+	else
-+		pci_dma_sz = pci_addr_lo - size;
-+
-+	/*
-+	 * if we couldn't map all of DRAM via the dma windows
-+	 * we need SWIOTLB to handle buffers located outside of
-+	 * dma capable memory region
-+	 */
-+	if (memblock_end_of_DRAM() > pci_dma_sz) {
-+		ppc_swiotlb_enable = 1;
-+		set_pci_dma_ops(&swiotlb_dma_ops);
-+		ppc_md.pci_dma_dev_setup =
-+			pci_dma_dev_setup_swiotlb;
-+	}
++	return result;
 +}
-+#endif
 +
- int primary_phb_addr;
  static int __devinit fsl_pci_probe(struct platform_device *pdev)
  {
-@@ -833,21 +943,6 @@ static int __devinit fsl_pci_probe(struct platform_device *pdev)
- 		of_address_to_resource(pdev->dev.of_node, 0, &rsrc);
- 		is_primary = ((rsrc.start & 0xfffff) == primary_phb_addr);
+-	struct pci_controller *hose;
+ 	bool is_primary;
++	is_primary = has_isa_node(pdev->dev.of_node);
+ 
+-	if (of_match_node(pci_ids, pdev->dev.of_node)) {
+-		struct resource rsrc;
+-		of_address_to_resource(pdev->dev.of_node, 0, &rsrc);
+-		is_primary = ((rsrc.start & 0xfffff) == primary_phb_addr);
++	if (of_match_node(pci_ids, pdev->dev.of_node))
  		fsl_add_bridge(pdev->dev.of_node, is_primary);
--
--#ifdef CONFIG_SWIOTLB
--		hose = pci_find_hose_for_OF_device(pdev->dev.of_node);
--		/*
--		 * if we couldn't map all of DRAM via the dma windows
--		 * we need SWIOTLB to handle buffers located outside of
--		 * dma capable memory region
--		 */
--		if (memblock_end_of_DRAM() > hose->dma_window_base_cur
--				+ hose->dma_window_size) {
--			ppc_swiotlb_enable = 1;
--			set_pci_dma_ops(&swiotlb_dma_ops);
--			ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
--		}
--#endif
- 	}
+-	}
  
  	return 0;
+ }
 diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index df9fc44..c2c1de5 100644
+index c2c1de5..abbc09d 100644
 --- a/arch/powerpc/sysdev/fsl_pci.h
 +++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -94,5 +94,11 @@ extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
- extern int mpc83xx_add_bridge(struct device_node *dev);
- u64 fsl_pci_immrbar_base(struct pci_controller *hose);
+@@ -88,7 +88,17 @@ struct ccsr_pci {
+ 	__be32	pex_err_cap_r3;		/* 0x.e34 - PCIE error capture register 0 */
+ };
  
-+#ifdef CONFIG_SWIOTLB
-+extern void pci_check_swiotlb(void);
-+#else
-+static inline void pci_check_swiotlb(void) {}
+-extern int primary_phb_addr;
++
++#ifdef CONFIG_SUSPEND
++struct fsl_pci_private_data {
++	int inbound_num;
++	struct pci_outbound_window_regs __iomem *pci_pow;
++	struct pci_inbound_window_regs __iomem *pci_piw;
++	void *saved_regs;
++};
 +#endif
 +
- #endif /* __POWERPC_FSL_PCI_H */
- #endif /* __KERNEL__ */
++extern int is_has_isa_node(struct device_node *parent);
+ extern int fsl_add_bridge(struct device_node *dev, int is_primary);
+ extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
+ extern int mpc83xx_add_bridge(struct device_node *dev);
 -- 
 1.7.5.1
