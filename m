@@ -1,18 +1,17 @@
 Return-Path: <B38951@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0B2322C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 20:43:32 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3D7E42C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 20:43:33 +1000 (EST)
 From: Jia Hongtao <B38951@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
  <B07421@freescale.com>
-Subject: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by looking for ISA
- node
-Date: Tue, 24 Jul 2012 18:20:07 +0800
-Message-ID: <1343125210-16720-3-git-send-email-B38951@freescale.com>
+Subject: [PATCH 4/6] powerpc/mpc85xx_ds: convert to unified PCI init
+Date: Tue, 24 Jul 2012 18:20:08 +0800
+Message-ID: <1343125210-16720-4-git-send-email-B38951@freescale.com>
 In-Reply-To: <1343125210-16720-1-git-send-email-B38951@freescale.com>
 References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
@@ -27,105 +26,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PCI host bridge is primary bus if it contains an ISA node. But not all boards
-fit this rule. Device tree should be updated for all these boards.
+PCI initialization is now done by PCI controller driver. In board setup_arch
+stage we don't need PCI init any more but swiotlb should be determined at this
+stage.
 
 Signed-off-by: Jia Hongtao <B38951@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/include/asm/pci-bridge.h |    1 +
- arch/powerpc/sysdev/fsl_pci.c         |   31 ++++++++++++++++++++++++-------
- arch/powerpc/sysdev/fsl_pci.h         |   12 +++++++++++-
- 3 files changed, 36 insertions(+), 8 deletions(-)
+ arch/powerpc/platforms/85xx/common.c     |    9 ++++
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c |   75 +++--------------------------
+ 2 files changed, 17 insertions(+), 67 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index ac39e6a..b48fa7f 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -20,6 +20,7 @@ struct device_node;
- struct pci_controller {
- 	struct pci_bus *bus;
- 	char is_dynamic;
-+	int is_primary;
- #ifdef CONFIG_PPC64
- 	int node;
- #endif
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 99a3e78..2a369be 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -453,6 +453,7 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 
- 	hose->first_busno = bus_range ? bus_range[0] : 0x0;
- 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
-+	hose->is_primary = is_primary;
- 
- 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
- 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
-@@ -932,18 +933,34 @@ void pci_check_swiotlb(void)
- }
- #endif
- 
--int primary_phb_addr;
-+/*
-+ * Recursively scan all the children nodes of parent and find out if there
-+ * is "isa" node. Return 1 if parent has isa node otherwise return 0.
-+ */
-+int has_isa_node(struct device_node *parent)
-+{
-+	static int result;
-+	struct device_node *cur_child;
-+
-+	cur_child = NULL;
-+	result = 0;
-+	while (!result && (cur_child = of_get_next_child(parent, cur_child))) {
-+		/* Get "isa" node and return 1 */
-+		if (of_node_cmp(cur_child->type, "isa") == 0)
-+			return result = 1;
-+		has_isa_node(cur_child);
-+	}
-+
-+	return result;
-+}
-+
- static int __devinit fsl_pci_probe(struct platform_device *pdev)
- {
--	struct pci_controller *hose;
- 	bool is_primary;
-+	is_primary = has_isa_node(pdev->dev.of_node);
- 
--	if (of_match_node(pci_ids, pdev->dev.of_node)) {
--		struct resource rsrc;
--		of_address_to_resource(pdev->dev.of_node, 0, &rsrc);
--		is_primary = ((rsrc.start & 0xfffff) == primary_phb_addr);
-+	if (of_match_node(pci_ids, pdev->dev.of_node))
- 		fsl_add_bridge(pdev->dev.of_node, is_primary);
--	}
- 
- 	return 0;
- }
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index c2c1de5..abbc09d 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -88,7 +88,17 @@ struct ccsr_pci {
- 	__be32	pex_err_cap_r3;		/* 0x.e34 - PCIE error capture register 0 */
+diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
+index 67dac22..303fedb 100644
+--- a/arch/powerpc/platforms/85xx/common.c
++++ b/arch/powerpc/platforms/85xx/common.c
+@@ -27,6 +27,15 @@ static struct of_device_id __initdata mpc85xx_common_ids[] = {
+ 	{ .compatible = "fsl,mpc8548-guts", },
+ 	/* Probably unnecessary? */
+ 	{ .compatible = "gpio-leds", },
++	/* For all PCI controllers */
++	{ .compatible = "fsl,mpc8540-pci", },
++	{ .compatible = "fsl,mpc8548-pcie", },
++	{ .compatible = "fsl,p1022-pcie", },
++	{ .compatible = "fsl,p1010-pcie", },
++	{ .compatible = "fsl,p1023-pcie", },
++	{ .compatible = "fsl,p4080-pcie", },
++	{ .compatible = "fsl,qoriq-pcie-v2.3", },
++	{ .compatible = "fsl,qoriq-pcie-v2.2", },
+ 	{},
  };
  
--extern int primary_phb_addr;
-+
-+#ifdef CONFIG_SUSPEND
-+struct fsl_pci_private_data {
-+	int inbound_num;
-+	struct pci_outbound_window_regs __iomem *pci_pow;
-+	struct pci_inbound_window_regs __iomem *pci_piw;
-+	void *saved_regs;
-+};
-+#endif
-+
-+extern int is_has_isa_node(struct device_node *parent);
- extern int fsl_add_bridge(struct device_node *dev, int is_primary);
- extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
- extern int mpc83xx_add_bridge(struct device_node *dev);
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index d30f6c4..b7ef007 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -114,22 +114,14 @@ void __init mpc85xx_ds_pic_init(void)
+ }
+ 
+ #ifdef CONFIG_PCI
+-static int primary_phb_addr;
+ extern int uli_exclude_device(struct pci_controller *hose,
+ 				u_char bus, u_char devfn);
+ 
+ static int mpc85xx_exclude_device(struct pci_controller *hose,
+ 				   u_char bus, u_char devfn)
+ {
+-	struct device_node* node;
+-	struct resource rsrc;
+-
+-	node = hose->dn;
+-	of_address_to_resource(node, 0, &rsrc);
+-
+-	if ((rsrc.start & 0xfffff) == primary_phb_addr) {
++	if (hose->is_primary)
+ 		return uli_exclude_device(hose, bus, devfn);
+-	}
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+@@ -140,46 +132,16 @@ static int mpc85xx_exclude_device(struct pci_controller *hose,
+  */
+ static void __init mpc85xx_ds_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-	struct pci_controller *hose;
+-#endif
+-	dma_addr_t max = 0xffffffff;
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
+ 
+ #ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie") ||
+-		    of_device_is_compatible(np, "fsl,p2020-pcie")) {
+-			struct resource rsrc;
+-			of_address_to_resource(np, 0, &rsrc);
+-			if ((rsrc.start & 0xfffff) == primary_phb_addr)
+-				fsl_add_bridge(np, 1);
+-			else
+-				fsl_add_bridge(np, 0);
+-
+-			hose = pci_find_hose_for_OF_device(np);
+-			max = min(max, hose->dma_window_base_cur +
+-					hose->dma_window_size);
+-		}
+-	}
+-
++	pci_check_swiotlb();
+ 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+ #endif
+ 
+ 	mpc85xx_smp_init();
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if ((memblock_end_of_DRAM() - 1) > max) {
+-		ppc_swiotlb_enable = 1;
+-		set_pci_dma_ops(&swiotlb_dma_ops);
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-	}
+-#endif
+-
+ 	printk("MPC85xx DS board from Freescale Semiconductor\n");
+ }
+ 
+@@ -190,19 +152,12 @@ static int __init mpc8544_ds_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "MPC8544DS")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0xb000;
+-#endif
+-		return 1;
+-	}
+-
+-	return 0;
++	return of_flat_dt_is_compatible(root, "MPC8544DS");
+ }
+ 
+-machine_device_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
+-machine_device_initcall(mpc8572_ds, mpc85xx_common_publish_devices);
+-machine_device_initcall(p2020_ds, mpc85xx_common_publish_devices);
++machine_arch_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
++machine_arch_initcall(mpc8572_ds, mpc85xx_common_publish_devices);
++machine_arch_initcall(p2020_ds, mpc85xx_common_publish_devices);
+ 
+ machine_arch_initcall(mpc8544_ds, swiotlb_setup_bus_notifier);
+ machine_arch_initcall(mpc8572_ds, swiotlb_setup_bus_notifier);
+@@ -215,14 +170,7 @@ static int __init mpc8572_ds_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "fsl,MPC8572DS")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0x8000;
+-#endif
+-		return 1;
+-	}
+-
+-	return 0;
++	return of_flat_dt_is_compatible(root, "fsl,MPC8572DS");
+ }
+ 
+ /*
+@@ -232,14 +180,7 @@ static int __init p2020_ds_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "fsl,P2020DS")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0x9000;
+-#endif
+-		return 1;
+-	}
+-
+-	return 0;
++	return of_flat_dt_is_compatible(root, "fsl,P2020DS");
+ }
+ 
+ define_machine(mpc8544_ds) {
 -- 
 1.7.5.1
