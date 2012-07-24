@@ -2,16 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 901DD2C008D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 17:33:20 +1000 (EST)
-Message-ID: <1343115193.3715.15.camel@pasglop>
-Subject: hvc_console: Better kernel console support
+ by ozlabs.org (Postfix) with ESMTPS id B2A8C2C007F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 17:47:45 +1000 (EST)
+Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q6O7lfrm018103
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 02:47:42 -0500
+Message-ID: <1343116058.3715.20.camel@pasglop>
+Subject: [PATCH] hvc_vio: Improve registration of udbg backend
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Tue, 24 Jul 2012 17:33:13 +1000
+Date: Tue, 24 Jul 2012 17:47:38 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,96 +23,163 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-hvc_console has two methods to instanciate the consoles.
+The pseries hvterm driver only registers a udbg backend (for xmon and
+other low level debugging mechanisms) when hvc0 is recognized as the
+firmware console at boot time, not if it's detected later on, for
+example because the firmware is using a graphics card.
 
-hvc_instanciate is meant to be called at early boot, while hvc_alloc is
-called for more dynamically probed objects.
-
-Currently, it only deals with adding kernel consoles in the former case,
-which means for example that if a console only uses dynamic probing, it
-will never be usable as a kernel console even when specifying
-console=hvc0 explicitly, which could be considered annoying...
-
-More specifically, on pseries, we only do the early instanciate for the
-console currently used by the firmware, so if you have your firmware
-configured to go to a video card, for example, you cannot get your
-kernel console, oops messages, etc... on your serial port or hypervisor
-console, which would be handy to deal with oopses.
-
-This fixes it by checking if hvc_console.flags & CON_ENABLED is set when
-registering a new dynamic console, and if not, redo the index check and
-re-register the console if the index matches, allowing console=hvcN to
-work.
+This can make debugging challenging especially under X11, and there's
+really no good reason for that limitation, so let's hookup udbg
+whenever hvc0 is detected instead.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index 2d691eb..f1d4d96 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -245,6 +245,20 @@ static void hvc_port_destruct(struct tty_port *port)
- 	kfree(hp);
- }
+
+diff --git a/drivers/tty/hvc/hvc_vio.c b/drivers/tty/hvc/hvc_vio.c
+index ee30779..070c0ee6 100644
+--- a/drivers/tty/hvc/hvc_vio.c
++++ b/drivers/tty/hvc/hvc_vio.c
+@@ -230,6 +230,69 @@ static const struct hv_ops hvterm_hvsi_ops = {
+ 	.tiocmset = hvterm_hvsi_tiocmset,
+ };
  
-+static void hvc_check_console(int index)
++static void udbg_hvc_putc(char c)
 +{
-+	/* Already enabled, bail out */
-+	if (hvc_console.flags & CON_ENABLED)
++	int count = -1;
++
++	if (!hvterm_privs[0])
 +		return;
 +
-+ 	/* If this index is what the user requested, then register
-+	 * now (setup won't fail at this point).  It's ok to just
-+	 * call register again if previously .setup failed.
-+	 */
-+	if (index == hvc_console.index)
-+		register_console(&hvc_console);
++	if (c == '\n')
++		udbg_hvc_putc('\r');
++
++	do {
++		switch(hvterm_privs[0]->proto) {
++		case HV_PROTOCOL_RAW:
++			count = hvterm_raw_put_chars(0, &c, 1);
++			break;
++		case HV_PROTOCOL_HVSI:
++			count = hvterm_hvsi_put_chars(0, &c, 1);
++			break;
++		}
++	} while(count == 0);
 +}
 +
- /*
-  * hvc_instantiate() is an early console discovery method which locates
-  * consoles * prior to the vio subsystem discovering them.  Hotplugged
-@@ -275,12 +289,8 @@ int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops)
- 	if (last_hvc < index)
- 		last_hvc = index;
++static int udbg_hvc_getc_poll(void)
++{
++	int rc = 0;
++	char c;
++
++	if (!hvterm_privs[0])
++		return -1;
++
++	switch(hvterm_privs[0]->proto) {
++	case HV_PROTOCOL_RAW:
++		rc = hvterm_raw_get_chars(0, &c, 1);
++		break;
++	case HV_PROTOCOL_HVSI:
++		rc = hvterm_hvsi_get_chars(0, &c, 1);
++		break;
++	}
++	if (!rc)
++		return -1;
++	return c;
++}
++
++static int udbg_hvc_getc(void)
++{
++	int ch;
++
++	if (!hvterm_privs[0])
++		return -1;
++
++	for (;;) {
++		ch = udbg_hvc_getc_poll();
++		if (ch == -1) {
++			/* This shouldn't be needed...but... */
++			volatile unsigned long delay;
++			for (delay=0; delay < 2000000; delay++)
++				;
++		} else {
++			return ch;
++		}
++	}
++}
++
+ static int __devinit hvc_vio_probe(struct vio_dev *vdev,
+ 				   const struct vio_device_id *id)
+ {
+@@ -289,6 +352,13 @@ static int __devinit hvc_vio_probe(struct vio_dev *vdev,
+ 		return PTR_ERR(hp);
+ 	dev_set_drvdata(&vdev->dev, hp);
  
--	/* if this index is what the user requested, then register
--	 * now (setup won't fail at this point).  It's ok to just
--	 * call register again if previously .setup failed.
--	 */
--	if (index == hvc_console.index)
--		register_console(&hvc_console);
-+	/* check if we need to re-register the kernel console */
-+	hvc_check_console(index);
- 
++	/* register udbg if it's not there already for console 0 */
++	if (hp->index == 0 && !udbg_putc) {
++		udbg_putc = udbg_hvc_putc;
++		udbg_getc = udbg_hvc_getc;
++		udbg_getc_poll = udbg_hvc_getc_poll;
++	}
++
  	return 0;
  }
-@@ -858,10 +868,15 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
- 		i = ++last_hvc;
  
- 	hp->index = i;
-+	cons_ops[i] = ops;
-+	vtermnos[i] = vtermno;
- 
- 	list_add_tail(&(hp->next), &hvc_structs);
- 	spin_unlock(&hvc_structs_lock);
- 
-+	/* check if we need to re-register the kernel console */
-+	hvc_check_console(i);
-+
- 	return hp;
+@@ -331,59 +401,6 @@ static void __exit hvc_vio_exit(void)
  }
- EXPORT_SYMBOL_GPL(hvc_alloc);
-@@ -874,8 +889,12 @@ int hvc_remove(struct hvc_struct *hp)
- 	tty = tty_port_tty_get(&hp->port);
+ module_exit(hvc_vio_exit);
  
- 	spin_lock_irqsave(&hp->lock, flags);
--	if (hp->index < MAX_NR_HVC_CONSOLES)
-+	if (hp->index < MAX_NR_HVC_CONSOLES) {
-+		console_lock();
- 		vtermnos[hp->index] = -1;
-+		cons_ops[hp->index] = NULL;
-+		console_unlock();
-+	}
- 
- 	/* Don't whack hp->irq because tty_hangup() will need to free the irq. */
- 
+-static void udbg_hvc_putc(char c)
+-{
+-	int count = -1;
+-
+-	if (c == '\n')
+-		udbg_hvc_putc('\r');
+-
+-	do {
+-		switch(hvterm_priv0.proto) {
+-		case HV_PROTOCOL_RAW:
+-			count = hvterm_raw_put_chars(0, &c, 1);
+-			break;
+-		case HV_PROTOCOL_HVSI:
+-			count = hvterm_hvsi_put_chars(0, &c, 1);
+-			break;
+-		}
+-	} while(count == 0);
+-}
+-
+-static int udbg_hvc_getc_poll(void)
+-{
+-	int rc = 0;
+-	char c;
+-
+-	switch(hvterm_priv0.proto) {
+-	case HV_PROTOCOL_RAW:
+-		rc = hvterm_raw_get_chars(0, &c, 1);
+-		break;
+-	case HV_PROTOCOL_HVSI:
+-		rc = hvterm_hvsi_get_chars(0, &c, 1);
+-		break;
+-	}
+-	if (!rc)
+-		return -1;
+-	return c;
+-}
+-
+-static int udbg_hvc_getc(void)
+-{
+-	int ch;
+-	for (;;) {
+-		ch = udbg_hvc_getc_poll();
+-		if (ch == -1) {
+-			/* This shouldn't be needed...but... */
+-			volatile unsigned long delay;
+-			for (delay=0; delay < 2000000; delay++)
+-				;
+-		} else {
+-			return ch;
+-		}
+-	}
+-}
+-
+ void __init hvc_vio_init_early(void)
+ {
+ 	struct device_node *stdout_node;
