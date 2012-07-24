@@ -2,28 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9C2322C0095
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 14:46:09 +1000 (EST)
-Message-ID: <1343105157.3715.6.camel@pasglop>
-Subject: Re: [PATCH] powerpc/mm: add ZONE_NORMAL zone for 64 bit kernel
+ by ozlabs.org (Postfix) with ESMTPS id 901DD2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 17:33:20 +1000 (EST)
+Message-ID: <1343115193.3715.15.camel@pasglop>
+Subject: hvc_console: Better kernel console support
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Date: Tue, 24 Jul 2012 14:45:57 +1000
-In-Reply-To: <500E1EB3.6060203@freescale.com>
-References: <1342786906-12634-1-git-send-email-Shaohui.Xie@freescale.com>
- <1343023569.2957.19.camel@pasglop>	<500D7921.6060804@freescale.com>
- <1343082030.2957.38.camel@pasglop>
- <CAOZdJXXd6GuLAed_Z4zNMjDN+DBBXHdd0yVRHof+BJ_eiUMbqQ@mail.gmail.com>
- <1343085145.2957.44.camel@pasglop> <500DDB1B.9030900@freescale.com>
- <1343086186.2957.46.camel@pasglop> <500DDFF3.3000408@freescale.com>
- <1343099318.3715.0.camel@pasglop> <500E1EB3.6060203@freescale.com>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Date: Tue, 24 Jul 2012 17:33:13 +1000
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Hu Mingkai-B21284 <B21284@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Xie Shaohui-B21989 <B21989@freescale.com>,
- Chen Yuanquan-B41889 <B41889@freescale.com>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,22 +21,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-07-24 at 04:04 +0000, Tabi Timur-B04825 wrote:
-> Benjamin Herrenschmidt wrote:
-> > Sure but I don't want to create the zones in the first place (and thus
-> > introduce the added pressure on the memory management) on machines that
-> > don't need it.
-> 
-> One thing that does confuse me -- by default, we don't create a 
-> ZONE_NORMAL.  We only create a ZONE_DMA.  Why is that?  Shouldn't it be 
-> the other way around?
+hvc_console has two methods to instanciate the consoles.
 
-Because ZONE_NORMAL allocations can be serviced from the ZONE_DMA while
-the other way isn't possible.
+hvc_instanciate is meant to be called at early boot, while hvc_alloc is
+called for more dynamically probed objects.
 
-Especially in the old days, there were quite a few cases of drivers
-and/or subsystems who were a bit heavy handed at using ZONE_DMA, so not
-having one would essentially make them not work at all.
+Currently, it only deals with adding kernel consoles in the former case,
+which means for example that if a console only uses dynamic probing, it
+will never be usable as a kernel console even when specifying
+console=hvc0 explicitly, which could be considered annoying...
 
-Cheers,
-Ben.
+More specifically, on pseries, we only do the early instanciate for the
+console currently used by the firmware, so if you have your firmware
+configured to go to a video card, for example, you cannot get your
+kernel console, oops messages, etc... on your serial port or hypervisor
+console, which would be handy to deal with oopses.
+
+This fixes it by checking if hvc_console.flags & CON_ENABLED is set when
+registering a new dynamic console, and if not, redo the index check and
+re-register the console if the index matches, allowing console=hvcN to
+work.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index 2d691eb..f1d4d96 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -245,6 +245,20 @@ static void hvc_port_destruct(struct tty_port *port)
+ 	kfree(hp);
+ }
+ 
++static void hvc_check_console(int index)
++{
++	/* Already enabled, bail out */
++	if (hvc_console.flags & CON_ENABLED)
++		return;
++
++ 	/* If this index is what the user requested, then register
++	 * now (setup won't fail at this point).  It's ok to just
++	 * call register again if previously .setup failed.
++	 */
++	if (index == hvc_console.index)
++		register_console(&hvc_console);
++}
++
+ /*
+  * hvc_instantiate() is an early console discovery method which locates
+  * consoles * prior to the vio subsystem discovering them.  Hotplugged
+@@ -275,12 +289,8 @@ int hvc_instantiate(uint32_t vtermno, int index, const struct hv_ops *ops)
+ 	if (last_hvc < index)
+ 		last_hvc = index;
+ 
+-	/* if this index is what the user requested, then register
+-	 * now (setup won't fail at this point).  It's ok to just
+-	 * call register again if previously .setup failed.
+-	 */
+-	if (index == hvc_console.index)
+-		register_console(&hvc_console);
++	/* check if we need to re-register the kernel console */
++	hvc_check_console(index);
+ 
+ 	return 0;
+ }
+@@ -858,10 +868,15 @@ struct hvc_struct *hvc_alloc(uint32_t vtermno, int data,
+ 		i = ++last_hvc;
+ 
+ 	hp->index = i;
++	cons_ops[i] = ops;
++	vtermnos[i] = vtermno;
+ 
+ 	list_add_tail(&(hp->next), &hvc_structs);
+ 	spin_unlock(&hvc_structs_lock);
+ 
++	/* check if we need to re-register the kernel console */
++	hvc_check_console(i);
++
+ 	return hp;
+ }
+ EXPORT_SYMBOL_GPL(hvc_alloc);
+@@ -874,8 +889,12 @@ int hvc_remove(struct hvc_struct *hp)
+ 	tty = tty_port_tty_get(&hp->port);
+ 
+ 	spin_lock_irqsave(&hp->lock, flags);
+-	if (hp->index < MAX_NR_HVC_CONSOLES)
++	if (hp->index < MAX_NR_HVC_CONSOLES) {
++		console_lock();
+ 		vtermnos[hp->index] = -1;
++		cons_ops[hp->index] = NULL;
++		console_unlock();
++	}
+ 
+ 	/* Don't whack hp->irq because tty_hangup() will need to free the irq. */
+ 
