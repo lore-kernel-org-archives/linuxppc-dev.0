@@ -1,37 +1,29 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D27A72C008A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 19:15:11 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 24 Jul 2012 19:15:01 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6O96Ywi59900148
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 19:06:35 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6O9EfGw002828
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 19:14:41 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V3 11/11] arch/powerpc: Add 64TB support
-In-Reply-To: <87eho1o8pv.fsf@skywalker.in.ibm.com>
-References: <1341839621-28332-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1341839621-28332-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120723093951.GB29264@bloggs.ozlabs.ibm.com>
- <87txwyhj5e.fsf@skywalker.in.ibm.com>
- <20120723110654.GC29264@bloggs.ozlabs.ibm.com>
- <87eho1o8pv.fsf@skywalker.in.ibm.com>
-Date: Tue, 24 Jul 2012 14:44:38 +0530
-Message-ID: <87boj5o70h.fsf@skywalker.in.ibm.com>
-MIME-Version: 1.0
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from plane.gmane.org (plane.gmane.org [80.91.229.3])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8844A2C0081
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2012 19:16:43 +1000 (EST)
+Received: from list by plane.gmane.org with local (Exim 4.69)
+ (envelope-from <glppe-linuxppc-embedded-2@m.gmane.org>)
+ id 1StbEN-0003O7-ML
+ for linuxppc-dev@ozlabs.org; Tue, 24 Jul 2012 11:16:39 +0200
+Received: from 146.177.65.86.rev.sfr.net ([86.65.177.146])
+ by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+ id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2012 11:16:39 +0200
+Received: from g.bugniot by 146.177.65.86.rev.sfr.net with local (Gmexim 0.1
+ (Debian)) id 1AlnuQ-0007hv-00
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Jul 2012 11:16:39 +0200
+To: linuxppc-dev@ozlabs.org
+From: Geoffrey Bugniot <g.bugniot@gmail.com>
+Subject: Re: Memory management problems on a custom PPC 8270 board
+Date: Tue, 24 Jul 2012 09:16:25 +0000 (UTC)
+Message-ID: <loom.20120724T102618-734@post.gmane.org>
+References: <loom.20120723T170223-328@post.gmane.org>
+ <500D8067.6070805@freescale.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,255 +33,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+Scott Wood <scottwood <at> freescale.com> writes:
 
-> Paul Mackerras <paulus@samba.org> writes:
+> 
+> On 07/23/2012 10:34 AM, Geoffrey Bugniot wrote:
+> > I got something like that :
+> > [  148.891584] Kernel panic - not syncing: Attempted to kill init!
+> 
+> Was there anything before this?
 >
->> On Mon, Jul 23, 2012 at 03:52:05PM +0530, Aneesh Kumar K.V wrote:
->>> Paul Mackerras <paulus@samba.org> writes:
->>> 
->>> > On Mon, Jul 09, 2012 at 06:43:41PM +0530, Aneesh Kumar K.V wrote:
->>> >
->>> >> -#define USER_ESID_BITS		16
->>> >> -#define USER_ESID_BITS_1T	4
->>> >> +#define USER_ESID_BITS		18
->>> >> +#define USER_ESID_BITS_1T	6
->>> >
->>> > You also need to change the proto-VSID generation for kernel addresses
->>> > when you do this.  If you don't you'll end up with some user processes
->>> > using the same VSIDs as we use for the kernel addresses, meaning that
->>> > those processes won't run very well...
->>> >
->>> 
->>> Can you explain this more. right now we generate vsid as below
->>> 
->>> vsid_scramble(ea >> SID_SHIFT, 256M) for kernel
->>> 
->>> vsid_scramble((context << USER_ESID_BITS) | (ea >> SID_SHIFT), 256M);
->>> for user
->>> 
->>> what changes are you suggesting ?
->>
->> Think about it.  With the current values of USER_ESID_BITS and
->> CONTEXT_BITS, and the addresses we use for kernel mappings, there are
->> no values of context, user_ea and kernel_ea for which
->>
->> kernel_ea >> SID_SHIFT == (context << USER_ESID_BITS) | (user_ea >> SID_SHIFT)
->>
->> If you increase USER_ESID_BITS, then there will be some context values
->> for which that equation becomes true.  For example, if you increase
->> USER_ESID_BITS to 18, then context 0x30000 will generate the same
->> proto-VSIDs as the kernel linear mapping.  Since we can hand out
->> contexts up to 0x7ffff (with CONTEXT_BITS = 19), there is a collision.
->>
->> In other words, the proto-VSID space (the space of values that are
->> input to vsid_scramble) is currently divided into two mutually
->> exclusive regions: from 0 to 2^35 - 1 for user processes, and from
->> 2^35 to 2^36 - 1 for kernel addresses.  You are wanting to expand the
->> amount of proto-VSID space that user processes can use, but you need
->> either to move the kernel portion of the space, or to make sure that
->> the context allocator doesn't hand out context values that would
->> collide with the kernel portion of the space (or both).
->
-> How about this ?. There is a FIXME in there which is not related.
 
-Updated one with both the fixes. Let me know what you think
-
->From f04a505be381b9c162fa41bda5df4a1a9edfdeb9 Mon Sep 17 00:00:00 2001
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 24 Jul 2012 14:22:15 +0530
-Subject: [PATCH 1/2] arch/powerpc: properly offset the context bits for 1T
- segemnts
-
-We should do rldimi r10,r9,USER_ESID_BITS,0 only after populating
-r10 with ESID bits.
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/slb_low.S |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index db2cb3f..7bd8438 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -59,6 +59,7 @@ _GLOBAL(slb_miss_kernel_load_linear)
- BEGIN_FTR_SECTION
- 	b	slb_finish_load
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
-+	srdi	r10,r10,40-28		/* get 1T ESID */
- 	b	slb_finish_load_1T
- 
- 1:
-@@ -88,6 +89,7 @@ _GLOBAL(slb_miss_kernel_load_vmemmap)
- BEGIN_FTR_SECTION
- 	b	slb_finish_load
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
-+	srdi	r10,r10,40-28		/* get 1T ESID */
- 	b	slb_finish_load_1T
- 
- 0:	/* user address: proto-VSID = context << 15 | ESID. First check
-@@ -155,13 +157,16 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
- 	ld	r9,PACACONTEXTID(r13)
- BEGIN_FTR_SECTION
- 	cmpldi	r10,0x1000
-+	bge	9f
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	rldimi	r10,r9,USER_ESID_BITS,0
-+	b	slb_finish_load
- BEGIN_FTR_SECTION
--	bge	slb_finish_load_1T
-+9:
-+	srdi	r10,r10,40-28		/* get 1T ESID */
-+	rldimi	r10,r9,USER_ESID_BITS,0
-+	b	slb_finish_load_1T
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
--	b	slb_finish_load
--
- 8:	/* invalid EA */
- 	li	r10,0			/* BAD_VSID */
- 	li	r11,SLB_VSID_USER	/* flags don't much matter */
-@@ -292,7 +297,6 @@ _GLOBAL(slb_compare_rr_to_size)
-  * r3 = EA, r10 = proto-VSID, r11 = flags, clobbers r9
-  */
- slb_finish_load_1T:
--	srdi	r10,r10,40-28		/* get 1T ESID */
- 	ASM_VSID_SCRAMBLE(r10,r9,1T)
- 	/*
- 	 * bits above VSID_BITS_1T need to be ignored from r10
--- 
-1.7.10
+No, that's the complete dump.
 
 
->From 43792d9e2c394370c71623f2769d11ff98090918 Mon Sep 17 00:00:00 2001
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Tue, 24 Jul 2012 11:40:29 +0530
-Subject: [PATCH 2/2] arch/powerpc: properly isolate kernel and user
- proto-VSID
+> > [  148.897503] Call Trace:
+> > [  148.899934] [c7829d10] [c0008fbc] show_stack+0x4c/0x138 (unreliable)
+> > [  148.906470] [c7829d50] [c03be7d8] panic+0xa4/0x1e8
+> > [  148.911401] [c7829db0] [c0025580] do_exit+0x94/0x630
+> > [  148.916501] [c7829e00] [c0025bdc] do_group_exit+0x80/0xac
+> > [  148.922071] [c7829e10] [c00340d8] get_signal_to_deliver+0x474/0x490
+> > [  148.928515] [c7829e70] [c0009aa4] do_signal_pending.constprop.9+0x40/0x22c
+> > [  148.935586] [c7829f30] [c0009d88] do_signal+0x24/0x50
+> > [  148.940793] [c7829f40] [c000f76c] do_user_signal+0x74/0xc4
+> > [  148.946419] --- Exception: 700 at 0xfec5394
+> > [  148.946433]     LR = 0x1000410c
+> > [  148.954009] Rebooting in 3 seconds..
+> 
+> This looks like your init process crashed.  You could try enabling
+> show_unhandled_signals in arch/powerpc/signal.c.
 
-The proto-VSID space is divided into two class
-User: 0 to 2^(CONTEXT_BITS + USER_ESID_BITS) -1
-kernel: 2^(CONTEXT_BITS + USER_ESID_BITS) to 2^(VSID_BITS) - 1
+With "show_unhandled_signals = 1", I get few lines more :
 
-This patch does above isolation
+root@pLinesE_VMEb:~# tar cvf file.tar.gz file1 file2 file3 file4
+file1
+file2
+file3
+file4
+tar[243]: unhandled signal 11 at bfaec004 nip 100064fc lr 100063dc code
+30001
+Segmentation fault
+sh[233]: unhandled signal 4 at 0febf184 nip 0febf184 lr 0febf0e0 code 30001
+klogd[227]: unhandled signal 4 at 0febf184 nip 0febf184 lr 0ffabb8c code
+30001
+init[244]: unhandled signal 4 at 0febf184 nip 0febf184 lr 0ffabb8c code 30001
+init[245]: unhandled signal 4 at 0febf184 nip 0febf184 lr 0ffabb8c code 30001
+init[246]: unhandled signal 4 at 0febf184 nip 0febf184 lr 0ffabb8c code 30001
+init[247]: unhandled signal 4 at 0febf184 nip 0febf184 lr 0ffabb8c code 30001
+init[248]: unhandled signal 4 at 0febf184 nip 0febf184 lr 0ffabb8c code 30001
+init[249]: unhandled signal 4 at 0febf184 nip 0febf184 lr 0ffabb8c code 30001
+init[250]: unhandled signal 4 at 0febf184 nip 0febf184 lr 0ffabb8c code 30001
+Kernel panic - not syncing: Attempted to kill init!
+Call Trace:
+[c7815d30] [c0007d1c] show_stack+0x4c/0x138 (unreliable)
+[c7815d70] [c01e2004] panic+0xa4/0x1d8
+[c7815dd0] [c001ddb0] do_exit+0xa0/0x5c0
+[c7815e20] [c001e390] do_group_exit+0x80/0xac
+[c7815e30] [c00285c0] get_signal_to_deliver+0x2e4/0x300
+[c7815e70] [c00087f4] do_signal_pending.constprop.9+0x40/0x22c
+[c7815f30] [c0008ad8] do_signal+0x24/0x50
+[c7815f40] [c000deec] do_user_signal+0x74/0xc4
+--- Exception: 700 at 0xfebf184
+    LR = 0xffabb8c
+Rebooting in 3 seconds..
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/mmu-hash64.h |   32 ++++++++++++++++++++++++--------
- arch/powerpc/kernel/exceptions-64s.S  |    4 +++-
- arch/powerpc/mm/slb_low.S             |   10 ++++++++++
- 3 files changed, 37 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index daa3e4b..736df15 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -516,9 +516,19 @@ typedef struct {
- /* This is only valid for addresses >= PAGE_OFFSET */
- static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
- {
--	if (ssize == MMU_SEGSIZE_256M)
--		return vsid_scramble(ea >> SID_SHIFT, 256M);
--	return vsid_scramble(ea >> SID_SHIFT_1T, 1T);
-+	unsigned long proto_vsid;
-+	/*
-+	 * We need to make sure proto_vsid for the kernel is
-+	 * >= 2^(CONTEXT_BITS + USER_ESID_BITS[_1T])
-+	 */
-+	if (ssize == MMU_SEGSIZE_256M) {
-+		proto_vsid = ea >> SID_SHIFT;
-+		proto_vsid |= (1UL << (CONTEXT_BITS + USER_ESID_BITS));
-+		return vsid_scramble(proto_vsid, 256M);
-+	}
-+	proto_vsid = ea >> SID_SHIFT_1T;
-+	proto_vsid |= (1UL << (CONTEXT_BITS + USER_ESID_BITS_1T));
-+	return vsid_scramble(proto_vsid, 1T);
- }
- 
- /* Returns the segment size indicator for a user address */
-@@ -534,11 +544,17 @@ static inline int user_segment_size(unsigned long addr)
- static inline unsigned long get_vsid(unsigned long context, unsigned long ea,
- 				     int ssize)
- {
--	if (ssize == MMU_SEGSIZE_256M)
--		return vsid_scramble((context << USER_ESID_BITS)
--				     | (ea >> SID_SHIFT), 256M);
--	return vsid_scramble((context << USER_ESID_BITS_1T)
--			     | (ea >> SID_SHIFT_1T), 1T);
-+	unsigned long proto_vsid;
-+	if (ssize == MMU_SEGSIZE_256M) {
-+		proto_vsid = ((context << USER_ESID_BITS) |(ea >> SID_SHIFT));
-+		/* truncate this to 37 bits */
-+		proto_vsid &= (1UL << (CONTEXT_BITS + USER_ESID_BITS)) - 1;
-+		return vsid_scramble(proto_vsid, 256M);
-+	}
-+	proto_vsid = ((context << USER_ESID_BITS_1T) | (ea >> SID_SHIFT_1T));
-+	/* truncate this to 25 bits */
-+	proto_vsid &= (1UL << (CONTEXT_BITS + USER_ESID_BITS_1T)) - 1;
-+	return vsid_scramble( proto_vsid, 1T);
- }
- 
- #endif /* __ASSEMBLY__ */
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 1c06d29..40ed208 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -958,7 +958,9 @@ _GLOBAL(do_stab_bolted)
- 	rldimi	r10,r11,7,52	/* r10 = first ste of the group */
- 
- 	/* Calculate VSID */
--	/* This is a kernel address, so protovsid = ESID */
-+	/* This is a kernel address, so protovsid = ESID | 1 << 37 */
-+	li	r9,0x1
-+	rldimi  r11,r9,(CONTEXT_BITS + USER_ESID_BITS),0
- 	ASM_VSID_SCRAMBLE(r11, r9, 256M)
- 	rldic	r9,r11,12,16	/* r9 = vsid << 12 */
- 
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index 7bd8438..e6bace3 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -57,9 +57,13 @@ _GLOBAL(slb_allocate_realmode)
- _GLOBAL(slb_miss_kernel_load_linear)
- 	li	r11,0
- BEGIN_FTR_SECTION
-+	li	r9,0x1
-+	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
- 	b	slb_finish_load
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
- 	srdi	r10,r10,40-28		/* get 1T ESID */
-+	li	r9,0x1
-+	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS_1T),0
- 	b	slb_finish_load_1T
- 
- 1:
-@@ -87,9 +91,13 @@ _GLOBAL(slb_miss_kernel_load_vmemmap)
- 	li	r11,0
- 6:
- BEGIN_FTR_SECTION
-+	li	r9,0x1
-+	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
- 	b	slb_finish_load
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
- 	srdi	r10,r10,40-28		/* get 1T ESID */
-+	li	r9,0x1
-+	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS_1T),0
- 	b	slb_finish_load_1T
- 
- 0:	/* user address: proto-VSID = context << 15 | ESID. First check
-@@ -160,11 +168,13 @@ BEGIN_FTR_SECTION
- 	bge	9f
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 	rldimi	r10,r9,USER_ESID_BITS,0
-+	clrldi	r10,r10,(64 - (CONTEXT_BITS + USER_ESID_BITS))
- 	b	slb_finish_load
- BEGIN_FTR_SECTION
- 9:
- 	srdi	r10,r10,40-28		/* get 1T ESID */
- 	rldimi	r10,r9,USER_ESID_BITS,0
-+	clrldi	r10,r10,(64 - (CONTEXT_BITS + USER_ESID_BITS_1T))
- 	b	slb_finish_load_1T
- END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
- 8:	/* invalid EA */
--- 
-1.7.10
+> What are you running as your init process?  Do you have a normal
+> init/login scheme, or are you running a shell (esp. busybox, which would
+> have cp built in) directly as init?
+
+I build the kernel with an initramfs. In this one, I have an init script for
+mounting my flash device (which contains a JFF2 filesystem based on ELDK),
+and to process the "switch_root". Indeed, I used BusyBox in my initramfs and in
+the ELDK filesystem.
+
+
+> > When I use netsniff-ng, with default parameters, kernel hangs too. But If I
+> > specify a small ring buffer size with option "netsniff-ng -S 3MB" all is
+> > running fine. Here, is the dump when netsniff-ng causes a crash:
+> > 
+> > root <at> pLinesE_VMEb:~# netsniff-ng
+> > netsniff-ng 0.5.5.0 -- pid (245)
+> > [   36.065574] device eth0 entered promiscuous mode
+> > nice (0), scheduler (0 prio 0)
+> > 1 of 1 CPUs online, affinity bitstring (1)
+> > No device specified, using `eth0`.
+> > No filter applied. Switching to `all traffic`.
+> > 
+> > [   36.159714] BUG: Bad page state in process netsniff-ng  pfn:05401
+> > [   36.165759] page:c0401020 count:0 mapcount:1 mapping:  (null)
+> > index:0x0
+> > [   36.172548] page flags: 0x0()
+> 
+> Could you have bad memory timings (or bad memory)?  Usually when I see
+> things like this, it's because memory is getting corrupted.
+
+After more investigation, with gdb, the panic occurs when the the function
+"setsockopt" is called with the famous buffer (specify with -S xxMB) as a
+parameter. And it's the first use of the buffer in the code.
+
+I noticed that too : when I run tcpdump, It works, but if I run two tcpdump at
+the same time, segmentation faults or illegal instructions appears.
+
+It seems link to the usage of my memory. How can I investigate further to
+identify eventuals memory timing problems?
