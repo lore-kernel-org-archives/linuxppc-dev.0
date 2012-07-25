@@ -1,30 +1,29 @@
-Return-Path: <r61911@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 15EBB2C008E
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2012 12:55:23 +1000 (EST)
-Received: from mail151-va3 (localhost [127.0.0.1])	by
- mail151-va3-R.bigfish.com (Postfix) with ESMTP id C76673A0075	for
- <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2012 02:55:20 +0000 (UTC)
-Received: from VA3EHSMHS042.bigfish.com (unknown [10.7.14.240])	by
- mail151-va3.bigfish.com (Postfix) with ESMTP id A4E74200C6	for
- <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2012 02:55:18 +0000 (UTC)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Tabi Timur-B04825
- <B04825@freescale.com>
-Subject: RE: [PATCH] powerpc/p5040ds: Add support for P5040DS board
-Date: Wed, 25 Jul 2012 02:55:14 +0000
-Message-ID: <3E027F8168735B46AC006B1D0C7BB002079C5944@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1343148122-4584-1-git-send-email-timur@freescale.com>
- <500EE1BB.6060104@freescale.com> <500EE4C3.40707@freescale.com>
- <500EEA46.6030807@freescale.com>
-In-Reply-To: <500EEA46.6030807@freescale.com>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 20F4B2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 15:09:34 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so788407pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jul 2012 22:09:32 -0700 (PDT)
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Sender: glikely@secretlab.ca
+In-Reply-To: <1343025161.2957.22.camel@pasglop>
+References: <alpine.LSU.2.00.1207211911160.1585@eggly.anvils>
+ <1343011543.2957.2.camel@pasglop> <1343025161.2957.22.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 24 Jul 2012 23:09:11 -0600
+Message-ID: <CACxGe6vKUsUJnyef+DWfmQtpzGk8c6-Hta54VjCUWzss3Ej2gw@mail.gmail.com>
+Subject: Re: More irqdomain problems (Was: next/mmotm unbootable on G5:
+ irqdomain)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Hugh Dickins <hughd@google.com>,
+ linux-kernel@vger.kernel.org, Milton Miller <miltonm@bga.com>,
+ Paul Mundt <lethal@linux-sh.org>, Rob Herring <rob.herring@calxeda.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,28 +33,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jul 23, 2012 at 12:32 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Allright, another one Grant:
+>
+> unsigned int irq_find_mapping(struct irq_domain *domain,
+>                               irq_hw_number_t hwirq)
+> {
+>         struct irq_data *data;
+>
+>         /* Look for default domain if nececssary */
+>         if (domain == NULL)
+>                 domain = irq_default_domain;
+>         if (domain == NULL)
+>                 return 0;
+>
+>         switch (domain->revmap_type) {
+>         case IRQ_DOMAIN_MAP_LEGACY:
+>                 return irq_domain_legacy_revmap(domain, hwirq);
+>         case IRQ_DOMAIN_MAP_LINEAR:
+>                 return irq_linear_revmap(domain, hwirq);
+>         case IRQ_DOMAIN_MAP_TREE:
+>                 rcu_read_lock();
+>                 data = radix_tree_lookup(&domain->revmap_data.tree, hwirq);
+>                 rcu_read_unlock();
+>                 if (data)
+>                         return data->irq;
+> -               break;
+> +               return 0;
+>         case IRQ_DOMAIN_MAP_NOMAP:
+>
+> Please, stick a proper commit message and my s-o-b and see if you can fix
+> your tree before you ask Linus to pull because that's not pretty on any
+> pseries .... irq_find_mapping() does get called for all interrupt the
+> first time it's mapped to check if there's a pre-existing mapping, so
+> the case of the thing being unpopulated is absolutely legit.
+>
+> the NOMAP case has a similar dubious exit case but since I'm not that
+> familiar with NOMAP I haven't touched it.
 
+I've decided to rework the patch to simply omit the WARN statement. It
+isn't really needed. I've merged in Linus' tree below the eliminate
+slow-path patch and remove the WARN statement. It's been pushed out to
+my irqdomain/next branch, so it should show up in tomorrow's
+linux-next.
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-bounces+tie-
-> fei.zang=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Scott Wood
-> Sent: Wednesday, July 25, 2012 2:33 AM
-> To: Tabi Timur-B04825
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH] powerpc/p5040ds: Add support for P5040DS board
->=20
-> On 07/24/2012 01:09 PM, Timur Tabi wrote:
-> > Scott Wood wrote:
-> >> On 07/24/2012 11:42 AM, Timur Tabi wrote:
-> >>> +/* controller at 0x200000 */
-> >>> +&pci0 {
-> >>> +	compatible =3D "fsl,p5040-pcie", "fsl,qoriq-pcie-v2.2";
-> >>
-> >> p5040 has PCIe v2.4.
-> >
-> > Then it's broken on the SDK as well.
->=20
-> Yes.  There was internal discussion about this over the last few days.
-In SDK, we use consist v2.2, so there is no obvious problem, but we need to=
- fix this to v2.4. P5020 PCIe adds Liodn registers.
-Roy
+You can find it here if you want to give it a spin:
+
+git://git.secretlab.ca/git/linux-2.6 irqdomain/next
+
+I'll give it a bit more time in linux-next before I ask Linus to pull.
+
+g.
