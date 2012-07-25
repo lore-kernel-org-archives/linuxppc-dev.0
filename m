@@ -2,27 +2,26 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 08D962C0116
+ by ozlabs.org (Postfix) with ESMTPS id 08D822C00C3
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:58:35 +1000 (EST)
 Received: from /spool/local
  by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 25 Jul 2012 22:58:21 +1000
+ Wed, 25 Jul 2012 22:58:20 +1000
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6PCo78c721380
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:50:07 +1000
+ q6PCnxAY8978782
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:50:00 +1000
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6PCwOBl015440
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:58:24 +1000
+ q6PCwG9a015306
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:58:17 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V4 07/12] arch/powerpc: Make some of the PGTABLE_RANGE
- dependency explicit
-Date: Wed, 25 Jul 2012 18:28:00 +0530
-Message-Id: <1343221085-30661-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V4 01/12] arch/powerpc: Use hpt_va to compute virtual address
+Date: Wed, 25 Jul 2012 18:27:54 +0530
+Message-Id: <1343221085-30661-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1343221085-30661-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1343221085-30661-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -38,97 +37,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-slice array size and slice mask size depend on PGTABLE_RANGE. We
-can't directly include pgtable.h in these header because there is
-a circular dependency. So add compile time check for these values.
+Don't open code the same
 
+Reviewed-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h    |   13 ++++++++-----
- arch/powerpc/include/asm/page_64.h       |   16 ++++++++++++----
- arch/powerpc/include/asm/pgtable-ppc64.h |    8 ++++++++
- 3 files changed, 28 insertions(+), 9 deletions(-)
+ arch/powerpc/platforms/cell/beat_htab.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index fe865fe..d24d484 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -422,6 +422,13 @@ extern void slb_set_size(u16 size);
- 	srdi	rx,rx,VSID_BITS_##size;	/* extract 2^VSID_BITS bit */	\
- 	add	rt,rt,rx
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+index 943c9d3..b83077e 100644
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ b/arch/powerpc/platforms/cell/beat_htab.c
+@@ -259,7 +259,7 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
+ 	u64 dummy0, dummy1;
  
-+/* 4 bits per slice and we have one slice per 1TB */
-+#if 0 /* We can't directly include pgtable.h hence this hack */
-+#define SLICE_ARRAY_SIZE  (PGTABLE_RANGE >> 41)
-+#else
-+/* Right now we only support 64TB */
-+#define SLICE_ARRAY_SIZE  32
-+#endif
+ 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
+-	va = (vsid << 28) | (ea & 0x0fffffff);
++	va = hpt_va(ea, vsid, MMU_SEGSIZE_256M);
  
- #ifndef __ASSEMBLY__
- 
-@@ -466,11 +473,7 @@ typedef struct {
- 
- #ifdef CONFIG_PPC_MM_SLICES
- 	u64 low_slices_psize;	/* SLB page size encodings */
--	/*
--	 * Right now we support 64TB and 4 bits for each
--	 * 1TB slice we need 32 bytes for 64TB.
--	 */
--	unsigned char high_slices_psize[32];  /* 4 bits per slice for now */
-+	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
- #else
- 	u16 sllp;		/* SLB page size encoding */
- #endif
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 6c9bef4..5635acb 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -78,14 +78,22 @@ extern u64 ppc64_pft_size;
- #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
- #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
- 
-+/* 1 bit per slice and we have one slice per 1TB */
-+#if 0 /* We can't directly include pgtable.h hence this hack */
-+#define SLICE_MASK_SIZE (PGTABLE_RANG >> 43)
-+#else
-+/*
-+ * Right now we support only 64TB.
-+ * IF we change this we will have to change the type
-+ * of high_slices
-+ */
-+#define SLICE_MASK_SIZE 8
-+#endif
-+
- #ifndef __ASSEMBLY__
- 
- struct slice_mask {
- 	u16 low_slices;
--	/*
--	 * This should be derived out of PGTABLE_RANGE. For the current
--	 * max 64TB, u64 should be ok.
--	 */
- 	u64 high_slices;
- };
- 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 8af1cf2..dea953f 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -32,6 +32,14 @@
- #endif
- #endif
- 
-+#if (PGTABLE_RANGE >> 41) > SLICE_ARRAY_SIZE
-+#error PGTABLE_RANGE exceeds SLICE_ARRAY_SIZE
-+#endif
-+
-+#if (PGTABLE_RANGE >> 43) > SLICE_MASK_SIZE
-+#error PGTABLE_RANGE exceeds slice_mask high_slices size
-+#endif
-+
- /*
-  * Define the address range of the kernel non-linear virtual area
-  */
+ 	raw_spin_lock(&beat_htab_lock);
+ 	slot = beat_lpar_hpte_find(va, psize);
 -- 
 1.7.10
