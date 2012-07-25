@@ -1,34 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0DEA32C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 01:21:51 +1000 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 26 Jul 2012 01:21:29 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6PFD67N57278664
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 01:13:07 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6PFLFGP026312
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 01:21:15 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: Re: [PATCH -V4 12/12] arch/powerpc: properly isolate kernel and user
- proto-VSID
-In-Reply-To: <1343221085-30661-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1343221085-30661-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1343221085-30661-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 25 Jul 2012 20:51:09 +0530
-Message-ID: <87txwv7tp6.fsf@skywalker.in.ibm.com>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9378B2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 03:23:58 +1000 (EST)
+Message-ID: <50102B98.4000801@freescale.com>
+Date: Wed, 25 Jul 2012 12:23:36 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Subject: Re: [PATCH 1/6] powerpc/fsl-pci: Unify pci/pcie initialization code
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <500EECA3.3050806@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A27578@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A27578@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,37 +29,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/24/2012 09:35 PM, Jia Hongtao-B38951 wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Wednesday, July 25, 2012 2:43 AM
+>> To: Jia Hongtao-B38951
+>> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Wood Scott-
+>> B07421; Li Yang-R58472
+>> Subject: Re: [PATCH 1/6] powerpc/fsl-pci: Unify pci/pcie initialization
+>> code
+>>
+>> On 07/24/2012 05:20 AM, Jia Hongtao wrote:
+>>> We unified the Freescale pci/pcie initialization by changing the
+>> fsl_pci
+>>> to a platform driver.
+>>>
+>>> In previous version pci/pcie initialization is in platform code which
+>>> Initialize pci bridge base on EP/RC or host/agent settings.
+>>
+>> The previous version of what?  This patch, or the PCI code?  What
+>> changed in this patch since the last time you sent it, and where is the
+>> version number?
+>>
+>>> +#if defined(CONFIG_FSL_SOC_BOOKE) || defined(CONFIG_PPC_86xx)
+>>> +static const struct of_device_id pci_ids[] = {
+>>> +	{ .compatible = "fsl,mpc8540-pci", },
+>>> +	{ .compatible = "fsl,mpc8548-pcie", },
+>>> +	{ .compatible = "fsl,mpc8641-pcie", },
+>>> +	{ .compatible = "fsl,p1022-pcie", },
+>>> +	{ .compatible = "fsl,p1010-pcie", },
+>>> +	{ .compatible = "fsl,p1023-pcie", },
+>>> +	{ .compatible = "fsl,p4080-pcie", },
+>>> +	{ .compatible = "fsl,qoriq-pcie-v2.3", },
+>>> +	{ .compatible = "fsl,qoriq-pcie-v2.2", },
+>>> +	{},
+>>> +};
+>>
+>> Again, please base this on the latest tree, which has my PCI patches.
+>> This table already exists in this file.  And you're still missing
+>> fsl,mpc8610-pci.
+> 
+> Sorry fsl,mpc8610-pci will be added.
 
-MAX_CONTEXT change in this patch was not related. So may be we need it 
-to be a separate patch ?
+To what?  The table is already there in Linus's tree, with
+fsl,mpc8610-pci.  You don't need to add it again.
 
--aneesh
+>> It's too late for swiotlb here.  Again, please don't break something in
+>> one patch and then fix it in a later patch.  Use "git rebase -i" to edit
+>> your patchset into a reviewable, bisectable form.
+>>
+>> -Scott
+> 
+> Yes, bisectable requirement is sort of reasonable. 
+> 
+> But I check the SubmittingPatches Doc and it says "If one patch depends on
+> another patch in order for a change to be complete, that is OK. Simply
+> note 'this patch depends on patch X' in your patch description". In my
+> opinion swiotlb is a whole functional patch so I separate them. Maybe
+> I should add depends description in the next patch.
 
->From c67fb1b973c317f114ee256110cfc1b016dc1841 Mon Sep 17 00:00:00 2001
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 25 Jul 2012 18:34:12 +0530
-Subject: [PATCH -V4] arch/powerpc: Replace open coded CONTEXT_BITS value
+That's not what that means.  What it means is that if someone else has
+already posted a patch, and your patch is supposed to go on top of that
+patch, you should mention that.
 
-To clarify the meaning for future readers, replace the open coded
-19 with CONTEXT_BITS
+> About all this patch set Leo and I insist to make it as a platform driver
+> which is architectural better. I didn't base this patch set on the latest
+> tree and it's unapplicable just because I want to show the whole idea of
+> this patchset. If the idea is ok for upstream I will rebase the patch set.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/mmu_context_hash64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+If that's the case, you should label it as an [RFC PATCH] (stands for
+Request For Comments), and mention under the --- line any known issues,
+such as that it doesn't apply to the current tree.
 
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index 40677aa..daa076c 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -34,7 +34,7 @@ static DEFINE_IDA(mmu_context_ida);
-  * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
-  * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
-  */
--#define MAX_CONTEXT	((1UL << 19) - 1)
-+#define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
- 
- int __init_new_context(void)
- {
--- 
-1.7.10
+But it would be a lot easier to comment on it if it were based on the
+current code, rather than having to speculate what you'd do when you rebase.
+
+-Scott
