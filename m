@@ -1,25 +1,30 @@
-Return-Path: <B38951@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+Return-Path: <r61911@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C6C072C0086
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 12:42:09 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by looking
- for ISA node
-Date: Wed, 25 Jul 2012 02:42:00 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A275B4@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
- <1343125210-16720-3-git-send-email-B38951@freescale.com>
- <500EEDD9.8050507@freescale.com>
-In-Reply-To: <500EEDD9.8050507@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 15EBB2C008E
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2012 12:55:23 +1000 (EST)
+Received: from mail151-va3 (localhost [127.0.0.1])	by
+ mail151-va3-R.bigfish.com (Postfix) with ESMTP id C76673A0075	for
+ <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2012 02:55:20 +0000 (UTC)
+Received: from VA3EHSMHS042.bigfish.com (unknown [10.7.14.240])	by
+ mail151-va3.bigfish.com (Postfix) with ESMTP id A4E74200C6	for
+ <linuxppc-dev@ozlabs.org>; Wed, 25 Jul 2012 02:55:18 +0000 (UTC)
+From: Zang Roy-R61911 <r61911@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Tabi Timur-B04825
+ <B04825@freescale.com>
+Subject: RE: [PATCH] powerpc/p5040ds: Add support for P5040DS board
+Date: Wed, 25 Jul 2012 02:55:14 +0000
+Message-ID: <3E027F8168735B46AC006B1D0C7BB002079C5944@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1343148122-4584-1-git-send-email-timur@freescale.com>
+ <500EE1BB.6060104@freescale.com> <500EE4C3.40707@freescale.com>
+ <500EEA46.6030807@freescale.com>
+In-Reply-To: <500EEA46.6030807@freescale.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,61 +34,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBKdWx5IDI1LCAyMDEyIDI6NDggQU0NCj4gVG86IEppYSBI
-b25ndGFvLUIzODk1MQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGdhbGFr
-QGtlcm5lbC5jcmFzaGluZy5vcmc7IFdvb2QgU2NvdHQtDQo+IEIwNzQyMTsgTGkgWWFuZy1SNTg0
-NzINCj4gU3ViamVjdDogUmU6IFtQQVRDSCAzLzZdIHBvd2VycGMvZnNsLXBjaTogRGV0ZXJtaW5l
-IHByaW1hcnkgYnVzIGJ5DQo+IGxvb2tpbmcgZm9yIElTQSBub2RlDQo+IA0KPiBPbiAwNy8yNC8y
-MDEyIDA1OjIwIEFNLCBKaWEgSG9uZ3RhbyB3cm90ZToNCj4gPiBQQ0kgaG9zdCBicmlkZ2UgaXMg
-cHJpbWFyeSBidXMgaWYgaXQgY29udGFpbnMgYW4gSVNBIG5vZGUuIEJ1dCBub3QgYWxsDQo+IGJv
-YXJkcw0KPiA+IGZpdCB0aGlzIHJ1bGUuIERldmljZSB0cmVlIHNob3VsZCBiZSB1cGRhdGVkIGZv
-ciBhbGwgdGhlc2UgYm9hcmRzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8g
-PEIzODk1MUBmcmVlc2NhbGUuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IExpIFlhbmcgPGxlb2xp
-QGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9w
-Y2ktYnJpZGdlLmggfCAgICAxICsNCj4gPiAgYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMg
-ICAgICAgICB8ICAgMzEgKysrKysrKysrKysrKysrKysrKysrKysrLQ0KPiAtLS0tLS0NCj4gPiAg
-YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmggICAgICAgICB8ICAgMTIgKysrKysrKysrKyst
-DQo+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMzYgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkN
-Cj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGNpLWJyaWRn
-ZS5oDQo+IGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BjaS1icmlkZ2UuaA0KPiA+IGluZGV4
-IGFjMzllNmEuLmI0OGZhN2YgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUv
-YXNtL3BjaS1icmlkZ2UuaA0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wY2kt
-YnJpZGdlLmgNCj4gPiBAQCAtMjAsNiArMjAsNyBAQCBzdHJ1Y3QgZGV2aWNlX25vZGU7DQo+ID4g
-IHN0cnVjdCBwY2lfY29udHJvbGxlciB7DQo+ID4gIAlzdHJ1Y3QgcGNpX2J1cyAqYnVzOw0KPiA+
-ICAJY2hhciBpc19keW5hbWljOw0KPiA+ICsJaW50IGlzX3ByaW1hcnk7DQo+ID4gICNpZmRlZiBD
-T05GSUdfUFBDNjQNCj4gPiAgCWludCBub2RlOw0KPiA+ICAjZW5kaWYNCj4gPiBkaWZmIC0tZ2l0
-IGEvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4gYi9hcmNoL3Bvd2VycGMvc3lzZGV2
-L2ZzbF9wY2kuYw0KPiA+IGluZGV4IDk5YTNlNzguLjJhMzY5YmUgMTAwNjQ0DQo+ID4gLS0tIGEv
-YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMvc3lz
-ZGV2L2ZzbF9wY2kuYw0KPiA+IEBAIC00NTMsNiArNDUzLDcgQEAgaW50IF9faW5pdCBmc2xfYWRk
-X2JyaWRnZShzdHJ1Y3QgZGV2aWNlX25vZGUgKmRldiwNCj4gaW50IGlzX3ByaW1hcnkpDQo+ID4N
-Cj4gPiAgCWhvc2UtPmZpcnN0X2J1c25vID0gYnVzX3JhbmdlID8gYnVzX3JhbmdlWzBdIDogMHgw
-Ow0KPiA+ICAJaG9zZS0+bGFzdF9idXNubyA9IGJ1c19yYW5nZSA/IGJ1c19yYW5nZVsxXSA6IDB4
-ZmY7DQo+ID4gKwlob3NlLT5pc19wcmltYXJ5ID0gaXNfcHJpbWFyeTsNCj4gPg0KPiA+ICAJc2V0
-dXBfaW5kaXJlY3RfcGNpKGhvc2UsIHJzcmMuc3RhcnQsIHJzcmMuc3RhcnQgKyAweDQsDQo+ID4g
-IAkJUFBDX0lORElSRUNUX1RZUEVfQklHX0VORElBTik7DQo+ID4gQEAgLTkzMiwxOCArOTMzLDM0
-IEBAIHZvaWQgcGNpX2NoZWNrX3N3aW90bGIodm9pZCkNCj4gPiAgfQ0KPiA+ICAjZW5kaWYNCj4g
-Pg0KPiA+IC1pbnQgcHJpbWFyeV9waGJfYWRkcjsNCj4gPiArLyoNCj4gPiArICogUmVjdXJzaXZl
-bHkgc2NhbiBhbGwgdGhlIGNoaWxkcmVuIG5vZGVzIG9mIHBhcmVudCBhbmQgZmluZCBvdXQgaWYN
-Cj4gdGhlcmUNCj4gPiArICogaXMgImlzYSIgbm9kZS4gUmV0dXJuIDEgaWYgcGFyZW50IGhhcyBp
-c2Egbm9kZSBvdGhlcndpc2UgcmV0dXJuIDAuDQo+ID4gKyAqLw0KPiA+ICtpbnQgaGFzX2lzYV9u
-b2RlKHN0cnVjdCBkZXZpY2Vfbm9kZSAqcGFyZW50KQ0KPiA+ICt7DQo+ID4gKwlzdGF0aWMgaW50
-IHJlc3VsdDsNCj4gPiArCXN0cnVjdCBkZXZpY2Vfbm9kZSAqY3VyX2NoaWxkOw0KPiA+ICsNCj4g
-PiArCWN1cl9jaGlsZCA9IE5VTEw7DQo+ID4gKwlyZXN1bHQgPSAwOw0KPiA+ICsJd2hpbGUgKCFy
-ZXN1bHQgJiYgKGN1cl9jaGlsZCA9IG9mX2dldF9uZXh0X2NoaWxkKHBhcmVudCwNCj4gY3VyX2No
-aWxkKSkpIHsNCj4gPiArCQkvKiBHZXQgImlzYSIgbm9kZSBhbmQgcmV0dXJuIDEgKi8NCj4gPiAr
-CQlpZiAob2Zfbm9kZV9jbXAoY3VyX2NoaWxkLT50eXBlLCAiaXNhIikgPT0gMCkNCj4gPiArCQkJ
-cmV0dXJuIHJlc3VsdCA9IDE7DQo+ID4gKwkJaGFzX2lzYV9ub2RlKGN1cl9jaGlsZCk7DQo+ID4g
-Kwl9DQo+ID4gKw0KPiA+ICsJcmV0dXJuIHJlc3VsdDsNCj4gPiArfQ0KPiANCj4gV2h5IGFyZSB5
-b3UgcmVpbXBsZW1lbnRpbmcgdGhpcz8gIEl0J3MgYWxyZWFkeSBpbiBMaW51cydzIHRyZWUuICBT
-ZWUNCj4gZnNsX3BjaV9pbml0KCkuDQo+IA0KPiBQbHVzLCB5b3VyIHZlcnNpb24gaXMgcmVjdXJz
-aXZlIHdoaWNoIGlzIHVuYWNjZXB0YWJsZSBpbiBrZXJuZWwgY29kZQ0KPiB3aXRoIGEgc21hbGwg
-c3RhY2sgKG91dHNpZGUgb2YgYSBmZXcgcmFyZSBleGFtcGxlcyB3aGVyZSB0aGUgZGVwdGggaGFz
-IGENCj4gc21hbGwgZml4ZWQgdXBwZXIgYm91bmQpLCBhbmQgb25jZSBpdCBmaW5kcyBhbiBJU0Eg
-bm9kZSwgaXQgcmV0dXJucyAxDQo+IGZvcmV2ZXIsIHJlZ2FyZGxlc3Mgb2Ygd2hhdCBub2RlIHlv
-dSBwYXNzIGluIGluIHRoZSBmdXR1cmUuDQo+IA0KPiAtU2NvdHQNCg0KQWJvdXQgcmVjdXJzaW9u
-IEkgd2lsbCBkbyBzb21lIG1vcmUgaW52ZXN0aWdhdGlvbi4NCklmIGl0IGZpbmRzIElTQSBpdCBy
-ZXR1cm5zIDEuIEJ1dCBmb3IgbmV4dCBQQ0kgbm9kZSBpdCB3aWxsIHJldHVybiAwIGlmDQpubyBJ
-U0EgaXMgZm91bmQgKG5vdGUgdGhhdCBJIHNldCByZXN1bHQgdG8gMCBhdCB0aGUgYmVnaW5uaW5n
-KS4NCg0KLUhvbmd0YW8uDQoNCg==
+
+
+> -----Original Message-----
+> From: Linuxppc-dev [mailto:linuxppc-dev-bounces+tie-
+> fei.zang=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Scott Wood
+> Sent: Wednesday, July 25, 2012 2:33 AM
+> To: Tabi Timur-B04825
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH] powerpc/p5040ds: Add support for P5040DS board
+>=20
+> On 07/24/2012 01:09 PM, Timur Tabi wrote:
+> > Scott Wood wrote:
+> >> On 07/24/2012 11:42 AM, Timur Tabi wrote:
+> >>> +/* controller at 0x200000 */
+> >>> +&pci0 {
+> >>> +	compatible =3D "fsl,p5040-pcie", "fsl,qoriq-pcie-v2.2";
+> >>
+> >> p5040 has PCIe v2.4.
+> >
+> > Then it's broken on the SDK as well.
+>=20
+> Yes.  There was internal discussion about this over the last few days.
+In SDK, we use consist v2.2, so there is no obvious problem, but we need to=
+ fix this to v2.4. P5020 PCIe adds Liodn registers.
+Roy
