@@ -1,13 +1,13 @@
 Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 71B1F2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 03:26:05 +1000 (EST)
-Message-ID: <50102C27.8040004@freescale.com>
-Date: Wed, 25 Jul 2012 12:25:59 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 471CB2C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 03:28:15 +1000 (EST)
+Message-ID: <50102C9C.7030508@freescale.com>
+Date: Wed, 25 Jul 2012 12:27:56 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Jia Hongtao-B38951 <B38951@freescale.com>
@@ -16,8 +16,8 @@ Subject: Re: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by looking
 References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
  <1343125210-16720-3-git-send-email-B38951@freescale.com>
  <500EEDD9.8050507@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A275B4@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A275B4@039-SN1MPN1-002.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01A276B1@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A276B1@039-SN1MPN1-002.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -31,64 +31,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/24/2012 09:42 PM, Jia Hongtao-B38951 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Wood Scott-B07421
->> Sent: Wednesday, July 25, 2012 2:48 AM
->> To: Jia Hongtao-B38951
->> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Wood Scott-
->> B07421; Li Yang-R58472
->> Subject: Re: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by
->> looking for ISA node
->>
->> On 07/24/2012 05:20 AM, Jia Hongtao wrote:
->>> PCI host bridge is primary bus if it contains an ISA node. But not all
->> boards
->>> fit this rule. Device tree should be updated for all these boards.
->>>
->>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> ---
->>>  arch/powerpc/include/asm/pci-bridge.h |    1 +
->>>  arch/powerpc/sysdev/fsl_pci.c         |   31 ++++++++++++++++++++++++-
->> ------
->>>  arch/powerpc/sysdev/fsl_pci.h         |   12 +++++++++++-
->>>  3 files changed, 36 insertions(+), 8 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/pci-bridge.h
->> b/arch/powerpc/include/asm/pci-bridge.h
->>> index ac39e6a..b48fa7f 100644
->>> --- a/arch/powerpc/include/asm/pci-bridge.h
->>> +++ b/arch/powerpc/include/asm/pci-bridge.h
->>> @@ -20,6 +20,7 @@ struct device_node;
->>>  struct pci_controller {
->>>  	struct pci_bus *bus;
->>>  	char is_dynamic;
->>> +	int is_primary;
->>>  #ifdef CONFIG_PPC64
->>>  	int node;
->>>  #endif
->>> diff --git a/arch/powerpc/sysdev/fsl_pci.c
->> b/arch/powerpc/sysdev/fsl_pci.c
->>> index 99a3e78..2a369be 100644
->>> --- a/arch/powerpc/sysdev/fsl_pci.c
->>> +++ b/arch/powerpc/sysdev/fsl_pci.c
->>> @@ -453,6 +453,7 @@ int __init fsl_add_bridge(struct device_node *dev,
->> int is_primary)
->>>
->>>  	hose->first_busno = bus_range ? bus_range[0] : 0x0;
->>>  	hose->last_busno = bus_range ? bus_range[1] : 0xff;
->>> +	hose->is_primary = is_primary;
->>>
->>>  	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
->>>  		PPC_INDIRECT_TYPE_BIG_ENDIAN);
->>> @@ -932,18 +933,34 @@ void pci_check_swiotlb(void)
->>>  }
->>>  #endif
->>>
->>> -int primary_phb_addr;
+On 07/25/2012 04:01 AM, Jia Hongtao-B38951 wrote:
 >>> +/*
 >>> + * Recursively scan all the children nodes of parent and find out if
 >> there
@@ -122,13 +65,12 @@ On 07/24/2012 09:42 PM, Jia Hongtao-B38951 wrote:
 >>
 >> -Scott
 > 
-> About recursion I will do some more investigation.
-> If it finds ISA it returns 1. But for next PCI node it will return 0 if
-> no ISA is found (note that I set result to 0 at the beginning).
+> Yes, recursive function is not recommended for kernel but maybe it's not unacceptable.
+> This function is not so deep stacked and simple. In my opinion this is acceptable.
 
-Sorry, I misread that as an initializer.  Still, it's awkward (why not
-just use a return value?) and non-thread-safe (may not matter here, but
-it's a bad habit), and it's still an unacceptable use of recursion, and
-still a reimplementation of functionality that already exists. :-)
+The depth is limited not by code, but by externally provided data.
+
+Granted a bad device tree can mess the kernel up in far worse ways, but
+still it's a bad idea and totally unnecessary.
 
 -Scott
