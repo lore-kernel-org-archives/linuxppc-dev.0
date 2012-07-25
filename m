@@ -1,26 +1,25 @@
-Return-Path: <B04825@freescale.com>
+Return-Path: <B38951@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8D1102C0091
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 12:40:39 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [2/3][PATCH][upstream] TDM Framework
-Date: Wed, 25 Jul 2012 02:40:27 +0000
-Message-ID: <500F5C99.6060704@freescale.com>
-References: <1343040588-16002-1-git-send-email-b37400@freescale.com>
- <CAOZdJXVnEUEQesyG52pL_jerGDrmJLxdfBNFrj_xvhPs=ue4DA@mail.gmail.com>
- <3F1D9DCAAB49B94D88DBE05911FA4E6E50ED27@039-SN1MPN1-006.039d.mgd.msft.net>
- <500EB47F.1040903@freescale.com> <1343173422.2218.2.camel@concordia>
-In-Reply-To: <1343173422.2218.2.camel@concordia>
-Content-Type: text/plain; charset="iso-8859-1"
+ by ozlabs.org (Postfix) with ESMTPS id C6C072C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 12:42:09 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by looking
+ for ISA node
+Date: Wed, 25 Jul 2012 02:42:00 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A275B4@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <1343125210-16720-3-git-send-email-B38951@freescale.com>
+ <500EEDD9.8050507@freescale.com>
+In-Reply-To: <500EEDD9.8050507@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Singh Sandeep-B37400 <B37400@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +29,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
-> I agree these values are odd. But there's no rule that you can only use
-> an enum if the values are monotonically increasing.
->
-> It can still serve as helpful documentation, and reduce the number of
-> places you pass a bare int around.
-
-IMHO, an enum should only be used if
-
-1) You are doing real type checking of the enum
-2) You don't care what the actual values of each enum is
-
-For this patch, neither is true.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBKdWx5IDI1LCAyMDEyIDI6NDggQU0NCj4gVG86IEppYSBI
+b25ndGFvLUIzODk1MQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGdhbGFr
+QGtlcm5lbC5jcmFzaGluZy5vcmc7IFdvb2QgU2NvdHQtDQo+IEIwNzQyMTsgTGkgWWFuZy1SNTg0
+NzINCj4gU3ViamVjdDogUmU6IFtQQVRDSCAzLzZdIHBvd2VycGMvZnNsLXBjaTogRGV0ZXJtaW5l
+IHByaW1hcnkgYnVzIGJ5DQo+IGxvb2tpbmcgZm9yIElTQSBub2RlDQo+IA0KPiBPbiAwNy8yNC8y
+MDEyIDA1OjIwIEFNLCBKaWEgSG9uZ3RhbyB3cm90ZToNCj4gPiBQQ0kgaG9zdCBicmlkZ2UgaXMg
+cHJpbWFyeSBidXMgaWYgaXQgY29udGFpbnMgYW4gSVNBIG5vZGUuIEJ1dCBub3QgYWxsDQo+IGJv
+YXJkcw0KPiA+IGZpdCB0aGlzIHJ1bGUuIERldmljZSB0cmVlIHNob3VsZCBiZSB1cGRhdGVkIGZv
+ciBhbGwgdGhlc2UgYm9hcmRzLg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8g
+PEIzODk1MUBmcmVlc2NhbGUuY29tPg0KPiA+IFNpZ25lZC1vZmYtYnk6IExpIFlhbmcgPGxlb2xp
+QGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9w
+Y2ktYnJpZGdlLmggfCAgICAxICsNCj4gPiAgYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMg
+ICAgICAgICB8ICAgMzEgKysrKysrKysrKysrKysrKysrKysrKysrLQ0KPiAtLS0tLS0NCj4gPiAg
+YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmggICAgICAgICB8ICAgMTIgKysrKysrKysrKyst
+DQo+ID4gIDMgZmlsZXMgY2hhbmdlZCwgMzYgaW5zZXJ0aW9ucygrKSwgOCBkZWxldGlvbnMoLSkN
+Cj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vcGNpLWJyaWRn
+ZS5oDQo+IGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3BjaS1icmlkZ2UuaA0KPiA+IGluZGV4
+IGFjMzllNmEuLmI0OGZhN2YgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUv
+YXNtL3BjaS1icmlkZ2UuaA0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9wY2kt
+YnJpZGdlLmgNCj4gPiBAQCAtMjAsNiArMjAsNyBAQCBzdHJ1Y3QgZGV2aWNlX25vZGU7DQo+ID4g
+IHN0cnVjdCBwY2lfY29udHJvbGxlciB7DQo+ID4gIAlzdHJ1Y3QgcGNpX2J1cyAqYnVzOw0KPiA+
+ICAJY2hhciBpc19keW5hbWljOw0KPiA+ICsJaW50IGlzX3ByaW1hcnk7DQo+ID4gICNpZmRlZiBD
+T05GSUdfUFBDNjQNCj4gPiAgCWludCBub2RlOw0KPiA+ICAjZW5kaWYNCj4gPiBkaWZmIC0tZ2l0
+IGEvYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4gYi9hcmNoL3Bvd2VycGMvc3lzZGV2
+L2ZzbF9wY2kuYw0KPiA+IGluZGV4IDk5YTNlNzguLjJhMzY5YmUgMTAwNjQ0DQo+ID4gLS0tIGEv
+YXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMvc3lz
+ZGV2L2ZzbF9wY2kuYw0KPiA+IEBAIC00NTMsNiArNDUzLDcgQEAgaW50IF9faW5pdCBmc2xfYWRk
+X2JyaWRnZShzdHJ1Y3QgZGV2aWNlX25vZGUgKmRldiwNCj4gaW50IGlzX3ByaW1hcnkpDQo+ID4N
+Cj4gPiAgCWhvc2UtPmZpcnN0X2J1c25vID0gYnVzX3JhbmdlID8gYnVzX3JhbmdlWzBdIDogMHgw
+Ow0KPiA+ICAJaG9zZS0+bGFzdF9idXNubyA9IGJ1c19yYW5nZSA/IGJ1c19yYW5nZVsxXSA6IDB4
+ZmY7DQo+ID4gKwlob3NlLT5pc19wcmltYXJ5ID0gaXNfcHJpbWFyeTsNCj4gPg0KPiA+ICAJc2V0
+dXBfaW5kaXJlY3RfcGNpKGhvc2UsIHJzcmMuc3RhcnQsIHJzcmMuc3RhcnQgKyAweDQsDQo+ID4g
+IAkJUFBDX0lORElSRUNUX1RZUEVfQklHX0VORElBTik7DQo+ID4gQEAgLTkzMiwxOCArOTMzLDM0
+IEBAIHZvaWQgcGNpX2NoZWNrX3N3aW90bGIodm9pZCkNCj4gPiAgfQ0KPiA+ICAjZW5kaWYNCj4g
+Pg0KPiA+IC1pbnQgcHJpbWFyeV9waGJfYWRkcjsNCj4gPiArLyoNCj4gPiArICogUmVjdXJzaXZl
+bHkgc2NhbiBhbGwgdGhlIGNoaWxkcmVuIG5vZGVzIG9mIHBhcmVudCBhbmQgZmluZCBvdXQgaWYN
+Cj4gdGhlcmUNCj4gPiArICogaXMgImlzYSIgbm9kZS4gUmV0dXJuIDEgaWYgcGFyZW50IGhhcyBp
+c2Egbm9kZSBvdGhlcndpc2UgcmV0dXJuIDAuDQo+ID4gKyAqLw0KPiA+ICtpbnQgaGFzX2lzYV9u
+b2RlKHN0cnVjdCBkZXZpY2Vfbm9kZSAqcGFyZW50KQ0KPiA+ICt7DQo+ID4gKwlzdGF0aWMgaW50
+IHJlc3VsdDsNCj4gPiArCXN0cnVjdCBkZXZpY2Vfbm9kZSAqY3VyX2NoaWxkOw0KPiA+ICsNCj4g
+PiArCWN1cl9jaGlsZCA9IE5VTEw7DQo+ID4gKwlyZXN1bHQgPSAwOw0KPiA+ICsJd2hpbGUgKCFy
+ZXN1bHQgJiYgKGN1cl9jaGlsZCA9IG9mX2dldF9uZXh0X2NoaWxkKHBhcmVudCwNCj4gY3VyX2No
+aWxkKSkpIHsNCj4gPiArCQkvKiBHZXQgImlzYSIgbm9kZSBhbmQgcmV0dXJuIDEgKi8NCj4gPiAr
+CQlpZiAob2Zfbm9kZV9jbXAoY3VyX2NoaWxkLT50eXBlLCAiaXNhIikgPT0gMCkNCj4gPiArCQkJ
+cmV0dXJuIHJlc3VsdCA9IDE7DQo+ID4gKwkJaGFzX2lzYV9ub2RlKGN1cl9jaGlsZCk7DQo+ID4g
+Kwl9DQo+ID4gKw0KPiA+ICsJcmV0dXJuIHJlc3VsdDsNCj4gPiArfQ0KPiANCj4gV2h5IGFyZSB5
+b3UgcmVpbXBsZW1lbnRpbmcgdGhpcz8gIEl0J3MgYWxyZWFkeSBpbiBMaW51cydzIHRyZWUuICBT
+ZWUNCj4gZnNsX3BjaV9pbml0KCkuDQo+IA0KPiBQbHVzLCB5b3VyIHZlcnNpb24gaXMgcmVjdXJz
+aXZlIHdoaWNoIGlzIHVuYWNjZXB0YWJsZSBpbiBrZXJuZWwgY29kZQ0KPiB3aXRoIGEgc21hbGwg
+c3RhY2sgKG91dHNpZGUgb2YgYSBmZXcgcmFyZSBleGFtcGxlcyB3aGVyZSB0aGUgZGVwdGggaGFz
+IGENCj4gc21hbGwgZml4ZWQgdXBwZXIgYm91bmQpLCBhbmQgb25jZSBpdCBmaW5kcyBhbiBJU0Eg
+bm9kZSwgaXQgcmV0dXJucyAxDQo+IGZvcmV2ZXIsIHJlZ2FyZGxlc3Mgb2Ygd2hhdCBub2RlIHlv
+dSBwYXNzIGluIGluIHRoZSBmdXR1cmUuDQo+IA0KPiAtU2NvdHQNCg0KQWJvdXQgcmVjdXJzaW9u
+IEkgd2lsbCBkbyBzb21lIG1vcmUgaW52ZXN0aWdhdGlvbi4NCklmIGl0IGZpbmRzIElTQSBpdCBy
+ZXR1cm5zIDEuIEJ1dCBmb3IgbmV4dCBQQ0kgbm9kZSBpdCB3aWxsIHJldHVybiAwIGlmDQpubyBJ
+U0EgaXMgZm91bmQgKG5vdGUgdGhhdCBJIHNldCByZXN1bHQgdG8gMCBhdCB0aGUgYmVnaW5uaW5n
+KS4NCg0KLUhvbmd0YW8uDQoNCg==
