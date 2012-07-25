@@ -1,17 +1,17 @@
 Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D2EDF2C032E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 19:50:39 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 534822C0377
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 19:50:43 +1000 (EST)
 From: Jia Hongtao <B38951@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
  <B07421@freescale.com>
-Subject: [PATCH V2 4/6] powerpc/mpc85xx: convert to unified PCI init
-Date: Wed, 25 Jul 2012 17:26:59 +0800
-Message-ID: <1343208421-5552-4-git-send-email-B38951@freescale.com>
+Subject: [PATCH V2 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
+Date: Wed, 25 Jul 2012 17:27:00 +0800
+Message-ID: <1343208421-5552-5-git-send-email-B38951@freescale.com>
 In-Reply-To: <1343208421-5552-1-git-send-email-B38951@freescale.com>
 References: <1343208421-5552-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
@@ -26,106 +26,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PCI initialization is now done by PCI controller driver. In board setup_arch
-stage we don't need PCI init any more but swiotlb should be determined at this
-stage.
+Power supply for PCI inbound/outbound window registers is off when system
+go to deep-sleep state. We save the values of registers before suspend
+and restore to registers after resume.
 
+Signed-off-by: Jiang Yutang <b14898@freescale.com>
 Signed-off-by: Jia Hongtao <B38951@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
-We now just apply this for mpc85xx_ds and qemu
+ arch/powerpc/include/asm/pci-bridge.h |    2 +-
+ arch/powerpc/sysdev/fsl_pci.c         |  121 +++++++++++++++++++++++++++++++++
+ 2 files changed, 122 insertions(+), 1 deletions(-)
 
- arch/powerpc/platforms/85xx/mpc85xx_ds.c |   38 +++++++----------------------
- arch/powerpc/platforms/85xx/qemu_e500.c  |    5 +++-
- 2 files changed, 13 insertions(+), 30 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 6d3265f..3082ee8 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -117,40 +117,16 @@ void __init mpc85xx_ds_pic_init(void)
- extern int uli_exclude_device(struct pci_controller *hose,
- 				u_char bus, u_char devfn);
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index b48fa7f..f0f00a7 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -90,9 +90,9 @@ struct pci_controller {
  
--static struct device_node *pci_with_uli;
--
- static int mpc85xx_exclude_device(struct pci_controller *hose,
- 				   u_char bus, u_char devfn)
- {
--	if (hose->dn == pci_with_uli)
-+	if (hose->is_primary)
- 		return uli_exclude_device(hose, bus, devfn);
+ #ifdef CONFIG_PPC64
+ 	unsigned long buid;
++#endif	/* CONFIG_PPC64 */
  
- 	return PCIBIOS_SUCCESSFUL;
+ 	void *private_data;
+-#endif	/* CONFIG_PPC64 */
+ };
+ 
+ /* These are used for config access before all the PCI probing
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index babeec6..f67e609 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -966,12 +966,133 @@ static int __devinit fsl_pci_probe(struct platform_device *pdev)
+ 	return 0;
  }
- #endif	/* CONFIG_PCI */
  
--static void __init mpc85xx_ds_pci_init(void)
--{
--#ifdef CONFIG_PCI
--	struct device_node *node;
--
--	fsl_pci_init();
--
--	/* See if we have a ULI under the primary */
--
--	node = of_find_node_by_name(NULL, "uli1575");
--	while ((pci_with_uli = of_get_parent(node))) {
--		of_node_put(node);
--		node = pci_with_uli;
--
--		if (pci_with_uli == fsl_pci_primary) {
--			ppc_md.pci_exclude_device = mpc85xx_exclude_device;
--			break;
--		}
--	}
--#endif
--}
--
- /*
-  * Setup the architecture
-  */
-@@ -159,7 +135,11 @@ static void __init mpc85xx_ds_setup_arch(void)
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
- 
--	mpc85xx_ds_pci_init();
-+#ifdef CONFIG_PCI
-+	pci_check_swiotlb();
-+	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
++#ifdef CONFIG_SUSPEND
++
++#define PCI_POW_PIW_OFFSET	0xc00
++#define PCI_POW_PIW_SIZE	0x200
++#define PCI_POW_NUMBER		5
++
++static int fsl_pci_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	struct pci_controller *hose;
++	struct pci_outbound_window_regs *pci_saved_pow;
++	struct pci_inbound_window_regs *pci_saved_piw, *temp_piw;
++	struct resource pci_rsrc;
++	unsigned int i;
++	struct fsl_pci_private_data *sus_info;
++
++	hose = pci_find_hose_for_OF_device(pdev->dev.of_node);
++	of_address_to_resource(pdev->dev.of_node, 0, &pci_rsrc);
++
++	sus_info = kmalloc(
++			sizeof(struct fsl_pci_private_data), GFP_KERNEL);
++	if (!sus_info)
++		return -ENOMEM;
++
++	hose->private_data = sus_info;
++
++	sus_info->pci_pow = ioremap(pci_rsrc.start + PCI_POW_PIW_OFFSET,
++			PCI_POW_PIW_SIZE);
++	if (!sus_info->pci_pow) {
++		dev_err(&pdev->dev, "pci outbound/inbound windows ioremap error!\n");
++		goto err1;
++	}
++
++	sus_info->pci_piw = (struct pci_inbound_window_regs *)
++		((void *)sus_info->pci_pow + PCI_POW_PIW_SIZE) - 1;
++
++	if (of_device_is_compatible(pdev->dev.of_node, "fsl,qoriq-pcie-v2.2"))
++		sus_info->inbound_num = 4;
++	else
++		sus_info->inbound_num = 3;
++
++	sus_info->saved_regs = kmalloc(
++		sizeof(struct pci_outbound_window_regs) * PCI_POW_NUMBER +
++		sizeof(struct pci_inbound_window_regs) * sus_info->inbound_num,
++		GFP_KERNEL);
++	if (!sus_info->saved_regs)
++		goto err2;
++
++	pci_saved_pow = sus_info->saved_regs;
++	for (i = 0; i < PCI_POW_NUMBER; i++) {
++		pci_saved_pow[i].potar = in_be32(&sus_info->pci_pow[i].potar);
++		pci_saved_pow[i].potear = in_be32(&sus_info->pci_pow[i].potear);
++		pci_saved_pow[i].powbar = in_be32(&sus_info->pci_pow[i].powbar);
++		pci_saved_pow[i].powar = in_be32(&sus_info->pci_pow[i].powar);
++	}
++
++	pci_saved_piw = (struct pci_inbound_window_regs *)
++		(pci_saved_pow + PCI_POW_NUMBER);
++	temp_piw = sus_info->pci_piw;
++	for (i = 0; i < sus_info->inbound_num; i++, temp_piw--) {
++		pci_saved_piw[i].pitar = in_be32(&temp_piw->pitar);
++		pci_saved_piw[i].piwbar = in_be32(&temp_piw->piwbar);
++		pci_saved_piw[i].piwbear = in_be32(&temp_piw->piwbear);
++		pci_saved_piw[i].piwar = in_be32(&temp_piw->piwar);
++	}
++
++	return 0;
++
++err2:
++	iounmap(sus_info->pci_pow);
++
++err1:
++	kfree(sus_info);
++	return -ENOMEM;
++}
++
++static int fsl_pci_resume(struct platform_device *pdev)
++{
++	struct pci_controller *hose;
++	struct pci_outbound_window_regs *pci_saved_pow;
++	struct pci_inbound_window_regs *pci_saved_piw, *temp_piw;
++	unsigned int i;
++	struct fsl_pci_private_data *sus_info;
++
++	hose = pci_find_hose_for_OF_device(pdev->dev.of_node);
++	sus_info = (struct fsl_pci_private_data *)hose->private_data;
++
++	if (!sus_info->pci_pow || !sus_info->pci_piw || !sus_info->saved_regs)
++		return 0;
++
++	pci_saved_pow = sus_info->saved_regs;
++	for (i = 0; i < PCI_POW_NUMBER; i++) {
++		out_be32(&sus_info->pci_pow[i].potar, pci_saved_pow[i].potar);
++		out_be32(&sus_info->pci_pow[i].potear, pci_saved_pow[i].potear);
++		out_be32(&sus_info->pci_pow[i].powbar, pci_saved_pow[i].powbar);
++		out_be32(&sus_info->pci_pow[i].powar, pci_saved_pow[i].powar);
++	}
++
++	pci_saved_piw = (struct pci_inbound_window_regs *)
++		(pci_saved_pow + PCI_POW_NUMBER);
++	temp_piw = sus_info->pci_piw;
++	for (i = 0; i < sus_info->inbound_num; i++, temp_piw--) {
++		out_be32(&temp_piw->pitar, pci_saved_piw[i].pitar);
++		out_be32(&temp_piw->piwbar, pci_saved_piw[i].piwbar);
++		out_be32(&temp_piw->piwbear, pci_saved_piw[i].piwbear);
++		out_be32(&temp_piw->piwar, pci_saved_piw[i].piwar);
++	}
++	iounmap(sus_info->pci_pow);
++	kfree(sus_info->saved_regs);
++	sus_info->saved_regs = NULL;
++	kfree(sus_info);
++	sus_info = NULL;
++	hose->private_data = NULL;
++
++	return 0;
++}
 +#endif
 +
- 	mpc85xx_smp_init();
- 
- 	printk("MPC85xx DS board from Freescale Semiconductor\n");
-@@ -175,9 +155,9 @@ static int __init mpc8544_ds_probe(void)
- 	return !!of_flat_dt_is_compatible(root, "MPC8544DS");
- }
- 
--machine_device_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
--machine_device_initcall(mpc8572_ds, mpc85xx_common_publish_devices);
--machine_device_initcall(p2020_ds, mpc85xx_common_publish_devices);
-+machine_arch_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
-+machine_arch_initcall(mpc8572_ds, mpc85xx_common_publish_devices);
-+machine_arch_initcall(p2020_ds, mpc85xx_common_publish_devices);
- 
- machine_arch_initcall(mpc8544_ds, swiotlb_setup_bus_notifier);
- machine_arch_initcall(mpc8572_ds, swiotlb_setup_bus_notifier);
-diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
-index 95a2e53..025c9c2 100644
---- a/arch/powerpc/platforms/85xx/qemu_e500.c
-+++ b/arch/powerpc/platforms/85xx/qemu_e500.c
-@@ -41,7 +41,10 @@ static void __init qemu_e500_setup_arch(void)
- {
- 	ppc_md.progress("qemu_e500_setup_arch()", 0);
- 
--	fsl_pci_init();
-+#ifdef CONFIG_PCI
-+	pci_check_swiotlb();
+ static struct platform_driver fsl_pci_driver = {
+ 	.driver = {
+ 		.name = "fsl-pci",
+ 		.of_match_table = pci_ids,
+ 	},
+ 	.probe = fsl_pci_probe,
++#ifdef CONFIG_SUSPEND
++	.suspend	= fsl_pci_suspend,
++	.resume		= fsl_pci_resume,
 +#endif
-+
- 	mpc85xx_smp_init();
- }
+ };
  
+ static int __init fsl_pci_init(void)
 -- 
 1.7.5.1
