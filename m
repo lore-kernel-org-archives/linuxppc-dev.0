@@ -1,31 +1,34 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 08D822C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:58:35 +1000 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0DEA32C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 01:21:51 +1000 (EST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 25 Jul 2012 22:58:20 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6PCnxAY8978782
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:50:00 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6PCwG9a015306
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:58:17 +1000
+ Thu, 26 Jul 2012 01:21:29 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6PFD67N57278664
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 01:13:07 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6PFLFGP026312
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 01:21:15 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V4 01/12] arch/powerpc: Use hpt_va to compute virtual address
-Date: Wed, 25 Jul 2012 18:27:54 +0530
-Message-Id: <1343221085-30661-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1343221085-30661-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V4 12/12] arch/powerpc: properly isolate kernel and user
+ proto-VSID
+In-Reply-To: <1343221085-30661-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1343221085-30661-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ <1343221085-30661-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 25 Jul 2012 20:51:09 +0530
+Message-ID: <87txwv7tp6.fsf@skywalker.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,28 +38,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+
+MAX_CONTEXT change in this patch was not related. So may be we need it 
+to be a separate patch ?
+
+-aneesh
+
+>From c67fb1b973c317f114ee256110cfc1b016dc1841 Mon Sep 17 00:00:00 2001
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 25 Jul 2012 18:34:12 +0530
+Subject: [PATCH -V4] arch/powerpc: Replace open coded CONTEXT_BITS value
 
-Don't open code the same
+To clarify the meaning for future readers, replace the open coded
+19 with CONTEXT_BITS
 
-Reviewed-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/cell/beat_htab.c |    2 +-
+ arch/powerpc/mm/mmu_context_hash64.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
-index 943c9d3..b83077e 100644
---- a/arch/powerpc/platforms/cell/beat_htab.c
-+++ b/arch/powerpc/platforms/cell/beat_htab.c
-@@ -259,7 +259,7 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
- 	u64 dummy0, dummy1;
+diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
+index 40677aa..daa076c 100644
+--- a/arch/powerpc/mm/mmu_context_hash64.c
++++ b/arch/powerpc/mm/mmu_context_hash64.c
+@@ -34,7 +34,7 @@ static DEFINE_IDA(mmu_context_ida);
+  * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
+  * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
+  */
+-#define MAX_CONTEXT	((1UL << 19) - 1)
++#define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
  
- 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
--	va = (vsid << 28) | (ea & 0x0fffffff);
-+	va = hpt_va(ea, vsid, MMU_SEGSIZE_256M);
- 
- 	raw_spin_lock(&beat_htab_lock);
- 	slot = beat_lpar_hpte_find(va, psize);
+ int __init_new_context(void)
+ {
 -- 
 1.7.10
