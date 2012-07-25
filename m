@@ -1,28 +1,27 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4AA152C01FF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:58:34 +1000 (EST)
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 146072C0267
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:58:36 +1000 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 25 Jul 2012 22:58:18 +1000
+ Wed, 25 Jul 2012 22:58:20 +1000
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6PCoM6n5374348
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:50:22 +1000
+ q6PCo9mW58327080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:50:10 +1000
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6PCwU72015522
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:58:30 +1000
+ q6PCwIEc015332
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:58:18 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V4 12/12] arch/powerpc: properly isolate kernel and user
- proto-VSID
-Date: Wed, 25 Jul 2012 18:28:05 +0530
-Message-Id: <1343221085-30661-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V4 02/12] arch/powerpc: Simplify hpte_decode
+Date: Wed, 25 Jul 2012 18:27:55 +0530
+Message-Id: <1343221085-30661-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1343221085-30661-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1343221085-30661-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -38,109 +37,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-The proto-VSID space is divided into two class
-User:   0 to 2^(CONTEXT_BITS + USER_ESID_BITS) -1
-kernel: 2^(CONTEXT_BITS + USER_ESID_BITS) to 2^(VSID_BITS) - 1
+This patch simplify hpte_decode for easy switching of virtual address to
+virtual page number in the later patch
 
-With KERNEL_START at 0xc000000000000000, the proto vsid for
-the kernel ends up with 0xc00000000 (36 bits). With 64TB
-patchset we need to have kernel proto-VSID in the
-[2^37 to 2^38 - 1] range due to the increased USER_ESID_BITS.
-
+Reviewed-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h |   16 +++++++++++++---
- arch/powerpc/kernel/exceptions-64s.S  |    4 +++-
- arch/powerpc/mm/mmu_context_hash64.c  |    2 +-
- arch/powerpc/mm/slb_low.S             |    8 ++++++++
- 4 files changed, 25 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/hash_native_64.c |   49 ++++++++++++++++++++++----------------
+ 1 file changed, 28 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index daa3e4b..8e97715 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -516,9 +516,19 @@ typedef struct {
- /* This is only valid for addresses >= PAGE_OFFSET */
- static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 90039bc..660b8bb 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -351,9 +351,10 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long va,
+ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			int *psize, int *ssize, unsigned long *va)
  {
--	if (ssize == MMU_SEGSIZE_256M)
--		return vsid_scramble(ea >> SID_SHIFT, 256M);
--	return vsid_scramble(ea >> SID_SHIFT_1T, 1T);
-+	unsigned long proto_vsid;
-+	/*
-+	 * We need to make sure proto_vsid for the kernel is
-+	 * >= 2^(CONTEXT_BITS + USER_ESID_BITS[_1T])
-+	 */
-+	if (ssize == MMU_SEGSIZE_256M) {
-+		proto_vsid = ea >> SID_SHIFT;
-+		proto_vsid |= (1UL << (CONTEXT_BITS + USER_ESID_BITS));
-+		return vsid_scramble(proto_vsid, 256M);
-+	}
-+	proto_vsid = ea >> SID_SHIFT_1T;
-+	proto_vsid |= (1UL << (CONTEXT_BITS + USER_ESID_BITS_1T));
-+	return vsid_scramble(proto_vsid, 1T);
++	unsigned long avpn, pteg, vpi;
+ 	unsigned long hpte_r = hpte->r;
+ 	unsigned long hpte_v = hpte->v;
+-	unsigned long avpn;
++	unsigned long vsid, seg_off;
+ 	int i, size, shift, penc;
+ 
+ 	if (!(hpte_v & HPTE_V_LARGE))
+@@ -380,32 +381,38 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 	}
+ 
+ 	/* This works for all page sizes, and for 256M and 1T segments */
++	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ 	shift = mmu_psize_defs[size].shift;
+-	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm) << 23;
+-
+-	if (shift < 23) {
+-		unsigned long vpi, vsid, pteg;
+ 
+-		pteg = slot / HPTES_PER_GROUP;
+-		if (hpte_v & HPTE_V_SECONDARY)
+-			pteg = ~pteg;
+-		switch (hpte_v >> HPTE_V_SSIZE_SHIFT) {
+-		case MMU_SEGSIZE_256M:
+-			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
+-			break;
+-		case MMU_SEGSIZE_1T:
+-			vsid = avpn >> 40;
++	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm);
++	pteg = slot / HPTES_PER_GROUP;
++	if (hpte_v & HPTE_V_SECONDARY)
++		pteg = ~pteg;
++
++	switch (*ssize) {
++	case MMU_SEGSIZE_256M:
++		/* We only have 28 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1f) << 23;
++		vsid    =  avpn >> 5;
++		/* We can find more bits from the pteg value */
++		if (shift < 23) {
++			vpi = (vsid ^ pteg) & htab_hash_mask;
++			seg_off |= vpi << shift;
++		}
++		*va = vsid << SID_SHIFT | seg_off;
++	case MMU_SEGSIZE_1T:
++		/* We only have 40 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1ffff) << 23;
++		vsid    = avpn >> 17;
++		if (shift < 23) {
+ 			vpi = (vsid ^ (vsid << 25) ^ pteg) & htab_hash_mask;
+-			break;
+-		default:
+-			avpn = vpi = size = 0;
++			seg_off |= vpi << shift;
+ 		}
+-		avpn |= (vpi << mmu_psize_defs[size].shift);
++		*va = vsid << SID_SHIFT_1T | seg_off;
++	default:
++		*va = size = 0;
+ 	}
+-
+-	*va = avpn;
+ 	*psize = size;
+-	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
  }
  
- /* Returns the segment size indicator for a user address */
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 1c06d29..40ed208 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -958,7 +958,9 @@ _GLOBAL(do_stab_bolted)
- 	rldimi	r10,r11,7,52	/* r10 = first ste of the group */
- 
- 	/* Calculate VSID */
--	/* This is a kernel address, so protovsid = ESID */
-+	/* This is a kernel address, so protovsid = ESID | 1 << 37 */
-+	li	r9,0x1
-+	rldimi  r11,r9,(CONTEXT_BITS + USER_ESID_BITS),0
- 	ASM_VSID_SCRAMBLE(r11, r9, 256M)
- 	rldic	r9,r11,12,16	/* r9 = vsid << 12 */
- 
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index 40677aa..daa076c 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -34,7 +34,7 @@ static DEFINE_IDA(mmu_context_ida);
-  * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
-  * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
-  */
--#define MAX_CONTEXT	((1UL << 19) - 1)
-+#define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
- 
- int __init_new_context(void)
- {
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index 7bd8438..2777ba9 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -57,9 +57,13 @@ _GLOBAL(slb_allocate_realmode)
- _GLOBAL(slb_miss_kernel_load_linear)
- 	li	r11,0
- BEGIN_FTR_SECTION
-+	li	r9,0x1
-+	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
- 	b	slb_finish_load
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
- 	srdi	r10,r10,40-28		/* get 1T ESID */
-+	li	r9,0x1
-+	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS_1T),0
- 	b	slb_finish_load_1T
- 
- 1:
-@@ -87,9 +91,13 @@ _GLOBAL(slb_miss_kernel_load_vmemmap)
- 	li	r11,0
- 6:
- BEGIN_FTR_SECTION
-+	li	r9,0x1
-+	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
- 	b	slb_finish_load
- END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
- 	srdi	r10,r10,40-28		/* get 1T ESID */
-+	li	r9,0x1
-+	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS_1T),0
- 	b	slb_finish_load_1T
- 
- 0:	/* user address: proto-VSID = context << 15 | ESID. First check
+ /*
 -- 
 1.7.10
