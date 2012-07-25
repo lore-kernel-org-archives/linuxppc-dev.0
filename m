@@ -1,23 +1,26 @@
-Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Return-Path: <B04825@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 903D42C0091
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 12:35:31 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 1/6] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Wed, 25 Jul 2012 02:35:23 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A27578@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
- <500EECA3.3050806@freescale.com>
-In-Reply-To: <500EECA3.3050806@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 8D1102C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 12:40:39 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [2/3][PATCH][upstream] TDM Framework
+Date: Wed, 25 Jul 2012 02:40:27 +0000
+Message-ID: <500F5C99.6060704@freescale.com>
+References: <1343040588-16002-1-git-send-email-b37400@freescale.com>
+ <CAOZdJXVnEUEQesyG52pL_jerGDrmJLxdfBNFrj_xvhPs=ue4DA@mail.gmail.com>
+ <3F1D9DCAAB49B94D88DBE05911FA4E6E50ED27@039-SN1MPN1-006.039d.mgd.msft.net>
+ <500EB47F.1040903@freescale.com> <1343173422.2218.2.camel@concordia>
+In-Reply-To: <1343173422.2218.2.camel@concordia>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Singh Sandeep-B37400 <B37400@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +30,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBKdWx5IDI1LCAyMDEyIDI6NDMgQU0NCj4gVG86IEppYSBI
-b25ndGFvLUIzODk1MQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGdhbGFr
-QGtlcm5lbC5jcmFzaGluZy5vcmc7IFdvb2QgU2NvdHQtDQo+IEIwNzQyMTsgTGkgWWFuZy1SNTg0
-NzINCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzZdIHBvd2VycGMvZnNsLXBjaTogVW5pZnkgcGNp
-L3BjaWUgaW5pdGlhbGl6YXRpb24NCj4gY29kZQ0KPiANCj4gT24gMDcvMjQvMjAxMiAwNToyMCBB
-TSwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4gV2UgdW5pZmllZCB0aGUgRnJlZXNjYWxlIHBjaS9w
-Y2llIGluaXRpYWxpemF0aW9uIGJ5IGNoYW5naW5nIHRoZQ0KPiBmc2xfcGNpDQo+ID4gdG8gYSBw
-bGF0Zm9ybSBkcml2ZXIuDQo+ID4NCj4gPiBJbiBwcmV2aW91cyB2ZXJzaW9uIHBjaS9wY2llIGlu
-aXRpYWxpemF0aW9uIGlzIGluIHBsYXRmb3JtIGNvZGUgd2hpY2gNCj4gPiBJbml0aWFsaXplIHBj
-aSBicmlkZ2UgYmFzZSBvbiBFUC9SQyBvciBob3N0L2FnZW50IHNldHRpbmdzLg0KPiANCj4gVGhl
-IHByZXZpb3VzIHZlcnNpb24gb2Ygd2hhdD8gIFRoaXMgcGF0Y2gsIG9yIHRoZSBQQ0kgY29kZT8g
-IFdoYXQNCj4gY2hhbmdlZCBpbiB0aGlzIHBhdGNoIHNpbmNlIHRoZSBsYXN0IHRpbWUgeW91IHNl
-bnQgaXQsIGFuZCB3aGVyZSBpcyB0aGUNCj4gdmVyc2lvbiBudW1iZXI/DQo+IA0KPiA+ICsjaWYg
-ZGVmaW5lZChDT05GSUdfRlNMX1NPQ19CT09LRSkgfHwgZGVmaW5lZChDT05GSUdfUFBDXzg2eHgp
-DQo+ID4gK3N0YXRpYyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIHBjaV9pZHNbXSA9IHsNCj4g
-PiArCXsgLmNvbXBhdGlibGUgPSAiZnNsLG1wYzg1NDAtcGNpIiwgfSwNCj4gPiArCXsgLmNvbXBh
-dGlibGUgPSAiZnNsLG1wYzg1NDgtcGNpZSIsIH0sDQo+ID4gKwl7IC5jb21wYXRpYmxlID0gImZz
-bCxtcGM4NjQxLXBjaWUiLCB9LA0KPiA+ICsJeyAuY29tcGF0aWJsZSA9ICJmc2wscDEwMjItcGNp
-ZSIsIH0sDQo+ID4gKwl7IC5jb21wYXRpYmxlID0gImZzbCxwMTAxMC1wY2llIiwgfSwNCj4gPiAr
-CXsgLmNvbXBhdGlibGUgPSAiZnNsLHAxMDIzLXBjaWUiLCB9LA0KPiA+ICsJeyAuY29tcGF0aWJs
-ZSA9ICJmc2wscDQwODAtcGNpZSIsIH0sDQo+ID4gKwl7IC5jb21wYXRpYmxlID0gImZzbCxxb3Jp
-cS1wY2llLXYyLjMiLCB9LA0KPiA+ICsJeyAuY29tcGF0aWJsZSA9ICJmc2wscW9yaXEtcGNpZS12
-Mi4yIiwgfSwNCj4gPiArCXt9LA0KPiA+ICt9Ow0KPiANCj4gQWdhaW4sIHBsZWFzZSBiYXNlIHRo
-aXMgb24gdGhlIGxhdGVzdCB0cmVlLCB3aGljaCBoYXMgbXkgUENJIHBhdGNoZXMuDQo+IFRoaXMg
-dGFibGUgYWxyZWFkeSBleGlzdHMgaW4gdGhpcyBmaWxlLiAgQW5kIHlvdSdyZSBzdGlsbCBtaXNz
-aW5nDQo+IGZzbCxtcGM4NjEwLXBjaS4NCg0KU29ycnkgZnNsLG1wYzg2MTAtcGNpIHdpbGwgYmUg
-YWRkZWQuDQoNCj4gDQo+ID4gK2ludCBwcmltYXJ5X3BoYl9hZGRyOw0KPiA+ICtzdGF0aWMgaW50
-IF9fZGV2aW5pdCBmc2xfcGNpX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+
-ID4gK3sNCj4gPiArCXN0cnVjdCBwY2lfY29udHJvbGxlciAqaG9zZTsNCj4gPiArCWJvb2wgaXNf
-cHJpbWFyeTsNCj4gPiArDQo+ID4gKwlpZiAob2ZfbWF0Y2hfbm9kZShwY2lfaWRzLCBwZGV2LT5k
-ZXYub2Zfbm9kZSkpIHsNCj4gPiArCQlzdHJ1Y3QgcmVzb3VyY2UgcnNyYzsNCj4gPiArCQlvZl9h
-ZGRyZXNzX3RvX3Jlc291cmNlKHBkZXYtPmRldi5vZl9ub2RlLCAwLCAmcnNyYyk7DQo+ID4gKwkJ
-aXNfcHJpbWFyeSA9ICgocnNyYy5zdGFydCAmIDB4ZmZmZmYpID09IHByaW1hcnlfcGhiX2FkZHIp
-Ow0KPiA+ICsJCWZzbF9hZGRfYnJpZGdlKHBkZXYtPmRldi5vZl9ub2RlLCBpc19wcmltYXJ5KTsN
-Cj4gPiArDQo+ID4gKyNpZmRlZiBDT05GSUdfU1dJT1RMQg0KPiA+ICsJCWhvc2UgPSBwY2lfZmlu
-ZF9ob3NlX2Zvcl9PRl9kZXZpY2UocGRldi0+ZGV2Lm9mX25vZGUpOw0KPiA+ICsJCS8qDQo+ID4g
-KwkJICogaWYgd2UgY291bGRuJ3QgbWFwIGFsbCBvZiBEUkFNIHZpYSB0aGUgZG1hIHdpbmRvd3MN
-Cj4gPiArCQkgKiB3ZSBuZWVkIFNXSU9UTEIgdG8gaGFuZGxlIGJ1ZmZlcnMgbG9jYXRlZCBvdXRz
-aWRlIG9mDQo+ID4gKwkJICogZG1hIGNhcGFibGUgbWVtb3J5IHJlZ2lvbg0KPiA+ICsJCSAqLw0K
-PiA+ICsJCWlmIChtZW1ibG9ja19lbmRfb2ZfRFJBTSgpID4gaG9zZS0+ZG1hX3dpbmRvd19iYXNl
-X2N1cg0KPiA+ICsJCQkJKyBob3NlLT5kbWFfd2luZG93X3NpemUpIHsNCj4gPiArCQkJcHBjX3N3
-aW90bGJfZW5hYmxlID0gMTsNCj4gPiArCQkJc2V0X3BjaV9kbWFfb3BzKCZzd2lvdGxiX2RtYV9v
-cHMpOw0KPiA+ICsJCQlwcGNfbWQucGNpX2RtYV9kZXZfc2V0dXAgPSBwY2lfZG1hX2Rldl9zZXR1
-cF9zd2lvdGxiOw0KPiA+ICsJCX0NCj4gPiArI2VuZGlmDQo+ID4gKwl9DQo+IA0KPiBJdCdzIHRv
-byBsYXRlIGZvciBzd2lvdGxiIGhlcmUuICBBZ2FpbiwgcGxlYXNlIGRvbid0IGJyZWFrIHNvbWV0
-aGluZyBpbg0KPiBvbmUgcGF0Y2ggYW5kIHRoZW4gZml4IGl0IGluIGEgbGF0ZXIgcGF0Y2guICBV
-c2UgImdpdCByZWJhc2UgLWkiIHRvIGVkaXQNCj4geW91ciBwYXRjaHNldCBpbnRvIGEgcmV2aWV3
-YWJsZSwgYmlzZWN0YWJsZSBmb3JtLg0KPiANCj4gLVNjb3R0DQoNClllcywgYmlzZWN0YWJsZSBy
-ZXF1aXJlbWVudCBpcyBzb3J0IG9mIHJlYXNvbmFibGUuIA0KDQpCdXQgSSBjaGVjayB0aGUgU3Vi
-bWl0dGluZ1BhdGNoZXMgRG9jIGFuZCBpdCBzYXlzICJJZiBvbmUgcGF0Y2ggZGVwZW5kcyBvbg0K
-YW5vdGhlciBwYXRjaCBpbiBvcmRlciBmb3IgYSBjaGFuZ2UgdG8gYmUgY29tcGxldGUsIHRoYXQg
-aXMgT0suIFNpbXBseQ0Kbm90ZSAndGhpcyBwYXRjaCBkZXBlbmRzIG9uIHBhdGNoIFgnIGluIHlv
-dXIgcGF0Y2ggZGVzY3JpcHRpb24iLiBJbiBteQ0Kb3BpbmlvbiBzd2lvdGxiIGlzIGEgd2hvbGUg
-ZnVuY3Rpb25hbCBwYXRjaCBzbyBJIHNlcGFyYXRlIHRoZW0uIE1heWJlDQpJIHNob3VsZCBhZGQg
-ZGVwZW5kcyBkZXNjcmlwdGlvbiBpbiB0aGUgbmV4dCBwYXRjaC4NCg0KDQpBYm91dCBhbGwgdGhp
-cyBwYXRjaCBzZXQgTGVvIGFuZCBJIGluc2lzdCB0byBtYWtlIGl0IGFzIGEgcGxhdGZvcm0gZHJp
-dmVyDQp3aGljaCBpcyBhcmNoaXRlY3R1cmFsIGJldHRlci4gSSBkaWRuJ3QgYmFzZSB0aGlzIHBh
-dGNoIHNldCBvbiB0aGUgbGF0ZXN0DQp0cmVlIGFuZCBpdCdzIHVuYXBwbGljYWJsZSBqdXN0IGJl
-Y2F1c2UgSSB3YW50IHRvIHNob3cgdGhlIHdob2xlIGlkZWEgb2YNCnRoaXMgcGF0Y2hzZXQuIElm
-IHRoZSBpZGVhIGlzIG9rIGZvciB1cHN0cmVhbSBJIHdpbGwgcmViYXNlIHRoZSBwYXRjaCBzZXQu
-DQoNCi1Ib25ndGFvLiANCg==
+Michael Ellerman wrote:
+> I agree these values are odd. But there's no rule that you can only use
+> an enum if the values are monotonically increasing.
+>
+> It can still serve as helpful documentation, and reduce the number of
+> places you pass a bare int around.
+
+IMHO, an enum should only be used if
+
+1) You are doing real type checking of the enum
+2) You don't care what the actual values of each enum is
+
+For this patch, neither is true.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
