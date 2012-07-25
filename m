@@ -1,20 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F3BA42C0081
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 20:17:31 +1000 (EST)
-Message-ID: <1343211439.3715.46.camel@pasglop>
-Subject: Re: Errors related to i2c-powermac on the G4
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrey Gusev <ronne@list.ru>
-Date: Wed, 25 Jul 2012 20:17:19 +1000
-In-Reply-To: <500FA063.4070203@list.ru>
-References: <50096F45.80601@list.ru> <500FA063.4070203@list.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "paulus@samba.org" <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B10812@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 55A292C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 22:08:54 +1000 (EST)
+From: Aggrwal Poonam-B10812 <B10812@freescale.com>
+To: David Laight <David.Laight@ACULAB.COM>, Singh Sandeep-B37400
+ <B37400@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [1/3][PATCH][upstream]Adding documentation for TDM
+Date: Wed, 25 Jul 2012 12:08:40 +0000
+Message-ID: <ACB6D0C0104CFF42A45A5D82A0DD4F3D079B926B@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1343040588-16002-1-git-send-email-b37400@freescale.com>
+ <1343040588-16002-2-git-send-email-b37400@freescale.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B6FA4@saturn3.aculab.com>
+ <ACB6D0C0104CFF42A45A5D82A0DD4F3D079B7B35@039-SN2MPN1-013.039d.mgd.msft.net>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B6FA8@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6FA8@saturn3.aculab.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Singh Sandeep-B37400 <B37400@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,86 +31,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-07-25 at 11:29 +0400, Andrey Gusev wrote:
-> 20.07.2012 18:46, Andrey Gusev пишет:
-> > Hi!
-> > I build kernel from git and can see errors in dmesg on boot. 3.4.5 
-> > doesn't have such issue.
-> > git show | head -n2
-> > commit 85efc72a0218335324d358ac479a04c16316fd4d
 
-Ok, so:
 
-> Actual for 3.5.0
-> [ 2.841441] i2c /dev entries driver
-> [ 2.850155] i2c i2c-0: therm_windtunnel: attach_adapter method is deprecated
-> [ 2.858330] i2c i2c-0: Please use another way to instantiate your i2c_client
+> -----Original Message-----
+> From: David Laight [mailto:David.Laight@ACULAB.COM]
+> Sent: Wednesday, July 25, 2012 2:14 PM
+> To: Aggrwal Poonam-B10812; Singh Sandeep-B37400; linuxppc-
+> dev@lists.ozlabs.org
+> Cc: Singh Sandeep-B37400
+> Subject: RE: [1/3][PATCH][upstream]Adding documentation for TDM
+>=20
+> > > For flexibility you need to allow for 8bit samples being converted
+> as:
+> > > 1) 8bit raw ulaw or alaw data (unchanged from line).
+> > > 2) 8bit raw data, bit reversed, any hdlc protocol
+> > >    is bit reversed from audio [1].
+> > > 3) 8bit audio, converted from alaw to ulaw
+> > > 4) 8bit audio, converted from ulaw to alaw
+> > > 5) 16bit linear converted to/from alaw or ulaw and on a per-timeslot
+> > > basis.
+> > I agree. That we only support very limited samples. But We can add
+> this
+> > in second step once the basic framework is in.
+> > Also right now the testing infrastructure we have, we won't be able to
+> > test all these scenarios.
+>=20
+> You probably ought to make the application request a specific format -
+> and error the unsupported ones.
+> That would make it easier to add support for other formats later.
+David there is still configuration interface which needs to be added to the=
+ Framework.
+This is mentioned in the documentation and patch also.
+But we really need the core stuff which is handling the data get in and thi=
+ngs will be added subsequently.=20
+>=20
+> I also suspect that this 'framework' isn't that general!
+All the feedback welcome!
+> We (as a company) use the TDM interface blocks on the MSC8101 and MSC8013
+> Starecore DSPs as well as some bespoke FPGA logic (which will do ulaw<-
+> >alaw convertion).
+> The 'framework' would almost certainly be inappropriate for both out
+> hardware and software.
+Thanks a lot for the feedback. Can you please help to understand what is th=
+e scenario and how you use TDM. This will be a big help.
+More generic the better.
 
-The above (deprecated methods) have been around for a while, I'm
-converting the drivers one by one, windtunnel hasn't yet been
-trough the grinder.
-
-However, now that I know I have a tester that will make things easier
-(since I don't have the actual HW :-) I'll send you a patch to try out
-as soon as I have it sorted.
-
-> [ 2.866457] PowerMac i2c bus pmu 2 registered
-> [ 2.874885] i2c i2c-1: therm_windtunnel: attach_adapter method is deprecated
-> [ 2.882965] i2c i2c-1: Please use another way to instantiate your i2c_client
-> [ 2.890928] PowerMac i2c bus pmu 1 registered
-> [ 2.899526] i2c i2c-2: therm_windtunnel: attach_adapter method is deprecated
-> [ 2.907463] i2c i2c-2: Please use another way to instantiate your i2c_client
-> [ 2.915397] PowerMac i2c bus mac-io 0 registered
-
-Above are the same.
-
-> [ 2.923272] i2c i2c-2: i2c-powermac: invalid reg on 
-> /pci@f2000000/mac-io@17/i2c@18000/cereal
-> [ 2.931286] i2c i2c-2: i2c-powermac: invalid reg on 
-> /pci@f2000000/mac-io@17/i2c@18000/deq
-> [ 2.939246] i2c i2c-2: i2c-powermac: invalid reg on 
-> /pci@f2000000/mac-io@17/i2c@18000/i2c-modem
-
-Those are mostly harmless, they just tell us that the device-tree is
-missing the i2c address for a few things. The only one potentially
-worrying is the "deq" one (audio), for which I should have a workaround.
-
-Can you send me a tarball of /proc/device-tree on your machine so I can
-check a few things ? I might add code to silence some of those warnings
-as they don't actually indicate a problem.
-
-> [ 2.947580] i2c i2c-3: therm_windtunnel: attach_adapter method is deprecated
-> [ 2.955559] i2c i2c-3: Please use another way to instantiate your i2c_client
-> [ 2.964492] PowerMac i2c bus uni-n 1 registered
-> [ 2.972493] i2c i2c-3: i2c-powermac: invalid reg on 
-> /uni-n@f8000000/i2c@f8001000/cereal
-> [ 2.980977] usb 1-1: new full-speed USB device number 2 using ohci_hcd
-> [ 2.989404] i2c i2c-4: therm_windtunnel: attach_adapter method is deprecated
-> [ 2.997793] i2c i2c-4: Please use another way to instantiate your i2c_client
-> [ 3.007320] DS1775 digital thermometer [@49]
-> [ 3.015574] Temp: 33.0 C Hyst: 75.0 C OS: 80.0 C
-> [ 3.024410] ADM1030 fan controller [@2c]
-> [ 3.032533] PowerMac i2c bus uni-n 0 registered
-> [ 3.040575] i2c i2c-4: Failed to register i2c client MAC,adm1030 at 0x2c 
-> (-16)
-
-That one probably means that therm_windtunnel grabbed the device before
-we could expose it using the "new way"... well I think :-) I'll have to
-double check, but does it look like the thermal control is working ? If
-it is, then it's probably just that and will naturally disappear as soon
-as therm_windtunnel is converted over.
-
-> [ 3.048714] i2c i2c-4: i2c-powermac: Failure to register 
-> /uni-n@f8000000/i2c@f8001000/fan@58
-> [ 3.057147] i2c i2c-4: Failed to register i2c client MAC,ds1775 at 0x49 
-> (-16)
-> [ 3.065304] i2c i2c-4: i2c-powermac: Failure to register 
-> /uni-n@f8000000/i2c@f8001000/temp-monitor@92
-> [ 3.073475] i2c i2c-4: i2c-powermac: invalid reg on 
-> /uni-n@f8000000/i2c@f8001000/cereal
-> [ 3.082701] device-mapper: ioctl: 4.22.0-ioctl (2011-10-19) initialised: 
-> dm-devel@redhat.com
-> 
-
-Cheers,
-Ben.
+Regards
+Poonam
+>=20
+> 	David
+>=20
+>=20
+>=20
