@@ -1,23 +1,20 @@
-Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B956A2C0321
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 19:50:45 +1000 (EST)
-From: Jia Hongtao <B38951@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
- <B07421@freescale.com>
-Subject: [PATCH V2 6/6] Edac/85xx: Register mpc85xx_pci_err_driver by
- fsl_pci_driver
-Date: Wed, 25 Jul 2012 17:27:01 +0800
-Message-ID: <1343208421-5552-6-git-send-email-B38951@freescale.com>
-In-Reply-To: <1343208421-5552-1-git-send-email-B38951@freescale.com>
-References: <1343208421-5552-1-git-send-email-B38951@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: b38951@freescale.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F3BA42C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jul 2012 20:17:31 +1000 (EST)
+Message-ID: <1343211439.3715.46.camel@pasglop>
+Subject: Re: Errors related to i2c-powermac on the G4
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrey Gusev <ronne@list.ru>
+Date: Wed, 25 Jul 2012 20:17:19 +1000
+In-Reply-To: <500FA063.4070203@list.ru>
+References: <50096F45.80601@list.ru> <500FA063.4070203@list.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "paulus@samba.org" <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,138 +24,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Chunhe Lan <Chunhe.Lan@freescale.com>
+On Wed, 2012-07-25 at 11:29 +0400, Andrey Gusev wrote:
+> 20.07.2012 18:46, Andrey Gusev пишет:
+> > Hi!
+> > I build kernel from git and can see errors in dmesg on boot. 3.4.5 
+> > doesn't have such issue.
+> > git show | head -n2
+> > commit 85efc72a0218335324d358ac479a04c16316fd4d
 
-Now we registered pci controllers as platform devices. It will make edac
-driver failed to register pci nodes as platform devices too. So we combine
-two initialization code as one platform driver.
+Ok, so:
 
-Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jia Hongtao <B38951@freescale.com>
----
- arch/powerpc/sysdev/fsl_pci.c |    4 +++
- arch/powerpc/sysdev/fsl_pci.h |    4 +++
- drivers/edac/mpc85xx_edac.c   |   43 +++++++++++-----------------------------
- 3 files changed, 20 insertions(+), 31 deletions(-)
+> Actual for 3.5.0
+> [ 2.841441] i2c /dev entries driver
+> [ 2.850155] i2c i2c-0: therm_windtunnel: attach_adapter method is deprecated
+> [ 2.858330] i2c i2c-0: Please use another way to instantiate your i2c_client
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index f67e609..e84e230 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -963,6 +963,10 @@ static int __devinit fsl_pci_probe(struct platform_device *pdev)
- 	if (of_match_node(pci_ids, pdev->dev.of_node))
- 		fsl_add_bridge(pdev->dev.of_node, is_primary);
- 
-+#ifdef CONFIG_EDAC_MPC85XX
-+	mpc85xx_pci_err_probe(pdev);
-+#endif
-+
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index abbc09d..1dfe85d 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -110,5 +110,9 @@ extern void pci_check_swiotlb(void);
- static inline void pci_check_swiotlb(void) {}
- #endif
- 
-+#ifdef CONFIG_EDAC_MPC85XX
-+extern int mpc85xx_pci_err_probe(struct platform_device *op);
-+#endif
-+
- #endif /* __POWERPC_FSL_PCI_H */
- #endif /* __KERNEL__ */
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 0e37462..e4b6113 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -200,7 +200,7 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
--static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
-+int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- {
- 	struct edac_pci_ctl_info *pci;
- 	struct mpc85xx_pci_pdata *pdata;
-@@ -214,6 +214,16 @@ static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- 	if (!pci)
- 		return -ENOMEM;
- 
-+	/* make sure error reporting method is sane */
-+	switch (edac_op_state) {
-+	case EDAC_OPSTATE_POLL:
-+	case EDAC_OPSTATE_INT:
-+		break;
-+	default:
-+		edac_op_state = EDAC_OPSTATE_INT;
-+		break;
-+	}
-+
- 	pdata = pci->pvt_info;
- 	pdata->name = "mpc85xx_pci_err";
- 	pdata->irq = NO_IRQ;
-@@ -303,6 +313,7 @@ err:
- 	devres_release_group(&op->dev, mpc85xx_pci_err_probe);
- 	return res;
- }
-+EXPORT_SYMBOL(mpc85xx_pci_err_probe);
- 
- static int mpc85xx_pci_err_remove(struct platform_device *op)
- {
-@@ -326,27 +337,6 @@ static int mpc85xx_pci_err_remove(struct platform_device *op)
- 	return 0;
- }
- 
--static struct of_device_id mpc85xx_pci_err_of_match[] = {
--	{
--	 .compatible = "fsl,mpc8540-pcix",
--	 },
--	{
--	 .compatible = "fsl,mpc8540-pci",
--	},
--	{},
--};
--MODULE_DEVICE_TABLE(of, mpc85xx_pci_err_of_match);
--
--static struct platform_driver mpc85xx_pci_err_driver = {
--	.probe = mpc85xx_pci_err_probe,
--	.remove = __devexit_p(mpc85xx_pci_err_remove),
--	.driver = {
--		.name = "mpc85xx_pci_err",
--		.owner = THIS_MODULE,
--		.of_match_table = mpc85xx_pci_err_of_match,
--	},
--};
--
- #endif				/* CONFIG_PCI */
- 
- /**************************** L2 Err device ***************************/
-@@ -1193,12 +1183,6 @@ static int __init mpc85xx_mc_init(void)
- 	if (res)
- 		printk(KERN_WARNING EDAC_MOD_STR "L2 fails to register\n");
- 
--#ifdef CONFIG_PCI
--	res = platform_driver_register(&mpc85xx_pci_err_driver);
--	if (res)
--		printk(KERN_WARNING EDAC_MOD_STR "PCI fails to register\n");
--#endif
--
- #ifdef CONFIG_FSL_SOC_BOOKE
- 	pvr = mfspr(SPRN_PVR);
- 
-@@ -1235,9 +1219,6 @@ static void __exit mpc85xx_mc_exit(void)
- 		on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
- 	}
- #endif
--#ifdef CONFIG_PCI
--	platform_driver_unregister(&mpc85xx_pci_err_driver);
--#endif
- 	platform_driver_unregister(&mpc85xx_l2_err_driver);
- 	platform_driver_unregister(&mpc85xx_mc_err_driver);
- }
--- 
-1.7.5.1
+The above (deprecated methods) have been around for a while, I'm
+converting the drivers one by one, windtunnel hasn't yet been
+trough the grinder.
+
+However, now that I know I have a tester that will make things easier
+(since I don't have the actual HW :-) I'll send you a patch to try out
+as soon as I have it sorted.
+
+> [ 2.866457] PowerMac i2c bus pmu 2 registered
+> [ 2.874885] i2c i2c-1: therm_windtunnel: attach_adapter method is deprecated
+> [ 2.882965] i2c i2c-1: Please use another way to instantiate your i2c_client
+> [ 2.890928] PowerMac i2c bus pmu 1 registered
+> [ 2.899526] i2c i2c-2: therm_windtunnel: attach_adapter method is deprecated
+> [ 2.907463] i2c i2c-2: Please use another way to instantiate your i2c_client
+> [ 2.915397] PowerMac i2c bus mac-io 0 registered
+
+Above are the same.
+
+> [ 2.923272] i2c i2c-2: i2c-powermac: invalid reg on 
+> /pci@f2000000/mac-io@17/i2c@18000/cereal
+> [ 2.931286] i2c i2c-2: i2c-powermac: invalid reg on 
+> /pci@f2000000/mac-io@17/i2c@18000/deq
+> [ 2.939246] i2c i2c-2: i2c-powermac: invalid reg on 
+> /pci@f2000000/mac-io@17/i2c@18000/i2c-modem
+
+Those are mostly harmless, they just tell us that the device-tree is
+missing the i2c address for a few things. The only one potentially
+worrying is the "deq" one (audio), for which I should have a workaround.
+
+Can you send me a tarball of /proc/device-tree on your machine so I can
+check a few things ? I might add code to silence some of those warnings
+as they don't actually indicate a problem.
+
+> [ 2.947580] i2c i2c-3: therm_windtunnel: attach_adapter method is deprecated
+> [ 2.955559] i2c i2c-3: Please use another way to instantiate your i2c_client
+> [ 2.964492] PowerMac i2c bus uni-n 1 registered
+> [ 2.972493] i2c i2c-3: i2c-powermac: invalid reg on 
+> /uni-n@f8000000/i2c@f8001000/cereal
+> [ 2.980977] usb 1-1: new full-speed USB device number 2 using ohci_hcd
+> [ 2.989404] i2c i2c-4: therm_windtunnel: attach_adapter method is deprecated
+> [ 2.997793] i2c i2c-4: Please use another way to instantiate your i2c_client
+> [ 3.007320] DS1775 digital thermometer [@49]
+> [ 3.015574] Temp: 33.0 C Hyst: 75.0 C OS: 80.0 C
+> [ 3.024410] ADM1030 fan controller [@2c]
+> [ 3.032533] PowerMac i2c bus uni-n 0 registered
+> [ 3.040575] i2c i2c-4: Failed to register i2c client MAC,adm1030 at 0x2c 
+> (-16)
+
+That one probably means that therm_windtunnel grabbed the device before
+we could expose it using the "new way"... well I think :-) I'll have to
+double check, but does it look like the thermal control is working ? If
+it is, then it's probably just that and will naturally disappear as soon
+as therm_windtunnel is converted over.
+
+> [ 3.048714] i2c i2c-4: i2c-powermac: Failure to register 
+> /uni-n@f8000000/i2c@f8001000/fan@58
+> [ 3.057147] i2c i2c-4: Failed to register i2c client MAC,ds1775 at 0x49 
+> (-16)
+> [ 3.065304] i2c i2c-4: i2c-powermac: Failure to register 
+> /uni-n@f8000000/i2c@f8001000/temp-monitor@92
+> [ 3.073475] i2c i2c-4: i2c-powermac: invalid reg on 
+> /uni-n@f8000000/i2c@f8001000/cereal
+> [ 3.082701] device-mapper: ioctl: 4.22.0-ioctl (2011-10-19) initialised: 
+> dm-devel@redhat.com
+> 
+
+Cheers,
+Ben.
