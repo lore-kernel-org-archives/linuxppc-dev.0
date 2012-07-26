@@ -1,14 +1,25 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] KVM: PPC: BookE: HV: Fix compile
-In-reply-to: <1343170954-9460-1-git-send-email-agraf@suse.de>
-References: <1343170954-9460-1-git-send-email-agraf@suse.de>
-Date: Thu, 26 Jul 2012 10:31:47 +1000
-Message-ID: <9849.1343262707@neuling.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, KVM list <kvm@vger.kernel.org>,
- kvm-ppc@vger.kernel.org
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 67DDE2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 12:09:59 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 1/6] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Thu, 26 Jul 2012 02:09:50 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A27C62@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <500EECA3.3050806@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A27578@039-SN1MPN1-002.039d.mgd.msft.net>
+ <50102B98.4000801@freescale.com>
+In-Reply-To: <50102B98.4000801@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,130 +29,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf <agraf@suse.de> wrote:
-
-> After merging the register type check patches from Ben's tree, the
-> hv enabled booke implementation ceased to compile.
-> 
-> This patch fixes things up so everyone's happy again.
-
-Is there a defconfig which catches this?
-
-Mikey
-
-> 
-> Signed-off-by: Alexander Graf <agraf@suse.de>
-> ---
->  arch/powerpc/kvm/bookehv_interrupts.S |   77 +++++++++++++++++----------------
->  1 files changed, 39 insertions(+), 38 deletions(-)
-> 
-> diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
-> index d28c2d4..099fe82 100644
-> --- a/arch/powerpc/kvm/bookehv_interrupts.S
-> +++ b/arch/powerpc/kvm/bookehv_interrupts.S
-> @@ -50,8 +50,9 @@
->  #define HOST_R2         (3 * LONGBYTES)
->  #define HOST_CR         (4 * LONGBYTES)
->  #define HOST_NV_GPRS    (5 * LONGBYTES)
-> -#define HOST_NV_GPR(n)  (HOST_NV_GPRS + ((n - 14) * LONGBYTES))
-> -#define HOST_MIN_STACK_SIZE (HOST_NV_GPR(31) + LONGBYTES)
-> +#define __HOST_NV_GPR(n)  (HOST_NV_GPRS + ((n - 14) * LONGBYTES))
-> +#define HOST_NV_GPR(n)  __HOST_NV_GPR(__REG_##n)
-> +#define HOST_MIN_STACK_SIZE (HOST_NV_GPR(R31) + LONGBYTES)
->  #define HOST_STACK_SIZE ((HOST_MIN_STACK_SIZE + 15) & ~15) /* Align. */
->  #define HOST_STACK_LR   (HOST_STACK_SIZE + LONGBYTES) /* In caller stack frame. */
->  
-> @@ -410,24 +411,24 @@ heavyweight_exit:
->  	PPC_STL	r31, VCPU_GPR(R31)(r4)
->  
->  	/* Load host non-volatile register state from host stack. */
-> -	PPC_LL	r14, HOST_NV_GPR(r14)(r1)
-> -	PPC_LL	r15, HOST_NV_GPR(r15)(r1)
-> -	PPC_LL	r16, HOST_NV_GPR(r16)(r1)
-> -	PPC_LL	r17, HOST_NV_GPR(r17)(r1)
-> -	PPC_LL	r18, HOST_NV_GPR(r18)(r1)
-> -	PPC_LL	r19, HOST_NV_GPR(r19)(r1)
-> -	PPC_LL	r20, HOST_NV_GPR(r20)(r1)
-> -	PPC_LL	r21, HOST_NV_GPR(r21)(r1)
-> -	PPC_LL	r22, HOST_NV_GPR(r22)(r1)
-> -	PPC_LL	r23, HOST_NV_GPR(r23)(r1)
-> -	PPC_LL	r24, HOST_NV_GPR(r24)(r1)
-> -	PPC_LL	r25, HOST_NV_GPR(r25)(r1)
-> -	PPC_LL	r26, HOST_NV_GPR(r26)(r1)
-> -	PPC_LL	r27, HOST_NV_GPR(r27)(r1)
-> -	PPC_LL	r28, HOST_NV_GPR(r28)(r1)
-> -	PPC_LL	r29, HOST_NV_GPR(r29)(r1)
-> -	PPC_LL	r30, HOST_NV_GPR(r30)(r1)
-> -	PPC_LL	r31, HOST_NV_GPR(r31)(r1)
-> +	PPC_LL	r14, HOST_NV_GPR(R14)(r1)
-> +	PPC_LL	r15, HOST_NV_GPR(R15)(r1)
-> +	PPC_LL	r16, HOST_NV_GPR(R16)(r1)
-> +	PPC_LL	r17, HOST_NV_GPR(R17)(r1)
-> +	PPC_LL	r18, HOST_NV_GPR(R18)(r1)
-> +	PPC_LL	r19, HOST_NV_GPR(R19)(r1)
-> +	PPC_LL	r20, HOST_NV_GPR(R20)(r1)
-> +	PPC_LL	r21, HOST_NV_GPR(R21)(r1)
-> +	PPC_LL	r22, HOST_NV_GPR(R22)(r1)
-> +	PPC_LL	r23, HOST_NV_GPR(R23)(r1)
-> +	PPC_LL	r24, HOST_NV_GPR(R24)(r1)
-> +	PPC_LL	r25, HOST_NV_GPR(R25)(r1)
-> +	PPC_LL	r26, HOST_NV_GPR(R26)(r1)
-> +	PPC_LL	r27, HOST_NV_GPR(R27)(r1)
-> +	PPC_LL	r28, HOST_NV_GPR(R28)(r1)
-> +	PPC_LL	r29, HOST_NV_GPR(R29)(r1)
-> +	PPC_LL	r30, HOST_NV_GPR(R30)(r1)
-> +	PPC_LL	r31, HOST_NV_GPR(R31)(r1)
->  
->  	/* Return to kvm_vcpu_run(). */
->  	mtlr	r5
-> @@ -453,24 +454,24 @@ _GLOBAL(__kvmppc_vcpu_run)
->  	stw	r5, HOST_CR(r1)
->  
->  	/* Save host non-volatile register state to stack. */
-> -	PPC_STL	r14, HOST_NV_GPR(r14)(r1)
-> -	PPC_STL	r15, HOST_NV_GPR(r15)(r1)
-> -	PPC_STL	r16, HOST_NV_GPR(r16)(r1)
-> -	PPC_STL	r17, HOST_NV_GPR(r17)(r1)
-> -	PPC_STL	r18, HOST_NV_GPR(r18)(r1)
-> -	PPC_STL	r19, HOST_NV_GPR(r19)(r1)
-> -	PPC_STL	r20, HOST_NV_GPR(r20)(r1)
-> -	PPC_STL	r21, HOST_NV_GPR(r21)(r1)
-> -	PPC_STL	r22, HOST_NV_GPR(r22)(r1)
-> -	PPC_STL	r23, HOST_NV_GPR(r23)(r1)
-> -	PPC_STL	r24, HOST_NV_GPR(r24)(r1)
-> -	PPC_STL	r25, HOST_NV_GPR(r25)(r1)
-> -	PPC_STL	r26, HOST_NV_GPR(r26)(r1)
-> -	PPC_STL	r27, HOST_NV_GPR(r27)(r1)
-> -	PPC_STL	r28, HOST_NV_GPR(r28)(r1)
-> -	PPC_STL	r29, HOST_NV_GPR(r29)(r1)
-> -	PPC_STL	r30, HOST_NV_GPR(r30)(r1)
-> -	PPC_STL	r31, HOST_NV_GPR(r31)(r1)
-> +	PPC_STL	r14, HOST_NV_GPR(R14)(r1)
-> +	PPC_STL	r15, HOST_NV_GPR(R15)(r1)
-> +	PPC_STL	r16, HOST_NV_GPR(R16)(r1)
-> +	PPC_STL	r17, HOST_NV_GPR(R17)(r1)
-> +	PPC_STL	r18, HOST_NV_GPR(R18)(r1)
-> +	PPC_STL	r19, HOST_NV_GPR(R19)(r1)
-> +	PPC_STL	r20, HOST_NV_GPR(R20)(r1)
-> +	PPC_STL	r21, HOST_NV_GPR(R21)(r1)
-> +	PPC_STL	r22, HOST_NV_GPR(R22)(r1)
-> +	PPC_STL	r23, HOST_NV_GPR(R23)(r1)
-> +	PPC_STL	r24, HOST_NV_GPR(R24)(r1)
-> +	PPC_STL	r25, HOST_NV_GPR(R25)(r1)
-> +	PPC_STL	r26, HOST_NV_GPR(R26)(r1)
-> +	PPC_STL	r27, HOST_NV_GPR(R27)(r1)
-> +	PPC_STL	r28, HOST_NV_GPR(R28)(r1)
-> +	PPC_STL	r29, HOST_NV_GPR(R29)(r1)
-> +	PPC_STL	r30, HOST_NV_GPR(R30)(r1)
-> +	PPC_STL	r31, HOST_NV_GPR(R31)(r1)
->  
->  	/* Load guest non-volatiles. */
->  	PPC_LL	r14, VCPU_GPR(R14)(r4)
-> -- 
-> 1.6.0.2
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+VGhhbmtzIGZvciBhbGwgeW91ciBjb21tZW50cy4NCkkgc3VibWl0IHRoZSBWMiBvZiB0aGlzIHBh
+dGNoIHNldCB3aGljaCBpcyBiYXNlZCBvbiB0aGUgbGF0ZXN0IHRyZWUuDQpQbGVhc2UgaGF2ZSBh
+IHJldmlldy4NCg0KVGhhbmtzDQotSG9uZ3Rhby4NCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2Ut
+LS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTZW50OiBUaHVyc2RheSwgSnVseSAy
+NiwgMjAxMiAxOjI0IEFNDQo+IFRvOiBKaWEgSG9uZ3Rhby1CMzg5NTENCj4gQ2M6IFdvb2QgU2Nv
+dHQtQjA3NDIxOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsNCj4gZ2FsYWtAa2VybmVs
+LmNyYXNoaW5nLm9yZzsgTGkgWWFuZy1SNTg0NzINCj4gU3ViamVjdDogUmU6IFtQQVRDSCAxLzZd
+IHBvd2VycGMvZnNsLXBjaTogVW5pZnkgcGNpL3BjaWUgaW5pdGlhbGl6YXRpb24NCj4gY29kZQ0K
+PiANCj4gT24gMDcvMjQvMjAxMiAwOTozNSBQTSwgSmlhIEhvbmd0YW8tQjM4OTUxIHdyb3RlOg0K
+PiA+DQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogV29v
+ZCBTY290dC1CMDc0MjENCj4gPj4gU2VudDogV2VkbmVzZGF5LCBKdWx5IDI1LCAyMDEyIDI6NDMg
+QU0NCj4gPj4gVG86IEppYSBIb25ndGFvLUIzODk1MQ0KPiA+PiBDYzogbGludXhwcGMtZGV2QGxp
+c3RzLm96bGFicy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IFdvb2QNCj4gU2NvdHQt
+DQo+ID4+IEIwNzQyMTsgTGkgWWFuZy1SNTg0NzINCj4gPj4gU3ViamVjdDogUmU6IFtQQVRDSCAx
+LzZdIHBvd2VycGMvZnNsLXBjaTogVW5pZnkgcGNpL3BjaWUNCj4gaW5pdGlhbGl6YXRpb24NCj4g
+Pj4gY29kZQ0KPiA+Pg0KPiA+PiBPbiAwNy8yNC8yMDEyIDA1OjIwIEFNLCBKaWEgSG9uZ3RhbyB3
+cm90ZToNCj4gPj4+IFdlIHVuaWZpZWQgdGhlIEZyZWVzY2FsZSBwY2kvcGNpZSBpbml0aWFsaXph
+dGlvbiBieSBjaGFuZ2luZyB0aGUNCj4gPj4gZnNsX3BjaQ0KPiA+Pj4gdG8gYSBwbGF0Zm9ybSBk
+cml2ZXIuDQo+ID4+Pg0KPiA+Pj4gSW4gcHJldmlvdXMgdmVyc2lvbiBwY2kvcGNpZSBpbml0aWFs
+aXphdGlvbiBpcyBpbiBwbGF0Zm9ybSBjb2RlIHdoaWNoDQo+ID4+PiBJbml0aWFsaXplIHBjaSBi
+cmlkZ2UgYmFzZSBvbiBFUC9SQyBvciBob3N0L2FnZW50IHNldHRpbmdzLg0KPiA+Pg0KPiA+PiBU
+aGUgcHJldmlvdXMgdmVyc2lvbiBvZiB3aGF0PyAgVGhpcyBwYXRjaCwgb3IgdGhlIFBDSSBjb2Rl
+PyAgV2hhdA0KPiA+PiBjaGFuZ2VkIGluIHRoaXMgcGF0Y2ggc2luY2UgdGhlIGxhc3QgdGltZSB5
+b3Ugc2VudCBpdCwgYW5kIHdoZXJlIGlzDQo+IHRoZQ0KPiA+PiB2ZXJzaW9uIG51bWJlcj8NCj4g
+Pj4NCj4gPj4+ICsjaWYgZGVmaW5lZChDT05GSUdfRlNMX1NPQ19CT09LRSkgfHwgZGVmaW5lZChD
+T05GSUdfUFBDXzg2eHgpDQo+ID4+PiArc3RhdGljIGNvbnN0IHN0cnVjdCBvZl9kZXZpY2VfaWQg
+cGNpX2lkc1tdID0gew0KPiA+Pj4gKwl7IC5jb21wYXRpYmxlID0gImZzbCxtcGM4NTQwLXBjaSIs
+IH0sDQo+ID4+PiArCXsgLmNvbXBhdGlibGUgPSAiZnNsLG1wYzg1NDgtcGNpZSIsIH0sDQo+ID4+
+PiArCXsgLmNvbXBhdGlibGUgPSAiZnNsLG1wYzg2NDEtcGNpZSIsIH0sDQo+ID4+PiArCXsgLmNv
+bXBhdGlibGUgPSAiZnNsLHAxMDIyLXBjaWUiLCB9LA0KPiA+Pj4gKwl7IC5jb21wYXRpYmxlID0g
+ImZzbCxwMTAxMC1wY2llIiwgfSwNCj4gPj4+ICsJeyAuY29tcGF0aWJsZSA9ICJmc2wscDEwMjMt
+cGNpZSIsIH0sDQo+ID4+PiArCXsgLmNvbXBhdGlibGUgPSAiZnNsLHA0MDgwLXBjaWUiLCB9LA0K
+PiA+Pj4gKwl7IC5jb21wYXRpYmxlID0gImZzbCxxb3JpcS1wY2llLXYyLjMiLCB9LA0KPiA+Pj4g
+Kwl7IC5jb21wYXRpYmxlID0gImZzbCxxb3JpcS1wY2llLXYyLjIiLCB9LA0KPiA+Pj4gKwl7fSwN
+Cj4gPj4+ICt9Ow0KPiA+Pg0KPiA+PiBBZ2FpbiwgcGxlYXNlIGJhc2UgdGhpcyBvbiB0aGUgbGF0
+ZXN0IHRyZWUsIHdoaWNoIGhhcyBteSBQQ0kgcGF0Y2hlcy4NCj4gPj4gVGhpcyB0YWJsZSBhbHJl
+YWR5IGV4aXN0cyBpbiB0aGlzIGZpbGUuICBBbmQgeW91J3JlIHN0aWxsIG1pc3NpbmcNCj4gPj4g
+ZnNsLG1wYzg2MTAtcGNpLg0KPiA+DQo+ID4gU29ycnkgZnNsLG1wYzg2MTAtcGNpIHdpbGwgYmUg
+YWRkZWQuDQo+IA0KPiBUbyB3aGF0PyAgVGhlIHRhYmxlIGlzIGFscmVhZHkgdGhlcmUgaW4gTGlu
+dXMncyB0cmVlLCB3aXRoDQo+IGZzbCxtcGM4NjEwLXBjaS4gIFlvdSBkb24ndCBuZWVkIHRvIGFk
+ZCBpdCBhZ2Fpbi4NCj4gDQo+ID4+IEl0J3MgdG9vIGxhdGUgZm9yIHN3aW90bGIgaGVyZS4gIEFn
+YWluLCBwbGVhc2UgZG9uJ3QgYnJlYWsgc29tZXRoaW5nDQo+IGluDQo+ID4+IG9uZSBwYXRjaCBh
+bmQgdGhlbiBmaXggaXQgaW4gYSBsYXRlciBwYXRjaC4gIFVzZSAiZ2l0IHJlYmFzZSAtaSIgdG8N
+Cj4gZWRpdA0KPiA+PiB5b3VyIHBhdGNoc2V0IGludG8gYSByZXZpZXdhYmxlLCBiaXNlY3RhYmxl
+IGZvcm0uDQo+ID4+DQo+ID4+IC1TY290dA0KPiA+DQo+ID4gWWVzLCBiaXNlY3RhYmxlIHJlcXVp
+cmVtZW50IGlzIHNvcnQgb2YgcmVhc29uYWJsZS4NCj4gPg0KPiA+IEJ1dCBJIGNoZWNrIHRoZSBT
+dWJtaXR0aW5nUGF0Y2hlcyBEb2MgYW5kIGl0IHNheXMgIklmIG9uZSBwYXRjaCBkZXBlbmRzDQo+
+IG9uDQo+ID4gYW5vdGhlciBwYXRjaCBpbiBvcmRlciBmb3IgYSBjaGFuZ2UgdG8gYmUgY29tcGxl
+dGUsIHRoYXQgaXMgT0suIFNpbXBseQ0KPiA+IG5vdGUgJ3RoaXMgcGF0Y2ggZGVwZW5kcyBvbiBw
+YXRjaCBYJyBpbiB5b3VyIHBhdGNoIGRlc2NyaXB0aW9uIi4gSW4gbXkNCj4gPiBvcGluaW9uIHN3
+aW90bGIgaXMgYSB3aG9sZSBmdW5jdGlvbmFsIHBhdGNoIHNvIEkgc2VwYXJhdGUgdGhlbS4gTWF5
+YmUNCj4gPiBJIHNob3VsZCBhZGQgZGVwZW5kcyBkZXNjcmlwdGlvbiBpbiB0aGUgbmV4dCBwYXRj
+aC4NCj4gDQo+IFRoYXQncyBub3Qgd2hhdCB0aGF0IG1lYW5zLiAgV2hhdCBpdCBtZWFucyBpcyB0
+aGF0IGlmIHNvbWVvbmUgZWxzZSBoYXMNCj4gYWxyZWFkeSBwb3N0ZWQgYSBwYXRjaCwgYW5kIHlv
+dXIgcGF0Y2ggaXMgc3VwcG9zZWQgdG8gZ28gb24gdG9wIG9mIHRoYXQNCj4gcGF0Y2gsIHlvdSBz
+aG91bGQgbWVudGlvbiB0aGF0Lg0KPiANCj4gPiBBYm91dCBhbGwgdGhpcyBwYXRjaCBzZXQgTGVv
+IGFuZCBJIGluc2lzdCB0byBtYWtlIGl0IGFzIGEgcGxhdGZvcm0NCj4gZHJpdmVyDQo+ID4gd2hp
+Y2ggaXMgYXJjaGl0ZWN0dXJhbCBiZXR0ZXIuIEkgZGlkbid0IGJhc2UgdGhpcyBwYXRjaCBzZXQg
+b24gdGhlDQo+IGxhdGVzdA0KPiA+IHRyZWUgYW5kIGl0J3MgdW5hcHBsaWNhYmxlIGp1c3QgYmVj
+YXVzZSBJIHdhbnQgdG8gc2hvdyB0aGUgd2hvbGUgaWRlYQ0KPiBvZg0KPiA+IHRoaXMgcGF0Y2hz
+ZXQuIElmIHRoZSBpZGVhIGlzIG9rIGZvciB1cHN0cmVhbSBJIHdpbGwgcmViYXNlIHRoZSBwYXRj
+aA0KPiBzZXQuDQo+IA0KPiBJZiB0aGF0J3MgdGhlIGNhc2UsIHlvdSBzaG91bGQgbGFiZWwgaXQg
+YXMgYW4gW1JGQyBQQVRDSF0gKHN0YW5kcyBmb3INCj4gUmVxdWVzdCBGb3IgQ29tbWVudHMpLCBh
+bmQgbWVudGlvbiB1bmRlciB0aGUgLS0tIGxpbmUgYW55IGtub3duIGlzc3VlcywNCj4gc3VjaCBh
+cyB0aGF0IGl0IGRvZXNuJ3QgYXBwbHkgdG8gdGhlIGN1cnJlbnQgdHJlZS4NCj4gDQo+IEJ1dCBp
+dCB3b3VsZCBiZSBhIGxvdCBlYXNpZXIgdG8gY29tbWVudCBvbiBpdCBpZiBpdCB3ZXJlIGJhc2Vk
+IG9uIHRoZQ0KPiBjdXJyZW50IGNvZGUsIHJhdGhlciB0aGFuIGhhdmluZyB0byBzcGVjdWxhdGUg
+d2hhdCB5b3UnZCBkbyB3aGVuIHlvdQ0KPiByZWJhc2UuDQo+IA0KPiAtU2NvdHQNCg0K
