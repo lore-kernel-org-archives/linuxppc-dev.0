@@ -1,10 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 02/18] powerpc/crypto: Remove users of virt_to_abs() and
- phys_to_abs() in nx crypto driver
-Date: Thu, 26 Jul 2012 17:19:48 +1000
-Message-Id: <1343287204-7700-2-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 03/18] IB/ehca: Don't use phys_to_abs(), it's a nop
+Date: Thu, 26 Jul 2012 17:19:49 +1000
+Message-Id: <1343287204-7700-3-git-send-email-michael@ellerman.id.au>
 In-Reply-To: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
 References: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -16,63 +15,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-phys_to_abs() is a nop, don't use it.
-
-virt_to_abs() is just a wrapper around __pa(), call __pa() directly.
+Since commit f5339277 phys_to_abs() is 100% a nop, so just remove it.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- drivers/crypto/nx/nx.c |   17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_mrmw.c |   33 ++++++++++++++------------------
+ 1 file changed, 14 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/crypto/nx/nx.c b/drivers/crypto/nx/nx.c
-index d7f179c..638110e 100644
---- a/drivers/crypto/nx/nx.c
-+++ b/drivers/crypto/nx/nx.c
-@@ -34,7 +34,6 @@
- #include <linux/device.h>
- #include <linux/of.h>
- #include <asm/pSeries_reconfig.h>
--#include <asm/abs_addr.h>
- #include <asm/hvcall.h>
- #include <asm/vio.h>
- 
-@@ -104,10 +103,10 @@ struct nx_sg *nx_build_sg_list(struct nx_sg *sg_head,
- 	/* determine the start and end for this address range - slightly
- 	 * different if this is in VMALLOC_REGION */
- 	if (is_vmalloc_addr(start_addr))
--		sg_addr = phys_to_abs(page_to_phys(vmalloc_to_page(start_addr)))
-+		sg_addr = page_to_phys(vmalloc_to_page(start_addr))
- 			  + offset_in_page(sg_addr);
- 	else
--		sg_addr = virt_to_abs(sg_addr);
-+		sg_addr = __pa(sg_addr);
- 
- 	end_addr = sg_addr + len;
- 
-@@ -265,17 +264,17 @@ void nx_ctx_init(struct nx_crypto_ctx *nx_ctx, unsigned int function)
- 	nx_ctx->csbcpb->csb.valid |= NX_CSB_VALID_BIT;
- 
- 	nx_ctx->op.flags = function;
--	nx_ctx->op.csbcpb = virt_to_abs(nx_ctx->csbcpb);
--	nx_ctx->op.in = virt_to_abs(nx_ctx->in_sg);
--	nx_ctx->op.out = virt_to_abs(nx_ctx->out_sg);
-+	nx_ctx->op.csbcpb = __pa(nx_ctx->csbcpb);
-+	nx_ctx->op.in = __pa(nx_ctx->in_sg);
-+	nx_ctx->op.out = __pa(nx_ctx->out_sg);
- 
- 	if (nx_ctx->csbcpb_aead) {
- 		nx_ctx->csbcpb_aead->csb.valid |= NX_CSB_VALID_BIT;
- 
- 		nx_ctx->op_aead.flags = function;
--		nx_ctx->op_aead.csbcpb = virt_to_abs(nx_ctx->csbcpb_aead);
--		nx_ctx->op_aead.in = virt_to_abs(nx_ctx->in_sg);
--		nx_ctx->op_aead.out = virt_to_abs(nx_ctx->out_sg);
-+		nx_ctx->op_aead.csbcpb = __pa(nx_ctx->csbcpb_aead);
-+		nx_ctx->op_aead.in = __pa(nx_ctx->in_sg);
-+		nx_ctx->op_aead.out = __pa(nx_ctx->out_sg);
+diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
+index b781b2c..47baa54 100644
+--- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
++++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
+@@ -1870,9 +1870,8 @@ static int ehca_set_pagebuf_user1(struct ehca_mr_pginfo *pginfo,
+ 		for (i = pginfo->u.usr.next_nmap; i < chunk->nmap; ) {
+ 			pgaddr = page_to_pfn(sg_page(&chunk->page_list[i]))
+ 				<< PAGE_SHIFT ;
+-			*kpage = phys_to_abs(pgaddr +
+-					     (pginfo->next_hwpage *
+-					      pginfo->hwpage_size));
++			*kpage = pgaddr + (pginfo->next_hwpage *
++					   pginfo->hwpage_size);
+ 			if ( !(*kpage) ) {
+ 				ehca_gen_err("pgaddr=%llx "
+ 					     "chunk->page_list[i]=%llx "
+@@ -1927,7 +1926,7 @@ static int ehca_check_kpages_per_ate(struct scatterlist *page_list,
+ 		u64 pgaddr = page_to_pfn(sg_page(&page_list[t])) << PAGE_SHIFT;
+ 		if (ehca_debug_level >= 3)
+ 			ehca_gen_dbg("chunk_page=%llx value=%016llx", pgaddr,
+-				     *(u64 *)abs_to_virt(phys_to_abs(pgaddr)));
++				     *(u64 *)abs_to_virt(pgaddr));
+ 		if (pgaddr - PAGE_SIZE != *prev_pgaddr) {
+ 			ehca_gen_err("uncontiguous page found pgaddr=%llx "
+ 				     "prev_pgaddr=%llx page_list_i=%x",
+@@ -1962,7 +1961,7 @@ static int ehca_set_pagebuf_user2(struct ehca_mr_pginfo *pginfo,
+ 			if (nr_kpages == kpages_per_hwpage) {
+ 				pgaddr = ( page_to_pfn(sg_page(&chunk->page_list[i]))
+ 					   << PAGE_SHIFT );
+-				*kpage = phys_to_abs(pgaddr);
++				*kpage = pgaddr;
+ 				if ( !(*kpage) ) {
+ 					ehca_gen_err("pgaddr=%llx i=%x",
+ 						     pgaddr, i);
+@@ -1990,13 +1989,11 @@ static int ehca_set_pagebuf_user2(struct ehca_mr_pginfo *pginfo,
+ 						 (pginfo->hwpage_size - 1)) >>
+ 						PAGE_SHIFT;
+ 					nr_kpages -= pginfo->kpage_cnt;
+-					*kpage = phys_to_abs(
+-						pgaddr &
+-						~(pginfo->hwpage_size - 1));
++					*kpage = pgaddr &
++						 ~(pginfo->hwpage_size - 1);
+ 				}
+ 				if (ehca_debug_level >= 3) {
+-					u64 val = *(u64 *)abs_to_virt(
+-						phys_to_abs(pgaddr));
++					u64 val = *(u64 *)abs_to_virt(pgaddr);
+ 					ehca_gen_dbg("kpage=%llx chunk_page=%llx "
+ 						     "value=%016llx",
+ 						     *kpage, pgaddr, val);
+@@ -2084,9 +2081,8 @@ static int ehca_set_pagebuf_phys(struct ehca_mr_pginfo *pginfo,
+ 					     pginfo->num_hwpages, i);
+ 				return -EFAULT;
+ 			}
+-			*kpage = phys_to_abs(
+-				(pbuf->addr & ~(pginfo->hwpage_size - 1)) +
+-				(pginfo->next_hwpage * pginfo->hwpage_size));
++			*kpage = (pbuf->addr & ~(pginfo->hwpage_size - 1)) +
++				 (pginfo->next_hwpage * pginfo->hwpage_size);
+ 			if ( !(*kpage) && pbuf->addr ) {
+ 				ehca_gen_err("pbuf->addr=%llx pbuf->size=%llx "
+ 					     "next_hwpage=%llx", pbuf->addr,
+@@ -2124,8 +2120,8 @@ static int ehca_set_pagebuf_fmr(struct ehca_mr_pginfo *pginfo,
+ 	/* loop over desired page_list entries */
+ 	fmrlist = pginfo->u.fmr.page_list + pginfo->u.fmr.next_listelem;
+ 	for (i = 0; i < number; i++) {
+-		*kpage = phys_to_abs((*fmrlist & ~(pginfo->hwpage_size - 1)) +
+-				     pginfo->next_hwpage * pginfo->hwpage_size);
++		*kpage = (*fmrlist & ~(pginfo->hwpage_size - 1)) +
++			   pginfo->next_hwpage * pginfo->hwpage_size;
+ 		if ( !(*kpage) ) {
+ 			ehca_gen_err("*fmrlist=%llx fmrlist=%p "
+ 				     "next_listelem=%llx next_hwpage=%llx",
+@@ -2152,8 +2148,7 @@ static int ehca_set_pagebuf_fmr(struct ehca_mr_pginfo *pginfo,
+ 			u64 prev = *kpage;
+ 			/* check if adrs are contiguous */
+ 			for (j = 1; j < cnt_per_hwpage; j++) {
+-				u64 p = phys_to_abs(fmrlist[j] &
+-						    ~(pginfo->hwpage_size - 1));
++				u64 p = fmrlist[j] & ~(pginfo->hwpage_size - 1);
+ 				if (prev + pginfo->u.fmr.fmr_pgsize != p) {
+ 					ehca_gen_err("uncontiguous fmr pages "
+ 						     "found prev=%llx p=%llx "
+@@ -2388,8 +2383,8 @@ static int ehca_update_busmap(unsigned long pfn, unsigned long nr_pages)
+ 		memset(ehca_bmap, 0xFF, EHCA_TOP_MAP_SIZE);
  	}
- }
  
+-	start_section = phys_to_abs(pfn * PAGE_SIZE) / EHCA_SECTSIZE;
+-	end_section = phys_to_abs((pfn + nr_pages) * PAGE_SIZE) / EHCA_SECTSIZE;
++	start_section = (pfn * PAGE_SIZE) / EHCA_SECTSIZE;
++	end_section = ((pfn + nr_pages) * PAGE_SIZE) / EHCA_SECTSIZE;
+ 	for (i = start_section; i < end_section; i++) {
+ 		int ret;
+ 		top = ehca_calc_index(i, EHCA_TOP_INDEX_SHIFT);
 -- 
 1.7.9.5
