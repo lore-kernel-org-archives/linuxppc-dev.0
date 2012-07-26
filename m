@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8A7FE2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 03:29:29 +1000 (EST)
-Subject: Re: [PATCH v8 0/7] power management patch set
+ by ozlabs.org (Postfix) with ESMTPS id 3ACD12C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 03:46:46 +1000 (EST)
+Subject: Re: [PATCH V3 3/5] powerpc/mpc85xx: convert to unified PCI init
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CADRPPNSw5Yn7EgHt5fm2vYr+zxC4T+JbsvT812u2JPKELNcA6g@mail.gmail.com>
-Date: Thu, 26 Jul 2012 12:29:19 -0500
-Message-Id: <B5854411-6C9A-43BA-BF5D-FB1AD76E28D1@kernel.crashing.org>
-References: <1342788159-27529-1-git-send-email-chenhui.zhao@freescale.com>
- <CADRPPNSw5Yn7EgHt5fm2vYr+zxC4T+JbsvT812u2JPKELNcA6g@mail.gmail.com>
-To: Li Yang <leoli@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Zhao Chenhui <chenhui.zhao@freescale.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1343305827-26734-3-git-send-email-B38951@freescale.com>
+Date: Thu, 26 Jul 2012 12:46:42 -0500
+Message-Id: <802361F1-00A4-4D46-958B-76D80284D9E2@kernel.crashing.org>
+References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
+ <1343305827-26734-3-git-send-email-B38951@freescale.com>
+To: Jia Hongtao <B38951@freescale.com>
+Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +25,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 26, 2012, at 9:02 AM, Li Yang wrote:
+On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
 
-> On Fri, Jul 20, 2012 at 8:42 PM, Zhao Chenhui
-> <chenhui.zhao@freescale.com> wrote:
->> Changes for v8:
->> * Separated the cpu hotplug patch into three patches, as follows
->> [PATCH v8 1/7] powerpc/smp: use a struct epapr_spin_table to replace =
-macros
->> [PATCH v8 2/7] powerpc/smp: add generic_set_cpu_up() to set cpu_state =
-as CPU_UP_PREPARE
->> [PATCH v8 4/7] powerpc/85xx: add HOTPLUG_CPU support
->>=20
->> * Replaced magic numbers with macros in "[PATCH 5/7] powerpc/85xx: =
-add sleep and deep sleep support"
->>=20
->> * no change to the rest of the patch set
+> PCI initialization is now done by PCI controller driver. In =
+board_setup_arch
+> stage we don't need PCI init any more but swiotlb should be determined =
+at this
+> stage.
 >=20
-> Hi Kumar,
+> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> We now just apply this for mpc85xx_ds and qemu
 >=20
-> How about picking about this series for 3.6?  The review seems to
-> settle down for this revision.
+> arch/powerpc/kernel/iommu.c.rej          |   22 -----------------
+> arch/powerpc/platforms/85xx/common.c     |    9 +++++++
+> arch/powerpc/platforms/85xx/mpc85xx_ds.c |   38 =
++++++++----------------------
+> arch/powerpc/platforms/85xx/qemu_e500.c  |    5 +++-
+> 4 files changed, 22 insertions(+), 52 deletions(-)
+> delete mode 100644 arch/powerpc/kernel/iommu.c.rej
 
-Its too late for 3.6, but will look at queuing it up for 3.7.
+removal of iommu.c.rej is handled by:
 
-> Hi Scott,
->=20
-> Thanks for the review comments provided.  We'd like to get the ACK
-> from you for the series if you can.
->=20
-> Regards,
-> Leo
+commit 668fcb6972177489bdc01a66d697c3b494aa8a24
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Mon Jul 23 09:38:53 2012 +1000
+
+    Remove stale .rej file
 
 - k=
