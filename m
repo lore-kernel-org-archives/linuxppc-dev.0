@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 14/18] powerpc: Remove phys_to_abs() now all users have been
- removed
-Date: Thu, 26 Jul 2012 17:20:00 +1000
-Message-Id: <1343287204-7700-14-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 15/18] powerpc: Remove abs_to_virt() now all users have been
+ fixed
+Date: Thu, 26 Jul 2012 17:20:01 +1000
+Message-Id: <1343287204-7700-15-git-send-email-michael@ellerman.id.au>
 In-Reply-To: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
 References: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,21 +18,20 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/include/asm/abs_addr.h |    2 --
- 1 file changed, 2 deletions(-)
+ arch/powerpc/include/asm/abs_addr.h |    1 -
+ 1 file changed, 1 deletion(-)
 
 diff --git a/arch/powerpc/include/asm/abs_addr.h b/arch/powerpc/include/asm/abs_addr.h
-index 419aab7..4c92fba 100644
+index 4c92fba..80a9535 100644
 --- a/arch/powerpc/include/asm/abs_addr.h
 +++ b/arch/powerpc/include/asm/abs_addr.h
-@@ -18,8 +18,6 @@
- #include <asm/page.h>
- #include <asm/prom.h>
+@@ -20,7 +20,6 @@
  
--#define phys_to_abs(pa) (pa)
--
  /* Convenience macros */
  #define virt_to_abs(va) __pa(va)
- #define abs_to_virt(aa) __va(aa)
+-#define abs_to_virt(aa) __va(aa)
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_ABS_ADDR_H */
 -- 
 1.7.9.5
