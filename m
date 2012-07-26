@@ -2,16 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 695012C007E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 04:14:40 +1000 (EST)
-Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
+ by ozlabs.org (Postfix) with ESMTPS id 611572C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 04:21:51 +1000 (EST)
+Subject: Re: [PATCH V3 2/5] powerpc/fsl-pci: Determine primary bus by looking
+ for ISA node
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1343305827-26734-1-git-send-email-B38951@freescale.com>
-Date: Thu, 26 Jul 2012 13:14:37 -0500
-Message-Id: <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
+In-Reply-To: <1343305827-26734-2-git-send-email-B38951@freescale.com>
+Date: Thu, 26 Jul 2012 13:21:46 -0500
+Message-Id: <C853F286-EB9D-4A73-936F-E56AA003396C@kernel.crashing.org>
 References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
+ <1343305827-26734-2-git-send-email-B38951@freescale.com>
 To: Jia Hongtao <B38951@freescale.com>
 Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,47 +28,129 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
 
-> We unified the Freescale pci/pcie initialization by changing the =
-fsl_pci
-> to a platform driver. In previous PCI code architecture the =
-initialization
-> routine is called at board_setup_arch stage. Now the initialization is =
-done
-> in probe function which is architectural better. Also It's convenient =
-for
-> adding PM support for PCI controller in later patch.
->=20
-> One issue introduced by this architecture is the timing of =
-swiotlb_init.
-> During PCI initialization the need of swiotlb is determined and this =
-should
-> be done before swiotlb_init. So a new function to determine swiotlb by
-> parsing pci ranges is made. This function is called at =
-board_setup_arch
-> stage which is earlier than swiotlb_init.
+> PCI host bridge is primary bus if it contains an ISA node. But not all =
+boards
+> fit this rule. Device tree should be updated for all these boards.
+
+I don't really seen any reason for this patch.  We can just use the code =
+as Scott wrote it that sets fsl_pci_primary based on search for the isa =
+node.
+
 >=20
 > Signed-off-by: Jia Hongtao <B38951@freescale.com>
 > Signed-off-by: Li Yang <leoli@freescale.com>
 > ---
 > Changed for V3:
-> - Rebase the patch set on the latest tree
-> - merge PCI unify and swiotlb patch into one
+> - Using non-recursive function to find ISA under PCI
 >=20
-> arch/powerpc/sysdev/fsl_pci.c |  155 =
-++++++++++++++++++++++++++++++++---------
-> arch/powerpc/sysdev/fsl_pci.h |    9 +--
-> 2 files changed, 125 insertions(+), 39 deletions(-)
+> arch/powerpc/include/asm/pci-bridge.h |    1 +
+> arch/powerpc/sysdev/fsl_pci.c         |   31 =
+++++++++++++++++++++++++-------
+> arch/powerpc/sysdev/fsl_pci.h         |   12 +++++++++++-
+> 3 files changed, 36 insertions(+), 8 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/pci-bridge.h =
+b/arch/powerpc/include/asm/pci-bridge.h
+> index ac39e6a..b48fa7f 100644
+> --- a/arch/powerpc/include/asm/pci-bridge.h
+> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> @@ -20,6 +20,7 @@ struct device_node;
+> struct pci_controller {
+> 	struct pci_bus *bus;
+> 	char is_dynamic;
+> +	int is_primary;
+> #ifdef CONFIG_PPC64
+> 	int node;
+> #endif
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c =
+b/arch/powerpc/sysdev/fsl_pci.c
+> index 5228b6b..97557c5 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -453,6 +453,7 @@ int __init fsl_add_bridge(struct device_node *dev, =
+int is_primary)
+>=20
+> 	hose->first_busno =3D bus_range ? bus_range[0] : 0x0;
+> 	hose->last_busno =3D bus_range ? bus_range[1] : 0xff;
+> +	hose->is_primary =3D is_primary;
+>=20
+> 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
+> 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
+> @@ -933,18 +934,34 @@ void pci_determine_swiotlb(void)
+> }
+> #endif
+>=20
+> -int primary_phb_addr;
+> +/* Checkout if PCI contains ISA node (Only scan the children of PCI) =
+*/
+> +static int of_pci_has_isa(struct device_node *pci_node)
+> +{
+> +	struct device_node *np;
+> +
+> +	read_lock(&devtree_lock);
+> +	if (!pci_node)
+> +		return 0;
+> +	np =3D pci_node->allnext;
+> +	for (; np !=3D pci_node->sibling; np =3D np->allnext) {
+> +		if (np->type && (of_node_cmp(np->type, "isa") =3D=3D 0)
+> +		    && of_node_get(np)) {
+> +			of_node_put(pci_node);
+> +			return 1;
+> +		}
+> +	}
+> +	of_node_put(pci_node);
+> +	read_unlock(&devtree_lock);
+> +	return 0;
+> +}
+> +
+> static int __devinit fsl_pci_probe(struct platform_device *pdev)
+> {
+> -	struct pci_controller *hose;
+> 	bool is_primary;
+> +	is_primary =3D of_pci_has_isa(pdev->dev.of_node);
+>=20
+> -	if (of_match_node(pci_ids, pdev->dev.of_node)) {
+> -		struct resource rsrc;
+> -		of_address_to_resource(pdev->dev.of_node, 0, &rsrc);
+> -		is_primary =3D ((rsrc.start & 0xfffff) =3D=3D =
+primary_phb_addr);
+> +	if (of_match_node(pci_ids, pdev->dev.of_node))
+> 		fsl_add_bridge(pdev->dev.of_node, is_primary);
+> -	}
+>=20
+> 	return 0;
+> }
+> diff --git a/arch/powerpc/sysdev/fsl_pci.h =
+b/arch/powerpc/sysdev/fsl_pci.h
+> index 095392d..c884e06 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.h
+> +++ b/arch/powerpc/sysdev/fsl_pci.h
+> @@ -88,7 +88,17 @@ struct ccsr_pci {
+> 	__be32	pex_err_cap_r3;		/* 0x.e34 - PCIE error capture =
+register 0 */
+> };
+>=20
+> -extern int primary_phb_addr;
+> +
+> +#ifdef CONFIG_SUSPEND
+> +struct fsl_pci_private_data {
+> +	int inbound_num;
+> +	struct pci_outbound_window_regs __iomem *pci_pow;
+> +	struct pci_inbound_window_regs __iomem *pci_piw;
+> +	void *saved_regs;
+> +};
+> +#endif
+> +
 
-I'd like the SWIOTLB refactoring as a separate patch.  Additionally, the =
-order of patches should be as follows:
+This struct has nothing to do with this patch
 
-1. refactor PCI node parsing code
-2. add pci_determine_swiotlb (should rename to =
-fsl_pci_determine_swiotlb)
-3. Determine primary bus by looking for ISA node
-4. convert all boards over to fsl_pci_init
-5. convert fsl pci to platform driver (edac and other fixes should be =
-merged in here)
-6. PM support
+> +extern int is_has_isa_node(struct device_node *parent);
 
-- k=
+Where is is_has_isa_node() defined or used?
+
+> extern int fsl_add_bridge(struct device_node *dev, int is_primary);
+> extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
+> extern int mpc83xx_add_bridge(struct device_node *dev);
+> --=20
+> 1.7.5.1
+>=20
