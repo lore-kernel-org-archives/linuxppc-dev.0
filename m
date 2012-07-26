@@ -1,26 +1,36 @@
-Return-Path: <B36685@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5E33D2C0093
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 13:45:20 +1000 (EST)
-From: Liu Shengzhou-B36685 <B36685@freescale.com>
-To: "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, "akpm@linux-foundation.org"
- <akpm@linux-foundation.org>
-Subject: RE: [PATCH v2] PCI: use dev->irq instead of dev->pin to enable non
- MSI/INTx interrupt
-Date: Thu, 26 Jul 2012 03:45:03 +0000
-Message-ID: <3F453DDFF675A64A89321A1F35281021771A8B@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1342591614-1840-1-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1342591614-1840-1-git-send-email-Shengzhou.Liu@freescale.com>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <ananth@in.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 599B82C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 15:19:58 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
+ Thu, 26 Jul 2012 01:19:54 -0400
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id F2C7AC9001C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 01:19:03 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6Q5J3mG353378
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 01:19:03 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6QAntou004213
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 06:49:56 -0400
+Date: Thu, 26 Jul 2012 10:49:02 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] powerpc: Add trap_nr to thread_struct
+Message-ID: <20120726051902.GA29466@in.ibm.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Liu Shengzhou-B36685 <B36685@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
+ oleg@redhat.com, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,74 +40,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,=20
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-A gentle reminder!
-Any comments are appreciated.
+Add thread_struct.trap_nr and use it to store the last exception
+the thread experienced. In this patch, we populate the field at
+various places where we force_sig_info() to the process.
 
+This is also used in uprobes to determine if the probed instruction
+caused an exception.
 
-Regards,
-Shengzhou
+Patch applies on the current master branch of Linus' tree (bdc0077af)
 
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
+ arch/powerpc/include/asm/processor.h |    1 +
+ arch/powerpc/kernel/process.c        |    2 ++
+ arch/powerpc/kernel/traps.c          |    1 +
+ arch/powerpc/mm/fault.c              |    1 +
+ 4 files changed, 5 insertions(+)
 
-> -----Original Message-----
-> From: Liu Shengzhou-B36685
-> Sent: Wednesday, July 18, 2012 2:07 PM
-> To: bhelgaas@google.com; linux-pci@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org; Liu Shengzhou-B36685
-> Subject: [PATCH v2] PCI: use dev->irq instead of dev->pin to enable non
-> MSI/INTx interrupt
->=20
-> On some platforms, root port has neither MSI/MSI-X nor INTx interrupt
-> generated in RC mode. In this case, we have to use other interrupt(e.g.
-> system shared interrupt) for port service irq to have AER, Hot-plug, etc,
-> services to work.
->=20
-> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> ---
->  drivers/pci/pcie/portdrv_core.c |   16 ++++++++++++----
->  1 files changed, 12 insertions(+), 4 deletions(-)
->=20
-> diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_c=
-ore.c
-> index 75915b3..49acf72 100644
-> --- a/drivers/pci/pcie/portdrv_core.c
-> +++ b/drivers/pci/pcie/portdrv_core.c
-> @@ -200,10 +200,13 @@ static int init_service_irqs(struct pci_dev *dev, i=
-nt
-> *irqs, int mask)  {
->  	int i, irq =3D -1;
->=20
-> -	/* We have to use INTx if MSI cannot be used for PCIe PME or pciehp. */
-> +	/*
-> +	 * We have to use INTx or other interrupts(e.g. system shared interrupt=
-)
-> +	 * if MSI cannot be used for PCIe PME or pciehp.
-> +	 */
->  	if (((mask & PCIE_PORT_SERVICE_PME) && pcie_pme_no_msi()) ||
->  	    ((mask & PCIE_PORT_SERVICE_HP) && pciehp_no_msi())) {
-> -		if (dev->pin)
-> +		if (dev->irq)
->  			irq =3D dev->irq;
->  		goto no_msi;
->  	}
-> @@ -212,8 +215,13 @@ static int init_service_irqs(struct pci_dev *dev, in=
-t
-> *irqs, int mask)
->  	if (!pcie_port_enable_msix(dev, irqs, mask))
->  		return 0;
->=20
-> -	/* We're not going to use MSI-X, so try MSI and fall back to INTx */
-> -	if (!pci_enable_msi(dev) || dev->pin)
-> +	/*
-> +	 * We're not going to use MSI-X, so try MSI and fall back to INTx.
-> +	 * If neither MSI/MSI-X nor INTx available, try other interrupt. (On
-> +	 * some platforms, root port doesn't support generating MSI/MSI-X/INTx
-> +	 * in RC mode)
-> +	 */
-> +	if (!pci_enable_msi(dev) || dev->irq)
->  		irq =3D dev->irq;
->=20
->   no_msi:
-> --
-> 1.6.4
+Index: linux-26jul/arch/powerpc/include/asm/processor.h
+===================================================================
+--- linux-26jul.orig/arch/powerpc/include/asm/processor.h
++++ linux-26jul/arch/powerpc/include/asm/processor.h
+@@ -219,6 +219,7 @@ struct thread_struct {
+ #endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ #endif
+ 	unsigned long	dabr;		/* Data address breakpoint register */
++	unsigned long	trap_nr;	/* last trap # on this thread */
+ #ifdef CONFIG_ALTIVEC
+ 	/* Complete AltiVec register set */
+ 	vector128	vr[32] __attribute__((aligned(16)));
+Index: linux-26jul/arch/powerpc/kernel/process.c
+===================================================================
+--- linux-26jul.orig/arch/powerpc/kernel/process.c
++++ linux-26jul/arch/powerpc/kernel/process.c
+@@ -258,6 +258,7 @@ void do_send_trap(struct pt_regs *regs, 
+ {
+ 	siginfo_t info;
+ 
++	current->thread.trap_nr = signal_code;
+ 	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+ 			11, SIGSEGV) == NOTIFY_STOP)
+ 		return;
+@@ -275,6 +276,7 @@ void do_dabr(struct pt_regs *regs, unsig
+ {
+ 	siginfo_t info;
+ 
++	current->thread.trap_nr = TRAP_HWBKPT;
+ 	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+ 			11, SIGSEGV) == NOTIFY_STOP)
+ 		return;
+Index: linux-26jul/arch/powerpc/kernel/traps.c
+===================================================================
+--- linux-26jul.orig/arch/powerpc/kernel/traps.c
++++ linux-26jul/arch/powerpc/kernel/traps.c
+@@ -251,6 +251,7 @@ void _exception(int signr, struct pt_reg
+ 	if (arch_irqs_disabled() && !arch_irq_disabled_regs(regs))
+ 		local_irq_enable();
+ 
++	current->thread.trap_nr = code;
+ 	memset(&info, 0, sizeof(info));
+ 	info.si_signo = signr;
+ 	info.si_code = code;
+Index: linux-26jul/arch/powerpc/mm/fault.c
+===================================================================
+--- linux-26jul.orig/arch/powerpc/mm/fault.c
++++ linux-26jul/arch/powerpc/mm/fault.c
+@@ -133,6 +133,7 @@ static int do_sigbus(struct pt_regs *reg
+ 	up_read(&current->mm->mmap_sem);
+ 
+ 	if (user_mode(regs)) {
++		current->thread.trap_nr = BUS_ADRERR;
+ 		info.si_signo = SIGBUS;
+ 		info.si_errno = 0;
+ 		info.si_code = BUS_ADRERR;
