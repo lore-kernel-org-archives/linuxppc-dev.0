@@ -2,20 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 611572C0086
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 04:21:51 +1000 (EST)
-Subject: Re: [PATCH V3 2/5] powerpc/fsl-pci: Determine primary bus by looking
- for ISA node
+ by ozlabs.org (Postfix) with ESMTPS id 69F9D2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 04:53:35 +1000 (EST)
+Subject: Re: [PATCH][v1] powerpc/85xx: Fix sram_offset parameter type
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1343305827-26734-2-git-send-email-B38951@freescale.com>
-Date: Thu, 26 Jul 2012 13:21:46 -0500
-Message-Id: <C853F286-EB9D-4A73-936F-E56AA003396C@kernel.crashing.org>
-References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
- <1343305827-26734-2-git-send-email-B38951@freescale.com>
-To: Jia Hongtao <B38951@freescale.com>
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1343314075-2127-1-git-send-email-claudiu.manoil@freescale.com>
+Date: Thu, 26 Jul 2012 13:53:32 -0500
+Message-Id: <03E24D9C-22D0-429D-8EEC-E390B034F1C1@kernel.crashing.org>
+References: <1343314075-2127-1-git-send-email-claudiu.manoil@freescale.com>
+To: Claudiu Manoil <claudiu.manoil@freescale.com>
+Cc: Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,131 +24,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
+On Jul 26, 2012, at 9:47 AM, Claudiu Manoil wrote:
 
-> PCI host bridge is primary bus if it contains an ISA node. But not all =
-boards
-> fit this rule. Device tree should be updated for all these boards.
-
-I don't really seen any reason for this patch.  We can just use the code =
-as Scott wrote it that sets fsl_pci_primary based on search for the isa =
-node.
-
+> The sram_offset parameter represents a physical address
+> and should be of type phys_addr_t. As part of this fix,
+> the extraction of sram_params is being cleaned-up and
+> fixed.
+> This patch fixes now the case when the offset value of
+> 0xfff00000 was being rejected by the driver (returning
+> -EINVAL), although this is a valid offset value.
 >=20
-> Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
 > ---
-> Changed for V3:
-> - Using non-recursive function to find ISA under PCI
+> v1: fixed copyright year format
 >=20
-> arch/powerpc/include/asm/pci-bridge.h |    1 +
-> arch/powerpc/sysdev/fsl_pci.c         |   31 =
-++++++++++++++++++++++++-------
-> arch/powerpc/sysdev/fsl_pci.h         |   12 +++++++++++-
-> 3 files changed, 36 insertions(+), 8 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h =
-b/arch/powerpc/include/asm/pci-bridge.h
-> index ac39e6a..b48fa7f 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -20,6 +20,7 @@ struct device_node;
-> struct pci_controller {
-> 	struct pci_bus *bus;
-> 	char is_dynamic;
-> +	int is_primary;
-> #ifdef CONFIG_PPC64
-> 	int node;
-> #endif
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c =
-b/arch/powerpc/sysdev/fsl_pci.c
-> index 5228b6b..97557c5 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -453,6 +453,7 @@ int __init fsl_add_bridge(struct device_node *dev, =
-int is_primary)
->=20
-> 	hose->first_busno =3D bus_range ? bus_range[0] : 0x0;
-> 	hose->last_busno =3D bus_range ? bus_range[1] : 0xff;
-> +	hose->is_primary =3D is_primary;
->=20
-> 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
-> 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
-> @@ -933,18 +934,34 @@ void pci_determine_swiotlb(void)
-> }
-> #endif
->=20
-> -int primary_phb_addr;
-> +/* Checkout if PCI contains ISA node (Only scan the children of PCI) =
-*/
-> +static int of_pci_has_isa(struct device_node *pci_node)
-> +{
-> +	struct device_node *np;
-> +
-> +	read_lock(&devtree_lock);
-> +	if (!pci_node)
-> +		return 0;
-> +	np =3D pci_node->allnext;
-> +	for (; np !=3D pci_node->sibling; np =3D np->allnext) {
-> +		if (np->type && (of_node_cmp(np->type, "isa") =3D=3D 0)
-> +		    && of_node_get(np)) {
-> +			of_node_put(pci_node);
-> +			return 1;
-> +		}
-> +	}
-> +	of_node_put(pci_node);
-> +	read_unlock(&devtree_lock);
-> +	return 0;
-> +}
-> +
-> static int __devinit fsl_pci_probe(struct platform_device *pdev)
-> {
-> -	struct pci_controller *hose;
-> 	bool is_primary;
-> +	is_primary =3D of_pci_has_isa(pdev->dev.of_node);
->=20
-> -	if (of_match_node(pci_ids, pdev->dev.of_node)) {
-> -		struct resource rsrc;
-> -		of_address_to_resource(pdev->dev.of_node, 0, &rsrc);
-> -		is_primary =3D ((rsrc.start & 0xfffff) =3D=3D =
-primary_phb_addr);
-> +	if (of_match_node(pci_ids, pdev->dev.of_node))
-> 		fsl_add_bridge(pdev->dev.of_node, is_primary);
-> -	}
->=20
-> 	return 0;
-> }
-> diff --git a/arch/powerpc/sysdev/fsl_pci.h =
-b/arch/powerpc/sysdev/fsl_pci.h
-> index 095392d..c884e06 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.h
-> +++ b/arch/powerpc/sysdev/fsl_pci.h
-> @@ -88,7 +88,17 @@ struct ccsr_pci {
-> 	__be32	pex_err_cap_r3;		/* 0x.e34 - PCIE error capture =
-register 0 */
-> };
->=20
-> -extern int primary_phb_addr;
-> +
-> +#ifdef CONFIG_SUSPEND
-> +struct fsl_pci_private_data {
-> +	int inbound_num;
-> +	struct pci_outbound_window_regs __iomem *pci_pow;
-> +	struct pci_inbound_window_regs __iomem *pci_piw;
-> +	void *saved_regs;
-> +};
-> +#endif
-> +
+> arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h |    4 +-
+> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   39 =
+++++++++++------------------
+> 2 files changed, 16 insertions(+), 27 deletions(-)
 
-This struct has nothing to do with this patch
+applied to merge
 
-> +extern int is_has_isa_node(struct device_node *parent);
-
-Where is is_has_isa_node() defined or used?
-
-> extern int fsl_add_bridge(struct device_node *dev, int is_primary);
-> extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
-> extern int mpc83xx_add_bridge(struct device_node *dev);
-> --=20
-> 1.7.5.1
->=20
+- k=
