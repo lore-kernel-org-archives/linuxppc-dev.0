@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 11/18] powerpc/pseries: Remove uses of abs_to_virt() and
+Subject: [PATCH 12/18] powerpc/mm: Remove uses of abs_to_virt() and
  virt_to_abs()
-Date: Thu, 26 Jul 2012 17:19:57 +1000
-Message-Id: <1343287204-7700-11-git-send-email-michael@ellerman.id.au>
+Date: Thu, 26 Jul 2012 17:19:58 +1000
+Message-Id: <1343287204-7700-12-git-send-email-michael@ellerman.id.au>
 In-Reply-To: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
 References: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,65 +20,29 @@ These days they are just __va() and __pa() respectively.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/pseries/iommu.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ arch/powerpc/mm/stab.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 2d311c0..7393118 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -41,7 +41,6 @@
- #include <asm/iommu.h>
- #include <asm/pci-bridge.h>
- #include <asm/machdep.h>
+diff --git a/arch/powerpc/mm/stab.c b/arch/powerpc/mm/stab.c
+index 9106ebb..3f8efa6 100644
+--- a/arch/powerpc/mm/stab.c
++++ b/arch/powerpc/mm/stab.c
+@@ -20,7 +20,6 @@
+ #include <asm/paca.h>
+ #include <asm/cputable.h>
+ #include <asm/prom.h>
 -#include <asm/abs_addr.h>
- #include <asm/pSeries_reconfig.h>
- #include <asm/firmware.h>
- #include <asm/tce.h>
-@@ -99,7 +98,7 @@ static int tce_build_pSeries(struct iommu_table *tbl, long index,
  
- 	while (npages--) {
- 		/* can't move this out since we might cross MEMBLOCK boundary */
--		rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
-+		rpn = __pa(uaddr) >> TCE_SHIFT;
- 		*tcep = proto_tce | (rpn & TCE_RPN_MASK) << TCE_RPN_SHIFT;
+ struct stab_entry {
+ 	unsigned long esid_data;
+@@ -257,7 +256,7 @@ void __init stabs_alloc(void)
+ 		memset((void *)newstab, 0, HW_PAGE_SIZE);
  
- 		uaddr += TCE_PAGE_SIZE;
-@@ -148,7 +147,7 @@ static int tce_build_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 	int ret = 0;
- 	long tcenum_start = tcenum, npages_start = npages;
- 
--	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
-+	rpn = __pa(uaddr) >> TCE_SHIFT;
- 	proto_tce = TCE_PCI_READ;
- 	if (direction != DMA_TO_DEVICE)
- 		proto_tce |= TCE_PCI_WRITE;
-@@ -213,7 +212,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 		__get_cpu_var(tce_page) = tcep;
- 	}
- 
--	rpn = (virt_to_abs(uaddr)) >> TCE_SHIFT;
-+	rpn = __pa(uaddr) >> TCE_SHIFT;
- 	proto_tce = TCE_PCI_READ;
- 	if (direction != DMA_TO_DEVICE)
- 		proto_tce |= TCE_PCI_WRITE;
-@@ -233,7 +232,7 @@ static int tce_buildmulti_pSeriesLP(struct iommu_table *tbl, long tcenum,
- 
- 		rc = plpar_tce_put_indirect((u64)tbl->it_index,
- 					    (u64)tcenum << 12,
--					    (u64)virt_to_abs(tcep),
-+					    (u64)__pa(tcep),
- 					    limit);
- 
- 		npages -= limit;
-@@ -435,7 +434,7 @@ static int tce_setrange_multi_pSeriesLP(unsigned long start_pfn,
- 
- 		rc = plpar_tce_put_indirect(liobn,
- 					    dma_offset,
--					    (u64)virt_to_abs(tcep),
-+					    (u64)__pa(tcep),
- 					    limit);
- 
- 		num_tce -= limit;
+ 		paca[cpu].stab_addr = newstab;
+-		paca[cpu].stab_real = virt_to_abs(newstab);
++		paca[cpu].stab_real = __pa(newstab);
+ 		printk(KERN_INFO "Segment table for CPU %d at 0x%llx "
+ 		       "virtual, 0x%llx absolute\n",
+ 		       cpu, paca[cpu].stab_addr, paca[cpu].stab_real);
 -- 
 1.7.9.5
