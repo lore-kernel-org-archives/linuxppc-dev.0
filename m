@@ -1,9 +1,12 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 01/18] powerpc: Remove remaining iSeries chunks
-Date: Thu, 26 Jul 2012 17:19:47 +1000
-Message-Id: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 02/18] powerpc/crypto: Remove users of virt_to_abs() and
+ phys_to_abs() in nx crypto driver
+Date: Thu, 26 Jul 2012 17:19:48 +1000
+Message-Id: <1343287204-7700-2-git-send-email-michael@ellerman.id.au>
+In-Reply-To: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
+References: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,64 +16,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In commit f5339277 "powerpc: Remove FW_FEATURE ISERIES from arch code", we
-removed the bulk of the iSeries code, but missed a few bits.
+phys_to_abs() is a nop, don't use it.
 
-Remove the mschunks bits, these were only ever used on iSeries as far as I
-know, and are definitely not used anymore.
-
-Make it even clearer that phys_to_abs() is a nop, by making it a macro. We
-still have a few users of this, but should clean those up.
+virt_to_abs() is just a wrapper around __pa(), call __pa() directly.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/include/asm/abs_addr.h |   32 ++------------------------------
- 1 file changed, 2 insertions(+), 30 deletions(-)
+ drivers/crypto/nx/nx.c |   17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/abs_addr.h b/arch/powerpc/include/asm/abs_addr.h
-index 9d92ba0..419aab7 100644
---- a/arch/powerpc/include/asm/abs_addr.h
-+++ b/arch/powerpc/include/asm/abs_addr.h
-@@ -18,38 +18,10 @@
- #include <asm/page.h>
- #include <asm/prom.h>
+diff --git a/drivers/crypto/nx/nx.c b/drivers/crypto/nx/nx.c
+index d7f179c..638110e 100644
+--- a/drivers/crypto/nx/nx.c
++++ b/drivers/crypto/nx/nx.c
+@@ -34,7 +34,6 @@
+ #include <linux/device.h>
+ #include <linux/of.h>
+ #include <asm/pSeries_reconfig.h>
+-#include <asm/abs_addr.h>
+ #include <asm/hvcall.h>
+ #include <asm/vio.h>
  
--struct mschunks_map {
--        unsigned long num_chunks;
--        unsigned long chunk_size;
--        unsigned long chunk_shift;
--        unsigned long chunk_mask;
--        u32 *mapping;
--};
--
--extern struct mschunks_map mschunks_map;
--
--/* Chunks are 256 KB */
--#define MSCHUNKS_CHUNK_SHIFT	(18)
--#define MSCHUNKS_CHUNK_SIZE	(1UL << MSCHUNKS_CHUNK_SHIFT)
--#define MSCHUNKS_OFFSET_MASK	(MSCHUNKS_CHUNK_SIZE - 1)
--
--static inline unsigned long chunk_to_addr(unsigned long chunk)
--{
--	return chunk << MSCHUNKS_CHUNK_SHIFT;
--}
--
--static inline unsigned long addr_to_chunk(unsigned long addr)
--{
--	return addr >> MSCHUNKS_CHUNK_SHIFT;
--}
--
--static inline unsigned long phys_to_abs(unsigned long pa)
--{
--	return pa;
--}
-+#define phys_to_abs(pa) (pa)
+@@ -104,10 +103,10 @@ struct nx_sg *nx_build_sg_list(struct nx_sg *sg_head,
+ 	/* determine the start and end for this address range - slightly
+ 	 * different if this is in VMALLOC_REGION */
+ 	if (is_vmalloc_addr(start_addr))
+-		sg_addr = phys_to_abs(page_to_phys(vmalloc_to_page(start_addr)))
++		sg_addr = page_to_phys(vmalloc_to_page(start_addr))
+ 			  + offset_in_page(sg_addr);
+ 	else
+-		sg_addr = virt_to_abs(sg_addr);
++		sg_addr = __pa(sg_addr);
  
- /* Convenience macros */
--#define virt_to_abs(va) phys_to_abs(__pa(va))
-+#define virt_to_abs(va) __pa(va)
- #define abs_to_virt(aa) __va(aa)
+ 	end_addr = sg_addr + len;
  
- #endif /* __KERNEL__ */
+@@ -265,17 +264,17 @@ void nx_ctx_init(struct nx_crypto_ctx *nx_ctx, unsigned int function)
+ 	nx_ctx->csbcpb->csb.valid |= NX_CSB_VALID_BIT;
+ 
+ 	nx_ctx->op.flags = function;
+-	nx_ctx->op.csbcpb = virt_to_abs(nx_ctx->csbcpb);
+-	nx_ctx->op.in = virt_to_abs(nx_ctx->in_sg);
+-	nx_ctx->op.out = virt_to_abs(nx_ctx->out_sg);
++	nx_ctx->op.csbcpb = __pa(nx_ctx->csbcpb);
++	nx_ctx->op.in = __pa(nx_ctx->in_sg);
++	nx_ctx->op.out = __pa(nx_ctx->out_sg);
+ 
+ 	if (nx_ctx->csbcpb_aead) {
+ 		nx_ctx->csbcpb_aead->csb.valid |= NX_CSB_VALID_BIT;
+ 
+ 		nx_ctx->op_aead.flags = function;
+-		nx_ctx->op_aead.csbcpb = virt_to_abs(nx_ctx->csbcpb_aead);
+-		nx_ctx->op_aead.in = virt_to_abs(nx_ctx->in_sg);
+-		nx_ctx->op_aead.out = virt_to_abs(nx_ctx->out_sg);
++		nx_ctx->op_aead.csbcpb = __pa(nx_ctx->csbcpb_aead);
++		nx_ctx->op_aead.in = __pa(nx_ctx->in_sg);
++		nx_ctx->op_aead.out = __pa(nx_ctx->out_sg);
+ 	}
+ }
+ 
 -- 
 1.7.9.5
