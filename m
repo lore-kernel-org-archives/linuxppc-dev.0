@@ -1,31 +1,22 @@
-Return-Path: <B37400@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+Return-Path: <B08782@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A2E72C0079
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 20:50:02 +1000 (EST)
-Received: from mail153-co1 (localhost [127.0.0.1])	by
- mail153-co1-R.bigfish.com (Postfix) with ESMTP id 1837F7C009A	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 10:49:57 +0000 (UTC)
-Received: from CO1EHSMHS007.bigfish.com (unknown [10.243.78.246])	by
- mail153-co1.bigfish.com (Postfix) with ESMTP id 5570164003F	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 10:49:55 +0000 (UTC)
-From: Singh Sandeep-B37400 <B37400@freescale.com>
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: RE: [2/3][PATCH][upstream] TDM Framework
-Date: Thu, 26 Jul 2012 10:49:54 +0000
-Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E50F8C0@039-SN1MPN1-006.039d.mgd.msft.net>
-References: <1343040588-16002-1-git-send-email-b37400@freescale.com>
- <CAOZdJXVnEUEQesyG52pL_jerGDrmJLxdfBNFrj_xvhPs=ue4DA@mail.gmail.com>
- <3F1D9DCAAB49B94D88DBE05911FA4E6E50ED27@039-SN1MPN1-006.039d.mgd.msft.net>
- <500EB47F.1040903@freescale.com>
-In-Reply-To: <500EB47F.1040903@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 71A7B2C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 22:39:36 +1000 (EST)
+Message-ID: <50113A72.4000508@freescale.com>
+Date: Thu, 26 Jul 2012 15:39:14 +0300
+From: Claudiu Manoil <claudiu.manoil@freescale.com>
 MIME-Version: 1.0
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/85xx: Fix sram_offset parameter type
+References: <1342693696-29734-1-git-send-email-claudiu.manoil@freescale.com>
+ <37C94886-3DA3-4389-8A67-F13035D2CEA6@kernel.crashing.org>
+In-Reply-To: <37C94886-3DA3-4389-8A67-F13035D2CEA6@kernel.crashing.org>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,35 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On 7/19/2012 3:07 PM, Kumar Gala wrote:
+>
+> On Jul 19, 2012, at 5:28 AM, Claudiu Manoil wrote:
+>
+>> The sram_offset parameter represents a physical address
+>> and should be of type phys_addr_t. As part of this fix,
+>> the extraction of sram_params is being cleaned-up and
+>> fixed.
+>> This patch fixes now the case when the offset value of
+>> 0xfff00000 was being rejected by the driver (returning
+>> -EINVAL), although this is a valid offset value.
+>>
+>> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+>> Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
+>> ---
+>> arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h |    4 +-
+>> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   39 ++++++++++------------------
+>> 2 files changed, 16 insertions(+), 27 deletions(-)
+>>
+>> diff --git a/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h b/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+>> index 60c9c0b..a4ce9b8 100644
+>> --- a/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+>> +++ b/arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h
+>> @@ -1,5 +1,5 @@
+>> /*
+>> - * Copyright 2009-2010 Freescale Semiconductor, Inc
+>> + * Copyright 2009-2010 2012 Freescale Semiconductor, Inc
+>
+> we normally do 2009-2010, 2012
+>
+Hi Kumar,
 
-Please find my comment inline.
+Should I re-spin this patch, with the copyright year formatted per your 
+suggestion above?
 
-Regards,
-Sandeep
-
-
------Original Message-----
-From: Tabi Timur-B04825=20
-Sent: Tuesday, July 24, 2012 8:13 PM
-To: Singh Sandeep-B37400
-Cc: linuxppc-dev@lists.ozlabs.org; Aggrwal Poonam-B10812
-Subject: Re: [2/3][PATCH][upstream] TDM Framework
-
-Singh Sandeep-B37400 wrote:
-
->> +int tdm_adap_send(struct tdm_adapter *adap, void **buf, int count) {
->> +       int res;
->> +
->> +       if (adap->algo->tdm_write)
->> +               res =3D adap->algo->tdm_write(adap, buf, count);
->=20
-> Why does tdm_write() return a u32?  And shouldn't 'res' also be a u32, to=
- make tdm_write()?
-> [Sandeep] tdm_write() returns number of bytes written. You are right,=20
-> 'res' should be declared as u32
-
-Then it should return an unsigned int.  You should used a sized integer typ=
-e only when the size really matters (e.g. hardware registers or packed fiel=
-ds in a structure).
-[Sandeep] Agreed, will rectify.
+Thanks,
+claudiu
