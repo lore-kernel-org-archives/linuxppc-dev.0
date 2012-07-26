@@ -1,25 +1,26 @@
-Return-Path: <B38951@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+Return-Path: <B36685@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A50792C0091
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 12:38:16 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 1/6] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Thu, 26 Jul 2012 02:38:07 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A27CA1@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
- <500EECA3.3050806@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A27578@039-SN1MPN1-002.039d.mgd.msft.net>
- <50102B98.4000801@freescale.com>
-In-Reply-To: <50102B98.4000801@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 5E33D2C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 13:45:20 +1000 (EST)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: "bhelgaas@google.com" <bhelgaas@google.com>, "linux-pci@vger.kernel.org"
+ <linux-pci@vger.kernel.org>, "akpm@linux-foundation.org"
+ <akpm@linux-foundation.org>
+Subject: RE: [PATCH v2] PCI: use dev->irq instead of dev->pin to enable non
+ MSI/INTx interrupt
+Date: Thu, 26 Jul 2012 03:45:03 +0000
+Message-ID: <3F453DDFF675A64A89321A1F35281021771A8B@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1342591614-1840-1-git-send-email-Shengzhou.Liu@freescale.com>
+In-Reply-To: <1342591614-1840-1-git-send-email-Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Liu Shengzhou-B36685 <B36685@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +30,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIEp1bHkgMjYsIDIwMTIgMToyNCBBTQ0KPiBUbzogSmlhIEhv
-bmd0YW8tQjM4OTUxDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2QGxpc3Rz
-Lm96bGFicy5vcmc7DQo+IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlhbmctUjU4NDcy
-DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS82XSBwb3dlcnBjL2ZzbC1wY2k6IFVuaWZ5IHBjaS9w
-Y2llIGluaXRpYWxpemF0aW9uDQo+IGNvZGUNCj4gDQo+IE9uIDA3LzI0LzIwMTIgMDk6MzUgUE0s
-IEppYSBIb25ndGFvLUIzODk1MSB3cm90ZToNCj4gPg0KPiA+DQo+ID4+IC0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQo+ID4+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4+IFNlbnQ6IFdl
-ZG5lc2RheSwgSnVseSAyNSwgMjAxMiAyOjQzIEFNDQo+ID4+IFRvOiBKaWEgSG9uZ3Rhby1CMzg5
-NTENCj4gPj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBnYWxha0BrZXJuZWwu
-Y3Jhc2hpbmcub3JnOyBXb29kDQo+IFNjb3R0LQ0KPiA+PiBCMDc0MjE7IExpIFlhbmctUjU4NDcy
-DQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS82XSBwb3dlcnBjL2ZzbC1wY2k6IFVuaWZ5IHBj
-aS9wY2llDQo+IGluaXRpYWxpemF0aW9uDQo+ID4+IGNvZGUNCj4gPj4NCj4gPj4gT24gMDcvMjQv
-MjAxMiAwNToyMCBBTSwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4+PiBXZSB1bmlmaWVkIHRoZSBG
-cmVlc2NhbGUgcGNpL3BjaWUgaW5pdGlhbGl6YXRpb24gYnkgY2hhbmdpbmcgdGhlDQo+ID4+IGZz
-bF9wY2kNCj4gPj4+IHRvIGEgcGxhdGZvcm0gZHJpdmVyLg0KPiA+Pj4NCj4gPj4+IEluIHByZXZp
-b3VzIHZlcnNpb24gcGNpL3BjaWUgaW5pdGlhbGl6YXRpb24gaXMgaW4gcGxhdGZvcm0gY29kZSB3
-aGljaA0KPiA+Pj4gSW5pdGlhbGl6ZSBwY2kgYnJpZGdlIGJhc2Ugb24gRVAvUkMgb3IgaG9zdC9h
-Z2VudCBzZXR0aW5ncy4NCj4gPj4NCj4gPj4gVGhlIHByZXZpb3VzIHZlcnNpb24gb2Ygd2hhdD8g
-IFRoaXMgcGF0Y2gsIG9yIHRoZSBQQ0kgY29kZT8gIFdoYXQNCj4gPj4gY2hhbmdlZCBpbiB0aGlz
-IHBhdGNoIHNpbmNlIHRoZSBsYXN0IHRpbWUgeW91IHNlbnQgaXQsIGFuZCB3aGVyZSBpcw0KPiB0
-aGUNCj4gPj4gdmVyc2lvbiBudW1iZXI/DQo+ID4+DQo+ID4+PiArI2lmIGRlZmluZWQoQ09ORklH
-X0ZTTF9TT0NfQk9PS0UpIHx8IGRlZmluZWQoQ09ORklHX1BQQ184Nnh4KQ0KPiA+Pj4gK3N0YXRp
-YyBjb25zdCBzdHJ1Y3Qgb2ZfZGV2aWNlX2lkIHBjaV9pZHNbXSA9IHsNCj4gPj4+ICsJeyAuY29t
-cGF0aWJsZSA9ICJmc2wsbXBjODU0MC1wY2kiLCB9LA0KPiA+Pj4gKwl7IC5jb21wYXRpYmxlID0g
-ImZzbCxtcGM4NTQ4LXBjaWUiLCB9LA0KPiA+Pj4gKwl7IC5jb21wYXRpYmxlID0gImZzbCxtcGM4
-NjQxLXBjaWUiLCB9LA0KPiA+Pj4gKwl7IC5jb21wYXRpYmxlID0gImZzbCxwMTAyMi1wY2llIiwg
-fSwNCj4gPj4+ICsJeyAuY29tcGF0aWJsZSA9ICJmc2wscDEwMTAtcGNpZSIsIH0sDQo+ID4+PiAr
-CXsgLmNvbXBhdGlibGUgPSAiZnNsLHAxMDIzLXBjaWUiLCB9LA0KPiA+Pj4gKwl7IC5jb21wYXRp
-YmxlID0gImZzbCxwNDA4MC1wY2llIiwgfSwNCj4gPj4+ICsJeyAuY29tcGF0aWJsZSA9ICJmc2ws
-cW9yaXEtcGNpZS12Mi4zIiwgfSwNCj4gPj4+ICsJeyAuY29tcGF0aWJsZSA9ICJmc2wscW9yaXEt
-cGNpZS12Mi4yIiwgfSwNCj4gPj4+ICsJe30sDQo+ID4+PiArfTsNCj4gPj4NCj4gPj4gQWdhaW4s
-IHBsZWFzZSBiYXNlIHRoaXMgb24gdGhlIGxhdGVzdCB0cmVlLCB3aGljaCBoYXMgbXkgUENJIHBh
-dGNoZXMuDQo+ID4+IFRoaXMgdGFibGUgYWxyZWFkeSBleGlzdHMgaW4gdGhpcyBmaWxlLiAgQW5k
-IHlvdSdyZSBzdGlsbCBtaXNzaW5nDQo+ID4+IGZzbCxtcGM4NjEwLXBjaS4NCj4gPg0KPiA+IFNv
-cnJ5IGZzbCxtcGM4NjEwLXBjaSB3aWxsIGJlIGFkZGVkLg0KPiANCj4gVG8gd2hhdD8gIFRoZSB0
-YWJsZSBpcyBhbHJlYWR5IHRoZXJlIGluIExpbnVzJ3MgdHJlZSwgd2l0aA0KPiBmc2wsbXBjODYx
-MC1wY2kuICBZb3UgZG9uJ3QgbmVlZCB0byBhZGQgaXQgYWdhaW4uDQo+IA0KPiA+PiBJdCdzIHRv
-byBsYXRlIGZvciBzd2lvdGxiIGhlcmUuICBBZ2FpbiwgcGxlYXNlIGRvbid0IGJyZWFrIHNvbWV0
-aGluZw0KPiBpbg0KPiA+PiBvbmUgcGF0Y2ggYW5kIHRoZW4gZml4IGl0IGluIGEgbGF0ZXIgcGF0
-Y2guICBVc2UgImdpdCByZWJhc2UgLWkiIHRvDQo+IGVkaXQNCj4gPj4geW91ciBwYXRjaHNldCBp
-bnRvIGEgcmV2aWV3YWJsZSwgYmlzZWN0YWJsZSBmb3JtLg0KPiA+Pg0KPiA+PiAtU2NvdHQNCj4g
-Pg0KPiA+IFllcywgYmlzZWN0YWJsZSByZXF1aXJlbWVudCBpcyBzb3J0IG9mIHJlYXNvbmFibGUu
-DQo+ID4NCj4gPiBCdXQgSSBjaGVjayB0aGUgU3VibWl0dGluZ1BhdGNoZXMgRG9jIGFuZCBpdCBz
-YXlzICJJZiBvbmUgcGF0Y2ggZGVwZW5kcw0KPiBvbg0KPiA+IGFub3RoZXIgcGF0Y2ggaW4gb3Jk
-ZXIgZm9yIGEgY2hhbmdlIHRvIGJlIGNvbXBsZXRlLCB0aGF0IGlzIE9LLiBTaW1wbHkNCj4gPiBu
-b3RlICd0aGlzIHBhdGNoIGRlcGVuZHMgb24gcGF0Y2ggWCcgaW4geW91ciBwYXRjaCBkZXNjcmlw
-dGlvbiIuIEluIG15DQo+ID4gb3BpbmlvbiBzd2lvdGxiIGlzIGEgd2hvbGUgZnVuY3Rpb25hbCBw
-YXRjaCBzbyBJIHNlcGFyYXRlIHRoZW0uIE1heWJlDQo+ID4gSSBzaG91bGQgYWRkIGRlcGVuZHMg
-ZGVzY3JpcHRpb24gaW4gdGhlIG5leHQgcGF0Y2guDQo+IA0KPiBUaGF0J3Mgbm90IHdoYXQgdGhh
-dCBtZWFucy4gIFdoYXQgaXQgbWVhbnMgaXMgdGhhdCBpZiBzb21lb25lIGVsc2UgaGFzDQo+IGFs
-cmVhZHkgcG9zdGVkIGEgcGF0Y2gsIGFuZCB5b3VyIHBhdGNoIGlzIHN1cHBvc2VkIHRvIGdvIG9u
-IHRvcCBvZiB0aGF0DQo+IHBhdGNoLCB5b3Ugc2hvdWxkIG1lbnRpb24gdGhhdC4NCj4gDQo+ID4g
-QWJvdXQgYWxsIHRoaXMgcGF0Y2ggc2V0IExlbyBhbmQgSSBpbnNpc3QgdG8gbWFrZSBpdCBhcyBh
-IHBsYXRmb3JtDQo+IGRyaXZlcg0KPiA+IHdoaWNoIGlzIGFyY2hpdGVjdHVyYWwgYmV0dGVyLiBJ
-IGRpZG4ndCBiYXNlIHRoaXMgcGF0Y2ggc2V0IG9uIHRoZQ0KPiBsYXRlc3QNCj4gPiB0cmVlIGFu
-ZCBpdCdzIHVuYXBwbGljYWJsZSBqdXN0IGJlY2F1c2UgSSB3YW50IHRvIHNob3cgdGhlIHdob2xl
-IGlkZWENCj4gb2YNCj4gPiB0aGlzIHBhdGNoc2V0LiBJZiB0aGUgaWRlYSBpcyBvayBmb3IgdXBz
-dHJlYW0gSSB3aWxsIHJlYmFzZSB0aGUgcGF0Y2gNCj4gc2V0Lg0KPiANCj4gSWYgdGhhdCdzIHRo
-ZSBjYXNlLCB5b3Ugc2hvdWxkIGxhYmVsIGl0IGFzIGFuIFtSRkMgUEFUQ0hdIChzdGFuZHMgZm9y
-DQo+IFJlcXVlc3QgRm9yIENvbW1lbnRzKSwgYW5kIG1lbnRpb24gdW5kZXIgdGhlIC0tLSBsaW5l
-IGFueSBrbm93biBpc3N1ZXMsDQo+IHN1Y2ggYXMgdGhhdCBpdCBkb2Vzbid0IGFwcGx5IHRvIHRo
-ZSBjdXJyZW50IHRyZWUuDQo+IA0KDQpJIHdpbGwgZGlzY3VzcyB3aXRoIExlbyBhbmQgcmVzdWJt
-aXQgdGhlIHBhdGNoIGlmIG5lY2Vzc2FyeS4NCg0KVGhhbmtzLg0KLUhvbmd0YW8uDQo=
+Hello,=20
+
+A gentle reminder!
+Any comments are appreciated.
+
+
+Regards,
+Shengzhou
+
+
+> -----Original Message-----
+> From: Liu Shengzhou-B36685
+> Sent: Wednesday, July 18, 2012 2:07 PM
+> To: bhelgaas@google.com; linux-pci@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org; Liu Shengzhou-B36685
+> Subject: [PATCH v2] PCI: use dev->irq instead of dev->pin to enable non
+> MSI/INTx interrupt
+>=20
+> On some platforms, root port has neither MSI/MSI-X nor INTx interrupt
+> generated in RC mode. In this case, we have to use other interrupt(e.g.
+> system shared interrupt) for port service irq to have AER, Hot-plug, etc,
+> services to work.
+>=20
+> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> ---
+>  drivers/pci/pcie/portdrv_core.c |   16 ++++++++++++----
+>  1 files changed, 12 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/pci/pcie/portdrv_core.c b/drivers/pci/pcie/portdrv_c=
+ore.c
+> index 75915b3..49acf72 100644
+> --- a/drivers/pci/pcie/portdrv_core.c
+> +++ b/drivers/pci/pcie/portdrv_core.c
+> @@ -200,10 +200,13 @@ static int init_service_irqs(struct pci_dev *dev, i=
+nt
+> *irqs, int mask)  {
+>  	int i, irq =3D -1;
+>=20
+> -	/* We have to use INTx if MSI cannot be used for PCIe PME or pciehp. */
+> +	/*
+> +	 * We have to use INTx or other interrupts(e.g. system shared interrupt=
+)
+> +	 * if MSI cannot be used for PCIe PME or pciehp.
+> +	 */
+>  	if (((mask & PCIE_PORT_SERVICE_PME) && pcie_pme_no_msi()) ||
+>  	    ((mask & PCIE_PORT_SERVICE_HP) && pciehp_no_msi())) {
+> -		if (dev->pin)
+> +		if (dev->irq)
+>  			irq =3D dev->irq;
+>  		goto no_msi;
+>  	}
+> @@ -212,8 +215,13 @@ static int init_service_irqs(struct pci_dev *dev, in=
+t
+> *irqs, int mask)
+>  	if (!pcie_port_enable_msix(dev, irqs, mask))
+>  		return 0;
+>=20
+> -	/* We're not going to use MSI-X, so try MSI and fall back to INTx */
+> -	if (!pci_enable_msi(dev) || dev->pin)
+> +	/*
+> +	 * We're not going to use MSI-X, so try MSI and fall back to INTx.
+> +	 * If neither MSI/MSI-X nor INTx available, try other interrupt. (On
+> +	 * some platforms, root port doesn't support generating MSI/MSI-X/INTx
+> +	 * in RC mode)
+> +	 */
+> +	if (!pci_enable_msi(dev) || dev->irq)
+>  		irq =3D dev->irq;
+>=20
+>   no_msi:
+> --
+> 1.6.4
