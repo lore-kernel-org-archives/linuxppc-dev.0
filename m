@@ -2,18 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 69F9D2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 04:53:35 +1000 (EST)
-Subject: Re: [PATCH][v1] powerpc/85xx: Fix sram_offset parameter type
+ by ozlabs.org (Postfix) with ESMTPS id DDAA42C032C
+ for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 04:53:46 +1000 (EST)
+Subject: Re: [PATCH] powerpc/85xx: p1022ds: fix DIU/LBC switching with NAND
+ enabled
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1343314075-2127-1-git-send-email-claudiu.manoil@freescale.com>
-Date: Thu, 26 Jul 2012 13:53:32 -0500
-Message-Id: <03E24D9C-22D0-429D-8EEC-E390B034F1C1@kernel.crashing.org>
-References: <1343314075-2127-1-git-send-email-claudiu.manoil@freescale.com>
-To: Claudiu Manoil <claudiu.manoil@freescale.com>
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1343076212-5236-1-git-send-email-timur@freescale.com>
+Date: Thu, 26 Jul 2012 13:53:44 -0500
+Message-Id: <2E2533EE-1417-4FBC-82E4-FF0A0AAD5A4B@kernel.crashing.org>
+References: <1343076212-5236-1-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +25,21 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 26, 2012, at 9:47 AM, Claudiu Manoil wrote:
+On Jul 23, 2012, at 3:43 PM, Timur Tabi wrote:
 
-> The sram_offset parameter represents a physical address
-> and should be of type phys_addr_t. As part of this fix,
-> the extraction of sram_params is being cleaned-up and
-> fixed.
-> This patch fixes now the case when the offset value of
-> 0xfff00000 was being rejected by the driver (returning
-> -EINVAL), although this is a valid offset value.
+> In order for indirect mode on the PIXIS to work properly, both chip =
+selects
+> need to be set to GPCM mode, otherwise writes to the chip select base
+> addresses will not actually post to the local bus -- they'll go to the
+> NAND controller instead.  Therefore, we need to set BR0 and BR1 to =
+GPCM
+> mode before switching to indirect mode.
 >=20
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Signed-off-by: Claudiu Manoil <claudiu.manoil@freescale.com>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> v1: fixed copyright year format
->=20
-> arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h |    4 +-
-> arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   39 =
-++++++++++------------------
-> 2 files changed, 16 insertions(+), 27 deletions(-)
+> arch/powerpc/platforms/85xx/p1022_ds.c |   64 =
++++++++++++++++++++++++++++++++-
+> 1 files changed, 62 insertions(+), 2 deletions(-)
 
 applied to merge
 
