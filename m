@@ -1,20 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0690E2C011B
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 04:54:44 +1000 (EST)
-Subject: Re: [PATCH] powerpc/85xx: introduce support for the Freescale / iVeia
- P1022RDK
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1343085149-29048-1-git-send-email-timur@freescale.com>
-Date: Thu, 26 Jul 2012 13:54:43 -0500
-Message-Id: <66238D05-3FB3-4F88-9F1D-F981604FCB91@kernel.crashing.org>
-References: <1343085149-29048-1-git-send-email-timur@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <B04825@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 628AD2C00BB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 07:28:31 +1000 (EST)
+Message-ID: <5011B673.4030802@freescale.com>
+Date: Thu, 26 Jul 2012 16:28:19 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [2/3][PATCH][upstream] TDM Framework
+References: <1343040588-16002-1-git-send-email-b37400@freescale.com>
+ <CAOZdJXVnEUEQesyG52pL_jerGDrmJLxdfBNFrj_xvhPs=ue4DA@mail.gmail.com>
+ <3F1D9DCAAB49B94D88DBE05911FA4E6E50ED27@039-SN1MPN1-006.039d.mgd.msft.net>
+ <500EB47F.1040903@freescale.com> <1343173422.2218.2.camel@concordia>
+ <500F5C99.6060704@freescale.com> <1343193511.2218.10.camel@concordia>
+In-Reply-To: <1343193511.2218.10.camel@concordia>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Singh Sandeep-B37400 <B37400@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,40 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Michael Ellerman wrote:
+> And the bible, K & R, includes an example of an enum which explicitly
+> specifies all its values. It goes on to say "enumeration variables offer
+> the chance of [type] checking and so are often better than #defines".
 
-On Jul 23, 2012, at 6:12 PM, Timur Tabi wrote:
+I don't want to beat a dead horse here, but if the driver doesn't do enum
+type checking, then it's hard to justify using an enum.  Now you said,
+"Yes, if you're going to define an enum you should use it, which this
+patch doesn't, but that's just a bug in this patch."  It could be argued
+that there's no real place to incorporate enum type checking in this code.
 
-> The Freescale / iVeia P1022RDK reference board is a small-factor board
-> with a Freescale P1022 SOC.  It includes:
->=20
-> 1) 512 MB 64-bit DDR3-800 (max) memory
-> 2) 8MB SPI serial flash memory for boot loader
-> 3) Bootable 4-bit SD/MMC port
-> 4) Two 10/100/1000 Ethernet connectors
-> 5) One SATA port
-> 6) Two USB ports
-> 7) One PCIe x4 slot
-> 8) DVI video connector
-> 9) Audio input and output jacks, powered by a Wolfson WM8960 codec.
->=20
-> Unlike the P1022DS, the P1022RDK does not have any localbus devices,
-> presumably because of the localbus / DIU multiplexing restriction of
-> the P1022 SOC.
->=20
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
-> arch/powerpc/boot/dts/p1022rdk.dts         |  188 =
-+++++++++++++++++++++++++++
-> arch/powerpc/configs/mpc85xx_defconfig     |    1 +
-> arch/powerpc/configs/mpc85xx_smp_defconfig |    1 +
-> arch/powerpc/platforms/85xx/Kconfig        |    7 +
-> arch/powerpc/platforms/85xx/Makefile       |    1 +
-> arch/powerpc/platforms/85xx/p1022_rdk.c    |  195 =
-++++++++++++++++++++++++++++
-> 6 files changed, 393 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/p1022rdk.dts
-> create mode 100644 arch/powerpc/platforms/85xx/p1022_rdk.c
+IMHO, this is pointless:
 
-applied to next
+enum mytype {
+	VALUE1 = 0x10,
+	VALUE2 = 0x20
+};
+	
 
-- k=
+int func(void)
+{
+	if (some-condition)
+		return VALUE1;
+	else
+		return VALUE2;
+}
+
+> And the bible, K & R, includes an example of an enum which explicitly
+> specifies all its values.
+
+First, K&R is pretty old, and there are a lot of style issues in it that
+are no longer in favor.  I don't think anyone would advocate this:
+
+int func(x, y)
+int x;
+int y;
+{
+	...
+}
+
+Secondly, one of the benefits of an enum (which again, is not actually
+being used in this patch), is to be able to specify multiple constants
+that are given unique values, but you don't actually care what the values
+are, like this:
+
+enum radeon_family {
+	CHIP_FAMILY_UNKNOW,
+	CHIP_FAMILY_LEGACY,
+	CHIP_FAMILY_RADEON,
+	CHIP_FAMILY_RV100,
+	CHIP_FAMILY_RS100,    /* U1 (IGP320M) or A3 (IGP320)*/
+	CHIP_FAMILY_RV200,
+	...
+};
+
+The code will still work if I swap CHIP_FAMILY_RV100 with
+CHIP_FAMILY_RS100.  As long as each value is unique, everything works.
+
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
