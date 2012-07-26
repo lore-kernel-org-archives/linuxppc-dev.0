@@ -1,11 +1,31 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 18/18] powerpc: Remove <asm/abs_addr.h>
-Date: Thu, 26 Jul 2012 17:20:04 +1000
-Message-Id: <1343287204-7700-18-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
-References: <1343287204-7700-1-git-send-email-michael@ellerman.id.au>
+Return-Path: <B37400@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2A2E72C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 20:50:02 +1000 (EST)
+Received: from mail153-co1 (localhost [127.0.0.1])	by
+ mail153-co1-R.bigfish.com (Postfix) with ESMTP id 1837F7C009A	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 10:49:57 +0000 (UTC)
+Received: from CO1EHSMHS007.bigfish.com (unknown [10.243.78.246])	by
+ mail153-co1.bigfish.com (Postfix) with ESMTP id 5570164003F	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 10:49:55 +0000 (UTC)
+From: Singh Sandeep-B37400 <B37400@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: RE: [2/3][PATCH][upstream] TDM Framework
+Date: Thu, 26 Jul 2012 10:49:54 +0000
+Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E50F8C0@039-SN1MPN1-006.039d.mgd.msft.net>
+References: <1343040588-16002-1-git-send-email-b37400@freescale.com>
+ <CAOZdJXVnEUEQesyG52pL_jerGDrmJLxdfBNFrj_xvhPs=ue4DA@mail.gmail.com>
+ <3F1D9DCAAB49B94D88DBE05911FA4E6E50ED27@039-SN1MPN1-006.039d.mgd.msft.net>
+ <500EB47F.1040903@freescale.com>
+In-Reply-To: <500EB47F.1040903@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -15,41 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It contains no code and is not included by anyone.
+Hi,
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/include/asm/abs_addr.h |   22 ----------------------
- 1 file changed, 22 deletions(-)
- delete mode 100644 arch/powerpc/include/asm/abs_addr.h
+Please find my comment inline.
 
-diff --git a/arch/powerpc/include/asm/abs_addr.h b/arch/powerpc/include/asm/abs_addr.h
-deleted file mode 100644
-index dc667d4..0000000
---- a/arch/powerpc/include/asm/abs_addr.h
-+++ /dev/null
-@@ -1,22 +0,0 @@
--#ifndef _ASM_POWERPC_ABS_ADDR_H
--#define _ASM_POWERPC_ABS_ADDR_H
--#ifdef __KERNEL__
--
--
--/*
-- * c 2001 PPC 64 Team, IBM Corp
-- *
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License
-- * as published by the Free Software Foundation; either version
-- * 2 of the License, or (at your option) any later version.
-- */
--
--#include <linux/memblock.h>
--
--#include <asm/types.h>
--#include <asm/page.h>
--#include <asm/prom.h>
--
--#endif /* __KERNEL__ */
--#endif /* _ASM_POWERPC_ABS_ADDR_H */
--- 
-1.7.9.5
+Regards,
+Sandeep
+
+
+-----Original Message-----
+From: Tabi Timur-B04825=20
+Sent: Tuesday, July 24, 2012 8:13 PM
+To: Singh Sandeep-B37400
+Cc: linuxppc-dev@lists.ozlabs.org; Aggrwal Poonam-B10812
+Subject: Re: [2/3][PATCH][upstream] TDM Framework
+
+Singh Sandeep-B37400 wrote:
+
+>> +int tdm_adap_send(struct tdm_adapter *adap, void **buf, int count) {
+>> +       int res;
+>> +
+>> +       if (adap->algo->tdm_write)
+>> +               res =3D adap->algo->tdm_write(adap, buf, count);
+>=20
+> Why does tdm_write() return a u32?  And shouldn't 'res' also be a u32, to=
+ make tdm_write()?
+> [Sandeep] tdm_write() returns number of bytes written. You are right,=20
+> 'res' should be declared as u32
+
+Then it should return an unsigned int.  You should used a sized integer typ=
+e only when the size really matters (e.g. hardware registers or packed fiel=
+ds in a structure).
+[Sandeep] Agreed, will rectify.
