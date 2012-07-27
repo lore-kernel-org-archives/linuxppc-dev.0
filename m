@@ -1,40 +1,17 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1C2F42C0092
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 20:45:33 +1000 (EST)
-Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 435F63EE0C2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 19:45:32 +0900 (JST)
-Received: from smail (m2 [127.0.0.1])
- by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 2177645DE54
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 19:45:32 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
- by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 0569E45DE4E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 19:45:32 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id EA3E41DB8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 19:45:31 +0900 (JST)
-Received: from g01jpexchkw05.g01.fujitsu.local
- (g01jpexchkw05.g01.fujitsu.local [10.0.194.44])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id A9C511DB803C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 19:45:31 +0900 (JST)
-Message-ID: <5012712E.9000005@jp.fujitsu.com>
-Date: Fri, 27 Jul 2012 19:45:02 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5BC1C2C0079
+ for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 22:45:08 +1000 (EST)
+Date: Fri, 27 Jul 2012 07:44:53 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [git pull] Please pull powerpc.git merge branch
+Message-ID: <alpine.LFD.2.00.1207270743440.9079@right.am.freescale.net>
 MIME-Version: 1.0
-To: Wen Congyang <wency@cn.fujitsu.com>
-Subject: Re: [RFC PATCH v5 19/19] memory-hotplug: remove sysfs file of node
-References: <50126B83.3050201@cn.fujitsu.com> <50126F21.803@cn.fujitsu.com>
-In-Reply-To: <50126F21.803@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
- rientjes@google.com, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, liuj97@gmail.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,52 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Wen,
+Ben,
 
-2012/07/27 19:36, Wen Congyang wrote:
-> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->
-> The patch adds node_set_offline() and unregister_one_node() to remove_memory()
-> for removing sysfs file of node.
->
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> ---
->   mm/memory_hotplug.c |    5 +++++
->   1 files changed, 5 insertions(+), 0 deletions(-)
->
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 5ac035f..5681968 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -1267,6 +1267,11 @@ int __ref remove_memory(int nid, u64 start, u64 size)
->   	/* remove memmap entry */
->   	firmware_map_remove(start, start + size, "System RAM");
->
-> +	if (!node_present_pages(nid)) {
+A few patches that missed the initial 3.6 window.  These are bug fixes at
+this point.
 
-Applying [PATCH v5 17/19], pgdat->node_spanned_pages can become 0 when
-all memory of the pgdat is removed. When pgdat->node_spanned_pages is 0,
-it means the pgdat has no memory. So I think node_spanned_pages() is
-better.
+- k
 
-Thanks,
-Yasuaki Ishimatsu
+The following changes since commit 574ce79cea9d3fda109ffcc82f81733de4740e5c:
 
-> +		node_set_offline(nid);
-> +		unregister_one_node(nid);
-> +	}
-> +
->   	arch_remove_memory(start, size);
->   out:
->   	unlock_memory_hotplug();
->
+  powerpc/mpic: Create a revmap with enough entries for IPIs and timers (2012-07-23 14:20:42 +1000)
+
+are available in the git repository at:
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+
+Claudiu Manoil (1):
+      powerpc/85xx: Fix sram_offset parameter type
+
+Shaohui Xie (1):
+      powerpc/85xx: P3041DS - change espi input-clock from 40MHz to 35MHz
+
+Tang Yuantian (1):
+      powerpc/85xx: Fix pci base address error for p2020rdb-pc in dts
+
+Timur Tabi (2):
+      powerpc/85xx: p1022ds: disable the NAND flash node if video is enabled
+      powerpc/85xx: p1022ds: fix DIU/LBC switching with NAND enabled
+
+ arch/powerpc/boot/dts/p2020rdb-pc_32b.dts |    4 +-
+ arch/powerpc/boot/dts/p2020rdb-pc_36b.dts |    4 +-
+ arch/powerpc/boot/dts/p3041ds.dts         |    2 +-
+ arch/powerpc/platforms/85xx/p1022_ds.c    |  122 +++++++++++++++++++++++-----
+ arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h |    4 +-
+ arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   39 ++++------
+ 6 files changed, 121 insertions(+), 54 deletions(-)
