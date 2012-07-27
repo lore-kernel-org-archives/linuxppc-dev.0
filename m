@@ -1,24 +1,20 @@
-Return-Path: <B38951@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0476B2C008F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 20:10:18 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Fri, 27 Jul 2012 10:10:10 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A289D8@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
- <ACC8975F-CA31-4AA0-9824-4C3F6C70CD45@kernel.crashing.org>
-In-Reply-To: <ACC8975F-CA31-4AA0-9824-4C3F6C70CD45@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 27B072C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 20:15:57 +1000 (EST)
+Message-ID: <50126B83.3050201@cn.fujitsu.com>
+Date: Fri, 27 Jul 2012 18:20:51 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-ia64@vger.kernel.org, cmetcalf@tilera.com
+Subject: [RFC PATCH v5 00/19] memory-hotplug: hot-remove physical memory
+Content-Type: text/plain; charset=UTF-8
+Cc: len.brown@intel.com, Yasuaki ISIMATU <isimatu.yasuaki@jp.fujitsu.com>,
+ paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
+ rientjes@google.com, cl@linux.com, akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,266 +24,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi kumar,
+This patch series aims to support physical memory hot-remove.
 
-I know "duplicate code from pci_process_bridge_OF_ranges()" is
-hard to accept but "refactor the code to have a shared function"
-is knotty. Actually this is the reason I didn't do the refactor.
+The patches can free/remove following things:
 
-Here is the situation:
+  - acpi_memory_info                          : [RFC PATCH 4/19]
+  - /sys/firmware/memmap/X/{end, start, type} : [RFC PATCH 8/19]
+  - iomem_resource                            : [RFC PATCH 9/19]
+  - mem_section and related sysfs files       : [RFC PATCH 10-11, 13-16/19]
+  - page table of removed memory              : [RFC PATCH 12/19]
+  - node and related sysfs files              : [RFC PATCH 18-19/19]
 
-First, pci_process_bridge_OF_ranges() is a common code using by
-so many pci client.
+If you find lack of function for physical memory hot-remove, please let me
+know.
 
-Second, the contents of pci_process_bridge_OF_ranges() twisted
-together. It's hard to decouple the function I need for determining
-swiotlb with other contents. I tried and found a way to do this
-but the shared function need so many parameters which is also
-unacceptable.=20
+change log of v5:
+ * merge the patchset to clear page table and the patchset to hot remove
+   memory(from ishimatsu) to one big patchset.
 
-Third, my function to determine swiotlb should know the start
-and the end of pci mem space address for all the controllers.
-Note that the end of address is for determining where to map
-PEXCSRBAR.
+ [RFC PATCH v5 1/19]
+   * rename remove_memory() to offline_memory()/offline_pages()
 
-If you have any idea for this please let me know.
+ [RFC PATCH v5 2/19]
+   * new patch: implement offline_memory(). This function offlines pages,
+     update memory block's state, and notify the userspace that the memory
+     block's state is changed.
 
-Thanks.
--Hongtao.
+ [RFC PATCH v5 4/19]
+   * offline and remove memory in acpi_memory_disable_device() too.
+
+ [RFC PATCH v5 17/19]
+   * new patch: add a new function __remove_zone() to revert the things done
+     in the function __add_zone().
+
+ [RFC PATCH v5 18/19]
+   * flush work befor reseting node device.
+
+change log of v4:
+ * remove "memory-hotplug : unify argument of firmware_map_add_early/hotplug"
+   from the patch series, since the patch is a bugfix. It is being disccussed
+   on other thread. But for testing the patch series, the patch is needed.
+   So I added the patch as [PATCH 0/13].
+
+ [RFC PATCH v4 2/13]
+   * check memory is online or not at remove_memory()
+   * add memory_add_physaddr_to_nid() to acpi_memory_device_remove() for
+     getting node id
+ 
+ [RFC PATCH v4 3/13]
+   * create new patch : check memory is online or not at online_pages()
+
+ [RFC PATCH v4 4/13]
+   * add __ref section to remove_memory()
+   * call firmware_map_remove_entry() before remove_sysfs_fw_map_entry()
+
+ [RFC PATCH v4 11/13]
+   * rewrite register_page_bootmem_memmap() for removing page used as PT/PMD
+
+change log of v3:
+ * rebase to 3.5.0-rc6
+
+ [RFC PATCH v2 2/13]
+   * remove extra kobject_put()
+
+   * The patch was commented by Wen. Wen's comment is
+     "acpi_memory_device_remove() should ignore a return value of
+     remove_memory() since caller does not care the return value".
+     But I did not change it since I think caller should care the
+     return value. And I am trying to fix it as follow:
+
+     https://lkml.org/lkml/2012/7/5/624
+
+ [RFC PATCH v2 4/13]
+   * remove a firmware_memmap_entry allocated by kzmalloc()
+
+change log of v2:
+ [RFC PATCH v2 2/13]
+   * check whether memory block is offline or not before calling offline_memory()
+   * check whether section is valid or not in is_memblk_offline()
+   * call kobject_put() for each memory_block in is_memblk_offline()
+
+ [RFC PATCH v2 3/13]
+   * unify the end argument of firmware_map_add_early/hotplug
+
+ [RFC PATCH v2 4/13]
+   * add release_firmware_map_entry() for freeing firmware_map_entry
+
+ [RFC PATCH v2 6/13]
+  * add release_memory_block() for freeing memory_block
+
+ [RFC PATCH v2 11/13]
+  * fix wrong arguments of free_pages()
 
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, July 27, 2012 1:53 AM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
-> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
-> initialization code
->=20
->=20
-> On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
->=20
-> > We unified the Freescale pci/pcie initialization by changing the
-> fsl_pci
-> > to a platform driver. In previous PCI code architecture the
-> initialization
-> > routine is called at board_setup_arch stage. Now the initialization is
-> done
-> > in probe function which is architectural better. Also It's convenient
-> for
-> > adding PM support for PCI controller in later patch.
-> >
-> > One issue introduced by this architecture is the timing of swiotlb_init=
-.
-> > During PCI initialization the need of swiotlb is determined and this
-> should
-> > be done before swiotlb_init. So a new function to determine swiotlb by
-> > parsing pci ranges is made. This function is called at board_setup_arch
-> > stage which is earlier than swiotlb_init.
-> >
-> > Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> > Changed for V3:
-> > - Rebase the patch set on the latest tree
-> > - merge PCI unify and swiotlb patch into one
-> >
-> > arch/powerpc/sysdev/fsl_pci.c |  155 ++++++++++++++++++++++++++++++++--
-> -------
-> > arch/powerpc/sysdev/fsl_pci.h |    9 +--
-> > 2 files changed, 125 insertions(+), 39 deletions(-)
-> >
-> > diff --git a/arch/powerpc/sysdev/fsl_pci.c
-> b/arch/powerpc/sysdev/fsl_pci.c
-> > index a7b2a60..5228b6b 100644
-> > --- a/arch/powerpc/sysdev/fsl_pci.c
-> > +++ b/arch/powerpc/sysdev/fsl_pci.c
-> > @@ -823,56 +823,143 @@ static const struct of_device_id pci_ids[] =3D {
-> > 	{},
-> > };
-> >
-> > -struct device_node *fsl_pci_primary;
-> > -
-> > -void __devinit fsl_pci_init(void)
-> > +#ifdef CONFIG_SWIOTLB
-> > +void pci_determine_swiotlb(void)
-> > {
-> > +	const u32 *ranges;
-> > +	int rlen;
-> > +	int pna;
-> > +	int np;
-> > 	struct device_node *node;
-> > -	struct pci_controller *hose;
-> > -	dma_addr_t max =3D 0xffffffff;
-> > -
-> > -	/* Callers can specify the primary bus using other means. */
-> > -	if (!fsl_pci_primary) {
-> > -		/* If a PCI host bridge contains an ISA node, it's primary.
-> */
-> > -		node =3D of_find_node_by_type(NULL, "isa");
-> > -		while ((fsl_pci_primary =3D of_get_parent(node))) {
-> > -			of_node_put(node);
-> > -			node =3D fsl_pci_primary;
-> > -
-> > -			if (of_match_node(pci_ids, node))
-> > -				break;
-> > -		}
-> > -	}
-> > +	int memno;
-> > +	u32 pci_space;
-> > +	unsigned long long pci_addr, cpu_addr, pci_next, cpu_next, size;
-> > +	unsigned long long pci_addr_lo =3D ULLONG_MAX;
-> > +	unsigned long long pci_addr_hi =3D 0x0;
-> > +	dma_addr_t pci_dma_sz;
-> >
-> > -	node =3D NULL;
-> > 	for_each_node_by_type(node, "pci") {
-> > 		if (of_match_node(pci_ids, node)) {
-> > -			/*
-> > -			 * If there's no PCI host bridge with ISA, arbitrarily
-> > -			 * designate one as primary.  This can go away once
-> > -			 * various bugs with primary-less systems are fixed.
-> > -			 */
-> > -			if (!fsl_pci_primary)
-> > -				fsl_pci_primary =3D node;
-> > -
-> > -			fsl_add_bridge(node, fsl_pci_primary =3D=3D node);
-> > -			hose =3D pci_find_hose_for_OF_device(node);
-> > -			max =3D min(max, hose->dma_window_base_cur +
-> > -					hose->dma_window_size);
-> > +			memno =3D 0;
-> > +			pna =3D of_n_addr_cells(node);
-> > +			np =3D pna + 5;
->=20
-> Don't duplicate code from pci_process_bridge_OF_ranges(), refactor the
-> code to have a shared function:
->=20
-> > +			/* Get ranges property */
-> > +			ranges =3D of_get_property(node, "ranges", &rlen);
-> > +			if (ranges =3D=3D NULL)
-> > +				return;
-> > +
-> > +			/* Parse outbound MEM window range */
-> > +			while ((rlen -=3D np * 4) >=3D 0) {
-> > +				/* Read next ranges element */
-> > +				pci_space =3D ranges[0];
-> > +				if (!((pci_space >> 24) & 0x2)) {
-> > +					ranges +=3D np;
-> > +					break;
-> > +				}
-> > +				pci_addr =3D of_read_number(ranges + 1, 2);
-> > +				cpu_addr =3D of_translate_address(
-> > +						node, ranges + 3);
-> > +				size =3D of_read_number(ranges + pna + 3, 2);
-> > +				ranges +=3D np;
-> > +
-> > +				/*
-> > +				 * If we failed translation or got a zero-sized
-> > +				 * region (some FW try to feed us with non
-> > +				 * sensical zero sized regions such as power3
-> > +				 * which look like some kind of attempt at
-> > +				 * exposing the VGA memory hole)
-> > +				 */
-> > +				if (cpu_addr =3D=3D OF_BAD_ADDR || size =3D=3D 0)
-> > +					continue;
-> > +
-> > +				/*
-> > +				 * Now consume following elements while they
-> > +				 * are contiguous
-> > +				 */
-> > +				for (; rlen >=3D np * sizeof(u32);
-> > +						ranges +=3D np, rlen -=3D np * 4) {
-> > +					if (ranges[0] !=3D pci_space)
-> > +						break;
-> > +					pci_next =3D of_read_number(ranges + 1,
-> > +							2);
-> > +					cpu_next =3D of_translate_address(node,
-> > +							ranges + 3);
-> > +					if (pci_next !=3D pci_addr + size ||
-> > +						cpu_next !=3D cpu_addr + size)
-> > +						break;
-> > +					size +=3D of_read_number(
-> > +							ranges + pna + 3, 2);
-> > +				}
-> > +
-> > +				/* We support only 3 memory ranges */
-> > +				if (memno >=3D 3) {
-> > +					printk(KERN_INFO
-> > +							" \\--> Skipped (too
-> many) !\n");
-> > +					continue;
-> > +				}
-> > +
-> > +				pci_addr_lo =3D min(pci_addr, pci_addr_lo);
-> > +				pci_addr_hi =3D max(pci_addr + size, pci_addr_hi);
-> > +				memno++;
-> > +			}
-> > 		}
-> > 	}
-> >
-> > -#ifdef CONFIG_SWIOTLB
-> > +	/* Get PEXCSRBAR size (equal to CCSR size) */
-> > +	node =3D of_find_node_by_type(NULL, "soc");
-> > +	ranges =3D of_get_property(node, "ranges", &rlen);
-> > +	if (ranges =3D=3D NULL)
-> > +		return;
-> > +
-> > +	size =3D of_read_number(ranges + 3, 1);
-> > +	of_node_put(node);
-> > +
-> > +	if (pci_addr_hi < (0x100000000ull - size))
-> > +		pci_dma_sz =3D pci_addr_lo;
-> > +	else
-> > +		pci_dma_sz =3D pci_addr_lo - size;
-> > +
-> > 	/*
-> > 	 * if we couldn't map all of DRAM via the dma windows
-> > 	 * we need SWIOTLB to handle buffers located outside of
-> > 	 * dma capable memory region
-> > 	 */
-> > -	if (memblock_end_of_DRAM() - 1 > max) {
-> > +	if (memblock_end_of_DRAM() > pci_dma_sz) {
-> > 		ppc_swiotlb_enable =3D 1;
-> > 		set_pci_dma_ops(&swiotlb_dma_ops);
-> > -		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
-> > +		ppc_md.pci_dma_dev_setup =3D
-> > +			pci_dma_dev_setup_swiotlb;
->=20
-> why the line wrap change?
->=20
-> > 	}
-> > +}
-> > #endif
-> > +
-> > +int primary_phb_addr;
-> > +static int __devinit fsl_pci_probe(struct platform_device *pdev)
-> > +{
-> > +	struct pci_controller *hose;
-> > +	bool is_primary;
-> > +
-> > +	if (of_match_node(pci_ids, pdev->dev.of_node)) {
-> > +		struct resource rsrc;
-> > +		of_address_to_resource(pdev->dev.of_node, 0, &rsrc);
-> > +		is_primary =3D ((rsrc.start & 0xfffff) =3D=3D primary_phb_addr);
-> > +		fsl_add_bridge(pdev->dev.of_node, is_primary);
-> > +	}
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static struct platform_driver fsl_pci_driver =3D {
-> > +	.driver =3D {
-> > +		.name =3D "fsl-pci",
-> > +		.of_match_table =3D pci_ids,
-> > +	},
-> > +	.probe =3D fsl_pci_probe,
-> > +};
-> > +
-> > +static int __init fsl_pci_init(void)
-> > +{
-> > +	return platform_driver_register(&fsl_pci_driver);
-> > }
-> > +arch_initcall(fsl_pci_init);
-> > #endif
->=20
->=20
+Wen Congyang (5):
+  memory-hotplug: implement offline_memory()
+  memory-hotplug: store the node id in acpi_memory_device
+  memory-hotplug: export the function acpi_bus_remove()
+  memory-hotplug: call acpi_bus_remove() to remove memory device
+  memory-hotplug: introduce new function arch_remove_memory()
+
+Yasuaki Ishimatsu (14):
+  memory-hotplug: rename remove_memory() to
+    offline_memory()/offline_pages()
+  memory-hotplug: offline and remove memory when removing the memory
+    device
+  memory-hotplug: check whether memory is present or not
+  memory-hotplug: remove /sys/firmware/memmap/X sysfs
+  memory-hotplug: does not release memory region in PAGES_PER_SECTION
+    chunks
+  memory-hotplug: add memory_block_release
+  memory-hotplug: remove_memory calls __remove_pages
+  memory-hotplug: check page type in get_page_bootmem
+  memory-hotplug: move register_page_bootmem_info_node and
+    put_page_bootmem for sparse-vmemmap
+  memory-hotplug: implement register_page_bootmem_info_section of
+    sparse-vmemmap
+  memory-hotplug: free memmap of sparse-vmemmap
+  memory_hotplug: clear zone when the memory is removed
+  memory-hotplug: add node_device_release
+  memory-hotplug: remove sysfs file of node
+
+ arch/ia64/mm/init.c                             |   16 +
+ arch/powerpc/mm/mem.c                           |   14 +
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   16 +-
+ arch/s390/mm/init.c                             |    8 +
+ arch/sh/mm/init.c                               |   15 +
+ arch/tile/mm/init.c                             |    8 +
+ arch/x86/include/asm/pgtable_types.h            |    1 +
+ arch/x86/mm/init_32.c                           |   10 +
+ arch/x86/mm/init_64.c                           |  333 ++++++++++++++++++++++
+ arch/x86/mm/pageattr.c                          |   47 ++--
+ drivers/acpi/acpi_memhotplug.c                  |   51 +++-
+ drivers/acpi/scan.c                             |    3 +-
+ drivers/base/memory.c                           |   90 ++++++-
+ drivers/base/node.c                             |    8 +
+ drivers/firmware/memmap.c                       |   78 +++++-
+ include/acpi/acpi_bus.h                         |    1 +
+ include/linux/firmware-map.h                    |    6 +
+ include/linux/memory.h                          |    5 +
+ include/linux/memory_hotplug.h                  |   25 +-
+ include/linux/mm.h                              |    5 +-
+ include/linux/mmzone.h                          |   19 ++
+ mm/memory_hotplug.c                             |  337 +++++++++++++++++++++--
+ mm/sparse.c                                     |    5 +-
+ 23 files changed, 1010 insertions(+), 91 deletions(-)
