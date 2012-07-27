@@ -1,31 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 022DF2C007F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2012 02:37:33 +1000 (EST)
-Message-ID: <5012C3C2.7060205@freescale.com>
-Date: Fri, 27 Jul 2012 11:37:22 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3392A2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2012 03:59:44 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so5206695pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 10:59:42 -0700 (PDT)
+Date: Fri, 27 Jul 2012 10:59:39 -0700
+From: Greg KH <gregkh@linuxfoundation.org>
+To: sandeep@freescale.com
+Subject: Re: [2/3][PATCH][v2] TDM Framework
+Message-ID: <20120727175939.GA23105@kroah.com>
+References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
 MIME-Version: 1.0
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Subject: Re: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by looking
- for ISA node
-References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
- <1343125210-16720-3-git-send-email-B38951@freescale.com>
- <500EEDD9.8050507@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A275B4@039-SN1MPN1-002.039d.mgd.msft.net>
- <50102C27.8040004@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A27C7D@039-SN1MPN1-002.039d.mgd.msft.net>
- <5011F01C.8000008@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A285D0@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A285D0@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
+Cc: devel@driverdev.osuosl.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,40 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/26/2012 09:07 PM, Jia Hongtao-B38951 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Wood Scott-B07421
->> Sent: Friday, July 27, 2012 9:34 AM
->> To: Jia Hongtao-B38951
->> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
->> galak@kernel.crashing.org; Li Yang-R58472
->> Subject: Re: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by
->> looking for ISA node
->>
->> On 07/25/2012 09:20 PM, Jia Hongtao-B38951 wrote:
->>> All this recursion thing I will try another way.
->>>
->>> But this is not the same as you did. If we use platform driver probe
->> function
->>> will be called more than once. Your function is to find ISA node and
->> check if
->>> the parent equal to this PCI controller. My function is to search ISA
->> under
->>> each PCI controller.
->>
->> The result is the same -- "does this PCI controller have an ISA node
->> under it?"
->>
->> -Scott
-> 
-> 
-> The result is the same but as I said in platform driver probe function will
-> be called for each PCI controller.
+On Fri, Jul 27, 2012 at 07:35:38PM +0530, sandeep@freescale.com wrote:
+> +/* Data structures required for sysfs */
+> +static struct tdm_sysfs attr = {
+> +	.attr.name = "use_latest_data",
+> +	.attr.mode = 0664,
+> +	.cmd_type = TDM_LATEST_DATA,
+> +};
 
-So?  Just because you've got a platform device now doesn't mean you
-can't do any early global init.  This has to be done globally, so we can
-choose a fallback primary bus if there's no ISA in the system.
+What is this for?
 
--Scott
+> +int tdm_sysfs_init(void)
+> +{
+> +	struct kobject *tdm_kobj;
+> +	int err = 1;
+> +	tdm_kobj = kzalloc(sizeof(*tdm_kobj), GFP_KERNEL);
+> +	if (tdm_kobj) {
+> +		kobject_init(tdm_kobj, &tdm_type);
+> +		if (kobject_add(tdm_kobj, NULL, "%s", "tdm")) {
+> +			pr_err("tdm: Sysfs creation failed\n");
+> +			kobject_put(tdm_kobj);
+> +			err = -EINVAL;
+> +			goto out;
+> +		}
+> +	} else {
+> +		pr_err("tdm: Unable to allocate tdm_kobj\n");
+> +		err = -ENOMEM;
+> +		goto out;
+> +	}
+> +
+> +out:
+> +	return err;
+> +}
+
+You just leaked memory, what are you trying to do here?
+
+And why are you using "raw" kobjects?  That's a sure sign that something
+is really wrong.
+
+Your code doesn't look like it is tied into the driver model at all, why
+not?  What are you trying to do here?
+
+Also, when creating new sysfs entries, like you are attempting to do
+here (unsuccessfully I might add), you must create Documentation/ABI/
+files as well.
+
+And, to top it all off, you do realize you are asking us to do code
+review in the middle of the merge window, when we are all busy doing
+other things?
+
+greg k-h
