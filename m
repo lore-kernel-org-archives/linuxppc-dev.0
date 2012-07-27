@@ -1,21 +1,21 @@
 Return-Path: <B32616@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AC74C2C038E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 19:16:02 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 37CA32C057A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 19:16:31 +1000 (EST)
 From: <qiang.liu@freescale.com>
-To: <linux-crypto@vger.kernel.org>, <vinod.koul@intel.com>,
- <dan.j.williams@intel.com>, <herbert@gondor.hengli.com.au>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v4 0/7] Raid: enable talitos xor offload for improving
- performance
-Date: Fri, 27 Jul 2012 17:15:31 +0800
-Message-ID: <1343380531-11953-1-git-send-email-qiang.liu@freescale.com>
+To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v4 2/7] fsl-dma: remove attribute DMA_INTERRUPT of dmaengine
+Date: Fri, 27 Jul 2012 17:15:51 +0800
+Message-ID: <1343380551-11983-1-git-send-email-qiang.liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+Cc: Vinod Koul <vinod.koul@intel.com>, Qiang Liu <qiang.liu@freescale.com>,
+ herbert@gondor.hengli.com.au, Dan Williams <dan.j.williams@intel.com>,
+ davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,61 +25,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: Qiang Liu <qiang.liu@freescale.com>
 
-The following 7 patches enabling fsl-dma and talitos offload raid
-operations for improving raid performance and balancing CPU load.
+Delete attribute DMA_INTERRUPT because fsl-dma doesn't support this function,
+exception will be thrown if talitos is used to offload xor at the same time.
 
-Write performance will be improved by 25-30% tested by iozone.
-Write performance is improved about 2% after using spin_lock_bh replace
-spin_lock_irqsave.
-CPU load will be reduced by 8%.
+Cc: Dan Williams <dan.j.williams@intel.com>
+Cc: Vinod Koul <vinod.koul@intel.com>
+Cc: Li Yang <leoli@freescale.com>
+Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+Acked-by: Ira W. Snyder <iws@ovro.caltech.edu>
+---
+ drivers/dma/fsldma.c |   31 -------------------------------
+ 1 files changed, 0 insertions(+), 31 deletions(-)
 
-Changes in V4:
-	- fix an error in talitos when dest addr is same with src addr, dest
-	should be freed only one time if src is same with dest addr;
-	- correct coding style in fsl-dma according to Ira's comments;
-	- fix a race condition in fsl-dma fsl_tx_status(), remove the interface
-	which is used to free descriptors in queue ld_completed, this interface
-	has been included in fsldma_cleanup_descriptor(), in v3, there is one
-	place missed spin_lock protect;
-	- split the original patch 3/4 up to 2 patches 3/7 and 4/7 according to
-	Li Yang's comments.
-	- fix a warning of unitialized cookie;
-	- add memory copy self test in fsl-dma;
-	- add more detail description about use spin_lock_bh() to instead of
-	spin_lock_irqsave() according to Timur's comments;
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index 8f84761..4f2f212 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -543,35 +543,6 @@ static void fsl_dma_free_chan_resources(struct dma_chan *dchan)
+ }
 
-Changes in v3:
-	- change release process of fsl-dma descriptor for resolve the
-	potential race condition
-	- add test result when use spin_lock_bh replace spin_lock_irqsave
-	- modify the benchmark results according to the latest patch
+ static struct dma_async_tx_descriptor *
+-fsl_dma_prep_interrupt(struct dma_chan *dchan, unsigned long flags)
+-{
+-	struct fsldma_chan *chan;
+-	struct fsl_desc_sw *new;
+-
+-	if (!dchan)
+-		return NULL;
+-
+-	chan = to_fsl_chan(dchan);
+-
+-	new = fsl_dma_alloc_descriptor(chan);
+-	if (!new) {
+-		chan_err(chan, "%s\n", msg_ld_oom);
+-		return NULL;
+-	}
+-
+-	new->async_tx.cookie = -EBUSY;
+-	new->async_tx.flags = flags;
+-
+-	/* Insert the link descriptor to the LD ring */
+-	list_add_tail(&new->node, &new->tx_list);
+-
+-	/* Set End-of-link to the last link descriptor of new list */
+-	set_ld_eol(chan, new);
+-
+-	return &new->async_tx;
+-}
+-
+-static struct dma_async_tx_descriptor *
+ fsl_dma_prep_memcpy(struct dma_chan *dchan,
+ 	dma_addr_t dma_dst, dma_addr_t dma_src,
+ 	size_t len, unsigned long flags)
+@@ -1352,12 +1323,10 @@ static int __devinit fsldma_of_probe(struct platform_device *op)
+ 	fdev->irq = irq_of_parse_and_map(op->dev.of_node, 0);
 
-Changes in v2:
-	- rebase onto cryptodev tree
-	- split the patch 3/4 up to 3 independent patches
-	- remove the patch 4/4, the fix is not for cryptodev tree
-
-
-Qiang Liu (4):
-      Talitos: Support for async_tx XOR offload
-      fsl-dma: remove attribute DMA_INTERRUPT of dmaengine
-      fsl-dma: change release process of dma descriptor for supporting async_tx
-      fsl-dma: use spin_lock_bh to instead of spin_lock_irqsave
-
-Qiang Liu (7):
-      Talitos: Support for async_tx XOR offload
-      fsl-dma: remove attribute DMA_INTERRUPT of dmaengine
-      fsl-dma: change release process of dma descriptor for supporting async_tx
-      fsl-dma: move the function ahead of its invoke function
-      fsl-dma: use spin_lock_bh to instead of spin_lock_irqsave
-      fsl-dma: fix a warning of unitialized cookie
-      fsl-dma: add memcpy self test interface
-
- drivers/crypto/Kconfig   |    9 +
- drivers/crypto/talitos.c |  413 ++++++++++++++++++++++++++++++++++
- drivers/crypto/talitos.h |   53 +++++
- drivers/dma/fsldma.c     |  550 +++++++++++++++++++++++++++++-----------------
- drivers/dma/fsldma.h     |    1 +
- 5 files changed, 822 insertions(+), 204 deletions(-)
+ 	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+-	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
+ 	dma_cap_set(DMA_SG, fdev->common.cap_mask);
+ 	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+ 	fdev->common.device_alloc_chan_resources = fsl_dma_alloc_chan_resources;
+ 	fdev->common.device_free_chan_resources = fsl_dma_free_chan_resources;
+-	fdev->common.device_prep_dma_interrupt = fsl_dma_prep_interrupt;
+ 	fdev->common.device_prep_dma_memcpy = fsl_dma_prep_memcpy;
+ 	fdev->common.device_prep_dma_sg = fsl_dma_prep_sg;
+ 	fdev->common.device_tx_status = fsl_tx_status;
+--
+1.7.5.1
