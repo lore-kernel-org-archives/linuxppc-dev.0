@@ -1,23 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CAC252C007E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 22:47:55 +1000 (EST)
-Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A2883B@039-SN1MPN1-002.039d.mgd.msft.net>
-Date: Fri, 27 Jul 2012 07:47:28 -0500
-Message-Id: <73450B27-5496-499C-B7D1-13B797FE7650@kernel.crashing.org>
-References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
- <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A2883B@039-SN1MPN1-002.039d.mgd.msft.net>
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <B16395@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7B3AD2C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 22:57:55 +1000 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: "galak@kernel.crashing.org" <galak@kernel.crashing.org>
+Subject: RE: [PATCH 0/4] powerpc/booke: Modifications to fsl booke cpu setup
+ code
+Date: Fri, 27 Jul 2012 12:57:42 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D1490BF@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1341838357-16887-1-git-send-email-Varun.Sethi@freescale.com>
+In-Reply-To: <1341838357-16887-1-git-send-email-Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,78 +28,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Kumar,
+Can you please review this patch set.
 
-On Jul 27, 2012, at 3:35 AM, Jia Hongtao-B38951 wrote:
+Regards
+Varun
 
+> -----Original Message-----
+> From: Sethi Varun-B16395
+> Sent: Monday, July 09, 2012 6:23 PM
+> To: agraf@suse.de; galak@kernel.crashing.org; benh@kernel.crashing.org;
+> linuxppc-dev@lists.ozlabs.org; kvm-ppc@vger.kernel.org
+> Cc: Sethi Varun-B16395
+> Subject: [PATCH 0/4] powerpc/booke: Modifications to fsl booke cpu setup
+> code
 >=20
+> Modifications are aimed specifically at the e500mc/e5500 cpu setup code.
+> Following modifications are introduced by this patchset:
+> 1. Move the E.HV check to the cpu setup code. Based on this check we
+> manipulte the
+>    CPU_FTR_EMB_HV flag (added as a part of e500mc KVM support) in the
+> cpu_spec
+>    structure. We determine the presence of this feature based on the
+> MMUCFG[LPIDSIZE]
+>    check and decide if we can setup the E.HV mode ivors.
+> 2. Merge the 32 bit cpu setup code for e500mc/e5500 and define the
+> "cpu_restore"
+>    routine (for e5500/e6500) only for the 64 bit case. The cpu_restore
+> routine
+>    is used in the 64 bit case for setting up the secondary cores.
+> 3. For the 64 bit case separate out e5500 cpu_setup and cpu_restore
+> functions.
+>    The cpu_setup function (for the primary core) is passed the cpu_spec
+> pointer,
+>    which is not there in case of the cpu_restore function. Also, in our
+> case
+>    we will have to manipulate the CPU_FTR_EMB_HV flag on the the primary
+> core.
+> 4. Added CPU_FTR_EMB_HV check for e5500.
 >=20
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Friday, July 27, 2012 2:15 AM
->> To: Jia Hongtao-B38951
->> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
->> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
->> initialization code
->>=20
->>=20
->> On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
->>=20
->>> We unified the Freescale pci/pcie initialization by changing the
->> fsl_pci
->>> to a platform driver. In previous PCI code architecture the
->> initialization
->>> routine is called at board_setup_arch stage. Now the initialization =
-is
->> done
->>> in probe function which is architectural better. Also It's =
-convenient
->> for
->>> adding PM support for PCI controller in later patch.
->>>=20
->>> One issue introduced by this architecture is the timing of =
-swiotlb_init.
->>> During PCI initialization the need of swiotlb is determined and this
->> should
->>> be done before swiotlb_init. So a new function to determine swiotlb =
-by
->>> parsing pci ranges is made. This function is called at =
-board_setup_arch
->>> stage which is earlier than swiotlb_init.
->>>=20
->>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> ---
->>> Changed for V3:
->>> - Rebase the patch set on the latest tree
->>> - merge PCI unify and swiotlb patch into one
->>>=20
->>> arch/powerpc/sysdev/fsl_pci.c |  155 =
-++++++++++++++++++++++++++++++++--
->> -------
->>> arch/powerpc/sysdev/fsl_pci.h |    9 +--
->>> 2 files changed, 125 insertions(+), 39 deletions(-)
->>=20
->> I'd like the SWIOTLB refactoring as a separate patch.  Additionally, =
-the
->> order of patches should be as follows:
->>=20
->> 1. refactor PCI node parsing code
->> 2. add pci_determine_swiotlb (should rename to =
-fsl_pci_determine_swiotlb)
->> 3. Determine primary bus by looking for ISA node
->> 4. convert all boards over to fsl_pci_init
->> 5. convert fsl pci to platform driver (edac and other fixes should be
->> merged in here)
->> 6. PM support
->>=20
->> - k
+> Varun Sethi (4):
+>   Separate out E.HV check and ivor setup code.
+>   Merge the PPC 32 e5500 setup code with e500mc setup and don't define
+>   a restore routine for PPC 32.
+>   Separate out restore_e5500/setup_e5500 routines and check for E.HV
+>   mode before setting ivor setting code.
+>   Add CPU_FTR_EMB_HV check for e5500.
 >=20
-> Should I convert all boards over to fsl_pci_init first and then =
-convert them
-> over to platform driver again or just convert them direct to platform =
-driver?
-
-Yes do the fsl_pci_init conversion first.  The reason is we should NOT =
-break functionality from one patch to another.
-
-- k=
+>  arch/powerpc/kernel/cpu_setup_fsl_booke.S |   74
+> +++++++++++++++++++++++++----
+>  arch/powerpc/kernel/cputable.c            |    4 ++
+>  arch/powerpc/kernel/exceptions-64e.S      |   18 +------
+>  arch/powerpc/kernel/head_fsl_booke.S      |   18 ++-----
+>  4 files changed, 75 insertions(+), 39 deletions(-)
+>=20
+> --
+> 1.7.4.1
