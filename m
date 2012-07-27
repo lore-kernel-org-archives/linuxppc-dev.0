@@ -1,20 +1,24 @@
-Return-Path: <James.Bottomley@HansenPartnership.com>
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
- [66.63.167.143]) by ozlabs.org (Postfix) with ESMTP id A1E962C007A
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 17:06:15 +1000 (EST)
-Message-ID: <1343372206.3323.24.camel@dabdike>
-Subject: Re: [PATCH] scsi/ibmvscsi: /sys/class/scsi_host/hostX/config
- doesn't show any information
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 27 Jul 2012 07:56:46 +0100
-In-Reply-To: <1343366362.2118.15.camel@pasglop>
-References: <1342630157-16468-1-git-send-email-olaf@aepfle.de>
- <1343366362.2118.15.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, olaf@aepfle.de, Linda Xie <lxiep@us.ibm.com>,
- linux-scsi@vger.kernel.org
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 870132C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 18:35:52 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Fri, 27 Jul 2012 08:35:43 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A2883B@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
+ <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
+In-Reply-To: <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,12 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-07-27 at 15:19 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2012-07-18 at 18:49 +0200, olaf@aepfle.de wrote:
-> > From: Linda Xie <lxiep@us.ibm.com>
-> 
-> James, can I assume you're picking up those two ?
 
-If they get acked by the maintiners ...
 
-James
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Friday, July 27, 2012 2:15 AM
+> To: Jia Hongtao-B38951
+> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
+> initialization code
+>=20
+>=20
+> On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
+>=20
+> > We unified the Freescale pci/pcie initialization by changing the
+> fsl_pci
+> > to a platform driver. In previous PCI code architecture the
+> initialization
+> > routine is called at board_setup_arch stage. Now the initialization is
+> done
+> > in probe function which is architectural better. Also It's convenient
+> for
+> > adding PM support for PCI controller in later patch.
+> >
+> > One issue introduced by this architecture is the timing of swiotlb_init=
+.
+> > During PCI initialization the need of swiotlb is determined and this
+> should
+> > be done before swiotlb_init. So a new function to determine swiotlb by
+> > parsing pci ranges is made. This function is called at board_setup_arch
+> > stage which is earlier than swiotlb_init.
+> >
+> > Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > ---
+> > Changed for V3:
+> > - Rebase the patch set on the latest tree
+> > - merge PCI unify and swiotlb patch into one
+> >
+> > arch/powerpc/sysdev/fsl_pci.c |  155 ++++++++++++++++++++++++++++++++--
+> -------
+> > arch/powerpc/sysdev/fsl_pci.h |    9 +--
+> > 2 files changed, 125 insertions(+), 39 deletions(-)
+>=20
+> I'd like the SWIOTLB refactoring as a separate patch.  Additionally, the
+> order of patches should be as follows:
+>=20
+> 1. refactor PCI node parsing code
+> 2. add pci_determine_swiotlb (should rename to fsl_pci_determine_swiotlb)
+> 3. Determine primary bus by looking for ISA node
+> 4. convert all boards over to fsl_pci_init
+> 5. convert fsl pci to platform driver (edac and other fixes should be
+> merged in here)
+> 6. PM support
+>=20
+> - k
+
+Should I convert all boards over to fsl_pci_init first and then convert the=
+m
+over to platform driver again or just convert them direct to platform drive=
+r?
+
+Thanks.
+-Hongtao.
