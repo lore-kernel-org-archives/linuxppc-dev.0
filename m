@@ -1,21 +1,31 @@
-Return-Path: <romieu@fr.zoreil.com>
-Received: from violet.fr.zoreil.com (violet.fr.zoreil.com
- [IPv6:2001:4b98:dc0:41:216:3eff:feb0:8c92])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E64A62C0093
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2012 01:48:11 +1000 (EST)
-Date: Fri, 27 Jul 2012 17:25:42 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: sandeep@freescale.com
-Subject: Re: [2/3][PATCH][v2] TDM Framework
-Message-ID: <20120727152542.GB1613@electric-eye.fr.zoreil.com>
-References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
-Cc: devel@driverdev.osuosl.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 022DF2C007F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2012 02:37:33 +1000 (EST)
+Message-ID: <5012C3C2.7060205@freescale.com>
+Date: Fri, 27 Jul 2012 11:37:22 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Subject: Re: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by looking
+ for ISA node
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <1343125210-16720-3-git-send-email-B38951@freescale.com>
+ <500EEDD9.8050507@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A275B4@039-SN1MPN1-002.039d.mgd.msft.net>
+ <50102C27.8040004@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A27C7D@039-SN1MPN1-002.039d.mgd.msft.net>
+ <5011F01C.8000008@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A285D0@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A285D0@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +35,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-sandeep@freescale.com <sandeep@freescale.com> :
-[...]
-> The main functions of this Framework are:
->  - provides interface to TDM clients to access TDM functionalities.
->  - provides standard interface for TDM drivers to hook with the framework.
->  - handles various data handling stuff and buffer management.
+On 07/26/2012 09:07 PM, Jia Hongtao-B38951 wrote:
 > 
-> In future this Framework will be extended to provide Interface for Line control devices also. For example SLIC, E1/T1 Framers etc.
 > 
-> Presently the framework supports only Single Port channelised mode.
-> Also the configurability options are limited which will be extended later on.
-> Only kernel mode TDM clients are supported currently. Support for User mode clients will be added later.
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Friday, July 27, 2012 9:34 AM
+>> To: Jia Hongtao-B38951
+>> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
+>> galak@kernel.crashing.org; Li Yang-R58472
+>> Subject: Re: [PATCH 3/6] powerpc/fsl-pci: Determine primary bus by
+>> looking for ISA node
+>>
+>> On 07/25/2012 09:20 PM, Jia Hongtao-B38951 wrote:
+>>> All this recursion thing I will try another way.
+>>>
+>>> But this is not the same as you did. If we use platform driver probe
+>> function
+>>> will be called more than once. Your function is to find ISA node and
+>> check if
+>>> the parent equal to this PCI controller. My function is to search ISA
+>> under
+>>> each PCI controller.
+>>
+>> The result is the same -- "does this PCI controller have an ISA node
+>> under it?"
+>>
+>> -Scott
+> 
+> 
+> The result is the same but as I said in platform driver probe function will
+> be called for each PCI controller.
 
-1. You should send some kernel mode TDM clients. Without those the framework
-   is pretty useless.
+So?  Just because you've got a platform device now doesn't mean you
+can't do any early global init.  This has to be done globally, so we can
+choose a fallback primary bus if there's no ISA in the system.
 
-2. It would probably make sense to Cc: netdev and serial. There may be
-   some kernel client network integration from the start.
-
-3. Where is the userspace configuration interface ?
-
-[...]
-> Based on: git://git.am.freescale.net/gitolite/mirrors/galak-powerpc.git
-
-$ git clone git://git.am.freescale.net/gitolite/mirrors/galak-powerpc.git
-Cloning into 'galak-powerpc'...
-fatal: Unable to look up git.am.freescale.net (port 9418) (No address associated with hostname)
-
--- 
-Ueimor
+-Scott
