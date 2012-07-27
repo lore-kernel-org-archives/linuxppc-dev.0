@@ -1,21 +1,21 @@
 Return-Path: <B32616@freescale.com>
 Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 51E3B2C06F6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 19:17:25 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D02102C07C5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 19:17:29 +1000 (EST)
 From: <qiang.liu@freescale.com>
 To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v4 6/7] fsl-dma: fix a warning of unitialized cookie
-Date: Fri, 27 Jul 2012 17:16:48 +0800
-Message-ID: <1343380608-12099-1-git-send-email-qiang.liu@freescale.com>
+Subject: [PATCH v4 7/7] fsl-dma: add memcpy self test interface
+Date: Fri, 27 Jul 2012 17:16:56 +0800
+Message-ID: <1343380616-12126-1-git-send-email-qiang.liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Vinod Koul <vinod.koul@intel.com>, Qiang Liu <qiang.liu@freescale.com>,
- herbert@gondor.hengli.com.au, Dan Williams <dan.j.williams@intel.com>,
- davem@davemloft.net
+Cc: "Ira W. Snyder" <iws@ovro.caltech.edu>, Vinod Koul <vinod.koul@intel.com>,
+ Qiang Liu <qiang.liu@freescale.com>, herbert@gondor.hengli.com.au,
+ Dan Williams <dan.j.williams@intel.com>, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +27,118 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Qiang Liu <qiang.liu@freescale.com>
 
-Fix a warning of unitialized value when compile with -Wuninitialized.
+Add memory copy self test when probe device, fsl-dma will be disabled
+if self test failed.
 
 Cc: Dan Williams <dan.j.williams@intel.com>
 Cc: Vinod Koul <vinod.koul@intel.com>
 Cc: Li Yang <leoli@freescale.com>
+Cc: Ira W. Snyder <iws@ovro.caltech.edu>
 Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
-Cc: Kim Phillips <kim.phillips@freescale.com>
 ---
- drivers/dma/fsldma.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/dma/fsldma.c |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 83 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index e3814aa..6fc22eb 100644
+index 6fc22eb..5e0b162 100644
 --- a/drivers/dma/fsldma.c
 +++ b/drivers/dma/fsldma.c
-@@ -645,7 +645,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
- 	struct fsldma_chan *chan = to_fsl_chan(tx->chan);
- 	struct fsl_desc_sw *desc = tx_to_fsl_desc(tx);
- 	struct fsl_desc_sw *child;
--	dma_cookie_t cookie;
-+	dma_cookie_t cookie = 0;
+@@ -1277,6 +1277,82 @@ out_unwind:
+ 	return ret;
+ }
 
- 	spin_lock_bh(&chan->desc_lock);
++/*
++ * Perform a transaction to verify the HW works.
++ */
++#define FSL_DMA_TEST_SIZE 2000
++
++static int __devinit fsl_dma_memcpy_self_test(struct fsldma_device *device)
++{
++	int i;
++	void *src, *dest;
++	dma_addr_t src_dma, dest_dma;
++	struct dma_chan *dma_chan;
++	dma_cookie_t cookie;
++	struct dma_async_tx_descriptor *tx;
++	int err = 0;
++	struct fsldma_chan *chan;
++
++	src = kmalloc(sizeof(u8) * FSL_DMA_TEST_SIZE, GFP_KERNEL);
++	if (!src)
++		return -ENOMEM;
++
++	dest = kzalloc(sizeof(u8) * FSL_DMA_TEST_SIZE, GFP_KERNEL);
++	if (!dest) {
++		kfree(src);
++		return -ENOMEM;
++	}
++
++	/* Fill in src buffer */
++	for (i = 0; i < FSL_DMA_TEST_SIZE; i++)
++		((u8 *) src)[i] = (u8)i;
++
++	/* Start copy, using first DMA channel */
++	dma_chan = container_of(device->common.channels.next,
++			struct dma_chan, device_node);
++	if (fsl_dma_alloc_chan_resources(dma_chan) < 1) {
++		err = -ENODEV;
++		goto out;
++	}
++
++	chan = to_fsl_chan(dma_chan);
++	dest_dma = dma_map_single(chan->common.device->dev, dest,
++			FSL_DMA_TEST_SIZE, DMA_FROM_DEVICE);
++
++	src_dma = dma_map_single(chan->common.device->dev, src,
++			FSL_DMA_TEST_SIZE, DMA_TO_DEVICE);
++
++	tx = fsl_dma_prep_memcpy(dma_chan, dest_dma, src_dma, FSL_DMA_TEST_SIZE,
++			DMA_COMPL_SKIP_DEST_UNMAP | DMA_COMPL_SRC_UNMAP_SINGLE);
++	cookie = fsl_dma_tx_submit(tx);
++	fsl_dma_memcpy_issue_pending(dma_chan);
++	async_tx_ack(tx);
++	msleep(1);
++
++	if (fsl_tx_status(dma_chan, cookie, NULL) != DMA_SUCCESS) {
++		dev_printk(KERN_ERR, dma_chan->device->dev,
++				"Self-test copy timed out, disabling\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	dma_sync_single_for_cpu(device->dev, dest_dma,
++			FSL_DMA_TEST_SIZE, DMA_FROM_DEVICE);
++	if (memcmp(src, dest, FSL_DMA_TEST_SIZE)) {
++		dev_printk(KERN_ERR, dma_chan->device->dev,
++				"Self-test copy failed compare, disabling\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++free_resources:
++	fsl_dma_free_chan_resources(dma_chan);
++out:
++	kfree(src);
++	kfree(dest);
++	return err;
++}
++
+ /*----------------------------------------------------------------------------*/
+ /* OpenFirmware Subsystem                                                     */
+ /*----------------------------------------------------------------------------*/
+@@ -1461,6 +1537,13 @@ static int __devinit fsldma_of_probe(struct platform_device *op)
+ 		goto out_free_fdev;
+ 	}
+
++	if (dma_has_cap(DMA_MEMCPY, fdev->common.cap_mask)) {
++		err = fsl_dma_memcpy_self_test(fdev);
++		printk(KERN_INFO "FSL-DMA Channel memcpy self test returned %d\n", err);
++		if (err)
++			goto out_free_fdev;
++	}
++
+ 	dma_async_device_register(&fdev->common);
+ 	return 0;
 
 --
 1.7.5.1
