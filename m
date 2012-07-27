@@ -2,16 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5BC1C2C0079
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 22:45:08 +1000 (EST)
-Date: Fri, 27 Jul 2012 07:44:53 -0500 (CDT)
+ by ozlabs.org (Postfix) with ESMTPS id CAC252C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 22:47:55 +1000 (EST)
+Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Message-ID: <alpine.LFD.2.00.1207270743440.9079@right.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A2883B@039-SN1MPN1-002.039d.mgd.msft.net>
+Date: Fri, 27 Jul 2012 07:47:28 -0500
+Message-Id: <73450B27-5496-499C-B7D1-13B797FE7650@kernel.crashing.org>
+References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
+ <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A2883B@039-SN1MPN1-002.039d.mgd.msft.net>
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,37 +27,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
 
-A few patches that missed the initial 3.6 window.  These are bug fixes at
-this point.
+On Jul 27, 2012, at 3:35 AM, Jia Hongtao-B38951 wrote:
 
-- k
+>=20
+>=20
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Friday, July 27, 2012 2:15 AM
+>> To: Jia Hongtao-B38951
+>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+>> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
+>> initialization code
+>>=20
+>>=20
+>> On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
+>>=20
+>>> We unified the Freescale pci/pcie initialization by changing the
+>> fsl_pci
+>>> to a platform driver. In previous PCI code architecture the
+>> initialization
+>>> routine is called at board_setup_arch stage. Now the initialization =
+is
+>> done
+>>> in probe function which is architectural better. Also It's =
+convenient
+>> for
+>>> adding PM support for PCI controller in later patch.
+>>>=20
+>>> One issue introduced by this architecture is the timing of =
+swiotlb_init.
+>>> During PCI initialization the need of swiotlb is determined and this
+>> should
+>>> be done before swiotlb_init. So a new function to determine swiotlb =
+by
+>>> parsing pci ranges is made. This function is called at =
+board_setup_arch
+>>> stage which is earlier than swiotlb_init.
+>>>=20
+>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>> ---
+>>> Changed for V3:
+>>> - Rebase the patch set on the latest tree
+>>> - merge PCI unify and swiotlb patch into one
+>>>=20
+>>> arch/powerpc/sysdev/fsl_pci.c |  155 =
+++++++++++++++++++++++++++++++++--
+>> -------
+>>> arch/powerpc/sysdev/fsl_pci.h |    9 +--
+>>> 2 files changed, 125 insertions(+), 39 deletions(-)
+>>=20
+>> I'd like the SWIOTLB refactoring as a separate patch.  Additionally, =
+the
+>> order of patches should be as follows:
+>>=20
+>> 1. refactor PCI node parsing code
+>> 2. add pci_determine_swiotlb (should rename to =
+fsl_pci_determine_swiotlb)
+>> 3. Determine primary bus by looking for ISA node
+>> 4. convert all boards over to fsl_pci_init
+>> 5. convert fsl pci to platform driver (edac and other fixes should be
+>> merged in here)
+>> 6. PM support
+>>=20
+>> - k
+>=20
+> Should I convert all boards over to fsl_pci_init first and then =
+convert them
+> over to platform driver again or just convert them direct to platform =
+driver?
 
-The following changes since commit 574ce79cea9d3fda109ffcc82f81733de4740e5c:
+Yes do the fsl_pci_init conversion first.  The reason is we should NOT =
+break functionality from one patch to another.
 
-  powerpc/mpic: Create a revmap with enough entries for IPIs and timers (2012-07-23 14:20:42 +1000)
-
-are available in the git repository at:
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
-
-Claudiu Manoil (1):
-      powerpc/85xx: Fix sram_offset parameter type
-
-Shaohui Xie (1):
-      powerpc/85xx: P3041DS - change espi input-clock from 40MHz to 35MHz
-
-Tang Yuantian (1):
-      powerpc/85xx: Fix pci base address error for p2020rdb-pc in dts
-
-Timur Tabi (2):
-      powerpc/85xx: p1022ds: disable the NAND flash node if video is enabled
-      powerpc/85xx: p1022ds: fix DIU/LBC switching with NAND enabled
-
- arch/powerpc/boot/dts/p2020rdb-pc_32b.dts |    4 +-
- arch/powerpc/boot/dts/p2020rdb-pc_36b.dts |    4 +-
- arch/powerpc/boot/dts/p3041ds.dts         |    2 +-
- arch/powerpc/platforms/85xx/p1022_ds.c    |  122 +++++++++++++++++++++++-----
- arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h |    4 +-
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   39 ++++------
- 6 files changed, 121 insertions(+), 54 deletions(-)
+- k=
