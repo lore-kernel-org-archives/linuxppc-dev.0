@@ -1,26 +1,26 @@
-Return-Path: <B38951@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4B09A2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 12:57:10 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH V3 2/5] powerpc/fsl-pci: Determine primary bus by
- looking for ISA node
-Date: Fri, 27 Jul 2012 02:56:57 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A286A3@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
- <1343305827-26734-2-git-send-email-B38951@freescale.com>
- <C853F286-EB9D-4A73-936F-E56AA003396C@kernel.crashing.org>
-In-Reply-To: <C853F286-EB9D-4A73-936F-E56AA003396C@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8B6622C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 13:14:30 +1000 (EST)
+Received: by obbeh20 with SMTP id eh20so3400962obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jul 2012 20:14:27 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Sender: pku.leo@gmail.com
+In-Reply-To: <B5854411-6C9A-43BA-BF5D-FB1AD76E28D1@kernel.crashing.org>
+References: <1342788159-27529-1-git-send-email-chenhui.zhao@freescale.com>
+ <CADRPPNSw5Yn7EgHt5fm2vYr+zxC4T+JbsvT812u2JPKELNcA6g@mail.gmail.com>
+ <B5854411-6C9A-43BA-BF5D-FB1AD76E28D1@kernel.crashing.org>
+Date: Fri, 27 Jul 2012 11:14:27 +0800
+Message-ID: <CADRPPNRxBJX3Wgkj2aPmw8w=Ayj57CTCOkTEwBDCKwbjein1Ew@mail.gmail.com>
+Subject: Re: [PATCH v8 0/7] power management patch set
+From: Li Yang <leoli@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ Zhao Chenhui <chenhui.zhao@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, July 27, 2012 2:22 AM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
-> Subject: Re: [PATCH V3 2/5] powerpc/fsl-pci: Determine primary bus by
-> looking for ISA node
->=20
->=20
-> On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
->=20
-> > PCI host bridge is primary bus if it contains an ISA node. But not all
-> boards
-> > fit this rule. Device tree should be updated for all these boards.
->=20
-> I don't really seen any reason for this patch.  We can just use the code
-> as Scott wrote it that sets fsl_pci_primary based on search for the isa
-> node.
->=20
+On Fri, Jul 27, 2012 at 1:29 AM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On Jul 26, 2012, at 9:02 AM, Li Yang wrote:
+>
+>> On Fri, Jul 20, 2012 at 8:42 PM, Zhao Chenhui
+>> <chenhui.zhao@freescale.com> wrote:
+>>> Changes for v8:
+>>> * Separated the cpu hotplug patch into three patches, as follows
+>>> [PATCH v8 1/7] powerpc/smp: use a struct epapr_spin_table to replace macros
+>>> [PATCH v8 2/7] powerpc/smp: add generic_set_cpu_up() to set cpu_state as CPU_UP_PREPARE
+>>> [PATCH v8 4/7] powerpc/85xx: add HOTPLUG_CPU support
+>>>
+>>> * Replaced magic numbers with macros in "[PATCH 5/7] powerpc/85xx: add sleep and deep sleep support"
+>>>
+>>> * no change to the rest of the patch set
+>>
+>> Hi Kumar,
+>>
+>> How about picking about this series for 3.6?  The review seems to
+>> settle down for this revision.
+>
+> Its too late for 3.6, but will look at queuing it up for 3.7.
 
+Too late?  The latest version were submitted on Jul 20 and you are
+still picking up other patches today.  :)  I do think the patches have
+been floating around for too long time to wait for another release
+cycle.  If there are problems, we can work on addressing them in
+follow up patches.
 
-I change the way of searching ISA node just because the platform driver
-mechanism. Probe function of this driver will be called for each PCI
-controller which means more than once. I think the Scott's way is not
-perfectly match this situation. Anyway I will find a better way to solve
-this by refactoring the Scott's method or using my own way.
-
-Thanks.
--Hongtao.
+Leo
