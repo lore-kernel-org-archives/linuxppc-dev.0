@@ -1,19 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A3A8C2C007C
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 14:37:23 +1000 (EST)
-Message-ID: <1343363833.2118.14.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Fri, 27 Jul 2012 14:37:13 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <paulus@ozlabs.org>
+Date: Fri, 27 Jul 2012 14:51:09 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc: powernv: Always go into nap mode when CPU is
+ offline
+Message-ID: <20120727045109.GA11870@drongo>
+References: <20120726235347.GA16461@bloggs.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120726235347.GA16461@bloggs.ozlabs.ibm.com>
+Cc: Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,56 +19,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+The CPU hotplug code for the powernv platform currently only puts
+offline CPUs into nap mode if the powersave_nap variable is set.
+However, HV-style KVM on this platform requires secondary CPU threads
+to be offline and in nap mode.  Since we know nap mode works just
+fine on all POWER7 machines, and the only machines that support the
+powernv platform are POWER7 machines, this changes the code to
+always put offline CPUs into nap mode, regardless of powersave_nap.
+Powersave_nap still controls whether or not CPUs go into nap mode
+when idle, as before.
 
-Here's a handful of powerpc patches, a couple of regression fixes
-for problems introduced in the main batch in this merge window,
-a couple of defconfig updates, and some trivials. The radeonfb
-one is something that was long standing in SLES which I forgot
-to pickup earlier.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+v2: rediffed against current Linus tree to cope with minor context changes
 
-Cheers,
-Ben.
+ arch/powerpc/include/asm/processor.h |    1 +
+ arch/powerpc/kernel/idle_power7.S    |    2 ++
+ arch/powerpc/platforms/powernv/smp.c |   10 +---------
+ 3 files changed, 4 insertions(+), 9 deletions(-)
 
-The following changes since commit bdc0077af574800d24318b6945cf2344e8dbb050:
-
-  Merge tag 'scsi-misc' of git://git.kernel.org/pub/scm/linux/kernel/git/jejb/scsi (2012-07-24 18:11:22 -0700)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
-
-for you to fetch changes up to bac821a6e3404330d509fd3a245bf7701f210c7c:
-
-  powerpc/ftrace: Trace function graph entry before updating index (2012-07-27 11:42:34 +1000)
-
-----------------------------------------------------------------
-Alexander Graf (1):
-      powerpc/kvm/bookehv: Fix build regression
-
-Anton Blanchard (2):
-      powerpc: Enable pseries hardware RNG and crypto modules
-      powerpc: Lack of firmware flash support is not an error
-
-Benjamin Herrenschmidt (1):
-      powerpc: Update g5_defconfig
-
-Steven Rostedt (1):
-      powerpc/ftrace: Trace function graph entry before updating index
-
-Stuart Yoder (1):
-      powerpc: Set stack limit properly in crit_transfer_to_handler
-
-Tony Breeds (1):
-      radeonfb: Add quirk for the graphics adapter in some JSxx
-
- arch/powerpc/configs/g5_defconfig      |  103 ++++++++++----------------------
- arch/powerpc/configs/ppc64_defconfig   |    6 +-
- arch/powerpc/configs/pseries_defconfig |    6 +-
- arch/powerpc/kernel/entry_32.S         |   12 +++-
- arch/powerpc/kernel/ftrace.c           |   11 ++--
- arch/powerpc/kernel/rtas_flash.c       |    2 +-
- arch/powerpc/kvm/bookehv_interrupts.S  |   77 ++++++++++++------------
- drivers/video/aty/radeon_monitor.c     |   35 +++++++++++
- 8 files changed, 128 insertions(+), 124 deletions(-)
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 53b6dfa..54b73a2 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -386,6 +386,7 @@ extern unsigned long cpuidle_disable;
+ enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
+ 
+ extern int powersave_nap;	/* set if nap mode can be used in idle loop */
++extern void power7_nap(void);
+ 
+ #ifdef CONFIG_PSERIES_IDLE
+ extern void update_smt_snooze_delay(int snooze);
+diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
+index 7140d83..e11863f 100644
+--- a/arch/powerpc/kernel/idle_power7.S
++++ b/arch/powerpc/kernel/idle_power7.S
+@@ -28,7 +28,9 @@ _GLOBAL(power7_idle)
+ 	lwz	r4,ADDROFF(powersave_nap)(r3)
+ 	cmpwi	0,r4,0
+ 	beqlr
++	/* fall through */
+ 
++_GLOBAL(power7_nap)
+ 	/* NAP is a state loss, we create a regs frame on the
+ 	 * stack, fill it up with the state we care about and
+ 	 * stick a pointer to it in PACAR1. We really only
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index 3ef4625..7698b6e 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -106,14 +106,6 @@ static void pnv_smp_cpu_kill_self(void)
+ {
+ 	unsigned int cpu;
+ 
+-	/* If powersave_nap is enabled, use NAP mode, else just
+-	 * spin aimlessly
+-	 */
+-	if (!powersave_nap) {
+-		generic_mach_cpu_die();
+-		return;
+-	}
+-
+ 	/* Standard hot unplug procedure */
+ 	local_irq_disable();
+ 	idle_task_exit();
+@@ -128,7 +120,7 @@ static void pnv_smp_cpu_kill_self(void)
+ 	 */
+ 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
+ 	while (!generic_check_cpu_restart(cpu)) {
+-		power7_idle();
++		power7_nap();
+ 		if (!generic_check_cpu_restart(cpu)) {
+ 			DBG("CPU%d Unexpected exit while offline !\n", cpu);
+ 			/* We may be getting an IPI, so we re-enable
+-- 
+1.7.10
