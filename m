@@ -1,29 +1,21 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from plane.gmane.org (plane.gmane.org [80.91.229.3])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <romieu@fr.zoreil.com>
+Received: from violet.fr.zoreil.com (violet.fr.zoreil.com
+ [IPv6:2001:4b98:dc0:41:216:3eff:feb0:8c92])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 06FC42C0078
- for <linuxppc-dev@ozlabs.org>; Sat, 28 Jul 2012 01:35:21 +1000 (EST)
-Received: from list by plane.gmane.org with local (Exim 4.69)
- (envelope-from <glppd-linuxppc64-dev@m.gmane.org>)
- id 1SumKs-0008Pb-Sm
- for linuxppc-dev@ozlabs.org; Fri, 27 Jul 2012 17:20:14 +0200
-Received: from 146.177.65.86.rev.sfr.net ([86.65.177.146])
- by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
- id 1AlnuQ-0007hv-00
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 17:20:14 +0200
-Received: from g.bugniot by 146.177.65.86.rev.sfr.net with local (Gmexim 0.1
- (Debian)) id 1AlnuQ-0007hv-00
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 17:20:14 +0200
-To: linuxppc-dev@ozlabs.org
-From: Geoffrey Bugniot <g.bugniot@gmail.com>
-Subject: Re: Memory management problems on a custom PPC 8270 board
-Date: Fri, 27 Jul 2012 15:14:37 +0000 (UTC)
-Message-ID: <loom.20120727T170057-480@post.gmane.org>
-References: <loom.20120723T170223-328@post.gmane.org>
- <500D8067.6070805@freescale.com> <loom.20120724T102618-734@post.gmane.org>
+ by ozlabs.org (Postfix) with ESMTPS id E64A62C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2012 01:48:11 +1000 (EST)
+Date: Fri, 27 Jul 2012 17:25:42 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: sandeep@freescale.com
+Subject: Re: [2/3][PATCH][v2] TDM Framework
+Message-ID: <20120727152542.GB1613@electric-eye.fr.zoreil.com>
+References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
+Cc: devel@driverdev.osuosl.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,16 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Geoffrey Bugniot <g.bugniot <at> gmail.com> writes:
-
+sandeep@freescale.com <sandeep@freescale.com> :
+[...]
+> The main functions of this Framework are:
+>  - provides interface to TDM clients to access TDM functionalities.
+>  - provides standard interface for TDM drivers to hook with the framework.
+>  - handles various data handling stuff and buffer management.
 > 
-> Scott Wood <scottwood <at> freescale.com> writes:
+> In future this Framework will be extended to provide Interface for Line control devices also. For example SLIC, E1/T1 Framers etc.
 > 
-> Could you have bad memory timings (or bad memory)?  Usually when I see
-> things like this, it's because memory is getting corrupted.
-> 
+> Presently the framework supports only Single Port channelised mode.
+> Also the configurability options are limited which will be extended later on.
+> Only kernel mode TDM clients are supported currently. Support for User mode clients will be added later.
 
-OK, I've found the problem and you were right Scott. RAM chip and 60x BUS
-were misconfigurated in U-Boot (PBI mode, PSDMR, PSRT, MPTPR etc.).
+1. You should send some kernel mode TDM clients. Without those the framework
+   is pretty useless.
 
-G.B.
+2. It would probably make sense to Cc: netdev and serial. There may be
+   some kernel client network integration from the start.
+
+3. Where is the userspace configuration interface ?
+
+[...]
+> Based on: git://git.am.freescale.net/gitolite/mirrors/galak-powerpc.git
+
+$ git clone git://git.am.freescale.net/gitolite/mirrors/galak-powerpc.git
+Cloning into 'galak-powerpc'...
+fatal: Unable to look up git.am.freescale.net (port 9418) (No address associated with hostname)
+
+-- 
+Ueimor
