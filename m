@@ -1,24 +1,39 @@
-Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 870132C0096
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 18:35:52 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Fri, 27 Jul 2012 08:35:43 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A2883B@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
- <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
-In-Reply-To: <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <srikar@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e3.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BBF012C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 18:41:43 +1000 (EST)
+Received: from /spool/local
+ by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
+ Fri, 27 Jul 2012 04:41:18 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8B13438C8042
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 04:41:06 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6R8f6Xh089766
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 04:41:06 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6R8f4tE017319
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 05:41:05 -0300
+Date: Fri, 27 Jul 2012 14:10:55 +0530
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
+Message-ID: <20120727084055.GA6679@linux.vnet.ibm.com>
+References: <20120726051902.GA29466@in.ibm.com>
+ <20120726052029.GB29466@in.ibm.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20120726052029.GB29466@in.ibm.com>
+Cc: peterz@infradead.org, lkml <linux-kernel@vger.kernel.org>, oleg@redhat.com,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +43,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* Ananth N Mavinakayanahalli <ananth@in.ibm.com> [2012-07-26 10:50:29]:
 
+> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> 
+> This is the port of uprobes to powerpc. Usage is similar to x86.
+> 
+> [root@xxxx ~]# ./bin/perf probe -x /lib64/libc.so.6 malloc
+> Added new event:
+>   probe_libc:malloc    (on 0xb4860)
+> 
+> You can now use it in all perf tools, such as:
+> 
+> 	perf record -e probe_libc:malloc -aR sleep 1
+> 
+> [root@xxxx ~]# ./bin/perf record -e probe_libc:malloc -aR sleep 20
+> [ perf record: Woken up 22 times to write data ]
+> [ perf record: Captured and wrote 5.843 MB perf.data (~255302 samples) ]
+> [root@xxxx ~]# ./bin/perf report --stdio
+> ...
+> 
+> # Samples: 83K of event 'probe_libc:malloc'
+> # Event count (approx.): 83484
+> #
+> # Overhead       Command  Shared Object      Symbol
+> # ........  ............  .............  ..........
+> #
+>     69.05%           tar  libc-2.12.so   [.] malloc
+>     28.57%            rm  libc-2.12.so   [.] malloc
+>      1.32%  avahi-daemon  libc-2.12.so   [.] malloc
+>      0.58%          bash  libc-2.12.so   [.] malloc
+>      0.28%          sshd  libc-2.12.so   [.] malloc
+>      0.08%    irqbalance  libc-2.12.so   [.] malloc
+>      0.05%         bzip2  libc-2.12.so   [.] malloc
+>      0.04%         sleep  libc-2.12.so   [.] malloc
+>      0.03%    multipathd  libc-2.12.so   [.] malloc
+>      0.01%      sendmail  libc-2.12.so   [.] malloc
+>      0.01%     automount  libc-2.12.so   [.] malloc
+> 
+> Patch applies on the current master branch of Linus' tree (bdc0077af).
+> The trap_nr addition patch is a prereq.
+> 
+> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, July 27, 2012 2:15 AM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
-> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
-> initialization code
->=20
->=20
-> On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
->=20
-> > We unified the Freescale pci/pcie initialization by changing the
-> fsl_pci
-> > to a platform driver. In previous PCI code architecture the
-> initialization
-> > routine is called at board_setup_arch stage. Now the initialization is
-> done
-> > in probe function which is architectural better. Also It's convenient
-> for
-> > adding PM support for PCI controller in later patch.
-> >
-> > One issue introduced by this architecture is the timing of swiotlb_init=
-.
-> > During PCI initialization the need of swiotlb is determined and this
-> should
-> > be done before swiotlb_init. So a new function to determine swiotlb by
-> > parsing pci ranges is made. This function is called at board_setup_arch
-> > stage which is earlier than swiotlb_init.
-> >
-> > Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> > Changed for V3:
-> > - Rebase the patch set on the latest tree
-> > - merge PCI unify and swiotlb patch into one
-> >
-> > arch/powerpc/sysdev/fsl_pci.c |  155 ++++++++++++++++++++++++++++++++--
-> -------
-> > arch/powerpc/sysdev/fsl_pci.h |    9 +--
-> > 2 files changed, 125 insertions(+), 39 deletions(-)
->=20
-> I'd like the SWIOTLB refactoring as a separate patch.  Additionally, the
-> order of patches should be as follows:
->=20
-> 1. refactor PCI node parsing code
-> 2. add pci_determine_swiotlb (should rename to fsl_pci_determine_swiotlb)
-> 3. Determine primary bus by looking for ISA node
-> 4. convert all boards over to fsl_pci_init
-> 5. convert fsl pci to platform driver (edac and other fixes should be
-> merged in here)
-> 6. PM support
->=20
-> - k
-
-Should I convert all boards over to fsl_pci_init first and then convert the=
-m
-over to platform driver again or just convert them direct to platform drive=
-r?
-
-Thanks.
--Hongtao.
+Acked-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com> 
+ 
