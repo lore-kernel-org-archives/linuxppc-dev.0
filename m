@@ -1,23 +1,30 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
+Return-Path: <tony.luck@gmail.com>
+Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
+ [74.125.82.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 926F92C0095
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2012 04:12:13 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so5221593pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 11:12:12 -0700 (PDT)
-Date: Fri, 27 Jul 2012 11:12:08 -0700
-From: Greg KH <gregkh@linuxfoundation.org>
-To: sandeep@freescale.com
-Subject: Re: [2/3][PATCH][v2] TDM Framework
-Message-ID: <20120727181208.GC23105@kroah.com>
-References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 59E1B2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Jul 2012 06:17:24 +1000 (EST)
+Received: by weyx10 with SMTP id x10so2082832wey.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 13:17:20 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
-Cc: devel@driverdev.osuosl.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Sender: tony.luck@gmail.com
+In-Reply-To: <50126D44.7070608@cn.fujitsu.com>
+References: <50126B83.3050201@cn.fujitsu.com> <50126D44.7070608@cn.fujitsu.com>
+Date: Fri, 27 Jul 2012 13:17:20 -0700
+Message-ID: <CA+8MBbL+G=xqkWU4xGF3_Ra7KoeoHuzL6QYcRiKqtVZoOBfLdQ@mail.gmail.com>
+Subject: Re: [RFC PATCH v5 05/19] memory-hotplug: check whether memory is
+ present or not
+From: Tony Luck <tony.luck@intel.com>
+To: Wen Congyang <wency@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki ISIMATU <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,26 +34,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 27, 2012 at 07:35:38PM +0530, sandeep@freescale.com wrote:
-> +static struct kobj_type tdm_type = {
-> +	.sysfs_ops = &tdm_ops,
-> +	.default_attrs = tdm_attr,
-> +};
+On Fri, Jul 27, 2012 at 3:28 AM, Wen Congyang <wency@cn.fujitsu.com> wrote:
+> +static inline int pfns_present(unsigned long pfn, unsigned long nr_pages)
+> +{
+> +       int i;
+> +       for (i = 0; i < nr_pages; i++) {
+> +               if (pfn_present(pfn + 1))
 
-Ah, also, as per the documentation in the kernel (go look, it's there),
-I now get to publicly mock you for ignoring the error messages that
-the kernel is giving you when you try to shut down your code path.
+Typo? I think you meant "pfn + i"
 
-Well, to be fair, you are leaking memory like a sieve, so I doubt you
-ever saw those error messages because you never cleaned up after
-yourself, so perhaps I can forgive you, but your users can't, sorry.
-They like to rely on the fact that Linux is a reliable operating system,
-don't cause them to doubt that.
+> +                       continue;
+> +               else
+> +                       return -EINVAL;
+> +       }
+> +       return 0;
+> +}
 
-Please fix this code, it's horribly broken.  Read
-Documentation/kobject.txt for why.  That file was written for a reason,
-and not just because we like writing documentation (hint, we hate to...)
-
-Ugh,
-
-greg k-h
+-Tony
