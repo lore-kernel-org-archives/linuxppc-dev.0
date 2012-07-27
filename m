@@ -1,15 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Fri, 27 Jul 2012 14:51:09 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc: powernv: Always go into nap mode when CPU is
- offline
-Message-ID: <20120727045109.GA11870@drongo>
-References: <20120726235347.GA16461@bloggs.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120726235347.GA16461@bloggs.ozlabs.ibm.com>
-Cc: Alexander Graf <agraf@suse.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0B64B2C008C
+ for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 15:19:32 +1000 (EST)
+Message-ID: <1343366362.2118.15.camel@pasglop>
+Subject: Re: [PATCH] scsi/ibmvscsi: /sys/class/scsi_host/hostX/config
+ doesn't show any information
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: olaf@aepfle.de
+Date: Fri, 27 Jul 2012 15:19:22 +1000
+In-Reply-To: <1342630157-16468-1-git-send-email-olaf@aepfle.de>
+References: <1342630157-16468-1-git-send-email-olaf@aepfle.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Linda Xie <lxiep@us.ibm.com>,
+ linux-scsi@vger.kernel.org, "James E.J. Bottomley" <JBottomley@parallels.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,78 +25,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The CPU hotplug code for the powernv platform currently only puts
-offline CPUs into nap mode if the powersave_nap variable is set.
-However, HV-style KVM on this platform requires secondary CPU threads
-to be offline and in nap mode.  Since we know nap mode works just
-fine on all POWER7 machines, and the only machines that support the
-powernv platform are POWER7 machines, this changes the code to
-always put offline CPUs into nap mode, regardless of powersave_nap.
-Powersave_nap still controls whether or not CPUs go into nap mode
-when idle, as before.
+On Wed, 2012-07-18 at 18:49 +0200, olaf@aepfle.de wrote:
+> From: Linda Xie <lxiep@us.ibm.com>
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-v2: rediffed against current Linus tree to cope with minor context changes
+James, can I assume you're picking up those two ?
 
- arch/powerpc/include/asm/processor.h |    1 +
- arch/powerpc/kernel/idle_power7.S    |    2 ++
- arch/powerpc/platforms/powernv/smp.c |   10 +---------
- 3 files changed, 4 insertions(+), 9 deletions(-)
+Cheers,
+Ben.
 
-diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
-index 53b6dfa..54b73a2 100644
---- a/arch/powerpc/include/asm/processor.h
-+++ b/arch/powerpc/include/asm/processor.h
-@@ -386,6 +386,7 @@ extern unsigned long cpuidle_disable;
- enum idle_boot_override {IDLE_NO_OVERRIDE = 0, IDLE_POWERSAVE_OFF};
- 
- extern int powersave_nap;	/* set if nap mode can be used in idle loop */
-+extern void power7_nap(void);
- 
- #ifdef CONFIG_PSERIES_IDLE
- extern void update_smt_snooze_delay(int snooze);
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index 7140d83..e11863f 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -28,7 +28,9 @@ _GLOBAL(power7_idle)
- 	lwz	r4,ADDROFF(powersave_nap)(r3)
- 	cmpwi	0,r4,0
- 	beqlr
-+	/* fall through */
- 
-+_GLOBAL(power7_nap)
- 	/* NAP is a state loss, we create a regs frame on the
- 	 * stack, fill it up with the state we care about and
- 	 * stick a pointer to it in PACAR1. We really only
-diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
-index 3ef4625..7698b6e 100644
---- a/arch/powerpc/platforms/powernv/smp.c
-+++ b/arch/powerpc/platforms/powernv/smp.c
-@@ -106,14 +106,6 @@ static void pnv_smp_cpu_kill_self(void)
- {
- 	unsigned int cpu;
- 
--	/* If powersave_nap is enabled, use NAP mode, else just
--	 * spin aimlessly
--	 */
--	if (!powersave_nap) {
--		generic_mach_cpu_die();
--		return;
--	}
--
- 	/* Standard hot unplug procedure */
- 	local_irq_disable();
- 	idle_task_exit();
-@@ -128,7 +120,7 @@ static void pnv_smp_cpu_kill_self(void)
- 	 */
- 	mtspr(SPRN_LPCR, mfspr(SPRN_LPCR) & ~(u64)LPCR_PECE1);
- 	while (!generic_check_cpu_restart(cpu)) {
--		power7_idle();
-+		power7_nap();
- 		if (!generic_check_cpu_restart(cpu)) {
- 			DBG("CPU%d Unexpected exit while offline !\n", cpu);
- 			/* We may be getting an IPI, so we re-enable
--- 
-1.7.10
+> Expected result:
+> It should show something like this:
+> x1521p4:~ # cat /sys/class/scsi_host/host1/config
+> PARTITIONNAME='x1521p4'
+> NWSDNAME='X1521P4'
+> HOSTNAME='X1521P4'
+> DOMAINNAME='RCHLAND.IBM.COM'
+> NAMESERVERS='9.10.244.100 9.10.244.200'
+> 
+> Actual result:
+> x1521p4:~ # cat /sys/class/scsi_host/host0/config
+> x1521p4:~ #
+> 
+> This patch changes the size of the buffer used for transfering config
+> data to 4K. It was tested against 2.6.19-rc2 tree.
+> 
+> Reported by IBM during SLES11 beta testing:
+> 
+> https://bugzilla.novell.com/show_bug.cgi?id=439970
+> LTC49349
+> 
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> 
+> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+> index e580aa4..1513ca8 100644
+> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
+> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+> @@ -93,6 +93,8 @@ static int max_requests = IBMVSCSI_MAX_REQUESTS_DEFAULT;
+>  static int max_events = IBMVSCSI_MAX_REQUESTS_DEFAULT + 2;
+>  static int fast_fail = 1;
+>  static int client_reserve = 1;
+> +/* host data buffer size */
+> +#define HOST_BUFFER_SIZE 4096
+>  
+>  static struct scsi_transport_template *ibmvscsi_transport_template;
+>  
+> @@ -1666,7 +1668,7 @@ static ssize_t show_host_srp_version(struct device *dev,
+>  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+>  	int len;
+>  
+> -	len = snprintf(buf, PAGE_SIZE, "%s\n",
+> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%s\n",
+>  		       hostdata->madapter_info.srp_version);
+>  	return len;
+>  }
+> @@ -1687,7 +1689,7 @@ static ssize_t show_host_partition_name(struct device *dev,
+>  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+>  	int len;
+>  
+> -	len = snprintf(buf, PAGE_SIZE, "%s\n",
+> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%s\n",
+>  		       hostdata->madapter_info.partition_name);
+>  	return len;
+>  }
+> @@ -1708,7 +1710,7 @@ static ssize_t show_host_partition_number(struct device *dev,
+>  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+>  	int len;
+>  
+> -	len = snprintf(buf, PAGE_SIZE, "%d\n",
+> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%d\n",
+>  		       hostdata->madapter_info.partition_number);
+>  	return len;
+>  }
+> @@ -1728,7 +1730,7 @@ static ssize_t show_host_mad_version(struct device *dev,
+>  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+>  	int len;
+>  
+> -	len = snprintf(buf, PAGE_SIZE, "%d\n",
+> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%d\n",
+>  		       hostdata->madapter_info.mad_version);
+>  	return len;
+>  }
+> @@ -1748,7 +1750,7 @@ static ssize_t show_host_os_type(struct device *dev,
+>  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+>  	int len;
+>  
+> -	len = snprintf(buf, PAGE_SIZE, "%d\n", hostdata->madapter_info.os_type);
+> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%d\n", hostdata->madapter_info.os_type);
+>  	return len;
+>  }
+>  
+> @@ -1767,7 +1769,7 @@ static ssize_t show_host_config(struct device *dev,
+>  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
+>  
+>  	/* returns null-terminated host config data */
+> -	if (ibmvscsi_do_host_config(hostdata, buf, PAGE_SIZE) == 0)
+> +       if (ibmvscsi_do_host_config(hostdata, buf, HOST_BUFFER_SIZE) == 0)
+>  		return strlen(buf);
+>  	else
+>  		return 0;
