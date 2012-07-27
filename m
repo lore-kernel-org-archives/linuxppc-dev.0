@@ -1,21 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0B64B2C008C
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Jul 2012 15:19:32 +1000 (EST)
-Message-ID: <1343366362.2118.15.camel@pasglop>
-Subject: Re: [PATCH] scsi/ibmvscsi: /sys/class/scsi_host/hostX/config
- doesn't show any information
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: olaf@aepfle.de
-Date: Fri, 27 Jul 2012 15:19:22 +1000
-In-Reply-To: <1342630157-16468-1-git-send-email-olaf@aepfle.de>
-References: <1342630157-16468-1-git-send-email-olaf@aepfle.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Linda Xie <lxiep@us.ibm.com>,
- linux-scsi@vger.kernel.org, "James E.J. Bottomley" <JBottomley@parallels.com>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id AC07E2C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jul 2012 16:12:26 +1000 (EST)
+Message-ID: <5012326F.80702@cn.fujitsu.com>
+Date: Fri, 27 Jul 2012 14:17:19 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
+MIME-Version: 1.0
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v4 12/13] memory-hotplug : add node_device_release
+References: <50068974.1070409@jp.fujitsu.com> <50068D41.9090109@jp.fujitsu.com>
+In-Reply-To: <50068D41.9090109@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,101 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-07-18 at 18:49 +0200, olaf@aepfle.de wrote:
-> From: Linda Xie <lxiep@us.ibm.com>
+At 07/18/2012 06:17 PM, Yasuaki Ishimatsu Wrote:
+> When calling unregister_node(), the function shows following message at
+> device_release().
+> 
+> Device 'node2' does not have a release() function, it is broken and must be
+> fixed.
+> 
+> So the patch implements node_device_release()
+> 
+> CC: David Rientjes <rientjes@google.com>
+> CC: Jiang Liu <liuj97@gmail.com>
+> CC: Len Brown <len.brown@intel.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org> 
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> 
+> CC: Wen Congyang <wency@cn.fujitsu.com>
+> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> 
+> ---
+>  drivers/base/node.c |    7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> Index: linux-3.5-rc6/drivers/base/node.c
+> ===================================================================
+> --- linux-3.5-rc6.orig/drivers/base/node.c	2012-07-18 18:24:29.191121066 +0900
+> +++ linux-3.5-rc6/drivers/base/node.c	2012-07-18 18:25:47.111146983 +0900
+> @@ -252,6 +252,12 @@ static inline void hugetlb_register_node
+>  static inline void hugetlb_unregister_node(struct node *node) {}
+>  #endif
+>  
+> +static void node_device_release(struct device *dev)
+> +{
+> +	struct node *node_dev = to_node(dev);
+> +
+> +	memset(node_dev, 0, sizeof(struct node));
 
-James, can I assume you're picking up those two ?
+This line is wrong. node_dev->work_struct may be queued in workqueue.
+So, it is very dangerous to clear node_dev->work_struct here.
+In my test, it will cause kernel panicked.
 
-Cheers,
-Ben.
-
-> Expected result:
-> It should show something like this:
-> x1521p4:~ # cat /sys/class/scsi_host/host1/config
-> PARTITIONNAME='x1521p4'
-> NWSDNAME='X1521P4'
-> HOSTNAME='X1521P4'
-> DOMAINNAME='RCHLAND.IBM.COM'
-> NAMESERVERS='9.10.244.100 9.10.244.200'
+Thanks
+Wen Congyang
+> +}
+>  
+>  /*
+>   * register_node - Setup a sysfs device for a node.
+> @@ -265,6 +271,7 @@ int register_node(struct node *node, int
+>  
+>  	node->dev.id = num;
+>  	node->dev.bus = &node_subsys;
+> +	node->dev.release = node_device_release;
+>  	error = device_register(&node->dev);
+>  
+>  	if (!error){
 > 
-> Actual result:
-> x1521p4:~ # cat /sys/class/scsi_host/host0/config
-> x1521p4:~ #
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> This patch changes the size of the buffer used for transfering config
-> data to 4K. It was tested against 2.6.19-rc2 tree.
-> 
-> Reported by IBM during SLES11 beta testing:
-> 
-> https://bugzilla.novell.com/show_bug.cgi?id=439970
-> LTC49349
-> 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
-> 
-> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> index e580aa4..1513ca8 100644
-> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
-> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
-> @@ -93,6 +93,8 @@ static int max_requests = IBMVSCSI_MAX_REQUESTS_DEFAULT;
->  static int max_events = IBMVSCSI_MAX_REQUESTS_DEFAULT + 2;
->  static int fast_fail = 1;
->  static int client_reserve = 1;
-> +/* host data buffer size */
-> +#define HOST_BUFFER_SIZE 4096
->  
->  static struct scsi_transport_template *ibmvscsi_transport_template;
->  
-> @@ -1666,7 +1668,7 @@ static ssize_t show_host_srp_version(struct device *dev,
->  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
->  	int len;
->  
-> -	len = snprintf(buf, PAGE_SIZE, "%s\n",
-> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%s\n",
->  		       hostdata->madapter_info.srp_version);
->  	return len;
->  }
-> @@ -1687,7 +1689,7 @@ static ssize_t show_host_partition_name(struct device *dev,
->  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
->  	int len;
->  
-> -	len = snprintf(buf, PAGE_SIZE, "%s\n",
-> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%s\n",
->  		       hostdata->madapter_info.partition_name);
->  	return len;
->  }
-> @@ -1708,7 +1710,7 @@ static ssize_t show_host_partition_number(struct device *dev,
->  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
->  	int len;
->  
-> -	len = snprintf(buf, PAGE_SIZE, "%d\n",
-> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%d\n",
->  		       hostdata->madapter_info.partition_number);
->  	return len;
->  }
-> @@ -1728,7 +1730,7 @@ static ssize_t show_host_mad_version(struct device *dev,
->  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
->  	int len;
->  
-> -	len = snprintf(buf, PAGE_SIZE, "%d\n",
-> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%d\n",
->  		       hostdata->madapter_info.mad_version);
->  	return len;
->  }
-> @@ -1748,7 +1750,7 @@ static ssize_t show_host_os_type(struct device *dev,
->  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
->  	int len;
->  
-> -	len = snprintf(buf, PAGE_SIZE, "%d\n", hostdata->madapter_info.os_type);
-> +       len = snprintf(buf, HOST_BUFFER_SIZE, "%d\n", hostdata->madapter_info.os_type);
->  	return len;
->  }
->  
-> @@ -1767,7 +1769,7 @@ static ssize_t show_host_config(struct device *dev,
->  	struct ibmvscsi_host_data *hostdata = shost_priv(shost);
->  
->  	/* returns null-terminated host config data */
-> -	if (ibmvscsi_do_host_config(hostdata, buf, PAGE_SIZE) == 0)
-> +       if (ibmvscsi_do_host_config(hostdata, buf, HOST_BUFFER_SIZE) == 0)
->  		return strlen(buf);
->  	else
->  		return 0;
