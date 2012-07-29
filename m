@@ -1,23 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 62DD22C007D
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jul 2012 00:03:17 +1000 (EST)
-Subject: Re: [PATCH] powerpc/smp: Do not disable IPI interrupts during suspend
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1343427631.21647.1.camel@pasglop>
-Date: Sat, 28 Jul 2012 09:03:00 -0500
-Message-Id: <31CC815F-472E-4211-85E5-3DB644105AF4@kernel.crashing.org>
-References: <1342788421-27648-1-git-send-email-chenhui.zhao@freescale.com>
- <5028672F-1873-4E45-AA23-4CA9F191BE77@kernel.crashing.org>
- <1343427631.21647.1.camel@pasglop>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Zhao Chenhui <chenhui.zhao@freescale.com>,
- "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>
+Return-Path: <linus.walleij@linaro.org>
+Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
+ [209.85.212.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 07C052C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 02:13:32 +1000 (EST)
+Received: by vbbfn1 with SMTP id fn1so1648134vbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 29 Jul 2012 09:13:30 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1343034810-3386-9-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1343034810-3386-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1343034810-3386-9-git-send-email-u.kleine-koenig@pengutronix.de>
+Date: Sun, 29 Jul 2012 18:13:29 +0200
+Message-ID: <CACRpkdZqG7E6bsgGFQz_+2aC6FNNV_egOorzKYGtHQJk-fhhqg@mail.gmail.com>
+Subject: Re: [PATCH 08/25] gpio/mpc8xxx: add a const qualifier
+From: Linus Walleij <linus.walleij@linaro.org>
+To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= <u.kleine-koenig@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linus Walleij <linus.walleij@stericsson.com>, Arnd Bergmann <arnd@arndb.de>,
+ Rob Herring <rob.herring@calxeda.com>, kernel@pengutronix.de,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,59 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jul 23, 2012 at 11:13 AM, Uwe Kleine-K=F6nig
+<u.kleine-koenig@pengutronix.de> wrote:
 
-On Jul 27, 2012, at 5:20 PM, Benjamin Herrenschmidt wrote:
+> This prepares *of_device_id.data becoming const. Without this change
+> the following warning would occur:
+>
+>         drivers/gpio/gpio-mpc8xxx.c: In function 'mpc8xxx_add_controller'=
+:
+>         drivers/gpio/gpio-mpc8xxx.c:360:30: warning: assignment discards =
+'const' qualifier from pointer target type [enabled by default]
+>
+> Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@pengutronix.de>
 
-> On Fri, 2012-07-27 at 16:58 -0500, Kumar Gala wrote:
->> On Jul 20, 2012, at 7:47 AM, Zhao Chenhui wrote:
->>=20
->>> During suspend, all interrupts including IPI will be disabled. In =
-this case,
->>> the suspend process will hang in SMP. To prevent this, pass the flag
->>> IRQF_NO_SUSPEND when requesting IPI irq.
->>>=20
->>> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> ---
->>> arch/powerpc/kernel/smp.c |    2 +-
->>> 1 files changed, 1 insertions(+), 1 deletions(-)
->>=20
->> BenH,
->>=20
->> Can you ack?
->=20
-> No I'll merge it but not until it's been in next for a bit unless you
-> have some strong emergency there, it's on my mental list of things to
-> shovel into next after rc1.
+Acked-by: Linus Walleij <linus.walleij@linaro.org>
 
-I wasn't clear, I was meaning for my 'next' tree, not 3.6.  Trying to =
-get these FSL PM patches into my 'next' for 3.7.
-
-- k
-
-> Curiosity: didn't we use to disable all non-boot CPUs on suspend ?
->=20
-> Cheers,
-> Ben.
->=20
->> - k
->>=20
->>>=20
->>> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
->>> index fecb038..d26bbf8 100644
->>> --- a/arch/powerpc/kernel/smp.c
->>> +++ b/arch/powerpc/kernel/smp.c
->>> @@ -171,7 +171,7 @@ int smp_request_message_ipi(int virq, int msg)
->>> 	}
->>> #endif
->>> 	err =3D request_irq(virq, smp_ipi_action[msg],
->>> -			  IRQF_PERCPU | IRQF_NO_THREAD,
->>> +			  IRQF_PERCPU | IRQF_NO_THREAD | =
-IRQF_NO_SUSPEND,
->>> 			  smp_ipi_name[msg], 0);
->>> 	WARN(err < 0, "unable to request_irq %d for %s (rc %d)\n",
->>> 		virq, smp_ipi_name[msg], err);
->>> --=20
->>> 1.6.4.1
->>>=20
->=20
+Yours,
+Linus Walleij
