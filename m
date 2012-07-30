@@ -1,22 +1,22 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id CDADE2C007F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 04:33:28 +1000 (EST)
-Date: Mon, 30 Jul 2012 11:33:23 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [linuxppc-release] [PATCH v4 7/7] fsl-dma: add memcpy self
- test interface
-Message-ID: <20120730183322.GA32504@ovro.caltech.edu>
-References: <1343380616-12126-1-git-send-email-qiang.liu@freescale.com>
- <5016C8F9.7070801@freescale.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mo6-p00-ob.rzone.de (mo6-p00-ob.rzone.de
+ [IPv6:2a01:238:20a:202:5300::1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8FA3A2C0080
+ for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2012 05:06:18 +1000 (EST)
+Date: Mon, 30 Jul 2012 21:06:06 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] scsi/ibmvscsi: add module alias for ibmvscsic
+Message-ID: <20120730190606.GD3155@aepfle.de>
+References: <1342630158-16510-1-git-send-email-olaf@aepfle.de>
+ <1343611946.21647.23.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5016C8F9.7070801@freescale.com>
-Cc: Vinod Koul <vinod.koul@intel.com>, qiang.liu@freescale.com,
- herbert@gondor.hengli.com.au, linux-crypto@vger.kernel.org,
- Dan Williams <dan.j.williams@intel.com>, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1343611946.21647.23.camel@pasglop>
+Cc: linuxppc-dev@ozlabs.org, Brian J King <bjking1@us.ibm.com>,
+ "James E.J. Bottomley" <JBottomley@parallels.com>, linux-scsi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,27 +26,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jul 30, 2012 at 12:48:41PM -0500, Timur Tabi wrote:
-> qiang.liu@freescale.com wrote:
+On Mon, Jul 30, Benjamin Herrenschmidt wrote:
+
+> On Wed, 2012-07-18 at 18:49 +0200, olaf@aepfle.de wrote:
+> > From: Olaf Hering <olaf@aepfle.de>
 > > 
-> > Add memory copy self test when probe device, fsl-dma will be disabled
-> > if self test failed.
+> > The driver is named ibmvscsic, at runtime it its name is advertised as
+> > ibmvscsi. For this reason mkinitrd wont pickup the driver properly.
+> > Reported by IBM during SLES11 beta testing:
+> > 
+> > https://bugzilla.novell.com/show_bug.cgi?id=459933
+> > LTC50724
 > 
-> Is this a real problem that can occur?  The DMA driver used to have a
-> self-test, but I removed it a long time ago because it was pointless.  I
-> don't see why we need to add another one back in.
+> So while this would work, I do wonder however whether we could instead
+> fix it by simplifying the whole thing as follow since iSeries is now
+> gone and so we don't need split backends anymore:
 > 
-> -- 
-> Timur Tabi
-> Linux kernel developer at Freescale
-> 
+> scsi/ibmvscsi: Remove backend abstraction
 
-I made a comment that a test suite for the async_tx API would be very
-helpful in diagnosing similar problems in this and other DMA drivers.
-Something standalone, similar to the drivers/dma/dmatest.c driver, using
-the async_tx API.
+I cant that these things myself anymore.
 
-I think this was misinterpreted into me asking that the driver have a
-built-in self test.
-
-Ira
+Olaf
