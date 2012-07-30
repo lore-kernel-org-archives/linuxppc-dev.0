@@ -1,25 +1,25 @@
-Return-Path: <B38951@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A722D2C0088
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 16:09:57 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
-Date: Mon, 30 Jul 2012 06:09:36 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
- <1343125210-16720-5-git-send-email-B38951@freescale.com>
- <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
-In-Reply-To: <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from fornost.hengli.com.au (sting.hengli.com.au [178.18.18.71])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 381BE2C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 17:56:52 +1000 (EST)
+Date: Mon, 30 Jul 2012 15:56:28 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Seth Jennings <sjenning@linux.vnet.ibm.com>
+Subject: Re: [PATCH 0/4] powerpc/crypto: IBM Power7+ in-Nest compression
+ support
+Message-ID: <20120730075628.GE5515@gondor.apana.org.au>
+References: <1342708961-28587-1-git-send-email-sjenning@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1342708961-28587-1-git-send-email-sjenning@linux.vnet.ibm.com>
+Cc: Kent Yoder <key@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Robert Jennings <rcj@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, July 27, 2012 9:24 PM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
-> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM
-> support
->=20
->=20
-> On Jul 24, 2012, at 5:20 AM, Jia Hongtao wrote:
->=20
-> > Power supply for PCI inbound/outbound window registers is off when
-> system
-> > go to deep-sleep state. We save the values of registers before suspend
-> > and restore to registers after resume.
-> >
-> > Signed-off-by: Jiang Yutang <b14898@freescale.com>
-> > Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> > arch/powerpc/include/asm/pci-bridge.h |    2 +-
-> > arch/powerpc/sysdev/fsl_pci.c         |  121
-> +++++++++++++++++++++++++++++++++
-> > 2 files changed, 122 insertions(+), 1 deletions(-)
->=20
-> Remind me why we need to save/restore PCI ATMUs, why not just re-parse
-> the device tree to restore?
->=20
-> - k
+On Thu, Jul 19, 2012 at 09:42:37AM -0500, Seth Jennings wrote:
+> This is a continuation of support for the Power7+ in-Nest
+> hardware accelerator.
+> 
+> https://lkml.org/lkml/2012/4/12/223
+> 
+> This patchset adds the hardware driver and the cryptographic
+> driver for hardware accelerated compression, which uses a
+> hardware-optimized algorithm named 842.
+> 
+> The hardware driver has limits on generic compression and is
+> geared toward compressing units that are of PAGE_SIZE for
+> in-kernel memory compression.
+> 
+> Based on linux-next (20120717)
+> 
+> Seth Jennings (4):
 
-Save/restore is the more efficient way. Latency of sleep/wakeup is one of
-most important features in power management.
-
--Hongtao.
+All applied.  Thanks Seth.
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
