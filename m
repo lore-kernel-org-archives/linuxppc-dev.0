@@ -1,22 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1343635259.10666.1.camel@concordia>
-Subject: Re: [PATCH 3/4] powerpc/crypto: add 842 hardware compression driver
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Seth Jennings <sjenning@linux.vnet.ibm.com>
-Date: Mon, 30 Jul 2012 18:00:59 +1000
-In-Reply-To: <500964A7.1020702@linux.vnet.ibm.com>
-References: <1342708961-28587-1-git-send-email-sjenning@linux.vnet.ibm.com>
- <1342708961-28587-4-git-send-email-sjenning@linux.vnet.ibm.com>
- <1342762410.15356.7.camel@concordia> <500964A7.1020702@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Robert Jennings <rcj@linux.vnet.ibm.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Andrew Morton <akpm@linux-foundation.org>, Kent Yoder <key@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- linux-crypto@vger.kernel.org
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0119D2C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 18:07:40 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Mon, 30 Jul 2012 08:07:31 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A29FBA@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
+ <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A2883B@039-SN1MPN1-002.039d.mgd.msft.net>
+ <73450B27-5496-499C-B7D1-13B797FE7650@kernel.crashing.org>
+In-Reply-To: <73450B27-5496-499C-B7D1-13B797FE7650@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +30,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-07-20 at 09:01 -0500, Seth Jennings wrote:
-> On 07/20/2012 12:33 AM, Michael Ellerman wrote:
-> > On Thu, 2012-07-19 at 09:42 -0500, Seth Jennings wrote:
-> >> This patch adds the driver for interacting with the 842
-> >> compression accelerator on IBM Power7+ systems.
-> > 
-> > ...
-> > 
-> >> +struct nx842_slentry {
-> >> +	unsigned long ptr; /* Absolute address (use virt_to_abs()) */
-> >> /+	unsigned long len;
-> >> +};
-> > 
-> > These days virt_to_abs() is just __pa() - ie. convert to a real address.
-> 
-> Thanks, I'll make that change.
-> 
-> Is it a blocker to the code being pulled in though? I'm
-> hoping to get this in ASAP for the 3.6 merge window.  As
-> this isn't a functional defect (I assume __pa() and
-> virt_to_abs() still achieve the same result), can I get an
-> OK from you that this isn't a blocker to the code being
-> accepted?
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Friday, July 27, 2012 8:47 PM
+> To: Jia Hongtao-B38951
+> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
+> initialization code
+>=20
+>=20
+> On Jul 27, 2012, at 3:35 AM, Jia Hongtao-B38951 wrote:
+>=20
+> >
+> >
+> >> -----Original Message-----
+> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >> Sent: Friday, July 27, 2012 2:15 AM
+> >> To: Jia Hongtao-B38951
+> >> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+> >> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
+> >> initialization code
+> >>
+> >>
+> >> On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
+> >>
+> >>> We unified the Freescale pci/pcie initialization by changing the
+> >> fsl_pci
+> >>> to a platform driver. In previous PCI code architecture the
+> >> initialization
+> >>> routine is called at board_setup_arch stage. Now the initialization
+> is
+> >> done
+> >>> in probe function which is architectural better. Also It's convenient
+> >> for
+> >>> adding PM support for PCI controller in later patch.
+> >>>
+> >>> One issue introduced by this architecture is the timing of
+> swiotlb_init.
+> >>> During PCI initialization the need of swiotlb is determined and this
+> >> should
+> >>> be done before swiotlb_init. So a new function to determine swiotlb
+> by
+> >>> parsing pci ranges is made. This function is called at
+> board_setup_arch
+> >>> stage which is earlier than swiotlb_init.
+> >>>
+> >>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> >>> Signed-off-by: Li Yang <leoli@freescale.com>
+> >>> ---
+> >>> Changed for V3:
+> >>> - Rebase the patch set on the latest tree
+> >>> - merge PCI unify and swiotlb patch into one
+> >>>
+> >>> arch/powerpc/sysdev/fsl_pci.c |  155
+> ++++++++++++++++++++++++++++++++--
+> >> -------
+> >>> arch/powerpc/sysdev/fsl_pci.h |    9 +--
+> >>> 2 files changed, 125 insertions(+), 39 deletions(-)
+> >>
+> >> I'd like the SWIOTLB refactoring as a separate patch.  Additionally,
+> the
+> >> order of patches should be as follows:
+> >>
+> >> 1. refactor PCI node parsing code
+> >> 2. add pci_determine_swiotlb (should rename to
+> fsl_pci_determine_swiotlb)
+> >> 3. Determine primary bus by looking for ISA node
+> >> 4. convert all boards over to fsl_pci_init
+> >> 5. convert fsl pci to platform driver (edac and other fixes should be
+> >> merged in here)
+> >> 6. PM support
+> >>
+> >> - k
+> >
+> > Should I convert all boards over to fsl_pci_init first and then convert
+> them
+> > over to platform driver again or just convert them direct to platform
+> driver?
+>=20
+> Yes do the fsl_pci_init conversion first.  The reason is we should NOT
+> break functionality from one patch to another.
+>=20
+> - k
 
-Sorry I missed your reply. No it's not a blocker, just ugly.
 
-I have sent a series to Ben which removes virt_to_abs() entirely, so
-we'll want to make sure we fixup the nx driver before that goes in.
+Actually, the functionality is not broken, other boards just use the old
+Way to init pci controller and it still works.
 
-cheers
+-Hongtao.
