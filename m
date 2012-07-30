@@ -1,28 +1,23 @@
-Return-Path: <B32616@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 84B622C0088
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 12:06:19 +1000 (EST)
-From: Liu Qiang-B32616 <B32616@freescale.com>
-To: Liu Qiang-B32616 <B32616@freescale.com>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>, "vinod.koul@intel.com"
- <vinod.koul@intel.com>, "dan.j.williams@intel.com"
- <dan.j.williams@intel.com>, "herbert@gondor.hengli.com.au"
- <herbert@gondor.hengli.com.au>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v4 0/7] Raid: enable talitos xor offload for improving
- performance
-Date: Mon, 30 Jul 2012 02:06:10 +0000
-Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70C569F@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1343380531-11953-1-git-send-email-qiang.liu@freescale.com>
-In-Reply-To: <1343380531-11953-1-git-send-email-qiang.liu@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id CA16F2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 13:43:21 +1000 (EST)
+Message-ID: <501603E7.1060200@cn.fujitsu.com>
+Date: Mon, 30 Jul 2012 11:47:51 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: Li Yang-R58472 <r58472@freescale.com>,
- Phillips Kim-R1AAHA <R1AAHA@freescale.com>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: [RFC PATCH v5 19/19] memory-hotplug: remove sysfs file of node
+References: <50126B83.3050201@cn.fujitsu.com> <50126F21.803@cn.fujitsu.com>
+ <5012712E.9000005@jp.fujitsu.com>
+In-Reply-To: <5012712E.9000005@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
+ rientjes@google.com, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,92 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+At 07/27/2012 06:45 PM, Yasuaki Ishimatsu Wrote:
+> Hi Wen,
+> 
+> 2012/07/27 19:36, Wen Congyang wrote:
+>> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>
+>> The patch adds node_set_offline() and unregister_one_node() to
+>> remove_memory()
+>> for removing sysfs file of node.
+>>
+>> CC: David Rientjes <rientjes@google.com>
+>> CC: Jiang Liu <liuj97@gmail.com>
+>> CC: Len Brown <len.brown@intel.com>
+>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> CC: Paul Mackerras <paulus@samba.org>
+>> CC: Christoph Lameter <cl@linux.com>
+>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>> CC: Andrew Morton <akpm@linux-foundation.org>
+>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> CC: Wen Congyang <wency@cn.fujitsu.com>
+>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>> ---
+>>   mm/memory_hotplug.c |    5 +++++
+>>   1 files changed, 5 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>> index 5ac035f..5681968 100644
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -1267,6 +1267,11 @@ int __ref remove_memory(int nid, u64 start, u64
+>> size)
+>>       /* remove memmap entry */
+>>       firmware_map_remove(start, start + size, "System RAM");
+>>
+>> +    if (!node_present_pages(nid)) {
+> 
+> Applying [PATCH v5 17/19], pgdat->node_spanned_pages can become 0 when
+> all memory of the pgdat is removed. When pgdat->node_spanned_pages is 0,
+> it means the pgdat has no memory. So I think node_spanned_pages() is
+> better.
 
-Vinod, Dan, ping?
+Hmm, if the node contains cpu, and the cpu is onlined, can we offline
+this node?
 
+Thanks
+Wen Congyang
 
-> -----Original Message-----
-> From: linux-crypto-owner@vger.kernel.org [mailto:linux-crypto-
-> owner@vger.kernel.org] On Behalf Of qiang.liu@freescale.com
-> Sent: Friday, July 27, 2012 5:16 PM
-> To: linux-crypto@vger.kernel.org; vinod.koul@intel.com;
-> dan.j.williams@intel.com; herbert@gondor.hengli.com.au; linuxppc-
-> dev@lists.ozlabs.org
-> Cc: Li Yang-R58472; Phillips Kim-R1AAHA
-> Subject: [PATCH v4 0/7] Raid: enable talitos xor offload for improving
-> performance
->=20
-> Hi,
->=20
-> The following 7 patches enabling fsl-dma and talitos offload raid
-> operations for improving raid performance and balancing CPU load.
->=20
-> Write performance will be improved by 25-30% tested by iozone.
-> Write performance is improved about 2% after using spin_lock_bh replace
-> spin_lock_irqsave.
-> CPU load will be reduced by 8%.
->=20
-> Changes in V4:
-> 	- fix an error in talitos when dest addr is same with src addr,
-> dest
-> 	should be freed only one time if src is same with dest addr;
-> 	- correct coding style in fsl-dma according to Ira's comments;
-> 	- fix a race condition in fsl-dma fsl_tx_status(), remove the
-> interface
-> 	which is used to free descriptors in queue ld_completed, this
-> interface
-> 	has been included in fsldma_cleanup_descriptor(), in v3, there is
-> one
-> 	place missed spin_lock protect;
-> 	- split the original patch 3/4 up to 2 patches 3/7 and 4/7
-> according to
-> 	Li Yang's comments.
-> 	- fix a warning of unitialized cookie;
-> 	- add memory copy self test in fsl-dma;
-> 	- add more detail description about use spin_lock_bh() to instead
-> of
-> 	spin_lock_irqsave() according to Timur's comments;
->=20
-> Changes in v3:
-> 	- change release process of fsl-dma descriptor for resolve the
-> 	potential race condition
-> 	- add test result when use spin_lock_bh replace spin_lock_irqsave
-> 	- modify the benchmark results according to the latest patch
->=20
-> Changes in v2:
-> 	- rebase onto cryptodev tree
-> 	- split the patch 3/4 up to 3 independent patches
-> 	- remove the patch 4/4, the fix is not for cryptodev tree
->=20
->=20
-> Qiang Liu (4):
->       Talitos: Support for async_tx XOR offload
->       fsl-dma: remove attribute DMA_INTERRUPT of dmaengine
->       fsl-dma: change release process of dma descriptor for supporting
-> async_tx
->       fsl-dma: use spin_lock_bh to instead of spin_lock_irqsave
->=20
-> Qiang Liu (7):
->       Talitos: Support for async_tx XOR offload
->       fsl-dma: remove attribute DMA_INTERRUPT of dmaengine
->       fsl-dma: change release process of dma descriptor for supporting
-> async_tx
->       fsl-dma: move the function ahead of its invoke function
->       fsl-dma: use spin_lock_bh to instead of spin_lock_irqsave
->       fsl-dma: fix a warning of unitialized cookie
->       fsl-dma: add memcpy self test interface
->=20
->  drivers/crypto/Kconfig   |    9 +
->  drivers/crypto/talitos.c |  413 ++++++++++++++++++++++++++++++++++
->  drivers/crypto/talitos.h |   53 +++++
->  drivers/dma/fsldma.c     |  550 +++++++++++++++++++++++++++++-----------
-> ------
->  drivers/dma/fsldma.h     |    1 +
->  5 files changed, 822 insertions(+), 204 deletions(-)
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-crypto"
-> in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> Thanks,
+> Yasuaki Ishimatsu
+> 
+>> +        node_set_offline(nid);
+>> +        unregister_one_node(nid);
+>> +    }
+>> +
+>>       arch_remove_memory(start, size);
+>>   out:
+>>       unlock_memory_hotplug();
+>>
+> 
+> 
+> 
