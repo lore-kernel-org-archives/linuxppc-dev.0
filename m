@@ -1,35 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 306F72C009D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 15:37:03 +1000 (EST)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 30 Jul 2012 11:06:56 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6U5aSmD23724236
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 11:06:29 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6U5aR4c024272
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 15:36:27 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V4 11/12] arch/powerpc: properly offset the context bits
- for 1T segemnts
-In-Reply-To: <20120730005803.GB21364@bloggs.ozlabs.ibm.com>
-References: <1343221085-30661-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1343221085-30661-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120730005803.GB21364@bloggs.ozlabs.ibm.com>
-Date: Mon, 30 Jul 2012 11:06:27 +0530
-Message-ID: <873949n738.fsf@skywalker.in.ibm.com>
+Return-Path: <B38951@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A722D2C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 16:09:57 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
+Date: Mon, 30 Jul 2012 06:09:36 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <1343125210-16720-5-git-send-email-B38951@freescale.com>
+ <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
+In-Reply-To: <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,44 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Friday, July 27, 2012 9:24 PM
+> To: Jia Hongtao-B38951
+> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM
+> support
+>=20
+>=20
+> On Jul 24, 2012, at 5:20 AM, Jia Hongtao wrote:
+>=20
+> > Power supply for PCI inbound/outbound window registers is off when
+> system
+> > go to deep-sleep state. We save the values of registers before suspend
+> > and restore to registers after resume.
+> >
+> > Signed-off-by: Jiang Yutang <b14898@freescale.com>
+> > Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > ---
+> > arch/powerpc/include/asm/pci-bridge.h |    2 +-
+> > arch/powerpc/sysdev/fsl_pci.c         |  121
+> +++++++++++++++++++++++++++++++++
+> > 2 files changed, 122 insertions(+), 1 deletions(-)
+>=20
+> Remind me why we need to save/restore PCI ATMUs, why not just re-parse
+> the device tree to restore?
+>=20
+> - k
 
-> On Wed, Jul 25, 2012 at 06:28:04PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> We should do rldimi r10,r9,USER_ESID_BITS,0 only after populating
->> r10 with ESID bits.
->
-> This needs a lot more explanation as to what the problem is that this
-> patch aims to fix.  Is it a problem today without your other patches,
-> or is it introduced by previous patches?
->
-> In any case I think there is an error in the patch, see below...
->
->>  0:	/* user address: proto-VSID = context << 15 | ESID. First check
->> @@ -155,13 +157,16 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
->>  	ld	r9,PACACONTEXTID(r13)
->>  BEGIN_FTR_SECTION
->>  	cmpldi	r10,0x1000
->> +	bge	9f
->>  END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
->>  	rldimi	r10,r9,USER_ESID_BITS,0
->> +	b	slb_finish_load
->>  BEGIN_FTR_SECTION
->> -	bge	slb_finish_load_1T
->> +9:
->> +	srdi	r10,r10,40-28		/* get 1T ESID */
->> +	rldimi	r10,r9,USER_ESID_BITS,0
->
-> Shouldn't this one be USER_ESID_BITS_1T?  And in that case, since
-> USER_ESID_BITS == USER_ESID_BITS_1T + 12, I think the patch would
-> then introduce no change in behaviour (other than being slightly
-> slower than the current code).  Or am I missing something? -- in
-> that case we really need a longer and better explanation with the
-> patch.
+Save/restore is the more efficient way. Latency of sleep/wakeup is one of
+most important features in power management.
 
-Ok I missed that we used USER_ESID_BITS there. This patch can be
-dropped. I looked at the 1T code, and assumed that we were wrongly
-shifting the context bits there.
-
--aneesh
+-Hongtao.
