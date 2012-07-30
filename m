@@ -1,28 +1,26 @@
-Return-Path: <B38951@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+Return-Path: <B10812@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 51B9C2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 18:26:51 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Mon, 30 Jul 2012 08:26:43 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A29FEF@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
- <ACC8975F-CA31-4AA0-9824-4C3F6C70CD45@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A289D8@039-SN1MPN1-002.039d.mgd.msft.net>
- <5012F8FD.8030905@freescale.com>
- <A2F0976D-CF30-4A20-8697-0CD1830DD54A@kernel.crashing.org>
-In-Reply-To: <A2F0976D-CF30-4A20-8697-0CD1830DD54A@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id 682832C033E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 19:11:07 +1000 (EST)
+From: Aggrwal Poonam-B10812 <B10812@freescale.com>
+To: Greg KH <gregkh@linuxfoundation.org>, Singh Sandeep-B37400
+ <B37400@freescale.com>
+Subject: RE: [2/3][PATCH][v2] TDM Framework
+Date: Mon, 30 Jul 2012 09:10:48 +0000
+Message-ID: <ACB6D0C0104CFF42A45A5D82A0DD4F3D079C0B75@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
+ <20120727175939.GA23105@kroah.com>
+In-Reply-To: <20120727175939.GA23105@kroah.com>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
+Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,47 +33,87 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 > -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Saturday, July 28, 2012 5:17 AM
-> To: Wood Scott-B07421
-> Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
-> Li Yang-R58472
-> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
-> initialization code
+> From: Linuxppc-dev [mailto:linuxppc-dev-
+> bounces+poonam.aggrwal=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Gre=
+g
+> KH
+> Sent: Friday, July 27, 2012 11:30 PM
+> To: Singh Sandeep-B37400
+> Cc: devel@driverdev.osuosl.org; linuxppc-dev@lists.ozlabs.org; linux-arm-
+> kernel@lists.infradead.org; linux-kernel@vger.kernel.org
+> Subject: Re: [2/3][PATCH][v2] TDM Framework
 >=20
+> On Fri, Jul 27, 2012 at 07:35:38PM +0530, sandeep@freescale.com wrote:
+> > +/* Data structures required for sysfs */ static struct tdm_sysfs attr
+> > +=3D {
+> > +	.attr.name =3D "use_latest_data",
+> > +	.attr.mode =3D 0664,
+> > +	.cmd_type =3D TDM_LATEST_DATA,
+> > +};
 >=20
-> On Jul 27, 2012, at 3:24 PM, Scott Wood wrote:
->=20
-> > On 07/27/2012 05:10 AM, Jia Hongtao-B38951 wrote:
-> >> Hi kumar,
-> >>
-> >> I know "duplicate code from pci_process_bridge_OF_ranges()" is
-> >> hard to accept but "refactor the code to have a shared function"
-> >> is knotty. Actually this is the reason I didn't do the refactor.
-> >
-> > Maybe we should keep doing the init early?  We could still have a
-> > platform device for the PM stuff, but some init would be done before
-> probe.
-> >
-> > Another possibility is to try to handle swiotlb init later -- possibly
-> > by reserving memory for it if the platform indicates it's a possibility
-> > that it will be needed, then freeing the memory if it's not needed.
-> >
-> > -Scott
->=20
-> I think the first option seems reasonable.  Can we leave fsl_pci_init()
-> as we now have it and just have the platform driver deal with PM restore
-> via calling setup_pci_atmu() [probably need to update setup_pci_atmu to
-> handle restore case, but seems like minor changes]
->=20
-> - k
->=20
+> What is this for?
+This knob is to control the behavior of the TDM framework with respect to h=
+andling the received TDM frames.
+The framework layer receives the TDM frames from the TDM adapter driver, de=
+-interleaves the data and sends to respective client modules.
+In the case when the TDM client module has not consumed the data and emptie=
+d the Buffer, this flag decides whether to discard the un-fetched data, or =
+discard the latest received data.
 
+>=20
+> > +int tdm_sysfs_init(void)
+> > +{
+> > +	struct kobject *tdm_kobj;
+> > +	int err =3D 1;
+> > +	tdm_kobj =3D kzalloc(sizeof(*tdm_kobj), GFP_KERNEL);
+> > +	if (tdm_kobj) {
+> > +		kobject_init(tdm_kobj, &tdm_type);
+> > +		if (kobject_add(tdm_kobj, NULL, "%s", "tdm")) {
+> > +			pr_err("tdm: Sysfs creation failed\n");
+> > +			kobject_put(tdm_kobj);
+> > +			err =3D -EINVAL;
+> > +			goto out;
+> > +		}
+> > +	} else {
+> > +		pr_err("tdm: Unable to allocate tdm_kobj\n");
+> > +		err =3D -ENOMEM;
+> > +		goto out;
+> > +	}
+> > +
+> > +out:
+> > +	return err;
+> > +}
+>=20
+> You just leaked memory, what are you trying to do here?
+>=20
+> And why are you using "raw" kobjects?  That's a sure sign that something
+> is really wrong.
+Will refer the documentation. Not very experienced on this stuff. Thanks fo=
+r the comment.
+>=20
+> Your code doesn't look like it is tied into the driver model at all, why
+> not?  What are you trying to do here?
+This is a framework layer, not associated to a particular device. TDM adapt=
+er drivers will register to this framework.
+We got this comment in internal freescale review list also.
+>=20
+> Also, when creating new sysfs entries, like you are attempting to do here
+> (unsuccessfully I might add), you must create Documentation/ABI/ files as
+> well.
+Ok.
+>=20
+> And, to top it all off, you do realize you are asking us to do code
+> review in the middle of the merge window, when we are all busy doing
+> other things?
+Apologize for asking a review in the merge window time frame.
+Are there any guidelines when to send something for a review? We will be ca=
+reful next time.
 
-I think the second option is better if it's hard to decouple swiotlb
-determination from pci init. I believe the better architecture that
-PCI init in probe function of platform driver will bring us considerable
-advantage. I really like to keep the completion of pci controller
-platform driver not only for PM support but also for pci init.
-
--Hongtao.=20
+Regards
+Poonam
+>=20
+> greg k-h
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
