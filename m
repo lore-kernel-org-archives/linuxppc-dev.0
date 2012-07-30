@@ -1,26 +1,18 @@
-Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0119D2C008F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 18:07:40 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Mon, 30 Jul 2012 08:07:31 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A29FBA@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
- <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A2883B@039-SN1MPN1-002.039d.mgd.msft.net>
- <73450B27-5496-499C-B7D1-13B797FE7650@kernel.crashing.org>
-In-Reply-To: <73450B27-5496-499C-B7D1-13B797FE7650@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A706B2C0089
+ for <linuxppc-dev@ozlabs.org>; Mon, 30 Jul 2012 18:20:19 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
+Subject: [PATCH 1/1] booke/wdt: fix incorrect WDIOC_GETSUPPORT return path
+Date: Mon, 30 Jul 2012 16:15:22 +0800
+Message-ID: <1343636122-23273-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,91 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, July 27, 2012 8:47 PM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
-> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
-> initialization code
->=20
->=20
-> On Jul 27, 2012, at 3:35 AM, Jia Hongtao-B38951 wrote:
->=20
-> >
-> >
-> >> -----Original Message-----
-> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> >> Sent: Friday, July 27, 2012 2:15 AM
-> >> To: Jia Hongtao-B38951
-> >> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
-> >> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
-> >> initialization code
-> >>
-> >>
-> >> On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
-> >>
-> >>> We unified the Freescale pci/pcie initialization by changing the
-> >> fsl_pci
-> >>> to a platform driver. In previous PCI code architecture the
-> >> initialization
-> >>> routine is called at board_setup_arch stage. Now the initialization
-> is
-> >> done
-> >>> in probe function which is architectural better. Also It's convenient
-> >> for
-> >>> adding PM support for PCI controller in later patch.
-> >>>
-> >>> One issue introduced by this architecture is the timing of
-> swiotlb_init.
-> >>> During PCI initialization the need of swiotlb is determined and this
-> >> should
-> >>> be done before swiotlb_init. So a new function to determine swiotlb
-> by
-> >>> parsing pci ranges is made. This function is called at
-> board_setup_arch
-> >>> stage which is earlier than swiotlb_init.
-> >>>
-> >>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> >>> Signed-off-by: Li Yang <leoli@freescale.com>
-> >>> ---
-> >>> Changed for V3:
-> >>> - Rebase the patch set on the latest tree
-> >>> - merge PCI unify and swiotlb patch into one
-> >>>
-> >>> arch/powerpc/sysdev/fsl_pci.c |  155
-> ++++++++++++++++++++++++++++++++--
-> >> -------
-> >>> arch/powerpc/sysdev/fsl_pci.h |    9 +--
-> >>> 2 files changed, 125 insertions(+), 39 deletions(-)
-> >>
-> >> I'd like the SWIOTLB refactoring as a separate patch.  Additionally,
-> the
-> >> order of patches should be as follows:
-> >>
-> >> 1. refactor PCI node parsing code
-> >> 2. add pci_determine_swiotlb (should rename to
-> fsl_pci_determine_swiotlb)
-> >> 3. Determine primary bus by looking for ISA node
-> >> 4. convert all boards over to fsl_pci_init
-> >> 5. convert fsl pci to platform driver (edac and other fixes should be
-> >> merged in here)
-> >> 6. PM support
-> >>
-> >> - k
-> >
-> > Should I convert all boards over to fsl_pci_init first and then convert
-> them
-> > over to platform driver again or just convert them direct to platform
-> driver?
->=20
-> Yes do the fsl_pci_init conversion first.  The reason is we should NOT
-> break functionality from one patch to another.
->=20
-> - k
+We miss that correct WDIOC_GETSUPPORT return path when perform
+copy_to_user() properly.
 
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ drivers/watchdog/booke_wdt.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-Actually, the functionality is not broken, other boards just use the old
-Way to init pci controller and it still works.
-
--Hongtao.
+diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+index 3fe82d0..2be7f29 100644
+--- a/drivers/watchdog/booke_wdt.c
++++ b/drivers/watchdog/booke_wdt.c
+@@ -162,12 +162,13 @@ static long booke_wdt_ioctl(struct file *file,
+ 				unsigned int cmd, unsigned long arg)
+ {
+ 	u32 tmp = 0;
+-	u32 __user *p = (u32 __user *)arg;
++	void __user *argp = (u32 __user *)arg;
++	u32 __user *p = argp;
+ 
+ 	switch (cmd) {
+ 	case WDIOC_GETSUPPORT:
+-		if (copy_to_user((void *)arg, &ident, sizeof(ident)))
+-			return -EFAULT;
++		return copy_to_user(argp, &ident,
++				sizeof(ident)) ? -EFAULT : 0;
+ 	case WDIOC_GETSTATUS:
+ 		return put_user(0, p);
+ 	case WDIOC_GETBOOTSTATUS:
+-- 
+1.5.6
