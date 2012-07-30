@@ -1,25 +1,40 @@
-Return-Path: <B37400@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A04142C0089
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 19:51:05 +1000 (EST)
-From: Singh Sandeep-B37400 <B37400@freescale.com>
-To: Francois Romieu <romieu@fr.zoreil.com>
-Subject: RE: [2/3][PATCH][v2] TDM Framework
-Date: Mon, 30 Jul 2012 09:50:57 +0000
-Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E511121@039-SN1MPN1-006.039d.mgd.msft.net>
-References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
- <20120727152542.GB1613@electric-eye.fr.zoreil.com>
-In-Reply-To: <20120727152542.GB1613@electric-eye.fr.zoreil.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <heiko.carstens@de.ibm.com>
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp15.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E25E92C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 20:23:44 +1000 (EST)
+Received: from /spool/local
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
+ Mon, 30 Jul 2012 11:23:37 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+ [9.149.37.228])
+ by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6UANBTe2871364
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 11:23:11 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+ by d06av02.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6UAN5VB012494
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 04:23:10 -0600
+Date: Mon, 30 Jul 2012 12:23:05 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [RFC PATCH v5 12/19] memory-hotplug: introduce new function
+ arch_remove_memory()
+Message-ID: <20120730102305.GB3631@osiris.boeblingen.de.ibm.com>
+References: <50126B83.3050201@cn.fujitsu.com> <50126E2F.8010301@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <50126E2F.8010301@cn.fujitsu.com>
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki ISIMATU <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,62 +44,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for your comments. Please find replies inline.
+On Fri, Jul 27, 2012 at 06:32:15PM +0800, Wen Congyang wrote:
+> We don't call __add_pages() directly in the function add_memory()
+> because some other architecture related things need to be done
+> before or after calling __add_pages(). So we should introduce
+> a new function arch_remove_memory() to revert the things
+> done in arch_add_memory().
+> 
+> Note: the function for s390 is not implemented(I don't know how to
+> implement it for s390).
 
-Regards,
-Sandeep
-
------Original Message-----
-From: Francois Romieu [mailto:romieu@fr.zoreil.com]=20
-Sent: 27 July 2012 20:56
-To: Singh Sandeep-B37400
-Cc: linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org; ga=
-lak@kernel.crashing.org; linux-kernel@vger.kernel.org; devel@driverdev.osuo=
-sl.org
-Subject: Re: [2/3][PATCH][v2] TDM Framework
-
-sandeep@freescale.com <sandeep@freescale.com> :
-[...]
-> The main functions of this Framework are:
->  - provides interface to TDM clients to access TDM functionalities.
->  - provides standard interface for TDM drivers to hook with the framework=
-.
->  - handles various data handling stuff and buffer management.
->=20
-> In future this Framework will be extended to provide Interface for Line c=
-ontrol devices also. For example SLIC, E1/T1 Framers etc.
->=20
-> Presently the framework supports only Single Port channelised mode.
-> Also the configurability options are limited which will be extended later=
- on.
-> Only kernel mode TDM clients are supported currently. Support for User mo=
-de clients will be added later.
-
-1. You should send some kernel mode TDM clients. Without those the framewor=
-k
-   is pretty useless.
-[Sandeep] We do have a test client but not good enough to be pushed in open=
- source, should we add it to documentation??=20
-
-2. It would probably make sense to Cc: netdev and serial. There may be
-   some kernel client network integration from the start.
-[Sandeep] Ok.=20
-
-3. Where is the userspace configuration interface ?
-[Sandeep] TDM framework right now supports only kernel mode clients. It has=
- been tested with the client module that I mentioned above. Both the framew=
-ork and test client are a part of Freescale BSP.
-
-[...]
-> Based on: git://git.am.freescale.net/gitolite/mirrors/galak-powerpc.git
-[Sandeep] Please try below mentioned link. The above one is Freescale's int=
-ernal mirror of:
-git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git=20
-
-$ git clone git://git.am.freescale.net/gitolite/mirrors/galak-powerpc.git
-Cloning into 'galak-powerpc'...
-fatal: Unable to look up git.am.freescale.net (port 9418) (No address assoc=
-iated with hostname)
-
---=20
-Ueimor
+There is no hardware or firmware interface which could trigger a
+hot memory remove on s390. So there is nothing that needs to be
+implemented.
