@@ -1,23 +1,35 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id CA16F2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 13:43:21 +1000 (EST)
-Message-ID: <501603E7.1060200@cn.fujitsu.com>
-Date: Mon, 30 Jul 2012 11:47:51 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 306F72C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 15:37:03 +1000 (EST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 30 Jul 2012 11:06:56 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6U5aSmD23724236
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 11:06:29 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6U5aR4c024272
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 15:36:27 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH -V4 11/12] arch/powerpc: properly offset the context bits
+ for 1T segemnts
+In-Reply-To: <20120730005803.GB21364@bloggs.ozlabs.ibm.com>
+References: <1343221085-30661-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1343221085-30661-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20120730005803.GB21364@bloggs.ozlabs.ibm.com>
+Date: Mon, 30 Jul 2012 11:06:27 +0530
+Message-ID: <873949n738.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC PATCH v5 19/19] memory-hotplug: remove sysfs file of node
-References: <50126B83.3050201@cn.fujitsu.com> <50126F21.803@cn.fujitsu.com>
- <5012712E.9000005@jp.fujitsu.com>
-In-Reply-To: <5012712E.9000005@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
- rientjes@google.com, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, liuj97@gmail.com
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +39,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 07/27/2012 06:45 PM, Yasuaki Ishimatsu Wrote:
-> Hi Wen,
-> 
-> 2012/07/27 19:36, Wen Congyang wrote:
->> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>
->> The patch adds node_set_offline() and unregister_one_node() to
->> remove_memory()
->> for removing sysfs file of node.
->>
->> CC: David Rientjes <rientjes@google.com>
->> CC: Jiang Liu <liuj97@gmail.com>
->> CC: Len Brown <len.brown@intel.com>
->> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> CC: Paul Mackerras <paulus@samba.org>
->> CC: Christoph Lameter <cl@linux.com>
->> Cc: Minchan Kim <minchan.kim@gmail.com>
->> CC: Andrew Morton <akpm@linux-foundation.org>
->> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> CC: Wen Congyang <wency@cn.fujitsu.com>
->> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->> ---
->>   mm/memory_hotplug.c |    5 +++++
->>   1 files changed, 5 insertions(+), 0 deletions(-)
->>
->> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->> index 5ac035f..5681968 100644
->> --- a/mm/memory_hotplug.c
->> +++ b/mm/memory_hotplug.c
->> @@ -1267,6 +1267,11 @@ int __ref remove_memory(int nid, u64 start, u64
->> size)
->>       /* remove memmap entry */
->>       firmware_map_remove(start, start + size, "System RAM");
->>
->> +    if (!node_present_pages(nid)) {
-> 
-> Applying [PATCH v5 17/19], pgdat->node_spanned_pages can become 0 when
-> all memory of the pgdat is removed. When pgdat->node_spanned_pages is 0,
-> it means the pgdat has no memory. So I think node_spanned_pages() is
-> better.
+Paul Mackerras <paulus@samba.org> writes:
 
-Hmm, if the node contains cpu, and the cpu is onlined, can we offline
-this node?
+> On Wed, Jul 25, 2012 at 06:28:04PM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> We should do rldimi r10,r9,USER_ESID_BITS,0 only after populating
+>> r10 with ESID bits.
+>
+> This needs a lot more explanation as to what the problem is that this
+> patch aims to fix.  Is it a problem today without your other patches,
+> or is it introduced by previous patches?
+>
+> In any case I think there is an error in the patch, see below...
+>
+>>  0:	/* user address: proto-VSID = context << 15 | ESID. First check
+>> @@ -155,13 +157,16 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+>>  	ld	r9,PACACONTEXTID(r13)
+>>  BEGIN_FTR_SECTION
+>>  	cmpldi	r10,0x1000
+>> +	bge	9f
+>>  END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEGMENT)
+>>  	rldimi	r10,r9,USER_ESID_BITS,0
+>> +	b	slb_finish_load
+>>  BEGIN_FTR_SECTION
+>> -	bge	slb_finish_load_1T
+>> +9:
+>> +	srdi	r10,r10,40-28		/* get 1T ESID */
+>> +	rldimi	r10,r9,USER_ESID_BITS,0
+>
+> Shouldn't this one be USER_ESID_BITS_1T?  And in that case, since
+> USER_ESID_BITS == USER_ESID_BITS_1T + 12, I think the patch would
+> then introduce no change in behaviour (other than being slightly
+> slower than the current code).  Or am I missing something? -- in
+> that case we really need a longer and better explanation with the
+> patch.
 
-Thanks
-Wen Congyang
+Ok I missed that we used USER_ESID_BITS there. This patch can be
+dropped. I looked at the 1T code, and assumed that we were wrongly
+shifting the context bits there.
 
-> 
-> Thanks,
-> Yasuaki Ishimatsu
-> 
->> +        node_set_offline(nid);
->> +        unregister_one_node(nid);
->> +    }
->> +
->>       arch_remove_memory(start, size);
->>   out:
->>       unlock_memory_hotplug();
->>
-> 
-> 
-> 
+-aneesh
