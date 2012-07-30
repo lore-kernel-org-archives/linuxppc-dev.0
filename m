@@ -1,31 +1,25 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 33C3C2C032D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 21:22:42 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 30 Jul 2012 16:52:38 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6UBMPtV13959412
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 16:52:26 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6UBMNH8027381
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 21:22:25 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V5 04/13] arch/powerpc: Rename va to vpn
-Date: Mon, 30 Jul 2012 16:52:10 +0530
-Message-Id: <1343647339-25576-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1343647339-25576-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1343647339-25576-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <B37400@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7A5302C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 23:00:59 +1000 (EST)
+From: Singh Sandeep-B37400 <B37400@freescale.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: RE: [2/3][PATCH][v2] TDM Framework
+Date: Mon, 30 Jul 2012 13:00:32 +0000
+Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E511361@039-SN1MPN1-006.039d.mgd.msft.net>
+References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
+ <20120727145136.GB6802@n2100.arm.linux.org.uk>
+In-Reply-To: <20120727145136.GB6802@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,1215 +29,1646 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Thanks for your comments.
+Please find my response inline.
 
-Rename the variable to better reflect the values. No functional change
-in this patch.
+Regards,
+Sandeep
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/kvm_book3s.h   |    2 +-
- arch/powerpc/include/asm/machdep.h      |    6 +--
- arch/powerpc/include/asm/mmu-hash64.h   |   23 ++++----
- arch/powerpc/include/asm/tlbflush.h     |    4 +-
- arch/powerpc/kvm/book3s_32_mmu_host.c   |    8 +--
- arch/powerpc/kvm/book3s_64_mmu_host.c   |   17 +++---
- arch/powerpc/kvm/trace.h                |   14 ++---
- arch/powerpc/mm/hash_native_64.c        |   88 ++++++++++++++++---------------
- arch/powerpc/mm/hash_utils_64.c         |   30 +++++------
- arch/powerpc/mm/hugetlbpage-hash64.c    |   15 +++---
- arch/powerpc/mm/tlb_hash64.c            |   11 ++--
- arch/powerpc/platforms/cell/beat_htab.c |   45 ++++++++--------
- arch/powerpc/platforms/ps3/htab.c       |   22 ++++----
- arch/powerpc/platforms/pseries/lpar.c   |   60 +++++++++++----------
- 14 files changed, 177 insertions(+), 168 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-index f0e0c6a..7aefdb3 100644
---- a/arch/powerpc/include/asm/kvm_book3s.h
-+++ b/arch/powerpc/include/asm/kvm_book3s.h
-@@ -59,7 +59,7 @@ struct hpte_cache {
- 	struct hlist_node list_vpte;
- 	struct hlist_node list_vpte_long;
- 	struct rcu_head rcu_head;
--	u64 host_va;
-+	u64 host_vpn;
- 	u64 pfn;
- 	ulong slot;
- 	struct kvmppc_pte pte;
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 42ce570..cd63f1a 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -34,19 +34,19 @@ struct machdep_calls {
- 	char		*name;
- #ifdef CONFIG_PPC64
- 	void            (*hpte_invalidate)(unsigned long slot,
--					   unsigned long va,
-+					   unsigned long vpn,
- 					   int psize, int ssize,
- 					   int local);
- 	long		(*hpte_updatepp)(unsigned long slot, 
- 					 unsigned long newpp, 
--					 unsigned long va,
-+					 unsigned long vpn,
- 					 int psize, int ssize,
- 					 int local);
- 	void            (*hpte_updateboltedpp)(unsigned long newpp, 
- 					       unsigned long ea,
- 					       int psize, int ssize);
- 	long		(*hpte_insert)(unsigned long hpte_group,
--				       unsigned long va,
-+				       unsigned long vpn,
- 				       unsigned long prpn,
- 				       unsigned long rflags,
- 				       unsigned long vflags,
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 60f8596..e5af632 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -227,11 +227,11 @@ static inline unsigned long hpte_encode_avpn(unsigned long vpn, int psize,
-  * This function sets the AVPN and L fields of the HPTE  appropriately
-  * for the page size
-  */
--static inline unsigned long hpte_encode_v(unsigned long va, int psize,
--					  int ssize)
-+static inline unsigned long hpte_encode_v(unsigned long vpn,
-+					  int psize, int ssize)
- {
- 	unsigned long v;
--	v = hpte_encode_avpn(va, psize, ssize);
-+	v = hpte_encode_avpn(vpn, psize, ssize);
- 	if (psize != MMU_PAGE_4K)
- 		v |= HPTE_V_LARGE;
- 	return v;
-@@ -260,8 +260,8 @@ static inline unsigned long hpte_encode_r(unsigned long pa, int psize)
- /*
-  * Build a VPN_SHIFT bit shifted va given VSID, EA and segment size.
-  */
--static inline unsigned long hpt_vpn(unsigned long ea, unsigned long vsid,
--				   int ssize)
-+static inline unsigned long hpt_vpn(unsigned long ea,
-+				    unsigned long vsid, int ssize)
- {
- 	unsigned long mask;
- 	int s_shift = segment_shift(ssize);
-@@ -273,9 +273,8 @@ static inline unsigned long hpt_vpn(unsigned long ea, unsigned long vsid,
- /*
-  * This hashes a virtual address
-  */
--
--static inline unsigned long hpt_hash(unsigned long va, unsigned int shift,
--				     int ssize)
-+static inline unsigned long hpt_hash(unsigned long vpn,
-+				     unsigned int shift, int ssize)
- {
- 	int mask;
- 	unsigned long hash, vsid;
-@@ -284,13 +283,13 @@ static inline unsigned long hpt_hash(unsigned long va, unsigned int shift,
- 
- 	if (ssize == MMU_SEGSIZE_256M) {
- 		mask = (1ul << (SID_SHIFT - VPN_SHIFT)) - 1;
--		hash = ((va >> (SID_SHIFT - VPN_SHIFT)) & 0x0000007fffffffff) ^
--			(((va & mask) >> (shift - VPN_SHIFT)) & 0xffff);
-+		hash = ((vpn >> (SID_SHIFT - VPN_SHIFT)) & 0x0000007fffffffff) ^
-+			(((vpn & mask) >> (shift - VPN_SHIFT)) & 0xffff);
- 	} else {
- 		mask = (1ul << (SID_SHIFT_1T - VPN_SHIFT)) - 1;
--		vsid = va >> (SID_SHIFT_1T - VPN_SHIFT);
-+		vsid = vpn >> (SID_SHIFT_1T - VPN_SHIFT);
- 		hash = (vsid & 0xffffff) ^ ((vsid << 25) & 0x7fffffffff) ^
--			(((va & mask) >> (shift - VPN_SHIFT)) & 0xfffffff);
-+			(((vpn & mask) >> (shift - VPN_SHIFT)) & 0xfffffff);
- 	}
- 	return hash & 0x7fffffffffUL;
- }
-diff --git a/arch/powerpc/include/asm/tlbflush.h b/arch/powerpc/include/asm/tlbflush.h
-index 81143fc..fc02d1d 100644
---- a/arch/powerpc/include/asm/tlbflush.h
-+++ b/arch/powerpc/include/asm/tlbflush.h
-@@ -95,7 +95,7 @@ struct ppc64_tlb_batch {
- 	unsigned long		index;
- 	struct mm_struct	*mm;
- 	real_pte_t		pte[PPC64_TLB_BATCH_NR];
--	unsigned long		vaddr[PPC64_TLB_BATCH_NR];
-+	unsigned long		vpn[PPC64_TLB_BATCH_NR];
- 	unsigned int		psize;
- 	int			ssize;
- };
-@@ -127,7 +127,7 @@ static inline void arch_leave_lazy_mmu_mode(void)
- #define arch_flush_lazy_mmu_mode()      do {} while (0)
- 
- 
--extern void flush_hash_page(unsigned long va, real_pte_t pte, int psize,
-+extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
- 			    int ssize, int local);
- extern void flush_hash_range(unsigned long number, int local);
- 
-diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
-index bf5dfb3..f024d2c 100644
---- a/arch/powerpc/kvm/book3s_32_mmu_host.c
-+++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
-@@ -141,7 +141,7 @@ extern char etext[];
- int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
- {
- 	pfn_t hpaddr;
--	u64 va;
-+	u64 vpn;
- 	u64 vsid;
- 	struct kvmppc_sid_map *map;
- 	volatile u32 *pteg;
-@@ -173,7 +173,7 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
- 	BUG_ON(!map);
- 
- 	vsid = map->host_vsid;
--	va = (vsid << (SID_SHIFT - VPN_SHIFT)) | ((eaddr & ~ESID_MASK) >> VPN_SHIFT)
-+	vpn = (vsid << (SID_SHIFT - VPN_SHIFT)) | ((eaddr & ~ESID_MASK) >> VPN_SHIFT)
- 
- next_pteg:
- 	if (rr == 16) {
-@@ -241,11 +241,11 @@ next_pteg:
- 	dprintk_mmu("KVM: %c%c Map 0x%llx: [%lx] 0x%llx (0x%llx) -> %lx\n",
- 		    orig_pte->may_write ? 'w' : '-',
- 		    orig_pte->may_execute ? 'x' : '-',
--		    orig_pte->eaddr, (ulong)pteg, va,
-+		    orig_pte->eaddr, (ulong)pteg, vpn,
- 		    orig_pte->vpage, hpaddr);
- 
- 	pte->slot = (ulong)&pteg[rr];
--	pte->host_va = va;
-+	pte->host_vpn = vpn;
- 	pte->pte = *orig_pte;
- 	pte->pfn = hpaddr >> PAGE_SHIFT;
- 
-diff --git a/arch/powerpc/kvm/book3s_64_mmu_host.c b/arch/powerpc/kvm/book3s_64_mmu_host.c
-index 9d184f1..bfb5640 100644
---- a/arch/powerpc/kvm/book3s_64_mmu_host.c
-+++ b/arch/powerpc/kvm/book3s_64_mmu_host.c
-@@ -33,7 +33,7 @@
- 
- void kvmppc_mmu_invalidate_pte(struct kvm_vcpu *vcpu, struct hpte_cache *pte)
- {
--	ppc_md.hpte_invalidate(pte->slot, pte->host_va,
-+	ppc_md.hpte_invalidate(pte->slot, pte->host_vpn,
- 			       MMU_PAGE_4K, MMU_SEGSIZE_256M,
- 			       false);
- }
-@@ -80,8 +80,9 @@ static struct kvmppc_sid_map *find_sid_vsid(struct kvm_vcpu *vcpu, u64 gvsid)
- 
- int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
- {
-+	unsigned long vpn;
- 	pfn_t hpaddr;
--	ulong hash, hpteg, va;
-+	ulong hash, hpteg;
- 	u64 vsid;
- 	int ret;
- 	int rflags = 0x192;
-@@ -117,7 +118,7 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
- 	}
- 
- 	vsid = map->host_vsid;
--	va = hpt_vpn(orig_pte->eaddr, vsid, MMU_SEGSIZE_256M);
-+	vpn = hpt_vpn(orig_pte->eaddr, vsid, MMU_SEGSIZE_256M);
- 
- 	if (!orig_pte->may_write)
- 		rflags |= HPTE_R_PP;
-@@ -127,7 +128,7 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
- 	if (!orig_pte->may_execute)
- 		rflags |= HPTE_R_N;
- 
--	hash = hpt_hash(va, PTE_SIZE, MMU_SEGSIZE_256M);
-+	hash = hpt_hash(vpn, PTE_SIZE, MMU_SEGSIZE_256M);
- 
- map_again:
- 	hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
-@@ -139,7 +140,8 @@ map_again:
- 			goto out;
- 		}
- 
--	ret = ppc_md.hpte_insert(hpteg, va, hpaddr, rflags, vflags, MMU_PAGE_4K, MMU_SEGSIZE_256M);
-+	ret = ppc_md.hpte_insert(hpteg, vpn, hpaddr, rflags, vflags,
-+				 MMU_PAGE_4K, MMU_SEGSIZE_256M);
- 
- 	if (ret < 0) {
- 		/* If we couldn't map a primary PTE, try a secondary */
-@@ -150,7 +152,8 @@ map_again:
- 	} else {
- 		struct hpte_cache *pte = kvmppc_mmu_hpte_cache_next(vcpu);
- 
--		trace_kvm_book3s_64_mmu_map(rflags, hpteg, va, hpaddr, orig_pte);
-+		trace_kvm_book3s_64_mmu_map(rflags, hpteg,
-+					    vpn, hpaddr, orig_pte);
- 
- 		/* The ppc_md code may give us a secondary entry even though we
- 		   asked for a primary. Fix up. */
-@@ -160,7 +163,7 @@ map_again:
- 		}
- 
- 		pte->slot = hpteg + (ret & 7);
--		pte->host_va = va;
-+		pte->host_vpn = vpn;
- 		pte->pte = *orig_pte;
- 		pte->pfn = hpaddr >> PAGE_SHIFT;
- 
-diff --git a/arch/powerpc/kvm/trace.h b/arch/powerpc/kvm/trace.h
-index 877186b..ddb6a21 100644
---- a/arch/powerpc/kvm/trace.h
-+++ b/arch/powerpc/kvm/trace.h
-@@ -189,7 +189,7 @@ TRACE_EVENT(kvm_book3s_mmu_map,
- 	TP_ARGS(pte),
- 
- 	TP_STRUCT__entry(
--		__field(	u64,		host_va		)
-+		__field(	u64,		host_vpn	)
- 		__field(	u64,		pfn		)
- 		__field(	ulong,		eaddr		)
- 		__field(	u64,		vpage		)
-@@ -198,7 +198,7 @@ TRACE_EVENT(kvm_book3s_mmu_map,
- 	),
- 
- 	TP_fast_assign(
--		__entry->host_va	= pte->host_va;
-+		__entry->host_vpn	= pte->host_vpn;
- 		__entry->pfn		= pte->pfn;
- 		__entry->eaddr		= pte->pte.eaddr;
- 		__entry->vpage		= pte->pte.vpage;
-@@ -208,8 +208,8 @@ TRACE_EVENT(kvm_book3s_mmu_map,
- 					  (pte->pte.may_execute ? 0x1 : 0);
- 	),
- 
--	TP_printk("Map: hva=%llx pfn=%llx ea=%lx vp=%llx ra=%lx [%x]",
--		  __entry->host_va, __entry->pfn, __entry->eaddr,
-+	TP_printk("Map: hvpn=%llx pfn=%llx ea=%lx vp=%llx ra=%lx [%x]",
-+		  __entry->host_vpn, __entry->pfn, __entry->eaddr,
- 		  __entry->vpage, __entry->raddr, __entry->flags)
- );
- 
-@@ -218,7 +218,7 @@ TRACE_EVENT(kvm_book3s_mmu_invalidate,
- 	TP_ARGS(pte),
- 
- 	TP_STRUCT__entry(
--		__field(	u64,		host_va		)
-+		__field(	u64,		host_vpn	)
- 		__field(	u64,		pfn		)
- 		__field(	ulong,		eaddr		)
- 		__field(	u64,		vpage		)
-@@ -227,7 +227,7 @@ TRACE_EVENT(kvm_book3s_mmu_invalidate,
- 	),
- 
- 	TP_fast_assign(
--		__entry->host_va	= pte->host_va;
-+		__entry->host_vpn	= pte->host_vpn;
- 		__entry->pfn		= pte->pfn;
- 		__entry->eaddr		= pte->pte.eaddr;
- 		__entry->vpage		= pte->pte.vpage;
-@@ -238,7 +238,7 @@ TRACE_EVENT(kvm_book3s_mmu_invalidate,
- 	),
- 
- 	TP_printk("Flush: hva=%llx pfn=%llx ea=%lx vp=%llx ra=%lx [%x]",
--		  __entry->host_va, __entry->pfn, __entry->eaddr,
-+		  __entry->host_vpn, __entry->pfn, __entry->eaddr,
- 		  __entry->vpage, __entry->raddr, __entry->flags)
- );
- 
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 8e12798..c01679f 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -115,7 +115,7 @@ static inline void __tlbiel(unsigned long vpn, int psize, int ssize)
- 
- }
- 
--static inline void tlbie(unsigned long va, int psize, int ssize, int local)
-+static inline void tlbie(unsigned long vpn, int psize, int ssize, int local)
- {
- 	unsigned int use_local = local && mmu_has_feature(MMU_FTR_TLBIEL);
- 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
-@@ -126,10 +126,10 @@ static inline void tlbie(unsigned long va, int psize, int ssize, int local)
- 		raw_spin_lock(&native_tlbie_lock);
- 	asm volatile("ptesync": : :"memory");
- 	if (use_local) {
--		__tlbiel(va, psize, ssize);
-+		__tlbiel(vpn, psize, ssize);
- 		asm volatile("ptesync": : :"memory");
- 	} else {
--		__tlbie(va, psize, ssize);
-+		__tlbie(vpn, psize, ssize);
- 		asm volatile("eieio; tlbsync; ptesync": : :"memory");
- 	}
- 	if (lock_tlbie && !use_local)
-@@ -155,7 +155,7 @@ static inline void native_unlock_hpte(struct hash_pte *hptep)
- 	clear_bit_unlock(HPTE_LOCK_BIT, word);
- }
- 
--static long native_hpte_insert(unsigned long hpte_group, unsigned long va,
-+static long native_hpte_insert(unsigned long hpte_group, unsigned long vpn,
- 			unsigned long pa, unsigned long rflags,
- 			unsigned long vflags, int psize, int ssize)
- {
-@@ -164,9 +164,9 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long va,
- 	int i;
- 
- 	if (!(vflags & HPTE_V_BOLTED)) {
--		DBG_LOW("    insert(group=%lx, va=%016lx, pa=%016lx,"
-+		DBG_LOW("    insert(group=%lx, vpn=%016lx, pa=%016lx,"
- 			" rflags=%lx, vflags=%lx, psize=%d)\n",
--			hpte_group, va, pa, rflags, vflags, psize);
-+			hpte_group, vpn, pa, rflags, vflags, psize);
- 	}
- 
- 	for (i = 0; i < HPTES_PER_GROUP; i++) {
-@@ -184,7 +184,7 @@ static long native_hpte_insert(unsigned long hpte_group, unsigned long va,
- 	if (i == HPTES_PER_GROUP)
- 		return -1;
- 
--	hpte_v = hpte_encode_v(va, psize, ssize) | vflags | HPTE_V_VALID;
-+	hpte_v = hpte_encode_v(vpn, psize, ssize) | vflags | HPTE_V_VALID;
- 	hpte_r = hpte_encode_r(pa, psize) | rflags;
- 
- 	if (!(vflags & HPTE_V_BOLTED)) {
-@@ -246,17 +246,17 @@ static long native_hpte_remove(unsigned long hpte_group)
- }
- 
- static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
--				 unsigned long va, int psize, int ssize,
-+				 unsigned long vpn, int psize, int ssize,
- 				 int local)
- {
- 	struct hash_pte *hptep = htab_address + slot;
- 	unsigned long hpte_v, want_v;
- 	int ret = 0;
- 
--	want_v = hpte_encode_v(va, psize, ssize);
-+	want_v = hpte_encode_v(vpn, psize, ssize);
- 
--	DBG_LOW("    update(va=%016lx, avpnv=%016lx, group=%lx, newpp=%lx)",
--		va, want_v & HPTE_V_AVPN, slot, newpp);
-+	DBG_LOW("    update(vpn=%016lx, avpnv=%016lx, group=%lx, newpp=%lx)",
-+		vpn, want_v & HPTE_V_AVPN, slot, newpp);
- 
- 	native_lock_hpte(hptep);
- 
-@@ -275,12 +275,12 @@ static long native_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	native_unlock_hpte(hptep);
- 
- 	/* Ensure it is out of the tlb too. */
--	tlbie(va, psize, ssize, local);
-+	tlbie(vpn, psize, ssize, local);
- 
- 	return ret;
- }
- 
--static long native_hpte_find(unsigned long va, int psize, int ssize)
-+static long native_hpte_find(unsigned long vpn, int psize, int ssize)
- {
- 	struct hash_pte *hptep;
- 	unsigned long hash;
-@@ -288,8 +288,8 @@ static long native_hpte_find(unsigned long va, int psize, int ssize)
- 	long slot;
- 	unsigned long want_v, hpte_v;
- 
--	hash = hpt_hash(va, mmu_psize_defs[psize].shift, ssize);
--	want_v = hpte_encode_v(va, psize, ssize);
-+	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
-+	want_v = hpte_encode_v(vpn, psize, ssize);
- 
- 	/* Bolted mappings are only ever in the primary group */
- 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-@@ -316,14 +316,15 @@ static long native_hpte_find(unsigned long va, int psize, int ssize)
- static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
- 				       int psize, int ssize)
- {
--	unsigned long vsid, va;
-+	unsigned long vpn;
-+	unsigned long vsid;
- 	long slot;
- 	struct hash_pte *hptep;
- 
- 	vsid = get_kernel_vsid(ea, ssize);
--	va = hpt_vpn(ea, vsid, ssize);
-+	vpn = hpt_vpn(ea, vsid, ssize);
- 
--	slot = native_hpte_find(va, psize, ssize);
-+	slot = native_hpte_find(vpn, psize, ssize);
- 	if (slot == -1)
- 		panic("could not find page to bolt\n");
- 	hptep = htab_address + slot;
-@@ -333,10 +334,10 @@ static void native_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
- 		(newpp & (HPTE_R_PP | HPTE_R_N));
- 
- 	/* Ensure it is out of the tlb too. */
--	tlbie(va, psize, ssize, 0);
-+	tlbie(vpn, psize, ssize, 0);
- }
- 
--static void native_hpte_invalidate(unsigned long slot, unsigned long va,
-+static void native_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 				   int psize, int ssize, int local)
- {
- 	struct hash_pte *hptep = htab_address + slot;
-@@ -346,9 +347,9 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long va,
- 
- 	local_irq_save(flags);
- 
--	DBG_LOW("    invalidate(va=%016lx, hash: %lx)\n", va, slot);
-+	DBG_LOW("    invalidate(vpn=%016lx, hash: %lx)\n", vpn, slot);
- 
--	want_v = hpte_encode_v(va, psize, ssize);
-+	want_v = hpte_encode_v(vpn, psize, ssize);
- 	native_lock_hpte(hptep);
- 	hpte_v = hptep->v;
- 
-@@ -360,7 +361,7 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long va,
- 		hptep->v = 0;
- 
- 	/* Invalidate the TLB */
--	tlbie(va, psize, ssize, local);
-+	tlbie(vpn, psize, ssize, local);
- 
- 	local_irq_restore(flags);
- }
-@@ -370,7 +371,7 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long va,
- #define LP_MASK(i)	((0xFF >> (i)) << LP_SHIFT)
- 
- static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
--			int *psize, int *ssize, unsigned long *va)
-+			int *psize, int *ssize, unsigned long *vpn)
- {
- 	unsigned long avpn, pteg, vpi;
- 	unsigned long hpte_r = hpte->r;
-@@ -420,7 +421,7 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 			vpi = (vsid ^ pteg) & htab_hash_mask;
- 			seg_off |= vpi << shift;
- 		}
--		*va = vsid << (SID_SHIFT - VPN_SHIFT) | seg_off >> VPN_SHIFT;
-+		*vpn = vsid << (SID_SHIFT - VPN_SHIFT) | seg_off >> VPN_SHIFT;
- 	case MMU_SEGSIZE_1T:
- 		/* We only have 40 - 23 bits of seg_off in avpn */
- 		seg_off = (avpn & 0x1ffff) << 23;
-@@ -429,9 +430,9 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
- 			vpi = (vsid ^ (vsid << 25) ^ pteg) & htab_hash_mask;
- 			seg_off |= vpi << shift;
- 		}
--		*va = vsid << (SID_SHIFT_1T - VPN_SHIFT) | seg_off >> VPN_SHIFT;
-+		*vpn = vsid << (SID_SHIFT_1T - VPN_SHIFT) | seg_off >> VPN_SHIFT;
- 	default:
--		*va = size = 0;
-+		*vpn = size = 0;
- 	}
- 	*psize = size;
- }
-@@ -446,7 +447,7 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
-  */
- static void native_hpte_clear(void)
- {
--	unsigned long va = 0;
-+	unsigned long vpn = 0;
- 	unsigned long slot, slots, flags;
- 	struct hash_pte *hptep = htab_address;
- 	unsigned long hpte_v;
-@@ -477,9 +478,9 @@ static void native_hpte_clear(void)
- 		 * already hold the native_tlbie_lock.
- 		 */
- 		if (hpte_v & HPTE_V_VALID) {
--			hpte_decode(hptep, slot, &psize, &ssize, &va);
-+			hpte_decode(hptep, slot, &psize, &ssize, &vpn);
- 			hptep->v = 0;
--			__tlbie(va, psize, ssize);
-+			__tlbie(vpn, psize, ssize);
- 		}
- 	}
- 
-@@ -494,7 +495,8 @@ static void native_hpte_clear(void)
-  */
- static void native_flush_hash_range(unsigned long number, int local)
- {
--	unsigned long va, hash, index, hidx, shift, slot;
-+	unsigned long vpn;
-+	unsigned long hash, index, hidx, shift, slot;
- 	struct hash_pte *hptep;
- 	unsigned long hpte_v;
- 	unsigned long want_v;
-@@ -508,18 +510,18 @@ static void native_flush_hash_range(unsigned long number, int local)
- 	local_irq_save(flags);
- 
- 	for (i = 0; i < number; i++) {
--		va = batch->vaddr[i];
-+		vpn = batch->vpn[i];
- 		pte = batch->pte[i];
- 
--		pte_iterate_hashed_subpages(pte, psize, va, index, shift) {
--			hash = hpt_hash(va, shift, ssize);
-+		pte_iterate_hashed_subpages(pte, psize, vpn, index, shift) {
-+			hash = hpt_hash(vpn, shift, ssize);
- 			hidx = __rpte_to_hidx(pte, index);
- 			if (hidx & _PTEIDX_SECONDARY)
- 				hash = ~hash;
- 			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 			slot += hidx & _PTEIDX_GROUP_IX;
- 			hptep = htab_address + slot;
--			want_v = hpte_encode_v(va, psize, ssize);
-+			want_v = hpte_encode_v(vpn, psize, ssize);
- 			native_lock_hpte(hptep);
- 			hpte_v = hptep->v;
- 			if (!HPTE_V_COMPARE(hpte_v, want_v) ||
-@@ -534,12 +536,12 @@ static void native_flush_hash_range(unsigned long number, int local)
- 	    mmu_psize_defs[psize].tlbiel && local) {
- 		asm volatile("ptesync":::"memory");
- 		for (i = 0; i < number; i++) {
--			va = batch->vaddr[i];
-+			vpn = batch->vpn[i];
- 			pte = batch->pte[i];
- 
--			pte_iterate_hashed_subpages(pte, psize, va, index,
--						    shift) {
--				__tlbiel(va, psize, ssize);
-+			pte_iterate_hashed_subpages(pte, psize,
-+						    vpn, index, shift) {
-+				__tlbiel(vpn, psize, ssize);
- 			} pte_iterate_hashed_end();
- 		}
- 		asm volatile("ptesync":::"memory");
-@@ -551,12 +553,12 @@ static void native_flush_hash_range(unsigned long number, int local)
- 
- 		asm volatile("ptesync":::"memory");
- 		for (i = 0; i < number; i++) {
--			va = batch->vaddr[i];
-+			vpn = batch->vpn[i];
- 			pte = batch->pte[i];
- 
--			pte_iterate_hashed_subpages(pte, psize, va, index,
--						    shift) {
--				__tlbie(va, psize, ssize);
-+			pte_iterate_hashed_subpages(pte, psize,
-+						    vpn, index, shift) {
-+				__tlbie(vpn, psize, ssize);
- 			} pte_iterate_hashed_end();
- 		}
- 		asm volatile("eieio; tlbsync; ptesync":::"memory");
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 975c7d1..74c5479 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -192,18 +192,18 @@ int htab_bolt_mapping(unsigned long vstart, unsigned long vend,
- 	     vaddr += step, paddr += step) {
- 		unsigned long hash, hpteg;
- 		unsigned long vsid = get_kernel_vsid(vaddr, ssize);
--		unsigned long va  = hpt_vpn(vaddr, vsid, ssize);
-+		unsigned long vpn  = hpt_vpn(vaddr, vsid, ssize);
- 		unsigned long tprot = prot;
- 
- 		/* Make kernel text executable */
- 		if (overlaps_kernel_text(vaddr, vaddr + step))
- 			tprot &= ~HPTE_R_N;
- 
--		hash = hpt_hash(va, shift, ssize);
-+		hash = hpt_hash(vpn, shift, ssize);
- 		hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
- 
- 		BUG_ON(!ppc_md.hpte_insert);
--		ret = ppc_md.hpte_insert(hpteg, va, paddr, tprot,
-+		ret = ppc_md.hpte_insert(hpteg, vpn, paddr, tprot,
- 					 HPTE_V_BOLTED, psize, ssize);
- 
- 		if (ret < 0)
-@@ -1153,21 +1153,21 @@ void hash_preload(struct mm_struct *mm, unsigned long ea,
- /* WARNING: This is called from hash_low_64.S, if you change this prototype,
-  *          do not forget to update the assembly call site !
-  */
--void flush_hash_page(unsigned long va, real_pte_t pte, int psize, int ssize,
-+void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
- 		     int local)
- {
- 	unsigned long hash, index, shift, hidx, slot;
- 
--	DBG_LOW("flush_hash_page(va=%016lx)\n", va);
--	pte_iterate_hashed_subpages(pte, psize, va, index, shift) {
--		hash = hpt_hash(va, shift, ssize);
-+	DBG_LOW("flush_hash_page(vpn=%016lx)\n", vpn);
-+	pte_iterate_hashed_subpages(pte, psize, vpn, index, shift) {
-+		hash = hpt_hash(vpn, shift, ssize);
- 		hidx = __rpte_to_hidx(pte, index);
- 		if (hidx & _PTEIDX_SECONDARY)
- 			hash = ~hash;
- 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 		slot += hidx & _PTEIDX_GROUP_IX;
- 		DBG_LOW(" sub %ld: hash=%lx, hidx=%lx\n", index, slot, hidx);
--		ppc_md.hpte_invalidate(slot, va, psize, ssize, local);
-+		ppc_md.hpte_invalidate(slot, vpn, psize, ssize, local);
- 	} pte_iterate_hashed_end();
- }
- 
-@@ -1181,7 +1181,7 @@ void flush_hash_range(unsigned long number, int local)
- 			&__get_cpu_var(ppc64_tlb_batch);
- 
- 		for (i = 0; i < number; i++)
--			flush_hash_page(batch->vaddr[i], batch->pte[i],
-+			flush_hash_page(batch->vpn[i], batch->pte[i],
- 					batch->psize, batch->ssize, local);
- 	}
- }
-@@ -1208,14 +1208,14 @@ static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
- {
- 	unsigned long hash, hpteg;
- 	unsigned long vsid = get_kernel_vsid(vaddr, mmu_kernel_ssize);
--	unsigned long va = hpt_vpn(vaddr, vsid, mmu_kernel_ssize);
-+	unsigned long vpn = hpt_vpn(vaddr, vsid, mmu_kernel_ssize);
- 	unsigned long mode = htab_convert_pte_flags(PAGE_KERNEL);
- 	int ret;
- 
--	hash = hpt_hash(va, PAGE_SHIFT, mmu_kernel_ssize);
-+	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
- 	hpteg = ((hash & htab_hash_mask) * HPTES_PER_GROUP);
- 
--	ret = ppc_md.hpte_insert(hpteg, va, __pa(vaddr),
-+	ret = ppc_md.hpte_insert(hpteg, vpn, __pa(vaddr),
- 				 mode, HPTE_V_BOLTED,
- 				 mmu_linear_psize, mmu_kernel_ssize);
- 	BUG_ON (ret < 0);
-@@ -1229,9 +1229,9 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long lmi)
- {
- 	unsigned long hash, hidx, slot;
- 	unsigned long vsid = get_kernel_vsid(vaddr, mmu_kernel_ssize);
--	unsigned long va = hpt_vpn(vaddr, vsid, mmu_kernel_ssize);
-+	unsigned long vpn = hpt_vpn(vaddr, vsid, mmu_kernel_ssize);
- 
--	hash = hpt_hash(va, PAGE_SHIFT, mmu_kernel_ssize);
-+	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
- 	spin_lock(&linear_map_hash_lock);
- 	BUG_ON(!(linear_map_hash_slots[lmi] & 0x80));
- 	hidx = linear_map_hash_slots[lmi] & 0x7f;
-@@ -1241,7 +1241,7 @@ static void kernel_unmap_linear_page(unsigned long vaddr, unsigned long lmi)
- 		hash = ~hash;
- 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 	slot += hidx & _PTEIDX_GROUP_IX;
--	ppc_md.hpte_invalidate(slot, va, mmu_linear_psize, mmu_kernel_ssize, 0);
-+	ppc_md.hpte_invalidate(slot, vpn, mmu_linear_psize, mmu_kernel_ssize, 0);
- }
- 
- void kernel_map_pages(struct page *page, int numpages, int enable)
-diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
-index 1331403..cecad34 100644
---- a/arch/powerpc/mm/hugetlbpage-hash64.c
-+++ b/arch/powerpc/mm/hugetlbpage-hash64.c
-@@ -18,14 +18,15 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 		     pte_t *ptep, unsigned long trap, int local, int ssize,
- 		     unsigned int shift, unsigned int mmu_psize)
- {
-+	unsigned long vpn;
- 	unsigned long old_pte, new_pte;
--	unsigned long va, rflags, pa, sz;
-+	unsigned long rflags, pa, sz;
- 	long slot;
- 
- 	BUG_ON(shift != mmu_psize_defs[mmu_psize].shift);
- 
- 	/* Search the Linux page table for a match with va */
--	va = hpt_vpn(ea, vsid, ssize);
-+	vpn = hpt_vpn(ea, vsid, ssize);
- 
- 	/* At this point, we have a pte (old_pte) which can be used to build
- 	 * or update an HPTE. There are 2 cases:
-@@ -69,19 +70,19 @@ int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
- 		/* There MIGHT be an HPTE for this pte */
- 		unsigned long hash, slot;
- 
--		hash = hpt_hash(va, shift, ssize);
-+		hash = hpt_hash(vpn, shift, ssize);
- 		if (old_pte & _PAGE_F_SECOND)
- 			hash = ~hash;
- 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 		slot += (old_pte & _PAGE_F_GIX) >> 12;
- 
--		if (ppc_md.hpte_updatepp(slot, rflags, va, mmu_psize,
-+		if (ppc_md.hpte_updatepp(slot, rflags, vpn, mmu_psize,
- 					 ssize, local) == -1)
- 			old_pte &= ~_PAGE_HPTEFLAGS;
- 	}
- 
- 	if (likely(!(old_pte & _PAGE_HASHPTE))) {
--		unsigned long hash = hpt_hash(va, shift, ssize);
-+		unsigned long hash = hpt_hash(vpn, shift, ssize);
- 		unsigned long hpte_group;
- 
- 		pa = pte_pfn(__pte(old_pte)) << PAGE_SHIFT;
-@@ -101,14 +102,14 @@ repeat:
- 				      _PAGE_COHERENT | _PAGE_GUARDED));
- 
- 		/* Insert into the hash table, primary slot */
--		slot = ppc_md.hpte_insert(hpte_group, va, pa, rflags, 0,
-+		slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags, 0,
- 					  mmu_psize, ssize);
- 
- 		/* Primary is full, try the secondary */
- 		if (unlikely(slot == -1)) {
- 			hpte_group = ((~hash & htab_hash_mask) *
- 				      HPTES_PER_GROUP) & ~0x7UL;
--			slot = ppc_md.hpte_insert(hpte_group, va, pa, rflags,
-+			slot = ppc_md.hpte_insert(hpte_group, vpn, pa, rflags,
- 						  HPTE_V_SECONDARY,
- 						  mmu_psize, ssize);
- 			if (slot == -1) {
-diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
-index 321c585..ae758b3 100644
---- a/arch/powerpc/mm/tlb_hash64.c
-+++ b/arch/powerpc/mm/tlb_hash64.c
-@@ -42,8 +42,9 @@ DEFINE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
- void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 		     pte_t *ptep, unsigned long pte, int huge)
- {
-+	unsigned long vpn;
- 	struct ppc64_tlb_batch *batch = &get_cpu_var(ppc64_tlb_batch);
--	unsigned long vsid, vaddr;
-+	unsigned long vsid;
- 	unsigned int psize;
- 	int ssize;
- 	real_pte_t rpte;
-@@ -86,7 +87,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 		vsid = get_kernel_vsid(addr, mmu_kernel_ssize);
- 		ssize = mmu_kernel_ssize;
- 	}
--	vaddr = hpt_vpn(addr, vsid, ssize);
-+	vpn = hpt_vpn(addr, vsid, ssize);
- 	rpte = __real_pte(__pte(pte), ptep);
- 
- 	/*
-@@ -96,7 +97,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 	 * and decide to use local invalidates instead...
- 	 */
- 	if (!batch->active) {
--		flush_hash_page(vaddr, rpte, psize, ssize, 0);
-+		flush_hash_page(vpn, rpte, psize, ssize, 0);
- 		put_cpu_var(ppc64_tlb_batch);
- 		return;
- 	}
-@@ -122,7 +123,7 @@ void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
- 		batch->ssize = ssize;
- 	}
- 	batch->pte[i] = rpte;
--	batch->vaddr[i] = vaddr;
-+	batch->vpn[i] = vpn;
- 	batch->index = ++i;
- 	if (i >= PPC64_TLB_BATCH_NR)
- 		__flush_tlb_pending(batch);
-@@ -146,7 +147,7 @@ void __flush_tlb_pending(struct ppc64_tlb_batch *batch)
- 	if (cpumask_equal(mm_cpumask(batch->mm), tmp))
- 		local = 1;
- 	if (i == 1)
--		flush_hash_page(batch->vaddr[0], batch->pte[0],
-+		flush_hash_page(batch->vpn[0], batch->pte[0],
- 				batch->psize, batch->ssize, local);
- 	else
- 		flush_hash_range(i, local);
-diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
-index c8c7bf6..0f6f839 100644
---- a/arch/powerpc/platforms/cell/beat_htab.c
-+++ b/arch/powerpc/platforms/cell/beat_htab.c
-@@ -88,7 +88,7 @@ static inline unsigned int beat_read_mask(unsigned hpte_group)
- }
- 
- static long beat_lpar_hpte_insert(unsigned long hpte_group,
--				  unsigned long va, unsigned long pa,
-+				  unsigned long vpn, unsigned long pa,
- 				  unsigned long rflags, unsigned long vflags,
- 				  int psize, int ssize)
- {
-@@ -103,7 +103,7 @@ static long beat_lpar_hpte_insert(unsigned long hpte_group,
- 			"rflags=%lx, vflags=%lx, psize=%d)\n",
- 		hpte_group, va, pa, rflags, vflags, psize);
- 
--	hpte_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M) |
-+	hpte_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M) |
- 		vflags | HPTE_V_VALID;
- 	hpte_r = hpte_encode_r(pa, psize) | rflags;
- 
-@@ -184,14 +184,14 @@ static void beat_lpar_hptab_clear(void)
-  */
- static long beat_lpar_hpte_updatepp(unsigned long slot,
- 				    unsigned long newpp,
--				    unsigned long va,
-+				    unsigned long vpn,
- 				    int psize, int ssize, int local)
- {
- 	unsigned long lpar_rc;
- 	u64 dummy0, dummy1;
- 	unsigned long want_v;
- 
--	want_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
- 
- 	DBG_LOW("    update: "
- 		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
-@@ -220,15 +220,15 @@ static long beat_lpar_hpte_updatepp(unsigned long slot,
- 	return 0;
- }
- 
--static long beat_lpar_hpte_find(unsigned long va, int psize)
-+static long beat_lpar_hpte_find(unsigned long vpn, int psize)
- {
- 	unsigned long hash;
- 	unsigned long i, j;
- 	long slot;
- 	unsigned long want_v, hpte_v;
- 
--	hash = hpt_hash(va, mmu_psize_defs[psize].shift, MMU_SEGSIZE_256M);
--	want_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M);
-+	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
- 
- 	for (j = 0; j < 2; j++) {
- 		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-@@ -255,14 +255,15 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
- 					  unsigned long ea,
- 					  int psize, int ssize)
- {
--	unsigned long lpar_rc, slot, vsid, va;
-+	unsigned long vpn;
-+	unsigned long lpar_rc, slot, vsid;
- 	u64 dummy0, dummy1;
- 
- 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
--	va = hpt_vpn(ea, vsid, MMU_SEGSIZE_256M);
-+	vpn = hpt_vpn(ea, vsid, MMU_SEGSIZE_256M);
- 
- 	raw_spin_lock(&beat_htab_lock);
--	slot = beat_lpar_hpte_find(va, psize);
-+	slot = beat_lpar_hpte_find(vpn, psize);
- 	BUG_ON(slot == -1);
- 
- 	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7,
-@@ -272,7 +273,7 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
- 	BUG_ON(lpar_rc != 0);
- }
- 
--static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long va,
-+static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 					 int psize, int ssize, int local)
- {
- 	unsigned long want_v;
-@@ -282,7 +283,7 @@ static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long va,
- 
- 	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
- 		slot, va, psize, local);
--	want_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
- 
- 	raw_spin_lock_irqsave(&beat_htab_lock, flags);
- 	dummy1 = beat_lpar_hpte_getword0(slot);
-@@ -311,7 +312,7 @@ void __init hpte_init_beat(void)
- }
- 
- static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
--				  unsigned long va, unsigned long pa,
-+				  unsigned long vpn, unsigned long pa,
- 				  unsigned long rflags, unsigned long vflags,
- 				  int psize, int ssize)
- {
-@@ -322,11 +323,11 @@ static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
- 		return -1;
- 
- 	if (!(vflags & HPTE_V_BOLTED))
--		DBG_LOW("hpte_insert(group=%lx, va=%016lx, pa=%016lx, "
-+		DBG_LOW("hpte_insert(group=%lx, vpn=%016lx, pa=%016lx, "
- 			"rflags=%lx, vflags=%lx, psize=%d)\n",
--		hpte_group, va, pa, rflags, vflags, psize);
-+		hpte_group, vpn, pa, rflags, vflags, psize);
- 
--	hpte_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M) |
-+	hpte_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M) |
- 		vflags | HPTE_V_VALID;
- 	hpte_r = hpte_encode_r(pa, psize) | rflags;
- 
-@@ -364,14 +365,14 @@ static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
-  */
- static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
- 				    unsigned long newpp,
--				    unsigned long va,
-+				    unsigned long vpn,
- 				    int psize, int ssize, int local)
- {
- 	unsigned long lpar_rc;
- 	unsigned long want_v;
- 	unsigned long pss;
- 
--	want_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M);
-+	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
- 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
- 
- 	DBG_LOW("    update: "
-@@ -392,16 +393,16 @@ static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
- 	return 0;
- }
- 
--static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long va,
-+static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long vpn,
- 					 int psize, int ssize, int local)
- {
- 	unsigned long want_v;
- 	unsigned long lpar_rc;
- 	unsigned long pss;
- 
--	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
--		slot, va, psize, local);
--	want_v = hpte_encode_v(va, psize, MMU_SEGSIZE_256M);
-+	DBG_LOW("    inval : slot=%lx, vpn=%016lx, psize: %d, local: %d\n",
-+		slot, vpn, psize, local);
-+	want_v = hpte_encode_v(vpn, psize, MMU_SEGSIZE_256M);
- 	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc;
- 
- 	lpar_rc = beat_invalidate_htab_entry3(0, slot, want_v, pss);
-diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
-index 3124cf7..d00d7b0 100644
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -43,7 +43,7 @@ enum ps3_lpar_vas_id {
- 
- static DEFINE_SPINLOCK(ps3_htab_lock);
- 
--static long ps3_hpte_insert(unsigned long hpte_group, unsigned long va,
-+static long ps3_hpte_insert(unsigned long hpte_group, unsigned long vpn,
- 	unsigned long pa, unsigned long rflags, unsigned long vflags,
- 	int psize, int ssize)
- {
-@@ -61,7 +61,7 @@ static long ps3_hpte_insert(unsigned long hpte_group, unsigned long va,
- 	 */
- 	vflags &= ~HPTE_V_SECONDARY;
- 
--	hpte_v = hpte_encode_v(va, psize, ssize) | vflags | HPTE_V_VALID;
-+	hpte_v = hpte_encode_v(vpn, psize, ssize) | vflags | HPTE_V_VALID;
- 	hpte_r = hpte_encode_r(ps3_mm_phys_to_lpar(pa), psize) | rflags;
- 
- 	spin_lock_irqsave(&ps3_htab_lock, flags);
-@@ -75,8 +75,8 @@ static long ps3_hpte_insert(unsigned long hpte_group, unsigned long va,
- 
- 	if (result) {
- 		/* all entries bolted !*/
--		pr_info("%s:result=%d va=%lx pa=%lx ix=%lx v=%llx r=%llx\n",
--			__func__, result, va, pa, hpte_group, hpte_v, hpte_r);
-+		pr_info("%s:result=%d vpn=%lx pa=%lx ix=%lx v=%llx r=%llx\n",
-+			__func__, result, vpn, pa, hpte_group, hpte_v, hpte_r);
- 		BUG();
- 	}
- 
-@@ -107,7 +107,7 @@ static long ps3_hpte_remove(unsigned long hpte_group)
- }
- 
- static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
--	unsigned long va, int psize, int ssize, int local)
-+	unsigned long vpn, int psize, int ssize, int local)
- {
- 	int result;
- 	u64 hpte_v, want_v, hpte_rs;
-@@ -115,7 +115,7 @@ static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 	unsigned long flags;
- 	long ret;
- 
--	want_v = hpte_encode_v(va, psize, ssize);
-+	want_v = hpte_encode_v(vpn, psize, ssize);
- 
- 	spin_lock_irqsave(&ps3_htab_lock, flags);
- 
-@@ -125,8 +125,8 @@ static long ps3_hpte_updatepp(unsigned long slot, unsigned long newpp,
- 				       &hpte_rs);
- 
- 	if (result) {
--		pr_info("%s: res=%d read va=%lx slot=%lx psize=%d\n",
--			__func__, result, va, slot, psize);
-+		pr_info("%s: res=%d read vpn=%lx slot=%lx psize=%d\n",
-+			__func__, result, vpn, slot, psize);
- 		BUG();
- 	}
- 
-@@ -159,7 +159,7 @@ static void ps3_hpte_updateboltedpp(unsigned long newpp, unsigned long ea,
- 	panic("ps3_hpte_updateboltedpp() not implemented");
- }
- 
--static void ps3_hpte_invalidate(unsigned long slot, unsigned long va,
-+static void ps3_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 	int psize, int ssize, int local)
- {
- 	unsigned long flags;
-@@ -170,8 +170,8 @@ static void ps3_hpte_invalidate(unsigned long slot, unsigned long va,
- 	result = lv1_write_htab_entry(PS3_LPAR_VAS_ID_CURRENT, slot, 0, 0);
- 
- 	if (result) {
--		pr_info("%s: res=%d va=%lx slot=%lx psize=%d\n",
--			__func__, result, va, slot, psize);
-+		pr_info("%s: res=%d vpn=%lx slot=%lx psize=%d\n",
-+			__func__, result, vpn, slot, psize);
- 		BUG();
- 	}
- 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 2127529..8308b25 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -108,9 +108,9 @@ void vpa_init(int cpu)
- }
- 
- static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
-- 			      unsigned long va, unsigned long pa,
-- 			      unsigned long rflags, unsigned long vflags,
--			      int psize, int ssize)
-+				     unsigned long vpn, unsigned long pa,
-+				     unsigned long rflags, unsigned long vflags,
-+				     int psize, int ssize)
- {
- 	unsigned long lpar_rc;
- 	unsigned long flags;
-@@ -118,11 +118,11 @@ static long pSeries_lpar_hpte_insert(unsigned long hpte_group,
- 	unsigned long hpte_v, hpte_r;
- 
- 	if (!(vflags & HPTE_V_BOLTED))
--		pr_devel("hpte_insert(group=%lx, va=%016lx, pa=%016lx, "
--			 "rflags=%lx, vflags=%lx, psize=%d)\n",
--			 hpte_group, va, pa, rflags, vflags, psize);
-+		pr_devel("hpte_insert(group=%lx, vpn=%016lx, "
-+			 "pa=%016lx, rflags=%lx, vflags=%lx, psize=%d)\n",
-+			 hpte_group, vpn,  pa, rflags, vflags, psize);
- 
--	hpte_v = hpte_encode_v(va, psize, ssize) | vflags | HPTE_V_VALID;
-+	hpte_v = hpte_encode_v(vpn, psize, ssize) | vflags | HPTE_V_VALID;
- 	hpte_r = hpte_encode_r(pa, psize) | rflags;
- 
- 	if (!(vflags & HPTE_V_BOLTED))
-@@ -234,14 +234,14 @@ static void pSeries_lpar_hptab_clear(void)
-  */
- static long pSeries_lpar_hpte_updatepp(unsigned long slot,
- 				       unsigned long newpp,
--				       unsigned long va,
-+				       unsigned long vpn,
- 				       int psize, int ssize, int local)
- {
- 	unsigned long lpar_rc;
- 	unsigned long flags = (newpp & 7) | H_AVPN;
- 	unsigned long want_v;
- 
--	want_v = hpte_encode_avpn(va, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
- 	pr_devel("    update: avpnv=%016lx, hash=%016lx, f=%lx, psize: %d ...",
- 		 want_v, slot, flags, psize);
-@@ -279,15 +279,15 @@ static unsigned long pSeries_lpar_hpte_getword0(unsigned long slot)
- 	return dword0;
- }
- 
--static long pSeries_lpar_hpte_find(unsigned long va, int psize, int ssize)
-+static long pSeries_lpar_hpte_find(unsigned long vpn, int psize, int ssize)
- {
- 	unsigned long hash;
- 	unsigned long i;
- 	long slot;
- 	unsigned long want_v, hpte_v;
- 
--	hash = hpt_hash(va, mmu_psize_defs[psize].shift, ssize);
--	want_v = hpte_encode_avpn(va, psize, ssize);
-+	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 
- 	/* Bolted entries are always in the primary group */
- 	slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-@@ -307,12 +307,13 @@ static void pSeries_lpar_hpte_updateboltedpp(unsigned long newpp,
- 					     unsigned long ea,
- 					     int psize, int ssize)
- {
--	unsigned long lpar_rc, slot, vsid, va, flags;
-+	unsigned long vpn;
-+	unsigned long lpar_rc, slot, vsid, flags;
- 
- 	vsid = get_kernel_vsid(ea, ssize);
--	va = hpt_vpn(ea, vsid, ssize);
-+	vpn = hpt_vpn(ea, vsid, ssize);
- 
--	slot = pSeries_lpar_hpte_find(va, psize, ssize);
-+	slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
- 	BUG_ON(slot == -1);
- 
- 	flags = newpp & 7;
-@@ -321,17 +322,17 @@ static void pSeries_lpar_hpte_updateboltedpp(unsigned long newpp,
- 	BUG_ON(lpar_rc != H_SUCCESS);
- }
- 
--static void pSeries_lpar_hpte_invalidate(unsigned long slot, unsigned long va,
-+static void pSeries_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
- 					 int psize, int ssize, int local)
- {
- 	unsigned long want_v;
- 	unsigned long lpar_rc;
- 	unsigned long dummy1, dummy2;
- 
--	pr_devel("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
--		 slot, va, psize, local);
-+	pr_devel("    inval : slot=%lx, vpn=%016lx, psize: %d, local: %d\n",
-+		 slot, vpn, psize, local);
- 
--	want_v = hpte_encode_avpn(va, psize, ssize);
-+	want_v = hpte_encode_avpn(vpn, psize, ssize);
- 	lpar_rc = plpar_pte_remove(H_AVPN, slot, want_v, &dummy1, &dummy2);
- 	if (lpar_rc == H_NOT_FOUND)
- 		return;
-@@ -342,15 +343,16 @@ static void pSeries_lpar_hpte_invalidate(unsigned long slot, unsigned long va,
- static void pSeries_lpar_hpte_removebolted(unsigned long ea,
- 					   int psize, int ssize)
- {
--	unsigned long slot, vsid, va;
-+	unsigned long vpn;
-+	unsigned long slot, vsid;
- 
- 	vsid = get_kernel_vsid(ea, ssize);
--	va = hpt_vpn(ea, vsid, ssize);
-+	vpn = hpt_vpn(ea, vsid, ssize);
- 
--	slot = pSeries_lpar_hpte_find(va, psize, ssize);
-+	slot = pSeries_lpar_hpte_find(vpn, psize, ssize);
- 	BUG_ON(slot == -1);
- 
--	pSeries_lpar_hpte_invalidate(slot, va, psize, ssize, 0);
-+	pSeries_lpar_hpte_invalidate(slot, vpn, psize, ssize, 0);
- }
- 
- /* Flag bits for H_BULK_REMOVE */
-@@ -366,12 +368,12 @@ static void pSeries_lpar_hpte_removebolted(unsigned long ea,
-  */
- static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
- {
-+	unsigned long vpn;
- 	unsigned long i, pix, rc;
- 	unsigned long flags = 0;
- 	struct ppc64_tlb_batch *batch = &__get_cpu_var(ppc64_tlb_batch);
- 	int lock_tlbie = !mmu_has_feature(MMU_FTR_LOCKLESS_TLBIE);
- 	unsigned long param[9];
--	unsigned long va;
- 	unsigned long hash, index, shift, hidx, slot;
- 	real_pte_t pte;
- 	int psize, ssize;
-@@ -383,21 +385,21 @@ static void pSeries_lpar_flush_hash_range(unsigned long number, int local)
- 	ssize = batch->ssize;
- 	pix = 0;
- 	for (i = 0; i < number; i++) {
--		va = batch->vaddr[i];
-+		vpn = batch->vpn[i];
- 		pte = batch->pte[i];
--		pte_iterate_hashed_subpages(pte, psize, va, index, shift) {
--			hash = hpt_hash(va, shift, ssize);
-+		pte_iterate_hashed_subpages(pte, psize, vpn, index, shift) {
-+			hash = hpt_hash(vpn, shift, ssize);
- 			hidx = __rpte_to_hidx(pte, index);
- 			if (hidx & _PTEIDX_SECONDARY)
- 				hash = ~hash;
- 			slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
- 			slot += hidx & _PTEIDX_GROUP_IX;
- 			if (!firmware_has_feature(FW_FEATURE_BULK_REMOVE)) {
--				pSeries_lpar_hpte_invalidate(slot, va, psize,
-+				pSeries_lpar_hpte_invalidate(slot, vpn, psize,
- 							     ssize, local);
- 			} else {
- 				param[pix] = HBR_REQUEST | HBR_AVPN | slot;
--				param[pix+1] = hpte_encode_avpn(va, psize,
-+				param[pix+1] = hpte_encode_avpn(vpn, psize,
- 								ssize);
- 				pix += 2;
- 				if (pix == 8) {
--- 
-1.7.10
+-----Original Message-----
+From: Russell King - ARM Linux [mailto:linux@arm.linux.org.uk]=20
+Sent: Friday, July 27, 2012 8:22 PM
+To: Singh Sandeep-B37400
+Cc: linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.infradead.org; de=
+vel@driverdev.osuosl.org; galak@kernel.crashing.org; linux-kernel@vger.kern=
+el.org
+Subject: Re: [2/3][PATCH][v2] TDM Framework
+
+On Fri, Jul 27, 2012 at 07:35:38PM +0530, sandeep@freescale.com wrote:
+> +static DEFINE_MUTEX(tdm_core_lock);
+> +static DEFINE_IDR(tdm_adapter_idr);
+> +/* List of TDM adapters registered with TDM framework */=20
+> +LIST_HEAD(adapter_list);
+> +
+> +/* List of TDM clients registered with TDM framework */=20
+> +LIST_HEAD(driver_list);
+
+These two are far too generic to be public.  Have you checked your code wit=
+h sparse?  I think not.
+[Sandeep] Will changes the name to be more appropriate. Right, I haven't ch=
+ecked with sparse.
+
+> +
+> +/*
+> + * In case the previous data is not fetched by the client driver, the
+> + * de-interleaving function will  discard the old data and rewrite=20
+> +the
+> + * new data
+> + */
+> +
+> +static int use_latest_tdm_data =3D 1;
+> +
+> +/* Data structures required for sysfs */ static struct tdm_sysfs attr=20
+> +=3D {
+> +	.attr.name =3D "use_latest_data",
+> +	.attr.mode =3D 0664,
+> +	.cmd_type =3D TDM_LATEST_DATA,
+> +};
+> +
+> +static struct attribute *tdm_attr[] =3D {
+> +	&attr.attr,
+> +	NULL
+> +};
+> +
+> +const struct sysfs_ops tdm_ops =3D {
+> +	.show =3D tdm_show_sysfs,
+> +	.store =3D tdm_store_sysfs,
+> +};
+
+Again, lack of static.
+[Sandeep] Ok
+
+> +
+> +static struct kobj_type tdm_type =3D {
+> +	.sysfs_ops =3D &tdm_ops,
+> +	.default_attrs =3D tdm_attr,
+> +};
+> +
+> +/* tries to match client driver with the adapter */ static int=20
+> +tdm_device_match(struct tdm_driver *driver, struct tdm_adapter *adap)=20
+> +{
+> +	/* match on an id table if there is one */
+> +	if (driver->id_table && driver->id_table->name[0]) {
+> +		if (!(strcmp(driver->id_table->name, adap->name)))
+> +			return (int)driver->id_table;
+
+Casting a pointer to 'int' is not a good thing to do.  Please fix this.
+[Sandeep] Will fix this.
+
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int tdm_attach_driver_adap(struct tdm_driver *driver,
+> +		struct tdm_adapter *adap)
+> +{
+> +	int ret =3D 0;
+> +	/* if driver is already attached to any other adapter, return*/
+> +	if (driver->adapter && (driver->adapter !=3D adap))
+
+Additional parens not required.
+[Sandeep] Ok
+
+> +		return 0;
+> +
+> +	driver->adapter =3D adap;
+> +
+> +	if (driver->attach_adapter) {
+> +		ret =3D driver->attach_adapter(adap);
+> +		if (ret < 0) {
+> +			pr_err("tdm: attach_adapter failed for driver [%s]"
+> +					"err:%d\n", driver->name, ret);
+> +			return ret;
+> +		}
+> +	}
+> +	adap->drv_count++;
+> +
+> +	if (!adap->tasklet_conf) {
+> +		tdm_sysfs_init();
+> +		tasklet_init(&adap->tdm_data_tasklet, tdm_data_tasklet_fn,
+> +				(unsigned long)adap);
+
+Why not init this tasklet when the struct tdm_adapter is first created?
+Why do you need to wait, and then have state tracking for this?
+[Sandeep] Ok, will take care
+
+> +		adap->tasklet_conf =3D 1;
+> +	}
+> +
+> +	return ret;
+> +}
+> +
+> +/* Detach client driver and adapter */ static int=20
+> +tdm_detach_driver_adap(struct tdm_driver *driver,
+> +		struct tdm_adapter *adap)
+> +{
+> +	int res =3D 0;
+> +
+> +	if (!driver->adapter || (driver->adapter !=3D adap))
+
+Additional parens not required.
+[Sandeep] Ok.
+
+> +		return 0;
+> +
+> +	adap->drv_count--;
+> +
+> +	/* If no more driver is registed with the adapter*/
+> +	if (!adap->drv_count && adap->tasklet_conf) {
+> +		tasklet_disable(&adap->tdm_data_tasklet);
+> +		tasklet_kill(&adap->tdm_data_tasklet);
+> +		adap->tasklet_conf =3D 0;
+> +	}
+> +
+> +	if (driver->detach_adapter) {
+> +		if (driver->detach_adapter(adap))
+> +			pr_err("tdm: detach_adapter failed for driver [%s]\n",
+> +					driver->name);
+> +	}
+> +
+> +	driver->adapter =3D NULL;
+> +	return res;
+> +}
+> +
+> +/* TDM adapter Registration/De-registration with TDM framework */
+> +
+> +static int tdm_register_adapter(struct tdm_adapter *adap) {
+> +	int res =3D 0;
+> +	struct tdm_driver *driver, *next;
+> +
+> +	mutex_init(&adap->adap_lock);
+> +	INIT_LIST_HEAD(&adap->myports);
+> +	spin_lock_init(&adap->portlist_lock);
+> +
+> +	adap->drv_count =3D 0;
+> +	adap->tasklet_conf =3D 0;
+> +
+> +	list_add_tail(&adap->list, &adapter_list);
+
+What protects this list?
+[Sandeep] Ok, will take care
+
+> +
+> +	/* initialization of driver by framework in default configuration */
+> +	init_config_adapter(adap);
+> +
+> +	/* Notify drivers */
+> +	pr_info("adapter [%s] registered\n", adap->name);
+> +	mutex_lock(&tdm_core_lock);
+> +	list_for_each_entry_safe(driver, next, &driver_list, list) {
+> +		if (tdm_device_match(driver, adap)) {
+> +			res =3D tdm_attach_driver_adap(driver, adap);
+> +			if (res =3D=3D 0) {
+> +				pr_info("tdm: Driver(ID=3D%d) is "
+> +						"attached with Adapter %s(ID"
+> +						" =3D %d)\n", driver->id,
+> +						adap->name, adap->id);
+> +			} else {
+> +				pr_err("tdm: Driver(ID=3D%d) is unable "
+> +						"to attach with Adapter %s(ID =3D %d)\n",
+> +						driver->id, adap->name,
+> +						adap->id);
+> +			}
+> +		}
+> +	}
+> +	mutex_unlock(&tdm_core_lock);
+> +
+> +	return res;
+> +}
+> +
+> +/*
+> + * tdm_add_adapter - declare tdm adapter, use dynamic device number
+> + * @adapter: the adapter to add
+> + * Context: can sleep
+> + *
+> + * This routine is used to declare a TDM adapter
+> + * When this returns zero, a new device number will be allocated and=20
+> +stored
+> + * in adap->id, and the specified adapter became available for the clien=
+ts.
+> + * Otherwise, a negative error number value is returned.
+> + */
+> +int tdm_add_adapter(struct tdm_adapter *adapter) {
+> +	int id, res =3D 0;
+> +
+> +retry:
+> +	if (idr_pre_get(&tdm_adapter_idr, GFP_KERNEL) =3D=3D 0)
+> +		return -ENOMEM;
+> +
+> +	mutex_lock(&tdm_core_lock);
+> +	res =3D idr_get_new(&tdm_adapter_idr, adapter, &id);
+> +	mutex_unlock(&tdm_core_lock);
+> +
+> +	if (res < 0) {
+> +		if (res =3D=3D -EAGAIN)
+> +			goto retry;
+> +		return res;
+> +	}
+> +
+> +	adapter->id =3D id;
+> +	return tdm_register_adapter(adapter); }=20
+> +EXPORT_SYMBOL(tdm_add_adapter);
+> +
+> +
+> +/*
+> + * tdm_del_adapter - unregister TDM adapter
+> + * @adap: the adapter being unregistered
+> + *
+> + * This unregisters an TDM adapter which was previously registered
+> + * by @tdm_add_adapter.
+> + */
+> +int tdm_del_adapter(struct tdm_adapter *adap) {
+> +	int res =3D 0;
+> +	struct tdm_adapter *found;
+> +	struct tdm_driver *driver, *next;
+> +
+> +	/* First make sure that this adapter was ever added */
+> +	mutex_lock(&tdm_core_lock);
+> +	found =3D idr_find(&tdm_adapter_idr, adap->id);
+> +	mutex_unlock(&tdm_core_lock);
+> +	if (found !=3D adap) {
+> +		pr_err("tdm: attempting to delete unregistered "
+> +				"adapter [%s]\n", adap->name);
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* disable and kill the data processing tasklet */
+> +	if (adap->tasklet_conf) {
+> +		tasklet_disable(&adap->tdm_data_tasklet);
+> +		tasklet_kill(&adap->tdm_data_tasklet);
+> +		adap->tasklet_conf =3D 0;
+> +	}
+> +
+> +	/*
+> +	 * Detach any active ports. This can't fail, thus we do not
+> +	 * checking the returned value.
+> +	 */
+> +	mutex_lock(&tdm_core_lock);
+> +	list_for_each_entry_safe(driver, next, &driver_list, list) {
+> +		if (tdm_device_match(driver, adap)) {
+> +			tdm_detach_driver_adap(driver, adap);
+> +			pr_info(
+> +					"Driver(ID=3D%d) is detached from Adapter %s(ID =3D %d)\n",
+> +					driver->id, adap->name, adap->id);
+> +		}
+> +	}
+> +	idr_remove(&tdm_adapter_idr, adap->id);
+> +	mutex_unlock(&tdm_core_lock);
+> +
+> +	pr_debug("adapter [%s] unregistered\n", adap->name);
+> +
+> +	list_del(&adap->list);
+
+What protects this delete?
+[Sandeep] Ok, will take care
+
+> +	/*
+> +	 * Clear the device structure in case this adapter is ever going to be
+> +	 * added again
+> +	 */
+> +	adap->parent =3D NULL;
+> +
+> +	return res;
+> +}
+> +EXPORT_SYMBOL(tdm_del_adapter);
+> +
+> +/* TDM Client Drivers Registration/De-registration Functions */ int=20
+> +tdm_register_driver(struct tdm_driver *driver) {
+> +	int res =3D 0;
+> +	struct tdm_adapter *adap, *next;
+> +
+> +	list_add_tail(&driver->list, &driver_list);
+
+What serializes this list?
+[Sandeep] Ok, will take care
+
+> +
+> +	mutex_lock(&tdm_core_lock);
+> +	/* Walk the adapters that are already present */
+> +	list_for_each_entry_safe(adap, next, &adapter_list, list) {
+> +		if (tdm_device_match(driver, adap)) {
+> +			res =3D tdm_attach_driver_adap(driver, adap);
+> +			if (res =3D=3D 0) {
+> +				pr_info("TDM Driver(ID=3D%d)is attached with "
+> +						"Adapter%s(ID =3D %d) drv_count=3D%d",
+> +						driver->id, adap->name,
+> +						adap->id, adap->drv_count);
+> +			} else {
+> +				pr_err("TDM Driver(ID=3D%d) unable to attach "
+> +						"to Adapter%s(ID =3D %d) drv_count=3D%d",
+> +						driver->id, adap->name,
+> +						adap->id, adap->drv_count);
+> +			}
+> +			break;
+> +		}
+> +	}
+> +	mutex_unlock(&tdm_core_lock);
+> +
+> +	return res;
+> +}
+> +EXPORT_SYMBOL(tdm_register_driver);
+> +
+> +/*
+> + * tdm_unregister_driver - unregister TDM client driver from TDM=20
+> +framework
+> + * @driver: the driver being unregistered  */ void=20
+> +tdm_unregister_driver(struct tdm_driver *driver) {
+> +	/*
+> +	 * A driver can register to only one adapter,
+> +	 * so no need to browse the list
+> +	 */
+> +	mutex_lock(&tdm_core_lock);
+> +	tdm_detach_driver_adap(driver, driver->adapter);
+> +	mutex_unlock(&tdm_core_lock);
+> +
+> +	list_del(&driver->list);
+
+What serializes this delete?
+[Sandeep] Ok, will take care
+
+> +
+> +	pr_debug("tdm-core: driver [%s] unregistered\n", driver->name); }=20
+> +EXPORT_SYMBOL(tdm_unregister_driver);
+> +
+> +/* Interface to the tdm device/adapter */
+> +
+> +/*
+> + * tdm_adap_send - issue a TDM write
+> + * @adap: Handle to TDM device
+> + * @buf: Data that will be written to the TDM device
+> + * @count: How many bytes to write
+> + *
+> + * Returns negative errno, or else the number of bytes written.
+> + */
+> +int tdm_adap_send(struct tdm_adapter *adap, void **buf, int count) {
+> +	int res;
+> +
+> +	if (adap->algo->tdm_write)
+> +		res =3D adap->algo->tdm_write(adap, buf, count);
+> +	else {
+> +		pr_err("TDM level write not supported\n");
+
+Is there no associated struct device which could be used for these error me=
+ssages?  What if you have more than one TDM device?  It would be useful to =
+know which is producing errors.
+[Sandeep] Since this is a framework, we do not have any struct device assoc=
+iated. But we should work some way out to produce error messages which can =
+be linked with specific adapter.
+
+> +		return -EOPNOTSUPP;
+> +	}
+> +
+> +	/*
+> +	 * If everything went ok (i.e. frame transmitted), return #bytes
+> +	 * transmitted, else error code.
+> +	 */
+> +	return (res =3D=3D 1) ? count : res;
+> +}
+> +EXPORT_SYMBOL(tdm_adap_send);
+> +
+> +/*
+> + * tdm_adap_recv - issue a TDM read
+> + * @adap: Handle to TDM device
+> + * @buf: Where to store data read from TDM device
+> + *
+> + * Returns negative errno, or else the number of bytes read.
+> + */
+> +int tdm_adap_recv(struct tdm_adapter *adap, void **buf) {
+> +	int res;
+> +
+> +	if (adap->algo->tdm_read)
+> +		res =3D adap->algo->tdm_read(adap, (u16 **)buf);
+> +	else {
+> +		pr_err("TDM level read not supported\n");
+> +		return -EOPNOTSUPP;
+> +	}
+> +	/*
+> +	 * If everything went ok (i.e. frame received), return #bytes
+> +	 * transmitted, else error code.
+> +	 */
+> +	return res;
+> +}
+> +
+> +/*
+> + * tdm_adap_get_write_buf - get next write TDM device buffer
+> + * @adap: Handle to TDM device
+> + * @buf: pointer to TDM device buffer
+> + *
+> + * Returns negative errno, or else size of the write buffer.
+> + */
+> +int tdm_adap_get_write_buf(struct tdm_adapter *adap, void **buf) {
+> +	int res;
+> +
+> +	if (adap->algo->tdm_get_write_buf) {
+> +		res =3D adap->algo->tdm_get_write_buf(adap, (u16 **)buf);
+> +	} else {
+> +		pr_err("TDM level write buf get not supported\n");
+> +		return -EOPNOTSUPP;
+> +	}
+> +	/*
+> +	 * If everything went ok (i.e. 1 msg received), return #bytes
+> +	 * transmitted, else error code.
+> +	 */
+> +	return res;
+> +}
+> +EXPORT_SYMBOL(tdm_adap_get_write_buf);
+> +
+> +int tdm_adap_enable(struct tdm_driver *drv) {
+> +	int res;
+> +	struct tdm_adapter *adap;
+> +	adap =3D drv->adapter;
+
+The above two lines can become one line.
+[Sandeep] Sure.=20
+
+> +
+> +	if (adap->algo->tdm_enable) {
+> +		res =3D adap->algo->tdm_enable(adap);
+> +	} else {
+> +		pr_err("TDM level enable not supported\n");
+> +		return -EOPNOTSUPP;
+> +	}
+> +	return res;
+> +}
+> +EXPORT_SYMBOL(tdm_adap_enable);
+> +
+> +int tdm_adap_disable(struct tdm_driver *drv) {
+> +	int res;
+> +	struct tdm_adapter *adap;
+> +	adap =3D drv->adapter;
+
+Ditto.
+[Sandeep] Ok.
+
+> +
+> +	if (adap->algo->tdm_disable) {
+> +		res =3D adap->algo->tdm_disable(adap);
+> +	} else {
+> +		pr_err("TDM level enable not supported\n");
+> +		return -EOPNOTSUPP;
+> +	}
+> +	return res;
+> +}
+> +EXPORT_SYMBOL(tdm_adap_disable);
+> +
+> +struct tdm_adapter *tdm_get_adapter(int id) {
+> +	struct tdm_adapter *adapter;
+> +
+> +	mutex_lock(&tdm_core_lock);
+> +	adapter =3D idr_find(&tdm_adapter_idr, id);
+> +	if (adapter && !try_module_get(adapter->owner))
+> +		adapter =3D NULL;
+> +
+> +	mutex_unlock(&tdm_core_lock);
+> +
+> +	return adapter;
+> +}
+> +EXPORT_SYMBOL(tdm_get_adapter);
+> +
+> +void tdm_put_adapter(struct tdm_adapter *adap) {
+> +	module_put(adap->owner);
+> +}
+> +EXPORT_SYMBOL(tdm_put_adapter);
+> +
+> +
+> +/* Port Level APIs of TDM Framework */ int tdm_port_open(struct=20
+> +tdm_driver *driver, struct tdm_port **h_port) {
+> +	struct tdm_port *port;
+> +	struct tdm_adapter *adap;
+> +	unsigned long flags;
+> +	int res =3D 0;
+> +
+> +	/*
+> +	 * This creates an anonymous tdm_port, which may later be
+> +	 * pointed to some slot.
+> +	 */
+> +	port =3D kzalloc(sizeof(*port), GFP_KERNEL);
+> +	if (!port) {
+> +		res =3D -ENOMEM;
+> +		return res;
+> +	}
+> +
+> +	adap =3D tdm_get_adapter(driver->adapter->id);
+> +	if (!adap)
+> +		return -ENODEV;
+> +
+> +	port->rx_max_frames =3D NUM_SAMPLES_PER_FRAME;
+> +	port->port_cfg.port_mode =3D TDM_PORT_CHANNELIZED;
+> +
+> +	snprintf(driver->name, TDM_NAME_SIZE, "tdm-dev");
+> +	port->driver =3D driver;
+> +	port->adapter =3D adap;
+> +
+> +	spin_lock_irqsave(&adap->portlist_lock, flags);
+> +	list_add_tail(&port->list, &adap->myports);
+> +	spin_unlock_irqrestore(&adap->portlist_lock, flags);
+> +
+> +	INIT_LIST_HEAD(&port->mychannels);
+> +
+> +	*h_port =3D port;
+> +	return res;
+> +
+> +}
+> +EXPORT_SYMBOL(tdm_port_open);
+> +
+> +int tdm_port_close(struct tdm_port *h_port) {
+> +	struct tdm_adapter *adap;
+> +	struct tdm_driver *driver;
+> +	struct tdm_port *port;
+> +	struct tdm_channel *temp, *channel;
+> +	unsigned long flags;
+> +	int res =3D 0;
+> +	port =3D h_port;
+> +
+> +	driver =3D  port->driver;
+> +
+> +	list_for_each_entry_safe(channel, temp, &port->mychannels, list) {
+> +		if (channel)
+> +			if (channel->in_use) {
+
+if (channel && channel->in_use) {
+
+> +				pr_err("tdm: Cannot close port. Channel in"
+> +						"use\n");
+
+Don't wrap error messages.
+[Sandeep] How to handle them, it exceeds 80 character limit.
+
+> +				res =3D -ENXIO;
+> +				goto out;
+> +			}
+> +	}
+> +	adap =3D driver->adapter;
+> +	tdm_put_adapter(adap);
+> +
+> +	spin_lock_irqsave(&adap->portlist_lock, flags);
+> +	list_del(&port->list);
+> +	spin_unlock_irqrestore(&adap->portlist_lock, flags);
+> +
+> +	if (port->p_port_data !=3D NULL) {
+> +		int i;
+> +		struct tdm_bd *ch_bd;
+> +
+> +		/*
+> +		 * If the tdm is in channelised mode,
+> +		 * de-allocate the channelised buffer
+> +		 */
+> +		ch_bd =3D &(port->p_port_data->rx_data_fifo[0]);
+> +		for (i =3D 0; ch_bd && i < TDM_CH_RX_BD_RING_SIZE; i++) {
+> +			ch_bd->flag =3D 0;
+> +			ch_bd++;
+> +		}
+> +		ch_bd =3D &(port->p_port_data->tx_data_fifo[0]);
+> +		for (i =3D 0; ch_bd && i < TDM_CH_TX_BD_RING_SIZE; i++) {
+> +			ch_bd->flag =3D 0;
+> +			ch_bd++;
+> +		}
+> +		kfree(port->p_port_data);
+> +	}
+> +	kfree(port);
+> +	return res;
+> +out:
+> +	if (port)
+> +		kfree(port->p_port_data);
+> +	kfree(port);
+> +	return res;
+> +}
+> +EXPORT_SYMBOL(tdm_port_close);
+> +
+> +int tdm_channel_read(struct tdm_port *h_port, struct tdm_channel *h_chan=
+nel,
+> +		void *p_data, u16 *size)
+> +{
+> +	struct tdm_channel *channel;
+> +	struct tdm_bd *rx_bd;
+> +	unsigned long flags;
+> +	int res =3D 0;
+> +	unsigned short *buf, *buf1;
+> +	channel =3D h_channel;
+> +
+> +	if (!channel->p_ch_data || !channel->in_use)
+> +		return -EIO;
+> +
+> +	spin_lock_irqsave(&channel->p_ch_data->rx_channel_lock, flags);
+> +	rx_bd =3D channel->p_ch_data->rx_out_data;
+> +
+> +	if (rx_bd->flag) {
+> +		*size =3D rx_bd->length;
+> +		buf =3D (u16 *) p_data;
+> +		buf1 =3D (u16 *)rx_bd->p_data;
+> +		memcpy(buf1, buf, NUM_SAMPLES_PER_FRAME);
+> +		rx_bd->flag =3D 0;
+> +		rx_bd->offset =3D 0;
+> +		channel->p_ch_data->rx_out_data =3D (rx_bd->wrap) ?
+> +			channel->p_ch_data->rx_data_fifo : rx_bd + 1;
+> +
+> +	} else {
+> +		spin_unlock_irqrestore(&channel->p_ch_data->rx_channel_lock,
+> +				flags);
+> +		pr_debug("No Data Available");
+> +		return -EAGAIN;
+> +	}
+> +	spin_unlock_irqrestore(&channel->p_ch_data->rx_channel_lock, flags);
+> +
+> +	return res;
+> +}
+> +EXPORT_SYMBOL(tdm_channel_read);
+> +
+> +
+> +int tdm_channel_write(struct tdm_port *h_port, struct tdm_channel *h_cha=
+nnel,
+> +		void *p_data, u16 size)
+> +{
+> +	struct tdm_port *port;
+> +	struct tdm_channel *channel;
+> +	struct tdm_bd *tx_bd;
+> +	unsigned long flags;
+> +	int err =3D 0;
+> +	port =3D h_port;
+> +	channel =3D h_channel;
+> +#ifdef DEBUG
+> +	bool data_flag =3D 0;
+> +#endif
+> +
+> +	if (p_data =3D=3D NULL) { /* invalid data*/
+> +		pr_err("tdm: Invalid Data");
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (!channel->p_ch_data || !channel->in_use)
+> +		return -EIO;
+> +
+> +	spin_lock_irqsave(&channel->p_ch_data->tx_channel_lock, flags);
+> +	tx_bd =3D channel->p_ch_data->tx_in_data;
+> +
+> +	if (!tx_bd->flag) {
+> +		tx_bd->length =3D size;
+> +		memcpy(tx_bd->p_data, p_data,
+> +				size * port->adapter->adapt_cfg.slot_width);
+> +		tx_bd->flag =3D 1;
+> +		tx_bd->offset =3D 0;
+> +		channel->p_ch_data->tx_in_data =3D (tx_bd->wrap) ?
+> +			channel->p_ch_data->tx_data_fifo : tx_bd+1;
+> +		port->port_stat.tx_pkt_count++;
+> +#ifdef DEBUG
+> +		data_flag =3D 1;
+> +#endif
+> +	} else {
+> +		spin_unlock_irqrestore(&channel->p_ch_data->tx_channel_lock,
+> +				flags);
+> +		port->port_stat.tx_pkt_drop_count++;
+> +		pr_err("tdm: Transmit failed.");
+> +		return -ENOMEM;
+> +	}
+> +	spin_unlock_irqrestore(&channel->p_ch_data->tx_channel_lock, flags);
+> +
+> +#ifdef	DEBUG
+> +	if (data_flag) {
+> +		int k;
+> +		pr_info("\nTX port:%d - Write - Port TX-%d\n",
+> +				port->port_id, size);
+> +		for (k =3D 0; k < size; k++)
+> +			pr_info("%x", p_data[k]);
+> +		pr_info("\n");
+> +	}
+> +#endif
+> +	return err;
+> +}
+> +EXPORT_SYMBOL(tdm_channel_write);
+> +
+> +/*
+> + * Driver Function for select and poll. Based on Channel, it sleeps=20
+> +on
+> + * waitqueue
+> + */
+> +int tdm_ch_poll(struct tdm_channel *h_channel, unsigned int=20
+> +wait_time) {
+> +	struct tdm_channel *channel;
+> +	channel =3D h_channel;
+> +
+> +	if (!channel->p_ch_data || !channel->in_use)
+> +		return -EIO;
+> +
+> +	if (channel->p_ch_data->rx_out_data->flag) {
+> +		pr_debug("Data Available");
+> +		return 0;
+> +	}
+> +	if (wait_time) {
+> +		unsigned long timeout =3D msecs_to_jiffies(wait_time);
+> +
+> +		wait_event_interruptible_timeout(channel->ch_wait_queue,
+> +				channel->p_ch_data->rx_out_data->flag,
+> +				timeout);
+> +
+> +		if (channel->p_ch_data->rx_out_data->flag) {
+> +			pr_debug("Data Available");
+> +			return 0;
+> +		}
+> +	}
+> +	return -EAGAIN;
+
+That is incorrect.  -EAGAIN is the wrong return code when
+wait_event_interruptible_timeout() returns -ERESTARTSYS.
+[Sandeep] Ok
+
+> +}
+> +EXPORT_SYMBOL(tdm_ch_poll);
+> +
+> +unsigned int tdm_port_get_stats(struct tdm_port *h_port,
+> +		struct tdm_port_stats *portstat)
+> +{
+> +	struct tdm_port *port;
+> +	int port_num;
+> +	port =3D h_port;
+> +
+> +	if (port =3D=3D NULL || portstat =3D=3D NULL) { /* invalid handle */
+> +		pr_err("tdm: Invalid Handle");
+> +		return -ENXIO;
+> +	}
+> +	port_num =3D  port->port_id;
+> +
+> +	memcpy(portstat, &port->port_stat, sizeof(struct tdm_port_stats));
+> +
+> +	pr_info("TDM Port %d Get Stats", port_num);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL(tdm_port_get_stats);
+> +
+> +/* Data handling functions */
+> +
+> +static int tdm_data_rx_deinterleave(struct tdm_adapter *adap) {
+> +	struct tdm_port *port, *next;
+> +	struct tdm_channel *channel, *temp;
+> +	struct tdm_bd	*ch_bd;
+> +
+> +	int i, buf_size, ch_data_len;
+> +	u16 *input_tdm_buffer;
+> +	u16 *pcm_buffer;
+> +	int slot_width;
+> +	int frame_ch_data_size;
+> +	bool ch_data;
+> +	int bytes_in_fifo_per_frame;
+> +	int bytes_slot_offset;
+> +
+> +	ch_data_len =3D NUM_SAMPLES_PER_FRAME;
+> +	frame_ch_data_size =3D NUM_SAMPLES_PER_FRAME;
+> +	ch_data =3D 0;
+> +
+> +	slot_width =3D adap->adapt_cfg.slot_width;
+> +	buf_size =3D tdm_adap_recv(adap, (void **)&input_tdm_buffer);
+> +	if (buf_size <=3D 0 || !input_tdm_buffer)
+> +		return -EINVAL;
+> +
+> +	bytes_in_fifo_per_frame =3D buf_size/frame_ch_data_size;
+
+Spaces around /
+[Sandeep] Ok.
+
+> +	bytes_slot_offset =3D bytes_in_fifo_per_frame/slot_width;
+
+Spaces around /
+[Sandeep] Ok.
+
+> +
+> +	/* de-interleaving for all ports*/
+> +	list_for_each_entry_safe(port, next, &adap->myports, list) {
+> +
+> +		list_for_each_entry_safe(channel, temp, &port->mychannels,
+> +				list) {
+
+Why do you need the _safe variants here?  I can't see anything in this code=
+ which manipulates the lists.
+[Sandeep] Will check.
+
+> +			/* if the channel is not open */
+> +			if (!channel->in_use || !channel->p_ch_data)
+> +				continue;
+> +			ch_bd =3D channel->p_ch_data->rx_in_data;
+> +			spin_lock(&channel->p_ch_data->rx_channel_lock);
+> +			/*if old data is to be discarded */
+> +			if (use_latest_tdm_data && ch_bd->flag) {
+> +				ch_bd->flag =3D 0;
+> +				ch_bd->offset =3D 0;
+> +				if (ch_bd =3D=3D channel->p_ch_data->rx_out_data)
+> +					channel->p_ch_data->rx_out_data =3D
+> +						ch_bd->wrap ?
+> +						channel->p_ch_data->rx_data_fifo
+> +						: ch_bd+1;
+> +				port->port_stat.rx_pkt_drop_count++;
+> +			}
+> +			/* if the bd is empty */
+> +			if (!ch_bd->flag) {
+> +				if (ch_bd->offset =3D=3D 0)
+> +					ch_bd->length =3D port->rx_max_frames;
+> +
+> +				pcm_buffer =3D ch_bd->p_data + ch_bd->offset;
+> +				/* De-interleaving the data */
+> +				for (i =3D 0; i < ch_data_len; i++) {
+> +					pcm_buffer[i]
+> +						=3D input_tdm_buffer[i*
+> +						bytes_slot_offset +
+> +						channel->ch_id];
+> +				}
+> +				ch_bd->offset +=3D ch_data_len * slot_width;
+> +
+> +				if (ch_bd->offset >=3D
+> +						(ch_bd->length -
+> +						frame_ch_data_size)*
+> +						(adap->adapt_cfg.slot_width)) {
+> +					ch_bd->flag =3D 1;
+> +					ch_bd->offset =3D 0;
+> +					channel->p_ch_data->rx_in_data =3D
+> +						ch_bd->wrap ?
+> +						channel->p_ch_data->rx_data_fifo
+> +						: ch_bd+1;
+> +					ch_data =3D 1;
+> +					wake_up_interruptible
+> +						(&channel->ch_wait_queue);
+> +				}
+> +			} else {
+> +				port->port_stat.rx_pkt_drop_count++;
+> +			}
+> +			spin_unlock(&channel->p_ch_data->rx_channel_lock);
+> +		}
+> +
+> +		if (ch_data) {
+> +			/* Wake up the Port Data Poll event */
+> +#ifdef	DEBUG
+> +			pr_info("Port RX-%d-%d\n", channel->ch_id, ch_data_len);
+> +			for (i =3D 0; i < ch_data_len; i++)
+> +				pr_info("%x", pcm_buffer[i]);
+> +			pr_info("\n");
+> +#endif
+> +			port->port_stat.rx_pkt_count++;
+> +			ch_data =3D 0;
+> +		}
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int tdm_data_tx_interleave(struct tdm_adapter *adap) {
+> +	struct tdm_port *port, *next;
+> +	struct tdm_channel *channel, *temp;
+> +	struct tdm_bd	*ch_bd;
+> +	int i, buf_size, ch_data_len =3D NUM_SAMPLES_PER_FRAME;
+> +	bool last_data =3D 0;
+> +	u16 *output_tdm_buffer;
+> +	u16 *pcm_buffer;
+> +	int frame_ch_data_size =3D NUM_SAMPLES_PER_FRAME;
+> +	int bytes_in_fifo_per_frame;
+> +	int bytes_slot_offset;
+> +
+> +#ifdef DEBUG
+> +	u8	data_flag =3D 0;
+> +#endif
+> +
+> +	buf_size =3D tdm_adap_get_write_buf(adap, (void **)&output_tdm_buffer);
+> +	if (buf_size <=3D 0 || !output_tdm_buffer)
+> +		return -EINVAL;
+> +
+> +	bytes_in_fifo_per_frame =3D buf_size/frame_ch_data_size;
+> +	bytes_slot_offset =3D=20
+> +bytes_in_fifo_per_frame/adap->adapt_cfg.slot_width;
+> +
+> +
+> +	memset(output_tdm_buffer, 0, sizeof(buf_size));
+> +
+> +	list_for_each_entry_safe(port, next, &adap->myports, list) {
+> +
+> +		list_for_each_entry_safe(channel, temp, &port->mychannels,
+> +				list) {
+
+Why do you need the _safe variants here?  I can't see anything in this code=
+ which manipulates the lists.
+[Sandeep] Will check.
+
+> +			pr_debug("TX-Tdm %d (slots-)", channel->ch_id);
+> +
+> +
+> +			/* if the channel is open */
+> +			if (!channel->in_use || !channel->p_ch_data)
+> +				continue;
+> +
+> +			spin_lock(&channel->p_ch_data->tx_channel_lock);
+> +			if (!channel->in_use || !channel->p_ch_data)
+> +				continue;
+> +			ch_bd =3D channel->p_ch_data->tx_out_data;
+> +			if (ch_bd->flag) {
+> +				pcm_buffer =3D (u16 *)((uint8_t *)ch_bd->p_data +
+> +						ch_bd->offset);
+> +				/* if the buffer has less frames than required*/
+
+Space before */
+[Sandeep] Ok
+
+> +				if (frame_ch_data_size >=3D
+> +						(ch_bd->length - ch_bd->offset/
+
+Space before /
+[Sandeep] Ok
+
+> +						 adap->adapt_cfg.slot_width)) {
+> +					ch_data_len =3D
+> +						ch_bd->length - ch_bd->offset/
+
+Space before /
+[Sandeep] Ok
+
+> +						adap->adapt_cfg.slot_width;
+
+Wrong indentation.  If you're finding the 80 column limit is causing proble=
+ms, you have too much code in this function (read Documentation/CodingStyle=
+ again).
+[Sandeep] Ok.
+
+> +					last_data =3D 1;
+> +				} else {
+> +					ch_data_len =3D frame_ch_data_size;
+> +				}
+> +				/* Interleaving the data */
+> +				for (i =3D 0; i < ch_data_len; i++) {
+> +					/*
+> +					 * TODO- need to be genric for any size
+> +					 *  assignment
+> +					 */
+> +					output_tdm_buffer[channel->ch_id +
+> +						bytes_slot_offset * i] =3D
+> +						pcm_buffer[i];
+> +				}
+> +				/*
+> +				 * If all the data of this buffer is
+> +				 * transmitted
+> +				 */
+> +				if (last_data) {
+> +					ch_bd->flag =3D 0;
+> +					ch_bd->offset =3D 0;
+> +					channel->p_ch_data->tx_out_data =3D
+> +						ch_bd->wrap ?
+> +						channel->p_ch_data->tx_data_fifo
+> +						: ch_bd+1;
+
+Spaces around +
+[Sandeep] Ok
+
+> +					port->port_stat.tx_pkt_conf_count++;
+> +				} else {
+> +					ch_bd->offset +=3D ch_data_len *
+> +						(adap->adapt_cfg.slot_width);
+> +				}
+> +#ifdef	DEBUG
+> +				data_flag =3D 1;
+> +#endif
+> +			}
+> +			spin_unlock(&channel->p_ch_data->tx_channel_lock);
+> +		}
+> +	}
+> +
+> +#ifdef	DEBUG
+> +	if (data_flag) {
+> +		pr_info("TX-TDM Interleaved Data-\n");
+> +		for (i =3D 0; i < 64; i++)
+> +			pr_info("%x", output_tdm_buffer[i]);
+> +		pr_info("\n");
+> +	}
+> +#endif
+> +	return 0;
+> +}
+> +
+> +/* Channel Level APIs of TDM Framework */ int tdm_channel_open(u16=20
+> +chanid, u16 ch_width, struct tdm_port *port,
+> +		struct tdm_channel **h_channel)
+> +{
+> +	struct tdm_channel *channel, *temp;
+> +	unsigned long		flags;
+> +	struct tdm_ch_data	*p_ch_data;
+> +	int res =3D 0;
+> +
+> +	if (ch_width !=3D 1) {
+> +		pr_err("tdm: Mode not supported\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	list_for_each_entry_safe(channel, temp, &port->mychannels, list) {
+> +		if (channel->ch_id =3D=3D chanid) {
+> +			pr_err("tdm: Channel %d already open\n", chanid);
+> +			return -EINVAL;
+> +		}
+> +	}
+> +
+> +	channel =3D kzalloc(sizeof(*channel), GFP_KERNEL);
+> +	if (!channel) {
+> +		res =3D -ENOMEM;
+> +		goto out;
+> +	}
+> +
+> +	init_waitqueue_head(&channel->ch_wait_queue);
+> +	p_ch_data =3D kzalloc(sizeof(struct tdm_ch_data), GFP_KERNEL);
+> +	if (!p_ch_data) {
+> +		res =3D -ENOMEM;
+> +		goto outdata;
+> +	}
+> +
+> +	p_ch_data->rx_data_fifo[TDM_CH_RX_BD_RING_SIZE-1].wrap =3D 1;
+> +	p_ch_data->tx_data_fifo[TDM_CH_TX_BD_RING_SIZE-1].wrap =3D 1;
+> +
+> +	p_ch_data->rx_in_data =3D p_ch_data->rx_data_fifo;
+> +	p_ch_data->rx_out_data =3D p_ch_data->rx_data_fifo;
+> +	p_ch_data->tx_in_data =3D p_ch_data->tx_data_fifo;
+> +	p_ch_data->tx_out_data =3D p_ch_data->tx_data_fifo;
+> +	spin_lock_init(&p_ch_data->rx_channel_lock);
+> +	spin_lock_init(&p_ch_data->tx_channel_lock);
+> +
+> +	channel->p_ch_data =3D p_ch_data;
+> +
+> +	channel->ch_id =3D chanid;
+> +	channel->ch_cfg.first_slot =3D chanid;
+> +	channel->ch_cfg.num_slots =3D 1;	/*
+> +					 * This is 1 for channelized mode and
+> +					 * configurable for other modes
+> +					 */
+> +	channel->port =3D port;
+> +	channel->in_use =3D 1;
+> +
+> +	spin_lock_irqsave(&port->ch_list_lock, flags);
+> +	list_add_tail(&channel->list, &port->mychannels);
+> +	spin_unlock_irqrestore(&port->ch_list_lock, flags);
+> +
+> +	*h_channel =3D channel;
+> +
+> +	return res;
+> +
+> +outdata:
+> +	kfree(channel);
+> +out:
+> +	return res;
+> +}
+> +EXPORT_SYMBOL(tdm_channel_open);
+> +
+> +int tdm_sysfs_init(void)
+
+static?
+[Sandeep] Ok.
+
+> +{
+> +	struct kobject *tdm_kobj;
+> +	int err =3D 1;
+> +	tdm_kobj =3D kzalloc(sizeof(*tdm_kobj), GFP_KERNEL);
+> +	if (tdm_kobj) {
+> +		kobject_init(tdm_kobj, &tdm_type);
+> +		if (kobject_add(tdm_kobj, NULL, "%s", "tdm")) {
+> +			pr_err("tdm: Sysfs creation failed\n");
+> +			kobject_put(tdm_kobj);
+> +			err =3D -EINVAL;
+> +			goto out;
+> +		}
+> +	} else {
+> +		pr_err("tdm: Unable to allocate tdm_kobj\n");
+> +		err =3D -ENOMEM;
+> +		goto out;
+> +	}
+
+What if this function gets called multiple times?  It looks like
+kobject_add() will fail due to name conflicts.
+
+Also, what's the point of the above?  I looks like the kobject is never use=
+d.
+[Sandeep] Will check.
+
+> +
+> +out:
+> +	return err;
+> +}
+> +
+> +int tdm_channel_close(u16 chanid, u16 ch_width, struct tdm_port *port,
+> +		struct tdm_channel *h_channel)
+> +{
+> +	struct tdm_channel *channel;
+> +	unsigned long		flags;
+> +	int res =3D 0;
+> +	channel =3D h_channel;
+> +
+> +	spin_lock_irqsave(&port->ch_list_lock, flags);
+> +	list_del(&channel->list);
+> +	spin_unlock_irqrestore(&port->ch_list_lock, flags);
+> +
+> +	if (channel)
+> +		kfree(channel->p_ch_data);
+> +	kfree(channel);
+> +	return res;
+> +}
+> +EXPORT_SYMBOL(tdm_channel_close);
+> +
+> +ssize_t tdm_show_sysfs(struct kobject *kobj,
+> +		struct attribute *attr, char *buf)
+> +{
+> +	int retval =3D 0;
+> +	struct tdm_sysfs *a =3D container_of(attr,
+> +			struct tdm_sysfs, attr);
+> +	switch (a->cmd_type) {
+> +	case TDM_LATEST_DATA:
+> +		pr_info("use_latest_tdm_data: %d\n", use_latest_tdm_data);
+> +		break;
+> +	default:
+> +		pr_info("Invalid cmd_type value\n");
+> +		return -EINVAL;
+> +	}
+> +	return retval;
+> +}
+> +
+> +ssize_t tdm_store_sysfs(struct kobject *kobj,
+> +		struct attribute *attr, const char *buf, size_t len) {
+> +	struct tdm_sysfs *a =3D container_of(attr,
+> +			struct tdm_sysfs, attr);
+> +
+> +	sscanf(buf, "%d", &a->data);
+> +	use_latest_tdm_data =3D a->data;
+> +	return strlen(buf);
+> +}
+> +
+> +void init_config_adapter(struct tdm_adapter *adap) {
+> +	struct fsl_tdm_adapt_cfg default_adapt_cfg =3D {
+> +		.loopback =3D TDM_PROCESS_NORMAL,
+> +		.num_ch =3D NUM_CHANNELS,
+> +		.ch_size_type =3D CHANNEL_16BIT_LIN,
+> +		.frame_len =3D NUM_SAMPLES_PER_FRAME,
+> +		.num_frames =3D NUM_SAMPLES_PER_FRAME,
+> +		.adap_mode =3D TDM_ADAPTER_MODE_NONE
+> +	};
+> +
+> +	default_adapt_cfg.slot_width =3D default_adapt_cfg.ch_size_type/3 + 1;
+
+Spaces around /
+[Sandeep] Ok
+
+> +
+> +	memcpy(&adap->adapt_cfg, &default_adapt_cfg,
+> +			sizeof(struct fsl_tdm_adapt_cfg));
+
+If this is supposed to be a generic layer, why the fsl_ data in core code?
+[Sandeep] It's because framework initializes adapter in a default configura=
+tion and then passes it to the adapter.
+
+> +
+> +	return;
+> +}
+> +EXPORT_SYMBOL(init_config_adapter);
+> +
+> +void tdm_data_tasklet_fn(unsigned long data)
+
+static?
+[Sandeep] Ok
+
+> +{
+> +	struct tdm_adapter *adapter;
+> +	adapter =3D (struct tdm_adapter *)data;
+> +	if (adapter !=3D NULL) {
+> +		tdm_data_tx_interleave(adapter);
+> +		tdm_data_rx_deinterleave(adapter);
+> +	}
+> +}
+
+A general comment: it is better to place functions before their first use w=
+here possible.
+[Sandeep] Alright.
+
+> +
+> +
+> +MODULE_AUTHOR("Hemant Agrawal <hemant@freescale.com> and "
+> +	"Rajesh Gumasta <rajesh.gumasta@freescale.com>");=20
+> +MODULE_DESCRIPTION("TDM Driver Framework Core");=20
+> +MODULE_LICENSE("GPL");
+> diff --git a/include/linux/mod_devicetable.h=20
+> b/include/linux/mod_devicetable.h index 83ac071..573ac40 100644
+> --- a/include/linux/mod_devicetable.h
+> +++ b/include/linux/mod_devicetable.h
+> @@ -425,6 +425,17 @@ struct i2c_device_id {
+>  			__attribute__((aligned(sizeof(kernel_ulong_t))));
+>  };
+> =20
+> +/* tdm */
+> +
+> +#define TDM_NAME_SIZE   20
+> +#define TDM_MODULE_PREFIX "tdm:"
+> +
+> +struct tdm_device_id {
+> +	char name[TDM_NAME_SIZE];
+> +	kernel_ulong_t driver_data      /* Data private to the driver */
+> +			__attribute__((aligned(sizeof(kernel_ulong_t))));
+> +};
+> +
+>  /* spi */
+> =20
+>  #define SPI_NAME_SIZE	32
+> diff --git a/include/linux/tdm.h b/include/linux/tdm.h new file mode=20
+> 100644 index 0000000..44cd8cf
+> --- /dev/null
+> +++ b/include/linux/tdm.h
+> @@ -0,0 +1,389 @@
+> +/* include/linux/tdm.h
+> + *
+> + * Copyright 2012 Freescale Semiconductor, Inc.
+> + *
+> + * tdm.h - definitions for the tdm-device framework interface
+> + *
+> + * Author:Hemant Agrawal <hemant@freescale.com>
+> + *	Rajesh Gumasta <rajesh.gumasta@freescale.com>
+> + *
+> + * This program is free software; you can redistribute  it and/or=20
+> +modify it
+> + * under  the terms of  the GNU General  Public License as published=20
+> +by the
+> + * Free Software Foundation;  either version 2 of the  License, or=20
+> +(at your
+> + * option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,=20
+> +but
+> + * WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> + * General Public License for more details.
+> + *
+> + * You should have received a copy of the  GNU General Public License=20
+> +along
+> + * with this program; if not, write  to the Free Software Foundation,=20
+> +Inc.,
+> + * 675 Mass Ave, Cambridge, MA 02139, USA.
+> + */
+> +
+> +
+> +#ifndef _LINUX_TDM_H
+> +#define _LINUX_TDM_H
+> +
+> +#include <linux/types.h>
+> +#include <linux/module.h>
+> +#include <linux/mod_devicetable.h>
+> +#include <linux/device.h>	/* for struct device */
+> +#include <linux/sched.h>	/* for completion */
+> +#include <linux/mutex.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/sysfs.h>
+> +
+> +#define TDM_LATEST_DATA		1
+> +#define CHANNEL_8BIT_LIN	0	/* 8 bit linear */
+> +#define CHANNEL_8BIT_ULAW	1	/* 8 bit Mu-law */
+> +#define CHANNEL_8BIT_ALAW	2	/* 8 bit A-law */
+> +#define CHANNEL_16BIT_LIN	3	/* 16 bit Linear */
+> +
+> +/*
+> + * Default adapter configuration. All the TDM adapters registered=20
+> +with
+> + * framework will be configured with following default configuration.
+> + */
+> +#define NUM_CHANNELS	16
+> +
+> +/*
+> + * Default configuration for typical voice data sample. These=20
+> +parameters
+> + * will generally not be required to be changed for voice type applicati=
+ons.
+> + */
+> +
+> +/* 8 samples per milli sec per channel. Req for voice data */
+> +#define NUM_SAMPLES_PER_MS	8
+> +#define NUM_MS			10
+> +
+> +/* Number of samples for 1 client buffer */
+> +#define NUM_SAMPLES_PER_FRAME	(NUM_MS * NUM_SAMPLES_PER_MS)
+> +#define NUM_OF_TDM_BUF		3
+> +
+> +/* General options */
+> +
+> +struct tdm_adapt_algorithm;
+> +struct tdm_adapter;
+> +struct tdm_port;
+> +
+> +
+> +/*
+> + * struct tdm_driver - represent an TDM device driver
+> + * @class: What kind of tdm device we instantiate (for detect)
+> + * @id:Driver id
+> + * @name: Name of the driver
+> + * @attach_adapter: Callback for device addition (for legacy drivers)
+> + * @detach_adapter: Callback for device removal (for legacy drivers)
+> + * @probe: Callback for device binding
+> + * @remove: Callback for device unbinding
+> + * @shutdown: Callback for device shutdown
+> + * @suspend: Callback for device suspend
+> + * @resume: Callback for device resume
+> + * @command: Callback for sending commands to device
+> + * @id_table: List of TDM devices supported by this driver
+> + * @list: List of drivers created (for tdm-core use only)  */ struct=20
+> +tdm_driver {
+> +	unsigned int class;
+> +	unsigned int id;
+> +	char name[TDM_NAME_SIZE];
+> +
+> +	int (*attach_adapter)(struct tdm_adapter *);
+> +	int (*detach_adapter)(struct tdm_adapter *);
+> +
+> +	/* Standard driver model interfaces */
+> +	int (*probe)(const struct tdm_device_id *);
+> +	int (*remove)(void);
+> +
+> +	/* driver model interfaces that don't relate to enumeration */
+> +	void (*shutdown)(void);
+> +	int (*suspend)(pm_message_t mesg);
+> +	int (*resume)(void);
+
+Far better to use the dev_pm_ops stuff now, don't propagate the old PM inte=
+rfaces.
+[Sandeep] Ok.
+
+> +
+> +	const struct tdm_device_id *id_table;
+> +
+> +	/* The associated adapter for this driver */
+> +	struct tdm_adapter *adapter;
+> +	struct list_head list;
+> +};
+> +
+> +/*
+> + * tdm per port statistics structure, used for providing and storing=20
+> +tdm port
+> + * statistics.
+> + */
+> +struct tdm_port_stats {
+> +	unsigned int rx_pkt_count;	/* Rx frame count per channel */
+> +	unsigned int rx_pkt_drop_count;	/*
+> +					 * Rx drop count per channel to
+> +					 * clean space for new buffer
+> +					 */
+> +	unsigned int tx_pkt_count;	/* Tx frame count per channel */
+> +	unsigned int tx_pkt_conf_count;	/*
+> +					 * Tx frame confirmation count per
+> +					 * channel
+> +					 */
+> +	unsigned int tx_pkt_drop_count;	/*
+> +					 * Tx drop count per channel due to
+> +					 * queue full
+> +					 */
+> +};
+> +
+> +
+> +/*
+> + * tdm Buffer Descriptor, used for Creating Interleaved and=20
+> +De-interleaved
+> + * FIFOs
+> + */
+> +struct tdm_bd {
+> +	unsigned char flag;		/* BD is full or empty */
+> +	unsigned char wrap;		/* BD is last in the queue */
+> +	unsigned short length;		/* Length of data in BD */
+> +	/*TODO: use dyanmic memory */
+> +	unsigned short p_data[NUM_SAMPLES_PER_FRAME];	/* Data Pointer */
+> +	unsigned long offset;	/* Offset of the Data Pointer to be used */
+> +};
+> +
+> +#define TDM_CH_RX_BD_RING_SIZE	3
+> +#define TDM_CH_TX_BD_RING_SIZE	3
+> +
+> +/* tdm RX-TX Channelised Data */
+> +struct tdm_port_data {
+> +	struct tdm_bd rx_data_fifo[TDM_CH_RX_BD_RING_SIZE]; /*
+> +							     * Rx Channel Data
+> +							     * BD Ring
+> +							     */
+> +	struct tdm_bd *rx_in_data;	/*
+> +					 * Current Channel Rx BD to be filled by
+> +					 * de-interleave function
+> +					 */
+> +	struct tdm_bd *rx_out_data;	/*
+> +					 * Current Channel Rx BD to be
+> +					 * read by App
+> +					 */
+> +	struct tdm_bd tx_data_fifo[TDM_CH_TX_BD_RING_SIZE]; /*
+> +							     * Tx Channel Data
+> +							     *	BD Ring
+> +							     */
+> +	struct tdm_bd *tx_in_data;	/*
+> +					 * Current Channel Tx BD to be
+> +					 * filled by App
+> +					 */
+> +	struct tdm_bd *tx_out_data;	/*
+> +					 * Current Channel Tx BD to be read by
+> +					 * interleave function
+> +					 */
+> +	spinlock_t rx_channel_lock;	/* Spin Lock for Rx Channel */
+> +	spinlock_t tx_channel_lock;	/* Spin Lock for Tx Channel */
+> +};
+> +
+> +/* structure tdm_port_cfg - contains configuration params for a port=20
+> +*/ struct tdm_port_cfg {
+> +	unsigned short port_mode;
+> +};
+> +
+> +/* struct tdm_port - represent an TDM ports for a device */ struct=20
+> +tdm_port {
+> +	unsigned short port_id;
+> +	unsigned short in_use;	/* Port is enabled? */
+> +	uint16_t rx_max_frames;	/*
+> +				 * Received port frames before allowing
+> +				 * read operation in Port Mode
+> +				 */
+> +
+> +	struct tdm_port_stats port_stat; /*
+> +					  * A structure parameter defining
+> +					  * TDM port statistics.
+> +					  */
+> +	struct tdm_port_data *p_port_data;	/*
+> +						 * a structure parameter
+> +						 * defining tdm channelised data
+> +						 */
+> +
+> +	struct tdm_driver *driver;	/* driver for this port */
+> +	struct tdm_adapter *adapter;	/* adapter for this port */
+> +	struct list_head list;		/* list of ports */
+> +	struct list_head mychannels;	/* list of channels, on this port*/
+> +	spinlock_t ch_list_lock;	/* Spin Lock for channel_list */
+> +	struct tdm_port_cfg port_cfg;	/*
+> +					 * A structure parameter defining
+> +					 * TDM port configuration.
+> +					 */
+> +};
+> +
+> +/* tdm RX-TX Channelised Data */
+> +struct tdm_ch_data {
+> +	struct tdm_bd rx_data_fifo[TDM_CH_RX_BD_RING_SIZE]; /*
+> +							     * Rx Port Data BD
+> +							     * Ring
+> +							     */
+> +	struct tdm_bd *rx_in_data;	/*
+> +					 * Current Port Rx BD to be filled by
+> +					 * de-interleave function
+> +					 */
+> +	struct tdm_bd *rx_out_data; /* Current Port Rx BD to be read by App */
+> +	struct tdm_bd tx_data_fifo[TDM_CH_TX_BD_RING_SIZE]; /*
+> +							     * Tx Port Data BD
+> +							     * Ring
+> +							     */
+> +	struct tdm_bd *tx_in_data;	/*
+> +					 * Current Port Tx BD to be filled by
+> +					 * App
+> +					 */
+> +	struct tdm_bd *tx_out_data;	/*
+> +					 * Current Port Tx BD to be read by
+> +					 * interleave function
+> +					 */
+> +	spinlock_t rx_channel_lock;	/* Spin Lock for Rx Port */
+> +	spinlock_t tx_channel_lock;	/* Spin Lock for Tx Port */
+> +};
+> +
+> +/* Channel config params */
+> +struct tdm_ch_cfg {
+> +	unsigned short num_slots;
+> +	unsigned short first_slot;
+> +};
+> +
+> +/* struct tdm_channel- represent a TDM channel for a port */ struct=20
+> +tdm_channel {
+> +	u16 ch_id;			/* logical channel number */
+> +	struct list_head list;		/* list of channels in a port*/
+> +	struct tdm_port *port;		/* port for this channel */
+> +	u8 in_use;			/* channel is enabled? */
+> +	struct tdm_ch_cfg ch_cfg;	/* channel configuration */
+> +	struct tdm_ch_data *p_ch_data;	/* data storage space for channel */
+> +	wait_queue_head_t ch_wait_queue;/* waitQueue for RX Channel Data */=20
+> +};
+> +
+> +/* tdm_adapt_algorithm is for accessing the routines of device */=20
+> +struct tdm_adapt_algorithm {
+> +	int (*tdm_read)(struct tdm_adapter *, u16 **);
+> +	int (*tdm_get_write_buf)(struct tdm_adapter *, u16 **);
+> +	int (*tdm_write)(struct tdm_adapter *, void *, unsigned int len);
+> +	int (*tdm_enable)(struct tdm_adapter *);
+> +	int (*tdm_disable)(struct tdm_adapter *); };
+> +
+> +/* tdm_adapter_mode is to define in mode of the device */ enum=20
+> +tdm_adapter_mode {
+> +	TDM_ADAPTER_MODE_NONE =3D 0x00,
+> +	TDM_ADAPTER_MODE_T1 =3D 0x01,
+> +	TDM_ADAPTER_MODE_E1 =3D 0x02,
+> +	TDM_ADAPTER_MODE_T1_RAW =3D 0x10,
+> +	TDM_ADAPTER_MODE_E1_RAW =3D 0x20,
+> +};
+> +
+> +/* tdm_port_mode defines the mode in which the port is configured to=20
+> +operate
+> + * It can be channelized/full/fractional.
+> + */
+> +enum tdm_port_mode {
+> +	TDM_PORT_CHANNELIZED =3D 0,	/* Channelized mode */
+> +	TDM_PORT_FULL =3D 1,		/* Full mode */
+> +	TDM_PORT_FRACTIONAL =3D 2		/* Fractional mode */
+> +};
+> +
+> +/* tdm_process_mode used for testing the tdm device in normal mode or=20
+> +internal
+> + * loopback or external loopback
+> + */
+> +enum tdm_process_mode {
+> +	TDM_PROCESS_NORMAL =3D 0,		/* Normal mode */
+> +	TDM_PROCESS_INT_LPB =3D 1,	/* Internal loop mode */
+> +	TDM_PROCESS_EXT_LPB =3D 2		/* External Loopback mode */
+> +};
+> +
+> +/* TDM configuration parameters */
+> +struct fsl_tdm_adapt_cfg {
+> +	u8 num_ch;		/* Number of channels in this adpater */
+> +	u8 ch_size_type;	/*
+> +				 * reciever/transmit channel
+> +				 * size for all channels
+> +				 */
+> +	u8 slot_width;		/* 1 or 2 Is defined by channel type */
+> +	u8 frame_len;		/* Length of frame in samples */
+> +	u32 num_frames;
+> +	u8 loopback;		/* loopback or normal */
+> +	u8 adap_mode;		/*
+> +				 * 0=3DNone, 1=3D T1, 2=3D T1-FULL, 3=3DE1,
+> +				 * 4 =3D E1-FULL
+> +				 */
+> +	int max_timeslots;	/*
+> +				 * Max Number of timeslots that are
+> +				 * supported on this adapter
+> +				 */
+> +};
+> +
+> +/*
+> + * tdm_adapter is the structure used to identify a physical tdm=20
+> +device along
+> + * with the access algorithms necessary to access it.
+> + */
+> +struct tdm_adapter {
+> +	struct module *owner;	/* owner of the adapter module */
+> +	unsigned int id;	/* Adapter Id */
+> +	unsigned int drv_count;	/*
+> +				 * Number of drivers associated with the
+> +				 * adapter
+> +				 */
+> +	const struct tdm_adapt_algorithm *algo;	/*
+> +						 * algorithm to access the
+> +						 * adapter
+> +						 */
+> +
+> +	char name[TDM_NAME_SIZE];	/* Name of Adapter */
+> +	struct mutex adap_lock;
+> +	struct device *parent;
+> +
+> +	struct tasklet_struct tdm_data_tasklet;	/*
+> +						 * tasklet handle to perform
+> +						 * data processing
+> +						 */
+> +	int tasklet_conf;	/* flag for tasklet configuration */
+> +	int tdm_rx_flag;
+> +
+> +	struct list_head myports;	/*
+> +					 * list of ports, created on this
+> +					 * adapter
+> +					 */
+> +	struct list_head list;
+> +	spinlock_t portlist_lock;
+> +	void *data;
+> +	struct fsl_tdm_adapt_cfg adapt_cfg;
+> +};
+> +
+> +struct tdm_sysfs {
+> +	struct attribute attr;
+> +	int data;
+> +	u32 cmd_type;
+> +};
+> +
+> +/* functions exported by tdm.o */
+> +
+> +int tdm_add_adapter(struct tdm_adapter *adpater); int=20
+> +tdm_del_adapter(struct tdm_adapter *adapter); int=20
+> +tdm_register_driver(struct tdm_driver *driver); void=20
+> +tdm_unregister_driver(struct tdm_driver *driver); void=20
+> +init_config_adapter(struct tdm_adapter *adapter);
+> +
+> +int tdm_port_open(struct tdm_driver *driver, struct tdm_port=20
+> +**h_port); int tdm_port_close(struct tdm_port *h_port); int=20
+> +tdm_channel_read(struct tdm_port *h_port, struct tdm_channel *h_channel,
+> +		void *p_data, u16 *size);
+> +int tdm_channel_write(struct tdm_port *h_port, struct tdm_channel *h_cha=
+nnel,
+> +		void *p_data, u16 size);
+> +int tdm_ch_poll(struct tdm_channel *h_channel, unsigned int=20
+> +wait_time);
+> +
+> +int tdm_channel_open(u16 chanid, u16 ch_width, struct tdm_port *port,
+> +		struct tdm_channel **h_channel);
+> +int tdm_channel_close(u16 chanid, u16 ch_width, struct tdm_port *port,
+> +		struct tdm_channel *h_channel);
+> +/* this tasklet is created for each adapter instance */ void=20
+> +tdm_data_tasklet_fn(unsigned long); int tdm_sysfs_init(void); ssize_t=20
+> +tdm_show_sysfs(struct kobject *kobj,
+> +		struct attribute *attr, char *buf); ssize_t tdm_store_sysfs(struct=20
+> +kobject *kobj,
+> +		struct attribute *attr, const char *buf, size_t len);
+> +
+> +struct tdm_adapter *tdm_get_adapter(int id); void=20
+> +tdm_put_adapter(struct tdm_adapter *adap);
+> +
+> +#endif /* __KERNEL__ */
+> +
+> +#define TDM_E_OK 0
+> --
+> 1.5.6.5
+>=20
+>=20
+>=20
+> _______________________________________________
+> linux-arm-kernel mailing list
+> linux-arm-kernel@lists.infradead.org
+> http://lists.infradead.org/mailman/listinfo/linux-arm-kernel
