@@ -1,26 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D91382C0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 00:49:12 +1000 (EST)
-Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
-Mime-Version: 1.0 (Apple Message framework v1278)
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C579D2C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 02:04:27 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so9729793pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 09:04:25 -0700 (PDT)
+Date: Mon, 30 Jul 2012 09:04:22 -0700
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Aggrwal Poonam-B10812 <B10812@freescale.com>
+Subject: Re: [2/3][PATCH][v2] TDM Framework
+Message-ID: <20120730160422.GC28703@kroah.com>
+References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
+ <20120727175939.GA23105@kroah.com>
+ <ACB6D0C0104CFF42A45A5D82A0DD4F3D079C0B75@039-SN2MPN1-013.039d.mgd.msft.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A29FEF@039-SN1MPN1-002.039d.mgd.msft.net>
-Date: Mon, 30 Jul 2012 09:46:49 -0500
-Message-Id: <536EC8A2-60D9-4991-8D38-092C4C8B698F@kernel.crashing.org>
-References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
- <ACC8975F-CA31-4AA0-9824-4C3F6C70CD45@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A289D8@039-SN1MPN1-002.039d.mgd.msft.net>
- <5012F8FD.8030905@freescale.com>
- <A2F0976D-CF30-4A20-8697-0CD1830DD54A@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A29FEF@039-SN1MPN1-002.039d.mgd.msft.net>
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
+In-Reply-To: <ACB6D0C0104CFF42A45A5D82A0DD4F3D079C0B75@039-SN2MPN1-013.039d.mgd.msft.net>
+Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ Singh Sandeep-B37400 <B37400@freescale.com>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,66 +32,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Jul 30, 2012 at 09:10:48AM +0000, Aggrwal Poonam-B10812 wrote:
+> 
+> 
+> > -----Original Message-----
+> > From: Linuxppc-dev [mailto:linuxppc-dev-
+> > bounces+poonam.aggrwal=freescale.com@lists.ozlabs.org] On Behalf Of Greg
+> > KH
+> > Sent: Friday, July 27, 2012 11:30 PM
+> > To: Singh Sandeep-B37400
+> > Cc: devel@driverdev.osuosl.org; linuxppc-dev@lists.ozlabs.org; linux-arm-
+> > kernel@lists.infradead.org; linux-kernel@vger.kernel.org
+> > Subject: Re: [2/3][PATCH][v2] TDM Framework
+> > 
+> > On Fri, Jul 27, 2012 at 07:35:38PM +0530, sandeep@freescale.com wrote:
+> > > +/* Data structures required for sysfs */ static struct tdm_sysfs attr
+> > > += {
+> > > +	.attr.name = "use_latest_data",
+> > > +	.attr.mode = 0664,
+> > > +	.cmd_type = TDM_LATEST_DATA,
+> > > +};
+> > 
+> > What is this for?
+> This knob is to control the behavior of the TDM framework with respect
+> to handling the received TDM frames.
 
-On Jul 30, 2012, at 3:26 AM, Jia Hongtao-B38951 wrote:
+How will userspace know how to use this?  Who will use this?
 
->=20
->=20
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Saturday, July 28, 2012 5:17 AM
->> To: Wood Scott-B07421
->> Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org; Wood =
-Scott-B07421;
->> Li Yang-R58472
->> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
->> initialization code
->>=20
->>=20
->> On Jul 27, 2012, at 3:24 PM, Scott Wood wrote:
->>=20
->>> On 07/27/2012 05:10 AM, Jia Hongtao-B38951 wrote:
->>>> Hi kumar,
->>>>=20
->>>> I know "duplicate code from pci_process_bridge_OF_ranges()" is
->>>> hard to accept but "refactor the code to have a shared function"
->>>> is knotty. Actually this is the reason I didn't do the refactor.
->>>=20
->>> Maybe we should keep doing the init early?  We could still have a
->>> platform device for the PM stuff, but some init would be done before
->> probe.
->>>=20
->>> Another possibility is to try to handle swiotlb init later -- =
-possibly
->>> by reserving memory for it if the platform indicates it's a =
-possibility
->>> that it will be needed, then freeing the memory if it's not needed.
->>>=20
->>> -Scott
->>=20
->> I think the first option seems reasonable.  Can we leave =
-fsl_pci_init()
->> as we now have it and just have the platform driver deal with PM =
-restore
->> via calling setup_pci_atmu() [probably need to update setup_pci_atmu =
-to
->> handle restore case, but seems like minor changes]
->>=20
->> - k
->>=20
->=20
->=20
-> I think the second option is better if it's hard to decouple swiotlb
-> determination from pci init. I believe the better architecture that
-> PCI init in probe function of platform driver will bring us =
-considerable
-> advantage. I really like to keep the completion of pci controller
-> platform driver not only for PM support but also for pci init.
->=20
-> -Hongtao.=20
->=20
+> The framework layer receives the TDM frames from the TDM adapter
+> driver, de-interleaves the data and sends to respective client
+> modules.
 
-Shifting of swiotlb init has a lot more issues.  Why do we need to do =
-the PCI init in probe?
+Why would userspace care about this then?
 
-- k=
+> In the case when the TDM client module has not consumed the data and
+> emptied the Buffer, this flag decides whether to discard the
+> un-fetched data, or discard the latest received data.
+
+Again, why let userspace make this decision?  How will it know to do
+this or not?
+
+Don't add options for things that don't need options.
+
+> > > +int tdm_sysfs_init(void)
+> > > +{
+> > > +	struct kobject *tdm_kobj;
+> > > +	int err = 1;
+> > > +	tdm_kobj = kzalloc(sizeof(*tdm_kobj), GFP_KERNEL);
+> > > +	if (tdm_kobj) {
+> > > +		kobject_init(tdm_kobj, &tdm_type);
+> > > +		if (kobject_add(tdm_kobj, NULL, "%s", "tdm")) {
+> > > +			pr_err("tdm: Sysfs creation failed\n");
+> > > +			kobject_put(tdm_kobj);
+> > > +			err = -EINVAL;
+> > > +			goto out;
+> > > +		}
+> > > +	} else {
+> > > +		pr_err("tdm: Unable to allocate tdm_kobj\n");
+> > > +		err = -ENOMEM;
+> > > +		goto out;
+> > > +	}
+> > > +
+> > > +out:
+> > > +	return err;
+> > > +}
+> > 
+> > You just leaked memory, what are you trying to do here?
+> > 
+> > And why are you using "raw" kobjects?  That's a sure sign that something
+> > is really wrong.
+> Will refer the documentation. Not very experienced on this stuff. Thanks for the comment.
+> > 
+> > Your code doesn't look like it is tied into the driver model at all, why
+> > not?  What are you trying to do here?
+> This is a framework layer, not associated to a particular device.
+
+Not true, you have a parent pointer already, so you are hooked up to the
+device tree.
+
+> TDM adapter drivers will register to this framework.
+
+Then you had better be part of the kernel driver model.
+
+> We got this comment in internal freescale review list also.
+
+Why did you ignore that feedback and make us ask the same thing?
+
+> > Also, when creating new sysfs entries, like you are attempting to do here
+> > (unsuccessfully I might add), you must create Documentation/ABI/ files as
+> > well.
+> Ok.
+> > 
+> > And, to top it all off, you do realize you are asking us to do code
+> > review in the middle of the merge window, when we are all busy doing
+> > other things?
+> Apologize for asking a review in the merge window time frame.
+> Are there any guidelines when to send something for a review? We will
+> be careful next time.
+
+Anytime not in the merge window is usually good, also the week before
+the merge window is usually busy as well.
+
+greg k-h
