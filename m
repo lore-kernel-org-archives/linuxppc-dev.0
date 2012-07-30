@@ -1,33 +1,18 @@
-Return-Path: <heiko.carstens@de.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp15.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E25E92C0092
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 20:23:44 +1000 (EST)
-Received: from /spool/local
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
- Mon, 30 Jul 2012 11:23:37 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
- [9.149.37.228])
- by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6UANBTe2871364
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 11:23:11 +0100
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
- by d06av02.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6UAN5VB012494
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 04:23:10 -0600
-Date: Mon, 30 Jul 2012 12:23:05 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 6ED292C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 20:30:41 +1000 (EST)
+Message-ID: <50166379.4090305@cn.fujitsu.com>
+Date: Mon, 30 Jul 2012 18:35:37 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
+MIME-Version: 1.0
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
 Subject: Re: [RFC PATCH v5 12/19] memory-hotplug: introduce new function
  arch_remove_memory()
-Message-ID: <20120730102305.GB3631@osiris.boeblingen.de.ibm.com>
 References: <50126B83.3050201@cn.fujitsu.com> <50126E2F.8010301@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <50126E2F.8010301@cn.fujitsu.com>
+ <20120730102305.GB3631@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20120730102305.GB3631@osiris.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
  linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
  linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
@@ -44,16 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jul 27, 2012 at 06:32:15PM +0800, Wen Congyang wrote:
-> We don't call __add_pages() directly in the function add_memory()
-> because some other architecture related things need to be done
-> before or after calling __add_pages(). So we should introduce
-> a new function arch_remove_memory() to revert the things
-> done in arch_add_memory().
+At 07/30/2012 06:23 PM, Heiko Carstens Wrote:
+> On Fri, Jul 27, 2012 at 06:32:15PM +0800, Wen Congyang wrote:
+>> We don't call __add_pages() directly in the function add_memory()
+>> because some other architecture related things need to be done
+>> before or after calling __add_pages(). So we should introduce
+>> a new function arch_remove_memory() to revert the things
+>> done in arch_add_memory().
+>>
+>> Note: the function for s390 is not implemented(I don't know how to
+>> implement it for s390).
 > 
-> Note: the function for s390 is not implemented(I don't know how to
-> implement it for s390).
+> There is no hardware or firmware interface which could trigger a
+> hot memory remove on s390. So there is nothing that needs to be
+> implemented.
 
-There is no hardware or firmware interface which could trigger a
-hot memory remove on s390. So there is nothing that needs to be
-implemented.
+Thanks for providing this information.
+
+According to this, arch_remove_memory() for s390 can just return -EBUSY.
+
+Thanks
+Wen Congyang
+
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
