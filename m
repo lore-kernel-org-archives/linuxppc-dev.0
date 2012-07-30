@@ -1,25 +1,31 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 6ED292C0092
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 20:30:41 +1000 (EST)
-Message-ID: <50166379.4090305@cn.fujitsu.com>
-Date: Mon, 30 Jul 2012 18:35:37 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [RFC PATCH v5 12/19] memory-hotplug: introduce new function
- arch_remove_memory()
-References: <50126B83.3050201@cn.fujitsu.com> <50126E2F.8010301@cn.fujitsu.com>
- <20120730102305.GB3631@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20120730102305.GB3631@osiris.boeblingen.de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- Yasuaki ISIMATU <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- liuj97@gmail.com
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5100D2C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 21:22:33 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 30 Jul 2012 16:52:26 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6UBMPWa20316344
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 16:52:25 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6UBMNe2027353
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Jul 2012 21:22:24 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH -V5 02/13] arch/powerpc: Simplify hpte_decode
+Date: Mon, 30 Jul 2012 16:52:08 +0530
+Message-Id: <1343647339-25576-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1343647339-25576-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1343647339-25576-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +35,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 07/30/2012 06:23 PM, Heiko Carstens Wrote:
-> On Fri, Jul 27, 2012 at 06:32:15PM +0800, Wen Congyang wrote:
->> We don't call __add_pages() directly in the function add_memory()
->> because some other architecture related things need to be done
->> before or after calling __add_pages(). So we should introduce
->> a new function arch_remove_memory() to revert the things
->> done in arch_add_memory().
->>
->> Note: the function for s390 is not implemented(I don't know how to
->> implement it for s390).
-> 
-> There is no hardware or firmware interface which could trigger a
-> hot memory remove on s390. So there is nothing that needs to be
-> implemented.
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-Thanks for providing this information.
+This patch simplify hpte_decode for easy switching of virtual address to
+virtual page number in the later patch
 
-According to this, arch_remove_memory() for s390 can just return -EBUSY.
+Reviewed-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/hash_native_64.c |   49 ++++++++++++++++++++++----------------
+ 1 file changed, 28 insertions(+), 21 deletions(-)
 
-Thanks
-Wen Congyang
-
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 90039bc..660b8bb 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -351,9 +351,10 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long va,
+ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			int *psize, int *ssize, unsigned long *va)
+ {
++	unsigned long avpn, pteg, vpi;
+ 	unsigned long hpte_r = hpte->r;
+ 	unsigned long hpte_v = hpte->v;
+-	unsigned long avpn;
++	unsigned long vsid, seg_off;
+ 	int i, size, shift, penc;
+ 
+ 	if (!(hpte_v & HPTE_V_LARGE))
+@@ -380,32 +381,38 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 	}
+ 
+ 	/* This works for all page sizes, and for 256M and 1T segments */
++	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ 	shift = mmu_psize_defs[size].shift;
+-	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm) << 23;
+-
+-	if (shift < 23) {
+-		unsigned long vpi, vsid, pteg;
+ 
+-		pteg = slot / HPTES_PER_GROUP;
+-		if (hpte_v & HPTE_V_SECONDARY)
+-			pteg = ~pteg;
+-		switch (hpte_v >> HPTE_V_SSIZE_SHIFT) {
+-		case MMU_SEGSIZE_256M:
+-			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
+-			break;
+-		case MMU_SEGSIZE_1T:
+-			vsid = avpn >> 40;
++	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm);
++	pteg = slot / HPTES_PER_GROUP;
++	if (hpte_v & HPTE_V_SECONDARY)
++		pteg = ~pteg;
++
++	switch (*ssize) {
++	case MMU_SEGSIZE_256M:
++		/* We only have 28 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1f) << 23;
++		vsid    =  avpn >> 5;
++		/* We can find more bits from the pteg value */
++		if (shift < 23) {
++			vpi = (vsid ^ pteg) & htab_hash_mask;
++			seg_off |= vpi << shift;
++		}
++		*va = vsid << SID_SHIFT | seg_off;
++	case MMU_SEGSIZE_1T:
++		/* We only have 40 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1ffff) << 23;
++		vsid    = avpn >> 17;
++		if (shift < 23) {
+ 			vpi = (vsid ^ (vsid << 25) ^ pteg) & htab_hash_mask;
+-			break;
+-		default:
+-			avpn = vpi = size = 0;
++			seg_off |= vpi << shift;
+ 		}
+-		avpn |= (vpi << mmu_psize_defs[size].shift);
++		*va = vsid << SID_SHIFT_1T | seg_off;
++	default:
++		*va = size = 0;
+ 	}
+-
+-	*va = avpn;
+ 	*psize = size;
+-	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ }
+ 
+ /*
+-- 
+1.7.10
