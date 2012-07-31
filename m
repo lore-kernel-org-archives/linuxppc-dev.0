@@ -1,19 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 40F4E2C008A
- for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2012 17:33:32 +1000 (EST)
-Message-ID: <1343720005.8227.24.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 31 Jul 2012 17:33:25 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <B40534@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3B6262C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 17:58:52 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH] powerpc/fsl: mpic timer driver
+Date: Tue, 31 Jul 2012 07:58:44 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DA4580@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1343370058-2983-1-git-send-email-Dongsheng.wang@freescale.com>
+ <2F4F76E5-1ACD-4F30-A997-9811DCE82202@kernel.crashing.org>
+In-Reply-To: <2F4F76E5-1ACD-4F30-A997-9811DCE82202@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "paulus@samba.org" <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Wood Scott-B07421 <B07421@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,54 +28,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
-
-Kumar sent me a handful of Freescale related fixes and I added
-another regression fix to the pile.
-
-Cheers,
-Ben.
-
-PS. I -will- eventually learn about that signed tag business :-)
-
-The following changes since commit 1fad1e9a747687a7399bf58e87974f9b1bbcae06:
-
-  Merge tag 'nfs-for-3.6-1' of git://git.linux-nfs.org/projects/trondmy/linux-nfs (2012-07-30 19:16:57 -0700)
-
-are available in the git repository at:
 
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Friday, July 27, 2012 9:14 PM
+> To: Wang Dongsheng-B40534
+> Cc: benh@kernel.crashing.org; paulus@samba.org; Wood Scott-B07421;
+> linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH] powerpc/fsl: mpic timer driver
+>=20
+>=20
+> On Jul 27, 2012, at 1:20 AM, <Dongsheng.wang@freescale.com>
+> <Dongsheng.wang@freescale.com> wrote:
+>=20
+> > From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+> >
+> > Global timers A and B internal to the PIC. The two independent groups
+> > of global timer, group A and group B, are identical in their
+> functionality.
+> > The hardware timer generates an interrupt on every timer cycle.
+> > e.g
+> > Power management can use the hardware timer to wake up the machine.
+> >
+> > Signed-off-by: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+>=20
+> How much of this is FSL specific vs openpic?  OpenPIC spec's timer
+> support (only a single group).
+>=20
+[Wang Dongsheng] Yes, OpenPIC only a single group timer.
+FSL: add more register, features and group.
+This patch only to support FSL chip.
+"mpic_timer.c" -> "fsl_mpic_timer.c"
+I will modify the description of the patch. how about?
 
-for you to fetch changes up to ad36cb0d1d3e2b7f161cd33932433f9349cade1e:
+ > > +static int set_cascade_timer(struct group_priv *priv, u64 ticks,
+> > +		unsigned int num)
+> > +{
+> > +	struct cascade_priv *casc_priv;
+> > +	u32 tmp;
+> > +	u32 tmp_ticks;
+> > +	u32 rem_ticks;
+> > +
+> > +	/* set group tcr reg for cascade */
+> > +	casc_priv =3D priv->timer[num].cascade_handle;
+> > +	if (!casc_priv)
+> > +		return -EINVAL;
+> > +
+> > +	tmp =3D casc_priv->tcr_value |
+> > +		(casc_priv->tcr_value << MPIC_TIMER_TCR_ROVR_OFFSET);
+> > +	setbits32(priv->group_tcr, tmp);
+> > +
+> > +	tmp_ticks =3D div_u64_rem(ticks, MAX_TIME_CASCADE, &rem_ticks);
+> > +
+> > +	out_be32(&priv->regs[num].gtccr, 0);
+> > +	out_be32(&priv->regs[num].gtbcr, tmp_ticks | MPIC_TIMER_STOP);
+> > +
+> > +	out_be32(&priv->regs[num - 1].gtccr, 0);
+> > +	out_be32(&priv->regs[num - 1].gtbcr, rem_ticks);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +struct mpic_timer *get_cascade_timer(u64 ticks) {
+>=20
+> should this be static?
+>=20
+[Wang Dongsheng] ok.
 
-  powerpc/kvm/book3s_32: Fix MTMSR_EERI macro (2012-07-31 15:21:20 +1000)
-
-----------------------------------------------------------------
-Alexander Graf (1):
-      powerpc/kvm/book3s_32: Fix MTMSR_EERI macro
-
-Benjamin Herrenschmidt (1):
-      Merge remote-tracking branch 'kumar/merge' into merge
-
-Claudiu Manoil (1):
-      powerpc/85xx: Fix sram_offset parameter type
-
-Shaohui Xie (1):
-      powerpc/85xx: P3041DS - change espi input-clock from 40MHz to 35MHz
-
-Tang Yuantian (1):
-      powerpc/85xx: Fix pci base address error for p2020rdb-pc in dts
-
-Timur Tabi (2):
-      powerpc/85xx: p1022ds: disable the NAND flash node if video is enabled
-      powerpc/85xx: p1022ds: fix DIU/LBC switching with NAND enabled
-
- arch/powerpc/boot/dts/p2020rdb-pc_32b.dts |    4 +-
- arch/powerpc/boot/dts/p2020rdb-pc_36b.dts |    4 +-
- arch/powerpc/boot/dts/p3041ds.dts         |    2 +-
- arch/powerpc/kvm/book3s_rmhandlers.S      |    1 -
- arch/powerpc/platforms/85xx/p1022_ds.c    |  122 +++++++++++++++++++++++------
- arch/powerpc/sysdev/fsl_85xx_cache_ctlr.h |    4 +-
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c     |   39 ++++-----
- 7 files changed, 121 insertions(+), 55 deletions(-)
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+>=20
