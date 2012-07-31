@@ -1,22 +1,40 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B14662C008A
- for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2012 00:54:05 +1000 (EST)
-Subject: Re: [PATCH] dma/fsldma: fix a compilation warnings
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <BCB48C05FCE8BC4D9E61E841ECBE6DB70C5FA7@039-SN2MPN1-011.039d.mgd.msft.net>
-Date: Tue, 31 Jul 2012 09:53:09 -0500
-Message-Id: <C8EF4B7E-C0A9-4CEA-8978-02CA8912ACE0@kernel.crashing.org>
-References: <1343743058-8013-1-git-send-email-galak@kernel.crashing.org>
- <BCB48C05FCE8BC4D9E61E841ECBE6DB70C5FA7@039-SN2MPN1-011.039d.mgd.msft.net>
-To: Liu Qiang-B32616 <B32616@freescale.com>
-Cc: "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "dan.j.williams@intel.com" <dan.j.williams@intel.com>
+ (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 183CF2C0096
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2012 02:21:09 +1000 (EST)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Tue, 31 Jul 2012 10:21:06 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 082B91FF0023
+ for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2012 16:21:00 +0000 (WET)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q6VGKhrb138768
+ for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2012 10:20:44 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q6VGLWKZ021288
+ for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2012 10:21:33 -0600
+Message-ID: <501805C3.7030504@linux.vnet.ibm.com>
+Date: Tue, 31 Jul 2012 11:20:19 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] scsi/ibmvscsi: add module alias for ibmvscsic
+References: <1342630158-16510-1-git-send-email-olaf@aepfle.de>
+ <1343611946.21647.23.camel@pasglop> <20120730190606.GD3155@aepfle.de>
+ <1343704122.8227.3.camel@pasglop>
+In-Reply-To: <1343704122.8227.3.camel@pasglop>
+Content-Type: text/plain; charset=UTF-8
+Cc: Olaf Hering <olaf@aepfle.de>, Brian J King <bjking1@us.ibm.com>,
+ linux-scsi@vger.kernel.org, "James E.J. Bottomley" <JBottomley@parallels.com>,
+ linuxppc-dev@ozlabs.org, Robert C Jennings <rcjenn@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +44,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 07/30/2012 10:08 PM, Benjamin Herrenschmidt wrote:
+> On Mon, 2012-07-30 at 21:06 +0200, Olaf Hering wrote:
+>>> So while this would work, I do wonder however whether we could
+>> instead
+>>> fix it by simplifying the whole thing as follow since iSeries is now
+>>> gone and so we don't need split backends anymore:
+>>>
+>>> scsi/ibmvscsi: Remove backend abstraction
+>>
+>> I cant that these things myself anymore.
+> 
+> Brian, can somebody from your side own these ?
 
-On Jul 31, 2012, at 9:48 AM, Liu Qiang-B32616 wrote:
+I talked to Rob and he will be picking this up. Rob - can you submit
+a patch to the maintainers file, adding yourself as the ibmvscsi maintainer?
 
-> Hi Kumar,
-> ________________________________________
->> From: Linuxppc-dev =
-[linuxppc-dev-bounces+qiang.liu=3Dfreescale.com@lists.ozlabs.org] on =
-behalf of Kumar Gala [galak@kernel.crashing.org]
->> Sent: Tuesday, July 31, 2012 8:57 AM
->> To: dan.j.williams@intel.com
->> Cc: vinod.koul@intel.com; linuxppc-dev@ozlabs.org
->> Subject: [PATCH] dma/fsldma: fix a compilation warnings
->=20
->> drivers/dma/fsldma.c: In function 'fsl_dma_tx_submit':
->> drivers/dma/fsldma.c:409:15: warning: 'cookie' may be used =
-uninitialized in this function
->>=20
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> drivers/dma/fsldma.c |    2 +-
->> 1 file changed, 1 insertion(+), 1 deletion(-)
->>=20
->> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
->> index 8f84761..6194eb7 100644
->> --- a/drivers/dma/fsldma.c
->> +++ b/drivers/dma/fsldma.c
->> @@ -406,7 +406,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct =
-dma_async_tx_descriptor *tx)
->>      struct fsl_desc_sw *desc =3D tx_to_fsl_desc(tx);
->>      struct fsl_desc_sw *child;
->>       unsigned long flags;
->> -       dma_cookie_t cookie;
->> +       dma_cookie_t cookie =3D 0;
-> I have already submitted a patch to fix it. Please refer to:
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-July/099819.html
->=20
-> Thanks.
+Thanks,
 
-Ah, good.. missed it ;)
+Brian
 
-- k=
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
