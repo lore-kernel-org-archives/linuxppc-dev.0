@@ -1,29 +1,27 @@
-Return-Path: <B38951@freescale.com>
+Return-Path: <B37400@freescale.com>
 Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6BE8F2C008F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 16:36:58 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Tue, 31 Jul 2012 06:36:48 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A2A965@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
- <ACC8975F-CA31-4AA0-9824-4C3F6C70CD45@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A289D8@039-SN1MPN1-002.039d.mgd.msft.net>
- <5012F8FD.8030905@freescale.com>
- <A2F0976D-CF30-4A20-8697-0CD1830DD54A@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A29FEF@039-SN1MPN1-002.039d.mgd.msft.net>
- <536EC8A2-60D9-4991-8D38-092C4C8B698F@kernel.crashing.org>
-In-Reply-To: <536EC8A2-60D9-4991-8D38-092C4C8B698F@kernel.crashing.org>
+ by ozlabs.org (Postfix) with ESMTPS id A8AAB2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 16:40:39 +1000 (EST)
+From: Singh Sandeep-B37400 <B37400@freescale.com>
+To: John Stoffel <john@stoffel.org>
+Subject: RE: [2/3][PATCH][v2] TDM Framework
+Date: Tue, 31 Jul 2012 06:40:31 +0000
+Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E511B76@039-SN1MPN1-006.039d.mgd.msft.net>
+References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
+ <20498.41365.853741.261834@quad.stoffel.home>
+ <3F1D9DCAAB49B94D88DBE05911FA4E6E511095@039-SN1MPN1-006.039d.mgd.msft.net>
+ <20502.38341.619003.356462@quad.stoffel.home>
+In-Reply-To: <20502.38341.619003.356462@quad.stoffel.home>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
+Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,80 +32,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+-----Original Message-----
+From: John Stoffel [mailto:john@stoffel.org]=20
+Sent: Monday, July 30, 2012 7:40 PM
+To: Singh Sandeep-B37400
+Cc: John Stoffel; linuxppc-dev@lists.ozlabs.org; linux-arm-kernel@lists.inf=
+radead.org; galak@kernel.crashing.org; linux-kernel@vger.kernel.org; devel@=
+driverdev.osuosl.org
+Subject: RE: [2/3][PATCH][v2] TDM Framework
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Monday, July 30, 2012 10:47 PM
-> To: Jia Hongtao-B38951
-> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472
-> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
-> initialization code
->=20
->=20
-> On Jul 30, 2012, at 3:26 AM, Jia Hongtao-B38951 wrote:
->=20
-> >
-> >
-> >> -----Original Message-----
-> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> >> Sent: Saturday, July 28, 2012 5:17 AM
-> >> To: Wood Scott-B07421
-> >> Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org; Wood Scott-
-> B07421;
-> >> Li Yang-R58472
-> >> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
-> >> initialization code
-> >>
-> >>
-> >> On Jul 27, 2012, at 3:24 PM, Scott Wood wrote:
-> >>
-> >>> On 07/27/2012 05:10 AM, Jia Hongtao-B38951 wrote:
-> >>>> Hi kumar,
-> >>>>
-> >>>> I know "duplicate code from pci_process_bridge_OF_ranges()" is
-> >>>> hard to accept but "refactor the code to have a shared function"
-> >>>> is knotty. Actually this is the reason I didn't do the refactor.
-> >>>
-> >>> Maybe we should keep doing the init early?  We could still have a
-> >>> platform device for the PM stuff, but some init would be done before
-> >> probe.
-> >>>
-> >>> Another possibility is to try to handle swiotlb init later --
-> possibly
-> >>> by reserving memory for it if the platform indicates it's a
-> possibility
-> >>> that it will be needed, then freeing the memory if it's not needed.
-> >>>
-> >>> -Scott
-> >>
-> >> I think the first option seems reasonable.  Can we leave fsl_pci_init(=
-)
-> >> as we now have it and just have the platform driver deal with PM
-> restore
-> >> via calling setup_pci_atmu() [probably need to update setup_pci_atmu
-> to
-> >> handle restore case, but seems like minor changes]
-> >>
-> >> - k
-> >>
-> >
-> >
-> > I think the second option is better if it's hard to decouple swiotlb
-> > determination from pci init. I believe the better architecture that
-> > PCI init in probe function of platform driver will bring us
-> considerable
-> > advantage. I really like to keep the completion of pci controller
-> > platform driver not only for PM support but also for pci init.
-> >
-> > -Hongtao.
-> >
->=20
-> Shifting of swiotlb init has a lot more issues.  Why do we need to do the
-> PCI init in probe?
->=20
-> - k
+>>>>> "Singh" =3D=3D Singh Sandeep-B37400 <B37400@freescale.com> writes:
 
-I investigated the swiotlb init thing and found that in x86 swiotlb init is
-done first and free if we don't need it.
+Singh> -----Original Message-----
+Singh> From: John Stoffel [mailto:john@stoffel.org]
+Singh> Sent: 27 July 2012 19:42
+Singh> To: Singh Sandeep-B37400
+Singh> Cc: linuxppc-dev@lists.ozlabs.org;=20
+Singh> linux-arm-kernel@lists.infradead.org; galak@kernel.crashing.org;=20
+Singh> linux-kernel@vger.kernel.org; devel@driverdev.osuosl.org
+Singh> Subject: Re: [2/3][PATCH][v2] TDM Framework
 
--Hongtao.
+
+>> From: Sandeep Singh <Sandeep@freescale.com> TDM Framework is an=20
+>> attempt to provide a platform independent layer which can offer a=20
+>> standard interface  for TDM access to different client modules.
+
+Singh> Please don't use TLAs (Three Letter Acronyms) like TDM without expla=
+ining the clearly and up front.  It makes it hard for anyone else who doens=
+'t know your code to look it over without having to spend lots of time poki=
+ng around to figure it out from either context or somewhere else.
+
+Singh> [Sandeep] Patch for documentation for TDM is present in this=20
+Singh> patch set, which explains TDM in detail. Should we do this in=20
+Singh> commit message too??  Link too documentation patch:
+Singh> http://patchwork.ozlabs.org/patch/173680/
+
+You should put the expansion of TDM into the initial commit message, and al=
+so into the Kconfig text, so that someone configuring the kernel has a clue=
+ what you're talking about. =20
+[Sandeep] Thanks for suggestion. Will take care.
+
+Try to approach this as a brandnew user who doesn't have your knowledge of =
+the software.  Write for the un-initiated if at all possible.
+
+
+John
