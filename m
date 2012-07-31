@@ -2,17 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 709AB2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 00:15:54 +1000 (EST)
-Subject: Re: [PATCH v8 5/7] powerpc/85xx: add sleep and deep sleep support
+ by ozlabs.org (Postfix) with ESMTPS id 10AC72C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 00:21:52 +1000 (EST)
+Subject: Re: [PATCH v8 7/7] powerpc/85xx: add support to JOG feature using
+ cpufreq interface
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1342788159-27529-6-git-send-email-chenhui.zhao@freescale.com>
-Date: Tue, 31 Jul 2012 09:15:33 -0500
-Message-Id: <F8FE8505-6F6A-4A4B-8302-C1CF16B48B60@kernel.crashing.org>
+In-Reply-To: <1342788159-27529-8-git-send-email-chenhui.zhao@freescale.com>
+Date: Tue, 31 Jul 2012 09:21:46 -0500
+Message-Id: <EF2169E9-2F7B-4093-B87D-63E3D8121EB1@kernel.crashing.org>
 References: <1342788159-27529-1-git-send-email-chenhui.zhao@freescale.com>
- <1342788159-27529-6-git-send-email-chenhui.zhao@freescale.com>
+ <1342788159-27529-8-git-send-email-chenhui.zhao@freescale.com>
 To: Zhao Chenhui <chenhui.zhao@freescale.com>
 Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
@@ -28,175 +29,70 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On Jul 20, 2012, at 7:42 AM, Zhao Chenhui wrote:
 
-> In sleep PM mode, the clocks of e500 core and unused IP blocks is
-> turned off. IP blocks which are allowed to wake up the processor
-> are still running.
+> Some 85xx silicons like MPC8536 and P1022 have a JOG feature, which =
+provides
+> a dynamic mechanism to lower or raise the CPU core clock at runtime.
 >=20
-> Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
-> in addtion to the sleep PM mode.
+> This patch adds the support to change CPU frequency using the standard
+> cpufreq interface. The ratio CORE to CCB can be 1:1(except MPC8536), =
+3:2,
+> 2:1, 5:2, 3:1, 7:2 and 4:1.
 >=20
-> While in deep sleep PM mode, additionally, the power supply is
-> removed from e500 core and most IP blocks. Only the blocks needed
-> to wake up the chip out of deep sleep are ON.
+> Two CPU cores on P1022 must not in the low power state during the =
+frequency
+> transition. The driver uses a atomic counter to meet the requirement.
 >=20
-> This patch supports 32-bit and 36-bit address space.
+> The jog mode frequency transition process on the MPC8536 is similar to
+> the deep sleep process. The driver need save the CPU state and restore
+> it after CPU warm reset.
 >=20
-> The sleep mode is equal to the Standby state in Linux. The deep sleep
-> mode is equal to the Suspend-to-RAM state of Linux Power Management.
->=20
-> Command to enter sleep mode.
->  echo standby > /sys/power/state
-> Command to enter deep sleep mode.
->  echo mem > /sys/power/state
+> Note:
+> * The I/O peripherals such as PCIe and eTSEC may lose packets during
+>   the jog mode frequency transition.
+> * The driver doesn't support MPC8536 Rev 1.0 due to a JOG erratum.
+>   Subsequent revisions of MPC8536 have corrected the erratum.
 >=20
 > Signed-off-by: Dave Liu <daveliu@freescale.com>
 > Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Jin Qing <b24347@freescale.com>
 > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> Cc: Scott Wood <scottwood@freescale.com>
 > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> CC: Scott Wood <scottwood@freescale.com>
 > ---
-> arch/powerpc/Kconfig                  |    2 +-
-> arch/powerpc/include/asm/cacheflush.h |    2 +
-> arch/powerpc/kernel/Makefile          |    3 +
-> arch/powerpc/kernel/l2cache_85xx.S    |   56 +++
-> arch/powerpc/platforms/85xx/Makefile  |    2 +-
-> arch/powerpc/platforms/85xx/sleep.S   |  621 =
-+++++++++++++++++++++++++++++++++
-> arch/powerpc/sysdev/fsl_pmc.c         |   98 +++++-
-> arch/powerpc/sysdev/fsl_soc.h         |    5 +
-> 8 files changed, 769 insertions(+), 20 deletions(-)
-> create mode 100644 arch/powerpc/kernel/l2cache_85xx.S
-> create mode 100644 arch/powerpc/platforms/85xx/sleep.S
->=20
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index a7c6914..9d6de82 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -665,7 +665,7 @@ config FSL_PCI
-> config FSL_PMC
-> 	bool
-> 	default y
-> -	depends on SUSPEND && (PPC_85xx || PPC_86xx)
-> +	depends on SUSPEND && (PPC_85xx || PPC_86xx) && !PPC_E500MC
-> 	help
-> 	  Freescale MPC85xx/MPC86xx power management controller support
-> 	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
-> diff --git a/arch/powerpc/include/asm/cacheflush.h =
-b/arch/powerpc/include/asm/cacheflush.h
-> index b843e35..6c5f1c2 100644
-> --- a/arch/powerpc/include/asm/cacheflush.h
-> +++ b/arch/powerpc/include/asm/cacheflush.h
-> @@ -58,6 +58,8 @@ extern void flush_inval_dcache_range(unsigned long =
-start, unsigned long stop);
-> extern void flush_dcache_phys_range(unsigned long start, unsigned long =
-stop);
-> #endif
->=20
-> +extern void flush_dcache_L1(void);
-> +
-> #define copy_to_user_page(vma, page, vaddr, dst, src, len) \
-> 	do { \
-> 		memcpy(dst, src, len); \
-> diff --git a/arch/powerpc/kernel/Makefile =
-b/arch/powerpc/kernel/Makefile
-> index 83afacd..0ddef24 100644
-> --- a/arch/powerpc/kernel/Makefile
-> +++ b/arch/powerpc/kernel/Makefile
-> @@ -64,6 +64,9 @@ obj-$(CONFIG_FA_DUMP)		+=3D fadump.o
-> ifeq ($(CONFIG_PPC32),y)
-> obj-$(CONFIG_E500)		+=3D idle_e500.o
-> endif
-> +ifneq ($(CONFIG_PPC_E500MC),y)
-> +obj-$(CONFIG_PPC_85xx)		+=3D l2cache_85xx.o
-> +endif
+> arch/powerpc/platforms/85xx/Makefile      |    1 +
+> arch/powerpc/platforms/85xx/cpufreq-jog.c |  388 =
++++++++++++++++++++++++++++++
+> arch/powerpc/platforms/Kconfig            |   11 +
+> arch/powerpc/sysdev/fsl_pmc.c             |    3 +
+> arch/powerpc/sysdev/fsl_soc.h             |    2 +
+> include/linux/cpu.h                       |    4 +
+> 6 files changed, 409 insertions(+), 0 deletions(-)
+> create mode 100644 arch/powerpc/platforms/85xx/cpufreq-jog.c
 
-why do we need this, beyond reduce code size on an e500mc kernel build?  =
-If so why isn't 85xx/sleep.S doing the same thing?
+[snip]
 
-> obj-$(CONFIG_6xx)		+=3D idle_6xx.o l2cr_6xx.o =
-cpu_setup_6xx.o
-> obj-$(CONFIG_TAU)		+=3D tau_6xx.o
-> obj-$(CONFIG_HIBERNATION)	+=3D swsusp.o suspend.o
-> diff --git a/arch/powerpc/kernel/l2cache_85xx.S =
-b/arch/powerpc/kernel/l2cache_85xx.S
-> new file mode 100644
-> index 0000000..e920d69
-> --- /dev/null
-> +++ b/arch/powerpc/kernel/l2cache_85xx.S
-> @@ -0,0 +1,56 @@
-> +/*
-> + * Copyright (C) 2009-2012 Freescale Semiconductor, Inc. All rights =
-reserved.
-> + *	Scott Wood <scottwood@freescale.com>
-> + *	Dave Liu <daveliu@freescale.com>
-> + * implement the L2 cache operations of e500 based L2 controller
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <asm/reg.h>
-> +#include <asm/cputable.h>
-> +#include <asm/ppc_asm.h>
-> +#include <asm/asm-offsets.h>
-> +
-> +#define L2CTL_L2E	0x80000000
-> +#define L2CTL_L2I	0x40000000
-> +
-> +	.section .text
-> +
-> +	/* r3 =3D virtual address of L2 controller, WIMG =3D 01xx */
-> +_GLOBAL(flush_disable_L2)
-> +	/* It's a write-through cache, so only invalidation is needed. =
-*/
-> +	mbar
-> +	isync
-> +	lwz	r4, 0(r3)
-> +	li	r5, 1
-> +	rlwimi	r4, r5, 30, L2CTL_L2E | L2CTL_L2I
-> +	stw	r4, 0(r3)
-> +
-> +	/* Wait for the invalidate to finish */
-> +1:	lwz	r4, 0(r3)
-> +	andis.	r4, r4, L2CTL_L2I@h
-> +	bne	1b
-> +	mbar
-> +
-> +	blr
-> +
-> +	/* r3 =3D virtual address of L2 controller, WIMG =3D 01xx */
-> +_GLOBAL(invalidate_enable_L2)
-> +	mbar
-> +	isync
-> +	lwz	r4, 0(r3)
-> +	li	r5, 3
-> +	rlwimi	r4, r5, 30, L2CTL_L2E | L2CTL_L2I
-> +	stw	r4, 0(r3)
-> +
-> +	/* Wait for the invalidate to finish */
-> +1:	lwz	r4, 0(r3)
-> +	andis.	r4, r4, L2CTL_L2I@h
-> +	bne	1b
-> +	mbar
-> +
-> +	blr
-> diff --git a/arch/powerpc/platforms/85xx/Makefile =
-b/arch/powerpc/platforms/85xx/Makefile
-> index 3dfe811..405ab79 100644
-> --- a/arch/powerpc/platforms/85xx/Makefile
-> +++ b/arch/powerpc/platforms/85xx/Makefile
-> @@ -3,7 +3,7 @@
-> #
-> obj-$(CONFIG_SMP) +=3D smp.o
+> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+> index 2e9b9eb..c1ba260 100644
+> --- a/include/linux/cpu.h
+> +++ b/include/linux/cpu.h
+> @@ -145,6 +145,8 @@ void notify_cpu_starting(unsigned int cpu);
+> extern void cpu_maps_update_begin(void);
+> extern void cpu_maps_update_done(void);
 >=20
-> -obj-y +=3D common.o
-> +obj-y +=3D common.o sleep.o
+> +extern void cpu_hotplug_disable_before_freeze(void);
+> +extern void cpu_hotplug_enable_after_thaw(void);
+> #else	/* CONFIG_SMP */
 >=20
-> obj-$(CONFIG_BSC9131_RDB) +=3D bsc913x_rdb.o
-> obj-$(CONFIG_MPC8540_ADS) +=3D mpc85xx_ads.o
+> #define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+> @@ -166,6 +168,8 @@ static inline void cpu_maps_update_done(void)
+> {
+> }
 >=20
+> +static inline void cpu_hotplug_disable_before_freeze(void)	{}
+> +static inline void cpu_hotplug_enable_after_thaw(void)	{}
+> #endif /* CONFIG_SMP */
+> extern struct bus_type cpu_subsys;
 
-- k
+Can you pull this change into a separate patch.  I want an ACK by Rafael =
+J. Wysocki on it.
+
+- k=
