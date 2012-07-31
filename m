@@ -1,24 +1,23 @@
-Return-Path: <B40534@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3B6262C0093
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 17:58:52 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH] powerpc/fsl: mpic timer driver
-Date: Tue, 31 Jul 2012 07:58:44 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DA4580@039-SN2MPN1-021.039d.mgd.msft.net>
-References: <1343370058-2983-1-git-send-email-Dongsheng.wang@freescale.com>
- <2F4F76E5-1ACD-4F30-A997-9811DCE82202@kernel.crashing.org>
-In-Reply-To: <2F4F76E5-1ACD-4F30-A997-9811DCE82202@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E93AD2C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 18:09:26 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Update g5_defconfig
+References: <1343011712.2957.5.camel__22210.4697292254$1343011753$gmane$org@pasglop>
+ <m2fw8jyn43.fsf@igel.home> <1343027168.2957.30.camel@pasglop>
+ <m2boj7ym24.fsf@igel.home> <1343029161.2957.35.camel@pasglop>
+Date: Tue, 31 Jul 2012 10:09:12 +0200
+In-Reply-To: <1343029161.2957.35.camel@pasglop> (Benjamin Herrenschmidt's
+ message of "Mon, 23 Jul 2012 17:39:21 +1000")
+Message-ID: <m2sjc8cpxz.fsf@igel.home>
 MIME-Version: 1.0
-Cc: "paulus@samba.org" <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Wood Scott-B07421 <B07421@freescale.com>
+Content-Type: text/plain
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Ben Skeggs <bskeggs@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,77 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+It's even worse.  Since ec9b3a9de6b2a8a08c5250b466db92adf82b8d65
+(drm/nouveau/i2c: resume use of i2c-algo-bit, rather than custom stack)
+the system is just powered off in the middle of booting.  Since nothing
+is calling pmu_request with PMU_SHUTDOWN it must be some kind of bit
+banging that causes the PMU to freak out.
 
+Andreas.
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, July 27, 2012 9:14 PM
-> To: Wang Dongsheng-B40534
-> Cc: benh@kernel.crashing.org; paulus@samba.org; Wood Scott-B07421;
-> linuxppc-dev@lists.ozlabs.org
-> Subject: Re: [PATCH] powerpc/fsl: mpic timer driver
->=20
->=20
-> On Jul 27, 2012, at 1:20 AM, <Dongsheng.wang@freescale.com>
-> <Dongsheng.wang@freescale.com> wrote:
->=20
-> > From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-> >
-> > Global timers A and B internal to the PIC. The two independent groups
-> > of global timer, group A and group B, are identical in their
-> functionality.
-> > The hardware timer generates an interrupt on every timer cycle.
-> > e.g
-> > Power management can use the hardware timer to wake up the machine.
-> >
-> > Signed-off-by: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
->=20
-> How much of this is FSL specific vs openpic?  OpenPIC spec's timer
-> support (only a single group).
->=20
-[Wang Dongsheng] Yes, OpenPIC only a single group timer.
-FSL: add more register, features and group.
-This patch only to support FSL chip.
-"mpic_timer.c" -> "fsl_mpic_timer.c"
-I will modify the description of the patch. how about?
-
- > > +static int set_cascade_timer(struct group_priv *priv, u64 ticks,
-> > +		unsigned int num)
-> > +{
-> > +	struct cascade_priv *casc_priv;
-> > +	u32 tmp;
-> > +	u32 tmp_ticks;
-> > +	u32 rem_ticks;
-> > +
-> > +	/* set group tcr reg for cascade */
-> > +	casc_priv =3D priv->timer[num].cascade_handle;
-> > +	if (!casc_priv)
-> > +		return -EINVAL;
-> > +
-> > +	tmp =3D casc_priv->tcr_value |
-> > +		(casc_priv->tcr_value << MPIC_TIMER_TCR_ROVR_OFFSET);
-> > +	setbits32(priv->group_tcr, tmp);
-> > +
-> > +	tmp_ticks =3D div_u64_rem(ticks, MAX_TIME_CASCADE, &rem_ticks);
-> > +
-> > +	out_be32(&priv->regs[num].gtccr, 0);
-> > +	out_be32(&priv->regs[num].gtbcr, tmp_ticks | MPIC_TIMER_STOP);
-> > +
-> > +	out_be32(&priv->regs[num - 1].gtccr, 0);
-> > +	out_be32(&priv->regs[num - 1].gtbcr, rem_ticks);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +struct mpic_timer *get_cascade_timer(u64 ticks) {
->=20
-> should this be static?
->=20
-[Wang Dongsheng] ok.
-
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
->=20
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
