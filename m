@@ -1,20 +1,29 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id 4BBA82C00A1
- for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2012 15:53:51 +1000 (EST)
-Received: from trent.utfs.org (localhost [127.0.0.1])
- by trent.utfs.org (Postfix) with ESMTP id 8E4CC3DF2D
- for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2012 07:46:39 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
- by trent.utfs.org (Postfix) with ESMTP id 740383DAC3
- for <linuxppc-dev@ozlabs.org>; Tue, 31 Jul 2012 07:46:39 +0200 (CEST)
-Date: Mon, 30 Jul 2012 22:46:39 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: linuxppc-dev@ozlabs.org
-Subject: 3.5+: yaboot, Invalid memory access
-Message-ID: <alpine.DEB.2.01.1207302235170.26923@trent.utfs.org>
+Return-Path: <B38951@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6BE8F2C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 16:36:58 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Tue, 31 Jul 2012 06:36:48 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A2A965@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
+ <ACC8975F-CA31-4AA0-9824-4C3F6C70CD45@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A289D8@039-SN1MPN1-002.039d.mgd.msft.net>
+ <5012F8FD.8030905@freescale.com>
+ <A2F0976D-CF30-4A20-8697-0CD1830DD54A@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A29FEF@039-SN1MPN1-002.039d.mgd.msft.net>
+ <536EC8A2-60D9-4991-8D38-092C4C8B698F@kernel.crashing.org>
+In-Reply-To: <536EC8A2-60D9-4991-8D38-092C4C8B698F@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,26 +33,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
 
-when trying to upgrade from 3.5 (final) to today's git checkout from 
-Linus' tree, yaboot cannot boot and the following is printed:
 
-  [...]
-  returning from prom_init
-  Invalid memory access at %SRR0: 00c62fd4  %SRR1: 00003030
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Monday, July 30, 2012 10:47 PM
+> To: Jia Hongtao-B38951
+> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472
+> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
+> initialization code
+>=20
+>=20
+> On Jul 30, 2012, at 3:26 AM, Jia Hongtao-B38951 wrote:
+>=20
+> >
+> >
+> >> -----Original Message-----
+> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >> Sent: Saturday, July 28, 2012 5:17 AM
+> >> To: Wood Scott-B07421
+> >> Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org; Wood Scott-
+> B07421;
+> >> Li Yang-R58472
+> >> Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie
+> >> initialization code
+> >>
+> >>
+> >> On Jul 27, 2012, at 3:24 PM, Scott Wood wrote:
+> >>
+> >>> On 07/27/2012 05:10 AM, Jia Hongtao-B38951 wrote:
+> >>>> Hi kumar,
+> >>>>
+> >>>> I know "duplicate code from pci_process_bridge_OF_ranges()" is
+> >>>> hard to accept but "refactor the code to have a shared function"
+> >>>> is knotty. Actually this is the reason I didn't do the refactor.
+> >>>
+> >>> Maybe we should keep doing the init early?  We could still have a
+> >>> platform device for the PM stuff, but some init would be done before
+> >> probe.
+> >>>
+> >>> Another possibility is to try to handle swiotlb init later --
+> possibly
+> >>> by reserving memory for it if the platform indicates it's a
+> possibility
+> >>> that it will be needed, then freeing the memory if it's not needed.
+> >>>
+> >>> -Scott
+> >>
+> >> I think the first option seems reasonable.  Can we leave fsl_pci_init(=
+)
+> >> as we now have it and just have the platform driver deal with PM
+> restore
+> >> via calling setup_pci_atmu() [probably need to update setup_pci_atmu
+> to
+> >> handle restore case, but seems like minor changes]
+> >>
+> >> - k
+> >>
+> >
+> >
+> > I think the second option is better if it's hard to decouple swiotlb
+> > determination from pci init. I believe the better architecture that
+> > PCI init in probe function of platform driver will bring us
+> considerable
+> > advantage. I really like to keep the completion of pci controller
+> > platform driver not only for PM support but also for pci init.
+> >
+> > -Hongtao.
+> >
+>=20
+> Shifting of swiotlb init has a lot more issues.  Why do we need to do the
+> PCI init in probe?
+>=20
+> - k
 
-The whole message: http://nerdbynature.de/bits/3.5.0/yaboot/
+I investigated the swiotlb init thing and found that in x86 swiotlb init is
+done first and free if we don't need it.
 
-The Yaboot version is 1.3.16 (from Debian/testing), I haven't tried 1.3.17 
-yet, its changelog does not say anything about "newer kernel support" so 
-I'm not sure if this would help here.
-
-Any other ideas?
-
-Thanks,
-Christian.
--- 
-BOFH excuse #389:
-
-/dev/clue was linked to /dev/null
+-Hongtao.
