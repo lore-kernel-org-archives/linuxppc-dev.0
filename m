@@ -1,44 +1,24 @@
-Return-Path: <gerald.schaefer@de.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp15.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 391742C0089
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 22:40:40 +1000 (EST)
-Received: from /spool/local
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gerald.schaefer@de.ibm.com>;
- Tue, 31 Jul 2012 13:40:35 +0100
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
- by d06nrmr1707.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q6VCe5XW2724072
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 13:40:05 +0100
-Received: from d06av05.portsmouth.uk.ibm.com (loopback [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q6VCe3cV001509
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 06:40:04 -0600
-Date: Tue, 31 Jul 2012 14:40:00 +0200
-From: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-To: Wen Congyang <wency@cn.fujitsu.com>
-Subject: Re: [RFC PATCH v5 12/19] memory-hotplug: introduce new function
- arch_remove_memory()
-Message-ID: <20120731144000.33fd4a0a@thinkpad>
-In-Reply-To: <50166379.4090305@cn.fujitsu.com>
-References: <50126B83.3050201@cn.fujitsu.com> <50126E2F.8010301@cn.fujitsu.com>
- <20120730102305.GB3631@osiris.boeblingen.de.ibm.com>
- <50166379.4090305@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com, linux-mm@kvack.org,
- Yasuaki ISIMATU <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- liuj97@gmail.com
-Reply-To: gerald.schaefer@de.ibm.com
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D332F2C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Jul 2012 23:37:18 +1000 (EST)
+Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
+Date: Tue, 31 Jul 2012 08:37:02 -0500
+Message-Id: <BAB2AC7D-90D8-473A-83A0-59BD6F730E62@kernel.crashing.org>
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <1343125210-16720-5-git-send-email-B38951@freescale.com>
+ <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,39 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 30 Jul 2012 18:35:37 +0800
-Wen Congyang <wency@cn.fujitsu.com> wrote:
 
-> At 07/30/2012 06:23 PM, Heiko Carstens Wrote:
-> > On Fri, Jul 27, 2012 at 06:32:15PM +0800, Wen Congyang wrote:
-> >> We don't call __add_pages() directly in the function add_memory()
-> >> because some other architecture related things need to be done
-> >> before or after calling __add_pages(). So we should introduce
-> >> a new function arch_remove_memory() to revert the things
-> >> done in arch_add_memory().
-> >>
-> >> Note: the function for s390 is not implemented(I don't know how to
-> >> implement it for s390).
-> >=20
-> > There is no hardware or firmware interface which could trigger a
-> > hot memory remove on s390. So there is nothing that needs to be
-> > implemented.
+On Jul 30, 2012, at 1:09 AM, Jia Hongtao-B38951 wrote:
+
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Friday, July 27, 2012 9:24 PM
+>> To: Jia Hongtao-B38951
+>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+>> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM
+>> support
+>>=20
+>>=20
+>> On Jul 24, 2012, at 5:20 AM, Jia Hongtao wrote:
+>>=20
+>>> Power supply for PCI inbound/outbound window registers is off when
+>> system
+>>> go to deep-sleep state. We save the values of registers before =
+suspend
+>>> and restore to registers after resume.
+>>>=20
+>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
+>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>> ---
+>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
+>>> arch/powerpc/sysdev/fsl_pci.c         |  121
+>> +++++++++++++++++++++++++++++++++
+>>> 2 files changed, 122 insertions(+), 1 deletions(-)
+>>=20
+>> Remind me why we need to save/restore PCI ATMUs, why not just =
+re-parse
+>> the device tree to restore?
+>>=20
+>> - k
 >=20
-> Thanks for providing this information.
+> Save/restore is the more efficient way. Latency of sleep/wakeup is one =
+of
+> most important features in power management.
 >=20
-> According to this, arch_remove_memory() for s390 can just return
-> -EBUSY.
+> -Hongtao.
 
-Yes, but there is a prototype mismatch for arch_remove_memory() on s390
-and also other architectures (u64 vs. unsigned long).
+I don't think the time it takes to run through setup_pci_atmu() is that =
+long compared to fsl_pci_resume().
 
-arch/s390/mm/init.c:262: error: conflicting types for
-=E2=80=98arch_remove_memory=E2=80=99 include/linux/memory_hotplug.h:88: err=
-or: previous
-declaration of =E2=80=98arch_remove_memory=E2=80=99 was here
+Also, don't you need to setup PCICCSRBAR and do setup_pci_cmd() on =
+resume?
 
-In memory_hotplug.h you have:
-extern int arch_remove_memory(unsigned long start, unsigned long size);
-
-On all archs other than x86 you have:
-int arch_remove_memory(u64 start, u64 size)
+- k=
