@@ -1,14 +1,18 @@
-Return-Path: <caesar_hal9000@gmx.net>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.23])
- by ozlabs.org (Postfix) with SMTP id E58AB2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 04:21:34 +1000 (EST)
-Message-ID: <50197214.7090703@gmx.net>
-Date: Wed, 01 Aug 2012 20:14:44 +0200
-From: Michael Koch <caesar_hal9000@gmx.net>
+Return-Path: <jkosina@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B329C2C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 06:03:55 +1000 (EST)
+Date: Wed, 1 Aug 2012 22:03:42 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: fix personality handling in ppc64_personality()
+Message-ID: <alpine.LNX.2.00.1208012201520.14910@pobox.suse.cz>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Problem in phy.c, when using fixed network speed
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,30 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all,
-during testing i encountered a problem with setting up a 5200B 
-controller with a MICREL phy at static 100MBit full duplex - without 
-autonegotiation.
+Directly comparing current->personality against PER_LINUX32 doesn't work 
+in cases when any of the personality flags stored in the top three bytes 
+are used.
 
-I performed this as usual with ethtool and was succesful when i had my 
-link partner up, providing a link.
+Directly forcefully setting personality to PER_LINUX32 or PER_LINUX
+discards any flags stored in the top three bytes
 
-When kepping the link partner off, meaning no link at all, my machine 
-started to degrade its link capabilities ending 10MBit half duplex.
+Use personality() macro to compare only PER_MASK bytes and make sure that
+we are setting only the bits that should be set, instead of
+overwriting the whole value.
 
-I tracked it down to drivers/net/phy/phy.c:
-in the function phy_state_machine, the case block PHY_FORCING causes 
-this (at least for me) undesired behaviour. Calling the 
-phy_force_reduction function degrades actually an intentionally static 
-setup.
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
 
-I deactivated those lines, and it works for me.
+Found accidentally. Untested, I don't have the hardware.
 
-But anyhow i feel soe need to have a general solution that takes static 
-non autonagotiation setups into account.
+ arch/powerpc/kernel/syscalls.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-What do you think?
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index f2496f2..4dcc7c6 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -107,11 +107,11 @@ long ppc64_personality(unsigned long personality)
+ 	long ret;
+ 
+ 	if (personality(current->personality) == PER_LINUX32
+-	    && personality == PER_LINUX)
+-		personality = PER_LINUX32;
++	    && personality(personality) == PER_LINUX)
++		personality &= ~PER_LINUX | PER_LINUX32;
+ 	ret = sys_personality(personality);
+-	if (ret == PER_LINUX32)
+-		ret = PER_LINUX;
++	if (personality(ret) == PER_LINUX32)
++		ret &= ~PER_LINUX32 | PER_LINUX;
+ 	return ret;
+ }
+ #endif
 
-Hope to hear from you
-
-Michael
+-- 
+Jiri Kosina
+SUSE Labs
