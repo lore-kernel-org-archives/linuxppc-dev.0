@@ -1,33 +1,34 @@
-Return-Path: <jlarrew@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e6.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 514DA2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 17:22:40 +1000 (EST)
+ (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 991DF2C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 17:23:46 +1000 (EST)
 Received: from /spool/local
- by e6.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <jlarrew@linux.vnet.ibm.com>;
- Wed, 1 Aug 2012 03:22:36 -0400
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B4D13C90046
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 03:22:16 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q717MGQA17301582
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 03:22:16 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q71Cr89M011092
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 08:53:08 -0400
-Message-ID: <5018D926.6010709@linux.vnet.ibm.com>
-Date: Wed, 01 Aug 2012 02:22:14 -0500
-From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 1 Aug 2012 17:23:35 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q717EsI224051880
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 17:14:55 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q717NBFW010030
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 17:23:11 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH -V5 03/13] arch/powerpc: Convert virtual address to vpn
+In-Reply-To: <20120801043339.GB24014@drongo>
+References: <1343647339-25576-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1343647339-25576-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20120801043339.GB24014@drongo>
+Date: Wed, 01 Aug 2012 12:53:04 +0530
+Message-ID: <87zk6fhy93.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] vphn: fix arch_update_cpu_topology() return value
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,57 +38,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From 5dfd547532fca61462dc17fd0bb8e533002c4bc5 Mon Sep 17 00:00:00 2001
-From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
-Date: Thu, 7 Jun 2012 16:04:34 -0500
+Paul Mackerras <paulus@samba.org> writes:
 
-arch_update_cpu_topology() should only return 1 when the topology has
-actually changed, and should return 0 otherwise.
+> On Mon, Jul 30, 2012 at 04:52:09PM +0530, Aneesh Kumar K.V wrote:
+>> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+>> 
+>> This patch convert different functions to take virtual page number
+>> instead of virtual address. Virtual page number is virtual address
+>> shifted right by VPN_SHIFT (12) bits. This enable us to have an
+>> address range of upto 76 bits.
+>
+> Mostly looks good.  I don't think it's necessary to add the
+> BUILD_BUG_ON and BUG_ON conditions.  I would think a comment next to
+> the definition saying that VPN_SHIFT can be at most 12 would be
+> sufficient.
 
-This patch fixes a potential bug where rebuild_sched_domains() would
-reinitialize the sched domains even when the topology hasn't changed.
+Updated.
 
-Signed-off-by: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
----
- arch/powerpc/mm/numa.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 39b1597..59213cf 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1436,11 +1436,11 @@ static long vphn_get_associativity(unsigned long cpu,
- 
- /*
-  * Update the node maps and sysfs entries for each cpu whose home node
-- * has changed.
-+ * has changed. Returns 1 when the topology has changed, and 0 otherwise.
-  */
- int arch_update_cpu_topology(void)
- {
--	int cpu, nid, old_nid;
-+	int cpu, nid, old_nid, changed = 0;
- 	unsigned int associativity[VPHN_ASSOC_BUFSIZE] = {0};
- 	struct device *dev;
- 
-@@ -1466,9 +1466,10 @@ int arch_update_cpu_topology(void)
- 		dev = get_cpu_device(cpu);
- 		if (dev)
- 			kobject_uevent(&dev->kobj, KOBJ_CHANGE);
-+		changed = 1;
- 	}
- 
--	return 1;
-+	return changed;
- }
- 
- static void topology_work_fn(struct work_struct *work)
--- 
-1.7.7.6
-
-
-Jesse Larrew
-Software Engineer, Linux on Power Kernel Team
-IBM Linux Technology Center
-Phone: (512) 973-2052 (T/L: 363-2052)
-jlarrew@linux.vnet.ibm.com
+Thanks
+-aneesh
