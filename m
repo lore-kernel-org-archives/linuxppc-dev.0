@@ -2,7 +2,7 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AD1F72C0302
+ by ozlabs.org (Postfix) with ESMTPS id AD2A12C0329
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 02:14:16 +1000 (EST)
 Received: from /spool/local
  by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -10,19 +10,18 @@ Received: from /spool/local
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Wed, 1 Aug 2012 21:44:13 +0530
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q71GE8vS17694764
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 21:44:08 +0530
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q71GDwmF26673356
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 21:43:58 +0530
 Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q71GE788000404
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Aug 2012 02:14:08 +1000
+ q71GDveA032331
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Aug 2012 02:13:57 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V6 08/12] arch/powerpc: Make some of the PGTABLE_RANGE
- dependency explicit
-Date: Wed,  1 Aug 2012 21:43:39 +0530
-Message-Id: <1343837623-9046-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V6 03/12] arch/powerpc: Simplify hpte_decode
+Date: Wed,  1 Aug 2012 21:43:34 +0530
+Message-Id: <1343837623-9046-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1343837623-9046-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1343837623-9046-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -38,98 +37,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-slice array size and slice mask size depend on PGTABLE_RANGE. We
-can't directly include pgtable.h in these header because there is
-a circular dependency. So add compile time check for these values.
+This patch simplify hpte_decode for easy switching of virtual address to
+virtual page number in the later patch
 
 Reviewed-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h    |   13 ++++++++-----
- arch/powerpc/include/asm/page_64.h       |   16 ++++++++++++----
- arch/powerpc/include/asm/pgtable-ppc64.h |    8 ++++++++
- 3 files changed, 28 insertions(+), 9 deletions(-)
+ arch/powerpc/mm/hash_native_64.c |   49 ++++++++++++++++++++++----------------
+ 1 file changed, 28 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 8f05eec..8c5c5a4 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -420,6 +420,13 @@ extern void slb_set_size(u16 size);
- 	srdi	rx,rx,VSID_BITS_##size;	/* extract 2^VSID_BITS bit */	\
- 	add	rt,rt,rx
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 90039bc..660b8bb 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -351,9 +351,10 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long va,
+ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			int *psize, int *ssize, unsigned long *va)
+ {
++	unsigned long avpn, pteg, vpi;
+ 	unsigned long hpte_r = hpte->r;
+ 	unsigned long hpte_v = hpte->v;
+-	unsigned long avpn;
++	unsigned long vsid, seg_off;
+ 	int i, size, shift, penc;
  
-+/* 4 bits per slice and we have one slice per 1TB */
-+#if 0 /* We can't directly include pgtable.h hence this hack */
-+#define SLICE_ARRAY_SIZE  (PGTABLE_RANGE >> 41)
-+#else
-+/* Right now we only support 64TB */
-+#define SLICE_ARRAY_SIZE  32
-+#endif
+ 	if (!(hpte_v & HPTE_V_LARGE))
+@@ -380,32 +381,38 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 	}
  
- #ifndef __ASSEMBLY__
+ 	/* This works for all page sizes, and for 256M and 1T segments */
++	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ 	shift = mmu_psize_defs[size].shift;
+-	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm) << 23;
+-
+-	if (shift < 23) {
+-		unsigned long vpi, vsid, pteg;
  
-@@ -464,11 +471,7 @@ typedef struct {
- 
- #ifdef CONFIG_PPC_MM_SLICES
- 	u64 low_slices_psize;	/* SLB page size encodings */
--	/*
--	 * Right now we support 64TB and 4 bits for each
--	 * 1TB slice we need 32 bytes for 64TB.
--	 */
--	unsigned char high_slices_psize[32];  /* 4 bits per slice for now */
-+	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
- #else
- 	u16 sllp;		/* SLB page size encoding */
- #endif
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 6c9bef4..b55beb4 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -78,14 +78,22 @@ extern u64 ppc64_pft_size;
- #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
- #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
- 
-+/* 1 bit per slice and we have one slice per 1TB */
-+#if 0 /* We can't directly include pgtable.h hence this hack */
-+#define SLICE_MASK_SIZE (PGTABLE_RANGE >> 43)
-+#else
-+/*
-+ * Right now we support only 64TB.
-+ * IF we change this we will have to change the type
-+ * of high_slices
-+ */
-+#define SLICE_MASK_SIZE 8
-+#endif
+-		pteg = slot / HPTES_PER_GROUP;
+-		if (hpte_v & HPTE_V_SECONDARY)
+-			pteg = ~pteg;
+-		switch (hpte_v >> HPTE_V_SSIZE_SHIFT) {
+-		case MMU_SEGSIZE_256M:
+-			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
+-			break;
+-		case MMU_SEGSIZE_1T:
+-			vsid = avpn >> 40;
++	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm);
++	pteg = slot / HPTES_PER_GROUP;
++	if (hpte_v & HPTE_V_SECONDARY)
++		pteg = ~pteg;
 +
- #ifndef __ASSEMBLY__
++	switch (*ssize) {
++	case MMU_SEGSIZE_256M:
++		/* We only have 28 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1f) << 23;
++		vsid    =  avpn >> 5;
++		/* We can find more bits from the pteg value */
++		if (shift < 23) {
++			vpi = (vsid ^ pteg) & htab_hash_mask;
++			seg_off |= vpi << shift;
++		}
++		*va = vsid << SID_SHIFT | seg_off;
++	case MMU_SEGSIZE_1T:
++		/* We only have 40 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1ffff) << 23;
++		vsid    = avpn >> 17;
++		if (shift < 23) {
+ 			vpi = (vsid ^ (vsid << 25) ^ pteg) & htab_hash_mask;
+-			break;
+-		default:
+-			avpn = vpi = size = 0;
++			seg_off |= vpi << shift;
+ 		}
+-		avpn |= (vpi << mmu_psize_defs[size].shift);
++		*va = vsid << SID_SHIFT_1T | seg_off;
++	default:
++		*va = size = 0;
+ 	}
+-
+-	*va = avpn;
+ 	*psize = size;
+-	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ }
  
- struct slice_mask {
- 	u16 low_slices;
--	/*
--	 * This should be derived out of PGTABLE_RANGE. For the current
--	 * max 64TB, u64 should be ok.
--	 */
- 	u64 high_slices;
- };
- 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 8af1cf2..dea953f 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -32,6 +32,14 @@
- #endif
- #endif
- 
-+#if (PGTABLE_RANGE >> 41) > SLICE_ARRAY_SIZE
-+#error PGTABLE_RANGE exceeds SLICE_ARRAY_SIZE
-+#endif
-+
-+#if (PGTABLE_RANGE >> 43) > SLICE_MASK_SIZE
-+#error PGTABLE_RANGE exceeds slice_mask high_slices size
-+#endif
-+
  /*
-  * Define the address range of the kernel non-linear virtual area
-  */
 -- 
 1.7.10
