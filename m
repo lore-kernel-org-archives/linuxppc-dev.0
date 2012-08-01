@@ -1,34 +1,18 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 991DF2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 17:23:46 +1000 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 1 Aug 2012 17:23:35 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q717EsI224051880
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 17:14:55 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q717NBFW010030
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 17:23:11 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V5 03/13] arch/powerpc: Convert virtual address to vpn
-In-Reply-To: <20120801043339.GB24014@drongo>
-References: <1343647339-25576-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1343647339-25576-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120801043339.GB24014@drongo>
-Date: Wed, 01 Aug 2012 12:53:04 +0530
-Message-ID: <87zk6fhy93.fsf@skywalker.in.ibm.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id 818CE2C0040
+ for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2012 17:30:36 +1000 (EST)
+Date: Wed, 1 Aug 2012 00:30:29 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Subject: Re: 3.5+: yaboot, Invalid memory access
+In-Reply-To: <20120801020245.GC6467@thor.bakeyournoodle.com>
+Message-ID: <alpine.DEB.2.01.1208010023110.15245@trent.utfs.org>
+References: <alpine.DEB.2.01.1207302235170.26923@trent.utfs.org>
+ <20120801020245.GC6467@thor.bakeyournoodle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,22 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+On Wed, 1 Aug 2012 at 12:02, Tony Breeds wrote:
+> 1) can you also upload you vmlinux so we can poke at it.
 
-> On Mon, Jul 30, 2012 at 04:52:09PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> This patch convert different functions to take virtual page number
->> instead of virtual address. Virtual page number is virtual address
->> shifted right by VPN_SHIFT (12) bits. This enable us to have an
->> address range of upto 76 bits.
->
-> Mostly looks good.  I don't think it's necessary to add the
-> BUILD_BUG_ON and BUG_ON conditions.  I would think a comment next to
-> the definition saying that VPN_SHIFT can be at most 12 would be
-> sufficient.
+I've uploaded the vmlinx (and System.map) to the same location:
 
-Updated.
+  http://nerdbynature.de/bits/3.5.0/yaboot/
 
-Thanks
--aneesh
+> 2) What is the dmseg.txt file there?  If you're unable to boot 3.5 how
+> did you get the dmesg?
+
+This is a dmesg from the working 3.5.0 (final), i.e. the release version 
+which is working. The version that is not booting is "yesterday's git 
+tree" or 37cd9600a9e20359b0283983c9e3a55d84347168 to be specific.
+
+Sorry for the confusion. I only put the dmesg there so that people can 
+have a look and see what type of machine this is.
+
+Christian.
+-- 
+BOFH excuse #54:
+
+Evil dogs hypnotised the night shift
