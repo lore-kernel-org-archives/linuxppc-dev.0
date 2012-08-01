@@ -1,28 +1,28 @@
-Return-Path: <greg@kroah.com>
-Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
- [66.111.4.29])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 536952C007E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 22:37:43 +1000 (EST)
-Date: Wed, 1 Aug 2012 05:37:38 -0700
-From: Greg KH <greg@kroah.com>
-To: Singh Sandeep-B37400 <B37400@freescale.com>
-Subject: Re: [2/3][PATCH][v2] TDM Framework
-Message-ID: <20120801123738.GA28291@kroah.com>
-References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
- <20120727152542.GB1613@electric-eye.fr.zoreil.com>
- <3F1D9DCAAB49B94D88DBE05911FA4E6E511121@039-SN1MPN1-006.039d.mgd.msft.net>
- <20120730160146.GB28703@kroah.com>
- <3F1D9DCAAB49B94D88DBE05911FA4E6E515F98@039-SN1MPN1-001.039d.mgd.msft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <3F1D9DCAAB49B94D88DBE05911FA4E6E515F98@039-SN1MPN1-001.039d.mgd.msft.net>
-Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Francois Romieu <romieu@fr.zoreil.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 984B92C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 02:13:58 +1000 (EST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 1 Aug 2012 21:43:53 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q71GDoNB18153706
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 21:43:51 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q71GDoCX032087
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Aug 2012 02:13:50 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH -V6 0/12] arch/powerpc: Add 64TB support to ppc64   
+Date: Wed,  1 Aug 2012 21:43:31 +0530
+Message-Id: <1343837623-9046-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,32 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2012 at 12:13:19PM +0000, Singh Sandeep-B37400 wrote:
-> > On Mon, Jul 30, 2012 at 09:50:57AM +0000, Singh Sandeep-B37400 wrote:
-> > > 1. You should send some kernel mode TDM clients. Without those the
-> > framework
-> > >    is pretty useless.
-> > > [Sandeep] We do have a test client but not good enough to be pushed in
-> > > open source, should we add it to documentation??
-> > 
-> > Then how do you know if the framework is "correct" and good enough for
-> > real clients?  We don't add frameworks, or apis, to the kernel without
-> > users, so you will have to come up with some users before we can accept
-> > it.
-> We can only say that this framework is available in FSL BSPs and being used by VoIP companies.
-> But running a complete voice stack itself is beyond the scope of Freescale.
-> So vendors integrate their solutions with FSL solution.
-> To test the framework we have a small application in our BSP (this is a very basic test client) which tests the TDM driver and the SLIC interface from voice  transfer perspective.
-> We can get this added in the Linux codebase in some test directory. What could be a good place for this?
+Hi,
 
-tools/ is a good place for that.
+This patchset include patches for supporting 64TB with ppc64. I haven't booted
+this on hardware with 64TB memory yet. But they boot fine on real hardware with
+less memory. Changes extend VSID bits to 38 bits for a 256MB segment
+and 26 bits for 1TB segments. 
 
-And sorry, I was thinking you had kernel drivers that attached to this
-framework, not userspace programs.  Actually, what is the user/kernel
-interface for this framework, I seem to have missed that entirely.  You
-will have to document that quite well, and run it by the linux-api
-mailing list.
+Changes from v5:
+ * Address review feedback
+ 
+Changes from v4:
+ * Drop patch "arch/powerpc: properly offset the context bits for 1T segemnts"
+   based on review feedback
+ * split CONTEXT_BITS related changes from patch 12
+ * Add a new doc update patch
 
-thanks,
+Changes from v3:
+ * Address review comments.
+ * Added new patch to ensure proto-VSID isolation between kernel and user space
 
-greg k-h
+Changes from V2:
+ * Fix few FIXMEs in the patchset. I have added them as separate patch for
+   easier review. That should help us to drop those changes if we don't agree.
+
+Changes from V1:
+* Drop the usage of structure (struct virt_addr) to carry virtual address.
+  We now represent virtual address via vpn which is virtual address shifted 
+  right 12 bits.
+
+Thanks,
+-aneesh
