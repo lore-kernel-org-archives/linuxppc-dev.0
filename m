@@ -1,31 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 577372C042E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 02:14:51 +1000 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 1 Aug 2012 21:44:49 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q71GEFVv23199790
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 21:44:15 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q71GEF78000900
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Aug 2012 02:14:15 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V6 12/12] arch/powerpc: Update VSID allocation documentation
-Date: Wed,  1 Aug 2012 21:43:43 +0530
-Message-Id: <1343837623-9046-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1343837623-9046-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1343837623-9046-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <iws@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+ by ozlabs.org (Postfix) with ESMTP id C728D2C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 02:31:31 +1000 (EST)
+Date: Wed, 1 Aug 2012 09:31:25 -0700
+From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+To: qiang.liu@freescale.com
+Subject: Re: [PATCH v5 4/6] fsl-dma: move the function ahead of its invoke
+ function
+Message-ID: <20120801163125.GB11359@ovro.caltech.edu>
+References: <1343810983-25412-1-git-send-email-qiang.liu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1343810983-25412-1-git-send-email-qiang.liu@freescale.com>
+Cc: Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org,
+ dan.j.williams@gmail.com, herbert@gondor.hengli.com.au,
+ linux-crypto@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,108 +25,311 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On Wed, Aug 01, 2012 at 04:49:43PM +0800, qiang.liu@freescale.com wrote:
+> From: Qiang Liu <qiang.liu@freescale.com>
+> 
+> Move the function fsldma_cleanup_descriptor() and fsl_chan_xfer_ld_queue()
+> ahead of its invoke function for avoiding redundant definition.
+> 
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: Vinod Koul <vinod.koul@intel.com>
+> Cc: Li Yang <leoli@freescale.com>
+> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+> ---
+>  drivers/dma/fsldma.c |  252 +++++++++++++++++++++++++-------------------------
+>  1 files changed, 124 insertions(+), 128 deletions(-)
+> 
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> index 87f52c0..bb883c0 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -400,9 +400,6 @@ out_splice:
+>  	list_splice_tail_init(&desc->tx_list, &chan->ld_pending);
+>  }
+> 
+> -static void fsldma_cleanup_descriptor(struct fsldma_chan *chan);
+> -static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan);
+> -
 
-This update the proto-VSID and VSID scramble related information
-to be more generic by using names instead of current values.
+Please swap the order of this patch (patch 4/6) and the previous patch
+(patch 3/6).
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/mmu-hash64.h |   40 ++++++++++++++-------------------
- arch/powerpc/mm/mmu_context_hash64.c  |    8 ++++---
- 2 files changed, 22 insertions(+), 26 deletions(-)
+You added these lines in the patch 3/6 and deleted them here. If you
+reverse the order of the patches, this doesn't happen.
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 5c52691..8dfe31a 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -328,51 +328,45 @@ extern void slb_set_size(u16 size);
- #endif /* __ASSEMBLY__ */
- 
- /*
-- * VSID allocation
-+ * VSID allocation (256MB segment)
-  *
-- * We first generate a 36-bit "proto-VSID".  For kernel addresses this
-- * is equal to the ESID, for user addresses it is:
-- *	(context << 15) | (esid & 0x7fff)
-+ * We first generate a 38-bit "proto-VSID".  For kernel addresses this
-+ * is equal to the ESID | 1 << 37, for user addresses it is:
-+ *	(context << USER_ESID_BITS) | (esid & ((1U << USER_ESID_BITS) - 1)
-  *
-- * The two forms are distinguishable because the top bit is 0 for user
-- * addresses, whereas the top two bits are 1 for kernel addresses.
-- * Proto-VSIDs with the top two bits equal to 0b10 are reserved for
-- * now.
-+ * This splits the proto-VSID into the below range
-+ *  0 - (2^(CONTEXT_BITS + USER_ESID_BITS) - 1) : User proto-VSID range
-+ *  2^(CONTEXT_BITS + USER_ESID_BITS) - 2^(VSID_BITS) : Kernel proto-VSID range
-+ *
-+ * We also have CONTEXT_BITS + USER_ESID_BITS = VSID_BITS - 1
-+ * That is, we assign half of the space to user processes and half
-+ * to the kernel.
-  *
-  * The proto-VSIDs are then scrambled into real VSIDs with the
-  * multiplicative hash:
-  *
-  *	VSID = (proto-VSID * VSID_MULTIPLIER) % VSID_MODULUS
-- *	where	VSID_MULTIPLIER = 268435399 = 0xFFFFFC7
-- *		VSID_MODULUS = 2^36-1 = 0xFFFFFFFFF
-  *
-- * This scramble is only well defined for proto-VSIDs below
-- * 0xFFFFFFFFF, so both proto-VSID and actual VSID 0xFFFFFFFFF are
-- * reserved.  VSID_MULTIPLIER is prime, so in particular it is
-+ * VSID_MULTIPLIER is prime, so in particular it is
-  * co-prime to VSID_MODULUS, making this a 1:1 scrambling function.
-  * Because the modulus is 2^n-1 we can compute it efficiently without
-  * a divide or extra multiply (see below).
-  *
-  * This scheme has several advantages over older methods:
-  *
-- * 	- We have VSIDs allocated for every kernel address
-+ *	- We have VSIDs allocated for every kernel address
-  * (i.e. everything above 0xC000000000000000), except the very top
-  * segment, which simplifies several things.
-  *
-- *	- We allow for 16 significant bits of ESID and 19 bits of
-- * context for user addresses.  i.e. 16T (44 bits) of address space for
-- * up to half a million contexts.
-+ *	- We allow for USER_ESID_BITS significant bits of ESID and
-+ * CONTEXT_BITS  bits of context for user addresses.
-+ *  i.e. 64T (46 bits) of address space for up to half a million contexts.
-  *
-- * 	- The scramble function gives robust scattering in the hash
-+ *	- The scramble function gives robust scattering in the hash
-  * table (at least based on some initial results).  The previous
-  * method was more susceptible to pathological cases giving excessive
-  * hash collisions.
-  */
--/*
-- * WARNING - If you change these you must make sure the asm
-- * implementations in slb_allocate (slb_low.S), do_stab_bolted
-- * (head.S) and ASM_VSID_SCRAMBLE (below) are changed accordingly.
-- */
- 
- /*
-  * This should be computed such that protovosid * vsid_mulitplier
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index daa076c..ceb32e3 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -30,9 +30,11 @@ static DEFINE_SPINLOCK(mmu_context_lock);
- static DEFINE_IDA(mmu_context_ida);
- 
- /*
-- * The proto-VSID space has 2^35 - 1 segments available for user mappings.
-- * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
-- * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
-+ * 256MB segment
-+ * The proto-VSID space has 2^(CONTEX_BITS + USER_ESID_BITS) - 1 segments
-+ * available for user mappings. Each segment contains 2^28 bytes. Each
-+ * context maps 2^46 bytes so we can support 2^19-1 contexts
-+ * (19 == 37 + 28 - 46).
-  */
- #define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
- 
--- 
-1.7.10
+Adding lines only to delete them in the next patch should be avoided.
+
+>  /**
+>   * fsldma_clean_completed_descriptor - free all descriptors which
+>   * has been completed and acked
+> @@ -519,6 +516,130 @@ fsldma_clean_running_descriptor(struct fsldma_chan *chan,
+>  	return 0;
+>  }
+> 
+> +/**
+> + * fsl_chan_xfer_ld_queue - transfer any pending transactions
+> + * @chan : Freescale DMA channel
+> + *
+> + * HARDWARE STATE: idle
+> + * LOCKING: must hold chan->desc_lock
+> + */
+> +static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
+> +{
+> +	struct fsl_desc_sw *desc;
+> +
+> +	/*
+> +	 * If the list of pending descriptors is empty, then we
+> +	 * don't need to do any work at all
+> +	 */
+> +	if (list_empty(&chan->ld_pending)) {
+> +		chan_dbg(chan, "no pending LDs\n");
+> +		return;
+> +	}
+> +
+> +	/*
+> +	 * The DMA controller is not idle, which means that the interrupt
+> +	 * handler will start any queued transactions when it runs after
+> +	 * this transaction finishes
+> +	 */
+> +	if (!chan->idle) {
+> +		chan_dbg(chan, "DMA controller still busy\n");
+> +		return;
+> +	}
+> +
+> +	/*
+> +	 * If there are some link descriptors which have not been
+> +	 * transferred, we need to start the controller
+> +	 */
+> +
+> +	/*
+> +	 * Move all elements from the queue of pending transactions
+> +	 * onto the list of running transactions
+> +	 */
+> +	chan_dbg(chan, "idle, starting controller\n");
+> +	desc = list_first_entry(&chan->ld_pending, struct fsl_desc_sw, node);
+> +	list_splice_tail_init(&chan->ld_pending, &chan->ld_running);
+> +
+> +	/*
+> +	 * The 85xx DMA controller doesn't clear the channel start bit
+> +	 * automatically at the end of a transfer. Therefore we must clear
+> +	 * it in software before starting the transfer.
+> +	 */
+> +	if ((chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
+> +		u32 mode;
+> +
+> +		mode = DMA_IN(chan, &chan->regs->mr, 32);
+> +		mode &= ~FSL_DMA_MR_CS;
+> +		DMA_OUT(chan, &chan->regs->mr, mode, 32);
+> +	}
+> +
+> +	/*
+> +	 * Program the descriptor's address into the DMA controller,
+> +	 * then start the DMA transaction
+> +	 */
+> +	set_cdar(chan, desc->async_tx.phys);
+> +	get_cdar(chan);
+> +
+> +	dma_start(chan);
+> +	chan->idle = false;
+> +}
+> +
+> +/**
+> + * fsldma_cleanup_descriptor - cleanup and free a single link descriptor
+> + * @chan: Freescale DMA channel
+> + * @desc: descriptor to cleanup and free
+> + *
+> + * This function is used on a descriptor which has been executed by the DMA
+> + * controller. It will run any callbacks, submit any dependencies, and then
+> + * free the descriptor.
+> + */
+> +static void fsldma_cleanup_descriptor(struct fsldma_chan *chan)
+> +{
+> +	struct fsl_desc_sw *desc, *_desc;
+> +	dma_cookie_t cookie = 0;
+> +	dma_addr_t curr_phys = get_cdar(chan);
+> +	int idle = dma_is_idle(chan);
+> +	int seen_current = 0;
+> +
+> +	fsldma_clean_completed_descriptor(chan);
+> +
+> +	/* Run the callback for each descriptor, in order */
+> +	list_for_each_entry_safe(desc, _desc, &chan->ld_running, node) {
+> +		/*
+> +		 * do not advance past the current descriptor loaded into the
+> +		 * hardware channel, subsequent descriptors are either in
+> +		 * process or have not been submitted
+> +		 */
+> +		if (seen_current)
+> +			break;
+> +
+> +		/*
+> +		 * stop the search if we reach the current descriptor and the
+> +		 * channel is busy
+> +		 */
+> +		if (desc->async_tx.phys == curr_phys) {
+> +			seen_current = 1;
+> +			if (!idle)
+> +				break;
+> +		}
+> +
+> +		cookie = fsldma_run_tx_complete_actions(desc, chan, cookie);
+> +
+> +		if (fsldma_clean_running_descriptor(chan, desc))
+> +			break;
+> +	}
+> +
+> +	/*
+> +	 * Start any pending transactions automatically
+> +	 *
+> +	 * In the ideal case, we keep the DMA controller busy while we go
+> +	 * ahead and free the descriptors below.
+> +	 */
+> +	fsl_chan_xfer_ld_queue(chan);
+> +
+> +	if (cookie > 0)
+> +		chan->common.completed_cookie = cookie;
+> +}
+> +
+>  static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
+>  {
+>  	struct fsldma_chan *chan = to_fsl_chan(tx->chan);
+> @@ -932,131 +1053,6 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
+>  }
+> 
+>  /**
+> - * fsldma_cleanup_descriptor - cleanup and free a single link descriptor
+> - * @chan: Freescale DMA channel
+> - * @desc: descriptor to cleanup and free
+> - *
+> - * This function is used on a descriptor which has been executed by the DMA
+> - * controller. It will run any callbacks, submit any dependencies, and then
+> - * free the descriptor.
+> - */
+> -static void fsldma_cleanup_descriptor(struct fsldma_chan *chan)
+> -{
+> -	struct fsl_desc_sw *desc, *_desc;
+> -	dma_cookie_t cookie = 0;
+> -	dma_addr_t curr_phys = get_cdar(chan);
+> -	int idle = dma_is_idle(chan);
+> -	int seen_current = 0;
+> -
+> -	fsldma_clean_completed_descriptor(chan);
+> -
+> -	/* Run the callback for each descriptor, in order */
+> -	list_for_each_entry_safe(desc, _desc, &chan->ld_running, node) {
+> -		/*
+> -		 * do not advance past the current descriptor loaded into the
+> -		 * hardware channel, subsequent descriptors are either in
+> -		 * process or have not been submitted
+> -		 */
+> -		if (seen_current)
+> -			break;
+> -
+> -		/*
+> -		 * stop the search if we reach the current descriptor and the
+> -		 * channel is busy
+> -		 */
+> -		if (desc->async_tx.phys == curr_phys) {
+> -			seen_current = 1;
+> -			if (!idle)
+> -				break;
+> -		}
+> -
+> -		cookie = fsldma_run_tx_complete_actions(desc, chan, cookie);
+> -
+> -		if (fsldma_clean_running_descriptor(chan, desc))
+> -			break;
+> -
+> -	}
+> -
+> -	/*
+> -	 * Start any pending transactions automatically
+> -	 *
+> -	 * In the ideal case, we keep the DMA controller busy while we go
+> -	 * ahead and free the descriptors below.
+> -	 */
+> -	fsl_chan_xfer_ld_queue(chan);
+> -
+> -	if (cookie > 0)
+> -		chan->common.completed_cookie = cookie;
+> -}
+> -
+> -/**
+> - * fsl_chan_xfer_ld_queue - transfer any pending transactions
+> - * @chan : Freescale DMA channel
+> - *
+> - * HARDWARE STATE: idle
+> - * LOCKING: must hold chan->desc_lock
+> - */
+> -static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan)
+> -{
+> -	struct fsl_desc_sw *desc;
+> -
+> -	/*
+> -	 * If the list of pending descriptors is empty, then we
+> -	 * don't need to do any work at all
+> -	 */
+> -	if (list_empty(&chan->ld_pending)) {
+> -		chan_dbg(chan, "no pending LDs\n");
+> -		return;
+> -	}
+> -
+> -	/*
+> -	 * The DMA controller is not idle, which means that the interrupt
+> -	 * handler will start any queued transactions when it runs after
+> -	 * this transaction finishes
+> -	 */
+> -	if (!chan->idle) {
+> -		chan_dbg(chan, "DMA controller still busy\n");
+> -		return;
+> -	}
+> -
+> -	/*
+> -	 * If there are some link descriptors which have not been
+> -	 * transferred, we need to start the controller
+> -	 */
+> -
+> -	/*
+> -	 * Move all elements from the queue of pending transactions
+> -	 * onto the list of running transactions
+> -	 */
+> -	chan_dbg(chan, "idle, starting controller\n");
+> -	desc = list_first_entry(&chan->ld_pending, struct fsl_desc_sw, node);
+> -	list_splice_tail_init(&chan->ld_pending, &chan->ld_running);
+> -
+> -	/*
+> -	 * The 85xx DMA controller doesn't clear the channel start bit
+> -	 * automatically at the end of a transfer. Therefore we must clear
+> -	 * it in software before starting the transfer.
+> -	 */
+> -	if ((chan->feature & FSL_DMA_IP_MASK) == FSL_DMA_IP_85XX) {
+> -		u32 mode;
+> -
+> -		mode = DMA_IN(chan, &chan->regs->mr, 32);
+> -		mode &= ~FSL_DMA_MR_CS;
+> -		DMA_OUT(chan, &chan->regs->mr, mode, 32);
+> -	}
+> -
+> -	/*
+> -	 * Program the descriptor's address into the DMA controller,
+> -	 * then start the DMA transaction
+> -	 */
+> -	set_cdar(chan, desc->async_tx.phys);
+> -	get_cdar(chan);
+> -
+> -	dma_start(chan);
+> -	chan->idle = false;
+> -}
+> -
+> -/**
+>   * fsl_dma_memcpy_issue_pending - Issue the DMA start command
+>   * @chan : Freescale DMA channel
+>   */
+> --
+> 1.7.5.1
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
