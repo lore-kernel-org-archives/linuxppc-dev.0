@@ -1,35 +1,28 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1EE302C00C0
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 20:02:02 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 1 Aug 2012 15:31:59 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q71A1tdR23724144
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 15:31:56 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q71A1tqV027709
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 20:01:55 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V5 13/13] arch/powerpc: Update VSID allocation
- documentation
-In-Reply-To: <20120801053505.GG24014@drongo>
-References: <1343647339-25576-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1343647339-25576-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120801053505.GG24014@drongo>
-Date: Wed, 01 Aug 2012 15:31:47 +0530
-Message-ID: <87k3xjhqwk.fsf@skywalker.in.ibm.com>
+Return-Path: <B37400@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8C79D2C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 22:13:35 +1000 (EST)
+From: Singh Sandeep-B37400 <B37400@freescale.com>
+To: Greg KH <greg@kroah.com>
+Subject: RE: [2/3][PATCH][v2] TDM Framework
+Date: Wed, 1 Aug 2012 12:13:19 +0000
+Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E515F98@039-SN1MPN1-001.039d.mgd.msft.net>
+References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
+ <20120727152542.GB1613@electric-eye.fr.zoreil.com>
+ <3F1D9DCAAB49B94D88DBE05911FA4E6E511121@039-SN1MPN1-006.039d.mgd.msft.net>
+ <20120730160146.GB28703@kroah.com>
+In-Reply-To: <20120730160146.GB28703@kroah.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Francois Romieu <romieu@fr.zoreil.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,55 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
 
-> On Mon, Jul 30, 2012 at 04:52:19PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> This update the proto-VSID and VSID scramble related information
->> to be more generic by using names instead of current values.
->
-> Comments below...
->
->> - * VSID allocation
->> + * VSID allocation (256MB segment)
->>   *
->> - * We first generate a 36-bit "proto-VSID".  For kernel addresses this
->> - * is equal to the ESID, for user addresses it is:
->> - *	(context << 15) | (esid & 0x7fff)
->> + * We first generate a 38-bit "proto-VSID".  For kernel addresses this
->> + * is equal to the ESID | 1 << 37, for user addresses it is:
->> + *	(context << USER_ESID_BITS) | (esid & (1U << USER_ESID_BITS))
-> 					      ^^^^^^^^^^^^^^^^^^^^^^
-> should be ((1U << USER_ESID_BITS) - 1)
->
->>   *
->> - * The two forms are distinguishable because the top bit is 0 for user
->> - * addresses, whereas the top two bits are 1 for kernel addresses.
->> - * Proto-VSIDs with the top two bits equal to 0b10 are reserved for
->> - * now.
->> + * This splits the proto-VSID into the below range
->> + *  0 - (2^(CONTEXT_BITS + USER_ESID_BITS) - 1) : User proto-VSID range
->> + *  2^(CONTEXT_BITS + USER_ESID_BITS) - 2^(VSID_BITS) : Kernel proto-VSID range
->
-> Perhaps point out also that CONTEXT_BITS + USER_ESID_BITS == VSID_BITS - 1,
-> that is, you have assigned half of the space to user processes and half
-> to the kernel.
->
 
-updated
 
->> -/*
->> - * WARNING - If you change these you must make sure the asm
->> - * implementations in slb_allocate (slb_low.S), do_stab_bolted
->> - * (head.S) and ASM_VSID_SCRAMBLE (below) are changed accordingly.
->> - */
->
-> Are you absolutely sure that nothing in the assembly code would need
-> to be changed if someone changed these definitions?
->
+> -----Original Message-----
+> From: Greg KH [mailto:greg@kroah.com]
+> Sent: Monday, July 30, 2012 9:32 PM
+> To: Singh Sandeep-B37400
+> Cc: Francois Romieu; devel@driverdev.osuosl.org; linuxppc-
+> dev@lists.ozlabs.org; galak@kernel.crashing.org; linux-arm-
+> kernel@lists.infradead.org; linux-kernel@vger.kernel.org
+> Subject: Re: [2/3][PATCH][v2] TDM Framework
+>=20
+> On Mon, Jul 30, 2012 at 09:50:57AM +0000, Singh Sandeep-B37400 wrote:
+> > 1. You should send some kernel mode TDM clients. Without those the
+> framework
+> >    is pretty useless.
+> > [Sandeep] We do have a test client but not good enough to be pushed in
+> > open source, should we add it to documentation??
+>=20
+> Then how do you know if the framework is "correct" and good enough for
+> real clients?  We don't add frameworks, or apis, to the kernel without
+> users, so you will have to come up with some users before we can accept
+> it.
+We can only say that this framework is available in FSL BSPs and being used=
+ by VoIP companies.
+But running a complete voice stack itself is beyond the scope of Freescale.
+So vendors integrate their solutions with FSL solution.
+To test the framework we have a small application in our BSP (this is a ver=
+y basic test client) which tests the TDM driver and the SLIC interface from=
+ voice  transfer perspective.
+We can get this added in the Linux codebase in some test directory. What co=
+uld be a good place for this?
 
-As a part of this patchset, i didn't touch any of these and the pathcset
-do change these values. 
-
--aneesh
+Regards
+Sandeep
