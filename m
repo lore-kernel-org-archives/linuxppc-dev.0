@@ -1,24 +1,33 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 1746C2C00AB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 16:04:25 +1000 (EST)
-Message-ID: <5018C817.80509@cn.fujitsu.com>
-Date: Wed, 01 Aug 2012 14:09:27 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <jlarrew@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e6.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 514DA2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 17:22:40 +1000 (EST)
+Received: from /spool/local
+ by e6.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <jlarrew@linux.vnet.ibm.com>;
+ Wed, 1 Aug 2012 03:22:36 -0400
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B4D13C90046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 03:22:16 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q717MGQA17301582
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 03:22:16 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q71Cr89M011092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 08:53:08 -0400
+Message-ID: <5018D926.6010709@linux.vnet.ibm.com>
+Date: Wed, 01 Aug 2012 02:22:14 -0500
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: gerald.schaefer@de.ibm.com
-Subject: Re: [RFC PATCH v5 16/19] memory-hotplug: free memmap of sparse-vmemmap
-References: <50126B83.3050201@cn.fujitsu.com>	<50126EBE.1020006@cn.fujitsu.com>
- <20120731142251.5b2cae37@thinkpad>
-In-Reply-To: <20120731142251.5b2cae37@thinkpad>
+To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] vphn: fix arch_update_cpu_topology() return value
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- Yasuaki ISIMATU <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- liuj97@gmail.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +37,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 07/31/2012 08:22 PM, Gerald Schaefer Wrote:
-> On Fri, 27 Jul 2012 18:34:38 +0800
-> Wen Congyang <wency@cn.fujitsu.com> wrote:
-> 
->> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>
->> All pages of virtual mapping in removed memory cannot be freed, since
->> some pages used as PGD/PUD includes not only removed memory but also
->> other memory. So the patch checks whether page can be freed or not.
->>
->> How to check whether page can be freed or not?
->>  1. When removing memory, the page structs of the revmoved memory are
->> filled with 0FD.
->>  2. All page structs are filled with 0xFD on PT/PMD, PT/PMD can be
->> cleared. In this case, the page used as PT/PMD can be freed.
->>
->> Applying patch, __remove_section() of CONFIG_SPARSEMEM_VMEMMAP is
->> integrated into one. So __remove_section() of
->> CONFIG_SPARSEMEM_VMEMMAP is deleted.
-> 
-> There should also be generic or dummy versions of the functions
-> vmemmap_free_bootmem(), vmemmap_kfree() and
-> register_page_bootmem_memmap(). It doesn't compile on other
-> archtitectures than x86 as it is now:
-> 
-> mm/built-in.o: In function `sparse_remove_one_section':
-> (.text+0x49fa6): undefined reference to `vmemmap_free_bootmem'
-> mm/built-in.o: In function `sparse_remove_one_section':
-> (.text+0x49fcc): undefined reference to `vmemmap_kfree'
-> mm/built-in.o: In function `register_page_bootmem_info_node':
-> (.text+0x57c06): undefined reference to `register_page_bootmem_memmap'
-> mm/built-in.o: In function `sparse_add_one_section':
-> (.meminit.text+0x2506): undefined reference to `vmemmap_kfree'
-> mm/built-in.o: In function `sparse_add_one_section':
-> (.meminit.text+0x2528): undefined reference to `vmemmap_kfree'
-> make: *** [vmlinux] Error 1
-> 
-> 
+>From 5dfd547532fca61462dc17fd0bb8e533002c4bc5 Mon Sep 17 00:00:00 2001
+From: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+Date: Thu, 7 Jun 2012 16:04:34 -0500
 
-Thanks for testing. I will fix it.
+arch_update_cpu_topology() should only return 1 when the topology has
+actually changed, and should return 0 otherwise.
 
-Wen Congyang
+This patch fixes a potential bug where rebuild_sched_domains() would
+reinitialize the sched domains even when the topology hasn't changed.
+
+Signed-off-by: Jesse Larrew <jlarrew@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/numa.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 39b1597..59213cf 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -1436,11 +1436,11 @@ static long vphn_get_associativity(unsigned long cpu,
+ 
+ /*
+  * Update the node maps and sysfs entries for each cpu whose home node
+- * has changed.
++ * has changed. Returns 1 when the topology has changed, and 0 otherwise.
+  */
+ int arch_update_cpu_topology(void)
+ {
+-	int cpu, nid, old_nid;
++	int cpu, nid, old_nid, changed = 0;
+ 	unsigned int associativity[VPHN_ASSOC_BUFSIZE] = {0};
+ 	struct device *dev;
+ 
+@@ -1466,9 +1466,10 @@ int arch_update_cpu_topology(void)
+ 		dev = get_cpu_device(cpu);
+ 		if (dev)
+ 			kobject_uevent(&dev->kobj, KOBJ_CHANGE);
++		changed = 1;
+ 	}
+ 
+-	return 1;
++	return changed;
+ }
+ 
+ static void topology_work_fn(struct work_struct *work)
+-- 
+1.7.7.6
+
+
+Jesse Larrew
+Software Engineer, Linux on Power Kernel Team
+IBM Linux Technology Center
+Phone: (512) 973-2052 (T/L: 363-2052)
+jlarrew@linux.vnet.ibm.com
