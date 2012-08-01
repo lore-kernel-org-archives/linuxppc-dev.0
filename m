@@ -1,35 +1,26 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 935332C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 17:58:58 +1000 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 1 Aug 2012 13:28:55 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q717wrpv24510656
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 13:28:53 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q717wqir029191
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 17:58:52 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V5 11/13] arch/powerpc: properly isolate kernel and user
- proto-VSID
-In-Reply-To: <20120801043147.GA24014@drongo>
-References: <1343647339-25576-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1343647339-25576-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120801043147.GA24014@drongo>
-Date: Wed, 01 Aug 2012 13:28:47 +0530
-Message-ID: <87r4rrhwlk.fsf@skywalker.in.ibm.com>
+Return-Path: <B40534@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3055E2C00B7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 18:19:22 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH] powerpc/fsl: mpic timer driver
+Date: Wed, 1 Aug 2012 08:19:12 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DA7973@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <1343370058-2983-1-git-send-email-Dongsheng.wang@freescale.com>
+ <2F4F76E5-1ACD-4F30-A997-9811DCE82202@kernel.crashing.org>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DA4580@039-SN2MPN1-021.039d.mgd.msft.net>
+ <267909D0-5FDC-4864-AA4B-189A651889A6@kernel.crashing.org>
+In-Reply-To: <267909D0-5FDC-4864-AA4B-189A651889A6@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "paulus@samba.org" <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Wood Scott-B07421 <B07421@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,66 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
 
-> On Mon, Jul 30, 2012 at 04:52:17PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> The proto-VSID space is divided into two class
->> User:   0 to 2^(CONTEXT_BITS + USER_ESID_BITS) -1
->> kernel: 2^(CONTEXT_BITS + USER_ESID_BITS) to 2^(VSID_BITS) - 1
->> 
->> With KERNEL_START at 0xc000000000000000, the proto vsid for
->> the kernel ends up with 0xc00000000 (36 bits). With 64TB
->> patchset we need to have kernel proto-VSID in the
->> [2^37 to 2^38 - 1] range due to the increased USER_ESID_BITS.
->
-> This needs to be rolled in with the previous patch, otherwise you'll
-> break bisection.
->
->> diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
->> index db2cb3f..405d380 100644
->> --- a/arch/powerpc/mm/slb_low.S
->> +++ b/arch/powerpc/mm/slb_low.S
->> @@ -57,8 +57,16 @@ _GLOBAL(slb_allocate_realmode)
->>  _GLOBAL(slb_miss_kernel_load_linear)
->>  	li	r11,0
->>  BEGIN_FTR_SECTION
->> +	li	r9,0x1
->> +	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
->>  	b	slb_finish_load
->>  END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
->> +	li	r9,0x1
->> +	/*
->> +	 * shift 12 bits less here, slb_finish_load_1T will do
->> +	 * the necessary shits
->> +	 */
->> +	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
->>  	b	slb_finish_load_1T
->
-> Since you're actually doing exactly the same instructions in the 256M
-> and 1T segment cases, why not do the li; rldimi before the
-> BEGIN_FTR_SECTION?
->
->> @@ -86,8 +94,16 @@ _GLOBAL(slb_miss_kernel_load_vmemmap)
->>  	li	r11,0
->>  6:
->>  BEGIN_FTR_SECTION
->> +	li	r9,0x1
->> +	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
->>  	b	slb_finish_load
->>  END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
->> +	li	r9,0x1
->> +	/*
->> +	 * shift 12 bits less here, slb_finish_load_1T will do
->> +	 * the necessary shits
->> +	 */
->> +	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
->>  	b	slb_finish_load_1T
->
-> And similarly here.
->
 
-Folded to the previous patch and updated
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Tuesday, July 31, 2012 10:31 PM
+> To: Wang Dongsheng-B40534
+> Cc: benh@kernel.crashing.org; paulus@samba.org; Wood Scott-B07421;
+> linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH] powerpc/fsl: mpic timer driver
+>=20
+>=20
+> On Jul 31, 2012, at 2:58 AM, Wang Dongsheng-B40534 wrote:
+>=20
+> >
+> >
+> >> -----Original Message-----
+> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >> Sent: Friday, July 27, 2012 9:14 PM
+> >> To: Wang Dongsheng-B40534
+> >> Cc: benh@kernel.crashing.org; paulus@samba.org; Wood Scott-B07421;
+> >> linuxppc-dev@lists.ozlabs.org
+> >> Subject: Re: [PATCH] powerpc/fsl: mpic timer driver
+> >>
+> >>
+> >> On Jul 27, 2012, at 1:20 AM, <Dongsheng.wang@freescale.com>
+> >> <Dongsheng.wang@freescale.com> wrote:
+> >>
+> >>> From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+> >>>
+> >>> Global timers A and B internal to the PIC. The two independent
+> >>> groups of global timer, group A and group B, are identical in their
+> >> functionality.
+> >>> The hardware timer generates an interrupt on every timer cycle.
+> >>> e.g
+> >>> Power management can use the hardware timer to wake up the machine.
+> >>>
+> >>> Signed-off-by: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+> >>> Signed-off-by: Li Yang <leoli@freescale.com>
+> >>
+> >> How much of this is FSL specific vs openpic?  OpenPIC spec's timer
+> >> support (only a single group).
+> >>
+> > [Wang Dongsheng] Yes, OpenPIC only a single group timer.
+> > FSL: add more register, features and group.
+> > This patch only to support FSL chip.
+> > "mpic_timer.c" -> "fsl_mpic_timer.c"
+> > I will modify the description of the patch. how about?
+>=20
+> I'd rather we support both, can we not use the MPIC_FSL flag to deal with
+> FSL specific behavior?
+>=20
+[Wang Dongsheng] This patch, most of them are done processing cascade mode.
+Cascade is a FSL chip function. I think this patch is very targeted.
+I think that the patch only supports FSL chip.
 
--aneesh
+> - k
+>=20
