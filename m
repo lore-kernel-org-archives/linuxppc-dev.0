@@ -1,16 +1,26 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id BFA6A2C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 09:46:01 +1000 (EST)
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: linux-crypto@vger.kernel.org
-Subject: [PATCH 7/7] carma: remove unnecessary DMA_INTERRUPT capability
-Date: Tue, 31 Jul 2012 16:45:52 -0700
-Message-Id: <1343778352-5549-8-git-send-email-iws@ovro.caltech.edu>
-In-Reply-To: <1343778352-5549-1-git-send-email-iws@ovro.caltech.edu>
-References: <1343778352-5549-1-git-send-email-iws@ovro.caltech.edu>
-Cc: B32616@freescale.com, linuxppc-dev@lists.ozlabs.org,
- "Ira W. Snyder" <iws@ovro.caltech.edu>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id BAF902C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 11:37:24 +1000 (EST)
+Message-ID: <5018897E.4040109@cn.fujitsu.com>
+Date: Wed, 01 Aug 2012 09:42:22 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
+MIME-Version: 1.0
+To: gerald.schaefer@de.ibm.com
+Subject: Re: [RFC PATCH v5 12/19] memory-hotplug: introduce new function
+ arch_remove_memory()
+References: <50126B83.3050201@cn.fujitsu.com>	<50126E2F.8010301@cn.fujitsu.com>	<20120730102305.GB3631@osiris.boeblingen.de.ibm.com>	<50166379.4090305@cn.fujitsu.com>
+ <20120731144000.33fd4a0a@thinkpad>
+In-Reply-To: <20120731144000.33fd4a0a@thinkpad>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki ISIMATU <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,53 +30,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
+At 07/31/2012 08:40 PM, Gerald Schaefer Wrote:
+> On Mon, 30 Jul 2012 18:35:37 +0800
+> Wen Congyang <wency@cn.fujitsu.com> wrote:
+>=20
+>> At 07/30/2012 06:23 PM, Heiko Carstens Wrote:
+>>> On Fri, Jul 27, 2012 at 06:32:15PM +0800, Wen Congyang wrote:
+>>>> We don't call =5F=5Fadd=5Fpages() directly in the function add=5Fmemor=
+y()
+>>>> because some other architecture related things need to be done
+>>>> before or after calling =5F=5Fadd=5Fpages(). So we should introduce
+>>>> a new function arch=5Fremove=5Fmemory() to revert the things
+>>>> done in arch=5Fadd=5Fmemory().
+>>>>
+>>>> Note: the function for s390 is not implemented(I don't know how to
+>>>> implement it for s390).
+>>>
+>>> There is no hardware or firmware interface which could trigger a
+>>> hot memory remove on s390. So there is nothing that needs to be
+>>> implemented.
+>>
+>> Thanks for providing this information.
+>>
+>> According to this, arch=5Fremove=5Fmemory() for s390 can just return
+>> -EBUSY.
+>=20
+> Yes, but there is a prototype mismatch for arch=5Fremove=5Fmemory() on s3=
+90
+> and also other architectures (u64 vs. unsigned long).
+>=20
+> arch/s390/mm/init.c:262: error: conflicting types for
+> =E2=80=98arch=5Fremove=5Fmemory=E2=80=99 include/linux/memory=5Fhotplug.h=
+:88: error: previous
+> declaration of =E2=80=98arch=5Fremove=5Fmemory=E2=80=99 was here
+>=20
+> In memory=5Fhotplug.h you have:
+> extern int arch=5Fremove=5Fmemory(unsigned long start, unsigned long size=
+);
+>=20
+> On all archs other than x86 you have:
+> int arch=5Fremove=5Fmemory(u64 start, u64 size)
 
-These drivers set the DMA_INTERRUPT capability bit when requesting a DMA
-controller channel. This was historical, and is no longer needed.
+Thanks for pointing it out. I will fix it.
 
-Recent changes to the drivers/dma/fsldma.c driver have removed support
-for this flag. This makes the carma drivers unable to find a DMA channel
-with the required capabilities.
+Wen Congyang
 
-Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
----
- drivers/misc/carma/carma-fpga-program.c |    1 -
- drivers/misc/carma/carma-fpga.c         |    3 +--
- 2 files changed, 1 insertions(+), 3 deletions(-)
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>=20
 
-diff --git a/drivers/misc/carma/carma-fpga-program.c b/drivers/misc/carma/carma-fpga-program.c
-index a2d25e4..eaddfe9 100644
---- a/drivers/misc/carma/carma-fpga-program.c
-+++ b/drivers/misc/carma/carma-fpga-program.c
-@@ -978,7 +978,6 @@ static int fpga_of_probe(struct platform_device *op)
- 	dev_set_drvdata(priv->dev, priv);
- 	dma_cap_zero(mask);
- 	dma_cap_set(DMA_MEMCPY, mask);
--	dma_cap_set(DMA_INTERRUPT, mask);
- 	dma_cap_set(DMA_SLAVE, mask);
- 	dma_cap_set(DMA_SG, mask);
- 
-diff --git a/drivers/misc/carma/carma-fpga.c b/drivers/misc/carma/carma-fpga.c
-index 8c279da..861b298 100644
---- a/drivers/misc/carma/carma-fpga.c
-+++ b/drivers/misc/carma/carma-fpga.c
-@@ -666,7 +666,7 @@ static int data_submit_dma(struct fpga_device *priv, struct data_buf *buf)
- 	src = SYS_FPGA_BLOCK;
- 	tx = chan->device->device_prep_dma_memcpy(chan, dst, src,
- 						  REG_BLOCK_SIZE,
--						  DMA_PREP_INTERRUPT);
-+						  0);
- 	if (!tx) {
- 		dev_err(priv->dev, "unable to prep SYS-FPGA DMA\n");
- 		return -ENOMEM;
-@@ -1333,7 +1333,6 @@ static int data_of_probe(struct platform_device *op)
- 
- 	dma_cap_zero(mask);
- 	dma_cap_set(DMA_MEMCPY, mask);
--	dma_cap_set(DMA_INTERRUPT, mask);
- 	dma_cap_set(DMA_SLAVE, mask);
- 	dma_cap_set(DMA_SG, mask);
- 
--- 
-1.7.8.6
+=
