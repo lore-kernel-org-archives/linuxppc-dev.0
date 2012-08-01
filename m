@@ -1,32 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C520F2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 19:56:31 +1000 (EST)
+ (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1EE302C00C0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 20:02:02 +1000 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 1 Aug 2012 15:26:27 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q719uPqs25821250
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 15:26:25 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q719uOHS012016
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 19:56:25 +1000
+ Wed, 1 Aug 2012 15:31:59 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q71A1tdR23724144
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 15:31:56 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q71A1tqV027709
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Aug 2012 20:01:55 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V5 12/13] arch/powerpc: Replace open coded CONTEXT_BITS
- value
-In-Reply-To: <20120801052902.GF24014@drongo>
+Subject: Re: [PATCH -V5 13/13] arch/powerpc: Update VSID allocation
+ documentation
+In-Reply-To: <20120801053505.GG24014@drongo>
 References: <1343647339-25576-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1343647339-25576-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120801052902.GF24014@drongo>
-Date: Wed, 01 Aug 2012 15:26:18 +0530
-Message-ID: <87obmvhr5p.fsf@skywalker.in.ibm.com>
+ <1343647339-25576-14-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20120801053505.GG24014@drongo>
+Date: Wed, 01 Aug 2012 15:31:47 +0530
+Message-ID: <87k3xjhqwk.fsf@skywalker.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -41,33 +41,53 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Paul Mackerras <paulus@samba.org> writes:
 
-> On Mon, Jul 30, 2012 at 04:52:18PM +0530, Aneesh Kumar K.V wrote:
+> On Mon, Jul 30, 2012 at 04:52:19PM +0530, Aneesh Kumar K.V wrote:
 >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 >> 
->> To clarify the meaning for future readers, replace the open coded
->> 19 with CONTEXT_BITS
->> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/mm/mmu_context_hash64.c |    2 +-
->>  1 file changed, 1 insertion(+), 1 deletion(-)
->> 
->> diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
->> index 40677aa..daa076c 100644
->> --- a/arch/powerpc/mm/mmu_context_hash64.c
->> +++ b/arch/powerpc/mm/mmu_context_hash64.c
->> @@ -34,7 +34,7 @@ static DEFINE_IDA(mmu_context_ida);
->>   * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
->>   * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
->>   */
->> -#define MAX_CONTEXT	((1UL << 19) - 1)
->> +#define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
+>> This update the proto-VSID and VSID scramble related information
+>> to be more generic by using names instead of current values.
 >
-> This is a good thing to do, but you should also update the comment.
-> Maybe you should put this patch before your number 10/13 and then
-> change the comment in the same patch where you add the 64TB support.
+> Comments below...
+>
+>> - * VSID allocation
+>> + * VSID allocation (256MB segment)
+>>   *
+>> - * We first generate a 36-bit "proto-VSID".  For kernel addresses this
+>> - * is equal to the ESID, for user addresses it is:
+>> - *	(context << 15) | (esid & 0x7fff)
+>> + * We first generate a 38-bit "proto-VSID".  For kernel addresses this
+>> + * is equal to the ESID | 1 << 37, for user addresses it is:
+>> + *	(context << USER_ESID_BITS) | (esid & (1U << USER_ESID_BITS))
+> 					      ^^^^^^^^^^^^^^^^^^^^^^
+> should be ((1U << USER_ESID_BITS) - 1)
+>
+>>   *
+>> - * The two forms are distinguishable because the top bit is 0 for user
+>> - * addresses, whereas the top two bits are 1 for kernel addresses.
+>> - * Proto-VSIDs with the top two bits equal to 0b10 are reserved for
+>> - * now.
+>> + * This splits the proto-VSID into the below range
+>> + *  0 - (2^(CONTEXT_BITS + USER_ESID_BITS) - 1) : User proto-VSID range
+>> + *  2^(CONTEXT_BITS + USER_ESID_BITS) - 2^(VSID_BITS) : Kernel proto-VSID range
+>
+> Perhaps point out also that CONTEXT_BITS + USER_ESID_BITS == VSID_BITS - 1,
+> that is, you have assigned half of the space to user processes and half
+> to the kernel.
+>
 
-Moved this as the first patch and updated the doc the following doc
-update patch.
+updated
+
+>> -/*
+>> - * WARNING - If you change these you must make sure the asm
+>> - * implementations in slb_allocate (slb_low.S), do_stab_bolted
+>> - * (head.S) and ASM_VSID_SCRAMBLE (below) are changed accordingly.
+>> - */
+>
+> Are you absolutely sure that nothing in the assembly code would need
+> to be changed if someone changed these definitions?
+>
+
+As a part of this patchset, i didn't touch any of these and the pathcset
+do change these values. 
 
 -aneesh
