@@ -1,40 +1,31 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e3.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5F4932C00D2
- for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2012 19:18:28 +1000 (EST)
-Received: from /spool/local
- by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 1 Aug 2012 05:18:25 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 4012338C8039
- for <linuxppc-dev@ozlabs.org>; Wed,  1 Aug 2012 05:18:21 -0400 (EDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q719IKbc073556
- for <linuxppc-dev@ozlabs.org>; Wed, 1 Aug 2012 05:18:20 -0400
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q719IJj0029733
- for <linuxppc-dev@ozlabs.org>; Wed, 1 Aug 2012 03:18:19 -0600
-Date: Wed, 1 Aug 2012 17:18:14 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: Richard Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/8] ppc/pnv: create bus sensitive PEs
-Message-ID: <20120801091814.GC606@shangw.(null)>
-References: <1340639001-28152-1-git-send-email-shangw@linux.vnet.ibm.com>
- <1340639001-28152-2-git-send-email-shangw@linux.vnet.ibm.com>
- <20120801074941.GA10239@richard.(null)>
- <20120801082654.GA29143@shangw.(null)>
- <20120801090446.GA3895@richard.(null)>
+Return-Path: <B32616@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 613F42C00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Aug 2012 19:36:01 +1000 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: Liu Qiang-B32616 <B32616@freescale.com>, "linux-crypto@vger.kernel.org"
+ <linux-crypto@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "dan.j.williams@gmail.com"
+ <dan.j.williams@gmail.com>
+Subject: RE: [PATCH v5 3/6] fsl-dma: change release process of dma
+ descriptor for supporting async_tx
+Date: Wed, 1 Aug 2012 09:35:52 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70C64CC@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1343810957-25378-1-git-send-email-qiang.liu@freescale.com>
+In-Reply-To: <1343810957-25378-1-git-send-email-qiang.liu@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120801090446.GA3895@richard.(null)>
-Cc: linuxppc-dev@ozlabs.org, Gavin Shan <shangw@linux.vnet.ibm.com>
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ "Ira W. Snyder" <iws@ovro.caltech.edu>, Vinod Koul <vinod.koul@intel.com>,
+ Phillips Kim-R1AAHA <R1AAHA@freescale.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ "davem@davemloft.net" <davem@davemloft.net>,
+ "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,310 +35,419 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2012 at 05:04:46AM -0400, Richard Yang wrote:
->On Wed, Aug 01, 2012 at 04:26:54PM +0800, Gavin Shan wrote:
->>On Wed, Aug 01, 2012 at 03:49:41AM -0400, Richard Yang wrote:
->>>On Mon, Jun 25, 2012 at 11:43:14PM +0800, Gavin Shan wrote:
->>>>Basically, there're 2 types of PCI bus sensitive PEs: (A) The PE
->>>>includes single PCI bus. (B) The PE includes the PCI bus and all
->>>>the subordinate PCI buses. At present, we'd like to put PCI bus
->>>>originated by PCI-e link to form PE that contains single PCI bus,
->>>>and the PCIe-to-PCI bridge will form the 2nd type of PE. We don't
->>>>figure out to detect PLX bridge yet. Once we can detect PLX bridge
->>>>some day, we have to put PCI buses originated from the downstream
->>>>port of PLX bridge to the 2nd type of PE.
->>>>
->>>>The patch changes the original implementation for a little bit
->>>>to support 2 types of PCI bus sensitive PEs described as above.
->>>>Also, the function used to retrieve the corresponding PE according
->>>>to the given PCI device has been changed based on that because each
->>>>PCI device should trace the directly associated PE.
->>>>
->>>>Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
->>>>Reviewed-by: Ram Pai <linuxram@us.ibm.com>
->>>>Reviewed-by: Richard Yang <weiyang@linux.vnet.ibm.com>
->>>>---
->>>> arch/powerpc/platforms/powernv/pci-ioda.c |   97 +++++++++++++++++------------
->>>> arch/powerpc/platforms/powernv/pci.h      |   10 +--
->>>> 2 files changed, 63 insertions(+), 44 deletions(-)
->>>>
->>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>index fbdd74d..1504795 100644
->>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>@@ -548,7 +548,7 @@ static void __devinit pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
->>>>  * but in the meantime, we need to protect them to avoid warnings
->>>>  */
->>>> #ifdef CONFIG_PCI_MSI
->>>>-static struct pnv_ioda_pe * __devinit __pnv_ioda_get_one_pe(struct pci_dev *dev)
->>>>+static struct pnv_ioda_pe * __devinit pnv_ioda_get_pe(struct pci_dev *dev)
->>>> {
->>>> 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
->>>> 	struct pnv_phb *phb = hose->private_data;
->>>>@@ -560,19 +560,6 @@ static struct pnv_ioda_pe * __devinit __pnv_ioda_get_one_pe(struct pci_dev *dev)
->>>> 		return NULL;
->>>> 	return &phb->ioda.pe_array[pdn->pe_number];
->>>> }
->>>>-
->>>>-static struct pnv_ioda_pe * __devinit pnv_ioda_get_pe(struct pci_dev *dev)
->>>>-{
->>>>-	struct pnv_ioda_pe *pe = __pnv_ioda_get_one_pe(dev);
->>>>-
->>>>-	while (!pe && dev->bus->self) {
->>>>-		dev = dev->bus->self;
->>>>-		pe = __pnv_ioda_get_one_pe(dev);
->>>>-		if (pe)
->>>>-			pe = pe->bus_pe;
->>>>-	}
->>>>-	return pe;
->>>>-}
->>>> #endif /* CONFIG_PCI_MSI */
->>>>
->>>> static int __devinit pnv_ioda_configure_pe(struct pnv_phb *phb,
->>>>@@ -589,7 +576,11 @@ static int __devinit pnv_ioda_configure_pe(struct pnv_phb *phb,
->>>> 		dcomp = OPAL_IGNORE_RID_DEVICE_NUMBER;
->>>> 		fcomp = OPAL_IGNORE_RID_FUNCTION_NUMBER;
->>>> 		parent = pe->pbus->self;
->>>>-		count = pe->pbus->subordinate - pe->pbus->secondary + 1;
->>>>+		if (pe->flags & PNV_IODA_PE_BUS_ALL)
->>>>+			count = pe->pbus->subordinate - pe->pbus->secondary + 1;
->>>>+		else
->>>>+			count = 1;
->>>>+
->>>> 		switch(count) {
->>>> 		case  1: bcomp = OpalPciBusAll;		break;
->>>> 		case  2: bcomp = OpalPciBus7Bits;	break;
->>>>@@ -699,6 +690,7 @@ static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
->>>> 	return 10;
->>>> }
->>>>
->>>>+#if 0
->>>> static struct pnv_ioda_pe * __devinit pnv_ioda_setup_dev_PE(struct pci_dev *dev)
->>>> {
->>>> 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
->>>>@@ -767,6 +759,7 @@ static struct pnv_ioda_pe * __devinit pnv_ioda_setup_dev_PE(struct pci_dev *dev)
->>>>
->>>> 	return pe;
->>>> }
->>>>+#endif /* Useful for SRIOV case */
->>>>
->>>> static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
->>>> {
->>>>@@ -784,43 +777,47 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
->>>> 		pdn->pcidev = dev;
->>>> 		pdn->pe_number = pe->pe_number;
->>>> 		pe->dma_weight += pnv_ioda_dma_weight(dev);
->>>>-		if (dev->subordinate)
->>>>+		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
->>>> 			pnv_ioda_setup_same_PE(dev->subordinate, pe);
->>>> 	}
->>>> }
->>>>
->>>>-static void __devinit pnv_ioda_setup_bus_PE(struct pci_dev *dev,
->>>>-					    struct pnv_ioda_pe *ppe)
->>>>+/*
->>>>+ * There're 2 types of PCI bus sensitive PEs: One that is compromised of
->>>>+ * single PCI bus. Another one that contains the primary PCI bus and its
->>>>+ * subordinate PCI devices and buses. The second type of PE is normally
->>>>+ * orgiriated by PCIe-to-PCI bridge or PLX switch downstream ports.
->>>>+ */
->>>>+static void __devinit pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
->>>> {
->>>>-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
->>>>+	struct pci_controller *hose = pci_bus_to_host(bus);
->>>> 	struct pnv_phb *phb = hose->private_data;
->>>>-	struct pci_bus *bus = dev->subordinate;
->>>> 	struct pnv_ioda_pe *pe;
->>>> 	int pe_num;
->>>>
->>>>-	if (!bus) {
->>>>-		pr_warning("%s: Bridge without a subordinate bus !\n",
->>>>-			   pci_name(dev));
->>>>-		return;
->>>>-	}
->>>> 	pe_num = pnv_ioda_alloc_pe(phb);
->>>> 	if (pe_num == IODA_INVALID_PE) {
->>>>-		pr_warning("%s: Not enough PE# available, disabling bus\n",
->>>>-			   pci_name(dev));
->>>>+		pr_warning("%s: Not enough PE# available for PCI bus %04x:%02x\n",
->>>>+			__func__, pci_domain_nr(bus), bus->number);
->>>> 		return;
->>>> 	}
->>>>
->>>> 	pe = &phb->ioda.pe_array[pe_num];
->>>>-	ppe->bus_pe = pe;
->>>>+	pe->flags = (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
->>>> 	pe->pbus = bus;
->>>>+	pe->pe_number = pe_num;
->>>
->>>Gavin, 
->>>
->>>Sorry for the late reply. I am not sure I a replying on the latest code. If
->>>not, please point me out. 
->>>
->>>I think we don't need to add this line. the pe->pe_number is already set in
->>>pnv_ioda_alloc_pe().
->>>
->>
->>Thanks, Richard. I think we probablly need remove the following line in pnv_ioda_alloc_pe()
->>instead of the line you pointed because pnv_ioda_alloc_pe() might return invalid
->>PE number (-1). That will eventually cause data corruption while using "-1" to
->>referring phb->ioda.pe_array[], even the situation shouldn't happen for now :-)
->>
->>	phb->ioda.pe_array[pe].pe_number = pe;
->
->oh, so it is not proper to set pe_number = -1 in the pe_array, right?
->
+Hi Ira,
 
-It seems that I missed something. Anyway, moving the line from pnv_ioda_alloc_pe
-or that one you pointed is ok. I will remove the line you pointed in next version.
-Thanks a lot, Richard.
+I hope we can discuss fsl-dma in this thread. In this patch I give a simple=
+ case to illustrate why I must correct the release process of finished desc=
+riptors.
+There is potential risk in current fsl-dma, the finished cookie value and f=
+inished async_tx descriptor should be judged by hardware, but not only depe=
+nd on the s/w queue ld_running. I know h/w is very fast, but the driver sho=
+uld be in align with h/w.
 
-"-1" means invalid PE number. In previous reply, I tried to say that following code
-will cause data corruption, which will never happen after looking into the code
-again :-)
+Thanks.
 
-	phb->ioda.pe_array[-1].pe_number = -1;
-
-Thanks,
-Gavin
-
->>
->>Let me change it accordingly in next version. The series of patches is pending
->>for the patches against PCI core change. The later one is waiting for Bjorn's
->>confirm.
->>
->>Thanks,
->>Gavin
->>
->>>> 	pe->pdev = NULL;
->>>> 	pe->tce32_seg = -1;
->>>> 	pe->mve_number = -1;
->>>> 	pe->rid = bus->secondary << 8;
->>>> 	pe->dma_weight = 0;
->>>>
->>>>-	pe_info(pe, "Secondary busses %d..%d associated with PE\n",
->>>>-		bus->secondary, bus->subordinate);
->>>>+	if (all)
->>>>+		pe_info(pe, "Secondary busses %d..%d associated with PE#%d\n",
->>>>+			bus->secondary, bus->subordinate, pe_num);
->>>>+	else
->>>>+		pe_info(pe, "Secondary busses %d associated with PE#%d\n",
->>>>+			bus->secondary, pe_num);
->>>>
->>>> 	if (pnv_ioda_configure_pe(phb, pe)) {
->>>> 		/* XXX What do we do here ? */
->>>>@@ -848,17 +845,33 @@ static void __devinit pnv_ioda_setup_bus_PE(struct pci_dev *dev,
->>>> static void __devinit pnv_ioda_setup_PEs(struct pci_bus *bus)
->>>> {
->>>> 	struct pci_dev *dev;
->>>>-	struct pnv_ioda_pe *pe;
->>>>+
->>>>+	pnv_ioda_setup_bus_PE(bus, 0);
->>>>
->>>> 	list_for_each_entry(dev, &bus->devices, bus_list) {
->>>>-		pe = pnv_ioda_setup_dev_PE(dev);
->>>>-		if (pe == NULL)
->>>>-			continue;
->>>>-		/* Leaving the PCIe domain ... single PE# */
->>>>-		if (dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE)
->>>>-			pnv_ioda_setup_bus_PE(dev, pe);
->>>>-		else if (dev->subordinate)
->>>>-			pnv_ioda_setup_PEs(dev->subordinate);
->>>>+		if (dev->subordinate) {
->>>>+			if (dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE)
->>>>+				pnv_ioda_setup_bus_PE(dev->subordinate, 1);
->>>>+			else
->>>>+				pnv_ioda_setup_PEs(dev->subordinate);
->>>>+		}
->>>>+	}
->>>>+}
->>>>+
->>>>+/*
->>>>+ * Configure PEs so that the downstream PCI buses and devices
->>>>+ * could have their associated PE#. Unfortunately, we didn't
->>>>+ * figure out the way to identify the PLX bridge yet. So we
->>>>+ * simply put the PCI bus and the subordinate behind the root
->>>>+ * port to PE# here. The game rule here is expected to be changed
->>>>+ * as soon as we can detected PLX bridge correctly.
->>>>+ */
->>>>+static void __devinit pnv_pci_ioda_setup_PEs(void)
->>>>+{
->>>>+	struct pci_controller *hose, *tmp;
->>>>+
->>>>+	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
->>>>+		pnv_ioda_setup_PEs(hose->bus);
->>>> 	}
->>>> }
->>>>
->>>>@@ -1139,6 +1152,11 @@ static void __devinit pnv_pci_ioda_fixup_phb(struct pci_controller *hose)
->>>> 	}
->>>> }
->>>>
->>>>+static void __devinit pnv_pci_ioda_fixup(void)
->>>>+{
->>>>+	pnv_pci_ioda_setup_PEs();
->>>>+}
->>>>+
->>>> /* Prevent enabling devices for which we couldn't properly
->>>>  * assign a PE
->>>>  */
->>>>@@ -1305,6 +1323,7 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
->>>> 	 * ourselves here
->>>> 	 */
->>>> 	ppc_md.pcibios_fixup_phb = pnv_pci_ioda_fixup_phb;
->>>>+	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
->>>> 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
->>>> 	pci_add_flags(PCI_PROBE_ONLY | PCI_REASSIGN_ALL_RSRC);
->>>>
->>>>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->>>>index 8bc4796..0cb760c 100644
->>>>--- a/arch/powerpc/platforms/powernv/pci.h
->>>>+++ b/arch/powerpc/platforms/powernv/pci.h
->>>>@@ -17,9 +17,14 @@ enum pnv_phb_model {
->>>> };
->>>>
->>>> #define PNV_PCI_DIAG_BUF_SIZE	4096
->>>>+#define PNV_IODA_PE_DEV		(1 << 0)	/* PE has single PCI device	*/
->>>>+#define PNV_IODA_PE_BUS		(1 << 1)	/* PE has primary PCI bus	*/
->>>>+#define PNV_IODA_PE_BUS_ALL	(1 << 2)	/* PE has subordinate buses	*/
->>>>
->>>> /* Data associated with a PE, including IOMMU tracking etc.. */
->>>> struct pnv_ioda_pe {
->>>>+	unsigned long		flags;
->>>>+
->>>> 	/* A PE can be associated with a single device or an
->>>> 	 * entire bus (& children). In the former case, pdev
->>>> 	 * is populated, in the later case, pbus is.
->>>>@@ -40,11 +45,6 @@ struct pnv_ioda_pe {
->>>> 	 */
->>>> 	unsigned int		dma_weight;
->>>>
->>>>-	/* This is a PCI-E -> PCI-X bridge, this points to the
->>>>-	 * corresponding bus PE
->>>>-	 */
->>>>-	struct pnv_ioda_pe	*bus_pe;
->>>>-
->>>> 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
->>>> 	int			tce32_seg;
->>>> 	int			tce32_segcount;
->>>>-- 
->>>>1.7.9.5
->>>>
->>>>_______________________________________________
->>>>Linuxppc-dev mailing list
->>>>Linuxppc-dev@lists.ozlabs.org
->>>>https://lists.ozlabs.org/listinfo/linuxppc-dev
->>>
->>>-- 
->>>Richard Yang
->>>Help you, Help me
->>
->>_______________________________________________
->>Linuxppc-dev mailing list
->>Linuxppc-dev@lists.ozlabs.org
->>https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->-- 
->Richard Yang
->Help you, Help me
+> -----Original Message-----
+> From: Liu Qiang-B32616
+> Sent: Wednesday, August 01, 2012 4:49 PM
+> To: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; dan.j.williams@gmail.com
+> Cc: Phillips Kim-R1AAHA; herbert@gondor.hengli.com.au;
+> davem@davemloft.net; Liu Qiang-B32616; Dan Williams; Vinod Koul; Li Yang-
+> R58472; Ira W. Snyder
+> Subject: [PATCH v5 3/6] fsl-dma: change release process of dma descriptor
+> for supporting async_tx
+>=20
+> From: Qiang Liu <qiang.liu@freescale.com>
+>=20
+> Fix the potential risk when enable config NET_DMA and ASYNC_TX.
+> Async_tx is lack of support in current release process of dma descriptor,
+> all descriptors will be released whatever is acked or no-acked by
+> async_tx, so there is a potential race condition when dma engine is uesd
+> by others clients (e.g. when enable NET_DMA to offload TCP).
+>=20
+> In our case, a race condition which is raised when use both of talitos
+> and dmaengine to offload xor is because napi scheduler will sync all
+> pending requests in dma channels, it affects the process of raid
+> operations due to ack_tx is not checked in fsl dma. The no-acked
+> descriptor is freed which is submitted just now, as a dependent tx, this
+> freed descriptor trigger
+> BUG_ON(async_tx_test_ack(depend_tx)) in async_tx_submit().
+>=20
+> TASK =3D ee1a94a0[1390] 'md0_raid5' THREAD: ecf40000 CPU: 0
+> GPR00: 00000001 ecf41ca0 ee44/921a94a0 0000003f 00000001 c00593e4
+> 00000000 00000001
+> GPR08: 00000000 a7a7a7a7 00000001 045/920000002 42028042 100a38d4
+> ed576d98 00000000
+> GPR16: ed5a11b0 00000000 2b162000 00000200 046/920000000 2d555000
+> ed3015e8 c15a7aa0
+> GPR24: 00000000 c155fc40 00000000 ecb63220 ecf41d28 e47/92f640bb0
+> ef640c30 ecf41ca0 NIP [c02b048c] async_tx_submit+0x6c/0x2b4 LR [c02b068c]
+> async_tx_submit+0x26c/0x2b4 Call Trace:
+> [ecf41ca0] [c02b068c] async_tx_submit+0x26c/0x2b448/92 (unreliable)
+> [ecf41cd0] [c02b0a4c] async_memcpy+0x240/0x25c [ecf41d20] [c0421064]
+> async_copy_data+0xa0/0x17c [ecf41d70] [c0421cf4]
+> __raid_run_ops+0x874/0xe10 [ecf41df0] [c0426ee4]
+> handle_stripe+0x820/0x25e8 [ecf41e90] [c0429080] raid5d+0x3d4/0x5b4
+> [ecf41f40] [c04329b8] md_thread+0x138/0x16c [ecf41f90] [c008277c]
+> kthread+0x8c/0x90 [ecf41ff0] [c0011630] kernel_thread+0x4c/0x68
+>=20
+> Another major modification in this patch is the change to completed
+> descriptors, there is a potential risk which caused by exception
+> interrupt, all descriptors in ld_running list are seemed completed when
+> an interrupt raised, it works fine under normal condition, but if there
+> is an exception occured, it cannot work as our excepted. Hardware should
+> not depend on s/w list, the right way is to read current descriptor
+> address register to find the last completed descriptor. If an interrupt
+> is raised by an error, all descriptors in ld_running should not be seemed
+> finished, or these unfinished descriptors in ld_running will be released
+> wrongly.
+>=20
+> A simple way to reproduce,
+> Enable dmatest first, then insert some bad descriptors which can trigger
+> Programming Error interrupts before the good descriptors. Last, the good
+> descriptors will be freed before they are processsed because of the
+> exception intrerrupt.
+>=20
+> Note: the bad descriptors are only for simulating an exception interrupt.
+> This case can illustrate the potential risk in current fsl-dma very well.
+>=20
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Cc: Dan Williams <dan.j.williams@gmail.com>
+> Cc: Vinod Koul <vinod.koul@intel.com>
+> Cc: Li Yang <leoli@freescale.com>
+> Cc: Ira W. Snyder <iws@ovro.caltech.edu>
+> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+> ---
+>  drivers/dma/fsldma.c |  242 +++++++++++++++++++++++++++++++++++---------
+> ------
+>  drivers/dma/fsldma.h |    1 +
+>  2 files changed, 172 insertions(+), 71 deletions(-)
+>=20
+> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c index
+> 4f2f212..87f52c0 100644
+> --- a/drivers/dma/fsldma.c
+> +++ b/drivers/dma/fsldma.c
+> @@ -400,6 +400,125 @@ out_splice:
+>  	list_splice_tail_init(&desc->tx_list, &chan->ld_pending);  }
+>=20
+> +static void fsldma_cleanup_descriptor(struct fsldma_chan *chan); static
+> +void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan);
+> +
+> +/**
+> + * fsldma_clean_completed_descriptor - free all descriptors which
+> + * has been completed and acked
+> + * @chan: Freescale DMA channel
+> + *
+> + * This function is used on all completed and acked descriptors.
+> + * All descriptors should only be freed in this function.
+> + */
+> +static int
+> +fsldma_clean_completed_descriptor(struct fsldma_chan *chan) {
+> +	struct fsl_desc_sw *desc, *_desc;
+> +
+> +	/* Run the callback for each descriptor, in order */
+> +	list_for_each_entry_safe(desc, _desc, &chan->ld_completed, node) {
+> +
+> +		if (async_tx_test_ack(&desc->async_tx)) {
+> +			/* Remove from the list of transactions */
+> +			list_del(&desc->node);
+> +#ifdef FSL_DMA_LD_DEBUG
+> +			chan_dbg(chan, "LD %p free\n", desc); #endif
+> +			dma_pool_free(chan->desc_pool, desc,
+> +					desc->async_tx.phys);
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * fsldma_run_tx_complete_actions - cleanup and free a single link
+> +descriptor
+> + * @chan: Freescale DMA channel
+> + * @desc: descriptor to cleanup and free
+> + * @cookie: Freescale DMA transaction identifier
+> + *
+> + * This function is used on a descriptor which has been executed by the
+> +DMA
+> + * controller. It will run any callbacks, submit any dependencies.
+> + */
+> +static dma_cookie_t fsldma_run_tx_complete_actions(struct fsl_desc_sw
+> *desc,
+> +		struct fsldma_chan *chan, dma_cookie_t cookie) {
+> +	struct dma_async_tx_descriptor *txd =3D &desc->async_tx;
+> +	struct device *dev =3D chan->common.device->dev;
+> +	dma_addr_t src =3D get_desc_src(chan, desc);
+> +	dma_addr_t dst =3D get_desc_dst(chan, desc);
+> +	u32 len =3D get_desc_cnt(chan, desc);
+> +
+> +	BUG_ON(txd->cookie < 0);
+> +
+> +	if (txd->cookie > 0) {
+> +		cookie =3D txd->cookie;
+> +
+> +		/* Run the link descriptor callback function */
+> +		if (txd->callback) {
+> +#ifdef FSL_DMA_LD_DEBUG
+> +			chan_dbg(chan, "LD %p callback\n", desc); #endif
+> +			txd->callback(txd->callback_param);
+> +		}
+> +
+> +		/* Unmap the dst buffer, if requested */
+> +		if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
+> +			if (txd->flags & DMA_COMPL_DEST_UNMAP_SINGLE)
+> +				dma_unmap_single(dev, dst, len, DMA_FROM_DEVICE);
+> +			else
+> +				dma_unmap_page(dev, dst, len, DMA_FROM_DEVICE);
+> +		}
+> +
+> +		/* Unmap the src buffer, if requested */
+> +		if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+> +			if (txd->flags & DMA_COMPL_SRC_UNMAP_SINGLE)
+> +				dma_unmap_single(dev, src, len, DMA_TO_DEVICE);
+> +			else
+> +				dma_unmap_page(dev, src, len, DMA_TO_DEVICE);
+> +		}
+> +	}
+> +
+> +	/* Run any dependencies */
+> +	dma_run_dependencies(txd);
+> +
+> +	return cookie;
+> +}
+> +
+> +/**
+> + * fsldma_clean_running_descriptor - move the completed descriptor from
+> + * ld_running to ld_completed
+> + * @chan: Freescale DMA channel
+> + * @desc: the descriptor which is completed
+> + *
+> + * Free the descriptor directly if acked by async_tx api, or move it to
+> + * queue ld_completed.
+> + */
+> +static int
+> +fsldma_clean_running_descriptor(struct fsldma_chan *chan,
+> +		struct fsl_desc_sw *desc)
+> +{
+> +	/* Remove from the list of transactions */
+> +	list_del(&desc->node);
+> +	/*
+> +	 * the client is allowed to attach dependent operations
+> +	 * until 'ack' is set
+> +	 */
+> +	if (!async_tx_test_ack(&desc->async_tx)) {
+> +		/*
+> +		 * Move this descriptor to the list of descriptors which is
+> +		 * completed, but still awaiting the 'ack' bit to be set.
+> +		 */
+> +		list_add_tail(&desc->node, &chan->ld_completed);
+> +		return 0;
+> +	}
+> +
+> +	dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+> +	return 0;
+> +}
+> +
+>  static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx=
+)
+> {
+>  	struct fsldma_chan *chan =3D to_fsl_chan(tx->chan); @@ -534,8 +653,10
+> @@ static void fsl_dma_free_chan_resources(struct dma_chan *dchan)
+>=20
+>  	chan_dbg(chan, "free all channel resources\n");
+>  	spin_lock_irqsave(&chan->desc_lock, flags);
+> +	fsldma_cleanup_descriptor(chan);
+>  	fsldma_free_desc_list(chan, &chan->ld_pending);
+>  	fsldma_free_desc_list(chan, &chan->ld_running);
+> +	fsldma_free_desc_list(chan, &chan->ld_completed);
+>  	spin_unlock_irqrestore(&chan->desc_lock, flags);
+>=20
+>  	dma_pool_destroy(chan->desc_pool);
+> @@ -819,46 +940,53 @@ static int fsl_dma_device_control(struct dma_chan
+> *dchan,
+>   * controller. It will run any callbacks, submit any dependencies, and
+> then
+>   * free the descriptor.
+>   */
+> -static void fsldma_cleanup_descriptor(struct fsldma_chan *chan,
+> -				      struct fsl_desc_sw *desc)
+> +static void fsldma_cleanup_descriptor(struct fsldma_chan *chan)
+>  {
+> -	struct dma_async_tx_descriptor *txd =3D &desc->async_tx;
+> -	struct device *dev =3D chan->common.device->dev;
+> -	dma_addr_t src =3D get_desc_src(chan, desc);
+> -	dma_addr_t dst =3D get_desc_dst(chan, desc);
+> -	u32 len =3D get_desc_cnt(chan, desc);
+> +	struct fsl_desc_sw *desc, *_desc;
+> +	dma_cookie_t cookie =3D 0;
+> +	dma_addr_t curr_phys =3D get_cdar(chan);
+> +	int idle =3D dma_is_idle(chan);
+> +	int seen_current =3D 0;
+>=20
+> -	/* Run the link descriptor callback function */
+> -	if (txd->callback) {
+> -#ifdef FSL_DMA_LD_DEBUG
+> -		chan_dbg(chan, "LD %p callback\n", desc);
+> -#endif
+> -		txd->callback(txd->callback_param);
+> -	}
+> +	fsldma_clean_completed_descriptor(chan);
+>=20
+> -	/* Run any dependencies */
+> -	dma_run_dependencies(txd);
+> +	/* Run the callback for each descriptor, in order */
+> +	list_for_each_entry_safe(desc, _desc, &chan->ld_running, node) {
+> +		/*
+> +		 * do not advance past the current descriptor loaded into the
+> +		 * hardware channel, subsequent descriptors are either in
+> +		 * process or have not been submitted
+> +		 */
+> +		if (seen_current)
+> +			break;
+>=20
+> -	/* Unmap the dst buffer, if requested */
+> -	if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
+> -		if (txd->flags & DMA_COMPL_DEST_UNMAP_SINGLE)
+> -			dma_unmap_single(dev, dst, len, DMA_FROM_DEVICE);
+> -		else
+> -			dma_unmap_page(dev, dst, len, DMA_FROM_DEVICE);
+> -	}
+> +		/*
+> +		 * stop the search if we reach the current descriptor and the
+> +		 * channel is busy
+> +		 */
+> +		if (desc->async_tx.phys =3D=3D curr_phys) {
+> +			seen_current =3D 1;
+> +			if (!idle)
+> +				break;
+> +		}
+> +
+> +		cookie =3D fsldma_run_tx_complete_actions(desc, chan, cookie);
+> +
+> +		if (fsldma_clean_running_descriptor(chan, desc))
+> +			break;
+>=20
+> -	/* Unmap the src buffer, if requested */
+> -	if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+> -		if (txd->flags & DMA_COMPL_SRC_UNMAP_SINGLE)
+> -			dma_unmap_single(dev, src, len, DMA_TO_DEVICE);
+> -		else
+> -			dma_unmap_page(dev, src, len, DMA_TO_DEVICE);
+>  	}
+>=20
+> -#ifdef FSL_DMA_LD_DEBUG
+> -	chan_dbg(chan, "LD %p free\n", desc);
+> -#endif
+> -	dma_pool_free(chan->desc_pool, desc, txd->phys);
+> +	/*
+> +	 * Start any pending transactions automatically
+> +	 *
+> +	 * In the ideal case, we keep the DMA controller busy while we go
+> +	 * ahead and free the descriptors below.
+> +	 */
+> +	fsl_chan_xfer_ld_queue(chan);
+> +
+> +	if (cookie > 0)
+> +		chan->common.completed_cookie =3D cookie;
+>  }
+>=20
+>  /**
+> @@ -954,11 +1082,15 @@ static enum dma_status fsl_tx_status(struct
+> dma_chan *dchan,
+>  	enum dma_status ret;
+>  	unsigned long flags;
+>=20
+> -	spin_lock_irqsave(&chan->desc_lock, flags);
+>  	ret =3D dma_cookie_status(dchan, cookie, txstate);
+> +	if (ret =3D=3D DMA_SUCCESS)
+> +		return ret;
+> +
+> +	spin_lock_irqsave(&chan->desc_lock, flags);
+> +	fsldma_cleanup_descriptor(chan);
+>  	spin_unlock_irqrestore(&chan->desc_lock, flags);
+>=20
+> -	return ret;
+> +	return dma_cookie_status(dchan, cookie, txstate);
+>  }
+>=20
+>  /*----------------------------------------------------------------------
+> ------*/
+> @@ -1035,52 +1167,19 @@ static irqreturn_t fsldma_chan_irq(int irq, void
+> *data)  static void dma_do_tasklet(unsigned long data)  {
+>  	struct fsldma_chan *chan =3D (struct fsldma_chan *)data;
+> -	struct fsl_desc_sw *desc, *_desc;
+> -	LIST_HEAD(ld_cleanup);
+>  	unsigned long flags;
+>=20
+>  	chan_dbg(chan, "tasklet entry\n");
+>=20
+>  	spin_lock_irqsave(&chan->desc_lock, flags);
+>=20
+> -	/* update the cookie if we have some descriptors to cleanup */
+> -	if (!list_empty(&chan->ld_running)) {
+> -		dma_cookie_t cookie;
+> -
+> -		desc =3D to_fsl_desc(chan->ld_running.prev);
+> -		cookie =3D desc->async_tx.cookie;
+> -		dma_cookie_complete(&desc->async_tx);
+> -
+> -		chan_dbg(chan, "completed_cookie=3D%d\n", cookie);
+> -	}
+> -
+> -	/*
+> -	 * move the descriptors to a temporary list so we can drop the lock
+> -	 * during the entire cleanup operation
+> -	 */
+> -	list_splice_tail_init(&chan->ld_running, &ld_cleanup);
+> -
+>  	/* the hardware is now idle and ready for more */
+>  	chan->idle =3D true;
+>=20
+> -	/*
+> -	 * Start any pending transactions automatically
+> -	 *
+> -	 * In the ideal case, we keep the DMA controller busy while we go
+> -	 * ahead and free the descriptors below.
+> -	 */
+> -	fsl_chan_xfer_ld_queue(chan);
+> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> -
+> -	/* Run the callback for each descriptor, in order */
+> -	list_for_each_entry_safe(desc, _desc, &ld_cleanup, node) {
+> +	/* Run all cleanup for this descriptor */
+> +	fsldma_cleanup_descriptor(chan);
+>=20
+> -		/* Remove from the list of transactions */
+> -		list_del(&desc->node);
+> -
+> -		/* Run all cleanup for this descriptor */
+> -		fsldma_cleanup_descriptor(chan, desc);
+> -	}
+> +	spin_unlock_irqrestore(&chan->desc_lock, flags);
+>=20
+>  	chan_dbg(chan, "tasklet exit\n");
+>  }
+> @@ -1262,6 +1361,7 @@ static int __devinit fsl_dma_chan_probe(struct
+> fsldma_device *fdev,
+>  	spin_lock_init(&chan->desc_lock);
+>  	INIT_LIST_HEAD(&chan->ld_pending);
+>  	INIT_LIST_HEAD(&chan->ld_running);
+> +	INIT_LIST_HEAD(&chan->ld_completed);
+>  	chan->idle =3D true;
+>=20
+>  	chan->common.device =3D &fdev->common;
+> diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h index
+> f5c3879..7ede908 100644
+> --- a/drivers/dma/fsldma.h
+> +++ b/drivers/dma/fsldma.h
+> @@ -140,6 +140,7 @@ struct fsldma_chan {
+>  	spinlock_t desc_lock;		/* Descriptor operation lock */
+>  	struct list_head ld_pending;	/* Link descriptors queue */
+>  	struct list_head ld_running;	/* Link descriptors queue */
+> +	struct list_head ld_completed;	/* Link descriptors queue */
+>  	struct dma_chan common;		/* DMA common channel */
+>  	struct dma_pool *desc_pool;	/* Descriptors pool */
+>  	struct device *dev;		/* Channel device */
+> --
+> 1.7.5.1
