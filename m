@@ -1,21 +1,21 @@
-Return-Path: <iws@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
- by ozlabs.org (Postfix) with ESMTP id 5F2472C008C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 03:31:03 +1000 (EST)
-Date: Wed, 1 Aug 2012 10:30:59 -0700
-From: "Ira W. Snyder" <iws@ovro.caltech.edu>
-To: qiang.liu@freescale.com
-Subject: Re: [PATCH v5 5/6] fsl-dma: use spin_lock_bh to instead of
- spin_lock_irqsave
-Message-ID: <20120801173059.GF11359@ovro.caltech.edu>
-References: <1343811009-25466-1-git-send-email-qiang.liu@freescale.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 440512C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 03:49:15 +1000 (EST)
+In-Reply-To: <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
+References: <1343305827-26734-1-git-send-email-B38951@freescale.com>
+ <F5E29818-CC20-444E-A125-249E5E3BA365@kernel.crashing.org>
+Subject: Re: [PATCH V3 1/5] powerpc/fsl-pci: Unify pci/pcie initialization code
+To: Kumar Gala <galak@kernel.crashing.org>
+Message-ID: <OFAE3C73EB.2E7A2805-ONC1257A4D.0060EE3C-C1257A4D.00613F46@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Wed, 1 Aug 2012 19:42:11 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1343811009-25466-1-git-send-email-qiang.liu@freescale.com>
-Cc: Vinod Koul <vinod.koul@intel.com>, linux-kernel@vger.kernel.org,
- davem@davemloft.net, dan.j.williams@gmail.com, herbert@gondor.hengli.com.au,
- linux-crypto@vger.kernel.org, Dan Williams <dan.j.williams@intel.com>,
- linuxppc-dev@lists.ozlabs.org, Timur Tabi <timur@freescale.com>
+Content-type: text/plain; charset=US-ASCII
+Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ Jia Hongtao <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,170 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2012 at 04:50:09PM +0800, qiang.liu@freescale.com wrote:
-> From: Qiang Liu <qiang.liu@freescale.com>
-> 
-> - use spin_lock_bh() is the right way to use async_tx api,
-> dma_run_dependencies() should not be protected by spin_lock_irqsave();
-> - use spin_lock_bh to instead of spin_lock_irqsave for improving performance,
-> There is not any place to access descriptor queues in fsl-dma ISR except its
-> tasklet, spin_lock_bh() is more proper here. Interrupts will be turned off and
-> context will be save in irqsave, there is needless to use irqsave..
-> 
+>
+>
+> On Jul 26, 2012, at 7:30 AM, Jia Hongtao wrote:
+>
+> > We unified the Freescale pci/pcie initialization by changing the fsl_pci
+> > to a platform driver. In previous PCI code architecture the initialization
+> > routine is called at board_setup_arch stage. Now the initialization is done
+> > in probe function which is architectural better. Also It's convenient for
+> > adding PM support for PCI controller in later patch.
+> >
+> > One issue introduced by this architecture is the timing of swiotlb_init.
+> > During PCI initialization the need of swiotlb is determined and this should
+> > be done before swiotlb_init. So a new function to determine swiotlb by
+> > parsing pci ranges is made. This function is called at board_setup_arch
+> > stage which is earlier than swiotlb_init.
+> >
+> > Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > ---
+> > Changed for V3:
+> > - Rebase the patch set on the latest tree
+> > - merge PCI unify and swiotlb patch into one
+> >
+> > arch/powerpc/sysdev/fsl_pci.c |  155 ++++++++++++++++++++++++++++++++---------
+> > arch/powerpc/sysdev/fsl_pci.h |    9 +--
+> > 2 files changed, 125 insertions(+), 39 deletions(-)
+>
+> I'd like the SWIOTLB refactoring as a separate patch.  Additionally, the order of patches should be as follows:
+>
+> 1. refactor PCI node parsing code
+> 2. add pci_determine_swiotlb (should rename to fsl_pci_determine_swiotlb)
+> 3. Determine primary bus by looking for ISA node
+> 4. convert all boards over to fsl_pci_init
+> 5. convert fsl pci to platform driver (edac and other fixes should be merged in here)
+> 6. PM support
 
-This description is not very clear English. I understand it is not your
-native language. Let me try to help.
+Could you add:
+7. Fix PPC_INDIRECT_TYPE_NO_PCIE_LINK issue. The link is only probed at init and a subsequent
+pci/rescan does not change that. See mail thread titled:
+  mpc8xxx PCIe hotplug needs fixing, some clues ..
 
-"""
-The use of spin_lock_irqsave() is a stronger locking mechanism than is
-required throughout the driver. The minimum locking required should be
-used instead.
-
-Change all instances of spin_lock_irqsave() to spin_lock_bh(). All
-manipulation of protected fields is done using tasklet context or
-weaker, which makes spin_lock_bh() the correct choice.
-"""
-
-Other than that,
-Acked-by: Ira W. Snyder <iws@ovro.caltech.edu>
-
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> Cc: Vinod Koul <vinod.koul@intel.com>
-> Cc: Li Yang <leoli@freescale.com>
-> Cc: Timur Tabi <timur@freescale.com>
-> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
-> ---
->  drivers/dma/fsldma.c |   30 ++++++++++++------------------
->  1 files changed, 12 insertions(+), 18 deletions(-)
-> 
-> diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-> index bb883c0..e3814aa 100644
-> --- a/drivers/dma/fsldma.c
-> +++ b/drivers/dma/fsldma.c
-> @@ -645,10 +645,9 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
->  	struct fsldma_chan *chan = to_fsl_chan(tx->chan);
->  	struct fsl_desc_sw *desc = tx_to_fsl_desc(tx);
->  	struct fsl_desc_sw *child;
-> -	unsigned long flags;
->  	dma_cookie_t cookie;
-> 
-> -	spin_lock_irqsave(&chan->desc_lock, flags);
-> +	spin_lock_bh(&chan->desc_lock);
-> 
->  	/*
->  	 * assign cookies to all of the software descriptors
-> @@ -661,7 +660,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
->  	/* put this transaction onto the tail of the pending queue */
->  	append_ld_queue(chan, desc);
-> 
-> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> +	spin_unlock_bh(&chan->desc_lock);
-> 
->  	return cookie;
->  }
-> @@ -770,15 +769,14 @@ static void fsldma_free_desc_list_reverse(struct fsldma_chan *chan,
->  static void fsl_dma_free_chan_resources(struct dma_chan *dchan)
->  {
->  	struct fsldma_chan *chan = to_fsl_chan(dchan);
-> -	unsigned long flags;
-> 
->  	chan_dbg(chan, "free all channel resources\n");
-> -	spin_lock_irqsave(&chan->desc_lock, flags);
-> +	spin_lock_bh(&chan->desc_lock);
->  	fsldma_cleanup_descriptor(chan);
->  	fsldma_free_desc_list(chan, &chan->ld_pending);
->  	fsldma_free_desc_list(chan, &chan->ld_running);
->  	fsldma_free_desc_list(chan, &chan->ld_completed);
-> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> +	spin_unlock_bh(&chan->desc_lock);
-> 
->  	dma_pool_destroy(chan->desc_pool);
->  	chan->desc_pool = NULL;
-> @@ -997,7 +995,6 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
->  {
->  	struct dma_slave_config *config;
->  	struct fsldma_chan *chan;
-> -	unsigned long flags;
->  	int size;
-> 
->  	if (!dchan)
-> @@ -1007,7 +1004,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
-> 
->  	switch (cmd) {
->  	case DMA_TERMINATE_ALL:
-> -		spin_lock_irqsave(&chan->desc_lock, flags);
-> +		spin_lock_bh(&chan->desc_lock);
-> 
->  		/* Halt the DMA engine */
->  		dma_halt(chan);
-> @@ -1017,7 +1014,7 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
->  		fsldma_free_desc_list(chan, &chan->ld_running);
->  		chan->idle = true;
-> 
-> -		spin_unlock_irqrestore(&chan->desc_lock, flags);
-> +		spin_unlock_bh(&chan->desc_lock);
->  		return 0;
-> 
->  	case DMA_SLAVE_CONFIG:
-> @@ -1059,11 +1056,10 @@ static int fsl_dma_device_control(struct dma_chan *dchan,
->  static void fsl_dma_memcpy_issue_pending(struct dma_chan *dchan)
->  {
->  	struct fsldma_chan *chan = to_fsl_chan(dchan);
-> -	unsigned long flags;
-> 
-> -	spin_lock_irqsave(&chan->desc_lock, flags);
-> +	spin_lock_bh(&chan->desc_lock);
->  	fsl_chan_xfer_ld_queue(chan);
-> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> +	spin_unlock_bh(&chan->desc_lock);
->  }
-> 
->  /**
-> @@ -1076,15 +1072,14 @@ static enum dma_status fsl_tx_status(struct dma_chan *dchan,
->  {
->  	struct fsldma_chan *chan = to_fsl_chan(dchan);
->  	enum dma_status ret;
-> -	unsigned long flags;
-> 
->  	ret = dma_cookie_status(dchan, cookie, txstate);
->  	if (ret == DMA_SUCCESS)
->  		return ret;
-> 
-> -	spin_lock_irqsave(&chan->desc_lock, flags);
-> +	spin_lock_bh(&chan->desc_lock);
->  	fsldma_cleanup_descriptor(chan);
-> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> +	spin_unlock_bh(&chan->desc_lock);
-> 
->  	return dma_cookie_status(dchan, cookie, txstate);
->  }
-> @@ -1163,11 +1158,10 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
->  static void dma_do_tasklet(unsigned long data)
->  {
->  	struct fsldma_chan *chan = (struct fsldma_chan *)data;
-> -	unsigned long flags;
-> 
->  	chan_dbg(chan, "tasklet entry\n");
-> 
-> -	spin_lock_irqsave(&chan->desc_lock, flags);
-> +	spin_lock_bh(&chan->desc_lock);
-> 
->  	/* the hardware is now idle and ready for more */
->  	chan->idle = true;
-> @@ -1175,7 +1169,7 @@ static void dma_do_tasklet(unsigned long data)
->  	/* Run all cleanup for this descriptor */
->  	fsldma_cleanup_descriptor(chan);
-> 
-> -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> +	spin_unlock_bh(&chan->desc_lock);
-> 
->  	chan_dbg(chan, "tasklet exit\n");
->  }
-> --
-> 1.7.5.1
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+ Jocke
