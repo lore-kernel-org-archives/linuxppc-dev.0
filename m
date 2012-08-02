@@ -1,18 +1,21 @@
-Return-Path: <christian.melki@ericsson.com>
-Received: from mailgw2.ericsson.se (mailgw2.ericsson.se [193.180.251.37])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailgw2.ericsson.se",
- Issuer "VeriSign Class 3 Secure Server CA - G2" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 960512C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 21:01:36 +1000 (EST)
-From: Christian Melki <christian.melki@ericsson.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 2 Aug 2012 12:46:24 +0200
-Subject: Serial interrupt overrun and hard deadlock on 3.3.2 & 3.5,
- freescale 8347.
-Message-ID: <1346E68D3A5B2043907CF4BF466383411CC1554409@ESESSCMS0353.eemea.ericsson.se>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id A70A72C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 22:54:42 +1000 (EST)
+Subject: Re: [PATCH V4 2/3] powerpc/swiotlb: Enable at early stage and disable
+ if not necessary
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1343907741-20589-3-git-send-email-B38951@freescale.com>
+Date: Thu, 2 Aug 2012 07:54:36 -0500
+Message-Id: <6DEE036D-C59B-41C6-80F3-762D7E4AF2C1@kernel.crashing.org>
+References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
+ <1343907741-20589-3-git-send-email-B38951@freescale.com>
+To: Jia Hongtao <B38951@freescale.com>
+Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,28 +25,195 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi.
 
-I've spent a couple of hours lifting our freescale 8347 platform from 2.6.3=
-2 to 3.3.2 and just now to 3.5. The 3.x kernels are giving me some problems=
-.
-I get serial input overruns especially when cpu is loded, but I can reprodu=
-ce overruns even at 0 other load. I can't even remember when I saw overruns=
- like this the last time, must have been in 2.2.x or early 2.4.x.
-Also I can reliably trigger a hard kernel lock when using a USB-camera and =
-acessing sequential blocks from the mtd device (read to verify flash). I'm =
-thinking that this maybe has something to do with the reworks of IRQ handli=
-ng in the powerpc arch lately.
+On Aug 2, 2012, at 6:42 AM, Jia Hongtao wrote:
 
-I've tried most things I can think of to see if I can get a symptom change =
-somewhere (incl, preemption, smp-kernel etc etc) but I get nothing.
-Hard lock detection seems to be NMI bound on x86 only (?), so I can't use t=
-hat.
-A jtag-debugger does not give me much either, since I can't record the inst=
-ruction stream in realtime anyway.
+> Remove the dependency on PCI initialization for SWIOTLB =
+initialization.
+> So that PCI can be initialized at proper time.
+>=20
+> SWIOTLB is partly determined by PCI inbound/outbound map which is =
+assigned
+> in PCI initialization. But swiotlb_init() should be done at the stage =
+of
+> mem_init() which is much earlier than PCI initialization. So we =
+reserve the
+> memory for SWIOTLB first and free it if not necessary.
+>=20
+> All boards are converted to fit this change.
+>=20
+> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
 
-I'm kind of starved for ideas, so any help or tip as to what might be wrong=
- would be appreciated.
+This doesn't seem like it addresses our issue w/regards to not being =
+able to map all of memory from PCI.
 
-Regards,
-Christian=
+
+> arch/powerpc/include/asm/swiotlb.h       |    6 ++++++
+> arch/powerpc/kernel/dma-swiotlb.c        |   20 ++++++++++++++++++++
+> arch/powerpc/mm/mem.c                    |    3 +--
+> arch/powerpc/platforms/44x/currituck.c   |   10 ++--------
+> arch/powerpc/platforms/85xx/mpc85xx_ds.c |    1 +
+> arch/powerpc/platforms/85xx/qemu_e500.c  |    2 +-
+> arch/powerpc/sysdev/fsl_pci.c            |    5 +----
+> 7 files changed, 32 insertions(+), 15 deletions(-)
+
+Don't we also want to update all these:
+
+arch/powerpc/platforms/85xx/corenet_ds.c:               =
+ppc_swiotlb_enable =3D 1;
+arch/powerpc/platforms/85xx/ge_imp3a.c:         ppc_swiotlb_enable =3D =
+1;
+arch/powerpc/platforms/85xx/mpc8536_ds.c:               =
+ppc_swiotlb_enable =3D 1;
+arch/powerpc/platforms/85xx/mpc85xx_mds.c:              =
+ppc_swiotlb_enable =3D 1;
+arch/powerpc/platforms/85xx/p1022_ds.c:         ppc_swiotlb_enable =3D =
+1;
+arch/powerpc/platforms/86xx/mpc86xx_hpcn.c:             =
+ppc_swiotlb_enable =3D 1;
+
+
+>=20
+> diff --git a/arch/powerpc/include/asm/swiotlb.h =
+b/arch/powerpc/include/asm/swiotlb.h
+> index 8979d4c..de99d6e 100644
+> --- a/arch/powerpc/include/asm/swiotlb.h
+> +++ b/arch/powerpc/include/asm/swiotlb.h
+> @@ -22,4 +22,10 @@ int __init swiotlb_setup_bus_notifier(void);
+>=20
+> extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
+>=20
+> +#ifdef CONFIG_SWIOTLB
+> +void swiotlb_detect_4g(void);
+> +#else
+> +static inline void swiotlb_detect_4g(void) {}
+> +#endif
+> +
+> #endif /* __ASM_SWIOTLB_H */
+> diff --git a/arch/powerpc/kernel/dma-swiotlb.c =
+b/arch/powerpc/kernel/dma-swiotlb.c
+> index 4ab88da..aa85550 100644
+> --- a/arch/powerpc/kernel/dma-swiotlb.c
+> +++ b/arch/powerpc/kernel/dma-swiotlb.c
+> @@ -104,3 +104,23 @@ int __init swiotlb_setup_bus_notifier(void)
+> 			      &ppc_swiotlb_plat_bus_notifier);
+> 	return 0;
+> }
+> +
+> +void swiotlb_detect_4g(void)
+> +{
+> +	if ((memblock_end_of_DRAM() - 1) > 0xffffffff)
+> +		ppc_swiotlb_enable =3D 1;
+> +}
+> +
+> +static int __init swiotlb_late_init(void)
+> +{
+> +	if (ppc_swiotlb_enable) {
+> +		swiotlb_print_info();
+> +		set_pci_dma_ops(&swiotlb_dma_ops);
+> +		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
+> +	} else {
+> +		swiotlb_free();
+> +	}
+> +
+> +	return 0;
+> +}
+> +subsys_initcall(swiotlb_late_init);
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index baaafde..f23c4e0 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -300,8 +300,7 @@ void __init mem_init(void)
+> 	unsigned long reservedpages =3D 0, codesize, initsize, datasize, =
+bsssize;
+>=20
+> #ifdef CONFIG_SWIOTLB
+> -	if (ppc_swiotlb_enable)
+> -		swiotlb_init(1);
+> +	swiotlb_init(0);
+> #endif
+>=20
+> 	num_physpages =3D memblock_phys_mem_size() >> PAGE_SHIFT;
+> diff --git a/arch/powerpc/platforms/44x/currituck.c =
+b/arch/powerpc/platforms/44x/currituck.c
+> index 9f6c33d..6bd89a0 100644
+> --- a/arch/powerpc/platforms/44x/currituck.c
+> +++ b/arch/powerpc/platforms/44x/currituck.c
+> @@ -21,7 +21,6 @@
+>  */
+>=20
+> #include <linux/init.h>
+> -#include <linux/memblock.h>
+> #include <linux/of.h>
+> #include <linux/of_platform.h>
+> #include <linux/rtc.h>
+> @@ -159,13 +158,8 @@ static void __init ppc47x_setup_arch(void)
+>=20
+> 	/* No need to check the DMA config as we /know/ our windows are =
+all of
+>  	 * RAM.  Lets hope that doesn't change */
+> -#ifdef CONFIG_SWIOTLB
+> -	if ((memblock_end_of_DRAM() - 1) > 0xffffffff) {
+> -		ppc_swiotlb_enable =3D 1;
+> -		set_pci_dma_ops(&swiotlb_dma_ops);
+> -		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
+> -	}
+> -#endif
+> +	swiotlb_detect_4g();
+> +
+> 	ppc47x_smp_init();
+> }
+>=20
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c =
+b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> index 6d3265f..56f8c8f 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> @@ -159,6 +159,7 @@ static void __init mpc85xx_ds_setup_arch(void)
+> 	if (ppc_md.progress)
+> 		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
+>=20
+> +	swiotlb_detect_4g();
+> 	mpc85xx_ds_pci_init();
+> 	mpc85xx_smp_init();
+>=20
+> diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c =
+b/arch/powerpc/platforms/85xx/qemu_e500.c
+> index 95a2e53..04260cd 100644
+> --- a/arch/powerpc/platforms/85xx/qemu_e500.c
+> +++ b/arch/powerpc/platforms/85xx/qemu_e500.c
+> @@ -41,7 +41,7 @@ static void __init qemu_e500_setup_arch(void)
+> {
+> 	ppc_md.progress("qemu_e500_setup_arch()", 0);
+>=20
+> -	fsl_pci_init();
+> +	swiotlb_detect_4g();
+
+removing fsl_pci_init() seems wrong.
+
+> 	mpc85xx_smp_init();
+> }
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c =
+b/arch/powerpc/sysdev/fsl_pci.c
+> index 6938792..da7a3d7 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -872,11 +872,8 @@ void __devinit fsl_pci_init(void)
+> 	 * we need SWIOTLB to handle buffers located outside of
+> 	 * dma capable memory region
+> 	 */
+> -	if (memblock_end_of_DRAM() - 1 > max) {
+> +	if (memblock_end_of_DRAM() - 1 > max)
+> 		ppc_swiotlb_enable =3D 1;
+> -		set_pci_dma_ops(&swiotlb_dma_ops);
+> -		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
+> -	}
+> #endif
+> }
+> #endif
+> --=20
+> 1.7.5.1
+>=20
