@@ -1,21 +1,16 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BFACF2C008B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 08:19:40 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PATCH] powerpc: fix personality handling in ppc64_personality()
-References: <alpine.LNX.2.00.1208012201520.14910@pobox.suse.cz>
-Date: Thu, 02 Aug 2012 00:19:27 +0200
-In-Reply-To: <alpine.LNX.2.00.1208012201520.14910@pobox.suse.cz> (Jiri
- Kosina's message of "Wed, 1 Aug 2012 22:03:42 +0200 (CEST)")
-Message-ID: <m27gtitfv4.fsf@igel.home>
+Return-Path: <paulus@ozlabs.org>
+Date: Thu, 2 Aug 2012 10:00:38 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V6 01/12] arch/powerpc: Replace open coded CONTEXT_BITS
+ value
+Message-ID: <20120802000038.GA6279@bloggs.ozlabs.ibm.com>
+References: <1343837623-9046-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1343837623-9046-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1343837623-9046-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +20,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jiri Kosina <jkosina@suse.cz> writes:
+On Wed, Aug 01, 2012 at 09:43:32PM +0530, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> To clarify the meaning for future readers, replace the open coded
+> 19 with CONTEXT_BITS
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
->  	if (personality(current->personality) == PER_LINUX32
-> -	    && personality == PER_LINUX)
-> -		personality = PER_LINUX32;
-> +	    && personality(personality) == PER_LINUX)
-> +		personality &= ~PER_LINUX | PER_LINUX32;
-
-That doesn't work.  ~PER_LINUX is -1, so this is a no-op.
-
->  	ret = sys_personality(personality);
-> -	if (ret == PER_LINUX32)
-> -		ret = PER_LINUX;
-> +	if (personality(ret) == PER_LINUX32)
-> +		ret &= ~PER_LINUX32 | PER_LINUX;
-
-That only "works" because PER_LINUX is 0.
-
-Andreas.
-
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Reviewed-by: Paul Mackerras <paulus@samba.org>
