@@ -1,16 +1,30 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Thu, 2 Aug 2012 10:00:38 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V6 01/12] arch/powerpc: Replace open coded CONTEXT_BITS
- value
-Message-ID: <20120802000038.GA6279@bloggs.ozlabs.ibm.com>
-References: <1343837623-9046-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1343837623-9046-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <B32616@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 542622C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 14:52:31 +1000 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: RE: [PATCH v5 2/6] fsl-dma: remove attribute DMA_INTERRUPT of
+ dmaengine
+Date: Thu, 2 Aug 2012 04:52:23 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70CFD5F@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1343810948-25343-1-git-send-email-qiang.liu@freescale.com>
+ <20120801163553.GC11359@ovro.caltech.edu>
+In-Reply-To: <20120801163553.GC11359@ovro.caltech.edu>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1343837623-9046-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+ Vinod Koul <vinod.koul@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "dan.j.williams@gmail.com" <dan.j.williams@gmail.com>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,12 +34,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2012 at 09:43:32PM +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> To clarify the meaning for future readers, replace the open coded
-> 19 with CONTEXT_BITS
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> -----Original Message-----
+> From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]
+> Sent: Thursday, August 02, 2012 12:36 AM
+> To: Liu Qiang-B32616
+> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; dan.j.williams@gmail.com; Vinod Koul;
+> herbert@gondor.hengli.com.au; Dan Williams; davem@davemloft.net
+> Subject: Re: [PATCH v5 2/6] fsl-dma: remove attribute DMA_INTERRUPT of
+> dmaengine
+>=20
+> On Wed, Aug 01, 2012 at 04:49:08PM +0800, qiang.liu@freescale.com wrote:
+> > From: Qiang Liu <qiang.liu@freescale.com>
+> >
+> > Delete attribute DMA_INTERRUPT because fsl-dma doesn't support this
+> > function, exception will be thrown if talitos is used to offload xor at
+> the same time.
+> >
+>=20
+> I have no problem with this patch.
+>=20
+> However, it ***WILL BREAK*** both drivers in drivers/misc/carma. Please
+> add my patch 7/7 titled "[PATCH 7/7] carma: remove unnecessary
+> DMA_INTERRUPT capability" to your series. I suggest placing it
+> immediately after this patch in your series.
+>=20
+> The carma drivers use the fsldma driver exclusively.
+Fine, thanks.
 
-Reviewed-by: Paul Mackerras <paulus@samba.org>
+>=20
+> > Cc: Dan Williams <dan.j.williams@intel.com>
+> > Cc: Vinod Koul <vinod.koul@intel.com>
+> > Cc: Li Yang <leoli@freescale.com>
+> > Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+> > Acked-by: Ira W. Snyder <iws@ovro.caltech.edu>
+> > ---
+> >  drivers/dma/fsldma.c |   31 -------------------------------
+> >  1 files changed, 0 insertions(+), 31 deletions(-)
+> >
+> > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c index
+> > 8f84761..4f2f212 100644
+> > --- a/drivers/dma/fsldma.c
+> > +++ b/drivers/dma/fsldma.c
+> > @@ -543,35 +543,6 @@ static void fsl_dma_free_chan_resources(struct
+> > dma_chan *dchan)  }
+> >
+> >  static struct dma_async_tx_descriptor *
+> > -fsl_dma_prep_interrupt(struct dma_chan *dchan, unsigned long flags)
+> > -{
+> > -	struct fsldma_chan *chan;
+> > -	struct fsl_desc_sw *new;
+> > -
+> > -	if (!dchan)
+> > -		return NULL;
+> > -
+> > -	chan =3D to_fsl_chan(dchan);
+> > -
+> > -	new =3D fsl_dma_alloc_descriptor(chan);
+> > -	if (!new) {
+> > -		chan_err(chan, "%s\n", msg_ld_oom);
+> > -		return NULL;
+> > -	}
+> > -
+> > -	new->async_tx.cookie =3D -EBUSY;
+> > -	new->async_tx.flags =3D flags;
+> > -
+> > -	/* Insert the link descriptor to the LD ring */
+> > -	list_add_tail(&new->node, &new->tx_list);
+> > -
+> > -	/* Set End-of-link to the last link descriptor of new list */
+> > -	set_ld_eol(chan, new);
+> > -
+> > -	return &new->async_tx;
+> > -}
+> > -
+> > -static struct dma_async_tx_descriptor *  fsl_dma_prep_memcpy(struct
+> > dma_chan *dchan,
+> >  	dma_addr_t dma_dst, dma_addr_t dma_src,
+> >  	size_t len, unsigned long flags)
+> > @@ -1352,12 +1323,10 @@ static int __devinit fsldma_of_probe(struct
+> platform_device *op)
+> >  	fdev->irq =3D irq_of_parse_and_map(op->dev.of_node, 0);
+> >
+> >  	dma_cap_set(DMA_MEMCPY, fdev->common.cap_mask);
+> > -	dma_cap_set(DMA_INTERRUPT, fdev->common.cap_mask);
+> >  	dma_cap_set(DMA_SG, fdev->common.cap_mask);
+> >  	dma_cap_set(DMA_SLAVE, fdev->common.cap_mask);
+> >  	fdev->common.device_alloc_chan_resources =3D
+> fsl_dma_alloc_chan_resources;
+> >  	fdev->common.device_free_chan_resources =3D
+> fsl_dma_free_chan_resources;
+> > -	fdev->common.device_prep_dma_interrupt =3D fsl_dma_prep_interrupt;
+> >  	fdev->common.device_prep_dma_memcpy =3D fsl_dma_prep_memcpy;
+> >  	fdev->common.device_prep_dma_sg =3D fsl_dma_prep_sg;
+> >  	fdev->common.device_tx_status =3D fsl_tx_status;
+> > --
+> > 1.7.5.1
+> >
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
