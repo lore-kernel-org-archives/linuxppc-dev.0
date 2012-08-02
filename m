@@ -1,34 +1,35 @@
-Return-Path: <zch@az84smr01.freescale.net>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+Return-Path: <zch@tx30smr01.freescale.net>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 677E52C0080
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 20:02:35 +1000 (EST)
-Received: from mail116-va3 (localhost [127.0.0.1])	by
- mail116-va3-R.bigfish.com (Postfix) with ESMTP id 6218940242	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 10:02:29 +0000 (UTC)
-Received: from VA3EHSMHS032.bigfish.com (unknown [10.7.14.251])	by
- mail116-va3.bigfish.com (Postfix) with ESMTP id 8A9BD1C00ED	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 10:02:26 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 60C652C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 21:10:34 +1000 (EST)
+Received: from mail251-ch1 (localhost [127.0.0.1])	by
+ mail251-ch1-R.bigfish.com (Postfix) with ESMTP id 627AF1BC0229	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 11:10:29 +0000 (UTC)
+Received: from CH1EHSMHS030.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.252])	by mail251-ch1.bigfish.com (Postfix) with ESMTP id
+ 57228180047	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 11:10:28
+ +0000 (UTC)
 Received: from localhost.localdomain ([10.213.130.145])	by
- az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q72A2LpN017942	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Aug 2012 03:02:24 -0700
-Date: Thu, 2 Aug 2012 18:04:18 +0800
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q72BAPYV023260	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Aug 2012 04:10:26 -0700
+Date: Thu, 2 Aug 2012 19:12:24 +0800
 From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/smp: Do not disable IPI interrupts during suspend
-Message-ID: <20120802100418.GA13777@localhost.localdomain>
-References: <1342788421-27648-1-git-send-email-chenhui.zhao@freescale.com>
- <5028672F-1873-4E45-AA23-4CA9F191BE77@kernel.crashing.org>
- <1343427631.21647.1.camel@pasglop>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v8 5/7] powerpc/85xx: add sleep and deep sleep support
+Message-ID: <20120802111224.GB13777@localhost.localdomain>
+References: <1342788159-27529-1-git-send-email-chenhui.zhao@freescale.com>
+ <1342788159-27529-6-git-send-email-chenhui.zhao@freescale.com>
+ <F8FE8505-6F6A-4A4B-8302-C1CF16B48B60@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1343427631.21647.1.camel@pasglop>
-Sender: <zch@az84smr01.freescale.net>
-Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>
+In-Reply-To: <F8FE8505-6F6A-4A4B-8302-C1CF16B48B60@kernel.crashing.org>
+Sender: <zch@tx30smr01.freescale.net>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,35 +39,95 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Jul 28, 2012 at 08:20:31AM +1000, Benjamin Herrenschmidt wrote:
-> On Fri, 2012-07-27 at 16:58 -0500, Kumar Gala wrote:
-> > On Jul 20, 2012, at 7:47 AM, Zhao Chenhui wrote:
-> > 
-> > > During suspend, all interrupts including IPI will be disabled. In this case,
-> > > the suspend process will hang in SMP. To prevent this, pass the flag
-> > > IRQF_NO_SUSPEND when requesting IPI irq.
-> > > 
-> > > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> > > Signed-off-by: Li Yang <leoli@freescale.com>
-> > > ---
-> > > arch/powerpc/kernel/smp.c |    2 +-
-> > > 1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > BenH,
-> > 
-> > Can you ack?
+On Tue, Jul 31, 2012 at 09:15:33AM -0500, Kumar Gala wrote:
 > 
-> No I'll merge it but not until it's been in next for a bit unless you
-> have some strong emergency there, it's on my mental list of things to
-> shovel into next after rc1.
+> On Jul 20, 2012, at 7:42 AM, Zhao Chenhui wrote:
 > 
-> Curiosity: didn't we use to disable all non-boot CPUs on suspend ?
+> > In sleep PM mode, the clocks of e500 core and unused IP blocks is
+> > turned off. IP blocks which are allowed to wake up the processor
+> > are still running.
+> > 
+> > Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
+> > in addtion to the sleep PM mode.
+> > 
+> > While in deep sleep PM mode, additionally, the power supply is
+> > removed from e500 core and most IP blocks. Only the blocks needed
+> > to wake up the chip out of deep sleep are ON.
+> > 
+> > This patch supports 32-bit and 36-bit address space.
+> > 
+> > The sleep mode is equal to the Standby state in Linux. The deep sleep
+> > mode is equal to the Suspend-to-RAM state of Linux Power Management.
+> > 
+> > Command to enter sleep mode.
+> >  echo standby > /sys/power/state
+> > Command to enter deep sleep mode.
+> >  echo mem > /sys/power/state
+> > 
+> > Signed-off-by: Dave Liu <daveliu@freescale.com>
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > Signed-off-by: Jin Qing <b24347@freescale.com>
+> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> > Cc: Scott Wood <scottwood@freescale.com>
+> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> > ---
+> > arch/powerpc/Kconfig                  |    2 +-
+> > arch/powerpc/include/asm/cacheflush.h |    2 +
+> > arch/powerpc/kernel/Makefile          |    3 +
+> > arch/powerpc/kernel/l2cache_85xx.S    |   56 +++
+> > arch/powerpc/platforms/85xx/Makefile  |    2 +-
+> > arch/powerpc/platforms/85xx/sleep.S   |  621 +++++++++++++++++++++++++++++++++
+> > arch/powerpc/sysdev/fsl_pmc.c         |   98 +++++-
+> > arch/powerpc/sysdev/fsl_soc.h         |    5 +
+> > 8 files changed, 769 insertions(+), 20 deletions(-)
+> > create mode 100644 arch/powerpc/kernel/l2cache_85xx.S
+> > create mode 100644 arch/powerpc/platforms/85xx/sleep.S
+> > 
+> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > index a7c6914..9d6de82 100644
+> > --- a/arch/powerpc/Kconfig
+> > +++ b/arch/powerpc/Kconfig
+> > @@ -665,7 +665,7 @@ config FSL_PCI
+> > config FSL_PMC
+> > 	bool
+> > 	default y
+> > -	depends on SUSPEND && (PPC_85xx || PPC_86xx)
+> > +	depends on SUSPEND && (PPC_85xx || PPC_86xx) && !PPC_E500MC
+> > 	help
+> > 	  Freescale MPC85xx/MPC86xx power management controller support
+> > 	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
+> > diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+> > index b843e35..6c5f1c2 100644
+> > --- a/arch/powerpc/include/asm/cacheflush.h
+> > +++ b/arch/powerpc/include/asm/cacheflush.h
+> > @@ -58,6 +58,8 @@ extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
+> > extern void flush_dcache_phys_range(unsigned long start, unsigned long stop);
+> > #endif
+> > 
+> > +extern void flush_dcache_L1(void);
+> > +
+> > #define copy_to_user_page(vma, page, vaddr, dst, src, len) \
+> > 	do { \
+> > 		memcpy(dst, src, len); \
+> > diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> > index 83afacd..0ddef24 100644
+> > --- a/arch/powerpc/kernel/Makefile
+> > +++ b/arch/powerpc/kernel/Makefile
+> > @@ -64,6 +64,9 @@ obj-$(CONFIG_FA_DUMP)		+= fadump.o
+> > ifeq ($(CONFIG_PPC32),y)
+> > obj-$(CONFIG_E500)		+= idle_e500.o
+> > endif
+> > +ifneq ($(CONFIG_PPC_E500MC),y)
+> > +obj-$(CONFIG_PPC_85xx)		+= l2cache_85xx.o
+> > +endif
 > 
-> Cheers,
-> Ben.
+> why do we need this, beyond reduce code size on an e500mc kernel build?  If so why isn't 85xx/sleep.S doing the same thing?
+> - k
+> 
 
-Yes, we disabled all non-boot CPUs on suspend by calling disable_nonboot_cpus().
-The disable_nonboot_cpus() needs IPIs to work. But prior to
-calling disable_nonboot_cpus(), the IPIs are disabled in dpm_suspend_noirq().
+Yes, it is a little awkward. I have an idea to put e500/e500mc/e5500/e6500 related flush cache routines
+into this file, and rename it to cache_fsl_booke.S.
+
+As for 85xx/sleep.S, it is used by fsl_pmc.c. I will use CONFIG_FSL_PMC to guard it.
 
 -Chenhui
