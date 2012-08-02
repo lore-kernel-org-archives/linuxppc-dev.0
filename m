@@ -1,35 +1,30 @@
-Return-Path: <zch@tx30smr01.freescale.net>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Return-Path: <B32616@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 60C652C0088
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 21:10:34 +1000 (EST)
-Received: from mail251-ch1 (localhost [127.0.0.1])	by
- mail251-ch1-R.bigfish.com (Postfix) with ESMTP id 627AF1BC0229	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 11:10:29 +0000 (UTC)
-Received: from CH1EHSMHS030.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.252])	by mail251-ch1.bigfish.com (Postfix) with ESMTP id
- 57228180047	for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 11:10:28
- +0000 (UTC)
-Received: from localhost.localdomain ([10.213.130.145])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q72BAPYV023260	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Aug 2012 04:10:26 -0700
-Date: Thu, 2 Aug 2012 19:12:24 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v8 5/7] powerpc/85xx: add sleep and deep sleep support
-Message-ID: <20120802111224.GB13777@localhost.localdomain>
-References: <1342788159-27529-1-git-send-email-chenhui.zhao@freescale.com>
- <1342788159-27529-6-git-send-email-chenhui.zhao@freescale.com>
- <F8FE8505-6F6A-4A4B-8302-C1CF16B48B60@kernel.crashing.org>
-MIME-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id 378EE2C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 21:13:37 +1000 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Subject: RE: [PATCH v5 3/6] fsl-dma: change release process of dma
+ descriptor for supporting async_tx
+Date: Thu, 2 Aug 2012 11:13:26 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70D812D@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1343810957-25378-1-git-send-email-qiang.liu@freescale.com>
+ <20120801172526.GD11359@ovro.caltech.edu>
+In-Reply-To: <20120801172526.GD11359@ovro.caltech.edu>
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <F8FE8505-6F6A-4A4B-8302-C1CF16B48B60@kernel.crashing.org>
-Sender: <zch@tx30smr01.freescale.net>
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+ Vinod Koul <vinod.koul@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "dan.j.williams@gmail.com" <dan.j.williams@gmail.com>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,95 +34,620 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jul 31, 2012 at 09:15:33AM -0500, Kumar Gala wrote:
-> 
-> On Jul 20, 2012, at 7:42 AM, Zhao Chenhui wrote:
-> 
-> > In sleep PM mode, the clocks of e500 core and unused IP blocks is
-> > turned off. IP blocks which are allowed to wake up the processor
-> > are still running.
-> > 
-> > Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
-> > in addtion to the sleep PM mode.
-> > 
-> > While in deep sleep PM mode, additionally, the power supply is
-> > removed from e500 core and most IP blocks. Only the blocks needed
-> > to wake up the chip out of deep sleep are ON.
-> > 
-> > This patch supports 32-bit and 36-bit address space.
-> > 
-> > The sleep mode is equal to the Standby state in Linux. The deep sleep
-> > mode is equal to the Suspend-to-RAM state of Linux Power Management.
-> > 
-> > Command to enter sleep mode.
-> >  echo standby > /sys/power/state
-> > Command to enter deep sleep mode.
-> >  echo mem > /sys/power/state
-> > 
-> > Signed-off-by: Dave Liu <daveliu@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > Signed-off-by: Jin Qing <b24347@freescale.com>
-> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> > Cc: Scott Wood <scottwood@freescale.com>
-> > Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+Hi Ira,
+
+Here, I want to talk about the issue of dma lock when use dmatest with orig=
+inal patch.
+
+I do some tests on p1022ds, 2 cores, 6 dma channels (actually is 4 channels=
+, I am investigating why is 6, but it doesn't matter). I would like to shar=
+e with you to find something:)
+
+First, it is easy to reproduce your issue with 6 channels after up to 200,0=
+00 iterations per channel, there is not any response from terminal, then I =
+run top to see the 2 cores load, I found cpu load is 100%, terminal won't u=
+pdate any info after a long time;
+Second, I only enable 4 channels to run dmatest, I found cpu load is 50% pe=
+r channel, terminal also update info after a long time;
+Last, I only enable 1 channel to run dmatest, serial interrupt is attached =
+to core1, and dma channel interrupt is attached to core0, I found terminal =
+is very slow after boot up, but it's only slow whatever how many interrupts=
+ raised by the only dma channel (over 900,000 iterations).
+
+So I want to know, our test results are same? How do you know dma engine is=
+ self locked but not for heavy cpu load, there is no chance to schedule?
+I also read dmatest.c, there is not any sleep to release cpu (msleep(100) i=
+f tx is null).
+
+If our test results are same, I think I can explain why your original patch=
+ can "fix" the issue of dma lock, because your patch avoid mass cpu data op=
+eration. 83xx is old, and P1 series is low end chip of Freescale, this mayb=
+e the reason why p4080 cannot reproduce this issue.
+
+You can have a test to verify my point if you are available. I will follow =
+this issue until it's resolved. I will let you know if any other new clues.
+
+Thanks.
+
+=20
+
+> -----Original Message-----
+> From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]
+> Sent: Thursday, August 02, 2012 1:25 AM
+> To: Liu Qiang-B32616
+> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; dan.j.williams@gmail.com; Vinod Koul;
+> herbert@gondor.hengli.com.au; Dan Williams; davem@davemloft.net
+> Subject: Re: [PATCH v5 3/6] fsl-dma: change release process of dma
+> descriptor for supporting async_tx
+>=20
+> On Wed, Aug 01, 2012 at 04:49:17PM +0800, qiang.liu@freescale.com wrote:
+> > From: Qiang Liu <qiang.liu@freescale.com>
+> >
+> > Fix the potential risk when enable config NET_DMA and ASYNC_TX.
+> > Async_tx is lack of support in current release process of dma
+> descriptor,
+> > all descriptors will be released whatever is acked or no-acked by
+> async_tx,
+> > so there is a potential race condition when dma engine is uesd by
+> others
+> > clients (e.g. when enable NET_DMA to offload TCP).
+> >
+> > In our case, a race condition which is raised when use both of talitos
+> > and dmaengine to offload xor is because napi scheduler will sync all
+> > pending requests in dma channels, it affects the process of raid
+> operations
+> > due to ack_tx is not checked in fsl dma. The no-acked descriptor is
+> freed
+> > which is submitted just now, as a dependent tx, this freed descriptor
+> trigger
+> > BUG_ON(async_tx_test_ack(depend_tx)) in async_tx_submit().
+> >
+> > TASK =3D ee1a94a0[1390] 'md0_raid5' THREAD: ecf40000 CPU: 0
+> > GPR00: 00000001 ecf41ca0 ee44/921a94a0 0000003f 00000001 c00593e4
+> 00000000 00000001
+> > GPR08: 00000000 a7a7a7a7 00000001 045/920000002 42028042 100a38d4
+> ed576d98 00000000
+> > GPR16: ed5a11b0 00000000 2b162000 00000200 046/920000000 2d555000
+> ed3015e8 c15a7aa0
+> > GPR24: 00000000 c155fc40 00000000 ecb63220 ecf41d28 e47/92f640bb0
+> ef640c30 ecf41ca0
+> > NIP [c02b048c] async_tx_submit+0x6c/0x2b4
+> > LR [c02b068c] async_tx_submit+0x26c/0x2b4
+> > Call Trace:
+> > [ecf41ca0] [c02b068c] async_tx_submit+0x26c/0x2b448/92 (unreliable)
+> > [ecf41cd0] [c02b0a4c] async_memcpy+0x240/0x25c
+> > [ecf41d20] [c0421064] async_copy_data+0xa0/0x17c
+> > [ecf41d70] [c0421cf4] __raid_run_ops+0x874/0xe10
+> > [ecf41df0] [c0426ee4] handle_stripe+0x820/0x25e8
+> > [ecf41e90] [c0429080] raid5d+0x3d4/0x5b4
+> > [ecf41f40] [c04329b8] md_thread+0x138/0x16c
+> > [ecf41f90] [c008277c] kthread+0x8c/0x90
+> > [ecf41ff0] [c0011630] kernel_thread+0x4c/0x68
+> >
+> > Another major modification in this patch is the change to completed
+> descriptors,
+> > there is a potential risk which caused by exception interrupt, all
+> descriptors
+> > in ld_running list are seemed completed when an interrupt raised, it
+> works fine
+> > under normal condition, but if there is an exception occured, it cannot
+> work
+> > as our excepted. Hardware should not depend on s/w list, the right way
+> is
+> > to read current descriptor address register to find the last completed
+> > descriptor. If an interrupt is raised by an error, all descriptors in
+> ld_running
+> > should not be seemed finished, or these unfinished descriptors in
+> ld_running
+> > will be released wrongly.
+> >
+> > A simple way to reproduce,
+> > Enable dmatest first, then insert some bad descriptors which can
+> trigger
+> > Programming Error interrupts before the good descriptors. Last, the
+> good
+> > descriptors will be freed before they are processsed because of the
+> exception
+> > intrerrupt.
+> >
+> > Note: the bad descriptors are only for simulating an exception
+> interrupt.
+> > This case can illustrate the potential risk in current fsl-dma very
+> well.
+> >
+>=20
+> I've never managed to trigger a PE (programming error) interrupt on the
+> 83xx hardware. Any time I intentionally caused an error, the hardware
+> wedged itself. The CB (channel busy) bit is stuck high, and cannot be
+> cleared without a hard reset of the board.
+>=20
+> I agree the "snoop on the hardware" technique works. As far as I can
+> tell, you have implemented the code correctly.
+>=20
+> The MPC8349EARM.pdf from Freescale indicates that the hardware will halt
+> in response to a programming error, and generate a PE interrupt. See
+> section 12.5.3.3 (pg 568).
+>=20
+> The driver, as it is written, will never recover from such a condition.
+> Since you are complaining about this situation, do you intend to fix it?
+>=20
+> > Cc: Dan Williams <dan.j.williams@intel.com>
+> > Cc: Dan Williams <dan.j.williams@gmail.com>
+> > Cc: Vinod Koul <vinod.koul@intel.com>
+> > Cc: Li Yang <leoli@freescale.com>
+> > Cc: Ira W. Snyder <iws@ovro.caltech.edu>
+> > Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
 > > ---
-> > arch/powerpc/Kconfig                  |    2 +-
-> > arch/powerpc/include/asm/cacheflush.h |    2 +
-> > arch/powerpc/kernel/Makefile          |    3 +
-> > arch/powerpc/kernel/l2cache_85xx.S    |   56 +++
-> > arch/powerpc/platforms/85xx/Makefile  |    2 +-
-> > arch/powerpc/platforms/85xx/sleep.S   |  621 +++++++++++++++++++++++++++++++++
-> > arch/powerpc/sysdev/fsl_pmc.c         |   98 +++++-
-> > arch/powerpc/sysdev/fsl_soc.h         |    5 +
-> > 8 files changed, 769 insertions(+), 20 deletions(-)
-> > create mode 100644 arch/powerpc/kernel/l2cache_85xx.S
-> > create mode 100644 arch/powerpc/platforms/85xx/sleep.S
-> > 
-> > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> > index a7c6914..9d6de82 100644
-> > --- a/arch/powerpc/Kconfig
-> > +++ b/arch/powerpc/Kconfig
-> > @@ -665,7 +665,7 @@ config FSL_PCI
-> > config FSL_PMC
-> > 	bool
-> > 	default y
-> > -	depends on SUSPEND && (PPC_85xx || PPC_86xx)
-> > +	depends on SUSPEND && (PPC_85xx || PPC_86xx) && !PPC_E500MC
-> > 	help
-> > 	  Freescale MPC85xx/MPC86xx power management controller support
-> > 	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
-> > diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-> > index b843e35..6c5f1c2 100644
-> > --- a/arch/powerpc/include/asm/cacheflush.h
-> > +++ b/arch/powerpc/include/asm/cacheflush.h
-> > @@ -58,6 +58,8 @@ extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
-> > extern void flush_dcache_phys_range(unsigned long start, unsigned long stop);
-> > #endif
-> > 
-> > +extern void flush_dcache_L1(void);
+> >  drivers/dma/fsldma.c |  242 +++++++++++++++++++++++++++++++++++-------
+> --------
+> >  drivers/dma/fsldma.h |    1 +
+> >  2 files changed, 172 insertions(+), 71 deletions(-)
+> >
+> > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+> > index 4f2f212..87f52c0 100644
+> > --- a/drivers/dma/fsldma.c
+> > +++ b/drivers/dma/fsldma.c
+> > @@ -400,6 +400,125 @@ out_splice:
+> >  	list_splice_tail_init(&desc->tx_list, &chan->ld_pending);
+> >  }
+> >
+> > +static void fsldma_cleanup_descriptor(struct fsldma_chan *chan);
+> > +static void fsl_chan_xfer_ld_queue(struct fsldma_chan *chan);
 > > +
-> > #define copy_to_user_page(vma, page, vaddr, dst, src, len) \
-> > 	do { \
-> > 		memcpy(dst, src, len); \
-> > diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-> > index 83afacd..0ddef24 100644
-> > --- a/arch/powerpc/kernel/Makefile
-> > +++ b/arch/powerpc/kernel/Makefile
-> > @@ -64,6 +64,9 @@ obj-$(CONFIG_FA_DUMP)		+= fadump.o
-> > ifeq ($(CONFIG_PPC32),y)
-> > obj-$(CONFIG_E500)		+= idle_e500.o
-> > endif
-> > +ifneq ($(CONFIG_PPC_E500MC),y)
-> > +obj-$(CONFIG_PPC_85xx)		+= l2cache_85xx.o
-> > +endif
-> 
-> why do we need this, beyond reduce code size on an e500mc kernel build?  If so why isn't 85xx/sleep.S doing the same thing?
-> - k
-> 
-
-Yes, it is a little awkward. I have an idea to put e500/e500mc/e5500/e6500 related flush cache routines
-into this file, and rename it to cache_fsl_booke.S.
-
-As for 85xx/sleep.S, it is used by fsl_pmc.c. I will use CONFIG_FSL_PMC to guard it.
-
--Chenhui
+>=20
+> As noted in my reply to patch 4/6, please swap the order of this patch
+> and the following patch.
+>=20
+> These lines should not be added or removed in either patch.
+>=20
+> > +/**
+> > + * fsldma_clean_completed_descriptor - free all descriptors which
+> > + * has been completed and acked
+> > + * @chan: Freescale DMA channel
+> > + *
+> > + * This function is used on all completed and acked descriptors.
+> > + * All descriptors should only be freed in this function.
+> > + */
+> > +static int
+> > +fsldma_clean_completed_descriptor(struct fsldma_chan *chan)
+>=20
+> This should be 'static void'. It does not return an error code.
+>=20
+> > +{
+> > +	struct fsl_desc_sw *desc, *_desc;
+> > +
+> > +	/* Run the callback for each descriptor, in order */
+> > +	list_for_each_entry_safe(desc, _desc, &chan->ld_completed, node) {
+> > +
+> > +		if (async_tx_test_ack(&desc->async_tx)) {
+> > +			/* Remove from the list of transactions */
+> > +			list_del(&desc->node);
+> > +#ifdef FSL_DMA_LD_DEBUG
+> > +			chan_dbg(chan, "LD %p free\n", desc);
+> > +#endif
+> > +			dma_pool_free(chan->desc_pool, desc,
+> > +					desc->async_tx.phys);
+>=20
+> This code appears in multiple places in the driver. Please consider
+> adding my patch 3/7 titled "[PATCH 3/7] fsl-dma: add
+> fsl_dma_free_descriptor() to reduce code duplication" to your patch
+> series.
+>=20
+> > +		}
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +/**
+> > + * fsldma_run_tx_complete_actions - cleanup and free a single link
+> descriptor
+>=20
+> This documentation is incorrect. This code NEVER frees a descriptor.
+>=20
+> > + * @chan: Freescale DMA channel
+> > + * @desc: descriptor to cleanup and free
+> > + * @cookie: Freescale DMA transaction identifier
+> > + *
+> > + * This function is used on a descriptor which has been executed by
+> the DMA
+> > + * controller. It will run any callbacks, submit any dependencies.
+> > + */
+> > +static dma_cookie_t fsldma_run_tx_complete_actions(struct fsl_desc_sw
+> *desc,
+> > +		struct fsldma_chan *chan, dma_cookie_t cookie)
+>=20
+> Please change the parameter order to:
+>=20
+> static dma_cookie_t fsldma_run_tx_complete_actions(struct fsldma_chan
+> *chan,
+> 		struct fsl_desc_sw *desc, dma_cookie_t cookie)
+>=20
+> Every other function in the driver uses this parameter order. Channel
+> comes first, then descriptor.
+>=20
+> > +{
+> > +	struct dma_async_tx_descriptor *txd =3D &desc->async_tx;
+> > +	struct device *dev =3D chan->common.device->dev;
+> > +	dma_addr_t src =3D get_desc_src(chan, desc);
+> > +	dma_addr_t dst =3D get_desc_dst(chan, desc);
+> > +	u32 len =3D get_desc_cnt(chan, desc);
+> > +
+> > +	BUG_ON(txd->cookie < 0);
+> > +
+> > +	if (txd->cookie > 0) {
+>=20
+> It will significantly reduce your patch size if you move this if
+> statement to the function which calls this one. I've provided an example
+> down below, in the one place where this code is used.
+>=20
+> > +		cookie =3D txd->cookie;
+> > +
+> > +		/* Run the link descriptor callback function */
+> > +		if (txd->callback) {
+> > +#ifdef FSL_DMA_LD_DEBUG
+> > +			chan_dbg(chan, "LD %p callback\n", desc);
+> > +#endif
+> > +			txd->callback(txd->callback_param);
+> > +		}
+> > +
+> > +		/* Unmap the dst buffer, if requested */
+> > +		if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
+> > +			if (txd->flags & DMA_COMPL_DEST_UNMAP_SINGLE)
+> > +				dma_unmap_single(dev, dst, len, DMA_FROM_DEVICE);
+> > +			else
+> > +				dma_unmap_page(dev, dst, len, DMA_FROM_DEVICE);
+> > +		}
+> > +
+> > +		/* Unmap the src buffer, if requested */
+> > +		if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+> > +			if (txd->flags & DMA_COMPL_SRC_UNMAP_SINGLE)
+> > +				dma_unmap_single(dev, src, len, DMA_TO_DEVICE);
+> > +			else
+> > +				dma_unmap_page(dev, src, len, DMA_TO_DEVICE);
+> > +		}
+> > +	}
+> > +
+> > +	/* Run any dependencies */
+> > +	dma_run_dependencies(txd);
+> > +
+> > +	return cookie;
+> > +}
+> > +
+> > +/**
+> > + * fsldma_clean_running_descriptor - move the completed descriptor
+> from
+> > + * ld_running to ld_completed
+> > + * @chan: Freescale DMA channel
+> > + * @desc: the descriptor which is completed
+> > + *
+> > + * Free the descriptor directly if acked by async_tx api, or move it
+> to
+> > + * queue ld_completed.
+> > + */
+> > +static int
+>=20
+> This code never returns an error code. It should be 'static void'.
+>=20
+> > +fsldma_clean_running_descriptor(struct fsldma_chan *chan,
+> > +		struct fsl_desc_sw *desc)
+> > +{
+> > +	/* Remove from the list of transactions */
+> > +	list_del(&desc->node);
+> > +	/*
+> > +	 * the client is allowed to attach dependent operations
+> > +	 * until 'ack' is set
+> > +	 */
+> > +	if (!async_tx_test_ack(&desc->async_tx)) {
+> > +		/*
+> > +		 * Move this descriptor to the list of descriptors which is
+> > +		 * completed, but still awaiting the 'ack' bit to be set.
+> > +		 */
+> > +		list_add_tail(&desc->node, &chan->ld_completed);
+> > +		return 0;
+> > +	}
+> > +
+> > +	dma_pool_free(chan->desc_pool, desc, desc->async_tx.phys);
+> > +	return 0;
+> > +}
+> > +
+> >  static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor
+> *tx)
+> >  {
+> >  	struct fsldma_chan *chan =3D to_fsl_chan(tx->chan);
+> > @@ -534,8 +653,10 @@ static void fsl_dma_free_chan_resources(struct
+> dma_chan *dchan)
+> >
+> >  	chan_dbg(chan, "free all channel resources\n");
+> >  	spin_lock_irqsave(&chan->desc_lock, flags);
+> > +	fsldma_cleanup_descriptor(chan);
+> >  	fsldma_free_desc_list(chan, &chan->ld_pending);
+> >  	fsldma_free_desc_list(chan, &chan->ld_running);
+> > +	fsldma_free_desc_list(chan, &chan->ld_completed);
+> >  	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> >
+> >  	dma_pool_destroy(chan->desc_pool);
+> > @@ -819,46 +940,53 @@ static int fsl_dma_device_control(struct dma_chan
+> *dchan,
+> >   * controller. It will run any callbacks, submit any dependencies, and
+> then
+> >   * free the descriptor.
+> >   */
+>=20
+> This documentation is now wrong. This function no longer operates on a
+> single descriptor. It operates on all descriptors in ld_running and
+> ld_completed.
+>=20
+> Please fix the documentation, and add locking notes.
+>=20
+> > -static void fsldma_cleanup_descriptor(struct fsldma_chan *chan,
+> > -				      struct fsl_desc_sw *desc)
+> > +static void fsldma_cleanup_descriptor(struct fsldma_chan *chan)
+>=20
+> I think the name should change to fsldma_cleanup_descriptors(). It
+> cleans up one or more descriptors now.
+>=20
+> >  {
+> > -	struct dma_async_tx_descriptor *txd =3D &desc->async_tx;
+> > -	struct device *dev =3D chan->common.device->dev;
+> > -	dma_addr_t src =3D get_desc_src(chan, desc);
+> > -	dma_addr_t dst =3D get_desc_dst(chan, desc);
+> > -	u32 len =3D get_desc_cnt(chan, desc);
+> > +	struct fsl_desc_sw *desc, *_desc;
+> > +	dma_cookie_t cookie =3D 0;
+> > +	dma_addr_t curr_phys =3D get_cdar(chan);
+> > +	int idle =3D dma_is_idle(chan);
+> > +	int seen_current =3D 0;
+> >
+>=20
+> The hardware can advance quite a bit between here, where you save the
+> current descriptor address and idle status.
+>=20
+> > -	/* Run the link descriptor callback function */
+> > -	if (txd->callback) {
+> > -#ifdef FSL_DMA_LD_DEBUG
+> > -		chan_dbg(chan, "LD %p callback\n", desc);
+> > -#endif
+> > -		txd->callback(txd->callback_param);
+> > -	}
+> > +	fsldma_clean_completed_descriptor(chan);
+> >
+> > -	/* Run any dependencies */
+> > -	dma_run_dependencies(txd);
+> > +	/* Run the callback for each descriptor, in order */
+> > +	list_for_each_entry_safe(desc, _desc, &chan->ld_running, node) {
+> > +		/*
+> > +		 * do not advance past the current descriptor loaded into the
+> > +		 * hardware channel, subsequent descriptors are either in
+> > +		 * process or have not been submitted
+> > +		 */
+> > +		if (seen_current)
+> > +			break;
+> >
+> > -	/* Unmap the dst buffer, if requested */
+> > -	if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
+> > -		if (txd->flags & DMA_COMPL_DEST_UNMAP_SINGLE)
+> > -			dma_unmap_single(dev, dst, len, DMA_FROM_DEVICE);
+> > -		else
+> > -			dma_unmap_page(dev, dst, len, DMA_FROM_DEVICE);
+> > -	}
+> > +		/*
+> > +		 * stop the search if we reach the current descriptor and the
+> > +		 * channel is busy
+> > +		 */
+> > +		if (desc->async_tx.phys =3D=3D curr_phys) {
+> > +			seen_current =3D 1;
+> > +			if (!idle)
+> > +				break;
+> > +		}
+>=20
+> And here, where you check the current descriptor address and idle
+> status.
+>=20
+> Should this change to:
+>=20
+> if (desc->async_tx.phys =3D=3D get_cdar(chan)) {
+> 	seen_current =3D 1;
+> 	if (!dma_is_idle(chan))
+> 		break;
+> }
+>=20
+> > +
+> > +		cookie =3D fsldma_run_tx_complete_actions(desc, chan, cookie);
+> > +
+>=20
+> I would prefer if the code just kept track of the cookie here, rather
+> than passing it through this function call. This code also illustrates
+> how you can remove the "if (txd->cookie > 0)" check from
+> fsldma_run_tx_complete_actions() to reduce the patch size.
+>=20
+> /*
+>  * Only descriptors with non-zero cookies need their completion
+>  * actions run.
+>  */
+> if (desc->async_tx.cookie > 0) {
+> 	cookie =3D desc->async_tx.cookie;
+> 	fsldma_run_tx_complete_actions(chan, desc);
+> 	desc->async_tx.cookie =3D 0;
+> }
+>=20
+> /* This descriptor has been ACKed, free it */
+> if (async_tx_test_ack(&desc->async_tx)) {
+> 	fsl_dma_free_descriptor(chan, desc);
+> 	continue;
+> }
+>=20
+> /*
+>  * This descriptor was not ACKed, add it to the ld_completed
+>  * list, to be freed after the ACK bit is set.
+>  */
+> list_del(&desc->node);
+> list_add_tail(&desc->node, &chan->ld_completed);
+>=20
+>=20
+> > +		if (fsldma_clean_running_descriptor(chan, desc))
+> > +			break;
+> >
+>=20
+> This if statement will never trigger. fsldma_clean_running_descriptor()
+> only returns 0. It is useless.
+>=20
+> > -	/* Unmap the src buffer, if requested */
+> > -	if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+> > -		if (txd->flags & DMA_COMPL_SRC_UNMAP_SINGLE)
+> > -			dma_unmap_single(dev, src, len, DMA_TO_DEVICE);
+> > -		else
+> > -			dma_unmap_page(dev, src, len, DMA_TO_DEVICE);
+> >  	}
+> >
+> > -#ifdef FSL_DMA_LD_DEBUG
+> > -	chan_dbg(chan, "LD %p free\n", desc);
+> > -#endif
+> > -	dma_pool_free(chan->desc_pool, desc, txd->phys);
+> > +	/*
+> > +	 * Start any pending transactions automatically
+> > +	 *
+> > +	 * In the ideal case, we keep the DMA controller busy while we go
+> > +	 * ahead and free the descriptors below.
+> > +	 */
+> > +	fsl_chan_xfer_ld_queue(chan);
+> > +
+> > +	if (cookie > 0)
+> > +		chan->common.completed_cookie =3D cookie;
+> >  }
+> >
+> >  /**
+> > @@ -954,11 +1082,15 @@ static enum dma_status fsl_tx_status(struct
+> dma_chan *dchan,
+> >  	enum dma_status ret;
+> >  	unsigned long flags;
+> >
+> > -	spin_lock_irqsave(&chan->desc_lock, flags);
+> >  	ret =3D dma_cookie_status(dchan, cookie, txstate);
+> > +	if (ret =3D=3D DMA_SUCCESS)
+> > +		return ret;
+> > +
+> > +	spin_lock_irqsave(&chan->desc_lock, flags);
+> > +	fsldma_cleanup_descriptor(chan);
+> >  	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> >
+> > -	return ret;
+> > +	return dma_cookie_status(dchan, cookie, txstate);
+> >  }
+> >
+> >  /*--------------------------------------------------------------------
+> --------*/
+> > @@ -1035,52 +1167,19 @@ static irqreturn_t fsldma_chan_irq(int irq,
+> void *data)
+> >  static void dma_do_tasklet(unsigned long data)
+> >  {
+> >  	struct fsldma_chan *chan =3D (struct fsldma_chan *)data;
+> > -	struct fsl_desc_sw *desc, *_desc;
+> > -	LIST_HEAD(ld_cleanup);
+> >  	unsigned long flags;
+> >
+> >  	chan_dbg(chan, "tasklet entry\n");
+> >
+> >  	spin_lock_irqsave(&chan->desc_lock, flags);
+> >
+> > -	/* update the cookie if we have some descriptors to cleanup */
+> > -	if (!list_empty(&chan->ld_running)) {
+> > -		dma_cookie_t cookie;
+> > -
+> > -		desc =3D to_fsl_desc(chan->ld_running.prev);
+> > -		cookie =3D desc->async_tx.cookie;
+> > -		dma_cookie_complete(&desc->async_tx);
+> > -
+> > -		chan_dbg(chan, "completed_cookie=3D%d\n", cookie);
+> > -	}
+> > -
+> > -	/*
+> > -	 * move the descriptors to a temporary list so we can drop the lock
+> > -	 * during the entire cleanup operation
+> > -	 */
+> > -	list_splice_tail_init(&chan->ld_running, &ld_cleanup);
+> > -
+> >  	/* the hardware is now idle and ready for more */
+> >  	chan->idle =3D true;
+> >
+> > -	/*
+> > -	 * Start any pending transactions automatically
+> > -	 *
+> > -	 * In the ideal case, we keep the DMA controller busy while we go
+> > -	 * ahead and free the descriptors below.
+> > -	 */
+> > -	fsl_chan_xfer_ld_queue(chan);
+> > -	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> > -
+> > -	/* Run the callback for each descriptor, in order */
+> > -	list_for_each_entry_safe(desc, _desc, &ld_cleanup, node) {
+> > +	/* Run all cleanup for this descriptor */
+>=20
+> Nitpick. This should be:
+>=20
+> /* Run cleanup for all descriptors */
+>=20
+> > +	fsldma_cleanup_descriptor(chan);
+> >
+> > -		/* Remove from the list of transactions */
+> > -		list_del(&desc->node);
+> > -
+> > -		/* Run all cleanup for this descriptor */
+> > -		fsldma_cleanup_descriptor(chan, desc);
+> > -	}
+> > +	spin_unlock_irqrestore(&chan->desc_lock, flags);
+> >
+> >  	chan_dbg(chan, "tasklet exit\n");
+> >  }
+> > @@ -1262,6 +1361,7 @@ static int __devinit fsl_dma_chan_probe(struct
+> fsldma_device *fdev,
+> >  	spin_lock_init(&chan->desc_lock);
+> >  	INIT_LIST_HEAD(&chan->ld_pending);
+> >  	INIT_LIST_HEAD(&chan->ld_running);
+> > +	INIT_LIST_HEAD(&chan->ld_completed);
+> >  	chan->idle =3D true;
+> >
+> >  	chan->common.device =3D &fdev->common;
+> > diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+> > index f5c3879..7ede908 100644
+> > --- a/drivers/dma/fsldma.h
+> > +++ b/drivers/dma/fsldma.h
+> > @@ -140,6 +140,7 @@ struct fsldma_chan {
+> >  	spinlock_t desc_lock;		/* Descriptor operation lock */
+> >  	struct list_head ld_pending;	/* Link descriptors queue */
+> >  	struct list_head ld_running;	/* Link descriptors queue */
+> > +	struct list_head ld_completed;	/* Link descriptors queue */
+>=20
+> It may help to add some documentation here. It would have helped me to
+> review this patch. Something like this:
+>=20
+> /*
+>  * Descriptors which are queued to run, but have not yet been handed
+>  * to the hardware for execution
+>  */
+> struct list_head ld_pending;
+>=20
+> /*
+>  * Descriptors which are currently being executed by the hardware
+>  */
+> struct list_head ld_running;
+>=20
+> /*
+>  * Descriptors which have finished execution by the hardware. These
+>  * descriptors have already had their cleanup actions run. They are
+>  * waiting for the ACK bit to be set by the async_tx API.
+>  */
+> struct list_head ld_completed;
+>=20
+> >  	struct dma_chan common;		/* DMA common channel */
+> >  	struct dma_pool *desc_pool;	/* Descriptors pool */
+> >  	struct device *dev;		/* Channel device */
+> > --
+> > 1.7.5.1
+> >
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
