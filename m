@@ -1,30 +1,22 @@
-Return-Path: <B32616@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E08482C008B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 14:56:57 +1000 (EST)
-From: Liu Qiang-B32616 <B32616@freescale.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Subject: RE: [PATCH v5 5/6] fsl-dma: use spin_lock_bh to instead of
- spin_lock_irqsave
-Date: Thu, 2 Aug 2012 04:56:48 +0000
-Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70D1D9D@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1343811009-25466-1-git-send-email-qiang.liu@freescale.com>
- <20120801173059.GF11359@ovro.caltech.edu>
-In-Reply-To: <20120801173059.GF11359@ovro.caltech.edu>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <jkosina@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 32D442C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Aug 2012 17:10:14 +1000 (EST)
+Date: Thu, 2 Aug 2012 09:10:03 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: [PATCH v2] powerpc: fix personality handling in
+ ppc64_personality()
+In-Reply-To: <m27gtitfv4.fsf@igel.home>
+Message-ID: <alpine.LNX.2.00.1208020907490.14910@pobox.suse.cz>
+References: <alpine.LNX.2.00.1208012201520.14910@pobox.suse.cz>
+ <m27gtitfv4.fsf@igel.home>
 MIME-Version: 1.0
-Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
- Vinod Koul <vinod.koul@intel.com>, Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "dan.j.williams@gmail.com" <dan.j.williams@gmail.com>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- Dan Williams <dan.j.williams@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,187 +26,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]
-> Sent: Thursday, August 02, 2012 1:31 AM
-> To: Liu Qiang-B32616
-> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> kernel@vger.kernel.org; dan.j.williams@gmail.com; Vinod Koul; Tabi Timur-
-> B04825; herbert@gondor.hengli.com.au; Dan Williams; davem@davemloft.net
-> Subject: Re: [PATCH v5 5/6] fsl-dma: use spin_lock_bh to instead of
-> spin_lock_irqsave
->=20
-> On Wed, Aug 01, 2012 at 04:50:09PM +0800, qiang.liu@freescale.com wrote:
-> > From: Qiang Liu <qiang.liu@freescale.com>
-> >
-> > - use spin_lock_bh() is the right way to use async_tx api,
-> > dma_run_dependencies() should not be protected by spin_lock_irqsave();
-> > - use spin_lock_bh to instead of spin_lock_irqsave for improving
-> > performance, There is not any place to access descriptor queues in
-> > fsl-dma ISR except its tasklet, spin_lock_bh() is more proper here.
-> > Interrupts will be turned off and context will be save in irqsave,
-> there is needless to use irqsave..
-> >
->=20
-> This description is not very clear English. I understand it is not your
-> native language. Let me try to help.
->=20
-> """
-> The use of spin_lock_irqsave() is a stronger locking mechanism than is
-> required throughout the driver. The minimum locking required should be
-> used instead.
->=20
-> Change all instances of spin_lock_irqsave() to spin_lock_bh(). All
-> manipulation of protected fields is done using tasklet context or weaker,
-> which makes spin_lock_bh() the correct choice.
-> """
-I will modify the description in v6, please check later.
+Directly comparing current->personality against PER_LINUX32 doesn't work
+in cases when any of the personality flags stored in the top three bytes
+are used.
 
->=20
-> Other than that,
-> Acked-by: Ira W. Snyder <iws@ovro.caltech.edu>
-Thanks.
+Directly forcefully setting personality to PER_LINUX32 or PER_LINUX
+discards any flags stored in the top three bytes
 
->=20
-> > Cc: Dan Williams <dan.j.williams@intel.com>
-> > Cc: Vinod Koul <vinod.koul@intel.com>
-> > Cc: Li Yang <leoli@freescale.com>
-> > Cc: Timur Tabi <timur@freescale.com>
-> > Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
-> > ---
-> >  drivers/dma/fsldma.c |   30 ++++++++++++------------------
-> >  1 files changed, 12 insertions(+), 18 deletions(-)
-> >
-> > diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c index
-> > bb883c0..e3814aa 100644
-> > --- a/drivers/dma/fsldma.c
-> > +++ b/drivers/dma/fsldma.c
-> > @@ -645,10 +645,9 @@ static dma_cookie_t fsl_dma_tx_submit(struct
-> dma_async_tx_descriptor *tx)
-> >  	struct fsldma_chan *chan =3D to_fsl_chan(tx->chan);
-> >  	struct fsl_desc_sw *desc =3D tx_to_fsl_desc(tx);
-> >  	struct fsl_desc_sw *child;
-> > -	unsigned long flags;
-> >  	dma_cookie_t cookie;
-> >
-> > -	spin_lock_irqsave(&chan->desc_lock, flags);
-> > +	spin_lock_bh(&chan->desc_lock);
-> >
-> >  	/*
-> >  	 * assign cookies to all of the software descriptors @@ -661,7
-> > +660,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct
-> dma_async_tx_descriptor *tx)
-> >  	/* put this transaction onto the tail of the pending queue */
-> >  	append_ld_queue(chan, desc);
-> >
-> > -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> > +	spin_unlock_bh(&chan->desc_lock);
-> >
-> >  	return cookie;
-> >  }
-> > @@ -770,15 +769,14 @@ static void fsldma_free_desc_list_reverse(struct
-> > fsldma_chan *chan,  static void fsl_dma_free_chan_resources(struct
-> > dma_chan *dchan)  {
-> >  	struct fsldma_chan *chan =3D to_fsl_chan(dchan);
-> > -	unsigned long flags;
-> >
-> >  	chan_dbg(chan, "free all channel resources\n");
-> > -	spin_lock_irqsave(&chan->desc_lock, flags);
-> > +	spin_lock_bh(&chan->desc_lock);
-> >  	fsldma_cleanup_descriptor(chan);
-> >  	fsldma_free_desc_list(chan, &chan->ld_pending);
-> >  	fsldma_free_desc_list(chan, &chan->ld_running);
-> >  	fsldma_free_desc_list(chan, &chan->ld_completed);
-> > -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> > +	spin_unlock_bh(&chan->desc_lock);
-> >
-> >  	dma_pool_destroy(chan->desc_pool);
-> >  	chan->desc_pool =3D NULL;
-> > @@ -997,7 +995,6 @@ static int fsl_dma_device_control(struct dma_chan
-> > *dchan,  {
-> >  	struct dma_slave_config *config;
-> >  	struct fsldma_chan *chan;
-> > -	unsigned long flags;
-> >  	int size;
-> >
-> >  	if (!dchan)
-> > @@ -1007,7 +1004,7 @@ static int fsl_dma_device_control(struct
-> > dma_chan *dchan,
-> >
-> >  	switch (cmd) {
-> >  	case DMA_TERMINATE_ALL:
-> > -		spin_lock_irqsave(&chan->desc_lock, flags);
-> > +		spin_lock_bh(&chan->desc_lock);
-> >
-> >  		/* Halt the DMA engine */
-> >  		dma_halt(chan);
-> > @@ -1017,7 +1014,7 @@ static int fsl_dma_device_control(struct dma_chan
-> *dchan,
-> >  		fsldma_free_desc_list(chan, &chan->ld_running);
-> >  		chan->idle =3D true;
-> >
-> > -		spin_unlock_irqrestore(&chan->desc_lock, flags);
-> > +		spin_unlock_bh(&chan->desc_lock);
-> >  		return 0;
-> >
-> >  	case DMA_SLAVE_CONFIG:
-> > @@ -1059,11 +1056,10 @@ static int fsl_dma_device_control(struct
-> > dma_chan *dchan,  static void fsl_dma_memcpy_issue_pending(struct
-> > dma_chan *dchan)  {
-> >  	struct fsldma_chan *chan =3D to_fsl_chan(dchan);
-> > -	unsigned long flags;
-> >
-> > -	spin_lock_irqsave(&chan->desc_lock, flags);
-> > +	spin_lock_bh(&chan->desc_lock);
-> >  	fsl_chan_xfer_ld_queue(chan);
-> > -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> > +	spin_unlock_bh(&chan->desc_lock);
-> >  }
-> >
-> >  /**
-> > @@ -1076,15 +1072,14 @@ static enum dma_status fsl_tx_status(struct
-> > dma_chan *dchan,  {
-> >  	struct fsldma_chan *chan =3D to_fsl_chan(dchan);
-> >  	enum dma_status ret;
-> > -	unsigned long flags;
-> >
-> >  	ret =3D dma_cookie_status(dchan, cookie, txstate);
-> >  	if (ret =3D=3D DMA_SUCCESS)
-> >  		return ret;
-> >
-> > -	spin_lock_irqsave(&chan->desc_lock, flags);
-> > +	spin_lock_bh(&chan->desc_lock);
-> >  	fsldma_cleanup_descriptor(chan);
-> > -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> > +	spin_unlock_bh(&chan->desc_lock);
-> >
-> >  	return dma_cookie_status(dchan, cookie, txstate);  } @@ -1163,11
-> > +1158,10 @@ static irqreturn_t fsldma_chan_irq(int irq, void *data)
-> > static void dma_do_tasklet(unsigned long data)  {
-> >  	struct fsldma_chan *chan =3D (struct fsldma_chan *)data;
-> > -	unsigned long flags;
-> >
-> >  	chan_dbg(chan, "tasklet entry\n");
-> >
-> > -	spin_lock_irqsave(&chan->desc_lock, flags);
-> > +	spin_lock_bh(&chan->desc_lock);
-> >
-> >  	/* the hardware is now idle and ready for more */
-> >  	chan->idle =3D true;
-> > @@ -1175,7 +1169,7 @@ static void dma_do_tasklet(unsigned long data)
-> >  	/* Run all cleanup for this descriptor */
-> >  	fsldma_cleanup_descriptor(chan);
-> >
-> > -	spin_unlock_irqrestore(&chan->desc_lock, flags);
-> > +	spin_unlock_bh(&chan->desc_lock);
-> >
-> >  	chan_dbg(chan, "tasklet exit\n");
-> >  }
-> > --
-> > 1.7.5.1
-> >
-> >
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@lists.ozlabs.org
-> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+Use personality() macro to compare only PER_MASK bytes and make sure that
+we are setting only the bits that should be set, instead of
+overwriting the whole value.
+
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
+
+changed since v1: fix the bit ops to reflect the fact that PER_LINUX is 
+actually 0
+
+ arch/powerpc/kernel/syscalls.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index f2496f2..dc1558e 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -107,11 +107,11 @@ long ppc64_personality(unsigned long personality)
+ 	long ret;
+ 
+ 	if (personality(current->personality) == PER_LINUX32
+-	    && personality == PER_LINUX)
+-		personality = PER_LINUX32;
++	    && personality(personality) == PER_LINUX)
++		personality |= PER_LINUX32;
+ 	ret = sys_personality(personality);
+-	if (ret == PER_LINUX32)
+-		ret = PER_LINUX;
++	if (personality(ret) == PER_LINUX32)
++		ret &= ~PER_LINUX32;
+ 	return ret;
+ }
+ #endif
+-- 
+1.7.3.1
+
+-- 
+Jiri Kosina
+SUSE Labs
