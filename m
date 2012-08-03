@@ -1,17 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5EE7B2C0091
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2012 23:39:55 +1000 (EST)
-Date: Fri, 3 Aug 2012 08:39:38 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git merge branch
-Message-ID: <alpine.LFD.2.00.1208030838490.4148@right.am.freescale.net>
+Return-Path: <B11780@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3CDA62C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2012 23:51:56 +1000 (EST)
+Received: from mail50-tx2 (localhost [127.0.0.1])	by mail50-tx2-R.bigfish.com
+ (Postfix) with ESMTP id 230EF2E0187	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Aug 2012 13:51:52 +0000 (UTC)
+Received: from TX2EHSMHS037.bigfish.com (unknown [10.9.14.254])	by
+ mail50-tx2.bigfish.com (Postfix) with ESMTP id 8FF9D4C025A	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2012 13:51:50 +0000 (UTC)
+From: Gala Kumar-B11780 <B11780@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Tabi Timur-B04825
+ <B04825@freescale.com>, Liu Yu-B13201 <B13201@freescale.com>, Fan
+ Zhicheng-B32736 <B32736@freescale.com>, Huang Changming-R66093
+ <r66093@freescale.com>, Liu Qiang-B32616 <B32616@freescale.com>, Zhao
+ Chenhui-B35336 <B35336@freescale.com>, Yoder Stuart-B08248
+ <B08248@freescale.com>, Kushwaha Prabhakar-B32579 <B32579@freescale.com>
+Subject: Upstream patch status?? (v3.6-rc1 out)
+Date: Fri, 3 Aug 2012 13:51:49 +0000
+Message-ID: <FB9C2F4C-267C-4A33-A64D-D7BFC5A71D1D@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Trefny Thomas-RAT188 <RAT188@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,27 +35,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+Guys,
 
-Weekly bug fix pull request.
+As v3.6-rc1 is now out we really need to get some of these simpler patches =
+upstream and accepted NOW.  Please provide status updates if the patch is u=
+pstream already let me know.
 
-- k
+[P1025RDB] (some major differences between upstream and internal P1025RDB s=
+upport)
+powerpc/85xx: Add Quicc Engine support for p1025rdb	P1025RDB		Zhicheng Fan
+powerpc/dts: Add ucc uart support for p1025rdb	P1025RDB		Zhicheng Fan
+powerpc/dts: Add dts for p1025rdb board	P1025RDB		Zhicheng Fan
 
-The following changes since commit 0d7614f09c1ebdbaa1599a5aba7593f147bf96ee:
+[P1022DS] (this is trivial, please take 10m and get this updated and submit=
+ted)
+powerpc/mpc85xx: p1022ds support the MTD for NOR and NAND flash	P1022DS		Je=
+rry Huang
 
-  Linux 3.6-rc1 (2012-08-02 16:38:10 -0700)
+[DTS] (Stuart, can you help and close)
+powerpc/e5500: Add power isa properties to comply with ePAPR 1.1	EPAPR		Liu=
+ Yu
+powerpc/e500mc: Add power isa properties to comply with ePAPR 1.1	EPAPR		Li=
+u Yu
+powerpc/e500v2: Add power isa properties to comply with ePAPR 1.1	EPAPR		Li=
+u Yu
 
-are available in the git repository at:
+[MSI] (I think upstream, Timur please verify)
+powerpc/fsl: add MSI support for the Freescale hypervisor	KVM/HV		Timur Tab=
+i
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+[CORE]
+powerpc/booke: Re-organize debug code	CORE		Kumar Gala
 
-for you to fetch changes up to c9f11c30374329a0d2a88cf05281ca49d8eca9ab:
+[USB] (Again, this is trivial and spend 10m and send upstream)
+usb/fsl: fixed USB wakeup	USB		Zhao Chenhui
 
-  powerpc/fsl-pci: Only scan PCI bus if configured as a host (2012-08-03 08:25:52 -0500)
+[LBC]
+mtd: elbc nand: use drvdata to only remove the relevant chip	LBC		Scott Woo=
+d
 
-----------------------------------------------------------------
-Jia Hongtao (1):
-      powerpc/fsl-pci: Only scan PCI bus if configured as a host
+[SATA]
+libata-pmp: add schedule timeout to support some PMP cards	SATA		Jerry Huan=
+g
+fsl-sata: workaround to fix the exception of link layer	SATA		Qiang Liu
 
- arch/powerpc/sysdev/fsl_pci.c |   13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+- k=
