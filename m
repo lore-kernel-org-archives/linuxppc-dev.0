@@ -1,17 +1,16 @@
 Return-Path: <B38951@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AB4A22C0193
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2012 20:39:48 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 539E42C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2012 20:39:52 +1000 (EST)
 From: Jia Hongtao <B38951@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
-Subject: [PATCH V5 2/3] powerpc/swiotlb: Enable at early stage and disable if
- not necessary
-Date: Fri, 3 Aug 2012 18:14:10 +0800
-Message-ID: <1343988851-884-3-git-send-email-B38951@freescale.com>
+Subject: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Fri, 3 Aug 2012 18:14:11 +0800
+Message-ID: <1343988851-884-4-git-send-email-B38951@freescale.com>
 In-Reply-To: <1343988851-884-1-git-send-email-B38951@freescale.com>
 References: <1343988851-884-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
@@ -26,153 +25,1574 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the dependency on PCI initialization for SWIOTLB initialization.
-So that PCI can be initialized at proper time.
+We unified the Freescale pci/pcie initialization by changing the fsl_pci
+to a platform driver. In previous PCI code architecture the initialization
+routine is called at board_setup_arch stage. Now the initialization is done
+in probe function which is architectural better. Also It's convenient for
+adding PM support for PCI controller in later patch.
 
-SWIOTLB is partly determined by PCI inbound/outbound map which is assigned
-in PCI initialization. But swiotlb_init() should be done at the stage of
-mem_init() which is much earlier than PCI initialization. So we reserve the
-memory for SWIOTLB first and free it if not necessary.
-
-All boards are converted to fit this change.
+Now we registered pci controllers as platform devices. So we combine two
+initialization code as one platform driver.
 
 Signed-off-by: Jia Hongtao <B38951@freescale.com>
 Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
 ---
- arch/powerpc/include/asm/swiotlb.h       |    6 ++++++
- arch/powerpc/kernel/dma-swiotlb.c        |   20 ++++++++++++++++++++
- arch/powerpc/mm/mem.c                    |    3 +--
- arch/powerpc/platforms/44x/currituck.c   |   10 ++--------
- arch/powerpc/platforms/85xx/mpc85xx_ds.c |    1 +
- arch/powerpc/platforms/85xx/qemu_e500.c  |    1 +
- arch/powerpc/sysdev/fsl_pci.c            |    5 +----
- 7 files changed, 32 insertions(+), 14 deletions(-)
+Changed for V5:
+Convert all boards to use PCI controller platform driver.
 
-diff --git a/arch/powerpc/include/asm/swiotlb.h b/arch/powerpc/include/asm/swiotlb.h
-index 8979d4c..de99d6e 100644
---- a/arch/powerpc/include/asm/swiotlb.h
-+++ b/arch/powerpc/include/asm/swiotlb.h
-@@ -22,4 +22,10 @@ int __init swiotlb_setup_bus_notifier(void);
+ arch/powerpc/platforms/85xx/common.c       |   10 +++
+ arch/powerpc/platforms/85xx/corenet_ds.c   |   31 +--------
+ arch/powerpc/platforms/85xx/ge_imp3a.c     |   48 +------------
+ arch/powerpc/platforms/85xx/mpc8536_ds.c   |   36 +---------
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c  |    9 +--
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c  |   14 +----
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c   |   38 ++--------
+ arch/powerpc/platforms/85xx/mpc85xx_mds.c  |   38 +---------
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c  |   28 +++-----
+ arch/powerpc/platforms/85xx/p1010rdb.c     |   14 +----
+ arch/powerpc/platforms/85xx/p1022_ds.c     |   34 +---------
+ arch/powerpc/platforms/85xx/p1022_rdk.c    |   34 +---------
+ arch/powerpc/platforms/85xx/p1023_rds.c    |    7 +--
+ arch/powerpc/platforms/85xx/p2041_rdb.c    |    2 +-
+ arch/powerpc/platforms/85xx/p3041_ds.c     |    2 +-
+ arch/powerpc/platforms/85xx/p4080_ds.c     |    2 +-
+ arch/powerpc/platforms/85xx/p5020_ds.c     |    2 +-
+ arch/powerpc/platforms/85xx/p5040_ds.c     |    2 +-
+ arch/powerpc/platforms/85xx/qemu_e500.c    |    3 +-
+ arch/powerpc/platforms/85xx/sbc8548.c      |   19 +-----
+ arch/powerpc/platforms/85xx/socrates.c     |   11 +---
+ arch/powerpc/platforms/85xx/stx_gp3.c      |   11 +---
+ arch/powerpc/platforms/85xx/tqm85xx.c      |   21 +------
+ arch/powerpc/platforms/85xx/xes_mpc85xx.c  |   54 ++-------------
+ arch/powerpc/platforms/86xx/gef_ppc9a.c    |   10 +--
+ arch/powerpc/platforms/86xx/gef_sbc310.c   |   11 +---
+ arch/powerpc/platforms/86xx/gef_sbc610.c   |   10 +--
+ arch/powerpc/platforms/86xx/mpc8610_hpcd.c |   19 +----
+ arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   40 +----------
+ arch/powerpc/platforms/86xx/sbc8641d.c     |   12 +---
+ arch/powerpc/sysdev/fsl_pci.c              |  102 +++++++++++++++++-----------
+ arch/powerpc/sysdev/fsl_pci.h              |    9 ++-
+ drivers/edac/mpc85xx_edac.c                |   43 +++---------
+ 33 files changed, 160 insertions(+), 566 deletions(-)
+
+diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
+index 67dac22..d0861a0 100644
+--- a/arch/powerpc/platforms/85xx/common.c
++++ b/arch/powerpc/platforms/85xx/common.c
+@@ -27,6 +27,16 @@ static struct of_device_id __initdata mpc85xx_common_ids[] = {
+ 	{ .compatible = "fsl,mpc8548-guts", },
+ 	/* Probably unnecessary? */
+ 	{ .compatible = "gpio-leds", },
++	/* For all PCI controllers */
++	{ .compatible = "fsl,mpc8540-pci", },
++	{ .compatible = "fsl,mpc8548-pcie", },
++	{ .compatible = "fsl,p1022-pcie", },
++	{ .compatible = "fsl,p1010-pcie", },
++	{ .compatible = "fsl,p1023-pcie", },
++	{ .compatible = "fsl,p4080-pcie", },
++	{ .compatible = "fsl,qoriq-pcie-v2.4", },
++	{ .compatible = "fsl,qoriq-pcie-v2.3", },
++	{ .compatible = "fsl,qoriq-pcie-v2.2", },
+ 	{},
+ };
  
- extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
- 
-+#ifdef CONFIG_SWIOTLB
-+void swiotlb_detect_4g(void);
-+#else
-+static inline void swiotlb_detect_4g(void) {}
-+#endif
-+
- #endif /* __ASM_SWIOTLB_H */
-diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
-index 4ab88da..aa85550 100644
---- a/arch/powerpc/kernel/dma-swiotlb.c
-+++ b/arch/powerpc/kernel/dma-swiotlb.c
-@@ -104,3 +104,23 @@ int __init swiotlb_setup_bus_notifier(void)
- 			      &ppc_swiotlb_plat_bus_notifier);
- 	return 0;
- }
-+
-+void swiotlb_detect_4g(void)
-+{
-+	if ((memblock_end_of_DRAM() - 1) > 0xffffffff)
-+		ppc_swiotlb_enable = 1;
-+}
-+
-+static int __init swiotlb_late_init(void)
-+{
-+	if (ppc_swiotlb_enable) {
-+		swiotlb_print_info();
-+		set_pci_dma_ops(&swiotlb_dma_ops);
-+		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
-+	} else {
-+		swiotlb_free();
-+	}
-+
-+	return 0;
-+}
-+subsys_initcall(swiotlb_late_init);
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index baaafde..f23c4e0 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -300,8 +300,7 @@ void __init mem_init(void)
- 	unsigned long reservedpages = 0, codesize, initsize, datasize, bsssize;
- 
- #ifdef CONFIG_SWIOTLB
--	if (ppc_swiotlb_enable)
--		swiotlb_init(1);
-+	swiotlb_init(0);
- #endif
- 
- 	num_physpages = memblock_phys_mem_size() >> PAGE_SHIFT;
-diff --git a/arch/powerpc/platforms/44x/currituck.c b/arch/powerpc/platforms/44x/currituck.c
-index 9f6c33d..6bd89a0 100644
---- a/arch/powerpc/platforms/44x/currituck.c
-+++ b/arch/powerpc/platforms/44x/currituck.c
-@@ -21,7 +21,6 @@
-  */
- 
- #include <linux/init.h>
+diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c b/arch/powerpc/platforms/85xx/corenet_ds.c
+index 473d573..84b9d86 100644
+--- a/arch/powerpc/platforms/85xx/corenet_ds.c
++++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+@@ -16,7 +16,6 @@
+ #include <linux/kdev_t.h>
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
 -#include <linux/memblock.h>
- #include <linux/of.h>
- #include <linux/of_platform.h>
- #include <linux/rtc.h>
-@@ -159,13 +158,8 @@ static void __init ppc47x_setup_arch(void)
  
- 	/* No need to check the DMA config as we /know/ our windows are all of
-  	 * RAM.  Lets hope that doesn't change */
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -52,39 +51,13 @@ void __init corenet_ds_pic_init(void)
+  */
+ void __init corenet_ds_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-	struct pci_controller *hose;
+-#endif
+-	dma_addr_t max = 0xffffffff;
+-
+ 	mpc85xx_smp_init();
+ 
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,p4080-pcie") ||
+-		    of_device_is_compatible(np, "fsl,qoriq-pcie-v2.2") ||
+-		    of_device_is_compatible(np, "fsl,qoriq-pcie-v2.3") ||
+-		    of_device_is_compatible(np, "fsl,qoriq-pcie-v2.4")) {
+-			fsl_add_bridge(np, 0);
+-			hose = pci_find_hose_for_OF_device(np);
+-			max = min(max, hose->dma_window_base_cur +
+-					hose->dma_window_size);
+-		}
+-	}
+-
+-#ifdef CONFIG_PPC64
++#if defined(CONFIG_PCI) && defined(CONFIG_PPC64)
+ 	pci_devs_phb_init();
+ #endif
+-#endif
+ 
 -#ifdef CONFIG_SWIOTLB
--	if ((memblock_end_of_DRAM() - 1) > 0xffffffff) {
+-	if ((memblock_end_of_DRAM() - 1) > max) {
 -		ppc_swiotlb_enable = 1;
 -		set_pci_dma_ops(&swiotlb_dma_ops);
 -		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
 -	}
 -#endif
 +	swiotlb_detect_4g();
-+
- 	ppc47x_smp_init();
+ 	pr_info("%s board from Freescale Semiconductor\n", ppc_md.name);
  }
  
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 6d3265f..56f8c8f 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-@@ -159,6 +159,7 @@ static void __init mpc85xx_ds_setup_arch(void)
+diff --git a/arch/powerpc/platforms/85xx/ge_imp3a.c b/arch/powerpc/platforms/85xx/ge_imp3a.c
+index b6a728b..0483337 100644
+--- a/arch/powerpc/platforms/85xx/ge_imp3a.c
++++ b/arch/powerpc/platforms/85xx/ge_imp3a.c
+@@ -22,7 +22,6 @@
+ #include <linux/seq_file.h>
+ #include <linux/interrupt.h>
+ #include <linux/of_platform.h>
+-#include <linux/memblock.h>
+ 
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -84,53 +83,19 @@ void __init ge_imp3a_pic_init(void)
+ 	of_node_put(cascade_node);
+ }
+ 
+-#ifdef CONFIG_PCI
+-static int primary_phb_addr;
+-#endif	/* CONFIG_PCI */
+-
+ /*
+  * Setup the architecture
+  */
+ static void __init ge_imp3a_setup_arch(void)
+ {
+ 	struct device_node *regs;
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-	struct pci_controller *hose;
+-#endif
+-	dma_addr_t max = 0xffffffff;
+ 
  	if (ppc_md.progress)
- 		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
+ 		ppc_md.progress("ge_imp3a_setup_arch()", 0);
  
-+	swiotlb_detect_4g();
- 	mpc85xx_ds_pci_init();
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie") ||
+-		    of_device_is_compatible(np, "fsl,p2020-pcie")) {
+-			struct resource rsrc;
+-			of_address_to_resource(np, 0, &rsrc);
+-			if ((rsrc.start & 0xfffff) == primary_phb_addr)
+-				fsl_add_bridge(np, 1);
+-			else
+-				fsl_add_bridge(np, 0);
+-
+-			hose = pci_find_hose_for_OF_device(np);
+-			max = min(max, hose->dma_window_base_cur +
+-					hose->dma_window_size);
+-		}
+-	}
+-#endif
+-
  	mpc85xx_smp_init();
  
-diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
-index 95a2e53..3c5490c 100644
---- a/arch/powerpc/platforms/85xx/qemu_e500.c
-+++ b/arch/powerpc/platforms/85xx/qemu_e500.c
-@@ -42,6 +42,7 @@ static void __init qemu_e500_setup_arch(void)
- 	ppc_md.progress("qemu_e500_setup_arch()", 0);
- 
- 	fsl_pci_init();
-+	swiotlb_detect_4g();
- 	mpc85xx_smp_init();
- }
- 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 6938792..da7a3d7 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -872,11 +872,8 @@ void __devinit fsl_pci_init(void)
- 	 * we need SWIOTLB to handle buffers located outside of
- 	 * dma capable memory region
- 	 */
--	if (memblock_end_of_DRAM() - 1 > max) {
-+	if (memblock_end_of_DRAM() - 1 > max)
- 		ppc_swiotlb_enable = 1;
+-#ifdef CONFIG_SWIOTLB
+-	if ((memblock_end_of_DRAM() - 1) > max) {
+-		ppc_swiotlb_enable = 1;
 -		set_pci_dma_ops(&swiotlb_dma_ops);
 -		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
 -	}
+-#endif
++	swiotlb_detect_4g();
+ 
+ 	/* Remap basic board registers */
+ 	regs = of_find_compatible_node(NULL, NULL, "ge,imp3a-fpga-regs");
+@@ -215,17 +180,10 @@ static int __init ge_imp3a_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "ge,IMP3A")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0x9000;
+-#endif
+-		return 1;
+-	}
+-
+-	return 0;
++	return of_flat_dt_is_compatible(root, "ge,IMP3A");
+ }
+ 
+-machine_device_initcall(ge_imp3a, mpc85xx_common_publish_devices);
++machine_arch_initcall(ge_imp3a, mpc85xx_common_publish_devices);
+ 
+ machine_arch_initcall(ge_imp3a, swiotlb_setup_bus_notifier);
+ 
+diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+index 767c7cf..9bac2c2 100644
+--- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
+@@ -17,7 +17,6 @@
+ #include <linux/seq_file.h>
+ #include <linux/interrupt.h>
+ #include <linux/of_platform.h>
+-#include <linux/memblock.h>
+ 
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -46,46 +45,15 @@ void __init mpc8536_ds_pic_init(void)
+  */
+ static void __init mpc8536_ds_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-	struct pci_controller *hose;
+-#endif
+-	dma_addr_t max = 0xffffffff;
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc8536_ds_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
+-			struct resource rsrc;
+-			of_address_to_resource(np, 0, &rsrc);
+-			if ((rsrc.start & 0xfffff) == 0x8000)
+-				fsl_add_bridge(np, 1);
+-			else
+-				fsl_add_bridge(np, 0);
+-
+-			hose = pci_find_hose_for_OF_device(np);
+-			max = min(max, hose->dma_window_base_cur +
+-					hose->dma_window_size);
+-		}
+-	}
+-
+-#endif
+-
+-#ifdef CONFIG_SWIOTLB
+-	if ((memblock_end_of_DRAM() - 1) > max) {
+-		ppc_swiotlb_enable = 1;
+-		set_pci_dma_ops(&swiotlb_dma_ops);
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-	}
+-#endif
++	swiotlb_detect_4g();
+ 
+ 	printk("MPC8536 DS board from Freescale Semiconductor\n");
+ }
+ 
+-machine_device_initcall(mpc8536_ds, mpc85xx_common_publish_devices);
++machine_arch_initcall(mpc8536_ds, mpc85xx_common_publish_devices);
+ 
+ machine_arch_initcall(mpc8536_ds, swiotlb_setup_bus_notifier);
+ 
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+index 29ee8fc..ae3ab48 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
+@@ -137,10 +137,6 @@ static void __init init_ioports(void)
+ 
+ static void __init mpc85xx_ads_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_ads_setup_arch()", 0);
+ 
+@@ -150,9 +146,6 @@ static void __init mpc85xx_ads_setup_arch(void)
+ #endif
+ 
+ #ifdef CONFIG_PCI
+-	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
+-		fsl_add_bridge(np, 1);
+-
+ 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
  #endif
  }
+@@ -173,7 +166,7 @@ static void mpc85xx_ads_show_cpuinfo(struct seq_file *m)
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+ }
+ 
+-machine_device_initcall(mpc85xx_ads, mpc85xx_common_publish_devices);
++machine_arch_initcall(mpc85xx_ads, mpc85xx_common_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 11156fb..7b77b7cb 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -309,18 +309,6 @@ static void __init mpc85xx_cds_setup_arch(void)
+ 	}
+ 
+ #ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
+-			struct resource rsrc;
+-			of_address_to_resource(np, 0, &rsrc);
+-			if ((rsrc.start & 0xfffff) == 0x8000)
+-				fsl_add_bridge(np, 1);
+-			else
+-				fsl_add_bridge(np, 0);
+-		}
+-	}
+-
+ 	ppc_md.pci_irq_fixup = mpc85xx_cds_pci_irq_fixup;
+ 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
  #endif
+@@ -355,7 +343,7 @@ static int __init mpc85xx_cds_probe(void)
+         return of_flat_dt_is_compatible(root, "MPC85xxCDS");
+ }
+ 
+-machine_device_initcall(mpc85xx_cds, mpc85xx_common_publish_devices);
++machine_arch_initcall(mpc85xx_cds, mpc85xx_common_publish_devices);
+ 
+ define_machine(mpc85xx_cds) {
+ 	.name		= "MPC85xx CDS",
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+index 56f8c8f..f378253 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+@@ -20,7 +20,6 @@
+ #include <linux/seq_file.h>
+ #include <linux/interrupt.h>
+ #include <linux/of_platform.h>
+-#include <linux/memblock.h>
+ 
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -117,40 +116,16 @@ void __init mpc85xx_ds_pic_init(void)
+ extern int uli_exclude_device(struct pci_controller *hose,
+ 				u_char bus, u_char devfn);
+ 
+-static struct device_node *pci_with_uli;
+-
+ static int mpc85xx_exclude_device(struct pci_controller *hose,
+ 				   u_char bus, u_char devfn)
+ {
+-	if (hose->dn == pci_with_uli)
++	if (hose->dn == fsl_pci_primary)
+ 		return uli_exclude_device(hose, bus, devfn);
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+ #endif	/* CONFIG_PCI */
+ 
+-static void __init mpc85xx_ds_pci_init(void)
+-{
+-#ifdef CONFIG_PCI
+-	struct device_node *node;
+-
+-	fsl_pci_init();
+-
+-	/* See if we have a ULI under the primary */
+-
+-	node = of_find_node_by_name(NULL, "uli1575");
+-	while ((pci_with_uli = of_get_parent(node))) {
+-		of_node_put(node);
+-		node = pci_with_uli;
+-
+-		if (pci_with_uli == fsl_pci_primary) {
+-			ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+-			break;
+-		}
+-	}
+-#endif
+-}
+-
+ /*
+  * Setup the architecture
+  */
+@@ -159,8 +134,11 @@ static void __init mpc85xx_ds_setup_arch(void)
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
+ 
++#ifdef CONFIG_PCI
++	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
++#endif
++
+ 	swiotlb_detect_4g();
+-	mpc85xx_ds_pci_init();
+ 	mpc85xx_smp_init();
+ 
+ 	printk("MPC85xx DS board from Freescale Semiconductor\n");
+@@ -176,9 +154,9 @@ static int __init mpc8544_ds_probe(void)
+ 	return !!of_flat_dt_is_compatible(root, "MPC8544DS");
+ }
+ 
+-machine_device_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
+-machine_device_initcall(mpc8572_ds, mpc85xx_common_publish_devices);
+-machine_device_initcall(p2020_ds, mpc85xx_common_publish_devices);
++machine_arch_initcall(mpc8544_ds, mpc85xx_common_publish_devices);
++machine_arch_initcall(mpc8572_ds, mpc85xx_common_publish_devices);
++machine_arch_initcall(p2020_ds, mpc85xx_common_publish_devices);
+ 
+ machine_arch_initcall(mpc8544_ds, swiotlb_setup_bus_notifier);
+ machine_arch_initcall(mpc8572_ds, swiotlb_setup_bus_notifier);
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+index 8e4b094..555b106 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
+@@ -327,44 +327,14 @@ static void __init mpc85xx_mds_qeic_init(void) { }
+ 
+ static void __init mpc85xx_mds_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct pci_controller *hose;
+-	struct device_node *np;
+-#endif
+-	dma_addr_t max = 0xffffffff;
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_mds_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
+-			struct resource rsrc;
+-			of_address_to_resource(np, 0, &rsrc);
+-			if ((rsrc.start & 0xfffff) == 0x8000)
+-				fsl_add_bridge(np, 1);
+-			else
+-				fsl_add_bridge(np, 0);
+-
+-			hose = pci_find_hose_for_OF_device(np);
+-			max = min(max, hose->dma_window_base_cur +
+-					hose->dma_window_size);
+-		}
+-	}
+-#endif
+-
+ 	mpc85xx_smp_init();
+ 
+ 	mpc85xx_mds_qe_init();
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if ((memblock_end_of_DRAM() - 1) > max) {
+-		ppc_swiotlb_enable = 1;
+-		set_pci_dma_ops(&swiotlb_dma_ops);
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-	}
+-#endif
++	swiotlb_detect_4g();
+ }
+ 
+ 
+@@ -409,9 +379,9 @@ static int __init mpc85xx_publish_devices(void)
+ 	return mpc85xx_common_publish_devices();
+ }
+ 
+-machine_device_initcall(mpc8568_mds, mpc85xx_publish_devices);
+-machine_device_initcall(mpc8569_mds, mpc85xx_publish_devices);
+-machine_device_initcall(p1021_mds, mpc85xx_common_publish_devices);
++machine_arch_initcall(mpc8568_mds, mpc85xx_publish_devices);
++machine_arch_initcall(mpc8569_mds, mpc85xx_publish_devices);
++machine_arch_initcall(p1021_mds, mpc85xx_common_publish_devices);
+ 
+ machine_arch_initcall(mpc8568_mds, swiotlb_setup_bus_notifier);
+ machine_arch_initcall(mpc8569_mds, swiotlb_setup_bus_notifier);
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index 1910fdc..f4a0b7a 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -86,21 +86,13 @@ void __init mpc85xx_rdb_pic_init(void)
+  */
+ static void __init mpc85xx_rdb_setup_arch(void)
+ {
+-#if defined(CONFIG_PCI) || defined(CONFIG_QUICC_ENGINE)
++#ifdef CONFIG_QUICC_ENGINE
+ 	struct device_node *np;
+ #endif
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_rdb_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8548-pcie"))
+-			fsl_add_bridge(np, 0);
+-	}
+-
+-#endif
+-
+ 	mpc85xx_smp_init();
+ 
+ #ifdef CONFIG_QUICC_ENGINE
+@@ -161,15 +153,15 @@ qe_fail:
+ 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
+ }
+ 
+-machine_device_initcall(p2020_rdb, mpc85xx_common_publish_devices);
+-machine_device_initcall(p2020_rdb_pc, mpc85xx_common_publish_devices);
+-machine_device_initcall(p1020_mbg_pc, mpc85xx_common_publish_devices);
+-machine_device_initcall(p1020_rdb, mpc85xx_common_publish_devices);
+-machine_device_initcall(p1020_rdb_pc, mpc85xx_common_publish_devices);
+-machine_device_initcall(p1020_utm_pc, mpc85xx_common_publish_devices);
+-machine_device_initcall(p1021_rdb_pc, mpc85xx_common_publish_devices);
+-machine_device_initcall(p1025_rdb, mpc85xx_common_publish_devices);
+-machine_device_initcall(p1024_rdb, mpc85xx_common_publish_devices);
++machine_arch_initcall(p2020_rdb, mpc85xx_common_publish_devices);
++machine_arch_initcall(p2020_rdb_pc, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1020_mbg_pc, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1020_rdb, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1020_rdb_pc, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1020_utm_pc, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1021_rdb_pc, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1025_rdb, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1024_rdb, mpc85xx_common_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
+index dbaf443..a893bf1 100644
+--- a/arch/powerpc/platforms/85xx/p1010rdb.c
++++ b/arch/powerpc/platforms/85xx/p1010rdb.c
+@@ -46,25 +46,13 @@ void __init p1010_rdb_pic_init(void)
+  */
+ static void __init p1010_rdb_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("p1010_rdb_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,p1010-pcie"))
+-			fsl_add_bridge(np, 0);
+-	}
+-
+-#endif
+-
+ 	printk(KERN_INFO "P1010 RDB board from Freescale Semiconductor\n");
+ }
+ 
+-machine_device_initcall(p1010_rdb, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1010_rdb, mpc85xx_common_publish_devices);
+ machine_arch_initcall(p1010_rdb, swiotlb_setup_bus_notifier);
+ 
+ /*
+diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+index 3c732ac..a32efb9 100644
+--- a/arch/powerpc/platforms/85xx/p1022_ds.c
++++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+@@ -18,7 +18,6 @@
+ 
+ #include <linux/pci.h>
+ #include <linux/of_platform.h>
+-#include <linux/memblock.h>
+ #include <asm/div64.h>
+ #include <asm/mpic.h>
+ #include <asm/swiotlb.h>
+@@ -507,32 +506,9 @@ early_param("video", early_video_setup);
+  */
+ static void __init p1022_ds_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+-	dma_addr_t max = 0xffffffff;
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("p1022_ds_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	for_each_compatible_node(np, "pci", "fsl,p1022-pcie") {
+-		struct resource rsrc;
+-		struct pci_controller *hose;
+-
+-		of_address_to_resource(np, 0, &rsrc);
+-
+-		if ((rsrc.start & 0xfffff) == 0x8000)
+-			fsl_add_bridge(np, 1);
+-		else
+-			fsl_add_bridge(np, 0);
+-
+-		hose = pci_find_hose_for_OF_device(np);
+-		max = min(max, hose->dma_window_base_cur +
+-			  hose->dma_window_size);
+-	}
+-#endif
+-
+ #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
+ 	diu_ops.get_pixel_format	= p1022ds_get_pixel_format;
+ 	diu_ops.set_gamma_table		= p1022ds_set_gamma_table;
+@@ -601,18 +577,12 @@ static void __init p1022_ds_setup_arch(void)
+ 
+ 	mpc85xx_smp_init();
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if ((memblock_end_of_DRAM() - 1) > max) {
+-		ppc_swiotlb_enable = 1;
+-		set_pci_dma_ops(&swiotlb_dma_ops);
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-	}
+-#endif
++	swiotlb_detect_4g();
+ 
+ 	pr_info("Freescale P1022 DS reference board\n");
+ }
+ 
+-machine_device_initcall(p1022_ds, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1022_ds, mpc85xx_common_publish_devices);
+ 
+ machine_arch_initcall(p1022_ds, swiotlb_setup_bus_notifier);
+ 
+diff --git a/arch/powerpc/platforms/85xx/p1022_rdk.c b/arch/powerpc/platforms/85xx/p1022_rdk.c
+index b3cf11b..4d328aa 100644
+--- a/arch/powerpc/platforms/85xx/p1022_rdk.c
++++ b/arch/powerpc/platforms/85xx/p1022_rdk.c
+@@ -14,7 +14,6 @@
+ 
+ #include <linux/pci.h>
+ #include <linux/of_platform.h>
+-#include <linux/memblock.h>
+ #include <asm/div64.h>
+ #include <asm/mpic.h>
+ #include <asm/swiotlb.h>
+@@ -121,32 +120,9 @@ void __init p1022_rdk_pic_init(void)
+  */
+ static void __init p1022_rdk_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+-	dma_addr_t max = 0xffffffff;
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("p1022_rdk_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	for_each_compatible_node(np, "pci", "fsl,p1022-pcie") {
+-		struct resource rsrc;
+-		struct pci_controller *hose;
+-
+-		of_address_to_resource(np, 0, &rsrc);
+-
+-		if ((rsrc.start & 0xfffff) == 0x8000)
+-			fsl_add_bridge(np, 1);
+-		else
+-			fsl_add_bridge(np, 0);
+-
+-		hose = pci_find_hose_for_OF_device(np);
+-		max = min(max, hose->dma_window_base_cur +
+-			  hose->dma_window_size);
+-	}
+-#endif
+-
+ #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
+ 	diu_ops.set_monitor_port	= p1022rdk_set_monitor_port;
+ 	diu_ops.set_pixel_clock		= p1022rdk_set_pixel_clock;
+@@ -155,18 +131,12 @@ static void __init p1022_rdk_setup_arch(void)
+ 
+ 	mpc85xx_smp_init();
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if ((memblock_end_of_DRAM() - 1) > max) {
+-		ppc_swiotlb_enable = 1;
+-		set_pci_dma_ops(&swiotlb_dma_ops);
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-	}
+-#endif
++	swiotlb_detect_4g();
+ 
+ 	pr_info("Freescale / iVeia P1022 RDK reference board\n");
+ }
+ 
+-machine_device_initcall(p1022_rdk, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1022_rdk, mpc85xx_common_publish_devices);
+ 
+ machine_arch_initcall(p1022_rdk, swiotlb_setup_bus_notifier);
+ 
+diff --git a/arch/powerpc/platforms/85xx/p1023_rds.c b/arch/powerpc/platforms/85xx/p1023_rds.c
+index 2990e8b..606eff9 100644
+--- a/arch/powerpc/platforms/85xx/p1023_rds.c
++++ b/arch/powerpc/platforms/85xx/p1023_rds.c
+@@ -80,15 +80,10 @@ static void __init mpc85xx_rds_setup_arch(void)
+ 		}
+ 	}
+ 
+-#ifdef CONFIG_PCI
+-	for_each_compatible_node(np, "pci", "fsl,p1023-pcie")
+-		fsl_add_bridge(np, 0);
+-#endif
+-
+ 	mpc85xx_smp_init();
+ }
+ 
+-machine_device_initcall(p1023_rds, mpc85xx_common_publish_devices);
++machine_arch_initcall(p1023_rds, mpc85xx_common_publish_devices);
+ 
+ static void __init mpc85xx_rds_pic_init(void)
+ {
+diff --git a/arch/powerpc/platforms/85xx/p2041_rdb.c b/arch/powerpc/platforms/85xx/p2041_rdb.c
+index 6541fa2..000c089 100644
+--- a/arch/powerpc/platforms/85xx/p2041_rdb.c
++++ b/arch/powerpc/platforms/85xx/p2041_rdb.c
+@@ -80,7 +80,7 @@ define_machine(p2041_rdb) {
+ 	.power_save		= e500_idle,
+ };
+ 
+-machine_device_initcall(p2041_rdb, corenet_ds_publish_devices);
++machine_arch_initcall(p2041_rdb, corenet_ds_publish_devices);
+ 
+ #ifdef CONFIG_SWIOTLB
+ machine_arch_initcall(p2041_rdb, swiotlb_setup_bus_notifier);
+diff --git a/arch/powerpc/platforms/85xx/p3041_ds.c b/arch/powerpc/platforms/85xx/p3041_ds.c
+index f238efa..b3edc20 100644
+--- a/arch/powerpc/platforms/85xx/p3041_ds.c
++++ b/arch/powerpc/platforms/85xx/p3041_ds.c
+@@ -82,7 +82,7 @@ define_machine(p3041_ds) {
+ 	.power_save		= e500_idle,
+ };
+ 
+-machine_device_initcall(p3041_ds, corenet_ds_publish_devices);
++machine_arch_initcall(p3041_ds, corenet_ds_publish_devices);
+ 
+ #ifdef CONFIG_SWIOTLB
+ machine_arch_initcall(p3041_ds, swiotlb_setup_bus_notifier);
+diff --git a/arch/powerpc/platforms/85xx/p4080_ds.c b/arch/powerpc/platforms/85xx/p4080_ds.c
+index c92417d..54df106 100644
+--- a/arch/powerpc/platforms/85xx/p4080_ds.c
++++ b/arch/powerpc/platforms/85xx/p4080_ds.c
+@@ -81,7 +81,7 @@ define_machine(p4080_ds) {
+ 	.power_save		= e500_idle,
+ };
+ 
+-machine_device_initcall(p4080_ds, corenet_ds_publish_devices);
++machine_arch_initcall(p4080_ds, corenet_ds_publish_devices);
+ #ifdef CONFIG_SWIOTLB
+ machine_arch_initcall(p4080_ds, swiotlb_setup_bus_notifier);
+ #endif
+diff --git a/arch/powerpc/platforms/85xx/p5020_ds.c b/arch/powerpc/platforms/85xx/p5020_ds.c
+index 17bef15..753a42c 100644
+--- a/arch/powerpc/platforms/85xx/p5020_ds.c
++++ b/arch/powerpc/platforms/85xx/p5020_ds.c
+@@ -91,7 +91,7 @@ define_machine(p5020_ds) {
+ #endif
+ };
+ 
+-machine_device_initcall(p5020_ds, corenet_ds_publish_devices);
++machine_arch_initcall(p5020_ds, corenet_ds_publish_devices);
+ 
+ #ifdef CONFIG_SWIOTLB
+ machine_arch_initcall(p5020_ds, swiotlb_setup_bus_notifier);
+diff --git a/arch/powerpc/platforms/85xx/p5040_ds.c b/arch/powerpc/platforms/85xx/p5040_ds.c
+index 8e22a34..1138185 100644
+--- a/arch/powerpc/platforms/85xx/p5040_ds.c
++++ b/arch/powerpc/platforms/85xx/p5040_ds.c
+@@ -82,7 +82,7 @@ define_machine(p5040_ds) {
+ #endif
+ };
+ 
+-machine_device_initcall(p5040_ds, corenet_ds_publish_devices);
++machine_arch_initcall(p5040_ds, corenet_ds_publish_devices);
+ 
+ #ifdef CONFIG_SWIOTLB
+ machine_arch_initcall(p5040_ds, swiotlb_setup_bus_notifier);
+diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
+index 3c5490c..b3f27c5 100644
+--- a/arch/powerpc/platforms/85xx/qemu_e500.c
++++ b/arch/powerpc/platforms/85xx/qemu_e500.c
+@@ -41,7 +41,6 @@ static void __init qemu_e500_setup_arch(void)
+ {
+ 	ppc_md.progress("qemu_e500_setup_arch()", 0);
+ 
+-	fsl_pci_init();
+ 	swiotlb_detect_4g();
+ 	mpc85xx_smp_init();
+ }
+@@ -56,7 +55,7 @@ static int __init qemu_e500_probe(void)
+ 	return !!of_flat_dt_is_compatible(root, "fsl,qemu-e500");
+ }
+ 
+-machine_device_initcall(qemu_e500, mpc85xx_common_publish_devices);
++machine_arch_initcall(qemu_e500, mpc85xx_common_publish_devices);
+ 
+ define_machine(qemu_e500) {
+ 	.name			= "QEMU e500",
+diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platforms/85xx/sbc8548.c
+index cd3a66b..2825a62 100644
+--- a/arch/powerpc/platforms/85xx/sbc8548.c
++++ b/arch/powerpc/platforms/85xx/sbc8548.c
+@@ -88,26 +88,9 @@ static int __init sbc8548_hw_rev(void)
+  */
+ static void __init sbc8548_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("sbc8548_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
+-			struct resource rsrc;
+-			of_address_to_resource(np, 0, &rsrc);
+-			if ((rsrc.start & 0xfffff) == 0x8000)
+-				fsl_add_bridge(np, 1);
+-			else
+-				fsl_add_bridge(np, 0);
+-		}
+-	}
+-#endif
+ 	sbc_rev = sbc8548_hw_rev();
+ }
+ 
+@@ -128,7 +111,7 @@ static void sbc8548_show_cpuinfo(struct seq_file *m)
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+ }
+ 
+-machine_device_initcall(sbc8548, mpc85xx_common_publish_devices);
++machine_arch_initcall(sbc8548, mpc85xx_common_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+diff --git a/arch/powerpc/platforms/85xx/socrates.c b/arch/powerpc/platforms/85xx/socrates.c
+index b9c6daa..381463e 100644
+--- a/arch/powerpc/platforms/85xx/socrates.c
++++ b/arch/powerpc/platforms/85xx/socrates.c
+@@ -66,20 +66,11 @@ static void __init socrates_pic_init(void)
+  */
+ static void __init socrates_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("socrates_setup_arch()", 0);
+-
+-#ifdef CONFIG_PCI
+-	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
+-		fsl_add_bridge(np, 1);
+-#endif
+ }
+ 
+-machine_device_initcall(socrates, mpc85xx_common_publish_devices);
++machine_arch_initcall(socrates, mpc85xx_common_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+diff --git a/arch/powerpc/platforms/85xx/stx_gp3.c b/arch/powerpc/platforms/85xx/stx_gp3.c
+index e050800..bb1b1a7 100644
+--- a/arch/powerpc/platforms/85xx/stx_gp3.c
++++ b/arch/powerpc/platforms/85xx/stx_gp3.c
+@@ -60,21 +60,12 @@ static void __init stx_gp3_pic_init(void)
+  */
+ static void __init stx_gp3_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("stx_gp3_setup_arch()", 0);
+ 
+ #ifdef CONFIG_CPM2
+ 	cpm2_reset();
+ #endif
+-
+-#ifdef CONFIG_PCI
+-	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
+-		fsl_add_bridge(np, 1);
+-#endif
+ }
+ 
+ static void stx_gp3_show_cpuinfo(struct seq_file *m)
+@@ -93,7 +84,7 @@ static void stx_gp3_show_cpuinfo(struct seq_file *m)
+ 	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+ }
+ 
+-machine_device_initcall(stx_gp3, mpc85xx_common_publish_devices);
++machine_arch_initcall(stx_gp3, mpc85xx_common_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
+index 4d786c2..c8ef526 100644
+--- a/arch/powerpc/platforms/85xx/tqm85xx.c
++++ b/arch/powerpc/platforms/85xx/tqm85xx.c
+@@ -59,31 +59,12 @@ static void __init tqm85xx_pic_init(void)
+  */
+ static void __init tqm85xx_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("tqm85xx_setup_arch()", 0);
+ 
+ #ifdef CONFIG_CPM2
+ 	cpm2_reset();
+ #endif
+-
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
+-			struct resource rsrc;
+-			if (!of_address_to_resource(np, 0, &rsrc)) {
+-				if ((rsrc.start & 0xfffff) == 0x8000)
+-					fsl_add_bridge(np, 1);
+-				else
+-					fsl_add_bridge(np, 0);
+-			}
+-		}
+-	}
+-#endif
+ }
+ 
+ static void tqm85xx_show_cpuinfo(struct seq_file *m)
+@@ -123,7 +104,7 @@ static void __init tqm85xx_ti1520_fixup(struct pci_dev *pdev)
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TI, PCI_DEVICE_ID_TI_1520,
+ 		tqm85xx_ti1520_fixup);
+ 
+-machine_device_initcall(tqm85xx, mpc85xx_common_publish_devices);
++machine_arch_initcall(tqm85xx, mpc85xx_common_publish_devices);
+ 
+ static const char *board[] __initdata = {
+ 	"tqc,tqm8540",
+diff --git a/arch/powerpc/platforms/85xx/xes_mpc85xx.c b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
+index 41c6875..7c9cf6b 100644
+--- a/arch/powerpc/platforms/85xx/xes_mpc85xx.c
++++ b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
+@@ -111,18 +111,11 @@ static void xes_mpc85xx_fixups(void)
+ 	}
+ }
+ 
+-#ifdef CONFIG_PCI
+-static int primary_phb_addr;
+-#endif
+-
+ /*
+  * Setup the architecture
+  */
+ static void __init xes_mpc85xx_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+ 	struct device_node *root;
+ 	const char *model = "Unknown";
+ 
+@@ -137,26 +130,12 @@ static void __init xes_mpc85xx_setup_arch(void)
+ 
+ 	xes_mpc85xx_fixups();
+ 
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8540-pci") ||
+-		    of_device_is_compatible(np, "fsl,mpc8548-pcie")) {
+-			struct resource rsrc;
+-			of_address_to_resource(np, 0, &rsrc);
+-			if ((rsrc.start & 0xfffff) == primary_phb_addr)
+-				fsl_add_bridge(np, 1);
+-			else
+-				fsl_add_bridge(np, 0);
+-		}
+-	}
+-#endif
+-
+ 	mpc85xx_smp_init();
+ }
+ 
+-machine_device_initcall(xes_mpc8572, mpc85xx_common_publish_devices);
+-machine_device_initcall(xes_mpc8548, mpc85xx_common_publish_devices);
+-machine_device_initcall(xes_mpc8540, mpc85xx_common_publish_devices);
++machine_arch_initcall(xes_mpc8572, mpc85xx_common_publish_devices);
++machine_arch_initcall(xes_mpc8548, mpc85xx_common_publish_devices);
++machine_arch_initcall(xes_mpc8540, mpc85xx_common_publish_devices);
+ 
+ /*
+  * Called very early, device-tree isn't unflattened
+@@ -165,42 +144,21 @@ static int __init xes_mpc8572_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "xes,MPC8572")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0x8000;
+-#endif
+-		return 1;
+-	} else {
+-		return 0;
+-	}
++	return of_flat_dt_is_compatible(root, "xes,MPC8572");
+ }
+ 
+ static int __init xes_mpc8548_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "xes,MPC8548")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0xb000;
+-#endif
+-		return 1;
+-	} else {
+-		return 0;
+-	}
++	return of_flat_dt_is_compatible(root, "xes,MPC8548");
+ }
+ 
+ static int __init xes_mpc8540_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+ 
+-	if (of_flat_dt_is_compatible(root, "xes,MPC8540")) {
+-#ifdef CONFIG_PCI
+-		primary_phb_addr = 0xb000;
+-#endif
+-		return 1;
+-	} else {
+-		return 0;
+-	}
++	return of_flat_dt_is_compatible(root, "xes,MPC8540");
+ }
+ 
+ define_machine(xes_mpc8572) {
+diff --git a/arch/powerpc/platforms/86xx/gef_ppc9a.c b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+index 1fca663..6c7ddb3 100644
+--- a/arch/powerpc/platforms/86xx/gef_ppc9a.c
++++ b/arch/powerpc/platforms/86xx/gef_ppc9a.c
+@@ -73,13 +73,6 @@ static void __init gef_ppc9a_init_irq(void)
+ static void __init gef_ppc9a_setup_arch(void)
+ {
+ 	struct device_node *regs;
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-
+-	for_each_compatible_node(np, "pci", "fsl,mpc8641-pcie") {
+-		fsl_add_bridge(np, 1);
+-	}
+-#endif
+ 
+ 	printk(KERN_INFO "GE Intelligent Platforms PPC9A 6U VME SBC\n");
+ 
+@@ -221,6 +214,7 @@ static long __init mpc86xx_time_init(void)
+ static __initdata struct of_device_id of_bus_ids[] = {
+ 	{ .compatible = "simple-bus", },
+ 	{ .compatible = "gianfar", },
++	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{},
+ };
+ 
+@@ -231,7 +225,7 @@ static int __init declare_of_platform_devices(void)
+ 
+ 	return 0;
+ }
+-machine_device_initcall(gef_ppc9a, declare_of_platform_devices);
++machine_arch_initcall(gef_ppc9a, declare_of_platform_devices);
+ 
+ define_machine(gef_ppc9a) {
+ 	.name			= "GE PPC9A",
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
+index 14e0e576..2195ac7 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc310.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
+@@ -73,14 +73,6 @@ static void __init gef_sbc310_init_irq(void)
+ static void __init gef_sbc310_setup_arch(void)
+ {
+ 	struct device_node *regs;
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-
+-	for_each_compatible_node(np, "pci", "fsl,mpc8641-pcie") {
+-		fsl_add_bridge(np, 1);
+-	}
+-#endif
+-
+ 	printk(KERN_INFO "GE Intelligent Platforms SBC310 6U VPX SBC\n");
+ 
+ #ifdef CONFIG_SMP
+@@ -209,6 +201,7 @@ static long __init mpc86xx_time_init(void)
+ static __initdata struct of_device_id of_bus_ids[] = {
+ 	{ .compatible = "simple-bus", },
+ 	{ .compatible = "gianfar", },
++	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{},
+ };
+ 
+@@ -219,7 +212,7 @@ static int __init declare_of_platform_devices(void)
+ 
+ 	return 0;
+ }
+-machine_device_initcall(gef_sbc310, declare_of_platform_devices);
++machine_arch_initcall(gef_sbc310, declare_of_platform_devices);
+ 
+ define_machine(gef_sbc310) {
+ 	.name			= "GE SBC310",
+diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
+index 1638f43..52fd6d7 100644
+--- a/arch/powerpc/platforms/86xx/gef_sbc610.c
++++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
+@@ -73,13 +73,6 @@ static void __init gef_sbc610_init_irq(void)
+ static void __init gef_sbc610_setup_arch(void)
+ {
+ 	struct device_node *regs;
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-
+-	for_each_compatible_node(np, "pci", "fsl,mpc8641-pcie") {
+-		fsl_add_bridge(np, 1);
+-	}
+-#endif
+ 
+ 	printk(KERN_INFO "GE Intelligent Platforms SBC610 6U VPX SBC\n");
+ 
+@@ -198,6 +191,7 @@ static long __init mpc86xx_time_init(void)
+ static __initdata struct of_device_id of_bus_ids[] = {
+ 	{ .compatible = "simple-bus", },
+ 	{ .compatible = "gianfar", },
++	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{},
+ };
+ 
+@@ -208,7 +202,7 @@ static int __init declare_of_platform_devices(void)
+ 
+ 	return 0;
+ }
+-machine_device_initcall(gef_sbc610, declare_of_platform_devices);
++machine_arch_initcall(gef_sbc610, declare_of_platform_devices);
+ 
+ define_machine(gef_sbc610) {
+ 	.name			= "GE SBC610",
+diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+index 62cd3c5..a8229f3 100644
+--- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
++++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
+@@ -91,6 +91,9 @@ static struct of_device_id __initdata mpc8610_ids[] = {
+ 	{ .compatible = "simple-bus", },
+ 	/* So that the DMA channel nodes can be probed individually: */
+ 	{ .compatible = "fsl,eloplus-dma", },
++	/* PCI controllers */
++	{ .compatible = "fsl,mpc8610-pci", },
++	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{}
+ };
+ 
+@@ -107,7 +110,7 @@ static int __init mpc8610_declare_of_platform_devices(void)
+ 
+ 	return 0;
+ }
+-machine_device_initcall(mpc86xx_hpcd, mpc8610_declare_of_platform_devices);
++machine_arch_initcall(mpc86xx_hpcd, mpc8610_declare_of_platform_devices);
+ 
+ #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
+ 
+@@ -278,25 +281,11 @@ mpc8610hpcd_valid_monitor_port(enum fsl_diu_monitor_port port)
+ static void __init mpc86xx_hpcd_setup_arch(void)
+ {
+ 	struct resource r;
+-	struct device_node *np;
+ 	unsigned char *pixis;
+ 
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc86xx_hpcd_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	for_each_node_by_type(np, "pci") {
+-		if (of_device_is_compatible(np, "fsl,mpc8610-pci")
+-		    || of_device_is_compatible(np, "fsl,mpc8641-pcie")) {
+-			struct resource rsrc;
+-			of_address_to_resource(np, 0, &rsrc);
+-			if ((rsrc.start & 0xfffff) == 0xa000)
+-				fsl_add_bridge(np, 1);
+-			else
+-				fsl_add_bridge(np, 0);
+-		}
+-        }
+-#endif
+ #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
+ 	diu_ops.get_pixel_format	= mpc8610hpcd_get_pixel_format;
+ 	diu_ops.set_gamma_table		= mpc8610hpcd_set_gamma_table;
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+index 817245b..182cbe6 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
++++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
+@@ -19,7 +19,6 @@
+ #include <linux/delay.h>
+ #include <linux/seq_file.h>
+ #include <linux/of_platform.h>
+-#include <linux/memblock.h>
+ 
+ #include <asm/time.h>
+ #include <asm/machdep.h>
+@@ -51,15 +50,8 @@ extern int uli_exclude_device(struct pci_controller *hose,
+ static int mpc86xx_exclude_device(struct pci_controller *hose,
+ 				   u_char bus, u_char devfn)
+ {
+-	struct device_node* node;	
+-	struct resource rsrc;
+-
+-	node = hose->dn;
+-	of_address_to_resource(node, 0, &rsrc);
+-
+-	if ((rsrc.start & 0xfffff) == 0x8000) {
++	if (hose->dn == fsl_pci_primary)
+ 		return uli_exclude_device(hose, bus, devfn);
+-	}
+ 
+ 	return PCIBIOS_SUCCESSFUL;
+ }
+@@ -69,30 +61,11 @@ static int mpc86xx_exclude_device(struct pci_controller *hose,
+ static void __init
+ mpc86xx_hpcn_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-	struct pci_controller *hose;
+-#endif
+-	dma_addr_t max = 0xffffffff;
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc86xx_hpcn_setup_arch()", 0);
+ 
+ #ifdef CONFIG_PCI
+-	for_each_compatible_node(np, "pci", "fsl,mpc8641-pcie") {
+-		struct resource rsrc;
+-		of_address_to_resource(np, 0, &rsrc);
+-		if ((rsrc.start & 0xfffff) == 0x8000)
+-			fsl_add_bridge(np, 1);
+-		else
+-			fsl_add_bridge(np, 0);
+-		hose = pci_find_hose_for_OF_device(np);
+-		max = min(max, hose->dma_window_base_cur +
+-			  hose->dma_window_size);
+-	}
+-
+ 	ppc_md.pci_exclude_device = mpc86xx_exclude_device;
+-
+ #endif
+ 
+ 	printk("MPC86xx HPCN board from Freescale Semiconductor\n");
+@@ -101,13 +74,7 @@ mpc86xx_hpcn_setup_arch(void)
+ 	mpc86xx_smp_init();
+ #endif
+ 
+-#ifdef CONFIG_SWIOTLB
+-	if ((memblock_end_of_DRAM() - 1) > max) {
+-		ppc_swiotlb_enable = 1;
+-		set_pci_dma_ops(&swiotlb_dma_ops);
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-	}
+-#endif
++	swiotlb_detect_4g();
+ }
+ 
+ 
+@@ -162,6 +129,7 @@ static __initdata struct of_device_id of_bus_ids[] = {
+ 	{ .compatible = "simple-bus", },
+ 	{ .compatible = "fsl,srio", },
+ 	{ .compatible = "gianfar", },
++	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{},
+ };
+ 
+@@ -171,7 +139,7 @@ static int __init declare_of_platform_devices(void)
+ 
+ 	return 0;
+ }
+-machine_device_initcall(mpc86xx_hpcn, declare_of_platform_devices);
++machine_arch_initcall(mpc86xx_hpcn, declare_of_platform_devices);
+ machine_arch_initcall(mpc86xx_hpcn, swiotlb_setup_bus_notifier);
+ 
+ define_machine(mpc86xx_hpcn) {
+diff --git a/arch/powerpc/platforms/86xx/sbc8641d.c b/arch/powerpc/platforms/86xx/sbc8641d.c
+index e7007d0..52afebf 100644
+--- a/arch/powerpc/platforms/86xx/sbc8641d.c
++++ b/arch/powerpc/platforms/86xx/sbc8641d.c
+@@ -38,18 +38,9 @@
+ static void __init
+ sbc8641_setup_arch(void)
+ {
+-#ifdef CONFIG_PCI
+-	struct device_node *np;
+-#endif
+-
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("sbc8641_setup_arch()", 0);
+ 
+-#ifdef CONFIG_PCI
+-	for_each_compatible_node(np, "pci", "fsl,mpc8641-pcie")
+-		fsl_add_bridge(np, 0);
+-#endif
+-
+ 	printk("SBC8641 board from Wind River\n");
+ 
+ #ifdef CONFIG_SMP
+@@ -102,6 +93,7 @@ mpc86xx_time_init(void)
+ static __initdata struct of_device_id of_bus_ids[] = {
+ 	{ .compatible = "simple-bus", },
+ 	{ .compatible = "gianfar", },
++	{ .compatible = "fsl,mpc8641-pcie", },
+ 	{},
+ };
+ 
+@@ -111,7 +103,7 @@ static int __init declare_of_platform_devices(void)
+ 
+ 	return 0;
+ }
+-machine_device_initcall(sbc8641, declare_of_platform_devices);
++machine_arch_initcall(sbc8641, declare_of_platform_devices);
+ 
+ define_machine(sbc8641) {
+ 	.name			= "SBC8641D",
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index da7a3d7..6408d9d 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -826,54 +826,78 @@ static const struct of_device_id pci_ids[] = {
+ 
+ struct device_node *fsl_pci_primary;
+ 
+-void __devinit fsl_pci_init(void)
++/* Checkout if PCI contains ISA node */
++static int of_pci_has_isa(struct device_node *pci_node)
++{
++	struct device_node *np;
++	int ret = 0;
++
++	if (!pci_node)
++		return 0;
++
++	read_lock(&devtree_lock);
++	np = pci_node->allnext;
++
++	/* Only scan the children of PCI node */
++	for (; np != pci_node->sibling; np = np->allnext) {
++		if (np->type && (of_node_cmp(np->type, "isa") == 0)
++		    && of_node_get(np)) {
++			ret = 1;
++			break;
++		}
++	}
++
++	of_node_put(pci_node);
++	read_unlock(&devtree_lock);
++
++	return ret;
++}
++
++static int __devinit fsl_pci_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+-	struct device_node *node;
+ 	struct pci_controller *hose;
+-	dma_addr_t max = 0xffffffff;
++	int is_primary = 0;
+ 
+-	/* Callers can specify the primary bus using other means. */
+ 	if (!fsl_pci_primary) {
+-		/* If a PCI host bridge contains an ISA node, it's primary. */
+-		node = of_find_node_by_type(NULL, "isa");
+-		while ((fsl_pci_primary = of_get_parent(node))) {
+-			of_node_put(node);
+-			node = fsl_pci_primary;
+-
+-			if (of_match_node(pci_ids, node))
+-				break;
+-		}
++		is_primary = of_pci_has_isa(pdev->dev.of_node);
++		if (is_primary)
++			fsl_pci_primary = pdev->dev.of_node;
+ 	}
+ 
+-	node = NULL;
+-	for_each_node_by_type(node, "pci") {
+-		if (of_match_node(pci_ids, node)) {
+-			/*
+-			 * If there's no PCI host bridge with ISA, arbitrarily
+-			 * designate one as primary.  This can go away once
+-			 * various bugs with primary-less systems are fixed.
+-			 */
+-			if (!fsl_pci_primary)
+-				fsl_pci_primary = node;
+-
+-			ret = fsl_add_bridge(node, fsl_pci_primary == node);
+-			if (ret == 0) {
+-				hose = pci_find_hose_for_OF_device(node);
+-				max = min(max, hose->dma_window_base_cur +
+-						hose->dma_window_size);
+-			}
+-		}
+-	}
++	ret = fsl_add_bridge(pdev->dev.of_node, is_primary);
+ 
+ #ifdef CONFIG_SWIOTLB
+-	/*
+-	 * if we couldn't map all of DRAM via the dma windows
+-	 * we need SWIOTLB to handle buffers located outside of
+-	 * dma capable memory region
+-	 */
+-	if (memblock_end_of_DRAM() - 1 > max)
+-		ppc_swiotlb_enable = 1;
++	if (ret == 0) {
++		hose = pci_find_hose_for_OF_device(pdev->dev.of_node);
++
++		/*
++		 * if we couldn't map all of DRAM via the dma windows
++		 * we need SWIOTLB to handle buffers located outside of
++		 * dma capable memory region
++		 */
++		if (memblock_end_of_DRAM() - 1 > hose->dma_window_base_cur +
++				hose->dma_window_size)
++			ppc_swiotlb_enable = 1;
++	}
+ #endif
++
++	mpc85xx_pci_err_probe(pdev);
++
++	return 0;
++}
++
++static struct platform_driver fsl_pci_driver = {
++	.driver = {
++		.name = "fsl-pci",
++		.of_match_table = pci_ids,
++	},
++	.probe = fsl_pci_probe,
++};
++
++static int __init fsl_pci_init(void)
++{
++	return platform_driver_register(&fsl_pci_driver);
+ }
++arch_initcall(fsl_pci_init);
+ #endif
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index baa0fd1..ad54147 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -95,10 +95,13 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose);
+ 
+ extern struct device_node *fsl_pci_primary;
+ 
+-#ifdef CONFIG_FSL_PCI
+-void fsl_pci_init(void);
++#ifdef CONFIG_EDAC_MPC85XX
++int mpc85xx_pci_err_probe(struct platform_device *op);
+ #else
+-static inline void fsl_pci_init(void) {}
++static inline int mpc85xx_pci_err_probe(struct platform_device *op)
++{
++	return -ENOTSUPP;
++}
+ #endif
+ 
+ #endif /* __POWERPC_FSL_PCI_H */
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 0e37462..2677883 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -200,7 +200,7 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
+ 	return IRQ_HANDLED;
+ }
+ 
+-static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
++int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
+ {
+ 	struct edac_pci_ctl_info *pci;
+ 	struct mpc85xx_pci_pdata *pdata;
+@@ -214,6 +214,16 @@ static int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
+ 	if (!pci)
+ 		return -ENOMEM;
+ 
++	/* make sure error reporting method is sane */
++	switch (edac_op_state) {
++	case EDAC_OPSTATE_POLL:
++	case EDAC_OPSTATE_INT:
++		break;
++	default:
++		edac_op_state = EDAC_OPSTATE_INT;
++		break;
++	}
++
+ 	pdata = pci->pvt_info;
+ 	pdata->name = "mpc85xx_pci_err";
+ 	pdata->irq = NO_IRQ;
+@@ -303,6 +313,7 @@ err:
+ 	devres_release_group(&op->dev, mpc85xx_pci_err_probe);
+ 	return res;
+ }
++EXPORT_SYMBOL_GPL(mpc85xx_pci_err_probe);
+ 
+ static int mpc85xx_pci_err_remove(struct platform_device *op)
+ {
+@@ -326,27 +337,6 @@ static int mpc85xx_pci_err_remove(struct platform_device *op)
+ 	return 0;
+ }
+ 
+-static struct of_device_id mpc85xx_pci_err_of_match[] = {
+-	{
+-	 .compatible = "fsl,mpc8540-pcix",
+-	 },
+-	{
+-	 .compatible = "fsl,mpc8540-pci",
+-	},
+-	{},
+-};
+-MODULE_DEVICE_TABLE(of, mpc85xx_pci_err_of_match);
+-
+-static struct platform_driver mpc85xx_pci_err_driver = {
+-	.probe = mpc85xx_pci_err_probe,
+-	.remove = __devexit_p(mpc85xx_pci_err_remove),
+-	.driver = {
+-		.name = "mpc85xx_pci_err",
+-		.owner = THIS_MODULE,
+-		.of_match_table = mpc85xx_pci_err_of_match,
+-	},
+-};
+-
+ #endif				/* CONFIG_PCI */
+ 
+ /**************************** L2 Err device ***************************/
+@@ -1193,12 +1183,6 @@ static int __init mpc85xx_mc_init(void)
+ 	if (res)
+ 		printk(KERN_WARNING EDAC_MOD_STR "L2 fails to register\n");
+ 
+-#ifdef CONFIG_PCI
+-	res = platform_driver_register(&mpc85xx_pci_err_driver);
+-	if (res)
+-		printk(KERN_WARNING EDAC_MOD_STR "PCI fails to register\n");
+-#endif
+-
+ #ifdef CONFIG_FSL_SOC_BOOKE
+ 	pvr = mfspr(SPRN_PVR);
+ 
+@@ -1235,9 +1219,6 @@ static void __exit mpc85xx_mc_exit(void)
+ 		on_each_cpu(mpc85xx_mc_restore_hid1, NULL, 0);
+ 	}
+ #endif
+-#ifdef CONFIG_PCI
+-	platform_driver_unregister(&mpc85xx_pci_err_driver);
+-#endif
+ 	platform_driver_unregister(&mpc85xx_l2_err_driver);
+ 	platform_driver_unregister(&mpc85xx_mc_err_driver);
+ }
 -- 
 1.7.5.1
