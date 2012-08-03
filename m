@@ -1,36 +1,31 @@
-Return-Path: <sjenning@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 792382C00A1
- for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2012 00:41:30 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sjenning@linux.vnet.ibm.com>;
- Fri, 3 Aug 2012 10:41:27 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E650B6E8059
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Aug 2012 10:40:57 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q73Eeu41331964
- for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2012 10:40:56 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q73EeuV2017715
- for <linuxppc-dev@ozlabs.org>; Fri, 3 Aug 2012 11:40:56 -0300
-Message-ID: <501BE2F6.5080506@linux.vnet.ibm.com>
-Date: Fri, 03 Aug 2012 09:40:54 -0500
-From: Seth Jennings <sjenning@linux.vnet.ibm.com>
+Return-Path: <pku.leo@gmail.com>
+Received: from mail-yw0-f51.google.com (mail-yw0-f51.google.com
+ [209.85.213.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 29F242C00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2012 00:42:27 +1000 (EST)
+Received: by yhnn12 with SMTP id n12so852182yhn.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Aug 2012 07:42:25 -0700 (PDT)
 MIME-Version: 1.0
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/crypto: Remove virt_to_abs() usage in nx-842.c
-References: <1343960595-30232-1-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1343960595-30232-1-git-send-email-michael@ellerman.id.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, herbert@gondor.apana.org.au,
- linux-crypto@vger.kernel.org
+Sender: pku.leo@gmail.com
+In-Reply-To: <4C5227D8-BF6D-45BE-9201-8A6CD30FFFE8@kernel.crashing.org>
+References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
+ <1343907741-20589-3-git-send-email-B38951@freescale.com>
+ <6DEE036D-C59B-41C6-80F3-762D7E4AF2C1@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A359C3@039-SN1MPN1-002.039d.mgd.msft.net>
+ <4C5227D8-BF6D-45BE-9201-8A6CD30FFFE8@kernel.crashing.org>
+Date: Fri, 3 Aug 2012 22:42:24 +0800
+Message-ID: <CADRPPNQZZ5wWUCzhMsOxCgVhK14sb9ughReM_6CzG47YE9J4ew@mail.gmail.com>
+Subject: Re: [PATCH V4 2/3] powerpc/swiotlb: Enable at early stage and disable
+ if not necessary
+From: Li Yang <leoli@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,21 +35,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/02/2012 09:23 PM, Michael Ellerman wrote:
-> virt_to_abs() is just a wrapper around __pa(), use __pa() directly.
-> 
-> We should be including <asm/page.h> to get __pa(). abs_addr.h will be
-> removed shortly so drop that.
-> 
-> We were getting of.h via abs_addr.h so we need to include that directly.
-> 
-> Having done all that, clean up the ordering of the includes.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->  drivers/crypto/nx/nx-842.c |   34 ++++++++++++++++++----------------
->  1 file changed, 18 insertions(+), 16 deletions(-)
+On Fri, Aug 3, 2012 at 8:38 PM, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On Aug 2, 2012, at 9:21 PM, Jia Hongtao-B38951 wrote:
+>
+>>>
+>>> -----Original Message-----
+>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>>> Sent: Thursday, August 02, 2012 8:55 PM
+>>> To: Jia Hongtao-B38951
+>>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+>>> Subject: Re: [PATCH V4 2/3] powerpc/swiotlb: Enable at early stage and
+>>> disable if not necessary
+>>>
+>>>
+>>> On Aug 2, 2012, at 6:42 AM, Jia Hongtao wrote:
+>>>
+>>>> Remove the dependency on PCI initialization for SWIOTLB initialization.
+>>>> So that PCI can be initialized at proper time.
+>>>>
+>>>> SWIOTLB is partly determined by PCI inbound/outbound map which is
+>>> assigned
+>>>> in PCI initialization. But swiotlb_init() should be done at the stage
+>>> of
+>>>> mem_init() which is much earlier than PCI initialization. So we reserve
+>>> the
+>>>> memory for SWIOTLB first and free it if not necessary.
+>>>>
+>>>> All boards are converted to fit this change.
+>>>>
+>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>>> ---
+>>>
+>>> This doesn't seem like it addresses our issue w/regards to not being able
+>>> to map all of memory from PCI.
+>>
+>> PCI init will determine ppc_swiotlb_enable due to PCI map. swiotlb_late_init
+>> will handle all swiotlb things depend on the result of pci init.
+>
+> Think about the case that we have 4095M of memory & 1G of PCI memory mapped space.  The old code would enable swiotlb for this case since we would NOT be able to DMA to all 4095M of memory.  The patch does not handle this case correctly.
 
-Looks good here.  Thanks for doing this!
+The patch can handle it.  The ppc_swiotlb_enable is still being set in
+ fsl_pci_init() if there is 1G of PCI memory mapped space.  It is
+after next patch that the ppc_swiotlb_enable is being set in the PCI
+probe() routine.
 
-Acked-by: Seth Jennings <sjenning@linux.vnet.ibm.com>
+Leo
