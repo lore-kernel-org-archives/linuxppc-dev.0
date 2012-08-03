@@ -1,22 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Return-Path: <B38951@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D95A02C0088
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2012 06:18:52 +1000 (EST)
-Message-ID: <501AE0A2.4010809@freescale.com>
-Date: Thu, 2 Aug 2012 15:18:42 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jia Hongtao <B38951@freescale.com>
-Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+ by ozlabs.org (Postfix) with ESMTPS id 047F62C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2012 12:20:58 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Fri, 3 Aug 2012 02:20:50 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A359AF@039-SN1MPN1-002.039d.mgd.msft.net>
 References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
  <1343907741-20589-4-git-send-email-B38951@freescale.com>
-In-Reply-To: <1343907741-20589-4-git-send-email-B38951@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
+ <501AE0A2.4010809@freescale.com>
+In-Reply-To: <501AE0A2.4010809@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,89 +28,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/02/2012 06:42 AM, Jia Hongtao wrote:
-> We unified the Freescale pci/pcie initialization by changing the fsl_pci
-> to a platform driver. In previous PCI code architecture the initialization
-> routine is called at board_setup_arch stage. Now the initialization is done
-> in probe function which is architectural better. Also It's convenient for
-> adding PM support for PCI controller in later patch.
-> 
-> Now we registered pci controllers as platform devices. So we combine two
-> initialization code as one platform driver.
-> 
-> Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-> ---
->  arch/powerpc/platforms/85xx/mpc85xx_ds.c |   32 ++--------
->  arch/powerpc/sysdev/fsl_pci.c            |  102 ++++++++++++++++++-----------
->  arch/powerpc/sysdev/fsl_pci.h            |    6 +-
->  drivers/edac/mpc85xx_edac.c              |   43 ++++---------
->  4 files changed, 83 insertions(+), 100 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> index 56f8c8f..f2c7b1c 100644
-> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-> @@ -20,7 +20,6 @@
->  #include <linux/seq_file.h>
->  #include <linux/interrupt.h>
->  #include <linux/of_platform.h>
-> -#include <linux/memblock.h>
->  
->  #include <asm/time.h>
->  #include <asm/machdep.h>
-> @@ -117,40 +116,16 @@ void __init mpc85xx_ds_pic_init(void)
->  extern int uli_exclude_device(struct pci_controller *hose,
->  				u_char bus, u_char devfn);
->  
-> -static struct device_node *pci_with_uli;
-> -
->  static int mpc85xx_exclude_device(struct pci_controller *hose,
->  				   u_char bus, u_char devfn)
->  {
-> -	if (hose->dn == pci_with_uli)
-> +	if (hose->dn == fsl_pci_primary)
->  		return uli_exclude_device(hose, bus, devfn);
->  
->  	return PCIBIOS_SUCCESSFUL;
->  }
->  #endif	/* CONFIG_PCI */
->  
-> -static void __init mpc85xx_ds_pci_init(void)
-> -{
-> -#ifdef CONFIG_PCI
-> -	struct device_node *node;
-> -
-> -	fsl_pci_init();
-> -
-> -	/* See if we have a ULI under the primary */
-> -
-> -	node = of_find_node_by_name(NULL, "uli1575");
-> -	while ((pci_with_uli = of_get_parent(node))) {
-> -		of_node_put(node);
-> -		node = pci_with_uli;
-> -
-> -		if (pci_with_uli == fsl_pci_primary) {
-> -			ppc_md.pci_exclude_device = mpc85xx_exclude_device;
-> -			break;
-> -		}
-> -	}
-> -#endif
-> -}
-> -
->  /*
->   * Setup the architecture
->   */
-> @@ -159,8 +134,11 @@ static void __init mpc85xx_ds_setup_arch(void)
->  	if (ppc_md.progress)
->  		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
->  
-> +#ifdef CONFIG_PCI
-> +	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
-> +#endif
-
-Why are you eliminating the uli lookup?  We don't want to call
-uli_exclude_device on boards that don't have a uli.
-
--Scott
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBBdWd1c3QgMDMsIDIwMTIgNDoxOSBBTQ0KPiBUbzogSmlhIEhv
+bmd0YW8tQjM4OTUxDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZ2FsYWtA
+a2VybmVsLmNyYXNoaW5nLm9yZzsgV29vZCBTY290dC0NCj4gQjA3NDIxOyBMaSBZYW5nLVI1ODQ3
+Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY0IDMvM10gcG93ZXJwYy9mc2wtcGNpOiBVbmlmeSBw
+Y2kvcGNpZQ0KPiBpbml0aWFsaXphdGlvbiBjb2RlDQo+IA0KPiBPbiAwOC8wMi8yMDEyIDA2OjQy
+IEFNLCBKaWEgSG9uZ3RhbyB3cm90ZToNCj4gPiBXZSB1bmlmaWVkIHRoZSBGcmVlc2NhbGUgcGNp
+L3BjaWUgaW5pdGlhbGl6YXRpb24gYnkgY2hhbmdpbmcgdGhlDQo+IGZzbF9wY2kNCj4gPiB0byBh
+IHBsYXRmb3JtIGRyaXZlci4gSW4gcHJldmlvdXMgUENJIGNvZGUgYXJjaGl0ZWN0dXJlIHRoZQ0K
+PiBpbml0aWFsaXphdGlvbg0KPiA+IHJvdXRpbmUgaXMgY2FsbGVkIGF0IGJvYXJkX3NldHVwX2Fy
+Y2ggc3RhZ2UuIE5vdyB0aGUgaW5pdGlhbGl6YXRpb24gaXMNCj4gZG9uZQ0KPiA+IGluIHByb2Jl
+IGZ1bmN0aW9uIHdoaWNoIGlzIGFyY2hpdGVjdHVyYWwgYmV0dGVyLiBBbHNvIEl0J3MgY29udmVu
+aWVudA0KPiBmb3INCj4gPiBhZGRpbmcgUE0gc3VwcG9ydCBmb3IgUENJIGNvbnRyb2xsZXIgaW4g
+bGF0ZXIgcGF0Y2guDQo+ID4NCj4gPiBOb3cgd2UgcmVnaXN0ZXJlZCBwY2kgY29udHJvbGxlcnMg
+YXMgcGxhdGZvcm0gZGV2aWNlcy4gU28gd2UgY29tYmluZQ0KPiB0d28NCj4gPiBpbml0aWFsaXph
+dGlvbiBjb2RlIGFzIG9uZSBwbGF0Zm9ybSBkcml2ZXIuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5
+OiBKaWEgSG9uZ3RhbyA8QjM4OTUxQGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTog
+TGkgWWFuZyA8bGVvbGlAZnJlZXNjYWxlLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBDaHVuaGUg
+TGFuIDxDaHVuaGUuTGFuQGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIGFyY2gvcG93ZXJw
+Yy9wbGF0Zm9ybXMvODV4eC9tcGM4NXh4X2RzLmMgfCAgIDMyICsrLS0tLS0tLS0NCj4gPiAgYXJj
+aC9wb3dlcnBjL3N5c2Rldi9mc2xfcGNpLmMgICAgICAgICAgICB8ICAxMDIgKysrKysrKysrKysr
+KysrKysrLS0tLQ0KPiAtLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX3BjaS5o
+ICAgICAgICAgICAgfCAgICA2ICstDQo+ID4gIGRyaXZlcnMvZWRhYy9tcGM4NXh4X2VkYWMuYyAg
+ICAgICAgICAgICAgfCAgIDQzICsrKystLS0tLS0tLS0NCj4gPiAgNCBmaWxlcyBjaGFuZ2VkLCA4
+MyBpbnNlcnRpb25zKCspLCAxMDAgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEv
+YXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L21wYzg1eHhfZHMuYw0KPiBiL2FyY2gvcG93ZXJw
+Yy9wbGF0Zm9ybXMvODV4eC9tcGM4NXh4X2RzLmMNCj4gPiBpbmRleCA1NmY4YzhmLi5mMmM3YjFj
+IDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9tcGM4NXh4X2Rz
+LmMNCj4gPiArKysgYi9hcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzg1eHgvbXBjODV4eF9kcy5jDQo+
+ID4gQEAgLTIwLDcgKzIwLDYgQEANCj4gPiAgI2luY2x1ZGUgPGxpbnV4L3NlcV9maWxlLmg+DQo+
+ID4gICNpbmNsdWRlIDxsaW51eC9pbnRlcnJ1cHQuaD4NCj4gPiAgI2luY2x1ZGUgPGxpbnV4L29m
+X3BsYXRmb3JtLmg+DQo+ID4gLSNpbmNsdWRlIDxsaW51eC9tZW1ibG9jay5oPg0KPiA+DQo+ID4g
+ICNpbmNsdWRlIDxhc20vdGltZS5oPg0KPiA+ICAjaW5jbHVkZSA8YXNtL21hY2hkZXAuaD4NCj4g
+PiBAQCAtMTE3LDQwICsxMTYsMTYgQEAgdm9pZCBfX2luaXQgbXBjODV4eF9kc19waWNfaW5pdCh2
+b2lkKQ0KPiA+ICBleHRlcm4gaW50IHVsaV9leGNsdWRlX2RldmljZShzdHJ1Y3QgcGNpX2NvbnRy
+b2xsZXIgKmhvc2UsDQo+ID4gIAkJCQl1X2NoYXIgYnVzLCB1X2NoYXIgZGV2Zm4pOw0KPiA+DQo+
+ID4gLXN0YXRpYyBzdHJ1Y3QgZGV2aWNlX25vZGUgKnBjaV93aXRoX3VsaTsNCj4gPiAtDQo+ID4g
+IHN0YXRpYyBpbnQgbXBjODV4eF9leGNsdWRlX2RldmljZShzdHJ1Y3QgcGNpX2NvbnRyb2xsZXIg
+Kmhvc2UsDQo+ID4gIAkJCQkgICB1X2NoYXIgYnVzLCB1X2NoYXIgZGV2Zm4pDQo+ID4gIHsNCj4g
+PiAtCWlmIChob3NlLT5kbiA9PSBwY2lfd2l0aF91bGkpDQo+ID4gKwlpZiAoaG9zZS0+ZG4gPT0g
+ZnNsX3BjaV9wcmltYXJ5KQ0KPiA+ICAJCXJldHVybiB1bGlfZXhjbHVkZV9kZXZpY2UoaG9zZSwg
+YnVzLCBkZXZmbik7DQo+ID4NCj4gPiAgCXJldHVybiBQQ0lCSU9TX1NVQ0NFU1NGVUw7DQo+ID4g
+IH0NCj4gPiAgI2VuZGlmCS8qIENPTkZJR19QQ0kgKi8NCj4gPg0KPiA+IC1zdGF0aWMgdm9pZCBf
+X2luaXQgbXBjODV4eF9kc19wY2lfaW5pdCh2b2lkKQ0KPiA+IC17DQo+ID4gLSNpZmRlZiBDT05G
+SUdfUENJDQo+ID4gLQlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5vZGU7DQo+ID4gLQ0KPiA+IC0JZnNs
+X3BjaV9pbml0KCk7DQo+ID4gLQ0KPiA+IC0JLyogU2VlIGlmIHdlIGhhdmUgYSBVTEkgdW5kZXIg
+dGhlIHByaW1hcnkgKi8NCj4gPiAtDQo+ID4gLQlub2RlID0gb2ZfZmluZF9ub2RlX2J5X25hbWUo
+TlVMTCwgInVsaTE1NzUiKTsNCj4gPiAtCXdoaWxlICgocGNpX3dpdGhfdWxpID0gb2ZfZ2V0X3Bh
+cmVudChub2RlKSkpIHsNCj4gPiAtCQlvZl9ub2RlX3B1dChub2RlKTsNCj4gPiAtCQlub2RlID0g
+cGNpX3dpdGhfdWxpOw0KPiA+IC0NCj4gPiAtCQlpZiAocGNpX3dpdGhfdWxpID09IGZzbF9wY2lf
+cHJpbWFyeSkgew0KPiA+IC0JCQlwcGNfbWQucGNpX2V4Y2x1ZGVfZGV2aWNlID0gbXBjODV4eF9l
+eGNsdWRlX2RldmljZTsNCj4gPiAtCQkJYnJlYWs7DQo+ID4gLQkJfQ0KPiA+IC0JfQ0KPiA+IC0j
+ZW5kaWYNCj4gPiAtfQ0KPiA+IC0NCj4gPiAgLyoNCj4gPiAgICogU2V0dXAgdGhlIGFyY2hpdGVj
+dHVyZQ0KPiA+ICAgKi8NCj4gPiBAQCAtMTU5LDggKzEzNCwxMSBAQCBzdGF0aWMgdm9pZCBfX2lu
+aXQgbXBjODV4eF9kc19zZXR1cF9hcmNoKHZvaWQpDQo+ID4gIAlpZiAocHBjX21kLnByb2dyZXNz
+KQ0KPiA+ICAJCXBwY19tZC5wcm9ncmVzcygibXBjODV4eF9kc19zZXR1cF9hcmNoKCkiLCAwKTsN
+Cj4gPg0KPiA+ICsjaWZkZWYgQ09ORklHX1BDSQ0KPiA+ICsJcHBjX21kLnBjaV9leGNsdWRlX2Rl
+dmljZSA9IG1wYzg1eHhfZXhjbHVkZV9kZXZpY2U7DQo+ID4gKyNlbmRpZg0KPiANCj4gV2h5IGFy
+ZSB5b3UgZWxpbWluYXRpbmcgdGhlIHVsaSBsb29rdXA/ICBXZSBkb24ndCB3YW50IHRvIGNhbGwN
+Cj4gdWxpX2V4Y2x1ZGVfZGV2aWNlIG9uIGJvYXJkcyB0aGF0IGRvbid0IGhhdmUgYSB1bGkuDQo+
+IA0KPiAtU2NvdHQNCg0KSSBmb3VuZCBvdXQgdGhhdCBhbGwgODV4eF9kcyBib2FyZHMgKG1wYzg1
+NzJkcywgbXBjODU0NGRzLCBwMjAyMGRzKSBoYXZlDQpVTEkuIEFsc28gaW4gcGxhdGZvcm0gZHJp
+dmVyIGZzbF9wY2lfcHJpbWFyeSBpcyBkZXRlcm1pbmVkIGF0IGFyY2hfaW5pdGNhbGwNCndoaWNo
+IG1lYW5zIGF0IHRoZSBzdGFnZSBvZiBib2FyZF9zZXR1cF9hcmNoIGZzbF9wY2lfcHJpbWFyeSBp
+cyBub3QgcmVhZHkuDQoNCi1Ib25ndGFvLg0KDQo=
