@@ -1,31 +1,21 @@
-Return-Path: <B11780@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3CDA62C0095
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2012 23:51:56 +1000 (EST)
-Received: from mail50-tx2 (localhost [127.0.0.1])	by mail50-tx2-R.bigfish.com
- (Postfix) with ESMTP id 230EF2E0187	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Aug 2012 13:51:52 +0000 (UTC)
-Received: from TX2EHSMHS037.bigfish.com (unknown [10.9.14.254])	by
- mail50-tx2.bigfish.com (Postfix) with ESMTP id 8FF9D4C025A	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Aug 2012 13:51:50 +0000 (UTC)
-From: Gala Kumar-B11780 <B11780@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Tabi Timur-B04825
- <B04825@freescale.com>, Liu Yu-B13201 <B13201@freescale.com>, Fan
- Zhicheng-B32736 <B32736@freescale.com>, Huang Changming-R66093
- <r66093@freescale.com>, Liu Qiang-B32616 <B32616@freescale.com>, Zhao
- Chenhui-B35336 <B35336@freescale.com>, Yoder Stuart-B08248
- <B08248@freescale.com>, Kushwaha Prabhakar-B32579 <B32579@freescale.com>
-Subject: Upstream patch status?? (v3.6-rc1 out)
-Date: Fri, 3 Aug 2012 13:51:49 +0000
-Message-ID: <FB9C2F4C-267C-4A33-A64D-D7BFC5A71D1D@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Trefny Thomas-RAT188 <RAT188@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 72E4B2C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2012 00:00:43 +1000 (EST)
+Received: from [IPv6:::1] (localhost.localdomain [127.0.0.1])
+ by gate.crashing.org (8.14.1/8.13.8) with ESMTP id q73E0drj017736
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Aug 2012 09:00:40 -0500
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Apple Message framework v1278)
+Subject: Re: Upstream patch status?? (v3.6-rc1 out)
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <FB9C2F4C-267C-4A33-A64D-D7BFC5A71D1D@freescale.com>
+Date: Fri, 3 Aug 2012 09:00:43 -0500
+Message-Id: <2D9A1E35-C414-43F2-8153-A7F48BD7BC44@kernel.crashing.org>
+References: <FB9C2F4C-267C-4A33-A64D-D7BFC5A71D1D@freescale.com>
+To: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,48 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guys,
+Sorry,
 
-As v3.6-rc1 is now out we really need to get some of these simpler patches =
-upstream and accepted NOW.  Please provide status updates if the patch is u=
-pstream already let me know.
+This meant for an internal fsl list.
 
-[P1025RDB] (some major differences between upstream and internal P1025RDB s=
-upport)
-powerpc/85xx: Add Quicc Engine support for p1025rdb	P1025RDB		Zhicheng Fan
-powerpc/dts: Add ucc uart support for p1025rdb	P1025RDB		Zhicheng Fan
-powerpc/dts: Add dts for p1025rdb board	P1025RDB		Zhicheng Fan
+- k
 
-[P1022DS] (this is trivial, please take 10m and get this updated and submit=
-ted)
-powerpc/mpc85xx: p1022ds support the MTD for NOR and NAND flash	P1022DS		Je=
-rry Huang
+On Aug 3, 2012, at 8:51 AM, Gala Kumar-B11780 wrote:
 
-[DTS] (Stuart, can you help and close)
-powerpc/e5500: Add power isa properties to comply with ePAPR 1.1	EPAPR		Liu=
- Yu
-powerpc/e500mc: Add power isa properties to comply with ePAPR 1.1	EPAPR		Li=
-u Yu
-powerpc/e500v2: Add power isa properties to comply with ePAPR 1.1	EPAPR		Li=
-u Yu
-
-[MSI] (I think upstream, Timur please verify)
-powerpc/fsl: add MSI support for the Freescale hypervisor	KVM/HV		Timur Tab=
-i
-
-[CORE]
-powerpc/booke: Re-organize debug code	CORE		Kumar Gala
-
-[USB] (Again, this is trivial and spend 10m and send upstream)
-usb/fsl: fixed USB wakeup	USB		Zhao Chenhui
-
-[LBC]
-mtd: elbc nand: use drvdata to only remove the relevant chip	LBC		Scott Woo=
-d
-
-[SATA]
-libata-pmp: add schedule timeout to support some PMP cards	SATA		Jerry Huan=
-g
-fsl-sata: workaround to fix the exception of link layer	SATA		Qiang Liu
-
-- k=
+> Guys,
+>=20
+> As v3.6-rc1 is now out we really need to get some of these simpler =
+patches upstream and accepted NOW.  Please provide status updates if the =
+patch is upstream already let me know.
+>=20
+> [P1025RDB] (some major differences between upstream and internal =
+P1025RDB support)
+> powerpc/85xx: Add Quicc Engine support for p1025rdb	P1025RDB		=
+Zhicheng Fan
+> powerpc/dts: Add ucc uart support for p1025rdb	P1025RDB		=
+Zhicheng Fan
+> powerpc/dts: Add dts for p1025rdb board	P1025RDB		=
+Zhicheng Fan
+>=20
+> [P1022DS] (this is trivial, please take 10m and get this updated and =
+submitted)
+> powerpc/mpc85xx: p1022ds support the MTD for NOR and NAND flash	=
+P1022DS		Jerry Huang
+>=20
+> [DTS] (Stuart, can you help and close)
+> powerpc/e5500: Add power isa properties to comply with ePAPR 1.1	=
+EPAPR		Liu Yu
+> powerpc/e500mc: Add power isa properties to comply with ePAPR 1.1	=
+EPAPR		Liu Yu
+> powerpc/e500v2: Add power isa properties to comply with ePAPR 1.1	=
+EPAPR		Liu Yu
+>=20
+> [MSI] (I think upstream, Timur please verify)
+> powerpc/fsl: add MSI support for the Freescale hypervisor	KVM/HV		=
+Timur Tabi
+>=20
+> [CORE]
+> powerpc/booke: Re-organize debug code	CORE		Kumar Gala
+>=20
+> [USB] (Again, this is trivial and spend 10m and send upstream)
+> usb/fsl: fixed USB wakeup	USB		Zhao Chenhui
+>=20
+> [LBC]
+> mtd: elbc nand: use drvdata to only remove the relevant chip	LBC		=
+Scott Wood
+>=20
+> [SATA]
+> libata-pmp: add schedule timeout to support some PMP cards	SATA		=
+Jerry Huang
+> fsl-sata: workaround to fix the exception of link layer	SATA		=
+Qiang Liu
+>=20
+> - k
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
