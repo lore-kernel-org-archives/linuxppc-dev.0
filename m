@@ -1,23 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1D5CF2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2012 02:45:03 +1000 (EST)
-Message-ID: <501C0007.8070209@freescale.com>
-Date: Fri, 3 Aug 2012 11:44:55 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/3 v3] powerpc/mpic: FSL MPIC error interrupt support.
-References: <1343745764-3788-1-git-send-email-Varun.Sethi@freescale.com>
- <609EA81E-EC64-4539-B36B-E57525CE2492@kernel.crashing.org>
-In-Reply-To: <609EA81E-EC64-4539-B36B-E57525CE2492@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Bogdan Hamciuc <bogdan.hamciuc@freescale.com>,
- Varun Sethi <Varun.Sethi@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1B86A2C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2012 04:02:02 +1000 (EST)
+Subject: Re: [PATCH 4/4] powerpc/booke: Add CPU_FTR_EMB_HV check for e5500.
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1341839041-17223-1-git-send-email-Varun.Sethi@freescale.com>
+Date: Fri, 3 Aug 2012 13:01:45 -0500
+Message-Id: <03F34497-603F-4F39-A240-0845A9A6965A@kernel.crashing.org>
+References: <1341839041-17223-1-git-send-email-Varun.Sethi@freescale.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org,
+ Mihai Caraman <mihai.caraman@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,33 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/03/2012 08:19 AM, Kumar Gala wrote:
-> 
-> On Jul 31, 2012, at 9:42 AM, Varun Sethi wrote:
->> +	/* ioremap'ed base for error interrupt registers */
->> +	u32 __iomem	*err_regs;
->> +	/* error interrupt config */
->> +	u32			err_int_config_done;
->> +
-> 
-> Is this really needed ?
 
-Probably a left over from when it was done on demand.
+On Jul 9, 2012, at 8:04 AM, Varun Sethi wrote:
 
+> Added CPU_FTR_EMB_HV feature check for e550.
 > 
->> 	/* Protected sources */
->> 	unsigned long		*protected;
->>
->> @@ -370,6 +381,8 @@ struct mpic
->> #define MPIC_NO_RESET			0x00004000
->> /* Freescale MPIC (compatible includes "fsl,mpic") */
->> #define MPIC_FSL			0x00008000
->> +/* Freescale MPIC supports EIMR (error interrupt mask register)*/
->> +#define MPIC_FSL_HAS_EIMR		0x00010000
-> 
-> Can't we use BRR for this?
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+> arch/powerpc/kernel/cpu_setup_fsl_booke.S |    6 ++++++
+> 1 files changed, 6 insertions(+), 0 deletions(-)
 
-BRR is used, and this is set as a result.  Better than opencoding a BRR
-check a bunch of places...
+[ fixed typo e550 -> e5500 ]
 
--Scott
+applied to next
+
+- k
