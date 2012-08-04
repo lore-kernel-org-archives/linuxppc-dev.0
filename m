@@ -2,15 +2,15 @@ Return-Path: <mchehab@linuxtv.org>
 Received: from www.linuxtv.org (www.linuxtv.org [130.149.80.248])
  (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 811D22C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2012 12:38:05 +1000 (EST)
-Message-Id: <E1SxTx3-0003Ih-8D@www.linuxtv.org>
+ by ozlabs.org (Postfix) with ESMTPS id E0AD62C0690
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2012 12:38:12 +1000 (EST)
+Message-Id: <E1SxTx7-0003No-FT@www.linuxtv.org>
 From: Mauro Carvalho Chehab <mchehab@redhat.com>
-Subject: [git:v4l-dvb/for_v3.6] edac: Rename the parent dev to pdev
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Subject: [git:v4l-dvb/for_v3.6] pasemi_edac: convert driver to use the new
+ edac ABI
 To: linuxtv-commits@linuxtv.org
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>, Jason Uhlenkott <juhlenko@akamai.com>, Aristeu Rozanski <arozansk@redhat.com>, Hitoshi Mitake <h.mitake@gmail.com>, Mark Gross <mark.gross@intel.com>, Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>, Ranganathan Desikan <ravi@jetztechnologies.com>, Egor Martovetsky <egor@pasemi.com>, Niklas Söderlund <niklas.soderlund@ericsson.com>, Tim Small <tim@buttersideup.com>, "Arvind R." <arvino55@gmail.com>, Borislav Petkov <borislav.petkov@amd.com>, Chris Metcalf <cmetcalf@tilera.com>, Joe Perches <joe@perches.com>, Doug Thompson <norsk5@yahoo.com>, Michal Marek <mmarek@suse.cz>, Jiri Kosina <jkosina@suse.cz>, Olof Johansson <olof@lixom.net>, Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Olof Johansson <olof@lixom.net>, Egor Martovetsky <egor@pasemi.com>,
+ linuxppc-dev@lists.ozlabs.org
 Reply-To: linux-media@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,680 +20,80 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Date: Sat, 04 Aug 2012 02:38:06 -0000
+Date: Sat, 04 Aug 2012 02:38:13 -0000
 
 This is an automatic generated email to let you know that the following patch were queued at the 
 http://git.linuxtv.org/media_tree.git tree:
 
-Subject: edac: Rename the parent dev to pdev
+Subject: pasemi_edac: convert driver to use the new edac ABI
 Author:  Mauro Carvalho Chehab <mchehab@redhat.com>
-Date:    Fri Mar 16 07:44:18 2012 -0300
+Date:    Mon Apr 16 15:11:36 2012 -0300
 
-As EDAC doesn't use struct device itself, it created a parent dev
-pointer called as "pdev".  Now that we'll be converting it to use
-struct device, instead of struct devsys, this needs to be fixed.
+The legacy edac ABI is going to be removed. Port the driver to use
+and benefit from the new API functionality.
 
-No functional changes.
-
-Reviewed-by: Aristeu Rozanski <arozansk@redhat.com>
-Acked-by: Chris Metcalf <cmetcalf@tilera.com>
-Cc: Doug Thompson <norsk5@yahoo.com>
-Cc: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Mark Gross <mark.gross@intel.com>
-Cc: Jason Uhlenkott <juhlenko@akamai.com>
-Cc: Tim Small <tim@buttersideup.com>
-Cc: Ranganathan Desikan <ravi@jetztechnologies.com>
-Cc: "Arvind R." <arvino55@gmail.com>
 Cc: Olof Johansson <olof@lixom.net>
 Cc: Egor Martovetsky <egor@pasemi.com>
-Cc: Michal Marek <mmarek@suse.cz>
-Cc: Jiri Kosina <jkosina@suse.cz>
-Cc: Joe Perches <joe@perches.com>
-Cc: Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Hitoshi Mitake <h.mitake@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Niklas Söderlund" <niklas.soderlund@ericsson.com>
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
-Cc: Josh Boyer <jwboyer@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 
- drivers/edac/amd64_edac.c      |    2 +-
- drivers/edac/amd76x_edac.c     |    4 ++--
- drivers/edac/cell_edac.c       |   12 ++++++------
- drivers/edac/cpc925_edac.c     |    2 +-
- drivers/edac/e752x_edac.c      |    2 +-
- drivers/edac/e7xxx_edac.c      |    2 +-
- drivers/edac/edac_mc.c         |    8 ++++----
- drivers/edac/edac_mc_sysfs.c   |    2 +-
- drivers/edac/i3000_edac.c      |    4 ++--
- drivers/edac/i3200_edac.c      |    6 +++---
- drivers/edac/i5000_edac.c      |    2 +-
- drivers/edac/i5100_edac.c      |    2 +-
- drivers/edac/i5400_edac.c      |    2 +-
- drivers/edac/i7300_edac.c      |    2 +-
- drivers/edac/i7core_edac.c     |    4 ++--
- drivers/edac/i82443bxgx_edac.c |    4 ++--
- drivers/edac/i82860_edac.c     |    4 ++--
- drivers/edac/i82875p_edac.c    |    4 ++--
- drivers/edac/i82975x_edac.c    |    4 ++--
- drivers/edac/mpc85xx_edac.c    |    4 ++--
- drivers/edac/mv64x60_edac.c    |    2 +-
- drivers/edac/pasemi_edac.c     |    6 +++---
- drivers/edac/ppc4xx_edac.c     |    8 ++++----
- drivers/edac/r82600_edac.c     |    4 ++--
- drivers/edac/sb_edac.c         |    4 ++--
- drivers/edac/tile_edac.c       |    4 ++--
- drivers/edac/x38_edac.c        |    6 +++---
- include/linux/edac.h           |    2 +-
- 28 files changed, 56 insertions(+), 56 deletions(-)
+ drivers/edac/pasemi_edac.c |   25 ++++++++++++++++---------
+ 1 files changed, 16 insertions(+), 9 deletions(-)
 
 ---
 
-http://git.linuxtv.org/media_tree.git?a=commitdiff;h=fd687502dc8037aa5a4b84c570ada971106574ee
+http://git.linuxtv.org/media_tree.git?a=commitdiff;h=f34575aca9ea92bf61e428fb4584d9ebbff9807c
 
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 7be9b72..821bc2c 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -2601,7 +2601,7 @@ static int amd64_init_one_instance(struct pci_dev *F2)
- 		goto err_siblings;
- 
- 	mci->pvt_info = pvt;
--	mci->dev = &pvt->F2->dev;
-+	mci->pdev = &pvt->F2->dev;
- 
- 	setup_mci_misc_attrs(mci, fam_type);
- 
-diff --git a/drivers/edac/amd76x_edac.c b/drivers/edac/amd76x_edac.c
-index 9774d44..7439786 100644
---- a/drivers/edac/amd76x_edac.c
-+++ b/drivers/edac/amd76x_edac.c
-@@ -105,7 +105,7 @@ static void amd76x_get_error_info(struct mem_ctl_info *mci,
- {
- 	struct pci_dev *pdev;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 	pci_read_config_dword(pdev, AMD76X_ECC_MODE_STATUS,
- 			&info->ecc_mode_status);
- 
-@@ -257,7 +257,7 @@ static int amd76x_probe1(struct pci_dev *pdev, int dev_idx)
- 		return -ENOMEM;
- 
- 	debugf0("%s(): mci = %p\n", __func__, mci);
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_RDDR;
- 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
- 	mci->edac_cap = ems_mode ?
-diff --git a/drivers/edac/cell_edac.c b/drivers/edac/cell_edac.c
-index 69ee6aa..2e5b953 100644
---- a/drivers/edac/cell_edac.c
-+++ b/drivers/edac/cell_edac.c
-@@ -36,7 +36,7 @@ static void cell_edac_count_ce(struct mem_ctl_info *mci, int chan, u64 ar)
- 	struct csrow_info		*csrow = &mci->csrows[0];
- 	unsigned long			address, pfn, offset, syndrome;
- 
--	dev_dbg(mci->dev, "ECC CE err on node %d, channel %d, ar = 0x%016llx\n",
-+	dev_dbg(mci->pdev, "ECC CE err on node %d, channel %d, ar = 0x%016llx\n",
- 		priv->node, chan, ar);
- 
- 	/* Address decoding is likely a bit bogus, to dbl check */
-@@ -59,7 +59,7 @@ static void cell_edac_count_ue(struct mem_ctl_info *mci, int chan, u64 ar)
- 	struct csrow_info		*csrow = &mci->csrows[0];
- 	unsigned long			address, pfn, offset;
- 
--	dev_dbg(mci->dev, "ECC UE err on node %d, channel %d, ar = 0x%016llx\n",
-+	dev_dbg(mci->pdev, "ECC UE err on node %d, channel %d, ar = 0x%016llx\n",
- 		priv->node, chan, ar);
- 
- 	/* Address decoding is likely a bit bogus, to dbl check */
-@@ -83,7 +83,7 @@ static void cell_edac_check(struct mem_ctl_info *mci)
- 	fir = in_be64(&priv->regs->mic_fir);
- #ifdef DEBUG
- 	if (fir != priv->prev_fir) {
--		dev_dbg(mci->dev, "fir change : 0x%016lx\n", fir);
-+		dev_dbg(mci->pdev, "fir change : 0x%016lx\n", fir);
- 		priv->prev_fir = fir;
- 	}
- #endif
-@@ -119,7 +119,7 @@ static void cell_edac_check(struct mem_ctl_info *mci)
- 		mb();	/* sync up */
- #ifdef DEBUG
- 		fir = in_be64(&priv->regs->mic_fir);
--		dev_dbg(mci->dev, "fir clear  : 0x%016lx\n", fir);
-+		dev_dbg(mci->pdev, "fir clear  : 0x%016lx\n", fir);
- #endif
- 	}
- }
-@@ -155,7 +155,7 @@ static void __devinit cell_edac_init_csrows(struct mem_ctl_info *mci)
- 			dimm->edac_mode = EDAC_SECDED;
- 			dimm->nr_pages = nr_pages / csrow->nr_channels;
- 		}
--		dev_dbg(mci->dev,
-+		dev_dbg(mci->pdev,
- 			"Initialized on node %d, chanmask=0x%x,"
- 			" first_page=0x%lx, nr_pages=0x%x\n",
- 			priv->node, priv->chanmask,
-@@ -212,7 +212,7 @@ static int __devinit cell_edac_probe(struct platform_device *pdev)
- 	priv->regs = regs;
- 	priv->node = pdev->id;
- 	priv->chanmask = chanmask;
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_XDR;
- 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
- 	mci->edac_cap = EDAC_FLAG_EC | EDAC_FLAG_SECDED;
-diff --git a/drivers/edac/cpc925_edac.c b/drivers/edac/cpc925_edac.c
-index e22030a..9488723 100644
---- a/drivers/edac/cpc925_edac.c
-+++ b/drivers/edac/cpc925_edac.c
-@@ -995,7 +995,7 @@ static int __devinit cpc925_probe(struct platform_device *pdev)
- 	pdata->edac_idx = edac_mc_idx++;
- 	pdata->name = pdev->name;
- 
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	platform_set_drvdata(pdev, mci);
- 	mci->dev_name = dev_name(&pdev->dev);
- 	mci->mtype_cap = MEM_FLAG_RDDR | MEM_FLAG_DDR;
-diff --git a/drivers/edac/e752x_edac.c b/drivers/edac/e752x_edac.c
-index 3186512..d756606 100644
---- a/drivers/edac/e752x_edac.c
-+++ b/drivers/edac/e752x_edac.c
-@@ -1308,7 +1308,7 @@ static int e752x_probe1(struct pci_dev *pdev, int dev_idx)
- 	/* FIXME - what if different memory types are in different csrows? */
- 	mci->mod_name = EDAC_MOD_STR;
- 	mci->mod_ver = E752X_REVISION;
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 
- 	debugf3("%s(): init pvt\n", __func__);
- 	pvt = (struct e752x_pvt *)mci->pvt_info;
-diff --git a/drivers/edac/e7xxx_edac.c b/drivers/edac/e7xxx_edac.c
-index 9a9c1a5..b111266 100644
---- a/drivers/edac/e7xxx_edac.c
-+++ b/drivers/edac/e7xxx_edac.c
-@@ -458,7 +458,7 @@ static int e7xxx_probe1(struct pci_dev *pdev, int dev_idx)
- 	/* FIXME - what if different memory types are in different csrows? */
- 	mci->mod_name = EDAC_MOD_STR;
- 	mci->mod_ver = E7XXX_REVISION;
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	debugf3("%s(): init pvt\n", __func__);
- 	pvt = (struct e7xxx_pvt *)mci->pvt_info;
- 	pvt->dev_info = &e7xxx_devs[dev_idx];
-diff --git a/drivers/edac/edac_mc.c b/drivers/edac/edac_mc.c
-index ce25750..811f09a 100644
---- a/drivers/edac/edac_mc.c
-+++ b/drivers/edac/edac_mc.c
-@@ -93,7 +93,7 @@ static void edac_mc_dump_mci(struct mem_ctl_info *mci)
- 		mci->nr_csrows, mci->csrows);
- 	debugf3("\tmci->nr_dimms = %d, dimms = %p\n",
- 		mci->tot_dimms, mci->dimms);
--	debugf3("\tdev = %p\n", mci->dev);
-+	debugf3("\tdev = %p\n", mci->pdev);
- 	debugf3("\tmod_name:ctl_name = %s:%s\n", mci->mod_name, mci->ctl_name);
- 	debugf3("\tpvt_info = %p\n\n", mci->pvt_info);
- }
-@@ -428,7 +428,7 @@ struct mem_ctl_info *find_mci_by_dev(struct device *dev)
- 	list_for_each(item, &mc_devices) {
- 		mci = list_entry(item, struct mem_ctl_info, link);
- 
--		if (mci->dev == dev)
-+		if (mci->pdev == dev)
- 			return mci;
- 	}
- 
-@@ -580,7 +580,7 @@ static int add_mc_to_global_list(struct mem_ctl_info *mci)
- 
- 	insert_before = &mc_devices;
- 
--	p = find_mci_by_dev(mci->dev);
-+	p = find_mci_by_dev(mci->pdev);
- 	if (unlikely(p != NULL))
- 		goto fail0;
- 
-@@ -602,7 +602,7 @@ static int add_mc_to_global_list(struct mem_ctl_info *mci)
- 
- fail0:
- 	edac_printk(KERN_WARNING, EDAC_MC,
--		"%s (%s) %s %s already assigned %d\n", dev_name(p->dev),
-+		"%s (%s) %s %s already assigned %d\n", dev_name(p->pdev),
- 		edac_dev_name(mci), p->mod_name, p->ctl_name, p->mc_idx);
- 	return 1;
- 
-diff --git a/drivers/edac/edac_mc_sysfs.c b/drivers/edac/edac_mc_sysfs.c
-index f6a29b0..5953719 100644
---- a/drivers/edac/edac_mc_sysfs.c
-+++ b/drivers/edac/edac_mc_sysfs.c
-@@ -916,7 +916,7 @@ int edac_create_sysfs_mci_device(struct mem_ctl_info *mci)
- 	INIT_LIST_HEAD(&mci->grp_kobj_list);
- 
- 	/* create a symlink for the device */
--	err = sysfs_create_link(kobj_mci, &mci->dev->kobj,
-+	err = sysfs_create_link(kobj_mci, &mci->pdev->kobj,
- 				EDAC_DEVICE_SYMLINK);
- 	if (err) {
- 		debugf1("%s() failure to create symlink\n", __func__);
-diff --git a/drivers/edac/i3000_edac.c b/drivers/edac/i3000_edac.c
-index 8ad1744..d1ebd9b 100644
---- a/drivers/edac/i3000_edac.c
-+++ b/drivers/edac/i3000_edac.c
-@@ -194,7 +194,7 @@ static void i3000_get_error_info(struct mem_ctl_info *mci,
- {
- 	struct pci_dev *pdev;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 
- 	/*
- 	 * This is a mess because there is no atomic way to read all the
-@@ -368,7 +368,7 @@ static int i3000_probe1(struct pci_dev *pdev, int dev_idx)
- 
- 	debugf3("MC: %s(): init mci\n", __func__);
- 
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_DDR2;
- 
- 	mci->edac_ctl_cap = EDAC_FLAG_SECDED;
-diff --git a/drivers/edac/i3200_edac.c b/drivers/edac/i3200_edac.c
-index bbe43ef..600a05d 100644
---- a/drivers/edac/i3200_edac.c
-+++ b/drivers/edac/i3200_edac.c
-@@ -159,7 +159,7 @@ static void i3200_clear_error_info(struct mem_ctl_info *mci)
- {
- 	struct pci_dev *pdev;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 
- 	/*
- 	 * Clear any error bits.
-@@ -176,7 +176,7 @@ static void i3200_get_and_clear_error_info(struct mem_ctl_info *mci,
- 	struct i3200_priv *priv = mci->pvt_info;
- 	void __iomem *window = priv->window;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 
- 	/*
- 	 * This is a mess because there is no atomic way to read all the
-@@ -354,7 +354,7 @@ static int i3200_probe1(struct pci_dev *pdev, int dev_idx)
- 
- 	debugf3("MC: %s(): init mci\n", __func__);
- 
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_DDR2;
- 
- 	mci->edac_ctl_cap = EDAC_FLAG_SECDED;
-diff --git a/drivers/edac/i5000_edac.c b/drivers/edac/i5000_edac.c
-index 11ea835..a69245a 100644
---- a/drivers/edac/i5000_edac.c
-+++ b/drivers/edac/i5000_edac.c
-@@ -1409,7 +1409,7 @@ static int i5000_probe1(struct pci_dev *pdev, int dev_idx)
- 	kobject_get(&mci->edac_mci_kobj);
- 	debugf0("MC: %s: %s(): mci = %p\n", __FILE__, __func__, mci);
- 
--	mci->dev = &pdev->dev;	/* record ptr  to the generic device */
-+	mci->pdev = &pdev->dev;	/* record ptr  to the generic device */
- 
- 	pvt = mci->pvt_info;
- 	pvt->system_address = pdev;	/* Record this device in our private */
-diff --git a/drivers/edac/i5100_edac.c b/drivers/edac/i5100_edac.c
-index e9e7c2a..19aa284 100644
---- a/drivers/edac/i5100_edac.c
-+++ b/drivers/edac/i5100_edac.c
-@@ -943,7 +943,7 @@ static int __devinit i5100_init_one(struct pci_dev *pdev,
- 		goto bail_disable_ch1;
- 	}
- 
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 
- 	priv = mci->pvt_info;
- 	priv->ranksperchan = ranksperch;
-diff --git a/drivers/edac/i5400_edac.c b/drivers/edac/i5400_edac.c
-index 6640c29..ba60694 100644
---- a/drivers/edac/i5400_edac.c
-+++ b/drivers/edac/i5400_edac.c
-@@ -1299,7 +1299,7 @@ static int i5400_probe1(struct pci_dev *pdev, int dev_idx)
- 
- 	debugf0("MC: %s: %s(): mci = %p\n", __FILE__, __func__, mci);
- 
--	mci->dev = &pdev->dev;	/* record ptr  to the generic device */
-+	mci->pdev = &pdev->dev;	/* record ptr  to the generic device */
- 
- 	pvt = mci->pvt_info;
- 	pvt->system_address = pdev;	/* Record this device in our private */
-diff --git a/drivers/edac/i7300_edac.c b/drivers/edac/i7300_edac.c
-index 97c22fd..db84456 100644
---- a/drivers/edac/i7300_edac.c
-+++ b/drivers/edac/i7300_edac.c
-@@ -1057,7 +1057,7 @@ static int __devinit i7300_init_one(struct pci_dev *pdev,
- 
- 	debugf0("MC: " __FILE__ ": %s(): mci = %p\n", __func__, mci);
- 
--	mci->dev = &pdev->dev;	/* record ptr  to the generic device */
-+	mci->pdev = &pdev->dev;	/* record ptr  to the generic device */
- 
- 	pvt = mci->pvt_info;
- 	pvt->pci_dev_16_0_fsb_ctlr = pdev;	/* Record this device in our private */
-diff --git a/drivers/edac/i7core_edac.c b/drivers/edac/i7core_edac.c
-index c05e1ad..598d215 100644
---- a/drivers/edac/i7core_edac.c
-+++ b/drivers/edac/i7core_edac.c
-@@ -2122,7 +2122,7 @@ static void i7core_unregister_mci(struct i7core_dev *i7core_dev)
- 	i7core_pci_ctl_release(pvt);
- 
- 	/* Remove MC sysfs nodes */
--	edac_mc_del_mc(mci->dev);
-+	edac_mc_del_mc(mci->pdev);
- 
- 	debugf1("%s: free mci struct\n", mci->ctl_name);
- 	kfree(mci->ctl_name);
-@@ -2188,7 +2188,7 @@ static int i7core_register_mci(struct i7core_dev *i7core_dev)
- 	/* Get dimm basic config */
- 	get_dimm_config(mci);
- 	/* record ptr to the generic device */
--	mci->dev = &i7core_dev->pdev[0]->dev;
-+	mci->pdev = &i7core_dev->pdev[0]->dev;
- 	/* Set the function pointer to an actual operation function */
- 	mci->edac_check = i7core_check_error;
- 
-diff --git a/drivers/edac/i82443bxgx_edac.c b/drivers/edac/i82443bxgx_edac.c
-index 52072c2..65fd2e1 100644
---- a/drivers/edac/i82443bxgx_edac.c
-+++ b/drivers/edac/i82443bxgx_edac.c
-@@ -124,7 +124,7 @@ static void i82443bxgx_edacmc_get_error_info(struct mem_ctl_info *mci,
- 				*info)
- {
- 	struct pci_dev *pdev;
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 	pci_read_config_dword(pdev, I82443BXGX_EAP, &info->eap);
- 	if (info->eap & I82443BXGX_EAP_OFFSET_SBE)
- 		/* Clear error to allow next error to be reported [p.61] */
-@@ -260,7 +260,7 @@ static int i82443bxgx_edacmc_probe1(struct pci_dev *pdev, int dev_idx)
- 		return -ENOMEM;
- 
- 	debugf0("MC: %s: %s(): mci = %p\n", __FILE__, __func__, mci);
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_EDO | MEM_FLAG_SDR | MEM_FLAG_RDR;
- 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
- 	pci_read_config_byte(pdev, I82443BXGX_DRAMC, &dramc);
-diff --git a/drivers/edac/i82860_edac.c b/drivers/edac/i82860_edac.c
-index 0804505..8f33500 100644
---- a/drivers/edac/i82860_edac.c
-+++ b/drivers/edac/i82860_edac.c
-@@ -67,7 +67,7 @@ static void i82860_get_error_info(struct mem_ctl_info *mci,
- {
- 	struct pci_dev *pdev;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 
- 	/*
- 	 * This is a mess because there is no atomic way to read all the
-@@ -211,7 +211,7 @@ static int i82860_probe1(struct pci_dev *pdev, int dev_idx)
- 		return -ENOMEM;
- 
- 	debugf3("%s(): init mci\n", __func__);
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_DDR;
- 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_SECDED;
- 	/* I"m not sure about this but I think that all RDRAM is SECDED */
-diff --git a/drivers/edac/i82875p_edac.c b/drivers/edac/i82875p_edac.c
-index b613e31..1cc682d 100644
---- a/drivers/edac/i82875p_edac.c
-+++ b/drivers/edac/i82875p_edac.c
-@@ -189,7 +189,7 @@ static void i82875p_get_error_info(struct mem_ctl_info *mci,
- {
- 	struct pci_dev *pdev;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 
- 	/*
- 	 * This is a mess because there is no atomic way to read all the
-@@ -430,7 +430,7 @@ static int i82875p_probe1(struct pci_dev *pdev, int dev_idx)
- 	kobject_get(&mci->edac_mci_kobj);
- 
- 	debugf3("%s(): init mci\n", __func__);
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_DDR;
- 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_SECDED;
- 	mci->edac_cap = EDAC_FLAG_UNKNOWN;
-diff --git a/drivers/edac/i82975x_edac.c b/drivers/edac/i82975x_edac.c
-index 433332c..8b26401 100644
---- a/drivers/edac/i82975x_edac.c
-+++ b/drivers/edac/i82975x_edac.c
-@@ -241,7 +241,7 @@ static void i82975x_get_error_info(struct mem_ctl_info *mci,
- {
- 	struct pci_dev *pdev;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 
- 	/*
- 	 * This is a mess because there is no atomic way to read all the
-@@ -559,7 +559,7 @@ static int i82975x_probe1(struct pci_dev *pdev, int dev_idx)
- 	}
- 
- 	debugf3("%s(): init mci\n", __func__);
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_DDR2;
- 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_SECDED;
- 	mci->edac_cap = EDAC_FLAG_NONE | EDAC_FLAG_SECDED;
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 4c40235..67fb328 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -989,9 +989,9 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
- 	pdata = mci->pvt_info;
- 	pdata->name = "mpc85xx_mc_err";
- 	pdata->irq = NO_IRQ;
--	mci->dev = &op->dev;
-+	mci->pdev = &op->dev;
- 	pdata->edac_idx = edac_mc_idx++;
--	dev_set_drvdata(mci->dev, mci);
-+	dev_set_drvdata(mci->pdev, mci);
- 	mci->ctl_name = pdata->name;
- 	mci->dev_name = pdata->name;
- 
-diff --git a/drivers/edac/mv64x60_edac.c b/drivers/edac/mv64x60_edac.c
-index b0bb5a3..ff6b8e2 100644
---- a/drivers/edac/mv64x60_edac.c
-+++ b/drivers/edac/mv64x60_edac.c
-@@ -724,7 +724,7 @@ static int __devinit mv64x60_mc_err_probe(struct platform_device *pdev)
- 	}
- 
- 	pdata = mci->pvt_info;
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	platform_set_drvdata(pdev, mci);
- 	pdata->name = "mv64x60_mc_err";
- 	pdata->irq = NO_IRQ;
 diff --git a/drivers/edac/pasemi_edac.c b/drivers/edac/pasemi_edac.c
-index b095a90..92becaa 100644
+index 3fcefda..46aed62 100644
 --- a/drivers/edac/pasemi_edac.c
 +++ b/drivers/edac/pasemi_edac.c
-@@ -74,7 +74,7 @@ static int system_mmc_id;
+@@ -110,15 +110,16 @@ static void pasemi_edac_process_error_info(struct mem_ctl_info *mci, u32 errsta)
+ 	/* uncorrectable/multi-bit errors */
+ 	if (errsta & (MCDEBUG_ERRSTA_MBE_STATUS |
+ 		      MCDEBUG_ERRSTA_RFL_STATUS)) {
+-		edac_mc_handle_ue(mci, mci->csrows[cs].first_page, 0,
+-				  cs, mci->ctl_name);
++		edac_mc_handle_error(HW_EVENT_ERR_UNCORRECTED, mci,
++				     mci->csrows[cs].first_page, 0, 0,
++				     cs, 0, -1, mci->ctl_name, "", NULL);
+ 	}
  
- static u32 pasemi_edac_get_error_info(struct mem_ctl_info *mci)
+ 	/* correctable/single-bit errors */
+-	if (errsta & MCDEBUG_ERRSTA_SBE_STATUS) {
+-		edac_mc_handle_ce(mci, mci->csrows[cs].first_page, 0,
+-				  0, cs, 0, mci->ctl_name);
+-	}
++	if (errsta & MCDEBUG_ERRSTA_SBE_STATUS)
++		edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci,
++				     mci->csrows[cs].first_page, 0, 0,
++				     cs, 0, -1, mci->ctl_name, "", NULL);
+ }
+ 
+ static void pasemi_edac_check(struct mem_ctl_info *mci)
+@@ -191,6 +192,7 @@ static int __devinit pasemi_edac_probe(struct pci_dev *pdev,
+ 		const struct pci_device_id *ent)
  {
--	struct pci_dev *pdev = to_pci_dev(mci->dev);
-+	struct pci_dev *pdev = to_pci_dev(mci->pdev);
- 	u32 tmp;
+ 	struct mem_ctl_info *mci = NULL;
++	struct edac_mc_layer layers[2];
+ 	u32 errctl1, errcor, scrub, mcen;
  
- 	pci_read_config_dword(pdev, MCDEBUG_ERRSTA,
-@@ -95,7 +95,7 @@ static u32 pasemi_edac_get_error_info(struct mem_ctl_info *mci)
+ 	pci_read_config_dword(pdev, MCCFG_MCEN, &mcen);
+@@ -207,9 +209,14 @@ static int __devinit pasemi_edac_probe(struct pci_dev *pdev,
+ 		MCDEBUG_ERRCTL1_RFL_LOG_EN;
+ 	pci_write_config_dword(pdev, MCDEBUG_ERRCTL1, errctl1);
  
- static void pasemi_edac_process_error_info(struct mem_ctl_info *mci, u32 errsta)
- {
--	struct pci_dev *pdev = to_pci_dev(mci->dev);
-+	struct pci_dev *pdev = to_pci_dev(mci->pdev);
- 	u32 errlog1a;
- 	u32 cs;
- 
-@@ -225,7 +225,7 @@ static int __devinit pasemi_edac_probe(struct pci_dev *pdev,
- 		MCCFG_ERRCOR_ECC_GEN_EN |
- 		MCCFG_ERRCOR_ECC_CRR_EN;
- 
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_DDR | MEM_FLAG_RDDR;
- 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
- 	mci->edac_cap = (errcor & MCCFG_ERRCOR_ECC_GEN_EN) ?
-diff --git a/drivers/edac/ppc4xx_edac.c b/drivers/edac/ppc4xx_edac.c
-index f3f9fed..5351982 100644
---- a/drivers/edac/ppc4xx_edac.c
-+++ b/drivers/edac/ppc4xx_edac.c
-@@ -1027,9 +1027,9 @@ ppc4xx_edac_mc_init(struct mem_ctl_info *mci,
- 
- 	/* Initial driver pointers and private data */
- 
--	mci->dev		= &op->dev;
-+	mci->pdev		= &op->dev;
- 
--	dev_set_drvdata(mci->dev, mci);
-+	dev_set_drvdata(mci->pdev, mci);
- 
- 	pdata			= mci->pvt_info;
- 
-@@ -1334,7 +1334,7 @@ static int __devinit ppc4xx_edac_probe(struct platform_device *op)
- 	return 0;
- 
-  fail1:
--	edac_mc_del_mc(mci->dev);
-+	edac_mc_del_mc(mci->pdev);
- 
-  fail:
- 	edac_mc_free(mci);
-@@ -1368,7 +1368,7 @@ ppc4xx_edac_remove(struct platform_device *op)
- 
- 	dcr_unmap(pdata->dcr_host, SDRAM_DCR_RESOURCE_LEN);
- 
--	edac_mc_del_mc(mci->dev);
-+	edac_mc_del_mc(mci->pdev);
- 	edac_mc_free(mci);
- 
- 	return 0;
-diff --git a/drivers/edac/r82600_edac.c b/drivers/edac/r82600_edac.c
-index e1cacd1..cf4ccbd 100644
---- a/drivers/edac/r82600_edac.c
-+++ b/drivers/edac/r82600_edac.c
-@@ -140,7 +140,7 @@ static void r82600_get_error_info(struct mem_ctl_info *mci,
- {
- 	struct pci_dev *pdev;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 	pci_read_config_dword(pdev, R82600_EAP, &info->eapr);
- 
- 	if (info->eapr & BIT(0))
-@@ -296,7 +296,7 @@ static int r82600_probe1(struct pci_dev *pdev, int dev_idx)
+-	mci = edac_mc_alloc(0, PASEMI_EDAC_NR_CSROWS, PASEMI_EDAC_NR_CHANS,
+-				system_mmc_id++);
+-
++	layers[0].type = EDAC_MC_LAYER_CHIP_SELECT;
++	layers[0].size = PASEMI_EDAC_NR_CSROWS;
++	layers[0].is_virt_csrow = true;
++	layers[1].type = EDAC_MC_LAYER_CHANNEL;
++	layers[1].size = PASEMI_EDAC_NR_CHANS;
++	layers[1].is_virt_csrow = false;
++	mci = new_edac_mc_alloc(system_mmc_id++, ARRAY_SIZE(layers), layers,
++			    0);
+ 	if (mci == NULL)
  		return -ENOMEM;
  
- 	debugf0("%s(): mci = %p\n", __func__, mci);
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_RDDR | MEM_FLAG_DDR;
- 	mci->edac_ctl_cap = EDAC_FLAG_NONE | EDAC_FLAG_EC | EDAC_FLAG_SECDED;
- 	/* FIXME try to work out if the chip leads have been used for COM2
-diff --git a/drivers/edac/sb_edac.c b/drivers/edac/sb_edac.c
-index e834dfd..efa4883 100644
---- a/drivers/edac/sb_edac.c
-+++ b/drivers/edac/sb_edac.c
-@@ -1607,7 +1607,7 @@ static void sbridge_unregister_mci(struct sbridge_dev *sbridge_dev)
- 	mce_unregister_decode_chain(&sbridge_mce_dec);
- 
- 	/* Remove MC sysfs nodes */
--	edac_mc_del_mc(mci->dev);
-+	edac_mc_del_mc(mci->pdev);
- 
- 	debugf1("%s: free mci struct\n", mci->ctl_name);
- 	kfree(mci->ctl_name);
-@@ -1672,7 +1672,7 @@ static int sbridge_register_mci(struct sbridge_dev *sbridge_dev)
- 	get_memory_layout(mci);
- 
- 	/* record ptr to the generic device */
--	mci->dev = &sbridge_dev->pdev[0]->dev;
-+	mci->pdev = &sbridge_dev->pdev[0]->dev;
- 
- 	/* add this new MC control structure to EDAC's list of MCs */
- 	if (unlikely(edac_mc_add_mc(mci))) {
-diff --git a/drivers/edac/tile_edac.c b/drivers/edac/tile_edac.c
-index 7bb4614..604bc4d 100644
---- a/drivers/edac/tile_edac.c
-+++ b/drivers/edac/tile_edac.c
-@@ -69,7 +69,7 @@ static void tile_edac_check(struct mem_ctl_info *mci)
- 
- 	/* Check if the current error count is different from the saved one. */
- 	if (mem_error.sbe_count != priv->ce_count) {
--		dev_dbg(mci->dev, "ECC CE err on node %d\n", priv->node);
-+		dev_dbg(mci->pdev, "ECC CE err on node %d\n", priv->node);
- 		priv->ce_count = mem_error.sbe_count;
- 		edac_mc_handle_error(HW_EVENT_ERR_CORRECTED, mci,
- 				     0, 0, 0,
-@@ -149,7 +149,7 @@ static int __devinit tile_edac_mc_probe(struct platform_device *pdev)
- 	priv->node = pdev->id;
- 	priv->hv_devhdl = hv_devhdl;
- 
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_DDR2;
- 	mci->edac_ctl_cap = EDAC_FLAG_SECDED;
- 
-diff --git a/drivers/edac/x38_edac.c b/drivers/edac/x38_edac.c
-index 1ac7962..f9506f2 100644
---- a/drivers/edac/x38_edac.c
-+++ b/drivers/edac/x38_edac.c
-@@ -151,7 +151,7 @@ static void x38_clear_error_info(struct mem_ctl_info *mci)
- {
- 	struct pci_dev *pdev;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 
- 	/*
- 	 * Clear any error bits.
-@@ -172,7 +172,7 @@ static void x38_get_and_clear_error_info(struct mem_ctl_info *mci,
- 	struct pci_dev *pdev;
- 	void __iomem *window = mci->pvt_info;
- 
--	pdev = to_pci_dev(mci->dev);
-+	pdev = to_pci_dev(mci->pdev);
- 
- 	/*
- 	 * This is a mess because there is no atomic way to read all the
-@@ -354,7 +354,7 @@ static int x38_probe1(struct pci_dev *pdev, int dev_idx)
- 
- 	debugf3("MC: %s(): init mci\n", __func__);
- 
--	mci->dev = &pdev->dev;
-+	mci->pdev = &pdev->dev;
- 	mci->mtype_cap = MEM_FLAG_DDR2;
- 
- 	mci->edac_ctl_cap = EDAC_FLAG_SECDED;
-diff --git a/include/linux/edac.h b/include/linux/edac.h
-index 91ba3ba..ec1b527 100644
---- a/include/linux/edac.h
-+++ b/include/linux/edac.h
-@@ -567,7 +567,7 @@ struct mem_ctl_info {
- 	 * unique.  dev pointer should be sufficiently unique, but
- 	 * BUS:SLOT.FUNC numbers may not be unique.
- 	 */
--	struct device *dev;
-+	struct device *pdev;
- 	const char *mod_name;
- 	const char *mod_ver;
- 	const char *ctl_name;
