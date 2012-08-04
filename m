@@ -2,19 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2BB372C03C0
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Aug 2012 23:17:32 +1000 (EST)
-Subject: Re: [PATCH 3/4] powerpc/booke: Separate out restore_e5500/setup_e5500
- routines.
+ by ozlabs.org (Postfix) with ESMTPS id C84682C0093
+ for <linuxppc-dev@ozlabs.org>; Sat,  4 Aug 2012 23:22:34 +1000 (EST)
+Subject: Re: [git pull] Please pull powerpc.git merge branch
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1341838911-17157-1-git-send-email-Varun.Sethi@freescale.com>
-Date: Fri, 3 Aug 2012 11:38:41 -0500
-Message-Id: <624E2ACB-C865-4BDA-9CA5-11C4E82288D1@kernel.crashing.org>
-References: <1341838911-17157-1-git-send-email-Varun.Sethi@freescale.com>
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org
+In-Reply-To: <1344033253.24037.70.camel@pasglop>
+Date: Sat, 4 Aug 2012 08:22:34 -0500
+Message-Id: <7009C85C-A90F-4477-821A-507259A8F595@kernel.crashing.org>
+References: <alpine.LFD.2.00.1208030838490.4148@right.am.freescale.net>
+ <1344033253.24037.70.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,24 +25,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Jul 9, 2012, at 8:01 AM, Varun Sethi wrote:
+On Aug 3, 2012, at 5:34 PM, Benjamin Herrenschmidt wrote:
 
-> For the 64 bit case separate out e5500 cpu_setup and cpu_restore =
-functions.
-> The cpu_setup function (for the primary core) is passed the cpu_spec =
-pointer,
-> which is not there in case of the cpu_restore function. Also, in our =
-case
-> we will have to manipulate the CPU_FTR_EMB_HV flag on the the primary =
-core. =20
+> On Fri, 2012-08-03 at 08:39 -0500, Kumar Gala wrote:
+>> Ben,
+>>=20
+>> Weekly bug fix pull request.
 >=20
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
-> arch/powerpc/kernel/cpu_setup_fsl_booke.S |   38 =
-++++++++++++++++++++++++----
-> arch/powerpc/kernel/exceptions-64e.S      |   18 +------------
-> 2 files changed, 34 insertions(+), 22 deletions(-)
+> Well, Linus is on holiday so I don't think it makes sense for me to =
+ask
+> him to pull anything just yet... I'll put it in my tree some time next
+> week and will send it along with whatever I have as well when it looks
+> like he might be back :-)
 
-applied to next
+No problem, just trying to get into a weekly cadence of pull requests.
 
-- k=
+- k
+
+>=20
+> Cheers,
+> Ben.
+>=20
+>> - k
+>>=20
+>> The following changes since commit =
+0d7614f09c1ebdbaa1599a5aba7593f147bf96ee:
+>>=20
+>>  Linux 3.6-rc1 (2012-08-02 16:38:10 -0700)
+>>=20
+>> are available in the git repository at:
+>>=20
+>>  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git =
+merge
+>>=20
+>> for you to fetch changes up to =
+c9f11c30374329a0d2a88cf05281ca49d8eca9ab:
+>>=20
+>>  powerpc/fsl-pci: Only scan PCI bus if configured as a host =
+(2012-08-03 08:25:52 -0500)
+>>=20
+>> ----------------------------------------------------------------
+>> Jia Hongtao (1):
+>>      powerpc/fsl-pci: Only scan PCI bus if configured as a host
+>>=20
+>> arch/powerpc/sysdev/fsl_pci.c |   13 ++++++++-----
+>> 1 file changed, 8 insertions(+), 5 deletions(-)
+>=20
