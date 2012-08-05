@@ -1,25 +1,22 @@
-Return-Path: <B16395@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D54E82C0092
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Aug 2012 04:38:41 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 2/4] powerpc/booke: Merge the 32 bit e5500/e500mc cpu
- setup code.
-Date: Sat, 4 Aug 2012 18:31:27 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D15ADB3@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1341838701-17089-1-git-send-email-Varun.Sethi@freescale.com>
- <27CB83E1-41F1-40E3-80A3-95D5B96D88B6@kernel.crashing.org>
-In-Reply-To: <27CB83E1-41F1-40E3-80A3-95D5B96D88B6@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail4-relais-sop.national.inria.fr
+ (mail4-relais-sop.national.inria.fr [192.134.164.105])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.inria.fr", Issuer "TERENA SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 98F332C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Aug 2012 20:03:50 +1000 (EST)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: Alexander Graf <agraf@suse.de>
+Subject: [PATCH 3/6] arch/powerpc/kvm/e500_tlb.c: fix error return code
+Date: Sun,  5 Aug 2012 11:52:33 +0200
+Message-Id: <1344160356-387-4-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1344160356-387-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1344160356-387-1-git-send-email-Julia.Lawall@lip6.fr>
+Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
+ kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+ kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Avi Kivity <avi@redhat.com>, Julia Lawall <julia@diku.dk>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,47 +26,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Julia Lawall <julia@diku.dk>
 
+Convert a 0 error return code to a negative one, as returned elsewhere in the
+function.
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Friday, August 03, 2012 10:04 PM
-> To: Sethi Varun-B16395
-> Cc: agraf@suse.de; benh@kernel.crashing.org; linuxppc-
-> dev@lists.ozlabs.org; kvm-ppc@vger.kernel.org
-> Subject: Re: [PATCH 2/4] powerpc/booke: Merge the 32 bit e5500/e500mc cpu
-> setup code.
->=20
->=20
-> On Jul 9, 2012, at 7:58 AM, Varun Sethi wrote:
->=20
-> > Merge the 32 bit cpu setup code for e500mc/e5500 and define the
-> "cpu_restore"
-> > routine (for e5500/e6500) only for the 64 bit case. The cpu_restore
-> > routine is used in the 64 bit case for setting up the secondary cores.
-> >
-> > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > ---
-> > arch/powerpc/kernel/cpu_setup_fsl_booke.S |    1 +
-> > arch/powerpc/kernel/cputable.c            |    4 ++++
-> > 2 files changed, 5 insertions(+), 0 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> > b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> > index a55d028..5e87737 100644
-> > --- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> > +++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
-> > @@ -75,6 +75,7 @@ _GLOBAL(__setup_cpu_e500v2)
-> > 	mtlr	r4
-> > 	blr
-> > _GLOBAL(__setup_cpu_e500mc)
-> > +_GLOBAL(__setup_cpu_e5500)
->=20
-> This is a bit confusing, as we now have duplicated __setup_cpu_e5500()
-> between the ppc32 and ppc64 cases.
->=20
-> If you build this patch for corenet32_smp_defconfig it fails.
-[Sethi Varun-B16395] I am able to build without any issue with the same con=
-fig.
+A new label is also added to avoid freeing things that are known to not yet
+be allocated.
 
--Varun
+A simplified version of the semantic match that finds the first problem is as
+follows: (http://coccinelle.lip6.fr/)
+
+// <smpl>
+@@
+identifier ret;
+expression e,e1,e2,e3,e4,x;
+@@
+
+(
+if (\(ret != 0\|ret < 0\) || ...) { ... return ...; }
+|
+ret = 0
+)
+... when != ret = e1
+*x = \(kmalloc\|kzalloc\|kcalloc\|devm_kzalloc\|ioremap\|ioremap_nocache\|devm_ioremap\|devm_ioremap_nocache\)(...);
+... when != x = e2
+    when != ret = e3
+*if (x == NULL || ...)
+{
+  ... when != ret = e4
+*  return ret;
+}
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+
+---
+ arch/powerpc/kvm/e500_tlb.c |   19 +++++++++++++------
+ 1 file changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
+index c8f6c58..85fcdf7 100644
+--- a/arch/powerpc/kvm/e500_tlb.c
++++ b/arch/powerpc/kvm/e500_tlb.c
+@@ -1176,21 +1176,27 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
+ 	}
+ 
+ 	virt = vmap(pages, num_pages, VM_MAP, PAGE_KERNEL);
+-	if (!virt)
++	if (!virt) {
++		ret = -ENOMEM;
+ 		goto err_put_page;
++	}
+ 
+ 	privs[0] = kzalloc(sizeof(struct tlbe_priv) * params.tlb_sizes[0],
+ 			   GFP_KERNEL);
+ 	privs[1] = kzalloc(sizeof(struct tlbe_priv) * params.tlb_sizes[1],
+ 			   GFP_KERNEL);
+ 
+-	if (!privs[0] || !privs[1])
+-		goto err_put_page;
++	if (!privs[0] || !privs[1]) {
++		ret = -ENOMEM;
++		goto err_privs;
++	}
+ 
+ 	g2h_bitmap = kzalloc(sizeof(u64) * params.tlb_sizes[1],
+ 	                     GFP_KERNEL);
+-	if (!g2h_bitmap)
+-		goto err_put_page;
++	if (!g2h_bitmap) {
++		ret = -ENOMEM;
++		goto err_privs;
++	}
+ 
+ 	free_gtlb(vcpu_e500);
+ 
+@@ -1230,10 +1236,11 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
+ 	kvmppc_recalc_tlb1map_range(vcpu_e500);
+ 	return 0;
+ 
+-err_put_page:
++err_privs:
+ 	kfree(privs[0]);
+ 	kfree(privs[1]);
+ 
++err_put_page:
+ 	for (i = 0; i < num_pages; i++)
+ 		put_page(pages[i]);
+ 
