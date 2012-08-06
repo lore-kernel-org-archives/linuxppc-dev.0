@@ -1,23 +1,27 @@
 Return-Path: <B16395@freescale.com>
 Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+ (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2A9CE2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 02:22:59 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 2AD992C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 02:24:39 +1000 (EST)
 From: Sethi Varun-B16395 <B16395@freescale.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 3/3 v4] powerpc/mpic: FSL MPIC error interrupt support.
-Date: Mon, 6 Aug 2012 16:22:50 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D15BA0D@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1344257045-11200-1-git-send-email-Varun.Sethi@freescale.com>
- <FAD36277-EA2D-49D7-BD98-2F132CA886AA@kernel.crashing.org>
-In-Reply-To: <FAD36277-EA2D-49D7-BD98-2F132CA886AA@kernel.crashing.org>
+Subject: RE: [PATCH 2/4] powerpc/booke: Merge the 32 bit e5500/e500mc cpu
+ setup code.
+Date: Mon, 6 Aug 2012 16:24:31 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D15BA25@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1341838701-17089-1-git-send-email-Varun.Sethi@freescale.com>
+ <27CB83E1-41F1-40E3-80A3-95D5B96D88B6@kernel.crashing.org>
+ <C5ECD7A89D1DC44195F34B25E172658D15ADB3@039-SN2MPN1-013.039d.mgd.msft.net>
+ <D762F063-8210-41EF-B583-F277967EA279@kernel.crashing.org>
+In-Reply-To: <D762F063-8210-41EF-B583-F277967EA279@kernel.crashing.org>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Hamciuc Bogdan-BHAMCIU1 <bhamciu1@freescale.com>
+ "agraf@suse.de" <agraf@suse.de>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,98 +35,76 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 > -----Original Message-----
 > From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Monday, August 06, 2012 9:23 PM
+> Sent: Monday, August 06, 2012 9:28 PM
 > To: Sethi Varun-B16395
-> Cc: linuxppc-dev@lists.ozlabs.org; Hamciuc Bogdan-BHAMCIU1
-> Subject: Re: [PATCH 3/3 v4] powerpc/mpic: FSL MPIC error interrupt
-> support.
+> Cc: agraf@suse.de; benh@kernel.crashing.org; linuxppc-
+> dev@lists.ozlabs.org; kvm-ppc@vger.kernel.org
+> Subject: Re: [PATCH 2/4] powerpc/booke: Merge the 32 bit e5500/e500mc cpu
+> setup code.
 >=20
 >=20
-> On Aug 6, 2012, at 7:44 AM, Varun Sethi wrote:
+> On Aug 4, 2012, at 1:31 PM, Sethi Varun-B16395 wrote:
 >=20
-> > All SOC device error interrupts are muxed and delivered to the core as
-> > a single MPIC error interrupt. Currently all the device drivers
-> > requiring access to device errors have to register for the MPIC error
-> > interrupt as a shared interrupt.
 > >
-> > With this patch we add interrupt demuxing capability in the mpic
-> > driver, allowing device drivers to register for their individual error
-> interrupts.
-> > This is achieved by handling error interrupts in a cascaded fashion.
 > >
-> > MPIC error interrupt is handled by the "error_int_handler", which
-> > subsequently demuxes it using the EISR and delivers it to the
-> > respective drivers.
+> >> -----Original Message-----
+> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >> Sent: Friday, August 03, 2012 10:04 PM
+> >> To: Sethi Varun-B16395
+> >> Cc: agraf@suse.de; benh@kernel.crashing.org; linuxppc-
+> >> dev@lists.ozlabs.org; kvm-ppc@vger.kernel.org
+> >> Subject: Re: [PATCH 2/4] powerpc/booke: Merge the 32 bit e5500/e500mc
+> >> cpu setup code.
+> >>
+> >>
+> >> On Jul 9, 2012, at 7:58 AM, Varun Sethi wrote:
+> >>
+> >>> Merge the 32 bit cpu setup code for e500mc/e5500 and define the
+> >> "cpu_restore"
+> >>> routine (for e5500/e6500) only for the 64 bit case. The cpu_restore
+> >>> routine is used in the 64 bit case for setting up the secondary
+> cores.
+> >>>
+> >>> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> >>> ---
+> >>> arch/powerpc/kernel/cpu_setup_fsl_booke.S |    1 +
+> >>> arch/powerpc/kernel/cputable.c            |    4 ++++
+> >>> 2 files changed, 5 insertions(+), 0 deletions(-)
+> >>>
+> >>> diff --git a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> >>> b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> >>> index a55d028..5e87737 100644
+> >>> --- a/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> >>> +++ b/arch/powerpc/kernel/cpu_setup_fsl_booke.S
+> >>> @@ -75,6 +75,7 @@ _GLOBAL(__setup_cpu_e500v2)
+> >>> 	mtlr	r4
+> >>> 	blr
+> >>> _GLOBAL(__setup_cpu_e500mc)
+> >>> +_GLOBAL(__setup_cpu_e5500)
+> >>
+> >> This is a bit confusing, as we now have duplicated
+> >> __setup_cpu_e5500() between the ppc32 and ppc64 cases.
+> >>
+> >> If you build this patch for corenet32_smp_defconfig it fails.
+> > [Sethi Varun-B16395] I am able to build without any issue with the same
+> config.
 > >
-> > The error interrupt capability is dependent on the MPIC EIMR register,
-> > which was introduced in FSL MPIC version 4.1 (P4080 rev2). So, error
-> > interrupt demuxing capability is dependent on the MPIC version and can
-> > be used for versions >=3D 4.1.
-> >
-> > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > Signed-off-by: Bogdan Hamciuc <bogdan.hamciuc@freescale.com> [In the
-> > initial version of the patch we were using handle_simple_irq as the
-> > handler for cascaded error interrupts, this resulted in issues in case
-> > of threaded isrs (with RT kernel). This issue was debugged by Bogdan
-> > and decision was taken to use the handle_level_irq handler]
-> > ---
-> > arch/powerpc/include/asm/mpic.h    |   16 ++++
-> > arch/powerpc/sysdev/Makefile       |    2 +-
-> > arch/powerpc/sysdev/fsl_mpic_err.c |  153
-> ++++++++++++++++++++++++++++++++++++
-> > arch/powerpc/sysdev/mpic.c         |   45 ++++++++++-
-> > arch/powerpc/sysdev/mpic.h         |   22 +++++
-> > 5 files changed, 236 insertions(+), 2 deletions(-) create mode 100644
-> > arch/powerpc/sysdev/fsl_mpic_err.c
-> >
-> > diff --git a/arch/powerpc/include/asm/mpic.h
-> > b/arch/powerpc/include/asm/mpic.h index e14d35d..6c8e53b 100644
-> > --- a/arch/powerpc/include/asm/mpic.h
-> > +++ b/arch/powerpc/include/asm/mpic.h
-> > @@ -118,6 +118,9 @@
-> > #define MPIC_MAX_CPUS		32
-> > #define MPIC_MAX_ISU		32
-> >
-> > +#define MPIC_MAX_ERR      32
-> > +#define MPIC_FSL_ERR_INT  16
-> > +
-> > /*
-> >  * Tsi108 implementation of MPIC has many differences from the
-> > original one  */ @@ -270,6 +273,7 @@ struct mpic
-> > 	struct irq_chip		hc_ipi;
-> > #endif
-> > 	struct irq_chip		hc_tm;
-> > +	struct irq_chip		hc_err;
-> > 	const char		*name;
-> > 	/* Flags */
-> > 	unsigned int		flags;
-> > @@ -283,6 +287,8 @@ struct mpic
-> > 	/* vector numbers used for internal sources (ipi/timers) */
-> > 	unsigned int		ipi_vecs[4];
-> > 	unsigned int		timer_vecs[8];
-> > +	/* vector numbers used for FSL MPIC error interrupts */
-> > +	unsigned int		err_int_vecs[MPIC_MAX_ERR];
-> >
-> > 	/* Spurious vector to program into unused sources */
-> > 	unsigned int		spurious_vec;
-> > @@ -306,6 +312,11 @@ struct mpic
-> > 	struct mpic_reg_bank	cpuregs[MPIC_MAX_CPUS];
-> > 	struct mpic_reg_bank	isus[MPIC_MAX_ISU];
-> >
-> > +	/* ioremap'ed base for error interrupt registers */
-> > +	u32 __iomem	*err_regs;
-> > +	/* error interrupt config */
-> > +	u32			err_int_config_done;
+> > -Varun
 >=20
-> I thought we were going to remove this as it don't really provide any
-> value.
+> If you build corenet32_smp_defconfig at commit:
 >=20
-[Sethi Varun-B16395] We need a way to determine that irq handle got registe=
-red for=20
-Mpic error interrupt, only then can we go ahead and assign individual (casc=
-aded)
-error interrupts. Initially we were doing the same thing while translating=
-=20
-error interrupt specifier, now we are registering the handler in mpic_init.
+> commit c5537ef2d672d2cf48d4e4ac754781c8db112843
+> Author: Varun Sethi <Varun.Sethi@freescale.com>
+> Date:   Mon Jul 9 18:28:21 2012 +0530
+>=20
+>     powerpc/booke: Merge the 32 bit e5500/e500mc cpu setup code.
+>=20
+> You get the following build error:
+>=20
+> arch/powerpc/kernel/cpu_setup_fsl_booke.S: Assembler messages:
+> arch/powerpc/kernel/cpu_setup_fsl_booke.S:110: Error: symbol
+> `__setup_cpu_e5500' is already defined
+>=20
+Oh.., didn't realize that. Thanks for fixing this.
 
--Varun=20
+-Varun
