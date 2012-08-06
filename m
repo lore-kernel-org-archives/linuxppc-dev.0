@@ -1,22 +1,26 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-Received: from mail4-relais-sop.national.inria.fr
- (mail4-relais-sop.national.inria.fr [192.134.164.105])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.inria.fr", Issuer "TERENA SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 98F332C0095
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Aug 2012 20:03:50 +1000 (EST)
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Alexander Graf <agraf@suse.de>
-Subject: [PATCH 3/6] arch/powerpc/kvm/e500_tlb.c: fix error return code
-Date: Sun,  5 Aug 2012 11:52:33 +0200
-Message-Id: <1344160356-387-4-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1344160356-387-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1344160356-387-1-git-send-email-Julia.Lawall@lip6.fr>
-Cc: kvm@vger.kernel.org, Marcelo Tosatti <mtosatti@redhat.com>,
- kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
- kvm-ppc@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Avi Kivity <avi@redhat.com>, Julia Lawall <julia@diku.dk>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <B38951@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DF47E2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 12:39:47 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Mon, 6 Aug 2012 02:39:39 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A36CE7@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
+ <1343907741-20589-4-git-send-email-B38951@freescale.com>
+ <A4B0DB85-7B49-4748-8B94-0E1F1B7B663A@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A35A2F@039-SN1MPN1-002.039d.mgd.msft.net>
+ <501BF66C.3070107@freescale.com>
+In-Reply-To: <501BF66C.3070107@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,92 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <julia@diku.dk>
-
-Convert a 0 error return code to a negative one, as returned elsewhere in the
-function.
-
-A new label is also added to avoid freeing things that are known to not yet
-be allocated.
-
-A simplified version of the semantic match that finds the first problem is as
-follows: (http://coccinelle.lip6.fr/)
-
-// <smpl>
-@@
-identifier ret;
-expression e,e1,e2,e3,e4,x;
-@@
-
-(
-if (\(ret != 0\|ret < 0\) || ...) { ... return ...; }
-|
-ret = 0
-)
-... when != ret = e1
-*x = \(kmalloc\|kzalloc\|kcalloc\|devm_kzalloc\|ioremap\|ioremap_nocache\|devm_ioremap\|devm_ioremap_nocache\)(...);
-... when != x = e2
-    when != ret = e3
-*if (x == NULL || ...)
-{
-  ... when != ret = e4
-*  return ret;
-}
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
-
----
- arch/powerpc/kvm/e500_tlb.c |   19 +++++++++++++------
- 1 file changed, 13 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index c8f6c58..85fcdf7 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -1176,21 +1176,27 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
- 	}
- 
- 	virt = vmap(pages, num_pages, VM_MAP, PAGE_KERNEL);
--	if (!virt)
-+	if (!virt) {
-+		ret = -ENOMEM;
- 		goto err_put_page;
-+	}
- 
- 	privs[0] = kzalloc(sizeof(struct tlbe_priv) * params.tlb_sizes[0],
- 			   GFP_KERNEL);
- 	privs[1] = kzalloc(sizeof(struct tlbe_priv) * params.tlb_sizes[1],
- 			   GFP_KERNEL);
- 
--	if (!privs[0] || !privs[1])
--		goto err_put_page;
-+	if (!privs[0] || !privs[1]) {
-+		ret = -ENOMEM;
-+		goto err_privs;
-+	}
- 
- 	g2h_bitmap = kzalloc(sizeof(u64) * params.tlb_sizes[1],
- 	                     GFP_KERNEL);
--	if (!g2h_bitmap)
--		goto err_put_page;
-+	if (!g2h_bitmap) {
-+		ret = -ENOMEM;
-+		goto err_privs;
-+	}
- 
- 	free_gtlb(vcpu_e500);
- 
-@@ -1230,10 +1236,11 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu *vcpu,
- 	kvmppc_recalc_tlb1map_range(vcpu_e500);
- 	return 0;
- 
--err_put_page:
-+err_privs:
- 	kfree(privs[0]);
- 	kfree(privs[1]);
- 
-+err_put_page:
- 	for (i = 0; i < num_pages; i++)
- 		put_page(pages[i]);
- 
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogU2F0dXJkYXksIEF1Z3VzdCAwNCwgMjAxMiAxMjowNCBBTQ0KPiBUbzogSmlh
+IEhvbmd0YW8tQjM4OTUxDQo+IENjOiBLdW1hciBHYWxhOyBsaW51eHBwYy1kZXZAbGlzdHMub3ps
+YWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjE7IExpDQo+IFlhbmctUjU4NDcyDQo+IFN1YmplY3Q6
+IFJlOiBbUEFUQ0ggVjQgMy8zXSBwb3dlcnBjL2ZzbC1wY2k6IFVuaWZ5IHBjaS9wY2llDQo+IGlu
+aXRpYWxpemF0aW9uIGNvZGUNCj4gDQo+IE9uIDA4LzAyLzIwMTIgMTA6MzkgUE0sIEppYSBIb25n
+dGFvLUIzODk1MSB3cm90ZToNCj4gPg0KPiA+DQo+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+ID4+IEZyb206IEt1bWFyIEdhbGEgW21haWx0bzpnYWxha0BrZXJuZWwuY3Jhc2hpbmcu
+b3JnXQ0KPiA+PiBTZW50OiBUaHVyc2RheSwgQXVndXN0IDAyLCAyMDEyIDg6MjQgUE0NCj4gPj4g
+VG86IEppYSBIb25ndGFvLUIzODk1MQ0KPiA+PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
+cy5vcmc7IFdvb2QgU2NvdHQtQjA3NDIxOyBMaSBZYW5nLVI1ODQ3Mg0KPiA+PiBTdWJqZWN0OiBS
+ZTogW1BBVENIIFY0IDMvM10gcG93ZXJwYy9mc2wtcGNpOiBVbmlmeSBwY2kvcGNpZQ0KPiA+PiBp
+bml0aWFsaXphdGlvbiBjb2RlDQo+ID4+DQo+ID4+IFlvdSBuZWVkIHRvIGNvbnZlcnQgYWxsIGJv
+YXJkcyB0byB1c2UgZnNsX3BjaV9pbml0IGJlZm9yZSB0aGlzIHBhdGNoLg0KPiA+PiBPdGhlcndp
+c2Ugd2UnbGwgZW5kIHVwIHdpdGggUENJIGdldHRpbmcgaW5pdGlhbGl6ZWQgdHdpY2Ugb24gYm9h
+cmRzLg0KPiA+Pg0KPiA+PiAtIGsNCj4gPg0KPiA+IElmIHdlIGNvdmVydCBhbGwgYm9hcmRzIHdp
+dGggcGxhdGZvcm0gZHJpdmVyIGluIHRoaXMgcGF0Y2ggUENJIHdpbGwNCj4gPiBiZSBpbml0aWFs
+aXplZCBvbmx5IG9uY2Ugd2l0aG91dCBjb252ZXJ0aW5nIGFsbCBib2FyZHMgdG8gdXNlDQo+ID4g
+ZnNsX3BjaV9pbml0IGZpcnN0Lg0KPiANCj4gVGhlbiB3ZSdkIGhhdmUgdG8gcGljayBhcGFydCBj
+b3JlIGNoYW5nZXMgZnJvbSBib2FyZCBjaGFuZ2VzIHdoZW4NCj4gcmV2aWV3aW5nLg0KPiANCj4g
+PiBJZiB3ZSBjb252ZXJ0IGFsbCBib2FyZHMgdG8gdXNlIGZzbF9wY2lfaW5pdCBiZWZvcmUgdGhp
+cyBwYXRjaCBhbmQNCj4gPiBjb252ZXJ0IHRoZW0gdG8gdXNlIHBsYXRmb3JtIGRyaXZlciBhZ2Fp
+biBhZnRlciB0aGlzIHBhdGNoLiBUaGVuDQo+ID4gYmV0d2VlbiB0aGlzIHBhdGNoIGFuZCBuZXh0
+IHBjaSB3aWxsIGJlIGluaXRpYWxpemVkIHR3aWNlIHRvby4NCj4gDQo+IFdoeT8gIFRoYXQgb25l
+IHBhdGNoIHNob3VsZCBib3RoIGNyZWF0ZSB0aGUgcGxhdGZvcm0gZHJpdmVyIGFuZCByZW1vdmUN
+Cj4gdGhlIGluaXQgZnJvbSBmc2xfcGNpX2luaXQoKSAtLSBleGNlcHQgdGhpbmdzIGxpa2UgcHJp
+bWFyeSBidXMgZGV0ZWN0aW9uDQo+IHdoaWNoIGhhcyB0byBoYXBwZW4gZ2xvYmFsbHkuDQo+IA0K
+PiAtU2NvdHQNCg0KIk9uZSBwYXRjaCBib3RoIGNyZWF0ZSB0aGUgcGxhdGZvcm0gZHJpdmVyIGFu
+ZCByZW1vdmUgdGhlIGluaXQgZnJvbQ0KZnNsX3BjaV9pbml0KCkiIG1lYW5zIHdlIHNob3VsZCBj
+cmVhdGUgcGxhdGZvcm0gZHJpdmVyIGFuZCBhcHBsaWVkIHRvDQphbGwgYm9hcmRzLiBJZiBzbyB3
+aHkgbm90IGp1c3QgZGlyZWN0bHkgY29udmVydCBhbGwgYm9hcmRzIHVzaW5nIHBsYXRmb3JtDQpk
+cml2ZXI/IE5vdyBpbiB0aGlzIG9uZSBwYXRjaCB3ZSBjcmVhdGUgcGxhdGZvcm0gZHJpdmVyIGFu
+ZCByZW1vdmUNCmZzbF9wY2lfaW5pdCgpIGZyb20gdGhlIGJvYXJkcyB0aGF0IHVzaW5nIGl0IGFu
+ZCBjb252ZXJ0IGFsbCBvdGhlciBib2FyZHMNCnRoYXQgc3RpbGwgdXNpbmcgb2xkIHdheXMuIEkg
+dGhpbmsgaXQncyBjbGVhciBhbmQgcmlnaHQuDQoNCi1Ib25ndGFvLg0K
