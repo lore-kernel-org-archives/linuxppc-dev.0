@@ -1,20 +1,34 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EF8D82C0080
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2012 13:16:27 +1000 (EST)
-Message-ID: <501F35C2.6090005@windriver.com>
-Date: Mon, 6 Aug 2012 11:10:58 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <B04825@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 621622C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 14:11:54 +1000 (EST)
+Received: from mail234-va3 (localhost [127.0.0.1])	by
+ mail234-va3-R.bigfish.com (Postfix) with ESMTP id A2E83B0034D	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 04:11:49 +0000 (UTC)
+Received: from VA3EHSMHS027.bigfish.com (unknown [10.7.14.245])	by
+ mail234-va3.bigfish.com (Postfix) with ESMTP id 14ED6280047	for
+ <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 04:11:48 +0000 (UTC)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Mon, 6 Aug 2012 04:11:34 +0000
+Message-ID: <CAOZdJXWFPn2XqyTR4jUkUZ5NV-h7HRWcnm392qUYJ98tg8H7Ow@mail.gmail.com>
+References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
+ <1343907741-20589-4-git-send-email-B38951@freescale.com>
+ <501AE0A2.4010809@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A359AF@039-SN1MPN1-002.039d.mgd.msft.net>
+ <501BF7BC.1030208@freescale.com>
+In-Reply-To: <501BF7BC.1030208@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/1] booke/wdt: fix incorrect WDIOC_GETSUPPORT return path
-References: <1343636122-23273-1-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1343636122-23273-1-git-send-email-tiejun.chen@windriver.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@ozlabs.org, linux-watchdog@vger.kernel.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,40 +38,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07/30/2012 04:15 PM, Tiejun Chen wrote:
-> We miss that correct WDIOC_GETSUPPORT return path when perform
-> copy_to_user() properly.
+On Fri, Aug 3, 2012 at 11:09 AM, Scott Wood <scottwood@freescale.com> wrote=
+:
 
-Any comments?
+> p1022ds OTOH is weird enough that it deserves its own board file.
 
-Thanks
-Tiejun
+What's so weird about the P1022DS?
 
-> 
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
->  drivers/watchdog/booke_wdt.c |    7 ++++---
->  1 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
-> index 3fe82d0..2be7f29 100644
-> --- a/drivers/watchdog/booke_wdt.c
-> +++ b/drivers/watchdog/booke_wdt.c
-> @@ -162,12 +162,13 @@ static long booke_wdt_ioctl(struct file *file,
->  				unsigned int cmd, unsigned long arg)
->  {
->  	u32 tmp = 0;
-> -	u32 __user *p = (u32 __user *)arg;
-> +	void __user *argp = (u32 __user *)arg;
-> +	u32 __user *p = argp;
->  
->  	switch (cmd) {
->  	case WDIOC_GETSUPPORT:
-> -		if (copy_to_user((void *)arg, &ident, sizeof(ident)))
-> -			return -EFAULT;
-> +		return copy_to_user(argp, &ident,
-> +				sizeof(ident)) ? -EFAULT : 0;
->  	case WDIOC_GETSTATUS:
->  		return put_user(0, p);
->  	case WDIOC_GETBOOTSTATUS:
-> 
+Also, why do we need a default PCI bus if one isn't specified in the
+device tree?
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
