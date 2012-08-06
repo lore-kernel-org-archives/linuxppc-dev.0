@@ -1,24 +1,20 @@
-Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A038C2C0081
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 13:07:42 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Mon, 6 Aug 2012 03:07:34 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A36D0A@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343988851-884-1-git-send-email-B38951@freescale.com>
- <1343988851-884-4-git-send-email-B38951@freescale.com>
- <501BFC0E.6070708@freescale.com>
-In-Reply-To: <501BFC0E.6070708@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EF8D82C0080
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2012 13:16:27 +1000 (EST)
+Message-ID: <501F35C2.6090005@windriver.com>
+Date: Mon, 6 Aug 2012 11:10:58 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] booke/wdt: fix incorrect WDIOC_GETSUPPORT return path
+References: <1343636122-23273-1-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1343636122-23273-1-git-send-email-tiejun.chen@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linuxppc-dev@ozlabs.org, linux-watchdog@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,58 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogU2F0dXJkYXksIEF1Z3VzdCAwNCwgMjAxMiAxMjoyOCBBTQ0KPiBUbzogSmlh
-IEhvbmd0YW8tQjM4OTUxDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZ2Fs
-YWtAa2VybmVsLmNyYXNoaW5nLm9yZzsgTGkgWWFuZy0NCj4gUjU4NDcyOyBXb29kIFNjb3R0LUIw
-NzQyMQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY1IDMvM10gcG93ZXJwYy9mc2wtcGNpOiBVbmlm
-eSBwY2kvcGNpZQ0KPiBpbml0aWFsaXphdGlvbiBjb2RlDQo+IA0KPiBPbiAwOC8wMy8yMDEyIDA1
-OjE0IEFNLCBKaWEgSG9uZ3RhbyB3cm90ZToNCj4gPiAtdm9pZCBfX2RldmluaXQgZnNsX3BjaV9p
-bml0KHZvaWQpDQo+ID4gKy8qIENoZWNrb3V0IGlmIFBDSSBjb250YWlucyBJU0Egbm9kZSAqLw0K
-PiA+ICtzdGF0aWMgaW50IG9mX3BjaV9oYXNfaXNhKHN0cnVjdCBkZXZpY2Vfbm9kZSAqcGNpX25v
-ZGUpDQo+ID4gK3sNCj4gPiArCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7DQo+ID4gKwlpbnQgcmV0
-ID0gMDsNCj4gPiArDQo+ID4gKwlpZiAoIXBjaV9ub2RlKQ0KPiA+ICsJCXJldHVybiAwOw0KPiA+
-ICsNCj4gPiArCXJlYWRfbG9jaygmZGV2dHJlZV9sb2NrKTsNCj4gPiArCW5wID0gcGNpX25vZGUt
-PmFsbG5leHQ7DQo+ID4gKw0KPiA+ICsJLyogT25seSBzY2FuIHRoZSBjaGlsZHJlbiBvZiBQQ0kg
-bm9kZSAqLw0KPiA+ICsJZm9yICg7IG5wICE9IHBjaV9ub2RlLT5zaWJsaW5nOyBucCA9IG5wLT5h
-bGxuZXh0KSB7DQo+ID4gKwkJaWYgKG5wLT50eXBlICYmIChvZl9ub2RlX2NtcChucC0+dHlwZSwg
-ImlzYSIpID09IDApDQo+ID4gKwkJICAgICYmIG9mX25vZGVfZ2V0KG5wKSkgew0KPiA+ICsJCQly
-ZXQgPSAxOw0KPiA+ICsJCQlicmVhazsNCj4gPiArCQl9DQo+ID4gKwl9DQo+ID4gKw0KPiA+ICsJ
-b2Zfbm9kZV9wdXQocGNpX25vZGUpOw0KPiA+ICsJcmVhZF91bmxvY2soJmRldnRyZWVfbG9jayk7
-DQo+ID4gKw0KPiA+ICsJcmV0dXJuIHJldDsNCj4gPiArfQ0KPiANCj4gV2h5IGRvIHlvdSBrZWVw
-IGluc2lzdGluZyBvbiBzdWJzdGl0dXRpbmcgeW91ciBJU0Egc2VhcmNoIGNvZGUgaGVyZT8NCj4g
-V2hhdCBhZHZhbnRhZ2VzIGRvZXMgaXQgaGF2ZSBvdmVyIHRoZSBjb2RlIHRoYXQgaXMgYWxyZWFk
-eSB0aGVyZT8gIEl0DQo+IHVubmVjZXNzYXJpbHkgZGlncyBpbnRvIHRoZSBpbnRlcm5hbHMgb2Yg
-dGhlIHRyZWUgcmVwcmVzZW50YXRpb24uDQo+IA0KDQpJIHdhbnQgSVNBIHNlYXJjaCBpcyBkb25l
-IGZyb20gcHJvYmUuIEFsc28gdGhpcyB3YXkgaXMgbW9yZSBlZmZpY2llbnQgZHVlDQp0byB3ZSBq
-dXN0IHNlYXJjaCB0aGUgY2hpbGRyZW4gb2YgUENJLg0KDQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50
-IF9fZGV2aW5pdCBmc2xfcGNpX3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+
-ID4gIHsNCj4gPiAgCWludCByZXQ7DQo+ID4gLQlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5vZGU7DQo+
-ID4gIAlzdHJ1Y3QgcGNpX2NvbnRyb2xsZXIgKmhvc2U7DQo+ID4gLQlkbWFfYWRkcl90IG1heCA9
-IDB4ZmZmZmZmZmY7DQo+ID4gKwlpbnQgaXNfcHJpbWFyeSA9IDA7DQo+ID4NCj4gPiAtCS8qIENh
-bGxlcnMgY2FuIHNwZWNpZnkgdGhlIHByaW1hcnkgYnVzIHVzaW5nIG90aGVyIG1lYW5zLiAqLw0K
-PiA+ICAJaWYgKCFmc2xfcGNpX3ByaW1hcnkpIHsNCj4gPiAtCQkvKiBJZiBhIFBDSSBob3N0IGJy
-aWRnZSBjb250YWlucyBhbiBJU0Egbm9kZSwgaXQncyBwcmltYXJ5Lg0KPiAqLw0KPiA+IC0JCW5v
-ZGUgPSBvZl9maW5kX25vZGVfYnlfdHlwZShOVUxMLCAiaXNhIik7DQo+ID4gLQkJd2hpbGUgKChm
-c2xfcGNpX3ByaW1hcnkgPSBvZl9nZXRfcGFyZW50KG5vZGUpKSkgew0KPiA+IC0JCQlvZl9ub2Rl
-X3B1dChub2RlKTsNCj4gPiAtCQkJbm9kZSA9IGZzbF9wY2lfcHJpbWFyeTsNCj4gPiAtDQo+ID4g
-LQkJCWlmIChvZl9tYXRjaF9ub2RlKHBjaV9pZHMsIG5vZGUpKQ0KPiA+IC0JCQkJYnJlYWs7DQo+
-ID4gLQkJfQ0KPiA+ICsJCWlzX3ByaW1hcnkgPSBvZl9wY2lfaGFzX2lzYShwZGV2LT5kZXYub2Zf
-bm9kZSk7DQo+ID4gKwkJaWYgKGlzX3ByaW1hcnkpDQo+ID4gKwkJCWZzbF9wY2lfcHJpbWFyeSA9
-IHBkZXYtPmRldi5vZl9ub2RlOw0KPiA+ICAJfQ0KPiANCj4gQXMgSSBleHBsYWluZWQgYmVmb3Jl
-LCB0aGlzIGhhcyB0byBiZSBkb25lIGdsb2JhbGx5LCBub3QgZnJvbSB0aGUgcHJvYmUNCj4gZnVu
-Y3Rpb24sIHNvIHdlIGNhbiBhc3NpZ24gYSBkZWZhdWx0IHByaW1hcnkgYnVzIGlmIHRoZXJlIGlz
-bid0IGFueSBJU0EuDQo+ICBUaGVyZSBhcmUgYnVncyBpbiB0aGUgTGludXggUFBDIFBDSSBjb2Rl
-IHJlbGF0aW5nIHRvIG5vdCBoYXZpbmcgYW55DQo+IHByaW1hcnkgYnVzLg0KPiANCj4gLVNjb3R0
-DQoNCkluIG15IHdheSBvZiBzZWFyY2hpbmcgSVNBIHlvdSBjYW4gYWxzbyBhc3NpZ24gYSBkZWZh
-dWx0IHByaW1hcnkgYnVzIGluIGJvYXJkDQpzcGVjaWZpYyBmaWxlcy4gDQoNCkkgcmVhZCB5b3Vy
-IGNvZGUgYW5kIGZvdW5kIHRoYXQgaWYgdGhlcmUgaXMgbm8gSVNBIG5vZGUgeW91IHdpbGwgYXNz
-aWduIHRoZQ0KZmlyc3QgUENJIGJ1cyBzY2FubmVkIGFzIHByaW1hcnkuIEl0J3Mgbm90IGFsbCBy
-aWdodC4gVGFrZSBnZV9pbXAzYSBhcyBhbg0KZXhhbXBsZTogVGhlIHNlY29uZCBQQ0kgYnVzICg5
-MDAwKSBpcyBwcmltYXJ5IG5vdCB0aGUgZmlyc3Qgb25lLg0KDQpJIGRvdWJ0IHRoYXQgdGhlcmUg
-YXJlIGJ1Z3MgaWYgbm8gcHJpbWFyeSBhc3NpZ25lZC4gTGlrZSBtcGM4NXh4X3JkYiBhc3NpZ25l
-ZA0Kbm8gcHJpbWFyeSBhdCBhbGwuIFNvbWUgb3RoZXIgYm9hcmRzIGhhcyBubyBwcmltYXJ5IGV0
-aGVyIGxpa2UgcDEwMjJkcywgcDEwMjFtZHMsDQpwMTAxMHJkYiwgcDEwMjNyZHMsIGFsbCBjb3Jl
-bmV0IGJvYXJkcyAocDIwNDFfcmRiLCBwMzA0MV9kcywgcDQwODBfZHMsIHA1MDIwX2RzLA0KcDUw
-NDBfZHMpLiBJZiBubyBwcmltYXJ5IGlzIGEgYnVnIHRoZW4gYWxsIHRoZXNlIGJvYXJkcyBhYm92
-ZSBhcmUgbm90IGNvcnJlY3RseQ0Kc2V0dGluZyB1cC4NCg0KLUhvbmd0YW8uIA0KIA0KDQo=
+On 07/30/2012 04:15 PM, Tiejun Chen wrote:
+> We miss that correct WDIOC_GETSUPPORT return path when perform
+> copy_to_user() properly.
+
+Any comments?
+
+Thanks
+Tiejun
+
+> 
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> ---
+>  drivers/watchdog/booke_wdt.c |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/watchdog/booke_wdt.c b/drivers/watchdog/booke_wdt.c
+> index 3fe82d0..2be7f29 100644
+> --- a/drivers/watchdog/booke_wdt.c
+> +++ b/drivers/watchdog/booke_wdt.c
+> @@ -162,12 +162,13 @@ static long booke_wdt_ioctl(struct file *file,
+>  				unsigned int cmd, unsigned long arg)
+>  {
+>  	u32 tmp = 0;
+> -	u32 __user *p = (u32 __user *)arg;
+> +	void __user *argp = (u32 __user *)arg;
+> +	u32 __user *p = argp;
+>  
+>  	switch (cmd) {
+>  	case WDIOC_GETSUPPORT:
+> -		if (copy_to_user((void *)arg, &ident, sizeof(ident)))
+> -			return -EFAULT;
+> +		return copy_to_user(argp, &ident,
+> +				sizeof(ident)) ? -EFAULT : 0;
+>  	case WDIOC_GETSTATUS:
+>  		return put_user(0, p);
+>  	case WDIOC_GETBOOTSTATUS:
+> 
