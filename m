@@ -1,23 +1,23 @@
 Return-Path: <B32616@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5428C2C09DF
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 20:41:05 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 186AF2C0B23
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 20:41:29 +1000 (EST)
 From: <qiang.liu@freescale.com>
 To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <dan.j.williams@intel.com>, <linux-kernel@vger.kernel.org>,
- <dan.j.williams@gmail.com>, <vinod.koul@intel.com>
-Subject: [PATCH v6 7/8] fsl-dma: fix a warning of unitialized cookie
-Date: Mon, 6 Aug 2012 18:14:58 +0800
-Message-ID: <1344248098-9360-1-git-send-email-qiang.liu@freescale.com>
+ <dan.j.williams@intel.com>, <arnd@arndb.de>, <gregkh@linuxfoundation.org>,
+ <linux-kernel@vger.kernel.org>, <dan.j.williams@gmail.com>,
+ <vinod.koul@intel.com>
+Subject: [PATCH v6 8/8] carma: remove unnecessary DMA_INTERRUPT capability
+Date: Mon, 6 Aug 2012 18:15:13 +0800
+Message-ID: <1344248113-9398-1-git-send-email-qiang.liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: arnd@arndb.de, gregkh@linuxfoundation.org,
- Qiang Liu <qiang.liu@freescale.com>, herbert@gondor.hengli.com.au,
- davem@davemloft.net
+Cc: Qiang Liu <qiang.liu@freescale.com>, herbert@gondor.hengli.com.au,
+ davem@davemloft.net, "Ira W. Snyder" <iws@ovro.caltech.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +29,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Qiang Liu <qiang.liu@freescale.com>
 
-Fix a warning of unitialized value when compile with -Wuninitialized.
+These drivers set the DMA_INTERRUPT capability bit when requesting a DMA
+controller channel. This was historical, and is no longer needed.
 
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Dan Williams <dan.j.williams@gmail.com>
-Cc: Vinod Koul <vinod.koul@intel.com>
-Cc: Li Yang <leoli@freescale.com>
-Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
-Reported-by: Kim Phillips <kim.phillips@freescale.com>
-Acked-by: Ira W. Snyder <iws@ovro.caltech.edu>
+Recent changes to the drivers/dma/fsldma.c driver have removed support
+for this flag. This makes the carma drivers unable to find a DMA channel
+with the required capabilities.
+
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
 ---
- drivers/dma/fsldma.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Based on git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc.git
+against branch char-misc-next.
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index 3f809df..6275bdf 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -405,7 +405,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
- 	struct fsldma_chan *chan = to_fsl_chan(tx->chan);
- 	struct fsl_desc_sw *desc = tx_to_fsl_desc(tx);
- 	struct fsl_desc_sw *child;
--	dma_cookie_t cookie;
-+	dma_cookie_t cookie = 0;
+ drivers/misc/carma/carma-fpga-program.c |    1 -
+ drivers/misc/carma/carma-fpga.c         |    2 +-
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
- 	spin_lock_bh(&chan->desc_lock);
+diff --git a/drivers/misc/carma/carma-fpga-program.c b/drivers/misc/carma/carma-fpga-program.c
+index a2d25e4..eaddfe9 100644
+--- a/drivers/misc/carma/carma-fpga-program.c
++++ b/drivers/misc/carma/carma-fpga-program.c
+@@ -978,7 +978,6 @@ static int fpga_of_probe(struct platform_device *op)
+ 	dev_set_drvdata(priv->dev, priv);
+ 	dma_cap_zero(mask);
+ 	dma_cap_set(DMA_MEMCPY, mask);
+-	dma_cap_set(DMA_INTERRUPT, mask);
+ 	dma_cap_set(DMA_SLAVE, mask);
+ 	dma_cap_set(DMA_SG, mask);
 
+diff --git a/drivers/misc/carma/carma-fpga.c b/drivers/misc/carma/carma-fpga.c
+index 8c279da..0c43297 100644
+--- a/drivers/misc/carma/carma-fpga.c
++++ b/drivers/misc/carma/carma-fpga.c
+@@ -666,7 +666,7 @@ static int data_submit_dma(struct fpga_device *priv, struct data_buf *buf)
+ 	src = SYS_FPGA_BLOCK;
+ 	tx = chan->device->device_prep_dma_memcpy(chan, dst, src,
+ 						  REG_BLOCK_SIZE,
+-						  DMA_PREP_INTERRUPT);
++						  0);
+ 	if (!tx) {
+ 		dev_err(priv->dev, "unable to prep SYS-FPGA DMA\n");
+ 		return -ENOMEM;
 --
 1.7.5.1
