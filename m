@@ -1,28 +1,20 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D7CA62C007A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 01:15:47 +1000 (EST)
-Message-ID: <501FDF9B.4030304@freescale.com>
-Date: Mon, 6 Aug 2012 10:15:39 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
- <1343907741-20589-4-git-send-email-B38951@freescale.com>
- <A4B0DB85-7B49-4748-8B94-0E1F1B7B663A@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A35A2F@039-SN1MPN1-002.039d.mgd.msft.net>
- <501BF66C.3070107@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A36CE7@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A36CE7@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 527332C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 01:52:53 +1000 (EST)
+Subject: Re: [PATCH 3/3 v4] powerpc/mpic: FSL MPIC error interrupt support.
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1344257045-11200-1-git-send-email-Varun.Sethi@freescale.com>
+Date: Mon, 6 Aug 2012 10:52:42 -0500
+Message-Id: <FAD36277-EA2D-49D7-BD98-2F132CA886AA@kernel.crashing.org>
+References: <1344257045-11200-1-git-send-email-Varun.Sethi@freescale.com>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Cc: Bogdan Hamciuc <bogdan.hamciuc@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,61 +24,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/05/2012 09:39 PM, Jia Hongtao-B38951 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Wood Scott-B07421
->> Sent: Saturday, August 04, 2012 12:04 AM
->> To: Jia Hongtao-B38951
->> Cc: Kumar Gala; linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li
->> Yang-R58472
->> Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie
->> initialization code
->>
->> On 08/02/2012 10:39 PM, Jia Hongtao-B38951 wrote:
->>>
->>>
->>>> -----Original Message-----
->>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->>>> Sent: Thursday, August 02, 2012 8:24 PM
->>>> To: Jia Hongtao-B38951
->>>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
->>>> Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie
->>>> initialization code
->>>>
->>>> You need to convert all boards to use fsl_pci_init before this patch.
->>>> Otherwise we'll end up with PCI getting initialized twice on boards.
->>>>
->>>> - k
->>>
->>> If we covert all boards with platform driver in this patch PCI will
->>> be initialized only once without converting all boards to use
->>> fsl_pci_init first.
->>
->> Then we'd have to pick apart core changes from board changes when
->> reviewing.
->>
->>> If we convert all boards to use fsl_pci_init before this patch and
->>> convert them to use platform driver again after this patch. Then
->>> between this patch and next pci will be initialized twice too.
->>
->> Why?  That one patch should both create the platform driver and remove
->> the init from fsl_pci_init() -- except things like primary bus detection
->> which has to happen globally.
->>
->> -Scott
-> 
-> "One patch both create the platform driver and remove the init from
-> fsl_pci_init()" means we should create platform driver and applied to
-> all boards. If so why not just directly convert all boards using platform
-> driver?
 
-Because it's harder to review when you have a bunch of board code in the
-patch in addition to core changes.
+On Aug 6, 2012, at 7:44 AM, Varun Sethi wrote:
 
-Because you might want people to actually test on the boards in question
-when converting, especially given the change in how primary buses are
-determined, and that some boards may need to provide their own alternative.
+> All SOC device error interrupts are muxed and delivered to the core
+> as a single MPIC error interrupt. Currently all the device drivers
+> requiring access to device errors have to register for the MPIC error
+> interrupt as a shared interrupt.
+>=20
+> With this patch we add interrupt demuxing capability in the mpic =
+driver,
+> allowing device drivers to register for their individual error =
+interrupts.
+> This is achieved by handling error interrupts in a cascaded fashion.
+>=20
+> MPIC error interrupt is handled by the "error_int_handler", which
+> subsequently demuxes it using the EISR and delivers it to the =
+respective
+> drivers.=20
+>=20
+> The error interrupt capability is dependent on the MPIC EIMR register,
+> which was introduced in FSL MPIC version 4.1 (P4080 rev2). So, error
+> interrupt demuxing capability is dependent on the MPIC version and can
+> be used for versions >=3D 4.1.
+>=20
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> Signed-off-by: Bogdan Hamciuc <bogdan.hamciuc@freescale.com>
+> [In the initial version of the patch we were using handle_simple_irq
+> as the handler for cascaded error interrupts, this resulted
+> in issues in case of threaded isrs (with RT kernel). This issue was
+> debugged by Bogdan and decision was taken to use the handle_level_irq
+> handler]
+> ---
+> arch/powerpc/include/asm/mpic.h    |   16 ++++
+> arch/powerpc/sysdev/Makefile       |    2 +-
+> arch/powerpc/sysdev/fsl_mpic_err.c |  153 =
+++++++++++++++++++++++++++++++++++++
+> arch/powerpc/sysdev/mpic.c         |   45 ++++++++++-
+> arch/powerpc/sysdev/mpic.h         |   22 +++++
+> 5 files changed, 236 insertions(+), 2 deletions(-)
+> create mode 100644 arch/powerpc/sysdev/fsl_mpic_err.c
+>=20
+> diff --git a/arch/powerpc/include/asm/mpic.h =
+b/arch/powerpc/include/asm/mpic.h
+> index e14d35d..6c8e53b 100644
+> --- a/arch/powerpc/include/asm/mpic.h
+> +++ b/arch/powerpc/include/asm/mpic.h
+> @@ -118,6 +118,9 @@
+> #define MPIC_MAX_CPUS		32
+> #define MPIC_MAX_ISU		32
+>=20
+> +#define MPIC_MAX_ERR      32
+> +#define MPIC_FSL_ERR_INT  16
+> +
+> /*
+>  * Tsi108 implementation of MPIC has many differences from the =
+original one
+>  */
+> @@ -270,6 +273,7 @@ struct mpic
+> 	struct irq_chip		hc_ipi;
+> #endif
+> 	struct irq_chip		hc_tm;
+> +	struct irq_chip		hc_err;
+> 	const char		*name;
+> 	/* Flags */
+> 	unsigned int		flags;
+> @@ -283,6 +287,8 @@ struct mpic
+> 	/* vector numbers used for internal sources (ipi/timers) */
+> 	unsigned int		ipi_vecs[4];
+> 	unsigned int		timer_vecs[8];
+> +	/* vector numbers used for FSL MPIC error interrupts */
+> +	unsigned int		err_int_vecs[MPIC_MAX_ERR];
+>=20
+> 	/* Spurious vector to program into unused sources */
+> 	unsigned int		spurious_vec;
+> @@ -306,6 +312,11 @@ struct mpic
+> 	struct mpic_reg_bank	cpuregs[MPIC_MAX_CPUS];
+> 	struct mpic_reg_bank	isus[MPIC_MAX_ISU];
+>=20
+> +	/* ioremap'ed base for error interrupt registers */
+> +	u32 __iomem	*err_regs;
+> +	/* error interrupt config */
+> +	u32			err_int_config_done;
 
--Scott
+I thought we were going to remove this as it don't really provide any =
+value.
+
+> +
+> 	/* Protected sources */
+> 	unsigned long		*protected;
+>=20
+> @@ -370,6 +381,11 @@ struct mpic
+> #define MPIC_NO_RESET			0x00004000
+> /* Freescale MPIC (compatible includes "fsl,mpic") */
+> #define MPIC_FSL			0x00008000
+> +/* Freescale MPIC supports EIMR (error interrupt mask register).
+> + * This flag is set for MPIC version >=3D 4.1 (version determined
+> + * from the BRR1 register).
+> +*/
+> +#define MPIC_FSL_HAS_EIMR		0x00010000
+>=20
+> /* MPIC HW modification ID */
+> #define MPIC_REGSET_MASK		0xf0000000
+
+- k=
