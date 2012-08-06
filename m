@@ -1,33 +1,21 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp06.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EDEF92C0079
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2012 17:58:21 +1000 (EST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 6 Aug 2012 17:57:51 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q767vv2917825972
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2012 17:57:58 +1000
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q767vvon025806
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Aug 2012 17:57:57 +1000
-Message-ID: <501F7904.4050206@linux.vnet.ibm.com>
-Date: Mon, 06 Aug 2012 13:27:56 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1391A2C0098
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2012 19:39:36 +1000 (EST)
+In-Reply-To: <OF1A29C1FF.28BA9274-ONC1257A44.005B7A8B-C1257A44.005C12EB@transmode.se>
+References: <OFDEF2A72A.01F68496-ONC1257A41.0025B7CE-C1257A41.0028192F@transmode.se>
+ <EC6BFBB7-DF3B-402A-ACB6-51546C1B6CC9@kernel.crashing.org>
+ <OF85435159.0952793A-ONC1257A42.0058090C-C1257A42.0058F2A6@LocalDomain>
+ <OF1A29C1FF.28BA9274-ONC1257A44.005B7A8B-C1257A44.005C12EB@transmode.se>
+Subject: Re: mpc8xxx PCIe hotplug needs fixing, some clues ..
+Message-ID: <OFF5A3AF31.BAD2FD84-ONC1257A52.003410B3-C1257A52.00350E11@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Mon, 6 Aug 2012 11:39:30 +0200
 MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: how to implement platform specific per process parameter?
-References: <501F514C.2090909@ozlabs.ru>
-In-Reply-To: <501F514C.2090909@ozlabs.ru>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-type: text/plain; charset=US-ASCII
+Cc: scottwood@freescale.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,36 +25,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> There are 4 options:
+>
+> Joakim Tjernlund/Transmode wrote on 2012/07/21 18:11:32:
+> >
+> > Kumar Gala <galak@kernel.crashing.org> wrote on 2012/07/20 20:53:10:
+> > >
+> > >
+> > > On Jul 20, 2012, at 2:17 AM, Joakim Tjernlund wrote:
+> > >
+> > > >
+> > > > Hi Guys
+> > > >
+> > > > I see that you have been hacking Freescale PCI before so I send this to you(and the list)
+> > > >
+> > > > We are using PCIe(as RC) on P2010(basically a mpc85xx) and have PCI device that
+> > > > started from user space (needs advance clock conf) so when linux boots there is
+> > > > no device at all.
+> > > > Trying to "hotplug" the device after it is enabled fails, no amount of recan/remove using
+> > > > either fake or real hotplug makes a difference.
+> > > >
+> > > > I found the cause eventually but I can't fix it properly as I known almost nothing about PCI.
+> > > > Cause:
+> > > > indirect_pci.c:indirect_read_config() tests for if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK)
+> > > > and returns  PCIBIOS_DEVICE_NOT_FOUND
+> > > >
+> > > > PPC_INDIRECT_TYPE_NO_PCIE_LINK get set by fsl_pci.c (look for fsl_pcie_check_link) but is never cleared.
+> > > > Clearing it as appropriate makes a small difference. If you
+> > > > remove the RC and do a few of rescan's then the device appears.
+> > > >
+> > > > Hacking some more, like so:
+> > > >
+> > > > int fsl_pcie_check_link(struct pci_controller *hose)
+> > > > {
+> > > >    u32 val;
+> > > >
+> > > >    early_read_config_dword(hose, 0, 0, PCIE_LTSSM, &val);
+> > > >    hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
+> > > >    if (val < PCIE_LTSSM_L0)
+> > > >       return 1;
+> > > >    hose->indirect_type &= ~PPC_INDIRECT_TYPE_NO_PCIE_LINK;
+> > > >    return 0;
+> > > > }
+> > > > and then using it carefully(it is easy to make linux hang) in indirect_read_config():
+> > > > indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+> > > >            int len, u32 *val)
+> > > > {
+> > > >    struct pci_controller *hose = pci_bus_to_host(bus);
+> > > >    volatile void __iomem *cfg_data;
+> > > >    u8 cfg_type = 0;
+> > > >    u32 bus_no, reg;
+> > > >
+> > > >    if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
+> > > >       if (bus->number != hose->first_busno ||
+> > > >           devfn != 0) {
+> > > >          fsl_pcie_check_link(hose);
+> > > >          return PCIBIOS_DEVICE_NOT_FOUND;
+> > > >       }
+> > > >    }
+> > > >
+> > > > Now it works, just one rescan and the device appears!
+> > > > This is a hack, I don't known what other trouble it can cause, I hope you can
+> > > > sort this out.
+> > >
+> > > How are you forcing the re-scan?  We can see if we can add a re-check of the link state in that flow somewhere.
+> >
+> > echo 1 > /sys/bus/pci/rescan
+> >
+> > Why is that check important? Seems like some very ppc specific workaround for something.
+> >
+> > >
+> > > Can you do a dump_stack() or something to get a call chain?
+>
+> > here?
+> > indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+> >        int len, u32 *val)
+> > {
+> >  struct pci_controller *hose = pci_bus_to_host(bus);
+> >  volatile void __iomem *cfg_data;
+> >  u8 cfg_type = 0;
+> >  u32 bus_no, reg;
+> >  static int first_dump;
+> >
+> >  if (!first_dump) {
+> >   dump_stack();
+> >   first_dump = 1;
+> >  }
+> > ...
+> >
+> > I am not at work and and my board needs a reset button press to recover :(
+> > Furthermore, my vacation starts next week, not sure I can get it fixed soon enough
+>
+> So I managed to get someone to connect the BDI. Here is a dump according to the above:
+> Memory CAM mapping: 256/256 Mb, residual: 0Mb
+> Linux version 3.4.0+ (jocke@gentoo-jocke) (gcc version 4.5.3 (Gentoo 4.5.3-r2 p1.1, pie-0.4.7) ) #2088 PREEMPT Sat Jul 21 18:05:10 CEST 2012
+> bootconsole [udbg0] enabled
+> setup_arch: bootmem
+> p1010_rdb_setup_arch()
+> Call Trace:
+> [c0399e50] [c0006f28] show_stack+0x54/0x158 (unreliable)
+> [c0399e90] [c0019390] indirect_read_config+0x23c/0x250
+> [c0399ec0] [c017e630] pci_bus_read_config_byte+0x4c/0x94
+> [c0399ef0] [c000f4d4] early_read_config_byte+0x30/0x44
+> [c0399f10] [c0364524] fsl_add_bridge+0x118/0xa5c
+> [c0399f90] [c03655b4] p1010_rdb_setup_arch+0x8c/0xcc
+> [c0399fb0] [c0361850] setup_arch+0x1a8/0x1e8
+> [c0399fc0] [c035d558] start_kernel+0x80/0x2f0
+> [c0399ff0] [c00003ac] skpinv+0x298/0x2d4
+> Found FSL PCI host bridge at 0x00000000ff70a000. Firmware bus number: 0->1
+> PCI host bridge /pcie@ff70a000  ranges:
+>  MEM 0x0000000080000000..0x000000009fffffff -> 0x0000000080000000
+>   IO 0x00000000ffc00000..0x00000000ffc0ffff -> 0x0000000000000000
+> /pcie@ff70a000: PCICSRBAR @ 0xfff00000
+>
+> So early_read_config_byte uses indirect_read_config so obviously you cannot
+> use early_read_config_xxx from within indirect_read_config as this gets you
+> into a nice recursion loop :)
+>
+> Anyhow, I will be travelling for the better part of this week and will
+> have very limited Internet access.
 
-> 1. [not a kernel interface] use ptrace to execute the register changing
-> command inside the specified pid. The next context switch saves the new
-> value in the thread_struct. Dirty hack.
-> 
-> 2. Add a new syscall which would receive pid + register value and do the
-> job. A bit too much.
-> 
-> 3. Add some hook in /proc filesystem but so far there were no platform
-> specific bits, right?
-> 
-> 4. Implement a static node "/sys/devices/system/cpu/dscr_control".
-> write() would parse the input stream, call scanf("%d %x", &pid, &dscr)
-> and do the job.
-> 
+Any ideas on this?
 
+I think my hack will work in the general case too witch a small improvement:
+indirect_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
+            int len, u32 *val)
+ {
+    struct pci_controller *hose = pci_bus_to_host(bus);
+    volatile void __iomem *cfg_data;
+    u8 cfg_type = 0;
+    u32 bus_no, reg;
 
-/sys/ interface would be appropriate I believe. But in this way we can take a new
-(pid, dscr) and update thread_struct. But there should be a way to enlist all
-(pid, dscr) values which are explicitly set by the user and different than that
-of /sys/devices/system/cpu/dscr_default. So that we can know which process is holding
-to what value of DSCR at any point of time.
+    if (hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK) {
+       if (bus->number != hose->first_busno ||
+           devfn != 0) {
+          fsl_pcie_check_link(hose);
+	    if (!(hose->indirect_type & PPC_INDIRECT_TYPE_NO_PCIE_LINK))
+		goto link_ok;
+          return PCIBIOS_DEVICE_NOT_FOUND;
+       }
+    }
+link_ok:
 
- 
+or we could opencode fsl_pcie_check_link directly here to avoid exporting the function
 
-> What is the correct approach? Thanks.
-> 
-> 
-
-
-Regards
-Anshuman
+ Jocke
