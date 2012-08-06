@@ -1,34 +1,20 @@
-Return-Path: <B04825@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 621622C008D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 14:11:54 +1000 (EST)
-Received: from mail234-va3 (localhost [127.0.0.1])	by
- mail234-va3-R.bigfish.com (Postfix) with ESMTP id A2E83B0034D	for
- <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 04:11:49 +0000 (UTC)
-Received: from VA3EHSMHS027.bigfish.com (unknown [10.7.14.245])	by
- mail234-va3.bigfish.com (Postfix) with ESMTP id 14ED6280047	for
- <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Aug 2012 04:11:48 +0000 (UTC)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Mon, 6 Aug 2012 04:11:34 +0000
-Message-ID: <CAOZdJXWFPn2XqyTR4jUkUZ5NV-h7HRWcnm392qUYJ98tg8H7Ow@mail.gmail.com>
-References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
- <1343907741-20589-4-git-send-email-B38951@freescale.com>
- <501AE0A2.4010809@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A359AF@039-SN1MPN1-002.039d.mgd.msft.net>
- <501BF7BC.1030208@freescale.com>
-In-Reply-To: <501BF7BC.1030208@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
+ [209.85.160.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C04492C007E
+ for <linuxppc-dev@ozlabs.org>; Mon,  6 Aug 2012 15:08:34 +1000 (EST)
+Received: by pbbrp12 with SMTP id rp12so4261395pbb.15
+ for <linuxppc-dev@ozlabs.org>; Sun, 05 Aug 2012 22:08:33 -0700 (PDT)
+Message-ID: <501F514C.2090909@ozlabs.ru>
+Date: Mon, 06 Aug 2012 15:08:28 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- Jia Hongtao-B38951 <B38951@freescale.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ linuxppc-dev@ozlabs.org
+Subject: how to implement platform specific per process parameter?
+Content-Type: text/plain; charset=KOI8-R; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,16 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 3, 2012 at 11:09 AM, Scott Wood <scottwood@freescale.com> wrote=
-:
+Hi!
 
-> p1022ds OTOH is weird enough that it deserves its own board file.
+There is a per core register on modern POWER processors (POWER6+) called 
+"DSCR": The DSCR (aka Data Stream Control Register) is supported on some
+server PowerPC chips and allow some control over the prefetch of data
+streams.
 
-What's so weird about the P1022DS?
+Its "per process" support has been added by
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux.git;a=commitdiff;h=efcac6589a277c10060e4be44b9455cf43838dc1
+"powerpc: Per process DSCR + some fixes (try#4)"
 
-Also, why do we need a default PCI bus if one isn't specified in the
-device tree?
+The patch adds the DSCR value into "struct thread_struct" and 
+saves/restores it when the context is switched. Also, there is some policy 
+to initialize the register when a thread starts. So far so good.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+Here is the problem.
+
+Some customer(s) of this feature want an ability to change the DSCR value 
+of the already running process. I.e. we need some kernel interface which 
+would accept pid and the register value and change it.
+
+There are 4 options:
+1. [not a kernel interface] use ptrace to execute the register changing 
+command inside the specified pid. The next context switch saves the new 
+value in the thread_struct. Dirty hack.
+
+2. Add a new syscall which would receive pid + register value and do the 
+job. A bit too much.
+
+3. Add some hook in /proc filesystem but so far there were no platform 
+specific bits, right?
+
+4. Implement a static node "/sys/devices/system/cpu/dscr_control". write() 
+would parse the input stream, call scanf("%d %x", &pid, &dscr) and do the job.
+
+What is the correct approach? Thanks.
+
+
+-- 
+Alexey
