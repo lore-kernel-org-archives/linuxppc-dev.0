@@ -1,30 +1,23 @@
-Return-Path: <pku.leo@gmail.com>
-Received: from mail-yx0-f179.google.com (mail-yx0-f179.google.com
- [209.85.213.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 26EA72C0081
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 14:20:44 +1000 (EST)
-Received: by yenr13 with SMTP id r13so3049724yen.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Aug 2012 21:20:41 -0700 (PDT)
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id AA68C2C008B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 15:12:34 +1000 (EST)
+Message-ID: <5020A4EF.8010802@cn.fujitsu.com>
+Date: Tue, 07 Aug 2012 13:17:35 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Sender: pku.leo@gmail.com
-In-Reply-To: <501FDE40.1060906@freescale.com>
-References: <1343988851-884-1-git-send-email-B38951@freescale.com>
- <1343988851-884-4-git-send-email-B38951@freescale.com>
- <501BFC0E.6070708@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A36D0A@039-SN1MPN1-002.039d.mgd.msft.net>
- <501FDE40.1060906@freescale.com>
-Date: Tue, 7 Aug 2012 12:20:41 +0800
-Message-ID: <CADRPPNTqnEt3xE8Et1cbK=GwfemgA3-dF7aH2cTNppCddKJ6DA@mail.gmail.com>
-Subject: Re: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-From: Li Yang <leoli@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- Jia Hongtao-B38951 <B38951@freescale.com>
+To: wency@cn.fujitsu.com
+Subject: Re: [RFC PATCH V6 16/19] memory-hotplug: free memmap of sparse-vmemmap
+References: <1343980161-14254-1-git-send-email-wency@cn.fujitsu.com>
+ <1343980161-14254-17-git-send-email-wency@cn.fujitsu.com>
+In-Reply-To: <1343980161-14254-17-git-send-email-wency@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,116 +27,322 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 6, 2012 at 11:09 PM, Scott Wood <scottwood@freescale.com> wrote:
-> On 08/05/2012 10:07 PM, Jia Hongtao-B38951 wrote:
->>
->>
->>> -----Original Message-----
->>> From: Wood Scott-B07421
->>> Sent: Saturday, August 04, 2012 12:28 AM
->>> To: Jia Hongtao-B38951
->>> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Li Yang-
->>> R58472; Wood Scott-B07421
->>> Subject: Re: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie
->>> initialization code
->>>
->>> On 08/03/2012 05:14 AM, Jia Hongtao wrote:
->>>> -void __devinit fsl_pci_init(void)
->>>> +/* Checkout if PCI contains ISA node */
->>>> +static int of_pci_has_isa(struct device_node *pci_node)
->>>> +{
->>>> +   struct device_node *np;
->>>> +   int ret = 0;
->>>> +
->>>> +   if (!pci_node)
->>>> +           return 0;
->>>> +
->>>> +   read_lock(&devtree_lock);
->>>> +   np = pci_node->allnext;
->>>> +
->>>> +   /* Only scan the children of PCI node */
->>>> +   for (; np != pci_node->sibling; np = np->allnext) {
->>>> +           if (np->type && (of_node_cmp(np->type, "isa") == 0)
->>>> +               && of_node_get(np)) {
->>>> +                   ret = 1;
->>>> +                   break;
->>>> +           }
->>>> +   }
->>>> +
->>>> +   of_node_put(pci_node);
->>>> +   read_unlock(&devtree_lock);
->>>> +
->>>> +   return ret;
->>>> +}
->>>
->>> Why do you keep insisting on substituting your ISA search code here?
->>> What advantages does it have over the code that is already there?  It
->>> unnecessarily digs into the internals of the tree representation.
->>>
->>
->> I want ISA search is done from probe.
->
-> Too bad.  You're breaking the case where there's no ISA node.
->
+At 08/03/2012 03:49 PM, wency@cn.fujitsu.com Wrote:
+> From: Wen Congyang <wency@cn.fujitsu.com>
 
-We can also take care of special cases with our approach if needed.
-But it's not correct to assume the first PCI controller is the primary
-one if there is no ISA node.  Your approach is still a band-aid to me.
- We can come back to this issue when we do find a proper solution.
+This line is wrong. This patch is from Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
->> Also this way is more efficient due
->> to we just search the children of PCI.
->
-> It is not more efficient, because you're doing the search for every PCIe
-> bus rather than once.  Not that it matters in this context.
-
-We end up scanning at most a few PCI nodes instead of the whole device
-tree for the primary.
-
->
->>>> +
->>>> +static int __devinit fsl_pci_probe(struct platform_device *pdev)
->>>>  {
->>>>     int ret;
->>>> -   struct device_node *node;
->>>>     struct pci_controller *hose;
->>>> -   dma_addr_t max = 0xffffffff;
->>>> +   int is_primary = 0;
->>>>
->>>> -   /* Callers can specify the primary bus using other means. */
->>>>     if (!fsl_pci_primary) {
->>>> -           /* If a PCI host bridge contains an ISA node, it's primary.
->>> */
->>>> -           node = of_find_node_by_type(NULL, "isa");
->>>> -           while ((fsl_pci_primary = of_get_parent(node))) {
->>>> -                   of_node_put(node);
->>>> -                   node = fsl_pci_primary;
->>>> -
->>>> -                   if (of_match_node(pci_ids, node))
->>>> -                           break;
->>>> -           }
->>>> +           is_primary = of_pci_has_isa(pdev->dev.of_node);
->>>> +           if (is_primary)
->>>> +                   fsl_pci_primary = pdev->dev.of_node;
->>>>     }
->>>
->>> As I explained before, this has to be done globally, not from the probe
->>> function, so we can assign a default primary bus if there isn't any ISA.
->>>  There are bugs in the Linux PPC PCI code relating to not having any
->>> primary bus.
->>>
->>> -Scott
->>
->> In my way of searching ISA you can also assign a default primary bus in board
->> specific files.
->
-> That was meant for when the board file had an alternate way of searching
-> for the primary bus (e.g. look for i8259), not as a replacement for the
-> mechanism that guarantees there's a primary bus.
->
-> You are causing a regression in the qemu_e500.c platform.
-
-Can we fix the qemu device tree to address the problem if we do make
-it a rule to use the ISA node to indicate the primary bus?
-
-- Leo
+> 
+> All pages of virtual mapping in removed memory cannot be freed, since some pages
+> used as PGD/PUD includes not only removed memory but also other memory. So the
+> patch checks whether page can be freed or not.
+> 
+> How to check whether page can be freed or not?
+>  1. When removing memory, the page structs of the revmoved memory are filled
+>     with 0FD.
+>  2. All page structs are filled with 0xFD on PT/PMD, PT/PMD can be cleared.
+>     In this case, the page used as PT/PMD can be freed.
+> 
+> Applying patch, __remove_section() of CONFIG_SPARSEMEM_VMEMMAP is integrated
+> into one. So __remove_section() of CONFIG_SPARSEMEM_VMEMMAP is deleted.
+> 
+> Note:  vmemmap_kfree() and vmemmap_free_bootmem() are not implemented for ia64,
+> ppc, s390, and sparc.
+> 
+> CC: David Rientjes <rientjes@google.com>
+> CC: Jiang Liu <liuj97@gmail.com>
+> CC: Len Brown <len.brown@intel.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Wen Congyang <wency@cn.fujitsu.com>
+> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> ---
+>  arch/ia64/mm/discontig.c  |    8 +++
+>  arch/powerpc/mm/init_64.c |    8 +++
+>  arch/s390/mm/vmem.c       |    8 +++
+>  arch/sparc/mm/init_64.c   |    8 +++
+>  arch/x86/mm/init_64.c     |  119 +++++++++++++++++++++++++++++++++++++++++++++
+>  include/linux/mm.h        |    2 +
+>  mm/memory_hotplug.c       |   17 +------
+>  mm/sparse.c               |    5 +-
+>  8 files changed, 158 insertions(+), 17 deletions(-)
+> 
+> diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
+> index 33943db..0d23b69 100644
+> --- a/arch/ia64/mm/discontig.c
+> +++ b/arch/ia64/mm/discontig.c
+> @@ -823,6 +823,14 @@ int __meminit vmemmap_populate(struct page *start_page,
+>  	return vmemmap_populate_basepages(start_page, size, node);
+>  }
+>  
+> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
+> +{
+> +}
+> +
+> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
+> +{
+> +}
+> +
+>  void register_page_bootmem_memmap(unsigned long section_nr,
+>  				  struct page *start_page, unsigned long size)
+>  {
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index 3690c44..835a2b3 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -299,6 +299,14 @@ int __meminit vmemmap_populate(struct page *start_page,
+>  	return 0;
+>  }
+>  
+> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
+> +{
+> +}
+> +
+> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
+> +{
+> +}
+> +
+>  void register_page_bootmem_memmap(unsigned long section_nr,
+>  				  struct page *start_page, unsigned long size)
+>  {
+> diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
+> index eda55cd..4b42b0b 100644
+> --- a/arch/s390/mm/vmem.c
+> +++ b/arch/s390/mm/vmem.c
+> @@ -227,6 +227,14 @@ out:
+>  	return ret;
+>  }
+>  
+> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
+> +{
+> +}
+> +
+> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
+> +{
+> +}
+> +
+>  void register_page_bootmem_memmap(unsigned long section_nr,
+>  				  struct page *start_page, unsigned long size)
+>  {
+> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+> index 53f7604..d444f25 100644
+> --- a/arch/sparc/mm/init_64.c
+> +++ b/arch/sparc/mm/init_64.c
+> @@ -2060,6 +2060,14 @@ int __meminit vmemmap_populate(struct page *start, unsigned long nr, int node)
+>  	return 0;
+>  }
+>  
+> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
+> +{
+> +}
+> +
+> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
+> +{
+> +}
+> +
+>  void register_page_bootmem_memmap(unsigned long section_nr,
+>  				  struct page *start_page, unsigned long size)
+>  {
+> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+> index 0075592..4e8f8a4 100644
+> --- a/arch/x86/mm/init_64.c
+> +++ b/arch/x86/mm/init_64.c
+> @@ -1138,6 +1138,125 @@ vmemmap_populate(struct page *start_page, unsigned long size, int node)
+>  	return 0;
+>  }
+>  
+> +#define PAGE_INUSE 0xFD
+> +
+> +unsigned long find_and_clear_pte_page(unsigned long addr, unsigned long end,
+> +			    struct page **pp, int *page_size)
+> +{
+> +	pgd_t *pgd;
+> +	pud_t *pud;
+> +	pmd_t *pmd;
+> +	pte_t *pte;
+> +	void *page_addr;
+> +	unsigned long next;
+> +
+> +	*pp = NULL;
+> +
+> +	pgd = pgd_offset_k(addr);
+> +	if (pgd_none(*pgd))
+> +		return pgd_addr_end(addr, end);
+> +
+> +	pud = pud_offset(pgd, addr);
+> +	if (pud_none(*pud))
+> +		return pud_addr_end(addr, end);
+> +
+> +	if (!cpu_has_pse) {
+> +		next = (addr + PAGE_SIZE) & PAGE_MASK;
+> +		pmd = pmd_offset(pud, addr);
+> +		if (pmd_none(*pmd))
+> +			return next;
+> +
+> +		pte = pte_offset_kernel(pmd, addr);
+> +		if (pte_none(*pte))
+> +			return next;
+> +
+> +		*page_size = PAGE_SIZE;
+> +		*pp = pte_page(*pte);
+> +	} else {
+> +		next = pmd_addr_end(addr, end);
+> +
+> +		pmd = pmd_offset(pud, addr);
+> +		if (pmd_none(*pmd))
+> +			return next;
+> +
+> +		*page_size = PMD_SIZE;
+> +		*pp = pmd_page(*pmd);
+> +	}
+> +
+> +	/*
+> +	 * Removed page structs are filled with 0xFD.
+> +	 */
+> +	memset((void *)addr, PAGE_INUSE, next - addr);
+> +
+> +	page_addr = page_address(*pp);
+> +
+> +	/*
+> +	 * Check the page is filled with 0xFD or not.
+> +	 * memchr_inv() returns the address. In this case, we cannot
+> +	 * clear PTE/PUD entry, since the page is used by other.
+> +	 * So we cannot also free the page.
+> +	 *
+> +	 * memchr_inv() returns NULL. In this case, we can clear
+> +	 * PTE/PUD entry, since the page is not used by other.
+> +	 * So we can also free the page.
+> +	 */
+> +	if (memchr_inv(page_addr, PAGE_INUSE, *page_size)) {
+> +		*pp = NULL;
+> +		return next;
+> +	}
+> +
+> +	if (!cpu_has_pse)
+> +		pte_clear(&init_mm, addr, pte);
+> +	else
+> +		pmd_clear(pmd);
+> +
+> +	return next;
+> +}
+> +
+> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
+> +{
+> +	unsigned long addr = (unsigned long)memmap;
+> +	unsigned long end = (unsigned long)(memmap + nr_pages);
+> +	unsigned long next;
+> +	struct page *page;
+> +	int page_size;
+> +
+> +	for (; addr < end; addr = next) {
+> +		page = NULL;
+> +		page_size = 0;
+> +		next = find_and_clear_pte_page(addr, end, &page, &page_size);
+> +		if (!page)
+> +			continue;
+> +
+> +		free_pages((unsigned long)page_address(page),
+> +			    get_order(page_size));
+> +		__flush_tlb_one(addr);
+> +	}
+> +}
+> +
+> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
+> +{
+> +	unsigned long addr = (unsigned long)memmap;
+> +	unsigned long end = (unsigned long)(memmap + nr_pages);
+> +	unsigned long next;
+> +	struct page *page;
+> +	int page_size;
+> +	unsigned long magic;
+> +
+> +	for (; addr < end; addr = next) {
+> +		page = NULL;
+> +		page_size = 0;
+> +		next = find_and_clear_pte_page(addr, end, &page, &page_size);
+> +		if (!page)
+> +			continue;
+> +
+> +		magic = (unsigned long) page->lru.next;
+> +		if (magic == SECTION_INFO)
+> +			put_page_bootmem(page);
+> +		flush_tlb_kernel_range(addr, end);
+> +	}
+> +}
+> +
+>  void register_page_bootmem_memmap(unsigned long section_nr,
+>  				  struct page *start_page, unsigned long size)
+>  {
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index c607913..fb0d1fc 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1620,6 +1620,8 @@ int vmemmap_populate(struct page *start_page, unsigned long pages, int node);
+>  void vmemmap_populate_print_last(void);
+>  void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
+>  				  unsigned long size);
+> +void vmemmap_kfree(struct page *memmpa, unsigned long nr_pages);
+> +void vmemmap_free_bootmem(struct page *memmpa, unsigned long nr_pages);
+>  
+>  enum mf_flags {
+>  	MF_COUNT_INCREASED = 1 << 0,
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 4589f5b..a1f3490 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -300,19 +300,6 @@ static int __meminit __add_section(int nid, struct zone *zone,
+>  	return register_new_memory(nid, __pfn_to_section(phys_start_pfn));
+>  }
+>  
+> -#ifdef CONFIG_SPARSEMEM_VMEMMAP
+> -static int __remove_section(struct zone *zone, struct mem_section *ms)
+> -{
+> -	int ret = -EINVAL;
+> -
+> -	if (!valid_section(ms))
+> -		return ret;
+> -
+> -	ret = unregister_memory_section(ms);
+> -
+> -	return ret;
+> -}
+> -#else
+>  static int __remove_section(struct zone *zone, struct mem_section *ms)
+>  {
+>  	unsigned long flags;
+> @@ -329,9 +316,9 @@ static int __remove_section(struct zone *zone, struct mem_section *ms)
+>  	pgdat_resize_lock(pgdat, &flags);
+>  	sparse_remove_one_section(zone, ms);
+>  	pgdat_resize_unlock(pgdat, &flags);
+> -	return 0;
+> +
+> +	return ret;
+>  }
+> -#endif
+>  
+>  /*
+>   * Reasonably generic function for adding memory.  It is
+> diff --git a/mm/sparse.c b/mm/sparse.c
+> index fac95f2..ab9d755 100644
+> --- a/mm/sparse.c
+> +++ b/mm/sparse.c
+> @@ -613,12 +613,13 @@ static inline struct page *kmalloc_section_memmap(unsigned long pnum, int nid,
+>  	/* This will make the necessary allocations eventually. */
+>  	return sparse_mem_map_populate(pnum, nid);
+>  }
+> -static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
+> +static void __kfree_section_memmap(struct page *page, unsigned long nr_pages)
+>  {
+> -	return; /* XXX: Not implemented yet */
+> +	vmemmap_kfree(page, nr_pages);
+>  }
+>  static void free_map_bootmem(struct page *page, unsigned long nr_pages)
+>  {
+> +	vmemmap_free_bootmem(page, nr_pages);
+>  }
+>  #else
+>  static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
