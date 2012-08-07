@@ -1,28 +1,24 @@
-Return-Path: <r61911@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 887852C009B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 13:45:52 +1000 (EST)
-From: Zang Roy-R61911 <r61911@freescale.com>
-To: Liu Shengzhou-B36685 <B36685@freescale.com>, "bhelgaas@google.com"
- <bhelgaas@google.com>, "linux-pci@vger.kernel.org"
- <linux-pci@vger.kernel.org>, "akpm@linux-foundation.org"
- <akpm@linux-foundation.org>, Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH v2] PCI: use dev->irq instead of dev->pin to enable non
- MSI/INTx interrupt
-Date: Tue, 7 Aug 2012 03:45:30 +0000
-Message-ID: <3E027F8168735B46AC006B1D0C7BB002079D6153@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1342591614-1840-1-git-send-email-Shengzhou.Liu@freescale.com>
- <3F453DDFF675A64A89321A1F35281021771A8B@039-SN1MPN1-003.039d.mgd.msft.net>
-In-Reply-To: <3F453DDFF675A64A89321A1F35281021771A8B@039-SN1MPN1-003.039d.mgd.msft.net>
-Content-Type: text/plain; charset="Windows-1252"
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 09DBB2C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 13:57:56 +1000 (EST)
+Message-ID: <50209003.2090809@cn.fujitsu.com>
+Date: Tue, 07 Aug 2012 11:48:19 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Liu Shengzhou-B36685 <B36685@freescale.com>
+To: isimatu.yasuaki@jp.fujitsu.com
+Subject: Re: [RFC PATCH V6 15/19] memory-hotplug: implement
+ register_page_bootmem_info_section of sparse-vmemmap
+References: <1343980161-14254-1-git-send-email-wency@cn.fujitsu.com>
+ <1343980161-14254-16-git-send-email-wency@cn.fujitsu.com>
+In-Reply-To: <1343980161-14254-16-git-send-email-wency@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
+ rientjes@google.com, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +28,239 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+At 08/03/2012 03:49 PM, wency@cn.fujitsu.com Wrote:
+> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> 
+> For removing memmap region of sparse-vmemmap which is allocated bootmem,
+> memmap region of sparse-vmemmap needs to be registered by get_page_bootmem().
+> So the patch searches pages of virtual mapping and registers the pages by
+> get_page_bootmem().
+> 
+> Note: register_page_bootmem_memmap() is not implemented for ia64, ppc, s390,
+> and sparc.
+> 
+> CC: David Rientjes <rientjes@google.com>
+> CC: Jiang Liu <liuj97@gmail.com>
+> CC: Len Brown <len.brown@intel.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Wen Congyang <wency@cn.fujitsu.com>
+> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> ---
+>  arch/ia64/mm/discontig.c       |    6 ++++
+>  arch/powerpc/mm/init_64.c      |    6 ++++
+>  arch/s390/mm/vmem.c            |    6 ++++
+>  arch/sparc/mm/init_64.c        |    6 ++++
+>  arch/x86/mm/init_64.c          |   52 ++++++++++++++++++++++++++++++++++++++++
+>  include/linux/memory_hotplug.h |    2 +
+>  include/linux/mm.h             |    3 +-
+>  mm/memory_hotplug.c            |   23 +++++++++++++++--
+>  8 files changed, 100 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
+> index c641333..33943db 100644
+> --- a/arch/ia64/mm/discontig.c
+> +++ b/arch/ia64/mm/discontig.c
+> @@ -822,4 +822,10 @@ int __meminit vmemmap_populate(struct page *start_page,
+>  {
+>  	return vmemmap_populate_basepages(start_page, size, node);
+>  }
+> +
+> +void register_page_bootmem_memmap(unsigned long section_nr,
+> +				  struct page *start_page, unsigned long size)
+> +{
+> +	/* TODO */
+> +}
+>  #endif
+> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+> index 620b7ac..3690c44 100644
+> --- a/arch/powerpc/mm/init_64.c
+> +++ b/arch/powerpc/mm/init_64.c
+> @@ -298,5 +298,11 @@ int __meminit vmemmap_populate(struct page *start_page,
+>  
+>  	return 0;
+>  }
+> +
+> +void register_page_bootmem_memmap(unsigned long section_nr,
+> +				  struct page *start_page, unsigned long size)
+> +{
+> +	/* TODO */
+> +}
+>  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+>  
+> diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
+> index 6f896e7..eda55cd 100644
+> --- a/arch/s390/mm/vmem.c
+> +++ b/arch/s390/mm/vmem.c
+> @@ -227,6 +227,12 @@ out:
+>  	return ret;
+>  }
+>  
+> +void register_page_bootmem_memmap(unsigned long section_nr,
+> +				  struct page *start_page, unsigned long size)
+> +{
+> +	/* TODO */
+> +}
+> +
+>  /*
+>   * Add memory segment to the segment list if it doesn't overlap with
+>   * an already present segment.
+> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
+> index 6026fdd..53f7604 100644
+> --- a/arch/sparc/mm/init_64.c
+> +++ b/arch/sparc/mm/init_64.c
+> @@ -2059,6 +2059,12 @@ int __meminit vmemmap_populate(struct page *start, unsigned long nr, int node)
+>  	}
+>  	return 0;
+>  }
+> +
+> +void register_page_bootmem_memmap(unsigned long section_nr,
+> +				  struct page *start_page, unsigned long size)
+> +{
+> +	/* TODO */
+> +}
+>  #endif /* CONFIG_SPARSEMEM_VMEMMAP */
+>  
+>  static void prot_init_common(unsigned long page_none,
+> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+> index e0d88ba..0075592 100644
+> --- a/arch/x86/mm/init_64.c
+> +++ b/arch/x86/mm/init_64.c
+> @@ -1138,6 +1138,58 @@ vmemmap_populate(struct page *start_page, unsigned long size, int node)
+>  	return 0;
+>  }
+>  
+> +void register_page_bootmem_memmap(unsigned long section_nr,
+> +				  struct page *start_page, unsigned long size)
+> +{
+> +	unsigned long addr = (unsigned long)start_page;
+> +	unsigned long end = (unsigned long)(start_page + size);
+> +	unsigned long next;
+> +	pgd_t *pgd;
+> +	pud_t *pud;
+> +	pmd_t *pmd;
+> +
+> +	for (; addr < end; addr = next) {
+> +		pte_t *pte = NULL;
+> +
+> +		pgd = pgd_offset_k(addr);
+> +		if (pgd_none(*pgd)) {
+> +			next = (addr + PAGE_SIZE) & PAGE_MASK;
+> +			continue;
+> +		}
+> +		get_page_bootmem(section_nr, pgd_page(*pgd), MIX_SECTION_INFO);
+> +
+> +		pud = pud_offset(pgd, addr);
+> +		if (pud_none(*pud)) {
+> +			next = (addr + PAGE_SIZE) & PAGE_MASK;
+> +			continue;
+> +		}
+> +		get_page_bootmem(section_nr, pud_page(*pud), MIX_SECTION_INFO);
+> +
+> +		if (!cpu_has_pse) {
+> +			next = (addr + PAGE_SIZE) & PAGE_MASK;
+> +			pmd = pmd_offset(pud, addr);
+> +			if (pmd_none(*pmd))
+> +				continue;
+> +			get_page_bootmem(section_nr, pmd_page(*pmd),
+> +					 MIX_SECTION_INFO);
+> +
+> +			pte = pte_offset_kernel(pmd, addr);
+> +			if (pte_none(*pte))
+> +				continue;
+> +			get_page_bootmem(section_nr, pte_page(*pte),
+> +					 SECTION_INFO);
+> +		} else {
+> +			next = pmd_addr_end(addr, end);
+> +
+> +			pmd = pmd_offset(pud, addr);
+> +			if (pmd_none(*pmd))
+> +				continue;
+> +			get_page_bootmem(section_nr, pmd_page(*pmd),
+> +					 SECTION_INFO);
+> +		}
+> +	}
+> +}
+> +
+>  void __meminit vmemmap_populate_print_last(void)
+>  {
+>  	if (p_start) {
+> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+> index 1133e63..2d18235 100644
+> --- a/include/linux/memory_hotplug.h
+> +++ b/include/linux/memory_hotplug.h
+> @@ -164,6 +164,8 @@ static inline void arch_refresh_nodedata(int nid, pg_data_t *pgdat)
+>  
+>  extern void register_page_bootmem_info_node(struct pglist_data *pgdat);
+>  extern void put_page_bootmem(struct page *page);
+> +extern void get_page_bootmem(unsigned long ingo, struct page *page,
+> +			     unsigned long type);
+>  
+>  /*
+>   * Lock for memory hotplug guarantees 1) all callbacks for memory hotplug
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index 311be90..c607913 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -1618,7 +1618,8 @@ int vmemmap_populate_basepages(struct page *start_page,
+>  						unsigned long pages, int node);
+>  int vmemmap_populate(struct page *start_page, unsigned long pages, int node);
+>  void vmemmap_populate_print_last(void);
+> -
+> +void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
+> +				  unsigned long size);
+>  
+>  enum mf_flags {
+>  	MF_COUNT_INCREASED = 1 << 0,
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 3a264a5..4589f5b 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -91,8 +91,8 @@ static void release_memory_resource(struct resource *res)
+>  }
+>  
+>  #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+> -static void get_page_bootmem(unsigned long info,  struct page *page,
+> -			     unsigned long type)
+> +void get_page_bootmem(unsigned long info,  struct page *page,
+> +		      unsigned long type)
+>  {
+>  	unsigned long page_type;
+>  
+> @@ -164,8 +164,25 @@ static void register_page_bootmem_info_section(unsigned long start_pfn)
+>  
+>  }
+>  #else
+> -static inline void register_page_bootmem_info_section(unsigned long start_pfn)
+> +static void register_page_bootmem_info_section(unsigned long start_pfn)
+>  {
+> +	unsigned long mapsize, section_nr;
+> +	struct mem_section *ms;
+> +	struct page *page, *memmap;
+> +
+> +	if (!pfn_valid(start_pfn))
+> +		return;
+> +
+> +	section_nr = pfn_to_section_nr(start_pfn);
+> +	ms = __nr_to_section(section_nr);
+> +
+> +	memmap = sparse_decode_mem_map(ms->section_mem_map, section_nr);
+> +
+> +	page = virt_to_page(memmap);
+> +	mapsize = sizeof(struct page) * PAGES_PER_SECTION;
+> +	mapsize = PAGE_ALIGN(mapsize) >> PAGE_SHIFT;
+> +
+> +	register_page_bootmem_memmap(section_nr, memmap, PAGES_PER_SECTION);
 
+You only handle memmap here. I think usemap should be also handled here.
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-bounces+tie-
-> fei.zang=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Liu Shengzhou-B36=
-685
-> Sent: Thursday, July 26, 2012 11:45 AM
-> To: bhelgaas@google.com; linux-pci@vger.kernel.org; akpm@linux-
-> foundation.org
-> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Liu Shengzhou-B3668=
-5
-> Subject: RE: [PATCH v2] PCI: use dev->irq instead of dev->pin to enable n=
-on
-> MSI/INTx interrupt
->=20
-> Hello,
->=20
-> A gentle reminder!
-> Any comments are appreciated.
+Thanks
+Wen Congyang
 
-Who can help to review and pick up this patch?
-Thanks.
-Roy
+>  }
+>  #endif
+>  
