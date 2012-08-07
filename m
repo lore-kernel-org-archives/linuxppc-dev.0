@@ -1,24 +1,24 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E175F2C009E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 01:29:03 +1000 (EST)
-Message-ID: <50213439.9070806@freescale.com>
-Date: Tue, 7 Aug 2012 10:28:57 -0500
+ by ozlabs.org (Postfix) with ESMTPS id BCD1B2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 01:34:52 +1000 (EST)
+Message-ID: <50213597.5080600@freescale.com>
+Date: Tue, 7 Aug 2012 10:34:47 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Jia Hongtao-B38951 <B38951@freescale.com>
-Subject: Re: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-References: <1343988851-884-1-git-send-email-B38951@freescale.com>
- <1343988851-884-4-git-send-email-B38951@freescale.com>
- <501BFC0E.6070708@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A36D0A@039-SN1MPN1-002.039d.mgd.msft.net>
- <501FDE40.1060906@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A45931@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A45931@039-SN1MPN1-002.039d.mgd.msft.net>
+Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <1343125210-16720-5-git-send-email-B38951@freescale.com>
+ <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
+ <BAB2AC7D-90D8-473A-83A0-59BD6F730E62@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A48CF7@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A48CF7@039-SN1MPN1-002.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
@@ -32,10 +32,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/07/2012 03:09 AM, Jia Hongtao-B38951 wrote:
-> I am really not sure that all boards need primary bus. Could you give me
-> the link of discussion about primary that you mentioned?
+On 08/07/2012 05:11 AM, Jia Hongtao-B38951 wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Tuesday, July 31, 2012 9:37 PM
+>> To: Jia Hongtao-B38951
+>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+>> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM
+>> support
+>>
+>>
+>> On Jul 30, 2012, at 1:09 AM, Jia Hongtao-B38951 wrote:
+>>
+>>>> -----Original Message-----
+>>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>>>> Sent: Friday, July 27, 2012 9:24 PM
+>>>> To: Jia Hongtao-B38951
+>>>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+>>>> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM
+>>>> support
+>>>>
+>>>>
+>>>> On Jul 24, 2012, at 5:20 AM, Jia Hongtao wrote:
+>>>>
+>>>>> Power supply for PCI inbound/outbound window registers is off when
+>>>> system
+>>>>> go to deep-sleep state. We save the values of registers before
+>>>>> suspend and restore to registers after resume.
+>>>>>
+>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
+>>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>>>> ---
+>>>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
+>>>>> arch/powerpc/sysdev/fsl_pci.c         |  121
+>>>> +++++++++++++++++++++++++++++++++
+>>>>> 2 files changed, 122 insertions(+), 1 deletions(-)
+>>>>
+>>>> Remind me why we need to save/restore PCI ATMUs, why not just
+>>>> re-parse the device tree to restore?
+>>>>
+>>>> - k
+>>>
+>>> Save/restore is the more efficient way. Latency of sleep/wakeup is one
+>>> of most important features in power management.
+>>>
+>>> -Hongtao.
+>>
+>> I don't think the time it takes to run through setup_pci_atmu() is that
+>> long compared to fsl_pci_resume().
+>>
+>> Also, don't you need to setup PCICCSRBAR and do setup_pci_cmd() on resume?
+>>
+>> - k
+> 
+> Hi Kumar,
+> I did some tests on P1022DS and found out that PCI_CMD and PCICSRBAR is not
+> lost when system in deep sleep. We don't need to save it.
 
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-June/098586.html
+How does the PCI code know you're entering deep sleep and not hibernation?
 
 -Scott
