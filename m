@@ -1,26 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D38A2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 04:57:15 +1000 (EST)
-Message-ID: <50216504.9000703@freescale.com>
-Date: Tue, 7 Aug 2012 13:57:08 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Subject: Re: [PATCH 3/3 v3] powerpc/mpic: FSL MPIC error interrupt support.
-References: <1343745764-3788-1-git-send-email-Varun.Sethi@freescale.com>
- <609EA81E-EC64-4539-B36B-E57525CE2492@kernel.crashing.org>
- <C5ECD7A89D1DC44195F34B25E172658D15AAB5@039-SN2MPN1-013.039d.mgd.msft.net>
- <6291E6E2-0AED-4C8E-AD2F-23802204E575@kernel.crashing.org>
- <C5ECD7A89D1DC44195F34B25E172658D15AB15@039-SN2MPN1-013.039d.mgd.msft.net>
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D15AB15@039-SN2MPN1-013.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Hamciuc Bogdan-BHAMCIU1 <bhamciu1@freescale.com>
+Return-Path: <jirislaby@gmail.com>
+Received: from smtp.pripojeni.net (mail.pripojeni.net [178.22.112.14])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AA84F2C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 06:02:13 +1000 (EST)
+From: Jiri Slaby <jslaby@suse.cz>
+To: gregkh@linuxfoundation.org
+Subject: [PATCH 39/41] TTY: hvc_console, add tty install
+Date: Tue,  7 Aug 2012 21:48:04 +0200
+Message-Id: <1344368886-24033-40-git-send-email-jslaby@suse.cz>
+In-Reply-To: <1344368886-24033-1-git-send-email-jslaby@suse.cz>
+References: <1344368886-24033-1-git-send-email-jslaby@suse.cz>
+Cc: jirislaby@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, alan@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,73 +22,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/03/2012 02:32 PM, Sethi Varun-B16395 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Saturday, August 04, 2012 12:55 AM
->> To: Sethi Varun-B16395
->> Cc: linuxppc-dev@lists.ozlabs.org; Hamciuc Bogdan-BHAMCIU1
->> Subject: Re: [PATCH 3/3 v3] powerpc/mpic: FSL MPIC error interrupt
->> support.
->>
->>
->> On Aug 3, 2012, at 1:52 PM, Sethi Varun-B16395 wrote:
->>
->>>
->>>
->>>> -----Original Message-----
->>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->>>> Sent: Friday, August 03, 2012 6:49 PM
->>>> To: Sethi Varun-B16395
->>>> Cc: linuxppc-dev@lists.ozlabs.org; Hamciuc Bogdan-BHAMCIU1
->>>> Subject: Re: [PATCH 3/3 v3] powerpc/mpic: FSL MPIC error interrupt
->>>> support.
->>>>> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
->>>>> index 7e32db7..2a0b632 100644
->>>>> --- a/arch/powerpc/sysdev/mpic.c
->>>>> +++ b/arch/powerpc/sysdev/mpic.c
->>>>> @@ -1026,6 +1026,9 @@ static int mpic_host_map(struct irq_domain *h,
->>>> unsigned int virq,
->>>>> 		return 0;
->>>>> 	}
->>>>>
->>>>> +	if (mpic_map_error_int(mpic, virq, hw))
->>>>> +		return 0;
->>>>> +
->>>>> 	if (hw >= mpic->num_sources)
->>>>> 		return -EINVAL;
->>>>>
->>>>> @@ -1085,7 +1088,16 @@ static int mpic_host_xlate(struct irq_domain
->>>>> *h,
->>>> struct device_node *ct,
->>>>> 		 */
->>>>> 		switch (intspec[2]) {
->>>>> 		case 0:
->>>>> -		case 1: /* no EISR/EIMR support for now, treat as shared IRQ
->>>> */
->>>>> +			break;
->>>>> +		case 1:
->>>>> +			if (!mpic->err_int_config_done)
->>>>> +				break;
->>>>> +
->>>>
->>>> Under what case would we call mpic_host_xlate and have not called
->>>> mpic_init?
->>>>
->>> [Sethi Varun-B16395] Never, but we shouldn't translate the error
->>> interrupt specifier If mpic_err_int_init failed.
->>
->> Isnt that true of a 1000 other things.  If init failed we shouldn't even
->> call map for other reasons.  I don't think we need a special check here.
-> [Sethi Varun-B16395] There is no specific check to see if mpic_init failed.
-> In this particular case if we fail to register the error interrupt handler
-> we cannot use the error sub interrupts.
+This has two outcomes:
+* we give the TTY layer a tty_port
+* we do not find the info structure every time open is called on that
+  tty
 
-As Kumar says, you could say the same thing about all the ioremaps it
-does, or any other bit of init.  If mpic_init() fails, we're broken.
-There's no point trying to hobble along by testing whether this bit or
-that bit actually succeeded.
+Since we take a reference to a port in ->install, we need also
+->cleanup to drop that reference.
 
--Scott
+Signed-off-by: Jiri Slaby <jslaby@suse.cz>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ drivers/tty/hvc/hvc_console.c |   31 +++++++++++++++++++++++++------
+ 1 file changed, 25 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+index 2d691eb..7f80f15 100644
+--- a/drivers/tty/hvc/hvc_console.c
++++ b/drivers/tty/hvc/hvc_console.c
+@@ -299,20 +299,33 @@ static void hvc_unthrottle(struct tty_struct *tty)
+ 	hvc_kick();
+ }
+ 
++static int hvc_install(struct tty_driver *driver, struct tty_struct *tty)
++{
++	struct hvc_struct *hp;
++	int rc;
++
++	/* Auto increments kref reference if found. */
++	if (!(hp = hvc_get_by_index(tty->index)))
++		return -ENODEV;
++
++	tty->driver_data = hp;
++
++	rc = tty_port_install(&hp->port, driver, tty);
++	if (rc)
++		tty_port_put(&hp->port);
++	return rc;
++}
++
+ /*
+  * The TTY interface won't be used until after the vio layer has exposed the vty
+  * adapter to the kernel.
+  */
+ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ {
+-	struct hvc_struct *hp;
++	struct hvc_struct *hp = tty->driver_data;
+ 	unsigned long flags;
+ 	int rc = 0;
+ 
+-	/* Auto increments kref reference if found. */
+-	if (!(hp = hvc_get_by_index(tty->index)))
+-		return -ENODEV;
+-
+ 	spin_lock_irqsave(&hp->port.lock, flags);
+ 	/* Check and then increment for fast path open. */
+ 	if (hp->port.count++ > 0) {
+@@ -322,7 +335,6 @@ static int hvc_open(struct tty_struct *tty, struct file * filp)
+ 	} /* else count == 0 */
+ 	spin_unlock_irqrestore(&hp->port.lock, flags);
+ 
+-	tty->driver_data = hp;
+ 	tty_port_tty_set(&hp->port, tty);
+ 
+ 	if (hp->ops->notifier_add)
+@@ -389,6 +401,11 @@ static void hvc_close(struct tty_struct *tty, struct file * filp)
+ 				hp->vtermno, hp->port.count);
+ 		spin_unlock_irqrestore(&hp->port.lock, flags);
+ 	}
++}
++
++static void hvc_cleanup(struct tty_struct *tty)
++{
++	struct hvc_struct *hp = tty->driver_data;
+ 
+ 	tty_port_put(&hp->port);
+ }
+@@ -792,8 +809,10 @@ static void hvc_poll_put_char(struct tty_driver *driver, int line, char ch)
+ #endif
+ 
+ static const struct tty_operations hvc_ops = {
++	.install = hvc_install,
+ 	.open = hvc_open,
+ 	.close = hvc_close,
++	.cleanup = hvc_cleanup,
+ 	.write = hvc_write,
+ 	.hangup = hvc_hangup,
+ 	.unthrottle = hvc_unthrottle,
+-- 
+1.7.10.4
