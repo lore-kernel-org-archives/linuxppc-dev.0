@@ -1,23 +1,25 @@
-Return-Path: <B04825@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Return-Path: <R1AAHA@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 91F9E2C00A1
- for <linuxppc-dev@ozlabs.org>; Tue,  7 Aug 2012 09:36:28 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Tiejun Chen <tiejun.chen@windriver.com>
-Subject: Re: [PATCH 1/1] booke/wdt: fix incorrect WDIOC_GETSUPPORT return path
-Date: Mon, 6 Aug 2012 23:36:20 +0000
-Message-ID: <CAOZdJXWYyc_=iikFwSLy4gX7Grag=jxvWhYrP4Y9U3QZcwieBw@mail.gmail.com>
-References: <1343636122-23273-1-git-send-email-tiejun.chen@windriver.com>
- <CAOZdJXWftkUSw57-Qbe9JFP9NwodkHprKr6_1xi6ZzzLN8A4wA@mail.gmail.com>
-In-Reply-To: <CAOZdJXWftkUSw57-Qbe9JFP9NwodkHprKr6_1xi6ZzzLN8A4wA@mail.gmail.com>
-Content-Type: text/plain; charset="iso-8859-1"
+ by ozlabs.org (Postfix) with ESMTPS id 149352C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 11:37:20 +1000 (EST)
+Date: Mon, 6 Aug 2012 20:35:06 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: <qiang.liu@freescale.com>
+Subject: Re: [PATCH v6 0/8] Raid: enable talitos xor offload for improving
+ performance
+Message-ID: <20120806203506.bcf31cc63a2d1f55a9695f13@freescale.com>
+In-Reply-To: <1344247815-1104-1-git-send-email-qiang.liu@freescale.com>
+References: <1344247815-1104-1-git-send-email-qiang.liu@freescale.com>
 MIME-Version: 1.0
-Cc: "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>,
- "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset="US-ASCII"
+Cc: arnd@arndb.de, vinod.koul@intel.com, gregkh@linuxfoundation.org,
+ linux-kernel@vger.kernel.org, dan.j.williams@gmail.com,
+ herbert@gondor.hengli.com.au, linux-crypto@vger.kernel.org,
+ dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 6, 2012 at 2:12 PM, Tabi Timur-B04825 <b04825@freescale.com> wr=
-ote:
-> On Mon, Jul 30, 2012 at 3:15 AM, Tiejun Chen <tiejun.chen@windriver.com> =
-wrote:
->> We miss that correct WDIOC_GETSUPPORT return path when perform
->> copy_to_user() properly.
->
-> Thanks for catching this.  I'm amazed that this driver still has bugs lik=
-e this.
+On Mon, 6 Aug 2012 18:10:15 +0800
+<qiang.liu@freescale.com> wrote:
 
-While you're at it, I found a few related bugs.  Can you fix these, also?
+> Changes in v6:
+> 	- swap the order of original patch 3/6 and 4/6;
+> 	- merge Ira's patch to reduce the size of original patch;
+> 	- merge Ira's patch of carma in 8/8;
+> 	- update documents and descriptions according to Ira's advice;
 
-1.	case WDIOC_SETOPTIONS:
-		if (get_user(tmp, p))
-			return -EINVAL;
+fwiw, I gave v5 a test-drive, setting up a RAID5 array on ramdisks
+[1], and this patchseries, along with FSL_DMA && NET_DMA set seems
+to be holding water, so this series gets my:
 
-This should return -EFAULT.
+Tested-by: Kim Phillips <kim.phillips@freescale.com>
 
-2. 	case WDIOC_GETBOOTSTATUS:
-		/* XXX: something is clearing TSR */
-		tmp =3D mfspr(SPRN_TSR) & TSR_WRS(3);
-		/* returns CARDRESET if last reset was caused by the WDT */
-		return (tmp ? WDIOF_CARDRESET : 0);
+Thanks,
 
-This should use put_user() to return the value, instead of returning
-it as a return code.
+Kim
 
-You can title the new patch something like, "booke/wdt: some ioctls do
-not return values properly"
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+[1] mdadm --create --verbose --force /dev/md0 --level=raid5 --raid-devices=4 /dev/ram[0123]
