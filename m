@@ -1,24 +1,28 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id C198B2C008B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 15:26:51 +1000 (EST)
-Message-ID: <5020A849.4050209@cn.fujitsu.com>
-Date: Tue, 07 Aug 2012 13:31:53 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D89CF2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 16:24:08 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Tue, 7 Aug 2012 06:23:59 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A422A2@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
+ <1343907741-20589-4-git-send-email-B38951@freescale.com>
+ <A4B0DB85-7B49-4748-8B94-0E1F1B7B663A@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A35A2F@039-SN1MPN1-002.039d.mgd.msft.net>
+ <501BF66C.3070107@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A36CE7@039-SN1MPN1-002.039d.mgd.msft.net>
+ <501FDF9B.4030304@freescale.com>
+In-Reply-To: <501FDF9B.4030304@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: isimatu.yasuaki@jp.fujitsu.com
-Subject: Re: [RFC PATCH V6 13/19] memory-hotplug: check page type in
- get_page_bootmem
-References: <1343980161-14254-1-git-send-email-wency@cn.fujitsu.com>
- <1343980161-14254-14-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1343980161-14254-14-git-send-email-wency@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
- rientjes@google.com, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, liuj97@gmail.com
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +32,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 08/03/2012 03:49 PM, wency@cn.fujitsu.com Wrote:
-> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> 
-> There is a possibility that get_page_bootmem() is called to the same page many
-> times. So when get_page_bootmem is called to the same page, the function only
-> increments page->_count.
-> 
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> ---
->  mm/memory_hotplug.c |   15 +++++++++++----
->  1 files changed, 11 insertions(+), 4 deletions(-)
-> 
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 5f9f8c7..710e593 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -95,10 +95,17 @@ static void release_memory_resource(struct resource *res)
->  static void get_page_bootmem(unsigned long info,  struct page *page,
->  			     unsigned long type)
->  {
-> -	page->lru.next = (struct list_head *) type;
-> -	SetPagePrivate(page);
-> -	set_page_private(page, info);
-> -	atomic_inc(&page->_count);
-> +	unsigned long page_type;
-> +
-> +	page_type = (unsigned long) page->lru.next;
-> +	if (type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
-> +	    type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
-
-I think it should be page_type not type here.
-
-Thanks
-Wen Congyang
-
-> +		page->lru.next = (struct list_head *) type;
-> +		SetPagePrivate(page);
-> +		set_page_private(page, info);
-> +		atomic_inc(&page->_count);
-> +	} else
-> +		atomic_inc(&page->_count);
->  }
->  
->  /* reference to __meminit __free_pages_bootmem is valid
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBNb25kYXksIEF1Z3VzdCAwNiwgMjAxMiAxMToxNiBQTQ0KPiBUbzogSmlhIEhvbmd0
+YW8tQjM4OTUxDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgS3VtYXIgR2FsYTsgbGludXhwcGMt
+ZGV2QGxpc3RzLm96bGFicy5vcmc7IExpDQo+IFlhbmctUjU4NDcyDQo+IFN1YmplY3Q6IFJlOiBb
+UEFUQ0ggVjQgMy8zXSBwb3dlcnBjL2ZzbC1wY2k6IFVuaWZ5IHBjaS9wY2llDQo+IGluaXRpYWxp
+emF0aW9uIGNvZGUNCj4gDQo+IE9uIDA4LzA1LzIwMTIgMDk6MzkgUE0sIEppYSBIb25ndGFvLUIz
+ODk1MSB3cm90ZToNCj4gPg0KPiA+DQo+ID4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+
+ID4+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4+IFNlbnQ6IFNhdHVyZGF5LCBBdWd1c3Qg
+MDQsIDIwMTIgMTI6MDQgQU0NCj4gPj4gVG86IEppYSBIb25ndGFvLUIzODk1MQ0KPiA+PiBDYzog
+S3VtYXIgR2FsYTsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdvb2QgU2NvdHQtQjA3
+NDIxOyBMaQ0KPiA+PiBZYW5nLVI1ODQ3Mg0KPiA+PiBTdWJqZWN0OiBSZTogW1BBVENIIFY0IDMv
+M10gcG93ZXJwYy9mc2wtcGNpOiBVbmlmeSBwY2kvcGNpZQ0KPiA+PiBpbml0aWFsaXphdGlvbiBj
+b2RlDQo+ID4+DQo+ID4+IE9uIDA4LzAyLzIwMTIgMTA6MzkgUE0sIEppYSBIb25ndGFvLUIzODk1
+MSB3cm90ZToNCj4gPj4+DQo+ID4+Pg0KPiA+Pj4+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0t
+DQo+ID4+Pj4gRnJvbTogS3VtYXIgR2FsYSBbbWFpbHRvOmdhbGFrQGtlcm5lbC5jcmFzaGluZy5v
+cmddDQo+ID4+Pj4gU2VudDogVGh1cnNkYXksIEF1Z3VzdCAwMiwgMjAxMiA4OjI0IFBNDQo+ID4+
+Pj4gVG86IEppYSBIb25ndGFvLUIzODk1MQ0KPiA+Pj4+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMu
+b3psYWJzLm9yZzsgV29vZCBTY290dC1CMDc0MjE7IExpDQo+ID4+Pj4gWWFuZy1SNTg0NzINCj4g
+Pj4+PiBTdWJqZWN0OiBSZTogW1BBVENIIFY0IDMvM10gcG93ZXJwYy9mc2wtcGNpOiBVbmlmeSBw
+Y2kvcGNpZQ0KPiA+Pj4+IGluaXRpYWxpemF0aW9uIGNvZGUNCj4gPj4+Pg0KPiA+Pj4+IFlvdSBu
+ZWVkIHRvIGNvbnZlcnQgYWxsIGJvYXJkcyB0byB1c2UgZnNsX3BjaV9pbml0IGJlZm9yZSB0aGlz
+IHBhdGNoLg0KPiA+Pj4+IE90aGVyd2lzZSB3ZSdsbCBlbmQgdXAgd2l0aCBQQ0kgZ2V0dGluZyBp
+bml0aWFsaXplZCB0d2ljZSBvbiBib2FyZHMuDQo+ID4+Pj4NCj4gPj4+PiAtIGsNCj4gPj4+DQo+
+ID4+PiBJZiB3ZSBjb3ZlcnQgYWxsIGJvYXJkcyB3aXRoIHBsYXRmb3JtIGRyaXZlciBpbiB0aGlz
+IHBhdGNoIFBDSSB3aWxsDQo+ID4+PiBiZSBpbml0aWFsaXplZCBvbmx5IG9uY2Ugd2l0aG91dCBj
+b252ZXJ0aW5nIGFsbCBib2FyZHMgdG8gdXNlDQo+ID4+PiBmc2xfcGNpX2luaXQgZmlyc3QuDQo+
+ID4+DQo+ID4+IFRoZW4gd2UnZCBoYXZlIHRvIHBpY2sgYXBhcnQgY29yZSBjaGFuZ2VzIGZyb20g
+Ym9hcmQgY2hhbmdlcyB3aGVuDQo+ID4+IHJldmlld2luZy4NCj4gPj4NCj4gPj4+IElmIHdlIGNv
+bnZlcnQgYWxsIGJvYXJkcyB0byB1c2UgZnNsX3BjaV9pbml0IGJlZm9yZSB0aGlzIHBhdGNoIGFu
+ZA0KPiA+Pj4gY29udmVydCB0aGVtIHRvIHVzZSBwbGF0Zm9ybSBkcml2ZXIgYWdhaW4gYWZ0ZXIg
+dGhpcyBwYXRjaC4gVGhlbg0KPiA+Pj4gYmV0d2VlbiB0aGlzIHBhdGNoIGFuZCBuZXh0IHBjaSB3
+aWxsIGJlIGluaXRpYWxpemVkIHR3aWNlIHRvby4NCj4gPj4NCj4gPj4gV2h5PyAgVGhhdCBvbmUg
+cGF0Y2ggc2hvdWxkIGJvdGggY3JlYXRlIHRoZSBwbGF0Zm9ybSBkcml2ZXIgYW5kDQo+ID4+IHJl
+bW92ZSB0aGUgaW5pdCBmcm9tIGZzbF9wY2lfaW5pdCgpIC0tIGV4Y2VwdCB0aGluZ3MgbGlrZSBw
+cmltYXJ5IGJ1cw0KPiA+PiBkZXRlY3Rpb24gd2hpY2ggaGFzIHRvIGhhcHBlbiBnbG9iYWxseS4N
+Cj4gPj4NCj4gPj4gLVNjb3R0DQo+ID4NCj4gPiAiT25lIHBhdGNoIGJvdGggY3JlYXRlIHRoZSBw
+bGF0Zm9ybSBkcml2ZXIgYW5kIHJlbW92ZSB0aGUgaW5pdCBmcm9tDQo+ID4gZnNsX3BjaV9pbml0
+KCkiIG1lYW5zIHdlIHNob3VsZCBjcmVhdGUgcGxhdGZvcm0gZHJpdmVyIGFuZCBhcHBsaWVkIHRv
+DQo+ID4gYWxsIGJvYXJkcy4gSWYgc28gd2h5IG5vdCBqdXN0IGRpcmVjdGx5IGNvbnZlcnQgYWxs
+IGJvYXJkcyB1c2luZw0KPiA+IHBsYXRmb3JtIGRyaXZlcj8NCj4gDQo+IEJlY2F1c2UgaXQncyBo
+YXJkZXIgdG8gcmV2aWV3IHdoZW4geW91IGhhdmUgYSBidW5jaCBvZiBib2FyZCBjb2RlIGluIHRo
+ZQ0KPiBwYXRjaCBpbiBhZGRpdGlvbiB0byBjb3JlIGNoYW5nZXMuDQo+IA0KPiBCZWNhdXNlIHlv
+dSBtaWdodCB3YW50IHBlb3BsZSB0byBhY3R1YWxseSB0ZXN0IG9uIHRoZSBib2FyZHMgaW4gcXVl
+c3Rpb24NCj4gd2hlbiBjb252ZXJ0aW5nLCBlc3BlY2lhbGx5IGdpdmVuIHRoZSBjaGFuZ2UgaW4g
+aG93IHByaW1hcnkgYnVzZXMgYXJlDQo+IGRldGVybWluZWQsIGFuZCB0aGF0IHNvbWUgYm9hcmRz
+IG1heSBuZWVkIHRvIHByb3ZpZGUgdGhlaXIgb3duDQo+IGFsdGVybmF0aXZlLg0KPiANCj4gLVNj
+b3R0DQoNCkJ1dCBpZiB3ZSBzZXBhcmF0ZSB0aGUgY29yZSBjaGFuZ2VzIGFuZCB0aGUgYm9hcmRz
+IHVwZGF0ZSwgYmV0d2VlbiB0aGlzIHR3bw0KcGF0Y2hlcyBQQ0kgd2lsbCBiZSBpbml0aWFsaXpl
+ZCB0d2ljZS4NCg0KLUhvbmd0YW8uDQoNCg==
