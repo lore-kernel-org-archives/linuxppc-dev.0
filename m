@@ -1,26 +1,19 @@
-Return-Path: <B38951@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+Return-Path: <B35336@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BF1252C008D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 18:09:52 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Tue, 7 Aug 2012 08:09:45 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A45931@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343988851-884-1-git-send-email-B38951@freescale.com>
- <1343988851-884-4-git-send-email-B38951@freescale.com>
- <501BFC0E.6070708@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A36D0A@039-SN1MPN1-002.039d.mgd.msft.net>
- <501FDE40.1060906@freescale.com>
-In-Reply-To: <501FDE40.1060906@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 75B422C0078
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Aug 2012 18:41:36 +1000 (EST)
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH 1/4] powerpc/85xx: add sleep and deep sleep support
+Date: Tue, 7 Aug 2012 16:43:23 +0800
+Message-ID: <1344329006-10645-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,91 +23,946 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogTW9uZGF5LCBBdWd1c3QgMDYsIDIwMTIgMTE6MTAgUE0NCj4gVG86IEppYSBI
-b25ndGFvLUIzODk1MQ0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IGxpbnV4cHBjLWRldkBsaXN0
-cy5vemxhYnMub3JnOw0KPiBnYWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBMaSBZYW5nLVI1ODQ3
-Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY1IDMvM10gcG93ZXJwYy9mc2wtcGNpOiBVbmlmeSBw
-Y2kvcGNpZQ0KPiBpbml0aWFsaXphdGlvbiBjb2RlDQo+IA0KPiBPbiAwOC8wNS8yMDEyIDEwOjA3
-IFBNLCBKaWEgSG9uZ3Rhby1CMzg5NTEgd3JvdGU6DQo+ID4NCj4gPg0KPiA+PiAtLS0tLU9yaWdp
-bmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+PiBTZW50
-OiBTYXR1cmRheSwgQXVndXN0IDA0LCAyMDEyIDEyOjI4IEFNDQo+ID4+IFRvOiBKaWEgSG9uZ3Rh
-by1CMzg5NTENCj4gPj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBnYWxha0Br
-ZXJuZWwuY3Jhc2hpbmcub3JnOyBMaQ0KPiA+PiBZYW5nLSBSNTg0NzI7IFdvb2QgU2NvdHQtQjA3
-NDIxDQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjUgMy8zXSBwb3dlcnBjL2ZzbC1wY2k6IFVu
-aWZ5IHBjaS9wY2llDQo+ID4+IGluaXRpYWxpemF0aW9uIGNvZGUNCj4gPj4NCj4gPj4gT24gMDgv
-MDMvMjAxMiAwNToxNCBBTSwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4+PiAtdm9pZCBfX2Rldmlu
-aXQgZnNsX3BjaV9pbml0KHZvaWQpDQo+ID4+PiArLyogQ2hlY2tvdXQgaWYgUENJIGNvbnRhaW5z
-IElTQSBub2RlICovIHN0YXRpYyBpbnQNCj4gPj4+ICtvZl9wY2lfaGFzX2lzYShzdHJ1Y3QgZGV2
-aWNlX25vZGUgKnBjaV9ub2RlKSB7DQo+ID4+PiArCXN0cnVjdCBkZXZpY2Vfbm9kZSAqbnA7DQo+
-ID4+PiArCWludCByZXQgPSAwOw0KPiA+Pj4gKw0KPiA+Pj4gKwlpZiAoIXBjaV9ub2RlKQ0KPiA+
-Pj4gKwkJcmV0dXJuIDA7DQo+ID4+PiArDQo+ID4+PiArCXJlYWRfbG9jaygmZGV2dHJlZV9sb2Nr
-KTsNCj4gPj4+ICsJbnAgPSBwY2lfbm9kZS0+YWxsbmV4dDsNCj4gPj4+ICsNCj4gPj4+ICsJLyog
-T25seSBzY2FuIHRoZSBjaGlsZHJlbiBvZiBQQ0kgbm9kZSAqLw0KPiA+Pj4gKwlmb3IgKDsgbnAg
-IT0gcGNpX25vZGUtPnNpYmxpbmc7IG5wID0gbnAtPmFsbG5leHQpIHsNCj4gPj4+ICsJCWlmIChu
-cC0+dHlwZSAmJiAob2Zfbm9kZV9jbXAobnAtPnR5cGUsICJpc2EiKSA9PSAwKQ0KPiA+Pj4gKwkJ
-ICAgICYmIG9mX25vZGVfZ2V0KG5wKSkgew0KPiA+Pj4gKwkJCXJldCA9IDE7DQo+ID4+PiArCQkJ
-YnJlYWs7DQo+ID4+PiArCQl9DQo+ID4+PiArCX0NCj4gPj4+ICsNCj4gPj4+ICsJb2Zfbm9kZV9w
-dXQocGNpX25vZGUpOw0KPiA+Pj4gKwlyZWFkX3VubG9jaygmZGV2dHJlZV9sb2NrKTsNCj4gPj4+
-ICsNCj4gPj4+ICsJcmV0dXJuIHJldDsNCj4gPj4+ICt9DQo+ID4+DQo+ID4+IFdoeSBkbyB5b3Ug
-a2VlcCBpbnNpc3Rpbmcgb24gc3Vic3RpdHV0aW5nIHlvdXIgSVNBIHNlYXJjaCBjb2RlIGhlcmU/
-DQo+ID4+IFdoYXQgYWR2YW50YWdlcyBkb2VzIGl0IGhhdmUgb3ZlciB0aGUgY29kZSB0aGF0IGlz
-IGFscmVhZHkgdGhlcmU/ICBJdA0KPiA+PiB1bm5lY2Vzc2FyaWx5IGRpZ3MgaW50byB0aGUgaW50
-ZXJuYWxzIG9mIHRoZSB0cmVlIHJlcHJlc2VudGF0aW9uLg0KPiA+Pg0KPiA+DQo+ID4gSSB3YW50
-IElTQSBzZWFyY2ggaXMgZG9uZSBmcm9tIHByb2JlLg0KPiANCj4gVG9vIGJhZC4gIFlvdSdyZSBi
-cmVha2luZyB0aGUgY2FzZSB3aGVyZSB0aGVyZSdzIG5vIElTQSBub2RlLg0KPiANCj4gPiBBbHNv
-IHRoaXMgd2F5IGlzIG1vcmUgZWZmaWNpZW50IGR1ZQ0KPiA+IHRvIHdlIGp1c3Qgc2VhcmNoIHRo
-ZSBjaGlsZHJlbiBvZiBQQ0kuDQo+IA0KPiBJdCBpcyBub3QgbW9yZSBlZmZpY2llbnQsIGJlY2F1
-c2UgeW91J3JlIGRvaW5nIHRoZSBzZWFyY2ggZm9yIGV2ZXJ5IFBDSWUNCj4gYnVzIHJhdGhlciB0
-aGFuIG9uY2UuICBOb3QgdGhhdCBpdCBtYXR0ZXJzIGluIHRoaXMgY29udGV4dC4NCj4gDQo+ID4+
-PiArDQo+ID4+PiArc3RhdGljIGludCBfX2RldmluaXQgZnNsX3BjaV9wcm9iZShzdHJ1Y3QgcGxh
-dGZvcm1fZGV2aWNlICpwZGV2KQ0KPiA+Pj4gIHsNCj4gPj4+ICAJaW50IHJldDsNCj4gPj4+IC0J
-c3RydWN0IGRldmljZV9ub2RlICpub2RlOw0KPiA+Pj4gIAlzdHJ1Y3QgcGNpX2NvbnRyb2xsZXIg
-Kmhvc2U7DQo+ID4+PiAtCWRtYV9hZGRyX3QgbWF4ID0gMHhmZmZmZmZmZjsNCj4gPj4+ICsJaW50
-IGlzX3ByaW1hcnkgPSAwOw0KPiA+Pj4NCj4gPj4+IC0JLyogQ2FsbGVycyBjYW4gc3BlY2lmeSB0
-aGUgcHJpbWFyeSBidXMgdXNpbmcgb3RoZXIgbWVhbnMuICovDQo+ID4+PiAgCWlmICghZnNsX3Bj
-aV9wcmltYXJ5KSB7DQo+ID4+PiAtCQkvKiBJZiBhIFBDSSBob3N0IGJyaWRnZSBjb250YWlucyBh
-biBJU0Egbm9kZSwgaXQncyBwcmltYXJ5Lg0KPiA+PiAqLw0KPiA+Pj4gLQkJbm9kZSA9IG9mX2Zp
-bmRfbm9kZV9ieV90eXBlKE5VTEwsICJpc2EiKTsNCj4gPj4+IC0JCXdoaWxlICgoZnNsX3BjaV9w
-cmltYXJ5ID0gb2ZfZ2V0X3BhcmVudChub2RlKSkpIHsNCj4gPj4+IC0JCQlvZl9ub2RlX3B1dChu
-b2RlKTsNCj4gPj4+IC0JCQlub2RlID0gZnNsX3BjaV9wcmltYXJ5Ow0KPiA+Pj4gLQ0KPiA+Pj4g
-LQkJCWlmIChvZl9tYXRjaF9ub2RlKHBjaV9pZHMsIG5vZGUpKQ0KPiA+Pj4gLQkJCQlicmVhazsN
-Cj4gPj4+IC0JCX0NCj4gPj4+ICsJCWlzX3ByaW1hcnkgPSBvZl9wY2lfaGFzX2lzYShwZGV2LT5k
-ZXYub2Zfbm9kZSk7DQo+ID4+PiArCQlpZiAoaXNfcHJpbWFyeSkNCj4gPj4+ICsJCQlmc2xfcGNp
-X3ByaW1hcnkgPSBwZGV2LT5kZXYub2Zfbm9kZTsNCj4gPj4+ICAJfQ0KPiA+Pg0KPiA+PiBBcyBJ
-IGV4cGxhaW5lZCBiZWZvcmUsIHRoaXMgaGFzIHRvIGJlIGRvbmUgZ2xvYmFsbHksIG5vdCBmcm9t
-IHRoZQ0KPiA+PiBwcm9iZSBmdW5jdGlvbiwgc28gd2UgY2FuIGFzc2lnbiBhIGRlZmF1bHQgcHJp
-bWFyeSBidXMgaWYgdGhlcmUgaXNuJ3QNCj4gYW55IElTQS4NCj4gPj4gIFRoZXJlIGFyZSBidWdz
-IGluIHRoZSBMaW51eCBQUEMgUENJIGNvZGUgcmVsYXRpbmcgdG8gbm90IGhhdmluZyBhbnkNCj4g
-Pj4gcHJpbWFyeSBidXMuDQo+ID4+DQo+ID4+IC1TY290dA0KPiA+DQo+ID4gSW4gbXkgd2F5IG9m
-IHNlYXJjaGluZyBJU0EgeW91IGNhbiBhbHNvIGFzc2lnbiBhIGRlZmF1bHQgcHJpbWFyeSBidXMN
-Cj4gPiBpbiBib2FyZCBzcGVjaWZpYyBmaWxlcy4NCj4gDQo+IFRoYXQgd2FzIG1lYW50IGZvciB3
-aGVuIHRoZSBib2FyZCBmaWxlIGhhZCBhbiBhbHRlcm5hdGUgd2F5IG9mIHNlYXJjaGluZw0KPiBm
-b3IgdGhlIHByaW1hcnkgYnVzIChlLmcuIGxvb2sgZm9yIGk4MjU5KSwgbm90IGFzIGEgcmVwbGFj
-ZW1lbnQgZm9yIHRoZQ0KPiBtZWNoYW5pc20gdGhhdCBndWFyYW50ZWVzIHRoZXJlJ3MgYSBwcmlt
-YXJ5IGJ1cy4NCj4gDQo+IFlvdSBhcmUgY2F1c2luZyBhIHJlZ3Jlc3Npb24gaW4gdGhlIHFlbXVf
-ZTUwMC5jIHBsYXRmb3JtLg0KPiANCj4gPiBJIHJlYWQgeW91ciBjb2RlIGFuZCBmb3VuZCB0aGF0
-IGlmIHRoZXJlIGlzIG5vIElTQSBub2RlIHlvdSB3aWxsDQo+ID4gYXNzaWduIHRoZSBmaXJzdCBQ
-Q0kgYnVzIHNjYW5uZWQgYXMgcHJpbWFyeS4gSXQncyBub3QgYWxsIHJpZ2h0LiBUYWtlDQo+ID4g
-Z2VfaW1wM2EgYXMgYW4NCj4gPiBleGFtcGxlOiBUaGUgc2Vjb25kIFBDSSBidXMgKDkwMDApIGlz
-IHByaW1hcnkgbm90IHRoZSBmaXJzdCBvbmUuDQo+IA0KPiBEb2VzIHRoYXQgYm9hcmQgaGF2ZSBJ
-U0Egb24gaXQsIHRoYXQgaXNuJ3QgZGVzY3JpYmVkIGJ5IHRoZSBkZXZpY2UgdHJlZT8NCj4gIElm
-IHNvLCBiZWZvcmUgY29udmVydGluZyB0byB0aGUgbmV3IGluaXQgbWVjaGFuaXNtLCB0aGUgYm9h
-cmQgY29kZSB3aWxsDQo+IG5lZWQgdG8gc2V0IGZzbF9wY2lfcHJpbWFyeSBiYXNlZCBvbiBpdHMg
-b3duIGtub3dsZWRnZSBvZiB3aGVyZSB0aGF0IElTQQ0KPiBpcy4gIElmIGl0IGRvZXNuJ3QgaGF2
-ZSBJU0EsIGl0IGRvZXNuJ3QgbWF0dGVyIHdoaWNoIG9uZSB3ZSBkZXNpZ25hdGUgYXMNCj4gcHJp
-bWFyeS4NCj4gDQo+ID4gSSBkb3VidCB0aGF0IHRoZXJlIGFyZSBidWdzIGlmIG5vIHByaW1hcnkg
-YXNzaWduZWQuDQo+IA0KPiBZZWFoLCBJIGp1c3QgaW1wbGVtZW50ZWQgdGhlIGZhbGxiYWNrIGZv
-ciBmdW4uICBDb21lIG9uLg0KPiANCj4gSXQgd2FzIHJlY2VudGx5IGRpc2N1c3NlZCBvbiB0aGlz
-IGxpc3QuICBQQ0kgdW5kZXIgUUVNVSBkaWQgbm90IHdvcmsNCj4gd2l0aG91dCBpdC4NCj4gDQo+
-ID4gTGlrZSBtcGM4NXh4X3JkYiBhc3NpZ25lZA0KPiA+IG5vIHByaW1hcnkgYXQgYWxsLiBTb21l
-IG90aGVyIGJvYXJkcyBoYXMgbm8gcHJpbWFyeSBldGhlciBsaWtlDQo+ID4gcDEwMjJkcywgcDEw
-MjFtZHMsIHAxMDEwcmRiLCBwMTAyM3JkcywgYWxsIGNvcmVuZXQgYm9hcmRzIChwMjA0MV9yZGIs
-DQo+ID4gcDMwNDFfZHMsIHA0MDgwX2RzLCBwNTAyMF9kcywgcDUwNDBfZHMpLiBJZiBubyBwcmlt
-YXJ5IGlzIGEgYnVnIHRoZW4NCj4gPiBhbGwgdGhlc2UgYm9hcmRzIGFib3ZlIGFyZSBub3QgY29y
-cmVjdGx5IHNldHRpbmcgdXAuDQo+IA0KPiBUaG9zZSBib2FyZHMgYXJlIG5vdCBiZWluZyBjb3Jy
-ZWN0bHkgc2V0IHVwLiAgT24gcmVhbCBoYXJkd2FyZSB0aGluZ3MNCj4gd29yayBieSBjaGFuY2Us
-IGJ1dCBub3QgdW5kZXIgUUVNVS4NCj4gDQo+IC1TY290dA0KDQpJIGFtIHJlYWxseSBub3Qgc3Vy
-ZSB0aGF0IGFsbCBib2FyZHMgbmVlZCBwcmltYXJ5IGJ1cy4gQ291bGQgeW91IGdpdmUgbWUNCnRo
-ZSBsaW5rIG9mIGRpc2N1c3Npb24gYWJvdXQgcHJpbWFyeSB0aGF0IHlvdSBtZW50aW9uZWQ/DQoN
-Ci1Ib25ndGFvLg0KDQo=
+In sleep PM mode, the clocks of e500 core and unused IP blocks is
+turned off. IP blocks which are allowed to wake up the processor
+are still running.
+
+Some Freescale chips like MPC8536 and P1022 has deep sleep PM mode
+in addtion to the sleep PM mode.
+
+While in deep sleep PM mode, additionally, the power supply is
+removed from e500 core and most IP blocks. Only the blocks needed
+to wake up the chip out of deep sleep are ON.
+
+This patch supports 32-bit and 36-bit address space.
+
+The sleep mode is equal to the Standby state in Linux. The deep sleep
+mode is equal to the Suspend-to-RAM state of Linux Power Management.
+
+Command to enter sleep mode.
+  echo standby > /sys/power/state
+Command to enter deep sleep mode.
+  echo mem > /sys/power/state
+
+Signed-off-by: Dave Liu <daveliu@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+Signed-off-by: Jin Qing <b24347@freescale.com>
+Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+---
+ arch/powerpc/Kconfig                  |    2 +-
+ arch/powerpc/include/asm/cacheflush.h |    2 +
+ arch/powerpc/kernel/Makefile          |    1 +
+ arch/powerpc/kernel/cache_fsl.S       |   57 +++
+ arch/powerpc/platforms/85xx/Makefile  |    1 +
+ arch/powerpc/platforms/85xx/sleep.S   |  621 +++++++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_pmc.c         |   98 +++++-
+ arch/powerpc/sysdev/fsl_soc.h         |    5 +
+ 8 files changed, 768 insertions(+), 19 deletions(-)
+ create mode 100644 arch/powerpc/kernel/cache_fsl.S
+ create mode 100644 arch/powerpc/platforms/85xx/sleep.S
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d894069..d7b0517 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -667,7 +667,7 @@ config FSL_PCI
+ config FSL_PMC
+ 	bool
+ 	default y
+-	depends on SUSPEND && (PPC_85xx || PPC_86xx)
++	depends on SUSPEND && (PPC_85xx || PPC_86xx) && !PPC_E500MC
+ 	help
+ 	  Freescale MPC85xx/MPC86xx power management controller support
+ 	  (suspend/resume). For MPC83xx see platforms/83xx/suspend.c
+diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+index b843e35..6c5f1c2 100644
+--- a/arch/powerpc/include/asm/cacheflush.h
++++ b/arch/powerpc/include/asm/cacheflush.h
+@@ -58,6 +58,8 @@ extern void flush_inval_dcache_range(unsigned long start, unsigned long stop);
+ extern void flush_dcache_phys_range(unsigned long start, unsigned long stop);
+ #endif
+ 
++extern void flush_dcache_L1(void);
++
+ #define copy_to_user_page(vma, page, vaddr, dst, src, len) \
+ 	do { \
+ 		memcpy(dst, src, len); \
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index bb282dd..21e025b 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -64,6 +64,7 @@ obj-$(CONFIG_FA_DUMP)		+= fadump.o
+ ifeq ($(CONFIG_PPC32),y)
+ obj-$(CONFIG_E500)		+= idle_e500.o
+ endif
++obj-y				+= cache_fsl.o
+ obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+ obj-$(CONFIG_TAU)		+= tau_6xx.o
+ obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o
+diff --git a/arch/powerpc/kernel/cache_fsl.S b/arch/powerpc/kernel/cache_fsl.S
+new file mode 100644
+index 0000000..25cd22e
+--- /dev/null
++++ b/arch/powerpc/kernel/cache_fsl.S
+@@ -0,0 +1,57 @@
++/*
++ * Copyright (C) 2009-2012 Freescale Semiconductor, Inc. All rights reserved.
++ *	Scott Wood <scottwood@freescale.com>
++ *	Dave Liu <daveliu@freescale.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <asm/reg.h>
++#include <asm/cputable.h>
++#include <asm/ppc_asm.h>
++#include <asm/asm-offsets.h>
++
++#define L2CTL_L2E	0x80000000
++#define L2CTL_L2I	0x40000000
++
++	.section .text
++
++#ifdef CONFIG_FSL_PMC
++	/* r3 = virtual address of L2 controller, WIMG = 01xx */
++_GLOBAL(flush_disable_L2)
++	/* It's a write-through cache, so only invalidation is needed. */
++	mbar
++	isync
++	lwz	r4, 0(r3)
++	li	r5, 1
++	rlwimi	r4, r5, 30, L2CTL_L2E | L2CTL_L2I
++	stw	r4, 0(r3)
++
++	/* Wait for the invalidate to finish */
++1:	lwz	r4, 0(r3)
++	andis.	r4, r4, L2CTL_L2I@h
++	bne	1b
++	mbar
++
++	blr
++
++	/* r3 = virtual address of L2 controller, WIMG = 01xx */
++_GLOBAL(invalidate_enable_L2)
++	mbar
++	isync
++	lwz	r4, 0(r3)
++	li	r5, 3
++	rlwimi	r4, r5, 30, L2CTL_L2E | L2CTL_L2I
++	stw	r4, 0(r3)
++
++	/* Wait for the invalidate to finish */
++1:	lwz	r4, 0(r3)
++	andis.	r4, r4, L2CTL_L2I@h
++	bne	1b
++	mbar
++
++	blr
++#endif
+diff --git a/arch/powerpc/platforms/85xx/Makefile b/arch/powerpc/platforms/85xx/Makefile
+index 76f679c..8a030a1 100644
+--- a/arch/powerpc/platforms/85xx/Makefile
++++ b/arch/powerpc/platforms/85xx/Makefile
+@@ -4,6 +4,7 @@
+ obj-$(CONFIG_SMP) += smp.o
+ 
+ obj-y += common.o
++obj-$(CONFIG_FSL_PMC) += sleep.o
+ 
+ obj-$(CONFIG_BSC9131_RDB) += bsc913x_rdb.o
+ obj-$(CONFIG_MPC8540_ADS) += mpc85xx_ads.o
+diff --git a/arch/powerpc/platforms/85xx/sleep.S b/arch/powerpc/platforms/85xx/sleep.S
+new file mode 100644
+index 0000000..e6dfede
+--- /dev/null
++++ b/arch/powerpc/platforms/85xx/sleep.S
+@@ -0,0 +1,621 @@
++/*
++ * Enter and leave deep sleep/sleep state on MPC85xx
++ *
++ * Author: Scott Wood <scottwood@freescale.com>
++ *
++ * Copyright (C) 2006-2012 Freescale Semiconductor, Inc. All rights reserved.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include <asm/page.h>
++#include <asm/ppc_asm.h>
++#include <asm/reg.h>
++#include <asm/asm-offsets.h>
++#include <asm/mmu.h>
++
++#define CCSR_ADDR		0xf0000000
++
++#define L2C_OFFSET		0x20000	/* L2 Cache Controller offset */
++
++#define BPTR_OFFSET		0x20 /* Boot Page Translation Register */
++#define BPTR_EN			0x80000000
++
++#define PMRCCR_OFFSET		0xe0084
++#define PMRCCR_VRCNT_PRE_MASK	0x1f000000
++#define PMRCCR_VRCNT_MASK	0x00ff0000
++
++#define POWMGTSCR_OFFSET	0xe0080
++#define POWMGTSCR_DPSLP		0x00100000 /* deep sleep mode */
++
++#define SS_TB		0x00
++#define SS_HID		0x08 /* 2 HIDs */
++#define SS_IAC		0x10 /* 2 IACs */
++#define SS_DAC		0x18 /* 2 DACs */
++#define SS_DBCR		0x20 /* 3 DBCRs */
++#define SS_PID		0x2c /* 3 PIDs */
++#define SS_SPRG		0x38 /* 8 SPRGs */
++#define SS_IVOR		0x58 /* 20 interrupt vectors */
++#define SS_TCR		0xa8
++#define SS_BUCSR	0xac
++#define SS_L1CSR	0xb0 /* 2 L1CSRs */
++#define SS_MSR		0xb8
++#define SS_USPRG	0xbc
++#define SS_GPREG	0xc0 /* r12-r31 */
++#define SS_LR		0x110
++#define SS_CR		0x114
++#define SS_SP		0x118
++#define SS_CURRENT	0x11c
++#define SS_IVPR		0x120
++#define SS_BPTR		0x124
++
++#define STATE_SAVE_SIZE 0x128
++
++	.section .data
++	.align	5
++mpc85xx_sleep_save_area:
++	.space	STATE_SAVE_SIZE
++ccsrbase_low:
++	.long	0
++ccsrbase_high:
++	.long	0
++powmgtreq:
++	.long	0
++
++	.section .text
++	.align	12
++
++	/*
++	 * r3 = high word of physical address of CCSR
++	 * r4 = low word of physical address of CCSR
++	 * r5 = JOG or deep sleep request
++	 *      JOG-0x00200000, deep sleep-0x00100000
++	 */
++_GLOBAL(mpc85xx_enter_deep_sleep)
++	lis	r6, ccsrbase_low@ha
++	stw	r4, ccsrbase_low@l(r6)
++	lis	r6, ccsrbase_high@ha
++	stw	r3, ccsrbase_high@l(r6)
++
++	lis	r6, powmgtreq@ha
++	stw	r5, powmgtreq@l(r6)
++
++	lis	r10, mpc85xx_sleep_save_area@h
++	ori	r10, r10, mpc85xx_sleep_save_area@l
++
++	mfspr	r5, SPRN_HID0
++	mfspr	r6, SPRN_HID1
++
++	stw	r5, SS_HID+0(r10)
++	stw	r6, SS_HID+4(r10)
++
++	mfspr	r4, SPRN_IAC1
++	mfspr	r5, SPRN_IAC2
++	mfspr	r6, SPRN_DAC1
++	mfspr	r7, SPRN_DAC2
++
++	stw	r4, SS_IAC+0(r10)
++	stw	r5, SS_IAC+4(r10)
++	stw	r6, SS_DAC+0(r10)
++	stw	r7, SS_DAC+4(r10)
++
++	mfspr	r4, SPRN_DBCR0
++	mfspr	r5, SPRN_DBCR1
++	mfspr	r6, SPRN_DBCR2
++
++	stw	r4, SS_DBCR+0(r10)
++	stw	r5, SS_DBCR+4(r10)
++	stw	r6, SS_DBCR+8(r10)
++
++	mfspr	r4, SPRN_PID0
++	mfspr	r5, SPRN_PID1
++	mfspr	r6, SPRN_PID2
++
++	stw	r4, SS_PID+0(r10)
++	stw	r5, SS_PID+4(r10)
++	stw	r6, SS_PID+8(r10)
++
++	mfspr	r4, SPRN_SPRG0
++	mfspr	r5, SPRN_SPRG1
++	mfspr	r6, SPRN_SPRG2
++	mfspr	r7, SPRN_SPRG3
++
++	stw	r4, SS_SPRG+0x00(r10)
++	stw	r5, SS_SPRG+0x04(r10)
++	stw	r6, SS_SPRG+0x08(r10)
++	stw	r7, SS_SPRG+0x0c(r10)
++
++	mfspr	r4, SPRN_SPRG4
++	mfspr	r5, SPRN_SPRG5
++	mfspr	r6, SPRN_SPRG6
++	mfspr	r7, SPRN_SPRG7
++
++	stw	r4, SS_SPRG+0x10(r10)
++	stw	r5, SS_SPRG+0x14(r10)
++	stw	r6, SS_SPRG+0x18(r10)
++	stw	r7, SS_SPRG+0x1c(r10)
++
++	mfspr	r4, SPRN_IVPR
++	stw	r4, SS_IVPR(r10)
++
++	mfspr	r4, SPRN_IVOR0
++	mfspr	r5, SPRN_IVOR1
++	mfspr	r6, SPRN_IVOR2
++	mfspr	r7, SPRN_IVOR3
++
++	stw	r4, SS_IVOR+0x00(r10)
++	stw	r5, SS_IVOR+0x04(r10)
++	stw	r6, SS_IVOR+0x08(r10)
++	stw	r7, SS_IVOR+0x0c(r10)
++
++	mfspr	r4, SPRN_IVOR4
++	mfspr	r5, SPRN_IVOR5
++	mfspr	r6, SPRN_IVOR6
++	mfspr	r7, SPRN_IVOR7
++
++	stw	r4, SS_IVOR+0x10(r10)
++	stw	r5, SS_IVOR+0x14(r10)
++	stw	r6, SS_IVOR+0x18(r10)
++	stw	r7, SS_IVOR+0x1c(r10)
++
++	mfspr	r4, SPRN_IVOR8
++	mfspr	r5, SPRN_IVOR9
++	mfspr	r6, SPRN_IVOR10
++	mfspr	r7, SPRN_IVOR11
++
++	stw	r4, SS_IVOR+0x20(r10)
++	stw	r5, SS_IVOR+0x24(r10)
++	stw	r6, SS_IVOR+0x28(r10)
++	stw	r7, SS_IVOR+0x2c(r10)
++
++	mfspr	r4, SPRN_IVOR12
++	mfspr	r5, SPRN_IVOR13
++	mfspr	r6, SPRN_IVOR14
++	mfspr	r7, SPRN_IVOR15
++
++	stw	r4, SS_IVOR+0x30(r10)
++	stw	r5, SS_IVOR+0x34(r10)
++	stw	r6, SS_IVOR+0x38(r10)
++	stw	r7, SS_IVOR+0x3c(r10)
++
++	mfspr	r4, SPRN_IVOR32
++	mfspr	r5, SPRN_IVOR33
++	mfspr	r6, SPRN_IVOR34
++	mfspr	r7, SPRN_IVOR35
++
++	stw	r4, SS_IVOR+0x40(r10)
++	stw	r5, SS_IVOR+0x44(r10)
++	stw	r6, SS_IVOR+0x48(r10)
++	stw	r7, SS_IVOR+0x4c(r10)
++
++	mfspr	r4, SPRN_TCR
++	mfspr	r5, SPRN_BUCSR
++	mfspr	r6, SPRN_L1CSR0
++	mfspr	r7, SPRN_L1CSR1
++	mfspr	r8, SPRN_USPRG0
++
++	stw	r4, SS_TCR(r10)
++	stw	r5, SS_BUCSR(r10)
++	stw	r6, SS_L1CSR+0(r10)
++	stw	r7, SS_L1CSR+4(r10)
++	stw	r8, SS_USPRG+0(r10)
++
++	stmw	r12, SS_GPREG(r10)
++
++	mfmsr	r4
++	mflr	r5
++	mfcr	r6
++
++	stw	r4, SS_MSR(r10)
++	stw	r5, SS_LR(r10)
++	stw	r6, SS_CR(r10)
++	stw	r1, SS_SP(r10)
++	stw	r2, SS_CURRENT(r10)
++
++1:	mftbu	r4
++	mftb	r5
++	mftbu	r6
++	cmpw	r4, r6
++	bne	1b
++
++	stw	r4, SS_TB+0(r10)
++	stw	r5, SS_TB+4(r10)
++
++	lis	r5, ccsrbase_low@ha
++	lwz	r4, ccsrbase_low@l(r5)
++	lis	r5, ccsrbase_high@ha
++	lwz	r3, ccsrbase_high@l(r5)
++
++	/* Disable machine checks and critical exceptions */
++	mfmsr	r5
++	rlwinm	r5, r5, 0, ~MSR_CE
++	rlwinm	r5, r5, 0, ~MSR_ME
++	mtmsr	r5
++	isync
++
++	/* Use TLB1[15] to map the CCSR at 0xf0000000 */
++	LOAD_REG_IMMEDIATE(r5, MAS0_TLBSEL(1) | MAS0_ESEL(15))
++	mtspr	SPRN_MAS0, r5
++	LOAD_REG_IMMEDIATE(r5,
++		MAS1_VALID | MAS1_IPROT | MAS1_TSIZE(BOOK3E_PAGESZ_1M))
++	mtspr	SPRN_MAS1, r5
++	LOAD_REG_IMMEDIATE(r5, CCSR_ADDR | MAS2_I | MAS2_M)
++	mtspr	SPRN_MAS2, r5
++	rlwinm	r5, r4, 0, MAS3_RPN
++	ori	r5, r5, (MAS3_SW | MAS3_SR)
++	mtspr	SPRN_MAS3, r5
++	mtspr	SPRN_MAS7, r3
++	isync
++	tlbwe
++	isync
++
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + BPTR_OFFSET)
++	lwz	r4, 0(r3)
++	stw	r4, SS_BPTR(r10)
++
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + L2C_OFFSET)
++	bl	flush_disable_L2
++	bl	__flush_disable_L1
++
++	/* Enable I-cache, so as not to upset the bus
++	 * with our loop.
++	 */
++	mfspr	r4, SPRN_L1CSR1
++	ori	r4, r4, L1CSR1_ICE
++	mtspr	SPRN_L1CSR1, r4
++	isync
++
++	/* Set boot page translation */
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + BPTR_OFFSET)
++	lis	r4, (mpc85xx_deep_resume - PAGE_OFFSET)@h
++	ori	r4, r4, (mpc85xx_deep_resume - PAGE_OFFSET)@l
++	rlwinm	r4, r4, 20, 12, 31
++	oris	r4, r4, BPTR_EN@h
++	stw	r4, 0(r3)
++	lwz	r4, 0(r3) /* read-back to flush write */
++	twi	0, r4, 0
++	isync
++
++	/* Disable the decrementer */
++	mfspr	r4, SPRN_TCR
++	rlwinm	r4, r4, 0, ~TCR_DIE
++	mtspr	SPRN_TCR, r4
++
++	mfspr	r4, SPRN_TSR
++	oris	r4, r4, TSR_DIS@h
++	mtspr	SPRN_TSR, r4
++
++	/* set PMRCCR[VRCNT] to wait power stable for 40ms */
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + PMRCCR_OFFSET)
++	lwz	r4, 0(r3)
++	li	r5, 0x12
++	rlwimi	r4, r5, 0, PMRCCR_VRCNT_PRE_MASK
++	li	r5, 0xa3
++	rlwimi	r4, r5, 0, PMRCCR_VRCNT_MASK
++	stw	r4, 0(r3)
++	lwz	r4, 0(r3)
++
++	/* set deep sleep bit in POWMGTSCR */
++	lis	r3, powmgtreq@ha
++	lwz	r8, powmgtreq@l(r3)
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + POWMGTSCR_OFFSET)
++	lwz	r4, 0(r3)
++	or	r4, r4, r8
++	stw	r4, 0(r3)
++	lwz	r4, 0(r3)		/* read-back to flush write */
++	twi	0, r4, 0
++	isync
++
++	mftb	r5
++1:	/* spin until either we enter deep sleep, or the sleep process is
++	 * aborted due to a pending wakeup event.  Wait some time between
++	 * accesses, so we don't flood the bus and prevent the pmc from
++	 * detecting an idle system.
++	 */
++
++	mftb	r4
++	subf	r7, r5, r4
++	cmpwi	r7, 1000
++	blt	1b
++	mr	r5, r4
++
++	lwz	r6, 0(r3)
++	andis.	r6, r6, POWMGTSCR_DPSLP@h
++	bne	1b
++	b	2f
++
++2:	mfspr	r4, SPRN_PIR
++	andi.	r4, r4, 1
++99:	bne	99b
++
++	/* Establish a temporary 64MB 0->0 mapping in TLB1[1]. */
++	LOAD_REG_IMMEDIATE(r4, MAS0_TLBSEL(1) | MAS0_ESEL(1))
++	mtspr	SPRN_MAS0, r4
++	LOAD_REG_IMMEDIATE(r4,
++		MAS1_VALID | MAS1_IPROT | MAS1_TSIZE(BOOK3E_PAGESZ_64M))
++	mtspr	SPRN_MAS1, r4
++	li	r4, 0
++	mtspr	SPRN_MAS2, r4
++	li	r4, (MAS3_SX | MAS3_SW | MAS3_SR)
++	mtspr	SPRN_MAS3, r4
++	li	r4, 0
++	mtspr	SPRN_MAS7, r4
++	isync
++	tlbwe
++	isync
++
++	lis	r3, (3f - PAGE_OFFSET)@h
++	ori	r3, r3, (3f - PAGE_OFFSET)@l
++	mtctr	r3
++	bctr
++
++	/* Locate the resume vector in the last word of the current page. */
++	. = mpc85xx_enter_deep_sleep + 0xffc
++mpc85xx_deep_resume:
++	b	2b
++
++3:
++	/* Restore the contents of TLB1[0].  It is assumed that it covers
++	 * the currently executing code and the sleep save area, and that
++	 * it does not alias our temporary mapping (which is at virtual zero).
++	 */
++	lis	r3, (TLBCAM - PAGE_OFFSET)@h
++	ori	r3, r3, (TLBCAM - PAGE_OFFSET)@l
++
++	lwz	r4, 0(r3)
++	lwz	r5, 4(r3)
++	lwz	r6, 8(r3)
++	lwz	r7, 12(r3)
++	lwz	r8, 16(r3)
++
++	mtspr	SPRN_MAS0, r4
++	mtspr	SPRN_MAS1, r5
++	mtspr	SPRN_MAS2, r6
++	mtspr	SPRN_MAS3, r7
++	mtspr	SPRN_MAS7, r8
++
++	isync
++	tlbwe
++	isync
++
++	/* Access the ccsrbase address with TLB1[0] */
++	lis	r5, ccsrbase_low@ha
++	lwz	r4, ccsrbase_low@l(r5)
++	lis	r5, ccsrbase_high@ha
++	lwz	r3, ccsrbase_high@l(r5)
++
++	/* Use TLB1[15] to map the CCSR at 0xf0000000 */
++	LOAD_REG_IMMEDIATE(r5, MAS0_TLBSEL(1) | MAS0_ESEL(15))
++	mtspr	SPRN_MAS0, r5
++	LOAD_REG_IMMEDIATE(r5,
++		MAS1_VALID | MAS1_IPROT | MAS1_TSIZE(BOOK3E_PAGESZ_1M))
++	mtspr	SPRN_MAS1, r5
++	LOAD_REG_IMMEDIATE(r5, CCSR_ADDR | MAS2_I | MAS2_M)
++	mtspr	SPRN_MAS2, r5
++	rlwinm	r5, r4, 0, MAS3_RPN
++	ori	r5, r5, (MAS3_SW | MAS3_SR)
++	mtspr	SPRN_MAS3, r5
++	mtspr	SPRN_MAS7, r3
++	isync
++	tlbwe
++	isync
++
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + L2C_OFFSET)
++	bl	invalidate_enable_L2
++
++	/* Access the MEM(r10) with TLB1[0] */
++	lis	r10, mpc85xx_sleep_save_area@h
++	ori	r10, r10, mpc85xx_sleep_save_area@l
++
++	LOAD_REG_IMMEDIATE(r3, CCSR_ADDR + BPTR_OFFSET)
++	lwz	r4, SS_BPTR(r10)
++	stw	r4, 0(r3)		/* restore BPTR */
++
++	/* Program shift running space to PAGE_OFFSET */
++	mfmsr	r3
++	lis	r4, 1f@h
++	ori	r4, r4, 1f@l
++
++	mtsrr1	r3
++	mtsrr0	r4
++	rfi
++
++1:	/* Restore the rest of TLB1, in ascending order so that
++	 * the TLB1[1] gets invalidated first.
++	 *
++	 * XXX: It's better to invalidate the temporary mapping
++	 * TLB1[15] for CCSR before restore any TLB1 entry include 0.
++	 */
++	LOAD_REG_IMMEDIATE(r4, MAS0_TLBSEL(1) | MAS0_ESEL(15))
++	mtspr	SPRN_MAS0, r4
++	lis	r4, 0
++	mtspr	SPRN_MAS1, r4
++	isync
++	tlbwe
++	isync
++
++	lis	r3, (TLBCAM + 5*4 - 4)@h
++	ori	r3, r3, (TLBCAM + 5*4 - 4)@l
++	li	r4, 15
++	mtctr	r4
++
++2:
++	lwz	r5, 4(r3)
++	lwz	r6, 8(r3)
++	lwz	r7, 12(r3)
++	lwz	r8, 16(r3)
++	lwzu	r9, 20(r3)
++
++	mtspr	SPRN_MAS0, r5
++	mtspr	SPRN_MAS1, r6
++	mtspr	SPRN_MAS2, r7
++	mtspr	SPRN_MAS3, r8
++	mtspr	SPRN_MAS7, r9
++
++	isync
++	tlbwe
++	isync
++	bdnz	2b
++
++	lis	r10, mpc85xx_sleep_save_area@h
++	ori	r10, r10, mpc85xx_sleep_save_area@l
++
++	lwz	r5, SS_HID+0(r10)
++	lwz	r6, SS_HID+4(r10)
++
++	isync
++	mtspr	SPRN_HID0, r5
++	isync
++
++	msync
++	mtspr	SPRN_HID1, r6
++	isync
++
++	lwz	r4, SS_IAC+0(r10)
++	lwz	r5, SS_IAC+4(r10)
++	lwz	r6, SS_DAC+0(r10)
++	lwz	r7, SS_DAC+4(r10)
++
++	mtspr	SPRN_IAC1, r4
++	mtspr	SPRN_IAC2, r5
++	mtspr	SPRN_DAC1, r6
++	mtspr	SPRN_DAC2, r7
++
++	lwz	r4, SS_DBCR+0(r10)
++	lwz	r5, SS_DBCR+4(r10)
++	lwz	r6, SS_DBCR+8(r10)
++
++	mtspr	SPRN_DBCR0, r4
++	mtspr	SPRN_DBCR1, r5
++	mtspr	SPRN_DBCR2, r6
++
++	lwz	r4, SS_PID+0(r10)
++	lwz	r5, SS_PID+4(r10)
++	lwz	r6, SS_PID+8(r10)
++
++	mtspr	SPRN_PID0, r4
++	mtspr	SPRN_PID1, r5
++	mtspr	SPRN_PID2, r6
++
++	lwz	r4, SS_SPRG+0x00(r10)
++	lwz	r5, SS_SPRG+0x04(r10)
++	lwz	r6, SS_SPRG+0x08(r10)
++	lwz	r7, SS_SPRG+0x0c(r10)
++
++	mtspr	SPRN_SPRG0, r4
++	mtspr	SPRN_SPRG1, r5
++	mtspr	SPRN_SPRG2, r6
++	mtspr	SPRN_SPRG3, r7
++
++	lwz	r4, SS_SPRG+0x10(r10)
++	lwz	r5, SS_SPRG+0x14(r10)
++	lwz	r6, SS_SPRG+0x18(r10)
++	lwz	r7, SS_SPRG+0x1c(r10)
++
++	mtspr	SPRN_SPRG4, r4
++	mtspr	SPRN_SPRG5, r5
++	mtspr	SPRN_SPRG6, r6
++	mtspr	SPRN_SPRG7, r7
++
++	lwz	r4, SS_IVPR(r10)
++	mtspr	SPRN_IVPR, r4
++
++	lwz	r4, SS_IVOR+0x00(r10)
++	lwz	r5, SS_IVOR+0x04(r10)
++	lwz	r6, SS_IVOR+0x08(r10)
++	lwz	r7, SS_IVOR+0x0c(r10)
++
++	mtspr	SPRN_IVOR0, r4
++	mtspr	SPRN_IVOR1, r5
++	mtspr	SPRN_IVOR2, r6
++	mtspr	SPRN_IVOR3, r7
++
++	lwz	r4, SS_IVOR+0x10(r10)
++	lwz	r5, SS_IVOR+0x14(r10)
++	lwz	r6, SS_IVOR+0x18(r10)
++	lwz	r7, SS_IVOR+0x1c(r10)
++
++	mtspr	SPRN_IVOR4, r4
++	mtspr	SPRN_IVOR5, r5
++	mtspr	SPRN_IVOR6, r6
++	mtspr	SPRN_IVOR7, r7
++
++	lwz	r4, SS_IVOR+0x20(r10)
++	lwz	r5, SS_IVOR+0x24(r10)
++	lwz	r6, SS_IVOR+0x28(r10)
++	lwz	r7, SS_IVOR+0x2c(r10)
++
++	mtspr	SPRN_IVOR8, r4
++	mtspr	SPRN_IVOR9, r5
++	mtspr	SPRN_IVOR10, r6
++	mtspr	SPRN_IVOR11, r7
++
++	lwz	r4, SS_IVOR+0x30(r10)
++	lwz	r5, SS_IVOR+0x34(r10)
++	lwz	r6, SS_IVOR+0x38(r10)
++	lwz	r7, SS_IVOR+0x3c(r10)
++
++	mtspr	SPRN_IVOR12, r4
++	mtspr	SPRN_IVOR13, r5
++	mtspr	SPRN_IVOR14, r6
++	mtspr	SPRN_IVOR15, r7
++
++	lwz	r4, SS_IVOR+0x40(r10)
++	lwz	r5, SS_IVOR+0x44(r10)
++	lwz	r6, SS_IVOR+0x48(r10)
++	lwz	r7, SS_IVOR+0x4c(r10)
++
++	mtspr	SPRN_IVOR32, r4
++	mtspr	SPRN_IVOR33, r5
++	mtspr	SPRN_IVOR34, r6
++	mtspr	SPRN_IVOR35, r7
++
++	lwz	r4, SS_TCR(r10)
++	lwz	r5, SS_BUCSR(r10)
++	lwz	r6, SS_L1CSR+0(r10)
++	lwz	r7, SS_L1CSR+4(r10)
++	lwz	r8, SS_USPRG+0(r10)
++
++	mtspr	SPRN_TCR, r4
++	mtspr	SPRN_BUCSR, r5
++
++	msync
++	isync
++	mtspr	SPRN_L1CSR0, r6
++	isync
++
++	mtspr	SPRN_L1CSR1, r7
++	isync
++
++	mtspr	SPRN_USPRG0, r8
++
++	lmw	r12, SS_GPREG(r10)
++
++	lwz	r1, SS_SP(r10)
++	lwz	r2, SS_CURRENT(r10)
++	lwz	r4, SS_MSR(r10)
++	lwz	r5, SS_LR(r10)
++	lwz	r6, SS_CR(r10)
++
++	msync
++	mtmsr	r4
++	isync
++
++	mtlr	r5
++	mtcr	r6
++
++	li	r4, 0
++	mtspr	SPRN_TBWL, r4
++
++	lwz	r4, SS_TB+0(r10)
++	lwz	r5, SS_TB+4(r10)
++
++	mtspr	SPRN_TBWU, r4
++	mtspr	SPRN_TBWL, r5
++
++	lis	r3, 1
++	mtdec	r3
++
++	blr
+diff --git a/arch/powerpc/sysdev/fsl_pmc.c b/arch/powerpc/sysdev/fsl_pmc.c
+index 592a0f8..45718c5 100644
+--- a/arch/powerpc/sysdev/fsl_pmc.c
++++ b/arch/powerpc/sysdev/fsl_pmc.c
+@@ -2,6 +2,7 @@
+  * Suspend/resume support
+  *
+  * Copyright 2009  MontaVista Software, Inc.
++ * Copyright 2010-2012 Freescale Semiconductor Inc.
+  *
+  * Author: Anton Vorontsov <avorontsov@ru.mvista.com>
+  *
+@@ -19,39 +20,89 @@
+ #include <linux/delay.h>
+ #include <linux/device.h>
+ #include <linux/of_platform.h>
++#include <linux/pm.h>
++#include <asm/cacheflush.h>
++#include <asm/switch_to.h>
++
++#include <sysdev/fsl_soc.h>
+ 
+ struct pmc_regs {
++	/* 0xe0070: Device disable control register */
+ 	__be32 devdisr;
++	/* 0xe0074: 2nd Device disable control register */
+ 	__be32 devdisr2;
+-	__be32 :32;
+-	__be32 :32;
+-	__be32 pmcsr;
+-#define PMCSR_SLP	(1 << 17)
++	__be32 res1;
++	/* 0xe007c: Power Management Jog Control Register */
++	__be32 pmjcr;
++	/* 0xe0080: Power management control and status register */
++	__be32 powmgtcsr;
++#define POWMGTCSR_SLP		0x00020000
++#define POWMGTCSR_DPSLP		0x00100000
++	__be32 res3[2];
++	/* 0xe008c: Power management clock disable register */
++	__be32 pmcdr;
+ };
+ 
+-static struct device *pmc_dev;
+ static struct pmc_regs __iomem *pmc_regs;
++static unsigned int pmc_flag;
++
++#define PMC_SLEEP	0x1
++#define PMC_DEEP_SLEEP	0x2
+ 
+ static int pmc_suspend_enter(suspend_state_t state)
+ {
+-	int ret;
++	int ret = 0;
++
++	switch (state) {
++#ifdef CONFIG_PPC_85xx
++	case PM_SUSPEND_MEM:
++#ifdef CONFIG_SPE
++		enable_kernel_spe();
++#endif
++		enable_kernel_fp();
++
++		pr_debug("%s: Entering deep sleep\n", __func__);
++
++		local_irq_disable();
++		mpc85xx_enter_deep_sleep(get_immrbase(), POWMGTCSR_DPSLP);
++
++		pr_debug("%s: Resumed from deep sleep\n", __func__);
++		break;
++#endif
+ 
+-	setbits32(&pmc_regs->pmcsr, PMCSR_SLP);
+-	/* At this point, the CPU is asleep. */
++	case PM_SUSPEND_STANDBY:
++		local_irq_disable();
++#ifdef CONFIG_PPC_85xx
++		flush_dcache_L1();
++#endif
++		setbits32(&pmc_regs->powmgtcsr, POWMGTCSR_SLP);
++		/* At this point, the CPU is asleep. */
+ 
+-	/* Upon resume, wait for SLP bit to be clear. */
+-	ret = spin_event_timeout((in_be32(&pmc_regs->pmcsr) & PMCSR_SLP) == 0,
+-				 10000, 10) ? 0 : -ETIMEDOUT;
+-	if (ret)
+-		dev_err(pmc_dev, "tired waiting for SLP bit to clear\n");
++		/* Upon resume, wait for SLP bit to be clear. */
++		ret = spin_event_timeout(
++			(in_be32(&pmc_regs->powmgtcsr) & POWMGTCSR_SLP) == 0,
++			10000, 10);
++		if (!ret) {
++			pr_err("%s: timeout waiting for SLP bit "
++				"to be cleared\n", __func__);
++			ret = -EINVAL;
++		}
++		break;
++
++	default:
++		ret = -EINVAL;
++
++	}
+ 	return ret;
+ }
+ 
+ static int pmc_suspend_valid(suspend_state_t state)
+ {
+-	if (state != PM_SUSPEND_STANDBY)
++	if (((pmc_flag & PMC_SLEEP) && (state == PM_SUSPEND_STANDBY)) ||
++	    ((pmc_flag & PMC_DEEP_SLEEP) && (state == PM_SUSPEND_MEM)))
++		return 1;
++	else
+ 		return 0;
+-	return 1;
+ }
+ 
+ static const struct platform_suspend_ops pmc_suspend_ops = {
+@@ -59,14 +110,25 @@ static const struct platform_suspend_ops pmc_suspend_ops = {
+ 	.enter = pmc_suspend_enter,
+ };
+ 
+-static int pmc_probe(struct platform_device *ofdev)
++static int pmc_probe(struct platform_device *pdev)
+ {
+-	pmc_regs = of_iomap(ofdev->dev.of_node, 0);
++	struct device_node *np = pdev->dev.of_node;
++
++	pmc_regs = of_iomap(np, 0);
+ 	if (!pmc_regs)
+ 		return -ENOMEM;
+ 
+-	pmc_dev = &ofdev->dev;
++	pmc_flag = PMC_SLEEP;
++	if (of_device_is_compatible(np, "fsl,mpc8536-pmc"))
++		pmc_flag |= PMC_DEEP_SLEEP;
++
++	if (of_device_is_compatible(np, "fsl,p1022-pmc"))
++		pmc_flag |= PMC_DEEP_SLEEP;
++
+ 	suspend_set_ops(&pmc_suspend_ops);
++
++	pr_info("Freescale PMC driver: sleep(standby)%s\n",
++		(pmc_flag & PMC_DEEP_SLEEP) ? ", deep sleep(mem)" : "");
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index c6d0073..11d9f94 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -48,5 +48,10 @@ extern struct platform_diu_data_ops diu_ops;
+ void fsl_hv_restart(char *cmd);
+ void fsl_hv_halt(void);
+ 
++/*
++ * ccsrbar is u64 rather than phys_addr_t so that the assembly
++ * code can be compatible with both 32-bit & 36-bit.
++ */
++extern void mpc85xx_enter_deep_sleep(u64 ccsrbar, u32 powmgtreq);
+ #endif
+ #endif
+-- 
+1.6.4.1
