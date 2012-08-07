@@ -1,18 +1,20 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from smtp.pripojeni.net (mail.pripojeni.net [178.22.112.14])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E2A0F2C00CD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 06:02:17 +1000 (EST)
-From: Jiri Slaby <jslaby@suse.cz>
-To: gregkh@linuxfoundation.org
-Subject: [PATCH 41/41] TTY: hvcs, add tty install
-Date: Tue,  7 Aug 2012 21:48:06 +0200
-Message-Id: <1344368886-24033-42-git-send-email-jslaby@suse.cz>
-In-Reply-To: <1344368886-24033-1-git-send-email-jslaby@suse.cz>
-References: <1344368886-24033-1-git-send-email-jslaby@suse.cz>
-Cc: jirislaby@gmail.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, alan@linux.intel.com
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ian Molton <ian.molton@codethink.co.uk>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ devicetree-discuss@lists.ozlabs.org, Dale Farnsworth <dale@farnsworth.org>
+Subject: Re: [PATCH v3 3/7] mv643xx.c: Add basic device tree support.
+Date: Tue, 7 Aug 2012 20:25:22 +0000
+References: <1344350092-24050-1-git-send-email-ian.molton@codethink.co.uk>
+ <201208071456.41412.arnd@arndb.de> <50213ACB.6040301@codethink.co.uk>
+In-Reply-To: <50213ACB.6040301@codethink.co.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Message-Id: <201208072025.22871.arnd@arndb.de>
+Cc: thomas.petazzoni@free-electrons.com, andrew@lunn.ch,
+ ben.dooks@codethink.co.uk, linux-arm-kernel@lists.infradead.org,
+ netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,139 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This has two outcomes:
-* we give the TTY layer a tty_port
-* we do not find the info structure every time open is called on that
-  tty
+On Tuesday 07 August 2012, Ian Molton wrote:
+> > I think it documents some of the same thing,
+> 
+> Not really. It documents some godawful hack that recycled the platform
+> device -based driver and provided a DT binding for it, just for PPC.
+> 
+> I cant even find anything that implements code for whatever
+> "marvell,mv64360-mdio" might be. I'm sure it might exist somewhere.
 
->From now on, we only increase the reference count in ->install (and
-decrease in ->cleanup).
+The code dates back to when we had separate buses for platform devices
+and of devices, and then it was decided not to add support for both
+bus types to each of the marvell drivers. In hindsight it would have
+been better to do that, but that was impossible to tell back then.
 
-Signed-off-by: Jiri Slaby <jslaby@suse.cz>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- drivers/tty/hvc/hvcs.c |   52 ++++++++++++++++++++++++++++++------------------
- 1 file changed, 33 insertions(+), 19 deletions(-)
+> > We might also want to move some of the
+> > code from arch/powerpc/sysdev/mv64x60_dev.c to live in the same place
+> > as the device driver.
+> 
+> I hope not. I don't really want to touch that stuff at all. If it works
+> the way it
+> is, then it can stay that way. If the PPC folk want to send patches to
+> add the
+> properties they use to the driver, then they can do. I'll send an email
+> their
+> way and see if they want to join in.
+> 
+> From my perspective, the next thing that needs to happen to the driver is
+> for it to be broken up into ethernet and mdio drivers, so that we can
+> get rid
+> of all this shared_smi craziness... But that's for another patch series.
 
-diff --git a/drivers/tty/hvc/hvcs.c b/drivers/tty/hvc/hvcs.c
-index 6f5c3be..cab5c7a 100644
---- a/drivers/tty/hvc/hvcs.c
-+++ b/drivers/tty/hvc/hvcs.c
-@@ -1102,11 +1102,7 @@ static struct hvcs_struct *hvcs_get_by_index(int index)
- 	return NULL;
- }
- 
--/*
-- * This is invoked via the tty_open interface when a user app connects to the
-- * /dev node.
-- */
--static int hvcs_open(struct tty_struct *tty, struct file *filp)
-+static int hvcs_install(struct tty_driver *driver, struct tty_struct *tty)
- {
- 	struct hvcs_struct *hvcsd;
- 	struct vio_dev *vdev;
-@@ -1114,9 +1110,6 @@ static int hvcs_open(struct tty_struct *tty, struct file *filp)
- 	unsigned int irq;
- 	int retval;
- 
--	if (tty->driver_data)
--		goto fast_open;
--
- 	/*
- 	 * Is there a vty-server that shares the same index?
- 	 * This function increments the kref index.
-@@ -1139,7 +1132,7 @@ static int hvcs_open(struct tty_struct *tty, struct file *filp)
- 		}
- 	}
- 
--	hvcsd->port.count = 1;
-+	hvcsd->port.count = 0;
- 	hvcsd->port.tty = tty;
- 	tty->driver_data = hvcsd;
- 
-@@ -1166,28 +1159,42 @@ static int hvcs_open(struct tty_struct *tty, struct file *filp)
- 		goto err_put;
- 	}
- 
--	goto open_success;
-+	retval = tty_port_install(&hvcsd->port, driver, tty);
-+	if (retval)
-+		goto err_irq;
- 
--fast_open:
--	hvcsd = tty->driver_data;
-+	return 0;
-+err_irq:
-+	spin_lock_irqsave(&hvcsd->lock, flags);
-+	vio_disable_interrupts(hvcsd->vdev);
-+	spin_unlock_irqrestore(&hvcsd->lock, flags);
-+	free_irq(irq, hvcsd);
-+err_put:
-+	tty_port_put(&hvcsd->port);
-+
-+	return retval;
-+}
-+
-+/*
-+ * This is invoked via the tty_open interface when a user app connects to the
-+ * /dev node.
-+ */
-+static int hvcs_open(struct tty_struct *tty, struct file *filp)
-+{
-+	struct hvcs_struct *hvcsd = tty->driver_data;
-+	unsigned long flags;
- 
- 	spin_lock_irqsave(&hvcsd->lock, flags);
--	tty_port_get(&hvcsd->port);
- 	hvcsd->port.count++;
- 	hvcsd->todo_mask |= HVCS_SCHED_READ;
- 	spin_unlock_irqrestore(&hvcsd->lock, flags);
- 
--open_success:
- 	hvcs_kick();
- 
- 	printk(KERN_INFO "HVCS: vty-server@%X connection opened.\n",
- 		hvcsd->vdev->unit_address );
- 
- 	return 0;
--err_put:
--	tty_port_put(&hvcsd->port);
--
--	return retval;
- }
- 
- static void hvcs_close(struct tty_struct *tty, struct file *filp)
-@@ -1238,7 +1245,6 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 		tty->driver_data = NULL;
- 
- 		free_irq(irq, hvcsd);
--		tty_port_put(&hvcsd->port);
- 		return;
- 	} else if (hvcsd->port.count < 0) {
- 		printk(KERN_ERR "HVCS: vty-server@%X open_count: %d"
-@@ -1247,6 +1253,12 @@ static void hvcs_close(struct tty_struct *tty, struct file *filp)
- 	}
- 
- 	spin_unlock_irqrestore(&hvcsd->lock, flags);
-+}
-+
-+static void hvcs_cleanup(struct tty_struct * tty)
-+{
-+	struct hvcs_struct *hvcsd = tty->driver_data;
-+
- 	tty_port_put(&hvcsd->port);
- }
- 
-@@ -1433,8 +1445,10 @@ static int hvcs_chars_in_buffer(struct tty_struct *tty)
- }
- 
- static const struct tty_operations hvcs_ops = {
-+	.install = hvcs_install,
- 	.open = hvcs_open,
- 	.close = hvcs_close,
-+	.cleanup = hvcs_cleanup,
- 	.hangup = hvcs_hangup,
- 	.write = hvcs_write,
- 	.write_room = hvcs_write_room,
--- 
-1.7.10.4
+Adding devicetree-discuss and linuxppc-dev, as well as Dale Farnsworth,
+who initially added the bindings for mv643xx.
+
+I would hope that at least some of the properties that are used on
+powerpc can be reused in the same way for other architectures.
+The method to find the phy address on powerpc does indeed make
+more sense than the "port_number" property you suggested, and the
+phandle for the phy node is usually called "phy" not "mdio".
+
+I'm not sure if the ethernet-group is required on ARM as well, but
+it does sound a lot like what you actually want instead of the
+shared_smi property.
+
+	Arnd
