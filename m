@@ -1,28 +1,36 @@
-Return-Path: <r63875@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+Return-Path: <B38951@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0D64E2C0339
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 17:20:08 +1000 (EST)
-Received: from mail22-am1 (localhost [127.0.0.1])	by mail22-am1-R.bigfish.com
- (Postfix) with ESMTP id 6F5E71E0106	for <linuxppc-dev@ozlabs.org>;
- Wed,  8 Aug 2012 07:20:04 +0000 (UTC)
-Received: from AM1EHSMHS013.bigfish.com (unknown [10.3.201.249])	by
- mail22-am1.bigfish.com (Postfix) with ESMTP id 30230260044	for
- <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 07:20:03 +0000 (UTC)
-From: Olivia Yin <hong-hua.yin@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/3] powerpc/e500mc: Add power isa properties to comply with
- ePAPR 1.1
-Date: Wed, 8 Aug 2012 14:53:27 +0800
-Message-ID: <1344408808-29411-2-git-send-email-hong-hua.yin@freescale.com>
-In-Reply-To: <1344408808-29411-1-git-send-email-hong-hua.yin@freescale.com>
-References: <1344408808-29411-1-git-send-email-hong-hua.yin@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2516A2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 19:03:30 +1000 (EST)
+Received: from mail145-ch1 (localhost [127.0.0.1])	by
+ mail145-ch1-R.bigfish.com (Postfix) with ESMTP id BAEA080620	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 09:03:24 +0000 (UTC)
+Received: from CH1EHSMHS007.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.254])	by mail145-ch1.bigfish.com (Postfix) with ESMTP id
+ 460253E0065	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 09:03:09
+ +0000 (UTC)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Li Yang-R58472
+ <r58472@freescale.com>
+Subject: RE: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Wed, 8 Aug 2012 09:03:04 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A518E4@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343988851-884-1-git-send-email-B38951@freescale.com>
+ <1343988851-884-4-git-send-email-B38951@freescale.com>
+ <501BFC0E.6070708@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A36D0A@039-SN1MPN1-002.039d.mgd.msft.net>
+ <501FDE40.1060906@freescale.com>
+ <CADRPPNTqnEt3xE8Et1cbK=GwfemgA3-dF7aH2cTNppCddKJ6DA@mail.gmail.com>
+ <50213342.8020600@freescale.com>
+In-Reply-To: <50213342.8020600@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Olivia Yin <hong-hua.yin@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,126 +40,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch update all the e500mc platforms.
-
-Signed-off-by: Liu Yu <yu.liu@freescale.com>
-Signed-off-by: Olivia Yin <hong-hua.yin@freescale.com>
----
-git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-branch: next
-
- arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi |   58 +++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi      |    3 +
- 4 files changed, 67 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi
-
-diff --git a/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi b/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi
-new file mode 100644
-index 0000000..fa40047
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi
-@@ -0,0 +1,58 @@
-+/*
-+ * e500mc power isa Device Tree Source (include)
-+ *
-+ * Copyright 2012 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/ {
-+	cpus {
-+		power-isa-version = "2.06";
-+		power-isa-b;		// Base
-+		power-isa-e;		// Embedded
-+		power-isa-atb;		// Alternate Time Base
-+		power-isa-cs;		// Cache Specification
-+		power-isa-ds;		// Decorated Storage
-+		power-isa-e.ed;		// Embedded.Enhanced Debug
-+		power-isa-e.pd;		// Embedded.External PID
-+		power-isa-e.hv;		// Embedded.Hypervisor
-+		power-isa-e.le;		// Embedded.Little-Endian
-+		power-isa-e.pm;		// Embedded.Performance Monitor
-+		power-isa-e.pc;		// Embedded.Processor Control
-+		power-isa-ecl;		// Embedded Cache Locking
-+		power-isa-exp;		// External Proxy
-+		power-isa-fp;		// Floating Point
-+		power-isa-fp.r;		// Floating Point.Record
-+		power-isa-mmc;		// Memory Coherence
-+		power-isa-scpm;		// Store Conditional Page Mobility
-+		power-isa-wt;		// Wait
-+		mmu-type = "power-embedded";
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-index 2d0a40d..7a2697d 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500mc_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P2041";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-index 136def3..c9ca2c3 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500mc_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P3041";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-index b9556ee..493d9a0 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500mc_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P4080";
- 	#address-cells = <2>;
--- 
-1.6.4
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDA3LCAyMDEyIDExOjI1IFBNDQo+IFRvOiBMaSBZ
+YW5nLVI1ODQ3Mg0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IGxpbnV4cHBjLWRldkBsaXN0cy5v
+emxhYnMub3JnOyBMaSBZYW5nLVI1ODQ3MjsgSmlhDQo+IEhvbmd0YW8tQjM4OTUxDQo+IFN1Ympl
+Y3Q6IFJlOiBbUEFUQ0ggVjUgMy8zXSBwb3dlcnBjL2ZzbC1wY2k6IFVuaWZ5IHBjaS9wY2llDQo+
+IGluaXRpYWxpemF0aW9uIGNvZGUNCj4gDQo+IE9uIDA4LzA2LzIwMTIgMTE6MjAgUE0sIExpIFlh
+bmcgd3JvdGU6DQo+ID4gT24gTW9uLCBBdWcgNiwgMjAxMiBhdCAxMTowOSBQTSwgU2NvdHQgV29v
+ZCA8c2NvdHR3b29kQGZyZWVzY2FsZS5jb20+DQo+IHdyb3RlOg0KPiA+PiBPbiAwOC8wNS8yMDEy
+IDEwOjA3IFBNLCBKaWEgSG9uZ3Rhby1CMzg5NTEgd3JvdGU6DQo+ID4+Pg0KPiA+Pj4NCj4gPj4+
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+Pj4+IEZyb206IFdvb2QgU2NvdHQtQjA3
+NDIxDQo+ID4+Pj4gU2VudDogU2F0dXJkYXksIEF1Z3VzdCAwNCwgMjAxMiAxMjoyOCBBTQ0KPiA+
+Pj4+IFRvOiBKaWEgSG9uZ3Rhby1CMzg5NTENCj4gPj4+PiBDYzogbGludXhwcGMtZGV2QGxpc3Rz
+Lm96bGFicy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpDQo+ID4+Pj4gWWFuZy0g
+UjU4NDcyOyBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+Pj4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjUg
+My8zXSBwb3dlcnBjL2ZzbC1wY2k6IFVuaWZ5IHBjaS9wY2llDQo+ID4+Pj4gaW5pdGlhbGl6YXRp
+b24gY29kZQ0KPiA+Pj4+DQo+ID4+Pj4gQXMgSSBleHBsYWluZWQgYmVmb3JlLCB0aGlzIGhhcyB0
+byBiZSBkb25lIGdsb2JhbGx5LCBub3QgZnJvbSB0aGUNCj4gPj4+PiBwcm9iZSBmdW5jdGlvbiwg
+c28gd2UgY2FuIGFzc2lnbiBhIGRlZmF1bHQgcHJpbWFyeSBidXMgaWYgdGhlcmUNCj4gaXNuJ3Qg
+YW55IElTQS4NCj4gPj4+PiAgVGhlcmUgYXJlIGJ1Z3MgaW4gdGhlIExpbnV4IFBQQyBQQ0kgY29k
+ZSByZWxhdGluZyB0byBub3QgaGF2aW5nDQo+ID4+Pj4gYW55IHByaW1hcnkgYnVzLg0KPiA+Pj4+
+DQo+ID4+Pj4gLVNjb3R0DQo+ID4+Pg0KPiA+Pj4gSW4gbXkgd2F5IG9mIHNlYXJjaGluZyBJU0Eg
+eW91IGNhbiBhbHNvIGFzc2lnbiBhIGRlZmF1bHQgcHJpbWFyeSBidXMNCj4gPj4+IGluIGJvYXJk
+IHNwZWNpZmljIGZpbGVzLg0KPiA+Pg0KPiA+PiBUaGF0IHdhcyBtZWFudCBmb3Igd2hlbiB0aGUg
+Ym9hcmQgZmlsZSBoYWQgYW4gYWx0ZXJuYXRlIHdheSBvZg0KPiA+PiBzZWFyY2hpbmcgZm9yIHRo
+ZSBwcmltYXJ5IGJ1cyAoZS5nLiBsb29rIGZvciBpODI1OSksIG5vdCBhcyBhDQo+ID4+IHJlcGxh
+Y2VtZW50IGZvciB0aGUgbWVjaGFuaXNtIHRoYXQgZ3VhcmFudGVlcyB0aGVyZSdzIGEgcHJpbWFy
+eSBidXMuDQo+ID4+DQo+ID4+IFlvdSBhcmUgY2F1c2luZyBhIHJlZ3Jlc3Npb24gaW4gdGhlIHFl
+bXVfZTUwMC5jIHBsYXRmb3JtLg0KPiA+DQo+ID4gQ2FuIHdlIGZpeCB0aGUgcWVtdSBkZXZpY2Ug
+dHJlZSB0byBhZGRyZXNzIHRoZSBwcm9ibGVtIGlmIHdlIGRvIG1ha2UNCj4gPiBpdCBhIHJ1bGUg
+dG8gdXNlIHRoZSBJU0Egbm9kZSB0byBpbmRpY2F0ZSB0aGUgcHJpbWFyeSBidXM/DQo+IA0KPiBO
+by4gIFRoZXJlIGlzIG5vIElTQSwgYW5kIHdlJ3JlIG5vdCBnb2luZyB0byBsaWUgYW5kIHNheSB0
+aGVyZSBpcy4NCg0KQnV0IHdlIGNhbiBhc3NpZ24gYSBkZWZhdWx0IHByaW1hcnkgZm9yIHFlbXUu
+DQoNCj4gDQo+IEkgcmVhbGx5IGRvbid0IHVuZGVyc3RhbmQgd2hhdCB0aGUgcHJvYmxlbSBpcyB3
+aXRoIGxlYXZpbmcgdGhlIHByaW1hcnkNCj4gZGV0ZWN0aW9uIGNvZGUgYXMgZ2xvYmFsLiAgRWl0
+aGVyIGZpeCB0aGUgYnVncyBzbyB3ZSBkb24ndCBuZWVkIGEgcHJpbWFyeSwNCj4gb3IgYWNjZXB0
+IHNvbWUgImltcHVyaXR5IiBpbiB0aGUgd29ya2Fyb3VuZC4NCj4gDQo+IC1TY290dA0KDQpHbG9i
+YWwgZGV0ZWN0aW9uIGZvciBwcmltYXJ5IGlzIG9rIGJ1dCB3ZSB0aGluayBvdXIgd2F5IGlzIGRl
+ZXBlciB1bmlmaWVkLg0KDQpJcyB0aGVyZSBhbnkgcHJvYmxlbSB0byBmaXggdGhlIGJ1Z3M/DQpJ
+IHJlYWxseSBkb24ndCB1bmRlcnN0YW5kIHdoeSB3ZSBoYXZlIHRvIG5lZWQgYSBwcmltYXJ5IGJ1
+cy4NCg0KLUhvbmd0YW8uDQoNCg0K
