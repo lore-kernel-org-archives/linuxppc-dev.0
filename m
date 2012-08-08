@@ -1,30 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 431D12C0086
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2012 02:02:30 +1000 (EST)
-Message-ID: <50228D8B.3040204@freescale.com>
-Date: Wed, 8 Aug 2012 11:02:19 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Subject: Re: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 02AB52C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2012 05:04:02 +1000 (EST)
+Subject: Re: [PATCH V5 2/3] powerpc/swiotlb: Enable at early stage and disable
+ if not necessary
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1343988851-884-3-git-send-email-B38951@freescale.com>
+Date: Wed, 8 Aug 2012 14:03:45 -0500
+Message-Id: <66F04906-39B4-493D-8C63-202112AB1EA3@kernel.crashing.org>
 References: <1343988851-884-1-git-send-email-B38951@freescale.com>
- <1343988851-884-4-git-send-email-B38951@freescale.com>
- <501BFC0E.6070708@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A36D0A@039-SN1MPN1-002.039d.mgd.msft.net>
- <501FDE40.1060906@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A45931@039-SN1MPN1-002.039d.mgd.msft.net>
- <50213439.9070806@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A51913@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A51913@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
+ <1343988851-884-3-git-send-email-B38951@freescale.com>
+To: Josh Boyer <jwboyer@gmail.com>, Tony Breeds <tony@bakeyournoodle.com>
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Jia Hongtao <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,49 +27,178 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/08/2012 04:39 AM, Jia Hongtao-B38951 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Wood Scott-B07421
->> Sent: Tuesday, August 07, 2012 11:29 PM
->> To: Jia Hongtao-B38951
->> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
->> galak@kernel.crashing.org; Li Yang-R58472
->> Subject: Re: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie
->> initialization code
->>
->> On 08/07/2012 03:09 AM, Jia Hongtao-B38951 wrote:
->>> I am really not sure that all boards need primary bus. Could you give
->>> me the link of discussion about primary that you mentioned?
->>
->> https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-June/098586.html
->>
->> -Scott
-> 
-> 
-> It seems in qemu isa_io_base must be non-zero.
 
-In all cases.  It just shows up worse under QEMU because of a different
-issue.
+On Aug 3, 2012, at 5:14 AM, Jia Hongtao wrote:
 
-> If there is no isa bridge should isa_io_base be non-zero for other boards?
+> Remove the dependency on PCI initialization for SWIOTLB =
+initialization.
+> So that PCI can be initialized at proper time.
+>=20
+> SWIOTLB is partly determined by PCI inbound/outbound map which is =
+assigned
+> in PCI initialization. But swiotlb_init() should be done at the stage =
+of
+> mem_init() which is much earlier than PCI initialization. So we =
+reserve the
+> memory for SWIOTLB first and free it if not necessary.
+>=20
+> All boards are converted to fit this change.
+>=20
+> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> arch/powerpc/include/asm/swiotlb.h       |    6 ++++++
+> arch/powerpc/kernel/dma-swiotlb.c        |   20 ++++++++++++++++++++
+> arch/powerpc/mm/mem.c                    |    3 +--
+> arch/powerpc/platforms/44x/currituck.c   |   10 ++--------
+> arch/powerpc/platforms/85xx/mpc85xx_ds.c |    1 +
+> arch/powerpc/platforms/85xx/qemu_e500.c  |    1 +
+> arch/powerpc/sysdev/fsl_pci.c            |    5 +----
+> 7 files changed, 32 insertions(+), 14 deletions(-)
 
-Yes, until the bugs are fixed.
+Josh, Tony
 
-> If not maybe we should fix qemu bug.
+Can you ack the 44x/currituck.c change.
 
-If you want to try to make QEMU accept I/O BARs with address zero, go
-ahead, but you don't get to assume that someone else will do it, we
-still need to be compatible with older QEMUs (this bug is not so severe
-that compatibility is unreasonable), and it still doesn't address the
-fact that things are not functioning as designed.  IIRC there are some
-real hardware PCI cards that don't like getting an address of zero either.
+thanks
 
-> Or "quick fix" in the link is a workaround.
+- k
 
-I think that "quick fix" may have problems if there is a primary bus but
-it's not the first one detected.  In any case, any fix or workaround has
-to happen before you make changes that rely on it.
-
--Scott
+>=20
+> diff --git a/arch/powerpc/include/asm/swiotlb.h =
+b/arch/powerpc/include/asm/swiotlb.h
+> index 8979d4c..de99d6e 100644
+> --- a/arch/powerpc/include/asm/swiotlb.h
+> +++ b/arch/powerpc/include/asm/swiotlb.h
+> @@ -22,4 +22,10 @@ int __init swiotlb_setup_bus_notifier(void);
+>=20
+> extern void pci_dma_dev_setup_swiotlb(struct pci_dev *pdev);
+>=20
+> +#ifdef CONFIG_SWIOTLB
+> +void swiotlb_detect_4g(void);
+> +#else
+> +static inline void swiotlb_detect_4g(void) {}
+> +#endif
+> +
+> #endif /* __ASM_SWIOTLB_H */
+> diff --git a/arch/powerpc/kernel/dma-swiotlb.c =
+b/arch/powerpc/kernel/dma-swiotlb.c
+> index 4ab88da..aa85550 100644
+> --- a/arch/powerpc/kernel/dma-swiotlb.c
+> +++ b/arch/powerpc/kernel/dma-swiotlb.c
+> @@ -104,3 +104,23 @@ int __init swiotlb_setup_bus_notifier(void)
+> 			      &ppc_swiotlb_plat_bus_notifier);
+> 	return 0;
+> }
+> +
+> +void swiotlb_detect_4g(void)
+> +{
+> +	if ((memblock_end_of_DRAM() - 1) > 0xffffffff)
+> +		ppc_swiotlb_enable =3D 1;
+> +}
+> +
+> +static int __init swiotlb_late_init(void)
+> +{
+> +	if (ppc_swiotlb_enable) {
+> +		swiotlb_print_info();
+> +		set_pci_dma_ops(&swiotlb_dma_ops);
+> +		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
+> +	} else {
+> +		swiotlb_free();
+> +	}
+> +
+> +	return 0;
+> +}
+> +subsys_initcall(swiotlb_late_init);
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index baaafde..f23c4e0 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -300,8 +300,7 @@ void __init mem_init(void)
+> 	unsigned long reservedpages =3D 0, codesize, initsize, datasize, =
+bsssize;
+>=20
+> #ifdef CONFIG_SWIOTLB
+> -	if (ppc_swiotlb_enable)
+> -		swiotlb_init(1);
+> +	swiotlb_init(0);
+> #endif
+>=20
+> 	num_physpages =3D memblock_phys_mem_size() >> PAGE_SHIFT;
+> diff --git a/arch/powerpc/platforms/44x/currituck.c =
+b/arch/powerpc/platforms/44x/currituck.c
+> index 9f6c33d..6bd89a0 100644
+> --- a/arch/powerpc/platforms/44x/currituck.c
+> +++ b/arch/powerpc/platforms/44x/currituck.c
+> @@ -21,7 +21,6 @@
+>  */
+>=20
+> #include <linux/init.h>
+> -#include <linux/memblock.h>
+> #include <linux/of.h>
+> #include <linux/of_platform.h>
+> #include <linux/rtc.h>
+> @@ -159,13 +158,8 @@ static void __init ppc47x_setup_arch(void)
+>=20
+> 	/* No need to check the DMA config as we /know/ our windows are =
+all of
+>  	 * RAM.  Lets hope that doesn't change */
+> -#ifdef CONFIG_SWIOTLB
+> -	if ((memblock_end_of_DRAM() - 1) > 0xffffffff) {
+> -		ppc_swiotlb_enable =3D 1;
+> -		set_pci_dma_ops(&swiotlb_dma_ops);
+> -		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
+> -	}
+> -#endif
+> +	swiotlb_detect_4g();
+> +
+> 	ppc47x_smp_init();
+> }
+>=20
+> diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c =
+b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> index 6d3265f..56f8c8f 100644
+> --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
+> @@ -159,6 +159,7 @@ static void __init mpc85xx_ds_setup_arch(void)
+> 	if (ppc_md.progress)
+> 		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
+>=20
+> +	swiotlb_detect_4g();
+> 	mpc85xx_ds_pci_init();
+> 	mpc85xx_smp_init();
+>=20
+> diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c =
+b/arch/powerpc/platforms/85xx/qemu_e500.c
+> index 95a2e53..3c5490c 100644
+> --- a/arch/powerpc/platforms/85xx/qemu_e500.c
+> +++ b/arch/powerpc/platforms/85xx/qemu_e500.c
+> @@ -42,6 +42,7 @@ static void __init qemu_e500_setup_arch(void)
+> 	ppc_md.progress("qemu_e500_setup_arch()", 0);
+>=20
+> 	fsl_pci_init();
+> +	swiotlb_detect_4g();
+> 	mpc85xx_smp_init();
+> }
+>=20
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c =
+b/arch/powerpc/sysdev/fsl_pci.c
+> index 6938792..da7a3d7 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -872,11 +872,8 @@ void __devinit fsl_pci_init(void)
+> 	 * we need SWIOTLB to handle buffers located outside of
+> 	 * dma capable memory region
+> 	 */
+> -	if (memblock_end_of_DRAM() - 1 > max) {
+> +	if (memblock_end_of_DRAM() - 1 > max)
+> 		ppc_swiotlb_enable =3D 1;
+> -		set_pci_dma_ops(&swiotlb_dma_ops);
+> -		ppc_md.pci_dma_dev_setup =3D pci_dma_dev_setup_swiotlb;
+> -	}
+> #endif
+> }
+> #endif
+> --=20
+> 1.7.5.1
+>=20
