@@ -1,23 +1,26 @@
 Return-Path: <r63875@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C64592C0080
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 17:20:03 +1000 (EST)
-Received: from mail188-co1 (localhost [127.0.0.1])	by
- mail188-co1-R.bigfish.com (Postfix) with ESMTP id 3D7C43C0163	for
- <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 07:20:00 +0000 (UTC)
-Received: from CO1EHSMHS015.bigfish.com (unknown [10.243.78.237])	by
- mail188-co1.bigfish.com (Postfix) with ESMTP id 2ECBB4C004C	for
- <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 07:19:59 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 48BC42C0326
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 17:20:08 +1000 (EST)
+Received: from mail95-tx2 (localhost [127.0.0.1])	by mail95-tx2-R.bigfish.com
+ (Postfix) with ESMTP id 3EC541401B9	for <linuxppc-dev@ozlabs.org>;
+ Wed,  8 Aug 2012 07:20:05 +0000 (UTC)
+Received: from TX2EHSMHS022.bigfish.com (unknown [10.9.14.240])	by
+ mail95-tx2.bigfish.com (Postfix) with ESMTP id B7FEFC016E	for
+ <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 07:20:03 +0000 (UTC)
 From: Olivia Yin <hong-hua.yin@freescale.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/3] powerpc/e500v2: Add power isa properties to comply with
+Subject: [PATCH 3/3] powerpc/e5500: Add power isa properties to comply with
  ePAPR 1.1
-Date: Wed, 8 Aug 2012 14:53:26 +0800
-Message-ID: <1344408808-29411-1-git-send-email-hong-hua.yin@freescale.com>
+Date: Wed, 8 Aug 2012 14:53:28 +0800
+Message-ID: <1344408808-29411-3-git-send-email-hong-hua.yin@freescale.com>
+In-Reply-To: <1344408808-29411-2-git-send-email-hong-hua.yin@freescale.com>
+References: <1344408808-29411-1-git-send-email-hong-hua.yin@freescale.com>
+ <1344408808-29411-2-git-send-email-hong-hua.yin@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Olivia Yin <hong-hua.yin@freescale.com>
@@ -30,7 +33,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch update all e500v2 platforms.
+The patch update all the e5500 platforms.
 
 Signed-off-by: Liu Yu <yu.liu@freescale.com>
 Signed-off-by: Olivia Yin <hong-hua.yin@freescale.com>
@@ -38,34 +41,19 @@ Signed-off-by: Olivia Yin <hong-hua.yin@freescale.com>
 git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
 branch: next
 
- arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi |   52 +++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi    |    3 +
- arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi    |    3 +
- arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi    |    3 +
- arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi    |    3 +
- arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi    |    3 +
- arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi    |    3 +
- arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/mpc8540ads.dts            |    2 +
- arch/powerpc/boot/dts/mpc8541cds.dts            |    2 +
- arch/powerpc/boot/dts/mpc8555cds.dts            |    2 +
- arch/powerpc/boot/dts/mpc8560ads.dts            |    2 +
- 17 files changed, 96 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi
+ arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi |   59 ++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi     |    3 +
+ 2 files changed, 62 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
 
-diff --git a/arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi b/arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi
+diff --git a/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi b/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
 new file mode 100644
-index 0000000..efd6c73
+index 0000000..0e26eb5
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi
-@@ -0,0 +1,52 @@
++++ b/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
+@@ -0,0 +1,59 @@
 +/*
-+ * e500v2 power isa Device Tree Source (include)
++ * e5500 power isa Device Tree Source (include)
 + *
 + * Copyright 2012 Freescale Semiconductor Inc.
 + *
@@ -100,241 +88,42 @@ index 0000000..efd6c73
 +
 +/ {
 +	cpus {
-+		power-isa-version = "2.03";
++		power-isa-version = "2.06";
 +		power-isa-b;		// Base
 +		power-isa-e;		// Embedded
 +		power-isa-atb;		// Alternate Time Base
 +		power-isa-cs;		// Cache Specification
++		power-isa-ds;		// Decorated Storage
++		power-isa-e.ed;		// Embedded.Enhanced Debug
++		power-isa-e.pd;		// Embedded.External PID
++		power-isa-e.hv;		// Embedded.Hypervisor
 +		power-isa-e.le;		// Embedded.Little-Endian
 +		power-isa-e.pm;		// Embedded.Performance Monitor
++		power-isa-e.pc;		// Embedded.Processor Control
 +		power-isa-ecl;		// Embedded Cache Locking
++		power-isa-exp;		// External Proxy
++		power-isa-fp;		// Floating Point
++		power-isa-fp.r;		// Floating Point.Record
 +		power-isa-mmc;		// Memory Coherence
-+		power-isa-sp;		// Signal Processing Engine
-+		power-isa-sp.fd;	// SPE.Embedded Float Scalar Double
-+		power-isa-sp.fs;	// SPE.Embedded Float Scalar Single
-+		power-isa-sp.fv;	// SPE.Embedded Float Vector
++		power-isa-scpm;		// Store Conditional Page Mobility
++		power-isa-wt;		// Wait
++		power-isa-64;		// 64-bit
 +		mmu-type = "power-embedded";
 +	};
 +};
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi
-index 7de45a7..152906f 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi
+diff --git a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
+index ae823a4..0a198b0 100644
+--- a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
 @@ -33,6 +33,9 @@
   */
  
  /dts-v1/;
 +
-+/include/ "e500v2_power_isa.dtsi"
++/include/ "e5500_power_isa.dtsi"
 +
  / {
- 	compatible = "fsl,MPC8536";
+ 	compatible = "fsl,P5020";
  	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi
-index 8777f92..5a69baf 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,MPC8544";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi
-index 720422d..fc1ce97 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,MPC8548";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi
-index eacd62c..122ca3b 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,MPC8568";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi
-index b07064d..2cd15a2 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,MPC8569";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi
-index ca18832..28c2a86 100644
---- a/arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,MPC8572";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi
-index 7354a8f..6e76f9b 100644
---- a/arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P1010";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi
-index 6f0376e..fed9c4c 100644
---- a/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P1020";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi
-index 4abd54b..36161b5 100644
---- a/arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P1021";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-index e930f4f..1956dea 100644
---- a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P1022";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
-index ac45f6d..132a152 100644
---- a/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P1023";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi
-index 3213288..42bf3c6 100644
---- a/arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500v2_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P2020";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
-index f99fb11..2d31863 100644
---- a/arch/powerpc/boot/dts/mpc8540ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8540ads.dts
-@@ -11,6 +11,8 @@
- 
- /dts-v1/;
- 
-+/include/ "fsl/e500v2_power_isa.dtsi"
-+
- / {
- 	model = "MPC8540ADS";
- 	compatible = "MPC8540ADS", "MPC85xxADS";
-diff --git a/arch/powerpc/boot/dts/mpc8541cds.dts b/arch/powerpc/boot/dts/mpc8541cds.dts
-index 0f5e939..1c03c26 100644
---- a/arch/powerpc/boot/dts/mpc8541cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8541cds.dts
-@@ -11,6 +11,8 @@
- 
- /dts-v1/;
- 
-+/include/ "fsl/e500v2_power_isa.dtsi"
-+
- / {
- 	model = "MPC8541CDS";
- 	compatible = "MPC8541CDS", "MPC85xxCDS";
-diff --git a/arch/powerpc/boot/dts/mpc8555cds.dts b/arch/powerpc/boot/dts/mpc8555cds.dts
-index fe10438..36a7ea1 100644
---- a/arch/powerpc/boot/dts/mpc8555cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8555cds.dts
-@@ -11,6 +11,8 @@
- 
- /dts-v1/;
- 
-+/include/ "fsl/e500v2_power_isa.dtsi"
-+
- / {
- 	model = "MPC8555CDS";
- 	compatible = "MPC8555CDS", "MPC85xxCDS";
-diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
-index 6e85e1b..1a43f5a 100644
---- a/arch/powerpc/boot/dts/mpc8560ads.dts
-+++ b/arch/powerpc/boot/dts/mpc8560ads.dts
-@@ -11,6 +11,8 @@
- 
- /dts-v1/;
- 
-+/include/ "fsl/e500v2_power_isa.dtsi"
-+
- / {
- 	model = "MPC8560ADS";
- 	compatible = "MPC8560ADS", "MPC85xxADS";
 -- 
 1.6.4
