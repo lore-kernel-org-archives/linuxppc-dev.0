@@ -1,35 +1,31 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9BCF42C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 11:08:14 +1000 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 7 Aug 2012 19:08:11 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id DAB5019D803C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 01:07:48 +0000 (WET)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q7817NfY123296
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Aug 2012 19:07:38 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q78177jt023726
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Aug 2012 19:07:07 -0600
-Date: Tue, 7 Aug 2012 18:07:19 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] Use pmc_overflow() to detect rolled back events
-Message-ID: <20120808010719.GA32730@us.ibm.com>
+Return-Path: <B38951@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B9FCC2C00B3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 13:07:27 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
+Date: Wed, 8 Aug 2012 03:07:16 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A49F0F@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <1343125210-16720-5-git-send-email-B38951@freescale.com>
+ <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
+ <BAB2AC7D-90D8-473A-83A0-59BD6F730E62@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A48CF7@039-SN1MPN1-002.039d.mgd.msft.net>
+ <50213597.5080600@freescale.com>
+ <AAB7014A-15DB-4DFD-9301-7343AE4701AF@kernel.crashing.org>
+In-Reply-To: <AAB7014A-15DB-4DFD-9301-7343AE4701AF@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
- Maynard Johnson <mpjohn@us.ibm.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,67 +36,95 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
->From 21e9d1775f0c6f37a39e5d682ff74693fa9a4004 Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Tue, 7 Aug 2012 17:53:24 -0700
-Subject: [PATCH] Use pmc_overflow to detect rolled back events.
 
-For certain speculative events on Power7, 'perf stat' reports far higher
-event count than 'perf record' for the same event.
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Wednesday, August 08, 2012 1:34 AM
+> To: Wood Scott-B07421
+> Cc: Jia Hongtao-B38951; linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
+> Li Yang-R58472
+> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM
+> support
+>=20
+>=20
+> On Aug 7, 2012, at 10:34 AM, Scott Wood wrote:
+>=20
+> > On 08/07/2012 05:11 AM, Jia Hongtao-B38951 wrote:
+> >>
+> >>
+> >>> -----Original Message-----
+> >>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >>> Sent: Tuesday, July 31, 2012 9:37 PM
+> >>> To: Jia Hongtao-B38951
+> >>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li Yang-R58472
+> >>> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound
+> >>> PM support
+> >>>
+> >>>
+> >>> On Jul 30, 2012, at 1:09 AM, Jia Hongtao-B38951 wrote:
+> >>>
+> >>>>> -----Original Message-----
+> >>>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> >>>>> Sent: Friday, July 27, 2012 9:24 PM
+> >>>>> To: Jia Hongtao-B38951
+> >>>>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li
+> >>>>> Yang-R58472
+> >>>>> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound
+> >>>>> PM support
+> >>>>>
+> >>>>>
+> >>>>> On Jul 24, 2012, at 5:20 AM, Jia Hongtao wrote:
+> >>>>>
+> >>>>>> Power supply for PCI inbound/outbound window registers is off
+> >>>>>> when
+> >>>>> system
+> >>>>>> go to deep-sleep state. We save the values of registers before
+> >>>>>> suspend and restore to registers after resume.
+> >>>>>>
+> >>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
+> >>>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> >>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+> >>>>>> ---
+> >>>>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
+> >>>>>> arch/powerpc/sysdev/fsl_pci.c         |  121
+> >>>>> +++++++++++++++++++++++++++++++++
+> >>>>>> 2 files changed, 122 insertions(+), 1 deletions(-)
+> >>>>>
+> >>>>> Remind me why we need to save/restore PCI ATMUs, why not just
+> >>>>> re-parse the device tree to restore?
+> >>>>>
+> >>>>> - k
+> >>>>
+> >>>> Save/restore is the more efficient way. Latency of sleep/wakeup is
+> >>>> one of most important features in power management.
+> >>>>
+> >>>> -Hongtao.
+> >>>
+> >>> I don't think the time it takes to run through setup_pci_atmu() is
+> >>> that long compared to fsl_pci_resume().
+> >>>
+> >>> Also, don't you need to setup PCICCSRBAR and do setup_pci_cmd() on
+> resume?
+> >>>
+> >>> - k
+> >>
+> >> Hi Kumar,
+> >> I did some tests on P1022DS and found out that PCI_CMD and PCICSRBAR
+> >> is not lost when system in deep sleep. We don't need to save it.
+> >
+> > How does the PCI code know you're entering deep sleep and not
+> hibernation?
+> >
+> > -Scott
+> >
+>=20
+> Also, are you sure PCICSRBAR does not need restoring?  I'd be surprised
+> if PCICSRBAR was ok, but the ATMUs where not.
+>=20
+> - k
+>=20
 
-As described in following commit, a performance monitor exception is raised
-even when the the performance events are rolled back.
+PEXCSRBAR is in configuration space and ATMUs are memory map registers.
+I guess there are different power supplies.
 
-        commit 0837e3242c73566fc1c0196b4ec61779c25ffc93
-        Author: Anton Blanchard <anton@samba.org>
-        Date:   Wed Mar 9 14:38:42 2011 +1100
-
-perf_event_interrupt() records an event only when an overflow occurs. But
-this check for overflow is a simple 'if (val < 0)'.
-
-Because the events are rolled back, this check for overflow fails and the
-event is not recorded. perf_event_interrupt() later uses pmc_overflow() to
-detect the overflow and resets the counters and the events are lost completely.
-
-To properly detect the overflow of rolled back events, use pmc_overflow()
-even when recording events.
-
-To reproduce:
-        $ cat strcpy.c
-        #include <stdio.h>
-        #include <string.h>
-        main()
-        {
-                char buf[256];
-
-                alarm(5);
-                while(1)
-                        strcpy(buf, "string1");
-        }
-
-        $ perf record -e r20014 ./strcpy
-        $ perf report -n > report.1
-        $ perf stat -e r20014 > report.2
-        # Compare report.1 and report.2
-
-Reported-by: Maynard Johnson <mpjohn@us.ibm.com>
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/perf/core-book3s.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 8f84bcb..f74b90d 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -1394,7 +1394,7 @@ static void perf_event_interrupt(struct pt_regs *regs)
- 		if (!event->hw.idx || is_limited_pmc(event->hw.idx))
- 			continue;
- 		val = read_pmc(event->hw.idx);
--		if ((int)val < 0) {
-+		if (pmc_overflow(val)) {
- 			/* event has overflowed */
- 			found = 1;
- 			record_and_restart(event, val, regs);
--- 
-1.7.1
+-Hongtao.
