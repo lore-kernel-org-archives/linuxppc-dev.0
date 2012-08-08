@@ -1,37 +1,26 @@
-Return-Path: <zch@tx30smr01.freescale.net>
+Return-Path: <r63875@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 407E92C0095
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 17:09:54 +1000 (EST)
-Received: from mail75-co1 (localhost [127.0.0.1])	by mail75-co1-R.bigfish.com
- (Postfix) with ESMTP id 353D780363	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Aug 2012 07:09:50 +0000 (UTC)
-Received: from CO1EHSMHS026.bigfish.com (unknown [10.243.78.238])	by
- mail75-co1.bigfish.com (Postfix) with ESMTP id AAC9A640044	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 07:09:47 +0000 (UTC)
-Received: from localhost.localdomain ([10.213.130.145])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q7879gfX027888	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Aug 2012 00:09:45 -0700
-Date: Wed, 8 Aug 2012 15:11:26 +0800
-From: Zhao Chenhui <chenhui.zhao@freescale.com>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/4] cpu: export cpu hotplug disable/enable functions as
- global functions
-Message-ID: <20120808071125.GA31389@localhost.localdomain>
-References: <1344329006-10645-1-git-send-email-chenhui.zhao@freescale.com>
- <1344329006-10645-3-git-send-email-chenhui.zhao@freescale.com>
- <B4FC7F5E-EA8F-4FCA-B206-353FE4481DCE@kernel.crashing.org>
- <50220382.4010405@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id C64592C0080
+ for <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 17:20:03 +1000 (EST)
+Received: from mail188-co1 (localhost [127.0.0.1])	by
+ mail188-co1-R.bigfish.com (Postfix) with ESMTP id 3D7C43C0163	for
+ <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 07:20:00 +0000 (UTC)
+Received: from CO1EHSMHS015.bigfish.com (unknown [10.243.78.237])	by
+ mail188-co1.bigfish.com (Postfix) with ESMTP id 2ECBB4C004C	for
+ <linuxppc-dev@ozlabs.org>; Wed,  8 Aug 2012 07:19:59 +0000 (UTC)
+From: Olivia Yin <hong-hua.yin@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH 1/3] powerpc/e500v2: Add power isa properties to comply with
+ ePAPR 1.1
+Date: Wed, 8 Aug 2012 14:53:26 +0800
+Message-ID: <1344408808-29411-1-git-send-email-hong-hua.yin@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <50220382.4010405@linux.vnet.ibm.com>
-Sender: <zch@tx30smr01.freescale.net>
-Cc: rjw@sisk.pl,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: Olivia Yin <hong-hua.yin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,37 +30,311 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 08, 2012 at 11:43:22AM +0530, Srivatsa S. Bhat wrote:
-> On 08/07/2012 11:21 PM, Kumar Gala wrote:
-> > 
-> > On Aug 7, 2012, at 3:43 AM, Zhao Chenhui wrote:
-> > 
-> >> The cpufreq driver of mpc85xx will disable/enable cpu hotplug temporarily.
-> >> Therefore, the related functions should be exported.
-> >>
-> >> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
-> >> ---
-> >> include/linux/cpu.h |    4 ++++
-> >> 1 files changed, 4 insertions(+), 0 deletions(-)
-> > 
-> > Rafael, Srivatsa,
-> > 
-> > Wanted to get your ack on export these functions for direct calling by arch code.
-> >
-> 
-> Why not just use get_online_cpus()/put_online_cpus()?
-> 
-> In the case of suspend/resume/hibernation, we had introduced these CPU hotplug disable
-> functions because we would end up doing CPU hotplug ourselves, further down the path.
-> So if we did a get_online_cpus(), we would end up deadlocking ourselves. Whereas, the
-> patch 4/4 looks like a straightforward case of wanting to simply disable CPU hotplug..
-> I don't see where you are doing CPU hotplug yourself in the path. So IMO, just
-> get/put_online_cpus() should do.
-> 
-> Regards,
-> Srivatsa S. Bhat
-> 
+The patch update all e500v2 platforms.
 
-Thanks for your comment. I will try to use get/put_online_cpus() in my patch.
+Signed-off-by: Liu Yu <yu.liu@freescale.com>
+Signed-off-by: Olivia Yin <hong-hua.yin@freescale.com>
+---
+git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+branch: next
 
--Chenhui
+ arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi |   52 +++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi    |    3 +
+ arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi    |    3 +
+ arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi    |    3 +
+ arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi    |    3 +
+ arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi    |    3 +
+ arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi    |    3 +
+ arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi      |    3 +
+ arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi      |    3 +
+ arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi      |    3 +
+ arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi      |    3 +
+ arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi      |    3 +
+ arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi      |    3 +
+ arch/powerpc/boot/dts/mpc8540ads.dts            |    2 +
+ arch/powerpc/boot/dts/mpc8541cds.dts            |    2 +
+ arch/powerpc/boot/dts/mpc8555cds.dts            |    2 +
+ arch/powerpc/boot/dts/mpc8560ads.dts            |    2 +
+ 17 files changed, 96 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi
+
+diff --git a/arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi b/arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi
+new file mode 100644
+index 0000000..efd6c73
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/e500v2_power_isa.dtsi
+@@ -0,0 +1,52 @@
++/*
++ * e500v2 power isa Device Tree Source (include)
++ *
++ * Copyright 2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/ {
++	cpus {
++		power-isa-version = "2.03";
++		power-isa-b;		// Base
++		power-isa-e;		// Embedded
++		power-isa-atb;		// Alternate Time Base
++		power-isa-cs;		// Cache Specification
++		power-isa-e.le;		// Embedded.Little-Endian
++		power-isa-e.pm;		// Embedded.Performance Monitor
++		power-isa-ecl;		// Embedded Cache Locking
++		power-isa-mmc;		// Memory Coherence
++		power-isa-sp;		// Signal Processing Engine
++		power-isa-sp.fd;	// SPE.Embedded Float Scalar Double
++		power-isa-sp.fs;	// SPE.Embedded Float Scalar Single
++		power-isa-sp.fv;	// SPE.Embedded Float Vector
++		mmu-type = "power-embedded";
++	};
++};
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi
+index 7de45a7..152906f 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8536si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,MPC8536";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi
+index 8777f92..5a69baf 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8544si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,MPC8544";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi
+index 720422d..fc1ce97 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8548si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,MPC8548";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi
+index eacd62c..122ca3b 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8568si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,MPC8568";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi
+index b07064d..2cd15a2 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8569si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,MPC8569";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi b/arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi
+index ca18832..28c2a86 100644
+--- a/arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/mpc8572si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,MPC8572";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi
+index 7354a8f..6e76f9b 100644
+--- a/arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1010si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,P1010";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi
+index 6f0376e..fed9c4c 100644
+--- a/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1020si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,P1020";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi
+index 4abd54b..36161b5 100644
+--- a/arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1021si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,P1021";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
+index e930f4f..1956dea 100644
+--- a/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1022si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,P1022";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
+index ac45f6d..132a152 100644
+--- a/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1023si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,P1023";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi
+index 3213288..42bf3c6 100644
+--- a/arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p2020si-pre.dtsi
+@@ -33,6 +33,9 @@
+  */
+ 
+ /dts-v1/;
++
++/include/ "e500v2_power_isa.dtsi"
++
+ / {
+ 	compatible = "fsl,P2020";
+ 	#address-cells = <2>;
+diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
+index f99fb11..2d31863 100644
+--- a/arch/powerpc/boot/dts/mpc8540ads.dts
++++ b/arch/powerpc/boot/dts/mpc8540ads.dts
+@@ -11,6 +11,8 @@
+ 
+ /dts-v1/;
+ 
++/include/ "fsl/e500v2_power_isa.dtsi"
++
+ / {
+ 	model = "MPC8540ADS";
+ 	compatible = "MPC8540ADS", "MPC85xxADS";
+diff --git a/arch/powerpc/boot/dts/mpc8541cds.dts b/arch/powerpc/boot/dts/mpc8541cds.dts
+index 0f5e939..1c03c26 100644
+--- a/arch/powerpc/boot/dts/mpc8541cds.dts
++++ b/arch/powerpc/boot/dts/mpc8541cds.dts
+@@ -11,6 +11,8 @@
+ 
+ /dts-v1/;
+ 
++/include/ "fsl/e500v2_power_isa.dtsi"
++
+ / {
+ 	model = "MPC8541CDS";
+ 	compatible = "MPC8541CDS", "MPC85xxCDS";
+diff --git a/arch/powerpc/boot/dts/mpc8555cds.dts b/arch/powerpc/boot/dts/mpc8555cds.dts
+index fe10438..36a7ea1 100644
+--- a/arch/powerpc/boot/dts/mpc8555cds.dts
++++ b/arch/powerpc/boot/dts/mpc8555cds.dts
+@@ -11,6 +11,8 @@
+ 
+ /dts-v1/;
+ 
++/include/ "fsl/e500v2_power_isa.dtsi"
++
+ / {
+ 	model = "MPC8555CDS";
+ 	compatible = "MPC8555CDS", "MPC85xxCDS";
+diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
+index 6e85e1b..1a43f5a 100644
+--- a/arch/powerpc/boot/dts/mpc8560ads.dts
++++ b/arch/powerpc/boot/dts/mpc8560ads.dts
+@@ -11,6 +11,8 @@
+ 
+ /dts-v1/;
+ 
++/include/ "fsl/e500v2_power_isa.dtsi"
++
+ / {
+ 	model = "MPC8560ADS";
+ 	compatible = "MPC8560ADS", "MPC85xxADS";
+-- 
+1.6.4
