@@ -1,34 +1,28 @@
-Return-Path: <B11780@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C92302C044F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2012 05:04:33 +1000 (EST)
-Received: from mail169-va3 (localhost [127.0.0.1])	by
- mail169-va3-R.bigfish.com (Postfix) with ESMTP id AB513420493	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 19:04:28 +0000 (UTC)
-Received: from VA3EHSMHS005.bigfish.com (unknown [10.7.14.239])	by
- mail169-va3.bigfish.com (Postfix) with ESMTP id 6CC8360049	for
- <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 19:04:26 +0000 (UTC)
-From: Gala Kumar-B11780 <B11780@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: Re: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Wed, 8 Aug 2012 19:04:22 +0000
-Message-ID: <3F366E73-1EED-4DFE-85B3-F37BCCFFFFB5@freescale.com>
-References: <1343988851-884-1-git-send-email-B38951@freescale.com>
- <1343988851-884-4-git-send-email-B38951@freescale.com>
- <501BFC0E.6070708@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A36D0A@039-SN1MPN1-002.039d.mgd.msft.net>
- <501FDE40.1060906@freescale.com>
- <CADRPPNTqnEt3xE8Et1cbK=GwfemgA3-dF7aH2cTNppCddKJ6DA@mail.gmail.com>
- <50213342.8020600@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A518E4@039-SN1MPN1-002.039d.mgd.msft.net>
- <50228CA5.801@freescale.com>
-In-Reply-To: <50228CA5.801@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 23BCA2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2012 07:04:31 +1000 (EST)
+Message-ID: <5022D44E.8040102@freescale.com>
+Date: Wed, 8 Aug 2012 16:04:14 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <1343125210-16720-5-git-send-email-B38951@freescale.com>
+ <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
+ <BAB2AC7D-90D8-473A-83A0-59BD6F730E62@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A48CF7@039-SN1MPN1-002.039d.mgd.msft.net>
+ <50213597.5080600@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A51933@039-SN1MPN1-002.039d.mgd.msft.net>
+ <1C95474C-B59D-4635-8FA9-B76165E177CD@kernel.crashing.org>
+In-Reply-To: <1C95474C-B59D-4635-8FA9-B76165E177CD@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  Li Yang-R58472 <r58472@freescale.com>,
@@ -42,40 +36,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>>>>>> As I explained before, this has to be done globally, not from the
->>>>>>> probe function, so we can assign a default primary bus if there
->>> isn't any ISA.
->>>>>>> There are bugs in the Linux PPC PCI code relating to not having
->>>>>>> any primary bus.
->>>>>>>=20
->>>>>>> -Scott
->>>>>>=20
->>>>>> In my way of searching ISA you can also assign a default primary bus
->>>>>> in board specific files.
->>>>>=20
->>>>> That was meant for when the board file had an alternate way of
->>>>> searching for the primary bus (e.g. look for i8259), not as a
->>>>> replacement for the mechanism that guarantees there's a primary bus.
->>>>>=20
->>>>> You are causing a regression in the qemu_e500.c platform.
->>>>=20
->>>> Can we fix the qemu device tree to address the problem if we do make
->>>> it a rule to use the ISA node to indicate the primary bus?
->>>=20
->>> No.  There is no ISA, and we're not going to lie and say there is.
->>=20
->> But we can assign a default primary for qemu.
->=20
-> Not in the device tree.  What other mechanism do you propose?  And why
-> do you want to fix it only for QEMU and not other boards, where things
-> happen to work but not as designed?
->=20
-> Kumar, can you speak up here as maintainer so we can stop going back and
-> forth endlessly?
+On 08/08/2012 07:46 AM, Kumar Gala wrote:
+>>>>>>>
+>>>>>>> On Jul 24, 2012, at 5:20 AM, Jia Hongtao wrote:
+>>>>>>>
+>>>>>>>> Power supply for PCI inbound/outbound window registers is off when
+>>>>>>> system
+>>>>>>>> go to deep-sleep state. We save the values of registers before
+>>>>>>>> suspend and restore to registers after resume.
+>>>>>>>>
+>>>>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
+>>>>>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+>>>>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>>>>>>> ---
+>>>>>>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
+>>>>>>>> arch/powerpc/sysdev/fsl_pci.c         |  121
+>>>>>>> +++++++++++++++++++++++++++++++++
+>>>>>>>> 2 files changed, 122 insertions(+), 1 deletions(-)
+>>>>>>>
+>>>>>>> Remind me why we need to save/restore PCI ATMUs, why not just
+>>>>>>> re-parse the device tree to restore?
+>>>>>>>
+>>>>>>> - k
+>>>>>>
+>>>>>> Save/restore is the more efficient way. Latency of sleep/wakeup is
+>>>>>> one of most important features in power management.
+>>>>>>
+>>>>>> -Hongtao.
+>>>>>
+>>>>> I don't think the time it takes to run through setup_pci_atmu() is
+>>>>> that long compared to fsl_pci_resume().
+>>>>>
+>>>>> Also, don't you need to setup PCICCSRBAR and do setup_pci_cmd() on
+>>> resume?
+>>>>>
+>>>>> - k
+>>>>
+>>>> Hi Kumar,
+>>>> I did some tests on P1022DS and found out that PCI_CMD and PCICSRBAR
+>>>> is not lost when system in deep sleep. We don't need to save it.
 
-I'd rather we stick with the code that works for this purpose at this point=
-.  That would be Scott's current upstream code.  Lets get the other aspects=
- of this patchset closed (SWIOTLB, conversion to platform driver, PM, etc.)=
-.  The primary bus code Scott wrote does NOT need to change at this point.
+How do you know you're not just getting lucky?  Maybe it only survives
+deep sleep up to a certain duration, or under other specific circumstances.
 
-- k=
+Can you find anywhere that documents what state will be retained during
+deep sleep, or ask an appropriate hardware designer?
+
+-Scott
