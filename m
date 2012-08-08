@@ -1,14 +1,30 @@
-Return-Path: <anton@samba.org>
-Date: Wed, 8 Aug 2012 13:51:41 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 2/2] powerpc: Fix VMX in interrupt check in POWER7 copy loops
-Message-ID: <20120808135141.5d17d20e@kryten>
-In-Reply-To: <20120808135046.06056d11@kryten>
-References: <20120808135046.06056d11@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 893B62C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Aug 2012 13:57:19 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Wed, 8 Aug 2012 03:57:08 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A4B1D9@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
+ <1343907741-20589-4-git-send-email-B38951@freescale.com>
+ <A4B0DB85-7B49-4748-8B94-0E1F1B7B663A@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A35A2F@039-SN1MPN1-002.039d.mgd.msft.net>
+ <501BF66C.3070107@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A36CE7@039-SN1MPN1-002.039d.mgd.msft.net>
+ <501FDF9B.4030304@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A422A2@039-SN1MPN1-002.039d.mgd.msft.net>
+ <50213207.8050000@freescale.com>
+In-Reply-To: <50213207.8050000@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,54 +34,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-The enhanced prefetch hint patches corrupt the condition register
-that was used to check if we are in interrupt. Fix this by using cr1.
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
-
-Index: b/arch/powerpc/lib/copyuser_power7.S
-===================================================================
---- a/arch/powerpc/lib/copyuser_power7.S
-+++ b/arch/powerpc/lib/copyuser_power7.S
-@@ -288,7 +288,7 @@ err1;	stb	r0,0(r3)
- 	std	r0,16(r1)
- 	stdu	r1,-STACKFRAMESIZE(r1)
- 	bl	.enter_vmx_usercopy
--	cmpwi	r3,0
-+	cmpwi	cr1,r3,0
- 	ld	r0,STACKFRAMESIZE+16(r1)
- 	ld	r3,STACKFRAMESIZE+48(r1)
- 	ld	r4,STACKFRAMESIZE+56(r1)
-@@ -326,7 +326,7 @@ err1;	stb	r0,0(r3)
- 	dcbt	r0,r8,0b01010	/* GO */
- .machine pop
- 
--	beq	.Lunwind_stack_nonvmx_copy
-+	beq	cr1,.Lunwind_stack_nonvmx_copy
- 
- 	/*
- 	 * If source and destination are not relatively aligned we use a
-Index: b/arch/powerpc/lib/memcpy_power7.S
-===================================================================
---- a/arch/powerpc/lib/memcpy_power7.S
-+++ b/arch/powerpc/lib/memcpy_power7.S
-@@ -222,7 +222,7 @@ _GLOBAL(memcpy_power7)
- 	std	r0,16(r1)
- 	stdu	r1,-STACKFRAMESIZE(r1)
- 	bl	.enter_vmx_copy
--	cmpwi	r3,0
-+	cmpwi	cr1,r3,0
- 	ld	r0,STACKFRAMESIZE+16(r1)
- 	ld	r3,STACKFRAMESIZE+48(r1)
- 	ld	r4,STACKFRAMESIZE+56(r1)
-@@ -260,7 +260,7 @@ _GLOBAL(memcpy_power7)
- 	dcbt	r0,r8,0b01010	/* GO */
- .machine pop
- 
--	beq	.Lunwind_stack_nonvmx_copy
-+	beq	cr1,.Lunwind_stack_nonvmx_copy
- 
- 	/*
- 	 * If source and destination are not relatively aligned we use a
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDA3LCAyMDEyIDExOjIwIFBNDQo+IFRvOiBKaWEg
+SG9uZ3Rhby1CMzg5NTENCj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBLdW1hciBHYWxhOyBsaW51
+eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgTGkNCj4gWWFuZy1SNTg0NzINCj4gU3ViamVjdDog
+UmU6IFtQQVRDSCBWNCAzLzNdIHBvd2VycGMvZnNsLXBjaTogVW5pZnkgcGNpL3BjaWUNCj4gaW5p
+dGlhbGl6YXRpb24gY29kZQ0KPiANCj4gT24gMDgvMDcvMjAxMiAwMToyMyBBTSwgSmlhIEhvbmd0
+YW8tQjM4OTUxIHdyb3RlOg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBG
+cm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+PiBTZW50OiBNb25kYXksIEF1Z3VzdCAwNiwgMjAx
+MiAxMToxNiBQTQ0KPiA+PiBUbzogSmlhIEhvbmd0YW8tQjM4OTUxDQo+ID4+IENjOiBXb29kIFNj
+b3R0LUIwNzQyMTsgS3VtYXIgR2FsYTsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IExp
+DQo+ID4+IFlhbmctUjU4NDcyDQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjQgMy8zXSBwb3dl
+cnBjL2ZzbC1wY2k6IFVuaWZ5IHBjaS9wY2llDQo+ID4+IGluaXRpYWxpemF0aW9uIGNvZGUNCj4g
+Pj4NCj4gPj4gT24gMDgvMDUvMjAxMiAwOTozOSBQTSwgSmlhIEhvbmd0YW8tQjM4OTUxIHdyb3Rl
+Og0KPiA+Pj4NCj4gPj4+DQo+ID4+Pj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4+
+PiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+Pj4+IFNlbnQ6IFNhdHVyZGF5LCBBdWd1c3Qg
+MDQsIDIwMTIgMTI6MDQgQU0NCj4gPj4+PiBUbzogSmlhIEhvbmd0YW8tQjM4OTUxDQo+ID4+Pj4g
+Q2M6IEt1bWFyIEdhbGE7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBXb29kIFNjb3R0
+LUIwNzQyMTsgTGkNCj4gPj4+PiBZYW5nLVI1ODQ3Mg0KPiA+Pj4+IFN1YmplY3Q6IFJlOiBbUEFU
+Q0ggVjQgMy8zXSBwb3dlcnBjL2ZzbC1wY2k6IFVuaWZ5IHBjaS9wY2llDQo+ID4+Pj4gaW5pdGlh
+bGl6YXRpb24gY29kZQ0KPiA+Pj4+DQo+ID4+Pj4gT24gMDgvMDIvMjAxMiAxMDozOSBQTSwgSmlh
+IEhvbmd0YW8tQjM4OTUxIHdyb3RlOg0KPiA+Pj4+Pg0KPiA+Pj4+Pg0KPiA+Pj4+Pj4gLS0tLS1P
+cmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4+Pj4+IEZyb206IEt1bWFyIEdhbGEgW21haWx0bzpn
+YWxha0BrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiA+Pj4+Pj4gU2VudDogVGh1cnNkYXksIEF1Z3Vz
+dCAwMiwgMjAxMiA4OjI0IFBNDQo+ID4+Pj4+PiBUbzogSmlhIEhvbmd0YW8tQjM4OTUxDQo+ID4+
+Pj4+PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFdvb2QgU2NvdHQtQjA3NDIx
+OyBMaQ0KPiA+Pj4+Pj4gWWFuZy1SNTg0NzINCj4gPj4+Pj4+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
+VjQgMy8zXSBwb3dlcnBjL2ZzbC1wY2k6IFVuaWZ5IHBjaS9wY2llDQo+ID4+Pj4+PiBpbml0aWFs
+aXphdGlvbiBjb2RlDQo+ID4+Pj4+Pg0KPiA+Pj4+Pj4gWW91IG5lZWQgdG8gY29udmVydCBhbGwg
+Ym9hcmRzIHRvIHVzZSBmc2xfcGNpX2luaXQgYmVmb3JlIHRoaXMNCj4gcGF0Y2guDQo+ID4+Pj4+
+PiBPdGhlcndpc2Ugd2UnbGwgZW5kIHVwIHdpdGggUENJIGdldHRpbmcgaW5pdGlhbGl6ZWQgdHdp
+Y2Ugb24NCj4gYm9hcmRzLg0KPiA+Pj4+Pj4NCj4gPj4+Pj4+IC0gaw0KPiA+Pj4+Pg0KPiA+Pj4+
+PiBJZiB3ZSBjb3ZlcnQgYWxsIGJvYXJkcyB3aXRoIHBsYXRmb3JtIGRyaXZlciBpbiB0aGlzIHBh
+dGNoIFBDSSB3aWxsDQo+ID4+Pj4+IGJlIGluaXRpYWxpemVkIG9ubHkgb25jZSB3aXRob3V0IGNv
+bnZlcnRpbmcgYWxsIGJvYXJkcyB0byB1c2UNCj4gPj4+Pj4gZnNsX3BjaV9pbml0IGZpcnN0Lg0K
+PiA+Pj4+DQo+ID4+Pj4gVGhlbiB3ZSdkIGhhdmUgdG8gcGljayBhcGFydCBjb3JlIGNoYW5nZXMg
+ZnJvbSBib2FyZCBjaGFuZ2VzIHdoZW4NCj4gPj4+PiByZXZpZXdpbmcuDQo+ID4+Pj4NCj4gPj4+
+Pj4gSWYgd2UgY29udmVydCBhbGwgYm9hcmRzIHRvIHVzZSBmc2xfcGNpX2luaXQgYmVmb3JlIHRo
+aXMgcGF0Y2ggYW5kDQo+ID4+Pj4+IGNvbnZlcnQgdGhlbSB0byB1c2UgcGxhdGZvcm0gZHJpdmVy
+IGFnYWluIGFmdGVyIHRoaXMgcGF0Y2guIFRoZW4NCj4gPj4+Pj4gYmV0d2VlbiB0aGlzIHBhdGNo
+IGFuZCBuZXh0IHBjaSB3aWxsIGJlIGluaXRpYWxpemVkIHR3aWNlIHRvby4NCj4gPj4+Pg0KPiA+
+Pj4+IFdoeT8gIFRoYXQgb25lIHBhdGNoIHNob3VsZCBib3RoIGNyZWF0ZSB0aGUgcGxhdGZvcm0g
+ZHJpdmVyIGFuZA0KPiA+Pj4+IHJlbW92ZSB0aGUgaW5pdCBmcm9tIGZzbF9wY2lfaW5pdCgpIC0t
+IGV4Y2VwdCB0aGluZ3MgbGlrZSBwcmltYXJ5DQo+IGJ1cw0KPiA+Pj4+IGRldGVjdGlvbiB3aGlj
+aCBoYXMgdG8gaGFwcGVuIGdsb2JhbGx5Lg0KPiA+Pj4+DQo+ID4+Pj4gLVNjb3R0DQo+ID4+Pg0K
+PiA+Pj4gIk9uZSBwYXRjaCBib3RoIGNyZWF0ZSB0aGUgcGxhdGZvcm0gZHJpdmVyIGFuZCByZW1v
+dmUgdGhlIGluaXQgZnJvbQ0KPiA+Pj4gZnNsX3BjaV9pbml0KCkiIG1lYW5zIHdlIHNob3VsZCBj
+cmVhdGUgcGxhdGZvcm0gZHJpdmVyIGFuZCBhcHBsaWVkIHRvDQo+ID4+PiBhbGwgYm9hcmRzLiBJ
+ZiBzbyB3aHkgbm90IGp1c3QgZGlyZWN0bHkgY29udmVydCBhbGwgYm9hcmRzIHVzaW5nDQo+ID4+
+PiBwbGF0Zm9ybSBkcml2ZXI/DQo+ID4+DQo+ID4+IEJlY2F1c2UgaXQncyBoYXJkZXIgdG8gcmV2
+aWV3IHdoZW4geW91IGhhdmUgYSBidW5jaCBvZiBib2FyZCBjb2RlIGluDQo+IHRoZQ0KPiA+PiBw
+YXRjaCBpbiBhZGRpdGlvbiB0byBjb3JlIGNoYW5nZXMuDQo+ID4+DQo+ID4+IEJlY2F1c2UgeW91
+IG1pZ2h0IHdhbnQgcGVvcGxlIHRvIGFjdHVhbGx5IHRlc3Qgb24gdGhlIGJvYXJkcyBpbg0KPiBx
+dWVzdGlvbg0KPiA+PiB3aGVuIGNvbnZlcnRpbmcsIGVzcGVjaWFsbHkgZ2l2ZW4gdGhlIGNoYW5n
+ZSBpbiBob3cgcHJpbWFyeSBidXNlcyBhcmUNCj4gPj4gZGV0ZXJtaW5lZCwgYW5kIHRoYXQgc29t
+ZSBib2FyZHMgbWF5IG5lZWQgdG8gcHJvdmlkZSB0aGVpciBvd24NCj4gPj4gYWx0ZXJuYXRpdmUu
+DQo+ID4+DQo+ID4+IC1TY290dA0KPiA+DQo+ID4gQnV0IGlmIHdlIHNlcGFyYXRlIHRoZSBjb3Jl
+IGNoYW5nZXMgYW5kIHRoZSBib2FyZHMgdXBkYXRlLCBiZXR3ZWVuIHRoaXMNCj4gdHdvDQo+ID4g
+cGF0Y2hlcyBQQ0kgd2lsbCBiZSBpbml0aWFsaXplZCB0d2ljZS4NCj4gDQo+IEFzIEkgc2FpZCBl
+YXJsaWVyLCB5b3UgY2FuIHJlbW92ZSB0aGUgaW5pdGNhbGwgYW5kIHJlcXVpcmUgYm9hcmRzIHRv
+DQo+IG1hbnVhbGx5IGNhbGwgZnNsX3BjaV9pbml0KCkgdW50aWwgYWxsIGJvYXJkcyBhcmUgY29u
+dmVydGVkLg0KPiANCj4gLVNjb3R0DQoNCkFzIEkgc2FpZCBlYXJsaWVyLCBJIGNhbiBkbyB0aGlz
+IGJ1dCBpdCBkb2VzIG5vdCBzb2x2ZSB0aGUgdHdpY2UtaW5pdCBwcm9ibGVtLg0KSWYgSSBkbyB0
+aGlzIGZpcnN0IGFuZCB0aGVuIGFkZCBwbGF0Zm9ybSBkcml2ZXIgd2UgYWxzbyBoYXZlIHRvIGNv
+bnZlcnQgYWxsDQpib2FyZHMgdXNpbmcgcGxhdGZvcm0gZHJpdmVyIGluIHRoZSBzYW1lIHBhdGNo
+Lg0KDQpXZSBmaW5hbGx5IHVzaW5nIHRoZSBwbGF0Zm9ybSBkcml2ZXIgc28gV2h5IGRvIHlvdSBr
+ZWVwIGluc2lzdGluZyBvbiBjb252ZXJ0aW5nDQphbGwgYm9hcmRzIHVzaW5nIGZzbF9wY2lfaW5p
+dCgpIGZpcnN0IGV2ZW4gaXQgZG9lcyBubyBpbXByb3ZlbWVudC4NCg0KLUhvbmd0YW8uDQoNCg==
