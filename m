@@ -1,32 +1,36 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5483E2C007F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 08:21:05 +1000 (EST)
-Message-ID: <502437C4.4090804@freescale.com>
-Date: Thu, 9 Aug 2012 17:20:52 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Subject: Re: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-References: <1343988851-884-1-git-send-email-B38951@freescale.com>
- <1343988851-884-4-git-send-email-B38951@freescale.com>
- <501BFC0E.6070708@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A36D0A@039-SN1MPN1-002.039d.mgd.msft.net>
- <501FDE40.1060906@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A45931@039-SN1MPN1-002.039d.mgd.msft.net>
- <50213439.9070806@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A51913@039-SN1MPN1-002.039d.mgd.msft.net>
- <50228D8B.3040204@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A51E00@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A51E00@039-SN1MPN1-002.039d.mgd.msft.net>
+Return-Path: <adlai@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D55892C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 08:58:58 +1000 (EST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <adlai@linux.vnet.ibm.com>;
+ Thu, 9 Aug 2012 16:58:56 -0600
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 4409419D803C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2012 22:58:48 +0000 (WET)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q79Mwr2l174046
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2012 16:58:53 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q79Mwqn7020427
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2012 16:58:52 -0600
+Message-ID: <1344553253.28791.7.camel@footlong>
+Subject: [PATCH V2 0/3] tpm: Add new vTPM device driver for PPC64
+From: Ashley Lai <adlai@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Date: Thu, 09 Aug 2012 18:00:53 -0500
 Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Mime-Version: 1.0
+Cc: rcj@linux.vnet.ibm.com, adlai@linux.vnet.ibm.com,
+ linux-security-module@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
+ adlai@us.ibm.com, key@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,78 +40,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/08/2012 10:48 PM, Jia Hongtao-B38951 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Wood Scott-B07421
->> Sent: Thursday, August 09, 2012 12:02 AM
->> To: Jia Hongtao-B38951
->> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
->> galak@kernel.crashing.org; Li Yang-R58472
->> Subject: Re: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie
->> initialization code
->>
->> On 08/08/2012 04:39 AM, Jia Hongtao-B38951 wrote:
->>>
->>>
->>>> -----Original Message-----
->>>> From: Wood Scott-B07421
->>>> Sent: Tuesday, August 07, 2012 11:29 PM
->>>> To: Jia Hongtao-B38951
->>>> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
->>>> galak@kernel.crashing.org; Li Yang-R58472
->>>> Subject: Re: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie
->>>> initialization code
->>>>
->>>> On 08/07/2012 03:09 AM, Jia Hongtao-B38951 wrote:
->>>>> I am really not sure that all boards need primary bus. Could you
->>>>> give me the link of discussion about primary that you mentioned?
->>>>
->>>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-June/098586.html
->>>>
->>>> -Scott
->>>
->>>
->>> It seems in qemu isa_io_base must be non-zero.
->>
->> In all cases.  It just shows up worse under QEMU because of a different
->> issue.
->>
->>> If there is no isa bridge should isa_io_base be non-zero for other
->> boards?
->>
->> Yes, until the bugs are fixed.
->>
->>> If not maybe we should fix qemu bug.
->>
->> If you want to try to make QEMU accept I/O BARs with address zero, go
->> ahead, but you don't get to assume that someone else will do it, we still
->> need to be compatible with older QEMUs (this bug is not so severe that
->> compatibility is unreasonable), and it still doesn't address the fact
->> that things are not functioning as designed.  IIRC there are some real
->> hardware PCI cards that don't like getting an address of zero either.
->>
->>> Or "quick fix" in the link is a workaround.
->>
->> I think that "quick fix" may have problems if there is a primary bus but
->> it's not the first one detected.  In any case, any fix or workaround has
->> to happen before you make changes that rely on it.
->>
->> -Scott
-> 
-> If there is no primary assigned and accidently the primary is not the
-> first one this "quick fix" may have problem. But this -accident- only happened
-> in ge_imp3a board if I didn't miss other boards. 
+Change log V2:
+- Removed unnecessary tpm_bios_log_setup and tpm_bios_log_teardown
+  functions in tpm_eventlog.h (patch 3/3).
+- Added more descriptions on vTPM (patch 1/3).
 
-How is it an accident?  It's a perfectly legitimate situation.
+These patches add support for IBM vTPM for PPC64. This new device driver
+works on firmware that supports vTPM (firmware release 740 or higher).
 
-> So if there is no primary assigned but the primary is the first bus detected
-> this "quick fix" is right. That means the "quick fix" is the equivalent
-> substitution for "arbitrarily designate one as primary".
+Tested on Power7+ system with firmware level ZM770_001.
 
-It's not equivalent because I didn't try to convert the ge_imp3a board,
-and if I did I would have added special code to the ge_imp3a board to
-set the fsl_pci_primary before calling fsl_pci_init().
+Applied to Kent Yoder patch to modularize event log located at:
+https://github.com/shpedoikal/linux/tree/tpmdd-next
 
--Scott
+Ashley Lai (3):
+  drivers/char/tpm: Add new device driver to support IBM vTPM
+  PPC64: Add support for instantiating SML from Open Firmware
+  drivers/char/tpm: Add securityfs support for event log
+
+ arch/powerpc/kernel/prom_init.c   |   64 ++++
+ drivers/char/tpm/Kconfig          |    8 +
+ drivers/char/tpm/Makefile         |    9 +-
+ drivers/char/tpm/tpm.h            |   13 +-
+ drivers/char/tpm/tpm_eventlog.c   |    7 +
+ drivers/char/tpm/tpm_eventlog.h   |   14 +
+ drivers/char/tpm/tpm_ibmvtpm.c    |  750 +++++++++++++++++++++++++++++++++++++
+ drivers/char/tpm/tpm_ibmvtpm.h    |   83 ++++
+ drivers/char/tpm/tpm_noeventlog.c |   21 +
+ drivers/char/tpm/tpm_of.c         |   68 ++++
+ 10 files changed, 1024 insertions(+), 13 deletions(-)
+ create mode 100644 drivers/char/tpm/tpm_ibmvtpm.c
+ create mode 100644 drivers/char/tpm/tpm_ibmvtpm.h
+ create mode 100644 drivers/char/tpm/tpm_noeventlog.c
+ create mode 100644 drivers/char/tpm/tpm_of.c
