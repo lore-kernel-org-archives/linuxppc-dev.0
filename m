@@ -1,19 +1,25 @@
-Return-Path: <ian.molton@codethink.co.uk>
-Message-ID: <50239815.6020108@codethink.co.uk>
-Date: Thu, 09 Aug 2012 11:59:33 +0100
-From: Ian Molton <ian.molton@codethink.co.uk>
+Return-Path: <B16395@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2421A2C00CE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2012 22:30:05 +1000 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH 3/3 v4] powerpc/mpic: FSL MPIC error interrupt support.
+Date: Thu, 9 Aug 2012 12:29:56 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D15EE6A@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1344257045-11200-1-git-send-email-Varun.Sethi@freescale.com>
+ <FAD36277-EA2D-49D7-BD98-2F132CA886AA@kernel.crashing.org>
+ <C5ECD7A89D1DC44195F34B25E172658D15BA0D@039-SN2MPN1-013.039d.mgd.msft.net>
+ <50216492.60904@freescale.com>
+In-Reply-To: <50216492.60904@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v3 0/7] mv643xx.c: Add basic device tree support.
-References: <1344350092-24050-1-git-send-email-ian.molton@codethink.co.uk>
- <50223428.6030506@codethink.co.uk> <502252A6.4090409@codethink.co.uk>
- <201208081239.16778.arnd@arndb.de> <50226779.6060201@codethink.co.uk>
-In-Reply-To: <50226779.6060201@codethink.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: thomas.petazzoni@free-electrons.com, andrew@lunn.ch, netdev@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org, ben.dooks@codethink.co.uk,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Hamciuc Bogdan-BHAMCIU1 <bhamciu1@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,214 +29,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adding devicetree-discuss and linuxppc-dev, as well as Dale Farnsworth,
-who initially added the bindings for mv643xx.
-
-On 08/08/12 14:19, Ian Molton wrote:
-> On 08/08/12 13:39, Arnd Bergmann wrote:
->> On Wednesday 08 August 2012, Ian Molton wrote:
->>> The SMI / PHY stuff should look very similar, so I'm happy with something
->>> like:
->>>
->>> mdio@2000 {
->>>                 #address-cells = <1>;
->>>                 #size-cells = <1>;
->>>                 device_type = "mdio";
->>>                 compatible = "marvell,mv643xx-mdio";
->>>                 phy0: ethernet-phy@0 {
->>>                         device_type = "ethernet-phy";
->>>                         compatible = "marvell,whatever";
->>>                         interrupts = <76>;
->>>                         interrupt-parent = <&mpic>;
->>>                         reg = <0 32>;          // Auto probed phy addr
->>>                 };
->>>
->>>                 phy1: ethernet-phy@3 {
->>>                         device_type = "ethernet-phy";
->>>                         compatible = "marvell,whatever";
->>>                         interrupts = <77>;
->>>                         interrupt-parent = <&mpic>;
->>>                         reg = <3 1>;            // specified phy addr
->>>                 };
->>>
->>>                 ... and so on.
->>> }
->>>
->>> Where we can use the reg parameter to allow auto-probing, by
->>> specifying a size of 32 (32 phy addrs max).
->> I don't understand the auto-probed phy address. What is the purpose of that?
-> Personally, I think it should die - but the existing driver and a number
-> of its users actually scan the bus for their PHY.
->
-> I doubt the PHY really moves about or is hotplugged by any of them,
-> and its actually quite a slow process.
->
->> If possible, I think we should keep using #size-cells=<0>, which would
->> make the method you describe impossible. It might still work if you just
->> leave out the "reg" property for that node.
-> I can certainly investigate that. I couldn't see any good evidence that
-> it was a supported mechanism when I looked.
->
->> I also don't understand how the phy driver would locate ethernet-phy@0
->> on the bus if it does not know the address.
->>
->>> The ethernet driver itself is more complicated:
->>>
->>> We have the following considerations:
->>>
->>> * we have one MDIO bus, typically, shared between all the MACs / PHYs.
->>> * each ethernet device can multiple ports (up to three), each with its
->>>   own MAC/PHY.
->>> * MAC <-> PHY mapping can be specified, probed (ugh!) or a (gah!)
->>>   mix of the two.
->>> * existing D-T users, albeit not well documented / code complete.
->>> * some port address ranges overlap (MIB counters, MCAST / UNICAST
->>>   tables, etc.
->>>
->>> The existing ethernet-group idea only works because the current
->>> platform-device based driver doesnt really do proper resource
->>> management, and thus the MAC registers are actually mapped by
->>> the MDIO driver.
->>>
->>> I don't think that preserving this bad behaviour is a good idea, which
->>> leaves us with two choices:
->>>
->>> 1) My preferred solution - allow each device to specify up to three
->>> interrupts, MACs, and PHYs. This is clean in that it doesnt require
->>> multiply instantiating a driver three times over the same address
->>> space.
->>>
->>> ethernet@2400 {
->>>                 compatible = "marvell,mv643xx-eth";
->>>                 reg = <0x2400 0x1c00>
->>>                 interrupt_parent = <&mpic>;
->>>                 ports = <3>;
->>>                 interrupts = <4>, <5>, <6>;
->>>                 phys = <&phy0>, <&phy1>, <&phy2>;
->>> };
->>>
->>> ethernet@6400 {
->>>                 compatible = "marvell,mv643xx-eth";
->>>                 reg = <0x6400 0x1c00>
->>>                 interrupt_parent = <&mpic>;
->>>                 ports = <1>;
->>>                 interrupts = <4>;
->>>                 phys = <&phy3>;
->>> };
->>>
->>> Note that the address is 2400, not 2000 - since this driver no longer
->>> would share its address range with the MDIO driver.
->>>
->>> This method would require a small amount of rework in the driver to
->>> set up <n> ports, rather than just one.
->> This looks quite nice, but it is still very much incompatible with the
->> existing binding. Obviously we can abandon an existing binding and
->> introduce a second one for the same hardware, but that should not
->> be taken lightly.
-> Fair, however the existing users aren't anywhere near as
-> numerous as the new ones.
->
->>> 2) Create some kind of pseudo-ethernet group device that manages
->>> all the work for some sort of lightweight ethernet device, one per
->>> port. This can never be done cleanly since the port address ranges
->>> overlap:
->>>
->>> pseudo_eth@2400 {
->>>         #address-cells = <1>;
->>>         #size-cells = <0>;
->>>         compatible = "marvell,mv643xx-shared-eth"
->>>         reg = <0x2400 0x1c00>;
->>>
->>>         ethernet@0 {
->>>                 compatible = "marvell,mv643xx-port";
->>>                 interrupts = <4>;
->>>                 interrupt_parent = <&mpic>;
->>>                 phy = <&phy0>;
->>>         };
->>>
->>>         ethernet@1 {
->>>                 compatible = "marvell,mv643xx-port";
->>>                 interrupts = <5>;
->>>                 interrupt_parent = <&mpic>;
->>>                 phy = <&phy1>;
->>>         };
->>>
->>>         ethernet@2 {
->>>                 compatible = "marvell,mv643xx-port";
->>>                 interrupts = <6>;
->>>                 interrupt_parent = <&mpic>;
->>>                 phy = <&phy2>;
->>>         };
->>> }
->>> pseudo_eth@6400 {
->>>         #address-cells = <1>;
->>>         #size-cells = <0>;
->>>         compatible = "marvell,mv643xx-shared-eth"
->>>         reg = <0x6400 0x1c00>;
->>>
->>>         ethernet@0 {
->>>                 compatible = "marvell,mv643xx-port";
->>>                 interrupts = <4>;
->>>                 interrupt_parent = <&mpic>;
->>>                 phy = <&phy3>;
->>>         };
->>> };
->> This looks almost compatible with the existing binding, which is
->> good.
-> Well, I'm not sure about that - if the existing bindings are really
-> baked into firmware, then "almost" wont be any use at all.
->
->>  I would in fact recommend to use the actual "compatible"
->> strings from the binding. More generally speaking, you should not
->> use wildcards in those strings anyway, so always use
->> "marvell,mv64360-eth" instead of "marvell,mv64x60-eth" or
->> "marvell,mv643xx-eth". If you have multiple chips that are
->> completely compatible, put use the identifier for the older one.
-> Noted.
->
->> I don't fully understand your concern with the overlapping
->> registers, mostly because I still don't know all the combinations
->> that are actually valid here. Let me try to say what I understood
->> so far, and you can correct me if that's wrong:
->>
->> * A system can have multiple instances of an mv64360 ethernet
->> block, with a register area of 0x2000 bytes.
->> * Each such block can have three MACs and three PHYs.
->> * The first 0x400 bytes in the register space control the three
->>   PHYs and the remaining registers control the MACs.
->> * While this is meant to be used in a way that you assign
->>   the each of the three PHYs to one of the MACs, this is not
->>   always done, and sometimes you use a different PHY (?), or
->>   one from a different instance of the mv64360 ethernet block
->>   on the same SoC?.
-> Nearly - the whole block is 0x2000 in size, yes. And each one
-> can have 3 MACs and PHYs, as you say.
->
-> There is SMI @ 0x2000 - just one for all ports, and in many
-> (all?) cases, for all all the other controllers on the SoC to
-> share. On the armadaXP SoC, for example, each ethernet
-> block has its own alias of the same bas SMI reg. (there are
-> 4 blocks)
->
-> ethernet0@ 0x2400
-> ## regs in order: Main regs, MIB counters, Special mcast table, Mcast
-> table, Unicast table.
->    port0 has regs at +0x0000 *0x1000 +0x1400 +0x1500 +0x1600
->    port1 has regs at +0x0400 *0x1080 +0x1800 +0x1900 +0x1a00
->    port2 has regs at +0x0800 *0x1100 +0x1c00 +0x1d00 +0x1e00
-> ethernet1@ 0x6400
->   port0 has regs at +0x0000 *0x1000 +0x1400 +0x1500 +0x1600
-> ...
->
-> As you can see, instead of putting port1 at +0x1700 or so,
-> marvell have overlapped the register files - in fact, doubly
-> so, since port1 + 0x1080 is right in the middle of
-> (port0 + 0x1000) -> (port0 + 0x16ff), so one cant simply map two
-> sets of regs like 0x0000->0x03ff and 0x1000->0x16ff for port one
-> either.
->
-> -Ian
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMDgsIDIwMTIgMTI6MjUgQU0NCj4gVG86IFNl
+dGhpIFZhcnVuLUIxNjM5NQ0KPiBDYzogS3VtYXIgR2FsYTsgbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmc7IEhhbWNpdWMgQm9nZGFuLUJIQU1DSVUxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
+My8zIHY0XSBwb3dlcnBjL21waWM6IEZTTCBNUElDIGVycm9yIGludGVycnVwdA0KPiBzdXBwb3J0
+Lg0KPiANCj4gT24gMDgvMDYvMjAxMiAxMToyMiBBTSwgU2V0aGkgVmFydW4tQjE2Mzk1IHdyb3Rl
+Og0KPiA+DQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTog
+S3VtYXIgR2FsYSBbbWFpbHRvOmdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmddDQo+ID4+IFNlbnQ6
+IE1vbmRheSwgQXVndXN0IDA2LCAyMDEyIDk6MjMgUE0NCj4gPj4gVG86IFNldGhpIFZhcnVuLUIx
+NjM5NQ0KPiA+PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IEhhbWNpdWMgQm9n
+ZGFuLUJIQU1DSVUxDQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMy8zIHY0XSBwb3dlcnBjL21w
+aWM6IEZTTCBNUElDIGVycm9yIGludGVycnVwdA0KPiA+PiBzdXBwb3J0Lg0KPiA+Pg0KPiA+Pg0K
+PiA+PiBPbiBBdWcgNiwgMjAxMiwgYXQgNzo0NCBBTSwgVmFydW4gU2V0aGkgd3JvdGU6DQo+ID4+
+DQo+ID4+PiBBbGwgU09DIGRldmljZSBlcnJvciBpbnRlcnJ1cHRzIGFyZSBtdXhlZCBhbmQgZGVs
+aXZlcmVkIHRvIHRoZSBjb3JlDQo+ID4+PiBhcyBhIHNpbmdsZSBNUElDIGVycm9yIGludGVycnVw
+dC4gQ3VycmVudGx5IGFsbCB0aGUgZGV2aWNlIGRyaXZlcnMNCj4gPj4+IHJlcXVpcmluZyBhY2Nl
+c3MgdG8gZGV2aWNlIGVycm9ycyBoYXZlIHRvIHJlZ2lzdGVyIGZvciB0aGUgTVBJQw0KPiA+Pj4g
+ZXJyb3IgaW50ZXJydXB0IGFzIGEgc2hhcmVkIGludGVycnVwdC4NCj4gPj4+DQo+ID4+PiBXaXRo
+IHRoaXMgcGF0Y2ggd2UgYWRkIGludGVycnVwdCBkZW11eGluZyBjYXBhYmlsaXR5IGluIHRoZSBt
+cGljDQo+ID4+PiBkcml2ZXIsIGFsbG93aW5nIGRldmljZSBkcml2ZXJzIHRvIHJlZ2lzdGVyIGZv
+ciB0aGVpciBpbmRpdmlkdWFsDQo+ID4+PiBlcnJvcg0KPiA+PiBpbnRlcnJ1cHRzLg0KPiA+Pj4g
+VGhpcyBpcyBhY2hpZXZlZCBieSBoYW5kbGluZyBlcnJvciBpbnRlcnJ1cHRzIGluIGEgY2FzY2Fk
+ZWQgZmFzaGlvbi4NCj4gPj4+DQo+ID4+PiBNUElDIGVycm9yIGludGVycnVwdCBpcyBoYW5kbGVk
+IGJ5IHRoZSAiZXJyb3JfaW50X2hhbmRsZXIiLCB3aGljaA0KPiA+Pj4gc3Vic2VxdWVudGx5IGRl
+bXV4ZXMgaXQgdXNpbmcgdGhlIEVJU1IgYW5kIGRlbGl2ZXJzIGl0IHRvIHRoZQ0KPiA+Pj4gcmVz
+cGVjdGl2ZSBkcml2ZXJzLg0KPiA+Pj4NCj4gPj4+IFRoZSBlcnJvciBpbnRlcnJ1cHQgY2FwYWJp
+bGl0eSBpcyBkZXBlbmRlbnQgb24gdGhlIE1QSUMgRUlNUg0KPiA+Pj4gcmVnaXN0ZXIsIHdoaWNo
+IHdhcyBpbnRyb2R1Y2VkIGluIEZTTCBNUElDIHZlcnNpb24gNC4xIChQNDA4MCByZXYyKS4NCj4g
+Pj4+IFNvLCBlcnJvciBpbnRlcnJ1cHQgZGVtdXhpbmcgY2FwYWJpbGl0eSBpcyBkZXBlbmRlbnQg
+b24gdGhlIE1QSUMNCj4gPj4+IHZlcnNpb24gYW5kIGNhbiBiZSB1c2VkIGZvciB2ZXJzaW9ucyA+
+PSA0LjEuDQo+ID4+Pg0KPiA+Pj4gU2lnbmVkLW9mZi1ieTogVmFydW4gU2V0aGkgPFZhcnVuLlNl
+dGhpQGZyZWVzY2FsZS5jb20+DQo+ID4+PiBTaWduZWQtb2ZmLWJ5OiBCb2dkYW4gSGFtY2l1YyA8
+Ym9nZGFuLmhhbWNpdWNAZnJlZXNjYWxlLmNvbT4gW0luIHRoZQ0KPiA+Pj4gaW5pdGlhbCB2ZXJz
+aW9uIG9mIHRoZSBwYXRjaCB3ZSB3ZXJlIHVzaW5nIGhhbmRsZV9zaW1wbGVfaXJxIGFzIHRoZQ0K
+PiA+Pj4gaGFuZGxlciBmb3IgY2FzY2FkZWQgZXJyb3IgaW50ZXJydXB0cywgdGhpcyByZXN1bHRl
+ZCBpbiBpc3N1ZXMgaW4NCj4gPj4+IGNhc2Ugb2YgdGhyZWFkZWQgaXNycyAod2l0aCBSVCBrZXJu
+ZWwpLiBUaGlzIGlzc3VlIHdhcyBkZWJ1Z2dlZCBieQ0KPiA+Pj4gQm9nZGFuIGFuZCBkZWNpc2lv
+biB3YXMgdGFrZW4gdG8gdXNlIHRoZSBoYW5kbGVfbGV2ZWxfaXJxIGhhbmRsZXJdDQo+ID4+PiAt
+LS0NCj4gPj4+IGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tcGljLmggICAgfCAgIDE2ICsrKysN
+Cj4gPj4+IGFyY2gvcG93ZXJwYy9zeXNkZXYvTWFrZWZpbGUgICAgICAgfCAgICAyICstDQo+ID4+
+PiBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9tcGljX2Vyci5jIHwgIDE1Mw0KPiA+PiArKysrKysr
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPj4+IGFyY2gvcG93ZXJwYy9zeXNkZXYv
+bXBpYy5jICAgICAgICAgfCAgIDQ1ICsrKysrKysrKystDQo+ID4+PiBhcmNoL3Bvd2VycGMvc3lz
+ZGV2L21waWMuaCAgICAgICAgIHwgICAyMiArKysrKw0KPiA+Pj4gNSBmaWxlcyBjaGFuZ2VkLCAy
+MzYgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkgY3JlYXRlIG1vZGUNCj4gPj4+IDEwMDY0
+NCBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9tcGljX2Vyci5jDQo+ID4+Pg0KPiA+Pj4gZGlmZiAt
+LWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tcGljLmgNCj4gPj4+IGIvYXJjaC9wb3dl
+cnBjL2luY2x1ZGUvYXNtL21waWMuaCBpbmRleCBlMTRkMzVkLi42YzhlNTNiIDEwMDY0NA0KPiA+
+Pj4gLS0tIGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL21waWMuaA0KPiA+Pj4gKysrIGIvYXJj
+aC9wb3dlcnBjL2luY2x1ZGUvYXNtL21waWMuaA0KPiA+Pj4gQEAgLTExOCw2ICsxMTgsOSBAQA0K
+PiA+Pj4gI2RlZmluZSBNUElDX01BWF9DUFVTCQkzMg0KPiA+Pj4gI2RlZmluZSBNUElDX01BWF9J
+U1UJCTMyDQo+ID4+Pg0KPiA+Pj4gKyNkZWZpbmUgTVBJQ19NQVhfRVJSICAgICAgMzINCj4gPj4+
+ICsjZGVmaW5lIE1QSUNfRlNMX0VSUl9JTlQgIDE2DQo+ID4+PiArDQo+ID4+PiAvKg0KPiA+Pj4g
+ICogVHNpMTA4IGltcGxlbWVudGF0aW9uIG9mIE1QSUMgaGFzIG1hbnkgZGlmZmVyZW5jZXMgZnJv
+bSB0aGUNCj4gPj4+IG9yaWdpbmFsIG9uZSAgKi8gQEAgLTI3MCw2ICsyNzMsNyBAQCBzdHJ1Y3Qg
+bXBpYw0KPiA+Pj4gCXN0cnVjdCBpcnFfY2hpcAkJaGNfaXBpOw0KPiA+Pj4gI2VuZGlmDQo+ID4+
+PiAJc3RydWN0IGlycV9jaGlwCQloY190bTsNCj4gPj4+ICsJc3RydWN0IGlycV9jaGlwCQloY19l
+cnI7DQo+ID4+PiAJY29uc3QgY2hhcgkJKm5hbWU7DQo+ID4+PiAJLyogRmxhZ3MgKi8NCj4gPj4+
+IAl1bnNpZ25lZCBpbnQJCWZsYWdzOw0KPiA+Pj4gQEAgLTI4Myw2ICsyODcsOCBAQCBzdHJ1Y3Qg
+bXBpYw0KPiA+Pj4gCS8qIHZlY3RvciBudW1iZXJzIHVzZWQgZm9yIGludGVybmFsIHNvdXJjZXMg
+KGlwaS90aW1lcnMpICovDQo+ID4+PiAJdW5zaWduZWQgaW50CQlpcGlfdmVjc1s0XTsNCj4gPj4+
+IAl1bnNpZ25lZCBpbnQJCXRpbWVyX3ZlY3NbOF07DQo+ID4+PiArCS8qIHZlY3RvciBudW1iZXJz
+IHVzZWQgZm9yIEZTTCBNUElDIGVycm9yIGludGVycnVwdHMgKi8NCj4gPj4+ICsJdW5zaWduZWQg
+aW50CQllcnJfaW50X3ZlY3NbTVBJQ19NQVhfRVJSXTsNCj4gPj4+DQo+ID4+PiAJLyogU3B1cmlv
+dXMgdmVjdG9yIHRvIHByb2dyYW0gaW50byB1bnVzZWQgc291cmNlcyAqLw0KPiA+Pj4gCXVuc2ln
+bmVkIGludAkJc3B1cmlvdXNfdmVjOw0KPiA+Pj4gQEAgLTMwNiw2ICszMTIsMTEgQEAgc3RydWN0
+IG1waWMNCj4gPj4+IAlzdHJ1Y3QgbXBpY19yZWdfYmFuawljcHVyZWdzW01QSUNfTUFYX0NQVVNd
+Ow0KPiA+Pj4gCXN0cnVjdCBtcGljX3JlZ19iYW5rCWlzdXNbTVBJQ19NQVhfSVNVXTsNCj4gPj4+
+DQo+ID4+PiArCS8qIGlvcmVtYXAnZWQgYmFzZSBmb3IgZXJyb3IgaW50ZXJydXB0IHJlZ2lzdGVy
+cyAqLw0KPiA+Pj4gKwl1MzIgX19pb21lbQkqZXJyX3JlZ3M7DQo+ID4+PiArCS8qIGVycm9yIGlu
+dGVycnVwdCBjb25maWcgKi8NCj4gPj4+ICsJdTMyCQkJZXJyX2ludF9jb25maWdfZG9uZTsNCj4g
+Pj4NCj4gPj4gSSB0aG91Z2h0IHdlIHdlcmUgZ29pbmcgdG8gcmVtb3ZlIHRoaXMgYXMgaXQgZG9u
+J3QgcmVhbGx5IHByb3ZpZGUgYW55DQo+ID4+IHZhbHVlLg0KPiA+Pg0KPiA+IFtTZXRoaSBWYXJ1
+bi1CMTYzOTVdIFdlIG5lZWQgYSB3YXkgdG8gZGV0ZXJtaW5lIHRoYXQgaXJxIGhhbmRsZSBnb3QN
+Cj4gPiByZWdpc3RlcmVkIGZvciBNcGljIGVycm9yIGludGVycnVwdCwgb25seSB0aGVuIGNhbiB3
+ZSBnbyBhaGVhZCBhbmQNCj4gPiBhc3NpZ24gaW5kaXZpZHVhbCAoY2FzY2FkZWQpIGVycm9yIGlu
+dGVycnVwdHMuIEluaXRpYWxseSB3ZSB3ZXJlIGRvaW5nDQo+ID4gdGhlIHNhbWUgdGhpbmcgd2hp
+bGUgdHJhbnNsYXRpbmcgZXJyb3IgaW50ZXJydXB0IHNwZWNpZmllciwgbm93IHdlIGFyZQ0KPiBy
+ZWdpc3RlcmluZyB0aGUgaGFuZGxlciBpbiBtcGljX2luaXQuDQo+IA0KPiBJZiB5b3UgcmVnaXN0
+ZXIgaXQgaW4gbXBpY19pbml0KCksIHdoZW4gd291bGQgeW91IGJlIHVuc3VyZSBhYm91dCB3aGV0
+aGVyDQo+IHRoZSByZWdpc3RyYXRpb24gaGFzIGhhcHBlbmVkPw0KPiANCkl0IHdhcyBqdXN0IGEg
+c2FuaXR5IGNoZWNrIHRvIGVuc3VyZSB0aGF0IHRoZSBlcnJvciBpbnRlcnJ1cHQgaGFuZGxlciBh
+Y3R1YWxseSBnb3QNCnJlZ2lzdGVyZWQgZHVyaW5nIG1waWNfaW5pdCwgc28gdGhhdCB3ZSBjYW4g
+YXNzaWduIGluZGl2aWR1YWwgZXJyb3IgaW50ZXJydXB0cyBpbg0KdGhlIHhsYXRlIGZ1bmN0aW9u
+LiBJIGFncmVlIHRoYXQgdGhpcyBpc24ndCBhIG5lY2Vzc2FyeSByZXF1aXJlbWVudC4gU3VibWl0
+dGVkDQphIG5ldyB2ZXJzaW9uIG9mIHRoZSBwYXRjaCBhZnRlciByZW1vdmluZyB0aGUgY2hlY2su
+DQoNCi1WYXJ1bg0KDQo=
