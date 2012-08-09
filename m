@@ -1,25 +1,26 @@
 Return-Path: <r63875@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AD23A2C0091
- for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2012 18:09:29 +1000 (EST)
-Received: from mail4-db3 (localhost [127.0.0.1])	by mail4-db3-R.bigfish.com
- (Postfix) with ESMTP id 3991F2E0699	for <linuxppc-dev@ozlabs.org>; Thu,  9
- Aug 2012 08:09:25 +0000 (UTC)
-Received: from DB3EHSMHS008.bigfish.com (unknown [10.3.81.225])	by
- mail4-db3.bigfish.com (Postfix) with ESMTP id 3E9AE202F3	for
- <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2012 08:09:23 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id AD63C2C011D
+ for <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2012 18:09:31 +1000 (EST)
+Received: from mail61-co1 (localhost [127.0.0.1])	by mail61-co1-R.bigfish.com
+ (Postfix) with ESMTP id 5C7F1603FA	for <linuxppc-dev@ozlabs.org>;
+ Thu,  9 Aug 2012 08:09:28 +0000 (UTC)
+Received: from CO1EHSMHS027.bigfish.com (unknown [10.243.78.248])	by
+ mail61-co1.bigfish.com (Postfix) with ESMTP id 42032401F9	for
+ <linuxppc-dev@ozlabs.org>; Thu,  9 Aug 2012 08:09:25 +0000 (UTC)
 From: Olivia Yin <hong-hua.yin@freescale.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/3,
- v2] powerpc/e500mc: Add Power ISA properties to comply with ePAPR 1.1
-Date: Thu, 9 Aug 2012 15:42:35 +0800
-Message-ID: <1344498156-25127-2-git-send-email-hong-hua.yin@freescale.com>
-In-Reply-To: <1344498156-25127-1-git-send-email-hong-hua.yin@freescale.com>
+Subject: [PATCH 3/3,
+ v2] powerpc/e5500: Add Power ISA properties to comply with ePAPR 1.1
+Date: Thu, 9 Aug 2012 15:42:36 +0800
+Message-ID: <1344498156-25127-3-git-send-email-hong-hua.yin@freescale.com>
+In-Reply-To: <1344498156-25127-2-git-send-email-hong-hua.yin@freescale.com>
 References: <1344498156-25127-1-git-send-email-hong-hua.yin@freescale.com>
+ <1344498156-25127-2-git-send-email-hong-hua.yin@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Olivia Yin <hong-hua.yin@freescale.com>
@@ -40,7 +41,7 @@ existence of a property named power-isa-[CAT], where [CAT] is the
 abbreviated category name with all uppercase letters converted to 
 lowercase, indicates that the category is supported by the implementation.
 
-The patch update all the e500mc platforms.
+This patch update all the e5500 platforms.
 
 Signed-off-by: Liu Yu <yu.liu@freescale.com>
 Signed-off-by: Olivia Yin <hong-hua.yin@freescale.com>
@@ -48,21 +49,19 @@ Signed-off-by: Olivia Yin <hong-hua.yin@freescale.com>
 git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
 branch: next
 
- arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi |   58 +++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi      |    3 +
- arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi      |    3 +
- 4 files changed, 67 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi
+ arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi |   59 ++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi     |    3 +
+ 2 files changed, 62 insertions(+), 0 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
 
-diff --git a/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi b/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi
+diff --git a/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi b/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
 new file mode 100644
-index 0000000..fa40047
+index 0000000..0e26eb5
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/e500mc_power_isa.dtsi
-@@ -0,0 +1,58 @@
++++ b/arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
+@@ -0,0 +1,59 @@
 +/*
-+ * e500mc Power ISA Device Tree Source (include)
++ * e5500 Power ISA Device Tree Source (include)
 + *
 + * Copyright 2012 Freescale Semiconductor Inc.
 + *
@@ -116,50 +115,23 @@ index 0000000..fa40047
 +		power-isa-mmc;		// Memory Coherence
 +		power-isa-scpm;		// Store Conditional Page Mobility
 +		power-isa-wt;		// Wait
++		power-isa-64;		// 64-bit
 +		mmu-type = "power-embedded";
 +	};
 +};
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-index 2d0a40d..7a2697d 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-pre.dtsi
+diff --git a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
+index ae823a4..0a198b0 100644
+--- a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
 @@ -33,6 +33,9 @@
   */
  
  /dts-v1/;
 +
-+/include/ "e500mc_power_isa.dtsi"
++/include/ "e5500_power_isa.dtsi"
 +
  / {
- 	compatible = "fsl,P2041";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-index 136def3..c9ca2c3 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500mc_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P3041";
- 	#address-cells = <2>;
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-index b9556ee..493d9a0 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-pre.dtsi
-@@ -33,6 +33,9 @@
-  */
- 
- /dts-v1/;
-+
-+/include/ "e500mc_power_isa.dtsi"
-+
- / {
- 	compatible = "fsl,P4080";
+ 	compatible = "fsl,P5020";
  	#address-cells = <2>;
 -- 
 1.6.4
