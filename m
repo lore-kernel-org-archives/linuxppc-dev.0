@@ -1,25 +1,32 @@
-Return-Path: <B16395@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2421A2C00CE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2012 22:30:05 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 3/3 v4] powerpc/mpic: FSL MPIC error interrupt support.
-Date: Thu, 9 Aug 2012 12:29:56 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D15EE6A@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1344257045-11200-1-git-send-email-Varun.Sethi@freescale.com>
- <FAD36277-EA2D-49D7-BD98-2F132CA886AA@kernel.crashing.org>
- <C5ECD7A89D1DC44195F34B25E172658D15BA0D@039-SN2MPN1-013.039d.mgd.msft.net>
- <50216492.60904@freescale.com>
-In-Reply-To: <50216492.60904@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Hamciuc Bogdan-BHAMCIU1 <bhamciu1@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 22F572C00E2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2012 23:10:35 +1000 (EST)
+Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <CADRPPNRT3i-cmAtTmCzi4Rt6ohPpvk1U0vNHZZQqbCGeCJ5Cag@mail.gmail.com>
+Date: Thu, 9 Aug 2012 08:08:23 -0500
+Message-Id: <90115399-5F52-44AC-99F7-86738AABDA66@kernel.crashing.org>
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <1343125210-16720-5-git-send-email-B38951@freescale.com>
+ <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
+ <BAB2AC7D-90D8-473A-83A0-59BD6F730E62@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A48CF7@039-SN1MPN1-002.039d.mgd.msft.net>
+ <50213597.5080600@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A51933@039-SN1MPN1-002.039d.mgd.msft.net>
+ <1C95474C-B59D-4635-8FA9-B76165E177CD@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A51DA2@039-SN1MPN1-002.039d.mgd.msft.net>
+ <CADRPPNRT3i-cmAtTmCzi4Rt6ohPpvk1U0vNHZZQqbCGeCJ5Cag@mail.gmail.com>
+To: Li Yang <leoli@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,90 +36,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMDgsIDIwMTIgMTI6MjUgQU0NCj4gVG86IFNl
-dGhpIFZhcnVuLUIxNjM5NQ0KPiBDYzogS3VtYXIgR2FsYTsgbGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmc7IEhhbWNpdWMgQm9nZGFuLUJIQU1DSVUxDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0gg
-My8zIHY0XSBwb3dlcnBjL21waWM6IEZTTCBNUElDIGVycm9yIGludGVycnVwdA0KPiBzdXBwb3J0
-Lg0KPiANCj4gT24gMDgvMDYvMjAxMiAxMToyMiBBTSwgU2V0aGkgVmFydW4tQjE2Mzk1IHdyb3Rl
-Og0KPiA+DQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTog
-S3VtYXIgR2FsYSBbbWFpbHRvOmdhbGFrQGtlcm5lbC5jcmFzaGluZy5vcmddDQo+ID4+IFNlbnQ6
-IE1vbmRheSwgQXVndXN0IDA2LCAyMDEyIDk6MjMgUE0NCj4gPj4gVG86IFNldGhpIFZhcnVuLUIx
-NjM5NQ0KPiA+PiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IEhhbWNpdWMgQm9n
-ZGFuLUJIQU1DSVUxDQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMy8zIHY0XSBwb3dlcnBjL21w
-aWM6IEZTTCBNUElDIGVycm9yIGludGVycnVwdA0KPiA+PiBzdXBwb3J0Lg0KPiA+Pg0KPiA+Pg0K
-PiA+PiBPbiBBdWcgNiwgMjAxMiwgYXQgNzo0NCBBTSwgVmFydW4gU2V0aGkgd3JvdGU6DQo+ID4+
-DQo+ID4+PiBBbGwgU09DIGRldmljZSBlcnJvciBpbnRlcnJ1cHRzIGFyZSBtdXhlZCBhbmQgZGVs
-aXZlcmVkIHRvIHRoZSBjb3JlDQo+ID4+PiBhcyBhIHNpbmdsZSBNUElDIGVycm9yIGludGVycnVw
-dC4gQ3VycmVudGx5IGFsbCB0aGUgZGV2aWNlIGRyaXZlcnMNCj4gPj4+IHJlcXVpcmluZyBhY2Nl
-c3MgdG8gZGV2aWNlIGVycm9ycyBoYXZlIHRvIHJlZ2lzdGVyIGZvciB0aGUgTVBJQw0KPiA+Pj4g
-ZXJyb3IgaW50ZXJydXB0IGFzIGEgc2hhcmVkIGludGVycnVwdC4NCj4gPj4+DQo+ID4+PiBXaXRo
-IHRoaXMgcGF0Y2ggd2UgYWRkIGludGVycnVwdCBkZW11eGluZyBjYXBhYmlsaXR5IGluIHRoZSBt
-cGljDQo+ID4+PiBkcml2ZXIsIGFsbG93aW5nIGRldmljZSBkcml2ZXJzIHRvIHJlZ2lzdGVyIGZv
-ciB0aGVpciBpbmRpdmlkdWFsDQo+ID4+PiBlcnJvcg0KPiA+PiBpbnRlcnJ1cHRzLg0KPiA+Pj4g
-VGhpcyBpcyBhY2hpZXZlZCBieSBoYW5kbGluZyBlcnJvciBpbnRlcnJ1cHRzIGluIGEgY2FzY2Fk
-ZWQgZmFzaGlvbi4NCj4gPj4+DQo+ID4+PiBNUElDIGVycm9yIGludGVycnVwdCBpcyBoYW5kbGVk
-IGJ5IHRoZSAiZXJyb3JfaW50X2hhbmRsZXIiLCB3aGljaA0KPiA+Pj4gc3Vic2VxdWVudGx5IGRl
-bXV4ZXMgaXQgdXNpbmcgdGhlIEVJU1IgYW5kIGRlbGl2ZXJzIGl0IHRvIHRoZQ0KPiA+Pj4gcmVz
-cGVjdGl2ZSBkcml2ZXJzLg0KPiA+Pj4NCj4gPj4+IFRoZSBlcnJvciBpbnRlcnJ1cHQgY2FwYWJp
-bGl0eSBpcyBkZXBlbmRlbnQgb24gdGhlIE1QSUMgRUlNUg0KPiA+Pj4gcmVnaXN0ZXIsIHdoaWNo
-IHdhcyBpbnRyb2R1Y2VkIGluIEZTTCBNUElDIHZlcnNpb24gNC4xIChQNDA4MCByZXYyKS4NCj4g
-Pj4+IFNvLCBlcnJvciBpbnRlcnJ1cHQgZGVtdXhpbmcgY2FwYWJpbGl0eSBpcyBkZXBlbmRlbnQg
-b24gdGhlIE1QSUMNCj4gPj4+IHZlcnNpb24gYW5kIGNhbiBiZSB1c2VkIGZvciB2ZXJzaW9ucyA+
-PSA0LjEuDQo+ID4+Pg0KPiA+Pj4gU2lnbmVkLW9mZi1ieTogVmFydW4gU2V0aGkgPFZhcnVuLlNl
-dGhpQGZyZWVzY2FsZS5jb20+DQo+ID4+PiBTaWduZWQtb2ZmLWJ5OiBCb2dkYW4gSGFtY2l1YyA8
-Ym9nZGFuLmhhbWNpdWNAZnJlZXNjYWxlLmNvbT4gW0luIHRoZQ0KPiA+Pj4gaW5pdGlhbCB2ZXJz
-aW9uIG9mIHRoZSBwYXRjaCB3ZSB3ZXJlIHVzaW5nIGhhbmRsZV9zaW1wbGVfaXJxIGFzIHRoZQ0K
-PiA+Pj4gaGFuZGxlciBmb3IgY2FzY2FkZWQgZXJyb3IgaW50ZXJydXB0cywgdGhpcyByZXN1bHRl
-ZCBpbiBpc3N1ZXMgaW4NCj4gPj4+IGNhc2Ugb2YgdGhyZWFkZWQgaXNycyAod2l0aCBSVCBrZXJu
-ZWwpLiBUaGlzIGlzc3VlIHdhcyBkZWJ1Z2dlZCBieQ0KPiA+Pj4gQm9nZGFuIGFuZCBkZWNpc2lv
-biB3YXMgdGFrZW4gdG8gdXNlIHRoZSBoYW5kbGVfbGV2ZWxfaXJxIGhhbmRsZXJdDQo+ID4+PiAt
-LS0NCj4gPj4+IGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tcGljLmggICAgfCAgIDE2ICsrKysN
-Cj4gPj4+IGFyY2gvcG93ZXJwYy9zeXNkZXYvTWFrZWZpbGUgICAgICAgfCAgICAyICstDQo+ID4+
-PiBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9tcGljX2Vyci5jIHwgIDE1Mw0KPiA+PiArKysrKysr
-KysrKysrKysrKysrKysrKysrKysrKysrKysrKysNCj4gPj4+IGFyY2gvcG93ZXJwYy9zeXNkZXYv
-bXBpYy5jICAgICAgICAgfCAgIDQ1ICsrKysrKysrKystDQo+ID4+PiBhcmNoL3Bvd2VycGMvc3lz
-ZGV2L21waWMuaCAgICAgICAgIHwgICAyMiArKysrKw0KPiA+Pj4gNSBmaWxlcyBjaGFuZ2VkLCAy
-MzYgaW5zZXJ0aW9ucygrKSwgMiBkZWxldGlvbnMoLSkgY3JlYXRlIG1vZGUNCj4gPj4+IDEwMDY0
-NCBhcmNoL3Bvd2VycGMvc3lzZGV2L2ZzbF9tcGljX2Vyci5jDQo+ID4+Pg0KPiA+Pj4gZGlmZiAt
-LWdpdCBhL2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9tcGljLmgNCj4gPj4+IGIvYXJjaC9wb3dl
-cnBjL2luY2x1ZGUvYXNtL21waWMuaCBpbmRleCBlMTRkMzVkLi42YzhlNTNiIDEwMDY0NA0KPiA+
-Pj4gLS0tIGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL21waWMuaA0KPiA+Pj4gKysrIGIvYXJj
-aC9wb3dlcnBjL2luY2x1ZGUvYXNtL21waWMuaA0KPiA+Pj4gQEAgLTExOCw2ICsxMTgsOSBAQA0K
-PiA+Pj4gI2RlZmluZSBNUElDX01BWF9DUFVTCQkzMg0KPiA+Pj4gI2RlZmluZSBNUElDX01BWF9J
-U1UJCTMyDQo+ID4+Pg0KPiA+Pj4gKyNkZWZpbmUgTVBJQ19NQVhfRVJSICAgICAgMzINCj4gPj4+
-ICsjZGVmaW5lIE1QSUNfRlNMX0VSUl9JTlQgIDE2DQo+ID4+PiArDQo+ID4+PiAvKg0KPiA+Pj4g
-ICogVHNpMTA4IGltcGxlbWVudGF0aW9uIG9mIE1QSUMgaGFzIG1hbnkgZGlmZmVyZW5jZXMgZnJv
-bSB0aGUNCj4gPj4+IG9yaWdpbmFsIG9uZSAgKi8gQEAgLTI3MCw2ICsyNzMsNyBAQCBzdHJ1Y3Qg
-bXBpYw0KPiA+Pj4gCXN0cnVjdCBpcnFfY2hpcAkJaGNfaXBpOw0KPiA+Pj4gI2VuZGlmDQo+ID4+
-PiAJc3RydWN0IGlycV9jaGlwCQloY190bTsNCj4gPj4+ICsJc3RydWN0IGlycV9jaGlwCQloY19l
-cnI7DQo+ID4+PiAJY29uc3QgY2hhcgkJKm5hbWU7DQo+ID4+PiAJLyogRmxhZ3MgKi8NCj4gPj4+
-IAl1bnNpZ25lZCBpbnQJCWZsYWdzOw0KPiA+Pj4gQEAgLTI4Myw2ICsyODcsOCBAQCBzdHJ1Y3Qg
-bXBpYw0KPiA+Pj4gCS8qIHZlY3RvciBudW1iZXJzIHVzZWQgZm9yIGludGVybmFsIHNvdXJjZXMg
-KGlwaS90aW1lcnMpICovDQo+ID4+PiAJdW5zaWduZWQgaW50CQlpcGlfdmVjc1s0XTsNCj4gPj4+
-IAl1bnNpZ25lZCBpbnQJCXRpbWVyX3ZlY3NbOF07DQo+ID4+PiArCS8qIHZlY3RvciBudW1iZXJz
-IHVzZWQgZm9yIEZTTCBNUElDIGVycm9yIGludGVycnVwdHMgKi8NCj4gPj4+ICsJdW5zaWduZWQg
-aW50CQllcnJfaW50X3ZlY3NbTVBJQ19NQVhfRVJSXTsNCj4gPj4+DQo+ID4+PiAJLyogU3B1cmlv
-dXMgdmVjdG9yIHRvIHByb2dyYW0gaW50byB1bnVzZWQgc291cmNlcyAqLw0KPiA+Pj4gCXVuc2ln
-bmVkIGludAkJc3B1cmlvdXNfdmVjOw0KPiA+Pj4gQEAgLTMwNiw2ICszMTIsMTEgQEAgc3RydWN0
-IG1waWMNCj4gPj4+IAlzdHJ1Y3QgbXBpY19yZWdfYmFuawljcHVyZWdzW01QSUNfTUFYX0NQVVNd
-Ow0KPiA+Pj4gCXN0cnVjdCBtcGljX3JlZ19iYW5rCWlzdXNbTVBJQ19NQVhfSVNVXTsNCj4gPj4+
-DQo+ID4+PiArCS8qIGlvcmVtYXAnZWQgYmFzZSBmb3IgZXJyb3IgaW50ZXJydXB0IHJlZ2lzdGVy
-cyAqLw0KPiA+Pj4gKwl1MzIgX19pb21lbQkqZXJyX3JlZ3M7DQo+ID4+PiArCS8qIGVycm9yIGlu
-dGVycnVwdCBjb25maWcgKi8NCj4gPj4+ICsJdTMyCQkJZXJyX2ludF9jb25maWdfZG9uZTsNCj4g
-Pj4NCj4gPj4gSSB0aG91Z2h0IHdlIHdlcmUgZ29pbmcgdG8gcmVtb3ZlIHRoaXMgYXMgaXQgZG9u
-J3QgcmVhbGx5IHByb3ZpZGUgYW55DQo+ID4+IHZhbHVlLg0KPiA+Pg0KPiA+IFtTZXRoaSBWYXJ1
-bi1CMTYzOTVdIFdlIG5lZWQgYSB3YXkgdG8gZGV0ZXJtaW5lIHRoYXQgaXJxIGhhbmRsZSBnb3QN
-Cj4gPiByZWdpc3RlcmVkIGZvciBNcGljIGVycm9yIGludGVycnVwdCwgb25seSB0aGVuIGNhbiB3
-ZSBnbyBhaGVhZCBhbmQNCj4gPiBhc3NpZ24gaW5kaXZpZHVhbCAoY2FzY2FkZWQpIGVycm9yIGlu
-dGVycnVwdHMuIEluaXRpYWxseSB3ZSB3ZXJlIGRvaW5nDQo+ID4gdGhlIHNhbWUgdGhpbmcgd2hp
-bGUgdHJhbnNsYXRpbmcgZXJyb3IgaW50ZXJydXB0IHNwZWNpZmllciwgbm93IHdlIGFyZQ0KPiBy
-ZWdpc3RlcmluZyB0aGUgaGFuZGxlciBpbiBtcGljX2luaXQuDQo+IA0KPiBJZiB5b3UgcmVnaXN0
-ZXIgaXQgaW4gbXBpY19pbml0KCksIHdoZW4gd291bGQgeW91IGJlIHVuc3VyZSBhYm91dCB3aGV0
-aGVyDQo+IHRoZSByZWdpc3RyYXRpb24gaGFzIGhhcHBlbmVkPw0KPiANCkl0IHdhcyBqdXN0IGEg
-c2FuaXR5IGNoZWNrIHRvIGVuc3VyZSB0aGF0IHRoZSBlcnJvciBpbnRlcnJ1cHQgaGFuZGxlciBh
-Y3R1YWxseSBnb3QNCnJlZ2lzdGVyZWQgZHVyaW5nIG1waWNfaW5pdCwgc28gdGhhdCB3ZSBjYW4g
-YXNzaWduIGluZGl2aWR1YWwgZXJyb3IgaW50ZXJydXB0cyBpbg0KdGhlIHhsYXRlIGZ1bmN0aW9u
-LiBJIGFncmVlIHRoYXQgdGhpcyBpc24ndCBhIG5lY2Vzc2FyeSByZXF1aXJlbWVudC4gU3VibWl0
-dGVkDQphIG5ldyB2ZXJzaW9uIG9mIHRoZSBwYXRjaCBhZnRlciByZW1vdmluZyB0aGUgY2hlY2su
-DQoNCi1WYXJ1bg0KDQo=
+
+On Aug 9, 2012, at 12:05 AM, Li Yang wrote:
+
+> On Thu, Aug 9, 2012 at 10:52 AM, Jia Hongtao-B38951
+> <B38951@freescale.com> wrote:
+>>=20
+>>=20
+>>> -----Original Message-----
+>>> From: Linuxppc-dev [mailto:linuxppc-dev-
+>>> bounces+b38951=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Kumar =
+Gala
+>>> Sent: Wednesday, August 08, 2012 8:47 PM
+>>> To: Jia Hongtao-B38951
+>>> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472
+>>> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound =
+PM
+>>> support
+>>>=20
+>>>>>>>>>=20
+>>>>>>>>> On Jul 24, 2012, at 5:20 AM, Jia Hongtao wrote:
+>>>>>>>>>=20
+>>>>>>>>>> Power supply for PCI inbound/outbound window registers is off
+>>>>>>>>>> when
+>>>>>>>>> system
+>>>>>>>>>> go to deep-sleep state. We save the values of registers =
+before
+>>>>>>>>>> suspend and restore to registers after resume.
+>>>>>>>>>>=20
+>>>>>>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
+>>>>>>>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+>>>>>>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>>>>>>>>> ---
+>>>>>>>>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
+>>>>>>>>>> arch/powerpc/sysdev/fsl_pci.c         |  121
+>>>>>>>>> +++++++++++++++++++++++++++++++++
+>>>>>>>>>> 2 files changed, 122 insertions(+), 1 deletions(-)
+>>>>>>>>>=20
+>>>>>>>>> Remind me why we need to save/restore PCI ATMUs, why not just
+>>>>>>>>> re-parse the device tree to restore?
+>>>>>>>>>=20
+>>>>>>>>> - k
+>>>>>>>>=20
+>>>>>>>> Save/restore is the more efficient way. Latency of sleep/wakeup =
+is
+>>>>>>>> one of most important features in power management.
+>>>>>>>>=20
+>>>>>>>> -Hongtao.
+>>>>>>>=20
+>>>>>>> I don't think the time it takes to run through setup_pci_atmu() =
+is
+>>>>>>> that long compared to fsl_pci_resume().
+>>>>>>>=20
+>>>>>>> Also, don't you need to setup PCICCSRBAR and do setup_pci_cmd() =
+on
+>>>>> resume?
+>>>>>>>=20
+>>>>>>> - k
+>>>>>>=20
+>>>>>> Hi Kumar,
+>>>>>> I did some tests on P1022DS and found out that PCI_CMD and =
+PCICSRBAR
+>>>>>> is not lost when system in deep sleep. We don't need to save it.
+>>>>>=20
+>>>>> How does the PCI code know you're entering deep sleep and not
+>>> hibernation?
+>>>>>=20
+>>>>> -Scott
+>>>>=20
+>>>> When system come back from hibernation PCI will be initialized =
+again.
+>>>> So no need to save PCI_CMD and PEXCSRBAR.
+>>>>=20
+>>>> -Hongtao.
+>>>>=20
+>>>=20
+>>> What do you mean PCI will be initialized again?  What code path are =
+you
+>>> talking about that would set PCI_CMD & PEXCSRBAR?
+>>>=20
+>>> - k
+>>=20
+>>=20
+>> In hibernation mode:
+>>=20
+>> When system come back from hibernation kernel will start up again.
+>> Before loading hibernation image PCI initialization has already done.
+>> Some other hardware also re-init again.
+>=20
+> In current Linux implementation, restoring from hibernation image is
+> using late initcall.  By that time, all the platform devices are
+> already initialized like a fresh boot.
+>=20
+> - Leo
+
+I ask against, what specific code path (I'd like a call trace) would =
+cause PCI_CMD and PEXCSRBAR to be set in the wakeup case?
+
+- k=
