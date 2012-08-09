@@ -1,25 +1,25 @@
-Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 0D2382C0103
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 01:35:18 +1000 (EST)
-Message-ID: <5023D60F.7010009@zytor.com>
-Date: Thu, 09 Aug 2012 08:23:59 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH v2 4/6] x86: Add clear_page_nocache
+Return-Path: <JBeulich@suse.com>
+Received: from nat28.tlf.novell.com (nat28.tlf.novell.com [130.57.49.28])
+ by ozlabs.org (Postfix) with ESMTP id 549282C06B2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 01:28:59 +1000 (EST)
+Message-Id: <5023F3580200007800093F2C@nat28.tlf.novell.com>
+Date: Thu, 09 Aug 2012 16:28:56 +0100
+From: "Jan Beulich" <JBeulich@suse.com>
+To: "Andi Kleen" <ak@linux.intel.com>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Subject: Re: [PATCH v2 6/6] x86: switch the 64bit uncached page clear
+ to SSE/AVX v2
 References: <1344524583-1096-1-git-send-email-kirill.shutemov@linux.intel.com>
- <1344524583-1096-5-git-send-email-kirill.shutemov@linux.intel.com>
-In-Reply-To: <1344524583-1096-5-git-send-email-kirill.shutemov@linux.intel.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ <1344524583-1096-7-git-send-email-kirill.shutemov@linux.intel.com>
+In-Reply-To: <1344524583-1096-7-git-send-email-kirill.shutemov@linux.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-mips@linux-mips.org,
- Andi Kleen <ak@linux.intel.com>, Alex Shi <alex.shu@intel.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Alex Shi <alex.shu@intel.com>,
  Robert Richter <robert.richter@amd.com>, linuxppc-dev@lists.ozlabs.org,
  x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
- Jan Beulich <jbeulich@novell.com>, Andy Lutomirski <luto@amacapital.net>,
- linux-mm@kvack.org, linux-sh@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Andy Lutomirski <luto@amacapital.net>, linux-mm@kvack.org,
+ linux-sh@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
  Mel Gorman <mgorman@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
  sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
  Tim Chen <tim.c.chen@linux.intel.com>,
@@ -34,51 +34,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/09/2012 08:03 AM, Kirill A. Shutemov wrote:
-> From: Andi Kleen <ak@linux.intel.com>
->
-> Add a cache avoiding version of clear_page. Straight forward integer variant
-> of the existing 64bit clear_page, for both 32bit and 64bit.
->
-> Also add the necessary glue for highmem including a layer that non cache
-> coherent architectures that use the virtual address for flushing can
-> hook in. This is not needed on x86 of course.
->
-> If an architecture wants to provide cache avoiding version of clear_page
-> it should to define ARCH_HAS_USER_NOCACHE to 1 and implement
-> clear_page_nocache() and clear_user_highpage_nocache().
->
+>>> On 09.08.12 at 17:03, "Kirill A. Shutemov" <kirill.shutemov@linux.intel=
+.com> wrote:
+>  ENTRY(clear_page_nocache)
+>  	CFI_STARTPROC
+> -	xorl   %eax,%eax
+> -	movl   $4096/64,%ecx
+> +	push   %rdi
+> +	call   kernel_fpu_begin
+> +	pop    %rdi
 
-Compile failure:
+You use CFI annotations elsewhere, so why don't you use
+pushq_cfi/popq_cfi here?
 
-/home/hpa/kernel/tip.x86-mm/arch/x86/mm/fault.c: In function 
-‘clear_user_highpage_nocache’:
-/home/hpa/kernel/tip.x86-mm/arch/x86/mm/fault.c:1215:30: error: 
-‘KM_USER0’ undeclared (first use in this function)
-/home/hpa/kernel/tip.x86-mm/arch/x86/mm/fault.c:1215:30: note: each 
-undeclared identifier is reported only once for each function it appears in
-/home/hpa/kernel/tip.x86-mm/arch/x86/mm/fault.c:1215:2: error: too many 
-arguments to function ‘kmap_atomic’
-In file included from 
-/home/hpa/kernel/tip.x86-mm/include/linux/pagemap.h:10:0,
-                  from 
-/home/hpa/kernel/tip.x86-mm/include/linux/mempolicy.h:70,
-                  from 
-/home/hpa/kernel/tip.x86-mm/include/linux/hugetlb.h:15,
-                  from /home/hpa/kernel/tip.x86-mm/arch/x86/mm/fault.c:14:
-/home/hpa/kernel/tip.x86-mm/include/linux/highmem.h:66:21: note: 
-declared here
-make[4]: *** [arch/x86/mm/fault.o] Error 1
-make[3]: *** [arch/x86/mm] Error 2
-make[2]: *** [arch/x86] Error 2
-make[1]: *** [sub-make] Error 2
-make[1]: Leaving directory `/home/hpa/kernel/tip.x86-mm'
-
-This happens on *all* my test configurations, including both x86-64 and 
-i386 allyesconfig.  I suspect your patchset base is stale.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Jan
