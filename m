@@ -2,15 +2,15 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5F1102C007B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 23:09:12 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 89EFB2C00D1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 23:12:15 +1000 (EST)
 Subject: Re: [PATCH V6 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
 In-Reply-To: <1344586776-3115-1-git-send-email-B38951@freescale.com>
-Date: Fri, 10 Aug 2012 08:09:07 -0500
-Message-Id: <1FFB6DE4-7EEC-4A41-A054-797B8BCDFD7A@kernel.crashing.org>
+Date: Fri, 10 Aug 2012 08:12:11 -0500
+Message-Id: <8639423F-3A56-4344-A662-F790098985FD@kernel.crashing.org>
 References: <1344586776-3115-1-git-send-email-B38951@freescale.com>
 To: Jia Hongtao <B38951@freescale.com>
 Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
@@ -94,26 +94,25 @@ ge_imp3a.
 > drivers/edac/mpc85xx_edac.c                |   43 +++---------
 > 35 files changed, 165 insertions(+), 567 deletions(-)
 >=20
+> diff --git a/arch/powerpc/boot/dts/ge_imp3a.dts =
+b/arch/powerpc/boot/dts/ge_imp3a.dts
+> index fefae41..aa2c4b5 100644
+> --- a/arch/powerpc/boot/dts/ge_imp3a.dts
+> +++ b/arch/powerpc/boot/dts/ge_imp3a.dts
+> @@ -248,6 +248,10 @@
+> 				  0x1000000 0x0 0x0
+> 				  0x1000000 0x0 0x0
+> 				  0x0 0x10000>;
+> +
+> +			isa@1e {
+> +				device_type =3D "isa";
+> +			};
+> 		};
+> 	};
+> };
 
-[ snip ]
+Why are we adding an isa node to the ge_imp3a.dts?
 
-> diff --git a/arch/powerpc/kernel/pci-common.c =
-b/arch/powerpc/kernel/pci-common.c
-> index 0f75bd5..2a09aa5 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -734,7 +734,7 @@ void __devinit pci_process_bridge_OF_ranges(struct =
-pci_controller *hose,
-> 			hose->io_base_virt =3D ioremap(cpu_addr, size);
->=20
-> 			/* Expect trouble if pci_addr is not 0 */
-> -			if (primary)
-> +			if (primary || !isa_io_base)
-> 				isa_io_base =3D
-> 					(unsigned =
-long)hose->io_base_virt;
-> #endif /* CONFIG_PPC32 */
+If this is really needed it should be a separate patch as well.
 
-Make this a separate patch.
-
-- k=
+- k
