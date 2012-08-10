@@ -1,22 +1,24 @@
-Return-Path: <B36685@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2CCCF2C00F2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 21:15:44 +1000 (EST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-usb@vger.kernel.org>
-Subject: [PATCH 2/2] powerpc/usb: fix bug of CPU hang when missing USB PHY
- clock
-Date: Fri, 10 Aug 2012 18:48:32 +0800
-Message-ID: <1344595712-12804-2-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1344595712-12804-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1344595712-12804-1-git-send-email-Shengzhou.Liu@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D47CC2C0099
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 22:41:05 +1000 (EST)
+Subject: Re: [PATCH] powerpc/smp: Do not disable IPI interrupts during suspend
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20120802100418.GA13777@localhost.localdomain>
+Date: Fri, 10 Aug 2012 07:40:19 -0500
+Message-Id: <1C2FF4B5-3F3C-4A9D-941D-A4BC4F5C95DE@kernel.crashing.org>
+References: <1342788421-27648-1-git-send-email-chenhui.zhao@freescale.com>
+ <5028672F-1873-4E45-AA23-4CA9F191BE77@kernel.crashing.org>
+ <1343427631.21647.1.camel@pasglop>
+ <20120802100418.GA13777@localhost.localdomain>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Zhao Chenhui <chenhui.zhao@freescale.com>,
+ "linux-kernel@vger.kernel.org list" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,161 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-when missing USB PHY clock, kernel booting up will hang during USB
-initialization. We should check USBGP[PHY_CLK_VALID] bit to avoid
-CPU hanging in this case.
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
- drivers/usb/host/ehci-fsl.c |   63 ++++++++++++++++++++++++++++++------------
- drivers/usb/host/ehci-fsl.h |    1 +
- 2 files changed, 46 insertions(+), 18 deletions(-)
+On Aug 2, 2012, at 5:04 AM, Zhao Chenhui wrote:
 
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index b7451b2..aeb6d03 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -210,11 +210,11 @@ static void usb_hcd_fsl_remove(struct usb_hcd *hcd,
- 	usb_put_hcd(hcd);
- }
- 
--static void ehci_fsl_setup_phy(struct usb_hcd *hcd,
-+static int ehci_fsl_setup_phy(struct usb_hcd *hcd,
- 			       enum fsl_usb2_phy_modes phy_mode,
- 			       unsigned int port_offset)
- {
--	u32 portsc, temp;
-+	u32 portsc, timeout;
- 	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
- 	void __iomem *non_ehci = hcd->regs;
- 	struct device *dev = hcd->self.controller;
-@@ -232,9 +232,15 @@ static void ehci_fsl_setup_phy(struct usb_hcd *hcd,
- 	case FSL_USB2_PHY_ULPI:
- 		if (pdata->controller_ver) {
- 			/* controller version 1.6 or above */
--			temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
--			out_be32(non_ehci + FSL_SOC_USB_CTRL, temp |
--				USB_CTRL_USB_EN | ULPI_PHY_CLK_SEL);
-+			setbits32(non_ehci + FSL_SOC_USB_CTRL,
-+					ULPI_PHY_CLK_SEL);
-+			/*
-+			 * Due to controller issue of PHY_CLK_VALID in ULPI
-+			 * mode, we set USB_CTRL_USB_EN before checking
-+			 * PHY_CLK_VALID, otherwise PHY_CLK_VALID doesn't work.
-+			 */
-+			clrsetbits_be32(non_ehci + FSL_SOC_USB_CTRL,
-+					UTMI_PHY_EN, USB_CTRL_USB_EN);
- 		}
- 		portsc |= PORT_PTS_ULPI;
- 		break;
-@@ -247,9 +253,7 @@ static void ehci_fsl_setup_phy(struct usb_hcd *hcd,
- 	case FSL_USB2_PHY_UTMI:
- 		if (pdata->controller_ver) {
- 			/* controller version 1.6 or above */
--			temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
--			out_be32(non_ehci + FSL_SOC_USB_CTRL, temp |
--				UTMI_PHY_EN | USB_CTRL_USB_EN);
-+			setbits32(non_ehci + FSL_SOC_USB_CTRL, UTMI_PHY_EN);
- 			mdelay(FSL_UTMI_PHY_DLY);  /* Delay for UTMI PHY CLK to
- 						become stable - 10ms*/
- 		}
-@@ -262,23 +266,39 @@ static void ehci_fsl_setup_phy(struct usb_hcd *hcd,
- 	case FSL_USB2_PHY_NONE:
- 		break;
- 	}
-+
-+	if ((pdata->controller_ver) && ((phy_mode == FSL_USB2_PHY_ULPI) ||
-+			(phy_mode == FSL_USB2_PHY_UTMI))) {
-+		for (timeout = 1000; timeout > 0; timeout--) {
-+			/* check PHY_CLK_VALID to get phy clk valid */
-+			if (in_be32(non_ehci + FSL_SOC_USB_CTRL)
-+					& PHY_CLK_VALID)
-+				break;
-+			udelay(1);
-+		}
-+		if (timeout == 0) {
-+			printk(KERN_WARNING "fsl-ehci: USB PHY clock invalid\n");
-+			return -EINVAL;
-+		}
-+	}
-+
- 	ehci_writel(ehci, portsc, &ehci->regs->port_status[port_offset]);
-+
-+	if (phy_mode != FSL_USB2_PHY_ULPI)
-+		setbits32(non_ehci + FSL_SOC_USB_CTRL, USB_CTRL_USB_EN);
-+
-+	return 0;
- }
- 
--static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
-+static int ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- {
- 	struct usb_hcd *hcd = ehci_to_hcd(ehci);
- 	struct fsl_usb2_platform_data *pdata;
- 	void __iomem *non_ehci = hcd->regs;
--	u32 temp;
- 
- 	pdata = hcd->self.controller->platform_data;
- 
--	/* Enable PHY interface in the control reg. */
- 	if (pdata->have_sysif_regs) {
--		temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
--		out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
--
- 		/*
- 		* Turn on cache snooping hardware, since some PowerPC platforms
- 		* wholly rely on hardware to deal with cache coherent
-@@ -293,7 +313,8 @@ static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- 
- 	if ((pdata->operating_mode == FSL_USB2_DR_HOST) ||
- 			(pdata->operating_mode == FSL_USB2_DR_OTG))
--		ehci_fsl_setup_phy(hcd, pdata->phy_mode, 0);
-+		if (ehci_fsl_setup_phy(hcd, pdata->phy_mode, 0))
-+			return -EINVAL;
- 
- 	if (pdata->operating_mode == FSL_USB2_MPH_HOST) {
- 		unsigned int chip, rev, svr;
-@@ -307,9 +328,12 @@ static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- 			ehci->has_fsl_port_bug = 1;
- 
- 		if (pdata->port_enables & FSL_USB2_PORT0_ENABLED)
--			ehci_fsl_setup_phy(hcd, pdata->phy_mode, 0);
-+			if (ehci_fsl_setup_phy(hcd, pdata->phy_mode, 0))
-+				return -EINVAL;
-+
- 		if (pdata->port_enables & FSL_USB2_PORT1_ENABLED)
--			ehci_fsl_setup_phy(hcd, pdata->phy_mode, 1);
-+			if (ehci_fsl_setup_phy(hcd, pdata->phy_mode, 1))
-+				return -EINVAL;
- 	}
- 
- 	if (pdata->have_sysif_regs) {
-@@ -322,12 +346,15 @@ static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- #endif
- 		out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
- 	}
-+
-+	return 0;
- }
- 
- /* called after powerup, by probe or system-pm "wakeup" */
- static int ehci_fsl_reinit(struct ehci_hcd *ehci)
- {
--	ehci_fsl_usb_setup(ehci);
-+	if (ehci_fsl_usb_setup(ehci))
-+		return -EINVAL;
- 	ehci_port_power(ehci, 0);
- 
- 	return 0;
-diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-index 8840368..dbd292e 100644
---- a/drivers/usb/host/ehci-fsl.h
-+++ b/drivers/usb/host/ehci-fsl.h
-@@ -61,4 +61,5 @@
- #define PLL_RESET               (1<<8)
- #define UTMI_PHY_EN             (1<<9)
- #define ULPI_PHY_CLK_SEL        (1<<10)
-+#define PHY_CLK_VALID		(1<<17)
- #endif				/* _EHCI_FSL_H */
--- 
-1.6.4
+> On Sat, Jul 28, 2012 at 08:20:31AM +1000, Benjamin Herrenschmidt =
+wrote:
+>> On Fri, 2012-07-27 at 16:58 -0500, Kumar Gala wrote:
+>>> On Jul 20, 2012, at 7:47 AM, Zhao Chenhui wrote:
+>>>=20
+>>>> During suspend, all interrupts including IPI will be disabled. In =
+this case,
+>>>> the suspend process will hang in SMP. To prevent this, pass the =
+flag
+>>>> IRQF_NO_SUSPEND when requesting IPI irq.
+>>>>=20
+>>>> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>>> ---
+>>>> arch/powerpc/kernel/smp.c |    2 +-
+>>>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>>=20
+>>> BenH,
+>>>=20
+>>> Can you ack?
+>>=20
+>> No I'll merge it but not until it's been in next for a bit unless you
+>> have some strong emergency there, it's on my mental list of things to
+>> shovel into next after rc1.
+>>=20
+>> Curiosity: didn't we use to disable all non-boot CPUs on suspend ?
+>>=20
+>> Cheers,
+>> Ben.
+>=20
+> Yes, we disabled all non-boot CPUs on suspend by calling =
+disable_nonboot_cpus().
+> The disable_nonboot_cpus() needs IPIs to work. But prior to
+> calling disable_nonboot_cpus(), the IPIs are disabled in =
+dpm_suspend_noirq().
+>=20
+> -Chenhui
+
+Benh, Ack?
+
+- k=
