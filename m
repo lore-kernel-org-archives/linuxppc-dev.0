@@ -1,20 +1,18 @@
-Return-Path: <B40534@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3C6EB2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 16:22:04 +1000 (EST)
-From: <Dongsheng.wang@freescale.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>
-Subject: [PATCH v2 2/2] powerpc/mpic: add global timer support
-Date: Fri, 10 Aug 2012 13:54:41 +0800
-Message-ID: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, kumar.gala@freescale.com,
- linuxppc-dev@lists.ozlabs.org, Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1344583401.27290.15.camel@concordia>
+Subject: Re: [PATCH V2 3/3] drivers/char/tpm: Add securityfs support for
+ event log
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Ashley Lai <adlai@linux.vnet.ibm.com>
+Date: Fri, 10 Aug 2012 17:23:21 +1000
+In-Reply-To: <1344553986.28791.13.camel@footlong>
+References: <1344553253.28791.7.camel@footlong>
+ <1344553986.28791.13.camel@footlong>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: key@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ linux-security-module@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
+ adlai@us.ibm.com, rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,612 +22,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+On Thu, 2012-08-09 at 18:13 -0500, Ashley Lai wrote:
+> This patch retrieves the event log data from the device tree
+> during file open. The event log data will then displayed through
+> securityfs.
 
-The MPIC global timer is a hardware timer inside the Freescale PIC comply
-to Open-PIC standard. When the timer is timeout of the specified interval,
-the hardware timer generates an interrupt. The driver currently is only
-tested on fsl chip, but it can potentially support other global timers
-complying to Open-PIC standard.
-The two independent groups of global timer on fsl chip, group A and group B,
-are identical in their functionality, except that they appear at different
-locations within the PIC register map. The hardware timer can be cascaded to
-create timers larger than the default 31-bit global timers. Timer cascade
-fields allow configuration of up to two 63-bit timers. But These two groups
-of timers cannot be cascaded together.
-It can be used as a wakeup source for low power modes. It also could be used
-as periodical timer for protocols, drivers and etc.
+Hi Ashley,
 
-Signed-off-by: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- arch/powerpc/include/asm/mpic_timer.h |   15 +
- arch/powerpc/platforms/Kconfig        |    5 +
- arch/powerpc/sysdev/Makefile          |    1 +
- arch/powerpc/sysdev/mpic_timer.c      |  525 +++++++++++++++++++++++++++++++++
- 4 files changed, 546 insertions(+), 0 deletions(-)
- create mode 100644 arch/powerpc/include/asm/mpic_timer.h
- create mode 100644 arch/powerpc/sysdev/mpic_timer.c
+Comments inline ..
 
-diff --git a/arch/powerpc/include/asm/mpic_timer.h b/arch/powerpc/include/asm/mpic_timer.h
-new file mode 100644
-index 0000000..01d58a2
---- /dev/null
-+++ b/arch/powerpc/include/asm/mpic_timer.h
-@@ -0,0 +1,15 @@
-+#ifndef __MPIC_TIMER__
-+#define __MPIC_TIMER__
-+
-+#include <linux/interrupt.h>
-+#include <linux/time.h>
-+
-+struct mpic_timer *mpic_request_timer(irq_handler_t fn,  void *dev,
-+		const struct timeval *time);
-+
-+void mpic_start_timer(struct mpic_timer *handle);
-+
-+void mpic_stop_timer(struct mpic_timer *handle);
-+
-+void mpic_free_timer(struct mpic_timer *handle);
-+#endif
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index e7a896a..d82a822 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -87,6 +87,11 @@ config MPIC
- 	bool
- 	default n
- 
-+config MPIC_TIMER
-+	bool "MPIC Global Timer"
-+	depends on MPIC && FSL_SOC
-+	default n
-+
- config PPC_EPAPR_HV_PIC
- 	bool
- 	default n
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 1bd7ecb..b1a9e4d 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -6,6 +6,7 @@ mpic-msi-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o mpic_u3msi.o mpic_pasemi_msi.o
- obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y)
- mpic-msgr-obj-$(CONFIG_MPIC_MSGR)	+= mpic_msgr.o
- obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y) $(mpic-msgr-obj-y)
-+obj-$(CONFIG_MPIC_TIMER)	+= mpic_timer.o
- obj-$(CONFIG_PPC_EPAPR_HV_PIC)	+= ehv_pic.o
- fsl-msi-obj-$(CONFIG_PCI_MSI)	+= fsl_msi.o
- obj-$(CONFIG_PPC_MSI_BITMAP)	+= msi_bitmap.o
-diff --git a/arch/powerpc/sysdev/mpic_timer.c b/arch/powerpc/sysdev/mpic_timer.c
-new file mode 100644
-index 0000000..1b3ee59
---- /dev/null
-+++ b/arch/powerpc/sysdev/mpic_timer.c
-@@ -0,0 +1,525 @@
-+/*
-+ * Copyright (c) 2012 Freescale Semiconductor, Inc. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/errno.h>
-+#include <asm/io.h>
-+#include <linux/mm.h>
-+#include <linux/interrupt.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+
-+#include <sysdev/fsl_soc.h>
-+#include <asm/mpic_timer.h>
-+
-+#define FSL_GLOBAL_TIMER		0x1
-+
-+#define MPIC_TIMER_TCR_CLKDIV_64	0x00000300
-+#define MPIC_TIMER_TCR_ROVR_OFFSET	24
-+
-+#define TIMER_STOP			0x80000000
-+#define ALL_TIMER			4
-+#define MAX_TICKS			(~0U>>1)
-+#define MAX_TICKS_CASCADE		(~0U)
-+#define TIMER_OFFSET(num)		(1 << (ALL_TIMER - 1 - num))
-+#define ONE_SECOND			1000000
-+
-+struct timer_regs {
-+	u32	gtccr;
-+	u32	res0[3];
-+	u32	gtbcr;
-+	u32	res1[3];
-+	u32	gtvpr;
-+	u32	res2[3];
-+	u32	gtdr;
-+	u32	res3[3];
-+};
-+
-+struct cascade_priv {
-+	u32 tcr_value;			/* TCR register: CASC & ROVR value */
-+	unsigned int cascade_map;	/* cascade map */
-+	unsigned int timer_num;		/* cascade control timer */
-+};
-+
-+struct mpic_timer {
-+	void			*dev;
-+	struct cascade_priv	*cascade_handle;
-+	unsigned int		num;
-+	int			irq;
-+};
-+
-+struct group_priv {
-+	struct timer_regs __iomem	*regs;
-+	struct mpic_timer		timer[ALL_TIMER];
-+	struct list_head		node;
-+	unsigned int			timerfreq;
-+	unsigned int			idle;
-+	unsigned int			flags;
-+	spinlock_t			lock;
-+	void __iomem			*group_tcr;
-+	void __iomem			*group_tfrr;
-+};
-+
-+static struct cascade_priv cascade_timer[] = {
-+	/* cascade timer 0 and 1 */
-+	{0x1, 0xc, 0x1},
-+	/* cascade timer 1 and 2 */
-+	{0x2, 0x6, 0x2},
-+	/* cascade timer 2 and 3 */
-+	{0x4, 0x3, 0x3}
-+};
-+
-+static u32 ccbfreq;
-+static LIST_HEAD(group_list);
-+
-+/* the time set by the user is converted to "ticks" */
-+static int transform_time(struct group_priv *priv, const struct timeval *time,
-+		u64 *ticks)
-+{
-+	u64 max_value;		/* prevent u64 overflow */
-+	u64 tmp = 0;
-+
-+	u64 tmp_sec = 0;
-+	u64 tmp_ms = 0;
-+	u64 tmp_us = 0;
-+	u32 div = 0;
-+
-+	if (priv->flags & FSL_GLOBAL_TIMER)
-+		max_value = div_u64(ULLONG_MAX, ccbfreq);
-+	else
-+		max_value = div_u64(ULLONG_MAX, priv->timerfreq);
-+
-+	if (time->tv_sec > max_value ||
-+			(time->tv_sec == max_value && time->tv_usec > 0))
-+		return -EINVAL;
-+
-+	if (!(priv->flags & FSL_GLOBAL_TIMER)) {
-+		tmp = time->tv_sec * priv->timerfreq;
-+		*ticks = tmp;
-+
-+		return 0;
-+	}
-+
-+	div = (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
-+
-+	tmp_sec = div_u64((u64)time->tv_sec * (u64)ccbfreq, div);
-+	tmp += tmp_sec;
-+
-+	tmp_ms = time->tv_usec / 1000;
-+	tmp_ms = div_u64((u64)tmp_ms * (u64)ccbfreq, div * 1000);
-+	tmp += tmp_ms;
-+
-+	tmp_us = time->tv_usec % 1000;
-+	tmp_us = div_u64((u64)tmp_us * (u64)ccbfreq, div * 1000000);
-+	tmp += tmp_us;
-+
-+	*ticks = tmp;
-+
-+	return 0;
-+}
-+
-+/* detect whether there is a cascade timer available */
-+static struct mpic_timer *detect_idle_cascade_timer(struct group_priv *priv)
-+{
-+	struct cascade_priv *casc_priv;
-+	unsigned int tmp;
-+	unsigned int array_size = ARRAY_SIZE(cascade_timer);
-+	unsigned int num;
-+	unsigned int i;
-+	unsigned long flags;
-+
-+	casc_priv = cascade_timer;
-+	for (i = 0; i < array_size; i++) {
-+		spin_lock_irqsave(&priv->lock, flags);
-+		tmp = casc_priv->cascade_map & priv->idle;
-+		if (tmp == casc_priv->cascade_map) {
-+			num = casc_priv->timer_num;
-+			priv->timer[num].cascade_handle = casc_priv;
-+
-+			/* set timer busy */
-+			priv->idle &= ~casc_priv->cascade_map;
-+			spin_unlock_irqrestore(&priv->lock, flags);
-+			return &priv->timer[num];
-+		}
-+		spin_unlock_irqrestore(&priv->lock, flags);
-+		casc_priv++;
-+	}
-+
-+	return NULL;
-+}
-+
-+static int set_cascade_timer(struct group_priv *priv, u64 ticks,
-+		unsigned int num)
-+{
-+	struct cascade_priv *casc_priv;
-+	u32 tmp;
-+	u32 tmp_ticks;
-+	u32 rem_ticks;
-+
-+	/* set group tcr reg for cascade */
-+	casc_priv = priv->timer[num].cascade_handle;
-+	if (!casc_priv)
-+		return -EINVAL;
-+
-+	tmp = casc_priv->tcr_value |
-+		(casc_priv->tcr_value << MPIC_TIMER_TCR_ROVR_OFFSET);
-+	setbits32(priv->group_tcr, tmp);
-+
-+	tmp_ticks = div_u64_rem(ticks, MAX_TICKS_CASCADE, &rem_ticks);
-+
-+	out_be32(&priv->regs[num].gtccr, 0);
-+	out_be32(&priv->regs[num].gtbcr, tmp_ticks | TIMER_STOP);
-+
-+	out_be32(&priv->regs[num - 1].gtccr, 0);
-+	out_be32(&priv->regs[num - 1].gtbcr, rem_ticks);
-+
-+	return 0;
-+}
-+
-+static struct mpic_timer *get_cascade_timer(struct group_priv *priv, u64 ticks)
-+{
-+	struct mpic_timer *allocated_timer = NULL;
-+
-+	/* Two cascade timers: Support the maximum time */
-+	const u64 max_ticks = (u64)MAX_TICKS * (u64)MAX_TICKS_CASCADE;
-+	int ret;
-+
-+	if (ticks > max_ticks)
-+		return NULL;
-+
-+	/* detect idle timer */
-+	allocated_timer = detect_idle_cascade_timer(priv);
-+	if (!allocated_timer)
-+		return NULL;
-+
-+	/* set ticks to timer */
-+	ret = set_cascade_timer(priv, ticks, allocated_timer->num);
-+	if (ret < 0)
-+		return NULL;
-+
-+	return allocated_timer;
-+}
-+
-+static struct mpic_timer *get_timer(const struct timeval *time)
-+{
-+	struct group_priv *priv;
-+	struct mpic_timer *timer = NULL;
-+
-+	u64 ticks = 0;
-+	unsigned int num;
-+	unsigned int i;
-+	unsigned long flags;
-+	int ret = 0;
-+
-+	list_for_each_entry(priv, &group_list, node) {
-+		ret = transform_time(priv, time, &ticks);
-+		if (ret < 0)
-+			return NULL;
-+
-+		if (ticks > MAX_TICKS) {
-+			if (!(priv->flags & FSL_GLOBAL_TIMER))
-+				return NULL;
-+
-+			timer = get_cascade_timer(priv, ticks);
-+			if (!timer)
-+				continue;
-+			else
-+				return timer;
-+		}
-+
-+		for (i = 0; i < ALL_TIMER; i++) {
-+			/* one timer: Reverse allocation */
-+			num = ALL_TIMER - 1 - i;
-+			spin_lock_irqsave(&priv->lock, flags);
-+			if (priv->idle & (1 << i)) {
-+				/* set timer busy */
-+				priv->idle &= ~(1 << i);
-+				/* set ticks & stop timer */
-+				out_be32(&priv->regs[num].gtbcr,
-+					ticks | TIMER_STOP);
-+				out_be32(&priv->regs[num].gtccr, 0);
-+				priv->timer[num].cascade_handle = NULL;
-+				spin_unlock_irqrestore(&priv->lock, flags);
-+				return &priv->timer[num];
-+			}
-+			spin_unlock_irqrestore(&priv->lock, flags);
-+		}
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * mpic_request_timer - get a hardware timer
-+ * @fn: interrupt handler function
-+ * @dev: callback function of the data
-+ * @time: time for timer
-+ *
-+ * This executes the "request_irq", returning NULL
-+ * else "handle" on success.
-+ */
-+struct mpic_timer *mpic_request_timer(irq_handler_t fn, void *dev,
-+					const struct timeval *time)
-+{
-+	struct mpic_timer *allocated_timer = NULL;
-+
-+	int ret = 0;
-+
-+	if (list_empty(&group_list))
-+		return NULL;
-+
-+	if ((time->tv_sec + time->tv_usec) == 0 ||
-+			time->tv_sec < 0 || time->tv_usec < 0)
-+		return NULL;
-+
-+	if (time->tv_usec > ONE_SECOND)
-+		return NULL;
-+
-+	allocated_timer = get_timer(time);
-+	if (!allocated_timer)
-+		return NULL;
-+
-+	ret = request_irq(allocated_timer->irq, fn, IRQF_TRIGGER_LOW,
-+			"global-timer", dev);
-+	if (ret)
-+		return NULL;
-+
-+	allocated_timer->dev = dev;
-+
-+	return allocated_timer;
-+}
-+EXPORT_SYMBOL_GPL(mpic_request_timer);
-+
-+/**
-+ * mpic_start_timer - start hardware timer
-+ * @handle: the timer to be started.
-+ *
-+ * It will do ->fn(->dev) callback from the hardware interrupt at
-+ * the ->timeval point in the future.
-+ */
-+void mpic_start_timer(struct mpic_timer *handle)
-+{
-+	struct group_priv *priv = container_of(handle, struct group_priv,
-+			timer[handle->num]);
-+
-+	clrbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
-+}
-+EXPORT_SYMBOL_GPL(mpic_start_timer);
-+
-+/**
-+ * mpic_stop_timer - stop hardware timer
-+ * @handle: the timer to be stoped
-+ *
-+ * The timer periodically generates an interrupt. Unless user stops the timer.
-+ */
-+void mpic_stop_timer(struct mpic_timer *handle)
-+{
-+	struct group_priv *priv = container_of(handle, struct group_priv,
-+			timer[handle->num]);
-+
-+	setbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
-+}
-+EXPORT_SYMBOL_GPL(mpic_stop_timer);
-+
-+/**
-+ * mpic_free_timer - free hardware timer
-+ * @handle: the timer to be removed.
-+ *
-+ * Free the timer.
-+ *
-+ * Note: can not be used in interrupt context.
-+ */
-+void mpic_free_timer(struct mpic_timer *handle)
-+{
-+	struct group_priv *priv = container_of(handle, struct group_priv,
-+			timer[handle->num]);
-+
-+	struct cascade_priv *casc_priv = NULL;
-+	unsigned long flags;
-+
-+	mpic_stop_timer(handle);
-+
-+	casc_priv = priv->timer[handle->num].cascade_handle;
-+
-+	free_irq(priv->timer[handle->num].irq, priv->timer[handle->num].dev);
-+
-+	spin_lock_irqsave(&priv->lock, flags);
-+	if (casc_priv) {
-+		u32 tmp;
-+		tmp = casc_priv->tcr_value | (casc_priv->tcr_value <<
-+					MPIC_TIMER_TCR_ROVR_OFFSET);
-+		clrbits32(priv->group_tcr, tmp);
-+		priv->idle |= casc_priv->cascade_map;
-+		priv->timer[handle->num].cascade_handle = NULL;
-+	} else {
-+		priv->idle |= TIMER_OFFSET(handle->num);
-+	}
-+	spin_unlock_irqrestore(&priv->lock, flags);
-+}
-+EXPORT_SYMBOL_GPL(mpic_free_timer);
-+
-+static int group_get_freq(struct group_priv *priv)
-+{
-+	if (priv->flags & FSL_GLOBAL_TIMER) {
-+		ccbfreq = fsl_get_sys_freq();
-+		priv->timerfreq = ccbfreq;
-+	} else {
-+		priv->timerfreq = in_be32(priv->group_tfrr);
-+	}
-+
-+	if (priv->timerfreq <= 0)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int group_init_regmap(struct device_node *np, struct group_priv *priv)
-+{
-+	priv->group_tfrr = of_iomap(np, 0);
-+	if (!priv->group_tfrr) {
-+		pr_err("%s: cannot ioremap tfrr address.\n",
-+				np->full_name);
-+		return -EINVAL;
-+	}
-+
-+	priv->regs = of_iomap(np, 1);
-+	if (!priv->regs) {
-+		pr_err("%s: cannot ioremap timer register address.\n",
-+				np->full_name);
-+		return -EINVAL;
-+	}
-+
-+	if (!(priv->flags & FSL_GLOBAL_TIMER))
-+		return 0;
-+
-+	priv->group_tcr = of_iomap(np, 2);
-+	if (!priv->group_tcr) {
-+		pr_err("%s: cannot ioremap tcr address.\n", np->full_name);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int group_get_irq(struct device_node *np, struct group_priv *priv)
-+{
-+	const u32 all_timer[] = { 0, ALL_TIMER };
-+	const u32 *p = NULL;
-+	u32 offset;
-+	u32 count;
-+
-+	unsigned int i = 0;
-+	unsigned int j = 0;
-+	unsigned int irq_index = 0;
-+	int irq = 0;
-+	int len = 0;
-+
-+	p = of_get_property(np, "available-ranges", &len);
-+	if (p && len % (2 * sizeof(u32)) != 0) {
-+		pr_err("%s: malformed fsl,available-ranges property.\n",
-+				np->full_name);
-+		return -EINVAL;
-+	}
-+
-+	if (!p) {
-+		p = all_timer;
-+		len = sizeof(all_timer);
-+	}
-+
-+	len /= 2 * sizeof(u32);
-+
-+	for (i = 0; i < len; i++) {
-+		offset = p[i * 2];
-+		count = p[i * 2 + 1];
-+		for (j = 0; j < count; j++) {
-+			irq = irq_of_parse_and_map(np, irq_index);
-+			if (!irq)
-+				break;
-+			/* Set timer idle */
-+			priv->idle |= TIMER_OFFSET((offset + j));
-+			priv->timer[offset + j].irq = irq;
-+			priv->timer[offset + j].num = offset + j;
-+			irq_index++;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static void group_init(struct device_node *np)
-+{
-+	struct group_priv *priv = NULL;
-+	int ret = 0;
-+
-+	priv = kzalloc(sizeof(struct group_priv), GFP_KERNEL);
-+	if (!priv) {
-+		pr_err("%s: cannot allocate memory for group.\n",
-+				np->full_name);
-+		return;
-+	}
-+
-+	if (of_device_is_compatible(np, "fsl,global-timer"))
-+		priv->flags |= FSL_GLOBAL_TIMER;
-+
-+	ret = group_init_regmap(np, priv);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = group_get_freq(priv);
-+	if (ret < 0)
-+		goto out;
-+
-+	ret = group_get_irq(np, priv);
-+	if (ret < 0)
-+		goto out;
-+
-+	spin_lock_init(&priv->lock);
-+
-+	/* Init FSL timer hardware */
-+	if (priv->flags & FSL_GLOBAL_TIMER)
-+		setbits32(priv->group_tcr, MPIC_TIMER_TCR_CLKDIV_64);
-+
-+	list_add_tail(&priv->node, &group_list);
-+
-+	return;
-+out:
-+	if (priv->group_tcr)
-+		iounmap(priv->group_tcr);
-+
-+	if (priv->regs)
-+		iounmap(priv->regs);
-+
-+	if (priv->group_tfrr)
-+		iounmap(priv->group_tfrr);
-+
-+	kfree(priv);
-+}
-+
-+static const struct of_device_id mpic_timer_ids[] = {
-+	{ .compatible = "open-pic,global-timer", },
-+	{ .compatible = "fsl,global-timer", },
-+	{},
-+};
-+
-+static int __init mpic_timer_init(void)
-+{
-+	struct device_node *np = NULL;
-+
-+	for_each_node_by_type(np, "open-pic")
-+		if (of_match_node(mpic_timer_ids, np))
-+			group_init(np);
-+
-+	if (list_empty(&group_list))
-+		return -ENODEV;
-+
-+	return 0;
-+}
-+arch_initcall(mpic_timer_init);
--- 
-1.7.5.1
+> diff --git a/drivers/char/tpm/Makefile b/drivers/char/tpm/Makefile
+> index 547509d..b53da57 100644
+> --- a/drivers/char/tpm/Makefile
+> +++ b/drivers/char/tpm/Makefile
+> @@ -2,9 +2,15 @@
+>  # Makefile for the kernel tpm device drivers.
+>  #
+>  obj-$(CONFIG_TCG_TPM) += tpm.o
+> +obj-$(CONFIG_TCG_TPM) += tpm_bios.o
+>  ifdef CONFIG_ACPI
+> -	obj-$(CONFIG_TCG_TPM) += tpm_bios.o
+>  	tpm_bios-objs += tpm_eventlog.o tpm_acpi.o
+> +else
+> +ifdef CONFIG_TCG_IBMVTPM
+> +	tpm_bios-objs += tpm_eventlog.o tpm_of.o
+> +else
+> +	tpm_bios-objs += tpm_eventlog.o tpm_noeventlog.o
+
+What does it mean to build tpm_eventlog and tpm_noeventlog ?
+
+
+
+> diff --git a/drivers/char/tpm/tpm_eventlog.h b/drivers/char/tpm/tpm_eventlog.h
+> index 8e23ccd..21ac6af 100644
+> --- a/drivers/char/tpm/tpm_eventlog.h
+> +++ b/drivers/char/tpm/tpm_eventlog.h
+> @@ -68,4 +68,18 @@ enum tcpa_pc_event_ids {
+>  };
+>  
+>  int read_log(struct tpm_bios_log *log);
+> +
+> +extern struct dentry **tpm_bios_log_setup(char *);
+> +extern void tpm_bios_log_teardown(struct dentry **);
+> +
+> +#ifdef CONFIG_PPC64
+> +#define TPM_NO_EVENT_LOG !of_find_node_by_name(NULL, "ibm,vtpm")
+> +#else
+> +#ifdef CONFIG_ACPI
+> +#define TPM_NO_EVENT_LOG 0
+> +#else
+> +#define TPM_NO_EVENT_LOG 1
+> +#endif
+> +#endif
+
+This should be a static inline, with the ifdefs inside.
+
+How often is this called? of_find_node_by_name() is not particularly
+efficient. It might be better to search once and save a flag indicating
+whether you found it.
+
+Also you must call of_node_put() on the result of
+of_find_node_by_name(), so at the least you must do:
+
+struct device_node *np;
+np = of_find_node_by_name(NULL, "ibm,vtpm");
+of_node_put(np);
+return (np != NULL);
+
+>  #endif
+> diff --git a/drivers/char/tpm/tpm_noeventlog.c b/drivers/char/tpm/tpm_noeventlog.c
+> new file mode 100644
+> index 0000000..f30a2bf
+> --- /dev/null
+> +++ b/drivers/char/tpm/tpm_noeventlog.c
+> @@ -0,0 +1,21 @@
+> +/*
+> + * Copyright (C) 2012 IBM Corporation
+                ^^
+Don't use (C)
+
+> + *
+> + * Author: Ashley Lai <adlai@us.ibm.com>
+> + *
+> + * Maintained by: <tpmdd-devel@lists.sourceforge.net>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + *
+> + */
+> +
+> +#include <linux/slab.h>
+> +#include "tpm_eventlog.h"
+> +
+> +int read_log(struct tpm_bios_log *log)
+> +{
+> +	return -EINVAL;
+> +}
+
+Wouldn't it be simpler to put this in a header with the appropriate
+ifdefs, and then you'd need less logic in the Makefile?
+
+
+> diff --git a/drivers/char/tpm/tpm_of.c b/drivers/char/tpm/tpm_of.c
+> new file mode 100644
+> index 0000000..6d44adb
+> --- /dev/null
+> +++ b/drivers/char/tpm/tpm_of.c
+> @@ -0,0 +1,68 @@
+> +/*
+> + * Copyright 2012 IBM Corporation
+> + *
+> + * Author: Ashley Lai <adlai@us.ibm.com>
+> + *
+> + * Maintained by: <tpmdd-devel@lists.sourceforge.net>
+> + *
+> + * Read the event log created by the firmware on PPC64
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + *
+> + */
+> +
+> +#include <linux/slab.h>
+> +#include <linux/of.h>
+> +
+> +#include "tpm.h"
+> +#include "tpm_eventlog.h"
+> +
+> +int read_log(struct tpm_bios_log *log)
+> +{
+> +	struct device_node *np;
+> +	const u32 *sizep;
+> +	const __be64 *basep;
+> +
+> +	if (log->bios_event_log != NULL) {
+> +		pr_err("%s: ERROR - Eventlog already initialized\n", __func__);
+> +		return -EFAULT;
+> +	}
+> +
+> +	np = of_find_node_by_name(NULL, "ibm,vtpm");
+> +	if (!np) {
+> +		pr_err("%s: ERROR - IBMVTPM not supported\n", __func__);
+> +		return -ENODEV;
+> +	}
+
+All your return paths below here must call of_node_put(np).
+
+> +	sizep = of_get_property(np, "linux,sml-size", NULL);
+> +	if (sizep == NULL) {
+> +		pr_err("%s: ERROR - SML size not found\n", __func__);
+> +		return -EIO;
+> +	}
+> +	if (*sizep == 0) {
+> +		pr_err("%s: ERROR - event log area empty\n", __func__);
+> +		return -EIO;
+> +	}
+> +
+> +	basep = of_get_property(np, "linux,sml-base", NULL);
+> +	if (basep == NULL) {
+> +		pr_err(KERN_ERR "%s: ERROR - SML not found\n", __func__);
+> +		return -EIO;
+> +	}
+> +
+> +	log->bios_event_log = kmalloc(*sizep, GFP_KERNEL);
+> +	if (!log->bios_event_log) {
+> +		pr_err("%s: ERROR - Not enough memory for BIOS measurements\n",
+> +		       __func__);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	log->bios_event_log_end = log->bios_event_log + *sizep;
+> +
+> +	memcpy(log->bios_event_log, __va(be64_to_cpup(basep)), *sizep);
+> +
+> +	return 0;
+> +}
+
+
+cheers
