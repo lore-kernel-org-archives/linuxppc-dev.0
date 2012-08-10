@@ -1,40 +1,35 @@
-Return-Path: <adlai@us.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0F2332C009E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 06:32:12 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <adlai@us.ibm.com>;
- Thu, 9 Aug 2012 16:32:09 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id BF11238C8045
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Aug 2012 16:32:06 -0400 (EDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q79KW46e146534
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2012 16:32:05 -0400
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q79KVQo6001555
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Aug 2012 14:31:26 -0600
-In-Reply-To: <20120809155750.GA7352@linux.vnet.ibm.com>
-References: <1344367748.24990.1.camel@footlong>
- <1344369479.24990.9.camel@footlong>
- <20120809155750.GA7352@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/3] drivers/char/tpm: Add securityfs support for event log
-To: Kent Yoder <key@linux.vnet.ibm.com>
-Message-ID: <OF284CDC52.FE42D0E6-ON87257A55.007076F8-86257A55.0070EDBB@us.ibm.com>
-From: Ashley D Lai <adlai@us.ibm.com>
-Date: Thu, 9 Aug 2012 15:31:25 -0500
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7493C2C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 12:17:56 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Li Yang-R58472
+ <r58472@freescale.com>
+Subject: RE: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
+Date: Fri, 10 Aug 2012 02:17:45 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A52403@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
+ <1343125210-16720-5-git-send-email-B38951@freescale.com>
+ <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
+ <BAB2AC7D-90D8-473A-83A0-59BD6F730E62@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A48CF7@039-SN1MPN1-002.039d.mgd.msft.net>
+ <50213597.5080600@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A51933@039-SN1MPN1-002.039d.mgd.msft.net>
+ <1C95474C-B59D-4635-8FA9-B76165E177CD@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01A51DA2@039-SN1MPN1-002.039d.mgd.msft.net>
+ <CADRPPNRT3i-cmAtTmCzi4Rt6ohPpvk1U0vNHZZQqbCGeCJ5Cag@mail.gmail.com>
+ <90115399-5F52-44AC-99F7-86738AABDA66@kernel.crashing.org>
+In-Reply-To: <90115399-5F52-44AC-99F7-86738AABDA66@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-type: multipart/alternative;
- Boundary="0__=08BBF0C6DFE3F0688f9e8a93df938690918c08BBF0C6DFE3F068"
-Cc: linux-kernel@vger.kernel.org, Ashley Lai <adlai@linux.vnet.ibm.com>,
- linux-security-module@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
- rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,70 +39,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---0__=08BBF0C6DFE3F0688f9e8a93df938690918c08BBF0C6DFE3F068
-Content-type: text/plain; charset=US-ASCII
 
-Hi Kent,
 
-> > +ifdef CONFIG_TCG_IBMVTPM
-> > +   tpm_bios-objs += tpm_eventlog.o tpm_of.o
-> > +else
-> > +   tpm_bios-objs += tpm_eventlog.o tpm_noeventlog.o
->
->   tpm_eventlog.c is included in all cases here...
->
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, August 09, 2012 9:08 PM
+> To: Li Yang-R58472
+> Cc: Jia Hongtao-B38951; Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
+> Li Yang-R58472
+> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM
+> support
+>=20
+>=20
+> On Aug 9, 2012, at 12:05 AM, Li Yang wrote:
+>=20
+> > On Thu, Aug 9, 2012 at 10:52 AM, Jia Hongtao-B38951
+> > <B38951@freescale.com> wrote:
+> >>
+> >>
+> >>> -----Original Message-----
+> >>> From: Linuxppc-dev [mailto:linuxppc-dev-
+> >>> bounces+b38951=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Kumar
+> >>> bounces+Gala
+> >>> Sent: Wednesday, August 08, 2012 8:47 PM
+> >>> To: Jia Hongtao-B38951
+> >>> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472
+> >>> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound
+> >>> PM support
+> >>>
+> >>>>>>>>>
+> >>>>>>>>> On Jul 24, 2012, at 5:20 AM, Jia Hongtao wrote:
+> >>>>>>>>>
+> >>>>>>>>>> Power supply for PCI inbound/outbound window registers is off
+> >>>>>>>>>> when
+> >>>>>>>>> system
+> >>>>>>>>>> go to deep-sleep state. We save the values of registers
+> >>>>>>>>>> before suspend and restore to registers after resume.
+> >>>>>>>>>>
+> >>>>>>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
+> >>>>>>>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> >>>>>>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+> >>>>>>>>>> ---
+> >>>>>>>>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
+> >>>>>>>>>> arch/powerpc/sysdev/fsl_pci.c         |  121
+> >>>>>>>>> +++++++++++++++++++++++++++++++++
+> >>>>>>>>>> 2 files changed, 122 insertions(+), 1 deletions(-)
+> >>>>>>>>>
+> >>>>>>>>> Remind me why we need to save/restore PCI ATMUs, why not just
+> >>>>>>>>> re-parse the device tree to restore?
+> >>>>>>>>>
+> >>>>>>>>> - k
+> >>>>>>>>
+> >>>>>>>> Save/restore is the more efficient way. Latency of sleep/wakeup
+> >>>>>>>> is one of most important features in power management.
+> >>>>>>>>
+> >>>>>>>> -Hongtao.
+> >>>>>>>
+> >>>>>>> I don't think the time it takes to run through setup_pci_atmu()
+> >>>>>>> is that long compared to fsl_pci_resume().
+> >>>>>>>
+> >>>>>>> Also, don't you need to setup PCICCSRBAR and do setup_pci_cmd()
+> >>>>>>> on
+> >>>>> resume?
+> >>>>>>>
+> >>>>>>> - k
+> >>>>>>
+> >>>>>> Hi Kumar,
+> >>>>>> I did some tests on P1022DS and found out that PCI_CMD and
+> >>>>>> PCICSRBAR is not lost when system in deep sleep. We don't need to
+> save it.
+> >>>>>
+> >>>>> How does the PCI code know you're entering deep sleep and not
+> >>> hibernation?
+> >>>>>
+> >>>>> -Scott
+> >>>>
+> >>>> When system come back from hibernation PCI will be initialized again=
+.
+> >>>> So no need to save PCI_CMD and PEXCSRBAR.
+> >>>>
+> >>>> -Hongtao.
+> >>>>
+> >>>
+> >>> What do you mean PCI will be initialized again?  What code path are
+> >>> you talking about that would set PCI_CMD & PEXCSRBAR?
+> >>>
+> >>> - k
+> >>
+> >>
+> >> In hibernation mode:
+> >>
+> >> When system come back from hibernation kernel will start up again.
+> >> Before loading hibernation image PCI initialization has already done.
+> >> Some other hardware also re-init again.
+> >
+> > In current Linux implementation, restoring from hibernation image is
+> > using late initcall.  By that time, all the platform devices are
+> > already initialized like a fresh boot.
+> >
+> > - Leo
+>=20
+> I ask against, what specific code path (I'd like a call trace) would
+> cause PCI_CMD and PEXCSRBAR to be set in the wakeup case?
+>=20
+> - k
 
-> > +static inline struct dentry **tpm_bios_log_setup(char *name)
-> > +{
-> > +   return NULL;
-> > +}
-> > +static inline void tpm_bios_log_teardown(struct dentry **dir)
-> > +{
-> > +}
-> > +#endif
->
->   But here, without acpi or ppc64, we compile in stubs, which breaks
-> things. It looks like we don't need these stubs at all anymore, and can
-> rely on TPM_NO_EVENT_LOG to bail out in the cases on x86 where ACPI is
-> disabled.
->
-> Kent
+The code path is the same as a fresh boot:
+fsl_add_bridge()
+	-> setup_pci_cmd() [PCI_CMD is set]
+	-> setup_pci_atmu() [PEXCSRBAR is set]
 
-Thanks for testing it out.  I will fix it in the next version.
-
---Ashley
---0__=08BBF0C6DFE3F0688f9e8a93df938690918c08BBF0C6DFE3F068
-Content-type: text/html; charset=US-ASCII
-Content-Disposition: inline
-
-<html><body>
-<p><tt>Hi Kent,</tt><br>
-<tt><br>
-&gt; &gt; +ifdef CONFIG_TCG_IBMVTPM<br>
-&gt; &gt; + &nbsp; tpm_bios-objs += tpm_eventlog.o tpm_of.o<br>
-&gt; &gt; +else<br>
-&gt; &gt; + &nbsp; tpm_bios-objs += tpm_eventlog.o tpm_noeventlog.o<br>
-&gt; <br>
-&gt; &nbsp; tpm_eventlog.c is included in all cases here...<br>
-&gt; <br>
-<br>
-&gt; &gt; +static inline struct dentry **tpm_bios_log_setup(char *name)<br>
-&gt; &gt; +{<br>
-&gt; &gt; + &nbsp; return NULL;<br>
-&gt; &gt; +}<br>
-&gt; &gt; +static inline void tpm_bios_log_teardown(struct dentry **dir)<br>
-&gt; &gt; +{<br>
-&gt; &gt; +}<br>
-&gt; &gt; +#endif<br>
-&gt; <br>
-&gt; &nbsp; But here, without acpi or ppc64, we compile in stubs, which breaks<br>
-&gt; things. It looks like we don't need these stubs at all anymore, and can<br>
-&gt; rely on TPM_NO_EVENT_LOG to bail out in the cases on x86 where ACPI is<br>
-&gt; disabled.<br>
-&gt; <br>
-&gt; Kent</tt><br>
-<br>
-<tt>Thanks for testing it out. &nbsp;I will fix it in the next version.</tt><br>
-<br>
-<tt>--Ashley</tt></body></html>
---0__=08BBF0C6DFE3F0688f9e8a93df938690918c08BBF0C6DFE3F068--
+- Hongtao.
