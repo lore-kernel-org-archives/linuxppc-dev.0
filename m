@@ -1,19 +1,20 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ian Molton <ian.molton@codethink.co.uk>
-Subject: Re: [PATCH v3 0/7] mv643xx.c: Add basic device tree support.
-Date: Fri, 10 Aug 2012 10:49:57 +0000
-References: <1344350092-24050-1-git-send-email-ian.molton@codethink.co.uk>
- <201208091143.32972.arnd@arndb.de> <5023D577.8090001@codethink.co.uk>
-In-Reply-To: <5023D577.8090001@codethink.co.uk>
+Return-Path: <B36685@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C6D8F2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 21:15:37 +1000 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-usb@vger.kernel.org>
+Subject: [PATCH 1/2] powerpc/p4080ds: dts - add usb controller version info
+ and port0
+Date: Fri, 10 Aug 2012 18:48:31 +0800
+Message-ID: <1344595712-12804-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Message-Id: <201208101049.57586.arnd@arndb.de>
-Cc: thomas.petazzoni@free-electrons.com, andrew@lunn.ch, netdev@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org, ben.dooks@codethink.co.uk,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,53 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday 09 August 2012, Ian Molton wrote:
-> >  I think showing one
-> > parent device with children at address 0, 1 and 2 is ok.
-> Is it acceptable for the child devices to directly access the
-> parents register space? because there would be no other
-> way for that to work.
+Add the missing usb controller version info and port0, which is
+required during setup usb phy.
 
-Yes, I see no problem with that. As long as all the drivers
-agree on who can access what.
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-> >  The driver
-> > already knows all those offsets and they are always the same
-> > for all variants of mv643xx, right?
-> Yes, but its not clean. And no amount of refactoring is
-> really going to make a nice driver that also fits the ancient
-> (and badly thought out) OF bindings.
-
-In what way is it badly though out, or not clean? The use of
-underscores in the properties, and the way that the sram
-is configured is problematic, I agree. But The way that
-the three ports are addressed and how the PHY is found
-seems quite clever.
-
-> If we have to break things, we can at least go for a nice
-> clean design, surely?
-> 
-> The ports arent really child devices of the MAC. The MAC
-> just has 3 ports.
-
-I don't see the difference between those two things.
-
-> Luckily, it looks like the existing users don't actually use
-> the device tree to set up the driver at all, preferring to
-> translate their D-T bindings to calls to
-> platform_device_register() so all we'd need to do to
-> support them is completely ignore them.
-> 
-> We're going to have to maintain a legacy
-> platform_device -> DT bindings hack somewhere anyway,
-> at least until the remaining other users of the driver
-> convert to D-T.
-
-I don't understand why you describe the method used in
-powerpc as a hack. It was the normal way to introduce
-DT support for platform devices back when it was implemented.
-It also had the advantage of not requiring any modifications
-to the generic driver, because it was shared between one
-architecture using DT (powerpc) and one that didn't (ARM).
-
-	Arnd
+diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+index 8d35d2c..4f9c9f6 100644
+--- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+@@ -345,6 +345,13 @@
+ /include/ "qoriq-duart-1.dtsi"
+ /include/ "qoriq-gpio-0.dtsi"
+ /include/ "qoriq-usb2-mph-0.dtsi"
++	usb@210000 {
++		compatible = "fsl-usb2-mph-v1.6", "fsl,mpc85xx-usb2-mph", "fsl-usb2-mph";
++		port0;
++	};
+ /include/ "qoriq-usb2-dr-0.dtsi"
++	usb@211000 {
++		compatible = "fsl-usb2-dr-v1.6", "fsl,mpc85xx-usb2-dr", "fsl-usb2-dr";
++	};
+ /include/ "qoriq-sec4.0-0.dtsi"
+ };
+-- 
+1.6.4
