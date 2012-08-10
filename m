@@ -2,20 +2,19 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D743D2C04A0
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2012 23:06:21 +1000 (EST)
-Subject: Re: [PATCH 3/3,
- v2] powerpc/e5500: Add Power ISA properties to comply with ePAPR 1.1
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
+ by ozlabs.org (Postfix) with ESMTPS id 963492C0919
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2012 23:07:12 +1000 (EST)
+Date: Fri, 10 Aug 2012 08:07:01 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1344498156-25127-3-git-send-email-hong-hua.yin@freescale.com>
-Date: Fri, 10 Aug 2012 08:05:45 -0500
-Message-Id: <4A09DAAD-7BC7-4057-B8DB-95C29C9090FD@kernel.crashing.org>
-References: <1344498156-25127-1-git-send-email-hong-hua.yin@freescale.com>
- <1344498156-25127-2-git-send-email-hong-hua.yin@freescale.com>
- <1344498156-25127-3-git-send-email-hong-hua.yin@freescale.com>
-To: Olivia Yin <hong-hua.yin@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [git pull] Please pull powerpc.git merge branch (updated)
+In-Reply-To: <7009C85C-A90F-4477-821A-507259A8F595@kernel.crashing.org>
+Message-ID: <alpine.LFD.2.00.1208100806200.16855@right.am.freescale.net>
+References: <alpine.LFD.2.00.1208030838490.4148@right.am.freescale.net>
+ <1344033253.24037.70.camel@pasglop>
+ <7009C85C-A90F-4477-821A-507259A8F595@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,37 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Ben,
 
-On Aug 9, 2012, at 2:42 AM, Olivia Yin wrote:
+Two updates from last week (one dts bug fix, one minor defconfig update)
 
-> power-isa-version and power-isa-* are cpu node general properties =
-defined in ePAPR.
->=20
-> If the power-isa-version property exists, then for each category from =
-the=20
-> Categories section of Book I of the Power ISA version indicated, the=20=
+- k
 
-> existence of a property named power-isa-[CAT], where [CAT] is the=20
-> abbreviated category name with all uppercase letters converted to=20
-> lowercase, indicates that the category is supported by the =
-implementation.
->=20
-> This patch update all the e5500 platforms.
->=20
-> Signed-off-by: Liu Yu <yu.liu@freescale.com>
-> Signed-off-by: Olivia Yin <hong-hua.yin@freescale.com>
-> ---
-> git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-> branch: next
->=20
-> arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi |   59 =
-++++++++++++++++++++++++
-> arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi     |    3 +
-> 2 files changed, 62 insertions(+), 0 deletions(-)
-> create mode 100644 arch/powerpc/boot/dts/fsl/e5500_power_isa.dtsi
+The following changes since commit 0d7614f09c1ebdbaa1599a5aba7593f147bf96ee:
 
-Added p5040si-pre.dtsi
+  Linux 3.6-rc1 (2012-08-02 16:38:10 -0700)
 
-applied to next
+are available in the git repository at:
 
-- k=
+  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
+
+for you to fetch changes up to 09a3017a585eb8567a7de15b426bb1dfb548bf0f:
+
+  powerpc/p4080ds: dts - add usb controller version info and port0 (2012-08-10 07:47:02 -0500)
+
+----------------------------------------------------------------
+Jia Hongtao (1):
+      powerpc/fsl-pci: Only scan PCI bus if configured as a host
+
+Shengzhou Liu (1):
+      powerpc/p4080ds: dts - add usb controller version info and port0
+
+Zhao Chenhui (1):
+      powerpc/85xx: mpc85xx_defconfig - add VIA PATA support for MPC85xxCDS
+
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    7 +++++++
+ arch/powerpc/configs/mpc85xx_defconfig      |    1 +
+ arch/powerpc/sysdev/fsl_pci.c               |   13 ++++++++-----
+ 3 files changed, 16 insertions(+), 5 deletions(-)
