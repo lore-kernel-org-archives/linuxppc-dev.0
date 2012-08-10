@@ -1,35 +1,14 @@
-Return-Path: <B38951@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7493C2C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 12:17:56 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, Li Yang-R58472
- <r58472@freescale.com>
-Subject: RE: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM support
-Date: Fri, 10 Aug 2012 02:17:45 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A52403@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343125210-16720-1-git-send-email-B38951@freescale.com>
- <1343125210-16720-5-git-send-email-B38951@freescale.com>
- <946C76FC-1F2E-4F09-919F-D5769D29E1A4@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A29E98@039-SN1MPN1-002.039d.mgd.msft.net>
- <BAB2AC7D-90D8-473A-83A0-59BD6F730E62@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A48CF7@039-SN1MPN1-002.039d.mgd.msft.net>
- <50213597.5080600@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A51933@039-SN1MPN1-002.039d.mgd.msft.net>
- <1C95474C-B59D-4635-8FA9-B76165E177CD@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A51DA2@039-SN1MPN1-002.039d.mgd.msft.net>
- <CADRPPNRT3i-cmAtTmCzi4Rt6ohPpvk1U0vNHZZQqbCGeCJ5Cag@mail.gmail.com>
- <90115399-5F52-44AC-99F7-86738AABDA66@kernel.crashing.org>
-In-Reply-To: <90115399-5F52-44AC-99F7-86738AABDA66@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <B40534@freescale.com>
+From: <Dongsheng.wang@freescale.com>
+To: <benh@kernel.crashing.org>, <paulus@samba.org>
+Subject: [PATCH v2 1/2] powerpc/mpic: Add Open-PIC global timer document
+Date: Fri, 10 Aug 2012 13:53:22 +0800
+Message-ID: <1344578002-8057-1-git-send-email-Dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain
+Cc: devicetree-discuss@lists.ozlabs.org,
+ Wang Dongsheng <Dongsheng.Wang@freescale.com>, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org, kumar.gala@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,114 +18,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
 
+Add a description of the OPEN-PIC global timer in the OPEN-PIC document.
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Thursday, August 09, 2012 9:08 PM
-> To: Li Yang-R58472
-> Cc: Jia Hongtao-B38951; Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org;
-> Li Yang-R58472
-> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound PM
-> support
->=20
->=20
-> On Aug 9, 2012, at 12:05 AM, Li Yang wrote:
->=20
-> > On Thu, Aug 9, 2012 at 10:52 AM, Jia Hongtao-B38951
-> > <B38951@freescale.com> wrote:
-> >>
-> >>
-> >>> -----Original Message-----
-> >>> From: Linuxppc-dev [mailto:linuxppc-dev-
-> >>> bounces+b38951=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Kumar
-> >>> bounces+Gala
-> >>> Sent: Wednesday, August 08, 2012 8:47 PM
-> >>> To: Jia Hongtao-B38951
-> >>> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472
-> >>> Subject: Re: [PATCH 5/6] powerpc/fsl-pci: Add pci inbound/outbound
-> >>> PM support
-> >>>
-> >>>>>>>>>
-> >>>>>>>>> On Jul 24, 2012, at 5:20 AM, Jia Hongtao wrote:
-> >>>>>>>>>
-> >>>>>>>>>> Power supply for PCI inbound/outbound window registers is off
-> >>>>>>>>>> when
-> >>>>>>>>> system
-> >>>>>>>>>> go to deep-sleep state. We save the values of registers
-> >>>>>>>>>> before suspend and restore to registers after resume.
-> >>>>>>>>>>
-> >>>>>>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
-> >>>>>>>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> >>>>>>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
-> >>>>>>>>>> ---
-> >>>>>>>>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
-> >>>>>>>>>> arch/powerpc/sysdev/fsl_pci.c         |  121
-> >>>>>>>>> +++++++++++++++++++++++++++++++++
-> >>>>>>>>>> 2 files changed, 122 insertions(+), 1 deletions(-)
-> >>>>>>>>>
-> >>>>>>>>> Remind me why we need to save/restore PCI ATMUs, why not just
-> >>>>>>>>> re-parse the device tree to restore?
-> >>>>>>>>>
-> >>>>>>>>> - k
-> >>>>>>>>
-> >>>>>>>> Save/restore is the more efficient way. Latency of sleep/wakeup
-> >>>>>>>> is one of most important features in power management.
-> >>>>>>>>
-> >>>>>>>> -Hongtao.
-> >>>>>>>
-> >>>>>>> I don't think the time it takes to run through setup_pci_atmu()
-> >>>>>>> is that long compared to fsl_pci_resume().
-> >>>>>>>
-> >>>>>>> Also, don't you need to setup PCICCSRBAR and do setup_pci_cmd()
-> >>>>>>> on
-> >>>>> resume?
-> >>>>>>>
-> >>>>>>> - k
-> >>>>>>
-> >>>>>> Hi Kumar,
-> >>>>>> I did some tests on P1022DS and found out that PCI_CMD and
-> >>>>>> PCICSRBAR is not lost when system in deep sleep. We don't need to
-> save it.
-> >>>>>
-> >>>>> How does the PCI code know you're entering deep sleep and not
-> >>> hibernation?
-> >>>>>
-> >>>>> -Scott
-> >>>>
-> >>>> When system come back from hibernation PCI will be initialized again=
-.
-> >>>> So no need to save PCI_CMD and PEXCSRBAR.
-> >>>>
-> >>>> -Hongtao.
-> >>>>
-> >>>
-> >>> What do you mean PCI will be initialized again?  What code path are
-> >>> you talking about that would set PCI_CMD & PEXCSRBAR?
-> >>>
-> >>> - k
-> >>
-> >>
-> >> In hibernation mode:
-> >>
-> >> When system come back from hibernation kernel will start up again.
-> >> Before loading hibernation image PCI initialization has already done.
-> >> Some other hardware also re-init again.
-> >
-> > In current Linux implementation, restoring from hibernation image is
-> > using late initcall.  By that time, all the platform devices are
-> > already initialized like a fresh boot.
-> >
-> > - Leo
->=20
-> I ask against, what specific code path (I'd like a call trace) would
-> cause PCI_CMD and PEXCSRBAR to be set in the wakeup case?
->=20
-> - k
+Moidfy mpic-timer document. 1.Add a TFRR register region. This register
+is written by software to report the clocking frequency of the PIC timers.
+2.Add a device_type. The global timer in line with the OPEN-PIC specification.
 
-The code path is the same as a fresh boot:
-fsl_add_bridge()
-	-> setup_pci_cmd() [PCI_CMD is set]
-	-> setup_pci_atmu() [PEXCSRBAR is set]
+Signed-off-by: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ Documentation/devicetree/bindings/open-pic.txt     |   46 ++++++++++++++++++++
+ .../devicetree/bindings/powerpc/fsl/mpic-timer.txt |   21 +++++----
+ arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi    |    7 ++-
+ arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi            |    7 ++-
+ 4 files changed, 66 insertions(+), 15 deletions(-)
 
-- Hongtao.
+diff --git a/Documentation/devicetree/bindings/open-pic.txt b/Documentation/devicetree/bindings/open-pic.txt
+index 909a902..045c2e9 100644
+--- a/Documentation/devicetree/bindings/open-pic.txt
++++ b/Documentation/devicetree/bindings/open-pic.txt
+@@ -92,6 +92,52 @@ Example 2:
+ 
+ * References
+ 
++* Open PIC global timers
++
++Required properties:
++- compatible: "open-pic,global-timer"
++
++- reg : Contains two regions.  The first is the timer frequency reporting
++  register for the group.  The second is the main timer register bank
++  (GTCCR, GTBCR, GTVPR, GTDR).
++
++- available-ranges: use <start count> style section to define which
++  timer interrupts can be used.  This property is optional; without this,
++  all timers within the group can be used.
++
++- interrupts: one interrupt per timer in the group, in order, starting
++  with timer zero.  If available-ranges is present, only the interrupts
++  that correspond to available timers shall be present.
++
++* Examples
++
++Example 1:
++
++	/* Note that this requires #interrupt-cells to be 4 */
++	timer: timer@010f0 {
++		compatible = "open-pic,global-timer";
++		device_type = "open-pic";
++		reg = <0x010f0 4 0x01100 0x100>;
++
++		/* Another AMP partition is using timer */
++		available-ranges = <2 2>;
++
++		interrupts = <2 0 3 0
++		              3 0 3 0>;
++	};
++
++Example 2:
++
++	timer: timer@010f0 {
++		compatible = "open-pic,global-timer";
++		device_type = "open-pic";
++		reg = <0x010f0 4 0x01100 0x100>;
++		interrupts = <0 0 3 0
++			      1 0 3 0
++			      2 0 3 0
++		              3 0 3 0>;
++	};
++
+ [1] Power.org (TM) Standard for Embedded Power Architecture (TM) Platform
+     Requirements (ePAPR), Version 1.0, July 2008.
+     (http://www.power.org/resources/downloads/Power_ePAPR_APPROVED_v1.0.pdf)
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt b/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
+index df41958..5aafca0 100644
+--- a/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
++++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
+@@ -1,13 +1,14 @@
+ * Freescale MPIC timers
+ 
+ Required properties:
+-- compatible: "fsl,mpic-global-timer"
++- compatible: "fsl,global-timer"
+ 
+-- reg : Contains two regions.  The first is the main timer register bank
+-  (GTCCRxx, GTBCRxx, GTVPRxx, GTDRxx).  The second is the timer control
++- reg : Contains three regions.  The first is the timer frequency reporting
++  register (TFRRx) for the group.  The second is the main timer register
++  bank (GTCCRxx, GTBCRxx, GTVPRxx, GTDRxx).  The third is the timer control
+   register (TCRx) for the group.
+ 
+-- fsl,available-ranges: use <start count> style section to define which
++- available-ranges: use <start count> style section to define which
+   timer interrupts can be used.  This property is optional; without this,
+   all timers within the group can be used.
+ 
+@@ -18,19 +19,21 @@ Required properties:
+ Example:
+ 	/* Note that this requires #interrupt-cells to be 4 */
+ 	timer0: timer@41100 {
+-		compatible = "fsl,mpic-global-timer";
+-		reg = <0x41100 0x100 0x41300 4>;
++		compatible = "fsl,global-timer";
++		device_type = "open-pic";
++		reg = <0x410f0 4 0x41100 0x100 0x41300 4>;
+ 
+ 		/* Another AMP partition is using timers 0 and 1 */
+-		fsl,available-ranges = <2 2>;
++		available-ranges = <2 2>;
+ 
+ 		interrupts = <2 0 3 0
+ 		              3 0 3 0>;
+ 	};
+ 
+ 	timer1: timer@42100 {
+-		compatible = "fsl,mpic-global-timer";
+-		reg = <0x42100 0x100 0x42300 4>;
++		compatible = "fsl,global-timer";
++		device_type = "open-pic";
++		reg = <0x420f0 4 0x42100 0x100 0x42300 4>;
+ 		interrupts = <4 0 3 0
+ 		              5 0 3 0
+ 		              6 0 3 0
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi b/arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi
+index 8734cff..01cd33c 100644
+--- a/arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi
++++ b/arch/powerpc/boot/dts/fsl/pq3-mpic-timer-B.dtsi
+@@ -32,9 +32,10 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-timer@42100 {
+-	compatible = "fsl,mpic-global-timer";
+-	reg = <0x42100 0x100 0x42300 4>;
++timer@420f0 {
++	compatible = "fsl,global-timer";
++	device_type = "open-pic";
++	reg = <0x420f0 4 0x42100 0x100 0x42300 4>;
+ 	interrupts = <4 0 3 0
+ 		      5 0 3 0
+ 		      6 0 3 0
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi b/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
+index 71c30eb..c71d8e0 100644
+--- a/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
++++ b/arch/powerpc/boot/dts/fsl/pq3-mpic.dtsi
+@@ -44,9 +44,10 @@ mpic: pic@40000 {
+ 	last-interrupt-source = <255>;
+ };
+ 
+-timer@41100 {
+-	compatible = "fsl,mpic-global-timer";
+-	reg = <0x41100 0x100 0x41300 4>;
++timer@410f0 {
++	compatible = "fsl,global-timer";
++	device_type = "open-pic";
++	reg = <0x410f0 4 0x41100 0x100 0x41300 4>;
+ 	interrupts = <0 0 3 0
+ 		      1 0 3 0
+ 		      2 0 3 0
+-- 
+1.7.5.1
