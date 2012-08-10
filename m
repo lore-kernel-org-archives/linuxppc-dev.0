@@ -1,20 +1,34 @@
-Return-Path: <michael@ellerman.id.au>
-Received: from [10.61.2.158] (ibmaus65.lnk.telstra.net [165.228.126.9])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPSA id 6261D2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 19:00:48 +1000 (EST)
-Message-ID: <1344589252.27290.19.camel@concordia>
-Subject: Re: [-next] ERROR: "epapr_hypercall_start"
- [drivers/tty/ehv_bytechan.ko] undefined!
-From: Michael Ellerman <michael@ellerman.id.au>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 10 Aug 2012 19:00:52 +1000
-In-Reply-To: <1344589138.27290.18.camel@concordia>
-References: <CAMuHMdV9dgjdHuz3avU1dubyekcZwT70x=5W+CL7iHQuoC1n_w@mail.gmail.com>
- <1344589138.27290.18.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <zch@tx30smr01.freescale.net>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2285A2C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 19:39:51 +1000 (EST)
+Received: from mail48-am1 (localhost [127.0.0.1])	by mail48-am1-R.bigfish.com
+ (Postfix) with ESMTP id 1C7523400A2	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,
+ 10 Aug 2012 09:39:45 +0000 (UTC)
+Received: from AM1EHSMHS005.bigfish.com (unknown [10.3.201.225])	by
+ mail48-am1.bigfish.com (Postfix) with ESMTP id EA6A7140044	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 09:39:41 +0000 (UTC)
+Received: from localhost.localdomain ([10.213.130.145])	by
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q7A9dcbc007784	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 02:39:39 -0700
+Date: Fri, 10 Aug 2012 17:41:41 +0800
+From: Zhao Chenhui <chenhui.zhao@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: Re: [PATCH 3/4] cpu: export cpu hotplug disable/enable functions as
+ global functions
+Message-ID: <20120810094141.GA17891@localhost.localdomain>
+References: <1344329006-10645-1-git-send-email-chenhui.zhao@freescale.com>
+ <1344329006-10645-3-git-send-email-chenhui.zhao@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1344329006-10645-3-git-send-email-chenhui.zhao@freescale.com>
+Sender: <zch@tx30smr01.freescale.net>
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,29 +38,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-08-10 at 18:58 +1000, Michael Ellerman wrote:
-> On Fri, 2012-08-10 at 09:43 +0200, Geert Uytterhoeven wrote:
-> > Sicne a few days, powerpc allmodconfig fails with:
-> > 
-> > ERROR: "epapr_hypercall_start" [drivers/tty/ehv_bytechan.ko] undefined!
-> > make[2]: *** [__modpost] Error 1
-> > make[1]: *** [modules] Error 2
-> > 
-> > http://kisskb.ellerman.id.au/kisskb/buildresult/6883300/
+On Tue, Aug 07, 2012 at 04:43:25PM +0800, Zhao Chenhui wrote:
+> The cpufreq driver of mpc85xx will disable/enable cpu hotplug temporarily.
+> Therefore, the related functions should be exported.
 > 
+> Signed-off-by: Zhao Chenhui <chenhui.zhao@freescale.com>
+> ---
+>  include/linux/cpu.h |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 > 
-> Yep, modular build is broken.
+> diff --git a/include/linux/cpu.h b/include/linux/cpu.h
+> index ce7a074..df8f73d 100644
+> --- a/include/linux/cpu.h
+> +++ b/include/linux/cpu.h
+> @@ -146,6 +146,8 @@ void notify_cpu_starting(unsigned int cpu);
+>  extern void cpu_maps_update_begin(void);
+>  extern void cpu_maps_update_done(void);
+>  
+> +extern void cpu_hotplug_disable_before_freeze(void);
+> +extern void cpu_hotplug_enable_after_thaw(void);
+>  #else	/* CONFIG_SMP */
+>  
+>  #define cpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+> @@ -167,6 +169,8 @@ static inline void cpu_maps_update_done(void)
+>  {
+>  }
+>  
+> +static inline void cpu_hotplug_disable_before_freeze(void)	{}
+> +static inline void cpu_hotplug_enable_after_thaw(void)	{}
+>  #endif /* CONFIG_SMP */
+>  extern struct bus_type cpu_subsys;
+>  
+> -- 
+> 1.6.4.1
 > 
-> Since this commit by the looks of it:
-> 
-> commit 6d2d82627f4f1e96a33664ace494fa363e0495cb
-> Author: Liu Yu-B13201 <Yu.Liu@freescale.com>
-> Date:   Tue Jul 3 05:48:56 2012 +0000
-> 
->     PPC: Don't use hardcoded opcode for ePAPR hcall invocation
->     
->     Signed-off-by: Liu Yu <yu.liu@freescale.com>
 
-And this address bounces, nice.
+Hi kumar,
 
-cheers
+I will not use these API in the 4/4 patch. please ignore this patch.
+
+-Chenhui
