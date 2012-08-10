@@ -1,21 +1,20 @@
 Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E54E92C00B6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Aug 2012 06:37:50 +1000 (EST)
-Message-ID: <50257116.3030207@freescale.com>
-Date: Fri, 10 Aug 2012 15:37:42 -0500
+ by ozlabs.org (Postfix) with ESMTPS id C85FD2C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Aug 2012 08:21:34 +1000 (EST)
+Date: Fri, 10 Aug 2012 17:21:21 -0500
 From: Scott Wood <scottwood@freescale.com>
+To: <agraf@suse.de>
+Subject: [PATCH] powerpc/epapr: export epapr_hypercall_start
+Message-ID: <20120810222121.GA9408@tyr.buserror.net>
 MIME-Version: 1.0
-To: <Dongsheng.wang@freescale.com>
-Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
-References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
-In-Reply-To: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: kumar.gala@freescale.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,68 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/10/2012 12:54 AM, Dongsheng.wang@freescale.com wrote:
-> +static int group_get_freq(struct group_priv *priv)
-> +{
-> +	if (priv->flags & FSL_GLOBAL_TIMER) {
-> +		ccbfreq = fsl_get_sys_freq();
-> +		priv->timerfreq = ccbfreq;
-> +	} else {
-> +		priv->timerfreq = in_be32(priv->group_tfrr);
-> +	}
+This fixes breakage introduced by the following commit:
 
-FSL MPICs have TFRR too.  I'm not sure that the lack of fsl,mpic is a
-good indication that TFRR is being set (e.g. we have old device trees
-for FSL chips with U-Boot that are labelled as ordinary openpics).
+  commit 6d2d82627f4f1e96a33664ace494fa363e0495cb
+  Author: Liu Yu-B13201 <Yu.Liu@freescale.com>
+  Date:   Tue Jul 3 05:48:56 2012 +0000
 
-> +
-> +	if (priv->timerfreq <= 0)
-> +		return -EINVAL;
-> +
-> +	return 0;
-> +}
+    PPC: Don't use hardcoded opcode for ePAPR hcall invocation
 
-timerfreq is unsigned.  It can never be < 0.
+when a driver that uses ePAPR hypercalls is built as a module.
 
-> +
-> +static int group_init_regmap(struct device_node *np, struct group_priv *priv)
-> +{
-> +	priv->group_tfrr = of_iomap(np, 0);
-> +	if (!priv->group_tfrr) {
-> +		pr_err("%s: cannot ioremap tfrr address.\n",
-> +				np->full_name);
-> +		return -EINVAL;
-> +	}
-> +
-> +	priv->regs = of_iomap(np, 1);
-> +	if (!priv->regs) {
-> +		pr_err("%s: cannot ioremap timer register address.\n",
-> +				np->full_name);
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (!(priv->flags & FSL_GLOBAL_TIMER))
-> +		return 0;
-> +
-> +	priv->group_tcr = of_iomap(np, 2);
-> +	if (!priv->group_tcr) {
-> +		pr_err("%s: cannot ioremap tcr address.\n", np->full_name);
-> +		return -EINVAL;
-> +	}
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+Sending to Alex even though this isn't KVM-specific since the commit it
+fixes is still only in his tree (and linux-next).
 
-This is not compatible with existing mpic timer nodes.
+ arch/powerpc/kernel/ppc_ksyms.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-> +	p = of_get_property(np, "available-ranges", &len);
-> +	if (p && len % (2 * sizeof(u32)) != 0) {
-> +		pr_err("%s: malformed fsl,available-ranges property.\n",
-> +				np->full_name);
-> +		return -EINVAL;
-> +	}
-
-You need to support fsl,available-ranges since that's in an accepted
-binding and people could have partitioned setups already using it.
-
-You also have a mismatch between the property you check and the error
-string.
-
--Scott
+diff --git a/arch/powerpc/kernel/ppc_ksyms.c b/arch/powerpc/kernel/ppc_ksyms.c
+index 3e40315..e597dde 100644
+--- a/arch/powerpc/kernel/ppc_ksyms.c
++++ b/arch/powerpc/kernel/ppc_ksyms.c
+@@ -43,6 +43,7 @@
+ #include <asm/dcr.h>
+ #include <asm/ftrace.h>
+ #include <asm/switch_to.h>
++#include <asm/epapr_hcalls.h>
+ 
+ #ifdef CONFIG_PPC32
+ extern void transfer_to_handler(void);
+@@ -192,3 +193,7 @@ EXPORT_SYMBOL(__arch_hweight64);
+ #ifdef CONFIG_PPC_BOOK3S_64
+ EXPORT_SYMBOL_GPL(mmu_psize_defs);
+ #endif
++
++#ifdef CONFIG_EPAPR_PARAVIRT
++EXPORT_SYMBOL(epapr_hypercall_start);
++#endif
+-- 
+1.7.9.5
