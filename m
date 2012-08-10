@@ -2,20 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 963492C0919
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Aug 2012 23:07:12 +1000 (EST)
-Date: Fri, 10 Aug 2012 08:07:01 -0500 (CDT)
+ by ozlabs.org (Postfix) with ESMTPS id 5F1102C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Aug 2012 23:09:12 +1000 (EST)
+Subject: Re: [PATCH V6 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch (updated)
-In-Reply-To: <7009C85C-A90F-4477-821A-507259A8F595@kernel.crashing.org>
-Message-ID: <alpine.LFD.2.00.1208100806200.16855@right.am.freescale.net>
-References: <alpine.LFD.2.00.1208030838490.4148@right.am.freescale.net>
- <1344033253.24037.70.camel@pasglop>
- <7009C85C-A90F-4477-821A-507259A8F595@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1344586776-3115-1-git-send-email-B38951@freescale.com>
+Date: Fri, 10 Aug 2012 08:09:07 -0500
+Message-Id: <1FFB6DE4-7EEC-4A41-A054-797B8BCDFD7A@kernel.crashing.org>
+References: <1344586776-3115-1-git-send-email-B38951@freescale.com>
+To: Jia Hongtao <B38951@freescale.com>
+Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,35 +23,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
 
-Two updates from last week (one dts bug fix, one minor defconfig update)
+On Aug 10, 2012, at 3:19 AM, Jia Hongtao wrote:
 
-- k
+> We unified the Freescale pci/pcie initialization by changing the =
+fsl_pci
+> to a platform driver. In previous PCI code architecture the =
+initialization
+> routine is called at board_setup_arch stage. Now the initialization is =
+done
+> in probe function which is architectural better. Also It's convenient =
+for
+> adding PM support for PCI controller in later patch.
+>=20
+> We also change the way of determining primary bus for fitting platform
+> driver. Thanks to the proposal from Ben. Please refer to the link =
+below:
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-June/098586.html
+>=20
+> Now we registered pci controllers as platform devices. So we combine =
+two
+> initialization code as one platform driver.
+>=20
+> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+> ---
+> Changes for V6:
+> - Fix "isa_io_base could not be zero" bug. Thanks to Ben.
+>=20
+> - Determining primary by looking for ISA node does not work for =
+ge_imp3a.
+>  It's fixed by adding ISA node to its devied tree.
+>=20
+> arch/powerpc/boot/dts/ge_imp3a.dts         |    4 +
+> arch/powerpc/kernel/pci-common.c           |    2 +-
+> arch/powerpc/platforms/85xx/common.c       |   10 +++
+> arch/powerpc/platforms/85xx/corenet_ds.c   |   31 +--------
+> arch/powerpc/platforms/85xx/ge_imp3a.c     |   48 +------------
+> arch/powerpc/platforms/85xx/mpc8536_ds.c   |   36 +---------
+> arch/powerpc/platforms/85xx/mpc85xx_ads.c  |    9 +--
+> arch/powerpc/platforms/85xx/mpc85xx_cds.c  |   14 +----
+> arch/powerpc/platforms/85xx/mpc85xx_ds.c   |   38 ++--------
+> arch/powerpc/platforms/85xx/mpc85xx_mds.c  |   38 +---------
+> arch/powerpc/platforms/85xx/mpc85xx_rdb.c  |   28 +++-----
+> arch/powerpc/platforms/85xx/p1010rdb.c     |   14 +----
+> arch/powerpc/platforms/85xx/p1022_ds.c     |   34 +---------
+> arch/powerpc/platforms/85xx/p1022_rdk.c    |   34 +---------
+> arch/powerpc/platforms/85xx/p1023_rds.c    |    7 +--
+> arch/powerpc/platforms/85xx/p2041_rdb.c    |    2 +-
+> arch/powerpc/platforms/85xx/p3041_ds.c     |    2 +-
+> arch/powerpc/platforms/85xx/p4080_ds.c     |    2 +-
+> arch/powerpc/platforms/85xx/p5020_ds.c     |    2 +-
+> arch/powerpc/platforms/85xx/p5040_ds.c     |    2 +-
+> arch/powerpc/platforms/85xx/qemu_e500.c    |    3 +-
+> arch/powerpc/platforms/85xx/sbc8548.c      |   19 +-----
+> arch/powerpc/platforms/85xx/socrates.c     |   11 +---
+> arch/powerpc/platforms/85xx/stx_gp3.c      |   11 +---
+> arch/powerpc/platforms/85xx/tqm85xx.c      |   21 +------
+> arch/powerpc/platforms/85xx/xes_mpc85xx.c  |   54 ++-------------
+> arch/powerpc/platforms/86xx/gef_ppc9a.c    |   10 +--
+> arch/powerpc/platforms/86xx/gef_sbc310.c   |   11 +---
+> arch/powerpc/platforms/86xx/gef_sbc610.c   |   10 +--
+> arch/powerpc/platforms/86xx/mpc8610_hpcd.c |   19 +----
+> arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |   40 +----------
+> arch/powerpc/platforms/86xx/sbc8641d.c     |   12 +---
+> arch/powerpc/sysdev/fsl_pci.c              |  102 =
++++++++++++++++++-----------
+> arch/powerpc/sysdev/fsl_pci.h              |    9 ++-
+> drivers/edac/mpc85xx_edac.c                |   43 +++---------
+> 35 files changed, 165 insertions(+), 567 deletions(-)
+>=20
 
-The following changes since commit 0d7614f09c1ebdbaa1599a5aba7593f147bf96ee:
+[ snip ]
 
-  Linux 3.6-rc1 (2012-08-02 16:38:10 -0700)
+> diff --git a/arch/powerpc/kernel/pci-common.c =
+b/arch/powerpc/kernel/pci-common.c
+> index 0f75bd5..2a09aa5 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -734,7 +734,7 @@ void __devinit pci_process_bridge_OF_ranges(struct =
+pci_controller *hose,
+> 			hose->io_base_virt =3D ioremap(cpu_addr, size);
+>=20
+> 			/* Expect trouble if pci_addr is not 0 */
+> -			if (primary)
+> +			if (primary || !isa_io_base)
+> 				isa_io_base =3D
+> 					(unsigned =
+long)hose->io_base_virt;
+> #endif /* CONFIG_PPC32 */
 
-are available in the git repository at:
+Make this a separate patch.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
-
-for you to fetch changes up to 09a3017a585eb8567a7de15b426bb1dfb548bf0f:
-
-  powerpc/p4080ds: dts - add usb controller version info and port0 (2012-08-10 07:47:02 -0500)
-
-----------------------------------------------------------------
-Jia Hongtao (1):
-      powerpc/fsl-pci: Only scan PCI bus if configured as a host
-
-Shengzhou Liu (1):
-      powerpc/p4080ds: dts - add usb controller version info and port0
-
-Zhao Chenhui (1):
-      powerpc/85xx: mpc85xx_defconfig - add VIA PATA support for MPC85xxCDS
-
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    7 +++++++
- arch/powerpc/configs/mpc85xx_defconfig      |    1 +
- arch/powerpc/sysdev/fsl_pci.c               |   13 ++++++++-----
- 3 files changed, 16 insertions(+), 5 deletions(-)
+- k=
