@@ -1,34 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6A2452C0089
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Aug 2012 08:59:12 +1000 (EST)
-Message-ID: <50259237.3090100@freescale.com>
-Date: Fri, 10 Aug 2012 17:59:03 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <michael@ellerman.id.au>
+References: <CAMuHMdV9dgjdHuz3avU1dubyekcZwT70x=5W+CL7iHQuoC1n_w@mail.gmail.com>
+ <1344589138.27290.18.camel@concordia> <1344589252.27290.19.camel@concordia>
+ <50253F43.1070706@freescale.com>
+In-Reply-To: <50253F43.1070706@freescale.com>
 MIME-Version: 1.0
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-References: <1343907741-20589-1-git-send-email-B38951@freescale.com>
- <1343907741-20589-4-git-send-email-B38951@freescale.com>
- <A4B0DB85-7B49-4748-8B94-0E1F1B7B663A@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01A35A2F@039-SN1MPN1-002.039d.mgd.msft.net>
- <501BF66C.3070107@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A36CE7@039-SN1MPN1-002.039d.mgd.msft.net>
- <501FDF9B.4030304@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A422A2@039-SN1MPN1-002.039d.mgd.msft.net>
- <50213207.8050000@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A4B1D9@039-SN1MPN1-002.039d.mgd.msft.net>
- <50228B8A.7010008@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A51E1B@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A51E1B@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain;
+ charset=UTF-8
+Subject: Re: [-next] ERROR: "epapr_hypercall_start"
+ [drivers/tty/ehv_bytechan.ko] undefined!
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Sat, 11 Aug 2012 14:21:57 +1000
+To: Scott Wood <scottwood@freescale.com>
+Message-ID: <29656245-b371-4914-acb6-eccd21c2cb74@email.android.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,145 +23,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 08/08/2012 10:52 PM, Jia Hongtao-B38951 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Wood Scott-B07421
->> Sent: Wednesday, August 08, 2012 11:54 PM
->> To: Jia Hongtao-B38951
->> Cc: Wood Scott-B07421; Kumar Gala; linuxppc-dev@lists.ozlabs.org; Li
->> Yang-R58472
->> Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie
->> initialization code
->>
->> On 08/07/2012 10:57 PM, Jia Hongtao-B38951 wrote:
->>>
->>>
->>>> -----Original Message-----
->>>> From: Wood Scott-B07421
->>>> Sent: Tuesday, August 07, 2012 11:20 PM
->>>> To: Jia Hongtao-B38951
->>>> Cc: Wood Scott-B07421; Kumar Gala; linuxppc-dev@lists.ozlabs.org; Li
->>>> Yang-R58472
->>>> Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie
->>>> initialization code
->>>>
->>>> On 08/07/2012 01:23 AM, Jia Hongtao-B38951 wrote:
->>>>>> -----Original Message-----
->>>>>> From: Wood Scott-B07421
->>>>>> Sent: Monday, August 06, 2012 11:16 PM
->>>>>> To: Jia Hongtao-B38951
->>>>>> Cc: Wood Scott-B07421; Kumar Gala; linuxppc-dev@lists.ozlabs.org;
->>>>>> Li
->>>>>> Yang-R58472
->>>>>> Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie
->>>>>> initialization code
->>>>>>
->>>>>> On 08/05/2012 09:39 PM, Jia Hongtao-B38951 wrote:
->>>>>>>
->>>>>>>
->>>>>>>> -----Original Message-----
->>>>>>>> From: Wood Scott-B07421
->>>>>>>> Sent: Saturday, August 04, 2012 12:04 AM
->>>>>>>> To: Jia Hongtao-B38951
->>>>>>>> Cc: Kumar Gala; linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421;
->>>>>>>> Li
->>>>>>>> Yang-R58472
->>>>>>>> Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie
->>>>>>>> initialization code
->>>>>>>>
->>>>>>>> On 08/02/2012 10:39 PM, Jia Hongtao-B38951 wrote:
->>>>>>>>>
->>>>>>>>>
->>>>>>>>>> -----Original Message-----
->>>>>>>>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->>>>>>>>>> Sent: Thursday, August 02, 2012 8:24 PM
->>>>>>>>>> To: Jia Hongtao-B38951
->>>>>>>>>> Cc: linuxppc-dev@lists.ozlabs.org; Wood Scott-B07421; Li
->>>>>>>>>> Yang-R58472
->>>>>>>>>> Subject: Re: [PATCH V4 3/3] powerpc/fsl-pci: Unify pci/pcie
->>>>>>>>>> initialization code
->>>>>>>>>>
->>>>>>>>>> You need to convert all boards to use fsl_pci_init before this
->>>> patch.
->>>>>>>>>> Otherwise we'll end up with PCI getting initialized twice on
->>>> boards.
->>>>>>>>>>
->>>>>>>>>> - k
->>>>>>>>>
->>>>>>>>> If we covert all boards with platform driver in this patch PCI
->>>>>>>>> will be initialized only once without converting all boards to
->>>>>>>>> use fsl_pci_init first.
->>>>>>>>
->>>>>>>> Then we'd have to pick apart core changes from board changes when
->>>>>>>> reviewing.
->>>>>>>>
->>>>>>>>> If we convert all boards to use fsl_pci_init before this patch
->>>>>>>>> and convert them to use platform driver again after this patch.
->>>>>>>>> Then between this patch and next pci will be initialized twice
->> too.
->>>>>>>>
->>>>>>>> Why?  That one patch should both create the platform driver and
->>>>>>>> remove the init from fsl_pci_init() -- except things like primary
->>>> bus
->>>>>>>> detection which has to happen globally.
->>>>>>>>
->>>>>>>> -Scott
->>>>>>>
->>>>>>> "One patch both create the platform driver and remove the init
->>>>>>> from fsl_pci_init()" means we should create platform driver and
->>>>>>> applied to all boards. If so why not just directly convert all
->>>>>>> boards using platform driver?
->>>>>>
->>>>>> Because it's harder to review when you have a bunch of board code
->>>>>> in
->>>> the
->>>>>> patch in addition to core changes.
->>>>>>
->>>>>> Because you might want people to actually test on the boards in
->>>> question
->>>>>> when converting, especially given the change in how primary buses
->>>>>> are determined, and that some boards may need to provide their own
->>>>>> alternative.
->>>>>>
->>>>>> -Scott
->>>>>
->>>>> But if we separate the core changes and the boards update, between
->>>>> this
->>>> two
->>>>> patches PCI will be initialized twice.
->>>>
->>>> As I said earlier, you can remove the initcall and require boards to
->>>> manually call fsl_pci_init() until all boards are converted.
->>>>
->>>> -Scott
->>>
->>> As I said earlier, I can do this but it does not solve the twice-init
->> problem.
->>
->> I must have missed it.  Why does it not solve the problem?  If a board
->> doesn't call fsl_pci_init(), the platform driver doesn't get registered.
->>
->>> If I do this first and then add platform driver we also have to
->>> convert all boards using platform driver in the same patch.
->>>
->>> We finally using the platform driver so Why do you keep insisting on
->>> converting all boards using fsl_pci_init() first even it does no
->> improvement.
->>
->> What we're asking for is bisectability (don't have any intermediate
->> stages where PCI gets initialized twice), and the ability to have a
->> smooth transition where boards can be converted as people are able to
->> test them and look into their individual needs regarding primary bus.
->>
->> -Scott
-> 
-> In my patch there is no bisectability problem. If you don't think so could
-> you please give more details?
 
-You are registering the PCI platform device with an initcall, but you
-haven't updated the unconverted boards to not do the init themselves --
-and your proposal to fix that breaks the "smooth transition" request.
+Scott Wood <scottwood@freescale.com> wrote:
 
--Scott
+>On 08/10/2012 04:00 AM, Michael Ellerman wrote:
+>> On Fri, 2012-08-10 at 18:58 +1000, Michael Ellerman wrote:
+>>> On Fri, 2012-08-10 at 09:43 +0200, 
+>>>     
+>>>     Signed-off-by: Liu Yu <yu.liu@freescale.com>
+>> 
+>> And this address bounces, nice.
+>
+>He doesn't work here anymore.  We'll take care of the breakage.
+
+Thanks. 
