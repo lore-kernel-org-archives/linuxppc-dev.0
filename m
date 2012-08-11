@@ -1,24 +1,20 @@
-Return-Path: <B04825@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 937E42C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Aug 2012 23:10:19 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
-Date: Sat, 11 Aug 2012 13:10:09 +0000
-Message-ID: <CAOZdJXWmLgRM9t6Cus=5kfOwjmAFSg+hjNXyd1cR7GtJ8k0Qew@mail.gmail.com>
-References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
-In-Reply-To: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
- "paulus@samba.org" <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Wood Scott-B07421 <B07421@freescale.com>
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 358F02C0165
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Aug 2012 23:10:32 +1000 (EST)
+Subject: Re: [PATCH] powerpc/epapr: export epapr_hypercall_start
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <20120810222121.GA9408@tyr.buserror.net>
+Date: Sat, 11 Aug 2012 15:10:23 +0200
+Message-Id: <D6818778-6A5C-40D9-BE1A-3885ED4B4AA5@suse.de>
+References: <20120810222121.GA9408@tyr.buserror.net>
+To: Scott Wood <scottwood@freescale.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,13 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Aug 10, 2012 at 12:54 AM,  <Dongsheng.wang@freescale.com> wrote:
-> From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
 
-> +EXPORT_SYMBOL_GPL(mpic_request_timer);
+On 11.08.2012, at 00:21, Scott Wood wrote:
 
-Make these EXPORT_SYMBOL.  No need for a GPL restriction.
+> This fixes breakage introduced by the following commit:
+> 
+>  commit 6d2d82627f4f1e96a33664ace494fa363e0495cb
+>  Author: Liu Yu-B13201 <Yu.Liu@freescale.com>
+>  Date:   Tue Jul 3 05:48:56 2012 +0000
+> 
+>    PPC: Don't use hardcoded opcode for ePAPR hcall invocation
+> 
+> when a driver that uses ePAPR hypercalls is built as a module.
+> 
+> Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+> Sending to Alex even though this isn't KVM-specific since the commit it
+> fixes is still only in his tree (and linux-next).
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+Thanks, applied to kvm-ppc-next.
+
+
+Alex
