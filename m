@@ -1,25 +1,25 @@
 Return-Path: <B40534@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A59F2C00D1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2012 16:18:48 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E7C642C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2012 16:21:04 +1000 (EST)
 From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
 Subject: RE: [PATCH v2 2/2] powerpc/mpic: add global timer support
-Date: Mon, 13 Aug 2012 06:18:39 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB14CA@039-SN2MPN1-022.039d.mgd.msft.net>
+Date: Mon, 13 Aug 2012 06:20:56 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB14DD@039-SN2MPN1-022.039d.mgd.msft.net>
 References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
- <50257116.3030207@freescale.com>
-In-Reply-To: <50257116.3030207@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <CAOZdJXWmLgRM9t6Cus=5kfOwjmAFSg+hjNXyd1cR7GtJ8k0Qew@mail.gmail.com>
+In-Reply-To: <CAOZdJXWmLgRM9t6Cus=5kfOwjmAFSg+hjNXyd1cR7GtJ8k0Qew@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: Gala Kumar-B11780 <B11780@freescale.com>,
  "paulus@samba.org" <paulus@samba.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ Wood Scott-B07421 <B07421@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,56 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogU2F0dXJkYXksIEF1Z3VzdCAxMSwgMjAxMiA0OjM4IEFNDQo+IFRvOiBXYW5n
-IERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IGJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZzsgcGF1bHVz
-QHNhbWJhLm9yZzsgbGludXhwcGMtDQo+IGRldkBsaXN0cy5vemxhYnMub3JnOyBHYWxhIEt1bWFy
-LUIxMTc4MDsgTGkgWWFuZy1SNTg0NzINCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MiAyLzJdIHBv
-d2VycGMvbXBpYzogYWRkIGdsb2JhbCB0aW1lciBzdXBwb3J0DQo+IA0KPiBPbiAwOC8xMC8yMDEy
-IDEyOjU0IEFNLCBEb25nc2hlbmcud2FuZ0BmcmVlc2NhbGUuY29tIHdyb3RlOg0KPiA+ICtzdGF0
-aWMgaW50IGdyb3VwX2dldF9mcmVxKHN0cnVjdCBncm91cF9wcml2ICpwcml2KSB7DQo+ID4gKwlp
-ZiAocHJpdi0+ZmxhZ3MgJiBGU0xfR0xPQkFMX1RJTUVSKSB7DQo+ID4gKwkJY2NiZnJlcSA9IGZz
-bF9nZXRfc3lzX2ZyZXEoKTsNCj4gPiArCQlwcml2LT50aW1lcmZyZXEgPSBjY2JmcmVxOw0KPiA+
-ICsJfSBlbHNlIHsNCj4gPiArCQlwcml2LT50aW1lcmZyZXEgPSBpbl9iZTMyKHByaXYtPmdyb3Vw
-X3RmcnIpOw0KPiA+ICsJfQ0KPiANCj4gRlNMIE1QSUNzIGhhdmUgVEZSUiB0b28uICBJJ20gbm90
-IHN1cmUgdGhhdCB0aGUgbGFjayBvZiBmc2wsbXBpYyBpcyBhDQo+IGdvb2QgaW5kaWNhdGlvbiB0
-aGF0IFRGUlIgaXMgYmVpbmcgc2V0IChlLmcuIHdlIGhhdmUgb2xkIGRldmljZSB0cmVlcyBmb3IN
-Cj4gRlNMIGNoaXBzIHdpdGggVS1Cb290IHRoYXQgYXJlIGxhYmVsbGVkIGFzIG9yZGluYXJ5IG9w
-ZW5waWNzKS4NCj4gDQpbV2FuZyBEb25nc2hlbmddIHllcywgd2UgaGF2ZS4gQnV0IHdlIGRvIG5v
-dCB1c2VkIGl0LiBUaGUgVEZSUiByZWdpc3RlciB2YWx1ZQ0KaXMgemVyby4gDQoNCj4gPiArDQo+
-ID4gKwlpZiAocHJpdi0+dGltZXJmcmVxIDw9IDApDQo+ID4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+
-ID4gKw0KPiA+ICsJcmV0dXJuIDA7DQo+ID4gK30NCj4gDQo+IHRpbWVyZnJlcSBpcyB1bnNpZ25l
-ZC4gIEl0IGNhbiBuZXZlciBiZSA8IDAuDQo+IA0KW1dhbmcgRG9uZ3NoZW5nXSBZZWFoLiBUaGFu
-a3MuDQo+ID4gKw0KPiA+ICtzdGF0aWMgaW50IGdyb3VwX2luaXRfcmVnbWFwKHN0cnVjdCBkZXZp
-Y2Vfbm9kZSAqbnAsIHN0cnVjdA0KPiA+ICtncm91cF9wcml2ICpwcml2KSB7DQo+ID4gKwlwcml2
-LT5ncm91cF90ZnJyID0gb2ZfaW9tYXAobnAsIDApOw0KPiA+ICsJaWYgKCFwcml2LT5ncm91cF90
-ZnJyKSB7DQo+ID4gKwkJcHJfZXJyKCIlczogY2Fubm90IGlvcmVtYXAgdGZyciBhZGRyZXNzLlxu
-IiwNCj4gPiArCQkJCW5wLT5mdWxsX25hbWUpOw0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+
-ICsJfQ0KPiA+ICsNCj4gPiArCXByaXYtPnJlZ3MgPSBvZl9pb21hcChucCwgMSk7DQo+ID4gKwlp
-ZiAoIXByaXYtPnJlZ3MpIHsNCj4gPiArCQlwcl9lcnIoIiVzOiBjYW5ub3QgaW9yZW1hcCB0aW1l
-ciByZWdpc3RlciBhZGRyZXNzLlxuIiwNCj4gPiArCQkJCW5wLT5mdWxsX25hbWUpOw0KPiA+ICsJ
-CXJldHVybiAtRUlOVkFMOw0KPiA+ICsJfQ0KPiA+ICsNCj4gPiArCWlmICghKHByaXYtPmZsYWdz
-ICYgRlNMX0dMT0JBTF9USU1FUikpDQo+ID4gKwkJcmV0dXJuIDA7DQo+ID4gKw0KPiA+ICsJcHJp
-di0+Z3JvdXBfdGNyID0gb2ZfaW9tYXAobnAsIDIpOw0KPiA+ICsJaWYgKCFwcml2LT5ncm91cF90
-Y3IpIHsNCj4gPiArCQlwcl9lcnIoIiVzOiBjYW5ub3QgaW9yZW1hcCB0Y3IgYWRkcmVzcy5cbiIs
-IG5wLT5mdWxsX25hbWUpOw0KPiA+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+ICsJfQ0KPiANCj4g
-VGhpcyBpcyBub3QgY29tcGF0aWJsZSB3aXRoIGV4aXN0aW5nIG1waWMgdGltZXIgbm9kZXMuDQo+
-IA0KW1dhbmcgRG9uZ3NoZW5nXSBZZWFoLCBuZXh0IHBhdGNoIHRvIHN1cHBvcnQgdGhhdC4NCg0K
-PiA+ICsJcCA9IG9mX2dldF9wcm9wZXJ0eShucCwgImF2YWlsYWJsZS1yYW5nZXMiLCAmbGVuKTsN
-Cj4gPiArCWlmIChwICYmIGxlbiAlICgyICogc2l6ZW9mKHUzMikpICE9IDApIHsNCj4gPiArCQlw
-cl9lcnIoIiVzOiBtYWxmb3JtZWQgZnNsLGF2YWlsYWJsZS1yYW5nZXMgcHJvcGVydHkuXG4iLA0K
-PiA+ICsJCQkJbnAtPmZ1bGxfbmFtZSk7DQo+ID4gKwkJcmV0dXJuIC1FSU5WQUw7DQo+ID4gKwl9
-DQo+IA0KPiBZb3UgbmVlZCB0byBzdXBwb3J0IGZzbCxhdmFpbGFibGUtcmFuZ2VzIHNpbmNlIHRo
-YXQncyBpbiBhbiBhY2NlcHRlZA0KPiBiaW5kaW5nIGFuZCBwZW9wbGUgY291bGQgaGF2ZSBwYXJ0
-aXRpb25lZCBzZXR1cHMgYWxyZWFkeSB1c2luZyBpdC4NCj4gDQpbV2FuZyBEb25nc2hlbmddIEZT
-TCBjaGlwIG9yIE9QRU4tUElDIHNwZWNpZmljYXRpb24oT25seSBhIGdyb3VwKQ0KaW4gZWFjaCBn
-cm91cCBvbmx5IGZvdXIgdGltZXIuIFRoaXMgaXMgdW5pZmllZC4gU28gaSB1c2UgYSBnZW5lcmlj
-IG5hbWUuDQpJIHRoaW5rIHRoZXJlIGlzIG5vdCBjb21wYXRpYmxlIHdpdGggZXhpc3RpbmcgbXBp
-YyB0aW1lciBub2Rlcy4NCg0KCXAgPSBvZl9nZXRfcHJvcGVydHkobnAsICJhdmFpbGFibGUtcmFu
-Z2VzIiwgJmxlbik7DQoJaWYgKCFwKQ0KCQlwID0gb2ZfZ2V0X3Byb3BlcnR5KG5wLCAiZnNsLGF2
-YWlsYWJsZS1yYW5nZXMiLCAmbGVuKTsNCg0KCWlmIChwICYmIGxlbiAlICgyICogc2l6ZW9mKHUz
-MikpICE9IDApIHsNCgkJcHJfZXJyKCIlczogbWFsZm9ybWVkIGZzbCxhdmFpbGFibGUtcmFuZ2Vz
-IHByb3BlcnR5LlxuIiwNCgkJCQlucC0+ZnVsbF9uYW1lKTsNCgkJcmV0dXJuIC1FSU5WQUw7DQoJ
-fQ0KDQo+IFlvdSBhbHNvIGhhdmUgYSBtaXNtYXRjaCBiZXR3ZWVuIHRoZSBwcm9wZXJ0eSB5b3Ug
-Y2hlY2sgYW5kIHRoZSBlcnJvcg0KPiBzdHJpbmcuDQo+IA0KW1dhbmcgRG9uZ3NoZW5nXSBZZWFo
-LiA6LSguDQoNCj4gLVNjb3R0DQoNCg==
+
+
+> -----Original Message-----
+> From: Tabi Timur-B04825
+> Sent: Saturday, August 11, 2012 9:10 PM
+> To: Wang Dongsheng-B40534
+> Cc: benh@kernel.crashing.org; paulus@samba.org; Wood Scott-B07421; Gala
+> Kumar-B11780; linuxppc-dev@lists.ozlabs.org
+> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+>=20
+> On Fri, Aug 10, 2012 at 12:54 AM,  <Dongsheng.wang@freescale.com> wrote:
+> > From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+>=20
+> > +EXPORT_SYMBOL_GPL(mpic_request_timer);
+>=20
+> Make these EXPORT_SYMBOL.  No need for a GPL restriction.
+>=20
+[Wang Dongsheng] Why?
+> --
+> Timur Tabi
+> Linux kernel developer at Freescale
