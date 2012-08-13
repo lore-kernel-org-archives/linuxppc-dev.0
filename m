@@ -1,30 +1,26 @@
-Return-Path: <ak@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
- by ozlabs.org (Postfix) with ESMTP id 3A0A22C008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 02:27:56 +1000 (EST)
-Date: Mon, 13 Aug 2012 09:27:53 -0700
-From: Andi Kleen <ak@linux.intel.com>
-To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH v2 4/6] x86: Add clear_page_nocache
-Message-ID: <20120813162753.GM2644@tassilo.jf.intel.com>
-References: <1344524583-1096-1-git-send-email-kirill.shutemov@linux.intel.com>
- <1344524583-1096-5-git-send-email-kirill.shutemov@linux.intel.com>
- <5023F1BC0200007800093EF0@nat28.tlf.novell.com>
- <20120813114334.GA21855@otc-wbsnb-06>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 00EF82C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 02:49:32 +1000 (EST)
+Message-ID: <5029300F.60600@freescale.com>
+Date: Mon, 13 Aug 2012 11:49:19 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120813114334.GA21855@otc-wbsnb-06>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-mips@linux-mips.org,
- "H. Peter Anvin" <hpa@zytor.com>, Alex Shi <alex.shu@intel.com>,
- Robert Richter <robert.richter@amd.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
- Andy Lutomirski <luto@amacapital.net>, linux-mm@kvack.org,
- linux-sh@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Mel Gorman <mgorman@suse.de>, Jan Beulich <JBeulich@suse.com>,
- Johannes Weiner <hannes@cmpxchg.org>, sparclinux@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, Tim Chen <tim.c.chen@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
+ <5025639F.4070203@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB147E@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259DB147E@039-SN2MPN1-022.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>, "paulus@samba.org" <paulus@samba.org>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,12 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Moving 64 bytes per cycle is faster on Sandy Bridge, but slower on
-> Westmere. Any preference? ;)
+On 08/13/2012 12:53 AM, Wang Dongsheng-B40534 wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Saturday, August 11, 2012 3:40 AM
+>> To: Wang Dongsheng-B40534
+>> Cc: benh@kernel.crashing.org; paulus@samba.org; linuxppc-
+>> dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
+>> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+>>
+>> On 08/10/2012 12:54 AM, Dongsheng.wang@freescale.com wrote:
+>>> +static const struct of_device_id mpic_timer_ids[] = {
+>>> +	{ .compatible = "open-pic,global-timer", },
+>>> +	{ .compatible = "fsl,global-timer", },
+>>> +	{},
+>>> +};
+>>> +
+>>> +static int __init mpic_timer_init(void) {
+>>> +	struct device_node *np = NULL;
+>>> +
+>>> +	for_each_node_by_type(np, "open-pic")
+>>> +		if (of_match_node(mpic_timer_ids, np))
+>>> +			group_init(np);
+>>> +
+>>> +	if (list_empty(&group_list))
+>>> +		return -ENODEV;
+>>> +
+>>> +	return 0;
+>>> +}
+>>> +arch_initcall(mpic_timer_init);
+>>
+>> Oh, and don't probe by device_type.
+>>
+> [Wang Dongsheng] fine. for_each_node_by_name.
 
-You have to be careful with these benchmarks.
+No.  Probe by compatible only.
 
-- You need to make sure the data is cache cold, cache hot is misleading.
-- The numbers can change if you have multiple CPUs doing this in parallel.
-
--Andi
+-Scott
