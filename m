@@ -1,30 +1,19 @@
-Return-Path: <JBeulich@suse.com>
-Received: from nat28.tlf.novell.com (nat28.tlf.novell.com [130.57.49.28])
- by ozlabs.org (Postfix) with ESMTP id B62202C0085
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2012 22:03:06 +1000 (EST)
-Message-Id: <502909110200007800094719@nat28.tlf.novell.com>
-Date: Mon, 13 Aug 2012 13:02:57 +0100
-From: "Jan Beulich" <JBeulich@suse.com>
-To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH v2 4/6] x86: Add clear_page_nocache
-References: <1344524583-1096-1-git-send-email-kirill.shutemov@linux.intel.com>
- <1344524583-1096-5-git-send-email-kirill.shutemov@linux.intel.com>
- <5023F1BC0200007800093EF0@nat28.tlf.novell.com>
- <20120813114334.GA21855@otc-wbsnb-06>
-In-Reply-To: <20120813114334.GA21855@otc-wbsnb-06>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-mips@linux-mips.org,
- Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
- Alex Shi <alex.shu@intel.com>, Robert Richter <robert.richter@amd.com>,
- linuxppc-dev@lists.ozlabs.org, x86@kernel.org, Hugh Dickins <hughd@google.com>,
- linux-kernel@vger.kernel.org, Andy Lutomirski <luto@amacapital.net>,
- linux-mm@kvack.org, linux-sh@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Mel Gorman <mgorman@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
- sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Tim Chen <tim.c.chen@linux.intel.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <jkosina@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 338752C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2012 23:18:40 +1000 (EST)
+Date: Mon, 13 Aug 2012 15:18:28 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Andreas Schwab <schwab@linux-m68k.org>
+Subject: [PATCH] [RESEND] powerpc: fix personality handling in
+ ppc64_personality()
+Message-ID: <alpine.LNX.2.00.1208131515550.29827@pobox.suse.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,45 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> On 13.08.12 at 13:43, "Kirill A. Shutemov" <kirill.shutemov@linux.intel=
-.com> wrote:
-> On Thu, Aug 09, 2012 at 04:22:04PM +0100, Jan Beulich wrote:
->> >>> On 09.08.12 at 17:03, "Kirill A. Shutemov" <kirill.shutemov@linux.in=
-tel.com>  wrote:
->=20
-> ...
->=20
->> > ---
->> >  arch/x86/include/asm/page.h          |    2 ++
->> >  arch/x86/include/asm/string_32.h     |    5 +++++
->> >  arch/x86/include/asm/string_64.h     |    5 +++++
->> >  arch/x86/lib/Makefile                |    1 +
->> >  arch/x86/lib/clear_page_nocache_32.S |   30 +++++++++++++++++++++++++=
-+++++
->> >  arch/x86/lib/clear_page_nocache_64.S |   29 +++++++++++++++++++++++++=
-++++
->>=20
->> Couldn't this more reasonably go into clear_page_{32,64}.S?
->=20
-> We don't have clear_page_32.S.
+Directly comparing current->personality against PER_LINUX32 doesn't work 
+in cases when any of the personality flags stored in the top three bytes 
+are used.
 
-Sure, but you're introducing a file anyway. Fold the new code into
-the existing file for 64-bit, and create a new, similarly named one
-for 32-bit.
+Directly forcefully setting personality to PER_LINUX32 or PER_LINUX 
+discards any flags stored in the top three bytes
 
->> >+	xorl   %eax,%eax
->> >+	movl   $4096/64,%ecx
->> >+	.p2align 4
->> >+.Lloop:
->> >+	decl	%ecx
->> >+#define PUT(x) movnti %eax,x*8(%edi) ; movnti %eax,x*8+4(%edi)
->>=20
->> Is doing twice as much unrolling as on 64-bit really worth it?
->=20
-> Moving 64 bytes per cycle is faster on Sandy Bridge, but slower on
-> Westmere. Any preference? ;)
+Use personality() macro to compare only PER_MASK bytes and make sure that 
+we are setting only the bits that should be set, instead of overwriting 
+the whole value.
 
-If it's not a clear win, I'd favor the 8-stores-per-cycle variant,
-matching x86-64.
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+---
 
-Jan
+Resned of patch sent on Thu, 2 Aug 2012 09:10:03 +0200 (CEST)
+
+ arch/powerpc/kernel/syscalls.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
+index f2496f2..dc1558e 100644
+--- a/arch/powerpc/kernel/syscalls.c
++++ b/arch/powerpc/kernel/syscalls.c
+@@ -107,11 +107,11 @@ long ppc64_personality(unsigned long personality)
+ 	long ret;
+ 
+ 	if (personality(current->personality) == PER_LINUX32
+-	    && personality == PER_LINUX)
+-		personality = PER_LINUX32;
++	    && personality(personality) == PER_LINUX)
++		personality = (personality & ~PER_MASK) | PER_LINUX32;
+ 	ret = sys_personality(personality);
+-	if (ret == PER_LINUX32)
+-		ret = PER_LINUX;
++	if (personality(ret) == PER_LINUX32)
++		ret = (ret & ~PER_MASK) | PER_LINUX;
+ 	return ret;
+ }
+ #endif
+
+-- 
+Jiri Kosina
+SUSE Labs
