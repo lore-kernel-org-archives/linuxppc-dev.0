@@ -1,18 +1,19 @@
 Return-Path: <B40534@freescale.com>
 From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Gala Kumar-B11780 <B11780@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
 Subject: RE: [PATCH v2 1/2] powerpc/mpic: Add Open-PIC global timer document
-Date: Mon, 13 Aug 2012 04:10:06 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB1407@039-SN2MPN1-022.039d.mgd.msft.net>
+Date: Mon, 13 Aug 2012 05:40:27 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB1450@039-SN2MPN1-022.039d.mgd.msft.net>
 References: <1344578002-8057-1-git-send-email-Dongsheng.wang@freescale.com>
- <94D8FBCC-7AA8-4F50-90A3-2A11F579AC34@freescale.com>
-In-Reply-To: <94D8FBCC-7AA8-4F50-90A3-2A11F579AC34@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ <50255F49.5050500@freescale.com>
+In-Reply-To: <50255F49.5050500@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "devicetree-discuss@lists.ozlabs.org Discuss"
- <devicetree-discuss@lists.ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>, "paulus@samba.org" <paulus@samba.org>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,20 +23,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->=20
-> > a/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
-> > b/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
-> > index df41958..5aafca0 100644
-> > --- a/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
-> > +++ b/Documentation/devicetree/bindings/powerpc/fsl/mpic-timer.txt
-> > @@ -1,13 +1,14 @@
-> > * Freescale MPIC timers
-> >
-> > Required properties:
-> > -- compatible: "fsl,mpic-global-timer"
-> > +- compatible: "fsl,global-timer"
->=20
-> Why are renaming?.. also use of fsl,global-timer is to generic of a name
-> for the this.
->=20
-[Wang Dongsheng] "fsl,global-timer" is generic of a name.
+PiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvb3Blbi1w
+aWMudHh0DQo+ID4gYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvb3Blbi1waWMu
+dHh0DQo+ID4gaW5kZXggOTA5YTkwMi4uMDQ1YzJlOSAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1bWVu
+dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mvb3Blbi1waWMudHh0DQo+ID4gKysrIGIvRG9jdW1l
+bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL29wZW4tcGljLnR4dA0KPiA+IEBAIC05Miw2ICs5
+Miw1MiBAQCBFeGFtcGxlIDI6DQo+ID4NCj4gPiAgKiBSZWZlcmVuY2VzDQo+ID4NCj4gPiArKiBP
+cGVuIFBJQyBnbG9iYWwgdGltZXJzDQo+ID4gKw0KPiA+ICtSZXF1aXJlZCBwcm9wZXJ0aWVzOg0K
+PiA+ICstIGNvbXBhdGlibGU6ICJvcGVuLXBpYyxnbG9iYWwtdGltZXIiDQo+IA0KPiBvcGVuLXBp
+YyBpc24ndCBhIHZlbmRvciAob3Igc29mdHdhcmUgcHJvamVjdCB0aGF0IGFjdHMgbGlrZSBhDQo+
+IHBzZXVkby12ZW5kb3IpIC0tIEknZCBnbyB3aXRoICJvcGVuLXBpYy1nbG9iYWwtdGltZXIiLg0K
+PiANCltXYW5nIERvbmdzaGVuZ10geWVzLCAib3Blbi1waWMtZ2xvYmFsLXRpbWVyIiBsb29rcyBn
+b29kLg0KDQo+ID4gKy0gcmVnIDogQ29udGFpbnMgdHdvIHJlZ2lvbnMuICBUaGUgZmlyc3QgaXMg
+dGhlIHRpbWVyIGZyZXF1ZW5jeQ0KPiA+ICtyZXBvcnRpbmcNCj4gPiArICByZWdpc3RlciBmb3Ig
+dGhlIGdyb3VwLiAgVGhlIHNlY29uZCBpcyB0aGUgbWFpbiB0aW1lciByZWdpc3RlciBiYW5rDQo+
+ID4gKyAgKEdUQ0NSLCBHVEJDUiwgR1RWUFIsIEdURFIpLg0KPiANCj4gV2h5IG5vdCBqdXN0IHB1
+dCBjbG9jay1mcmVxdWVuY3kgaW4gdGhlIG5vZGUsIGluc3RlYWQgb2YgZGVzY3JpYmluZyBURlJS
+Pw0KPiBJIGRvbid0IHRoaW5rIFUtQm9vdCBjdXJyZW50bHkgc2V0cyBURlJSLg0KPiANCltXYW5n
+IERvbmdzaGVuZ10gSWYgZHVyaW5nIHN0YXJ0dXAgVS1Cb290IGRvIG5vdCBzZXQgVEZSUiB0aGF0
+IGlzIHVucmVhc29uYWJsZS4NCkluIE9wZW4tUElDIHRoaXMgaXMgbm90IGFsbG93ZWQuIFdlIHVz
+ZWQgaXMgdGhlIENDQiBmcmVxdWVuY3kgaW4gRlNMIGNoaXAuDQpXZSBkbyBub3QgbmVlZCB0byBj
+YXJlIGFib3V0IHRoZSB2YWx1ZSBvZiB0aGlzIHJlZ2lzdGVyLiBCdXQgd2UgbXVzdCBzdXBwb3J0
+IA0KVEZSUi4NCg0KPiA+ICsJCXJlZyA9IDwweDAxMGYwIDQgMHgwMTEwMCAweDEwMD47DQo+ID4g
+Kw0KPiA+ICsJCS8qIEFub3RoZXIgQU1QIHBhcnRpdGlvbiBpcyB1c2luZyB0aW1lciAqLw0KPiA+
+ICsJCWF2YWlsYWJsZS1yYW5nZXMgPSA8MiAyPjsNCj4gPg0KPiA+ICsNCj4gPiArCQlpbnRlcnJ1
+cHRzID0gPDIgMCAzIDANCj4gPiArCQkgICAgICAgICAgICAgIDMgMCAzIDA+Ow0KPiA+ICsJfTsN
+Cj4gPiArDQo+ID4gK0V4YW1wbGUgMjoNCj4gPiArDQo+ID4gKwl0aW1lcjogdGltZXJAMDEwZjAg
+ew0KPiA+ICsJCWNvbXBhdGlibGUgPSAib3Blbi1waWMsZ2xvYmFsLXRpbWVyIjsNCj4gPiArCQlk
+ZXZpY2VfdHlwZSA9ICJvcGVuLXBpYyI7DQo+ID4gKwkJcmVnID0gPDB4MDEwZjAgNCAweDAxMTAw
+IDB4MTAwPjsNCj4gPiArCQlpbnRlcnJ1cHRzID0gPDAgMCAzIDANCj4gPiArCQkJICAgICAgMSAw
+IDMgMA0KPiA+ICsJCQkgICAgICAyIDAgMyAwDQo+ID4gKwkJICAgICAgICAgICAgICAzIDAgMyAw
+PjsNCj4gPiArCX07DQo+IA0KPiA0LWNlbGwgaW50ZXJydXB0IHNwZWNpZmllcnMgYXJlIHNwZWNp
+ZmljIHRvIEZyZWVzY2FsZSBNUElDcy4gIFRoaXMgbWVhbnMNCj4gdGhlcmUncyBubyB3YXkgdG8g
+ZGVzY3JpYmUgdGhlIHRpbWVyIGludGVycnVwdCBvbiBhIG5vbi1GcmVlc2NhbGUgb3BlbnBpYy4N
+Cj4gQWdhaW4sIEkgc3VnZ2VzdCB3ZSBub3QgYm90aGVyIHdpdGggdGhpcyBpbiB0aGUgYWJzZW5j
+ZSBvZiBhbiBhY3R1YWwgbmVlZA0KPiB0byBzdXBwb3J0IHRoZSB0aW1lciBvbiBub24tRnJlZXNj
+YWxlIG9wZW5waWMgaW4gcGFydGl0aW9uZWQgc2NlbmFyaW9zLg0KPiBUaGUgZXhpc3Rpbmcgb3Bl
+bnBpYyBub2RlIGlzIHN1ZmZpY2llbnQgdG8gZGVzY3JpYmUgdGhlDQo+IGhhcmR3YXJlIGluIHRo
+ZSBhYnNlbmNlIG9mIHBhcnRpdGlvbmluZy4gICBXZSBjb3VsZCBoYXZlIGFuDQo+ICJvcGVucGlj
+LW5vLXRpbWVyIiBwcm9wZXJ0eSB0byBpbmRpY2F0ZSB0aGF0IHdlJ3JlIGRlc2NyaWJpbmcgaXQN
+Cj4gc2VwYXJhdGVseSwgc28gdGhhdCB0aGUgYWJzZW5jZSBvZiBhIHRpbWVyIG5vZGUgaXNuJ3Qg
+YW1iaWd1b3VzIGFzIHRvDQo+IHdoZXRoZXIgaXQncyBhbiBvbGQgdHJlZSBvciBhIHBhcnRpdGlv
+bmVkIHNjZW5hcmlvLiAgQW4gZnNsLG1waWMNCj4gY29tcGF0aWJsZSB3b3VsZCBpbXBseSBvcGVu
+cGljLW5vLXRpbWVyLg0KPiANCj4gTm90ZSB0aGF0IEkgYmVsaWV2ZSBtYW55IG9mIHRoZSBub24t
+RnJlZXNjYWxlIG9wZW5waWMgbm9kZXMgYXJlIGdvaW5nIHRvDQo+IGJlIGZvdW5kIG9uIHN5c3Rl
+bXMgd2l0aCByZWFsIE9wZW4gRmlybXdhcmUsIHNvIHdlIGNhbid0IGdvIGNoYW5naW5nIHRoZQ0K
+PiBkZXZpY2UgdHJlZSBmb3IgdGhlbS4NCltXYW5nIERvbmdzaGVuZ10gSW4gdGhlIE9wZW4tUElD
+IHNwZWNpZmljYXRpb24sIHRoZXJlIGFyZSBmb3VyIHRpbWVyLg0KCQlpbnRlcnJ1cHRzID0gPDAg
+MCAzIDANCgkJCSAgICAgIDEgMCAzIDANCgkJCSAgICAgIDIgMCAzIDANCgkJICAgICAgICAgICAg
+ICAzIDAgMyAwPjsNCg0KVGhlICJpbnRlcnJ1cHRzIiBqdXN0IGxldCB1c2VyIGtub3cgdGhlcmUg
+YXJlIGZvdXIgdGltZXJzLiBVc2FnZSBiYXNlZCAiaW50ZXJydXB0cyINCmJpbmRpbmcgdG8gY2hh
+bmdlIGR0cy4NCg0KPiANCj4gLVNjb3R0DQoNCg==
