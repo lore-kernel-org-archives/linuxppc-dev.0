@@ -1,23 +1,30 @@
-Return-Path: <B07421@freescale.com>
-Message-ID: <50293062.7060809@freescale.com>
-Date: Mon, 13 Aug 2012 11:50:42 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by ozlabs.org (Postfix) with ESMTP id C9FAA2C008B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 03:12:05 +1000 (EST)
+Date: Mon, 13 Aug 2012 19:04:02 +0200
+From: Borislav Petkov <bp@alien8.de>
+To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Subject: Re: [PATCH v2 4/6] x86: Add clear_page_nocache
+Message-ID: <20120813170402.GB15530@x1.osrc.amd.com>
+References: <1344524583-1096-1-git-send-email-kirill.shutemov@linux.intel.com>
+ <1344524583-1096-5-git-send-email-kirill.shutemov@linux.intel.com>
+ <5023F1BC0200007800093EF0@nat28.tlf.novell.com>
+ <20120813114334.GA21855@otc-wbsnb-06>
 MIME-Version: 1.0
-To: Li Yang-R58472 <r58472@freescale.com>
-Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
-References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
- <5025639F.4070203@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB147E@039-SN2MPN1-022.039d.mgd.msft.net>
- <94F013E7935FF44C83EBE7784D62AD3F093AEC18@039-SN2MPN1-023.039d.mgd.msft
-In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F093AEC18@039-SN2MPN1-023.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>,
- Wang Dongsheng-B40534 <B40534@freescale.com>,
- "paulus@samba.org" <paulus@samba.org>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20120813114334.GA21855@otc-wbsnb-06>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ Jan Beulich <JBeulich@suse.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>,
+ Andi Kleen <ak@linux.intel.com>, Robert Richter <robert.richter@amd.com>,
+ x86@kernel.org, Hugh Dickins <hughd@google.com>,
+ Ingo Molnar <mingo@redhat.com>, Mel Gorman <mgorman@suse.de>,
+ Alex Shi <alex.shu@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ Tim Chen <tim.c.chen@linux.intel.com>, linux-kernel@vger.kernel.org,
+ Andy Lutomirski <luto@amacapital.net>, Johannes Weiner <hannes@cmpxchg.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +34,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/13/2012 01:17 AM, Li Yang-R58472 wrote:
+On Mon, Aug 13, 2012 at 02:43:34PM +0300, Kirill A. Shutemov wrote:
+> $ cat test.c
+> #include <stdio.h>
+> #include <sys/mman.h>
 > 
+> #define SIZE 1024*1024*1024
 > 
->> -----Original Message-----
->> From: Wang Dongsheng-B40534
->> Sent: Monday, August 13, 2012 1:54 PM
->> To: Wood Scott-B07421
->> Cc: benh@kernel.crashing.org; paulus@samba.org; linuxppc-
->> dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
->> Subject: RE: [PATCH v2 2/2] powerpc/mpic: add global timer support
->>
->>
->>
->>> -----Original Message-----
->>> From: Wood Scott-B07421
->>> Sent: Saturday, August 11, 2012 3:40 AM
->>> To: Wang Dongsheng-B40534
->>> Cc: benh@kernel.crashing.org; paulus@samba.org; linuxppc-
->>> dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
->>> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
->>>
->>> On 08/10/2012 12:54 AM, Dongsheng.wang@freescale.com wrote:
->>>> +static const struct of_device_id mpic_timer_ids[] = {
->>>> +	{ .compatible = "open-pic,global-timer", },
->>>> +	{ .compatible = "fsl,global-timer", },
->>>> +	{},
->>>> +};
->>>> +
->>>> +static int __init mpic_timer_init(void) {
->>>> +	struct device_node *np = NULL;
->>>> +
->>>> +	for_each_node_by_type(np, "open-pic")
->>>> +		if (of_match_node(mpic_timer_ids, np))
->>>> +			group_init(np);
->>>> +
->>>> +	if (list_empty(&group_list))
->>>> +		return -ENODEV;
->>>> +
->>>> +	return 0;
->>>> +}
->>>> +arch_initcall(mpic_timer_init);
->>>
->>> Oh, and don't probe by device_type.
+> void clear_page_nocache_sse2(void *page) __attribute__((regparm(1)));
 > 
-> Actually it does match the compatible.  The device_type is just to
-> speed up the search.  I don't think it's a problem unless the device
-> type is not mandatory any more for defined types.
+> int main(int argc, char** argv)
+> {
+>         char *p;
+>         unsigned long i, j;
+> 
+>         p = mmap(NULL, SIZE, PROT_WRITE|PROT_READ,
+>                         MAP_PRIVATE|MAP_ANONYMOUS|MAP_POPULATE, -1, 0);
+>         for(j = 0; j < 100; j++) {
+>                 for(i = 0; i < SIZE; i += 4096) {
+>                         clear_page_nocache_sse2(p + i);
+>                 }
+>         }
+> 
+>         return 0;
+> }
+> $ cat clear_page_nocache_unroll32.S
+> .globl clear_page_nocache_sse2
+> .align 4,0x90
+> clear_page_nocache_sse2:
+> .cfi_startproc
+>         mov    %eax,%edx
+>         xorl   %eax,%eax
+>         movl   $4096/32,%ecx
+>         .p2align 4
+> .Lloop_sse2:
+>         decl    %ecx
+> #define PUT(x) movnti %eax,x*4(%edx)
+>         PUT(0)
+>         PUT(1)
+>         PUT(2)
+>         PUT(3)
+>         PUT(4)
+>         PUT(5)
+>         PUT(6)
+>         PUT(7)
+> #undef PUT
+>         lea     32(%edx),%edx
+>         jnz     .Lloop_sse2
+>         nop
+>         ret
+> .cfi_endproc
+> .type clear_page_nocache_sse2, @function
+> .size clear_page_nocache_sse2, .-clear_page_nocache_sse2
+> $ cat clear_page_nocache_unroll64.S
+> .globl clear_page_nocache_sse2
+> .align 4,0x90
+> clear_page_nocache_sse2:
+> .cfi_startproc
+>         mov    %eax,%edx
 
-Doesn't matter (and I doubt it provides any significant speed up
-compared to a search by compatible, and in any case this is not
-performance critical).  device_type is deprecated outside certain
-specific legacy uses.  Get rid of it.
+This must still be the 32-bit version becaue it segfaults here. Here's
+why:
 
--Scott
+mmap above gives a ptr which, on 64-bit, is larger than 32-bit, i.e. it
+looks like 0x7fffxxxxx000, i.e. starting from top of userspace.
+
+Now, the mov above truncates that ptr and the thing segfaults.
+
+Doing s/edx/rdx/g fixes it though.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+Boris.
