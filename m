@@ -1,26 +1,25 @@
 Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 816032C008B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 03:29:23 +1000 (EST)
-Message-ID: <50293961.9070409@freescale.com>
-Date: Mon, 13 Aug 2012 12:29:05 -0500
+ by ozlabs.org (Postfix) with ESMTPS id 748EE2C0083
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 03:37:03 +1000 (EST)
+Message-ID: <50293B36.1000408@freescale.com>
+Date: Mon, 13 Aug 2012 12:36:54 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: Re: [PATCH] powerpc/epapr: export epapr_hypercall_start
-References: <20120810222121.GA9408@tyr.buserror.net>
- <CAMuHMdUZmT3g1+6yBPK3LAjTO-orE3Fh7QUP7AB5Kj8o4M4_1g@mail.gmail.com>
- <CAOZdJXW+Br2LCxCuMruHJtODqu+8xcdgWrcLPWE2aJ2U23RU3g@mail.gmail.com>
-In-Reply-To: <CAOZdJXW+Br2LCxCuMruHJtODqu+8xcdgWrcLPWE2aJ2U23RU3g@mail.gmail.com>
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
+ <50257116.3030207@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB14CA@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259DB14CA@039-SN2MPN1-022.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>, "agraf@suse.de" <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>,
+ Li Yang-R58472 <r58472@freescale.com>, "paulus@samba.org" <paulus@samba.org>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,26 +30,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/11/2012 08:07 AM, Tabi Timur-B04825 wrote:
-> On Sat, Aug 11, 2012 at 2:01 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
->> On Sat, Aug 11, 2012 at 12:21 AM, Scott Wood <scottwood@freescale.com> wrote:
->>> +EXPORT_SYMBOL(epapr_hypercall_start);
+On 08/13/2012 01:18 AM, Wang Dongsheng-B40534 wrote:
+>>> +	p = of_get_property(np, "available-ranges", &len);
+>>> +	if (p && len % (2 * sizeof(u32)) != 0) {
+>>> +		pr_err("%s: malformed fsl,available-ranges property.\n",
+>>> +				np->full_name);
+>>> +		return -EINVAL;
+>>> +	}
 >>
->> EXPORT_SYMBOL_GPL?
-> 
-> We prefer EXPORT_SYMBOL.  We don't want to restrict our customers from
-> having to use GPL code.
-> 
+>> You need to support fsl,available-ranges since that's in an accepted
+>> binding and people could have partitioned setups already using it.
+>>
+> [Wang Dongsheng] FSL chip or OPEN-PIC specification(Only a group)
+> in each group only four timer. This is unified. So i use a generic name.
+> I think there is not compatible with existing mpic timer nodes.
 
-More specifically in this case, I don't see how use of this symbol in
-any way suggests that the code would be GPL-derivative.  The API is
-documented in the ePAPR standard or other external sources -- not a
-kernel internal implementation issue.  The contents of
-epapr_hypercall_start itself are not copyrightable (by default it's
-basically "return -1", and is patched at runtime with a few instructions
-provided by the hypervisor).  The header file with the inline accessors
-is dual licensed (and also unlikely to be copyrightable, in terms of
-what actually makes it into the output binary).
+We need to be compatible with existing trees, so you'd need to check for
+both -- but I think any further discussion of the details is premature
+until we decide whether this is worthwhile to begin with (both the
+support of non-FSL timers, and the creation of a new device tree binding
+which will not be implemented by many of the machines that have non-FSL
+openpic because they run real Open Firmware).
 
 -Scott
