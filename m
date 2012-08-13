@@ -1,27 +1,19 @@
-Return-Path: <B40534@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 352312C007B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Aug 2012 16:26:12 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wang Dongsheng-B40534 <B40534@freescale.com>, Tabi Timur-B04825
- <B04825@freescale.com>
-Subject: RE: [PATCH v2 2/2] powerpc/mpic: add global timer support
-Date: Mon, 13 Aug 2012 06:25:37 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB1503@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
- <CAOZdJXWmLgRM9t6Cus=5kfOwjmAFSg+hjNXyd1cR7GtJ8k0Qew@mail.gmail.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB14DD@039-SN2MPN1-022.039d.mgd.msft.net>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259DB14DD@039-SN2MPN1-022.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <ian.molton@codethink.co.uk>
+Message-ID: <5028D040.60604@codethink.co.uk>
+Date: Mon, 13 Aug 2012 11:00:32 +0100
+From: Ian Molton <ian.molton@codethink.co.uk>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "paulus@samba.org" <paulus@samba.org>,
- Wood Scott-B07421 <B07421@freescale.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH v3 0/7] mv643xx.c: Add basic device tree support.
+References: <1344350092-24050-1-git-send-email-ian.molton@codethink.co.uk>
+ <201208091143.32972.arnd@arndb.de> <5023D577.8090001@codethink.co.uk>
+ <201208101049.57586.arnd@arndb.de>
+In-Reply-To: <201208101049.57586.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: thomas.petazzoni@free-electrons.com, andrew@lunn.ch, netdev@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, ben.dooks@codethink.co.uk,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,44 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 10/08/12 11:49, Arnd Bergmann wrote:
+> On Thursday 09 August 2012, Ian Molton wrote:
+>>>  The driver
+>>> already knows all those offsets and they are always the same
+>>> for all variants of mv643xx, right?
+>> Yes, but its not clean. And no amount of refactoring is
+>> really going to make a nice driver that also fits the ancient
+>> (and badly thought out) OF bindings.
+> In what way is it badly though out, or not clean? The use of
+> underscores in the properties, and the way that the sram
+> is configured is problematic, I agree. But The way that
+> the three ports are addressed and how the PHY is found
+> seems quite clever.
 
+It forces one to load the MDIO driver first, because it maps ALL the
+registers for both itself and all the ports, and the MDIO driver has no
+way of knowing how many ethernet blocks are present (I have a device
+here with two, and another with four). Thats anywhere from 1 to 12
+ports, split across 1 to 4 address ranges, and theres a big gap in the
+address range between controllers 0,1 and 2,3. *ALL* the devices on the
+board are sharing ethernet block 0's MDIO bus. By pure luck it happens
+to work, because the blocks 2,3 have an alias of the MDIO registers from
+blocks 0,1.
 
-> -----Original Message-----
-> From: Linuxppc-dev [mailto:linuxppc-dev-
-> bounces+b40534=3Dfreescale.com@lists.ozlabs.org] On Behalf Of Wang
-> Dongsheng-B40534
-> Sent: Monday, August 13, 2012 2:21 PM
-> To: Tabi Timur-B04825
-> Cc: Gala Kumar-B11780; paulus@samba.org; linuxppc-dev@lists.ozlabs.org;
-> Wood Scott-B07421
-> Subject: RE: [PATCH v2 2/2] powerpc/mpic: add global timer support
->=20
->=20
->=20
-> > -----Original Message-----
-> > From: Tabi Timur-B04825
-> > Sent: Saturday, August 11, 2012 9:10 PM
-> > To: Wang Dongsheng-B40534
-> > Cc: benh@kernel.crashing.org; paulus@samba.org; Wood Scott-B07421;
-> > Gala Kumar-B11780; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
-> >
-> > On Fri, Aug 10, 2012 at 12:54 AM,  <Dongsheng.wang@freescale.com> wrote=
-:
-> > > From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
-> >
-> > > +EXPORT_SYMBOL_GPL(mpic_request_timer);
-> >
-> > Make these EXPORT_SYMBOL.  No need for a GPL restriction.
-> >
-> [Wang Dongsheng] Why?
-[Wang Dongsheng] Sorry, I just see the mail. Thanks.
+Having the MDIO driver map the ethernet drivers memory is a terrible
+solution, IMO. Ethernet drivers should map their own memory, and that
+introduces the n-ports-per-block problem, because their address ranges
+overlap.
 
-> > --
-> > Timur Tabi
-> > Linux kernel developer at Freescale
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+I think the best solution is to make each ethernet block register 3 ports.
+
+the PPC code can simply generate different fixups so that instead of
+creating 3 devices, it creates one, with three ports.
+
+>> If we have to break things, we can at least go for a nice
+>> clean design, surely?
+>>
+>> The ports arent really child devices of the MAC. The MAC
+>> just has 3 ports.
+> I don't see the difference between those two things.
+
+The ports are at best 'pseudodevices'. Real devices have registers of
+their own.
+
+>> We're going to have to maintain a legacy
+>> platform_device -> DT bindings hack somewhere anyway,
+>> at least until the remaining other users of the driver
+>> convert to D-T.
+> I don't understand why you describe the method used in
+> powerpc as a hack. It was the normal way to introduce
+> DT support for platform devices back when it was implemented.
+
+Just because its normal doesn't mean its not a hack :)
+
+> It also had the advantage of not requiring any modifications
+> to the generic driver, because it was shared between one
+> architecture using DT (powerpc) and one that didn't (ARM).
+
+It /did/ spawn a pretty hideous driver, though...
+
+-Ian
