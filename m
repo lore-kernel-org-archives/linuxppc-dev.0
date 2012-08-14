@@ -1,34 +1,27 @@
-Return-Path: <kas@shutemov.name>
-Received: from shutemov.name (shutemov.name [176.9.204.213])
- by ozlabs.org (Postfix) with ESMTP id CB9CE2C008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 05:14:20 +1000 (EST)
-Date: Mon, 13 Aug 2012 22:07:43 +0300
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: Borislav Petkov <bp@alien8.de>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Jan Beulich <JBeulich@suse.com>, Andi Kleen <ak@linux.intel.com>,
- Andy Lutomirski <luto@amacapital.net>,
- Robert Richter <robert.richter@amd.com>,
- Johannes Weiner <hannes@cmpxchg.org>,
- Hugh Dickins <hughd@google.com>, Alex Shi <alex.shu@intel.com>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, x86@kernel.org,
- linux-mm@kvack.org, Thomas Gleixner <tglx@linutronix.de>,
- Andrew Morton <akpm@linux-foundation.org>,
- linux-mips@linux-mips.org, Tim Chen <tim.c.chen@linux.intel.com>,
- linuxppc-dev@lists.ozlabs.org, Andrea Arcangeli <aarcange@redhat.com>,
- Ingo Molnar <mingo@redhat.com>, Mel Gorman <mgorman@suse.de>,
- linux-kernel@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH v2 4/6] x86: Add clear_page_nocache
-Message-ID: <20120813190743.GA10584@shutemov.name>
-References: <1344524583-1096-1-git-send-email-kirill.shutemov@linux.intel.com>
- <1344524583-1096-5-git-send-email-kirill.shutemov@linux.intel.com>
- <5023F1BC0200007800093EF0@nat28.tlf.novell.com>
- <20120813114334.GA21855@otc-wbsnb-06>
- <20120813170402.GB15530@x1.osrc.amd.com>
+Return-Path: <B40534@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2B00D2C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 12:01:13 +1000 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v2 2/2] powerpc/mpic: add global timer support
+Date: Tue, 14 Aug 2012 02:00:50 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB1984@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
+ <50257116.3030207@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB14CA@039-SN2MPN1-022.039d.mgd.msft.net>
+ <50293B36.1000408@freescale.com>
+In-Reply-To: <50293B36.1000408@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120813170402.GB15530@x1.osrc.amd.com>
+Cc: Gala Kumar-B11780 <B11780@freescale.com>,
+ "paulus@samba.org" <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,69 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Aug 13, 2012 at 07:04:02PM +0200, Borislav Petkov wrote:
-> On Mon, Aug 13, 2012 at 02:43:34PM +0300, Kirill A. Shutemov wrote:
-> > $ cat test.c
-> > #include <stdio.h>
-> > #include <sys/mman.h>
-> > 
-> > #define SIZE 1024*1024*1024
-> > 
-> > void clear_page_nocache_sse2(void *page) __attribute__((regparm(1)));
-> > 
-> > int main(int argc, char** argv)
-> > {
-> >         char *p;
-> >         unsigned long i, j;
-> > 
-> >         p = mmap(NULL, SIZE, PROT_WRITE|PROT_READ,
-> >                         MAP_PRIVATE|MAP_ANONYMOUS|MAP_POPULATE, -1, 0);
-> >         for(j = 0; j < 100; j++) {
-> >                 for(i = 0; i < SIZE; i += 4096) {
-> >                         clear_page_nocache_sse2(p + i);
-> >                 }
-> >         }
-> > 
-> >         return 0;
-> > }
-> > $ cat clear_page_nocache_unroll32.S
-> > .globl clear_page_nocache_sse2
-> > .align 4,0x90
-> > clear_page_nocache_sse2:
-> > .cfi_startproc
-> >         mov    %eax,%edx
-> >         xorl   %eax,%eax
-> >         movl   $4096/32,%ecx
-> >         .p2align 4
-> > .Lloop_sse2:
-> >         decl    %ecx
-> > #define PUT(x) movnti %eax,x*4(%edx)
-> >         PUT(0)
-> >         PUT(1)
-> >         PUT(2)
-> >         PUT(3)
-> >         PUT(4)
-> >         PUT(5)
-> >         PUT(6)
-> >         PUT(7)
-> > #undef PUT
-> >         lea     32(%edx),%edx
-> >         jnz     .Lloop_sse2
-> >         nop
-> >         ret
-> > .cfi_endproc
-> > .type clear_page_nocache_sse2, @function
-> > .size clear_page_nocache_sse2, .-clear_page_nocache_sse2
-> > $ cat clear_page_nocache_unroll64.S
-> > .globl clear_page_nocache_sse2
-> > .align 4,0x90
-> > clear_page_nocache_sse2:
-> > .cfi_startproc
-> >         mov    %eax,%edx
-> 
-> This must still be the 32-bit version becaue it segfaults here.
-
-Yes, it's test for 32-bit version.
-
--- 
- Kirill A. Shutemov
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDE0LCAyMDEyIDE6MzcgQU0NCj4gVG86IFdhbmcg
+RG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IGJlbmhAa2VybmVsLmNy
+YXNoaW5nLm9yZzsgcGF1bHVzQHNhbWJhLm9yZzsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
+cy5vcmc7IEdhbGEgS3VtYXItQjExNzgwOyBMaSBZYW5nLVI1ODQ3Mg0KPiBTdWJqZWN0OiBSZTog
+W1BBVENIIHYyIDIvMl0gcG93ZXJwYy9tcGljOiBhZGQgZ2xvYmFsIHRpbWVyIHN1cHBvcnQNCj4g
+DQo+IE9uIDA4LzEzLzIwMTIgMDE6MTggQU0sIFdhbmcgRG9uZ3NoZW5nLUI0MDUzNCB3cm90ZToN
+Cj4gPj4+ICsJcCA9IG9mX2dldF9wcm9wZXJ0eShucCwgImF2YWlsYWJsZS1yYW5nZXMiLCAmbGVu
+KTsNCj4gPj4+ICsJaWYgKHAgJiYgbGVuICUgKDIgKiBzaXplb2YodTMyKSkgIT0gMCkgew0KPiA+
+Pj4gKwkJcHJfZXJyKCIlczogbWFsZm9ybWVkIGZzbCxhdmFpbGFibGUtcmFuZ2VzIHByb3BlcnR5
+LlxuIiwNCj4gPj4+ICsJCQkJbnAtPmZ1bGxfbmFtZSk7DQo+ID4+PiArCQlyZXR1cm4gLUVJTlZB
+TDsNCj4gPj4+ICsJfQ0KPiA+Pg0KPiA+PiBZb3UgbmVlZCB0byBzdXBwb3J0IGZzbCxhdmFpbGFi
+bGUtcmFuZ2VzIHNpbmNlIHRoYXQncyBpbiBhbiBhY2NlcHRlZA0KPiA+PiBiaW5kaW5nIGFuZCBw
+ZW9wbGUgY291bGQgaGF2ZSBwYXJ0aXRpb25lZCBzZXR1cHMgYWxyZWFkeSB1c2luZyBpdC4NCj4g
+Pj4NCj4gPiBbV2FuZyBEb25nc2hlbmddIEZTTCBjaGlwIG9yIE9QRU4tUElDIHNwZWNpZmljYXRp
+b24oT25seSBhIGdyb3VwKSBpbg0KPiA+IGVhY2ggZ3JvdXAgb25seSBmb3VyIHRpbWVyLiBUaGlz
+IGlzIHVuaWZpZWQuIFNvIGkgdXNlIGEgZ2VuZXJpYyBuYW1lLg0KPiA+IEkgdGhpbmsgdGhlcmUg
+aXMgbm90IGNvbXBhdGlibGUgd2l0aCBleGlzdGluZyBtcGljIHRpbWVyIG5vZGVzLg0KPiANCj4g
+V2UgbmVlZCB0byBiZSBjb21wYXRpYmxlIHdpdGggZXhpc3RpbmcgdHJlZXMsIHNvIHlvdSdkIG5l
+ZWQgdG8gY2hlY2sgZm9yDQo+IGJvdGggLS0gYnV0IEkgdGhpbmsgYW55IGZ1cnRoZXIgZGlzY3Vz
+c2lvbiBvZiB0aGUgZGV0YWlscyBpcyBwcmVtYXR1cmUNCj4gdW50aWwgd2UgZGVjaWRlIHdoZXRo
+ZXIgdGhpcyBpcyB3b3J0aHdoaWxlIHRvIGJlZ2luIHdpdGggKGJvdGggdGhlDQo+IHN1cHBvcnQg
+b2Ygbm9uLUZTTCB0aW1lcnMsIGFuZCB0aGUgY3JlYXRpb24gb2YgYSBuZXcgZGV2aWNlIHRyZWUg
+YmluZGluZw0KPiB3aGljaCB3aWxsIG5vdCBiZSBpbXBsZW1lbnRlZCBieSBtYW55IG9mIHRoZSBt
+YWNoaW5lcyB0aGF0IGhhdmUgbm9uLUZTTA0KPiBvcGVucGljIGJlY2F1c2UgdGhleSBydW4gcmVh
+bCBPcGVuIEZpcm13YXJlKS4NCj4gDQpbV2FuZyBEb25nc2hlbmddIA0KCXAgPSBvZl9nZXRfcHJv
+cGVydHkobnAsICJhdmFpbGFibGUtcmFuZ2VzIiwgJmxlbik7DQoJaWYgKCFwKQ0KCQlwID0gb2Zf
+Z2V0X3Byb3BlcnR5KG5wLCAiZnNsLGF2YWlsYWJsZS1yYW5nZXMiLCAmbGVuKTsNCgkNCgl0aGlz
+IGNvZGUgYmUgY29tcGF0aWJsZSB3aXRoIGV4aXN0aW5nIHRyZWVzLg0KCQ0KPiAtU2NvdHQNCg0K
