@@ -1,32 +1,23 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 985602C0088
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2012 07:20:54 +1000 (EST)
-Message-ID: <502AC12C.2010808@freescale.com>
-Date: Tue, 14 Aug 2012 16:20:44 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
-References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
- <50257116.3030207@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB14CA@039-SN2MPN1-022.039d.mgd.msft.net>
- <50293B36.1000408@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB1984@039-SN2MPN1-022.039d.mgd.msft.net>
- <5029B25E.4010708@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB19CF@039-SN2MPN1-022.039d.mgd.msft.net>
- <5029B576.7070900@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB19EB@039-SN2MPN1-022.039d.mgd.msft.net>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259DB19EB@039-SN2MPN1-022.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>, "paulus@samba.org" <paulus@samba.org>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 851232C0085
+ for <linuxppc-dev@ozlabs.org>; Wed, 15 Aug 2012 07:45:48 +1000 (EST)
+Subject: Re: [PATCH 2/2] powerpc/85xx: add Fman MDIO muxing support to the
+ P4080DS
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1344637896-14267-2-git-send-email-timur@freescale.com>
+Date: Tue, 14 Aug 2012 16:45:36 -0500
+Message-Id: <5F0028FE-C555-47DE-B69A-888E7322A6E1@kernel.crashing.org>
+References: <1344637896-14267-1-git-send-email-timur@freescale.com>
+ <1344637896-14267-2-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+ Andy Fleming <afleming@freescale.com>, ddaney.cavm@gmail.com,
+ netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,99 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/13/2012 09:32 PM, Wang Dongsheng-B40534 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Wood Scott-B07421
->> Sent: Tuesday, August 14, 2012 10:19 AM
->> To: Wang Dongsheng-B40534
->> Cc: Wood Scott-B07421; benh@kernel.crashing.org; paulus@samba.org;
->> linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
->> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
->>
->> On 08/13/2012 09:15 PM, Wang Dongsheng-B40534 wrote:
->>>
->>>
->>>> -----Original Message-----
->>>> From: Wood Scott-B07421
->>>> Sent: Tuesday, August 14, 2012 10:05 AM
->>>> To: Wang Dongsheng-B40534
->>>> Cc: Wood Scott-B07421; benh@kernel.crashing.org; paulus@samba.org;
->>>> linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
->>>> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
->>>>
->>>> On 08/13/2012 09:00 PM, Wang Dongsheng-B40534 wrote:
->>>>>
->>>>>
->>>>>> -----Original Message-----
->>>>>> From: Wood Scott-B07421
->>>>>> Sent: Tuesday, August 14, 2012 1:37 AM
->>>>>> To: Wang Dongsheng-B40534
->>>>>> Cc: Wood Scott-B07421; benh@kernel.crashing.org; paulus@samba.org;
->>>>>> linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
->>>>>> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
->>>>>>
->>>>>> On 08/13/2012 01:18 AM, Wang Dongsheng-B40534 wrote:
->>>>>>>>> +	p = of_get_property(np, "available-ranges", &len);
->>>>>>>>> +	if (p && len % (2 * sizeof(u32)) != 0) {
->>>>>>>>> +		pr_err("%s: malformed fsl,available-ranges property.\n",
->>>>>>>>> +				np->full_name);
->>>>>>>>> +		return -EINVAL;
->>>>>>>>> +	}
->>>>>>>>
->>>>>>>> You need to support fsl,available-ranges since that's in an
->>>>>>>> accepted binding and people could have partitioned setups already
->>>> using it.
->>>>>>>>
->>>>>>> [Wang Dongsheng] FSL chip or OPEN-PIC specification(Only a group)
->>>>>>> in each group only four timer. This is unified. So i use a generic
->> name.
->>>>>>> I think there is not compatible with existing mpic timer nodes.
->>>>>>
->>>>>> We need to be compatible with existing trees, so you'd need to
->>>>>> check for both -- but I think any further discussion of the details
->>>>>> is premature until we decide whether this is worthwhile to begin
->>>>>> with (both the support of non-FSL timers, and the creation of a new
->>>>>> device tree binding which will not be implemented by many of the
->>>>>> machines that have non-FSL openpic because they run real Open
->> Firmware).
->>>>>>
->>>>> [Wang Dongsheng]
->>>>> 	p = of_get_property(np, "available-ranges", &len);
->>>>> 	if (!p)
->>>>> 		p = of_get_property(np, "fsl,available-ranges", &len);
->>>>>
->>>>> 	this code be compatible with existing trees.
->>>>
->>>> Yes, that's what I meant by checking both.
->>>>
->>>> I still think we need to discuss why we're doing this first.  What
->>>> specific machines are going to have these new openpic timer nodes?
->>>>
->>> [Wang Dongsheng] It's support to power management awakening. At
->>> present, the power management more and more important. This way is
->>> important to wake up machine. At least need support power management
->>> of machine still needs such a driver.
->>
->> I mean specifically for the non-Freescale openpic nodes.
->>
-> [Wang Dongsheng] I think non-Freescale chips can also use this function
-> to wake up the machine. 
 
-Maybe (it's very machine-specific what can be used as a wake source),
-but what I asked was what specific machines could make use of this.
-Name *one* machine for which these new openpic timer nodes will actually
-be created.
+On Aug 10, 2012, at 5:31 PM, Timur Tabi wrote:
 
-> And There is also an important feature, It can
-> periodically generate an interrupt.
+> diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c =
+b/arch/powerpc/platforms/85xx/corenet_ds.c
+> index 925b028..a79fc79 100644
+> --- a/arch/powerpc/platforms/85xx/corenet_ds.c
+> +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
+> @@ -106,6 +106,13 @@ static const struct of_device_id of_device_ids[] =
+__devinitconst =3D {
+> 	{
+> 		.name		=3D "handles",
+> 	},
+> +	{
+> +		/*
+> +		 * Warning: this entry might need to be located before =
+those
+> +		 * for the Fman Ethernet nodes.
+> +		 */
+> +		.compatible	=3D "mdio-mux",
+> +	},
+> 	{}
+> };
 
-That's not important at all.  We already have a way to do that using the
-decrementer.
+Under what condition would that be the case?
 
-> For example, the network periodically check the hardware device(link status).
-
-And it uses standard Linux software timers to do it.
-
--Scott
+- k=
