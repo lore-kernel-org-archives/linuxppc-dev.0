@@ -1,21 +1,30 @@
-Return-Path: <B40534@freescale.com>
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v2 1/2] powerpc/mpic: Add Open-PIC global timer document
-Date: Tue, 14 Aug 2012 02:40:22 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB1A08@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1344578002-8057-1-git-send-email-Dongsheng.wang@freescale.com>
- <50255F49.5050500@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB1450@039-SN2MPN1-022.039d.mgd.msft.net>
- <50293BEA.90401@freescale.com>
-In-Reply-To: <50293BEA.90401@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <B32616@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2F5EC2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 19:04:20 +1000 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+ "vinod.koul@intel.com" <vinod.koul@intel.com>, "dan.j.williams@gmail.com"
+ <dan.j.williams@gmail.com>, "arnd@arndb.de" <arnd@arndb.de>,
+ "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
+Subject: RE: [PATCH v7 0/8] Raid: enable talitos xor offload for improving
+ performance
+Date: Tue, 14 Aug 2012 09:04:09 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70E3D47@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1344500375-8457-1-git-send-email-qiang.liu@freescale.com>
+ <20120809170307.GG14264@ovro.caltech.edu>
+In-Reply-To: <20120809170307.GG14264@ovro.caltech.edu>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Cc: Li Yang-R58472 <r58472@freescale.com>,
- "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>, "paulus@samba.org" <paulus@samba.org>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "Ira W. Snyder" <iws@ovro.caltech.edu>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,67 +34,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDE0LCAyMDEyIDE6NDAgQU0NCj4gVG86IFdhbmcg
-RG9uZ3NoZW5nLUI0MDUzNA0KPiBDYzogV29vZCBTY290dC1CMDc0MjE7IGJlbmhAa2VybmVsLmNy
-YXNoaW5nLm9yZzsgcGF1bHVzQHNhbWJhLm9yZzsNCj4gbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
-cy5vcmc7IGRldmljZXRyZWUtZGlzY3Vzc0BsaXN0cy5vemxhYnMub3JnOyBHYWxhDQo+IEt1bWFy
-LUIxMTc4MDsgTGkgWWFuZy1SNTg0NzINCj4gU3ViamVjdDogUmU6IFtQQVRDSCB2MiAxLzJdIHBv
-d2VycGMvbXBpYzogQWRkIE9wZW4tUElDIGdsb2JhbCB0aW1lcg0KPiBkb2N1bWVudA0KPiANCj4g
-T24gMDgvMTMvMjAxMiAxMjo0MCBBTSwgV2FuZyBEb25nc2hlbmctQjQwNTM0IHdyb3RlOg0KPiA+
-Pj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9vcGVuLXBp
-Yy50eHQNCj4gPj4+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL29wZW4tcGlj
-LnR4dA0KPiA+Pj4gaW5kZXggOTA5YTkwMi4uMDQ1YzJlOSAxMDA2NDQNCj4gPj4+IC0tLSBhL0Rv
-Y3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9vcGVuLXBpYy50eHQNCj4gPj4+ICsrKyBi
-L0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9vcGVuLXBpYy50eHQNCj4gPj4+IEBA
-IC05Miw2ICs5Miw1MiBAQCBFeGFtcGxlIDI6DQo+ID4+Pg0KPiA+Pj4gICogUmVmZXJlbmNlcw0K
-PiA+Pj4NCj4gPj4+ICsqIE9wZW4gUElDIGdsb2JhbCB0aW1lcnMNCj4gPj4+ICsNCj4gPj4+ICtS
-ZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiA+Pj4gKy0gY29tcGF0aWJsZTogIm9wZW4tcGljLGdsb2Jh
-bC10aW1lciINCj4gPj4NCj4gPj4gb3Blbi1waWMgaXNuJ3QgYSB2ZW5kb3IgKG9yIHNvZnR3YXJl
-IHByb2plY3QgdGhhdCBhY3RzIGxpa2UgYQ0KPiA+PiBwc2V1ZG8tdmVuZG9yKSAtLSBJJ2QgZ28g
-d2l0aCAib3Blbi1waWMtZ2xvYmFsLXRpbWVyIi4NCj4gPj4NCj4gPiBbV2FuZyBEb25nc2hlbmdd
-IHllcywgIm9wZW4tcGljLWdsb2JhbC10aW1lciIgbG9va3MgZ29vZC4NCj4gPg0KPiA+Pj4gKy0g
-cmVnIDogQ29udGFpbnMgdHdvIHJlZ2lvbnMuICBUaGUgZmlyc3QgaXMgdGhlIHRpbWVyIGZyZXF1
-ZW5jeQ0KPiA+Pj4gK3JlcG9ydGluZw0KPiA+Pj4gKyAgcmVnaXN0ZXIgZm9yIHRoZSBncm91cC4g
-IFRoZSBzZWNvbmQgaXMgdGhlIG1haW4gdGltZXIgcmVnaXN0ZXINCj4gPj4+ICtiYW5rDQo+ID4+
-PiArICAoR1RDQ1IsIEdUQkNSLCBHVFZQUiwgR1REUikuDQo+ID4+DQo+ID4+IFdoeSBub3QganVz
-dCBwdXQgY2xvY2stZnJlcXVlbmN5IGluIHRoZSBub2RlLCBpbnN0ZWFkIG9mIGRlc2NyaWJpbmcN
-Cj4gVEZSUj8NCj4gPj4gSSBkb24ndCB0aGluayBVLUJvb3QgY3VycmVudGx5IHNldHMgVEZSUi4N
-Cj4gPj4NCj4gPiBbV2FuZyBEb25nc2hlbmddIElmIGR1cmluZyBzdGFydHVwIFUtQm9vdCBkbyBu
-b3Qgc2V0IFRGUlIgdGhhdCBpcw0KPiB1bnJlYXNvbmFibGUuDQo+IA0KPiBUb28gYmFkLCBpdCdz
-IHdoYXQgaGFwcGVucyBhbmQgd2UncmUgbm90IGdvaW5nIHRvIGZvcmNlIHVzZXJzIHRvIHVwZGF0
-ZQ0KPiBVLUJvb3QgYmVjYXVzZSBvZiB0aGlzLg0KPiANCj4gPj4+ICtFeGFtcGxlIDI6DQo+ID4+
-PiArDQo+ID4+PiArCXRpbWVyOiB0aW1lckAwMTBmMCB7DQo+ID4+PiArCQljb21wYXRpYmxlID0g
-Im9wZW4tcGljLGdsb2JhbC10aW1lciI7DQo+ID4+PiArCQlkZXZpY2VfdHlwZSA9ICJvcGVuLXBp
-YyI7DQo+ID4+PiArCQlyZWcgPSA8MHgwMTBmMCA0IDB4MDExMDAgMHgxMDA+Ow0KPiA+Pj4gKwkJ
-aW50ZXJydXB0cyA9IDwwIDAgMyAwDQo+ID4+PiArCQkJICAgICAgMSAwIDMgMA0KPiA+Pj4gKwkJ
-CSAgICAgIDIgMCAzIDANCj4gPj4+ICsJCSAgICAgICAgICAgICAgMyAwIDMgMD47DQo+ID4+PiAr
-CX07DQo+ID4+DQo+ID4+IDQtY2VsbCBpbnRlcnJ1cHQgc3BlY2lmaWVycyBhcmUgc3BlY2lmaWMg
-dG8gRnJlZXNjYWxlIE1QSUNzLiAgVGhpcw0KPiA+PiBtZWFucyB0aGVyZSdzIG5vIHdheSB0byBk
-ZXNjcmliZSB0aGUgdGltZXIgaW50ZXJydXB0IG9uIGEgbm9uLQ0KPiBGcmVlc2NhbGUgb3BlbnBp
-Yy4NCj4gPj4gQWdhaW4sIEkgc3VnZ2VzdCB3ZSBub3QgYm90aGVyIHdpdGggdGhpcyBpbiB0aGUg
-YWJzZW5jZSBvZiBhbiBhY3R1YWwNCj4gPj4gbmVlZCB0byBzdXBwb3J0IHRoZSB0aW1lciBvbiBu
-b24tRnJlZXNjYWxlIG9wZW5waWMgaW4gcGFydGl0aW9uZWQNCj4gc2NlbmFyaW9zLg0KPiA+PiBU
-aGUgZXhpc3Rpbmcgb3BlbnBpYyBub2RlIGlzIHN1ZmZpY2llbnQgdG8gZGVzY3JpYmUgdGhlDQo+
-ID4+IGhhcmR3YXJlIGluIHRoZSBhYnNlbmNlIG9mIHBhcnRpdGlvbmluZy4gICBXZSBjb3VsZCBo
-YXZlIGFuDQo+ID4+ICJvcGVucGljLW5vLXRpbWVyIiBwcm9wZXJ0eSB0byBpbmRpY2F0ZSB0aGF0
-IHdlJ3JlIGRlc2NyaWJpbmcgaXQNCj4gPj4gc2VwYXJhdGVseSwgc28gdGhhdCB0aGUgYWJzZW5j
-ZSBvZiBhIHRpbWVyIG5vZGUgaXNuJ3QgYW1iaWd1b3VzIGFzIHRvDQo+ID4+IHdoZXRoZXIgaXQn
-cyBhbiBvbGQgdHJlZSBvciBhIHBhcnRpdGlvbmVkIHNjZW5hcmlvLiAgQW4gZnNsLG1waWMNCj4g
-Pj4gY29tcGF0aWJsZSB3b3VsZCBpbXBseSBvcGVucGljLW5vLXRpbWVyLg0KPiA+Pg0KPiA+PiBO
-b3RlIHRoYXQgSSBiZWxpZXZlIG1hbnkgb2YgdGhlIG5vbi1GcmVlc2NhbGUgb3BlbnBpYyBub2Rl
-cyBhcmUgZ29pbmcNCj4gPj4gdG8gYmUgZm91bmQgb24gc3lzdGVtcyB3aXRoIHJlYWwgT3BlbiBG
-aXJtd2FyZSwgc28gd2UgY2FuJ3QgZ28NCj4gPj4gY2hhbmdpbmcgdGhlIGRldmljZSB0cmVlIGZv
-ciB0aGVtLg0KPiA+IFtXYW5nIERvbmdzaGVuZ10gSW4gdGhlIE9wZW4tUElDIHNwZWNpZmljYXRp
-b24sIHRoZXJlIGFyZSBmb3VyIHRpbWVyLg0KPiA+IAkJaW50ZXJydXB0cyA9IDwwIDAgMyAwDQo+
-ID4gCQkJICAgICAgMSAwIDMgMA0KPiA+IAkJCSAgICAgIDIgMCAzIDANCj4gPiAJCSAgICAgICAg
-ICAgICAgMyAwIDMgMD47DQo+ID4NCj4gPiBUaGUgImludGVycnVwdHMiIGp1c3QgbGV0IHVzZXIg
-a25vdyB0aGVyZSBhcmUgZm91ciB0aW1lcnMuIFVzYWdlIGJhc2VkDQo+ICJpbnRlcnJ1cHRzIg0K
-PiA+IGJpbmRpbmcgdG8gY2hhbmdlIGR0cy4NCj4gDQo+IEkgY2FuJ3QgdW5kZXJzdGFuZCB0aGUg
-YWJvdmUgb3IgaG93IGl0J3MgYSByZXNwb25zZSB0byB3aGF0IEkgd3JvdGUuDQo+IA0KW1dhbmcg
-RG9uZ3NoZW5nXSBJIG1lYW4gdGhpcyBqdXN0IHRvIHRlbGwgaG93IG1hbnkgdGltZXJzIHRvIHN1
-cHBvcnQgaW4gT3Blbi1QSUMNCnNwZWNpZmljYXRpb24uIElmIHNvbWVvbmUgbmVlZHMgdG8gd3Jp
-dGUgImludGVycnVwdHMiIGludG8gZHRzLCB0aGlzIG11c3QgY29tcGx5DQp3aXRoIHRoZSBzcGVj
-aWZpY2F0aW9uIG9mIHRoZSBpbnRlcnJ1cHQgdG8gd3JpdGUuIHRoaXMgaXMgYmFzZWQgb24gdGhl
-IHBpYyBkcml2ZXINCnNob3VsZCBiZSBjaGFuZ2VkIGluIGRpZmZlcmVudCBwbGF0Zm9ybXMuDQoN
-Cj4gLVNjb3R0DQoNCg==
+Hi Vinod,
+
+Would you like to apply this series from patch 2/8 to 7/8) in your tree?
+The link as below,
+http://patchwork.ozlabs.org/patch/176023/
+http://patchwork.ozlabs.org/patch/176024/
+http://patchwork.ozlabs.org/patch/176025/
+http://patchwork.ozlabs.org/patch/176026/
+http://patchwork.ozlabs.org/patch/176027/
+http://patchwork.ozlabs.org/patch/176028/
+
+After that, Herbert will merge patch 1/8, http://patchwork.ozlabs.org/patch=
+/176022/
+and Greg apply patch 8/8, http://patchwork.ozlabs.org/patch/176029/
+
+Thanks.
+=20
+
+> -----Original Message-----
+> From: Ira W. Snyder [mailto:iws@ovro.caltech.edu]
+> Sent: Friday, August 10, 2012 1:03 AM
+> To: Liu Qiang-B32616
+> Cc: linux-crypto@vger.kernel.org; vinod.koul@intel.com;
+> dan.j.williams@intel.com; herbert@gondor.hengli.com.au; arnd@arndb.de;
+> gregkh@linuxfoundation.org; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; dan.j.williams@gmail.com
+> Subject: Re: [PATCH v7 0/8] Raid: enable talitos xor offload for
+> improving performance
+>=20
+> On Thu, Aug 09, 2012 at 04:19:35PM +0800, qiang.liu@freescale.com wrote:
+> > Hi all,
+> >
+> > The following 8 patches enabling fsl-dma and talitos offload raid
+> > operations for improving raid performance and balancing CPU load.
+> >
+> > These patches include talitos, fsl-dma and carma module (caram uses
+> > some features of fsl-dma).
+> >
+> > Write performance will be improved by 25-30% tested by iozone.
+> > Write performance is improved about 2% after using spin_lock_bh
+> > replace spin_lock_irqsave.
+> > CPU load will be reduced by 8%.
+> >
+> > "fwiw, I gave v5 a test-drive, setting up a RAID5 array on ramdisks
+> > [1], and this patchseries, along with FSL_DMA && NET_DMA set seems to
+> > be holding water, so this series gets my:"
+> >
+> > Tested-by: Kim Phillips <kim.phillips@freescale.com>
+> >
+>=20
+> The fsldma parts of the series all look great to me.
+>=20
+> Thanks,
+> Ira
+>=20
+> > [1] mdadm --create --verbose --force /dev/md0 --level=3Draid5 --raid-
+> devices=3D4 \
+> > 	/dev/ram[0123]
+> >
+> > Changes in v7:
+> > 	- add test result which is provided by Kim Phillips;
+> > 	- correct one coding style issue in patch 5/8;
+> > 	- add comments by Arnd Bergmann in patch 6/8;
+> >
+> > Changes in v6:
+> > 	- swap the order of original patch 3/6 and 4/6;
+> > 	- merge Ira's patch to reduce the size of original patch;
+> > 	- merge Ira's patch of carma in 8/8;
+> > 	- update documents and descriptions according to Ira's advice;
+> >
+> > Changes in v5:
+> > 	- add detail description in patch 3/6 about the process of
+> completed
+> > 	descriptor, the process is in align with fsl-dma Reference Manual,
+> > 	illustrate the potential risk and how to reproduce it;
+> > 	- drop the patch 7/7 in v4 according to Timur's comments;
+> >
+> > Changes in v4:
+> > 	- fix an error in talitos when dest addr is same with src addr,
+> dest
+> > 	should be freed only one time if src is same with dest addr;
+> > 	- correct coding style in fsl-dma according to Ira's comments;
+> > 	- fix a race condition in fsl-dma fsl_tx_status(), remove the
+> interface
+> > 	which is used to free descriptors in queue ld_completed, this
+> interface
+> > 	has been included in fsldma_cleanup_descriptor(), in v3, there is
+> one
+> > 	place missed spin_lock protect;
+> > 	- split the original patch 3/4 up to 2 patches 3/7 and 4/7
+> according to
+> > 	Li Yang's comments;
+> > 	- fix a warning of unitialized cookie;
+> > 	- add memory copy self test in fsl-dma;
+> > 	- add more detail description about use spin_lock_bh() to instead
+> of
+> > 	spin_lock_irqsave() according to Timur's comments.
+> >
+> > Changes in v3:
+> > 	- change release process of fsl-dma descriptor for resolve the
+> > 	potential race condition;
+> > 	- add test result when use spin_lock_bh replace spin_lock_irqsave;
+> > 	- modify the benchmark results according to the latest patch.
+> >
+> > Changes in v2:
+> > 	- rebase onto cryptodev tree;
+> > 	- split the patch 3/4 up to 3 independent patches;
+> > 	- remove the patch 4/4, the fix is not for cryptodev tree;
+> >
+> > Qiang Liu (8):
+> >       Talitos: Support for async_tx XOR offload
+> >       fsl-dma: remove attribute DMA_INTERRUPT of dmaengine
+> >       fsl-dma: add fsl_dma_free_descriptor() to reduce code duplication
+> >       fsl-dma: move functions to avoid forward declarations
+> >       fsl-dma: change release process of dma descriptor for supporting
+> async_tx
+> >       fsl-dma: use spin_lock_bh to instead of spin_lock_irqsave
+> >       fsl-dma: fix a warning of unitialized cookie
+> >       carma: remove unnecessary DMA_INTERRUPT capability
+> >
+> >  drivers/crypto/Kconfig                  |    9 +
+> >  drivers/crypto/talitos.c                |  413
+> ++++++++++++++++++++++++++
+> >  drivers/crypto/talitos.h                |   53 ++++
+> >  drivers/dma/fsldma.c                    |  488 +++++++++++++++++------
+> --------
+> >  drivers/dma/fsldma.h                    |   17 +-
+> >  drivers/misc/carma/carma-fpga-program.c |    1 -
+> >  drivers/misc/carma/carma-fpga.c         |    2 +-
+> >  7 files changed, 761 insertions(+), 222 deletions(-)
+> >
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
