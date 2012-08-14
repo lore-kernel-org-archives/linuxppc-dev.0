@@ -1,29 +1,30 @@
-Return-Path: <B40534@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+Return-Path: <B07421@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0DA132C008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 12:15:31 +1000 (EST)
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v2 2/2] powerpc/mpic: add global timer support
-Date: Tue, 14 Aug 2012 02:15:23 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB19CF@039-SN2MPN1-022.039d.mgd.msft.net>
+ by ozlabs.org (Postfix) with ESMTPS id 1D3BC2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Aug 2012 12:18:42 +1000 (EST)
+Message-ID: <5029B576.7070900@freescale.com>
+Date: Mon, 13 Aug 2012 21:18:30 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
 References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
  <50257116.3030207@freescale.com>
  <ABB05CD9C9F68C46A5CEDC7F15439259DB14CA@039-SN2MPN1-022.039d.mgd.msft.net>
  <50293B36.1000408@freescale.com>
  <ABB05CD9C9F68C46A5CEDC7F15439259DB1984@039-SN2MPN1-022.039d.mgd.msft.net>
  <5029B25E.4010708@freescale.com>
-In-Reply-To: <5029B25E.4010708@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
- "paulus@samba.org" <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB19CF@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259DB19CF@039-SN2MPN1-022.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>, "paulus@samba.org" <paulus@samba.org>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,49 +34,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDE0LCAyMDEyIDEwOjA1IEFNDQo+IFRvOiBXYW5n
-IERvbmdzaGVuZy1CNDA1MzQNCj4gQ2M6IFdvb2QgU2NvdHQtQjA3NDIxOyBiZW5oQGtlcm5lbC5j
-cmFzaGluZy5vcmc7IHBhdWx1c0BzYW1iYS5vcmc7DQo+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
-YnMub3JnOyBHYWxhIEt1bWFyLUIxMTc4MDsgTGkgWWFuZy1SNTg0NzINCj4gU3ViamVjdDogUmU6
-IFtQQVRDSCB2MiAyLzJdIHBvd2VycGMvbXBpYzogYWRkIGdsb2JhbCB0aW1lciBzdXBwb3J0DQo+
-IA0KPiBPbiAwOC8xMy8yMDEyIDA5OjAwIFBNLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6
-DQo+ID4NCj4gPg0KPiA+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+PiBGcm9tOiBX
-b29kIFNjb3R0LUIwNzQyMQ0KPiA+PiBTZW50OiBUdWVzZGF5LCBBdWd1c3QgMTQsIDIwMTIgMToz
-NyBBTQ0KPiA+PiBUbzogV2FuZyBEb25nc2hlbmctQjQwNTM0DQo+ID4+IENjOiBXb29kIFNjb3R0
-LUIwNzQyMTsgYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnOyBwYXVsdXNAc2FtYmEub3JnOw0KPiA+
-PiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgR2FsYSBLdW1hci1CMTE3ODA7IExpIFlh
-bmctUjU4NDcyDQo+ID4+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggdjIgMi8yXSBwb3dlcnBjL21waWM6
-IGFkZCBnbG9iYWwgdGltZXIgc3VwcG9ydA0KPiA+Pg0KPiA+PiBPbiAwOC8xMy8yMDEyIDAxOjE4
-IEFNLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+ID4+Pj4+ICsJcCA9IG9mX2dldF9w
-cm9wZXJ0eShucCwgImF2YWlsYWJsZS1yYW5nZXMiLCAmbGVuKTsNCj4gPj4+Pj4gKwlpZiAocCAm
-JiBsZW4gJSAoMiAqIHNpemVvZih1MzIpKSAhPSAwKSB7DQo+ID4+Pj4+ICsJCXByX2VycigiJXM6
-IG1hbGZvcm1lZCBmc2wsYXZhaWxhYmxlLXJhbmdlcyBwcm9wZXJ0eS5cbiIsDQo+ID4+Pj4+ICsJ
-CQkJbnAtPmZ1bGxfbmFtZSk7DQo+ID4+Pj4+ICsJCXJldHVybiAtRUlOVkFMOw0KPiA+Pj4+PiAr
-CX0NCj4gPj4+Pg0KPiA+Pj4+IFlvdSBuZWVkIHRvIHN1cHBvcnQgZnNsLGF2YWlsYWJsZS1yYW5n
-ZXMgc2luY2UgdGhhdCdzIGluIGFuDQo+ID4+Pj4gYWNjZXB0ZWQgYmluZGluZyBhbmQgcGVvcGxl
-IGNvdWxkIGhhdmUgcGFydGl0aW9uZWQgc2V0dXBzIGFscmVhZHkNCj4gdXNpbmcgaXQuDQo+ID4+
-Pj4NCj4gPj4+IFtXYW5nIERvbmdzaGVuZ10gRlNMIGNoaXAgb3IgT1BFTi1QSUMgc3BlY2lmaWNh
-dGlvbihPbmx5IGEgZ3JvdXApIGluDQo+ID4+PiBlYWNoIGdyb3VwIG9ubHkgZm91ciB0aW1lci4g
-VGhpcyBpcyB1bmlmaWVkLiBTbyBpIHVzZSBhIGdlbmVyaWMgbmFtZS4NCj4gPj4+IEkgdGhpbmsg
-dGhlcmUgaXMgbm90IGNvbXBhdGlibGUgd2l0aCBleGlzdGluZyBtcGljIHRpbWVyIG5vZGVzLg0K
-PiA+Pg0KPiA+PiBXZSBuZWVkIHRvIGJlIGNvbXBhdGlibGUgd2l0aCBleGlzdGluZyB0cmVlcywg
-c28geW91J2QgbmVlZCB0byBjaGVjaw0KPiA+PiBmb3IgYm90aCAtLSBidXQgSSB0aGluayBhbnkg
-ZnVydGhlciBkaXNjdXNzaW9uIG9mIHRoZSBkZXRhaWxzIGlzDQo+ID4+IHByZW1hdHVyZSB1bnRp
-bCB3ZSBkZWNpZGUgd2hldGhlciB0aGlzIGlzIHdvcnRod2hpbGUgdG8gYmVnaW4gd2l0aA0KPiA+
-PiAoYm90aCB0aGUgc3VwcG9ydCBvZiBub24tRlNMIHRpbWVycywgYW5kIHRoZSBjcmVhdGlvbiBv
-ZiBhIG5ldyBkZXZpY2UNCj4gPj4gdHJlZSBiaW5kaW5nIHdoaWNoIHdpbGwgbm90IGJlIGltcGxl
-bWVudGVkIGJ5IG1hbnkgb2YgdGhlIG1hY2hpbmVzDQo+ID4+IHRoYXQgaGF2ZSBub24tRlNMIG9w
-ZW5waWMgYmVjYXVzZSB0aGV5IHJ1biByZWFsIE9wZW4gRmlybXdhcmUpLg0KPiA+Pg0KPiA+IFtX
-YW5nIERvbmdzaGVuZ10NCj4gPiAJcCA9IG9mX2dldF9wcm9wZXJ0eShucCwgImF2YWlsYWJsZS1y
-YW5nZXMiLCAmbGVuKTsNCj4gPiAJaWYgKCFwKQ0KPiA+IAkJcCA9IG9mX2dldF9wcm9wZXJ0eShu
-cCwgImZzbCxhdmFpbGFibGUtcmFuZ2VzIiwgJmxlbik7DQo+ID4NCj4gPiAJdGhpcyBjb2RlIGJl
-IGNvbXBhdGlibGUgd2l0aCBleGlzdGluZyB0cmVlcy4NCj4gDQo+IFllcywgdGhhdCdzIHdoYXQg
-SSBtZWFudCBieSBjaGVja2luZyBib3RoLg0KPiANCj4gSSBzdGlsbCB0aGluayB3ZSBuZWVkIHRv
-IGRpc2N1c3Mgd2h5IHdlJ3JlIGRvaW5nIHRoaXMgZmlyc3QuICBXaGF0DQo+IHNwZWNpZmljIG1h
-Y2hpbmVzIGFyZSBnb2luZyB0byBoYXZlIHRoZXNlIG5ldyBvcGVucGljIHRpbWVyIG5vZGVzPw0K
-PiANCltXYW5nIERvbmdzaGVuZ10gSXQncyBzdXBwb3J0IHRvIHBvd2VyIG1hbmFnZW1lbnQgYXdh
-a2VuaW5nLiBBdCBwcmVzZW50LCANCnRoZSBwb3dlciBtYW5hZ2VtZW50IG1vcmUgYW5kIG1vcmUg
-aW1wb3J0YW50LiBUaGlzIHdheSBpcyBpbXBvcnRhbnQgdG8gd2FrZQ0KdXAgbWFjaGluZS4gQXQg
-bGVhc3QgbmVlZCBzdXBwb3J0IHBvd2VyIG1hbmFnZW1lbnQgb2YgbWFjaGluZSBzdGlsbCBuZWVk
-cw0Kc3VjaCBhIGRyaXZlci4NCg0KPiAtU2NvdHQNCg0K
+On 08/13/2012 09:15 PM, Wang Dongsheng-B40534 wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Tuesday, August 14, 2012 10:05 AM
+>> To: Wang Dongsheng-B40534
+>> Cc: Wood Scott-B07421; benh@kernel.crashing.org; paulus@samba.org;
+>> linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
+>> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+>>
+>> On 08/13/2012 09:00 PM, Wang Dongsheng-B40534 wrote:
+>>>
+>>>
+>>>> -----Original Message-----
+>>>> From: Wood Scott-B07421
+>>>> Sent: Tuesday, August 14, 2012 1:37 AM
+>>>> To: Wang Dongsheng-B40534
+>>>> Cc: Wood Scott-B07421; benh@kernel.crashing.org; paulus@samba.org;
+>>>> linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
+>>>> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+>>>>
+>>>> On 08/13/2012 01:18 AM, Wang Dongsheng-B40534 wrote:
+>>>>>>> +	p = of_get_property(np, "available-ranges", &len);
+>>>>>>> +	if (p && len % (2 * sizeof(u32)) != 0) {
+>>>>>>> +		pr_err("%s: malformed fsl,available-ranges property.\n",
+>>>>>>> +				np->full_name);
+>>>>>>> +		return -EINVAL;
+>>>>>>> +	}
+>>>>>>
+>>>>>> You need to support fsl,available-ranges since that's in an
+>>>>>> accepted binding and people could have partitioned setups already
+>> using it.
+>>>>>>
+>>>>> [Wang Dongsheng] FSL chip or OPEN-PIC specification(Only a group) in
+>>>>> each group only four timer. This is unified. So i use a generic name.
+>>>>> I think there is not compatible with existing mpic timer nodes.
+>>>>
+>>>> We need to be compatible with existing trees, so you'd need to check
+>>>> for both -- but I think any further discussion of the details is
+>>>> premature until we decide whether this is worthwhile to begin with
+>>>> (both the support of non-FSL timers, and the creation of a new device
+>>>> tree binding which will not be implemented by many of the machines
+>>>> that have non-FSL openpic because they run real Open Firmware).
+>>>>
+>>> [Wang Dongsheng]
+>>> 	p = of_get_property(np, "available-ranges", &len);
+>>> 	if (!p)
+>>> 		p = of_get_property(np, "fsl,available-ranges", &len);
+>>>
+>>> 	this code be compatible with existing trees.
+>>
+>> Yes, that's what I meant by checking both.
+>>
+>> I still think we need to discuss why we're doing this first.  What
+>> specific machines are going to have these new openpic timer nodes?
+>>
+> [Wang Dongsheng] It's support to power management awakening. At present, 
+> the power management more and more important. This way is important to wake
+> up machine. At least need support power management of machine still needs
+> such a driver.
+
+I mean specifically for the non-Freescale openpic nodes.
+
+-Scott
