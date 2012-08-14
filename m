@@ -1,21 +1,30 @@
 Return-Path: <B07421@freescale.com>
-Message-ID: <502AC0B0.5030801@freescale.com>
-Date: Tue, 14 Aug 2012 16:18:40 -0500
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 985602C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2012 07:20:54 +1000 (EST)
+Message-ID: <502AC12C.2010808@freescale.com>
+Date: Tue, 14 Aug 2012 16:20:44 -0500
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
 To: Wang Dongsheng-B40534 <B40534@freescale.com>
-Subject: Re: [PATCH v2 1/2] powerpc/mpic: Add Open-PIC global timer document
-References: <1344578002-8057-1-git-send-email-Dongsheng.wang@freescale.com>
- <50255F49.5050500@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB1450@039-SN2MPN1-022.039d.mgd.msft.net>
- <50293BEA.90401@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB1A08@039-SN2MPN1-022.039d.mgd.msft.net>
-In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259DB1A08@039-SN2MPN1-022.039d.mgd.msft.net>
+Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+References: <1344578081-8095-1-git-send-email-Dongsheng.wang@freescale.com>
+ <50257116.3030207@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB14CA@039-SN2MPN1-022.039d.mgd.msft.net>
+ <50293B36.1000408@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB1984@039-SN2MPN1-022.039d.mgd.msft.net>
+ <5029B25E.4010708@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB19CF@039-SN2MPN1-022.039d.mgd.msft.net>
+ <5029B576.7070900@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB19EB@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259DB19EB@039-SN2MPN1-022.039d.mgd.msft.net>
 Content-Type: text/plain; charset="UTF-8"
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- "devicetree-discuss@lists.ozlabs.org" <devicetree-discuss@lists.ozlabs.org>,
- "paulus@samba.org" <paulus@samba.org>,
+ Li Yang-R58472 <r58472@freescale.com>, "paulus@samba.org" <paulus@samba.org>,
  Gala Kumar-B11780 <B11780@freescale.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -27,54 +36,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/13/2012 09:40 PM, Wang Dongsheng-B40534 wrote:
->>>> +Example 2:
->>>>> +
->>>>> +	timer: timer@010f0 {
->>>>> +		compatible = "open-pic,global-timer";
->>>>> +		device_type = "open-pic";
->>>>> +		reg = <0x010f0 4 0x01100 0x100>;
->>>>> +		interrupts = <0 0 3 0
->>>>> +			      1 0 3 0
->>>>> +			      2 0 3 0
->>>>> +		              3 0 3 0>;
->>>>> +	};
->>>>
->>>> 4-cell interrupt specifiers are specific to Freescale MPICs.  This
->>>> means there's no way to describe the timer interrupt on a non-
->> Freescale openpic.
->>>> Again, I suggest we not bother with this in the absence of an actual
->>>> need to support the timer on non-Freescale openpic in partitioned
->> scenarios.
->>>> The existing openpic node is sufficient to describe the
->>>> hardware in the absence of partitioning.   We could have an
->>>> "openpic-no-timer" property to indicate that we're describing it
->>>> separately, so that the absence of a timer node isn't ambiguous as to
->>>> whether it's an old tree or a partitioned scenario.  An fsl,mpic
->>>> compatible would imply openpic-no-timer.
->>>>
->>>> Note that I believe many of the non-Freescale openpic nodes are going
->>>> to be found on systems with real Open Firmware, so we can't go
->>>> changing the device tree for them.
->>> [Wang Dongsheng] In the Open-PIC specification, there are four timer.
->>> 		interrupts = <0 0 3 0
->>> 			      1 0 3 0
->>> 			      2 0 3 0
->>> 		              3 0 3 0>;
+On 08/13/2012 09:32 PM, Wang Dongsheng-B40534 wrote:
+> 
+> 
+>> -----Original Message-----
+>> From: Wood Scott-B07421
+>> Sent: Tuesday, August 14, 2012 10:19 AM
+>> To: Wang Dongsheng-B40534
+>> Cc: Wood Scott-B07421; benh@kernel.crashing.org; paulus@samba.org;
+>> linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
+>> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+>>
+>> On 08/13/2012 09:15 PM, Wang Dongsheng-B40534 wrote:
 >>>
->>> The "interrupts" just let user know there are four timers. Usage based
->> "interrupts"
->>> binding to change dts.
+>>>
+>>>> -----Original Message-----
+>>>> From: Wood Scott-B07421
+>>>> Sent: Tuesday, August 14, 2012 10:05 AM
+>>>> To: Wang Dongsheng-B40534
+>>>> Cc: Wood Scott-B07421; benh@kernel.crashing.org; paulus@samba.org;
+>>>> linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
+>>>> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+>>>>
+>>>> On 08/13/2012 09:00 PM, Wang Dongsheng-B40534 wrote:
+>>>>>
+>>>>>
+>>>>>> -----Original Message-----
+>>>>>> From: Wood Scott-B07421
+>>>>>> Sent: Tuesday, August 14, 2012 1:37 AM
+>>>>>> To: Wang Dongsheng-B40534
+>>>>>> Cc: Wood Scott-B07421; benh@kernel.crashing.org; paulus@samba.org;
+>>>>>> linuxppc-dev@lists.ozlabs.org; Gala Kumar-B11780; Li Yang-R58472
+>>>>>> Subject: Re: [PATCH v2 2/2] powerpc/mpic: add global timer support
+>>>>>>
+>>>>>> On 08/13/2012 01:18 AM, Wang Dongsheng-B40534 wrote:
+>>>>>>>>> +	p = of_get_property(np, "available-ranges", &len);
+>>>>>>>>> +	if (p && len % (2 * sizeof(u32)) != 0) {
+>>>>>>>>> +		pr_err("%s: malformed fsl,available-ranges property.\n",
+>>>>>>>>> +				np->full_name);
+>>>>>>>>> +		return -EINVAL;
+>>>>>>>>> +	}
+>>>>>>>>
+>>>>>>>> You need to support fsl,available-ranges since that's in an
+>>>>>>>> accepted binding and people could have partitioned setups already
+>>>> using it.
+>>>>>>>>
+>>>>>>> [Wang Dongsheng] FSL chip or OPEN-PIC specification(Only a group)
+>>>>>>> in each group only four timer. This is unified. So i use a generic
+>> name.
+>>>>>>> I think there is not compatible with existing mpic timer nodes.
+>>>>>>
+>>>>>> We need to be compatible with existing trees, so you'd need to
+>>>>>> check for both -- but I think any further discussion of the details
+>>>>>> is premature until we decide whether this is worthwhile to begin
+>>>>>> with (both the support of non-FSL timers, and the creation of a new
+>>>>>> device tree binding which will not be implemented by many of the
+>>>>>> machines that have non-FSL openpic because they run real Open
+>> Firmware).
+>>>>>>
+>>>>> [Wang Dongsheng]
+>>>>> 	p = of_get_property(np, "available-ranges", &len);
+>>>>> 	if (!p)
+>>>>> 		p = of_get_property(np, "fsl,available-ranges", &len);
+>>>>>
+>>>>> 	this code be compatible with existing trees.
+>>>>
+>>>> Yes, that's what I meant by checking both.
+>>>>
+>>>> I still think we need to discuss why we're doing this first.  What
+>>>> specific machines are going to have these new openpic timer nodes?
+>>>>
+>>> [Wang Dongsheng] It's support to power management awakening. At
+>>> present, the power management more and more important. This way is
+>>> important to wake up machine. At least need support power management
+>>> of machine still needs such a driver.
 >>
->> I can't understand the above or how it's a response to what I wrote.
+>> I mean specifically for the non-Freescale openpic nodes.
 >>
-> [Wang Dongsheng] I mean this just to tell how many timers to support in Open-PIC
-> specification. If someone needs to write "interrupts" into dts, this must comply
-> with the specification of the interrupt to write. this is based on the pic driver
-> should be changed in different platforms.
+> [Wang Dongsheng] I think non-Freescale chips can also use this function
+> to wake up the machine. 
 
-My point (beyond that examples provided should be valid for *some*
-system) is there is no valid thing to put in the interrupts property
-here when the interrupt controller is not "fsl,mpic", so this doesn't work.
+Maybe (it's very machine-specific what can be used as a wake source),
+but what I asked was what specific machines could make use of this.
+Name *one* machine for which these new openpic timer nodes will actually
+be created.
+
+> And There is also an important feature, It can
+> periodically generate an interrupt.
+
+That's not important at all.  We already have a way to do that using the
+decrementer.
+
+> For example, the network periodically check the hardware device(link status).
+
+And it uses standard Linux software timers to do it.
 
 -Scott
