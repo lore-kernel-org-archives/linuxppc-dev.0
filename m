@@ -1,16 +1,22 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6BE332C0085
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 06:36:11 +1000 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] rapidio/tsi721: fix unused variable compiler warning
-Date: Wed, 15 Aug 2012 16:35:13 -0400
-Message-Id: <1345062913-29590-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CC77B2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 07:02:10 +1000 (EST)
+Subject: Re: [PATCH V7 2/3] powerpc/ge_imp3a: Add ISA node to PCI primary bus
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <502BDCEE.70007@freescale.com>
+Date: Wed, 15 Aug 2012 16:01:57 -0500
+Message-Id: <62B0A8DA-3EB8-494C-946B-4D2C4510F702@kernel.crashing.org>
+References: <1345021026-10886-1-git-send-email-B38951@freescale.com>
+ <1345021026-10886-3-git-send-email-B38951@freescale.com>
+ <502BDCEE.70007@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ Jia Hongtao <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,45 +26,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fix unused variable compiler warning when built with CONFIG_RAPIDIO_DEBUG
-option off.
 
-This patch is applicable to kernel versions starting from v3.2
+On Aug 15, 2012, at 12:31 PM, Scott Wood wrote:
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>
----
- drivers/rapidio/devices/tsi721.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+> On 08/15/2012 03:57 AM, Jia Hongtao wrote:
+>> PCI primary bus will be determined by looking for ISA node in device =
+tree.
+>> Also for board ge_imp3a primary bus is the second PCI controller =
+detected.
+>> So we add ISA node to ge_imp3a's device tree to fit the new =
+determination.
+>>=20
+>> Adding ISA node to other boards' device tree is not necessary. The =
+situation
+>> that the first bus is primary have already been handled. Please refer =
+to the
+>> following patch:
+>> powerpc/pci: Make sure ISA IO base is not zero
+>>=20
+>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+>> Signed-off-by: Li Yang <leoli@freescale.com>
+>> ---
+>> arch/powerpc/boot/dts/ge_imp3a.dts |    4 ++++
+>> 1 files changed, 4 insertions(+), 0 deletions(-)
+>>=20
+>> diff --git a/arch/powerpc/boot/dts/ge_imp3a.dts =
+b/arch/powerpc/boot/dts/ge_imp3a.dts
+>> index fefae41..aa2c4b5 100644
+>> --- a/arch/powerpc/boot/dts/ge_imp3a.dts
+>> +++ b/arch/powerpc/boot/dts/ge_imp3a.dts
+>> @@ -248,6 +248,10 @@
+>> 				  0x1000000 0x0 0x0
+>> 				  0x1000000 0x0 0x0
+>> 				  0x0 0x10000>;
+>> +
+>> +			isa@1e {
+>> +				device_type =3D "isa";
+>> +			};
+>> 		};
+>> 	};
+>> };
+>=20
+> I believe I already said it's not acceptable to break old device =
+trees.
+>=20
+> -Scott
+>=20
 
-diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
-index c0d6a04..5d44252 100644
---- a/drivers/rapidio/devices/tsi721.c
-+++ b/drivers/rapidio/devices/tsi721.c
-@@ -2219,7 +2219,7 @@ static int __devinit tsi721_probe(struct pci_dev *pdev,
- 				  const struct pci_device_id *id)
- {
- 	struct tsi721_device *priv;
--	int i, cap;
-+	int cap;
- 	int err;
- 	u32 regval;
- 
-@@ -2239,12 +2239,15 @@ static int __devinit tsi721_probe(struct pci_dev *pdev,
- 	priv->pdev = pdev;
- 
- #ifdef DEBUG
-+	{
-+	int i;
- 	for (i = 0; i <= PCI_STD_RESOURCE_END; i++) {
- 		dev_dbg(&pdev->dev, "res[%d] @ 0x%llx (0x%lx, 0x%lx)\n",
- 			i, (unsigned long long)pci_resource_start(pdev, i),
- 			(unsigned long)pci_resource_len(pdev, i),
- 			pci_resource_flags(pdev, i));
- 	}
-+	}
- #endif
- 	/*
- 	 * Verify BAR configuration
--- 
-1.7.8.4
+I agree w/Scott this is NOT an acceptable solution, both because of old =
+device tree and its just wrong to list ISA if it doesn't exist in the =
+device.
+
+- k=
