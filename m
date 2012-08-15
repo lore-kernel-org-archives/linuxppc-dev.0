@@ -1,40 +1,20 @@
 Return-Path: <B38951@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 32EA32C009B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2012 19:22:22 +1000 (EST)
-Received: from mail154-va3 (localhost [127.0.0.1])	by
- mail154-va3-R.bigfish.com (Postfix) with ESMTP id CC82B1E008F	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2012 09:22:18 +0000 (UTC)
-Received: from VA3EHSMHS015.bigfish.com (unknown [10.7.14.251])	by
- mail154-va3.bigfish.com (Postfix) with ESMTP id 96DDF220224	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2012 09:22:15 +0000 (UTC)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH V5 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Wed, 15 Aug 2012 09:22:10 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A54908@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1343988851-884-1-git-send-email-B38951@freescale.com>
- <1343988851-884-4-git-send-email-B38951@freescale.com>
- <501BFC0E.6070708@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A36D0A@039-SN1MPN1-002.039d.mgd.msft.net>
- <501FDE40.1060906@freescale.com>
- <CADRPPNTqnEt3xE8Et1cbK=GwfemgA3-dF7aH2cTNppCddKJ6DA@mail.gmail.com>
- <50213342.8020600@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A518E4@039-SN1MPN1-002.039d.mgd.msft.net>
- <50228CA5.801@freescale.com>
- <3F366E73-1EED-4DFE-85B3-F37BCCFFFFB5@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A52814@039-SN1MPN1-002.039d.mgd.msft.net>
- <50253004.3010808@freescale.com>
-In-Reply-To: <50253004.3010808@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id C2D0D2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2012 19:25:22 +1000 (EST)
+From: Jia Hongtao <B38951@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
+ <benh@kernel.crashing.org>
+Subject: [PATCH V7 0/3] PCI unification patch description
+Date: Wed, 15 Aug 2012 16:57:03 +0800
+Message-ID: <1345021026-10886-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
-Cc: Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain
+Cc: B07421@freescale.com, b38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,68 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogU2F0dXJkYXksIEF1Z3VzdCAxMSwgMjAxMiAxMjowMCBBTQ0KPiBUbzogSmlh
-IEhvbmd0YW8tQjM4OTUxDQo+IENjOiBHYWxhIEt1bWFyLUIxMTc4MDsgV29vZCBTY290dC1CMDc0
-MjE7IExpIFlhbmctUjU4NDcyOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmcNCj4g
-U3ViamVjdDogUmU6IFtQQVRDSCBWNSAzLzNdIHBvd2VycGMvZnNsLXBjaTogVW5pZnkgcGNpL3Bj
-aWUNCj4gaW5pdGlhbGl6YXRpb24gY29kZQ0KPiANCj4gT24gMDgvMTAvMjAxMiAwMzo0NyBBTSwg
-SmlhIEhvbmd0YW8tQjM4OTUxIHdyb3RlOg0KPiA+DQo+ID4NCj4gPj4gLS0tLS1PcmlnaW5hbCBN
-ZXNzYWdlLS0tLS0NCj4gPj4gRnJvbTogR2FsYSBLdW1hci1CMTE3ODANCj4gPj4gU2VudDogVGh1
-cnNkYXksIEF1Z3VzdCAwOSwgMjAxMiAzOjA0IEFNDQo+ID4+IFRvOiBXb29kIFNjb3R0LUIwNzQy
-MQ0KPiA+PiBDYzogSmlhIEhvbmd0YW8tQjM4OTUxOyBXb29kIFNjb3R0LUIwNzQyMTsgTGkgWWFu
-Zy1SNTg0NzI7IGxpbnV4cHBjLQ0KPiA+PiBkZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+PiBTdWJq
-ZWN0OiBSZTogW1BBVENIIFY1IDMvM10gcG93ZXJwYy9mc2wtcGNpOiBVbmlmeSBwY2kvcGNpZQ0K
-PiA+PiBpbml0aWFsaXphdGlvbiBjb2RlDQo+ID4+DQo+ID4+Pj4+Pj4+PiBBcyBJIGV4cGxhaW5l
-ZCBiZWZvcmUsIHRoaXMgaGFzIHRvIGJlIGRvbmUgZ2xvYmFsbHksIG5vdCBmcm9tDQo+ID4+Pj4+
-Pj4+PiB0aGUgcHJvYmUgZnVuY3Rpb24sIHNvIHdlIGNhbiBhc3NpZ24gYSBkZWZhdWx0IHByaW1h
-cnkgYnVzIGlmDQo+ID4+Pj4+Pj4+PiB0aGVyZQ0KPiA+Pj4+PiBpc24ndCBhbnkgSVNBLg0KPiA+
-Pj4+Pj4+Pj4gVGhlcmUgYXJlIGJ1Z3MgaW4gdGhlIExpbnV4IFBQQyBQQ0kgY29kZSByZWxhdGlu
-ZyB0byBub3QNCj4gPj4+Pj4+Pj4+IGhhdmluZyBhbnkgcHJpbWFyeSBidXMuDQo+ID4+Pj4+Pj4+
-Pg0KPiA+Pj4+Pj4+Pj4gLVNjb3R0DQo+ID4+Pj4+Pj4+DQo+ID4+Pj4+Pj4+IEluIG15IHdheSBv
-ZiBzZWFyY2hpbmcgSVNBIHlvdSBjYW4gYWxzbyBhc3NpZ24gYSBkZWZhdWx0DQo+ID4+Pj4+Pj4+
-IHByaW1hcnkgYnVzIGluIGJvYXJkIHNwZWNpZmljIGZpbGVzLg0KPiA+Pj4+Pj4+DQo+ID4+Pj4+
-Pj4gVGhhdCB3YXMgbWVhbnQgZm9yIHdoZW4gdGhlIGJvYXJkIGZpbGUgaGFkIGFuIGFsdGVybmF0
-ZSB3YXkgb2YNCj4gPj4+Pj4+PiBzZWFyY2hpbmcgZm9yIHRoZSBwcmltYXJ5IGJ1cyAoZS5nLiBs
-b29rIGZvciBpODI1OSksIG5vdCBhcyBhDQo+ID4+Pj4+Pj4gcmVwbGFjZW1lbnQgZm9yIHRoZSBt
-ZWNoYW5pc20gdGhhdCBndWFyYW50ZWVzIHRoZXJlJ3MgYSBwcmltYXJ5DQo+IGJ1cy4NCj4gPj4+
-Pj4+Pg0KPiA+Pj4+Pj4+IFlvdSBhcmUgY2F1c2luZyBhIHJlZ3Jlc3Npb24gaW4gdGhlIHFlbXVf
-ZTUwMC5jIHBsYXRmb3JtLg0KPiA+Pj4+Pj4NCj4gPj4+Pj4+IENhbiB3ZSBmaXggdGhlIHFlbXUg
-ZGV2aWNlIHRyZWUgdG8gYWRkcmVzcyB0aGUgcHJvYmxlbSBpZiB3ZSBkbw0KPiA+Pj4+Pj4gbWFr
-ZSBpdCBhIHJ1bGUgdG8gdXNlIHRoZSBJU0Egbm9kZSB0byBpbmRpY2F0ZSB0aGUgcHJpbWFyeSBi
-dXM/DQo+ID4+Pj4+DQo+ID4+Pj4+IE5vLiAgVGhlcmUgaXMgbm8gSVNBLCBhbmQgd2UncmUgbm90
-IGdvaW5nIHRvIGxpZSBhbmQgc2F5IHRoZXJlIGlzLg0KPiA+Pj4+DQo+ID4+Pj4gQnV0IHdlIGNh
-biBhc3NpZ24gYSBkZWZhdWx0IHByaW1hcnkgZm9yIHFlbXUuDQo+ID4+Pg0KPiA+Pj4gTm90IGlu
-IHRoZSBkZXZpY2UgdHJlZS4gIFdoYXQgb3RoZXIgbWVjaGFuaXNtIGRvIHlvdSBwcm9wb3NlPyAg
-QW5kDQo+ID4+PiB3aHkgZG8geW91IHdhbnQgdG8gZml4IGl0IG9ubHkgZm9yIFFFTVUgYW5kIG5v
-dCBvdGhlciBib2FyZHMsIHdoZXJlDQo+ID4+PiB0aGluZ3MgaGFwcGVuIHRvIHdvcmsgYnV0IG5v
-dCBhcyBkZXNpZ25lZD8NCj4gPj4+DQo+ID4+PiBLdW1hciwgY2FuIHlvdSBzcGVhayB1cCBoZXJl
-IGFzIG1haW50YWluZXIgc28gd2UgY2FuIHN0b3AgZ29pbmcgYmFjaw0KPiA+Pj4gYW5kIGZvcnRo
-IGVuZGxlc3NseT8NCj4gPj4NCj4gPj4gSSdkIHJhdGhlciB3ZSBzdGljayB3aXRoIHRoZSBjb2Rl
-IHRoYXQgd29ya3MgZm9yIHRoaXMgcHVycG9zZSBhdCB0aGlzDQo+ID4+IHBvaW50LiAgVGhhdCB3
-b3VsZCBiZSBTY290dCdzIGN1cnJlbnQgdXBzdHJlYW0gY29kZS4gIExldHMgZ2V0IHRoZQ0KPiA+
-PiBvdGhlciBhc3BlY3RzIG9mIHRoaXMgcGF0Y2hzZXQgY2xvc2VkIChTV0lPVExCLCBjb252ZXJz
-aW9uIHRvDQo+ID4+IHBsYXRmb3JtIGRyaXZlciwgUE0sIGV0Yy4pLiAgVGhlIHByaW1hcnkgYnVz
-IGNvZGUgU2NvdHQgd3JvdGUgZG9lcw0KPiA+PiBOT1QgbmVlZCB0byBjaGFuZ2UgYXQgdGhpcyBw
-b2ludC4NCj4gPj4NCj4gPj4gLSBrDQo+ID4NCj4gPg0KPiA+IEkganVzdCBzdWJtaXR0ZWQgYSBu
-ZXcgdmVyc2lvbiBvZiBQQ0kgcGF0Y2ggaW4gd2hpY2ggSSBpbXByb3ZlIHRoZQ0KPiBwcmltYXJ5
-IHBhcnQuDQo+ID4gVGhlIHJlYXNvbnMgSSB3YW50IHRvIGNoYW5nZSB0aGUgd2F5IG9mIHByaW1h
-cnkgYXNzaWdubWVudCBsaXN0ZWQgYmVsb3c6DQo+ID4NCj4gPiAxLiBUaGlzIGFwcHJvYWNoIGlz
-IGZ1bmN0aW9uYWxseSBlcXVpdmFsZW50IHRvIHRoZSBTY290dCdzIGNvZGUuIEluIG15DQo+ID4g
-YXBwcm9hY2ggdGhlcmUgbWlnaHQgYmUgbm8gcHJpbWFyeSBhc3NpZ25lZCBidXQgaXQgZml4ZWQg
-YnkgInF1aWNrIGZpeCINCj4gaW50cm9kdWNlZCBieSBCZW4uDQo+ID4gUGxlYXNlIHJlZmVyIHRv
-IHRoaXMgbGluazoNCj4gPiBodHRwczovL2xpc3RzLm96bGFicy5vcmcvcGlwZXJtYWlsL2xpbnV4
-cHBjLWRldi8yMDEyLUp1bmUvMDk4NTg2Lmh0bWwNCj4gDQo+IFlvdSBtaWdodCB3YW50IHRvIGdl
-dCBCZW4ncyBpbnB1dCBhcyB0byB3aGV0aGVyIGhlIGFjdHVhbGx5IHdhbnRzIHRvIHNlZQ0KPiB0
-aGF0ICJxdWljayBmaXgiIGFwcGxpZWQuDQo+IA0KPiA+IDIuIFNjb3R0J3MgYW5kIG15IHdheSBj
-b3VsZCBub3QgaGFuZGxlIHRoZSBzaXR1YXRpb24gdGhhdCAidGhlIHByaW1hcnkNCj4gPiBpcyBu
-b3QgdGhlIGZpcnN0IFBDSSBidXMgZGV0ZWN0ZWQiLiBJIGZvdW5kIHRoYXQgb25seSBnZV9pbXAz
-YSBnb3QNCj4gPiB0aGlzIHByb2JsZW0gc28gSSBmaXhlZCBpdCBieSBhZGRpbmcgSVNBIG5vZGUg
-dG8gaXRzIGRldmljZSB0cmVlLiBCeQ0KPiA+IGFkZGluZyB0aGlzIEkgdGhpbmsgdGhlIHNvbHV0
-aW9uIGlzIGxvZ2ljYWxseSBjb21wbGV0ZWQuDQo+IA0KPiBIb3cgZGlkIG15IGFwcHJvYWNoIG5v
-dCBoYW5kbGUgdGhpcyBjYXNlPyAgQXMgSSBzYWlkLCBnZV9pbXAzYSBwbGF0Zm9ybQ0KPiBjb2Rl
-IG5lZWRzIHRvIHNldCBmc2xfcGNpX3ByaW1hcnkgbWFudWFsbHkgYmVmb3JlIFBDSSBpbml0IHJ1
-bnMuDQo+IA0KPiBBZGRpbmcgYSBub2RlIHRvIHRoZSBkZXZpY2UgdHJlZSBpcyBub3QgdGhlIGFu
-c3dlciwgc2luY2UgdGhhdCB3aWxsIGJyZWFrDQo+IGNvbXBhdGliaWxpdHkgd2l0aCBvbGQgZGV2
-aWNlIHRyZWVzLg0KPiANCg0KSSBhc3N1bWUgdGhhdCBrZXJuZWwgaW1hZ2UgYW5kIGR0YiBpbWFn
-ZSBhcmUgZnJvbSB0aGUgc2FtZSB0cmVlLg0KLUhvbmd0YW8uDQo=
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+In this patch set we unified the Freescale pci/pcie initialization by
+changing the fsl_pci to a platform driver. 
+
+We also change the way of determining primary bus for fitting platform
+driver. The first two patches are the preparation for this.
+
+Thanks to Ben. For the first patch you can refer to the following link:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-June/098586.html
