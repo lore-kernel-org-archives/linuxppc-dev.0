@@ -1,22 +1,24 @@
-Return-Path: <B38951@freescale.com>
+Return-Path: <B04825@freescale.com>
 Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 02D812C01CE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2012 19:25:41 +1000 (EST)
-From: Jia Hongtao <B38951@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
- <benh@kernel.crashing.org>
-Subject: [PATCH V7 1/3] powerpc/pci: Make sure ISA IO base is not zero
-Date: Wed, 15 Aug 2012 16:57:04 +0800
-Message-ID: <1345021026-10886-2-git-send-email-B38951@freescale.com>
-In-Reply-To: <1345021026-10886-1-git-send-email-B38951@freescale.com>
-References: <1345021026-10886-1-git-send-email-B38951@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5AA812C008B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Aug 2012 21:11:12 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Subject: Re: [PATCH V6 3/3] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Wed, 15 Aug 2012 11:11:02 +0000
+Message-ID: <FF77A60F-B45F-4A0D-9134-31FBB0AEC446@freescale.com>
+References: <1344586776-3115-1-git-send-email-B38951@freescale.com>
+ <CAOZdJXW_mcx89v9hqp21D0baXYpqFtXLmo0VPtQTfMof9wn7UA@mail.gmail.com>,
+ <412C8208B4A0464FA894C5F0C278CD5D01A54861@039-SN1MPN1-002.039d.mgd.msft.net>
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A54861@039-SN1MPN1-002.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: B07421@freescale.com, b38951@freescale.com
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Aug 14, 2012, at 10:56 PM, "Jia Hongtao-B38951" <B38951@freescale.com> w=
+rote:
 
-Some platforms like QEMU treat 0 as an invalid address for ISA IO base.
-So we make sure that ISA IO base will never be zero. By functionality this
-is equivalent to assgin the first pci bus detected as a primary bus.
+>>=20
+>>>=20
+>>> +EXPORT_SYMBOL_GPL(mpc85xx_pci_err_probe);
+>>=20
+>> Make this EXPORT_SYMBOL.
+>>=20
+>=20
+> Hi Timur and Kumar:
+>=20
+> I'm a little confused.
+> Should we remove _GPL for upstream version too?
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Jia Hongtao <B38951@freescale.com>
----
- arch/powerpc/kernel/pci-common.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Yes.=20
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 0f75bd5..2a09aa5 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -734,7 +734,7 @@ void __devinit pci_process_bridge_OF_ranges(struct pci_controller *hose,
- 			hose->io_base_virt = ioremap(cpu_addr, size);
- 
- 			/* Expect trouble if pci_addr is not 0 */
--			if (primary)
-+			if (primary || !isa_io_base)
- 				isa_io_base =
- 					(unsigned long)hose->io_base_virt;
- #endif /* CONFIG_PPC32 */
--- 
-1.7.5.1
+
+>=20
+> -Hongtao.
