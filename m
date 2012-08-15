@@ -2,13 +2,13 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EC0672C009B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 07:35:59 +1000 (EST)
-Message-ID: <1345066551.11751.1.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 4EC292C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 07:37:04 +1000 (EST)
+Message-ID: <1345066616.11751.2.camel@pasglop>
 Subject: Re: therm_pm72 units, interface
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Jan Engelhardt <jengelh@inai.de>
-Date: Thu, 16 Aug 2012 07:35:51 +1000
+Date: Thu, 16 Aug 2012 07:36:56 +1000
 In-Reply-To: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
 References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
 Content-Type: text/plain; charset="UTF-8"
@@ -22,6 +22,15 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+BTW... On a somewhat related note ... if you happen to have a spare
+Xserve G5 PSU I'm interested :-) Mine died (well I -think- it's the
+PSU ... it just won't power up) which means I can't test on these things
+anymore (the new Windfarm RackMac driver is totally untested for
+example).
+
+Cheers,
+Ben.
 
 On Wed, 2012-08-15 at 19:53 +0200, Jan Engelhardt wrote:
 > About a week ago, an XServe G5 of mine started powering off more or less 
@@ -43,16 +52,7 @@ On Wed, 2012-08-15 at 19:53 +0200, Jan Engelhardt wrote:
 > (because there's no way the server room is 54°F=12°C cold).
 > 
 > Is there a way to obtain the trip points for the hardware?
-
-BTW. There's a new windfarm driver for these in recent kernels...
-
-Appart from that, the trip points are coming from a calibration EEPROM,
-you may want to tweak the driver to warn a bit earlier or that sort of
-things ? (Or just to print more things out ?)
-
-Cheers,
-Ben.
-
+> 
 > $ cd /sys/devices/temperature; grep '' *;
 > backside_fan_pwm:32
 > backside_temperature:54.000
