@@ -1,23 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2C5EA2C007F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 07:42:29 +1000 (EST)
-Message-ID: <1345066913.11751.4.camel@pasglop>
-Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Date: Thu, 16 Aug 2012 07:41:53 +1000
-In-Reply-To: <20120815165931.GA10059@redhat.com>
-References: <20120726051902.GA29466@in.ibm.com>
- <20120726052029.GB29466@in.ibm.com> <20120815165931.GA10059@redhat.com>
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DE29D2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 07:58:10 +1000 (EST)
+Message-ID: <502C1B64.8050505@freescale.com>
+Date: Wed, 15 Aug 2012 16:57:56 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH V7 1/3] powerpc/pci: Make sure ISA IO base is not zero
+References: <1345021026-10886-1-git-send-email-B38951@freescale.com>
+ <1345021026-10886-2-git-send-email-B38951@freescale.com>
+ <502BDC6B.4090800@freescale.com> <1345066379.11596.1.camel@pasglop>
+In-Reply-To: <1345066379.11596.1.camel@pasglop>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: peterz@infradead.org, lkml <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ Jia Hongtao <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,40 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-08-15 at 18:59 +0200, Oleg Nesterov wrote:
-> On 07/26, Ananth N Mavinakayanahalli wrote:
-> >
-> > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> >
-> > This is the port of uprobes to powerpc. Usage is similar to x86.
+On 08/15/2012 04:32 PM, Benjamin Herrenschmidt wrote:
+> On Wed, 2012-08-15 at 12:29 -0500, Scott Wood wrote:
+>>> ---
+>>>  arch/powerpc/kernel/pci-common.c |    2 +-
+>>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+>>> index 0f75bd5..2a09aa5 100644
+>>> --- a/arch/powerpc/kernel/pci-common.c
+>>> +++ b/arch/powerpc/kernel/pci-common.c
+>>> @@ -734,7 +734,7 @@ void __devinit pci_process_bridge_OF_ranges(struct pci_controller *hose,
+>>>  			hose->io_base_virt = ioremap(cpu_addr, size);
+>>>  
+>>>  			/* Expect trouble if pci_addr is not 0 */
+>>> -			if (primary)
+>>> +			if (primary || !isa_io_base)
+>>>  				isa_io_base =
+>>>  					(unsigned long)hose->io_base_virt;
+>>>  #endif /* CONFIG_PPC32 */
+>>>
+>>
+>> Didn't I already point out that this has problems when the primary bus
+>> is not the first to be probed?  If your answer is that you fix that in a
+>> later patch, that breaks bisectability.
 > 
-> I am just curious why this series was ignored by powerpc maintainers...
+> Is it though ? ie, we will override it with the real primary in the
+> above test, so it will only very temporarily be set to the "wrong" bus
+> no ? IE, the test will still trip on the actual "primary" if there's
+> one
 
-Because it arrived too late for the previous merge window considering my
-limited bandwidth for reviewing things and that nobody else seems to
-have reviewed it :-)
+Is there no lasting remnant of that temporary wrong isa_io_base?  We
+won't have I/O resources that were calculated relative to that, which
+stop working once isa_io_base changes?  Or does that happen later, after
+this function has been called on all buses (and would that continue to
+be the case if we change the PCI bus to a platform device)?
 
-It's still on track for the next one, and I'm hoping to dedicate most of
-next week going through patches & doing a powerpc -next.
-
-> Of course I can not review this code, I know nothing about powerpc,
-> but the patches look simple/straightforward.
-> 
-> Paul, Benjamin?
-> 
-> Just one question... Shouldn't arch_uprobe_pre_xol() forbid to probe
-> UPROBE_SWBP_INSN (at least) ?
-> 
-> (I assume that emulate_step() can't handle this case but of course I
->  do not understand arch/powerpc/lib/sstep.c)
-> 
-> Note that uprobe_pre_sstep_notifier() sets utask->state = UTASK_BP_HIT
-> without any checks. This doesn't look right if it was UTASK_SSTEP...
-> 
-> But again, I do not know what powepc will actually do if we try to
-> single-step over UPROBE_SWBP_INSN.
-
-Ananth ?
-
-Cheers,
-Ben.
+-Scott
