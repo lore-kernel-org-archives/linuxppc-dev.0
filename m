@@ -1,22 +1,21 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DE29D2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 07:58:10 +1000 (EST)
-Message-ID: <502C1B64.8050505@freescale.com>
-Date: Wed, 15 Aug 2012 16:57:56 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EB3D12C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 08:43:10 +1000 (EST)
+Message-ID: <1345070575.11751.8.camel@pasglop>
 Subject: Re: [PATCH V7 1/3] powerpc/pci: Make sure ISA IO base is not zero
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Scott Wood <scottwood@freescale.com>
+Date: Thu, 16 Aug 2012 08:42:55 +1000
+In-Reply-To: <502C1B64.8050505@freescale.com>
 References: <1345021026-10886-1-git-send-email-B38951@freescale.com>
  <1345021026-10886-2-git-send-email-B38951@freescale.com>
  <502BDC6B.4090800@freescale.com> <1345066379.11596.1.camel@pasglop>
-In-Reply-To: <1345066379.11596.1.camel@pasglop>
+ <502C1B64.8050505@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
  Jia Hongtao <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,40 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/15/2012 04:32 PM, Benjamin Herrenschmidt wrote:
-> On Wed, 2012-08-15 at 12:29 -0500, Scott Wood wrote:
->>> ---
->>>  arch/powerpc/kernel/pci-common.c |    2 +-
->>>  1 files changed, 1 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->>> index 0f75bd5..2a09aa5 100644
->>> --- a/arch/powerpc/kernel/pci-common.c
->>> +++ b/arch/powerpc/kernel/pci-common.c
->>> @@ -734,7 +734,7 @@ void __devinit pci_process_bridge_OF_ranges(struct pci_controller *hose,
->>>  			hose->io_base_virt = ioremap(cpu_addr, size);
->>>  
->>>  			/* Expect trouble if pci_addr is not 0 */
->>> -			if (primary)
->>> +			if (primary || !isa_io_base)
->>>  				isa_io_base =
->>>  					(unsigned long)hose->io_base_virt;
->>>  #endif /* CONFIG_PPC32 */
->>>
->>
->> Didn't I already point out that this has problems when the primary bus
->> is not the first to be probed?  If your answer is that you fix that in a
->> later patch, that breaks bisectability.
-> 
-> Is it though ? ie, we will override it with the real primary in the
-> above test, so it will only very temporarily be set to the "wrong" bus
-> no ? IE, the test will still trip on the actual "primary" if there's
-> one
+On Wed, 2012-08-15 at 16:57 -0500, Scott Wood wrote:
+> Is there no lasting remnant of that temporary wrong isa_io_base?  We
+> won't have I/O resources that were calculated relative to that, which
+> stop working once isa_io_base changes?  Or does that happen later, after
+> this function has been called on all buses (and would that continue to
+> be the case if we change the PCI bus to a platform device)?
 
-Is there no lasting remnant of that temporary wrong isa_io_base?  We
-won't have I/O resources that were calculated relative to that, which
-stop working once isa_io_base changes?  Or does that happen later, after
-this function has been called on all buses (and would that continue to
-be the case if we change the PCI bus to a platform device)?
+If you continue creating your PCI busses all at once early on you'll be
+fine. The platform device business is going to break that (and other
+things as well btw, such as pci_final_fixup).
 
--Scott
+Maybe it's time to contemplate doing something more like ppc64 and
+reserve a piece of virtual address space (I know there isn't much, so
+make it 64k per bus max) and just map the busses in there with the first
+64k being reserved for the ISA stuff if it exists ?
+
+Cheers,
+Ben.
