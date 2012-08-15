@@ -1,20 +1,21 @@
-Return-Path: <B32579@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7B61E2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 01:14:14 +1000 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc:Update Integrated Flash controller device tree
- bindings
-Date: Wed, 15 Aug 2012 20:43:52 +0530
-Message-ID: <1345043632-28535-1-git-send-email-prabhakar@freescale.com>
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id C45E02C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 03:03:21 +1000 (EST)
+Date: Wed, 15 Aug 2012 18:59:31 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
+Message-ID: <20120815165931.GA10059@redhat.com>
+References: <20120726051902.GA29466@in.ibm.com>
+ <20120726052029.GB29466@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Prabhakar Kushwaha <prabhakar@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120726052029.GB29466@in.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
+ lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Freescale's Integrated Flash controller (IFC) may have one or two
-interrupts. In case of single interrupt line, it will cover all IFC
-interrupts.
+On 07/26, Ananth N Mavinakayanahalli wrote:
+>
+> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+>
+> This is the port of uprobes to powerpc. Usage is similar to x86.
 
-Update this information in IFC device tree bindings
+I am just curious why this series was ignored by powerpc maintainers...
 
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
-Base upon git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-Branch next
+Of course I can not review this code, I know nothing about powerpc,
+but the patches look simple/straightforward.
 
- .../devicetree/bindings/powerpc/fsl/ifc.txt        |    9 ++++++---
- 1 file changed, 6 insertions(+), 3 deletions(-)
+Paul, Benjamin?
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/ifc.txt b/Documentation/devicetree/bindings/powerpc/fsl/ifc.txt
-index 939a26d..88c7a26 100644
---- a/Documentation/devicetree/bindings/powerpc/fsl/ifc.txt
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/ifc.txt
-@@ -12,9 +12,12 @@ Properties:
- - #size-cells : Either one or two, depending on how large each chipselect
-                 can be.
- - reg : Offset and length of the register set for the device
--- interrupts : IFC has two interrupts. The first one is the "common"
--               interrupt(CM_EVTER_STAT), and second is the NAND interrupt
--               (NAND_EVTER_STAT).
-+- interrupts: IFC may have one or two interrupts.  If two interrupt
-+              specifiers are present, the first is the "common"
-+              interrupt (CM_EVTER_STAT), and the second is the NAND
-+              interrupt (NAND_EVTER_STAT).  If there is only one,
-+              that interrupt reports both types of event.
-+
- 
- - ranges : Each range corresponds to a single chipselect, and covers
-            the entire access window as configured.
--- 
-1.7.9.5
+
+
+
+
+Just one question... Shouldn't arch_uprobe_pre_xol() forbid to probe
+UPROBE_SWBP_INSN (at least) ?
+
+(I assume that emulate_step() can't handle this case but of course I
+ do not understand arch/powerpc/lib/sstep.c)
+
+Note that uprobe_pre_sstep_notifier() sets utask->state = UTASK_BP_HIT
+without any checks. This doesn't look right if it was UTASK_SSTEP...
+
+But again, I do not know what powepc will actually do if we try to
+single-step over UPROBE_SWBP_INSN.
+
+Oleg.
