@@ -2,21 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CC0AE2C0124
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 07:33:15 +1000 (EST)
-Message-ID: <1345066379.11596.1.camel@pasglop>
-Subject: Re: [PATCH V7 1/3] powerpc/pci: Make sure ISA IO base is not zero
+ by ozlabs.org (Postfix) with ESMTPS id EC0672C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 07:35:59 +1000 (EST)
+Message-ID: <1345066551.11751.1.camel@pasglop>
+Subject: Re: therm_pm72 units, interface
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Thu, 16 Aug 2012 07:32:59 +1000
-In-Reply-To: <502BDC6B.4090800@freescale.com>
-References: <1345021026-10886-1-git-send-email-B38951@freescale.com>
- <1345021026-10886-2-git-send-email-B38951@freescale.com>
- <502BDC6B.4090800@freescale.com>
+To: Jan Engelhardt <jengelh@inai.de>
+Date: Thu, 16 Aug 2012 07:35:51 +1000
+In-Reply-To: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
+References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Jia Hongtao <B38951@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,34 +23,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-08-15 at 12:29 -0500, Scott Wood wrote:
-> > ---
-> >  arch/powerpc/kernel/pci-common.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> > index 0f75bd5..2a09aa5 100644
-> > --- a/arch/powerpc/kernel/pci-common.c
-> > +++ b/arch/powerpc/kernel/pci-common.c
-> > @@ -734,7 +734,7 @@ void __devinit pci_process_bridge_OF_ranges(struct pci_controller *hose,
-> >  			hose->io_base_virt = ioremap(cpu_addr, size);
-> >  
-> >  			/* Expect trouble if pci_addr is not 0 */
-> > -			if (primary)
-> > +			if (primary || !isa_io_base)
-> >  				isa_io_base =
-> >  					(unsigned long)hose->io_base_virt;
-> >  #endif /* CONFIG_PPC32 */
-> > 
+On Wed, 2012-08-15 at 19:53 +0200, Jan Engelhardt wrote:
+> About a week ago, an XServe G5 of mine started powering off more or less 
+> randomly (after 1 hour, chances were good it for it to occur). A 
+> problematic UPS has already been cut from the loop, and today I cleaned 
+> the machine inside out with pressurized air. So far it runs, for now at 
+> least, with a load >= 2.0, but I am keeping an eye on whether this is a 
+> thermal issue.
 > 
-> Didn't I already point out that this has problems when the primary bus
-> is not the first to be probed?  If your answer is that you fix that in a
-> later patch, that breaks bisectability.
+> To that end, I wanted to obtain some statistics. Despite 
+> sensors-detect(8) loads lm87.ko for me, running sensors(1) shows no 
+> sensors. Oddly enough, I found a "kfand" process running that seems to 
+> stem from therm_pm72.ko, which brings me to the sysfs files.
+> 
+> Is there a reason sensors(1) is not supported for Rackmac3,1?
+> 
+> Certain sysfs files have a value with an unknown unit.
+> "current" is likely in Ampere, temperature must be in Celsius
+> (because there's no way the server room is 54°F=12°C cold).
+> 
+> Is there a way to obtain the trip points for the hardware?
 
-Is it though ? ie, we will override it with the real primary in the
-above test, so it will only very temporarily be set to the "wrong" bus
-no ? IE, the test will still trip on the actual "primary" if there's
-one.
+BTW. There's a new windfarm driver for these in recent kernels...
+
+Appart from that, the trip points are coming from a calibration EEPROM,
+you may want to tweak the driver to warn a bit earlier or that sort of
+things ? (Or just to print more things out ?)
 
 Cheers,
 Ben.
+
+> $ cd /sys/devices/temperature; grep '' *;
+> backside_fan_pwm:32
+> backside_temperature:54.000
+> cpu0_current:34.423
+> cpu0_exhaust_fan_rpm:5340
+> cpu0_intake_fan_rpm:5340
+> cpu0_temperature:72.889
+> cpu0_voltage:1.252
+> cpu1_current:34.179
+> cpu1_exhaust_fan_rpm:4584
+> cpu1_intake_fan_rpm:4584
+> cpu1_temperature:68.526
+> cpu1_voltage:1.259
+> dimms_temperature:53.000
+> grep: driver: Er en filkatalog
+> modalias:platform:temperature
+> grep: power: Er en filkatalog
+> slots_fan_pwm:20
+> slots_temperature:38.500
+> grep: subsystem: Er en filkatalog
+> uevent:DRIVER=temperature
+> uevent:OF_NAME=fan
+> uevent:OF_FULLNAME=/u3@0,f8000000/i2c@f8001000/fan@15e
+> uevent:OF_TYPE=fcu
+> uevent:OF_COMPATIBLE_0=fcu
+> uevent:OF_COMPATIBLE_N=1
+> uevent:MODALIAS=of:NfanTfcuCfcu
