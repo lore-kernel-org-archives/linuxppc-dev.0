@@ -1,20 +1,19 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id 217422C0096
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 23:16:22 +1000 (EST)
-Message-ID: <502CF2A0.8080109@c-s.fr>
-Date: Thu, 16 Aug 2012 15:16:16 +0200
-From: leroy christophe <christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Powerpc 8xx CPM_UART delay in receive
-References: <201208141426.q7EEQSPc003956@localhost.localdomain>
- <20120814155227.018988da@pyramind.ukuu.org.uk>
-In-Reply-To: <20120814155227.018988da@pyramind.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
- linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Alan Cox <alan@linux.intel.com>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1345125747.20062.12.camel@concordia>
+Subject: Re: powerpc/perf: hw breakpoints return ENOSPC
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Fri, 17 Aug 2012 00:02:27 +1000
+In-Reply-To: <1345117498.29668.23.camel@twins>
+References: <28857.1345091034@neuling.org>
+ <1345102812.31459.114.camel@twins> <20344.1345115849@neuling.org>
+ <1345117498.29668.23.camel@twins>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, K Prasad <prasad@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2012-08-16 at 13:44 +0200, Peter Zijlstra wrote:
+> On Thu, 2012-08-16 at 21:17 +1000, Michael Neuling wrote:
+> > Peter,
+> > 
+> > > > On this second syscall, fetch_bp_busy_slots() sets slots.pinned to be 1,
+> > > > despite there being no breakpoint on this CPU.  This is because the call
+> > > > the task_bp_pinned, checks all CPUs, rather than just the current CPU.
+> > > > POWER7 only has one hardware breakpoint per CPU (ie. HBP_NUM=1), so we
+> > > > return ENOSPC.
+> > > 
+> > > I think this comes from the ptrace legacy, we register a breakpoint on
+> > > all cpus because when we migrate a task it cannot fail to migrate the
+> > > breakpoint.
+> > > 
+> > > Its one of the things I hate most about the hwbp stuff as it relates to
+> > > perf.
+> > > 
+> > > Frederic knows more...
+> > 
+> > Maybe I should wait for Frederic to respond but I'm not sure I
+> > understand what you're saying.
+> > 
+> > I can see how using ptrace hw breakpoints and perf hw breakpoints at the
+> > same time could be a problem, but I'm not sure how this would stop it.
+> 
+> ptrace uses perf for hwbp support so we're stuck with all kinds of
+> stupid ptrace constraints.. or somesuch.
+> 
+> > Are you saying that we need to keep at least 1 slot free at all times,
+> > so that we can use it for ptrace?
+> 
+> No, I'm saying perf-hwbp is weird because of ptrace, maybe the ptrace
+> weirdness shouldn't live in perf-hwpb but in the ptrace-perf glue
+> however..
 
-Le 14/08/2012 16:52, Alan Cox a écrit :
-> On Tue, 14 Aug 2012 16:26:28 +0200
-> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->
->> Hello,
->>
->> I'm not sure who to address this Patch to either
->>
->> It fixes a delay issue with CPM UART driver on Powerpc MPC8xx.
->> The problem is that with the actual code, the driver waits 32 IDLE patterns before returning the received data to the upper level. It means for instance about 1 second at 300 bauds.
->> This fix limits to one byte the waiting period.
-> Take a look how the 8250 does it - I think you want to set the value
-> based upon the data rate. Your patch will break it for everyone doing
-> high seed I/O.
->
-> Alan
->
-I'm not sure I understand what you mean. As far as I can see 8250/16550 
-is working a bit different, as it is based on a fifo and triggers an 
-interrupt as soon as a given number of bytes is received. I also see 
-that in case this amount is not reached, there is a receive-timeout 
-which goes on after no byte is received for a duration of more than 4 bytes.
+But how else would it work, even if ptrace wasn't in the picture?
 
-The PowerPC CPM is working differently. It doesn't use a fifo but 
-buffers. Buffers are handed to the microprocessor only when they are 
-full or after a timeout period which is adjustable. In the driver, the 
-buffers are configured with a size of 32 bytes. And the timeout is set 
-to the size of the buffer. That is this timeout that I'm reducing to 1 
-byte in my proposed patch. I can't see what it would break for high 
-speed I/O.
+You do want to guarantee that the task will always be subject to the
+breakpoint, even if it moves cpus. So is there any way to guarantee that
+other than reserving a breakpoint slot on every cpu ahead of time?
 
-Christophe
+Or can a hwbp event go into error state if it can't be installed on the
+new cpu, like a pinned event does? I can't see any code that does that.
+
+cheers
