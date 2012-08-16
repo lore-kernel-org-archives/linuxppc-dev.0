@@ -1,14 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1345125747.20062.12.camel@concordia>
+Return-Path: <a.p.zijlstra@chello.nl>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BEAB22C007E
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2012 00:15:31 +1000 (EST)
+Message-ID: <1345126502.29668.36.camel@twins>
 Subject: Re: powerpc/perf: hw breakpoints return ENOSPC
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Fri, 17 Aug 2012 00:02:27 +1000
-In-Reply-To: <1345117498.29668.23.camel@twins>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 16 Aug 2012 16:15:02 +0200
+In-Reply-To: <1345125747.20062.12.camel@concordia>
 References: <28857.1345091034@neuling.org>
  <1345102812.31459.114.camel@twins> <20344.1345115849@neuling.org>
- <1345117498.29668.23.camel@twins>
-Content-Type: text/plain; charset="UTF-8"
+ <1345117498.29668.23.camel@twins> <1345125747.20062.12.camel@concordia>
+Content-Type: text/plain; charset="ISO-8859-1"
 Mime-Version: 1.0
 Cc: Michael Neuling <mikey@neuling.org>,
  Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
@@ -23,48 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-08-16 at 13:44 +0200, Peter Zijlstra wrote:
-> On Thu, 2012-08-16 at 21:17 +1000, Michael Neuling wrote:
-> > Peter,
-> > 
-> > > > On this second syscall, fetch_bp_busy_slots() sets slots.pinned to be 1,
-> > > > despite there being no breakpoint on this CPU.  This is because the call
-> > > > the task_bp_pinned, checks all CPUs, rather than just the current CPU.
-> > > > POWER7 only has one hardware breakpoint per CPU (ie. HBP_NUM=1), so we
-> > > > return ENOSPC.
-> > > 
-> > > I think this comes from the ptrace legacy, we register a breakpoint on
-> > > all cpus because when we migrate a task it cannot fail to migrate the
-> > > breakpoint.
-> > > 
-> > > Its one of the things I hate most about the hwbp stuff as it relates to
-> > > perf.
-> > > 
-> > > Frederic knows more...
-> > 
-> > Maybe I should wait for Frederic to respond but I'm not sure I
-> > understand what you're saying.
-> > 
-> > I can see how using ptrace hw breakpoints and perf hw breakpoints at the
-> > same time could be a problem, but I'm not sure how this would stop it.
-> 
-> ptrace uses perf for hwbp support so we're stuck with all kinds of
-> stupid ptrace constraints.. or somesuch.
-> 
-> > Are you saying that we need to keep at least 1 slot free at all times,
-> > so that we can use it for ptrace?
-> 
-> No, I'm saying perf-hwbp is weird because of ptrace, maybe the ptrace
-> weirdness shouldn't live in perf-hwpb but in the ptrace-perf glue
-> however..
+On Fri, 2012-08-17 at 00:02 +1000, Michael Ellerman wrote:
+> You do want to guarantee that the task will always be subject to the
+> breakpoint, even if it moves cpus. So is there any way to guarantee that
+> other than reserving a breakpoint slot on every cpu ahead of time?=20
 
-But how else would it work, even if ptrace wasn't in the picture?
+That's not how regular perf works.. regular perf can overload hw
+resources at will and stuff is strictly per-cpu.
 
-You do want to guarantee that the task will always be subject to the
-breakpoint, even if it moves cpus. So is there any way to guarantee that
-other than reserving a breakpoint slot on every cpu ahead of time?
+So the regular perf record has perf_event_attr::inherit enabled by
+default, this will result in it creating a per-task-per-cpu event for
+each cpu and this will succeed because there's no strict reservation to
+avoid/detect starvation against perf_event_attr::pinned events.
 
-Or can a hwbp event go into error state if it can't be installed on the
-new cpu, like a pinned event does? I can't see any code that does that.
+For regular (!pinned) events, we'll RR the created events on the
+available hardware resources.
 
-cheers
+HWBP does things completely different and reserves a slot over all CPUs
+for everything, thus stuff completely falls apart.
