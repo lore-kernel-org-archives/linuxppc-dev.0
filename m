@@ -1,19 +1,11 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C05852C009B
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Aug 2012 17:40:29 +1000 (EST)
-Message-ID: <1345102812.31459.114.camel@twins>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Subject: Re: powerpc/perf: hw breakpoints return ENOSPC
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Michael Neuling <mikey@neuling.org>
-Date: Thu, 16 Aug 2012 09:40:12 +0200
-In-Reply-To: <28857.1345091034@neuling.org>
-References: <28857.1345091034@neuling.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
+In-reply-to: <1345102812.31459.114.camel@twins>
+References: <28857.1345091034@neuling.org> <1345102812.31459.114.camel@twins>
+Date: Thu, 16 Aug 2012 21:17:29 +1000
+Message-ID: <20344.1345115849@neuling.org>
 Cc: Ingo Molnar <mingo@kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>,
  K Prasad <prasad@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@ozlabs.org
@@ -26,19 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-08-16 at 14:23 +1000, Michael Neuling wrote:
->=20
-> On this second syscall, fetch_bp_busy_slots() sets slots.pinned to be 1,
-> despite there being no breakpoint on this CPU.  This is because the call
-> the task_bp_pinned, checks all CPUs, rather than just the current CPU.
-> POWER7 only has one hardware breakpoint per CPU (ie. HBP_NUM=3D1), so we
-> return ENOSPC.
+Peter,
 
-I think this comes from the ptrace legacy, we register a breakpoint on
-all cpus because when we migrate a task it cannot fail to migrate the
-breakpoint.
+> > On this second syscall, fetch_bp_busy_slots() sets slots.pinned to be 1,
+> > despite there being no breakpoint on this CPU.  This is because the call
+> > the task_bp_pinned, checks all CPUs, rather than just the current CPU.
+> > POWER7 only has one hardware breakpoint per CPU (ie. HBP_NUM=1), so we
+> > return ENOSPC.
+> 
+> I think this comes from the ptrace legacy, we register a breakpoint on
+> all cpus because when we migrate a task it cannot fail to migrate the
+> breakpoint.
+> 
+> Its one of the things I hate most about the hwbp stuff as it relates to
+> perf.
+> 
+> Frederic knows more...
 
-Its one of the things I hate most about the hwbp stuff as it relates to
-perf.
+Maybe I should wait for Frederic to respond but I'm not sure I
+understand what you're saying.
 
-Frederic knows more...
+I can see how using ptrace hw breakpoints and perf hw breakpoints at the
+same time could be a problem, but I'm not sure how this would stop it.
+
+Are you saying that we need to keep at least 1 slot free at all times,
+so that we can use it for ptrace?
+
+Is "perf record -e mem:0x10000000 true" ever going to be able to work on
+POWER7 with only one hw breakpoint resource per CPU?  
+
+Thanks,
+Mikey
