@@ -1,27 +1,20 @@
-Return-Path: <kas@linux.intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by ozlabs.org (Postfix) with ESMTP id 576292C0222
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:16:29 +1000 (EST)
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-To: linux-mm@kvack.org
-Subject: [PATCH v3 6/7] mm: make clear_huge_page cache clear only around the
- fault address
-Date: Thu, 16 Aug 2012 18:15:53 +0300
-Message-Id: <1345130154-9602-7-git-send-email-kirill.shutemov@linux.intel.com>
-In-Reply-To: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
-References: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
- Jan Beulich <jbeulich@novell.com>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>,
- Andi Kleen <ak@linux.intel.com>, Robert Richter <robert.richter@amd.com>,
- x86@kernel.org, Hugh Dickins <hughd@google.com>,
- Ingo Molnar <mingo@redhat.com>, Mel Gorman <mgorman@suse.de>,
- Alex Shi <alex.shu@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
- Tim Chen <tim.c.chen@linux.intel.com>, linux-kernel@vger.kernel.org,
- Andy Lutomirski <luto@amacapital.net>, Johannes Weiner <hannes@cmpxchg.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Return-Path: <jengelh@inai.de>
+Received: from seven.medozas.de (seven.medozas.de [IPv6:2a01:4f8:161:ffa::1])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F172E2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:24:55 +1000 (EST)
+Date: Thu, 16 Aug 2012 17:24:49 +0200 (CEST)
+From: Jan Engelhardt <jengelh@inai.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: therm_pm72 units, interface
+In-Reply-To: <1345066551.11751.1.camel@pasglop>
+Message-ID: <alpine.LNX.2.01.1208161718210.8111@frira.zrqbmnf.qr>
+References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
+ <1345066551.11751.1.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,87 +24,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andi Kleen <ak@linux.intel.com>
 
-Clearing a 2MB huge page will typically blow away several levels
-of CPU caches. To avoid this only cache clear the 4K area
-around the fault address and use a cache avoiding clears
-for the rest of the 2MB area.
+On Wednesday 2012-08-15 23:35, Benjamin Herrenschmidt wrote:
+>> XServe G5 of mine started powering off more or less 
+>> randomly
+>
+>BTW. There's a new windfarm driver for these in recent kernels...
+>
+>Appart from that, the trip points are coming from a calibration EEPROM,
+>you may want to tweak the driver to warn a bit earlier or that sort of
+>things ? (Or just to print more things out ?)
 
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
----
- mm/memory.c |   34 +++++++++++++++++++++++++++++-----
- 1 files changed, 29 insertions(+), 5 deletions(-)
+If you have more things to print/offer via sysfs, I'm all for it.
 
-diff --git a/mm/memory.c b/mm/memory.c
-index dfc179b..d4626b9 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3969,18 +3969,34 @@ EXPORT_SYMBOL(might_fault);
- #endif
- 
- #if defined(CONFIG_TRANSPARENT_HUGEPAGE) || defined(CONFIG_HUGETLBFS)
-+
-+#ifndef ARCH_HAS_USER_NOCACHE
-+#define ARCH_HAS_USER_NOCACHE 0
-+#endif
-+
-+#if ARCH_HAS_USER_NOCACHE == 0
-+#define clear_user_highpage_nocache clear_user_highpage
-+#endif
-+
- static void clear_gigantic_page(struct page *page,
--				unsigned long addr,
--				unsigned int pages_per_huge_page)
-+		unsigned long haddr, unsigned long fault_address,
-+		unsigned int pages_per_huge_page)
- {
- 	int i;
- 	struct page *p = page;
-+	unsigned long vaddr;
-+	int target = (fault_address - haddr) >> PAGE_SHIFT;
- 
- 	might_sleep();
-+	vaddr = haddr;
- 	for (i = 0; i < pages_per_huge_page;
- 	     i++, p = mem_map_next(p, page, i)) {
- 		cond_resched();
--		clear_user_highpage(p, addr + i * PAGE_SIZE);
-+		vaddr = haddr + i*PAGE_SIZE;
-+		if (!ARCH_HAS_USER_NOCACHE  || i == target)
-+			clear_user_highpage(p, vaddr);
-+		else
-+			clear_user_highpage_nocache(p, vaddr);
- 	}
- }
- void clear_huge_page(struct page *page,
-@@ -3988,16 +4004,24 @@ void clear_huge_page(struct page *page,
- 		     unsigned int pages_per_huge_page)
- {
- 	int i;
-+	unsigned long vaddr;
-+	int target = (fault_address - haddr) >> PAGE_SHIFT;
- 
- 	if (unlikely(pages_per_huge_page > MAX_ORDER_NR_PAGES)) {
--		clear_gigantic_page(page, haddr, pages_per_huge_page);
-+		clear_gigantic_page(page, haddr, fault_address,
-+				pages_per_huge_page);
- 		return;
- 	}
- 
- 	might_sleep();
-+	vaddr = haddr;
- 	for (i = 0; i < pages_per_huge_page; i++) {
- 		cond_resched();
--		clear_user_highpage(page + i, haddr + i * PAGE_SIZE);
-+		vaddr = haddr + i*PAGE_SIZE;
-+		if (!ARCH_HAS_USER_NOCACHE || i == target)
-+			clear_user_highpage(page + i, vaddr);
-+		else
-+			clear_user_highpage_nocache(page + i, vaddr);
- 	}
- }
- 
--- 
-1.7.7.6
+The XsG5 really has (by looking into the casing): 1 PCI Fan,
+6 center fans, 1 PSU intake and 1 PSU outblow fan (this last one
+seems rather slow-turning, but maybe that's normal).
+It is not quite clear which is which in the sysfs display.
+
+What I did figure out: at the PROM, fans run at what seems
+to be full speed (some 8000-9000 rpm?). Once Linux and therm_pm72
+are loaded, the fans settle down towards 4000 rpm, and if the machine
+has warmed up, that is then when it powers off. (The kernel is indeed
+3.4. I now need to figure out how to place a new kernel on it without
+it powering off inbetween.)
+
+>> $ cd /sys/devices/temperature; grep '' *;
+>> backside_fan_pwm:32
+>> backside_temperature:54.000
+>> cpu0_current:34.423
+>> cpu0_exhaust_fan_rpm:5340
+>> cpu0_intake_fan_rpm:5340
+>> cpu0_temperature:72.889
+>> cpu0_voltage:1.252
+>> cpu1_current:34.179
+>> cpu1_exhaust_fan_rpm:4584
+>> cpu1_intake_fan_rpm:4584
+>> cpu1_temperature:68.526
+>> cpu1_voltage:1.259
+>> dimms_temperature:53.000
+>> grep: driver: Er en filkatalog
+>> modalias:platform:temperature
+>> grep: power: Er en filkatalog
+>> slots_fan_pwm:20
+>> slots_temperature:38.500
+>> grep: subsystem: Er en filkatalog
+>> uevent:DRIVER=temperature
+>> uevent:OF_NAME=fan
+>> uevent:OF_FULLNAME=/u3@0,f8000000/i2c@f8001000/fan@15e
+>> uevent:OF_TYPE=fcu
+>> uevent:OF_COMPATIBLE_0=fcu
+>> uevent:OF_COMPATIBLE_N=1
+>> uevent:MODALIAS=of:NfanTfcuCfcu
