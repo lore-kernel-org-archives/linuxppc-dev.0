@@ -1,13 +1,41 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: K Prasad <prasad@linux.vnet.ibm.com>
+Return-Path: <ananth@in.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 97EA02C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 15:00:57 +1000 (EST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
+ Thu, 16 Aug 2012 01:00:54 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 95EC26E8045
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 01:00:52 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q7G50pwg068742
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 01:00:52 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q7G50T6w031219
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 02:00:30 -0300
+Date: Thu, 16 Aug 2012 10:30:30 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
+Message-ID: <20120816050030.GA12060@in.ibm.com>
+References: <20120726051902.GA29466@in.ibm.com>
+ <20120726052029.GB29466@in.ibm.com> <20120815165931.GA10059@redhat.com>
+ <1345066913.11751.4.camel@pasglop>
 MIME-Version: 1.0
-Subject: powerpc/perf: hw breakpoints return ENOSPC
-Date: Thu, 16 Aug 2012 14:23:54 +1000
-Message-ID: <28857.1345091034@neuling.org>
-Cc: Ingo Molnar <mingo@kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1345066913.11751.4.camel@pasglop>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
+ Oleg Nesterov <oleg@redhat.com>, lkml <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Ingo Molnar <mingo@elte.hu>, linuxppc-dev@lists.ozlabs.org
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,90 +45,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Aug 16, 2012 at 07:41:53AM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2012-08-15 at 18:59 +0200, Oleg Nesterov wrote:
+> > On 07/26, Ananth N Mavinakayanahalli wrote:
+> > >
+> > > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> > >
+> > > This is the port of uprobes to powerpc. Usage is similar to x86.
+> > 
+> > I am just curious why this series was ignored by powerpc maintainers...
+> 
+> Because it arrived too late for the previous merge window considering my
+> limited bandwidth for reviewing things and that nobody else seems to
+> have reviewed it :-)
+> 
+> It's still on track for the next one, and I'm hoping to dedicate most of
+> next week going through patches & doing a powerpc -next.
 
-I've been trying to get hardware breakpoints with perf to work on POWER7
-but I'm getting the following:
+Thanks Ben!
 
-  % perf record -e mem:0x10000000 true
+> > Of course I can not review this code, I know nothing about powerpc,
+> > but the patches look simple/straightforward.
+> > 
+> > Paul, Benjamin?
+> > 
+> > Just one question... Shouldn't arch_uprobe_pre_xol() forbid to probe
+> > UPROBE_SWBP_INSN (at least) ?
+> > 
+> > (I assume that emulate_step() can't handle this case but of course I
+> >  do not understand arch/powerpc/lib/sstep.c)
+> > 
+> > Note that uprobe_pre_sstep_notifier() sets utask->state = UTASK_BP_HIT
+> > without any checks. This doesn't look right if it was UTASK_SSTEP...
+> > 
+> > But again, I do not know what powepc will actually do if we try to
+> > single-step over UPROBE_SWBP_INSN.
+> 
+> Ananth ?
 
-    Error: sys_perf_event_open() syscall returned with 28 (No space left on device).  /bin/dmesg may provide additional information.
+set_swbp() will return -EEXIST to install_breakpoint if we are trying to
+put a breakpoint on UPROBE_SWBP_INSN. So, the arch agnostic code itself
+takes care of this case... or am I missing something?
 
-    Fatal: No CONFIG_PERF_EVENTS=y kernel support configured?
+However, I see that we need a powerpc specific is_swbp_insn()
+implementation since we will have to take care of all the trap variants.
 
-  true: Terminated
+I will need to update the patches based on changes being made by Oleg
+and Sebastien for the single-step issues. Will incorporate the powerpc
+specific is_swbp_insn() change along with the changes required for the
+single-step part and send out the next version.
 
-(FWIW adding -a and it works fine)
-
-Debugging it seems that __reserve_bp_slot() is returning ENOSPC because
-it thinks there are no free breakpoint slots on this CPU.
-
-I have a 2 CPUs, so perf userspace is doing two perf_event_open syscalls
-to add a counter to each CPU [1].  The first syscall succeeds but the
-second is failing.
-
-On this second syscall, fetch_bp_busy_slots() sets slots.pinned to be 1,
-despite there being no breakpoint on this CPU.  This is because the call
-the task_bp_pinned, checks all CPUs, rather than just the current CPU.
-POWER7 only has one hardware breakpoint per CPU (ie. HBP_NUM=1), so we
-return ENOSPC.
-
-The following patch fixes this by checking the associated CPU for each
-breakpoint in task_bp_pinned.  I'm not familiar with this code, so it's
-provided as a reference to the above issue.
-
-Mikey
-
-1. not sure why it doesn't just do one syscall and specify all CPUs, but
-that's another issue.  Using two syscalls should work.
-
-diff --git a/kernel/events/hw_breakpoint.c b/kernel/events/hw_breakpoint.c
-index bb38c4d..e092daa 100644
---- a/kernel/events/hw_breakpoint.c
-+++ b/kernel/events/hw_breakpoint.c
-@@ -111,14 +111,16 @@ static unsigned int max_task_bp_pinned(int cpu, enum bp_type_idx type)
-  * Count the number of breakpoints of the same type and same task.
-  * The given event must be not on the list.
-  */
--static int task_bp_pinned(struct perf_event *bp, enum bp_type_idx type)
-+static int task_bp_pinned(int cpu, struct perf_event *bp, enum bp_type_idx type)
- {
- 	struct task_struct *tsk = bp->hw.bp_target;
- 	struct perf_event *iter;
- 	int count = 0;
- 
- 	list_for_each_entry(iter, &bp_task_head, hw.bp_list) {
--		if (iter->hw.bp_target == tsk && find_slot_idx(iter) == type)
-+		if (iter->hw.bp_target == tsk &&
-+		    find_slot_idx(iter) == type &&
-+		    cpu == iter->cpu)
- 			count += hw_breakpoint_weight(iter);
- 	}
- 
-@@ -141,7 +143,7 @@ fetch_bp_busy_slots(struct bp_busy_slots *slots, struct perf_event *bp,
- 		if (!tsk)
- 			slots->pinned += max_task_bp_pinned(cpu, type);
- 		else
--			slots->pinned += task_bp_pinned(bp, type);
-+			slots->pinned += task_bp_pinned(cpu, bp, type);
- 		slots->flexible = per_cpu(nr_bp_flexible[type], cpu);
- 
- 		return;
-@@ -154,7 +156,7 @@ fetch_bp_busy_slots(struct bp_busy_slots *slots, struct perf_event *bp,
- 		if (!tsk)
- 			nr += max_task_bp_pinned(cpu, type);
- 		else
--			nr += task_bp_pinned(bp, type);
-+			nr += task_bp_pinned(cpu, bp, type);
- 
- 		if (nr > slots->pinned)
- 			slots->pinned = nr;
-@@ -188,7 +190,7 @@ static void toggle_bp_task_slot(struct perf_event *bp, int cpu, bool enable,
- 	int old_idx = 0;
- 	int idx = 0;
- 
--	old_count = task_bp_pinned(bp, type);
-+	old_count = task_bp_pinned(cpu, bp, type);
- 	old_idx = old_count - 1;
- 	idx = old_idx + weight;
- 
+Ananth
