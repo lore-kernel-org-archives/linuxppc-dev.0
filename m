@@ -1,25 +1,23 @@
-Return-Path: <a.p.zijlstra@chello.nl>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (lxorguk.ukuu.org.uk [81.2.110.251])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BEAB22C007E
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2012 00:15:31 +1000 (EST)
-Message-ID: <1345126502.29668.36.camel@twins>
-Subject: Re: powerpc/perf: hw breakpoints return ENOSPC
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Michael Ellerman <michael@ellerman.id.au>
-Date: Thu, 16 Aug 2012 16:15:02 +0200
-In-Reply-To: <1345125747.20062.12.camel@concordia>
-References: <28857.1345091034@neuling.org>
- <1345102812.31459.114.camel@twins> <20344.1345115849@neuling.org>
- <1345117498.29668.23.camel@twins> <1345125747.20062.12.camel@concordia>
-Content-Type: text/plain; charset="ISO-8859-1"
+ by ozlabs.org (Postfix) with ESMTPS id C32942C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 00:25:03 +1000 (EST)
+Date: Thu, 16 Aug 2012 15:29:18 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: leroy christophe <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH] Powerpc 8xx CPM_UART delay in receive
+Message-ID: <20120816152918.5ed2649f@pyramind.ukuu.org.uk>
+In-Reply-To: <502CF2A0.8080109@c-s.fr>
+References: <201208141426.q7EEQSPc003956@localhost.localdomain>
+ <20120814155227.018988da@pyramind.ukuu.org.uk>
+ <502CF2A0.8080109@c-s.fr>
 Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>,
- Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, K Prasad <prasad@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
+ linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Alan Cox <alan@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,21 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-08-17 at 00:02 +1000, Michael Ellerman wrote:
-> You do want to guarantee that the task will always be subject to the
-> breakpoint, even if it moves cpus. So is there any way to guarantee that
-> other than reserving a breakpoint slot on every cpu ahead of time?=20
+> The PowerPC CPM is working differently. It doesn't use a fifo but 
+> buffers. Buffers are handed to the microprocessor only when they are 
+> full or after a timeout period which is adjustable. In the driver, the 
 
-That's not how regular perf works.. regular perf can overload hw
-resources at will and stuff is strictly per-cpu.
+Which is different how - remembering we empty the FIFO on an IRQ
 
-So the regular perf record has perf_event_attr::inherit enabled by
-default, this will result in it creating a per-task-per-cpu event for
-each cpu and this will succeed because there's no strict reservation to
-avoid/detect starvation against perf_event_attr::pinned events.
+> buffers are configured with a size of 32 bytes. And the timeout is set 
+> to the size of the buffer. That is this timeout that I'm reducing to 1 
+> byte in my proposed patch. I can't see what it would break for high 
+> speed I/O.
 
-For regular (!pinned) events, we'll RR the created events on the
-available hardware resources.
+How can a timeout be measured in "bytes". Can we have a bit more clarity
+on how the hardware works and take it from there ?
 
-HWBP does things completely different and reserves a slot over all CPUs
-for everything, thus stuff completely falls apart.
+Alan
