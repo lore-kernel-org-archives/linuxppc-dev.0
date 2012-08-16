@@ -1,14 +1,12 @@
 Return-Path: <kas@linux.intel.com>
 Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
- by ozlabs.org (Postfix) with ESMTP id 166722C01D6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:16:16 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 2FC952C0207
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:16:17 +1000 (EST)
 From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 To: linux-mm@kvack.org
-Subject: [PATCH v3 4/7] mm: pass fault address to clear_huge_page()
-Date: Thu, 16 Aug 2012 18:15:51 +0300
-Message-Id: <1345130154-9602-5-git-send-email-kirill.shutemov@linux.intel.com>
-In-Reply-To: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
-References: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
+Subject: [PATCH v3 0/7] Avoid cache trashing on clearing huge/gigantic page
+Date: Thu, 16 Aug 2012 18:15:47 +0300
+Message-Id: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
  Jan Beulich <jbeulich@novell.com>, "H. Peter Anvin" <hpa@zytor.com>,
  sparclinux@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>,
@@ -32,81 +30,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 
-Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
----
- include/linux/mm.h |    2 +-
- mm/huge_memory.c   |    2 +-
- mm/hugetlb.c       |    3 ++-
- mm/memory.c        |    7 ++++---
- 4 files changed, 8 insertions(+), 6 deletions(-)
+Clearing a 2MB huge page will typically blow away several levels of CPU
+caches.  To avoid this only cache clear the 4K area around the fault
+address and use a cache avoiding clears for the rest of the 2MB area.
 
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 311be90..2858723 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1638,7 +1638,7 @@ extern void dump_page(struct page *page);
- 
- #if defined(CONFIG_TRANSPARENT_HUGEPAGE) || defined(CONFIG_HUGETLBFS)
- extern void clear_huge_page(struct page *page,
--			    unsigned long addr,
-+			    unsigned long haddr, unsigned long fault_address,
- 			    unsigned int pages_per_huge_page);
- extern void copy_user_huge_page(struct page *dst, struct page *src,
- 				unsigned long addr, struct vm_area_struct *vma,
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 6f0825b611..070bf89 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -644,7 +644,7 @@ static int __do_huge_pmd_anonymous_page(struct mm_struct *mm,
- 	if (unlikely(!pgtable))
- 		return VM_FAULT_OOM;
- 
--	clear_huge_page(page, haddr, HPAGE_PMD_NR);
-+	clear_huge_page(page, haddr, address, HPAGE_PMD_NR);
- 	__SetPageUptodate(page);
- 
- 	spin_lock(&mm->page_table_lock);
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 3c86d3d..5182192 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -2718,7 +2718,8 @@ retry:
- 				ret = VM_FAULT_SIGBUS;
- 			goto out;
- 		}
--		clear_huge_page(page, haddr, pages_per_huge_page(h));
-+		clear_huge_page(page, haddr, fault_address,
-+				pages_per_huge_page(h));
- 		__SetPageUptodate(page);
- 
- 		if (vma->vm_flags & VM_MAYSHARE) {
-diff --git a/mm/memory.c b/mm/memory.c
-index 5736170..dfc179b 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3984,19 +3984,20 @@ static void clear_gigantic_page(struct page *page,
- 	}
- }
- void clear_huge_page(struct page *page,
--		     unsigned long addr, unsigned int pages_per_huge_page)
-+		     unsigned long haddr, unsigned long fault_address,
-+		     unsigned int pages_per_huge_page)
- {
- 	int i;
- 
- 	if (unlikely(pages_per_huge_page > MAX_ORDER_NR_PAGES)) {
--		clear_gigantic_page(page, addr, pages_per_huge_page);
-+		clear_gigantic_page(page, haddr, pages_per_huge_page);
- 		return;
- 	}
- 
- 	might_sleep();
- 	for (i = 0; i < pages_per_huge_page; i++) {
- 		cond_resched();
--		clear_user_highpage(page + i, addr + i * PAGE_SIZE);
-+		clear_user_highpage(page + i, haddr + i * PAGE_SIZE);
- 	}
- }
- 
+This patchset implements cache avoiding version of clear_page only for
+x86. If an architecture wants to provide cache avoiding version of
+clear_page it should to define ARCH_HAS_USER_NOCACHE to 1 and implement
+clear_page_nocache() and clear_user_highpage_nocache().
+
+v3:
+  - Rebased to current Linus' tree. kmap_atomic() build issue is fixed;
+  - Pass fault address to clear_huge_page(). v2 had problem with clearing
+    for sizes other than HPAGE_SIZE
+  - x86: fix 32bit variant. Fallback version of clear_page_nocache() has
+    been added for non-SSE2 systems;
+  - x86: clear_page_nocache() moved to clear_page_{32,64}.S;
+  - x86: use pushq_cfi/popq_cfi instead of push/pop;
+v2:
+  - No code change. Only commit messages are updated.
+  - RFC mark is dropped.
+
+Andi Kleen (5):
+  THP: Use real address for NUMA policy
+  THP: Pass fault address to __do_huge_pmd_anonymous_page()
+  x86: Add clear_page_nocache
+  mm: make clear_huge_page cache clear only around the fault address
+  x86: switch the 64bit uncached page clear to SSE/AVX v2
+
+Kirill A. Shutemov (2):
+  hugetlb: pass fault address to hugetlb_no_page()
+  mm: pass fault address to clear_huge_page()
+
+ arch/x86/include/asm/page.h      |    2 +
+ arch/x86/include/asm/string_32.h |    5 ++
+ arch/x86/include/asm/string_64.h |    5 ++
+ arch/x86/lib/Makefile            |    3 +-
+ arch/x86/lib/clear_page_32.S     |   72 +++++++++++++++++++++++++++++++++++
+ arch/x86/lib/clear_page_64.S     |   78 ++++++++++++++++++++++++++++++++++++++
+ arch/x86/mm/fault.c              |    7 +++
+ include/linux/mm.h               |    2 +-
+ mm/huge_memory.c                 |   17 ++++----
+ mm/hugetlb.c                     |   39 ++++++++++---------
+ mm/memory.c                      |   37 +++++++++++++++---
+ 11 files changed, 232 insertions(+), 35 deletions(-)
+ create mode 100644 arch/x86/lib/clear_page_32.S
+
 -- 
 1.7.7.6
