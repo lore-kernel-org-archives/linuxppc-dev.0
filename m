@@ -1,20 +1,22 @@
-Return-Path: <jengelh@inai.de>
-Received: from seven.medozas.de (seven.medozas.de [IPv6:2a01:4f8:161:ffa::1])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F172E2C00A7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:24:55 +1000 (EST)
-Date: Thu, 16 Aug 2012 17:24:49 +0200 (CEST)
-From: Jan Engelhardt <jengelh@inai.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: therm_pm72 units, interface
-In-Reply-To: <1345066551.11751.1.camel@pasglop>
-Message-ID: <alpine.LNX.2.01.1208161718210.8111@frira.zrqbmnf.qr>
-References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
- <1345066551.11751.1.camel@pasglop>
+Return-Path: <oleg@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id B15152C0119
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:24:59 +1000 (EST)
+Date: Thu, 16 Aug 2012 17:21:12 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
+Message-ID: <20120816152112.GA8874@redhat.com>
+References: <20120726051902.GA29466@in.ibm.com>
+ <20120726052029.GB29466@in.ibm.com> <20120815165931.GA10059@redhat.com>
+ <1345066913.11751.4.camel@pasglop> <20120816050030.GA12060@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120816050030.GA12060@in.ibm.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
+ lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,55 +26,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Wednesday 2012-08-15 23:35, Benjamin Herrenschmidt wrote:
->> XServe G5 of mine started powering off more or less 
->> randomly
+On 08/16, Ananth N Mavinakayanahalli wrote:
 >
->BTW. There's a new windfarm driver for these in recent kernels...
+> On Thu, Aug 16, 2012 at 07:41:53AM +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2012-08-15 at 18:59 +0200, Oleg Nesterov wrote:
+> > > On 07/26, Ananth N Mavinakayanahalli wrote:
+> > > >
+> > > > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> > > >
+> > > > This is the port of uprobes to powerpc. Usage is similar to x86.
+> > >
+> > > I am just curious why this series was ignored by powerpc maintainers...
+> >
+> > Because it arrived too late for the previous merge window considering my
+> > limited bandwidth for reviewing things and that nobody else seems to
+> > have reviewed it :-)
+> >
+> > It's still on track for the next one, and I'm hoping to dedicate most of
+> > next week going through patches & doing a powerpc -next.
 >
->Appart from that, the trip points are coming from a calibration EEPROM,
->you may want to tweak the driver to warn a bit earlier or that sort of
->things ? (Or just to print more things out ?)
+> Thanks Ben!
 
-If you have more things to print/offer via sysfs, I'm all for it.
+Great!
 
-The XsG5 really has (by looking into the casing): 1 PCI Fan,
-6 center fans, 1 PSU intake and 1 PSU outblow fan (this last one
-seems rather slow-turning, but maybe that's normal).
-It is not quite clear which is which in the sysfs display.
+> > > Just one question... Shouldn't arch_uprobe_pre_xol() forbid to probe
+> > > UPROBE_SWBP_INSN (at least) ?
+> > >
+> > > (I assume that emulate_step() can't handle this case but of course I
+> > >  do not understand arch/powerpc/lib/sstep.c)
+> > >
+> > > Note that uprobe_pre_sstep_notifier() sets utask->state = UTASK_BP_HIT
+> > > without any checks. This doesn't look right if it was UTASK_SSTEP...
+> > >
+> > > But again, I do not know what powepc will actually do if we try to
+> > > single-step over UPROBE_SWBP_INSN.
+> >
+> > Ananth ?
+>
+> set_swbp() will return -EEXIST to install_breakpoint if we are trying to
+> put a breakpoint on UPROBE_SWBP_INSN.
 
-What I did figure out: at the PROM, fans run at what seems
-to be full speed (some 8000-9000 rpm?). Once Linux and therm_pm72
-are loaded, the fans settle down towards 4000 rpm, and if the machine
-has warmed up, that is then when it powers off. (The kernel is indeed
-3.4. I now need to figure out how to place a new kernel on it without
-it powering off inbetween.)
+not really, this -EEXIST (already removed by recent changes) means that
+bp was already installed.
 
->> $ cd /sys/devices/temperature; grep '' *;
->> backside_fan_pwm:32
->> backside_temperature:54.000
->> cpu0_current:34.423
->> cpu0_exhaust_fan_rpm:5340
->> cpu0_intake_fan_rpm:5340
->> cpu0_temperature:72.889
->> cpu0_voltage:1.252
->> cpu1_current:34.179
->> cpu1_exhaust_fan_rpm:4584
->> cpu1_intake_fan_rpm:4584
->> cpu1_temperature:68.526
->> cpu1_voltage:1.259
->> dimms_temperature:53.000
->> grep: driver: Er en filkatalog
->> modalias:platform:temperature
->> grep: power: Er en filkatalog
->> slots_fan_pwm:20
->> slots_temperature:38.500
->> grep: subsystem: Er en filkatalog
->> uevent:DRIVER=temperature
->> uevent:OF_NAME=fan
->> uevent:OF_FULLNAME=/u3@0,f8000000/i2c@f8001000/fan@15e
->> uevent:OF_TYPE=fcu
->> uevent:OF_COMPATIBLE_0=fcu
->> uevent:OF_COMPATIBLE_N=1
->> uevent:MODALIAS=of:NfanTfcuCfcu
+But this doesn't matter,
+
+> So, the arch agnostic code itself
+> takes care of this case...
+
+Yes. I forgot about install_breakpoint()->is_swbp_insn() check which
+returns -ENOTSUPP, somehow I thought arch_uprobe_analyze_insn() does
+this.
+
+> or am I missing something?
+
+No, it is me.
+
+> However, I see that we need a powerpc specific is_swbp_insn()
+> implementation since we will have to take care of all the trap variants.
+
+Hmm, I am not sure. is_swbp_insn(insn), as it is used in the arch agnostic
+code, should only return true if insn == UPROBE_SWBP_INSN (just in case,
+this logic needs more fixes but this is offtopic).
+
+If powerpc has another insn(s) which can trigger powerpc's do_int3()
+counterpart, they should be rejected by arch_uprobe_analyze_insn().
+I think.
+
+> I will need to update the patches based on changes being made by Oleg
+> and Sebastien for the single-step issues.
+
+Perhaps you can do this in a separate change?
+
+We need some (simple) changes in the arch agnostic code first, they
+should not break poweppc. These changes are still under discussion.
+Once we have "__weak  arch_uprobe_step*" you can reimplement these
+hooks and fix the problems with single-stepping.
+
+Oleg.
