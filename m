@@ -1,22 +1,29 @@
-Return-Path: <oleg@redhat.com>
+Return-Path: <aarcange@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id B15152C0119
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:24:59 +1000 (EST)
-Date: Thu, 16 Aug 2012 17:21:12 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
-Message-ID: <20120816152112.GA8874@redhat.com>
-References: <20120726051902.GA29466@in.ibm.com>
- <20120726052029.GB29466@in.ibm.com> <20120815165931.GA10059@redhat.com>
- <1345066913.11751.4.camel@pasglop> <20120816050030.GA12060@in.ibm.com>
+ by ozlabs.org (Postfix) with ESMTP id AB3602C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 02:17:23 +1000 (EST)
+Date: Thu, 16 Aug 2012 18:16:47 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Subject: Re: [PATCH v3 6/7] mm: make clear_huge_page cache clear only around
+ the fault address
+Message-ID: <20120816161647.GM11188@redhat.com>
+References: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
+ <1345130154-9602-7-git-send-email-kirill.shutemov@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120816050030.GA12060@in.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
- lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1345130154-9602-7-git-send-email-kirill.shutemov@linux.intel.com>
+Cc: linux-mips@linux-mips.org, Andi Kleen <ak@linux.intel.com>,
+ Alex Shi <alex.shu@intel.com>, Robert Richter <robert.richter@amd.com>,
+ linuxppc-dev@lists.ozlabs.org, x86@kernel.org, Hugh Dickins <hughd@google.com>,
+ linux-kernel@vger.kernel.org, Jan Beulich <jbeulich@novell.com>,
+ Andy Lutomirski <luto@amacapital.net>, Johannes Weiner <hannes@cmpxchg.org>,
+ linux-mm@kvack.org, linux-sh@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Mel Gorman <mgorman@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,81 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/16, Ananth N Mavinakayanahalli wrote:
->
-> On Thu, Aug 16, 2012 at 07:41:53AM +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2012-08-15 at 18:59 +0200, Oleg Nesterov wrote:
-> > > On 07/26, Ananth N Mavinakayanahalli wrote:
-> > > >
-> > > > From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> > > >
-> > > > This is the port of uprobes to powerpc. Usage is similar to x86.
-> > >
-> > > I am just curious why this series was ignored by powerpc maintainers...
-> >
-> > Because it arrived too late for the previous merge window considering my
-> > limited bandwidth for reviewing things and that nobody else seems to
-> > have reviewed it :-)
-> >
-> > It's still on track for the next one, and I'm hoping to dedicate most of
-> > next week going through patches & doing a powerpc -next.
->
-> Thanks Ben!
+Hi Kirill,
 
-Great!
+On Thu, Aug 16, 2012 at 06:15:53PM +0300, Kirill A. Shutemov wrote:
+>  	for (i = 0; i < pages_per_huge_page;
+>  	     i++, p = mem_map_next(p, page, i)) {
 
-> > > Just one question... Shouldn't arch_uprobe_pre_xol() forbid to probe
-> > > UPROBE_SWBP_INSN (at least) ?
-> > >
-> > > (I assume that emulate_step() can't handle this case but of course I
-> > >  do not understand arch/powerpc/lib/sstep.c)
-> > >
-> > > Note that uprobe_pre_sstep_notifier() sets utask->state = UTASK_BP_HIT
-> > > without any checks. This doesn't look right if it was UTASK_SSTEP...
-> > >
-> > > But again, I do not know what powepc will actually do if we try to
-> > > single-step over UPROBE_SWBP_INSN.
-> >
-> > Ananth ?
->
-> set_swbp() will return -EEXIST to install_breakpoint if we are trying to
-> put a breakpoint on UPROBE_SWBP_INSN.
+It may be more optimal to avoid a multiplication/shiftleft before the
+add, and to do:
 
-not really, this -EEXIST (already removed by recent changes) means that
-bp was already installed.
+  	for (i = 0, vaddr = haddr; i < pages_per_huge_page;
+  	     i++, p = mem_map_next(p, page, i), vaddr += PAGE_SIZE) {
 
-But this doesn't matter,
+>  		cond_resched();
+> -		clear_user_highpage(p, addr + i * PAGE_SIZE);
+> +		vaddr = haddr + i*PAGE_SIZE;
 
-> So, the arch agnostic code itself
-> takes care of this case...
+Not sure if gcc can optimize it away because of the external calls.
 
-Yes. I forgot about install_breakpoint()->is_swbp_insn() check which
-returns -ENOTSUPP, somehow I thought arch_uprobe_analyze_insn() does
-this.
+> +		if (!ARCH_HAS_USER_NOCACHE || i == target)
+> +			clear_user_highpage(page + i, vaddr);
+> +		else
+> +			clear_user_highpage_nocache(page + i, vaddr);
+>  	}
 
-> or am I missing something?
 
-No, it is me.
+My only worry overall is if there can be some workload where this may
+actually slow down userland if the CPU cache is very large and
+userland would access most of the faulted in memory after the first
+fault.
 
-> However, I see that we need a powerpc specific is_swbp_insn()
-> implementation since we will have to take care of all the trap variants.
+So I wouldn't mind to add one more check in addition of
+!ARCH_HAS_USER_NOCACHE above to check a runtime sysctl variable. It'll
+waste a cacheline yes but I doubt it's measurable compared to the time
+it takes to do a >=2M hugepage copy.
 
-Hmm, I am not sure. is_swbp_insn(insn), as it is used in the arch agnostic
-code, should only return true if insn == UPROBE_SWBP_INSN (just in case,
-this logic needs more fixes but this is offtopic).
+Furthermore it would allow people to benchmark its effect without
+having to rebuild the kernel themself.
 
-If powerpc has another insn(s) which can trigger powerpc's do_int3()
-counterpart, they should be rejected by arch_uprobe_analyze_insn().
-I think.
+All other patches looks fine to me.
 
-> I will need to update the patches based on changes being made by Oleg
-> and Sebastien for the single-step issues.
-
-Perhaps you can do this in a separate change?
-
-We need some (simple) changes in the arch agnostic code first, they
-should not break poweppc. These changes are still under discussion.
-Once we have "__weak  arch_uprobe_step*" you can reimplement these
-hooks and fix the problems with single-stepping.
-
-Oleg.
+Thanks!
+Andrea
