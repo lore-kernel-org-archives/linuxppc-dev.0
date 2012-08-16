@@ -1,23 +1,26 @@
-Return-Path: <alan@linux.intel.com>
-Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
- by ozlabs.org (Postfix) with ESMTP id 004252C007C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:04:10 +1000 (EST)
-Date: Thu, 16 Aug 2012 16:21:36 +0100
-From: Alan Cox <alan@linux.intel.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH] Powerpc 8xx CPM_UART delay in receive
-Message-ID: <20120816162136.059b64b4@bob.linux.org.uk>
-In-Reply-To: <502D054B.3010606@c-s.fr>
-References: <201208141426.q7EEQSPc003956@localhost.localdomain>
- <20120814155227.018988da@pyramind.ukuu.org.uk>
- <502CF2A0.8080109@c-s.fr>
- <20120816152918.5ed2649f@pyramind.ukuu.org.uk>
- <502D054B.3010606@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=windows-1252
-Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
- linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <kas@linux.intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id D75B52C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:15:58 +1000 (EST)
+From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+To: linux-mm@kvack.org
+Subject: [PATCH v3 1/7] THP: Use real address for NUMA policy
+Date: Thu, 16 Aug 2012 18:15:48 +0300
+Message-Id: <1345130154-9602-2-git-send-email-kirill.shutemov@linux.intel.com>
+In-Reply-To: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
+References: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+ Jan Beulich <jbeulich@novell.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>,
+ Andi Kleen <ak@linux.intel.com>, Robert Richter <robert.richter@amd.com>,
+ x86@kernel.org, Hugh Dickins <hughd@google.com>,
+ Ingo Molnar <mingo@redhat.com>, Mel Gorman <mgorman@suse.de>,
+ Alex Shi <alex.shu@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ Tim Chen <tim.c.chen@linux.intel.com>, linux-kernel@vger.kernel.org,
+ Andy Lutomirski <luto@amacapital.net>, Johannes Weiner <hannes@cmpxchg.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> MAX_IDL: Maximum idle characters. When a character is received, the 
-> receiver begins counting idle characters. If MAX_IDL idle characters
-> are received before the next data character, an idle timeout occurs
-> and the buffer is closed,
-> generating a maskable interrupt request to the core to receive the
-> data from the buffer. Thus, MAX_IDL offers a way to demarcate frames.
-> To disable the feature, clear MAX_IDL. The bit length of an idle
-> character is calculated as follows: 1 + data length (5–9) + 1 (if
-> parity is used) 
-> + number of stop bits (1–2). For 8 data bits, no parity, and 1 stop
-> bit, the character length is 10 bits
+From: Andi Kleen <ak@linux.intel.com>
 
+Use the fault address, not the rounded down hpage address for NUMA
+policy purposes. In some circumstances this can give more exact
+NUMA policy.
 
-So if you have slightly bursty high speed data as its quite typical
-before your change you would get one interrupt per buffer of 32 bytes,
-with it you'll get a lot more interrupts.
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+---
+ mm/huge_memory.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-You have two available hints about the way to set this - one of them is
-the baud rate (low baud rates mean the fifo isn't a big win and the
-latency is high), the other is the low_latency flag if the driver
-supports the low latency feature (and arguably you can still use a
-request for it as a hint even if you refuse the actual feature).
-
-So I think a reasonable approach would be set the idle timeout down for
-low baud rates or if low_latency is requested.
-
-> generated if there is at least one word in the FIFO and for a time 
-> equivalent to the transmission of four characters
-
-Which is a bit more reasonable than one, although problematic at low
-speed (hence the fifo on/off).
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 57c4b93..70737ec 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -681,11 +681,11 @@ static inline gfp_t alloc_hugepage_gfpmask(int defrag, gfp_t extra_gfp)
+ 
+ static inline struct page *alloc_hugepage_vma(int defrag,
+ 					      struct vm_area_struct *vma,
+-					      unsigned long haddr, int nd,
++					      unsigned long address, int nd,
+ 					      gfp_t extra_gfp)
+ {
+ 	return alloc_pages_vma(alloc_hugepage_gfpmask(defrag, extra_gfp),
+-			       HPAGE_PMD_ORDER, vma, haddr, nd);
++			       HPAGE_PMD_ORDER, vma, address, nd);
+ }
+ 
+ #ifndef CONFIG_NUMA
+@@ -710,7 +710,7 @@ int do_huge_pmd_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		if (unlikely(khugepaged_enter(vma)))
+ 			return VM_FAULT_OOM;
+ 		page = alloc_hugepage_vma(transparent_hugepage_defrag(vma),
+-					  vma, haddr, numa_node_id(), 0);
++					  vma, address, numa_node_id(), 0);
+ 		if (unlikely(!page)) {
+ 			count_vm_event(THP_FAULT_FALLBACK);
+ 			goto out;
+@@ -944,7 +944,7 @@ int do_huge_pmd_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	if (transparent_hugepage_enabled(vma) &&
+ 	    !transparent_hugepage_debug_cow())
+ 		new_page = alloc_hugepage_vma(transparent_hugepage_defrag(vma),
+-					      vma, haddr, numa_node_id(), 0);
++					      vma, address, numa_node_id(), 0);
+ 	else
+ 		new_page = NULL;
+ 
+-- 
+1.7.7.6
