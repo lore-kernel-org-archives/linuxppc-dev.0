@@ -1,12 +1,12 @@
 Return-Path: <kas@linux.intel.com>
-Received: from mga14.intel.com (mga14.intel.com [143.182.124.37])
- by ozlabs.org (Postfix) with ESMTP id 2EF582C0130
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:16:19 +1000 (EST)
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by ozlabs.org (Postfix) with ESMTP id 31FC82C0230
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 01:16:28 +1000 (EST)
 From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 To: linux-mm@kvack.org
-Subject: [PATCH v3 3/7] hugetlb: pass fault address to hugetlb_no_page()
-Date: Thu, 16 Aug 2012 18:15:50 +0300
-Message-Id: <1345130154-9602-4-git-send-email-kirill.shutemov@linux.intel.com>
+Subject: [PATCH v3 5/7] x86: Add clear_page_nocache
+Date: Thu, 16 Aug 2012 18:15:52 +0300
+Message-Id: <1345130154-9602-6-git-send-email-kirill.shutemov@linux.intel.com>
 In-Reply-To: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
 References: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
@@ -30,154 +30,248 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+From: Andi Kleen <ak@linux.intel.com>
 
+Add a cache avoiding version of clear_page. Straight forward integer variant
+of the existing 64bit clear_page, for both 32bit and 64bit.
+
+Also add the necessary glue for highmem including a layer that non cache
+coherent architectures that use the virtual address for flushing can
+hook in. This is not needed on x86 of course.
+
+If an architecture wants to provide cache avoiding version of clear_page
+it should to define ARCH_HAS_USER_NOCACHE to 1 and implement
+clear_page_nocache() and clear_user_highpage_nocache().
+
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
 ---
- mm/hugetlb.c |   38 +++++++++++++++++++-------------------
- 1 files changed, 19 insertions(+), 19 deletions(-)
+ arch/x86/include/asm/page.h      |    2 +
+ arch/x86/include/asm/string_32.h |    5 +++
+ arch/x86/include/asm/string_64.h |    5 +++
+ arch/x86/lib/Makefile            |    3 +-
+ arch/x86/lib/clear_page_32.S     |   72 ++++++++++++++++++++++++++++++++++++++
+ arch/x86/lib/clear_page_64.S     |   29 +++++++++++++++
+ arch/x86/mm/fault.c              |    7 ++++
+ 7 files changed, 122 insertions(+), 1 deletions(-)
+ create mode 100644 arch/x86/lib/clear_page_32.S
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index bc72712..3c86d3d 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -2672,7 +2672,8 @@ static bool hugetlbfs_pagecache_present(struct hstate *h,
+diff --git a/arch/x86/include/asm/page.h b/arch/x86/include/asm/page.h
+index 8ca8283..aa83a1b 100644
+--- a/arch/x86/include/asm/page.h
++++ b/arch/x86/include/asm/page.h
+@@ -29,6 +29,8 @@ static inline void copy_user_page(void *to, void *from, unsigned long vaddr,
+ 	copy_page(to, from);
  }
  
- static int hugetlb_no_page(struct mm_struct *mm, struct vm_area_struct *vma,
--			unsigned long address, pte_t *ptep, unsigned int flags)
-+			unsigned long haddr, unsigned long fault_address,
-+			pte_t *ptep, unsigned int flags)
- {
- 	struct hstate *h = hstate_vma(vma);
- 	int ret = VM_FAULT_SIGBUS;
-@@ -2696,7 +2697,7 @@ static int hugetlb_no_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	}
++void clear_user_highpage_nocache(struct page *page, unsigned long vaddr);
++
+ #define __alloc_zeroed_user_highpage(movableflags, vma, vaddr) \
+ 	alloc_page_vma(GFP_HIGHUSER | __GFP_ZERO | movableflags, vma, vaddr)
+ #define __HAVE_ARCH_ALLOC_ZEROED_USER_HIGHPAGE
+diff --git a/arch/x86/include/asm/string_32.h b/arch/x86/include/asm/string_32.h
+index 3d3e835..3f2fbcf 100644
+--- a/arch/x86/include/asm/string_32.h
++++ b/arch/x86/include/asm/string_32.h
+@@ -3,6 +3,8 @@
  
- 	mapping = vma->vm_file->f_mapping;
--	idx = vma_hugecache_offset(h, vma, address);
-+	idx = vma_hugecache_offset(h, vma, haddr);
+ #ifdef __KERNEL__
  
- 	/*
- 	 * Use page lock to guard against racing truncation
-@@ -2708,7 +2709,7 @@ retry:
- 		size = i_size_read(mapping->host) >> huge_page_shift(h);
- 		if (idx >= size)
- 			goto out;
--		page = alloc_huge_page(vma, address, 0);
-+		page = alloc_huge_page(vma, haddr, 0);
- 		if (IS_ERR(page)) {
- 			ret = PTR_ERR(page);
- 			if (ret == -ENOMEM)
-@@ -2717,7 +2718,7 @@ retry:
- 				ret = VM_FAULT_SIGBUS;
- 			goto out;
- 		}
--		clear_huge_page(page, address, pages_per_huge_page(h));
-+		clear_huge_page(page, haddr, pages_per_huge_page(h));
- 		__SetPageUptodate(page);
++#include <linux/linkage.h>
++
+ /* Let gcc decide whether to inline or use the out of line functions */
  
- 		if (vma->vm_flags & VM_MAYSHARE) {
-@@ -2763,7 +2764,7 @@ retry:
- 	 * the spinlock.
- 	 */
- 	if ((flags & FAULT_FLAG_WRITE) && !(vma->vm_flags & VM_SHARED))
--		if (vma_needs_reservation(h, vma, address) < 0) {
-+		if (vma_needs_reservation(h, vma, haddr) < 0) {
- 			ret = VM_FAULT_OOM;
- 			goto backout_unlocked;
- 		}
-@@ -2778,16 +2779,16 @@ retry:
- 		goto backout;
+ #define __HAVE_ARCH_STRCPY
+@@ -337,6 +339,9 @@ void *__constant_c_and_count_memset(void *s, unsigned long pattern,
+ #define __HAVE_ARCH_MEMSCAN
+ extern void *memscan(void *addr, int c, size_t size);
  
- 	if (anon_rmap)
--		hugepage_add_new_anon_rmap(page, vma, address);
-+		hugepage_add_new_anon_rmap(page, vma, haddr);
- 	else
- 		page_dup_rmap(page);
- 	new_pte = make_huge_pte(vma, page, ((vma->vm_flags & VM_WRITE)
- 				&& (vma->vm_flags & VM_SHARED)));
--	set_huge_pte_at(mm, address, ptep, new_pte);
-+	set_huge_pte_at(mm, haddr, ptep, new_pte);
++#define ARCH_HAS_USER_NOCACHE 1
++asmlinkage void clear_page_nocache(void *page);
++
+ #endif /* __KERNEL__ */
  
- 	if ((flags & FAULT_FLAG_WRITE) && !(vma->vm_flags & VM_SHARED)) {
- 		/* Optimization, do the COW without a second fault */
--		ret = hugetlb_cow(mm, vma, address, ptep, new_pte, page);
-+		ret = hugetlb_cow(mm, vma, haddr, ptep, new_pte, page);
- 	}
+ #endif /* _ASM_X86_STRING_32_H */
+diff --git a/arch/x86/include/asm/string_64.h b/arch/x86/include/asm/string_64.h
+index 19e2c46..ca23d1d 100644
+--- a/arch/x86/include/asm/string_64.h
++++ b/arch/x86/include/asm/string_64.h
+@@ -3,6 +3,8 @@
  
- 	spin_unlock(&mm->page_table_lock);
-@@ -2813,21 +2814,20 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	struct page *pagecache_page = NULL;
- 	static DEFINE_MUTEX(hugetlb_instantiation_mutex);
- 	struct hstate *h = hstate_vma(vma);
-+	unsigned long haddr = address & huge_page_mask(h);
+ #ifdef __KERNEL__
  
--	address &= huge_page_mask(h);
--
--	ptep = huge_pte_offset(mm, address);
-+	ptep = huge_pte_offset(mm, haddr);
- 	if (ptep) {
- 		entry = huge_ptep_get(ptep);
- 		if (unlikely(is_hugetlb_entry_migration(entry))) {
--			migration_entry_wait(mm, (pmd_t *)ptep, address);
-+			migration_entry_wait(mm, (pmd_t *)ptep, haddr);
- 			return 0;
- 		} else if (unlikely(is_hugetlb_entry_hwpoisoned(entry)))
- 			return VM_FAULT_HWPOISON_LARGE |
- 				VM_FAULT_SET_HINDEX(hstate_index(h));
- 	}
++#include <linux/linkage.h>
++
+ /* Written 2002 by Andi Kleen */
  
--	ptep = huge_pte_alloc(mm, address, huge_page_size(h));
-+	ptep = huge_pte_alloc(mm, haddr, huge_page_size(h));
- 	if (!ptep)
- 		return VM_FAULT_OOM;
+ /* Only used for special circumstances. Stolen from i386/string.h */
+@@ -63,6 +65,9 @@ char *strcpy(char *dest, const char *src);
+ char *strcat(char *dest, const char *src);
+ int strcmp(const char *cs, const char *ct);
  
-@@ -2839,7 +2839,7 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	mutex_lock(&hugetlb_instantiation_mutex);
- 	entry = huge_ptep_get(ptep);
- 	if (huge_pte_none(entry)) {
--		ret = hugetlb_no_page(mm, vma, address, ptep, flags);
-+		ret = hugetlb_no_page(mm, vma, haddr, address, ptep, flags);
- 		goto out_mutex;
- 	}
++#define ARCH_HAS_USER_NOCACHE 1
++asmlinkage void clear_page_nocache(void *page);
++
+ #endif /* __KERNEL__ */
  
-@@ -2854,14 +2854,14 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
- 	 * consumed.
- 	 */
- 	if ((flags & FAULT_FLAG_WRITE) && !pte_write(entry)) {
--		if (vma_needs_reservation(h, vma, address) < 0) {
-+		if (vma_needs_reservation(h, vma, haddr) < 0) {
- 			ret = VM_FAULT_OOM;
- 			goto out_mutex;
- 		}
+ #endif /* _ASM_X86_STRING_64_H */
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index b00f678..14e47a2 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -23,6 +23,7 @@ lib-y += memcpy_$(BITS).o
+ lib-$(CONFIG_SMP) += rwlock.o
+ lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem.o
+ lib-$(CONFIG_INSTRUCTION_DECODER) += insn.o inat.o
++lib-y += clear_page_$(BITS).o
  
- 		if (!(vma->vm_flags & VM_MAYSHARE))
- 			pagecache_page = hugetlbfs_pagecache_page(h,
--								vma, address);
-+								vma, haddr);
- 	}
+ obj-y += msr.o msr-reg.o msr-reg-export.o
  
- 	/*
-@@ -2884,16 +2884,16 @@ int hugetlb_fault(struct mm_struct *mm, struct vm_area_struct *vma,
+@@ -40,7 +41,7 @@ endif
+ else
+         obj-y += iomap_copy_64.o
+         lib-y += csum-partial_64.o csum-copy_64.o csum-wrappers_64.o
+-        lib-y += thunk_64.o clear_page_64.o copy_page_64.o
++        lib-y += thunk_64.o copy_page_64.o
+         lib-y += memmove_64.o memset_64.o
+         lib-y += copy_user_64.o copy_user_nocache_64.o
+ 	lib-y += cmpxchg16b_emu.o
+diff --git a/arch/x86/lib/clear_page_32.S b/arch/x86/lib/clear_page_32.S
+new file mode 100644
+index 0000000..9592161
+--- /dev/null
++++ b/arch/x86/lib/clear_page_32.S
+@@ -0,0 +1,72 @@
++#include <linux/linkage.h>
++#include <asm/alternative-asm.h>
++#include <asm/cpufeature.h>
++#include <asm/dwarf2.h>
++
++/*
++ * Fallback version if SSE2 is not avaible.
++ */
++ENTRY(clear_page_nocache)
++	CFI_STARTPROC
++	mov    %eax,%edx
++	xorl   %eax,%eax
++	movl   $4096/32,%ecx
++	.p2align 4
++.Lloop:
++	decl	%ecx
++#define PUT(x) mov %eax,x*4(%edx)
++	PUT(0)
++	PUT(1)
++	PUT(2)
++	PUT(3)
++	PUT(4)
++	PUT(5)
++	PUT(6)
++	PUT(7)
++#undef PUT
++	lea	32(%edx),%edx
++	jnz	.Lloop
++	nop
++	ret
++	CFI_ENDPROC
++ENDPROC(clear_page_nocache)
++
++	.section .altinstr_replacement,"ax"
++1:      .byte 0xeb /* jmp <disp8> */
++	.byte (clear_page_nocache_sse2 - clear_page_nocache) - (2f - 1b)
++	/* offset */
++2:
++	.previous
++	.section .altinstructions,"a"
++	altinstruction_entry clear_page_nocache,1b,X86_FEATURE_XMM2,\
++				16, 2b-1b
++	.previous
++
++/*
++ * Zero a page avoiding the caches
++ * eax	page
++ */
++ENTRY(clear_page_nocache_sse2)
++	CFI_STARTPROC
++	mov    %eax,%edx
++	xorl   %eax,%eax
++	movl   $4096/32,%ecx
++	.p2align 4
++.Lloop_sse2:
++	decl	%ecx
++#define PUT(x) movnti %eax,x*4(%edx)
++	PUT(0)
++	PUT(1)
++	PUT(2)
++	PUT(3)
++	PUT(4)
++	PUT(5)
++	PUT(6)
++	PUT(7)
++#undef PUT
++	lea	32(%edx),%edx
++	jnz	.Lloop_sse2
++	nop
++	ret
++	CFI_ENDPROC
++ENDPROC(clear_page_nocache_sse2)
+diff --git a/arch/x86/lib/clear_page_64.S b/arch/x86/lib/clear_page_64.S
+index f2145cf..9d2f3c2 100644
+--- a/arch/x86/lib/clear_page_64.S
++++ b/arch/x86/lib/clear_page_64.S
+@@ -40,6 +40,7 @@ ENTRY(clear_page)
+ 	PUT(5)
+ 	PUT(6)
+ 	PUT(7)
++#undef PUT
+ 	leaq	64(%rdi),%rdi
+ 	jnz	.Lloop
+ 	nop
+@@ -71,3 +72,31 @@ ENDPROC(clear_page)
+ 	altinstruction_entry clear_page,2b,X86_FEATURE_ERMS,   \
+ 			     .Lclear_page_end-clear_page,3b-2b
+ 	.previous
++
++/*
++ * Zero a page avoiding the caches
++ * rdi	page
++ */
++ENTRY(clear_page_nocache)
++	CFI_STARTPROC
++	xorl   %eax,%eax
++	movl   $4096/64,%ecx
++	.p2align 4
++.Lloop_nocache:
++	decl	%ecx
++#define PUT(x) movnti %rax,x*8(%rdi)
++	movnti %rax,(%rdi)
++	PUT(1)
++	PUT(2)
++	PUT(3)
++	PUT(4)
++	PUT(5)
++	PUT(6)
++	PUT(7)
++#undef PUT
++	leaq	64(%rdi),%rdi
++	jnz	.Lloop_nocache
++	nop
++	ret
++	CFI_ENDPROC
++ENDPROC(clear_page_nocache)
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index 76dcd9d..d8cf231 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -1209,3 +1209,10 @@ good_area:
  
- 	if (flags & FAULT_FLAG_WRITE) {
- 		if (!pte_write(entry)) {
--			ret = hugetlb_cow(mm, vma, address, ptep, entry,
-+			ret = hugetlb_cow(mm, vma, haddr, ptep, entry,
- 							pagecache_page);
- 			goto out_page_table_lock;
- 		}
- 		entry = pte_mkdirty(entry);
- 	}
- 	entry = pte_mkyoung(entry);
--	if (huge_ptep_set_access_flags(vma, address, ptep, entry,
-+	if (huge_ptep_set_access_flags(vma, haddr, ptep, entry,
- 						flags & FAULT_FLAG_WRITE))
--		update_mmu_cache(vma, address, ptep);
-+		update_mmu_cache(vma, haddr, ptep);
- 
- out_page_table_lock:
- 	spin_unlock(&mm->page_table_lock);
+ 	up_read(&mm->mmap_sem);
+ }
++
++void clear_user_highpage_nocache(struct page *page, unsigned long vaddr)
++{
++	void *p = kmap_atomic(page);
++	clear_page_nocache(p);
++	kunmap_atomic(p);
++}
 -- 
 1.7.7.6
