@@ -1,23 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EB3D12C008D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 08:43:10 +1000 (EST)
-Message-ID: <1345070575.11751.8.camel@pasglop>
-Subject: Re: [PATCH V7 1/3] powerpc/pci: Make sure ISA IO base is not zero
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Thu, 16 Aug 2012 08:42:55 +1000
-In-Reply-To: <502C1B64.8050505@freescale.com>
+Return-Path: <B38951@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E0E142C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 13:11:51 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH V7 1/3] powerpc/pci: Make sure ISA IO base is not zero
+Date: Thu, 16 Aug 2012 03:11:41 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A54CE3@039-SN1MPN1-002.039d.mgd.msft.net>
 References: <1345021026-10886-1-git-send-email-B38951@freescale.com>
  <1345021026-10886-2-git-send-email-B38951@freescale.com>
- <502BDC6B.4090800@freescale.com> <1345066379.11596.1.camel@pasglop>
- <502C1B64.8050505@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Jia Hongtao <B38951@freescale.com>
+ <502BDC6B.4090800@freescale.com>
+In-Reply-To: <502BDC6B.4090800@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,21 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-08-15 at 16:57 -0500, Scott Wood wrote:
-> Is there no lasting remnant of that temporary wrong isa_io_base?  We
-> won't have I/O resources that were calculated relative to that, which
-> stop working once isa_io_base changes?  Or does that happen later, after
-> this function has been called on all buses (and would that continue to
-> be the case if we change the PCI bus to a platform device)?
-
-If you continue creating your PCI busses all at once early on you'll be
-fine. The platform device business is going to break that (and other
-things as well btw, such as pci_final_fixup).
-
-Maybe it's time to contemplate doing something more like ppc64 and
-reserve a piece of virtual address space (I know there isn't much, so
-make it 64k per bus max) and just map the busses in there with the first
-64k being reserved for the ISA stuff if it exists ?
-
-Cheers,
-Ben.
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVGh1cnNkYXksIEF1Z3VzdCAxNiwgMjAxMiAxOjI5IEFNDQo+IFRvOiBKaWEg
+SG9uZ3Rhby1CMzg5NTENCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBnYWxh
+a0BrZXJuZWwuY3Jhc2hpbmcub3JnOw0KPiBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlh
+bmctUjU4NDcyOyBXb29kIFNjb3R0LUIwNzQyMQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY3IDEv
+M10gcG93ZXJwYy9wY2k6IE1ha2Ugc3VyZSBJU0EgSU8gYmFzZSBpcyBub3QNCj4gemVybw0KPiAN
+Cj4gT24gMDgvMTUvMjAxMiAwMzo1NyBBTSwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4gRnJvbTog
+QmVuamFtaW4gSGVycmVuc2NobWlkdCA8YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnPg0KPiA+DQo+
+ID4gU29tZSBwbGF0Zm9ybXMgbGlrZSBRRU1VIHRyZWF0IDAgYXMgYW4gaW52YWxpZCBhZGRyZXNz
+IGZvciBJU0EgSU8gYmFzZS4NCj4gPiBTbyB3ZSBtYWtlIHN1cmUgdGhhdCBJU0EgSU8gYmFzZSB3
+aWxsIG5ldmVyIGJlIHplcm8uIEJ5IGZ1bmN0aW9uYWxpdHkNCj4gPiB0aGlzIGlzIGVxdWl2YWxl
+bnQgdG8gYXNzZ2luIHRoZSBmaXJzdCBwY2kgYnVzIGRldGVjdGVkIGFzIGEgcHJpbWFyeQ0KPiBi
+dXMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBCZW5qYW1pbiBIZXJyZW5zY2htaWR0IDxiZW5o
+QGtlcm5lbC5jcmFzaGluZy5vcmc+DQo+ID4gU2lnbmVkLW9mZi1ieTogSmlhIEhvbmd0YW8gPEIz
+ODk1MUBmcmVlc2NhbGUuY29tPg0KPiANCj4gV2hlbiBkaWQgQmVuIHBvc3QgdGhpcz8NCj4gDQo+
+IFN1Z2dlc3RpbmcgYSB0ZW1wb3Jhcnkgd29ya2Fyb3VuZCBpbiBhbiBlLW1haWwgaXMgKm5vdCog
+dGhlIHNhbWUgYXMNCj4gcG9zdGluZyBhIHBhdGNoLCBhbmQgZGVmaW5pdGVseSBub3QgdGhlIHNh
+bWUgYXMgcHJvdmlkaW5nIGEgc2lnbmVkLW9mZi1ieQ0KPiB3aGljaCBBRkFJQ1QgeW91IGZvcmdl
+ZC4gIERvbid0IGRvIHRoYXQuDQo+IA0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMva2VybmVs
+L3BjaS1jb21tb24uYyB8ICAgIDIgKy0NCj4gPiAgMSBmaWxlcyBjaGFuZ2VkLCAxIGluc2VydGlv
+bnMoKyksIDEgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBj
+L2tlcm5lbC9wY2ktY29tbW9uLmMNCj4gPiBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvcGNpLWNvbW1v
+bi5jDQo+ID4gaW5kZXggMGY3NWJkNS4uMmEwOWFhNSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bv
+d2VycGMva2VybmVsL3BjaS1jb21tb24uYw0KPiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwv
+cGNpLWNvbW1vbi5jDQo+ID4gQEAgLTczNCw3ICs3MzQsNyBAQCB2b2lkIF9fZGV2aW5pdCBwY2lf
+cHJvY2Vzc19icmlkZ2VfT0ZfcmFuZ2VzKHN0cnVjdA0KPiBwY2lfY29udHJvbGxlciAqaG9zZSwN
+Cj4gPiAgCQkJaG9zZS0+aW9fYmFzZV92aXJ0ID0gaW9yZW1hcChjcHVfYWRkciwgc2l6ZSk7DQo+
+ID4NCj4gPiAgCQkJLyogRXhwZWN0IHRyb3VibGUgaWYgcGNpX2FkZHIgaXMgbm90IDAgKi8NCj4g
+PiAtCQkJaWYgKHByaW1hcnkpDQo+ID4gKwkJCWlmIChwcmltYXJ5IHx8ICFpc2FfaW9fYmFzZSkN
+Cj4gPiAgCQkJCWlzYV9pb19iYXNlID0NCj4gPiAgCQkJCQkodW5zaWduZWQgbG9uZylob3NlLT5p
+b19iYXNlX3ZpcnQ7ICAjZW5kaWYNCj4gLyogQ09ORklHX1BQQzMyICovDQo+ID4NCj4gDQo+IERp
+ZG4ndCBJIGFscmVhZHkgcG9pbnQgb3V0IHRoYXQgdGhpcyBoYXMgcHJvYmxlbXMgd2hlbiB0aGUg
+cHJpbWFyeSBidXMgaXMNCj4gbm90IHRoZSBmaXJzdCB0byBiZSBwcm9iZWQ/ICBJZiB5b3VyIGFu
+c3dlciBpcyB0aGF0IHlvdSBmaXggdGhhdCBpbiBhDQo+IGxhdGVyIHBhdGNoLCB0aGF0IGJyZWFr
+cyBiaXNlY3RhYmlsaXR5Lg0KPiANCj4gLVNjb3R0DQoNClNvcnJ5LCBteSBhbnN3ZXIgaXMgbm90
+IHRoYXQgSSBmaXggdGhhdCBpbiBsYXRlciBwYXRjaC4NCk15IGFuc3dlciBpcywgd2l0aG91dCB0
+aGlzIHBhdGNoIHRoZXJlIGlzIGFsc28gcHJvYmxlbSB3aXRoIG5vbi1maXJzdC1wcmltYXJ5Lg0K
+VGhhdCBpcyB0byBzYXkgdGhlIGJpc2VjdGFiaWxpdHkgcHJvYmxlbSBoYXMgYmVlbiBhbHJlYWR5
+IHRoZXJlLg0KVGhlIHByb2JsZW0gaXMgbm90IGJyb3VnaHQgYnkgdGhpcyBwYXRjaC4NCg0KLSBI
+b25ndGFvLg0KDQo=
