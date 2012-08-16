@@ -1,19 +1,31 @@
-Return-Path: <ian.molton@codethink.co.uk>
-Message-ID: <502D201E.9030304@codethink.co.uk>
-Date: Thu, 16 Aug 2012 17:30:22 +0100
-From: Ian Molton <ian.molton@codethink.co.uk>
+Return-Path: <kas@shutemov.name>
+Received: from shutemov.name (shutemov.name [176.9.204.213])
+ by ozlabs.org (Postfix) with ESMTP id 2EBC82C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 02:43:34 +1000 (EST)
+Date: Thu, 16 Aug 2012 19:43:56 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Subject: Re: [PATCH v3 6/7] mm: make clear_huge_page cache clear only around
+ the fault address
+Message-ID: <20120816164356.GA30106@shutemov.name>
+References: <1345130154-9602-1-git-send-email-kirill.shutemov@linux.intel.com>
+ <1345130154-9602-7-git-send-email-kirill.shutemov@linux.intel.com>
+ <20120816161647.GM11188@redhat.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v3 0/7] mv643xx.c: Add basic device tree support.
-References: <1344350092-24050-1-git-send-email-ian.molton@codethink.co.uk>
- <201208091143.32972.arnd@arndb.de> <5023D577.8090001@codethink.co.uk>
- <201208101049.57586.arnd@arndb.de> <5028D040.60604@codethink.co.uk>
-In-Reply-To: <5028D040.60604@codethink.co.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: thomas.petazzoni@free-electrons.com, andrew@lunn.ch, netdev@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org, ben.dooks@codethink.co.uk,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120816161647.GM11188@redhat.com>
+Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
+ Jan Beulich <jbeulich@novell.com>, linux-mm@kvack.org,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Andi Kleen <ak@linux.intel.com>, Robert Richter <robert.richter@amd.com>,
+ x86@kernel.org, Hugh Dickins <hughd@google.com>,
+ Ingo Molnar <mingo@redhat.com>, Mel Gorman <mgorman@suse.de>,
+ Alex Shi <alex.shu@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ Tim Chen <tim.c.chen@linux.intel.com>, linux-kernel@vger.kernel.org,
+ Andy Lutomirski <luto@amacapital.net>, Johannes Weiner <hannes@cmpxchg.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,23 +35,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping :)
+On Thu, Aug 16, 2012 at 06:16:47PM +0200, Andrea Arcangeli wrote:
+> Hi Kirill,
+> 
+> On Thu, Aug 16, 2012 at 06:15:53PM +0300, Kirill A. Shutemov wrote:
+> >  	for (i = 0; i < pages_per_huge_page;
+> >  	     i++, p = mem_map_next(p, page, i)) {
+> 
+> It may be more optimal to avoid a multiplication/shiftleft before the
+> add, and to do:
+> 
+>   	for (i = 0, vaddr = haddr; i < pages_per_huge_page;
+>   	     i++, p = mem_map_next(p, page, i), vaddr += PAGE_SIZE) {
+> 
 
-Can we get some consensus on the right approach here? I'm loathe to code
-this if its going to be rejected.
+Makes sense. I'll update it.
 
-I'd prefer the driver to be properly split so we dont have the MDIO
-driver mapping the ethernet drivers address spaces, but if thats not
-going to be merged, I'm not feeling like doing the work for nothing.
+> >  		cond_resched();
+> > -		clear_user_highpage(p, addr + i * PAGE_SIZE);
+> > +		vaddr = haddr + i*PAGE_SIZE;
+> 
+> Not sure if gcc can optimize it away because of the external calls.
+> 
+> > +		if (!ARCH_HAS_USER_NOCACHE || i == target)
+> > +			clear_user_highpage(page + i, vaddr);
+> > +		else
+> > +			clear_user_highpage_nocache(page + i, vaddr);
+> >  	}
+> 
+> 
+> My only worry overall is if there can be some workload where this may
+> actually slow down userland if the CPU cache is very large and
+> userland would access most of the faulted in memory after the first
+> fault.
+> 
+> So I wouldn't mind to add one more check in addition of
+> !ARCH_HAS_USER_NOCACHE above to check a runtime sysctl variable. It'll
+> waste a cacheline yes but I doubt it's measurable compared to the time
+> it takes to do a >=2M hugepage copy.
 
-If the driver is to use the overlapping-address mapped-by-the-mdio
-scheme, then so be it, but I could do with knowing.
+Hm.. I think with static_key we can avoid cache overhead here. I'll try.
+ 
+> Furthermore it would allow people to benchmark its effect without
+> having to rebuild the kernel themself.
+> 
+> All other patches looks fine to me.
 
-Another point against the latter scheme is that the MDIO driver could
-sensibly be used (the block is identical) on the ArmadaXP, which has 4
-ethernet blocks rather than two, yet grouped in two pairs with a
-discontiguous address range.
+Thanks, for review. Could you take a look at huge zero page patchset? ;)
 
-I'd like to get this moved along as soon as possible though.
-
--Ian
+-- 
+ Kirill A. Shutemov
