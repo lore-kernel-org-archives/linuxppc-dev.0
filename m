@@ -1,23 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 23A182C0099
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2012 04:00:20 +1000 (EST)
-Date: Fri, 17 Aug 2012 12:56:35 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git merge branch (updated)
-In-Reply-To: <2F2AC95E-BCAD-4EE6-BC63-E8EF5B3584BE@kernel.crashing.org>
-Message-ID: <alpine.LFD.2.00.1208171256150.26104@right.am.freescale.net>
-References: <alpine.LFD.2.00.1208030838490.4148@right.am.freescale.net>
- <1344033253.24037.70.camel@pasglop>
- <7009C85C-A90F-4477-821A-507259A8F595@kernel.crashing.org>
- <alpine.LFD.2.00.1208100806200.16855@right.am.freescale.net>
- <2F2AC95E-BCAD-4EE6-BC63-E8EF5B3584BE@kernel.crashing.org>
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri2.pp.htv.fi (filtteri2.pp.htv.fi [213.243.153.185])
+ by ozlabs.org (Postfix) with ESMTP id C2DC92C00A0
+ for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2012 06:13:32 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+ by filtteri2.pp.htv.fi (Postfix) with ESMTP id 7F05A19B9E7
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2012 23:04:09 +0300 (EEST)
+Received: from smtp4.welho.com ([213.243.153.38])
+ by localhost (filtteri2.pp.htv.fi [213.243.153.185]) (amavisd-new, port 10024)
+ with ESMTP id UWdi86M+bi1P for <linuxppc-dev@ozlabs.org>;
+ Fri, 17 Aug 2012 23:04:09 +0300 (EEST)
+Received: from harshnoise (212-149-209-232.bb.dnainternet.fi [212.149.209.232])
+ by smtp4.welho.com (Postfix) with SMTP id 38F135BC010
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2012 23:04:08 +0300 (EEST)
+Date: Fri, 17 Aug 2012 23:04:06 +0300
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: linuxppc-dev@ozlabs.org
+Subject: PPC64 & DMA zone
+Message-ID: <20120817200406.GA1908@harshnoise.musicnaut.iki.fi>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
+Hi,
 
-Added a watchdog fix.
+Is there a way to reduce/limit DMA zone with PPC64 kernel (3.6-rcX)
+on G5 Mac? I have tried to search Kconfig or command line options,
+but can't find anything.
 
-- k
+The problem I have is that b43 driver (wireless chip) insists a 30-bit
+DMA mask, but I have 1.5 GB physical memory. So the only way I can get
+the wireless connection to work is to boot with "mem=1024MB". And as a
+result my bloaty applications will loose much needed memory...
 
-The following changes since commit 0d7614f09c1ebdbaa1599a5aba7593f147bf96ee:
+Thanks,
 
-  Linux 3.6-rc1 (2012-08-02 16:38:10 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
-
-for you to fetch changes up to 127c6e731106a2071ee4a6c5a34c471cd3e719f0:
-
-  booke/wdt: some ioctls do not return values properly (2012-08-17 09:03:51 -0500)
-
-----------------------------------------------------------------
-Jia Hongtao (1):
-      powerpc/fsl-pci: Only scan PCI bus if configured as a host
-
-Shengzhou Liu (1):
-      powerpc/p4080ds: dts - add usb controller version info and port0
-
-Tiejun Chen (1):
-      booke/wdt: some ioctls do not return values properly
-
-Zhao Chenhui (1):
-      powerpc/85xx: mpc85xx_defconfig - add VIA PATA support for MPC85xxCDS
-
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    7 +++++++
- arch/powerpc/configs/mpc85xx_defconfig      |    1 +
- arch/powerpc/sysdev/fsl_pci.c               |   13 ++++++++-----
- drivers/watchdog/booke_wdt.c                |    7 +++----
- 4 files changed, 19 insertions(+), 9 deletions(-)
+A.
