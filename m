@@ -1,23 +1,19 @@
-Return-Path: <B40534@freescale.com>
-From: Wang Dongsheng-B40534 <B40534@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH v2 1/2] powerpc/mpic: Add Open-PIC global timer document
-Date: Fri, 17 Aug 2012 07:15:43 +0000
-Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB481C@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1344578002-8057-1-git-send-email-Dongsheng.wang@freescale.com>
- <50255F49.5050500@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB1450@039-SN2MPN1-022.039d.mgd.msft.net>
- <50293BEA.90401@freescale.com>
- <ABB05CD9C9F68C46A5CEDC7F15439259DB1A08@039-SN2MPN1-022.039d.mgd.msft.net>
- <502AC0B0.5030801@freescale.com>
-In-Reply-To: <502AC0B0.5030801@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ian Molton <ian.molton@codethink.co.uk>
+Subject: Re: [PATCH v3 0/7] mv643xx.c: Add basic device tree support.
+Date: Fri, 17 Aug 2012 12:13:08 +0000
+References: <1344350092-24050-1-git-send-email-ian.molton@codethink.co.uk>
+ <201208101049.57586.arnd@arndb.de> <5028D040.60604@codethink.co.uk>
+In-Reply-To: <5028D040.60604@codethink.co.uk>
 MIME-Version: 1.0
-Cc: Li Yang-R58472 <r58472@freescale.com>,
- "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>, "paulus@samba.org" <paulus@samba.org>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201208171213.09160.arnd@arndb.de>
+Cc: thomas.petazzoni@free-electrons.com, andrew@lunn.ch, netdev@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, ben.dooks@codethink.co.uk,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +23,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMTUsIDIwMTIgNToxOSBBTQ0KPiBUbzogV2Fu
-ZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgYmVuaEBrZXJuZWwu
-Y3Jhc2hpbmcub3JnOyBwYXVsdXNAc2FtYmEub3JnOw0KPiBsaW51eHBwYy1kZXZAbGlzdHMub3ps
-YWJzLm9yZzsgZGV2aWNldHJlZS1kaXNjdXNzQGxpc3RzLm96bGFicy5vcmc7IEdhbGENCj4gS3Vt
-YXItQjExNzgwOyBMaSBZYW5nLVI1ODQ3Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDEvMl0g
-cG93ZXJwYy9tcGljOiBBZGQgT3Blbi1QSUMgZ2xvYmFsIHRpbWVyDQo+IGRvY3VtZW50DQo+IA0K
-PiBPbiAwOC8xMy8yMDEyIDA5OjQwIFBNLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+
-ID4+Pj4gK0V4YW1wbGUgMjoNCj4gPj4+Pj4gKw0KPiA+Pj4+PiArCXRpbWVyOiB0aW1lckAwMTBm
-MCB7DQo+ID4+Pj4+ICsJCWNvbXBhdGlibGUgPSAib3Blbi1waWMsZ2xvYmFsLXRpbWVyIjsNCj4g
-Pj4+Pj4gKwkJZGV2aWNlX3R5cGUgPSAib3Blbi1waWMiOw0KPiA+Pj4+PiArCQlyZWcgPSA8MHgw
-MTBmMCA0IDB4MDExMDAgMHgxMDA+Ow0KPiA+Pj4+PiArCQlpbnRlcnJ1cHRzID0gPDAgMCAzIDAN
-Cj4gPj4+Pj4gKwkJCSAgICAgIDEgMCAzIDANCj4gPj4+Pj4gKwkJCSAgICAgIDIgMCAzIDANCj4g
-Pj4+Pj4gKwkJICAgICAgICAgICAgICAzIDAgMyAwPjsNCj4gPj4+Pj4gKwl9Ow0KPiA+Pj4+DQo+
-ID4+Pj4gNC1jZWxsIGludGVycnVwdCBzcGVjaWZpZXJzIGFyZSBzcGVjaWZpYyB0byBGcmVlc2Nh
-bGUgTVBJQ3MuICBUaGlzDQo+ID4+Pj4gbWVhbnMgdGhlcmUncyBubyB3YXkgdG8gZGVzY3JpYmUg
-dGhlIHRpbWVyIGludGVycnVwdCBvbiBhIG5vbi0NCj4gPj4gRnJlZXNjYWxlIG9wZW5waWMuDQo+
-ID4+Pj4gQWdhaW4sIEkgc3VnZ2VzdCB3ZSBub3QgYm90aGVyIHdpdGggdGhpcyBpbiB0aGUgYWJz
-ZW5jZSBvZiBhbiBhY3R1YWwNCj4gPj4+PiBuZWVkIHRvIHN1cHBvcnQgdGhlIHRpbWVyIG9uIG5v
-bi1GcmVlc2NhbGUgb3BlbnBpYyBpbiBwYXJ0aXRpb25lZA0KPiA+PiBzY2VuYXJpb3MuDQo+ID4+
-Pj4gVGhlIGV4aXN0aW5nIG9wZW5waWMgbm9kZSBpcyBzdWZmaWNpZW50IHRvIGRlc2NyaWJlIHRo
-ZQ0KPiA+Pj4+IGhhcmR3YXJlIGluIHRoZSBhYnNlbmNlIG9mIHBhcnRpdGlvbmluZy4gICBXZSBj
-b3VsZCBoYXZlIGFuDQo+ID4+Pj4gIm9wZW5waWMtbm8tdGltZXIiIHByb3BlcnR5IHRvIGluZGlj
-YXRlIHRoYXQgd2UncmUgZGVzY3JpYmluZyBpdA0KPiA+Pj4+IHNlcGFyYXRlbHksIHNvIHRoYXQg
-dGhlIGFic2VuY2Ugb2YgYSB0aW1lciBub2RlIGlzbid0IGFtYmlndW91cyBhcw0KPiB0bw0KPiA+
-Pj4+IHdoZXRoZXIgaXQncyBhbiBvbGQgdHJlZSBvciBhIHBhcnRpdGlvbmVkIHNjZW5hcmlvLiAg
-QW4gZnNsLG1waWMNCj4gPj4+PiBjb21wYXRpYmxlIHdvdWxkIGltcGx5IG9wZW5waWMtbm8tdGlt
-ZXIuDQo+ID4+Pj4NCj4gPj4+PiBOb3RlIHRoYXQgSSBiZWxpZXZlIG1hbnkgb2YgdGhlIG5vbi1G
-cmVlc2NhbGUgb3BlbnBpYyBub2RlcyBhcmUNCj4gZ29pbmcNCj4gPj4+PiB0byBiZSBmb3VuZCBv
-biBzeXN0ZW1zIHdpdGggcmVhbCBPcGVuIEZpcm13YXJlLCBzbyB3ZSBjYW4ndCBnbw0KPiA+Pj4+
-IGNoYW5naW5nIHRoZSBkZXZpY2UgdHJlZSBmb3IgdGhlbS4NCj4gPj4+IFtXYW5nIERvbmdzaGVu
-Z10gSW4gdGhlIE9wZW4tUElDIHNwZWNpZmljYXRpb24sIHRoZXJlIGFyZSBmb3VyIHRpbWVyLg0K
-PiA+Pj4gCQlpbnRlcnJ1cHRzID0gPDAgMCAzIDANCj4gPj4+IAkJCSAgICAgIDEgMCAzIDANCj4g
-Pj4+IAkJCSAgICAgIDIgMCAzIDANCj4gPj4+IAkJICAgICAgICAgICAgICAzIDAgMyAwPjsNCj4g
-Pj4+DQo+ID4+PiBUaGUgImludGVycnVwdHMiIGp1c3QgbGV0IHVzZXIga25vdyB0aGVyZSBhcmUg
-Zm91ciB0aW1lcnMuIFVzYWdlDQo+IGJhc2VkDQo+ID4+ICJpbnRlcnJ1cHRzIg0KPiA+Pj4gYmlu
-ZGluZyB0byBjaGFuZ2UgZHRzLg0KPiA+Pg0KPiA+PiBJIGNhbid0IHVuZGVyc3RhbmQgdGhlIGFi
-b3ZlIG9yIGhvdyBpdCdzIGEgcmVzcG9uc2UgdG8gd2hhdCBJIHdyb3RlLg0KPiA+Pg0KPiA+IFtX
-YW5nIERvbmdzaGVuZ10gSSBtZWFuIHRoaXMganVzdCB0byB0ZWxsIGhvdyBtYW55IHRpbWVycyB0
-byBzdXBwb3J0IGluDQo+IE9wZW4tUElDDQo+ID4gc3BlY2lmaWNhdGlvbi4gSWYgc29tZW9uZSBu
-ZWVkcyB0byB3cml0ZSAiaW50ZXJydXB0cyIgaW50byBkdHMsIHRoaXMNCj4gbXVzdCBjb21wbHkN
-Cj4gPiB3aXRoIHRoZSBzcGVjaWZpY2F0aW9uIG9mIHRoZSBpbnRlcnJ1cHQgdG8gd3JpdGUuIHRo
-aXMgaXMgYmFzZWQgb24gdGhlDQo+IHBpYyBkcml2ZXINCj4gPiBzaG91bGQgYmUgY2hhbmdlZCBp
-biBkaWZmZXJlbnQgcGxhdGZvcm1zLg0KPiANCj4gTXkgcG9pbnQgKGJleW9uZCB0aGF0IGV4YW1w
-bGVzIHByb3ZpZGVkIHNob3VsZCBiZSB2YWxpZCBmb3IgKnNvbWUqDQo+IHN5c3RlbSkgaXMgdGhl
-cmUgaXMgbm8gdmFsaWQgdGhpbmcgdG8gcHV0IGluIHRoZSBpbnRlcnJ1cHRzIHByb3BlcnR5DQo+
-IGhlcmUgd2hlbiB0aGUgaW50ZXJydXB0IGNvbnRyb2xsZXIgaXMgbm90ICJmc2wsbXBpYyIsIHNv
-IHRoaXMgZG9lc24ndA0KPiB3b3JrLg0KPiANCltXYW5nIERvbmdzaGVuZ10gRmluZSwgSSB3aWxs
-IHJlbW92ZSB0aGlzIGRvY3VtZW50IG9mIE9wZW4tUElDIGdsb2JhbCB0aW1lci4NCldlIG9ubHkg
-c3VwcG9ydCBtcGljIHRpbWVyLiBEcml2ZXIgd2lsbCBiZSBjb21wYXRpYmxlIHdpdGggT1BFTi1Q
-SUMNCnNwZWNpZmljYXRpb24uIExldCBzb21lb25lIHdobyBjYXJlcyBhYm91dCBvcmRpbmFyeSBP
-cGVuUElDIGRyaXZlcnMgYWRkDQpzdXBwb3J0Pw0KDQo+IC1TY290dA0KDQo=
+On Monday 13 August 2012, Ian Molton wrote:
+> On 10/08/12 11:49, Arnd Bergmann wrote:
+> > On Thursday 09 August 2012, Ian Molton wrote:
+> >>>  The driver
+> >>> already knows all those offsets and they are always the same
+> >>> for all variants of mv643xx, right?
+> >> Yes, but its not clean. And no amount of refactoring is
+> >> really going to make a nice driver that also fits the ancient
+> >> (and badly thought out) OF bindings.
+> > In what way is it badly though out, or not clean? The use of
+> > underscores in the properties, and the way that the sram
+> > is configured is problematic, I agree. But The way that
+> > the three ports are addressed and how the PHY is found
+> > seems quite clever.
+> 
+> It forces one to load the MDIO driver first, because it maps ALL the
+> registers for both itself and all the ports, and the MDIO driver has no
+> way of knowing how many ethernet blocks are present (I have a device
+> here with two, and another with four). Thats anywhere from 1 to 12
+> ports, split across 1 to 4 address ranges, and theres a big gap in the
+> address range between controllers 0,1 and 2,3. *ALL* the devices on the
+> board are sharing ethernet block 0's MDIO bus. By pure luck it happens
+> to work, because the blocks 2,3 have an alias of the MDIO registers from
+> blocks 0,1.
+> 
+> Having the MDIO driver map the ethernet drivers memory is a terrible
+> solution, IMO. Ethernet drivers should map their own memory, and that
+> introduces the n-ports-per-block problem, because their address ranges
+> overlap.
+> 
+> I think the best solution is to make each ethernet block register 3 ports.
+> 
+> the PPC code can simply generate different fixups so that instead of
+> creating 3 devices, it creates one, with three ports.
+
+Ok.
+
+> Can we get some consensus on the right approach here? I'm loathe to code
+> this if its going to be rejected.
+> 
+> I'd prefer the driver to be properly split so we dont have the MDIO
+> driver mapping the ethernet drivers address spaces, but if thats not
+> going to be merged, I'm not feeling like doing the work for nothing.
+> 
+> If the driver is to use the overlapping-address mapped-by-the-mdio
+> scheme, then so be it, but I could do with knowing.
+> 
+> Another point against the latter scheme is that the MDIO driver could
+> sensibly be used (the block is identical) on the ArmadaXP, which has 4
+> ethernet blocks rather than two, yet grouped in two pairs with a
+> discontiguous address range.
+> 
+> I'd like to get this moved along as soon as possible though.
+
+I don't object to any device driver changes, but I do want to make
+sure that the bindings are sensible and can coexist with the
+ones that have been used for the past 5 years.
+
+Maybe you can move the binding for the ethernet parts out of the
+marvell.txt file into the place you want to use for the new
+bindings and then extend it to cover both the old and the new style.
+
+	Arnd
