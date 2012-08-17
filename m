@@ -1,23 +1,23 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 5E57F2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Aug 2012 01:04:20 +1000 (EST)
-Date: Fri, 17 Aug 2012 17:00:31 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
-Message-ID: <20120817150031.GA5029@redhat.com>
-References: <20120726051902.GA29466@in.ibm.com>
- <20120726052029.GB29466@in.ibm.com> <20120815165931.GA10059@redhat.com>
- <1345066913.11751.4.camel@pasglop> <20120816050030.GA12060@in.ibm.com>
- <20120816152112.GA8874@redhat.com> <20120817051307.GA4782@in.ibm.com>
+Return-Path: <fweisbec@gmail.com>
+Received: from mail-wg0-f52.google.com (mail-wg0-f52.google.com [74.125.82.52])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 224342C00B6
+ for <linuxppc-dev@ozlabs.org>; Sat, 18 Aug 2012 02:16:04 +1000 (EST)
+Received: by wgbfg15 with SMTP id fg15so3330973wgb.21
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2012 09:16:00 -0700 (PDT)
+Date: Fri, 17 Aug 2012 18:15:57 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: powerpc/perf: hw breakpoints return ENOSPC
+Message-ID: <20120817161554.GA3772@somewhere>
+References: <28857.1345091034@neuling.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120817051307.GA4782@in.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
- lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <28857.1345091034@neuling.org>
+Cc: Ingo Molnar <mingo@kernel.org>, linuxppc-dev@ozlabs.org,
+ K Prasad <prasad@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +27,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/17, Ananth N Mavinakayanahalli wrote:
->
-> On Thu, Aug 16, 2012 at 05:21:12PM +0200, Oleg Nesterov wrote:
->
-> > Hmm, I am not sure. is_swbp_insn(insn), as it is used in the arch agnostic
-> > code, should only return true if insn == UPROBE_SWBP_INSN (just in case,
-> > this logic needs more fixes but this is offtopic).
->
-> I think it does...
->
-> > If powerpc has another insn(s) which can trigger powerpc's do_int3()
-> > counterpart, they should be rejected by arch_uprobe_analyze_insn().
-> > I think.
->
-> The insn that gets passed to arch_uprobe_analyze_insn() is copy_insn()'s
-> version, which is the file copy of the instruction.
+On Thu, Aug 16, 2012 at 02:23:54PM +1000, Michael Neuling wrote:
+> Hi,
+> 
+> I've been trying to get hardware breakpoints with perf to work on POWER7
+> but I'm getting the following:
+> 
+>   % perf record -e mem:0x10000000 true
+> 
+>     Error: sys_perf_event_open() syscall returned with 28 (No space left on device).  /bin/dmesg may provide additional information.
+> 
+>     Fatal: No CONFIG_PERF_EVENTS=y kernel support configured?
+> 
+>   true: Terminated
+> 
+> (FWIW adding -a and it works fine)
+> 
+> Debugging it seems that __reserve_bp_slot() is returning ENOSPC because
+> it thinks there are no free breakpoint slots on this CPU.
+> 
+> I have a 2 CPUs, so perf userspace is doing two perf_event_open syscalls
+> to add a counter to each CPU [1].  The first syscall succeeds but the
+> second is failing.
+> 
+> On this second syscall, fetch_bp_busy_slots() sets slots.pinned to be 1,
+> despite there being no breakpoint on this CPU.  This is because the call
+> the task_bp_pinned, checks all CPUs, rather than just the current CPU.
+> POWER7 only has one hardware breakpoint per CPU (ie. HBP_NUM=1), so we
+> return ENOSPC.
+> 
+> The following patch fixes this by checking the associated CPU for each
+> breakpoint in task_bp_pinned.  I'm not familiar with this code, so it's
+> provided as a reference to the above issue.
+> 
+> Mikey
+> 
+> 1. not sure why it doesn't just do one syscall and specify all CPUs, but
+> that's another issue.  Using two syscalls should work.
 
-Yes, exactly. And we are going to single-step this saved uprobe->arch.insn,
-even if gdb/whatever replaces the original insn later or already replaced.
+This patch seems to make sense. I'll try it and run some tests.
+Can I have your Signed-off-by ?
 
-So arch_uprobe_analyze_insn() should reject the "unsafe" instructions which
-we can't step over safely.
+Thanks.
 
-> We should also take
-> care of the in-memory copy, in case gdb had inserted a breakpoint at the
-> same location, right?
-
-gdb (or even the application itself) and uprobes can obviously confuse
-each other, in many ways, and we can do nothing at least currently.
-Just we should ensure that the kernel can't crash/hang/etc.
-
-> Updating is_swbp_insn() per-arch where needed will
-> take care of both the cases, 'cos it gets called before
-> arch_analyze_uprobe_insn() too.
-
-For example. set_swbp()->is_swbp_insn() == T means that (for example)
-uprobe_register() and uprobe_mmap() raced with each other and there is
-no need for set_swbp().
-
-However, find_active_uprobe()->is_swbp_at_addr()->is_swbp_insn() is
-different, "true" confirms that this insn has triggered do_int3() and
-thus we need send_sig(SIGTRAP) (just in case, this is not strictly
-correct too but offtopic again).
-
-We definitely need more changes/fixes/improvements in this area. And
-perhaps powerpc requires more changes in the arch-neutral code, I dunno.
-In particular, I think is_swbp_insn() should have a single caller,
-is_swbp_at_addr(), and this caller should always play with current->mm.
-And many, many other changes in the long term.
-
-So far I think that, if powerpc really needs to change is_swbp_insn(),
-it would be better to make another patch and discuss this change.
-But of course I can't judge.
-
-Oleg.
+> 
+> diff --git a/kernel/events/hw_breakpoint.c b/kernel/events/hw_breakpoint.c
+> index bb38c4d..e092daa 100644
+> --- a/kernel/events/hw_breakpoint.c
+> +++ b/kernel/events/hw_breakpoint.c
+> @@ -111,14 +111,16 @@ static unsigned int max_task_bp_pinned(int cpu, enum bp_type_idx type)
+>   * Count the number of breakpoints of the same type and same task.
+>   * The given event must be not on the list.
+>   */
+> -static int task_bp_pinned(struct perf_event *bp, enum bp_type_idx type)
+> +static int task_bp_pinned(int cpu, struct perf_event *bp, enum bp_type_idx type)
+>  {
+>  	struct task_struct *tsk = bp->hw.bp_target;
+>  	struct perf_event *iter;
+>  	int count = 0;
+>  
+>  	list_for_each_entry(iter, &bp_task_head, hw.bp_list) {
+> -		if (iter->hw.bp_target == tsk && find_slot_idx(iter) == type)
+> +		if (iter->hw.bp_target == tsk &&
+> +		    find_slot_idx(iter) == type &&
+> +		    cpu == iter->cpu)
+>  			count += hw_breakpoint_weight(iter);
+>  	}
+>  
+> @@ -141,7 +143,7 @@ fetch_bp_busy_slots(struct bp_busy_slots *slots, struct perf_event *bp,
+>  		if (!tsk)
+>  			slots->pinned += max_task_bp_pinned(cpu, type);
+>  		else
+> -			slots->pinned += task_bp_pinned(bp, type);
+> +			slots->pinned += task_bp_pinned(cpu, bp, type);
+>  		slots->flexible = per_cpu(nr_bp_flexible[type], cpu);
+>  
+>  		return;
+> @@ -154,7 +156,7 @@ fetch_bp_busy_slots(struct bp_busy_slots *slots, struct perf_event *bp,
+>  		if (!tsk)
+>  			nr += max_task_bp_pinned(cpu, type);
+>  		else
+> -			nr += task_bp_pinned(bp, type);
+> +			nr += task_bp_pinned(cpu, bp, type);
+>  
+>  		if (nr > slots->pinned)
+>  			slots->pinned = nr;
+> @@ -188,7 +190,7 @@ static void toggle_bp_task_slot(struct perf_event *bp, int cpu, bool enable,
+>  	int old_idx = 0;
+>  	int idx = 0;
+>  
+> -	old_count = task_bp_pinned(bp, type);
+> +	old_count = task_bp_pinned(cpu, bp, type);
+>  	old_idx = old_count - 1;
+>  	idx = old_idx + weight;
+>  
