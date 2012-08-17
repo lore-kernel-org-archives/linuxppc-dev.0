@@ -1,20 +1,43 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1345166426.28806.0.camel@concordia>
-Subject: Re: powerpc/perf: hw breakpoints return ENOSPC
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Fri, 17 Aug 2012 11:20:26 +1000
-In-Reply-To: <1345126502.29668.36.camel@twins>
-References: <28857.1345091034@neuling.org>
- <1345102812.31459.114.camel@twins> <20344.1345115849@neuling.org>
- <1345117498.29668.23.camel@twins> <1345125747.20062.12.camel@concordia>
- <1345126502.29668.36.camel@twins>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>,
- Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, K Prasad <prasad@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
+Return-Path: <ananth@in.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D732A2C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Aug 2012 15:14:50 +1000 (EST)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
+ Thu, 16 Aug 2012 23:14:47 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id AA0FEC40002
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 23:13:50 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q7H5DOiq039952
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 23:13:35 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q7H5D8wi032621
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Aug 2012 23:13:09 -0600
+Date: Fri, 17 Aug 2012 10:43:07 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
+Message-ID: <20120817051307.GA4782@in.ibm.com>
+References: <20120726051902.GA29466@in.ibm.com>
+ <20120726052029.GB29466@in.ibm.com> <20120815165931.GA10059@redhat.com>
+ <1345066913.11751.4.camel@pasglop> <20120816050030.GA12060@in.ibm.com>
+ <20120816152112.GA8874@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120816152112.GA8874@redhat.com>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
+ lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
+ linuxppc-dev@lists.ozlabs.org
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +47,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-08-16 at 16:15 +0200, Peter Zijlstra wrote:
-> On Fri, 2012-08-17 at 00:02 +1000, Michael Ellerman wrote:
-> > You do want to guarantee that the task will always be subject to the
-> > breakpoint, even if it moves cpus. So is there any way to guarantee that
-> > other than reserving a breakpoint slot on every cpu ahead of time? 
+On Thu, Aug 16, 2012 at 05:21:12PM +0200, Oleg Nesterov wrote:
+
+...
+
+> > So, the arch agnostic code itself
+> > takes care of this case...
 > 
-> That's not how regular perf works.. regular perf can overload hw
-> resources at will and stuff is strictly per-cpu.
-..
-> For regular (!pinned) events, we'll RR the created events on the
-> available hardware resources.
+> Yes. I forgot about install_breakpoint()->is_swbp_insn() check which
+> returns -ENOTSUPP, somehow I thought arch_uprobe_analyze_insn() does
+> this.
+> 
+> > or am I missing something?
+> 
+> No, it is me.
+> 
+> > However, I see that we need a powerpc specific is_swbp_insn()
+> > implementation since we will have to take care of all the trap variants.
+> 
+> Hmm, I am not sure. is_swbp_insn(insn), as it is used in the arch agnostic
+> code, should only return true if insn == UPROBE_SWBP_INSN (just in case,
+> this logic needs more fixes but this is offtopic).
 
-Yeah I know, but that isn't really the semantics you want for a
-breakpoint. You don't want to sometimes have the breakpoint active and
-sometimes not, it needs to be active at all times when the task is
-running.
+I think it does...
 
-At the very least you want it to behave like a pinned event, ie. if it
-can't be scheduled you get notified and can tell the user.
+> If powerpc has another insn(s) which can trigger powerpc's do_int3()
+> counterpart, they should be rejected by arch_uprobe_analyze_insn().
+> I think.
 
-> HWBP does things completely different and reserves a slot over all CPUs
-> for everything, thus stuff completely falls apart.
+The insn that gets passed to arch_uprobe_analyze_insn() is copy_insn()'s
+version, which is the file copy of the instruction. We should also take
+care of the in-memory copy, in case gdb had inserted a breakpoint at the
+same location, right? Updating is_swbp_insn() per-arch where needed will
+take care of both the cases, 'cos it gets called before
+arch_analyze_uprobe_insn() too.
 
-So it would seem :)
+> > I will need to update the patches based on changes being made by Oleg
+> > and Sebastien for the single-step issues.
+> 
+> Perhaps you can do this in a separate change?
+> 
+> We need some (simple) changes in the arch agnostic code first, they
+> should not break poweppc. These changes are still under discussion.
+> Once we have "__weak  arch_uprobe_step*" you can reimplement these
+> hooks and fix the problems with single-stepping.
 
-I guess my point was that reserving a slot on each cpu seems like a
-reasonable way of guaranteeing that wherever the task goes we will be
-able to install the breakpoint.
+OK. Agreed.
 
-But obviously we need some way to make it play nice with perf.
-
-cheers
+Ananth
