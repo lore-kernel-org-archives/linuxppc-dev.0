@@ -1,22 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 565062C008B
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Aug 2012 15:32:10 +1000 (EST)
-Subject: Re: [git pull] Please pull powerpc.git merge branch (updated)
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <alpine.LFD.2.00.1208100806200.16855@right.am.freescale.net>
-Date: Fri, 17 Aug 2012 00:28:48 -0500
-Message-Id: <2F2AC95E-BCAD-4EE6-BC63-E8EF5B3584BE@kernel.crashing.org>
-References: <alpine.LFD.2.00.1208030838490.4148@right.am.freescale.net>
- <1344033253.24037.70.camel@pasglop>
- <7009C85C-A90F-4477-821A-507259A8F595@kernel.crashing.org>
- <alpine.LFD.2.00.1208100806200.16855@right.am.freescale.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <B40534@freescale.com>
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH v2 1/2] powerpc/mpic: Add Open-PIC global timer document
+Date: Fri, 17 Aug 2012 07:15:43 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DB481C@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1344578002-8057-1-git-send-email-Dongsheng.wang@freescale.com>
+ <50255F49.5050500@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB1450@039-SN2MPN1-022.039d.mgd.msft.net>
+ <50293BEA.90401@freescale.com>
+ <ABB05CD9C9F68C46A5CEDC7F15439259DB1A08@039-SN2MPN1-022.039d.mgd.msft.net>
+ <502AC0B0.5030801@freescale.com>
+In-Reply-To: <502AC0B0.5030801@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>, "paulus@samba.org" <paulus@samba.org>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +27,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben,
-
-Poke.  :)
-
-- k
-
-On Aug 10, 2012, at 8:07 AM, Kumar Gala wrote:
-
-> Ben,
->=20
-> Two updates from last week (one dts bug fix, one minor defconfig =
-update)
->=20
-> - k
->=20
-> The following changes since commit =
-0d7614f09c1ebdbaa1599a5aba7593f147bf96ee:
->=20
->  Linux 3.6-rc1 (2012-08-02 16:38:10 -0700)
->=20
-> are available in the git repository at:
->=20
->  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git merge
->=20
-> for you to fetch changes up to =
-09a3017a585eb8567a7de15b426bb1dfb548bf0f:
->=20
->  powerpc/p4080ds: dts - add usb controller version info and port0 =
-(2012-08-10 07:47:02 -0500)
->=20
-> ----------------------------------------------------------------
-> Jia Hongtao (1):
->      powerpc/fsl-pci: Only scan PCI bus if configured as a host
->=20
-> Shengzhou Liu (1):
->      powerpc/p4080ds: dts - add usb controller version info and port0
->=20
-> Zhao Chenhui (1):
->      powerpc/85xx: mpc85xx_defconfig - add VIA PATA support for =
-MPC85xxCDS
->=20
-> arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    7 +++++++
-> arch/powerpc/configs/mpc85xx_defconfig      |    1 +
-> arch/powerpc/sysdev/fsl_pci.c               |   13 ++++++++-----
-> 3 files changed, 16 insertions(+), 5 deletions(-)
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogV2VkbmVzZGF5LCBBdWd1c3QgMTUsIDIwMTIgNToxOSBBTQ0KPiBUbzogV2Fu
+ZyBEb25nc2hlbmctQjQwNTM0DQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgYmVuaEBrZXJuZWwu
+Y3Jhc2hpbmcub3JnOyBwYXVsdXNAc2FtYmEub3JnOw0KPiBsaW51eHBwYy1kZXZAbGlzdHMub3ps
+YWJzLm9yZzsgZGV2aWNldHJlZS1kaXNjdXNzQGxpc3RzLm96bGFicy5vcmc7IEdhbGENCj4gS3Vt
+YXItQjExNzgwOyBMaSBZYW5nLVI1ODQ3Mg0KPiBTdWJqZWN0OiBSZTogW1BBVENIIHYyIDEvMl0g
+cG93ZXJwYy9tcGljOiBBZGQgT3Blbi1QSUMgZ2xvYmFsIHRpbWVyDQo+IGRvY3VtZW50DQo+IA0K
+PiBPbiAwOC8xMy8yMDEyIDA5OjQwIFBNLCBXYW5nIERvbmdzaGVuZy1CNDA1MzQgd3JvdGU6DQo+
+ID4+Pj4gK0V4YW1wbGUgMjoNCj4gPj4+Pj4gKw0KPiA+Pj4+PiArCXRpbWVyOiB0aW1lckAwMTBm
+MCB7DQo+ID4+Pj4+ICsJCWNvbXBhdGlibGUgPSAib3Blbi1waWMsZ2xvYmFsLXRpbWVyIjsNCj4g
+Pj4+Pj4gKwkJZGV2aWNlX3R5cGUgPSAib3Blbi1waWMiOw0KPiA+Pj4+PiArCQlyZWcgPSA8MHgw
+MTBmMCA0IDB4MDExMDAgMHgxMDA+Ow0KPiA+Pj4+PiArCQlpbnRlcnJ1cHRzID0gPDAgMCAzIDAN
+Cj4gPj4+Pj4gKwkJCSAgICAgIDEgMCAzIDANCj4gPj4+Pj4gKwkJCSAgICAgIDIgMCAzIDANCj4g
+Pj4+Pj4gKwkJICAgICAgICAgICAgICAzIDAgMyAwPjsNCj4gPj4+Pj4gKwl9Ow0KPiA+Pj4+DQo+
+ID4+Pj4gNC1jZWxsIGludGVycnVwdCBzcGVjaWZpZXJzIGFyZSBzcGVjaWZpYyB0byBGcmVlc2Nh
+bGUgTVBJQ3MuICBUaGlzDQo+ID4+Pj4gbWVhbnMgdGhlcmUncyBubyB3YXkgdG8gZGVzY3JpYmUg
+dGhlIHRpbWVyIGludGVycnVwdCBvbiBhIG5vbi0NCj4gPj4gRnJlZXNjYWxlIG9wZW5waWMuDQo+
+ID4+Pj4gQWdhaW4sIEkgc3VnZ2VzdCB3ZSBub3QgYm90aGVyIHdpdGggdGhpcyBpbiB0aGUgYWJz
+ZW5jZSBvZiBhbiBhY3R1YWwNCj4gPj4+PiBuZWVkIHRvIHN1cHBvcnQgdGhlIHRpbWVyIG9uIG5v
+bi1GcmVlc2NhbGUgb3BlbnBpYyBpbiBwYXJ0aXRpb25lZA0KPiA+PiBzY2VuYXJpb3MuDQo+ID4+
+Pj4gVGhlIGV4aXN0aW5nIG9wZW5waWMgbm9kZSBpcyBzdWZmaWNpZW50IHRvIGRlc2NyaWJlIHRo
+ZQ0KPiA+Pj4+IGhhcmR3YXJlIGluIHRoZSBhYnNlbmNlIG9mIHBhcnRpdGlvbmluZy4gICBXZSBj
+b3VsZCBoYXZlIGFuDQo+ID4+Pj4gIm9wZW5waWMtbm8tdGltZXIiIHByb3BlcnR5IHRvIGluZGlj
+YXRlIHRoYXQgd2UncmUgZGVzY3JpYmluZyBpdA0KPiA+Pj4+IHNlcGFyYXRlbHksIHNvIHRoYXQg
+dGhlIGFic2VuY2Ugb2YgYSB0aW1lciBub2RlIGlzbid0IGFtYmlndW91cyBhcw0KPiB0bw0KPiA+
+Pj4+IHdoZXRoZXIgaXQncyBhbiBvbGQgdHJlZSBvciBhIHBhcnRpdGlvbmVkIHNjZW5hcmlvLiAg
+QW4gZnNsLG1waWMNCj4gPj4+PiBjb21wYXRpYmxlIHdvdWxkIGltcGx5IG9wZW5waWMtbm8tdGlt
+ZXIuDQo+ID4+Pj4NCj4gPj4+PiBOb3RlIHRoYXQgSSBiZWxpZXZlIG1hbnkgb2YgdGhlIG5vbi1G
+cmVlc2NhbGUgb3BlbnBpYyBub2RlcyBhcmUNCj4gZ29pbmcNCj4gPj4+PiB0byBiZSBmb3VuZCBv
+biBzeXN0ZW1zIHdpdGggcmVhbCBPcGVuIEZpcm13YXJlLCBzbyB3ZSBjYW4ndCBnbw0KPiA+Pj4+
+IGNoYW5naW5nIHRoZSBkZXZpY2UgdHJlZSBmb3IgdGhlbS4NCj4gPj4+IFtXYW5nIERvbmdzaGVu
+Z10gSW4gdGhlIE9wZW4tUElDIHNwZWNpZmljYXRpb24sIHRoZXJlIGFyZSBmb3VyIHRpbWVyLg0K
+PiA+Pj4gCQlpbnRlcnJ1cHRzID0gPDAgMCAzIDANCj4gPj4+IAkJCSAgICAgIDEgMCAzIDANCj4g
+Pj4+IAkJCSAgICAgIDIgMCAzIDANCj4gPj4+IAkJICAgICAgICAgICAgICAzIDAgMyAwPjsNCj4g
+Pj4+DQo+ID4+PiBUaGUgImludGVycnVwdHMiIGp1c3QgbGV0IHVzZXIga25vdyB0aGVyZSBhcmUg
+Zm91ciB0aW1lcnMuIFVzYWdlDQo+IGJhc2VkDQo+ID4+ICJpbnRlcnJ1cHRzIg0KPiA+Pj4gYmlu
+ZGluZyB0byBjaGFuZ2UgZHRzLg0KPiA+Pg0KPiA+PiBJIGNhbid0IHVuZGVyc3RhbmQgdGhlIGFi
+b3ZlIG9yIGhvdyBpdCdzIGEgcmVzcG9uc2UgdG8gd2hhdCBJIHdyb3RlLg0KPiA+Pg0KPiA+IFtX
+YW5nIERvbmdzaGVuZ10gSSBtZWFuIHRoaXMganVzdCB0byB0ZWxsIGhvdyBtYW55IHRpbWVycyB0
+byBzdXBwb3J0IGluDQo+IE9wZW4tUElDDQo+ID4gc3BlY2lmaWNhdGlvbi4gSWYgc29tZW9uZSBu
+ZWVkcyB0byB3cml0ZSAiaW50ZXJydXB0cyIgaW50byBkdHMsIHRoaXMNCj4gbXVzdCBjb21wbHkN
+Cj4gPiB3aXRoIHRoZSBzcGVjaWZpY2F0aW9uIG9mIHRoZSBpbnRlcnJ1cHQgdG8gd3JpdGUuIHRo
+aXMgaXMgYmFzZWQgb24gdGhlDQo+IHBpYyBkcml2ZXINCj4gPiBzaG91bGQgYmUgY2hhbmdlZCBp
+biBkaWZmZXJlbnQgcGxhdGZvcm1zLg0KPiANCj4gTXkgcG9pbnQgKGJleW9uZCB0aGF0IGV4YW1w
+bGVzIHByb3ZpZGVkIHNob3VsZCBiZSB2YWxpZCBmb3IgKnNvbWUqDQo+IHN5c3RlbSkgaXMgdGhl
+cmUgaXMgbm8gdmFsaWQgdGhpbmcgdG8gcHV0IGluIHRoZSBpbnRlcnJ1cHRzIHByb3BlcnR5DQo+
+IGhlcmUgd2hlbiB0aGUgaW50ZXJydXB0IGNvbnRyb2xsZXIgaXMgbm90ICJmc2wsbXBpYyIsIHNv
+IHRoaXMgZG9lc24ndA0KPiB3b3JrLg0KPiANCltXYW5nIERvbmdzaGVuZ10gRmluZSwgSSB3aWxs
+IHJlbW92ZSB0aGlzIGRvY3VtZW50IG9mIE9wZW4tUElDIGdsb2JhbCB0aW1lci4NCldlIG9ubHkg
+c3VwcG9ydCBtcGljIHRpbWVyLiBEcml2ZXIgd2lsbCBiZSBjb21wYXRpYmxlIHdpdGggT1BFTi1Q
+SUMNCnNwZWNpZmljYXRpb24uIExldCBzb21lb25lIHdobyBjYXJlcyBhYm91dCBvcmRpbmFyeSBP
+cGVuUElDIGRyaXZlcnMgYWRkDQpzdXBwb3J0Pw0KDQo+IC1TY290dA0KDQo=
