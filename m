@@ -1,21 +1,26 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-Received: from mail4-relais-sop.national.inria.fr
- (mail4-relais-sop.national.inria.fr [192.134.164.105])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.inria.fr", Issuer "TERENA SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3C92E2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Aug 2012 17:03:09 +1000 (EST)
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Geoff Levand <geoff@infradead.org>
-Subject: [PATCH 9/9] sound/ppc/snd_ps3.c: fix error return code
-Date: Sun, 19 Aug 2012 09:02:59 +0200
-Message-Id: <1345359780-18647-9-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1345359780-18647-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1345359780-18647-1-git-send-email-Julia.Lawall@lip6.fr>
-Cc: cbe-oss-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- Takashi Iwai <tiwai@suse.de>, kernel-janitors@vger.kernel.org,
- linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 71F232C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 07:02:41 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH 4/8] time: Condense timekeeper.xtime into xtime_sec
+References: <1342156917-25092-1-git-send-email-john.stultz@linaro.org>
+ <1342156917-25092-5-git-send-email-john.stultz@linaro.org>
+Date: Sun, 19 Aug 2012 23:02:21 +0200
+In-Reply-To: <1342156917-25092-5-git-send-email-john.stultz@linaro.org> (John
+ Stultz's message of "Fri, 13 Jul 2012 01:21:53 -0400")
+Message-ID: <m2fw7ilhnm.fsf@igel.home>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Prarit Bhargava <prarit@redhat.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <Julia.Lawall@lip6.fr>
+John Stultz <john.stultz@linaro.org> writes:
 
-Initialize ret before returning on failure, as done elsewhere in the
-function.
+> The timekeeper struct has a xtime_nsec, which keeps the
+> sub-nanosecond remainder.  This ends up being somewhat
+> duplicative of the timekeeper.xtime.tv_nsec value, and we
+> have to do extra work to keep them apart, copying the full
+> nsec portion out and back in over and over.
+>
+> This patch simplifies some of the logic by taking the timekeeper
+> xtime value and splitting it into timekeeper.xtime_sec and
+> reuses the timekeeper.xtime_nsec for the sub-second portion
+> (stored in higher res shifted nanoseconds).
+>
+> This simplifies some of the accumulation logic. And will
+> allow for more accurate timekeeping once the vsyscall code
+> is updated to use the shifted nanosecond remainder.
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+This (together with b44d50d "time: Fix casting issue in tk_set_xtime and
+tk_xtime_add") is causing resume to hang on the iBook (PowerBook6,7).
+The fact that the add-on commit is needed to uncover the bug might give
+a hint, but I'm unable to decipher it.
 
-// <smpl>
-(
-if@p1 (\(ret < 0\|ret != 0\))
- { ... return ret; }
-|
-ret@p1 = 0
-)
-... when != ret = e1
-    when != &ret
-*if(...)
-{
-  ... when != ret = e2
-      when forall
- return ret;
-}
+Andreas.
 
-// </smpl>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
----
- sound/ppc/snd_ps3.c |    1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
-index 1aa52ef..9b18b52 100644
---- a/sound/ppc/snd_ps3.c
-+++ b/sound/ppc/snd_ps3.c
-@@ -1040,6 +1040,7 @@ static int __devinit snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
- 				   GFP_KERNEL);
- 	if (!the_card.null_buffer_start_vaddr) {
- 		pr_info("%s: nullbuffer alloc failed\n", __func__);
-+		ret = -ENOMEM;
- 		goto clean_preallocate;
- 	}
- 	pr_debug("%s: null vaddr=%p dma=%#llx\n", __func__,
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
