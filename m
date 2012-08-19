@@ -1,13 +1,21 @@
-Return-Path: <aaro.koskinen@iki.fi>
-Received: from filtteri5.pp.htv.fi (filtteri5.pp.htv.fi [213.243.153.188])
- by ozlabs.org (Postfix) with ESMTP id A17742C0098
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Aug 2012 03:43:01 +1000 (EST)
-From: Aaro Koskinen <aaro.koskinen@iki.fi>
-To: benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: dma-iommu: fix IOMMU window check
-Date: Sat, 18 Aug 2012 20:34:15 +0300
-Message-Id: <1345311255-30657-1-git-send-email-aaro.koskinen@iki.fi>
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail4-relais-sop.national.inria.fr
+ (mail4-relais-sop.national.inria.fr [192.134.164.105])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.inria.fr", Issuer "TERENA SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3C92E2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Aug 2012 17:03:09 +1000 (EST)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: Geoff Levand <geoff@infradead.org>
+Subject: [PATCH 9/9] sound/ppc/snd_ps3.c: fix error return code
+Date: Sun, 19 Aug 2012 09:02:59 +0200
+Message-Id: <1345359780-18647-9-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1345359780-18647-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1345359780-18647-1-git-send-email-Julia.Lawall@lip6.fr>
+Cc: cbe-oss-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
+ Takashi Iwai <tiwai@suse.de>, kernel-janitors@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,41 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Checking for device mask to cover the whole IOMMU table is too strict.
-IOMMU allocators should handle mask constraint properly for each
-allocation.
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-The patch enables to use old AirPort Extreme cards on PowerMacs with
-more than 1GB of memory; without the patch the driver init fails with:
+Initialize ret before returning on failure, as done elsewhere in the
+function.
 
-  b43-pci-bridge 0001:01:01.0: Warning: IOMMU window too big for device mask
-  b43-pci-bridge 0001:01:01.0: mask: 0x3fffffff, table end: 0x80000000
-  b43-phy0 ERROR: The machine/kernel does not support the required 30-bit DMA mask
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
 
-Signed-off-by: Aaro Koskinen <aaro.koskinen@iki.fi>
+// <smpl>
+(
+if@p1 (\(ret < 0\|ret != 0\))
+ { ... return ret; }
+|
+ret@p1 = 0
+)
+... when != ret = e1
+    when != &ret
+*if(...)
+{
+  ... when != ret = e2
+      when forall
+ return ret;
+}
+
+// </smpl>
+
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+
 ---
- arch/powerpc/kernel/dma-iommu.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+ sound/ppc/snd_ps3.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-index 2d7bb8c..e489752 100644
---- a/arch/powerpc/kernel/dma-iommu.c
-+++ b/arch/powerpc/kernel/dma-iommu.c
-@@ -83,11 +83,10 @@ static int dma_iommu_dma_supported(struct device *dev, u64 mask)
- 		return 0;
+diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
+index 1aa52ef..9b18b52 100644
+--- a/sound/ppc/snd_ps3.c
++++ b/sound/ppc/snd_ps3.c
+@@ -1040,6 +1040,7 @@ static int __devinit snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
+ 				   GFP_KERNEL);
+ 	if (!the_card.null_buffer_start_vaddr) {
+ 		pr_info("%s: nullbuffer alloc failed\n", __func__);
++		ret = -ENOMEM;
+ 		goto clean_preallocate;
  	}
- 
--	if ((tbl->it_offset + tbl->it_size) > (mask >> IOMMU_PAGE_SHIFT)) {
--		dev_info(dev, "Warning: IOMMU window too big for device mask\n");
--		dev_info(dev, "mask: 0x%08llx, table end: 0x%08lx\n",
--				mask, (tbl->it_offset + tbl->it_size) <<
--				IOMMU_PAGE_SHIFT);
-+	if (tbl->it_offset > (mask >> IOMMU_PAGE_SHIFT)) {
-+		dev_info(dev, "Warning: IOMMU offset too big for device mask\n");
-+		dev_info(dev, "mask: 0x%08llx, table offset: 0x%08lx\n",
-+				mask, tbl->it_offset << IOMMU_PAGE_SHIFT);
- 		return 0;
- 	} else
- 		return 1;
--- 
-1.7.2.5
+ 	pr_debug("%s: null vaddr=%p dma=%#llx\n", __func__,
