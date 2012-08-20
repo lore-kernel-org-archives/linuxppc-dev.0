@@ -1,16 +1,16 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id B49F82C00D8
+ by ozlabs.org (Postfix) with ESMTP id 121862C010B
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 19:30:51 +1000 (EST)
 From: wency@cn.fujitsu.com
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com
-Subject: [RFC V7 PATCH 01/19] memory-hotplug: rename remove_memory() to
- offline_memory()/offline_pages()
-Date: Mon, 20 Aug 2012 17:35:24 +0800
-Message-Id: <1345455342-27752-2-git-send-email-wency@cn.fujitsu.com>
+Subject: [RFC V7 PATCH 03/19] memory-hotplug: store the node id in
+ acpi_memory_device
+Date: Mon, 20 Aug 2012 17:35:26 +0800
+Message-Id: <1345455342-27752-4-git-send-email-wency@cn.fujitsu.com>
 In-Reply-To: <1345455342-27752-1-git-send-email-wency@cn.fujitsu.com>
 References: <1345455342-27752-1-git-send-email-wency@cn.fujitsu.com>
 Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
@@ -26,19 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+From: Wen Congyang <wency@cn.fujitsu.com>
 
-remove_memory() only try to offline pages. It is called in two cases:
-1. hot remove a memory device
-2. echo offline >/sys/devices/system/memory/memoryXX/state
-
-In the 1st case, we should also change memory block's state, and notify
-the userspace that the memory block's state is changed after offlining
-pages.
-
-So rename remove_memory() to offline_memory()/offline_pages(). And in
-the 1st case, offline_memory() will be used. The function offline_memory()
-is not implemented. In the 2nd case, offline_pages() will be used.
+The memory device has only one node id. Store the node id when
+enable the memory device, and we can reuse it when removing the
+memory device.
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -49,120 +41,34 @@ CC: Christoph Lameter <cl@linux.com>
 Cc: Minchan Kim <minchan.kim@gmail.com>
 CC: Andrew Morton <akpm@linux-foundation.org>
 CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+Reviewed-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 ---
- drivers/acpi/acpi_memhotplug.c |    2 +-
- drivers/base/memory.c          |    9 +++------
- include/linux/memory_hotplug.h |    3 ++-
- mm/memory_hotplug.c            |   22 ++++++++++++++--------
- 4 files changed, 20 insertions(+), 16 deletions(-)
+ drivers/acpi/acpi_memhotplug.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
-index 24c807f..2a7beac 100644
+index 2a7beac..7873832 100644
 --- a/drivers/acpi/acpi_memhotplug.c
 +++ b/drivers/acpi/acpi_memhotplug.c
-@@ -318,7 +318,7 @@ static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
- 	 */
- 	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
- 		if (info->enabled) {
--			result = remove_memory(info->start_addr, info->length);
-+			result = offline_memory(info->start_addr, info->length);
- 			if (result)
- 				return result;
- 		}
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 7dda4f7..44e7de6 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -248,26 +248,23 @@ static bool pages_correctly_reserved(unsigned long start_pfn,
- static int
- memory_block_action(unsigned long phys_index, unsigned long action)
- {
--	unsigned long start_pfn, start_paddr;
-+	unsigned long start_pfn;
- 	unsigned long nr_pages = PAGES_PER_SECTION * sections_per_block;
- 	struct page *first_page;
- 	int ret;
+@@ -83,6 +83,7 @@ struct acpi_memory_info {
+ struct acpi_memory_device {
+ 	struct acpi_device * device;
+ 	unsigned int state;	/* State of the memory device */
++	int nid;
+ 	struct list_head res_list;
+ };
  
- 	first_page = pfn_to_page(phys_index << PFN_SECTION_SHIFT);
-+	start_pfn = page_to_pfn(first_page);
- 
- 	switch (action) {
- 		case MEM_ONLINE:
--			start_pfn = page_to_pfn(first_page);
--
- 			if (!pages_correctly_reserved(start_pfn, nr_pages))
- 				return -EBUSY;
- 
- 			ret = online_pages(start_pfn, nr_pages);
- 			break;
- 		case MEM_OFFLINE:
--			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
--			ret = remove_memory(start_paddr,
--					    nr_pages << PAGE_SHIFT);
-+			ret = offline_pages(start_pfn, nr_pages);
- 			break;
- 		default:
- 			WARN(1, KERN_WARNING "%s(%ld, %ld) unknown action: "
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index 910550f..c183f39 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -233,7 +233,8 @@ static inline int is_mem_section_removable(unsigned long pfn,
- extern int mem_online_node(int nid);
- extern int add_memory(int nid, u64 start, u64 size);
- extern int arch_add_memory(int nid, u64 start, u64 size);
--extern int remove_memory(u64 start, u64 size);
-+extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
-+extern int offline_memory(u64 start, u64 size);
- extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
- 								int nr_pages);
- extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 3ad25f9..c182c76 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -866,7 +866,7 @@ check_pages_isolated(unsigned long start_pfn, unsigned long end_pfn)
- 	return offlined;
- }
- 
--static int __ref offline_pages(unsigned long start_pfn,
-+static int __ref __offline_pages(unsigned long start_pfn,
- 		  unsigned long end_pfn, unsigned long timeout)
- {
- 	unsigned long pfn, nr_pages, expire;
-@@ -994,18 +994,24 @@ out:
- 	return ret;
- }
- 
--int remove_memory(u64 start, u64 size)
-+int offline_pages(unsigned long start_pfn, unsigned long nr_pages)
- {
--	unsigned long start_pfn, end_pfn;
-+	return __offline_pages(start_pfn, start_pfn + nr_pages, 120 * HZ);
-+}
- 
--	start_pfn = PFN_DOWN(start);
--	end_pfn = start_pfn + PFN_DOWN(size);
--	return offline_pages(start_pfn, end_pfn, 120 * HZ);
-+int offline_memory(u64 start, u64 size)
-+{
-+	return -EINVAL;
- }
- #else
--int remove_memory(u64 start, u64 size)
-+int offline_pages(u64 start, u64 size)
-+{
-+	return -EINVAL;
-+}
+@@ -256,6 +257,9 @@ static int acpi_memory_enable_device(struct acpi_memory_device *mem_device)
+ 		info->enabled = 1;
+ 		num_enabled++;
+ 	}
 +
-+int offline_memory(u64 start, u64 size)
- {
- 	return -EINVAL;
- }
- #endif /* CONFIG_MEMORY_HOTREMOVE */
--EXPORT_SYMBOL_GPL(remove_memory);
-+EXPORT_SYMBOL_GPL(offline_memory);
++	mem_device->nid = node;
++
+ 	if (!num_enabled) {
+ 		printk(KERN_ERR PREFIX "add_memory failed\n");
+ 		mem_device->state = MEMORY_INVALID_STATE;
 -- 
 1.7.1
