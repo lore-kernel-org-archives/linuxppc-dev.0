@@ -2,29 +2,31 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9F68A2C0388
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 23:49:47 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6A6752C00C3
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 23:49:49 +1000 (EST)
 Received: from /spool/local
  by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 20 Aug 2012 09:49:44 -0400
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 96EED38C806E
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:26 -0400 (EDT)
+ Mon, 20 Aug 2012 09:49:46 -0400
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id D2DE638C8041
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:31 -0400 (EDT)
 Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q7KDnQiY066294
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:26 -0400
+ by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q7KDnRWq34013296
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:28 -0400
 Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
  by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q7KDnPsn031061
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:26 -0400
+ q7KDnRuF031148
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:27 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH V4 0/8] Rework on PowerNV P7IOC initialization 
-Date: Mon, 20 Aug 2012 21:49:13 +0800
-Message-Id: <1345470561-17785-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/8] ppc/pnv: PE list based on creation order
+Date: Mon, 20 Aug 2012 21:49:15 +0800
+Message-Id: <1345470561-17785-3-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1345470561-17785-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1345470561-17785-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: weiyang@linux.vnet.ibm.com, Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,50 +37,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The rework is done based on Ben's initial ideas on how PE and resource
-assignment is done on top of PCI core instead of doing resource assignment
-by powernv platform. With the series of patches, the following aspects will
-be covered:
+The resource (I/O and MMIO) will be assigned on basis of PE from
+top to bottom so that we can implement the trick here: the resource
+that has been assigned to parent PE could be taken by child PE if
+necessary.
 
-	- Only create PE based on PCI bus. Basically, there will be 2 types
-	  of PEs built on PCI bus: (A) PE only includes single PCI bus. (B)
-	  PE includes the PCI bus as well as its subordinate PCI buses.
-	- Make the I/O and MMIO resources of P2P bridge aligned according to
-	  the PHB's resource layout. For example, MMIO resource of P2P bridges
-	  will be aligned with 16MB if PHB has 16MB M32 segment.
-	- The resource allocation will be done on basis of PE.
-	- Trivial fixup on the hook of enabling PCI device, PE check etc.
+The current implementation already has PE list per PHB basis, but
+the list doesn't meet our requirment: tracing PE based on their
+cration time from top to bottom. So the patch does rename for the
+DMA based PE list and introduces the list to trace the PEs sequentially
+based on their creation time.
 
-The series of patches has been verified on Firebird-L based on kernel 3.6.RC2. During
-the kernel boots, USB HUBs can be detected and initialized correctly. Also, the disk
-drive as well as network interfaces can work successfully after booting into shell
-environment.
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Reviewed-by: Ram Pai <linuxram@us.ibm.com>
+Reviewed-by: Richard Yang <weiyang@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c |   12 ++++++++----
+ arch/powerpc/platforms/powernv/pci.h      |   10 ++++++++--
+ 2 files changed, 16 insertions(+), 6 deletions(-)
 
-V1 -> V2
-	- Add separate field into "struct pci_host_bridge" to trace the minimal
-	  alignment of prefetchable MMIO bars for P2P bridges (Benjamin Herrenschmidt)
-	- Reduced variable names while measuring the MMIO bars (Benjamin Herrenschmidt)
-	- Change the commit log for more clear description on [PATCH 2/8] (Benjamin Herrenschmidt)
-	- Change the commit log for more clear description on the types of PCI bus
-	  sensitive PEs on [PATCH 5/8] (Richard Yang)
-
-V2 -> V3
-	- Rework the sequence of the patches so that it won't break "git bitsect" (Benjamin Herrenschmidt)
-	- Cleanup on variables name so that they have shorter length (Benjamin Herrenschmidt)
-	- Rework on PE's resource calculation based on the PCI bus (Benjamin Herrenschmidt)
-	- Cleanup on changelog (Benjamin Herrenschmidt)
-
-V3 -> V4
-	- Rebase to 3.6.RC2
-	- The series of patches has been reworked to comply with the generic part
-	  "[PATCH v8 0/8] Minimal alignment for p2p bars"	
-	- Remove the duplicate assignment for PE number (Richard Yang)
-
------
-
-arch/powerpc/platforms/powernv/pci-ioda.c |  694 ++++++++---------------------
-arch/powerpc/platforms/powernv/pci.h      |   21 +-
-2 files changed, 195 insertions(+), 520 deletions(-)
-
-Thanks,
-Gavin
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 138de18..61b0571 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -657,13 +657,13 @@ static void __devinit pnv_ioda_link_pe_by_weight(struct pnv_phb *phb,
+ {
+ 	struct pnv_ioda_pe *lpe;
+ 
+-	list_for_each_entry(lpe, &phb->ioda.pe_list, link) {
++	list_for_each_entry(lpe, &phb->ioda.pe_dma_list, dma_link) {
+ 		if (lpe->dma_weight < pe->dma_weight) {
+-			list_add_tail(&pe->link, &lpe->link);
++			list_add_tail(&pe->dma_link, &lpe->dma_link);
+ 			return;
+ 		}
+ 	}
+-	list_add_tail(&pe->link, &phb->ioda.pe_list);
++	list_add_tail(&pe->dma_link, &phb->ioda.pe_dma_list);
+ }
+ 
+ static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
+@@ -829,6 +829,9 @@ static void __devinit pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+ 	/* Associate it with all child devices */
+ 	pnv_ioda_setup_same_PE(bus, pe);
+ 
++	/* Put PE to the list */
++	list_add_tail(&pe->list, &phb->ioda.pe_list);
++
+ 	/* Account for one DMA PE if at least one DMA capable device exist
+ 	 * below the bridge
+ 	 */
+@@ -1012,7 +1015,7 @@ static void __devinit pnv_ioda_setup_dma(struct pnv_phb *phb)
+ 	remaining = phb->ioda.tce32_count;
+ 	tw = phb->ioda.dma_weight;
+ 	base = 0;
+-	list_for_each_entry(pe, &phb->ioda.pe_list, link) {
++	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+ 		if (!pe->dma_weight)
+ 			continue;
+ 		if (!remaining) {
+@@ -1305,6 +1308,7 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
+ 	phb->ioda.pe_array = aux + pemap_off;
+ 	set_bit(0, phb->ioda.pe_alloc);
+ 
++	INIT_LIST_HEAD(&phb->ioda.pe_dma_list);
+ 	INIT_LIST_HEAD(&phb->ioda.pe_list);
+ 
+ 	/* Calculate how many 32-bit TCE segments we have */
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index 0cb760c..b70720b 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -59,7 +59,8 @@ struct pnv_ioda_pe {
+ 	int			mve_number;
+ 
+ 	/* Link in list of PE#s */
+-	struct list_head	link;
++	struct list_head	dma_link;
++	struct list_head	list;
+ };
+ 
+ struct pnv_phb {
+@@ -107,6 +108,11 @@ struct pnv_phb {
+ 			unsigned int		*io_segmap;
+ 			struct pnv_ioda_pe	*pe_array;
+ 
++			/* Sorted list of used PE's based
++			 * on the sequence of creation
++			 */
++			struct list_head	pe_list;
++
+ 			/* Reverse map of PEs, will have to extend if
+ 			 * we are to support more than 256 PEs, indexed
+ 			 * bus { bus, devfn }
+@@ -125,7 +131,7 @@ struct pnv_phb {
+ 			/* Sorted list of used PE's, sorted at
+ 			 * boot for resource allocation purposes
+ 			 */
+-			struct list_head	pe_list;
++			struct list_head	pe_dma_list;
+ 		} ioda;
+ 	};
+ 
+-- 
+1.7.5.4
