@@ -1,28 +1,43 @@
-Return-Path: <wujianguo106@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0A8392C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 00:09:53 +1000 (EST)
-Received: by dajt11 with SMTP id t11so2628296daj.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 07:09:51 -0700 (PDT)
-Message-ID: <50324524.5000501@gmail.com>
-Date: Mon, 20 Aug 2012 22:09:40 +0800
-From: Jianguo Wu <wujianguo106@gmail.com>
+Return-Path: <john.stultz@linaro.org>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6E0912C008B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 04:59:49 +1000 (EST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <john.stultz@linaro.org>;
+ Mon, 20 Aug 2012 12:59:45 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CF5C519D8041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 12:59:11 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+ id q7KIx2QM125120
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 12:59:03 -0600
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q7KIwwmq007180
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 12:58:59 -0600
+Message-ID: <503288ED.10306@linaro.org>
+Date: Mon, 20 Aug 2012 11:58:53 -0700
+From: John Stultz <john.stultz@linaro.org>
 MIME-Version: 1.0
-To: wency@cn.fujitsu.com
-Subject: Re: [RFC V7 PATCH 18/19] memory-hotplug: add node_device_release
-References: <1345455342-27752-1-git-send-email-wency@cn.fujitsu.com>
- <1345455342-27752-19-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1345455342-27752-19-git-send-email-wency@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH 4/8] time: Condense timekeeper.xtime into xtime_sec
+References: <1342156917-25092-1-git-send-email-john.stultz@linaro.org>
+ <1342156917-25092-5-git-send-email-john.stultz@linaro.org>
+ <m2fw7ilhnm.fsf@igel.home>
+In-Reply-To: <m2fw7ilhnm.fsf@igel.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Prarit Bhargava <prarit@redhat.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,75 +47,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2012/8/20 17:35, wency@cn.fujitsu.com wrote:
-> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> 
-> When calling unregister_node(), the function shows following message at
-> device_release().
-> 
-> Device 'node2' does not have a release() function, it is broken and must be
-> fixed.
-> 
-> So the patch implements node_device_release()
-> 
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
-> ---
->  drivers/base/node.c |    8 ++++++++
->  1 files changed, 8 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/base/node.c b/drivers/base/node.c
-> index af1a177..9bc2f57 100644
-> --- a/drivers/base/node.c
-> +++ b/drivers/base/node.c
-> @@ -252,6 +252,13 @@ static inline void hugetlb_register_node(struct node *node) {}
->  static inline void hugetlb_unregister_node(struct node *node) {}
->  #endif
->  
-> +static void node_device_release(struct device *dev)
-> +{
-> +	struct node *node_dev = to_node(dev);
-> +
-> +	flush_work(&node_dev->node_work);
+On 08/19/2012 02:02 PM, Andreas Schwab wrote:
+> John Stultz <john.stultz@linaro.org> writes:
+>
+>> The timekeeper struct has a xtime_nsec, which keeps the
+>> sub-nanosecond remainder.  This ends up being somewhat
+>> duplicative of the timekeeper.xtime.tv_nsec value, and we
+>> have to do extra work to keep them apart, copying the full
+>> nsec portion out and back in over and over.
+>>
+>> This patch simplifies some of the logic by taking the timekeeper
+>> xtime value and splitting it into timekeeper.xtime_sec and
+>> reuses the timekeeper.xtime_nsec for the sub-second portion
+>> (stored in higher res shifted nanoseconds).
+>>
+>> This simplifies some of the accumulation logic. And will
+>> allow for more accurate timekeeping once the vsyscall code
+>> is updated to use the shifted nanosecond remainder.
+> This (together with b44d50d "time: Fix casting issue in tk_set_xtime and
+> tk_xtime_add") is causing resume to hang on the iBook (PowerBook6,7).
+> The fact that the add-on commit is needed to uncover the bug might give
+> a hint, but I'm unable to decipher it.
 
-Hi Congyang,
-	I think this should be:
-#if defined(CONFIG_MEMORY_HOTPLUG_SPARSE) && defined(CONFIG_HUGETLBFS)
-	flush_work(&node_dev->node_work);
-#endif
+Thanks for the bug report and narrowing this down.
 
-	As struct node defined in node.h:
-struct node {
-	struct sys_device	sysdev;
+I'm not very familiar w/ the iBook hardware, but does it use a 
+clocksource, or does it use arch_gettimeoffset()?
 
-#if defined(CONFIG_MEMORY_HOTPLUG_SPARSE) && defined(CONFIG_HUGETLBFS)
-	struct work_struct	node_work;
-#endif
-};
+I suspect that the casting has avoided clipping some strange values from 
+the persistent clock.
 
-	Thanks
-	Jianguo Wu
+Could you try with the following patch against Linus' HEAD? I suspect it 
+will let the box resume (although it will seem as though no time was 
+spent in resume) and then let me know what the JDB lines print out?
 
-> +	memset(node_dev, 0, sizeof(struct node));
-> +}
->  
->  /*
->   * register_node - Setup a sysfs device for a node.
-> @@ -265,6 +272,7 @@ int register_node(struct node *node, int num, struct node *parent)
->  
->  	node->dev.id = num;
->  	node->dev.bus = &node_subsys;
-> +	node->dev.release = node_device_release;
->  	error = device_register(&node->dev);
->  
->  	if (!error){
-> 
+thanks
+-john
+
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index e16af19..03f5a82 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -753,10 +753,14 @@ static void timekeeping_resume(void)
+  	clocksource_resume();
+  
+  	write_seqlock_irqsave(&tk->lock, flags);
++	printk("JDB: suspend_time: %ld:%ld  resume_time: %ld:%ld\n",
++		timekeeping_suspend_time.tv_sec, timekeeping_suspend_time.tv_nsec,
++		ts.tv_sec, ts.tv_nsec);
+  
+  	if (timespec_compare(&ts, &timekeeping_suspend_time) > 0) {
+  		ts = timespec_sub(ts, timekeeping_suspend_time);
+-		__timekeeping_inject_sleeptime(tk, &ts);
++		printk("JDB: Trying to add: %ld:%ld\n", ts.tv_sec, ts.tv_nsec);
++		//__timekeeping_inject_sleeptime(tk, &ts);
+  	}
+  	/* re-base the last cycle value */
+  	tk->clock->cycle_last = tk->clock->read(tk->clock);
