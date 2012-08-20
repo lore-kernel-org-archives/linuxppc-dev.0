@@ -1,16 +1,16 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 9BB652C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 19:30:55 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 4AC862C01FF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 19:30:56 +1000 (EST)
 From: wency@cn.fujitsu.com
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com
-Subject: [RFC V7 PATCH 08/19] memory-hotplug: remove /sys/firmware/memmap/X
- sysfs
-Date: Mon, 20 Aug 2012 17:35:31 +0800
-Message-Id: <1345455342-27752-9-git-send-email-wency@cn.fujitsu.com>
+Subject: [RFC V7 PATCH 13/19] memory-hotplug: check page type in
+ get_page_bootmem
+Date: Mon, 20 Aug 2012 17:35:36 +0800
+Message-Id: <1345455342-27752-14-git-send-email-wency@cn.fujitsu.com>
 In-Reply-To: <1345455342-27752-1-git-send-email-wency@cn.fujitsu.com>
 References: <1345455342-27752-1-git-send-email-wency@cn.fujitsu.com>
 Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
@@ -28,12 +28,9 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
-When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
-sysfs files are created. But there is no code to remove these files. The patch
-implements the function to remove them.
-
-Note : The code does not free firmware_map_entry since there is no way to free
-       memory which is allocated by bootmem.
+There is a possibility that get_page_bootmem() is called to the same page many
+times. So when get_page_bootmem is called to the same page, the function only
+increments page->_count.
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -47,189 +44,34 @@ CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 CC: Wen Congyang <wency@cn.fujitsu.com>
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 ---
- drivers/firmware/memmap.c    |   78 +++++++++++++++++++++++++++++++++++++++++-
- include/linux/firmware-map.h |    6 +++
- mm/memory_hotplug.c          |    9 ++++-
- 3 files changed, 90 insertions(+), 3 deletions(-)
+ mm/memory_hotplug.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-index c1cdc92..b2e7e5e 100644
---- a/drivers/firmware/memmap.c
-+++ b/drivers/firmware/memmap.c
-@@ -21,6 +21,7 @@
- #include <linux/types.h>
- #include <linux/bootmem.h>
- #include <linux/slab.h>
-+#include <linux/mm.h>
- 
- /*
-  * Data types ------------------------------------------------------------------
-@@ -79,7 +80,22 @@ static const struct sysfs_ops memmap_attr_ops = {
- 	.show = memmap_attr_show,
- };
- 
-+#define to_memmap_entry(obj) container_of(obj, struct firmware_map_entry, kobj)
-+
-+static void release_firmware_map_entry(struct kobject *kobj)
-+{
-+	struct firmware_map_entry *entry = to_memmap_entry(kobj);
-+	struct page *page;
-+
-+	page = virt_to_page(entry);
-+	if (PageSlab(page) || PageCompound(page))
-+		kfree(entry);
-+
-+	/* There is no way to free memory allocated from bootmem*/
-+}
-+
- static struct kobj_type memmap_ktype = {
-+	.release	= release_firmware_map_entry,
- 	.sysfs_ops	= &memmap_attr_ops,
- 	.default_attrs	= def_attrs,
- };
-@@ -123,6 +139,16 @@ static int firmware_map_add_entry(u64 start, u64 end,
- 	return 0;
- }
- 
-+/**
-+ * firmware_map_remove_entry() - Does the real work to remove a firmware
-+ * memmap entry.
-+ * @entry: removed entry.
-+ **/
-+static inline void firmware_map_remove_entry(struct firmware_map_entry *entry)
-+{
-+	list_del(&entry->list);
-+}
-+
- /*
-  * Add memmap entry on sysfs
-  */
-@@ -144,6 +170,31 @@ static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry)
- 	return 0;
- }
- 
-+/*
-+ * Remove memmap entry on sysfs
-+ */
-+static inline void remove_sysfs_fw_map_entry(struct firmware_map_entry *entry)
-+{
-+	kobject_put(&entry->kobj);
-+}
-+
-+/*
-+ * Search memmap entry
-+ */
-+
-+struct firmware_map_entry * __meminit
-+find_firmware_map_entry(u64 start, u64 end, const char *type)
-+{
-+	struct firmware_map_entry *entry;
-+
-+	list_for_each_entry(entry, &map_entries, list)
-+		if ((entry->start == start) && (entry->end == end) &&
-+		    (!strcmp(entry->type, type)))
-+			return entry;
-+
-+	return NULL;
-+}
-+
- /**
-  * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
-  * memory hotplug.
-@@ -196,6 +247,32 @@ int __init firmware_map_add_early(u64 start, u64 end, const char *type)
- 	return firmware_map_add_entry(start, end, type, entry);
- }
- 
-+/**
-+ * firmware_map_remove() - remove a firmware mapping entry
-+ * @start: Start of the memory range.
-+ * @end:   End of the memory range.
-+ * @type:  Type of the memory range.
-+ *
-+ * removes a firmware mapping entry.
-+ *
-+ * Returns 0 on success, or -EINVAL if no entry.
-+ **/
-+int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
-+{
-+	struct firmware_map_entry *entry;
-+
-+	entry = find_firmware_map_entry(start, end - 1, type);
-+	if (!entry)
-+		return -EINVAL;
-+
-+	firmware_map_remove_entry(entry);
-+
-+	/* remove the memmap entry */
-+	remove_sysfs_fw_map_entry(entry);
-+
-+	return 0;
-+}
-+
- /*
-  * Sysfs functions -------------------------------------------------------------
-  */
-@@ -218,7 +295,6 @@ static ssize_t type_show(struct firmware_map_entry *entry, char *buf)
- }
- 
- #define to_memmap_attr(_attr) container_of(_attr, struct memmap_attribute, attr)
--#define to_memmap_entry(obj) container_of(obj, struct firmware_map_entry, kobj)
- 
- static ssize_t memmap_attr_show(struct kobject *kobj,
- 				struct attribute *attr, char *buf)
-diff --git a/include/linux/firmware-map.h b/include/linux/firmware-map.h
-index 43fe52f..71d4fa7 100644
---- a/include/linux/firmware-map.h
-+++ b/include/linux/firmware-map.h
-@@ -25,6 +25,7 @@
- 
- int firmware_map_add_early(u64 start, u64 end, const char *type);
- int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
-+int firmware_map_remove(u64 start, u64 end, const char *type);
- 
- #else /* CONFIG_FIRMWARE_MEMMAP */
- 
-@@ -38,6 +39,11 @@ static inline int firmware_map_add_hotplug(u64 start, u64 end, const char *type)
- 	return 0;
- }
- 
-+static inline int firmware_map_remove(u64 start, u64 end, const char *type)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_FIRMWARE_MEMMAP */
- 
- #endif /* _LINUX_FIRMWARE_MAP_H */
 diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 3f1d7c5..45b03b3 100644
+index 5f9f8c7..d85af6d 100644
 --- a/mm/memory_hotplug.c
 +++ b/mm/memory_hotplug.c
-@@ -1052,9 +1052,9 @@ int offline_memory(u64 start, u64 size)
- 	return 0;
+@@ -95,10 +95,17 @@ static void release_memory_resource(struct resource *res)
+ static void get_page_bootmem(unsigned long info,  struct page *page,
+ 			     unsigned long type)
+ {
+-	page->lru.next = (struct list_head *) type;
+-	SetPagePrivate(page);
+-	set_page_private(page, info);
+-	atomic_inc(&page->_count);
++	unsigned long page_type;
++
++	page_type = (unsigned long) page->lru.next;
++	if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
++	    page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
++		page->lru.next = (struct list_head *) type;
++		SetPagePrivate(page);
++		set_page_private(page, info);
++		atomic_inc(&page->_count);
++	} else
++		atomic_inc(&page->_count);
  }
  
--int remove_memory(int nid, u64 start, u64 size)
-+int __ref remove_memory(int nid, u64 start, u64 size)
- {
--	int ret = -EBUSY;
-+	int ret = 0;
- 	lock_memory_hotplug();
- 	/*
- 	 * The memory might become online by other task, even if you offine it.
-@@ -1065,8 +1065,13 @@ int remove_memory(int nid, u64 start, u64 size)
- 			"because the memmory range is online\n",
- 			start, start + size);
- 		ret = -EAGAIN;
-+		goto out;
- 	}
- 
-+	/* remove memmap entry */
-+	firmware_map_remove(start, start + size, "System RAM");
-+
-+out:
- 	unlock_memory_hotplug();
- 	return ret;
- 
+ /* reference to __meminit __free_pages_bootmem is valid
 -- 
 1.7.1
