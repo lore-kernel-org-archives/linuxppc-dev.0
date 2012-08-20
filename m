@@ -2,29 +2,29 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e1.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DB2CB2C0521
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 23:50:41 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A4D602C061F
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 23:51:11 +1000 (EST)
 Received: from /spool/local
  by e1.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 20 Aug 2012 09:50:37 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 6496B6E8054
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:29 -0400 (EDT)
+ Mon, 20 Aug 2012 09:51:06 -0400
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 5B8EA6E804D
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:30 -0400 (EDT)
 Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q7KDnTAZ115998
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q7KDnT5i156072
  for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:29 -0400
 Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
  by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q7KDnS2B031250
+ q7KDnTSQ031275
  for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:29 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/8] ppc/pnv: skip check on PE if necessary
-Date: Mon, 20 Aug 2012 21:49:18 +0800
-Message-Id: <1345470561-17785-6-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 7/8] ppc/pnv: using PCI core to do resource assignment
+Date: Mon, 20 Aug 2012 21:49:20 +0800
+Message-Id: <1345470561-17785-8-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1345470561-17785-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1345470561-17785-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: weiyang@linux.vnet.ibm.com, Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,81 +37,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While the device driver or PCI core tries to enable PCI device, the
-platform dependent callback "ppc_md.pcibios_enable_device_hook" will
-be called to check if there has one associated PE for the PCI device.
-If we don't have the associated PE for the PCI device, it's not allowed
-to enable the PCI device. Unfortunately, there might have some cases
-we have to enable the PCI device (e.g. P2P bridge), but the PEs have
-not been created yet.
+Currently, the PCI probe flags "PCI_PROBE_ONLY | PCI_REASSIGN_ALL_RSRC"
+used on powernv platform. That means the platform has to do the PCI
+resource assignment by itself.
 
-The patch handles the unfortunate cases. Each PHB (struct pnv_phb)
-has one field "initialized" to trace if the PEs have been created
-and configured or not. When the PEs are not available, we won't check
-the associated PE for the PCI device to be enabled.
+The patch changes the PCI probe flag to "PCI_REASSIGN_ALL_RSRC" so
+that the PCI core will do the resource assignment. Also, the I/O
+and MMIO minimal alignment for P2P bridges have been configured
+while doing fixup for the PHBs.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 Reviewed-by: Ram Pai <linuxram@us.ibm.com>
 Reviewed-by: Richard Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |   19 ++++++++++++++++++-
- arch/powerpc/platforms/powernv/pci.h      |    1 +
- 2 files changed, 19 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c |   43 +++++------------------------
+ 1 files changed, 7 insertions(+), 36 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 09deab2..adaef11 100644
+index c856f90..ead4eff 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1245,9 +1245,14 @@ static void __devinit pnv_pci_ioda_setup_seg(void)
- static void __devinit pnv_pci_ioda_setup_DMA(void)
- {
- 	struct pci_controller *hose, *tmp;
-+	struct pnv_phb *phb;
+@@ -1124,36 +1124,6 @@ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
+ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb) { }
+ #endif /* CONFIG_PCI_MSI */
  
- 	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
- 		pnv_ioda_setup_dma(hose->private_data);
-+
-+		/* Mark the PHB initialization done */
-+		phb = hose->private_data;
-+		phb->initialized = 1;
- 	}
- }
+-/* This is the starting point of our IODA specific resource
+- * allocation process
+- */
+-static void __devinit pnv_pci_ioda_fixup_phb(struct pci_controller *hose)
+-{
+-	resource_size_t size, align;
+-	struct pci_bus *child;
+-
+-	/* Associate PEs per functions */
+-	pnv_ioda_setup_PEs(hose->bus);
+-
+-	/* Calculate all resources */
+-	pnv_ioda_calc_bus(hose->bus, IORESOURCE_IO, &size, &align);
+-	pnv_ioda_calc_bus(hose->bus, IORESOURCE_MEM, &size, &align);
+-
+-	/* Apply then to HW */
+-	pnv_ioda_update_resources(hose->bus);
+-
+-	/* Setup DMA */
+-	pnv_ioda_setup_dma(hose->private_data);
+-
+-	/* Configure PCI Express settings */
+-	list_for_each_entry(child, &hose->bus->children, node) {
+-		struct pci_dev *self = child->self;
+-		if (!self)
+-			continue;
+-		pcie_bus_configure_settings(child, self->pcie_mpss);
+-	}
+-}
+-
+ /*
+  * This function is supposed to be called on basis of PE from top
+  * to bottom style. So the the I/O or MMIO segment assigned to
+@@ -1473,16 +1443,17 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
+ 	/* Setup MSI support */
+ 	pnv_pci_init_ioda_msis(phb);
  
-@@ -1300,10 +1305,22 @@ out:
-  */
- static int __devinit pnv_pci_enable_device_hook(struct pci_dev *dev)
- {
--	struct pci_dn *pdn = pnv_ioda_get_pdn(dev);
-+	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	struct pnv_phb *phb = hose->private_data;
-+	struct pci_dn *pdn;
+-	/* We set both PCI_PROBE_ONLY and PCI_REASSIGN_ALL_RSRC. This is an
+-	 * odd combination which essentially means that we skip all resource
+-	 * fixups and assignments in the generic code, and do it all
+-	 * ourselves here
++	/*
++	 * We pass the PCI probe flag PCI_REASSIGN_ALL_RSRC here
++	 * to let the PCI core do resource assignment. It's supposed
++	 * that the PCI core will do correct I/O and MMIO alignment
++	 * for the P2P bridge bars so that each PCI bus (excluding
++	 * the child P2P bridges) can form individual PE.
+ 	 */
+-	ppc_md.pcibios_fixup_phb = pnv_pci_ioda_fixup_phb;
+ 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+ 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
+ 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
+-	pci_add_flags(PCI_PROBE_ONLY | PCI_REASSIGN_ALL_RSRC);
++	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
  
-+	/* The function is probably called while the PEs have
-+	 * not be created yet. For example, resource reassignment
-+	 * during PCI probe period. We just skip the check if
-+	 * PEs isn't ready.
-+	 */
-+	if (!phb->initialized)
-+		return 0;
-+
-+	pdn = pnv_ioda_get_pdn(dev);
- 	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
- 		return -EINVAL;
-+
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index b70720b..7cfb7c8 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -69,6 +69,7 @@ struct pnv_phb {
- 	enum pnv_phb_model	model;
- 	u64			opal_id;
- 	void __iomem		*regs;
-+	int			initialized;
- 	spinlock_t		lock;
- 
- #ifdef CONFIG_PCI_MSI
+ 	/* Reset IODA tables to a clean state */
+ 	rc = opal_pci_reset(phb_id, OPAL_PCI_IODA_TABLE_RESET, OPAL_ASSERT_RESET);
 -- 
 1.7.5.4
