@@ -1,16 +1,16 @@
 Return-Path: <B38951@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3116C2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 20:25:02 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 2B9782C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 20:35:31 +1000 (EST)
 From: Jia Hongtao <B38951@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
 Subject: [PATCH V8] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Mon, 20 Aug 2012 17:55:35 +0800
-Message-ID: <1345456535-4233-1-git-send-email-B38951@freescale.com>
+Date: Mon, 20 Aug 2012 18:06:01 +0800
+Message-ID: <1345457161-4731-1-git-send-email-B38951@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: B07421@freescale.com, b38951@freescale.com
@@ -48,7 +48,7 @@ Changes for V8:
  arch/powerpc/platforms/85xx/mpc8536_ds.c   |   36 +-------------
  arch/powerpc/platforms/85xx/mpc85xx_ads.c  |   11 +---
  arch/powerpc/platforms/85xx/mpc85xx_cds.c  |   16 +-----
- arch/powerpc/platforms/85xx/mpc85xx_ds.c   |   13 ++---
+ arch/powerpc/platforms/85xx/mpc85xx_ds.c   |   14 ++---
  arch/powerpc/platforms/85xx/mpc85xx_mds.c  |   40 ++-------------
  arch/powerpc/platforms/85xx/mpc85xx_rdb.c  |   30 +++++-------
  arch/powerpc/platforms/85xx/p1010rdb.c     |   14 +-----
@@ -75,7 +75,7 @@ Changes for V8:
  arch/powerpc/sysdev/fsl_pci.c              |   71 +++++++++++++++++----------
  arch/powerpc/sysdev/fsl_pci.h              |   15 +++++-
  drivers/edac/mpc85xx_edac.c                |   43 +++++------------
- 33 files changed, 203 insertions(+), 525 deletions(-)
+ 33 files changed, 203 insertions(+), 526 deletions(-)
 
 diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
 index 67dac22..d0861a0 100644
@@ -99,7 +99,7 @@ index 67dac22..d0861a0 100644
  };
  
 diff --git a/arch/powerpc/platforms/85xx/corenet_ds.c b/arch/powerpc/platforms/85xx/corenet_ds.c
-index 473d573..7c5d08a 100644
+index 473d573..ed69c92 100644
 --- a/arch/powerpc/platforms/85xx/corenet_ds.c
 +++ b/arch/powerpc/platforms/85xx/corenet_ds.c
 @@ -16,7 +16,6 @@
@@ -148,7 +148,7 @@ index 473d573..7c5d08a 100644
 -		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
 -	}
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
 +	swiotlb_detect_4g();
 +
@@ -260,7 +260,7 @@ index b6a728b..1eb0046 100644
  machine_arch_initcall(ge_imp3a, swiotlb_setup_bus_notifier);
  
 diff --git a/arch/powerpc/platforms/85xx/mpc8536_ds.c b/arch/powerpc/platforms/85xx/mpc8536_ds.c
-index 767c7cf..e79eb4c 100644
+index 767c7cf..15ce4b5 100644
 --- a/arch/powerpc/platforms/85xx/mpc8536_ds.c
 +++ b/arch/powerpc/platforms/85xx/mpc8536_ds.c
 @@ -17,7 +17,6 @@
@@ -302,7 +302,7 @@ index 767c7cf..e79eb4c 100644
 -	}
 -
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  
 -#ifdef CONFIG_SWIOTLB
 -	if ((memblock_end_of_DRAM() - 1) > max) {
@@ -322,7 +322,7 @@ index 767c7cf..e79eb4c 100644
  machine_arch_initcall(mpc8536_ds, swiotlb_setup_bus_notifier);
  
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ads.c b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
-index 29ee8fc..9be38b0 100644
+index 29ee8fc..7d12a19 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_ads.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_ads.c
 @@ -137,10 +137,6 @@ static void __init init_ioports(void)
@@ -346,7 +346,7 @@ index 29ee8fc..9be38b0 100644
  	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
  #endif
 +
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  }
  
  static void mpc85xx_ads_show_cpuinfo(struct seq_file *m)
@@ -360,7 +360,7 @@ index 29ee8fc..9be38b0 100644
  /*
   * Called very early, device-tree isn't unflattened
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index 11156fb..bae40b8 100644
+index 11156fb..48cb82a 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
 @@ -309,21 +309,11 @@ static void __init mpc85xx_cds_setup_arch(void)
@@ -383,7 +383,7 @@ index 11156fb..bae40b8 100644
  	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
  #endif
 +
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  }
  
  static void mpc85xx_cds_show_cpuinfo(struct seq_file *m)
@@ -397,7 +397,7 @@ index 11156fb..bae40b8 100644
  define_machine(mpc85xx_cds) {
  	.name		= "MPC85xx CDS",
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_ds.c b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
-index 56f8c8f..52246a0 100644
+index 56f8c8f..9ebb91e 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_ds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_ds.c
 @@ -20,7 +20,6 @@
@@ -408,31 +408,32 @@ index 56f8c8f..52246a0 100644
  
  #include <asm/time.h>
  #include <asm/machdep.h>
-@@ -129,12 +128,12 @@ static int mpc85xx_exclude_device(struct pci_controller *hose,
+@@ -129,13 +128,11 @@ static int mpc85xx_exclude_device(struct pci_controller *hose,
  }
  #endif	/* CONFIG_PCI */
  
 -static void __init mpc85xx_ds_pci_init(void)
-+static void __init mpc85xx_ds_assign_pci_primary(void)
++static void __init mpc85xx_ds_uli_init(void)
  {
  #ifdef CONFIG_PCI
  	struct device_node *node;
  
 -	fsl_pci_init();
-+	fsl_assign_pci_primary();
- 
+-
  	/* See if we have a ULI under the primary */
  
-@@ -160,7 +159,7 @@ static void __init mpc85xx_ds_setup_arch(void)
+ 	node = of_find_node_by_name(NULL, "uli1575");
+@@ -160,7 +157,8 @@ static void __init mpc85xx_ds_setup_arch(void)
  		ppc_md.progress("mpc85xx_ds_setup_arch()", 0);
  
  	swiotlb_detect_4g();
 -	mpc85xx_ds_pci_init();
-+	mpc85xx_ds_assign_pci_primary();
++	fsl_pci_assign_primary();
++	mpc85xx_ds_uli_init();
  	mpc85xx_smp_init();
  
  	printk("MPC85xx DS board from Freescale Semiconductor\n");
-@@ -176,9 +175,9 @@ static int __init mpc8544_ds_probe(void)
+@@ -176,9 +174,9 @@ static int __init mpc8544_ds_probe(void)
  	return !!of_flat_dt_is_compatible(root, "MPC8544DS");
  }
  
@@ -446,7 +447,7 @@ index 56f8c8f..52246a0 100644
  machine_arch_initcall(mpc8544_ds, swiotlb_setup_bus_notifier);
  machine_arch_initcall(mpc8572_ds, swiotlb_setup_bus_notifier);
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index 8e4b094..607dcaf 100644
+index 8e4b094..8498f73 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
 @@ -327,44 +327,16 @@ static void __init mpc85xx_mds_qeic_init(void) { }
@@ -491,7 +492,7 @@ index 8e4b094..607dcaf 100644
 -		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
 -	}
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
 +	swiotlb_detect_4g();
  }
@@ -511,7 +512,7 @@ index 8e4b094..607dcaf 100644
  machine_arch_initcall(mpc8568_mds, swiotlb_setup_bus_notifier);
  machine_arch_initcall(mpc8569_mds, swiotlb_setup_bus_notifier);
 diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index 1910fdc..8c1e867 100644
+index 1910fdc..ede8771 100644
 --- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
 +++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
 @@ -86,23 +86,17 @@ void __init mpc85xx_rdb_pic_init(void)
@@ -536,7 +537,7 @@ index 1910fdc..8c1e867 100644
 -
  	mpc85xx_smp_init();
  
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
  #ifdef CONFIG_QUICC_ENGINE
  	np = of_find_compatible_node(NULL, NULL, "fsl,qe");
@@ -567,7 +568,7 @@ index 1910fdc..8c1e867 100644
  /*
   * Called very early, device-tree isn't unflattened
 diff --git a/arch/powerpc/platforms/85xx/p1010rdb.c b/arch/powerpc/platforms/85xx/p1010rdb.c
-index dbaf443..ace45ea 100644
+index dbaf443..0252961 100644
 --- a/arch/powerpc/platforms/85xx/p1010rdb.c
 +++ b/arch/powerpc/platforms/85xx/p1010rdb.c
 @@ -46,25 +46,15 @@ void __init p1010_rdb_pic_init(void)
@@ -588,7 +589,7 @@ index dbaf443..ace45ea 100644
 -	}
 -
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  
  	printk(KERN_INFO "P1010 RDB board from Freescale Semiconductor\n");
  }
@@ -599,7 +600,7 @@ index dbaf443..ace45ea 100644
  
  /*
 diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index 3c732ac..8c8f399 100644
+index 3c732ac..848a3e9 100644
 --- a/arch/powerpc/platforms/85xx/p1022_ds.c
 +++ b/arch/powerpc/platforms/85xx/p1022_ds.c
 @@ -18,7 +18,6 @@
@@ -654,7 +655,7 @@ index 3c732ac..8c8f399 100644
 -		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
 -	}
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
 +	swiotlb_detect_4g();
  
@@ -667,7 +668,7 @@ index 3c732ac..8c8f399 100644
  machine_arch_initcall(p1022_ds, swiotlb_setup_bus_notifier);
  
 diff --git a/arch/powerpc/platforms/85xx/p1022_rdk.c b/arch/powerpc/platforms/85xx/p1022_rdk.c
-index b3cf11b..0565ef7 100644
+index b3cf11b..55ffa1c 100644
 --- a/arch/powerpc/platforms/85xx/p1022_rdk.c
 +++ b/arch/powerpc/platforms/85xx/p1022_rdk.c
 @@ -14,7 +14,6 @@
@@ -722,7 +723,7 @@ index b3cf11b..0565ef7 100644
 -		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
 -	}
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
 +	swiotlb_detect_4g();
  
@@ -735,7 +736,7 @@ index b3cf11b..0565ef7 100644
  machine_arch_initcall(p1022_rdk, swiotlb_setup_bus_notifier);
  
 diff --git a/arch/powerpc/platforms/85xx/p1023_rds.c b/arch/powerpc/platforms/85xx/p1023_rds.c
-index 2990e8b..fc96531 100644
+index 2990e8b..9cc60a7 100644
 --- a/arch/powerpc/platforms/85xx/p1023_rds.c
 +++ b/arch/powerpc/platforms/85xx/p1023_rds.c
 @@ -80,15 +80,12 @@ static void __init mpc85xx_rds_setup_arch(void)
@@ -749,7 +750,7 @@ index 2990e8b..fc96531 100644
 -
  	mpc85xx_smp_init();
 +
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  }
  
 -machine_device_initcall(p1023_rds, mpc85xx_common_publish_devices);
@@ -823,7 +824,7 @@ index 8e22a34..1138185 100644
  #ifdef CONFIG_SWIOTLB
  machine_arch_initcall(p5040_ds, swiotlb_setup_bus_notifier);
 diff --git a/arch/powerpc/platforms/85xx/qemu_e500.c b/arch/powerpc/platforms/85xx/qemu_e500.c
-index 3c5490c..af30a0f 100644
+index 3c5490c..f6ea561 100644
 --- a/arch/powerpc/platforms/85xx/qemu_e500.c
 +++ b/arch/powerpc/platforms/85xx/qemu_e500.c
 @@ -41,7 +41,7 @@ static void __init qemu_e500_setup_arch(void)
@@ -831,7 +832,7 @@ index 3c5490c..af30a0f 100644
  	ppc_md.progress("qemu_e500_setup_arch()", 0);
  
 -	fsl_pci_init();
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  	swiotlb_detect_4g();
  	mpc85xx_smp_init();
  }
@@ -845,7 +846,7 @@ index 3c5490c..af30a0f 100644
  define_machine(qemu_e500) {
  	.name			= "QEMU e500",
 diff --git a/arch/powerpc/platforms/85xx/sbc8548.c b/arch/powerpc/platforms/85xx/sbc8548.c
-index cd3a66b..f69ffa7 100644
+index cd3a66b..f621218 100644
 --- a/arch/powerpc/platforms/85xx/sbc8548.c
 +++ b/arch/powerpc/platforms/85xx/sbc8548.c
 @@ -88,26 +88,11 @@ static int __init sbc8548_hw_rev(void)
@@ -872,7 +873,7 @@ index cd3a66b..f69ffa7 100644
 -		}
 -	}
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
  	sbc_rev = sbc8548_hw_rev();
  }
@@ -887,7 +888,7 @@ index cd3a66b..f69ffa7 100644
  /*
   * Called very early, device-tree isn't unflattened
 diff --git a/arch/powerpc/platforms/85xx/socrates.c b/arch/powerpc/platforms/85xx/socrates.c
-index b9c6daa..dcc9bb3 100644
+index b9c6daa..ae368e0 100644
 --- a/arch/powerpc/platforms/85xx/socrates.c
 +++ b/arch/powerpc/platforms/85xx/socrates.c
 @@ -66,20 +66,13 @@ static void __init socrates_pic_init(void)
@@ -905,7 +906,7 @@ index b9c6daa..dcc9bb3 100644
 -	for_each_compatible_node(np, "pci", "fsl,mpc8540-pci")
 -		fsl_add_bridge(np, 1);
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  }
  
 -machine_device_initcall(socrates, mpc85xx_common_publish_devices);
@@ -914,7 +915,7 @@ index b9c6daa..dcc9bb3 100644
  /*
   * Called very early, device-tree isn't unflattened
 diff --git a/arch/powerpc/platforms/85xx/stx_gp3.c b/arch/powerpc/platforms/85xx/stx_gp3.c
-index e050800..84fec3e 100644
+index e050800..6f4939b 100644
 --- a/arch/powerpc/platforms/85xx/stx_gp3.c
 +++ b/arch/powerpc/platforms/85xx/stx_gp3.c
 @@ -60,21 +60,14 @@ static void __init stx_gp3_pic_init(void)
@@ -928,7 +929,7 @@ index e050800..84fec3e 100644
  	if (ppc_md.progress)
  		ppc_md.progress("stx_gp3_setup_arch()", 0);
  
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
  #ifdef CONFIG_CPM2
  	cpm2_reset();
@@ -951,7 +952,7 @@ index e050800..84fec3e 100644
  /*
   * Called very early, device-tree isn't unflattened
 diff --git a/arch/powerpc/platforms/85xx/tqm85xx.c b/arch/powerpc/platforms/85xx/tqm85xx.c
-index 4d786c2..a2fc85d 100644
+index 4d786c2..942870f 100644
 --- a/arch/powerpc/platforms/85xx/tqm85xx.c
 +++ b/arch/powerpc/platforms/85xx/tqm85xx.c
 @@ -59,10 +59,6 @@ static void __init tqm85xx_pic_init(void)
@@ -983,7 +984,7 @@ index 4d786c2..a2fc85d 100644
 -		}
 -	}
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  }
  
  static void tqm85xx_show_cpuinfo(struct seq_file *m)
@@ -997,7 +998,7 @@ index 4d786c2..a2fc85d 100644
  static const char *board[] __initdata = {
  	"tqc,tqm8540",
 diff --git a/arch/powerpc/platforms/85xx/xes_mpc85xx.c b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
-index 41c6875..b9ba456 100644
+index 41c6875..dcbf7e4 100644
 --- a/arch/powerpc/platforms/85xx/xes_mpc85xx.c
 +++ b/arch/powerpc/platforms/85xx/xes_mpc85xx.c
 @@ -111,18 +111,11 @@ static void xes_mpc85xx_fixups(void)
@@ -1039,7 +1040,7 @@ index 41c6875..b9ba456 100644
 -
  	mpc85xx_smp_init();
 +
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  }
  
 -machine_device_initcall(xes_mpc8572, mpc85xx_common_publish_devices);
@@ -1098,7 +1099,7 @@ index 41c6875..b9ba456 100644
  
  define_machine(xes_mpc8572) {
 diff --git a/arch/powerpc/platforms/86xx/gef_ppc9a.c b/arch/powerpc/platforms/86xx/gef_ppc9a.c
-index 1fca663..b5b24cb 100644
+index 1fca663..58d753f 100644
 --- a/arch/powerpc/platforms/86xx/gef_ppc9a.c
 +++ b/arch/powerpc/platforms/86xx/gef_ppc9a.c
 @@ -73,13 +73,6 @@ static void __init gef_ppc9a_init_irq(void)
@@ -1119,7 +1120,7 @@ index 1fca663..b5b24cb 100644
  	mpc86xx_smp_init();
  #endif
  
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
  	/* Remap basic board registers */
  	regs = of_find_compatible_node(NULL, NULL, "gef,ppc9a-fpga-regs");
@@ -1142,7 +1143,7 @@ index 1fca663..b5b24cb 100644
  define_machine(gef_ppc9a) {
  	.name			= "GE PPC9A",
 diff --git a/arch/powerpc/platforms/86xx/gef_sbc310.c b/arch/powerpc/platforms/86xx/gef_sbc310.c
-index 14e0e576..3c624b5 100644
+index 14e0e576..67aaa81 100644
 --- a/arch/powerpc/platforms/86xx/gef_sbc310.c
 +++ b/arch/powerpc/platforms/86xx/gef_sbc310.c
 @@ -73,20 +73,14 @@ static void __init gef_sbc310_init_irq(void)
@@ -1163,7 +1164,7 @@ index 14e0e576..3c624b5 100644
  	mpc86xx_smp_init();
  #endif
  
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
  	/* Remap basic board registers */
  	regs = of_find_compatible_node(NULL, NULL, "gef,fpga-regs");
@@ -1186,7 +1187,7 @@ index 14e0e576..3c624b5 100644
  define_machine(gef_sbc310) {
  	.name			= "GE SBC310",
 diff --git a/arch/powerpc/platforms/86xx/gef_sbc610.c b/arch/powerpc/platforms/86xx/gef_sbc610.c
-index 1638f43..dcb9fdc 100644
+index 1638f43..7666273 100644
 --- a/arch/powerpc/platforms/86xx/gef_sbc610.c
 +++ b/arch/powerpc/platforms/86xx/gef_sbc610.c
 @@ -73,13 +73,6 @@ static void __init gef_sbc610_init_irq(void)
@@ -1207,7 +1208,7 @@ index 1638f43..dcb9fdc 100644
  	mpc86xx_smp_init();
  #endif
  
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
  	/* Remap basic board registers */
  	regs = of_find_compatible_node(NULL, NULL, "gef,fpga-regs");
@@ -1230,7 +1231,7 @@ index 1638f43..dcb9fdc 100644
  define_machine(gef_sbc610) {
  	.name			= "GE SBC610",
 diff --git a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
-index 62cd3c5..db0454a 100644
+index 62cd3c5..a817398 100644
 --- a/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
 +++ b/arch/powerpc/platforms/86xx/mpc8610_hpcd.c
 @@ -91,6 +91,9 @@ static struct of_device_id __initdata mpc8610_ids[] = {
@@ -1275,13 +1276,13 @@ index 62cd3c5..db0454a 100644
 -		}
 -        }
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
  #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
  	diu_ops.get_pixel_format	= mpc8610hpcd_get_pixel_format;
  	diu_ops.set_gamma_table		= mpc8610hpcd_set_gamma_table;
 diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 817245b..2195047 100644
+index 817245b..e8bf3fa 100644
 --- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
 +++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
 @@ -19,7 +19,6 @@
@@ -1351,7 +1352,7 @@ index 817245b..2195047 100644
 -		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
 -	}
 -#endif
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
 +
 +	swiotlb_detect_4g();
  }
@@ -1375,7 +1376,7 @@ index 817245b..2195047 100644
  
  define_machine(mpc86xx_hpcn) {
 diff --git a/arch/powerpc/platforms/86xx/sbc8641d.c b/arch/powerpc/platforms/86xx/sbc8641d.c
-index e7007d0..93e1453 100644
+index e7007d0..b47a8fd 100644
 --- a/arch/powerpc/platforms/86xx/sbc8641d.c
 +++ b/arch/powerpc/platforms/86xx/sbc8641d.c
 @@ -38,23 +38,16 @@
@@ -1400,7 +1401,7 @@ index e7007d0..93e1453 100644
  	mpc86xx_smp_init();
  #endif
 +
-+	fsl_assign_pci_primary();
++	fsl_pci_assign_primary();
  }
  
  
@@ -1422,7 +1423,7 @@ index e7007d0..93e1453 100644
  define_machine(sbc8641) {
  	.name			= "SBC8641D",
 diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index da7a3d7..c080de2 100644
+index da7a3d7..e2d33fa 100644
 --- a/arch/powerpc/sysdev/fsl_pci.c
 +++ b/arch/powerpc/sysdev/fsl_pci.c
 @@ -826,12 +826,9 @@ static const struct of_device_id pci_ids[] = {
@@ -1430,7 +1431,7 @@ index da7a3d7..c080de2 100644
  struct device_node *fsl_pci_primary;
  
 -void __devinit fsl_pci_init(void)
-+void fsl_assign_pci_primary(void)
++void fsl_pci_assign_primary(void)
  {
 -	int ret;
  	struct device_node *node;
@@ -1523,7 +1524,7 @@ index da7a3d7..c080de2 100644
 +arch_initcall(fsl_pci_init);
  #endif
 diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index baa0fd1..cd46273 100644
+index baa0fd1..d5aa1d9 100644
 --- a/arch/powerpc/sysdev/fsl_pci.h
 +++ b/arch/powerpc/sysdev/fsl_pci.h
 @@ -95,10 +95,19 @@ u64 fsl_pci_immrbar_base(struct pci_controller *hose);
@@ -1533,10 +1534,10 @@ index baa0fd1..cd46273 100644
 -#ifdef CONFIG_FSL_PCI
 -void fsl_pci_init(void);
 +#ifdef CONFIG_PCI
-+void fsl_assign_pci_primary(void);
++void fsl_pci_assign_primary(void);
  #else
 -static inline void fsl_pci_init(void) {}
-+static inline void fsl_assign_primary(void) {}
++static inline void fsl_pci_assign_primary(void) {}
 +#endif
 +
 +#ifdef CONFIG_EDAC_MPC85XX
