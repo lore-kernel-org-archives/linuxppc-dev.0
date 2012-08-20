@@ -1,30 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7763F2C0392
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 23:49:59 +1000 (EST)
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AADD42C041D
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 23:50:21 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 20 Aug 2012 09:49:56 -0400
+ Mon, 20 Aug 2012 09:50:19 -0400
 Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id E2559C9004C
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:52 -0400 (EDT)
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 4B0666E8039
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:50:16 -0400 (EDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
  by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q7KDnogV079020
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:49:51 -0400
+ q7KDoFhA146596
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 09:50:15 -0400
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q7KDnabe017606
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 07:49:37 -0600
+ q7KDoD3m022725
+ for <linuxppc-dev@ozlabs.org>; Mon, 20 Aug 2012 07:50:14 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/8] ppc/pnv: create bus sensitive PEs
-Date: Mon, 20 Aug 2012 21:49:14 +0800
-Message-Id: <1345470561-17785-2-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 3/8] ppc/pnv: I/O and MMIO resource assignment for PEs
+Date: Mon, 20 Aug 2012 21:49:16 +0800
+Message-Id: <1345470561-17785-4-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1345470561-17785-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1345470561-17785-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: weiyang@linux.vnet.ibm.com, Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,246 +37,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Basically, there're 2 types of PCI bus sensitive PEs: (A) The PE
-includes single PCI bus. (B) The PE includes the PCI bus and all
-the subordinate PCI buses. At present, we'd like to put PCI bus
-originated by PCI-e link to form PE that contains single PCI bus,
-and the PCIe-to-PCI bridge will form the 2nd type of PE. We don't
-figure out to detect PLX bridge yet. Once we can detect PLX bridge
-some day, we have to put PCI buses originated from the downstream
-port of PLX bridge to the 2nd type of PE.
+There're 2 types of PCI bus sensitive PEs: (A) The PE includes
+single PCI bus. (B) The PE includes the PCI bus and all the subordinate
+PCI buses, and the patch tries to assign I/O and MMIO resources
+based on created PEs. Fortunately, we figured out unified scheme
+to do resource assignment for all types of PCI bus based PEs according
+to Ben's idea:
 
-The patch changes the original implementation for a little bit
-to support 2 types of PCI bus sensitive PEs described as above.
-Also, the function used to retrieve the corresponding PE according
-to the given PCI device has been changed based on that because each
-PCI device should trace the directly associated PE.
+        - Resource assignment based on PE from top to bottom.
+        - The soureces, either I/O or MMIO, of the PE are figured out
+          from the assigned PCI bus.
+        - The occupied resource by parent PE could possibilly be overrided
+          by children PEs.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 Reviewed-by: Ram Pai <linuxram@us.ibm.com>
 Reviewed-by: Richard Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |   96 +++++++++++++++++------------
- arch/powerpc/platforms/powernv/pci.h      |   10 ++--
- 2 files changed, 62 insertions(+), 44 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c |   89 +++++++++++++++++++++++++++++
+ 1 files changed, 89 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index af6b7fb..138de18 100644
+index 61b0571..96cdc61 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -548,7 +548,7 @@ static void __devinit pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
-  * but in the meantime, we need to protect them to avoid warnings
-  */
- #ifdef CONFIG_PCI_MSI
--static struct pnv_ioda_pe * __devinit __pnv_ioda_get_one_pe(struct pci_dev *dev)
-+static struct pnv_ioda_pe * __devinit pnv_ioda_get_pe(struct pci_dev *dev)
- {
- 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
- 	struct pnv_phb *phb = hose->private_data;
-@@ -560,19 +560,6 @@ static struct pnv_ioda_pe * __devinit __pnv_ioda_get_one_pe(struct pci_dev *dev)
- 		return NULL;
- 	return &phb->ioda.pe_array[pdn->pe_number];
- }
--
--static struct pnv_ioda_pe * __devinit pnv_ioda_get_pe(struct pci_dev *dev)
--{
--	struct pnv_ioda_pe *pe = __pnv_ioda_get_one_pe(dev);
--
--	while (!pe && dev->bus->self) {
--		dev = dev->bus->self;
--		pe = __pnv_ioda_get_one_pe(dev);
--		if (pe)
--			pe = pe->bus_pe;
--	}
--	return pe;
--}
- #endif /* CONFIG_PCI_MSI */
- 
- static int __devinit pnv_ioda_configure_pe(struct pnv_phb *phb,
-@@ -589,7 +576,11 @@ static int __devinit pnv_ioda_configure_pe(struct pnv_phb *phb,
- 		dcomp = OPAL_IGNORE_RID_DEVICE_NUMBER;
- 		fcomp = OPAL_IGNORE_RID_FUNCTION_NUMBER;
- 		parent = pe->pbus->self;
--		count = pe->pbus->busn_res.end - pe->pbus->busn_res.start + 1;
-+		if (pe->flags & PNV_IODA_PE_BUS_ALL)
-+			count = pe->pbus->busn_res.end - pe->pbus->busn_res.start + 1;
-+		else
-+			count = 1;
-+
- 		switch(count) {
- 		case  1: bcomp = OpalPciBusAll;		break;
- 		case  2: bcomp = OpalPciBus7Bits;	break;
-@@ -699,6 +690,7 @@ static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
- 	return 10;
- }
- 
-+#if 0
- static struct pnv_ioda_pe * __devinit pnv_ioda_setup_dev_PE(struct pci_dev *dev)
- {
- 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-@@ -767,6 +759,7 @@ static struct pnv_ioda_pe * __devinit pnv_ioda_setup_dev_PE(struct pci_dev *dev)
- 
- 	return pe;
- }
-+#endif /* Useful for SRIOV case */
- 
- static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
- {
-@@ -784,34 +777,33 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
- 		pdn->pcidev = dev;
- 		pdn->pe_number = pe->pe_number;
- 		pe->dma_weight += pnv_ioda_dma_weight(dev);
--		if (dev->subordinate)
-+		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
- 			pnv_ioda_setup_same_PE(dev->subordinate, pe);
+@@ -1154,9 +1154,98 @@ static void __devinit pnv_pci_ioda_fixup_phb(struct pci_controller *hose)
  	}
  }
  
--static void __devinit pnv_ioda_setup_bus_PE(struct pci_dev *dev,
--					    struct pnv_ioda_pe *ppe)
 +/*
-+ * There're 2 types of PCI bus sensitive PEs: One that is compromised of
-+ * single PCI bus. Another one that contains the primary PCI bus and its
-+ * subordinate PCI devices and buses. The second type of PE is normally
-+ * orgiriated by PCIe-to-PCI bridge or PLX switch downstream ports.
++ * This function is supposed to be called on basis of PE from top
++ * to bottom style. So the the I/O or MMIO segment assigned to
++ * parent PE could be overrided by its child PEs if necessary.
 + */
-+static void __devinit pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
- {
--	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	struct pci_controller *hose = pci_bus_to_host(bus);
- 	struct pnv_phb *phb = hose->private_data;
--	struct pci_bus *bus = dev->subordinate;
- 	struct pnv_ioda_pe *pe;
- 	int pe_num;
- 
--	if (!bus) {
--		pr_warning("%s: Bridge without a subordinate bus !\n",
--			   pci_name(dev));
--		return;
--	}
- 	pe_num = pnv_ioda_alloc_pe(phb);
- 	if (pe_num == IODA_INVALID_PE) {
--		pr_warning("%s: Not enough PE# available, disabling bus\n",
--			   pci_name(dev));
-+		pr_warning("%s: Not enough PE# available for PCI bus %04x:%02x\n",
-+			__func__, pci_domain_nr(bus), bus->number);
- 		return;
- 	}
- 
- 	pe = &phb->ioda.pe_array[pe_num];
--	ppe->bus_pe = pe;
-+	pe->flags = (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
- 	pe->pbus = bus;
- 	pe->pdev = NULL;
- 	pe->tce32_seg = -1;
-@@ -819,8 +811,12 @@ static void __devinit pnv_ioda_setup_bus_PE(struct pci_dev *dev,
- 	pe->rid = bus->busn_res.start << 8;
- 	pe->dma_weight = 0;
- 
--	pe_info(pe, "Secondary busses %pR associated with PE\n",
--		&bus->busn_res);
-+	if (all)
-+		pe_info(pe, "Secondary bus %d..%d associated with PE#%d\n",
-+			bus->busn_res.start, bus->busn_res.end, pe_num);
-+	else
-+		pe_info(pe, "Secondary bus %d associated with PE#%d\n",
-+			bus->busn_res.start, pe_num);
- 
- 	if (pnv_ioda_configure_pe(phb, pe)) {
- 		/* XXX What do we do here ? */
-@@ -848,17 +844,33 @@ static void __devinit pnv_ioda_setup_bus_PE(struct pci_dev *dev,
- static void __devinit pnv_ioda_setup_PEs(struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
--	struct pnv_ioda_pe *pe;
++static void __devinit pnv_ioda_setup_pe_seg(struct pci_controller *hose,
++				struct pnv_ioda_pe *pe)
++{
++	struct pnv_phb *phb = hose->private_data;
++	struct pci_bus_region region;
++	struct resource *res;
++	int i, index;
++	int rc;
 +
-+	pnv_ioda_setup_bus_PE(bus, 0);
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
--		pe = pnv_ioda_setup_dev_PE(dev);
--		if (pe == NULL)
--			continue;
--		/* Leaving the PCIe domain ... single PE# */
--		if (dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE)
--			pnv_ioda_setup_bus_PE(dev, pe);
--		else if (dev->subordinate)
--			pnv_ioda_setup_PEs(dev->subordinate);
-+		if (dev->subordinate) {
-+			if (dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE)
-+				pnv_ioda_setup_bus_PE(dev->subordinate, 1);
-+			else
-+				pnv_ioda_setup_PEs(dev->subordinate);
++	/*
++	 * NOTE: We only care PCI bus based PE for now. For PCI
++	 * device based PE, for example SRIOV sensitive VF should
++	 * be figured out later.
++	 */
++	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
++
++	pci_bus_for_each_resource(pe->pbus, res, i) {
++		if (!res || !res->flags ||
++		    res->start > res->end)
++			continue;
++
++		if (res->flags & IORESOURCE_IO) {
++			region.start = res->start - phb->ioda.io_pci_base;
++			region.end   = res->end - phb->ioda.io_pci_base;
++			index = region.start / phb->ioda.io_segsize;
++
++			while (index < phb->ioda.total_pe &&
++			       region.start <= region.end) {
++				phb->ioda.io_segmap[index] = pe->pe_number;
++				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
++					pe->pe_number, OPAL_IO_WINDOW_TYPE, 0, index);
++				if (rc != OPAL_SUCCESS) {
++					pr_err("%s: OPAL error %d when mapping IO "
++					       "segment #%d to PE#%d\n",
++					       __func__, rc, index, pe->pe_number);
++					break;
++				}
++
++				region.start += phb->ioda.io_segsize;
++				index++;
++			}
++		} else if (res->flags & IORESOURCE_MEM) {
++			region.start = res->start -
++				       hose->pci_mem_offset -
++				       phb->ioda.m32_pci_base;
++			region.end   = res->end -
++				       hose->pci_mem_offset -
++				       phb->ioda.m32_pci_base;
++			index = region.start / phb->ioda.m32_segsize;
++
++			while (index < phb->ioda.total_pe &&
++			       region.start <= region.end) {
++				phb->ioda.m32_segmap[index] = pe->pe_number;
++				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
++					pe->pe_number, OPAL_M32_WINDOW_TYPE, 0, index);
++				if (rc != OPAL_SUCCESS) {
++					pr_err("%s: OPAL error %d when mapping M32 "
++					       "segment#%d to PE#%d",
++					       __func__, rc, index, pe->pe_number);
++					break;
++				}
++
++				region.start += phb->ioda.m32_segsize;
++				index++;
++			}
 +		}
 +	}
 +}
 +
-+/*
-+ * Configure PEs so that the downstream PCI buses and devices
-+ * could have their associated PE#. Unfortunately, we didn't
-+ * figure out the way to identify the PLX bridge yet. So we
-+ * simply put the PCI bus and the subordinate behind the root
-+ * port to PE# here. The game rule here is expected to be changed
-+ * as soon as we can detected PLX bridge correctly.
-+ */
-+static void __devinit pnv_pci_ioda_setup_PEs(void)
++static void __devinit pnv_pci_ioda_setup_seg(void)
 +{
-+	struct pci_controller *hose, *tmp;
++	struct pci_controller *tmp, *hose;
++	struct pnv_phb *phb;
++	struct pnv_ioda_pe *pe;
 +
 +	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-+		pnv_ioda_setup_PEs(hose->bus);
- 	}
- }
- 
-@@ -1139,6 +1151,11 @@ static void __devinit pnv_pci_ioda_fixup_phb(struct pci_controller *hose)
- 	}
- }
- 
-+static void __devinit pnv_pci_ioda_fixup(void)
-+{
-+	pnv_pci_ioda_setup_PEs();
++		phb = hose->private_data;
++		list_for_each_entry(pe, &phb->ioda.pe_list, list) {
++			pnv_ioda_setup_pe_seg(hose, pe);
++		}
++	}
 +}
 +
+ static void __devinit pnv_pci_ioda_fixup(void)
+ {
+ 	pnv_pci_ioda_setup_PEs();
++	pnv_pci_ioda_setup_seg();
+ }
+ 
  /*
-  * Returns the alignment for I/O or memory windows for p2p
-  * bridges. That actually depends on how PEs are segmented.
-@@ -1342,6 +1359,7 @@ void __init pnv_pci_init_ioda1_phb(struct device_node *np)
- 	 * ourselves here
- 	 */
- 	ppc_md.pcibios_fixup_phb = pnv_pci_ioda_fixup_phb;
-+	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
- 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
- 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
- 	pci_add_flags(PCI_PROBE_ONLY | PCI_REASSIGN_ALL_RSRC);
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 8bc4796..0cb760c 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -17,9 +17,14 @@ enum pnv_phb_model {
- };
- 
- #define PNV_PCI_DIAG_BUF_SIZE	4096
-+#define PNV_IODA_PE_DEV		(1 << 0)	/* PE has single PCI device	*/
-+#define PNV_IODA_PE_BUS		(1 << 1)	/* PE has primary PCI bus	*/
-+#define PNV_IODA_PE_BUS_ALL	(1 << 2)	/* PE has subordinate buses	*/
- 
- /* Data associated with a PE, including IOMMU tracking etc.. */
- struct pnv_ioda_pe {
-+	unsigned long		flags;
-+
- 	/* A PE can be associated with a single device or an
- 	 * entire bus (& children). In the former case, pdev
- 	 * is populated, in the later case, pbus is.
-@@ -40,11 +45,6 @@ struct pnv_ioda_pe {
- 	 */
- 	unsigned int		dma_weight;
- 
--	/* This is a PCI-E -> PCI-X bridge, this points to the
--	 * corresponding bus PE
--	 */
--	struct pnv_ioda_pe	*bus_pe;
--
- 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
- 	int			tce32_seg;
- 	int			tce32_segcount;
 -- 
 1.7.5.4
