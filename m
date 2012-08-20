@@ -1,12 +1,14 @@
 Return-Path: <kas@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
- by ozlabs.org (Postfix) with ESMTP id F40AB2C0948
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id 2693C2C094C
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 23:52:40 +1000 (EST)
 From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 To: linux-mm@kvack.org
-Subject: [PATCH v4 0/8] Avoid cache trashing on clearing huge/gigantic page
-Date: Mon, 20 Aug 2012 16:52:29 +0300
-Message-Id: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
+Subject: [PATCH v4 1/8] THP: Use real address for NUMA policy
+Date: Mon, 20 Aug 2012 16:52:30 +0300
+Message-Id: <1345470757-12005-2-git-send-email-kirill.shutemov@linux.intel.com>
+In-Reply-To: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
+References: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
  Jan Beulich <jbeulich@novell.com>, "H. Peter Anvin" <hpa@zytor.com>,
  sparclinux@vger.kernel.org, Andrea Arcangeli <aarcange@redhat.com>,
@@ -28,60 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+From: Andi Kleen <ak@linux.intel.com>
 
-Clearing a 2MB huge page will typically blow away several levels of CPU
-caches.  To avoid this only cache clear the 4K area around the fault
-address and use a cache avoiding clears for the rest of the 2MB area.
+Use the fault address, not the rounded down hpage address for NUMA
+policy purposes. In some circumstances this can give more exact
+NUMA policy.
 
-This patchset implements cache avoiding version of clear_page only for
-x86. If an architecture wants to provide cache avoiding version of
-clear_page it should to define ARCH_HAS_USER_NOCACHE to 1 and implement
-clear_page_nocache() and clear_user_highpage_nocache().
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Signed-off-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+---
+ mm/huge_memory.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-v4:
-  - vm.clear_huge_page_nocache sysctl;
-  - rework page iteration in clear_{huge,gigantic}_page according to
-    Andrea Arcangeli suggestion;
-v3:
-  - Rebased to current Linus' tree. kmap_atomic() build issue is fixed;
-  - Pass fault address to clear_huge_page(). v2 had problem with clearing
-    for sizes other than HPAGE_SIZE;
-  - x86: fix 32bit variant. Fallback version of clear_page_nocache() has
-    been added for non-SSE2 systems;
-  - x86: clear_page_nocache() moved to clear_page_{32,64}.S;
-  - x86: use pushq_cfi/popq_cfi instead of push/pop;
-v2:
-  - No code change. Only commit messages are updated;
-  - RFC mark is dropped;
-
-Andi Kleen (5):
-  THP: Use real address for NUMA policy
-  THP: Pass fault address to __do_huge_pmd_anonymous_page()
-  x86: Add clear_page_nocache
-  mm: make clear_huge_page cache clear only around the fault address
-  x86: switch the 64bit uncached page clear to SSE/AVX v2
-
-Kirill A. Shutemov (3):
-  hugetlb: pass fault address to hugetlb_no_page()
-  mm: pass fault address to clear_huge_page()
-  mm: implement vm.clear_huge_page_nocache sysctl
-
- Documentation/sysctl/vm.txt      |   13 ++++++
- arch/x86/include/asm/page.h      |    2 +
- arch/x86/include/asm/string_32.h |    5 ++
- arch/x86/include/asm/string_64.h |    5 ++
- arch/x86/lib/Makefile            |    3 +-
- arch/x86/lib/clear_page_32.S     |   72 +++++++++++++++++++++++++++++++++++
- arch/x86/lib/clear_page_64.S     |   78 ++++++++++++++++++++++++++++++++++++++
- arch/x86/mm/fault.c              |    7 +++
- include/linux/mm.h               |    7 +++-
- kernel/sysctl.c                  |   12 ++++++
- mm/huge_memory.c                 |   17 ++++----
- mm/hugetlb.c                     |   39 ++++++++++---------
- mm/memory.c                      |   72 ++++++++++++++++++++++++++++++----
- 13 files changed, 294 insertions(+), 38 deletions(-)
- create mode 100644 arch/x86/lib/clear_page_32.S
-
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 57c4b93..70737ec 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -681,11 +681,11 @@ static inline gfp_t alloc_hugepage_gfpmask(int defrag, gfp_t extra_gfp)
+ 
+ static inline struct page *alloc_hugepage_vma(int defrag,
+ 					      struct vm_area_struct *vma,
+-					      unsigned long haddr, int nd,
++					      unsigned long address, int nd,
+ 					      gfp_t extra_gfp)
+ {
+ 	return alloc_pages_vma(alloc_hugepage_gfpmask(defrag, extra_gfp),
+-			       HPAGE_PMD_ORDER, vma, haddr, nd);
++			       HPAGE_PMD_ORDER, vma, address, nd);
+ }
+ 
+ #ifndef CONFIG_NUMA
+@@ -710,7 +710,7 @@ int do_huge_pmd_anonymous_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		if (unlikely(khugepaged_enter(vma)))
+ 			return VM_FAULT_OOM;
+ 		page = alloc_hugepage_vma(transparent_hugepage_defrag(vma),
+-					  vma, haddr, numa_node_id(), 0);
++					  vma, address, numa_node_id(), 0);
+ 		if (unlikely(!page)) {
+ 			count_vm_event(THP_FAULT_FALLBACK);
+ 			goto out;
+@@ -944,7 +944,7 @@ int do_huge_pmd_wp_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	if (transparent_hugepage_enabled(vma) &&
+ 	    !transparent_hugepage_debug_cow())
+ 		new_page = alloc_hugepage_vma(transparent_hugepage_defrag(vma),
+-					      vma, haddr, numa_node_id(), 0);
++					      vma, address, numa_node_id(), 0);
+ 	else
+ 		new_page = NULL;
+ 
 -- 
 1.7.7.6
