@@ -1,22 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 967DF2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 10:56:49 +1000 (EST)
-Message-ID: <5032DCC8.1040005@freescale.com>
-Date: Mon, 20 Aug 2012 19:56:40 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Jia Hongtao <B38951@freescale.com>
-Subject: Re: [PATCH V8] powerpc/fsl-pci: Unify pci/pcie initialization code
-References: <1345457161-4731-1-git-send-email-B38951@freescale.com>
- <5032B455.3080607@freescale.com>
-In-Reply-To: <5032B455.3080607@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linuxppc-dev@lists.ozlabs.org, Bradley Hughes <bhughes@silicontkx.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 058952C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 11:22:44 +1000 (EST)
+Subject: Re: [PATCH 2/2] powerpc/usb: fix bug of CPU hang when missing USB PHY
+ clock
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=windows-1252
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <3F453DDFF675A64A89321A1F3528102178AD97@039-SN1MPN1-004.039d.mgd.msft.net>
+Date: Mon, 20 Aug 2012 20:22:35 -0500
+Message-Id: <9F42EE26-7362-4B6E-8BD6-92EE02A07A1D@kernel.crashing.org>
+References: <1344595712-12804-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1344595712-12804-2-git-send-email-Shengzhou.Liu@freescale.com>
+ <366E392A-9EAE-43C9-8666-808EA19C03EA@kernel.crashing.org>
+ <3F453DDFF675A64A89321A1F3528102178AD97@039-SN1MPN1-004.039d.mgd.msft.net>
+To: gregkh@linuxfoundation.org
+Cc: Liu Shengzhou-B36685 <B36685@freescale.com>, linux-usb@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/20/2012 05:04 PM, Scott Wood wrote:
-> On 08/20/2012 05:06 AM, Jia Hongtao wrote:
->> @@ -842,38 +839,60 @@ void __devinit fsl_pci_init(void)
->>  			node = fsl_pci_primary;
->>  
->>  			if (of_match_node(pci_ids, node))
->> -				break;
->> +				return;
->>  		}
->> -	}
->>  
->> -	node = NULL;
->> -	for_each_node_by_type(node, "pci") {
->> -		if (of_match_node(pci_ids, node)) {
->> +		node = of_find_node_by_type(NULL, "pci");
->> +		if (of_match_node(pci_ids, node))
->>
-> 
-> What if the node returned doesn't match?  If you're checking for this,
-> handle the else-case (even if just with an error message).
 
-Or just use of_find_matching_node().
+On Aug 12, 2012, at 10:01 PM, Liu Shengzhou-B36685 wrote:
 
-Also, we probably need to check of_device_is_available() here (like
-fsl_add_bridge does), and move on to the next PCI bus if it's disabled.
+>=20
+>=20
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Friday, August 10, 2012 9:50 PM
+>> To: Liu Shengzhou-B36685
+>> Cc: linuxppc-dev@lists.ozlabs.org list; linux-usb@vger.kernel.org;
+>> gregkh@linuxfoundation.org
+>> Subject: Re: [PATCH 2/2] powerpc/usb: fix bug of CPU hang when =
+missing USB PHY
+>> clock
+>>=20
+>>=20
+>> On Aug 10, 2012, at 5:48 AM, Shengzhou Liu wrote:
+>>=20
+>>> when missing USB PHY clock, kernel booting up will hang during USB
+>>> initialization. We should check USBGP[PHY_CLK_VALID] bit to avoid =
+CPU
+>>> hanging in this case.
+>>>=20
+>>> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+>>> ---
+>>> drivers/usb/host/ehci-fsl.c |   63 =
+++++++++++++++++++++++++++++++-----------
+>> -
+>>> drivers/usb/host/ehci-fsl.h |    1 +
+>>> 2 files changed, 46 insertions(+), 18 deletions(-)
+>>=20
+>> I assume this should be considered a bug fix and be looked at for =
+inclusion in
+>> v3.6?
+>>=20
+>> - k
+> [Shengzhou] Yes.=20
 
--Scott
+Greg,
+
+ping?
+
+- k
