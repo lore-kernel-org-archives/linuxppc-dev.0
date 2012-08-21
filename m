@@ -1,25 +1,29 @@
-Return-Path: <r58472@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DFB172C008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 16:49:41 +1000 (EST)
-From: Li Yang-R58472 <r58472@freescale.com>
-To: Jia Hongtao-B38951 <B38951@freescale.com>, Wood Scott-B07421
- <B07421@freescale.com>
-Subject: RE: [PATCH V8] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Tue, 21 Aug 2012 06:49:31 +0000
-Message-ID: <94F013E7935FF44C83EBE7784D62AD3F093BD870@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1345457161-4731-1-git-send-email-B38951@freescale.com>
- <5032B455.3080607@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A56A61@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A56A61@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 139D22C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 17:14:16 +1000 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: John Stultz <john.stultz@linaro.org>
+Subject: Re: [PATCH 4/8] time: Condense timekeeper.xtime into xtime_sec
+References: <1342156917-25092-1-git-send-email-john.stultz@linaro.org>
+ <1342156917-25092-5-git-send-email-john.stultz@linaro.org>
+ <m2fw7ilhnm.fsf@igel.home> <503288ED.10306@linaro.org>
+ <m2fw7h4ab5.fsf@igel.home> <503296C1.4070906@linaro.org>
+ <m2boi549ed.fsf@igel.home> <5033029A.2030201@linaro.org>
+Date: Tue, 21 Aug 2012 09:14:06 +0200
+In-Reply-To: <5033029A.2030201@linaro.org> (John Stultz's message of "Mon, 20
+ Aug 2012 20:38:02 -0700")
+Message-ID: <m2d32kemyp.fsf@igel.home>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bradley Hughes <bhughes@silicontkx.com>
+Content-Type: text/plain
+Cc: Prarit Bhargava <prarit@redhat.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,77 +33,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogSmlhIEhvbmd0YW8tQjM4
-OTUxDQo+IFNlbnQ6IFR1ZXNkYXksIEF1Z3VzdCAyMSwgMjAxMiAxMToyNiBBTQ0KPiBUbzogV29v
-ZCBTY290dC1CMDc0MjENCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBnYWxh
-a0BrZXJuZWwuY3Jhc2hpbmcub3JnOyBMaSBZYW5nLQ0KPiBSNTg0NzI7IEJyYWRsZXkgSHVnaGVz
-DQo+IFN1YmplY3Q6IFJFOiBbUEFUQ0ggVjhdIHBvd2VycGMvZnNsLXBjaTogVW5pZnkgcGNpL3Bj
-aWUgaW5pdGlhbGl6YXRpb24NCj4gY29kZQ0KPiANCj4gDQo+IA0KPiA+IC0tLS0tT3JpZ2luYWwg
-TWVzc2FnZS0tLS0tDQo+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiBTZW50OiBUdWVz
-ZGF5LCBBdWd1c3QgMjEsIDIwMTIgNjowNCBBTQ0KPiA+IFRvOiBKaWEgSG9uZ3Rhby1CMzg5NTEN
-Cj4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFz
-aGluZy5vcmc7IExpIFlhbmctDQo+ID4gUjU4NDcyOyBCcmFkbGV5IEh1Z2hlcw0KPiA+IFN1Ympl
-Y3Q6IFJlOiBbUEFUQ0ggVjhdIHBvd2VycGMvZnNsLXBjaTogVW5pZnkgcGNpL3BjaWUgaW5pdGlh
-bGl6YXRpb24NCj4gPiBjb2RlDQo+ID4NCj4gPiBPbiAwOC8yMC8yMDEyIDA1OjA2IEFNLCBKaWEg
-SG9uZ3RhbyB3cm90ZToNCj4gPiA+IFdlIHVuaWZpZWQgdGhlIEZyZWVzY2FsZSBwY2kvcGNpZSBp
-bml0aWFsaXphdGlvbiBieSBjaGFuZ2luZyB0aGUNCj4gPiA+IGZzbF9wY2kgdG8gYSBwbGF0Zm9y
-bSBkcml2ZXIuIEluIHByZXZpb3VzIFBDSSBjb2RlIGFyY2hpdGVjdHVyZSB0aGUNCj4gPiA+IGlu
-aXRpYWxpemF0aW9uIHJvdXRpbmUgaXMgY2FsbGVkIGF0IGJvYXJkX3NldHVwX2FyY2ggc3RhZ2Uu
-IE5vdyB0aGUNCj4gPiA+IGluaXRpYWxpemF0aW9uIGlzIGRvbmUgaW4gcHJvYmUgZnVuY3Rpb24g
-d2hpY2ggaXMgYXJjaGl0ZWN0dXJhbA0KPiA+ID4gYmV0dGVyLiBBbHNvIEl0J3MgY29udmVuaWVu
-dCBmb3IgYWRkaW5nIFBNIHN1cHBvcnQgZm9yIFBDSSBjb250cm9sbGVyDQo+ID4gaW4gbGF0ZXIg
-cGF0Y2guDQo+ID4gPg0KPiA+ID4gTm93IHdlIHJlZ2lzdGVyZWQgcGNpIGNvbnRyb2xsZXJzIGFz
-IHBsYXRmb3JtIGRldmljZXMuIFNvIHdlIGNvbWJpbmUNCj4gPiA+IHR3byBpbml0aWFsaXphdGlv
-biBjb2RlIGFzIG9uZSBwbGF0Zm9ybSBkcml2ZXIuDQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1i
-eTogSmlhIEhvbmd0YW8gPEIzODk1MUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gU2lnbmVkLW9mZi1i
-eTogTGkgWWFuZyA8bGVvbGlAZnJlZXNjYWxlLmNvbT4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6IENo
-dW5oZSBMYW4gPENodW5oZS5MYW5AZnJlZXNjYWxlLmNvbT4NCj4gPiA+IC0tLQ0KPiA+ID4gQ2hh
-bmdlcyBmb3IgVjg6DQo+ID4gPiAqIFVzZSBwcmV2aW91cyBwcmltYXJ5IGRldGVybWluYXRpb24u
-IEJhc2VkIG9uIHRoZSBwb2ludCB0aGF0IHRoZXJlDQo+IGFyZQ0KPiA+ID4gICBidWdzIG9uIHBy
-aW1hcnktbGVzcyBzeXN0ZW0uDQo+ID4gPiAqIEFkZCBleGNlcHRpb25hbCBzdXBwb3J0IG9uIGdl
-X2ltcDNhIGluIHdoaWNoIHRoZSBwcmltYXJ5IGJ1cyBpcyBub3QNCj4gPiB0aGUNCj4gPiA+ICAg
-Zmlyc3QgcGNpIGJ1cyBkZXRlY3RlZC4NCj4gPg0KPiA+IFRoZSBleGNlcHRpb25hbCB0aGluZyBh
-Ym91dCBnZV9pbXAzYSBpcyB0aGF0IGl0IGhhcyBubyBpc2Egbm9kZSwgYnV0DQo+ID4gd2UncmUg
-bm90IHN1cmUgaWYgaXQgYWN0dWFsbHkgaGFzIGlzYSBvciBub3QuICBXZSBzaG91bGQgbm90IGJl
-IHJlbHlpbmcNCj4gPiBvbiBwcm9iZSBvcmRlciBpbiBhbnkgY2FzZS4gIERldmljZSB0cmVlIG5v
-ZGVzIGFyZSBub3Qgb3JkZXJlZC4NCj4gDQo+IFllcy4uLiBXZSBkb24ndCBrbm93IGlmIGdlX2lt
-cDNhIGFjdHVhbGx5IGhhcyBpc2EgYW5kIHN0aWxsIG5vIGFuc3dlcg0KPiBmcm9tDQo+IGJvYXJk
-IG93bmVyLiBJIGp1c3Qgc2V0IHByaW1hcnkgYXMgdGhlIGJvYXJkIHVzZWQgdG8uIEF0IGxlYXN0
-IHdlIGRvbid0DQo+IGRvDQo+IGFueSBoYXJtLg0KPiANCj4gPg0KPiA+IEFub3RoZXIgaW50ZXJl
-c3RpbmcgY2FzZSBpcyBzdHhzc2E4NTU1LmR0cywgd2hpY2ggaGFzIGFuIGk4MjU5IG5vZGUgYnV0
-DQo+ID4gbm8gSVNBIG5vZGUgKGFyZSB0aGVyZSBhbnkgb3RoZXIgaW5zdGFuY2VzIG9mIHRoaXM/
-KS4gIEhvd2V2ZXIsIEkgY2FuJ3QNCj4gPiB0ZWxsIGlmIHN0eF9ncDMuYyBpcyB0aGUgcGxhdGZv
-cm0gZmlsZSB0aGF0IGdvZXMgd2l0aCB0aGlzIGRldmljZSB0cmVlLA0KPiA+IG9yIGlmIHRoZSBw
-bGF0Zm9ybSBjb2RlIGZvciBzdHhzc2E4NTU1IGlzIG91dC1vZi10cmVlIChvciBzb21lIG90aGVy
-DQo+IGZpbGUNCj4gPiB0aGF0IEknbSBub3Qgc2VlaW5nKS4NCj4gDQo+IE1QQzg1NDFfQ0RTIGFu
-ZCBNUEM4NTU1X0NEUyBhbHNvIGhhcyBpODI1OSBidXQgbm8gSVNBIG5vZGUuIHN0eF9ncDMgc2Vl
-bXMNCj4gZ28NCj4gd2l0aCBzdHhzc2E4NTU1LmR0cyBidXQgSSdtIG5vdCBzdXJlIGV0aGVyLg0K
-PiANCj4gU28geW91IG1lYW4gd2UgaGF2ZSB0byBsb29rIGZvciBpODI1OSB0b28gZm9yIGRldGVy
-bWluaW5nIHByaW1hcnkuDQo+IFRha2UgZGV2aWNlIHRyZWUgYXMgZXZpZGVuY2Ugd2UgY2FuIHRl
-bGwgdGhhdCByZWFsIHByaW1hcnkgZXRoZXIgaGFzIGlzYQ0KPiBub2RlDQo+IG9yIGk4MjU5IG5v
-ZGUuIEFuZCBpZiB0aGVyZSBpcyBubyBpc2Egd2UganVzdCBhcmJpdHJhcmlseSBkZXNpZ25hdGUg
-b25lLg0KPiANCj4gSWYgdGhpcyBsb2dpYyB3b3JrcyB3ZWxsIHRoZW4gb2suDQoNCklmIHRoZXJl
-IGlzIGk4MjU5IG5vZGUgaW4gdGhlIGRldmljZSB0cmVlLCBpdCBzaG91bGQgYmUgc3VnZ2VzdGlu
-ZyB0aGF0IHRoZXJlIGlzIGEgUENJIHRvIElTQSBicmlkZ2UgYnV0IG5vdCBleHBsaWNpdGx5IGRl
-c2NyaWJlZCBpbiB0aGUgZGV2aWNlIHRyZWUuICBUaGVuIHdlIG5lZWQgdG8gZml4IHRoZSBkZXZp
-Y2UgdHJlZSB0byBhZGQgdGhlIElTQSBub2Rlcy4NCg0KLSBMZW8NCj4gDQo+IA0KPiA+DQo+ID4g
-PiAtdm9pZCBfX2RldmluaXQgZnNsX3BjaV9pbml0KHZvaWQpDQo+ID4gPiArdm9pZCBmc2xfcGNp
-X2Fzc2lnbl9wcmltYXJ5KHZvaWQpDQo+ID4gPiAgew0KPiA+ID4gLQlpbnQgcmV0Ow0KPiA+ID4g
-IAlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5vZGU7DQo+ID4gPiAtCXN0cnVjdCBwY2lfY29udHJvbGxl
-ciAqaG9zZTsNCj4gPiA+IC0JZG1hX2FkZHJfdCBtYXggPSAweGZmZmZmZmZmOw0KPiA+ID4NCj4g
-PiA+ICAJLyogQ2FsbGVycyBjYW4gc3BlY2lmeSB0aGUgcHJpbWFyeSBidXMgdXNpbmcgb3RoZXIg
-bWVhbnMuICovDQo+ID4gPiAgCWlmICghZnNsX3BjaV9wcmltYXJ5KSB7DQo+ID4NCj4gPiBTaW5j
-ZSB0aGUgd2hvbGUgcG9pbnQgb2YgdGhpcyBmdW5jdGlvbiBpcyBub3cgdG8gZmluZCB0aGUgcHJp
-bWFyeSwganVzdA0KPiA+IHJldHVybiBpZiBpdCdzIGFscmVhZHkgc2V0LCBpbnN0ZWFkIG9mIGlu
-ZGVudGluZyB0aGUgcmVzdCBvZiB0aGUNCj4gZnVuY3Rpb24uDQo+ID4NCj4gPiA+IEBAIC04NDIs
-MzggKzgzOSw2MCBAQCB2b2lkIF9fZGV2aW5pdCBmc2xfcGNpX2luaXQodm9pZCkNCj4gPiA+ICAJ
-CQlub2RlID0gZnNsX3BjaV9wcmltYXJ5Ow0KPiA+ID4NCj4gPiA+ICAJCQlpZiAob2ZfbWF0Y2hf
-bm9kZShwY2lfaWRzLCBub2RlKSkNCj4gPiA+IC0JCQkJYnJlYWs7DQo+ID4gPiArCQkJCXJldHVy
-bjsNCj4gPiA+ICAJCX0NCj4gPiA+IC0JfQ0KPiA+ID4NCj4gPiA+IC0Jbm9kZSA9IE5VTEw7DQo+
-ID4gPiAtCWZvcl9lYWNoX25vZGVfYnlfdHlwZShub2RlLCAicGNpIikgew0KPiA+ID4gLQkJaWYg
-KG9mX21hdGNoX25vZGUocGNpX2lkcywgbm9kZSkpIHsNCj4gPiA+ICsJCW5vZGUgPSBvZl9maW5k
-X25vZGVfYnlfdHlwZShOVUxMLCAicGNpIik7DQo+ID4gPiArCQlpZiAob2ZfbWF0Y2hfbm9kZShw
-Y2lfaWRzLCBub2RlKSkNCj4gPiA+DQo+ID4NCj4gPiBXaGF0IGlmIHRoZSBub2RlIHJldHVybmVk
-IGRvZXNuJ3QgbWF0Y2g/ICBJZiB5b3UncmUgY2hlY2tpbmcgZm9yIHRoaXMsDQo+ID4gaGFuZGxl
-IHRoZSBlbHNlLWNhc2UgKGV2ZW4gaWYganVzdCB3aXRoIGFuIGVycm9yIG1lc3NhZ2UpLg0KPiA+
-DQo+ID4gLVNjb3R0DQoNCg==
+John Stultz <john.stultz@linaro.org> writes:
+
+> @@ -115,6 +115,7 @@ static void tk_xtime_add(struct timekeeper *tk, const struct timespec *ts)
+>  {
+>  	tk->xtime_sec += ts->tv_sec;
+>  	tk->xtime_nsec += (u64)ts->tv_nsec << tk->shift;
+> +	tk_normalize_xtime(tk);
+>  }
+
+Yes, that does it.  Failure to normalize is always bad.
+
+Andreas.
+
+-- 
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
