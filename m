@@ -1,32 +1,19 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Return-Path: <martyn.welch@ge.com>
+Received: from exprod5og111.obsmtp.com (exprod5og111.obsmtp.com [64.18.0.22])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7D1E92C03BC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 21:43:17 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Tue, 21 Aug 2012 17:13:09 +0530
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q7LBh7o540304884
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 17:13:07 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q7LBh5YR023339
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 21:43:06 +1000
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Subject: [PATCH v2 2/2] [powerpc] Export memory limit via device tree
-To: linuxppc-dev@lists.ozlabs.org
-Date: Tue, 21 Aug 2012 17:12:43 +0530
-Message-ID: <20120821114240.29282.44213.stgit@suzukikp.in.ibm.com>
-In-Reply-To: <20120821113815.29282.4000.stgit@suzukikp.in.ibm.com>
-References: <20120821113815.29282.4000.stgit@suzukikp.in.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 6652F2C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 22:44:18 +1000 (EST)
+Message-ID: <50338169.8040102@ge.com>
+Date: Tue, 21 Aug 2012 13:39:05 +0100
+From: Martyn Welch <martyn.welch@ge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: mahesh@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: GE IMP3a
+References: <68C39493-C518-4898-954B-CA2E1DCF5DAD@kernel.crashing.org>
+In-Reply-To: <68C39493-C518-4898-954B-CA2E1DCF5DAD@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,64 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The powerpc kernel doesn't export the memory limit enforced by 'mem='
-kernel parameter. This is required for building the ELF header in
-kexec-tools to limit the vmcore to capture only the used memory. On
-powerpc the kexec-tools depends on the device-tree for memory related
-information, unlike /proc/iomem on the x86.
+On 15/08/12 22:32, Kumar Gala wrote:
+> Do you know why ge_imp3a.c has 0x9000 as the 'primary' PCIe bus on the board?
+> 
 
-Without this information, the kexec-tools assumes the entire System
-RAM and vmcore creates an unnecessarily larger dump.
+Hi Kumar,
 
-This patch exports the memory limit, if present, via
-chosen/linux,memory-limit
-property, so that the vmcore can be limited to the memory limit.
+Sorry, missed your mail.
 
-The prom_init seems to export this value in the same node. But doesn't
-really
-appear there.  Also the memory_limit gets adjusted with the processing of
-crashkernel= parameter. This patch makes sure we get the actual limit.
+At a quick guess it's because that's the interface that is used for the
+on-board PCI devices.
 
-The kexec-tools will use the value to limit the 'end' of the memory
-regions.
+Martyn
 
-Tested this patch on ppc64 and ppc32(ppc440) with a kexec-tools
-patch by Mahesh.
 
-Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-Tested-by: Mahesh J. Salgaonkar <mahesh@linux.vnet.ibm.com>
----
-
- arch/powerpc/kernel/machine_kexec.c |   12 ++++++++++++
- 1 files changed, 12 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/kernel/machine_kexec.c b/arch/powerpc/kernel/machine_kexec.c
-index 4074eff..fa9f6c7 100644
---- a/arch/powerpc/kernel/machine_kexec.c
-+++ b/arch/powerpc/kernel/machine_kexec.c
-@@ -204,6 +204,12 @@ static struct property crashk_size_prop = {
- 	.value = &crashk_size,
- };
- 
-+static struct property memory_limit_prop = {
-+	.name = "linux,memory-limit",
-+	.length = sizeof(unsigned long long),
-+	.value = &memory_limit,
-+};
-+
- static void __init export_crashk_values(struct device_node *node)
- {
- 	struct property *prop;
-@@ -223,6 +229,12 @@ static void __init export_crashk_values(struct device_node *node)
- 		crashk_size = resource_size(&crashk_res);
- 		prom_add_property(node, &crashk_size_prop);
- 	}
-+
-+	/*
-+	 * memory_limit is required by the kexec-tools to limit the
-+	 * crash regions to the actual memory used.
-+	 */
-+	prom_update_property(node, &memory_limit_prop);
- }
- 
- static int __init kexec_setup(void)
+-- 
+Martyn Welch (Lead Software Engineer)  | Registered in England and Wales
+GE Intelligent Platforms               | (3828642) at 100 Barbirolli Square
+T +44(0)1327322748                     | Manchester, M2 3AB
+E martyn.welch@ge.com                  | VAT:GB 927559189
