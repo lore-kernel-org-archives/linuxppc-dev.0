@@ -1,46 +1,18 @@
-Return-Path: <john.stultz@linaro.org>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 111B62C007A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:16:10 +1000 (EST)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <john.stultz@linaro.org>;
- Tue, 21 Aug 2012 12:16:07 -0600
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id A4BAD3E4003D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 12:15:01 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q7LIEn4J131546
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 12:14:54 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q7LIG0Fw026837
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 12:16:00 -0600
-Message-ID: <5033D00B.4060701@linaro.org>
-Date: Tue, 21 Aug 2012 11:14:35 -0700
-From: John Stultz <john.stultz@linaro.org>
-MIME-Version: 1.0
-To: Andreas Schwab <schwab@linux-m68k.org>
-Subject: Re: [PATCH 4/8] time: Condense timekeeper.xtime into xtime_sec
-References: <1342156917-25092-1-git-send-email-john.stultz@linaro.org>
- <1342156917-25092-5-git-send-email-john.stultz@linaro.org>
- <m2fw7ilhnm.fsf@igel.home> <503288ED.10306@linaro.org>
- <m2fw7h4ab5.fsf@igel.home> <503296C1.4070906@linaro.org>
- <m2boi549ed.fsf@igel.home> <5033029A.2030201@linaro.org>
- <m2d32kemyp.fsf@igel.home>
-In-Reply-To: <m2d32kemyp.fsf@igel.home>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Prarit Bhargava <prarit@redhat.com>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Richard Cochran <richardcochran@gmail.com>,
- Linux Kernel <linux-kernel@vger.kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
- Ingo Molnar <mingo@kernel.org>
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5DE6C2C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:22:54 +1000 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/mm: match variable types to API
+Date: Tue, 21 Aug 2012 14:22:28 -0400
+Message-Id: <1345573348-28248-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: Paul Mackerras <paulus@samba.org>,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Joe MacDonald <joe.macdonald@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,19 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/21/2012 12:14 AM, Andreas Schwab wrote:
-> John Stultz <john.stultz@linaro.org> writes:
->
->> @@ -115,6 +115,7 @@ static void tk_xtime_add(struct timekeeper *tk, const struct timespec *ts)
->>   {
->>   	tk->xtime_sec += ts->tv_sec;
->>   	tk->xtime_nsec += (u64)ts->tv_nsec << tk->shift;
->> +	tk_normalize_xtime(tk);
->>   }
-> Yes, that does it.  Failure to normalize is always bad.
+From: Joe MacDonald <joe.macdonald@windriver.com>
 
-Great. Thanks for the testing and the bug report! I'll be sending out 
-the patch to -tip later today.
+sys_subpage_prot() takes an unsigned long for 'addr' then does some stuff
+with it and the result is stored in a signed int, i, which is eventually
+used as the size parameter in a copy_from_user call.  Update 'i' to be an
+unsigned long as well and since 'nw' is used in a size_t context which,
+depending on whether this is 32- or 64-bit may be unsigned int or unsigned
+long, switch that to a size_t and always be right.
 
-thanks
--john
+Finally, since we're in the neighbourhood, make the same changes to
+subpage_prot_clear().
+
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Joe MacDonald <joe.macdonald@windriver.com>
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/mm/subpage-prot.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/subpage-prot.c b/arch/powerpc/mm/subpage-prot.c
+index e4f8f1f..7c415dd 100644
+--- a/arch/powerpc/mm/subpage-prot.c
++++ b/arch/powerpc/mm/subpage-prot.c
+@@ -95,7 +95,8 @@ static void subpage_prot_clear(unsigned long addr, unsigned long len)
+ 	struct mm_struct *mm = current->mm;
+ 	struct subpage_prot_table *spt = &mm->context.spt;
+ 	u32 **spm, *spp;
+-	int i, nw;
++	unsigned long i;
++	size_t nw;
+ 	unsigned long next, limit;
+ 
+ 	down_write(&mm->mmap_sem);
+@@ -144,7 +145,8 @@ long sys_subpage_prot(unsigned long addr, unsigned long len, u32 __user *map)
+ 	struct mm_struct *mm = current->mm;
+ 	struct subpage_prot_table *spt = &mm->context.spt;
+ 	u32 **spm, *spp;
+-	int i, nw;
++	unsigned long i;
++	size_t nw;
+ 	unsigned long next, limit;
+ 	int err;
+ 
+-- 
+1.7.11.1
