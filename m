@@ -1,26 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+Return-Path: <R1AAHA@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D8BA82C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:33:52 +1000 (EST)
-Message-ID: <5033D488.5040404@freescale.com>
-Date: Tue, 21 Aug 2012 13:33:44 -0500
-From: Scott Wood <scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 2A3A32C00B3
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2012 08:25:21 +1000 (EST)
+Date: Tue, 21 Aug 2012 17:23:03 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/fsl: fix "Failed to mount /dev: No such device" errors
+Message-ID: <20120821172303.53d5698006b32063dca99300@freescale.com>
 MIME-Version: 1.0
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Subject: Re: [PATCH V8] powerpc/fsl-pci: Unify pci/pcie initialization code
-References: <1345457161-4731-1-git-send-email-B38951@freescale.com>
- <5032B455.3080607@freescale.com>
- <412C8208B4A0464FA894C5F0C278CD5D01A56A61@039-SN1MPN1-002.039d.mgd.msft.net>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01A56A61@039-SN1MPN1-002.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Bradley Hughes <bhughes@silicontkx.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain; charset="US-ASCII"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,39 +22,574 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/20/2012 10:26 PM, Jia Hongtao-B38951 wrote:
-> 
-> 
->> -----Original Message-----
->> From: Wood Scott-B07421
->> Sent: Tuesday, August 21, 2012 6:04 AM
->> To: Jia Hongtao-B38951
->> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Li Yang-
->> R58472; Bradley Hughes
->> Subject: Re: [PATCH V8] powerpc/fsl-pci: Unify pci/pcie initialization
->> code
->>
->> Another interesting case is stxssa8555.dts, which has an i8259 node but
->> no ISA node (are there any other instances of this?).  However, I can't
->> tell if stx_gp3.c is the platform file that goes with this device tree,
->> or if the platform code for stxssa8555 is out-of-tree (or some other file
->> that I'm not seeing).
-> 
-> MPC8541_CDS and MPC8555_CDS also has i8259 but no ISA node. stx_gp3 seems go
-> with stxssa8555.dts but I'm not sure ether.
-> 
-> So you mean we have to look for i8259 too for determining primary.
-> Take device tree as evidence we can tell that real primary ether has isa node
-> or i8259 node. And if there is no isa we just arbitrarily designate one.
-> 
-> If this logic works well then ok.
+Yocto (Built by Poky 7.0) 1.2 root filesystems fail to boot,
+at least over nfs, with:
 
-Yes, but it should be board code that does this, as it's a workaround
-for a broken device tree.
+Failed to mount /dev: No such device
 
-Maybe have a common helper function that finds a toplevel PCI bus that
-contains a node matching a supplied of_match.  This could be used for
-both the ISA lookup and the i8259 lookup, and any other weird thing some
-board might have as long as it can be uniquely represented with of_match.
+Configuring DEVTMPFS fixes it.
 
--Scott
+Note: all non-DEVTMPFS changes are due to the side effects of
+running make savedefconfig.
+
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+if the savedefconfig effects are undesired, I can re-post
+a two-patch series, the first the result of only running
+savedefconfig, the second the addition of DEVTMPFS.
+
+based on Kumar's powerpc.git next branch (commit 1ee9545)
+
+ arch/powerpc/configs/85xx/p1023rds_defconfig | 31 +++++++++------------------
+ arch/powerpc/configs/corenet32_smp_defconfig | 29 ++++++++-----------------
+ arch/powerpc/configs/corenet64_smp_defconfig |  1 +
+ arch/powerpc/configs/mpc83xx_defconfig       | 18 +++++-----------
+ arch/powerpc/configs/mpc85xx_defconfig       | 32 +++++++---------------------
+ arch/powerpc/configs/mpc85xx_smp_defconfig   | 32 +++++++---------------------
+ 6 files changed, 41 insertions(+), 102 deletions(-)
+
+diff --git a/arch/powerpc/configs/85xx/p1023rds_defconfig b/arch/powerpc/configs/85xx/p1023rds_defconfig
+index f4337ba..26e541c 100644
+--- a/arch/powerpc/configs/85xx/p1023rds_defconfig
++++ b/arch/powerpc/configs/85xx/p1023rds_defconfig
+@@ -6,28 +6,27 @@ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+ CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_AUDIT=y
+-CONFIG_SPARSE_IRQ=y
++CONFIG_IRQ_DOMAIN_DEBUG=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+ CONFIG_KALLSYMS_ALL=y
+-CONFIG_KALLSYMS_EXTRA_PASS=y
+ CONFIG_EMBEDDED=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ CONFIG_MODULE_FORCE_UNLOAD=y
+ CONFIG_MODVERSIONS=y
+ # CONFIG_BLK_DEV_BSG is not set
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_MAC_PARTITION=y
+ CONFIG_P1023_RDS=y
+ CONFIG_QUICC_ENGINE=y
+ CONFIG_QE_GPIO=y
+ CONFIG_CPM2=y
+-CONFIG_GPIO_MPC8XXX=y
+ CONFIG_HIGHMEM=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+ CONFIG_BINFMT_MISC=m
+ CONFIG_MATH_EMULATION=y
+@@ -63,11 +62,11 @@ CONFIG_INET_ESP=y
+ CONFIG_IPV6=y
+ CONFIG_IP_SCTP=m
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_DEVTMPFS=y
+ CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+ CONFIG_BLK_DEV_RAM_SIZE=131072
+-CONFIG_MISC_DEVICES=y
+ CONFIG_EEPROM_LEGACY=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_CHR_DEV_ST=y
+@@ -80,15 +79,14 @@ CONFIG_SATA_FSL=y
+ CONFIG_SATA_SIL24=y
+ CONFIG_NETDEVICES=y
+ CONFIG_DUMMY=y
++CONFIG_FS_ENET=y
++CONFIG_FSL_PQ_MDIO=y
++CONFIG_E1000E=y
+ CONFIG_MARVELL_PHY=y
+ CONFIG_DAVICOM_PHY=y
+ CONFIG_CICADA_PHY=y
+ CONFIG_VITESSE_PHY=y
+ CONFIG_FIXED_PHY=y
+-CONFIG_NET_ETHERNET=y
+-CONFIG_FS_ENET=y
+-CONFIG_E1000E=y
+-CONFIG_FSL_PQ_MDIO=y
+ CONFIG_INPUT_FF_MEMLESS=m
+ # CONFIG_INPUT_MOUSEDEV is not set
+ # CONFIG_INPUT_KEYBOARD is not set
+@@ -98,16 +96,15 @@ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_SERIAL_8250_NR_UARTS=2
+ CONFIG_SERIAL_8250_RUNTIME_UARTS=2
+-CONFIG_SERIAL_8250_EXTENDED=y
+ CONFIG_SERIAL_8250_MANY_PORTS=y
+ CONFIG_SERIAL_8250_DETECT_IRQ=y
+ CONFIG_SERIAL_8250_RSA=y
+ CONFIG_SERIAL_QE=m
+-CONFIG_HW_RANDOM=y
+ CONFIG_NVRAM=y
+ CONFIG_I2C=y
+ CONFIG_I2C_CPM=m
+ CONFIG_I2C_MPC=y
++CONFIG_GPIO_MPC8XXX=y
+ # CONFIG_HWMON is not set
+ CONFIG_VIDEO_OUTPUT_CONTROL=y
+ CONFIG_SOUND=y
+@@ -123,7 +120,6 @@ CONFIG_DMADEVICES=y
+ CONFIG_FSL_DMA=y
+ # CONFIG_NET_DMA is not set
+ CONFIG_STAGING=y
+-# CONFIG_STAGING_EXCLUDE_BUILD is not set
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+@@ -150,22 +146,15 @@ CONFIG_QNX4FS_FS=m
+ CONFIG_SYSV_FS=m
+ CONFIG_UFS_FS=m
+ CONFIG_NFS_FS=y
+-CONFIG_NFS_V3=y
+ CONFIG_NFS_V4=y
+ CONFIG_ROOT_NFS=y
+ CONFIG_NFSD=y
+-CONFIG_PARTITION_ADVANCED=y
+-CONFIG_MAC_PARTITION=y
+ CONFIG_CRC_T10DIF=y
+ CONFIG_FRAME_WARN=8092
+ CONFIG_DEBUG_FS=y
+-CONFIG_DEBUG_KERNEL=y
+ CONFIG_DETECT_HUNG_TASK=y
+ # CONFIG_DEBUG_BUGVERBOSE is not set
+ CONFIG_DEBUG_INFO=y
+-# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+-CONFIG_SYSCTL_SYSCALL_CHECK=y
+-CONFIG_IRQ_DOMAIN_DEBUG=y
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_SHA256=y
+ CONFIG_CRYPTO_SHA512=y
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index 3b40015..1c0f243 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -6,8 +6,8 @@ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+ CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_AUDIT=y
+-CONFIG_SPARSE_IRQ=y
+-CONFIG_RCU_TRACE=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=14
+@@ -21,24 +21,23 @@ CONFIG_MODULE_UNLOAD=y
+ CONFIG_MODULE_FORCE_UNLOAD=y
+ CONFIG_MODVERSIONS=y
+ # CONFIG_BLK_DEV_BSG is not set
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_MAC_PARTITION=y
+ CONFIG_P2041_RDB=y
+ CONFIG_P3041_DS=y
+ CONFIG_P4080_DS=y
+ CONFIG_P5020_DS=y
+ CONFIG_P5040_DS=y
+ CONFIG_HIGHMEM=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+ CONFIG_BINFMT_MISC=m
+ CONFIG_KEXEC=y
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_FORCE_MAX_ZONEORDER=13
+-CONFIG_FSL_LBC=y
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
+-CONFIG_PCI_MSI=y
+ # CONFIG_PCIEASPM is not set
++CONFIG_PCI_MSI=y
+ CONFIG_RAPIDIO=y
+ CONFIG_FSL_RIO=y
+ CONFIG_NET=y
+@@ -71,6 +70,7 @@ CONFIG_INET_IPCOMP=y
+ CONFIG_IPV6=y
+ CONFIG_IP_SCTP=m
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_DEVTMPFS=y
+ CONFIG_MTD=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+ CONFIG_MTD_CHAR=y
+@@ -78,17 +78,14 @@ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_AMDSTD=y
+ CONFIG_MTD_PHYSMAP_OF=y
++CONFIG_MTD_M25P80=y
+ CONFIG_MTD_NAND=y
+-CONFIG_MTD_NAND_ECC=y
+-CONFIG_MTD_NAND_IDS=y
+-CONFIG_MTD_NAND_FSL_IFC=y
+ CONFIG_MTD_NAND_FSL_ELBC=y
+-CONFIG_MTD_M25P80=y
++CONFIG_MTD_NAND_FSL_IFC=y
+ CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+ CONFIG_BLK_DEV_RAM_SIZE=131072
+-CONFIG_MISC_DEVICES=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_CHR_DEV_ST=y
+ CONFIG_BLK_DEV_SR=y
+@@ -116,11 +113,9 @@ CONFIG_SERIO_LIBPS2=y
+ CONFIG_PPC_EPAPR_HV_BYTECHAN=y
+ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
+-CONFIG_SERIAL_8250_EXTENDED=y
+ CONFIG_SERIAL_8250_MANY_PORTS=y
+ CONFIG_SERIAL_8250_DETECT_IRQ=y
+ CONFIG_SERIAL_8250_RSA=y
+-CONFIG_HW_RANDOM=y
+ CONFIG_NVRAM=y
+ CONFIG_I2C=y
+ CONFIG_I2C_CHARDEV=y
+@@ -133,7 +128,6 @@ CONFIG_SPI_FSL_ESPI=y
+ CONFIG_VIDEO_OUTPUT_CONTROL=y
+ CONFIG_USB_HID=m
+ CONFIG_USB=y
+-CONFIG_USB_DEVICEFS=y
+ CONFIG_USB_MON=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_EHCI_FSL=y
+@@ -143,8 +137,6 @@ CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
+ CONFIG_USB_STORAGE=y
+ CONFIG_MMC=y
+ CONFIG_MMC_SDHCI=y
+-CONFIG_MMC_SDHCI_OF=y
+-CONFIG_MMC_SDHCI_OF_ESDHC=y
+ CONFIG_EDAC=y
+ CONFIG_EDAC_MM_EDAC=y
+ CONFIG_EDAC_MPC85XX=y
+@@ -171,19 +163,16 @@ CONFIG_HUGETLBFS=y
+ CONFIG_JFFS2_FS=y
+ CONFIG_CRAMFS=y
+ CONFIG_NFS_FS=y
+-CONFIG_NFS_V3=y
+ CONFIG_NFS_V4=y
+ CONFIG_ROOT_NFS=y
+ CONFIG_NFSD=m
+-CONFIG_PARTITION_ADVANCED=y
+-CONFIG_MAC_PARTITION=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_NLS_UTF8=m
+ CONFIG_MAGIC_SYSRQ=y
+ CONFIG_DEBUG_SHIRQ=y
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_DEBUG_INFO=y
+-CONFIG_SYSCTL_SYSCALL_CHECK=y
++CONFIG_RCU_TRACE=y
+ CONFIG_CRYPTO_NULL=y
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_MD4=y
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 36df45b..88fa5c4 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -57,6 +57,7 @@ CONFIG_INET_ESP=y
+ CONFIG_IPV6=y
+ CONFIG_IP_SCTP=m
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_DEVTMPFS=y
+ CONFIG_MTD=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+ CONFIG_MTD_CHAR=y
+diff --git a/arch/powerpc/configs/mpc83xx_defconfig b/arch/powerpc/configs/mpc83xx_defconfig
+index 5aac9a8..9352e44 100644
+--- a/arch/powerpc/configs/mpc83xx_defconfig
++++ b/arch/powerpc/configs/mpc83xx_defconfig
+@@ -2,12 +2,12 @@ CONFIG_EXPERIMENTAL=y
+ CONFIG_SYSVIPC=y
+ CONFIG_LOG_BUF_SHIFT=14
+ CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
+ CONFIG_EXPERT=y
+ CONFIG_SLAB=y
+ CONFIG_MODULES=y
+ CONFIG_MODULE_UNLOAD=y
+ # CONFIG_BLK_DEV_BSG is not set
++CONFIG_PARTITION_ADVANCED=y
+ # CONFIG_PPC_CHRP is not set
+ # CONFIG_PPC_PMAC is not set
+ CONFIG_PPC_83xx=y
+@@ -25,7 +25,6 @@ CONFIG_ASP834x=y
+ CONFIG_QUICC_ENGINE=y
+ CONFIG_QE_GPIO=y
+ CONFIG_MATH_EMULATION=y
+-CONFIG_SPARSE_IRQ=y
+ CONFIG_PCI=y
+ CONFIG_NET=y
+ CONFIG_PACKET=y
+@@ -42,10 +41,9 @@ CONFIG_INET_ESP=y
+ # CONFIG_INET_LRO is not set
+ # CONFIG_IPV6 is not set
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_DEVTMPFS=y
+ # CONFIG_FW_LOADER is not set
+ CONFIG_MTD=y
+-CONFIG_MTD_PARTITIONS=y
+-CONFIG_MTD_OF_PARTS=y
+ CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLOCK=y
+ CONFIG_MTD_CFI=y
+@@ -64,15 +62,14 @@ CONFIG_ATA=y
+ CONFIG_SATA_FSL=y
+ CONFIG_SATA_SIL=y
+ CONFIG_NETDEVICES=y
++CONFIG_MII=y
++CONFIG_UCC_GETH=y
++CONFIG_GIANFAR=y
+ CONFIG_MARVELL_PHY=y
+ CONFIG_DAVICOM_PHY=y
+ CONFIG_VITESSE_PHY=y
+ CONFIG_ICPLUS_PHY=y
+ CONFIG_FIXED_PHY=y
+-CONFIG_NET_ETHERNET=y
+-CONFIG_MII=y
+-CONFIG_GIANFAR=y
+-CONFIG_UCC_GETH=y
+ CONFIG_INPUT_FF_MEMLESS=m
+ # CONFIG_INPUT_MOUSEDEV is not set
+ # CONFIG_INPUT_KEYBOARD is not set
+@@ -112,17 +109,12 @@ CONFIG_RTC_DRV_DS1374=y
+ CONFIG_EXT2_FS=y
+ CONFIG_EXT3_FS=y
+ # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+-CONFIG_INOTIFY=y
+ CONFIG_PROC_KCORE=y
+ CONFIG_TMPFS=y
+ CONFIG_NFS_FS=y
+-CONFIG_NFS_V3=y
+ CONFIG_NFS_V4=y
+ CONFIG_ROOT_NFS=y
+-CONFIG_PARTITION_ADVANCED=y
+ CONFIG_CRC_T10DIF=y
+-# CONFIG_RCU_CPU_STALL_DETECTOR is not set
+-CONFIG_SYSCTL_SYSCALL_CHECK=y
+ CONFIG_CRYPTO_ECB=m
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_SHA256=y
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
+index 627c257..cf815e8 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_defconfig
+@@ -5,7 +5,9 @@ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+ CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_AUDIT=y
+-CONFIG_SPARSE_IRQ=y
++CONFIG_IRQ_DOMAIN_DEBUG=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=14
+@@ -17,6 +19,8 @@ CONFIG_MODULE_UNLOAD=y
+ CONFIG_MODULE_FORCE_UNLOAD=y
+ CONFIG_MODVERSIONS=y
+ # CONFIG_BLK_DEV_BSG is not set
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_MAC_PARTITION=y
+ CONFIG_MPC8540_ADS=y
+ CONFIG_MPC8560_ADS=y
+ CONFIG_MPC85xx_CDS=y
+@@ -41,8 +45,6 @@ CONFIG_SBC8548=y
+ CONFIG_QUICC_ENGINE=y
+ CONFIG_QE_GPIO=y
+ CONFIG_HIGHMEM=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BINFMT_MISC=m
+ CONFIG_MATH_EMULATION=y
+ CONFIG_FORCE_MAX_ZONEORDER=12
+@@ -75,36 +77,25 @@ CONFIG_INET_ESP=y
+ CONFIG_IPV6=y
+ CONFIG_IP_SCTP=m
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_DEVTMPFS=y
+ CONFIG_MTD=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+ CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLOCK=y
+-CONFIG_MTD_CFI=y
+ CONFIG_FTL=y
+-CONFIG_MTD_GEN_PROBE=y
+-CONFIG_MTD_MAP_BANK_WIDTH_1=y
+-CONFIG_MTD_MAP_BANK_WIDTH_2=y
+-CONFIG_MTD_MAP_BANK_WIDTH_4=y
+-CONFIG_MTD_CFI_I1=y
+-CONFIG_MTD_CFI_I2=y
++CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_INTELEXT=y
+ CONFIG_MTD_CFI_AMDSTD=y
+-CONFIG_MTD_CFI_UTIL=y
+ CONFIG_MTD_PHYSMAP_OF=y
+-CONFIG_MTD_PARTITIONS=y
+-CONFIG_MTD_OF_PARTS=y
++CONFIG_MTD_M25P80=y
+ CONFIG_MTD_NAND=y
+ CONFIG_MTD_NAND_FSL_ELBC=y
+ CONFIG_MTD_NAND_FSL_IFC=y
+-CONFIG_MTD_NAND_IDS=y
+-CONFIG_MTD_NAND_ECC=y
+-CONFIG_MTD_M25P80=y
+ CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_NBD=y
+ CONFIG_BLK_DEV_RAM=y
+ CONFIG_BLK_DEV_RAM_SIZE=131072
+-CONFIG_MISC_DEVICES=y
+ CONFIG_EEPROM_LEGACY=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_CHR_DEV_ST=y
+@@ -136,7 +127,6 @@ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_SERIAL_8250_NR_UARTS=2
+ CONFIG_SERIAL_8250_RUNTIME_UARTS=2
+-CONFIG_SERIAL_8250_EXTENDED=y
+ CONFIG_SERIAL_8250_MANY_PORTS=y
+ CONFIG_SERIAL_8250_DETECT_IRQ=y
+ CONFIG_SERIAL_8250_RSA=y
+@@ -185,7 +175,6 @@ CONFIG_HID_SAMSUNG=y
+ CONFIG_HID_SONY=y
+ CONFIG_HID_SUNPLUS=y
+ CONFIG_USB=y
+-CONFIG_USB_DEVICEFS=y
+ CONFIG_USB_MON=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_EHCI_FSL=y
+@@ -231,18 +220,13 @@ CONFIG_QNX4FS_FS=m
+ CONFIG_SYSV_FS=m
+ CONFIG_UFS_FS=m
+ CONFIG_NFS_FS=y
+-CONFIG_NFS_V3=y
+ CONFIG_NFS_V4=y
+ CONFIG_ROOT_NFS=y
+ CONFIG_NFSD=y
+-CONFIG_PARTITION_ADVANCED=y
+-CONFIG_MAC_PARTITION=y
+ CONFIG_CRC_T10DIF=y
+ CONFIG_DEBUG_FS=y
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_DEBUG_INFO=y
+-CONFIG_SYSCTL_SYSCALL_CHECK=y
+-CONFIG_IRQ_DOMAIN_DEBUG=y
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_SHA256=y
+ CONFIG_CRYPTO_SHA512=y
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+index 8d1c2a4..502cd9e 100644
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
+@@ -7,7 +7,9 @@ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+ CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_AUDIT=y
+-CONFIG_SPARSE_IRQ=y
++CONFIG_IRQ_DOMAIN_DEBUG=y
++CONFIG_NO_HZ=y
++CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=14
+@@ -19,6 +21,8 @@ CONFIG_MODULE_UNLOAD=y
+ CONFIG_MODULE_FORCE_UNLOAD=y
+ CONFIG_MODVERSIONS=y
+ # CONFIG_BLK_DEV_BSG is not set
++CONFIG_PARTITION_ADVANCED=y
++CONFIG_MAC_PARTITION=y
+ CONFIG_MPC8540_ADS=y
+ CONFIG_MPC8560_ADS=y
+ CONFIG_MPC85xx_CDS=y
+@@ -43,8 +47,6 @@ CONFIG_SBC8548=y
+ CONFIG_QUICC_ENGINE=y
+ CONFIG_QE_GPIO=y
+ CONFIG_HIGHMEM=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_BINFMT_MISC=m
+ CONFIG_MATH_EMULATION=y
+ CONFIG_IRQ_ALL_CPUS=y
+@@ -78,36 +80,25 @@ CONFIG_INET_ESP=y
+ CONFIG_IPV6=y
+ CONFIG_IP_SCTP=m
+ CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
++CONFIG_DEVTMPFS=y
+ CONFIG_MTD=y
+ CONFIG_MTD_CMDLINE_PARTS=y
+ CONFIG_MTD_CHAR=y
+ CONFIG_MTD_BLOCK=y
+-CONFIG_MTD_CFI=y
+ CONFIG_FTL=y
+-CONFIG_MTD_GEN_PROBE=y
+-CONFIG_MTD_MAP_BANK_WIDTH_1=y
+-CONFIG_MTD_MAP_BANK_WIDTH_2=y
+-CONFIG_MTD_MAP_BANK_WIDTH_4=y
+-CONFIG_MTD_CFI_I1=y
+-CONFIG_MTD_CFI_I2=y
++CONFIG_MTD_CFI=y
+ CONFIG_MTD_CFI_INTELEXT=y
+ CONFIG_MTD_CFI_AMDSTD=y
+-CONFIG_MTD_CFI_UTIL=y
+ CONFIG_MTD_PHYSMAP_OF=y
+-CONFIG_MTD_PARTITIONS=y
+-CONFIG_MTD_OF_PARTS=y
++CONFIG_MTD_M25P80=y
+ CONFIG_MTD_NAND=y
+ CONFIG_MTD_NAND_FSL_ELBC=y
+ CONFIG_MTD_NAND_FSL_IFC=y
+-CONFIG_MTD_NAND_IDS=y
+-CONFIG_MTD_NAND_ECC=y
+-CONFIG_MTD_M25P80=y
+ CONFIG_PROC_DEVICETREE=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_NBD=y
+ CONFIG_BLK_DEV_RAM=y
+ CONFIG_BLK_DEV_RAM_SIZE=131072
+-CONFIG_MISC_DEVICES=y
+ CONFIG_EEPROM_LEGACY=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_CHR_DEV_ST=y
+@@ -138,7 +129,6 @@ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
+ CONFIG_SERIAL_8250_NR_UARTS=2
+ CONFIG_SERIAL_8250_RUNTIME_UARTS=2
+-CONFIG_SERIAL_8250_EXTENDED=y
+ CONFIG_SERIAL_8250_MANY_PORTS=y
+ CONFIG_SERIAL_8250_DETECT_IRQ=y
+ CONFIG_SERIAL_8250_RSA=y
+@@ -187,7 +177,6 @@ CONFIG_HID_SAMSUNG=y
+ CONFIG_HID_SONY=y
+ CONFIG_HID_SUNPLUS=y
+ CONFIG_USB=y
+-CONFIG_USB_DEVICEFS=y
+ CONFIG_USB_MON=y
+ CONFIG_USB_EHCI_HCD=y
+ CONFIG_USB_EHCI_FSL=y
+@@ -233,18 +222,13 @@ CONFIG_QNX4FS_FS=m
+ CONFIG_SYSV_FS=m
+ CONFIG_UFS_FS=m
+ CONFIG_NFS_FS=y
+-CONFIG_NFS_V3=y
+ CONFIG_NFS_V4=y
+ CONFIG_ROOT_NFS=y
+ CONFIG_NFSD=y
+-CONFIG_PARTITION_ADVANCED=y
+-CONFIG_MAC_PARTITION=y
+ CONFIG_CRC_T10DIF=y
+ CONFIG_DEBUG_FS=y
+ CONFIG_DETECT_HUNG_TASK=y
+ CONFIG_DEBUG_INFO=y
+-CONFIG_SYSCTL_SYSCALL_CHECK=y
+-CONFIG_IRQ_DOMAIN_DEBUG=y
+ CONFIG_CRYPTO_PCBC=m
+ CONFIG_CRYPTO_SHA256=y
+ CONFIG_CRYPTO_SHA512=y
+-- 
+1.7.11.4
