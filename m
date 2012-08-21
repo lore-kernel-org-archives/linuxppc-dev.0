@@ -1,19 +1,27 @@
-Return-Path: <stern+5039bcd2@rowland.harvard.edu>
-Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
- by ozlabs.org (Postfix) with SMTP id CE7172C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 00:40:38 +1000 (EST)
-Date: Tue, 21 Aug 2012 10:33:55 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc/usb: fix bug of CPU hang when missing USB
- PHY clock
-In-Reply-To: <9F42EE26-7362-4B6E-8BD6-92EE02A07A1D@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.44L0.1208211033280.1462-100000@iolanthe.rowland.org>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F19CB2C00AD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 03:16:14 +1000 (EST)
+Message-ID: <5033C250.2000904@freescale.com>
+Date: Tue, 21 Aug 2012 12:16:00 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Liu Shengzhou-B36685 <B36685@freescale.com>
+To: Li Yang-R58472 <r58472@freescale.com>
+Subject: Re: [PATCH V8] powerpc/fsl-pci: Unify pci/pcie initialization code
+References: <1345457161-4731-1-git-send-email-B38951@freescale.com>
+ <5032B455.3080607@freescale.com>
+ <412C8208B4A0464FA894C5F0C278CD5D01A56A61@039-SN1MPN1-002.039d.mgd.msft.net>
+ <94F013E7935FF44C83EBE7784D62AD3F093BD870@039-SN2MPN1-023.039d.mgd.msft.net>
+In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F093BD870@039-SN2MPN1-023.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Bradley Hughes <bhughes@silicontkx.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 20 Aug 2012, Kumar Gala wrote:
+On 08/21/2012 01:49 AM, Li Yang-R58472 wrote:
+> If there is i8259 node in the device tree, it should be suggesting
+> that there is a PCI to ISA bridge but not explicitly described in the
+> device tree.  Then we need to fix the device tree to add the ISA
+> nodes.
 
-> >> Subject: Re: [PATCH 2/2] powerpc/usb: fix bug of CPU hang when missing USB PHY
-> >> clock
-> >> 
-> >> 
-> >> On Aug 10, 2012, at 5:48 AM, Shengzhou Liu wrote:
-> >> 
-> >>> when missing USB PHY clock, kernel booting up will hang during USB
-> >>> initialization. We should check USBGP[PHY_CLK_VALID] bit to avoid CPU
-> >>> hanging in this case.
-> >>> 
-> >>> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> >>> ---
-> >>> drivers/usb/host/ehci-fsl.c |   63 ++++++++++++++++++++++++++++++-----------
-> >> -
-> >>> drivers/usb/host/ehci-fsl.h |    1 +
-> >>> 2 files changed, 46 insertions(+), 18 deletions(-)
-> >> 
-> >> I assume this should be considered a bug fix and be looked at for inclusion in
-> >> v3.6?
-> >> 
-> >> - k
-> > [Shengzhou] Yes. 
-> 
-> Greg,
-> 
-> ping?
+No, we need to work with existing device trees.  Just because they're
+hosted in the kernel tree doesn't mean they can be treated as an
+internal kernel implementation detail.  They are stable API with
+external entities such as bootloaders and hypervisors, get forked for
+custom boards, etc.
 
-Greg is away on vacation for the rest of this week.
+Boards with this problem should set fsl_pci_primary in platform code
+based on whatever criteria is relevant.
 
-Alan Stern
+-Scott
