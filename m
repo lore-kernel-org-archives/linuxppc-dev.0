@@ -1,29 +1,18 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from cassiel.sirena.org.uk (unknown [IPv6:2001:41c8:1:5384::2])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5139C2C00AD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 00:13:51 +1000 (EST)
-Date: Tue, 21 Aug 2012 15:13:37 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Greg KH <greg@kroah.com>
-Subject: Re: [2/3][PATCH][v2] TDM Framework
-Message-ID: <20120821141336.GD21557@sirena.org.uk>
-References: <1343397940-12975-1-git-send-email-sandeep@freescale.com>
- <20120727152542.GB1613@electric-eye.fr.zoreil.com>
- <3F1D9DCAAB49B94D88DBE05911FA4E6E511121@039-SN1MPN1-006.039d.mgd.msft.net>
- <20120730160146.GB28703@kroah.com>
- <3F1D9DCAAB49B94D88DBE05911FA4E6E515F98@039-SN1MPN1-001.039d.mgd.msft.net>
- <20120801123738.GA28291@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120801123738.GA28291@kroah.com>
-Cc: "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Francois Romieu <romieu@fr.zoreil.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Singh Sandeep-B37400 <B37400@freescale.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 756F32C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 00:24:59 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] rapidio: apply RX/TX enable to active switch ports only
+Date: Tue, 21 Aug 2012 10:23:55 -0400
+Message-Id: <1345559035-25879-2-git-send-email-alexandre.bounine@idt.com>
+In-Reply-To: <1345559035-25879-1-git-send-email-alexandre.bounine@idt.com>
+References: <1345559035-25879-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Aug 01, 2012 at 05:37:38AM -0700, Greg KH wrote:
-> On Wed, Aug 01, 2012 at 12:13:19PM +0000, Singh Sandeep-B37400 wrote:
+Modify RIO enumeration to apply RX/TX enable operations only to active
+switch ports. This will leave inactive ports in condition consistent with
+their state.
 
-> > But running a complete voice stack itself is beyond the scope of Freescale.
-> > So vendors integrate their solutions with FSL solution.
+This patch is applicable to kernel versions starting from v2.6.35.
 
-> And sorry, I was thinking you had kernel drivers that attached to this
-> framework, not userspace programs.  Actually, what is the user/kernel
-> interface for this framework, I seem to have missed that entirely.  You
-> will have to document that quite well, and run it by the linux-api
-> mailing list.
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+---
+ drivers/rapidio/rio-scan.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-This does also sound like we ought to be playing nicer with ALSA rather
-than just providing a binary only pipe...
+diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+index 2bebd79..02e686b 100644
+--- a/drivers/rapidio/rio-scan.c
++++ b/drivers/rapidio/rio-scan.c
+@@ -839,12 +839,10 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 		for (port_num = 0;
+ 		     port_num < RIO_GET_TOTAL_PORTS(rdev->swpinfo);
+ 		     port_num++) {
+-			/*Enable Input Output Port (transmitter reviever)*/
+-			rio_enable_rx_tx_port(port, 0,
++			if (sw_inport == port_num) {
++				rio_enable_rx_tx_port(port, 0,
+ 					      RIO_ANY_DESTID(port->sys_size),
+ 					      hopcount, port_num);
+-
+-			if (sw_inport == port_num) {
+ 				rdev->rswitch->port_ok |= (1 << port_num);
+ 				continue;
+ 			}
+@@ -857,6 +855,9 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 				pr_debug(
+ 				    "RIO: scanning device on port %d\n",
+ 				    port_num);
++				rio_enable_rx_tx_port(port, 0,
++					      RIO_ANY_DESTID(port->sys_size),
++					      hopcount, port_num);
+ 				rdev->rswitch->port_ok |= (1 << port_num);
+ 				rio_route_add_entry(rdev, RIO_GLOBAL_TABLE,
+ 						RIO_ANY_DESTID(port->sys_size),
+-- 
+1.7.8.4
