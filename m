@@ -1,23 +1,45 @@
-Return-Path: <B38951@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 817952C007B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 13:27:23 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH V8] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Tue, 21 Aug 2012 03:27:12 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A56A80@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1345457161-4731-1-git-send-email-B38951@freescale.com>
- <5032B455.3080607@freescale.com> <5032DCC8.1040005@freescale.com>
-In-Reply-To: <5032DCC8.1040005@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <john.stultz@linaro.org>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e34.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DFDEB2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Aug 2012 13:38:12 +1000 (EST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <john.stultz@linaro.org>;
+ Mon, 20 Aug 2012 21:38:10 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id A0A2C3E40039
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 21:38:07 -0600 (MDT)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q7L3c678153530
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 21:38:06 -0600
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q7L3dQh3015673
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Aug 2012 21:39:27 -0600
+Message-ID: <5033029A.2030201@linaro.org>
+Date: Mon, 20 Aug 2012 20:38:02 -0700
+From: John Stultz <john.stultz@linaro.org>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Bradley Hughes <bhughes@silicontkx.com>
+To: Andreas Schwab <schwab@linux-m68k.org>
+Subject: Re: [PATCH 4/8] time: Condense timekeeper.xtime into xtime_sec
+References: <1342156917-25092-1-git-send-email-john.stultz@linaro.org>
+ <1342156917-25092-5-git-send-email-john.stultz@linaro.org>
+ <m2fw7ilhnm.fsf@igel.home> <503288ED.10306@linaro.org>
+ <m2fw7h4ab5.fsf@igel.home> <503296C1.4070906@linaro.org>
+ <m2boi549ed.fsf@igel.home>
+In-Reply-To: <m2boi549ed.fsf@igel.home>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Prarit Bhargava <prarit@redhat.com>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Richard Cochran <richardcochran@gmail.com>,
+ Linux Kernel <linux-kernel@vger.kernel.org>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +49,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDIxLCAyMDEyIDg6NTcgQU0NCj4gVG86IEppYSBI
-b25ndGFvLUIzODk1MQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IEJyYWRs
-ZXkgSHVnaGVzDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggVjhdIHBvd2VycGMvZnNsLXBjaTogVW5p
-ZnkgcGNpL3BjaWUgaW5pdGlhbGl6YXRpb24NCj4gY29kZQ0KPiANCj4gT24gMDgvMjAvMjAxMiAw
-NTowNCBQTSwgU2NvdHQgV29vZCB3cm90ZToNCj4gPiBPbiAwOC8yMC8yMDEyIDA1OjA2IEFNLCBK
-aWEgSG9uZ3RhbyB3cm90ZToNCj4gPj4gQEAgLTg0MiwzOCArODM5LDYwIEBAIHZvaWQgX19kZXZp
-bml0IGZzbF9wY2lfaW5pdCh2b2lkKQ0KPiA+PiAgCQkJbm9kZSA9IGZzbF9wY2lfcHJpbWFyeTsN
-Cj4gPj4NCj4gPj4gIAkJCWlmIChvZl9tYXRjaF9ub2RlKHBjaV9pZHMsIG5vZGUpKQ0KPiA+PiAt
-CQkJCWJyZWFrOw0KPiA+PiArCQkJCXJldHVybjsNCj4gPj4gIAkJfQ0KPiA+PiAtCX0NCj4gPj4N
-Cj4gPj4gLQlub2RlID0gTlVMTDsNCj4gPj4gLQlmb3JfZWFjaF9ub2RlX2J5X3R5cGUobm9kZSwg
-InBjaSIpIHsNCj4gPj4gLQkJaWYgKG9mX21hdGNoX25vZGUocGNpX2lkcywgbm9kZSkpIHsNCj4g
-Pj4gKwkJbm9kZSA9IG9mX2ZpbmRfbm9kZV9ieV90eXBlKE5VTEwsICJwY2kiKTsNCj4gPj4gKwkJ
-aWYgKG9mX21hdGNoX25vZGUocGNpX2lkcywgbm9kZSkpDQo+ID4+DQo+ID4NCj4gPiBXaGF0IGlm
-IHRoZSBub2RlIHJldHVybmVkIGRvZXNuJ3QgbWF0Y2g/ICBJZiB5b3UncmUgY2hlY2tpbmcgZm9y
-IHRoaXMsDQo+ID4gaGFuZGxlIHRoZSBlbHNlLWNhc2UgKGV2ZW4gaWYganVzdCB3aXRoIGFuIGVy
-cm9yIG1lc3NhZ2UpLg0KPiANCj4gT3IganVzdCB1c2Ugb2ZfZmluZF9tYXRjaGluZ19ub2RlKCku
-DQo+IA0KPiBBbHNvLCB3ZSBwcm9iYWJseSBuZWVkIHRvIGNoZWNrIG9mX2RldmljZV9pc19hdmFp
-bGFibGUoKSBoZXJlIChsaWtlDQo+IGZzbF9hZGRfYnJpZGdlIGRvZXMpLCBhbmQgbW92ZSBvbiB0
-byB0aGUgbmV4dCBQQ0kgYnVzIGlmIGl0J3MgZGlzYWJsZWQuDQo+IA0KPiAtU2NvdHQNCg0KDQpJ
-IGFncmVlIHdpdGggeW91LCBvZl9kZXZpY2VfaXNfYXZhaWxhYmxlIHNob3VsZCBiZSB0ZXN0IHRv
-by4NCg0KLSBIb25ndGFvLg0KDQo=
+On 08/20/2012 01:04 PM, Andreas Schwab wrote:
+> John Stultz <john.stultz@linaro.org> writes:
+>
+>> Huh.  Yea, that looks fine.  And without the
+>> __timekeeping_inject_sleeptime() call, the system resumed ok?
+> Yes, it does.
+
+So I'm mostly still stumped on this. But I did find one possible related 
+bugfix that maybe you can try?
+
+Let me know if the patch below dodges the problem, and if not, please 
+send me the JDB printk output.
+(if the resume hangs without any output, add a "return;" before the 
+tk_xtime_add() call between the JDB printks).
+
+thanks
+-john
+
+
+
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index e16af19..1a9b9c5 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -115,6 +115,7 @@ static void tk_xtime_add(struct timekeeper *tk, const struct timespec *ts)
+  {
+  	tk->xtime_sec += ts->tv_sec;
+  	tk->xtime_nsec += (u64)ts->tv_nsec << tk->shift;
++	tk_normalize_xtime(tk);
+  }
+  
+  static void tk_set_wall_to_mono(struct timekeeper *tk, struct timespec wtm)
+@@ -695,9 +696,22 @@ static void __timekeeping_inject_sleeptime(struct timekeeper *tk,
+  					"sleep delta value!\n");
+  		return;
+  	}
++
++	printk("JDB: pre xt %ld:%ld  wtm: %ld:%ld st: %ld:%ld\n",
++		tk_xtime(tk).tv_sec, tk_xtime(tk).tv_nsec,
++		tk->wall_to_monotonic.tv_sec,tk->wall_to_monotonic.tv_nsec,
++		tk->total_sleep_time.tv_sec, tk->total_sleep_time.tv_nsec);
++	printk("JDB: Adding %ld:%ld\n", delta->tv_sec, delta->tv_nsec);
++
+  	tk_xtime_add(tk, delta);
+  	tk_set_wall_to_mono(tk, timespec_sub(tk->wall_to_monotonic, *delta));
+  	tk_set_sleep_time(tk, timespec_add(tk->total_sleep_time, *delta));
++
++	printk("JDB: post xt %ld:%ld  wtm: %ld:%ld st: %ld:%ld\n",
++		tk_xtime(tk).tv_sec, tk_xtime(tk).tv_nsec,
++		tk->wall_to_monotonic.tv_sec,tk->wall_to_monotonic.tv_nsec,
++		tk->total_sleep_time.tv_sec, tk->total_sleep_time.tv_nsec);
++
+  }
+  
+  /**
