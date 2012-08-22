@@ -1,24 +1,37 @@
-Return-Path: <B38951@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 608BD2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 17:41:35 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, "galak@kernel.crashing.org"
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH V8] powerpc/fsl-pci: Unify pci/pcie initialization code
-Date: Wed, 22 Aug 2012 07:41:29 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A56F11@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1345457161-4731-1-git-send-email-B38951@freescale.com>
- <5032B455.3080607@freescale.com>
-In-Reply-To: <5032B455.3080607@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <ananth@in.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 143732C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 18:22:13 +1000 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
+ Wed, 22 Aug 2012 02:22:10 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 344191FF003B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 02:22:08 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q7M8M8S6115194
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 02:22:08 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q7M8M6tl008948
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 02:22:07 -0600
+Date: Wed, 22 Aug 2012 13:52:05 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: ppcdev <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] powerpc: Add trap_nr to thread_struct
+Message-ID: <20120822082205.GA29216@in.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>, Bradley Hughes <bhughes@silicontkx.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
+ oleg@redhat.com, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,57 +41,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVHVlc2RheSwgQXVndXN0IDIxLCAyMDEyIDY6MDQgQU0NCj4gVG86IEppYSBI
-b25ndGFvLUIzODk1MQ0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGdhbGFr
-QGtlcm5lbC5jcmFzaGluZy5vcmc7IExpIFlhbmctDQo+IFI1ODQ3MjsgQnJhZGxleSBIdWdoZXMN
-Cj4gU3ViamVjdDogUmU6IFtQQVRDSCBWOF0gcG93ZXJwYy9mc2wtcGNpOiBVbmlmeSBwY2kvcGNp
-ZSBpbml0aWFsaXphdGlvbg0KPiBjb2RlDQo+IA0KPiBPbiAwOC8yMC8yMDEyIDA1OjA2IEFNLCBK
-aWEgSG9uZ3RhbyB3cm90ZToNCj4gPiBXZSB1bmlmaWVkIHRoZSBGcmVlc2NhbGUgcGNpL3BjaWUg
-aW5pdGlhbGl6YXRpb24gYnkgY2hhbmdpbmcgdGhlDQo+ID4gZnNsX3BjaSB0byBhIHBsYXRmb3Jt
-IGRyaXZlci4gSW4gcHJldmlvdXMgUENJIGNvZGUgYXJjaGl0ZWN0dXJlIHRoZQ0KPiA+IGluaXRp
-YWxpemF0aW9uIHJvdXRpbmUgaXMgY2FsbGVkIGF0IGJvYXJkX3NldHVwX2FyY2ggc3RhZ2UuIE5v
-dyB0aGUNCj4gPiBpbml0aWFsaXphdGlvbiBpcyBkb25lIGluIHByb2JlIGZ1bmN0aW9uIHdoaWNo
-IGlzIGFyY2hpdGVjdHVyYWwNCj4gPiBiZXR0ZXIuIEFsc28gSXQncyBjb252ZW5pZW50IGZvciBh
-ZGRpbmcgUE0gc3VwcG9ydCBmb3IgUENJIGNvbnRyb2xsZXINCj4gaW4gbGF0ZXIgcGF0Y2guDQo+
-ID4NCj4gPiBOb3cgd2UgcmVnaXN0ZXJlZCBwY2kgY29udHJvbGxlcnMgYXMgcGxhdGZvcm0gZGV2
-aWNlcy4gU28gd2UgY29tYmluZQ0KPiA+IHR3byBpbml0aWFsaXphdGlvbiBjb2RlIGFzIG9uZSBw
-bGF0Zm9ybSBkcml2ZXIuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBKaWEgSG9uZ3RhbyA8QjM4
-OTUxQGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9mZi1ieTogTGkgWWFuZyA8bGVvbGlAZnJl
-ZXNjYWxlLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBDaHVuaGUgTGFuIDxDaHVuaGUuTGFuQGZy
-ZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gQ2hhbmdlcyBmb3IgVjg6DQo+ID4gKiBVc2UgcHJl
-dmlvdXMgcHJpbWFyeSBkZXRlcm1pbmF0aW9uLiBCYXNlZCBvbiB0aGUgcG9pbnQgdGhhdCB0aGVy
-ZSBhcmUNCj4gPiAgIGJ1Z3Mgb24gcHJpbWFyeS1sZXNzIHN5c3RlbS4NCj4gPiAqIEFkZCBleGNl
-cHRpb25hbCBzdXBwb3J0IG9uIGdlX2ltcDNhIGluIHdoaWNoIHRoZSBwcmltYXJ5IGJ1cyBpcyBu
-b3QNCj4gdGhlDQo+ID4gICBmaXJzdCBwY2kgYnVzIGRldGVjdGVkLg0KPiANCj4gVGhlIGV4Y2Vw
-dGlvbmFsIHRoaW5nIGFib3V0IGdlX2ltcDNhIGlzIHRoYXQgaXQgaGFzIG5vIGlzYSBub2RlLCBi
-dXQNCj4gd2UncmUgbm90IHN1cmUgaWYgaXQgYWN0dWFsbHkgaGFzIGlzYSBvciBub3QuICBXZSBz
-aG91bGQgbm90IGJlIHJlbHlpbmcNCj4gb24gcHJvYmUgb3JkZXIgaW4gYW55IGNhc2UuICBEZXZp
-Y2UgdHJlZSBub2RlcyBhcmUgbm90IG9yZGVyZWQuDQo+IA0KPiBBbm90aGVyIGludGVyZXN0aW5n
-IGNhc2UgaXMgc3R4c3NhODU1NS5kdHMsIHdoaWNoIGhhcyBhbiBpODI1OSBub2RlIGJ1dA0KPiBu
-byBJU0Egbm9kZSAoYXJlIHRoZXJlIGFueSBvdGhlciBpbnN0YW5jZXMgb2YgdGhpcz8pLiAgSG93
-ZXZlciwgSSBjYW4ndA0KPiB0ZWxsIGlmIHN0eF9ncDMuYyBpcyB0aGUgcGxhdGZvcm0gZmlsZSB0
-aGF0IGdvZXMgd2l0aCB0aGlzIGRldmljZSB0cmVlLA0KPiBvciBpZiB0aGUgcGxhdGZvcm0gY29k
-ZSBmb3Igc3R4c3NhODU1NSBpcyBvdXQtb2YtdHJlZSAob3Igc29tZSBvdGhlciBmaWxlDQo+IHRo
-YXQgSSdtIG5vdCBzZWVpbmcpLg0KPiANCg0KSGkgU2NvdHQgYW5kIEt1bWFyOg0KDQpPYnZpb3Vz
-bHkgc3R4X2dwM184NTYwLmR0cyB3aXRob3V0IGlzYSBvciBpODI1OSBub2RlIGdvZXMgd2l0aCB0
-aGUgZmlsZQ0Kc3R4X2dwMy5jLiBCdXQgSSdtIG5vdCBzdXJlIHRoZSBib2FyZCBoYXMgSVNBIGJy
-aWRnZSBvciBub3QuDQoNCg0KPiA+IC12b2lkIF9fZGV2aW5pdCBmc2xfcGNpX2luaXQodm9pZCkN
-Cj4gPiArdm9pZCBmc2xfcGNpX2Fzc2lnbl9wcmltYXJ5KHZvaWQpDQo+ID4gIHsNCj4gPiAtCWlu
-dCByZXQ7DQo+ID4gIAlzdHJ1Y3QgZGV2aWNlX25vZGUgKm5vZGU7DQo+ID4gLQlzdHJ1Y3QgcGNp
-X2NvbnRyb2xsZXIgKmhvc2U7DQo+ID4gLQlkbWFfYWRkcl90IG1heCA9IDB4ZmZmZmZmZmY7DQo+
-ID4NCj4gPiAgCS8qIENhbGxlcnMgY2FuIHNwZWNpZnkgdGhlIHByaW1hcnkgYnVzIHVzaW5nIG90
-aGVyIG1lYW5zLiAqLw0KPiA+ICAJaWYgKCFmc2xfcGNpX3ByaW1hcnkpIHsNCj4gDQo+IFNpbmNl
-IHRoZSB3aG9sZSBwb2ludCBvZiB0aGlzIGZ1bmN0aW9uIGlzIG5vdyB0byBmaW5kIHRoZSBwcmlt
-YXJ5LCBqdXN0DQo+IHJldHVybiBpZiBpdCdzIGFscmVhZHkgc2V0LCBpbnN0ZWFkIG9mIGluZGVu
-dGluZyB0aGUgcmVzdCBvZiB0aGUgZnVuY3Rpb24uDQo+IA0KPiA+IEBAIC04NDIsMzggKzgzOSw2
-MCBAQCB2b2lkIF9fZGV2aW5pdCBmc2xfcGNpX2luaXQodm9pZCkNCj4gPiAgCQkJbm9kZSA9IGZz
-bF9wY2lfcHJpbWFyeTsNCj4gPg0KPiA+ICAJCQlpZiAob2ZfbWF0Y2hfbm9kZShwY2lfaWRzLCBu
-b2RlKSkNCj4gPiAtCQkJCWJyZWFrOw0KPiA+ICsJCQkJcmV0dXJuOw0KPiA+ICAJCX0NCj4gPiAt
-CX0NCj4gPg0KPiA+IC0Jbm9kZSA9IE5VTEw7DQo+ID4gLQlmb3JfZWFjaF9ub2RlX2J5X3R5cGUo
-bm9kZSwgInBjaSIpIHsNCj4gPiAtCQlpZiAob2ZfbWF0Y2hfbm9kZShwY2lfaWRzLCBub2RlKSkg
-ew0KPiA+ICsJCW5vZGUgPSBvZl9maW5kX25vZGVfYnlfdHlwZShOVUxMLCAicGNpIik7DQo+ID4g
-KwkJaWYgKG9mX21hdGNoX25vZGUocGNpX2lkcywgbm9kZSkpDQo+ID4NCj4gDQo+IFdoYXQgaWYg
-dGhlIG5vZGUgcmV0dXJuZWQgZG9lc24ndCBtYXRjaD8gIElmIHlvdSdyZSBjaGVja2luZyBmb3Ig
-dGhpcywNCj4gaGFuZGxlIHRoZSBlbHNlLWNhc2UgKGV2ZW4gaWYganVzdCB3aXRoIGFuIGVycm9y
-IG1lc3NhZ2UpLg0KPiANCj4gLVNjb3R0DQoNCg==
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+
+Add thread_struct.trap_nr and use it to store the last exception
+the thread experienced. In this patch, we populate the field at
+various places where we force_sig_info() to the process.
+
+This is also used in uprobes to determine if the probed instruction
+caused an exception.
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
+ arch/powerpc/include/asm/processor.h |    1 +
+ arch/powerpc/kernel/process.c        |    2 ++
+ arch/powerpc/kernel/traps.c          |    1 +
+ arch/powerpc/mm/fault.c              |    1 +
+ 4 files changed, 5 insertions(+)
+
+Index: linux-26jul/arch/powerpc/include/asm/processor.h
+===================================================================
+--- linux-26jul.orig/arch/powerpc/include/asm/processor.h
++++ linux-26jul/arch/powerpc/include/asm/processor.h
+@@ -219,6 +219,7 @@ struct thread_struct {
+ #endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ #endif
+ 	unsigned long	dabr;		/* Data address breakpoint register */
++	unsigned long	trap_nr;	/* last trap # on this thread */
+ #ifdef CONFIG_ALTIVEC
+ 	/* Complete AltiVec register set */
+ 	vector128	vr[32] __attribute__((aligned(16)));
+Index: linux-26jul/arch/powerpc/kernel/process.c
+===================================================================
+--- linux-26jul.orig/arch/powerpc/kernel/process.c
++++ linux-26jul/arch/powerpc/kernel/process.c
+@@ -258,6 +258,7 @@ void do_send_trap(struct pt_regs *regs, 
+ {
+ 	siginfo_t info;
+ 
++	current->thread.trap_nr = signal_code;
+ 	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+ 			11, SIGSEGV) == NOTIFY_STOP)
+ 		return;
+@@ -275,6 +276,7 @@ void do_dabr(struct pt_regs *regs, unsig
+ {
+ 	siginfo_t info;
+ 
++	current->thread.trap_nr = TRAP_HWBKPT;
+ 	if (notify_die(DIE_DABR_MATCH, "dabr_match", regs, error_code,
+ 			11, SIGSEGV) == NOTIFY_STOP)
+ 		return;
+Index: linux-26jul/arch/powerpc/kernel/traps.c
+===================================================================
+--- linux-26jul.orig/arch/powerpc/kernel/traps.c
++++ linux-26jul/arch/powerpc/kernel/traps.c
+@@ -251,6 +251,7 @@ void _exception(int signr, struct pt_reg
+ 	if (arch_irqs_disabled() && !arch_irq_disabled_regs(regs))
+ 		local_irq_enable();
+ 
++	current->thread.trap_nr = code;
+ 	memset(&info, 0, sizeof(info));
+ 	info.si_signo = signr;
+ 	info.si_code = code;
+Index: linux-26jul/arch/powerpc/mm/fault.c
+===================================================================
+--- linux-26jul.orig/arch/powerpc/mm/fault.c
++++ linux-26jul/arch/powerpc/mm/fault.c
+@@ -133,6 +133,7 @@ static int do_sigbus(struct pt_regs *reg
+ 	up_read(&current->mm->mmap_sem);
+ 
+ 	if (user_mode(regs)) {
++		current->thread.trap_nr = BUS_ADRERR;
+ 		info.si_signo = SIGBUS;
+ 		info.si_errno = 0;
+ 		info.si_code = BUS_ADRERR;
