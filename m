@@ -1,20 +1,21 @@
-Return-Path: <B36685@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0A0DB2C0088
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 20:46:43 +1000 (EST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-usb@vger.kernel.org>,
- <galak@kernel.crashing.org>
-Subject: [PATCH v2] powerpc/usb: fix bug of CPU hang when missing USB PHY clock
-Date: Wed, 22 Aug 2012 18:17:00 +0800
-Message-ID: <1345630620-32070-1-git-send-email-Shengzhou.Liu@freescale.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4696A2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 20:50:38 +1000 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH 3/3] powerpc/kgdb: restore current_thread_info properly
+Date: Wed, 22 Aug 2012 18:43:12 +0800
+Message-ID: <1345632192-19810-3-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1345632192-19810-1-git-send-email-tiejun.chen@windriver.com>
+References: <1345632192-19810-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ jason.wessel@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,171 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-when missing USB PHY clock, kernel booting up will hang during USB
-initialization. We should check USBGP[PHY_CLK_VALID] bit to avoid
-CPU hanging in this case.
+For powerpc BooKE and e200, singlestep is handled on the critical/dbg
+exception stack. This causes current_thread_info() to fail for kgdb
+internal, so previously We work around this issue by copying
+the thread_info from the kernel stack before calling kgdb_handle_exception,
+and copying it back afterwards.
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+But actually we don't do this previously. We should backp current_thread_info
+then restore that when exit.
+
+CC: Jason Wessel <jason.wessel@windriver.com>
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
-v2 changes: use spin_event_timeout() instead.
+ arch/powerpc/kernel/kgdb.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
- drivers/usb/host/ehci-fsl.c |   58 +++++++++++++++++++++++++++++-------------
- drivers/usb/host/ehci-fsl.h |    1 +
- include/linux/fsl_devices.h |    1 +
- 3 files changed, 42 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
-index b7451b2..11ff4b4 100644
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -210,11 +210,11 @@ static void usb_hcd_fsl_remove(struct usb_hcd *hcd,
- 	usb_put_hcd(hcd);
- }
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index e84252b..7dcdbe7 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -25,6 +25,7 @@
+ #include <asm/processor.h>
+ #include <asm/machdep.h>
+ #include <asm/debug.h>
++#include <linux/slab.h>
  
--static void ehci_fsl_setup_phy(struct usb_hcd *hcd,
-+static int ehci_fsl_setup_phy(struct usb_hcd *hcd,
- 			       enum fsl_usb2_phy_modes phy_mode,
- 			       unsigned int port_offset)
+ /*
+  * This table contains the mapping between PowerPC hardware trap types, and
+@@ -156,6 +157,8 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+ static int kgdb_singlestep(struct pt_regs *regs)
  {
--	u32 portsc, temp;
-+	u32 portsc;
- 	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
- 	void __iomem *non_ehci = hcd->regs;
- 	struct device *dev = hcd->self.controller;
-@@ -232,9 +232,15 @@ static void ehci_fsl_setup_phy(struct usb_hcd *hcd,
- 	case FSL_USB2_PHY_ULPI:
- 		if (pdata->controller_ver) {
- 			/* controller version 1.6 or above */
--			temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
--			out_be32(non_ehci + FSL_SOC_USB_CTRL, temp |
--				USB_CTRL_USB_EN | ULPI_PHY_CLK_SEL);
-+			setbits32(non_ehci + FSL_SOC_USB_CTRL,
-+					ULPI_PHY_CLK_SEL);
-+			/*
-+			 * Due to controller issue of PHY_CLK_VALID in ULPI
-+			 * mode, we set USB_CTRL_USB_EN before checking
-+			 * PHY_CLK_VALID, otherwise PHY_CLK_VALID doesn't work.
-+			 */
-+			clrsetbits_be32(non_ehci + FSL_SOC_USB_CTRL,
-+					UTMI_PHY_EN, USB_CTRL_USB_EN);
- 		}
- 		portsc |= PORT_PTS_ULPI;
- 		break;
-@@ -247,9 +253,7 @@ static void ehci_fsl_setup_phy(struct usb_hcd *hcd,
- 	case FSL_USB2_PHY_UTMI:
- 		if (pdata->controller_ver) {
- 			/* controller version 1.6 or above */
--			temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
--			out_be32(non_ehci + FSL_SOC_USB_CTRL, temp |
--				UTMI_PHY_EN | USB_CTRL_USB_EN);
-+			setbits32(non_ehci + FSL_SOC_USB_CTRL, UTMI_PHY_EN);
- 			mdelay(FSL_UTMI_PHY_DLY);  /* Delay for UTMI PHY CLK to
- 						become stable - 10ms*/
- 		}
-@@ -262,23 +266,34 @@ static void ehci_fsl_setup_phy(struct usb_hcd *hcd,
- 	case FSL_USB2_PHY_NONE:
- 		break;
- 	}
-+
-+	if ((pdata->controller_ver) && ((phy_mode == FSL_USB2_PHY_ULPI) ||
-+			(phy_mode == FSL_USB2_PHY_UTMI))) {
-+		/* check PHY_CLK_VALID to get phy clk valid */
-+		if (!spin_event_timeout(in_be32(non_ehci + FSL_SOC_USB_CTRL) &
-+				PHY_CLK_VALID, FSL_USB_PHY_CLK_TIMEOUT, 0)) {
-+			printk(KERN_WARNING "fsl-ehci: USB PHY clock invalid\n");
-+			return -EINVAL;
-+		}
+ 	struct thread_info *thread_info, *exception_thread_info;
++	struct thread_info *backup_current_thread_info = \
++		(struct thread_info *)kmalloc(sizeof(struct thread_info), GFP_KERNEL);
+ 
+ 	if (user_mode(regs))
+ 		return 0;
+@@ -173,13 +176,17 @@ static int kgdb_singlestep(struct pt_regs *regs)
+ 	thread_info = (struct thread_info *)(regs->gpr[1] & ~(THREAD_SIZE-1));
+ 	exception_thread_info = current_thread_info();
+ 
+-	if (thread_info != exception_thread_info)
++	if (thread_info != exception_thread_info) {
++		/* Save the original current_thread_info. */
++		memcpy(backup_current_thread_info, exception_thread_info, sizeof *thread_info);
+ 		memcpy(exception_thread_info, thread_info, sizeof *thread_info);
 +	}
-+
- 	ehci_writel(ehci, portsc, &ehci->regs->port_status[port_offset]);
-+
-+	if (phy_mode != FSL_USB2_PHY_ULPI)
-+		setbits32(non_ehci + FSL_SOC_USB_CTRL, USB_CTRL_USB_EN);
-+
-+	return 0;
+ 
+ 	kgdb_handle_exception(0, SIGTRAP, 0, regs);
+ 
+ 	if (thread_info != exception_thread_info)
+-		memcpy(thread_info, exception_thread_info, sizeof *thread_info);
++		/* Restore current_thread_info lastly. */
++		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
+ 
+ 	return 1;
  }
- 
--static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
-+static int ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- {
- 	struct usb_hcd *hcd = ehci_to_hcd(ehci);
- 	struct fsl_usb2_platform_data *pdata;
- 	void __iomem *non_ehci = hcd->regs;
--	u32 temp;
- 
- 	pdata = hcd->self.controller->platform_data;
- 
--	/* Enable PHY interface in the control reg. */
- 	if (pdata->have_sysif_regs) {
--		temp = in_be32(non_ehci + FSL_SOC_USB_CTRL);
--		out_be32(non_ehci + FSL_SOC_USB_CTRL, temp | 0x00000004);
--
- 		/*
- 		* Turn on cache snooping hardware, since some PowerPC platforms
- 		* wholly rely on hardware to deal with cache coherent
-@@ -293,7 +308,8 @@ static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- 
- 	if ((pdata->operating_mode == FSL_USB2_DR_HOST) ||
- 			(pdata->operating_mode == FSL_USB2_DR_OTG))
--		ehci_fsl_setup_phy(hcd, pdata->phy_mode, 0);
-+		if (ehci_fsl_setup_phy(hcd, pdata->phy_mode, 0))
-+			return -EINVAL;
- 
- 	if (pdata->operating_mode == FSL_USB2_MPH_HOST) {
- 		unsigned int chip, rev, svr;
-@@ -307,9 +323,12 @@ static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- 			ehci->has_fsl_port_bug = 1;
- 
- 		if (pdata->port_enables & FSL_USB2_PORT0_ENABLED)
--			ehci_fsl_setup_phy(hcd, pdata->phy_mode, 0);
-+			if (ehci_fsl_setup_phy(hcd, pdata->phy_mode, 0))
-+				return -EINVAL;
-+
- 		if (pdata->port_enables & FSL_USB2_PORT1_ENABLED)
--			ehci_fsl_setup_phy(hcd, pdata->phy_mode, 1);
-+			if (ehci_fsl_setup_phy(hcd, pdata->phy_mode, 1))
-+				return -EINVAL;
- 	}
- 
- 	if (pdata->have_sysif_regs) {
-@@ -322,12 +341,15 @@ static void ehci_fsl_usb_setup(struct ehci_hcd *ehci)
- #endif
- 		out_be32(non_ehci + FSL_SOC_USB_SICTRL, 0x00000001);
- 	}
-+
-+	return 0;
- }
- 
- /* called after powerup, by probe or system-pm "wakeup" */
- static int ehci_fsl_reinit(struct ehci_hcd *ehci)
- {
--	ehci_fsl_usb_setup(ehci);
-+	if (ehci_fsl_usb_setup(ehci))
-+		return -EINVAL;
- 	ehci_port_power(ehci, 0);
- 
- 	return 0;
-diff --git a/drivers/usb/host/ehci-fsl.h b/drivers/usb/host/ehci-fsl.h
-index 8840368..dbd292e 100644
---- a/drivers/usb/host/ehci-fsl.h
-+++ b/drivers/usb/host/ehci-fsl.h
-@@ -61,4 +61,5 @@
- #define PLL_RESET               (1<<8)
- #define UTMI_PHY_EN             (1<<9)
- #define ULPI_PHY_CLK_SEL        (1<<10)
-+#define PHY_CLK_VALID		(1<<17)
- #endif				/* _EHCI_FSL_H */
-diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
-index 15be561..ccfc4bb 100644
---- a/include/linux/fsl_devices.h
-+++ b/include/linux/fsl_devices.h
-@@ -19,6 +19,7 @@
- 
- #define FSL_UTMI_PHY_DLY	10	/*As per P1010RM, delay for UTMI
- 				PHY CLK to become stable - 10ms*/
-+#define FSL_USB_PHY_CLK_TIMEOUT	1000	/* uSec */
- #define FSL_USB_VER_OLD		0
- #define FSL_USB_VER_1_6		1
- #define FSL_USB_VER_2_2		2
 -- 
-1.6.4
+1.5.6
