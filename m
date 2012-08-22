@@ -1,37 +1,43 @@
 Return-Path: <ananth@in.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B12A92C0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 18:27:15 +1000 (EST)
+ (Client CN "e6.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 530772C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 18:32:34 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e6.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Wed, 22 Aug 2012 04:27:12 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id D42866E803C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:27:10 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q7M8RAw9147374
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:27:10 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q7M8R9Mt001421
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 05:27:10 -0300
-Date: Wed, 22 Aug 2012 13:57:08 +0530
+ Wed, 22 Aug 2012 04:32:30 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7315D6E803C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:32:28 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q7M8WSxs113798
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:32:28 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q7M8WRNL023042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:32:28 -0400
+Date: Wed, 22 Aug 2012 14:02:25 +0530
 From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: ppcdev <linuxppc-dev@lists.ozlabs.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH v4 2/2] powerpc: Uprobes port to powerpc
-Message-ID: <20120822082708.GB29216@in.ibm.com>
-References: <20120822082205.GA29216@in.ibm.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
+Message-ID: <20120822083224.GC29216@in.ibm.com>
+References: <20120726051902.GA29466@in.ibm.com>
+ <20120726052029.GB29466@in.ibm.com> <20120815165931.GA10059@redhat.com>
+ <1345066913.11751.4.camel@pasglop> <20120816050030.GA12060@in.ibm.com>
+ <20120816152112.GA8874@redhat.com> <20120817051307.GA4782@in.ibm.com>
+ <20120817150031.GA5029@redhat.com> <20120821112433.GB3519@in.ibm.com>
+ <20120821130930.GA10382@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120822082205.GA29216@in.ibm.com>
+In-Reply-To: <20120821130930.GA10382@redhat.com>
 Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
- oleg@redhat.com, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>
+ lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
+ linuxppc-dev@lists.ozlabs.org
 Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -42,397 +48,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+On Tue, Aug 21, 2012 at 03:09:30PM +0200, Oleg Nesterov wrote:
 
-This is the port of uprobes to powerpc. Usage is similar to x86.
-
-[root@xxxx ~]# ./bin/perf probe -x /lib64/libc.so.6 malloc
-Added new event:
-  probe_libc:malloc    (on 0xb4860)
-
-You can now use it in all perf tools, such as:
-
-	perf record -e probe_libc:malloc -aR sleep 1
-
-[root@xxxx ~]# ./bin/perf record -e probe_libc:malloc -aR sleep 20
-[ perf record: Woken up 22 times to write data ]
-[ perf record: Captured and wrote 5.843 MB perf.data (~255302 samples) ]
-[root@xxxx ~]# ./bin/perf report --stdio
 ...
 
-# Samples: 83K of event 'probe_libc:malloc'
-# Event count (approx.): 83484
-#
-# Overhead       Command  Shared Object      Symbol
-# ........  ............  .............  ..........
-#
-    69.05%           tar  libc-2.12.so   [.] malloc
-    28.57%            rm  libc-2.12.so   [.] malloc
-     1.32%  avahi-daemon  libc-2.12.so   [.] malloc
-     0.58%          bash  libc-2.12.so   [.] malloc
-     0.28%          sshd  libc-2.12.so   [.] malloc
-     0.08%    irqbalance  libc-2.12.so   [.] malloc
-     0.05%         bzip2  libc-2.12.so   [.] malloc
-     0.04%         sleep  libc-2.12.so   [.] malloc
-     0.03%    multipathd  libc-2.12.so   [.] malloc
-     0.01%      sendmail  libc-2.12.so   [.] malloc
-     0.01%     automount  libc-2.12.so   [.] malloc
+> > This is true for Intel like architectures that have *one* swbp
+> > instruction. On Powerpc, gdb for instance, can insert a trap variant at
+> > the address. Therefore, is_swbp_insn() by definition should return true
+> > for all trap variants.
+> 
+> Not in this case, I think.
+> 
+> OK, I was going to do this later, but this discussion makes me think
+> I should try to send the patch sooner.
+> 
+> set_swbp()->is_swbp_at_addr() is simply unneeded and in fact should
+> be considered as unnecessary pessimization.
+> 
+> set_orig_insn()->is_swbp_at_addr() makes more sense, but it can't fix
+> all races with userpace. Still it should die.
+> 
+> > OK. I will separate out the is_swbp_insn() change into a separate patch.
+> 
+> Great thanks. And if we remove is_swbp_insn() from set_swbp() and
+> set_orig_insn() then the semantics of is_swbp_insn() will much more
+> clear, and in this case I powerpc probably really needs to change it.
 
-The trap_nr addition patch is a prereq.
+Oleg,
 
-A few minor changes can be expected down the line based on the
-discussions currently happening on lkml around the single-stepping
-infrastructure code (http://marc.info/?l=linux-kernel&m=134545967710242&w=2).
+I have posted a new version for review [1] without the is_swbp_insn()
+change. I will await your changes around is_swbp_at_addr() and make
+changes to the powerpc code if necessary.
 
-Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
----
+Regards,
+Ananth
 
-Tested on POWER6; I don't see anything here that should stop it from
-working on a ppc32; since I don't have access to a ppc32 machine, it
-would be good if somoene could verify that part.
-
-V4:
-Enhance arch_analyze_uprobe_insn() to reject uprobes on trap variants.
-
-V3:
-Added abort_xol() logic for powerpc, using thread_struct.trap_nr to
-determine if the stepped instruction caused an exception.
-
-V2:
-a. arch_uprobe_analyze_insn() now gets unsigned long addr.
-b. Verified that mtmsr[d] and rfi[d] are handled correctly by
-   emulate_step() (no changes to this patch).
-
- arch/powerpc/Kconfig                   |    3 
- arch/powerpc/include/asm/thread_info.h |    4 
- arch/powerpc/include/asm/uprobes.h     |   58 ++++++++++
- arch/powerpc/kernel/Makefile           |    1 
- arch/powerpc/kernel/signal.c           |    6 +
- arch/powerpc/kernel/uprobes.c          |  180 +++++++++++++++++++++++++++++++++
- 6 files changed, 251 insertions(+), 1 deletion(-)
-
-Index: linux-tip-16aug/arch/powerpc/include/asm/thread_info.h
-===================================================================
---- linux-tip-16aug.orig/arch/powerpc/include/asm/thread_info.h
-+++ linux-tip-16aug/arch/powerpc/include/asm/thread_info.h
-@@ -102,6 +102,7 @@ static inline struct thread_info *curren
- #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
- #define TIF_NOERROR		12	/* Force successful syscall return */
- #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
-+#define TIF_UPROBE		14	/* breakpointed or single-stepping */
- #define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
- 
- /* as above, but as bit values */
-@@ -118,12 +119,13 @@ static inline struct thread_info *curren
- #define _TIF_RESTOREALL		(1<<TIF_RESTOREALL)
- #define _TIF_NOERROR		(1<<TIF_NOERROR)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
-+#define _TIF_UPROBE		(1<<TIF_UPROBE)
- #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
- 				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
- 
- #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
--				 _TIF_NOTIFY_RESUME)
-+				 _TIF_NOTIFY_RESUME | _TIF_UPROBE)
- #define _TIF_PERSYSCALL_MASK	(_TIF_RESTOREALL|_TIF_NOERROR)
- 
- /* Bits in local_flags */
-Index: linux-tip-16aug/arch/powerpc/include/asm/uprobes.h
-===================================================================
---- /dev/null
-+++ linux-tip-16aug/arch/powerpc/include/asm/uprobes.h
-@@ -0,0 +1,58 @@
-+#ifndef _ASM_UPROBES_H
-+#define _ASM_UPROBES_H
-+/*
-+ * User-space Probes (UProbes) for powerpc
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2007-2012
-+ *
-+ * Adapted from the x86 port by Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-+ */
-+
-+#include <linux/notifier.h>
-+
-+typedef unsigned int uprobe_opcode_t;
-+
-+#define MAX_UINSN_BYTES			4
-+#define UPROBE_XOL_SLOT_BYTES		(MAX_UINSN_BYTES)
-+
-+#define UPROBE_SWBP_INSN		0x7fe00008
-+#define UPROBE_SWBP_INSN_SIZE		4 /* swbp insn size in bytes */
-+
-+#define IS_TW(instr)		(((instr) & 0xfc0007fe) == 0x7c000008)
-+#define IS_TD(instr)		(((instr) & 0xfc0007fe) == 0x7c000088)
-+#define IS_TDI(instr)		(((instr) & 0xfc000000) == 0x08000000)
-+#define IS_TWI(instr)		(((instr) & 0xfc000000) == 0x0c000000)
-+
-+#define is_trap(instr)	(IS_TW(instr) || IS_TD(instr) || \
-+			IS_TWI(instr) || IS_TDI(instr))
-+
-+struct arch_uprobe {
-+	u8	insn[MAX_UINSN_BYTES];
-+};
-+
-+struct arch_uprobe_task {
-+	unsigned long	saved_trap_nr;
-+};
-+
-+extern int  arch_uprobe_analyze_insn(struct arch_uprobe *aup, struct mm_struct *mm, unsigned long addr);
-+extern unsigned long uprobe_get_swbp_addr(struct pt_regs *regs);
-+extern int  arch_uprobe_pre_xol(struct arch_uprobe *aup, struct pt_regs *regs);
-+extern int  arch_uprobe_post_xol(struct arch_uprobe *aup, struct pt_regs *regs);
-+extern bool arch_uprobe_xol_was_trapped(struct task_struct *tsk);
-+extern int  arch_uprobe_exception_notify(struct notifier_block *self, unsigned long val, void *data);
-+extern void arch_uprobe_abort_xol(struct arch_uprobe *aup, struct pt_regs *regs);
-+#endif	/* _ASM_UPROBES_H */
-Index: linux-tip-16aug/arch/powerpc/kernel/Makefile
-===================================================================
---- linux-tip-16aug.orig/arch/powerpc/kernel/Makefile
-+++ linux-tip-16aug/arch/powerpc/kernel/Makefile
-@@ -96,6 +96,7 @@ obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
- obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
- obj-$(CONFIG_SMP)		+= smp.o
- obj-$(CONFIG_KPROBES)		+= kprobes.o
-+obj-$(CONFIG_UPROBES)		+= uprobes.o
- obj-$(CONFIG_PPC_UDBG_16550)	+= legacy_serial.o udbg_16550.o
- obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
- obj-$(CONFIG_SWIOTLB)		+= dma-swiotlb.o
-Index: linux-tip-16aug/arch/powerpc/kernel/signal.c
-===================================================================
---- linux-tip-16aug.orig/arch/powerpc/kernel/signal.c
-+++ linux-tip-16aug/arch/powerpc/kernel/signal.c
-@@ -11,6 +11,7 @@
- 
- #include <linux/tracehook.h>
- #include <linux/signal.h>
-+#include <linux/uprobes.h>
- #include <linux/key.h>
- #include <asm/hw_breakpoint.h>
- #include <asm/uaccess.h>
-@@ -157,6 +158,11 @@ static int do_signal(struct pt_regs *reg
- 
- void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
- {
-+	if (thread_info_flags & _TIF_UPROBE) {
-+		clear_thread_flag(TIF_UPROBE);
-+		uprobe_notify_resume(regs);
-+	}
-+
- 	if (thread_info_flags & _TIF_SIGPENDING)
- 		do_signal(regs);
- 
-Index: linux-tip-16aug/arch/powerpc/kernel/uprobes.c
-===================================================================
---- /dev/null
-+++ linux-tip-16aug/arch/powerpc/kernel/uprobes.c
-@@ -0,0 +1,180 @@
-+/*
-+ * User-space Probes (UProbes) for powerpc
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright (C) IBM Corporation, 2007-2012
-+ *
-+ * Adapted from the x86 port by Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-+ */
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/ptrace.h>
-+#include <linux/uprobes.h>
-+#include <linux/uaccess.h>
-+#include <linux/kdebug.h>
-+
-+#include <asm/sstep.h>
-+
-+#define UPROBE_TRAP_NR	UINT_MAX
-+
-+/**
-+ * arch_uprobe_analyze_insn
-+ * @mm: the probed address space.
-+ * @arch_uprobe: the probepoint information.
-+ * @addr: vaddr to probe.
-+ * Return 0 on success or a -ve number on error.
-+ */
-+int arch_uprobe_analyze_insn(struct arch_uprobe *auprobe, struct mm_struct *mm, unsigned long addr)
-+{
-+	unsigned int insn;
-+
-+	if (addr & 0x03)
-+		return -EINVAL;
-+
-+	memcpy(&insn, auprobe->insn, MAX_UINSN_BYTES);
-+	if (is_trap(insn))
-+		return -ENOTSUPP;
-+	return 0;
-+}
-+
-+/*
-+ * arch_uprobe_pre_xol - prepare to execute out of line.
-+ * @auprobe: the probepoint information.
-+ * @regs: reflects the saved user state of current task.
-+ */
-+int arch_uprobe_pre_xol(struct arch_uprobe *auprobe, struct pt_regs *regs)
-+{
-+	struct arch_uprobe_task *autask = &current->utask->autask;
-+
-+	autask->saved_trap_nr = current->thread.trap_nr;
-+	current->thread.trap_nr = UPROBE_TRAP_NR;
-+	regs->nip = current->utask->xol_vaddr;
-+	return 0;
-+}
-+
-+/**
-+ * uprobe_get_swbp_addr - compute address of swbp given post-swbp regs
-+ * @regs: Reflects the saved state of the task after it has hit a breakpoint
-+ * instruction.
-+ * Return the address of the breakpoint instruction.
-+ */
-+unsigned long uprobe_get_swbp_addr(struct pt_regs *regs)
-+{
-+	return instruction_pointer(regs);
-+}
-+
-+/*
-+ * If xol insn itself traps and generates a signal (SIGILL/SIGSEGV/etc),
-+ * then detect the case where a singlestepped instruction jumps back to its
-+ * own address. It is assumed that anything like do_page_fault/do_trap/etc
-+ * sets thread.trap_nr != -1.
-+ *
-+ * arch_uprobe_pre_xol/arch_uprobe_post_xol save/restore thread.trap_nr,
-+ * arch_uprobe_xol_was_trapped() simply checks that ->trap_nr is not equal to
-+ * UPROBE_TRAP_NR == -1 set by arch_uprobe_pre_xol().
-+ */
-+bool arch_uprobe_xol_was_trapped(struct task_struct *t)
-+{
-+	if (t->thread.trap_nr != UPROBE_TRAP_NR)
-+		return true;
-+
-+	return false;
-+}
-+
-+/*
-+ * Called after single-stepping. To avoid the SMP problems that can
-+ * occur when we temporarily put back the original opcode to
-+ * single-step, we single-stepped a copy of the instruction.
-+ *
-+ * This function prepares to resume execution after the single-step.
-+ */
-+int arch_uprobe_post_xol(struct arch_uprobe *auprobe, struct pt_regs *regs)
-+{
-+	struct uprobe_task *utask = current->utask;
-+
-+	WARN_ON_ONCE(current->thread.trap_nr != UPROBE_TRAP_NR);
-+
-+	current->thread.trap_nr = utask->autask.saved_trap_nr;
-+
-+	/*
-+	 * On powerpc, except for loads and stores, most instructions
-+	 * including ones that alter code flow (branches, calls, returns)
-+	 * are emulated in the kernel. We get here only if the emulation
-+	 * support doesn't exist and have to fix-up the next instruction
-+	 * to be executed.
-+	 */
-+	regs->nip = utask->vaddr + MAX_UINSN_BYTES;
-+	return 0;
-+}
-+
-+/* callback routine for handling exceptions. */
-+int arch_uprobe_exception_notify(struct notifier_block *self, unsigned long val, void *data)
-+{
-+	struct die_args *args = data;
-+	struct pt_regs *regs = args->regs;
-+
-+	/* We are only interested in userspace traps */
-+	if (regs && !user_mode(regs))
-+		return NOTIFY_DONE;
-+
-+	switch (val) {
-+	case DIE_BPT:
-+		if (uprobe_pre_sstep_notifier(regs))
-+			return NOTIFY_STOP;
-+		break;
-+	case DIE_SSTEP:
-+		if (uprobe_post_sstep_notifier(regs))
-+			return NOTIFY_STOP;
-+	default:
-+		break;
-+	}
-+	return NOTIFY_DONE;
-+}
-+
-+/*
-+ * This function gets called when XOL instruction either gets trapped or
-+ * the thread has a fatal signal, so reset the instruction pointer to its
-+ * probed address.
-+ */
-+void arch_uprobe_abort_xol(struct arch_uprobe *auprobe, struct pt_regs *regs)
-+{
-+	struct uprobe_task *utask = current->utask;
-+
-+	current->thread.trap_nr = utask->autask.saved_trap_nr;
-+	instruction_pointer_set(regs, utask->vaddr);
-+}
-+
-+/*
-+ * See if the instruction can be emulated.
-+ * Returns true if instruction was emulated, false otherwise.
-+ */
-+bool arch_uprobe_skip_sstep(struct arch_uprobe *auprobe, struct pt_regs *regs)
-+{
-+	int ret;
-+	unsigned int insn;
-+
-+	memcpy(&insn, auprobe->insn, MAX_UINSN_BYTES);
-+
-+	/*
-+	 * emulate_step() returns 1 if the insn was successfully emulated.
-+	 * For all other cases, we need to single-step in hardware.
-+	 */
-+	ret = emulate_step(regs, insn);
-+	if (ret > 0)
-+		return true;
-+
-+	return false;
-+}
-Index: linux-tip-16aug/arch/powerpc/Kconfig
-===================================================================
---- linux-tip-16aug.orig/arch/powerpc/Kconfig
-+++ linux-tip-16aug/arch/powerpc/Kconfig
-@@ -239,6 +239,9 @@ config PPC_OF_PLATFORM_PCI
- config ARCH_SUPPORTS_DEBUG_PAGEALLOC
- 	def_bool y
- 
-+config ARCH_SUPPORTS_UPROBES
-+	def_bool y
-+
- config PPC_ADV_DEBUG_REGS
- 	bool
- 	depends on 40x || BOOKE
+[1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-August/100524.html
