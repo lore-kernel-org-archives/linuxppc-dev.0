@@ -1,21 +1,24 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D4C262C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 20:50:39 +1000 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH 2/3] powerpc: Bail out of KGDB when we've been triggered
-Date: Wed, 22 Aug 2012 18:43:11 +0800
-Message-ID: <1345632192-19810-2-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1345632192-19810-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <B04825@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe003.messaging.microsoft.com [213.199.154.141])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ADC1B2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2012 01:07:11 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Tiejun Chen <tiejun.chen@windriver.com>
+Subject: Re: [PATCH 2/3] powerpc: Bail out of KGDB when we've been triggered
+Date: Wed, 22 Aug 2012 15:07:00 +0000
+Message-ID: <6AE080B68D46FC4BA2D2769E68D765B7059AE7E7@039-SN2MPN1-022.039d.mgd.msft.net>
 References: <1345632192-19810-1-git-send-email-tiejun.chen@windriver.com>
+ <1345632192-19810-2-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1345632192-19810-2-git-send-email-tiejun.chen@windriver.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- jason.wessel@windriver.com
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "jason.wessel@windriver.com" <jason.wessel@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to skip a breakpoint exception when it occurs after
-a breakpoint has already been removed.
+On Wed, Aug 22, 2012 at 5:43 AM, Tiejun Chen <tiejun.chen@windriver.com> wr=
+ote:
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/kernel/kgdb.c |   18 ++++++++++++++++++
- 1 files changed, 18 insertions(+), 0 deletions(-)
+> +int kgdb_skipexception(int exception, struct pt_regs *regs)
+> +{
+> +       if (kgdb_isremovedbreak(regs->nip))
+> +               return 1;
+> +
+> +       return 0;
+> +}
 
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index bbabc5a..e84252b 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -101,6 +101,24 @@ static int computeSignal(unsigned int tt)
- 	return SIGHUP;		/* default for things we don't know about */
- }
- 
-+/**
-+ *
-+ *	kgdb_skipexception - Bail out of KGDB when we've been triggered.
-+ *	@exception: Exception vector number
-+ *	@regs: Current &struct pt_regs.
-+ *
-+ *	On some architectures we need to skip a breakpoint exception when
-+ *	it occurs after a breakpoint has been removed.
-+ *
-+ */
-+int kgdb_skipexception(int exception, struct pt_regs *regs)
-+{
-+	if (kgdb_isremovedbreak(regs->nip))
-+		return 1;
-+
-+	return 0;
-+}
-+
- static int kgdb_call_nmi_hook(struct pt_regs *regs)
- {
- 	kgdb_nmicallback(raw_smp_processor_id(), regs);
--- 
-1.5.6
+int kgdb_skipexception(int exception, struct pt_regs *regs)
+{
+        return !!kgdb_isremovedbreak(regs->nip));
+}
+
+If the caller only cares about zero vs. non-zero, you can drop the !!.
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
