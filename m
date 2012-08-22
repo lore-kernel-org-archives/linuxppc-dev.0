@@ -1,44 +1,21 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <martyn.welch@ge.com>
+Received: from exprod5og103.obsmtp.com (exprod5og103.obsmtp.com [64.18.0.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e6.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 530772C007D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 18:32:34 +1000 (EST)
-Received: from /spool/local
- by e6.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Wed, 22 Aug 2012 04:32:30 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 7315D6E803C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:32:28 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q7M8WSxs113798
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:32:28 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q7M8WRNL023042
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 04:32:28 -0400
-Date: Wed, 22 Aug 2012 14:02:25 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH v3 2/2] powerpc: Uprobes port to powerpc
-Message-ID: <20120822083224.GC29216@in.ibm.com>
-References: <20120726051902.GA29466@in.ibm.com>
- <20120726052029.GB29466@in.ibm.com> <20120815165931.GA10059@redhat.com>
- <1345066913.11751.4.camel@pasglop> <20120816050030.GA12060@in.ibm.com>
- <20120816152112.GA8874@redhat.com> <20120817051307.GA4782@in.ibm.com>
- <20120817150031.GA5029@redhat.com> <20120821112433.GB3519@in.ibm.com>
- <20120821130930.GA10382@redhat.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 164332C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Aug 2012 19:53:39 +1000 (EST)
+Message-ID: <5034AC1E.2030208@ge.com>
+Date: Wed, 22 Aug 2012 10:53:34 +0100
+From: Martyn Welch <martyn.welch@ge.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120821130930.GA10382@redhat.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
- lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: ananth@in.ibm.com
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: GE IMP3a
+References: <68C39493-C518-4898-954B-CA2E1DCF5DAD@kernel.crashing.org>
+ <50338169.8040102@ge.com>
+ <D8AFDE1A-73A8-4C7C-817C-CBB95CEDA98B@kernel.crashing.org>
+In-Reply-To: <D8AFDE1A-73A8-4C7C-817C-CBB95CEDA98B@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,39 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Aug 21, 2012 at 03:09:30PM +0200, Oleg Nesterov wrote:
-
-...
-
-> > This is true for Intel like architectures that have *one* swbp
-> > instruction. On Powerpc, gdb for instance, can insert a trap variant at
-> > the address. Therefore, is_swbp_insn() by definition should return true
-> > for all trap variants.
+On 21/08/12 14:58, Kumar Gala wrote:
 > 
-> Not in this case, I think.
+> On Aug 21, 2012, at 7:39 AM, Martyn Welch wrote:
 > 
-> OK, I was going to do this later, but this discussion makes me think
-> I should try to send the patch sooner.
+>> On 15/08/12 22:32, Kumar Gala wrote:
+>>> Do you know why ge_imp3a.c has 0x9000 as the 'primary' PCIe bus on the board?
+>>>
+>>
+>> Hi Kumar,
+>>
+>> Sorry, missed your mail.
 > 
-> set_swbp()->is_swbp_at_addr() is simply unneeded and in fact should
-> be considered as unnecessary pessimization.
+> np.
 > 
-> set_orig_insn()->is_swbp_at_addr() makes more sense, but it can't fix
-> all races with userpace. Still it should die.
+>> At a quick guess it's because that's the interface that is used for the
+>> on-board PCI devices.
 > 
-> > OK. I will separate out the is_swbp_insn() change into a separate patch.
+> What PCI devices are on-board?
 > 
-> Great thanks. And if we remove is_swbp_insn() from set_swbp() and
-> set_orig_insn() then the semantics of is_swbp_insn() will much more
-> clear, and in this case I powerpc probably really needs to change it.
 
-Oleg,
+Just SATA.
 
-I have posted a new version for review [1] without the is_swbp_insn()
-change. I will await your changes around is_swbp_at_addr() and make
-changes to the powerpc code if necessary.
+> Does the board have any PCIe-ISA bridges?
+> 
 
-Regards,
-Ananth
+No, though SERDES Port 1 is connected to a PCie-PCI non-transparent bridge to
+a PCI backplane.
 
-[1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-August/100524.html
+> [ if you can generate an lspci dump, that might answer some of these questions ]
+> 
+
+Sorry, I don't have easy access to a board at the moment.
+
+Martyn
+
+-- 
+Martyn Welch (Lead Software Engineer)  | Registered in England and Wales
+GE Intelligent Platforms               | (3828642) at 100 Barbirolli Square
+T +44(0)1327322748                     | Manchester, M2 3AB
+E martyn.welch@ge.com                  | VAT:GB 927559189
