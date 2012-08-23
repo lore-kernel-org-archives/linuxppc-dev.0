@@ -1,39 +1,31 @@
-Return-Path: <srikar@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6C08A2C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 02:19:26 +1000 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srikar@linux.vnet.ibm.com>;
- Fri, 24 Aug 2012 02:18:13 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q7NGJKMQ27721890
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 02:19:20 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q7NGJJ8F007882
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 02:19:20 +1000
-Date: Thu, 23 Aug 2012 21:47:37 +0530
-From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 2/2] powerpc: Uprobes port to powerpc
-Message-ID: <20120823161737.GG25338@linux.vnet.ibm.com>
-References: <20120822082205.GA29216@in.ibm.com>
- <20120822082708.GB29216@in.ibm.com>
- <1345696100.3338.21.camel@concordia>
- <20120823053234.GE25338@linux.vnet.ibm.com>
- <1345716378.29170.4.camel@pasglop>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-qa0-f73.google.com (mail-qa0-f73.google.com
+ [209.85.216.73])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2E13C2C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 04:02:18 +1000 (EST)
+Received: by qabj40 with SMTP id j40so126568qab.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2012 11:02:14 -0700 (PDT)
+Date: Thu, 23 Aug 2012 12:02:13 -0600
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 1/2] PCI: leave MEM and IO decoding disabled during
+ 64-bit BAR sizing, too
+Message-ID: <20120823180213.GA31462@google.com>
+References: <20120709181745.18165.93914.stgit@bhelgaas.mtv.corp.google.com>
+ <20120709182018.18165.98339.stgit@bhelgaas.mtv.corp.google.com>
+ <CAOesGMgUGUG9Z=x6ssumVkAxN6fHoeyAJ3-P8CoaNTGas7-vmg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1345716378.29170.4.camel@pasglop>
-Cc: peterz@infradead.org, lkml <linux-kernel@vger.kernel.org>, oleg@redhat.com,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Ingo Molnar <mingo@elte.hu>, ppcdev <linuxppc-dev@lists.ozlabs.org>
-Reply-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAOesGMgUGUG9Z=x6ssumVkAxN6fHoeyAJ3-P8CoaNTGas7-vmg@mail.gmail.com>
+Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, linux-pci@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ Matthew Wilcox <matthew.r.wilcox@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Robert Hancock <hancockrwd@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,60 +35,136 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-* Benjamin Herrenschmidt <benh@kernel.crashing.org> [2012-08-23 20:06:18]:
-
-> On Thu, 2012-08-23 at 11:02 +0530, Srikar Dronamraju wrote:
-> > > 
-> > 
-> > insn is updated/accessed in the arch independent code. Size of
-> > uprobe_opcode_t could be different for different archs.
-> > uprobe_opcode_t
-> > represents the size of the smallest breakpoint instruction for an
-> > arch.
-> > 
-> > Hence u8 works out the best. I know we could still use uprobe_opcode_t
-> > and achieve the same. In which case, we would have to interpret
-> > MAX_UINSN_BYTES differently. Do you see any advantages of using
-> > uprobe_opcode_t instead of u8 across archs?
+On Thu, Aug 23, 2012 at 12:28:23AM -0700, Olof Johansson wrote:
+> Hi,
 > 
-> But don't you actively rely on the fact that on powerpc, unlike x86, you
-> -can- atomically replace an instruction with a single 32-bit store ?
+> On Mon, Jul 9, 2012 at 11:20 AM, Bjorn Helgaas <bhelgaas@google.com> wrote:
+> > After 253d2e5498, we disable MEM and IO decoding for most devices while we
+> > size 32-bit BARs.  However, we restore the original COMMAND register before
+> > we size the upper 32 bits of 64-bit BARs, so we can still cause a conflict.
+> >
+> > This patch waits to restore the original COMMAND register until we're
+> > completely finished sizing the BAR.
+> >
+> > Reference: https://lkml.org/lkml/2007/8/25/154
+> > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 > 
-
-We are not doing a replace here, we are only copying from the ->vm_file
-for the largest size instruction possible for that instruction. For
-powerpc, this is easy because of fixed size instructions.  
-
-On other archs, at this point, we dont even know the length of the
-underlying instruction.
-
-Now there are 3 ways to handle this:
-1. use arch independent copy_insn() (current.) (handles if the
-instruction spreads across multiple pages on non fixed instruction
-archs). 
-
-2. make the copy_insn() arch specific, that would mean every arch will
-have to do read_mapping_page etc.
-
-3. have a arch specific hook in arch independent copy_insn code that
-either does a memcpy for non fixed instruction archs or does an
-assignment in archs like powerpc.
-
-I think you are suggesting option 3.
-But instead of adding another call that does the arch specific stuff, we
-are probably be better of doing a memcpy. Right?
-
-For all powerpc references to insn we could refer to it as u32 as
-suggested by Oleg.
-
--- 
-Thanks and Regards
-Srikar
-
-
-> If you don't you should consider it, and that makes defining this as a
-> u8 array non-sensical (as is using memcpy)
+> This patch causes boot lockup on PA Semi hardware, since it disables
+> the bar on the UART that is used for console, and it has printks
+> between the old and the new re-enable location. If I boot with 'debug'
+> level for printk, I hit this. If I boot with just regular console
+> args, I don't.
 > 
-> Ben.
+> I'm guessing any other platform that uses MMIO-based UART on PCI for
+> console will have similar issues. I can verify on Chrome OS x86
+> hardware tomorrow if legacy powerpc isn't important enough to care
+> about. :-)
 > 
-> 
+> I have no proposal for a fix for this. Can you please consider
+> reverting for 3.6 unless someone has a better idea?
+
+Thanks a lot for finding and debugging this!
+
+Can you try the patch below?
+
+
+commit cfc29ece86d648e63fb46de81b2bf8e3e107672c
+Author: Bjorn Helgaas <bhelgaas@google.com>
+Date:   Thu Aug 23 10:53:08 2012 -0600
+
+    PCI: Don't print anything while decoding is disabled
+    
+    If we try to print to the console device while its decoding is disabled,
+    the system will hang.
+    
+    Reported-by: Olof Johansson <olof@lixom.net>
+    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 6c143b4..9f8a6b7 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -144,15 +144,13 @@ static inline unsigned long decode_bar(struct pci_dev *dev, u32 bar)
+ 	case PCI_BASE_ADDRESS_MEM_TYPE_32:
+ 		break;
+ 	case PCI_BASE_ADDRESS_MEM_TYPE_1M:
+-		dev_info(&dev->dev, "1M mem BAR treated as 32-bit BAR\n");
++		/* 1M mem BAR treated as 32-bit BAR */
+ 		break;
+ 	case PCI_BASE_ADDRESS_MEM_TYPE_64:
+ 		flags |= IORESOURCE_MEM_64;
+ 		break;
+ 	default:
+-		dev_warn(&dev->dev,
+-			 "mem unknown type %x treated as 32-bit BAR\n",
+-			 mem_type);
++		/* mem unknown type treated as 32-bit BAR */
+ 		break;
+ 	}
+ 	return flags;
+@@ -173,9 +171,11 @@ int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+ 	u32 l, sz, mask;
+ 	u16 orig_cmd;
+ 	struct pci_bus_region region;
++	bool bar_too_big = false, bar_disabled = false;
+ 
+ 	mask = type ? PCI_ROM_ADDRESS_MASK : ~0;
+ 
++	/* No printks while decoding is disabled! */
+ 	if (!dev->mmio_always_on) {
+ 		pci_read_config_word(dev, PCI_COMMAND, &orig_cmd);
+ 		pci_write_config_word(dev, PCI_COMMAND,
+@@ -240,8 +240,7 @@ int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+ 			goto fail;
+ 
+ 		if ((sizeof(resource_size_t) < 8) && (sz64 > 0x100000000ULL)) {
+-			dev_err(&dev->dev, "reg %x: can't handle 64-bit BAR\n",
+-				pos);
++			bar_too_big = true;
+ 			goto fail;
+ 		}
+ 
+@@ -252,12 +251,11 @@ int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+ 			region.start = 0;
+ 			region.end = sz64;
+ 			pcibios_bus_to_resource(dev, res, &region);
++			bar_disabled = true;
+ 		} else {
+ 			region.start = l64;
+ 			region.end = l64 + sz64;
+ 			pcibios_bus_to_resource(dev, res, &region);
+-			dev_printk(KERN_DEBUG, &dev->dev, "reg %x: %pR\n",
+-				   pos, res);
+ 		}
+ 	} else {
+ 		sz = pci_size(l, sz, mask);
+@@ -268,18 +266,23 @@ int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+ 		region.start = l;
+ 		region.end = l + sz;
+ 		pcibios_bus_to_resource(dev, res, &region);
+-
+-		dev_printk(KERN_DEBUG, &dev->dev, "reg %x: %pR\n", pos, res);
+ 	}
+ 
+- out:
++	goto out;
++
++
++fail:
++	res->flags = 0;
++out:
+ 	if (!dev->mmio_always_on)
+ 		pci_write_config_word(dev, PCI_COMMAND, orig_cmd);
+ 
++	if (bar_too_big)
++		dev_err(&dev->dev, "reg %x: can't handle 64-bit BAR\n", pos);
++	if (res->flags && !bar_disabled)
++		dev_printk(KERN_DEBUG, &dev->dev, "reg %x: %pR\n", pos, res);
++
+ 	return (res->flags & IORESOURCE_MEM_64) ? 1 : 0;
+- fail:
+-	res->flags = 0;
+-	goto out;
+ }
+ 
+ static void pci_read_bases(struct pci_dev *dev, unsigned int howmany, int rom)
