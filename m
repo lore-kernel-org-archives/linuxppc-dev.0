@@ -1,20 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 28A3D2C008F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2012 11:35:58 +1000 (EST)
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH] powerpc/mpic_msgr: add missing includes
-Date: Wed, 22 Aug 2012 20:35:47 -0500
-Message-ID: <1345685747-22451-1-git-send-email-scottwood@freescale.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B92B42C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2012 12:02:04 +1000 (EST)
+Message-ID: <50358D6E.20209@windriver.com>
+Date: Thu, 23 Aug 2012 09:54:54 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Meador Inge <meador_inge@mentor.com>, linuxppc-dev@lists.ozlabs.org,
- Jia Hongtao <B38951@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: Re: [PATCH 2/3] powerpc: Bail out of KGDB when we've been triggered
+References: <1345632192-19810-1-git-send-email-tiejun.chen@windriver.com>
+ <1345632192-19810-2-git-send-email-tiejun.chen@windriver.com>
+ <6AE080B68D46FC4BA2D2769E68D765B7059AE7E7@039-SN2MPN1-022.039d.mgd.msft.net>
+In-Reply-To: <6AE080B68D46FC4BA2D2769E68D765B7059AE7E7@039-SN2MPN1-022.039d.mgd.msft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "jason.wessel@windriver.com" <jason.wessel@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,42 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add several #includes that mpic_msgr relies on being pulled implicitly,
-which only happens on certain configs.
+On 08/22/2012 11:07 PM, Tabi Timur-B04825 wrote:
+> On Wed, Aug 22, 2012 at 5:43 AM, Tiejun Chen <tiejun.chen@windriver.com> wrote:
+> 
+>> +int kgdb_skipexception(int exception, struct pt_regs *regs)
+>> +{
+>> +       if (kgdb_isremovedbreak(regs->nip))
+>> +               return 1;
+>> +
+>> +       return 0;
+>> +}
+> 
+> int kgdb_skipexception(int exception, struct pt_regs *regs)
+> {
+>         return !!kgdb_isremovedbreak(regs->nip));
+> }
+> 
+> If the caller only cares about zero vs. non-zero, you can drop the !!.
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Meador Inge <meador_inge@mentor.com>
-Cc: Jia Hongtao <B38951@freescale.com>
----
- arch/powerpc/include/asm/mpic_msgr.h |    1 +
- arch/powerpc/sysdev/mpic_msgr.c      |    3 +++
- 2 files changed, 4 insertions(+)
+Yes, so 'return kgdb_isremovedbreak(regs->nip);' is already fine and simple.
 
-diff --git a/arch/powerpc/include/asm/mpic_msgr.h b/arch/powerpc/include/asm/mpic_msgr.h
-index 326d33c..d4f471f 100644
---- a/arch/powerpc/include/asm/mpic_msgr.h
-+++ b/arch/powerpc/include/asm/mpic_msgr.h
-@@ -14,6 +14,7 @@
- #include <linux/types.h>
- #include <linux/spinlock.h>
- #include <asm/smp.h>
-+#include <asm/io.h>
- 
- struct mpic_msgr {
- 	u32 __iomem *base;
-diff --git a/arch/powerpc/sysdev/mpic_msgr.c b/arch/powerpc/sysdev/mpic_msgr.c
-index 483d8fa..e961f8c 100644
---- a/arch/powerpc/sysdev/mpic_msgr.c
-+++ b/arch/powerpc/sysdev/mpic_msgr.c
-@@ -14,6 +14,9 @@
- #include <linux/list.h>
- #include <linux/of_platform.h>
- #include <linux/errno.h>
-+#include <linux/err.h>
-+#include <linux/export.h>
-+#include <linux/slab.h>
- #include <asm/prom.h>
- #include <asm/hw_irq.h>
- #include <asm/ppc-pci.h>
--- 
-1.7.9.5
+I'll update this as v2 so thanks your comment.
+
+Tiejun
