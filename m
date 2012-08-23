@@ -1,32 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
- [74.125.82.179])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
+ [209.85.212.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B7CFA2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 04:20:16 +1000 (EST)
-Received: by weyx10 with SMTP id x10so517156wey.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2012 11:20:12 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id E8DEF2C00AF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 06:50:25 +1000 (EST)
+Received: by vbbfn1 with SMTP id fn1so1242278vbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2012 13:50:22 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20120823180213.GA31462@google.com>
-References: <20120709181745.18165.93914.stgit@bhelgaas.mtv.corp.google.com>
- <20120709182018.18165.98339.stgit@bhelgaas.mtv.corp.google.com>
- <CAOesGMgUGUG9Z=x6ssumVkAxN6fHoeyAJ3-P8CoaNTGas7-vmg@mail.gmail.com>
- <20120823180213.GA31462@google.com>
-Date: Thu, 23 Aug 2012 11:20:12 -0700
-Message-ID: <CAOesGMjU9trQ3RFFfnQp6TOKWJr1ceeEcKx8xW2phW7EHn+bCw@mail.gmail.com>
-Subject: Re: [PATCH 1/2] PCI: leave MEM and IO decoding disabled during 64-bit
- BAR sizing, too
-From: Olof Johansson <olof@lixom.net>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Jacob Pan <jacob.jun.pan@linux.intel.com>, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, Jesse Barnes <jbarnes@virtuousgeek.org>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Matthew Wilcox <matthew.r.wilcox@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Robert Hancock <hancockrwd@gmail.com>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1345754768-4634-1-git-send-email-geert@linux-m68k.org>
+References: <1345754768-4634-1-git-send-email-geert@linux-m68k.org>
+Date: Thu, 23 Aug 2012 22:50:22 +0200
+Message-ID: <CAMuHMdWFY_iOXTfLO7zCm_RTdkEjj7BpT5o9pJ6cu3LdT8JsYQ@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.6-rc3
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-xtensa@linux-xtensa.org, the arch/x86 maintainers <x86@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,60 +28,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Aug 23, 2012 at 10:46 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.6-rc3 to v3.6-rc2[3], the summaries are:
+>   - build errors: +13/-9
 
-On Thu, Aug 23, 2012 at 11:02 AM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> On Thu, Aug 23, 2012 at 12:28:23AM -0700, Olof Johansson wrote:
->> Hi,
->>
->> On Mon, Jul 9, 2012 at 11:20 AM, Bjorn Helgaas <bhelgaas@google.com> wrote:
->> > After 253d2e5498, we disable MEM and IO decoding for most devices while we
->> > size 32-bit BARs.  However, we restore the original COMMAND register before
->> > we size the upper 32 bits of 64-bit BARs, so we can still cause a conflict.
->> >
->> > This patch waits to restore the original COMMAND register until we're
->> > completely finished sizing the BAR.
->> >
->> > Reference: https://lkml.org/lkml/2007/8/25/154
->> > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->>
->> This patch causes boot lockup on PA Semi hardware, since it disables
->> the bar on the UART that is used for console, and it has printks
->> between the old and the new re-enable location. If I boot with 'debug'
->> level for printk, I hit this. If I boot with just regular console
->> args, I don't.
->>
->> I'm guessing any other platform that uses MMIO-based UART on PCI for
->> console will have similar issues. I can verify on Chrome OS x86
->> hardware tomorrow if legacy powerpc isn't important enough to care
->> about. :-)
->>
->> I have no proposal for a fix for this. Can you please consider
->> reverting for 3.6 unless someone has a better idea?
->
-> Thanks a lot for finding and debugging this!
->
-> Can you try the patch below?
->
->
-> commit cfc29ece86d648e63fb46de81b2bf8e3e107672c
-> Author: Bjorn Helgaas <bhelgaas@google.com>
-> Date:   Thu Aug 23 10:53:08 2012 -0600
->
->     PCI: Don't print anything while decoding is disabled
->
->     If we try to print to the console device while its decoding is disabled,
->     the system will hang.
->
->     Reported-by: Olof Johansson <olof@lixom.net>
->     Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+  + arch/x86/include/asm/uaccess_32.h: error: call to
+'copy_from_user_overflow' declared with attribute error:
+copy_from_user() buffer size is not provably correct:  => 211:26
 
-Ah yes, of course. Teaches me to try to do anything productive late at
-night. Tested fine here.
+i386_defconfig, i386-randconfig, x86_64_defconfig
 
-Acked-by: Olof Johansson <olof@lixom.net>
+  + drivers/extcon/extcon_gpio.c: error: implicit declaration of
+function 'devm_gpio_request_one'
+[-Werror=implicit-function-declaration]:  => 110:2
 
+xtensa-allmodconfig
 
-Thanks!
+  + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
 
--Olof
+i386-randconfig
+
+  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `._raw_read_lock' defined in .spinlock.text section in
+kernel/built-in.o:  => (.text+0x1ff91bc)
+  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `.sprintf' defined in .text section in lib/lib.a(vsprintf.o):
+=> (.text+0x1ff940c)
+  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `_restgpr0_16' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ffa6e8)
+  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `_savegpr0_27' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ff9854)
+  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `_savegpr0_30' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ff8eb4), (.text+0x1ff8e80)
+  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
+against symbol `._raw_spin_unlock_irqrestore' defined in
+.spinlock.text section in kernel/built-in.o:  => (.text+0x1ff82cc),
+(.text+0x1ff8278)
+  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
+against symbol `.mutex_unlock' defined in .sched.text section in
+kernel/built-in.o:  => (.text+0x1ff83fc), (.text+0x1ff83a8)
+
+powerpc-allyesconfig
+
+  + error: via-pmu-event.c: undefined reference to
+`.input_allocate_device':  => .init.text+0xdfbc)
+  + error: via-pmu-event.c: undefined reference to
+`.input_free_device':  => .init.text+0xe084)
+  + error: via-pmu-event.c: undefined reference to
+`.input_register_device':  => .init.text+0xe06c)
+
+powerpc-randconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/5359/ (all 116 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/5338/ (all 116 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
