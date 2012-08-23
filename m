@@ -1,19 +1,18 @@
-Return-Path: <ben.dubb@gmail.com>
-Received: from mail-iy0-f170.google.com (mail-iy0-f170.google.com
- [209.85.210.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E0BAD2C0096
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Aug 2012 13:54:48 +1000 (EST)
-Received: by iamm10 with SMTP id m10so482717iam.15
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Aug 2012 20:54:46 -0700 (PDT)
-MIME-Version: 1.0
-From: Ben Dubb <ben.dubb@gmail.com>
-Date: Wed, 22 Aug 2012 23:54:25 -0400
-Message-ID: <CACLP1513KDxU95cY0_tpMqenwFmc8WZyuQMbaZbvU_pZdVqkSg@mail.gmail.com>
-Subject: [PATCH] QE USB host fix for mpc832x
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=e89a8f3ba0a9fb7fa104c7e6d1a6
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1345696100.3338.21.camel@concordia>
+Subject: Re: [PATCH v4 2/2] powerpc: Uprobes port to powerpc
+From: Michael Ellerman <michael@ellerman.id.au>
+To: ananth@in.ibm.com
+Date: Thu, 23 Aug 2012 14:28:20 +1000
+In-Reply-To: <20120822082708.GB29216@in.ibm.com>
+References: <20120822082205.GA29216@in.ibm.com>
+ <20120822082708.GB29216@in.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
+ lkml <linux-kernel@vger.kernel.org>, oleg@redhat.com,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Ingo Molnar <mingo@elte.hu>, ppcdev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,172 +22,335 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---e89a8f3ba0a9fb7fa104c7e6d1a6
-Content-Type: text/plain; charset=ISO-8859-1
+On Wed, 2012-08-22 at 13:57 +0530, Ananth N Mavinakayanahalli wrote:
+> From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> 
+> This is the port of uprobes to powerpc. Usage is similar to x86.
 
-This patch should be used to get QE USB host mode working on mpc832x and
-mpc8360
-based devices. It fixes the following issues:
+Hi Ananth,
 
-- BRG divisor shall not be an add number greater than 3.
-- USB param block in multi-user ram can't be accessed at default location
-on mpc832x
-  device. Allocate it dynamically.
-
-These changes have been tested on mpc8360-rdk board as well as mpc8321e
-based design.
-On the mpc832x devices, the QE_USB3 microcode patch is required, and has to
-be loaded
-early during initialization sequence.
-
-These changes are partially based on an earlier patch from Marcel Ziswiler,
-[PATCH] QE USB Host Integration for
-MPC832x"<http://lkml.indiana.edu/hypermail/linux/kernel/0904.0/00479.html>
-
--Ben
-----
-
-diff -Naur linux-2.6.34.13.orig/arch/powerpc/sysdev/qe_lib/qe.c
-linux-2.6.34.13.new/arch/powerpc/sysdev/qe_lib/qe.c
---- linux-2.6.34.13.orig/arch/powerpc/sysdev/qe_lib/qe.c        2012-08-20
-14:45:22.000000000 -0400
-+++ linux-2.6.34.13.new/arch/powerpc/sysdev/qe_lib/qe.c 2012-08-22
-21:51:05.093065082 -0400
-@@ -215,8 +215,8 @@
-
-        /* Errata QE_General4, which affects some MPC832x and MPC836x SOCs,
-says
-           that the BRG divisor must be even if you're not using
-divide-by-16
--          mode. */
--       if (!div16 && (divisor & 1))
-+          mode, and is greater than 3. */
-+       if (!div16 && (divisor & 1) && (divisor > 3))
-                divisor++;
-
-        tempval = ((divisor - 1) << QE_BRGC_DIVISOR_SHIFT) |
-diff -Naur linux-2.6.34.13.orig/drivers/usb/host/fhci-hcd.c
-linux-2.6.34.13.new/drivers/usb/host/fhci-hcd.c
---- linux-2.6.34.13.orig/drivers/usb/host/fhci-hcd.c    2012-08-20
-14:45:22.000000000 -0400
-+++ linux-2.6.34.13.new/drivers/usb/host/fhci-hcd.c     2012-08-22
-22:39:00.453065145 -0400
-@@ -614,15 +614,8 @@
-        }
-        fhci->regs = hcd->regs;
-
--       /* Parameter RAM. */
--       iprop = of_get_property(node, "reg", &size);
--       if (!iprop || size < sizeof(*iprop) * 4) {
--               dev_err(dev, "can't get pram offset\n");
--               ret = -EINVAL;
--               goto err_pram;
--       }
--
--       pram_addr = cpm_muram_alloc_fixed(iprop[2], FHCI_PRAM_SIZE);
-+       /* Dynamically allocate USB Parameter RAM. */
-+       pram_addr = qe_muram_alloc(FHCI_PRAM_SIZE, 64);
-        if (IS_ERR_VALUE(pram_addr)) {
-                dev_err(dev, "failed to allocate usb pram\n");
-                ret = -ENOMEM;
-@@ -630,6 +623,11 @@
-        }
-        fhci->pram = cpm_muram_addr(pram_addr);
-
-+       /* On mpc832x devices the usb param base address is outside the 16K
-MURAM
-+          space, and therefore must be remapped via QE Assign Page
-command. */
-+       qe_issue_cmd(QE_ASSIGN_PAGE_TO_DEVICE, QE_CR_SUBBLOCK_USB,
+Excuse my ignorance of uprobes, some comments inline ...
 
 
-+               QE_CR_PROTOCOL_UNSPECIFIED, pi->pram_addr);
-+
-        /* GPIOs and pins */
-        for (i = 0; i < NUM_GPIOS; i++) {
-                int gpio;
+> [root@xxxx ~]# ./bin/perf probe -x /lib64/libc.so.6 malloc
+> Added new event:
+>   probe_libc:malloc    (on 0xb4860)
+> 
+> You can now use it in all perf tools, such as:
+> 
+> 	perf record -e probe_libc:malloc -aR sleep 1
 
---e89a8f3ba0a9fb7fa104c7e6d1a6
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Is there a test suite for any of this?
 
-<div>This patch should be used to get QE USB host mode working on mpc832x=
-=A0and mpc8360=A0</div><div>based devices.=A0It fixes the following issues:=
-</div><div><br></div><div>- BRG divisor shall not be an add number greater =
-than 3.</div>
 
-<div>- USB param block in multi-user ram can&#39;t be accessed at default l=
-ocation on mpc832x=A0</div><div>=A0 device. Allocate it dynamically.</div><=
-div><br></div><div>These changes have been tested on mpc8360-rdk board as w=
-ell as mpc8321e based design.</div>
+> Index: linux-tip-16aug/arch/powerpc/include/asm/uprobes.h
+> ===================================================================
+> --- /dev/null
+> +++ linux-tip-16aug/arch/powerpc/include/asm/uprobes.h
+> @@ -0,0 +1,58 @@
+> +#ifndef _ASM_UPROBES_H
+> +#define _ASM_UPROBES_H
+> +/*
+> + * User-space Probes (UProbes) for powerpc
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + *
+> + * Copyright (C) IBM Corporation, 2007-2012
 
-<div>On the mpc832x devices, the=A0QE_USB3 microcode patch is required, and=
- has to be loaded=A0</div><div>early during=A0initialization sequence.</div=
-><div><br></div><div>These changes are partially based on an earlier patch =
-from Marcel Ziswiler,=A0</div>
+The lawyers say we shouldn't use (C).
 
-<div><a href=3D"http://lkml.indiana.edu/hypermail/linux/kernel/0904.0/00479=
-.html" style=3D"font-family:Times;font-size:medium;background-color:rgb(255=
-,255,255)">[PATCH] QE USB Host Integration for MPC832x&quot;</a></div><div>
+Is it really copyright IBM 2007-2012? Or is that because you copied
+another header?
 
-<br></div><div>-Ben</div><div>----</div><div><br></div><div>diff -Naur linu=
-x-2.6.34.13.orig/arch/powerpc/sysdev/qe_lib/qe.c linux-2.6.34.13.new/arch/p=
-owerpc/sysdev/qe_lib/qe.c</div><div>--- linux-2.6.34.13.orig/arch/powerpc/s=
-ysdev/qe_lib/qe.c =A0 =A0 =A0 =A02012-08-20 14:45:22.000000000 -0400</div>
 
-<div>+++ linux-2.6.34.13.new/arch/powerpc/sysdev/qe_lib/qe.c 2012-08-22 21:=
-51:05.093065082 -0400</div><div>@@ -215,8 +215,8 @@</div><div>=A0</div><div=
->=A0 =A0 =A0 =A0 /* Errata QE_General4, which affects some MPC832x and MPC8=
-36x SOCs, says</div>
+> +typedef unsigned int uprobe_opcode_t;
 
-<div>=A0 =A0 =A0 =A0 =A0 =A0that the BRG divisor must be even if you&#39;re=
- not using divide-by-16</div><div>- =A0 =A0 =A0 =A0 =A0mode. */</div><div>-=
- =A0 =A0 =A0 if (!div16 &amp;&amp; (divisor &amp; 1))</div><div>+ =A0 =A0 =
-=A0 =A0 =A0mode, and is greater than 3. */</div>
+I'd prefer u32.
 
-<div>+ =A0 =A0 =A0 if (!div16 &amp;&amp; (divisor &amp; 1) &amp;&amp; (divi=
-sor &gt; 3))</div><div>=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 divisor++;</div><div=
->=A0</div><div>=A0 =A0 =A0 =A0 tempval =3D ((divisor - 1) &lt;&lt; QE_BRGC_=
-DIVISOR_SHIFT) |</div><div>diff -Naur linux-2.6.34.13.orig/drivers/usb/host=
-/fhci-hcd.c linux-2.6.34.13.new/drivers/usb/host/fhci-hcd.c</div>
+It would be nice if someone could consolidate this with kprobe_opcode_t.
 
-<div>--- linux-2.6.34.13.orig/drivers/usb/host/fhci-hcd.c =A0 =A02012-08-20=
- 14:45:22.000000000 -0400</div><div>+++ linux-2.6.34.13.new/drivers/usb/hos=
-t/fhci-hcd.c =A0 =A0 2012-08-22 22:39:00.453065145 -0400</div><div>@@ -614,=
-15 +614,8 @@</div>
 
-<div>=A0 =A0 =A0 =A0 }</div><div>=A0 =A0 =A0 =A0 fhci-&gt;regs =3D hcd-&gt;=
-regs;</div><div>=A0</div><div>- =A0 =A0 =A0 /* Parameter RAM. */</div><div>=
-- =A0 =A0 =A0 iprop =3D of_get_property(node, &quot;reg&quot;, &amp;size);<=
-/div><div>- =A0 =A0 =A0 if (!iprop || size &lt; sizeof(*iprop) * 4) {</div>
+> +#define MAX_UINSN_BYTES			4
+> +#define UPROBE_XOL_SLOT_BYTES		(MAX_UINSN_BYTES)
+> +
+> +#define UPROBE_SWBP_INSN		0x7fe00008
 
-<div>- =A0 =A0 =A0 =A0 =A0 =A0 =A0 dev_err(dev, &quot;can&#39;t get pram of=
-fset\n&quot;);</div><div>- =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -EINVAL;</di=
-v><div>- =A0 =A0 =A0 =A0 =A0 =A0 =A0 goto err_pram;</div><div>- =A0 =A0 =A0=
- }</div><div>-</div><div>- =A0 =A0 =A0 pram_addr =3D cpm_muram_alloc_fixed(=
-iprop[2], FHCI_PRAM_SIZE);</div>
+This is just "trap" ?
 
-<div>+ =A0 =A0 =A0 /* Dynamically allocate USB Parameter RAM. */</div><div>=
-+ =A0 =A0 =A0 pram_addr =3D qe_muram_alloc(FHCI_PRAM_SIZE, 64);</div><div>=
-=A0 =A0 =A0 =A0 if (IS_ERR_VALUE(pram_addr)) {</div><div>=A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 dev_err(dev, &quot;failed to allocate usb pram\n&quot;);</d=
-iv>
+> +#define UPROBE_SWBP_INSN_SIZE		4 /* swbp insn size in bytes */
+> +
+> +#define IS_TW(instr)		(((instr) & 0xfc0007fe) == 0x7c000008)
+> +#define IS_TD(instr)		(((instr) & 0xfc0007fe) == 0x7c000088)
+> +#define IS_TDI(instr)		(((instr) & 0xfc000000) == 0x08000000)
+> +#define IS_TWI(instr)		(((instr) & 0xfc000000) == 0x0c000000)
+> +
+> +#define is_trap(instr)	(IS_TW(instr) || IS_TD(instr) || \
+> +			IS_TWI(instr) || IS_TDI(instr))
 
-<div>=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 ret =3D -ENOMEM;</div><div>@@ -630,6 +=
-623,11 @@</div><div>=A0 =A0 =A0 =A0 }</div><div>=A0 =A0 =A0 =A0 fhci-&gt;pr=
-am =3D cpm_muram_addr(pram_addr);</div><div>=A0</div><div>+ =A0 =A0 =A0 /* =
-On mpc832x devices the usb param base address is outside the 16K MURAM</div=
->
+These seem to be duplicated in kprobes.h, can we consolidate them.
 
-<div>+ =A0 =A0 =A0 =A0 =A0space, and therefore must be remapped via QE Assi=
-gn Page command. */</div><div>+ =A0 =A0 =A0 qe_issue_cmd(QE_ASSIGN_PAGE_TO_=
-DEVICE, QE_CR_SUBBLOCK_USB, =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=
- =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0=A0</div>
+> +struct arch_uprobe {
+> +	u8	insn[MAX_UINSN_BYTES];
+> +};
 
-<div>+ =A0 =A0 =A0 =A0 =A0 =A0 =A0 QE_CR_PROTOCOL_UNSPECIFIED, pi-&gt;pram_=
-addr); =A0=A0</div><div>+</div><div>=A0 =A0 =A0 =A0 /* GPIOs and pins */</d=
-iv><div>=A0 =A0 =A0 =A0 for (i =3D 0; i &lt; NUM_GPIOS; i++) {</div><div>=
-=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 int gpio;</div>
+Why not uprobe_opcode_t insn ?
 
---e89a8f3ba0a9fb7fa104c7e6d1a6--
+
+
+> Index: linux-tip-16aug/arch/powerpc/kernel/signal.c
+> ===================================================================
+> --- linux-tip-16aug.orig/arch/powerpc/kernel/signal.c
+> +++ linux-tip-16aug/arch/powerpc/kernel/signal.c
+> @@ -11,6 +11,7 @@
+>  
+>  #include <linux/tracehook.h>
+>  #include <linux/signal.h>
+> +#include <linux/uprobes.h>
+>  #include <linux/key.h>
+>  #include <asm/hw_breakpoint.h>
+>  #include <asm/uaccess.h>
+> @@ -157,6 +158,11 @@ static int do_signal(struct pt_regs *reg
+>  
+>  void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
+>  {
+> +	if (thread_info_flags & _TIF_UPROBE) {
+> +		clear_thread_flag(TIF_UPROBE);
+> +		uprobe_notify_resume(regs);
+> +	}
+
+Presumably this ordering is crucial, ie. uprobes before signals.
+
+>  	if (thread_info_flags & _TIF_SIGPENDING)
+>  		do_signal(regs);
+>  
+> Index: linux-tip-16aug/arch/powerpc/kernel/uprobes.c
+> ===================================================================
+> --- /dev/null
+> +++ linux-tip-16aug/arch/powerpc/kernel/uprobes.c
+> @@ -0,0 +1,180 @@
+> +/*
+> + * User-space Probes (UProbes) for powerpc
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + *
+> + * Copyright (C) IBM Corporation, 2007-2012
+> + *
+> + * Adapted from the x86 port by Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> + */
+> +#include <linux/kernel.h>
+> +#include <linux/sched.h>
+> +#include <linux/ptrace.h>
+> +#include <linux/uprobes.h>
+> +#include <linux/uaccess.h>
+> +#include <linux/kdebug.h>
+> +
+> +#include <asm/sstep.h>
+> +
+> +#define UPROBE_TRAP_NR	UINT_MAX
+
+In the comments below you talk about -1 a few times, but you actually
+mean UINT_MAX.
+
+
+> +/**
+> + * arch_uprobe_analyze_insn
+
+Analyze what about the instruction?
+
+> + * @mm: the probed address space.
+> + * @arch_uprobe: the probepoint information.
+> + * @addr: vaddr to probe.
+> + * Return 0 on success or a -ve number on error.
+> + */
+> +int arch_uprobe_analyze_insn(struct arch_uprobe *auprobe, struct mm_struct *mm, unsigned long addr)
+> +{
+> +	unsigned int insn;
+> +
+> +	if (addr & 0x03)
+> +		return -EINVAL;
+> +
+> +	memcpy(&insn, auprobe->insn, MAX_UINSN_BYTES);
+
+We shouldn't need to use memcpy, we know it's a u32.
+
+> +	if (is_trap(insn))
+> +		return -ENOTSUPP;
+
+A comment saying why we can't handle this would be nice.
+
+> +	return 0;
+> +}
+
+
+I am probably missing something, but why do we need to execute out of
+line?
+
+> +/*
+> + * arch_uprobe_pre_xol - prepare to execute out of line.
+> + * @auprobe: the probepoint information.
+> + * @regs: reflects the saved user state of current task.
+> + */
+> +int arch_uprobe_pre_xol(struct arch_uprobe *auprobe, struct pt_regs *regs)
+> +{
+> +	struct arch_uprobe_task *autask = &current->utask->autask;
+> +
+> +	autask->saved_trap_nr = current->thread.trap_nr;
+> +	current->thread.trap_nr = UPROBE_TRAP_NR;
+> +	regs->nip = current->utask->xol_vaddr;
+> +	return 0;
+> +}
+> +
+> +/**
+> + * uprobe_get_swbp_addr - compute address of swbp given post-swbp regs
+> + * @regs: Reflects the saved state of the task after it has hit a breakpoint
+> + * instruction.
+> + * Return the address of the breakpoint instruction.
+> + */
+> +unsigned long uprobe_get_swbp_addr(struct pt_regs *regs)
+> +{
+> +	return instruction_pointer(regs);
+> +}
+
+This seems like it would be better in asm/uprobes.h as a static inline,
+but that's not your fault.
+
+> +/*
+> + * If xol insn itself traps and generates a signal (SIGILL/SIGSEGV/etc),
+> + * then detect the case where a singlestepped instruction jumps back to its
+> + * own address. It is assumed that anything like do_page_fault/do_trap/etc
+> + * sets thread.trap_nr != -1.
+> + *
+> + * arch_uprobe_pre_xol/arch_uprobe_post_xol save/restore thread.trap_nr,
+> + * arch_uprobe_xol_was_trapped() simply checks that ->trap_nr is not equal to
+> + * UPROBE_TRAP_NR == -1 set by arch_uprobe_pre_xol().
+> + */
+> +bool arch_uprobe_xol_was_trapped(struct task_struct *t)
+> +{
+> +	if (t->thread.trap_nr != UPROBE_TRAP_NR)
+> +		return true;
+> +
+> +	return false;
+> +}
+> +
+> +/*
+> + * Called after single-stepping. To avoid the SMP problems that can
+> + * occur when we temporarily put back the original opcode to
+> + * single-step, we single-stepped a copy of the instruction.
+> + *
+> + * This function prepares to resume execution after the single-step.
+> + */
+> +int arch_uprobe_post_xol(struct arch_uprobe *auprobe, struct pt_regs *regs)
+> +{
+> +	struct uprobe_task *utask = current->utask;
+> +
+> +	WARN_ON_ONCE(current->thread.trap_nr != UPROBE_TRAP_NR);
+> +
+> +	current->thread.trap_nr = utask->autask.saved_trap_nr;
+> +
+> +	/*
+> +	 * On powerpc, except for loads and stores, most instructions
+> +	 * including ones that alter code flow (branches, calls, returns)
+> +	 * are emulated in the kernel. We get here only if the emulation
+> +	 * support doesn't exist and have to fix-up the next instruction
+> +	 * to be executed.
+> +	 */
+> +	regs->nip = utask->vaddr + MAX_UINSN_BYTES;
+> +	return 0;
+> +}
+> +
+> +/* callback routine for handling exceptions. */
+> +int arch_uprobe_exception_notify(struct notifier_block *self, unsigned long val, void *data)
+> +{
+> +	struct die_args *args = data;
+> +	struct pt_regs *regs = args->regs;
+> +
+> +	/* We are only interested in userspace traps */
+> +	if (regs && !user_mode(regs))
+> +		return NOTIFY_DONE;
+
+Do we ever get here with a NULL regs?
+
+> +	switch (val) {
+> +	case DIE_BPT:
+> +		if (uprobe_pre_sstep_notifier(regs))
+> +			return NOTIFY_STOP;
+> +		break;
+> +	case DIE_SSTEP:
+> +		if (uprobe_post_sstep_notifier(regs))
+> +			return NOTIFY_STOP;
+> +	default:
+> +		break;
+> +	}
+> +	return NOTIFY_DONE;
+> +}
+> +
+> +/*
+> + * This function gets called when XOL instruction either gets trapped or
+> + * the thread has a fatal signal, so reset the instruction pointer to its
+> + * probed address.
+> + */
+> +void arch_uprobe_abort_xol(struct arch_uprobe *auprobe, struct pt_regs *regs)
+> +{
+> +	struct uprobe_task *utask = current->utask;
+> +
+> +	current->thread.trap_nr = utask->autask.saved_trap_nr;
+> +	instruction_pointer_set(regs, utask->vaddr);
+> +}
+> +
+> +/*
+> + * See if the instruction can be emulated.
+> + * Returns true if instruction was emulated, false otherwise.
+> + */
+> +bool arch_uprobe_skip_sstep(struct arch_uprobe *auprobe, struct pt_regs *regs)
+> +{
+> +	int ret;
+> +	unsigned int insn;
+> +
+> +	memcpy(&insn, auprobe->insn, MAX_UINSN_BYTES);
+
+Why memcpy?
+
+> +
+> +	/*
+> +	 * emulate_step() returns 1 if the insn was successfully emulated.
+> +	 * For all other cases, we need to single-step in hardware.
+> +	 */
+> +	ret = emulate_step(regs, insn);
+> +	if (ret > 0)
+> +		return true;
+
+This actually emulates the instruction, ie. the contents of regs are
+changed based on the instruction.
+
+That seems to differ vs x86, where arch_uprobe_skip_sstep() just checks
+the instruction and returns true/false. Is that because on x86 they are
+only returning true for nops? ie. there is no emulation to be done?
+
+It's a little surprising that can_skip_sstep() actually emulates the
+instruction, but again that's not your fault.
+
+cheers
