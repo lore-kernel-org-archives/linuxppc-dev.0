@@ -1,24 +1,25 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
- [209.85.212.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E8DEF2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 06:50:25 +1000 (EST)
-Received: by vbbfn1 with SMTP id fn1so1242278vbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Aug 2012 13:50:22 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1345754768-4634-1-git-send-email-geert@linux-m68k.org>
-References: <1345754768-4634-1-git-send-email-geert@linux-m68k.org>
-Date: Thu, 23 Aug 2012 22:50:22 +0200
-Message-ID: <CAMuHMdWFY_iOXTfLO7zCm_RTdkEjj7BpT5o9pJ6cu3LdT8JsYQ@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.6-rc3
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-xtensa@linux-xtensa.org, the arch/x86 maintainers <x86@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 733A82C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 07:58:24 +1000 (EST)
+Message-ID: <1345759045.29170.12.camel@pasglop>
+Subject: Re: [PATCH v4 2/2] powerpc: Uprobes port to powerpc
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Date: Fri, 24 Aug 2012 07:57:25 +1000
+In-Reply-To: <20120823161737.GG25338@linux.vnet.ibm.com>
+References: <20120822082205.GA29216@in.ibm.com>
+ <20120822082708.GB29216@in.ibm.com> <1345696100.3338.21.camel@concordia>
+ <20120823053234.GE25338@linux.vnet.ibm.com>
+ <1345716378.29170.4.camel@pasglop>
+ <20120823161737.GG25338@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: peterz@infradead.org, lkml <linux-kernel@vger.kernel.org>, oleg@redhat.com,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Ingo Molnar <mingo@elte.hu>, ppcdev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,71 +29,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 23, 2012 at 10:46 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.6-rc3 to v3.6-rc2[3], the summaries are:
->   - build errors: +13/-9
+On Thu, 2012-08-23 at 21:47 +0530, Srikar Dronamraju wrote:
+> * Benjamin Herrenschmidt <benh@kernel.crashing.org> [2012-08-23 20:06:18]:
+> 
+> > On Thu, 2012-08-23 at 11:02 +0530, Srikar Dronamraju wrote:
+> > > > 
+> > > 
+> > > insn is updated/accessed in the arch independent code. Size of
+> > > uprobe_opcode_t could be different for different archs.
+> > > uprobe_opcode_t
+> > > represents the size of the smallest breakpoint instruction for an
+> > > arch.
+> > > 
+> > > Hence u8 works out the best. I know we could still use uprobe_opcode_t
+> > > and achieve the same. In which case, we would have to interpret
+> > > MAX_UINSN_BYTES differently. Do you see any advantages of using
+> > > uprobe_opcode_t instead of u8 across archs?
+> > 
+> > But don't you actively rely on the fact that on powerpc, unlike x86, you
+> > -can- atomically replace an instruction with a single 32-bit store ?
+> > 
+> 
+> We are not doing a replace here, we are only copying from the ->vm_file
+> for the largest size instruction possible for that instruction. For
+> powerpc, this is easy because of fixed size instructions.  
+> 
+> On other archs, at this point, we dont even know the length of the
+> underlying instruction.
+> 
+> Now there are 3 ways to handle this:
+> 1. use arch independent copy_insn() (current.) (handles if the
+> instruction spreads across multiple pages on non fixed instruction
+> archs). 
+> 
+> 2. make the copy_insn() arch specific, that would mean every arch will
+> have to do read_mapping_page etc.
+> 
+> 3. have a arch specific hook in arch independent copy_insn code that
+> either does a memcpy for non fixed instruction archs or does an
+> assignment in archs like powerpc.
+>
+> I think you are suggesting option 3.
+> But instead of adding another call that does the arch specific stuff, we
+> are probably be better of doing a memcpy. Right?
+> 
+> For all powerpc references to insn we could refer to it as u32 as
+> suggested by Oleg.
 
-  + arch/x86/include/asm/uaccess_32.h: error: call to
-'copy_from_user_overflow' declared with attribute error:
-copy_from_user() buffer size is not provably correct:  => 211:26
+Ok, doens't matter much either way, it's just odd and inefficient.
 
-i386_defconfig, i386-randconfig, x86_64_defconfig
-
-  + drivers/extcon/extcon_gpio.c: error: implicit declaration of
-function 'devm_gpio_request_one'
-[-Werror=implicit-function-declaration]:  => 110:2
-
-xtensa-allmodconfig
-
-  + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
-
-i386-randconfig
-
-  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
-symbol `._raw_read_lock' defined in .spinlock.text section in
-kernel/built-in.o:  => (.text+0x1ff91bc)
-  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
-symbol `.sprintf' defined in .text section in lib/lib.a(vsprintf.o):
-=> (.text+0x1ff940c)
-  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
-symbol `_restgpr0_16' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ffa6e8)
-  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
-symbol `_savegpr0_27' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff9854)
-  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
-symbol `_savegpr0_30' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff8eb4), (.text+0x1ff8e80)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `._raw_spin_unlock_irqrestore' defined in
-.spinlock.text section in kernel/built-in.o:  => (.text+0x1ff82cc),
-(.text+0x1ff8278)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `.mutex_unlock' defined in .sched.text section in
-kernel/built-in.o:  => (.text+0x1ff83fc), (.text+0x1ff83a8)
-
-powerpc-allyesconfig
-
-  + error: via-pmu-event.c: undefined reference to
-`.input_allocate_device':  => .init.text+0xdfbc)
-  + error: via-pmu-event.c: undefined reference to
-`.input_free_device':  => .init.text+0xe084)
-  + error: via-pmu-event.c: undefined reference to
-`.input_register_device':  => .init.text+0xe06c)
-
-powerpc-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/5359/ (all 116 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/5338/ (all 116 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Cheers,
+Ben.
