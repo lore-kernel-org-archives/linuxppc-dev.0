@@ -1,23 +1,16 @@
-Return-Path: <oleg@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id A55212C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 01:36:12 +1000 (EST)
-Date: Thu, 23 Aug 2012 11:02:09 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 2/2] powerpc: Uprobes port to powerpc
-Message-ID: <20120823090209.GA4630@redhat.com>
-References: <20120822082205.GA29216@in.ibm.com>
- <20120822082708.GB29216@in.ibm.com> <1345696100.3338.21.camel@concordia>
- <20120823053234.GE25338@linux.vnet.ibm.com>
- <1345716378.29170.4.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1345716378.29170.4.camel@pasglop>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, peterz@infradead.org,
- lkml <linux-kernel@vger.kernel.org>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Ingo Molnar <mingo@elte.hu>,
- ppcdev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <w.sang@pengutronix.de>
+Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
+ [92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D62172C0084
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2012 01:52:30 +1000 (EST)
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: dts: 52xx: drop critical IRQ from dts files
+Date: Thu, 23 Aug 2012 17:31:06 +0200
+Message-Id: <1345735866-10001-1-git-send-email-w.sang@pengutronix.de>
+Cc: John Bonesio <bones@secretlab.ca>, Anatolij Gustschin <agust@denx.de>,
+ Wolfram Sang <w.sang@pengutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/23, Benjamin Herrenschmidt wrote:
->
-> On Thu, 2012-08-23 at 11:02 +0530, Srikar Dronamraju wrote:
-> > >
-> >
-> > insn is updated/accessed in the arch independent code. Size of
-> > uprobe_opcode_t could be different for different archs.
-> > uprobe_opcode_t
-> > represents the size of the smallest breakpoint instruction for an
-> > arch.
-> >
-> > Hence u8 works out the best. I know we could still use uprobe_opcode_t
-> > and achieve the same. In which case, we would have to interpret
-> > MAX_UINSN_BYTES differently. Do you see any advantages of using
-> > uprobe_opcode_t instead of u8 across archs?
->
-> But don't you actively rely on the fact that on powerpc, unlike x86, you
-> -can- atomically replace an instruction with a single 32-bit store ?
+The wakeup-gpios have been assigned a critical IRQ in current
+devicetrees. The PIC driver does not support critical IRQs, though, which
+leads to the following error when booting (a PCM030 in this case):
 
-I must have missed something...
+	mpc52xx_irqhost_map: invalid irq: virq=16, l1=0, l2=3
+	irq: irq-16==>hwirq-0x3 mapping failed: -22
+	[WARNing skipped]
 
-But powerpc does not replace an instruction, the arch independent code
-does this and it assumes that uprobe->arch.insn is u8[MAX_UINSN_BYTES].
+Remove these entries until they are supported, if ever.
 
-Perhaps you meant that on powerpc it is "safe" to replace the insn
-even if this can race with some CPU executing this code? But uprobes
-has to replace the original page anyway, we should not write to
-->vm_file.
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: John Bonesio <bones@secretlab.ca>
+Cc: Anatolij Gustschin <agust@denx.de>
+---
+ arch/powerpc/boot/dts/lite5200.dts  |    2 +-
+ arch/powerpc/boot/dts/mpc5200b.dtsi |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-I agree that memcpy() in arch_uprobe_analyze_insn() and
-arch_uprobe_skip_sstep() looks a bit strange. May be powerpc can do
-
-	struct arch_uprobe {
-		union {
-			u8		insn[MAX_UINSN_BYTES];
-			u32		ainsn;
-		};
-	};
-
-and use auprobe->ainsn directly, I dunno.
-
-But probably I misunderstood you.
-
-Oleg.
+diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
+index 179a178..25adace 100644
+--- a/arch/powerpc/boot/dts/lite5200.dts
++++ b/arch/powerpc/boot/dts/lite5200.dts
+@@ -141,7 +141,7 @@
+ 		gpio@c00 {
+ 			compatible = "fsl,mpc5200-gpio-wkup";
+ 			reg = <0xc00 0x40>;
+-			interrupts = <1 8 0 0 3 0>;
++			interrupts = <1 8 0>;
+ 			gpio-controller;
+ 			#gpio-cells = <2>;
+ 		};
+diff --git a/arch/powerpc/boot/dts/mpc5200b.dtsi b/arch/powerpc/boot/dts/mpc5200b.dtsi
+index 7ab286a..e610d68 100644
+--- a/arch/powerpc/boot/dts/mpc5200b.dtsi
++++ b/arch/powerpc/boot/dts/mpc5200b.dtsi
+@@ -141,7 +141,7 @@
+ 		gpio_wkup: gpio@c00 {
+ 			compatible = "fsl,mpc5200b-gpio-wkup","fsl,mpc5200-gpio-wkup";
+ 			reg = <0xc00 0x40>;
+-			interrupts = <1 8 0 0 3 0>;
++			interrupts = <1 8 0>;
+ 			gpio-controller;
+ 			#gpio-cells = <2>;
+ 		};
+-- 
+1.7.10.4
