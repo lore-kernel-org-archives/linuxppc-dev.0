@@ -1,16 +1,22 @@
-Return-Path: <w.sang@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [92.198.50.35]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D62172C0084
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2012 01:52:30 +1000 (EST)
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: dts: 52xx: drop critical IRQ from dts files
-Date: Thu, 23 Aug 2012 17:31:06 +0200
-Message-Id: <1345735866-10001-1-git-send-email-w.sang@pengutronix.de>
-Cc: John Bonesio <bones@secretlab.ca>, Anatolij Gustschin <agust@denx.de>,
- Wolfram Sang <w.sang@pengutronix.de>
+ by ozlabs.org (Postfix) with ESMTPS id CC1892C00AF
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2012 01:58:26 +1000 (EST)
+Subject: Re: [PATCH 2/2 v2] powerpc/fsl: fix "Failed to mount /dev: No such
+ device" errors
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <20120822134330.288990f2699569868923c23c@freescale.com>
+Date: Thu, 23 Aug 2012 10:58:15 -0500
+Message-Id: <A9EC53D6-102A-4197-9236-A24459CC118E@kernel.crashing.org>
+References: <20120821172303.53d5698006b32063dca99300@freescale.com>
+ <94E5411D-0FC7-46AF-BDE4-FC87416DF805@kernel.crashing.org>
+ <20120822134330.288990f2699569868923c23c@freescale.com>
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,49 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The wakeup-gpios have been assigned a critical IRQ in current
-devicetrees. The PIC driver does not support critical IRQs, though, which
-leads to the following error when booting (a PCM030 in this case):
 
-	mpc52xx_irqhost_map: invalid irq: virq=16, l1=0, l2=3
-	irq: irq-16==>hwirq-0x3 mapping failed: -22
-	[WARNing skipped]
+On Aug 22, 2012, at 1:43 PM, Kim Phillips wrote:
 
-Remove these entries until they are supported, if ever.
+> Yocto (Built by Poky 7.0) 1.2 root filesystems fail to boot,
+> at least over nfs, with:
+> 
+> Failed to mount /dev: No such device
+> 
+> Configuring DEVTMPFS fixes it.
+> 
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ---
+> v2: separated savedefconfig updates, rebased on merge branch
+> 
+> arch/powerpc/configs/85xx/p1023rds_defconfig | 1 +
+> arch/powerpc/configs/corenet32_smp_defconfig | 1 +
+> arch/powerpc/configs/corenet64_smp_defconfig | 1 +
+> arch/powerpc/configs/mpc83xx_defconfig       | 1 +
+> arch/powerpc/configs/mpc85xx_defconfig       | 1 +
+> arch/powerpc/configs/mpc85xx_smp_defconfig   | 1 +
+> 6 files changed, 6 insertions(+)
 
-Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-Cc: John Bonesio <bones@secretlab.ca>
-Cc: Anatolij Gustschin <agust@denx.de>
----
- arch/powerpc/boot/dts/lite5200.dts  |    2 +-
- arch/powerpc/boot/dts/mpc5200b.dtsi |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+applied to merge
 
-diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
-index 179a178..25adace 100644
---- a/arch/powerpc/boot/dts/lite5200.dts
-+++ b/arch/powerpc/boot/dts/lite5200.dts
-@@ -141,7 +141,7 @@
- 		gpio@c00 {
- 			compatible = "fsl,mpc5200-gpio-wkup";
- 			reg = <0xc00 0x40>;
--			interrupts = <1 8 0 0 3 0>;
-+			interrupts = <1 8 0>;
- 			gpio-controller;
- 			#gpio-cells = <2>;
- 		};
-diff --git a/arch/powerpc/boot/dts/mpc5200b.dtsi b/arch/powerpc/boot/dts/mpc5200b.dtsi
-index 7ab286a..e610d68 100644
---- a/arch/powerpc/boot/dts/mpc5200b.dtsi
-+++ b/arch/powerpc/boot/dts/mpc5200b.dtsi
-@@ -141,7 +141,7 @@
- 		gpio_wkup: gpio@c00 {
- 			compatible = "fsl,mpc5200b-gpio-wkup","fsl,mpc5200-gpio-wkup";
- 			reg = <0xc00 0x40>;
--			interrupts = <1 8 0 0 3 0>;
-+			interrupts = <1 8 0>;
- 			gpio-controller;
- 			#gpio-cells = <2>;
- 		};
--- 
-1.7.10.4
+- k
