@@ -1,18 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1345772029.13865.23.camel@concordia>
-Subject: Re: [PATCH v4 2/2] powerpc: Uprobes port to powerpc
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Date: Fri, 24 Aug 2012 11:33:49 +1000
-In-Reply-To: <20120823053234.GE25338@linux.vnet.ibm.com>
-References: <20120822082205.GA29216@in.ibm.com>
- <20120822082708.GB29216@in.ibm.com> <1345696100.3338.21.camel@concordia>
- <20120823053234.GE25338@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: peterz@infradead.org, lkml <linux-kernel@vger.kernel.org>, oleg@redhat.com,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- Ingo Molnar <mingo@elte.hu>, ppcdev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B38951@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 359EE2C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Aug 2012 12:34:46 +1000 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH V9] powerpc/fsl-pci: Unify pci/pcie initialization code
+Date: Fri, 24 Aug 2012 02:34:36 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01A6F548@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1345714301-13027-1-git-send-email-B38951@freescale.com>
+ <5036C7AE.9020500@freescale.com>
+In-Reply-To: <5036C7AE.9020500@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,123 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-08-23 at 11:02 +0530, Srikar Dronamraju wrote:
-> > 
-> > These seem to be duplicated in kprobes.h, can we consolidate them.
-> > 
-> > > +struct arch_uprobe {
-> > > +	u8	insn[MAX_UINSN_BYTES];
-> > > +};
-> > 
-> > Why not uprobe_opcode_t insn ?
-> > 
-> 
-> insn is updated/accessed in the arch independent code. Size of
-> uprobe_opcode_t could be different for different archs. uprobe_opcode_t
-> represents the size of the smallest breakpoint instruction for an arch.
-> 
-> Hence u8 works out the best. I know we could still use uprobe_opcode_t
-> and achieve the same. In which case, we would have to interpret
-> MAX_UINSN_BYTES differently. Do you see any advantages of using
-> uprobe_opcode_t instead of u8 across archs?
-
-It's not a big deal, just a bit of a nit.
-
-It just feels a bit messy to have uprobe_opcode_t and also expect the
-arch code to use an array.
-
-It seems like if we need uprobe_opcode_t then the generic code should
-expect to use that everywhere.
-
-Or, we should get ride of uprobe_opcode_t and use u8 (or void *).
-
-
-> > >  void do_notify_resume(struct pt_regs *regs, unsigned long thread_info_flags)
-> > >  {
-> > > +	if (thread_info_flags & _TIF_UPROBE) {
-> > > +		clear_thread_flag(TIF_UPROBE);
-> > > +		uprobe_notify_resume(regs);
-> > > +	}
-> > 
-> > Presumably this ordering is crucial, ie. uprobes before signals.
-> > 
-> 
-> Yes, we would want uprobes to have a say before do_signal can take a
-> look.
-
-A comment would be good IMHO, so in 10 years we don't forget.
-
-> > I am probably missing something, but why do we need to execute out of
-> > line?
-> 
-> The other alternative to execute out of line is the current inline
-> singlestepping. In inline singlestepping, we would have to guard other
-> tasks from executing the same instruction. 
-> 
-> Executing out of line solves this problem.
-
-Yeah ignore that, I was forgetting that the original trap is caused by a
-patched instruction.
-
-> > > +/**
-> > > + * uprobe_get_swbp_addr - compute address of swbp given post-swbp regs
-> > > + * @regs: Reflects the saved state of the task after it has hit a breakpoint
-> > > + * instruction.
-> > > + * Return the address of the breakpoint instruction.
-> > > + */
-> > > +unsigned long uprobe_get_swbp_addr(struct pt_regs *regs)
-> > > +{
-> > > +	return instruction_pointer(regs);
-> > > +}
-> > 
-> > This seems like it would be better in asm/uprobes.h as a static inline,
-> > but that's not your fault.
-> > 
-> 
-> We want archs to override uprobe_get_swbp_addr() if the default
-> uprobe_get_swbp_addr() doesnt suite for a particular arch. Do you have
-> better ways to achieve this. Initially we were using arch specific
-> callbacks from which we moved to using weak functions based on reviews.
-
-OK, having a default that is weak makes sense if there is one behaviour
-that is common across arches, but a few arches need to override it. A
-static inline in the arch header is simpler if the behaviour is actually
-different across all arches.
-
-The current default implements the x86 behaviour, where the instruction
-pointer has moved past the breakpoint instruction.
-
-What does ARM do? ie. is this behaviour actually the right default?
-
-> > > +	/*
-> > > +	 * emulate_step() returns 1 if the insn was successfully emulated.
-> > > +	 * For all other cases, we need to single-step in hardware.
-> > > +	 */
-> > > +	ret = emulate_step(regs, insn);
-> > > +	if (ret > 0)
-> > > +		return true;
-> > 
-> > This actually emulates the instruction, ie. the contents of regs are
-> > changed based on the instruction.
-> > 
-> > That seems to differ vs x86, where arch_uprobe_skip_sstep() just checks
-> > the instruction and returns true/false. Is that because on x86 they are
-> > only returning true for nops? ie. there is no emulation to be done?
-> > 
-> 
-> Yes, In x86, we currently support skip for nop instructions, Once we add
-> code for skipping other instructions in x86, we could enhance them to
-> skip them too.
-
-(and emulating them right?)
-
-> > It's a little surprising that can_skip_sstep() actually emulates the
-> > instruction, but again that's not your fault.
-> 
-> Are you saying its doing more than what the name suggests or to the fact
-> that can_skip_step should ideally be called just once?
-
-Yeah just that the name suggests it is just a "checker" function, but it
-actually emulates the instruction and changes the task state!
-
-cheers
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBBdWd1c3QgMjQsIDIwMTIgODoxNiBBTQ0KPiBUbzogSmlhIEhv
+bmd0YW8tQjM4OTUxDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZ2FsYWtA
+a2VybmVsLmNyYXNoaW5nLm9yZzsgTGkgWWFuZy0NCj4gUjU4NDcyOyBXb29kIFNjb3R0LUIwNzQy
+MQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIIFY5XSBwb3dlcnBjL2ZzbC1wY2k6IFVuaWZ5IHBjaS9w
+Y2llIGluaXRpYWxpemF0aW9uDQo+IGNvZGUNCj4gDQo+IE9uIDA4LzIzLzIwMTIgMDQ6MzEgQU0s
+IEppYSBIb25ndGFvIHdyb3RlOg0KPiA+ICtzdGF0aWMgdm9pZCBtcGM4NXh4X2Nkc19wY2lfYXNz
+aWduX3ByaW1hcnkodm9pZCkNCj4gPiArew0KPiA+ICsjaWZkZWYgQ09ORklHX1BDSQ0KPiA+ICsJ
+c3RydWN0IGRldmljZV9ub2RlICpucDsNCj4gPiArDQo+ID4gKwlpZiAoZnNsX3BjaV9wcmltYXJ5
+KQ0KPiA+ICsJCXJldHVybjsNCj4gPiArDQo+ID4gKwkvKg0KPiA+ICsJICogTVBDODV4eF9DRFMg
+aGFzIElTQSBicmlkZ2UgYnV0IHVuZm9ydHVuYXRlbHkgdGhlcmUgaXMgbm8NCj4gPiArCSAqIGlz
+YSBub2RlIGluIGRldmljZSB0cmVlLiBXZSBub3cgbG9va2luZyBmb3IgaTgyNTkgbm9kZSBhcw0K
+PiA+ICsJICogYSB0ZW1wb3Jhcnkgd29ya2Fyb3VuZCBmb3Igc3VjaCBhIGJyb2tlbiBkZXZpY2Ug
+dHJlZS4NCj4gPiArCSAqIFRoaXMgY2FuIGdvIGF3YXkgb25jZSB0aGUgZGV2aWNlIHRyZWUgaXMg
+dXBkYXRlZC4NCj4gPiArCSAqLw0KPiANCj4gSXQgY2Fubm90IGdvIGF3YXkgb25jZSB0aGUgZGV2
+aWNlIHRyZWUgaXMgdXBkYXRlZCwgYmVjYXVzZSB3ZSBtYWludGFpbg0KPiBzdXBwb3J0IGZvciBv
+bGQgZGV2aWNlIHRyZWVzIHdpdGhpbiByZWFzb24uICBJdCdzIG5vdCBsaWtlIHRoaXMgaXMgY29y
+ZQ0KPiBrZXJuZWwgY29kZTsgdGhlIGNvc3Qgb2YgaGF2aW5nIHRoaXMgY29tcGF0aWJpbGl0eSBo
+ZXJlIGlzIG1pbmltYWwsIGV2ZW4NCj4gaWYgdGhlIGRldmljZSB0cmVlcyB3ZSdyZSBzdGF5aW5n
+IGNvbXBhdGlibGUgd2l0aCBhcmUgdGVjaG5pY2FsbHkgYnJva2VuLg0KPiBDb21wYXJlIHRoYXQg
+dG8gY3VzdG9tZXIgc3VwcG9ydCBlZmZvcnQgaWYgdGhpcyBicmVha3Mgc29tZW9uZSdzIGN1c3Rv
+bQ0KPiBib2FyZCB3aXRoIGEgZm9ya2VkIGRldmljZSB0cmVlLCBvciBpZiB1cGdyYWRpbmcgdGhl
+IGRldmljZSB0cmVlIGJyZWFrcw0KPiBzb21lb25lJ3Mgb2xkIFUtQm9vdC4NCj4gDQo+IC1TY290
+dA0KDQoNCkhvdyBhYm91dCBjaGFuZ2luZyB0aGUgY29tbWVudHMgdG8gdGhpczoNCg0KLyoNCiAq
+IE1QQzg1eHhfQ0RTIGhhcyBJU0EgYnJpZGdlIGJ1dCB1bmZvcnR1bmF0ZWx5IHRoZXJlIGlzIG5v
+DQogKiBpc2Egbm9kZSBpbiBkZXZpY2UgdHJlZS4gV2Ugbm93IGxvb2tpbmcgZm9yIGk4MjU5IG5v
+ZGUgYXMNCiAqIGEgd29ya2Fyb3VuZCBmb3Igc3VjaCBhIGJyb2tlbiBkZXZpY2UgdHJlZS4gVGhp
+cyByb3V0aW5lDQogKiBpcyBmb3IgY29tcGx5aW5nIHRvIGFsbCBkZXZpY2UgdHJlZXMuDQogKi8N
+Cg0KQW5kIGFueSBvdGhlciBjb21tZW50cz8NCg0KVGhhbmtzLg0KLUhvbmd0YW8uDQo=
