@@ -1,23 +1,18 @@
-Return-Path: <wsa@pengutronix.de>
-Received: from metis.ext.pengutronix.de (metis.ext.pengutronix.de
- [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6CF7F2C01CC
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2012 18:44:34 +1000 (EST)
-Date: Fri, 24 Aug 2012 10:44:25 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] powerpc: dts: 52xx: drop critical IRQ from dts files
-Message-ID: <20120824084425.GA12630@pengutronix.de>
-References: <1345735866-10001-1-git-send-email-w.sang@pengutronix.de>
- <CACxGe6si6a6=9511e0W_YDsQTUr98KOkqTpzYJryakcAAqQvew@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="gKMricLos+KVdGMg"
-In-Reply-To: <CACxGe6si6a6=9511e0W_YDsQTUr98KOkqTpzYJryakcAAqQvew@mail.gmail.com>
-Cc: John Bonesio <bones@secretlab.ca>, linuxppc-dev@ozlabs.org,
- Anatolij Gustschin <agust@denx.de>
+ by ozlabs.org (Postfix) with ESMTPS id A69192C00BD
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Aug 2012 20:59:23 +1000 (EST)
+Message-ID: <1345805954.29170.36.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Fri, 24 Aug 2012 20:59:14 +1000
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +22,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Linus !
 
---gKMricLos+KVdGMg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I meant to sent that earlier but got swamped with other things, so here
+are some powerpc fixes for 3.6. A few regression fixes and some bug
+fixes that I deemed should still make it.
 
-On Thu, Aug 23, 2012 at 04:59:26PM +0100, Grant Likely wrote:
-> On Thu, Aug 23, 2012 at 4:31 PM, Wolfram Sang <w.sang@pengutronix.de> wro=
-te:
-> > The wakeup-gpios have been assigned a critical IRQ in current
-> > devicetrees. The PIC driver does not support critical IRQs, though, whi=
-ch
-> > leads to the following error when booting (a PCM030 in this case):
-> >
-> >         mpc52xx_irqhost_map: invalid irq: virq=3D16, l1=3D0, l2=3D3
-> >         irq: irq-16=3D=3D>hwirq-0x3 mapping failed: -22
-> >         [WARNing skipped]
-> >
-> > Remove these entries until they are supported, if ever.
->=20
-> The warning is a bug since the irq specifier is valid. Removing the
-> irqs from the .dts files isn't the solution.
+There's a FSL update from Kumar with a bunch of defconfig updates along
+with a few embedded fixes.
 
-Adding another warning (not error) that critical IRQ are not supported
-is?
+I also reverted my g5_defconfig update that I merged earlier as it was
+completely busted, not too sure what happened there, I'll do a new one
+later.
 
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Cheers,
+Ben.
 
---gKMricLos+KVdGMg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+The following changes since commit 0d7614f09c1ebdbaa1599a5aba7593f147bf96ee:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+  Linux 3.6-rc1 (2012-08-02 16:38:10 -0700)
 
-iEYEARECAAYFAlA3PukACgkQD27XaX1/VRvNzQCfaepoyap0rROFmzbgvsaui8fD
-qcYAoKUXObX8kd2Fok8MUqF5QlV6Q6BJ
-=ER8d
------END PGP SIGNATURE-----
+are available in the git repository at:
 
---gKMricLos+KVdGMg--
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to 2c39bf49fd05305bea6d70670855047b2191d3f5:
+
+  Revert "powerpc: Update g5_defconfig" (2012-08-24 20:55:55 +1000)
+
+----------------------------------------------------------------
+Aaro Koskinen (1):
+      powerpc/dma-iommu: Fix IOMMU window check
+
+Anton Blanchard (2):
+      powerpc: POWER7 copy_to_user/copy_from_user patch applied twice
+      powerpc: Fix VMX in interrupt check in POWER7 copy loops
+
+Benjamin Herrenschmidt (1):
+      Revert "powerpc: Update g5_defconfig"
+
+Jia Hongtao (1):
+      powerpc/fsl-pci: Only scan PCI bus if configured as a host
+
+Jiri Kosina (1):
+      powerpc: Fix personality handling in ppc64_personality()
+
+Kim Phillips (2):
+      powerpc/fsl: update defconfigs
+      powerpc/fsl: fix "Failed to mount /dev: No such device" errors
+
+Michael Ellerman (2):
+      powerpc: Fix xmon dl command for new printk implementation
+      powerpc: Fixup whitespace in xmon
+
+Michael Neuling (2):
+      powerpc: Fix null pointer deref in perf hardware breakpoints
+      powerpc: Remove unnecessary ifdefs
+
+Scott Wood (1):
+      powerpc/mpic_msgr: Add missing includes
+
+Shengzhou Liu (1):
+      powerpc/p4080ds: dts - add usb controller version info and port0
+
+Sukadev Bhattiprolu (1):
+      powerpc/perf: Use pmc_overflow() to detect rolled back events
+
+Tiejun Chen (4):
+      booke/wdt: some ioctls do not return values properly
+      powerpc/kgdb: Do not set kgdb_single_step on ppc
+      powerpc/kgdb: Bail out of KGDB when we've been triggered
+      powerpc/kgdb: Restore current_thread_info properly
+
+Zhao Chenhui (1):
+      powerpc/85xx: mpc85xx_defconfig - add VIA PATA support for MPC85xxCDS
+
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi  |    7 ++
+ arch/powerpc/configs/85xx/p1023rds_defconfig |   31 +++-----
+ arch/powerpc/configs/corenet32_smp_defconfig |   29 +++-----
+ arch/powerpc/configs/corenet64_smp_defconfig |    1 +
+ arch/powerpc/configs/g5_defconfig            |  103 ++++++++++++++++++--------
+ arch/powerpc/configs/mpc83xx_defconfig       |   18 ++---
+ arch/powerpc/configs/mpc85xx_defconfig       |   33 +++------
+ arch/powerpc/configs/mpc85xx_smp_defconfig   |   32 ++------
+ arch/powerpc/include/asm/cputable.h          |    2 -
+ arch/powerpc/include/asm/mpic_msgr.h         |    1 +
+ arch/powerpc/kernel/dma-iommu.c              |    9 +--
+ arch/powerpc/kernel/hw_breakpoint.c          |    2 +-
+ arch/powerpc/kernel/kgdb.c                   |   27 ++++++-
+ arch/powerpc/kernel/syscalls.c               |    8 +-
+ arch/powerpc/lib/copyuser_power7.S           |   35 +--------
+ arch/powerpc/lib/memcpy_power7.S             |    4 +-
+ arch/powerpc/perf/core-book3s.c              |    2 +-
+ arch/powerpc/sysdev/fsl_pci.c                |   13 ++--
+ arch/powerpc/sysdev/mpic_msgr.c              |    3 +
+ arch/powerpc/xmon/xmon.c                     |   84 +++++++++------------
+ drivers/watchdog/booke_wdt.c                 |    7 +-
+ 21 files changed, 209 insertions(+), 242 deletions(-)
