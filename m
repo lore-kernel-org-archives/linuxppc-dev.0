@@ -1,14 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Sat, 25 Aug 2012 15:04:23 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Make sure IPI handlers see data written by IPI
- senders
-Message-ID: <20120825050423.GD7051@bloggs.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Milton Miller <miltonm@bga.com>
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail1-relais-roc.national.inria.fr
+ (mail1-relais-roc.national.inria.fr [192.134.164.82])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.inria.fr", Issuer "TERENA SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 433022C00D5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2012 03:41:48 +1000 (EST)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: Jochen Friedrich <jochen@scram.de>
+Subject: [PATCH 1/6] i2c: cpm: use devm_ functions
+Date: Sat, 25 Aug 2012 19:41:34 +0200
+Message-Id: <1345916499-6657-1-git-send-email-Julia.Lawall@lip6.fr>
+Cc: kernel-janitors@vger.kernel.org,
+ "Wolfram Sang \(embedded platforms\)" <w.sang@pengutronix.de>,
+ linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
+ "Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
+ "Jean Delvare \(PC drivers, core\)" <khali@linux-fr.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,71 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have been observing hangs, both in KVM guest vcpus and more
-generally, where a process that is woken doesn't properly wake up and
-continue to run, but instead sticks in TASK_WAKING state.  This
-happens because the update of rq->wake_list in ttwu_queue_remote()
-is not ordered with the update of ipi_message in
-smp_muxed_ipi_message_pass(), and the reading of rq->wake_list in
-scheduler_ipi() is not ordered with the reading of ipi_message in
-smp_ipi_demux().  Thus it is possible for the IPI receiver not to see
-the updated rq->wake_list and therefore conclude that there is nothing
-for it to do.
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-In order to make sure that anything done before calling
-smp_send_reschedule() is ordered before anything done in the resulting
-call to scheduler_ipi(), this adds barriers in
-smp_muxed_message_pass() and smp_ipi_demux().  The barrier in
-smp_muxed_message_pass() is a full barrier to ensure that there is a
-full ordering between the smp_send_reschedule() caller and
-scheduler_ipi().  In smp_ipi_demux(), we use xchg() rather than
-xchg_local() because xchg() includes release and acquire barriers.
-Using xchg() rather than xchg_local() makes sense given that
-ipi_message is not just accessed locally.
+The various devm_ functions allocate memory that is released when a driver
+detaches.  This patch uses these functions for data that is allocated in
+the probe function of a platform device and is only freed in the remove
+function.
 
-These changes made no measurable difference to the speed of IPIs as
-measured using a simple ping-pong latency test across two CPUs on
-different cores of a POWER7 machine.
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-The analysis of the reason why processes were not waking up properly
-is due to Milton Miller.
-
-Cc: stable@vger.kernel.org
-Reported-by: Milton Miller <miltonm@bga.com>
-Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- arch/powerpc/kernel/smp.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+Not compiled.
 
-diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-index e292ff2..ca1040a 100644
---- a/arch/powerpc/kernel/smp.c
-+++ b/arch/powerpc/kernel/smp.c
-@@ -197,8 +197,15 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
- 	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
- 	char *message = (char *)&info->messages;
+ drivers/i2c/busses/i2c-cpm.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+index c1e1096..ec97415 100644
+--- a/drivers/i2c/busses/i2c-cpm.c
++++ b/drivers/i2c/busses/i2c-cpm.c
+@@ -640,7 +640,7 @@ static int __devinit cpm_i2c_probe(struct platform_device *ofdev)
+ 	struct cpm_i2c *cpm;
+ 	const u32 *data;
  
-+	/*
-+	 * Order previous accesses before accesses in the IPI handler.
-+	 */
-+	smp_mb();
- 	message[msg] = 1;
--	mb();
-+	/*
-+	 * Order setting of message before IPI.
-+	 */
-+	smp_wmb();
- 	smp_ops->cause_ipi(cpu, info->data);
+-	cpm = kzalloc(sizeof(struct cpm_i2c), GFP_KERNEL);
++	cpm = devm_kzalloc(&ofdev->dev, sizeof(struct cpm_i2c), GFP_KERNEL);
+ 	if (!cpm)
+ 		return -ENOMEM;
+ 
+@@ -683,7 +683,6 @@ out_shut:
+ 	cpm_i2c_shutdown(cpm);
+ out_free:
+ 	dev_set_drvdata(&ofdev->dev, NULL);
+-	kfree(cpm);
+ 
+ 	return result;
  }
+@@ -697,7 +696,6 @@ static int __devexit cpm_i2c_remove(struct platform_device *ofdev)
+ 	cpm_i2c_shutdown(cpm);
  
-@@ -210,7 +217,7 @@ irqreturn_t smp_ipi_demux(void)
- 	mb();	/* order any irq clear */
+ 	dev_set_drvdata(&ofdev->dev, NULL);
+-	kfree(cpm);
  
- 	do {
--		all = xchg_local(&info->messages, 0);
-+		all = xchg(&info->messages, 0);
- 
- #ifdef __BIG_ENDIAN
- 		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNCTION)))
--- 
-1.7.10.rc3.219.g53414
+ 	return 0;
+ }
