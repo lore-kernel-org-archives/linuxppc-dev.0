@@ -1,21 +1,22 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-Received: from mail1-relais-roc.national.inria.fr
- (mail1-relais-roc.national.inria.fr [192.134.164.82])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.inria.fr", Issuer "TERENA SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 433022C00D5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 26 Aug 2012 03:41:48 +1000 (EST)
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Jochen Friedrich <jochen@scram.de>
-Subject: [PATCH 1/6] i2c: cpm: use devm_ functions
-Date: Sat, 25 Aug 2012 19:41:34 +0200
-Message-Id: <1345916499-6657-1-git-send-email-Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org,
- "Wolfram Sang \(embedded platforms\)" <w.sang@pengutronix.de>,
- linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org,
- "Ben Dooks \(embedded platforms\)" <ben-linux@fluff.org>,
- "Jean Delvare \(PC drivers, core\)" <khali@linux-fr.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <Alexandre.Bounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 732E92C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Aug 2012 23:12:32 +1000 (EST)
+From: "Bounine, Alexandre" <Alexandre.Bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: RE: [PATCH] rapidio: apply RX/TX enable to active switch ports only
+Date: Mon, 27 Aug 2012 13:01:00 +0000
+Message-ID: <8D983423E7EDF846BB3056827B8CC5D12E7C2C91@corpmail1.na.ads.idt.com>
+References: <1345559035-25879-1-git-send-email-alexandre.bounine@idt.com>
+ <1345559035-25879-2-git-send-email-alexandre.bounine@idt.com>
+ <20120824140419.2b3a9623.akpm@linux-foundation.org>
+In-Reply-To: <20120824140419.2b3a9623.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <Julia.Lawall@lip6.fr>
+On Friday, August 24, 2012 5:04 PM
+Andrew Morton <akpm@linux-foundation.org>
+>=20
+> On Tue, 21 Aug 2012 10:23:55 -0400
+> Alexandre Bounine <alexandre.bounine@idt.com> wrote:
+>=20
+>> Modify RIO enumeration to apply RX/TX enable operations only to
+>> active switch ports. This will leave inactive ports in condition consist=
+ent
+>> with their state.
+>=20
+> It's unclear (to me) what the effects of this are.  Does it fix some
+> user-visible malfunction?  Or is it just some nice-to-have thing?  Or
+> what?
+>=20
 
-The various devm_ functions allocate memory that is released when a driver
-detaches.  This patch uses these functions for data that is allocated in
-the probe function of a platform device and is only freed in the remove
-function.
+This patch was intended to keep inactive switch ports with inbound and
+outbound packet transfers disabled to block unexpected packets during
+hot insertion event. While it does not fix any visible malfunction it
+was intended to prevent such events in future.  =20
 
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
+Since this patch was published it was brought to my attention that some
+existing switches may require inbound and outbound ports enabled for
+inactive ports as well (not spec compliant).
+Therefore, please remove this patch from your tree.    =20
 
----
-Not compiled.
-
- drivers/i2c/busses/i2c-cpm.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
-index c1e1096..ec97415 100644
---- a/drivers/i2c/busses/i2c-cpm.c
-+++ b/drivers/i2c/busses/i2c-cpm.c
-@@ -640,7 +640,7 @@ static int __devinit cpm_i2c_probe(struct platform_device *ofdev)
- 	struct cpm_i2c *cpm;
- 	const u32 *data;
- 
--	cpm = kzalloc(sizeof(struct cpm_i2c), GFP_KERNEL);
-+	cpm = devm_kzalloc(&ofdev->dev, sizeof(struct cpm_i2c), GFP_KERNEL);
- 	if (!cpm)
- 		return -ENOMEM;
- 
-@@ -683,7 +683,6 @@ out_shut:
- 	cpm_i2c_shutdown(cpm);
- out_free:
- 	dev_set_drvdata(&ofdev->dev, NULL);
--	kfree(cpm);
- 
- 	return result;
- }
-@@ -697,7 +696,6 @@ static int __devexit cpm_i2c_remove(struct platform_device *ofdev)
- 	cpm_i2c_shutdown(cpm);
- 
- 	dev_set_drvdata(&ofdev->dev, NULL);
--	kfree(cpm);
- 
- 	return 0;
- }
+>> This patch is applicable to kernel versions starting from v2.6.35.
+>=20
+> Is that a recommendation that such a backport be performed?  If so,
+> please provide the reasoning.
