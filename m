@@ -1,16 +1,16 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 9B4D82C013E
+ by ozlabs.org (Postfix) with ESMTP id BDD482C0261
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2012 19:59:56 +1000 (EST)
 From: wency@cn.fujitsu.com
 To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [RFC v8 PATCH 06/20] memory-hotplug: export the function
- acpi_bus_remove()
-Date: Tue, 28 Aug 2012 18:00:13 +0800
-Message-Id: <1346148027-24468-7-git-send-email-wency@cn.fujitsu.com>
+Subject: [RFC v8 PATCH 05/20] memory-hotplug: check whether memory is present
+ or not
+Date: Tue, 28 Aug 2012 18:00:12 +0800
+Message-Id: <1346148027-24468-6-git-send-email-wency@cn.fujitsu.com>
 In-Reply-To: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
 References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
 Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
@@ -26,11 +26,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wen Congyang <wency@cn.fujitsu.com>
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
-The function acpi_bus_remove() can remove a acpi device from acpi device.
-When a acpi device is removed, we need to call this function to remove
-the acpi device from acpi bus. So export this function.
+If system supports memory hot-remove, online_pages() may online removed pages.
+So online_pages() need to check whether onlining pages are present or not.
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -41,45 +40,66 @@ CC: Christoph Lameter <cl@linux.com>
 Cc: Minchan Kim <minchan.kim@gmail.com>
 CC: Andrew Morton <akpm@linux-foundation.org>
 CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+CC: Wen Congyang <wency@cn.fujitsu.com>
+Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 ---
- drivers/acpi/scan.c     |    3 ++-
- include/acpi/acpi_bus.h |    1 +
- 2 files changed, 3 insertions(+), 1 deletions(-)
+ include/linux/mmzone.h |   19 +++++++++++++++++++
+ mm/memory_hotplug.c    |   13 +++++++++++++
+ 2 files changed, 32 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index d1ecca2..1cefc34 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -1224,7 +1224,7 @@ static int acpi_device_set_context(struct acpi_device *device)
- 	return -ENODEV;
- }
+diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
+index 2daa54f..ac3ae30 100644
+--- a/include/linux/mmzone.h
++++ b/include/linux/mmzone.h
+@@ -1180,6 +1180,25 @@ void sparse_init(void);
+ #define sparse_index_init(_sec, _nid)  do {} while (0)
+ #endif /* CONFIG_SPARSEMEM */
  
--static int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
-+int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
- {
- 	if (!dev)
- 		return -EINVAL;
-@@ -1246,6 +1246,7 @@ static int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
++#ifdef CONFIG_SPARSEMEM
++static inline int pfns_present(unsigned long pfn, unsigned long nr_pages)
++{
++	int i;
++	for (i = 0; i < nr_pages; i++) {
++		if (pfn_present(pfn + i))
++			continue;
++		else
++			return -EINVAL;
++	}
++	return 0;
++}
++#else
++static inline int pfns_present(unsigned long pfn, unsigned long nr_pages)
++{
++	return 0;
++}
++#endif /* CONFIG_SPARSEMEM*/
++
+ #ifdef CONFIG_NODES_SPAN_OTHER_NODES
+ bool early_pfn_in_nid(unsigned long pfn, int nid);
+ #else
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 80cded7..3f1d7c5 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -467,6 +467,19 @@ int __ref online_pages(unsigned long pfn, unsigned long nr_pages)
+ 	struct memory_notify arg;
  
- 	return 0;
- }
-+EXPORT_SYMBOL(acpi_bus_remove);
- 
- static int acpi_add_single_object(struct acpi_device **child,
- 				  acpi_handle handle, int type,
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index bde976e..2ccf109 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -360,6 +360,7 @@ bool acpi_bus_power_manageable(acpi_handle handle);
- bool acpi_bus_can_wakeup(acpi_handle handle);
- int acpi_power_resource_register_device(struct device *dev, acpi_handle handle);
- void acpi_power_resource_unregister_device(struct device *dev, acpi_handle handle);
-+int acpi_bus_remove(struct acpi_device *dev, int rmdevice);
- #ifdef CONFIG_ACPI_PROC_EVENT
- int acpi_bus_generate_proc_event(struct acpi_device *device, u8 type, int data);
- int acpi_bus_generate_proc_event4(const char *class, const char *bid, u8 type, int data);
+ 	lock_memory_hotplug();
++	/*
++	 * If system supports memory hot-remove, the memory may have been
++	 * removed. So we check whether the memory has been removed or not.
++	 *
++	 * Note: When CONFIG_SPARSEMEM is defined, pfns_present() become
++	 *       effective. If CONFIG_SPARSEMEM is not defined, pfns_present()
++	 *       always returns 0.
++	 */
++	ret = pfns_present(pfn, nr_pages);
++	if (ret) {
++		unlock_memory_hotplug();
++		return ret;
++	}
+ 	arg.start_pfn = pfn;
+ 	arg.nr_pages = nr_pages;
+ 	arg.status_change_nid = -1;
 -- 
 1.7.1
