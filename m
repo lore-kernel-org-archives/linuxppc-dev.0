@@ -1,16 +1,15 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 52D882C00D3
+ by ozlabs.org (Postfix) with ESMTP id 9D41D2C00D2
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2012 19:59:55 +1000 (EST)
 From: wency@cn.fujitsu.com
 To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [RFC v8 PATCH 13/20] memory-hotplug: check page type in
- get_page_bootmem
-Date: Tue, 28 Aug 2012 18:00:20 +0800
-Message-Id: <1346148027-24468-14-git-send-email-wency@cn.fujitsu.com>
+Subject: [RFC v8 PATCH 18/20] memory-hotplug: add node_device_release
+Date: Tue, 28 Aug 2012 18:00:25 +0800
+Message-Id: <1346148027-24468-19-git-send-email-wency@cn.fujitsu.com>
 In-Reply-To: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
 References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
 Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
@@ -28,9 +27,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
-There is a possibility that get_page_bootmem() is called to the same page many
-times. So when get_page_bootmem is called to the same page, the function only
-increments page->_count.
+When calling unregister_node(), the function shows following message at
+device_release().
+
+Device 'node2' does not have a release() function, it is broken and must be
+fixed.
+
+So the patch implements node_device_release()
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -41,37 +44,40 @@ CC: Christoph Lameter <cl@linux.com>
 Cc: Minchan Kim <minchan.kim@gmail.com>
 CC: Andrew Morton <akpm@linux-foundation.org>
 CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Wen Congyang <wency@cn.fujitsu.com>
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
 ---
- mm/memory_hotplug.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+ drivers/base/node.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 5f9f8c7..d85af6d 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -95,10 +95,17 @@ static void release_memory_resource(struct resource *res)
- static void get_page_bootmem(unsigned long info,  struct page *page,
- 			     unsigned long type)
- {
--	page->lru.next = (struct list_head *) type;
--	SetPagePrivate(page);
--	set_page_private(page, info);
--	atomic_inc(&page->_count);
-+	unsigned long page_type;
-+
-+	page_type = (unsigned long) page->lru.next;
-+	if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
-+	    page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
-+		page->lru.next = (struct list_head *) type;
-+		SetPagePrivate(page);
-+		set_page_private(page, info);
-+		atomic_inc(&page->_count);
-+	} else
-+		atomic_inc(&page->_count);
- }
+diff --git a/drivers/base/node.c b/drivers/base/node.c
+index af1a177..07523fb 100644
+--- a/drivers/base/node.c
++++ b/drivers/base/node.c
+@@ -252,6 +252,16 @@ static inline void hugetlb_register_node(struct node *node) {}
+ static inline void hugetlb_unregister_node(struct node *node) {}
+ #endif
  
- /* reference to __meminit __free_pages_bootmem is valid
++static void node_device_release(struct device *dev)
++{
++	struct node *node_dev = to_node(dev);
++
++#if defined(CONFIG_MEMORY_HOTPLUG_SPARSE) && defined(CONFIG_HUGETLBFS)
++	flush_work(&node_dev->node_work);
++#endif
++
++	memset(node_dev, 0, sizeof(struct node));
++}
+ 
+ /*
+  * register_node - Setup a sysfs device for a node.
+@@ -265,6 +275,7 @@ int register_node(struct node *node, int num, struct node *parent)
+ 
+ 	node->dev.id = num;
+ 	node->dev.bus = &node_subsys;
++	node->dev.release = node_device_release;
+ 	error = device_register(&node->dev);
+ 
+ 	if (!error){
 -- 
 1.7.1
