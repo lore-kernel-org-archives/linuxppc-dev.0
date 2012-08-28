@@ -1,16 +1,16 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id AFAB52C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2012 19:59:53 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 5A6F02C00D3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2012 19:59:54 +1000 (EST)
 From: wency@cn.fujitsu.com
 To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [RFC v8 PATCH 07/20] memory-hotplug: call acpi_bus_remove() to remove
- memory device
-Date: Tue, 28 Aug 2012 18:00:14 +0800
-Message-Id: <1346148027-24468-8-git-send-email-wency@cn.fujitsu.com>
+Subject: [RFC v8 PATCH 20/20] memory-hotplug: clear hwpoisoned flag when
+ onlining pages
+Date: Tue, 28 Aug 2012 18:00:27 +0800
+Message-Id: <1346148027-24468-21-git-send-email-wency@cn.fujitsu.com>
 In-Reply-To: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
 References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
 Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
@@ -28,8 +28,12 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wen Congyang <wency@cn.fujitsu.com>
 
-The memory device has been ejected and powoffed, so we can call
-acpi_bus_remove() to remove the memory device from acpi bus.
+hwpoisoned may set when we offline a page by the sysfs interface
+/sys/devices/system/memory/soft_offline_page or
+/sys/devices/system/memory/hard_offline_page. If we don't clear
+this flag when onlining pages, this page can't be freed, and will
+not in free list. So we can't offline these pages again. So we
+should clear this flag when onlining pages.
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -43,23 +47,24 @@ CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
 ---
- drivers/acpi/acpi_memhotplug.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+ mm/memory_hotplug.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
-index 9d47458..b152767 100644
---- a/drivers/acpi/acpi_memhotplug.c
-+++ b/drivers/acpi/acpi_memhotplug.c
-@@ -425,8 +425,9 @@ static void acpi_memory_device_notify(acpi_handle handle, u32 event, void *data)
- 		}
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index fb8af64..85603c4 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -661,6 +661,11 @@ EXPORT_SYMBOL_GPL(__online_page_increment_counters);
  
- 		/*
--		 * TBD: Invoke acpi_bus_remove to cleanup data structures
-+		 * Invoke acpi_bus_remove() to remove memory device
- 		 */
-+		acpi_bus_remove(device, 1);
- 
- 		/* _EJ0 succeeded; _OST is not necessary */
- 		return;
+ void __online_page_free(struct page *page)
+ {
++#ifdef CONFIG_MEMORY_FAILURE
++	/* The page may be marked HWPoisoned by soft/hard offline page */
++	ClearPageHWPoison(page);
++#endif
++
+ 	ClearPageReserved(page);
+ 	init_page_count(page);
+ 	__free_page(page);
 -- 
 1.7.1
