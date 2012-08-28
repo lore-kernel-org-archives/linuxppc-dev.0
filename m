@@ -1,22 +1,20 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id B5D2C2C024D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2012 20:00:02 +1000 (EST)
-From: wency@cn.fujitsu.com
-To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [RFC v8 PATCH 04/20] memory-hotplug: offline and remove memory when
- removing the memory device
-Date: Tue, 28 Aug 2012 18:00:11 +0800
-Message-Id: <1346148027-24468-5-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
-References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
-Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
- akpm@linux-foundation.org, liuj97@gmail.com
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource.wolfsonmicro.com (opensource.wolfsonmicro.com
+ [80.75.67.52]) by ozlabs.org (Postfix) with ESMTP id ED5B32C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2012 06:41:34 +1000 (EST)
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Arnd Bergmann <arnd@arndb.de>, Russell King <linux@arm.linux.org.uk>,
+ Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>,
+ Ralf Baechle <ralf@linux-mips.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Guan Xuetao <gxt@mprc.pku.edu.cn>
+Subject: [PATCH] clk: Make the generic clock API available by default
+Date: Tue, 28 Aug 2012 13:35:04 -0700
+Message-Id: <1346186104-4083-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Cc: linux-mips@linux-mips.org, Mark Brown <broonie@opensource.wolfsonmicro.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,258 +24,273 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Rather than requiring platforms to select the generic clock API to make
+it available make the API available as a user selectable option unless the
+user either selects HAVE_CUSTOM_CLK (if they have their own implementation)
+or selects COMMON_CLK (if they depend on the generic implementation).
 
-We should offline and remove memory when removing the memory device.
-The memory device can be removed by 2 ways:
-1. send eject request by SCI
-2. echo 1 >/sys/bus/pci/devices/PNP0C80:XX/eject
+All current architectures that HAVE_CLK but don't use the common clock
+framework have selects of HAVE_CUSTOM_CLK added.
 
-In the 1st case, acpi_memory_disable_device() will be called. In the 2nd
-case, acpi_memory_device_remove() will be called. acpi_memory_device_remove()
-will also be called when we unbind the memory device from the driver
-acpi_memhotplug. If the type is ACPI_BUS_REMOVAL_EJECT, it means
-that the user wants to eject the memory device, and we should offline
-and remove memory in acpi_memory_device_remove().
+This allows drivers to use the generic API on platforms which have no need
+for the clock API at platform level.
 
-The function remove_memory() is not implemeted now. It only check whether
-all memory has been offllined now.
-
-CC: David Rientjes <rientjes@google.com>
-CC: Jiang Liu <liuj97@gmail.com>
-CC: Len Brown <len.brown@intel.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Christoph Lameter <cl@linux.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- drivers/acpi/acpi_memhotplug.c |   45 +++++++++++++++++++++++++++++++++------
- drivers/base/memory.c          |   39 ++++++++++++++++++++++++++++++++++
- include/linux/memory.h         |    5 ++++
- include/linux/memory_hotplug.h |    5 ++++
- mm/memory_hotplug.c            |   22 +++++++++++++++++++
- 5 files changed, 109 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
-index 7873832..9d47458 100644
---- a/drivers/acpi/acpi_memhotplug.c
-+++ b/drivers/acpi/acpi_memhotplug.c
-@@ -29,6 +29,7 @@
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/types.h>
-+#include <linux/memory.h>
- #include <linux/memory_hotplug.h>
- #include <linux/slab.h>
- #include <acpi/acpi_drivers.h>
-@@ -310,25 +311,44 @@ static int acpi_memory_powerdown_device(struct acpi_memory_device *mem_device)
- 	return 0;
- }
+This depends on having one of the patches I've sent adding a generic
+clkdev.h added merged - Arnd was expecting to merge one of those, there
+was just the lack of clarity about the most practical Kbuild hookup.
+
+ arch/arm/Kconfig            |   12 ++++++++++++
+ arch/avr32/Kconfig          |    1 +
+ arch/mips/Kconfig           |    4 ++++
+ arch/mips/loongson/Kconfig  |    1 +
+ arch/mips/loongson1/Kconfig |    1 +
+ arch/mips/txx9/Kconfig      |    1 +
+ arch/powerpc/Kconfig        |    1 +
+ arch/unicore32/Kconfig      |    1 +
+ drivers/clk/Kconfig         |   13 ++++++++++---
+ 9 files changed, 32 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index d4471d4..2a5633b 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -330,6 +330,7 @@ config ARCH_VEXPRESS
+ 	select COMMON_CLK
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select HAVE_PATA_PLATFORM
+ 	select ICST
+ 	select NO_IOPORT
+@@ -343,6 +344,7 @@ config ARCH_AT91
+ 	bool "Atmel AT91"
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select CLKDEV_LOOKUP
+ 	select IRQ_DOMAIN
+ 	select NEED_MACH_IO_H if PCCARD
+@@ -674,6 +676,7 @@ config ARCH_TEGRA
+ 	select GENERIC_CLOCKEVENTS
+ 	select GENERIC_GPIO
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select HAVE_SMP
+ 	select MIGHT_HAVE_CACHE_L2X0
+ 	select ARCH_HAS_CPUFREQ
+@@ -732,6 +735,7 @@ config ARCH_PXA
+ config ARCH_MSM
+ 	bool "Qualcomm MSM"
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select GENERIC_CLOCKEVENTS
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select CLKDEV_LOOKUP
+@@ -745,6 +749,7 @@ config ARCH_MSM
+ config ARCH_SHMOBILE
+ 	bool "Renesas SH-Mobile / R-Mobile"
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select CLKDEV_LOOKUP
+ 	select HAVE_MACH_CLKDEV
+ 	select HAVE_SMP
+@@ -798,6 +803,7 @@ config ARCH_S3C24XX
+ 	select GENERIC_GPIO
+ 	select ARCH_HAS_CPUFREQ
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select CLKDEV_LOOKUP
+ 	select ARCH_USES_GETTIMEOFFSET
+ 	select HAVE_S3C2410_I2C if I2C
+@@ -816,6 +822,7 @@ config ARCH_S3C64XX
+ 	select CPU_V6
+ 	select ARM_VIC
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select HAVE_TCM
+ 	select CLKDEV_LOOKUP
+ 	select NO_IOPORT
+@@ -838,6 +845,7 @@ config ARCH_S5P64X0
+ 	select CPU_V6
+ 	select GENERIC_GPIO
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select CLKDEV_LOOKUP
+ 	select CLKSRC_MMIO
+ 	select HAVE_S3C2410_WATCHDOG if WATCHDOG
+@@ -852,6 +860,7 @@ config ARCH_S5PC100
+ 	bool "Samsung S5PC100"
+ 	select GENERIC_GPIO
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select CLKDEV_LOOKUP
+ 	select CPU_V7
+ 	select ARCH_USES_GETTIMEOFFSET
+@@ -868,6 +877,7 @@ config ARCH_S5PV210
+ 	select ARCH_HAS_HOLES_MEMORYMODEL
+ 	select GENERIC_GPIO
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select CLKDEV_LOOKUP
+ 	select CLKSRC_MMIO
+ 	select ARCH_HAS_CPUFREQ
+@@ -886,6 +896,7 @@ config ARCH_EXYNOS
+ 	select ARCH_HAS_HOLES_MEMORYMODEL
+ 	select GENERIC_GPIO
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select CLKDEV_LOOKUP
+ 	select ARCH_HAS_CPUFREQ
+ 	select GENERIC_CLOCKEVENTS
+@@ -972,6 +983,7 @@ config ARCH_OMAP
+ 	bool "TI OMAP"
+ 	depends on MMU
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select ARCH_HAS_CPUFREQ
+ 	select CLKSRC_MMIO
+diff --git a/arch/avr32/Kconfig b/arch/avr32/Kconfig
+index 06e73bf..bfeb9cc 100644
+--- a/arch/avr32/Kconfig
++++ b/arch/avr32/Kconfig
+@@ -4,6 +4,7 @@ config AVR32
+ 	# that we usually don't need on AVR32.
+ 	select EXPERT
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select HAVE_OPROFILE
+ 	select HAVE_KPROBES
+ 	select HAVE_GENERIC_HARDIRQS
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 641d067..27dfc99 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -84,6 +84,7 @@ config AR7
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select VLYNQ
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	help
+ 	  Support for the Texas Instruments AR7 System-on-a-Chip
+ 	  family: TNETD7100, 7200 and 7300.
+@@ -96,6 +97,7 @@ config ATH79
+ 	select CSRC_R4K
+ 	select DMA_NONCOHERENT
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select IRQ_CPU
+ 	select MIPS_MACHINE
+ 	select SYS_HAS_CPU_MIPS32_R2
+@@ -133,6 +135,7 @@ config BCM63XX
+ 	select SWAP_IO_SPACE
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	help
+ 	 Support for BCM63XX based boards
  
--static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
-+static int
-+acpi_memory_device_remove_memory(struct acpi_memory_device *mem_device)
- {
- 	int result;
- 	struct acpi_memory_info *info, *n;
-+	int node = mem_device->nid;
+@@ -228,6 +231,7 @@ config MACH_JZ4740
+ 	select SYS_HAS_EARLY_PRINTK
+ 	select HAVE_PWM
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select GENERIC_IRQ_CHIP
  
--
--	/*
--	 * Ask the VM to offline this memory range.
--	 * Note: Assume that this function returns zero on success
--	 */
- 	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
- 		if (info->enabled) {
- 			result = offline_memory(info->start_addr, info->length);
- 			if (result)
- 				return result;
-+
-+			result = remove_memory(node, info->start_addr,
-+					       info->length);
-+			if (result)
-+				return result;
- 		}
-+
-+		list_del(&info->list);
- 		kfree(info);
- 	}
+ config LANTIQ
+diff --git a/arch/mips/loongson/Kconfig b/arch/mips/loongson/Kconfig
+index 263beb9..ed42be1 100644
+--- a/arch/mips/loongson/Kconfig
++++ b/arch/mips/loongson/Kconfig
+@@ -42,6 +42,7 @@ config LEMOTE_MACH2F
+ 	select DMA_NONCOHERENT
+ 	select GENERIC_ISA_DMA_SUPPORT_BROKEN
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select HW_HAS_PCI
+ 	select I8259
+ 	select IRQ_CPU
+diff --git a/arch/mips/loongson1/Kconfig b/arch/mips/loongson1/Kconfig
+index a9a14d6..ddaa7d0 100644
+--- a/arch/mips/loongson1/Kconfig
++++ b/arch/mips/loongson1/Kconfig
+@@ -16,6 +16,7 @@ config LOONGSON1_LS1B
+ 	select SYS_SUPPORTS_HIGHMEM
+ 	select SYS_HAS_EARLY_PRINTK
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
  
-+	return 0;
-+}
-+
-+static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
-+{
-+	int result;
-+
-+	/*
-+	 * Ask the VM to offline this memory range.
-+	 * Note: Assume that this function returns zero on success
-+	 */
-+	result = acpi_memory_device_remove_memory(mem_device);
-+	if (result)
-+		return result;
-+
- 	/* Power-off and eject the device */
- 	result = acpi_memory_powerdown_device(mem_device);
- 	if (result) {
-@@ -477,12 +497,23 @@ static int acpi_memory_device_add(struct acpi_device *device)
- static int acpi_memory_device_remove(struct acpi_device *device, int type)
- {
- 	struct acpi_memory_device *mem_device = NULL;
--
-+	int result;
+ endchoice
  
- 	if (!device || !acpi_driver_data(device))
- 		return -EINVAL;
+diff --git a/arch/mips/txx9/Kconfig b/arch/mips/txx9/Kconfig
+index 6d40bc7..04e3cdb 100644
+--- a/arch/mips/txx9/Kconfig
++++ b/arch/mips/txx9/Kconfig
+@@ -21,6 +21,7 @@ config MACH_TXX9
+ 	select SYS_SUPPORTS_LITTLE_ENDIAN
+ 	select SYS_SUPPORTS_BIG_ENDIAN
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
  
- 	mem_device = acpi_driver_data(device);
-+
-+	if (type == ACPI_BUS_REMOVAL_EJECT) {
-+		/*
-+		 * offline and remove memory only when the memory device is
-+		 * ejected.
-+		 */
-+		result = acpi_memory_device_remove_memory(mem_device);
-+		if (result)
-+			return result;
-+	}
-+
- 	kfree(mem_device);
+ config TOSHIBA_JMR3927
+ 	bool "Toshiba JMR-TX3927 board"
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 58088dd..b7a611b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -1013,6 +1013,7 @@ config PPC_CLOCK
+ 	bool
+ 	default n
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
  
- 	return 0;
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 86c8821..038be73 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -70,6 +70,45 @@ void unregister_memory_isolate_notifier(struct notifier_block *nb)
- }
- EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+ config PPC_LIB_RHEAP
+ 	bool
+diff --git a/arch/unicore32/Kconfig b/arch/unicore32/Kconfig
+index 5d53ffd..fe30bb1 100644
+--- a/arch/unicore32/Kconfig
++++ b/arch/unicore32/Kconfig
+@@ -89,6 +89,7 @@ config ARCH_PUV3
+ 	select CPU_UCV2
+ 	select GENERIC_CLOCKEVENTS
+ 	select HAVE_CLK
++	select HAVE_CUSTOM_CLK
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	select ARCH_HAS_CPUFREQ
  
-+bool is_memblk_offline(unsigned long start, unsigned long size)
-+{
-+	struct memory_block *mem = NULL;
-+	struct mem_section *section;
-+	unsigned long start_pfn, end_pfn;
-+	unsigned long pfn, section_nr;
-+
-+	start_pfn = PFN_DOWN(start);
-+	end_pfn = PFN_UP(start + size);
-+
-+	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
-+		section_nr = pfn_to_section_nr(pfn);
-+		if (!present_section_nr(section_nr))
-+			continue;
-+
-+		section = __nr_to_section(section_nr);
-+		/* same memblock? */
-+		if (mem)
-+			if ((section_nr >= mem->start_section_nr) &&
-+			    (section_nr <= mem->end_section_nr))
-+				continue;
-+
-+		mem = find_memory_block_hinted(section, mem);
-+		if (!mem)
-+			continue;
-+		if (mem->state == MEM_OFFLINE)
-+			continue;
-+
-+		kobject_put(&mem->dev.kobj);
-+		return false;
-+	}
-+
-+	if (mem)
-+		kobject_put(&mem->dev.kobj);
-+
-+	return true;
-+}
-+EXPORT_SYMBOL(is_memblk_offline);
-+
- /*
-  * register_memory - Setup a sysfs device for a memory block
-  */
-diff --git a/include/linux/memory.h b/include/linux/memory.h
-index 1ac7f6e..7c66126 100644
---- a/include/linux/memory.h
-+++ b/include/linux/memory.h
-@@ -106,6 +106,10 @@ static inline int memory_isolate_notify(unsigned long val, void *v)
- {
- 	return 0;
- }
-+static inline bool is_memblk_offline(unsigned long start, unsigned long size)
-+{
-+	return false;
-+}
- #else
- extern int register_memory_notifier(struct notifier_block *nb);
- extern void unregister_memory_notifier(struct notifier_block *nb);
-@@ -120,6 +124,7 @@ extern int memory_isolate_notify(unsigned long val, void *v);
- extern struct memory_block *find_memory_block_hinted(struct mem_section *,
- 							struct memory_block *);
- extern struct memory_block *find_memory_block(struct mem_section *);
-+extern bool is_memblk_offline(unsigned long start, unsigned long size);
- #define CONFIG_MEM_BLOCK_SIZE	(PAGES_PER_SECTION<<PAGE_SHIFT)
- enum mem_add_context { BOOT, HOTPLUG };
- #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index 0b040bb..fd84ea9 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -222,6 +222,7 @@ static inline void unlock_memory_hotplug(void) {}
- #ifdef CONFIG_MEMORY_HOTREMOVE
+diff --git a/drivers/clk/Kconfig b/drivers/clk/Kconfig
+index 7f0b5ca..e94fd06 100644
+--- a/drivers/clk/Kconfig
++++ b/drivers/clk/Kconfig
+@@ -9,16 +9,23 @@ config HAVE_CLK_PREPARE
+ config HAVE_MACH_CLKDEV
+ 	bool
  
- extern int is_mem_section_removable(unsigned long pfn, unsigned long nr_pages);
-+extern int remove_memory(int nid, u64 start, u64 size);
+-config COMMON_CLK
++config HAVE_CUSTOM_CLK
+ 	bool
++	---help---
++	  Architectures which provide a custom clk API should select
++	  this to disable the common clock API.
++
++config COMMON_CLK
++	bool "Common clock framework"
++	depends on !HAVE_CUSTOM_CLK
+ 	select HAVE_CLK_PREPARE
+ 	select CLKDEV_LOOKUP
+ 	---help---
+ 	  The common clock framework is a single definition of struct
+ 	  clk, useful across many platforms, as well as an
+ 	  implementation of the clock API in include/linux/clk.h.
+-	  Architectures utilizing the common struct clk should select
+-	  this option.
++	  This provides a generic way for drivers to provide and use
++	  clocks without hard coded relationships in the drivers.
  
- #else
- static inline int is_mem_section_removable(unsigned long pfn,
-@@ -229,6 +230,10 @@ static inline int is_mem_section_removable(unsigned long pfn,
- {
- 	return 0;
- }
-+static inline int remove_memory(int nid, u64 start, u64 size)
-+{
-+	return -EBUSY;
-+}
- #endif /* CONFIG_MEMORY_HOTREMOVE */
- 
- extern int mem_online_node(int nid);
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 3113cd4..80cded7 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1038,6 +1038,28 @@ int offline_memory(u64 start, u64 size)
- 
- 	return 0;
- }
-+
-+int remove_memory(int nid, u64 start, u64 size)
-+{
-+	int ret = -EBUSY;
-+	lock_memory_hotplug();
-+	/*
-+	 * The memory might become online by other task, even if you offine it.
-+	 * So we check whether the cpu has been onlined or not.
-+	 */
-+	if (!is_memblk_offline(start, size)) {
-+		pr_warn("memory removing [mem %#010llx-%#010llx] failed, "
-+			"because the memmory range is online\n",
-+			start, start + size);
-+		ret = -EAGAIN;
-+	}
-+
-+	unlock_memory_hotplug();
-+	return ret;
-+
-+}
-+EXPORT_SYMBOL_GPL(remove_memory);
-+
- #else
- int offline_pages(u64 start, u64 size)
- {
+ menu "Common Clock Framework"
+ 	depends on COMMON_CLK
 -- 
-1.7.1
+1.7.10.4
