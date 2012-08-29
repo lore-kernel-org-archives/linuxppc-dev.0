@@ -1,18 +1,31 @@
-Return-Path: <cxie@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id BCF012C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2012 13:57:18 +1000 (EST)
-Content-Type: text/plain; charset=utf-8; format=flowed; delsp=yes
-To: "David Gibson" <david@gibson.dropbear.id.au>
-Subject: Re: The MAX high_addr for `mmap` on PPC64
-References: <op.wjr9i6t4xxpu98@localhost.localdomain>
- <20120829034258.GF5723@truffula.fritz.box>
-Date: Wed, 29 Aug 2012 11:57:06 +0800
+Return-Path: <B32616@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3ADB12C02B0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2012 21:16:02 +1000 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: Dan Williams <djbw@fb.com>
+Subject: RE: [PATCH v7 0/8] Raid: enable talitos xor offload for improving
+ performance
+Date: Wed, 29 Aug 2012 11:15:53 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70FC3CA@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1344500375-8457-1-git-send-email-qiang.liu@freescale.com>
+ <20120809170307.GG14264@ovro.caltech.edu>
+ <BCB48C05FCE8BC4D9E61E841ECBE6DB70E3D47@039-SN2MPN1-013.039d.mgd.msft.net>
+ <CAA9_cme4tHrx14JaSaHwgcGq79qQK5bv8E205fbC3ega5OpUiQ@mail.gmail.com>
+In-Reply-To: <CAA9_cme4tHrx14JaSaHwgcGq79qQK5bv8E205fbC3ega5OpUiQ@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-From: madper <cxie@redhat.com>
-Message-ID: <op.wjsalgstxxpu98@localhost.localdomain>
-In-Reply-To: <20120829034258.GF5723@truffula.fritz.box>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+ "arnd@arndb.de" <arnd@arndb.de>, "Ira W.
+ Snyder" <iws@ovro.caltech.edu>, "vinod.koul@intel.com" <vinod.koul@intel.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,41 +35,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 29 Aug 2012 11:42:58 +0800, David Gibson  
-<david@gibson.dropbear.id.au> wrote:
+Hi Dan,
 
-> On Wed, Aug 29, 2012 at 11:34:08AM +0800, madper wrote:
->> Hi every one,
->>     I use the ltp (Linux-Test-Project) and run it on both ppc64 and  
->> x86_64.
->>     There is a code like follows in
->> `ltp/testcase/kernel/mem/hugetbl/hugemmap/hugemmap03.c`:
->> `code`
->>         #define HIGH_ADDR       (void *)(0x1000000000000)
->> 	/* Attempt to mmap into highmem addr, should get ENOMEM */
->> 	addr = mmap(HIGH_ADDR, map_sz, PROT_READ,
->> 	            MAP_SHARED | MAP_FIXED, fildes, 0);
->> `code ends`
->>     It return ENOMEM on x86_64 as well as we expected. But return
->> EINVAL on ppc64. So I want to know the MAX high addr for PPC64.
->
-> That's a pretty bogus test, since the max address is not specified
-> strictly.  It's currently 4T on ppc64, but patches that are in the
-> works will change it to 16T.
->
-Hi, I tested it for rhel6. Also I change the high_addr to `0x7ffffffffff`  
-but it got EINVAL again.
-So, I nearly certain that rhel6 can only support for 4T.
-So, do you think that I should change the high_addr to `0x3ffffffffff`?
-
-> Also I'm not convinced that "highmem addr" has any meaning in the
-> context of userspace addresses.
->
-I think may be the coder want to test kernel by userspace program?    :-(
+Ping?
+Can you apply these patches? Thanks.
 
 
-Thank you very very much, David.
+- Qiang
 
---
-Thanks,
-Madper Xie.
+> -----Original Message-----
+> From: dan.j.williams@gmail.com [mailto:dan.j.williams@gmail.com] On
+> Behalf Of Dan Williams
+> Sent: Wednesday, August 15, 2012 4:02 AM
+> To: Liu Qiang-B32616
+> Cc: dan.j.williams@intel.com; vinod.koul@intel.com; arnd@arndb.de;
+> herbert@gondor.apana.org.au; gregkh@linuxfoundation.org; linuxppc-
+> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; linux-
+> crypto@vger.kernel.org; Ira W. Snyder
+> Subject: Re: [PATCH v7 0/8] Raid: enable talitos xor offload for
+> improving performance
+>=20
+> On Tue, Aug 14, 2012 at 2:04 AM, Liu Qiang-B32616 <B32616@freescale.com>
+> wrote:
+> > Hi Vinod,
+> >
+> > Would you like to apply this series from patch 2/8 to 7/8) in your tree=
+?
+> > The link as below,
+> > http://patchwork.ozlabs.org/patch/176023/
+> > http://patchwork.ozlabs.org/patch/176024/
+> > http://patchwork.ozlabs.org/patch/176025/
+> > http://patchwork.ozlabs.org/patch/176026/
+> > http://patchwork.ozlabs.org/patch/176027/
+> > http://patchwork.ozlabs.org/patch/176028/
+> >
+>=20
+> Hi, sorry for the recent silence I've been transitioning and am now
+> just catching up.  I'll take a look and then it's fine for these to go
+> through Vinod's tree.
+>=20
+> --
+> Dan
