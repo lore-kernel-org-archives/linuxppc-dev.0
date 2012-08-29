@@ -1,25 +1,16 @@
-Return-Path: <egtvedt@samfundet.no>
-Received: from cassarossa.samfundet.no (cassarossa.samfundet.no
- [IPv6:2001:700:300:1800::1919])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9870E2C00AF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2012 16:41:52 +1000 (EST)
-Date: Wed, 29 Aug 2012 07:56:25 +0200
-From: Hans-Christian Egtvedt <egtvedt@samfundet.no>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: Re: [PATCH] clk: Make the generic clock API available by default
-Message-ID: <20120829055625.GA17753@samfundet.no>
-References: <1346186104-4083-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 30 Aug 2012 09:39:27 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: madper <cxie@redhat.com>
+Subject: Re: The MAX high_addr for `mmap` on PPC64
+Message-ID: <20120829233927.GK5723@truffula.fritz.box>
+References: <op.wjr9i6t4xxpu98@localhost.localdomain>
+ <20120829034258.GF5723@truffula.fritz.box>
+ <op.wjsalgstxxpu98@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1346186104-4083-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-Cc: linux-mips@linux-mips.org, Russell King <linux@arm.linux.org.uk>,
- Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Mackerras <paulus@samba.org>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org,
- Haavard Skinnemoen <hskinnemoen@gmail.com>
+In-Reply-To: <op.wjsalgstxxpu98@localhost.localdomain>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +20,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Around Tue 28 Aug 2012 13:35:04 -0700 or thereabout, Mark Brown wrote:
-> Rather than requiring platforms to select the generic clock API to make
-> it available make the API available as a user selectable option unless the
-> user either selects HAVE_CUSTOM_CLK (if they have their own implementation)
-> or selects COMMON_CLK (if they depend on the generic implementation).
+On Wed, Aug 29, 2012 at 11:57:06AM +0800, madper wrote:
+> On Wed, 29 Aug 2012 11:42:58 +0800, David Gibson
+> <david@gibson.dropbear.id.au> wrote:
 > 
-> All current architectures that HAVE_CLK but don't use the common clock
-> framework have selects of HAVE_CUSTOM_CLK added.
-> 
-> This allows drivers to use the generic API on platforms which have no need
-> for the clock API at platform level.
-> 
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
-> 
-> This depends on having one of the patches I've sent adding a generic
-> clkdev.h added merged - Arnd was expecting to merge one of those, there
-> was just the lack of clarity about the most practical Kbuild hookup.
-> 
->  arch/arm/Kconfig            |   12 ++++++++++++
->  arch/avr32/Kconfig          |    1 +
+> >On Wed, Aug 29, 2012 at 11:34:08AM +0800, madper wrote:
+> >>Hi every one,
+> >>    I use the ltp (Linux-Test-Project) and run it on both ppc64
+> >>and x86_64.
+> >>    There is a code like follows in
+> >>`ltp/testcase/kernel/mem/hugetbl/hugemmap/hugemmap03.c`:
+> >>`code`
+> >>        #define HIGH_ADDR       (void *)(0x1000000000000)
+> >>	/* Attempt to mmap into highmem addr, should get ENOMEM */
+> >>	addr = mmap(HIGH_ADDR, map_sz, PROT_READ,
+> >>	            MAP_SHARED | MAP_FIXED, fildes, 0);
+> >>`code ends`
+> >>    It return ENOMEM on x86_64 as well as we expected. But return
+> >>EINVAL on ppc64. So I want to know the MAX high addr for PPC64.
+> >
+> >That's a pretty bogus test, since the max address is not specified
+> >strictly.  It's currently 4T on ppc64, but patches that are in the
+> >works will change it to 16T.
+> >
+> Hi, I tested it for rhel6. Also I change the high_addr to
+> `0x7ffffffffff` but it got EINVAL again.
 
-For the AVR32 related changes
+0x7ffffffffff is not page aligned, so it probably should get EINVAL.
+That said, it wouldn't surprise me if we got the wront error code for
+address space overflows.
 
-Acked-by: Hans-Christian Egtvedt <egtvedt@samfundet.no>
+> So, I nearly certain that rhel6 can only support for 4T.
+> So, do you think that I should change the high_addr to `0x3ffffffffff`?
+> 
+> >Also I'm not convinced that "highmem addr" has any meaning in the
+> >context of userspace addresses.
+> >
+> I think may be the coder want to test kernel by userspace program?    :-(
 
-<snipp>
+
 
 -- 
-mvh
-Hans-Christian Egtvedt
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
