@@ -1,25 +1,24 @@
-Return-Path: <B40534@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1EE712C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2012 13:31:35 +1000 (EST)
-Received: from mail110-va3 (localhost [127.0.0.1])	by
- mail110-va3-R.bigfish.com (Postfix) with ESMTP id 553B0200A7	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2012 03:31:31 +0000 (UTC)
-Received: from VA3EHSMHS016.bigfish.com (unknown [10.7.14.238])	by
- mail110-va3.bigfish.com (Postfix) with ESMTP id 2A1613E0141	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2012 03:31:29 +0000 (UTC)
-From: <Dongsheng.wang@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/8544ds: add partition table for norflash
-Date: Wed, 29 Aug 2012 11:00:49 +0800
-Message-ID: <1346209249-5049-1-git-send-email-Dongsheng.wang@freescale.com>
+Return-Path: <cxie@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 75BB82C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Aug 2012 13:34:19 +1000 (EST)
+Received: from int-mx09.intmail.prod.int.phx2.redhat.com
+ (int-mx09.intmail.prod.int.phx2.redhat.com [10.5.11.22])
+ by mx1.redhat.com (8.14.4/8.14.4) with ESMTP id q7T3YHdu024348
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2012 23:34:17 -0400
+Received: from localhost.localdomain ([10.66.13.237])
+ by int-mx09.intmail.prod.int.phx2.redhat.com (8.14.4/8.14.4) with ESMTP id
+ q7T3YEdi016378
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Aug 2012 23:34:16 -0400
+Content-Type: text/plain; charset=utf-8; format=flowed; delsp=yes
+To: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 29 Aug 2012 11:34:08 +0800
+Subject: The MAX high_addr for `mmap` on PPC64
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+From: madper <cxie@redhat.com>
+Message-ID: <op.wjr9i6t4xxpu98@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,81 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Hi every one,
+     I use the ltp (Linux-Test-Project) and run it on both ppc64 and x86_64.
+     There is a code like follows in  
+`ltp/testcase/kernel/mem/hugetbl/hugemmap/hugemmap03.c`:
+`code`
+         #define HIGH_ADDR       (void *)(0x1000000000000)
+	/* Attempt to mmap into highmem addr, should get ENOMEM */
+	addr = mmap(HIGH_ADDR, map_sz, PROT_READ,
+	            MAP_SHARED | MAP_FIXED, fildes, 0);
+`code ends`
+     It return ENOMEM on x86_64 as well as we expected. But return EINVAL  
+on ppc64. So I want to know the MAX high addr for PPC64.
 
-create partition table for norflash.
-
-Signed-off-by: Wang Dongsheng <Dongsheng.Wang@freescale.com>
----
-
- arch/powerpc/boot/dts/mpc8544ds.dts  |    4 ++-
- arch/powerpc/boot/dts/mpc8544ds.dtsi |   38 ++++++++++++++++++++++++++++++++++
- 2 files changed, 41 insertions(+), 1 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/mpc8544ds.dts b/arch/powerpc/boot/dts/mpc8544ds.dts
-index e934987..ed38874 100644
---- a/arch/powerpc/boot/dts/mpc8544ds.dts
-+++ b/arch/powerpc/boot/dts/mpc8544ds.dts
-@@ -20,8 +20,10 @@
- 		reg = <0 0 0 0>;	// Filled by U-Boot
- 	};
- 
--	lbc: localbus@e0005000 {
-+	board_lbc: lbc: localbus@e0005000 {
- 		reg = <0 0xe0005000 0 0x1000>;
-+
-+		ranges = <0x0 0x0 0x0 0xff800000 0x800000>;
- 	};
- 
- 	board_soc: soc: soc8544@e0000000 {
-diff --git a/arch/powerpc/boot/dts/mpc8544ds.dtsi b/arch/powerpc/boot/dts/mpc8544ds.dtsi
-index 77ebc9f..8be5b31 100644
---- a/arch/powerpc/boot/dts/mpc8544ds.dtsi
-+++ b/arch/powerpc/boot/dts/mpc8544ds.dtsi
-@@ -32,6 +32,44 @@
-  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
- 
-+&board_lbc {
-+	nor@0,0 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "cfi-flash";
-+		reg = <0x0 0x0 0x800000>;
-+		bank-width = <2>;
-+		device-width = <1>;
-+
-+		partition@0 {
-+			reg = <0x0 0x10000>;
-+			label = "dtb-nor";
-+		};
-+
-+		partition@20000 {
-+			reg = <0x20000 0x30000>;
-+			label = "diagnostic-nor";
-+			read-only;
-+		};
-+
-+		partition@200000 {
-+			reg = <0x200000 0x200000>;
-+			label = "dink-nor";
-+			read-only;
-+		};
-+
-+		partition@400000 {
-+			reg = <0x400000 0x380000>;
-+			label = "kernel-nor";
-+		};
-+
-+		partition@780000 {
-+			reg = <0x780000 0x80000>;
-+			label = "u-boot-nor";
-+		};
-+	};
-+};
-+
- &board_soc {
- 	enet0: ethernet@24000 {
- 		phy-handle = <&phy0>;
 -- 
-1.7.5.1
+Thanks,
+Madper Xie.
