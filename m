@@ -1,19 +1,18 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9485E2C01FF
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2012 01:25:30 +1000 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
-Subject: Re: Moving target
-References: <503F7555.5060404__42569.4412122995$1346339823$gmane$org@lpsc.in2p3.fr>
-Date: Thu, 30 Aug 2012 17:25:24 +0200
-In-Reply-To: <503F7555.5060404__42569.4412122995$1346339823$gmane$org@lpsc.in2p3.fr>
- (Guillaume Dargaud's message of "Thu, 30 Aug 2012 16:14:45 +0200")
-Message-ID: <m2r4qos8pn.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by ozlabs.org (Postfix) with ESMTPS id A32442C0136
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2012 02:07:16 +1000 (EST)
+Subject: Re: [PATCH] powerpc/8544ds: add partition table for norflash
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1346209249-5049-1-git-send-email-Dongsheng.wang@freescale.com>
+Date: Thu, 30 Aug 2012 11:07:10 -0500
+Message-Id: <7D2CD2DE-279D-4F00-8303-F481FC521D75@kernel.crashing.org>
+References: <1346209249-5049-1-git-send-email-Dongsheng.wang@freescale.com>
+To: "<Dongsheng.wang@freescale.com>" <Dongsheng.wang@freescale.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,17 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Guillaume Dargaud <dargaud@lpsc.in2p3.fr> writes:
 
-> I don't understand the part about address 0x00000030. Does it mean I'm
-> trying to wrongly access physical/virtual address 0x30 somewhere in my
-> code?
+On Aug 28, 2012, at 10:00 PM, <Dongsheng.wang@freescale.com> =
+<Dongsheng.wang@freescale.com> wrote:
 
-More likely a NULL pointer dereference.
+> From: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+>=20
+> create partition table for norflash.
+>=20
+> Signed-off-by: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+> ---
+>=20
+> arch/powerpc/boot/dts/mpc8544ds.dts  |    4 ++-
+> arch/powerpc/boot/dts/mpc8544ds.dtsi |   38 =
+++++++++++++++++++++++++++++++++++
+> 2 files changed, 41 insertions(+), 1 deletions(-)
 
-Andreas.
+Added read-only to u-boot partition.
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+applied to next
+
+- k=
