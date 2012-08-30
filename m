@@ -1,31 +1,19 @@
-Return-Path: <B05471@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CCEE62C0201
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2012 00:23:42 +1000 (EST)
-From: Geanta Neag Horia Ioan-B05471 <B05471@freescale.com>
-To: Liu Qiang-B32616 <B32616@freescale.com>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>, "dan.j.williams@gmail.com"
- <dan.j.williams@gmail.com>, "herbert@gondor.hengli.com.au"
- <herbert@gondor.hengli.com.au>, "davem@davemloft.net" <davem@davemloft.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH v7 1/8] Talitos: Support for async_tx XOR offload
-Date: Thu, 30 Aug 2012 14:23:29 +0000
-Message-ID: <FD18E5D573A8AB48A365D4D78185DE992E5C0D@039-SN1MPN1-001.039d.mgd.msft.net>
-References: <1344500448-10927-1-git-send-email-qiang.liu@freescale.com>
-In-Reply-To: <1344500448-10927-1-git-send-email-qiang.liu@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5DEA92C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2012 01:16:23 +1000 (EST)
+Received: from [134.158.40.174] (lpsc0174x.in2p3.fr [134.158.40.174])
+ by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id q7UEEjOe004212
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Aug 2012 16:14:45 +0200
+Message-ID: <503F7555.5060404@lpsc.in2p3.fr>
+Date: Thu, 30 Aug 2012 16:14:45 +0200
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
 MIME-Version: 1.0
-Cc: Li Yang-R58472 <r58472@freescale.com>, "arnd@arndb.de" <arnd@arndb.de>,
- "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- Phillips Kim-R1AAHA <R1AAHA@freescale.com>,
- Liu Qiang-B32616 <B32616@freescale.com>,
- "dan.j.williams@intel.com" <dan.j.williams@intel.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Moving target
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,227 +23,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 9 Aug 2012 11:20:48 +0300, qiang.liu@freescale.com wrote:
-> From: Qiang Liu <qiang.liu@freescale.com>
->=20
-> Expose Talitos's XOR functionality to be used for RAID parity
-> calculation via the Async_tx layer.
->=20
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> Cc: David S. Miller <davem@davemloft.net>
-> Signed-off-by: Dipen Dudhat <Dipen.Dudhat@freescale.com>
-> Signed-off-by: Maneesh Gupta <Maneesh.Gupta@freescale.com>
-> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
-> Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
-> ---
->  drivers/crypto/Kconfig   |    9 +
->  drivers/crypto/talitos.c |  413 ++++++++++++++++++++++++++++++++++++++++=
-++++++
->  drivers/crypto/talitos.h |   53 ++++++
->  3 files changed, 475 insertions(+), 0 deletions(-)
+Hello all,
+I had a homebrew driver that compiled and ran well on 2.6.38 and I 
+recently upgraded to the latest xilinx kernel and had some trouble 
+recompiling without adjustments (of_driver/driver, 
+of_platform_driver/platform_driver and some such).
+
+But now, after those adjustments, it crashes on run.
+
+My first generic question is: is there a clean canonical example of how 
+to write each part (module init/exit, /dev handling, probing, physical 
+memory access, interrupt handling, etc) of a basic driver ? Because each 
+upgrade breaks my code and as driver writing is only one of my duties, I 
+have a hard time keeping up with the moving target of the 
+requirements... To say that books are obsolete is an understatement.
+
+And now to the specifics:
+
+[   16.655868] {xad_init 519} Module xad: loading...
+[   16.661122] {xad_init 528} Module xad: Major=241, Minor=0, Count=1
+[   16.666231] Unable to handle kernel paging request for data at 
+address 0x00000030
+[   16.673599] Faulting instruction address: 0xc0116fc0
+[   16.678495] Oops: Kernel access of bad area, sig: 11 [#1]
+[   16.683745] Xilinx Virtex
+[   16.686337] Modules linked in: xad(+)
+[   16.689978] NIP: c0116fc0 LR: c939a0f8 CTR: c0116fa8
+[   16.694912] REGS: c789fd90 TRAP: 0300   Not tainted  (3.0.0-14.1-build3+)
+[   16.701629] MSR: 00029030 <EE,ME,CE,IR,DR>  CR: 42000022  XER: 20000000
+[   16.708199] DEAR: 00000030, ESR: 00000000
+[   16.712185] TASK = c7851420[281] 'insmod' THREAD: c789e000
+[   16.717441] GPR00: c939a0f8 c789fe40 c7851420 c9397b70 000046d7 
+ffffffff c0110314 00000000
+[   16.725736] GPR08: c0337380 00000000 00004000 c0116fa8 22000024 
+100b99d4 ffffffff ffffffff
+[   16.734030] GPR16: ffffffff ffffffff 100b5aed bfa54388 100844d8 
+100844b8 000007a0 00000000
+[   16.742324] GPR24: c0047edc 00000124 0000001c c9390000 c93973da 
+c9397b08 c93971e8 c9397b70
+[   16.750870] NIP [c0116fc0] driver_register+0x18/0x144
+[   16.755901] LR [c939a0f8] xad_init+0xf8/0x1e8 [xad]
+[   16.760638] Call Trace:
+[   16.763119] [c789fe40] [c93973da] xad_device_id+0x1da/0xfffffef8 
+[xad] (unreliable)
+[   16.770719] [c789fe60] [c939a0f8] xad_init+0xf8/0x1e8 [xad]
+[   16.776230] [c789fe80] [c0002508] do_one_initcall+0xe0/0x1c0
+[   16.781871] [c789feb0] [c004a08c] sys_init_module+0x15cc/0x17c0
+[   16.787720] [c789ff40] [c000c95c] ret_from_syscall+0x0/0x3c
+[   16.793212] Instruction dump:
+[   16.796155] 80630034 4bfcd669 80010014 38210010 7c0803a6 4e800020 
+9421ffe0 7c0802a6
+[   16.803842] bf410008 90010024 7c7f1b78 81230004
+[   16.808257]  7c000034 5400d97e 0f000000
+[   16.813362] ---[ end trace e40dbcf43f9d5d57 ]---
+
+I don't understand the part about address 0x00000030. Does it mean I'm 
+trying to wrongly access physical/virtual address 0x30 somewhere in my code?
+
+Here are the very basics from my code (I've removed all printk, error 
+checking and what the driver itself does for clarity). I really need a 
+hand with the changes of of_something:
+
+static dev_t first;
+static unsigned int count = 1;
+static int my_major = 241, my_minor = 0;
+
+struct cdev *my_cdev=NULL;
+
+typedef struct XadDevice {
+//	struct platform_device *of_dev;
+	struct device *dev;
+	int irq;
+	resource_size_t hw_phy_base, hw_length;	// Address of the IP resource
+	void *hw_virt;							// Virtual of above
+#ifdef DEBUG
+	void *buffer_virt;						// Virtual address of the above
+#endif
+	struct resource *hw_region;				// Nothing is done with this
+	...
+} tXadDevice;
+tXadDevice Xad;
 
 
-> +static void talitos_xor_run_tx_complete_actions(struct talitos_xor_desc =
-*desc,
-> +		struct talitos_xor_chan *xor_chan)
-> +{
-> +	struct device *dev =3D xor_chan->dev;
-> +	dma_addr_t dest, addr;
-> +	unsigned int src_cnt =3D desc->unmap_src_cnt;
-> +	unsigned int len =3D desc->unmap_len;
-> +	enum dma_ctrl_flags flags =3D desc->async_tx.flags;
-> +	struct dma_async_tx_descriptor *tx =3D &desc->async_tx;
-> +
-> +	/* unmap dma addresses */
-> +	dest =3D desc->hwdesc.ptr[6].ptr;
-> +	if (likely(!(flags & DMA_COMPL_SKIP_DEST_UNMAP)))
-> +		dma_unmap_page(dev, dest, len, DMA_BIDIRECTIONAL);
-> +
-> +	desc->idx =3D 6 - src_cnt;
-> +	if (likely(!(flags & DMA_COMPL_SKIP_SRC_UNMAP))) {
-> +		while(desc->idx < 6) {
-> +			addr =3D desc->hwdesc.ptr[desc->idx++].ptr;
-> +			if (addr =3D=3D dest)
-> +				continue;
-> +			dma_unmap_page(dev, addr, len, DMA_TO_DEVICE);
-> +		}
-> +	}
+static irqreturn_t XadIsr(int irq, void *dev_id) { ... }
 
-No need for braces around the while block.
+static int xad_driver_probe(struct device * dev)
+	struct resource res;
+	struct device_node *dn = dev->of_node;
+	int rc=0;
 
-> +	/* run dependent operations */
-> +	dma_run_dependencies(tx);
-> +}
+	printk(KERN_INFO SD "Probing %s\n" FL, dn->full_name);
 
+	rc = of_address_to_resource(dn, 0, &res);
 
-> +static void talitos_release_xor(struct device *dev, struct talitos_desc =
-*hwdesc,
-> +				void *context, int error)
-> +{
-> +	struct talitos_xor_desc *desc =3D context;
-> +	struct talitos_xor_chan *xor_chan;
-> +	dma_async_tx_callback callback;
-> +	void *callback_param;
-> +
-> +	if (unlikely(error))
-> +		dev_err(dev, "xor operation: talitos error %d\n", error);
-> +
-> +	xor_chan =3D container_of(desc->async_tx.chan, struct talitos_xor_chan,
-> +				common);
-> +	spin_lock_bh(&xor_chan->desc_lock);
-> +	if (xor_chan->completed_cookie < desc->async_tx.cookie)
-> +		xor_chan->completed_cookie =3D desc->async_tx.cookie;
-> +
-> +	callback =3D desc->async_tx.callback;
-> +	callback_param =3D desc->async_tx.callback_param;
-> +
-> +	if (callback) {
-> +		spin_unlock_bh(&xor_chan->desc_lock);
-> +		callback(callback_param);
-> +		spin_lock_bh(&xor_chan->desc_lock);
-> +	}
+	Xad.irq = irq_of_parse_and_map(dn, 0);
+	rc=request_irq(Xad.irq, XadIsr, IRQF_TRIGGER_RISING  /* | 
+IRQF_DISABLED*/ | IRQF_SHARED | IRQF_SAMPLE_RANDOM, "XadIsr", &Xad);
 
-Since callback_param is used only here, maybe:
+	init_waitqueue_head(&Xad.wait);
 
-if (callback) {
-	void *callback_param =3D desc->async_tx.callback_param;
+	Xad.hw_region = request_mem_region((unsigned int)Xad.hw_phy_base, 
+(unsigned int)(Xad.hw_length),  "xps-acqui-data");
 
-	spin_unlock_bh(&xor_chan->desc_lock);
-	callback(callback_param);
-	spin_lock_bh(&xor_chan->desc_lock);
+	Xad.hw_virt= ioremap( (unsigned int)Xad.hw_phy_base, (unsigned 
+int)(Xad.hw_length) );
+
+	dev_set_drvdata(Xad.dev, &Xad);
+	return 0;
 }
 
-> +
-> +	talitos_xor_run_tx_complete_actions(desc, xor_chan);
-> +
-> +	list_del(&desc->node);
-> +	list_add_tail(&desc->node, &xor_chan->free_desc);
-> +	spin_unlock_bh(&xor_chan->desc_lock);
-> +	if (!list_empty(&xor_chan->pending_q))
-> +		talitos_process_pending(xor_chan);
-> +}
+
+///////////////////////////////////////////////////////////////////////////////
+// There should be something in:
+// ll /sys/devices/plb.0/c9800000.xps-acqui-data
+static const struct of_device_id xad_device_id[] = {
+	{ .compatible     = "xlnx,xps-acqui-data-4.00.a" },	// Must match the DTS
+	{}
+};
+
+MODULE_DEVICE_TABLE(of, xad_device_id);	// Is this necessary ?
+
+static struct device_driver xad_driver = {
+	.probe  = xad_driver_probe,
+	.remove = xad_driver_remove,
+	.name = "xad-driver",
+	.of_match_table = xad_device_id,
+};
+
+...
+
+static struct file_operations fops = {
+	.owner   = THIS_MODULE,
+	.read    = xad_read,
+	.open    = xad_open,
+	.release = xad_close,
+	.unlocked_ioctl   = xad_ioctl,
+};
+
+static int __init xad_init(void) {
+	first = MKDEV (my_major, my_minor);
+	register_chrdev_region(first, count, DEVNAME);
+	my_cdev = cdev_alloc ();
+	
+	cdev_init(my_cdev, &fops);
+	rc=cdev_add (my_cdev, first, count);
+	
+	rc = driver_register(&xad_driver);
+
+	printk(KERN_INFO SD "Driver ready!\n" FL);
+	return 0;
+}
+
+module_init(xad_init);
 
 
-> +static int talitos_alloc_chan_resources(struct dma_chan *chan)
-> +{
-> +	struct talitos_xor_chan *xor_chan;
-> +	struct talitos_xor_desc *desc;
-> +	LIST_HEAD(tmp_list);
-> +	int i;
-> +
-> +	xor_chan =3D container_of(chan, struct talitos_xor_chan, common);
-> +
-> +	if (!list_empty(&xor_chan->free_desc))
-> +		return xor_chan->total_desc;
-> +
-> +	for (i =3D 0; i < TALITOS_MAX_DESCRIPTOR_NR; i++) {
-> +		desc =3D talitos_xor_alloc_descriptor(xor_chan,
-> +				GFP_KERNEL | GFP_DMA);
-
-talitos_xor_alloc_descriptor() is called here without holding
-the xor_chan->desc_lock and it increments xor_chan->total_desc.
-Isn't this an issue ?
-
-> +		if (!desc) {
-> +			dev_err(xor_chan->common.device->dev,
-> +				"Only %d initial descriptors\n", i);
-> +			break;
-> +		}
-> +		list_add_tail(&desc->node, &tmp_list);
-> +	}
-> +
-> +	if (!i)
-> +		return -ENOMEM;
-> +
-> +	/* At least one desc is allocated */
-> +	spin_lock_bh(&xor_chan->desc_lock);
-> +	list_splice_init(&tmp_list, &xor_chan->free_desc);
-> +	spin_unlock_bh(&xor_chan->desc_lock);
-> +
-> +	return xor_chan->total_desc;
-> +}
-
-
-> +/**
-> + * talitos_register_dma_async - Initialize the Freescale XOR ADMA device
-> + * It is registered as a DMA device with the capability to perform
-> + * XOR operation with the Async_tx layer.
-> + * The various queues and channel resources are also allocated.
-> + */
-> +static int talitos_register_async_tx(struct device *dev, int max_xor_src=
-s)
-> +{
-> +	struct talitos_private *priv =3D dev_get_drvdata(dev);
-> +	struct dma_device *dma_dev =3D &priv->dma_dev_common;
-> +	struct talitos_xor_chan *xor_chan;
-> +	int err;
-> +
-> +	xor_chan =3D kzalloc(sizeof(struct talitos_xor_chan), GFP_KERNEL);
-> +	if (!xor_chan) {
-> +		dev_err(dev, "unable to allocate xor channel\n");
-> +		return -ENOMEM;
-> +	}
-> +
-> +	dma_dev->dev =3D dev;
-> +	dma_dev->device_alloc_chan_resources =3D talitos_alloc_chan_resources;
-> +	dma_dev->device_free_chan_resources =3D talitos_free_chan_resources;
-> +	dma_dev->device_prep_dma_xor =3D talitos_prep_dma_xor;
-> +	dma_dev->max_xor =3D max_xor_srcs;
-> +	dma_dev->device_tx_status =3D talitos_is_tx_complete;
-> +	dma_dev->device_issue_pending =3D talitos_issue_pending;
-> +	INIT_LIST_HEAD(&dma_dev->channels);
-> +	dma_cap_set(DMA_XOR, dma_dev->cap_mask);
-> +
-> +	xor_chan->dev =3D dev;
-> +	xor_chan->common.device =3D dma_dev;
-> +	xor_chan->total_desc =3D 0;
-> +	INIT_LIST_HEAD(&xor_chan->submit_q);
-> +	INIT_LIST_HEAD(&xor_chan->pending_q);
-> +	INIT_LIST_HEAD(&xor_chan->in_progress_q);
-> +	INIT_LIST_HEAD(&xor_chan->free_desc);
-> +	spin_lock_init(&xor_chan->desc_lock);
-> +
-> +	list_add_tail(&xor_chan->common.device_node, &dma_dev->channels);
-> +	dma_dev->chancnt++;
-> +
-> +	err =3D dma_async_device_register(dma_dev);
-> +	if (err) {
-> +		dev_err(dev, "Unable to register XOR with Async_tx\n");
-> +		goto err_out;
-
-Replace the jump with talitos_unregister_async_xor(dev) and
-remove code under err_out label.
-
-> +	}
-> +
-> +	return err;
-> +
-> +err_out:
-> +	talitos_unregister_async_xor(dev);
-> +	return err;
-> +}
-> +#endif
-
-
-> diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
-> index 61a1405..fc9d125 100644
-> --- a/drivers/crypto/talitos.h
-> +++ b/drivers/crypto/talitos.h
-> @@ -30,6 +30,7 @@
->=20
->  #define TALITOS_TIMEOUT 100000
->  #define TALITOS_MAX_DATA_LEN 65535
-> +#define TALITOS_MAX_DESCRIPTOR_NR 256
-
-This refers only to xor descriptors, so renaming it similar to
-TALITOS_MAX_XOR_DESCRIPTOR_NR would make sense.
-
-Besides these:
-1. As Dan Williams mentioned, you should explain why you are using
-both spin_lock_bh and spin_lock_irqsave on the same lock.
-2. I don't see anything added to talitos_remove(). Shouldn't
-talitos_unregister_async_xor() be called? Anything else?
-Have you tested with talitos built as a module?
-
-Horia
+Thanks for reading so far !!!
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/
