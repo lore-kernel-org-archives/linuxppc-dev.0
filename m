@@ -1,25 +1,27 @@
-Return-Path: <B05471@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+Return-Path: <B32616@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BF3F22C03B4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2012 20:38:57 +1000 (EST)
-From: Geanta Neag Horia Ioan-B05471 <B05471@freescale.com>
-To: Liu Qiang-B32616 <B32616@freescale.com>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>, "dan.j.williams@gmail.com"
- <dan.j.williams@gmail.com>, "herbert@gondor.hengli.com.au"
- <herbert@gondor.hengli.com.au>, "davem@davemloft.net" <davem@davemloft.net>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by ozlabs.org (Postfix) with ESMTPS id 4A03F2C03B7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Aug 2012 20:41:19 +1000 (EST)
+From: Liu Qiang-B32616 <B32616@freescale.com>
+To: Geanta Neag Horia Ioan-B05471 <B05471@freescale.com>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "dan.j.williams@gmail.com" <dan.j.williams@gmail.com>,
+ "herbert@gondor.hengli.com.au" <herbert@gondor.hengli.com.au>,
+ "davem@davemloft.net" <davem@davemloft.net>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
 Subject: RE: [PATCH v7 1/8] Talitos: Support for async_tx XOR offload
-Date: Fri, 31 Aug 2012 10:38:46 +0000
-Message-ID: <FD18E5D573A8AB48A365D4D78185DE992E9EFF@039-SN1MPN1-001.039d.mgd.msft.net>
+Date: Fri, 31 Aug 2012 10:41:08 +0000
+Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70FDD90@039-SN2MPN1-011.039d.mgd.msft.net>
 References: <1344500448-10927-1-git-send-email-qiang.liu@freescale.com>
  <FD18E5D573A8AB48A365D4D78185DE992E5C0D@039-SN1MPN1-001.039d.mgd.msft.net>
  <BCB48C05FCE8BC4D9E61E841ECBE6DB70FDB13@039-SN2MPN1-011.039d.mgd.msft.net>
-In-Reply-To: <BCB48C05FCE8BC4D9E61E841ECBE6DB70FDB13@039-SN2MPN1-011.039d.mgd.msft.net>
+ <FD18E5D573A8AB48A365D4D78185DE992E9EFF@039-SN1MPN1-001.039d.mgd.msft.net>
+In-Reply-To: <FD18E5D573A8AB48A365D4D78185DE992E9EFF@039-SN1MPN1-001.039d.mgd.msft.net>
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: Li Yang-R58472 <r58472@freescale.com>, "arnd@arndb.de" <arnd@arndb.de>,
@@ -35,74 +37,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 31 Aug 2012 06:08:05 +0300, Liu Qiang-B32616 <B32616@freescale.com>
-wrote:
-> > -----Original Message-----
-> > From: Geanta Neag Horia Ioan-B05471
-> > Sent: Thursday, August 30, 2012 10:23 PM
-> > To: Liu Qiang-B32616; linux-crypto@vger.kernel.org;
-> > dan.j.williams@gmail.com; herbert@gondor.hengli.com.au;
-> > davem@davemloft.net; linux-kernel@vger.kernel.org; linuxppc-
-> > dev@lists.ozlabs.org
-> > Cc: Li Yang-R58472; Phillips Kim-R1AAHA; vinod.koul@intel.com;
-> > dan.j.williams@intel.com; arnd@arndb.de; gregkh@linuxfoundation.org; Li=
-u
-> > Qiang-B32616
-> > Subject: RE: [PATCH v7 1/8] Talitos: Support for async_tx XOR offload
-> >
-> > On Thu, 9 Aug 2012 11:20:48 +0300, qiang.liu@freescale.com wrote:
-> > > From: Qiang Liu <qiang.liu@freescale.com>
-> > >
-> > > Expose Talitos's XOR functionality to be used for RAID parity
-> > > calculation via the Async_tx layer.
-> > >
-> > > Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> > > Cc: David S. Miller <davem@davemloft.net>
-> > > Signed-off-by: Dipen Dudhat <Dipen.Dudhat@freescale.com>
-> > > Signed-off-by: Maneesh Gupta <Maneesh.Gupta@freescale.com>
-> > > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-> > > Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
-> > > Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
-> > > ---
-> > >  drivers/crypto/Kconfig   |    9 +
-> > >  drivers/crypto/talitos.c |  413
-> > ++++++++++++++++++++++++++++++++++++++++++++++
-> > >  drivers/crypto/talitos.h |   53 ++++++
-> > >  3 files changed, 475 insertions(+), 0 deletions(-)
-> >
-
-> > > +static int talitos_alloc_chan_resources(struct dma_chan *chan)
-> > > +{
-> > > +	struct talitos_xor_chan *xor_chan;
-> > > +	struct talitos_xor_desc *desc;
-> > > +	LIST_HEAD(tmp_list);
-> > > +	int i;
-> > > +
-> > > +	xor_chan =3D container_of(chan, struct talitos_xor_chan, common);
-> > > +
-> > > +	if (!list_empty(&xor_chan->free_desc))
-> > > +		return xor_chan->total_desc;
-> > > +
-> > > +	for (i =3D 0; i < TALITOS_MAX_DESCRIPTOR_NR; i++) {
-> > > +		desc =3D talitos_xor_alloc_descriptor(xor_chan,
-> > > +				GFP_KERNEL | GFP_DMA);
-> >
-> > talitos_xor_alloc_descriptor() is called here without holding
-> > the xor_chan->desc_lock and it increments xor_chan->total_desc.
-> > Isn't this an issue ?
+> -----Original Message-----
+> From: Geanta Neag Horia Ioan-B05471
+> Sent: Friday, August 31, 2012 6:39 PM
+> To: Liu Qiang-B32616; linux-crypto@vger.kernel.org;
+> dan.j.williams@gmail.com; herbert@gondor.hengli.com.au;
+> davem@davemloft.net; linux-kernel@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org
+> Cc: Li Yang-R58472; Phillips Kim-R1AAHA; vinod.koul@intel.com; Dan
+> Williams; arnd@arndb.de; gregkh@linuxfoundation.org
+> Subject: RE: [PATCH v7 1/8] Talitos: Support for async_tx XOR offload
 >=20
-> No, please refer to the code as below,
-> +	list_add_tail(&desc->node, &tmp_list);
+> On Fri, 31 Aug 2012 06:08:05 +0300, Liu Qiang-B32616
+> <B32616@freescale.com>
+> wrote:
+> > > -----Original Message-----
+> > > From: Geanta Neag Horia Ioan-B05471
+> > > Sent: Thursday, August 30, 2012 10:23 PM
+> > > To: Liu Qiang-B32616; linux-crypto@vger.kernel.org;
+> > > dan.j.williams@gmail.com; herbert@gondor.hengli.com.au;
+> > > davem@davemloft.net; linux-kernel@vger.kernel.org; linuxppc-
+> > > dev@lists.ozlabs.org
+> > > Cc: Li Yang-R58472; Phillips Kim-R1AAHA; vinod.koul@intel.com;
+> > > dan.j.williams@intel.com; arnd@arndb.de; gregkh@linuxfoundation.org;
+> Liu
+> > > Qiang-B32616
+> > > Subject: RE: [PATCH v7 1/8] Talitos: Support for async_tx XOR offload
+> > >
+> > > On Thu, 9 Aug 2012 11:20:48 +0300, qiang.liu@freescale.com wrote:
+> > > > From: Qiang Liu <qiang.liu@freescale.com>
+> > > >
+> > > > Expose Talitos's XOR functionality to be used for RAID parity
+> > > > calculation via the Async_tx layer.
+> > > >
+> > > > Cc: Herbert Xu <herbert@gondor.apana.org.au>
+> > > > Cc: David S. Miller <davem@davemloft.net>
+> > > > Signed-off-by: Dipen Dudhat <Dipen.Dudhat@freescale.com>
+> > > > Signed-off-by: Maneesh Gupta <Maneesh.Gupta@freescale.com>
+> > > > Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> > > > Signed-off-by: Vishnu Suresh <Vishnu@freescale.com>
+> > > > Signed-off-by: Qiang Liu <qiang.liu@freescale.com>
+> > > > ---
+> > > >  drivers/crypto/Kconfig   |    9 +
+> > > >  drivers/crypto/talitos.c |  413
+> > > ++++++++++++++++++++++++++++++++++++++++++++++
+> > > >  drivers/crypto/talitos.h |   53 ++++++
+> > > >  3 files changed, 475 insertions(+), 0 deletions(-)
+> > >
 >=20
-> The list is temporary list, it will be merged to xor_chan->free_desc in n=
-ext step, here is protected
-> by lock,
-> +	spin_lock_bh(&xor_chan->desc_lock);
-> +	list_splice_init(&tmp_list, &xor_chan->free_desc);
-> +	spin_unlock_bh(&xor_chan->desc_lock);
-
-I was not referring to the list, but to xor_chan->total_desc variable.
-The following access:
-talitos_alloc_chan_resources()->talitos_xor_alloc_descriptor()->total_desc+=
-+
-is not protected by the xor_chan->desc_lock.
+> > > > +static int talitos_alloc_chan_resources(struct dma_chan *chan)
+> > > > +{
+> > > > +	struct talitos_xor_chan *xor_chan;
+> > > > +	struct talitos_xor_desc *desc;
+> > > > +	LIST_HEAD(tmp_list);
+> > > > +	int i;
+> > > > +
+> > > > +	xor_chan =3D container_of(chan, struct talitos_xor_chan,
+> common);
+> > > > +
+> > > > +	if (!list_empty(&xor_chan->free_desc))
+> > > > +		return xor_chan->total_desc;
+> > > > +
+> > > > +	for (i =3D 0; i < TALITOS_MAX_DESCRIPTOR_NR; i++) {
+> > > > +		desc =3D talitos_xor_alloc_descriptor(xor_chan,
+> > > > +				GFP_KERNEL | GFP_DMA);
+> > >
+> > > talitos_xor_alloc_descriptor() is called here without holding
+> > > the xor_chan->desc_lock and it increments xor_chan->total_desc.
+> > > Isn't this an issue ?
+> >
+> > No, please refer to the code as below,
+> > +	list_add_tail(&desc->node, &tmp_list);
+> >
+> > The list is temporary list, it will be merged to xor_chan->free_desc in
+> next step, here is protected
+> > by lock,
+> > +	spin_lock_bh(&xor_chan->desc_lock);
+> > +	list_splice_init(&tmp_list, &xor_chan->free_desc);
+> > +	spin_unlock_bh(&xor_chan->desc_lock);
+>=20
+> I was not referring to the list, but to xor_chan->total_desc variable.
+> The following access:
+> talitos_alloc_chan_resources()->talitos_xor_alloc_descriptor()-
+> >total_desc++
+> is not protected by the xor_chan->desc_lock.
+Ok, I will correct it in next series. Thanks.
