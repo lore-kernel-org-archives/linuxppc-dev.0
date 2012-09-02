@@ -1,25 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 44D692C036C
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Sep 2012 07:30:35 +1000 (EST)
-Date: Fri, 31 Aug 2012 14:30:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: wency@cn.fujitsu.com
-Subject: Re: [RFC v8 PATCH 13/20] memory-hotplug: check page type in
- get_page_bootmem
-Message-Id: <20120831143032.1343e99a.akpm@linux-foundation.org>
-In-Reply-To: <1346148027-24468-14-git-send-email-wency@cn.fujitsu.com>
-References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
- <1346148027-24468-14-git-send-email-wency@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- liuj97@gmail.com
+Return-Path: <B04825@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C4BC52C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2012 12:48:10 +1000 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+Subject: Re: [PATCH] i2c-mpc: Wait for STOP to hit the bus
+Date: Sun, 2 Sep 2012 02:48:01 +0000
+Message-ID: <6AE080B68D46FC4BA2D2769E68D765B708019E97@039-SN2MPN1-022.039d.mgd.msft.net>
+References: <1346323204-19210-1-git-send-email-Joakim.Tjernlund@transmode.se>
+In-Reply-To: <1346323204-19210-1-git-send-email-Joakim.Tjernlund@transmode.se>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,40 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 28 Aug 2012 18:00:20 +0800
-wency@cn.fujitsu.com wrote:
+On Thu, Aug 30, 2012 at 5:40 AM, Joakim Tjernlund
+<Joakim.Tjernlund@transmode.se> wrote:
 
-> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> 
-> There is a possibility that get_page_bootmem() is called to the same page many
-> times. So when get_page_bootmem is called to the same page, the function only
-> increments page->_count.
-
-I really don't understand this explanation, even after having looked at
-the code.  Can you please have another attempt at the changelog?
-
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -95,10 +95,17 @@ static void release_memory_resource(struct resource *res)
->  static void get_page_bootmem(unsigned long info,  struct page *page,
->  			     unsigned long type)
->  {
-> -	page->lru.next = (struct list_head *) type;
-> -	SetPagePrivate(page);
-> -	set_page_private(page, info);
-> -	atomic_inc(&page->_count);
-> +	unsigned long page_type;
+> -       mpc_i2c_stop(i2c);
+> +       mpc_i2c_stop(i2c); /* Initiate STOP */
+> +       orig_jiffies =3D jiffies;
+> +       /* Wait until STOP is seen, allow up to 1 s */
+> +       while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
+> +               if (time_after(jiffies, orig_jiffies + HZ)) {
+> +                       u8 status =3D readb(i2c->base + MPC_I2C_SR);
 > +
-> +	page_type = (unsigned long) page->lru.next;
-> +	if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
-> +	    page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
-> +		page->lru.next = (struct list_head *) type;
-> +		SetPagePrivate(page);
-> +		set_page_private(page, info);
-> +		atomic_inc(&page->_count);
-> +	} else
-> +		atomic_inc(&page->_count);
->  }
+> +                       dev_dbg(i2c->dev, "timeout\n");
+> +                       if ((status & (CSR_MCF | CSR_MBB | CSR_RXAK)) !=
+=3D 0) {
+> +                               writeb(status & ~CSR_MAL,
+> +                                      i2c->base + MPC_I2C_SR);
+> +                               mpc_i2c_fixup(i2c);
+> +                       }
+> +                       return -EIO;
+> +               }
+> +               cond_resched();
+> +       }
 
-And a code comment which explains what is going on would be good.  As
-is always the case ;)
+Shouldn't the while-loop be inside mpc_i2c_stop() itself?
+
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
