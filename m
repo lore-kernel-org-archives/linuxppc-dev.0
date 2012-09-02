@@ -1,27 +1,23 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
+ [209.85.220.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DE6B92C0085
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2012 18:41:21 +1000 (EST)
-Received: by pbbro8 with SMTP id ro8so7137083pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Sep 2012 01:41:19 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id F108A2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Sep 2012 19:33:12 +1000 (EST)
+Received: by vcqp16 with SMTP id p16so4361765vcq.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Sep 2012 02:33:09 -0700 (PDT)
 MIME-Version: 1.0
-Sender: dan.j.williams@gmail.com
-In-Reply-To: <1344500582-11110-1-git-send-email-qiang.liu@freescale.com>
-References: <1344500582-11110-1-git-send-email-qiang.liu@freescale.com>
-Date: Sun, 2 Sep 2012 01:41:18 -0700
-Message-ID: <CAA9_cmeFamCX1u+z3fP_gxAqe83JFbY9Beqpqgb-PjRoJ8BrWA@mail.gmail.com>
-Subject: Re: [PATCH v7 6/8] fsl-dma: use spin_lock_bh to instead of
- spin_lock_irqsave
-From: Dan Williams <djbw@fb.com>
-To: qiang.liu@freescale.com
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: arnd@arndb.de, vinod.koul@intel.com, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>,
- herbert@gondor.hengli.com.au, linux-crypto@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1346577700-8156-1-git-send-email-geert@linux-m68k.org>
+References: <1346577700-8156-1-git-send-email-geert@linux-m68k.org>
+Date: Sun, 2 Sep 2012 11:33:08 +0200
+Message-ID: <CAMuHMdUSGHF4VXa91=n96hnNTywA3e03xp6Ayc32ZyHBn=Vh5A@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.6-rc4
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, linux-input@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,25 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Aug 9, 2012 at 1:23 AM,  <qiang.liu@freescale.com> wrote:
-> From: Qiang Liu <qiang.liu@freescale.com>
->
-> The use of spin_lock_irqsave() is a stronger locking mechanism than is
-> required throughout the driver. The minimum locking required should be
-> used instead. Interrupts will be turned off and context will be saved,
-> there is needless to use irqsave.
->
-> Change all instances of spin_lock_irqsave() to spin_lock_bh().
-> All manipulation of protected fields is done using tasklet context or
-> weaker, which makes spin_lock_bh() the correct choice.
+On Sun, Sep 2, 2012 at 11:21 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.6-rc4 to v3.6-rc3[3], the summaries are:
+>   - build errors: +6/-13
 
-It seems you are coordinating fsl-dma copy and talitos xor operations.
- It looks like fsl-dma will be called through
-talitos_process_pending()->dma_run_dependencies(), which is
-potentially called in hard irq context.
+6 regressions:
+  + drivers/input/touchscreen/edt-ft5x06.c: error: 'struct
+edt_ft5x06_ts_data' has no member named 'raw_buffer':  => 846:14
 
-This all comes back to the need to fix raid offload to manage the
-channels explicitly rather than the current dependency chains.
+powerpc-randconfig, fix reported as queued by Dmitry.
+
+  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `_restgpr0_25' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ff96e4), (.text+0x1ff9438),
+(.text+0x1ff8e74)
+  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `_restgpr0_28' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ff9848)
+  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `_restgpr0_30' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ff8ea8), (.text+0x1ff8edc)
+  + error: eni.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `_savegpr0_29' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ff9cf0)
+  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
+against symbol `_restgpr0_22' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ff8608), (.text+0x1ff7e5c)
+
+powerpc-allyesconfig
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/5381/ (all 116 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/5359/ (all 116 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
 
 --
-Dan
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
