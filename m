@@ -1,21 +1,25 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AEA492C008E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2012 00:22:06 +1000 (EST)
-In-Reply-To: <6AE080B68D46FC4BA2D2769E68D765B708019E97@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1346323204-19210-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <6AE080B68D46FC4BA2D2769E68D765B708019E97@039-SN2MPN1-022.039d.mgd.msft.net>
-Subject: Re: [PATCH] i2c-mpc: Wait for STOP to hit the bus
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Message-ID: <OF0ACFB3FB.F2667AE9-ONC1257A6D.004E0ADE-C1257A6D.004EEB75@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Sun, 2 Sep 2012 16:22:00 +0200
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 18F572C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2012 11:25:23 +1000 (EST)
+Message-ID: <5044084B.3050705@cn.fujitsu.com>
+Date: Mon, 03 Sep 2012 09:30:51 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC v8 PATCH 04/20] memory-hotplug: offline and remove memory
+ when removing the memory device
+References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>	<1346148027-24468-5-git-send-email-wency@cn.fujitsu.com>
+ <20120831135514.2a2dc0d4.akpm@linux-foundation.org>
+In-Reply-To: <20120831135514.2a2dc0d4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +29,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Tabi Timur-B04825 <B04825@freescale.com> wrote on 2012/09/02 04:48:01:
-> On Thu, Aug 30, 2012 at 5:40 AM, Joakim Tjernlund
-> <Joakim.Tjernlund@transmode.se> wrote:
->
-> > -       mpc_i2c_stop(i2c);
-> > +       mpc_i2c_stop(i2c); /* Initiate STOP */
-> > +       orig_jiffies = jiffies;
-> > +       /* Wait until STOP is seen, allow up to 1 s */
-> > +       while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
-> > +               if (time_after(jiffies, orig_jiffies + HZ)) {
-> > +                       u8 status = readb(i2c->base + MPC_I2C_SR);
-> > +
-> > +                       dev_dbg(i2c->dev, "timeout\n");
-> > +                       if ((status & (CSR_MCF | CSR_MBB | CSR_RXAK)) != 0) {
-> > +                               writeb(status & ~CSR_MAL,
-> > +                                      i2c->base + MPC_I2C_SR);
-> > +                               mpc_i2c_fixup(i2c);
-> > +                       }
-> > +                       return -EIO;
-> > +               }
-> > +               cond_resched();
-> > +       }
->
-> Shouldn't the while-loop be inside mpc_i2c_stop() itself?
+At 09/01/2012 04:55 AM, Andrew Morton Wrote:
+> On Tue, 28 Aug 2012 18:00:11 +0800
+> wency@cn.fujitsu.com wrote:
+> 
+>> +int remove_memory(int nid, u64 start, u64 size)
+>> +{
+>> +	int ret = -EBUSY;
+>> +	lock_memory_hotplug();
+>> +	/*
+>> +	 * The memory might become online by other task, even if you offine it.
+>> +	 * So we check whether the cpu has been onlined or not.
+> 
+> I think you meant "memory", not "cpu".
 
-Possibly but I choosed to do it this way as there is a similar loop in the beginning of mpc_xfer().
-I figured it has better visibility if it is in the same function.
+Yes. I will fix it.
 
- Jocke
+Thanks
+Wen Congyang
+
+> 
+> Actually, "check whether any part of this memory range has been
+> onlined" would be better.  If that is accurate ;)
+> 
+>> +	 */
+>> +	if (!is_memblk_offline(start, size)) {
+>> +		pr_warn("memory removing [mem %#010llx-%#010llx] failed, "
+>> +			"because the memmory range is online\n",
+>> +			start, start + size);
+>> +		ret = -EAGAIN;
+>> +	}
+>> +
+>> +	unlock_memory_hotplug();
+>> +	return ret;
+>> +
+>> +}
+>> +EXPORT_SYMBOL_GPL(remove_memory);
+> 
