@@ -1,9 +1,9 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id BDBD42C0093
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2012 15:45:42 +1000 (EST)
-Message-ID: <5044454E.7070909@cn.fujitsu.com>
-Date: Mon, 03 Sep 2012 13:51:10 +0800
+ by ozlabs.org (Postfix) with ESMTP id 0AD802C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2012 17:44:41 +1000 (EST)
+Message-ID: <50445CB4.80303@cn.fujitsu.com>
+Date: Mon, 03 Sep 2012 15:31:00 +0800
 From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -48,6 +48,11 @@ At 09/01/2012 05:06 AM, Andrew Morton Wrote:
 > 
 > It would be better to implement this as an inlined C function.  That
 > has improved type safety and improved readability.
+
+Hmm, this macro is not a new macro. It is defined after the function
+release_firmware_map_entry(). We just moved it here because we
+need it in the function release_firmware_map_entry().
+
 > 
 >> +static void release_firmware_map_entry(struct kobject *kobj)
 >> +{
@@ -58,11 +63,6 @@ At 09/01/2012 05:06 AM, Andrew Morton Wrote:
 >> +	if (PageSlab(page) || PageCompound(page))
 > 
 > That PageCompound() test looks rather odd.  Why is this done?
-
-Liu Jiang and Christoph Lameter discussed how to find slab page
-in this mail:
-https://lkml.org/lkml/2012/7/6/333.
-
 > 
 >> +		kfree(entry);
 >> +
@@ -94,6 +94,12 @@ https://lkml.org/lkml/2012/7/6/333.
 >> +}
 > 
 > Is there no locking  to protect that list?
+
+OK, I will add a lock to protect it.
+
+Thanks
+Wen Congyang
+
 > 
 >>  /*
 >>   * Add memmap entry on sysfs
@@ -120,9 +126,6 @@ https://lkml.org/lkml/2012/7/6/333.
 > A better name would be firmware_map_find_entry().  To retain the (good)
 > convention that symbols exported from here all start with
 > "firmware_map_".
-
-OK.
-
 > 
 >> +{
 >> +	struct firmware_map_entry *entry;
@@ -182,13 +185,6 @@ OK.
 >> +int __ref remove_memory(int nid, u64 start, u64 size)
 > 
 > Why was __ref added?
-
-Hmm, firmware_map_remove() was put in meminit section, and we call it
-in this function, so __ref is added here.
-
-Thanks
-Wen Congyang
-
 > 
 >>  {
 >> -	int ret = -EBUSY;
