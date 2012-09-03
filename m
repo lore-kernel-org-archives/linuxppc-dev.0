@@ -1,25 +1,19 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 0AD802C0091
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2012 17:44:41 +1000 (EST)
-Message-ID: <50445CB4.80303@cn.fujitsu.com>
-Date: Mon, 03 Sep 2012 15:31:00 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <r61911@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 05E342C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Sep 2012 18:21:53 +1000 (EST)
+From: Roy Zang <tie-fei.zang@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 1/2] powerpc/pci: Add IP revision register define for
+ Freescale PCIe controller
+Date: Mon, 3 Sep 2012 17:22:09 +0800
+Message-ID: <1346664130-7896-1-git-send-email-tie-fei.zang@freescale.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC v8 PATCH 08/20] memory-hotplug: remove /sys/firmware/memmap/X
- sysfs
-References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>	<1346148027-24468-9-git-send-email-wency@cn.fujitsu.com>
- <20120831140623.8d13bd2c.akpm@linux-foundation.org>
-In-Reply-To: <20120831140623.8d13bd2c.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- liuj97@gmail.com
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,170 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 09/01/2012 05:06 AM, Andrew Morton Wrote:
-> On Tue, 28 Aug 2012 18:00:15 +0800
-> wency@cn.fujitsu.com wrote:
-> 
->> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>
->> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
->> sysfs files are created. But there is no code to remove these files. The patch
->> implements the function to remove them.
->>
->> Note : The code does not free firmware_map_entry since there is no way to free
->>        memory which is allocated by bootmem.
->>
->> ....
->>
->> +#define to_memmap_entry(obj) container_of(obj, struct firmware_map_entry, kobj)
-> 
-> It would be better to implement this as an inlined C function.  That
-> has improved type safety and improved readability.
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_pci.h |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Hmm, this macro is not a new macro. It is defined after the function
-release_firmware_map_entry(). We just moved it here because we
-need it in the function release_firmware_map_entry().
-
-> 
->> +static void release_firmware_map_entry(struct kobject *kobj)
->> +{
->> +	struct firmware_map_entry *entry = to_memmap_entry(kobj);
->> +	struct page *page;
->> +
->> +	page = virt_to_page(entry);
->> +	if (PageSlab(page) || PageCompound(page))
-> 
-> That PageCompound() test looks rather odd.  Why is this done?
-> 
->> +		kfree(entry);
->> +
->> +	/* There is no way to free memory allocated from bootmem*/
->> +}
-> 
-> This function is a bit ugly - poking around in page flags to determine
-> whether or not the memory came from bootmem.  It would be cleaner to
-> use a separate boolean.  Although I guess we can live with it as you
-> have it here.
-> 
->>  static struct kobj_type memmap_ktype = {
->> +	.release	= release_firmware_map_entry,
->>  	.sysfs_ops	= &memmap_attr_ops,
->>  	.default_attrs	= def_attrs,
->>  };
->> @@ -123,6 +139,16 @@ static int firmware_map_add_entry(u64 start, u64 end,
->>  	return 0;
->>  }
->>  
->> +/**
->> + * firmware_map_remove_entry() - Does the real work to remove a firmware
->> + * memmap entry.
->> + * @entry: removed entry.
->> + **/
->> +static inline void firmware_map_remove_entry(struct firmware_map_entry *entry)
->> +{
->> +	list_del(&entry->list);
->> +}
-> 
-> Is there no locking  to protect that list?
-
-OK, I will add a lock to protect it.
-
-Thanks
-Wen Congyang
-
-> 
->>  /*
->>   * Add memmap entry on sysfs
->>   */
->> @@ -144,6 +170,31 @@ static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry)
->>  	return 0;
->>  }
->>  
->> +/*
->> + * Remove memmap entry on sysfs
->> + */
->> +static inline void remove_sysfs_fw_map_entry(struct firmware_map_entry *entry)
->> +{
->> +	kobject_put(&entry->kobj);
->> +}
->> +
->> +/*
->> + * Search memmap entry
->> + */
->> +
->> +struct firmware_map_entry * __meminit
->> +find_firmware_map_entry(u64 start, u64 end, const char *type)
-> 
-> A better name would be firmware_map_find_entry().  To retain the (good)
-> convention that symbols exported from here all start with
-> "firmware_map_".
-> 
->> +{
->> +	struct firmware_map_entry *entry;
->> +
->> +	list_for_each_entry(entry, &map_entries, list)
->> +		if ((entry->start == start) && (entry->end == end) &&
->> +		    (!strcmp(entry->type, type)))
->> +			return entry;
->> +
->> +	return NULL;
->> +}
->> +
->>  /**
->>   * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
->>   * memory hotplug.
->> @@ -196,6 +247,32 @@ int __init firmware_map_add_early(u64 start, u64 end, const char *type)
->>  	return firmware_map_add_entry(start, end, type, entry);
->>  }
->>  
->> +/**
->> + * firmware_map_remove() - remove a firmware mapping entry
->> + * @start: Start of the memory range.
->> + * @end:   End of the memory range.
->> + * @type:  Type of the memory range.
->> + *
->> + * removes a firmware mapping entry.
->> + *
->> + * Returns 0 on success, or -EINVAL if no entry.
->> + **/
->> +int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
->> +{
->> +	struct firmware_map_entry *entry;
->> +
->> +	entry = find_firmware_map_entry(start, end - 1, type);
->> +	if (!entry)
->> +		return -EINVAL;
->> +
->> +	firmware_map_remove_entry(entry);
->> +
->> +	/* remove the memmap entry */
->> +	remove_sysfs_fw_map_entry(entry);
->> +
->> +	return 0;
->> +}
-> 
-> Again, the lack of locking looks bad.
-> 
->> ...
->>
->> --- a/mm/memory_hotplug.c
->> +++ b/mm/memory_hotplug.c
->> @@ -1052,9 +1052,9 @@ int offline_memory(u64 start, u64 size)
->>  	return 0;
->>  }
->>  
->> -int remove_memory(int nid, u64 start, u64 size)
->> +int __ref remove_memory(int nid, u64 start, u64 size)
-> 
-> Why was __ref added?
-> 
->>  {
->> -	int ret = -EBUSY;
->> +	int ret = 0;
->>  	lock_memory_hotplug();
->>  	/*
->>  	 * The memory might become online by other task, even if you offine it.
->>
->> ...
->>
-> 
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index baa0fd1..7192932 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -16,6 +16,7 @@
+ 
+ #define PCIE_LTSSM	0x0404		/* PCIE Link Training and Status */
+ #define PCIE_LTSSM_L0	0x16		/* L0 state */
++#define PCIE_IP_REV_2_2		0x02080202 /* PCIE IP block version Rev2.2 */
+ #define PIWAR_EN		0x80000000	/* Enable */
+ #define PIWAR_PF		0x20000000	/* prefetch */
+ #define PIWAR_TGI_LOCAL		0x00f00000	/* target - local memory */
+@@ -57,7 +58,9 @@ struct ccsr_pci {
+ 	__be32	pex_pme_mes_disr;	/* 0x.024 - PCIE PME and message disable register */
+ 	__be32	pex_pme_mes_ier;	/* 0x.028 - PCIE PME and message interrupt enable register */
+ 	__be32	pex_pmcr;		/* 0x.02c - PCIE power management command register */
+-	u8	res3[3024];
++	u8	res3[3016];
++	__be32	block_rev1;	/* 0x.bf8 - PCIE Block Revision register 1 */
++	__be32	block_rev2;	/* 0x.bfc - PCIE Block Revision register 2 */
+ 
+ /* PCI/PCI Express outbound window 0-4
+  * Window 0 is the default window and is the only window enabled upon reset.
+-- 
+1.7.8.1
