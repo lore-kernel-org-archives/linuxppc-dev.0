@@ -1,28 +1,27 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 340D32C03D4
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 19:02:37 +1000 (EST)
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1F1452C03D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 19:02:38 +1000 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 4 Sep 2012 14:32:35 +0530
+ Tue, 4 Sep 2012 14:32:36 +0530
 Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8492VFi60751884
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 14:32:31 +0530
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8492ZJu28835884
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 14:32:35 +0530
 Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
  by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8492QM3030936
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 19:02:28 +1000
+ q8492X3G031532
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 19:02:34 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V7 08/12] arch/powerpc: Make some of the PGTABLE_RANGE
- dependency explicit
-Date: Tue,  4 Sep 2012 14:31:25 +0530
-Message-Id: <1346749289-16986-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V7 10/12] arch/powerpc: Use 32bit array for slb cache
+Date: Tue,  4 Sep 2012 14:31:27 +0530
+Message-Id: <1346749289-16986-11-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1346749289-16986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1346749289-16986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -38,98 +37,47 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-slice array size and slice mask size depend on PGTABLE_RANGE. We
-can't directly include pgtable.h in these header because there is
-a circular dependency. So add compile time check for these values.
+With larger vsid we need to track more bits of ESID in slb cache
+for slb invalidate.
 
 Reviewed-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h    |   13 ++++++++-----
- arch/powerpc/include/asm/page_64.h       |   16 ++++++++++++----
- arch/powerpc/include/asm/pgtable-ppc64.h |    8 ++++++++
- 3 files changed, 28 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/paca.h |    2 +-
+ arch/powerpc/mm/slb_low.S       |    8 ++++----
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 8f05eec..8c5c5a4 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -420,6 +420,13 @@ extern void slb_set_size(u16 size);
- 	srdi	rx,rx,VSID_BITS_##size;	/* extract 2^VSID_BITS bit */	\
- 	add	rt,rt,rx
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index daf813f..3e7abba 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -100,7 +100,7 @@ struct paca_struct {
+ 	/* SLB related definitions */
+ 	u16 vmalloc_sllp;
+ 	u16 slb_cache_ptr;
+-	u16 slb_cache[SLB_CACHE_ENTRIES];
++	u32 slb_cache[SLB_CACHE_ENTRIES];
+ #endif /* CONFIG_PPC_STD_MMU_64 */
  
-+/* 4 bits per slice and we have one slice per 1TB */
-+#if 0 /* We can't directly include pgtable.h hence this hack */
-+#define SLICE_ARRAY_SIZE  (PGTABLE_RANGE >> 41)
-+#else
-+/* Right now we only support 64TB */
-+#define SLICE_ARRAY_SIZE  32
-+#endif
+ #ifdef CONFIG_PPC_BOOK3E
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index 3b75f19..f6a2625 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -270,10 +270,10 @@ _GLOBAL(slb_compare_rr_to_size)
+ 	bge	1f
  
- #ifndef __ASSEMBLY__
- 
-@@ -464,11 +471,7 @@ typedef struct {
- 
- #ifdef CONFIG_PPC_MM_SLICES
- 	u64 low_slices_psize;	/* SLB page size encodings */
--	/*
--	 * Right now we support 64TB and 4 bits for each
--	 * 1TB slice we need 32 bytes for 64TB.
--	 */
--	unsigned char high_slices_psize[32];  /* 4 bits per slice for now */
-+	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
- #else
- 	u16 sllp;		/* SLB page size encoding */
- #endif
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 6c9bef4..b55beb4 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -78,14 +78,22 @@ extern u64 ppc64_pft_size;
- #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
- #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
- 
-+/* 1 bit per slice and we have one slice per 1TB */
-+#if 0 /* We can't directly include pgtable.h hence this hack */
-+#define SLICE_MASK_SIZE (PGTABLE_RANGE >> 43)
-+#else
-+/*
-+ * Right now we support only 64TB.
-+ * IF we change this we will have to change the type
-+ * of high_slices
-+ */
-+#define SLICE_MASK_SIZE 8
-+#endif
-+
- #ifndef __ASSEMBLY__
- 
- struct slice_mask {
- 	u16 low_slices;
--	/*
--	 * This should be derived out of PGTABLE_RANGE. For the current
--	 * max 64TB, u64 should be ok.
--	 */
- 	u64 high_slices;
- };
- 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 8af1cf2..dea953f 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -32,6 +32,14 @@
- #endif
- #endif
- 
-+#if (PGTABLE_RANGE >> 41) > SLICE_ARRAY_SIZE
-+#error PGTABLE_RANGE exceeds SLICE_ARRAY_SIZE
-+#endif
-+
-+#if (PGTABLE_RANGE >> 43) > SLICE_MASK_SIZE
-+#error PGTABLE_RANGE exceeds slice_mask high_slices size
-+#endif
-+
- /*
-  * Define the address range of the kernel non-linear virtual area
-  */
+ 	/* still room in the slb cache */
+-	sldi	r11,r3,1		/* r11 = offset * sizeof(u16) */
+-	rldicl	r10,r10,36,28		/* get low 16 bits of the ESID */
+-	add	r11,r11,r13		/* r11 = (u16 *)paca + offset */
+-	sth	r10,PACASLBCACHE(r11)	/* paca->slb_cache[offset] = esid */
++	sldi	r11,r3,2		/* r11 = offset * sizeof(u32) */
++	srdi    r10,r10,28		/* get the 36 bits of the ESID */
++	add	r11,r11,r13		/* r11 = (u32 *)paca + offset */
++	stw	r10,PACASLBCACHE(r11)	/* paca->slb_cache[offset] = esid */
+ 	addi	r3,r3,1			/* offset++ */
+ 	b	2f
+ 1:					/* offset >= SLB_CACHE_ENTRIES */
 -- 
 1.7.10
