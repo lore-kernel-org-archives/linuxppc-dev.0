@@ -1,19 +1,25 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
- [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 652812C0093
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 00:27:23 +1000 (EST)
-Message-ID: <1346768840.27919.2.camel@gandalf.local.home>
-Subject: Re: 3.5+: yaboot, Invalid memory access
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 04 Sep 2012 10:27:20 -0400
-In-Reply-To: <1346741491.7619.12.camel@concordia>
-References: <alpine.DEB.2.01.1207302235170.26923@trent.utfs.org>
- <alpine.DEB.2.01.1209032310220.25392@trent.utfs.org>
- <1346741491.7619.12.camel@concordia>
-Content-Type: text/plain; charset="ISO-8859-15"
-Mime-Version: 1.0
-Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id 270F12C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 01:01:02 +1000 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 28493-03 for <linuxppc-dev@lists.ozlabs.org>;
+ Tue,  4 Sep 2012 15:54:19 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH] sata_fsl: add workaround for data length mismatch on
+ freescale V2 controller
+Date: Tue, 4 Sep 2012 15:51:26 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B6FD6@saturn3.aculab.com>
+In-Reply-To: <1346756920-19128-1-git-send-email-Shaohui.Xie@freescale.com>
+References: <1346756920-19128-1-git-send-email-Shaohui.Xie@freescale.com>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Shaohui Xie" <Shaohui.Xie@freescale.com>, <jgarzik@pobox.com>,
+ <linux-ide@vger.kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Anju Bhartiya <Anju.Bhartiya@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-09-04 at 16:51 +1000, Michael Ellerman wrote:
+> +	/* Read command completed register */
+> +	done_mask =3D ioread32(hcr_base + CC);
+> +
+> +	if (host_priv->quirks & SATA_FSL_QUIRK_V2_ERRATA) {
+> +		if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
+> +			for (tag =3D 0; tag < ATA_MAX_QUEUE; tag++) {
+> +				qc =3D ata_qc_from_tag(ap, tag);
+> +				if (qc && ata_is_atapi(qc->tf.protocol))
+{
+> +					atapi_flag =3D 1;
+> +					break;
+> +				}
+> +			}
+> +		}
+> +	}
+> +
+> +	/* Workaround for data length mismatch errata */
+> +	if (atapi_flag) {
 
-> My guess would be we're calling that quite early and the __put_user()
-> check is getting confused and failing. That means we'll have left some
-> code unpatched, which then fails.
-> 
-> Can you try with the patch applied, but instead of returning if the
-> __put_user() fails, just continue on anyway.
-> 
-> That will isolate if it's something in the __put_user() (I doubt it), or
-> just that the __put_user() is failing and leaving the code unpatched.
+Seems to me like the conditionals for this code are all
+in the wrong order - adding code to the normal path.
 
-As a test case, continuing on error is fine, but I would not recommend
-that as a fix. If it fails, but still does the patch, that could be
-harmful, and confusing of a result.
+The whole lot should probably be inside:
+	if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
+and the 'atapi_flag' boolean removed.
 
-Need to figure out why put_user is failing.
+I also wonder it this is worthy of an actual quirk?
+Might be worth doing anyway.
 
--- Steve
+	David
