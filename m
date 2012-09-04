@@ -1,19 +1,26 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id 82FD92C008F
- for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2012 19:32:49 +1000 (EST)
-Date: Tue, 4 Sep 2012 02:32:36 -0700 (PDT)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: 3.5+: yaboot, Invalid memory access
-In-Reply-To: <1346741491.7619.12.camel@concordia>
-Message-ID: <alpine.DEB.2.01.1209040223380.25392@trent.utfs.org>
-References: <alpine.DEB.2.01.1207302235170.26923@trent.utfs.org>
- <alpine.DEB.2.01.1209032310220.25392@trent.utfs.org>
- <1346741491.7619.12.camel@concordia>
+Return-Path: <julia.lawall@lip6.fr>
+Received: from mail1-relais-roc.national.inria.fr
+ (mail1-relais-roc.national.inria.fr [192.134.164.82])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.inria.fr", Issuer "TERENA SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 021B12C00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 19:44:54 +1000 (EST)
+Date: Tue, 4 Sep 2012 11:44:34 +0200 (CEST)
+From: Julia Lawall <julia.lawall@lip6.fr>
+To: Lars-Peter Clausen <lars@metafoo.de>
+Subject: Re: [PATCH 4/4] drivers/mtd/nand/mpc5121_nfc.c: some devm_
+ cleanups
+In-Reply-To: <5045C19A.7000705@metafoo.de>
+Message-ID: <alpine.DEB.2.02.1209041142130.2759@hadrien>
+References: <1346517191-8794-1-git-send-email-Julia.Lawall@lip6.fr>
+ <1346517191-8794-4-git-send-email-Julia.Lawall@lip6.fr>
+ <1346748171.12610.22.camel@sauron.fi.intel.com> <5045C19A.7000705@metafoo.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Steven Rostedt <rostedt@goodmis.org>, linuxppc-dev@ozlabs.org
+Cc: dedekind1@gmail.com, David Woodhouse <dwmw2@infradead.org>,
+ kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Julia Lawall <Julia.Lawall@lip6.fr>, linux-mtd@lists.infradead.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,46 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 4 Sep 2012 at 16:51, Michael Ellerman wrote:
-> My guess would be we're calling that quite early and the __put_user()
-> check is getting confused and failing. That means we'll have left some
-> code unpatched, which then fails.
-> 
-> Can you try with the patch applied, but instead of returning if the
-> __put_user() fails, just continue on anyway.
+On Tue, 4 Sep 2012, Lars-Peter Clausen wrote:
 
-You mean, like this?
+> On 09/04/2012 10:42 AM, Artem Bityutskiy wrote:
+> > Aiaiai! :-) [1] [2]
+> >
+> > I've build-tested this using aiaiai and it reports that this change breaks the build:
+> >
+> > dedekind@blue:~/git/maintaining$ ./verify ../l2-mtd/ mpc5121_nfc < ~/tmp/julia2.mbox
+> > Tested the patch(es) on top of the following commits:
+> > ba64756 Quick fixes - applied by aiaiai
+> > 651c6fa JFFS2: don't fail on bitflips in OOB
+> > e22ac84 mtd: autcpu12-nvram: drop frees of devm_ alloc'd data
+> > ea9d312 mtd: cmdlinepart: minor cleanups
+> >
+> > --------------------------------------------------------------------------------
+> > Failed to build the following commit for configuration "powerpc-mpc512x_defconfig" (architecture powerpc)":
+> >
+> > 0fe13ab drivers/mtd/nand/mpc5121_nfc.c: some devm_ cleanups
+> >
+> > ...
+> > drivers/mtd/nand/mpc5121_nfc.c: In function 'mpc5121_nfc_probe':
+> > drivers/mtd/nand/mpc5121_nfc.c:622:28: warning: variable 'regs_size' set but not used [-Wunused-but-set-variable]
+> > drivers/mtd/nand/mpc5121_nfc.c:622:16: warning: variable 'regs_paddr' set but not used [-Wunused-but-set-variable]
+> > drivers/built-in.o: In function `mpc5121_nfc_probe':
+> > mpc5121_nfc.c:(.devinit.text+0x2a14): undefined reference to `devm_clk_get'
+> > make[1]: *** [vmlinux] Error 1
+> >
+> > --------------------------------------------------------------------------------
+> >
+> > I do not really know why, but it seems that clock framework is not supported for powerpc. CCing the PPC mailing list. Preserved the context below for the PPC people.
+> >
+>
+> I've been bitten by the same issue recently, also cause by one of these
+> cocci devm patches. devm_clk_get is only available if the generic
+> clk_get/clk_put implementation is used. Not all architectures do this and
+> some implement their own clk_get/clk_put, etc functions. Since devm_clk_get
+> is merely a wrapper around clk_get/clk_put there is no reason why it should
+> depend CLKDEV_LOOKUP. I've prepared a patch which makes them generically
+> available if the clk_get/clk_put are implemented (i.e. if HAVE_CLK is set),
+> but it is on a different machine right now, will try to submit it later today.
 
-------
-diff --git a/arch/powerpc/lib/code-patching.c 
-b/arch/powerpc/lib/code-patching.c
-index dd223b3..755b623 100644
---- a/arch/powerpc/lib/code-patching.c
-+++ b/arch/powerpc/lib/code-patching.c
-@@ -21,8 +21,8 @@ int patch_instruction(unsigned int *addr, unsigned int 
-instr)
-        int err;
- 
-        err = __put_user(instr, addr);
--       if (err)
--               return err;
-+//     if (err)
-+//             return err;
-        asm ("dcbst 0, %0; sync; icbi 0,%0; sync; isync" : : "r" (addr));
-        return 0;
- }
-------
+Sorry about this.  I wasn't aware that devm_clk_get wasn't supported by
+all architectures, and I have no way of compiling code for these
+architectures...  But I wonder why it is not, since devm-ness doesn't seem
+to have anything to do with architecture-specific details?  It would be
+really nice to have it for all architectures, because the clock functions
+are just as (or at least almost as) common as kzalloc, ioremap, etc.
 
-
-Thanks,
-Christian.
-
-> 
-> That will isolate if it's something in the __put_user() (I doubt it), or
-> just that the __put_user() is failing and leaving the code unpatched.
-> 
-> cheers
--- 
-BOFH excuse #361:
-
-Communist revolutionaries taking over the server room and demanding all the computers in the building or they shoot the sysadmin. Poor misguided fools.
+thanks,
+julia
