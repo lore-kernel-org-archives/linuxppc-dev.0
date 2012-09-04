@@ -1,24 +1,18 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 431EA2C008B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 13:44:44 +1000 (EST)
-Message-ID: <50457983.1050304@cn.fujitsu.com>
-Date: Tue, 04 Sep 2012 11:46:11 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id 7367B2C008C
+ for <linuxppc-dev@ozlabs.org>; Tue,  4 Sep 2012 16:18:52 +1000 (EST)
+Date: Mon, 3 Sep 2012 23:18:45 -0700 (PDT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Steven Rostedt <rostedt@goodmis.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: 3.5+: yaboot, Invalid memory access
+In-Reply-To: <alpine.DEB.2.01.1207302235170.26923@trent.utfs.org>
+Message-ID: <alpine.DEB.2.01.1209032310220.25392@trent.utfs.org>
+References: <alpine.DEB.2.01.1207302235170.26923@trent.utfs.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, isimatu.yasuaki@jp.fujitsu.com
-Subject: Re: [RFC v8 PATCH 13/20] memory-hotplug: check page type in
- get_page_bootmem
-References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>	<1346148027-24468-14-git-send-email-wency@cn.fujitsu.com>
- <20120831143032.1343e99a.akpm@linux-foundation.org>
-In-Reply-To: <20120831143032.1343e99a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
- rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, liuj97@gmail.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,53 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi, isimatu-san
+On Mon, 30 Jul 2012 at 22:46, Christian Kujau wrote:
+> when trying to upgrade from 3.5 (final) to today's git checkout from 
+> Linus' tree, yaboot cannot boot and the following is printed:
+> 
+>   [...]
+>   returning from prom_init
+>   Invalid memory access at %SRR0: 00c62fd4  %SRR1: 00003030
 
-At 09/01/2012 05:30 AM, Andrew Morton Wrote:
-> On Tue, 28 Aug 2012 18:00:20 +0800
-> wency@cn.fujitsu.com wrote:
-> 
->> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>
->> There is a possibility that get_page_bootmem() is called to the same page many
->> times. So when get_page_bootmem is called to the same page, the function only
->> increments page->_count.
-> 
-> I really don't understand this explanation, even after having looked at
-> the code.  Can you please have another attempt at the changelog?
+Finally got around to do a bisection:
 
-What is the problem that you want to fix? The function get_page_bootmem()
-may be called to the same page more than once, but I don't find any problem
-about current implementation.
+-----------------------------
+b6e3796834faefe4b6e9a2aedfe12665cd51fbc5 is the first bad commit
+commit b6e3796834faefe4b6e9a2aedfe12665cd51fbc5
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Thu Apr 26 08:31:18 2012 +0000
 
-Thanks
-Wen Congyang
+    powerpc: Have patch_instruction detect faults
+    
+    For ftrace to use the patch_instruction code, it needs to check for
+    faults on write. Ftrace updates code all over the kernel, and we need 
+    to know if code is updated or not due to protections that are placed 
+    on some portions of the kernel. If ftrace does not detect a fault, it 
+    will error later on, and it will be much more difficult to find the 
+    problem.
+    
+    By changing patch_instruction() to detect faults, then ftrace will be
+    able to make use of it too.
+    
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+:040000 040000 83fb0e420524db452c07425e4dc402041428e696 0d1a01acd863237cf388045946ad4446a28df50c M      arch
+-----------------------------
+
+The changeset looked pretty harmless to me but I tested with a current 
+3.6+ git checkout and the kernel would only boot when this changeset was
+reverted.
+
+Thoughts?
+
+Thanks,
+Christian.
+
+> The whole message: http://nerdbynature.de/bits/3.5.0/yaboot/
 > 
->> --- a/mm/memory_hotplug.c
->> +++ b/mm/memory_hotplug.c
->> @@ -95,10 +95,17 @@ static void release_memory_resource(struct resource *res)
->>  static void get_page_bootmem(unsigned long info,  struct page *page,
->>  			     unsigned long type)
->>  {
->> -	page->lru.next = (struct list_head *) type;
->> -	SetPagePrivate(page);
->> -	set_page_private(page, info);
->> -	atomic_inc(&page->_count);
->> +	unsigned long page_type;
->> +
->> +	page_type = (unsigned long) page->lru.next;
->> +	if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
->> +	    page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
->> +		page->lru.next = (struct list_head *) type;
->> +		SetPagePrivate(page);
->> +		set_page_private(page, info);
->> +		atomic_inc(&page->_count);
->> +	} else
->> +		atomic_inc(&page->_count);
->>  }
+> The Yaboot version is 1.3.16 (from Debian/testing), I haven't tried 1.3.17 
+> yet, its changelog does not say anything about "newer kernel support" so 
+> I'm not sure if this would help here.
 > 
-> And a code comment which explains what is going on would be good.  As
-> is always the case ;)
+> Any other ideas?
 > 
-> 
+> Thanks,
+> Christian.
+
+-- 
+BOFH excuse #154:
+
+You can tune a file system, but you can't tune a fish (from most tunefs man pages)
