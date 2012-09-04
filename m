@@ -1,28 +1,27 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B0DD52C0109
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 19:02:30 +1000 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E3A572C03A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 19:02:34 +1000 (EST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 4 Sep 2012 14:32:25 +0530
+ Tue, 4 Sep 2012 14:32:33 +0530
 Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
  by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8492Ms733882138
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 14:32:22 +0530
+ q8492UPF36700200
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 14:32:30 +0530
 Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
  by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8492M95030577
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 19:02:22 +1000
+ q8492Pfa030754
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 19:02:28 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V7 06/12] arch/powerpc: Make KERN_VIRT_SIZE not dependend on
- PGTABLE_RANGE
-Date: Tue,  4 Sep 2012 14:31:23 +0530
-Message-Id: <1346749289-16986-7-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V7 07/12] arch/powerpc: Increase the slice range to 64TB
+Date: Tue,  4 Sep 2012 14:31:24 +0530
+Message-Id: <1346749289-16986-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1346749289-16986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1346749289-16986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -38,27 +37,336 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-As we keep increasing PGTABLE_RANGE we need not increase the virual
-map area for kernel.
+This patch makes the high psizes mask as an unsigned char array
+so that we can have more than 16TB. Currently we support upto
+64TB
 
-Reviewed-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pgtable-ppc64.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/mmu-hash64.h |    6 +-
+ arch/powerpc/include/asm/page_64.h    |    6 +-
+ arch/powerpc/mm/hash_utils_64.c       |   15 +++--
+ arch/powerpc/mm/slb_low.S             |   30 ++++++---
+ arch/powerpc/mm/slice.c               |  107 +++++++++++++++++++++------------
+ 5 files changed, 109 insertions(+), 55 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index c420561..8af1cf2 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -41,7 +41,7 @@
- #else
- #define KERN_VIRT_START ASM_CONST(0xD000000000000000)
- #endif
--#define KERN_VIRT_SIZE	PGTABLE_RANGE
-+#define KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index d848c56..8f05eec 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -464,7 +464,11 @@ typedef struct {
  
- /*
-  * The vmalloc space starts at the beginning of that region, and
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	u64 low_slices_psize;	/* SLB page size encodings */
+-	u64 high_slices_psize;  /* 4 bits per slice for now */
++	/*
++	 * Right now we support 64TB and 4 bits for each
++	 * 1TB slice we need 32 bytes for 64TB.
++	 */
++	unsigned char high_slices_psize[32];  /* 4 bits per slice for now */
+ #else
+ 	u16 sllp;		/* SLB page size encoding */
+ #endif
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index fed85e6..6c9bef4 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -82,7 +82,11 @@ extern u64 ppc64_pft_size;
+ 
+ struct slice_mask {
+ 	u16 low_slices;
+-	u16 high_slices;
++	/*
++	 * This should be derived out of PGTABLE_RANGE. For the current
++	 * max 64TB, u64 should be ok.
++	 */
++	u64 high_slices;
+ };
+ 
+ struct mm_struct;
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 74c5479..13e0ccf 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -804,16 +804,19 @@ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
+ #ifdef CONFIG_PPC_MM_SLICES
+ unsigned int get_paca_psize(unsigned long addr)
+ {
+-	unsigned long index, slices;
++	u64 lpsizes;
++	unsigned char *hpsizes;
++	unsigned long index, mask_index;
+ 
+ 	if (addr < SLICE_LOW_TOP) {
+-		slices = get_paca()->context.low_slices_psize;
++		lpsizes = get_paca()->context.low_slices_psize;
+ 		index = GET_LOW_SLICE_INDEX(addr);
+-	} else {
+-		slices = get_paca()->context.high_slices_psize;
+-		index = GET_HIGH_SLICE_INDEX(addr);
++		return (lpsizes >> (index * 4)) & 0xF;
+ 	}
+-	return (slices >> (index * 4)) & 0xF;
++	hpsizes = get_paca()->context.high_slices_psize;
++	index = GET_HIGH_SLICE_INDEX(addr);
++	mask_index = index & 0x1;
++	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xF;
+ }
+ 
+ #else
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index b9ee79ce..e132dc6 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -108,17 +108,31 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+ 	 * between 4k and 64k standard page size
+ 	 */
+ #ifdef CONFIG_PPC_MM_SLICES
++	/* r10 have esid */
+ 	cmpldi	r10,16
+-
+-	/* Get the slice index * 4 in r11 and matching slice size mask in r9 */
+-	ld	r9,PACALOWSLICESPSIZE(r13)
+-	sldi	r11,r10,2
++	/* below SLICE_LOW_TOP */
+ 	blt	5f
+-	ld	r9,PACAHIGHSLICEPSIZE(r13)
+-	srdi	r11,r10,(SLICE_HIGH_SHIFT - SLICE_LOW_SHIFT - 2)
+-	andi.	r11,r11,0x3c
++	/*
++	 * Handle hpsizes,
++	 * r9 is get_paca()->context.high_slices_psize[index], r11 is mask_index
++	 */
++	srdi    r11,r10,(SLICE_HIGH_SHIFT - SLICE_LOW_SHIFT + 1) /* index */
++	addi	r9,r11,PACAHIGHSLICEPSIZE
++	lbzx	r9,r13,r9		/* r9 is hpsizes[r11] */
++	/* r11 = (r10 >> (SLICE_HIGH_SHIFT - SLICE_LOW_SHIFT)) & 0x1 */
++	rldicl	r11,r10,(64 - (SLICE_HIGH_SHIFT - SLICE_LOW_SHIFT)),63
++	b	6f
+ 
+-5:	/* Extract the psize and multiply to get an array offset */
++5:
++	/*
++	 * Handle lpsizes
++	 * r9 is get_paca()->context.low_slices_psize, r11 is index
++	 */
++	ld	r9,PACALOWSLICESPSIZE(r13)
++	mr	r11,r10
++6:
++	sldi	r11,r11,2  /* index * 4 */
++	/* Extract the psize and multiply to get an array offset */
+ 	srd	r9,r9,r11
+ 	andi.	r9,r9,0xf
+ 	mulli	r9,r9,MMUPSIZEDEFSIZE
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index 73709f7..b4e996a 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -42,7 +42,7 @@ int _slice_debug = 1;
+ 
+ static void slice_print_mask(const char *label, struct slice_mask mask)
+ {
+-	char	*p, buf[16 + 3 + 16 + 1];
++	char	*p, buf[16 + 3 + 64 + 1];
+ 	int	i;
+ 
+ 	if (!_slice_debug)
+@@ -54,7 +54,7 @@ static void slice_print_mask(const char *label, struct slice_mask mask)
+ 	*(p++) = '-';
+ 	*(p++) = ' ';
+ 	for (i = 0; i < SLICE_NUM_HIGH; i++)
+-		*(p++) = (mask.high_slices & (1 << i)) ? '1' : '0';
++		*(p++) = (mask.high_slices & (1ul << i)) ? '1' : '0';
+ 	*(p++) = 0;
+ 
+ 	printk(KERN_DEBUG "%s:%s\n", label, buf);
+@@ -84,8 +84,8 @@ static struct slice_mask slice_range_to_mask(unsigned long start,
+ 	}
+ 
+ 	if ((start + len) > SLICE_LOW_TOP)
+-		ret.high_slices = (1u << (GET_HIGH_SLICE_INDEX(end) + 1))
+-			- (1u << GET_HIGH_SLICE_INDEX(start));
++		ret.high_slices = (1ul << (GET_HIGH_SLICE_INDEX(end) + 1))
++			- (1ul << GET_HIGH_SLICE_INDEX(start));
+ 
+ 	return ret;
+ }
+@@ -135,26 +135,31 @@ static struct slice_mask slice_mask_for_free(struct mm_struct *mm)
+ 
+ 	for (i = 0; i < SLICE_NUM_HIGH; i++)
+ 		if (!slice_high_has_vma(mm, i))
+-			ret.high_slices |= 1u << i;
++			ret.high_slices |= 1ul << i;
+ 
+ 	return ret;
+ }
+ 
+ static struct slice_mask slice_mask_for_size(struct mm_struct *mm, int psize)
+ {
++	unsigned char *hpsizes;
++	int index, mask_index;
+ 	struct slice_mask ret = { 0, 0 };
+ 	unsigned long i;
+-	u64 psizes;
++	u64 lpsizes;
+ 
+-	psizes = mm->context.low_slices_psize;
++	lpsizes = mm->context.low_slices_psize;
+ 	for (i = 0; i < SLICE_NUM_LOW; i++)
+-		if (((psizes >> (i * 4)) & 0xf) == psize)
++		if (((lpsizes >> (i * 4)) & 0xf) == psize)
+ 			ret.low_slices |= 1u << i;
+ 
+-	psizes = mm->context.high_slices_psize;
+-	for (i = 0; i < SLICE_NUM_HIGH; i++)
+-		if (((psizes >> (i * 4)) & 0xf) == psize)
+-			ret.high_slices |= 1u << i;
++	hpsizes = mm->context.high_slices_psize;
++	for (i = 0; i < SLICE_NUM_HIGH; i++) {
++		mask_index = i & 0x1;
++		index = i >> 1;
++		if (((hpsizes[index] >> (mask_index * 4)) & 0xf) == psize)
++			ret.high_slices |= 1ul << i;
++	}
+ 
+ 	return ret;
+ }
+@@ -183,8 +188,10 @@ static void slice_flush_segments(void *parm)
+ 
+ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psize)
+ {
++	int index, mask_index;
+ 	/* Write the new slice psize bits */
+-	u64 lpsizes, hpsizes;
++	unsigned char *hpsizes;
++	u64 lpsizes;
+ 	unsigned long i, flags;
+ 
+ 	slice_dbg("slice_convert(mm=%p, psize=%d)\n", mm, psize);
+@@ -201,14 +208,18 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
+ 			lpsizes = (lpsizes & ~(0xful << (i * 4))) |
+ 				(((unsigned long)psize) << (i * 4));
+ 
+-	hpsizes = mm->context.high_slices_psize;
+-	for (i = 0; i < SLICE_NUM_HIGH; i++)
+-		if (mask.high_slices & (1u << i))
+-			hpsizes = (hpsizes & ~(0xful << (i * 4))) |
+-				(((unsigned long)psize) << (i * 4));
+-
++	/* Assign the value back */
+ 	mm->context.low_slices_psize = lpsizes;
+-	mm->context.high_slices_psize = hpsizes;
++
++	hpsizes = mm->context.high_slices_psize;
++	for (i = 0; i < SLICE_NUM_HIGH; i++) {
++		mask_index = i & 0x1;
++		index = i >> 1;
++		if (mask.high_slices & (1ul << i))
++			hpsizes[index] = (hpsizes[index] &
++					  ~(0xf << (mask_index * 4))) |
++				(((unsigned long)psize) << (mask_index * 4));
++	}
+ 
+ 	slice_dbg(" lsps=%lx, hsps=%lx\n",
+ 		  mm->context.low_slices_psize,
+@@ -587,18 +598,19 @@ unsigned long arch_get_unmapped_area_topdown(struct file *filp,
+ 
+ unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+ {
+-	u64 psizes;
+-	int index;
++	unsigned char *hpsizes;
++	int index, mask_index;
+ 
+ 	if (addr < SLICE_LOW_TOP) {
+-		psizes = mm->context.low_slices_psize;
++		u64 lpsizes;
++		lpsizes = mm->context.low_slices_psize;
+ 		index = GET_LOW_SLICE_INDEX(addr);
+-	} else {
+-		psizes = mm->context.high_slices_psize;
+-		index = GET_HIGH_SLICE_INDEX(addr);
++		return (lpsizes >> (index * 4)) & 0xf;
+ 	}
+-
+-	return (psizes >> (index * 4)) & 0xf;
++	hpsizes = mm->context.high_slices_psize;
++	index = GET_HIGH_SLICE_INDEX(addr);
++	mask_index = index & 0x1;
++	return (hpsizes[index >> 1] >> (mask_index * 4)) & 0xf;
+ }
+ EXPORT_SYMBOL_GPL(get_slice_psize);
+ 
+@@ -618,7 +630,9 @@ EXPORT_SYMBOL_GPL(get_slice_psize);
+  */
+ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ {
+-	unsigned long flags, lpsizes, hpsizes;
++	int index, mask_index;
++	unsigned char *hpsizes;
++	unsigned long flags, lpsizes;
+ 	unsigned int old_psize;
+ 	int i;
+ 
+@@ -639,15 +653,21 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ 		if (((lpsizes >> (i * 4)) & 0xf) == old_psize)
+ 			lpsizes = (lpsizes & ~(0xful << (i * 4))) |
+ 				(((unsigned long)psize) << (i * 4));
++	/* Assign the value back */
++	mm->context.low_slices_psize = lpsizes;
+ 
+ 	hpsizes = mm->context.high_slices_psize;
+-	for (i = 0; i < SLICE_NUM_HIGH; i++)
+-		if (((hpsizes >> (i * 4)) & 0xf) == old_psize)
+-			hpsizes = (hpsizes & ~(0xful << (i * 4))) |
+-				(((unsigned long)psize) << (i * 4));
++	for (i = 0; i < SLICE_NUM_HIGH; i++) {
++		mask_index = i & 0x1;
++		index = i >> 1;
++		if (((hpsizes[index] >> (mask_index * 4)) & 0xf) == old_psize)
++			hpsizes[index] = (hpsizes[index] &
++					  ~(0xf << (mask_index * 4))) |
++				(((unsigned long)psize) << (mask_index * 4));
++	}
++
++
+ 
+-	mm->context.low_slices_psize = lpsizes;
+-	mm->context.high_slices_psize = hpsizes;
+ 
+ 	slice_dbg(" lsps=%lx, hsps=%lx\n",
+ 		  mm->context.low_slices_psize,
+@@ -660,18 +680,27 @@ void slice_set_user_psize(struct mm_struct *mm, unsigned int psize)
+ void slice_set_psize(struct mm_struct *mm, unsigned long address,
+ 		     unsigned int psize)
+ {
++	unsigned char *hpsizes;
+ 	unsigned long i, flags;
+-	u64 *p;
++	u64 *lpsizes;
+ 
+ 	spin_lock_irqsave(&slice_convert_lock, flags);
+ 	if (address < SLICE_LOW_TOP) {
+ 		i = GET_LOW_SLICE_INDEX(address);
+-		p = &mm->context.low_slices_psize;
++		lpsizes = &mm->context.low_slices_psize;
++		*lpsizes = (*lpsizes & ~(0xful << (i * 4))) |
++			((unsigned long) psize << (i * 4));
+ 	} else {
++		int index, mask_index;
+ 		i = GET_HIGH_SLICE_INDEX(address);
+-		p = &mm->context.high_slices_psize;
++		hpsizes = mm->context.high_slices_psize;
++		mask_index = i & 0x1;
++		index = i >> 1;
++		hpsizes[index] = (hpsizes[index] &
++				  ~(0xf << (mask_index * 4))) |
++			(((unsigned long)psize) << (mask_index * 4));
+ 	}
+-	*p = (*p & ~(0xful << (i * 4))) | ((unsigned long) psize << (i * 4));
++
+ 	spin_unlock_irqrestore(&slice_convert_lock, flags);
+ 
+ #ifdef CONFIG_SPU_BASE
 -- 
 1.7.10
