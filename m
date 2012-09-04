@@ -1,27 +1,27 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 492012C041B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 19:02:43 +1000 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 682F42C0385
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 19:02:44 +1000 (EST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Tue, 4 Sep 2012 14:32:41 +0530
 Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8492dH025166030
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 14:32:39 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8492bFm47251504
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 14:32:37 +0530
 Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
  by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8492be2031939
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 19:02:39 +1000
+ q8492YVM031629
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 4 Sep 2012 19:02:35 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V7 12/12] arch/powerpc: Update VSID allocation documentation
-Date: Tue,  4 Sep 2012 14:31:29 +0530
-Message-Id: <1346749289-16986-13-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V7 11/12] arch/powerpc: Add 64TB support
+Date: Tue,  4 Sep 2012 14:31:28 +0530
+Message-Id: <1346749289-16986-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1346749289-16986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1346749289-16986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -37,106 +37,188 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This update the proto-VSID and VSID scramble related information
-to be more generic by using names instead of current values.
+Increase max addressable range to 64TB. This is not tested on
+real hardware yet.
 
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h |   40 ++++++++++++++-------------------
- arch/powerpc/mm/mmu_context_hash64.c  |    8 ++++---
- 2 files changed, 22 insertions(+), 26 deletions(-)
+ arch/powerpc/include/asm/mmu-hash64.h        |   42 ++++++++++++++++++++------
+ arch/powerpc/include/asm/pgtable-ppc64-4k.h  |    2 +-
+ arch/powerpc/include/asm/pgtable-ppc64-64k.h |    2 +-
+ arch/powerpc/include/asm/processor.h         |    4 +--
+ arch/powerpc/include/asm/sparsemem.h         |    4 +--
+ arch/powerpc/kernel/exceptions-64s.S         |    4 ++-
+ arch/powerpc/mm/slb_low.S                    |   12 ++++++++
+ 7 files changed, 54 insertions(+), 16 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 5c52691..8dfe31a 100644
+index 8c5c5a4..5c52691 100644
 --- a/arch/powerpc/include/asm/mmu-hash64.h
 +++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -328,51 +328,45 @@ extern void slb_set_size(u16 size);
- #endif /* __ASSEMBLY__ */
+@@ -374,17 +374,21 @@ extern void slb_set_size(u16 size);
+  * (head.S) and ASM_VSID_SCRAMBLE (below) are changed accordingly.
+  */
  
- /*
-- * VSID allocation
-+ * VSID allocation (256MB segment)
-  *
-- * We first generate a 36-bit "proto-VSID".  For kernel addresses this
-- * is equal to the ESID, for user addresses it is:
-- *	(context << 15) | (esid & 0x7fff)
-+ * We first generate a 38-bit "proto-VSID".  For kernel addresses this
-+ * is equal to the ESID | 1 << 37, for user addresses it is:
-+ *	(context << USER_ESID_BITS) | (esid & ((1U << USER_ESID_BITS) - 1)
-  *
-- * The two forms are distinguishable because the top bit is 0 for user
-- * addresses, whereas the top two bits are 1 for kernel addresses.
-- * Proto-VSIDs with the top two bits equal to 0b10 are reserved for
-- * now.
-+ * This splits the proto-VSID into the below range
-+ *  0 - (2^(CONTEXT_BITS + USER_ESID_BITS) - 1) : User proto-VSID range
-+ *  2^(CONTEXT_BITS + USER_ESID_BITS) - 2^(VSID_BITS) : Kernel proto-VSID range
+-#define VSID_MULTIPLIER_256M	ASM_CONST(200730139)	/* 28-bit prime */
+-#define VSID_BITS_256M		36
++/*
++ * This should be computed such that protovosid * vsid_mulitplier
++ * doesn't overflow 64 bits. It should also be co-prime to vsid_modulus
++ */
++#define VSID_MULTIPLIER_256M	ASM_CONST(12538073)	/* 24-bit prime */
++#define VSID_BITS_256M		38
+ #define VSID_MODULUS_256M	((1UL<<VSID_BITS_256M)-1)
+ 
+ #define VSID_MULTIPLIER_1T	ASM_CONST(12538073)	/* 24-bit prime */
+-#define VSID_BITS_1T		24
++#define VSID_BITS_1T		26
+ #define VSID_MODULUS_1T		((1UL<<VSID_BITS_1T)-1)
+ 
+ #define CONTEXT_BITS		19
+-#define USER_ESID_BITS		16
+-#define USER_ESID_BITS_1T	4
++#define USER_ESID_BITS		18
++#define USER_ESID_BITS_1T	6
+ 
+ #define USER_VSID_RANGE	(1UL << (USER_ESID_BITS + SID_SHIFT))
+ 
+@@ -507,12 +511,32 @@ typedef struct {
+ 	})
+ #endif /* 1 */
+ 
+-/* This is only valid for addresses >= PAGE_OFFSET */
++/*
++ * This is only valid for addresses >= PAGE_OFFSET
++ * The proto-VSID space is divided into two class
++ * User:   0 to 2^(CONTEXT_BITS + USER_ESID_BITS) -1
++ * kernel: 2^(CONTEXT_BITS + USER_ESID_BITS) to 2^(VSID_BITS) - 1
 + *
-+ * We also have CONTEXT_BITS + USER_ESID_BITS = VSID_BITS - 1
-+ * That is, we assign half of the space to user processes and half
-+ * to the kernel.
-  *
-  * The proto-VSIDs are then scrambled into real VSIDs with the
-  * multiplicative hash:
-  *
-  *	VSID = (proto-VSID * VSID_MULTIPLIER) % VSID_MODULUS
-- *	where	VSID_MULTIPLIER = 268435399 = 0xFFFFFC7
-- *		VSID_MODULUS = 2^36-1 = 0xFFFFFFFFF
-  *
-- * This scramble is only well defined for proto-VSIDs below
-- * 0xFFFFFFFFF, so both proto-VSID and actual VSID 0xFFFFFFFFF are
-- * reserved.  VSID_MULTIPLIER is prime, so in particular it is
-+ * VSID_MULTIPLIER is prime, so in particular it is
-  * co-prime to VSID_MODULUS, making this a 1:1 scrambling function.
-  * Because the modulus is 2^n-1 we can compute it efficiently without
-  * a divide or extra multiply (see below).
-  *
-  * This scheme has several advantages over older methods:
-  *
-- * 	- We have VSIDs allocated for every kernel address
-+ *	- We have VSIDs allocated for every kernel address
-  * (i.e. everything above 0xC000000000000000), except the very top
-  * segment, which simplifies several things.
-  *
-- *	- We allow for 16 significant bits of ESID and 19 bits of
-- * context for user addresses.  i.e. 16T (44 bits) of address space for
-- * up to half a million contexts.
-+ *	- We allow for USER_ESID_BITS significant bits of ESID and
-+ * CONTEXT_BITS  bits of context for user addresses.
-+ *  i.e. 64T (46 bits) of address space for up to half a million contexts.
-  *
-- * 	- The scramble function gives robust scattering in the hash
-+ *	- The scramble function gives robust scattering in the hash
-  * table (at least based on some initial results).  The previous
-  * method was more susceptible to pathological cases giving excessive
-  * hash collisions.
++ * With KERNEL_START at 0xc000000000000000, the proto vsid for
++ * the kernel ends up with 0xc00000000 (36 bits). With 64TB
++ * support we need to have kernel proto-VSID in the
++ * [2^37 to 2^38 - 1] range due to the increased USER_ESID_BITS.
++ */
+ static inline unsigned long get_kernel_vsid(unsigned long ea, int ssize)
+ {
+-	if (ssize == MMU_SEGSIZE_256M)
+-		return vsid_scramble(ea >> SID_SHIFT, 256M);
+-	return vsid_scramble(ea >> SID_SHIFT_1T, 1T);
++	unsigned long proto_vsid;
++	/*
++	 * We need to make sure proto_vsid for the kernel is
++	 * >= 2^(CONTEXT_BITS + USER_ESID_BITS[_1T])
++	 */
++	if (ssize == MMU_SEGSIZE_256M) {
++		proto_vsid = ea >> SID_SHIFT;
++		proto_vsid |= (1UL << (CONTEXT_BITS + USER_ESID_BITS));
++		return vsid_scramble(proto_vsid, 256M);
++	}
++	proto_vsid = ea >> SID_SHIFT_1T;
++	proto_vsid |= (1UL << (CONTEXT_BITS + USER_ESID_BITS_1T));
++	return vsid_scramble(proto_vsid, 1T);
+ }
+ 
+ /* Returns the segment size indicator for a user address */
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64-4k.h b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
+index 6eefdcf..b3eccf2 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64-4k.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
+@@ -7,7 +7,7 @@
   */
--/*
-- * WARNING - If you change these you must make sure the asm
-- * implementations in slb_allocate (slb_low.S), do_stab_bolted
-- * (head.S) and ASM_VSID_SCRAMBLE (below) are changed accordingly.
-- */
+ #define PTE_INDEX_SIZE  9
+ #define PMD_INDEX_SIZE  7
+-#define PUD_INDEX_SIZE  7
++#define PUD_INDEX_SIZE  9
+ #define PGD_INDEX_SIZE  9
  
- /*
-  * This should be computed such that protovosid * vsid_mulitplier
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index daa076c..40bc5b0 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -30,9 +30,11 @@ static DEFINE_SPINLOCK(mmu_context_lock);
- static DEFINE_IDA(mmu_context_ida);
+ #ifndef __ASSEMBLY__
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64-64k.h b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
+index 90533dd..be4e287 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64-64k.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64-64k.h
+@@ -7,7 +7,7 @@
+ #define PTE_INDEX_SIZE  12
+ #define PMD_INDEX_SIZE  12
+ #define PUD_INDEX_SIZE	0
+-#define PGD_INDEX_SIZE  4
++#define PGD_INDEX_SIZE  6
  
- /*
-- * The proto-VSID space has 2^35 - 1 segments available for user mappings.
-- * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
-- * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
-+ * 256MB segment
-+ * The proto-VSID space has 2^(CONTEX_BITS + USER_ESID_BITS) - 1 segments
-+ * available for user mappings. Each segment contains 2^28 bytes. Each
-+ * context maps 2^46 bytes (64TB) so we can support 2^19-1 contexts
-+ * (19 == 37 + 28 - 46).
+ #ifndef __ASSEMBLY__
+ #define PTE_TABLE_SIZE	(sizeof(real_pte_t) << PTE_INDEX_SIZE)
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index 53b6dfa..00bda2f 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -97,8 +97,8 @@ extern struct task_struct *last_task_used_spe;
+ #endif
+ 
+ #ifdef CONFIG_PPC64
+-/* 64-bit user address space is 44-bits (16TB user VM) */
+-#define TASK_SIZE_USER64 (0x0000100000000000UL)
++/* 64-bit user address space is 46-bits (64TB user VM) */
++#define TASK_SIZE_USER64 (0x0000400000000000UL)
+ 
+ /* 
+  * 32-bit user address space is 4GB - 1 page 
+diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
+index 0c5fa31..f6fc0ee 100644
+--- a/arch/powerpc/include/asm/sparsemem.h
++++ b/arch/powerpc/include/asm/sparsemem.h
+@@ -10,8 +10,8 @@
   */
- #define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
+ #define SECTION_SIZE_BITS       24
  
+-#define MAX_PHYSADDR_BITS       44
+-#define MAX_PHYSMEM_BITS        44
++#define MAX_PHYSADDR_BITS       46
++#define MAX_PHYSMEM_BITS        46
+ 
+ #endif /* CONFIG_SPARSEMEM */
+ 
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index e894515..d980818 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -959,7 +959,9 @@ _GLOBAL(do_stab_bolted)
+ 	rldimi	r10,r11,7,52	/* r10 = first ste of the group */
+ 
+ 	/* Calculate VSID */
+-	/* This is a kernel address, so protovsid = ESID */
++	/* This is a kernel address, so protovsid = ESID | 1 << 37 */
++	li	r9,0x1
++	rldimi  r11,r9,(CONTEXT_BITS + USER_ESID_BITS),0
+ 	ASM_VSID_SCRAMBLE(r11, r9, 256M)
+ 	rldic	r9,r11,12,16	/* r9 = vsid << 12 */
+ 
+diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
+index f6a2625..1a16ca2 100644
+--- a/arch/powerpc/mm/slb_low.S
++++ b/arch/powerpc/mm/slb_low.S
+@@ -56,6 +56,12 @@ _GLOBAL(slb_allocate_realmode)
+ 	 */
+ _GLOBAL(slb_miss_kernel_load_linear)
+ 	li	r11,0
++	li	r9,0x1
++	/*
++	 * for 1T we shift 12 bits more.  slb_finish_load_1T will do
++	 * the necessary adjustment
++	 */
++	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
+ BEGIN_FTR_SECTION
+ 	b	slb_finish_load
+ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
+@@ -85,6 +91,12 @@ _GLOBAL(slb_miss_kernel_load_vmemmap)
+ 	_GLOBAL(slb_miss_kernel_load_io)
+ 	li	r11,0
+ 6:
++	li	r9,0x1
++	/*
++	 * for 1T we shift 12 bits more.  slb_finish_load_1T will do
++	 * the necessary adjustment
++	 */
++	rldimi  r10,r9,(CONTEXT_BITS + USER_ESID_BITS),0
+ BEGIN_FTR_SECTION
+ 	b	slb_finish_load
+ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_1T_SEGMENT)
 -- 
 1.7.10
