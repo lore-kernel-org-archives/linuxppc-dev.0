@@ -1,14 +1,24 @@
-Return-Path: <anton@samba.org>
-Date: Tue, 4 Sep 2012 12:51:10 +1000
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 4/4] powerpc: Restore correct DSCR in context switch
-Message-ID: <20120904125110.102244f3@kryten>
-In-Reply-To: <20120904124756.4ddeb535@kryten>
-References: <20120904124756.4ddeb535@kryten>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 431EA2C008B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 13:44:44 +1000 (EST)
+Message-ID: <50457983.1050304@cn.fujitsu.com>
+Date: Tue, 04 Sep 2012 11:46:11 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>, isimatu.yasuaki@jp.fujitsu.com
+Subject: Re: [RFC v8 PATCH 13/20] memory-hotplug: check page type in
+ get_page_bootmem
+References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>	<1346148027-24468-14-git-send-email-wency@cn.fujitsu.com>
+ <20120831143032.1343e99a.akpm@linux-foundation.org>
+In-Reply-To: <20120831143032.1343e99a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
+ rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,93 +28,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi, isimatu-san
 
-During a context switch we always restore the per thread DSCR value.
-If we aren't doing explicit DSCR management
-(ie thread.dscr_inherit == 0) and the default DSCR changed while
-the process has been sleeping we end up with the wrong value.
+At 09/01/2012 05:30 AM, Andrew Morton Wrote:
+> On Tue, 28 Aug 2012 18:00:20 +0800
+> wency@cn.fujitsu.com wrote:
+> 
+>> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>
+>> There is a possibility that get_page_bootmem() is called to the same page many
+>> times. So when get_page_bootmem is called to the same page, the function only
+>> increments page->_count.
+> 
+> I really don't understand this explanation, even after having looked at
+> the code.  Can you please have another attempt at the changelog?
 
-Check thread.dscr_inherit and select the default DSCR or per thread
-DSCR as required.
+What is the problem that you want to fix? The function get_page_bootmem()
+may be called to the same page more than once, but I don't find any problem
+about current implementation.
 
-This was found with the following test case, when running with
-more threads than CPUs (ie forcing context switching):
+Thanks
+Wen Congyang
 
-http://ozlabs.org/~anton/junkcode/dscr_default_test.c
-
-With the four patches applied I can run a combination of all
-test cases successfully at the same time:
-
-http://ozlabs.org/~anton/junkcode/dscr_default_test.c
-http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
-http://ozlabs.org/~anton/junkcode/dscr_inherit_test.c
-
-Signed-off-by: Anton Blanchard <anton@samba.org>  
-Cc: <stable@kernel.org> # 3.0+
----
-
-Index: b/arch/powerpc/kernel/entry_64.S
-===================================================================
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -370,6 +370,12 @@ _GLOBAL(ret_from_fork)
- 	li	r3,0
- 	b	syscall_exit
- 
-+	.section	".toc","aw"
-+DSCR_DEFAULT:
-+	.tc dscr_default[TC],dscr_default
-+
-+	.section	".text"
-+
- /*
-  * This routine switches between two different tasks.  The process
-  * state of one is saved on its kernel stack.  Then the state
-@@ -509,9 +515,6 @@ END_MMU_FTR_SECTION_IFSET(MMU_FTR_1T_SEG
- 	mr	r1,r8		/* start using new stack pointer */
- 	std	r7,PACAKSAVE(r13)
- 
--	ld	r6,_CCR(r1)
--	mtcrf	0xFF,r6
--
- #ifdef CONFIG_ALTIVEC
- BEGIN_FTR_SECTION
- 	ld	r0,THREAD_VRSAVE(r4)
-@@ -520,14 +523,22 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
- #endif /* CONFIG_ALTIVEC */
- #ifdef CONFIG_PPC64
- BEGIN_FTR_SECTION
-+	lwz	r6,THREAD_DSCR_INHERIT(r4)
-+	ld	r7,DSCR_DEFAULT@toc(2)
- 	ld	r0,THREAD_DSCR(r4)
--	cmpd	r0,r25
--	beq	1f
-+	cmpwi	r6,0
-+	bne	1f
-+	ld	r0,0(r7)
-+1:	cmpd	r0,r25
-+	beq	2f
- 	mtspr	SPRN_DSCR,r0
--1:	
-+2:
- END_FTR_SECTION_IFSET(CPU_FTR_DSCR)
- #endif
- 
-+	ld	r6,_CCR(r1)
-+	mtcrf	0xFF,r6
-+
- 	/* r3-r13 are destroyed -- Cort */
- 	REST_8GPRS(14, r1)
- 	REST_10GPRS(22, r1)
-Index: b/arch/powerpc/kernel/asm-offsets.c
-===================================================================
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -76,6 +76,7 @@ int main(void)
- 	DEFINE(SIGSEGV, SIGSEGV);
- 	DEFINE(NMI_MASK, NMI_MASK);
- 	DEFINE(THREAD_DSCR, offsetof(struct thread_struct, dscr));
-+	DEFINE(THREAD_DSCR_INHERIT, offsetof(struct thread_struct, dscr_inherit));
- #else
- 	DEFINE(THREAD_INFO, offsetof(struct task_struct, stack));
- #endif /* CONFIG_PPC64 */
+> 
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -95,10 +95,17 @@ static void release_memory_resource(struct resource *res)
+>>  static void get_page_bootmem(unsigned long info,  struct page *page,
+>>  			     unsigned long type)
+>>  {
+>> -	page->lru.next = (struct list_head *) type;
+>> -	SetPagePrivate(page);
+>> -	set_page_private(page, info);
+>> -	atomic_inc(&page->_count);
+>> +	unsigned long page_type;
+>> +
+>> +	page_type = (unsigned long) page->lru.next;
+>> +	if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
+>> +	    page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
+>> +		page->lru.next = (struct list_head *) type;
+>> +		SetPagePrivate(page);
+>> +		set_page_private(page, info);
+>> +		atomic_inc(&page->_count);
+>> +	} else
+>> +		atomic_inc(&page->_count);
+>>  }
+> 
+> And a code comment which explains what is going on would be good.  As
+> is always the case ;)
+> 
+> 
