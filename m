@@ -1,9 +1,9 @@
 Return-Path: <anton@samba.org>
-Date: Tue, 4 Sep 2012 12:48:46 +1000
+Date: Tue, 4 Sep 2012 12:49:47 +1000
 From: Anton Blanchard <anton@samba.org>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH 2/4] powerpc: Keep thread.dscr and thread.dscr_inherit in sync
-Message-ID: <20120904124846.27edd33c@kryten>
+Subject: [PATCH 3/4] powerpc: Fix DSCR inheritance in copy_thread()
+Message-ID: <20120904124947.009dd177@kryten>
 In-Reply-To: <20120904124756.4ddeb535@kryten>
 References: <20120904124756.4ddeb535@kryten>
 Mime-Version: 1.0
@@ -19,51 +19,42 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-When we update the DSCR either via emulation of mtspr(DSCR) or via
-a change to dscr_default in sysfs we don't update thread.dscr.
-We will eventually update it at context switch time but there is
-a period where thread.dscr is incorrect.
+If the default DSCR is non zero we set thread.dscr_inherit in
+copy_thread() meaning the new thread and all its children will ignore
+future updates to the default DSCR. This is not intended and is
+a change in behaviour that a number of our users have hit.
 
-If we fork at this point we will copy the old value of thread.dscr
-into the child. To avoid this, always keep thread.dscr in sync with
-reality.
+We just need to inherit thread.dscr and thread.dscr_inherit from
+the parent which ends up being much simpler.
 
-This issue was found with the following testcase:
+This was found with the following test case:
 
-http://ozlabs.org/~anton/junkcode/dscr_inherit_test.c
+http://ozlabs.org/~anton/junkcode/dscr_default_test.c
 
 Signed-off-by: Anton Blanchard <anton@samba.org>  
 Cc: <stable@kernel.org> # 3.0+
 ---
 
-Index: b/arch/powerpc/kernel/traps.c
+Index: b/arch/powerpc/kernel/process.c
 ===================================================================
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -972,8 +972,9 @@ static int emulate_instruction(struct pt
- 			cpu_has_feature(CPU_FTR_DSCR)) {
- 		PPC_WARN_EMULATED(mtdscr, regs);
- 		rd = (instword >> 21) & 0x1f;
--		mtspr(SPRN_DSCR, regs->gpr[rd]);
-+		current->thread.dscr = regs->gpr[rd];
- 		current->thread.dscr_inherit = 1;
-+		mtspr(SPRN_DSCR, current->thread.dscr);
- 		return 0;
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -802,16 +802,8 @@ int copy_thread(unsigned long clone_flag
+ #endif /* CONFIG_PPC_STD_MMU_64 */
+ #ifdef CONFIG_PPC64 
+ 	if (cpu_has_feature(CPU_FTR_DSCR)) {
+-		if (current->thread.dscr_inherit) {
+-			p->thread.dscr_inherit = 1;
+-			p->thread.dscr = current->thread.dscr;
+-		} else if (0 != dscr_default) {
+-			p->thread.dscr_inherit = 1;
+-			p->thread.dscr = dscr_default;
+-		} else {
+-			p->thread.dscr_inherit = 0;
+-			p->thread.dscr = 0;
+-		}
++		p->thread.dscr_inherit = current->thread.dscr_inherit;
++		p->thread.dscr = current->thread.dscr;
  	}
  #endif
-Index: b/arch/powerpc/kernel/sysfs.c
-===================================================================
---- a/arch/powerpc/kernel/sysfs.c
-+++ b/arch/powerpc/kernel/sysfs.c
-@@ -196,8 +196,10 @@ static ssize_t show_dscr_default(struct
  
- static void update_dscr(void *dummy)
- {
--	if (!current->thread.dscr_inherit)
-+	if (!current->thread.dscr_inherit) {
-+		current->thread.dscr = dscr_default;
- 		mtspr(SPRN_DSCR, dscr_default);
-+	}
- }
- 
- static ssize_t __used store_dscr_default(struct device *dev,
