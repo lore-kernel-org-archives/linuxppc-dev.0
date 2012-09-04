@@ -1,32 +1,19 @@
-Return-Path: <B32616@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BE59A2C008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Sep 2012 22:40:10 +1000 (EST)
-From: Liu Qiang-B32616 <B32616@freescale.com>
-To: Dan Williams <djbw@fb.com>
-Subject: RE: [PATCH v7 6/8] fsl-dma: use spin_lock_bh to instead of
- spin_lock_irqsave
-Date: Tue, 4 Sep 2012 12:39:58 +0000
-Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB70FFB92@039-SN2MPN1-011.039d.mgd.msft.net>
-References: <1344500582-11110-1-git-send-email-qiang.liu@freescale.com>
- <CAA9_cmeFamCX1u+z3fP_gxAqe83JFbY9Beqpqgb-PjRoJ8BrWA@mail.gmail.com>
-In-Reply-To: <CAA9_cmeFamCX1u+z3fP_gxAqe83JFbY9Beqpqgb-PjRoJ8BrWA@mail.gmail.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
- "arnd@arndb.de" <arnd@arndb.de>, "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- Phillips Kim-R1AAHA <R1AAHA@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>,
- Li Yang-R58472 <r58472@freescale.com>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 652812C0093
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 00:27:23 +1000 (EST)
+Message-ID: <1346768840.27919.2.camel@gandalf.local.home>
+Subject: Re: 3.5+: yaboot, Invalid memory access
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 04 Sep 2012 10:27:20 -0400
+In-Reply-To: <1346741491.7619.12.camel@concordia>
+References: <alpine.DEB.2.01.1207302235170.26923@trent.utfs.org>
+ <alpine.DEB.2.01.1209032310220.25392@trent.utfs.org>
+ <1346741491.7619.12.camel@concordia>
+Content-Type: text/plain; charset="ISO-8859-15"
+Mime-Version: 1.0
+Cc: Christian Kujau <lists@nerdbynature.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,41 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: dan.j.williams@gmail.com [mailto:dan.j.williams@gmail.com] On
-> Behalf Of Dan Williams
-> Sent: Sunday, September 02, 2012 4:41 PM
-> To: Liu Qiang-B32616
-> Cc: linux-crypto@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> kernel@vger.kernel.org; vinod.koul@intel.com; Phillips Kim-R1AAHA;
-> herbert@gondor.hengli.com.au; davem@davemloft.net; arnd@arndb.de;
-> gregkh@linuxfoundation.org; Li Yang-R58472; Tabi Timur-B04825
-> Subject: Re: [PATCH v7 6/8] fsl-dma: use spin_lock_bh to instead of
-> spin_lock_irqsave
->=20
-> On Thu, Aug 9, 2012 at 1:23 AM,  <qiang.liu@freescale.com> wrote:
-> > From: Qiang Liu <qiang.liu@freescale.com>
-> >
-> > The use of spin_lock_irqsave() is a stronger locking mechanism than is
-> > required throughout the driver. The minimum locking required should be
-> > used instead. Interrupts will be turned off and context will be saved,
-> > there is needless to use irqsave.
-> >
-> > Change all instances of spin_lock_irqsave() to spin_lock_bh().
-> > All manipulation of protected fields is done using tasklet context or
-> > weaker, which makes spin_lock_bh() the correct choice.
->=20
-> It seems you are coordinating fsl-dma copy and talitos xor operations.
->  It looks like fsl-dma will be called through
-> talitos_process_pending()->dma_run_dependencies(), which is
-> potentially called in hard irq context.
->=20
-> This all comes back to the need to fix raid offload to manage the
-> channels explicitly rather than the current dependency chains.
-So you mean I must implement talitos_run_dependencies() and fsldma_run_depe=
-ndencies()? Invoke async_tx->callback() respectively.
-How about avoiding irq context in talitos?
+On Tue, 2012-09-04 at 16:51 +1000, Michael Ellerman wrote:
 
->=20
-> --
-> Dan
+> My guess would be we're calling that quite early and the __put_user()
+> check is getting confused and failing. That means we'll have left some
+> code unpatched, which then fails.
+> 
+> Can you try with the patch applied, but instead of returning if the
+> __put_user() fails, just continue on anyway.
+> 
+> That will isolate if it's something in the __put_user() (I doubt it), or
+> just that the __put_user() is failing and leaving the code unpatched.
+
+As a test case, continuing on error is fine, but I would not recommend
+that as a fix. If it fails, but still does the patch, that could be
+harmful, and confusing of a result.
+
+Need to figure out why put_user is failing.
+
+-- Steve
