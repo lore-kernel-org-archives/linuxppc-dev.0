@@ -1,18 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5DD082C0093
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:12:55 +1000 (EST)
-Message-ID: <1346825568.2257.55.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 05 Sep 2012 16:12:48 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+ (Client CN "e3.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6E9B22C008F
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:08 +1000 (EST)
+Received: from /spool/local
+ by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 5 Sep 2012 02:15:05 -0400
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id AE9A038C8041
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 02:15:03 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q856F3ga147402
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 02:15:03 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q856F28O018909
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 03:15:03 -0300
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 00/21 V3] powerpc/eeh: PE support
+Date: Wed,  5 Sep 2012 14:14:35 +0800
+Message-Id: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,61 +35,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+The series of patches address explicit PE support as well as probe type
+support. For explicit PE support, struct eeh_pe has been introduced.
+While designing the struct, following factors have been taken into
+account.
 
-Here are a few fixes for 3.6 that were piling up while I was away or
-busy (I was mostly MIA a week or two before San Diego). Some fixes from
-Anton fixing up issues with our relatively new DSCR control feature,
-and a few other fixes that are either regressions or bugs nasty enough
-to warrant not waiting.
+   * For one particular PE, it might be composed of single PCI device,
+     or multiple PCI devices and its educed children PCI devices (e.g.
+     by PCIe bridges). The PE struct has included a linked list to refer
+     the included PCI devices. Also, the linked list of devices has relected
+     top-to-bottom fasion of the PCI subtree. That's to say, the first device
+     in the linked list should be the toppest element in the PCI subtree which
+     is being managed by the PE.
+   * PEs correlate to each other. So the existing PEs have to form hierarchy
+     levels. There're some fields in PE struct (e.g. parent/child/silbing)
+     have been introduced for the purpose.
+   * For one PE, it's only meaningful in the PHB domain.
 
-Cheers,
-Ben.
+In addition, the mechniasm used to do memory bars restore, error report have
+been reworked based on PE. The eeh cache has been reworked for a little bit
+based on Ben's suggestion to trace eeh device. 
 
-The following changes since commit 5b716ac728bcc01b1f2a7ed6e437196602237c27:
+In order for explicit probe support, either OF node or pci device, global
+variable and some inline functions are introduced. For pSeries platform, it's
+going to support OF node probe and figure out PEs from the corresponding OF
+nodes. In contrast, powernv platform has to use pci device probe type since
+the PEs are being constructed at PHB fixup time.
 
-  Merge branch 'for-next' of git://git.samba.org/sfrench/cifs-2.6 (2012-09-02 11:30:10 -0700)
+The series of patches have been verified on Firebird-L machine using "errinjct"
+utility. Here's the command used for that.
 
-are available in the git repository at:
+errinjct eeh -v -f 0 -p U78AE.001.WZS00M9-P1-C18-L1-T2 -a 0x0 -m 0x0
 
+V2 -> V3:
+	* Rebase to 3.6.RC4.
+V1 -> V2:
+	* Rebase to 3.5.RC4.
+	* Use the link list to trace the relationships of PEs, PE and eeh
+	  devices according to Ram's suggestion.
+	* Simplify the PE tranverse function according to Ram's example.
+	* Move EEH initialization around according to Ben's suggestion so
+	  that we can do memory allocation through slab.
+	* Use kzmalloc() to allocate memory chunks for PE and eeh devices.
+	* More booting messages for EEH initialization functions.
+	* Introduce global EEH mutex to protect the PEs and eeh devices.
+	* Added functions to support PE removal.
+	* Comments cleanup
+	* Change on the comparison of PE or BDF (Bus/Device/Function)
+	  address so that code looks more readable.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git 
+-----
 
-for you to fetch changes up to 636802ef96eebe279b22ad9f9dacfe29291e45c7:
+arch/powerpc/include/asm/eeh.h               |  132 +++++--
+arch/powerpc/include/asm/eeh_event.h         |    6 +-
+arch/powerpc/include/asm/pci-bridge.h        |    2 +
+arch/powerpc/include/asm/ppc-pci.h           |   15 +-
+arch/powerpc/kernel/rtas_pci.c               |    5 +-
+arch/powerpc/platforms/pseries/Makefile      |    5 +-
+arch/powerpc/platforms/pseries/eeh.c         |  527 +++++------------------
+arch/powerpc/platforms/pseries/eeh_cache.c   |   19 +-
+arch/powerpc/platforms/pseries/eeh_dev.c     |   14 +-
+arch/powerpc/platforms/pseries/eeh_driver.c  |  235 +++++------
+arch/powerpc/platforms/pseries/eeh_event.c   |   54 +--
+arch/powerpc/platforms/pseries/eeh_pe.c      |  583 ++++++++++++++++++++++++++
+arch/powerpc/platforms/pseries/eeh_pseries.c |  246 ++++++++----
+arch/powerpc/platforms/pseries/eeh_sysfs.c   |    9 -
+arch/powerpc/platforms/pseries/msi.c         |    6 +-
+arch/powerpc/platforms/pseries/setup.c       |    2 -
+16 files changed, 1119 insertions(+), 741 deletions(-)
+create mode 100644 arch/powerpc/platforms/pseries/eeh_pe.c
 
-  powerpc: Don't use __put_user() in patch_instruction (2012-09-05 16:05:23 +1000)
-
-----------------------------------------------------------------
-Anton Blanchard (4):
-      powerpc: Update DSCR on all CPUs when writing sysfs dscr_default
-      powerpc: Keep thread.dscr and thread.dscr_inherit in sync
-      powerpc: Fix DSCR inheritance in copy_thread()
-      powerpc: Restore correct DSCR in context switch
-
-Benjamin Herrenschmidt (1):
-      powerpc: Don't use __put_user() in patch_instruction
-
-Jesse Larrew (1):
-      powerpc/vphn: Fix arch_update_cpu_topology() return value
-
-Paul Mackerras (3):
-      powerpc: Give hypervisor decrementer interrupts their own handler
-      powerpc/powernv: Always go into nap mode when CPU is offline
-      powerpc: Make sure IPI handlers see data written by IPI senders
-
- arch/powerpc/include/asm/processor.h |    1 +
- arch/powerpc/kernel/asm-offsets.c    |    1 +
- arch/powerpc/kernel/dbell.c          |    2 ++
- arch/powerpc/kernel/entry_64.S       |   23 +++++++++++++++++------
- arch/powerpc/kernel/exceptions-64s.S |    3 ++-
- arch/powerpc/kernel/idle_power7.S    |    2 ++
- arch/powerpc/kernel/process.c        |   12 ++----------
- arch/powerpc/kernel/smp.c            |   11 +++++++++--
- arch/powerpc/kernel/sysfs.c          |   10 ++++++++++
- arch/powerpc/kernel/time.c           |    9 +++++++++
- arch/powerpc/kernel/traps.c          |    3 ++-
- arch/powerpc/lib/code-patching.c     |    2 +-
- arch/powerpc/mm/numa.c               |    7 ++++---
- arch/powerpc/platforms/powernv/smp.c |   10 +---------
- arch/powerpc/sysdev/xics/icp-hv.c    |    6 +++++-
- 15 files changed, 68 insertions(+), 34 deletions(-)
+Thanks,
+Gavin
