@@ -1,16 +1,16 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id EA48A2C0095
+ by ozlabs.org (Postfix) with ESMTP id F35222C009A
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 19:20:31 +1000 (EST)
 From: wency@cn.fujitsu.com
 To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [RFC v9 PATCH 09/21] memory-hotplug: does not release memory region
- in PAGES_PER_SECTION chunks
-Date: Wed, 5 Sep 2012 17:25:43 +0800
-Message-Id: <1346837155-534-10-git-send-email-wency@cn.fujitsu.com>
+Subject: [RFC v9 PATCH 01/21] memory-hotplug: rename remove_memory() to
+ offline_memory()/offline_pages()
+Date: Wed, 5 Sep 2012 17:25:35 +0800
+Message-Id: <1346837155-534-2-git-send-email-wency@cn.fujitsu.com>
 In-Reply-To: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
 References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
 Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
@@ -28,14 +28,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
-Since applying a patch(de7f0cba96786c), release_mem_region() has been changed
-as called in PAGES_PER_SECTION chunks because register_memory_resource() is
-called in PAGES_PER_SECTION chunks by add_memory(). But it seems firmware
-dependency. If CRS are written in the PAGES_PER_SECTION chunks in ACPI DSDT
-Table, register_memory_resource() is called in PAGES_PER_SECTION chunks.
-But if CRS are written in the DIMM unit in ACPI DSDT Table,
-register_memory_resource() is called in DIMM unit. So release_mem_region()
-should not be called in PAGES_PER_SECTION chunks. The patch fixes it.
+remove_memory() only try to offline pages. It is called in two cases:
+1. hot remove a memory device
+2. echo offline >/sys/devices/system/memory/memoryXX/state
+
+In the 1st case, we should also change memory block's state, and notify
+the userspace that the memory block's state is changed after offlining
+pages.
+
+So rename remove_memory() to offline_memory()/offline_pages(). And in
+the 1st case, offline_memory() will be used. The function offline_memory()
+is not implemented. In the 2nd case, offline_pages() will be used.
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -46,61 +49,120 @@ CC: Christoph Lameter <cl@linux.com>
 Cc: Minchan Kim <minchan.kim@gmail.com>
 CC: Andrew Morton <akpm@linux-foundation.org>
 CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Wen Congyang <wency@cn.fujitsu.com>
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
 ---
- arch/powerpc/platforms/pseries/hotplug-memory.c |   13 +++++++++----
- mm/memory_hotplug.c                             |    4 ++--
- 2 files changed, 11 insertions(+), 6 deletions(-)
+ drivers/acpi/acpi_memhotplug.c |    2 +-
+ drivers/base/memory.c          |    9 +++------
+ include/linux/memory_hotplug.h |    3 ++-
+ mm/memory_hotplug.c            |   22 ++++++++++++++--------
+ 4 files changed, 20 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 11d8e05..dc0a035 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -77,7 +77,8 @@ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_siz
- {
- 	unsigned long start, start_pfn;
- 	struct zone *zone;
--	int ret;
-+	int i, ret;
-+	int sections_to_remove;
- 
- 	start_pfn = base >> PAGE_SHIFT;
- 
-@@ -97,9 +98,13 @@ static int pseries_remove_memblock(unsigned long base, unsigned int memblock_siz
- 	 * to sysfs "state" file and we can't remove sysfs entries
- 	 * while writing to it. So we have to defer it to here.
+diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
+index 24c807f..2a7beac 100644
+--- a/drivers/acpi/acpi_memhotplug.c
++++ b/drivers/acpi/acpi_memhotplug.c
+@@ -318,7 +318,7 @@ static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
  	 */
--	ret = __remove_pages(zone, start_pfn, memblock_size >> PAGE_SHIFT);
--	if (ret)
--		return ret;
-+	sections_to_remove = (memblock_size >> PAGE_SHIFT) / PAGES_PER_SECTION;
-+	for (i = 0; i < sections_to_remove; i++) {
-+		unsigned long pfn = start_pfn + i * PAGES_PER_SECTION;
-+		ret = __remove_pages(zone, start_pfn,  PAGES_PER_SECTION);
-+		if (ret)
-+			return ret;
-+	}
+ 	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
+ 		if (info->enabled) {
+-			result = remove_memory(info->start_addr, info->length);
++			result = offline_memory(info->start_addr, info->length);
+ 			if (result)
+ 				return result;
+ 		}
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 7dda4f7..44e7de6 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -248,26 +248,23 @@ static bool pages_correctly_reserved(unsigned long start_pfn,
+ static int
+ memory_block_action(unsigned long phys_index, unsigned long action)
+ {
+-	unsigned long start_pfn, start_paddr;
++	unsigned long start_pfn;
+ 	unsigned long nr_pages = PAGES_PER_SECTION * sections_per_block;
+ 	struct page *first_page;
+ 	int ret;
  
- 	/*
- 	 * Update memory regions for memory remove
+ 	first_page = pfn_to_page(phys_index << PFN_SECTION_SHIFT);
++	start_pfn = page_to_pfn(first_page);
+ 
+ 	switch (action) {
+ 		case MEM_ONLINE:
+-			start_pfn = page_to_pfn(first_page);
+-
+ 			if (!pages_correctly_reserved(start_pfn, nr_pages))
+ 				return -EBUSY;
+ 
+ 			ret = online_pages(start_pfn, nr_pages);
+ 			break;
+ 		case MEM_OFFLINE:
+-			start_paddr = page_to_pfn(first_page) << PAGE_SHIFT;
+-			ret = remove_memory(start_paddr,
+-					    nr_pages << PAGE_SHIFT);
++			ret = offline_pages(start_pfn, nr_pages);
+ 			break;
+ 		default:
+ 			WARN(1, KERN_WARNING "%s(%ld, %ld) unknown action: "
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index 910550f..c183f39 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -233,7 +233,8 @@ static inline int is_mem_section_removable(unsigned long pfn,
+ extern int mem_online_node(int nid);
+ extern int add_memory(int nid, u64 start, u64 size);
+ extern int arch_add_memory(int nid, u64 start, u64 size);
+-extern int remove_memory(u64 start, u64 size);
++extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
++extern int offline_memory(u64 start, u64 size);
+ extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+ 								int nr_pages);
+ extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
 diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index e74a01d..2353887 100644
+index 3ad25f9..bb42316 100644
 --- a/mm/memory_hotplug.c
 +++ b/mm/memory_hotplug.c
-@@ -358,11 +358,11 @@ int __remove_pages(struct zone *zone, unsigned long phys_start_pfn,
- 	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
- 	BUG_ON(nr_pages % PAGES_PER_SECTION);
+@@ -866,7 +866,7 @@ check_pages_isolated(unsigned long start_pfn, unsigned long end_pfn)
+ 	return offlined;
+ }
  
-+	release_mem_region(phys_start_pfn << PAGE_SHIFT,  nr_pages * PAGE_SIZE);
+-static int __ref offline_pages(unsigned long start_pfn,
++static int __ref __offline_pages(unsigned long start_pfn,
+ 		  unsigned long end_pfn, unsigned long timeout)
+ {
+ 	unsigned long pfn, nr_pages, expire;
+@@ -994,18 +994,24 @@ out:
+ 	return ret;
+ }
+ 
+-int remove_memory(u64 start, u64 size)
++int offline_pages(unsigned long start_pfn, unsigned long nr_pages)
+ {
+-	unsigned long start_pfn, end_pfn;
++	return __offline_pages(start_pfn, start_pfn + nr_pages, 120 * HZ);
++}
+ 
+-	start_pfn = PFN_DOWN(start);
+-	end_pfn = start_pfn + PFN_DOWN(size);
+-	return offline_pages(start_pfn, end_pfn, 120 * HZ);
++int offline_memory(u64 start, u64 size)
++{
++	return -EINVAL;
+ }
+ #else
+-int remove_memory(u64 start, u64 size)
++int offline_pages(unsigned long start, unsigned long size)
++{
++	return -EINVAL;
++}
 +
- 	sections_to_remove = nr_pages / PAGES_PER_SECTION;
- 	for (i = 0; i < sections_to_remove; i++) {
- 		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
--		release_mem_region(pfn << PAGE_SHIFT,
--				   PAGES_PER_SECTION << PAGE_SHIFT);
- 		ret = __remove_section(zone, __pfn_to_section(pfn));
- 		if (ret)
- 			break;
++int offline_memory(u64 start, u64 size)
+ {
+ 	return -EINVAL;
+ }
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
+-EXPORT_SYMBOL_GPL(remove_memory);
++EXPORT_SYMBOL_GPL(offline_memory);
 -- 
 1.7.1
