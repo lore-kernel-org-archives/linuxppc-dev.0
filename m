@@ -1,31 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B1CE82C00B1
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:24 +1000 (EST)
+ (Client CN "e31.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 35DD52C0347
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:26 +1000 (EST)
 Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 5 Sep 2012 00:15:22 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id DC90A3E40039
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 00:15:18 -0600 (MDT)
+ Wed, 5 Sep 2012 00:15:24 -0600
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 9D7263E40040
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 00:15:20 -0600 (MDT)
 Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q856FJOA232990
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:19 -0600
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q856FKxT230730
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:20 -0600
 Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
  by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q856FIPa028617
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:18 -0600
+ q856FJCx028692
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:20 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 09/21] ppc/eeh: remove PE at appropriate time
-Date: Wed,  5 Sep 2012 14:14:44 +0800
-Message-Id: <1346825696-13960-10-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 10/21] ppc/eeh: build EEH event based on PE
+Date: Wed,  5 Sep 2012 14:14:45 +0800
+Message-Id: <1346825696-13960-11-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,99 +38,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During PCI hotplug and EEH recovery, the PE hierarchy PE might be
-changed due to the PCI topology changes. At later point when the
-PCI device is added, the PE will be created dynamically again.
-
-The patch introduces new function to remove EEH devices from the
-associated PE. That also can cause that the parent PE is removed
-from the PE tree if the parent PE doesn't include valid EEH devices
-and child PEs.
+The original implementation builds EEH event based on EEH device.
+We already had dedicated struct to depict PE. It's reasonable to
+build EEH event based on PE.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h          |    1 +
- arch/powerpc/platforms/pseries/eeh.c    |    1 +
- arch/powerpc/platforms/pseries/eeh_pe.c |   46 +++++++++++++++++++++++++++++++
- 3 files changed, 48 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/eeh_event.h       |    4 +-
+ arch/powerpc/platforms/pseries/eeh_event.c |   29 +++++++--------------------
+ 2 files changed, 10 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index e41107d..fd69584 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -167,6 +167,7 @@ static inline void eeh_unlock(void)
- typedef void *(*eeh_traverse_func)(void *data, void *flag);
- int __devinit eeh_phb_pe_create(struct pci_controller *phb);
- int eeh_pe_create(struct eeh_dev *edev);
-+int eeh_pe_remove(struct eeh_dev *edev);
+diff --git a/arch/powerpc/include/asm/eeh_event.h b/arch/powerpc/include/asm/eeh_event.h
+index c68b012..dc722b5 100644
+--- a/arch/powerpc/include/asm/eeh_event.h
++++ b/arch/powerpc/include/asm/eeh_event.h
+@@ -28,10 +28,10 @@
+  */
+ struct eeh_event {
+ 	struct list_head	list;	/* to form event queue	*/
+-	struct eeh_dev		*edev;	/* EEH device		*/
++	struct eeh_pe		*pe;	/* EEH PE		*/
+ };
  
- void * __devinit eeh_dev_init(struct device_node *dn, void *data);
- void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb);
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 99937da..82a5fdc 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -1156,6 +1156,7 @@ static void eeh_remove_device(struct pci_dev *dev)
- 	dev->dev.archdata.edev = NULL;
- 	pci_dev_put(dev);
+-int eeh_send_failure_event(struct eeh_dev *edev);
++int eeh_send_failure_event(struct eeh_pe *pe);
+ struct eeh_dev *handle_eeh_events(struct eeh_event *);
  
-+	eeh_pe_remove(edev);
- 	pci_addr_cache_remove_device(dev);
- 	eeh_sysfs_remove_device(dev);
- }
-diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
-index 56aab91..ed675b8 100644
---- a/arch/powerpc/platforms/pseries/eeh_pe.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pe.c
-@@ -336,3 +336,49 @@ int eeh_pe_create(struct eeh_dev *edev)
-         return 0;
- }
+ #endif /* __KERNEL__ */
+diff --git a/arch/powerpc/platforms/pseries/eeh_event.c b/arch/powerpc/platforms/pseries/eeh_event.c
+index 6132772..7f89f1e 100644
+--- a/arch/powerpc/platforms/pseries/eeh_event.c
++++ b/arch/powerpc/platforms/pseries/eeh_event.c
+@@ -119,36 +119,23 @@ static void eeh_thread_launcher(struct work_struct *dummy)
  
-+/**
-+ * eeh_pe_remove - Remove one EEH device from the associated PE
-+ * @edev: EEH device
-+ *
-+ * The PE hierarchy tree might be changed when doing PCI hotplug.
-+ * Also, the PCI devices or buses could be removed from the system
-+ * during EEH recovery.
-+ */
-+int eeh_pe_remove(struct eeh_dev *edev)
-+{
-+	struct eeh_pe *pe, *parent;
-+
-+	if (!edev->pe) {
-+		pr_err("%s: No PE found for EEH device %s\n",
-+			__func__, edev->dn->full_name);
-+		return -EEXIST;
+ /**
+  * eeh_send_failure_event - Generate a PCI error event
+- * @edev: EEH device
++ * @pe: EEH PE
+  *
+  * This routine can be called within an interrupt context;
+  * the actual event will be delivered in a normal context
+  * (from a workqueue).
+  */
+-int eeh_send_failure_event(struct eeh_dev *edev)
++int eeh_send_failure_event(struct eeh_pe *pe)
+ {
+ 	unsigned long flags;
+ 	struct eeh_event *event;
+-	struct device_node *dn = eeh_dev_to_of_node(edev);
+-	const char *location;
+-
+-	if (!mem_init_done) {
+-		printk(KERN_ERR "EEH: event during early boot not handled\n");
+-		location = of_get_property(dn, "ibm,loc-code", NULL);
+-		printk(KERN_ERR "EEH: device node = %s\n", dn->full_name);
+-		printk(KERN_ERR "EEH: PCI location = %s\n", location);
+-		return 1;
+-	}
+-	event = kzalloc(sizeof(*event), GFP_ATOMIC);
+-	if (event == NULL) {
+-		printk(KERN_ERR "EEH: out of memory, event not handled\n");
+-		return 1;
+- 	}
+-
+-	if (edev->pdev)
+-		pci_dev_get(edev->pdev);
+ 
+-	event->edev = edev;
++	event = kzalloc(sizeof(*event), GFP_ATOMIC);
++	if (!event) {
++		pr_err("EEH: out of memory, event not handled\n");
++		return -ENOMEM;
 +	}
-+
-+	/* Remove the EEH device */
-+	pe = edev->pe;
-+	edev->pe = NULL;
-+	list_del(&edev->list);
-+
-+	/*
-+	 * Check if the parent PE includes any EEH devices.
-+	 * If not, we should delete that. Also, we should
-+	 * delete the parent PE if it doesn't have associated
-+	 * child PEs and EEH devices.
-+	 */
-+	while (1) {
-+		parent = pe->parent;
-+		if (pe->type & EEH_PE_PHB)
-+			break;
-+
-+		if (list_empty(&pe->edevs) &&
-+		    list_empty(&pe->child_list)) {
-+			list_del(&pe->child);
-+			kfree(pe);
-+		}
-+
-+		pe = parent;
-+	}
-+
-+	return 0;
-+}
-+
++	event->pe = pe;
+ 
+ 	/* We may or may not be called in an interrupt context */
+ 	spin_lock_irqsave(&eeh_eventlist_lock, flags);
 -- 
 1.7.5.4
