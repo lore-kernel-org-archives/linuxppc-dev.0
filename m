@@ -1,22 +1,23 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 396B32C0328
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 19:20:35 +1000 (EST)
-From: wency@cn.fujitsu.com
-To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [RFC v9 PATCH 21/21] memory-hotplug: auto offline page_cgroup when
- onlining memory block failed
-Date: Wed, 5 Sep 2012 17:25:55 +0800
-Message-Id: <1346837155-534-22-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
-References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
-Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
- akpm@linux-foundation.org, liuj97@gmail.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0AC522C0815
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 19:24:03 +1000 (EST)
+Message-ID: <1346837023.2257.57.camel@pasglop>
+Subject: Re: [PATCH 13/25] macintosh/mediabay: add a const qualifier
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Uwe =?ISO-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+Date: Wed, 05 Sep 2012 19:23:43 +1000
+In-Reply-To: <20120905080249.GI28643@pengutronix.de>
+References: <1343034810-3386-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1343034810-3386-14-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1346812817.2257.23.camel@pasglop> <20120905080249.GI28643@pengutronix.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Arnd Bergmann <arnd@arndb.de>, Rob Herring <rob.herring@calxeda.com>,
+ kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wen Congyang <wency@cn.fujitsu.com>
+On Wed, 2012-09-05 at 10:02 +0200, Uwe Kleine-König wrote:
+> Hello,
+> 
+> On Wed, Sep 05, 2012 at 12:40:17PM +1000, Benjamin Herrenschmidt wrote:
+> > On Mon, 2012-07-23 at 11:13 +0200, Uwe Kleine-König wrote:
+> > > This prepares *of_device_id.data becoming const. Without this change
+> > > the following warning would occur:
+> > > 
+> > > 	drivers/macintosh/mediabay.c: In function 'media_bay_attach':
+> > > 	drivers/macintosh/mediabay.c:589:11: warning: assignment discards 'const' qualifier from pointer target type [enabled by default]
+> > > 
+> > > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> > > ---
+> > 
+> > Ack all of these assuming you test built (I didn't).
+> "all" means the two mediabay patches? And yes, they are all built
+> tested.
 
-When a memory block is onlined, we will try allocate memory on that node
-to store page_cgroup. If onlining the memory block failed, we don't
-offline the page cgroup, and we have no chance to offline this page cgroup
-unless the memory block is onlined successfully again. It will cause
-that we can't hot-remove the memory device on that node, because some
-memory is used to store page cgroup. If onlining the memory block
-is failed, there is no need to stort page cgroup for this memory. So
-auto offline page_cgroup when onlining memory block failed.
+Yeah, anything powerpc you had in your series, but the two mediabay ones
+are what I spotted when digging through stuff today :-)
 
-CC: David Rientjes <rientjes@google.com>
-CC: Jiang Liu <liuj97@gmail.com>
-CC: Len Brown <len.brown@intel.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Christoph Lameter <cl@linux.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
----
- mm/page_cgroup.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+> >                                                      Do you need me to
+> > carry any of this via the powerpc tree ?
+> The patch that adds the const to of_device_id depends[1] on this patch.
+> And the other mediabay is only valid after that const is added. So the
+> easiest is if the series is pulled in one go. Arnd intended to let Linus
+> pull it for 3.6-rc1 but it was missed because of a communication
+> problem. So I intend to get it in during the 3.7 merge window.
 
-diff --git a/mm/page_cgroup.c b/mm/page_cgroup.c
-index 5ddad0c..44db00e 100644
---- a/mm/page_cgroup.c
-+++ b/mm/page_cgroup.c
-@@ -251,6 +251,9 @@ static int __meminit page_cgroup_callback(struct notifier_block *self,
- 				mn->nr_pages, mn->status_change_nid);
- 		break;
- 	case MEM_CANCEL_ONLINE:
-+		offline_page_cgroup(mn->start_pfn,
-+				mn->nr_pages, mn->status_change_nid);
-+		break;
- 	case MEM_GOING_OFFLINE:
- 		break;
- 	case MEM_ONLINE:
--- 
-1.7.1
+Ok, I'm happy for Arnd to carry all of these, I trust his
+judgement/review for that stuff including for ppc specific bits.
+
+Cheers,
+Ben.
+
+> Best regards
+> Uwe
+> 
+> [1] it's only a soft depend, because the result is "only" a warning, but
+> still.
+> 
