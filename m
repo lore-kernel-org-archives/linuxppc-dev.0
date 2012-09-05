@@ -1,25 +1,24 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id EAC6F2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 11:46:23 +1000 (EST)
-Message-ID: <5046ADB2.9020703@cn.fujitsu.com>
-Date: Wed, 05 Sep 2012 09:41:06 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC v8 PATCH 08/20] memory-hotplug: remove /sys/firmware/memmap/X
- sysfs
-References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>	<1346148027-24468-9-git-send-email-wency@cn.fujitsu.com>	<20120831140623.8d13bd2c.akpm@linux-foundation.org>	<5044454E.7070909@cn.fujitsu.com>
- <20120904161634.f1f9f693.akpm@linux-foundation.org>
-In-Reply-To: <20120904161634.f1f9f693.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, Christoph Lameter <cl@linux-foundation.org>,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, liuj97@gmail.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4E8BA2C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 12:04:27 +1000 (EST)
+Message-ID: <1346810624.2257.22.camel@pasglop>
+Subject: Re: [PATCH] clk: Make the generic clock API available by default
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Date: Wed, 05 Sep 2012 12:03:44 +1000
+In-Reply-To: <1346186104-4083-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1346186104-4083-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Russell King <linux@arm.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+ linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
+ Paul Mackerras <paulus@samba.org>, Haavard Skinnemoen <hskinnemoen@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ Hans-Christian Egtvedt <egtvedt@samfundet.no>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,35 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 09/05/2012 07:16 AM, Andrew Morton Wrote:
-> On Mon, 03 Sep 2012 13:51:10 +0800
-> Wen Congyang <wency@cn.fujitsu.com> wrote:
+On Tue, 2012-08-28 at 13:35 -0700, Mark Brown wrote:
+> Rather than requiring platforms to select the generic clock API to make
+> it available make the API available as a user selectable option unless the
+> user either selects HAVE_CUSTOM_CLK (if they have their own implementation)
+> or selects COMMON_CLK (if they depend on the generic implementation).
 > 
->>>> +static void release_firmware_map_entry(struct kobject *kobj)
->>>> +{
->>>> +	struct firmware_map_entry *entry = to_memmap_entry(kobj);
->>>> +	struct page *page;
->>>> +
->>>> +	page = virt_to_page(entry);
->>>> +	if (PageSlab(page) || PageCompound(page))
->>>
->>> That PageCompound() test looks rather odd.  Why is this done?
->>
->> Liu Jiang and Christoph Lameter discussed how to find slab page
->> in this mail:
->> https://lkml.org/lkml/2012/7/6/333.
+> All current architectures that HAVE_CLK but don't use the common clock
+> framework have selects of HAVE_CUSTOM_CLK added.
 > 
-> Well, please add a code comment to release_firmware_map_entry() which
-> fully explains these things.
+> This allows drivers to use the generic API on platforms which have no need
+> for the clock API at platform level.
 > 
-> I see that Christoph and I agree: "It would be cleaner if memory
-> hotplug had an indicator which allocation mechanism was used and would
-> use the corresponding free action".  You didn't respond to this
-> suggestion when he made it, nor when I made it.  What are your thoughts
-> on this?
+> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> ---
 
-Hmm, I think it is better to use an indicator which allocation mechanism was
-used. I will do it in the next version.
+For powerpc:
 
-Thanks
-Wen Congyang
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Cheers,
+Ben.
