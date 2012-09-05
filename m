@@ -1,31 +1,30 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B48EC2C0362
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:22 +1000 (EST)
+ (Client CN "e3.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CDDB52C012C
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:23 +1000 (EST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 5 Sep 2012 00:15:20 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 11AC93E40039
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 00:15:17 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q856FHHR247722
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:17 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q856FFQg028376
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:16 -0600
+ Wed, 5 Sep 2012 02:15:21 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id F043FC90041
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 02:15:17 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q856FHhw189566
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 02:15:17 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q856FHjA026982
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 02:15:17 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/21] ppc/eeh: Search PE based on requirement
-Date: Wed,  5 Sep 2012 14:14:42 +0800
-Message-Id: <1346825696-13960-8-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 08/21] ppc/eeh: create PEs duing EEH initialization
+Date: Wed,  5 Sep 2012 14:14:43 +0800
+Message-Id: <1346825696-13960-9-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,186 +37,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch implements searching PE based on the following
-requirements:
+The patch creates PEs and associated the newly created PEs with
+it parent/silbing as well as EEH devices. It would become more
+straight to trace EEH errors and recover them accordingly.
 
- * Search PE according to PE address, which is traditional
-   PE address that is composed of PCI bus/device/function
-   number, or unified PE address assigned by firmware or
-   platform.
- * Search parent PE according to the given EEH device. It's
-   useful when creating new PE and put it into right position.
+Once the EEH functionality on one PCI IOA has been enabled, we
+tries to create PE against it. If there's existing PE, to which
+the current PCI IOA should be attached, the existing PE will be
+converted from "device" type to "bus" type accordingly.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
  arch/powerpc/include/asm/eeh.h          |    1 +
- arch/powerpc/platforms/pseries/eeh_pe.c |  146 +++++++++++++++++++++++++++++++
- 2 files changed, 147 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/pseries/eeh.c    |    6 ++
+ arch/powerpc/platforms/pseries/eeh_pe.c |   89 +++++++++++++++++++++++++++++++
+ 3 files changed, 96 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 7b9c7d6..1cc1388 100644
+index 1cc1388..e41107d 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -164,6 +164,7 @@ static inline void eeh_unlock(void)
-  */
- #define EEH_MAX_ALLOWED_FREEZES 5
+@@ -166,6 +166,7 @@ static inline void eeh_unlock(void)
  
-+typedef void *(*eeh_traverse_func)(void *data, void *flag);
+ typedef void *(*eeh_traverse_func)(void *data, void *flag);
  int __devinit eeh_phb_pe_create(struct pci_controller *phb);
++int eeh_pe_create(struct eeh_dev *edev);
  
  void * __devinit eeh_dev_init(struct device_node *dn, void *data);
+ void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 0ba7e3b..99937da 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -895,6 +895,8 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
+ 			eeh_subsystem_enabled = 1;
+ 			edev->mode |= EEH_MODE_SUPPORTED;
+ 
++			eeh_pe_create(edev);
++
+ 			pr_debug("EEH: %s: eeh enabled, config=%x pe_config=%x\n",
+ 				 dn->full_name, edev->config_addr,
+ 				 edev->pe_config_addr);
+@@ -908,6 +910,10 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
+ 				/* Parent supports EEH. */
+ 				edev->mode |= EEH_MODE_SUPPORTED;
+ 				edev->config_addr = of_node_to_eeh_dev(dn->parent)->config_addr;
++				edev->pe_config_addr = of_node_to_eeh_dev(dn->parent)->pe_config_addr;
++
++				eeh_pe_create(edev);
++
+ 				return NULL;
+ 			}
+ 		}
 diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
-index 20d65dc..f019953 100644
+index f019953..56aab91 100644
 --- a/arch/powerpc/platforms/pseries/eeh_pe.c
 +++ b/arch/powerpc/platforms/pseries/eeh_pe.c
-@@ -101,3 +101,149 @@ static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
+@@ -247,3 +247,92 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
  	return NULL;
  }
  
 +/**
-+ * eeh_pe_next - Retrieve the next PE in the tree
-+ * @pe: current PE
-+ * @root: root PE
-+ *
-+ * The function is used to retrieve the next PE in the
-+ * hierarchy PE tree.
-+ */
-+static struct eeh_pe *eeh_pe_next(struct eeh_pe *pe,
-+				  struct eeh_pe *root)
-+{
-+	struct list_head *next = pe->child_list.next;
-+
-+	if (next == &pe->child_list) {
-+		while (1) {
-+			if (pe == root)
-+				return NULL;
-+			next = pe->child.next;
-+			if (next != &pe->parent->child_list)
-+				break;
-+			pe = pe->parent;
-+		}
-+	}
-+
-+	return list_entry(next, struct eeh_pe, child);
-+}
-+
-+/**
-+ * eeh_pe_traverse - Traverse PEs in the specified PHB
-+ * @root: root PE
-+ * @fn: callback
-+ * @flag: extra parameter to callback
-+ *
-+ * The function is used to traverse the specified PE and its
-+ * child PEs. The traversing is to be terminated once the
-+ * callback returns something other than NULL, or no more PEs
-+ * to be traversed.
-+ */
-+static void *eeh_pe_traverse(struct eeh_pe *root,
-+			eeh_traverse_func fn, void *flag)
-+{
-+	struct eeh_pe *pe;
-+	void *ret;
-+
-+	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
-+		ret = fn(pe, flag);
-+		if (ret) return ret;
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-+ * __eeh_pe_get - Check the PE address
-+ * @data: EEH PE
-+ * @flag: EEH device
-+ *
-+ * For one particular PE, it can be identified by PE address
-+ * or tranditional BDF address. BDF address is composed of
-+ * Bus/Device/Function number. The extra data referred by flag
-+ * indicates which type of address should be used.
-+ */
-+static void *__eeh_pe_get(void *data, void *flag)
-+{
-+	struct eeh_pe *pe = (struct eeh_pe *)data;
-+	struct eeh_dev *edev = (struct eeh_dev *)flag;
-+
-+	/* Unexpected PHB PE */
-+	if (pe->type == EEH_PE_PHB)
-+		return NULL;
-+
-+	/* We prefer PE address */
-+	if (edev->pe_config_addr &&
-+	    (edev->pe_config_addr == pe->addr))
-+		return pe;
-+
-+	/* Try BDF address */
-+	if (edev->pe_config_addr &&
-+	    (edev->config_addr == pe->config_addr))
-+		return pe;
-+
-+	return NULL;
-+}
-+
-+/**
-+ * eeh_pe_get - Search PE based on the given address
++ * eeh_pe_create - Create EEH PE according to EEH device
 + * @edev: EEH device
 + *
-+ * Search the corresponding PE based on the specified address which
-+ * is included in the eeh device. The function is used to check if
-+ * the associated PE has been created against the PE address. It's
-+ * notable that the PE address has 2 format: traditional PE address
-+ * which is composed of PCI bus/device/function number, or unified
-+ * PE address.
++ * Create EEH PE according to the specified EEH device and
++ * put the EEH PE into appropriate place in the PE hierarchy
++ * tree.
 + */
-+static struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
++int eeh_pe_create(struct eeh_dev *edev)
 +{
-+	struct eeh_pe *root = eeh_phb_pe_get(edev->phb);
-+	struct eeh_pe *pe;
-+
-+	eeh_lock();
-+	pe = eeh_pe_traverse(root, __eeh_pe_get, edev);
-+	eeh_unlock();
-+
-+	return pe;
-+}
-+
-+/**
-+ * eeh_pe_get_parent - Retrieve the parent PE
-+ * @edev: EEH device
-+ *
-+ * The whole PEs existing in the system are organized as hierarchy
-+ * tree. The function is used to retrieve the parent PE according
-+ * to the parent EEH device.
-+ */
-+static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
-+{
-+	struct device_node *dn;
-+	struct eeh_dev *parent;
++	struct eeh_pe *pe, *parent;
 +
 +	/*
-+	 * It might have the case for the indirect parent
-+	 * EEH device already having associated PE, but
-+	 * the direct parent EEH device doesn't have yet.
++	 * Search the PE has been existing or not according
++	 * to the PE address. If that has been existing, the
++	 * PE should be composed of PCI bus and its subordinate
++	 * components.
 +	 */
-+	dn = edev->dn->parent;
-+	while (dn) {
-+		/* We're poking out of PCI territory */
-+		if (!PCI_DN(dn))
-+			return NULL;
++	pe = eeh_pe_get(edev);
++	if (pe) {
++		if (!edev->pe_config_addr) {
++			pr_err("%s: PE with addr 0x%x already exists\n",
++				__func__, edev->config_addr);
++			return -EEXIST;
++		}
 +
-+		parent = of_node_to_eeh_dev(dn);
++		/* Mark the PE as type of PCI bus */
++		pe->type = EEH_PE_BUS;
++		edev->pe = pe;
 +
-+		/* We're poking out of PCI territory */
-+		if (!parent)
-+			return NULL;
++		/* Put the edev to PE */
++		list_add_tail(&edev->list, &pe->edevs);
 +
-+		if (parent->pe)
-+			return parent->pe;
++		pr_info("EEH: Add %s to Bus PE#%x\n",
++			edev->dn->full_name, pe->addr);
 +
-+		dn = dn->parent;
++                return 0;
 +	}
 +
-+	return NULL;
++	/* Create a new EEH PE */
++	pe = kzalloc(sizeof(struct eeh_pe), GFP_KERNEL);
++	if (!pe) {
++		pr_err("%s: out of memory!\n", __func__);
++		return -ENOMEM;
++	}
++	pe->addr	= edev->pe_config_addr;
++	pe->config_addr	= edev->config_addr;
++	pe->type	= EEH_PE_DEVICE;
++	pe->phb		= edev->phb;
++	INIT_LIST_HEAD(&pe->child_list);
++	INIT_LIST_HEAD(&pe->child);
++	INIT_LIST_HEAD(&pe->edevs);
++
++	/*
++	 * Put the new EEH PE into hierarchy tree. If the parent
++	 * can't be found, the newly created PE will be attached
++	 * to PHB directly. Otherwise, we have to associate the
++	 * PE with its parent.
++	 */
++	parent = eeh_pe_get_parent(edev);
++	if (!parent) {
++		parent = eeh_phb_pe_get(edev->phb);
++		if (!parent) {
++			pr_err("%s: No PHB PE is found (PHB Domain=%d)\n",
++				__func__, edev->phb->global_number);
++			edev->pe = NULL;
++			kfree(pe);
++			return -EEXIST;
++		}
++
++		pe->parent = parent;
++	} else {
++		pe->parent = parent;
++	}
++
++	/*
++	 * Put the newly created PE into the child list and
++	 * link the EEH device accordingly.
++	 */
++	list_add_tail(&pe->child, &parent->child_list);
++	list_add_tail(&edev->list, &pe->edevs);
++	edev->pe = pe;
++
++        pr_info("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
++                edev->dn->full_name, pe->addr, pe->parent->addr);
++
++        return 0;
 +}
 +
 -- 
