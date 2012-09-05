@@ -2,29 +2,29 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e2.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B82AF2C0095
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:18 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6BD612C033A
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:19 +1000 (EST)
 Received: from /spool/local
  by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
  Wed, 5 Sep 2012 02:15:16 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 52B206E803A
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 02:15:13 -0400 (EDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q856FCKc137438
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 02:15:13 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q856FCu7028119
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:12 -0600
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B515CC9003E
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 02:15:14 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q856FEdE099118
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 02:15:14 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q856FEEf026398
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 02:15:14 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 04/21] ppc/eeh: Introduce eeh_pe struct
-Date: Wed,  5 Sep 2012 14:14:39 +0800
-Message-Id: <1346825696-13960-5-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 06/21] ppc/eeh: Create PEs for PHBs
+Date: Wed,  5 Sep 2012 14:14:41 +0800
+Message-Id: <1346825696-13960-7-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,85 +37,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As defined in PAPR 2.4, Partitionable Endpoint (PE) is an I/O subtree
-that can be treated as a unit for the purposes of partitioning and error
-recovery. Therefore, eeh core should be aware of PE. With eeh_pe struct,
-we can support PE explicitly. Further more, it makes all the staff as
-data centralized. Another important reason is for eeh core to support
-multiple platforms. Some of them like pSeries figures out PEs through
-OF nodes while others like powernv have to do that through PCI bus/device
-tree. With explicit PE support, eeh core will be implemented based on
-the centrialized data and platform dependent implementations figure it
-out by their feasible ways.
+For one particular PE, it's only meaningful in the ancestor PHB
+domain. Therefore, each PHB should have its own PE hierarchy tree
+to trace those PEs created against the PHB.
 
-When the struct is designed, following factors are taken in account:
-  * Reflecting the relationships of PEs. PE might have parent
-    as well children.
-  * Reflecting the association of PE and (eeh) devices.
-  * PEs have PHB boundary.
-  * PE should have unique address assigned in the corresponding
-    PHB domain.
+The patch creates PEs for the PHBs and put those PEs into the
+global link list traced by "eeh_phb_pe". The link list of PEs
+would be first level of overall PE hierarchy tree across the
+system.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h |   38 ++++++++++++++++++++++++++++++++++++++
- 1 files changed, 38 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/eeh.h           |    2 +
+ arch/powerpc/platforms/pseries/Makefile  |    5 +-
+ arch/powerpc/platforms/pseries/eeh_dev.c |    4 +
+ arch/powerpc/platforms/pseries/eeh_pe.c  |  103 ++++++++++++++++++++++++++++++
+ 4 files changed, 112 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/platforms/pseries/eeh_pe.c
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 06dedff..f77b6d7 100644
+index 248b3d9..7b9c7d6 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -32,6 +32,42 @@ struct device_node;
- #ifdef CONFIG_EEH
+@@ -164,6 +164,8 @@ static inline void eeh_unlock(void)
+  */
+ #define EEH_MAX_ALLOWED_FREEZES 5
  
- /*
-+ * The struct is used to trace PE related EEH functionality.
-+ * In theory, there will have one instance of the struct to
-+ * be created against particular PE. In nature, PEs corelate
-+ * to each other. the struct has to reflect that hierarchy in
-+ * order to easily pick up those affected PEs when one particular
-+ * PE has EEH errors.
-+ *
-+ * Also, one particular PE might be composed of PCI device, PCI
-+ * bus and its subordinate components. The struct also need ship
-+ * the information. Further more, one particular PE is only meaingful
-+ * in the corresponding PHB. Therefore, the root PEs should be created
-+ * against existing PHBs in on-to-one fashion.
-+ */
-+#define EEH_PE_PHB	1	/* PHB PE    */
-+#define EEH_PE_DEVICE 	2	/* Device PE */
-+#define EEH_PE_BUS	3	/* Bus PE    */
++int __devinit eeh_phb_pe_create(struct pci_controller *phb);
 +
-+#define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
-+#define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
+ void * __devinit eeh_dev_init(struct device_node *dn, void *data);
+ void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+ int __init eeh_ops_register(struct eeh_ops *ops);
+diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
+index c222189..890622b 100644
+--- a/arch/powerpc/platforms/pseries/Makefile
++++ b/arch/powerpc/platforms/pseries/Makefile
+@@ -6,8 +6,9 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
+ 			   firmware.o power.o dlpar.o mobility.o
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_SCANLOG)	+= scanlog.o
+-obj-$(CONFIG_EEH)	+= eeh.o eeh_dev.o eeh_cache.o eeh_driver.o \
+-			   eeh_event.o eeh_sysfs.o eeh_pseries.o
++obj-$(CONFIG_EEH)	+= eeh.o eeh_pe.o eeh_dev.o eeh_cache.o \
++			   eeh_driver.o eeh_event.o eeh_sysfs.o \
++			   eeh_pseries.o
+ obj-$(CONFIG_KEXEC)	+= kexec.o
+ obj-$(CONFIG_PCI)	+= pci.o pci_dlpar.o
+ obj-$(CONFIG_PSERIES_MSI)	+= msi.o
+diff --git a/arch/powerpc/platforms/pseries/eeh_dev.c b/arch/powerpc/platforms/pseries/eeh_dev.c
+index a0cee3a..6644234 100644
+--- a/arch/powerpc/platforms/pseries/eeh_dev.c
++++ b/arch/powerpc/platforms/pseries/eeh_dev.c
+@@ -65,6 +65,7 @@ void * __devinit eeh_dev_init(struct device_node *dn, void *data)
+ 	PCI_DN(dn)->edev = edev;
+ 	edev->dn  = dn;
+ 	edev->phb = phb;
++	INIT_LIST_HEAD(&edev->list);
+ 
+ 	return NULL;
+ }
+@@ -80,6 +81,9 @@ void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb)
+ {
+ 	struct device_node *dn = phb->dn;
+ 
++	/* EEH PE for PHB */
++	eeh_phb_pe_create(phb);
 +
-+struct eeh_pe {
-+	int type;			/* PE type: PHB/Bus/Device	*/
-+	int state;			/* PE EEH dependent mode	*/
-+	int config_addr;		/* Traditional PCI address	*/
-+	int addr;			/* PE configuration address	*/
-+	struct pci_controller *phb;	/* Associated PHB		*/
-+	int check_count;		/* Times of ignored error	*/
-+	int freeze_count;		/* Times of froze up		*/
-+	int false_positives;		/* Times of reported #ff's	*/
-+	struct eeh_pe *parent;		/* Parent PE			*/
-+	struct list_head child_list;	/* Link PE to the child list	*/
-+	struct list_head edevs;		/* Link list of EEH devices	*/
-+	struct list_head child;		/* Child PEs			*/
-+};
-+
+ 	/* EEH device for PHB */
+ 	eeh_dev_init(dn, phb);
+ 
+diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
+new file mode 100644
+index 0000000..20d65dc
+--- /dev/null
++++ b/arch/powerpc/platforms/pseries/eeh_pe.c
+@@ -0,0 +1,103 @@
 +/*
-  * The struct is used to trace EEH state for the associated
-  * PCI device node or PCI device. In future, it might
-  * represent PE as well so that the EEH device to form
-@@ -53,6 +89,8 @@ struct eeh_dev {
- 	int freeze_count;		/* Times of froze up		*/
- 	int false_positives;		/* Times of reported #ff's	*/
- 	u32 config_space[16];		/* Saved PCI config space	*/
-+	struct eeh_pe *pe;		/* Associated PE		*/
-+	struct list_head list;		/* Form link list in the PE	*/
- 	struct pci_controller *phb;	/* Associated PHB		*/
- 	struct device_node *dn;		/* Associated device node	*/
- 	struct pci_dev *pdev;		/* Associated PCI device	*/
++ * The file intends to implement PE based on the information from
++ * platforms. Basically, there have 3 types of PEs: PHB/Bus/Device.
++ * All the PEs should be organized as hierarchy tree. The first level
++ * of the tree will be associated to existing PHBs since the particular
++ * PE is only meaningful in one PHB domain.
++ *
++ * Copyright Benjamin Herrenschmidt & Gavin Shan, IBM Corporation 2012.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++#include <linux/export.h>
++#include <linux/gfp.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/pci.h>
++#include <linux/string.h>
++
++#include <asm/pci-bridge.h>
++#include <asm/ppc-pci.h>
++
++static LIST_HEAD(eeh_phb_pe);
++
++/**
++ * eeh_phb_pe_create - Create PHB PE 
++ * @phb: PCI controller
++ *
++ * The function should be called while the PHB is detected during
++ * system boot or PCI hotplug in order to create PHB PE.
++ */
++int __devinit eeh_phb_pe_create(struct pci_controller *phb)
++{
++	struct eeh_pe *pe;
++
++	/* Allocate PHB PE */
++	pe = kzalloc(sizeof(struct eeh_pe), GFP_KERNEL);
++	if (!pe) {
++		pr_err("%s: out of memory!\n", __func__);
++		return -ENOMEM;
++	}
++
++	/* Initialize PHB PE */
++	pe->type = EEH_PE_PHB;
++	pe->phb = phb;
++	INIT_LIST_HEAD(&pe->child_list);
++	INIT_LIST_HEAD(&pe->child);
++	INIT_LIST_HEAD(&pe->edevs);
++
++	/* Put it into the list */
++	eeh_lock();
++	list_add_tail(&pe->child, &eeh_phb_pe);
++	eeh_unlock();
++
++	pr_info("EEH: Add PE for PHB#%d\n", phb->global_number);
++
++	return 0;
++}
++
++/**
++ * eeh_phb_pe_get - Retrieve PHB PE based on the given PHB
++ * @phb: PCI controller
++ *
++ * The overall PEs form hierarchy tree. The first layer of the
++ * hierarchy tree is composed of PHB PEs. The function is used
++ * to retrieve the corresponding PHB PE according to the given PHB.
++ */
++static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
++{
++	struct eeh_pe *pe;
++
++	eeh_lock();
++
++	list_for_each_entry(pe, &eeh_phb_pe, child) {
++		/*
++		 * Actually, we needn't check the type since
++		 * the PE for PHB has been determined when that
++		 * was created.
++		 */
++		if (pe->type == EEH_PE_PHB &&
++		    pe->phb == phb) {
++			eeh_unlock();
++			return pe;
++		}
++	}
++
++	eeh_unlock();
++
++	return NULL;
++}
++
 -- 
 1.7.5.4
