@@ -1,24 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8A2462C008A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 13:40:18 +1000 (EST)
-Message-ID: <1346816407.2257.37.camel@pasglop>
-Subject: Re: [PATCH V3 1/3] drivers/char/tpm: Add new device driver to
- support IBM vTPM
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kent Yoder <key@linux.vnet.ibm.com>
-Date: Wed, 05 Sep 2012 13:40:07 +1000
-In-Reply-To: <20120822214217.GB13519@linux.vnet.ibm.com>
-References: <1344987282.4430.26.camel@footlong>
- <1345670263.25124.7.camel@footlong>
- <20120822214217.GB13519@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, Ashley Lai <adlai@linux.vnet.ibm.com>,
- linux-security-module@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
- adlai@us.ibm.com, rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <paulus@ozlabs.org>
+Date: Wed, 5 Sep 2012 14:33:08 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] powerpc: Make sure IPI handlers see data written by IPI
+ senders
+Message-ID: <20120905043308.GA10800@drongo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,104 +18,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-08-22 at 16:42 -0500, Kent Yoder wrote:
-> On Wed, Aug 22, 2012 at 04:17:43PM -0500, Ashley Lai wrote:
-> > This patch adds a new device driver to support IBM virtual TPM
-> > (vTPM) for PPC64.  IBM vTPM is supported through the adjunct
-> > partition with firmware release 740 or higher.  With vTPM
-> > support, each lpar is able to have its own vTPM without the
-> > physical TPM hardware.
-> > 
-> > This driver provides TPM functionalities by communicating with
-> > the vTPM adjunct partition through Hypervisor calls (Hcalls)
-> > and Command/Response Queue (CRQ) commands.
-> 
->  Thanks Ashley, I'll include this in my next pull request to James.
+We have been observing hangs, both of KVM guest vcpu tasks and more
+generally, where a process that is woken doesn't properly wake up and
+continue to run, but instead sticks in TASK_WAKING state.  This
+happens because the update of rq->wake_list in ttwu_queue_remote()
+is not ordered with the update of ipi_message in
+smp_muxed_ipi_message_pass(), and the reading of rq->wake_list in
+scheduler_ipi() is not ordered with the reading of ipi_message in
+smp_ipi_demux().  Thus it is possible for the IPI receiver not to see
+the updated rq->wake_list and therefore conclude that there is nothing
+for it to do.
 
-Oh ? I was about to put it in the powerpc tree ... But yeah, I notice
-there's a change to tpm.h so it probably should be at least acked by the
-TPM folks. As for the subsequent patches, they are powerpc specific so I
-can add them, I don't think there's a strict dependency, is there ?
+In order to make sure that anything done before smp_send_reschedule()
+is ordered before anything done in the resulting call to scheduler_ipi(),
+this adds barriers in smp_muxed_message_pass() and smp_ipi_demux().
+The barrier in smp_muxed_message_pass() is a full barrier to ensure that
+there is a full ordering between the smp_send_reschedule() caller and
+scheduler_ipi().  In smp_ipi_demux(), we use xchg() rather than
+xchg_local() because xchg() includes release and acquire barriers.
+Using xchg() rather than xchg_local() makes sense given that
+ipi_message is not just accessed locally.
 
-Now, while having a look at the driver, I found a few things that I'm
-not sure I'm happy with:
+This moves the barrier between setting the message and calling the
+cause_ipi() function into the individual cause_ipi implementations.
+Most of them -- those that used outb, out_8 or similar -- already had
+a full barrier because out_8 etc. include a sync before the MMIO
+store.  This adds an explicit barrier in the two remaining cases.
 
-Mainly:
+These changes made no measurable difference to the speed of IPIs as
+measured using a simple ping-pong latency test across two CPUs on
+different cores of a POWER7 machine.
 
-> > + */
-> > +static int tpm_ibmvtpm_recv(struct tpm_chip *chip, u8 *buf, size_t count)
-> > +{
-> > +	struct ibmvtpm_dev *ibmvtpm;
-> > +	u16 len;
-> > +
-> > +	ibmvtpm = (struct ibmvtpm_dev *)chip->vendor.data;
-> > +
-> > +	if (!ibmvtpm->rtce_buf) {
-> > +		dev_err(ibmvtpm->dev, "ibmvtpm device is not ready\n");
-> > +		return 0;
-> > +	}
-> > +
-> > +	wait_event_interruptible(wq, ibmvtpm->crq_res.len != 0);
-> > +
-> > +	if (count < ibmvtpm->crq_res.len) {
+The analysis of the reason why processes were not waking up properly
+is due to Milton Miller.
 
-That doesn't look right. The "other side" as far as I can tell is:
+Cc: stable@vger.kernel.org # v3.0+
+Reported-by: Milton Miller <miltonm@bga.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+v2: Move the barrier between setting message and calling cause_ipi
+    into the cause_ipi functions
 
-> > +		case VTPM_TPM_COMMAND_RES:
-> > +			ibmvtpm->crq_res.valid = crq->valid;
-> > +			ibmvtpm->crq_res.msg = crq->msg;
-> > +			ibmvtpm->crq_res.len = crq->len;
-> > +			ibmvtpm->crq_res.data = crq->data;
-> > +			wake_up_interruptible(&wq);
+ arch/powerpc/kernel/dbell.c       |    2 ++
+ arch/powerpc/kernel/smp.c         |   11 +++++++++--
+ arch/powerpc/sysdev/xics/icp-hv.c |    6 +++++-
+ 3 files changed, 16 insertions(+), 3 deletions(-)
 
-That looks racy to me. At the very least it should be doing:
-
-			ibmvtpm->crq_res.data = crq->data;
-			smp_wmb();
-			ibmvtpm->crq_res.len = crq->len;
-
-IE. Ensure that "len" is written last, and possibly have an
-corresponding smp_rmb() after wait_event_interruptible() in the receive
-case.
-
-Also, I dislike having a global symbol called "wq". You also don't seem
-to have any synchronization on access to that wq, can't you end up with
-several clients trying to send messages & wait for responses getting all
-mixed up ? You might need to make sure that at least you do a
-wake_up_interruptible_all() to ensure you wake them all up (inefficient
-but works). Unless you can track per-client ?
-
-Or is the above TPM layer making sure only one command/response happens
-at a given point in time ?
-
-You also do an interruptible wait but don't seem to be checking for
-signals (and not testing the result from wait_event_interruptible which
-might be returning -ERESTARTSYS in this case).
-
-That all sound a bit wrong to me ...
-> > +static irqreturn_t ibmvtpm_interrupt(int irq, void *vtpm_instance)
-> > +{
-> > +	struct ibmvtpm_dev *ibmvtpm = (struct ibmvtpm_dev *) vtpm_instance;
-> > +	unsigned long flags;
-> > +
-> > +	spin_lock_irqsave(&ibmvtpm->lock, flags);
-> > +	vio_disable_interrupts(ibmvtpm->vdev);
-> > +	tasklet_schedule(&ibmvtpm->tasklet);
-> > +	spin_unlock_irqrestore(&ibmvtpm->lock, flags);
-> > +
-> > +	return IRQ_HANDLED;
-> > +}
-
-Tasklets ? We still use those things ? That's softirq iirc, do you
-really need to offload ? I mean, it allows to limit the amount of time
-an interrupt is disabled, but that's only useful if you assume you'll
-have quite a lot of traffic here, is that the case ?
-
-You might be actually increasing latency here in favor of throughput, is
-that what you are aiming for ? Also keep in mind that
-vio_disable/enable_interrupt() being an hcall, it can have significant
-overhead. So again, only worth it if you're going to process a bulk of
-data at a time.
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
+index 5b25c80..a892680 100644
+--- a/arch/powerpc/kernel/dbell.c
++++ b/arch/powerpc/kernel/dbell.c
+@@ -28,6 +28,8 @@ void doorbell_setup_this_cpu(void)
+ 
+ void doorbell_cause_ipi(int cpu, unsigned long data)
+ {
++	/* Order previous accesses vs. msgsnd, which is treated as a store */
++	mb();
+ 	ppc_msgsnd(PPC_DBELL, 0, data);
+ }
+ 
+diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+index 0321007..8d4214a 100644
+--- a/arch/powerpc/kernel/smp.c
++++ b/arch/powerpc/kernel/smp.c
+@@ -198,8 +198,15 @@ void smp_muxed_ipi_message_pass(int cpu, int msg)
+ 	struct cpu_messages *info = &per_cpu(ipi_message, cpu);
+ 	char *message = (char *)&info->messages;
+ 
++	/*
++	 * Order previous accesses before accesses in the IPI handler.
++	 */
++	smp_mb();
+ 	message[msg] = 1;
+-	mb();
++	/*
++	 * cause_ipi functions are required to include a full barrier
++	 * before doing whatever causes the IPI.
++	 */
+ 	smp_ops->cause_ipi(cpu, info->data);
+ }
+ 
+@@ -211,7 +218,7 @@ irqreturn_t smp_ipi_demux(void)
+ 	mb();	/* order any irq clear */
+ 
+ 	do {
+-		all = xchg_local(&info->messages, 0);
++		all = xchg(&info->messages, 0);
+ 
+ #ifdef __BIG_ENDIAN
+ 		if (all & (1 << (24 - 8 * PPC_MSG_CALL_FUNCTION)))
+diff --git a/arch/powerpc/sysdev/xics/icp-hv.c b/arch/powerpc/sysdev/xics/icp-hv.c
+index 14469cf..df0fc58 100644
+--- a/arch/powerpc/sysdev/xics/icp-hv.c
++++ b/arch/powerpc/sysdev/xics/icp-hv.c
+@@ -65,7 +65,11 @@ static inline void icp_hv_set_xirr(unsigned int value)
+ static inline void icp_hv_set_qirr(int n_cpu , u8 value)
+ {
+ 	int hw_cpu = get_hard_smp_processor_id(n_cpu);
+-	long rc = plpar_hcall_norets(H_IPI, hw_cpu, value);
++	long rc;
++
++	/* Make sure all previous accesses are ordered before IPI sending */
++	mb();
++	rc = plpar_hcall_norets(H_IPI, hw_cpu, value);
+ 	if (rc != H_SUCCESS) {
+ 		pr_err("%s: bad return code qirr cpu=%d hw_cpu=%d mfrr=0x%x "
+ 			"returned %ld\n", __func__, n_cpu, hw_cpu, value, rc);
+-- 
+1.7.10
