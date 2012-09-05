@@ -1,26 +1,24 @@
-Return-Path: <B21989@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 46BD72C0346
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 13:20:11 +1000 (EST)
-From: Xie Shaohui-B21989 <B21989@freescale.com>
-To: David Laight <David.Laight@ACULAB.COM>, "jgarzik@pobox.com"
- <jgarzik@pobox.com>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
-Subject: RE: [PATCH] sata_fsl: add workaround for data length mismatch on
- freescale V2 controller
-Date: Wed, 5 Sep 2012 03:20:04 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C9079C4915@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1346756920-19128-1-git-send-email-Shaohui.Xie@freescale.com>
- <AE90C24D6B3A694183C094C60CF0A2F6026B6FD6@saturn3.aculab.com>
-In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6FD6@saturn3.aculab.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Bhartiya Anju-B07263 <B07263@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8A2462C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 13:40:18 +1000 (EST)
+Message-ID: <1346816407.2257.37.camel@pasglop>
+Subject: Re: [PATCH V3 1/3] drivers/char/tpm: Add new device driver to
+ support IBM vTPM
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kent Yoder <key@linux.vnet.ibm.com>
+Date: Wed, 05 Sep 2012 13:40:07 +1000
+In-Reply-To: <20120822214217.GB13519@linux.vnet.ibm.com>
+References: <1344987282.4430.26.camel@footlong>
+ <1345670263.25124.7.camel@footlong>
+ <20120822214217.GB13519@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, Ashley Lai <adlai@linux.vnet.ibm.com>,
+ linux-security-module@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
+ adlai@us.ibm.com, rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +28,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: David Laight [mailto:David.Laight@ACULAB.COM]
-> Sent: Tuesday, September 04, 2012 10:51 PM
-> To: Xie Shaohui-B21989; jgarzik@pobox.com; linux-ide@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Bhartiya
-> Anju-B07263
-> Subject: RE: [PATCH] sata_fsl: add workaround for data length mismatch on
-> freescale V2 controller
->=20
-> > +	/* Read command completed register */
-> > +	done_mask =3D ioread32(hcr_base + CC);
+On Wed, 2012-08-22 at 16:42 -0500, Kent Yoder wrote:
+> On Wed, Aug 22, 2012 at 04:17:43PM -0500, Ashley Lai wrote:
+> > This patch adds a new device driver to support IBM virtual TPM
+> > (vTPM) for PPC64.  IBM vTPM is supported through the adjunct
+> > partition with firmware release 740 or higher.  With vTPM
+> > support, each lpar is able to have its own vTPM without the
+> > physical TPM hardware.
+> > 
+> > This driver provides TPM functionalities by communicating with
+> > the vTPM adjunct partition through Hypervisor calls (Hcalls)
+> > and Command/Response Queue (CRQ) commands.
+> 
+>  Thanks Ashley, I'll include this in my next pull request to James.
+
+Oh ? I was about to put it in the powerpc tree ... But yeah, I notice
+there's a change to tpm.h so it probably should be at least acked by the
+TPM folks. As for the subsequent patches, they are powerpc specific so I
+can add them, I don't think there's a strict dependency, is there ?
+
+Now, while having a look at the driver, I found a few things that I'm
+not sure I'm happy with:
+
+Mainly:
+
+> > + */
+> > +static int tpm_ibmvtpm_recv(struct tpm_chip *chip, u8 *buf, size_t count)
+> > +{
+> > +	struct ibmvtpm_dev *ibmvtpm;
+> > +	u16 len;
 > > +
-> > +	if (host_priv->quirks & SATA_FSL_QUIRK_V2_ERRATA) {
-> > +		if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
-> > +			for (tag =3D 0; tag < ATA_MAX_QUEUE; tag++) {
-> > +				qc =3D ata_qc_from_tag(ap, tag);
-> > +				if (qc && ata_is_atapi(qc->tf.protocol))
-> {
-> > +					atapi_flag =3D 1;
-> > +					break;
-> > +				}
-> > +			}
-> > +		}
+> > +	ibmvtpm = (struct ibmvtpm_dev *)chip->vendor.data;
+> > +
+> > +	if (!ibmvtpm->rtce_buf) {
+> > +		dev_err(ibmvtpm->dev, "ibmvtpm device is not ready\n");
+> > +		return 0;
 > > +	}
 > > +
-> > +	/* Workaround for data length mismatch errata */
-> > +	if (atapi_flag) {
->=20
-> Seems to me like the conditionals for this code are all in the wrong
-> order - adding code to the normal path.
->=20
-> The whole lot should probably be inside:
-> 	if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) { and the
-> 'atapi_flag' boolean removed.
-[S.H] OK. But I need to move the "done_mask =3D ioread32(hcr_base + CC);" b=
-efore these codes,
- because these codes will clean command completed register.
+> > +	wait_event_interruptible(wq, ibmvtpm->crq_res.len != 0);
+> > +
+> > +	if (count < ibmvtpm->crq_res.len) {
 
->=20
-> I also wonder it this is worthy of an actual quirk?
-> Might be worth doing anyway.
-[S.H] The quirk is useful for our internal use(there is another errata but =
-got fixed by silicon upgrade),
-but you are right it's worth doing anyway in upstream, since the upstream c=
-ode only handles this errata.
+That doesn't look right. The "other side" as far as I can tell is:
 
-Best Regards,=20
-Shaohui Xie
+> > +		case VTPM_TPM_COMMAND_RES:
+> > +			ibmvtpm->crq_res.valid = crq->valid;
+> > +			ibmvtpm->crq_res.msg = crq->msg;
+> > +			ibmvtpm->crq_res.len = crq->len;
+> > +			ibmvtpm->crq_res.data = crq->data;
+> > +			wake_up_interruptible(&wq);
+
+That looks racy to me. At the very least it should be doing:
+
+			ibmvtpm->crq_res.data = crq->data;
+			smp_wmb();
+			ibmvtpm->crq_res.len = crq->len;
+
+IE. Ensure that "len" is written last, and possibly have an
+corresponding smp_rmb() after wait_event_interruptible() in the receive
+case.
+
+Also, I dislike having a global symbol called "wq". You also don't seem
+to have any synchronization on access to that wq, can't you end up with
+several clients trying to send messages & wait for responses getting all
+mixed up ? You might need to make sure that at least you do a
+wake_up_interruptible_all() to ensure you wake them all up (inefficient
+but works). Unless you can track per-client ?
+
+Or is the above TPM layer making sure only one command/response happens
+at a given point in time ?
+
+You also do an interruptible wait but don't seem to be checking for
+signals (and not testing the result from wait_event_interruptible which
+might be returning -ERESTARTSYS in this case).
+
+That all sound a bit wrong to me ...
+> > +static irqreturn_t ibmvtpm_interrupt(int irq, void *vtpm_instance)
+> > +{
+> > +	struct ibmvtpm_dev *ibmvtpm = (struct ibmvtpm_dev *) vtpm_instance;
+> > +	unsigned long flags;
+> > +
+> > +	spin_lock_irqsave(&ibmvtpm->lock, flags);
+> > +	vio_disable_interrupts(ibmvtpm->vdev);
+> > +	tasklet_schedule(&ibmvtpm->tasklet);
+> > +	spin_unlock_irqrestore(&ibmvtpm->lock, flags);
+> > +
+> > +	return IRQ_HANDLED;
+> > +}
+
+Tasklets ? We still use those things ? That's softirq iirc, do you
+really need to offload ? I mean, it allows to limit the amount of time
+an interrupt is disabled, but that's only useful if you assume you'll
+have quite a lot of traffic here, is that the case ?
+
+You might be actually increasing latency here in favor of throughput, is
+that what you are aiming for ? Also keep in mind that
+vio_disable/enable_interrupt() being an hcall, it can have significant
+overhead. So again, only worth it if you're going to process a bulk of
+data at a time.
+
+Cheers,
+Ben.
