@@ -1,34 +1,41 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <key@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B11B02C0094
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 00:45:46 +1000 (EST)
+ (Client CN "e7.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 094DE2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 01:47:30 +1000 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 6 Sep 2012 00:44:16 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q85EaIqt25952446
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2012 00:36:19 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q85EjHcK009566
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2012 00:45:17 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH -V7 04/12] arch/powerpc: Convert virtual address to vpn
-In-Reply-To: <20120905082629.GB22688@bloggs.ozlabs.ibm.com>
-References: <1346749289-16986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1346749289-16986-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20120905082629.GB22688@bloggs.ozlabs.ibm.com>
-Date: Wed, 05 Sep 2012 20:15:11 +0530
-Message-ID: <87392wcyvc.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
+ Wed, 5 Sep 2012 11:47:25 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8B02138C8067
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 11:47:11 -0400 (EDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q85FlAKi125490
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2012 11:47:10 -0400
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q85FkE7d029343
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 5 Sep 2012 09:46:14 -0600
+Date: Wed, 5 Sep 2012 10:46:44 -0500
+From: Kent Yoder <key@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH V3 1/3] drivers/char/tpm: Add new device driver to
+ support IBM vTPM
+Message-ID: <20120905154644.GA14925@linux.vnet.ibm.com>
+References: <1344987282.4430.26.camel@footlong>
+ <1345670263.25124.7.camel@footlong>
+ <20120822214217.GB13519@linux.vnet.ibm.com>
+ <1346816407.2257.37.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1346816407.2257.37.camel@pasglop>
+Cc: linux-kernel@vger.kernel.org, Ashley Lai <adlai@linux.vnet.ibm.com>,
+ linux-security-module@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
+ adlai@us.ibm.com, rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,94 +45,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras <paulus@samba.org> writes:
+On Wed, Sep 05, 2012 at 01:40:07PM +1000, Benjamin Herrenschmidt wrote:
+> On Wed, 2012-08-22 at 16:42 -0500, Kent Yoder wrote:
+> > On Wed, Aug 22, 2012 at 04:17:43PM -0500, Ashley Lai wrote:
+> > > This patch adds a new device driver to support IBM virtual TPM
+> > > (vTPM) for PPC64.  IBM vTPM is supported through the adjunct
+> > > partition with firmware release 740 or higher.  With vTPM
+> > > support, each lpar is able to have its own vTPM without the
+> > > physical TPM hardware.
+> > > 
+> > > This driver provides TPM functionalities by communicating with
+> > > the vTPM adjunct partition through Hypervisor calls (Hcalls)
+> > > and Command/Response Queue (CRQ) commands.
+> > 
+> >  Thanks Ashley, I'll include this in my next pull request to James.
+> 
+> Oh ? I was about to put it in the powerpc tree ... But yeah, I notice
+> there's a change to tpm.h so it probably should be at least acked by the
+> TPM folks. As for the subsequent patches, they are powerpc specific so I
+> can add them, I don't think there's a strict dependency, is there ?
 
-> On Tue, Sep 04, 2012 at 02:31:21PM +0530, Aneesh Kumar K.V wrote:
->> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->> 
->> This patch convert different functions to take virtual page number
->> instead of virtual address. Virtual page number is virtual address
->> shifted right by VPN_SHIFT (12) bits. This enable us to have an
->> address range of upto 76 bits.
->> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->
-> A few comments below...
->
->> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
->> index 1c65a59..d3a1139 100644
->> --- a/arch/powerpc/include/asm/mmu-hash64.h
->> +++ b/arch/powerpc/include/asm/mmu-hash64.h
->> @@ -15,6 +15,10 @@
->>  #include <asm/asm-compat.h>
->>  #include <asm/page.h>
->>  
->> +#ifndef __ASSEMBLY__
->> +#include <linux/bug.h>
->> +#endif
->> +
->
-> This is unnecessary, since you haven't added any BUG_ONs or WARN_ONs
-> in this file.
->
->> @@ -233,13 +276,19 @@ static inline unsigned long hpt_va(unsigned long ea, unsigned long vsid,
->>  static inline unsigned long hpt_hash(unsigned long va, unsigned int shift,
->>  				     int ssize)
->>  {
->> +	int mask;
->>  	unsigned long hash, vsid;
->>  
->> +	/* VPN_SHIFT can be atmost 12 */
->>  	if (ssize == MMU_SEGSIZE_256M) {
->> -		hash = (va >> 28) ^ ((va & 0x0fffffffUL) >> shift);
->> +		mask = (1ul << (SID_SHIFT - VPN_SHIFT)) - 1;
->> +		hash = ((va >> (SID_SHIFT - VPN_SHIFT)) & 0x0000007fffffffff) ^
->
-> You have added the "& 0x0000007fffffffff" part, which is unnecessary
-> since the result is anded with that same value before being returned.
->
->> +			(((va & mask) >> (shift - VPN_SHIFT)) & 0xffff);
->
-> Similarly the "& 0xffff" is completely redundant, since you have anded
-> the va (really vpn) with the mask already.
->
->>  	} else {
->> -		vsid = va >> 40;
->> -		hash = vsid ^ (vsid << 25) ^ ((va & 0xffffffffffUL) >> shift);
->> +		mask = (1ul << (SID_SHIFT_1T - VPN_SHIFT)) - 1;
->> +		vsid = va >> (SID_SHIFT_1T - VPN_SHIFT);
->> +		hash = (vsid & 0xffffff) ^ ((vsid << 25) & 0x7fffffffff) ^
->
-> Here the "vsid & 0xffffff" is actually wrong, since the architecture
-> says that this term takes the whole VSID, not just the bottom 24 bits.
-> I realise you were copying what happened before, where the VSID was
-> restricted to 24 bits anyway because the VA was restricted to 64 bits,
-> but now that you are extending the VA size you need to include the
-> whole VSID.
->
-> As in the previous case, the "& 0x7fffffffff" part is redundant.
+  James did accept my pull request, so these are already in
+security-next...
 
-Updated the patch with all the above changes.
-
->
-> Also, it's very confusing to review this patch with variables called
-> "va" containing vpns.  It would actually be easier to review if you
-> combined this patch and the following one (that renames va to vpn).
-
-One of the reason i avoided va -> vpn rename is to avoid unnecessary
-hunks. But then what i can do is to apply the name to those part of the
-hunks which is being touched in this patch. Will that help. Or do you
-want me to fold the two patches ?
-
->
->> +			(((va & mask) >> (shift - VPN_SHIFT)) & 0xfffffff);
->
-> Once again the "& 0xfffffff" is redundant because the "& mask" has
-> already removed any bits that the second and would remove.
->
-
-done
-
-
-Thanks for the review
--aneesh
+Kent
