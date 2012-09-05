@@ -1,16 +1,15 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 1186A2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 19:44:54 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTP id BA72D2C009D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 19:44:55 +1000 (EST)
 From: wency@cn.fujitsu.com
 To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [RFC v9 PATCH 13/21] memory-hotplug: check page type in
- get_page_bootmem
-Date: Wed, 5 Sep 2012 17:25:47 +0800
-Message-Id: <1346837155-534-14-git-send-email-wency@cn.fujitsu.com>
+Subject: [RFC v9 PATCH 10/21] memory-hotplug: add memory_block_release
+Date: Wed, 5 Sep 2012 17:25:44 +0800
+Message-Id: <1346837155-534-11-git-send-email-wency@cn.fujitsu.com>
 In-Reply-To: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
 References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
 Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
@@ -28,11 +27,14 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
-The function get_page_bootmem() may be called more than one time to the same
-page. There is no need to set page's type, private if the function is not
-the first time called to the page.
+When calling remove_memory_block(), the function shows following message at
+device_release().
 
-Note: the patch is just optimization and does not fix any problem.
+Device 'memory528' does not have a release() function, it is broken and must
+be fixed.
+
+remove_memory_block() calls kfree(mem). I think it shouled be called from
+device_release(). So the patch implements memory_block_release()
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -46,34 +48,42 @@ CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 CC: Wen Congyang <wency@cn.fujitsu.com>
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 ---
- mm/memory_hotplug.c |   15 +++++++++++----
- 1 files changed, 11 insertions(+), 4 deletions(-)
+ drivers/base/memory.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index d736df3..26a5012 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -95,10 +95,17 @@ static void release_memory_resource(struct resource *res)
- static void get_page_bootmem(unsigned long info,  struct page *page,
- 			     unsigned long type)
- {
--	page->lru.next = (struct list_head *) type;
--	SetPagePrivate(page);
--	set_page_private(page, info);
--	atomic_inc(&page->_count);
-+	unsigned long page_type;
-+
-+	page_type = (unsigned long)page->lru.next;
-+	if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
-+	    page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
-+		page->lru.next = (struct list_head *)type;
-+		SetPagePrivate(page);
-+		set_page_private(page, info);
-+		atomic_inc(&page->_count);
-+	} else
-+		atomic_inc(&page->_count);
+diff --git a/drivers/base/memory.c b/drivers/base/memory.c
+index 038be73..f44d624 100644
+--- a/drivers/base/memory.c
++++ b/drivers/base/memory.c
+@@ -109,6 +109,13 @@ bool is_memblk_offline(unsigned long start, unsigned long size)
  }
+ EXPORT_SYMBOL(is_memblk_offline);
  
- /* reference to __meminit __free_pages_bootmem is valid
++static void release_memory_block(struct device *dev)
++{
++	struct memory_block *mem = container_of(dev, struct memory_block, dev);
++
++	kfree(mem);
++}
++
+ /*
+  * register_memory - Setup a sysfs device for a memory block
+  */
+@@ -119,6 +126,7 @@ int register_memory(struct memory_block *memory)
+ 
+ 	memory->dev.bus = &memory_subsys;
+ 	memory->dev.id = memory->start_section_nr / sections_per_block;
++	memory->dev.release = release_memory_block;
+ 
+ 	error = device_register(&memory->dev);
+ 	return error;
+@@ -674,7 +682,6 @@ int remove_memory_block(unsigned long node_id, struct mem_section *section,
+ 		mem_remove_simple_file(mem, phys_device);
+ 		mem_remove_simple_file(mem, removable);
+ 		unregister_memory(mem);
+-		kfree(mem);
+ 	} else
+ 		kobject_put(&mem->dev.kobj);
+ 
 -- 
 1.7.1
