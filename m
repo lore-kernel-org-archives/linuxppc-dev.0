@@ -1,15 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 5 Sep 2012 18:26:29 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V7 04/12] arch/powerpc: Convert virtual address to vpn
-Message-ID: <20120905082629.GB22688@bloggs.ozlabs.ibm.com>
-References: <1346749289-16986-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1346749289-16986-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-lpp01m010-f51.google.com (mail-lpp01m010-f51.google.com
+ [209.85.215.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E37072C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 22:33:04 +1000 (EST)
+Received: by lags15 with SMTP id s15so243873lag.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Sep 2012 05:33:00 -0700 (PDT)
+Message-ID: <50474637.6000800@mvista.com>
+Date: Wed, 05 Sep 2012 16:31:51 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1346749289-16986-5-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Enrico Scholz <enrico.scholz@sigma-chemnitz.de>
+Subject: Re: [PATCH] usb: gadget: fsl_udc_core: remove mapped flag
+References: <1346779499-6085-1-git-send-email-enrico.scholz@sigma-chemnitz.de>
+In-Reply-To: <1346779499-6085-1-git-send-email-enrico.scholz@sigma-chemnitz.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,78 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 04, 2012 at 02:31:21PM +0530, Aneesh Kumar K.V wrote:
-> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> 
-> This patch convert different functions to take virtual page number
-> instead of virtual address. Virtual page number is virtual address
-> shifted right by VPN_SHIFT (12) bits. This enable us to have an
-> address range of upto 76 bits.
-> 
-> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Hello.
 
-A few comments below...
+On 04-09-2012 21:24, Enrico Scholz wrote:
 
-> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-> index 1c65a59..d3a1139 100644
-> --- a/arch/powerpc/include/asm/mmu-hash64.h
-> +++ b/arch/powerpc/include/asm/mmu-hash64.h
-> @@ -15,6 +15,10 @@
->  #include <asm/asm-compat.h>
->  #include <asm/page.h>
->  
-> +#ifndef __ASSEMBLY__
-> +#include <linux/bug.h>
-> +#endif
-> +
+> The 'mapped' flag in 'struct fsl_req' flag is redundant with checking
+> for 'req.dma != DMA_ADDR_INVALID' and it was also set to a wrong value
+> (see 2nd hunk of patch).
 
-This is unnecessary, since you haven't added any BUG_ONs or WARN_ONs
-in this file.
+> Replacing it in the way described above saves 60 bytes:
 
-> @@ -233,13 +276,19 @@ static inline unsigned long hpt_va(unsigned long ea, unsigned long vsid,
->  static inline unsigned long hpt_hash(unsigned long va, unsigned int shift,
->  				     int ssize)
->  {
-> +	int mask;
->  	unsigned long hash, vsid;
->  
-> +	/* VPN_SHIFT can be atmost 12 */
->  	if (ssize == MMU_SEGSIZE_256M) {
-> -		hash = (va >> 28) ^ ((va & 0x0fffffffUL) >> shift);
-> +		mask = (1ul << (SID_SHIFT - VPN_SHIFT)) - 1;
-> +		hash = ((va >> (SID_SHIFT - VPN_SHIFT)) & 0x0000007fffffffff) ^
+>    function                                     old     new   delta
+>    fsl_udc_irq                                 2952    2940     -12
+>    ep0_prime_status                             380     368     -12
+>    done                                         448     432     -16
+>    fsl_ep_queue                                 668     648     -20
 
-You have added the "& 0x0000007fffffffff" part, which is unnecessary
-since the result is anded with that same value before being returned.
+> and has same (or less) runtime costs like evaluating 'req->mapped'.
 
-> +			(((va & mask) >> (shift - VPN_SHIFT)) & 0xffff);
+> Signed-off-by: Enrico Scholz <enrico.scholz@sigma-chemnitz.de>
+> ---
+>   drivers/usb/gadget/fsl_udc_core.c | 10 ++--------
+>   drivers/usb/gadget/fsl_usb2_udc.h |  1 -
+>   2 files changed, 2 insertions(+), 9 deletions(-)
 
-Similarly the "& 0xffff" is completely redundant, since you have anded
-the va (really vpn) with the mask already.
+> diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+> index 55c4a61..1282a11 100644
+> --- a/drivers/usb/gadget/fsl_udc_core.c
+> +++ b/drivers/usb/gadget/fsl_udc_core.c
+> @@ -195,14 +195,13 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
+>   		dma_pool_free(udc->td_pool, curr_td, curr_td->td_dma);
+>   	}
+>
+> -	if (req->mapped) {
+> +	if (req->req.dma != DMA_ADDR_INVALID) {
+>   		dma_unmap_single(ep->udc->gadget.dev.parent,
+>   			req->req.dma, req->req.length,
+>   			ep_is_in(ep)
+>   				? DMA_TO_DEVICE
+>   				: DMA_FROM_DEVICE);
+>   		req->req.dma = DMA_ADDR_INVALID;
+> -		req->mapped = 0;
+>   	} else
+>   		dma_sync_single_for_cpu(ep->udc->gadget.dev.parent,
+>   			req->req.dma, req->req.length,
+> @@ -915,15 +914,12 @@ fsl_ep_queue(struct usb_ep *_ep, struct usb_request *_req, gfp_t gfp_flags)
+>   					req->req.length, ep_is_in(ep)
+>   						? DMA_TO_DEVICE
+>   						: DMA_FROM_DEVICE);
+> -		req->mapped = 1;
+> -	} else {
+> +	} else
 
->  	} else {
-> -		vsid = va >> 40;
-> -		hash = vsid ^ (vsid << 25) ^ ((va & 0xffffffffffUL) >> shift);
-> +		mask = (1ul << (SID_SHIFT_1T - VPN_SHIFT)) - 1;
-> +		vsid = va >> (SID_SHIFT_1T - VPN_SHIFT);
-> +		hash = (vsid & 0xffffff) ^ ((vsid << 25) & 0x7fffffffff) ^
+    You should keep the { here, according to the Documentation/CodingStyle.
+If one branch of the *if* statement uses {}, so should the other.
 
-Here the "vsid & 0xffffff" is actually wrong, since the architecture
-says that this term takes the whole VSID, not just the bottom 24 bits.
-I realise you were copying what happened before, where the VSID was
-restricted to 24 bits anyway because the VA was restricted to 64 bits,
-but now that you are extending the VA size you need to include the
-whole VSID.
-
-As in the previous case, the "& 0x7fffffffff" part is redundant.
-
-Also, it's very confusing to review this patch with variables called
-"va" containing vpns.  It would actually be easier to review if you
-combined this patch and the following one (that renames va to vpn).
-
-> +			(((va & mask) >> (shift - VPN_SHIFT)) & 0xfffffff);
-
-Once again the "& 0xfffffff" is redundant because the "& mask" has
-already removed any bits that the second and would remove.
-
-Paul.
+WBR, Sergei
