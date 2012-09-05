@@ -1,34 +1,24 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C2B7E2C03EF
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:43 +1000 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 5 Sep 2012 00:15:41 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0E7F119D8039
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 00:15:39 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q856FcHD251198
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:38 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q856FbGe032261
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:38 -0600
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 19/21] ppc/eeh: move stats to PE
-Date: Wed,  5 Sep 2012 14:14:54 +0800
-Message-Id: <1346825696-13960-20-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <ukl@pengutronix.de>
+Received: from metis.ext.pengutronix.de (unknown
+ [IPv6:2001:6f8:1178:4:290:27ff:fe1d:cc33])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 582AF2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 18:03:08 +1000 (EST)
+Date: Wed, 5 Sep 2012 10:02:49 +0200
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <u.kleine-koenig@pengutronix.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 13/25] macintosh/mediabay: add a const qualifier
+Message-ID: <20120905080249.GI28643@pengutronix.de>
+References: <1343034810-3386-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1343034810-3386-14-git-send-email-u.kleine-koenig@pengutronix.de>
+ <1346812817.2257.23.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1346812817.2257.23.camel@pasglop>
+Cc: Arnd Bergmann <arnd@arndb.de>, Rob Herring <rob.herring@calxeda.com>,
+ kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,170 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch removes the eeh related statistics for eeh device since
-they have been maintained by the corresponding eeh PE. Also, the
-flags used to trace the state of eeh device and PE have been reworked
-for a little bit.
+Hello,
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h              |    9 +--------
- arch/powerpc/platforms/pseries/eeh.c        |   13 +++----------
- arch/powerpc/platforms/pseries/eeh_cache.c  |    3 +--
- arch/powerpc/platforms/pseries/eeh_driver.c |    6 +++---
- arch/powerpc/platforms/pseries/eeh_sysfs.c  |    9 ---------
- 5 files changed, 8 insertions(+), 32 deletions(-)
+On Wed, Sep 05, 2012 at 12:40:17PM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2012-07-23 at 11:13 +0200, Uwe Kleine-König wrote:
+> > This prepares *of_device_id.data becoming const. Without this change
+> > the following warning would occur:
+> > 
+> > 	drivers/macintosh/mediabay.c: In function 'media_bay_attach':
+> > 	drivers/macintosh/mediabay.c:589:11: warning: assignment discards 'const' qualifier from pointer target type [enabled by default]
+> > 
+> > Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> > ---
+> 
+> Ack all of these assuming you test built (I didn't).
+"all" means the two mediabay patches? And yes, they are all built
+tested.
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index e07ece1..b7ac3f7 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -77,20 +77,13 @@ struct eeh_pe {
-  * another tree except the currently existing tree of PCI
-  * buses and PCI devices
-  */
--#define EEH_MODE_SUPPORTED	(1<<0)	/* EEH supported on the device	*/
--#define EEH_MODE_NOCHECK	(1<<1)	/* EEH check should be skipped	*/
--#define EEH_MODE_ISOLATED	(1<<2)	/* The device has been isolated	*/
--#define EEH_MODE_RECOVERING	(1<<3)	/* Recovering the device	*/
--#define EEH_MODE_IRQ_DISABLED	(1<<4)	/* Interrupt disabled		*/
-+#define EEH_DEV_IRQ_DISABLED	(1<<0)	/* Interrupt disabled		*/
- 
- struct eeh_dev {
- 	int mode;			/* EEH mode			*/
- 	int class_code;			/* Class code of the device	*/
- 	int config_addr;		/* Config address		*/
- 	int pe_config_addr;		/* PE config address		*/
--	int check_count;		/* Times of ignored error	*/
--	int freeze_count;		/* Times of froze up		*/
--	int false_positives;		/* Times of reported #ff's	*/
- 	u32 config_space[16];		/* Saved PCI config space	*/
- 	struct eeh_pe *pe;		/* Associated PE		*/
- 	struct list_head list;		/* Form link list in the PE	*/
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index d855c20..1438c4e 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -537,7 +537,7 @@ static void eeh_reset_pe_once(struct eeh_pe *pe)
- 	 * pci slot reset line is dropped. Make sure we don't miss
- 	 * these, and clear the flag now.
- 	 */
--	eeh_pe_state_clear(pe, EEH_MODE_ISOLATED);
-+	eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
- 
- 	eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
- 
-@@ -625,9 +625,6 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
- 
- 	edev->class_code = 0;
- 	edev->mode = 0;
--	edev->check_count = 0;
--	edev->freeze_count = 0;
--	edev->false_positives = 0;
- 
- 	if (!of_device_is_available(dn))
- 		return NULL;
-@@ -637,10 +634,8 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
- 		return NULL;
- 
- 	/* There is nothing to check on PCI to ISA bridges */
--	if (dn->type && !strcmp(dn->type, "isa")) {
--		edev->mode |= EEH_MODE_NOCHECK;
-+	if (dn->type && !strcmp(dn->type, "isa"))
- 		return NULL;
--	}
- 	edev->class_code = *class_code;
- 
- 	/* Ok... see if this device supports EEH.  Some do, some don't,
-@@ -679,7 +674,6 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
- 
- 		if (enable) {
- 			eeh_subsystem_enabled = 1;
--			edev->mode |= EEH_MODE_SUPPORTED;
- 
- 			eeh_pe_create(edev);
- 
-@@ -692,9 +686,8 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
- 			 * EEH parent, in which case we mark it as supported.
- 			 */
- 			if (dn->parent && of_node_to_eeh_dev(dn->parent) &&
--			    (of_node_to_eeh_dev(dn->parent)->mode & EEH_MODE_SUPPORTED)) {
-+			    of_node_to_eeh_dev(dn->parent)->pe) {
- 				/* Parent supports EEH. */
--				edev->mode |= EEH_MODE_SUPPORTED;
- 				edev->config_addr = of_node_to_eeh_dev(dn->parent)->config_addr;
- 				edev->pe_config_addr = of_node_to_eeh_dev(dn->parent)->pe_config_addr;
- 
-diff --git a/arch/powerpc/platforms/pseries/eeh_cache.c b/arch/powerpc/platforms/pseries/eeh_cache.c
-index f50b717..a191057 100644
---- a/arch/powerpc/platforms/pseries/eeh_cache.c
-+++ b/arch/powerpc/platforms/pseries/eeh_cache.c
-@@ -192,8 +192,7 @@ static void __pci_addr_cache_insert_device(struct pci_dev *dev)
- 	}
- 
- 	/* Skip any devices for which EEH is not enabled. */
--	if (!(edev->mode & EEH_MODE_SUPPORTED) ||
--	    edev->mode & EEH_MODE_NOCHECK) {
-+	if (!edev->pe) {
- #ifdef DEBUG
- 		pr_info("PCI: skip building address cache for=%s - %s\n",
- 			pci_name(dev), dn->full_name);
-diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
-index 343c807..8370ce7 100644
---- a/arch/powerpc/platforms/pseries/eeh_driver.c
-+++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-@@ -93,7 +93,7 @@ static void eeh_disable_irq(struct pci_dev *dev)
- 	if (!irq_has_action(dev->irq))
- 		return;
- 
--	edev->mode |= EEH_MODE_IRQ_DISABLED;
-+	edev->mode |= EEH_DEV_IRQ_DISABLED;
- 	disable_irq_nosync(dev->irq);
- }
- 
-@@ -108,8 +108,8 @@ static void eeh_enable_irq(struct pci_dev *dev)
- {
- 	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
- 
--	if ((edev->mode) & EEH_MODE_IRQ_DISABLED) {
--		edev->mode &= ~EEH_MODE_IRQ_DISABLED;
-+	if ((edev->mode) & EEH_DEV_IRQ_DISABLED) {
-+		edev->mode &= ~EEH_DEV_IRQ_DISABLED;
- 		enable_irq(dev->irq);
- 	}
- }
-diff --git a/arch/powerpc/platforms/pseries/eeh_sysfs.c b/arch/powerpc/platforms/pseries/eeh_sysfs.c
-index 243b351..d377083 100644
---- a/arch/powerpc/platforms/pseries/eeh_sysfs.c
-+++ b/arch/powerpc/platforms/pseries/eeh_sysfs.c
-@@ -53,9 +53,6 @@ static DEVICE_ATTR(_name, S_IRUGO, eeh_show_##_name, NULL);
- EEH_SHOW_ATTR(eeh_mode,            mode,            "0x%x");
- EEH_SHOW_ATTR(eeh_config_addr,     config_addr,     "0x%x");
- EEH_SHOW_ATTR(eeh_pe_config_addr,  pe_config_addr,  "0x%x");
--EEH_SHOW_ATTR(eeh_check_count,     check_count,     "%d"  );
--EEH_SHOW_ATTR(eeh_freeze_count,    freeze_count,    "%d"  );
--EEH_SHOW_ATTR(eeh_false_positives, false_positives, "%d"  );
- 
- void eeh_sysfs_add_device(struct pci_dev *pdev)
- {
-@@ -64,9 +61,6 @@ void eeh_sysfs_add_device(struct pci_dev *pdev)
- 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_mode);
- 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_config_addr);
- 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
--	rc += device_create_file(&pdev->dev, &dev_attr_eeh_check_count);
--	rc += device_create_file(&pdev->dev, &dev_attr_eeh_false_positives);
--	rc += device_create_file(&pdev->dev, &dev_attr_eeh_freeze_count);
- 
- 	if (rc)
- 		printk(KERN_WARNING "EEH: Unable to create sysfs entries\n");
-@@ -77,8 +71,5 @@ void eeh_sysfs_remove_device(struct pci_dev *pdev)
- 	device_remove_file(&pdev->dev, &dev_attr_eeh_mode);
- 	device_remove_file(&pdev->dev, &dev_attr_eeh_config_addr);
- 	device_remove_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
--	device_remove_file(&pdev->dev, &dev_attr_eeh_check_count);
--	device_remove_file(&pdev->dev, &dev_attr_eeh_false_positives);
--	device_remove_file(&pdev->dev, &dev_attr_eeh_freeze_count);
- }
- 
+>                                                      Do you need me to
+> carry any of this via the powerpc tree ?
+The patch that adds the const to of_device_id depends[1] on this patch.
+And the other mediabay is only valid after that const is added. So the
+easiest is if the series is pulled in one go. Arnd intended to let Linus
+pull it for 3.6-rc1 but it was missed because of a communication
+problem. So I intend to get it in during the 3.7 merge window.
+
+Best regards
+Uwe
+
+[1] it's only a soft depend, because the result is "only" a warning, but
+still.
+
 -- 
-1.7.5.4
+Pengutronix e.K.                           | Uwe Kleine-König            |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
