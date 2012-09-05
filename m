@@ -1,24 +1,22 @@
-Return-Path: <jkosina@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A1B322C0090
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 18:57:08 +1000 (EST)
-Date: Wed, 5 Sep 2012 10:56:53 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: fix personality handling in
- ppc64_personality()
-In-Reply-To: <1346813643.2257.24.camel@pasglop>
-Message-ID: <alpine.LNX.2.00.1209051056060.11079@pobox.suse.cz>
-References: <alpine.LNX.2.00.1208012201520.14910@pobox.suse.cz>
- <m27gtitfv4.fsf@igel.home>
- <alpine.LNX.2.00.1208020907490.14910@pobox.suse.cz>
- <1346813643.2257.24.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>, Andreas Schwab <schwab@linux-m68k.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 00E9F2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 19:20:29 +1000 (EST)
+From: wency@cn.fujitsu.com
+To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
+Subject: [RFC v9 PATCH 07/21] memory-hotplug: call acpi_bus_remove() to remove
+ memory device
+Date: Wed, 5 Sep 2012 17:25:41 +0800
+Message-Id: <1346837155-534-8-git-send-email-wency@cn.fujitsu.com>
+In-Reply-To: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
+References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
+Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
+ isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
+ akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 5 Sep 2012, Benjamin Herrenschmidt wrote:
+From: Wen Congyang <wency@cn.fujitsu.com>
 
-> > Directly comparing current->personality against PER_LINUX32 doesn't work
-> > in cases when any of the personality flags stored in the top three bytes
-> > are used.
-> > 
-> > Directly forcefully setting personality to PER_LINUX32 or PER_LINUX
-> > discards any flags stored in the top three bytes
-> > 
-> > Use personality() macro to compare only PER_MASK bytes and make sure that
-> > we are setting only the bits that should be set, instead of
-> > overwriting the whole value.
-> > 
-> > Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> > ---
-> > 
-> > changed since v1: fix the bit ops to reflect the fact that PER_LINUX is 
-> > actually 0
-> 
-> Had already merged v1 (oops.. didn't spot the issue with PER_LINUX being
-> 0). Can you send an incremental fixup ?
+The memory device has been ejected and powoffed, so we can call
+acpi_bus_remove() to remove the memory device from acpi bus.
 
-Hi Benjamin,
+CC: David Rientjes <rientjes@google.com>
+CC: Jiang Liu <liuj97@gmail.com>
+CC: Len Brown <len.brown@intel.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Christoph Lameter <cl@linux.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+---
+ drivers/acpi/acpi_memhotplug.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-actually commit 7256a5d2da56 seems to contain the correct PER_LINUX 
-handling, so seems like you picked the right one :)
-
-Thanks,
-
+diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
+index 9d47458..b152767 100644
+--- a/drivers/acpi/acpi_memhotplug.c
++++ b/drivers/acpi/acpi_memhotplug.c
+@@ -425,8 +425,9 @@ static void acpi_memory_device_notify(acpi_handle handle, u32 event, void *data)
+ 		}
+ 
+ 		/*
+-		 * TBD: Invoke acpi_bus_remove to cleanup data structures
++		 * Invoke acpi_bus_remove() to remove memory device
+ 		 */
++		acpi_bus_remove(device, 1);
+ 
+ 		/* _EJ0 succeeded; _OST is not necessary */
+ 		return;
 -- 
-Jiri Kosina
-SUSE Labs
+1.7.1
