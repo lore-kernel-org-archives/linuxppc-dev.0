@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e3.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F35272C03B7
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:39 +1000 (EST)
+ (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C2B7E2C03EF
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 16:15:43 +1000 (EST)
 Received: from /spool/local
- by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 5 Sep 2012 02:15:37 -0400
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 4165BC9003E
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 02:15:35 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q856FZKL144232
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 02:15:35 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q856FX7e030061
- for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 02:15:34 -0400
+ Wed, 5 Sep 2012 00:15:41 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0E7F119D8039
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Sep 2012 00:15:39 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q856FcHD251198
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:38 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q856FbGe032261
+ for <linuxppc-dev@ozlabs.org>; Wed, 5 Sep 2012 00:15:38 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 21/21] ppc/eeh: trace eeh device from I/O cache
-Date: Wed,  5 Sep 2012 14:14:56 +0800
-Message-Id: <1346825696-13960-22-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 19/21] ppc/eeh: move stats to PE
+Date: Wed,  5 Sep 2012 14:14:54 +0800
+Message-Id: <1346825696-13960-20-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1346825696-13960-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,234 +38,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The idea comes from Benjamin Herrenschmidt. The eeh cache helps
-fetching the pci device according to the given I/O address. Since
-the eeh cache is serving for eeh, it's reasonable for eeh cache
-to trace eeh device except pci device.
-
-The patch make eeh cache to trace eeh device. Also, the major
-eeh entry function eeh_dn_check_failure has been renamed to
-eeh_dev_check_failure since it will take eeh device as input
-parameter.
+The patch removes the eeh related statistics for eeh device since
+they have been maintained by the corresponding eeh PE. Also, the
+flags used to trace the state of eeh device and PE have been reworked
+for a little bit.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h             |    7 +----
- arch/powerpc/include/asm/pci-bridge.h      |    2 +
- arch/powerpc/include/asm/ppc-pci.h         |    2 +-
- arch/powerpc/kernel/rtas_pci.c             |    2 +-
- arch/powerpc/platforms/pseries/eeh.c       |   33 +++++++++++----------------
- arch/powerpc/platforms/pseries/eeh_cache.c |   14 ++++++-----
- 6 files changed, 28 insertions(+), 32 deletions(-)
+ arch/powerpc/include/asm/eeh.h              |    9 +--------
+ arch/powerpc/platforms/pseries/eeh.c        |   13 +++----------
+ arch/powerpc/platforms/pseries/eeh_cache.c  |    3 +--
+ arch/powerpc/platforms/pseries/eeh_driver.c |    6 +++---
+ arch/powerpc/platforms/pseries/eeh_sysfs.c  |    9 ---------
+ 5 files changed, 8 insertions(+), 32 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 91c38b7..4d59da0 100644
+index e07ece1..b7ac3f7 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -196,7 +196,7 @@ int __init eeh_ops_register(struct eeh_ops *ops);
- int __exit eeh_ops_unregister(const char *name);
- unsigned long eeh_check_failure(const volatile void __iomem *token,
- 				unsigned long val);
--int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev);
-+int eeh_dev_check_failure(struct eeh_dev *edev);
- void __init pci_addr_cache_build(void);
- void eeh_add_device_tree_early(struct device_node *);
- void eeh_add_device_tree_late(struct pci_bus *);
-@@ -231,10 +231,7 @@ static inline unsigned long eeh_check_failure(const volatile void __iomem *token
- 	return val;
- }
+@@ -77,20 +77,13 @@ struct eeh_pe {
+  * another tree except the currently existing tree of PCI
+  * buses and PCI devices
+  */
+-#define EEH_MODE_SUPPORTED	(1<<0)	/* EEH supported on the device	*/
+-#define EEH_MODE_NOCHECK	(1<<1)	/* EEH check should be skipped	*/
+-#define EEH_MODE_ISOLATED	(1<<2)	/* The device has been isolated	*/
+-#define EEH_MODE_RECOVERING	(1<<3)	/* Recovering the device	*/
+-#define EEH_MODE_IRQ_DISABLED	(1<<4)	/* Interrupt disabled		*/
++#define EEH_DEV_IRQ_DISABLED	(1<<0)	/* Interrupt disabled		*/
  
--static inline int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
--{
--	return 0;
--}
-+#define eeh_dev_check_failure(x) (0)
- 
- static inline void pci_addr_cache_build(void) { }
- 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 8cccbee..973df4d 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -184,6 +184,8 @@ static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
- {
- 	return PCI_DN(dn)->edev;
- }
-+#else
-+#define of_node_to_eeh_dev(x) (NULL)
- #endif
- 
- /** Find the bus corresponding to the indicated device node */
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index 56d55c7..962a902 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -50,7 +50,7 @@ extern int rtas_setup_phb(struct pci_controller *phb);
- void pci_addr_cache_build(void);
- void pci_addr_cache_insert_device(struct pci_dev *dev);
- void pci_addr_cache_remove_device(struct pci_dev *dev);
--struct pci_dev *pci_addr_cache_get_device(unsigned long addr);
-+struct eeh_dev *pci_addr_cache_get_device(unsigned long addr);
- void eeh_slot_error_detail(struct eeh_pe *pe, int severity);
- int eeh_pci_enable(struct eeh_pe *pe, int function);
- int eeh_reset_pe(struct eeh_pe *);
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index 140735c..6de63e3 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -81,7 +81,7 @@ int rtas_read_config(struct pci_dn *pdn, int where, int size, u32 *val)
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
- 	if (returnval == EEH_IO_ERROR_VALUE(size) &&
--	    eeh_dn_check_failure (pdn->node, NULL))
-+	    eeh_dev_check_failure(of_node_to_eeh_dev(pdn->node)))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
- 	return PCIBIOS_SUCCESSFUL;
+ struct eeh_dev {
+ 	int mode;			/* EEH mode			*/
+ 	int class_code;			/* Class code of the device	*/
+ 	int config_addr;		/* Config address		*/
+ 	int pe_config_addr;		/* PE config address		*/
+-	int check_count;		/* Times of ignored error	*/
+-	int freeze_count;		/* Times of froze up		*/
+-	int false_positives;		/* Times of reported #ff's	*/
+ 	u32 config_space[16];		/* Saved PCI config space	*/
+ 	struct eeh_pe *pe;		/* Associated PE		*/
+ 	struct list_head list;		/* Form link list in the PE	*/
 diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index b2caf84..81e8c8e 100644
+index d855c20..1438c4e 100644
 --- a/arch/powerpc/platforms/pseries/eeh.c
 +++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -270,9 +270,8 @@ static inline unsigned long eeh_token_to_phys(unsigned long token)
- }
+@@ -537,7 +537,7 @@ static void eeh_reset_pe_once(struct eeh_pe *pe)
+ 	 * pci slot reset line is dropped. Make sure we don't miss
+ 	 * these, and clear the flag now.
+ 	 */
+-	eeh_pe_state_clear(pe, EEH_MODE_ISOLATED);
++	eeh_pe_state_clear(pe, EEH_PE_ISOLATED);
  
- /**
-- * eeh_dn_check_failure - Check if all 1's data is due to EEH slot freeze
-- * @dn: device node
-- * @dev: pci device, if known
-+ * eeh_dev_check_failure - Check if all 1's data is due to EEH slot freeze
-+ * @edev: eeh device
-  *
-  * Check for an EEH failure for the given device node.  Call this
-  * routine if the result of a read was all 0xff's and you want to
-@@ -284,12 +283,13 @@ static inline unsigned long eeh_token_to_phys(unsigned long token)
-  *
-  * It is safe to call this routine in an interrupt context.
-  */
--int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
-+int eeh_dev_check_failure(struct eeh_dev *edev)
- {
- 	int ret;
- 	unsigned long flags;
-+	struct device_node *dn;
-+	struct pci_dev *dev;
- 	struct eeh_pe *pe;
--	struct eeh_dev *edev;
- 	int rc = 0;
- 	const char *location;
+ 	eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
  
-@@ -298,15 +298,12 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	if (!eeh_subsystem_enabled)
- 		return 0;
+@@ -625,9 +625,6 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
  
--	if (dn) {
--		edev = of_node_to_eeh_dev(dn);
--	} else if (dev) {
--		edev = pci_dev_to_eeh_dev(dev);
--		dn = pci_device_to_OF_node(dev);
--	} else {
-+	if (!edev) {
- 		eeh_stats.no_dn++;
- 		return 0;
- 	}
-+	dn = eeh_dev_to_of_node(edev);
-+	dev = eeh_dev_to_pci_dev(edev);
- 	pe = edev->pe;
+ 	edev->class_code = 0;
+ 	edev->mode = 0;
+-	edev->check_count = 0;
+-	edev->freeze_count = 0;
+-	edev->false_positives = 0;
  
- 	/* Access to IO BARs might get this far and still not want checking. */
-@@ -393,7 +390,7 @@ dn_unlock:
- 	return rc;
- }
+ 	if (!of_device_is_available(dn))
+ 		return NULL;
+@@ -637,10 +634,8 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
+ 		return NULL;
  
--EXPORT_SYMBOL_GPL(eeh_dn_check_failure);
-+EXPORT_SYMBOL_GPL(eeh_dev_check_failure);
+ 	/* There is nothing to check on PCI to ISA bridges */
+-	if (dn->type && !strcmp(dn->type, "isa")) {
+-		edev->mode |= EEH_MODE_NOCHECK;
++	if (dn->type && !strcmp(dn->type, "isa"))
+ 		return NULL;
+-	}
+ 	edev->class_code = *class_code;
  
- /**
-  * eeh_check_failure - Check if all 1's data is due to EEH slot freeze
-@@ -410,21 +407,19 @@ EXPORT_SYMBOL_GPL(eeh_dn_check_failure);
- unsigned long eeh_check_failure(const volatile void __iomem *token, unsigned long val)
- {
- 	unsigned long addr;
--	struct pci_dev *dev;
--	struct device_node *dn;
-+	struct eeh_dev *edev;
+ 	/* Ok... see if this device supports EEH.  Some do, some don't,
+@@ -679,7 +674,6 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
  
- 	/* Finding the phys addr + pci device; this is pretty quick. */
- 	addr = eeh_token_to_phys((unsigned long __force) token);
--	dev = pci_addr_cache_get_device(addr);
--	if (!dev) {
-+	edev = pci_addr_cache_get_device(addr);
-+	if (!edev) {
- 		eeh_stats.no_device++;
- 		return val;
- 	}
+ 		if (enable) {
+ 			eeh_subsystem_enabled = 1;
+-			edev->mode |= EEH_MODE_SUPPORTED;
  
--	dn = pci_device_to_OF_node(dev);
--	eeh_dn_check_failure(dn, dev);
-+	eeh_dev_check_failure(edev);
+ 			eeh_pe_create(edev);
  
--	pci_dev_put(dev);
-+	pci_dev_put(eeh_dev_to_pci_dev(edev));
- 	return val;
- }
+@@ -692,9 +686,8 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
+ 			 * EEH parent, in which case we mark it as supported.
+ 			 */
+ 			if (dn->parent && of_node_to_eeh_dev(dn->parent) &&
+-			    (of_node_to_eeh_dev(dn->parent)->mode & EEH_MODE_SUPPORTED)) {
++			    of_node_to_eeh_dev(dn->parent)->pe) {
+ 				/* Parent supports EEH. */
+-				edev->mode |= EEH_MODE_SUPPORTED;
+ 				edev->config_addr = of_node_to_eeh_dev(dn->parent)->config_addr;
+ 				edev->pe_config_addr = of_node_to_eeh_dev(dn->parent)->pe_config_addr;
  
 diff --git a/arch/powerpc/platforms/pseries/eeh_cache.c b/arch/powerpc/platforms/pseries/eeh_cache.c
-index a191057..6c5ef75 100644
+index f50b717..a191057 100644
 --- a/arch/powerpc/platforms/pseries/eeh_cache.c
 +++ b/arch/powerpc/platforms/pseries/eeh_cache.c
-@@ -50,6 +50,7 @@ struct pci_io_addr_range {
- 	struct rb_node rb_node;
- 	unsigned long addr_lo;
- 	unsigned long addr_hi;
-+	struct eeh_dev *edev;
- 	struct pci_dev *pcidev;
- 	unsigned int flags;
- };
-@@ -59,7 +60,7 @@ static struct pci_io_addr_cache {
- 	spinlock_t piar_lock;
- } pci_io_addr_cache_root;
- 
--static inline struct pci_dev *__pci_addr_cache_get_device(unsigned long addr)
-+static inline struct eeh_dev *__pci_addr_cache_get_device(unsigned long addr)
- {
- 	struct rb_node *n = pci_io_addr_cache_root.rb_root.rb_node;
- 
-@@ -74,7 +75,7 @@ static inline struct pci_dev *__pci_addr_cache_get_device(unsigned long addr)
- 				n = n->rb_right;
- 			} else {
- 				pci_dev_get(piar->pcidev);
--				return piar->pcidev;
-+				return piar->edev;
- 			}
- 		}
+@@ -192,8 +192,7 @@ static void __pci_addr_cache_insert_device(struct pci_dev *dev)
  	}
-@@ -92,15 +93,15 @@ static inline struct pci_dev *__pci_addr_cache_get_device(unsigned long addr)
-  * from zero (that is, they do *not* have pci_io_addr added in).
-  * It is safe to call this function within an interrupt.
-  */
--struct pci_dev *pci_addr_cache_get_device(unsigned long addr)
-+struct eeh_dev *pci_addr_cache_get_device(unsigned long addr)
- {
--	struct pci_dev *dev;
-+	struct eeh_dev *edev;
- 	unsigned long flags;
  
- 	spin_lock_irqsave(&pci_io_addr_cache_root.piar_lock, flags);
--	dev = __pci_addr_cache_get_device(addr);
-+	edev = __pci_addr_cache_get_device(addr);
- 	spin_unlock_irqrestore(&pci_io_addr_cache_root.piar_lock, flags);
--	return dev;
-+	return edev;
+ 	/* Skip any devices for which EEH is not enabled. */
+-	if (!(edev->mode & EEH_MODE_SUPPORTED) ||
+-	    edev->mode & EEH_MODE_NOCHECK) {
++	if (!edev->pe) {
+ #ifdef DEBUG
+ 		pr_info("PCI: skip building address cache for=%s - %s\n",
+ 			pci_name(dev), dn->full_name);
+diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
+index 343c807..8370ce7 100644
+--- a/arch/powerpc/platforms/pseries/eeh_driver.c
++++ b/arch/powerpc/platforms/pseries/eeh_driver.c
+@@ -93,7 +93,7 @@ static void eeh_disable_irq(struct pci_dev *dev)
+ 	if (!irq_has_action(dev->irq))
+ 		return;
+ 
+-	edev->mode |= EEH_MODE_IRQ_DISABLED;
++	edev->mode |= EEH_DEV_IRQ_DISABLED;
+ 	disable_irq_nosync(dev->irq);
  }
  
- #ifdef DEBUG
-@@ -158,6 +159,7 @@ pci_addr_cache_insert(struct pci_dev *dev, unsigned long alo,
- 	pci_dev_get(dev);
- 	piar->addr_lo = alo;
- 	piar->addr_hi = ahi;
-+	piar->edev = pci_dev_to_eeh_dev(dev);
- 	piar->pcidev = dev;
- 	piar->flags = flags;
+@@ -108,8 +108,8 @@ static void eeh_enable_irq(struct pci_dev *dev)
+ {
+ 	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+ 
+-	if ((edev->mode) & EEH_MODE_IRQ_DISABLED) {
+-		edev->mode &= ~EEH_MODE_IRQ_DISABLED;
++	if ((edev->mode) & EEH_DEV_IRQ_DISABLED) {
++		edev->mode &= ~EEH_DEV_IRQ_DISABLED;
+ 		enable_irq(dev->irq);
+ 	}
+ }
+diff --git a/arch/powerpc/platforms/pseries/eeh_sysfs.c b/arch/powerpc/platforms/pseries/eeh_sysfs.c
+index 243b351..d377083 100644
+--- a/arch/powerpc/platforms/pseries/eeh_sysfs.c
++++ b/arch/powerpc/platforms/pseries/eeh_sysfs.c
+@@ -53,9 +53,6 @@ static DEVICE_ATTR(_name, S_IRUGO, eeh_show_##_name, NULL);
+ EEH_SHOW_ATTR(eeh_mode,            mode,            "0x%x");
+ EEH_SHOW_ATTR(eeh_config_addr,     config_addr,     "0x%x");
+ EEH_SHOW_ATTR(eeh_pe_config_addr,  pe_config_addr,  "0x%x");
+-EEH_SHOW_ATTR(eeh_check_count,     check_count,     "%d"  );
+-EEH_SHOW_ATTR(eeh_freeze_count,    freeze_count,    "%d"  );
+-EEH_SHOW_ATTR(eeh_false_positives, false_positives, "%d"  );
+ 
+ void eeh_sysfs_add_device(struct pci_dev *pdev)
+ {
+@@ -64,9 +61,6 @@ void eeh_sysfs_add_device(struct pci_dev *pdev)
+ 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_mode);
+ 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_config_addr);
+ 	rc += device_create_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
+-	rc += device_create_file(&pdev->dev, &dev_attr_eeh_check_count);
+-	rc += device_create_file(&pdev->dev, &dev_attr_eeh_false_positives);
+-	rc += device_create_file(&pdev->dev, &dev_attr_eeh_freeze_count);
+ 
+ 	if (rc)
+ 		printk(KERN_WARNING "EEH: Unable to create sysfs entries\n");
+@@ -77,8 +71,5 @@ void eeh_sysfs_remove_device(struct pci_dev *pdev)
+ 	device_remove_file(&pdev->dev, &dev_attr_eeh_mode);
+ 	device_remove_file(&pdev->dev, &dev_attr_eeh_config_addr);
+ 	device_remove_file(&pdev->dev, &dev_attr_eeh_pe_config_addr);
+-	device_remove_file(&pdev->dev, &dev_attr_eeh_check_count);
+-	device_remove_file(&pdev->dev, &dev_attr_eeh_false_positives);
+-	device_remove_file(&pdev->dev, &dev_attr_eeh_freeze_count);
+ }
  
 -- 
 1.7.5.4
