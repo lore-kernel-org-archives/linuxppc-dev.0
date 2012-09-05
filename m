@@ -1,23 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3A60C2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 12:54:18 +1000 (EST)
-Message-ID: <1346813643.2257.24.camel@pasglop>
-Subject: Re: [PATCH v2] powerpc: fix personality handling in
- ppc64_personality()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Date: Wed, 05 Sep 2012 12:54:03 +1000
-In-Reply-To: <alpine.LNX.2.00.1208020907490.14910@pobox.suse.cz>
-References: <alpine.LNX.2.00.1208012201520.14910@pobox.suse.cz>
- <m27gtitfv4.fsf@igel.home>
- <alpine.LNX.2.00.1208020907490.14910@pobox.suse.cz>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, Andreas Schwab <schwab@linux-m68k.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <B21989@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 46BD72C0346
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 13:20:11 +1000 (EST)
+From: Xie Shaohui-B21989 <B21989@freescale.com>
+To: David Laight <David.Laight@ACULAB.COM>, "jgarzik@pobox.com"
+ <jgarzik@pobox.com>, "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>
+Subject: RE: [PATCH] sata_fsl: add workaround for data length mismatch on
+ freescale V2 controller
+Date: Wed, 5 Sep 2012 03:20:04 +0000
+Message-ID: <ED492CCEAF882048BC2237DE806547C9079C4915@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1346756920-19128-1-git-send-email-Shaohui.Xie@freescale.com>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B6FD6@saturn3.aculab.com>
+In-Reply-To: <AE90C24D6B3A694183C094C60CF0A2F6026B6FD6@saturn3.aculab.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Bhartiya Anju-B07263 <B07263@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,53 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-08-02 at 09:10 +0200, Jiri Kosina wrote:
-> Directly comparing current->personality against PER_LINUX32 doesn't work
-> in cases when any of the personality flags stored in the top three bytes
-> are used.
-> 
-> Directly forcefully setting personality to PER_LINUX32 or PER_LINUX
-> discards any flags stored in the top three bytes
-> 
-> Use personality() macro to compare only PER_MASK bytes and make sure that
-> we are setting only the bits that should be set, instead of
-> overwriting the whole value.
-> 
-> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-> ---
-> 
-> changed since v1: fix the bit ops to reflect the fact that PER_LINUX is 
-> actually 0
+> -----Original Message-----
+> From: David Laight [mailto:David.Laight@ACULAB.COM]
+> Sent: Tuesday, September 04, 2012 10:51 PM
+> To: Xie Shaohui-B21989; jgarzik@pobox.com; linux-ide@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Bhartiya
+> Anju-B07263
+> Subject: RE: [PATCH] sata_fsl: add workaround for data length mismatch on
+> freescale V2 controller
+>=20
+> > +	/* Read command completed register */
+> > +	done_mask =3D ioread32(hcr_base + CC);
+> > +
+> > +	if (host_priv->quirks & SATA_FSL_QUIRK_V2_ERRATA) {
+> > +		if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
+> > +			for (tag =3D 0; tag < ATA_MAX_QUEUE; tag++) {
+> > +				qc =3D ata_qc_from_tag(ap, tag);
+> > +				if (qc && ata_is_atapi(qc->tf.protocol))
+> {
+> > +					atapi_flag =3D 1;
+> > +					break;
+> > +				}
+> > +			}
+> > +		}
+> > +	}
+> > +
+> > +	/* Workaround for data length mismatch errata */
+> > +	if (atapi_flag) {
+>=20
+> Seems to me like the conditionals for this code are all in the wrong
+> order - adding code to the normal path.
+>=20
+> The whole lot should probably be inside:
+> 	if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) { and the
+> 'atapi_flag' boolean removed.
+[S.H] OK. But I need to move the "done_mask =3D ioread32(hcr_base + CC);" b=
+efore these codes,
+ because these codes will clean command completed register.
 
-Had already merged v1 (oops.. didn't spot the issue with PER_LINUX being
-0). Can you send an incremental fixup ?
+>=20
+> I also wonder it this is worthy of an actual quirk?
+> Might be worth doing anyway.
+[S.H] The quirk is useful for our internal use(there is another errata but =
+got fixed by silicon upgrade),
+but you are right it's worth doing anyway in upstream, since the upstream c=
+ode only handles this errata.
 
-Cheers,
-Ben.
-
->  arch/powerpc/kernel/syscalls.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-> index f2496f2..dc1558e 100644
-> --- a/arch/powerpc/kernel/syscalls.c
-> +++ b/arch/powerpc/kernel/syscalls.c
-> @@ -107,11 +107,11 @@ long ppc64_personality(unsigned long personality)
->  	long ret;
->  
->  	if (personality(current->personality) == PER_LINUX32
-> -	    && personality == PER_LINUX)
-> -		personality = PER_LINUX32;
-> +	    && personality(personality) == PER_LINUX)
-> +		personality |= PER_LINUX32;
->  	ret = sys_personality(personality);
-> -	if (ret == PER_LINUX32)
-> -		ret = PER_LINUX;
-> +	if (personality(ret) == PER_LINUX32)
-> +		ret &= ~PER_LINUX32;
->  	return ret;
->  }
->  #endif
-> -- 
-> 1.7.3.1
-> 
+Best Regards,=20
+Shaohui Xie
