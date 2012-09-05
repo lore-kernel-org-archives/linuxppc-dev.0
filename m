@@ -1,16 +1,16 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 335562C0100
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 19:20:32 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTP id D81A52C0143
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Sep 2012 19:20:33 +1000 (EST)
 From: wency@cn.fujitsu.com
 To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [RFC v9 PATCH 08/21] memory-hotplug: remove /sys/firmware/memmap/X
- sysfs
-Date: Wed, 5 Sep 2012 17:25:42 +0800
-Message-Id: <1346837155-534-9-git-send-email-wency@cn.fujitsu.com>
+Subject: [RFC v9 PATCH 06/21] memory-hotplug: export the function
+ acpi_bus_remove()
+Date: Wed, 5 Sep 2012 17:25:40 +0800
+Message-Id: <1346837155-534-7-git-send-email-wency@cn.fujitsu.com>
 In-Reply-To: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
 References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
 Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
@@ -26,14 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+From: Wen Congyang <wency@cn.fujitsu.com>
 
-When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
-sysfs files are created. But there is no code to remove these files. The patch
-implements the function to remove them.
-
-Note : The code does not free firmware_map_entry since there is no way to free
-       memory which is allocated by bootmem.
+The function acpi_bus_remove() can remove a acpi device from acpi device.
+When a acpi device is removed, we need to call this function to remove
+the acpi device from acpi bus. So export this function.
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -44,234 +41,45 @@ CC: Christoph Lameter <cl@linux.com>
 Cc: Minchan Kim <minchan.kim@gmail.com>
 CC: Andrew Morton <akpm@linux-foundation.org>
 CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
 ---
- drivers/firmware/memmap.c    |   98 +++++++++++++++++++++++++++++++++++++++++-
- include/linux/firmware-map.h |    6 +++
- mm/memory_hotplug.c          |    9 +++-
- 3 files changed, 109 insertions(+), 4 deletions(-)
+ drivers/acpi/scan.c     |    3 ++-
+ include/acpi/acpi_bus.h |    1 +
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-index c1cdc92..6740d26 100644
---- a/drivers/firmware/memmap.c
-+++ b/drivers/firmware/memmap.c
-@@ -21,6 +21,7 @@
- #include <linux/types.h>
- #include <linux/bootmem.h>
- #include <linux/slab.h>
-+#include <linux/mm.h>
- 
- /*
-  * Data types ------------------------------------------------------------------
-@@ -41,6 +42,7 @@ struct firmware_map_entry {
- 	const char		*type;	/* type of the memory range */
- 	struct list_head	list;	/* entry for the linked list */
- 	struct kobject		kobj;   /* kobject for each entry */
-+	unsigned int		bootmem:1; /* allocated from bootmem */
- };
- 
- /*
-@@ -79,7 +81,26 @@ static const struct sysfs_ops memmap_attr_ops = {
- 	.show = memmap_attr_show,
- };
- 
-+
-+static inline struct firmware_map_entry *
-+to_memmap_entry(struct kobject *kobj)
-+{
-+	return container_of(kobj, struct firmware_map_entry, kobj);
-+}
-+
-+static void release_firmware_map_entry(struct kobject *kobj)
-+{
-+	struct firmware_map_entry *entry = to_memmap_entry(kobj);
-+
-+	if (entry->bootmem)
-+		/* There is no way to free memory allocated from bootmem */
-+		return;
-+
-+	kfree(entry);
-+}
-+
- static struct kobj_type memmap_ktype = {
-+	.release	= release_firmware_map_entry,
- 	.sysfs_ops	= &memmap_attr_ops,
- 	.default_attrs	= def_attrs,
- };
-@@ -94,6 +115,7 @@ static struct kobj_type memmap_ktype = {
-  * in firmware initialisation code in one single thread of execution.
-  */
- static LIST_HEAD(map_entries);
-+static DEFINE_SPINLOCK(map_entries_lock);
- 
- /**
-  * firmware_map_add_entry() - Does the real work to add a firmware memmap entry.
-@@ -118,11 +140,25 @@ static int firmware_map_add_entry(u64 start, u64 end,
- 	INIT_LIST_HEAD(&entry->list);
- 	kobject_init(&entry->kobj, &memmap_ktype);
- 
-+	spin_lock(&map_entries_lock);
- 	list_add_tail(&entry->list, &map_entries);
-+	spin_unlock(&map_entries_lock);
- 
- 	return 0;
+diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+index d1ecca2..1cefc34 100644
+--- a/drivers/acpi/scan.c
++++ b/drivers/acpi/scan.c
+@@ -1224,7 +1224,7 @@ static int acpi_device_set_context(struct acpi_device *device)
+ 	return -ENODEV;
  }
  
-+/**
-+ * firmware_map_remove_entry() - Does the real work to remove a firmware
-+ * memmap entry.
-+ * @entry: removed entry.
-+ **/
-+static inline void firmware_map_remove_entry(struct firmware_map_entry *entry)
-+{
-+	spin_lock(&map_entries_lock);
-+	list_del(&entry->list);
-+	spin_unlock(&map_entries_lock);
-+}
-+
- /*
-  * Add memmap entry on sysfs
-  */
-@@ -144,6 +180,35 @@ static int add_sysfs_fw_map_entry(struct firmware_map_entry *entry)
- 	return 0;
- }
- 
-+/*
-+ * Remove memmap entry on sysfs
-+ */
-+static inline void remove_sysfs_fw_map_entry(struct firmware_map_entry *entry)
-+{
-+	kobject_put(&entry->kobj);
-+}
-+
-+/*
-+ * Search memmap entry
-+ */
-+
-+static struct firmware_map_entry * __meminit
-+firmware_map_find_entry(u64 start, u64 end, const char *type)
-+{
-+	struct firmware_map_entry *entry;
-+
-+	spin_lock(&map_entries_lock);
-+	list_for_each_entry(entry, &map_entries, list)
-+		if ((entry->start == start) && (entry->end == end) &&
-+		    (!strcmp(entry->type, type))) {
-+			spin_unlock(&map_entries_lock);
-+			return entry;
-+		}
-+
-+	spin_unlock(&map_entries_lock);
-+	return NULL;
-+}
-+
- /**
-  * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
-  * memory hotplug.
-@@ -193,9 +258,36 @@ int __init firmware_map_add_early(u64 start, u64 end, const char *type)
- 	if (WARN_ON(!entry))
- 		return -ENOMEM;
- 
-+	entry->bootmem = 1;
- 	return firmware_map_add_entry(start, end, type, entry);
- }
- 
-+/**
-+ * firmware_map_remove() - remove a firmware mapping entry
-+ * @start: Start of the memory range.
-+ * @end:   End of the memory range.
-+ * @type:  Type of the memory range.
-+ *
-+ * removes a firmware mapping entry.
-+ *
-+ * Returns 0 on success, or -EINVAL if no entry.
-+ **/
-+int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
-+{
-+	struct firmware_map_entry *entry;
-+
-+	entry = firmware_map_find_entry(start, end - 1, type);
-+	if (!entry)
-+		return -EINVAL;
-+
-+	firmware_map_remove_entry(entry);
-+
-+	/* remove the memmap entry */
-+	remove_sysfs_fw_map_entry(entry);
-+
-+	return 0;
-+}
-+
- /*
-  * Sysfs functions -------------------------------------------------------------
-  */
-@@ -217,8 +309,10 @@ static ssize_t type_show(struct firmware_map_entry *entry, char *buf)
- 	return snprintf(buf, PAGE_SIZE, "%s\n", entry->type);
- }
- 
--#define to_memmap_attr(_attr) container_of(_attr, struct memmap_attribute, attr)
--#define to_memmap_entry(obj) container_of(obj, struct firmware_map_entry, kobj)
-+static inline struct memmap_attribute *to_memmap_attr(struct attribute *attr)
-+{
-+	return container_of(attr, struct memmap_attribute, attr);
-+}
- 
- static ssize_t memmap_attr_show(struct kobject *kobj,
- 				struct attribute *attr, char *buf)
-diff --git a/include/linux/firmware-map.h b/include/linux/firmware-map.h
-index 43fe52f..71d4fa7 100644
---- a/include/linux/firmware-map.h
-+++ b/include/linux/firmware-map.h
-@@ -25,6 +25,7 @@
- 
- int firmware_map_add_early(u64 start, u64 end, const char *type);
- int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
-+int firmware_map_remove(u64 start, u64 end, const char *type);
- 
- #else /* CONFIG_FIRMWARE_MEMMAP */
- 
-@@ -38,6 +39,11 @@ static inline int firmware_map_add_hotplug(u64 start, u64 end, const char *type)
- 	return 0;
- }
- 
-+static inline int firmware_map_remove(u64 start, u64 end, const char *type)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_FIRMWARE_MEMMAP */
- 
- #endif /* _LINUX_FIRMWARE_MAP_H */
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 299747d..e74a01d 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1052,9 +1052,9 @@ int offline_memory(u64 start, u64 size)
- 	return 0;
- }
- 
--int remove_memory(int nid, u64 start, u64 size)
-+int __ref remove_memory(int nid, u64 start, u64 size)
+-static int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
++int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
  {
--	int ret = -EBUSY;
-+	int ret = 0;
- 	lock_memory_hotplug();
- 	/*
- 	 * The memory might become online by other task, even if you offine it.
-@@ -1065,8 +1065,13 @@ int remove_memory(int nid, u64 start, u64 size)
- 			"because the memmory range is online\n",
- 			start, start + size);
- 		ret = -EAGAIN;
-+		goto out;
- 	}
+ 	if (!dev)
+ 		return -EINVAL;
+@@ -1246,6 +1246,7 @@ static int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
  
-+	/* remove memmap entry */
-+	firmware_map_remove(start, start + size, "System RAM");
-+
-+out:
- 	unlock_memory_hotplug();
- 	return ret;
+ 	return 0;
+ }
++EXPORT_SYMBOL(acpi_bus_remove);
  
+ static int acpi_add_single_object(struct acpi_device **child,
+ 				  acpi_handle handle, int type,
+diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
+index bde976e..2ccf109 100644
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -360,6 +360,7 @@ bool acpi_bus_power_manageable(acpi_handle handle);
+ bool acpi_bus_can_wakeup(acpi_handle handle);
+ int acpi_power_resource_register_device(struct device *dev, acpi_handle handle);
+ void acpi_power_resource_unregister_device(struct device *dev, acpi_handle handle);
++int acpi_bus_remove(struct acpi_device *dev, int rmdevice);
+ #ifdef CONFIG_ACPI_PROC_EVENT
+ int acpi_bus_generate_proc_event(struct acpi_device *device, u8 type, int data);
+ int acpi_bus_generate_proc_event4(const char *class, const char *bid, u8 type, int data);
 -- 
 1.7.1
