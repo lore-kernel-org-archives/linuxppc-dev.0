@@ -2,7 +2,7 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B605F2C0455
+ by ozlabs.org (Postfix) with ESMTPS id BCFF42C0456
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 01:30:03 +1000 (EST)
 Received: from /spool/local
  by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -10,18 +10,19 @@ Received: from /spool/local
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
  Fri, 7 Sep 2012 01:29:36 +1000
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q86FKUf928508312
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 01:20:30 +1000
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q86FKWis18153686
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 01:20:32 +1000
 Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q86FTdQg006195
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 01:29:39 +1000
+ q86FTWjS005703
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 01:29:33 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V8 11/11] arch/powerpc: Update VSID allocation documentation
-Date: Thu,  6 Sep 2012 20:59:11 +0530
-Message-Id: <1346945351-7672-12-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V8 07/11] arch/powerpc: Make some of the PGTABLE_RANGE
+ dependency explicit
+Date: Thu,  6 Sep 2012 20:59:07 +0530
+Message-Id: <1346945351-7672-8-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -37,107 +38,98 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This update the proto-VSID and VSID scramble related information
-to be more generic by using names instead of current values.
+slice array size and slice mask size depend on PGTABLE_RANGE. We
+can't directly include pgtable.h in these header because there is
+a circular dependency. So add compile time check for these values.
 
 Reviewed-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu-hash64.h |   40 ++++++++++++++-------------------
- arch/powerpc/mm/mmu_context_hash64.c  |    8 ++++---
- 2 files changed, 22 insertions(+), 26 deletions(-)
+ arch/powerpc/include/asm/mmu-hash64.h    |   13 ++++++++-----
+ arch/powerpc/include/asm/page_64.h       |   16 ++++++++++++----
+ arch/powerpc/include/asm/pgtable-ppc64.h |    8 ++++++++
+ 3 files changed, 28 insertions(+), 9 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index de9cfed..428f23e 100644
+index 7cbd541..cbd7edb 100644
 --- a/arch/powerpc/include/asm/mmu-hash64.h
 +++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -324,51 +324,45 @@ extern void slb_set_size(u16 size);
- #endif /* __ASSEMBLY__ */
+@@ -416,6 +416,13 @@ extern void slb_set_size(u16 size);
+ 	srdi	rx,rx,VSID_BITS_##size;	/* extract 2^VSID_BITS bit */	\
+ 	add	rt,rt,rx
  
++/* 4 bits per slice and we have one slice per 1TB */
++#if 0 /* We can't directly include pgtable.h hence this hack */
++#define SLICE_ARRAY_SIZE  (PGTABLE_RANGE >> 41)
++#else
++/* Right now we only support 64TB */
++#define SLICE_ARRAY_SIZE  32
++#endif
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -460,11 +467,7 @@ typedef struct {
+ 
+ #ifdef CONFIG_PPC_MM_SLICES
+ 	u64 low_slices_psize;	/* SLB page size encodings */
+-	/*
+-	 * Right now we support 64TB and 4 bits for each
+-	 * 1TB slice we need 32 bytes for 64TB.
+-	 */
+-	unsigned char high_slices_psize[32];  /* 4 bits per slice for now */
++	unsigned char high_slices_psize[SLICE_ARRAY_SIZE];
+ #else
+ 	u16 sllp;		/* SLB page size encoding */
+ #endif
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index 6c9bef4..b55beb4 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -78,14 +78,22 @@ extern u64 ppc64_pft_size;
+ #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
+ #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
+ 
++/* 1 bit per slice and we have one slice per 1TB */
++#if 0 /* We can't directly include pgtable.h hence this hack */
++#define SLICE_MASK_SIZE (PGTABLE_RANGE >> 43)
++#else
++/*
++ * Right now we support only 64TB.
++ * IF we change this we will have to change the type
++ * of high_slices
++ */
++#define SLICE_MASK_SIZE 8
++#endif
++
+ #ifndef __ASSEMBLY__
+ 
+ struct slice_mask {
+ 	u16 low_slices;
+-	/*
+-	 * This should be derived out of PGTABLE_RANGE. For the current
+-	 * max 64TB, u64 should be ok.
+-	 */
+ 	u64 high_slices;
+ };
+ 
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 8af1cf2..dea953f 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -32,6 +32,14 @@
+ #endif
+ #endif
+ 
++#if (PGTABLE_RANGE >> 41) > SLICE_ARRAY_SIZE
++#error PGTABLE_RANGE exceeds SLICE_ARRAY_SIZE
++#endif
++
++#if (PGTABLE_RANGE >> 43) > SLICE_MASK_SIZE
++#error PGTABLE_RANGE exceeds slice_mask high_slices size
++#endif
++
  /*
-- * VSID allocation
-+ * VSID allocation (256MB segment)
-  *
-- * We first generate a 36-bit "proto-VSID".  For kernel addresses this
-- * is equal to the ESID, for user addresses it is:
-- *	(context << 15) | (esid & 0x7fff)
-+ * We first generate a 38-bit "proto-VSID".  For kernel addresses this
-+ * is equal to the ESID | 1 << 37, for user addresses it is:
-+ *	(context << USER_ESID_BITS) | (esid & ((1U << USER_ESID_BITS) - 1)
-  *
-- * The two forms are distinguishable because the top bit is 0 for user
-- * addresses, whereas the top two bits are 1 for kernel addresses.
-- * Proto-VSIDs with the top two bits equal to 0b10 are reserved for
-- * now.
-+ * This splits the proto-VSID into the below range
-+ *  0 - (2^(CONTEXT_BITS + USER_ESID_BITS) - 1) : User proto-VSID range
-+ *  2^(CONTEXT_BITS + USER_ESID_BITS) - 2^(VSID_BITS) : Kernel proto-VSID range
-+ *
-+ * We also have CONTEXT_BITS + USER_ESID_BITS = VSID_BITS - 1
-+ * That is, we assign half of the space to user processes and half
-+ * to the kernel.
-  *
-  * The proto-VSIDs are then scrambled into real VSIDs with the
-  * multiplicative hash:
-  *
-  *	VSID = (proto-VSID * VSID_MULTIPLIER) % VSID_MODULUS
-- *	where	VSID_MULTIPLIER = 268435399 = 0xFFFFFC7
-- *		VSID_MODULUS = 2^36-1 = 0xFFFFFFFFF
-  *
-- * This scramble is only well defined for proto-VSIDs below
-- * 0xFFFFFFFFF, so both proto-VSID and actual VSID 0xFFFFFFFFF are
-- * reserved.  VSID_MULTIPLIER is prime, so in particular it is
-+ * VSID_MULTIPLIER is prime, so in particular it is
-  * co-prime to VSID_MODULUS, making this a 1:1 scrambling function.
-  * Because the modulus is 2^n-1 we can compute it efficiently without
-  * a divide or extra multiply (see below).
-  *
-  * This scheme has several advantages over older methods:
-  *
-- * 	- We have VSIDs allocated for every kernel address
-+ *	- We have VSIDs allocated for every kernel address
-  * (i.e. everything above 0xC000000000000000), except the very top
-  * segment, which simplifies several things.
-  *
-- *	- We allow for 16 significant bits of ESID and 19 bits of
-- * context for user addresses.  i.e. 16T (44 bits) of address space for
-- * up to half a million contexts.
-+ *	- We allow for USER_ESID_BITS significant bits of ESID and
-+ * CONTEXT_BITS  bits of context for user addresses.
-+ *  i.e. 64T (46 bits) of address space for up to half a million contexts.
-  *
-- * 	- The scramble function gives robust scattering in the hash
-+ *	- The scramble function gives robust scattering in the hash
-  * table (at least based on some initial results).  The previous
-  * method was more susceptible to pathological cases giving excessive
-  * hash collisions.
+  * Define the address range of the kernel non-linear virtual area
   */
--/*
-- * WARNING - If you change these you must make sure the asm
-- * implementations in slb_allocate (slb_low.S), do_stab_bolted
-- * (head.S) and ASM_VSID_SCRAMBLE (below) are changed accordingly.
-- */
- 
- /*
-  * This should be computed such that protovosid * vsid_mulitplier
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index daa076c..40bc5b0 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -30,9 +30,11 @@ static DEFINE_SPINLOCK(mmu_context_lock);
- static DEFINE_IDA(mmu_context_ida);
- 
- /*
-- * The proto-VSID space has 2^35 - 1 segments available for user mappings.
-- * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
-- * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
-+ * 256MB segment
-+ * The proto-VSID space has 2^(CONTEX_BITS + USER_ESID_BITS) - 1 segments
-+ * available for user mappings. Each segment contains 2^28 bytes. Each
-+ * context maps 2^46 bytes (64TB) so we can support 2^19-1 contexts
-+ * (19 == 37 + 28 - 46).
-  */
- #define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
- 
 -- 
 1.7.10
