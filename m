@@ -1,28 +1,29 @@
-Return-Path: <B21989@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe002.messaging.microsoft.com [216.32.180.12])
+Return-Path: <mcaraman@mcaraman-VirtualBox.ea.freescale.net>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2AC222C009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 21:57:46 +1000 (EST)
-From: Xie Shaohui-B21989 <B21989@freescale.com>
-To: Sergei Shtylyov <sshtylyov@mvista.com>
-Subject: RE: [PATCH] [v2] sata_fsl: add workaround for data length mismatch
- on freescale V2 controller
-Date: Thu, 6 Sep 2012 11:57:37 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C9079D3C6C@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1346905686-27912-1-git-send-email-Shaohui.Xie@freescale.com>
- <504888F8.5060907@mvista.com>
-In-Reply-To: <504888F8.5060907@mvista.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 3B87F2C009E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 22:50:10 +1000 (EST)
+Received: from mail70-db3 (localhost [127.0.0.1])	by mail70-db3-R.bigfish.com
+ (Postfix) with ESMTP id 6BCE33E018A	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2012 12:50:04 +0000 (UTC)
+Received: from DB3EHSMHS004.bigfish.com (unknown [10.3.81.238])	by
+ mail70-db3.bigfish.com (Postfix) with ESMTP id E597F3C0086	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 12:50:00 +0000 (UTC)
+Received: from mcaraman-VirtualBox.ea.freescale.net ([10.213.130.145])	by
+ az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q86CnuOP028133	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2012 05:49:57 -0700
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc64: restore VDSO information on critical exception
+Date: Thu, 6 Sep 2012 15:49:44 +0300
+Message-ID: <1346935784-19521-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
- "David.Laight@ACULAB.COM" <David.Laight@ACULAB.COM>,
- Bhartiya Anju-B07263 <B07263@freescale.com>,
- "jgarzik@pobox.com" <jgarzik@pobox.com>
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, kvm@vger.kernel.org,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,42 +33,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> >
-> >   	hstatus =3D ioread32(hcr_base + HSTATUS);
-> >
-> >   	sata_fsl_scr_read(&ap->link, SCR_ERROR, &SError);
-> >
-> > +	/* Read command completed register */
-> > +	done_mask =3D ioread32(hcr_base + CC);
-> > +
-> > +	/* Workaround for data length mismatch errata */
-> > +	if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
-> > +		for (tag =3D 0; tag < ATA_MAX_QUEUE; tag++) {
-> > +			qc =3D ata_qc_from_tag(ap, tag);
-> > +			if (qc && ata_is_atapi(qc->tf.protocol)) {
-> > +				u32 Hcontrol;
->=20
->     No uppercase in variable names please.=20
-[S.H] OK.
+Critical exception on 64-bit booke uses user-visible SPRG3 as scratch.
+Restore VDSO information in SPRG3 on exception prolog.
+Use a common sprg3 field in PACA for all powerpc64 architectures.
 
-Besides, you have 'hstatus'
-> variable already and that would be inconsistent.
-[S.H] Yes, but I ignored fatal error and device error, so this won't be an =
-issue.
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+ arch/powerpc/include/asm/kvm_book3s_asm.h |    1 -
+ arch/powerpc/include/asm/paca.h           |    1 +
+ arch/powerpc/kernel/asm-offsets.c         |    2 +-
+ arch/powerpc/kernel/exceptions-64e.S      |    4 +++-
+ arch/powerpc/kernel/vdso.c                |    4 +---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S   |    2 +-
+ 6 files changed, 7 insertions(+), 7 deletions(-)
 
->=20
-> > +#define HCONTROL_CLEAR_ERROR	(1 << 27)
-> > +				/* Set HControl[27] to clear error registers */
-> > +				Hcontrol =3D ioread32(hcr_base + HCONTROL);
-> > +				iowrite32(Hcontrol | HCONTROL_CLEAR_ERROR,
-> > +						hcr_base + HCONTROL);
-> > +
-> > +				/* Clear HControl[27] */
-> > +				iowrite32(Hcontrol & (~HCONTROL_CLEAR_ERROR),
->=20
->     Parens not needed around ~HCONTROL_CLEAR_ERROR.
-[S.H] OK.
-
-
-Best Regards,=20
-Shaohui Xie
+diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
+index bfcd00c..88609b2 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_asm.h
++++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
+@@ -74,7 +74,6 @@ struct kvmppc_host_state {
+ 	ulong vmhandler;
+ 	ulong scratch0;
+ 	ulong scratch1;
+-	ulong sprg3;
+ 	u8 in_guest;
+ 	u8 restore_hid5;
+ 	u8 napping;
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index daf813f..7796519 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -136,6 +136,7 @@ struct paca_struct {
+ 	u8 io_sync;			/* writel() needs spin_unlock sync */
+ 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
+ 	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
++	u64 sprg3;			/* Saved user-visible sprg */
+ 
+ #ifdef CONFIG_PPC_POWERNV
+ 	/* Pointer to OPAL machine check event structure set by the
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 85b05c4..72f2616 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -205,6 +205,7 @@ int main(void)
+ 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
+ 	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
+ 	DEFINE(PACA_NAPSTATELOST, offsetof(struct paca_struct, nap_state_lost));
++	DEFINE(PACA_SPRG3, offsetof(struct paca_struct, sprg3));
+ #endif /* CONFIG_PPC64 */
+ 
+ 	/* RTAS */
+@@ -533,7 +534,6 @@ int main(void)
+ 	HSTATE_FIELD(HSTATE_VMHANDLER, vmhandler);
+ 	HSTATE_FIELD(HSTATE_SCRATCH0, scratch0);
+ 	HSTATE_FIELD(HSTATE_SCRATCH1, scratch1);
+-	HSTATE_FIELD(HSTATE_SPRG3, sprg3);
+ 	HSTATE_FIELD(HSTATE_IN_GUEST, in_guest);
+ 	HSTATE_FIELD(HSTATE_RESTORE_HID5, restore_hid5);
+ 	HSTATE_FIELD(HSTATE_NAPPING, napping);
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 7476b0a..87a82fb 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -110,7 +110,9 @@
+ 
+ #define PROLOG_STORE_RESTORE_SCRATCH_CRIT				    \
+ 	mfspr	r10,SPRN_SPRG_CRIT_SCRATCH;	/* get r13 */		    \
+-	std	r10,PACA_EXCRIT+EX_R13(r13)
++	std	r10,PACA_EXCRIT+EX_R13(r13);				    \
++	ld	r11,PACA_SPRG3(r13);					    \
++	mtspr	SPRN_SPRG_CRIT_SCRATCH,r11;
+ 
+ /* Variants of the "addition" argument for the prolog
+  */
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index b67db22..1b2076f 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -723,9 +723,7 @@ int __cpuinit vdso_getcpu_init(void)
+ 
+ 	val = (cpu & 0xfff) | ((node & 0xffff) << 16);
+ 	mtspr(SPRN_SPRG3, val);
+-#ifdef CONFIG_KVM_BOOK3S_HANDLER
+-	get_paca()->kvm_hstate.sprg3 = val;
+-#endif
++	get_paca()->sprg3 = val;
+ 
+ 	put_cpu();
+ 
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index 5a84c8d..39a21bf 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -1065,7 +1065,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
+ 	mtspr	SPRN_DABRX,r6
+ 
+ 	/* Restore SPRG3 */
+-	ld	r3,HSTATE_SPRG3(r13)
++	ld	r3,PACA_SPRG3(r13)
+ 	mtspr	SPRN_SPRG3,r3
+ 
+ 	/*
+-- 
+1.7.4.1
