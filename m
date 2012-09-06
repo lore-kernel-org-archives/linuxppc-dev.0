@@ -1,26 +1,25 @@
-Return-Path: <jkosina@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8AC702C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 18:46:33 +1000 (EST)
-Date: Thu, 6 Sep 2012 10:46:19 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: fix personality handling in
- ppc64_personality()
-In-Reply-To: <1346879598.19098.4.camel@pasglop>
-Message-ID: <alpine.LNX.2.00.1209061039180.23459@pobox.suse.cz>
-References: <alpine.LNX.2.00.1208012201520.14910@pobox.suse.cz>
- <m27gtitfv4.fsf@igel.home>
- <alpine.LNX.2.00.1208020907490.14910@pobox.suse.cz>
- <1346813643.2257.24.camel@pasglop>
- <alpine.LNX.2.00.1209051056060.11079@pobox.suse.cz>
- <1346879598.19098.4.camel@pasglop>
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-lpp01m010-f51.google.com (mail-lpp01m010-f51.google.com
+ [209.85.215.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AE5842C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 21:30:09 +1000 (EST)
+Received: by lags15 with SMTP id s15so900427lag.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2012 04:30:05 -0700 (PDT)
+Message-ID: <504888F8.5060907@mvista.com>
+Date: Thu, 06 Sep 2012 15:28:56 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>, Andreas Schwab <schwab@linux-m68k.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: Shaohui Xie <Shaohui.Xie@freescale.com>
+Subject: Re: [PATCH] [v2] sata_fsl: add workaround for data length mismatch
+ on freescale V2 controller
+References: <1346905686-27912-1-git-send-email-Shaohui.Xie@freescale.com>
+In-Reply-To: <1346905686-27912-1-git-send-email-Shaohui.Xie@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-ide@vger.kernel.org, David.Laight@ACULAB.COM,
+ Anju Bhartiya <Anju.Bhartiya@freescale.com>, jgarzik@pobox.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +29,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 6 Sep 2012, Benjamin Herrenschmidt wrote:
+Hello.
 
-> > actually commit 7256a5d2da56 seems to contain the correct PER_LINUX 
-> > handling, so seems like you picked the right one :)
-> > 
-> 
-> Odd, they looked different around the use of PER_MASK when I looked but
+On 06-09-2012 8:28, Shaohui Xie wrote:
 
-The original patch had
+> The freescale V2 SATA controller checks if the received data length matches
+> the programmed length 'ttl', if not, it assumes that this is an error.
+> In ATAPI, the 'ttl' is based on max allocation length and not the actual
+> data transfer length, controller will raise 'DLM' (Data length Mismatch)
+> error bit in Hstatus register. Along with 'DLM', DE (Device error) and
+> FE (fatal Error) bits are also set in Hstatus register, 'E' (Internal Error)
+> bit is set in Serror register and CE (Command Error) and DE (Device error)
+> registers have the corresponding bit set. In this condition, we need to
+> clear errors in following way: in the service routine, based on 'DLM' flag,
+> HCONTROL[27] operation clears Hstatus, CE and DE registers, clear Serror
+> register.
 
-	personality &= ~PER_LINUX | PER_LINUX32;
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> Signed-off-by: Anju Bhartiya <Anju.Bhartiya@freescale.com>
+> ---
+> changes for V2:
+> 1. remove the using of quirk;
+> 2. wrap errata codes in condition;
 
-Which is bogus, exactly because ~PER_LINUX is -1.
+>   drivers/ata/sata_fsl.c |   40 +++++++++++++++++++++++++++++++++++-----
+>   1 files changed, 35 insertions(+), 5 deletions(-)
 
-I then used
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+> index d6577b9..6b7b73e 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+[...]
+> @@ -1180,26 +1181,55 @@ static void sata_fsl_host_intr(struct ata_port *ap)
+>   	void __iomem *hcr_base = host_priv->hcr_base;
+>   	u32 hstatus, done_mask = 0;
+>   	struct ata_queued_cmd *qc;
+> -	u32 SError;
+> +	u32 SError, tag;
+> +	u32 status_mask = INT_ON_ERROR;
+>
+>   	hstatus = ioread32(hcr_base + HSTATUS);
+>
+>   	sata_fsl_scr_read(&ap->link, SCR_ERROR, &SError);
+>
+> +	/* Read command completed register */
+> +	done_mask = ioread32(hcr_base + CC);
+> +
+> +	/* Workaround for data length mismatch errata */
+> +	if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
+> +		for (tag = 0; tag < ATA_MAX_QUEUE; tag++) {
+> +			qc = ata_qc_from_tag(ap, tag);
+> +			if (qc && ata_is_atapi(qc->tf.protocol)) {
+> +				u32 Hcontrol;
 
-	personality = (personality & ~PER_MASK) | PER_LINUX32;
+    No uppercase in variable names please. Besides, you have 'hstatus' 
+variable already and that would be inconsistent.
 
-which is correct and perhaps a little bit more descriptive, and that is 
-what you have merged, so all is fine.
+> +#define HCONTROL_CLEAR_ERROR	(1 << 27)
+> +				/* Set HControl[27] to clear error registers */
+> +				Hcontrol = ioread32(hcr_base + HCONTROL);
+> +				iowrite32(Hcontrol | HCONTROL_CLEAR_ERROR,
+> +						hcr_base + HCONTROL);
+> +
+> +				/* Clear HControl[27] */
+> +				iowrite32(Hcontrol & (~HCONTROL_CLEAR_ERROR),
 
-> I was tired & jet lagged, so I might have just had a brain fail...
+    Parens not needed around ~HCONTROL_CLEAR_ERROR.
 
-Probably just missed that the first patch used PER_LINUX and the second 
-one PER_MASK, or whatever.
+> +						hcr_base + HCONTROL);
 
-Anyway, thanks.
-
--- 
-Jiri Kosina
-SUSE Labs
+MBR, Sergei
