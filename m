@@ -1,29 +1,31 @@
-Return-Path: <mcaraman@mcaraman-VirtualBox.ea.freescale.net>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3B87F2C009E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 22:50:10 +1000 (EST)
-Received: from mail70-db3 (localhost [127.0.0.1])	by mail70-db3-R.bigfish.com
- (Postfix) with ESMTP id 6BCE33E018A	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2012 12:50:04 +0000 (UTC)
-Received: from DB3EHSMHS004.bigfish.com (unknown [10.3.81.238])	by
- mail70-db3.bigfish.com (Postfix) with ESMTP id E597F3C0086	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 12:50:00 +0000 (UTC)
-Received: from mcaraman-VirtualBox.ea.freescale.net ([10.213.130.145])	by
- az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q86CnuOP028133	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 6 Sep 2012 05:49:57 -0700
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc64: restore VDSO information on critical exception
-Date: Thu, 6 Sep 2012 15:49:44 +0300
-Message-ID: <1346935784-19521-1-git-send-email-mihai.caraman@freescale.com>
+Return-Path: <balbi@ti.com>
+Received: from na3sys009aog116.obsmtp.com (na3sys009aog116.obsmtp.com
+ [74.125.149.240])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C10D02C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 23:21:41 +1000 (EST)
+Received: by lbao2 with SMTP id o2so1004710lba.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2012 06:21:31 -0700 (PDT)
+Date: Thu, 6 Sep 2012 16:17:10 +0300
+From: Felipe Balbi <balbi@ti.com>
+To: Chen Peter-B29397 <B29397@freescale.com>
+Subject: Re: [PATCH] usb: gadget: fsl_udc_core: do not immediatly prime
+ STATUS for IN xfer
+Message-ID: <20120906131708.GJ29202@arwen.pp.htv.fi>
+References: <1346777932-3362-1-git-send-email-enrico.scholz@sigma-chemnitz.de>
+ <F281D0F91ED19E4D8E63A7504E8A649803C67DA2@039-SN2MPN1-023.039d.mgd.msft.net>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, kvm@vger.kernel.org,
- kvm-ppc@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="JsihDCElWRmQcbOr"
+In-Reply-To: <F281D0F91ED19E4D8E63A7504E8A649803C67DA2@039-SN2MPN1-023.039d.mgd.msft.net>
+Cc: Li Yang-R58472 <r58472@freescale.com>,
+ Enrico Scholz <enrico.scholz@sigma-chemnitz.de>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "balbi@ti.com" <balbi@ti.com>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,106 +35,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Critical exception on 64-bit booke uses user-visible SPRG3 as scratch.
-Restore VDSO information in SPRG3 on exception prolog.
-Use a common sprg3 field in PACA for all powerpc64 architectures.
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
----
- arch/powerpc/include/asm/kvm_book3s_asm.h |    1 -
- arch/powerpc/include/asm/paca.h           |    1 +
- arch/powerpc/kernel/asm-offsets.c         |    2 +-
- arch/powerpc/kernel/exceptions-64e.S      |    4 +++-
- arch/powerpc/kernel/vdso.c                |    4 +---
- arch/powerpc/kvm/book3s_hv_rmhandlers.S   |    2 +-
- 6 files changed, 7 insertions(+), 7 deletions(-)
+--JsihDCElWRmQcbOr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
-index bfcd00c..88609b2 100644
---- a/arch/powerpc/include/asm/kvm_book3s_asm.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
-@@ -74,7 +74,6 @@ struct kvmppc_host_state {
- 	ulong vmhandler;
- 	ulong scratch0;
- 	ulong scratch1;
--	ulong sprg3;
- 	u8 in_guest;
- 	u8 restore_hid5;
- 	u8 napping;
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index daf813f..7796519 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -136,6 +136,7 @@ struct paca_struct {
- 	u8 io_sync;			/* writel() needs spin_unlock sync */
- 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
- 	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
-+	u64 sprg3;			/* Saved user-visible sprg */
- 
- #ifdef CONFIG_PPC_POWERNV
- 	/* Pointer to OPAL machine check event structure set by the
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 85b05c4..72f2616 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -205,6 +205,7 @@ int main(void)
- 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
- 	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
- 	DEFINE(PACA_NAPSTATELOST, offsetof(struct paca_struct, nap_state_lost));
-+	DEFINE(PACA_SPRG3, offsetof(struct paca_struct, sprg3));
- #endif /* CONFIG_PPC64 */
- 
- 	/* RTAS */
-@@ -533,7 +534,6 @@ int main(void)
- 	HSTATE_FIELD(HSTATE_VMHANDLER, vmhandler);
- 	HSTATE_FIELD(HSTATE_SCRATCH0, scratch0);
- 	HSTATE_FIELD(HSTATE_SCRATCH1, scratch1);
--	HSTATE_FIELD(HSTATE_SPRG3, sprg3);
- 	HSTATE_FIELD(HSTATE_IN_GUEST, in_guest);
- 	HSTATE_FIELD(HSTATE_RESTORE_HID5, restore_hid5);
- 	HSTATE_FIELD(HSTATE_NAPPING, napping);
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 7476b0a..87a82fb 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -110,7 +110,9 @@
- 
- #define PROLOG_STORE_RESTORE_SCRATCH_CRIT				    \
- 	mfspr	r10,SPRN_SPRG_CRIT_SCRATCH;	/* get r13 */		    \
--	std	r10,PACA_EXCRIT+EX_R13(r13)
-+	std	r10,PACA_EXCRIT+EX_R13(r13);				    \
-+	ld	r11,PACA_SPRG3(r13);					    \
-+	mtspr	SPRN_SPRG_CRIT_SCRATCH,r11;
- 
- /* Variants of the "addition" argument for the prolog
-  */
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index b67db22..1b2076f 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -723,9 +723,7 @@ int __cpuinit vdso_getcpu_init(void)
- 
- 	val = (cpu & 0xfff) | ((node & 0xffff) << 16);
- 	mtspr(SPRN_SPRG3, val);
--#ifdef CONFIG_KVM_BOOK3S_HANDLER
--	get_paca()->kvm_hstate.sprg3 = val;
--#endif
-+	get_paca()->sprg3 = val;
- 
- 	put_cpu();
- 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 5a84c8d..39a21bf 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1065,7 +1065,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_ARCH_206)
- 	mtspr	SPRN_DABRX,r6
- 
- 	/* Restore SPRG3 */
--	ld	r3,HSTATE_SPRG3(r13)
-+	ld	r3,PACA_SPRG3(r13)
- 	mtspr	SPRN_SPRG3,r3
- 
- 	/*
--- 
-1.7.4.1
+On Wed, Sep 05, 2012 at 02:10:39AM +0000, Chen Peter-B29397 wrote:
+> =20
+> >=20
+> > Because the fsl_udc_core driver shares one 'status_req' object for the
+> > complete ep0 control transfer, it is not possible to prime the final
+> > STATUS phase immediately after the IN transaction.  E.g. ch9getstatus()
+> > executed:
+> >=20
+> > | req =3D udc->status_req;
+> > | ...
+> > | list_add_tail(&req->queue, &ep->queue);
+> > | if (ep0_prime_status(udc, EP_DIR_OUT))
+> > |       ....
+> > |       struct fsl_req *req =3D udc->status_req;
+> > |       list_add_tail(&req->queue, &ep->queue);
+> >=20
+> > which corrupts the ep->queue list by inserting 'status_req' twice.  This
+> > causes a kernel oops e.g. when 'lsusb -v' is executed on the host.
+> >=20
+> > Patch delays the final 'ep0_prime_status(udc, EP_DIR_OUT))' by moving it
+> > into the ep0 completion handler.
+> >=20
+> Enrico, thanks for pointing this problem.
+>=20
+> As "prime STATUS phase immediately after the IN transaction" is followed
+> USB 2.0 spec, to fix this problem, it is better to add data_req for ep0.
+> In fact, it is already at FSL i.mx internal code, just still not mainline=
+d.
+
+so, do I get an Acked-by to this patch ? Does it need to go on v3.6-rc
+or can it wait until v3.7 merge window ?
+
+--=20
+balbi
+
+--JsihDCElWRmQcbOr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQSKJUAAoJEIaOsuA1yqREjfIP/jq8ZeTUI0RuYecp2LsjxjJ8
+7nHxCHNzPNshSgXTv1f0vBKywLFKsA+C+Lv2UyPZknuek4nUigZCgN8lnPIvHTZC
+lgePn2vQn7YOK1ADCS9qRz2xpyGYQsb0cKtcwVgi8WYg+ZN4vuZkag/4mLFuqcfm
+MU4ASTO8daGsp82fK641gMecLHPub5DO5hV0isESBhJ92h9kO03PEomZzISmMHRe
+GSW8f+hmVYS90X7Ca2KJ+hHtI0eDTXxcEmtM8FPqsBarixCAlMLtJ2v23zUZzMos
+dFi6y6jW0egPKq0Pw7G9DUePHijE/W3JrmEEYAoICrBkq2mHqgsijrhiCRu8gx4R
+4Ezv/iQVsl7h9CsEzuItv96HyXxDtNDYAmriV7NKV2wXXV0MwKBwlYlRFx5b8bIp
+ZICC2WC6uYHncEf/IFjZ6PMkO79OznqiMzAJNj64LA8tQCQcBSXBJ1m02grr1Iy3
+gpAl4H0hJcHL12VePPonzrqNqvkX/ruLIlfcmTHOFFVcJMSZCI2TEf/QGfwXKTF0
+WA/CNEiF1WcAV6w64txR4/46E0DgpYvUGNOEfTZIlT8TDFliGsV6lYzsnbNsdV8B
+J3R+RWzWeoeNWDw1onKlCYePmcj0jTVgrPUkEeQu49pGwLJjw2S/dTTobXvsMgDq
+zES84LDCtnDset76bd3f
+=H7WT
+-----END PGP SIGNATURE-----
+
+--JsihDCElWRmQcbOr--
