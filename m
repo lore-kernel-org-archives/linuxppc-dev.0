@@ -1,15 +1,15 @@
 Return-Path: <fengguang.wu@intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
- by ozlabs.org (Postfix) with ESMTP id 89B582C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 12:20:08 +1000 (EST)
-Date: Thu, 6 Sep 2012 10:20:03 +0800
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id 38D132C04F0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 12:20:58 +1000 (EST)
+Date: Thu, 6 Sep 2012 10:20:28 +0800
 From: Fengguang Wu <fengguang.wu@intel.com>
 To: Michael Ellerman <michael@ellerman.id.au>
-Subject: [powerpc:next 11/29] arch/powerpc/platforms/pseries/iommu.c:1064:2:
- error: implicit declaration of function 'memblock_end_of_DRAM'
-Message-ID: <20120906022003.GB16076@localhost>
+Subject: [powerpc:next 5/29] arch/powerpc/platforms/pasemi/iommu.c:195:2:
+ error: implicit declaration of function 'memblock_alloc'
+Message-ID: <20120906022028.GC16076@localhost>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8GpibOaaTibBMecb"
+Content-Type: multipart/mixed; boundary="0lnxQi9hkpPO77W3"
 Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,7 +21,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---8GpibOaaTibBMecb
+--0lnxQi9hkpPO77W3
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -31,20 +31,22 @@ FYI, kernel build failed on
 
 tree:   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
 head:   8b64a9dfb091f1eca8b7e58da82f1e7d1d5fe0ad
-commit: 474e3d569b63f7275cfec072d7ef7b2ffb8904c8 [11/29] powerpc/pseries: Remove uses of abs_to_virt() and virt_to_abs()
+commit: 7db90c0222efeae676baa2c72758fcc00666e84f [5/29] powerpc/pasemi: Remove uses of virt_to_abs() and abs_to_virt()
 config: powerpc-allmodconfig (attached as .config)
 
 All related error/warning messages:
 
-arch/powerpc/platforms/pseries/iommu.c: In function 'enable_ddw':
-arch/powerpc/platforms/pseries/iommu.c:1064:2: error: implicit declaration of function 'memblock_end_of_DRAM' [-Werror=implicit-function-declaration]
+arch/powerpc/platforms/pasemi/iommu.c: In function 'iob_init':
+arch/powerpc/platforms/pasemi/iommu.c:195:2: error: implicit declaration of function 'memblock_alloc' [-Werror=implicit-function-declaration]
+arch/powerpc/platforms/pasemi/iommu.c: In function 'alloc_iobmap_l2':
+arch/powerpc/platforms/pasemi/iommu.c:260:2: error: implicit declaration of function 'memblock_alloc_base' [-Werror=implicit-function-declaration]
 cc1: some warnings being treated as errors
 
 ---
 0-DAY kernel build testing backend         Open Source Technology Centre
 Fengguang Wu <wfg@linux.intel.com>                     Intel Corporation
 
---8GpibOaaTibBMecb
+--0lnxQi9hkpPO77W3
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: attachment; filename=".config"
 
@@ -5848,4 +5850,4 @@ CONFIG_KVM_BOOK3S_64=m
 CONFIG_KVM_BOOK3S_64_HV=y
 CONFIG_VHOST_NET=m
 
---8GpibOaaTibBMecb--
+--0lnxQi9hkpPO77W3--
