@@ -1,31 +1,31 @@
-Return-Path: <balbi@ti.com>
-Received: from na3sys009aog102.obsmtp.com (na3sys009aog102.obsmtp.com
- [74.125.149.69])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DF6062C008D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 00:36:38 +1000 (EST)
-Received: by lags15 with SMTP id s15so1018687lag.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2012 07:36:35 -0700 (PDT)
-Date: Thu, 6 Sep 2012 17:32:13 +0300
-From: Felipe Balbi <balbi@ti.com>
-To: Enrico Scholz <enrico.scholz@sigma-chemnitz.de>
-Subject: Re: [PATCH] usb: gadget: fsl_udc_core: remove mapped flag
-Message-ID: <20120906143211.GY29202@arwen.pp.htv.fi>
-References: <1346779499-6085-1-git-send-email-enrico.scholz@sigma-chemnitz.de>
- <F281D0F91ED19E4D8E63A7504E8A649803C67DB9@039-SN2MPN1-023.039d.mgd.msft.net>
- <lya9x31atf.fsf@ensc-virt.intern.sigma-chemnitz.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="/hzbcv1ZPoZ/SOgH"
-In-Reply-To: <lya9x31atf.fsf@ensc-virt.intern.sigma-chemnitz.de>
-Cc: Li Yang-R58472 <r58472@freescale.com>,
- Chen Peter-B29397 <B29397@freescale.com>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "balbi@ti.com" <balbi@ti.com>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Reply-To: balbi@ti.com
+ (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DAC112C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 01:29:25 +1000 (EST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 7 Sep 2012 01:27:19 +1000
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q86FKLoU18153662
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 01:20:21 +1000
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q86FTLqB005518
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 01:29:21 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH -V8 01/11] arch/powerpc: Replace open coded CONTEXT_BITS value
+Date: Thu,  6 Sep 2012 20:59:01 +0530
+Message-Id: <1346945351-7672-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,47 +35,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
---/hzbcv1ZPoZ/SOgH
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+To clarify the meaning for future readers, replace the open coded
+19 with CONTEXT_BITS
 
-On Thu, Sep 06, 2012 at 04:32:28PM +0200, Enrico Scholz wrote:
-> Chen Peter-B29397 <B29397@freescale.com> writes:
->=20
-> > If the class driver has already mapped this address, the req->req.dma i=
-s not
-> > DMA_ADDR_INVALID either, in this case, the dma_sync_single_for_cpu is
-> > enough.
->=20
-> ok; forget the patch then.
+Reviewed-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/mm/mmu_context_hash64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-fair enough, when can I get generic map/unmap conversion patch ?
-
---=20
-balbi
-
---/hzbcv1ZPoZ/SOgH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQSLPrAAoJEIaOsuA1yqREeFAQAIbpu3RGHEWXGb2lQDZOehDa
-1VcBrlUaC6uJsDB5cH7qaFJ6jzwHfmfikG1Qgd1WtcJ/3pyR4Ty6STikJ8uE8EbQ
-vBM9FAgYMpK5e4xgMuSIWrbThRU41zZhCm+CG8wTO8qjuEglEwpwTTU9Cy2t54vX
-RCyJjPRGn12IJISShlr/K3ZbyquYqG+qp8lLu42nARHKchiGRxaPcPlsVMzvUtCa
-U+P4E8AY+j7QLYx//BhTPWw6YGQgGWQlSwyig37YTh9quYp8gmwWgt4ZGOFFG8G5
-kGAlY0fKctuP4e03wVo9REj3Q7IPg+nhtAUNUw9i8qVsLJhghctUyELJDd53pRHG
-0v2LV6CQLWW6FIXv5dCpzEo3rszgAhOmXA0EvbBZF6RVXi4fb14wZVgkeJdaT5Yq
-BvCoewyCHHZlqyCyKQJrUb4IHEsHuUXsf6tIv8uXp8vBENPHXWhn6QQe1KkU05d6
-RvsJbD2gtM1xb0uBYrqX3BmlMfmhqvTFRIlpvo9X+2Ijvisevv7/hzaoXNXfuIzD
-jxpogtk9TkPriz1yAA9RHVcaR5c2FEnyvp2UmDk/HInFebhXF6XjccOOr9QzM9Jr
-HCqA7EhjvKucLIb9zUE1WHHAzgLO/y02ojVoSkYjeVP98Rso9VVGsovvXvmC242y
-1yHnA8WQIyBSjRBDYMY0
-=oFGc
------END PGP SIGNATURE-----
-
---/hzbcv1ZPoZ/SOgH--
+diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
+index 40677aa..daa076c 100644
+--- a/arch/powerpc/mm/mmu_context_hash64.c
++++ b/arch/powerpc/mm/mmu_context_hash64.c
+@@ -34,7 +34,7 @@ static DEFINE_IDA(mmu_context_ida);
+  * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
+  * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
+  */
+-#define MAX_CONTEXT	((1UL << 19) - 1)
++#define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
+ 
+ int __init_new_context(void)
+ {
+-- 
+1.7.10
