@@ -1,15 +1,15 @@
 Return-Path: <fengguang.wu@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by ozlabs.org (Postfix) with ESMTP id 6E1C42C0086
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 12:19:35 +1000 (EST)
-Date: Thu, 6 Sep 2012 10:19:29 +0800
+Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
+ by ozlabs.org (Postfix) with ESMTP id 89B582C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 12:20:08 +1000 (EST)
+Date: Thu, 6 Sep 2012 10:20:03 +0800
 From: Fengguang Wu <fengguang.wu@intel.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: [powerpc:next 24/29] drivers/atm/fore200e.h:263:3: error:
- redefinition of typedef 'opcode_t' with different type
-Message-ID: <20120906021929.GA16076@localhost>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: [powerpc:next 11/29] arch/powerpc/platforms/pseries/iommu.c:1064:2:
+ error: implicit declaration of function 'memblock_end_of_DRAM'
+Message-ID: <20120906022003.GB16076@localhost>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="nFreZHaLTZJo0R7j"
+Content-Type: multipart/mixed; boundary="8GpibOaaTibBMecb"
 Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,30 +21,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---nFreZHaLTZJo0R7j
+--8GpibOaaTibBMecb
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-Hi Ananth,
+Hi Michael,
 
 FYI, kernel build failed on
 
 tree:   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
 head:   8b64a9dfb091f1eca8b7e58da82f1e7d1d5fe0ad
-commit: 8b7b80b9ebb46dd88fbb94e918297295cf312b59 [24/29] powerpc: Uprobes port to powerpc
+commit: 474e3d569b63f7275cfec072d7ef7b2ffb8904c8 [11/29] powerpc/pseries: Remove uses of abs_to_virt() and virt_to_abs()
 config: powerpc-allmodconfig (attached as .config)
 
 All related error/warning messages:
 
-In file included from drivers/atm/fore200e.c:70:0:
-drivers/atm/fore200e.h:263:3: error: redefinition of typedef 'opcode_t' with different type
-arch/powerpc/include/asm/probes.h:25:13: note: previous declaration of 'opcode_t' was here
+arch/powerpc/platforms/pseries/iommu.c: In function 'enable_ddw':
+arch/powerpc/platforms/pseries/iommu.c:1064:2: error: implicit declaration of function 'memblock_end_of_DRAM' [-Werror=implicit-function-declaration]
+cc1: some warnings being treated as errors
 
 ---
 0-DAY kernel build testing backend         Open Source Technology Centre
 Fengguang Wu <wfg@linux.intel.com>                     Intel Corporation
 
---nFreZHaLTZJo0R7j
+--8GpibOaaTibBMecb
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: attachment; filename=".config"
 
@@ -121,7 +121,6 @@ CONFIG_PPC_DCR_MMIO=y
 CONFIG_PPC_DCR=y
 CONFIG_PPC_OF_PLATFORM_PCI=y
 CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
-CONFIG_ARCH_SUPPORTS_UPROBES=y
 CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 CONFIG_CONSTRUCTORS=y
 CONFIG_HAVE_IRQ_WORK=y
@@ -5628,7 +5627,6 @@ CONFIG_BRANCH_PROFILE_NONE=y
 CONFIG_STACK_TRACER=y
 CONFIG_BLK_DEV_IO_TRACE=y
 CONFIG_KPROBE_EVENT=y
-# CONFIG_UPROBE_EVENT is not set
 CONFIG_PROBE_EVENTS=y
 CONFIG_DYNAMIC_FTRACE=y
 CONFIG_FUNCTION_PROFILER=y
@@ -5850,4 +5848,4 @@ CONFIG_KVM_BOOK3S_64=m
 CONFIG_KVM_BOOK3S_64_HV=y
 CONFIG_VHOST_NET=m
 
---nFreZHaLTZJo0R7j--
+--8GpibOaaTibBMecb--
