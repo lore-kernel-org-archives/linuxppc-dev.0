@@ -1,28 +1,20 @@
-Return-Path: <wujianguo106@gmail.com>
-Received: from mail-pz0-f51.google.com (mail-pz0-f51.google.com
- [209.85.210.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B4E192C008A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 17:07:02 +1000 (EST)
-Received: by dajt11 with SMTP id t11so860967daj.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Sep 2012 00:07:00 -0700 (PDT)
-Message-ID: <50484B8A.4090009@gmail.com>
-Date: Thu, 06 Sep 2012 15:06:50 +0800
-From: wujianguo <wujianguo106@gmail.com>
-MIME-Version: 1.0
-To: wency@cn.fujitsu.com
-Subject: Re: [RFC PATCH V6 10/19] memory-hotplug: add memory_block_release
-References: <1343980161-14254-1-git-send-email-wency@cn.fujitsu.com>
- <1343980161-14254-11-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1343980161-14254-11-git-send-email-wency@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-acpi@vger.kernel.org, len.brown@intel.com, linux-sh@vger.kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 2BA6A2C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Sep 2012 17:12:02 +1000 (EST)
+Date: Thu, 6 Sep 2012 17:11:53 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the final tree (powerpc
+ tree related)
+Message-Id: <20120906171153.c80e87ea8db3dd3f4ac87cf5@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__6_Sep_2012_17_11_53_+1000_9qgwl6mOfInQ1Z19"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,72 +24,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2012-8-3 15:49, wency@cn.fujitsu.com wrote:
-> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> 
-> When calling remove_memory_block(), the function shows following message at
-> device_release().
-> 
-> Device 'memory528' does not have a release() function, it is broken and must
-> be fixed.
-> 
+--Signature=_Thu__6_Sep_2012_17_11_53_+1000_9qgwl6mOfInQ1Z19
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I found this warning too when doing memory-hotplug,
-why not send as a bug fix patch?
-The same as [RFC PATCH V6 18/19] memory-hotplug: add node_device_release
+Hi all,
 
-> remove_memory_block() calls kfree(mem). I think it shouled be called from
-> device_release(). So the patch implements memory_block_release()
-> 
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> ---
->  drivers/base/memory.c |   11 ++++++++++-
->  1 files changed, 10 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-> index 038be73..1cd3ef3 100644
-> --- a/drivers/base/memory.c
-> +++ b/drivers/base/memory.c
-> @@ -109,6 +109,15 @@ bool is_memblk_offline(unsigned long start, unsigned long size)
->  }
->  EXPORT_SYMBOL(is_memblk_offline);
->  
-> +#define to_memory_block(device) container_of(device, struct memory_block, dev)
-> +
-> +static void release_memory_block(struct device *dev)
-> +{
-> +	struct memory_block *mem = to_memory_block(dev);
-> +
-> +	kfree(mem);
-> +}
-> +
->  /*
->   * register_memory - Setup a sysfs device for a memory block
->   */
-> @@ -119,6 +128,7 @@ int register_memory(struct memory_block *memory)
->  
->  	memory->dev.bus = &memory_subsys;
->  	memory->dev.id = memory->start_section_nr / sections_per_block;
-> +	memory->dev.release = release_memory_block;
->  
->  	error = device_register(&memory->dev);
->  	return error;
-> @@ -674,7 +684,6 @@ int remove_memory_block(unsigned long node_id, struct mem_section *section,
->  		mem_remove_simple_file(mem, phys_device);
->  		mem_remove_simple_file(mem, removable);
->  		unregister_memory(mem);
-> -		kfree(mem);
->  	} else
->  		kobject_put(&mem->dev.kobj);
->  
-> 
+After merging the final tree, today's linux-next build (powerpc allyesconfi=
+g)
+failed like this:
+
+In file included from drivers/atm/fore200e.c:70:0:
+drivers/atm/fore200e.h:263:3: error: redefinition of typedef 'opcode_t' wit=
+h different type
+arch/powerpc/include/asm/probes.h:25:13: note: previous declaration of 'opc=
+ode_t' was here
+
+Caused by commit 7118e7e648e0 ("powerpc: Consolidate {k,u}probe
+definitions") from the powerpc tree.
+
+I have reverted that commit (and the two following:
+41ab5266c362	"powerpc: Add trap_nr to thread_struct"
+8b7b80b9ebb4	"powerpc: Uprobes port to powerpc")
+for today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Thu__6_Sep_2012_17_11_53_+1000_9qgwl6mOfInQ1Z19
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJQSEy5AAoJEECxmPOUX5FEo0EQAIALijyHzcSPJTpOkXOC5al6
+1hc+LVqeBwRSwuLJyXObyXTIIU1C9kaDB3ziJ0Ji2WXG7M8FEHf8K8q1xbw6fQ8A
+whcIZjVlZ7gfj+l31iFGsLqMI2sZq1V1Pk2/zuZst7HrDS3AsDLxQY7xRSIW7W+u
+nSLrzrIFA1n9r0SVhtelVNSUE471g4kJ7ww4aI8rig72m08zD/AzfK9zFkHxhH00
+4LXIHqTYhWTsMIhk79UirBFWLyinKStS7uCIfBF2Cxxlqao0mrrPlEDTd3VBRiEk
+IgHVzu4lQ+pquI0Fk7IjbkmxGWyMsR3X1cyt6tl9EAuy95iW/HIB8H02heL2ka0U
+v55XAibbgn04WTlLROZFRSyWlsGXg7Fp/yL83x2lHpbysBlO+vNk9uFt1kugMcU6
+9nW75BpyDQWoHQbOZFoK+N5NChw0qEyZz4iCMBuj44BGY9XJgRaR0Se2nOh2D6co
+6tCDBsPM8r+tUEsnZ2/W1EmzLmw1xg+R/SnrxaYPIbJUZhS/B5FRIiZhadNJHFbF
+02GC63qd3S5GxbWRFY5QCM5XIBU0e2kKNBga8czTxNr619ehXnUiZ/C/4rdfRJyQ
+OVfAKCYmSctefKyKo4ITfW4+AbLJlBSCN7609lrpR/ykcMLJ67dky1oLaOCViEfc
+jTogHNotM+TNnccFAWrO
+=xExw
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__6_Sep_2012_17_11_53_+1000_9qgwl6mOfInQ1Z19--
