@@ -1,39 +1,33 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A3D52C009D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 15:27:14 +1000 (EST)
-Received: from mail185-co1 (localhost [127.0.0.1])	by
- mail185-co1-R.bigfish.com (Postfix) with ESMTP id 053A88C00AB	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 05:27:10 +0000 (UTC)
-Received: from CO1EHSMHS007.bigfish.com (unknown [10.243.78.245])	by
- mail185-co1.bigfish.com (Postfix) with ESMTP id D81C19E0043	for
- <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 05:27:06 +0000 (UTC)
-Received: from [43.194.30.231] ([43.194.30.231]:23960 "EHLO
- pdmx1.eu.sony.com")	by mx3.eu.sony.com with ESMTP id S54205Ab2IGF1F (ORCPT
- <rfc822;linuxppc-dev@lists.ozlabs.org>);	Fri, 7 Sep 2012 06:27:05 +0100
-Received: from gb-bas-dc-dx1.eu.sony.com ([43.194.30.31]:44462 "EHLO
- gbise0weymsx02.eu.sony.com") by pdmx1.eu.sony.com with ESMTP	id
- S60061Ab2IGF1F convert rfc822-to-8bit (ORCPT
- <rfc822;linuxppc-dev@lists.ozlabs.org>);	Fri, 7 Sep 2012 06:27:05 +0100
-Date: Fri, 7 Sep 2012 07:26:29 +0200
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: <geert@sonytel.be>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 4/5] powerpc: Rework set_dabr so it can take a DABRX
- value as well
-In-Reply-To: <15813.1346989072@neuling.org>
-Message-ID: <alpine.DEB.2.00.1209070716110.22556@bushbaby.sonytel.be>
-References: <1346908671-7464-1-git-send-email-mikey@neuling.org>
- <1346908671-7464-4-git-send-email-mikey@neuling.org>
- <CAMuHMdU=UjkU3BRV7Aouu-m=vKaSPWH93Rkh6L3RWev4oM5jYA@mail.gmail.com>
- <15813.1346989072@neuling.org>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3D4D12C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 15:42:57 +1000 (EST)
+Received: from /spool/local
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 7 Sep 2012 11:12:53 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q875godp61604086
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 11:12:50 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q875gnq6010055
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 15:42:50 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH -V8 0/11] arch/powerpc: Add 64TB support to ppc64
+In-Reply-To: <1346982235.2385.33.camel@pasglop>
+References: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1346982235.2385.33.camel@pasglop>
+Date: Fri, 07 Sep 2012 11:12:49 +0530
+Message-ID: <871uiexuau.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-15"
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,93 +37,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-	Hi Mikey,
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-On Fri, 7 Sep 2012, Michael Neuling wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > On Thu, Sep 6, 2012 at 7:17 AM, Michael Neuling <mikey@neuling.org> w=
-rote:
-> > > Rework set_dabr to take a DABRX value as well. We are not actually
-> > > changing any functionality at this stage, just preparing for that.
-> >=20
-> > You are changing functionality.
->=20
-> You are right.. I'll fix that up.. Sorry.
->=20
-> > >  #define   DABRX_USER   (1UL << 0)
-> > >  #define   DABRX_KERNEL (1UL << 1)
-> > > +#define   DABRX_HYP    (1UL << 2)
-> > > +#define   DABRX_BTI    (1UL << 3)
-> > > +#define   DABRX_ALL     (DABRX_BTI | DABRX_HYP | DABRX_KERNEL | DA=
-BRX_USER)
-> >=20
-> > > --- a/arch/powerpc/platforms/cell/beat.c
-> > > +++ b/arch/powerpc/platforms/cell/beat.c
-> > > @@ -136,9 +136,9 @@ ssize_t beat_nvram_get_size(void)
-> > >         return BEAT_NVRAM_SIZE;
-> > >  }
-> > >
-> > > -int beat_set_xdabr(unsigned long dabr)
-> > > +int beat_set_xdabr(unsigned long dabr, unsigned long dabrx)
-> > >  {
-> > > -       if (beat_set_dabr(dabr, DABRX_KERNEL | DABRX_USER))
-> > > +       if (beat_set_dabr(dabr, dabrx))
-> > >                 return -1;
-> > >         return 0;
-> > >  }
-> >=20
-> > > --- a/arch/powerpc/platforms/ps3/setup.c
-> > > +++ b/arch/powerpc/platforms/ps3/setup.c
-> > > @@ -184,11 +184,9 @@ early_param("ps3flash", early_parse_ps3flash);
-> > >  #define prealloc_ps3flash_bounce_buffer()      do { } while (0)
-> > >  #endif
-> > >
-> > > -static int ps3_set_dabr(unsigned long dabr)
-> > > +static int ps3_set_dabr(unsigned long dabr, unsigned long dabrx)
-> > >  {
-> > > -       enum {DABR_USER =3D 1, DABR_KERNEL =3D 2,};
-> > > -
-> > > -       return lv1_set_dabr(dabr, DABR_KERNEL | DABR_USER) ? -1 : 0=
-;
-> > > +       return lv1_set_dabr(dabr, dabrx) ? -1 : 0;
-> > >  }
-> >=20
-> > > -               set_dabr(dabr.address | (dabr.enabled & 7));
-> > > +               set_dabr(dabr.address | (dabr.enabled & 7), DABRX_A=
-LL);
-> >=20
-> > Before, beat_set_dabr() and lv1_set_dabr() would have been called wit=
-h dabrx =3D 3
-> > (DABRX_KERNEL | DABRX_USER). Now they're called with dabrx =3D 15
-> > (DABRX_ALL =3D DABRX_BTI | DABRX_HYP | DABRX_KERNEL | DABRX_USER).
-> >=20
-> > No idea what's the impact of this...
->=20
-> Do you know if the ps3 hypervisor will allow us to set DABRX_BTI or
-> DABRX_HYP?  phyp wont. =20
+> On Thu, 2012-09-06 at 20:59 +0530, Aneesh Kumar K.V wrote:
+>> Hi,
+>> 
+>> This patchset include patches for supporting 64TB with ppc64. I haven't booted
+>> this on hardware with 64TB memory yet. But they boot fine on real hardware with
+>> less memory. Changes extend VSID bits to 38 bits for a 256MB segment
+>> and 26 bits for 1TB segments.
+>
+> Your series breaks the embedded 64-bit build. You seem to be hard wiring
+> dependencies on slice stuff all over 64-bit stuff regardless of the MMU
+> type or the value of CONFIG_MM_SLICES.
+>
+> Also all these:
+>
+>> +/* 4 bits per slice and we have one slice per 1TB */
+>> +#if 0 /* We can't directly include pgtable.h hence this hack */
+>> +#define SLICE_ARRAY_SIZE  (PGTABLE_RANGE >> 41)
+>> +#else
+>> +/* Right now we only support 64TB */
+>> +#define SLICE_ARRAY_SIZE  32
+>> +#endif
+>
+> Things are just too horrible. Find a different way of doing it, if
+> necessary create a new range define somewhere, whatever but don't leave
+> that crap as-is, it's too wrong.
+>
+> Dropping the series for now.
+>
 
-According to the documenation, all bits but DABRX_USER, DABRX_KERNEL, and
-DABRX_BTI must be zero.  This implies DABRX_HYP cannot be set.
+How about the change below. If you are ok moving the range details to
+new header, I can fold this into patch 7 and send a new series
 
-BTW, the requirement that DABRX_USER and DABRX_KERNEL cannot both be zero
-at the same time is also there, cfr. your comment and check in
-pseries_set_xdabr().
+-aneesh
 
-Unfortunately, I cannot test it.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-Technology and Software Centre Europe
-
-Sony Belgium, bijkantoor van Sony Europe Limited.
-Da Vincilaan 7-D1 =C2=B7 B-1935 Zaventem =C2=B7 Belgium
-
-Phone:  +32 (0)2 700 8453
-Fax:    +32 (0)2 700 8622
-E-mail: Geert.Uytterhoeven@sonycom.com
-
-Sony Europe Limited. A company registered in England and Wales.
-Registered office: The Heights, Brooklands, Weybridge, Surrey. KT13 0XW.
-                   United Kingdom
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index 428f23e..057a12a 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -14,6 +14,7 @@
+ 
+ #include <asm/asm-compat.h>
+ #include <asm/page.h>
++#include <asm/pgtable-ppc64-range.h>
+ 
+ /*
+  * Segment table
+@@ -415,12 +416,7 @@ extern void slb_set_size(u16 size);
+ 	add	rt,rt,rx
+ 
+ /* 4 bits per slice and we have one slice per 1TB */
+-#if 0 /* We can't directly include pgtable.h hence this hack */
+ #define SLICE_ARRAY_SIZE  (PGTABLE_RANGE >> 41)
+-#else
+-/* Right now we only support 64TB */
+-#define SLICE_ARRAY_SIZE  32
+-#endif
+ 
+ #ifndef __ASSEMBLY__
+ 
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index b55beb4..01ab518 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -78,16 +78,14 @@ extern u64 ppc64_pft_size;
+ #define GET_LOW_SLICE_INDEX(addr)	((addr) >> SLICE_LOW_SHIFT)
+ #define GET_HIGH_SLICE_INDEX(addr)	((addr) >> SLICE_HIGH_SHIFT)
+ 
+-/* 1 bit per slice and we have one slice per 1TB */
+-#if 0 /* We can't directly include pgtable.h hence this hack */
+-#define SLICE_MASK_SIZE (PGTABLE_RANGE >> 43)
+-#else
+-/*
++/* 1 bit per slice and we have one slice per 1TB
+  * Right now we support only 64TB.
+  * IF we change this we will have to change the type
+  * of high_slices
+  */
+ #define SLICE_MASK_SIZE 8
++#if (PGTABLE_RANGE >> 43) > SLICE_MASK_SIZE
++#error PGTABLE_RANGE exceeds slice_mask high_slices size
+ #endif
+ 
+ #ifndef __ASSEMBLY__
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64-range.h b/arch/powerpc/include/asm/pgtable-ppc64-range.h
+new file mode 100644
+index 0000000..04a825c
+--- /dev/null
++++ b/arch/powerpc/include/asm/pgtable-ppc64-range.h
+@@ -0,0 +1,16 @@
++#ifndef _ASM_POWERPC_PGTABLE_PPC64_RANGE_H_
++#define _ASM_POWERPC_PGTABLE_PPC64_RANGE_H_
++
++#ifdef CONFIG_PPC_64K_PAGES
++#include <asm/pgtable-ppc64-64k.h>
++#else
++#include <asm/pgtable-ppc64-4k.h>
++#endif
++
++/*
++ * Size of EA range mapped by our pagetables.
++ */
++#define PGTABLE_EADDR_SIZE (PTE_INDEX_SIZE + PMD_INDEX_SIZE + \
++			    PUD_INDEX_SIZE + PGD_INDEX_SIZE + PAGE_SHIFT)
++#define PGTABLE_RANGE (ASM_CONST(1) << PGTABLE_EADDR_SIZE)
++#endif
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index dea953f..ee783b4 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -13,13 +13,7 @@
+ 
+ #define FIRST_USER_ADDRESS	0
+ 
+-/*
+- * Size of EA range mapped by our pagetables.
+- */
+-#define PGTABLE_EADDR_SIZE (PTE_INDEX_SIZE + PMD_INDEX_SIZE + \
+-                	    PUD_INDEX_SIZE + PGD_INDEX_SIZE + PAGE_SHIFT)
+-#define PGTABLE_RANGE (ASM_CONST(1) << PGTABLE_EADDR_SIZE)
+-
++#include <asm/pgtable-ppc64-range.h>
+ 
+ /* Some sanity checking */
+ #if TASK_SIZE_USER64 > PGTABLE_RANGE
+@@ -32,14 +26,6 @@
+ #endif
+ #endif
+ 
+-#if (PGTABLE_RANGE >> 41) > SLICE_ARRAY_SIZE
+-#error PGTABLE_RANGE exceeds SLICE_ARRAY_SIZE
+-#endif
+-
+-#if (PGTABLE_RANGE >> 43) > SLICE_MASK_SIZE
+-#error PGTABLE_RANGE exceeds slice_mask high_slices size
+-#endif
+-
+ /*
+  * Define the address range of the kernel non-linear virtual area
+  */
