@@ -1,33 +1,21 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CB78B2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 21:55:01 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 7 Sep 2012 21:54:05 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q87BjtOY26935328
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 21:45:56 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q87Bsubu023504
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 21:54:57 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH -V8 0/11] arch/powerpc: Add 64TB support to ppc64
-In-Reply-To: <1346982235.2385.33.camel@pasglop>
-References: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1346982235.2385.33.camel@pasglop>
-Date: Fri, 07 Sep 2012 17:24:52 +0530
-Message-ID: <87fw6uoxo3.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4FA3B2C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 22:37:59 +1000 (EST)
+Subject: Re: [PATCH][v3] sata_fsl: add workaround for data length mismatch on
+ freescale V2 controller
+Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1347012095-4404-1-git-send-email-Shaohui.Xie@freescale.com>
+Date: Fri, 7 Sep 2012 07:37:53 -0500
+Message-Id: <82046C25-828E-4E0F-9F86-8E038AE5C93C@kernel.crashing.org>
+References: <1347012095-4404-1-git-send-email-Shaohui.Xie@freescale.com>
+To: Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: linux-ide@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@lists.ozlabs.org,
+ Anju Bhartiya <Anju.Bhartiya@freescale.com>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,41 +25,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> On Thu, 2012-09-06 at 20:59 +0530, Aneesh Kumar K.V wrote:
->> Hi,
->> 
->> This patchset include patches for supporting 64TB with ppc64. I haven't booted
->> this on hardware with 64TB memory yet. But they boot fine on real hardware with
->> less memory. Changes extend VSID bits to 38 bits for a 256MB segment
->> and 26 bits for 1TB segments.
->
-> Your series breaks the embedded 64-bit build. You seem to be hard wiring
-> dependencies on slice stuff all over 64-bit stuff regardless of the MMU
-> type or the value of CONFIG_MM_SLICES.
->
-> Also all these:
->
->> +/* 4 bits per slice and we have one slice per 1TB */
->> +#if 0 /* We can't directly include pgtable.h hence this hack */
->> +#define SLICE_ARRAY_SIZE  (PGTABLE_RANGE >> 41)
->> +#else
->> +/* Right now we only support 64TB */
->> +#define SLICE_ARRAY_SIZE  32
->> +#endif
->
-> Things are just too horrible. Find a different way of doing it, if
-> necessary create a new range define somewhere, whatever but don't leave
-> that crap as-is, it's too wrong.
->
-> Dropping the series for now.
->
+On Sep 7, 2012, at 5:01 AM, Shaohui Xie wrote:
 
-You can drop the patch [PATCH -V8 07/11] arch/powerpc: Make some of the PGTABLE_RANGE dependency explicit
-from the series. The above two problems are introduced by that patch and
-as such can be looked up as a cleanup. I can rework the patch later. You
-should be able to apply series without any conflicts even if you drop
-that patch.
+> The freescale V2 SATA controller checks if the received data length =
+matches
+> the programmed length 'ttl', if not, it assumes that this is an error.
+> In ATAPI, the 'ttl' is based on max allocation length and not the =
+actual
+> data transfer length, controller will raise 'DLM' (Data length =
+Mismatch)
+> error bit in Hstatus register. Along with 'DLM', DE (Device error) and
+> FE (fatal Error) bits are also set in Hstatus register, 'E' (Internal =
+Error)
+> bit is set in Serror register and CE (Command Error) and DE (Device =
+error)
+> registers have the corresponding bit set. In this condition, we need =
+to
+> clear errors in following way: in the service routine, based on 'DLM' =
+flag,
+> HCONTROL[27] operation clears Hstatus, CE and DE registers, clear =
+Serror
+> register.
+>=20
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> Signed-off-by: Anju Bhartiya <Anju.Bhartiya@freescale.com>
+> ---
+> changes for v3:
+> 1. not using uppercase for variable names;
+> 2. remove unnecessary parens;
+>=20
+> changes for v2:
+> 1. remove the using of quirk;
+> 2. wrap errata codes in condition;
+>=20
+> drivers/ata/sata_fsl.c |   39 +++++++++++++++++++++++++++++++++++----
+> 1 files changed, 35 insertions(+), 4 deletions(-)
+>=20
+> diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+> index d6577b9..9fbab68 100644
+> --- a/drivers/ata/sata_fsl.c
+> +++ b/drivers/ata/sata_fsl.c
+> @@ -143,6 +143,7 @@ enum {
+> 	    FATAL_ERR_CRC_ERR_RX |
+> 	    FATAL_ERR_FIFO_OVRFL_TX | FATAL_ERR_FIFO_OVRFL_RX,
+>=20
+> +	INT_ON_DATA_LENGTH_MISMATCH =3D (1 << 12),
+> 	INT_ON_FATAL_ERR =3D (1 << 5),
+> 	INT_ON_PHYRDY_CHG =3D (1 << 4),
+>=20
+> @@ -1181,25 +1182,55 @@ static void sata_fsl_host_intr(struct ata_port =
+*ap)
+> 	u32 hstatus, done_mask =3D 0;
+> 	struct ata_queued_cmd *qc;
+> 	u32 SError;
+> +	u32 tag;
+> +	u32 status_mask =3D INT_ON_ERROR;
+>=20
+> 	hstatus =3D ioread32(hcr_base + HSTATUS);
+>=20
+> 	sata_fsl_scr_read(&ap->link, SCR_ERROR, &SError);
+>=20
+> +	/* Read command completed register */
+> +	done_mask =3D ioread32(hcr_base + CC);
+> +
+> +	/* Workaround for data length mismatch errata */
+> +	if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
+> +		for (tag =3D 0; tag < ATA_MAX_QUEUE; tag++) {
+> +			qc =3D ata_qc_from_tag(ap, tag);
+> +			if (qc && ata_is_atapi(qc->tf.protocol)) {
+> +				u32 hcontrol;
+> +#define HCONTROL_CLEAR_ERROR	(1 << 27)
 
--aneesh
+shouldn't we have this #define be part of the enum that the other =
+HCONTROL_ bits/flags are part of?
+
+> +				/* Set HControl[27] to clear error =
+registers */
+> +				hcontrol =3D ioread32(hcr_base + =
+HCONTROL);
+> +				iowrite32(hcontrol | =
+HCONTROL_CLEAR_ERROR,
+> +						hcr_base + HCONTROL);
+> +
+> +				/* Clear HControl[27] */
+> +				iowrite32(hcontrol & =
+~HCONTROL_CLEAR_ERROR,
+> +						hcr_base + HCONTROL);
+> +
+> +				/* Clear SError[E] bit */
+> +				sata_fsl_scr_write(&ap->link, SCR_ERROR,
+> +						SError);
+> +
+> +				/* Ignore fatal error and device error =
+*/
+> +				status_mask &=3D =
+~(INT_ON_SINGL_DEVICE_ERR
+> +						| INT_ON_FATAL_ERR);
+> +				break;
+> +			}
+> +		}
+> +	}
+> +
+> 	if (unlikely(SError & 0xFFFF0000)) {
+> 		DPRINTK("serror @host_intr : 0x%x\n", SError);
+> 		sata_fsl_error_intr(ap);
+> 	}
+>=20
+> -	if (unlikely(hstatus & INT_ON_ERROR)) {
+> +	if (unlikely(hstatus & status_mask)) {
+> 		DPRINTK("error interrupt!!\n");
+> 		sata_fsl_error_intr(ap);
+> 		return;
+> 	}
+>=20
+> -	/* Read command completed register */
+> -	done_mask =3D ioread32(hcr_base + CC);
+> -
+> 	VPRINTK("Status of all queues :\n");
+> 	VPRINTK("done_mask/CC =3D 0x%x, CA =3D 0x%x, =
+CE=3D0x%x,CQ=3D0x%x,apqa=3D0x%x\n",
+> 		done_mask,
+> --=20
+> 1.6.4
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe =
+linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
