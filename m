@@ -1,36 +1,22 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D84F82C0093
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 20:01:53 +1000 (EST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <suzuki@in.ibm.com>;
- Fri, 7 Sep 2012 15:31:48 +0530
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q87A1jIc37814402
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 15:31:46 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q87A1iDk010905
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 7 Sep 2012 20:01:45 +1000
-Message-ID: <5049C5F1.3050301@in.ibm.com>
-Date: Fri, 07 Sep 2012 15:31:21 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Return-Path: <B21989@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 65D4D2C0083
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 20:34:15 +1000 (EST)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: <jgarzik@pobox.com>, <linux-ide@vger.kernel.org>
+Subject: [PATCH][v3] sata_fsl: add workaround for data length mismatch on
+ freescale V2 controller
+Date: Fri, 7 Sep 2012 18:01:35 +0800
+Message-ID: <1347012095-4404-1-git-send-email-Shaohui.Xie@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 1/2] [powerpc] Change memory_limit from phys_addr_t
- to unsigned long long
-References: <20120821113815.29282.4000.stgit@suzukikp.in.ibm.com>
- <20120821114225.29282.87841.stgit@suzukikp.in.ibm.com>
- <1346981712.2385.30.camel@pasglop>
-In-Reply-To: <1346981712.2385.30.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Anju Bhartiya <Anju.Bhartiya@freescale.com>,
+ Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,40 +26,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/07/2012 07:05 AM, Benjamin Herrenschmidt wrote:
-> On Tue, 2012-08-21 at 17:12 +0530, Suzuki K. Poulose wrote:
->> There are some device-tree nodes, whose values are of type phys_addr_t.
->> The phys_addr_t is variable sized based on the CONFIG_PHSY_T_64BIT.
->>
->> Change these to a fixed unsigned long long for consistency.
->>
->> This patch does the change only for memory_limit.
->>
->> The following is a list of such variables which need the change:
->>
->>   1) kernel_end, crashk_size - in arch/powerpc/kernel/machine_kexec.c
->>
->>   2) (struct resource *)crashk_res.start - We could export a local static
->>      variable from machine_kexec.c.
->>
->> Changing the above values might break the kexec-tools. So, I will
->> fix kexec-tools first to handle the different sized values and then change
->>   the above.
->>
->> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
->> ---
->
-> Breaks the build on some configs (with 32-bit phys_addr_t):
+The freescale V2 SATA controller checks if the received data length matches
+the programmed length 'ttl', if not, it assumes that this is an error.
+In ATAPI, the 'ttl' is based on max allocation length and not the actual
+data transfer length, controller will raise 'DLM' (Data length Mismatch)
+error bit in Hstatus register. Along with 'DLM', DE (Device error) and
+FE (fatal Error) bits are also set in Hstatus register, 'E' (Internal Error)
+bit is set in Serror register and CE (Command Error) and DE (Device error)
+registers have the corresponding bit set. In this condition, we need to
+clear errors in following way: in the service routine, based on 'DLM' flag,
+HCONTROL[27] operation clears Hstatus, CE and DE registers, clear Serror
+register.
 
-Sorry for that.
->
-> /home/benh/linux-powerpc-test/arch/powerpc/kernel/prom.c: In function
-> 'early_init_devtree':
-> /home/benh/linux-powerpc-test/arch/powerpc/kernel/prom.c:664:25: error:
-> comparison of distinct pointer types lacks a cast
->
-> I'm fixing that myself this time but please be more careful.
-Sure. Thanks Ben for fixing that.
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+Signed-off-by: Anju Bhartiya <Anju.Bhartiya@freescale.com>
+---
+changes for v3:
+1. not using uppercase for variable names;
+2. remove unnecessary parens;
 
-Suzuki
+changes for v2:
+1. remove the using of quirk;
+2. wrap errata codes in condition;
+
+ drivers/ata/sata_fsl.c |   39 +++++++++++++++++++++++++++++++++++----
+ 1 files changed, 35 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index d6577b9..9fbab68 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -143,6 +143,7 @@ enum {
+ 	    FATAL_ERR_CRC_ERR_RX |
+ 	    FATAL_ERR_FIFO_OVRFL_TX | FATAL_ERR_FIFO_OVRFL_RX,
+ 
++	INT_ON_DATA_LENGTH_MISMATCH = (1 << 12),
+ 	INT_ON_FATAL_ERR = (1 << 5),
+ 	INT_ON_PHYRDY_CHG = (1 << 4),
+ 
+@@ -1181,25 +1182,55 @@ static void sata_fsl_host_intr(struct ata_port *ap)
+ 	u32 hstatus, done_mask = 0;
+ 	struct ata_queued_cmd *qc;
+ 	u32 SError;
++	u32 tag;
++	u32 status_mask = INT_ON_ERROR;
+ 
+ 	hstatus = ioread32(hcr_base + HSTATUS);
+ 
+ 	sata_fsl_scr_read(&ap->link, SCR_ERROR, &SError);
+ 
++	/* Read command completed register */
++	done_mask = ioread32(hcr_base + CC);
++
++	/* Workaround for data length mismatch errata */
++	if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
++		for (tag = 0; tag < ATA_MAX_QUEUE; tag++) {
++			qc = ata_qc_from_tag(ap, tag);
++			if (qc && ata_is_atapi(qc->tf.protocol)) {
++				u32 hcontrol;
++#define HCONTROL_CLEAR_ERROR	(1 << 27)
++				/* Set HControl[27] to clear error registers */
++				hcontrol = ioread32(hcr_base + HCONTROL);
++				iowrite32(hcontrol | HCONTROL_CLEAR_ERROR,
++						hcr_base + HCONTROL);
++
++				/* Clear HControl[27] */
++				iowrite32(hcontrol & ~HCONTROL_CLEAR_ERROR,
++						hcr_base + HCONTROL);
++
++				/* Clear SError[E] bit */
++				sata_fsl_scr_write(&ap->link, SCR_ERROR,
++						SError);
++
++				/* Ignore fatal error and device error */
++				status_mask &= ~(INT_ON_SINGL_DEVICE_ERR
++						| INT_ON_FATAL_ERR);
++				break;
++			}
++		}
++	}
++
+ 	if (unlikely(SError & 0xFFFF0000)) {
+ 		DPRINTK("serror @host_intr : 0x%x\n", SError);
+ 		sata_fsl_error_intr(ap);
+ 	}
+ 
+-	if (unlikely(hstatus & INT_ON_ERROR)) {
++	if (unlikely(hstatus & status_mask)) {
+ 		DPRINTK("error interrupt!!\n");
+ 		sata_fsl_error_intr(ap);
+ 		return;
+ 	}
+ 
+-	/* Read command completed register */
+-	done_mask = ioread32(hcr_base + CC);
+-
+ 	VPRINTK("Status of all queues :\n");
+ 	VPRINTK("done_mask/CC = 0x%x, CA = 0x%x, CE=0x%x,CQ=0x%x,apqa=0x%x\n",
+ 		done_mask,
+-- 
+1.6.4
