@@ -1,14 +1,18 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH 4/5] powerpc: Rework set_dabr so it can take a DABRX value
- as well
-In-reply-to: <CAMuHMdU=UjkU3BRV7Aouu-m=vKaSPWH93Rkh6L3RWev4oM5jYA@mail.gmail.com>
-References: <1346908671-7464-1-git-send-email-mikey@neuling.org>
- <1346908671-7464-4-git-send-email-mikey@neuling.org>
- <CAMuHMdU=UjkU3BRV7Aouu-m=vKaSPWH93Rkh6L3RWev4oM5jYA@mail.gmail.com>
-Date: Fri, 07 Sep 2012 13:37:52 +1000
-Message-ID: <15813.1346989072@neuling.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B8E712C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 14:24:08 +1000 (EST)
+Message-ID: <1346991839.2385.42.camel@pasglop>
+Subject: Re: [PATCH] powerpc/booke-64: fix tlbsrx. path in bolted tlb handler
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: scott@tyr.buserror.net
+Date: Fri, 07 Sep 2012 14:23:59 +1000
+In-Reply-To: <20120612220232.GA17228@tyr.buserror.net>
+References: <20120612220232.GA17228@tyr.buserror.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,63 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+On Tue, 2012-06-12 at 17:02 -0500, Scott Wood wrote:
+> It was branching to the cleanup part of the non-bolted handler,
+> which would have been bad if there were any chips with tlbsrx.
+> that use the bolted handler.
 
-> On Thu, Sep 6, 2012 at 7:17 AM, Michael Neuling <mikey@neuling.org> wrote:
-> > Rework set_dabr to take a DABRX value as well. We are not actually
-> > changing any functionality at this stage, just preparing for that.
-> 
-> You are changing functionality.
+Still relevant ? It doesn't apply anymore :-)
 
-You are right.. I'll fix that up.. Sorry.
+Cheers,
+Ben.
 
+> Signed-off-by: Scott Wood <scott@tyr.buserror.net>
+> ---
+>  arch/powerpc/mm/tlb_low_64e.S |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
 > 
-> >  #define   DABRX_USER   (1UL << 0)
-> >  #define   DABRX_KERNEL (1UL << 1)
-> > +#define   DABRX_HYP    (1UL << 2)
-> > +#define   DABRX_BTI    (1UL << 3)
-> > +#define   DABRX_ALL     (DABRX_BTI | DABRX_HYP | DABRX_KERNEL | DABRX_USER)
-> 
-> > --- a/arch/powerpc/platforms/cell/beat.c
-> > +++ b/arch/powerpc/platforms/cell/beat.c
-> > @@ -136,9 +136,9 @@ ssize_t beat_nvram_get_size(void)
-> >         return BEAT_NVRAM_SIZE;
-> >  }
-> >
-> > -int beat_set_xdabr(unsigned long dabr)
-> > +int beat_set_xdabr(unsigned long dabr, unsigned long dabrx)
-> >  {
-> > -       if (beat_set_dabr(dabr, DABRX_KERNEL | DABRX_USER))
-> > +       if (beat_set_dabr(dabr, dabrx))
-> >                 return -1;
-> >         return 0;
-> >  }
-> 
-> > --- a/arch/powerpc/platforms/ps3/setup.c
-> > +++ b/arch/powerpc/platforms/ps3/setup.c
-> > @@ -184,11 +184,9 @@ early_param("ps3flash", early_parse_ps3flash);
-> >  #define prealloc_ps3flash_bounce_buffer()      do { } while (0)
-> >  #endif
-> >
-> > -static int ps3_set_dabr(unsigned long dabr)
-> > +static int ps3_set_dabr(unsigned long dabr, unsigned long dabrx)
-> >  {
-> > -       enum {DABR_USER = 1, DABR_KERNEL = 2,};
-> > -
-> > -       return lv1_set_dabr(dabr, DABR_KERNEL | DABR_USER) ? -1 : 0;
-> > +       return lv1_set_dabr(dabr, dabrx) ? -1 : 0;
-> >  }
-> 
-> > -               set_dabr(dabr.address | (dabr.enabled & 7));
-> > +               set_dabr(dabr.address | (dabr.enabled & 7), DABRX_ALL);
-> 
-> Before, beat_set_dabr() and lv1_set_dabr() would have been called with dabrx = 3
-> (DABRX_KERNEL | DABRX_USER). Now they're called with dabrx = 15
-> (DABRX_ALL = DABRX_BTI | DABRX_HYP | DABRX_KERNEL | DABRX_USER).
-> 
-> No idea what's the impact of this...
-
-Do you know if the ps3 hypervisor will allow us to set DABRX_BTI or
-DABRX_HYP?  phyp wont.  
-
-Mikey
+> diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
+> index ff672bd..efe0f33 100644
+> --- a/arch/powerpc/mm/tlb_low_64e.S
+> +++ b/arch/powerpc/mm/tlb_low_64e.S
+> @@ -128,7 +128,7 @@ BEGIN_MMU_FTR_SECTION
+>  	 */
+>  	PPC_TLBSRX_DOT(0,r16)
+>  	ldx	r14,r14,r15		/* grab pgd entry */
+> -	beq	normal_tlb_miss_done	/* tlb exists already, bail */
+> +	beq	tlb_miss_done_bolted	/* tlb exists already, bail */
+>  MMU_FTR_SECTION_ELSE
+>  	ldx	r14,r14,r15		/* grab pgd entry */
+>  ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
+> @@ -184,6 +184,7 @@ ALT_MMU_FTR_SECTION_END_IFSET(MMU_FTR_USE_TLBRSRV)
+>  	mtspr	SPRN_MAS7_MAS3,r15
+>  	tlbwe
+>  
+> +tlb_miss_done_bolted:
+>  	TLB_MISS_STATS_X(MMSTAT_TLB_MISS_NORM_OK)
+>  	tlb_epilog_bolted
+>  	rfi
