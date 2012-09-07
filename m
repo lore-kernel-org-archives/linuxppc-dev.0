@@ -2,21 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F0BA22C008D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 11:38:10 +1000 (EST)
-Message-ID: <1346981712.2385.30.camel@pasglop>
-Subject: Re: [PATCH v2 1/2] [powerpc] Change memory_limit from phys_addr_t
- to unsigned long long
+ by ozlabs.org (Postfix) with ESMTPS id B89842C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Sep 2012 11:44:03 +1000 (EST)
+Message-ID: <1346982235.2385.33.camel@pasglop>
+Subject: Re: [PATCH -V8 0/11] arch/powerpc: Add 64TB support to ppc64
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Suzuki K. Poulose" <suzuki@in.ibm.com>
-Date: Fri, 07 Sep 2012 11:35:12 +1000
-In-Reply-To: <20120821114225.29282.87841.stgit@suzukikp.in.ibm.com>
-References: <20120821113815.29282.4000.stgit@suzukikp.in.ibm.com>
- <20120821114225.29282.87841.stgit@suzukikp.in.ibm.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Fri, 07 Sep 2012 11:43:55 +1000
+In-Reply-To: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +23,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-08-21 at 17:12 +0530, Suzuki K. Poulose wrote:
-> There are some device-tree nodes, whose values are of type phys_addr_t.
-> The phys_addr_t is variable sized based on the CONFIG_PHSY_T_64BIT.
+On Thu, 2012-09-06 at 20:59 +0530, Aneesh Kumar K.V wrote:
+> Hi,
 > 
-> Change these to a fixed unsigned long long for consistency.
-> 
-> This patch does the change only for memory_limit.
-> 
-> The following is a list of such variables which need the change:
-> 
->  1) kernel_end, crashk_size - in arch/powerpc/kernel/machine_kexec.c
-> 
->  2) (struct resource *)crashk_res.start - We could export a local static
->     variable from machine_kexec.c.
-> 
-> Changing the above values might break the kexec-tools. So, I will
-> fix kexec-tools first to handle the different sized values and then change
->  the above.
-> 
-> Suggested-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
-> ---
+> This patchset include patches for supporting 64TB with ppc64. I haven't booted
+> this on hardware with 64TB memory yet. But they boot fine on real hardware with
+> less memory. Changes extend VSID bits to 38 bits for a 256MB segment
+> and 26 bits for 1TB segments.
 
-Breaks the build on some configs (with 32-bit phys_addr_t):
+Your series breaks the embedded 64-bit build. You seem to be hard wiring
+dependencies on slice stuff all over 64-bit stuff regardless of the MMU
+type or the value of CONFIG_MM_SLICES.
 
-/home/benh/linux-powerpc-test/arch/powerpc/kernel/prom.c: In function
-'early_init_devtree':
-/home/benh/linux-powerpc-test/arch/powerpc/kernel/prom.c:664:25: error:
-comparison of distinct pointer types lacks a cast
+Also all these:
 
-I'm fixing that myself this time but please be more careful.
+> +/* 4 bits per slice and we have one slice per 1TB */
+> +#if 0 /* We can't directly include pgtable.h hence this hack */
+> +#define SLICE_ARRAY_SIZE  (PGTABLE_RANGE >> 41)
+> +#else
+> +/* Right now we only support 64TB */
+> +#define SLICE_ARRAY_SIZE  32
+> +#endif
+
+Things are just too horrible. Find a different way of doing it, if
+necessary create a new range define somewhere, whatever but don't leave
+that crap as-is, it's too wrong.
+
+Dropping the series for now.
 
 Cheers,
-Ben.
+Ben. 
+
+> Changes from V7:
+>  * Address review feedback
+> 
+> Changes from V6:
+>  * rebase to latest upstream (5b716ac728bcc01b1f2a7ed6e437196602237c27)
+> 
+> Changes from v5:
+>  * Address review feedback
+> 
+> Changes from v4:
+>  * Drop patch "arch/powerpc: properly offset the context bits for 1T segemnts"
+>    based on review feedback
+>  * split CONTEXT_BITS related changes from patch 12
+>  * Add a new doc update patch
+> 
+> Changes from v3:
+>  * Address review comments.
+>  * Added new patch to ensure proto-VSID isolation between kernel and user space
+> 
+> Changes from V2:
+>  * Fix few FIXMEs in the patchset. I have added them as separate patch for
+>    easier review. That should help us to drop those changes if we don't agree.
+> 
+> Changes from V1:
+> * Drop the usage of structure (struct virt_addr) to carry virtual address.
+>   We now represent virtual address via vpn which is virtual address shifted
+>   right 12 bits.
+> 
+> Thanks,
+> -aneesh
+> 
