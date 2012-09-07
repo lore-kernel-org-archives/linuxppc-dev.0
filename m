@@ -3,23 +3,25 @@ Received: from mail-ie0-f170.google.com (mail-ie0-f170.google.com
  [209.85.223.170])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id C67A12C0095
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 02:16:51 +1000 (EST)
-Received: by ieak14 with SMTP id k14so603003iea.15
- for <linuxppc-dev@ozlabs.org>; Fri, 07 Sep 2012 09:16:49 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 8F1332C0095
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 02:33:14 +1000 (EST)
+Received: by ieak14 with SMTP id k14so628804iea.15
+ for <linuxppc-dev@ozlabs.org>; Fri, 07 Sep 2012 09:33:12 -0700 (PDT)
 MIME-Version: 1.0
 Sender: rcj@pochix.net
-In-Reply-To: <1343611946.21647.23.camel@pasglop>
-References: <1342630158-16510-1-git-send-email-olaf@aepfle.de>
- <1343611946.21647.23.camel@pasglop>
-Date: Fri, 7 Sep 2012 11:16:49 -0500
-Message-ID: <CALAi6FcBMthd2+2RsGbVwH4opy2TVFQo4KdT=KEsT06ZUUjtyQ@mail.gmail.com>
-Subject: Re: [PATCH] scsi/ibmvscsi: add module alias for ibmvscsic
+In-Reply-To: <1343611985.21647.25.camel@pasglop>
+References: <1342630157-16468-1-git-send-email-olaf@aepfle.de>
+ <1343611985.21647.25.camel@pasglop>
+Date: Fri, 7 Sep 2012 11:33:12 -0500
+Message-ID: <CALAi6Fcj1Np-Hm3UiJFM4FMEhMNQ=MMiVQDv6T0mEZGVmJq33A@mail.gmail.com>
+Subject: Re: [PATCH] scsi/ibmvscsi: /sys/class/scsi_host/hostX/config doesn't
+ show any information
 From: Robert Jennings <rcj@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, olaf@aepfle.de, Brian J King <bjking1@us.ibm.com>,
- "James E.J. Bottomley" <JBottomley@parallels.com>, linux-scsi@vger.kernel.org
+Cc: olaf@aepfle.de, Linda Xie <lxiep@us.ibm.com>,
+ Brian J King <bjking1@us.ibm.com>, linux-scsi@vger.kernel.org,
+ "James E.J. Bottomley" <JBottomley@parallels.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +31,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jul 29, 2012 at 8:32 PM, Benjamin Herrenschmidt
+On Sun, Jul 29, 2012 at 8:33 PM, Benjamin Herrenschmidt
 <benh@kernel.crashing.org> wrote:
-> On Wed, 2012-07-18 at 18:49 +0200, olaf@aepfle.de wrote:
->> From: Olaf Hering <olaf@aepfle.de>
->>
->> The driver is named ibmvscsic, at runtime it its name is advertised as
->> ibmvscsi. For this reason mkinitrd wont pickup the driver properly.
->> Reported by IBM during SLES11 beta testing:
->>
->> https://bugzilla.novell.com/show_bug.cgi?id=459933
->> LTC50724
+> scsi/ibmvscsi: Fix host config length field overflow
 >
-> So while this would work, I do wonder however whether we could instead
-> fix it by simplifying the whole thing as follow since iSeries is now
-> gone and so we don't need split backends anymore:
+> The length field in the host config packet is only 16-bit long, so
+> passing it 0x10000 (64K which is our standard PAGE_SIZE) doesn't
+> work and result in an empty config from the server.
 >
-> scsi/ibmvscsi: Remove backend abstraction
->
-> Now that the iSeries code is gone the backend abstraction
-> in this driver is no longer necessary, which allows us to
-> consolidate the driver in one file.
->
-> The side effect is that the module name is now ibmvscsi.ko
-> which matches the driver hotplug name and fixes auto-load
-> issues.
->
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: <stable@vger.kernel.org>
 
-I've give this a quick test and I prefer this cleanup, it solves the
-initial problem nicely.
-
-James, please consider pulling this patch.  Thanks.
+James, can this be added to your for-next branch so that we can
+also get this to the stable trees?  Thanks.
 
 Acked-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+
+> ---
+>
+> diff --git a/drivers/scsi/ibmvscsi/ibmvscsi.c b/drivers/scsi/ibmvscsi/ibmvscsi.c
+> index 3a6c474..337e8b3 100644
+> --- a/drivers/scsi/ibmvscsi/ibmvscsi.c
+> +++ b/drivers/scsi/ibmvscsi/ibmvscsi.c
+> @@ -1541,6 +1541,9 @@ static int ibmvscsi_do_host_config(struct ibmvscsi_host_data *hostdata,
+>
+>         host_config = &evt_struct->iu.mad.host_config;
+>
+> +       /* The transport length field is only 16-bit */
+> +       length = min(0xffff, length);
+> +
+>         /* Set up a lun reset SRP command */
+>         memset(host_config, 0x00, sizeof(*host_config));
+>         host_config->common.type = VIOSRP_HOST_CONFIG_TYPE;
+>
+>
