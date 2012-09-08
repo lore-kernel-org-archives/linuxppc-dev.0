@@ -1,34 +1,23 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 704B62C0392
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:45:56 +1000 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 8 Sep 2012 02:45:54 -0600
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
- [9.17.195.226])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C081EC40004
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 02:44:38 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q888ie5K150630
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:40 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q888ieG0004266
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:40 -0600
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 14/22] ppc/eeh: device bars restore based on PE
-Date: Sat,  8 Sep 2012 16:44:15 +0800
-Message-Id: <1347093863-6319-15-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5DD2E2C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Sep 2012 20:15:44 +1000 (EST)
+Message-ID: <1347099328.2385.61.camel@pasglop>
+Subject: Re: [PATCH 2/2] powerpc/e6500: TLB miss handler with hardware
+ tablewalk support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Date: Sat, 08 Sep 2012 20:15:28 +1000
+In-Reply-To: <20120908005549.GA5451@linux.vnet.ibm.com>
+References: <20120614234101.GB17147@tyr.buserror.net>
+ <1346992880.2385.51.camel@pasglop> <504A4C3D.3040709@freescale.com>
+ <504A7CBC.80803@freescale.com> <1347061804.2385.58.camel@pasglop>
+ <20120908005549.GA5451@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,242 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch introduces the function to traverse the devices of the
-specified PE and its child PEs. Also, the restore on device bars
-is implemented based on the traverse function.
+On Fri, 2012-09-07 at 17:55 -0700, Nishanth Aravamudan wrote:
+> On 08.09.2012 [09:50:04 +1000], Benjamin Herrenschmidt wrote:
+> <snip>
+> > BTW. On another note, can you pickup Ananth series for larger address
+> 
+> I think you mean Aneesh here? Just to help Scott find the thread.
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h          |    3 +
- arch/powerpc/include/asm/ppc-pci.h      |    1 -
- arch/powerpc/platforms/pseries/eeh.c    |   79 --------------------------
- arch/powerpc/platforms/pseries/eeh_pe.c |   94 +++++++++++++++++++++++++++++++
- 4 files changed, 97 insertions(+), 80 deletions(-)
+Ah yes, sorry, my bad.
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 5e45a1c..629fb27 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -171,6 +171,9 @@ typedef void *(*eeh_traverse_func)(void *data, void *flag);
- int __devinit eeh_phb_pe_create(struct pci_controller *phb);
- int eeh_add_to_parent_pe(struct eeh_dev *edev);
- int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
-+void *eeh_pe_dev_traverse(struct eeh_pe *root,
-+		eeh_traverse_func fn, void *flag);
-+void eeh_pe_restore_bars(struct eeh_pe *pe);
- 
- void * __devinit eeh_dev_init(struct device_node *dn, void *data);
- void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb);
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index 3e301b1..5cbe3f2 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -54,7 +54,6 @@ struct pci_dev *pci_addr_cache_get_device(unsigned long addr);
- void eeh_slot_error_detail(struct eeh_dev *edev, int severity);
- int eeh_pci_enable(struct eeh_dev *edev, int function);
- int eeh_reset_pe(struct eeh_dev *);
--void eeh_restore_bars(struct eeh_dev *);
- int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
- int rtas_read_config(struct pci_dn *, int where, int size, u32 *val);
- void eeh_pe_state_mark(struct eeh_pe *pe, int state);
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 3c8658e..b5fcecb 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -610,85 +610,6 @@ int eeh_reset_pe(struct eeh_dev *edev)
- 	return -1;
- }
- 
--/** Save and restore of PCI BARs
-- *
-- * Although firmware will set up BARs during boot, it doesn't
-- * set up device BAR's after a device reset, although it will,
-- * if requested, set up bridge configuration. Thus, we need to
-- * configure the PCI devices ourselves.  
-- */
--
--/**
-- * eeh_restore_one_device_bars - Restore the Base Address Registers for one device
-- * @edev: PCI device associated EEH device
-- *
-- * Loads the PCI configuration space base address registers,
-- * the expansion ROM base address, the latency timer, and etc.
-- * from the saved values in the device node.
-- */
--static inline void eeh_restore_one_device_bars(struct eeh_dev *edev)
--{
--	int i;
--	u32 cmd;
--	struct device_node *dn = eeh_dev_to_of_node(edev);
--
--	if (!edev->phb)
--		return;
--
--	for (i=4; i<10; i++) {
--		eeh_ops->write_config(dn, i*4, 4, edev->config_space[i]);
--	}
--
--	/* 12 == Expansion ROM Address */
--	eeh_ops->write_config(dn, 12*4, 4, edev->config_space[12]);
--
--#define BYTE_SWAP(OFF) (8*((OFF)/4)+3-(OFF))
--#define SAVED_BYTE(OFF) (((u8 *)(edev->config_space))[BYTE_SWAP(OFF)])
--
--	eeh_ops->write_config(dn, PCI_CACHE_LINE_SIZE, 1,
--	            SAVED_BYTE(PCI_CACHE_LINE_SIZE));
--
--	eeh_ops->write_config(dn, PCI_LATENCY_TIMER, 1,
--	            SAVED_BYTE(PCI_LATENCY_TIMER));
--
--	/* max latency, min grant, interrupt pin and line */
--	eeh_ops->write_config(dn, 15*4, 4, edev->config_space[15]);
--
--	/* Restore PERR & SERR bits, some devices require it,
--	 * don't touch the other command bits
--	 */
--	eeh_ops->read_config(dn, PCI_COMMAND, 4, &cmd);
--	if (edev->config_space[1] & PCI_COMMAND_PARITY)
--		cmd |= PCI_COMMAND_PARITY;
--	else
--		cmd &= ~PCI_COMMAND_PARITY;
--	if (edev->config_space[1] & PCI_COMMAND_SERR)
--		cmd |= PCI_COMMAND_SERR;
--	else
--		cmd &= ~PCI_COMMAND_SERR;
--	eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
--}
--
--/**
-- * eeh_restore_bars - Restore the PCI config space info
-- * @edev: EEH device
-- *
-- * This routine performs a recursive walk to the children
-- * of this device as well.
-- */
--void eeh_restore_bars(struct eeh_dev *edev)
--{
--	struct device_node *dn;
--	if (!edev)
--		return;
--	
--	if ((edev->mode & EEH_MODE_SUPPORTED) && !IS_BRIDGE(edev->class_code))
--		eeh_restore_one_device_bars(edev);
--
--	for_each_child_of_node(eeh_dev_to_of_node(edev), dn)
--		eeh_restore_bars(of_node_to_eeh_dev(dn));
--}
--
- /**
-  * eeh_save_bars - Save device bars
-  * @edev: PCI device associated EEH device
-diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
-index 6e33f03..ed0f31f 100644
---- a/arch/powerpc/platforms/pseries/eeh_pe.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pe.c
-@@ -172,6 +172,38 @@ static void *eeh_pe_traverse(struct eeh_pe *root,
- }
- 
- /**
-+ * eeh_pe_dev_traverse - Traverse the devices from the PE
-+ * @root: EEH PE
-+ * @fn: function callback
-+ * @flag: extra parameter to callback
-+ *
-+ * The function is used to traverse the devices of the specified
-+ * PE and its child PEs.
-+ */
-+void *eeh_pe_dev_traverse(struct eeh_pe *root,
-+		eeh_traverse_func fn, void *flag)
-+{
-+	struct eeh_pe *pe;
-+	struct eeh_dev *edev;
-+	void *ret;
-+
-+	if (!root) {
-+		pr_warning("%s: Invalid PE %p\n", __func__, root);
-+		return NULL;
-+	}
-+
-+	/* Traverse root PE */
-+	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
-+		eeh_pe_for_each_dev(pe, edev) {
-+			ret = fn(edev, flag);
-+			if (ret) return ret;
-+		}
-+	}
-+
-+	return NULL;
-+}
-+
-+/**
-  * __eeh_pe_get - Check the PE address
-  * @data: EEH PE
-  * @flag: EEH device
-@@ -467,3 +499,65 @@ void eeh_pe_state_clear(struct eeh_pe *pe, int state)
- {
- 	eeh_pe_traverse(pe, __eeh_pe_state_clear, &state);
- }
-+
-+/**
-+ * eeh_restore_one_device_bars - Restore the Base Address Registers for one device
-+ * @data: EEH device
-+ * @flag: Unused
-+ *
-+ * Loads the PCI configuration space base address registers,
-+ * the expansion ROM base address, the latency timer, and etc.
-+ * from the saved values in the device node.
-+ */
-+static void *eeh_restore_one_device_bars(void *data, void *flag)
-+{
-+	int i;
-+	u32 cmd;
-+	struct eeh_dev *edev = (struct eeh_dev *)data;
-+	struct device_node *dn = eeh_dev_to_of_node(edev);
-+
-+	for (i = 4; i < 10; i++)
-+		eeh_ops->write_config(dn, i*4, 4, edev->config_space[i]);
-+	/* 12 == Expansion ROM Address */
-+	eeh_ops->write_config(dn, 12*4, 4, edev->config_space[12]);
-+
-+#define BYTE_SWAP(OFF) (8*((OFF)/4)+3-(OFF))
-+#define SAVED_BYTE(OFF) (((u8 *)(edev->config_space))[BYTE_SWAP(OFF)])
-+
-+	eeh_ops->write_config(dn, PCI_CACHE_LINE_SIZE, 1,
-+		SAVED_BYTE(PCI_CACHE_LINE_SIZE));
-+	eeh_ops->write_config(dn, PCI_LATENCY_TIMER, 1,
-+		SAVED_BYTE(PCI_LATENCY_TIMER));
-+
-+	/* max latency, min grant, interrupt pin and line */
-+	eeh_ops->write_config(dn, 15*4, 4, edev->config_space[15]);
-+
-+	/*
-+	 * Restore PERR & SERR bits, some devices require it,
-+	 * don't touch the other command bits
-+	 */
-+	eeh_ops->read_config(dn, PCI_COMMAND, 4, &cmd);
-+	if (edev->config_space[1] & PCI_COMMAND_PARITY)
-+		cmd |= PCI_COMMAND_PARITY;
-+	else
-+		cmd &= ~PCI_COMMAND_PARITY;
-+	if (edev->config_space[1] & PCI_COMMAND_SERR)
-+		cmd |= PCI_COMMAND_SERR;
-+	else
-+		cmd &= ~PCI_COMMAND_SERR;
-+	eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
-+
-+	return NULL;
-+}
-+
-+/**
-+ * eeh_pe_restore_bars - Restore the PCI config space info
-+ * @pe: EEH PE
-+ *
-+ * This routine performs a recursive walk to the children
-+ * of this device as well.
-+ */
-+void eeh_pe_restore_bars(struct eeh_pe *pe)
-+{
-+	eeh_pe_dev_traverse(pe, eeh_restore_one_device_bars, NULL);
-+}
--- 
-1.7.5.4
+Cheers,
+Ben.
+
+> Thanks,
+> Nish
+> 
+> > space (minus the one patch that breaks the BookE build, it shouldn't
+> > matter) and see if there's any runtime issue on BookE 64 ? (And whether
+> > the larger address space actually works for you too, using something
+> > like high up mmap tests)
+> > 
+> > Cheers,
+> > Ben.
+> > 
+> > 
+> > 
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@lists.ozlabs.org
+> > https://lists.ozlabs.org/listinfo/linuxppc-dev
+> > 
