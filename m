@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e2.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CDD5B2C0093
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:44:38 +1000 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 248E12C0093
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:44:39 +1000 (EST)
 Received: from /spool/local
- by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 8 Sep 2012 04:44:36 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 788FC6E803C
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 04:44:34 -0400 (EDT)
+ Sat, 8 Sep 2012 02:44:38 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 2349519D803C
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 02:44:35 -0600 (MDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q888iYbJ130092
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 04:44:34 -0400
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q888iYXT260648
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:34 -0600
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q888iXff003224
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:33 -0600
+ q888iYhS003255
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:34 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/22] ppc/eeh: Create PEs for PHBs
-Date: Sat,  8 Sep 2012 16:44:07 +0800
-Message-Id: <1347093863-6319-7-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 08/22] ppc/eeh: create PEs duing EEH initialization
+Date: Sat,  8 Sep 2012 16:44:09 +0800
+Message-Id: <1347093863-6319-9-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,200 +38,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For one particular PE, it's only meaningful in the ancestor PHB
-domain. Therefore, each PHB should have its own PE hierarchy tree
-to trace those PEs created against the PHB.
+The patch creates PEs and associated the newly created PEs with
+it parent/silbing as well as EEH devices. It would become more
+straight to trace EEH errors and recover them accordingly.
 
-The patch creates PEs for the PHBs and put those PEs into the
-global link list traced by "eeh_phb_pe". The link list of PEs
-would be first level of overall PE hierarchy tree across the
-system.
+Once the EEH functionality on one PCI IOA has been enabled, we
+tries to create PE against it. If there's existing PE, to which
+the current PCI IOA should be attached, the existing PE will be
+converted from "device" type to "bus" type accordingly.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h           |    2 +
- arch/powerpc/platforms/pseries/Makefile  |    5 +-
- arch/powerpc/platforms/pseries/eeh_dev.c |    4 +
- arch/powerpc/platforms/pseries/eeh_pe.c  |  120 ++++++++++++++++++++++++++++++
- 4 files changed, 129 insertions(+), 2 deletions(-)
- create mode 100644 arch/powerpc/platforms/pseries/eeh_pe.c
+ arch/powerpc/include/asm/eeh.h          |    1 +
+ arch/powerpc/platforms/pseries/eeh.c    |    6 ++
+ arch/powerpc/platforms/pseries/eeh_pe.c |   80 +++++++++++++++++++++++++++++++
+ 3 files changed, 87 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 248b3d9..7b9c7d6 100644
+index 1cc1388..6b13790 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -164,6 +164,8 @@ static inline void eeh_unlock(void)
-  */
- #define EEH_MAX_ALLOWED_FREEZES 5
+@@ -166,6 +166,7 @@ static inline void eeh_unlock(void)
  
-+int __devinit eeh_phb_pe_create(struct pci_controller *phb);
-+
+ typedef void *(*eeh_traverse_func)(void *data, void *flag);
+ int __devinit eeh_phb_pe_create(struct pci_controller *phb);
++int eeh_add_to_parent_pe(struct eeh_dev *edev);
+ 
  void * __devinit eeh_dev_init(struct device_node *dn, void *data);
  void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb);
- int __init eeh_ops_register(struct eeh_ops *ops);
-diff --git a/arch/powerpc/platforms/pseries/Makefile b/arch/powerpc/platforms/pseries/Makefile
-index c222189..890622b 100644
---- a/arch/powerpc/platforms/pseries/Makefile
-+++ b/arch/powerpc/platforms/pseries/Makefile
-@@ -6,8 +6,9 @@ obj-y			:= lpar.o hvCall.o nvram.o reconfig.o \
- 			   firmware.o power.o dlpar.o mobility.o
- obj-$(CONFIG_SMP)	+= smp.o
- obj-$(CONFIG_SCANLOG)	+= scanlog.o
--obj-$(CONFIG_EEH)	+= eeh.o eeh_dev.o eeh_cache.o eeh_driver.o \
--			   eeh_event.o eeh_sysfs.o eeh_pseries.o
-+obj-$(CONFIG_EEH)	+= eeh.o eeh_pe.o eeh_dev.o eeh_cache.o \
-+			   eeh_driver.o eeh_event.o eeh_sysfs.o \
-+			   eeh_pseries.o
- obj-$(CONFIG_KEXEC)	+= kexec.o
- obj-$(CONFIG_PCI)	+= pci.o pci_dlpar.o
- obj-$(CONFIG_PSERIES_MSI)	+= msi.o
-diff --git a/arch/powerpc/platforms/pseries/eeh_dev.c b/arch/powerpc/platforms/pseries/eeh_dev.c
-index a0cee3a..6644234 100644
---- a/arch/powerpc/platforms/pseries/eeh_dev.c
-+++ b/arch/powerpc/platforms/pseries/eeh_dev.c
-@@ -65,6 +65,7 @@ void * __devinit eeh_dev_init(struct device_node *dn, void *data)
- 	PCI_DN(dn)->edev = edev;
- 	edev->dn  = dn;
- 	edev->phb = phb;
-+	INIT_LIST_HEAD(&edev->list);
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 0ba7e3b..8f214906 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -895,6 +895,8 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
+ 			eeh_subsystem_enabled = 1;
+ 			edev->mode |= EEH_MODE_SUPPORTED;
+ 
++			eeh_add_to_parent_pe(edev);
++
+ 			pr_debug("EEH: %s: eeh enabled, config=%x pe_config=%x\n",
+ 				 dn->full_name, edev->config_addr,
+ 				 edev->pe_config_addr);
+@@ -908,6 +910,10 @@ static void *eeh_early_enable(struct device_node *dn, void *data)
+ 				/* Parent supports EEH. */
+ 				edev->mode |= EEH_MODE_SUPPORTED;
+ 				edev->config_addr = of_node_to_eeh_dev(dn->parent)->config_addr;
++				edev->pe_config_addr = of_node_to_eeh_dev(dn->parent)->pe_config_addr;
++
++				eeh_add_to_parent_pe(edev);
++
+ 				return NULL;
+ 			}
+ 		}
+diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
+index 6b53fb8..08b62de 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pe.c
++++ b/arch/powerpc/platforms/pseries/eeh_pe.c
+@@ -261,3 +261,83 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
  
  	return NULL;
  }
-@@ -80,6 +81,9 @@ void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb)
- {
- 	struct device_node *dn = phb->dn;
- 
-+	/* EEH PE for PHB */
-+	eeh_phb_pe_create(phb);
-+
- 	/* EEH device for PHB */
- 	eeh_dev_init(dn, phb);
- 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
-new file mode 100644
-index 0000000..535788e
---- /dev/null
-+++ b/arch/powerpc/platforms/pseries/eeh_pe.c
-@@ -0,0 +1,120 @@
-+/*
-+ * The file intends to implement PE based on the information from
-+ * platforms. Basically, there have 3 types of PEs: PHB/Bus/Device.
-+ * All the PEs should be organized as hierarchy tree. The first level
-+ * of the tree will be associated to existing PHBs since the particular
-+ * PE is only meaningful in one PHB domain.
-+ *
-+ * Copyright Benjamin Herrenschmidt & Gavin Shan, IBM Corporation 2012.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <linux/export.h>
-+#include <linux/gfp.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
-+#include <linux/string.h>
-+
-+#include <asm/pci-bridge.h>
-+#include <asm/ppc-pci.h>
-+
-+static LIST_HEAD(eeh_phb_pe);
 +
 +/**
-+ * eeh_pe_alloc - Allocate PE
-+ * @phb: PCI controller
-+ * @type: PE type
++ * eeh_add_to_parent_pe - Add EEH device to parent PE
++ * @edev: EEH device
 + *
-+ * Allocate PE instance dynamically.
++ * Add EEH device to the parent PE. If the parent PE already
++ * exists, the PE type will be changed to EEH_PE_BUS. Otherwise,
++ * we have to create new PE to hold the EEH device and the new
++ * PE will be linked to its parent PE as well.
 + */
-+static struct eeh_pe *eeh_pe_alloc(struct pci_controller *phb, int type)
++int eeh_add_to_parent_pe(struct eeh_dev *edev)
 +{
-+	struct eeh_pe *pe;
++	struct eeh_pe *pe, *parent;
 +
-+	/* Allocate PHB PE */
-+	pe = kzalloc(sizeof(struct eeh_pe), GFP_KERNEL);
-+	if (!pe) return NULL; 
++	/*
++	 * Search the PE has been existing or not according
++	 * to the PE address. If that has been existing, the
++	 * PE should be composed of PCI bus and its subordinate
++	 * components.
++	 */
++	pe = eeh_pe_get(edev);
++	if (pe) {
++		if (!edev->pe_config_addr) {
++			pr_err("%s: PE with addr 0x%x already exists\n",
++				__func__, edev->config_addr);
++			return -EEXIST;
++		}
 +
-+	/* Initialize PHB PE */
-+	pe->type = type;
-+	pe->phb = phb;
-+	INIT_LIST_HEAD(&pe->child_list);
-+	INIT_LIST_HEAD(&pe->child);
-+	INIT_LIST_HEAD(&pe->edevs);
++		/* Mark the PE as type of PCI bus */
++		pe->type = EEH_PE_BUS;
++		edev->pe = pe;
 +
-+	return pe;
-+}
++		/* Put the edev to PE */
++		list_add_tail(&edev->list, &pe->edevs);
++		pr_debug("EEH: Add %s to Bus PE#%x\n",
++			edev->dn->full_name, pe->addr);
 +
-+/**
-+ * eeh_phb_pe_create - Create PHB PE 
-+ * @phb: PCI controller
-+ *
-+ * The function should be called while the PHB is detected during
-+ * system boot or PCI hotplug in order to create PHB PE.
-+ */
-+int __devinit eeh_phb_pe_create(struct pci_controller *phb)
-+{
-+	struct eeh_pe *pe;
++		return 0;
++	}
 +
-+	/* Allocate PHB PE */
-+	pe = eeh_pe_alloc(phb, EEH_PE_PHB);
++	/* Create a new EEH PE */
++	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
 +	if (!pe) {
 +		pr_err("%s: out of memory!\n", __func__);
 +		return -ENOMEM;
 +	}
-+ 
-+	/* Put it into the list */
-+	eeh_lock();
-+	list_add_tail(&pe->child, &eeh_phb_pe);
-+	eeh_unlock();
++	pe->addr	= edev->pe_config_addr;
++	pe->config_addr	= edev->config_addr;
 +
-+	pr_debug("EEH: Add PE for PHB#%d\n", phb->global_number);
-+
-+	return 0;
-+}
-+
-+/**
-+ * eeh_phb_pe_get - Retrieve PHB PE based on the given PHB
-+ * @phb: PCI controller
-+ *
-+ * The overall PEs form hierarchy tree. The first layer of the
-+ * hierarchy tree is composed of PHB PEs. The function is used
-+ * to retrieve the corresponding PHB PE according to the given PHB.
-+ */
-+static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
-+{
-+	struct eeh_pe *pe;
-+
-+	eeh_lock();
-+
-+	list_for_each_entry(pe, &eeh_phb_pe, child) {
-+		/*
-+		 * Actually, we needn't check the type since
-+		 * the PE for PHB has been determined when that
-+		 * was created.
-+		 */
-+		if (pe->type == EEH_PE_PHB &&
-+		    pe->phb == phb) {
-+			eeh_unlock();
-+			return pe;
++	/*
++	 * Put the new EEH PE into hierarchy tree. If the parent
++	 * can't be found, the newly created PE will be attached
++	 * to PHB directly. Otherwise, we have to associate the
++	 * PE with its parent.
++	 */
++	parent = eeh_pe_get_parent(edev);
++	if (!parent) {
++		parent = eeh_phb_pe_get(edev->phb);
++		if (!parent) {
++			pr_err("%s: No PHB PE is found (PHB Domain=%d)\n",
++				__func__, edev->phb->global_number);
++			edev->pe = NULL;
++			kfree(pe);
++			return -EEXIST;
 +		}
 +	}
++	pe->parent = parent;
 +
-+	eeh_unlock();
++	/*
++	 * Put the newly created PE into the child list and
++	 * link the EEH device accordingly.
++	 */
++	list_add_tail(&pe->child, &parent->child_list);
++	list_add_tail(&edev->list, &pe->edevs);
++	edev->pe = pe;
++	pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
++		edev->dn->full_name, pe->addr, pe->parent->addr);
 +
-+	return NULL;
++	return 0;
 +}
 -- 
 1.7.5.4
