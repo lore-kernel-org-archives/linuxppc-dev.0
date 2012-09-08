@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e1.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A85D82C03FF
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:45:17 +1000 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 704B62C0392
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:45:56 +1000 (EST)
 Received: from /spool/local
- by e1.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 8 Sep 2012 04:45:14 -0400
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 4F9C66E803F
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 04:44:30 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q888iTBe129430
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 04:44:30 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q888iTvk017785
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 04:44:29 -0400
+ Sat, 8 Sep 2012 02:45:54 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C081EC40004
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 02:44:38 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q888ie5K150630
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:40 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q888ieG0004266
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:40 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 01/22] ppc/eeh: move EEH initialization around
-Date: Sat,  8 Sep 2012 16:44:02 +0800
-Message-Id: <1347093863-6319-2-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 14/22] ppc/eeh: device bars restore based on PE
+Date: Sat,  8 Sep 2012 16:44:15 +0800
+Message-Id: <1347093863-6319-15-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,164 +38,242 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, we have 3 phases for EEH initialization on pSeries platform.
-All of them are done through builtin functions: platform initialization,
-EEH device creation, and EEH subsystem enablement. All of them are done
-no later than ppc_md.setup_arch. That means that the slab/slub isn't ready
-yet, so we have to allocate memory chunks on basis of PAGE_SIZE for those
-dynamically created EEH devices. That's pretty expensive.
-
-In order to utilize slab/slub for memory allocation, we have to move the EEH
-initialization functions around, but all of them should be called after slab
-is ready.
+The patch introduces the function to traverse the devices of the
+specified PE and its child PEs. Also, the restore on device bars
+is implemented based on the traverse function.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |   16 ----------------
- arch/powerpc/kernel/rtas_pci.c               |    3 ---
- arch/powerpc/platforms/pseries/eeh.c         |   10 +++++++---
- arch/powerpc/platforms/pseries/eeh_dev.c     |    6 +++++-
- arch/powerpc/platforms/pseries/eeh_pseries.c |    4 +++-
- arch/powerpc/platforms/pseries/setup.c       |    2 --
- 6 files changed, 15 insertions(+), 26 deletions(-)
+ arch/powerpc/include/asm/eeh.h          |    3 +
+ arch/powerpc/include/asm/ppc-pci.h      |    1 -
+ arch/powerpc/platforms/pseries/eeh.c    |   79 --------------------------
+ arch/powerpc/platforms/pseries/eeh_pe.c |   94 +++++++++++++++++++++++++++++++
+ 4 files changed, 97 insertions(+), 80 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index d60f998..06dedff 100644
+index 5e45a1c..629fb27 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -117,11 +117,6 @@ extern int eeh_subsystem_enabled;
+@@ -171,6 +171,9 @@ typedef void *(*eeh_traverse_func)(void *data, void *flag);
+ int __devinit eeh_phb_pe_create(struct pci_controller *phb);
+ int eeh_add_to_parent_pe(struct eeh_dev *edev);
+ int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
++void *eeh_pe_dev_traverse(struct eeh_pe *root,
++		eeh_traverse_func fn, void *flag);
++void eeh_pe_restore_bars(struct eeh_pe *pe);
  
  void * __devinit eeh_dev_init(struct device_node *dn, void *data);
  void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb);
--void __init eeh_dev_phb_init(void);
--void __init eeh_init(void);
--#ifdef CONFIG_PPC_PSERIES
--int __init eeh_pseries_init(void);
--#endif
- int __init eeh_ops_register(struct eeh_ops *ops);
- int __exit eeh_ops_unregister(const char *name);
- unsigned long eeh_check_failure(const volatile void __iomem *token,
-@@ -156,17 +151,6 @@ static inline void *eeh_dev_init(struct device_node *dn, void *data)
- 
- static inline void eeh_dev_phb_init_dynamic(struct pci_controller *phb) { }
- 
--static inline void eeh_dev_phb_init(void) { }
--
--static inline void eeh_init(void) { }
--
--#ifdef CONFIG_PPC_PSERIES
--static inline int eeh_pseries_init(void)
--{
--	return 0;
--}
--#endif /* CONFIG_PPC_PSERIES */
--
- static inline unsigned long eeh_check_failure(const volatile void __iomem *token, unsigned long val)
- {
- 	return val;
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index 179af90..140735c 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -275,9 +275,6 @@ void __init find_and_init_phbs(void)
- 	of_node_put(root);
- 	pci_devs_phb_init();
- 
--	/* Create EEH devices for all PHBs */
--	eeh_dev_phb_init();
--
- 	/*
- 	 * PCI_PROBE_ONLY and PCI_REASSIGN_ALL_BUS can be set via properties
- 	 * in chosen.
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 3e301b1..5cbe3f2 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -54,7 +54,6 @@ struct pci_dev *pci_addr_cache_get_device(unsigned long addr);
+ void eeh_slot_error_detail(struct eeh_dev *edev, int severity);
+ int eeh_pci_enable(struct eeh_dev *edev, int function);
+ int eeh_reset_pe(struct eeh_dev *);
+-void eeh_restore_bars(struct eeh_dev *);
+ int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
+ int rtas_read_config(struct pci_dn *, int where, int size, u32 *val);
+ void eeh_pe_state_mark(struct eeh_pe *pe, int state);
 diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index ecd394c..e819448 100644
+index 3c8658e..b5fcecb 100644
 --- a/arch/powerpc/platforms/pseries/eeh.c
 +++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -982,7 +982,7 @@ int __exit eeh_ops_unregister(const char *name)
-  * Even if force-off is set, the EEH hardware is still enabled, so that
-  * newer systems can boot.
-  */
--void __init eeh_init(void)
-+static int __init eeh_init(void)
- {
- 	struct pci_controller *hose, *tmp;
- 	struct device_node *phb;
-@@ -992,11 +992,11 @@ void __init eeh_init(void)
- 	if (!eeh_ops) {
- 		pr_warning("%s: Platform EEH operation not found\n",
- 			__func__);
--		return;
-+		return -EEXIST;
- 	} else if ((ret = eeh_ops->init())) {
- 		pr_warning("%s: Failed to call platform init function (%d)\n",
- 			__func__, ret);
--		return;
-+		return ret;
- 	}
- 
- 	raw_spin_lock_init(&confirm_error_lock);
-@@ -1011,8 +1011,12 @@ void __init eeh_init(void)
- 		printk(KERN_INFO "EEH: PCI Enhanced I/O Error Handling Enabled\n");
- 	else
- 		printk(KERN_WARNING "EEH: No capable adapters found\n");
-+
-+	return ret;
+@@ -610,85 +610,6 @@ int eeh_reset_pe(struct eeh_dev *edev)
+ 	return -1;
  }
  
-+core_initcall_sync(eeh_init);
-+
+-/** Save and restore of PCI BARs
+- *
+- * Although firmware will set up BARs during boot, it doesn't
+- * set up device BAR's after a device reset, although it will,
+- * if requested, set up bridge configuration. Thus, we need to
+- * configure the PCI devices ourselves.  
+- */
+-
+-/**
+- * eeh_restore_one_device_bars - Restore the Base Address Registers for one device
+- * @edev: PCI device associated EEH device
+- *
+- * Loads the PCI configuration space base address registers,
+- * the expansion ROM base address, the latency timer, and etc.
+- * from the saved values in the device node.
+- */
+-static inline void eeh_restore_one_device_bars(struct eeh_dev *edev)
+-{
+-	int i;
+-	u32 cmd;
+-	struct device_node *dn = eeh_dev_to_of_node(edev);
+-
+-	if (!edev->phb)
+-		return;
+-
+-	for (i=4; i<10; i++) {
+-		eeh_ops->write_config(dn, i*4, 4, edev->config_space[i]);
+-	}
+-
+-	/* 12 == Expansion ROM Address */
+-	eeh_ops->write_config(dn, 12*4, 4, edev->config_space[12]);
+-
+-#define BYTE_SWAP(OFF) (8*((OFF)/4)+3-(OFF))
+-#define SAVED_BYTE(OFF) (((u8 *)(edev->config_space))[BYTE_SWAP(OFF)])
+-
+-	eeh_ops->write_config(dn, PCI_CACHE_LINE_SIZE, 1,
+-	            SAVED_BYTE(PCI_CACHE_LINE_SIZE));
+-
+-	eeh_ops->write_config(dn, PCI_LATENCY_TIMER, 1,
+-	            SAVED_BYTE(PCI_LATENCY_TIMER));
+-
+-	/* max latency, min grant, interrupt pin and line */
+-	eeh_ops->write_config(dn, 15*4, 4, edev->config_space[15]);
+-
+-	/* Restore PERR & SERR bits, some devices require it,
+-	 * don't touch the other command bits
+-	 */
+-	eeh_ops->read_config(dn, PCI_COMMAND, 4, &cmd);
+-	if (edev->config_space[1] & PCI_COMMAND_PARITY)
+-		cmd |= PCI_COMMAND_PARITY;
+-	else
+-		cmd &= ~PCI_COMMAND_PARITY;
+-	if (edev->config_space[1] & PCI_COMMAND_SERR)
+-		cmd |= PCI_COMMAND_SERR;
+-	else
+-		cmd &= ~PCI_COMMAND_SERR;
+-	eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
+-}
+-
+-/**
+- * eeh_restore_bars - Restore the PCI config space info
+- * @edev: EEH device
+- *
+- * This routine performs a recursive walk to the children
+- * of this device as well.
+- */
+-void eeh_restore_bars(struct eeh_dev *edev)
+-{
+-	struct device_node *dn;
+-	if (!edev)
+-		return;
+-	
+-	if ((edev->mode & EEH_MODE_SUPPORTED) && !IS_BRIDGE(edev->class_code))
+-		eeh_restore_one_device_bars(edev);
+-
+-	for_each_child_of_node(eeh_dev_to_of_node(edev), dn)
+-		eeh_restore_bars(of_node_to_eeh_dev(dn));
+-}
+-
  /**
-  * eeh_add_device_early - Enable EEH for the indicated device_node
-  * @dn: device node for which to set up EEH
-diff --git a/arch/powerpc/platforms/pseries/eeh_dev.c b/arch/powerpc/platforms/pseries/eeh_dev.c
-index c4507d0..ab68c59 100644
---- a/arch/powerpc/platforms/pseries/eeh_dev.c
-+++ b/arch/powerpc/platforms/pseries/eeh_dev.c
-@@ -93,10 +93,14 @@ void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb)
-  * Scan all the existing PHBs and create EEH devices for their OF
-  * nodes and their children OF nodes
-  */
--void __init eeh_dev_phb_init(void)
-+static int __init eeh_dev_phb_init(void)
- {
- 	struct pci_controller *phb, *tmp;
+  * eeh_save_bars - Save device bars
+  * @edev: PCI device associated EEH device
+diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
+index 6e33f03..ed0f31f 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pe.c
++++ b/arch/powerpc/platforms/pseries/eeh_pe.c
+@@ -172,6 +172,38 @@ static void *eeh_pe_traverse(struct eeh_pe *root,
+ }
  
- 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
- 		eeh_dev_phb_init_dynamic(phb);
+ /**
++ * eeh_pe_dev_traverse - Traverse the devices from the PE
++ * @root: EEH PE
++ * @fn: function callback
++ * @flag: extra parameter to callback
++ *
++ * The function is used to traverse the devices of the specified
++ * PE and its child PEs.
++ */
++void *eeh_pe_dev_traverse(struct eeh_pe *root,
++		eeh_traverse_func fn, void *flag)
++{
++	struct eeh_pe *pe;
++	struct eeh_dev *edev;
++	void *ret;
 +
-+	return 0;
++	if (!root) {
++		pr_warning("%s: Invalid PE %p\n", __func__, root);
++		return NULL;
++	}
++
++	/* Traverse root PE */
++	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
++		eeh_pe_for_each_dev(pe, edev) {
++			ret = fn(edev, flag);
++			if (ret) return ret;
++		}
++	}
++
++	return NULL;
++}
++
++/**
+  * __eeh_pe_get - Check the PE address
+  * @data: EEH PE
+  * @flag: EEH device
+@@ -467,3 +499,65 @@ void eeh_pe_state_clear(struct eeh_pe *pe, int state)
+ {
+ 	eeh_pe_traverse(pe, __eeh_pe_state_clear, &state);
  }
 +
-+core_initcall(eeh_dev_phb_init);
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index c33360ec..5e2805a 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -559,7 +559,9 @@ static struct eeh_ops pseries_eeh_ops = {
-  * EEH initialization on pseries platform. This function should be
-  * called before any EEH related functions.
-  */
--int __init eeh_pseries_init(void)
-+static int __init eeh_pseries_init(void)
- {
- 	return eeh_ops_register(&pseries_eeh_ops);
- }
++/**
++ * eeh_restore_one_device_bars - Restore the Base Address Registers for one device
++ * @data: EEH device
++ * @flag: Unused
++ *
++ * Loads the PCI configuration space base address registers,
++ * the expansion ROM base address, the latency timer, and etc.
++ * from the saved values in the device node.
++ */
++static void *eeh_restore_one_device_bars(void *data, void *flag)
++{
++	int i;
++	u32 cmd;
++	struct eeh_dev *edev = (struct eeh_dev *)data;
++	struct device_node *dn = eeh_dev_to_of_node(edev);
 +
-+early_initcall(eeh_pseries_init);
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 51ecac9..5406473 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -388,10 +388,8 @@ static void __init pSeries_setup_arch(void)
- 
- 	/* Find and initialize PCI host bridges */
- 	init_pci_config_tokens();
--	eeh_pseries_init();
- 	find_and_init_phbs();
- 	pSeries_reconfig_notifier_register(&pci_dn_reconfig_nb);
--	eeh_init();
- 
- 	pSeries_nvram_init();
- 
++	for (i = 4; i < 10; i++)
++		eeh_ops->write_config(dn, i*4, 4, edev->config_space[i]);
++	/* 12 == Expansion ROM Address */
++	eeh_ops->write_config(dn, 12*4, 4, edev->config_space[12]);
++
++#define BYTE_SWAP(OFF) (8*((OFF)/4)+3-(OFF))
++#define SAVED_BYTE(OFF) (((u8 *)(edev->config_space))[BYTE_SWAP(OFF)])
++
++	eeh_ops->write_config(dn, PCI_CACHE_LINE_SIZE, 1,
++		SAVED_BYTE(PCI_CACHE_LINE_SIZE));
++	eeh_ops->write_config(dn, PCI_LATENCY_TIMER, 1,
++		SAVED_BYTE(PCI_LATENCY_TIMER));
++
++	/* max latency, min grant, interrupt pin and line */
++	eeh_ops->write_config(dn, 15*4, 4, edev->config_space[15]);
++
++	/*
++	 * Restore PERR & SERR bits, some devices require it,
++	 * don't touch the other command bits
++	 */
++	eeh_ops->read_config(dn, PCI_COMMAND, 4, &cmd);
++	if (edev->config_space[1] & PCI_COMMAND_PARITY)
++		cmd |= PCI_COMMAND_PARITY;
++	else
++		cmd &= ~PCI_COMMAND_PARITY;
++	if (edev->config_space[1] & PCI_COMMAND_SERR)
++		cmd |= PCI_COMMAND_SERR;
++	else
++		cmd &= ~PCI_COMMAND_SERR;
++	eeh_ops->write_config(dn, PCI_COMMAND, 4, cmd);
++
++	return NULL;
++}
++
++/**
++ * eeh_pe_restore_bars - Restore the PCI config space info
++ * @pe: EEH PE
++ *
++ * This routine performs a recursive walk to the children
++ * of this device as well.
++ */
++void eeh_pe_restore_bars(struct eeh_pe *pe)
++{
++	eeh_pe_dev_traverse(pe, eeh_restore_one_device_bars, NULL);
++}
 -- 
 1.7.5.4
