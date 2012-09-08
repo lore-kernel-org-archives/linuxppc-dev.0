@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e5.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A626B2C00D8
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:44:41 +1000 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 018A02C01C0
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:44:42 +1000 (EST)
 Received: from /spool/local
- by e5.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 8 Sep 2012 04:44:38 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9BC7A6E803F
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 04:44:36 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q888iahO143756
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 04:44:36 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q888iao4002756
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 05:44:36 -0300
+ Sat, 8 Sep 2012 02:44:41 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 92B3619D803E
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 02:44:39 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q888icj9122738
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:38 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q888ic98003462
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:38 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 09/22] ppc/eeh: remove PE at appropriate time
-Date: Sat,  8 Sep 2012 16:44:10 +0800
-Message-Id: <1347093863-6319-10-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 11/22] ppc/eeh: trace EEH state based on PE
+Date: Sat,  8 Sep 2012 16:44:12 +0800
+Message-Id: <1347093863-6319-12-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,100 +38,251 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-During PCI hotplug and EEH recovery, the PE hierarchy tree might be
-changed due to the PCI topology changes. At later point when the
-PCI device is added, the PE will be created dynamically again.
+Since we've introduced dedicated struct to trace individual PEs,
+it's reasonable to trace its state through the dedicated struct
+instead of using "eeh_dev" any more.
 
-The patch introduces new function to remove EEH devices from the
-associated PE. That also can cause that the parent PE is removed
-from the PE tree if the parent PE doesn't include valid EEH devices
-and child PEs.
+The patches implements the state tracing based on PE. It's notable
+that the PE state will be applied to the specified PE as well as
+its child PEs. That complies with the rule that problematic parent
+PE will prevent those child PEs from working properly.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h          |    1 +
- arch/powerpc/platforms/pseries/eeh.c    |    1 +
- arch/powerpc/platforms/pseries/eeh_pe.c |   47 +++++++++++++++++++++++++++++++
- 3 files changed, 49 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/eeh.h          |    3 +
+ arch/powerpc/include/asm/ppc-pci.h      |    4 +-
+ arch/powerpc/platforms/pseries/eeh.c    |  102 -------------------------------
+ arch/powerpc/platforms/pseries/eeh_pe.c |   79 ++++++++++++++++++++++++
+ 4 files changed, 84 insertions(+), 104 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 6b13790..250ae27 100644
+index 250ae27..f86a85f 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -167,6 +167,7 @@ static inline void eeh_unlock(void)
- typedef void *(*eeh_traverse_func)(void *data, void *flag);
- int __devinit eeh_phb_pe_create(struct pci_controller *phb);
- int eeh_add_to_parent_pe(struct eeh_dev *edev);
-+int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
+@@ -67,6 +67,9 @@ struct eeh_pe {
+ 	struct list_head child;		/* Child PEs			*/
+ };
  
- void * __devinit eeh_dev_init(struct device_node *dn, void *data);
- void __devinit eeh_dev_phb_init_dynamic(struct pci_controller *phb);
++#define eeh_pe_for_each_dev(pe, edev) \
++		list_for_each_entry(edev, &pe->edevs, list)
++
+ /*
+  * The struct is used to trace EEH state for the associated
+  * PCI device node or PCI device. In future, it might
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 80fa704..c7e5bd6 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -57,8 +57,8 @@ int eeh_reset_pe(struct eeh_dev *);
+ void eeh_restore_bars(struct eeh_dev *);
+ int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
+ int rtas_read_config(struct pci_dn *, int where, int size, u32 *val);
+-void eeh_mark_slot(struct device_node *dn, int mode_flag);
+-void eeh_clear_slot(struct device_node *dn, int mode_flag);
++void eeh_pe_state_mark(struct eeh_pe *pe, int state);
++void eeh_pe_state_clear(struct eeh_pe *pe, int state);
+ struct device_node *eeh_find_device_pe(struct device_node *dn);
+ 
+ void eeh_sysfs_add_device(struct pci_dev *pdev);
 diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 8f214906..b60863b 100644
+index b60863b..9c623c2 100644
 --- a/arch/powerpc/platforms/pseries/eeh.c
 +++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -1156,6 +1156,7 @@ static void eeh_remove_device(struct pci_dev *dev)
- 	dev->dev.archdata.edev = NULL;
- 	pci_dev_put(dev);
- 
-+	eeh_rmv_from_parent_pe(edev);
- 	pci_addr_cache_remove_device(dev);
- 	eeh_sysfs_remove_device(dev);
+@@ -279,108 +279,6 @@ struct device_node *eeh_find_device_pe(struct device_node *dn)
  }
+ 
+ /**
+- * __eeh_mark_slot - Mark all child devices as failed
+- * @parent: parent device
+- * @mode_flag: failure flag
+- *
+- * Mark all devices that are children of this device as failed.
+- * Mark the device driver too, so that it can see the failure
+- * immediately; this is critical, since some drivers poll
+- * status registers in interrupts ... If a driver is polling,
+- * and the slot is frozen, then the driver can deadlock in
+- * an interrupt context, which is bad.
+- */
+-static void __eeh_mark_slot(struct device_node *parent, int mode_flag)
+-{
+-	struct device_node *dn;
+-
+-	for_each_child_of_node(parent, dn) {
+-		if (of_node_to_eeh_dev(dn)) {
+-			/* Mark the pci device driver too */
+-			struct pci_dev *dev = of_node_to_eeh_dev(dn)->pdev;
+-
+-			of_node_to_eeh_dev(dn)->mode |= mode_flag;
+-
+-			if (dev && dev->driver)
+-				dev->error_state = pci_channel_io_frozen;
+-
+-			__eeh_mark_slot(dn, mode_flag);
+-		}
+-	}
+-}
+-
+-/**
+- * eeh_mark_slot - Mark the indicated device and its children as failed
+- * @dn: parent device
+- * @mode_flag: failure flag
+- *
+- * Mark the indicated device and its child devices as failed.
+- * The device drivers are marked as failed as well.
+- */
+-void eeh_mark_slot(struct device_node *dn, int mode_flag)
+-{
+-	struct pci_dev *dev;
+-	dn = eeh_find_device_pe(dn);
+-
+-	/* Back up one, since config addrs might be shared */
+-	if (!pcibios_find_pci_bus(dn) && of_node_to_eeh_dev(dn->parent))
+-		dn = dn->parent;
+-
+-	of_node_to_eeh_dev(dn)->mode |= mode_flag;
+-
+-	/* Mark the pci device too */
+-	dev = of_node_to_eeh_dev(dn)->pdev;
+-	if (dev)
+-		dev->error_state = pci_channel_io_frozen;
+-
+-	__eeh_mark_slot(dn, mode_flag);
+-}
+-
+-/**
+- * __eeh_clear_slot - Clear failure flag for the child devices
+- * @parent: parent device
+- * @mode_flag: flag to be cleared
+- *
+- * Clear failure flag for the child devices.
+- */
+-static void __eeh_clear_slot(struct device_node *parent, int mode_flag)
+-{
+-	struct device_node *dn;
+-
+-	for_each_child_of_node(parent, dn) {
+-		if (of_node_to_eeh_dev(dn)) {
+-			of_node_to_eeh_dev(dn)->mode &= ~mode_flag;
+-			of_node_to_eeh_dev(dn)->check_count = 0;
+-			__eeh_clear_slot(dn, mode_flag);
+-		}
+-	}
+-}
+-
+-/**
+- * eeh_clear_slot - Clear failure flag for the indicated device and its children
+- * @dn: parent device
+- * @mode_flag: flag to be cleared
+- *
+- * Clear failure flag for the indicated device and its children.
+- */
+-void eeh_clear_slot(struct device_node *dn, int mode_flag)
+-{
+-	unsigned long flags;
+-	raw_spin_lock_irqsave(&confirm_error_lock, flags);
+-	
+-	dn = eeh_find_device_pe(dn);
+-	
+-	/* Back up one, since config addrs might be shared */
+-	if (!pcibios_find_pci_bus(dn) && of_node_to_eeh_dev(dn->parent))
+-		dn = dn->parent;
+-
+-	of_node_to_eeh_dev(dn)->mode &= ~mode_flag;
+-	of_node_to_eeh_dev(dn)->check_count = 0;
+-	__eeh_clear_slot(dn, mode_flag);
+-	raw_spin_unlock_irqrestore(&confirm_error_lock, flags);
+-}
+-
+-/**
+  * eeh_dn_check_failure - Check if all 1's data is due to EEH slot freeze
+  * @dn: device node
+  * @dev: pci device, if known
 diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
-index 08b62de..0629ae5 100644
+index 0629ae5..6e33f03 100644
 --- a/arch/powerpc/platforms/pseries/eeh_pe.c
 +++ b/arch/powerpc/platforms/pseries/eeh_pe.c
-@@ -341,3 +341,50 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+@@ -388,3 +388,82 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
  
  	return 0;
  }
 +
 +/**
-+ * eeh_rmv_from_parent_pe - Remove one EEH device from the associated PE
-+ * @edev: EEH device
++ * __eeh_pe_state_mark - Mark the state for the PE
++ * @data: EEH PE
++ * @flag: state
 + *
-+ * The PE hierarchy tree might be changed when doing PCI hotplug.
-+ * Also, the PCI devices or buses could be removed from the system
-+ * during EEH recovery. So we have to call the function remove the
-+ * corresponding PE accordingly if necessary.
++ * The function is used to mark the indicated state for the given
++ * PE. Also, the associated PCI devices will be put into IO frozen
++ * state as well.
 + */
-+int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
++static void *__eeh_pe_state_mark(void *data, void *flag)
 +{
-+	struct eeh_pe *pe, *parent;
-+
-+	if (!edev->pe) {
-+		pr_warning("%s: No PE found for EEH device %s\n",
-+			__func__, edev->dn->full_name);
-+		return -EEXIST;
-+	}
-+
-+	/* Remove the EEH device */
-+	pe = edev->pe;
-+	edev->pe = NULL;
-+	list_del(&edev->list);
++	struct eeh_pe *pe = (struct eeh_pe *)data;
++	int state = *((int *)flag);
++	struct eeh_dev *tmp;
++	struct pci_dev *pdev;
 +
 +	/*
-+	 * Check if the parent PE includes any EEH devices.
-+	 * If not, we should delete that. Also, we should
-+	 * delete the parent PE if it doesn't have associated
-+	 * child PEs and EEH devices.
++	 * Mark the PE with the indicated state. Also,
++	 * the associated PCI device will be put into
++	 * I/O frozen state to avoid I/O accesses from
++	 * the PCI device driver.
 +	 */
-+	while (1) {
-+		parent = pe->parent;
-+		if (pe->type == EEH_PE_PHB)
-+			break;
-+
-+		if (list_empty(&pe->edevs) &&
-+		    list_empty(&pe->child_list)) {
-+			list_del(&pe->child);
-+			kfree(pe);
-+		}
-+
-+		pe = parent;
++	pe->state |= state;
++	eeh_pe_for_each_dev(pe, tmp) {
++		pdev = eeh_dev_to_pci_dev(tmp);
++		if (pdev)
++			pdev->error_state = pci_channel_io_frozen;
 +	}
 +
-+	return 0;
++	return NULL;
++}
++
++/**
++ * eeh_pe_state_mark - Mark specified state for PE and its associated device
++ * @pe: EEH PE
++ *
++ * EEH error affects the current PE and its child PEs. The function
++ * is used to mark appropriate state for the affected PEs and the
++ * associated devices.
++ */
++void eeh_pe_state_mark(struct eeh_pe *pe, int state)
++{
++	eeh_pe_traverse(pe, __eeh_pe_state_mark, &state);
++}
++
++/**
++ * __eeh_pe_state_clear - Clear state for the PE
++ * @data: EEH PE
++ * @flag: state
++ *
++ * The function is used to clear the indicated state from the
++ * given PE. Besides, we also clear the check count of the PE
++ * as well.
++ */
++static void *__eeh_pe_state_clear(void *data, void *flag)
++{
++	struct eeh_pe *pe = (struct eeh_pe *)data;
++	int state = *((int *)flag);
++
++	pe->state &= ~state;
++	pe->check_count = 0;
++
++	return NULL;
++}
++
++/**
++ * eeh_pe_state_clear - Clear state for the PE and its children
++ * @pe: PE
++ * @state: state to be cleared
++ *
++ * When the PE and its children has been recovered from error,
++ * we need clear the error state for that. The function is used
++ * for the purpose.
++ */
++void eeh_pe_state_clear(struct eeh_pe *pe, int state)
++{
++	eeh_pe_traverse(pe, __eeh_pe_state_clear, &state);
 +}
 -- 
 1.7.5.4
