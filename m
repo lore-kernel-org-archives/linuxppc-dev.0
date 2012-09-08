@@ -1,31 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6C4AF2C00B2
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AA8812C0296
  for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:44:48 +1000 (EST)
 Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
  Sat, 8 Sep 2012 02:44:46 -0600
 Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
  [9.17.195.227])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id BA846C40002
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 02:44:40 -0600 (MDT)
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3EE9FC40001
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 02:44:42 -0600 (MDT)
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
  by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q888igrs256100
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:42 -0600
+ q888iix9256104
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:44 -0600
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
  by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q888igAv004717
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:42 -0600
+ q888iheL004779
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:44 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 17/22] ppc/eeh: make EEH handler PE sensitive
-Date: Sat,  8 Sep 2012 16:44:18 +0800
-Message-Id: <1347093863-6319-18-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 20/22] ppc/eeh: probe mode support
+Date: Sat,  8 Sep 2012 16:44:21 +0800
+Message-Id: <1347093863-6319-21-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -38,69 +38,373 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once eeh error is found, eeh event will be created and put it into
-the global linked list. At the mean while, kernel thread will be
-started to process it. The handler for the kernel thread originally
-was eeh device sensitive.
+While EEH module is installed, PCI devices is checked one by one
+to see if it supports eeh. On different platforms, the PCI devices
+are referred through different ways when the EEH module is loaded.
+For example, on pSeries platform, that is done by OF node. However,
+we would do that by real PCI devices (struct pci_dev) on PowerNV
+platform in future. So we needs some mechanism to differentiate
+those cases by classifying them to probe modes, either from OF
+nodes or real PCI devices.
 
-The patch reworks the handler of the kernel thread so that it's PE
-sensitive.
+The patch implements the support to eeh probe mode. Also, the
+EEH on pSeries has set it into EEH_PROBE_MODE_DEVTREE. That means
+the probe will be done based on OF nodes on pSeries platform.
+
+In addition, On pSeries platform, it's done by OF nodes. The patch
+moves the the probe function from EEH core to platform dependent
+backend and some cleanup applied.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/eeh_event.c |   25 ++++++++++---------------
- 1 files changed, 10 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/eeh.h               |   21 ++++
+ arch/powerpc/include/asm/ppc-pci.h           |    1 +
+ arch/powerpc/platforms/pseries/eeh.c         |  131 +++++---------------------
+ arch/powerpc/platforms/pseries/eeh_pseries.c |   96 +++++++++++++++++++
+ 4 files changed, 140 insertions(+), 109 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_event.c b/arch/powerpc/platforms/pseries/eeh_event.c
-index 7f89f1e..ba7005a 100644
---- a/arch/powerpc/platforms/pseries/eeh_event.c
-+++ b/arch/powerpc/platforms/pseries/eeh_event.c
-@@ -57,7 +57,7 @@ static int eeh_event_handler(void * dummy)
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 792d2d7..895fd0d 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -129,6 +129,8 @@ static inline struct pci_dev *eeh_dev_to_pci_dev(struct eeh_dev *edev)
+ struct eeh_ops {
+ 	char *name;
+ 	int (*init)(void);
++	void* (*of_probe)(struct device_node *dn, void *flag);
++	void* (*dev_probe)(struct pci_dev *dev, void *flag);
+ 	int (*set_option)(struct eeh_pe *pe, int option);
+ 	int (*get_pe_addr)(struct eeh_pe *pe);
+ 	int (*get_state)(struct eeh_pe *pe, int *state);
+@@ -143,6 +145,25 @@ struct eeh_ops {
+ extern struct eeh_ops *eeh_ops;
+ extern int eeh_subsystem_enabled;
+ extern struct mutex eeh_mutex;
++extern int eeh_probe_mode;
++
++#define EEH_PROBE_MODE_DEV	(1<<0)	/* From PCI device	*/
++#define EEH_PROBE_MODE_DEVTREE	(1<<1)	/* From device tree	*/
++
++static inline void eeh_probe_mode_set(int flag)
++{
++	eeh_probe_mode = flag;
++}
++
++static inline int eeh_probe_mode_devtree(void)
++{
++	return (eeh_probe_mode == EEH_PROBE_MODE_DEVTREE);
++}
++
++static inline int eeh_probe_mode_dev(void)
++{
++	return (eeh_probe_mode == EEH_PROBE_MODE_DEV);
++}
+ 
+ static inline void eeh_lock(void)
  {
- 	unsigned long flags;
- 	struct eeh_event *event;
--	struct eeh_dev *edev;
-+	struct eeh_pe *pe;
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index 2a80f08..56d55c7 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -54,6 +54,7 @@ struct pci_dev *pci_addr_cache_get_device(unsigned long addr);
+ void eeh_slot_error_detail(struct eeh_pe *pe, int severity);
+ int eeh_pci_enable(struct eeh_pe *pe, int function);
+ int eeh_reset_pe(struct eeh_pe *);
++void eeh_save_bars(struct eeh_dev *edev);
+ int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
+ int rtas_read_config(struct pci_dn *, int where, int size, u32 *val);
+ void eeh_pe_state_mark(struct eeh_pe *pe, int state);
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 6d43230..4bdc278 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -92,6 +92,17 @@ struct eeh_ops *eeh_ops = NULL;
+ int eeh_subsystem_enabled;
+ EXPORT_SYMBOL(eeh_subsystem_enabled);
  
- 	set_task_comm(current, "eehd");
++/*
++ * EEH probe mode support. The intention is to support multiple
++ * platforms for EEH. Some platforms like pSeries do PCI emunation
++ * based on device tree. However, other platforms like powernv probe
++ * PCI devices from hardware. The flag is used to distinguish that.
++ * In addition, struct eeh_ops::probe would be invoked for particular
++ * OF node or PCI device so that the corresponding PE would be created
++ * there.
++ */
++int eeh_probe_mode;
++
+ /* Global EEH mutex */
+ DEFINE_MUTEX(eeh_mutex);
  
-@@ -76,28 +76,23 @@ static int eeh_event_handler(void * dummy)
+@@ -590,7 +601,7 @@ int eeh_reset_pe(struct eeh_pe *pe)
+  * PCI devices are added individually; but, for the restore,
+  * an entire slot is reset at a time.
+  */
+-static void eeh_save_bars(struct eeh_dev *edev)
++void eeh_save_bars(struct eeh_dev *edev)
+ {
+ 	int i;
+ 	struct device_node *dn;
+@@ -604,108 +615,6 @@ static void eeh_save_bars(struct eeh_dev *edev)
+ }
  
- 	/* Serialize processing of EEH events */
- 	mutex_lock(&eeh_event_mutex);
--	edev = event->edev;
--	eeh_mark_slot(eeh_dev_to_of_node(edev), EEH_MODE_RECOVERING);
+ /**
+- * eeh_early_enable - Early enable EEH on the indicated device
+- * @dn: device node
+- * @data: BUID
+- *
+- * Enable EEH functionality on the specified PCI device. The function
+- * is expected to be called before real PCI probing is done. However,
+- * the PHBs have been initialized at this point.
+- */
+-static void *eeh_early_enable(struct device_node *dn, void *data)
+-{
+-	int ret;
+-	const u32 *class_code = of_get_property(dn, "class-code", NULL);
+-	const u32 *vendor_id = of_get_property(dn, "vendor-id", NULL);
+-	const u32 *device_id = of_get_property(dn, "device-id", NULL);
+-	const u32 *regs;
+-	int enable;
+-	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
+-	struct eeh_pe pe;
 -
--	printk(KERN_INFO "EEH: Detected PCI bus error on device %s\n",
--	       eeh_pci_name(edev->pdev));
-+	pe = event->pe;
-+	eeh_pe_state_mark(pe, EEH_PE_RECOVERING);
-+	pr_info("EEH: Detected PCI bus error on PHB#%d-PE#%x\n",
-+		pe->phb->global_number, pe->addr);
- 
- 	set_current_state(TASK_INTERRUPTIBLE);	/* Don't add to load average */
--	edev = handle_eeh_events(event);
+-	edev->class_code = 0;
+-	edev->mode = 0;
 -
--	if (edev) {
--		eeh_clear_slot(eeh_dev_to_of_node(edev), EEH_MODE_RECOVERING);
--		pci_dev_put(edev->pdev);
+-	if (!of_device_is_available(dn))
+-		return NULL;
+-
+-	/* Ignore bad nodes. */
+-	if (!class_code || !vendor_id || !device_id)
+-		return NULL;
+-
+-	/* There is nothing to check on PCI to ISA bridges */
+-	if (dn->type && !strcmp(dn->type, "isa"))
+-		return NULL;
+-	edev->class_code = *class_code;
+-
+-	/* Ok... see if this device supports EEH.  Some do, some don't,
+-	 * and the only way to find out is to check each and every one.
+-	 */
+-	regs = of_get_property(dn, "reg", NULL);
+-	if (regs) {
+-		/* Initialize the fake PE */
+-		memset(&pe, 0, sizeof(struct eeh_pe));
+-		pe.phb = edev->phb;
+-		pe.config_addr = regs[0];
+-
+-		/* First register entry is addr (00BBSS00)  */
+-		/* Try to enable eeh */
+-		ret = eeh_ops->set_option(&pe, EEH_OPT_ENABLE);
+-
+-		enable = 0;
+-		if (ret == 0) {
+-			edev->config_addr = regs[0];
+-
+-			/* If the newer, better, ibm,get-config-addr-info is supported, 
+-			 * then use that instead.
+-			 */
+-			edev->pe_config_addr = eeh_ops->get_pe_addr(&pe);
+-			pe.addr = edev->pe_config_addr;
+-
+-			/* Some older systems (Power4) allow the
+-			 * ibm,set-eeh-option call to succeed even on nodes
+-			 * where EEH is not supported. Verify support
+-			 * explicitly.
+-			 */
+-			ret = eeh_ops->get_state(&pe, NULL);
+-			if (ret > 0 && ret != EEH_STATE_NOT_SUPPORT)
+-				enable = 1;
+-		}
+-
+-		if (enable) {
+-			eeh_subsystem_enabled = 1;
+-
+-			eeh_add_to_parent_pe(edev);
+-
+-			pr_debug("EEH: %s: eeh enabled, config=%x pe_config=%x\n",
+-				 dn->full_name, edev->config_addr,
+-				 edev->pe_config_addr);
+-		} else {
+-
+-			/* This device doesn't support EEH, but it may have an
+-			 * EEH parent, in which case we mark it as supported.
+-			 */
+-			if (dn->parent && of_node_to_eeh_dev(dn->parent) &&
+-			    of_node_to_eeh_dev(dn->parent)->pe) {
+-				/* Parent supports EEH. */
+-				edev->config_addr = of_node_to_eeh_dev(dn->parent)->config_addr;
+-				edev->pe_config_addr = of_node_to_eeh_dev(dn->parent)->pe_config_addr;
+-
+-				eeh_add_to_parent_pe(edev);
+-
+-				return NULL;
+-			}
+-		}
+-	} else {
+-		printk(KERN_WARNING "EEH: %s: unable to get reg property.\n",
+-		       dn->full_name);
 -	}
-+	handle_eeh_events(event);
-+	eeh_pe_state_clear(pe, EEH_PE_RECOVERING);
+-
+-	eeh_save_bars(edev);
+-	return NULL;
+-}
+-
+-/**
+  * eeh_ops_register - Register platform dependent EEH operations
+  * @ops: platform dependent EEH operations
+  *
+@@ -790,15 +699,18 @@ static int __init eeh_init(void)
+ 	raw_spin_lock_init(&confirm_error_lock);
  
- 	kfree(event);
- 	mutex_unlock(&eeh_event_mutex);
- 
- 	/* If there are no new errors after an hour, clear the counter. */
--	if (edev && edev->freeze_count>0) {
-+	if (pe && pe->freeze_count > 0) {
- 		msleep_interruptible(3600*1000);
--		if (edev->freeze_count>0)
--			edev->freeze_count--;
-+		if (pe->freeze_count > 0)
-+			pe->freeze_count--;
- 
+ 	/* Enable EEH for all adapters */
+-	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
+-		phb = hose->dn;
+-		traverse_pci_devices(phb, eeh_early_enable, NULL);
++	if (eeh_probe_mode_devtree()) {
++		list_for_each_entry_safe(hose, tmp,
++			&hose_list, list_node) {
++			phb = hose->dn;
++			traverse_pci_devices(phb, eeh_ops->of_probe, NULL);
++		}
  	}
  
+ 	if (eeh_subsystem_enabled)
+-		printk(KERN_INFO "EEH: PCI Enhanced I/O Error Handling Enabled\n");
++		pr_info("EEH: PCI Enhanced I/O Error Handling Enabled\n");
+ 	else
+-		printk(KERN_WARNING "EEH: No capable adapters found\n");
++		pr_warning("EEH: No capable adapters found\n");
+ 
+ 	return ret;
+ }
+@@ -829,7 +741,8 @@ static void eeh_add_device_early(struct device_node *dn)
+ 	if (NULL == phb || 0 == phb->buid)
+ 		return;
+ 
+-	eeh_early_enable(dn, NULL);
++	/* FIXME: hotplug support on POWERNV */
++	eeh_ops->of_probe(dn, NULL);
+ }
+ 
+ /**
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index fdeef77..19506f9 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -129,10 +129,104 @@ static int pseries_eeh_init(void)
+ 		eeh_error_buf_size = RTAS_ERROR_LOG_MAX;
+ 	}
+ 
++	/* Set EEH probe mode */
++	eeh_probe_mode_set(EEH_PROBE_MODE_DEVTREE);
++
+ 	return 0;
+ }
+ 
+ /**
++ * pseries_eeh_of_probe - EEH probe on the given device
++ * @dn: OF node
++ * @flag: Unused
++ *
++ * When EEH module is installed during system boot, all PCI devices
++ * are checked one by one to see if it supports EEH. The function
++ * is introduced for the purpose.
++ */
++static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
++{
++	struct eeh_dev *edev;
++	struct eeh_pe pe;
++	const u32 *class_code, *vendor_id, *device_id;
++	const u32 *regs;
++	int enable = 0;
++	int ret;
++
++	/* Retrieve OF node and eeh device */
++	edev = of_node_to_eeh_dev(dn);
++	if (!of_device_is_available(dn))
++		return NULL;
++
++	/* Retrieve class/vendor/device IDs */
++	class_code = of_get_property(dn, "class-code", NULL);
++	vendor_id  = of_get_property(dn, "vendor-id", NULL);
++	device_id  = of_get_property(dn, "device-id", NULL);
++
++	/* Skip for bad OF node or PCI-ISA bridge */
++	if (!class_code || !vendor_id || !device_id)
++		return NULL;
++	if (dn->type && !strcmp(dn->type, "isa"))
++		return NULL;
++
++	/* Update class code and mode of eeh device */
++	edev->class_code = *class_code;
++	edev->mode = 0;
++
++	/* Retrieve the device address */
++	regs = of_get_property(dn, "reg", NULL);
++	if (!regs) {
++		pr_warning("%s: OF node property %s::reg not found\n",
++			__func__, dn->full_name);
++		return NULL;
++	}
++
++	/* Initialize the fake PE */
++	memset(&pe, 0, sizeof(struct eeh_pe));
++	pe.phb = edev->phb;
++	pe.config_addr = regs[0];
++
++	/* Enable EEH on the device */
++	ret = eeh_ops->set_option(&pe, EEH_OPT_ENABLE);
++	if (!ret) {
++		edev->config_addr = regs[0];
++		/* Retrieve PE address */
++		edev->pe_config_addr = eeh_ops->get_pe_addr(&pe);
++		pe.addr = edev->pe_config_addr;
++
++		/* Some older systems (Power4) allow the ibm,set-eeh-option
++		 * call to succeed even on nodes where EEH is not supported.
++		 * Verify support explicitly.
++		 */
++		ret = eeh_ops->get_state(&pe, NULL);
++		if (ret > 0 && ret != EEH_STATE_NOT_SUPPORT)
++			enable = 1;
++
++		if (enable) {
++			eeh_subsystem_enabled = 1;
++			eeh_add_to_parent_pe(edev);
++
++			pr_debug("%s: EEH enabled on %s PHB#%d-PE#%x, config addr#%x\n",
++				__func__, dn->full_name, pe.phb->global_number,
++				pe.addr, pe.config_addr);
++		} else if (dn->parent && of_node_to_eeh_dev(dn->parent) &&
++			   (of_node_to_eeh_dev(dn->parent))->pe) {
++			/* This device doesn't support EEH, but it may have an
++			 * EEH parent, in which case we mark it as supported.
++			 */
++			edev->config_addr = of_node_to_eeh_dev(dn->parent)->config_addr;
++			edev->pe_config_addr = of_node_to_eeh_dev(dn->parent)->pe_config_addr;
++			eeh_add_to_parent_pe(edev);
++		}
++	}
++
++	/* Save memory bars */
++	eeh_save_bars(edev);
++
++	return NULL;
++}
++
++/**
+  * pseries_eeh_set_option - Initialize EEH or MMIO/DMA reenable
+  * @pe: EEH PE
+  * @option: operation to be issued
+@@ -523,6 +617,8 @@ static int pseries_eeh_write_config(struct device_node *dn, int where, int size,
+ static struct eeh_ops pseries_eeh_ops = {
+ 	.name			= "pseries",
+ 	.init			= pseries_eeh_init,
++	.of_probe		= pseries_eeh_of_probe,
++	.dev_probe		= NULL,
+ 	.set_option		= pseries_eeh_set_option,
+ 	.get_pe_addr		= pseries_eeh_get_pe_addr,
+ 	.get_state		= pseries_eeh_get_state,
 -- 
 1.7.5.4
