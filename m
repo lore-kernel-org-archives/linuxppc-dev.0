@@ -1,30 +1,31 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DEB272C0262
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:44:44 +1000 (EST)
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ED1842C013E
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 18:44:45 +1000 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sat, 8 Sep 2012 04:44:42 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id B37C76E8040
- for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 04:44:38 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q888icAk108074
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 04:44:38 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q888icJP002907
- for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 05:44:38 -0300
+ Sat, 8 Sep 2012 02:44:44 -0600
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7549219D803C
+ for <linuxppc-dev@ozlabs.org>; Sat,  8 Sep 2012 02:44:42 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q888igfO225944
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:42 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q888if3q003704
+ for <linuxppc-dev@ozlabs.org>; Sat, 8 Sep 2012 02:44:42 -0600
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 12/22] ppc/eeh: trace error based on PE from beginning
-Date: Sat,  8 Sep 2012 16:44:13 +0800
-Message-Id: <1347093863-6319-13-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 16/22] ppc/eeh: do reset based on PE
+Date: Sat,  8 Sep 2012 16:44:17 +0800
+Message-Id: <1347093863-6319-17-git-send-email-shangw@linux.vnet.ibm.com>
 In-Reply-To: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 References: <1347093863-6319-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -37,176 +38,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There're 2 conditions to trigger EEH error detection: invalid value
-returned from reading I/O or config space. On each case, the function
-eeh_dn_check_failure will be called to initialize EEH event and put
-it into the poll for further processing.
-
-The patch changes the function for a little bit so that the EEH error
-will be traced based on PE instead of EEH device any more. Also, the
-function eeh_find_device_pe() has been removed since the eeh device
-is tracing the PE by struct eeh_dev::pe.
+The patch implements reset based on PE instead of eeh device. Also,
+The functions used to retrieve the reset type, either hot or fundamental
+reset, have been reworked for a little bit. More specificly, it's
+implemented based the the eeh device traverse function.
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-pci.h   |    1 -
- arch/powerpc/platforms/pseries/eeh.c |   51 +++++++++++++--------------------
- arch/powerpc/platforms/pseries/msi.c |    6 +++-
- 3 files changed, 25 insertions(+), 33 deletions(-)
+ arch/powerpc/include/asm/ppc-pci.h   |    2 +-
+ arch/powerpc/platforms/pseries/eeh.c |   91 +++++++++++++---------------------
+ 2 files changed, 35 insertions(+), 58 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index c7e5bd6..3e301b1 100644
+index 5e34b10..2a80f08 100644
 --- a/arch/powerpc/include/asm/ppc-pci.h
 +++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -59,7 +59,6 @@ int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
+@@ -53,7 +53,7 @@ void pci_addr_cache_remove_device(struct pci_dev *dev);
+ struct pci_dev *pci_addr_cache_get_device(unsigned long addr);
+ void eeh_slot_error_detail(struct eeh_pe *pe, int severity);
+ int eeh_pci_enable(struct eeh_pe *pe, int function);
+-int eeh_reset_pe(struct eeh_dev *);
++int eeh_reset_pe(struct eeh_pe *);
+ int rtas_write_config(struct pci_dn *, int where, int size, u32 val);
  int rtas_read_config(struct pci_dn *, int where, int size, u32 *val);
  void eeh_pe_state_mark(struct eeh_pe *pe, int state);
- void eeh_pe_state_clear(struct eeh_pe *pe, int state);
--struct device_node *eeh_find_device_pe(struct device_node *dn);
- 
- void eeh_sysfs_add_device(struct pci_dev *pdev);
- void eeh_sysfs_remove_device(struct pci_dev *pdev);
 diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 9c623c2..f210160 100644
+index 4572361..56a022b 100644
 --- a/arch/powerpc/platforms/pseries/eeh.c
 +++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -264,21 +264,6 @@ static inline unsigned long eeh_token_to_phys(unsigned long token)
+@@ -455,17 +455,24 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+  */
+ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+ {
+-	struct device_node *dn = pci_device_to_OF_node(dev);
++	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
++	struct eeh_pe *pe = edev->pe;
++
++	if (!pe) {
++		pr_err("%s: No PE found on PCI device %s\n",
++			__func__, pci_name(dev));
++		return -EINVAL;
++	}
+ 
+ 	switch (state) {
+ 	case pcie_deassert_reset:
+-		eeh_ops->reset(dn, EEH_RESET_DEACTIVATE);
++		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+ 		break;
+ 	case pcie_hot_reset:
+-		eeh_ops->reset(dn, EEH_RESET_HOT);
++		eeh_ops->reset(pe, EEH_RESET_HOT);
+ 		break;
+ 	case pcie_warm_reset:
+-		eeh_ops->reset(dn, EEH_RESET_FUNDAMENTAL);
++		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -475,66 +482,37 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
  }
  
  /**
-- * eeh_find_device_pe - Retrieve the PE for the given device
-- * @dn: device node
+- * __eeh_set_pe_freset - Check the required reset for child devices
+- * @parent: parent device
+- * @freset: return value
 - *
-- * Return the PE under which this device lies
+- * Each device might have its preferred reset type: fundamental or
+- * hot reset. The routine is used to collect the information from
+- * the child devices so that they could be reset accordingly.
 - */
--struct device_node *eeh_find_device_pe(struct device_node *dn)
+-void __eeh_set_pe_freset(struct device_node *parent, unsigned int *freset)
 -{
--	while (dn->parent && of_node_to_eeh_dev(dn->parent) &&
--	       (of_node_to_eeh_dev(dn->parent)->mode & EEH_MODE_SUPPORTED)) {
--		dn = dn->parent;
+-	struct device_node *dn;
+-
+-	for_each_child_of_node(parent, dn) {
+-		if (of_node_to_eeh_dev(dn)) {
+-			struct pci_dev *dev = of_node_to_eeh_dev(dn)->pdev;
+-
+-			if (dev && dev->driver)
+-				*freset |= dev->needs_freset;
+-
+-			__eeh_set_pe_freset(dn, freset);
+-		}
 -	}
--	return dn;
 -}
 -
 -/**
-  * eeh_dn_check_failure - Check if all 1's data is due to EEH slot freeze
-  * @dn: device node
-  * @dev: pci device, if known
-@@ -297,6 +282,7 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
+- * eeh_set_pe_freset - Check the required reset for the indicated device and its children
+- * @dn: parent device
+- * @freset: return value
++ * eeh_set_pe_freset - Check the required reset for the indicated device
++ * @data: EEH device
++ * @flag: return value
+  *
+  * Each device might have its preferred reset type: fundamental or
+  * hot reset. The routine is used to collected the information for
+  * the indicated device and its children so that the bunch of the
+  * devices could be reset properly.
+  */
+-void eeh_set_pe_freset(struct device_node *dn, unsigned int *freset)
++static void *eeh_set_dev_freset(void *data, void *flag)
  {
- 	int ret;
- 	unsigned long flags;
-+	struct eeh_pe *pe;
- 	struct eeh_dev *edev;
- 	int rc = 0;
- 	const char *location;
-@@ -306,23 +292,26 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	if (!eeh_subsystem_enabled)
- 		return 0;
- 
--	if (!dn) {
-+	if (dn) {
-+		edev = of_node_to_eeh_dev(dn);
-+	} else if (dev) {
-+		edev = pci_dev_to_eeh_dev(dev);
-+		dn = pci_device_to_OF_node(dev);
-+	} else {
- 		eeh_stats.no_dn++;
- 		return 0;
- 	}
+ 	struct pci_dev *dev;
 -	dn = eeh_find_device_pe(dn);
--	edev = of_node_to_eeh_dev(dn);
-+	pe = edev->pe;
+-
+-	/* Back up one, since config addrs might be shared */
+-	if (!pcibios_find_pci_bus(dn) && of_node_to_eeh_dev(dn->parent))
+-		dn = dn->parent;
++	unsigned int *freset = (unsigned int *)flag;
++	struct eeh_dev *edev = (struct eeh_dev *)data;
  
- 	/* Access to IO BARs might get this far and still not want checking. */
--	if (!(edev->mode & EEH_MODE_SUPPORTED) ||
--	    edev->mode & EEH_MODE_NOCHECK) {
-+	if (!pe) {
- 		eeh_stats.ignored_check++;
--		pr_debug("EEH: Ignored check (%x) for %s %s\n",
--			edev->mode, eeh_pci_name(dev), dn->full_name);
-+		pr_debug("EEH: Ignored check for %s %s\n",
-+			eeh_pci_name(dev), dn->full_name);
- 		return 0;
- 	}
+-	dev = of_node_to_eeh_dev(dn)->pdev;
++	dev = eeh_dev_to_pci_dev(edev);
+ 	if (dev)
+ 		*freset |= dev->needs_freset;
  
--	if (!edev->config_addr && !edev->pe_config_addr) {
-+	if (!pe->addr && !pe->config_addr) {
- 		eeh_stats.no_cfg_addr++;
- 		return 0;
- 	}
-@@ -335,13 +324,13 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	 */
- 	raw_spin_lock_irqsave(&confirm_error_lock, flags);
- 	rc = 1;
--	if (edev->mode & EEH_MODE_ISOLATED) {
--		edev->check_count++;
--		if (edev->check_count % EEH_MAX_FAILS == 0) {
-+	if (pe->state & EEH_PE_ISOLATED) {
-+		pe->check_count++;
-+		if (pe->check_count % EEH_MAX_FAILS == 0) {
- 			location = of_get_property(dn, "ibm,loc-code", NULL);
- 			printk(KERN_ERR "EEH: %d reads ignored for recovering device at "
- 				"location=%s driver=%s pci addr=%s\n",
--				edev->check_count, location,
-+				pe->check_count, location,
- 				eeh_driver_name(dev), eeh_pci_name(dev));
- 			printk(KERN_ERR "EEH: Might be infinite loop in %s driver\n",
- 				eeh_driver_name(dev));
-@@ -357,7 +346,7 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	 * function zero of a multi-function device.
- 	 * In any case they must share a common PHB.
- 	 */
--	ret = eeh_ops->get_state(dn, NULL);
-+	ret = eeh_ops->get_state(pe, NULL);
+-	__eeh_set_pe_freset(dn, freset);
++	return NULL;
+ }
  
- 	/* Note that config-io to empty slots may fail;
- 	 * they are empty when they don't have children.
-@@ -370,7 +359,7 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	    (ret & (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) ==
- 	    (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE)) {
- 		eeh_stats.false_positives++;
--		edev->false_positives ++;
-+		pe->false_positives++;
- 		rc = 0;
- 		goto dn_unlock;
- 	}
-@@ -381,10 +370,10 @@ int eeh_dn_check_failure(struct device_node *dn, struct pci_dev *dev)
- 	 * with other functions on this device, and functions under
- 	 * bridges.
- 	 */
--	eeh_mark_slot(dn, EEH_MODE_ISOLATED);
-+	eeh_pe_state_mark(pe, EEH_PE_ISOLATED);
- 	raw_spin_unlock_irqrestore(&confirm_error_lock, flags);
- 
--	eeh_send_failure_event(edev);
-+	eeh_send_failure_event(pe);
- 
- 	/* Most EEH events are due to device driver bugs.  Having
- 	 * a stack trace will help the device-driver authors figure
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-index 109fdb7..c8534fa 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -210,6 +210,7 @@ static struct device_node *find_pe_total_msi(struct pci_dev *dev, int *total)
- static struct device_node *find_pe_dn(struct pci_dev *dev, int *total)
+ /**
+  * eeh_reset_pe_once - Assert the pci #RST line for 1/4 second
+- * @edev: pci device node to be reset.
++ * @pe: EEH PE
+  *
+  * Assert the PCI #RST line for 1/4 second.
+  */
+-static void eeh_reset_pe_once(struct eeh_dev *edev)
++static void eeh_reset_pe_once(struct eeh_pe *pe)
  {
- 	struct device_node *dn;
-+	struct eeh_dev *edev;
+ 	unsigned int freset = 0;
+-	struct device_node *dn = eeh_dev_to_of_node(edev);
  
- 	/* Found our PE and assume 8 at that point. */
+ 	/* Determine type of EEH reset required for
+ 	 * Partitionable Endpoint, a hot-reset (1)
+@@ -542,12 +520,12 @@ static void eeh_reset_pe_once(struct eeh_dev *edev)
+ 	 * A fundamental reset required by any device under
+ 	 * Partitionable Endpoint trumps hot-reset.
+   	 */
+-	eeh_set_pe_freset(dn, &freset);
++	eeh_pe_dev_traverse(pe, eeh_set_dev_freset, &freset);
  
-@@ -217,7 +218,10 @@ static struct device_node *find_pe_dn(struct pci_dev *dev, int *total)
- 	if (!dn)
- 		return NULL;
+ 	if (freset)
+-		eeh_ops->reset(dn, EEH_RESET_FUNDAMENTAL);
++		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
+ 	else
+-		eeh_ops->reset(dn, EEH_RESET_HOT);
++		eeh_ops->reset(pe, EEH_RESET_HOT);
  
--	dn = eeh_find_device_pe(dn);
-+	/* Get the top level device in the PE */
-+	edev = of_node_to_eeh_dev(dn);
-+	edev = list_first_entry(&edev->pe->edevs, struct eeh_dev, list);
-+	dn = eeh_dev_to_of_node(edev);
- 	if (!dn)
- 		return NULL;
+ 	/* The PCI bus requires that the reset be held high for at least
+ 	 * a 100 milliseconds. We wait a bit longer 'just in case'.
+@@ -559,9 +537,9 @@ static void eeh_reset_pe_once(struct eeh_dev *edev)
+ 	 * pci slot reset line is dropped. Make sure we don't miss
+ 	 * these, and clear the flag now.
+ 	 */
+-	eeh_clear_slot(dn, EEH_MODE_ISOLATED);
++	eeh_pe_state_clear(pe, EEH_MODE_ISOLATED);
  
+-	eeh_ops->reset(dn, EEH_RESET_DEACTIVATE);
++	eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+ 
+ 	/* After a PCI slot has been reset, the PCI Express spec requires
+ 	 * a 1.5 second idle time for the bus to stabilize, before starting
+@@ -573,32 +551,31 @@ static void eeh_reset_pe_once(struct eeh_dev *edev)
+ 
+ /**
+  * eeh_reset_pe - Reset the indicated PE
+- * @edev: PCI device associated EEH device
++ * @pe: EEH PE
+  *
+  * This routine should be called to reset indicated device, including
+  * PE. A PE might include multiple PCI devices and sometimes PCI bridges
+  * might be involved as well.
+  */
+-int eeh_reset_pe(struct eeh_dev *edev)
++int eeh_reset_pe(struct eeh_pe *pe)
+ {
+ 	int i, rc;
+-	struct device_node *dn = eeh_dev_to_of_node(edev);
+ 
+ 	/* Take three shots at resetting the bus */
+ 	for (i=0; i<3; i++) {
+-		eeh_reset_pe_once(edev);
++		eeh_reset_pe_once(pe);
+ 
+-		rc = eeh_ops->wait_state(dn, PCI_BUS_RESET_WAIT_MSEC);
++		rc = eeh_ops->wait_state(pe, PCI_BUS_RESET_WAIT_MSEC);
+ 		if (rc == (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE))
+ 			return 0;
+ 
+ 		if (rc < 0) {
+-			printk(KERN_ERR "EEH: unrecoverable slot failure %s\n",
+-			       dn->full_name);
++			pr_err("%s: Unrecoverable slot failure on PHB#%d-PE#%x",
++				__func__, pe->phb->global_number, pe->addr);
+ 			return -1;
+ 		}
+-		printk(KERN_ERR "EEH: bus reset %d failed on slot %s, rc=%d\n",
+-		       i+1, dn->full_name, rc);
++		pr_err("EEH: bus reset %d failed on PHB#%d-PE#%x, rc=%d\n",
++			i+1, pe->phb->global_number, pe->addr, rc);
+ 	}
+ 
+ 	return -1;
 -- 
 1.7.5.4
