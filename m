@@ -1,33 +1,33 @@
 Return-Path: <haren@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 667E02C0040
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Sep 2012 21:41:52 +1000 (EST)
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C3C1E2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Sep 2012 21:43:27 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Sun, 9 Sep 2012 07:41:49 -0400
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8DF8138C803D
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Sep 2012 07:41:46 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q89BfkdQ32899130
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Sep 2012 07:41:46 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q89BfjIT012684
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Sep 2012 07:41:46 -0400
-Subject: [PATCH 4/6] powerpc: Increase exceptions arrays in paca struct to
- save PPR
+ Sun, 9 Sep 2012 05:43:25 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 44D6D1FF003B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Sep 2012 05:43:21 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q89BhN5g270414
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Sep 2012 05:43:23 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q89BhMvm011661
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Sep 2012 05:43:23 -0600
+Subject: [PATCH 5/6] powerpc: Macros for saving/restore PPR
 From: Haren Myneni <haren@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
  mikey@neuling.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 09 Sep 2012 04:41:44 -0700
-Message-ID: <1347190904.3418.17.camel@hbabu-laptop>
+Date: Sun, 09 Sep 2012 04:43:21 -0700
+Message-ID: <1347191001.3418.19.camel@hbabu-laptop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,42 +40,71 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Using paca to save user defined PPR value in the first level exception vector.
+Several macros are defined for saving and restore user defined PPR value.
 
 Signed-off-by: Haren Myneni <haren@us.ibm.com>
 ---
- arch/powerpc/include/asm/exception-64s.h |    1 +
- arch/powerpc/include/asm/paca.h          |    6 +++---
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h |   35 ++++++++++++++++++++++++++++++
+ arch/powerpc/include/asm/reg.h           |    1 +
+ 2 files changed, 36 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 45702e0..bfd3f1f 100644
+index bfd3f1f..618fd18 100644
 --- a/arch/powerpc/include/asm/exception-64s.h
 +++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -47,6 +47,7 @@
- #define EX_R3		64
- #define EX_LR		72
- #define EX_CFAR		80
-+#define EX_PPR		88	/* SMT thread status register (priority) */
+@@ -62,6 +62,41 @@
+ #define EXC_HV	H
+ #define EXC_STD
  
- /*
-  * We're short on space and time in the exception prolog, so we can't
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index daf813f..d32b1e5 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -93,9 +93,9 @@ struct paca_struct {
- 	 * Now, starting in cacheline 2, the exception save areas
- 	 */
- 	/* used for most interrupts/exceptions */
--	u64 exgen[11] __attribute__((aligned(0x80)));
--	u64 exmc[11];		/* used for machine checks */
--	u64 exslb[11];		/* used for SLB/segment table misses
-+	u64 exgen[12] __attribute__((aligned(0x80)));
-+	u64 exmc[12];		/* used for machine checks */
-+	u64 exslb[12];		/* used for SLB/segment table misses
-  				 * on the linear mapping */
- 	/* SLB related definitions */
- 	u16 vmalloc_sllp;
++/*
++ * PPR save/restore macros - Used on P7 or later processors
++ */
++#define SAVE_PPR(area, ra, rb)						\
++BEGIN_FTR_SECTION_NESTED(940)						\
++	ld	ra,area+EX_PPR(r13);	/* Read PPR from paca */	\
++	clrrdi	rb,r1,THREAD_SHIFT;	/* thread_info struct */	\
++	std	ra,TI_PPR(rb);		/* Save PPR in thread_info */	\
++END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,940)
++
++#define RESTORE_PPR(ra,rb)						\
++BEGIN_FTR_SECTION_NESTED(941)						\
++	clrrdi	ra,r1,THREAD_SHIFT;					\
++	ld	rb,TI_PPR(ra);		/* Read PPR from thread_info */	\
++	mtspr	SPRN_PPR,rb;		/* Restore PPR */		\
++END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,941)
++
++#define RESTORE_PPR_PACA(area,ra)					\
++BEGIN_FTR_SECTION_NESTED(942)						\
++	ld	ra,area+EX_PPR(r13);					\
++	mtspr	SPRN_PPR,ra;						\
++END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,942)
++
++#define HMT_MEDIUM_NO_PPR						\
++BEGIN_FTR_SECTION_NESTED(944)						\
++	HMT_MEDIUM;							\
++END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,0,944)  /*non P7*/		
++
++#define HMT_MEDIUM_HAS_PPR(area, ra)					\
++BEGIN_FTR_SECTION_NESTED(943)						\
++	mfspr	ra,SPRN_PPR;						\
++	std	ra,area+EX_PPR(r13);					\
++	HMT_MEDIUM;							\
++END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,943) /* P7 */
++
+ #define __EXCEPTION_PROLOG_1(area, extra, vec)				\
+ 	GET_PACA(r13);							\
+ 	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 6386086..dff2f89 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -284,6 +284,7 @@
+ #define SPRN_DBAT6U	0x23C	/* Data BAT 6 Upper Register */
+ #define SPRN_DBAT7L	0x23F	/* Data BAT 7 Lower Register */
+ #define SPRN_DBAT7U	0x23E	/* Data BAT 7 Upper Register */
++#define SPRN_PPR	0x380	/* SMT Thread status Register */
+ 
+ #define SPRN_DEC	0x016		/* Decrement Register */
+ #define SPRN_DER	0x095		/* Debug Enable Regsiter */
 -- 
 1.7.10.4
