@@ -1,23 +1,23 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
- [209.85.212.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 799AF2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 06:44:13 +1000 (EST)
-Received: by vbbfn1 with SMTP id fn1so1628742vbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 09 Sep 2012 13:44:09 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1347223280-29847-1-git-send-email-geert@linux-m68k.org>
-References: <1347223280-29847-1-git-send-email-geert@linux-m68k.org>
-Date: Sun, 9 Sep 2012 22:44:09 +0200
-Message-ID: <CAMuHMdVDJLKsa=H63hwsNL1DJtuX+YF=ZN5AAo7NvYbFX2itTg@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.6-rc5
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id EA0E42C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 09:38:01 +1000 (EST)
+Message-ID: <1347233868.2385.128.camel@pasglop>
+Subject: Re: [PATCH][v2] powerpc/mm: using two zones for freescale 64 bit
+ kernel
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Date: Mon, 10 Sep 2012 09:37:48 +1000
+In-Reply-To: <9EADE983-F25D-41BC-8A04-E69A20BF68E3@kernel.crashing.org>
+References: <1345805425-3829-1-git-send-email-Shaohui.Xie@freescale.com>
+ <9EADE983-F25D-41BC-8A04-E69A20BF68E3@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Mingkai Hu <Mingkai.hu@freescale.com>, "linuxppc-dev@lists.ozlabs.org
+ list" <linuxppc-dev@lists.ozlabs.org>, Shaohui Xie <Shaohui.Xie@freescale.com>,
+ Chen Yuanquan <B41889@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Sep 9, 2012 at 10:41 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.6-rc5 to v3.6-rc4[3], the summaries are:
->   - build errors: +15/-4
+On Thu, 2012-08-30 at 15:49 -0500, Kumar Gala wrote:
+> On Aug 24, 2012, at 5:50 AM, Shaohui Xie wrote:
+> 
+> > PowerPC platform only supports ZONE_DMA zone for 64bit kernel, so all the
+> > memory will be put into this zone. If the memory size is greater than
+> > the device's DMA capability and device uses dma_alloc_coherent to allocate
+> > memory, it will get an address which is over the device's DMA addressing,
+> > the device will fail.
+> > 
+> > So we split the memory to two zones: zone ZONE_DMA32 & ZONE_NORMAL, since
+> > we already allocate PCICSRBAR/PEXCSRBAR right below the 4G boundary (if the
+> > lowest PCI address is above 4G), so we constrain the DMA zone ZONE_DMA32
+> > to 2GB, also, we clear flag __GFP_DMA & __GFP_DMA32 and set __GFP_DMA32 only
+> > if the device's dma_mask < total memory size. By doing this, devices which
+> > cannot DMA all the memory will be limited to ZONE_DMA32, but devices which
+> > can DMA all the memory will not be affected by this limitation.
+> > 
+> > Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> > Signed-off-by: Mingkai Hu <Mingkai.hu@freescale.com>
+> > Signed-off-by: Chen Yuanquan <B41889@freescale.com>
+> > ---
+> > changes for v2:
+> > 1. use a config option for using two zones (ZONE_DMA32 & ZONE_NORMAL) in
+> > freescale 64 bit kernel.
+> > 
 
-  + arch/powerpc/platforms/512x/mpc512x_shared.c: error:
-'FSL_DIU_PORT_DVI' undeclared (first use in this function):  => 189:9
-  + arch/powerpc/platforms/512x/mpc512x_shared.c: error: 'enum
-fsl_diu_monitor_port' declared inside parameter list [-Werror]:  =>
-70:9, 84:9, 88:36
-  + arch/powerpc/platforms/512x/mpc512x_shared.c: error: 'return' with
-a value, in function returning void [-Werror]:  => 189:2
-  + arch/powerpc/platforms/512x/mpc512x_shared.c: error: function
-declaration isn't a prototype [-Werror=strict-prototypes]:  => 69:5,
-88:6, 83:6, 187:1
-  + arch/powerpc/platforms/512x/mpc512x_shared.c: error: its scope is
-only this definition or declaration, which is probably not what you
-want [-Werror]:  => 70:9
-  + arch/powerpc/platforms/512x/mpc512x_shared.c: error: parameter 1
-('port') has incomplete type:  => 187:54, 83:56, 88:57, 69:56
-  + arch/powerpc/platforms/512x/mpc512x_shared.c: error: return type
-is an incomplete type:  => 187:1
-  + arch/powerpc/sysdev/mpic.c: error: case label does not reduce to
-an integer constant:  => 890:9, 898:9, 886:9, 894:9
-  + arch/powerpc/sysdev/mv64x60_dev.c: error: assignment makes pointer
-from integer without a cast [-Werror]:  => 253:11
-  + arch/powerpc/sysdev/mv64x60_dev.c: error: implicit declaration of
-function 'of_get_mac_address' [-Werror=implicit-function-declaration]:
- => 253:2
-  + arch/powerpc/sysdev/tsi108_dev.c: error: assignment makes pointer
-from integer without a cast [-Werror]:  => 107:12
-  + arch/powerpc/sysdev/tsi108_dev.c: error: implicit declaration of
-function 'of_get_mac_address' [-Werror=implicit-function-declaration]:
- => 107:3
+There must have been a misunderstanding. I think this should be a
+runtime choice, possibly by the platform code. Any reason that can't be
+done ?
 
-powerpc-randconfig (it was a good random config today ;-)
+Also how does Intel do it ? Do they have iommu and ZONE_DMA32 co-exist ?
 
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `_restgpr0_23' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff8134)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `_restgpr0_25' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff884c)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `_savegpr0_27' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff8e54)
-
-powerpc-allyesconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/5400/ (all 116 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/5381/ (all 116 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Cheers,
+Ben.
