@@ -1,21 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5CDF62C008F
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Sep 2012 09:09:14 +1000 (EST)
-Message-ID: <1347145741.2385.68.camel@pasglop>
-Subject: Re: [PATCH 2/2] powerpc/e6500: TLB miss handler with hardware
- tablewalk support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Sun, 09 Sep 2012 09:09:01 +1000
-In-Reply-To: <1339722302.9220.175.camel@pasglop>
-References: <20120614234101.GB17147@tyr.buserror.net>
- <1339722302.9220.175.camel@pasglop>
+ (Client CN "e3.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 34DF12C0096
+ for <linuxppc-dev@ozlabs.org>; Sun,  9 Sep 2012 21:32:13 +1000 (EST)
+Received: from /spool/local
+ by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Sun, 9 Sep 2012 07:32:11 -0400
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8AC4238C8039
+ for <linuxppc-dev@ozlabs.org>; Sun,  9 Sep 2012 07:32:08 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q89BW8HF34472008
+ for <linuxppc-dev@ozlabs.org>; Sun, 9 Sep 2012 07:32:08 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q89BW7LQ002829
+ for <linuxppc-dev@ozlabs.org>; Sun, 9 Sep 2012 08:32:07 -0300
+Subject: [PATCH 0/6] powerpc: SMT priority (PPR) save and restore
+From: Haren Myneni <haren@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, anton@samba.org,
+ mikey@neuling.org
 Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 09 Sep 2012 04:32:06 -0700
+Message-ID: <1347190326.3418.7.camel@hbabu-laptop>
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-06-15 at 11:05 +1000, Benjamin Herrenschmidt wrote:
-> > -#define MMU_PAGE_COUNT       14
-> > +#define MMU_PAGE_2M  6
-> > +#define MMU_PAGE_4M  7
-> > +#define MMU_PAGE_8M  8
-> > +#define MMU_PAGE_16M 9
-> > +#define MMU_PAGE_64M 10
-> > +#define MMU_PAGE_256M        11
-> > +#define MMU_PAGE_1G  12
-> > +#define MMU_PAGE_16G 13
-> > +#define MMU_PAGE_64G 14
-> > +
-> > +#define MMU_PAGE_COUNT       15 
 
-BTW. We are getting close to 16 here which is the max since we encode
-the size into a 4-bit field in the slice masks on server.
+On P7 systems, users can define SMT priority levels 2,3 and 4 for
+processes so that some can run higher priority than the other ones.
+In the current kernel, the default priority is set to 4 which prohibits
+processes for using higher priority. Also the kernel boosts the priority to
+4 during exceptions without saving the user defined priorities when
+the task enters the kernel. So we will be loosing the process PPR value
+and can not be restored it back when the task exits the kernel.
 
-Any chance if/when you respin, to add a BUILD_BUG_ON somewhere to ensure
-that we never accidentally break that limit ? (With a comment).
+This patch set implements saving and restore the user defined PPR value
+for all tasks.
 
-If we need to scavenge a size, we can always get rid of the AP one, it's
-not actually useful (we'll have to find a different way to store the
-encodings on server if we ever support multiple size per segment).
+Haren Myneni (6):
+  powerpc: Move branch instruction from ACCOUNT_CPU_USER_ENTRY to caller
+  powerpc: Add enable_ppr kernel parameter to enable PPR save/restore
+  powerpc: Add ppr in thread_info struct
+  powerpc: Increase exceptions arrays in paca struct to save PPR
+  powerpc: Macros for saving/restore PPR
+  powerpc: Implement PPR save/restore
 
-Cheers,
-Ben.
+ Documentation/kernel-parameters.txt      |    4 +++
+ arch/powerpc/include/asm/cputable.h      |    6 ++--
+ arch/powerpc/include/asm/exception-64s.h |   51 ++++++++++++++++++++++++++----
+ arch/powerpc/include/asm/paca.h          |    6 ++--
+ arch/powerpc/include/asm/ppc_asm.h       |    2 --
+ arch/powerpc/include/asm/reg.h           |    1 +
+ arch/powerpc/include/asm/thread_info.h   |   11 +++++++
+ arch/powerpc/kernel/asm-offsets.c        |    1 +
+ arch/powerpc/kernel/entry_64.S           |    7 +++-
+ arch/powerpc/kernel/exceptions-64s.S     |   18 ++++++-----
+ arch/powerpc/kernel/setup_64.c           |   14 ++++++++
+ 11 files changed, 99 insertions(+), 22 deletions(-)
+
+-- 
+1.7.10.4
