@@ -2,26 +2,26 @@ Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
 Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e28smtp04.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8B1B02C00AE
+ by ozlabs.org (Postfix) with ESMTPS id 8F91C2C00AF
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:13 +1000 (EST)
 Received: from /spool/local
  by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 10 Sep 2012 18:23:11 +0530
+ Mon, 10 Sep 2012 18:23:07 +0530
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8ACr7hE4325776
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 18:23:07 +0530
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8ACr5J431719518
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 18:23:05 +0530
 Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8ACr6R1015131
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:07 +1000
+ q8ACr4rw014961
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:04 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V9 08/11] arch/powerpc: Use 32bit array for slb cache
-Date: Mon, 10 Sep 2012 18:22:54 +0530
-Message-Id: <1347281577-5460-9-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH -V9 03/11] arch/powerpc: Simplify hpte_decode
+Date: Mon, 10 Sep 2012 18:22:49 +0530
+Message-Id: <1347281577-5460-4-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 In-Reply-To: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -37,47 +37,89 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-With larger vsid we need to track more bits of ESID in slb cache
-for slb invalidate.
+This patch simplify hpte_decode for easy switching of virtual address to
+virtual page number in the later patch
 
 Reviewed-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/paca.h |    2 +-
- arch/powerpc/mm/slb_low.S       |    8 ++++----
- 2 files changed, 5 insertions(+), 5 deletions(-)
+ arch/powerpc/mm/hash_native_64.c |   49 ++++++++++++++++++++++----------------
+ 1 file changed, 28 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
-index daf813f..3e7abba 100644
---- a/arch/powerpc/include/asm/paca.h
-+++ b/arch/powerpc/include/asm/paca.h
-@@ -100,7 +100,7 @@ struct paca_struct {
- 	/* SLB related definitions */
- 	u16 vmalloc_sllp;
- 	u16 slb_cache_ptr;
--	u16 slb_cache[SLB_CACHE_ENTRIES];
-+	u32 slb_cache[SLB_CACHE_ENTRIES];
- #endif /* CONFIG_PPC_STD_MMU_64 */
+diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
+index 90039bc..660b8bb 100644
+--- a/arch/powerpc/mm/hash_native_64.c
++++ b/arch/powerpc/mm/hash_native_64.c
+@@ -351,9 +351,10 @@ static void native_hpte_invalidate(unsigned long slot, unsigned long va,
+ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 			int *psize, int *ssize, unsigned long *va)
+ {
++	unsigned long avpn, pteg, vpi;
+ 	unsigned long hpte_r = hpte->r;
+ 	unsigned long hpte_v = hpte->v;
+-	unsigned long avpn;
++	unsigned long vsid, seg_off;
+ 	int i, size, shift, penc;
  
- #ifdef CONFIG_PPC_BOOK3E
-diff --git a/arch/powerpc/mm/slb_low.S b/arch/powerpc/mm/slb_low.S
-index 3b75f19..f6a2625 100644
---- a/arch/powerpc/mm/slb_low.S
-+++ b/arch/powerpc/mm/slb_low.S
-@@ -270,10 +270,10 @@ _GLOBAL(slb_compare_rr_to_size)
- 	bge	1f
+ 	if (!(hpte_v & HPTE_V_LARGE))
+@@ -380,32 +381,38 @@ static void hpte_decode(struct hash_pte *hpte, unsigned long slot,
+ 	}
  
- 	/* still room in the slb cache */
--	sldi	r11,r3,1		/* r11 = offset * sizeof(u16) */
--	rldicl	r10,r10,36,28		/* get low 16 bits of the ESID */
--	add	r11,r11,r13		/* r11 = (u16 *)paca + offset */
--	sth	r10,PACASLBCACHE(r11)	/* paca->slb_cache[offset] = esid */
-+	sldi	r11,r3,2		/* r11 = offset * sizeof(u32) */
-+	srdi    r10,r10,28		/* get the 36 bits of the ESID */
-+	add	r11,r11,r13		/* r11 = (u32 *)paca + offset */
-+	stw	r10,PACASLBCACHE(r11)	/* paca->slb_cache[offset] = esid */
- 	addi	r3,r3,1			/* offset++ */
- 	b	2f
- 1:					/* offset >= SLB_CACHE_ENTRIES */
+ 	/* This works for all page sizes, and for 256M and 1T segments */
++	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ 	shift = mmu_psize_defs[size].shift;
+-	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm) << 23;
+-
+-	if (shift < 23) {
+-		unsigned long vpi, vsid, pteg;
+ 
+-		pteg = slot / HPTES_PER_GROUP;
+-		if (hpte_v & HPTE_V_SECONDARY)
+-			pteg = ~pteg;
+-		switch (hpte_v >> HPTE_V_SSIZE_SHIFT) {
+-		case MMU_SEGSIZE_256M:
+-			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
+-			break;
+-		case MMU_SEGSIZE_1T:
+-			vsid = avpn >> 40;
++	avpn = (HPTE_V_AVPN_VAL(hpte_v) & ~mmu_psize_defs[size].avpnm);
++	pteg = slot / HPTES_PER_GROUP;
++	if (hpte_v & HPTE_V_SECONDARY)
++		pteg = ~pteg;
++
++	switch (*ssize) {
++	case MMU_SEGSIZE_256M:
++		/* We only have 28 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1f) << 23;
++		vsid    =  avpn >> 5;
++		/* We can find more bits from the pteg value */
++		if (shift < 23) {
++			vpi = (vsid ^ pteg) & htab_hash_mask;
++			seg_off |= vpi << shift;
++		}
++		*va = vsid << SID_SHIFT | seg_off;
++	case MMU_SEGSIZE_1T:
++		/* We only have 40 - 23 bits of seg_off in avpn */
++		seg_off = (avpn & 0x1ffff) << 23;
++		vsid    = avpn >> 17;
++		if (shift < 23) {
+ 			vpi = (vsid ^ (vsid << 25) ^ pteg) & htab_hash_mask;
+-			break;
+-		default:
+-			avpn = vpi = size = 0;
++			seg_off |= vpi << shift;
+ 		}
+-		avpn |= (vpi << mmu_psize_defs[size].shift);
++		*va = vsid << SID_SHIFT_1T | seg_off;
++	default:
++		*va = size = 0;
+ 	}
+-
+-	*va = avpn;
+ 	*psize = size;
+-	*ssize = hpte_v >> HPTE_V_SSIZE_SHIFT;
+ }
+ 
+ /*
 -- 
 1.7.10
