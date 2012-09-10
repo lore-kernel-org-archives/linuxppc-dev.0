@@ -1,24 +1,22 @@
-Return-Path: <R65777@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4D2292C0087
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 18:50:38 +1000 (EST)
-From: Bhushan Bharat-R65777 <R65777@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: RE: [PATCH] using get/put_user64 apis on 64bit machine
-Date: Mon, 10 Sep 2012 08:50:23 +0000
-Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0646913C@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1343038597-23859-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1347252129.2385.147.camel@pasglop>
-In-Reply-To: <1347252129.2385.147.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <dargaud@lpsc.in2p3.fr>
+Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4D15E2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 19:31:56 +1000 (EST)
+Received: from [134.158.40.174] (lpsc0174x.in2p3.fr [134.158.40.174])
+ by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id q8A9VptF002935
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 11:31:52 +0200
+Message-ID: <504DB387.9050904@lpsc.in2p3.fr>
+Date: Mon, 10 Sep 2012 11:31:51 +0200
+From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "agraf@suse.de" <agraf@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: Moving target
+References: <503F7555.5060404@lpsc.in2p3.fr>
+ <1346369432.18688.10.camel@concordia>
+In-Reply-To: <1346369432.18688.10.camel@concordia>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
-c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogTW9uZGF5
-LCBTZXB0ZW1iZXIgMTAsIDIwMTIgMTA6MTIgQU0NCj4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3
-Nw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFz
-aGluZy5vcmc7IGFncmFmQHN1c2UuZGU7DQo+IFdvb2QgU2NvdHQtQjA3NDIxOyBCaHVzaGFuIEJo
-YXJhdC1SNjU3NzcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gdXNpbmcgZ2V0L3B1dF91c2VyNjQg
-YXBpcyBvbiA2NGJpdCBtYWNoaW5lDQo+IA0KPiBPbiBNb24sIDIwMTItMDctMjMgYXQgMTU6NDYg
-KzA1MzAsIEJoYXJhdCBCaHVzaGFuIHdyb3RlOg0KPiA+IE9uIHBvd2VycGM2NCBtYWNoaW5lIGdl
-dC9wdXRfdXNlcjY0KCkgaXMgc2FtZSBhcyBnZXQvcHV0X3VzZXIoKSB3aGlsZQ0KPiA+IG9uIHBv
-d2VycGMzMiBtYWNoaW5lIGdldF91c2VyNjQgaXMgZGlmZmVyZW50LiBXaXRoIHRoaXMgcGF0Y2gg
-d2UgY2FuDQo+ID4gdXNlIGdldF91c2VyNjQoKSBhbmQgcHV0X3VzZXI2NCgpIG9uIDMyIGFuZCA2
-NCBiaXQgbWFjaGluZXMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBCaGFyYXQgQmh1c2hhbiA8
-YmhhcmF0LmJodXNoYW5AZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gDQo+IFRoZXJlIGFwcGVh
-ciB0byBiZSBubyB1c2VyIG9mIGFueSBvZiB0aGVzZSBBUElzIGluIHRoZSB0cmVlLiBUaGVyZSdz
-IGFsc28gbm8NCj4gZ2V0X3VzZXI2NCAtPiBfX2dldF91c2VyNjQoKSBtYWNyb3MgZWl0aGVyLiBX
-aHkgbm90IGp1c3QgcmVtb3ZlIHRoZSB3aG9sZSBsb3QgPw0KDQpXaGVuIEkgc2VudCB0aGUgcGF0
-Y2ggSSBkaWQgbm90IHNlYXJjaCB0aGUgdXNlcnMsIEkgYWdyZWUgdGhhdCB3ZSBjYW4gcmVtb3Zl
-IHRoZSBfX2dldF91c2VyNjQgYW5kIF9fcHV0X3VzZXI2NCBhbHRvZ2V0aGVyLg0KDQpUaGFua3MN
-Ci1CaGFyYXQgDQoNCj4gDQo+IENoZWVycywNCj4gQmVuLg0KPiANCj4gPiAgYXJjaC9wb3dlcnBj
-L2luY2x1ZGUvYXNtL3VhY2Nlc3MuaCB8ICAgIDcgKysrKysrKw0KPiA+ICAxIGZpbGVzIGNoYW5n
-ZWQsIDcgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQg
-YS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vdWFjY2Vzcy5oDQo+ID4gYi9hcmNoL3Bvd2VycGMv
-aW5jbHVkZS9hc20vdWFjY2Vzcy5oDQo+ID4gaW5kZXggMTdiYjQwYy4uMDE3NDNhYSAxMDA2NDQN
-Cj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vdWFjY2Vzcy5oDQo+ID4gKysrIGIv
-YXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3VhY2Nlc3MuaA0KPiA+IEBAIC0xMTQsMTAgKzExNCwx
-NyBAQCBzdHJ1Y3QgZXhjZXB0aW9uX3RhYmxlX2VudHJ5IHsgICNkZWZpbmUNCj4gPiBfX3B1dF91
-c2VyKHgsIHB0cikgXA0KPiA+ICAJX19wdXRfdXNlcl9ub2NoZWNrKChfX3R5cGVvZl9fKCoocHRy
-KSkpKHgpLCAocHRyKSwgc2l6ZW9mKCoocHRyKSkpDQo+ID4NCj4gPiArLyoNCj4gPiArICogT24g
-cG93ZXJwYzY0IG1hY2hpbmUgZ2V0L3B1dF91c2VyNjQoKSBpcyBzYW1lIGFzIGdldC9wdXRfdXNl
-cigpDQo+ID4gK3doaWxlDQo+ID4gKyAqIG9uIHBvd2VycGMzMiBtYWNoaW5lIGdldF91c2VyNjQg
-aXMgZGlmZmVyZW50Lg0KPiA+ICsgKi8NCj4gPiAgI2lmbmRlZiBfX3Bvd2VycGM2NF9fDQo+ID4g
-ICNkZWZpbmUgX19nZXRfdXNlcjY0KHgsIHB0cikgXA0KPiA+ICAJX19nZXRfdXNlcjY0X25vY2hl
-Y2soKHgpLCAocHRyKSwgc2l6ZW9mKCoocHRyKSkpICAjZGVmaW5lDQo+ID4gX19wdXRfdXNlcjY0
-KHgsIHB0cikgX19wdXRfdXNlcih4LCBwdHIpDQo+ID4gKyNlbHNlDQo+ID4gKyNkZWZpbmUgX19n
-ZXRfdXNlcjY0KHgsIHB0cikgX19nZXRfdXNlcih4LCBwdHIpICNkZWZpbmUNCj4gPiArX19wdXRf
-dXNlcjY0KHgsIHB0cikgX19wdXRfdXNlcih4LCBwdHIpDQo+ID4gICNlbmRpZg0KPiA+DQo+ID4g
-ICNkZWZpbmUgX19nZXRfdXNlcl9pbmF0b21pYyh4LCBwdHIpIFwNCj4gDQo+IA0KDQo=
+On 08/31/2012 01:30 AM, Michael Ellerman wrote:
+
+> I don't think you should be using driver_register().
+>
+> I think instead you want this to be a platform_driver, and use
+> platform_driver_register() ?
+
+Thank you for that. The test engineer was on vacation so it took a while 
+before I got feedback on whether it worked or not, and it seems so.
+-- 
+Guillaume Dargaud
+http://www.gdargaud.net/Antarctica/
