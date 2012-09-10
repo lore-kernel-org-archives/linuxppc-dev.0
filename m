@@ -1,25 +1,31 @@
-Return-Path: <alan@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
- by ozlabs.org (Postfix) with ESMTP id CC8EF2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:52:31 +1000 (EST)
-Date: Mon, 10 Sep 2012 14:10:21 +0100
-From: Alan Cox <alan@linux.intel.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH] Powerpc 8xx CPM_UART delay in receive
-Message-ID: <20120910141021.6e7762d6@bob.linux.org.uk>
-In-Reply-To: <504D922C.1030407@c-s.fr>
-References: <201208141426.q7EEQSPc003956@localhost.localdomain>
- <20120814155227.018988da@pyramind.ukuu.org.uk>
- <502CF2A0.8080109@c-s.fr>
- <20120816152918.5ed2649f@pyramind.ukuu.org.uk>
- <502D054B.3010606@c-s.fr>
- <20120816162136.059b64b4@bob.linux.org.uk>
- <504D922C.1030407@c-s.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Marcelo Tosatti <marcelo@kvack.org>, linux-kernel@vger.kernel.org,
- linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Alan Cox <alan@lxorguk.ukuu.org.uk>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 582E32C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:11 +1000 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 10 Sep 2012 18:23:07 +0530
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8ACr4cG51314770
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 18:23:04 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8ACr36t014925
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:04 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH -V9 02/11] arch/powerpc: Use hpt_va to compute virtual address
+Date: Mon, 10 Sep 2012 18:22:48 +0530
+Message-Id: <1347281577-5460-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,17 +35,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> * a value of 1 for all rates below 2400 (On 8250, fifo is set to 1
-> for such rates)
-> * a value of 2 for 2400 and 4800
-> * a value of 4 for 9600 (which is the default on the 8250 for all
-> rates above 2400)
-> * a value of 8 for 19200
-> * a value of 16 for 38400 and above (on UCC_UART, maxidl is set to
-> 16, never 32)
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-That would seem sensible.
+Don't open code the same
 
+Reviewed-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/cell/beat_htab.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-Alan
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+index 943c9d3..b83077e 100644
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ b/arch/powerpc/platforms/cell/beat_htab.c
+@@ -259,7 +259,7 @@ static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
+ 	u64 dummy0, dummy1;
+ 
+ 	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
+-	va = (vsid << 28) | (ea & 0x0fffffff);
++	va = hpt_va(ea, vsid, MMU_SEGSIZE_256M);
+ 
+ 	raw_spin_lock(&beat_htab_lock);
+ 	slot = beat_lpar_hpte_find(va, psize);
+-- 
+1.7.10
