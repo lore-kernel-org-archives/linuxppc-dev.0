@@ -1,15 +1,42 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/6] powerpc: Add enable_ppr kernel parameter to enable
- PPR save/restore
-In-reply-to: <1347235922.2385.138.camel@pasglop>
-References: <1347190671.3418.12.camel@hbabu-laptop>
- <1347235922.2385.138.camel@pasglop>
-Date: Mon, 10 Sep 2012 10:22:38 +1000
-Message-ID: <13010.1347236558@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, anton@samba.org,
- Haren Myneni <haren@linux.vnet.ibm.com>
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 01D242C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 11:47:19 +1000 (EST)
+Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 52FA03EE0BD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 10:47:15 +0900 (JST)
+Received: from smail (m1 [127.0.0.1])
+ by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 2F91145DE5C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 10:47:15 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
+ by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 14C1645DE55
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 10:47:15 +0900 (JST)
+Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 02B811DB8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 10:47:15 +0900 (JST)
+Received: from g01jpexchkw06.g01.fujitsu.local
+ (g01jpexchkw06.g01.fujitsu.local [10.0.194.45])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id B33161DB8052
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 10:47:14 +0900 (JST)
+Message-ID: <504D467D.2080201@jp.fujitsu.com>
+Date: Mon, 10 Sep 2012 10:46:37 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+MIME-Version: 1.0
+To: <wency@cn.fujitsu.com>
+Subject: Re: [RFC v8 PATCH 00/20] memory-hotplug: hot-remove physical memory
+References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
+ <20120831134956.fec0f681.akpm@linux-foundation.org>
+In-Reply-To: <20120831134956.fec0f681.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
+ rientjes@google.com, sparclinux@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ cl@linux.com, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,131 +46,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hi Wen,
 
-> On Sun, 2012-09-09 at 04:37 -0700, Haren Myneni wrote:
-> > enable_ppr kernel parameter is used to enable PPR save and restore.
-> > Supported on Power7 and later processors.
-> > 
-> > By default, CPU_FTR_HAS_PPR is set for POWER7. If this parameter is not
-> > passed, disable CPU_FTR_HAS_PPR.
-> 
-> What is the point ? Obscure / magic kernel command line options to turn
-> on a feature are pointless. Nobody knows about them, nobody enables
-> them.
-> 
-> What you are doing is guarantee that nobody's ever going to enable your
-> code, so your whole patch series is thus irrelevant :-)
-> 
-> If there's a good reason to *avoid* your option, then maybe consider
-> adding an option to *disable* the PPR save/restore, though of course
-> that would bring the argument that if it needs to be disabled maybe we
-> shouldn't do it in the first place, or you might want to think of a
-> reasonable way to intuit what the option should be.
+2012/09/01 5:49, Andrew Morton wrote:
+> On Tue, 28 Aug 2012 18:00:07 +0800
+> wency@cn.fujitsu.com wrote:
+>
+>> This patch series aims to support physical memory hot-remove.
+>
+> Have you had much review and testing feedback yet?
+>
+>> The patches can free/remove the following things:
+>>
+>>    - acpi_memory_info                          : [RFC PATCH 4/19]
+>>    - /sys/firmware/memmap/X/{end, start, type} : [RFC PATCH 8/19]
+>>    - iomem_resource                            : [RFC PATCH 9/19]
+>>    - mem_section and related sysfs files       : [RFC PATCH 10-11, 13-16/19]
+>>    - page table of removed memory              : [RFC PATCH 12/19]
+>>    - node and related sysfs files              : [RFC PATCH 18-19/19]
+>>
+>> If you find lack of function for physical memory hot-remove, please let me
+>> know.
+>
 
-IIRC, Haren was saying there's a 6% hit on null syscall for this.  So we
-suggested having a cmdline option to disable it for distros.
+> I doubt if many people have hardware which permits physical memory
+> removal?  How would you suggest that people with regular hardware can
+> test these chagnes?
 
-Haren, is my recollection correct?  If so, can you add this info the
-change log and change the sex of the option. 
+How do you test the patch? As Andrew says, for hot-removing memory,
+we need a particular hardware. I think so too. So many people may want
+to know how to test the patch.
+If we apply following patch to kvm guest, can we hot-remove memory on
+kvm guest?
 
-Mikey
+http://lists.gnu.org/archive/html/qemu-devel/2012-07/msg01389.html
 
-> 
-> Ben.
-> 
-> > Signed-off-by: Haren Myneni <haren@us.ibm.com>
-> > 
-> > ---
-> >  Documentation/kernel-parameters.txt |    4 ++++
-> >  arch/powerpc/include/asm/cputable.h |    6 ++++--
-> >  arch/powerpc/kernel/setup_64.c      |   14 ++++++++++++++
-> >  3 files changed, 22 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> > index ad7e2e5..2881e5f 100644
-> > --- a/Documentation/kernel-parameters.txt
-> > +++ b/Documentation/kernel-parameters.txt
-> > @@ -809,6 +809,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
-> >  			to discrete, to make X server driver able to add WB
-> >  			entry later. This parameter enables that.
-> >  
-> > +	enable_ppr	[PPC/PSERIES]
-> > +			Saves user defined PPR when process enters to kernel 
-> > +			and restores PPR at exit. But it impacts performance.
-> > +
-> >  	enable_timer_pin_1 [X86]
-> >  			Enable PIN 1 of APIC timer
-> >  			Can be useful to work around chipset bugs
-> > diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> > index b3c083d..880c469 100644
-> > --- a/arch/powerpc/include/asm/cputable.h
-> > +++ b/arch/powerpc/include/asm/cputable.h
-> > @@ -203,6 +203,7 @@ extern const char *powerpc_base_platform;
-> >  #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0800000000000000)
-> >  #define CPU_FTR_ICSWX			LONG_ASM_CONST(0x1000000000000000)
-> >  #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x2000000000000000)
-> > +#define CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x4000000000000000)
-> >  
-> >  #ifndef __ASSEMBLY__
-> >  
-> > @@ -432,7 +433,8 @@ extern const char *powerpc_base_platform;
-> >  	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
-> >  	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
-> >  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
-> > -	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY)
-> > +	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
-> > +	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR)
-> >  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
-> >  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
-> >  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> > @@ -454,7 +456,7 @@ extern const char *powerpc_base_platform;
-> >  	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
-> >  	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
-> >  	    CPU_FTRS_POWER7 | CPU_FTRS_CELL | CPU_FTRS_PA6T |		\
-> > -	    CPU_FTR_VSX)
-> > +	    CPU_FTR_VSX | CPU_FTR_HAS_PPR)
-> >  #endif
-> >  #else
-> >  enum {
-> > diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-> > index 389bd4f..e4c1945 100644
-> > --- a/arch/powerpc/kernel/setup_64.c
-> > +++ b/arch/powerpc/kernel/setup_64.c
-> > @@ -98,6 +98,8 @@ int dcache_bsize;
-> >  int icache_bsize;
-> >  int ucache_bsize;
-> >  
-> > +static u32 enable_ppr = 0;
-> > +
-> >  #ifdef CONFIG_SMP
-> >  
-> >  static char *smt_enabled_cmdline;
-> > @@ -357,6 +359,9 @@ void __init setup_system(void)
-> >  {
-> >  	DBG(" -> setup_system()\n");
-> >  
-> > +	if (cpu_has_feature(CPU_FTR_HAS_PPR) && !enable_ppr)
-> > +		cur_cpu_spec->cpu_features &= ~CPU_FTR_HAS_PPR;
-> > +
-> >  	/* Apply the CPUs-specific and firmware specific fixups to kernel
-> >  	 * text (nop out sections not relevant to this CPU or this firmware)
-> >  	 */
-> > @@ -683,6 +688,15 @@ void __init setup_per_cpu_areas(void)
-> >  }
-> >  #endif
-> >  
-> > +/* early_ppr kernel parameter to save/restore PPR register */
-> > +static int __init early_ppr_enabled(char *str)
-> > +{
-> > +	enable_ppr = 1;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +early_param("enable_ppr", early_ppr_enabled);
-> >  
-> >  #ifdef CONFIG_PPC_INDIRECT_IO
-> >  struct ppc_pci_io ppc_pci_io;
-> 
-> 
+Thanks,
+Yasuaki Ishimatsu
+
+>
+>> Known problems:
+>> 1. memory can't be offlined when CONFIG_MEMCG is selected.
+>
+> That's quite a problem!  Do you have a description of why this is the
+> case, and a plan for fixing it?
+>
