@@ -1,21 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DA4B82C0096
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 15:23:25 +1000 (EST)
-Message-ID: <1347254598.11820.3.camel@pasglop>
-Subject: Re: [PATCH -V8 0/11] arch/powerpc: Add 64TB support to ppc64
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Date: Mon, 10 Sep 2012 15:23:18 +1000
-In-Reply-To: <87ipbomp0h.fsf@linux.vnet.ibm.com>
-References: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1346982235.2385.33.camel@pasglop> <87fw6uoxo3.fsf@linux.vnet.ibm.com>
- <87ipbomp0h.fsf@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org
+Subject: [PATCH] powerpc: add denormalisation exception handling for POWER6/7
+In-reply-to: <5E6FBB75-BE97-4D97-AEA2-EC8EAF1E0ECF@kernel.crashing.org>
+References: <11738.1310363538@neuling.org>
+ <5E6FBB75-BE97-4D97-AEA2-EC8EAF1E0ECF@kernel.crashing.org>
+Date: Mon, 10 Sep 2012 16:54:47 +1000
+Message-ID: <25882.1347260087@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>, miltonm@bga.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,194 +17,253 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-09-08 at 22:27 +0530, Aneesh Kumar K.V wrote:
+On POWER6 and POWER7 if the input operand to an instruction is a
+denormalised single precision binary floating we can take a
+denormalisation exception where it's expected that the hypervisor (HV=1)
+will fix up the inputs before the instruction is run.
 
- .../...
+This adds code to handle this denormalisation exception for POWER6 and
+POWER7.
 
-> slice array size and slice mask size depend on PGTABLE_RANGE. We
-> can't directly include pgtable.h in these header because there is
-> a circular dependency. So split the pgtable range into a separate
-> header and include that
+It also add a CONFIG_PPC_DENORMALISATION option and sets it in
+pseries/ppc64_defconfig.
+
+This is useful on bare metal systems only.  Based on patch from Milton
+Miller.
+
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+It's been a year since I posted this.  I forgot to repost... I guess I
+got distracted by a dog with a fluffy tail or something.
+
+So here's v2 to address Kumar's concern about the Kconfig dependency and
+to rebase on a years kernel dev.
+
+If you have any comments, v3 will be out in ~2014.
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 352f416..a454360 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -557,6 +557,14 @@ config SCHED_SMT
+ 	  when dealing with POWER5 cpus at a cost of slightly increased
+ 	  overhead in some places. If unsure say N here.
  
-Not fan of that pgtable-*-range.h .... I did a quick hack on top of
-upstream and it looks like you can get away with something along the
-lines of: (fill in the gaps)
-
-index 1c65a59..40f70085 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -16,6 +16,14 @@
- #include <asm/page.h>
++config PPC_DENORMALISATION
++	bool "PowerPC denormalisation exception handling"
++	depends on PPC_BOOK3S_64
++	default "n"
++	---help---
++	  Add support for handling denormalisation of single precision
++	  values.  Useful for bare metal only.  If unsure say Y here.
++
+ config CMDLINE_BOOL
+ 	bool "Default bootloader kernel arguments"
  
- /*
-+ * This is necessary to get the definition of PGTABLE_RANGE which we
-+ * need for various slices related matters. Note that this isn't the
-+ * complete pgtable.h but only a portion of it.
-+ */
-+#include <asm/pgtable-ppc64.h>
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index db27c82..e263e6a 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -51,6 +51,7 @@ CONFIG_KEXEC=y
+ CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_MEMORY_HOTREMOVE=y
+ CONFIG_SCHED_SMT=y
++CONFIG_PPC_DENORMALISATION=y
+ CONFIG_PCCARD=y
+ CONFIG_ELECTRA_CF=y
+ CONFIG_HOTPLUG_PCI=m
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 1f65b3c..c169dfb 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -48,6 +48,7 @@ CONFIG_MEMORY_HOTREMOVE=y
+ CONFIG_PPC_64K_PAGES=y
+ CONFIG_PPC_SUBPAGE_PROT=y
+ CONFIG_SCHED_SMT=y
++CONFIG_PPC_DENORMALISATION=y
+ CONFIG_HOTPLUG_PCI=m
+ CONFIG_HOTPLUG_PCI_RPA=m
+ CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
+diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
+index 4c25319..5f73ce6 100644
+--- a/arch/powerpc/include/asm/ppc-opcode.h
++++ b/arch/powerpc/include/asm/ppc-opcode.h
+@@ -126,6 +126,7 @@
+ #define PPC_INST_TLBIVAX		0x7c000624
+ #define PPC_INST_TLBSRX_DOT		0x7c0006a5
+ #define PPC_INST_XXLOR			0xf0000510
++#define PPC_INST_XVCPSGNDP		0xf0000780
+ 
+ #define PPC_INST_NAP			0x4c000364
+ #define PPC_INST_SLEEP			0x4c0003a4
+@@ -277,6 +278,8 @@
+ 					       VSX_XX1((s), a, b))
+ #define XXLOR(t, a, b)		stringify_in_c(.long PPC_INST_XXLOR | \
+ 					       VSX_XX3((t), a, b))
++#define XVCPSGNDP(t, a, b)	stringify_in_c(.long (PPC_INST_XVCPSGNDP | \
++					       VSX_XX3((t), (a), (b))))
+ 
+ #define PPC_NAP			stringify_in_c(.long PPC_INST_NAP)
+ #define PPC_SLEEP		stringify_in_c(.long PPC_INST_SLEEP)
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 334be34..d352aa4 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -524,6 +524,7 @@
+ 
+ #define SPRN_HSRR0	0x13A	/* Save/Restore Register 0 */
+ #define SPRN_HSRR1	0x13B	/* Save/Restore Register 1 */
++#define   HSRR1_DENORM		0x00100000 /* Denorm exception */
+ 
+ #define SPRN_TBCTL	0x35f	/* PA6T Timebase control register */
+ #define   TBCTL_FREEZE		0x0000000000000000ull /* Freeze all tbs */
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 39aa97d..6bbfbad 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -275,6 +275,31 @@ vsx_unavailable_pSeries_1:
+ 	STD_EXCEPTION_PSERIES(0x1300, 0x1300, instruction_breakpoint)
+ 	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_STD, 0x1300)
+ 
++#ifdef CONFIG_PPC_DENORMALISATION
++	. = 0x1500
++	.global denorm_Hypervisor
++denorm_Hypervisor:
++	HMT_MEDIUM
++	mtspr	SPRN_SPRG_HSCRATCH0,r13
++	mfspr	r13,SPRN_SPRG_HPACA
++	std	r9,PACA_EXGEN+EX_R9(r13)
++	std	r10,PACA_EXGEN+EX_R10(r13)
++	std	r11,PACA_EXGEN+EX_R11(r13)
++	std	r12,PACA_EXGEN+EX_R12(r13)
++	mfspr	r9,SPRN_SPRG_HSCRATCH0
++	std	r9,PACA_EXGEN+EX_R13(r13)
++	mfcr	r9
 +
++	mfspr	r10,SPRN_HSRR1
++	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
++	andis.	r10,r10,(HSRR1_DENORM)@h /* denorm? */
++	addi	r11,r11,-4		/* HSRR0 is next instruction */
++	bne+	denorm_assist
 +
++	EXCEPTION_PROLOG_PSERIES_1(denorm_common, EXC_HV)
++	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_STD, 0x1500)
++#endif
++
+ #ifdef CONFIG_CBE_RAS
+ 	STD_EXCEPTION_HV(0x1600, 0x1602, cbe_maintenance)
+ 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1602)
+@@ -336,6 +361,103 @@ do_stab_bolted_pSeries:
+ 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x900)
+ 	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0x982)
+ 
++#ifdef CONFIG_PPC_DENORMALISATION
++denorm_assist:
++BEGIN_FTR_SECTION
 +/*
-  * Segment table
-  */
- 
-@@ -371,8 +379,7 @@ extern void slb_set_size(u16 size);
- 	addi	rx,rt,1;						\
- 	srdi	rx,rx,VSID_BITS_##size;	/* extract 2^VSID_BITS bit */	\
- 	add	rt,rt,rx
--
--
-+ 
- #ifndef __ASSEMBLY__
- 
- #ifdef CONFIG_PPC_SUBPAGE_PROT
-diff --git a/arch/powerpc/include/asm/mmu.h
-b/arch/powerpc/include/asm/mmu.h
-index e8a26db..0a3692d 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -146,6 +146,16 @@ extern void setup_initial_memory_limit(phys_addr_t
-first_memblock_base,
- extern u64 ppc64_rma_size;
- #endif /* CONFIG_PPC64 */
- 
-+struct mm_struct;
-+
-+#ifdef CONFIG_DEBUG_VM
-+extern void assert_pte_locked(struct mm_struct *mm, unsigned long
-addr);
-+#else /* CONFIG_DEBUG_VM */
-+static inline void assert_pte_locked(struct mm_struct *mm, unsigned
-long addr)
-+{
-+}
-+#endif /* !CONFIG_DEBUG_VM */
-+
- #endif /* !__ASSEMBLY__ */
- 
- /* The kernel use the constants below to index in the page sizes array.
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h
-b/arch/powerpc/include/asm/pgtable-ppc64.h
-index c420561..2871b00 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -21,17 +21,6 @@
- #define PGTABLE_RANGE (ASM_CONST(1) << PGTABLE_EADDR_SIZE)
- 
- 
--/* Some sanity checking */
--#if TASK_SIZE_USER64 > PGTABLE_RANGE
--#error TASK_SIZE_USER64 exceeds pagetable range
--#endif
--
--#ifdef CONFIG_PPC_STD_MMU_64
--#if TASK_SIZE_USER64 > (1UL << (USER_ESID_BITS + SID_SHIFT))
--#error TASK_SIZE_USER64 exceeds user VSID range
--#endif
--#endif
--
- /*
-  * Define the address range of the kernel non-linear virtual area
-  */
-@@ -117,9 +106,6 @@
- 
- #ifndef __ASSEMBLY__
- 
--#include <linux/stddef.h>
--#include <asm/tlbflush.h>
--
- /*
-  * This is the default implementation of various PTE accessors, it's
-  * used in all cases except Book3S with 64K pages where we have a
-@@ -200,6 +186,9 @@
- #define pgd_offset_k(address) pgd_offset(&init_mm, address)
- 
- 
-+extern void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
-+			    pte_t *ptep, unsigned long pte, int huge);
-+
- /* Atomic PTE updates */
- static inline unsigned long pte_update(struct mm_struct *mm,
- 				       unsigned long addr,
-diff --git a/arch/powerpc/include/asm/pgtable.h
-b/arch/powerpc/include/asm/pgtable.h
-index 2e0e411..a9cbd3b 100644
---- a/arch/powerpc/include/asm/pgtable.h
-+++ b/arch/powerpc/include/asm/pgtable.h
-@@ -9,14 +9,6 @@
- 
- struct mm_struct;
- 
--#ifdef CONFIG_DEBUG_VM
--extern void assert_pte_locked(struct mm_struct *mm, unsigned long
-addr);
--#else /* CONFIG_DEBUG_VM */
--static inline void assert_pte_locked(struct mm_struct *mm, unsigned
-long addr)
--{
--}
--#endif /* !CONFIG_DEBUG_VM */
--
- #endif /* !__ASSEMBLY__ */
- 
- #if defined(CONFIG_PPC64)
-@@ -27,6 +19,8 @@ static inline void assert_pte_locked(struct mm_struct
-*mm, unsigned long addr)
- 
- #ifndef __ASSEMBLY__
- 
-+#include <asm/tlbflush.h>
-+
- /* Generic accessors to PTE bits */
- static inline int pte_write(pte_t pte)		{ return pte_val(pte) &
-_PAGE_RW; }
- static inline int pte_dirty(pte_t pte)		{ return pte_val(pte) &
-_PAGE_DIRTY; }
-diff --git a/arch/powerpc/include/asm/tlbflush.h
-b/arch/powerpc/include/asm/tlbflush.h
-index 81143fc..2af6a03 100644
---- a/arch/powerpc/include/asm/tlbflush.h
-+++ b/arch/powerpc/include/asm/tlbflush.h
-@@ -103,9 +103,6 @@ DECLARE_PER_CPU(struct ppc64_tlb_batch,
-ppc64_tlb_batch);
- 
- extern void __flush_tlb_pending(struct ppc64_tlb_batch *batch);
- 
--extern void hpte_need_flush(struct mm_struct *mm, unsigned long addr,
--			    pte_t *ptep, unsigned long pte, int huge);
--
- #define __HAVE_ARCH_ENTER_LAZY_MMU_MODE
- 
- static inline void arch_enter_lazy_mmu_mode(void)
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 44cf2b2..4aa2da5 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -41,6 +41,7 @@
- #include <asm/io.h>
- #include <asm/mmu_context.h>
- #include <asm/pgtable.h>
-+#include <asm/tlbflush.h>
- #include <asm/mmu.h>
- #include <asm/smp.h>
- #include <asm/machdep.h>
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 297d495..411e7a1 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -327,3 +327,15 @@ EXPORT_SYMBOL(__ioremap_at);
- EXPORT_SYMBOL(iounmap);
- EXPORT_SYMBOL(__iounmap);
- EXPORT_SYMBOL(__iounmap_at);
-+
-+/* Some sanity checking */
-+#if TASK_SIZE_USER64 > PGTABLE_RANGE
-+#error TASK_SIZE_USER64 exceeds pagetable range
++ * To denormalise we need to move a copy of the register to itself.
++ * For POWER6 do that here for all FP regs.
++ */
++	mfmsr	r10
++	ori	r10,r10,(MSR_FP|MSR_FE0|MSR_FE1)
++	xori	r10,r10,(MSR_FE0|MSR_FE1)
++	mtmsrd	r10
++	sync
++	fmr	0,0
++	fmr	1,1
++	fmr	2,2
++	fmr	3,3
++	fmr	4,4
++	fmr	5,5
++	fmr	6,6
++	fmr	7,7
++	fmr	8,8
++	fmr	9,9
++	fmr	10,10
++	fmr	11,11
++	fmr	12,12
++	fmr	13,13
++	fmr	14,14
++	fmr	15,15
++	fmr	16,16
++	fmr	17,17
++	fmr	18,18
++	fmr	19,19
++	fmr	20,20
++	fmr	21,21
++	fmr	22,22
++	fmr	23,23
++	fmr	24,24
++	fmr	25,25
++	fmr	26,26
++	fmr	27,27
++	fmr	28,28
++	fmr	29,29
++	fmr	30,30
++	fmr	31,31
++FTR_SECTION_ELSE
++/*
++ * To denormalise we need to move a copy of the register to itself.
++ * For POWER7 do that here for the first 32 VSX registers only.
++ */
++	mfmsr	r10
++	oris	r10,r10,MSR_VSX@h
++	mtmsrd	r10
++	sync
++	XVCPSGNDP(0,0,0)
++	XVCPSGNDP(1,1,1)
++	XVCPSGNDP(2,2,2)
++	XVCPSGNDP(3,3,3)
++	XVCPSGNDP(4,4,4)
++	XVCPSGNDP(5,5,5)
++	XVCPSGNDP(6,6,6)
++	XVCPSGNDP(7,7,7)
++	XVCPSGNDP(8,8,8)
++	XVCPSGNDP(9,9,9)
++	XVCPSGNDP(10,10,10)
++	XVCPSGNDP(11,11,11)
++	XVCPSGNDP(12,12,12)
++	XVCPSGNDP(13,13,13)
++	XVCPSGNDP(14,14,14)
++	XVCPSGNDP(15,15,15)
++	XVCPSGNDP(16,16,16)
++	XVCPSGNDP(17,17,17)
++	XVCPSGNDP(18,18,18)
++	XVCPSGNDP(19,19,19)
++	XVCPSGNDP(20,20,20)
++	XVCPSGNDP(21,21,21)
++	XVCPSGNDP(22,22,22)
++	XVCPSGNDP(23,23,23)
++	XVCPSGNDP(24,24,24)
++	XVCPSGNDP(25,25,25)
++	XVCPSGNDP(26,26,26)
++	XVCPSGNDP(27,27,27)
++	XVCPSGNDP(28,28,28)
++	XVCPSGNDP(29,29,29)
++	XVCPSGNDP(30,30,30)
++	XVCPSGNDP(31,31,31)
++ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_206)
++	mtspr	SPRN_HSRR0,r11
++	mtcrf	0x80,r9
++	ld	r9,PACA_EXGEN+EX_R9(r13)
++	ld	r10,PACA_EXGEN+EX_R10(r13)
++	ld	r11,PACA_EXGEN+EX_R11(r13)
++	ld	r12,PACA_EXGEN+EX_R12(r13)
++	ld	r13,PACA_EXGEN+EX_R13(r13)
++	HRFID
++	b	.
 +#endif
 +
-+#ifdef CONFIG_PPC_STD_MMU_64
-+#if TASK_SIZE_USER64 > (1UL << (USER_ESID_BITS + SID_SHIFT))
-+#error TASK_SIZE_USER64 exceeds user VSID range
+ 	.align	7
+ 	/* moved from 0xe00 */
+ 	STD_EXCEPTION_HV(., 0xe02, h_data_storage)
+@@ -495,6 +617,9 @@ machine_check_common:
+         STD_EXCEPTION_COMMON(0xe60, hmi_exception, .unknown_exception)
+ 	STD_EXCEPTION_COMMON_ASYNC(0xf00, performance_monitor, .performance_monitor_exception)
+ 	STD_EXCEPTION_COMMON(0x1300, instruction_breakpoint, .instruction_breakpoint_exception)
++#ifdef CONFIG_PPC_DENORMALISATION
++	STD_EXCEPTION_COMMON(0x1502, denorm, .unknown_exception)
 +#endif
-+#endif
-+
+ #ifdef CONFIG_ALTIVEC
+ 	STD_EXCEPTION_COMMON(0x1700, altivec_assist, .altivec_assist_exception)
+ #else
