@@ -1,31 +1,29 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 05A2D2C010F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:17 +1000 (EST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 10 Sep 2012 18:23:15 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8ACr3kJ39518404
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 18:23:04 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8ACr3W4014885
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:03 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V9 01/11] arch/powerpc: Replace open coded CONTEXT_BITS value
-Date: Mon, 10 Sep 2012 18:22:47 +0530
-Message-Id: <1347281577-5460-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <vasilis.liaskovitis@profitbricks.com>
+Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 37A2C2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 23:52:20 +1000 (EST)
+Received: by eeke50 with SMTP id e50so956605eek.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 06:52:17 -0700 (PDT)
+Date: Mon, 10 Sep 2012 15:52:13 +0200
+From: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [RFC v8 PATCH 00/20] memory-hotplug: hot-remove physical memory
+Message-ID: <20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>
+References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
+ <20120831134956.fec0f681.akpm@linux-foundation.org>
+ <504D467D.2080201@jp.fujitsu.com> <504D4A08.7090602@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <504D4A08.7090602@cn.fujitsu.com>
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, cl@linux.com, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Hi,
 
-To clarify the meaning for future readers, replace the open coded
-19 with CONTEXT_BITS
+On Mon, Sep 10, 2012 at 10:01:44AM +0800, Wen Congyang wrote:
+> At 09/10/2012 09:46 AM, Yasuaki Ishimatsu Wrote:
+> > Hi Wen,
+> > 
+> > 2012/09/01 5:49, Andrew Morton wrote:
+> >> On Tue, 28 Aug 2012 18:00:07 +0800
+> >> wency@cn.fujitsu.com wrote:
+> >>
+> >>> This patch series aims to support physical memory hot-remove.
+> >>
+> >> I doubt if many people have hardware which permits physical memory
+> >> removal?  How would you suggest that people with regular hardware can
+> >> test these chagnes?
+> > 
+> > How do you test the patch? As Andrew says, for hot-removing memory,
+> > we need a particular hardware. I think so too. So many people may want
+> > to know how to test the patch.
+> > If we apply following patch to kvm guest, can we hot-remove memory on
+> > kvm guest?
+> > 
+> > http://lists.gnu.org/archive/html/qemu-devel/2012-07/msg01389.html
+> 
+> Yes, if we apply this patchset, we can test hot-remove memory on kvm guest.
+> But that patchset doesn't implement _PS3, so there is some restriction.
 
-Reviewed-by: Paul Mackerras <paulus@samba.org>
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/mm/mmu_context_hash64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+the following repos contain the patchset above, plus 2 more patches that add
+PS3 support to the dimm devices in qemu/seabios:
 
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index 40677aa..daa076c 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -34,7 +34,7 @@ static DEFINE_IDA(mmu_context_ida);
-  * Each segment contains 2^28 bytes.  Each context maps 2^44 bytes,
-  * so we can support 2^19-1 contexts (19 == 35 + 28 - 44).
-  */
--#define MAX_CONTEXT	((1UL << 19) - 1)
-+#define MAX_CONTEXT	((1UL << CONTEXT_BITS) - 1)
- 
- int __init_new_context(void)
- {
--- 
-1.7.10
+https://github.com/vliaskov/seabios/commits/memhp-v2
+https://github.com/vliaskov/qemu-kvm/commits/memhp-v2
+
+I have not posted the PS3 patches yet in the qemu list, but will post them
+soon for v3 of the memory hotplug series. If you have issues testing, let me
+know.
+
+thanks,
+
+- Vasilis
