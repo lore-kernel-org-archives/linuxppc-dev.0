@@ -1,36 +1,36 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e4.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EB9B02C0082
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 12:49:59 +1000 (EST)
+ (Client CN "e1.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 62A832C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 12:51:34 +1000 (EST)
 Received: from /spool/local
- by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e1.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Sun, 9 Sep 2012 22:49:53 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 98B3538C8039
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Sep 2012 22:49:37 -0400 (EDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8A2na5G180994
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Sep 2012 22:49:37 -0400
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8A2najJ003534
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Sep 2012 20:49:36 -0600
-Date: Mon, 10 Sep 2012 10:49:31 +0800
+ Sun, 9 Sep 2012 22:51:29 -0400
+Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id BCDCD38C803B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Sep 2012 22:51:27 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8A2pRGW128842
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Sep 2012 22:51:27 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8A2pRLv015834
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 9 Sep 2012 22:51:27 -0400
+Date: Mon, 10 Sep 2012 10:51:22 +0800
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: Fengguang Wu <fengguang.wu@intel.com>
-Subject: Re: [powerpc:next 59/78]
- arch/powerpc/platforms/pseries/eeh_pe.c:98:23: error: 'eeh_phb_pe_get'
- defined but not used
-Message-ID: <20120910024931.GA1572@shangw.(null)>
-References: <20120910023413.GA29863@localhost>
+Subject: Re: [powerpc:next 60/78]
+ arch/powerpc/platforms/pseries/eeh_pe.c:217:23: error: 'eeh_pe_get' defined
+ but not used
+Message-ID: <20120910025121.GB1572@shangw.(null)>
+References: <20120910023442.GB29863@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120910023413.GA29863@localhost>
+In-Reply-To: <20120910023442.GB29863@localhost>
 Cc: linuxppc-dev@lists.ozlabs.org, kernel-janitors@vger.kernel.org,
  Gavin Shan <shangw@linux.vnet.ibm.com>
 Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
@@ -51,34 +51,36 @@ Hi Fengguang,
 >
 >tree:   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
 >head:   4715fed600109e0bd3d6cfa2b925a643173a08b4
->commit: 55037d176107c33ac79528bf9ab282a6b0b51e16 [59/78] powerpc/eeh: Create PEs for PHBs
+>commit: 22f4ab123f10e1862579785c73d9e60fa24afd4f [60/78] powerpc/eeh: Search PE based on requirement
 >config: powerpc-defconfig (attached as .config)
 >
 >All related error/warning messages:
 >
->arch/powerpc/platforms/pseries/eeh_pe.c:98:23: error: 'eeh_phb_pe_get' defined but not used [-Werror=unused-function]
+>arch/powerpc/platforms/pseries/eeh_pe.c:217:23: error: 'eeh_pe_get' defined but not used [-Werror=unused-function]
+>arch/powerpc/platforms/pseries/eeh_pe.c:237:23: error: 'eeh_pe_get_parent' defined but not used [-Werror=unused-function]
 >cc1: all warnings being treated as errors
 >
 
-The global function eeh_phb_pe_get() will be used by subsequent patches.
-I think that ppc/next merged total 23 patches in one batch. I'm not sure
-that I need refactor the patches to avoid the build failure? :-)
+The global functions eeh_pe_get() and eeh_pe_get_parent() will be used
+by subsequent patches. I think ppc/next merged 23 patches for EEH core
+this time. I'm not sure I should refactor those patches to avoid the
+build failure? :-)
 
 Thanks,
 Gavin
 
->vim +98 arch/powerpc/platforms/pseries/eeh_pe.c
->    93	 *
->    94	 * The overall PEs form hierarchy tree. The first layer of the
->    95	 * hierarchy tree is composed of PHB PEs. The function is used
->    96	 * to retrieve the corresponding PHB PE according to the given PHB.
->    97	 */
->  > 98	static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
->    99	{
->   100		struct eeh_pe *pe;
->   101	
->   102		eeh_lock();
->   103	
+>vim +217 arch/powerpc/platforms/pseries/eeh_pe.c
+>   212	 * the associated PE has been created against the PE address. It's
+>   213	 * notable that the PE address has 2 format: traditional PE address
+>   214	 * which is composed of PCI bus/device/function number, or unified
+>   215	 * PE address.
+>   216	 */
+> > 217	static struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
+>   218	{
+>   219		struct eeh_pe *root = eeh_phb_pe_get(edev->phb);
+>   220		struct eeh_pe *pe;
+>   221	
+>   222		eeh_lock();
 >
 >---
 >0-DAY kernel build testing backend         Open Source Technology Centre
@@ -3007,8 +3009,3 @@ Gavin
 >CONFIG_KVM_BOOK3S_64=m
 >CONFIG_KVM_BOOK3S_64_HV=y
 >CONFIG_VHOST_NET=m
-
->_______________________________________________
->Linuxppc-dev mailing list
->Linuxppc-dev@lists.ozlabs.org
->https://lists.ozlabs.org/listinfo/linuxppc-dev
