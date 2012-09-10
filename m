@@ -1,17 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1347264790.6887.16.camel@concordia>
-Subject: Re: [PATCH] powerpc: add denormalisation exception handling for
- POWER6/7
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Michael Neuling <mikey@neuling.org>
-Date: Mon, 10 Sep 2012 18:13:10 +1000
-In-Reply-To: <25882.1347260087@neuling.org>
-References: <11738.1310363538@neuling.org>
- <5E6FBB75-BE97-4D97-AEA2-EC8EAF1E0ECF@kernel.crashing.org>
- <25882.1347260087@neuling.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, miltonm@bga.com, linuxppc-dev@ozlabs.org
+Return-Path: <R65777@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4D2292C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 18:50:38 +1000 (EST)
+From: Bhushan Bharat-R65777 <R65777@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: RE: [PATCH] using get/put_user64 apis on 64bit machine
+Date: Mon, 10 Sep 2012 08:50:23 +0000
+Message-ID: <6A3DF150A5B70D4F9B66A25E3F7C888D0646913C@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <1343038597-23859-1-git-send-email-Bharat.Bhushan@freescale.com>
+ <1347252129.2385.147.camel@pasglop>
+In-Reply-To: <1347252129.2385.147.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "agraf@suse.de" <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,221 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-09-10 at 16:54 +1000, Michael Neuling wrote:
-> On POWER6 and POWER7 if the input operand to an instruction is a
-> denormalised single precision binary floating we can take a
-                                               ^
-                                               point value?
-
-
-
-> diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-> index 4c25319..5f73ce6 100644
-> --- a/arch/powerpc/include/asm/ppc-opcode.h
-> +++ b/arch/powerpc/include/asm/ppc-opcode.h
-> @@ -126,6 +126,7 @@
->  #define PPC_INST_TLBIVAX		0x7c000624
->  #define PPC_INST_TLBSRX_DOT		0x7c0006a5
->  #define PPC_INST_XXLOR			0xf0000510
-> +#define PPC_INST_XVCPSGNDP		0xf0000780
->  
->  #define PPC_INST_NAP			0x4c000364
->  #define PPC_INST_SLEEP			0x4c0003a4
-> @@ -277,6 +278,8 @@
->  					       VSX_XX1((s), a, b))
->  #define XXLOR(t, a, b)		stringify_in_c(.long PPC_INST_XXLOR | \
->  					       VSX_XX3((t), a, b))
-> +#define XVCPSGNDP(t, a, b)	stringify_in_c(.long (PPC_INST_XVCPSGNDP | \
-> +					       VSX_XX3((t), (a), (b))))
-
-If anyone else is wondering, yes the instruction really is "xvcpsgndp".
-
-
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index 334be34..d352aa4 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -524,6 +524,7 @@
->  
->  #define SPRN_HSRR0	0x13A	/* Save/Restore Register 0 */
->  #define SPRN_HSRR1	0x13B	/* Save/Restore Register 1 */
-> +#define   HSRR1_DENORM		0x00100000 /* Denorm exception */
->  
->  #define SPRN_TBCTL	0x35f	/* PA6T Timebase control register */
->  #define   TBCTL_FREEZE		0x0000000000000000ull /* Freeze all tbs */
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index 39aa97d..6bbfbad 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -275,6 +275,31 @@ vsx_unavailable_pSeries_1:
->  	STD_EXCEPTION_PSERIES(0x1300, 0x1300, instruction_breakpoint)
->  	KVM_HANDLER_PR_SKIP(PACA_EXGEN, EXC_STD, 0x1300)
->  
-> +#ifdef CONFIG_PPC_DENORMALISATION
-> +	. = 0x1500
-> +	.global denorm_Hypervisor
-> +denorm_Hypervisor:
-
-The naming pattern seems to be "foo_exception_hv".
-
-> +	HMT_MEDIUM
-> +	mtspr	SPRN_SPRG_HSCRATCH0,r13
-> +	mfspr	r13,SPRN_SPRG_HPACA
-> +	std	r9,PACA_EXGEN+EX_R9(r13)
-> +	std	r10,PACA_EXGEN+EX_R10(r13)
-> +	std	r11,PACA_EXGEN+EX_R11(r13)
-> +	std	r12,PACA_EXGEN+EX_R12(r13)
-> +	mfspr	r9,SPRN_SPRG_HSCRATCH0
-> +	std	r9,PACA_EXGEN+EX_R13(r13)
-> +	mfcr	r9
-> +
-> +	mfspr	r10,SPRN_HSRR1
-> +	mfspr	r11,SPRN_HSRR0		/* save HSRR0 */
-> +	andis.	r10,r10,(HSRR1_DENORM)@h /* denorm? */
-> +	addi	r11,r11,-4		/* HSRR0 is next instruction */
-> +	bne+	denorm_assist
-
-I think only this hunk should be inside the  #ifdef.
-
-ie. we should always handle the exception but if we have no denorm
-support you go to unknown_exception(), rather than just landing in fubar
-land.
-
-> +	EXCEPTION_PROLOG_PSERIES_1(denorm_common, EXC_HV)
-> +	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_STD, 0x1500)
-> +#endif
-
-
-> @@ -336,6 +361,103 @@ do_stab_bolted_pSeries:
->  	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0x900)
->  	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0x982)
->  
-> +#ifdef CONFIG_PPC_DENORMALISATION
-> +denorm_assist:
-> +BEGIN_FTR_SECTION
-> +/*
-> + * To denormalise we need to move a copy of the register to itself.
-> + * For POWER6 do that here for all FP regs.
-> + */
-> +	mfmsr	r10
-> +	ori	r10,r10,(MSR_FP|MSR_FE0|MSR_FE1)
-> +	xori	r10,r10,(MSR_FE0|MSR_FE1)
-> +	mtmsrd	r10
-
-So we're enabling FP, and switching the FP exception mode to "ignore".
-Which is OK because we are going to switch it all back the way it was on
-the way out when we rfid?
-
-> +	sync
-> +	fmr	0,0
-> +	fmr	1,1
-> +	fmr	2,2
-> +	fmr	3,3
-> +	fmr	4,4
-> +	fmr	5,5
-> +	fmr	6,6
-> +	fmr	7,7
-> +	fmr	8,8
-> +	fmr	9,9
-> +	fmr	10,10
-> +	fmr	11,11
-> +	fmr	12,12
-> +	fmr	13,13
-> +	fmr	14,14
-> +	fmr	15,15
-> +	fmr	16,16
-> +	fmr	17,17
-> +	fmr	18,18
-> +	fmr	19,19
-> +	fmr	20,20
-> +	fmr	21,21
-> +	fmr	22,22
-> +	fmr	23,23
-> +	fmr	24,24
-> +	fmr	25,25
-> +	fmr	26,26
-> +	fmr	27,27
-> +	fmr	28,28
-> +	fmr	29,29
-> +	fmr	30,30
-> +	fmr	31,31
-> +FTR_SECTION_ELSE
-> +/*
-> + * To denormalise we need to move a copy of the register to itself.
-> + * For POWER7 do that here for the first 32 VSX registers only.
-> + */
-
-Why only the first 32?
-
-> +	mfmsr	r10
-> +	oris	r10,r10,MSR_VSX@h
-> +	mtmsrd	r10
-
-Here we just enable VSX and exceptions be damned?
-
-> +	sync
-> +	XVCPSGNDP(0,0,0)
-> +	XVCPSGNDP(1,1,1)
-> +	XVCPSGNDP(2,2,2)
-> +	XVCPSGNDP(3,3,3)
-> +	XVCPSGNDP(4,4,4)
-> +	XVCPSGNDP(5,5,5)
-> +	XVCPSGNDP(6,6,6)
-> +	XVCPSGNDP(7,7,7)
-> +	XVCPSGNDP(8,8,8)
-> +	XVCPSGNDP(9,9,9)
-> +	XVCPSGNDP(10,10,10)
-> +	XVCPSGNDP(11,11,11)
-> +	XVCPSGNDP(12,12,12)
-> +	XVCPSGNDP(13,13,13)
-> +	XVCPSGNDP(14,14,14)
-> +	XVCPSGNDP(15,15,15)
-> +	XVCPSGNDP(16,16,16)
-> +	XVCPSGNDP(17,17,17)
-> +	XVCPSGNDP(18,18,18)
-> +	XVCPSGNDP(19,19,19)
-> +	XVCPSGNDP(20,20,20)
-> +	XVCPSGNDP(21,21,21)
-> +	XVCPSGNDP(22,22,22)
-> +	XVCPSGNDP(23,23,23)
-> +	XVCPSGNDP(24,24,24)
-> +	XVCPSGNDP(25,25,25)
-> +	XVCPSGNDP(26,26,26)
-> +	XVCPSGNDP(27,27,27)
-> +	XVCPSGNDP(28,28,28)
-> +	XVCPSGNDP(29,29,29)
-> +	XVCPSGNDP(30,30,30)
-> +	XVCPSGNDP(31,31,31)
-> +ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_206)
-> +	mtspr	SPRN_HSRR0,r11
-
-Do we not need to restore HSRR1 too?
-
-> +	mtcrf	0x80,r9
-> +	ld	r9,PACA_EXGEN+EX_R9(r13)
-> +	ld	r10,PACA_EXGEN+EX_R10(r13)
-> +	ld	r11,PACA_EXGEN+EX_R11(r13)
-> +	ld	r12,PACA_EXGEN+EX_R12(r13)
-> +	ld	r13,PACA_EXGEN+EX_R13(r13)
-> +	HRFID
-> +	b	.
-> +#endif
-> +
->  	.align	7
->  	/* moved from 0xe00 */
->  	STD_EXCEPTION_HV(., 0xe02, h_data_storage)
-> @@ -495,6 +617,9 @@ machine_check_common:
->          STD_EXCEPTION_COMMON(0xe60, hmi_exception, .unknown_exception)
->  	STD_EXCEPTION_COMMON_ASYNC(0xf00, performance_monitor, .performance_monitor_exception)
->  	STD_EXCEPTION_COMMON(0x1300, instruction_breakpoint, .instruction_breakpoint_exception)
-> +#ifdef CONFIG_PPC_DENORMALISATION
-> +	STD_EXCEPTION_COMMON(0x1502, denorm, .unknown_exception)
-> +#endif
->  #ifdef CONFIG_ALTIVEC
->  	STD_EXCEPTION_COMMON(0x1700, altivec_assist, .altivec_assist_exception)
->  #else
-
-
-Looking forward to your response in 2014 ;)
-
-cheers
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQmVuamFtaW4gSGVycmVu
+c2NobWlkdCBbbWFpbHRvOmJlbmhAa2VybmVsLmNyYXNoaW5nLm9yZ10NCj4gU2VudDogTW9uZGF5
+LCBTZXB0ZW1iZXIgMTAsIDIwMTIgMTA6MTIgQU0NCj4gVG86IEJodXNoYW4gQmhhcmF0LVI2NTc3
+Nw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGdhbGFrQGtlcm5lbC5jcmFz
+aGluZy5vcmc7IGFncmFmQHN1c2UuZGU7DQo+IFdvb2QgU2NvdHQtQjA3NDIxOyBCaHVzaGFuIEJo
+YXJhdC1SNjU3NzcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gdXNpbmcgZ2V0L3B1dF91c2VyNjQg
+YXBpcyBvbiA2NGJpdCBtYWNoaW5lDQo+IA0KPiBPbiBNb24sIDIwMTItMDctMjMgYXQgMTU6NDYg
+KzA1MzAsIEJoYXJhdCBCaHVzaGFuIHdyb3RlOg0KPiA+IE9uIHBvd2VycGM2NCBtYWNoaW5lIGdl
+dC9wdXRfdXNlcjY0KCkgaXMgc2FtZSBhcyBnZXQvcHV0X3VzZXIoKSB3aGlsZQ0KPiA+IG9uIHBv
+d2VycGMzMiBtYWNoaW5lIGdldF91c2VyNjQgaXMgZGlmZmVyZW50LiBXaXRoIHRoaXMgcGF0Y2gg
+d2UgY2FuDQo+ID4gdXNlIGdldF91c2VyNjQoKSBhbmQgcHV0X3VzZXI2NCgpIG9uIDMyIGFuZCA2
+NCBiaXQgbWFjaGluZXMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBCaGFyYXQgQmh1c2hhbiA8
+YmhhcmF0LmJodXNoYW5AZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gDQo+IFRoZXJlIGFwcGVh
+ciB0byBiZSBubyB1c2VyIG9mIGFueSBvZiB0aGVzZSBBUElzIGluIHRoZSB0cmVlLiBUaGVyZSdz
+IGFsc28gbm8NCj4gZ2V0X3VzZXI2NCAtPiBfX2dldF91c2VyNjQoKSBtYWNyb3MgZWl0aGVyLiBX
+aHkgbm90IGp1c3QgcmVtb3ZlIHRoZSB3aG9sZSBsb3QgPw0KDQpXaGVuIEkgc2VudCB0aGUgcGF0
+Y2ggSSBkaWQgbm90IHNlYXJjaCB0aGUgdXNlcnMsIEkgYWdyZWUgdGhhdCB3ZSBjYW4gcmVtb3Zl
+IHRoZSBfX2dldF91c2VyNjQgYW5kIF9fcHV0X3VzZXI2NCBhbHRvZ2V0aGVyLg0KDQpUaGFua3MN
+Ci1CaGFyYXQgDQoNCj4gDQo+IENoZWVycywNCj4gQmVuLg0KPiANCj4gPiAgYXJjaC9wb3dlcnBj
+L2luY2x1ZGUvYXNtL3VhY2Nlc3MuaCB8ICAgIDcgKysrKysrKw0KPiA+ICAxIGZpbGVzIGNoYW5n
+ZWQsIDcgaW5zZXJ0aW9ucygrKSwgMCBkZWxldGlvbnMoLSkNCj4gPg0KPiA+IGRpZmYgLS1naXQg
+YS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vdWFjY2Vzcy5oDQo+ID4gYi9hcmNoL3Bvd2VycGMv
+aW5jbHVkZS9hc20vdWFjY2Vzcy5oDQo+ID4gaW5kZXggMTdiYjQwYy4uMDE3NDNhYSAxMDA2NDQN
+Cj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vdWFjY2Vzcy5oDQo+ID4gKysrIGIv
+YXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL3VhY2Nlc3MuaA0KPiA+IEBAIC0xMTQsMTAgKzExNCwx
+NyBAQCBzdHJ1Y3QgZXhjZXB0aW9uX3RhYmxlX2VudHJ5IHsgICNkZWZpbmUNCj4gPiBfX3B1dF91
+c2VyKHgsIHB0cikgXA0KPiA+ICAJX19wdXRfdXNlcl9ub2NoZWNrKChfX3R5cGVvZl9fKCoocHRy
+KSkpKHgpLCAocHRyKSwgc2l6ZW9mKCoocHRyKSkpDQo+ID4NCj4gPiArLyoNCj4gPiArICogT24g
+cG93ZXJwYzY0IG1hY2hpbmUgZ2V0L3B1dF91c2VyNjQoKSBpcyBzYW1lIGFzIGdldC9wdXRfdXNl
+cigpDQo+ID4gK3doaWxlDQo+ID4gKyAqIG9uIHBvd2VycGMzMiBtYWNoaW5lIGdldF91c2VyNjQg
+aXMgZGlmZmVyZW50Lg0KPiA+ICsgKi8NCj4gPiAgI2lmbmRlZiBfX3Bvd2VycGM2NF9fDQo+ID4g
+ICNkZWZpbmUgX19nZXRfdXNlcjY0KHgsIHB0cikgXA0KPiA+ICAJX19nZXRfdXNlcjY0X25vY2hl
+Y2soKHgpLCAocHRyKSwgc2l6ZW9mKCoocHRyKSkpICAjZGVmaW5lDQo+ID4gX19wdXRfdXNlcjY0
+KHgsIHB0cikgX19wdXRfdXNlcih4LCBwdHIpDQo+ID4gKyNlbHNlDQo+ID4gKyNkZWZpbmUgX19n
+ZXRfdXNlcjY0KHgsIHB0cikgX19nZXRfdXNlcih4LCBwdHIpICNkZWZpbmUNCj4gPiArX19wdXRf
+dXNlcjY0KHgsIHB0cikgX19wdXRfdXNlcih4LCBwdHIpDQo+ID4gICNlbmRpZg0KPiA+DQo+ID4g
+ICNkZWZpbmUgX19nZXRfdXNlcl9pbmF0b21pYyh4LCBwdHIpIFwNCj4gDQo+IA0KDQo=
