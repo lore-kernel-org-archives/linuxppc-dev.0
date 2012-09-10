@@ -1,28 +1,32 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D0EE22C0093
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 116422C00AC
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:12 +1000 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 10 Sep 2012 18:23:08 +0530
+ Mon, 10 Sep 2012 18:23:09 +0530
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8ACr31o36831388
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 18:23:03 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8ACr5rM53674124
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 18:23:06 +0530
 Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8ACr2gT014861
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:03 +1000
+ q8ACr5cS015039
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 22:53:05 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH -V9 0/11] arch/powerpc: Add 64TB support to ppc64
-Date: Mon, 10 Sep 2012 18:22:46 +0530
-Message-Id: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH -V9 05/11] arch/powerpc: Make KERN_VIRT_SIZE not dependend on
+ PGTABLE_RANGE
+Date: Mon, 10 Sep 2012 18:22:51 +0530
+Message-Id: <1347281577-5460-6-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,43 +36,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 
-This patchset include patches for supporting 64TB with ppc64. I haven't booted
-this on hardware with 64TB memory yet. But they boot fine on real hardware with
-less memory. Changes extend VSID bits to 38 bits for a 256MB segment
-and 26 bits for 1TB segments.
+As we keep increasing PGTABLE_RANGE we need not increase the virual
+map area for kernel.
 
-Changes from V8:
- * Address review feedback
+Reviewed-by: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes from V7:
- * Address review feedback
-
-Changes from V6:
- * rebase to latest upstream (5b716ac728bcc01b1f2a7ed6e437196602237c27)
-
-Changes from v5:
- * Address review feedback
-
-Changes from v4:
- * Drop patch "arch/powerpc: properly offset the context bits for 1T segemnts"
-   based on review feedback
- * split CONTEXT_BITS related changes from patch 12
- * Add a new doc update patch
-
-Changes from v3:
- * Address review comments.
- * Added new patch to ensure proto-VSID isolation between kernel and user space
-
-Changes from V2:
- * Fix few FIXMEs in the patchset. I have added them as separate patch for
-   easier review. That should help us to drop those changes if we don't agree.
-
-Changes from V1:
-* Drop the usage of structure (struct virt_addr) to carry virtual address.
-  We now represent virtual address via vpn which is virtual address shifted
-  right 12 bits.
-
-Thanks,
--aneesh
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index c420561..8af1cf2 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -41,7 +41,7 @@
+ #else
+ #define KERN_VIRT_START ASM_CONST(0xD000000000000000)
+ #endif
+-#define KERN_VIRT_SIZE	PGTABLE_RANGE
++#define KERN_VIRT_SIZE	ASM_CONST(0x0000100000000000)
+ 
+ /*
+  * The vmalloc space starts at the beginning of that region, and
+-- 
+1.7.10
