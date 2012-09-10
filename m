@@ -1,15 +1,15 @@
 Return-Path: <fengguang.wu@intel.com>
 Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by ozlabs.org (Postfix) with ESMTP id A55B02C008A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 12:34:21 +1000 (EST)
-Date: Mon, 10 Sep 2012 10:34:13 +0800
+ by ozlabs.org (Postfix) with ESMTP id 4B7D92C03A5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 12:34:49 +1000 (EST)
+Date: Mon, 10 Sep 2012 10:34:42 +0800
 From: Fengguang Wu <fengguang.wu@intel.com>
 To: Gavin Shan <shangw@linux.vnet.ibm.com>
-Subject: [powerpc:next 59/78] arch/powerpc/platforms/pseries/eeh_pe.c:98:23:
- error: 'eeh_phb_pe_get' defined but not used
-Message-ID: <20120910023413.GA29863@localhost>
+Subject: [powerpc:next 60/78] arch/powerpc/platforms/pseries/eeh_pe.c:217:23:
+ error: 'eeh_pe_get' defined but not used
+Message-ID: <20120910023442.GB29863@localhost>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="fUYQa+Pmc3FrFX/N"
+Content-Type: multipart/mixed; boundary="V0207lvV8h4k8FAm"
 Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,7 +21,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---fUYQa+Pmc3FrFX/N
+--V0207lvV8h4k8FAm
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
@@ -31,32 +31,33 @@ FYI, kernel build failed on
 
 tree:   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
 head:   4715fed600109e0bd3d6cfa2b925a643173a08b4
-commit: 55037d176107c33ac79528bf9ab282a6b0b51e16 [59/78] powerpc/eeh: Create PEs for PHBs
+commit: 22f4ab123f10e1862579785c73d9e60fa24afd4f [60/78] powerpc/eeh: Search PE based on requirement
 config: powerpc-defconfig (attached as .config)
 
 All related error/warning messages:
 
-arch/powerpc/platforms/pseries/eeh_pe.c:98:23: error: 'eeh_phb_pe_get' defined but not used [-Werror=unused-function]
+arch/powerpc/platforms/pseries/eeh_pe.c:217:23: error: 'eeh_pe_get' defined but not used [-Werror=unused-function]
+arch/powerpc/platforms/pseries/eeh_pe.c:237:23: error: 'eeh_pe_get_parent' defined but not used [-Werror=unused-function]
 cc1: all warnings being treated as errors
 
-vim +98 arch/powerpc/platforms/pseries/eeh_pe.c
-    93	 *
-    94	 * The overall PEs form hierarchy tree. The first layer of the
-    95	 * hierarchy tree is composed of PHB PEs. The function is used
-    96	 * to retrieve the corresponding PHB PE according to the given PHB.
-    97	 */
-  > 98	static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
-    99	{
-   100		struct eeh_pe *pe;
-   101	
-   102		eeh_lock();
-   103	
+vim +217 arch/powerpc/platforms/pseries/eeh_pe.c
+   212	 * the associated PE has been created against the PE address. It's
+   213	 * notable that the PE address has 2 format: traditional PE address
+   214	 * which is composed of PCI bus/device/function number, or unified
+   215	 * PE address.
+   216	 */
+ > 217	static struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
+   218	{
+   219		struct eeh_pe *root = eeh_phb_pe_get(edev->phb);
+   220		struct eeh_pe *pe;
+   221	
+   222		eeh_lock();
 
 ---
 0-DAY kernel build testing backend         Open Source Technology Centre
 Fengguang Wu <wfg@linux.intel.com>                     Intel Corporation
 
---fUYQa+Pmc3FrFX/N
+--V0207lvV8h4k8FAm
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: attachment; filename=".config"
 
@@ -2984,4 +2985,4 @@ CONFIG_KVM_BOOK3S_64=m
 CONFIG_KVM_BOOK3S_64_HV=y
 CONFIG_VHOST_NET=m
 
---fUYQa+Pmc3FrFX/N--
+--V0207lvV8h4k8FAm--
