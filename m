@@ -1,27 +1,29 @@
-Return-Path: <B21989@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7BCC92C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 19:51:21 +1000 (EST)
-From: Xie Shaohui-B21989 <B21989@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH][v2] powerpc/mm: using two zones for freescale 64 bit
- kernel
-Date: Mon, 10 Sep 2012 09:51:09 +0000
-Message-ID: <ED492CCEAF882048BC2237DE806547C9079D9F2F@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1345805425-3829-1-git-send-email-Shaohui.Xie@freescale.com>
- <9EADE983-F25D-41BC-8A04-E69A20BF68E3@kernel.crashing.org>
- <1347233868.2385.128.camel@pasglop>
-In-Reply-To: <1347233868.2385.128.camel@pasglop>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <sshtylyov@mvista.com>
+Received: from mail-lpp01m010-f51.google.com (mail-lpp01m010-f51.google.com
+ [209.85.215.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 48B232C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 20:22:58 +1000 (EST)
+Received: by lags15 with SMTP id s15so830715lag.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 03:22:55 -0700 (PDT)
+Message-ID: <504DBF3D.2000102@mvista.com>
+Date: Mon, 10 Sep 2012 14:21:49 +0400
+From: Sergei Shtylyov <sshtylyov@mvista.com>
 MIME-Version: 1.0
-Cc: Hu Mingkai-B21284 <B21284@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Chen Yuanquan-B41889 <B41889@freescale.com>
+To: Xie Shaohui-B21989 <B21989@freescale.com>
+Subject: Re: [PATCH][v3] sata_fsl: add workaround for data length mismatch
+ on freescale V2 controller
+References: <1347012095-4404-1-git-send-email-Shaohui.Xie@freescale.com>
+ <82046C25-828E-4E0F-9F86-8E038AE5C93C@kernel.crashing.org>
+ <ED492CCEAF882048BC2237DE806547C9079D9AB9@039-SN2MPN1-012.039d.mgd.msft.net>
+In-Reply-To: <ED492CCEAF882048BC2237DE806547C9079D9AB9@039-SN2MPN1-012.039d.mgd.msft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: "jgarzik@pobox.com" <jgarzik@pobox.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-ide@vger.kernel.org" <linux-ide@vger.kernel.org>,
+ Bhartiya Anju-B07263 <B07263@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,63 +33,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2ht
-aWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBNb25kYXksIFNl
-cHRlbWJlciAxMCwgMjAxMiA3OjM4IEFNDQo+IFRvOiBLdW1hciBHYWxhDQo+IENjOiBYaWUgU2hh
-b2h1aS1CMjE5ODk7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnIGxpc3Q7IEh1IE1pbmdr
-YWktDQo+IEIyMTI4NDsgQ2hlbiBZdWFucXVhbi1CNDE4ODkNCj4gU3ViamVjdDogUmU6IFtQQVRD
-SF1bdjJdIHBvd2VycGMvbW06IHVzaW5nIHR3byB6b25lcyBmb3IgZnJlZXNjYWxlIDY0IGJpdA0K
-PiBrZXJuZWwNCj4gDQo+IE9uIFRodSwgMjAxMi0wOC0zMCBhdCAxNTo0OSAtMDUwMCwgS3VtYXIg
-R2FsYSB3cm90ZToNCj4gPiBPbiBBdWcgMjQsIDIwMTIsIGF0IDU6NTAgQU0sIFNoYW9odWkgWGll
-IHdyb3RlOg0KPiA+DQo+ID4gPiBQb3dlclBDIHBsYXRmb3JtIG9ubHkgc3VwcG9ydHMgWk9ORV9E
-TUEgem9uZSBmb3IgNjRiaXQga2VybmVsLCBzbw0KPiA+ID4gYWxsIHRoZSBtZW1vcnkgd2lsbCBi
-ZSBwdXQgaW50byB0aGlzIHpvbmUuIElmIHRoZSBtZW1vcnkgc2l6ZSBpcw0KPiA+ID4gZ3JlYXRl
-ciB0aGFuIHRoZSBkZXZpY2UncyBETUEgY2FwYWJpbGl0eSBhbmQgZGV2aWNlIHVzZXMNCj4gPiA+
-IGRtYV9hbGxvY19jb2hlcmVudCB0byBhbGxvY2F0ZSBtZW1vcnksIGl0IHdpbGwgZ2V0IGFuIGFk
-ZHJlc3Mgd2hpY2gNCj4gPiA+IGlzIG92ZXIgdGhlIGRldmljZSdzIERNQSBhZGRyZXNzaW5nLCB0
-aGUgZGV2aWNlIHdpbGwgZmFpbC4NCj4gPiA+DQo+ID4gPiBTbyB3ZSBzcGxpdCB0aGUgbWVtb3J5
-IHRvIHR3byB6b25lczogem9uZSBaT05FX0RNQTMyICYgWk9ORV9OT1JNQUwsDQo+ID4gPiBzaW5j
-ZSB3ZSBhbHJlYWR5IGFsbG9jYXRlIFBDSUNTUkJBUi9QRVhDU1JCQVIgcmlnaHQgYmVsb3cgdGhl
-IDRHDQo+ID4gPiBib3VuZGFyeSAoaWYgdGhlIGxvd2VzdCBQQ0kgYWRkcmVzcyBpcyBhYm92ZSA0
-RyksIHNvIHdlIGNvbnN0cmFpbg0KPiA+ID4gdGhlIERNQSB6b25lIFpPTkVfRE1BMzIgdG8gMkdC
-LCBhbHNvLCB3ZSBjbGVhciBmbGFnIF9fR0ZQX0RNQSAmDQo+ID4gPiBfX0dGUF9ETUEzMiBhbmQg
-c2V0IF9fR0ZQX0RNQTMyIG9ubHkgaWYgdGhlIGRldmljZSdzIGRtYV9tYXNrIDwNCj4gPiA+IHRv
-dGFsIG1lbW9yeSBzaXplLiBCeSBkb2luZyB0aGlzLCBkZXZpY2VzIHdoaWNoIGNhbm5vdCBETUEg
-YWxsIHRoZQ0KPiA+ID4gbWVtb3J5IHdpbGwgYmUgbGltaXRlZCB0byBaT05FX0RNQTMyLCBidXQg
-ZGV2aWNlcyB3aGljaCBjYW4gRE1BIGFsbA0KPiB0aGUgbWVtb3J5IHdpbGwgbm90IGJlIGFmZmVj
-dGVkIGJ5IHRoaXMgbGltaXRhdGlvbi4NCj4gPiA+DQo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBTaGFv
-aHVpIFhpZSA8U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6
-IE1pbmdrYWkgSHUgPE1pbmdrYWkuaHVAZnJlZXNjYWxlLmNvbT4NCj4gPiA+IFNpZ25lZC1vZmYt
-Ynk6IENoZW4gWXVhbnF1YW4gPEI0MTg4OUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gLS0tDQo+ID4g
-PiBjaGFuZ2VzIGZvciB2MjoNCj4gPiA+IDEuIHVzZSBhIGNvbmZpZyBvcHRpb24gZm9yIHVzaW5n
-IHR3byB6b25lcyAoWk9ORV9ETUEzMiAmDQo+ID4gPiBaT05FX05PUk1BTCkgaW4gZnJlZXNjYWxl
-IDY0IGJpdCBrZXJuZWwuDQo+ID4gPg0KPiANCj4gVGhlcmUgbXVzdCBoYXZlIGJlZW4gYSBtaXN1
-bmRlcnN0YW5kaW5nLiBJIHRoaW5rIHRoaXMgc2hvdWxkIGJlIGEgcnVudGltZQ0KPiBjaG9pY2Us
-IHBvc3NpYmx5IGJ5IHRoZSBwbGF0Zm9ybSBjb2RlLiBBbnkgcmVhc29uIHRoYXQgY2FuJ3QgYmUg
-ZG9uZSA/DQo+IA0KW1MuSF0gRG8geW91IG1lYW4gdGhpczoNCg0KcGh5c19hZGRyX3QgcGxhdGZv
-cm1fZG1hX3NpemUgKG1heWJlIGEgZGVmYXVsdCB2YWx1ZSBzaG91bGQgYmUgdXNlZCwgdGhlbiBw
-bGF0Zm9ybSBjb2RlIHdpbGwgY2hhbmdlIGl0KQ0KDQppZiAodG9wX29mX3JhbSA+IHBsYXRmb3Jt
-X2RtYV9zaXplKQ0KCW1heF96b25lX3BmbnNbWk9ORV9ETUFdID0gcGxhdGZvcm1fZG1hX3NpemUg
-Pj4gUEFHRV9TSElGVDsNCmVsc2UNCgltYXhfem9uZV9wZm5zW1pPTkVfRE1BXSA9IHRvcF9vZl9y
-YW0gPj4gUEFHRV9TSElGVDsNCg0KbWF4X3pvbmVfcGZuc1taT05FX05PUk1BTF0gPSB0b3Bfb2Zf
-cmFtID4+IFBBR0VfU0hJRlQ7DQoJDQo+IEFsc28gaG93IGRvZXMgSW50ZWwgZG8gaXQgPyANCltT
-LkhdIGJlbG93IGFyZSBjb2RlcyBpbiBJbnRlbDoNCg0KNDAzIHZvaWQgX19pbml0IHpvbmVfc2l6
-ZXNfaW5pdCh2b2lkKQ0KNDA0IHsgICAgICAgDQo0MDUgICAgICAgICB1bnNpZ25lZCBsb25nIG1h
-eF96b25lX3BmbnNbTUFYX05SX1pPTkVTXTsNCjQwNiAgICAgICAgIA0KNDA3ICAgICAgICAgbWVt
-c2V0KG1heF96b25lX3BmbnMsIDAsIHNpemVvZihtYXhfem9uZV9wZm5zKSk7DQo0MDggICAgICAg
-ICAgICAgICAgIA0KNDA5ICNpZmRlZiBDT05GSUdfWk9ORV9ETUENCjQxMCAgICAgICAgIG1heF96
-b25lX3BmbnNbWk9ORV9ETUFdICAgICAgICAgPSBNQVhfRE1BX1BGTjsNCjQxMSAjZW5kaWYNCjQx
-MiAjaWZkZWYgQ09ORklHX1pPTkVfRE1BMzINCjQxMyAgICAgICAgIG1heF96b25lX3BmbnNbWk9O
-RV9ETUEzMl0gICAgICAgPSBNQVhfRE1BMzJfUEZOOw0KNDE0ICNlbmRpZg0KNDE1ICAgICAgICAg
-bWF4X3pvbmVfcGZuc1taT05FX05PUk1BTF0gICAgICA9IG1heF9sb3dfcGZuOw0KNDE2ICNpZmRl
-ZiBDT05GSUdfSElHSE1FTQ0KNDE3ICAgICAgICAgbWF4X3pvbmVfcGZuc1taT05FX0hJR0hNRU1d
-ICAgICA9IG1heF9wZm47DQo0MTggI2VuZGlmDQo0MTkgIA0KICAgICAgDQpGb3IgeDg2XzY0LCB0
-aGVyZSBpcyBubyBDT05GSUdfSElHSE1FTSwgc28gdGhlcmUgd2lsbCBiZSB0aHJlZSB6b25lczog
-DQpaT05FX0RNQS9aT05FX0RNQTMyL1pPTkVfTk9STUFMLg0KDQo+RG8gdGhleSBoYXZlIGlvbW11
-IGFuZCBaT05FX0RNQTMyIGNvLWV4aXN0ID8NCg0KSSdtIG5vdCBmYW1pbGlhciB3aXRoIElPTU1V
-LCBJIHJlYWQgc29tZSBrZXJuZWwgZG9jcywgaW4gRG9jdW1lbnRhdGlvbi9rZXJuZWwtcGFyYW1l
-dGVycy50eHQsDQpUaGVyZSBhcmUgYW1kX2lvbW11ICYgaW50ZWxfaW9tbXUgYXZhaWxhYmxlLCBp
-biBEb2N1bWVudGF0aW9uL3g4Ni94ODZfNjQvYm9vdC1vcHRpb25zLnR4dCwNCkl0IHNheXMgIiBD
-dXJyZW50bHkgZm91ciB4ODYtNjQgUENJLURNQSBtYXBwaW5nIGltcGxlbWVudGF0aW9ucyBleGlz
-dCIuIA0KDQpEb2VzIFBQQzY0IHN1cHBvcnQgSU9NTVUsIGhvdyB0byB1c2UgaXQ/DQoNCg0KQmVz
-dCBSZWdhcmRzLCANClNoYW9odWkgWGllDQo=
+Hello.
+
+On 10-09-2012 6:53, Xie Shaohui-B21989 wrote:
+
+>>> +	/* Workaround for data length mismatch errata */
+>>> +	if (unlikely(hstatus & INT_ON_DATA_LENGTH_MISMATCH)) {
+>>> +		for (tag = 0; tag < ATA_MAX_QUEUE; tag++) {
+>>> +			qc = ata_qc_from_tag(ap, tag);
+>>> +			if (qc && ata_is_atapi(qc->tf.protocol)) {
+>>> +				u32 hcontrol;
+>>> +#define HCONTROL_CLEAR_ERROR	(1 << 27)
+
+>> shouldn't we have this #define be part of the enum that the other
+>> HCONTROL_ bits/flags are part of?
+
+> [S.H] do you mean this?
+
+    Apparently not. He said *enum*, not #define.
+
+> #ifdef SATA_FSL_XXX_ERRATUAM
+
+    We don't need that at all.
+
+> #define HCONTROL_CLEAR_ERROR	(1 << 27)
+> #endif
+
+MBR, Sergei
