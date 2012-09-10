@@ -1,34 +1,23 @@
-Return-Path: <balbi@ti.com>
-Received: from na3sys009aog123.obsmtp.com (na3sys009aog123.obsmtp.com
- [74.125.149.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 25C4C2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 02:26:51 +1000 (EST)
-Received: by lbao2 with SMTP id o2so1131940lba.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 09:26:48 -0700 (PDT)
-Date: Mon, 10 Sep 2012 19:22:18 +0300
-From: Felipe Balbi <balbi@ti.com>
-To: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH] usb: gadget: fsl_udc_core: do not immediatly prime
- STATUS for IN xfer
-Message-ID: <20120910162215.GJ7464@arwen.pp.htv.fi>
-References: <1346777932-3362-1-git-send-email-enrico.scholz@sigma-chemnitz.de>
- <F281D0F91ED19E4D8E63A7504E8A649803C67DA2@039-SN2MPN1-023.039d.mgd.msft.net>
- <20120906131708.GJ29202@arwen.pp.htv.fi>
- <lyehmf1b27.fsf@ensc-virt.intern.sigma-chemnitz.de>
- <20120906142739.GV29202@arwen.pp.htv.fi>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="tAmVnWIZ6lqEAvSf"
-In-Reply-To: <20120906142739.GV29202@arwen.pp.htv.fi>
-Cc: Chen Peter-B29397 <B29397@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Enrico Scholz <enrico.scholz@sigma-chemnitz.de>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Reply-To: balbi@ti.com
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 9B32F2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 03:06:31 +1000 (EST)
+Message-ID: <1347296781.24938.71.camel@ul30vt.home>
+Subject: Re: [PATCH] powerpc-powernv: align BARs to PAGE_SIZE on powernv
+ platform
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Mon, 10 Sep 2012 11:06:21 -0600
+In-Reply-To: <5046E2B1.8010805@ozlabs.ru>
+References: <1346744035-31154-1-git-send-email-aik@ozlabs.ru>
+ <1346744201-31262-1-git-send-email-aik@ozlabs.ru>
+ <1346787940.3025.11.camel@pasglop> <5046A2F1.1020004@ozlabs.ru>
+ <1346807803.2257.19.camel@pasglop> <1346821074.2225.65.camel@ul30vt.home>
+ <1346822276.2257.46.camel@pasglop> <5046E2B1.8010805@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,87 +27,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2012-09-05 at 15:27 +1000, Alexey Kardashevskiy wrote:
+> On 05/09/12 15:17, Benjamin Herrenschmidt wrote:
+> > On Tue, 2012-09-04 at 22:57 -0600, Alex Williamson wrote:
+> >
+> >> Do we need an extra region info field, or is it sufficient that we
+> >> define a region to be mmap'able with getpagesize() pages when the MMAP
+> >> flag is set and simply offset the region within the device fd?  ex.
+> >
+> > Alexey ? You mentioned you had ways to get at the offset with the
+> > existing interfaces ?
+> 
+> 
+> Yes, VFIO_DEVICE_GET_REGION_INFO ioctl of vfio-pci host driver, the "info" 
+> struct has an "offset" field.
+> I just do not have a place to use it in the QEMU right now as the guest 
+> does the same allocation as the host does (by accident).
 
---tAmVnWIZ6lqEAvSf
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yep, this is the offset into the device fd though.  We currently used a
+fixed 40bit region for each BAR, but that's mostly a leftover from
+before the API described the offset.  It's a little bit of an
+optimization on the kernel side to convert offset->BAR w/o a lookup, but
+we're hopefully mmap'ing as much as possible, modulo the page size
+issues here.
 
-On Thu, Sep 06, 2012 at 05:27:42PM +0300, Felipe Balbi wrote:
-> Hi,
->=20
-> On Thu, Sep 06, 2012 at 04:27:12PM +0200, Enrico Scholz wrote:
-> > Felipe Balbi <balbi@ti.com> writes:
-> >=20
-> > >> > Because the fsl_udc_core driver shares one 'status_req' object for=
- the
-> > >> > complete ep0 control transfer, it is not possible to prime the fin=
-al
-> > >> > STATUS phase immediately after the IN transaction.  E.g. ch9getsta=
-tus()
-> > >> > executed:
-> > >> >=20
-> > >> > | req =3D udc->status_req;
-> > >> > | ...
-> > >> > | list_add_tail(&req->queue, &ep->queue);
-> > >> > | if (ep0_prime_status(udc, EP_DIR_OUT))
-> > >> > |       ....
-> > >> > |       struct fsl_req *req =3D udc->status_req;
-> > >> > |       list_add_tail(&req->queue, &ep->queue);
-> > >> >=20
-> > >> > which corrupts the ep->queue list by inserting 'status_req' twice.=
-  This
-> > >> > causes a kernel oops e.g. when 'lsusb -v' is executed on the host.
-> > >> >=20
-> > >> > Patch delays the final 'ep0_prime_status(udc, EP_DIR_OUT))' by mov=
-ing it
-> > >> > into the ep0 completion handler.
-> > >> >=20
-> > >> Enrico, thanks for pointing this problem.
-> > >>=20
-> > >> As "prime STATUS phase immediately after the IN transaction" is foll=
-owed
-> > >> USB 2.0 spec, to fix this problem, it is better to add data_req for =
-ep0.
-> > >> In fact, it is already at FSL i.mx internal code, just still not mai=
-nlined.
-> > >
-> > > so, do I get an Acked-by to this patch ? Does it need to go on v3.6-rc
-> > > or can it wait until v3.7 merge window ?
-> >=20
-> > Without this (or the mentioned data_req patch), I can crash a g_multi
-> > gadget by executing 'lsusb -v' as root on the host.  Should not be
-> > exploitable (only a BUG_ON() is triggered) but issue should be fixed
-> > asap.
->=20
-> cool, so I'll apply to my fixes branch as soon as I get Acked-by or
-> Tested-by from someone.
+> >> BAR0: 0x10000 /* no offset */
+> >> BAR1: 0x21000 /* 4k offset */
+> >> BAR2: 0x32000 /* 8k offset */
+> >>
+> >> A second level optimization might make these 0x10000, 0x11000, 0x12000.
+> >>
+> >> This will obviously require some arch hooks w/in vfio as we can't do
+> >> this on x86 since we can't guarantee that whatever lives in the
+> >> overflow/gaps is in the same group and power is going to need to make
+> >> sure we don't accidentally allow msix table mapping... in fact hiding
+> >> the msix table might be a lot more troublesome on 64k page hosts.
+> >
+> > Fortunately, our guests don't access the msix table directly anyway, at
+> > least most of the time :-)
+> 
+> 
+> Not at all in our case. It took me some time to push a QEMU patch which 
+> changes msix table :)
 
-No Acks, no Tested-by ?
+vfio needs to be safe regardless of whether it's being used by qemu or
+some other userspace driver though.
 
---=20
-balbi
+> > There's a paravirt API for it, and our iommu
+> > makes sure that if for some reason the guest still accesses it and does
+> > the wrong thing to it, the side effects will be contained to the guest.
 
---tAmVnWIZ6lqEAvSf
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+If direct access to the MSIX table neither leaks information nor leads
+to exploitable holes, then I have no problem allowing a platform hook to
+make it mmap'able.  We should be looking at this for x86 too on
+platforms where we have interrupt remapping capabilities.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+> >>> Now the main problem here is going to be that the guest itself might
+> >>> reallocate the BAR and move it around (well, it's version of the BAR
+> >>> which isn't the real thing), and so we cannot create a direct MMU
+> >>> mapping between -that- and the real BAR.
+> >>>
+> >>> IE. We can only allow that direct mapping if the guest BAR mapping has
+> >>> the same "offset within page" as the host BAR mapping.
+> >>
+> >> Euw...
+> >
+> > Yeah sucks :-) Basically, let's say page size is 64K. Host side BAR
+> > (real BAR) is at 0xf0001000.
+> >
+> > qemu maps 0xf0000000..0xf000ffff to a virtual address inside QEMU,
+> > itself 64k aligned, let's say 0x80000000 and knows that the BAR is at
+> > offset 0x1000 in there.
+> >
+> > However, the KVM "MR" API is such that we can only map PAGE_SIZE regions
+> > into the guest as well, so if the guest assigns a value ADDR to the
+> > guest BAR, let's say 0x40002000, all KVM can do is an MR that maps
+> > 0x40000000 (guest physical) to 0x80000000 (qemu). Any access within that
+> > 64K page will have the low bits transferred directly from guest to HW.
+> >
+> > So the guest will end up having that 0x2000 offset instead of the 0x1000
+> > needed to actually access the BAR. FAIL.
+> >
+> > There are ways to fix that but all are nasty.
+> >
+> >   - In theory, we have the capability (and use it today) to restrict IO
+> > mappings in the guest to 4K HW pages, so knowing that, KVM could use a
+> > "special" MR that plays tricks here... but that would break all sort of
+> > generic code both in qemu and kvm and generally be very nasty.
+> >
+> >   - The best approach is to rely on the fact that our guest kernels don't
+> > do BAR assignment, they rely on FW to do it (ie not at all, unlike x86,
+> > we can't even fixup because in the general case, the hypervisor won't
+> > let us anyway). So we could move our guest BAR allocation code out of
+> > our guest firmware (SLOF) back into qemu (where we had it very early
+> > on), which allows us to make sure that the guest BAR values we assign
+> > have the same "offset within the page" as the host side values. This
+> > would also allow us to avoid messing up too many MRs (this can have a
+> > performance impact with KVM) and eventually handle our "group" regions
+> > instead of individual BARs for mappings. We might need to do that anyway
+> > in the long run for hotplug as our hotplug hypervisor APIs also rely on
+> > the "new" hotplugged devices to have the BARs pre-assigned when they get
+> > handed out to the guest.
 
-iQIcBAEBAgAGBQJQThO3AAoJEIaOsuA1yqRE4z0QAKG090oA0pNXuc+uknT6SSYh
-hcrGAtdAwxBlomHn3it9XQDWfLfzv+rrMvfD8bCFVYzOaO4PW3Swuzjm2J4qrEgT
-1beOcy5y2J9B/N7rSv429DoLIjU//0xvajmaxw2C/XOVQE6Z8facxIxqmkgN/SHU
-tfQrax3G0rd2PmqhCVwHjxpMb9V/c2G907ZEOmA+jkls6I30eEb9fD1rSYuxHoDE
-FwzULOYm0PCCXs7+xWemI/p8fZA0HPCSNl0bs591xjaJT1gDbscbuBVBtx9XIPdG
-jBV/RMF33J6WShkA1hVKXYi4edhxxGbvcaFs64+RXD4rpW385cizO4HfhlZ0iuKD
-f373sHXXvpz3HhIb+V1KnTOP7G+NPsbcUl3MZibE8YFgE0fGtHoacpviF8ajO+V1
-8Wx0tGT8e4jaraKcJK4BDBqNmDX4pDwjZrif5r4Z4SiaXEdF4snI+4HtxdbfTf0I
-KtSJdBv3TW22JZw0WdeNqD+N+DPsGIHJIZqLaiBw4Y93KkQQpW0ASp54SGIHozmI
-BZPgMAGklLpWy+hxS2QC8MKpkuiwRatLdNpRKbQHsGARAaiOwllqqRKc9cwEfmoS
-eTQavcdhhH0gt65pBSys0v22pxCaAYfbytYalPwLTIvWK4XKr89d1XSDURJZept+
-2PwEjGcmKp+JmyqfLtrp
-=IK04
------END PGP SIGNATURE-----
+Ok, now it's making more sense how the original patch here was
+beneficial.  If the physical BAR is 64k aligned we could expose the BAR
+as being at least 64k and therefore everything would line up.  We have
+the same issue on x86 where devices might have <4k BARs and we'd prefer
+to mmap them.  So far we've successfully ignored them because they're
+not "high performance" devices and because we can't always assume the
+extra space is unused or even safe to access.  Obviously the problem
+gets much worse at 64k.
 
---tAmVnWIZ6lqEAvSf--
+You know that the MMIO space consumed by a group is 64k aligned, but
+individual BARs are not.  Guest and host may end up with different BAR
+offsets within a 64k page though, so that doesn't buy us much.  Blech.
+Yeah, relying on the guest not changing mappings is pretty ugly, but may
+be a solution.  For the general case though we'd really prefer each BAR
+to be treated as a minimum 64k then exposed to the user (qemu) as the
+same.  Doing that across a system is pretty wasteful and remapping is
+not always possible.  You almost want a setting per PE to specify how
+BARs are aligned (and x86 might want the same, but it's not as clear how
+to define what devices to apply it to).  Hard problem.  Thanks,
+
+Alex
