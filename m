@@ -1,29 +1,22 @@
-Return-Path: <vasilis.liaskovitis@profitbricks.com>
-Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 37A2C2C008E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 23:52:20 +1000 (EST)
-Received: by eeke50 with SMTP id e50so956605eek.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 06:52:17 -0700 (PDT)
-Date: Mon, 10 Sep 2012 15:52:13 +0200
-From: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
-To: Wen Congyang <wency@cn.fujitsu.com>
-Subject: Re: [RFC v8 PATCH 00/20] memory-hotplug: hot-remove physical memory
-Message-ID: <20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>
-References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
- <20120831134956.fec0f681.akpm@linux-foundation.org>
- <504D467D.2080201@jp.fujitsu.com> <504D4A08.7090602@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <504D4A08.7090602@cn.fujitsu.com>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, cl@linux.com, liuj97@gmail.com
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 7B3072C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 00:02:26 +1000 (EST)
+Message-ID: <1347285742.10751.6.camel@gandalf.local.home>
+Subject: Re: [RFC patch powerpc,trace] Avoid suspicious RCU usage reporting
+ for some tracepoints
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 10 Sep 2012 10:02:22 -0400
+In-Reply-To: <1347253812.2385.148.camel@pasglop>
+References: <1347253133.2725.45.camel@ThinkPad-T420>
+ <1347253812.2385.148.camel@pasglop>
+Content-Type: text/plain; charset="ISO-8859-15"
+Mime-Version: 1.0
+Cc: Anton Blanchard <anton@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ Li Zhong <zhong@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,43 +26,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Mon, Sep 10, 2012 at 10:01:44AM +0800, Wen Congyang wrote:
-> At 09/10/2012 09:46 AM, Yasuaki Ishimatsu Wrote:
-> > Hi Wen,
+On Mon, 2012-09-10 at 15:10 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2012-09-10 at 12:58 +0800, Li Zhong wrote:
+> > There are a few tracepoints in the interrupt code path, which is before
+> > irq_enter(), or after irq_exit(), like
+> > trace_irq_entry()/trace_irq_exit() in do_IRQ(),
+> > trace_timer_interrupt_entry()/trace_timer_interrupt_exit() in
+> > timer_interrupt(). 
 > > 
-> > 2012/09/01 5:49, Andrew Morton wrote:
-> >> On Tue, 28 Aug 2012 18:00:07 +0800
-> >> wency@cn.fujitsu.com wrote:
-> >>
-> >>> This patch series aims to support physical memory hot-remove.
-> >>
-> >> I doubt if many people have hardware which permits physical memory
-> >> removal?  How would you suggest that people with regular hardware can
-> >> test these chagnes?
-> > 
-> > How do you test the patch? As Andrew says, for hot-removing memory,
-> > we need a particular hardware. I think so too. So many people may want
-> > to know how to test the patch.
-> > If we apply following patch to kvm guest, can we hot-remove memory on
-> > kvm guest?
-> > 
-> > http://lists.gnu.org/archive/html/qemu-devel/2012-07/msg01389.html
+> > If the interrupt is from idle(), and because tracepoint contains RCU
+> > read-side critical section, we could see following suspicious RCU usage
+> > reported:
 > 
-> Yes, if we apply this patchset, we can test hot-remove memory on kvm guest.
-> But that patchset doesn't implement _PS3, so there is some restriction.
+>  .../...
+> 
+> > This is because the RCU usage in interrupt context should be used in
+> > area marked by rcu_irq_enter()/rcu_irq_exit(), called in
+> > irq_enter()/irq_exit() respectively. 
+> > 
+> > Could we add a new tracepoint trace_***_rcuirq, like trace_***_rcuidle
+> > to avoid the report? like the code attached below.
+> > 
+> > Or could we just move these tracepoints inside the
+> > irq_enter()/irq_exit() area? (Seems not good for the timer_interrupt
+> > case). 
+> 
+> I'd say just move them in. Anton, any objection ?
+> 
 
-the following repos contain the patchset above, plus 2 more patches that add
-PS3 support to the dimm devices in qemu/seabios:
+I agree too. I'm a bit concerned about the lack of coverage the
+irq_enter() and irq_exit() have in the timer interrupt:
 
-https://github.com/vliaskov/seabios/commits/memhp-v2
-https://github.com/vliaskov/qemu-kvm/commits/memhp-v2
+	may_hard_irq_enable();
 
-I have not posted the PS3 patches yet in the qemu list, but will post them
-soon for v3 of the memory hotplug series. If you have issues testing, let me
-know.
+	trace_timer_interrupt_entry(regs);
 
-thanks,
+	__get_cpu_var(irq_stat).timer_irqs++;
 
-- Vasilis
+#if defined(CONFIG_PPC32) && defined(CONFIG_PMAC)
+	if (atomic_read(&ppc_n_lost_interrupts) != 0)
+		do_IRQ(regs);
+#endif
+
+	old_regs = set_irq_regs(regs);
+	irq_enter();
+
+
+I'm guessing that call to do_IRQ() has to do with lazy irq handling?
+
+Anyway, there may be a reason to have the tracepoint before this call,
+but I'm not sure it really is that important. It should probably be best
+to move it after the irq_enter(). There's side-effects with calling
+things from interrupt context outside of irq_enter/exit().
+
+-- Steve
