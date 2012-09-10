@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AC1F72C032C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 10:05:20 +1000 (EST)
-Message-ID: <1347235505.2385.134.camel@pasglop>
-Subject: Re: [PATCH 1/6] powerpc: Move branch instruction from
- ACCOUNT_CPU_USER_ENTRY to caller
+ by ozlabs.org (Postfix) with ESMTPS id 510AC2C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 10:12:10 +1000 (EST)
+Message-ID: <1347235922.2385.138.camel@pasglop>
+Subject: Re: [PATCH 2/6] powerpc: Add enable_ppr kernel parameter to enable
+ PPR save/restore
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Haren Myneni <haren@linux.vnet.ibm.com>
-Date: Mon, 10 Sep 2012 10:05:05 +1000
-In-Reply-To: <1347190604.3418.11.camel@hbabu-laptop>
-References: <1347190604.3418.11.camel@hbabu-laptop>
+Date: Mon, 10 Sep 2012 10:12:02 +1000
+In-Reply-To: <1347190671.3418.12.camel@hbabu-laptop>
+References: <1347190671.3418.12.camel@hbabu-laptop>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, paulus@samba.org,
@@ -25,73 +25,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2012-09-09 at 04:36 -0700, Haren Myneni wrote:
-> The first instruction in ACCOUNT_CPU_USER_ENTRY is 'beq' which checkes for
-> exceptions coming from kernel mode. PPR value will be saved immediately after
-> ACCOUNT_CPU_USER_ENTRY and is also for user level exceptions. So moved this
-> branch instruction in the caller code.
+On Sun, 2012-09-09 at 04:37 -0700, Haren Myneni wrote:
+> enable_ppr kernel parameter is used to enable PPR save and restore.
+> Supported on Power7 and later processors.
+> 
+> By default, CPU_FTR_HAS_PPR is set for POWER7. If this parameter is not
+> passed, disable CPU_FTR_HAS_PPR.
 
-grep fail ? ACCOUNT_CPU_USER_ENTRY is used in exception-64e.S as well,
-so that needs to be updated too.
+What is the point ? Obscure / magic kernel command line options to turn
+on a feature are pointless. Nobody knows about them, nobody enables
+them.
 
-Cheers,
+What you are doing is guarantee that nobody's ever going to enable your
+code, so your whole patch series is thus irrelevant :-)
+
+If there's a good reason to *avoid* your option, then maybe consider
+adding an option to *disable* the PPR save/restore, though of course
+that would bring the argument that if it needs to be disabled maybe we
+shouldn't do it in the first place, or you might want to think of a
+reasonable way to intuit what the option should be.
+
 Ben.
 
 > Signed-off-by: Haren Myneni <haren@us.ibm.com>
 > 
 > ---
->  arch/powerpc/include/asm/exception-64s.h |    3 ++-
->  arch/powerpc/include/asm/ppc_asm.h       |    2 --
->  arch/powerpc/kernel/entry_64.S           |    3 ++-
->  3 files changed, 4 insertions(+), 4 deletions(-)
+>  Documentation/kernel-parameters.txt |    4 ++++
+>  arch/powerpc/include/asm/cputable.h |    6 ++++--
+>  arch/powerpc/kernel/setup_64.c      |   14 ++++++++++++++
+>  3 files changed, 22 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-> index a43c147..45702e0 100644
-> --- a/arch/powerpc/include/asm/exception-64s.h
-> +++ b/arch/powerpc/include/asm/exception-64s.h
-> @@ -176,8 +176,9 @@ do_kvm_##n:								\
->  	std	r10,0(r1);		/* make stack chain pointer	*/ \
->  	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
->  	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
-> +	beq	4f;			/* if from kernel mode		*/ \
->  	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
-> -	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
-> +4:	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
->  	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
->  	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
->  	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
-> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-> index ea2a86e..376e36d 100644
-> --- a/arch/powerpc/include/asm/ppc_asm.h
-> +++ b/arch/powerpc/include/asm/ppc_asm.h
-> @@ -30,7 +30,6 @@
->  #define ACCOUNT_STOLEN_TIME
->  #else
->  #define ACCOUNT_CPU_USER_ENTRY(ra, rb)					\
-> -	beq	2f;			/* if from kernel mode */	\
->  	MFTB(ra);			/* get timebase */		\
->  	ld	rb,PACA_STARTTIME_USER(r13);				\
->  	std	ra,PACA_STARTTIME(r13);					\
-> @@ -38,7 +37,6 @@
->  	ld	ra,PACA_USER_TIME(r13);					\
->  	add	ra,ra,rb;		/* add on to user time */	\
->  	std	ra,PACA_USER_TIME(r13);					\
-> -2:
+> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+> index ad7e2e5..2881e5f 100644
+> --- a/Documentation/kernel-parameters.txt
+> +++ b/Documentation/kernel-parameters.txt
+> @@ -809,6 +809,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+>  			to discrete, to make X server driver able to add WB
+>  			entry later. This parameter enables that.
 >  
->  #define ACCOUNT_CPU_USER_EXIT(ra, rb)					\
->  	MFTB(ra);			/* get timebase */		\
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index b40e0b4..8d21cc4 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -62,8 +62,9 @@ system_call_common:
->  	std	r12,_MSR(r1)
->  	std	r0,GPR0(r1)
->  	std	r10,GPR1(r1)
-> +	beq	2f			/* if from kernel mode */
->  	ACCOUNT_CPU_USER_ENTRY(r10, r11)
-> -	std	r2,GPR2(r1)
-> +2:	std	r2,GPR2(r1)
->  	std	r3,GPR3(r1)
->  	mfcr	r2
->  	std	r4,GPR4(r1)
+> +	enable_ppr	[PPC/PSERIES]
+> +			Saves user defined PPR when process enters to kernel 
+> +			and restores PPR at exit. But it impacts performance.
+> +
+>  	enable_timer_pin_1 [X86]
+>  			Enable PIN 1 of APIC timer
+>  			Can be useful to work around chipset bugs
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index b3c083d..880c469 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -203,6 +203,7 @@ extern const char *powerpc_base_platform;
+>  #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0800000000000000)
+>  #define CPU_FTR_ICSWX			LONG_ASM_CONST(0x1000000000000000)
+>  #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x2000000000000000)
+> +#define CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x4000000000000000)
+>  
+>  #ifndef __ASSEMBLY__
+>  
+> @@ -432,7 +433,8 @@ extern const char *powerpc_base_platform;
+>  	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+>  	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
+>  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+> -	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY)
+> +	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
+> +	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR)
+>  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+>  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+>  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> @@ -454,7 +456,7 @@ extern const char *powerpc_base_platform;
+>  	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+>  	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
+>  	    CPU_FTRS_POWER7 | CPU_FTRS_CELL | CPU_FTRS_PA6T |		\
+> -	    CPU_FTR_VSX)
+> +	    CPU_FTR_VSX | CPU_FTR_HAS_PPR)
+>  #endif
+>  #else
+>  enum {
+> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+> index 389bd4f..e4c1945 100644
+> --- a/arch/powerpc/kernel/setup_64.c
+> +++ b/arch/powerpc/kernel/setup_64.c
+> @@ -98,6 +98,8 @@ int dcache_bsize;
+>  int icache_bsize;
+>  int ucache_bsize;
+>  
+> +static u32 enable_ppr = 0;
+> +
+>  #ifdef CONFIG_SMP
+>  
+>  static char *smt_enabled_cmdline;
+> @@ -357,6 +359,9 @@ void __init setup_system(void)
+>  {
+>  	DBG(" -> setup_system()\n");
+>  
+> +	if (cpu_has_feature(CPU_FTR_HAS_PPR) && !enable_ppr)
+> +		cur_cpu_spec->cpu_features &= ~CPU_FTR_HAS_PPR;
+> +
+>  	/* Apply the CPUs-specific and firmware specific fixups to kernel
+>  	 * text (nop out sections not relevant to this CPU or this firmware)
+>  	 */
+> @@ -683,6 +688,15 @@ void __init setup_per_cpu_areas(void)
+>  }
+>  #endif
+>  
+> +/* early_ppr kernel parameter to save/restore PPR register */
+> +static int __init early_ppr_enabled(char *str)
+> +{
+> +	enable_ppr = 1;
+> +
+> +	return 0;
+> +}
+> +
+> +early_param("enable_ppr", early_ppr_enabled);
+>  
+>  #ifdef CONFIG_PPC_INDIRECT_IO
+>  struct ppc_pci_io ppc_pci_io;
