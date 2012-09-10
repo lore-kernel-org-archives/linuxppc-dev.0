@@ -1,22 +1,27 @@
-Return-Path: <dargaud@lpsc.in2p3.fr>
-Received: from lpsc-mail.in2p3.fr (lpsc-mail.in2p3.fr [134.158.40.8])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4D15E2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 19:31:56 +1000 (EST)
-Received: from [134.158.40.174] (lpsc0174x.in2p3.fr [134.158.40.174])
- by lpsc-mail.in2p3.fr (8.13.1/8.13.1/In2p3) with ESMTP id q8A9VptF002935
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 11:31:52 +0200
-Message-ID: <504DB387.9050904@lpsc.in2p3.fr>
-Date: Mon, 10 Sep 2012 11:31:51 +0200
-From: Guillaume Dargaud <dargaud@lpsc.in2p3.fr>
+Return-Path: <B21989@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7BCC92C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 19:51:21 +1000 (EST)
+From: Xie Shaohui-B21989 <B21989@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Kumar Gala
+ <galak@kernel.crashing.org>
+Subject: RE: [PATCH][v2] powerpc/mm: using two zones for freescale 64 bit
+ kernel
+Date: Mon, 10 Sep 2012 09:51:09 +0000
+Message-ID: <ED492CCEAF882048BC2237DE806547C9079D9F2F@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1345805425-3829-1-git-send-email-Shaohui.Xie@freescale.com>
+ <9EADE983-F25D-41BC-8A04-E69A20BF68E3@kernel.crashing.org>
+ <1347233868.2385.128.camel@pasglop>
+In-Reply-To: <1347233868.2385.128.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Moving target
-References: <503F7555.5060404@lpsc.in2p3.fr>
- <1346369432.18688.10.camel@concordia>
-In-Reply-To: <1346369432.18688.10.camel@concordia>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Hu Mingkai-B21284 <B21284@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Chen Yuanquan-B41889 <B41889@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,15 +31,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08/31/2012 01:30 AM, Michael Ellerman wrote:
-
-> I don't think you should be using driver_register().
->
-> I think instead you want this to be a platform_driver, and use
-> platform_driver_register() ?
-
-Thank you for that. The test engineer was on vacation so it took a while 
-before I got feedback on whether it worked or not, and it seems so.
--- 
-Guillaume Dargaud
-http://www.gdargaud.net/Antarctica/
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBCZW5qYW1pbiBIZXJyZW5zY2ht
+aWR0IFttYWlsdG86YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnXQ0KPiBTZW50OiBNb25kYXksIFNl
+cHRlbWJlciAxMCwgMjAxMiA3OjM4IEFNDQo+IFRvOiBLdW1hciBHYWxhDQo+IENjOiBYaWUgU2hh
+b2h1aS1CMjE5ODk7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnIGxpc3Q7IEh1IE1pbmdr
+YWktDQo+IEIyMTI4NDsgQ2hlbiBZdWFucXVhbi1CNDE4ODkNCj4gU3ViamVjdDogUmU6IFtQQVRD
+SF1bdjJdIHBvd2VycGMvbW06IHVzaW5nIHR3byB6b25lcyBmb3IgZnJlZXNjYWxlIDY0IGJpdA0K
+PiBrZXJuZWwNCj4gDQo+IE9uIFRodSwgMjAxMi0wOC0zMCBhdCAxNTo0OSAtMDUwMCwgS3VtYXIg
+R2FsYSB3cm90ZToNCj4gPiBPbiBBdWcgMjQsIDIwMTIsIGF0IDU6NTAgQU0sIFNoYW9odWkgWGll
+IHdyb3RlOg0KPiA+DQo+ID4gPiBQb3dlclBDIHBsYXRmb3JtIG9ubHkgc3VwcG9ydHMgWk9ORV9E
+TUEgem9uZSBmb3IgNjRiaXQga2VybmVsLCBzbw0KPiA+ID4gYWxsIHRoZSBtZW1vcnkgd2lsbCBi
+ZSBwdXQgaW50byB0aGlzIHpvbmUuIElmIHRoZSBtZW1vcnkgc2l6ZSBpcw0KPiA+ID4gZ3JlYXRl
+ciB0aGFuIHRoZSBkZXZpY2UncyBETUEgY2FwYWJpbGl0eSBhbmQgZGV2aWNlIHVzZXMNCj4gPiA+
+IGRtYV9hbGxvY19jb2hlcmVudCB0byBhbGxvY2F0ZSBtZW1vcnksIGl0IHdpbGwgZ2V0IGFuIGFk
+ZHJlc3Mgd2hpY2gNCj4gPiA+IGlzIG92ZXIgdGhlIGRldmljZSdzIERNQSBhZGRyZXNzaW5nLCB0
+aGUgZGV2aWNlIHdpbGwgZmFpbC4NCj4gPiA+DQo+ID4gPiBTbyB3ZSBzcGxpdCB0aGUgbWVtb3J5
+IHRvIHR3byB6b25lczogem9uZSBaT05FX0RNQTMyICYgWk9ORV9OT1JNQUwsDQo+ID4gPiBzaW5j
+ZSB3ZSBhbHJlYWR5IGFsbG9jYXRlIFBDSUNTUkJBUi9QRVhDU1JCQVIgcmlnaHQgYmVsb3cgdGhl
+IDRHDQo+ID4gPiBib3VuZGFyeSAoaWYgdGhlIGxvd2VzdCBQQ0kgYWRkcmVzcyBpcyBhYm92ZSA0
+RyksIHNvIHdlIGNvbnN0cmFpbg0KPiA+ID4gdGhlIERNQSB6b25lIFpPTkVfRE1BMzIgdG8gMkdC
+LCBhbHNvLCB3ZSBjbGVhciBmbGFnIF9fR0ZQX0RNQSAmDQo+ID4gPiBfX0dGUF9ETUEzMiBhbmQg
+c2V0IF9fR0ZQX0RNQTMyIG9ubHkgaWYgdGhlIGRldmljZSdzIGRtYV9tYXNrIDwNCj4gPiA+IHRv
+dGFsIG1lbW9yeSBzaXplLiBCeSBkb2luZyB0aGlzLCBkZXZpY2VzIHdoaWNoIGNhbm5vdCBETUEg
+YWxsIHRoZQ0KPiA+ID4gbWVtb3J5IHdpbGwgYmUgbGltaXRlZCB0byBaT05FX0RNQTMyLCBidXQg
+ZGV2aWNlcyB3aGljaCBjYW4gRE1BIGFsbA0KPiB0aGUgbWVtb3J5IHdpbGwgbm90IGJlIGFmZmVj
+dGVkIGJ5IHRoaXMgbGltaXRhdGlvbi4NCj4gPiA+DQo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBTaGFv
+aHVpIFhpZSA8U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4NCj4gPiA+IFNpZ25lZC1vZmYtYnk6
+IE1pbmdrYWkgSHUgPE1pbmdrYWkuaHVAZnJlZXNjYWxlLmNvbT4NCj4gPiA+IFNpZ25lZC1vZmYt
+Ynk6IENoZW4gWXVhbnF1YW4gPEI0MTg4OUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gLS0tDQo+ID4g
+PiBjaGFuZ2VzIGZvciB2MjoNCj4gPiA+IDEuIHVzZSBhIGNvbmZpZyBvcHRpb24gZm9yIHVzaW5n
+IHR3byB6b25lcyAoWk9ORV9ETUEzMiAmDQo+ID4gPiBaT05FX05PUk1BTCkgaW4gZnJlZXNjYWxl
+IDY0IGJpdCBrZXJuZWwuDQo+ID4gPg0KPiANCj4gVGhlcmUgbXVzdCBoYXZlIGJlZW4gYSBtaXN1
+bmRlcnN0YW5kaW5nLiBJIHRoaW5rIHRoaXMgc2hvdWxkIGJlIGEgcnVudGltZQ0KPiBjaG9pY2Us
+IHBvc3NpYmx5IGJ5IHRoZSBwbGF0Zm9ybSBjb2RlLiBBbnkgcmVhc29uIHRoYXQgY2FuJ3QgYmUg
+ZG9uZSA/DQo+IA0KW1MuSF0gRG8geW91IG1lYW4gdGhpczoNCg0KcGh5c19hZGRyX3QgcGxhdGZv
+cm1fZG1hX3NpemUgKG1heWJlIGEgZGVmYXVsdCB2YWx1ZSBzaG91bGQgYmUgdXNlZCwgdGhlbiBw
+bGF0Zm9ybSBjb2RlIHdpbGwgY2hhbmdlIGl0KQ0KDQppZiAodG9wX29mX3JhbSA+IHBsYXRmb3Jt
+X2RtYV9zaXplKQ0KCW1heF96b25lX3BmbnNbWk9ORV9ETUFdID0gcGxhdGZvcm1fZG1hX3NpemUg
+Pj4gUEFHRV9TSElGVDsNCmVsc2UNCgltYXhfem9uZV9wZm5zW1pPTkVfRE1BXSA9IHRvcF9vZl9y
+YW0gPj4gUEFHRV9TSElGVDsNCg0KbWF4X3pvbmVfcGZuc1taT05FX05PUk1BTF0gPSB0b3Bfb2Zf
+cmFtID4+IFBBR0VfU0hJRlQ7DQoJDQo+IEFsc28gaG93IGRvZXMgSW50ZWwgZG8gaXQgPyANCltT
+LkhdIGJlbG93IGFyZSBjb2RlcyBpbiBJbnRlbDoNCg0KNDAzIHZvaWQgX19pbml0IHpvbmVfc2l6
+ZXNfaW5pdCh2b2lkKQ0KNDA0IHsgICAgICAgDQo0MDUgICAgICAgICB1bnNpZ25lZCBsb25nIG1h
+eF96b25lX3BmbnNbTUFYX05SX1pPTkVTXTsNCjQwNiAgICAgICAgIA0KNDA3ICAgICAgICAgbWVt
+c2V0KG1heF96b25lX3BmbnMsIDAsIHNpemVvZihtYXhfem9uZV9wZm5zKSk7DQo0MDggICAgICAg
+ICAgICAgICAgIA0KNDA5ICNpZmRlZiBDT05GSUdfWk9ORV9ETUENCjQxMCAgICAgICAgIG1heF96
+b25lX3BmbnNbWk9ORV9ETUFdICAgICAgICAgPSBNQVhfRE1BX1BGTjsNCjQxMSAjZW5kaWYNCjQx
+MiAjaWZkZWYgQ09ORklHX1pPTkVfRE1BMzINCjQxMyAgICAgICAgIG1heF96b25lX3BmbnNbWk9O
+RV9ETUEzMl0gICAgICAgPSBNQVhfRE1BMzJfUEZOOw0KNDE0ICNlbmRpZg0KNDE1ICAgICAgICAg
+bWF4X3pvbmVfcGZuc1taT05FX05PUk1BTF0gICAgICA9IG1heF9sb3dfcGZuOw0KNDE2ICNpZmRl
+ZiBDT05GSUdfSElHSE1FTQ0KNDE3ICAgICAgICAgbWF4X3pvbmVfcGZuc1taT05FX0hJR0hNRU1d
+ICAgICA9IG1heF9wZm47DQo0MTggI2VuZGlmDQo0MTkgIA0KICAgICAgDQpGb3IgeDg2XzY0LCB0
+aGVyZSBpcyBubyBDT05GSUdfSElHSE1FTSwgc28gdGhlcmUgd2lsbCBiZSB0aHJlZSB6b25lczog
+DQpaT05FX0RNQS9aT05FX0RNQTMyL1pPTkVfTk9STUFMLg0KDQo+RG8gdGhleSBoYXZlIGlvbW11
+IGFuZCBaT05FX0RNQTMyIGNvLWV4aXN0ID8NCg0KSSdtIG5vdCBmYW1pbGlhciB3aXRoIElPTU1V
+LCBJIHJlYWQgc29tZSBrZXJuZWwgZG9jcywgaW4gRG9jdW1lbnRhdGlvbi9rZXJuZWwtcGFyYW1l
+dGVycy50eHQsDQpUaGVyZSBhcmUgYW1kX2lvbW11ICYgaW50ZWxfaW9tbXUgYXZhaWxhYmxlLCBp
+biBEb2N1bWVudGF0aW9uL3g4Ni94ODZfNjQvYm9vdC1vcHRpb25zLnR4dCwNCkl0IHNheXMgIiBD
+dXJyZW50bHkgZm91ciB4ODYtNjQgUENJLURNQSBtYXBwaW5nIGltcGxlbWVudGF0aW9ucyBleGlz
+dCIuIA0KDQpEb2VzIFBQQzY0IHN1cHBvcnQgSU9NTVUsIGhvdyB0byB1c2UgaXQ/DQoNCg0KQmVz
+dCBSZWdhcmRzLCANClNoYW9odWkgWGllDQo=
