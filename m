@@ -1,22 +1,19 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
- [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 7B3072C008E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 00:02:26 +1000 (EST)
-Message-ID: <1347285742.10751.6.camel@gandalf.local.home>
-Subject: Re: [RFC patch powerpc,trace] Avoid suspicious RCU usage reporting
- for some tracepoints
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 10 Sep 2012 10:02:22 -0400
-In-Reply-To: <1347253812.2385.148.camel@pasglop>
-References: <1347253133.2725.45.camel@ThinkPad-T420>
- <1347253812.2385.148.camel@pasglop>
-Content-Type: text/plain; charset="ISO-8859-15"
-Mime-Version: 1.0
-Cc: Anton Blanchard <anton@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Li Zhong <zhong@linux.vnet.ibm.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ian Molton <ian.molton@codethink.co.uk>
+Subject: Re: [PATCH v3 0/7] mv643xx.c: Add basic device tree support.
+Date: Mon, 10 Sep 2012 14:22:13 +0000
+References: <1344350092-24050-1-git-send-email-ian.molton@codethink.co.uk>
+ <5028D040.60604@codethink.co.uk> <502D201E.9030304@codethink.co.uk>
+In-Reply-To: <502D201E.9030304@codethink.co.uk>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201209101422.13875.arnd@arndb.de>
+Cc: thomas.petazzoni@free-electrons.com, andrew@lunn.ch, netdev@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, ben.dooks@codethink.co.uk,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-09-10 at 15:10 +1000, Benjamin Herrenschmidt wrote:
-> On Mon, 2012-09-10 at 12:58 +0800, Li Zhong wrote:
-> > There are a few tracepoints in the interrupt code path, which is before
-> > irq_enter(), or after irq_exit(), like
-> > trace_irq_entry()/trace_irq_exit() in do_IRQ(),
-> > trace_timer_interrupt_entry()/trace_timer_interrupt_exit() in
-> > timer_interrupt(). 
-> > 
-> > If the interrupt is from idle(), and because tracepoint contains RCU
-> > read-side critical section, we could see following suspicious RCU usage
-> > reported:
+On Thursday 16 August 2012, Ian Molton wrote:
+> Ping :)
 > 
->  .../...
+> Can we get some consensus on the right approach here? I'm loathe to code
+> this if its going to be rejected.
 > 
-> > This is because the RCU usage in interrupt context should be used in
-> > area marked by rcu_irq_enter()/rcu_irq_exit(), called in
-> > irq_enter()/irq_exit() respectively. 
-> > 
-> > Could we add a new tracepoint trace_***_rcuirq, like trace_***_rcuidle
-> > to avoid the report? like the code attached below.
-> > 
-> > Or could we just move these tracepoints inside the
-> > irq_enter()/irq_exit() area? (Seems not good for the timer_interrupt
-> > case). 
+> I'd prefer the driver to be properly split so we dont have the MDIO
+> driver mapping the ethernet drivers address spaces, but if thats not
+> going to be merged, I'm not feeling like doing the work for nothing.
 > 
-> I'd say just move them in. Anton, any objection ?
+> If the driver is to use the overlapping-address mapped-by-the-mdio
+> scheme, then so be it, but I could do with knowing.
 > 
+> Another point against the latter scheme is that the MDIO driver could
+> sensibly be used (the block is identical) on the ArmadaXP, which has 4
+> ethernet blocks rather than two, yet grouped in two pairs with a
+> discontiguous address range.
+> 
+> I'd like to get this moved along as soon as possible though.
 
-I agree too. I'm a bit concerned about the lack of coverage the
-irq_enter() and irq_exit() have in the timer interrupt:
+Following up on the old discussion, I talked briefly about this
+issue with BenH at the kernel summit. The outcome basically is that
+it's a bit sad to have incompatible bindings, but it's not the end
+of the world,and it's more important to do it right this time.
 
-	may_hard_irq_enable();
+Just make sure that you use different values for the 'compatible'
+strings and then do what you need to get the ARM hardware working.
 
-	trace_timer_interrupt_entry(regs);
+Ideally, the new binding should be written in a way that powerpc
+machines can use the same one, but the existing ones all use
+an version of Open Firmware that is not going to get updated
+and it's also not too likely that we are going to see new
+powerpc machines based on this chip.
 
-	__get_cpu_var(irq_stat).timer_irqs++;
-
-#if defined(CONFIG_PPC32) && defined(CONFIG_PMAC)
-	if (atomic_read(&ppc_n_lost_interrupts) != 0)
-		do_IRQ(regs);
-#endif
-
-	old_regs = set_irq_regs(regs);
-	irq_enter();
-
-
-I'm guessing that call to do_IRQ() has to do with lazy irq handling?
-
-Anyway, there may be a reason to have the tracepoint before this call,
-but I'm not sure it really is that important. It should probably be best
-to move it after the irq_enter(). There's side-effects with calling
-things from interrupt context outside of irq_enter/exit().
-
--- Steve
+	Arnd
