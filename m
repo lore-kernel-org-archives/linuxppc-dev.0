@@ -1,20 +1,24 @@
-Return-Path: <R65777@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8FF852C008E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 20:24:07 +1000 (EST)
-From: Bharat Bhushan <r65777@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
- <benh@kernel.crashing.org>
-Subject: [PATCH] Remove unused __get_user64() and __put_user64()
-Date: Tue, 11 Sep 2012 15:49:45 +0530
-Message-ID: <1347358785-4695-1-git-send-email-Bharat.Bhushan@freescale.com>
+Return-Path: <cbouatmailru@gmail.com>
+Received: from mail-ie0-f179.google.com (mail-ie0-f179.google.com
+ [209.85.223.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1AD1D2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 18:07:34 +1000 (EST)
+Received: by ieje13 with SMTP id e13so452871iej.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 01:07:31 -0700 (PDT)
+Date: Tue, 11 Sep 2012 01:04:58 -0700
+From: Anton Vorontsov <cbouatmailru@gmail.com>
+To: Chang-Ming.Huang@freescale.com
+Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
+Message-ID: <20120911080457.GA28235@lizard>
+References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
+ <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
+ <20120911075429.GA27028@lizard>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20120911075429.GA27028@lizard>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-mmc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +28,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-__get_user64()  and __put_user64() are not used.
+On Tue, Sep 11, 2012 at 12:54:29AM -0700, Anton Vorontsov wrote:
+> On Tue, Sep 11, 2012 at 03:12:44PM +0800, Chang-Ming.Huang@freescale.com wrote:
+> > From: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> > 
+> > Below SOCs don't support the cmd23 command for MMC card,
+> > therefore, disable it in device tree:
+> > P1020, P1021, P1022, P1024, P1025 and P4080
+> > 
+> > Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+> 
+> Acked-by: Anton Vorontsov <cbouatmailru@gmail.com>
 
-Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+Btw, although the patch is trivial, I guess you still want to let know
+PowerPC folks about it. Adding Cc and copying the patch:
+
+- - - -
+From: Jerry Huang <Chang-Ming.Huang@freescale.com>
+
+Below SOCs don't support the cmd23 command for MMC card,
+therefore, disable it in device tree:
+P1020, P1021, P1022, P1024, P1025 and P4080
+
+Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
+CC: Anton Vorontsov <cbouatmailru@gmail.com>
 ---
- arch/powerpc/include/asm/uaccess.h |   11 -----------
- 1 files changed, 0 insertions(+), 11 deletions(-)
+ arch/powerpc/boot/dts/fsl/p1020si-post.dtsi |    1 +
+ arch/powerpc/boot/dts/fsl/p1021si-post.dtsi |    1 +
+ arch/powerpc/boot/dts/fsl/p1022si-post.dtsi |    1 +
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    1 +
+ 4 files changed, 4 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 17bb40c..4db4959 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -98,11 +98,6 @@ struct exception_table_entry {
-  * PowerPC, we can just do these as direct assignments.  (Of course, the
-  * exception handling means that it's no longer "just"...)
-  *
-- * The "user64" versions of the user access functions are versions that
-- * allow access of 64-bit data. The "get_user" functions do not
-- * properly handle 64-bit data because the value gets down cast to a long.
-- * The "put_user" functions already handle 64-bit data properly but we add
-- * "user64" versions for completeness
-  */
- #define get_user(x, ptr) \
- 	__get_user_check((x), (ptr), sizeof(*(ptr)))
-@@ -114,12 +109,6 @@ struct exception_table_entry {
- #define __put_user(x, ptr) \
- 	__put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
+diff --git a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
+index 68cc5e7..793a30b 100644
+--- a/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1020si-post.dtsi
+@@ -154,6 +154,7 @@
+ 	sdhc@2e000 {
+ 		compatible = "fsl,p1020-esdhc", "fsl,esdhc";
+ 		sdhci,auto-cmd12;
++		sdhci,no-cmd23;
+ 	};
+ /include/ "pq3-sec3.3-0.dtsi"
  
--#ifndef __powerpc64__
--#define __get_user64(x, ptr) \
--	__get_user64_nocheck((x), (ptr), sizeof(*(ptr)))
--#define __put_user64(x, ptr) __put_user(x, ptr)
--#endif
--
- #define __get_user_inatomic(x, ptr) \
- 	__get_user_nosleep((x), (ptr), sizeof(*(ptr)))
- #define __put_user_inatomic(x, ptr) \
+diff --git a/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
+index adb82fd..2b7fd2a 100644
+--- a/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1021si-post.dtsi
+@@ -149,6 +149,7 @@
+ /include/ "pq3-esdhc-0.dtsi"
+ 	sdhc@2e000 {
+ 		sdhci,auto-cmd12;
++		sdhci,no-cmd23;
+ 	};
+ 
+ /include/ "pq3-sec3.3-0.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+index 06216b8..2334a52 100644
+--- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+@@ -215,6 +215,7 @@
+ 	sdhc@2e000 {
+ 		compatible = "fsl,p1022-esdhc", "fsl,esdhc";
+ 		sdhci,auto-cmd12;
++		sdhci,no-cmd23;
+ 	};
+ 
+ /include/ "pq3-sec3.3-0.dtsi"
+diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+index 8d35d2c..5b39952 100644
+--- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+@@ -337,6 +337,7 @@
+ 	sdhc@114000 {
+ 		voltage-ranges = <3300 3300>;
+ 		sdhci,auto-cmd12;
++		sdhci,no-cmd23;
+ 	};
+ 
+ /include/ "qoriq-i2c-0.dtsi"
 -- 
-1.7.0.4
+1.7.9.5
