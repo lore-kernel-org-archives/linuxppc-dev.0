@@ -1,27 +1,21 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 4F1D72C0078
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 15:34:03 +1000 (EST)
-Message-ID: <504ECEA2.4010805@cn.fujitsu.com>
-Date: Tue, 11 Sep 2012 13:39:46 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Jerry <uulinux@gmail.com>
-Subject: Re: [RFC v8 PATCH 00/20] memory-hotplug: hot-remove physical memory
-References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>	<20120831134956.fec0f681.akpm@linux-foundation.org>	<504D467D.2080201@jp.fujitsu.com>	<504D4A08.7090602@cn.fujitsu.com>	<20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>	<CAAV+Mu7YWRWnxt78F4ZDMrrUsWB=n-_qkYOcQT7WQ2HwP89Obw@mail.gmail.com>	<20120911012345.GD14205@bbox>
- <CAAV+Mu4hb0qbW2Ry6w5FAGUM06puDH0v_H-jr584-G9CzJqSGw@mail.gmail.com>
-In-Reply-To: <CAAV+Mu4hb0qbW2Ry6w5FAGUM06puDH0v_H-jr584-G9CzJqSGw@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-acpi@vger.kernel.org, len.brown@intel.com, linux-mm@kvack.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com,
- Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>,
- Minchan Kim <minchan@kernel.org>,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, cl@linux.com, liuj97@gmail.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id D3C432C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 15:37:30 +1000 (EST)
+Message-ID: <1347341841.2603.31.camel@pasglop>
+Subject: Re: [PATCH 5/6] powerpc: Macros for saving/restore PPR
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Date: Tue, 11 Sep 2012 15:37:21 +1000
+In-Reply-To: <504EC99B.7000302@linux.vnet.ibm.com>
+References: <1347191001.3418.19.camel@hbabu-laptop>
+ <1347251044.2385.144.camel@pasglop> <504EC99B.7000302@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, paulus@samba.org,
+ anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,153 +25,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 09/11/2012 01:18 PM, Jerry Wrote:
-> Hi Kim,
-> 
-> Thank you for your kindness. Let me clarify this:
-> 
-> On ARM architecture, there are 32 bits physical addresses space. However,
-> the addresses space is divided into 8 banks normally. Each bank
-> disabled/enabled by a chip selector signal. In my platform, bank0 connects
-> a DDR chip, and bank1 also connects another DDR chip. And each DDR chip
-> whose capability is 512MB is integrated into the main board. So, it could
-> not be removed by hand. We can disable/enable each bank by peripheral
-> device controller registers.
-> 
-> When system enter suspend state, if all the pages allocated could be
-> migrated to one bank, there are no valid data in the another bank. In this
-> time, I could disable the free bank. It isn't necessary to provided power
-> to this chip in the suspend state. When system resume, I just need to
-> enable it again.
-> 
-> Hi Wen,
-> 
-> I am sorry for that I doesn't know the "_PSx support" means. Maybe I
-> needn't it.
+On Mon, 2012-09-10 at 22:18 -0700, Haren Myneni wrote:
 
-Hmm, arm doesn't support ACPI, so please ignore it.
+> We can also use thread struct, but the saved ppr is needed as long as
+> the process is in kernel context. Once the process exits, we do not need
+> this value - means the kernel or any other command will not be reading
+> this value.
+>
+>  Even the process can change this value later. Need to add
+> ppr in thread_struct which uses extra 8 bytes for each task.
 
-Thanks
-Wen Congyang
+Allright so the real answer is that the thread info is easier to get at
+than the thread struct :-) However, the most logical place to put that
+stuff is along the lines of the surrounding code... in the pt_regs on
+the stack.
 
+It should be fairly easy to carve some space here, for example softe
+doesn't have to be 64-bit (it's really one bit, you can make it one
+byte, just make sure to adapt the corresponding assembly).
+
+The main issue with that approach is that you then need to audit a bit
+to see how pt_regs might be constructed here or there in case you end up
+with a 0 (illegal PPR) value in there.
+
+> Whereas thread_info is at the top of stack. No need to allocate extra
+> memory. Since the saved process PPR value is needed temporarily whenever
+> the process is in kernel, thought thread_info is proper. Also easy to
+> read - one less load instruction.
+
+The advantage of pt_regs is that a signal can "peek" at the PPR value
+which could be useful for debugging purposes.
+
+> Saving in thread_info:
 > 
-> Thanks,
-> Jerry
+> ld      r4,area+EX_PPR(r13);
+> clrrdi  r5,r1,THREAD_SHIFT;
+> std     r4,TI_PPR(r5);
 > 
-> 2012/9/11 Minchan Kim <minchan@kernel.org>
+> Saving in thread_struct:
 > 
->> Hi Jerry,
->>
->> On Tue, Sep 11, 2012 at 08:27:40AM +0800, Jerry wrote:
->>> Hi Wen,
->>>
->>> I have been arranged a job related memory hotplug on ARM architecture.
->>> Maybe I know some new issues about memory hotplug on ARM architecture. I
->>> just enabled it on ARM, and it works well in my Android tablet now.
->>> However, I have not send out my patches. The real reason is that I don't
->>> know how to do it. Maybe I need to read
->> "Documentation/SubmittingPatches".
->>>
->>> Hi Andrew,
->>> This is my first time to send you a e-mail. I am so nervous about if I
->> have
->>> some mistakes or not.
->>
->> Don't be afraid.
->> If you might make a mistake, it's very natural to newbie.
->> I am sure anyone doesn't blame you. :)
->> If you have a good patch, please send out.
->>
->>>
->>> Some peoples maybe think memory hotplug need to be supported by special
->>> hardware. Maybe it means memory physical hotplug. Some times, we just
->> need
->>> to use memory logical hotplug, doesn't remove the memory in physical. It
->> is
->>> also usefully for power saving in my platform. Because I doesn't want
->>> the offline memory is in *self-refresh* state.
->>
->> Just out of curiosity.
->> What's the your scenario and gain?
->> AFAIK, there were some effort about it in embedded side but gain isn't
->> rather big
->> IIRC.
->>
->>>
->>> Any comments are appreciated.
->>>
->>> Thanks,
->>> Jerry
->>>
->>> 2012/9/10 Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
->>>
->>>> Hi,
->>>>
->>>> On Mon, Sep 10, 2012 at 10:01:44AM +0800, Wen Congyang wrote:
->>>>> At 09/10/2012 09:46 AM, Yasuaki Ishimatsu Wrote:
->>>>>> Hi Wen,
->>>>>>
->>>>>> 2012/09/01 5:49, Andrew Morton wrote:
->>>>>>> On Tue, 28 Aug 2012 18:00:07 +0800
->>>>>>> wency@cn.fujitsu.com wrote:
->>>>>>>
->>>>>>>> This patch series aims to support physical memory hot-remove.
->>>>>>>
->>>>>>> I doubt if many people have hardware which permits physical memory
->>>>>>> removal?  How would you suggest that people with regular hardware
->> can
->>>>>>> test these chagnes?
->>>>>>
->>>>>> How do you test the patch? As Andrew says, for hot-removing memory,
->>>>>> we need a particular hardware. I think so too. So many people may
->> want
->>>>>> to know how to test the patch.
->>>>>> If we apply following patch to kvm guest, can we hot-remove memory
->> on
->>>>>> kvm guest?
->>>>>>
->>>>>> http://lists.gnu.org/archive/html/qemu-devel/2012-07/msg01389.html
->>>>>
->>>>> Yes, if we apply this patchset, we can test hot-remove memory on kvm
->>>> guest.
->>>>> But that patchset doesn't implement _PS3, so there is some
->> restriction.
->>>>
->>>> the following repos contain the patchset above, plus 2 more patches
->> that
->>>> add
->>>> PS3 support to the dimm devices in qemu/seabios:
->>>>
->>>> https://github.com/vliaskov/seabios/commits/memhp-v2
->>>> https://github.com/vliaskov/qemu-kvm/commits/memhp-v2
->>>>
->>>> I have not posted the PS3 patches yet in the qemu list, but will post
->> them
->>>> soon for v3 of the memory hotplug series. If you have issues testing,
->> let
->>>> me
->>>> know.
->>>>
->>>> thanks,
->>>>
->>>> - Vasilis
->>>>
->>>> --
->>>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
->>>> the body to majordomo@kvack.org.  For more info on Linux MM,
->>>> see: http://www.linux-mm.org/ .
->>>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->>>>
->>>
->>>
->>>
->>> --
->>> I love linux!!!
->>
->> --
->> Kind regards,
->> Minchan Kim
->>
+>  ld      r4,PACACURRENT(r13)
+>  addi    r5,r4,THREAD
+>  ld      r4,paca+EX_PPR(r13);
+>  std     r4,THREAD_PPR(r5)
 > 
+> If you prefer thread_struct, I will change the patch. Please let me know.
+
+Cheers,
+Ben.
+
+> Thanks
+> Haren
 > 
-> 
+> > 
+> > Cheers,
+> > Ben.
+> > 
+> >> +#define RESTORE_PPR(ra,rb)						\
+> >> +BEGIN_FTR_SECTION_NESTED(941)						\
+> >> +	clrrdi	ra,r1,THREAD_SHIFT;					\
+> >> +	ld	rb,TI_PPR(ra);		/* Read PPR from thread_info */	\
+> >> +	mtspr	SPRN_PPR,rb;		/* Restore PPR */		\
+> >> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,941)
+> >> +
+> >> +#define RESTORE_PPR_PACA(area,ra)					\
+> >> +BEGIN_FTR_SECTION_NESTED(942)						\
+> >> +	ld	ra,area+EX_PPR(r13);					\
+> >> +	mtspr	SPRN_PPR,ra;						\
+> >> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,942)
+> >> +
+> >> +#define HMT_MEDIUM_NO_PPR						\
+> >> +BEGIN_FTR_SECTION_NESTED(944)						\
+> >> +	HMT_MEDIUM;							\
+> >> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,0,944)  /*non P7*/		
+> >> +
+> >> +#define HMT_MEDIUM_HAS_PPR(area, ra)					\
+> >> +BEGIN_FTR_SECTION_NESTED(943)						\
+> >> +	mfspr	ra,SPRN_PPR;						\
+> >> +	std	ra,area+EX_PPR(r13);					\
+> >> +	HMT_MEDIUM;							\
+> >> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,943) /* P7 */
+> >> +
+> >>  #define __EXCEPTION_PROLOG_1(area, extra, vec)				\
+> >>  	GET_PACA(r13);							\
+> >>  	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
+> >> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+> >> index 6386086..dff2f89 100644
+> >> --- a/arch/powerpc/include/asm/reg.h
+> >> +++ b/arch/powerpc/include/asm/reg.h
+> >> @@ -284,6 +284,7 @@
+> >>  #define SPRN_DBAT6U	0x23C	/* Data BAT 6 Upper Register */
+> >>  #define SPRN_DBAT7L	0x23F	/* Data BAT 7 Lower Register */
+> >>  #define SPRN_DBAT7U	0x23E	/* Data BAT 7 Upper Register */
+> >> +#define SPRN_PPR	0x380	/* SMT Thread status Register */
+> >>  
+> >>  #define SPRN_DEC	0x016		/* Decrement Register */
+> >>  #define SPRN_DER	0x095		/* Debug Enable Regsiter */
+> > 
+> > 
