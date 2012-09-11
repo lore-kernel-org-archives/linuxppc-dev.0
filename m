@@ -1,36 +1,37 @@
 Return-Path: <haren@linux.vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e5.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E9D352C0089
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 15:18:28 +1000 (EST)
+ (Client CN "e2.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6594B2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 15:23:58 +1000 (EST)
 Received: from /spool/local
- by e5.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Tue, 11 Sep 2012 01:18:25 -0400
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 9BD8338C803B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 01:18:21 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8B5ILqS37945560
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 01:18:21 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8B5IKxS016749
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 02:18:21 -0300
-Message-ID: <504EC99B.7000302@linux.vnet.ibm.com>
-Date: Mon, 10 Sep 2012 22:18:19 -0700
+ Tue, 11 Sep 2012 01:23:55 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 24F0C6E803C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 01:23:23 -0400 (EDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8B5NMMk171044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 01:23:23 -0400
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8B5NMG6031565
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 23:23:22 -0600
+Message-ID: <504ECAC9.3080102@linux.vnet.ibm.com>
+Date: Mon, 10 Sep 2012 22:23:21 -0700
 From: Haren Myneni <haren@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 5/6] powerpc: Macros for saving/restore PPR
-References: <1347191001.3418.19.camel@hbabu-laptop>
- <1347251044.2385.144.camel@pasglop>
-In-Reply-To: <1347251044.2385.144.camel@pasglop>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, mikey@neuling.org, paulus@samba.org,
+Subject: Re: [PATCH 1/6] powerpc: Move branch instruction from
+ ACCOUNT_CPU_USER_ENTRY to caller
+References: <1347190604.3418.11.camel@hbabu-laptop>
+ <1347235505.2385.134.camel@pasglop>
+In-Reply-To: <1347235505.2385.134.camel@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: paulus@samba.org, mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
  anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,108 +42,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/09/2012 09:24 PM, Benjamin Herrenschmidt wrote:
-> On Sun, 2012-09-09 at 04:43 -0700, Haren Myneni wrote:
->> Several macros are defined for saving and restore user defined PPR value.
->>
->> Signed-off-by: Haren Myneni <haren@us.ibm.com>
->> ---
->>  arch/powerpc/include/asm/exception-64s.h |   35 ++++++++++++++++++++++++++++++
->>  arch/powerpc/include/asm/reg.h           |    1 +
->>  2 files changed, 36 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
->> index bfd3f1f..618fd18 100644
->> --- a/arch/powerpc/include/asm/exception-64s.h
->> +++ b/arch/powerpc/include/asm/exception-64s.h
->> @@ -62,6 +62,41 @@
->>  #define EXC_HV	H
->>  #define EXC_STD
->>  
->> +/*
->> + * PPR save/restore macros - Used on P7 or later processors
->> + */
->> +#define SAVE_PPR(area, ra, rb)						\
->> +BEGIN_FTR_SECTION_NESTED(940)						\
->> +	ld	ra,area+EX_PPR(r13);	/* Read PPR from paca */	\
->> +	clrrdi	rb,r1,THREAD_SHIFT;	/* thread_info struct */	\
->> +	std	ra,TI_PPR(rb);		/* Save PPR in thread_info */	\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,940)
+On 09/09/2012 05:05 PM, Benjamin Herrenschmidt wrote:
+> On Sun, 2012-09-09 at 04:36 -0700, Haren Myneni wrote:
+>> The first instruction in ACCOUNT_CPU_USER_ENTRY is 'beq' which checkes for
+>> exceptions coming from kernel mode. PPR value will be saved immediately after
+>> ACCOUNT_CPU_USER_ENTRY and is also for user level exceptions. So moved this
+>> branch instruction in the caller code.
 > 
-> Why the thread info and not the thread struct ?
+> grep fail ? ACCOUNT_CPU_USER_ENTRY is used in exception-64e.S as well,
+> so that needs to be updated too.
 
-We can also use thread struct, but the saved ppr is needed as long as
-the process is in kernel context. Once the process exits, we do not need
-this value - means the kernel or any other command will not be reading
-this value. Even the process can change this value later. Need to add
-ppr in thread_struct which uses extra 8 bytes for each task.
-
-Whereas thread_info is at the top of stack. No need to allocate extra
-memory. Since the saved process PPR value is needed temporarily whenever
-the process is in kernel, thought thread_info is proper. Also easy to
-read - one less load instruction.
-
-Saving in thread_info:
-
-ld      r4,area+EX_PPR(r13);
-clrrdi  r5,r1,THREAD_SHIFT;
-std     r4,TI_PPR(r5);
-
-Saving in thread_struct:
-
- ld      r4,PACACURRENT(r13)
- addi    r5,r4,THREAD
- ld      r4,paca+EX_PPR(r13);
- std     r4,THREAD_PPR(r5)
-
-If you prefer thread_struct, I will change the patch. Please let me know.
-
-Thanks
-Haren
+Sorry, I will make this change.
 
 > 
 > Cheers,
 > Ben.
 > 
->> +#define RESTORE_PPR(ra,rb)						\
->> +BEGIN_FTR_SECTION_NESTED(941)						\
->> +	clrrdi	ra,r1,THREAD_SHIFT;					\
->> +	ld	rb,TI_PPR(ra);		/* Read PPR from thread_info */	\
->> +	mtspr	SPRN_PPR,rb;		/* Restore PPR */		\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,941)
->> +
->> +#define RESTORE_PPR_PACA(area,ra)					\
->> +BEGIN_FTR_SECTION_NESTED(942)						\
->> +	ld	ra,area+EX_PPR(r13);					\
->> +	mtspr	SPRN_PPR,ra;						\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,942)
->> +
->> +#define HMT_MEDIUM_NO_PPR						\
->> +BEGIN_FTR_SECTION_NESTED(944)						\
->> +	HMT_MEDIUM;							\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,0,944)  /*non P7*/		
->> +
->> +#define HMT_MEDIUM_HAS_PPR(area, ra)					\
->> +BEGIN_FTR_SECTION_NESTED(943)						\
->> +	mfspr	ra,SPRN_PPR;						\
->> +	std	ra,area+EX_PPR(r13);					\
->> +	HMT_MEDIUM;							\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,943) /* P7 */
->> +
->>  #define __EXCEPTION_PROLOG_1(area, extra, vec)				\
->>  	GET_PACA(r13);							\
->>  	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
->> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
->> index 6386086..dff2f89 100644
->> --- a/arch/powerpc/include/asm/reg.h
->> +++ b/arch/powerpc/include/asm/reg.h
->> @@ -284,6 +284,7 @@
->>  #define SPRN_DBAT6U	0x23C	/* Data BAT 6 Upper Register */
->>  #define SPRN_DBAT7L	0x23F	/* Data BAT 7 Lower Register */
->>  #define SPRN_DBAT7U	0x23E	/* Data BAT 7 Upper Register */
->> +#define SPRN_PPR	0x380	/* SMT Thread status Register */
+>> Signed-off-by: Haren Myneni <haren@us.ibm.com>
+>>
+>> ---
+>>  arch/powerpc/include/asm/exception-64s.h |    3 ++-
+>>  arch/powerpc/include/asm/ppc_asm.h       |    2 --
+>>  arch/powerpc/kernel/entry_64.S           |    3 ++-
+>>  3 files changed, 4 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
+>> index a43c147..45702e0 100644
+>> --- a/arch/powerpc/include/asm/exception-64s.h
+>> +++ b/arch/powerpc/include/asm/exception-64s.h
+>> @@ -176,8 +176,9 @@ do_kvm_##n:								\
+>>  	std	r10,0(r1);		/* make stack chain pointer	*/ \
+>>  	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
+>>  	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
+>> +	beq	4f;			/* if from kernel mode		*/ \
+>>  	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
+>> -	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
+>> +4:	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
+>>  	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
+>>  	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
+>>  	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
+>> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+>> index ea2a86e..376e36d 100644
+>> --- a/arch/powerpc/include/asm/ppc_asm.h
+>> +++ b/arch/powerpc/include/asm/ppc_asm.h
+>> @@ -30,7 +30,6 @@
+>>  #define ACCOUNT_STOLEN_TIME
+>>  #else
+>>  #define ACCOUNT_CPU_USER_ENTRY(ra, rb)					\
+>> -	beq	2f;			/* if from kernel mode */	\
+>>  	MFTB(ra);			/* get timebase */		\
+>>  	ld	rb,PACA_STARTTIME_USER(r13);				\
+>>  	std	ra,PACA_STARTTIME(r13);					\
+>> @@ -38,7 +37,6 @@
+>>  	ld	ra,PACA_USER_TIME(r13);					\
+>>  	add	ra,ra,rb;		/* add on to user time */	\
+>>  	std	ra,PACA_USER_TIME(r13);					\
+>> -2:
 >>  
->>  #define SPRN_DEC	0x016		/* Decrement Register */
->>  #define SPRN_DER	0x095		/* Debug Enable Regsiter */
+>>  #define ACCOUNT_CPU_USER_EXIT(ra, rb)					\
+>>  	MFTB(ra);			/* get timebase */		\
+>> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+>> index b40e0b4..8d21cc4 100644
+>> --- a/arch/powerpc/kernel/entry_64.S
+>> +++ b/arch/powerpc/kernel/entry_64.S
+>> @@ -62,8 +62,9 @@ system_call_common:
+>>  	std	r12,_MSR(r1)
+>>  	std	r0,GPR0(r1)
+>>  	std	r10,GPR1(r1)
+>> +	beq	2f			/* if from kernel mode */
+>>  	ACCOUNT_CPU_USER_ENTRY(r10, r11)
+>> -	std	r2,GPR2(r1)
+>> +2:	std	r2,GPR2(r1)
+>>  	std	r3,GPR3(r1)
+>>  	mfcr	r2
+>>  	std	r4,GPR4(r1)
 > 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 > 
