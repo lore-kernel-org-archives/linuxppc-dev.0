@@ -1,39 +1,33 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp05.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5A35A2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 11:37:59 +1000 (EST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Tue, 11 Sep 2012 11:36:49 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8B1SeP626017934
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 11:28:40 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8B1bjGJ007715
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 11:37:46 +1000
-Message-ID: <1347327463.8364.8.camel@ThinkPad-T420>
-Subject: [PATCH powerpc,trace] Avoid suspicious RCU usage reporting for some
- tracepoints
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 11 Sep 2012 09:37:43 +0800
-In-Reply-To: <1347315255.11820.45.camel@pasglop>
-References: <1347253133.2725.45.camel@ThinkPad-T420>
- <1347253812.2385.148.camel@pasglop>
- <1347285742.10751.6.camel@gandalf.local.home>
- <1347315255.11820.45.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Anton Blanchard <anton@au1.ibm.com>, Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
- Steven Rostedt <rostedt@goodmis.org>
+Return-Path: <uulinux@gmail.com>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 15D0D2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 10:27:43 +1000 (EST)
+Received: by obbeh20 with SMTP id eh20so3748129obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 17:27:40 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>
+References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
+ <20120831134956.fec0f681.akpm@linux-foundation.org>
+ <504D467D.2080201@jp.fujitsu.com> <504D4A08.7090602@cn.fujitsu.com>
+ <20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>
+Date: Tue, 11 Sep 2012 08:27:40 +0800
+Message-ID: <CAAV+Mu7YWRWnxt78F4ZDMrrUsWB=n-_qkYOcQT7WQ2HwP89Obw@mail.gmail.com>
+Subject: Re: [RFC v8 PATCH 00/20] memory-hotplug: hot-remove physical memory
+From: Jerry <uulinux@gmail.com>
+To: Wen Congyang <wency@cn.fujitsu.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Content-Type: multipart/alternative; boundary=f46d044481d959ad8304c96224d8
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
+ Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
+ liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,139 +37,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thank you all, this is the updated patch for your review:
+--f46d044481d959ad8304c96224d8
+Content-Type: text/plain; charset=ISO-8859-1
 
-There are a few tracepoints in the interrupt code path, which is before
-irq_enter(), or after irq_exit(), like
-trace_irq_entry()/trace_irq_exit() in do_IRQ(),
-trace_timer_interrupt_entry()/trace_timer_interrupt_exit() in
-timer_interrupt(). 
+Hi Wen,
 
-If the interrupt is from idle(), and because tracepoint contains RCU
-read-side critical section, we could see following suspicious RCU usage
-reported:
+I have been arranged a job related memory hotplug on ARM architecture.
+Maybe I know some new issues about memory hotplug on ARM architecture. I
+just enabled it on ARM, and it works well in my Android tablet now.
+However, I have not send out my patches. The real reason is that I don't
+know how to do it. Maybe I need to read "Documentation/SubmittingPatches".
 
-[  145.127743] ===============================
-[  145.127747] [ INFO: suspicious RCU usage. ]
-[  145.127752] 3.6.0-rc3+ #1 Not tainted
-[  145.127755] -------------------------------
-[  145.127759] /root/.workdir/linux/arch/powerpc/include/asm/trace.h:33
-suspicious rcu_dereference_check() usage!
-[  145.127765] 
-[  145.127765] other info that might help us debug this:
-[  145.127765] 
-[  145.127771] 
-[  145.127771] RCU used illegally from idle CPU!
-[  145.127771] rcu_scheduler_active = 1, debug_locks = 0
-[  145.127777] RCU used illegally from extended quiescent state!
-[  145.127781] no locks held by swapper/0/0.
-[  145.127785] 
-[  145.127785] stack backtrace:
-[  145.127789] Call Trace:
-[  145.127796] [c00000000108b530] [c000000000013c40] .show_stack
-+0x70/0x1c0 (unreliable)
-[  145.127806] [c00000000108b5e0]
-[c0000000000f59d8] .lockdep_rcu_suspicious+0x118/0x150
-[  145.127813] [c00000000108b680] [c00000000000fc58] .do_IRQ+0x498/0x500
-[  145.127820] [c00000000108b750] [c000000000003950]
-hardware_interrupt_common+0x150/0x180
-[  145.127828] --- Exception: 501 at .plpar_hcall_norets+0x84/0xd4
-[  145.127828]     LR = .check_and_cede_processor+0x38/0x70
-[  145.127836] [c00000000108bab0] [c0000000000665dc] .shared_cede_loop
-+0x5c/0x100
-[  145.127844] [c00000000108bb70] [c000000000588ab0] .cpuidle_enter
-+0x30/0x50
-[  145.127850] [c00000000108bbe0]
-[c000000000588b0c] .cpuidle_enter_state+0x3c/0xb0
-[  145.127857] [c00000000108bc60] [c000000000589730] .cpuidle_idle_call
-+0x150/0x6c0
-[  145.127863] [c00000000108bd30] [c000000000058440] .pSeries_idle
-+0x10/0x40
-[  145.127870] [c00000000108bda0] [c00000000001683c] .cpu_idle
-+0x18c/0x2d0
-[  145.127876] [c00000000108be60] [c00000000000b434] .rest_init
-+0x124/0x1b0
-[  145.127884] [c00000000108bef0] [c0000000009d0d28] .start_kernel
-+0x568/0x588
-[  145.127890] [c00000000108bf90] [c000000000009660] .start_here_common
-+0x20/0x40
+Hi Andrew,
+This is my first time to send you a e-mail. I am so nervous about if I have
+some mistakes or not.
 
-This is because the RCU usage in interrupt context should be used in
-area marked by rcu_irq_enter()/rcu_irq_exit(), called in
-irq_enter()/irq_exit() respectively. 
+Some peoples maybe think memory hotplug need to be supported by special
+hardware. Maybe it means memory physical hotplug. Some times, we just need
+to use memory logical hotplug, doesn't remove the memory in physical. It is
+also usefully for power saving in my platform. Because I doesn't want
+the offline memory is in *self-refresh* state.
 
-Move them into the irq_enter()/irq_exit() area to avoid the reporting.
+Any comments are appreciated.
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/irq.c  |    8 ++++----
- arch/powerpc/kernel/time.c |    8 ++++----
- 2 files changed, 8 insertions(+), 8 deletions(-)
+Thanks,
+Jerry
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 1f017bb..71413f4 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -489,10 +489,10 @@ void do_IRQ(struct pt_regs *regs)
- 	struct pt_regs *old_regs = set_irq_regs(regs);
- 	unsigned int irq;
- 
--	trace_irq_entry(regs);
--
- 	irq_enter();
- 
-+	trace_irq_entry(regs);
-+
- 	check_stack_overflow();
- 
- 	/*
-@@ -511,10 +511,10 @@ void do_IRQ(struct pt_regs *regs)
- 	else
- 		__get_cpu_var(irq_stat).spurious_irqs++;
- 
-+	trace_irq_exit(regs);
-+
- 	irq_exit();
- 	set_irq_regs(old_regs);
--
--	trace_irq_exit(regs);
- }
- 
- void __init init_IRQ(void)
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index e49e931..bd693a1 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -493,8 +493,6 @@ void timer_interrupt(struct pt_regs * regs)
- 	 */
- 	may_hard_irq_enable();
- 
--	trace_timer_interrupt_entry(regs);
--
- 	__get_cpu_var(irq_stat).timer_irqs++;
- 
- #if defined(CONFIG_PPC32) && defined(CONFIG_PMAC)
-@@ -505,6 +503,8 @@ void timer_interrupt(struct pt_regs * regs)
- 	old_regs = set_irq_regs(regs);
- 	irq_enter();
- 
-+	trace_timer_interrupt_entry(regs);
-+
- 	if (test_irq_work_pending()) {
- 		clear_irq_work_pending();
- 		irq_work_run();
-@@ -529,10 +529,10 @@ void timer_interrupt(struct pt_regs * regs)
- 	}
- #endif
- 
-+	trace_timer_interrupt_exit(regs);
-+
- 	irq_exit();
- 	set_irq_regs(old_regs);
--
--	trace_timer_interrupt_exit(regs);
- }
- 
- /*
+2012/9/10 Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
+
+> Hi,
+>
+> On Mon, Sep 10, 2012 at 10:01:44AM +0800, Wen Congyang wrote:
+> > At 09/10/2012 09:46 AM, Yasuaki Ishimatsu Wrote:
+> > > Hi Wen,
+> > >
+> > > 2012/09/01 5:49, Andrew Morton wrote:
+> > >> On Tue, 28 Aug 2012 18:00:07 +0800
+> > >> wency@cn.fujitsu.com wrote:
+> > >>
+> > >>> This patch series aims to support physical memory hot-remove.
+> > >>
+> > >> I doubt if many people have hardware which permits physical memory
+> > >> removal?  How would you suggest that people with regular hardware can
+> > >> test these chagnes?
+> > >
+> > > How do you test the patch? As Andrew says, for hot-removing memory,
+> > > we need a particular hardware. I think so too. So many people may want
+> > > to know how to test the patch.
+> > > If we apply following patch to kvm guest, can we hot-remove memory on
+> > > kvm guest?
+> > >
+> > > http://lists.gnu.org/archive/html/qemu-devel/2012-07/msg01389.html
+> >
+> > Yes, if we apply this patchset, we can test hot-remove memory on kvm
+> guest.
+> > But that patchset doesn't implement _PS3, so there is some restriction.
+>
+> the following repos contain the patchset above, plus 2 more patches that
+> add
+> PS3 support to the dimm devices in qemu/seabios:
+>
+> https://github.com/vliaskov/seabios/commits/memhp-v2
+> https://github.com/vliaskov/qemu-kvm/commits/memhp-v2
+>
+> I have not posted the PS3 patches yet in the qemu list, but will post them
+> soon for v3 of the memory hotplug series. If you have issues testing, let
+> me
+> know.
+>
+> thanks,
+>
+> - Vasilis
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>
+
+
+
 -- 
-1.7.1
+I love linux!!!
+
+--f46d044481d959ad8304c96224d8
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi Wen,<div><br></div><div>I have been arranged a job related memory hotplu=
+g on ARM architecture. Maybe I know some new issues about memory hotplug on=
+ ARM architecture. I just enabled it on ARM, and it works well in my Androi=
+d tablet now. However, I have not send out my patches. The real reason is t=
+hat I don&#39;t know how to do it. Maybe I need to read &quot;Documentation=
+/SubmittingPatches&quot;.</div>
+<div><br></div><div>Hi Andrew,</div><div>This is my first time to send you =
+a e-mail. I am so=A0nervous about if I have some mistakes or not.</div><div=
+><br></div><div>Some peoples maybe think memory hotplug need to be supporte=
+d by=A0special hardware. Maybe it means memory physical hotplug. Some times=
+, we just need to use memory logical hotplug, doesn&#39;t remove the memory=
+ in physical. It is also usefully for power saving in my platform. Because =
+I doesn&#39;t want the=A0offline=A0memory is in=A0<b>self-refresh</b>=A0sta=
+te.</div>
+<div><br></div><div>Any=A0comments are=A0appreciated.=A0</div><div><br></di=
+v><div>Thanks,</div><div>Jerry</div><div><br><div class=3D"gmail_quote">201=
+2/9/10 Vasilis Liaskovitis <span dir=3D"ltr">&lt;<a href=3D"mailto:vasilis.=
+liaskovitis@profitbricks.com" target=3D"_blank">vasilis.liaskovitis@profitb=
+ricks.com</a>&gt;</span><br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">Hi,<br>
+<div class=3D"im"><br>
+On Mon, Sep 10, 2012 at 10:01:44AM +0800, Wen Congyang wrote:<br>
+&gt; At 09/10/2012 09:46 AM, Yasuaki Ishimatsu Wrote:<br>
+&gt; &gt; Hi Wen,<br>
+&gt; &gt;<br>
+&gt; &gt; 2012/09/01 5:49, Andrew Morton wrote:<br>
+&gt; &gt;&gt; On Tue, 28 Aug 2012 18:00:07 +0800<br>
+&gt; &gt;&gt; <a href=3D"mailto:wency@cn.fujitsu.com">wency@cn.fujitsu.com<=
+/a> wrote:<br>
+&gt; &gt;&gt;<br>
+&gt; &gt;&gt;&gt; This patch series aims to support physical memory hot-rem=
+ove.<br>
+&gt; &gt;&gt;<br>
+</div><div class=3D"im">&gt; &gt;&gt; I doubt if many people have hardware =
+which permits physical memory<br>
+&gt; &gt;&gt; removal? =A0How would you suggest that people with regular ha=
+rdware can<br>
+&gt; &gt;&gt; test these chagnes?<br>
+&gt; &gt;<br>
+&gt; &gt; How do you test the patch? As Andrew says, for hot-removing memor=
+y,<br>
+&gt; &gt; we need a particular hardware. I think so too. So many people may=
+ want<br>
+&gt; &gt; to know how to test the patch.<br>
+&gt; &gt; If we apply following patch to kvm guest, can we hot-remove memor=
+y on<br>
+&gt; &gt; kvm guest?<br>
+&gt; &gt;<br>
+&gt; &gt; <a href=3D"http://lists.gnu.org/archive/html/qemu-devel/2012-07/m=
+sg01389.html" target=3D"_blank">http://lists.gnu.org/archive/html/qemu-deve=
+l/2012-07/msg01389.html</a><br>
+&gt;<br>
+&gt; Yes, if we apply this patchset, we can test hot-remove memory on kvm g=
+uest.<br>
+&gt; But that patchset doesn&#39;t implement _PS3, so there is some restric=
+tion.<br>
+<br>
+</div>the following repos contain the patchset above, plus 2 more patches t=
+hat add<br>
+PS3 support to the dimm devices in qemu/seabios:<br>
+<br>
+<a href=3D"https://github.com/vliaskov/seabios/commits/memhp-v2" target=3D"=
+_blank">https://github.com/vliaskov/seabios/commits/memhp-v2</a><br>
+<a href=3D"https://github.com/vliaskov/qemu-kvm/commits/memhp-v2" target=3D=
+"_blank">https://github.com/vliaskov/qemu-kvm/commits/memhp-v2</a><br>
+<br>
+I have not posted the PS3 patches yet in the qemu list, but will post them<=
+br>
+soon for v3 of the memory hotplug series. If you have issues testing, let m=
+e<br>
+know.<br>
+<br>
+thanks,<br>
+<br>
+- Vasilis<br>
+<div class=3D"HOEnZb"><div class=3D"h5"><br>
+--<br>
+To unsubscribe, send a message with &#39;unsubscribe linux-mm&#39; in<br>
+the body to <a href=3D"mailto:majordomo@kvack.org">majordomo@kvack.org</a>.=
+ =A0For more info on Linux MM,<br>
+see: <a href=3D"http://www.linux-mm.org/" target=3D"_blank">http://www.linu=
+x-mm.org/</a> .<br>
+Don&#39;t email: &lt;a href=3Dmailto:&quot;<a href=3D"mailto:dont@kvack.org=
+">dont@kvack.org</a>&quot;&gt; <a href=3D"mailto:email@kvack.org">email@kva=
+ck.org</a> &lt;/a&gt;<br>
+</div></div></blockquote></div><br><br clear=3D"all"><div><br></div>-- <br>=
+I love linux!!!<br>
+</div>
+
+--f46d044481d959ad8304c96224d8--
