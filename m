@@ -1,24 +1,22 @@
-Return-Path: <r66093@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EBDF12C007E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 19:36:43 +1000 (EST)
-From: Huang Changming-R66093 <r66093@freescale.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: RE: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
-Date: Tue, 11 Sep 2012 09:36:33 +0000
-Message-ID: <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
-In-Reply-To: <20120911080457.GA28235@lizard>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 193DF2C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 20:13:31 +1000 (EST)
+In-Reply-To: <OF0ACFB3FB.F2667AE9-ONC1257A6D.004E0ADE-C1257A6D.004EEB75@LocalDomain>
+References: <1346323204-19210-1-git-send-email-Joakim.Tjernlund@transmode.se>
+ <6AE080B68D46FC4BA2D2769E68D765B708019E97@039-SN2MPN1-022.039d.mgd.msft.net>
+ <OF0ACFB3FB.F2667AE9-ONC1257A6D.004E0ADE-C1257A6D.004EEB75@LocalDomain>
+Subject: Re: [PATCH] i2c-mpc: Wait for STOP to hit the bus
+Message-ID: <OFA8525D38.481DAB6F-ONC1257A76.003806D7-C1257A76.00382807@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Tue, 11 Sep 2012 12:13:22 +0200
 MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,64 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VGhhbmtzLCBBbnRvbi4NCklmIGl0IGlzIG5lY2Vzc2FyeSwgSSB3aWxsIHJlc2VuZCB0aGlzIHBh
-dGNoIHRvIGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnLg0KDQpCZXN0IFJlZ2FyZHMNCkpl
-cnJ5IEh1YW5nDQoNCg0KPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBBbnRv
-biBWb3JvbnRzb3YgW21haWx0bzpjYm91YXRtYWlscnVAZ21haWwuY29tXQ0KPiBTZW50OiBUdWVz
-ZGF5LCBTZXB0ZW1iZXIgMTEsIDIwMTIgNDowNSBQTQ0KPiBUbzogSHVhbmcgQ2hhbmdtaW5nLVI2
-NjA5Mw0KPiBDYzogbGludXgtbW1jQHZnZXIua2VybmVsLm9yZzsgS3VtYXIgR2FsYTsgbGludXhw
-cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzNdIHBvd2Vy
-cGMvZXNkaGM6IGFkZCBwcm9wZXJ0eSB0byBkaXNhYmxlIHRoZSBDTUQyMw0KPiANCj4gT24gVHVl
-LCBTZXAgMTEsIDIwMTIgYXQgMTI6NTQ6MjlBTSAtMDcwMCwgQW50b24gVm9yb250c292IHdyb3Rl
-Og0KPiA+IE9uIFR1ZSwgU2VwIDExLCAyMDEyIGF0IDAzOjEyOjQ0UE0gKzA4MDAsIENoYW5nLQ0K
-PiBNaW5nLkh1YW5nQGZyZWVzY2FsZS5jb20gd3JvdGU6DQo+ID4gPiBGcm9tOiBKZXJyeSBIdWFu
-ZyA8Q2hhbmctTWluZy5IdWFuZ0BmcmVlc2NhbGUuY29tPg0KPiA+ID4NCj4gPiA+IEJlbG93IFNP
-Q3MgZG9uJ3Qgc3VwcG9ydCB0aGUgY21kMjMgY29tbWFuZCBmb3IgTU1DIGNhcmQsIHRoZXJlZm9y
-ZSwNCj4gPiA+IGRpc2FibGUgaXQgaW4gZGV2aWNlIHRyZWU6DQo+ID4gPiBQMTAyMCwgUDEwMjEs
-IFAxMDIyLCBQMTAyNCwgUDEwMjUgYW5kIFA0MDgwDQo+ID4gPg0KPiA+ID4gU2lnbmVkLW9mZi1i
-eTogSmVycnkgSHVhbmcgPENoYW5nLU1pbmcuSHVhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+
-IEFja2VkLWJ5OiBBbnRvbiBWb3JvbnRzb3YgPGNib3VhdG1haWxydUBnbWFpbC5jb20+DQo+IA0K
-PiBCdHcsIGFsdGhvdWdoIHRoZSBwYXRjaCBpcyB0cml2aWFsLCBJIGd1ZXNzIHlvdSBzdGlsbCB3
-YW50IHRvIGxldCBrbm93DQo+IFBvd2VyUEMgZm9sa3MgYWJvdXQgaXQuIEFkZGluZyBDYyBhbmQg
-Y29weWluZyB0aGUgcGF0Y2g6DQo+IA0KPiAtIC0gLSAtDQo+IEZyb206IEplcnJ5IEh1YW5nIDxD
-aGFuZy1NaW5nLkh1YW5nQGZyZWVzY2FsZS5jb20+DQo+IA0KPiBCZWxvdyBTT0NzIGRvbid0IHN1
-cHBvcnQgdGhlIGNtZDIzIGNvbW1hbmQgZm9yIE1NQyBjYXJkLCB0aGVyZWZvcmUsDQo+IGRpc2Fi
-bGUgaXQgaW4gZGV2aWNlIHRyZWU6DQo+IFAxMDIwLCBQMTAyMSwgUDEwMjIsIFAxMDI0LCBQMTAy
-NSBhbmQgUDQwODANCj4gDQo+IFNpZ25lZC1vZmYtYnk6IEplcnJ5IEh1YW5nIDxDaGFuZy1NaW5n
-Lkh1YW5nQGZyZWVzY2FsZS5jb20+DQo+IENDOiBBbnRvbiBWb3JvbnRzb3YgPGNib3VhdG1haWxy
-dUBnbWFpbC5jb20+DQo+IC0tLQ0KPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9wMTAyMHNp
-LXBvc3QuZHRzaSB8ICAgIDEgKw0KPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9wMTAyMXNp
-LXBvc3QuZHRzaSB8ICAgIDEgKw0KPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9wMTAyMnNp
-LXBvc3QuZHRzaSB8ICAgIDEgKw0KPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9wNDA4MHNp
-LXBvc3QuZHRzaSB8ICAgIDEgKw0KPiAgNCBmaWxlcyBjaGFuZ2VkLCA0IGluc2VydGlvbnMoKykN
-Cj4gDQo+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3AxMDIwc2ktcG9z
-dC5kdHNpDQo+IGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9wMTAyMHNpLXBvc3QuZHRzaQ0K
-PiBpbmRleCA2OGNjNWU3Li43OTNhMzBiIDEwMDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9v
-dC9kdHMvZnNsL3AxMDIwc2ktcG9zdC5kdHNpDQo+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0
-cy9mc2wvcDEwMjBzaS1wb3N0LmR0c2kNCj4gQEAgLTE1NCw2ICsxNTQsNyBAQA0KPiAgCXNkaGNA
-MmUwMDAgew0KPiAgCQljb21wYXRpYmxlID0gImZzbCxwMTAyMC1lc2RoYyIsICJmc2wsZXNkaGMi
-Ow0KPiAgCQlzZGhjaSxhdXRvLWNtZDEyOw0KPiArCQlzZGhjaSxuby1jbWQyMzsNCj4gIAl9Ow0K
-PiAgL2luY2x1ZGUvICJwcTMtc2VjMy4zLTAuZHRzaSINCj4gDQo+IGRpZmYgLS1naXQgYS9hcmNo
-L3Bvd2VycGMvYm9vdC9kdHMvZnNsL3AxMDIxc2ktcG9zdC5kdHNpDQo+IGIvYXJjaC9wb3dlcnBj
-L2Jvb3QvZHRzL2ZzbC9wMTAyMXNpLXBvc3QuZHRzaQ0KPiBpbmRleCBhZGI4MmZkLi4yYjdmZDJh
-IDEwMDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3AxMDIxc2ktcG9zdC5k
-dHNpDQo+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcDEwMjFzaS1wb3N0LmR0c2kN
-Cj4gQEAgLTE0OSw2ICsxNDksNyBAQA0KPiAgL2luY2x1ZGUvICJwcTMtZXNkaGMtMC5kdHNpIg0K
-PiAgCXNkaGNAMmUwMDAgew0KPiAgCQlzZGhjaSxhdXRvLWNtZDEyOw0KPiArCQlzZGhjaSxuby1j
-bWQyMzsNCj4gIAl9Ow0KPiANCj4gIC9pbmNsdWRlLyAicHEzLXNlYzMuMy0wLmR0c2kiDQo+IGRp
-ZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3AxMDIyc2ktcG9zdC5kdHNpDQo+
-IGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9wMTAyMnNpLXBvc3QuZHRzaQ0KPiBpbmRleCAw
-NjIxNmI4Li4yMzM0YTUyIDEwMDY0NA0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNs
-L3AxMDIyc2ktcG9zdC5kdHNpDQo+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcDEw
-MjJzaS1wb3N0LmR0c2kNCj4gQEAgLTIxNSw2ICsyMTUsNyBAQA0KPiAgCXNkaGNAMmUwMDAgew0K
-PiAgCQljb21wYXRpYmxlID0gImZzbCxwMTAyMi1lc2RoYyIsICJmc2wsZXNkaGMiOw0KPiAgCQlz
-ZGhjaSxhdXRvLWNtZDEyOw0KPiArCQlzZGhjaSxuby1jbWQyMzsNCj4gIAl9Ow0KPiANCj4gIC9p
-bmNsdWRlLyAicHEzLXNlYzMuMy0wLmR0c2kiDQo+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMv
-Ym9vdC9kdHMvZnNsL3A0MDgwc2ktcG9zdC5kdHNpDQo+IGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRz
-L2ZzbC9wNDA4MHNpLXBvc3QuZHRzaQ0KPiBpbmRleCA4ZDM1ZDJjLi41YjM5OTUyIDEwMDY0NA0K
-PiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3A0MDgwc2ktcG9zdC5kdHNpDQo+ICsr
-KyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcDQwODBzaS1wb3N0LmR0c2kNCj4gQEAgLTMz
-Nyw2ICszMzcsNyBAQA0KPiAgCXNkaGNAMTE0MDAwIHsNCj4gIAkJdm9sdGFnZS1yYW5nZXMgPSA8
-MzMwMCAzMzAwPjsNCj4gIAkJc2RoY2ksYXV0by1jbWQxMjsNCj4gKwkJc2RoY2ksbm8tY21kMjM7
-DQo+ICAJfTsNCj4gDQo+ICAvaW5jbHVkZS8gInFvcmlxLWkyYy0wLmR0c2kiDQo+IC0tDQo+IDEu
-Ny45LjUNCg0K
+Joakim Tjernlund/Transmode wrote on 2012/09/02 16:22:00:
+>
+> Tabi Timur-B04825 <B04825@freescale.com> wrote on 2012/09/02 04:48:01:
+> > On Thu, Aug 30, 2012 at 5:40 AM, Joakim Tjernlund
+> > <Joakim.Tjernlund@transmode.se> wrote:
+> >
+> > > -       mpc_i2c_stop(i2c);
+> > > +       mpc_i2c_stop(i2c); /* Initiate STOP */
+> > > +       orig_jiffies = jiffies;
+> > > +       /* Wait until STOP is seen, allow up to 1 s */
+> > > +       while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
+> > > +               if (time_after(jiffies, orig_jiffies + HZ)) {
+> > > +                       u8 status = readb(i2c->base + MPC_I2C_SR);
+> > > +
+> > > +                       dev_dbg(i2c->dev, "timeout\n");
+> > > +                       if ((status & (CSR_MCF | CSR_MBB | CSR_RXAK)) != 0) {
+> > > +                               writeb(status & ~CSR_MAL,
+> > > +                                      i2c->base + MPC_I2C_SR);
+> > > +                               mpc_i2c_fixup(i2c);
+> > > +                       }
+> > > +                       return -EIO;
+> > > +               }
+> > > +               cond_resched();
+> > > +       }
+> >
+> > Shouldn't the while-loop be inside mpc_i2c_stop() itself?
+>
+> Possibly but I choosed to do it this way as there is a similar loop in the beginning of mpc_xfer().
+> I figured it has better visibility if it is in the same function.
+>
+>  Jocke
+
+Ping? Anything holding this patch back?
+
+ Jocke
