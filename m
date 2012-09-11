@@ -1,22 +1,20 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 193DF2C0088
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 20:13:31 +1000 (EST)
-In-Reply-To: <OF0ACFB3FB.F2667AE9-ONC1257A6D.004E0ADE-C1257A6D.004EEB75@LocalDomain>
-References: <1346323204-19210-1-git-send-email-Joakim.Tjernlund@transmode.se>
- <6AE080B68D46FC4BA2D2769E68D765B708019E97@039-SN2MPN1-022.039d.mgd.msft.net>
- <OF0ACFB3FB.F2667AE9-ONC1257A6D.004E0ADE-C1257A6D.004EEB75@LocalDomain>
-Subject: Re: [PATCH] i2c-mpc: Wait for STOP to hit the bus
-Message-ID: <OFA8525D38.481DAB6F-ONC1257A76.003806D7-C1257A76.00382807@transmode.se>
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-Date: Tue, 11 Sep 2012 12:13:22 +0200
+Return-Path: <R65777@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8FF852C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 20:24:07 +1000 (EST)
+From: Bharat Bhushan <r65777@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
+ <benh@kernel.crashing.org>
+Subject: [PATCH] Remove unused __get_user64() and __put_user64()
+Date: Tue, 11 Sep 2012 15:49:45 +0530
+Message-ID: <1347358785-4695-1-git-send-email-Bharat.Bhushan@freescale.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
+Content-Type: text/plain
+Cc: Bharat Bhushan <bharat.bhushan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,38 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joakim Tjernlund/Transmode wrote on 2012/09/02 16:22:00:
->
-> Tabi Timur-B04825 <B04825@freescale.com> wrote on 2012/09/02 04:48:01:
-> > On Thu, Aug 30, 2012 at 5:40 AM, Joakim Tjernlund
-> > <Joakim.Tjernlund@transmode.se> wrote:
-> >
-> > > -       mpc_i2c_stop(i2c);
-> > > +       mpc_i2c_stop(i2c); /* Initiate STOP */
-> > > +       orig_jiffies = jiffies;
-> > > +       /* Wait until STOP is seen, allow up to 1 s */
-> > > +       while (readb(i2c->base + MPC_I2C_SR) & CSR_MBB) {
-> > > +               if (time_after(jiffies, orig_jiffies + HZ)) {
-> > > +                       u8 status = readb(i2c->base + MPC_I2C_SR);
-> > > +
-> > > +                       dev_dbg(i2c->dev, "timeout\n");
-> > > +                       if ((status & (CSR_MCF | CSR_MBB | CSR_RXAK)) != 0) {
-> > > +                               writeb(status & ~CSR_MAL,
-> > > +                                      i2c->base + MPC_I2C_SR);
-> > > +                               mpc_i2c_fixup(i2c);
-> > > +                       }
-> > > +                       return -EIO;
-> > > +               }
-> > > +               cond_resched();
-> > > +       }
-> >
-> > Shouldn't the while-loop be inside mpc_i2c_stop() itself?
->
-> Possibly but I choosed to do it this way as there is a similar loop in the beginning of mpc_xfer().
-> I figured it has better visibility if it is in the same function.
->
->  Jocke
+__get_user64()  and __put_user64() are not used.
 
-Ping? Anything holding this patch back?
+Signed-off-by: Bharat Bhushan <bharat.bhushan@freescale.com>
+---
+ arch/powerpc/include/asm/uaccess.h |   11 -----------
+ 1 files changed, 0 insertions(+), 11 deletions(-)
 
- Jocke
+diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
+index 17bb40c..4db4959 100644
+--- a/arch/powerpc/include/asm/uaccess.h
++++ b/arch/powerpc/include/asm/uaccess.h
+@@ -98,11 +98,6 @@ struct exception_table_entry {
+  * PowerPC, we can just do these as direct assignments.  (Of course, the
+  * exception handling means that it's no longer "just"...)
+  *
+- * The "user64" versions of the user access functions are versions that
+- * allow access of 64-bit data. The "get_user" functions do not
+- * properly handle 64-bit data because the value gets down cast to a long.
+- * The "put_user" functions already handle 64-bit data properly but we add
+- * "user64" versions for completeness
+  */
+ #define get_user(x, ptr) \
+ 	__get_user_check((x), (ptr), sizeof(*(ptr)))
+@@ -114,12 +109,6 @@ struct exception_table_entry {
+ #define __put_user(x, ptr) \
+ 	__put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
+ 
+-#ifndef __powerpc64__
+-#define __get_user64(x, ptr) \
+-	__get_user64_nocheck((x), (ptr), sizeof(*(ptr)))
+-#define __put_user64(x, ptr) __put_user(x, ptr)
+-#endif
+-
+ #define __get_user_inatomic(x, ptr) \
+ 	__get_user_nosleep((x), (ptr), sizeof(*(ptr)))
+ #define __put_user_inatomic(x, ptr) \
+-- 
+1.7.0.4
