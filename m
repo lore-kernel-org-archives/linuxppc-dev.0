@@ -1,23 +1,19 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AED1A2C0088
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 15:55:21 +1000 (EST)
-Message-ID: <1347342911.2603.39.camel@pasglop>
-Subject: Re: [PATCH 2/6] powerpc: Add enable_ppr kernel parameter to enable
- PPR save/restore
+Message-ID: <1347343411.2603.42.camel@pasglop>
+Subject: Re: [PATCH v3 0/7] mv643xx.c: Add basic device tree support.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Haren Myneni <haren@linux.vnet.ibm.com>
-Date: Tue, 11 Sep 2012 15:55:11 +1000
-In-Reply-To: <504ECF35.9070305@linux.vnet.ibm.com>
-References: <1347190671.3418.12.camel@hbabu-laptop>
- <1347235922.2385.138.camel@pasglop> <13010.1347236558@neuling.org>
- <504ECF35.9070305@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 11 Sep 2012 16:03:31 +1000
+In-Reply-To: <201209101422.13875.arnd@arndb.de>
+References: <1344350092-24050-1-git-send-email-ian.molton@codethink.co.uk>
+ <5028D040.60604@codethink.co.uk> <502D201E.9030304@codethink.co.uk>
+ <201209101422.13875.arnd@arndb.de>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: paulus@samba.org, Michael Neuling <mikey@neuling.org>,
- linuxppc-dev@lists.ozlabs.org, anton@samba.org
+Cc: thomas.petazzoni@free-electrons.com, andrew@lunn.ch, netdev@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ ben.dooks@codethink.co.uk, Ian Molton <ian.molton@codethink.co.uk>,
+ David Miller <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-09-10 at 22:42 -0700, Haren Myneni wrote:
+On Mon, 2012-09-10 at 14:22 +0000, Arnd Bergmann wrote:
+> Following up on the old discussion, I talked briefly about this
+> issue with BenH at the kernel summit. The outcome basically is that
+> it's a bit sad to have incompatible bindings, but it's not the end
+> of the world,and it's more important to do it right this time.
 > 
-> Thanks Michael. Yes, we noticed 6% overhead with null syscall test.
-> Hence added cmdline option as suggested. I will add this comment in
-> the
-> changelog.
+> Just make sure that you use different values for the 'compatible'
+> strings and then do what you need to get the ARM hardware working.
 > 
-> Regarding the option name, I thought about various ones such as
-> retain_process_ppr, retain_smt_priority, save_ppr and etc. Finally
-> added
-> 'enable_ppr' since it enables CPU_FTR (CPU_FTR_HAS_PPR) which allows
-> to
-> save/restore PPR value. Sure, I will change this option.
+> Ideally, the new binding should be written in a way that powerpc
+> machines can use the same one, but the existing ones all use
+> an version of Open Firmware that is not going to get updated
+> and it's also not too likely that we are going to see new
+> powerpc machines based on this chip.
 
-No, that isn't a problem with the name. It's a problem with the polarity
-of the option.
+Right, mostly these machines where the Pegasos. Those came with a fairly
+busted variant of Open Firmware which generated a pretty gross
+device-tree.
 
-If you need a command line argument to enable the option, then nobody
-will enable it, it's pointless.
+For some reason, the manufacturer of those things was never willing to
+fix anything in their firmware (despite the distributor providing
+patches etc...), seemingly on the assumption that whatever they were
+doing was perfect and operating system people like us didn't matter one
+little bit :-)
+
+So I don't care much about it. It would be nice to keep them working
+since people in the community still have them but if it goes through
+some "compat" code that detects old/broken device-trees and eventually
+disappears when we finally drop support, then so be it.
 
 Cheers,
 Ben.
