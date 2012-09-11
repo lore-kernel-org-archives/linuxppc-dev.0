@@ -3,13 +3,15 @@ Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
  (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EACD22C0087
+ by ozlabs.org (Postfix) with ESMTPS id F00CF2C0088
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 12:21:12 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v3][PATCH 1/3] powerpc/kprobe: introduce a new thread flag
-Date: Tue, 11 Sep 2012 10:20:51 +0800
-Message-ID: <1347330053-27039-1-git-send-email-tiejun.chen@windriver.com>
+Subject: [v3][PATCH 3/3] ppc/kprobe: don't emulate store when kprobe stwu r1
+Date: Tue, 11 Sep 2012 10:20:53 +0800
+Message-ID: <1347330053-27039-3-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1347330053-27039-1-git-send-email-tiejun.chen@windriver.com>
+References: <1347330053-27039-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -22,41 +24,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to add a new thread flag, TIF_EMULATE_STACK_STORE,
-for emulating stack store operation while exiting exception.
+We don't do the real store operation for kprobing 'stwu Rx,(y)R1'
+since this may corrupt the exception frame, now we will do this
+operation safely in exception return code after migrate current
+exception frame below the kprobed function stack.
+
+So we only update gpr[1] here and trigger a thread flag to mask
+this.
+
+Note we should make sure if we trigger kernel stack over flow.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
-v3:
-* rebase on next
-* restore those clobbered registers
-* add for 64-bit
-* retest with kprobe do_fork()/show_interrupts()
-	for fsl-p4080 and fsl-p5020, separately
+ arch/powerpc/lib/sstep.c |   36 ++++++++++++++++++++++++++++++++++--
+ 1 file changed, 34 insertions(+), 2 deletions(-)
 
- arch/powerpc/include/asm/thread_info.h |    3 +++
- 1 file changed, 3 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index e942203..8ceea14 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -104,6 +104,8 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_NOTIFY_RESUME	13	/* callback before returning to user */
- #define TIF_UPROBE		14	/* breakpointed or single-stepping */
- #define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
-+#define TIF_EMULATE_STACK_STORE	16	/* Is an instruction emulation
-+						for stack store? */
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 9a52349..e15c521 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -566,7 +566,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 	unsigned long int ea;
+ 	unsigned int cr, mb, me, sh;
+ 	int err;
+-	unsigned long old_ra;
++	unsigned long old_ra, val3;
+ 	long ival;
  
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -121,6 +123,7 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
- #define _TIF_UPROBE		(1<<TIF_UPROBE)
- #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
-+#define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
- 				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
+ 	opcode = instr >> 26;
+@@ -1486,11 +1486,43 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		goto ldst_done;
  
+ 	case 36:	/* stw */
+-	case 37:	/* stwu */
+ 		val = regs->gpr[rd];
+ 		err = write_mem(val, dform_ea(instr, regs), 4, regs);
+ 		goto ldst_done;
+ 
++	case 37:	/* stwu */
++		val = regs->gpr[rd];
++		val3 = dform_ea(instr, regs);
++		/*
++		 * For PPC32 we always use stwu to change stack point with r1. So
++		 * this emulated store may corrupt the exception frame, now we
++		 * have to provide the exception frame trampoline, which is pushed
++		 * below the kprobed function stack. So we only update gpr[1] but
++		 * don't emulate the real store operation. We will do real store
++		 * operation safely in exception return code by checking this flag.
++		 */
++		if ((ra == 1) && !(regs->msr & MSR_PR) \
++			&& (val3 >= (regs->gpr[1] - STACK_INT_FRAME_SIZE))) {
++			/*
++			 * Check if we will touch kernel sack overflow
++			 */
++			if (val3 - STACK_INT_FRAME_SIZE <= current->thread.ksp_limit) {
++				printk(KERN_CRIT "Can't kprobe this since Kernel stack overflow.\n");
++				err = -EINVAL;
++				break;
++			}
++
++			/*
++			 * Check if we already set since that means we'll
++			 * lose the previous value.
++			 */
++			WARN_ON(test_thread_flag(TIF_EMULATE_STACK_STORE));
++			set_thread_flag(TIF_EMULATE_STACK_STORE);
++			err = 0;
++		} else
++			err = write_mem(val, val3, 4, regs);
++		goto ldst_done;
++
+ 	case 38:	/* stb */
+ 	case 39:	/* stbu */
+ 		val = regs->gpr[rd];
 -- 
 1.7.9.5
