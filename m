@@ -1,38 +1,21 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 93C112C0090
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 15:42:20 +1000 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Mon, 10 Sep 2012 23:42:17 -0600
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 6237719D803F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 23:42:15 -0600 (MDT)
-Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8B5gFZo233386
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 23:42:15 -0600
-Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
- by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8B5hhup002005
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Sep 2012 23:43:44 -0600
-Message-ID: <504ECF35.9070305@linux.vnet.ibm.com>
-Date: Mon, 10 Sep 2012 22:42:13 -0700
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 2/6] powerpc: Add enable_ppr kernel parameter to enable
- PPR save/restore
-References: <1347190671.3418.12.camel@hbabu-laptop>
- <1347235922.2385.138.camel@pasglop> <13010.1347236558@neuling.org>
-In-Reply-To: <13010.1347236558@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, anton@samba.org, paulus@samba.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 00FF32C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 15:52:05 +1000 (EST)
+Message-ID: <1347342718.2603.38.camel@pasglop>
+Subject: Re: [v3][PATCH 2/3] ppc/kprobe: complete kprobe and migrate
+ exception frame
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Tiejun Chen <tiejun.chen@windriver.com>
+Date: Tue, 11 Sep 2012 15:51:58 +1000
+In-Reply-To: <1347330053-27039-2-git-send-email-tiejun.chen@windriver.com>
+References: <1347330053-27039-1-git-send-email-tiejun.chen@windriver.com>
+ <1347330053-27039-2-git-send-email-tiejun.chen@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,150 +25,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/09/2012 05:22 PM, Michael Neuling wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Tue, 2012-09-11 at 10:20 +0800, Tiejun Chen wrote:
+> We can't emulate stwu since that may corrupt current exception stack.
+> So we will have to do real store operation in the exception return code.
 > 
->> On Sun, 2012-09-09 at 04:37 -0700, Haren Myneni wrote:
->>> enable_ppr kernel parameter is used to enable PPR save and restore.
->>> Supported on Power7 and later processors.
->>>
->>> By default, CPU_FTR_HAS_PPR is set for POWER7. If this parameter is not
->>> passed, disable CPU_FTR_HAS_PPR.
->>
->> What is the point ? Obscure / magic kernel command line options to turn
->> on a feature are pointless. Nobody knows about them, nobody enables
->> them.
->>
->> What you are doing is guarantee that nobody's ever going to enable your
->> code, so your whole patch series is thus irrelevant :-)
->>
->> If there's a good reason to *avoid* your option, then maybe consider
->> adding an option to *disable* the PPR save/restore, though of course
->> that would bring the argument that if it needs to be disabled maybe we
->> shouldn't do it in the first place, or you might want to think of a
->> reasonable way to intuit what the option should be.
-> 
-> IIRC, Haren was saying there's a 6% hit on null syscall for this.  So we
-> suggested having a cmdline option to disable it for distros.
-> 
-> Haren, is my recollection correct?  If so, can you add this info the
-> change log and change the sex of the option. 
+> Firstly we'll allocate a trampoline exception frame below the kprobed
+> function stack and copy the current exception frame to the trampoline.
+> Then we can do this real store operation to implement 'stwu', and reroute
+> the trampoline frame to r1 to complete this exception migration.
 
-Thanks Michael. Yes, we noticed 6% overhead with null syscall test.
-Hence added cmdline option as suggested. I will add this comment in the
-changelog.
+Ok, so not quite there yet :-)
 
-Regarding the option name, I thought about various ones such as
-retain_process_ppr, retain_smt_priority, save_ppr and etc. Finally added
-'enable_ppr' since it enables CPU_FTR (CPU_FTR_HAS_PPR) which allows to
-save/restore PPR value. Sure, I will change this option.
+See below:
 
-Thanks
-Haren
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> ---
+>  arch/powerpc/kernel/entry_32.S |   45 ++++++++++++++++++++++++++++++++++------
+>  arch/powerpc/kernel/entry_64.S |   32 ++++++++++++++++++++++++++++
+>  2 files changed, 71 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index ead5016..6cfe12f 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -831,19 +831,54 @@ restore_user:
+>  	bnel-	load_dbcr0
+>  #endif
+>  
+> -#ifdef CONFIG_PREEMPT
+>  	b	restore
+>  
+>  /* N.B. the only way to get here is from the beq following ret_from_except. */
+>  resume_kernel:
+> +	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+> +	CURRENT_THREAD_INFO(r9, r1)
+> +	lwz	r0,TI_FLAGS(r9)
+> +	andis.	r0,r0,_TIF_EMULATE_STACK_STORE@h
+> +	beq+	1f
 
-> 
-> Mikey
-> 
->>
->> Ben.
->>
->>> Signed-off-by: Haren Myneni <haren@us.ibm.com>
->>>
->>> ---
->>>  Documentation/kernel-parameters.txt |    4 ++++
->>>  arch/powerpc/include/asm/cputable.h |    6 ++++--
->>>  arch/powerpc/kernel/setup_64.c      |   14 ++++++++++++++
->>>  3 files changed, 22 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
->>> index ad7e2e5..2881e5f 100644
->>> --- a/Documentation/kernel-parameters.txt
->>> +++ b/Documentation/kernel-parameters.txt
->>> @@ -809,6 +809,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
->>>  			to discrete, to make X server driver able to add WB
->>>  			entry later. This parameter enables that.
->>>  
->>> +	enable_ppr	[PPC/PSERIES]
->>> +			Saves user defined PPR when process enters to kernel 
->>> +			and restores PPR at exit. But it impacts performance.
->>> +
->>>  	enable_timer_pin_1 [X86]
->>>  			Enable PIN 1 of APIC timer
->>>  			Can be useful to work around chipset bugs
->>> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
->>> index b3c083d..880c469 100644
->>> --- a/arch/powerpc/include/asm/cputable.h
->>> +++ b/arch/powerpc/include/asm/cputable.h
->>> @@ -203,6 +203,7 @@ extern const char *powerpc_base_platform;
->>>  #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0800000000000000)
->>>  #define CPU_FTR_ICSWX			LONG_ASM_CONST(0x1000000000000000)
->>>  #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x2000000000000000)
->>> +#define CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x4000000000000000)
->>>  
->>>  #ifndef __ASSEMBLY__
->>>  
->>> @@ -432,7 +433,8 @@ extern const char *powerpc_base_platform;
->>>  	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
->>>  	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
->>>  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
->>> -	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY)
->>> +	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
->>> +	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR)
->>>  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
->>>  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
->>>  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
->>> @@ -454,7 +456,7 @@ extern const char *powerpc_base_platform;
->>>  	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
->>>  	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
->>>  	    CPU_FTRS_POWER7 | CPU_FTRS_CELL | CPU_FTRS_PA6T |		\
->>> -	    CPU_FTR_VSX)
->>> +	    CPU_FTR_VSX | CPU_FTR_HAS_PPR)
->>>  #endif
->>>  #else
->>>  enum {
->>> diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
->>> index 389bd4f..e4c1945 100644
->>> --- a/arch/powerpc/kernel/setup_64.c
->>> +++ b/arch/powerpc/kernel/setup_64.c
->>> @@ -98,6 +98,8 @@ int dcache_bsize;
->>>  int icache_bsize;
->>>  int ucache_bsize;
->>>  
->>> +static u32 enable_ppr = 0;
->>> +
->>>  #ifdef CONFIG_SMP
->>>  
->>>  static char *smt_enabled_cmdline;
->>> @@ -357,6 +359,9 @@ void __init setup_system(void)
->>>  {
->>>  	DBG(" -> setup_system()\n");
->>>  
->>> +	if (cpu_has_feature(CPU_FTR_HAS_PPR) && !enable_ppr)
->>> +		cur_cpu_spec->cpu_features &= ~CPU_FTR_HAS_PPR;
->>> +
->>>  	/* Apply the CPUs-specific and firmware specific fixups to kernel
->>>  	 * text (nop out sections not relevant to this CPU or this firmware)
->>>  	 */
->>> @@ -683,6 +688,15 @@ void __init setup_per_cpu_areas(void)
->>>  }
->>>  #endif
->>>  
->>> +/* early_ppr kernel parameter to save/restore PPR register */
->>> +static int __init early_ppr_enabled(char *str)
->>> +{
->>> +	enable_ppr = 1;
->>> +
->>> +	return 0;
->>> +}
->>> +
->>> +early_param("enable_ppr", early_ppr_enabled);
->>>  
->>>  #ifdef CONFIG_PPC_INDIRECT_IO
->>>  struct ppc_pci_io ppc_pci_io;
->>
->>
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+So you used r0 to load the TI_FLAGS and immediately clobbered it in
+andis. forcing you to re-load them later down. Instead, put them in r8
+
+	lwz	r8,TI_FLAGS(r9)
+	andis.	r0,r8,_TIF_*
+	beq+	*
+
+> +	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
+
+Then you put your entry in r8 ....
+
+> +	lwz	r3,GPR1(r1)
+> +	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
+> +	mr	r4,r1			/* src:  current exception frame */
+> +	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
+> +	mr	r1,r3			/* Reroute the trampoline frame to r1 */
+> +	bl	memcpy			/* Copy from the original to the trampoline */
+
+Which you just clobbered... oops :-)
+
+So you need to store that old r1 somewhere fist then retrieve it
+after the memcpy call. That or open-code the memcpy to avoid all
+the clobbering problems.
+
+> +	CURRENT_THREAD_INFO(r9, r1)
+> +	lwz	r0,TI_FLAGS(r9)		/* Restore this clobbered r0 */
+
+Re-load in r8 as suggested above ? Anyway, it doesn't matter you don't
+actually need to load it at all because you re-load it in your
+lwarx/stwcx. loop further down
+
+> +	/* Do real store operation to complete stwu */
+> +	lwz	r5,GPR1(r1)
+> +	stw	r8,0(r5)
+
+(Storing a clobbered value.)
+
+> +	/* Clear _TIF_EMULATE_STACK_STORE flag */
+> +	CURRENT_THREAD_INFO(r9, r1)
+
+Why re-calculate r9 here ? you just did 4 lines above
+
+> +	lis	r11,_TIF_EMULATE_STACK_STORE@h
+> +	addi	r5,r9,TI_FLAGS
+> +0:	lwarx	r8,0,r5
+>
+> +	andc	r8,r8,r11
+> +#ifdef CONFIG_IBM405_ERR77
+> +	dcbt	0,r5
+> +#endif
+> +	stwcx.	r8,0,r5
+> +	bne-	0b
+
+So here, r8 contains TI_FLAGS
+
+> +1:
+
+And if you do the change I suggested above, here too.
+
+> +#ifdef CONFIG_PREEMPT
+>  	/* check current_thread_info->preempt_count */
+>  	CURRENT_THREAD_INFO(r9, r1)
+
+r9 already has what you want
+
+> -	lwz	r0,TI_PREEMPT(r9)
+> -	cmpwi	0,r0,0		/* if non-zero, just restore regs and return */
+> +	lwz	r8,TI_PREEMPT(r9)
+> +	cmpwi	0,r8,0		/* if non-zero, just restore regs and return */
+
+Leave that to be r0, r8 has your TI_FLAGS already.
+
+>  	bne	restore
+> -	lwz	r0,TI_FLAGS(r9)
+
+See above.
+
+>  	andi.	r0,r0,_TIF_NEED_RESCHED
+>  	beq+	restore
+> +	lwz	r3,_MSR(r1)
+>  	andi.	r0,r3,MSR_EE	/* interrupts off? */
+>  	beq	restore		/* don't schedule if so */
+>  #ifdef CONFIG_TRACE_IRQFLAGS
+> @@ -864,8 +899,6 @@ resume_kernel:
+>  	 */
+>  	bl	trace_hardirqs_on
+>  #endif
+> -#else
+> -resume_kernel:
+>  #endif /* CONFIG_PREEMPT */
+>  
+>  	/* interrupts are hard-disabled at this point */
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index b40e0b4..b6d7483 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -593,6 +593,38 @@ _GLOBAL(ret_from_except_lite)
+>  	b	.ret_from_except
+>  
+>  resume_kernel:
+> +	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+> +	CURRENT_THREAD_INFO(r9, r1)
+> +	ld	r0,TI_FLAGS(r9)
+> +	andis.	r0,r0,_TIF_EMULATE_STACK_STORE@h
+> +	beq+	1f
+
+Similar comments to 32-bit
+
+> +	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
+
+That gets clobbered too.
+
+> +	lwz	r3,GPR1(r1)
+> +	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
+> +	mr	r4,r1			/* src:  current exception frame */
+> +	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
+> +	mr	r1,r3			/* Reroute the trampoline frame to r1 */
+> +	bl	memcpy			/* Copy from the original to the trampoline */
+> +
+> +	CURRENT_THREAD_INFO(r9, r1)
+> +	ld	r4,TI_FLAGS(r9)		/* Restore this clobbered r4 */
+
+Usueless reloads
+
+> +	/* Do real store operation to complete stwu */
+> +	lwz	r5,GPR1(r1)
+> +	std	r8,0(r5)
+> +
+> +	/* Clear _TIF_EMULATE_STACK_STORE flag */
+> +	CURRENT_THREAD_INFO(r9, r1)
+> +	lis	r11,_TIF_EMULATE_STACK_STORE@h
+> +	addi	r5,r9,TI_FLAGS
+> +0:	ldarx	r8,0,r5
+> +	andc	r8,r8,r11
+> +	stdcx.	r8,0,r5
+> +	bne-	0b
+> +1:
+> +
+>  #ifdef CONFIG_PREEMPT
+>  	/* Check if we need to preempt */
+>  	andi.	r0,r4,_TIF_NEED_RESCHED
+
+Cheers,
+Ben.
