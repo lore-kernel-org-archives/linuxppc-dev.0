@@ -1,25 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 388A62C0091
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 22:49:17 +1000 (EST)
-Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
-Date: Tue, 11 Sep 2012 07:49:04 -0500
-Message-Id: <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
-References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
- <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
- <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
-To: Huang Changming-R66093 <R66093@freescale.com>
-Cc: linux-mmc@vger.kernel.org, Chris Ball <cjb@laptop.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Anton Vorontsov <cbouatmailru@gmail.com>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-lpp01m010-f51.google.com (mail-lpp01m010-f51.google.com
+ [209.85.215.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 748BC2C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 00:29:04 +1000 (EST)
+Received: by lags15 with SMTP id s15so315749lag.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 07:28:59 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20120911112924.c2206bc738a2c29259f6e2d8@canb.auug.org.au>
+References: <20120911112924.c2206bc738a2c29259f6e2d8@canb.auug.org.au>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Tue, 11 Sep 2012 08:28:39 -0600
+Message-ID: <CAErSpo5Qoq6J7gB3o7Oc_YwfBXkXy8vHvbBXHkvb93CHYGHb4g@mail.gmail.com>
+Subject: Re: linux-next: build failure after merge of the pci tree
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Yijing Wang <wangyijing@huawei.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In sdhci_add_host()
+On Mon, Sep 10, 2012 at 7:29 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Bjorn,
+>
+> After merging the pci tree, today's linux-next build (powerpc
+> ppc64_defconfig) failed like this:
+>
+> arch/powerpc/platforms/powernv/pci-ioda.c: In function 'pnv_pci_window_alignment':
+> arch/powerpc/platforms/powernv/pci-ioda.c:1163:13: error: 'struct pci_dev' has no member named 'pcie_type'
+>
+> Caused by commit ac161fbfdaa2 ("powerpc/powernv: I/O and memory alignment
+> for P2P bridges").  pcie_type was removed in commit b2ef39be5744 ("PCI:
+> Remove unused field pcie_type from struct pci_dev") (also in the pci
+> tree).
+>
+> I have used the pci tree from next-20120910 for today.
 
-We have the following
+Thanks.
 
-...
-        mmc->caps |=3D MMC_CAP_SDIO_IRQ | MMC_CAP_ERASE | MMC_CAP_CMD23;
+Gavin, Ben, I folded in the trivial fix and updated both my
+pci/gavin-window-alignment and next branches.
 
-        if (host->quirks & SDHCI_QUIRK_MULTIBLOCK_READ_ACMD12)
-                host->flags |=3D SDHCI_AUTO_CMD12;
+Ben, I think you'll need to pull in pci/jiang-pcie-cap before
+pci/gavin-window-alignment to get both pieces.
 
-        /* Auto-CMD23 stuff only works in ADMA or PIO. */
-        if ((host->version >=3D SDHCI_SPEC_300) &&
-            ((host->flags & SDHCI_USE_ADMA) ||
-             !(host->flags & SDHCI_USE_SDMA))) {
-                host->flags |=3D SDHCI_AUTO_CMD23;
-                DBG("%s: Auto-CMD23 available\n", mmc_hostname(mmc));
-        } else {
-                DBG("%s: Auto-CMD23 unavailable\n", mmc_hostname(mmc));
-        }
-
-...
-
-I'm not clear what the difference is between mmc->caps & host->flags, =
-but shouldn't we move setting MMC_CAP_CMD23 inside the 'Auto-CMD23' if =
-check?
-
-- k=
+Bjorn
