@@ -1,24 +1,18 @@
-Return-Path: <emillbrandt@dekaresearch.com>
-Received: from dekaexchange07.deka.local (mail.dekaresearch.com
- [208.65.175.196]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "dekaexchange07", Issuer "dekaexchange07" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 975712C0082
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 00:29:42 +1000 (EST)
-From: Eric Millbrandt <emillbrandt@dekaresearch.com>
-To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>
-Date: Wed, 12 Sep 2012 10:29:38 -0400
-Subject: RE: [PATCH 1/5] ASoC: fsl: mpc5200 multi-codec fixups
-Message-ID: <0A40042D85E7C84DB443060EC44B3FD336D854FEE4@dekaexchange07.deka.local>
-References: <1347416089-23393-1-git-send-email-emillbrandt@dekaresearch.com>
- <1347416089-23393-2-git-send-email-emillbrandt@dekaresearch.com>
- <20120912030457.GF9162@opensource.wolfsonmicro.com>
-In-Reply-To: <20120912030457.GF9162@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <dan@danny.cz>
+Received: from eagle.danny.cz (unknown
+ [IPv6:2a01:8c00:ffb3:160:222:15ff:fe86:f1bd])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0B93A2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 02:06:52 +1000 (EST)
+From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] add GXT4000P and GXT6500P support to the gxt4500 driver
+Date: Wed, 12 Sep 2012 18:06:44 +0200
+Message-Id: <1347466004-14592-1-git-send-email-dan@danny.cz>
 MIME-Version: 1.0
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Liam Girdwood <lrg@ti.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Nico Macrionitis <acrux@cruxppc.org>, Giuseppe Coviello <cjg@cruxppc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +22,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mark,
+I'm reviving an old patch from 2009 that adds support for GXT4000P and GXT6500P
+adapter to the gxt4500 driver.
 
-On 2012-09-11 Mark Brown wrote:
->> --- a/arch/powerpc/platforms/52xx/Kconfig
->> +++ b/arch/powerpc/platforms/52xx/Kconfig
->> @@ -1,6 +1,7 @@
->>  config PPC_MPC52xx  bool "52xx-based boards"        depends on 6xx +   =
-     select
->>  FSL_SOC     select PPC_CLOCK        select PPC_PCI_CHOICE
->
-> This doesnt seem to have much to do with the commit message...
->
-I'll spit this into another patch.  SND_POWERPC_SOC, which wraps all of the=
- Powerpc socs, depends on FSL_SOC.  Would it be better to have SND_POWERPC_=
-SOC depend on FSL_SOC or PPC_MPC52xx?
+See threads at http://marc.info/?l=linux-fbdev-devel&m=124345080216952&w=2
+and https://lists.ozlabs.org/pipermail/linuxppc-dev/2009-June/072672.html
+for more details.
 
->> -/* ALSA only supports a single AC97 device so static is recommend here
->> */ +/* ALSA only supports a single AC97 bus device so static is
->> recommend +here */
->>  static struct psc_dma *psc_dma;
->
-> Or this.
->
-I'll also be split this out.  The change was to clarify that now you can ha=
-ve multiple ac97 codec, but soc-core can still only have on ac97 bus.
+This patch adds support for GXT4000P and GXT6500P cards found on some
+IBM pSeries machines.
+GXT4000P/6000P and GXT4500P/6500P  couples are  identical from
+software's point of view and are based on the same  Raster Engine
+(RC1000), except for a different reference clock for the PLL.
+GXT6x00P models are equipped with an additional Geometry Engine
+(GT1000) but this driver doesn't use it.
 
-Eric
+Signed-off-by: Nico Macrionitis <acrux@cruxppc.org>
+Signed-off-by: Giuseppe Coviello <cjg@cruxppc.org>
+Tested-by: Dan Horák <dan@danny.cz>
+---
+ drivers/video/Kconfig   |    8 +++++---
+ drivers/video/gxt4500.c |   15 +++++++++++++--
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
-
-
-
-This e-mail and the information, including any attachments, it contains are=
- intended to be a confidential communication only to the person or entity t=
-o whom it is addressed and may contain information that is privileged. If t=
-he reader of this message is not the intended recipient, you are hereby not=
-ified that any dissemination, distribution or copying of this communication=
- is strictly prohibited. If you have received this communication in error, =
-please immediately notify the sender and destroy the original message.
-
-Thank you.
-
-Please consider the environment before printing this email.
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 0217f74..c89eb1e 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -2167,14 +2167,16 @@ config FB_PNX4008_DUM_RGB
+ 	  Say Y here to enable support for PNX4008 RGB Framebuffer
+ 
+ config FB_IBM_GXT4500
+-	tristate "Framebuffer support for IBM GXT4500P adaptor"
++	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
+ 	depends on FB && PPC
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+ 	---help---
+-	  Say Y here to enable support for the IBM GXT4500P display
+-	  adaptor, found on some IBM System P (pSeries) machines.
++	  Say Y here to enable support for the IBM GXT4000P/6000P and
++	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
++	  found on some IBM System P (pSeries) machines. This driver
++	  doesn't use Geometry Engine GT1000.
+ 
+ config FB_PS3
+ 	tristate "PS3 GPU framebuffer driver"
+diff --git a/drivers/video/gxt4500.c b/drivers/video/gxt4500.c
+index 0fad23f..755c3e7 100644
+--- a/drivers/video/gxt4500.c
++++ b/drivers/video/gxt4500.c
+@@ -1,5 +1,6 @@
+ /*
+- * Frame buffer device for IBM GXT4500P and GXT6000P display adaptors
++ * Frame buffer device for IBM GXT4500P/6500P and GXT4000P/6000P
++ * display adaptors
+  *
+  * Copyright (C) 2006 Paul Mackerras, IBM Corp. <paulus@samba.org>
+  */
+@@ -14,6 +15,8 @@
+ #include <linux/string.h>
+ 
+ #define PCI_DEVICE_ID_IBM_GXT4500P	0x21c
++#define PCI_DEVICE_ID_IBM_GXT6500P	0x21b
++#define PCI_DEVICE_ID_IBM_GXT4000P	0x16e
+ #define PCI_DEVICE_ID_IBM_GXT6000P	0x170
+ 
+ /* GXT4500P registers */
+@@ -173,6 +176,8 @@ static const struct fb_videomode defaultmode __devinitdata = {
+ /* List of supported cards */
+ enum gxt_cards {
+ 	GXT4500P,
++	GXT6500P,
++	GXT4000P,
+ 	GXT6000P
+ };
+ 
+@@ -182,6 +187,8 @@ static const struct cardinfo {
+ 	const char *cardname;
+ } cardinfo[] = {
+ 	[GXT4500P] = { .refclk_ps = 9259, .cardname = "IBM GXT4500P" },
++	[GXT6500P] = { .refclk_ps = 9259, .cardname = "IBM GXT6500P" },
++	[GXT4000P] = { .refclk_ps = 40000, .cardname = "IBM GXT4000P" },
+ 	[GXT6000P] = { .refclk_ps = 40000, .cardname = "IBM GXT6000P" },
+ };
+ 
+@@ -736,6 +743,10 @@ static void __devexit gxt4500_remove(struct pci_dev *pdev)
+ static const struct pci_device_id gxt4500_pci_tbl[] = {
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT4500P),
+ 	  .driver_data = GXT4500P },
++	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT6500P),
++	  .driver_data = GXT6500P },
++	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT4000P),
++	  .driver_data = GXT4000P },
+ 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT6000P),
+ 	  .driver_data = GXT6000P },
+ 	{ 0 }
+@@ -768,7 +779,7 @@ static void __exit gxt4500_exit(void)
+ module_exit(gxt4500_exit);
+ 
+ MODULE_AUTHOR("Paul Mackerras <paulus@samba.org>");
+-MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6000P");
++MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6500P and GXT4000P/6000P");
+ MODULE_LICENSE("GPL");
+ module_param(mode_option, charp, 0);
+ MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\"");
+-- 
+1.7.7.6
