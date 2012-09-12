@@ -1,20 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 543402C0096
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 09:08:13 +1000 (EST)
-Message-ID: <1347491161.2276.14.camel@pasglop>
-Subject: Re: [PATCH] powerpc: fix typo in PTRS_PER_PUD
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Date: Thu, 13 Sep 2012 09:06:01 +1000
-In-Reply-To: <20120912230009.GA17226@buserror.net>
-References: <20120912230009.GA17226@buserror.net>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <cyril@ti.com>
+Message-ID: <50511EB5.800@ti.com>
+Date: Wed, 12 Sep 2012 19:45:57 -0400
+From: Cyril Chemparathy <cyril@ti.com>
+MIME-Version: 1.0
+To: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH] of: specify initrd location using 64-bit
+References: <1347465937-7056-1-git-send-email-cyril@ti.com>
+ <5050EF3F.6030003@gmail.com>
+In-Reply-To: <5050EF3F.6030003@gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linux-mips@linux-mips.org, x86@kernel.org, david.daney@cavium.com,
+ linux@openrisc.net, paul.gortmaker@windriver.com, paulus@samba.org,
+ hpa@zytor.com, m.szyprowski@samsung.com, jonas@southpole.se,
+ linus.walleij@linaro.org, linux@arm.linux.org.uk, linux-c6x-dev@linux-c6x.org,
+ nico@linaro.org, a-jacquiot@ti.com, mingo@redhat.com, suzuki@in.ibm.com,
+ mahesh@linux.vnet.ibm.com, bigeasy@linutronix.de, arnd@arndb.de,
+ microblaze-uclinux@itee.uq.edu.au, devicetree-discuss@lists.ozlabs.org,
+ msalter@redhat.com, rob.herring@calxeda.com, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, blogic@openwrt.org, dhowells@redhat.com,
+ monstr@monstr.eu, linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+ tj@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-09-12 at 18:00 -0500, Scott Wood wrote:
-> PTRS_PER_PUD should be based on PUD_INDEX_SIZE, not PMD_INDEX_SIZE.  We
-> got away with it because PUD and PMD had the same index size, but this is
-> no longer true with Aneesh's patchset to support a 46-bit user effective
-> address space.
+On 9/12/2012 4:23 PM, Rob Herring wrote:
+> On 09/12/2012 11:05 AM, Cyril Chemparathy wrote:
+>> On some PAE architectures, the entire range of physical memory could reside
+>> outside the 32-bit limit.  These systems need the ability to specify the
+>> initrd location using 64-bit numbers.
+>>
+>> This patch globally modifies the early_init_dt_setup_initrd_arch() function to
+>> use 64-bit numbers instead of the current unsigned long.
+>
+> S-o-B?
+>
 
-Ah, my typo :-) Cool, I'll make sure to apply that before Aneesh
-patches.
+Sorry about that, will include in v2.
 
-Thanks,
-Ben.
+[...]
+>> --- a/arch/arm/mm/init.c
+>> +++ b/arch/arm/mm/init.c
+>> @@ -76,7 +76,7 @@ static int __init parse_tag_initrd2(const struct tag *tag)
+>>   __tagtable(ATAG_INITRD2, parse_tag_initrd2);
+>>
+>>   #ifdef CONFIG_OF_FLATTREE
+>> -void __init early_init_dt_setup_initrd_arch(unsigned long start, unsigned long end)
+>> +void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
+>
+> phys_initrd_start/size need to change too. Not sure about similar things
+> on other arches.
+>
 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/include/asm/pgtable-ppc64-4k.h |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pgtable-ppc64-4k.h b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-> index b3eccf2..12798c9 100644
-> --- a/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-> +++ b/arch/powerpc/include/asm/pgtable-ppc64-4k.h
-> @@ -19,7 +19,7 @@
->  
->  #define PTRS_PER_PTE	(1 << PTE_INDEX_SIZE)
->  #define PTRS_PER_PMD	(1 << PMD_INDEX_SIZE)
-> -#define PTRS_PER_PUD	(1 << PMD_INDEX_SIZE)
-> +#define PTRS_PER_PUD	(1 << PUD_INDEX_SIZE)
->  #define PTRS_PER_PGD	(1 << PGD_INDEX_SIZE)
->  
->  /* PMD_SHIFT determines what a second-level page table entry can map */
+I've fixed phys_initrd_start (not size) in another patch, please see [1].
+
+> Does u-boot need similar fixes?
+>
+
+We aren't there yet :-)  We are currently running this platform without 
+u-boot.
+
+
+[1] http://permalink.gmane.org/gmane.linux.kernel/1356713
+
+-- 
+Thanks
+- Cyril
