@@ -1,15 +1,16 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 580382C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 18:42:12 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D12452C013E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 18:42:13 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v4][PATCH 2/4] powerpc/ppc32: make copy_and_flush() as global
-Date: Wed, 12 Sep 2012 16:42:03 +0800
-Message-ID: <1347439325-5563-2-git-send-email-tiejun.chen@windriver.com>
+Subject: [v4][PATCH 3/4] powerpc/kprobe: complete kprobe and migrate exception
+ frame
+Date: Wed, 12 Sep 2012 16:42:04 +0800
+Message-ID: <1347439325-5563-3-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1347439325-5563-1-git-send-email-tiejun.chen@windriver.com>
 References: <1347439325-5563-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -24,95 +25,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Somewhere we need this simple copy_and_flush().
+We can't emulate stwu since that may corrupt current exception stack.
+So we will have to do real store operation in the exception return code.
+
+Firstly we'll allocate a trampoline exception frame below the kprobed
+function stack and copy the current exception frame to the trampoline.
+Then we can do this real store operation to implement 'stwu', and reroute
+the trampoline frame to r1 to complete this exception migration.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/entry_32.S |   27 +++++++++++++++++++++++++++
- arch/powerpc/kernel/head_32.S  |   26 --------------------------
- 2 files changed, 27 insertions(+), 26 deletions(-)
+v4:
+
+* improve register usage
+* use copy_and_flush() to replace memcpy since that only clobber r0, r6
+  and LR explicitly.
+* retest
+
+ arch/powerpc/kernel/entry_32.S |   44 ++++++++++++++++++++++++++++++++++------
+ arch/powerpc/kernel/entry_64.S |   32 +++++++++++++++++++++++++++++
+ 2 files changed, 70 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index ead5016..1536d2c 100644
+index 1536d2c..b18e494 100644
 --- a/arch/powerpc/kernel/entry_32.S
 +++ b/arch/powerpc/kernel/entry_32.S
-@@ -32,6 +32,7 @@
- #include <asm/unistd.h>
- #include <asm/ftrace.h>
- #include <asm/ptrace.h>
-+#include <asm/cache.h>
+@@ -832,19 +832,53 @@ restore_user:
+ 	bnel-	load_dbcr0
+ #endif
  
- #undef SHOW_SYSCALLS
- #undef SHOW_SYSCALLS_TASK
-@@ -1265,6 +1266,32 @@ ee_restarts:
- 	.previous
+-#ifdef CONFIG_PREEMPT
+ 	b	restore
  
- /*
-+ * Copy routine used to copy the kernel to start at physical address 0
-+ * and flush and invalidate the caches as needed.
-+ * r3 = dest addr, r4 = source addr, r5 = copy limit, r6 = start offset
-+ * on exit, r3, r4, r5 are unchanged, r6 is updated to be >= r5.
-+ */
-+_GLOBAL(copy_and_flush)
-+	addi	r5,r5,-4
-+	addi	r6,r6,-4
-+4:	li	r0,L1_CACHE_BYTES/4
-+	mtctr	r0
-+3:	addi	r6,r6,4			/* copy a cache line */
-+	lwzx	r0,r6,r4
-+	stwx	r0,r6,r3
-+	bdnz	3b
-+	dcbst	r6,r3			/* write it to memory */
-+	sync
-+	icbi	r6,r3			/* flush the icache line */
-+	cmplw	0,r6,r5
-+	blt	4b
-+	sync				/* additional sync needed on g4 */
-+	isync
-+	addi	r5,r5,4
-+	addi	r6,r6,4
-+	blr
+ /* N.B. the only way to get here is from the beq following ret_from_except. */
+ resume_kernel:
+-	/* check current_thread_info->preempt_count */
++	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+ 	CURRENT_THREAD_INFO(r9, r1)
++	lwz	r8,TI_FLAGS(r9)
++	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
++	beq+	1f
 +
-+/*
-  * PROM code for specific machines follows.  Put it
-  * here so it's easy to add arch-specific sections later.
-  * -- Cort
-diff --git a/arch/powerpc/kernel/head_32.S b/arch/powerpc/kernel/head_32.S
-index dc0488b..14ea361 100644
---- a/arch/powerpc/kernel/head_32.S
-+++ b/arch/powerpc/kernel/head_32.S
-@@ -777,32 +777,6 @@ relocate_kernel:
- 	bl	copy_and_flush		/* copy the rest */
- 	b	turn_on_mmu
++	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
++
++	lwz	r3,GPR1(r1)
++	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
++	mr	r4,r1			/* src:  current exception frame */
++	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
++	li	r6,0			/* start offset: 0 */
++	mr	r1,r3			/* Reroute the trampoline frame to r1 */
++	/* Copy from the original to the trampoline.
++	 * Its safe since copy_and_flush *only* clobbers r0, r6 and lr.
++	 */
++	bl	copy_and_flush
++
++	/* Do real store operation to complete stwu */
++	lwz	r5,GPR1(r1)
++	stw	r8,0(r5)
++
++	/* Clear _TIF_EMULATE_STACK_STORE flag */
++	lis	r11,_TIF_EMULATE_STACK_STORE@h
++	addi	r5,r9,TI_FLAGS
++0:	lwarx	r8,0,r5
++	andc	r8,r8,r11
++#ifdef CONFIG_IBM405_ERR77
++	dcbt	0,r5
++#endif
++	stwcx.	r8,0,r5
++	bne-	0b
++1:
++
++#ifdef CONFIG_PREEMPT
++	/* check current_thread_info->preempt_count */
+ 	lwz	r0,TI_PREEMPT(r9)
+ 	cmpwi	0,r0,0		/* if non-zero, just restore regs and return */
+ 	bne	restore
+-	lwz	r0,TI_FLAGS(r9)
+-	andi.	r0,r0,_TIF_NEED_RESCHED
++	andi.	r8,r8,_TIF_NEED_RESCHED
+ 	beq+	restore
++	lwz	r3,_MSR(r1)
+ 	andi.	r0,r3,MSR_EE	/* interrupts off? */
+ 	beq	restore		/* don't schedule if so */
+ #ifdef CONFIG_TRACE_IRQFLAGS
+@@ -865,8 +899,6 @@ resume_kernel:
+ 	 */
+ 	bl	trace_hardirqs_on
+ #endif
+-#else
+-resume_kernel:
+ #endif /* CONFIG_PREEMPT */
  
--/*
-- * Copy routine used to copy the kernel to start at physical address 0
-- * and flush and invalidate the caches as needed.
-- * r3 = dest addr, r4 = source addr, r5 = copy limit, r6 = start offset
-- * on exit, r3, r4, r5 are unchanged, r6 is updated to be >= r5.
-- */
--_ENTRY(copy_and_flush)
--	addi	r5,r5,-4
--	addi	r6,r6,-4
--4:	li	r0,L1_CACHE_BYTES/4
--	mtctr	r0
--3:	addi	r6,r6,4			/* copy a cache line */
--	lwzx	r0,r6,r4
--	stwx	r0,r6,r3
--	bdnz	3b
--	dcbst	r6,r3			/* write it to memory */
--	sync
--	icbi	r6,r3			/* flush the icache line */
--	cmplw	0,r6,r5
--	blt	4b
--	sync				/* additional sync needed on g4 */
--	isync
--	addi	r5,r5,4
--	addi	r6,r6,4
--	blr
--
- #ifdef CONFIG_SMP
- 	.globl __secondary_start_mpc86xx
- __secondary_start_mpc86xx:
+ 	/* interrupts are hard-disabled at this point */
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index b40e0b4..d060f4d 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -593,6 +593,38 @@ _GLOBAL(ret_from_except_lite)
+ 	b	.ret_from_except
+ 
+ resume_kernel:
++	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
++	CURRENT_THREAD_INFO(r9, r1)
++	ld	r8,TI_FLAGS(r9)
++	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
++	beq+	1f
++
++	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
++
++	lwz	r3,GPR1(r1)
++	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
++	mr	r4,r1			/* src:  current exception frame */
++	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
++	li	r6,0			/* start offset: 0 */
++	mr	r1,r3			/* Reroute the trampoline frame to r1 */
++	/* Copy from the original to the trampoline.
++	 * Its safe since copy_and_flush *only* clobbers r0, r6 and lr
++	 */
++	bl	.copy_and_flush
++
++	/* Do real store operation to complete stwu */
++	lwz	r5,GPR1(r1)
++	std	r8,0(r5)
++
++	/* Clear _TIF_EMULATE_STACK_STORE flag */
++	lis	r11,_TIF_EMULATE_STACK_STORE@h
++	addi	r5,r9,TI_FLAGS
++	ldarx	r4,0,r5
++	andc	r4,r4,r11
++	stdcx.	r4,0,r5
++	bne-	0b
++1:
++
+ #ifdef CONFIG_PREEMPT
+ 	/* Check if we need to preempt */
+ 	andi.	r0,r4,_TIF_NEED_RESCHED
 -- 
 1.7.9.5
