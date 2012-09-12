@@ -1,29 +1,22 @@
-Return-Path: <cjb@laptop.org>
-Received: from void.printf.net (void.printf.net [89.145.121.20])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8B8E82C008A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 06:59:18 +1000 (EST)
-From: Chris Ball <cjb@laptop.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
-References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
- <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
- <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
- <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
- <87k3w0y5yn.fsf@octavius.laptop.org>
- <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org>
-Date: Tue, 11 Sep 2012 16:59:07 -0400
-In-Reply-To: <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org> (Kumar
- Gala's message of "Tue, 11 Sep 2012 15:26:32 -0500")
-Message-ID: <87liggwa1w.fsf@octavius.laptop.org>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7E73D2C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 10:59:24 +1000 (EST)
+Message-ID: <504FDE3F.1060309@freescale.com>
+Date: Tue, 11 Sep 2012 19:58:39 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-mmc@vger.kernel.org, Huang Changming-R66093 <R66093@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Anton Vorontsov <cbouatmailru@gmail.com>
+To: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH -V9 09/11] arch/powerpc: Add 64TB support
+References: <1347281577-5460-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1347281577-5460-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1347281577-5460-10-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,21 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On 09/10/2012 07:52 AM, Aneesh Kumar K.V wrote:
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> Increase max addressable range to 64TB. This is not tested on
+> real hardware yet.
+> 
+> Reviewed-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/mmu-hash64.h        |   42 ++++++++++++++++++++------
+>  arch/powerpc/include/asm/pgtable-ppc64-4k.h  |    2 +-
+>  arch/powerpc/include/asm/pgtable-ppc64-64k.h |    2 +-
+>  arch/powerpc/include/asm/processor.h         |    4 +--
+>  arch/powerpc/include/asm/sparsemem.h         |    4 +--
+>  arch/powerpc/kernel/exceptions-64s.S         |    4 ++-
+>  arch/powerpc/mm/slb_low.S                    |   12 ++++++++
+>  7 files changed, 54 insertions(+), 16 deletions(-)
 
-On Tue, Sep 11 2012, Kumar Gala wrote:
-> thanks for the info.  Do you know what's required on controller side
-> to handle cards that support CMD23?
->
-> I'm trying to figure out if older controller's on FSL SoCs are missing
-> some feature to allow CMD23 to work (vs Auto-CMD23).
+Bisect shows this patch to be the one that causes hangs on p5020.  It
+gets stuck in a loop of TLB misses, bailing on a PUD entry of zero.  The
+page fault path runs and returns, but doesn't fix the situation, so it
+repeats.  AFAICT the miss handler is behaving correctly.  I'll try to
+see what's going on in the page fault code.
 
-It seems plausible that it's just not implemented on these controllers.
-It's a little strange, since the command's been specified for so long
-and we haven't seen any other controllers with problems.  The patch
-would be correct if this is true.
-
-- Chris.
--- 
-Chris Ball   <cjb@laptop.org>   <http://printf.net/>
-One Laptop Per Child
+-Scott
