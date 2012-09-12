@@ -3,13 +3,13 @@ Received: from eagle.danny.cz (unknown
  [IPv6:2a01:8c00:ffb3:160:222:15ff:fe86:f1bd])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 952C42C0087
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 22:41:55 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id F14062C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 23:22:43 +1000 (EST)
 From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
-To: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org
 Subject: [PATCH] add GXT4000P and GXT6500P support to the gxt4500 driver
-Date: Wed, 12 Sep 2012 14:20:12 +0200
-Message-Id: <1347452412-7129-1-git-send-email-dan@danny.cz>
+Date: Wed, 12 Sep 2012 14:58:55 +0200
+Message-Id: <1347454735-7709-1-git-send-email-dan@danny.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Cc: Nico Macrionitis <acrux@cruxppc.org>, Giuseppe Coviello <cjg@cruxppc.org>
