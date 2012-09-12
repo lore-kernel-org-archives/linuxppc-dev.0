@@ -2,29 +2,31 @@ Return-Path: <shangw@linux.vnet.ibm.com>
 Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e3.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C9C2A2C0095
+ by ozlabs.org (Postfix) with ESMTPS id C43C72C0092
  for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 15:16:34 +1000 (EST)
 Received: from /spool/local
  by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
  Wed, 12 Sep 2012 01:16:31 -0400
-Received: from d01relay01.pok.ibm.com (d01relay01.pok.ibm.com [9.56.227.233])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C3D5E6E803F
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:28 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8C5GSIa126724
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:28 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8C5GR5r002982
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 02:16:28 -0300
+Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 306ECC9003E
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:27 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8C5GQQ134013324
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:27 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8C5GPVn014687
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:26 -0400
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] ppc/eeh: introduce EEH_PE_INVALID type PE
-Date: Wed, 12 Sep 2012 13:16:16 +0800
-Message-Id: <1347426978-6194-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 2/3] ppc/eeh: remove EEH PE for normal PCI hotplug
+Date: Wed, 12 Sep 2012 13:16:17 +0800
+Message-Id: <1347426978-6194-2-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1347426978-6194-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1347426978-6194-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,151 +37,260 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When EEH error happens on the PE whose PCI devices don't have
-attached drivers. In function eeh_handle_event(), the default
-value PCI_ERS_RESULT_NONE will be returned after iterating all
-drivers of those PCI devices belonging to the PE. Actually, we
-don't have installed drivers for the PCI devices. Under the
-circumstance, we will remove the corresponding PCI bus of the PE,
-including the associated EEH devices and PE instance. However,
-we still need the information stored in the PE instance to do PE
-reset after that. So it's unsafe to free the PE instance.
+Function eeh_rmv_from_parent_pe() could be called by the path of
+either normal PCI hotplug, or EEH recovery. For the former case,
+we need purge the corresponding PE on removal of the associated
+PE bus.
 
-The patch introduces EEH_PE_INVALID type PE to address the issue.
-When the PCI bus and the corresponding attached EEH devices are
-removed, we will mark the PE as EEH_PE_INVALID. At later point,
-the PE will be changed to EEH_PE_DEVICE or EEH_PE_BUS when the
-corresponding EEH devices are attached again.
+The patch tries to cover that by passing more information to function
+pcibios_remove_pci_devices() so that we know if the corresponding PE
+needs to be purged or be marked as "invalid".
 
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h          |    7 ++--
- arch/powerpc/platforms/pseries/eeh_pe.c |   50 ++++++++++++++++++++++++-------
- 2 files changed, 43 insertions(+), 14 deletions(-)
+ arch/powerpc/include/asm/eeh.h              |    6 ++--
+ arch/powerpc/include/asm/pci-bridge.h       |    1 +
+ arch/powerpc/platforms/pseries/eeh.c        |   12 +++++----
+ arch/powerpc/platforms/pseries/eeh_driver.c |    8 +++++-
+ arch/powerpc/platforms/pseries/eeh_pe.c     |   35 +++++++++++++++++---------
+ arch/powerpc/platforms/pseries/pci_dlpar.c  |   32 ++++++++++++++++++------
+ 6 files changed, 65 insertions(+), 29 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 58c5ee6..afeb400 100644
+index afeb400..b0ef738 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -45,9 +45,10 @@ struct device_node;
-  * in the corresponding PHB. Therefore, the root PEs should be created
-  * against existing PHBs in on-to-one fashion.
-  */
--#define EEH_PE_PHB	1	/* PHB PE    */
--#define EEH_PE_DEVICE 	2	/* Device PE */
--#define EEH_PE_BUS	3	/* Bus PE    */
-+#define EEH_PE_INVALID	(1 << 0)	/* Invalid   */
-+#define EEH_PE_PHB	(1 << 1)	/* PHB PE    */
-+#define EEH_PE_DEVICE 	(1 << 2)	/* Device PE */
-+#define EEH_PE_BUS	(1 << 3)	/* Bus PE    */
+@@ -185,7 +185,7 @@ static inline void eeh_unlock(void)
+ typedef void *(*eeh_traverse_func)(void *data, void *flag);
+ int __devinit eeh_phb_pe_create(struct pci_controller *phb);
+ int eeh_add_to_parent_pe(struct eeh_dev *edev);
+-int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
++int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe);
+ void *eeh_pe_dev_traverse(struct eeh_pe *root,
+ 		eeh_traverse_func fn, void *flag);
+ void eeh_pe_restore_bars(struct eeh_pe *pe);
+@@ -201,7 +201,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev);
+ void __init eeh_addr_cache_build(void);
+ void eeh_add_device_tree_early(struct device_node *);
+ void eeh_add_device_tree_late(struct pci_bus *);
+-void eeh_remove_bus_device(struct pci_dev *);
++void eeh_remove_bus_device(struct pci_dev *, int);
  
- #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
- #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
+ /**
+  * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
+@@ -240,7 +240,7 @@ static inline void eeh_add_device_tree_early(struct device_node *dn) { }
+ 
+ static inline void eeh_add_device_tree_late(struct pci_bus *bus) { }
+ 
+-static inline void eeh_remove_bus_device(struct pci_dev *dev) { }
++static inline void eeh_remove_bus_device(struct pci_dev *dev, int purge_pe) { }
+ 
+ static inline void eeh_lock(void) { }
+ static inline void eeh_unlock(void) { }
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 973df4d..a059cb9 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -192,6 +192,7 @@ static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
+ extern struct pci_bus *pcibios_find_pci_bus(struct device_node *dn);
+ 
+ /** Remove all of the PCI devices under this bus */
++extern void __pcibios_remove_pci_devices(struct pci_bus *bus, int purge_pe);
+ extern void pcibios_remove_pci_devices(struct pci_bus *bus);
+ 
+ /** Discover new pci devices under this bus, and add them */
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 18c168b..43f6ed4 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -817,6 +817,7 @@ EXPORT_SYMBOL_GPL(eeh_add_device_tree_late);
+ /**
+  * eeh_remove_device - Undo EEH setup for the indicated pci device
+  * @dev: pci device to be removed
++ * @purge_pe: remove the PE or not
+  *
+  * This routine should be called when a device is removed from
+  * a running system (e.g. by hotplug or dlpar).  It unregisters
+@@ -824,7 +825,7 @@ EXPORT_SYMBOL_GPL(eeh_add_device_tree_late);
+  * this device will no longer be detected after this call; thus,
+  * i/o errors affecting this slot may leave this device unusable.
+  */
+-static void eeh_remove_device(struct pci_dev *dev)
++static void eeh_remove_device(struct pci_dev *dev, int purge_pe)
+ {
+ 	struct eeh_dev *edev;
+ 
+@@ -843,7 +844,7 @@ static void eeh_remove_device(struct pci_dev *dev)
+ 	dev->dev.archdata.edev = NULL;
+ 	pci_dev_put(dev);
+ 
+-	eeh_rmv_from_parent_pe(edev);
++	eeh_rmv_from_parent_pe(edev, purge_pe);
+ 	eeh_addr_cache_rmv_dev(dev);
+ 	eeh_sysfs_remove_device(dev);
+ }
+@@ -851,21 +852,22 @@ static void eeh_remove_device(struct pci_dev *dev)
+ /**
+  * eeh_remove_bus_device - Undo EEH setup for the indicated PCI device
+  * @dev: PCI device
++ * @purge_pe: remove the corresponding PE or not
+  *
+  * This routine must be called when a device is removed from the
+  * running system through hotplug or dlpar. The corresponding
+  * PCI address cache will be removed.
+  */
+-void eeh_remove_bus_device(struct pci_dev *dev)
++void eeh_remove_bus_device(struct pci_dev *dev, int purge_pe)
+ {
+ 	struct pci_bus *bus = dev->subordinate;
+ 	struct pci_dev *child, *tmp;
+ 
+-	eeh_remove_device(dev);
++	eeh_remove_device(dev, purge_pe);
+ 
+ 	if (bus && dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
+ 		list_for_each_entry_safe(child, tmp, &bus->devices, bus_list)
+-			 eeh_remove_bus_device(child);
++			 eeh_remove_bus_device(child, purge_pe);
+ 	}
+ }
+ EXPORT_SYMBOL_GPL(eeh_remove_bus_device);
+diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
+index 8370ce7..37c2cf7 100644
+--- a/arch/powerpc/platforms/pseries/eeh_driver.c
++++ b/arch/powerpc/platforms/pseries/eeh_driver.c
+@@ -305,8 +305,14 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
+ 	/* pcibios will clear the counter; save the value */
+ 	cnt = pe->freeze_count;
+ 
++	/*
++	 * We don't remove the corresponding PE instances because
++	 * we need the information afterwords. The attached EEH
++	 * devices are expected to be attached soon when calling
++	 * into pcibios_add_pci_devices().
++	 */
+ 	if (bus)
+-		pcibios_remove_pci_devices(bus);
++		__pcibios_remove_pci_devices(bus, 0);
+ 
+ 	/* Reset the pci controller. (Asserts RST#; resets config space).
+ 	 * Reconfigure bridges and devices. Don't try to bring the system
 diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
-index 047617e..8f95ffd 100644
+index 8f95ffd..a2646cf 100644
 --- a/arch/powerpc/platforms/pseries/eeh_pe.c
 +++ b/arch/powerpc/platforms/pseries/eeh_pe.c
-@@ -107,7 +107,7 @@ static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
- 		 * the PE for PHB has been determined when that
- 		 * was created.
- 		 */
--		if (pe->type == EEH_PE_PHB &&
-+		if ((pe->type & EEH_PE_PHB) &&
- 		    pe->phb == phb) {
- 			eeh_unlock();
- 			return pe;
-@@ -219,7 +219,7 @@ static void *__eeh_pe_get(void *data, void *flag)
- 	struct eeh_dev *edev = (struct eeh_dev *)flag;
- 
- 	/* Unexpected PHB PE */
--	if (pe->type == EEH_PE_PHB)
-+	if (pe->type & EEH_PE_PHB)
- 		return NULL;
- 
- 	/* We prefer PE address */
-@@ -314,7 +314,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
- 	 * components.
- 	 */
- 	pe = eeh_pe_get(edev);
--	if (pe) {
-+	if (pe && !(pe->type & EEH_PE_INVALID)) {
- 		if (!edev->pe_config_addr) {
- 			pr_err("%s: PE with addr 0x%x already exists\n",
- 				__func__, edev->config_addr);
-@@ -331,6 +331,24 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
- 			edev->dn->full_name, pe->addr);
- 
- 		return 0;
-+	} else if (pe && (pe->type & EEH_PE_INVALID)) {
-+		list_add_tail(&edev->list, &pe->edevs);
-+		edev->pe = pe;
-+		/*
-+		 * We're running to here because of PCI hotplug caused by
-+		 * EEH recovery. We need clear EEH_PE_INVALID until the top.
-+		 */
-+		parent = pe;
-+		while (parent) {
-+			if (!(parent->type & EEH_PE_INVALID))
-+				break;
-+			parent->type &= ~EEH_PE_INVALID;
-+			parent = parent->parent;
-+		}
-+		pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
-+			edev->dn->full_name, pe->addr, pe->parent->addr);
-+
-+		return 0;
- 	}
- 
- 	/* Create a new EEH PE */
-@@ -385,7 +403,8 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+@@ -395,13 +395,14 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ /**
+  * eeh_rmv_from_parent_pe - Remove one EEH device from the associated PE
+  * @edev: EEH device
++ * @purge_pe: remove PE or not
+  *
+  * The PE hierarchy tree might be changed when doing PCI hotplug.
+  * Also, the PCI devices or buses could be removed from the system
+  * during EEH recovery. So we have to call the function remove the
+  * corresponding PE accordingly if necessary.
   */
- int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
+-int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
++int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe)
  {
--	struct eeh_pe *pe, *parent;
-+	struct eeh_pe *pe, *parent, *child;
-+	int cnt;
- 
- 	if (!edev->pe) {
- 		pr_warning("%s: No PE found for EEH device %s\n",
-@@ -406,13 +425,22 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
- 	 */
- 	while (1) {
- 		parent = pe->parent;
--		if (pe->type == EEH_PE_PHB)
-+		if (pe->type & EEH_PE_PHB)
+ 	struct eeh_pe *pe, *parent, *child;
+ 	int cnt;
+@@ -428,19 +429,29 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
+ 		if (pe->type & EEH_PE_PHB)
  			break;
  
--		if (list_empty(&pe->edevs) &&
--		    list_empty(&pe->child_list)) {
--			list_del(&pe->child);
--			kfree(pe);
-+		if (list_empty(&pe->edevs)) {
-+			cnt = 0;
-+			list_for_each_entry(child, &pe->child_list, child) {
-+				if (!(pe->type & EEH_PE_INVALID)) {
-+					cnt++;
-+					break;
-+				}
-+			}
-+
-+			if (!cnt)
-+				pe->type |= EEH_PE_INVALID;
-+			else
+-		if (list_empty(&pe->edevs)) {
+-			cnt = 0;
+-			list_for_each_entry(child, &pe->child_list, child) {
+-				if (!(pe->type & EEH_PE_INVALID)) {
+-					cnt++;
+-					break;
+-				}
++		if (purge_pe) {
++			if (list_empty(&pe->edevs) &&
++			    list_empty(&pe->child_list)) {
++				list_del(&pe->child);
++				kfree(pe);
++			} else {
 +				break;
+ 			}
++		} else {
++			if (list_empty(&pe->edevs)) {
++				cnt = 0;
++				list_for_each_entry(child, &pe->child_list, child) {
++					if (!(pe->type & EEH_PE_INVALID)) {
++						cnt++;
++						break;
++					}
++				}
+ 
+-			if (!cnt)
+-				pe->type |= EEH_PE_INVALID;
+-			else
+-				break;
++				if (!cnt)
++					pe->type |= EEH_PE_INVALID;
++				else
++					break;
++			}
  		}
  
  		pe = parent;
-@@ -578,9 +606,9 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
- 	struct eeh_dev *edev;
- 	struct pci_dev *pdev;
+diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
+index 3ccebc8..261a577 100644
+--- a/arch/powerpc/platforms/pseries/pci_dlpar.c
++++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
+@@ -65,27 +65,43 @@ pcibios_find_pci_bus(struct device_node *dn)
+ EXPORT_SYMBOL_GPL(pcibios_find_pci_bus);
  
--	if (pe->type == EEH_PE_PHB) {
-+	if (pe->type & EEH_PE_PHB) {
- 		bus = pe->phb->bus;
--	} else if (pe->type == EEH_PE_BUS) {
-+	} else if (pe->type & EEH_PE_BUS) {
- 		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
- 		pdev = eeh_dev_to_pci_dev(edev);
- 		if (pdev)
+ /**
+- * pcibios_remove_pci_devices - remove all devices under this bus
++ * __pcibios_remove_pci_devices - remove all devices under this bus
++ * @bus: the indicated PCI bus
++ * @purge_pe: destroy the PE on removal of PCI devices
+  *
+  * Remove all of the PCI devices under this bus both from the
+  * linux pci device tree, and from the powerpc EEH address cache.
++ * By default, the corresponding PE will be destroied during the
++ * normal PCI hotplug path. For PCI hotplug during EEH recovery,
++ * the corresponding PE won't be destroied and deallocated.
+  */
+-void pcibios_remove_pci_devices(struct pci_bus *bus)
++void __pcibios_remove_pci_devices(struct pci_bus *bus, int purge_pe)
+ {
+- 	struct pci_dev *dev, *tmp;
++	struct pci_dev *dev, *tmp;
+ 	struct pci_bus *child_bus;
+ 
+ 	/* First go down child busses */
+ 	list_for_each_entry(child_bus, &bus->children, node)
+-		pcibios_remove_pci_devices(child_bus);
++		__pcibios_remove_pci_devices(child_bus, purge_pe);
+ 
+ 	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
+-		 pci_domain_nr(bus),  bus->number);
++		pci_domain_nr(bus),  bus->number);
+ 	list_for_each_entry_safe(dev, tmp, &bus->devices, bus_list) {
+ 		pr_debug("     * Removing %s...\n", pci_name(dev));
+-		eeh_remove_bus_device(dev);
+- 		pci_stop_and_remove_bus_device(dev);
+- 	}
++		eeh_remove_bus_device(dev, purge_pe);
++		pci_stop_and_remove_bus_device(dev);
++	}
++}
++
++/**
++ * pcibios_remove_pci_devices - remove all devices under this bus
++ *
++ * Remove all of the PCI devices under this bus both from the
++ * linux pci device tree, and from the powerpc EEH address cache.
++ */
++void pcibios_remove_pci_devices(struct pci_bus *bus)
++{
++	__pcibios_remove_pci_devices(bus, 1);
+ }
+ EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
+ 
 -- 
 1.7.5.4
