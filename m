@@ -1,28 +1,33 @@
-Return-Path: <jmorris@namei.org>
-Received: from tundra.namei.org (tundra.namei.org [65.99.196.166])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 64CAB2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 13:58:53 +1000 (EST)
-Date: Wed, 12 Sep 2012 13:16:25 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Kent Yoder <key@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 1/3] drivers/char/tpm: Add new device driver to support
- IBM vTPM
-In-Reply-To: <20120907173809.GA19704@linux.vnet.ibm.com>
-Message-ID: <alpine.LRH.2.02.1209121316030.4482@tundra.namei.org>
-References: <1344987282.4430.26.camel@footlong>
- <1345670263.25124.7.camel@footlong>
- <20120822214217.GB13519@linux.vnet.ibm.com>
- <1346816407.2257.37.camel@pasglop>
- <20120905154644.GA14925@linux.vnet.ibm.com>
- <1346879505.19098.3.camel@pasglop>
- <20120907173809.GA19704@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, Ashley Lai <adlai@linux.vnet.ibm.com>,
- linux-security-module@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
- adlai@us.ibm.com, rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+ (Client CN "e4.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C6AB52C0093
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 15:16:33 +1000 (EST)
+Received: from /spool/local
+ by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Wed, 12 Sep 2012 01:16:30 -0400
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 81CA538C8039
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:27 -0400 (EDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8C5GQ0s191810
+ for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:27 -0400
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8C5GQiV022364
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Sep 2012 23:16:26 -0600
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 3/3] ppc/eeh: global mutex to protect PE tree
+Date: Wed, 12 Sep 2012 13:16:18 +0800
+Message-Id: <1347426978-6194-3-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1347426978-6194-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1347426978-6194-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +37,194 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 7 Sep 2012, Kent Yoder wrote:
+We have missed lots of situations where the PE hierarchy tree need
+protection through the EEH global mutex. The patch fixes that for
+those public APIs implemented in eeh_pe.c. The only exception is
+eeh_pe_restore_bars() because it calls eeh_pe_dev_traverse(), which
+has been protected by the mutex.
 
-> > >   James did accept my pull request, so these are already in
-> > > security-next...
-> > 
-> > For the driver itself, it's not a big issue (though I did found issue
-> > while reviewing it so it will need another round of updates). For the
-> > code that changes arch/powerpc, especially prom_init.c, that stuff must
-> > at the very least be acked by me (or the acting powerpc person if I'm
-> > away) if it's going to go via a different tree.
-> 
->   Sorry about that.  Hopefully there won't be any changes there and we
-> can amend with your ack.
-> 
->   As for the driver updates, I'd hate to see everyone else's code in the
-> pull request get delayed yet again.  James, will it be ok to apply the
-> update on top of security-next?
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/eeh_pe.c |   39 +++++++++++++++++++++++++-----
+ 1 files changed, 32 insertions(+), 7 deletions(-)
 
-I guess?
-
+diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
+index a2646cf..07b6e4b 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pe.c
++++ b/arch/powerpc/platforms/pseries/eeh_pe.c
+@@ -99,8 +99,6 @@ static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
+ {
+ 	struct eeh_pe *pe;
+ 
+-	eeh_lock();
+-
+ 	list_for_each_entry(pe, &eeh_phb_pe, child) {
+ 		/*
+ 		 * Actually, we needn't check the type since
+@@ -114,8 +112,6 @@ static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
+ 		}
+ 	}
+ 
+-	eeh_unlock();
+-
+ 	return NULL;
+ }
+ 
+@@ -192,14 +188,21 @@ void *eeh_pe_dev_traverse(struct eeh_pe *root,
+ 		return NULL;
+ 	}
+ 
++	eeh_lock();
++
+ 	/* Traverse root PE */
+ 	for (pe = root; pe; pe = eeh_pe_next(pe, root)) {
+ 		eeh_pe_for_each_dev(pe, edev) {
+ 			ret = fn(edev, flag);
+-			if (ret) return ret;
++			if (ret) {
++				eeh_unlock();
++				return ret;
++			}
+ 		}
+ 	}
+ 
++	eeh_unlock();
++
+ 	return NULL;
+ }
+ 
+@@ -251,9 +254,7 @@ static struct eeh_pe *eeh_pe_get(struct eeh_dev *edev)
+ 	struct eeh_pe *root = eeh_phb_pe_get(edev->phb);
+ 	struct eeh_pe *pe;
+ 
+-	eeh_lock();
+ 	pe = eeh_pe_traverse(root, __eeh_pe_get, edev);
+-	eeh_unlock();
+ 
+ 	return pe;
+ }
+@@ -307,6 +308,8 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ {
+ 	struct eeh_pe *pe, *parent;
+ 
++	eeh_lock();
++
+ 	/*
+ 	 * Search the PE has been existing or not according
+ 	 * to the PE address. If that has been existing, the
+@@ -316,6 +319,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	pe = eeh_pe_get(edev);
+ 	if (pe && !(pe->type & EEH_PE_INVALID)) {
+ 		if (!edev->pe_config_addr) {
++			eeh_unlock();
+ 			pr_err("%s: PE with addr 0x%x already exists\n",
+ 				__func__, edev->config_addr);
+ 			return -EEXIST;
+@@ -327,6 +331,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 
+ 		/* Put the edev to PE */
+ 		list_add_tail(&edev->list, &pe->edevs);
++		eeh_unlock();
+ 		pr_debug("EEH: Add %s to Bus PE#%x\n",
+ 			edev->dn->full_name, pe->addr);
+ 
+@@ -345,6 +350,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 			parent->type &= ~EEH_PE_INVALID;
+ 			parent = parent->parent;
+ 		}
++		eeh_unlock();
+ 		pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
+ 			edev->dn->full_name, pe->addr, pe->parent->addr);
+ 
+@@ -354,6 +360,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	/* Create a new EEH PE */
+ 	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
+ 	if (!pe) {
++		eeh_unlock();
+ 		pr_err("%s: out of memory!\n", __func__);
+ 		return -ENOMEM;
+ 	}
+@@ -370,6 +377,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	if (!parent) {
+ 		parent = eeh_phb_pe_get(edev->phb);
+ 		if (!parent) {
++			eeh_unlock();
+ 			pr_err("%s: No PHB PE is found (PHB Domain=%d)\n",
+ 				__func__, edev->phb->global_number);
+ 			edev->pe = NULL;
+@@ -386,6 +394,7 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	list_add_tail(&pe->child, &parent->child_list);
+ 	list_add_tail(&edev->list, &pe->edevs);
+ 	edev->pe = pe;
++	eeh_unlock();
+ 	pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
+ 		edev->dn->full_name, pe->addr, pe->parent->addr);
+ 
+@@ -413,6 +422,8 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe)
+ 		return -EEXIST;
+ 	}
+ 
++	eeh_lock();
++
+ 	/* Remove the EEH device */
+ 	pe = edev->pe;
+ 	edev->pe = NULL;
+@@ -457,6 +468,8 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe)
+ 		pe = parent;
+ 	}
+ 
++	eeh_unlock();
++
+ 	return 0;
+ }
+ 
+@@ -502,7 +515,9 @@ static void *__eeh_pe_state_mark(void *data, void *flag)
+  */
+ void eeh_pe_state_mark(struct eeh_pe *pe, int state)
+ {
++	eeh_lock();
+ 	eeh_pe_traverse(pe, __eeh_pe_state_mark, &state);
++	eeh_unlock();
+ }
+ 
+ /**
+@@ -536,7 +551,9 @@ static void *__eeh_pe_state_clear(void *data, void *flag)
+  */
+ void eeh_pe_state_clear(struct eeh_pe *pe, int state)
+ {
++	eeh_lock();
+ 	eeh_pe_traverse(pe, __eeh_pe_state_clear, &state);
++	eeh_unlock();
+ }
+ 
+ /**
+@@ -598,6 +615,10 @@ static void *eeh_restore_one_device_bars(void *data, void *flag)
+  */
+ void eeh_pe_restore_bars(struct eeh_pe *pe)
+ {
++	/*
++	 * We needn't take the EEH lock since eeh_pe_dev_traverse()
++	 * will take that.
++	 */
+ 	eeh_pe_dev_traverse(pe, eeh_restore_one_device_bars, NULL);
+ }
+ 
+@@ -617,6 +638,8 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+ 	struct eeh_dev *edev;
+ 	struct pci_dev *pdev;
+ 
++	eeh_lock();
++
+ 	if (pe->type & EEH_PE_PHB) {
+ 		bus = pe->phb->bus;
+ 	} else if (pe->type & EEH_PE_BUS) {
+@@ -626,5 +649,7 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
+ 			bus = pdev->bus;
+ 	}
+ 
++	eeh_unlock();
++
+ 	return bus;
+ }
 -- 
-James Morris
-<jmorris@namei.org>
+1.7.5.4
