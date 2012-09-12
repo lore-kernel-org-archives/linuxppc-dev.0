@@ -3,15 +3,15 @@ Received: from norco.coldhaus.com (norco.coldhaus.com [64.32.230.18])
  (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (Client CN "norco.coldhaus.com",
  Issuer "StartCom Class 1 Primary Intermediate Server CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EC1892C007A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 12:25:26 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 1D7432C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 12:25:27 +1000 (EST)
 From: Eric Millbrandt <emillbrandt@dekaresearch.com>
 To: Grant Likely <grant.likely@secretlab.ca>, Liam Girdwood <lrg@ti.com>,
  Mark Brown <broonie@opensource.wolfsonmicro.com>,
  Anatolij Gustschin <agust@denx.de>
-Subject: [PATCH 2/5] ASoC: fsl: mpc5200 combine psc_dma platform data
-Date: Tue, 11 Sep 2012 22:14:46 -0400
-Message-Id: <1347416089-23393-3-git-send-email-emillbrandt@dekaresearch.com>
+Subject: [PATCH 5/5] ASoC: fsl: mpc5200 remove pcm030 and efika audio fabric
+Date: Tue, 11 Sep 2012 22:14:49 -0400
+Message-Id: <1347416089-23393-6-git-send-email-emillbrandt@dekaresearch.com>
 In-Reply-To: <1347416089-23393-1-git-send-email-emillbrandt@dekaresearch.com>
 References: <1347416089-23393-1-git-send-email-emillbrandt@dekaresearch.com>
 Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
@@ -25,124 +25,252 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The mpc5200_psc_ac97 and mpc5200_psc_i2s modules rely on shared platform data
-with mpc5200_dma.
+MPC5200 ASoC setup can now be done in the device tree.
 
 Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
 ---
- sound/soc/fsl/mpc5200_dma.c      |   24 ++++--------------------
- sound/soc/fsl/mpc5200_dma.h      |    3 +++
- sound/soc/fsl/mpc5200_psc_ac97.c |    5 +++++
- sound/soc/fsl/mpc5200_psc_i2s.c  |    5 +++++
- 4 files changed, 17 insertions(+), 20 deletions(-)
+ sound/soc/fsl/Kconfig               |   17 -------
+ sound/soc/fsl/Makefile              |    2 -
+ sound/soc/fsl/efika-audio-fabric.c  |   91 -----------------------------------
+ sound/soc/fsl/pcm030-audio-fabric.c |   91 -----------------------------------
+ 4 files changed, 0 insertions(+), 201 deletions(-)
+ delete mode 100644 sound/soc/fsl/efika-audio-fabric.c
+ delete mode 100644 sound/soc/fsl/pcm030-audio-fabric.c
 
-diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
-index 46fb518..4fabc85 100644
---- a/sound/soc/fsl/mpc5200_dma.c
-+++ b/sound/soc/fsl/mpc5200_dma.c
-@@ -370,7 +370,7 @@ static struct snd_soc_platform_driver mpc5200_audio_dma_platform = {
- 	.pcm_free	= psc_dma_free,
- };
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index b3eee63..54ba798 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -70,23 +70,6 @@ config SND_MPC52xx_SOC_AUDIO
+ 	  Say Y if you want to generic device-tree support for sound on the
+ 	  Freescale MPC5200
  
--static int mpc5200_hpcd_probe(struct platform_device *op)
-+int mpc5200_audio_dma_create(struct platform_device *op)
- {
- 	phys_addr_t fifo;
- 	struct psc_dma *psc_dma;
-@@ -487,8 +487,9 @@ out_unmap:
- 	iounmap(regs);
- 	return ret;
- }
-+EXPORT_SYMBOL_GPL(mpc5200_audio_dma_create);
- 
--static int mpc5200_hpcd_remove(struct platform_device *op)
-+int mpc5200_audio_dma_destroy(struct platform_device *op)
- {
- 	struct psc_dma *psc_dma = dev_get_drvdata(&op->dev);
- 
-@@ -510,24 +511,7 @@ static int mpc5200_hpcd_remove(struct platform_device *op)
- 
- 	return 0;
- }
+-config SND_MPC52xx_SOC_PCM030
+-	tristate "SoC AC97 Audio support for Phytec pcm030 and WM9712"
+-	depends on PPC_MPC5200_SIMPLE
+-	select SND_SOC_MPC5200_AC97
+-	select SND_SOC_WM9712
+-	help
+-	  Say Y if you want to add support for sound on the Phytec pcm030
+-	  baseboard.
 -
--static struct of_device_id mpc5200_hpcd_match[] = {
--	{ .compatible = "fsl,mpc5200-pcm", },
--	{}
+-config SND_MPC52xx_SOC_EFIKA
+-	tristate "SoC AC97 Audio support for bbplan Efika and STAC9766"
+-	depends on PPC_EFIKA
+-	select SND_SOC_MPC5200_AC97
+-	select SND_SOC_STAC9766
+-	help
+-	  Say Y if you want to add support for sound on the Efika.
+-
+ endif # SND_POWERPC_SOC
+ 
+ menuconfig SND_IMX_SOC
+diff --git a/sound/soc/fsl/Makefile b/sound/soc/fsl/Makefile
+index d2e2e68..bd5f511 100644
+--- a/sound/soc/fsl/Makefile
++++ b/sound/soc/fsl/Makefile
+@@ -21,8 +21,6 @@ obj-$(CONFIG_SND_SOC_MPC5200_AC97) += mpc5200_psc_ac97.o
+ 
+ # MPC5200 Machine Support
+ obj-$(CONFIG_SND_MPC52xx_SOC_AUDIO) += mpc5200_soc_audio.o
+-obj-$(CONFIG_SND_MPC52xx_SOC_PCM030) += pcm030-audio-fabric.o
+-obj-$(CONFIG_SND_MPC52xx_SOC_EFIKA) += efika-audio-fabric.o
+ 
+ # i.MX Platform Support
+ snd-soc-imx-ssi-objs := imx-ssi.o
+diff --git a/sound/soc/fsl/efika-audio-fabric.c b/sound/soc/fsl/efika-audio-fabric.c
+deleted file mode 100644
+index b2acd329..0000000
+--- a/sound/soc/fsl/efika-audio-fabric.c
++++ /dev/null
+@@ -1,91 +0,0 @@
+-/*
+- * Efika driver for the PSC of the Freescale MPC52xx
+- * configured as AC97 interface
+- *
+- * Copyright 2008 Jon Smirl, Digispeaker
+- * Author: Jon Smirl <jonsmirl@gmail.com>
+- *
+- * This file is licensed under the terms of the GNU General Public License
+- * version 2. This program is licensed "as is" without any warranty of any
+- * kind, whether express or implied.
+- */
+-
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/interrupt.h>
+-#include <linux/device.h>
+-#include <linux/delay.h>
+-#include <linux/of_device.h>
+-#include <linux/of_platform.h>
+-#include <linux/dma-mapping.h>
+-
+-#include <sound/core.h>
+-#include <sound/pcm.h>
+-#include <sound/pcm_params.h>
+-#include <sound/initval.h>
+-#include <sound/soc.h>
+-
+-#include "mpc5200_dma.h"
+-#include "mpc5200_psc_ac97.h"
+-#include "../codecs/stac9766.h"
+-
+-#define DRV_NAME "efika-audio-fabric"
+-
+-static struct snd_soc_dai_link efika_fabric_dai[] = {
+-{
+-	.name = "AC97",
+-	.stream_name = "AC97 Analog",
+-	.codec_dai_name = "stac9766-hifi-analog",
+-	.cpu_dai_name = "mpc5200-psc-ac97.0",
+-	.platform_name = "mpc5200-pcm-audio",
+-	.codec_name = "stac9766-codec",
+-},
+-{
+-	.name = "AC97",
+-	.stream_name = "AC97 IEC958",
+-	.codec_dai_name = "stac9766-hifi-IEC958",
+-	.cpu_dai_name = "mpc5200-psc-ac97.1",
+-	.platform_name = "mpc5200-pcm-audio",
+-	.codec_name = "stac9766-codec",
+-},
 -};
--MODULE_DEVICE_TABLE(of, mpc5200_hpcd_match);
 -
--static struct platform_driver mpc5200_hpcd_of_driver = {
--	.probe		= mpc5200_hpcd_probe,
--	.remove		= mpc5200_hpcd_remove,
--	.driver = {
--		.owner		= THIS_MODULE,
--		.name		= "mpc5200-pcm-audio",
--		.of_match_table    = mpc5200_hpcd_match,
+-static struct snd_soc_card card = {
+-	.name = "Efika",
+-	.owner = THIS_MODULE,
+-	.dai_link = efika_fabric_dai,
+-	.num_links = ARRAY_SIZE(efika_fabric_dai),
+-};
+-
+-static __init int efika_fabric_init(void)
+-{
+-	struct platform_device *pdev;
+-	int rc;
+-
+-	if (!of_machine_is_compatible("bplan,efika"))
+-		return -ENODEV;
+-
+-	pdev = platform_device_alloc("soc-audio", 1);
+-	if (!pdev) {
+-		pr_err("efika_fabric_init: platform_device_alloc() failed\n");
+-		return -ENODEV;
 -	}
+-
+-	platform_set_drvdata(pdev, &card);
+-
+-	rc = platform_device_add(pdev);
+-	if (rc) {
+-		pr_err("efika_fabric_init: platform_device_add() failed\n");
+-		platform_device_put(pdev);
+-		return -ENODEV;
+-	}
+-	return 0;
+-}
+-
+-module_init(efika_fabric_init);
+-
+-
+-MODULE_AUTHOR("Jon Smirl <jonsmirl@gmail.com>");
+-MODULE_DESCRIPTION(DRV_NAME ": mpc5200 Efika fabric driver");
+-MODULE_LICENSE("GPL");
+-
+diff --git a/sound/soc/fsl/pcm030-audio-fabric.c b/sound/soc/fsl/pcm030-audio-fabric.c
+deleted file mode 100644
+index b3af55d..0000000
+--- a/sound/soc/fsl/pcm030-audio-fabric.c
++++ /dev/null
+@@ -1,91 +0,0 @@
+-/*
+- * Phytec pcm030 driver for the PSC of the Freescale MPC52xx
+- * configured as AC97 interface
+- *
+- * Copyright 2008 Jon Smirl, Digispeaker
+- * Author: Jon Smirl <jonsmirl@gmail.com>
+- *
+- * This file is licensed under the terms of the GNU General Public License
+- * version 2. This program is licensed "as is" without any warranty of any
+- * kind, whether express or implied.
+- */
+-
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/interrupt.h>
+-#include <linux/device.h>
+-#include <linux/delay.h>
+-#include <linux/of_device.h>
+-#include <linux/of_platform.h>
+-#include <linux/dma-mapping.h>
+-
+-#include <sound/core.h>
+-#include <sound/pcm.h>
+-#include <sound/pcm_params.h>
+-#include <sound/initval.h>
+-#include <sound/soc.h>
+-
+-#include "mpc5200_dma.h"
+-#include "mpc5200_psc_ac97.h"
+-#include "../codecs/wm9712.h"
+-
+-#define DRV_NAME "pcm030-audio-fabric"
+-
+-static struct snd_soc_dai_link pcm030_fabric_dai[] = {
+-{
+-	.name = "AC97",
+-	.stream_name = "AC97 Analog",
+-	.codec_dai_name = "wm9712-hifi",
+-	.cpu_dai_name = "mpc5200-psc-ac97.0",
+-	.platform_name = "mpc5200-pcm-audio",
+-	.codec_name = "wm9712-codec",
+-},
+-{
+-	.name = "AC97",
+-	.stream_name = "AC97 IEC958",
+-	.codec_dai_name = "wm9712-aux",
+-	.cpu_dai_name = "mpc5200-psc-ac97.1",
+-	.platform_name = "mpc5200-pcm-audio",
+-	.codec_name = "wm9712-codec",
+-},
 -};
 -
--module_platform_driver(mpc5200_hpcd_of_driver);
-+EXPORT_SYMBOL_GPL(mpc5200_audio_dma_destroy);
- 
- MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
- MODULE_DESCRIPTION("Freescale MPC5200 PSC in DMA mode ASoC Driver");
-diff --git a/sound/soc/fsl/mpc5200_dma.h b/sound/soc/fsl/mpc5200_dma.h
-index a3c0cd5..dff253f 100644
---- a/sound/soc/fsl/mpc5200_dma.h
-+++ b/sound/soc/fsl/mpc5200_dma.h
-@@ -81,4 +81,7 @@ to_psc_dma_stream(struct snd_pcm_substream *substream, struct psc_dma *psc_dma)
- 	return &psc_dma->playback;
- }
- 
-+int mpc5200_audio_dma_create(struct platform_device *op);
-+int mpc5200_audio_dma_destroy(struct platform_device *op);
-+
- #endif /* __SOUND_SOC_FSL_MPC5200_DMA_H__ */
-diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
-index 2f70729..17b17b8 100644
---- a/sound/soc/fsl/mpc5200_psc_ac97.c
-+++ b/sound/soc/fsl/mpc5200_psc_ac97.c
-@@ -283,6 +283,10 @@ static int __devinit psc_ac97_of_probe(struct platform_device *op)
- 	struct snd_ac97 ac97;
- 	struct mpc52xx_psc __iomem *regs;
- 
-+	rc = mpc5200_audio_dma_create(op);
-+	if (rc != 0)
-+		return rc;
-+
- 	rc = snd_soc_register_dais(&op->dev, psc_ac97_dai, ARRAY_SIZE(psc_ac97_dai));
- 	if (rc != 0) {
- 		dev_err(&op->dev, "Failed to register DAI\n");
-@@ -308,6 +312,7 @@ static int __devinit psc_ac97_of_probe(struct platform_device *op)
- 
- static int __devexit psc_ac97_of_remove(struct platform_device *op)
- {
-+	mpc5200_audio_dma_destroy(op);
- 	snd_soc_unregister_dais(&op->dev, ARRAY_SIZE(psc_ac97_dai));
- 	return 0;
- }
-diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
-index 3cf21df..5710dc8 100644
---- a/sound/soc/fsl/mpc5200_psc_i2s.c
-+++ b/sound/soc/fsl/mpc5200_psc_i2s.c
-@@ -159,6 +159,10 @@ static int __devinit psc_i2s_of_probe(struct platform_device *op)
- 	struct psc_dma *psc_dma;
- 	struct mpc52xx_psc __iomem *regs;
- 
-+	rc = mpc5200_audio_dma_create(op);
-+	if (rc != 0)
-+		return rc;
-+
- 	rc = snd_soc_register_dais(&op->dev, psc_i2s_dai, ARRAY_SIZE(psc_i2s_dai));
- 	if (rc != 0) {
- 		pr_err("Failed to register DAI\n");
-@@ -203,6 +207,7 @@ static int __devinit psc_i2s_of_probe(struct platform_device *op)
- 
- static int __devexit psc_i2s_of_remove(struct platform_device *op)
- {
-+	mpc5200_audio_dma_destroy(op);
- 	snd_soc_unregister_dais(&op->dev, ARRAY_SIZE(psc_i2s_dai));
- 	return 0;
- }
+-static struct snd_soc_card card = {
+-	.name = "pcm030",
+-	.owner = THIS_MODULE,
+-	.dai_link = pcm030_fabric_dai,
+-	.num_links = ARRAY_SIZE(pcm030_fabric_dai),
+-};
+-
+-static __init int pcm030_fabric_init(void)
+-{
+-	struct platform_device *pdev;
+-	int rc;
+-
+-	if (!of_machine_is_compatible("phytec,pcm030"))
+-		return -ENODEV;
+-
+-	pdev = platform_device_alloc("soc-audio", 1);
+-	if (!pdev) {
+-		pr_err("pcm030_fabric_init: platform_device_alloc() failed\n");
+-		return -ENODEV;
+-	}
+-
+-	platform_set_drvdata(pdev, &card);
+-
+-	rc = platform_device_add(pdev);
+-	if (rc) {
+-		pr_err("pcm030_fabric_init: platform_device_add() failed\n");
+-		platform_device_put(pdev);
+-		return -ENODEV;
+-	}
+-	return 0;
+-}
+-
+-module_init(pcm030_fabric_init);
+-
+-
+-MODULE_AUTHOR("Jon Smirl <jonsmirl@gmail.com>");
+-MODULE_DESCRIPTION(DRV_NAME ": mpc5200 pcm030 fabric driver");
+-MODULE_LICENSE("GPL");
+-
 -- 
 1.7.2.5
