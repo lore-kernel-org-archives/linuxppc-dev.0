@@ -1,9 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Add an xmon command to dump one or all pacas
-Date: Wed, 12 Sep 2012 17:52:40 +1000
-Message-Id: <1347436360-29095-1-git-send-email-michael@ellerman.id.au>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 520862C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 18:38:33 +1000 (EST)
+Message-ID: <505049FE.8060204@windriver.com>
+Date: Wed, 12 Sep 2012 16:38:22 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [v3][PATCH 2/3] ppc/kprobe: complete kprobe and migrate exception
+ frame
+References: <1347330053-27039-1-git-send-email-tiejun.chen@windriver.com>
+ <1347330053-27039-2-git-send-email-tiejun.chen@windriver.com>
+ <1347342718.2603.38.camel@pasglop>
+In-Reply-To: <1347342718.2603.38.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,162 +27,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This was originally motivated by a desire to see the mapping between
-logical and hardware cpu numbers.
+On 09/11/2012 01:51 PM, Benjamin Herrenschmidt wrote:
+> On Tue, 2012-09-11 at 10:20 +0800, Tiejun Chen wrote:
+>> We can't emulate stwu since that may corrupt current exception stack.
+>> So we will have to do real store operation in the exception return code.
+>>
+>> Firstly we'll allocate a trampoline exception frame below the kprobed
+>> function stack and copy the current exception frame to the trampoline.
+>> Then we can do this real store operation to implement 'stwu', and reroute
+>> the trampoline frame to r1 to complete this exception migration.
+>
+> Ok, so not quite there yet :-)
+>
+> See below:
+>
+>> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+>> ---
+>>   arch/powerpc/kernel/entry_32.S |   45 ++++++++++++++++++++++++++++++++++------
+>>   arch/powerpc/kernel/entry_64.S |   32 ++++++++++++++++++++++++++++
+>>   2 files changed, 71 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+>> index ead5016..6cfe12f 100644
+>> --- a/arch/powerpc/kernel/entry_32.S
+>> +++ b/arch/powerpc/kernel/entry_32.S
+>> @@ -831,19 +831,54 @@ restore_user:
+>>   	bnel-	load_dbcr0
+>>   #endif
+>>
+>> -#ifdef CONFIG_PREEMPT
+>>   	b	restore
+>>
+>>   /* N.B. the only way to get here is from the beq following ret_from_except. */
+>>   resume_kernel:
+>> +	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+>> +	CURRENT_THREAD_INFO(r9, r1)
+>> +	lwz	r0,TI_FLAGS(r9)
+>> +	andis.	r0,r0,_TIF_EMULATE_STACK_STORE@h
+>> +	beq+	1f
+>
+> So you used r0 to load the TI_FLAGS and immediately clobbered it in
+> andis. forcing you to re-load them later down. Instead, put them in r8
+>
+> 	lwz	r8,TI_FLAGS(r9)
+> 	andis.	r0,r8,_TIF_*
+> 	beq+	*
+>
+>> +	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
+>
+> Then you put your entry in r8 ....
 
-But it seemed that it made more sense to just add a command to dump
-(most of) the paca.
+I'll update this for 32b and 64b sections.
 
-With no arguments "dp" will dump the paca for all possible cpus. If
-there are no possible cpus, like early in boot, it will tell you that.
+>
+>> +	lwz	r3,GPR1(r1)
+>> +	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
+>> +	mr	r4,r1			/* src:  current exception frame */
+>> +	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
+>> +	mr	r1,r3			/* Reroute the trampoline frame to r1 */
+>> +	bl	memcpy			/* Copy from the original to the trampoline */
+>
+> Which you just clobbered... oops :-)
+>
+> So you need to store that old r1 somewhere fist then retrieve it
+> after the memcpy call. That or open-code the memcpy to avoid all
+> the clobbering problems.
 
-It also takes an argument, eg. "dp 3" which is the logical cpu number
-in hex. This form does not check if the cpu is possible, but displays
-the paca regardless, as well as the cpu's state in the possible, present
-and online masks.
+Maybe we can use copy_and_flush() since looks copy_and_flush() only clobber r0, 
+r6 and LR explicitly.
 
-Sample output, number in brackets is the offset into the struct:
+I'll resync these comments for v4.
 
-2:mon> dp 3
-paca for cpu 0x3 @ c00000000ff20a80:
- possible         = yes
- present          = yes
- online           = yes
- lock_token       = 0x8000            	(0x8)
- paca_index       = 0x3               	(0xa)
- kernel_toc       = 0xc00000000144f990	(0x10)
- kernelbase       = 0xc000000000000000	(0x18)
- kernel_msr       = 0xb000000000001032	(0x20)
- stab_real        = 0x0               	(0x28)
- stab_addr        = 0x0               	(0x30)
- emergency_sp     = 0xc00000003ffe4000	(0x38)
- data_offset      = 0xa40000          	(0x40)
- hw_cpu_id        = 0x9               	(0x50)
- cpu_start        = 0x1               	(0x52)
- kexec_state      = 0x0               	(0x53)
- __current        = 0xc00000007e568680	(0x218)
- kstack           = 0xc00000007e5a3e30	(0x220)
- stab_rr          = 0x1a              	(0x228)
- saved_r1         = 0xc00000007e7cb450	(0x230)
- trap_save        = 0x0               	(0x240)
- soft_enabled     = 0x0               	(0x242)
- irq_happened     = 0x0               	(0x243)
- io_sync          = 0x0               	(0x244)
- irq_work_pending = 0x0               	(0x245)
- nap_state_lost   = 0x0               	(0x246)
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/xmon/xmon.c |   83 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 83 insertions(+)
-
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index eab3492..f090c46 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -202,6 +202,7 @@ Commands:\n\
-   df	dump float values\n\
-   dd	dump double values\n\
-   dl    dump the kernel log buffer\n\
-+  dp #  dump paca for cpu # (or all)\n\
-   dr	dump stream of raw bytes\n\
-   e	print exception information\n\
-   f	flush cache\n\
-@@ -2008,6 +2009,82 @@ static void xmon_rawdump (unsigned long adrs, long ndump)
- 	printf("\n");
- }
- 
-+static void dump_one_paca(int cpu)
-+{
-+	struct paca_struct *p;
-+
-+	if (setjmp(bus_error_jmp) != 0) {
-+		printf("*** Error dumping paca for cpu 0x%x!\n", cpu);
-+		return;
-+	}
-+
-+	catch_memory_errors = 1;
-+	sync();
-+
-+	p = &paca[cpu];
-+
-+	printf("paca for cpu 0x%x @ %p:\n", cpu, p);
-+
-+	printf(" %-*s = %s\n", 16, "possible", cpu_possible(cpu) ? "yes" : "no");
-+	printf(" %-*s = %s\n", 16, "present", cpu_present(cpu) ? "yes" : "no");
-+	printf(" %-*s = %s\n", 16, "online", cpu_online(cpu) ? "yes" : "no");
-+
-+#define DUMP(name, format) \
-+	printf(" %-*s = %#-*"format"\t(0x%lx)\n", 16, #name, 18, p->name, \
-+		(u64)((void *)&(p->name) - (void *)p));
-+
-+	DUMP(lock_token, "x");
-+	DUMP(paca_index, "x");
-+	DUMP(kernel_toc, "lx");
-+	DUMP(kernelbase, "lx");
-+	DUMP(kernel_msr, "lx");
-+#ifdef CONFIG_PPC_STD_MMU_64
-+	DUMP(stab_real, "lx");
-+	DUMP(stab_addr, "lx");
-+#endif
-+	DUMP(emergency_sp, "p");
-+	DUMP(data_offset, "lx");
-+	DUMP(hw_cpu_id, "x");
-+	DUMP(cpu_start, "x");
-+	DUMP(kexec_state, "x");
-+	DUMP(__current, "p");
-+	DUMP(kstack, "lx");
-+	DUMP(stab_rr, "lx");
-+	DUMP(saved_r1, "lx");
-+	DUMP(trap_save, "x");
-+	DUMP(soft_enabled, "x");
-+	DUMP(irq_happened, "x");
-+	DUMP(io_sync, "x");
-+	DUMP(irq_work_pending, "x");
-+	DUMP(nap_state_lost, "x");
-+
-+#undef DUMP
-+
-+	catch_memory_errors = 0;
-+	sync();
-+}
-+
-+static void dump_pacas(void)
-+{
-+	unsigned long num = ULONG_MAX;
-+	int cpu;
-+
-+	scanhex(&num);
-+	if (num != ULONG_MAX) {
-+		/* NB we allow showing a non-possible paca here */
-+		dump_one_paca(num);
-+		return;
-+	}
-+
-+	if (num_possible_cpus() == 0) {
-+		printf("No possible cpus, use 'dp #' to dump individual cpus\n");
-+		return;
-+	}
-+
-+	for_each_possible_cpu(cpu)
-+		dump_one_paca(cpu);
-+}
-+
- #define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
- 			 || ('a' <= (c) && (c) <= 'f') \
- 			 || ('A' <= (c) && (c) <= 'F'))
-@@ -2017,6 +2094,12 @@ dump(void)
- 	int c;
- 
- 	c = inchar();
-+
-+	if (c == 'p') {
-+		dump_pacas();
-+		return;
-+	}
-+
- 	if ((isxdigit(c) && c != 'f' && c != 'd') || c == '\n')
- 		termch = c;
- 	scanhex((void *)&adrs);
--- 
-1.7.9.5
+Tiejun
