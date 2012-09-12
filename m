@@ -1,16 +1,16 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D12452C013E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 18:42:13 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D8FC52C00C9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 18:42:14 +1000 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v4][PATCH 3/4] powerpc/kprobe: complete kprobe and migrate exception
- frame
-Date: Wed, 12 Sep 2012 16:42:04 +0800
-Message-ID: <1347439325-5563-3-git-send-email-tiejun.chen@windriver.com>
+Subject: [v4][PATCH 4/4] powerpc/kprobe: don't emulate store when kprobe stwu
+ r1
+Date: Wed, 12 Sep 2012 16:42:05 +0800
+Message-ID: <1347439325-5563-4-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1347439325-5563-1-git-send-email-tiejun.chen@windriver.com>
 References: <1347439325-5563-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -25,140 +25,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can't emulate stwu since that may corrupt current exception stack.
-So we will have to do real store operation in the exception return code.
+We don't do the real store operation for kprobing 'stwu Rx,(y)R1'
+since this may corrupt the exception frame, now we will do this
+operation safely in exception return code after migrate current
+exception frame below the kprobed function stack.
 
-Firstly we'll allocate a trampoline exception frame below the kprobed
-function stack and copy the current exception frame to the trampoline.
-Then we can do this real store operation to implement 'stwu', and reroute
-the trampoline frame to r1 to complete this exception migration.
+So we only update gpr[1] here and trigger a thread flag to mask
+this.
+
+Note we should make sure if we trigger kernel stack over flow.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
-v4:
+ arch/powerpc/lib/sstep.c |   36 ++++++++++++++++++++++++++++++++++--
+ 1 file changed, 34 insertions(+), 2 deletions(-)
 
-* improve register usage
-* use copy_and_flush() to replace memcpy since that only clobber r0, r6
-  and LR explicitly.
-* retest
-
- arch/powerpc/kernel/entry_32.S |   44 ++++++++++++++++++++++++++++++++++------
- arch/powerpc/kernel/entry_64.S |   32 +++++++++++++++++++++++++++++
- 2 files changed, 70 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 1536d2c..b18e494 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -832,19 +832,53 @@ restore_user:
- 	bnel-	load_dbcr0
- #endif
+diff --git a/arch/powerpc/lib/sstep.c b/arch/powerpc/lib/sstep.c
+index 9a52349..e15c521 100644
+--- a/arch/powerpc/lib/sstep.c
++++ b/arch/powerpc/lib/sstep.c
+@@ -566,7 +566,7 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 	unsigned long int ea;
+ 	unsigned int cr, mb, me, sh;
+ 	int err;
+-	unsigned long old_ra;
++	unsigned long old_ra, val3;
+ 	long ival;
  
--#ifdef CONFIG_PREEMPT
- 	b	restore
+ 	opcode = instr >> 26;
+@@ -1486,11 +1486,43 @@ int __kprobes emulate_step(struct pt_regs *regs, unsigned int instr)
+ 		goto ldst_done;
  
- /* N.B. the only way to get here is from the beq following ret_from_except. */
- resume_kernel:
--	/* check current_thread_info->preempt_count */
-+	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
- 	CURRENT_THREAD_INFO(r9, r1)
-+	lwz	r8,TI_FLAGS(r9)
-+	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
-+	beq+	1f
-+
-+	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
-+
-+	lwz	r3,GPR1(r1)
-+	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
-+	mr	r4,r1			/* src:  current exception frame */
-+	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
-+	li	r6,0			/* start offset: 0 */
-+	mr	r1,r3			/* Reroute the trampoline frame to r1 */
-+	/* Copy from the original to the trampoline.
-+	 * Its safe since copy_and_flush *only* clobbers r0, r6 and lr.
-+	 */
-+	bl	copy_and_flush
-+
-+	/* Do real store operation to complete stwu */
-+	lwz	r5,GPR1(r1)
-+	stw	r8,0(r5)
-+
-+	/* Clear _TIF_EMULATE_STACK_STORE flag */
-+	lis	r11,_TIF_EMULATE_STACK_STORE@h
-+	addi	r5,r9,TI_FLAGS
-+0:	lwarx	r8,0,r5
-+	andc	r8,r8,r11
-+#ifdef CONFIG_IBM405_ERR77
-+	dcbt	0,r5
-+#endif
-+	stwcx.	r8,0,r5
-+	bne-	0b
-+1:
-+
-+#ifdef CONFIG_PREEMPT
-+	/* check current_thread_info->preempt_count */
- 	lwz	r0,TI_PREEMPT(r9)
- 	cmpwi	0,r0,0		/* if non-zero, just restore regs and return */
- 	bne	restore
--	lwz	r0,TI_FLAGS(r9)
--	andi.	r0,r0,_TIF_NEED_RESCHED
-+	andi.	r8,r8,_TIF_NEED_RESCHED
- 	beq+	restore
-+	lwz	r3,_MSR(r1)
- 	andi.	r0,r3,MSR_EE	/* interrupts off? */
- 	beq	restore		/* don't schedule if so */
- #ifdef CONFIG_TRACE_IRQFLAGS
-@@ -865,8 +899,6 @@ resume_kernel:
- 	 */
- 	bl	trace_hardirqs_on
- #endif
--#else
--resume_kernel:
- #endif /* CONFIG_PREEMPT */
+ 	case 36:	/* stw */
+-	case 37:	/* stwu */
+ 		val = regs->gpr[rd];
+ 		err = write_mem(val, dform_ea(instr, regs), 4, regs);
+ 		goto ldst_done;
  
- 	/* interrupts are hard-disabled at this point */
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index b40e0b4..d060f4d 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -593,6 +593,38 @@ _GLOBAL(ret_from_except_lite)
- 	b	.ret_from_except
- 
- resume_kernel:
-+	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
-+	CURRENT_THREAD_INFO(r9, r1)
-+	ld	r8,TI_FLAGS(r9)
-+	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
-+	beq+	1f
++	case 37:	/* stwu */
++		val = regs->gpr[rd];
++		val3 = dform_ea(instr, regs);
++		/*
++		 * For PPC32 we always use stwu to change stack point with r1. So
++		 * this emulated store may corrupt the exception frame, now we
++		 * have to provide the exception frame trampoline, which is pushed
++		 * below the kprobed function stack. So we only update gpr[1] but
++		 * don't emulate the real store operation. We will do real store
++		 * operation safely in exception return code by checking this flag.
++		 */
++		if ((ra == 1) && !(regs->msr & MSR_PR) \
++			&& (val3 >= (regs->gpr[1] - STACK_INT_FRAME_SIZE))) {
++			/*
++			 * Check if we will touch kernel sack overflow
++			 */
++			if (val3 - STACK_INT_FRAME_SIZE <= current->thread.ksp_limit) {
++				printk(KERN_CRIT "Can't kprobe this since Kernel stack overflow.\n");
++				err = -EINVAL;
++				break;
++			}
 +
-+	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
++			/*
++			 * Check if we already set since that means we'll
++			 * lose the previous value.
++			 */
++			WARN_ON(test_thread_flag(TIF_EMULATE_STACK_STORE));
++			set_thread_flag(TIF_EMULATE_STACK_STORE);
++			err = 0;
++		} else
++			err = write_mem(val, val3, 4, regs);
++		goto ldst_done;
 +
-+	lwz	r3,GPR1(r1)
-+	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
-+	mr	r4,r1			/* src:  current exception frame */
-+	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
-+	li	r6,0			/* start offset: 0 */
-+	mr	r1,r3			/* Reroute the trampoline frame to r1 */
-+	/* Copy from the original to the trampoline.
-+	 * Its safe since copy_and_flush *only* clobbers r0, r6 and lr
-+	 */
-+	bl	.copy_and_flush
-+
-+	/* Do real store operation to complete stwu */
-+	lwz	r5,GPR1(r1)
-+	std	r8,0(r5)
-+
-+	/* Clear _TIF_EMULATE_STACK_STORE flag */
-+	lis	r11,_TIF_EMULATE_STACK_STORE@h
-+	addi	r5,r9,TI_FLAGS
-+	ldarx	r4,0,r5
-+	andc	r4,r4,r11
-+	stdcx.	r4,0,r5
-+	bne-	0b
-+1:
-+
- #ifdef CONFIG_PREEMPT
- 	/* Check if we need to preempt */
- 	andi.	r0,r4,_TIF_NEED_RESCHED
+ 	case 38:	/* stb */
+ 	case 39:	/* stbu */
+ 		val = regs->gpr[rd];
 -- 
 1.7.9.5
