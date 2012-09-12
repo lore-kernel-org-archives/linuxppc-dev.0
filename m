@@ -1,25 +1,30 @@
-Return-Path: <B21989@freescale.com>
+Return-Path: <r58472@freescale.com>
 Received: from tx2outboundpool.messaging.microsoft.com
  (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 39F742C007A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 21:09:42 +1000 (EST)
-Received: from mail214-tx2 (localhost [127.0.0.1])	by
- mail214-tx2-R.bigfish.com (Postfix) with ESMTP id BAB05C01D9	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 11:09:37 +0000 (UTC)
-Received: from TX2EHSMHS032.bigfish.com (unknown [10.9.14.252])	by
- mail214-tx2.bigfish.com (Postfix) with ESMTP id 8BBA63C0048	for
- <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 11:09:36 +0000 (UTC)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/p5040: fix dtb build warning of p5040ds.dtb
-Date: Wed, 12 Sep 2012 18:36:03 +0800
-Message-ID: <1347446163-15470-1-git-send-email-Shaohui.Xie@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 673012C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 21:17:22 +1000 (EST)
+From: Li Yang-R58472 <r58472@freescale.com>
+To: "balbi@ti.com" <balbi@ti.com>, Enrico Scholz
+ <enrico.scholz@sigma-chemnitz.de>
+Subject: RE: [PATCH] usb: gadget: fsl_udc_core: do not immediatly prime
+ STATUS for IN xfer
+Date: Wed, 12 Sep 2012 11:17:14 +0000
+Message-ID: <94F013E7935FF44C83EBE7784D62AD3F09418B8A@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <1346777932-3362-1-git-send-email-enrico.scholz@sigma-chemnitz.de>
+ <F281D0F91ED19E4D8E63A7504E8A649803C67DA2@039-SN2MPN1-023.039d.mgd.msft.net>
+ <20120906131708.GJ29202@arwen.pp.htv.fi>
+ <lyehmf1b27.fsf@ensc-virt.intern.sigma-chemnitz.de>
+ <20120906142739.GV29202@arwen.pp.htv.fi>
+In-Reply-To: <20120906142739.GV29202@arwen.pp.htv.fi>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: Chen Peter-B29397 <B29397@freescale.com>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,56 +34,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Device node adt7461 was wrongly added in p5040ds.dts, it should be added
-into i2c instead of localbus, when build p5040ds.dtb, a warning will dump:
 
-Warning (reg_format): "reg" property in
-/localbus@ffe124000/nand@2,0/adt7461@4c has invalid length (4 bytes)
-(#address-cells == 1, #size-cells == 1)
 
-This was introduced by:
+> -----Original Message-----
+> From: Felipe Balbi [mailto:balbi@ti.com]
+> Sent: Thursday, September 06, 2012 10:28 PM
+> To: Enrico Scholz
+> Cc: balbi@ti.com; Chen Peter-B29397; linux-usb@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; Li Yang-R58472; gregkh@linuxfoundation.org
+> Subject: Re: [PATCH] usb: gadget: fsl_udc_core: do not immediatly prime
+> STATUS for IN xfer
+>=20
+> Hi,
+>=20
+> On Thu, Sep 06, 2012 at 04:27:12PM +0200, Enrico Scholz wrote:
+> > Felipe Balbi <balbi@ti.com> writes:
+> >
+> > >> > Because the fsl_udc_core driver shares one 'status_req' object
+> > >> > for the complete ep0 control transfer, it is not possible to
+> > >> > prime the final STATUS phase immediately after the IN
+> > >> > transaction.  E.g. ch9getstatus()
+> > >> > executed:
+> > >> >
+> > >> > | req =3D udc->status_req;
+> > >> > | ...
+> > >> > | list_add_tail(&req->queue, &ep->queue); if
+> > >> > | (ep0_prime_status(udc, EP_DIR_OUT))
+> > >> > |       ....
+> > >> > |       struct fsl_req *req =3D udc->status_req;
+> > >> > |       list_add_tail(&req->queue, &ep->queue);
+> > >> >
+> > >> > which corrupts the ep->queue list by inserting 'status_req'
+> > >> > twice.  This causes a kernel oops e.g. when 'lsusb -v' is executed
+> on the host.
+> > >> >
+> > >> > Patch delays the final 'ep0_prime_status(udc, EP_DIR_OUT))' by
+> > >> > moving it into the ep0 completion handler.
+> > >> >
+> > >> Enrico, thanks for pointing this problem.
+> > >>
+> > >> As "prime STATUS phase immediately after the IN transaction" is
+> > >> followed USB 2.0 spec, to fix this problem, it is better to add
+> data_req for ep0.
+> > >> In fact, it is already at FSL i.mx internal code, just still not
+> mainlined.
+> > >
+> > > so, do I get an Acked-by to this patch ? Does it need to go on
+> > > v3.6-rc or can it wait until v3.7 merge window ?
+> >
+> > Without this (or the mentioned data_req patch), I can crash a g_multi
+> > gadget by executing 'lsusb -v' as root on the host.  Should not be
+> > exploitable (only a BUG_ON() is triggered) but issue should be fixed
+> > asap.
+>=20
+> cool, so I'll apply to my fixes branch as soon as I get Acked-by or
+> Tested-by from someone.
 
-commit ea6b1ba692bcb5f6e39f409a78cf8b04fdf23baa
-Author: Jia Hongtao <B38951@freescale.com>
-Date:   Tue Aug 28 10:00:55 2012 +0800
+This seems to revert the error handling for USB2.0 spec 8.5.3.3.  But the p=
+roblem is a serious one to be fixed right away.  So
 
-    powerpc: add adt7461 thermal monitor support to applicable boards
+Acked-by: Li Yang <leoli@freescale.com>
 
-    Add thermal monitor support to following boards:
-    P1022DS, MPC8536DS, P2041RDB, P3041DS, P4080DS, P5020DS, P5040DS
+We need to revisit the error handling issue later and find a proper way to =
+address it.
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
-based on next branch of http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
-
- arch/powerpc/boot/dts/p5040ds.dts |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/p5040ds.dts b/arch/powerpc/boot/dts/p5040ds.dts
-index 8165c93..860b5cc 100644
---- a/arch/powerpc/boot/dts/p5040ds.dts
-+++ b/arch/powerpc/boot/dts/p5040ds.dts
-@@ -95,6 +95,10 @@
- 				reg = <0x68>;
- 				interrupts = <0x1 0x1 0 0>;
- 			};
-+			adt7461@4c {
-+				compatible = "adi,adt7461";
-+				reg = <0x4c>;
-+			};
- 		};
- 	};
- 
-@@ -146,10 +150,6 @@
- 				label = "NAND Writable User area";
- 				reg = <0x1f000000 0x01000000>;
- 			};
--			adt7461@4c {
--				compatible = "adi,adt7461";
--				reg = <0x4c>;
--			};
- 		};
- 
- 		board-control@3,0 {
--- 
-1.6.4
+Regards,
+Leo
