@@ -1,33 +1,26 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e3.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C43C72C0092
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 15:16:34 +1000 (EST)
-Received: from /spool/local
- by e3.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 12 Sep 2012 01:16:31 -0400
-Received: from d01relay06.pok.ibm.com (d01relay06.pok.ibm.com [9.56.227.116])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 306ECC9003E
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:27 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay06.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8C5GQQ134013324
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:27 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8C5GPVn014687
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 01:16:26 -0400
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/3] ppc/eeh: remove EEH PE for normal PCI hotplug
-Date: Wed, 12 Sep 2012 13:16:17 +0800
-Message-Id: <1347426978-6194-2-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1347426978-6194-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1347426978-6194-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 768A42C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 15:47:09 +1000 (EST)
+Message-ID: <50501B9C.7000200@cn.fujitsu.com>
+Date: Wed, 12 Sep 2012 13:20:28 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
+MIME-Version: 1.0
+To: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
+Subject: Re: [RFC v8 PATCH 00/20] memory-hotplug: hot-remove physical memory
+References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
+ <20120831134956.fec0f681.akpm@linux-foundation.org>
+ <504D467D.2080201@jp.fujitsu.com> <504D4A08.7090602@cn.fujitsu.com>
+ <20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>
+In-Reply-To: <20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, cl@linux.com, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,260 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Function eeh_rmv_from_parent_pe() could be called by the path of
-either normal PCI hotplug, or EEH recovery. For the former case,
-we need purge the corresponding PE on removal of the associated
-PE bus.
+At 09/10/2012 09:52 PM, Vasilis Liaskovitis Wrote:
+> Hi,
+> 
+> On Mon, Sep 10, 2012 at 10:01:44AM +0800, Wen Congyang wrote:
+>> At 09/10/2012 09:46 AM, Yasuaki Ishimatsu Wrote:
+>>> Hi Wen,
+>>>
+>>> 2012/09/01 5:49, Andrew Morton wrote:
+>>>> On Tue, 28 Aug 2012 18:00:07 +0800
+>>>> wency@cn.fujitsu.com wrote:
+>>>>
+>>>>> This patch series aims to support physical memory hot-remove.
+>>>>
+>>>> I doubt if many people have hardware which permits physical memory
+>>>> removal?  How would you suggest that people with regular hardware can
+>>>> test these chagnes?
+>>>
+>>> How do you test the patch? As Andrew says, for hot-removing memory,
+>>> we need a particular hardware. I think so too. So many people may want
+>>> to know how to test the patch.
+>>> If we apply following patch to kvm guest, can we hot-remove memory on
+>>> kvm guest?
+>>>
+>>> http://lists.gnu.org/archive/html/qemu-devel/2012-07/msg01389.html
+>>
+>> Yes, if we apply this patchset, we can test hot-remove memory on kvm guest.
+>> But that patchset doesn't implement _PS3, so there is some restriction.
+> 
+> the following repos contain the patchset above, plus 2 more patches that add
+> PS3 support to the dimm devices in qemu/seabios:
+> 
+> https://github.com/vliaskov/seabios/commits/memhp-v2
+> https://github.com/vliaskov/qemu-kvm/commits/memhp-v2
+> 
+> I have not posted the PS3 patches yet in the qemu list, but will post them
+> soon for v3 of the memory hotplug series. If you have issues testing, let me
+> know.
 
-The patch tries to cover that by passing more information to function
-pcibios_remove_pci_devices() so that we know if the corresponding PE
-needs to be purged or be marked as "invalid".
+Hmm, seabios doesn't support ACPI table SLIT. We can specify node it for dimm
+device, so I think we should support SLIT in seabios. Otherwise we may meet
+the following kernel messages:
+[  325.016769] init_memory_mapping: [mem 0x40000000-0x5fffffff]
+[  325.018060]  [mem 0x40000000-0x5fffffff] page 2M
+[  325.019168] [ffffea0001000000-ffffea00011fffff] potential offnode page_structs
+[  325.024172] [ffffea0001200000-ffffea00013fffff] potential offnode page_structs
+[  325.028596]  [ffffea0001400000-ffffea00017fffff] PMD -> [ffff880035000000-ffff8800353fffff] on node 1
+[  325.031775] [ffffea0001600000-ffffea00017fffff] potential offnode page_structs
 
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h              |    6 ++--
- arch/powerpc/include/asm/pci-bridge.h       |    1 +
- arch/powerpc/platforms/pseries/eeh.c        |   12 +++++----
- arch/powerpc/platforms/pseries/eeh_driver.c |    8 +++++-
- arch/powerpc/platforms/pseries/eeh_pe.c     |   35 +++++++++++++++++---------
- arch/powerpc/platforms/pseries/pci_dlpar.c  |   32 ++++++++++++++++++------
- 6 files changed, 65 insertions(+), 29 deletions(-)
+Do you have plan to do it?
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index afeb400..b0ef738 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -185,7 +185,7 @@ static inline void eeh_unlock(void)
- typedef void *(*eeh_traverse_func)(void *data, void *flag);
- int __devinit eeh_phb_pe_create(struct pci_controller *phb);
- int eeh_add_to_parent_pe(struct eeh_dev *edev);
--int eeh_rmv_from_parent_pe(struct eeh_dev *edev);
-+int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe);
- void *eeh_pe_dev_traverse(struct eeh_pe *root,
- 		eeh_traverse_func fn, void *flag);
- void eeh_pe_restore_bars(struct eeh_pe *pe);
-@@ -201,7 +201,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev);
- void __init eeh_addr_cache_build(void);
- void eeh_add_device_tree_early(struct device_node *);
- void eeh_add_device_tree_late(struct pci_bus *);
--void eeh_remove_bus_device(struct pci_dev *);
-+void eeh_remove_bus_device(struct pci_dev *, int);
- 
- /**
-  * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
-@@ -240,7 +240,7 @@ static inline void eeh_add_device_tree_early(struct device_node *dn) { }
- 
- static inline void eeh_add_device_tree_late(struct pci_bus *bus) { }
- 
--static inline void eeh_remove_bus_device(struct pci_dev *dev) { }
-+static inline void eeh_remove_bus_device(struct pci_dev *dev, int purge_pe) { }
- 
- static inline void eeh_lock(void) { }
- static inline void eeh_unlock(void) { }
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 973df4d..a059cb9 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -192,6 +192,7 @@ static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
- extern struct pci_bus *pcibios_find_pci_bus(struct device_node *dn);
- 
- /** Remove all of the PCI devices under this bus */
-+extern void __pcibios_remove_pci_devices(struct pci_bus *bus, int purge_pe);
- extern void pcibios_remove_pci_devices(struct pci_bus *bus);
- 
- /** Discover new pci devices under this bus, and add them */
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 18c168b..43f6ed4 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -817,6 +817,7 @@ EXPORT_SYMBOL_GPL(eeh_add_device_tree_late);
- /**
-  * eeh_remove_device - Undo EEH setup for the indicated pci device
-  * @dev: pci device to be removed
-+ * @purge_pe: remove the PE or not
-  *
-  * This routine should be called when a device is removed from
-  * a running system (e.g. by hotplug or dlpar).  It unregisters
-@@ -824,7 +825,7 @@ EXPORT_SYMBOL_GPL(eeh_add_device_tree_late);
-  * this device will no longer be detected after this call; thus,
-  * i/o errors affecting this slot may leave this device unusable.
-  */
--static void eeh_remove_device(struct pci_dev *dev)
-+static void eeh_remove_device(struct pci_dev *dev, int purge_pe)
- {
- 	struct eeh_dev *edev;
- 
-@@ -843,7 +844,7 @@ static void eeh_remove_device(struct pci_dev *dev)
- 	dev->dev.archdata.edev = NULL;
- 	pci_dev_put(dev);
- 
--	eeh_rmv_from_parent_pe(edev);
-+	eeh_rmv_from_parent_pe(edev, purge_pe);
- 	eeh_addr_cache_rmv_dev(dev);
- 	eeh_sysfs_remove_device(dev);
- }
-@@ -851,21 +852,22 @@ static void eeh_remove_device(struct pci_dev *dev)
- /**
-  * eeh_remove_bus_device - Undo EEH setup for the indicated PCI device
-  * @dev: PCI device
-+ * @purge_pe: remove the corresponding PE or not
-  *
-  * This routine must be called when a device is removed from the
-  * running system through hotplug or dlpar. The corresponding
-  * PCI address cache will be removed.
-  */
--void eeh_remove_bus_device(struct pci_dev *dev)
-+void eeh_remove_bus_device(struct pci_dev *dev, int purge_pe)
- {
- 	struct pci_bus *bus = dev->subordinate;
- 	struct pci_dev *child, *tmp;
- 
--	eeh_remove_device(dev);
-+	eeh_remove_device(dev, purge_pe);
- 
- 	if (bus && dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
- 		list_for_each_entry_safe(child, tmp, &bus->devices, bus_list)
--			 eeh_remove_bus_device(child);
-+			 eeh_remove_bus_device(child, purge_pe);
- 	}
- }
- EXPORT_SYMBOL_GPL(eeh_remove_bus_device);
-diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
-index 8370ce7..37c2cf7 100644
---- a/arch/powerpc/platforms/pseries/eeh_driver.c
-+++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-@@ -305,8 +305,14 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	/* pcibios will clear the counter; save the value */
- 	cnt = pe->freeze_count;
- 
-+	/*
-+	 * We don't remove the corresponding PE instances because
-+	 * we need the information afterwords. The attached EEH
-+	 * devices are expected to be attached soon when calling
-+	 * into pcibios_add_pci_devices().
-+	 */
- 	if (bus)
--		pcibios_remove_pci_devices(bus);
-+		__pcibios_remove_pci_devices(bus, 0);
- 
- 	/* Reset the pci controller. (Asserts RST#; resets config space).
- 	 * Reconfigure bridges and devices. Don't try to bring the system
-diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
-index 8f95ffd..a2646cf 100644
---- a/arch/powerpc/platforms/pseries/eeh_pe.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pe.c
-@@ -395,13 +395,14 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
- /**
-  * eeh_rmv_from_parent_pe - Remove one EEH device from the associated PE
-  * @edev: EEH device
-+ * @purge_pe: remove PE or not
-  *
-  * The PE hierarchy tree might be changed when doing PCI hotplug.
-  * Also, the PCI devices or buses could be removed from the system
-  * during EEH recovery. So we have to call the function remove the
-  * corresponding PE accordingly if necessary.
-  */
--int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
-+int eeh_rmv_from_parent_pe(struct eeh_dev *edev, int purge_pe)
- {
- 	struct eeh_pe *pe, *parent, *child;
- 	int cnt;
-@@ -428,19 +429,29 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
- 		if (pe->type & EEH_PE_PHB)
- 			break;
- 
--		if (list_empty(&pe->edevs)) {
--			cnt = 0;
--			list_for_each_entry(child, &pe->child_list, child) {
--				if (!(pe->type & EEH_PE_INVALID)) {
--					cnt++;
--					break;
--				}
-+		if (purge_pe) {
-+			if (list_empty(&pe->edevs) &&
-+			    list_empty(&pe->child_list)) {
-+				list_del(&pe->child);
-+				kfree(pe);
-+			} else {
-+				break;
- 			}
-+		} else {
-+			if (list_empty(&pe->edevs)) {
-+				cnt = 0;
-+				list_for_each_entry(child, &pe->child_list, child) {
-+					if (!(pe->type & EEH_PE_INVALID)) {
-+						cnt++;
-+						break;
-+					}
-+				}
- 
--			if (!cnt)
--				pe->type |= EEH_PE_INVALID;
--			else
--				break;
-+				if (!cnt)
-+					pe->type |= EEH_PE_INVALID;
-+				else
-+					break;
-+			}
- 		}
- 
- 		pe = parent;
-diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-index 3ccebc8..261a577 100644
---- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-+++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-@@ -65,27 +65,43 @@ pcibios_find_pci_bus(struct device_node *dn)
- EXPORT_SYMBOL_GPL(pcibios_find_pci_bus);
- 
- /**
-- * pcibios_remove_pci_devices - remove all devices under this bus
-+ * __pcibios_remove_pci_devices - remove all devices under this bus
-+ * @bus: the indicated PCI bus
-+ * @purge_pe: destroy the PE on removal of PCI devices
-  *
-  * Remove all of the PCI devices under this bus both from the
-  * linux pci device tree, and from the powerpc EEH address cache.
-+ * By default, the corresponding PE will be destroied during the
-+ * normal PCI hotplug path. For PCI hotplug during EEH recovery,
-+ * the corresponding PE won't be destroied and deallocated.
-  */
--void pcibios_remove_pci_devices(struct pci_bus *bus)
-+void __pcibios_remove_pci_devices(struct pci_bus *bus, int purge_pe)
- {
-- 	struct pci_dev *dev, *tmp;
-+	struct pci_dev *dev, *tmp;
- 	struct pci_bus *child_bus;
- 
- 	/* First go down child busses */
- 	list_for_each_entry(child_bus, &bus->children, node)
--		pcibios_remove_pci_devices(child_bus);
-+		__pcibios_remove_pci_devices(child_bus, purge_pe);
- 
- 	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
--		 pci_domain_nr(bus),  bus->number);
-+		pci_domain_nr(bus),  bus->number);
- 	list_for_each_entry_safe(dev, tmp, &bus->devices, bus_list) {
- 		pr_debug("     * Removing %s...\n", pci_name(dev));
--		eeh_remove_bus_device(dev);
-- 		pci_stop_and_remove_bus_device(dev);
-- 	}
-+		eeh_remove_bus_device(dev, purge_pe);
-+		pci_stop_and_remove_bus_device(dev);
-+	}
-+}
-+
-+/**
-+ * pcibios_remove_pci_devices - remove all devices under this bus
-+ *
-+ * Remove all of the PCI devices under this bus both from the
-+ * linux pci device tree, and from the powerpc EEH address cache.
-+ */
-+void pcibios_remove_pci_devices(struct pci_bus *bus)
-+{
-+	__pcibios_remove_pci_devices(bus, 1);
- }
- EXPORT_SYMBOL_GPL(pcibios_remove_pci_devices);
- 
--- 
-1.7.5.4
+Thanks
+Wen Congyang
+
+> 
+> thanks,
+> 
+> - Vasilis
+> 
