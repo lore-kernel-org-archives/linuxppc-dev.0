@@ -1,25 +1,32 @@
-Return-Path: <emillbrandt@dekaresearch.com>
-Received: from dekaexchange07.deka.local (mail.dekaresearch.com
- [208.65.175.196]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
- (Client CN "dekaexchange07", Issuer "dekaexchange07" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E9F1E2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 03:15:17 +1000 (EST)
-From: Eric Millbrandt <emillbrandt@dekaresearch.com>
-To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>
-Date: Wed, 12 Sep 2012 13:15:05 -0400
-Subject: RE: [alsa-devel] [PATCH 2/5] ASoC: fsl: mpc5200 combine psc_dma
- platform data
-Message-ID: <0A40042D85E7C84DB443060EC44B3FD336D854FEE6@dekaexchange07.deka.local>
-References: <1347416089-23393-1-git-send-email-emillbrandt@dekaresearch.com>
- <1347416089-23393-3-git-send-email-emillbrandt@dekaresearch.com>
- <20120912135412.GF19055@opensource.wolfsonmicro.com>
-In-Reply-To: <20120912135412.GF19055@opensource.wolfsonmicro.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <vasilis.liaskovitis@profitbricks.com>
+Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
+ [209.85.214.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 911CE2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 03:18:21 +1000 (EST)
+Received: by bkuw5 with SMTP id w5so31517bku.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 10:18:18 -0700 (PDT)
+Date: Wed, 12 Sep 2012 19:18:14 +0200
+From: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [RFC v8 PATCH 00/20] memory-hotplug: hot-remove physical memory
+Message-ID: <20120912171814.GB5253@dhcp-192-168-178-175.profitbricks.localdomain>
+References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
+ <20120831134956.fec0f681.akpm@linux-foundation.org>
+ <504D467D.2080201@jp.fujitsu.com> <504D4A08.7090602@cn.fujitsu.com>
+ <20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>
+ <50501B9C.7000200@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- Anatolij Gustschin <agust@denx.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Liam Girdwood <lrg@ti.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <50501B9C.7000200@cn.fujitsu.com>
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, cl@linux.com, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +36,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Mark,
+Hi,
 
-On 2012-09-12 Mark Brown wrote:
-> On Tue, Sep 11, 2012 at 10:14:46PM -0400, Eric Millbrandt wrote:
->> The mpc5200_psc_ac97 and mpc5200_psc_i2s modules rely on shared
->> platform data with mpc5200_dma.
->
-> This looks good but depends on patch 1 so I can't apply it - if you can
-> rebase things so this is patch 1 I'll apply it.
+On Wed, Sep 12, 2012 at 01:20:28PM +0800, Wen Congyang wrote:
+> > 
+> > On Mon, Sep 10, 2012 at 10:01:44AM +0800, Wen Congyang wrote:
+> >> At 09/10/2012 09:46 AM, Yasuaki Ishimatsu Wrote:
+> >>> How do you test the patch? As Andrew says, for hot-removing memory,
+> >>> we need a particular hardware. I think so too. So many people may want
+> >>> to know how to test the patch.
+> >>> If we apply following patch to kvm guest, can we hot-remove memory on
+> >>> kvm guest?
+> >>>
+> >>> http://lists.gnu.org/archive/html/qemu-devel/2012-07/msg01389.html
+> >>
+> >> Yes, if we apply this patchset, we can test hot-remove memory on kvm guest.
+> >> But that patchset doesn't implement _PS3, so there is some restriction.
+> > 
+> > the following repos contain the patchset above, plus 2 more patches that add
+> > PS3 support to the dimm devices in qemu/seabios:
+> > 
+> > https://github.com/vliaskov/seabios/commits/memhp-v2
+> > https://github.com/vliaskov/qemu-kvm/commits/memhp-v2
+> > 
+> > I have not posted the PS3 patches yet in the qemu list, but will post them
+> > soon for v3 of the memory hotplug series. If you have issues testing, let me
+> > know.
+> 
+> Hmm, seabios doesn't support ACPI table SLIT. We can specify node it for dimm
+> device, so I think we should support SLIT in seabios. Otherwise we may meet
+> the following kernel messages:
+> [  325.016769] init_memory_mapping: [mem 0x40000000-0x5fffffff]
+> [  325.018060]  [mem 0x40000000-0x5fffffff] page 2M
+> [  325.019168] [ffffea0001000000-ffffea00011fffff] potential offnode page_structs
+> [  325.024172] [ffffea0001200000-ffffea00013fffff] potential offnode page_structs
+> [  325.028596]  [ffffea0001400000-ffffea00017fffff] PMD -> [ffff880035000000-ffff8800353fffff] on node 1
+> [  325.031775] [ffffea0001600000-ffffea00017fffff] potential offnode page_structs
+> 
+> Do you have plan to do it?
+thanks for testing.
 
-After mulling your comments I see now that not being able to define a snd_s=
-oc_ops for an ASoC machine driver would only work for very few boards.  I'l=
-l think on it some more and respin the series to be pcm030 specific.
+commit 5294828 from https://github.com/vliaskov/seabios/commits/memhp-v2
+implements a SLIT table for the given numa nodes.
 
-Eric
+However I am not sure the SLIT is the problem. The kernel builds a default
+numa_distance table in arch/x86/mm/numa.c: numa_alloc_distance(). If the BIOS
+doesn't present a SLIT, this should take effect (numactl --hardware should
+report this table)
 
--DISCLAIMER: an automatically appended disclaimer may follow. By posting-
--to a public e-mail mailing list I hereby grant permission to distribute-
--and copy this message.-
+Do you have more details on how to reproduce the warning? e.g. how many dimms
+are present in the system? Does this happen on the first dimm hot-plugged?
+Are all SRAT entries parsed correctly at boot-time or do you see any other
+warnings at boot-time?
 
+I 'll investigate a bit more and report back.
 
+thanks,
 
-This e-mail and the information, including any attachments, it contains are=
- intended to be a confidential communication only to the person or entity t=
-o whom it is addressed and may contain information that is privileged. If t=
-he reader of this message is not the intended recipient, you are hereby not=
-ified that any dissemination, distribution or copying of this communication=
- is strictly prohibited. If you have received this communication in error, =
-please immediately notify the sender and destroy the original message.
-
-Thank you.
-
-Please consider the environment before printing this email.
+- Vasilis
