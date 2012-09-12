@@ -1,20 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 7FF5E2C0086
- for <linuxppc-dev@ozlabs.org>; Wed, 12 Sep 2012 21:07:11 +1000 (EST)
-Date: Wed, 12 Sep 2012 21:07:04 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: Add an xmon command to dump one or all pacas
-Message-Id: <20120912210704.54cc517b6f39c8e2f73523af@canb.auug.org.au>
-In-Reply-To: <1347436360-29095-1-git-send-email-michael@ellerman.id.au>
-References: <1347436360-29095-1-git-send-email-michael@ellerman.id.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__12_Sep_2012_21_07_04_+1000_E11lZL_0D5_RV..U"
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <B21989@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 39F742C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 21:09:42 +1000 (EST)
+Received: from mail214-tx2 (localhost [127.0.0.1])	by
+ mail214-tx2-R.bigfish.com (Postfix) with ESMTP id BAB05C01D9	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 11:09:37 +0000 (UTC)
+Received: from TX2EHSMHS032.bigfish.com (unknown [10.9.14.252])	by
+ mail214-tx2.bigfish.com (Postfix) with ESMTP id 8BBA63C0048	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 11:09:36 +0000 (UTC)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/p5040: fix dtb build warning of p5040ds.dtb
+Date: Wed, 12 Sep 2012 18:36:03 +0800
+Message-ID: <1347446163-15470-1-git-send-email-Shaohui.Xie@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,47 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__12_Sep_2012_21_07_04_+1000_E11lZL_0D5_RV..U
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Device node adt7461 was wrongly added in p5040ds.dts, it should be added
+into i2c instead of localbus, when build p5040ds.dtb, a warning will dump:
 
-Hi Michael,
+Warning (reg_format): "reg" property in
+/localbus@ffe124000/nand@2,0/adt7461@4c has invalid length (4 bytes)
+(#address-cells == 1, #size-cells == 1)
 
-On Wed, 12 Sep 2012 17:52:40 +1000 Michael Ellerman <michael@ellerman.id.au=
-> wrote:
->
-> +#define DUMP(name, format) \
-> +	printf(" %-*s =3D %#-*"format"\t(0x%lx)\n", 16, #name, 18, p->name, \
-> +		(u64)((void *)&(p->name) - (void *)p));
+This was introduced by:
 
-I must say that I hate macros that reference (assumed) globals and
-shouldn't you use offsetof(struct paca_struct, name) (from
-linux/stddef.h)?
+commit ea6b1ba692bcb5f6e39f409a78cf8b04fdf23baa
+Author: Jia Hongtao <B38951@freescale.com>
+Date:   Tue Aug 28 10:00:55 2012 +0800
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+    powerpc: add adt7461 thermal monitor support to applicable boards
 
---Signature=_Wed__12_Sep_2012_21_07_04_+1000_E11lZL_0D5_RV..U
-Content-Type: application/pgp-signature
+    Add thermal monitor support to following boards:
+    P1022DS, MPC8536DS, P2041RDB, P3041DS, P4080DS, P5020DS, P5040DS
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+---
+based on next branch of http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
 
-iQIcBAEBCAAGBQJQUGzYAAoJEECxmPOUX5FE+LQQAKnoKZRPVLexuNIZvdR1xre6
-HCKc3RoUTgQYPE8zBeX7EyJYVE8kBY8RFhsWDM0ryA6lbThEgXSSb5oh1G0aylUy
-VCLnyRh0fAwCxMdaSt6D7dg7Kt8ZQq8WiTvezj8xPzQnlPIDB2MC2MeBZm9QmvDU
-2EEggUHTpzDJlY74jJgeydeDmgsVxILhXbDVMBytHQOhZHHWcJscQlhdxQYx7/GW
-zO+kTfhRaEvPouc/ItowxKTjZiwb4bhVu6uDK4H/Hl1hnQ341LRScwgMede2AMvb
-OLCwtHTo0JKIked9BcfaVAbBGq4gwZD5WGVl+DZqw6cj1Fa3NJf+7frp+LLVuZCG
-J+CGE3MmQ9+QALKgcnQk4EIrFRvWVAkCHkX3nKpaxKyNPrXW4mfsDtZJfqZS6Z1k
-YFg1V1zQwvAAP4Z+JeiTIunIiALGQ6+J5p/tZfVCHyhYX2AyFFwrQHnsIBLy1Rfu
-u7OCKqh1uwOnBoRkkNvRPvKy+KFQt2YOCDlVhTCHATmGsIzKUvStg0ugomfN1tAT
-HXsmwnElWALsfCJPPPpbaxcZKt8xwX5KjR+ojH6kEm5IbGsXk1PgyfQmpBWYirqh
-9rKTPeCLXVmX+Y/jBZTtLXSZTgK9JnJGkuEbzcsxicJhvOkSo6GnwhCC1fubAqMP
-08NUwFinZSHyiYhW5cJy
-=gzNH
------END PGP SIGNATURE-----
+ arch/powerpc/boot/dts/p5040ds.dts |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
---Signature=_Wed__12_Sep_2012_21_07_04_+1000_E11lZL_0D5_RV..U--
+diff --git a/arch/powerpc/boot/dts/p5040ds.dts b/arch/powerpc/boot/dts/p5040ds.dts
+index 8165c93..860b5cc 100644
+--- a/arch/powerpc/boot/dts/p5040ds.dts
++++ b/arch/powerpc/boot/dts/p5040ds.dts
+@@ -95,6 +95,10 @@
+ 				reg = <0x68>;
+ 				interrupts = <0x1 0x1 0 0>;
+ 			};
++			adt7461@4c {
++				compatible = "adi,adt7461";
++				reg = <0x4c>;
++			};
+ 		};
+ 	};
+ 
+@@ -146,10 +150,6 @@
+ 				label = "NAND Writable User area";
+ 				reg = <0x1f000000 0x01000000>;
+ 			};
+-			adt7461@4c {
+-				compatible = "adi,adt7461";
+-				reg = <0x4c>;
+-			};
+ 		};
+ 
+ 		board-control@3,0 {
+-- 
+1.6.4
