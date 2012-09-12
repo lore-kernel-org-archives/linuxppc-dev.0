@@ -1,26 +1,23 @@
-Return-Path: <cyril@ti.com>
-Message-ID: <5050CE33.9060909@ti.com>
-Date: Wed, 12 Sep 2012 14:02:27 -0400
-From: Cyril Chemparathy <cyril@ti.com>
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] of: specify initrd location using 64-bit
-References: <1347465937-7056-1-git-send-email-cyril@ti.com>
- <CAMuHMdUuQzD0bq8PifBea2-0Pk7RhmPA0-GAFprsk+vMxMGjGw@mail.gmail.com>
-In-Reply-To: <CAMuHMdUuQzD0bq8PifBea2-0Pk7RhmPA0-GAFprsk+vMxMGjGw@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linux-mips@linux-mips.org, x86@kernel.org, a-jacquiot@ti.com,
- mahesh@linux.vnet.ibm.com, linus.walleij@linaro.org,
- paul.gortmaker@windriver.com, paulus@samba.org, hpa@zytor.com,
- m.szyprowski@samsung.com, jonas@southpole.se, linux@arm.linux.org.uk,
- linux-c6x-dev@linux-c6x.org, nico@linaro.org, david.daney@cavium.com,
- mingo@redhat.com, suzuki@in.ibm.com, linux-arm-kernel@lists.infradead.org,
- linux@openrisc.net, arnd@arndb.de, microblaze-uclinux@itee.uq.edu.au,
- devicetree-discuss@lists.ozlabs.org, msalter@redhat.com,
- rob.herring@calxeda.com, tglx@linutronix.de, bigeasy@linutronix.de,
- blogic@openwrt.org, dhowells@redhat.com, monstr@monstr.eu,
- linux-kernel@vger.kernel.org, ralf@linux-mips.org, tj@kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 88CBB2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 04:56:14 +1000 (EST)
+References: <1347455894-30044-1-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1347455894-30044-1-git-send-email-mihai.caraman@freescale.com>
+Mime-Version: 1.0 (1.0)
+Content-Type: text/plain;
+	charset=us-ascii
+Message-Id: <F4E2A678-6697-4207-8CEE-2CFB3629F554@suse.de>
+From: Alexander Graf <agraf@suse.de>
+Subject: Re: [PATCH] KVM: PPC: bookehv: Allow duplicate calls of DO_KVM macro
+Date: Wed, 12 Sep 2012 20:56:08 +0200
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: Mihai Caraman <mihai.caraman@freescale.com>,
+ "<linuxppc-dev@lists.ozlabs.org>" <linuxppc-dev@lists.ozlabs.org>,
+ "<kvm@vger.kernel.org>" <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,36 +27,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 9/12/2012 12:16 PM, Geert Uytterhoeven wrote:
-> On Wed, Sep 12, 2012 at 6:05 PM, Cyril Chemparathy <cyril@ti.com> wrote:
->> On some PAE architectures, the entire range of physical memory could reside
->> outside the 32-bit limit.  These systems need the ability to specify the
->> initrd location using 64-bit numbers.
->>
->> This patch globally modifies the early_init_dt_setup_initrd_arch() function to
->> use 64-bit numbers instead of the current unsigned long.
->
->> -void __init early_init_dt_setup_initrd_arch(unsigned long start, unsigned long end)
->> +void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
->
-> Why not phys_addr_t?
->
 
-The rest of the memory specific bits of the device-tree code use u64 for 
-addresses, and I kept it the same for consistency.
 
-> Gr{oetje,eeting}s,
->
->                          Geert
->
+On 12.09.2012, at 15:18, Mihai Caraman <mihai.caraman@freescale.com> wrote:
+
+> The current form of DO_KVM macro restricts its use to one call per input
+> parameter set. This is caused by kvmppc_resume_\intno\()_\srr1 symbol
+> definition.
+> Duplicate calls of DO_KVM are required by distinct implementations of
+> exeption handlers which are delegated at runtime.
+
+Not sure I understand what you're trying to achieve here. Please elaborate ;=
+)
+
+Alex
+
+> Use a rare label number
+> to avoid conflicts with the calling contexts.
+>=20
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+> arch/powerpc/include/asm/kvm_booke_hv_asm.h |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/kvm_booke_hv_asm.h b/arch/powerpc/in=
+clude/asm/kvm_booke_hv_asm.h
+> index 30a600f..a37a12a 100644
+> --- a/arch/powerpc/include/asm/kvm_booke_hv_asm.h
+> +++ b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
+> @@ -38,9 +38,9 @@
+> #ifdef CONFIG_KVM_BOOKE_HV
+> BEGIN_FTR_SECTION
+>    mtocrf    0x80, r11    /* check MSR[GS] without clobbering reg */
+> -    bf    3, kvmppc_resume_\intno\()_\srr1
+> +    bf    3, 1975f
+>    b    kvmppc_handler_\intno\()_\srr1
+> -kvmppc_resume_\intno\()_\srr1:
+> +1975:
+> END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+> #endif
+> .endm
+> --=20
+> 1.7.4.1
+>=20
+>=20
 > --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                  -- Linus Torvalds
->
-
--- 
-Thanks
-- Cyril
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
