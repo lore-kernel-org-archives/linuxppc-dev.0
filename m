@@ -1,23 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 88CBB2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 04:56:14 +1000 (EST)
-References: <1347455894-30044-1-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1347455894-30044-1-git-send-email-mihai.caraman@freescale.com>
-Mime-Version: 1.0 (1.0)
-Content-Type: text/plain;
-	charset=us-ascii
-Message-Id: <F4E2A678-6697-4207-8CEE-2CFB3629F554@suse.de>
-From: Alexander Graf <agraf@suse.de>
-Subject: Re: [PATCH] KVM: PPC: bookehv: Allow duplicate calls of DO_KVM macro
-Date: Wed, 12 Sep 2012 20:56:08 +0200
-To: Mihai Caraman <mihai.caraman@freescale.com>
-Cc: Mihai Caraman <mihai.caraman@freescale.com>,
- "<linuxppc-dev@lists.ozlabs.org>" <linuxppc-dev@lists.ozlabs.org>,
- "<kvm@vger.kernel.org>" <kvm@vger.kernel.org>,
- "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 22C682C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 06:20:11 +1000 (EST)
+Subject: Re: [PATCH] powerpc/p5040: fix dtb build warning of p5040ds.dtb
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1347446163-15470-1-git-send-email-Shaohui.Xie@freescale.com>
+Date: Wed, 12 Sep 2012 15:20:05 -0500
+Message-Id: <8A7EAC17-D715-47A0-9DE7-AA5E8D27C125@kernel.crashing.org>
+References: <1347446163-15470-1-git-send-email-Shaohui.Xie@freescale.com>
+To: Shaohui Xie <Shaohui.Xie@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,50 +24,36 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+On Sep 12, 2012, at 5:36 AM, Shaohui Xie wrote:
 
-On 12.09.2012, at 15:18, Mihai Caraman <mihai.caraman@freescale.com> wrote:
-
-> The current form of DO_KVM macro restricts its use to one call per input
-> parameter set. This is caused by kvmppc_resume_\intno\()_\srr1 symbol
-> definition.
-> Duplicate calls of DO_KVM are required by distinct implementations of
-> exeption handlers which are delegated at runtime.
-
-Not sure I understand what you're trying to achieve here. Please elaborate ;=
-)
-
-Alex
-
-> Use a rare label number
-> to avoid conflicts with the calling contexts.
+> Device node adt7461 was wrongly added in p5040ds.dts, it should be =
+added
+> into i2c instead of localbus, when build p5040ds.dtb, a warning will =
+dump:
 >=20
-> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> Warning (reg_format): "reg" property in
+> /localbus@ffe124000/nand@2,0/adt7461@4c has invalid length (4 bytes)
+> (#address-cells =3D=3D 1, #size-cells =3D=3D 1)
+>=20
+> This was introduced by:
+>=20
+> commit ea6b1ba692bcb5f6e39f409a78cf8b04fdf23baa
+> Author: Jia Hongtao <B38951@freescale.com>
+> Date:   Tue Aug 28 10:00:55 2012 +0800
+>=20
+>    powerpc: add adt7461 thermal monitor support to applicable boards
+>=20
+>    Add thermal monitor support to following boards:
+>    P1022DS, MPC8536DS, P2041RDB, P3041DS, P4080DS, P5020DS, P5040DS
+>=20
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 > ---
-> arch/powerpc/include/asm/kvm_booke_hv_asm.h |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
+> based on next branch of =
+http://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
 >=20
-> diff --git a/arch/powerpc/include/asm/kvm_booke_hv_asm.h b/arch/powerpc/in=
-clude/asm/kvm_booke_hv_asm.h
-> index 30a600f..a37a12a 100644
-> --- a/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-> +++ b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
-> @@ -38,9 +38,9 @@
-> #ifdef CONFIG_KVM_BOOKE_HV
-> BEGIN_FTR_SECTION
->    mtocrf    0x80, r11    /* check MSR[GS] without clobbering reg */
-> -    bf    3, kvmppc_resume_\intno\()_\srr1
-> +    bf    3, 1975f
->    b    kvmppc_handler_\intno\()_\srr1
-> -kvmppc_resume_\intno\()_\srr1:
-> +1975:
-> END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
-> #endif
-> .endm
-> --=20
-> 1.7.4.1
->=20
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> arch/powerpc/boot/dts/p5040ds.dts |    8 ++++----
+> 1 files changed, 4 insertions(+), 4 deletions(-)
+
+applied to next
+
+- k=
