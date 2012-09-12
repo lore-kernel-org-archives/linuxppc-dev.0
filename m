@@ -1,31 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A25252C007D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 22:13:53 +1000 (EST)
-Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <110EED8CC96DFC488B7E717A2027A27C17701A@039-SN1MPN1-002.039d.mgd.msft.net>
-Date: Wed, 12 Sep 2012 07:13:41 -0500
-Message-Id: <8B1F0805-759E-417A-B787-40DF197896F3@kernel.crashing.org>
-References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
- <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
- <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
- <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
- <87k3w0y5yn.fsf@octavius.laptop.org>
- <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org>
- <87liggwa1w.fsf@octavius.laptop.org>
- <110EED8CC96DFC488B7E717A2027A27C17701A@039-SN1MPN1-002.039d.mgd.msft.net>
-To: Huang Changming-R66093 <R66093@freescale.com>
-Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Chris Ball <cjb@laptop.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Anton Vorontsov <cbouatmailru@gmail.com>
+Return-Path: <mcaraman@mcaraman-VirtualBox.ea.freescale.net>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 69DC52C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 23:18:30 +1000 (EST)
+Received: from mail29-co1 (localhost [127.0.0.1])	by mail29-co1-R.bigfish.com
+ (Postfix) with ESMTP id 1E15E720061	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed,
+ 12 Sep 2012 13:18:23 +0000 (UTC)
+Received: from CO1EHSMHS015.bigfish.com (unknown [10.243.78.233])	by
+ mail29-co1.bigfish.com (Postfix) with ESMTP id 4046FDC0057	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 13:18:20 +0000 (UTC)
+Received: from mcaraman-VirtualBox.ea.freescale.net ([10.213.130.145])	by
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q8CDIFYF002578	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 06:18:17 -0700
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH] KVM: PPC: bookehv: Allow duplicate calls of DO_KVM macro
+Date: Wed, 12 Sep 2012 16:18:14 +0300
+Message-ID: <1347455894-30044-1-git-send-email-mihai.caraman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,51 +34,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The current form of DO_KVM macro restricts its use to one call per input
+parameter set. This is caused by kvmppc_resume_\intno\()_\srr1 symbol
+definition.
+Duplicate calls of DO_KVM are required by distinct implementations of
+exeption handlers which are delegated at runtime. Use a rare label number
+to avoid conflicts with the calling contexts.
 
-On Sep 12, 2012, at 1:18 AM, Huang Changming-R66093 wrote:
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+ arch/powerpc/include/asm/kvm_booke_hv_asm.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
->=20
->=20
-> Best Regards
-> Jerry Huang
->=20
->=20
->> -----Original Message-----
->> From: Chris Ball [mailto:cjb@laptop.org]
->> Sent: Wednesday, September 12, 2012 4:59 AM
->> To: Kumar Gala
->> Cc: Huang Changming-R66093; linuxppc-dev@lists.ozlabs.org list; =
-linux-
->> mmc@vger.kernel.org; Anton Vorontsov
->> Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the =
-CMD23
->>=20
->> Hi,
->>=20
->> On Tue, Sep 11 2012, Kumar Gala wrote:
->>> thanks for the info.  Do you know what's required on controller side
->>> to handle cards that support CMD23?
->>>=20
->>> I'm trying to figure out if older controller's on FSL SoCs are =
-missing
->>> some feature to allow CMD23 to work (vs Auto-CMD23).
->>=20
->> It seems plausible that it's just not implemented on these =
-controllers.
->> It's a little strange, since the command's been specified for so long =
-and
->> we haven't seen any other controllers with problems.  The patch would =
-be
->> correct if this is true.
->>=20
->=20
-> I didn't find any description about it, but after testing on FSL =
-silicones, I got this result:
-> Some silicones support this command, and some silicones don't support =
-it, which will cause I/O error.
-
-Can you list out which SoCs support it and which don't.  Having this =
-list will be useful in understanding which controller versions supported =
-it.
-
-- k=
+diff --git a/arch/powerpc/include/asm/kvm_booke_hv_asm.h b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
+index 30a600f..a37a12a 100644
+--- a/arch/powerpc/include/asm/kvm_booke_hv_asm.h
++++ b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
+@@ -38,9 +38,9 @@
+ #ifdef CONFIG_KVM_BOOKE_HV
+ BEGIN_FTR_SECTION
+ 	mtocrf	0x80, r11	/* check MSR[GS] without clobbering reg */
+-	bf	3, kvmppc_resume_\intno\()_\srr1
++	bf	3, 1975f
+ 	b	kvmppc_handler_\intno\()_\srr1
+-kvmppc_resume_\intno\()_\srr1:
++1975:
+ END_FTR_SECTION_IFSET(CPU_FTR_EMB_HV)
+ #endif
+ .endm
+-- 
+1.7.4.1
