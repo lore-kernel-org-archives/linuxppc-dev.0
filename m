@@ -1,31 +1,31 @@
-Return-Path: <minchan@kernel.org>
-Received: from LGEMRELSE1Q.lge.com (LGEMRELSE1Q.lge.com [156.147.1.111])
- by ozlabs.org (Postfix) with ESMTP id 0FEBF2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 16:15:51 +1000 (EST)
-Date: Wed, 12 Sep 2012 15:17:47 +0900
-From: Minchan Kim <minchan@kernel.org>
-To: Jerry <uulinux@gmail.com>
-Subject: Re: [RFC v8 PATCH 00/20] memory-hotplug: hot-remove physical memory
-Message-ID: <20120912061747.GA31798@bbox>
-References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
- <20120831134956.fec0f681.akpm@linux-foundation.org>
- <504D467D.2080201@jp.fujitsu.com> <504D4A08.7090602@cn.fujitsu.com>
- <20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>
- <CAAV+Mu7YWRWnxt78F4ZDMrrUsWB=n-_qkYOcQT7WQ2HwP89Obw@mail.gmail.com>
- <20120911012345.GD14205@bbox>
- <CAAV+Mu4hb0qbW2Ry6w5FAGUM06puDH0v_H-jr584-G9CzJqSGw@mail.gmail.com>
+Return-Path: <r66093@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3FCAB2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 16:18:12 +1000 (EST)
+From: Huang Changming-R66093 <r66093@freescale.com>
+To: Chris Ball <cjb@laptop.org>, Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
+Date: Wed, 12 Sep 2012 06:18:01 +0000
+Message-ID: <110EED8CC96DFC488B7E717A2027A27C17701A@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
+ <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
+ <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
+ <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
+ <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
+ <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
+ <87k3w0y5yn.fsf@octavius.laptop.org>
+ <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org>
+ <87liggwa1w.fsf@octavius.laptop.org>
+In-Reply-To: <87liggwa1w.fsf@octavius.laptop.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAAV+Mu4hb0qbW2Ry6w5FAGUM06puDH0v_H-jr584-G9CzJqSGw@mail.gmail.com>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, len.brown@intel.com, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
- Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, cl@linux.com, liuj97@gmail.com
+Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Vorontsov <cbouatmailru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,41 +35,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 11, 2012 at 01:18:24PM +0800, Jerry wrote:
-> Hi Kim,
-> 
-> Thank you for your kindness. Let me clarify this:
-> 
-> On ARM architecture, there are 32 bits physical addresses space. However,
-> the addresses space is divided into 8 banks normally. Each bank
-> disabled/enabled by a chip selector signal. In my platform, bank0 connects
-> a DDR chip, and bank1 also connects another DDR chip. And each DDR chip
-> whose capability is 512MB is integrated into the main board. So, it could
-> not be removed by hand. We can disable/enable each bank by peripheral
-> device controller registers.
-> 
-> When system enter suspend state, if all the pages allocated could be
-> migrated to one bank, there are no valid data in the another bank. In this
-> time, I could disable the free bank. It isn't necessary to provided power
-> to this chip in the suspend state. When system resume, I just need to
-> enable it again.
-> 
 
-Yes. I already know it and other trials for that a few years ago[1].
-A few years ago, I investigated the benefit between power consumption
-benefit during suspend VS start-up latency of resume and
-power consumption cost of migration(page migration and IO write for
-migration) and concluded normally the gain is not big. :)
-The situation could be changed these days as workload are changing
-but I'm skeptical about that approach, still.
 
-Anyway, it's my private thought so you don't need to care about that.
-If you are ready to submit the patchset, please send out.
+Best Regards
+Jerry Huang
 
-1. http://lwn.net/Articles/478049/
 
-Thanks.
+> -----Original Message-----
+> From: Chris Ball [mailto:cjb@laptop.org]
+> Sent: Wednesday, September 12, 2012 4:59 AM
+> To: Kumar Gala
+> Cc: Huang Changming-R66093; linuxppc-dev@lists.ozlabs.org list; linux-
+> mmc@vger.kernel.org; Anton Vorontsov
+> Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
+>=20
+> Hi,
+>=20
+> On Tue, Sep 11 2012, Kumar Gala wrote:
+> > thanks for the info.  Do you know what's required on controller side
+> > to handle cards that support CMD23?
+> >
+> > I'm trying to figure out if older controller's on FSL SoCs are missing
+> > some feature to allow CMD23 to work (vs Auto-CMD23).
+>=20
+> It seems plausible that it's just not implemented on these controllers.
+> It's a little strange, since the command's been specified for so long and
+> we haven't seen any other controllers with problems.  The patch would be
+> correct if this is true.
+>=20
 
-- 
-Kind regards,
-Minchan Kim
+I didn't find any description about it, but after testing on FSL silicones,=
+ I got this result:
+Some silicones support this command, and some silicones don't support it, w=
+hich will cause I/O error.
