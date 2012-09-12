@@ -1,33 +1,28 @@
-Return-Path: <B32616@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 176412C0089
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 19:45:13 +1000 (EST)
-From: Liu Qiang-B32616 <B32616@freescale.com>
-To: Dan Williams <djbw@fb.com>
-Subject: RE: [PATCH v7 1/8] Talitos: Support for async_tx XOR offload
-Date: Wed, 12 Sep 2012 09:45:05 +0000
-Message-ID: <BCB48C05FCE8BC4D9E61E841ECBE6DB710E9A7@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1344500448-10927-1-git-send-email-qiang.liu@freescale.com>
- <CAA9_cmdqmuhAcaqfkjvKSpsTL350BAJcY8pn6U=SJ9Nok1-XuA@mail.gmail.com>
- <BCB48C05FCE8BC4D9E61E841ECBE6DB70FFB67@039-SN2MPN1-011.039d.mgd.msft.net>
- <CAA9_cmfT1R2+r9_8g0giMJz+wvrNce6T6GPDpvUTtcA-UyAZNQ@mail.gmail.com>
-In-Reply-To: <CAA9_cmfT1R2+r9_8g0giMJz+wvrNce6T6GPDpvUTtcA-UyAZNQ@mail.gmail.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <kas@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [143.182.124.21])
+ by ozlabs.org (Postfix) with ESMTP id 3492A2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 20:09:23 +1000 (EST)
+Date: Wed, 12 Sep 2012 13:09:41 +0300
+From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+To: linux-mm@kvack.org
+Subject: Re: [PATCH v4 0/8] Avoid cache trashing on clearing huge/gigantic page
+Message-ID: <20120912100941.GA26582@otc-wbsnb-06>
+References: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
 MIME-Version: 1.0
-Cc: Li Yang-R58472 <r58472@freescale.com>, "arnd@arndb.de" <arnd@arndb.de>,
- "vinod.koul@intel.com" <vinod.koul@intel.com>,
- "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
- Dave Jiang <dave.jiang@gmail.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Phillips Kim-R1AAHA <R1AAHA@freescale.com>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>,
- "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="9amGYk9869ThD9tj"
+In-Reply-To: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
+Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-mips@linux-mips.org,
+ Andi Kleen <ak@linux.intel.com>, Alex Shi <alex.shu@intel.com>,
+ Robert Richter <robert.richter@amd.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
+ Jan Beulich <jbeulich@novell.com>, Andy Lutomirski <luto@amacapital.net>,
+ Johannes Weiner <hannes@cmpxchg.org>, linux-sh@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Mel Gorman <mgorman@suse.de>,
+ "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, Tim Chen <tim.c.chen@linux.intel.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,95 +32,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> >> Will this engine be coordinating with another to handle memory copies?
-> >>  The dma mapping code for async_tx/raid is broken when dma mapping
-> >> requests overlap or cross dma device boundaries [1].
-> >>
-> >> [1]: http://marc.info/?l=3Dlinux-arm-kernel&m=3D129407269402930&w=3D2
-> > Yes, it needs fsl-dma to handle memcpy copies.
-> > I read your link, the unmap address is stored in talitos hwdesc, the
-> address will be unmapped when async_tx ack this descriptor, I know fsl-
-> dma won't wait this ack flag in current kernel, so I fix it in fsl-dma
-> patch 5/8. Do you mean that?
->=20
-> Unfortunately no.  I'm open to other suggestions. but as far as I can
-> see it requires deeper changes to rip out the dma mapping that happens
-> in async_tx and the automatic unmapping done by drivers.  It should
-> all be pushed to the client (md).
->=20
-> Currently async_tx hides hardware details from md such that it doesn't
-> even care if the operation is offloaded to hardware at all, but that
-> takes things too far.  In the worst case an copy->xor chain handled by
-> multiple channels results in :
->=20
-> 1/ dma_map(copy_chan...)
-> 2/ dma_map(xor_chan...)
-> 3/ <exec copy>
-> 4/ dma_unmap(copy_chan...)
-> 5/ <exec xor> <---initiated by the copy_chan
-> 6/ dma_unmap(xor_chan...)
->=20
-> Step 2 violates the dma api since the buffers belong to the xor_chan
-> until unmap.  Step 5 also causes the random completion context of the
-> copy channel to bleed into submission context of the xor channel which
-> is problematic.  So the order needs to be:
->=20
-> 1/ dma_map(copy_chan...)
-> 2/ <exec copy>
-> 3/ dma_unmap(copy_chan...)
-> 4/ dma_map(xor_chan...)
-> 5/ <exec xor> <--initiated by md in a static context
-> 6/ dma_unmap(xor_chan...)
->=20
-> Also, if xor_chan and copy_chan lie with the same dma mapping domain
-> (iommu or parent device) then we can map the stripe once and skip the
-> extra maintenance for the duration of the chain of operations.  This
-> dumps a lot of hardware details on md, but I think it is the only way
-> to get consistent semantics when arbitrary offload devices are
-> involved.
-Thanks for your answer and links, I did some investigate these days,
 
-first, powerpc processor should be hardware assured cache coherency, it sho=
-uld
-be ok for hardware when in step 5 (but I will avoid map same address on dif=
-ferent
-device).
+--9amGYk9869ThD9tj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-second, I have a workaround to make dma_map/unmap by order when using 2 dif=
-ferent
-device to offload, I will submit next descriptor until current descriptor c=
-omplete,
-        if (submit->flags & ASYNC_TX_ACK)
-                async_tx_ack(tx);
-        if (depend_tx)
-                async_tx_ack(depend_tx);
+Hi,
 
-+       /* do more check to support 2 devices offload? */
-+       if (dma_wait_for_async_tx(tx) =3D=3D DMA_ERROR)
-+               panic("%s: DMA_ERROR waiting for tx\n", __func__);
-}
-EXPORT_SYMBOL_GPL(async_tx_submit);
+Any feedback?
 
-Also use your example,=20
-1/ dma_map(copy_chan...)
-2/ tx->submit(tx); async_tx_ack(tx);
-3/ dma_unmap(copy_chan...)
-4/ dma_map(xor_chan...)
-5/ <exec xor> <-- initialized by tx->submit(tx);
-6/ dma_unmap(xor_chan...)
+--=20
+ Kirill A. Shutemov
 
-Under this way, actually dma_run_dependency() is useless, so this can make =
-sure copy
-and xor with same page processed by order, and only one descriptor per chan=
-nel is
-served. dma_unmap in driver is controlled by client (tx->flags)
+--9amGYk9869ThD9tj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-How's you thinking or any suggestions? I test it on our powerpc, I don't kn=
-ow whether
-it does work on other architecture.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
 
-Thanks.
+iQIcBAEBAgAGBQJQUF9lAAoJEAd+omnVudOMqvgP/A9oBD+NU+NuFlm6b32IkUIR
+2jlEFuSzAp3dAS+aQWVcjLz88pNu7ZjD2m9dTWwVr03UKSlfc/UUcHctWmjrhj+B
+trkuGQ7qVadFTaunqj1z1NZGCrXwGTdw2f+soGtJ+cmwmOqxrqyDJlbJyyOfpiJe
+iYyOU522V7Rc/cnyjY+OxOkaHDBy3RIpo6DhVpSC4Ws6wH6bkuiM2ZYAx+fiRDnj
+Ii60Iel88rjQ0uSeTQ+Jznu16czL4q4bRB9IeT24jUQRgTp7kYKNyjzgy4/zrjOL
+Dlkck9VihPQhZ3QxAjqcxQQCwclB0GctZDFUIrP97+REFlvd3u7yVzgxpeVuqtsz
+K6aXJDcPqfTGyEe0OgOGVb+M6ylvIvsXjNXkym85PTCZNnw9smem1S2HY5689bH+
+ELP9ruYagr1yb+LTX3CQmFuvmoCyuzES/tgw97AJbFP3prkt0K44WhBsJCaflJjl
+efJg6qWTwTrIK8hq0ulcWnwa2oi9zbNwV2SVgDdVQmOfwtzKAp69ijF0Rd4lwpZf
+47ch8oZDVcn8Fv2nhv9FrFr8JiAZ07eIwzeAGiSfpIRpcKXoKUp8y950i++mlxNq
+xoGPDY1odKCKoVsbwYtW/E9l/tmUhTljqExfn9pzcHqMz4YUMGob7xnZOP0ljY5y
+ikNOztWkQPhLD2Cj1nLx
+=p8ME
+-----END PGP SIGNATURE-----
 
->=20
-> --
-> Dan
+--9amGYk9869ThD9tj--
