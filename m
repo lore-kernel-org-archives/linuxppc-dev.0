@@ -1,18 +1,23 @@
-Return-Path: <dan@danny.cz>
-Received: from eagle.danny.cz (unknown
- [IPv6:2a01:8c00:ffb3:160:222:15ff:fe86:f1bd])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F14062C0080
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 23:22:43 +1000 (EST)
-From: =?UTF-8?q?Dan=20Hor=C3=A1k?= <dan@danny.cz>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] add GXT4000P and GXT6500P support to the gxt4500 driver
-Date: Wed, 12 Sep 2012 14:58:55 +0200
-Message-Id: <1347454735-7709-1-git-send-email-dan@danny.cz>
+Return-Path: <cyril@ti.com>
+From: Cyril Chemparathy <cyril@ti.com>
+To: <devicetree-discuss@lists.ozlabs.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-c6x-dev@linux-c6x.org>,
+ <linux-kernel@vger.kernel.org>, <linux-mips@linux-mips.org>,
+ <linux@openrisc.net>, <linuxppc-dev@lists.ozlabs.org>,
+ <microblaze-uclinux@itee.uq.edu.au>
+Subject: [PATCH] of: specify initrd location using 64-bit
+Date: Wed, 12 Sep 2012 12:05:37 -0400
+Message-ID: <1347465937-7056-1-git-send-email-cyril@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: Nico Macrionitis <acrux@cruxppc.org>, Giuseppe Coviello <cjg@cruxppc.org>
+Content-Type: text/plain
+Cc: x86@kernel.org, david.daney@cavium.com, bigeasy@linutronix.de,
+ paul.gortmaker@windriver.com, paulus@samba.org, hpa@zytor.com,
+ m.szyprowski@samsung.com, jonas@southpole.se, linux@arm.linux.org.uk,
+ nico@linaro.org, a-jacquiot@ti.com, mingo@redhat.com, suzuki@in.ibm.com,
+ mahesh@linux.vnet.ibm.com, linus.walleij@linaro.org,
+ Cyril Chemparathy <cyril@ti.com>, arnd@arndb.de, msalter@redhat.com,
+ rob.herring@calxeda.com, tglx@linutronix.de, blogic@openwrt.org,
+ dhowells@redhat.com, monstr@monstr.eu, ralf@linux-mips.org, tj@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,111 +27,168 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I'm reviving an old patch from 2009 that adds support for GXT4000P and GXT6500P
-adapter to the gxt4500 driver.
+On some PAE architectures, the entire range of physical memory could reside
+outside the 32-bit limit.  These systems need the ability to specify the
+initrd location using 64-bit numbers.
 
-See threads at http://marc.info/?l=linux-fbdev-devel&m=124345080216952&w=2
-and https://lists.ozlabs.org/pipermail/linuxppc-dev/2009-June/072672.html
-for more details.
-
-This patch adds support for GXT4000P and GXT6500P cards found on some
-IBM pSeries machines.
-GXT4000P/6000P and GXT4500P/6500P  couples are  identical from
-software's point of view and are based on the same  Raster Engine
-(RC1000), except for a different reference clock for the PLL.
-GXT6x00P models are equipped with an additional Geometry Engine
-(GT1000) but this driver doesn't use it.
-
-Signed-off-by: Nico Macrionitis <acrux@cruxppc.org>
-Signed-off-by: Giuseppe Coviello <cjg@cruxppc.org>
-Tested-by: Dan Horák <dan@danny.cz>
+This patch globally modifies the early_init_dt_setup_initrd_arch() function to
+use 64-bit numbers instead of the current unsigned long.
 ---
- drivers/video/Kconfig   |    8 +++++---
- drivers/video/gxt4500.c |   15 +++++++++++++--
- 2 files changed, 18 insertions(+), 5 deletions(-)
+ arch/arm/mm/init.c            |    2 +-
+ arch/c6x/kernel/devicetree.c  |    3 +--
+ arch/microblaze/kernel/prom.c |    3 +--
+ arch/mips/kernel/prom.c       |    3 +--
+ arch/openrisc/kernel/prom.c   |    3 +--
+ arch/powerpc/kernel/prom.c    |    3 +--
+ arch/x86/kernel/devicetree.c  |    3 +--
+ drivers/of/fdt.c              |   10 ++++++----
+ include/linux/of_fdt.h        |    3 +--
+ 9 files changed, 14 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 0217f74..c89eb1e 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -2167,14 +2167,16 @@ config FB_PNX4008_DUM_RGB
- 	  Say Y here to enable support for PNX4008 RGB Framebuffer
+diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
+index ad722f1..579792c 100644
+--- a/arch/arm/mm/init.c
++++ b/arch/arm/mm/init.c
+@@ -76,7 +76,7 @@ static int __init parse_tag_initrd2(const struct tag *tag)
+ __tagtable(ATAG_INITRD2, parse_tag_initrd2);
  
- config FB_IBM_GXT4500
--	tristate "Framebuffer support for IBM GXT4500P adaptor"
-+	tristate "Framebuffer support for IBM GXT4000P/4500P/6000P/6500P adaptors"
- 	depends on FB && PPC
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
- 	---help---
--	  Say Y here to enable support for the IBM GXT4500P display
--	  adaptor, found on some IBM System P (pSeries) machines.
-+	  Say Y here to enable support for the IBM GXT4000P/6000P and
-+	  GXT4500P/6500P display adaptor based on Raster Engine RC1000,
-+	  found on some IBM System P (pSeries) machines. This driver
-+	  doesn't use Geometry Engine GT1000.
+ #ifdef CONFIG_OF_FLATTREE
+-void __init early_init_dt_setup_initrd_arch(unsigned long start, unsigned long end)
++void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
+ {
+ 	phys_initrd_start = start;
+ 	phys_initrd_size = end - start;
+diff --git a/arch/c6x/kernel/devicetree.c b/arch/c6x/kernel/devicetree.c
+index bdb56f0..287d0e6 100644
+--- a/arch/c6x/kernel/devicetree.c
++++ b/arch/c6x/kernel/devicetree.c
+@@ -33,8 +33,7 @@ void __init early_init_devtree(void *params)
  
- config FB_PS3
- 	tristate "PS3 GPU framebuffer driver"
-diff --git a/drivers/video/gxt4500.c b/drivers/video/gxt4500.c
-index 0fad23f..755c3e7 100644
---- a/drivers/video/gxt4500.c
-+++ b/drivers/video/gxt4500.c
-@@ -1,5 +1,6 @@
- /*
-- * Frame buffer device for IBM GXT4500P and GXT6000P display adaptors
-+ * Frame buffer device for IBM GXT4500P/6500P and GXT4000P/6000P
-+ * display adaptors
-  *
-  * Copyright (C) 2006 Paul Mackerras, IBM Corp. <paulus@samba.org>
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+-void __init early_init_dt_setup_initrd_arch(unsigned long start,
+-		unsigned long end)
++void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
+ {
+ 	initrd_start = (unsigned long)__va(start);
+ 	initrd_end = (unsigned long)__va(end);
+diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
+index 4a764cc..cecd42c 100644
+--- a/arch/microblaze/kernel/prom.c
++++ b/arch/microblaze/kernel/prom.c
+@@ -136,8 +136,7 @@ void __init early_init_devtree(void *params)
+ }
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+-void __init early_init_dt_setup_initrd_arch(unsigned long start,
+-		unsigned long end)
++void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
+ {
+ 	initrd_start = (unsigned long)__va(start);
+ 	initrd_end = (unsigned long)__va(end);
+diff --git a/arch/mips/kernel/prom.c b/arch/mips/kernel/prom.c
+index 028f6f8..e37e0dc 100644
+--- a/arch/mips/kernel/prom.c
++++ b/arch/mips/kernel/prom.c
+@@ -41,8 +41,7 @@ void * __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
+ }
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+-void __init early_init_dt_setup_initrd_arch(unsigned long start,
+-					    unsigned long end)
++void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
+ {
+ 	initrd_start = (unsigned long)__va(start);
+ 	initrd_end = (unsigned long)__va(end);
+diff --git a/arch/openrisc/kernel/prom.c b/arch/openrisc/kernel/prom.c
+index 5869e3f..150215a 100644
+--- a/arch/openrisc/kernel/prom.c
++++ b/arch/openrisc/kernel/prom.c
+@@ -96,8 +96,7 @@ void __init early_init_devtree(void *params)
+ }
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+-void __init early_init_dt_setup_initrd_arch(unsigned long start,
+-		unsigned long end)
++void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
+ {
+ 	initrd_start = (unsigned long)__va(start);
+ 	initrd_end = (unsigned long)__va(end);
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 37725e8..ac15f63 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -549,8 +549,7 @@ void * __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
+ }
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+-void __init early_init_dt_setup_initrd_arch(unsigned long start,
+-		unsigned long end)
++void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
+ {
+ 	initrd_start = (unsigned long)__va(start);
+ 	initrd_end = (unsigned long)__va(end);
+diff --git a/arch/x86/kernel/devicetree.c b/arch/x86/kernel/devicetree.c
+index b158152..2fbad6b 100644
+--- a/arch/x86/kernel/devicetree.c
++++ b/arch/x86/kernel/devicetree.c
+@@ -52,8 +52,7 @@ void * __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
+ }
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+-void __init early_init_dt_setup_initrd_arch(unsigned long start,
+-					    unsigned long end)
++void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
+ {
+ 	initrd_start = (unsigned long)__va(start);
+ 	initrd_end = (unsigned long)__va(end);
+diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+index 91a375f..2ff8b7a 100644
+--- a/drivers/of/fdt.c
++++ b/drivers/of/fdt.c
+@@ -554,7 +554,8 @@ int __init of_flat_dt_match(unsigned long node, const char *const *compat)
   */
-@@ -14,6 +15,8 @@
- #include <linux/string.h>
+ void __init early_init_dt_check_for_initrd(unsigned long node)
+ {
+-	unsigned long start, end, len;
++	u64 start, end;
++	unsigned long len;
+ 	__be32 *prop;
  
- #define PCI_DEVICE_ID_IBM_GXT4500P	0x21c
-+#define PCI_DEVICE_ID_IBM_GXT6500P	0x21b
-+#define PCI_DEVICE_ID_IBM_GXT4000P	0x16e
- #define PCI_DEVICE_ID_IBM_GXT6000P	0x170
+ 	pr_debug("Looking for initrd properties... ");
+@@ -562,15 +563,16 @@ void __init early_init_dt_check_for_initrd(unsigned long node)
+ 	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
+ 	if (!prop)
+ 		return;
+-	start = of_read_ulong(prop, len/4);
++	start = of_read_number(prop, len/4);
  
- /* GXT4500P registers */
-@@ -173,6 +176,8 @@ static const struct fb_videomode defaultmode __devinitdata = {
- /* List of supported cards */
- enum gxt_cards {
- 	GXT4500P,
-+	GXT6500P,
-+	GXT4000P,
- 	GXT6000P
- };
+ 	prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
+ 	if (!prop)
+ 		return;
+-	end = of_read_ulong(prop, len/4);
++	end = of_read_number(prop, len/4);
  
-@@ -182,6 +187,8 @@ static const struct cardinfo {
- 	const char *cardname;
- } cardinfo[] = {
- 	[GXT4500P] = { .refclk_ps = 9259, .cardname = "IBM GXT4500P" },
-+	[GXT6500P] = { .refclk_ps = 9259, .cardname = "IBM GXT6500P" },
-+	[GXT4000P] = { .refclk_ps = 40000, .cardname = "IBM GXT4000P" },
- 	[GXT6000P] = { .refclk_ps = 40000, .cardname = "IBM GXT6000P" },
- };
+ 	early_init_dt_setup_initrd_arch(start, end);
+-	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n", start, end);
++	pr_debug("initrd_start=0x%llx  initrd_end=0x%llx\n",
++		 (unsigned long long)start, (unsigned long long)end);
+ }
+ #else
+ inline void early_init_dt_check_for_initrd(unsigned long node)
+diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+index ed136ad..4a17939 100644
+--- a/include/linux/of_fdt.h
++++ b/include/linux/of_fdt.h
+@@ -106,8 +106,7 @@ extern u64 dt_mem_next_cell(int s, __be32 **cellp);
+  * physical addresses.
+  */
+ #ifdef CONFIG_BLK_DEV_INITRD
+-extern void early_init_dt_setup_initrd_arch(unsigned long start,
+-					    unsigned long end);
++extern void early_init_dt_setup_initrd_arch(u64 start, u64 end);
+ #endif
  
-@@ -736,6 +743,10 @@ static void __devexit gxt4500_remove(struct pci_dev *pdev)
- static const struct pci_device_id gxt4500_pci_tbl[] = {
- 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT4500P),
- 	  .driver_data = GXT4500P },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT6500P),
-+	  .driver_data = GXT6500P },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT4000P),
-+	  .driver_data = GXT4000P },
- 	{ PCI_DEVICE(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_GXT6000P),
- 	  .driver_data = GXT6000P },
- 	{ 0 }
-@@ -768,7 +779,7 @@ static void __exit gxt4500_exit(void)
- module_exit(gxt4500_exit);
- 
- MODULE_AUTHOR("Paul Mackerras <paulus@samba.org>");
--MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6000P");
-+MODULE_DESCRIPTION("FBDev driver for IBM GXT4500P/6500P and GXT4000P/6000P");
- MODULE_LICENSE("GPL");
- module_param(mode_option, charp, 0);
- MODULE_PARM_DESC(mode_option, "Specify resolution as \"<xres>x<yres>[-<bpp>][@<refresh>]\"");
+ /* Early flat tree scan hooks */
 -- 
-1.7.7.6
+1.7.9.5
