@@ -1,23 +1,25 @@
-Return-Path: <cyril@ti.com>
-From: Cyril Chemparathy <cyril@ti.com>
-To: <devicetree-discuss@lists.ozlabs.org>,
- <linux-arm-kernel@lists.infradead.org>, <linux-c6x-dev@linux-c6x.org>,
- <linux-kernel@vger.kernel.org>, <linux-mips@linux-mips.org>,
- <linux@openrisc.net>, <linuxppc-dev@lists.ozlabs.org>,
- <microblaze-uclinux@itee.uq.edu.au>
-Subject: [PATCH] of: specify initrd location using 64-bit
-Date: Wed, 12 Sep 2012 12:05:37 -0400
-Message-ID: <1347465937-7056-1-git-send-email-cyril@ti.com>
+Return-Path: <emillbrandt@dekaresearch.com>
+Received: from dekaexchange07.deka.local (mail.dekaresearch.com
+ [208.65.175.196]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "dekaexchange07", Issuer "dekaexchange07" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E9F1E2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 03:15:17 +1000 (EST)
+From: Eric Millbrandt <emillbrandt@dekaresearch.com>
+To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>
+Date: Wed, 12 Sep 2012 13:15:05 -0400
+Subject: RE: [alsa-devel] [PATCH 2/5] ASoC: fsl: mpc5200 combine psc_dma
+ platform data
+Message-ID: <0A40042D85E7C84DB443060EC44B3FD336D854FEE6@dekaexchange07.deka.local>
+References: <1347416089-23393-1-git-send-email-emillbrandt@dekaresearch.com>
+ <1347416089-23393-3-git-send-email-emillbrandt@dekaresearch.com>
+ <20120912135412.GF19055@opensource.wolfsonmicro.com>
+In-Reply-To: <20120912135412.GF19055@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: x86@kernel.org, david.daney@cavium.com, bigeasy@linutronix.de,
- paul.gortmaker@windriver.com, paulus@samba.org, hpa@zytor.com,
- m.szyprowski@samsung.com, jonas@southpole.se, linux@arm.linux.org.uk,
- nico@linaro.org, a-jacquiot@ti.com, mingo@redhat.com, suzuki@in.ibm.com,
- mahesh@linux.vnet.ibm.com, linus.walleij@linaro.org,
- Cyril Chemparathy <cyril@ti.com>, arnd@arndb.de, msalter@redhat.com,
- rob.herring@calxeda.com, tglx@linutronix.de, blogic@openwrt.org,
- dhowells@redhat.com, monstr@monstr.eu, ralf@linux-mips.org, tj@kernel.org
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Liam Girdwood <lrg@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,168 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On some PAE architectures, the entire range of physical memory could reside
-outside the 32-bit limit.  These systems need the ability to specify the
-initrd location using 64-bit numbers.
+Hi Mark,
 
-This patch globally modifies the early_init_dt_setup_initrd_arch() function to
-use 64-bit numbers instead of the current unsigned long.
----
- arch/arm/mm/init.c            |    2 +-
- arch/c6x/kernel/devicetree.c  |    3 +--
- arch/microblaze/kernel/prom.c |    3 +--
- arch/mips/kernel/prom.c       |    3 +--
- arch/openrisc/kernel/prom.c   |    3 +--
- arch/powerpc/kernel/prom.c    |    3 +--
- arch/x86/kernel/devicetree.c  |    3 +--
- drivers/of/fdt.c              |   10 ++++++----
- include/linux/of_fdt.h        |    3 +--
- 9 files changed, 14 insertions(+), 19 deletions(-)
+On 2012-09-12 Mark Brown wrote:
+> On Tue, Sep 11, 2012 at 10:14:46PM -0400, Eric Millbrandt wrote:
+>> The mpc5200_psc_ac97 and mpc5200_psc_i2s modules rely on shared
+>> platform data with mpc5200_dma.
+>
+> This looks good but depends on patch 1 so I can't apply it - if you can
+> rebase things so this is patch 1 I'll apply it.
 
-diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
-index ad722f1..579792c 100644
---- a/arch/arm/mm/init.c
-+++ b/arch/arm/mm/init.c
-@@ -76,7 +76,7 @@ static int __init parse_tag_initrd2(const struct tag *tag)
- __tagtable(ATAG_INITRD2, parse_tag_initrd2);
- 
- #ifdef CONFIG_OF_FLATTREE
--void __init early_init_dt_setup_initrd_arch(unsigned long start, unsigned long end)
-+void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
- {
- 	phys_initrd_start = start;
- 	phys_initrd_size = end - start;
-diff --git a/arch/c6x/kernel/devicetree.c b/arch/c6x/kernel/devicetree.c
-index bdb56f0..287d0e6 100644
---- a/arch/c6x/kernel/devicetree.c
-+++ b/arch/c6x/kernel/devicetree.c
-@@ -33,8 +33,7 @@ void __init early_init_devtree(void *params)
- 
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--void __init early_init_dt_setup_initrd_arch(unsigned long start,
--		unsigned long end)
-+void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
- {
- 	initrd_start = (unsigned long)__va(start);
- 	initrd_end = (unsigned long)__va(end);
-diff --git a/arch/microblaze/kernel/prom.c b/arch/microblaze/kernel/prom.c
-index 4a764cc..cecd42c 100644
---- a/arch/microblaze/kernel/prom.c
-+++ b/arch/microblaze/kernel/prom.c
-@@ -136,8 +136,7 @@ void __init early_init_devtree(void *params)
- }
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--void __init early_init_dt_setup_initrd_arch(unsigned long start,
--		unsigned long end)
-+void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
- {
- 	initrd_start = (unsigned long)__va(start);
- 	initrd_end = (unsigned long)__va(end);
-diff --git a/arch/mips/kernel/prom.c b/arch/mips/kernel/prom.c
-index 028f6f8..e37e0dc 100644
---- a/arch/mips/kernel/prom.c
-+++ b/arch/mips/kernel/prom.c
-@@ -41,8 +41,7 @@ void * __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
- }
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--void __init early_init_dt_setup_initrd_arch(unsigned long start,
--					    unsigned long end)
-+void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
- {
- 	initrd_start = (unsigned long)__va(start);
- 	initrd_end = (unsigned long)__va(end);
-diff --git a/arch/openrisc/kernel/prom.c b/arch/openrisc/kernel/prom.c
-index 5869e3f..150215a 100644
---- a/arch/openrisc/kernel/prom.c
-+++ b/arch/openrisc/kernel/prom.c
-@@ -96,8 +96,7 @@ void __init early_init_devtree(void *params)
- }
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--void __init early_init_dt_setup_initrd_arch(unsigned long start,
--		unsigned long end)
-+void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
- {
- 	initrd_start = (unsigned long)__va(start);
- 	initrd_end = (unsigned long)__va(end);
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 37725e8..ac15f63 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -549,8 +549,7 @@ void * __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
- }
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--void __init early_init_dt_setup_initrd_arch(unsigned long start,
--		unsigned long end)
-+void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
- {
- 	initrd_start = (unsigned long)__va(start);
- 	initrd_end = (unsigned long)__va(end);
-diff --git a/arch/x86/kernel/devicetree.c b/arch/x86/kernel/devicetree.c
-index b158152..2fbad6b 100644
---- a/arch/x86/kernel/devicetree.c
-+++ b/arch/x86/kernel/devicetree.c
-@@ -52,8 +52,7 @@ void * __init early_init_dt_alloc_memory_arch(u64 size, u64 align)
- }
- 
- #ifdef CONFIG_BLK_DEV_INITRD
--void __init early_init_dt_setup_initrd_arch(unsigned long start,
--					    unsigned long end)
-+void __init early_init_dt_setup_initrd_arch(u64 start, u64 end)
- {
- 	initrd_start = (unsigned long)__va(start);
- 	initrd_end = (unsigned long)__va(end);
-diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-index 91a375f..2ff8b7a 100644
---- a/drivers/of/fdt.c
-+++ b/drivers/of/fdt.c
-@@ -554,7 +554,8 @@ int __init of_flat_dt_match(unsigned long node, const char *const *compat)
-  */
- void __init early_init_dt_check_for_initrd(unsigned long node)
- {
--	unsigned long start, end, len;
-+	u64 start, end;
-+	unsigned long len;
- 	__be32 *prop;
- 
- 	pr_debug("Looking for initrd properties... ");
-@@ -562,15 +563,16 @@ void __init early_init_dt_check_for_initrd(unsigned long node)
- 	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &len);
- 	if (!prop)
- 		return;
--	start = of_read_ulong(prop, len/4);
-+	start = of_read_number(prop, len/4);
- 
- 	prop = of_get_flat_dt_prop(node, "linux,initrd-end", &len);
- 	if (!prop)
- 		return;
--	end = of_read_ulong(prop, len/4);
-+	end = of_read_number(prop, len/4);
- 
- 	early_init_dt_setup_initrd_arch(start, end);
--	pr_debug("initrd_start=0x%lx  initrd_end=0x%lx\n", start, end);
-+	pr_debug("initrd_start=0x%llx  initrd_end=0x%llx\n",
-+		 (unsigned long long)start, (unsigned long long)end);
- }
- #else
- inline void early_init_dt_check_for_initrd(unsigned long node)
-diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
-index ed136ad..4a17939 100644
---- a/include/linux/of_fdt.h
-+++ b/include/linux/of_fdt.h
-@@ -106,8 +106,7 @@ extern u64 dt_mem_next_cell(int s, __be32 **cellp);
-  * physical addresses.
-  */
- #ifdef CONFIG_BLK_DEV_INITRD
--extern void early_init_dt_setup_initrd_arch(unsigned long start,
--					    unsigned long end);
-+extern void early_init_dt_setup_initrd_arch(u64 start, u64 end);
- #endif
- 
- /* Early flat tree scan hooks */
--- 
-1.7.9.5
+After mulling your comments I see now that not being able to define a snd_s=
+oc_ops for an ASoC machine driver would only work for very few boards.  I'l=
+l think on it some more and respin the series to be pcm030 specific.
+
+Eric
+
+-DISCLAIMER: an automatically appended disclaimer may follow. By posting-
+-to a public e-mail mailing list I hereby grant permission to distribute-
+-and copy this message.-
+
+
+
+This e-mail and the information, including any attachments, it contains are=
+ intended to be a confidential communication only to the person or entity t=
+o whom it is addressed and may contain information that is privileged. If t=
+he reader of this message is not the intended recipient, you are hereby not=
+ified that any dissemination, distribution or copying of this communication=
+ is strictly prohibited. If you have received this communication in error, =
+please immediately notify the sender and destroy the original message.
+
+Thank you.
+
+Please consider the environment before printing this email.
