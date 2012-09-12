@@ -1,28 +1,28 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-ie0-f179.google.com (mail-ie0-f179.google.com
- [209.85.223.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D3D832C0092
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 13:40:52 +1000 (EST)
-Received: by ieje13 with SMTP id e13so2358964iej.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Sep 2012 20:40:50 -0700 (PDT)
-Date: Tue, 11 Sep 2012 20:38:11 -0700
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Huang Changming-R66093 <r66093@freescale.com>
-Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
-Message-ID: <20120912033811.GA1886@lizard>
-References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
- <504F82C1.2000907@freescale.com>
- <110EED8CC96DFC488B7E717A2027A27C176E94@039-SN1MPN1-002.039d.mgd.msft.net>
+Return-Path: <jmorris@namei.org>
+Received: from tundra.namei.org (tundra.namei.org [65.99.196.166])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 64CAB2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Sep 2012 13:58:53 +1000 (EST)
+Date: Wed, 12 Sep 2012 13:16:25 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Kent Yoder <key@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 1/3] drivers/char/tpm: Add new device driver to support
+ IBM vTPM
+In-Reply-To: <20120907173809.GA19704@linux.vnet.ibm.com>
+Message-ID: <alpine.LRH.2.02.1209121316030.4482@tundra.namei.org>
+References: <1344987282.4430.26.camel@footlong>
+ <1345670263.25124.7.camel@footlong>
+ <20120822214217.GB13519@linux.vnet.ibm.com>
+ <1346816407.2257.37.camel@pasglop>
+ <20120905154644.GA14925@linux.vnet.ibm.com>
+ <1346879505.19098.3.camel@pasglop>
+ <20120907173809.GA19704@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <110EED8CC96DFC488B7E717A2027A27C176E94@039-SN1MPN1-002.039d.mgd.msft.net>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, Ashley Lai <adlai@linux.vnet.ibm.com>,
+ linux-security-module@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
+ adlai@us.ibm.com, rcj@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +32,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 12, 2012 at 03:19:18AM +0000, Huang Changming-R66093 wrote:
-[...]
-> I don't think it is the best way to do it.  For the VVN2.2 or older,
-> some silicon support this feature (mpc8536 and p2020), but other
-> silicones don't support it (e.g. p4080, p102x).  Though, the current
-> p5/p4/p3 has supported this feature, can we sure the future silicon
-> support it?  So I think the best way is to specify it in device tree
-> as 'sdhci,auto-cmd12'
+On Fri, 7 Sep 2012, Kent Yoder wrote:
 
-In addition to your current patches, you could just add another patch
-that blacklists affected SOC revisions based on the info from PVR/SVR.
+> > >   James did accept my pull request, so these are already in
+> > > security-next...
+> > 
+> > For the driver itself, it's not a big issue (though I did found issue
+> > while reviewing it so it will need another round of updates). For the
+> > code that changes arch/powerpc, especially prom_init.c, that stuff must
+> > at the very least be acked by me (or the acting powerpc person if I'm
+> > away) if it's going to go via a different tree.
+> 
+>   Sorry about that.  Hopefully there won't be any changes there and we
+> can amend with your ack.
+> 
+>   As for the driver updates, I'd hate to see everyone else's code in the
+> pull request get delayed yet again.  James, will it be ok to apply the
+> update on top of security-next?
 
-For example, see gfar_detect_errata() in
-drivers/net/ethernet/freescale/gianfar.c.
+I guess?
 
-That way you could help users that don't have the newest device trees.
-
-Thanks,
-Anton.
+-- 
+James Morris
+<jmorris@namei.org>
