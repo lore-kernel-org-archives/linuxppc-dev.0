@@ -1,21 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E36892C0084
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 22:54:26 +1000 (EST)
-Subject: Re: [PATCH] driver/mtd:IFC NAND:Initialise internal SRAM before any
- write
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1347526489-20186-1-git-send-email-prabhakar@freescale.com>
-Date: Thu, 13 Sep 2012 07:53:34 -0500
-Message-Id: <68738277-B1F2-4455-B8FD-67F2DD9E1310@kernel.crashing.org>
-References: <1347526489-20186-1-git-send-email-prabhakar@freescale.com>
-To: Prabhakar Kushwaha <prabhakar@freescale.com>
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-mtd@lists.infradead.org, dedekind1@gmail.com
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 444C12C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 01:02:14 +1000 (EST)
+Message-ID: <5051F56E.6010409@suse.de>
+Date: Thu, 13 Sep 2012 17:02:06 +0200
+From: Alexander Graf <agraf@suse.de>
+MIME-Version: 1.0
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Subject: Re: [PATCH] KVM: PPC: bookehv: Allow duplicate calls of DO_KVM macro
+References: <1347455894-30044-1-git-send-email-mihai.caraman@freescale.com>
+In-Reply-To: <1347455894-30044-1-git-send-email-mihai.caraman@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,37 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 09/12/2012 03:18 PM, Mihai Caraman wrote:
+> The current form of DO_KVM macro restricts its use to one call per input
+> parameter set. This is caused by kvmppc_resume_\intno\()_\srr1 symbol
+> definition.
+> Duplicate calls of DO_KVM are required by distinct implementations of
+> exeption handlers which are delegated at runtime. Use a rare label number
+> to avoid conflicts with the calling contexts.
+>
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 
-On Sep 13, 2012, at 3:54 AM, Prabhakar Kushwaha wrote:
+Thanks, applied to kvm-ppc-next.
 
-> IFC-1.1.0 uses 28nm techenology for SRAM. This tech has known =
-limitaion for
-> SRAM i.e. "byte select" is not supported. Hence Read Modify Write is
-> implemented in IFC for any "system side write" into sram buffer. =
-Reading an
-> uninitialized memory results in ECC Error from sram wrapper.
->=20
-> Hence we must initialize/prefill SRAM buffer by any data before =
-writing
-> anything in SRAM from system side. To initialize SRAM user can use =
-"READID"
-> NAND command with read bytes equal to SRAM size. It will be a one time
-> activity post boot.
->=20
-> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
-> ---
-> Based upon git://git.infradead.org/linux-mtd.git branch master
-> The compilation of this patch depends upon following patch.
-> http://patchwork.ozlabs.org/patch/177893/
-> This patch is currently applied on =
-git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git=20
-> branch next and status is "Awaiting Upstream"
->=20
->=20
-> drivers/mtd/nand/fsl_ifc_nand.c |   56 =
-++++++++++++++++++++++++++++++++++++++-
-> 1 file changed, 55 insertions(+), 1 deletion(-)
 
-If MTD maintainers ack, I'm happy to pull this in via PPC tree.
-
-- k=
+Alex
