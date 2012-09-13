@@ -1,28 +1,24 @@
-Return-Path: <robherring2@gmail.com>
-Message-ID: <505249F9.7050201@gmail.com>
-Date: Thu, 13 Sep 2012 16:02:49 -0500
-From: Rob Herring <robherring2@gmail.com>
-MIME-Version: 1.0
-To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH] of: specify initrd location using 64-bit
-References: <1347465937-7056-1-git-send-email-cyril@ti.com>
- <CAMuHMdUuQzD0bq8PifBea2-0Pk7RhmPA0-GAFprsk+vMxMGjGw@mail.gmail.com>
- <5050CE33.9060909@ti.com> <5050E965.5080405@linutronix.de>
- <505107DF.5020105@gmail.com> <5051816A.3050705@linutronix.de>
-In-Reply-To: <5051816A.3050705@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mips@linux-mips.org, a-jacquiot@ti.com, mahesh@linux.vnet.ibm.com,
- linux@openrisc.net, paul.gortmaker@windriver.com, paulus@samba.org,
- hpa@zytor.com, m.szyprowski@samsung.com, jonas@southpole.se,
- linux@arm.linux.org.uk, linux-c6x-dev@linux-c6x.org, nico@linaro.org,
- x86@kernel.org, mingo@redhat.com, suzuki@in.ibm.com,
- Cyril Chemparathy <cyril@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- linus.walleij@linaro.org, arnd@arndb.de, microblaze-uclinux@itee.uq.edu.au,
- devicetree-discuss@lists.ozlabs.org, msalter@redhat.com,
- rob.herring@calxeda.com, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, blogic@openwrt.org, dhowells@redhat.com,
- monstr@monstr.eu, david.daney@cavium.com, linux-kernel@vger.kernel.org,
- ralf@linux-mips.org, tj@kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 529FA2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 07:42:10 +1000 (EST)
+Message-ID: <1347572526.2276.29.camel@pasglop>
+Subject: Re: [v3][PATCH 2/3] ppc/kprobe: complete kprobe and migrate
+ exception frame
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "tiejun.chen" <tiejun.chen@windriver.com>
+Date: Fri, 14 Sep 2012 07:42:06 +1000
+In-Reply-To: <5051B749.5040606@windriver.com>
+References: <1347330053-27039-1-git-send-email-tiejun.chen@windriver.com>
+ <1347330053-27039-2-git-send-email-tiejun.chen@windriver.com>
+ <1347342718.2603.38.camel@pasglop> <505049FE.8060204@windriver.com>
+ <1347439382.2603.97.camel@pasglop> <50504DEE.6060903@windriver.com>
+ <1347446296.2276.0.camel@pasglop> <5051B749.5040606@windriver.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +28,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/13/2012 01:47 AM, Sebastian Andrzej Siewior wrote:
-> On 09/13/2012 12:08 AM, Rob Herring wrote:
->>> Geert is right here. If it is a physical address, it should be
->>> phys_addr_t.
->>
->> While generally true, for the DT specific code I think it should be a
->> fixed u64. The size of the address is defined by the FDT, not the
->> kernel. It is very likely we could have a FDT that specifies addresses
->> in 64-bit values, but then we boot a kernel is compiled for !LPAE.
->> phys_addr_t is currently sized based on LPAE setting.
+On Thu, 2012-09-13 at 18:36 +0800, tiejun.chen wrote:
+> On 09/12/2012 06:38 PM, Benjamin Herrenschmidt wrote:
+> > On Wed, 2012-09-12 at 16:55 +0800, tiejun.chen wrote:
+> >>> to worry about nor stack frame to create etc...
+> >>
+> >> If you don't like this v4, let me know and then I can go back memcpy
+> >> for next
+> >> version.
+> >
+> > Just open code the whole copy. It should be easy really. As I said, you
+> > have the src and dst already in registers and you know they are aligned,
+> > so just put the size of the frame in a register (divided by 4), do an
+> > mtctr and do a little load_update/store_update loop to do the copy, all
+> > in the asm.
 > 
-> If your kernel is 32bit without PAE and your DTB address is >32ibt than
-> you can't handle it. If you don't notice this in your dt code than you
-> remap the wrong memory ioremap().
+> Is the following Okay?
 
-The size of the initrd fields are set by #address-cells properties and
-determined when you create the dtb. The address to load the initrd is
-decided by the bootloader/user and set at that point later in time. The
-dtb should not be tied to the kernel you are booting. Obviously, if you
-want to boot a non-PAE kernel, everything has to be placed at <4GB.
+Well, why did you bother with the flushes ? One of the main reason I
+wasn't too happy with hijacking copy_and_flush is that ... you really
+don't need to bother about flushing the cache :-) The flush in that
+routine is about copying kernel code around and making sure the I/D
+caches stay in sync.
 
-I can boot i386 and i386-pae kernels on an i386-pae machines. I expect
-to generally be able to do that on ARM. Perhaps some SOCs like this one
-will not allow that, it is not always true.
+Cheers,
+Ben.
 
-Rob
+> ---
+>   arch/powerpc/kernel/entry_32.S |   55 +++++++++++++++++++++++++++++++++++-----
+>   arch/powerpc/kernel/entry_64.S |   45 ++++++++++++++++++++++++++++++++
+>   2 files changed, 94 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index ead5016..3b56bba 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -32,6 +32,7 @@
+>   #include <asm/unistd.h>
+>   #include <asm/ftrace.h>
+>   #include <asm/ptrace.h>
+> +#include <asm/cache.h>
+> 
+>   #undef SHOW_SYSCALLS
+>   #undef SHOW_SYSCALLS_TASK
+> @@ -831,19 +832,63 @@ restore_user:
+>   	bnel-	load_dbcr0
+>   #endif
+> 
+> -#ifdef CONFIG_PREEMPT
+>   	b	restore
+> 
+>   /* N.B. the only way to get here is from the beq following ret_from_except. */
+>   resume_kernel:
+> -	/* check current_thread_info->preempt_count */
+> +	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+>   	CURRENT_THREAD_INFO(r9, r1)
+> +	lwz	r8,TI_FLAGS(r9)
+> +	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
+> +	beq+	1f
+> +
+> +	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
+> +
+> +	lwz	r3,GPR1(r1)
+> +	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
+> +	mr	r4,r1			/* src:  current exception frame */
+> +	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
+> +	li	r6,0			/* start offset: 0 */
+> +	mr	r1,r3			/* Reroute the trampoline frame to r1 */
+> +
+> +	/* Copy from the original to the trampoline. */
+> +	addi	r5,r5,-4
+> +	addi	r6,r6,-4
+> +4:	li	r0,L1_CACHE_BYTES/4
+> +	mtctr	r0
+> +3:	addi	r6,r6,4			/* copy a cache line */
+> +	lwzx	r0,r6,r4
+> +	stwx	r0,r6,r3
+> +	bdnz	3b
+> +	dcbst	r6,r3			/* write it to memory */
+> +	sync
+> +	cmplw	0,r6,r5
+> +	blt	4b
+> +
+> +	/* Do real store operation to complete stwu */
+> +	lwz	r5,GPR1(r1)
+> +	stw	r8,0(r5)
+> +
+> +	/* Clear _TIF_EMULATE_STACK_STORE flag */
+> +	lis	r11,_TIF_EMULATE_STACK_STORE@h
+> +	addi	r5,r9,TI_FLAGS
+> +0:	lwarx	r8,0,r5
+> +	andc	r8,r8,r11
+> +#ifdef CONFIG_IBM405_ERR77
+> +	dcbt	0,r5
+> +#endif
+> +	stwcx.	r8,0,r5
+> +	bne-	0b
+> +1:
+> +
+> +#ifdef CONFIG_PREEMPT
+> +	/* check current_thread_info->preempt_count */
+>   	lwz	r0,TI_PREEMPT(r9)
+>   	cmpwi	0,r0,0		/* if non-zero, just restore regs and return */
+>   	bne	restore
+> -	lwz	r0,TI_FLAGS(r9)
+> -	andi.	r0,r0,_TIF_NEED_RESCHED
+> +	andi.	r8,r8,_TIF_NEED_RESCHED
+>   	beq+	restore
+> +	lwz	r3,_MSR(r1)
+>   	andi.	r0,r3,MSR_EE	/* interrupts off? */
+>   	beq	restore		/* don't schedule if so */
+>   #ifdef CONFIG_TRACE_IRQFLAGS
+> @@ -864,8 +909,6 @@ resume_kernel:
+>   	 */
+>   	bl	trace_hardirqs_on
+>   #endif
+> -#else
+> -resume_kernel:
+>   #endif /* CONFIG_PREEMPT */
+> 
+>   	/* interrupts are hard-disabled at this point */
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index b40e0b4..cc43b64 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -593,6 +593,51 @@ _GLOBAL(ret_from_except_lite)
+>   	b	.ret_from_except
+> 
+>   resume_kernel:
+> +	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
+> +	CURRENT_THREAD_INFO(r9, r1)
+> +	ld	r8,TI_FLAGS(r9)
+> +	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
+> +	beq+	1f
+> +
+> +	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
+> +
+> +	lwz	r3,GPR1(r1)
+> +	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
+> +	mr	r4,r1			/* src:  current exception frame */
+> +	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
+> +	li	r6,0			/* start offset: 0 */
+> +	mr	r1,r3			/* Reroute the trampoline frame to r1 */
+> +
+> +	/* Copy from the original to the trampoline. */
+> +	addi	r5,r5,-8
+> +	addi	r6,r6,-8
+> +4:	li	r0,8
+> +	mtctr	r0	
+> +3:	addi	r6,r6,8			/* copy a cache line		*/
+> +	ldx	r0,r6,r4
+> +	stdx	r0,r6,r3
+> +	bdnz	3b
+> +	dcbst	r6,r3			/* write it to memory		*/
+> +	sync
+> +	cmpld	0,r6,r5
+> +	blt	4b
+> +	sync
+> +
+> +	bl	.copy_and_flush
+> +
+> +	/* Do real store operation to complete stwu */
+> +	lwz	r5,GPR1(r1)
+> +	std	r8,0(r5)
+> +
+> +	/* Clear _TIF_EMULATE_STACK_STORE flag */
+> +	lis	r11,_TIF_EMULATE_STACK_STORE@h
+> +	addi	r5,r9,TI_FLAGS
+> +	ldarx	r4,0,r5
+> +	andc	r4,r4,r11
+> +	stdcx.	r4,0,r5
+> +	bne-	0b
+> +1:
+> +
+>   #ifdef CONFIG_PREEMPT
+>   	/* Check if we need to preempt */
+>   	andi.	r0,r4,_TIF_NEED_RESCHED
