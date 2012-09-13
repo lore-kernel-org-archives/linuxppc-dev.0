@@ -1,22 +1,27 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 719832C0088
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 08:55:31 +1000 (EST)
-Message-ID: <1347576926.24938.352.camel@ul30vt.home>
-Subject: Re: [PATCH] vfio: enabled and supported on power (v7)
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Scott Wood <scottwood@freescale.com>
-Date: Thu, 13 Sep 2012 16:55:26 -0600
-In-Reply-To: <20120913224127.GA31437@buserror.net>
-References: <20120821113534.GS29724@truffula.fritz.box>
- <1346744035-31154-1-git-send-email-aik@ozlabs.ru>
- <1347292924.24938.45.camel@ul30vt.home> <504EF638.3090507@ozlabs.ru>
- <1347575699.24938.344.camel@ul30vt.home>
- <20120913224127.GA31437@buserror.net>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 206982C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 09:05:09 +1000 (EST)
+Date: Thu, 13 Sep 2012 16:05:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
+Subject: Re: [PATCH v4 0/8] Avoid cache trashing on clearing huge/gigantic page
+Message-Id: <20120913160506.d394392a.akpm@linux-foundation.org>
+In-Reply-To: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
+References: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
 Mime-Version: 1.0
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-mips@linux-mips.org,
+ Andi Kleen <ak@linux.intel.com>, Alex Shi <alex.shu@intel.com>,
+ Robert Richter <robert.richter@amd.com>, linuxppc-dev@lists.ozlabs.org,
+ x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
+ Jan Beulich <jbeulich@novell.com>, Andy Lutomirski <luto@amacapital.net>,
+ Johannes Weiner <hannes@cmpxchg.org>, linux-mm@kvack.org,
+ linux-sh@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
+ Mel Gorman <mgorman@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+ sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +31,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-09-13 at 17:41 -0500, Scott Wood wrote:
-> On Thu, Sep 13, 2012 at 04:34:59PM -0600, Alex Williamson wrote:
-> > Do you only want VFIO drivers to work on POWER if they're written by
-> > POWER people?  Ideally there are a few simple concepts: a) devices have
-> > an I/O virtual address space.  On x86 we call this the iova and it's
-> > effectively a zero-based, 64bit (not really, but close enough) address
-> > space.  You seem to have two smaller windows, one in 32bit space,
-> > another in 64bit space (maybe we could name these more consistently).
-> > b) Userspace has a buffer that they want to map and unmap to an iova,
-> > potentially with some access flags.  That's all you need to know to use
-> > the x86 _type1 VFIO IOMMU API.  Why do I need to know about H_PUT_TCE to
-> > use this interface?  Let's assume there might be some VFIO drivers some
-> > day that aren't written by POWER people.  Thanks,
+On Mon, 20 Aug 2012 16:52:29 +0300
+"Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> wrote:
+
+> Clearing a 2MB huge page will typically blow away several levels of CPU
+> caches.  To avoid this only cache clear the 4K area around the fault
+> address and use a cache avoiding clears for the rest of the 2MB area.
 > 
-> I'm not familiar with the POWER IOMMU, but certainly with our chips it
-> would help allow generic drivers to work if there were a type of mapping
-> operation where the IOMMU driver decides the IOVA and returns it, instead
-> of the driver trying to choose the IOVA with no knowledge of the IOMMU's
-> constraints.
+> This patchset implements cache avoiding version of clear_page only for
+> x86. If an architecture wants to provide cache avoiding version of
+> clear_page it should to define ARCH_HAS_USER_NOCACHE to 1 and implement
+> clear_page_nocache() and clear_user_highpage_nocache().
 
-That sounds reasonable to me.  If we had IOMMU API support for that in
-the kernel on x86, it would only take an ALLOC_IOVA flag in the MAP
-ioctl, returning the iova in the mapping structure, and the addition of
-a capability to let userspace know it's there.  Thanks,
-
-Alex
+Patchset looks nice to me, but the changelogs are terribly short of
+performance measurements.  For this sort of change I do think it is
+important that pretty exhaustive testing be performed, and that the
+results (or a readable summary of them) be shown.  And that testing
+should be designed to probe for slowdowns, not just the speedups!
