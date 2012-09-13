@@ -1,31 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2D2962C0088
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 22:47:55 +1000 (EST)
-Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <110EED8CC96DFC488B7E717A2027A27C1785D0@039-SN1MPN1-002.039d.mgd.msft.net>
-Date: Thu, 13 Sep 2012 07:47:33 -0500
-Message-Id: <4E15F856-D385-40C4-A5FD-5F298C70F402@kernel.crashing.org>
-References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
- <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
- <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
- <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
- <87k3w0y5yn.fsf@octavius.laptop.org>
- <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org> <87liggwa1w
- <8B1F0805-759E-417A-B787-40DF197896F3@kernel.crashing.org>
- <110EED8CC96DFC488B7E717A2027A27C1785D0@039-SN1MPN1-002.039d.mgd.msft.net>
-To: Huang Changming-R66093 <R66093@freescale.com>
-Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Chris Ball <cjb@laptop.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Anton Vorontsov <cbouatmailru@gmail.com>
+Return-Path: <B02008@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 567BD2C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 22:50:36 +1000 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Alexander Graf <agraf@suse.de>
+Subject: RE: [PATCH] KVM: PPC: bookehv: Allow duplicate calls of DO_KVM macro
+Date: Thu, 13 Sep 2012 12:50:14 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF1DED0A@039-SN2MPN1-011.039d.mgd.msft.net>
+References: <1347455894-30044-1-git-send-email-mihai.caraman@freescale.com>
+ <F4E2A678-6697-4207-8CEE-2CFB3629F554@suse.de>
+ <505100BD.6020304@freescale.com>
+ <B9A48F7E-664A-4E8A-883F-CEB01068CC2A@suse.de>
+ <5051048D.3080309@freescale.com>
+In-Reply-To: <5051048D.3080309@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "<linuxppc-dev@lists.ozlabs.org>" <linuxppc-dev@lists.ozlabs.org>,
+ "<kvm@vger.kernel.org>" <kvm@vger.kernel.org>,
+ "<kvm-ppc@vger.kernel.org>" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,71 +31,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Sep 12, 2012, at 9:02 PM, Huang Changming-R66093 wrote:
-
->>>=20
->>>> -----Original Message-----
->>>> From: Chris Ball [mailto:cjb@laptop.org]
->>>> Sent: Wednesday, September 12, 2012 4:59 AM
->>>> To: Kumar Gala
->>>> Cc: Huang Changming-R66093; linuxppc-dev@lists.ozlabs.org list;
->>>> linux- mmc@vger.kernel.org; Anton Vorontsov
->>>> Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the
->>>> CMD23
->>>>=20
->>>> Hi,
->>>>=20
->>>> On Tue, Sep 11 2012, Kumar Gala wrote:
->>>>> thanks for the info.  Do you know what's required on controller =
-side
->>>>> to handle cards that support CMD23?
->>>>>=20
->>>>> I'm trying to figure out if older controller's on FSL SoCs are
->>>>> missing some feature to allow CMD23 to work (vs Auto-CMD23).
->>>>=20
->>>> It seems plausible that it's just not implemented on these =
-controllers.
->>>> It's a little strange, since the command's been specified for so =
-long
->>>> and we haven't seen any other controllers with problems.  The patch
->>>> would be correct if this is true.
->>>>=20
->>>=20
->>> I didn't find any description about it, but after testing on FSL
->> silicones, I got this result:
->>> Some silicones support this command, and some silicones don't =
-support
->> it, which will cause I/O error.
->>=20
->> Can you list out which SoCs support it and which don't.  Having this =
-list
->> will be useful in understanding which controller versions supported =
-it.
->>=20
-> P1020, p1021, p1022, p1024, p1015 and p4080 can't support it.
-> Mpc8536, p2020, and the other current DPAA silicon (e.g. p5020, p3041) =
-support it.
-
-Based on this, why don't we use the HOSTVER register to detect instead =
-of device tree:
-
-
-#define FSL_SDHC_VER_1_0	0x00
-#define FSL_SDHC_VER_1_1	0x01
-#define FSL_SDHC_VER_2_0	0x10
-#define FSL_SDHC_VER_2_1	0x11
-#define FSL_SDHC_VER_2_2	0x12
-#define FSL_SDHC_VER_2_3	0x13
-
-unsigned int vendor_version;
-
-vendor_version =3D sdhci_readw(host, SDHCI_HOST_VERSION);
-vendor_version =3D (vendor_version & SDHCI_VENDOR_VER_MASK) >> =
-SDHCI_VENDOR_VER_SHIFT;
-
-if ((vendor_version =3D=3D FSL_SDHC_VER_1_1) || (vendor_version =3D=3D =
-FSL_SDHC_VER_2_2))
-	host->quirks2 |=3D SDHCI_QUIRK2_HOST_NO_CMD23;
-
-- k
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBUaHVyc2RheSwgU2VwdGVtYmVyIDEzLCAyMDEyIDEyOjU0IEFNDQo+IFRvOiBBbGV4
+YW5kZXIgR3JhZg0KPiBDYzogQ2FyYW1hbiBNaWhhaSBDbGF1ZGl1LUIwMjAwODsgPGt2bS1wcGNA
+dmdlci5rZXJuZWwub3JnPjsgPGxpbnV4cHBjLQ0KPiBkZXZAbGlzdHMub3psYWJzLm9yZz47IDxr
+dm1Admdlci5rZXJuZWwub3JnPg0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBLVk06IFBQQzogYm9v
+a2VodjogQWxsb3cgZHVwbGljYXRlIGNhbGxzIG9mIERPX0tWTQ0KPiBtYWNybw0KPiANCj4gT24g
+MDkvMTIvMjAxMiAwNDo0NSBQTSwgQWxleGFuZGVyIEdyYWYgd3JvdGU6DQo+ID4NCj4gPg0KPiA+
+IE9uIDEyLjA5LjIwMTIsIGF0IDIzOjM4LCBTY290dCBXb29kIDxzY290dHdvb2RAZnJlZXNjYWxl
+LmNvbT4gd3JvdGU6DQo+ID4NCj4gPj4gT24gMDkvMTIvMjAxMiAwMTo1NiBQTSwgQWxleGFuZGVy
+IEdyYWYgd3JvdGU6DQo+ID4+Pg0KPiA+Pj4NCj4gPj4+IE9uIDEyLjA5LjIwMTIsIGF0IDE1OjE4
+LCBNaWhhaSBDYXJhbWFuIDxtaWhhaS5jYXJhbWFuQGZyZWVzY2FsZS5jb20+DQo+IHdyb3RlOg0K
+PiA+Pj4NCj4gPj4+PiBUaGUgY3VycmVudCBmb3JtIG9mIERPX0tWTSBtYWNybyByZXN0cmljdHMg
+aXRzIHVzZSB0byBvbmUgY2FsbCBwZXINCj4gaW5wdXQNCj4gPj4+PiBwYXJhbWV0ZXIgc2V0LiBU
+aGlzIGlzIGNhdXNlZCBieSBrdm1wcGNfcmVzdW1lX1xpbnRub1woKV9cc3JyMQ0KPiBzeW1ib2wN
+Cj4gPj4+PiBkZWZpbml0aW9uLg0KPiA+Pj4+IER1cGxpY2F0ZSBjYWxscyBvZiBET19LVk0gYXJl
+IHJlcXVpcmVkIGJ5IGRpc3RpbmN0IGltcGxlbWVudGF0aW9ucw0KPiBvZg0KPiA+Pj4+IGV4ZXB0
+aW9uIGhhbmRsZXJzIHdoaWNoIGFyZSBkZWxlZ2F0ZWQgYXQgcnVudGltZS4NCj4gPj4+DQo+ID4+
+PiBOb3Qgc3VyZSBJIHVuZGVyc3RhbmQgd2hhdCB5b3UncmUgdHJ5aW5nIHRvIGFjaGlldmUgaGVy
+ZS4gUGxlYXNlDQo+IGVsYWJvcmF0ZSA7KQ0KPiA+Pg0KPiA+PiBPbiA2NC1iaXQgYm9vazNlIHdl
+IGNvbXBpbGUgbXVsdGlwbGUgdmVyc2lvbnMgb2YgdGhlIFRMQiBtaXNzDQo+IGhhbmRsZXJzLA0K
+PiA+PiBhbmQgY2hvb3NlIGZyb20gdGhlbSBhdCBydW50aW1lLg0KDQpUaGUgZXhjZXB0aW9uIGhh
+bmRsZXIgcGF0Y2hpbmcgaXMgYWN0aXZlIGluIF9fZWFybHlfaW5pdF9tbXUoKSBmdW5jdGlvbg0K
+cG93ZXJwYy9tbS90bGJfbm9oYXNoLmMgZm9yIHF1aXRlIGEgZmV3IHllYXJzLiBGb3IgdGxiIG1p
+c3MgZXhjZXB0aW9ucw0KdGhlcmUgYXJlIHRocmVlIGhhbmRsZXIgdmVyc2lvbnM6IHN0YW5kYXJk
+LCBIVyB0YWJsZXdhbGsgYW5kIGJvbHRlZC4NCg0KPiBJIHBvc3RlZCBhIHBhdGNoIHRvIGFkZCBh
+bm90aGVyIHZhcmlhbnQsIGZvciBlNjUwMC1zdHlsZSBoYXJkd2FyZQ0KPiB0YWJsZXdhbGssIHdo
+aWNoIHNoYXJlcyB0aGUgYm9sdGVkIHByb2xvZy9lcGlsb2cgKGJlc2lkZXMgcHJvbG9nL2VwaWxv
+Zw0KPiBwZXJmb3JtYW5jZSwgZTY1MDAgaXMgaW5jb21wYXRpYmxlIHdpdGggdGhlIElCTSB0YWJs
+ZXdhbGsgY29kZSBmb3INCj4gdmFyaW91cyByZWFzb25zKS4gIFRoYXQgY2F1c2VkIHVzIHRvIGhh
+dmUgdHdvIERPX0tWTXMgZm9yIHRoZSBzYW1lDQo+IGV4Y2VwdGlvbiB0eXBlLg0KDQpTb3JyeSwg
+SSBtaXNzZWQgdG8gY2Mga3ZtLXBwYyBtYWlsaXN0IHdoZW4gSSByZXBsYXllZCB0byB0aGF0IGRp
+c2N1c3Npb24NCnRocmVhZC4NCg0KLU1pa2UNCg==
