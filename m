@@ -1,32 +1,27 @@
-Return-Path: <r66093@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe004.messaging.microsoft.com [216.32.180.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F2EB82C00BB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 12:02:50 +1000 (EST)
-From: Huang Changming-R66093 <r66093@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
-Date: Thu, 13 Sep 2012 02:02:30 +0000
-Message-ID: <110EED8CC96DFC488B7E717A2027A27C1785D0@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
- <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
- <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
- <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
- <87k3w0y5yn.fsf@octavius.laptop.org>
- <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org> <87liggwa1w
- <8B1F0805-759E-417A-B787-40DF197896F3@kernel.crashing.org>
-In-Reply-To: <8B1F0805-759E-417A-B787-40DF197896F3@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <broonie@opensource.wolfsonmicro.com>
+Received: from opensource.wolfsonmicro.com (opensource.wolfsonmicro.com
+ [80.75.67.52])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 426C52C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 14:27:51 +1000 (EST)
+Date: Thu, 13 Sep 2012 12:27:39 +0800
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Subject: Re: [PATCH 5/5] ASoC: fsl: mpc5200 remove pcm030 and efika audio
+ fabric
+Message-ID: <20120913042737.GC6732@opensource.wolfsonmicro.com>
+References: <1347416089-23393-1-git-send-email-emillbrandt@dekaresearch.com>
+ <1347416089-23393-6-git-send-email-emillbrandt@dekaresearch.com>
+ <20120912032026.GI9162@opensource.wolfsonmicro.com>
+ <0A40042D85E7C84DB443060EC44B3FD336D854FEE2@dekaexchange07.deka.local>
 MIME-Version: 1.0
-Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Chris Ball <cjb@laptop.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Anton Vorontsov <cbouatmailru@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <0A40042D85E7C84DB443060EC44B3FD336D854FEE2@dekaexchange07.deka.local>
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Anatolij Gustschin <agust@denx.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Liam Girdwood <lrg@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,40 +31,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> >
-> >> -----Original Message-----
-> >> From: Chris Ball [mailto:cjb@laptop.org]
-> >> Sent: Wednesday, September 12, 2012 4:59 AM
-> >> To: Kumar Gala
-> >> Cc: Huang Changming-R66093; linuxppc-dev@lists.ozlabs.org list;
-> >> linux- mmc@vger.kernel.org; Anton Vorontsov
-> >> Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the
-> >> CMD23
-> >>
-> >> Hi,
-> >>
-> >> On Tue, Sep 11 2012, Kumar Gala wrote:
-> >>> thanks for the info.  Do you know what's required on controller side
-> >>> to handle cards that support CMD23?
-> >>>
-> >>> I'm trying to figure out if older controller's on FSL SoCs are
-> >>> missing some feature to allow CMD23 to work (vs Auto-CMD23).
-> >>
-> >> It seems plausible that it's just not implemented on these controllers=
-.
-> >> It's a little strange, since the command's been specified for so long
-> >> and we haven't seen any other controllers with problems.  The patch
-> >> would be correct if this is true.
-> >>
-> >
-> > I didn't find any description about it, but after testing on FSL
-> silicones, I got this result:
-> > Some silicones support this command, and some silicones don't support
-> it, which will cause I/O error.
->=20
-> Can you list out which SoCs support it and which don't.  Having this list
-> will be useful in understanding which controller versions supported it.
->=20
-P1020, p1021, p1022, p1024, p1015 and p4080 can't support it.
-Mpc8536, p2020, and the other current DPAA silicon (e.g. p5020, p3041) supp=
-ort it.
+On Wed, Sep 12, 2012 at 10:05:33AM -0400, Eric Millbrandt wrote:
+
+Please fix your mailer to word wrap within paragraphs.
+
+> On 2012-09-11 Mark Brown wrote:
+
+> > I only noticed DT bindings being added for pcm030, not for efika?
+
+> When I looked I didn't see the Efika (PPC 5200B) DT in-tree.  It only
+> appears to exist out-of-tree,
+
+Hrm, well - that's not terribly clever.  It'll mean a regression on
+existing systems and since they're clearly taking advantage of the
+ability to distribute the device tree separately...  we'd really want
+some sort of backwards compatibility to avoid breaking upgrades.  Not
+sure what the normal way of doing that is.
