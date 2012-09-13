@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 776842C00B8
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2012 17:50:24 +1000 (EST)
-Message-ID: <1347522605.2276.25.camel@pasglop>
-Subject: Re: [PATCH] add GXT4000P and GXT6500P support to the gxt4500 driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 13 Sep 2012 17:50:05 +1000
-In-Reply-To: <CAMuHMdU2vahGBej+3Q8eBpmn1c7kU3hb1Ez4hGdY1Upn1qsygQ@mail.gmail.com>
-References: <1347452412-7129-1-git-send-email-dan@danny.cz>
- <1347494498.2276.19.camel@pasglop>
- <CAMuHMdU2vahGBej+3Q8eBpmn1c7kU3hb1Ez4hGdY1Upn1qsygQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Dan =?ISO-8859-1?Q?Hor=E1k?= <dan@danny.cz>, linuxppc-dev@ozlabs.org,
- Nico Macrionitis <acrux@cruxppc.org>, Giuseppe Coviello <cjg@cruxppc.org>
+Return-Path: <r66093@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DB3D42C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 17:58:05 +1000 (EST)
+From: Huang Changming-R66093 <r66093@freescale.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: RE: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
+Date: Thu, 13 Sep 2012 07:57:53 +0000
+Message-ID: <110EED8CC96DFC488B7E717A2027A27C178A9D@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
+ <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
+ <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
+ <504F82C1.2000907@freescale.com>
+ <110EED8CC96DFC488B7E717A2027A27C176E94@039-SN1MPN1-002.039d.mgd.msft.net>
+ <20120912033811.GA1886@lizard>
+In-Reply-To: <20120912033811.GA1886@lizard>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-09-13 at 07:01 +0200, Geert Uytterhoeven wrote:
-> On Thu, Sep 13, 2012 at 2:01 AM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Wed, 2012-09-12 at 14:20 +0200, Dan Horák wrote:
-> >> I'm reviving an old patch from 2009 that adds support for GXT4000P and GXT6500P
-> >> adapter to the gxt4500 driver.
-> >
-> > Who is the original author ?
-> 
-> Signed-off-by: Nico Macrionitis <acrux@cruxppc.org>
-> Signed-off-by: Giuseppe Coviello <cjg@cruxppc.org>
-> 
-> It even has your ack (albeit not in canonical form ;-), cfr.
-
-Well, the submission had no From: line matching the top S-O-B so I'm not
-sure who actually wrote the patch :-)
-
-Cheers,
-Ben
-
-> >> See threads at http://marc.info/?l=linux-fbdev-devel&m=124345080216952&w=2
-> >> and https://lists.ozlabs.org/pipermail/linuxppc-dev/2009-June/072672.html
-> >> for more details.
-> 
-> Gr{oetje,eeting}s,
-> 
->                         Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+DQoNCkJlc3QgUmVnYXJkcw0KSmVycnkgSHVhbmcNCg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
+ZS0tLS0tDQo+IEZyb206IEFudG9uIFZvcm9udHNvdiBbbWFpbHRvOmNib3VhdG1haWxydUBnbWFp
+bC5jb21dDQo+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDEyLCAyMDEyIDExOjM4IEFNDQo+
+IFRvOiBIdWFuZyBDaGFuZ21pbmctUjY2MDkzDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBtbWNAdmdlci5rZXJuZWwub3Jn
+DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8zXSBwb3dlcnBjL2VzZGhjOiBhZGQgcHJvcGVydHkg
+dG8gZGlzYWJsZSB0aGUgQ01EMjMNCj4gDQo+IE9uIFdlZCwgU2VwIDEyLCAyMDEyIGF0IDAzOjE5
+OjE4QU0gKzAwMDAsIEh1YW5nIENoYW5nbWluZy1SNjYwOTMgd3JvdGU6DQo+IFsuLi5dDQo+ID4g
+SSBkb24ndCB0aGluayBpdCBpcyB0aGUgYmVzdCB3YXkgdG8gZG8gaXQuICBGb3IgdGhlIFZWTjIu
+MiBvciBvbGRlciwNCj4gPiBzb21lIHNpbGljb24gc3VwcG9ydCB0aGlzIGZlYXR1cmUgKG1wYzg1
+MzYgYW5kIHAyMDIwKSwgYnV0IG90aGVyDQo+ID4gc2lsaWNvbmVzIGRvbid0IHN1cHBvcnQgaXQg
+KGUuZy4gcDQwODAsIHAxMDJ4KS4gIFRob3VnaCwgdGhlIGN1cnJlbnQNCj4gPiBwNS9wNC9wMyBo
+YXMgc3VwcG9ydGVkIHRoaXMgZmVhdHVyZSwgY2FuIHdlIHN1cmUgdGhlIGZ1dHVyZSBzaWxpY29u
+DQo+ID4gc3VwcG9ydCBpdD8gIFNvIEkgdGhpbmsgdGhlIGJlc3Qgd2F5IGlzIHRvIHNwZWNpZnkg
+aXQgaW4gZGV2aWNlIHRyZWUNCj4gPiBhcyAnc2RoY2ksYXV0by1jbWQxMicNCj4gDQo+IEluIGFk
+ZGl0aW9uIHRvIHlvdXIgY3VycmVudCBwYXRjaGVzLCB5b3UgY291bGQganVzdCBhZGQgYW5vdGhl
+ciBwYXRjaA0KPiB0aGF0IGJsYWNrbGlzdHMgYWZmZWN0ZWQgU09DIHJldmlzaW9ucyBiYXNlZCBv
+biB0aGUgaW5mbyBmcm9tIFBWUi9TVlIuDQo+IA0KPiBGb3IgZXhhbXBsZSwgc2VlIGdmYXJfZGV0
+ZWN0X2VycmF0YSgpIGluDQo+IGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9naWFuZmFy
+LmMuDQo+IA0KPiBUaGF0IHdheSB5b3UgY291bGQgaGVscCB1c2VycyB0aGF0IGRvbid0IGhhdmUg
+dGhlIG5ld2VzdCBkZXZpY2UgdHJlZXMuDQo+IA0KSGksIEFudG9uDQpUaGFua3MuDQpCdXQsIHRo
+ZXNlIHBhdGNoZXMgYXJlIGp1c3QgZm9yIGxhdGVzdCBrZXJuZWwsIGlmIHRoZSB1c2VyIGRvbid0
+IGhhdmUgdGhlIGxhdGVzdCBkZXZpY2UgdHJlZSwNClRoZW4gdGhleSBkb24ndCBoYXZlIHRoZSBs
+YXRlc3Qga2VybmVsLCBhbmQgdGhlc2UgcGF0Y2hlcyBjYW4ndCBiZSB1c2VkIGZvciB0aGVtIGRp
+cmVjdGx5LA0KVGhvdWdoIHByb3ZpZGUgdGhlIGZ1bmN0aW9uIGxpa2UgZ2Zhcl9kZXRlY3RfZXJy
+YXRhLCB0aGV5IG11c3QgbW9kaWZ5IHRoZWlyIGNvZGVzLg0KDQpBbmQgSSBkb24ndCBrbm93IGlm
+IHRoZSBmdXR1cmUgc2lsaWNvbiBjYW4gc3VwcG9ydCBDTUQyMywgaWYgbm90LCB3ZSBtdXN0IG1v
+ZGlmeSBzZGhjIGRyaXZlciBhZ2Fpbi4NCldoZW4gd2UgdXNlIHRoZSBkZXZpY2UgdHJlZSB0byBp
+ZGVudGlmeSBpdCwgaWYgdGhlIHNpbGljb24gZG9lcyBub3Qgc3VwcG9ydCB0aGlzIGZlYXR1cmUs
+DQp3ZSBqdXN0IGFkZCB0aGlzIHByb3BlcnR5IGludG8gdGhlIG5ldyBkZXZpY2UgdHJlZSwgbm90
+IG5lZWQgdG8gbW9kaWZ5IFNESEMgZHJpdmVyLg0KSSB0aGluaywgdGhpcyBpcyB0aGUgYmVzdCB3
+YXkuDQogDQoNCg==
