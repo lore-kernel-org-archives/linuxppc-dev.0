@@ -1,25 +1,21 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 32D242C00C0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 21:00:14 +1000 (EST)
-Message-ID: <5051B749.5040606@windriver.com>
-Date: Thu, 13 Sep 2012 18:36:57 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <B21989@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3D0442C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 21:29:43 +1000 (EST)
+From: Shaohui Xie <Shaohui.Xie@freescale.com>
+To: <linux-edac@vger.kernel.org>
+Subject: [PATCH] edac/85xx: fix error handle of mpc85xx_mc_err_probe
+Date: Thu, 13 Sep 2012 18:55:29 +0800
+Message-ID: <1347533729-5893-1-git-send-email-Shaohui.Xie@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [v3][PATCH 2/3] ppc/kprobe: complete kprobe and migrate exception
- frame
-References: <1347330053-27039-1-git-send-email-tiejun.chen@windriver.com>
- <1347330053-27039-2-git-send-email-tiejun.chen@windriver.com>
- <1347342718.2603.38.camel@pasglop> <505049FE.8060204@windriver.com>
- <1347439382.2603.97.camel@pasglop> <50504DEE.6060903@windriver.com>
- <1347446296.2276.0.camel@pasglop>
-In-Reply-To: <1347446296.2276.0.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Shaohui Xie <Shaohui.Xie@freescale.com>, avorontsov@mvista.com,
+ linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,173 +25,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/12/2012 06:38 PM, Benjamin Herrenschmidt wrote:
-> On Wed, 2012-09-12 at 16:55 +0800, tiejun.chen wrote:
->>> to worry about nor stack frame to create etc...
->>
->> If you don't like this v4, let me know and then I can go back memcpy
->> for next
->> version.
->
-> Just open code the whole copy. It should be easy really. As I said, you
-> have the src and dst already in registers and you know they are aligned,
-> so just put the size of the frame in a register (divided by 4), do an
-> mtctr and do a little load_update/store_update loop to do the copy, all
-> in the asm.
+Error handle in case of DDR ECC off is wrong, sysfs entries have not been
+created, so edac_mc_free which frees a mci instance should not be called.
+Also, free mci's memory in this case.
 
-Is the following Okay?
-
+Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
 ---
-  arch/powerpc/kernel/entry_32.S |   55 +++++++++++++++++++++++++++++++++++-----
-  arch/powerpc/kernel/entry_64.S |   45 ++++++++++++++++++++++++++++++++
-  2 files changed, 94 insertions(+), 6 deletions(-)
+ drivers/edac/edac_core.h    |    1 +
+ drivers/edac/edac_mc.c      |   53 ++++++++++++++++++++++++++++--------------
+ drivers/edac/mpc85xx_edac.c |   14 +++++++----
+ 3 files changed, 45 insertions(+), 23 deletions(-)
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index ead5016..3b56bba 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -32,6 +32,7 @@
-  #include <asm/unistd.h>
-  #include <asm/ftrace.h>
-  #include <asm/ptrace.h>
-+#include <asm/cache.h>
-
-  #undef SHOW_SYSCALLS
-  #undef SHOW_SYSCALLS_TASK
-@@ -831,19 +832,63 @@ restore_user:
-  	bnel-	load_dbcr0
-  #endif
-
--#ifdef CONFIG_PREEMPT
-  	b	restore
-
-  /* N.B. the only way to get here is from the beq following ret_from_except. */
-  resume_kernel:
--	/* check current_thread_info->preempt_count */
-+	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
-  	CURRENT_THREAD_INFO(r9, r1)
-+	lwz	r8,TI_FLAGS(r9)
-+	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
-+	beq+	1f
+diff --git a/drivers/edac/edac_core.h b/drivers/edac/edac_core.h
+index 23bb99f..108c4e2 100644
+--- a/drivers/edac/edac_core.h
++++ b/drivers/edac/edac_core.h
+@@ -448,6 +448,7 @@ struct mem_ctl_info *edac_mc_alloc(unsigned mc_num,
+ 				   unsigned sz_pvt);
+ extern int edac_mc_add_mc(struct mem_ctl_info *mci);
+ extern void edac_mc_free(struct mem_ctl_info *mci);
++extern void edac_mc_free_mem(struct mem_ctl_info *mci);
+ extern struct mem_ctl_info *edac_mc_find(int idx);
+ extern struct mem_ctl_info *find_mci_by_dev(struct device *dev);
+ extern struct mem_ctl_info *edac_mc_del_mc(struct device *dev);
+diff --git a/drivers/edac/edac_mc.c b/drivers/edac/edac_mc.c
+index 616d90b..a2488b2 100644
+--- a/drivers/edac/edac_mc.c
++++ b/drivers/edac/edac_mc.c
+@@ -199,6 +199,40 @@ void *edac_align_ptr(void **p, unsigned size, int n_elems)
+ 	return (void *)(((unsigned long)ptr) + align - r);
+ }
+ 
++/*
++ * edac_mc_free_mem
++ *	'Free' a previously allocated 'mci' memory
++ * @mci: pointer to a struct mem_ctl_info structure
++ */
++void edac_mc_free_mem(struct mem_ctl_info *mci)
++{
++	int i = 0, tot_dimms, chn, tot_channels;
++	struct csrow_info *csr;
 +
-+	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
++	tot_dimms = mci->tot_dimms;
++	tot_channels = mci->num_cschannel;
 +
-+	lwz	r3,GPR1(r1)
-+	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
-+	mr	r4,r1			/* src:  current exception frame */
-+	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
-+	li	r6,0			/* start offset: 0 */
-+	mr	r1,r3			/* Reroute the trampoline frame to r1 */
++	if (mci->dimms) {
++		for (i = 0; i < tot_dimms; i++)
++			kfree(mci->dimms[i]);
++		kfree(mci->dimms);
++	}
++	if (mci->csrows) {
++		for (chn = 0; chn < tot_channels; chn++) {
++			csr = mci->csrows[chn];
++			if (csr) {
++				for (chn = 0; chn < tot_channels; chn++)
++					kfree(csr->channels[chn]);
++				kfree(csr);
++			}
++			kfree(mci->csrows[i]);
++		}
++		kfree(mci->csrows);
++	}
++	kfree(mci);
++}
++EXPORT_SYMBOL_GPL(edac_mc_free_mem);
 +
-+	/* Copy from the original to the trampoline. */
-+	addi	r5,r5,-4
-+	addi	r6,r6,-4
-+4:	li	r0,L1_CACHE_BYTES/4
-+	mtctr	r0
-+3:	addi	r6,r6,4			/* copy a cache line */
-+	lwzx	r0,r6,r4
-+	stwx	r0,r6,r3
-+	bdnz	3b
-+	dcbst	r6,r3			/* write it to memory */
-+	sync
-+	cmplw	0,r6,r5
-+	blt	4b
-+
-+	/* Do real store operation to complete stwu */
-+	lwz	r5,GPR1(r1)
-+	stw	r8,0(r5)
-+
-+	/* Clear _TIF_EMULATE_STACK_STORE flag */
-+	lis	r11,_TIF_EMULATE_STACK_STORE@h
-+	addi	r5,r9,TI_FLAGS
-+0:	lwarx	r8,0,r5
-+	andc	r8,r8,r11
-+#ifdef CONFIG_IBM405_ERR77
-+	dcbt	0,r5
-+#endif
-+	stwcx.	r8,0,r5
-+	bne-	0b
-+1:
-+
-+#ifdef CONFIG_PREEMPT
-+	/* check current_thread_info->preempt_count */
-  	lwz	r0,TI_PREEMPT(r9)
-  	cmpwi	0,r0,0		/* if non-zero, just restore regs and return */
-  	bne	restore
--	lwz	r0,TI_FLAGS(r9)
--	andi.	r0,r0,_TIF_NEED_RESCHED
-+	andi.	r8,r8,_TIF_NEED_RESCHED
-  	beq+	restore
-+	lwz	r3,_MSR(r1)
-  	andi.	r0,r3,MSR_EE	/* interrupts off? */
-  	beq	restore		/* don't schedule if so */
-  #ifdef CONFIG_TRACE_IRQFLAGS
-@@ -864,8 +909,6 @@ resume_kernel:
-  	 */
-  	bl	trace_hardirqs_on
-  #endif
--#else
--resume_kernel:
-  #endif /* CONFIG_PREEMPT */
-
-  	/* interrupts are hard-disabled at this point */
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index b40e0b4..cc43b64 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -593,6 +593,51 @@ _GLOBAL(ret_from_except_lite)
-  	b	.ret_from_except
-
-  resume_kernel:
-+	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
-+	CURRENT_THREAD_INFO(r9, r1)
-+	ld	r8,TI_FLAGS(r9)
-+	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
-+	beq+	1f
-+
-+	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
-+
-+	lwz	r3,GPR1(r1)
-+	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
-+	mr	r4,r1			/* src:  current exception frame */
-+	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
-+	li	r6,0			/* start offset: 0 */
-+	mr	r1,r3			/* Reroute the trampoline frame to r1 */
-+
-+	/* Copy from the original to the trampoline. */
-+	addi	r5,r5,-8
-+	addi	r6,r6,-8
-+4:	li	r0,8
-+	mtctr	r0	
-+3:	addi	r6,r6,8			/* copy a cache line		*/
-+	ldx	r0,r6,r4
-+	stdx	r0,r6,r3
-+	bdnz	3b
-+	dcbst	r6,r3			/* write it to memory		*/
-+	sync
-+	cmpld	0,r6,r5
-+	blt	4b
-+	sync
-+
-+	bl	.copy_and_flush
-+
-+	/* Do real store operation to complete stwu */
-+	lwz	r5,GPR1(r1)
-+	std	r8,0(r5)
-+
-+	/* Clear _TIF_EMULATE_STACK_STORE flag */
-+	lis	r11,_TIF_EMULATE_STACK_STORE@h
-+	addi	r5,r9,TI_FLAGS
-+	ldarx	r4,0,r5
-+	andc	r4,r4,r11
-+	stdcx.	r4,0,r5
-+	bne-	0b
-+1:
-+
-  #ifdef CONFIG_PREEMPT
-  	/* Check if we need to preempt */
-  	andi.	r0,r4,_TIF_NEED_RESCHED
+ /**
+  * edac_mc_alloc: Allocate and partially fill a struct mem_ctl_info structure
+  * @mc_num:		Memory controller number
+@@ -413,24 +447,7 @@ struct mem_ctl_info *edac_mc_alloc(unsigned mc_num,
+ 	return mci;
+ 
+ error:
+-	if (mci->dimms) {
+-		for (i = 0; i < tot_dimms; i++)
+-			kfree(mci->dimms[i]);
+-		kfree(mci->dimms);
+-	}
+-	if (mci->csrows) {
+-		for (chn = 0; chn < tot_channels; chn++) {
+-			csr = mci->csrows[chn];
+-			if (csr) {
+-				for (chn = 0; chn < tot_channels; chn++)
+-					kfree(csr->channels[chn]);
+-				kfree(csr);
+-			}
+-			kfree(mci->csrows[i]);
+-		}
+-		kfree(mci->csrows);
+-	}
+-	kfree(mci);
++	edac_mc_free_mem(mci);
+ 
+ 	return NULL;
+ }
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index a1e791e..402b3f5 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -1012,7 +1012,7 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
+ 	if (res) {
+ 		printk(KERN_ERR "%s: Unable to get resource for MC err regs\n",
+ 		       __func__);
+-		goto err;
++		goto err1;
+ 	}
+ 
+ 	if (!devm_request_mem_region(&op->dev, r.start, resource_size(&r),
+@@ -1020,14 +1020,14 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
+ 		printk(KERN_ERR "%s: Error while requesting mem region\n",
+ 		       __func__);
+ 		res = -EBUSY;
+-		goto err;
++		goto err1;
+ 	}
+ 
+ 	pdata->mc_vbase = devm_ioremap(&op->dev, r.start, resource_size(&r));
+ 	if (!pdata->mc_vbase) {
+ 		printk(KERN_ERR "%s: Unable to setup MC err regs\n", __func__);
+ 		res = -ENOMEM;
+-		goto err;
++		goto err1;
+ 	}
+ 
+ 	sdram_ctl = in_be32(pdata->mc_vbase + MPC85XX_MC_DDR_SDRAM_CFG);
+@@ -1035,7 +1035,7 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
+ 		/* no ECC */
+ 		printk(KERN_WARNING "%s: No ECC DIMMs discovered\n", __func__);
+ 		res = -ENODEV;
+-		goto err;
++		goto err1;
+ 	}
+ 
+ 	edac_dbg(3, "init mci\n");
+@@ -1065,7 +1065,7 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
+ 
+ 	if (edac_mc_add_mc(mci)) {
+ 		edac_dbg(3, "failed edac_mc_add_mc()\n");
+-		goto err;
++		goto err1;
+ 	}
+ 
+ 	if (mpc85xx_create_sysfs_attributes(mci)) {
+@@ -1115,6 +1115,10 @@ err:
+ 	devres_release_group(&op->dev, mpc85xx_mc_err_probe);
+ 	edac_mc_free(mci);
+ 	return res;
++err1:
++	devres_release_group(&op->dev, mpc85xx_mc_err_probe);
++	edac_mc_free_mem(mci);
++	return res;
+ }
+ 
+ static int mpc85xx_mc_err_remove(struct platform_device *op)
 -- 
-1.7.9.5
-
-Tiejun
+1.6.4
