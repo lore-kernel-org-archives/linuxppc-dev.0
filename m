@@ -1,21 +1,31 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 5A8D62C0084
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 22:37:41 +1000 (EST)
-Date: Thu, 13 Sep 2012 22:37:39 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [PATCH] pseries: double NR_CPUS in defconfig
-Message-Id: <20120913223739.48f27d7fbacca32b013777fc@canb.auug.org.au>
-In-Reply-To: <20120912174706.GE9269@linux.vnet.ibm.com>
-References: <20120912174706.GE9269@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Thu__13_Sep_2012_22_37_39_+1000_V_T/Od_UNWCIe4HE"
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
- Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2D2962C0088
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 22:47:55 +1000 (EST)
+Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <110EED8CC96DFC488B7E717A2027A27C1785D0@039-SN1MPN1-002.039d.mgd.msft.net>
+Date: Thu, 13 Sep 2012 07:47:33 -0500
+Message-Id: <4E15F856-D385-40C4-A5FD-5F298C70F402@kernel.crashing.org>
+References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
+ <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
+ <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
+ <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
+ <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
+ <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
+ <87k3w0y5yn.fsf@octavius.laptop.org>
+ <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org> <87liggwa1w
+ <8B1F0805-759E-417A-B787-40DF197896F3@kernel.crashing.org>
+ <110EED8CC96DFC488B7E717A2027A27C1785D0@039-SN1MPN1-002.039d.mgd.msft.net>
+To: Huang Changming-R66093 <R66093@freescale.com>
+Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Chris Ball <cjb@laptop.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Vorontsov <cbouatmailru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,45 +35,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Thu__13_Sep_2012_22_37_39_+1000_V_T/Od_UNWCIe4HE
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+On Sep 12, 2012, at 9:02 PM, Huang Changming-R66093 wrote:
 
-On Wed, 12 Sep 2012 10:47:07 -0700 Nishanth Aravamudan <nacc@linux.vnet.ibm=
-.com> wrote:
->
-> Anticipating growth in coming years, we should ensure we are getting a
-> good lead on testing.
+>>>=20
+>>>> -----Original Message-----
+>>>> From: Chris Ball [mailto:cjb@laptop.org]
+>>>> Sent: Wednesday, September 12, 2012 4:59 AM
+>>>> To: Kumar Gala
+>>>> Cc: Huang Changming-R66093; linuxppc-dev@lists.ozlabs.org list;
+>>>> linux- mmc@vger.kernel.org; Anton Vorontsov
+>>>> Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the
+>>>> CMD23
+>>>>=20
+>>>> Hi,
+>>>>=20
+>>>> On Tue, Sep 11 2012, Kumar Gala wrote:
+>>>>> thanks for the info.  Do you know what's required on controller =
+side
+>>>>> to handle cards that support CMD23?
+>>>>>=20
+>>>>> I'm trying to figure out if older controller's on FSL SoCs are
+>>>>> missing some feature to allow CMD23 to work (vs Auto-CMD23).
+>>>>=20
+>>>> It seems plausible that it's just not implemented on these =
+controllers.
+>>>> It's a little strange, since the command's been specified for so =
+long
+>>>> and we haven't seen any other controllers with problems.  The patch
+>>>> would be correct if this is true.
+>>>>=20
+>>>=20
+>>> I didn't find any description about it, but after testing on FSL
+>> silicones, I got this result:
+>>> Some silicones support this command, and some silicones don't =
+support
+>> it, which will cause I/O error.
+>>=20
+>> Can you list out which SoCs support it and which don't.  Having this =
+list
+>> will be useful in understanding which controller versions supported =
+it.
+>>=20
+> P1020, p1021, p1022, p1024, p1015 and p4080 can't support it.
+> Mpc8536, p2020, and the other current DPAA silicon (e.g. p5020, p3041) =
+support it.
 
-Most changes to pseries_defconfig are copied into ppc64_defconfig.
-Should this one be as well?
+Based on this, why don't we use the HOSTVER register to detect instead =
+of device tree:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Thu__13_Sep_2012_22_37_39_+1000_V_T/Od_UNWCIe4HE
-Content-Type: application/pgp-signature
+#define FSL_SDHC_VER_1_0	0x00
+#define FSL_SDHC_VER_1_1	0x01
+#define FSL_SDHC_VER_2_0	0x10
+#define FSL_SDHC_VER_2_1	0x11
+#define FSL_SDHC_VER_2_2	0x12
+#define FSL_SDHC_VER_2_3	0x13
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+unsigned int vendor_version;
 
-iQIcBAEBCAAGBQJQUdOTAAoJEECxmPOUX5FEZ84QAJSc/fYxXjKQcJsWKyMItdhI
-cGoAlnJE+l5OTTFfrxxnxDnNslD3D67UQ0AmANyjPAPnJqMsacbUEmK5RY7CUyln
-wf/DmmeXfz6oyO6R9zO/9QOxI0oIZBr5vIeFu/do6/iq8LmyUrr5xJNpaAbg33m9
-UxCKSXWCil483KgzURPpdH3kgXhhKyfY3351BXAtzoz/JmtGXkvRraj9R3m19nMR
-Slx0ja92pXXrx3hh0CavJAD9RIPd5x9xMeKYhRMN0j6xLMSfZTZBeNZLjLhWQ6Df
-HscBeKlhP3wJIPC9WzAN/FdghFJ2Yy8lWUPqSK8BQRYRhibMgV+0Jb2aRbM5F2mk
-cPUtoVSRVyhgYN0OvXCIvVXtoh4CfGdimOsWOzLSLxVMP4JcNOBhFe1C8sA8ULaF
-Iwu7Y0mF76fzfk4vlTjfuDDRq/PHEGEelOdJ2NT1KLnV4UqUX5e3CaINFUMNm8aC
-wGO9AHj2rdbgItlXnmdkFSkxR/HOhC0j2/tr6muw00SUsS3ERyV+w51VGcaOeUrh
-VFQGkSOy3Jh/lEeGt1y22wWj3i5B1me2X9fVuqlr8oGQE2qlYwR/MzOFNsQSmOCo
-tapyo9HJEkRc4Wdiwgq4IXmQisVl3jC464qaQjTa65uKCOXGxdVgCjGlN73nXwXL
-14AurKjPJCinBapc4pEE
-=mKGX
------END PGP SIGNATURE-----
+vendor_version =3D sdhci_readw(host, SDHCI_HOST_VERSION);
+vendor_version =3D (vendor_version & SDHCI_VENDOR_VER_MASK) >> =
+SDHCI_VENDOR_VER_SHIFT;
 
---Signature=_Thu__13_Sep_2012_22_37_39_+1000_V_T/Od_UNWCIe4HE--
+if ((vendor_version =3D=3D FSL_SDHC_VER_1_1) || (vendor_version =3D=3D =
+FSL_SDHC_VER_2_2))
+	host->quirks2 |=3D SDHCI_QUIRK2_HOST_NO_CMD23;
+
+- k
