@@ -1,21 +1,21 @@
-Return-Path: <B21989@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3D0442C0040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 21:29:43 +1000 (EST)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linux-edac@vger.kernel.org>
-Subject: [PATCH] edac/85xx: fix error handle of mpc85xx_mc_err_probe
-Date: Thu, 13 Sep 2012 18:55:29 +0800
-Message-ID: <1347533729-5893-1-git-send-email-Shaohui.Xie@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>, avorontsov@mvista.com,
- linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 5A8D62C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 22:37:41 +1000 (EST)
+Date: Thu, 13 Sep 2012 22:37:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH] pseries: double NR_CPUS in defconfig
+Message-Id: <20120913223739.48f27d7fbacca32b013777fc@canb.auug.org.au>
+In-Reply-To: <20120912174706.GE9269@linux.vnet.ibm.com>
+References: <20120912174706.GE9269@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Thu__13_Sep_2012_22_37_39_+1000_V_T/Od_UNWCIe4HE"
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,158 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Error handle in case of DDR ECC off is wrong, sysfs entries have not been
-created, so edac_mc_free which frees a mci instance should not be called.
-Also, free mci's memory in this case.
+--Signature=_Thu__13_Sep_2012_22_37_39_+1000_V_T/Od_UNWCIe4HE
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
----
- drivers/edac/edac_core.h    |    1 +
- drivers/edac/edac_mc.c      |   53 ++++++++++++++++++++++++++++--------------
- drivers/edac/mpc85xx_edac.c |   14 +++++++----
- 3 files changed, 45 insertions(+), 23 deletions(-)
+Hi,
 
-diff --git a/drivers/edac/edac_core.h b/drivers/edac/edac_core.h
-index 23bb99f..108c4e2 100644
---- a/drivers/edac/edac_core.h
-+++ b/drivers/edac/edac_core.h
-@@ -448,6 +448,7 @@ struct mem_ctl_info *edac_mc_alloc(unsigned mc_num,
- 				   unsigned sz_pvt);
- extern int edac_mc_add_mc(struct mem_ctl_info *mci);
- extern void edac_mc_free(struct mem_ctl_info *mci);
-+extern void edac_mc_free_mem(struct mem_ctl_info *mci);
- extern struct mem_ctl_info *edac_mc_find(int idx);
- extern struct mem_ctl_info *find_mci_by_dev(struct device *dev);
- extern struct mem_ctl_info *edac_mc_del_mc(struct device *dev);
-diff --git a/drivers/edac/edac_mc.c b/drivers/edac/edac_mc.c
-index 616d90b..a2488b2 100644
---- a/drivers/edac/edac_mc.c
-+++ b/drivers/edac/edac_mc.c
-@@ -199,6 +199,40 @@ void *edac_align_ptr(void **p, unsigned size, int n_elems)
- 	return (void *)(((unsigned long)ptr) + align - r);
- }
- 
-+/*
-+ * edac_mc_free_mem
-+ *	'Free' a previously allocated 'mci' memory
-+ * @mci: pointer to a struct mem_ctl_info structure
-+ */
-+void edac_mc_free_mem(struct mem_ctl_info *mci)
-+{
-+	int i = 0, tot_dimms, chn, tot_channels;
-+	struct csrow_info *csr;
-+
-+	tot_dimms = mci->tot_dimms;
-+	tot_channels = mci->num_cschannel;
-+
-+	if (mci->dimms) {
-+		for (i = 0; i < tot_dimms; i++)
-+			kfree(mci->dimms[i]);
-+		kfree(mci->dimms);
-+	}
-+	if (mci->csrows) {
-+		for (chn = 0; chn < tot_channels; chn++) {
-+			csr = mci->csrows[chn];
-+			if (csr) {
-+				for (chn = 0; chn < tot_channels; chn++)
-+					kfree(csr->channels[chn]);
-+				kfree(csr);
-+			}
-+			kfree(mci->csrows[i]);
-+		}
-+		kfree(mci->csrows);
-+	}
-+	kfree(mci);
-+}
-+EXPORT_SYMBOL_GPL(edac_mc_free_mem);
-+
- /**
-  * edac_mc_alloc: Allocate and partially fill a struct mem_ctl_info structure
-  * @mc_num:		Memory controller number
-@@ -413,24 +447,7 @@ struct mem_ctl_info *edac_mc_alloc(unsigned mc_num,
- 	return mci;
- 
- error:
--	if (mci->dimms) {
--		for (i = 0; i < tot_dimms; i++)
--			kfree(mci->dimms[i]);
--		kfree(mci->dimms);
--	}
--	if (mci->csrows) {
--		for (chn = 0; chn < tot_channels; chn++) {
--			csr = mci->csrows[chn];
--			if (csr) {
--				for (chn = 0; chn < tot_channels; chn++)
--					kfree(csr->channels[chn]);
--				kfree(csr);
--			}
--			kfree(mci->csrows[i]);
--		}
--		kfree(mci->csrows);
--	}
--	kfree(mci);
-+	edac_mc_free_mem(mci);
- 
- 	return NULL;
- }
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index a1e791e..402b3f5 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -1012,7 +1012,7 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
- 	if (res) {
- 		printk(KERN_ERR "%s: Unable to get resource for MC err regs\n",
- 		       __func__);
--		goto err;
-+		goto err1;
- 	}
- 
- 	if (!devm_request_mem_region(&op->dev, r.start, resource_size(&r),
-@@ -1020,14 +1020,14 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
- 		printk(KERN_ERR "%s: Error while requesting mem region\n",
- 		       __func__);
- 		res = -EBUSY;
--		goto err;
-+		goto err1;
- 	}
- 
- 	pdata->mc_vbase = devm_ioremap(&op->dev, r.start, resource_size(&r));
- 	if (!pdata->mc_vbase) {
- 		printk(KERN_ERR "%s: Unable to setup MC err regs\n", __func__);
- 		res = -ENOMEM;
--		goto err;
-+		goto err1;
- 	}
- 
- 	sdram_ctl = in_be32(pdata->mc_vbase + MPC85XX_MC_DDR_SDRAM_CFG);
-@@ -1035,7 +1035,7 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
- 		/* no ECC */
- 		printk(KERN_WARNING "%s: No ECC DIMMs discovered\n", __func__);
- 		res = -ENODEV;
--		goto err;
-+		goto err1;
- 	}
- 
- 	edac_dbg(3, "init mci\n");
-@@ -1065,7 +1065,7 @@ static int __devinit mpc85xx_mc_err_probe(struct platform_device *op)
- 
- 	if (edac_mc_add_mc(mci)) {
- 		edac_dbg(3, "failed edac_mc_add_mc()\n");
--		goto err;
-+		goto err1;
- 	}
- 
- 	if (mpc85xx_create_sysfs_attributes(mci)) {
-@@ -1115,6 +1115,10 @@ err:
- 	devres_release_group(&op->dev, mpc85xx_mc_err_probe);
- 	edac_mc_free(mci);
- 	return res;
-+err1:
-+	devres_release_group(&op->dev, mpc85xx_mc_err_probe);
-+	edac_mc_free_mem(mci);
-+	return res;
- }
- 
- static int mpc85xx_mc_err_remove(struct platform_device *op)
--- 
-1.6.4
+On Wed, 12 Sep 2012 10:47:07 -0700 Nishanth Aravamudan <nacc@linux.vnet.ibm=
+.com> wrote:
+>
+> Anticipating growth in coming years, we should ensure we are getting a
+> good lead on testing.
+
+Most changes to pseries_defconfig are copied into ppc64_defconfig.
+Should this one be as well?
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Thu__13_Sep_2012_22_37_39_+1000_V_T/Od_UNWCIe4HE
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJQUdOTAAoJEECxmPOUX5FEZ84QAJSc/fYxXjKQcJsWKyMItdhI
+cGoAlnJE+l5OTTFfrxxnxDnNslD3D67UQ0AmANyjPAPnJqMsacbUEmK5RY7CUyln
+wf/DmmeXfz6oyO6R9zO/9QOxI0oIZBr5vIeFu/do6/iq8LmyUrr5xJNpaAbg33m9
+UxCKSXWCil483KgzURPpdH3kgXhhKyfY3351BXAtzoz/JmtGXkvRraj9R3m19nMR
+Slx0ja92pXXrx3hh0CavJAD9RIPd5x9xMeKYhRMN0j6xLMSfZTZBeNZLjLhWQ6Df
+HscBeKlhP3wJIPC9WzAN/FdghFJ2Yy8lWUPqSK8BQRYRhibMgV+0Jb2aRbM5F2mk
+cPUtoVSRVyhgYN0OvXCIvVXtoh4CfGdimOsWOzLSLxVMP4JcNOBhFe1C8sA8ULaF
+Iwu7Y0mF76fzfk4vlTjfuDDRq/PHEGEelOdJ2NT1KLnV4UqUX5e3CaINFUMNm8aC
+wGO9AHj2rdbgItlXnmdkFSkxR/HOhC0j2/tr6muw00SUsS3ERyV+w51VGcaOeUrh
+VFQGkSOy3Jh/lEeGt1y22wWj3i5B1me2X9fVuqlr8oGQE2qlYwR/MzOFNsQSmOCo
+tapyo9HJEkRc4Wdiwgq4IXmQisVl3jC464qaQjTa65uKCOXGxdVgCjGlN73nXwXL
+14AurKjPJCinBapc4pEE
+=mKGX
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__13_Sep_2012_22_37_39_+1000_V_T/Od_UNWCIe4HE--
