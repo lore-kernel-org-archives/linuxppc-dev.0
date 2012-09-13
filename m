@@ -1,20 +1,21 @@
-Return-Path: <B32579@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1D3C72C0096
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 18:55:25 +1000 (EST)
-From: Prabhakar Kushwaha <prabhakar@freescale.com>
-To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] driver/mtd:IFC NAND:Initialise internal SRAM before any write
-Date: Thu, 13 Sep 2012 14:24:49 +0530
-Message-ID: <1347526489-20186-1-git-send-email-prabhakar@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Prabhakar Kushwaha <prabhakar@freescale.com>,
- dedekind1@gmail.com
+Return-Path: <dan@danny.cz>
+Received: from smtpout1-pesd.core.ignum.cz (smtpout1-pesd.core.ignum.cz
+ [62.109.128.57]) by ozlabs.org (Postfix) with ESMTP id A604E2C0087
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2012 19:37:32 +1000 (EST)
+Message-ID: <1347528729.2583.27.camel@eagle.danny.cz>
+Subject: Re: [PATCH] add GXT4000P and GXT6500P support to the gxt4500 driver
+From: Dan =?ISO-8859-1?Q?Hor=E1k?= <dan@danny.cz>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 13 Sep 2012 11:32:09 +0200
+In-Reply-To: <1347522605.2276.25.camel@pasglop>
+References: <1347452412-7129-1-git-send-email-dan@danny.cz>
+ <1347494498.2276.19.camel@pasglop>
+ <CAMuHMdU2vahGBej+3Q8eBpmn1c7kU3hb1Ez4hGdY1Upn1qsygQ@mail.gmail.com>
+ <1347522605.2276.25.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Nico Macrionitis <acrux@cruxppc.org>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Giuseppe Coviello <cjg@cruxppc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,114 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-IFC-1.1.0 uses 28nm techenology for SRAM. This tech has known limitaion for
-SRAM i.e. "byte select" is not supported. Hence Read Modify Write is
-implemented in IFC for any "system side write" into sram buffer. Reading an
-uninitialized memory results in ECC Error from sram wrapper.
+Benjamin Herrenschmidt píše v Čt 13. 09. 2012 v 17:50 +1000: 
+> On Thu, 2012-09-13 at 07:01 +0200, Geert Uytterhoeven wrote:
+> > On Thu, Sep 13, 2012 at 2:01 AM, Benjamin Herrenschmidt
+> > <benh@kernel.crashing.org> wrote:
+> > > On Wed, 2012-09-12 at 14:20 +0200, Dan Horák wrote:
+> > >> I'm reviving an old patch from 2009 that adds support for GXT4000P and GXT6500P
+> > >> adapter to the gxt4500 driver.
+> > >
+> > > Who is the original author ?
+> > 
+> > Signed-off-by: Nico Macrionitis <acrux@cruxppc.org>
+> > Signed-off-by: Giuseppe Coviello <cjg@cruxppc.org>
+> > 
+> > It even has your ack (albeit not in canonical form ;-), cfr.
+> 
+> Well, the submission had no From: line matching the top S-O-B so I'm not
+> sure who actually wrote the patch :-)
 
-Hence we must initialize/prefill SRAM buffer by any data before writing
-anything in SRAM from system side. To initialize SRAM user can use "READID"
-NAND command with read bytes equal to SRAM size. It will be a one time
-activity post boot.
-
-Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
----
- Based upon git://git.infradead.org/linux-mtd.git branch master
- The compilation of this patch depends upon following patch.
- http://patchwork.ozlabs.org/patch/177893/
- This patch is currently applied on git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git 
- branch next and status is "Awaiting Upstream"
+it must be one of the guys in S-O-B, I have only volunteered to resubmit
+it to get it finally included in mainline
 
 
- drivers/mtd/nand/fsl_ifc_nand.c |   56 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 55 insertions(+), 1 deletion(-)
+Dan
 
-diff --git a/drivers/mtd/nand/fsl_ifc_nand.c b/drivers/mtd/nand/fsl_ifc_nand.c
-index 1f71b54..3d15b92 100644
---- a/drivers/mtd/nand/fsl_ifc_nand.c
-+++ b/drivers/mtd/nand/fsl_ifc_nand.c
-@@ -31,6 +31,7 @@
- #include <linux/mtd/nand_ecc.h>
- #include <asm/fsl_ifc.h>
- 
-+#define FSL_IFC_V1_1_0	0x01010000
- #define ERR_BYTE		0xFF /* Value returned for read
- 					bytes when read failed	*/
- #define IFC_TIMEOUT_MSECS	500  /* Maximum number of mSecs to wait
-@@ -775,13 +776,62 @@ static int fsl_ifc_chip_init_tail(struct mtd_info *mtd)
- 	return 0;
- }
- 
-+static void fsl_ifc_sram_init(struct fsl_ifc_mtd *priv)
-+{
-+	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
-+	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
-+	uint32_t csor = 0, csor_8k = 0, csor_ext = 0;
-+	uint32_t cs = priv->bank;
-+
-+	/* Save CSOR and CSOR_ext */
-+	csor = in_be32(&ifc->csor_cs[cs].csor);
-+	csor_ext = in_be32(&ifc->csor_cs[cs].csor_ext);
-+
-+	/* chage PageSize 8K and SpareSize 1K*/
-+	csor_8k = (csor & ~(CSOR_NAND_PGS_MASK)) | 0x0018C000;
-+	out_be32(&ifc->csor_cs[cs].csor, csor_8k);
-+	out_be32(&ifc->csor_cs[cs].csor_ext, 0x0000400);
-+
-+	/* READID */
-+	out_be32(&ifc->ifc_nand.nand_fir0,
-+			(IFC_FIR_OP_CMD0 << IFC_NAND_FIR0_OP0_SHIFT) |
-+			(IFC_FIR_OP_UA  << IFC_NAND_FIR0_OP1_SHIFT) |
-+			(IFC_FIR_OP_RB << IFC_NAND_FIR0_OP2_SHIFT));
-+	out_be32(&ifc->ifc_nand.nand_fcr0,
-+			NAND_CMD_READID << IFC_NAND_FCR0_CMD0_SHIFT);
-+	out_be32(&ifc->ifc_nand.row3, 0x0);
-+
-+	out_be32(&ifc->ifc_nand.nand_fbcr, 0x0);
-+
-+	/* Program ROW0/COL0 */
-+	out_be32(&ifc->ifc_nand.row0, 0x0);
-+	out_be32(&ifc->ifc_nand.col0, 0x0);
-+
-+	/* set the chip select for NAND Transaction */
-+	out_be32(&ifc->ifc_nand.nand_csel, cs << IFC_NAND_CSEL_SHIFT);
-+
-+	/* start read seq */
-+	out_be32(&ifc->ifc_nand.nandseq_strt, IFC_NAND_SEQ_STRT_FIR_STRT);
-+
-+	/* wait for command complete flag or timeout */
-+	wait_event_timeout(ctrl->nand_wait, ctrl->nand_stat,
-+			   IFC_TIMEOUT_MSECS * HZ/1000);
-+
-+	if (ctrl->nand_stat != IFC_NAND_EVTER_STAT_OPC)
-+		printk(KERN_ERR "fsl-ifc: Failed to Initialise SRAM\n");
-+
-+	/* Restore CSOR and CSOR_ext */
-+	out_be32(&ifc->csor_cs[cs].csor, csor);
-+	out_be32(&ifc->csor_cs[cs].csor_ext, csor_ext);
-+}
-+
- static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
- {
- 	struct fsl_ifc_ctrl *ctrl = priv->ctrl;
- 	struct fsl_ifc_regs __iomem *ifc = ctrl->regs;
- 	struct nand_chip *chip = &priv->chip;
- 	struct nand_ecclayout *layout;
--	u32 csor;
-+	u32 csor, ver;
- 
- 	/* Fill in fsl_ifc_mtd structure */
- 	priv->mtd.priv = chip;
-@@ -875,6 +925,10 @@ static int fsl_ifc_chip_init(struct fsl_ifc_mtd *priv)
- 		chip->ecc.mode = NAND_ECC_SOFT;
- 	}
- 
-+	ver = in_be32(&ifc->ifc_rev);
-+	if (ver == FSL_IFC_V1_1_0)
-+		fsl_ifc_sram_init(priv);
-+
- 	return 0;
- }
- 
--- 
-1.7.9.5
+> Cheers,
+> Ben
+> 
+> > >> See threads at http://marc.info/?l=linux-fbdev-devel&m=124345080216952&w=2
+> > >> and https://lists.ozlabs.org/pipermail/linuxppc-dev/2009-June/072672.html
+> > >> for more details.
+> > 
+> > Gr{oetje,eeting}s,
+> > 
+> >                         Geert
+> > 
+> > --
+> > Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> > 
+> > In personal conversations with technical people, I call myself a hacker. But
+> > when I'm talking to journalists I just say "programmer" or something like that.
+> >                                 -- Linus Torvalds
+> 
+> 
+> 
