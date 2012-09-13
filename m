@@ -1,28 +1,22 @@
-Return-Path: <bigeasy@linutronix.de>
-Message-ID: <5051816A.3050705@linutronix.de>
-Date: Thu, 13 Sep 2012 08:47:06 +0200
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-MIME-Version: 1.0
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH] of: specify initrd location using 64-bit
-References: <1347465937-7056-1-git-send-email-cyril@ti.com>
- <CAMuHMdUuQzD0bq8PifBea2-0Pk7RhmPA0-GAFprsk+vMxMGjGw@mail.gmail.com>
- <5050CE33.9060909@ti.com> <5050E965.5080405@linutronix.de>
- <505107DF.5020105@gmail.com>
-In-Reply-To: <505107DF.5020105@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-mips@linux-mips.org, a-jacquiot@ti.com, mahesh@linux.vnet.ibm.com,
- linux@openrisc.net, paul.gortmaker@windriver.com, paulus@samba.org,
- hpa@zytor.com, m.szyprowski@samsung.com, jonas@southpole.se,
- linux@arm.linux.org.uk, linux-c6x-dev@linux-c6x.org, nico@linaro.org,
- x86@kernel.org, mingo@redhat.com, suzuki@in.ibm.com,
- Cyril Chemparathy <cyril@ti.com>, Geert Uytterhoeven <geert@linux-m68k.org>,
- linus.walleij@linaro.org, arnd@arndb.de, microblaze-uclinux@itee.uq.edu.au,
- devicetree-discuss@lists.ozlabs.org, msalter@redhat.com,
- rob.herring@calxeda.com, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, blogic@openwrt.org, dhowells@redhat.com,
- monstr@monstr.eu, david.daney@cavium.com, linux-kernel@vger.kernel.org,
- ralf@linux-mips.org, tj@kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 776842C00B8
+ for <linuxppc-dev@ozlabs.org>; Thu, 13 Sep 2012 17:50:24 +1000 (EST)
+Message-ID: <1347522605.2276.25.camel@pasglop>
+Subject: Re: [PATCH] add GXT4000P and GXT6500P support to the gxt4500 driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 13 Sep 2012 17:50:05 +1000
+In-Reply-To: <CAMuHMdU2vahGBej+3Q8eBpmn1c7kU3hb1Ez4hGdY1Upn1qsygQ@mail.gmail.com>
+References: <1347452412-7129-1-git-send-email-dan@danny.cz>
+ <1347494498.2276.19.camel@pasglop>
+ <CAMuHMdU2vahGBej+3Q8eBpmn1c7kU3hb1Ez4hGdY1Upn1qsygQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Dan =?ISO-8859-1?Q?Hor=E1k?= <dan@danny.cz>, linuxppc-dev@ozlabs.org,
+ Nico Macrionitis <acrux@cruxppc.org>, Giuseppe Coviello <cjg@cruxppc.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/13/2012 12:08 AM, Rob Herring wrote:
->> Geert is right here. If it is a physical address, it should be
->> phys_addr_t.
->
-> While generally true, for the DT specific code I think it should be a
-> fixed u64. The size of the address is defined by the FDT, not the
-> kernel. It is very likely we could have a FDT that specifies addresses
-> in 64-bit values, but then we boot a kernel is compiled for !LPAE.
-> phys_addr_t is currently sized based on LPAE setting.
+On Thu, 2012-09-13 at 07:01 +0200, Geert Uytterhoeven wrote:
+> On Thu, Sep 13, 2012 at 2:01 AM, Benjamin Herrenschmidt
+> <benh@kernel.crashing.org> wrote:
+> > On Wed, 2012-09-12 at 14:20 +0200, Dan Horák wrote:
+> >> I'm reviving an old patch from 2009 that adds support for GXT4000P and GXT6500P
+> >> adapter to the gxt4500 driver.
+> >
+> > Who is the original author ?
+> 
+> Signed-off-by: Nico Macrionitis <acrux@cruxppc.org>
+> Signed-off-by: Giuseppe Coviello <cjg@cruxppc.org>
+> 
+> It even has your ack (albeit not in canonical form ;-), cfr.
 
-If your kernel is 32bit without PAE and your DTB address is >32ibt than
-you can't handle it. If you don't notice this in your dt code than you
-remap the wrong memory ioremap().
+Well, the submission had no From: line matching the top S-O-B so I'm not
+sure who actually wrote the patch :-)
 
->
-> Rob
->
+Cheers,
+Ben
 
-Sebastian
+> >> See threads at http://marc.info/?l=linux-fbdev-devel&m=124345080216952&w=2
+> >> and https://lists.ozlabs.org/pipermail/linuxppc-dev/2009-June/072672.html
+> >> for more details.
+> 
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
