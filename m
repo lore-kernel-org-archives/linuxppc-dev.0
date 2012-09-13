@@ -1,28 +1,19 @@
-Return-Path: <r66093@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
+Return-Path: <B32579@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DB3D42C007D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 17:58:05 +1000 (EST)
-From: Huang Changming-R66093 <r66093@freescale.com>
-To: Anton Vorontsov <cbouatmailru@gmail.com>
-Subject: RE: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
-Date: Thu, 13 Sep 2012 07:57:53 +0000
-Message-ID: <110EED8CC96DFC488B7E717A2027A27C178A9D@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
- <504F82C1.2000907@freescale.com>
- <110EED8CC96DFC488B7E717A2027A27C176E94@039-SN1MPN1-002.039d.mgd.msft.net>
- <20120912033811.GA1886@lizard>
-In-Reply-To: <20120912033811.GA1886@lizard>
-Content-Type: text/plain; charset="utf-8"
+ by ozlabs.org (Postfix) with ESMTPS id 8D9CE2C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Sep 2012 18:04:28 +1000 (EST)
+From: Prabhakar Kushwaha <prabhakar@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/mpc85xx:Update interrupt handling for IFC controller
+Date: Thu, 13 Sep 2012 13:34:11 +0530
+Message-ID: <1347523451-7843-1-git-send-email-prabhakar@freescale.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: Prabhakar Kushwaha <prabhakar@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,35 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCkJlc3QgUmVnYXJkcw0KSmVycnkgSHVhbmcNCg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2Fn
-ZS0tLS0tDQo+IEZyb206IEFudG9uIFZvcm9udHNvdiBbbWFpbHRvOmNib3VhdG1haWxydUBnbWFp
-bC5jb21dDQo+IFNlbnQ6IFdlZG5lc2RheSwgU2VwdGVtYmVyIDEyLCAyMDEyIDExOjM4IEFNDQo+
-IFRvOiBIdWFuZyBDaGFuZ21pbmctUjY2MDkzDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGlu
-dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LQ0KPiBtbWNAdmdlci5rZXJuZWwub3Jn
-DQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMi8zXSBwb3dlcnBjL2VzZGhjOiBhZGQgcHJvcGVydHkg
-dG8gZGlzYWJsZSB0aGUgQ01EMjMNCj4gDQo+IE9uIFdlZCwgU2VwIDEyLCAyMDEyIGF0IDAzOjE5
-OjE4QU0gKzAwMDAsIEh1YW5nIENoYW5nbWluZy1SNjYwOTMgd3JvdGU6DQo+IFsuLi5dDQo+ID4g
-SSBkb24ndCB0aGluayBpdCBpcyB0aGUgYmVzdCB3YXkgdG8gZG8gaXQuICBGb3IgdGhlIFZWTjIu
-MiBvciBvbGRlciwNCj4gPiBzb21lIHNpbGljb24gc3VwcG9ydCB0aGlzIGZlYXR1cmUgKG1wYzg1
-MzYgYW5kIHAyMDIwKSwgYnV0IG90aGVyDQo+ID4gc2lsaWNvbmVzIGRvbid0IHN1cHBvcnQgaXQg
-KGUuZy4gcDQwODAsIHAxMDJ4KS4gIFRob3VnaCwgdGhlIGN1cnJlbnQNCj4gPiBwNS9wNC9wMyBo
-YXMgc3VwcG9ydGVkIHRoaXMgZmVhdHVyZSwgY2FuIHdlIHN1cmUgdGhlIGZ1dHVyZSBzaWxpY29u
-DQo+ID4gc3VwcG9ydCBpdD8gIFNvIEkgdGhpbmsgdGhlIGJlc3Qgd2F5IGlzIHRvIHNwZWNpZnkg
-aXQgaW4gZGV2aWNlIHRyZWUNCj4gPiBhcyAnc2RoY2ksYXV0by1jbWQxMicNCj4gDQo+IEluIGFk
-ZGl0aW9uIHRvIHlvdXIgY3VycmVudCBwYXRjaGVzLCB5b3UgY291bGQganVzdCBhZGQgYW5vdGhl
-ciBwYXRjaA0KPiB0aGF0IGJsYWNrbGlzdHMgYWZmZWN0ZWQgU09DIHJldmlzaW9ucyBiYXNlZCBv
-biB0aGUgaW5mbyBmcm9tIFBWUi9TVlIuDQo+IA0KPiBGb3IgZXhhbXBsZSwgc2VlIGdmYXJfZGV0
-ZWN0X2VycmF0YSgpIGluDQo+IGRyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9naWFuZmFy
-LmMuDQo+IA0KPiBUaGF0IHdheSB5b3UgY291bGQgaGVscCB1c2VycyB0aGF0IGRvbid0IGhhdmUg
-dGhlIG5ld2VzdCBkZXZpY2UgdHJlZXMuDQo+IA0KSGksIEFudG9uDQpUaGFua3MuDQpCdXQsIHRo
-ZXNlIHBhdGNoZXMgYXJlIGp1c3QgZm9yIGxhdGVzdCBrZXJuZWwsIGlmIHRoZSB1c2VyIGRvbid0
-IGhhdmUgdGhlIGxhdGVzdCBkZXZpY2UgdHJlZSwNClRoZW4gdGhleSBkb24ndCBoYXZlIHRoZSBs
-YXRlc3Qga2VybmVsLCBhbmQgdGhlc2UgcGF0Y2hlcyBjYW4ndCBiZSB1c2VkIGZvciB0aGVtIGRp
-cmVjdGx5LA0KVGhvdWdoIHByb3ZpZGUgdGhlIGZ1bmN0aW9uIGxpa2UgZ2Zhcl9kZXRlY3RfZXJy
-YXRhLCB0aGV5IG11c3QgbW9kaWZ5IHRoZWlyIGNvZGVzLg0KDQpBbmQgSSBkb24ndCBrbm93IGlm
-IHRoZSBmdXR1cmUgc2lsaWNvbiBjYW4gc3VwcG9ydCBDTUQyMywgaWYgbm90LCB3ZSBtdXN0IG1v
-ZGlmeSBzZGhjIGRyaXZlciBhZ2Fpbi4NCldoZW4gd2UgdXNlIHRoZSBkZXZpY2UgdHJlZSB0byBp
-ZGVudGlmeSBpdCwgaWYgdGhlIHNpbGljb24gZG9lcyBub3Qgc3VwcG9ydCB0aGlzIGZlYXR1cmUs
-DQp3ZSBqdXN0IGFkZCB0aGlzIHByb3BlcnR5IGludG8gdGhlIG5ldyBkZXZpY2UgdHJlZSwgbm90
-IG5lZWQgdG8gbW9kaWZ5IFNESEMgZHJpdmVyLg0KSSB0aGluaywgdGhpcyBpcyB0aGUgYmVzdCB3
-YXkuDQogDQoNCg==
+IFC may have one or two interrupts.  If two interrupt specifiers are present,
+the first is the "common" interrupt (CM_EVTER_STAT), and the second is the NAND
+interrupt (NAND_EVTER_STAT).
+If there is only one, that interrupt reports both types of event.
+
+Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
+---
+ Based upon git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git branch next 
+
+ arch/powerpc/sysdev/fsl_ifc.c |   20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
+
+diff --git a/arch/powerpc/sysdev/fsl_ifc.c b/arch/powerpc/sysdev/fsl_ifc.c
+index b31f19f..097cc9d2 100644
+--- a/arch/powerpc/sysdev/fsl_ifc.c
++++ b/arch/powerpc/sysdev/fsl_ifc.c
+@@ -244,12 +244,6 @@ static int __devinit fsl_ifc_ctrl_probe(struct platform_device *dev)
+ 	/* get the nand machine irq */
+ 	fsl_ifc_ctrl_dev->nand_irq =
+ 			irq_of_parse_and_map(dev->dev.of_node, 1);
+-	if (fsl_ifc_ctrl_dev->nand_irq == NO_IRQ) {
+-		dev_err(&dev->dev, "failed to get irq resource "
+-						"for NAND Machine\n");
+-		ret = -ENODEV;
+-		goto err;
+-	}
+ 
+ 	fsl_ifc_ctrl_dev->dev = &dev->dev;
+ 
+@@ -267,12 +261,14 @@ static int __devinit fsl_ifc_ctrl_probe(struct platform_device *dev)
+ 		goto err_irq;
+ 	}
+ 
+-	ret = request_irq(fsl_ifc_ctrl_dev->nand_irq, fsl_ifc_nand_irq, 0,
+-			  "fsl-ifc-nand", fsl_ifc_ctrl_dev);
+-	if (ret != 0) {
+-		dev_err(&dev->dev, "failed to install irq (%d)\n",
+-			fsl_ifc_ctrl_dev->nand_irq);
+-		goto err_nandirq;
++	if (fsl_ifc_ctrl_dev->nand_irq) {
++		ret = request_irq(fsl_ifc_ctrl_dev->nand_irq, fsl_ifc_nand_irq,
++				0, "fsl-ifc-nand", fsl_ifc_ctrl_dev);
++		if (ret != 0) {
++			dev_err(&dev->dev, "failed to install irq (%d)\n",
++				fsl_ifc_ctrl_dev->nand_irq);
++			goto err_nandirq;
++		}
+ 	}
+ 
+ 	return 0;
+-- 
+1.7.9.5
