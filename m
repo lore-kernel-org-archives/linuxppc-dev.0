@@ -1,9 +1,26 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Add an xmon command to dump one or all pacas
-Date: Fri, 14 Sep 2012 16:03:57 +1000
-Message-Id: <1347602637-18683-1-git-send-email-michael@ellerman.id.au>
+Return-Path: <B25806@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3CB012C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 17:54:54 +1000 (EST)
+Received: from mail47-tx2 (localhost [127.0.0.1])	by mail47-tx2-R.bigfish.com
+ (Postfix) with ESMTP id BBB9A4200F0	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri,
+ 14 Sep 2012 07:54:49 +0000 (UTC)
+Received: from TX2EHSMHS037.bigfish.com (unknown [10.9.14.242])	by
+ mail47-tx2.bigfish.com (Postfix) with ESMTP id 9E8854C0047	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 07:54:47 +0000 (UTC)
+From: Chunhe Lan <Chunhe.Lan@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] p1023rds_defconfig: Add USB support
+Date: Fri, 14 Sep 2012 15:57:20 -0400
+Message-ID: <1347652640-20748-1-git-send-email-Chunhe.Lan@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: kumar.gala@freescale.com, Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,181 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This was originally motivated by a desire to see the mapping between
-logical and hardware cpu numbers.
-
-But it seemed that it made more sense to just add a command to dump
-(most of) the paca.
-
-With no arguments "dp" will dump the paca for the current cpu.
-
-It also takes an argument, eg. "dp 3" which is the logical cpu number
-in hex. This form does not check if the cpu is possible, but displays
-the paca regardless, as well as the cpu's state in the possible, present
-and online masks.
-
-Thirdly, "dpa" will display the paca for all possible cpus. If there are
-no possible cpus, like early in boot, it will tell you that.
-
-Sample output, number in brackets is the offset into the struct:
-
-2:mon> dp 3
-paca for cpu 0x3 @ c00000000ff20a80:
- possible         = yes
- present          = yes
- online           = yes
- lock_token       = 0x8000            	(0x8)
- paca_index       = 0x3               	(0xa)
- kernel_toc       = 0xc00000000144f990	(0x10)
- kernelbase       = 0xc000000000000000	(0x18)
- kernel_msr       = 0xb000000000001032	(0x20)
- stab_real        = 0x0               	(0x28)
- stab_addr        = 0x0               	(0x30)
- emergency_sp     = 0xc00000003ffe4000	(0x38)
- data_offset      = 0xa40000          	(0x40)
- hw_cpu_id        = 0x9               	(0x50)
- cpu_start        = 0x1               	(0x52)
- kexec_state      = 0x0               	(0x53)
- __current        = 0xc00000007e568680	(0x218)
- kstack           = 0xc00000007e5a3e30	(0x220)
- stab_rr          = 0x1a              	(0x228)
- saved_r1         = 0xc00000007e7cb450	(0x230)
- trap_save        = 0x0               	(0x240)
- soft_enabled     = 0x0               	(0x242)
- irq_happened     = 0x0               	(0x243)
- io_sync          = 0x0               	(0x244)
- irq_work_pending = 0x0               	(0x245)
- nap_state_lost   = 0x0               	(0x246)
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-
+Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
 ---
+ arch/powerpc/configs/85xx/p1023rds_defconfig |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-v2: Fix macro per sfr's comments. Change dp to show current cpu's paca,
-    and add dpa to show all.
----
- arch/powerpc/xmon/xmon.c |   95 ++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
-
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 9b49c65..2a2339f 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -203,6 +203,8 @@ Commands:\n\
-   df	dump float values\n\
-   dd	dump double values\n\
-   dl    dump the kernel log buffer\n\
-+  dp[#]	dump paca for current cpu, or cpu #\n\
-+  dpa	dump paca for all possible cpus\n\
-   dr	dump stream of raw bytes\n\
-   e	print exception information\n\
-   f	flush cache\n\
-@@ -2009,6 +2011,93 @@ static void xmon_rawdump (unsigned long adrs, long ndump)
- 	printf("\n");
- }
- 
-+static void dump_one_paca(int cpu)
-+{
-+	struct paca_struct *p;
-+
-+	if (setjmp(bus_error_jmp) != 0) {
-+		printf("*** Error dumping paca for cpu 0x%x!\n", cpu);
-+		return;
-+	}
-+
-+	catch_memory_errors = 1;
-+	sync();
-+
-+	p = &paca[cpu];
-+
-+	printf("paca for cpu 0x%x @ %p:\n", cpu, p);
-+
-+	printf(" %-*s = %s\n", 16, "possible", cpu_possible(cpu) ? "yes" : "no");
-+	printf(" %-*s = %s\n", 16, "present", cpu_present(cpu) ? "yes" : "no");
-+	printf(" %-*s = %s\n", 16, "online", cpu_online(cpu) ? "yes" : "no");
-+
-+#define DUMP(paca, name, format) \
-+	printf(" %-*s = %#-*"format"\t(0x%lx)\n", 16, #name, 18, paca->name, \
-+		offsetof(struct paca_struct, name));
-+
-+	DUMP(p, lock_token, "x");
-+	DUMP(p, paca_index, "x");
-+	DUMP(p, kernel_toc, "lx");
-+	DUMP(p, kernelbase, "lx");
-+	DUMP(p, kernel_msr, "lx");
-+#ifdef CONFIG_PPC_STD_MMU_64
-+	DUMP(p, stab_real, "lx");
-+	DUMP(p, stab_addr, "lx");
-+#endif
-+	DUMP(p, emergency_sp, "p");
-+	DUMP(p, data_offset, "lx");
-+	DUMP(p, hw_cpu_id, "x");
-+	DUMP(p, cpu_start, "x");
-+	DUMP(p, kexec_state, "x");
-+	DUMP(p, __current, "p");
-+	DUMP(p, kstack, "lx");
-+	DUMP(p, stab_rr, "lx");
-+	DUMP(p, saved_r1, "lx");
-+	DUMP(p, trap_save, "x");
-+	DUMP(p, soft_enabled, "x");
-+	DUMP(p, irq_happened, "x");
-+	DUMP(p, io_sync, "x");
-+	DUMP(p, irq_work_pending, "x");
-+	DUMP(p, nap_state_lost, "x");
-+
-+#undef DUMP
-+
-+	catch_memory_errors = 0;
-+	sync();
-+}
-+
-+static void dump_all_pacas(void)
-+{
-+	int cpu;
-+
-+	if (num_possible_cpus() == 0) {
-+		printf("No possible cpus, use 'dp #' to dump individual cpus\n");
-+		return;
-+	}
-+
-+	for_each_possible_cpu(cpu)
-+		dump_one_paca(cpu);
-+}
-+
-+static void dump_pacas(void)
-+{
-+	unsigned long num;
-+	int c;
-+
-+	c = inchar();
-+	if (c == 'a') {
-+		dump_all_pacas();
-+		return;
-+	}
-+
-+	termch = c;	/* Put c back, it wasn't 'a' */
-+
-+	if (scanhex(&num))
-+		dump_one_paca(num);
-+	else
-+		dump_one_paca(xmon_owner);
-+}
-+
- #define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
- 			 || ('a' <= (c) && (c) <= 'f') \
- 			 || ('A' <= (c) && (c) <= 'F'))
-@@ -2018,6 +2107,12 @@ dump(void)
- 	int c;
- 
- 	c = inchar();
-+
-+	if (c == 'p') {
-+		dump_pacas();
-+		return;
-+	}
-+
- 	if ((isxdigit(c) && c != 'f' && c != 'd') || c == '\n')
- 		termch = c;
- 	scanhex((void *)&adrs);
+diff --git a/arch/powerpc/configs/85xx/p1023rds_defconfig b/arch/powerpc/configs/85xx/p1023rds_defconfig
+index 26e541c..b80bcc6 100644
+--- a/arch/powerpc/configs/85xx/p1023rds_defconfig
++++ b/arch/powerpc/configs/85xx/p1023rds_defconfig
+@@ -112,6 +112,12 @@ CONFIG_SND=y
+ CONFIG_SND_MIXER_OSS=y
+ CONFIG_SND_PCM_OSS=y
+ # CONFIG_SND_SUPPORT_OLD_API is not set
++CONFIG_USB=y
++CONFIG_USB_DEVICEFS=y
++CONFIG_USB_MON=y
++CONFIG_USB_EHCI_HCD=y
++CONFIG_USB_EHCI_FSL=y
++CONFIG_USB_STORAGE=y
+ CONFIG_EDAC=y
+ CONFIG_EDAC_MM_EDAC=y
+ CONFIG_RTC_CLASS=y
 -- 
-1.7.9.5
+1.7.6.5
