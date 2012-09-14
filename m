@@ -1,16 +1,16 @@
 Return-Path: <srinivas.kandagatla@st.com>
-Received: from eu1sys200aog116.obsmtp.com (eu1sys200aog116.obsmtp.com
- [207.126.144.141])
+Received: from eu1sys200aog112.obsmtp.com (eu1sys200aog112.obsmtp.com
+ [207.126.144.133])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DAE0E2C008B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 18:50:35 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3614D2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 18:50:36 +1000 (EST)
 From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
-To: benh@kernel.crashing.org, bergner@us.ibm.com
-Subject: [PATCH v2 2/7] dt/powerpc: Use of_get_child_by_name to get a named
- child.
-Date: Fri, 14 Sep 2012 09:18:44 +0100
-Message-Id: <1347610724-20152-1-git-send-email-srinivas.kandagatla@st.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH v2 3/7] dt/powerpc/powernv: Use of_get_child_by_name to get a
+ named child.
+Date: Fri, 14 Sep 2012 09:19:03 +0100
+Message-Id: <1347610743-20189-1-git-send-email-srinivas.kandagatla@st.com>
 Cc: robherring2@gmail.com, devicetree-discuss@lists.ozlabs.org,
  linuxppc-dev@lists.ozlabs.org, srinivas.kandagatla@st.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,31 +30,26 @@ driver by replacing it with of_get_child_by_name instead.
 
 Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 ---
- arch/powerpc/kernel/prom.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/powernv/opal.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index f191bf0..80e5b6c 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -735,7 +735,6 @@ void __init early_init_devtree(void *params)
-  */
- struct device_node *of_find_next_cache_node(struct device_node *np)
- {
--	struct device_node *child;
- 	const phandle *handle;
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index aaa0dba..6dfb8af 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -294,11 +294,9 @@ static int __init opal_init(void)
+ 		consoles = of_node_get(opal_node);
  
- 	handle = of_get_property(np, "l2-cache", NULL);
-@@ -749,9 +748,7 @@ struct device_node *of_find_next_cache_node(struct device_node *np)
- 	 * beneath CPU nodes.
- 	 */
- 	if (!strcmp(np->type, "cpu"))
--		for_each_child_of_node(np, child)
--			if (!strcmp(child->type, "cache"))
--				return child;
-+		return of_get_child_by_name(np, "cache");
+ 	/* Register serial ports */
+-	for_each_child_of_node(consoles, np) {
+-		if (strcmp(np->name, "serial"))
+-			continue;
++	np = of_get_child_by_name(consoles, "serial");
++	if (np)
+ 		of_platform_device_create(np, NULL, NULL);
+-	}
+ 	of_node_put(consoles);
  
- 	return NULL;
- }
+ 	/* Find all OPAL interrupts and request them */
 -- 
 1.7.0.4
