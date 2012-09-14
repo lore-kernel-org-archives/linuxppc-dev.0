@@ -1,27 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 206982C007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 09:05:09 +1000 (EST)
-Date: Thu, 13 Sep 2012 16:05:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH v4 0/8] Avoid cache trashing on clearing huge/gigantic page
-Message-Id: <20120913160506.d394392a.akpm@linux-foundation.org>
-In-Reply-To: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
-References: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Andrea Arcangeli <aarcange@redhat.com>, linux-mips@linux-mips.org,
- Andi Kleen <ak@linux.intel.com>, Alex Shi <alex.shu@intel.com>,
- Robert Richter <robert.richter@amd.com>, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org, Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org,
- Jan Beulich <jbeulich@novell.com>, Andy Lutomirski <luto@amacapital.net>,
- Johannes Weiner <hannes@cmpxchg.org>, linux-mm@kvack.org,
- linux-sh@vger.kernel.org, Ingo Molnar <mingo@redhat.com>,
- Mel Gorman <mgorman@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
- sparclinux@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Tim Chen <tim.c.chen@linux.intel.com>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <R1AAHA@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D7CB92C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 10:07:04 +1000 (EST)
+Date: Thu, 13 Sep 2012 19:04:39 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Shaohui Xie <Shaohui.Xie@freescale.com>
+Subject: Re: [PATCH] edac/85xx: fix error handle of mpc85xx_mc_err_probe
+Message-ID: <20120913190439.64ef56f8566328b23f3843db@freescale.com>
+In-Reply-To: <1347533729-5893-1-git-send-email-Shaohui.Xie@freescale.com>
+References: <1347533729-5893-1-git-send-email-Shaohui.Xie@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: akpm@linux-foundation.org, avorontsov@mvista.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-edac@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,20 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 20 Aug 2012 16:52:29 +0300
-"Kirill A. Shutemov" <kirill.shutemov@linux.intel.com> wrote:
+On Thu, 13 Sep 2012 18:55:29 +0800
+Shaohui Xie <Shaohui.Xie@freescale.com> wrote:
 
-> Clearing a 2MB huge page will typically blow away several levels of CPU
-> caches.  To avoid this only cache clear the 4K area around the fault
-> address and use a cache avoiding clears for the rest of the 2MB area.
+> Error handle in case of DDR ECC off is wrong, sysfs entries have not been
+> created, so edac_mc_free which frees a mci instance should not be called.
+> Also, free mci's memory in this case.
 > 
-> This patchset implements cache avoiding version of clear_page only for
-> x86. If an architecture wants to provide cache avoiding version of
-> clear_page it should to define ARCH_HAS_USER_NOCACHE to 1 and implement
-> clear_page_nocache() and clear_user_highpage_nocache().
+> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+> ---
 
-Patchset looks nice to me, but the changelogs are terribly short of
-performance measurements.  For this sort of change I do think it is
-important that pretty exhaustive testing be performed, and that the
-results (or a readable summary of them) be shown.  And that testing
-should be designed to probe for slowdowns, not just the speedups!
+this fixes a 'WARNING: at lib/kobject.c:593' on a p2020, so:
+
+Tested-by: Kim Phillips <kim.phillips@freescale.com>
+
+Kim
