@@ -1,9 +1,25 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Add an xmon command to dump one or all pacas
-Date: Fri, 14 Sep 2012 19:01:31 +1000
-Message-Id: <1347613291-29001-1-git-send-email-michael@ellerman.id.au>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BB9852C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Sep 2012 19:31:19 +1000 (EST)
+Message-ID: <20120914113100.119048xeot7zcym8@webmail.mnet-online.de>
+Date: Fri, 14 Sep 2012 11:31:00 +0200
+From: agust@denx.de
+To: Eric Millbrandt <emillbrandt@dekaresearch.com>
+Subject: Re: [PATCH 1/7] powerpc/52xx: define FSL_SOC
+References: <1347572596-37540-1-git-send-email-emillbrandt@dekaresearch.com>
+ <1347572596-37540-2-git-send-email-emillbrandt@dekaresearch.com>
+In-Reply-To: <1347572596-37540-2-git-send-email-emillbrandt@dekaresearch.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
+Cc: alsa-devel@alsa-project.org,
+ Mark Brown <broonie@opensource.wolfsonmicro.com>,
+ linuxppc-dev@lists.ozlabs.org, Liam Girdwood <lrg@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -13,193 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This was originally motivated by a desire to see the mapping between
-logical and hardware cpu numbers.
+Eric Millbrandt <emillbrandt@dekaresearch.com> wrote:
 
-But it seemed that it made more sense to just add a command to dump
-(most of) the paca.
+> mpc52xx socs need to have FSL_SOC defined to build their drivers  
+> (i2c-mpc, ASoC)
 
-With no arguments "dp" will dump the paca for the current cpu.
+No, i2c-mpc depends on PPC only. And FSL_SOC enables code we do not
+use on mpc52xx. For ASoC please see comment below.
 
-It also takes an argument, eg. "dp 3" which is the logical cpu number
-in hex. This form does not check if the cpu is possible, but displays
-the paca regardless, as well as the cpu's state in the possible, present
-and online masks.
+> Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
+>
+> diff --git a/arch/powerpc/platforms/52xx/Kconfig  
+> b/arch/powerpc/platforms/52xx/Kconfig
+> index 90f4496..fb35944 100644
+> --- a/arch/powerpc/platforms/52xx/Kconfig
+> +++ b/arch/powerpc/platforms/52xx/Kconfig
+> @@ -1,6 +1,7 @@
+>  config PPC_MPC52xx
+>  	bool "52xx-based boards"
+>  	depends on 6xx
+> +	select FSL_SOC
 
-Thirdly, "dpa" will display the paca for all possible cpus. If there are
-no possible cpus, like early in boot, it will tell you that.
+Better use:
 
-Sample output, number in brackets is the offset into the struct:
+diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
+index d701330..4563b28 100644
+--- a/sound/soc/fsl/Kconfig
++++ b/sound/soc/fsl/Kconfig
+@@ -6,7 +6,7 @@ config SND_SOC_FSL_UTILS
 
-2:mon> dp 3
-paca for cpu 0x3 @ c00000000ff20a80:
- possible         = yes
- present          = yes
- online           = yes
- lock_token       = 0x8000            	(0x8)
- paca_index       = 0x3               	(0xa)
- kernel_toc       = 0xc00000000144f990	(0x10)
- kernelbase       = 0xc000000000000000	(0x18)
- kernel_msr       = 0xb000000000001032	(0x20)
- stab_real        = 0x0               	(0x28)
- stab_addr        = 0x0               	(0x30)
- emergency_sp     = 0xc00000003ffe4000	(0x38)
- data_offset      = 0xa40000          	(0x40)
- hw_cpu_id        = 0x9               	(0x50)
- cpu_start        = 0x1               	(0x52)
- kexec_state      = 0x0               	(0x53)
- __current        = 0xc00000007e568680	(0x218)
- kstack           = 0xc00000007e5a3e30	(0x220)
- stab_rr          = 0x1a              	(0x228)
- saved_r1         = 0xc00000007e7cb450	(0x230)
- trap_save        = 0x0               	(0x240)
- soft_enabled     = 0x0               	(0x242)
- irq_happened     = 0x0               	(0x243)
- io_sync          = 0x0               	(0x244)
- irq_work_pending = 0x0               	(0x245)
- nap_state_lost   = 0x0               	(0x246)
+  menuconfig SND_POWERPC_SOC
+         tristate "SoC Audio for Freescale PowerPC CPUs"
+-       depends on FSL_SOC
++       depends on FSL_SOC || PPC_MPC52xx
+         help
+           Say Y or M if you want to add support for codecs attached to
+           the PowerPC CPUs.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Thanks,
 
----
-
-v3: Fix 32-bit build :}
-
-v2: Fix macro per sfr's comments. Change dp to show current cpu's paca,
-    and add dpa to show all.
----
- arch/powerpc/xmon/xmon.c |  105 +++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 104 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 9b49c65..d5ae12b 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -202,7 +202,13 @@ Commands:\n\
-   di	dump instructions\n\
-   df	dump float values\n\
-   dd	dump double values\n\
--  dl    dump the kernel log buffer\n\
-+  dl    dump the kernel log buffer\n"
-+#ifdef CONFIG_PPC64
-+  "\
-+  dp[#]	dump paca for current cpu, or cpu #\n\
-+  dpa	dump paca for all possible cpus\n"
-+#endif
-+  "\
-   dr	dump stream of raw bytes\n\
-   e	print exception information\n\
-   f	flush cache\n\
-@@ -2009,6 +2015,95 @@ static void xmon_rawdump (unsigned long adrs, long ndump)
- 	printf("\n");
- }
- 
-+#ifdef CONFIG_PPC64
-+static void dump_one_paca(int cpu)
-+{
-+	struct paca_struct *p;
-+
-+	if (setjmp(bus_error_jmp) != 0) {
-+		printf("*** Error dumping paca for cpu 0x%x!\n", cpu);
-+		return;
-+	}
-+
-+	catch_memory_errors = 1;
-+	sync();
-+
-+	p = &paca[cpu];
-+
-+	printf("paca for cpu 0x%x @ %p:\n", cpu, p);
-+
-+	printf(" %-*s = %s\n", 16, "possible", cpu_possible(cpu) ? "yes" : "no");
-+	printf(" %-*s = %s\n", 16, "present", cpu_present(cpu) ? "yes" : "no");
-+	printf(" %-*s = %s\n", 16, "online", cpu_online(cpu) ? "yes" : "no");
-+
-+#define DUMP(paca, name, format) \
-+	printf(" %-*s = %#-*"format"\t(0x%lx)\n", 16, #name, 18, paca->name, \
-+		offsetof(struct paca_struct, name));
-+
-+	DUMP(p, lock_token, "x");
-+	DUMP(p, paca_index, "x");
-+	DUMP(p, kernel_toc, "lx");
-+	DUMP(p, kernelbase, "lx");
-+	DUMP(p, kernel_msr, "lx");
-+#ifdef CONFIG_PPC_STD_MMU_64
-+	DUMP(p, stab_real, "lx");
-+	DUMP(p, stab_addr, "lx");
-+#endif
-+	DUMP(p, emergency_sp, "p");
-+	DUMP(p, data_offset, "lx");
-+	DUMP(p, hw_cpu_id, "x");
-+	DUMP(p, cpu_start, "x");
-+	DUMP(p, kexec_state, "x");
-+	DUMP(p, __current, "p");
-+	DUMP(p, kstack, "lx");
-+	DUMP(p, stab_rr, "lx");
-+	DUMP(p, saved_r1, "lx");
-+	DUMP(p, trap_save, "x");
-+	DUMP(p, soft_enabled, "x");
-+	DUMP(p, irq_happened, "x");
-+	DUMP(p, io_sync, "x");
-+	DUMP(p, irq_work_pending, "x");
-+	DUMP(p, nap_state_lost, "x");
-+
-+#undef DUMP
-+
-+	catch_memory_errors = 0;
-+	sync();
-+}
-+
-+static void dump_all_pacas(void)
-+{
-+	int cpu;
-+
-+	if (num_possible_cpus() == 0) {
-+		printf("No possible cpus, use 'dp #' to dump individual cpus\n");
-+		return;
-+	}
-+
-+	for_each_possible_cpu(cpu)
-+		dump_one_paca(cpu);
-+}
-+
-+static void dump_pacas(void)
-+{
-+	unsigned long num;
-+	int c;
-+
-+	c = inchar();
-+	if (c == 'a') {
-+		dump_all_pacas();
-+		return;
-+	}
-+
-+	termch = c;	/* Put c back, it wasn't 'a' */
-+
-+	if (scanhex(&num))
-+		dump_one_paca(num);
-+	else
-+		dump_one_paca(xmon_owner);
-+}
-+#endif
-+
- #define isxdigit(c)	(('0' <= (c) && (c) <= '9') \
- 			 || ('a' <= (c) && (c) <= 'f') \
- 			 || ('A' <= (c) && (c) <= 'F'))
-@@ -2018,6 +2113,14 @@ dump(void)
- 	int c;
- 
- 	c = inchar();
-+
-+#ifdef CONFIG_PPC64
-+	if (c == 'p') {
-+		dump_pacas();
-+		return;
-+	}
-+#endif
-+
- 	if ((isxdigit(c) && c != 'f' && c != 'd') || c == '\n')
- 		termch = c;
- 	scanhex((void *)&adrs);
--- 
-1.7.9.5
+Anatolij
