@@ -1,18 +1,20 @@
-Return-Path: <srinivas.kandagatla@st.com>
-Message-ID: <50532DDC.4020805@st.com>
-Date: Fri, 14 Sep 2012 14:15:08 +0100
-From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from gw1.transmode.se (gw1.transmode.se [195.58.98.146])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E9B592C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Sep 2012 00:21:23 +1000 (EST)
+In-Reply-To: <20120914140234.GH2630@pengutronix.de>
+References: <1346323204-19210-1-git-send-email-Joakim.Tjernlund@transmode.se>
+ <20120914140234.GH2630@pengutronix.de>
+Subject: Re: [PATCH] i2c-mpc: Wait for STOP to hit the bus
+To: Wolfram Sang <w.sang@pengutronix.de>
+Message-ID: <OF06A39459.C875C05A-ONC1257A79.004E987A-C1257A79.004EDA28@transmode.se>
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+Date: Fri, 14 Sep 2012 16:21:16 +0200
 MIME-Version: 1.0
-To: Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH v2 2/7] dt/powerpc: Use of_get_child_by_name to get a
- named child.
-References: <1347610724-20152-1-git-send-email-srinivas.kandagatla@st.com>
- <50532BEC.70201@gmail.com>
-In-Reply-To: <50532BEC.70201@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: bergner@us.ibm.com, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: srinivas.kandagatla@st.com
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,50 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-My bad...
-Will skip this patch in next patch-set...
+Wolfram Sang <w.sang@pengutronix.de> wrote on 2012/09/14 16:02:34:
+>
+> On Thu, Aug 30, 2012 at 12:40:04PM +0200, Joakim Tjernlund wrote:
+> > mpc_i2c_stop() only initiates STOP but does not wait for it to
+> > hit the I2C bus. This is a problem when using I2C devices which
+> > uses fairly long clock stretching just before STOP if you also
+> > have an i2c-mux which may switch to another bus before STOP has
+> > been processed.
+> >
+> > Signed-off-by: Joakim Tjernlund <Joakim.Tjernlund@transmode.se>
+>
+> Patch didn't apply, because it was a p0-patch. Checkpatch would have
+> warned you.
 
+Bugger, it is my git config setting:
+[diff]
+	noprefix = true
 
-On 14/09/12 14:06, Rob Herring wrote:
-> On 09/14/2012 03:18 AM, Srinivas KANDAGATLA wrote:
->> From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
->>
->> As follow-up to "dt: introduce of_get_child_by_name to get child node by
->> name." patch, This patch removes some of the code duplication in the
->> driver by replacing it with of_get_child_by_name instead.
->>
->> Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
->> ---
->>  arch/powerpc/kernel/prom.c |    5 +----
->>  1 files changed, 1 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
->> index f191bf0..80e5b6c 100644
->> --- a/arch/powerpc/kernel/prom.c
->> +++ b/arch/powerpc/kernel/prom.c
->> @@ -735,7 +735,6 @@ void __init early_init_devtree(void *params)
->>   */
->>  struct device_node *of_find_next_cache_node(struct device_node *np)
->>  {
->> -	struct device_node *child;
->>  	const phandle *handle;
->>  
->>  	handle = of_get_property(np, "l2-cache", NULL);
->> @@ -749,9 +748,7 @@ struct device_node *of_find_next_cache_node(struct device_node *np)
->>  	 * beneath CPU nodes.
->>  	 */
->>  	if (!strcmp(np->type, "cpu"))
->> -		for_each_child_of_node(np, child)
->> -			if (!strcmp(child->type, "cache"))
-> name and type are not the same thing.
+I always forget to remove that one before generating patches, I will have to remove it.
+
 >
-> Rob
->
->> -				return child;
->> +		return of_get_child_by_name(np, "cache");
->>  
->>  	return NULL;
->>  }
->>
->
->
+> Fixed that and applied to -next, thanks!
+
+Thanks
