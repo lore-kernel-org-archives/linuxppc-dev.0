@@ -1,35 +1,30 @@
-Return-Path: <cjb@laptop.org>
-Received: from void.printf.net (void.printf.net [89.145.121.20])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8EF512C0083
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2012 23:45:22 +1000 (EST)
-From: Chris Ball <cjb@laptop.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
-References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
- <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
- <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
- <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
- <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
- <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
- <87k3w0y5yn.fsf@octavius.laptop.org>
- <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org>
- <8B1F0805-759E-417A-B787-40DF197896F3@kernel.crashing.org>
- <110EED8CC96DFC488B7E717A2027A27C1785D0@039-SN1MPN1-002.039d.mgd.msft.net>
- <4E15F856-D385-40C4-A5FD-5F298C70F402@kernel.crashing.org>
- <m3k3vsn7wf.fsf@pullcord.laptop.org>
- <1166FFD6-342F-4BDA-BF23-794DAEA95CC9@kernel.crashing.org>
-Date: Mon, 17 Sep 2012 09:45:30 -0400
-In-Reply-To: <1166FFD6-342F-4BDA-BF23-794DAEA95CC9@kernel.crashing.org> (Kumar
- Gala's message of "Mon, 17 Sep 2012 08:12:56 -0500")
-Message-ID: <m3fw6gn4p1.fsf@pullcord.laptop.org>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Huang Changming-R66093 <R66093@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
- Anton Vorontsov <cbouatmailru@gmail.com>
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CDBD52C0086
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2012 00:34:41 +1000 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Mon, 17 Sep 2012 10:34:37 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8HEYXYq041804
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 10:34:33 -0400
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8HEYVo2032037
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 08:34:31 -0600
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 2/2] ppc/eeh: fix crash on converting OF node to edev
+Date: Mon, 17 Sep 2012 22:34:28 +0800
+Message-Id: <1347892468-25818-2-git-send-email-shangw@linux.vnet.ibm.com>
+In-Reply-To: <1347892468-25818-1-git-send-email-shangw@linux.vnet.ibm.com>
+References: <1347892468-25818-1-git-send-email-shangw@linux.vnet.ibm.com>
+Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,24 +34,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+The kernel crash was reported by Alexy. He was testing some feature
+with private kernel, in which Alexy added some code in pci_pm_reset()
+to read the CSR after writting it. The bug could be reproduced on
+Fiber Channel card (Fibre Channel: Emulex Corporation Saturn-X:
+LightPulse Fibre Channel Host Adapter (rev 03)) by the following
+commands.
 
-On Mon, Sep 17 2012, Kumar Gala wrote:
->>>> P1020, p1021, p1022, p1024, p1015 and p4080 can't support it.
->>>> Mpc8536, p2020, and the other current DPAA silicon (e.g. p5020, p3041) support it.
->>> 
->>> Based on this, why don't we use the HOSTVER register to detect instead of device tree:
->> 
->> I've got a mild preference for handling quirk assignment in the DT
->> rather than in driver code, so I'd prefer to just push the original
->> patch to mmc-next as-is.  Does that sound okay?
->
-> Why?  I only ask because I agree with Scott that this means you have to update your device tree to get proper functionality.
+	# echo 1 > /sys/devices/pci0004:01/0004:01:00.0/reset
+	# rmmod lpfc
+	# modprobe lpfc
 
-Thanks, I'd missed that.  I withdraw my preference; I'll pick up
-whichever method you all prefer.
+The history behind the test case is that those additional config
+space reading operations in pci_pm_reset() would cause EEH error,
+but we didn't detect EEH error until "modprobe lpfc". For the case,
+all the PCI devices on PCI bus (0004:01) were removed and added after
+PE reset. Then the EEH devices would be figured out again based on
+the OF nodes. Unfortunately, there were some child OF nodes under
+PCI device (0004:01:00.0), but they didn't have attached PCI_DN since
+they're invisible from PCI domain. However, we were still trying to
+convert OF node to EEH device without checking on the attached PCI_DN.
+Eventually, it caused the kernel crash as follows:
 
-- Chris.
+Unable to handle kernel paging request for data at address 0x00000030
+Faulting instruction address: 0xc00000000004d888
+cpu 0x0: Vector: 300 (Data Access) at [c000000fc797b950]
+    pc: c00000000004d888: .eeh_add_device_tree_early+0x78/0x140
+    lr: c00000000004d880: .eeh_add_device_tree_early+0x70/0x140
+    sp: c000000fc797bbd0
+   msr: 8000000000009032
+   dar: 30
+ dsisr: 40000000
+  current = 0xc000000fc78d9f70
+  paca    = 0xc00000000edb0000   softe: 0        irq_happened: 0x00
+    pid   = 2951, comm = eehd
+enter ? for help
+[c000000fc797bc50] c00000000004d848 .eeh_add_device_tree_early+0x38/0x140
+[c000000fc797bcd0] c00000000004d848 .eeh_add_device_tree_early+0x38/0x140
+[c000000fc797bd50] c000000000051b54 .pcibios_add_pci_devices+0x34/0x190
+[c000000fc797bde0] c00000000004fb10 .eeh_reset_device+0x100/0x160
+[c000000fc797be70] c0000000000502dc .eeh_handle_event+0x19c/0x300
+[c000000fc797bf00] c000000000050570 .eeh_event_handler+0x130/0x1a0
+[c000000fc797bf90] c000000000020138 .kernel_thread+0x54/0x70
+
+The patch changes of_node_to_eeh_dev() and just returns NULL if the
+passed OF node doesn't have attached PCI_DN.
+
+Cc: stable@vger.kernel.org
+Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pci-bridge.h |    8 ++++++++
+ arch/powerpc/platforms/pseries/eeh.c  |    2 +-
+ 2 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index a059cb9..025a130 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -182,6 +182,14 @@ static inline int pci_device_from_OF_node(struct device_node *np,
+ #if defined(CONFIG_EEH)
+ static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
+ {
++	/*
++	 * For those OF nodes whose parent isn't PCI bridge, they
++	 * don't have PCI_DN actually. So we have to skip them for
++	 * any EEH operations.
++	 */
++	if (!dn || !PCI_DN(dn))
++		return NULL;
++
+ 	return PCI_DN(dn)->edev;
+ }
+ #else
+diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
+index 43f6ed4..9a04322 100644
+--- a/arch/powerpc/platforms/pseries/eeh.c
++++ b/arch/powerpc/platforms/pseries/eeh.c
+@@ -728,7 +728,7 @@ static void eeh_add_device_early(struct device_node *dn)
+ {
+ 	struct pci_controller *phb;
+ 
+-	if (!dn || !of_node_to_eeh_dev(dn))
++	if (!of_node_to_eeh_dev(dn))
+ 		return;
+ 	phb = of_node_to_eeh_dev(dn)->phb;
+ 
 -- 
-Chris Ball   <cjb@laptop.org>   <http://printf.net/>
-One Laptop Per Child
+1.7.5.4
