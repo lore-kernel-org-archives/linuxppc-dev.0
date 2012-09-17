@@ -1,28 +1,35 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D0E3D2C0087
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2012 00:34:41 +1000 (EST)
+ (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 839382C008A
+ for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2012 08:15:45 +1000 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 17 Sep 2012 10:34:35 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8HEYVFj138326
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 10:34:31 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8HEYU5r006580
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 11:34:31 -0300
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] ppc/eeh: lock module while handling EEH event
-Date: Mon, 17 Sep 2012 22:34:27 +0800
-Message-Id: <1347892468-25818-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, stable@vger.kernel.org
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Mon, 17 Sep 2012 16:15:40 -0600
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A018A1FF0039
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 16:15:35 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8HMFcgN176090
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 16:15:38 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8HMFbqg023725
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 16:15:38 -0600
+Date: Mon, 17 Sep 2012 15:16:17 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH][v3]: powerpc/perf: Sample only if SIAR-Valid bit is set in P7+
+Message-ID: <20120917221617.GA14113@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
+ cel@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,250 +39,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The EEH core is talking with the PCI device driver to determine the
-action (purely reset, or PCI device removal). During the period, the
-driver might be unloaded and in turn causes kernel crash as follows:
+>From 192fa874e5574d08d66d96155b6d9c536fce6e8a Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Mon, 2 Jul 2012 08:06:14 -0700
+Subject: [PATCH] powerpc/perf: Sample only if SIAR-Valid bit is set in P7+
 
-EEH: Detected PCI bus error on PHB#4-PE#10000
-EEH: This PCI device has failed 3 times in the last hour
-lpfc 0004:01:00.0: 0:2710 PCI channel disable preparing for reset
-Unable to handle kernel paging request for data at address 0x00000490
-Faulting instruction address: 0xd00000000e682c90
-cpu 0x1: Vector: 300 (Data Access) at [c000000fc75ffa20]
-    pc: d00000000e682c90: .lpfc_io_error_detected+0x30/0x240 [lpfc]
-    lr: d00000000e682c8c: .lpfc_io_error_detected+0x2c/0x240 [lpfc]
-    sp: c000000fc75ffca0
-   msr: 8000000000009032
-   dar: 490
- dsisr: 40000000
-  current = 0xc000000fc79b88b0
-  paca    = 0xc00000000edb0380	 softe: 0	 irq_happened: 0x00
-    pid   = 3386, comm = eehd
-enter ? for help
-[c000000fc75ffca0] c000000fc75ffd30 (unreliable)
-[c000000fc75ffd30] c00000000004fd3c .eeh_report_error+0x7c/0xf0
-[c000000fc75ffdc0] c00000000004ee00 .eeh_pe_dev_traverse+0xa0/0x180
-[c000000fc75ffe70] c00000000004ffd8 .eeh_handle_event+0x68/0x300
-[c000000fc75fff00] c0000000000503a0 .eeh_event_handler+0x130/0x1a0
-[c000000fc75fff90] c000000000020138 .kernel_thread+0x54/0x70
-1:mon>
+On POWER7+ two new bits (mmcra[35] and mmcra[36]) indicate whether the
+contents of SIAR and SDAR are valid.
 
-The patch increases the reference of the corresponding driver modules
-while EEH core does the negotiation with PCI device driver so that the
-corresponding driver modules can't be unloaded during the period and
-we're safe to refer the callbacks. 
+For marked instructions on P7+, we must save the contents of SIAR and
+SDAR registers only if these new bits are set.
 
-Cc: stable@vger.kernel.org
-Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+This code/check for the SIAR-Valid bit is specific to P7+, so rather than
+waste a CPU-feature bit use the PVR flag.
+
+Note that Carl Love proposed a similar change for oprofile:
+
+        https://lkml.org/lkml/2012/6/22/309
+
+Changelog[v3]:
+	- Commit 5c093efa6f2 added checks to use SIAR only for kernel samples.
+	  Extend that to use SIAR only if SIAR-valid bit is set (in processors
+	  that implement that bit).
+
+Changelog[v2]:
+	- [Gabriel Paubert] Rename PV_POWER7P to PV_POWER7p.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/pseries/eeh_driver.c |   91 ++++++++++++++++++++------
- 1 files changed, 70 insertions(+), 21 deletions(-)
+ arch/powerpc/include/asm/perf_event_server.h |    1 +
+ arch/powerpc/include/asm/reg.h               |    4 ++
+ arch/powerpc/perf/core-book3s.c              |   39 ++++++++++++++++++++++----
+ arch/powerpc/perf/power7-pmu.c               |    3 ++
+ 4 files changed, 41 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
-index 37c2cf7..a3fefb6 100644
---- a/arch/powerpc/platforms/pseries/eeh_driver.c
-+++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-@@ -25,6 +25,7 @@
- #include <linux/delay.h>
- #include <linux/interrupt.h>
- #include <linux/irq.h>
-+#include <linux/module.h>
- #include <linux/pci.h>
- #include <asm/eeh.h>
- #include <asm/eeh_event.h>
-@@ -47,6 +48,41 @@ static inline const char *eeh_pcid_name(struct pci_dev *pdev)
- 	return "";
- }
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index 078019b..9710be3 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -49,6 +49,7 @@ struct power_pmu {
+ #define PPMU_ALT_SIPR		2	/* uses alternate posn for SIPR/HV */
+ #define PPMU_NO_SIPR		4	/* no SIPR/HV in MMCRA at all */
+ #define PPMU_NO_CONT_SAMPLING	8	/* no continuous sampling */
++#define PPMU_SIAR_VALID		16	/* Processor has SIAR Valid bit */
  
-+/**
-+ * eeh_pcid_get - Get the PCI device driver
-+ * @pdev: PCI device
-+ *
-+ * The function is used to retrieve the PCI device driver for
-+ * the indicated PCI device. Besides, we will increase the reference
-+ * of the PCI device driver to prevent that being unloaded on
-+ * the fly. Otherwise, kernel crash would be seen.
-+ */
-+static inline struct pci_driver *eeh_pcid_get(struct pci_dev *pdev)
-+{
-+	if (!pdev || !pdev->driver)
-+		return NULL;
+ /*
+  * Values for flags to get_alternatives()
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 12412b5..bcf5760 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -602,6 +602,10 @@
+ #define   POWER6_MMCRA_SIPR   0x0000020000000000ULL
+ #define   POWER6_MMCRA_THRM	0x00000020UL
+ #define   POWER6_MMCRA_OTHER	0x0000000EUL
 +
-+	if (!try_module_get(pdev->driver->driver.owner))
-+		return NULL;
++#define   POWER7P_MMCRA_SIAR_VALID 0x10000000	/* P7+ SIAR contents valid */
++#define   POWER7P_MMCRA_SDAR_VALID 0x08000000	/* P7+ SDAR contents valid */
 +
-+	return pdev->driver;
-+}
-+
-+/**
-+ * eeh_pcid_put - Dereference on the PCI device driver
-+ * @pdev: PCI device
-+ *
-+ * The function is called to do dereference on the PCI device
-+ * driver of the indicated PCI device.
-+ */
-+static inline void eeh_pcid_put(struct pci_dev *pdev)
-+{
-+	if (!pdev || !pdev->driver)
-+		return;
-+
-+	module_put(pdev->driver->driver.owner);
-+}
-+
- #if 0
- static void print_device_node_tree(struct pci_dn *pdn, int dent)
+ #define SPRN_PMC1	787
+ #define SPRN_PMC2	788
+ #define SPRN_PMC3	789
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 7cd2dbd..05b2f41 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -106,14 +106,20 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
+  * If we're not doing instruction sampling, give them the SDAR
+  * (sampled data address).  If we are doing instruction sampling, then
+  * only give them the SDAR if it corresponds to the instruction
+- * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC
+- * bit in MMCRA.
++ * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC or
++ * the [POWER7P_]MMCRA_SDAR_VALID bit in MMCRA.
+  */
+ static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp)
  {
-@@ -128,23 +164,24 @@ static void *eeh_report_error(void *data, void *userdata)
- 	struct eeh_dev *edev = (struct eeh_dev *)data;
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
- 	enum pci_ers_result rc, *res = userdata;
--	struct pci_driver *driver = dev->driver;
-+	struct pci_driver *driver;
- 
- 	/* We might not have the associated PCI device,
- 	 * then we should continue for next one.
- 	 */
- 	if (!dev) return NULL;
--
- 	dev->error_state = pci_channel_io_frozen;
- 
--	if (!driver)
--		return NULL;
-+	driver = eeh_pcid_get(dev);
-+	if (!driver) return NULL;
- 
- 	eeh_disable_irq(dev);
- 
- 	if (!driver->err_handler ||
--	    !driver->err_handler->error_detected)
-+	    !driver->err_handler->error_detected) {
-+		eeh_pcid_put(dev);
- 		return NULL;
-+	}
- 
- 	rc = driver->err_handler->error_detected(dev, pci_channel_io_frozen);
- 
-@@ -152,6 +189,7 @@ static void *eeh_report_error(void *data, void *userdata)
- 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
- 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
- 
-+	eeh_pcid_put(dev);
- 	return NULL;
- }
- 
-@@ -171,12 +209,14 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
- 
--	if (!dev) return NULL;
-+	driver = eeh_pcid_get(dev);
-+	if (!driver) return NULL;
- 
--	if (!(driver = dev->driver) ||
--	    !driver->err_handler ||
--	    !driver->err_handler->mmio_enabled)
-+	if (!driver->err_handler ||
-+	    !driver->err_handler->mmio_enabled) {
-+		eeh_pcid_put(dev);
- 		return NULL;
-+	}
- 
- 	rc = driver->err_handler->mmio_enabled(dev);
- 
-@@ -184,6 +224,7 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
- 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
- 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
- 
-+	eeh_pcid_put(dev);
- 	return NULL;
- }
- 
-@@ -204,16 +245,19 @@ static void *eeh_report_reset(void *data, void *userdata)
- 	enum pci_ers_result rc, *res = userdata;
- 	struct pci_driver *driver;
- 
--	if (!dev || !(driver = dev->driver))
--		return NULL;
--
-+	if (!dev) return NULL;
- 	dev->error_state = pci_channel_io_normal;
- 
-+	driver = eeh_pcid_get(dev);
-+	if (!driver) return NULL;
+ 	unsigned long mmcra = regs->dsisr;
+-	unsigned long sdsync = (ppmu->flags & PPMU_ALT_SIPR) ?
+-		POWER6_MMCRA_SDSYNC : MMCRA_SDSYNC;
++	unsigned long sdsync;
 +
- 	eeh_enable_irq(dev);
++	if (ppmu->flags & PPMU_SIAR_VALID)
++		sdsync = POWER7P_MMCRA_SDAR_VALID;
++	else if (ppmu->flags & PPMU_ALT_SIPR)
++		sdsync = POWER6_MMCRA_SDSYNC;
++	else
++		sdsync = MMCRA_SDSYNC;
  
- 	if (!driver->err_handler ||
--	    !driver->err_handler->slot_reset)
-+	    !driver->err_handler->slot_reset) {
-+		eeh_pcid_put(dev);
- 		return NULL;
-+	}
+ 	if (!(mmcra & MMCRA_SAMPLE_ENABLE) || (mmcra & sdsync))
+ 		*addrp = mfspr(SPRN_SDAR);
+@@ -1291,6 +1297,25 @@ struct pmu power_pmu = {
+ 	.event_idx	= power_pmu_event_idx,
+ };
  
- 	rc = driver->err_handler->slot_reset(dev);
- 	if ((*res == PCI_ERS_RESULT_NONE) ||
-@@ -221,6 +265,7 @@ static void *eeh_report_reset(void *data, void *userdata)
- 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
- 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
++
++/*
++ * On processors like P7+ that have the SIAR-Valid bit, marked instructions
++ * must be sampled only if the SIAR-valid bit is set.
++ *
++ * For unmarked instructions and for processors that don't have the SIAR-Valid
++ * bit, assume that SIAR is valid.
++ */
++static inline int siar_valid(struct pt_regs *regs)
++{
++	unsigned long mmcra = regs->dsisr;
++	int marked = mmcra & MMCRA_SAMPLE_ENABLE;
++
++	if ((ppmu->flags & PPMU_SIAR_VALID) && marked)
++		return mmcra & POWER7P_MMCRA_SIAR_VALID;
++
++	return 1;
++}
++
+ /*
+  * A counter has overflowed; update its count and record
+  * things if requested.  Note that interrupts are hard-disabled
+@@ -1324,7 +1349,7 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+ 			left += period;
+ 			if (left <= 0)
+ 				left = period;
+-			record = 1;
++			record = siar_valid(regs);
+ 			event->hw.last_period = event->hw.sample_period;
+ 		}
+ 		if (left < 0x80000000LL)
+@@ -1374,8 +1399,10 @@ unsigned long perf_instruction_pointer(struct pt_regs *regs)
+ {
+ 	unsigned long use_siar = regs->result;
  
-+	eeh_pcid_put(dev);
- 	return NULL;
+-	if (use_siar)
++	if (use_siar && siar_valid(regs))
+ 		return mfspr(SPRN_SIAR) + perf_ip_adjust(regs);
++	else if (use_siar)
++		return 0;		// no valid instruction pointer
+ 	else
+ 		return regs->nip;
  }
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 1251e4d..970a634 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -373,6 +373,9 @@ static int __init init_power7_pmu(void)
+ 	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power7"))
+ 		return -ENODEV;
  
-@@ -240,20 +285,22 @@ static void *eeh_report_resume(void *data, void *userdata)
- 	struct pci_driver *driver;
- 
- 	if (!dev) return NULL;
--
- 	dev->error_state = pci_channel_io_normal;
- 
--	if (!(driver = dev->driver))
--		return NULL;
-+	driver = eeh_pcid_get(dev);
-+	if (!driver) return NULL;
- 
- 	eeh_enable_irq(dev);
- 
- 	if (!driver->err_handler ||
--	    !driver->err_handler->resume)
-+	    !driver->err_handler->resume) {
-+		eeh_pcid_put(dev);
- 		return NULL;
-+	}
- 
- 	driver->err_handler->resume(dev);
- 
-+	eeh_pcid_put(dev);
- 	return NULL;
- }
- 
-@@ -272,20 +319,22 @@ static void *eeh_report_failure(void *data, void *userdata)
- 	struct pci_driver *driver;
- 
- 	if (!dev) return NULL;
--
- 	dev->error_state = pci_channel_io_perm_failure;
- 
--	if (!(driver = dev->driver))
--		return NULL;
-+	driver = eeh_pcid_get(dev);
-+	if (!driver) return NULL;
- 
- 	eeh_disable_irq(dev);
- 
- 	if (!driver->err_handler ||
--	    !driver->err_handler->error_detected)
-+	    !driver->err_handler->error_detected) {
-+		eeh_pcid_put(dev);
- 		return NULL;
-+	}
- 
- 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
- 
-+	eeh_pcid_put(dev);
- 	return NULL;
++	if (__is_processor(PV_POWER7p))
++		power7_pmu.flags |= PPMU_SIAR_VALID;
++
+ 	return register_power_pmu(&power7_pmu);
  }
  
 -- 
-1.7.5.4
+1.7.1
