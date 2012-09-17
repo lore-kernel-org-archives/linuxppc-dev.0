@@ -1,29 +1,27 @@
 Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CDBD52C0086
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D0E3D2C0087
  for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2012 00:34:41 +1000 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Mon, 17 Sep 2012 10:34:37 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8HEYXYq041804
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 10:34:33 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8HEYVo2032037
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 08:34:31 -0600
+ Mon, 17 Sep 2012 10:34:35 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by d01relay01.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8HEYVFj138326
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 10:34:31 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8HEYU5r006580
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 11:34:31 -0300
 From: Gavin Shan <shangw@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] ppc/eeh: fix crash on converting OF node to edev
-Date: Mon, 17 Sep 2012 22:34:28 +0800
-Message-Id: <1347892468-25818-2-git-send-email-shangw@linux.vnet.ibm.com>
-In-Reply-To: <1347892468-25818-1-git-send-email-shangw@linux.vnet.ibm.com>
-References: <1347892468-25818-1-git-send-email-shangw@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] ppc/eeh: lock module while handling EEH event
+Date: Mon, 17 Sep 2012 22:34:27 +0800
+Message-Id: <1347892468-25818-1-git-send-email-shangw@linux.vnet.ibm.com>
 Cc: Gavin Shan <shangw@linux.vnet.ibm.com>, stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,91 +32,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kernel crash was reported by Alexy. He was testing some feature
-with private kernel, in which Alexy added some code in pci_pm_reset()
-to read the CSR after writting it. The bug could be reproduced on
-Fiber Channel card (Fibre Channel: Emulex Corporation Saturn-X:
-LightPulse Fibre Channel Host Adapter (rev 03)) by the following
-commands.
+The EEH core is talking with the PCI device driver to determine the
+action (purely reset, or PCI device removal). During the period, the
+driver might be unloaded and in turn causes kernel crash as follows:
 
-	# echo 1 > /sys/devices/pci0004:01/0004:01:00.0/reset
-	# rmmod lpfc
-	# modprobe lpfc
-
-The history behind the test case is that those additional config
-space reading operations in pci_pm_reset() would cause EEH error,
-but we didn't detect EEH error until "modprobe lpfc". For the case,
-all the PCI devices on PCI bus (0004:01) were removed and added after
-PE reset. Then the EEH devices would be figured out again based on
-the OF nodes. Unfortunately, there were some child OF nodes under
-PCI device (0004:01:00.0), but they didn't have attached PCI_DN since
-they're invisible from PCI domain. However, we were still trying to
-convert OF node to EEH device without checking on the attached PCI_DN.
-Eventually, it caused the kernel crash as follows:
-
-Unable to handle kernel paging request for data at address 0x00000030
-Faulting instruction address: 0xc00000000004d888
-cpu 0x0: Vector: 300 (Data Access) at [c000000fc797b950]
-    pc: c00000000004d888: .eeh_add_device_tree_early+0x78/0x140
-    lr: c00000000004d880: .eeh_add_device_tree_early+0x70/0x140
-    sp: c000000fc797bbd0
+EEH: Detected PCI bus error on PHB#4-PE#10000
+EEH: This PCI device has failed 3 times in the last hour
+lpfc 0004:01:00.0: 0:2710 PCI channel disable preparing for reset
+Unable to handle kernel paging request for data at address 0x00000490
+Faulting instruction address: 0xd00000000e682c90
+cpu 0x1: Vector: 300 (Data Access) at [c000000fc75ffa20]
+    pc: d00000000e682c90: .lpfc_io_error_detected+0x30/0x240 [lpfc]
+    lr: d00000000e682c8c: .lpfc_io_error_detected+0x2c/0x240 [lpfc]
+    sp: c000000fc75ffca0
    msr: 8000000000009032
-   dar: 30
+   dar: 490
  dsisr: 40000000
-  current = 0xc000000fc78d9f70
-  paca    = 0xc00000000edb0000   softe: 0        irq_happened: 0x00
-    pid   = 2951, comm = eehd
+  current = 0xc000000fc79b88b0
+  paca    = 0xc00000000edb0380	 softe: 0	 irq_happened: 0x00
+    pid   = 3386, comm = eehd
 enter ? for help
-[c000000fc797bc50] c00000000004d848 .eeh_add_device_tree_early+0x38/0x140
-[c000000fc797bcd0] c00000000004d848 .eeh_add_device_tree_early+0x38/0x140
-[c000000fc797bd50] c000000000051b54 .pcibios_add_pci_devices+0x34/0x190
-[c000000fc797bde0] c00000000004fb10 .eeh_reset_device+0x100/0x160
-[c000000fc797be70] c0000000000502dc .eeh_handle_event+0x19c/0x300
-[c000000fc797bf00] c000000000050570 .eeh_event_handler+0x130/0x1a0
-[c000000fc797bf90] c000000000020138 .kernel_thread+0x54/0x70
+[c000000fc75ffca0] c000000fc75ffd30 (unreliable)
+[c000000fc75ffd30] c00000000004fd3c .eeh_report_error+0x7c/0xf0
+[c000000fc75ffdc0] c00000000004ee00 .eeh_pe_dev_traverse+0xa0/0x180
+[c000000fc75ffe70] c00000000004ffd8 .eeh_handle_event+0x68/0x300
+[c000000fc75fff00] c0000000000503a0 .eeh_event_handler+0x130/0x1a0
+[c000000fc75fff90] c000000000020138 .kernel_thread+0x54/0x70
+1:mon>
 
-The patch changes of_node_to_eeh_dev() and just returns NULL if the
-passed OF node doesn't have attached PCI_DN.
+The patch increases the reference of the corresponding driver modules
+while EEH core does the negotiation with PCI device driver so that the
+corresponding driver modules can't be unloaded during the period and
+we're safe to refer the callbacks. 
 
 Cc: stable@vger.kernel.org
 Reported-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pci-bridge.h |    8 ++++++++
- arch/powerpc/platforms/pseries/eeh.c  |    2 +-
- 2 files changed, 9 insertions(+), 1 deletions(-)
+ arch/powerpc/platforms/pseries/eeh_driver.c |   91 ++++++++++++++++++++------
+ 1 files changed, 70 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index a059cb9..025a130 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -182,6 +182,14 @@ static inline int pci_device_from_OF_node(struct device_node *np,
- #if defined(CONFIG_EEH)
- static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
- {
-+	/*
-+	 * For those OF nodes whose parent isn't PCI bridge, they
-+	 * don't have PCI_DN actually. So we have to skip them for
-+	 * any EEH operations.
-+	 */
-+	if (!dn || !PCI_DN(dn))
+diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
+index 37c2cf7..a3fefb6 100644
+--- a/arch/powerpc/platforms/pseries/eeh_driver.c
++++ b/arch/powerpc/platforms/pseries/eeh_driver.c
+@@ -25,6 +25,7 @@
+ #include <linux/delay.h>
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
++#include <linux/module.h>
+ #include <linux/pci.h>
+ #include <asm/eeh.h>
+ #include <asm/eeh_event.h>
+@@ -47,6 +48,41 @@ static inline const char *eeh_pcid_name(struct pci_dev *pdev)
+ 	return "";
+ }
+ 
++/**
++ * eeh_pcid_get - Get the PCI device driver
++ * @pdev: PCI device
++ *
++ * The function is used to retrieve the PCI device driver for
++ * the indicated PCI device. Besides, we will increase the reference
++ * of the PCI device driver to prevent that being unloaded on
++ * the fly. Otherwise, kernel crash would be seen.
++ */
++static inline struct pci_driver *eeh_pcid_get(struct pci_dev *pdev)
++{
++	if (!pdev || !pdev->driver)
 +		return NULL;
 +
- 	return PCI_DN(dn)->edev;
- }
- #else
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 43f6ed4..9a04322 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -728,7 +728,7 @@ static void eeh_add_device_early(struct device_node *dn)
++	if (!try_module_get(pdev->driver->driver.owner))
++		return NULL;
++
++	return pdev->driver;
++}
++
++/**
++ * eeh_pcid_put - Dereference on the PCI device driver
++ * @pdev: PCI device
++ *
++ * The function is called to do dereference on the PCI device
++ * driver of the indicated PCI device.
++ */
++static inline void eeh_pcid_put(struct pci_dev *pdev)
++{
++	if (!pdev || !pdev->driver)
++		return;
++
++	module_put(pdev->driver->driver.owner);
++}
++
+ #if 0
+ static void print_device_node_tree(struct pci_dn *pdn, int dent)
  {
- 	struct pci_controller *phb;
+@@ -128,23 +164,24 @@ static void *eeh_report_error(void *data, void *userdata)
+ 	struct eeh_dev *edev = (struct eeh_dev *)data;
+ 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
+ 	enum pci_ers_result rc, *res = userdata;
+-	struct pci_driver *driver = dev->driver;
++	struct pci_driver *driver;
  
--	if (!dn || !of_node_to_eeh_dev(dn))
-+	if (!of_node_to_eeh_dev(dn))
- 		return;
- 	phb = of_node_to_eeh_dev(dn)->phb;
+ 	/* We might not have the associated PCI device,
+ 	 * then we should continue for next one.
+ 	 */
+ 	if (!dev) return NULL;
+-
+ 	dev->error_state = pci_channel_io_frozen;
+ 
+-	if (!driver)
+-		return NULL;
++	driver = eeh_pcid_get(dev);
++	if (!driver) return NULL;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+-	    !driver->err_handler->error_detected)
++	    !driver->err_handler->error_detected) {
++		eeh_pcid_put(dev);
+ 		return NULL;
++	}
+ 
+ 	rc = driver->err_handler->error_detected(dev, pci_channel_io_frozen);
+ 
+@@ -152,6 +189,7 @@ static void *eeh_report_error(void *data, void *userdata)
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
+ 
++	eeh_pcid_put(dev);
+ 	return NULL;
+ }
+ 
+@@ -171,12 +209,14 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver;
+ 
+-	if (!dev) return NULL;
++	driver = eeh_pcid_get(dev);
++	if (!driver) return NULL;
+ 
+-	if (!(driver = dev->driver) ||
+-	    !driver->err_handler ||
+-	    !driver->err_handler->mmio_enabled)
++	if (!driver->err_handler ||
++	    !driver->err_handler->mmio_enabled) {
++		eeh_pcid_put(dev);
+ 		return NULL;
++	}
+ 
+ 	rc = driver->err_handler->mmio_enabled(dev);
+ 
+@@ -184,6 +224,7 @@ static void *eeh_report_mmio_enabled(void *data, void *userdata)
+ 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
+ 
++	eeh_pcid_put(dev);
+ 	return NULL;
+ }
+ 
+@@ -204,16 +245,19 @@ static void *eeh_report_reset(void *data, void *userdata)
+ 	enum pci_ers_result rc, *res = userdata;
+ 	struct pci_driver *driver;
+ 
+-	if (!dev || !(driver = dev->driver))
+-		return NULL;
+-
++	if (!dev) return NULL;
+ 	dev->error_state = pci_channel_io_normal;
+ 
++	driver = eeh_pcid_get(dev);
++	if (!driver) return NULL;
++
+ 	eeh_enable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+-	    !driver->err_handler->slot_reset)
++	    !driver->err_handler->slot_reset) {
++		eeh_pcid_put(dev);
+ 		return NULL;
++	}
+ 
+ 	rc = driver->err_handler->slot_reset(dev);
+ 	if ((*res == PCI_ERS_RESULT_NONE) ||
+@@ -221,6 +265,7 @@ static void *eeh_report_reset(void *data, void *userdata)
+ 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
+ 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
+ 
++	eeh_pcid_put(dev);
+ 	return NULL;
+ }
+ 
+@@ -240,20 +285,22 @@ static void *eeh_report_resume(void *data, void *userdata)
+ 	struct pci_driver *driver;
+ 
+ 	if (!dev) return NULL;
+-
+ 	dev->error_state = pci_channel_io_normal;
+ 
+-	if (!(driver = dev->driver))
+-		return NULL;
++	driver = eeh_pcid_get(dev);
++	if (!driver) return NULL;
+ 
+ 	eeh_enable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+-	    !driver->err_handler->resume)
++	    !driver->err_handler->resume) {
++		eeh_pcid_put(dev);
+ 		return NULL;
++	}
+ 
+ 	driver->err_handler->resume(dev);
+ 
++	eeh_pcid_put(dev);
+ 	return NULL;
+ }
+ 
+@@ -272,20 +319,22 @@ static void *eeh_report_failure(void *data, void *userdata)
+ 	struct pci_driver *driver;
+ 
+ 	if (!dev) return NULL;
+-
+ 	dev->error_state = pci_channel_io_perm_failure;
+ 
+-	if (!(driver = dev->driver))
+-		return NULL;
++	driver = eeh_pcid_get(dev);
++	if (!driver) return NULL;
+ 
+ 	eeh_disable_irq(dev);
+ 
+ 	if (!driver->err_handler ||
+-	    !driver->err_handler->error_detected)
++	    !driver->err_handler->error_detected) {
++		eeh_pcid_put(dev);
+ 		return NULL;
++	}
+ 
+ 	driver->err_handler->error_detected(dev, pci_channel_io_perm_failure);
+ 
++	eeh_pcid_put(dev);
+ 	return NULL;
+ }
  
 -- 
 1.7.5.4
