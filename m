@@ -1,13 +1,33 @@
-Return-Path: <srinivas.kandagatla@st.com>
-From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
-To: robherring2@gmail.com, bergner@us.ibm.com,
- devicetree-discuss@lists.ozlabs.org
-Subject: [RESEND PATCH v3 0/5]  Introduce of_get_child_by_name.
-Date: Mon, 17 Sep 2012 12:58:12 +0100
-Message-Id: <1347883092-16644-1-git-send-email-srinivas.kandagatla@st.com>
-Cc: kgene.kim@samsung.com, srinivas.kandagatla@st.com,
- broonie@opensource.wolfsonmicro.com, afleming@freescale.com,
- ben-linux@fluff.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <cjb@laptop.org>
+Received: from void.printf.net (void.printf.net [89.145.121.20])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 789F52C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Sep 2012 22:36:12 +1000 (EST)
+From: Chris Ball <cjb@laptop.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
+References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
+ <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
+ <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
+ <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
+ <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
+ <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
+ <87k3w0y5yn.fsf@octavius.laptop.org>
+ <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org>
+ <8B1F0805-759E-417A-B787-40DF197896F3@kernel.crashing.org>
+ <110EED8CC96DFC488B7E717A2027A27C1785D0@039-SN1MPN1-002.039d.mgd.msft.net>
+ <4E15F856-D385-40C4-A5FD-5F298C70F402@kernel.crashing.org>
+Date: Mon, 17 Sep 2012 08:36:16 -0400
+In-Reply-To: <4E15F856-D385-40C4-A5FD-5F298C70F402@kernel.crashing.org> (Kumar
+ Gala's message of "Thu, 13 Sep 2012 07:47:33 -0500")
+Message-ID: <m3k3vsn7wf.fsf@pullcord.laptop.org>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ Huang Changming-R66093 <R66093@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Vorontsov <cbouatmailru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,41 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
+Hi,
 
-This patch series introduces of_get_child_by_name function to get a 
-child node by its name in a given parent node and also removes code 
-duplication in some of the existing driver code by using of_get_child_by_name.
+On Thu, Sep 13 2012, Kumar Gala wrote:
+>>> Can you list out which SoCs support it and which don't.  Having this list
+>>> will be useful in understanding which controller versions supported it.
+>>> 
+>> P1020, p1021, p1022, p1024, p1015 and p4080 can't support it.
+>> Mpc8536, p2020, and the other current DPAA silicon (e.g. p5020, p3041) support it.
+>
+> Based on this, why don't we use the HOSTVER register to detect instead of device tree:
 
-Normally if a driver want to get a child node it would iterate all the nodes
-of parent and compare its name and then get it.
-This use case is becoming common as device trees are used more, so moving this 
-functionality to a libary function makes sense.
+I've got a mild preference for handling quirk assignment in the DT
+rather than in driver code, so I'd prefer to just push the original
+patch to mmc-next as-is.  Does that sound okay?
 
-Having of_get_child_by_name libary function would avoid code duplication,
-errors, proper reference counting and is more convenient.
+(I think the argument that there isn't going to be any new hardware
+with this problem is equally in favor of both methods.)
 
-Changes from v2:
-	- Fixed typo errors.
-	- Removed bogus patches which used "type" instead of "name" 
-	- Fixed reference counting in follow-up patches.
+Thanks,
 
-Changes from v1:
-	-rename of_get_child to of_get_child_by_name.
-	-remove read lock in of_get_child_by_name.
-	-make use of of_get_child_by_name in the existing kernel code.
-
-Srinivas Kandagatla (5):
-  dt: introduce of_get_child_by_name to get child node by name.
-  dt/powerpc/powernv: Use of_get_child_by_name to get a named child.
-  dt/powerpc/sysdev: Use of_get_child_by_name to get a named child.
-  dt/s3c64xx/spi: Use of_get_child_by_name to get a named child.
-  dt/tty/opal: Use of_get_child_by_name to get a named child.
-
- arch/powerpc/platforms/powernv/opal.c |    6 +++---
- arch/powerpc/sysdev/qe_lib/qe.c       |    5 +----
- drivers/of/base.c                     |   25 +++++++++++++++++++++++++
- drivers/spi/spi-s3c64xx.c             |    7 ++++---
- drivers/tty/hvc/hvc_opal.c            |    9 ++-------
- include/linux/of.h                    |    2 ++
- 6 files changed, 37 insertions(+), 17 deletions(-)
+- Chris.
+-- 
+Chris Ball   <cjb@laptop.org>   <http://printf.net/>
+One Laptop Per Child
