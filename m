@@ -1,14 +1,13 @@
 Return-Path: <srinivas.kandagatla@st.com>
 From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
-To: robherring2@gmail.com, bergner@us.ibm.com,
- devicetree-discuss@lists.ozlabs.org
-Subject: [RESEND PATCH v3 1/5] dt: introduce of_get_child_by_name to get child
- node by name.
-Date: Mon, 17 Sep 2012 12:58:21 +0100
-Message-Id: <1347883101-16679-1-git-send-email-srinivas.kandagatla@st.com>
+To: benh@kernel.crashing.org
+Subject: [RESEND PATCH v3 3/5] dt/powerpc/sysdev: Use of_get_child_by_name to
+ get a named child.
+Date: Mon, 17 Sep 2012 12:58:39 +0100
+Message-Id: <1347883119-16750-1-git-send-email-srinivas.kandagatla@st.com>
 Cc: kgene.kim@samsung.com, srinivas.kandagatla@st.com,
- broonie@opensource.wolfsonmicro.com, afleming@freescale.com,
- ben-linux@fluff.org, linuxppc-dev@lists.ozlabs.org
+ devicetree-discuss@lists.ozlabs.org, broonie@opensource.wolfsonmicro.com,
+ robherring2@gmail.com, ben-linux@fluff.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,67 +19,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 
-This patch introduces of_get_child_by_name function to get a child node
-by its name in a given parent node.
-
-Without this patch each driver code has to iterate the parent and do
-a string compare, However having of_get_child_by_name libary function would
-avoid code duplication, errors and is more convenient.
+As follow-up to "dt: introduce of_get_child_by_name to get child node by
+name." patch, This patch removes some of the code duplication in the
+driver by replacing it with of_get_child_by_name instead.
 
 Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 ---
- drivers/of/base.c  |   25 +++++++++++++++++++++++++
- include/linux/of.h |    2 ++
- 2 files changed, 27 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/qe_lib/qe.c |    5 +----
+ 1 files changed, 1 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index d4a1c9a..7391f8a 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -391,6 +391,31 @@ struct device_node *of_get_next_available_child(const struct device_node *node,
- EXPORT_SYMBOL(of_get_next_available_child);
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index b043675..d094e51 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -568,10 +568,7 @@ struct qe_firmware_info *qe_get_firmware_info(void)
+ 	}
  
- /**
-+ *	of_get_child_by_name - Find the child node by name for a given parent
-+ *	@node:	parent node
-+ *	@name:	child name to look for.
-+ *
-+ *      This function looks for child node for given matching name
-+ *
-+ *	Returns a node pointer if found, with refcount incremented, use
-+ *	of_node_put() on it when done.
-+ *	Returns NULL if node is not found.
-+ */
-+
-+struct device_node *of_get_child_by_name(const struct device_node *node,
-+				const char *name)
-+{
-+	struct device_node *child;
-+
-+	for_each_child_of_node(node, child)
-+		if (child->name && (of_node_cmp(child->name, name) == 0)
-+			&& of_node_get(child))
-+			break;
-+	return child;
-+}
-+EXPORT_SYMBOL(of_get_child_by_name);
-+
-+/**
-  *	of_find_node_by_path - Find a node matching a full OF path
-  *	@path:	The full path to match
-  *
-diff --git a/include/linux/of.h b/include/linux/of.h
-index 1b11632..7b8e3cd 100644
---- a/include/linux/of.h
-+++ b/include/linux/of.h
-@@ -192,6 +192,8 @@ extern struct device_node *of_get_next_child(const struct device_node *node,
- 					     struct device_node *prev);
- extern struct device_node *of_get_next_available_child(
- 	const struct device_node *node, struct device_node *prev);
-+extern struct device_node *of_get_child_by_name(const struct device_node *node,
-+					const char *name);
+ 	/* Find the 'firmware' child node */
+-	for_each_child_of_node(qe, fw) {
+-		if (strcmp(fw->name, "firmware") == 0)
+-			break;
+-	}
++	fw = of_get_child_by_name(qe, "firmware");
  
- #define for_each_child_of_node(parent, child) \
- 	for (child = of_get_next_child(parent, NULL); child != NULL; \
+ 	of_node_put(qe);
+ 
 -- 
 1.7.0.4
