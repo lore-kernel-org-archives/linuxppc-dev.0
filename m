@@ -1,13 +1,14 @@
 Return-Path: <srinivas.kandagatla@st.com>
 From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
-To: benh@kernel.crashing.org
-Subject: [RESEND PATCH v3 2/5] dt/powerpc/powernv: Use of_get_child_by_name to
- get a named child.
-Date: Mon, 17 Sep 2012 12:58:29 +0100
-Message-Id: <1347883109-16714-1-git-send-email-srinivas.kandagatla@st.com>
+To: robherring2@gmail.com, bergner@us.ibm.com,
+ devicetree-discuss@lists.ozlabs.org
+Subject: [RESEND PATCH v3 1/5] dt: introduce of_get_child_by_name to get child
+ node by name.
+Date: Mon, 17 Sep 2012 12:58:21 +0100
+Message-Id: <1347883101-16679-1-git-send-email-srinivas.kandagatla@st.com>
 Cc: kgene.kim@samsung.com, srinivas.kandagatla@st.com,
- devicetree-discuss@lists.ozlabs.org, broonie@opensource.wolfsonmicro.com,
- robherring2@gmail.com, ben-linux@fluff.org, linuxppc-dev@lists.ozlabs.org
+ broonie@opensource.wolfsonmicro.com, afleming@freescale.com,
+ ben-linux@fluff.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,31 +20,67 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 
-As follow-up to "dt: introduce of_get_child_by_name to get child node by
-name." patch, This patch removes some of the code duplication in the
-driver by replacing it with of_get_child_by_name instead.
+This patch introduces of_get_child_by_name function to get a child node
+by its name in a given parent node.
+
+Without this patch each driver code has to iterate the parent and do
+a string compare, However having of_get_child_by_name libary function would
+avoid code duplication, errors and is more convenient.
 
 Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 ---
- arch/powerpc/platforms/powernv/opal.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ drivers/of/base.c  |   25 +++++++++++++++++++++++++
+ include/linux/of.h |    2 ++
+ 2 files changed, 27 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index aaa0dba..fc7ae70 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -294,9 +294,9 @@ static int __init opal_init(void)
- 		consoles = of_node_get(opal_node);
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index d4a1c9a..7391f8a 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -391,6 +391,31 @@ struct device_node *of_get_next_available_child(const struct device_node *node,
+ EXPORT_SYMBOL(of_get_next_available_child);
  
- 	/* Register serial ports */
--	for_each_child_of_node(consoles, np) {
--		if (strcmp(np->name, "serial"))
--			continue;
-+	np = of_get_child_by_name(consoles, "serial");
-+	if (np) {
-+		of_node_put(np);
- 		of_platform_device_create(np, NULL, NULL);
- 	}
- 	of_node_put(consoles);
+ /**
++ *	of_get_child_by_name - Find the child node by name for a given parent
++ *	@node:	parent node
++ *	@name:	child name to look for.
++ *
++ *      This function looks for child node for given matching name
++ *
++ *	Returns a node pointer if found, with refcount incremented, use
++ *	of_node_put() on it when done.
++ *	Returns NULL if node is not found.
++ */
++
++struct device_node *of_get_child_by_name(const struct device_node *node,
++				const char *name)
++{
++	struct device_node *child;
++
++	for_each_child_of_node(node, child)
++		if (child->name && (of_node_cmp(child->name, name) == 0)
++			&& of_node_get(child))
++			break;
++	return child;
++}
++EXPORT_SYMBOL(of_get_child_by_name);
++
++/**
+  *	of_find_node_by_path - Find a node matching a full OF path
+  *	@path:	The full path to match
+  *
+diff --git a/include/linux/of.h b/include/linux/of.h
+index 1b11632..7b8e3cd 100644
+--- a/include/linux/of.h
++++ b/include/linux/of.h
+@@ -192,6 +192,8 @@ extern struct device_node *of_get_next_child(const struct device_node *node,
+ 					     struct device_node *prev);
+ extern struct device_node *of_get_next_available_child(
+ 	const struct device_node *node, struct device_node *prev);
++extern struct device_node *of_get_child_by_name(const struct device_node *node,
++					const char *name);
+ 
+ #define for_each_child_of_node(parent, child) \
+ 	for (child = of_get_next_child(parent, NULL); child != NULL; \
 -- 
 1.7.0.4
