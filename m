@@ -1,24 +1,28 @@
-Return-Path: <B36685@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 562FB2C0081
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2012 19:31:42 +1000 (EST)
-From: Liu Shengzhou-B36685 <B36685@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, Greg KH <greg@kroah.com>
-Subject: RE: [PATCH v2] powerpc/usb: fix bug of CPU hang when missing USB
- PHY clock
-Date: Tue, 18 Sep 2012 09:31:33 +0000
-Message-ID: <3F453DDFF675A64A89321A1F352810217FE2A8@039-SN1MPN1-004.039d.mgd.msft.net>
-References: <1345630620-32070-1-git-send-email-Shengzhou.Liu@freescale.com>
- <6E81CB63-79F1-4C45-87A6-28048351FF84@kernel.crashing.org>
-In-Reply-To: <6E81CB63-79F1-4C45-87A6-28048351FF84@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 6D8922C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2012 19:34:05 +1000 (EST)
+Message-ID: <50584159.3020403@cn.fujitsu.com>
+Date: Tue, 18 Sep 2012 17:39:37 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+To: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
+Subject: Re: [RFC v8 PATCH 00/20] memory-hotplug: hot-remove physical memory
+References: <1346148027-24468-1-git-send-email-wency@cn.fujitsu.com>
+ <20120831134956.fec0f681.akpm@linux-foundation.org>
+ <504D467D.2080201@jp.fujitsu.com> <504D4A08.7090602@cn.fujitsu.com>
+ <20120910135213.GA1550@dhcp-192-168-178-175.profitbricks.localdomain>
+ <50501B9C.7000200@cn.fujitsu.com>
+ <20120912171814.GB5253@dhcp-192-168-178-175.profitbricks.localdomain>
+In-Reply-To: <20120912171814.GB5253@dhcp-192-168-178-175.profitbricks.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, cl@linux.com, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +32,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+At 09/13/2012 01:18 AM, Vasilis Liaskovitis Wrote:
+> Hi,
+> 
+> On Wed, Sep 12, 2012 at 01:20:28PM +0800, Wen Congyang wrote:
+>>>
+>>> On Mon, Sep 10, 2012 at 10:01:44AM +0800, Wen Congyang wrote:
+>>>> At 09/10/2012 09:46 AM, Yasuaki Ishimatsu Wrote:
+>>>>> How do you test the patch? As Andrew says, for hot-removing memory,
+>>>>> we need a particular hardware. I think so too. So many people may want
+>>>>> to know how to test the patch.
+>>>>> If we apply following patch to kvm guest, can we hot-remove memory on
+>>>>> kvm guest?
+>>>>>
+>>>>> http://lists.gnu.org/archive/html/qemu-devel/2012-07/msg01389.html
+>>>>
+>>>> Yes, if we apply this patchset, we can test hot-remove memory on kvm guest.
+>>>> But that patchset doesn't implement _PS3, so there is some restriction.
+>>>
+>>> the following repos contain the patchset above, plus 2 more patches that add
+>>> PS3 support to the dimm devices in qemu/seabios:
+>>>
+>>> https://github.com/vliaskov/seabios/commits/memhp-v2
+>>> https://github.com/vliaskov/qemu-kvm/commits/memhp-v2
+>>>
+>>> I have not posted the PS3 patches yet in the qemu list, but will post them
+>>> soon for v3 of the memory hotplug series. If you have issues testing, let me
+>>> know.
+>>
+>> Hmm, seabios doesn't support ACPI table SLIT. We can specify node it for dimm
+>> device, so I think we should support SLIT in seabios. Otherwise we may meet
+>> the following kernel messages:
+>> [  325.016769] init_memory_mapping: [mem 0x40000000-0x5fffffff]
+>> [  325.018060]  [mem 0x40000000-0x5fffffff] page 2M
+>> [  325.019168] [ffffea0001000000-ffffea00011fffff] potential offnode page_structs
+>> [  325.024172] [ffffea0001200000-ffffea00013fffff] potential offnode page_structs
+>> [  325.028596]  [ffffea0001400000-ffffea00017fffff] PMD -> [ffff880035000000-ffff8800353fffff] on node 1
+>> [  325.031775] [ffffea0001600000-ffffea00017fffff] potential offnode page_structs
+>>
+>> Do you have plan to do it?
+> thanks for testing.
+> 
+> commit 5294828 from https://github.com/vliaskov/seabios/commits/memhp-v2
+> implements a SLIT table for the given numa nodes.
 
+Hmm, why do you set node_distance(i, j) to REMOTE_DISTANCE if i != j?
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Tuesday, September 18, 2012 1:35 PM
-> To: Greg KH
-> Cc: Liu Shengzhou-B36685; linuxppc-dev@lists.ozlabs.org list; linux-
-> usb@vger.kernel.org
-> Subject: Re: [PATCH v2] powerpc/usb: fix bug of CPU hang when missing USB
-> PHY clock
->=20
->=20
-> On Aug 22, 2012, at 5:17 AM, Shengzhou Liu wrote:
->=20
-> > when missing USB PHY clock, kernel booting up will hang during USB
-> > initialization. We should check USBGP[PHY_CLK_VALID] bit to avoid CPU
-> > hanging in this case.
-> >
-> > Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-> > ---
-> > v2 changes: use spin_event_timeout() instead.
-> >
-> > drivers/usb/host/ehci-fsl.c |   58 +++++++++++++++++++++++++++++-------
-> ------
-> > drivers/usb/host/ehci-fsl.h |    1 +
-> > include/linux/fsl_devices.h |    1 +
-> > 3 files changed, 42 insertions(+), 18 deletions(-)
->=20
-> Greg,
->=20
-> Any issues picking this fix up for v3.6 inclusion?
->=20
-> - k
->=20
+> 
+> However I am not sure the SLIT is the problem. The kernel builds a default
+> numa_distance table in arch/x86/mm/numa.c: numa_alloc_distance(). If the BIOS
+> doesn't present a SLIT, this should take effect (numactl --hardware should
+> report this table)
 
-[Shengzhou] please pick the v3, thanks.
-http://patchwork.ozlabs.org/patch/184666/
+If the BIOS doesn't present a SLIT, numa_distance_cnt is set to 0 in the
+function numa_reset_distance(). So node_distance(i, j) is REMOTE_DISTANCE(i != j).
+
+> 
+> Do you have more details on how to reproduce the warning? e.g. how many dimms
+> are present in the system? Does this happen on the first dimm hot-plugged?
+> Are all SRAT entries parsed correctly at boot-time or do you see any other
+> warnings at boot-time?
+
+I can't reproduce it again. IIRC, I only do the following things:
+hotplug a memory device, online the pages, offline the pages and hot remove
+the memory device.
+
+Thanks
+Wen Congyang
+
+> 
+> I 'll investigate a bit more and report back.
+> 
+> thanks,
+> 
+> - Vasilis
+> 
