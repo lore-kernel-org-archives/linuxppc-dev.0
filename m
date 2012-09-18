@@ -1,10 +1,10 @@
 Return-Path: <srinivas.kandagatla@st.com>
 From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
 To: benh@kernel.crashing.org
-Subject: [PATCH v4 3/5] dt/powerpc/sysdev: Use of_get_child_by_name to get a
+Subject: [PATCH v4 2/5] dt/powerpc/powernv: Use of_get_child_by_name to get a
  named child
-Date: Tue, 18 Sep 2012 08:10:42 +0100
-Message-Id: <1347952242-24638-1-git-send-email-srinivas.kandagatla@st.com>
+Date: Tue, 18 Sep 2012 08:10:36 +0100
+Message-Id: <1347952236-24603-1-git-send-email-srinivas.kandagatla@st.com>
 Cc: kgene.kim@samsung.com, srinivas.kandagatla@st.com,
  devicetree-discuss@lists.ozlabs.org, broonie@opensource.wolfsonmicro.com,
  robherring2@gmail.com, ben-linux@fluff.org, linuxppc-dev@lists.ozlabs.org
@@ -25,24 +25,26 @@ driver by replacing it with of_get_child_by_name instead.
 
 Signed-off-by: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 ---
- arch/powerpc/sysdev/qe_lib/qe.c |    5 +----
- 1 files changed, 1 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/powernv/opal.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
-index b043675..d094e51 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c
-@@ -568,10 +568,7 @@ struct qe_firmware_info *qe_get_firmware_info(void)
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index aaa0dba..f4a5567 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -294,10 +294,10 @@ static int __init opal_init(void)
+ 		consoles = of_node_get(opal_node);
+ 
+ 	/* Register serial ports */
+-	for_each_child_of_node(consoles, np) {
+-		if (strcmp(np->name, "serial"))
+-			continue;
++	np = of_get_child_by_name(consoles, "serial");
++	if (np) {
+ 		of_platform_device_create(np, NULL, NULL);
++		of_node_put(np);
  	}
- 
- 	/* Find the 'firmware' child node */
--	for_each_child_of_node(qe, fw) {
--		if (strcmp(fw->name, "firmware") == 0)
--			break;
--	}
-+	fw = of_get_child_by_name(qe, "firmware");
- 
- 	of_node_put(qe);
+ 	of_node_put(consoles);
  
 -- 
 1.7.0.4
