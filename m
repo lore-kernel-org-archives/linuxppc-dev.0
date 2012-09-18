@@ -1,18 +1,24 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+Return-Path: <greg@kroah.com>
+Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
+ [66.111.4.27])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BD8862C0091
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2012 23:38:25 +1000 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] rapidio/tsi721: add inbound memory mapping callbacks
-Date: Tue, 18 Sep 2012 09:37:21 -0400
-Message-Id: <1347975441-6723-3-git-send-email-alexandre.bounine@idt.com>
-In-Reply-To: <1347975441-6723-1-git-send-email-alexandre.bounine@idt.com>
-References: <1347975441-6723-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id AA6E32C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 00:41:23 +1000 (EST)
+Date: Tue, 18 Sep 2012 15:34:28 +0100
+From: Greg KH <greg@kroah.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc/usb: fix bug of CPU hang when missing USB PHY
+ clock
+Message-ID: <20120918143428.GE15432@kroah.com>
+References: <1345630620-32070-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <6E81CB63-79F1-4C45-87A6-28048351FF84@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <6E81CB63-79F1-4C45-87A6-28048351FF84@kernel.crashing.org>
+Cc: linux-usb@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,156 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add Tsi721 routines to support RapidIO subsystem's inbound memory mapping
-interface (RapidIO to system's local memory). 
+On Tue, Sep 18, 2012 at 12:35:09AM -0500, Kumar Gala wrote:
+> 
+> On Aug 22, 2012, at 5:17 AM, Shengzhou Liu wrote:
+> 
+> > when missing USB PHY clock, kernel booting up will hang during USB
+> > initialization. We should check USBGP[PHY_CLK_VALID] bit to avoid
+> > CPU hanging in this case.
+> > 
+> > Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> > ---
+> > v2 changes: use spin_event_timeout() instead.
+> > 
+> > drivers/usb/host/ehci-fsl.c |   58 +++++++++++++++++++++++++++++-------------
+> > drivers/usb/host/ehci-fsl.h |    1 +
+> > include/linux/fsl_devices.h |    1 +
+> > 3 files changed, 42 insertions(+), 18 deletions(-)
+> 
+> Greg,
+> 
+> Any issues picking this fix up for v3.6 inclusion?
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Li Yang <leoli@freescale.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>
----
- drivers/rapidio/devices/tsi721.c |   88 +++++++++++++++++++++++++++++++++++++-
- drivers/rapidio/devices/tsi721.h |   15 +++++-
- 2 files changed, 99 insertions(+), 4 deletions(-)
+Yes, I will not as there is a v3 out there that I want some review on
+before I can take it...
 
-diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
-index 1974359..961dc7a 100644
---- a/drivers/rapidio/devices/tsi721.c
-+++ b/drivers/rapidio/devices/tsi721.c
-@@ -862,6 +862,90 @@ static void tsi721_init_pc2sr_mapping(struct tsi721_device *priv)
- }
- 
- /**
-+ * tsi721_rio_map_inb_mem -- Mapping inbound memory region.
-+ * @mport: RapidIO master port
-+ * @lstart: Local memory space start address.
-+ * @rstart: RapidIO space start address.
-+ * @size: The mapping region size.
-+ * @flags: Flags for mapping. 0 for using default flags.
-+ *
-+ * Return: 0 -- Success.
-+ *
-+ * This function will create the inbound mapping
-+ * from rstart to lstart.
-+ */
-+static int tsi721_rio_map_inb_mem(struct rio_mport *mport, dma_addr_t lstart,
-+		u64 rstart, u32 size, u32 flags)
-+{
-+	struct tsi721_device *priv = mport->priv;
-+	int i;
-+	u32 regval;
-+
-+	if (!is_power_of_2(size) || size < 0x1000 ||
-+	    ((u64)lstart & (size - 1)) || (rstart & (size - 1)))
-+		return -EINVAL;
-+
-+	/* Search for free inbound translation window */
-+	for (i = 0; i < TSI721_IBWIN_NUM; i++) {
-+		regval = ioread32(priv->regs + TSI721_IBWIN_LB(i));
-+		if (!(regval & TSI721_IBWIN_LB_WEN))
-+			break;
-+	}
-+
-+	if (i >= TSI721_IBWIN_NUM) {
-+		dev_err(&priv->pdev->dev,
-+			"Unable to find free inbound window\n");
-+		return -EBUSY;
-+	}
-+
-+	iowrite32(TSI721_IBWIN_SIZE(size) << 8,
-+			priv->regs + TSI721_IBWIN_SZ(i));
-+
-+	iowrite32(((u64)lstart >> 32), priv->regs + TSI721_IBWIN_TUA(i));
-+	iowrite32(((u64)lstart & TSI721_IBWIN_TLA_ADD),
-+		  priv->regs + TSI721_IBWIN_TLA(i));
-+
-+	iowrite32(rstart >> 32, priv->regs + TSI721_IBWIN_UB(i));
-+	iowrite32((rstart & TSI721_IBWIN_LB_BA) | TSI721_IBWIN_LB_WEN,
-+		priv->regs + TSI721_IBWIN_LB(i));
-+	dev_dbg(&priv->pdev->dev,
-+		"Configured IBWIN%d mapping (RIO_0x%llx -> PCIe_0x%llx)\n",
-+		i, rstart, (unsigned long long)lstart);
-+
-+	return 0;
-+}
-+
-+/**
-+ * fsl_rio_unmap_inb_mem -- Unmapping inbound memory region.
-+ * @mport: RapidIO master port
-+ * @lstart: Local memory space start address.
-+ */
-+static void tsi721_rio_unmap_inb_mem(struct rio_mport *mport,
-+				dma_addr_t lstart)
-+{
-+	struct tsi721_device *priv = mport->priv;
-+	int i;
-+	u64 addr;
-+	u32 regval;
-+
-+	/* Search for matching active inbound translation window */
-+	for (i = 0; i < TSI721_IBWIN_NUM; i++) {
-+		regval = ioread32(priv->regs + TSI721_IBWIN_LB(i));
-+		if (regval & TSI721_IBWIN_LB_WEN) {
-+			regval = ioread32(priv->regs + TSI721_IBWIN_TUA(i));
-+			addr = (u64)regval << 32;
-+			regval = ioread32(priv->regs + TSI721_IBWIN_TLA(i));
-+			addr |= regval & TSI721_IBWIN_TLA_ADD;
-+
-+			if (addr == (u64)lstart) {
-+				iowrite32(0, priv->regs + TSI721_IBWIN_LB(i));
-+				break;
-+			}
-+		}
-+	}
-+}
-+
-+/**
-  * tsi721_init_sr2pc_mapping - initializes inbound (SRIO->PCIe)
-  * translation regions.
-  * @priv: pointer to tsi721 private data
-@@ -874,7 +958,7 @@ static void tsi721_init_sr2pc_mapping(struct tsi721_device *priv)
- 
- 	/* Disable all SR2PC inbound windows */
- 	for (i = 0; i < TSI721_IBWIN_NUM; i++)
--		iowrite32(0, priv->regs + TSI721_IBWINLB(i));
-+		iowrite32(0, priv->regs + TSI721_IBWIN_LB(i));
- }
- 
- /**
-@@ -2144,6 +2228,8 @@ static int __devinit tsi721_setup_mport(struct tsi721_device *priv)
- 	ops->add_outb_message = tsi721_add_outb_message;
- 	ops->add_inb_buffer = tsi721_add_inb_buffer;
- 	ops->get_inb_message = tsi721_get_inb_message;
-+	ops->map_inb = tsi721_rio_map_inb_mem;
-+	ops->unmap_inb = tsi721_rio_unmap_inb_mem;
- 
- 	mport = kzalloc(sizeof(struct rio_mport), GFP_KERNEL);
- 	if (!mport) {
-diff --git a/drivers/rapidio/devices/tsi721.h b/drivers/rapidio/devices/tsi721.h
-index 59de9d7..7d5b13b 100644
---- a/drivers/rapidio/devices/tsi721.h
-+++ b/drivers/rapidio/devices/tsi721.h
-@@ -156,9 +156,18 @@
- 
- #define TSI721_IBWIN_NUM	8
- 
--#define TSI721_IBWINLB(x)	(0x29000 + (x) * 0x20)
--#define TSI721_IBWINLB_BA	0xfffff000
--#define TSI721_IBWINLB_WEN	0x00000001
-+#define TSI721_IBWIN_LB(x)	(0x29000 + (x) * 0x20)
-+#define TSI721_IBWIN_LB_BA	0xfffff000
-+#define TSI721_IBWIN_LB_WEN	0x00000001
-+
-+#define TSI721_IBWIN_UB(x)	(0x29004 + (x) * 0x20)
-+#define TSI721_IBWIN_SZ(x)	(0x29008 + (x) * 0x20)
-+#define TSI721_IBWIN_SZ_SIZE	0x00001f00
-+#define TSI721_IBWIN_SIZE(size)	(__fls(size) - 12)
-+
-+#define TSI721_IBWIN_TLA(x)	(0x2900c + (x) * 0x20)
-+#define TSI721_IBWIN_TLA_ADD	0xfffff000
-+#define TSI721_IBWIN_TUA(x)	(0x29010 + (x) * 0x20)
- 
- #define TSI721_SR2PC_GEN_INTE	0x29800
- #define TSI721_SR2PC_PWE	0x29804
--- 
-1.7.8.4
+thanks,
+
+greg k-h
