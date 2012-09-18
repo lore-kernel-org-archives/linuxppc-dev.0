@@ -1,23 +1,13 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4DD7A2C0081
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2012 16:13:07 +1000 (EST)
-Message-ID: <505810EC.6060907@windriver.com>
-Date: Tue, 18 Sep 2012 14:13:00 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [v5][PATCH 2/3] powerpc/kprobe: complete kprobe and migrate
- exception frame
-References: <1347875671-15838-1-git-send-email-tiejun.chen@windriver.com>
- <1347875671-15838-2-git-send-email-tiejun.chen@windriver.com>
- <1347944755.2386.43.camel@pasglop> <1347944998.2386.44.camel@pasglop>
-In-Reply-To: <1347944998.2386.44.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <srinivas.kandagatla@st.com>
+From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
+To: robherring2@gmail.com, bergner@us.ibm.com,
+ devicetree-discuss@lists.ozlabs.org
+Subject: [RESEND PATCH v3 0/5] Introduce of_get_child_by_name
+Date: Tue, 18 Sep 2012 08:08:10 +0100
+Message-Id: <1347952090-24054-1-git-send-email-srinivas.kandagatla@st.com>
+Cc: kgene.kim@samsung.com, srinivas.kandagatla@st.com,
+ broonie@opensource.wolfsonmicro.com, afleming@freescale.com,
+ ben-linux@fluff.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,73 +17,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/18/2012 01:09 PM, Benjamin Herrenschmidt wrote:
-> On Tue, 2012-09-18 at 15:05 +1000, Benjamin Herrenschmidt wrote:
->> On Mon, 2012-09-17 at 17:54 +0800, Tiejun Chen wrote:
->>> -#ifdef CONFIG_PREEMPT
->>>   	b	restore
->>>
->>>   /* N.B. the only way to get here is from the beq following ret_from_except. */
->>>   resume_kernel:
->>> -	/* check current_thread_info->preempt_count */
->>> +	/* check current_thread_info, _TIF_EMULATE_STACK_STORE */
->>>   	CURRENT_THREAD_INFO(r9, r1)
->>> +	lwz	r8,TI_FLAGS(r9)
->>> +	andis.	r8,r8,_TIF_EMULATE_STACK_STORE@h
->>> +	beq+	1f
->>> +
->>> +	addi	r8,r1,INT_FRAME_SIZE	/* Get the kprobed function entry */
->>> +
->>> +	lwz	r3,GPR1(r1)
->>> +	subi	r3,r3,INT_FRAME_SIZE	/* dst: Allocate a trampoline exception frame */
->>> +	mr	r4,r1			/* src:  current exception frame */
->>> +	li	r5,INT_FRAME_SIZE	/* size: INT_FRAME_SIZE */
->>> +	li	r6,0			/* start offset: 0 */
->>> +	mr	r1,r3			/* Reroute the trampoline frame to r1 */
->>> +
->>> +	/* Copy from the original to the trampoline. */
->>> +	li	r6,0
->>
->> You just did that li r6,0 2 lines above :-) I'll fix it up manually
->> while applying.
->
-> In fact the srwi can be dropped completely, we can just load r5 with the
-> divided value. Committed, will push later today, please test.
+From: Srinivas Kandagatla <srinivas.kandagatla@st.com>
 
-I retest to kprobe do_fork() and show_interrupts() with/without enabling 
-CONFIG_PREEMPT, separately, looks still work.
+This patch series introduces of_get_child_by_name function to get a 
+child node by its name in a given parent node and also removes code 
+duplication in some of the existing driver code by using of_get_child_by_name.
 
-For 32-bit:
-------------
-+       /* Copy from the original to the trampoline. */
-+       lwz     r3,GPR1(r1)
-+       subi    r3,r3,INT_FRAME_SIZE    /* dst: Allocate a trampoline exception 
-frame */
-+       mr      r4,r1                   /* src:  current exception frame */
-+       li      r5,INT_FRAME_SIZE/4     /* size: INT_FRAME_SIZE */
-+       li      r6,0                    /* start offset: 0 */
-+       mr      r1,r3                   /* Reroute the trampoline frame to r1 */
-+       mtctr   r5
-+2:     lwzx    r0,r6,r4
-+       stwx    r0,r6,r3
-+       addi    r6,r6,4
-+       bdnz    2b
+Normally if a driver want to get a child node it would iterate all the nodes
+of parent and compare its name and then get it.
+This use case is becoming common as device trees are used more, so moving this 
+functionality to a libary function makes sense.
 
-And for 64-bit:
----------------
-+       /* Copy from the original to the trampoline. */
-+       lwz     r3,GPR1(r1)
-+       subi    r3,r3,INT_FRAME_SIZE    /* dst: Allocate a trampoline exception 
-frame */
-+       mr      r4,r1                   /* src:  current exception frame */
-+       li      r5,INT_FRAME_SIZE/8     /* size: INT_FRAME_SIZE */
-+       li      r6,0                    /* start offset: 0 */
-+       mr      r1,r3                   /* Reroute the trampoline frame to r1 */
-+       mtctr   r5
-+2:     ldx     r0,r6,r4
-+       stdx    r0,r6,r3
-+       addi    r6,r6,8
-+       bdnz    2b
+Having of_get_child_by_name libary function would avoid code duplication,
+errors, proper reference counting and is more convenient.
 
-Thanks
-Tiejun
+Changes from v3:
+	- Removed extra of_get_node from of_get_child_by_name.
+	- reordered of_put_node in hvc_opal.c
+Changes from v2:
+	- Fixed typo errors.
+	- Removed bogus patches which used "type" instead of "name" 
+	- Fixed reference counting in follow-up patches.
+
+Changes from v1:
+	-rename of_get_child to of_get_child_by_name.
+	-remove read lock in of_get_child_by_name.
+	-make use of of_get_child_by_name in the existing kernel code.
+
+Srinivas Kandagatla (5):
+  dt: introduce of_get_child_by_name to get child node by name
+  dt/powerpc/powernv: Use of_get_child_by_name to get a named child
+  dt/powerpc/sysdev: Use of_get_child_by_name to get a named child
+  dt/s3c64xx/spi: Use of_get_child_by_name to get a named child
+  dt/tty/opal: Use of_get_child_by_name to get a named child
+
+ arch/powerpc/platforms/powernv/opal.c |    6 +++---
+ arch/powerpc/sysdev/qe_lib/qe.c       |    5 +----
+ drivers/of/base.c                     |   23 +++++++++++++++++++++++
+ drivers/spi/spi-s3c64xx.c             |    7 ++++---
+ drivers/tty/hvc/hvc_opal.c            |    9 ++-------
+ include/linux/of.h                    |    2 ++
+ 6 files changed, 35 insertions(+), 17 deletions(-)
