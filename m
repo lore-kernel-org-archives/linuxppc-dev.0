@@ -1,35 +1,35 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 839382C008A
- for <linuxppc-dev@ozlabs.org>; Tue, 18 Sep 2012 08:15:45 +1000 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 17 Sep 2012 16:15:40 -0600
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A018A1FF0039
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 16:15:35 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8HMFcgN176090
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 16:15:38 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8HMFbqg023725
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Sep 2012 16:15:38 -0600
-Date: Mon, 17 Sep 2012 15:16:17 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org
-Subject: [PATCH][v3]: powerpc/perf: Sample only if SIAR-Valid bit is set in P7+
-Message-ID: <20120917221617.GA14113@us.ibm.com>
+Return-Path: <r66093@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 19FDC2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2012 11:10:00 +1000 (EST)
+From: Huang Changming-R66093 <r66093@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>, Chris Ball <cjb@laptop.org>
+Subject: RE: [PATCH 2/3] powerpc/esdhc: add property to disable the CMD23
+Date: Tue, 18 Sep 2012 01:09:50 +0000
+Message-ID: <110EED8CC96DFC488B7E717A2027A27C17DBCA@039-SN1MPN1-002.039d.mgd.msft.net>
+References: <1347347565-17474-1-git-send-email-Chang-Ming.Huang@freescale.com>
+ <1347347565-17474-2-git-send-email-Chang-Ming.Huang@freescale.com>
+ <20120911075429.GA27028@lizard> <20120911080457.GA28235@lizard>
+ <110EED8CC96DFC488B7E717A2027A27C176170@039-SN1MPN1-002.039d.mgd.msft.net>
+ <6D8C87BA-CA06-4215-94F5-63EBF5162B0A@kernel.crashing.org>
+ <2A6FCAE3-288F-4972-90C0-15105932F13E@kernel.crashing.org>
+ <87k3w0y5yn.fsf@octavius.laptop.org>
+ <FC22FA36-B2CF-49C2-A0B1-8A0EA614B9CB@kernel.crashing.org>
+ <8B1F0805-759E-417A-B787-40DF197896F3@kernel.crashing.org>
+ <110EED8CC96DFC488B7E717A2027A27C1785D0@039-SN1MPN1-002.039d.mgd.msft.net>
+ <4E15F856-D385-40C4-A5FD-5F298C70F402@kernel.crashing.org>
+ <m3k3vsn7wf.fsf@pullcord.laptop.org>
+ <1166FFD6-342F-4BDA-BF23-794DAEA95CC9@kernel.crashing.org>
+In-Reply-To: <1166FFD6-342F-4BDA-BF23-794DAEA95CC9@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
- cel@linux.vnet.ibm.com
+Cc: "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Anton Vorontsov <cbouatmailru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,156 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From 192fa874e5574d08d66d96155b6d9c536fce6e8a Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Mon, 2 Jul 2012 08:06:14 -0700
-Subject: [PATCH] powerpc/perf: Sample only if SIAR-Valid bit is set in P7+
-
-On POWER7+ two new bits (mmcra[35] and mmcra[36]) indicate whether the
-contents of SIAR and SDAR are valid.
-
-For marked instructions on P7+, we must save the contents of SIAR and
-SDAR registers only if these new bits are set.
-
-This code/check for the SIAR-Valid bit is specific to P7+, so rather than
-waste a CPU-feature bit use the PVR flag.
-
-Note that Carl Love proposed a similar change for oprofile:
-
-        https://lkml.org/lkml/2012/6/22/309
-
-Changelog[v3]:
-	- Commit 5c093efa6f2 added checks to use SIAR only for kernel samples.
-	  Extend that to use SIAR only if SIAR-valid bit is set (in processors
-	  that implement that bit).
-
-Changelog[v2]:
-	- [Gabriel Paubert] Rename PV_POWER7P to PV_POWER7p.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/perf_event_server.h |    1 +
- arch/powerpc/include/asm/reg.h               |    4 ++
- arch/powerpc/perf/core-book3s.c              |   39 ++++++++++++++++++++++----
- arch/powerpc/perf/power7-pmu.c               |    3 ++
- 4 files changed, 41 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 078019b..9710be3 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -49,6 +49,7 @@ struct power_pmu {
- #define PPMU_ALT_SIPR		2	/* uses alternate posn for SIPR/HV */
- #define PPMU_NO_SIPR		4	/* no SIPR/HV in MMCRA at all */
- #define PPMU_NO_CONT_SAMPLING	8	/* no continuous sampling */
-+#define PPMU_SIAR_VALID		16	/* Processor has SIAR Valid bit */
- 
- /*
-  * Values for flags to get_alternatives()
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 12412b5..bcf5760 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -602,6 +602,10 @@
- #define   POWER6_MMCRA_SIPR   0x0000020000000000ULL
- #define   POWER6_MMCRA_THRM	0x00000020UL
- #define   POWER6_MMCRA_OTHER	0x0000000EUL
-+
-+#define   POWER7P_MMCRA_SIAR_VALID 0x10000000	/* P7+ SIAR contents valid */
-+#define   POWER7P_MMCRA_SDAR_VALID 0x08000000	/* P7+ SDAR contents valid */
-+
- #define SPRN_PMC1	787
- #define SPRN_PMC2	788
- #define SPRN_PMC3	789
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 7cd2dbd..05b2f41 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -106,14 +106,20 @@ static inline unsigned long perf_ip_adjust(struct pt_regs *regs)
-  * If we're not doing instruction sampling, give them the SDAR
-  * (sampled data address).  If we are doing instruction sampling, then
-  * only give them the SDAR if it corresponds to the instruction
-- * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC
-- * bit in MMCRA.
-+ * pointed to by SIAR; this is indicated by the [POWER6_]MMCRA_SDSYNC or
-+ * the [POWER7P_]MMCRA_SDAR_VALID bit in MMCRA.
-  */
- static inline void perf_get_data_addr(struct pt_regs *regs, u64 *addrp)
- {
- 	unsigned long mmcra = regs->dsisr;
--	unsigned long sdsync = (ppmu->flags & PPMU_ALT_SIPR) ?
--		POWER6_MMCRA_SDSYNC : MMCRA_SDSYNC;
-+	unsigned long sdsync;
-+
-+	if (ppmu->flags & PPMU_SIAR_VALID)
-+		sdsync = POWER7P_MMCRA_SDAR_VALID;
-+	else if (ppmu->flags & PPMU_ALT_SIPR)
-+		sdsync = POWER6_MMCRA_SDSYNC;
-+	else
-+		sdsync = MMCRA_SDSYNC;
- 
- 	if (!(mmcra & MMCRA_SAMPLE_ENABLE) || (mmcra & sdsync))
- 		*addrp = mfspr(SPRN_SDAR);
-@@ -1291,6 +1297,25 @@ struct pmu power_pmu = {
- 	.event_idx	= power_pmu_event_idx,
- };
- 
-+
-+/*
-+ * On processors like P7+ that have the SIAR-Valid bit, marked instructions
-+ * must be sampled only if the SIAR-valid bit is set.
-+ *
-+ * For unmarked instructions and for processors that don't have the SIAR-Valid
-+ * bit, assume that SIAR is valid.
-+ */
-+static inline int siar_valid(struct pt_regs *regs)
-+{
-+	unsigned long mmcra = regs->dsisr;
-+	int marked = mmcra & MMCRA_SAMPLE_ENABLE;
-+
-+	if ((ppmu->flags & PPMU_SIAR_VALID) && marked)
-+		return mmcra & POWER7P_MMCRA_SIAR_VALID;
-+
-+	return 1;
-+}
-+
- /*
-  * A counter has overflowed; update its count and record
-  * things if requested.  Note that interrupts are hard-disabled
-@@ -1324,7 +1349,7 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
- 			left += period;
- 			if (left <= 0)
- 				left = period;
--			record = 1;
-+			record = siar_valid(regs);
- 			event->hw.last_period = event->hw.sample_period;
- 		}
- 		if (left < 0x80000000LL)
-@@ -1374,8 +1399,10 @@ unsigned long perf_instruction_pointer(struct pt_regs *regs)
- {
- 	unsigned long use_siar = regs->result;
- 
--	if (use_siar)
-+	if (use_siar && siar_valid(regs))
- 		return mfspr(SPRN_SIAR) + perf_ip_adjust(regs);
-+	else if (use_siar)
-+		return 0;		// no valid instruction pointer
- 	else
- 		return regs->nip;
- }
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index 1251e4d..970a634 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -373,6 +373,9 @@ static int __init init_power7_pmu(void)
- 	    strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power7"))
- 		return -ENODEV;
- 
-+	if (__is_processor(PV_POWER7p))
-+		power7_pmu.flags |= PPMU_SIAR_VALID;
-+
- 	return register_power_pmu(&power7_pmu);
- }
- 
--- 
-1.7.1
+> On Sep 17, 2012, at 7:36 AM, Chris Ball wrote:
+>=20
+> > Hi,
+> >
+> > On Thu, Sep 13 2012, Kumar Gala wrote:
+> >>>> Can you list out which SoCs support it and which don't.  Having
+> >>>> this list will be useful in understanding which controller versions
+> supported it.
+> >>>>
+> >>> P1020, p1021, p1022, p1024, p1015 and p4080 can't support it.
+> >>> Mpc8536, p2020, and the other current DPAA silicon (e.g. p5020, p3041=
+)
+> support it.
+> >>
+> >> Based on this, why don't we use the HOSTVER register to detect instead
+> of device tree:
+> >
+> > I've got a mild preference for handling quirk assignment in the DT
+> > rather than in driver code, so I'd prefer to just push the original
+> > patch to mmc-next as-is.  Does that sound okay?
+>=20
+> Why?  I only ask because I agree with Scott that this means you have to
+> update your device tree to get proper functionality.
+>=20
+When the new silicon does not support CMD23,
+if we don't update the device tree, then we must update the SDHC driver.
+I prefer to add the property in device tree,
+because we just add this property in new device tree, we don't need more ef=
+fort to modify driver.
