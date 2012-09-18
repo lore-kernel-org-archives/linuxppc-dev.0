@@ -2,9 +2,9 @@ Return-Path: <srinivas.kandagatla@st.com>
 From: Srinivas KANDAGATLA <srinivas.kandagatla@st.com>
 To: robherring2@gmail.com, bergner@us.ibm.com,
  devicetree-discuss@lists.ozlabs.org
-Subject: [RESEND PATCH v3 0/5] Introduce of_get_child_by_name
-Date: Tue, 18 Sep 2012 08:08:10 +0100
-Message-Id: <1347952090-24054-1-git-send-email-srinivas.kandagatla@st.com>
+Subject: [PATCH v4 0/5] Introduce of_get_child_by_name
+Date: Tue, 18 Sep 2012 08:10:14 +0100
+Message-Id: <1347952214-24532-1-git-send-email-srinivas.kandagatla@st.com>
 Cc: kgene.kim@samsung.com, srinivas.kandagatla@st.com,
  broonie@opensource.wolfsonmicro.com, afleming@freescale.com,
  ben-linux@fluff.org, linuxppc-dev@lists.ozlabs.org
