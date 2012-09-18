@@ -1,23 +1,16 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
- [209.85.212.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B77832C0084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 04:15:32 +1000 (EST)
-Received: by vbbfn1 with SMTP id fn1so170621vbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Sep 2012 11:15:29 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1347991700-22730-1-git-send-email-geert@linux-m68k.org>
-References: <1347991700-22730-1-git-send-email-geert@linux-m68k.org>
-Date: Tue, 18 Sep 2012 20:15:29 +0200
-Message-ID: <CAMuHMdUDQTUvFNavKy6VX1LNqy4jJ_OyMusu86eVd7QspzbUCw@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.6-rc6
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Linux-sh list <linux-sh@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 11CFB2C007F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 04:29:02 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH RESEND] rapidio: apply RX/TX enable to active switch ports only
+Date: Tue, 18 Sep 2012 14:27:13 -0400
+Message-Id: <1347992833-13744-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,71 +20,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Sep 18, 2012 at 8:08 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.6-rc6 to v3.6-rc5[3], the summaries are:
->   - build errors: +14/-16
+Apply port RX/TX enable operations only to active switch ports.
 
-14 regressions:
-  + arch/powerpc/mm/tlb_nohash_low.S: Error: bad expression:  => 212,
-234, 232, 230
-  + arch/powerpc/mm/tlb_nohash_low.S: Error: junk at end of line,
-first unrecognized character is `r':  => 212, 234, 232, 230
-  + arch/powerpc/mm/tlb_nohash_low.S: Error: missing ')':  => 212, 234, 232, 230
+RapidIO specification (Part 6: LP-Serial Physical Layer)
+recommends to keep Output Port Enable (TX) and Input Port Enable (RX)
+control bits in disabled state (0b0) after device reset. It also allows
+to have implementation specific reset state for these bits.
 
-44x/currituck_defconfig
+This patch ensures that TX/RX enable action is applied only to active
+switch's ports while preserving an initial state of inactive ones.
 
-  + error: ci13xxx_imx.c: undefined reference to `devm_clk_get':  =>
-.devinit.text+0x4b154)
-  + error: exynos-rng.c: undefined reference to `devm_clk_get':  =>
-.devinit.text+0x2da54)
-  + error: flexcan.c: undefined reference to `devm_clk_get':  =>
-.devinit.text+0x43148), .devinit.text+0x430c8)
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+---
 
-powerpc-randconfig
+RESEND: Initial submission of this patch was dropped due to feedback
+comment which raised concern about some RapidIO switch implementations
+that may be affected by the change. After specification and device details
+review this patch declared to be safe because it preserves any combination
+of initial states of RX/TX enable for inactive port. 
 
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `.ktime_get_real' defined in .text section in
-kernel/built-in.o:  => (.text+0x1ff8928)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `.msecs_to_jiffies' defined in .text section in
-kernel/built-in.o:  => (.text+0x1ff9068)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `.panic' defined in .text.unlikely section in
-kernel/built-in.o:  => (.text+0x1ff9be4)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `_restgpr0_14' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff876c)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `_savegpr0_20' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff8774)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `_savegpr0_23' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff9358)
-  + error: fore200e.c: relocation truncated to fit: R_PPC64_REL24
-against symbol `_savegpr0_29' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff8ebc)
+ drivers/rapidio/rio-scan.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-powerpc-allyesconfig
-
-  + kernel/sys.c: error: 'mmap_min_addr' undeclared (first use in this
-function): 1868:34 => 1868:37, 1868:34
-
-sh-allyesconfig, sh-allmodconfig, sh-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/5424/ (117 out of 116 configs)
-
-Doh, forgot to update my scripts for the increase in configs...
-
-> [3] http://kisskb.ellerman.id.au/kisskb/head/5400/ (all 116 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+index 2bebd79..02e686b 100644
+--- a/drivers/rapidio/rio-scan.c
++++ b/drivers/rapidio/rio-scan.c
+@@ -839,12 +839,10 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 		for (port_num = 0;
+ 		     port_num < RIO_GET_TOTAL_PORTS(rdev->swpinfo);
+ 		     port_num++) {
+-			/*Enable Input Output Port (transmitter reviever)*/
+-			rio_enable_rx_tx_port(port, 0,
++			if (sw_inport == port_num) {
++				rio_enable_rx_tx_port(port, 0,
+ 					      RIO_ANY_DESTID(port->sys_size),
+ 					      hopcount, port_num);
+-
+-			if (sw_inport == port_num) {
+ 				rdev->rswitch->port_ok |= (1 << port_num);
+ 				continue;
+ 			}
+@@ -857,6 +855,9 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
+ 				pr_debug(
+ 				    "RIO: scanning device on port %d\n",
+ 				    port_num);
++				rio_enable_rx_tx_port(port, 0,
++					      RIO_ANY_DESTID(port->sys_size),
++					      hopcount, port_num);
+ 				rdev->rswitch->port_ok |= (1 << port_num);
+ 				rio_route_add_entry(rdev, RIO_GLOBAL_TABLE,
+ 						RIO_ANY_DESTID(port->sys_size),
+-- 
+1.7.8.4
