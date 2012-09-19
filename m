@@ -1,21 +1,27 @@
-Return-Path: <emillbrandt@norco.coldhaus.com>
-Received: from norco.coldhaus.com (norco.coldhaus.com [64.32.230.18])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
- (Client CN "norco.coldhaus.com",
- Issuer "StartCom Class 1 Primary Intermediate Server CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8432C2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 00:52:16 +1000 (EST)
-From: "\"Eric Millbrandt" <emillbrandt@dekaresearch.com>"
-To: Grant Likely <grant.likely@secretlab.ca>, Liam Girdwood <lrg@ti.com>,
- Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH v2 1/7] ASoC: fsl: add PPC_MPC52xx dependency to
- SND_POWERPC_SOC
-Date: Wed, 19 Sep 2012 10:51:25 -0400
-Message-Id: <1348066285-87741-1-git-send-email-emillbrandt@dekaresearch.com>
-In-Reply-To: <y>
-References: <y>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- Eric Millbrandt <emillbrandt@dekaresearch.com>
+Return-Path: <B11780@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 015932C00E6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 00:52:21 +1000 (EST)
+Received: from mail141-va3 (localhost [127.0.0.1])	by
+ mail141-va3-R.bigfish.com (Postfix) with ESMTP id C0B9F2C0151	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 14:52:14 +0000 (UTC)
+Received: from VA3EHSMHS004.bigfish.com (unknown [10.7.14.240])	by
+ mail141-va3.bigfish.com (Postfix) with ESMTP id 26E56300047	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 14:52:13 +0000 (UTC)
+From: Gala Kumar-B11780 <B11780@freescale.com>
+To: Lan Chunhe-B25806 <B25806@freescale.com>
+Subject: Re: [PATCH] p1023rds_defconfig: Add USB support
+Date: Wed, 19 Sep 2012 14:52:10 +0000
+Message-ID: <CF1EE7AED478CD48A05574C8E2DA142D5CBACD@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1347652640-20748-1-git-send-email-Chunhe.Lan@freescale.com>
+In-Reply-To: <1347652640-20748-1-git-send-email-Chunhe.Lan@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "<linuxppc-dev@lists.ozlabs.org>" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +31,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Eric Millbrandt <emillbrandt@dekaresearch.com>
 
-mpc52xx socs need to define SND_POWERPC_SOC to build ASoC drivers.
+On Sep 14, 2012, at 2:57 PM, Chunhe Lan wrote:
 
-Signed-off-by: Eric Millbrandt <emillbrandt@dekaresearch.com>
----
-Changes since v1:
-Patch was "powerpc/52xx: define FSL_SOC"
-Changed from defining FSL_SOC for PPC_MPC52xx to adding PPC_MPC52xx as a
-dependency of SND_POWERPC_SOC as per Anatolij Gustschin's comment.
+> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+> ---
+> arch/powerpc/configs/85xx/p1023rds_defconfig |    6 ++++++
+> 1 files changed, 6 insertions(+), 0 deletions(-)
 
- sound/soc/fsl/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+applied to next
 
-diff --git a/sound/soc/fsl/Kconfig b/sound/soc/fsl/Kconfig
-index d701330..4563b28 100644
---- a/sound/soc/fsl/Kconfig
-+++ b/sound/soc/fsl/Kconfig
-@@ -6,7 +6,7 @@ config SND_SOC_FSL_UTILS
- 
- menuconfig SND_POWERPC_SOC
- 	tristate "SoC Audio for Freescale PowerPC CPUs"
--	depends on FSL_SOC
-+	depends on FSL_SOC || PPC_MPC52xx
- 	help
- 	  Say Y or M if you want to add support for codecs attached to
- 	  the PowerPC CPUs.
--- 
-1.7.2.5
+- k
