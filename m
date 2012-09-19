@@ -1,19 +1,31 @@
-Return-Path: <B31939@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+Return-Path: <varuns@nmglablinux27.zin33.ap.freescale.net>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 86F832C007F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 17:23:40 +1000 (EST)
-From: Minghuan Lian <Minghuan.Lian@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/fsl-pci: use 'Header Type' to identify PCIE mode
-Date: Wed, 19 Sep 2012 15:23:38 +0800
-Message-ID: <1348039419-17798-1-git-send-email-Minghuan.Lian@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id CC5592C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 23:20:36 +1000 (EST)
+Received: from mail3-ch1 (localhost [127.0.0.1])	by mail3-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 5D0933C0165	for <linuxppc-dev@lists.ozlabs.org>; Wed,
+ 19 Sep 2012 13:20:27 +0000 (UTC)
+Received: from CH1EHSMHS031.bigfish.com (snatpool2.int.messaging.microsoft.com
+ [10.43.68.237])	by mail3-ch1.bigfish.com (Postfix) with ESMTP id
+ 456C64C005E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 13:20:24 +0000 (UTC)
+Received: from nmglablinux27.zin33.ap.freescale.net ([10.213.130.145])	by
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q8JDKJeO001866	for
+ <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 06:20:20 -0700
+From: <b16395@freescale.com>
+To: <iommu@lists.linux-foundation.org>, <joerg.roedel@amd.com>,
+ <linux-kernel@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [RFC][PATCH 0/3] iommu/fsl: Freescale PAMU driver and IOMMU API
+ implementation.
+Date: Wed, 19 Sep 2012 18:47:09 +0530
+Message-ID: <1348060632-12997-1-git-send-email-b16395@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
+Cc: Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,102 +35,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The original code uses 'Programming Interface' field to judge if PCIE is
-EP or RC mode, however, some latest silicons do not support this functionality.
-According to PCIE specification, 'Header Type' offset 0x0e is used to
-indicate header type, so change code to use 'Header Type' field to
-judge PCIE mode. Because FSL PCI controller does not support 'Header Type',
-patch still uses 'Programming Interface' to identify PCI mode.
+From: Varun Sethi <Varun.Sethi@freescale.com>
 
-Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
----
- arch/powerpc/sysdev/fsl_pci.c |   38 +++++++++++++++++++++++---------------
- 1 file changed, 23 insertions(+), 15 deletions(-)
+This patchset provides the Freescale PAMU (Peripheral Access Management Unit) driver
+and the corresponding IOMMU API implementation. PAMU is the IOMMU present on Freescale
+QorIQ platforms. PAMU can authorize memory access, remap the memory address, and remap 
+the I/O transaction type.
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index c37f461..43d30df 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -38,15 +38,15 @@ static int fsl_pcie_bus_fixup, is_mpc83xx_pci;
- 
- static void __devinit quirk_fsl_pcie_header(struct pci_dev *dev)
- {
--	u8 progif;
-+	u8 hdr_type;
- 
- 	/* if we aren't a PCIe don't bother */
- 	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
- 		return;
- 
- 	/* if we aren't in host mode don't bother */
--	pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
--	if (progif & 0x1)
-+	pci_read_config_byte(dev, PCI_HEADER_TYPE, &hdr_type);
-+	if ((hdr_type & 0x7f) != PCI_HEADER_TYPE_BRIDGE)
- 		return;
- 
- 	dev->class = PCI_CLASS_BRIDGE_PCI << 8;
-@@ -425,7 +425,7 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 	struct pci_controller *hose;
- 	struct resource rsrc;
- 	const int *bus_range;
--	u8 progif;
-+	u8 hdr_type, progif;
- 
- 	if (!of_device_is_available(dev)) {
- 		pr_warning("%s: disabled\n", dev->full_name);
-@@ -457,25 +457,24 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
- 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
- 
--	early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
--	if ((progif & 1) == 1) {
--		/* unmap cfg_data & cfg_addr separately if not on same page */
--		if (((unsigned long)hose->cfg_data & PAGE_MASK) !=
--		    ((unsigned long)hose->cfg_addr & PAGE_MASK))
--			iounmap(hose->cfg_data);
--		iounmap(hose->cfg_addr);
--		pcibios_free_controller(hose);
--		return -ENODEV;
--	}
--
- 	setup_pci_cmd(hose);
- 
- 	/* check PCI express link status */
- 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
-+		/* For PCIE read HEADER_TYPE to identify controler mode */
-+		early_read_config_byte(hose, 0, 0, PCI_HEADER_TYPE, &hdr_type);
-+		if ((hdr_type & 0x7f) != PCI_HEADER_TYPE_BRIDGE)
-+			goto no_bridge;
-+
- 		hose->indirect_type |= PPC_INDIRECT_TYPE_EXT_REG |
- 			PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
- 		if (fsl_pcie_check_link(hose))
- 			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
-+	} else {
-+		/* For PCI read PROG to identify controller mode */
-+		early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
-+		if ((progif & 1) == 1)
-+			goto no_bridge;
- 	}
- 
- 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
-@@ -494,6 +493,15 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
- 	setup_pci_atmu(hose, &rsrc);
- 
- 	return 0;
-+
-+no_bridge:
-+	/* unmap cfg_data & cfg_addr separately if not on same page */
-+	if (((unsigned long)hose->cfg_data & PAGE_MASK) !=
-+	    ((unsigned long)hose->cfg_addr & PAGE_MASK))
-+		iounmap(hose->cfg_data);
-+	iounmap(hose->cfg_addr);
-+	pcibios_free_controller(hose);
-+	return -ENODEV;
- }
- #endif /* CONFIG_FSL_SOC_BOOKE || CONFIG_PPC_86xx */
- 
+This set consists of the following patches:
+1. Addition of new field in the device (powerpc) archdata structure for storing iommu domain information
+   pointer. This pointer is stored when the device is attached to a particular iommu domain.
+2. Addition of domain attributes required by the PAMU driver IOMMU API.
+3. PAMU driver and IOMMU API implementation.
+
+Varun Sethi (3):
+  Store iommu domain information pointer in archdata.
+  Add iommu domain attributes required by fsl PAMU driver.
+  FSL PAMU driver and IOMMU API implementation.
+
+ arch/powerpc/include/asm/device.h |    4 +
+ drivers/iommu/Kconfig             |    7 +
+ drivers/iommu/Makefile            |    1 +
+ drivers/iommu/fsl_pamu.c          | 1033 +++++++++++++++++++++++++++++++++++++
+ drivers/iommu/fsl_pamu.h          |  377 ++++++++++++++
+ drivers/iommu/fsl_pamu_domain.c   |  990 +++++++++++++++++++++++++++++++++++
+ drivers/iommu/fsl_pamu_domain.h   |   94 ++++
+ drivers/iommu/fsl_pamu_proto.h    |   49 ++
+ include/linux/iommu.h             |   30 ++
+ 9 files changed, 2585 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/iommu/fsl_pamu.c
+ create mode 100644 drivers/iommu/fsl_pamu.h
+ create mode 100644 drivers/iommu/fsl_pamu_domain.c
+ create mode 100644 drivers/iommu/fsl_pamu_domain.h
+ create mode 100644 drivers/iommu/fsl_pamu_proto.h
+
 -- 
-1.7.9.5
+1.7.4.1
