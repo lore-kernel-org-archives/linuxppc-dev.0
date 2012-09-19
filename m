@@ -1,24 +1,19 @@
-Return-Path: <B38951@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe005.messaging.microsoft.com [213.199.154.143])
+Return-Path: <B31939@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E2E142C007C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 17:10:19 +1000 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM support
-Date: Wed, 19 Sep 2012 07:10:07 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01AAA35A@039-SN1MPN1-002.039d.mgd.msft.net>
-References: <1347934234-18223-1-git-send-email-B38951@freescale.com>
- <86ADF4ED-B84C-4560-8781-D9FA4486D854@kernel.crashing.org>
-In-Reply-To: <86ADF4ED-B84C-4560-8781-D9FA4486D854@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 86F832C007F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Sep 2012 17:23:40 +1000 (EST)
+From: Minghuan Lian <Minghuan.Lian@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/fsl-pci: use 'Header Type' to identify PCIE mode
+Date: Wed, 19 Sep 2012 15:23:38 +0800
+Message-ID: <1348039419-17798-1-git-send-email-Minghuan.Lian@freescale.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+Content-Type: text/plain
+Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +23,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The original code uses 'Programming Interface' field to judge if PCIE is
+EP or RC mode, however, some latest silicons do not support this functionality.
+According to PCIE specification, 'Header Type' offset 0x0e is used to
+indicate header type, so change code to use 'Header Type' field to
+judge PCIE mode. Because FSL PCI controller does not support 'Header Type',
+patch still uses 'Programming Interface' to identify PCI mode.
 
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_pci.c |   38 +++++++++++++++++++++++---------------
+ 1 file changed, 23 insertions(+), 15 deletions(-)
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Tuesday, September 18, 2012 1:04 PM
-> To: Jia Hongtao-B38951
-> Cc: linuxppc-dev@lists.ozlabs.org; Li Yang-R58472; Wood Scott-B07421
-> Subject: Re: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM
-> support
->=20
->=20
-> On Sep 17, 2012, at 9:10 PM, Jia Hongtao wrote:
->=20
-> > Power supply for PCI inbound/outbound window registers is off when
-> > system go to deep-sleep state. We save the values of registers before
-> > suspend and restore to registers after resume.
-> >
-> > Signed-off-by: Jiang Yutang <b14898@freescale.com>
-> > Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> > Changes for V4:
-> > We just rebase the patch upon following patch:
-> > powerpc/fsl-pci: Unify pci/pcie initialization code
-> >
-> > arch/powerpc/include/asm/pci-bridge.h |    2 +-
-> > arch/powerpc/sysdev/fsl_pci.c         |  121
-> +++++++++++++++++++++++++++++++++
-> > 2 files changed, 122 insertions(+), 1 deletions(-)
->=20
-> Did you ever compare this to just re-parsing device tree method?
->=20
-> - k
-
-I tested the re-parsing way by using setup_pci_atmu() when resume.
-And I found out that re-parsing will *change* outbound IO translation
-address regitster.
-
-It seems that in the first bootup, after setup_atmu()
-pcibios_setup_phb_resources() may update hose->io_resource, but atmu
-is not updated according to the new hose->io_resource value.
-In resume from sleep setup_atmu() will reset atmu according to the
-new hose->io_resource value. So the setup_atmu() will cause different
-result on outbound IO register between first bootup and resume from
-sleep.
-
-So... There's a possibility that in the first bootup atmu is not setup
-properly.
-
-Anyway, if setup_pci_atmu() at resume is functionally right then re-parsing
-is a good way for PM. I also test the latency of re-parsing and save/restor=
-e,
-both way are acceptable.
-
-
-- Hongtao.
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index c37f461..43d30df 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -38,15 +38,15 @@ static int fsl_pcie_bus_fixup, is_mpc83xx_pci;
+ 
+ static void __devinit quirk_fsl_pcie_header(struct pci_dev *dev)
+ {
+-	u8 progif;
++	u8 hdr_type;
+ 
+ 	/* if we aren't a PCIe don't bother */
+ 	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
+ 		return;
+ 
+ 	/* if we aren't in host mode don't bother */
+-	pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
+-	if (progif & 0x1)
++	pci_read_config_byte(dev, PCI_HEADER_TYPE, &hdr_type);
++	if ((hdr_type & 0x7f) != PCI_HEADER_TYPE_BRIDGE)
+ 		return;
+ 
+ 	dev->class = PCI_CLASS_BRIDGE_PCI << 8;
+@@ -425,7 +425,7 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	struct pci_controller *hose;
+ 	struct resource rsrc;
+ 	const int *bus_range;
+-	u8 progif;
++	u8 hdr_type, progif;
+ 
+ 	if (!of_device_is_available(dev)) {
+ 		pr_warning("%s: disabled\n", dev->full_name);
+@@ -457,25 +457,24 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
+ 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
+ 
+-	early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
+-	if ((progif & 1) == 1) {
+-		/* unmap cfg_data & cfg_addr separately if not on same page */
+-		if (((unsigned long)hose->cfg_data & PAGE_MASK) !=
+-		    ((unsigned long)hose->cfg_addr & PAGE_MASK))
+-			iounmap(hose->cfg_data);
+-		iounmap(hose->cfg_addr);
+-		pcibios_free_controller(hose);
+-		return -ENODEV;
+-	}
+-
+ 	setup_pci_cmd(hose);
+ 
+ 	/* check PCI express link status */
+ 	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
++		/* For PCIE read HEADER_TYPE to identify controler mode */
++		early_read_config_byte(hose, 0, 0, PCI_HEADER_TYPE, &hdr_type);
++		if ((hdr_type & 0x7f) != PCI_HEADER_TYPE_BRIDGE)
++			goto no_bridge;
++
+ 		hose->indirect_type |= PPC_INDIRECT_TYPE_EXT_REG |
+ 			PPC_INDIRECT_TYPE_SURPRESS_PRIMARY_BUS;
+ 		if (fsl_pcie_check_link(hose))
+ 			hose->indirect_type |= PPC_INDIRECT_TYPE_NO_PCIE_LINK;
++	} else {
++		/* For PCI read PROG to identify controller mode */
++		early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
++		if ((progif & 1) == 1)
++			goto no_bridge;
+ 	}
+ 
+ 	printk(KERN_INFO "Found FSL PCI host bridge at 0x%016llx. "
+@@ -494,6 +493,15 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	setup_pci_atmu(hose, &rsrc);
+ 
+ 	return 0;
++
++no_bridge:
++	/* unmap cfg_data & cfg_addr separately if not on same page */
++	if (((unsigned long)hose->cfg_data & PAGE_MASK) !=
++	    ((unsigned long)hose->cfg_addr & PAGE_MASK))
++		iounmap(hose->cfg_data);
++	iounmap(hose->cfg_addr);
++	pcibios_free_controller(hose);
++	return -ENODEV;
+ }
+ #endif /* CONFIG_FSL_SOC_BOOKE || CONFIG_PPC_86xx */
+ 
+-- 
+1.7.9.5
