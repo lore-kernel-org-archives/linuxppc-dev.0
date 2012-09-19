@@ -1,23 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3AF232C0080
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 00:27:35 +1000 (EST)
-Subject: Re: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM support
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01AAA35A@039-SN1MPN1-002.039d.mgd.msft.net>
-Date: Wed, 19 Sep 2012 09:27:17 -0500
-Message-Id: <36119932-E4BF-4DF6-8D33-C9A832883272@kernel.crashing.org>
-References: <1347934234-18223-1-git-send-email-B38951@freescale.com>
- <86ADF4ED-B84C-4560-8781-D9FA4486D854@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01AAA35A@039-SN1MPN1-002.039d.mgd.msft.net>
-To: Jia Hongtao-B38951 <B38951@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
+Return-Path: <emillbrandt@dekaresearch.com>
+Received: from dekaexchange07.deka.local (mail.dekaresearch.com
+ [208.65.175.196]) (using TLSv1 with cipher RC4-MD5 (128/128 bits))
+ (Client CN "dekaexchange07", Issuer "dekaexchange07" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 860C92C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 00:34:35 +1000 (EST)
+From: Eric Millbrandt <emillbrandt@dekaresearch.com>
+To: 'Mark Brown' <broonie@opensource.wolfsonmicro.com>
+Date: Wed, 19 Sep 2012 10:35:45 -0400
+Subject: RE: [PATCH 5/7] ASoC: fsl: convert pcm030-audio-fabric to a
+ platform-driver
+Message-ID: <0A40042D85E7C84DB443060EC44B3FD3459868BABB@dekaexchange07.deka.local>
+References: <1347572596-37540-1-git-send-email-emillbrandt@dekaresearch.com>
+ <1347572596-37540-6-git-send-email-emillbrandt@dekaresearch.com>
+ <20120919030324.GO8832@opensource.wolfsonmicro.com>
+In-Reply-To: <20120919030324.GO8832@opensource.wolfsonmicro.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
+ Anatolij Gustschin <agust@denx.de>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+ Liam Girdwood <lrg@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,68 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 2012-09-18 Mark Brown wrote:
+> On Thu, Sep 13, 2012 at 05:43:14PM -0400, Eric Millbrandt wrote:
+>
+>> +static int __devexit pcm030_fabric_remove(struct platform_device *op)
+>> +{ + struct platform_device *pdev =3D platform_get_drvdata(op); +
+>> +    platform_device_unregister(pdev); + +   return 0; +}
+>
+> This seems really confused...  why is a platform device registering
+> another platform device?  Do you mean to convert to
+> snd_soc_register_card()?
+>
+That was an artifact of me splitting the changes to pcm030-audio-fabric.c
+into multiple patches.  I changed the driver to a platform device in this
+patch and converted to snd_soc_register_card() in the next patch.  I can
+merge the two patches back together if you think that is cleaner and
+easier to understand.
 
-On Sep 19, 2012, at 2:10 AM, Jia Hongtao-B38951 wrote:
+Thanks
+Eric
 
->=20
->=20
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Tuesday, September 18, 2012 1:04 PM
->> To: Jia Hongtao-B38951
->> Cc: linuxppc-dev@lists.ozlabs.org; Li Yang-R58472; Wood Scott-B07421
->> Subject: Re: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM
->> support
->>=20
->>=20
->> On Sep 17, 2012, at 9:10 PM, Jia Hongtao wrote:
->>=20
->>> Power supply for PCI inbound/outbound window registers is off when
->>> system go to deep-sleep state. We save the values of registers =
-before
->>> suspend and restore to registers after resume.
->>>=20
->>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
->>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
->>> Signed-off-by: Li Yang <leoli@freescale.com>
->>> ---
->>> Changes for V4:
->>> We just rebase the patch upon following patch:
->>> powerpc/fsl-pci: Unify pci/pcie initialization code
->>>=20
->>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
->>> arch/powerpc/sysdev/fsl_pci.c         |  121
->> +++++++++++++++++++++++++++++++++
->>> 2 files changed, 122 insertions(+), 1 deletions(-)
->>=20
->> Did you ever compare this to just re-parsing device tree method?
->>=20
->> - k
->=20
-> I tested the re-parsing way by using setup_pci_atmu() when resume.
-> And I found out that re-parsing will *change* outbound IO translation
-> address regitster.
->=20
-> It seems that in the first bootup, after setup_atmu()
-> pcibios_setup_phb_resources() may update hose->io_resource, but atmu
-> is not updated according to the new hose->io_resource value.
-> In resume from sleep setup_atmu() will reset atmu according to the
-> new hose->io_resource value. So the setup_atmu() will cause different
-> result on outbound IO register between first bootup and resume from
-> sleep.
->=20
-> So... There's a possibility that in the first bootup atmu is not setup
-> properly.
 
-Are you seeing this happen in your testing?  If so its a bug we need to =
-look at fixing.
+-DISCLAIMER: an automatically appended disclaimer may follow. By posting-
+-to a public e-mail mailing list I hereby grant permission to distribute-
+-and copy this message.-
 
->=20
-> Anyway, if setup_pci_atmu() at resume is functionally right then =
-re-parsing
-> is a good way for PM. I also test the latency of re-parsing and =
-save/restore,
-> both way are acceptable.
->=20
->=20
-> - Hongtao.
+This e-mail and the information, including any attachments, it contains are=
+ intended to be a confidential communication only to the person or entity t=
+o whom it is addressed and may contain information that is privileged. If t=
+he reader of this message is not the intended recipient, you are hereby not=
+ified that any dissemination, distribution or copying of this communication=
+ is strictly prohibited. If you have received this communication in error, =
+please immediately notify the sender and destroy the original message.
+
+Thank you.
+
+Please consider the environment before printing this email.
