@@ -1,29 +1,26 @@
-Return-Path: <B16395@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
+Return-Path: <B21989@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6E2D82C0091
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 19:46:46 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: RE: [RFC][PATCH 2/3] iommu/fsl: Add iommu domain attributes
- required by fsl PAMU driver.
-Date: Thu, 20 Sep 2012 09:46:32 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D1A49A2@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1348060632-12997-1-git-send-email-b16395@freescale.com>
- <1348060632-12997-3-git-send-email-b16395@freescale.com>
- <6B8A3365-C97E-4742-A0DD-D8FD6BA358EB@kernel.crashing.org>
- <1348099936.22800.21@snotra>
-In-Reply-To: <1348099936.22800.21@snotra>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 78C5B2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 20:15:01 +1000 (EST)
+From: Xie Shaohui-B21989 <B21989@freescale.com>
+To: Xie Shaohui-B21989 <B21989@freescale.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH][v2] powerpc/mm: using two zones for freescale 64 bit
+ kernel
+Date: Thu, 20 Sep 2012 10:14:50 +0000
+Message-ID: <ED492CCEAF882048BC2237DE806547C9079ED987@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1345805425-3829-1-git-send-email-Shaohui.Xie@freescale.com>
+ <9EADE983-F25D-41BC-8A04-E69A20BF68E3@kernel.crashing.org>
+ <1347233868.2385.128.camel@pasglop>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Hu Mingkai-B21284 <B21284@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Chen Yuanquan-B41889 <B41889@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,90 +30,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Thursday, September 20, 2012 5:42 AM
-> To: Kumar Gala
-> Cc: Sethi Varun-B16395; joerg.roedel@amd.com; iommu@lists.linux-
-> foundation.org; linuxppc-dev@lists.ozlabs.org; linux-
-> kernel@vger.kernel.org; Sethi Varun-B16395
-> Subject: Re: [RFC][PATCH 2/3] iommu/fsl: Add iommu domain attributes
-> required by fsl PAMU driver.
->=20
-> On 09/19/2012 08:52:27 AM, Kumar Gala wrote:
-> >
-> > On Sep 19, 2012, at 8:17 AM, <b16395@freescale.com>
-> > <b16395@freescale.com> wrote:
-> >
-> > > From: Varun Sethi <Varun.Sethi@freescale.com>
-> > >
-> > > Added the following domain attributes required by FSL PAMU driver:
-> > > 1. Subwindows field added to the iommu domain geometry attribute.
-> > > 2. Added new iommu stash attribute, which allows setting of the
-> > >   LIODN specific stash id parameter through IOMMU API.
-> > > 3. Added an attribute for enabling/disabling DMA to a particular
-> > >   memory window.
-> > >
-> > > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > > ---
-> > > include/linux/iommu.h |   30 ++++++++++++++++++++++++++++++
-> > > 1 files changed, 30 insertions(+), 0 deletions(-)
-> > >
-> > > diff --git a/include/linux/iommu.h b/include/linux/iommu.h index
-> > > 7e83370..eaa40c6 100644
-> > > --- a/include/linux/iommu.h
-> > > +++ b/include/linux/iommu.h
-> > > @@ -44,6 +44,28 @@ struct iommu_domain_geometry {
-> > > 	dma_addr_t aperture_start; /* First address that can be
-> > mapped    */
-> > > 	dma_addr_t aperture_end;   /* Last address that can be
-> > mapped     */
-> > > 	bool force_aperture;       /* DMA only allowed in mappable
-> > range? */
-> > > +
-> > > +	/* The subwindows field indicates number of DMA subwindows
-> > supported
-> > > +	 * by the geometry. Following is the interpretation of
-> > > +	 * values for this field:
-> > > +	 * 0 : This implies that the supported geometry size is 1 MB
-> > > +         * with each subwindow size being 4KB. Thus number of
-> > subwindows
-> > > +	 * being =3D 1MB/4KB =3D 256.
-> > > +	 * 1 : Only one DMA window i.e. no subwindows.
-> > > +	 * value other than 0 or 1 would indicate actual number of
-> > subwindows.
-> > > +	 */
-> > > +	u32 subwindows;
-> > > +};
-> > > +
-> > > +/* This attribute corresponds to IOMMUs capable of generating
-> > > + * a stash transaction. A stash transaction is typically a
-> > > + * hardware initiated prefetch of data from memory to cache.
-> > > + * This attribute allows configuring stashig specific parameters
-> > > + * in the IOMMU hardware.
-> > > + */
-> > > +struct iommu_stash_attribute {
-> > > +	u32 	cpu;	/* cpu number */
-> > > +	u32 	cache;	/* cache to stash to: L1,L2,L3 */
-> >
-> > seems like this should be enum instead of u32 for cache
-> >
-> > With enum being something like:
-> >
-> > enum iommu_attr_stash_cache {
-> > 	IOMMU_ATTR_CACHE_L1,
-> > 	IOMMU_ATTR_CACHE_L2,
-> > 	IOMMU_ATTR_CACHE_L3,
-> > };
->=20
-> Don't we want these structs to be usable via some VFIO ioctl?  In that
-> case they need to use fixed size types.
->=20
-Yes, this would be usable via vfio ioctl. But, then the caller should be
-aware of supported stash targets. May be I should add an interface for the =
-caller,
-to query supported stash targets.
-
--Varun
+PiA+IE9uIFRodSwgMjAxMi0wOC0zMCBhdCAxNTo0OSAtMDUwMCwgS3VtYXIgR2FsYSB3cm90ZToN
+Cj4gPiA+IE9uIEF1ZyAyNCwgMjAxMiwgYXQgNTo1MCBBTSwgU2hhb2h1aSBYaWUgd3JvdGU6DQo+
+ID4gPg0KPiA+ID4gPiBQb3dlclBDIHBsYXRmb3JtIG9ubHkgc3VwcG9ydHMgWk9ORV9ETUEgem9u
+ZSBmb3IgNjRiaXQga2VybmVsLCBzbw0KPiA+ID4gPiBhbGwgdGhlIG1lbW9yeSB3aWxsIGJlIHB1
+dCBpbnRvIHRoaXMgem9uZS4gSWYgdGhlIG1lbW9yeSBzaXplIGlzDQo+ID4gPiA+IGdyZWF0ZXIg
+dGhhbiB0aGUgZGV2aWNlJ3MgRE1BIGNhcGFiaWxpdHkgYW5kIGRldmljZSB1c2VzDQo+ID4gPiA+
+IGRtYV9hbGxvY19jb2hlcmVudCB0byBhbGxvY2F0ZSBtZW1vcnksIGl0IHdpbGwgZ2V0IGFuIGFk
+ZHJlc3MNCj4gPiA+ID4gd2hpY2ggaXMgb3ZlciB0aGUgZGV2aWNlJ3MgRE1BIGFkZHJlc3Npbmcs
+IHRoZSBkZXZpY2Ugd2lsbCBmYWlsLg0KPiA+ID4gPg0KPiA+ID4gPiBTbyB3ZSBzcGxpdCB0aGUg
+bWVtb3J5IHRvIHR3byB6b25lczogem9uZSBaT05FX0RNQTMyICYNCj4gPiA+ID4gWk9ORV9OT1JN
+QUwsIHNpbmNlIHdlIGFscmVhZHkgYWxsb2NhdGUgUENJQ1NSQkFSL1BFWENTUkJBUiByaWdodA0K
+PiA+ID4gPiBiZWxvdyB0aGUgNEcgYm91bmRhcnkgKGlmIHRoZSBsb3dlc3QgUENJIGFkZHJlc3Mg
+aXMgYWJvdmUgNEcpLCBzbw0KPiA+ID4gPiB3ZSBjb25zdHJhaW4gdGhlIERNQSB6b25lIFpPTkVf
+RE1BMzIgdG8gMkdCLCBhbHNvLCB3ZSBjbGVhciBmbGFnDQo+ID4gPiA+IF9fR0ZQX0RNQSAmDQo+
+ID4gPiA+IF9fR0ZQX0RNQTMyIGFuZCBzZXQgX19HRlBfRE1BMzIgb25seSBpZiB0aGUgZGV2aWNl
+J3MgZG1hX21hc2sgPA0KPiA+ID4gPiB0b3RhbCBtZW1vcnkgc2l6ZS4gQnkgZG9pbmcgdGhpcywg
+ZGV2aWNlcyB3aGljaCBjYW5ub3QgRE1BIGFsbCB0aGUNCj4gPiA+ID4gbWVtb3J5IHdpbGwgYmUg
+bGltaXRlZCB0byBaT05FX0RNQTMyLCBidXQgZGV2aWNlcyB3aGljaCBjYW4gRE1BDQo+ID4gPiA+
+IGFsbA0KPiA+IHRoZSBtZW1vcnkgd2lsbCBub3QgYmUgYWZmZWN0ZWQgYnkgdGhpcyBsaW1pdGF0
+aW9uLg0KPiA+ID4gPg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBTaGFvaHVpIFhpZSA8U2hhb2h1
+aS5YaWVAZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogTWluZ2thaSBIdSA8
+TWluZ2thaS5odUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBDaGVuIFl1
+YW5xdWFuIDxCNDE4ODlAZnJlZXNjYWxlLmNvbT4NCj4gPiA+ID4gLS0tDQo+ID4gPiA+IGNoYW5n
+ZXMgZm9yIHYyOg0KPiA+ID4gPiAxLiB1c2UgYSBjb25maWcgb3B0aW9uIGZvciB1c2luZyB0d28g
+em9uZXMgKFpPTkVfRE1BMzIgJg0KPiA+ID4gPiBaT05FX05PUk1BTCkgaW4gZnJlZXNjYWxlIDY0
+IGJpdCBrZXJuZWwuDQo+ID4gPiA+DQo+ID4NCj4gPiBUaGVyZSBtdXN0IGhhdmUgYmVlbiBhIG1p
+c3VuZGVyc3RhbmRpbmcuIEkgdGhpbmsgdGhpcyBzaG91bGQgYmUgYQ0KPiA+IHJ1bnRpbWUgY2hv
+aWNlLCBwb3NzaWJseSBieSB0aGUgcGxhdGZvcm0gY29kZS4gQW55IHJlYXNvbiB0aGF0IGNhbid0
+IGJlDQo+IGRvbmUgPw0KPiA+DQo+IFtTLkhdIERvIHlvdSBtZWFuIHRoaXM6DQo+IA0KPiBwaHlz
+X2FkZHJfdCBwbGF0Zm9ybV9kbWFfc2l6ZSAobWF5YmUgYSBkZWZhdWx0IHZhbHVlIHNob3VsZCBi
+ZSB1c2VkLCB0aGVuDQo+IHBsYXRmb3JtIGNvZGUgd2lsbCBjaGFuZ2UgaXQpDQo+IA0KPiBpZiAo
+dG9wX29mX3JhbSA+IHBsYXRmb3JtX2RtYV9zaXplKQ0KPiAJbWF4X3pvbmVfcGZuc1taT05FX0RN
+QV0gPSBwbGF0Zm9ybV9kbWFfc2l6ZSA+PiBQQUdFX1NISUZUOyBlbHNlDQo+IAltYXhfem9uZV9w
+Zm5zW1pPTkVfRE1BXSA9IHRvcF9vZl9yYW0gPj4gUEFHRV9TSElGVDsNCj4gDQo+IG1heF96b25l
+X3BmbnNbWk9ORV9OT1JNQUxdID0gdG9wX29mX3JhbSA+PiBQQUdFX1NISUZUOw0KPiANCj4gPiBB
+bHNvIGhvdyBkb2VzIEludGVsIGRvIGl0ID8NCj4gW1MuSF0gYmVsb3cgYXJlIGNvZGVzIGluIElu
+dGVsOg0KPiANCj4gNDAzIHZvaWQgX19pbml0IHpvbmVfc2l6ZXNfaW5pdCh2b2lkKQ0KPiA0MDQg
+ew0KPiA0MDUgICAgICAgICB1bnNpZ25lZCBsb25nIG1heF96b25lX3BmbnNbTUFYX05SX1pPTkVT
+XTsNCj4gNDA2DQo+IDQwNyAgICAgICAgIG1lbXNldChtYXhfem9uZV9wZm5zLCAwLCBzaXplb2Yo
+bWF4X3pvbmVfcGZucykpOw0KPiA0MDgNCj4gNDA5ICNpZmRlZiBDT05GSUdfWk9ORV9ETUENCj4g
+NDEwICAgICAgICAgbWF4X3pvbmVfcGZuc1taT05FX0RNQV0gICAgICAgICA9IE1BWF9ETUFfUEZO
+Ow0KPiA0MTEgI2VuZGlmDQo+IDQxMiAjaWZkZWYgQ09ORklHX1pPTkVfRE1BMzINCj4gNDEzICAg
+ICAgICAgbWF4X3pvbmVfcGZuc1taT05FX0RNQTMyXSAgICAgICA9IE1BWF9ETUEzMl9QRk47DQo+
+IDQxNCAjZW5kaWYNCj4gNDE1ICAgICAgICAgbWF4X3pvbmVfcGZuc1taT05FX05PUk1BTF0gICAg
+ICA9IG1heF9sb3dfcGZuOw0KPiA0MTYgI2lmZGVmIENPTkZJR19ISUdITUVNDQo+IDQxNyAgICAg
+ICAgIG1heF96b25lX3BmbnNbWk9ORV9ISUdITUVNXSAgICAgPSBtYXhfcGZuOw0KPiA0MTggI2Vu
+ZGlmDQo+IDQxOQ0KPiANCj4gRm9yIHg4Nl82NCwgdGhlcmUgaXMgbm8gQ09ORklHX0hJR0hNRU0s
+IHNvIHRoZXJlIHdpbGwgYmUgdGhyZWUgem9uZXM6DQo+IFpPTkVfRE1BL1pPTkVfRE1BMzIvWk9O
+RV9OT1JNQUwuDQo+IA0KW1MuSF0gSGVsbG8sIEJlbiwNCg0KSSBoYXZlIHNvbWUgcXVlc3Rpb25z
+LCB0aG91Z2ggSSdtIHN0aWxsIGV4cGVjdGluZyB5b3VyIGNvbW1lbnRzLg0KUFBDIGRvZXMgbm90
+IGhhdmUgWk9ORV9ETUEzMiBieSBkZWZhdWx0LCBpZiB3ZSB3YW50IHRvIHVzZSBpdCwgd2UgbmVl
+ZCB0byBhZGQgImNvbmZpZyBaT05FX0RNQTMyIiBpbiBLY29uZmlnIGZpcnN0Lg0KSWYgc2V0dGlu
+ZyBtdWx0aXBsZSB6b25lcyB3aXRob3V0IFpPTkVfRE1BLCBrbWFsbG9jIGluICJpbmNsdWRlL2xp
+bnV4L3NsYWJfZGVmLmgiIHdpbGwgZmFpbCBpZiBpdCB1c2VzIGZsYWcgR0ZQX0RNQS4NCkZvciB0
+aGUgcnVudGltZSBjaG9pY2UgaW4gNjQtYml0IGtlcm5lbCwgd2hhdCBleGFjdGx5IG11bHRpcGxl
+IHpvbmVzIHNob3VsZCBiZSB1c2VkPw0KIlpPTkVfRE1BICYgWk9ORV9OT1JNQUwiIG9yICJaT05F
+X0RNQSAmIFpPTkVfRE1BMzIgJiBaT05FX05PUk1BTCI/DQpUaGVuIHdoYXQgdGhlIHNpemUgc2hv
+dWxkIGJlIHNldCBmb3IgdGhlbSByZXNwZWN0aXZlbHk/DQoNClBsZWFzZSBjb21tZW50LCBUaGFu
+a3MhDQoNCg0KQmVzdCBSZWdhcmRzLCANClNoYW9odWkgWGllDQo=
