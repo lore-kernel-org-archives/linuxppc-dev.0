@@ -1,25 +1,21 @@
-Return-Path: <broonie@opensource.wolfsonmicro.com>
-Received: from opensource.wolfsonmicro.com (opensource.wolfsonmicro.com
- [80.75.67.52])
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DF9742C0081
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 12:04:29 +1000 (EST)
-Date: Wed, 19 Sep 2012 21:30:37 -0400
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Eric Millbrandt <emillbrandt@dekaresearch.com>
-Subject: Re: [PATCH v2 1/7] ASoC: fsl: add PPC_MPC52xx dependency to
- SND_POWERPC_SOC
-Message-ID: <20120920013036.GE17666@opensource.wolfsonmicro.com>
-References: <1348066285-87741-1-git-send-email-emillbrandt@dekaresearch.com>
- <20120919204730.GB12297@opensource.wolfsonmicro.com>
- <0A40042D85E7C84DB443060EC44B3FD3459868BAC0@dekaexchange07.deka.local>
-MIME-Version: 1.0
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1D8C02C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 19:01:57 +1000 (EST)
+Subject: Re: [PATCH] powerpc-kvm: fixing page alignment for TCE
+Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <0A40042D85E7C84DB443060EC44B3FD3459868BAC0@dekaexchange07.deka.local>
-Cc: "alsa-devel@alsa-project.org" <alsa-devel@alsa-project.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Liam Girdwood <lrg@ti.com>
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1346744187-31226-1-git-send-email-aik@ozlabs.ru>
+Date: Thu, 20 Sep 2012 11:01:46 +0200
+Message-Id: <429A2CD3-5DEB-4C5D-A204-E06B1C0B6F88@suse.de>
+References: <1346744035-31154-1-git-send-email-aik@ozlabs.ru>
+ <1346744187-31226-1-git-send-email-aik@ozlabs.ru>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ kvm-ppc@vger.kernel.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,13 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Sep 19, 2012 at 05:07:34PM -0400, Eric Millbrandt wrote:
-> On 2012-09-19 Mark Brown wrote:
 
-> > Patches 2 to 7 appear to have gone AWOL?
+On 04.09.2012, at 09:36, Alexey Kardashevskiy wrote:
 
-> No changes to 2 through 7, so I didn't repost the full series.
+> From: Paul Mackerras <paulus@samba.org>
+>=20
+> TODO: ask Paul to make a proper message.
 
-Then this isn't patch 1/7, it's just a patch.  The fact that you may
-have posted some patches earlier isn't relevant and creates confusion
-like this.
+TODO?
+
+Also, Ben or Paul, please ack if you think it's correct.
+
+
+Alex
+
+>=20
+> This is the fix for a host kernel compiled with a page size
+> other than 4K (TCE page size). In the case of a 64K page size,
+> the host used to lose address bits in hpte_rpn().
+> The patch fixes it.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> arch/powerpc/kvm/book3s_64_mmu_hv.c |    9 ++++-----
+> 1 file changed, 4 insertions(+), 5 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c =
+b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> index 80a5775..a41f11b 100644
+> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+> @@ -503,7 +503,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run =
+*run, struct kvm_vcpu *vcpu,
+> 	struct kvm *kvm =3D vcpu->kvm;
+> 	unsigned long *hptep, hpte[3], r;
+> 	unsigned long mmu_seq, psize, pte_size;
+> -	unsigned long gfn, hva, pfn;
+> +	unsigned long gpa, gfn, hva, pfn;
+> 	struct kvm_memory_slot *memslot;
+> 	unsigned long *rmap;
+> 	struct revmap_entry *rev;
+> @@ -541,15 +541,14 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run =
+*run, struct kvm_vcpu *vcpu,
+>=20
+> 	/* Translate the logical address and get the page */
+> 	psize =3D hpte_page_size(hpte[0], r);
+> -	gfn =3D hpte_rpn(r, psize);
+> +	gpa =3D (r & HPTE_R_RPN & ~(psize - 1)) | (ea & (psize - 1));
+> +	gfn =3D gpa >> PAGE_SHIFT;
+> 	memslot =3D gfn_to_memslot(kvm, gfn);
+>=20
+> 	/* No memslot means it's an emulated MMIO region */
+> -	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID)) {
+> -		unsigned long gpa =3D (gfn << PAGE_SHIFT) | (ea & (psize =
+- 1));
+> +	if (!memslot || (memslot->flags & KVM_MEMSLOT_INVALID))
+> 		return kvmppc_hv_emulate_mmio(run, vcpu, gpa, ea,
+> 					      dsisr & DSISR_ISSTORE);
+> -	}
+>=20
+> 	if (!kvm->arch.using_mmu_notifiers)
+> 		return -EFAULT;		/* should never get here */
+> --=20
+> 1.7.10.4
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
