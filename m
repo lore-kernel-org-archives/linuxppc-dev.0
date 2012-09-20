@@ -1,25 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id A82852C007B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 08:28:55 +1000 (EST)
-Date: Fri, 21 Sep 2012 08:28:49 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net [149.20.54.216])
+ by ozlabs.org (Postfix) with ESMTP id 27FFF2C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 08:53:22 +1000 (EST)
+Date: Thu, 20 Sep 2012 18:53:15 -0400 (EDT)
+Message-Id: <20120920.185315.576326460331670020.davem@davemloft.net>
+To: benh@kernel.crashing.org
 Subject: Re: linux-next: build failure after merge of the final tree
  (net-next tree related)
-Message-Id: <20120921082849.693919e9a04431aed9e2461b@canb.auug.org.au>
-In-Reply-To: <20120920.164558.2281417114805373564.davem@davemloft.net>
-References: <20120920173622.2aa7209cd241a3945f4384d4@canb.auug.org.au>
- <20120920091013.GV15548@intel.com>
- <20120920.164558.2281417114805373564.davem@davemloft.net>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1348179764.1132.35.camel@pasglop>
+References: <20120920.164558.2281417114805373564.davem@davemloft.net>
+ <20120921081531.67db8a7d0ac1b35426b22c45@canb.auug.org.au>
+ <1348179764.1132.35.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__21_Sep_2012_08_28_49_+1000_I41RF1v=v_nKmmYs"
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, mika.westerberg@linux.intel.com
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, mika.westerberg@linux.intel.com,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__21_Sep_2012_08_28_49_+1000_I41RF1v=v_nKmmYs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 21 Sep 2012 08:22:44 +1000
 
-Hi Dave,
+> Hrm, that's ancient gunk, I'll have to dig. We potentially can support
+> ISA devices DMA'ing from an ISA bridge... but via the iommu, which means
+> isa_virt_to_bus is a non-starter.
+> 
+> But then, do we really care ? IE. Is there single device that actually
+> requires ISA_DMA_API and that is expected to work on any currently
+> supported powerpc hw ? :-)
+> 
+> We don't even support PReP anymore, so that leaves us with what ?
 
-On Thu, 20 Sep 2012 16:45:58 -0400 (EDT) David Miller <davem@davemloft.net>=
- wrote:
->
-> I think the powerpc port is at fault here.
->=20
-> Part of being able to advertise ISA_DMA_API is providing isa_virt_to_bus(=
-).
+ISA_DMA_API implies a fixed window of addresses which are <= 32-bits
+on the bus, which is a hardware requirement of these devices.
 
-Not disagreeing, but it would be nice if this was documented somewhere
-(maybe in Documentation/DMA-ISA-LPC.txt).  We have not had this problem
-before because all the other uses of isa_virt_to_bus() are in drivers
-that depend on X86 or ARM or ISA or EISA.
+isa_virt_to_bus() goes to that physical address, and the expection is
+that you use GFP_DMA and thus the physical addresses fit inside of
+an unsigned int.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+isa_virt_to_bus() basically amounts to a virt-->phys plus a cast.
 
---Signature=_Fri__21_Sep_2012_08_28_49_+1000_I41RF1v=v_nKmmYs
-Content-Type: application/pgp-signature
+> Anybody has an objection to turning ISA_DMA_API off ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJQW5ihAAoJEECxmPOUX5FEdHsQAKA/SCls+zDBV1Q3Pw8KTo5U
-gawnFuCNNo5hQIfhXoY/o50OqbEp2An4CMAgTb8Ox/KoAq1Wk31Zn5thk7zdDT45
-kGKOdVnlrDzqNd8zDwG8Jfbkvf+fZ3knpjblm1ySxBu48hQDbHI+ZEHjgyFKguRa
-LP1vCs9zKN4kil4f1V2CPMpzehoFoHEz1LHLRocStIKeMQjm5w3ZlEolzn/MUOtT
-7nBDSFpsWNwXlYcZh6P+ln7hMW5402ddu93A5hWzhzdddplXulD8K10DZBIP85zB
-fO7kmcy01TZ5v83vy4E2hlX++EhrBPtGN08N3r6fMxT1Yf9fCxz0Ar+bI/vhOGpO
-v0juToNesc/QTxm5sWUdSxUP6qrZFUtM426TUsslLbDsuYvX/gY+I/J38dxly8Nu
-jr1I0FLY1ERvBFt0qfWn7w+ZNF2dIFQY3dSf0cC7jFXa+2ql+XNY7T1uziZWBj2X
-n0B2eUkSsvmB06logXlyI9opR0tJfT4udgVquhv1YmtWCZOiAbbbJgRdwEgU/2BO
-0AegZam+50jksHtIAjBqHV8sRKQSQjyJI9isNGd7i7Asp6vN7mCYqDfwtNSBCa5A
-IAM3jyIkB1uP23nmFXXNlh2jwO015XJtO+T6ahBIuxTGz4oRo39x8AbSgCySYT9x
-QQ+1keznyzq2iOLkDfGo
-=9Gc5
------END PGP SIGNATURE-----
-
---Signature=_Fri__21_Sep_2012_08_28_49_+1000_I41RF1v=v_nKmmYs--
+Then you can remove all of the DMA api stuff in powerpc's asm/dma.h
+but some of it looks like it might be in use.
