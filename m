@@ -1,26 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id C3E8E2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 08:15:39 +1000 (EST)
-Date: Fri, 21 Sep 2012 08:15:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DE7B02C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 08:23:04 +1000 (EST)
+Message-ID: <1348179764.1132.35.camel@pasglop>
 Subject: Re: linux-next: build failure after merge of the final tree
  (net-next tree related)
-Message-Id: <20120921081531.67db8a7d0ac1b35426b22c45@canb.auug.org.au>
-In-Reply-To: <20120920.164558.2281417114805373564.davem@davemloft.net>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Fri, 21 Sep 2012 08:22:44 +1000
+In-Reply-To: <20120921081531.67db8a7d0ac1b35426b22c45@canb.auug.org.au>
 References: <20120920173622.2aa7209cd241a3945f4384d4@canb.auug.org.au>
  <20120920091013.GV15548@intel.com>
  <20120920.164558.2281417114805373564.davem@davemloft.net>
+ <20120921081531.67db8a7d0ac1b35426b22c45@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__21_Sep_2012_08_15_31_+1000_T+/kma/tBQb0KTQc"
-Cc: netdev@vger.kernel.org, linux-next@vger.kernel.org,
- mika.westerberg@linux.intel.com, David Miller <davem@davemloft.net>,
- linux-kernel@vger.kernel.org
+Cc: mika.westerberg@linux.intel.com, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,70 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__21_Sep_2012_08_15_31_+1000_T+/kma/tBQb0KTQc
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-[Just bring this to the attention of the PowerPC folks ...]
+> > I think the powerpc port is at fault here.
+> > 
+> > Part of being able to advertise ISA_DMA_API is providing isa_virt_to_bus().
 
-On Thu, 20 Sep 2012 16:45:58 -0400 (EDT) David Miller <davem@davemloft.net>=
- wrote:
->
-> From: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Date: Thu, 20 Sep 2012 12:10:14 +0300
->=20
-> > On Thu, Sep 20, 2012 at 05:36:22PM +1000, Stephen Rothwell wrote:
-> >> Hi all,
-> >>=20
-> >> After merging the final tree, today's linux-next build (powerpc
-> >> allyesconfig) failed like this:
-> >>=20
-> >> drivers/net/ethernet/i825xx/znet.c: In function 'hardware_init':
-> >> drivers/net/ethernet/i825xx/znet.c:868:2: error: implicit declaration =
-of function 'isa_virt_to_bus' [-Werror=3Dimplicit-function-declaration]
-> >>=20
-> >> Caused by commit 1d3ff76759b7 ("i825xx: znet: fix compiler warnings wh=
-en
-> >> building a 64-bit kernel").  Is there some Kconfig dependency missing =
-(CONFIG_ISA)?
-> >=20
-> > If we make it dependent on CONFIG_ISA then the driver cannot be built w=
-ith
-> > 64-bit kernel. Then again is there someone running 64-bit kernel on Zen=
-ith
-> > Z-note notebook? From the pictures it looks like very ancient "laptop".
-> >=20
-> > An alternative is to make it depend on X86 like this:
->=20
-> I think the powerpc port is at fault here.
->=20
-> Part of being able to advertise ISA_DMA_API is providing isa_virt_to_bus(=
-).
+Hrm, that's ancient gunk, I'll have to dig. We potentially can support
+ISA devices DMA'ing from an ISA bridge... but via the iommu, which means
+isa_virt_to_bus is a non-starter.
 
---=20
+But then, do we really care ? IE. Is there single device that actually
+requires ISA_DMA_API and that is expected to work on any currently
+supported powerpc hw ? :-)
+
+We don't even support PReP anymore, so that leaves us with what ?
+
+Anybody has an objection to turning ISA_DMA_API off ?
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Fri__21_Sep_2012_08_15_31_+1000_T+/kma/tBQb0KTQc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJQW5WDAAoJEECxmPOUX5FEfUAP+wVDkkqTUK3PovWOuIcr4Rfm
-e8QLESS1lmjcsG0chwzDedjRfvGsI3F7s5lEqfCYunbBpN8iYMvmNdgsG81UKeO0
-BccfUKFazdNzwwTYI6ylueJ3iAokuxfgoEIYDYitaXx/xiWEcPc1Sm6O+uZgN6o4
-3riifaSjuUjPADLPaN21HqPVBWQwWU78lVLChaS4hazWNk4uXBxmLgFQeidzBW9r
-LDJple2qC5WCv40hzFH4Y+DAnFyUxKowjg9Zj4I2YXKkvNT/2sSYpLIFhlWwaVWC
-kSvNxa9It2KaUa5Q/qMzI8w2rJ/OUG7GeEQCFB2fcVqrK2d0tUbbELvxzf96SPzF
-ScwNfxJZZg/FOhVa1VLsrQ/qb6wYVal7aO/KMH9vnutiBxciIQ1UCRUN4s0Ji9Qq
-0uH2LwA1tFdVELQVn7lpB6grrR5DlZhr3l8XDfn7MNEUEnNeCnMQ8qNbgfgn0YMf
-2fcFg44aZ75Upq3Pl1e3p1Utl3qcnbN5+OkJaFDwXRku2rBZwuxgQLQ3PB39jUG1
-zCcrchLm0QZcvPNSlvyK8KYRMg5RegL9tj6VCGwPdbSzOa1pSxCtQjbvGVG2Noj3
-ytP+Jyjw1fYbnkt+YtO/D4YBIkFI4FTtJausblpOIsXJqqM13I3G/VSCZYIZbtVG
-26umyeOvJA0YGvqatENU
-=Rw0G
------END PGP SIGNATURE-----
-
---Signature=_Fri__21_Sep_2012_08_15_31_+1000_T+/kma/tBQb0KTQc--
+Ben.
