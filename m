@@ -1,22 +1,33 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net [149.20.54.216])
- by ozlabs.org (Postfix) with ESMTP id 27FFF2C007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 08:53:22 +1000 (EST)
-Date: Thu, 20 Sep 2012 18:53:15 -0400 (EDT)
-Message-Id: <20120920.185315.576326460331670020.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: linux-next: build failure after merge of the final tree
- (net-next tree related)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1348179764.1132.35.camel@pasglop>
-References: <20120920.164558.2281417114805373564.davem@davemloft.net>
- <20120921081531.67db8a7d0ac1b35426b22c45@canb.auug.org.au>
- <1348179764.1132.35.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, mika.westerberg@linux.intel.com,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e2.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CCAC22C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 10:37:28 +1000 (EST)
+Received: from /spool/local
+ by e2.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Thu, 20 Sep 2012 20:37:25 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8L0bNQq166104
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 20:37:23 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8L0bM1E023599
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Sep 2012 21:37:23 -0300
+Date: Thu, 20 Sep 2012 17:38:05 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Use pmc_overflow() to detect rolled back events
+Message-ID: <20120921003805.GA4507@us.ibm.com>
+References: <20120808010719.GA32730@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120808010719.GA32730@us.ibm.com>
+Cc: Maynard Johnson <mpjohn@us.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,29 +37,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 21 Sep 2012 08:22:44 +1000
 
-> Hrm, that's ancient gunk, I'll have to dig. We potentially can support
-> ISA devices DMA'ing from an ISA bridge... but via the iommu, which means
-> isa_virt_to_bus is a non-starter.
-> 
-> But then, do we really care ? IE. Is there single device that actually
-> requires ISA_DMA_API and that is expected to work on any currently
-> supported powerpc hw ? :-)
-> 
-> We don't even support PReP anymore, so that leaves us with what ?
+Sukadev Bhattiprolu [sukadev@linux.vnet.ibm.com] wrote:
+| 
+| >From 21e9d1775f0c6f37a39e5d682ff74693fa9a4004 Mon Sep 17 00:00:00 2001
+| From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+| Date: Tue, 7 Aug 2012 17:53:24 -0700
+| Subject: [PATCH] Use pmc_overflow to detect rolled back events.
+| 
+| For certain speculative events on Power7, 'perf stat' reports far higher
+| event count than 'perf record' for the same event.
+| 
+| As described in following commit, a performance monitor exception is raised
+| even when the the performance events are rolled back.
+| 
+|         commit 0837e3242c73566fc1c0196b4ec61779c25ffc93
+|         Author: Anton Blanchard <anton@samba.org>
+|         Date:   Wed Mar 9 14:38:42 2011 +1100
+| 
+| perf_event_interrupt() records an event only when an overflow occurs. But
+| this check for overflow is a simple 'if (val < 0)'.
+| 
+| Because the events are rolled back, this check for overflow fails and the
+| event is not recorded. perf_event_interrupt() later uses pmc_overflow() to
+| detect the overflow and resets the counters and the events are lost completely.
+| 
+| To properly detect the overflow of rolled back events, use pmc_overflow()
+| even when recording events.
 
-ISA_DMA_API implies a fixed window of addresses which are <= 32-bits
-on the bus, which is a hardware requirement of these devices.
+Ben,
 
-isa_virt_to_bus() goes to that physical address, and the expection is
-that you use GFP_DMA and thus the physical addresses fit inside of
-an unsigned int.
+Sorry for the noise, but please revert this patch (following commit):
 
-isa_virt_to_bus() basically amounts to a virt-->phys plus a cast.
+	commit 813312110bede27bffd082c25cd31730bd567beb
+	Author: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+	Date:   Tue Aug 7 15:07:19 2012 +0000
 
-> Anybody has an objection to turning ISA_DMA_API off ?
+While it does fix the problem described above and works for the limit-pmc
+events, it seems to break on Power7 for other events and when the sample
+period is low.
 
-Then you can remove all of the DMA api stuff in powerpc's asm/dma.h
-but some of it looks like it might be in use.
+I am still investigating the problem and will follow up with a separate
+mail.
+
+Sukadev
