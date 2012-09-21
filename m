@@ -1,33 +1,20 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e6.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B5A472C0080
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 20:58:39 +1000 (EST)
-Received: from /spool/local
- by e6.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Fri, 21 Sep 2012 06:58:34 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8LAwUMV37158926
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 06:58:30 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8LAwToU024462
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 07:58:30 -0300
-Date: Fri, 21 Sep 2012 18:58:26 +0800
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] arch/powerpc: Don't release eeh_mutex in eeh_phb_pe_get
-Message-ID: <20120921105826.GA31029@shangw.(null)>
-References: <1348219786-31221-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <zinosat@gmail.com>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C8FD72C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 21:33:42 +1000 (EST)
+Received: by pbbro8 with SMTP id ro8so7331676pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 04:33:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1348219786-31221-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, shangw@linux.vnet.ibm.com
-Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
+Sender: zinosat@gmail.com
+Date: Fri, 21 Sep 2012 13:33:40 +0200
+Message-ID: <CAKpAL0m2XqzuYsG4-yj3WfZN88PjQXMUxFtXpx-sjsWA_Q4EUQ@mail.gmail.com>
+Subject: PCI device not working
+From: Davide Viti <zinosat@tiscali.it>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=047d7b339c838adf9704ca349c77
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,63 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Sep 21, 2012 at 02:59:46PM +0530, Aneesh Kumar K.V wrote:
->From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
->
->=====================================
->[ BUG: bad unlock balance detected! ]
->3.6.0-rc5-00338-gcaa1d63-dirty #6 Not tainted
->-------------------------------------
->swapper/0/1 is trying to release lock (eeh_mutex) at:
->[<c000000000058218>] .eeh_add_to_parent_pe+0x318/0x410
->but there are no more locks to release!
->
->other info that might help us debug this:
->no locks held by swapper/0/1.
->
->stack backtrace:
->Call Trace:
->[c00000003e483870] [c000000000013310] .show_stack+0x70/0x1c0 (unreliable)
->[c00000003e483920] [c0000000000d8310] .print_unlock_inbalance_bug+0x110/0x120
->[c00000003e4839b0] [c0000000000d9a50] .lock_release+0x1d0/0x240
->[c00000003e483a60] [c000000000778064] .__mutex_unlock_slowpath+0xb4/0x250
->[c00000003e483b10] [c000000000058218] .eeh_add_to_parent_pe+0x318/0x410
->[c00000003e483bc0] [c00000000005a118] .pseries_eeh_of_probe+0x258/0x2f0
->[c00000003e483cc0] [c000000000032528] .traverse_pci_devices+0xa8/0x150
->[c00000003e483d70] [c000000000aa7288] .eeh_init+0xd4/0x140
->[c00000003e483e00] [c00000000000abc4] .do_one_initcall+0x64/0x1e0
->[c00000003e483ec0] [c000000000a90418] .kernel_init+0x1e8/0x2bc
->[c00000003e483f90] [c00000000002048c] .kernel_thread+0x54/0x70
->EEH: PCI Enhanced I/O Error Handling Enabled
->
->Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+--047d7b339c838adf9704ca349c77
+Content-Type: text/plain; charset=ISO-8859-1
 
-Acked-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Hi,
+I'm working on a custom board based on P1020 with two (identical) PCI
+devices attached;
+The work is derived from another board with a single instance of that
+device.
+The system is based on u-boot-2009.11 and Linux 2.6.34.6
 
-Thanks,
-Gavin
+The "pci" command on u-boot, shows me both the PCI controllers and
+the attached devices:
 
->---
-> arch/powerpc/platforms/pseries/eeh_pe.c |    5 +----
-> 1 file changed, 1 insertion(+), 4 deletions(-)
->
->diff --git a/arch/powerpc/platforms/pseries/eeh_pe.c b/arch/powerpc/platforms/pseries/eeh_pe.c
->index 9d35543..797cd18 100644
->--- a/arch/powerpc/platforms/pseries/eeh_pe.c
->+++ b/arch/powerpc/platforms/pseries/eeh_pe.c
->@@ -105,11 +105,8 @@ static struct eeh_pe *eeh_phb_pe_get(struct pci_controller *phb)
-> 		 * the PE for PHB has been determined when that
-> 		 * was created.
-> 		 */
->-		if ((pe->type & EEH_PE_PHB) &&
->-		    pe->phb == phb) {
->-			eeh_unlock();
->+		if ((pe->type & EEH_PE_PHB) && pe->phb == phb)
-> 			return pe;
->-		}
-> 	}
->
-> 	return NULL;
->-- 
->1.7.10
->
+Scanning PCI devices on bus 0
+BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
+_____________________________________________________________
+00.00.00   0x1957     0x0100     Processor               0x20
+
+Scanning PCI devices on bus 1
+BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
+_____________________________________________________________
+01.00.00   0x1b65     0xabba     Network controller      0x80
+
+Scanning PCI devices on bus 2
+BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
+_____________________________________________________________
+02.00.00   0x1957     0x0100     Processor               0x20
+
+Scanning PCI devices on bus 3
+BusDevFun  VendorId   DeviceId   Device Class       Sub-Class
+_____________________________________________________________
+03.00.00   0x1b65     0xabba     Network controller      0x80
+
+The kernel detects only the first instance of the device.
+
+Didn't get very far while looking at dts file and kernel logs, so I'm
+asking for some help on narrowing down the problem.
+
+I'm wondering if I can assume that the problem is restricted to
+kernel/dts and avoid concentrating on uboot.
+I can provide any log (didn't want to post tons of details on the first
+message)
+
+Thanx in advance for your help,
+regards
+
+Davide
+
+--047d7b339c838adf9704ca349c77
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<div>Hi,</div><div>I&#39;m working on a custom board based on P1020 with tw=
+o (identical) PCI devices attached;</div><div>The work is derived from anot=
+her board with a single instance of that device.</div><div>The system is ba=
+sed on u-boot-2009.11 and Linux 2.6.34.6</div>
+<div><br></div><div>The &quot;pci&quot; command on u-boot, shows me both th=
+e PCI controllers and</div><div>the attached devices:</div><div><br></div><=
+div>Scanning PCI devices on bus 0</div><div>BusDevFun =A0VendorId =A0 Devic=
+eId =A0 Device Class =A0 =A0 =A0 Sub-Class</div>
+<div>_____________________________________________________________</div><di=
+v>00.00.00 =A0 0x1957 =A0 =A0 0x0100 =A0 =A0 Processor =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 0x20</div><div><br></div><div>Scanning PCI devices on bus 1</div><d=
+iv>BusDevFun =A0VendorId =A0 DeviceId =A0 Device Class =A0 =A0 =A0 Sub-Clas=
+s</div>
+<div>_____________________________________________________________</div><di=
+v>01.00.00 =A0 0x1b65 =A0 =A0 0xabba =A0 =A0 Network controller =A0 =A0 =A0=
+0x80</div><div><br></div><div>Scanning PCI devices on bus 2</div><div>BusDe=
+vFun =A0VendorId =A0 DeviceId =A0 Device Class =A0 =A0 =A0 Sub-Class</div>
+<div>_____________________________________________________________</div><di=
+v>02.00.00 =A0 0x1957 =A0 =A0 0x0100 =A0 =A0 Processor =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 0x20</div><div><br></div><div>Scanning PCI devices on bus 3</div><d=
+iv>BusDevFun =A0VendorId =A0 DeviceId =A0 Device Class =A0 =A0 =A0 Sub-Clas=
+s</div>
+<div>_____________________________________________________________</div><di=
+v>03.00.00 =A0 0x1b65 =A0 =A0 0xabba =A0 =A0 Network controller =A0 =A0 =A0=
+0x80</div><div><br></div><div>The kernel detects only the first instance of=
+ the device.</div>
+<div><br></div><div>Didn&#39;t get very far while looking at dts file and k=
+ernel logs, so I&#39;m</div><div>asking for some help on narrowing down the=
+ problem.</div><div><br></div><div>I&#39;m wondering if I can assume that t=
+he problem is restricted to</div>
+<div>kernel/dts and avoid concentrating on uboot.=A0</div><div>I can provid=
+e any log (didn&#39;t want to post tons of details on the first=A0</div><di=
+v>message)</div><div><br></div><div>Thanx in advance for your help,</div><d=
+iv>
+regards</div><div><br></div><div>Davide</div>
+
+--047d7b339c838adf9704ca349c77--
