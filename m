@@ -2,20 +2,28 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 116F32C007B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 23:06:22 +1000 (EST)
-Subject: Re: [PATCH] powerpc/fsl-pci: use 'Header Type' to identify PCIE mode
+ by ozlabs.org (Postfix) with ESMTPS id 248DB2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Sep 2012 23:16:00 +1000 (EST)
+Subject: Re: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM support
 Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <505BE102.7080701@freescale.com>
-Date: Fri, 21 Sep 2012 08:06:18 -0500
-Message-Id: <8B35341A-E055-4520-96AB-0D68C8E8CB3D@kernel.crashing.org>
-References: <1348039419-17798-1-git-send-email-Minghuan.Lian@freescale.com>
- <4FA47D63-B0ED-42BF-A075-174B6338A0E8@kernel.crashing.org>
- <505BE102.7080701@freescale.com>
-To: Lian Minghaun-b31939 <B31939@freescale.com>
-Cc: Minghuan Lian <Minghuan.Lian@freescale.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <412C8208B4A0464FA894C5F0C278CD5D01AB6AE7@039-SN1MPN1-004.039d.mgd.msft.net>
+Date: Fri, 21 Sep 2012 08:15:57 -0500
+Message-Id: <95B12FA1-EC53-4632-8DFB-64109668BA9C@kernel.crashing.org>
+References: <1347934234-18223-1-git-send-email-B38951@freescale.com>
+ <86ADF4ED-B84C-4560-8781-D9FA4486D854@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AAA35A@039-SN1MPN1-002.039d.mgd.msft.net>,
+ <36119932-E4BF-4DF6-8D33-C9A832883272@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AAA4E8@039-SN1MPN1-002.039d.mgd.msft.net>
+ <8086D08B-62B7-4838-8DB6-0F6158DE581A@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AB4A6F@039-SN1MPN1-004.039d.mgd.msft.net>
+ <94F013E7935FF44C83EBE7784D62AD3F09432A5F@039-SN2MPN1-021.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01AB6AE7@039-SN1MPN1-004.039d.mgd.msft.net>
+To: Jia Hongtao-B38951 <B38951@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,112 +33,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+>>>>>>>=20
+>>>>>>> On Sep 17, 2012, at 9:10 PM, Jia Hongtao wrote:
+>>>>>>>=20
+>>>>>>>> Power supply for PCI inbound/outbound window registers is off
+>>>>>>>> when system go to deep-sleep state. We save the values of
+>>>>>>>> registers
+>>>> before
+>>>>>>>> suspend and restore to registers after resume.
+>>>>>>>>=20
+>>>>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
+>>>>>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+>>>>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+>>>>>>>> ---
+>>>>>>>> Changes for V4:
+>>>>>>>> We just rebase the patch upon following patch:
+>>>>>>>> powerpc/fsl-pci: Unify pci/pcie initialization code
+>>>>>>>>=20
+>>>>>>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
+>>>>>>>> arch/powerpc/sysdev/fsl_pci.c         |  121
+>>>>>>> +++++++++++++++++++++++++++++++++
+>>>>>>>> 2 files changed, 122 insertions(+), 1 deletions(-)
+>>>>>>>=20
+>>>>>>> Did you ever compare this to just re-parsing device tree method?
+>>>>>>>=20
+>>>>>>> - k
+>>>>>>=20
+>>>>>> I tested the re-parsing way by using setup_pci_atmu() when =
+resume.
+>>>>>> And I found out that re-parsing will *change* outbound IO
+>>>>>> translation address regitster.
+>>>>>>=20
+>>>>>> It seems that in the first bootup, after setup_atmu()
+>>>>>> pcibios_setup_phb_resources() may update hose->io_resource, but
+>>>>>> atmu is not updated according to the new hose->io_resource value.
+>>>>>> In resume from sleep setup_atmu() will reset atmu according to
+>>>>>> the new hose->io_resource value. So the setup_atmu() will cause
+>>>>>> different result on outbound IO register between first bootup and
+>>>>>> resume from sleep.
+>>>>>>=20
+>>>>>> So... There's a possibility that in the first bootup atmu is not
+>>>>>> setup properly.
+>>>>>=20
+>>>>> [Are you seeing this happen in your testing?  If so its a bug we
+>>>>> need
+>>>> to look at fixing.]
+>>>>>=20
+>>>>> Yes, I see this in my testing.
+>>>>> Also PCIe ethernet card works well after resuming from sleep in
+>>>>> both
+>>>> save/restore
+>>>>> and re-parsing way. (Maybe PCIe ethernet card don't need outbound
+>>>>> IO
+>>>> resource)
+>>>>> So, I guess the result of re-parsing (actually it's re-setup) is
+>>>>> right
+>>>> and ATMU is not setup
+>>>>> properly at the first bootup.
+>>>>=20
+>>>> Are you seeing the following message - "PCI: I/O resource not set
+>>>> for host bridge" ?
+>>>=20
+>>> No.
+>>>=20
+>>>>=20
+>>>> Trying to understand why you'd hit the reassignment of io_resource.
+>>>>=20
+>>>> - k
+>>>>=20
+>>>=20
+>>> I did some investigations and the conclusion is:
+>>>=20
+>>> io_resource.flags & IORESOURCE_IO are both positive but
+>>> io_resource.start is 0 before pcibios_setup_phb_io_space() is done.
+>>>=20
+>>> The sequence of related process listed below:
+>>> fsl_add_bridge() -> setup_pci_atmu()
+>>> pcibios_init() -> pcibios_scan_phb() -> pcibios_setup_phb_io_space()
+>>>=20
+>>> Because fsl_add_bridge() must be finished before pcibios_init() so
+>>> ATMU is set when io_resource.start is 0. That means outbound IO regs
+>>> are not set.
+>>>=20
+>>> If system re-setup ATMU the io_resource.start has already updated so
+>>> outbound IO regs are set.
+>>>=20
+>>> My question is:
+>>> Is there any problem if outbound IO regs are not set in first =
+bootup?
 
-On Sep 20, 2012, at 10:37 PM, Lian Minghaun-b31939 wrote:
+Yes, it means that IO transactions would not work.
 
-> Hi Kumar,
->=20
-> please see my comments inline.
->=20
->=20
-> On 09/19/2012 10:22 PM, Kumar Gala wrote:
->> On Sep 19, 2012, at 2:23 AM, Minghuan Lian wrote:
+>> Please also provide the IO resource address range before and after =
+the
+>> pci scan.  Then we can evaluate if the range is needed to be mapped =
+via
+>> ATMU.
 >>=20
->>> The original code uses 'Programming Interface' field to judge if =
-PCIE is
->>> EP or RC mode, however, some latest silicons do not support this =
-functionality.
->>> According to PCIE specification, 'Header Type' offset 0x0e is used =
-to
->>> indicate header type, so change code to use 'Header Type' field to
->>> judge PCIE mode. Because FSL PCI controller does not support 'Header =
-Type',
->>> patch still uses 'Programming Interface' to identify PCI mode.
->>>=20
->>> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
->>> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
->>> ---
->>> arch/powerpc/sysdev/fsl_pci.c |   38 =
-+++++++++++++++++++++++---------------
->>> 1 file changed, 23 insertions(+), 15 deletions(-)
->>>=20
->>> diff --git a/arch/powerpc/sysdev/fsl_pci.c =
-b/arch/powerpc/sysdev/fsl_pci.c
->>> index c37f461..43d30df 100644
->>> --- a/arch/powerpc/sysdev/fsl_pci.c
->>> +++ b/arch/powerpc/sysdev/fsl_pci.c
->>> @@ -38,15 +38,15 @@ static int fsl_pcie_bus_fixup, is_mpc83xx_pci;
->>>=20
->>> static void __devinit quirk_fsl_pcie_header(struct pci_dev *dev)
->>> {
->>> -	u8 progif;
->>> +	u8 hdr_type;
->>>=20
->>> 	/* if we aren't a PCIe don't bother */
->>> 	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
->>> 		return;
->>>=20
->>> 	/* if we aren't in host mode don't bother */
->>> -	pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
->>> -	if (progif & 0x1)
->>> +	pci_read_config_byte(dev, PCI_HEADER_TYPE, &hdr_type);
->>> +	if ((hdr_type & 0x7f) !=3D PCI_HEADER_TYPE_BRIDGE)
->>> 		return;
->>>=20
->>> 	dev->class =3D PCI_CLASS_BRIDGE_PCI << 8;
->>> @@ -425,7 +425,7 @@ int __init fsl_add_bridge(struct device_node =
-*dev, int is_primary)
->>> 	struct pci_controller *hose;
->>> 	struct resource rsrc;
->>> 	const int *bus_range;
->>> -	u8 progif;
->>> +	u8 hdr_type, progif;
->>>=20
->>> 	if (!of_device_is_available(dev)) {
->>> 		pr_warning("%s: disabled\n", dev->full_name);
->>> @@ -457,25 +457,24 @@ int __init fsl_add_bridge(struct device_node =
-*dev, int is_primary)
->>> 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
->>> 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
->>>=20
->>> -	early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
->>> -	if ((progif & 1) =3D=3D 1) {
->>> -		/* unmap cfg_data & cfg_addr separately if not on same =
-page */
->>> -		if (((unsigned long)hose->cfg_data & PAGE_MASK) !=3D
->>> -		    ((unsigned long)hose->cfg_addr & PAGE_MASK))
->>> -			iounmap(hose->cfg_data);
->>> -		iounmap(hose->cfg_addr);
->>> -		pcibios_free_controller(hose);
->>> -		return -ENODEV;
->>> -	}
->>> -
->>> 	setup_pci_cmd(hose);
->> I think we should be doing the check before we call setup_pci_cmd().  =
-The old code didn't touch the controller registers if we where and =
-end-point.  We should maintain that.
-> [Minghuan] Thanks for you pointing this.
-> I want to move setup_pci_cmd like this:
+>> Leo
 >=20
-> pr_debug(" ->Hose at 0x%p, cfg_addr=3D0x%p,cfg_data=3D0x%p\n",
->        hose, hose->cfg_addr, hose->cfg_data);
+> Since potar is set by out_be32(&pci->pow[j].potar, =
+(hose->io_resource.start >> 12);
+> I provide the result of hose->io_resource.start >> 12 as follows:
 >=20
-> +    setup_pci_cmd(hose);
+> pcie@ffe09000:
+> before pci scan: io_resource.start >> 12: 0
+> after pci scan : io_resource.start >> 12: ff7ed
 >=20
->    /* Interpret the "ranges" property */
->    /* This also maps the I/O region and sets isa_io/mem_base */
->    pci_process_bridge_OF_ranges(hose, dev, is_primary);
+> pcie@ffe0a000:
+> before pci scan: io_resource.start >> 12: 0
+> after pci scan : io_resource.start >> 12: ff7db
 >=20
-> This movement will cause fsl_pcie_check_link() calling before =
-setup_pci_cmd().
-> Is this ok?
+> pcie@ffe0b000:
+> before pci scan: io_resource.start >> 12: 0
+> after pci scan : io_resource.start >> 12: ff7c9
+>=20
+> Note that I tested on P1022DS.
+>=20
+> - Hongtao.
 
-I think so, as its how the code is today:
+1. What's the device tree nodes for PCIe look like?
+2. Can you get the pr_debug() in setup_pci_atmu() to print and report =
+results (as well as full boot log)
 
-setup_pci_cmd()
-..
-if (pcie)
-	fsl_pcie_check_link()
+However, I think the change of the io_resource.start is normal and =
+correct behavior.
 
-
-> If not, I will call setup_pci_cmd() for PCI and PCIE respectively.
+- k
