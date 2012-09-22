@@ -1,34 +1,18 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C868E2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Sep 2012 08:41:11 +1000 (EST)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Sat, 22 Sep 2012 16:41:07 -0600
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
- [9.17.195.226])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5827B19D8042
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Sep 2012 16:41:04 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8MMf3VD224040
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Sep 2012 16:41:03 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8MMf3P6006635
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Sep 2012 16:41:03 -0600
-Date: Sat, 22 Sep 2012 15:41:47 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: POWER7: Question on speculative rollback
-Message-ID: <20120922224147.GA4946@us.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sun, 23 Sep 2012 02:13:31 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: malc <av1474@comtv.ru>
+Subject: Re: Probing for native availability of isel from userspace
+Message-ID: <20120922161331.GA9800@truffula.fritz.box>
+References: <alpine.LNX.2.00.1209212355050.8539@linmac>
+ <50EE7AAC-3080-4B1B-B741-E3F7F5A57A73@kernel.crashing.org>
+ <alpine.LNX.2.00.1209221412010.1468@linmac>
+ <20120922102151.GA31314@visitor2.iram.es>
+ <alpine.LNX.2.00.1209221936330.3878@linmac>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Anton Blanchard <anton@au1.ibm.com>, paulus@samba.org
+In-Reply-To: <alpine.LNX.2.00.1209221936330.3878@linmac>
+Cc: linuxppc-dev@lists.ozlabs.org, hollis@penguinppc.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,35 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, Sep 22, 2012 at 07:37:03PM +0400, malc wrote:
+> On Sat, 22 Sep 2012, Gabriel Paubert wrote:
+> 
+> > On Sat, Sep 22, 2012 at 02:12:42PM +0400, malc wrote:
+> > > On Sat, 22 Sep 2012, Segher Boessenkool wrote:
+> > > 
+> > > > > Is it possible to determine if _native_ isel is available from userspace
+> > > > > somehow?
+> > > > 
+> > > > Just try to execute one and catch the SIGILL?
+> > > > 
+> > > 
+> > > Unfortunately my kernel emulates ISEL for me in this case, so i don't
+> > > get any SIGILLs.
+> > 
+> > Perform a few isels in a loop between a couple of mftb and measure the 
+> > shortest time it takes. Any emulation will take tens of timebase ticks,
+> > hardware implementation will return very small values, perhaps even
+> > 0 depending on the relationship between core and timebase frequencies.
+> > 
+> > I don't remember whether it's necessary inserting an isync between the
+> > two mftb. I believe that even on the most OOO machines, two mftb in
+> > a row will not be reordered to the point that the second executes before 
+> > the first.
+> 
+> Thanks for suggestion, but i'd rather not play with heuristics.
 
-Is there a way to reliably check if a speculative roll back has occured in
-the CPU ?
+It sounds like the sort of thing that ought to be in the ELF aux
+vector, but I don't know if it actually is.
 
-Normally we consider that an overflow has occured if the number of events
-in a PMC reaches the overflow mark (0x80000000).
-
-With speculative rollback, we assume that the overflow has occured if the
-number of events is short of the overflow mark by 256 or less. pmc_overflow()
-and check_compute_delta() use this assumption.
-
-The problem with this assumption is that it is not always valid which is
-why perf_event_interrupt() uses two different checks for overflow.
-
-In the first pass it uses '(int)val < 0' and in the second pass the
-pmc_overflow() helper.
-
-The reason for falling back to 'val < 0' check is that the sampling period
-could be very low and the number of events could truly be less than 256
-even if no speculative roll back had occured.
-
-But the problem with the 'val < 0' check is that if speculative rollback did
-occur, we would not detect the rollback. We simply go ahead and reset the
-counters and THROW AWAY all the events that occured until that point.
-
-Over time and possibly with larger sampling periods, the number of events
-thrown away can lead to very inaccurate results.
-
-So, is there a better way to detect if a speculative rollback has occured
-when we get a perf_event_interrupt() ?
-
-Sukadev
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
