@@ -1,21 +1,14 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de [212.227.17.10])
- by ozlabs.org (Postfix) with ESMTP id 1C0822C008E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 00:17:00 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Teodori Serge <teodori.serge@gmail.com>
-Subject: Re: [PATCH 1/1] drivers/char/mem.c
-Date: Sun, 23 Sep 2012 14:16:51 +0000
-References: <Teodori Serge <teodori.serge@hotmail.com>
- <teodori.serge@hotmail.com>
- <1348348812-17201-1-git-send-email-teodori.serge@hotmail.com>
-In-Reply-To: <1348348812-17201-1-git-send-email-teodori.serge@hotmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Message-Id: <201209231416.52067.arnd@arndb.de>
-Cc: Teodori Serge <teodori.serge@hotmail.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <anton@samba.org>
+Date: Mon, 24 Sep 2012 07:04:05 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: Remove tlb batching hack for nighthawk
+Message-ID: <20120924070405.1a5d1c33@kryten>
+In-Reply-To: <1348214908-32605-1-git-send-email-michael@ellerman.id.au>
+References: <1348214908-32605-1-git-send-email-michael@ellerman.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,44 +18,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday 22 September 2012, Teodori Serge wrote:
-> replace 'arch_has_dev_port()' to 'CONFIG_DEVPORT'
-> 
-> modified:   arch/powerpc/include/asm/io.h
-> modified:   drivers/char/mem.c
-> modified:   include/linux/io.h
-> 
-> why do we need 'arch_has_dev_port()' if we have a 'CONFIG_DEVPORT'?
-> 
-> Signed-off-by: Teodori Serge <teodori.serge@hotmail.com>
-> ---
->  arch/powerpc/include/asm/io.h |    2 +-
->  drivers/char/mem.c            |    6 ------
->  include/linux/io.h            |    9 ---------
->  3 files changed, 1 insertion(+), 16 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/io.h b/arch/powerpc/include/asm/io.h
-> index f94ef42..cb8b663 100644
-> --- a/arch/powerpc/include/asm/io.h
-> +++ b/arch/powerpc/include/asm/io.h
-> @@ -25,7 +25,7 @@ extern struct pci_dev *isa_bridge_pcidev;
->  /*
->   * has legacy ISA devices ?
->   */
-> -#define arch_has_dev_port()	(isa_bridge_pcidev != NULL)
-> +#define CONFIG_DEVPORT	(isa_bridge_pcidev != NULL)
->  #endif
->  
->  #include <linux/device.h>
+On Fri, 21 Sep 2012 18:08:28 +1000
+Michael Ellerman <michael@ellerman.id.au> wrote:
 
-By convention, CONFIG_* symbols should only be set by Kconfig and not used
-for runtime checks.
+> In hpte_init_native() we call tlb_batching_enabled() to decide if we
+> should setup ppc_md.flush_hash_range.
+> 
+> tlb_batching_enabled() checks the _unflattened_ device tree, to see
+> if we are running on a nighthawk.
+> 
+> Since commit a223535 ("dont allow pSeries_probe to succeed without
+> initialising MMU", Dec 2006), hpte_init_native() has been called from
+> pSeries_probe() - at which point we have not yet unflattened the
+> device tree.
+> 
+> This means tlb_batching_enabled() will always return true, so the hack
+> has effectively been disabled since Dec 2006. Ergo, I think we can
+> drop it.
 
-Also, the existing checks for those symbols check for whether it is
-defined, not for the actual value. With what you have there,
-the driver will always enable /dev/ports because CONFIG_DEVPORT
-is defined.
+Ouch. We probably had the last nighthawk in existence and we crushed it
+years ago. So:
 
-What are you actually trying to achieve?
+Acked-by: Anton Blanchard <anton@samba.org>
 
-	Arnd
+Anton
