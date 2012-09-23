@@ -1,18 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sun, 23 Sep 2012 02:13:31 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: malc <av1474@comtv.ru>
-Subject: Re: Probing for native availability of isel from userspace
-Message-ID: <20120922161331.GA9800@truffula.fritz.box>
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 16C9D2C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Sep 2012 11:46:06 +1000 (EST)
+In-Reply-To: <1348343737.1132.74.camel@pasglop>
 References: <alpine.LNX.2.00.1209212355050.8539@linmac>
  <50EE7AAC-3080-4B1B-B741-E3F7F5A57A73@kernel.crashing.org>
  <alpine.LNX.2.00.1209221412010.1468@linmac>
  <20120922102151.GA31314@visitor2.iram.es>
  <alpine.LNX.2.00.1209221936330.3878@linmac>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LNX.2.00.1209221936330.3878@linmac>
-Cc: linuxppc-dev@lists.ozlabs.org, hollis@penguinppc.org
+ <BB86F53C-6C09-41DB-9FF3-38E3027BCC82@kernel.crashing.org>
+ <1348343737.1132.74.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <35A5B006-1E4E-4355-A6A4-CA5F7371D21C@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Probing for native availability of isel from userspace
+Date: Sun, 23 Sep 2012 03:46:06 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org, malc <av1474@comtv.ru>,
+ hollis@penguinppc.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Sep 22, 2012 at 07:37:03PM +0400, malc wrote:
-> On Sat, 22 Sep 2012, Gabriel Paubert wrote:
-> 
-> > On Sat, Sep 22, 2012 at 02:12:42PM +0400, malc wrote:
-> > > On Sat, 22 Sep 2012, Segher Boessenkool wrote:
-> > > 
-> > > > > Is it possible to determine if _native_ isel is available from userspace
-> > > > > somehow?
-> > > > 
-> > > > Just try to execute one and catch the SIGILL?
-> > > > 
-> > > 
-> > > Unfortunately my kernel emulates ISEL for me in this case, so i don't
-> > > get any SIGILLs.
-> > 
-> > Perform a few isels in a loop between a couple of mftb and measure the 
-> > shortest time it takes. Any emulation will take tens of timebase ticks,
-> > hardware implementation will return very small values, perhaps even
-> > 0 depending on the relationship between core and timebase frequencies.
-> > 
-> > I don't remember whether it's necessary inserting an isync between the
-> > two mftb. I believe that even on the most OOO machines, two mftb in
-> > a row will not be reordered to the point that the second executes before 
-> > the first.
-> 
-> Thanks for suggestion, but i'd rather not play with heuristics.
+>> Have a look at /sys/kernel/debug/powerpc/emulated_instructions/ then?
+>
+> Userspace should *NEVER* rely on the content of debugfs, it will  
+> change
+> with time, it is not a guaranteed ABI, it's purely for people to look
+> at... for debugging.
 
-It sounds like the sort of thing that ought to be in the ELF aux
-vector, but I don't know if it actually is.
+malc didn't say what he wants it for...  People are in userspace as
+well ;-)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> At this stage I would recommend using arch 2.06 as your key/trigger  
+> and
+> either add a handful of known PVR values (mfpvr is emulated) for other
+> CPUs you know support it (there shouldn't be that many), or just do  
+> the
+> heuristic :-(
+
+That's for 64-bit; another good option for 64-bit is to just never use
+isel, it hardly ever buys you anything.  It is much more useful on the
+(older) 32-bit cores that support it.
+
+Why does the kernel emulate this, btw?  I can see emulation is useful
+for running older binaries, for instructions that have been removed
+from the architecture; but for newly added instructions, or optional
+instructions, it hurts more than it helps?
+
+
+Segher
