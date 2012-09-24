@@ -1,26 +1,26 @@
-Return-Path: <B04825@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe006.messaging.microsoft.com [213.199.154.144])
+Return-Path: <B36685@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3AFF52C0085
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 00:38:46 +1000 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH v3 1/2] mmc: Move mmc_delay() to include/linux/mmc/core.h
-Date: Mon, 24 Sep 2012 14:38:34 +0000
-Message-ID: <6AE080B68D46FC4BA2D2769E68D765B708090865@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <1344637513-29383-1-git-send-email-Chunhe.Lan@freescale.com>
- <201209211233.54545.arnd@arndb.de>	<50607A5A.3060103@freescale.com>
- <201209241317.32425.arnd@arndb.de>
-In-Reply-To: <201209241317.32425.arnd@arndb.de>
-Content-Type: text/plain; charset="iso-8859-1"
+ by ozlabs.org (Postfix) with ESMTPS id 126442C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 00:44:29 +1000 (EST)
+From: Liu Shengzhou-B36685 <B36685@freescale.com>
+To: Greg KH <greg@kroah.com>, Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH v3] powerpc/usb: fix bug of CPU hang when missing USB
+ PHY clock
+Date: Mon, 24 Sep 2012 14:44:19 +0000
+Message-ID: <3F453DDFF675A64A89321A1F352810217FFC51@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1347958359-20153-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <20120921164342.GA31272@kroah.com>
+ <E182B82C-A53B-4013-9D3B-0271268A6A96@kernel.crashing.org>
+ <20120922144853.GA10935@kroah.com>
+In-Reply-To: <20120922144853.GA10935@kroah.com>
+Content-Type: text/plain; charset="gb2312"
 MIME-Version: 1.0
-Cc: Lan Chunhe-B25806 <B25806@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Gala Kumar-B11780 <B11780@freescale.com>, "cjb@laptop.org" <cjb@laptop.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +30,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 24, 2012 at 8:17 AM, Arnd Bergmann <arnd@arndb.de> wrote:
->
->> static inline void mmc_delay(unsigned int ms)
->> {
->>           msleep(ms);
->> }
->
-> That would be my preferred choice, unless someone has specific issues wit=
-h this.
-
-If we're going to do that, then just get rid of mmc_delay and replace
-all calls to it with msleep().  Why bother with the inline function?
-There's nothing really MMC-specific about it.
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IEdyZWcgS0ggW21haWx0bzpn
+cmVnQGtyb2FoLmNvbV0NCj4gU2VudDogMjAxMsTqOdTCMjLI1SAyMjo0OQ0KPiBUbzogS3VtYXIg
+R2FsYQ0KPiBDYzogTGl1IFNoZW5nemhvdS1CMzY2ODU7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
+YnMub3JnOyBsaW51eC0NCj4gdXNiQHZnZXIua2VybmVsLm9yZw0KPiBTdWJqZWN0OiBSZTogW1BB
+VENIIHYzXSBwb3dlcnBjL3VzYjogZml4IGJ1ZyBvZiBDUFUgaGFuZyB3aGVuIG1pc3NpbmcNCj4g
+VVNCIFBIWSBjbG9jaw0KPiANCj4gT24gU2F0LCBTZXAgMjIsIDIwMTIgYXQgMDk6Mzk6MTVBTSAt
+MDUwMCwgS3VtYXIgR2FsYSB3cm90ZToNCj4gPg0KPiA+IE9uIFNlcCAyMSwgMjAxMiwgYXQgMTE6
+NDMgQU0sIEdyZWcgS0ggd3JvdGU6DQo+ID4NCj4gPiA+IE9uIFR1ZSwgU2VwIDE4LCAyMDEyIGF0
+IDA0OjUyOjM5UE0gKzA4MDAsIFNoZW5nemhvdSBMaXUgd3JvdGU6DQo+ID4gPj4gd2hlbiBtaXNz
+aW5nIFVTQiBQSFkgY2xvY2ssIGtlcm5lbCBib290aW5nIHVwIHdpbGwgaGFuZyBkdXJpbmcgVVNC
+DQo+ID4gPj4gaW5pdGlhbGl6YXRpb24uIFdlIHNob3VsZCBjaGVjayBVU0JHUFtQSFlfQ0xLX1ZB
+TElEXSBiaXQgdG8gYXZvaWQNCj4gPiA+PiBDUFUgaGFuZ2luZyBpbiB0aGlzIGNhc2UuDQo+ID4g
+Pj4NCj4gPiA+PiBTaWduZWQtb2ZmLWJ5OiBTaGVuZ3pob3UgTGl1IDxTaGVuZ3pob3UuTGl1QGZy
+ZWVzY2FsZS5jb20+DQo+ID4gPj4gLS0tDQo+ID4gPj4gdjMgY2hhbmdlOiBubyBjaGVjayBmb3Ig
+VVRNSSBQSFkuDQo+ID4gPj4gdjIgY2hhbmdlOiB1c2Ugc3Bpbl9ldmVudF90aW1lb3V0KCkgaW5z
+dGVhZC4NCj4gPiA+Pg0KPiA+ID4+IGRyaXZlcnMvdXNiL2hvc3QvZWhjaS1mc2wuYyB8ICAgNTcg
+KysrKysrKysrKysrKysrKysrKysrKysrKysrKystLQ0KPiAtLS0tLS0tLS0tLQ0KPiA+ID4+IGRy
+aXZlcnMvdXNiL2hvc3QvZWhjaS1mc2wuaCB8ICAgIDEgKw0KPiA+ID4+IGluY2x1ZGUvbGludXgv
+ZnNsX2RldmljZXMuaCB8ICAgIDEgKw0KPiA+ID4+IDMgZmlsZXMgY2hhbmdlZCwgNDEgaW5zZXJ0
+aW9ucygrKSwgMTggZGVsZXRpb25zKC0pDQo+ID4gPg0KPiA+ID4gVGhpcyBpcyBhbHJlYWR5IGFw
+cGxpZWQsIHJpZ2h0Pw0KPiA+ID4NCj4gPiA+IGdyZWcgay1oDQo+ID4NCj4gPiBJdCBhcHBlYXJz
+IHRoYXQgdjIgb2YgdGhlIHBhdGNoIGlzIGFwcGxpZWQgdG8geW91ciB1c2ItbmV4dCBicmFuY2gu
+DQo+ID4NCj4gPiBpbiBkcml2ZXJzL3VzYi9ob3N0L2VoY2ktZnNsLmMNCj4gPg0KPiA+IFYyOg0K
+PiA+IEBAIC0yNjIsMjMgKzI2NiwzNCBAQCBzdGF0aWMgdm9pZCBlaGNpX2ZzbF9zZXR1cF9waHko
+c3RydWN0IHVzYl9oY2QNCj4gKmhjZCwNCj4gPiAgICAgICAgIGNhc2UgRlNMX1VTQjJfUEhZX05P
+TkU6DQo+ID4gICAgICAgICAgICAgICAgIGJyZWFrOw0KPiA+ICAgICAgICAgfQ0KPiA+ICsNCj4g
+PiArICAgICAgIGlmICgocGRhdGEtPmNvbnRyb2xsZXJfdmVyKSAmJiAoKHBoeV9tb2RlID09DQo+
+IEZTTF9VU0IyX1BIWV9VTFBJKSB8fA0KPiA+ICsgICAgICAgICAgICAgICAgICAgICAgIChwaHlf
+bW9kZSA9PSBGU0xfVVNCMl9QSFlfVVRNSSkpKSB7DQo+ID4NCj4gPiBWMzoNCj4gPg0KPiA+IEBA
+IC0yNjIsMjMgKzI2NiwzMyBAQCAgc3RhdGljIHZvaWQgZWhjaV9mc2xfc2V0dXBfcGh5KHN0cnVj
+dCB1c2JfaGNkDQo+ICpoY2QsDQo+ID4NCj4gPiAgCWNhc2UgRlNMX1VTQjJfUEhZX05PTkU6DQo+
+ID4gIAkJYnJlYWs7DQo+ID4gIAl9DQo+ID4NCj4gPiArDQo+ID4gKwlpZiAocGRhdGEtPmNvbnRy
+b2xsZXJfdmVyICYmIChwaHlfbW9kZSA9PSBGU0xfVVNCMl9QSFlfVUxQSSkpIHsNCj4gPiArCQkv
+KiBjaGVjayBQSFlfQ0xLX1ZBTElEIHRvIGdldCBwaHkgY2xrIHZhbGlkICovDQo+IA0KPiBPaywg
+Y2FuIHNvbWVvbmUgcGxlYXNlIG1ha2UgdGhlIGluY3JlbWVudGFsIHBhdGNoIHRoYXQgSSBuZWVk
+IHRvIGFwcGx5DQo+IGhlcmUgYW5kIHNlbmQgaXQgdG8gbWU/DQo+IA0KPiB0aGFua3MsDQo+IA0K
+PiBncmVnIGstaA0KDQpIaSBncmVnLA0KDQpJIGhhdmUgc2VudCB0aGUgYmVsb3cgaW5jcmVtZW50
+YWwgcGF0Y2ggdG8geW91LCBwbGVhc2Ugc3F1YXNoIGl0IGludG8gdGhlIHByZXZpb3VzIHBhdGNo
+IHYyLCB3aGljaCBoYWQgYmVlbiBhcHBsaWVkIGluIHlvdXIgdXNiLW5leHQgYnJhbmNoLiANCmh0
+dHA6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC8xODY0NDMvDQoNClRoYW5rcywNClNoZW5n
+emhvdQ0KDQo=
