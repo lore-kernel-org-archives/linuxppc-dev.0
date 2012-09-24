@@ -1,13 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id 3E72C2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 16:21:44 +1000 (EST)
-Date: Mon, 24 Sep 2012 08:20:18 +0200
-Message-Id: <201209240620.q8O6KINT029454@localhost.localdomain>
+ by ozlabs.org (Postfix) with ESMTP id 4E1762C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 16:41:11 +1000 (EST)
+Date: Mon, 24 Sep 2012 08:39:44 +0200
+Message-Id: <201209240639.q8O6di6f029596@localhost.localdomain>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Alan Cox <alan@linux.intel.com>, Vitaly Bordug <vitb@kernel.crashing.org>,
  Marcelo Tosatti <marcelo@kvack.org>
-Subject: [PATCH] Powerpc 8xx CPM_UART maxidl should not depend on fifo size
+Subject: [PATCH] Powerpc 8xx CPM_UART setting MAXIDL register proportionaly to
+ baud rate
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,29 +20,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-maxidl register was set to fifo size. There is no reason to set this
-register to same value as fifo size. Setting it now to 0x10 by default
-as in the UCC UART driver.
+MAXIDL is the timeout after which a receive buffer is closed when not full if
+no more characters are received. We calculate it from the baudrate so that the
+duration is always the same at standard rates: about 4ms. At 9600 bauds it gives
+a timeout of 4 characters, which is the timeout on the 8250 UART.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 --- linux-3.5-vanilla/drivers/tty/serial/cpm_uart/cpm_uart_core.c	2012-07-21 22:58:29.000000000 +0200
 +++ linux-3.5/drivers/tty/serial/cpm_uart/cpm_uart_core.c	2012-08-09 17:38:37.000000000 +0200
-@@ -799,7 +799,7 @@
- 	cpm_set_scc_fcr(sup);
+@@ -501,6 +501,7 @@
+ 	struct uart_cpm_port *pinfo = (struct uart_cpm_port *)port;
+ 	smc_t __iomem *smcp = pinfo->smcp;
+ 	scc_t __iomem *sccp = pinfo->sccp;
++	int maxidl;
  
- 	out_be16(&sup->scc_genscc.scc_mrblr, pinfo->rx_fifosize);
--	out_be16(&sup->scc_maxidl, pinfo->rx_fifosize);
-+	out_be16(&sup->scc_maxidl, 0x10);
- 	out_be16(&sup->scc_brkcr, 1);
- 	out_be16(&sup->scc_parec, 0);
- 	out_be16(&sup->scc_frmec, 0);
-@@ -873,7 +873,7 @@
+ 	pr_debug("CPM uart[%d]:set_termios\n", port->line);
  
- 	/* Using idle character time requires some additional tuning.  */
- 	out_be16(&up->smc_mrblr, pinfo->rx_fifosize);
--	out_be16(&up->smc_maxidl, pinfo->rx_fifosize);
-+	out_be16(&up->smc_maxidl, 0x10);
- 	out_be16(&up->smc_brklen, 0);
- 	out_be16(&up->smc_brkec, 0);
- 	out_be16(&up->smc_brkcr, 1);
+@@ -511,6 +512,17 @@
+ 	else
+ 		pinfo->rx_fifosize = RX_BUF_SIZE;
+ 
++	/* MAXIDL is the timeout after which a receive buffer is closed
++	 * when not full if no more characters are received.
++	 * We calculate it from the baudrate so that the duration is
++	 * always the same at standard rates: about 4ms.
++	 */
++	maxidl = baud / 2400;
++	if (maxidl < 1)
++		maxidl = 1;
++	if (maxidl > 0x10)
++		maxidl = 0x10;
++
+ 	/* Character length programmed into the mode register is the
+ 	 * sum of: 1 start bit, number of data bits, 0 or 1 parity bit,
+ 	 * 1 or 2 stop bits, minus 1.
+@@ -611,6 +623,7 @@
+ 		 * SMC/SCC receiver is disabled.
+ 		 */
+ 		out_be16(&pinfo->smcup->smc_mrblr, pinfo->rx_fifosize);
++		out_be16(&pinfo->smcup->smc_maxidl, maxidl);
+ 
+ 		/* Set the mode register.  We want to keep a copy of the
+ 		 * enables, because we want to put them back if they were
+@@ -623,6 +636,7 @@
+ 		    SMCMR_SM_UART | prev_mode);
+ 	} else {
+ 		out_be16(&pinfo->sccup->scc_genscc.scc_mrblr, pinfo->rx_fifosize);
++		out_be16(&pinfo->sccup->scc_maxidl, maxidl);
+ 		out_be16(&sccp->scc_psmr, (sbits << 12) | scval);
+ 	}
+ 
