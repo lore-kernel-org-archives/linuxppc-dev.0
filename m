@@ -3,22 +3,22 @@ Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
  [209.85.160.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4B5542C008A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 23:25:51 +1000 (EST)
-Received: by pbbrp16 with SMTP id rp16so2020347pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 06:25:49 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 5F2102C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 23:27:33 +1000 (EST)
+Received: by pbbrp16 with SMTP id rp16so2023170pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 06:27:31 -0700 (PDT)
 MIME-Version: 1.0
 Sender: zinosat@gmail.com
 In-Reply-To: <CAKpAL0nTu9XXFgz7i5-1LmetrV05qfQcdf1zGxqHzODgQ7xjKA@mail.gmail.com>
 References: <CAKpAL0m2XqzuYsG4-yj3WfZN88PjQXMUxFtXpx-sjsWA_Q4EUQ@mail.gmail.com>
  <89227A80-31E1-4E18-9257-6B60126E5A62@kernel.crashing.org>
  <CAKpAL0nTu9XXFgz7i5-1LmetrV05qfQcdf1zGxqHzODgQ7xjKA@mail.gmail.com>
-Date: Mon, 24 Sep 2012 15:25:49 +0200
-Message-ID: <CAKpAL0m+VTtFi21ioAOeqrAPJOCo_C4rRf5KDufA7mU4i3yD4A@mail.gmail.com>
+Date: Mon, 24 Sep 2012 15:27:31 +0200
+Message-ID: <CAKpAL0nk-5zz2zht6suNx+BVCQtkxPFPL33uZFSuGpxT8YFFqg@mail.gmail.com>
 Subject: Re: PCI device not working
 From: Davide Viti <zinosat@tiscali.it>
 To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=e89a8f83a3e9230b2404ca728708
+Content-Type: multipart/alternative; boundary=e89a8ff24c7b3eca9604ca728d64
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,8 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---e89a8f83a3e9230b2404ca728708
+--e89a8ff24c7b3eca9604ca728d64
 Content-Type: text/plain; charset=ISO-8859-1
+
+Hi,
+does the output I've included show anything wrong or should I post
+something else to help identifying the cause of the problem?
+
+thank you in advance,
+Davide
 
 2012/9/21 Davide Viti <zinosat@tiscali.it>
 
@@ -188,14 +195,26 @@ Content-Type: text/plain; charset=ISO-8859-1
 >>
 >
 
---e89a8f83a3e9230b2404ca728708
+--e89a8ff24c7b3eca9604ca728d64
 Content-Type: text/html; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
-<br><br><div class=3D"gmail_quote">2012/9/21 Davide Viti <span dir=3D"ltr">=
-&lt;<a href=3D"mailto:zinosat@tiscali.it" target=3D"_blank">zinosat@tiscali=
-.it</a>&gt;</span><br><blockquote class=3D"gmail_quote" style=3D"margin:0 0=
- 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
+<span style=3D"color:rgb(34,34,34);font-family:arial,sans-serif;font-size:1=
+3px;background-color:rgb(255,255,255)">Hi,</span><div style=3D"color:rgb(34=
+,34,34);font-family:arial,sans-serif;font-size:13px;background-color:rgb(25=
+5,255,255)">
+does the output I&#39;ve included show anything wrong or should I post some=
+thing else to help identifying the cause of the problem?</div><div style=3D=
+"color:rgb(34,34,34);font-family:arial,sans-serif;font-size:13px;background=
+-color:rgb(255,255,255)">
+<br></div><div style=3D"color:rgb(34,34,34);font-family:arial,sans-serif;fo=
+nt-size:13px;background-color:rgb(255,255,255)">thank you in advance,</div>=
+<div style=3D"color:rgb(34,34,34);font-family:arial,sans-serif;font-size:13=
+px;background-color:rgb(255,255,255)">
+Davide</div><br><div class=3D"gmail_quote">2012/9/21 Davide Viti <span dir=
+=3D"ltr">&lt;<a href=3D"mailto:zinosat@tiscali.it" target=3D"_blank">zinosa=
+t@tiscali.it</a>&gt;</span><br><blockquote class=3D"gmail_quote" style=3D"m=
+argin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
 <div>I mean there are two controllers and both of them have a device &quot;=
 subtended&quot; (both=A00x1b65:0xabba).</div><div>u-boot can see both devic=
 es, linux detects only the device attached to the first controller.</div>
@@ -408,4 +427,4 @@ What does lspci in linux say?<br>
 </font></span></blockquote></div><br>
 </div></div></blockquote></div><br>
 
---e89a8f83a3e9230b2404ca728708--
+--e89a8ff24c7b3eca9604ca728d64--
