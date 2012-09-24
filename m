@@ -1,37 +1,19 @@
-Return-Path: <key@linux.vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e4.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6FA782C0086
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 00:12:18 +1000 (EST)
-Received: from /spool/local
- by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Mon, 24 Sep 2012 10:12:03 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8OEBFHN132378
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 10:11:15 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8OEBCui018155
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 08:11:12 -0600
-Date: Mon, 24 Sep 2012 09:10:41 -0500
-From: key@linux.vnet.ibm.com
-To: James Morris <jmorris@namei.org>
-Subject: Re: [PATCH 1/1] drivers/char/tpm: remove tasklet and cleanup
-Message-ID: <20120924141041.GA2741@ennui.austin.ibm.com>
-References: <1345670263.25124.7.camel@footlong>
- <1347472190.27058.5.camel@footlong>
- <alpine.LRH.2.02.1209241225230.678@tundra.namei.org>
+Return-Path: <B36685@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ADCAB2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 00:37:57 +1000 (EST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <greg@kroah.com>
+Subject: [PATCH] powerpc/usb: remove checking PHY_CLK_VALID for UTMI PHY
+Date: Mon, 24 Sep 2012 22:01:35 +0800
+Message-ID: <1348495295-19109-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.LRH.2.02.1209241225230.678@tundra.namei.org>
-Cc: key@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- Ashley Lai <adlai@linux.vnet.ibm.com>, linux-security-module@vger.kernel.org,
- tpmdd-devel@lists.sourceforge.net, adlai@us.ibm.com, rcj@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: linux-usb@vger.kernel.org, Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,264 +23,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 24, 2012 at 12:26:05PM +1000, James Morris wrote:
-> On Wed, 12 Sep 2012, Ashley Lai wrote:
-> 
-> > This patch removed the tasklet and moved the wait queue into the
-> > private structure.  It also cleaned up the response CRQ path.
-> > 
-> > Signed-off-by: Ashley Lai <adlai@us.ibm.com>
-> 
-> 
-> Kent: any comment on this?  You should probably push this to me via your 
-> tree.
+PHY_CLK_VALID bit doesn't work properly with UTMI PHY.
+e.g. This bit is always zero on P5040, etc.
+There is no need to check this bit for UTMI PHY, just keep
+checking for ULPI PHY to prevent system hanging.
 
-  Oh, I thought we were waiting on Ben. This looks good to me, I'll get
-this to you today.
+This patch should be squashed into previous commit 3735ba8db8e6e
+"powerpc/usb: fix bug of CPU hang when missing USB PHY clock"
 
-  Kent
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+ drivers/usb/host/ehci-fsl.c |    3 +--
+ include/linux/fsl_devices.h |    2 +-
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-> 
-> 
-> > ---
-> > James,
-> > 
-> > This patch is based on your "next" branch.
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/linux-security.git
-> > 
-> > Thanks,
-> > Ashley Lai
-> > ---
-> >  drivers/char/tpm/tpm_ibmvtpm.c | 81 +++++++++++++++---------------------------
-> >  drivers/char/tpm/tpm_ibmvtpm.h |  5 ++-
-> >  2 files changed, 30 insertions(+), 56 deletions(-)
-> > 
-> > diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
-> > index efc4ab3..88a95ea 100644
-> > --- a/drivers/char/tpm/tpm_ibmvtpm.c
-> > +++ b/drivers/char/tpm/tpm_ibmvtpm.c
-> > @@ -38,8 +38,6 @@ static struct vio_device_id tpm_ibmvtpm_device_table[] __devinitdata = {
-> >  };
-> >  MODULE_DEVICE_TABLE(vio, tpm_ibmvtpm_device_table);
-> >  
-> > -DECLARE_WAIT_QUEUE_HEAD(wq);
-> > -
-> >  /**
-> >   * ibmvtpm_send_crq - Send a CRQ request
-> >   * @vdev:	vio device struct
-> > @@ -83,6 +81,7 @@ static int tpm_ibmvtpm_recv(struct tpm_chip *chip, u8 *buf, size_t count)
-> >  {
-> >  	struct ibmvtpm_dev *ibmvtpm;
-> >  	u16 len;
-> > +	int sig;
-> >  
-> >  	ibmvtpm = (struct ibmvtpm_dev *)chip->vendor.data;
-> >  
-> > @@ -91,22 +90,23 @@ static int tpm_ibmvtpm_recv(struct tpm_chip *chip, u8 *buf, size_t count)
-> >  		return 0;
-> >  	}
-> >  
-> > -	wait_event_interruptible(wq, ibmvtpm->crq_res.len != 0);
-> > +	sig = wait_event_interruptible(ibmvtpm->wq, ibmvtpm->res_len != 0);
-> > +	if (sig)
-> > +		return -EINTR;
-> > +
-> > +	len = ibmvtpm->res_len;
-> >  
-> > -	if (count < ibmvtpm->crq_res.len) {
-> > +	if (count < len) {
-> >  		dev_err(ibmvtpm->dev,
-> >  			"Invalid size in recv: count=%ld, crq_size=%d\n",
-> > -			count, ibmvtpm->crq_res.len);
-> > +			count, len);
-> >  		return -EIO;
-> >  	}
-> >  
-> >  	spin_lock(&ibmvtpm->rtce_lock);
-> > -	memcpy((void *)buf, (void *)ibmvtpm->rtce_buf, ibmvtpm->crq_res.len);
-> > -	memset(ibmvtpm->rtce_buf, 0, ibmvtpm->crq_res.len);
-> > -	ibmvtpm->crq_res.valid = 0;
-> > -	ibmvtpm->crq_res.msg = 0;
-> > -	len = ibmvtpm->crq_res.len;
-> > -	ibmvtpm->crq_res.len = 0;
-> > +	memcpy((void *)buf, (void *)ibmvtpm->rtce_buf, len);
-> > +	memset(ibmvtpm->rtce_buf, 0, len);
-> > +	ibmvtpm->res_len = 0;
-> >  	spin_unlock(&ibmvtpm->rtce_lock);
-> >  	return len;
-> >  }
-> > @@ -273,7 +273,6 @@ static int __devexit tpm_ibmvtpm_remove(struct vio_dev *vdev)
-> >  	int rc = 0;
-> >  
-> >  	free_irq(vdev->irq, ibmvtpm);
-> > -	tasklet_kill(&ibmvtpm->tasklet);
-> >  
-> >  	do {
-> >  		if (rc)
-> > @@ -372,7 +371,6 @@ static int ibmvtpm_reset_crq(struct ibmvtpm_dev *ibmvtpm)
-> >  static int tpm_ibmvtpm_resume(struct device *dev)
-> >  {
-> >  	struct ibmvtpm_dev *ibmvtpm = ibmvtpm_get_data(dev);
-> > -	unsigned long flags;
-> >  	int rc = 0;
-> >  
-> >  	do {
-> > @@ -387,10 +385,11 @@ static int tpm_ibmvtpm_resume(struct device *dev)
-> >  		return rc;
-> >  	}
-> >  
-> > -	spin_lock_irqsave(&ibmvtpm->lock, flags);
-> > -	vio_disable_interrupts(ibmvtpm->vdev);
-> > -	tasklet_schedule(&ibmvtpm->tasklet);
-> > -	spin_unlock_irqrestore(&ibmvtpm->lock, flags);
-> > +	rc = vio_enable_interrupts(ibmvtpm->vdev);
-> > +	if (rc) {
-> > +		dev_err(dev, "Error vio_enable_interrupts rc=%d\n", rc);
-> > +		return rc;
-> > +	}
-> >  
-> >  	rc = ibmvtpm_crq_send_init(ibmvtpm);
-> >  	if (rc)
-> > @@ -467,7 +466,7 @@ static struct ibmvtpm_crq *ibmvtpm_crq_get_next(struct ibmvtpm_dev *ibmvtpm)
-> >  	if (crq->valid & VTPM_MSG_RES) {
-> >  		if (++crq_q->index == crq_q->num_entry)
-> >  			crq_q->index = 0;
-> > -		rmb();
-> > +		smp_rmb();
-> >  	} else
-> >  		crq = NULL;
-> >  	return crq;
-> > @@ -535,11 +534,9 @@ static void ibmvtpm_crq_process(struct ibmvtpm_crq *crq,
-> >  			ibmvtpm->vtpm_version = crq->data;
-> >  			return;
-> >  		case VTPM_TPM_COMMAND_RES:
-> > -			ibmvtpm->crq_res.valid = crq->valid;
-> > -			ibmvtpm->crq_res.msg = crq->msg;
-> > -			ibmvtpm->crq_res.len = crq->len;
-> > -			ibmvtpm->crq_res.data = crq->data;
-> > -			wake_up_interruptible(&wq);
-> > +			/* len of the data in rtce buffer */
-> > +			ibmvtpm->res_len = crq->len;
-> > +			wake_up_interruptible(&ibmvtpm->wq);
-> >  			return;
-> >  		default:
-> >  			return;
-> > @@ -559,38 +556,19 @@ static void ibmvtpm_crq_process(struct ibmvtpm_crq *crq,
-> >  static irqreturn_t ibmvtpm_interrupt(int irq, void *vtpm_instance)
-> >  {
-> >  	struct ibmvtpm_dev *ibmvtpm = (struct ibmvtpm_dev *) vtpm_instance;
-> > -	unsigned long flags;
-> > -
-> > -	spin_lock_irqsave(&ibmvtpm->lock, flags);
-> > -	vio_disable_interrupts(ibmvtpm->vdev);
-> > -	tasklet_schedule(&ibmvtpm->tasklet);
-> > -	spin_unlock_irqrestore(&ibmvtpm->lock, flags);
-> > -
-> > -	return IRQ_HANDLED;
-> > -}
-> > -
-> > -/**
-> > - * ibmvtpm_tasklet - Interrupt handler tasklet
-> > - * @data:	ibm vtpm device struct
-> > - *
-> > - * Returns:
-> > - *	Nothing
-> > - **/
-> > -static void ibmvtpm_tasklet(void *data)
-> > -{
-> > -	struct ibmvtpm_dev *ibmvtpm = data;
-> >  	struct ibmvtpm_crq *crq;
-> > -	unsigned long flags;
-> >  
-> > -	spin_lock_irqsave(&ibmvtpm->lock, flags);
-> > +	/* while loop is needed for initial setup (get version and
-> > +	 * get rtce_size). There should be only one tpm request at any
-> > +	 * given time.
-> > +	 */
-> >  	while ((crq = ibmvtpm_crq_get_next(ibmvtpm)) != NULL) {
-> >  		ibmvtpm_crq_process(crq, ibmvtpm);
-> >  		crq->valid = 0;
-> > -		wmb();
-> > +		smp_wmb();
-> >  	}
-> >  
-> > -	vio_enable_interrupts(ibmvtpm->vdev);
-> > -	spin_unlock_irqrestore(&ibmvtpm->lock, flags);
-> > +	return IRQ_HANDLED;
-> >  }
-> >  
-> >  /**
-> > @@ -650,9 +628,6 @@ static int __devinit tpm_ibmvtpm_probe(struct vio_dev *vio_dev,
-> >  		goto reg_crq_cleanup;
-> >  	}
-> >  
-> > -	tasklet_init(&ibmvtpm->tasklet, (void *)ibmvtpm_tasklet,
-> > -		     (unsigned long)ibmvtpm);
-> > -
-> >  	rc = request_irq(vio_dev->irq, ibmvtpm_interrupt, 0,
-> >  			 tpm_ibmvtpm_driver_name, ibmvtpm);
-> >  	if (rc) {
-> > @@ -666,13 +641,14 @@ static int __devinit tpm_ibmvtpm_probe(struct vio_dev *vio_dev,
-> >  		goto init_irq_cleanup;
-> >  	}
-> >  
-> > +	init_waitqueue_head(&ibmvtpm->wq);
-> > +
-> >  	crq_q->index = 0;
-> >  
-> >  	ibmvtpm->dev = dev;
-> >  	ibmvtpm->vdev = vio_dev;
-> >  	chip->vendor.data = (void *)ibmvtpm;
-> >  
-> > -	spin_lock_init(&ibmvtpm->lock);
-> >  	spin_lock_init(&ibmvtpm->rtce_lock);
-> >  
-> >  	rc = ibmvtpm_crq_send_init(ibmvtpm);
-> > @@ -689,7 +665,6 @@ static int __devinit tpm_ibmvtpm_probe(struct vio_dev *vio_dev,
-> >  
-> >  	return rc;
-> >  init_irq_cleanup:
-> > -	tasklet_kill(&ibmvtpm->tasklet);
-> >  	do {
-> >  		rc1 = plpar_hcall_norets(H_FREE_CRQ, vio_dev->unit_address);
-> >  	} while (rc1 == H_BUSY || H_IS_LONG_BUSY(rc1));
-> > diff --git a/drivers/char/tpm/tpm_ibmvtpm.h b/drivers/char/tpm/tpm_ibmvtpm.h
-> > index 4296eb4..bd82a79 100644
-> > --- a/drivers/char/tpm/tpm_ibmvtpm.h
-> > +++ b/drivers/char/tpm/tpm_ibmvtpm.h
-> > @@ -38,13 +38,12 @@ struct ibmvtpm_dev {
-> >  	struct vio_dev *vdev;
-> >  	struct ibmvtpm_crq_queue crq_queue;
-> >  	dma_addr_t crq_dma_handle;
-> > -	spinlock_t lock;
-> > -	struct tasklet_struct tasklet;
-> >  	u32 rtce_size;
-> >  	void __iomem *rtce_buf;
-> >  	dma_addr_t rtce_dma_handle;
-> >  	spinlock_t rtce_lock;
-> > -	struct ibmvtpm_crq crq_res;
-> > +	wait_queue_head_t wq;
-> > +	u16 res_len;
-> >  	u32 vtpm_version;
-> >  };
-> >  
-> > -- 
-> > 1.7.11.2
-> > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
-> 
-> -- 
-> James Morris
-> <jmorris@namei.org>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+diff --git a/drivers/usb/host/ehci-fsl.c b/drivers/usb/host/ehci-fsl.c
+index 11ff4b4..9bfde82 100644
+--- a/drivers/usb/host/ehci-fsl.c
++++ b/drivers/usb/host/ehci-fsl.c
+@@ -267,8 +267,7 @@ static int ehci_fsl_setup_phy(struct usb_hcd *hcd,
+ 		break;
+ 	}
+ 
+-	if ((pdata->controller_ver) && ((phy_mode == FSL_USB2_PHY_ULPI) ||
+-			(phy_mode == FSL_USB2_PHY_UTMI))) {
++	if (pdata->controller_ver && (phy_mode == FSL_USB2_PHY_ULPI)) {
+ 		/* check PHY_CLK_VALID to get phy clk valid */
+ 		if (!spin_event_timeout(in_be32(non_ehci + FSL_SOC_USB_CTRL) &
+ 				PHY_CLK_VALID, FSL_USB_PHY_CLK_TIMEOUT, 0)) {
+diff --git a/include/linux/fsl_devices.h b/include/linux/fsl_devices.h
+index ccfc4bb..700bf31 100644
+--- a/include/linux/fsl_devices.h
++++ b/include/linux/fsl_devices.h
+@@ -19,7 +19,7 @@
+ 
+ #define FSL_UTMI_PHY_DLY	10	/*As per P1010RM, delay for UTMI
+ 				PHY CLK to become stable - 10ms*/
+-#define FSL_USB_PHY_CLK_TIMEOUT	1000	/* uSec */
++#define FSL_USB_PHY_CLK_TIMEOUT	10000	/* uSec */
+ #define FSL_USB_VER_OLD		0
+ #define FSL_USB_VER_1_6		1
+ #define FSL_USB_VER_2_2		2
+-- 
+1.6.4
