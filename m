@@ -1,42 +1,26 @@
-Return-Path: <key@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <greg@kroah.com>
+Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
+ [66.111.4.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 35C022C0083
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 01:49:18 +1000 (EST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
- Mon, 24 Sep 2012 09:49:15 -0600
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
- [9.17.195.107])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id DA46119D8041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 09:48:34 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q8OFmSCi206580
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 09:48:29 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q8OFmS60028236
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 09:48:28 -0600
-Date: Mon, 24 Sep 2012 10:48:21 -0500
-From: key@linux.vnet.ibm.com
-To: key@linux.vnet.ibm.com
-Subject: Re: [PATCH 1/1] drivers/char/tpm: remove tasklet and cleanup
-Message-ID: <20120924154821.GA16007@ennui.austin.ibm.com>
-References: <1345670263.25124.7.camel@footlong>
- <1347472190.27058.5.camel@footlong>
- <alpine.LRH.2.02.1209241225230.678@tundra.namei.org>
- <20120924141041.GA2741@ennui.austin.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 2DAC12C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 03:28:01 +1000 (EST)
+Date: Mon, 24 Sep 2012 10:27:52 -0700
+From: Greg KH <greg@kroah.com>
+To: Liu Shengzhou-B36685 <B36685@freescale.com>
+Subject: Re: [PATCH v3] powerpc/usb: fix bug of CPU hang when missing USB PHY
+ clock
+Message-ID: <20120924172752.GC32691@kroah.com>
+References: <1347958359-20153-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <20120921164342.GA31272@kroah.com>
+ <E182B82C-A53B-4013-9D3B-0271268A6A96@kernel.crashing.org>
+ <20120922144853.GA10935@kroah.com>
+ <3F453DDFF675A64A89321A1F352810217FFC51@039-SN1MPN1-004.039d.mgd.msft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120924141041.GA2741@ennui.austin.ibm.com>
-Cc: rcj@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
- tpmdd-devel@lists.sourceforge.net, adlai@us.ibm.com,
- Ashley Lai <adlai@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <3F453DDFF675A64A89321A1F352810217FFC51@039-SN1MPN1-004.039d.mgd.msft.net>
+Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,27 +30,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Sep 24, 2012 at 09:10:41AM -0500, key@linux.vnet.ibm.com wrote:
-> On Mon, Sep 24, 2012 at 12:26:05PM +1000, James Morris wrote:
-> > On Wed, 12 Sep 2012, Ashley Lai wrote:
-> > 
-> > > This patch removed the tasklet and moved the wait queue into the
-> > > private structure.  It also cleaned up the response CRQ path.
-> > > 
-> > > Signed-off-by: Ashley Lai <adlai@us.ibm.com>
-> > 
-> > 
-> > Kent: any comment on this?  You should probably push this to me via your 
-> > tree.
+On Mon, Sep 24, 2012 at 02:44:19PM +0000, Liu Shengzhou-B36685 wrote:
 > 
->   Oh, I thought we were waiting on Ben. This looks good to me, I'll get
-> this to you today.
-
-  Ashley tells me Ben's review is in the works, so I'll send once we
-have it.
-
-Kent
-
+> > -----Original Message-----
+> > From: Greg KH [mailto:greg@kroah.com]
+> > Sent: 2012年9月22日 22:49
+> > To: Kumar Gala
+> > Cc: Liu Shengzhou-B36685; linuxppc-dev@lists.ozlabs.org; linux-
+> > usb@vger.kernel.org
+> > Subject: Re: [PATCH v3] powerpc/usb: fix bug of CPU hang when missing
+> > USB PHY clock
+> > 
+> > On Sat, Sep 22, 2012 at 09:39:15AM -0500, Kumar Gala wrote:
+> > >
+> > > On Sep 21, 2012, at 11:43 AM, Greg KH wrote:
+> > >
+> > > > On Tue, Sep 18, 2012 at 04:52:39PM +0800, Shengzhou Liu wrote:
+> > > >> when missing USB PHY clock, kernel booting up will hang during USB
+> > > >> initialization. We should check USBGP[PHY_CLK_VALID] bit to avoid
+> > > >> CPU hanging in this case.
+> > > >>
+> > > >> Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+> > > >> ---
+> > > >> v3 change: no check for UTMI PHY.
+> > > >> v2 change: use spin_event_timeout() instead.
+> > > >>
+> > > >> drivers/usb/host/ehci-fsl.c |   57 +++++++++++++++++++++++++++++--
+> > -----------
+> > > >> drivers/usb/host/ehci-fsl.h |    1 +
+> > > >> include/linux/fsl_devices.h |    1 +
+> > > >> 3 files changed, 41 insertions(+), 18 deletions(-)
+> > > >
+> > > > This is already applied, right?
+> > > >
+> > > > greg k-h
+> > >
+> > > It appears that v2 of the patch is applied to your usb-next branch.
+> > >
+> > > in drivers/usb/host/ehci-fsl.c
+> > >
+> > > V2:
+> > > @@ -262,23 +266,34 @@ static void ehci_fsl_setup_phy(struct usb_hcd
+> > *hcd,
+> > >         case FSL_USB2_PHY_NONE:
+> > >                 break;
+> > >         }
+> > > +
+> > > +       if ((pdata->controller_ver) && ((phy_mode ==
+> > FSL_USB2_PHY_ULPI) ||
+> > > +                       (phy_mode == FSL_USB2_PHY_UTMI))) {
+> > >
+> > > V3:
+> > >
+> > > @@ -262,23 +266,33 @@  static void ehci_fsl_setup_phy(struct usb_hcd
+> > *hcd,
+> > >
+> > >  	case FSL_USB2_PHY_NONE:
+> > >  		break;
+> > >  	}
+> > >
+> > > +
+> > > +	if (pdata->controller_ver && (phy_mode == FSL_USB2_PHY_ULPI)) {
+> > > +		/* check PHY_CLK_VALID to get phy clk valid */
+> > 
+> > Ok, can someone please make the incremental patch that I need to apply
+> > here and send it to me?
+> > 
+> > thanks,
+> > 
+> > greg k-h
 > 
->   Kent
+> Hi greg,
 > 
+> I have sent the below incremental patch to you, please squash it into the previous patch v2, which had been applied in your usb-next branch. 
+> http://patchwork.ozlabs.org/patch/186443/
+
+Given that this is a git tree, "squashing" patches does not work at all.
+I'll just apply it as-is.
+
+thanks,
+
+greg k-h
