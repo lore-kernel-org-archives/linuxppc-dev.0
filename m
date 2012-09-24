@@ -1,22 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BC5E42C0085
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 15:31:06 +1000 (EST)
-Message-ID: <1348464657.1132.86.camel@pasglop>
-Subject: Re: [RFC PATCH powerpc] Fix a lazy irq related WARING in
- arch_local_irq_restore()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Date: Mon, 24 Sep 2012 15:30:57 +1000
-In-Reply-To: <1348458962.2475.8.camel@ThinkPad-T420>
-References: <1348458962.2475.8.camel@ThinkPad-T420>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B31939@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8BFB82C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Sep 2012 15:51:01 +1000 (EST)
+From: Minghuan Lian <Minghuan.Lian@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH][v2] powerpc/fsl-pci: use 'Header Type' to identify PCIE mode
+Date: Mon, 24 Sep 2012 13:50:52 +0800
+Message-ID: <1348465852-6507-1-git-send-email-Minghuan.Lian@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Minghuan Lian <Minghuan.Lian@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,76 +23,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-09-24 at 11:56 +0800, Li Zhong wrote:
-> This patch tries to fix a WARNING in irq.c(below), when doing cpu offline/online. 
-> 
-> The reason is that if the preferred offline state is CPU_STATE_INACTIVE, when
-> cpu offline, pseries_mach_cpu_die() calls extended_cede_processor() to cede
-> the processor. After the hv call returns, the MSR_EE is enabled, while
-> the irq_happened in paca should already be set as PACA_IRQ_HARD_DIS.
-> 
-> Then when the cpu is put online again, the warning is reported when
-> start_secondary() tries to enable irq. [ Sometimes, we don't see this warning,
-> that's because when we come to local_irq_enable(), there might already have been
-> some interrupts occurred, e.g. PACA_IRQ_DEC is already set. ]
-> 
-> The patch tries to clear MSR_EE by calling __hard_irq_disable() after cede
-> returns, and before calling start_secondary_resume(). 
+The original code uses 'Programming Interface' field to judge if PCIE is
+EP or RC mode, however, some latest silicons do not support this functionality.
+According to PCIE specification, 'Header Type' offset 0x0e is used to
+indicate header type, so change code to use 'Header Type' field to
+judge PCIE mode. Because FSL PCI controller does not support 'Header Type',
+patch still uses 'Programming Interface' to identify PCI mode.
 
-Is that enough ? Do we know for sure we won't get a stray IPI or
-interrupt which then will reach us with an inconsistent HW/SW enable
-state ?
+Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+---
+Change log:
+v2 - 
+keep the original PCI initialization order according to kumar's recommendations.
 
-We might need to "sanitize" the enable state in the PACA before we
-actually enter NAP or in the return from NAP code, like we do for normal
-idle code...
+ arch/powerpc/sysdev/fsl_pci.c |   37 ++++++++++++++++++++++++-------------
+ 1 file changed, 24 insertions(+), 13 deletions(-)
 
-Cheers,
-Ben.
-
-> [   56.618846] WARNING: at arch/powerpc/kernel/irq.c:240
-> [   56.618851] Modules linked in: rcutorture ipv6 dm_mod ext3 jbd mbcache sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt ibmveth
-> [   56.618883] NIP: c00000000000ff94 LR: c00000000067a5e0 CTR: 0000000000000001
-> [   56.618889] REGS: c0000001fef6bbe0 TRAP: 0700   Not tainted  (3.6.0-rc1-autokern1)
-> [   56.618894] MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 42000082  XER: 20000000
-> [   56.618913] SOFTE: 1
-> [   56.618916] CFAR: c00000000067a5dc
-> [   56.618920] TASK = c0000001feed79a0[0] 'swapper/5' THREAD: c0000001fef68000 CPU: 5
-> GPR00: 0000000000000001 c0000001fef6be60 c000000000f9ca08 0000000000000001 
-> GPR04: 0000000000000001 0000000000000008 0000000000000001 0000000000000000 
-> GPR08: 0000000000000000 c0000001feed79a0 0008a80000000000 0000000000000000 
-> GPR12: 0000000022000082 c00000000f330f00 c0000001fef6bf90 000000000f394b4c 
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> GPR24: c000000000fe8f80 0000000000000008 0000000000000028 0000000000000000 
-> GPR28: 0000000000000000 0000000000000020 c000000000f1ab40 0000000000000001 
-> [   56.619014] NIP [c00000000000ff94] .arch_local_irq_restore+0x34/0xa0
-> [   56.619020] LR [c00000000067a5e0] .start_secondary+0x368/0x37c
-> [   56.619025] Call Trace:
-> [   56.619030] [c0000001fef6be60] [c000000001ba0500] 0xc000000001ba0500 (unreliable)
-> [   56.619038] [c0000001fef6bed0] [c00000000067a5e0] .start_secondary+0x368/0x37c
-> [   56.619046] [c0000001fef6bf90] [c000000000009380] .start_secondary_resume+0x10/0x14
-> [   56.619052] Instruction dump:
-> [   56.619056] f8010010 f821ff91 986d022a 2fa30000 419e0054 880d022b 78000621 41820048 
-> [   56.619071] 2f800001 40de0064 7c0000a6 78008fe2 <0b000000> 2fa00000 40de0050 38000000 
-> [   56.619088] ---[ end trace 0199c0d783d7f9ba ]---
-> 
-> Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> index 64c97d8..8de539a 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> @@ -137,6 +137,8 @@ static void pseries_mach_cpu_die(void)
->  		if (get_preferred_offline_state(cpu) == CPU_STATE_ONLINE) {
->  			unregister_slb_shadow(hwcpu);
->  
-> +			__hard_irq_disable();
-> +
->  			/*
->  			 * Call to start_secondary_resume() will not return.
->  			 * Kernel stack will be reset and start_secondary()
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index c37f461..468e76c 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -38,15 +38,15 @@ static int fsl_pcie_bus_fixup, is_mpc83xx_pci;
+ 
+ static void __devinit quirk_fsl_pcie_header(struct pci_dev *dev)
+ {
+-	u8 progif;
++	u8 hdr_type;
+ 
+ 	/* if we aren't a PCIe don't bother */
+ 	if (!pci_find_capability(dev, PCI_CAP_ID_EXP))
+ 		return;
+ 
+ 	/* if we aren't in host mode don't bother */
+-	pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
+-	if (progif & 0x1)
++	pci_read_config_byte(dev, PCI_HEADER_TYPE, &hdr_type);
++	if ((hdr_type & 0x7f) != PCI_HEADER_TYPE_BRIDGE)
+ 		return;
+ 
+ 	dev->class = PCI_CLASS_BRIDGE_PCI << 8;
+@@ -425,7 +425,7 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	struct pci_controller *hose;
+ 	struct resource rsrc;
+ 	const int *bus_range;
+-	u8 progif;
++	u8 hdr_type, progif;
+ 
+ 	if (!of_device_is_available(dev)) {
+ 		pr_warning("%s: disabled\n", dev->full_name);
+@@ -457,15 +457,17 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	setup_indirect_pci(hose, rsrc.start, rsrc.start + 0x4,
+ 		PPC_INDIRECT_TYPE_BIG_ENDIAN);
+ 
+-	early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
+-	if ((progif & 1) == 1) {
+-		/* unmap cfg_data & cfg_addr separately if not on same page */
+-		if (((unsigned long)hose->cfg_data & PAGE_MASK) !=
+-		    ((unsigned long)hose->cfg_addr & PAGE_MASK))
+-			iounmap(hose->cfg_data);
+-		iounmap(hose->cfg_addr);
+-		pcibios_free_controller(hose);
+-		return -ENODEV;
++	if (early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP)) {
++		/* For PCIE read HEADER_TYPE to identify controler mode */
++		early_read_config_byte(hose, 0, 0, PCI_HEADER_TYPE, &hdr_type);
++		if ((hdr_type & 0x7f) != PCI_HEADER_TYPE_BRIDGE)
++			goto no_bridge;
++
++	} else {
++		/* For PCI read PROG to identify controller mode */
++		early_read_config_byte(hose, 0, 0, PCI_CLASS_PROG, &progif);
++		if ((progif & 1) == 1)
++			goto no_bridge;
+ 	}
+ 
+ 	setup_pci_cmd(hose);
+@@ -494,6 +496,15 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	setup_pci_atmu(hose, &rsrc);
+ 
+ 	return 0;
++
++no_bridge:
++	/* unmap cfg_data & cfg_addr separately if not on same page */
++	if (((unsigned long)hose->cfg_data & PAGE_MASK) !=
++	    ((unsigned long)hose->cfg_addr & PAGE_MASK))
++		iounmap(hose->cfg_data);
++	iounmap(hose->cfg_addr);
++	pcibios_free_controller(hose);
++	return -ENODEV;
+ }
+ #endif /* CONFIG_FSL_SOC_BOOKE || CONFIG_PPC_86xx */
+ 
+-- 
+1.7.9.5
