@@ -1,19 +1,29 @@
-Return-Path: <teodori.serge@gmail.com>
-Received: from mail-wi0-f169.google.com (mail-wi0-f169.google.com
- [209.85.212.169])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 84E8A2C007C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 22:27:24 +1000 (EST)
-Received: by wiwc10 with SMTP id c10so2347052wiw.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 05:27:20 -0700 (PDT)
-MIME-Version: 1.0
-Date: Tue, 25 Sep 2012 14:27:18 +0200
-Message-ID: <CANUt7sogbn9ujj3rJHEgYwqEyWzYmEQtCDxOdCJH3yu8spdpxQ@mail.gmail.com>
-Subject: /dev/port under powerpc
-From: Serge Teodori <teodori.serge@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=20cf302079f4bc7b0904ca85d33e
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E20732C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 23:18:16 +1000 (EST)
+In-Reply-To: <1348479715.1132.91.camel@pasglop>
+References: <alpine.LNX.2.00.1209212355050.8539@linmac>
+ <50EE7AAC-3080-4B1B-B741-E3F7F5A57A73@kernel.crashing.org>
+ <alpine.LNX.2.00.1209221412010.1468@linmac>
+ <20120922102151.GA31314@visitor2.iram.es>
+ <alpine.LNX.2.00.1209221936330.3878@linmac>
+ <BB86F53C-6C09-41DB-9FF3-38E3027BCC82@kernel.crashing.org>
+ <1348343737.1132.74.camel@pasglop>
+ <35A5B006-1E4E-4355-A6A4-CA5F7371D21C@kernel.crashing.org>
+ <20120924075546.GA4263@visitor2.iram.es> <1348473517.1132.87.camel@pasglop>
+ <20120924080633.GA8127@visitor2.iram.es> <1348479715.1132.91.camel@pasglop>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CA1BC0F6-577D-4CEF-85C9-599774B176C9@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Probing for native availability of isel from userspace
+Date: Tue, 25 Sep 2012 15:17:21 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: malc <av1474@comtv.ru>, linuxppc-dev@lists.ozlabs.org,
+ hollis@penguinppc.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,20 +33,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---20cf302079f4bc7b0904ca85d33e
-Content-Type: text/plain; charset=ISO-8859-1
+>> Fine. But I believe that mfpvr emulation came first, which is the  
+>> point
+>> I object to (see the mess that the fact that CPUID is available to
+>> applications made to x86 when SSE registers were added).
+>
+> Heh, possibly, I don't remember... I added the cputable, I think we
+> added mfpvr because we didn't have anything, then I added cputable  
+> which
+> got us the HW caps, but some old stuff still relied on mfpvr so we
+> couldn't completely remove it.
 
-Hello,
-I am curently doing some cleanup, and noticed 'arch_has_dev_port()' could
-be omitted if 'arch/powerpc/configs/*' would be update with
-'CONFIG_DEVPORT'. My question is, which ones have or have not an 'isa pci
-bridge'.
-
---20cf302079f4bc7b0904ca85d33e
-Content-Type: text/html; charset=ISO-8859-1
-
-<p>Hello,<br>
-I am curently doing some cleanup, and noticed &#39;arch_has_dev_port()&#39; could be omitted if &#39;arch/powerpc/configs/*&#39; would be update with &#39;CONFIG_DEVPORT&#39;. My question is, which ones have or have not an &#39;isa pci bridge&#39;.</p>
+If I have my history right end up, MFPVR emulation was added for MoL.
+Which is funny (if you like that kind of thing) because it now hurts
+all other "hypervisor in userspace" kind of things, that might want
+to lie in their emulated PVR...
 
 
---20cf302079f4bc7b0904ca85d33e--
+Segher
