@@ -1,22 +1,17 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 19CA12C008E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 10:41:00 +1000 (EST)
-Date: Mon, 24 Sep 2012 19:40:46 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: Probing for native availability of isel from userspace
+Return-Path: <av1474@comtv.ru>
+Received: from akado.ru (fe02x03-cgp.akado.ru [77.232.31.165])
+ by ozlabs.org (Postfix) with ESMTP id 4DD0B2C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 10:47:45 +1000 (EST)
+Date: Tue, 25 Sep 2012 04:47:28 +0400 (MSK)
+From: malc <av1474@comtv.ru>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Probing for native availability of isel from userspace
+In-Reply-To: <1348533123.1132.102.camel@pasglop>
+Message-ID: <alpine.LNX.2.00.1209250446300.9670@linmac>
 References: <1348530909.25867.29@snotra> <1348533123.1132.102.camel@pasglop>
-In-Reply-To: <1348533123.1132.102.camel@pasglop> (from
- benh@kernel.crashing.org on Mon Sep 24 19:32:03 2012)
-Message-ID: <1348533646.25867.33@snotra>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: malc <av1474@comtv.ru>, linuxppc-dev@lists.ozlabs.org,
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
  hollis@penguinppc.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,19 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/24/2012 07:32:03 PM, Benjamin Herrenschmidt wrote:
+On Tue, 25 Sep 2012, Benjamin Herrenschmidt wrote:
+
 > On Mon, 2012-09-24 at 18:55 -0500, Scott Wood wrote:
-> > The ISA says that isel is "Category: Phased-In (sV2.06)" -- are =20
-> there
+> > The ISA says that isel is "Category: Phased-In (sV2.06)" -- are there  
 > > any 2.06 chips that don't have it?
->=20
-> I believe "malc" is interested in knowing about pre-2.06 chips that =20
-> have
+> 
+> I believe "malc" is interested in knowing about pre-2.06 chips that have
 > it.
+> 
 
-You said to key off of 2.06 plus a PVR whitelist for pre-2.06 chips =20
-that have it.  Wouldn't you also need a PVR blacklist for 2.06 chips =20
-that don't have it (unless there are no such things)?  Or if one is =20
-only interested in pre-2.06 chips, why check for 2.06 at all?
+That too, but also what 's' prefix means.
 
--Scott=
+-- 
+mailto:av1474@comtv.ru
