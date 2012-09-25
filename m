@@ -1,31 +1,30 @@
-Return-Path: <aarcange@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 6A7842C008F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2012 05:34:27 +1000 (EST)
-Date: Tue, 25 Sep 2012 21:33:57 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-Subject: Re: [PATCH v4 0/8] Avoid cache trashing on clearing huge/gigantic page
-Message-ID: <20120925193356.GX7620@redhat.com>
-References: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
- <20120913160506.d394392a.akpm@linux-foundation.org>
- <20120914055210.GC9043@gmail.com>
- <20120925142703.GA1598@otc-wbsnb-06>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20120925142703.GA1598@otc-wbsnb-06>
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
- Jan Beulich <jbeulich@novell.com>, linux-mm@kvack.org,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Ingo Molnar <mingo@kernel.org>, Andi Kleen <ak@linux.intel.com>,
- Robert Richter <robert.richter@amd.com>, x86@kernel.org,
- Hugh Dickins <hughd@google.com>, Ingo Molnar <mingo@redhat.com>,
- Mel Gorman <mgorman@suse.de>, Alex Shi <alex.shu@intel.com>,
- Thomas Gleixner <tglx@linutronix.de>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
- Tim Chen <tim.c.chen@linux.intel.com>, linux-kernel@vger.kernel.org,
- Andy Lutomirski <luto@amacapital.net>, Johannes Weiner <hannes@cmpxchg.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DAA1E2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2012 06:59:55 +1000 (EST)
+Message-ID: <1348606771.7937.8.camel@pasglop>
+Subject: Re: Probing for native availability of isel from userspace
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Wed, 26 Sep 2012 06:59:31 +1000
+In-Reply-To: <CA1BC0F6-577D-4CEF-85C9-599774B176C9@kernel.crashing.org>
+References: <alpine.LNX.2.00.1209212355050.8539@linmac>
+ <50EE7AAC-3080-4B1B-B741-E3F7F5A57A73@kernel.crashing.org>
+ <alpine.LNX.2.00.1209221412010.1468@linmac>
+ <20120922102151.GA31314@visitor2.iram.es>
+ <alpine.LNX.2.00.1209221936330.3878@linmac>
+ <BB86F53C-6C09-41DB-9FF3-38E3027BCC82@kernel.crashing.org>
+ <1348343737.1132.74.camel@pasglop>
+ <35A5B006-1E4E-4355-A6A4-CA5F7371D21C@kernel.crashing.org>
+ <20120924075546.GA4263@visitor2.iram.es> <1348473517.1132.87.camel@pasglop>
+ <20120924080633.GA8127@visitor2.iram.es> <1348479715.1132.91.camel@pasglop>
+ <CA1BC0F6-577D-4CEF-85C9-599774B176C9@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: malc <av1474@comtv.ru>, linuxppc-dev@lists.ozlabs.org,
+ hollis@penguinppc.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,63 +34,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kirill,
-
-On Tue, Sep 25, 2012 at 05:27:03PM +0300, Kirill A. Shutemov wrote:
-> On Fri, Sep 14, 2012 at 07:52:10AM +0200, Ingo Molnar wrote:
-> > Without repeatable hard numbers such code just gets into the 
-> > kernel and bitrots there as new CPU generations come in - a few 
-> > years down the line the original decisions often degrade to pure 
-> > noise. We've been there, we've done that, we don't want to 
-> > repeat it.
+On Tue, 2012-09-25 at 15:17 +0200, Segher Boessenkool wrote:
+> >> Fine. But I believe that mfpvr emulation came first, which is the  
+> >> point
+> >> I object to (see the mess that the fact that CPUID is available to
+> >> applications made to x86 when SSE registers were added).
+> >
+> > Heh, possibly, I don't remember... I added the cputable, I think we
+> > added mfpvr because we didn't have anything, then I added cputable  
+> > which
+> > got us the HW caps, but some old stuff still relied on mfpvr so we
+> > couldn't completely remove it.
 > 
-> <sorry, for late answer..>
-> 
-> Hard numbers are hard.
-> I've checked some workloads: Mosbench, NPB, specjvm2008. Most of time the
-> patchset doesn't show any difference (within run-to-run deviation).
-> On NPB it recovers THP regression, but it's probably not enough to make
-> decision.
-> 
-> It would be nice if somebody test the patchset on other system or
-> workload. Especially, if the configuration shows regression with
-> THP enabled.
+> If I have my history right end up, MFPVR emulation was added for MoL.
+> Which is funny (if you like that kind of thing) because it now hurts
+> all other "hypervisor in userspace" kind of things, that might want
+> to lie in their emulated PVR...
 
-If the only workload that gets a benefit is NPB then we've the proof
-this is too hardware dependend to be a conclusive result.
+Are you sure ? MOL had a kernel module, it wouldn't have needed that...
 
-It may have been slower by an accident, things like cache
-associativity off by one bit, combined with the implicit coloring
-provided to the lowest 512 colors could hurts more if the cache
-associativity is low.
-
-I'm saying this because NPB on a thinkpad (Intel CPU I assume) is the
-benchmark that shows the most benefit among all benchmarks run on that
-hardware.
-
-http://www.phoronix.com/scan.php?page=article&item=linux_transparent_hugepages&num=2
-
-I've once seen certain computations that run much slower with perfect
-cache coloring but most others runs much faster with the page
-coloring. Doesn't mean page coloring is bad per se. So the NPB on that
-specific hardware may have been the exception and not the interesting
-case. Especially considering the effect of cache-copying is opposite
-on slightly different hw.
-
-I think the the static_key should be off by default whenever the CPU
-L2 cache size is >= the size of the copy (2*HPAGE_PMD_SIZE). Now the
-cache does random replacement so maybe we could also allow cache
-copies for twice the size of the copy (L2size >=
-4*HPAGE_PMD_SIZE). Current CPUs have caches much larger than 2*2MB...
-
-It would make a whole lot more sense for hugetlbfs giga pages than for
-THP (unlike for THP, cache trashing with giga pages is guaranteed),
-but even with giga pages, it's not like they're allocated frequently
-(maybe once per OS reboot) so that's also sure totally lost in the
-noise as it only saves a few accesses after the cache copy is
-finished.
-
-It's good to have tested it though.
-
-Thanks,
-Andrea
+Cheers,
+Ben.
