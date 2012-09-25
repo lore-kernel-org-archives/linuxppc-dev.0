@@ -2,26 +2,17 @@ Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E20732C008A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 23:18:16 +1000 (EST)
-In-Reply-To: <1348479715.1132.91.camel@pasglop>
-References: <alpine.LNX.2.00.1209212355050.8539@linmac>
- <50EE7AAC-3080-4B1B-B741-E3F7F5A57A73@kernel.crashing.org>
- <alpine.LNX.2.00.1209221412010.1468@linmac>
- <20120922102151.GA31314@visitor2.iram.es>
- <alpine.LNX.2.00.1209221936330.3878@linmac>
- <BB86F53C-6C09-41DB-9FF3-38E3027BCC82@kernel.crashing.org>
- <1348343737.1132.74.camel@pasglop>
- <35A5B006-1E4E-4355-A6A4-CA5F7371D21C@kernel.crashing.org>
- <20120924075546.GA4263@visitor2.iram.es> <1348473517.1132.87.camel@pasglop>
- <20120924080633.GA8127@visitor2.iram.es> <1348479715.1132.91.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id 3678A2C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Sep 2012 23:32:55 +1000 (EST)
+In-Reply-To: <1348530909.25867.29@snotra>
+References: <1348530909.25867.29@snotra>
 Mime-Version: 1.0 (Apple Message framework v753.1)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CA1BC0F6-577D-4CEF-85C9-599774B176C9@kernel.crashing.org>
+Message-Id: <370AE837-07FF-4A85-9524-66D8EE185C40@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: Probing for native availability of isel from userspace
-Date: Tue, 25 Sep 2012 15:17:21 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 25 Sep 2012 15:31:40 +0200
+To: Scott Wood <scottwood@freescale.com>
 Cc: malc <av1474@comtv.ru>, linuxppc-dev@lists.ozlabs.org,
  hollis@penguinppc.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -33,21 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Fine. But I believe that mfpvr emulation came first, which is the  
->> point
->> I object to (see the mess that the fact that CPUID is available to
->> applications made to x86 when SSE registers were added).
+>> That's for 64-bit; another good option for 64-bit is to just never  
+>> use
+>> isel, it hardly ever buys you anything.  It is much more useful on  
+>> the
+>> (older) 32-bit cores that support it.
 >
-> Heh, possibly, I don't remember... I added the cputable, I think we
-> added mfpvr because we didn't have anything, then I added cputable  
-> which
-> got us the HW caps, but some old stuff still relied on mfpvr so we
-> couldn't completely remove it.
+> Why is it more useful on 32-bit?  If you're referring to the  
+> performance of specific cores rather than some architectural thing,  
+> maybe that's true with some chips, but on the Freescale side I'd be  
+> surprised if e5500 were much different from e500v2 in that regard.
 
-If I have my history right end up, MFPVR emulation was added for MoL.
-Which is funny (if you like that kind of thing) because it now hurts
-all other "hypervisor in userspace" kind of things, that might want
-to lie in their emulated PVR...
+Yes, I was talking about the older cores.  I'd be surprised if ISEL is
+often a win on e5500, but I don't really know.  I forgot about that chip
+to tell you the truth :-)
 
 
 Segher
