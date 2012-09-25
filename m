@@ -1,23 +1,23 @@
-Return-Path: <kas@linux.intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by ozlabs.org (Postfix) with ESMTP id 65C4B2C007C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2012 00:26:36 +1000 (EST)
-Date: Tue, 25 Sep 2012 17:27:03 +0300
-From: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
-To: Ingo Molnar <mingo@kernel.org>
+Return-Path: <aarcange@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 6A7842C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2012 05:34:27 +1000 (EST)
+Date: Tue, 25 Sep 2012 21:33:57 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>
 Subject: Re: [PATCH v4 0/8] Avoid cache trashing on clearing huge/gigantic page
-Message-ID: <20120925142703.GA1598@otc-wbsnb-06>
+Message-ID: <20120925193356.GX7620@redhat.com>
 References: <1345470757-12005-1-git-send-email-kirill.shutemov@linux.intel.com>
  <20120913160506.d394392a.akpm@linux-foundation.org>
  <20120914055210.GC9043@gmail.com>
+ <20120925142703.GA1598@otc-wbsnb-06>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="k+w/mQv8wyuph6w0"
-In-Reply-To: <20120914055210.GC9043@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20120925142703.GA1598@otc-wbsnb-06>
 Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
  Jan Beulich <jbeulich@novell.com>, linux-mm@kvack.org,
  "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- Andrea Arcangeli <aarcange@redhat.com>, Andi Kleen <ak@linux.intel.com>,
+ Ingo Molnar <mingo@kernel.org>, Andi Kleen <ak@linux.intel.com>,
  Robert Richter <robert.richter@amd.com>, x86@kernel.org,
  Hugh Dickins <hughd@google.com>, Ingo Molnar <mingo@redhat.com>,
  Mel Gorman <mgorman@suse.de>, Alex Shi <alex.shu@intel.com>,
@@ -35,54 +35,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Kirill,
 
---k+w/mQv8wyuph6w0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, Sep 25, 2012 at 05:27:03PM +0300, Kirill A. Shutemov wrote:
+> On Fri, Sep 14, 2012 at 07:52:10AM +0200, Ingo Molnar wrote:
+> > Without repeatable hard numbers such code just gets into the 
+> > kernel and bitrots there as new CPU generations come in - a few 
+> > years down the line the original decisions often degrade to pure 
+> > noise. We've been there, we've done that, we don't want to 
+> > repeat it.
+> 
+> <sorry, for late answer..>
+> 
+> Hard numbers are hard.
+> I've checked some workloads: Mosbench, NPB, specjvm2008. Most of time the
+> patchset doesn't show any difference (within run-to-run deviation).
+> On NPB it recovers THP regression, but it's probably not enough to make
+> decision.
+> 
+> It would be nice if somebody test the patchset on other system or
+> workload. Especially, if the configuration shows regression with
+> THP enabled.
 
-On Fri, Sep 14, 2012 at 07:52:10AM +0200, Ingo Molnar wrote:
-> Without repeatable hard numbers such code just gets into the=20
-> kernel and bitrots there as new CPU generations come in - a few=20
-> years down the line the original decisions often degrade to pure=20
-> noise. We've been there, we've done that, we don't want to=20
-> repeat it.
+If the only workload that gets a benefit is NPB then we've the proof
+this is too hardware dependend to be a conclusive result.
 
-<sorry, for late answer..>
+It may have been slower by an accident, things like cache
+associativity off by one bit, combined with the implicit coloring
+provided to the lowest 512 colors could hurts more if the cache
+associativity is low.
 
-Hard numbers are hard.
-I've checked some workloads: Mosbench, NPB, specjvm2008. Most of time the
-patchset doesn't show any difference (within run-to-run deviation).
-On NPB it recovers THP regression, but it's probably not enough to make
-decision.
+I'm saying this because NPB on a thinkpad (Intel CPU I assume) is the
+benchmark that shows the most benefit among all benchmarks run on that
+hardware.
 
-It would be nice if somebody test the patchset on other system or
-workload. Especially, if the configuration shows regression with
-THP enabled.
+http://www.phoronix.com/scan.php?page=article&item=linux_transparent_hugepages&num=2
 
---=20
- Kirill A. Shutemov
+I've once seen certain computations that run much slower with perfect
+cache coloring but most others runs much faster with the page
+coloring. Doesn't mean page coloring is bad per se. So the NPB on that
+specific hardware may have been the exception and not the interesting
+case. Especially considering the effect of cache-copying is opposite
+on slightly different hw.
 
---k+w/mQv8wyuph6w0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+I think the the static_key should be off by default whenever the CPU
+L2 cache size is >= the size of the copy (2*HPAGE_PMD_SIZE). Now the
+cache does random replacement so maybe we could also allow cache
+copies for twice the size of the copy (L2size >=
+4*HPAGE_PMD_SIZE). Current CPUs have caches much larger than 2*2MB...
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+It would make a whole lot more sense for hugetlbfs giga pages than for
+THP (unlike for THP, cache trashing with giga pages is guaranteed),
+but even with giga pages, it's not like they're allocated frequently
+(maybe once per OS reboot) so that's also sure totally lost in the
+noise as it only saves a few accesses after the cache copy is
+finished.
 
-iQIcBAEBAgAGBQJQYb83AAoJEAd+omnVudOMEiwP/jY2gXW39BINUmG8+U4etfX4
-vth8c0cn2Gd3F/plJzx2R/HI8qeTaIJeJdEPDuYyaGHEYXNsuVI8mWSbFVTBobag
-CjkmAGB39F7dPATNxsC5doX+Br+D9/ITvTsPK2unQzq1GX5XL8Gtr72yIq/OYagC
-0o+gKCtO6D2GPd7TwD6oxCoPYZwnoAWrNP+1QK2bgm0582AMpJxA/FIJ9EyGLIGX
-wrrajcBx/RTdNX400jEkNnVPdHCRd5EPED1qpa6Bnx90wFk7YDdSmC9eqdov/GnR
-0Rqk7tpnNvPzBb9dpFE2p422RDTrgCA223iLO35Mta7/0+zzwPUYr1wskqY7Jn5U
-mahxDSTwzqH6lFoal/eOtv+zj6dojOLHq7xDsCg2FjYDgvwgXrk28uDBUnhld0W+
-BjQXEf7g4LRAbgHaaW8tM5QhKsxJUCbzVmxvjgsWjChWQF6eiUXIHrEguvtH/3h6
-5SU1amCxJoSVtcHS84yOBWnTY7DbzRyXr9qV+PQ4BgXMCWtC51Q7jI8G6mVOiyYV
-vWTPJkHQOyxo+HObIAqYAOqj1OUuasLS1kFwT/sd6S6+sBbOC4NVeY//IlKPAqfe
-JlHej7XaFDphiYgPlKUPP409dufRqXxRwA5ac/pCt24FH2wmuDo3x1UR5MjJefTB
-AOawqDSExew3gFgwKuh1
-=8QRo
------END PGP SIGNATURE-----
+It's good to have tested it though.
 
---k+w/mQv8wyuph6w0--
+Thanks,
+Andrea
