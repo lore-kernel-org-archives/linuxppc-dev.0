@@ -1,28 +1,17 @@
-Return-Path: <vasilis.liaskovitis@profitbricks.com>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6AF7D2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 02:58:27 +1000 (EST)
-Received: by bkue19 with SMTP id e19so396008bku.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Sep 2012 09:58:24 -0700 (PDT)
-Date: Wed, 26 Sep 2012 18:58:21 +0200
-From: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
-To: wency@cn.fujitsu.com
-Subject: Re: [RFC v9 PATCH 00/21] memory-hotplug: hot-remove physical memory
-Message-ID: <20120926165820.GB7559@dhcp-192-168-178-175.profitbricks.localdomain>
-References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, liuj97@gmail.com
+Return-Path: <abounine@idt.com>
+Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F1A0C2C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 05:15:39 +1000 (EST)
+From: Alexandre Bounine <alexandre.bounine@idt.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] rapidio/rionet: fix multicast packet transmit logic
+Date: Wed, 26 Sep 2012 15:14:27 -0400
+Message-Id: <1348686867-28842-1-git-send-email-alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
+ "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,51 +21,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Testing 3.6.0-rc7 with this v9 patchset plus more recent fixes [1],[2],[3]
-Running in a guest (qemu+seabios from [4]). 
-CONFIG_SLAB=y
-CONFIG_DEBUG_SLAB=y
+Fix multicast packet transmit logic to account for repetitive transmission
+of single skb:
+- correct check for available buffers (this bug may produce NULL pointer
+  crash dump in case of heavy traffic);
+- update skb user count (incorrect user counter causes a warning dump from
+  net_tx_action routine during multicast transfers in systems with three or
+  more rionet participants).
 
-- succesfull hot-add and online
-- succesfull hot-remove with SCI (qemu) eject
-- attempt to hot-readd same memory
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org
+---
+ drivers/net/rionet.c |   20 +++++++++++++++++---
+ 1 files changed, 17 insertions(+), 3 deletions(-)
 
-When the pages are re-onlined on hot-readd, I get a bad_page state for many
-pages e.g.
-
-[   59.611278] init_memory_mapping: [mem 0x80000000-0x9fffffff]
-[   59.637836] Built 2 zonelists in Node order, mobility grouping on.  Total pages: 547617
-[   59.638739] Policy zone: Normal
-[   59.650840] BUG: Bad page state in process bash  pfn:9b6dc
-[   59.651124] page:ffffea0002200020 count:0 mapcount:0 mapping:          (null) index:0xfdfdfdfdfdfdfdfd
-[   59.651494] page flags: 0x2fdfdfdfd5df9fd(locked|referenced|uptodate|dirty|lru|active|slab|owner_priv_1|private|private_2|writeback|head|tail|swapcache|reclaim|swapbacked|unevictable|uncached|compound_lock)
-[   59.653604] Modules linked in: netconsole acpiphp pci_hotplug acpi_memhotplug loop kvm_amd kvm microcode tpm_tis tpm tpm_bios evdev psmouse serio_raw i2c_piix4 i2c_core parport_pc parport processor button thermal_sys ext3 jbd mbcache sg sr_mod cdrom ata_generic virtio_net ata_piix virtio_blk libata virtio_pci virtio_ring virtio scsi_mod
-[   59.656998] Pid: 988, comm: bash Not tainted 3.6.0-rc7-guest #12
-[   59.657172] Call Trace:
-[   59.657275]  [<ffffffff810e9b30>] ? bad_page+0xb0/0x100
-[   59.657434]  [<ffffffff810ea4c3>] ? free_pages_prepare+0xb3/0x100
-[   59.657610]  [<ffffffff810ea668>] ? free_hot_cold_page+0x48/0x1a0
-[   59.657787]  [<ffffffff8112cc08>] ? online_pages_range+0x68/0xa0
-[   59.657961]  [<ffffffff8112cba0>] ? __online_page_increment_counters+0x10/0x10
-[   59.658162]  [<ffffffff81045561>] ? walk_system_ram_range+0x101/0x110
-[   59.658346]  [<ffffffff814c4f95>] ? online_pages+0x1a5/0x2b0
-[   59.658515]  [<ffffffff8135663d>] ? __memory_block_change_state+0x20d/0x270
-[   59.658710]  [<ffffffff81356756>] ? store_mem_state+0xb6/0xf0
-[   59.658878]  [<ffffffff8119e482>] ? sysfs_write_file+0xd2/0x160
-[   59.659052]  [<ffffffff8113769a>] ? vfs_write+0xaa/0x160
-[   59.659212]  [<ffffffff81137977>] ? sys_write+0x47/0x90
-[   59.659371]  [<ffffffff814e2f25>] ? async_page_fault+0x25/0x30
-[   59.659543]  [<ffffffff814ea239>] ? system_call_fastpath+0x16/0x1b
-[   59.659720] Disabling lock debugging due to kernel taint
-
-Patch 20/21 deals with a similar scenario, but only for __PG_HWPOISON flag.
-Did i miss any other patch for this?
-
-thanks,
-
-- Vasilis
-
-[1] https://lkml.org/lkml/2012/9/6/635
-[2] https://lkml.org/lkml/2012/9/11/542
-[3] https://lkml.org/lkml/2012/9/20/37
-[4] http://permalink.gmane.org/gmane.comp.emulators.kvm.devel/98691
+diff --git a/drivers/net/rionet.c b/drivers/net/rionet.c
+index 91d2588..1470d3e 100644
+--- a/drivers/net/rionet.c
++++ b/drivers/net/rionet.c
+@@ -79,6 +79,7 @@ static int rionet_capable = 1;
+  * on system trade-offs.
+  */
+ static struct rio_dev **rionet_active;
++static int nact;	/* total number of active rionet peers */
+ 
+ #define is_rionet_capable(src_ops, dst_ops)			\
+ 			((src_ops & RIO_SRC_OPS_DATA_MSG) &&	\
+@@ -175,6 +176,7 @@ static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 	struct ethhdr *eth = (struct ethhdr *)skb->data;
+ 	u16 destid;
+ 	unsigned long flags;
++	int add_num = 1;
+ 
+ 	local_irq_save(flags);
+ 	if (!spin_trylock(&rnet->tx_lock)) {
+@@ -182,7 +184,10 @@ static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 		return NETDEV_TX_LOCKED;
+ 	}
+ 
+-	if ((rnet->tx_cnt + 1) > RIONET_TX_RING_SIZE) {
++	if (is_multicast_ether_addr(eth->h_dest))
++		add_num = nact;
++
++	if ((rnet->tx_cnt + add_num) > RIONET_TX_RING_SIZE) {
+ 		netif_stop_queue(ndev);
+ 		spin_unlock_irqrestore(&rnet->tx_lock, flags);
+ 		printk(KERN_ERR "%s: BUG! Tx Ring full when queue awake!\n",
+@@ -191,11 +196,16 @@ static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 	}
+ 
+ 	if (is_multicast_ether_addr(eth->h_dest)) {
++		int count = 0;
+ 		for (i = 0; i < RIO_MAX_ROUTE_ENTRIES(rnet->mport->sys_size);
+ 				i++)
+-			if (rionet_active[i])
++			if (rionet_active[i]) {
+ 				rionet_queue_tx_msg(skb, ndev,
+ 						    rionet_active[i]);
++				if (count)
++					atomic_inc(&skb->users);
++				count++;
++			}
+ 	} else if (RIONET_MAC_MATCH(eth->h_dest)) {
+ 		destid = RIONET_GET_DESTID(eth->h_dest);
+ 		if (rionet_active[destid])
+@@ -220,14 +230,17 @@ static void rionet_dbell_event(struct rio_mport *mport, void *dev_id, u16 sid, u
+ 	if (info == RIONET_DOORBELL_JOIN) {
+ 		if (!rionet_active[sid]) {
+ 			list_for_each_entry(peer, &rionet_peers, node) {
+-				if (peer->rdev->destid == sid)
++				if (peer->rdev->destid == sid) {
+ 					rionet_active[sid] = peer->rdev;
++					nact++;
++				}
+ 			}
+ 			rio_mport_send_doorbell(mport, sid,
+ 						RIONET_DOORBELL_JOIN);
+ 		}
+ 	} else if (info == RIONET_DOORBELL_LEAVE) {
+ 		rionet_active[sid] = NULL;
++		nact--;
+ 	} else {
+ 		if (netif_msg_intr(rnet))
+ 			printk(KERN_WARNING "%s: unhandled doorbell\n",
+@@ -523,6 +536,7 @@ static int rionet_probe(struct rio_dev *rdev, const struct rio_device_id *id)
+ 
+ 		rc = rionet_setup_netdev(rdev->net->hport, ndev);
+ 		rionet_check = 1;
++		nact = 0;
+ 	}
+ 
+ 	/*
+-- 
+1.7.8.4
