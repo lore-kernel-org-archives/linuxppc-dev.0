@@ -1,21 +1,25 @@
 Return-Path: <B25806@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com (mail-tx2.bigfish.com
- [65.55.88.10]) (using TLSv1 with cipher AES128-SHA (128/128 bits))
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9C5E02C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 16:59:31 +1000 (EST)
-Received: from mail168-tx2 (localhost [127.0.0.1])	by
- mail168-tx2-R.bigfish.com (Postfix) with ESMTP id C44B53C0108	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 06:59:26 +0000 (UTC)
-Received: from TX2EHSMHS033.bigfish.com (unknown [10.9.14.251])	by
- mail168-tx2.bigfish.com (Postfix) with ESMTP id 4FFE018006D	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 06:59:24 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id 312B52C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 16:59:32 +1000 (EST)
+Received: from mail56-ch1 (localhost [127.0.0.1])	by mail56-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 698921600FF	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,
+ 27 Sep 2012 06:59:27 +0000 (UTC)
+Received: from CH1EHSMHS016.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.244])	by mail56-ch1.bigfish.com (Postfix) with ESMTP id
+ 7BAB06008E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 06:59:25 +0000 (UTC)
 From: Chunhe Lan <Chunhe.Lan@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/3] edac/85xx: PCI/PCIe error interrupt edac support
-Date: Thu, 27 Sep 2012 15:02:02 -0400
-Message-ID: <1348772523-17587-2-git-send-email-Chunhe.Lan@freescale.com>
+Subject: [PATCH 3/3] edac/85xx: Enable the EDAC PCI err driver by
+ device_initcall
+Date: Thu, 27 Sep 2012 15:02:03 -0400
+Message-ID: <1348772523-17587-3-git-send-email-Chunhe.Lan@freescale.com>
 In-Reply-To: <1348772523-17587-1-git-send-email-Chunhe.Lan@freescale.com>
 References: <1348772523-17587-1-git-send-email-Chunhe.Lan@freescale.com>
 MIME-Version: 1.0
@@ -30,322 +34,137 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adding pcie error interrupt edac support for mpc85xx and p4080.
-mpc85xx uses the legacy interrupt report mechanism - the error
-interrupts are reported directly to mpic. While, p4080 attaches
-the most of error interrupts to interrupt 0. And report error
-interrupts to mpic via interrupt 0. This patch can handle both
-of them.
+Original process of call:
+	The mpc85xx_pci_err_probe function completes to been registered
+	and enabled of EDAC PCI err driver at the latter time stage of
+	kernel boot in the mpc85xx_edac.c.
+Current process of call:
+	The mpc85xx_pci_err_probe function completes to been registered
+	and enabled of EDAC PCI err driver at the first	time stage of
+	kernel boot in the fsl_pci.c.
+
+So in this case the following error messages appear in the boot log:
+
+    PCI: Probing PCI hardware
+    pci 0000:00:00.0: ignoring class b20 (doesn't match header type 01)
+    PCIE error(s) detected
+    PCIE ERR_DR register: 0x00020000
+    PCIE ERR_CAP_STAT register: 0x80000001
+    PCIE ERR_CAP_R0 register: 0x00000800
+    PCIE ERR_CAP_R1 register: 0x00000000
+    PCIE ERR_CAP_R2 register: 0x00000000
+    PCIE ERR_CAP_R3 register: 0x00000000
+
+Because the EDAC PCI err driver is registered and enabled earlier than
+original point of call. But at this point of time, PCI hardware is not
+probed and initialized, and it is in unknowable state.
+
+So, move enable function into mpc85xx_pci_err_en which is called at the
+middle time stage of kernel boot and after PCI hardware is probed and
+initialized by device_initcall in the fsl_pci.c.
 
 Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
 ---
- drivers/edac/mpc85xx_edac.c |  228 +++++++++++++++++++++++++++++++++----------
- drivers/edac/mpc85xx_edac.h |    8 ++-
- 2 files changed, 182 insertions(+), 54 deletions(-)
+ arch/powerpc/sysdev/fsl_pci.c |   12 ++++++++++
+ arch/powerpc/sysdev/fsl_pci.h |    5 ++++
+ drivers/edac/mpc85xx_edac.c   |   47 ++++++++++++++++++++++++++++------------
+ 3 files changed, 50 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 4fe66fa..05ef1f2 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -1,5 +1,6 @@
- /*
-  * Freescale MPC85xx Memory Controller kenel module
-+ * Copyright (c) 2012 Freescale Semiconductor, Inc.
-  *
-  * Author: Dave Jiang <djiang@mvista.com>
-  *
-@@ -21,6 +22,7 @@
- 
- #include <linux/of_platform.h>
- #include <linux/of_device.h>
-+#include <sysdev/fsl_pci.h>
- #include "edac_module.h"
- #include "edac_core.h"
- #include "mpc85xx_edac.h"
-@@ -37,11 +39,6 @@ static u32 orig_ddr_err_sbe;
- /*
-  * PCI Err defines
-  */
--#ifdef CONFIG_PCI
--static u32 orig_pci_err_cap_dr;
--static u32 orig_pci_err_en;
--#endif
--
- static u32 orig_l2_err_disable;
- #ifdef CONFIG_FSL_SOC_BOOKE
- static u32 orig_hid1[2];
-@@ -163,37 +160,52 @@ static void mpc85xx_pci_check(struct edac_pci_ctl_info *pci)
- {
- 	struct mpc85xx_pci_pdata *pdata = pci->pvt_info;
- 	u32 err_detect;
-+	struct ccsr_pci *reg = pdata->pci_reg;
-+
-+	err_detect = in_be32(&pdata->pci_reg->pex_err_dr);
-+
-+	if (pdata->pcie_flag) {
-+		pr_err("PCIE error(s) detected\n");
-+		pr_err("PCIE ERR_DR register: 0x%08x\n", err_detect);
-+		pr_err("PCIE ERR_CAP_STAT register: 0x%08x\n",
-+				in_be32(&reg->pex_err_cap_stat));
-+		pr_err("PCIE ERR_CAP_R0 register: 0x%08x\n",
-+				in_be32(&reg->pex_err_cap_r0));
-+		pr_err("PCIE ERR_CAP_R1 register: 0x%08x\n",
-+				in_be32(&reg->pex_err_cap_r1));
-+		pr_err("PCIE ERR_CAP_R2 register: 0x%08x\n",
-+				in_be32(&reg->pex_err_cap_r2));
-+		pr_err("PCIE ERR_CAP_R3 register: 0x%08x\n",
-+				in_be32(&reg->pex_err_cap_r3));
-+	} else {
-+		/* master aborts can happen during PCI config cycles */
-+		if (!(err_detect & ~(PCI_EDE_MULTI_ERR | PCI_EDE_MST_ABRT))) {
-+			out_be32(&reg->pex_err_dr, err_detect);
-+			return;
-+		}
- 
--	err_detect = in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DR);
--
--	/* master aborts can happen during PCI config cycles */
--	if (!(err_detect & ~(PCI_EDE_MULTI_ERR | PCI_EDE_MST_ABRT))) {
--		out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DR, err_detect);
--		return;
-+		pr_err("PCI error(s) detected\n");
-+		pr_err("PCI/X ERR_DR register: 0x%08x\n", err_detect);
-+		pr_err("PCI/X ERR_ATTRIB register: 0x%08x\n",
-+				in_be32(&reg->pex_err_attrib));
-+		pr_err("PCI/X ERR_ADDR register: 0x%08x\n",
-+				in_be32(&reg->pex_err_disr));
-+		pr_err("PCI/X ERR_EXT_ADDR register: 0x%08x\n",
-+				in_be32(&reg->pex_err_ext_addr));
-+		pr_err("PCI/X ERR_DL register: 0x%08x\n",
-+				in_be32(&reg->pex_err_dl));
-+		pr_err("PCI/X ERR_DH register: 0x%08x\n",
-+				in_be32(&reg->pex_err_dh));
-+
-+		if (err_detect & PCI_EDE_PERR_MASK)
-+			edac_pci_handle_pe(pci, pci->ctl_name);
-+
-+		if (err_detect & ~(PCI_EDE_MULTI_ERR | PCI_EDE_PERR_MASK))
-+			edac_pci_handle_npe(pci, pci->ctl_name);
- 	}
- 
--	printk(KERN_ERR "PCI error(s) detected\n");
--	printk(KERN_ERR "PCI/X ERR_DR register: %#08x\n", err_detect);
--
--	printk(KERN_ERR "PCI/X ERR_ATTRIB register: %#08x\n",
--	       in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_ATTRIB));
--	printk(KERN_ERR "PCI/X ERR_ADDR register: %#08x\n",
--	       in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_ADDR));
--	printk(KERN_ERR "PCI/X ERR_EXT_ADDR register: %#08x\n",
--	       in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EXT_ADDR));
--	printk(KERN_ERR "PCI/X ERR_DL register: %#08x\n",
--	       in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DL));
--	printk(KERN_ERR "PCI/X ERR_DH register: %#08x\n",
--	       in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DH));
--
- 	/* clear error bits */
--	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DR, err_detect);
--
--	if (err_detect & PCI_EDE_PERR_MASK)
--		edac_pci_handle_pe(pci, pci->ctl_name);
--
--	if ((err_detect & ~PCI_EDE_MULTI_ERR) & ~PCI_EDE_PERR_MASK)
--		edac_pci_handle_npe(pci, pci->ctl_name);
-+	out_be32(&reg->pex_err_dr, err_detect);
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 3d6f4d8..a591965 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -904,4 +904,16 @@ static int __init fsl_pci_init(void)
+ 	return platform_driver_register(&fsl_pci_driver);
  }
- 
- static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
-@@ -202,7 +214,7 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
- 	struct mpc85xx_pci_pdata *pdata = pci->pvt_info;
- 	u32 err_detect;
- 
--	err_detect = in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DR);
-+	err_detect = in_be32(&pdata->pci_reg->pex_err_dr);
- 
- 	if (!err_detect)
- 		return IRQ_NONE;
-@@ -212,11 +224,102 @@ static irqreturn_t mpc85xx_pci_isr(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
-+/*
-+ * This function is for error interrupt ORed mechanism.
-+ * This mechanism attaches most functions' error interrupts to interrupt 0.
-+ * And report error interrupt to mpic via interrupt 0.
-+ * EIMR0 - Error Interrupt Mask Register 0.
-+ *
-+ * This function check whether the device support error interrupt ORed
-+ * mechanism via device tree. If supported, umask pcie error interrupt
-+ * bit in EIMR0.
-+ */
-+static int mpc85xx_err_int_en(struct platform_device *op)
+ arch_initcall(fsl_pci_init);
++
++static int __init fsl_pci_err_en(void)
 +{
-+	u32 *int_cell;
 +	struct device_node *np;
-+	void __iomem *mpic_base;
-+	u32 reg_tmp;
-+	u32 int_len;
-+	struct resource r;
-+	int res;
 +
-+	if (!op->dev.of_node)
-+		return -EINVAL;
-+
-+	/*
-+	 * Unmask pcie error interrupt bit in EIMR0.
-+	 * Extend interrupt specifier has 4 cells.
-+	 * For the 3rd cell:
-+	 *	0 -- normal interrupt;
-+	 *	1 -- error interrupt.
-+	 */
-+	int_cell = (u32 *)of_get_property(op->dev.of_node, "interrupts",
-+						&int_len);
-+	if ((int_len/sizeof(u32)) == 4) {
-+		/* soc has error interrupt integration handling mechanism */
-+		if (*(int_cell + 2) == 1) {
-+			np = of_find_node_by_type(NULL, "open-pic");
-+
-+			if (of_address_to_resource(np, 0, &r)) {
-+				pr_err("%s: Failed to map mpic regs\n",
-+					__func__);
-+				of_node_put(np);
-+				res = -ENOMEM;
-+				goto err;
-+			}
-+
-+			if (!request_mem_region(r.start, r.end - r.start + 1,
-+						"mpic")) {
-+				pr_err("%s: Error when requesting mem region\n",
-+					__func__);
-+				res = -EBUSY;
-+				goto err;
-+			}
-+
-+			mpic_base = ioremap(r.start, r.end - r.start + 1);
-+			if (!mpic_base) {
-+				pr_err("%s: Unable to map mpic regs\n",
-+					__func__);
-+				res = -ENOMEM;
-+				goto err_ioremap;
-+			}
-+
-+			reg_tmp = in_be32(mpic_base + MPC85XX_MPIC_EIMR0);
-+			out_be32(mpic_base + MPC85XX_MPIC_EIMR0, reg_tmp &
-+					~(1 << (31 - *(int_cell + 3))));
-+			iounmap(mpic_base);
-+			release_mem_region(r.start, r.end - r.start + 1);
-+			of_node_put(np);
-+		}
-+	}
++	for_each_node_by_type(np, "pci")
++		if (of_match_node(pci_ids, np))
++			mpc85xx_pci_err_en(np);
 +
 +	return 0;
-+
-+err_ioremap:
-+	release_mem_region(r.start, r.end - r.start + 1);
-+err:
-+	return res;
 +}
-+
-+static int mpc85xx_pcie_find_capability(struct device_node *np)
-+{
-+	struct pci_controller *hose;
-+
-+	if (!np)
-+		return -EINVAL;
-+
-+	hose = pci_find_hose_for_OF_device(np);
-+
-+	return early_find_capability(hose, 0, 0, PCI_CAP_ID_EXP);
-+}
-+
- int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
++device_initcall(fsl_pci_err_en);
+ #endif
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index 796fe55..62a7323 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -136,11 +136,16 @@ static inline void fsl_pci_assign_primary(void) {}
+ 
+ #ifdef CONFIG_EDAC_MPC85XX
+ int mpc85xx_pci_err_probe(struct platform_device *op);
++int __init mpc85xx_pci_err_en(struct device_node *np);
+ #else
+ static inline int mpc85xx_pci_err_probe(struct platform_device *op)
  {
- 	struct edac_pci_ctl_info *pci;
- 	struct mpc85xx_pci_pdata *pdata;
- 	struct resource r;
-+	struct ccsr_pci *reg;
- 	int res = 0;
+ 	return -ENOTSUPP;
+ }
++static inline int __init mpc85xx_pci_err_en(struct device_node *np)
++{
++	return -ENOTSUPP;
++}
+ #endif
  
- 	if (!devres_open_group(&op->dev, mpc85xx_pci_err_probe, GFP_KERNEL))
-@@ -245,6 +348,9 @@ int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- 	pci->ctl_name = pdata->name;
- 	pci->dev_name = dev_name(&op->dev);
+ #endif /* __POWERPC_FSL_PCI_H */
+diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
+index 05ef1f2..c317683 100644
+--- a/drivers/edac/mpc85xx_edac.c
++++ b/drivers/edac/mpc85xx_edac.c
+@@ -394,9 +394,6 @@ int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
+ 	pdata->orig_pci_err_en = in_be32(&reg->pex_err_en);
+ 	out_be32(&reg->pex_err_en, 0);
  
-+	if (mpc85xx_pcie_find_capability(op->dev.of_node) > 0)
-+		pdata->pcie_flag = 1;
-+
- 	if (edac_op_state == EDAC_OPSTATE_POLL)
- 		pci->edac_check = mpc85xx_pci_check;
- 
-@@ -256,10 +362,6 @@ int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- 		       "PCI err regs\n", __func__);
- 		goto err;
- 	}
+-	/* clear all error bits */
+-	out_be32(&reg->pex_err_dr, ~0);
 -
--	/* we only need the error registers */
--	r.start += 0xe00;
--
- 	if (!devm_request_mem_region(&op->dev, r.start, resource_size(&r),
- 					pdata->name)) {
- 		printk(KERN_ERR "%s: Error while requesting mem region\n",
-@@ -268,26 +370,32 @@ int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- 		goto err;
- 	}
- 
--	pdata->pci_vbase = devm_ioremap(&op->dev, r.start, resource_size(&r));
--	if (!pdata->pci_vbase) {
-+	pdata->pci_reg = devm_ioremap(&op->dev, r.start, resource_size(&r));
-+	if (!pdata->pci_reg) {
- 		printk(KERN_ERR "%s: Unable to setup PCI err regs\n", __func__);
- 		res = -ENOMEM;
- 		goto err;
- 	}
- 
--	orig_pci_err_cap_dr =
--	    in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_CAP_DR);
--
--	/* PCI master abort is expected during config cycles */
--	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_CAP_DR, 0x40);
-+	if (mpc85xx_err_int_en(op) < 0)
-+		goto err;
- 
--	orig_pci_err_en = in_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN);
-+	reg = pdata->pci_reg;
-+	/* disable pci/pcie error detect */
-+	if (pdata->pcie_flag) {
-+		pdata->orig_pci_err_dr =  in_be32(&reg->pex_err_disr);
-+		out_be32(&reg->pex_err_disr, ~0);
-+	} else {
-+		pdata->orig_pci_err_dr =  in_be32(&reg->pex_err_cap_dr);
-+		out_be32(&reg->pex_err_cap_dr, ~0);
-+	}
- 
--	/* disable master abort reporting */
--	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN, ~0x40);
-+	/* disable all pcie error interrupt */
-+	pdata->orig_pci_err_en = in_be32(&reg->pex_err_en);
-+	out_be32(&reg->pex_err_en, 0);
- 
--	/* clear error bits */
--	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_DR, ~0);
-+	/* clear all error bits */
-+	out_be32(&reg->pex_err_dr, ~0);
- 
  	if (edac_pci_add_device(pci, pdata->edac_idx) > 0) {
  		edac_dbg(3, "failed edac_pci_add_device()\n");
-@@ -297,7 +405,7 @@ int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
- 	if (edac_op_state == EDAC_OPSTATE_INT) {
- 		pdata->irq = irq_of_parse_and_map(op->dev.of_node, 0);
- 		res = devm_request_irq(&op->dev, pdata->irq,
--				       mpc85xx_pci_isr, IRQF_DISABLED,
-+				       mpc85xx_pci_isr, IRQF_SHARED,
- 				       "[EDAC] PCI err", pci);
- 		if (res < 0) {
- 			printk(KERN_ERR
-@@ -312,6 +420,17 @@ int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
+ 		goto err;
+@@ -420,17 +417,6 @@ int __devinit mpc85xx_pci_err_probe(struct platform_device *op)
  		       pdata->irq);
  	}
  
-+	if (pdata->pcie_flag) {
+-	if (pdata->pcie_flag) {
+-		/* enable all pcie error interrupt & error detect */
+-		out_be32(&reg->pex_err_en, ~0);
+-		out_be32(&reg->pex_err_disr, 0);
+-	} else {
+-		/* PCI master abort is expected during config cycles */
+-		out_be32(&reg->pex_err_cap_dr, PCI_ERR_CAP_DR_DIS_MST);
+-		/* disable master abort reporting */
+-		out_be32(&reg->pex_err_en, PCI_ERR_EN_DIS_MST);
+-	}
+-
+ 	devres_remove_group(&op->dev, mpc85xx_pci_err_probe);
+ 	edac_dbg(3, "success\n");
+ 	printk(KERN_INFO EDAC_MOD_STR " PCI err registered\n");
+@@ -446,6 +432,39 @@ err:
+ }
+ EXPORT_SYMBOL(mpc85xx_pci_err_probe);
+ 
++int __init mpc85xx_pci_err_en(struct device_node *np)
++{
++	struct mpc85xx_pci_pdata pdata;
++	struct resource res;
++	struct ccsr_pci *reg;
++
++	if (mpc85xx_pcie_find_capability(np) > 0)
++		pdata.pcie_flag = 1;
++
++	of_address_to_resource(np, 0, &res);
++	pdata.pci_reg = ioremap(res.start, (res.end - res.start + 1));
++	reg = pdata.pci_reg;
++
++	/* clear all error bits */
++	out_be32(&reg->pex_err_dr, ~0);
++
++	if (pdata.pcie_flag) {
 +		/* enable all pcie error interrupt & error detect */
 +		out_be32(&reg->pex_err_en, ~0);
 +		out_be32(&reg->pex_err_disr, 0);
@@ -356,52 +175,14 @@ index 4fe66fa..05ef1f2 100644
 +		out_be32(&reg->pex_err_en, PCI_ERR_EN_DIS_MST);
 +	}
 +
- 	devres_remove_group(&op->dev, mpc85xx_pci_err_probe);
- 	edac_dbg(3, "success\n");
- 	printk(KERN_INFO EDAC_MOD_STR " PCI err registered\n");
-@@ -334,10 +453,13 @@ static int mpc85xx_pci_err_remove(struct platform_device *op)
- 
- 	edac_dbg(0, "\n");
- 
--	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_CAP_DR,
--		 orig_pci_err_cap_dr);
-+	if (pdata->pcie_flag)
-+		out_be32(&pdata->pci_reg->pex_err_disr, pdata->orig_pci_err_dr);
-+	else
-+		out_be32(&pdata->pci_reg->pex_err_cap_dr,
-+						pdata->orig_pci_err_dr);
- 
--	out_be32(pdata->pci_vbase + MPC85XX_PCI_ERR_EN, orig_pci_err_en);
-+	out_be32(&pdata->pci_reg->pex_err_en, pdata->orig_pci_err_en);
- 
- 	edac_pci_del_device(pci->dev);
- 
-diff --git a/drivers/edac/mpc85xx_edac.h b/drivers/edac/mpc85xx_edac.h
-index 192c8f5..262004d 100644
---- a/drivers/edac/mpc85xx_edac.h
-+++ b/drivers/edac/mpc85xx_edac.h
-@@ -133,6 +133,9 @@
- #define PCI_EDE_PERR_MASK	(PCI_EDE_TGT_PERR | PCI_EDE_MST_PERR | \
- 				PCI_EDE_ADDR_PERR)
- 
-+#define PCI_ERR_CAP_DR_DIS_MST		0x40
-+#define PCI_ERR_EN_DIS_MST		(~PCI_ERR_CAP_DR_DIS_MST)
-+#define MPC85XX_MPIC_EIMR0		0x3910
- 
- struct mpc85xx_mc_pdata {
- 	char *name;
-@@ -150,8 +153,11 @@ struct mpc85xx_l2_pdata {
- 
- struct mpc85xx_pci_pdata {
- 	char *name;
-+	u8 pcie_flag;
- 	int edac_idx;
--	void __iomem *pci_vbase;
-+	struct ccsr_pci *pci_reg;
-+	u32 orig_pci_err_dr;
-+	u32 orig_pci_err_en;
- 	int irq;
- };
- 
++	pr_info(EDAC_MOD_STR " PCI err enabled\n");
++
++	return 0;
++}
++EXPORT_SYMBOL(mpc85xx_pci_err_en);
++
+ static int mpc85xx_pci_err_remove(struct platform_device *op)
+ {
+ 	struct edac_pci_ctl_info *pci = dev_get_drvdata(&op->dev);
 -- 
 1.7.6.5
