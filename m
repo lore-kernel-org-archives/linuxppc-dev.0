@@ -2,19 +2,20 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 976BE2C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 22:33:07 +1000 (EST)
-Subject: Re: [PATCH][v2] powerpc/fsl-pci: use 'Header Type' to identify PCIE
- mode
+ by ozlabs.org (Postfix) with ESMTPS id A5AA32C024B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 22:33:29 +1000 (EST)
+Subject: Re: [PATCH] driver/mtd:IFC NAND:Initialise internal SRAM before any
+ write
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1348465852-6507-1-git-send-email-Minghuan.Lian@freescale.com>
-Date: Thu, 27 Sep 2012 07:33:08 -0500
-Message-Id: <8BCDA75C-2454-4301-B40F-86E5AC023FD3@kernel.crashing.org>
-References: <1348465852-6507-1-git-send-email-Minghuan.Lian@freescale.com>
-To: Minghuan Lian <Minghuan.Lian@freescale.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1347526489-20186-1-git-send-email-prabhakar@freescale.com>
+Date: Thu, 27 Sep 2012 07:33:17 -0500
+Message-Id: <35D2D92E-D6B7-46CB-A3F2-6DAE2134EA30@kernel.crashing.org>
+References: <1347526489-20186-1-git-send-email-prabhakar@freescale.com>
+To: Prabhakar Kushwaha <prabhakar@freescale.com>
+Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-mtd@lists.infradead.org, dedekind1@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +26,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Sep 24, 2012, at 12:50 AM, Minghuan Lian wrote:
+On Sep 13, 2012, at 3:54 AM, Prabhakar Kushwaha wrote:
 
-> The original code uses 'Programming Interface' field to judge if PCIE =
-is
-> EP or RC mode, however, some latest silicons do not support this =
-functionality.
-> According to PCIE specification, 'Header Type' offset 0x0e is used to
-> indicate header type, so change code to use 'Header Type' field to
-> judge PCIE mode. Because FSL PCI controller does not support 'Header =
-Type',
-> patch still uses 'Programming Interface' to identify PCI mode.
+> IFC-1.1.0 uses 28nm techenology for SRAM. This tech has known =
+limitaion for
+> SRAM i.e. "byte select" is not supported. Hence Read Modify Write is
+> implemented in IFC for any "system side write" into sram buffer. =
+Reading an
+> uninitialized memory results in ECC Error from sram wrapper.
 >=20
-> Signed-off-by: Minghuan Lian <Minghuan.Lian@freescale.com>
-> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> Hence we must initialize/prefill SRAM buffer by any data before =
+writing
+> anything in SRAM from system side. To initialize SRAM user can use =
+"READID"
+> NAND command with read bytes equal to SRAM size. It will be a one time
+> activity post boot.
+>=20
+> Signed-off-by: Prabhakar Kushwaha <prabhakar@freescale.com>
 > ---
-> Change log:
-> v2 -=20
-> keep the original PCI initialization order according to kumar's =
-recommendations.
+> Based upon git://git.infradead.org/linux-mtd.git branch master
+> The compilation of this patch depends upon following patch.
+> http://patchwork.ozlabs.org/patch/177893/
+> This patch is currently applied on =
+git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git=20
+> branch next and status is "Awaiting Upstream"
 >=20
-> arch/powerpc/sysdev/fsl_pci.c |   37 =
-++++++++++++++++++++++++-------------
-> 1 file changed, 24 insertions(+), 13 deletions(-)
+>=20
+> drivers/mtd/nand/fsl_ifc_nand.c |   56 =
+++++++++++++++++++++++++++++++++++++++-
+> 1 file changed, 55 insertions(+), 1 deletion(-)
 
 applied to next
 
