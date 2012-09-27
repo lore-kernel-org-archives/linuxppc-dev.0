@@ -1,30 +1,16 @@
-Return-Path: <vasilis.liaskovitis@profitbricks.com>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0BD7F2C00C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 21:02:12 +1000 (EST)
-Received: by bkue19 with SMTP id e19so1231198bku.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 04:02:09 -0700 (PDT)
-Date: Thu, 27 Sep 2012 13:02:05 +0200
-From: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
-To: Wen Congyang <wency@cn.fujitsu.com>
-Subject: Re: [RFC v9 PATCH 00/21] memory-hotplug: hot-remove physical memory
-Message-ID: <20120927110205.GB30772@dhcp-192-168-178-175.profitbricks.localdomain>
-References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
- <20120926165820.GB7559@dhcp-192-168-178-175.profitbricks.localdomain>
- <50642526.4070603@cn.fujitsu.com>
+Return-Path: <zinosat@tiscali.it>
+Received: from mrqout2.tiscali.it (mrqout2.tiscali.it [195.130.225.12])
+ by ozlabs.org (Postfix) with ESMTP id D67402C009C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 21:59:41 +1000 (EST)
+Message-ID: <5793250.72901348746209965.JavaMail.defaultUser@defaultHost>
+Date: Thu, 27 Sep 2012 13:43:29 +0200 (CEST)
+From: Davide Viti <zinosat@tiscali.it>
+To: <galak@kernel.crashing.org>
+Subject: R: Re: PCI device not working
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <50642526.4070603@cn.fujitsu.com>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, liuj97@gmail.com
+Content-Type: text/plain;charset="UTF-8"
+Cc: linuxppc-dev@lists.ozlabs.org
+Reply-To: Davide Viti <zinosat@tiscali.it>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,60 +20,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Sep 27, 2012 at 06:06:30PM +0800, Wen Congyang wrote:
-> Please try the following patch:
-> From a38ec678e0a9b48b252f457d7910b7527049dc43 Mon Sep 17 00:00:00 2001
-> From: Wen Congyang <wency@cn.fujitsu.com>
-> Date: Thu, 27 Sep 2012 17:27:57 +0800
-> Subject: [PATCH] clear the memory to store page information
+Hi,
 
-this solves the hot re-add problem for me.
-thanks for the quick solution.
+>So its odd that scanning of the second bus didn't report any devices.  Do=
+=20
+you have code that implements ppc_md.pci_exclude_device ?
 
-- Vasilis
+not that I'm aware=20
+of
 
-> 
-> ---
->  mm/sparse.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/sparse.c b/mm/sparse.c
-> index ab9d755..36dda08 100644
-> --- a/mm/sparse.c
-> +++ b/mm/sparse.c
-> @@ -639,7 +639,6 @@ static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
->  got_map_page:
->  	ret = (struct page *)pfn_to_kaddr(page_to_pfn(page));
->  got_map_ptr:
-> -	memset(ret, 0, memmap_size);
->  
->  	return ret;
->  }
-> @@ -761,6 +760,8 @@ int __meminit sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
->  		goto out;
->  	}
->  
-> +	memset(memmap, 0, sizeof(struct page) * nr_pages);
-> +
->  	ms->section_mem_map |= SECTION_MARKED_PRESENT;
->  
->  	ret = sparse_init_one_section(ms, section_nr, memmap, usemap);
-> -- 
-> 1.7.1
-> 
-> Thanks
-> Wen Congyang
-> 
-> > 
-> > thanks,
-> > 
-> > - Vasilis
-> > 
-> > [1] https://lkml.org/lkml/2012/9/6/635
-> > [2] https://lkml.org/lkml/2012/9/11/542
-> > [3] https://lkml.org/lkml/2012/9/20/37
-> > [4] http://permalink.gmane.org/gmane.comp.emulators.kvm.devel/98691
-> > 
-> > 
-> > 
-> 
+>You might also want to put some code in the indirect PCI ops (indirect.c)=
+=20
+to see what actual values you are getting from various indirect_read_config=
+()=20
+calls.
+
+To make sure that  ppc_md.pci_exclude_device is not implemented, I've=20
+put some printouts inside  indirect_read_config(): I print various paramete=
+rs=20
+when the function is called, and when it returns and note that:
+
+ 1.=20
+indirect_read_config() is called 422 times:=20
+     174 times for=20
+[/pcie@ffe0a000] (controller where the device is not detected)
+     248 times=20
+for [/pcie@ffe09000]=20
+ 2. ppc_md.pci_exclude_device is always NULL
+ 3. the=20
+function always returns with PCIBIOS_SUCCESSFUL
+ 4. the only call to =20
+indirect_read_config() inside which  bus_no=3D0x3, returns with the followi=
+ng=20
+log:
+
+pci_bus 0001:03: scanning bus
+-> ind_r_config - [/pcie@ffe0a000]=20
+devfn=3D0x0 len=3D0x4 hose->indirect_type=3D0x16 hose->first_busno=3D0x2 bu=
+s-
+>number=3D0x3
+ -> ind_r_config [/pcie@ffe0a000] - (bus_no=3D0x3 reg=3D0x0=20
+cfg_data=3D0xffffffff len=3D0xff7eb004) val=3D0x4 PCIBIOS_SUCCESSFUL =20
+
+the entire=20
+log is about 116Kb and is available in [1] or [2] (didn't feel like pasting=
+ so=20
+much data on the ML)
+thanx alot,
+
+Davide
+
+[1] http://pastebin.com/JaPGmmfs
+[2]=20
+http://paste2.org/p/2273728
+
+
+Invita i tuoi amici e Tiscali ti premia! Il consiglio di un amico vale pi=
+=C3=B9 di uno spot in TV. Per ogni nuovo abbonato 30 =E2=82=AC di premio pe=
+r te e per lui! Un amico al mese e parli e navighi sempre gratis: http://fr=
+eelosophy.tiscali.it/
