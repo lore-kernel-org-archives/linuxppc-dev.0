@@ -2,34 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 221A22C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 02:04:03 +1000 (EST)
-Subject: Re: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM support
+ by ozlabs.org (Postfix) with ESMTPS id 3CBC62C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 02:07:49 +1000 (EST)
+Subject: Re: PCI device not working
 Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=windows-1252
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <CADRPPNQga4J26oDacT-fGMZiecE2KLsLh2DBEErtQ9_gJSwgpA@mail.gmail.com>
-Date: Thu, 27 Sep 2012 11:04:01 -0500
-Message-Id: <587B44DE-F710-4AF0-AB0B-A48FEEE29509@kernel.crashing.org>
-References: <1347934234-18223-1-git-send-email-B38951@freescale.com>
- <86ADF4ED-B84C-4560-8781-D9FA4486D854@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01AAA35A@039-SN1MPN1-002.039d.mgd.msft.net>
- <36119932-E4BF-4DF6-8D33-C9A832883272@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01AAA4E8@039-SN1MPN1-002.039d.mgd.msft.net>
- <8086D08B-62B7-4838-8DB6-0F6158DE581A@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01AB4A6F@039-SN1MPN1-004.039d.mgd.msft.net>
- <94F013E7935FF44C83EBE7784D62AD3F09432A5F@039-SN2MPN1-021.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01AB6AE7@039-SN1MPN1-004.039d.mgd.msft.net>
- <95B12FA1-EC53-4632-8DFB-64109668BA9C@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01AB8317@039-SN1MPN1-004.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01AC2B34@039-SN1MPN1-004.039d.mgd.msft.net>
- <30C76F52-4022-459D-8B84-876B1A572ABE@kernel.crashing.org>
- <CADRPPNQga4J26oDacT-fGMZiecE2KLsLh2DBEErtQ9_gJSwgpA@mail.gmail.com>
-To: Li Yang <leoli@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>,
- Jia Hongtao-B38951 <B38951@freescale.com>
+In-Reply-To: <1566557.89621348751677116.JavaMail.defaultUser@defaultHost>
+Date: Thu, 27 Sep 2012 11:06:09 -0500
+Message-Id: <DDC80566-F415-44E4-AA71-C5B0B24E988E@kernel.crashing.org>
+References: <1566557.89621348751677116.JavaMail.defaultUser@defaultHost>
+To: Davide Viti <zinosat@tiscali.it>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,47 +23,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->>> Hi Kumar,
->>> I have already sent the log.
->>> Do you have any comment on it?
->>>=20
->>> Thanks.
->>> - Hongtao.
->>>=20
->>=20
->> Hongtao,
->>=20
->> You mentioned:
->>=20
->>> I tested the re-parsing way by using setup_pci_atmu() when resume.
->>> And I found out that re-parsing will *change* outbound IO
->>> translation address regitster.
->>=20
->> What do the values look like in both ATMU registers and io_resource =
-if you reparse?
->=20
-> I think Hongtao mentioned in previous email as follows, the ATMU
-> registers are inline with the io_resource address.
 
-I was under that the impression that was the normal boot case, not the =
-values from after wakeup.
+On Sep 27, 2012, at 8:14 AM, Davide Viti wrote:
+
+> Hi Kumar,
+>=20
+>> ----Messaggio originale----
+>> Da: galak@kernel.crashing.org
+>> Data:=20
+> 27/09/2012 14.27
+>> A: "Davide Viti"<zinosat@tiscali.it>
+>> Cc: <linuxppc-dev@lists.
+> ozlabs.org>
+>> Ogg: Re: PCI device not working
+>>=20
+> ...
+>> Can you see what bus_no=20
+> actually gets set to in the case we scan 0001:03 ?
+>>=20
+>> If its set to 03, can you=20
+> try hack it to 1.
+>=20
+> is this what you mean?
+
+It was, can you figure out in u-boot what exact config read on the bus =
+would return the correct thing.
+
+The fact that when we probe the device at 0001:03 we should get back =
+something like cfg_data=3D0xabba1b65
 
 - k
 
->>> Since potar is set by out_be32(&pci->pow[j].potar, (hose-
->>> io_resource.start >> 12);
->>> I provide the result of hose->io_resource.start >> 12 as follows:
->>>=20
->>> pcie@ffe09000:
->>> before pci scan: io_resource.start >> 12: 0
->>> after pci scan : io_resource.start >> 12: ff7ed
->>>=20
->>> pcie@ffe0a000:
->>> before pci scan: io_resource.start >> 12: 0
->>> after pci scan : io_resource.start >> 12: ff7db
->>>=20
->>> pcie@ffe0b000:
->>> before pci scan: io_resource.start >> 12: 0
->>> after pci scan : io_resource.start >> 12: ff7c9
->>>=20
->>> Note that I tested on P1022DS.
+>=20
+> ---=20
+> a/arch/powerpc/sysdev/indirect_pci.c
+> +++ b/arch/powerpc/sysdev/indirect_pci.c
+>=20
+>=20
+>        bus_no =3D (bus->number =3D=3D hose->first_busno) ?
+>=20
+> hose->self_busno : bus->number;
+>=20
+> +       if (bus_no =3D=3D 3) {
+> +         printk
+> ("*** force bus_no 3 -> 1 ***\n");
+> +         bus_no =3D 1;
+> +       }
+> +
+>=20
+>=20
+> I've=20
+> tested a kernel with the above patch and this is what is printed on =
+the log:
+>=20
+>=20
+> pci_bus 0001:03: scanning bus
+> -> ind_r_config - [/pcie@ffe0a000] devfn=3D0x0=20
+> offset=3D0x0 len=3D0x4 hose->indirect_type=3D0x16 =
+hose->first_busno=3D0x2 bus-
+>> number=3D0x3
+> *** force bus_no 3 -> 1 ***
+> -> ind_r_config [/pcie@ffe0a000] -=20
+> (bus_no=3D0x1 reg=3D0x0 cfg_data=3D0xff7eb004 len=3D0x4 =
+hose->cfg_addr=3D0xff7eb000)=20
+> val=3D0xffffffff PCIBIOS_SUCCESSFUL
+>=20
+> the entire log (132Kb) is available in [1]=20
+> and [2]
+>=20
+> thanx for your help,
+> Davide
+>=20
+> [1] http://pastebin.com/3mcbDzwY
+> [2] http:
+> //paste2.org/p/2274032
+>=20
+>=20
+>=20
+> Invita i tuoi amici e Tiscali ti premia! Il consiglio di un amico vale =
+pi=F9 di uno spot in TV. Per ogni nuovo abbonato 30 =80 di premio per te =
+e per lui! Un amico al mese e parli e navighi sempre gratis: =
+http://freelosophy.tiscali.it/
