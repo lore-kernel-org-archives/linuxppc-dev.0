@@ -1,19 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3CBC62C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 02:07:49 +1000 (EST)
-Subject: Re: PCI device not working
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=windows-1252
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1566557.89621348751677116.JavaMail.defaultUser@defaultHost>
-Date: Thu, 27 Sep 2012 11:06:09 -0500
-Message-Id: <DDC80566-F415-44E4-AA71-C5B0B24E988E@kernel.crashing.org>
-References: <1566557.89621348751677116.JavaMail.defaultUser@defaultHost>
-To: Davide Viti <zinosat@tiscali.it>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 36B1D2C00B2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 02:12:20 +1000 (EST)
+Received: from mail140-va3 (localhost [127.0.0.1])	by
+ mail140-va3-R.bigfish.com (Postfix) with ESMTP id 700F7E00C4	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 16:12:14 +0000 (UTC)
+Received: from VA3EHSMHS022.bigfish.com (unknown [10.7.14.247])	by
+ mail140-va3.bigfish.com (Postfix) with ESMTP id F0C9C160047	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 16:09:15 +0000 (UTC)
+Date: Thu, 27 Sep 2012 11:09:11 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/3] edac/85xx: Enable the EDAC PCI err driver by
+ device_initcall
+To: Chunhe Lan <Chunhe.Lan@freescale.com>
+References: <1348772523-17587-1-git-send-email-Chunhe.Lan@freescale.com>
+ <1348772523-17587-3-git-send-email-Chunhe.Lan@freescale.com>
+In-Reply-To: <1348772523-17587-3-git-send-email-Chunhe.Lan@freescale.com>
+ (from Chunhe.Lan@freescale.com on Thu Sep 27 14:02:03 2012)
+Message-ID: <1348762151.18375.6@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: kumar.gala@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,84 +35,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Sep 27, 2012, at 8:14 AM, Davide Viti wrote:
-
-> Hi Kumar,
+On 09/27/2012 02:02:03 PM, Chunhe Lan wrote:
+> Original process of call:
+> 	The mpc85xx_pci_err_probe function completes to been registered
+> 	and enabled of EDAC PCI err driver at the latter time stage of
+> 	kernel boot in the mpc85xx_edac.c.
+> Current process of call:
+> 	The mpc85xx_pci_err_probe function completes to been registered
+> 	and enabled of EDAC PCI err driver at the first	time stage of
+> 	kernel boot in the fsl_pci.c.
 >=20
->> ----Messaggio originale----
->> Da: galak@kernel.crashing.org
->> Data:=20
-> 27/09/2012 14.27
->> A: "Davide Viti"<zinosat@tiscali.it>
->> Cc: <linuxppc-dev@lists.
-> ozlabs.org>
->> Ogg: Re: PCI device not working
->>=20
-> ...
->> Can you see what bus_no=20
-> actually gets set to in the case we scan 0001:03 ?
->>=20
->> If its set to 03, can you=20
-> try hack it to 1.
+> So in this case the following error messages appear in the boot log:
 >=20
-> is this what you mean?
-
-It was, can you figure out in u-boot what exact config read on the bus =
-would return the correct thing.
-
-The fact that when we probe the device at 0001:03 we should get back =
-something like cfg_data=3D0xabba1b65
-
-- k
-
+>     PCI: Probing PCI hardware
+>     pci 0000:00:00.0: ignoring class b20 (doesn't match header type =20
+> 01)
+>     PCIE error(s) detected
+>     PCIE ERR_DR register: 0x00020000
+>     PCIE ERR_CAP_STAT register: 0x80000001
+>     PCIE ERR_CAP_R0 register: 0x00000800
+>     PCIE ERR_CAP_R1 register: 0x00000000
+>     PCIE ERR_CAP_R2 register: 0x00000000
+>     PCIE ERR_CAP_R3 register: 0x00000000
 >=20
-> ---=20
-> a/arch/powerpc/sysdev/indirect_pci.c
-> +++ b/arch/powerpc/sysdev/indirect_pci.c
+> Because the EDAC PCI err driver is registered and enabled earlier than
+> original point of call. But at this point of time, PCI hardware is not
+> probed and initialized, and it is in unknowable state.
 >=20
+> So, move enable function into mpc85xx_pci_err_en which is called at =20
+> the
+> middle time stage of kernel boot and after PCI hardware is probed and
+> initialized by device_initcall in the fsl_pci.c.
 >=20
->        bus_no =3D (bus->number =3D=3D hose->first_busno) ?
+> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+> ---
+>  arch/powerpc/sysdev/fsl_pci.c |   12 ++++++++++
+>  arch/powerpc/sysdev/fsl_pci.h |    5 ++++
+>  drivers/edac/mpc85xx_edac.c   |   47 =20
+> ++++++++++++++++++++++++++++------------
+>  3 files changed, 50 insertions(+), 14 deletions(-)
 >=20
-> hose->self_busno : bus->number;
->=20
-> +       if (bus_no =3D=3D 3) {
-> +         printk
-> ("*** force bus_no 3 -> 1 ***\n");
-> +         bus_no =3D 1;
-> +       }
+> diff --git a/arch/powerpc/sysdev/fsl_pci.c =20
+> b/arch/powerpc/sysdev/fsl_pci.c
+> index 3d6f4d8..a591965 100644
+> --- a/arch/powerpc/sysdev/fsl_pci.c
+> +++ b/arch/powerpc/sysdev/fsl_pci.c
+> @@ -904,4 +904,16 @@ static int __init fsl_pci_init(void)
+>  	return platform_driver_register(&fsl_pci_driver);
+>  }
+>  arch_initcall(fsl_pci_init);
 > +
->=20
->=20
-> I've=20
-> tested a kernel with the above patch and this is what is printed on =
-the log:
->=20
->=20
-> pci_bus 0001:03: scanning bus
-> -> ind_r_config - [/pcie@ffe0a000] devfn=3D0x0=20
-> offset=3D0x0 len=3D0x4 hose->indirect_type=3D0x16 =
-hose->first_busno=3D0x2 bus-
->> number=3D0x3
-> *** force bus_no 3 -> 1 ***
-> -> ind_r_config [/pcie@ffe0a000] -=20
-> (bus_no=3D0x1 reg=3D0x0 cfg_data=3D0xff7eb004 len=3D0x4 =
-hose->cfg_addr=3D0xff7eb000)=20
-> val=3D0xffffffff PCIBIOS_SUCCESSFUL
->=20
-> the entire log (132Kb) is available in [1]=20
-> and [2]
->=20
-> thanx for your help,
-> Davide
->=20
-> [1] http://pastebin.com/3mcbDzwY
-> [2] http:
-> //paste2.org/p/2274032
->=20
->=20
->=20
-> Invita i tuoi amici e Tiscali ti premia! Il consiglio di un amico vale =
-pi=F9 di uno spot in TV. Per ogni nuovo abbonato 30 =80 di premio per te =
-e per lui! Un amico al mese e parli e navighi sempre gratis: =
-http://freelosophy.tiscali.it/
+> +static int __init fsl_pci_err_en(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	for_each_node_by_type(np, "pci")
+> +		if (of_match_node(pci_ids, np))
+> +			mpc85xx_pci_err_en(np);
+> +
+> +	return 0;
+> +}
+> +device_initcall(fsl_pci_err_en);
+
+Why can't you call this from the normal PCIe controller init, instead =20
+of searching for the node independently?
+
+-Scott=
