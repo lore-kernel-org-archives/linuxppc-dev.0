@@ -1,9 +1,9 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id A723B2C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 18:48:18 +1000 (EST)
-Message-ID: <50641427.3040103@cn.fujitsu.com>
-Date: Thu, 27 Sep 2012 16:53:59 +0800
+ by ozlabs.org (Postfix) with ESMTP id BF9BA2C00BE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 20:00:49 +1000 (EST)
+Message-ID: <50642526.4070603@cn.fujitsu.com>
+Date: Thu, 27 Sep 2012 18:06:30 +0800
 From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
 To: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
@@ -40,12 +40,6 @@ At 09/27/2012 12:58 AM, Vasilis Liaskovitis Wrote:
 > 
 > When the pages are re-onlined on hot-readd, I get a bad_page state for many
 > pages e.g.
-
-I have reproduced this problem, and I investigate it now.
-
-Thanks
-Wen Congyang
-
 > 
 > [   59.611278] init_memory_mapping: [mem 0x80000000-0x9fffffff]
 > [   59.637836] Built 2 zonelists in Node order, mobility grouping on.  Total pages: 547617
@@ -74,6 +68,44 @@ Wen Congyang
 > 
 > Patch 20/21 deals with a similar scenario, but only for __PG_HWPOISON flag.
 > Did i miss any other patch for this?
+
+Please try the following patch:
+>From a38ec678e0a9b48b252f457d7910b7527049dc43 Mon Sep 17 00:00:00 2001
+From: Wen Congyang <wency@cn.fujitsu.com>
+Date: Thu, 27 Sep 2012 17:27:57 +0800
+Subject: [PATCH] clear the memory to store page information
+
+---
+ mm/sparse.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/mm/sparse.c b/mm/sparse.c
+index ab9d755..36dda08 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -639,7 +639,6 @@ static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
+ got_map_page:
+ 	ret = (struct page *)pfn_to_kaddr(page_to_pfn(page));
+ got_map_ptr:
+-	memset(ret, 0, memmap_size);
+ 
+ 	return ret;
+ }
+@@ -761,6 +760,8 @@ int __meminit sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+ 		goto out;
+ 	}
+ 
++	memset(memmap, 0, sizeof(struct page) * nr_pages);
++
+ 	ms->section_mem_map |= SECTION_MARKED_PRESENT;
+ 
+ 	ret = sparse_init_one_section(ms, section_nr, memmap, usemap);
+-- 
+1.7.1
+
+Thanks
+Wen Congyang
+
 > 
 > thanks,
 > 
@@ -85,9 +117,4 @@ Wen Congyang
 > [4] http://permalink.gmane.org/gmane.comp.emulators.kvm.devel/98691
 > 
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 > 
