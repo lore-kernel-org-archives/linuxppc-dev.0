@@ -1,27 +1,24 @@
-Return-Path: <B25806@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E15FB2C011A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 16:59:36 +1000 (EST)
-Received: from mail77-ch1 (localhost [127.0.0.1])	by mail77-ch1-R.bigfish.com
- (Postfix) with ESMTP id 628734201C5	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,
- 27 Sep 2012 06:59:31 +0000 (UTC)
-Received: from CH1EHSMHS007.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.250])	by mail77-ch1.bigfish.com (Postfix) with ESMTP id
- 5EAC9440159
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 06:59:19 +0000 (UTC)
-From: Chunhe Lan <Chunhe.Lan@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/3] edac: Use ccsr_pci structure instead of hardcoded define
-Date: Thu, 27 Sep 2012 15:02:01 -0400
-Message-ID: <1348772523-17587-1-git-send-email-Chunhe.Lan@freescale.com>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id A723B2C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Sep 2012 18:48:18 +1000 (EST)
+Message-ID: <50641427.3040103@cn.fujitsu.com>
+Date: Thu, 27 Sep 2012 16:53:59 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: kumar.gala@freescale.com, Chunhe Lan <Chunhe.Lan@freescale.com>
+To: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
+Subject: Re: [RFC v9 PATCH 00/21] memory-hotplug: hot-remove physical memory
+References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
+ <20120926165820.GB7559@dhcp-192-168-178-175.profitbricks.localdomain>
+In-Reply-To: <20120926165820.GB7559@dhcp-192-168-178-175.profitbricks.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,119 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There are some differences of register offset and definition between
-pci and pcie error management registers. While, some other pci/pcie
-error management registers are nearly the same.
+At 09/27/2012 12:58 AM, Vasilis Liaskovitis Wrote:
+> Testing 3.6.0-rc7 with this v9 patchset plus more recent fixes [1],[2],[3]
+> Running in a guest (qemu+seabios from [4]). 
+> CONFIG_SLAB=y
+> CONFIG_DEBUG_SLAB=y
+> 
+> - succesfull hot-add and online
+> - succesfull hot-remove with SCI (qemu) eject
+> - attempt to hot-readd same memory
+> 
+> When the pages are re-onlined on hot-readd, I get a bad_page state for many
+> pages e.g.
 
-To merge pci and pcie edac code into one, it is easier to use ccsr_pci
-structure than the hardcoded define. So remove the hardcoded define and
-add pci/pcie error management register in ccsr_pci structure.
+I have reproduced this problem, and I investigate it now.
 
-Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
----
- arch/powerpc/sysdev/fsl_pci.h |   46 +++++++++++++++++++++++++++++++++-------
- drivers/edac/mpc85xx_edac.h   |   12 +---------
- 2 files changed, 40 insertions(+), 18 deletions(-)
+Thanks
+Wen Congyang
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
-index d078537..796fe55 100644
---- a/arch/powerpc/sysdev/fsl_pci.h
-+++ b/arch/powerpc/sysdev/fsl_pci.h
-@@ -1,7 +1,7 @@
- /*
-  * MPC85xx/86xx PCI Express structure define
-  *
-- * Copyright 2007,2011 Freescale Semiconductor, Inc
-+ * Copyright 2007,2011,2012 Freescale Semiconductor, Inc
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -14,6 +14,8 @@
- #ifndef __POWERPC_FSL_PCI_H
- #define __POWERPC_FSL_PCI_H
- 
-+#include <asm/pci-bridge.h>
-+
- #define PCIE_LTSSM	0x0404		/* PCIE Link Training and Status */
- #define PCIE_LTSSM_L0	0x16		/* L0 state */
- #define PCIE_IP_REV_2_2		0x02080202 /* PCIE IP block version Rev2.2 */
-@@ -77,13 +79,41 @@ struct ccsr_pci {
-  */
- 	struct pci_inbound_window_regs piw[4];
- 
--	__be32	pex_err_dr;		/* 0x.e00 - PCI/PCIE error detect register */
--	u8	res21[4];
--	__be32	pex_err_en;		/* 0x.e08 - PCI/PCIE error interrupt enable register */
--	u8	res22[4];
--	__be32	pex_err_disr;		/* 0x.e10 - PCI/PCIE error disable register */
--	u8	res23[12];
--	__be32	pex_err_cap_stat;	/* 0x.e20 - PCI/PCIE error capture status register */
-+/* Merge PCI Express/PCI error management registers */
-+	__be32	pex_err_dr;	  /* 0x.e00
-+				   * - PCI/PCIE error detect register
-+				   */
-+	__be32	pex_err_cap_dr;	  /* 0x.e04
-+				   * - PCI error capture disabled register
-+				   * - PCIE has no this register
-+				   */
-+	__be32	pex_err_en;	  /* 0x.e08
-+				   * - PCI/PCIE error interrupt enable register
-+				   */
-+	__be32	pex_err_attrib;	  /* 0x.e0c
-+				   * - PCI error attributes capture register
-+				   * - PCIE has no this register
-+				   */
-+	__be32	pex_err_disr;	  /* 0x.e10
-+				   * - PCI error address capture register
-+				   * - PCIE error disable register
-+				   */
-+	__be32	pex_err_ext_addr; /* 0x.e14
-+				   * - PCI error extended addr capture register
-+				   * - PCIE has no this register
-+				   */
-+	__be32	pex_err_dl;	  /* 0x.e18
-+				   * - PCI error data low capture register
-+				   * - PCIE has no this register
-+				   */
-+	__be32	pex_err_dh;	  /* 0x.e1c
-+				   * - PCI error data high capture register
-+				   * - PCIE has no this register
-+				   */
-+	__be32	pex_err_cap_stat; /* 0x.e20
-+				   * - PCI gasket timer register
-+				   * - PCIE error capture status register
-+				   */
- 	u8	res24[4];
- 	__be32	pex_err_cap_r0;		/* 0x.e28 - PCIE error capture register 0 */
- 	__be32	pex_err_cap_r1;		/* 0x.e2c - PCIE error capture register 0 */
-diff --git a/drivers/edac/mpc85xx_edac.h b/drivers/edac/mpc85xx_edac.h
-index 932016f..192c8f5 100644
---- a/drivers/edac/mpc85xx_edac.h
-+++ b/drivers/edac/mpc85xx_edac.h
-@@ -1,5 +1,7 @@
- /*
-  * Freescale MPC85xx Memory Controller kenel module
-+ * Copyright (c) 2012 Freescale Semiconductor, Inc.
-+ *
-  * Author: Dave Jiang <djiang@mvista.com>
-  *
-  * 2006-2007 (c) MontaVista Software, Inc. This file is licensed under
-@@ -131,16 +133,6 @@
- #define PCI_EDE_PERR_MASK	(PCI_EDE_TGT_PERR | PCI_EDE_MST_PERR | \
- 				PCI_EDE_ADDR_PERR)
- 
--#define MPC85XX_PCI_ERR_DR		0x0000
--#define MPC85XX_PCI_ERR_CAP_DR		0x0004
--#define MPC85XX_PCI_ERR_EN		0x0008
--#define MPC85XX_PCI_ERR_ATTRIB		0x000c
--#define MPC85XX_PCI_ERR_ADDR		0x0010
--#define MPC85XX_PCI_ERR_EXT_ADDR	0x0014
--#define MPC85XX_PCI_ERR_DL		0x0018
--#define MPC85XX_PCI_ERR_DH		0x001c
--#define MPC85XX_PCI_GAS_TIMR		0x0020
--#define MPC85XX_PCI_PCIX_TIMR		0x0024
- 
- struct mpc85xx_mc_pdata {
- 	char *name;
--- 
-1.7.6.5
+> 
+> [   59.611278] init_memory_mapping: [mem 0x80000000-0x9fffffff]
+> [   59.637836] Built 2 zonelists in Node order, mobility grouping on.  Total pages: 547617
+> [   59.638739] Policy zone: Normal
+> [   59.650840] BUG: Bad page state in process bash  pfn:9b6dc
+> [   59.651124] page:ffffea0002200020 count:0 mapcount:0 mapping:          (null) index:0xfdfdfdfdfdfdfdfd
+> [   59.651494] page flags: 0x2fdfdfdfd5df9fd(locked|referenced|uptodate|dirty|lru|active|slab|owner_priv_1|private|private_2|writeback|head|tail|swapcache|reclaim|swapbacked|unevictable|uncached|compound_lock)
+> [   59.653604] Modules linked in: netconsole acpiphp pci_hotplug acpi_memhotplug loop kvm_amd kvm microcode tpm_tis tpm tpm_bios evdev psmouse serio_raw i2c_piix4 i2c_core parport_pc parport processor button thermal_sys ext3 jbd mbcache sg sr_mod cdrom ata_generic virtio_net ata_piix virtio_blk libata virtio_pci virtio_ring virtio scsi_mod
+> [   59.656998] Pid: 988, comm: bash Not tainted 3.6.0-rc7-guest #12
+> [   59.657172] Call Trace:
+> [   59.657275]  [<ffffffff810e9b30>] ? bad_page+0xb0/0x100
+> [   59.657434]  [<ffffffff810ea4c3>] ? free_pages_prepare+0xb3/0x100
+> [   59.657610]  [<ffffffff810ea668>] ? free_hot_cold_page+0x48/0x1a0
+> [   59.657787]  [<ffffffff8112cc08>] ? online_pages_range+0x68/0xa0
+> [   59.657961]  [<ffffffff8112cba0>] ? __online_page_increment_counters+0x10/0x10
+> [   59.658162]  [<ffffffff81045561>] ? walk_system_ram_range+0x101/0x110
+> [   59.658346]  [<ffffffff814c4f95>] ? online_pages+0x1a5/0x2b0
+> [   59.658515]  [<ffffffff8135663d>] ? __memory_block_change_state+0x20d/0x270
+> [   59.658710]  [<ffffffff81356756>] ? store_mem_state+0xb6/0xf0
+> [   59.658878]  [<ffffffff8119e482>] ? sysfs_write_file+0xd2/0x160
+> [   59.659052]  [<ffffffff8113769a>] ? vfs_write+0xaa/0x160
+> [   59.659212]  [<ffffffff81137977>] ? sys_write+0x47/0x90
+> [   59.659371]  [<ffffffff814e2f25>] ? async_page_fault+0x25/0x30
+> [   59.659543]  [<ffffffff814ea239>] ? system_call_fastpath+0x16/0x1b
+> [   59.659720] Disabling lock debugging due to kernel taint
+> 
+> Patch 20/21 deals with a similar scenario, but only for __PG_HWPOISON flag.
+> Did i miss any other patch for this?
+> 
+> thanks,
+> 
+> - Vasilis
+> 
+> [1] https://lkml.org/lkml/2012/9/6/635
+> [2] https://lkml.org/lkml/2012/9/11/542
+> [3] https://lkml.org/lkml/2012/9/20/37
+> [4] http://permalink.gmane.org/gmane.comp.emulators.kvm.devel/98691
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
