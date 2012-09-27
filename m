@@ -1,25 +1,35 @@
-Return-Path: <fweisbec@gmail.com>
-Received: from mail-bk0-f42.google.com (mail-bk0-f42.google.com
- [209.85.214.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 14D1C2C00AF
- for <linuxppc-dev@ozlabs.org>; Fri, 28 Sep 2012 01:23:11 +1000 (EST)
-Received: by bkwj5 with SMTP id j5so1567683bkw.15
- for <linuxppc-dev@ozlabs.org>; Thu, 27 Sep 2012 08:23:08 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <29084.1348557014@neuling.org>
-References: <28857.1345091034@neuling.org> <20120817161554.GA3772@somewhere>
- <11821.1345240695@neuling.org> <29084.1348557014@neuling.org>
-Date: Thu, 27 Sep 2012 17:23:08 +0200
-Message-ID: <CAFTL4hzj=maY1SVjM2iHSer8vTA5h6nGd77DCMgX6W4QRfd3pA@mail.gmail.com>
-Subject: Re: powerpc/perf: hw breakpoints return ENOSPC
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Michael Neuling <mikey@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Ingo Molnar <mingo@kernel.org>, linuxppc-dev@ozlabs.org,
- K Prasad <prasad@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Peter Zijlstra <a.p.zijlstra@chello.nl>
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 221A22C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 02:04:03 +1000 (EST)
+Subject: Re: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM support
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <CADRPPNQga4J26oDacT-fGMZiecE2KLsLh2DBEErtQ9_gJSwgpA@mail.gmail.com>
+Date: Thu, 27 Sep 2012 11:04:01 -0500
+Message-Id: <587B44DE-F710-4AF0-AB0B-A48FEEE29509@kernel.crashing.org>
+References: <1347934234-18223-1-git-send-email-B38951@freescale.com>
+ <86ADF4ED-B84C-4560-8781-D9FA4486D854@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AAA35A@039-SN1MPN1-002.039d.mgd.msft.net>
+ <36119932-E4BF-4DF6-8D33-C9A832883272@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AAA4E8@039-SN1MPN1-002.039d.mgd.msft.net>
+ <8086D08B-62B7-4838-8DB6-0F6158DE581A@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AB4A6F@039-SN1MPN1-004.039d.mgd.msft.net>
+ <94F013E7935FF44C83EBE7784D62AD3F09432A5F@039-SN2MPN1-021.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01AB6AE7@039-SN1MPN1-004.039d.mgd.msft.net>
+ <95B12FA1-EC53-4632-8DFB-64109668BA9C@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AB8317@039-SN1MPN1-004.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01AC2B34@039-SN1MPN1-004.039d.mgd.msft.net>
+ <30C76F52-4022-459D-8B84-876B1A572ABE@kernel.crashing.org>
+ <CADRPPNQga4J26oDacT-fGMZiecE2KLsLh2DBEErtQ9_gJSwgpA@mail.gmail.com>
+To: Li Yang <leoli@freescale.com>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Jia Hongtao-B38951 <B38951@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,58 +39,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2012/9/25 Michael Neuling <mikey@neuling.org>:
-> Michael Neuling <mikey@neuling.org> wrote:
->
->> Frederic Weisbecker <fweisbec@gmail.com> wrote:
->>
->> > On Thu, Aug 16, 2012 at 02:23:54PM +1000, Michael Neuling wrote:
->> > > Hi,
->> > >
->> > > I've been trying to get hardware breakpoints with perf to work on POWER7
->> > > but I'm getting the following:
->> > >
->> > >   % perf record -e mem:0x10000000 true
->> > >
->> > >     Error: sys_perf_event_open() syscall returned with 28 (No space left on device).  /bin/dmesg may provide additional information.
->> > >
->> > >     Fatal: No CONFIG_PERF_EVENTS=y kernel support configured?
->> > >
->> > >   true: Terminated
->> > >
->> > > (FWIW adding -a and it works fine)
->> > >
->> > > Debugging it seems that __reserve_bp_slot() is returning ENOSPC because
->> > > it thinks there are no free breakpoint slots on this CPU.
->> > >
->> > > I have a 2 CPUs, so perf userspace is doing two perf_event_open syscalls
->> > > to add a counter to each CPU [1].  The first syscall succeeds but the
->> > > second is failing.
->> > >
->> > > On this second syscall, fetch_bp_busy_slots() sets slots.pinned to be 1,
->> > > despite there being no breakpoint on this CPU.  This is because the call
->> > > the task_bp_pinned, checks all CPUs, rather than just the current CPU.
->> > > POWER7 only has one hardware breakpoint per CPU (ie. HBP_NUM=1), so we
->> > > return ENOSPC.
->> > >
->> > > The following patch fixes this by checking the associated CPU for each
->> > > breakpoint in task_bp_pinned.  I'm not familiar with this code, so it's
->> > > provided as a reference to the above issue.
->> > >
->> > > Mikey
->> > >
->> > > 1. not sure why it doesn't just do one syscall and specify all CPUs, but
->> > > that's another issue.  Using two syscalls should work.
->> >
->> > This patch seems to make sense. I'll try it and run some tests.
->> > Can I have your Signed-off-by ?
->
-> Frederic,
->
-> Did you ever get to testing or integrating this patch?
->
-> Mikey
+>>> Hi Kumar,
+>>> I have already sent the log.
+>>> Do you have any comment on it?
+>>>=20
+>>> Thanks.
+>>> - Hongtao.
+>>>=20
+>>=20
+>> Hongtao,
+>>=20
+>> You mentioned:
+>>=20
+>>> I tested the re-parsing way by using setup_pci_atmu() when resume.
+>>> And I found out that re-parsing will *change* outbound IO
+>>> translation address regitster.
+>>=20
+>> What do the values look like in both ATMU registers and io_resource =
+if you reparse?
+>=20
+> I think Hongtao mentioned in previous email as follows, the ATMU
+> registers are inline with the io_resource address.
 
-Sorry, I forgot this in my mailbox. I'm going to look at this in the
-next few days.
-Feel free to harass me by email or IRC if I don't give news on this soon.
+I was under that the impression that was the normal boot case, not the =
+values from after wakeup.
+
+- k
+
+>>> Since potar is set by out_be32(&pci->pow[j].potar, (hose-
+>>> io_resource.start >> 12);
+>>> I provide the result of hose->io_resource.start >> 12 as follows:
+>>>=20
+>>> pcie@ffe09000:
+>>> before pci scan: io_resource.start >> 12: 0
+>>> after pci scan : io_resource.start >> 12: ff7ed
+>>>=20
+>>> pcie@ffe0a000:
+>>> before pci scan: io_resource.start >> 12: 0
+>>> after pci scan : io_resource.start >> 12: ff7db
+>>>=20
+>>> pcie@ffe0b000:
+>>> before pci scan: io_resource.start >> 12: 0
+>>> after pci scan : io_resource.start >> 12: ff7c9
+>>>=20
+>>> Note that I tested on P1022DS.
