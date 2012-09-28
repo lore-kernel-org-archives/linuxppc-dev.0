@@ -1,25 +1,43 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe002.messaging.microsoft.com [216.32.181.182])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5C8A92C00CA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 03:35:37 +1000 (EST)
-Date: Fri, 28 Sep 2012 12:35:17 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/3] edac/85xx: Enable the EDAC PCI err driver by
- device_initcall
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <8C412487-0A6A-4C2E-9DE5-05B141201653@kernel.crashing.org>
- (from galak@kernel.crashing.org on Thu Sep 27 17:33:26 2012)
-Message-ID: <1348853717.5580.5@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Lan Chunhe-B25806 <B25806@freescale.com>,
- Wood Scott-B07421 <B07421@freescale.com>,
- Gala Kumar-B11780 <B11780@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <rsa@us.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C3F3A2C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 08:11:56 +1000 (EST)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <rsa@us.ibm.com>;
+ Fri, 28 Sep 2012 16:11:52 -0600
+Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
+ [9.17.195.107])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id DC7621FF003F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 16:11:44 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q8SMBm9a261732
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 16:11:48 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q8SMBmq7004765
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 16:11:48 -0600
+Subject: Re: [PATCH 2/6] powerpc: Add enable_ppr kernel parameter to enable
+ PPR save/restore
+From: Ryan Arnold <rsa@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1347342911.2603.39.camel@pasglop>
+References: <1347190671.3418.12.camel@hbabu-laptop>
+ <1347235922.2385.138.camel@pasglop> <13010.1347236558@neuling.org>
+ <504ECF35.9070305@linux.vnet.ibm.com>  <1347342911.2603.39.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 28 Sep 2012 17:11:44 -0500
+Message-ID: <1348870304.29664.6212.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>,
+ Adhemerval Zanella <azanella@linux.vnet.ibm.com>, sjmunroe@us.ibm.com,
+ paulus@samba.org, anton@samba.org, linuxppc-dev@lists.ozlabs.org,
+ Haren Myneni <haren@linux.vnet.ibm.com>
+Reply-To: rsa@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,88 +47,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/27/2012 05:33:26 PM, Kumar Gala wrote:
->=20
-> On Sep 27, 2012, at 4:51 PM, Scott Wood wrote:
->=20
-> > On 09/27/2012 04:45:08 PM, Gala Kumar-B11780 wrote:
-> >> On Sep 27, 2012, at 11:09 AM, Scott Wood wrote:
-> >>> On 09/27/2012 02:02:03 PM, Chunhe Lan wrote:
-> >>>> Original process of call:
-> >>>> 	The mpc85xx_pci_err_probe function completes to been registered
-> >>>> 	and enabled of EDAC PCI err driver at the latter time stage of
-> >>>> 	kernel boot in the mpc85xx_edac.c.
-> >>>> Current process of call:
-> >>>> 	The mpc85xx_pci_err_probe function completes to been registered
-> >>>> 	and enabled of EDAC PCI err driver at the first	time stage of
-> >>>> 	kernel boot in the fsl_pci.c.
-> >>>> So in this case the following error messages appear in the boot =20
-> log:
-> >>>>   PCI: Probing PCI hardware
-> >>>>   pci 0000:00:00.0: ignoring class b20 (doesn't match header =20
-> type 01)
-> >>>>   PCIE error(s) detected
-> >>>>   PCIE ERR_DR register: 0x00020000
-> >>>>   PCIE ERR_CAP_STAT register: 0x80000001
-> >>>>   PCIE ERR_CAP_R0 register: 0x00000800
-> >>>>   PCIE ERR_CAP_R1 register: 0x00000000
-> >>>>   PCIE ERR_CAP_R2 register: 0x00000000
-> >>>>   PCIE ERR_CAP_R3 register: 0x00000000
-> >>>> Because the EDAC PCI err driver is registered and enabled =20
-> earlier than
-> >>>> original point of call. But at this point of time, PCI hardware =20
-> is not
-> >>>> probed and initialized, and it is in unknowable state.
-> >>>> So, move enable function into mpc85xx_pci_err_en which is called =20
-> at the
-> >>>> middle time stage of kernel boot and after PCI hardware is =20
-> probed and
-> >>>> initialized by device_initcall in the fsl_pci.c.
-> >>>> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-> >>>> ---
-> >>>> arch/powerpc/sysdev/fsl_pci.c |   12 ++++++++++
-> >>>> arch/powerpc/sysdev/fsl_pci.h |    5 ++++
-> >>>> drivers/edac/mpc85xx_edac.c   |   47 =20
-> ++++++++++++++++++++++++++++------------
-> >>>> 3 files changed, 50 insertions(+), 14 deletions(-)
-> >>>> diff --git a/arch/powerpc/sysdev/fsl_pci.c =20
-> b/arch/powerpc/sysdev/fsl_pci.c
-> >>>> index 3d6f4d8..a591965 100644
-> >>>> --- a/arch/powerpc/sysdev/fsl_pci.c
-> >>>> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> >>>> @@ -904,4 +904,16 @@ static int __init fsl_pci_init(void)
-> >>>> 	return platform_driver_register(&fsl_pci_driver);
-> >>>> }
-> >>>> arch_initcall(fsl_pci_init);
-> >>>> +
-> >>>> +static int __init fsl_pci_err_en(void)
-> >>>> +{
-> >>>> +	struct device_node *np;
-> >>>> +
-> >>>> +	for_each_node_by_type(np, "pci")
-> >>>> +		if (of_match_node(pci_ids, np))
-> >>>> +			mpc85xx_pci_err_en(np);
-> >>>> +
-> >>>> +	return 0;
-> >>>> +}
-> >>>> +device_initcall(fsl_pci_err_en);
-> >>>
-> >>> Why can't you call this from the normal PCIe controller init, =20
-> instead of searching for the node independently?
-> >> Don't we have this now with mpc85xx_pci_err_probe() ??
-> >
-> > What do you mean by "this"?
->=20
-> I'm saying don't we replace fsl_pci_err_en() with =20
-> mpc85xx_pci_err_probe()...
->=20
-> I need to look at this more, but not clear why mpc85xx_pci_err_en() =20
-> can just be part of mpc85xx_pci_err_probe()
+On Tue, 2012-09-11 at 15:55 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2012-09-10 at 22:42 -0700, Haren Myneni wrote:
+> > 
+> > Thanks Michael. Yes, we noticed 6% overhead with null syscall test.
+> > Hence added cmdline option as suggested. I will add this comment in
+> > the
+> > changelog.
+> > 
+> > Regarding the option name, I thought about various ones such as
+> > retain_process_ppr, retain_smt_priority, save_ppr and etc. Finally
+> > added
+> > 'enable_ppr' since it enables CPU_FTR (CPU_FTR_HAS_PPR) which allows
+> > to
+> > save/restore PPR value. Sure, I will change this option.
+> 
+> No, that isn't a problem with the name. It's a problem with the polarity
+> of the option.
+> 
+> If you need a command line argument to enable the option, then nobody
+> will enable it, it's pointless.
 
-OK, I was confused -- I thought the point was to make it happen =20
-earlier, not later.  The changelog is not clear at all.
+In GLIBC (ppc.h) we'll be providing a user space API to change the
+thread priority in user state.  We're also interested in using this in
+some of the locking constructs if performance tests indicate it's
+beneficial.
 
-Don't we want to be able to capture errors that happen during PCI =20
-driver initialization, though?
+I have concerns with being able to enable/disable this option at boot
+time.  Usually, in GLIBC we'll just do a kernel version check and enable
+certain facilities if we're building against a particular kernel that
+supports them.
 
--Scott=
+In this case, with a configurable option, GLIBC is going to need the
+kernel to export a hwcap bit that tells us whether we need to do the
+save/restore ourselves.  Having to check the hwcap, and do the
+save/restore in user space will, of course, increase the overhead on our
+side.
+
+If no hwcap bit is provided and this is disabled at kernel boot time, no
+check is done and the user process assumes it's running under a certain
+priority when it is, in-fact, not.  I don't care for this option.  We'll
+be hitting code paths that are ineffective and unnecessary.
+
+Ryan S. Arnold
+Linux Technology Center
