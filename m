@@ -3,12 +3,12 @@ Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
  [209.85.220.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E677C2C00ED
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 13:45:39 +1000 (EST)
-Received: by pabkq12 with SMTP id kq12so2808674pab.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 20:45:37 -0700 (PDT)
-Message-ID: <50666ED4.2010406@gmail.com>
-Date: Sat, 29 Sep 2012 11:45:24 +0800
+ by ozlabs.org (Postfix) with ESMTPS id BDF192C00F2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 18:19:51 +1000 (EST)
+Received: by pabkq12 with SMTP id kq12so2915371pab.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 01:19:49 -0700 (PDT)
+Message-ID: <5066AF1A.4090509@gmail.com>
+Date: Sat, 29 Sep 2012 16:19:38 +0800
 From: Ni zhan Chen <nizhan.chen@gmail.com>
 MIME-Version: 1.0
 To: wency@cn.fujitsu.com
@@ -48,15 +48,16 @@ On 09/05/2012 05:25 PM, wency@cn.fujitsu.com wrote:
 >
 > If you find lack of function for physical memory hot-remove, please let me
 > know.
-
-Since patchset is too big, could you add more patchset changelog to 
-describe how this patchset works? in order that it is easier to review.
-
 >
 > How to test this patchset?
 > 1. apply this patchset and build the kernel. MEMORY_HOTPLUG, MEMORY_HOTREMOVE,
 >     ACPI_HOTPLUG_MEMORY must be selected.
 > 2. load the module acpi_memhotplug
+
+Hi Yasuaki,
+
+where is the acpi_memhotplug module?
+
 > 3. hotplug the memory device(it depends on your hardware)
 >     You will see the memory device under the directory /sys/bus/acpi/devices/.
 >     Its name is PNP0C80:XX.
