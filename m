@@ -1,30 +1,24 @@
-Return-Path: <nizhan.chen@gmail.com>
-Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 981632C00E1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 12:16:08 +1000 (EST)
-Received: by obblz20 with SMTP id lz20so3481748obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Sep 2012 19:16:05 -0700 (PDT)
-Message-ID: <506659D7.9080904@gmail.com>
-Date: Sat, 29 Sep 2012 10:15:51 +0800
-From: Ni zhan Chen <nizhan.chen@gmail.com>
+Return-Path: <B25806@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6E66C2C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 12:39:26 +1000 (EST)
+Message-ID: <506708BE.1090905@freescale.com>
+Date: Sat, 29 Sep 2012 10:42:06 -0400
+From: Chunhe Lan <b25806@freescale.com>
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC v9 PATCH 13/21] memory-hotplug: check page type in
- get_page_bootmem
-References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
- <1346837155-534-14-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1346837155-534-14-git-send-email-wency@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
- rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/3] edac/85xx: Enable the EDAC PCI err driver by
+ device_initcall
+References: <1348853717.5580.5@snotra>
+In-Reply-To: <1348853717.5580.5@snotra>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Gala Kumar-B11780 <B11780@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,73 +28,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/05/2012 05:25 PM, wency@cn.fujitsu.com wrote:
-> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+On 09/28/2012 01:35 PM, Scott Wood wrote:
+> On 09/27/2012 05:33:26 PM, Kumar Gala wrote:
+>>
+>> On Sep 27, 2012, at 4:51 PM, Scott Wood wrote:
+>>
+>> > On 09/27/2012 04:45:08 PM, Gala Kumar-B11780 wrote:
+>> >> On Sep 27, 2012, at 11:09 AM, Scott Wood wrote:
+>> >>> On 09/27/2012 02:02:03 PM, Chunhe Lan wrote:
+>> >>>> Original process of call:
+>> >>>>     The mpc85xx_pci_err_probe function completes to been registered
+>> >>>>     and enabled of EDAC PCI err driver at the latter time stage of
+>> >>>>     kernel boot in the mpc85xx_edac.c.
+>> >>>> Current process of call:
+>> >>>>     The mpc85xx_pci_err_probe function completes to been registered
+>> >>>>     and enabled of EDAC PCI err driver at the first    time 
+>> stage of
+>> >>>>     kernel boot in the fsl_pci.c.
+>> >>>> So in this case the following error messages appear in the boot 
+>> log:
+>> >>>>   PCI: Probing PCI hardware
+>> >>>>   pci 0000:00:00.0: ignoring class b20 (doesn't match header 
+>> type 01)
+>> >>>>   PCIE error(s) detected
+>> >>>>   PCIE ERR_DR register: 0x00020000
+>> >>>>   PCIE ERR_CAP_STAT register: 0x80000001
+>> >>>>   PCIE ERR_CAP_R0 register: 0x00000800
+>> >>>>   PCIE ERR_CAP_R1 register: 0x00000000
+>> >>>>   PCIE ERR_CAP_R2 register: 0x00000000
+>> >>>>   PCIE ERR_CAP_R3 register: 0x00000000
+>> >>>> Because the EDAC PCI err driver is registered and enabled 
+>> earlier than
+>> >>>> original point of call. But at this point of time, PCI hardware 
+>> is not
+>> >>>> probed and initialized, and it is in unknowable state.
+>> >>>> So, move enable function into mpc85xx_pci_err_en which is called 
+>> at the
+>> >>>> middle time stage of kernel boot and after PCI hardware is 
+>> probed and
+>> >>>> initialized by device_initcall in the fsl_pci.c.
+>> >>>> Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+>> >>>> ---
+>> >>>> arch/powerpc/sysdev/fsl_pci.c |   12 ++++++++++
+>> >>>> arch/powerpc/sysdev/fsl_pci.h |    5 ++++
+>> >>>> drivers/edac/mpc85xx_edac.c   |   47 
+>> ++++++++++++++++++++++++++++------------
+>> >>>> 3 files changed, 50 insertions(+), 14 deletions(-)
+>> >>>> diff --git a/arch/powerpc/sysdev/fsl_pci.c 
+>> b/arch/powerpc/sysdev/fsl_pci.c
+>> >>>> index 3d6f4d8..a591965 100644
+>> >>>> --- a/arch/powerpc/sysdev/fsl_pci.c
+>> >>>> +++ b/arch/powerpc/sysdev/fsl_pci.c
+>> >>>> @@ -904,4 +904,16 @@ static int __init fsl_pci_init(void)
+>> >>>>     return platform_driver_register(&fsl_pci_driver);
+>> >>>> }
+>> >>>> arch_initcall(fsl_pci_init);
+>> >>>> +
+>> >>>> +static int __init fsl_pci_err_en(void)
+>> >>>> +{
+>> >>>> +    struct device_node *np;
+>> >>>> +
+>> >>>> +    for_each_node_by_type(np, "pci")
+>> >>>> +        if (of_match_node(pci_ids, np))
+>> >>>> +            mpc85xx_pci_err_en(np);
+>> >>>> +
+>> >>>> +    return 0;
+>> >>>> +}
+>> >>>> +device_initcall(fsl_pci_err_en);
+>> >>>
+>> >>> Why can't you call this from the normal PCIe controller init, 
+>> instead of searching for the node independently?
+>> >> Don't we have this now with mpc85xx_pci_err_probe() ??
+>> >
+>> > What do you mean by "this"?
+>>
+>> I'm saying don't we replace fsl_pci_err_en() with 
+>> mpc85xx_pci_err_probe()...
+>>
+>> I need to look at this more, but not clear why mpc85xx_pci_err_en() 
+>> can just be part of mpc85xx_pci_err_probe()
 >
-> The function get_page_bootmem() may be called more than one time to the same
-> page. There is no need to set page's type, private if the function is not
-> the first time called to the page.
+> OK, I was confused -- I thought the point was to make it happen 
+> earlier, not later.  The changelog is not clear at all.
 >
-> Note: the patch is just optimization and does not fix any problem.
+> Don't we want to be able to capture errors that happen during PCI 
+> driver initialization, though?
+     Yes.
+     When PCI controller is probing slot which if the any device does 
+not have on, happens the invalid address errors.
+     Then the edac driver prints the many error massages. This makes 
+sense as normal, but this is ugly.
+     So, move the enable edac driver to later, and only detect the 
+errors of the follow-up pci operations.
 
-Hi Yasuaki,
-
-this patch is reasonable to me. I have another question associated to 
-get_page_bootmem(), the question is from another fujitsu guy's patch 
-changelog [commit : 04753278769f3], the changelog said  that:
-
-  1) When the memmap of removing section is allocated on other
-      section by bootmem, it should/can be free.
-  2) When the memmap of removing section is allocated on the
-      same section, it shouldn't be freed. Because the section has to be
-      logical memory offlined already and all pages must be isolated against
-      page allocater. If it is freed, page allocator may use it which will
-      be removed physically soon.
-
-but I don't see his patch guarantee 2), it means that his patch doesn't 
-guarantee the memmap of removing section which is allocated on other 
-section by bootmem doesn't be freed. Hopefully get your explaination in 
-details, thanks in advance. :-)
-
+    Thanks,
+    Chunhe
 >
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> ---
->   mm/memory_hotplug.c |   15 +++++++++++----
->   1 files changed, 11 insertions(+), 4 deletions(-)
->
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index d736df3..26a5012 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -95,10 +95,17 @@ static void release_memory_resource(struct resource *res)
->   static void get_page_bootmem(unsigned long info,  struct page *page,
->   			     unsigned long type)
->   {
-> -	page->lru.next = (struct list_head *) type;
-> -	SetPagePrivate(page);
-> -	set_page_private(page, info);
-> -	atomic_inc(&page->_count);
-> +	unsigned long page_type;
-> +
-> +	page_type = (unsigned long)page->lru.next;
-> +	if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
-> +	    page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
-> +		page->lru.next = (struct list_head *)type;
-> +		SetPagePrivate(page);
-> +		set_page_private(page, info);
-> +		atomic_inc(&page->_count);
-> +	} else
-> +		atomic_inc(&page->_count);
->   }
->   
->   /* reference to __meminit __free_pages_bootmem is valid
+> -Scott
