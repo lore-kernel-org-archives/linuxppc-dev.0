@@ -1,28 +1,25 @@
-Return-Path: <nizhan.chen@gmail.com>
-Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
- [209.85.220.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BDF192C00F2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 18:19:51 +1000 (EST)
-Received: by pabkq12 with SMTP id kq12so2915371pab.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 01:19:49 -0700 (PDT)
-Message-ID: <5066AF1A.4090509@gmail.com>
-Date: Sat, 29 Sep 2012 16:19:38 +0800
-From: Ni zhan Chen <nizhan.chen@gmail.com>
+Return-Path: <R58495@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 161472C00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2012 09:44:45 +1000 (EST)
+Received: from mail198-co1 (localhost [127.0.0.1])	by
+ mail198-co1-R.bigfish.com (Postfix) with ESMTP id 5B52CD00074	for
+ <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 23:44:39 +0000 (UTC)
+Received: from CO1EHSMHS018.bigfish.com (unknown [10.243.78.254])	by
+ mail198-co1.bigfish.com (Postfix) with ESMTP id 2EF261C005D	for
+ <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 23:44:38 +0000 (UTC)
+From: York Sun <yorksun@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/mpc85xx: Change spin table to cached memory
+Date: Sat, 29 Sep 2012 16:44:35 -0700
+Message-ID: <1348962275-24052-1-git-send-email-yorksun@freescale.com>
 MIME-Version: 1.0
-To: wency@cn.fujitsu.com
-Subject: Re: [RFC v9 PATCH 00/21] memory-hotplug: hot-remove physical memory
-References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, liuj97@gmail.com
+Content-Type: text/plain
+Cc: scottwood@freescale.com, kumar.gala@freescale.com, timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,243 +29,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/05/2012 05:25 PM, wency@cn.fujitsu.com wrote:
-> From: Wen Congyang <wency@cn.fujitsu.com>
->
-> This patch series aims to support physical memory hot-remove.
->
-> The patches can free/remove the following things:
->
->    - acpi_memory_info                          : [RFC PATCH 4/19]
->    - /sys/firmware/memmap/X/{end, start, type} : [RFC PATCH 8/19]
->    - iomem_resource                            : [RFC PATCH 9/19]
->    - mem_section and related sysfs files       : [RFC PATCH 10-11, 13-16/19]
->    - page table of removed memory              : [RFC PATCH 12/19]
->    - node and related sysfs files              : [RFC PATCH 18-19/19]
->
-> If you find lack of function for physical memory hot-remove, please let me
-> know.
->
-> How to test this patchset?
-> 1. apply this patchset and build the kernel. MEMORY_HOTPLUG, MEMORY_HOTREMOVE,
->     ACPI_HOTPLUG_MEMORY must be selected.
-> 2. load the module acpi_memhotplug
+ePAPR v1.1 requires the spin table to be in cached memory. So we need
+to change the call argument of ioremap to enable cache and coherence.
+We also flush the cache after writing to spin table to keep it compatible
+with previous cache-inhibit spin table. Flushing before and after
+accessing spin table is recommended by ePAPR.
 
-Hi Yasuaki,
+Signed-off-by: York Sun <yorksun@freescale.com>
+Acked-by: Timur Tabi <timur@freescale.com>
+---
+This patch applies to git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next branch.
 
-where is the acpi_memhotplug module?
+ arch/powerpc/platforms/85xx/smp.c |   49 +++++++++++++++++++++++++++----------
+ 1 file changed, 36 insertions(+), 13 deletions(-)
 
-> 3. hotplug the memory device(it depends on your hardware)
->     You will see the memory device under the directory /sys/bus/acpi/devices/.
->     Its name is PNP0C80:XX.
-> 4. online/offline pages provided by this memory device
->     You can write online/offline to /sys/devices/system/memory/memoryX/state to
->     online/offline pages provided by this memory device
-> 5. hotremove the memory device
->     You can hotremove the memory device by the hardware, or writing 1 to
->     /sys/bus/acpi/devices/PNP0C80:XX/eject.
->
-> Note: if the memory provided by the memory device is used by the kernel, it
-> can't be offlined. It is not a bug.
->
-> Known problems:
-> 1. memory can't be offlined when CONFIG_MEMCG is selected.
->     For example: there is a memory device on node 1. The address range
->     is [1G, 1.5G). You will find 4 new directories memory8, memory9, memory10,
->     and memory11 under the directory /sys/devices/system/memory/.
->     If CONFIG_MEMCG is selected, we will allocate memory to store page cgroup
->     when we online pages. When we online memory8, the memory stored page cgroup
->     is not provided by this memory device. But when we online memory9, the memory
->     stored page cgroup may be provided by memory8. So we can't offline memory8
->     now. We should offline the memory in the reversed order.
->     When the memory device is hotremoved, we will auto offline memory provided
->     by this memory device. But we don't know which memory is onlined first, so
->     offlining memory may fail. In such case, you should offline the memory by
->     hand before hotremoving the memory device.
-> 2. hotremoving memory device may cause kernel panicked
->     This bug will be fixed by Liu Jiang's patch:
->     https://lkml.org/lkml/2012/7/3/1
->
-> change log of v9:
->   [RFC PATCH v9 8/21]
->     * add a lock to protect the list map_entries
->     * add an indicator to firmware_map_entry to remember whether the memory
->       is allocated from bootmem
->   [RFC PATCH v9 10/21]
->     * change the macro to inline function
->   [RFC PATCH v9 19/21]
->     * don't offline the node if the cpu on the node is onlined
->   [RFC PATCH v9 21/21]
->     * create new patch: auto offline page_cgroup when onlining memory block
->       failed
->
-> change log of v8:
->   [RFC PATCH v8 17/20]
->     * Fix problems when one node's range include the other nodes
->   [RFC PATCH v8 18/20]
->     * fix building error when CONFIG_MEMORY_HOTPLUG_SPARSE or CONFIG_HUGETLBFS
->       is not defined.
->   [RFC PATCH v8 19/20]
->     * don't offline node when some memory sections are not removed
->   [RFC PATCH v8 20/20]
->     * create new patch: clear hwpoisoned flag when onlining pages
->
-> change log of v7:
->   [RFC PATCH v7 4/19]
->     * do not continue if acpi_memory_device_remove_memory() fails.
->   [RFC PATCH v7 15/19]
->     * handle usemap in register_page_bootmem_info_section() too.
->
-> change log of v6:
->   [RFC PATCH v6 12/19]
->     * fix building error on other archtitectures than x86
->
->   [RFC PATCH v6 15-16/19]
->     * fix building error on other archtitectures than x86
->
-> change log of v5:
->   * merge the patchset to clear page table and the patchset to hot remove
->     memory(from ishimatsu) to one big patchset.
->
->   [RFC PATCH v5 1/19]
->     * rename remove_memory() to offline_memory()/offline_pages()
->
->   [RFC PATCH v5 2/19]
->     * new patch: implement offline_memory(). This function offlines pages,
->       update memory block's state, and notify the userspace that the memory
->       block's state is changed.
->
->   [RFC PATCH v5 4/19]
->     * offline and remove memory in acpi_memory_disable_device() too.
->
->   [RFC PATCH v5 17/19]
->     * new patch: add a new function __remove_zone() to revert the things done
->       in the function __add_zone().
->
->   [RFC PATCH v5 18/19]
->     * flush work befor reseting node device.
->
-> change log of v4:
->   * remove "memory-hotplug : unify argument of firmware_map_add_early/hotplug"
->     from the patch series, since the patch is a bugfix. It is being disccussed
->     on other thread. But for testing the patch series, the patch is needed.
->     So I added the patch as [PATCH 0/13].
->
->   [RFC PATCH v4 2/13]
->     * check memory is online or not at remove_memory()
->     * add memory_add_physaddr_to_nid() to acpi_memory_device_remove() for
->       getting node id
->   
->   [RFC PATCH v4 3/13]
->     * create new patch : check memory is online or not at online_pages()
->
->   [RFC PATCH v4 4/13]
->     * add __ref section to remove_memory()
->     * call firmware_map_remove_entry() before remove_sysfs_fw_map_entry()
->
->   [RFC PATCH v4 11/13]
->     * rewrite register_page_bootmem_memmap() for removing page used as PT/PMD
->
-> change log of v3:
->   * rebase to 3.5.0-rc6
->
->   [RFC PATCH v2 2/13]
->     * remove extra kobject_put()
->
->     * The patch was commented by Wen. Wen's comment is
->       "acpi_memory_device_remove() should ignore a return value of
->       remove_memory() since caller does not care the return value".
->       But I did not change it since I think caller should care the
->       return value. And I am trying to fix it as follow:
->
->       https://lkml.org/lkml/2012/7/5/624
->
->   [RFC PATCH v2 4/13]
->     * remove a firmware_memmap_entry allocated by kzmalloc()
->
-> change log of v2:
->   [RFC PATCH v2 2/13]
->     * check whether memory block is offline or not before calling offline_memory()
->     * check whether section is valid or not in is_memblk_offline()
->     * call kobject_put() for each memory_block in is_memblk_offline()
->
->   [RFC PATCH v2 3/13]
->     * unify the end argument of firmware_map_add_early/hotplug
->
->   [RFC PATCH v2 4/13]
->     * add release_firmware_map_entry() for freeing firmware_map_entry
->
->   [RFC PATCH v2 6/13]
->    * add release_memory_block() for freeing memory_block
->
->   [RFC PATCH v2 11/13]
->    * fix wrong arguments of free_pages()
->
->
-> Wen Congyang (8):
->    memory-hotplug: implement offline_memory()
->    memory-hotplug: store the node id in acpi_memory_device
->    memory-hotplug: export the function acpi_bus_remove()
->    memory-hotplug: call acpi_bus_remove() to remove memory device
->    memory-hotplug: introduce new function arch_remove_memory()
->    memory-hotplug: remove sysfs file of node
->    memory-hotplug: clear hwpoisoned flag when onlining pages
->    memory-hotplug: auto offline page_cgroup when onlining memory block
->      failed
->
-> Yasuaki Ishimatsu (13):
->    memory-hotplug: rename remove_memory() to
->      offline_memory()/offline_pages()
->    memory-hotplug: offline and remove memory when removing the memory
->      device
->    memory-hotplug: check whether memory is present or not
->    memory-hotplug: remove /sys/firmware/memmap/X sysfs
->    memory-hotplug: does not release memory region in PAGES_PER_SECTION
->      chunks
->    memory-hotplug: add memory_block_release
->    memory-hotplug: remove_memory calls __remove_pages
->    memory-hotplug: check page type in get_page_bootmem
->    memory-hotplug: move register_page_bootmem_info_node and
->      put_page_bootmem for sparse-vmemmap
->    memory-hotplug: implement register_page_bootmem_info_section of
->      sparse-vmemmap
->    memory-hotplug: free memmap of sparse-vmemmap
->    memory_hotplug: clear zone when the memory is removed
->    memory-hotplug: add node_device_release
->
->   arch/ia64/mm/discontig.c                        |   14 +
->   arch/ia64/mm/init.c                             |   16 +
->   arch/powerpc/mm/init_64.c                       |   14 +
->   arch/powerpc/mm/mem.c                           |   14 +
->   arch/powerpc/platforms/pseries/hotplug-memory.c |   16 +-
->   arch/s390/mm/init.c                             |   12 +
->   arch/s390/mm/vmem.c                             |   14 +
->   arch/sh/mm/init.c                               |   15 +
->   arch/sparc/mm/init_64.c                         |   14 +
->   arch/tile/mm/init.c                             |    8 +
->   arch/x86/include/asm/pgtable_types.h            |    1 +
->   arch/x86/mm/init_32.c                           |   10 +
->   arch/x86/mm/init_64.c                           |  331 ++++++++++++++++++
->   arch/x86/mm/pageattr.c                          |   47 ++--
->   drivers/acpi/acpi_memhotplug.c                  |   54 +++-
->   drivers/acpi/scan.c                             |    3 +-
->   drivers/base/memory.c                           |   88 ++++-
->   drivers/base/node.c                             |   11 +
->   drivers/firmware/memmap.c                       |   98 +++++-
->   include/acpi/acpi_bus.h                         |    1 +
->   include/linux/firmware-map.h                    |    6 +
->   include/linux/memory.h                          |    5 +
->   include/linux/memory_hotplug.h                  |   25 +-
->   include/linux/mm.h                              |    5 +-
->   include/linux/mmzone.h                          |   19 +
->   mm/memory_hotplug.c                             |  424 +++++++++++++++++++++--
->   mm/page_cgroup.c                                |    3 +
->   mm/sparse.c                                     |    5 +-
->   28 files changed, 1181 insertions(+), 92 deletions(-)
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index 6fcfa12..148c2f2 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -128,6 +128,19 @@ static void __cpuinit smp_85xx_mach_cpu_die(void)
+ }
+ #endif
+ 
++static inline void flush_spin_table(void *spin_table)
++{
++	flush_dcache_range((ulong)spin_table,
++		(ulong)spin_table + sizeof(struct epapr_spin_table));
++}
++
++static inline u32 read_spin_table_addr_l(void *spin_table)
++{
++	flush_dcache_range((ulong)spin_table,
++		(ulong)spin_table + sizeof(struct epapr_spin_table));
++	return in_be32(&((struct epapr_spin_table *)spin_table)->addr_l);
++}
++
+ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ {
+ 	unsigned long flags;
+@@ -161,8 +174,8 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ 
+ 	/* Map the spin table */
+ 	if (ioremappable)
+-		spin_table = ioremap(*cpu_rel_addr,
+-				sizeof(struct epapr_spin_table));
++		spin_table = ioremap_prot(*cpu_rel_addr,
++			sizeof(struct epapr_spin_table), _PAGE_COHERENT);
+ 	else
+ 		spin_table = phys_to_virt(*cpu_rel_addr);
+ 
+@@ -173,7 +186,16 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ 	generic_set_cpu_up(nr);
+ 
+ 	if (system_state == SYSTEM_RUNNING) {
++		/*
++		 * To keep it compatible with old boot program which uses
++		 * cache-inhibit spin table, we need to flush the cache
++		 * before accessing spin table to invalidate any staled data.
++		 * We also need to flush the cache after writing to spin
++		 * table to push data out.
++		 */
++		flush_spin_table(spin_table);
+ 		out_be32(&spin_table->addr_l, 0);
++		flush_spin_table(spin_table);
+ 
+ 		/*
+ 		 * We don't set the BPTR register here since it already points
+@@ -181,9 +203,14 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ 		 */
+ 		mpic_reset_core(hw_cpu);
+ 
+-		/* wait until core is ready... */
+-		if (!spin_event_timeout(in_be32(&spin_table->addr_l) == 1,
+-						10000, 100)) {
++		/*
++		 * wait until core is ready...
++		 * We need to invalidate the stale data, in case the boot
++		 * loader uses a cache-inhibited spin table.
++		 */
++		if (!spin_event_timeout(
++				read_spin_table_addr_l(spin_table) == 1,
++				10000, 100)) {
+ 			pr_err("%s: timeout waiting for core %d to reset\n",
+ 							__func__, hw_cpu);
+ 			ret = -ENOENT;
+@@ -194,12 +221,10 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
+ 		__secondary_hold_acknowledge = -1;
+ 	}
+ #endif
++	flush_spin_table(spin_table);
+ 	out_be32(&spin_table->pir, hw_cpu);
+ 	out_be32(&spin_table->addr_l, __pa(__early_start));
+-
+-	if (!ioremappable)
+-		flush_dcache_range((ulong)spin_table,
+-			(ulong)spin_table + sizeof(struct epapr_spin_table));
++	flush_spin_table(spin_table);
+ 
+ 	/* Wait a bit for the CPU to ack. */
+ 	if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
+@@ -213,13 +238,11 @@ out:
+ #else
+ 	smp_generic_kick_cpu(nr);
+ 
++	flush_spin_table(spin_table);
+ 	out_be32(&spin_table->pir, hw_cpu);
+ 	out_be64((u64 *)(&spin_table->addr_h),
+ 	  __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
+-
+-	if (!ioremappable)
+-		flush_dcache_range((ulong)spin_table,
+-			(ulong)spin_table + sizeof(struct epapr_spin_table));
++	flush_spin_table(spin_table);
+ #endif
+ 
+ 	local_irq_restore(flags);
+-- 
+1.7.9.5
