@@ -1,25 +1,18 @@
-Return-Path: <R58495@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 161472C00B0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Sep 2012 09:44:45 +1000 (EST)
-Received: from mail198-co1 (localhost [127.0.0.1])	by
- mail198-co1-R.bigfish.com (Postfix) with ESMTP id 5B52CD00074	for
- <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 23:44:39 +0000 (UTC)
-Received: from CO1EHSMHS018.bigfish.com (unknown [10.243.78.254])	by
- mail198-co1.bigfish.com (Postfix) with ESMTP id 2EF261C005D	for
- <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Sep 2012 23:44:38 +0000 (UTC)
-From: York Sun <yorksun@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/mpc85xx: Change spin table to cached memory
-Date: Sat, 29 Sep 2012 16:44:35 -0700
-Message-ID: <1348962275-24052-1-git-send-email-yorksun@freescale.com>
+Return-Path: <jgunthorpe@obsidianresearch.com>
+Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 35AC62C00D6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 09:48:51 +1000 (EST)
+Date: Sun, 30 Sep 2012 17:26:19 -0600
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] PPC: Do not make the entire heap executable
+Message-ID: <20120930232619.GE30637@obsidianresearch.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, kumar.gala@freescale.com, timur@freescale.com
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, Alexander Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,120 +22,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ePAPR v1.1 requires the spin table to be in cached memory. So we need
-to change the call argument of ioremap to enable cache and coherence.
-We also flush the cache after writing to spin table to keep it compatible
-with previous cache-inhibit spin table. Flushing before and after
-accessing spin table is recommended by ePAPR.
+On PPC the ELF PLT sections look like this:
 
-Signed-off-by: York Sun <yorksun@freescale.com>
-Acked-by: Timur Tabi <timur@freescale.com>
+  [17] .sbss             NOBITS          0002aff8 01aff8 000014 00  WA  0   0  4
+  [18] .plt              NOBITS          0002b00c 01aff8 000084 00 WAX  0   0  4
+  [19] .bss              NOBITS          0002b090 01aff8 0000a4 00  WA  0   0  4
+
+Which results in an ELF load header:
+  Type           Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+  LOAD           0x019c70 0x00029c70 0x00029c70 0x01388 0x014c4 RWE 0x10000
+
+This is all correct, the load region containing the PLT is marked as
+executable. Note that the PLT starts at 0002b00c but the file mapping ends at
+0002aff8, so the PLT falls in the 0 fill section described by the load header,
+and after a page boundary.
+
+Unfortunately the generic ELF loader ignores the X bit in the load headers
+when it creates the 0 filled non-file backed mappings. It assumes all of these
+mappings are RW BSS sections, which is not the case for PPC.
+
+Teach the ELF loader to check the X bit in the relevant load header and
+create 0 filled anonymous mappings that are executable if the load header
+requests that.
+
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 ---
-This patch applies to git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next branch.
+ arch/powerpc/include/asm/page.h    |   10 +--------
+ arch/powerpc/include/asm/page_32.h |    2 -
+ arch/powerpc/include/asm/page_64.h |    4 ---
+ fs/binfmt_elf.c                    |   37 ++++++++++++++++++++++++++++-------
+ 4 files changed, 30 insertions(+), 23 deletions(-)
 
- arch/powerpc/platforms/85xx/smp.c |   49 +++++++++++++++++++++++++++----------
- 1 file changed, 36 insertions(+), 13 deletions(-)
+Please consider this a proposal to solve this issue.. 
 
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index 6fcfa12..148c2f2 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -128,6 +128,19 @@ static void __cpuinit smp_85xx_mach_cpu_die(void)
- }
+diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
+index f072e97..61e46fc 100644
+--- a/arch/powerpc/include/asm/page.h
++++ b/arch/powerpc/include/asm/page.h
+@@ -215,15 +215,7 @@ extern long long virt_phys_offset;
+ #define __pa(x) ((unsigned long)(x) - PAGE_OFFSET + MEMORY_START)
  #endif
  
-+static inline void flush_spin_table(void *spin_table)
-+{
-+	flush_dcache_range((ulong)spin_table,
-+		(ulong)spin_table + sizeof(struct epapr_spin_table));
-+}
-+
-+static inline u32 read_spin_table_addr_l(void *spin_table)
-+{
-+	flush_dcache_range((ulong)spin_table,
-+		(ulong)spin_table + sizeof(struct epapr_spin_table));
-+	return in_be32(&((struct epapr_spin_table *)spin_table)->addr_l);
-+}
-+
- static int __cpuinit smp_85xx_kick_cpu(int nr)
+-/*
+- * Unfortunately the PLT is in the BSS in the PPC32 ELF ABI,
+- * and needs to be executable.  This means the whole heap ends
+- * up being executable.
+- */
+-#define VM_DATA_DEFAULT_FLAGS32	(VM_READ | VM_WRITE | VM_EXEC | \
+-				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+-
+-#define VM_DATA_DEFAULT_FLAGS64	(VM_READ | VM_WRITE | \
++#define VM_DATA_DEFAULT_FLAGS	(VM_READ | VM_WRITE | \
+ 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
+ 
+ #ifdef __powerpc64__
+diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
+index 68d73b2..aaae5a6 100644
+--- a/arch/powerpc/include/asm/page_32.h
++++ b/arch/powerpc/include/asm/page_32.h
+@@ -7,8 +7,6 @@
+ #endif
+ #endif
+ 
+-#define VM_DATA_DEFAULT_FLAGS	VM_DATA_DEFAULT_FLAGS32
+-
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+ #define ARCH_DMA_MINALIGN	L1_CACHE_BYTES
+ #endif
+diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
+index fed85e6..615d88b 100644
+--- a/arch/powerpc/include/asm/page_64.h
++++ b/arch/powerpc/include/asm/page_64.h
+@@ -136,10 +136,6 @@ do {						\
+ 
+ #endif /* !CONFIG_HUGETLB_PAGE */
+ 
+-#define VM_DATA_DEFAULT_FLAGS \
+-	(is_32bit_task() ? \
+-	 VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
+-
+ /*
+  * This is the default if a program doesn't have a PT_GNU_STACK
+  * program header entry. The PPC64 ELF ABI has a non executable stack
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 1b52956..e5a432b 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -76,13 +76,20 @@ static struct linux_binfmt elf_format = {
+ 
+ #define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
+ 
+-static int set_brk(unsigned long start, unsigned long end)
++static int set_brk(unsigned long start, unsigned long end, int prot)
  {
- 	unsigned long flags;
-@@ -161,8 +174,8 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
- 
- 	/* Map the spin table */
- 	if (ioremappable)
--		spin_table = ioremap(*cpu_rel_addr,
--				sizeof(struct epapr_spin_table));
-+		spin_table = ioremap_prot(*cpu_rel_addr,
-+			sizeof(struct epapr_spin_table), _PAGE_COHERENT);
- 	else
- 		spin_table = phys_to_virt(*cpu_rel_addr);
- 
-@@ -173,7 +186,16 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
- 	generic_set_cpu_up(nr);
- 
- 	if (system_state == SYSTEM_RUNNING) {
-+		/*
-+		 * To keep it compatible with old boot program which uses
-+		 * cache-inhibit spin table, we need to flush the cache
-+		 * before accessing spin table to invalidate any staled data.
-+		 * We also need to flush the cache after writing to spin
-+		 * table to push data out.
-+		 */
-+		flush_spin_table(spin_table);
- 		out_be32(&spin_table->addr_l, 0);
-+		flush_spin_table(spin_table);
- 
- 		/*
- 		 * We don't set the BPTR register here since it already points
-@@ -181,9 +203,14 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
- 		 */
- 		mpic_reset_core(hw_cpu);
- 
--		/* wait until core is ready... */
--		if (!spin_event_timeout(in_be32(&spin_table->addr_l) == 1,
--						10000, 100)) {
-+		/*
-+		 * wait until core is ready...
-+		 * We need to invalidate the stale data, in case the boot
-+		 * loader uses a cache-inhibited spin table.
-+		 */
-+		if (!spin_event_timeout(
-+				read_spin_table_addr_l(spin_table) == 1,
-+				10000, 100)) {
- 			pr_err("%s: timeout waiting for core %d to reset\n",
- 							__func__, hw_cpu);
- 			ret = -ENOENT;
-@@ -194,12 +221,10 @@ static int __cpuinit smp_85xx_kick_cpu(int nr)
- 		__secondary_hold_acknowledge = -1;
+ 	start = ELF_PAGEALIGN(start);
+ 	end = ELF_PAGEALIGN(end);
+ 	if (end > start) {
+ 		unsigned long addr;
+-		addr = vm_brk(start, end - start);
++		/* Map the non-file portion of the last load header. If the
++		   header is requesting these pages to be executeable then
++		   we have to honour that, otherwise assume they are bss. */
++		if (prot & PROT_EXEC)
++			addr = vm_mmap(0, start, end - start, prot,
++				MAP_PRIVATE | MAP_FIXED, 0);
++		else
++			addr = vm_brk(start, end - start);
+ 		if (BAD_ADDR(addr))
+ 			return addr;
  	}
- #endif
-+	flush_spin_table(spin_table);
- 	out_be32(&spin_table->pir, hw_cpu);
- 	out_be32(&spin_table->addr_l, __pa(__early_start));
--
--	if (!ioremappable)
--		flush_dcache_range((ulong)spin_table,
--			(ulong)spin_table + sizeof(struct epapr_spin_table));
-+	flush_spin_table(spin_table);
+@@ -381,6 +388,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+ 	unsigned long load_addr = 0;
+ 	int load_addr_set = 0;
+ 	unsigned long last_bss = 0, elf_bss = 0;
++	int bss_prot = 0;
+ 	unsigned long error = ~0UL;
+ 	unsigned long total_size;
+ 	int retval, i, size;
+@@ -489,8 +497,10 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+ 			 * elf_bss and last_bss is the bss section.
+ 			 */
+ 			k = load_addr + eppnt->p_memsz + eppnt->p_vaddr;
+-			if (k > last_bss)
++			if (k > last_bss) {
+ 				last_bss = k;
++				bss_prot = elf_prot;
++			}
+ 		}
+ 	}
  
- 	/* Wait a bit for the CPU to ack. */
- 	if (!spin_event_timeout(__secondary_hold_acknowledge == hw_cpu,
-@@ -213,13 +238,11 @@ out:
- #else
- 	smp_generic_kick_cpu(nr);
+@@ -509,8 +519,15 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+ 		/* What we have mapped so far */
+ 		elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
  
-+	flush_spin_table(spin_table);
- 	out_be32(&spin_table->pir, hw_cpu);
- 	out_be64((u64 *)(&spin_table->addr_h),
- 	  __pa((u64)*((unsigned long long *)generic_secondary_smp_init)));
--
--	if (!ioremappable)
--		flush_dcache_range((ulong)spin_table,
--			(ulong)spin_table + sizeof(struct epapr_spin_table));
-+	flush_spin_table(spin_table);
- #endif
+-		/* Map the last of the bss segment */
+-		error = vm_brk(elf_bss, last_bss - elf_bss);
++		/* Map the non-file portion of the last load header. If the
++		   header is requesting these pages to be executeable then
++		   we have to honour that, otherwise assume they are bss. */
++		if (bss_prot & PROT_EXEC)
++			error = vm_mmap(0, elf_bss, last_bss - elf_bss,
++					bss_prot, MAP_PRIVATE | MAP_FIXED, 0);
++		else
++			error = vm_brk(elf_bss, last_bss - elf_bss);
++
+ 		if (BAD_ADDR(error))
+ 			goto out_close;
+ 	}
+@@ -560,6 +577,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	unsigned long error;
+ 	struct elf_phdr *elf_ppnt, *elf_phdata;
+ 	unsigned long elf_bss, elf_brk;
++	int bss_prot = 0;
+ 	int retval, i;
+ 	unsigned int size;
+ 	unsigned long elf_entry;
+@@ -750,7 +768,8 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 			   before this one. Map anonymous pages, if needed,
+ 			   and clear the area.  */
+ 			retval = set_brk(elf_bss + load_bias,
+-					 elf_brk + load_bias);
++					 elf_brk + load_bias,
++					 bss_prot);
+ 			if (retval) {
+ 				send_sig(SIGKILL, current, 0);
+ 				goto out_free_dentry;
+@@ -852,8 +871,10 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 		if (end_data < k)
+ 			end_data = k;
+ 		k = elf_ppnt->p_vaddr + elf_ppnt->p_memsz;
+-		if (k > elf_brk)
++		if (k > elf_brk) {
++			bss_prot = elf_prot;
+ 			elf_brk = k;
++		}
+ 	}
  
- 	local_irq_restore(flags);
+ 	loc->elf_ex.e_entry += load_bias;
+@@ -869,7 +890,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	 * mapping in the interpreter, to make sure it doesn't wind
+ 	 * up getting placed where the bss needs to go.
+ 	 */
+-	retval = set_brk(elf_bss, elf_brk);
++	retval = set_brk(elf_bss, elf_brk, bss_prot);
+ 	if (retval) {
+ 		send_sig(SIGKILL, current, 0);
+ 		goto out_free_dentry;
 -- 
-1.7.9.5
+1.7.4.1
