@@ -1,44 +1,22 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B5C8C2C00B1
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 17:39:26 +1000 (EST)
-Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 11F583EE0AE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 16:39:23 +0900 (JST)
-Received: from smail (m2 [127.0.0.1])
- by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id F041745DE52
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 16:39:22 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
- by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id C582E45DE4E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 16:39:22 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id B59121DB803F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 16:39:22 +0900 (JST)
-Received: from g01jpexchkw04.g01.fujitsu.local
- (g01jpexchkw04.g01.fujitsu.local [10.0.194.43])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 711CD1DB8038
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 16:39:22 +0900 (JST)
-Message-ID: <50694884.7090706@jp.fujitsu.com>
-Date: Mon, 1 Oct 2012 16:38:44 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
+ [209.85.212.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A81FA2C00E3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 22:16:32 +1000 (EST)
+Received: by vbbfn1 with SMTP id fn1so4866777vbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2012 05:16:29 -0700 (PDT)
 MIME-Version: 1.0
-To: Ni zhan Chen <nizhan.chen@gmail.com>
-Subject: Re: [RFC v9 PATCH 03/21] memory-hotplug: store the node id in
- acpi_memory_device
-References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
- <1346837155-534-4-git-send-email-wency@cn.fujitsu.com>
- <506517C1.7050909@gmail.com>
-In-Reply-To: <506517C1.7050909@gmail.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- wency@cn.fujitsu.com, linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org,
- len.brown@intel.com, x86@kernel.org, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com, linux-mm@kvack.org, paulus@samba.org,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, liuj97@gmail.com
+In-Reply-To: <20120930232723.GF30637@obsidianresearch.com>
+References: <20120930232723.GF30637@obsidianresearch.com>
+Date: Mon, 1 Oct 2012 08:16:29 -0400
+Message-ID: <CA+5PVA767HNZUoFNj=UubLCdh91EtWiuK2JaY2qarMn=oCCB+A@mail.gmail.com>
+Subject: Re: [PATCH] PPC: Enable the Watchdog vector for 405
+From: Josh Boyer <jwboyer@gmail.com>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,61 +26,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Chen,
+On Sun, Sep 30, 2012 at 7:27 PM, Jason Gunthorpe
+<jgunthorpe@obsidianresearch.com> wrote:
+> Move the body of the PIT exception out of line to make room.
 
-2012/09/28 12:21, Ni zhan Chen wrote:
-> On 09/05/2012 05:25 PM, wency@cn.fujitsu.com wrote:
->> From: Wen Congyang <wency@cn.fujitsu.com>
->>
->> The memory device has only one node id. Store the node id when
->> enable the memory device, and we can reuse it when removing the
->> memory device.
+What boards did you test this on?  What driver are you using for the
+watchdog?
+
+> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+> ---
+>  arch/powerpc/kernel/head_40x.S |   26 +++++++++++++-------------
+>  arch/powerpc/kernel/traps.c    |    2 +-
+>  2 files changed, 14 insertions(+), 14 deletions(-)
 >
-> one question:
-> if use numa emulation, memory device will associated to one node or ...?
-
-Memory device has only one node, even if you use numa emulation.
-
-Thanks,
-Yasuaki Ishimatsu
-
+> diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+> index 4989661..7edd7b1 100644
+> --- a/arch/powerpc/kernel/head_40x.S
+> +++ b/arch/powerpc/kernel/head_40x.S
+> @@ -431,29 +431,19 @@ label:
 >
->>
->> CC: David Rientjes <rientjes@google.com>
->> CC: Jiang Liu <liuj97@gmail.com>
->> CC: Len Brown <len.brown@intel.com>
->> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> CC: Paul Mackerras <paulus@samba.org>
->> CC: Christoph Lameter <cl@linux.com>
->> Cc: Minchan Kim <minchan.kim@gmail.com>
->> CC: Andrew Morton <akpm@linux-foundation.org>
->> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
->> Reviewed-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->> ---
->>   drivers/acpi/acpi_memhotplug.c |    4 ++++
->>   1 files changed, 4 insertions(+), 0 deletions(-)
->>
->> diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
->> index 2a7beac..7873832 100644
->> --- a/drivers/acpi/acpi_memhotplug.c
->> +++ b/drivers/acpi/acpi_memhotplug.c
->> @@ -83,6 +83,7 @@ struct acpi_memory_info {
->>   struct acpi_memory_device {
->>       struct acpi_device * device;
->>       unsigned int state;    /* State of the memory device */
->> +    int nid;
->>       struct list_head res_list;
->>   };
->> @@ -256,6 +257,9 @@ static int acpi_memory_enable_device(struct acpi_memory_device *mem_device)
->>           info->enabled = 1;
->>           num_enabled++;
->>       }
->> +
->> +    mem_device->nid = node;
->> +
->>       if (!num_enabled) {
->>           printk(KERN_ERR PREFIX "add_memory failed\n");
->>           mem_device->state = MEMORY_INVALID_STATE;
+>  /* 0x1000 - Programmable Interval Timer (PIT) Exception */
+>         START_EXCEPTION(0x1000, Decrementer)
+> -       NORMAL_EXCEPTION_PROLOG
+> -       lis     r0,TSR_PIS@h
+> -       mtspr   SPRN_TSR,r0             /* Clear the PIT exception */
+> -       addi    r3,r1,STACK_FRAME_OVERHEAD
+> -       EXC_XFER_LITE(0x1000, timer_interrupt)
+> +       b pit_longer
 >
+> -#if 0
+>  /* NOTE:
+> - * FIT and WDT handlers are not implemented yet.
+> + * FIT handler is not implemented yet.
+>   */
+>
+>  /* 0x1010 - Fixed Interval Timer (FIT) Exception
+>  */
+> -       STND_EXCEPTION(0x1010,  FITException,           unknown_exception)
+> +//     STND_EXCEPTION(0x1010,  FITException,           unknown_exception)
+
+Please just move the #endif for the #if 0 up instead of putting a C++
+style comment here.
+
+>  /* 0x1020 - Watchdog Timer (WDT) Exception
+>  */
+> -#ifdef CONFIG_BOOKE_WDT
+>         CRITICAL_EXCEPTION(0x1020, WDTException, WatchdogException)
+> -#else
+> -       CRITICAL_EXCEPTION(0x1020, WDTException, unknown_exception)
+> -#endif
+> -#endif
+
+Please leave this wrapped in CONFIG_BOOKE_WDT.  I don't agree with
+unconditionally enabling this for every 405 chip out there.
+
+>  /* 0x1100 - Data TLB Miss Exception
+>   * As the name implies, translation is not in the MMU, so search the
+> @@ -738,6 +728,16 @@ label:
+>                 (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
+>                 NOCOPY, crit_transfer_to_handler, ret_from_crit_exc)
+>
+> +       /* Programmable Interval Timer (PIT) Exception. The PIT runs into
+> +          the space reserved for other exceptions, so we branch down
+> +          to here. */
+> +pit_longer:
+> +       NORMAL_EXCEPTION_PROLOG
+> +       lis     r0,TSR_PIS@h
+> +       mtspr   SPRN_TSR,r0             /* Clear the PIT exception */
+> +       addi    r3,r1,STACK_FRAME_OVERHEAD
+> +       EXC_XFER_LITE(0x1000, timer_interrupt)
+> +
+>  /*
+>   * The other Data TLB exceptions bail out to this point
+>   * if they can't resolve the lightweight TLB fault.
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index ae0843f..0701ec1 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -1514,7 +1514,7 @@ void unrecoverable_exception(struct pt_regs *regs)
+>         die("Unrecoverable exception", regs, SIGABRT);
+>  }
+>
+> -#ifdef CONFIG_BOOKE_WDT
+> +#if defined(CONFIG_BOOKE_WDT) | defined(CONFIG_40x)
+
+Pretty sure you meant || here?  Thought if you just enable the existing
+config option, I don't think you'd need to edit this file at all.
+
+josh
