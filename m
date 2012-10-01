@@ -1,44 +1,42 @@
 Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 832362C00B5
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 13:03:54 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 61E3A2C00E1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 14:45:23 +1000 (EST)
 Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id CC4643EE0BC
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 12:03:50 +0900 (JST)
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id D6C493EE0BB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 13:45:19 +0900 (JST)
 Received: from smail (m1 [127.0.0.1])
- by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id AD96345DE64
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 12:03:50 +0900 (JST)
+ by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id B085E45DE5B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 13:45:19 +0900 (JST)
 Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
- by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 8355445DE56
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 12:03:50 +0900 (JST)
+ by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 7401845DE56
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 13:45:19 +0900 (JST)
 Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 7034D1DB805B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 12:03:50 +0900 (JST)
-Received: from g01jpexchyt08.g01.fujitsu.local
- (g01jpexchyt08.g01.fujitsu.local [10.128.194.47])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 1C8AD1DB8052
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 12:03:50 +0900 (JST)
-Message-ID: <506907E5.2080609@jp.fujitsu.com>
-Date: Mon, 1 Oct 2012 12:03:01 +0900
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 61B551DB8049
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 13:45:19 +0900 (JST)
+Received: from G01JPEXCHYT21.g01.fujitsu.local
+ (G01JPEXCHYT21.g01.fujitsu.local [10.128.193.104])
+ by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 0AB531DB8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Oct 2012 13:45:19 +0900 (JST)
+Message-ID: <50691FBA.5080107@jp.fujitsu.com>
+Date: Mon, 1 Oct 2012 13:44:42 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
 To: Ni zhan Chen <nizhan.chen@gmail.com>
-Subject: Re: [RFC v9 PATCH 13/21] memory-hotplug: check page type in
- get_page_bootmem
+Subject: Re: [RFC v9 PATCH 00/21] memory-hotplug: hot-remove physical memory
 References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
- <1346837155-534-14-git-send-email-wency@cn.fujitsu.com>
- <506659D7.9080904@gmail.com>
-In-Reply-To: <506659D7.9080904@gmail.com>
+ <5066AF1A.4090509@gmail.com>
+In-Reply-To: <5066AF1A.4090509@gmail.com>
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
- rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
+ wency@cn.fujitsu.com, linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org,
+ len.brown@intel.com, x86@kernel.org, linux-kernel@vger.kernel.org,
+ cmetcalf@tilera.com, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,77 +48,253 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Chen,
 
-2012/09/29 11:15, Ni zhan Chen wrote:
+2012/09/29 17:19, Ni zhan Chen wrote:
 > On 09/05/2012 05:25 PM, wency@cn.fujitsu.com wrote:
->> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>> From: Wen Congyang <wency@cn.fujitsu.com>
 >>
->> The function get_page_bootmem() may be called more than one time to the same
->> page. There is no need to set page's type, private if the function is not
->> the first time called to the page.
+>> This patch series aims to support physical memory hot-remove.
 >>
->> Note: the patch is just optimization and does not fix any problem.
+>> The patches can free/remove the following things:
+>>
+>>    - acpi_memory_info                          : [RFC PATCH 4/19]
+>>    - /sys/firmware/memmap/X/{end, start, type} : [RFC PATCH 8/19]
+>>    - iomem_resource                            : [RFC PATCH 9/19]
+>>    - mem_section and related sysfs files       : [RFC PATCH 10-11, 13-16/19]
+>>    - page table of removed memory              : [RFC PATCH 12/19]
+>>    - node and related sysfs files              : [RFC PATCH 18-19/19]
+>>
+>> If you find lack of function for physical memory hot-remove, please let me
+>> know.
+>>
+>> How to test this patchset?
+>> 1. apply this patchset and build the kernel. MEMORY_HOTPLUG, MEMORY_HOTREMOVE,
+>>     ACPI_HOTPLUG_MEMORY must be selected.
+>> 2. load the module acpi_memhotplug
 >
 > Hi Yasuaki,
 >
-> this patch is reasonable to me. I have another question associated to get_page_bootmem(), the question is from another fujitsu guy's patch changelog [commit : 04753278769f3], the changelog said  that:
->
->   1) When the memmap of removing section is allocated on other
->       section by bootmem, it should/can be free.
->   2) When the memmap of removing section is allocated on the
->       same section, it shouldn't be freed. Because the section has to be
->       logical memory offlined already and all pages must be isolated against
->       page allocater. If it is freed, page allocator may use it which will
->       be removed physically soon.
->
-> but I don't see his patch guarantee 2), it means that his patch doesn't guarantee the memmap of removing section which is allocated on other section by bootmem doesn't be freed. Hopefully get your explaination in details, thanks in advance. :-)
+> where is the acpi_memhotplug module?
 
-In my understanding, the patch does not guarantee it.
-Please see [commit : 0c0a4a517a31e]. free_map_bootmem() in the commit
-guarantees it.
+If you build acpi_memhotplug as module, it is created under
+/lib/modules/<kernel-version>/driver/acpi/ directory. It depends
+on config ACPI_HOTPLUG_MEMORY. The confing is [*], it becomes built-in
+function. So you don't need to care about it.  
 
 Thanks,
 Yasuaki Ishimatsu
 
 >
+>> 3. hotplug the memory device(it depends on your hardware)
+>>     You will see the memory device under the directory /sys/bus/acpi/devices/.
+>>     Its name is PNP0C80:XX.
+>> 4. online/offline pages provided by this memory device
+>>     You can write online/offline to /sys/devices/system/memory/memoryX/state to
+>>     online/offline pages provided by this memory device
+>> 5. hotremove the memory device
+>>     You can hotremove the memory device by the hardware, or writing 1 to
+>>     /sys/bus/acpi/devices/PNP0C80:XX/eject.
 >>
->> CC: David Rientjes <rientjes@google.com>
->> CC: Jiang Liu <liuj97@gmail.com>
->> CC: Len Brown <len.brown@intel.com>
->> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->> CC: Paul Mackerras <paulus@samba.org>
->> CC: Christoph Lameter <cl@linux.com>
->> Cc: Minchan Kim <minchan.kim@gmail.com>
->> CC: Andrew Morton <akpm@linux-foundation.org>
->> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> CC: Wen Congyang <wency@cn.fujitsu.com>
->> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->> ---
->>   mm/memory_hotplug.c |   15 +++++++++++----
->>   1 files changed, 11 insertions(+), 4 deletions(-)
+>> Note: if the memory provided by the memory device is used by the kernel, it
+>> can't be offlined. It is not a bug.
 >>
->> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->> index d736df3..26a5012 100644
->> --- a/mm/memory_hotplug.c
->> +++ b/mm/memory_hotplug.c
->> @@ -95,10 +95,17 @@ static void release_memory_resource(struct resource *res)
->>   static void get_page_bootmem(unsigned long info,  struct page *page,
->>                    unsigned long type)
->>   {
->> -    page->lru.next = (struct list_head *) type;
->> -    SetPagePrivate(page);
->> -    set_page_private(page, info);
->> -    atomic_inc(&page->_count);
->> +    unsigned long page_type;
->> +
->> +    page_type = (unsigned long)page->lru.next;
->> +    if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
->> +        page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
->> +        page->lru.next = (struct list_head *)type;
->> +        SetPagePrivate(page);
->> +        set_page_private(page, info);
->> +        atomic_inc(&page->_count);
->> +    } else
->> +        atomic_inc(&page->_count);
->>   }
->>   /* reference to __meminit __free_pages_bootmem is valid
+>> Known problems:
+>> 1. memory can't be offlined when CONFIG_MEMCG is selected.
+>>     For example: there is a memory device on node 1. The address range
+>>     is [1G, 1.5G). You will find 4 new directories memory8, memory9, memory10,
+>>     and memory11 under the directory /sys/devices/system/memory/.
+>>     If CONFIG_MEMCG is selected, we will allocate memory to store page cgroup
+>>     when we online pages. When we online memory8, the memory stored page cgroup
+>>     is not provided by this memory device. But when we online memory9, the memory
+>>     stored page cgroup may be provided by memory8. So we can't offline memory8
+>>     now. We should offline the memory in the reversed order.
+>>     When the memory device is hotremoved, we will auto offline memory provided
+>>     by this memory device. But we don't know which memory is onlined first, so
+>>     offlining memory may fail. In such case, you should offline the memory by
+>>     hand before hotremoving the memory device.
+>> 2. hotremoving memory device may cause kernel panicked
+>>     This bug will be fixed by Liu Jiang's patch:
+>>     https://lkml.org/lkml/2012/7/3/1
+>>
+>> change log of v9:
+>>   [RFC PATCH v9 8/21]
+>>     * add a lock to protect the list map_entries
+>>     * add an indicator to firmware_map_entry to remember whether the memory
+>>       is allocated from bootmem
+>>   [RFC PATCH v9 10/21]
+>>     * change the macro to inline function
+>>   [RFC PATCH v9 19/21]
+>>     * don't offline the node if the cpu on the node is onlined
+>>   [RFC PATCH v9 21/21]
+>>     * create new patch: auto offline page_cgroup when onlining memory block
+>>       failed
+>>
+>> change log of v8:
+>>   [RFC PATCH v8 17/20]
+>>     * Fix problems when one node's range include the other nodes
+>>   [RFC PATCH v8 18/20]
+>>     * fix building error when CONFIG_MEMORY_HOTPLUG_SPARSE or CONFIG_HUGETLBFS
+>>       is not defined.
+>>   [RFC PATCH v8 19/20]
+>>     * don't offline node when some memory sections are not removed
+>>   [RFC PATCH v8 20/20]
+>>     * create new patch: clear hwpoisoned flag when onlining pages
+>>
+>> change log of v7:
+>>   [RFC PATCH v7 4/19]
+>>     * do not continue if acpi_memory_device_remove_memory() fails.
+>>   [RFC PATCH v7 15/19]
+>>     * handle usemap in register_page_bootmem_info_section() too.
+>>
+>> change log of v6:
+>>   [RFC PATCH v6 12/19]
+>>     * fix building error on other archtitectures than x86
+>>
+>>   [RFC PATCH v6 15-16/19]
+>>     * fix building error on other archtitectures than x86
+>>
+>> change log of v5:
+>>   * merge the patchset to clear page table and the patchset to hot remove
+>>     memory(from ishimatsu) to one big patchset.
+>>
+>>   [RFC PATCH v5 1/19]
+>>     * rename remove_memory() to offline_memory()/offline_pages()
+>>
+>>   [RFC PATCH v5 2/19]
+>>     * new patch: implement offline_memory(). This function offlines pages,
+>>       update memory block's state, and notify the userspace that the memory
+>>       block's state is changed.
+>>
+>>   [RFC PATCH v5 4/19]
+>>     * offline and remove memory in acpi_memory_disable_device() too.
+>>
+>>   [RFC PATCH v5 17/19]
+>>     * new patch: add a new function __remove_zone() to revert the things done
+>>       in the function __add_zone().
+>>
+>>   [RFC PATCH v5 18/19]
+>>     * flush work befor reseting node device.
+>>
+>> change log of v4:
+>>   * remove "memory-hotplug : unify argument of firmware_map_add_early/hotplug"
+>>     from the patch series, since the patch is a bugfix. It is being disccussed
+>>     on other thread. But for testing the patch series, the patch is needed.
+>>     So I added the patch as [PATCH 0/13].
+>>
+>>   [RFC PATCH v4 2/13]
+>>     * check memory is online or not at remove_memory()
+>>     * add memory_add_physaddr_to_nid() to acpi_memory_device_remove() for
+>>       getting node id
+>>   [RFC PATCH v4 3/13]
+>>     * create new patch : check memory is online or not at online_pages()
+>>
+>>   [RFC PATCH v4 4/13]
+>>     * add __ref section to remove_memory()
+>>     * call firmware_map_remove_entry() before remove_sysfs_fw_map_entry()
+>>
+>>   [RFC PATCH v4 11/13]
+>>     * rewrite register_page_bootmem_memmap() for removing page used as PT/PMD
+>>
+>> change log of v3:
+>>   * rebase to 3.5.0-rc6
+>>
+>>   [RFC PATCH v2 2/13]
+>>     * remove extra kobject_put()
+>>
+>>     * The patch was commented by Wen. Wen's comment is
+>>       "acpi_memory_device_remove() should ignore a return value of
+>>       remove_memory() since caller does not care the return value".
+>>       But I did not change it since I think caller should care the
+>>       return value. And I am trying to fix it as follow:
+>>
+>>       https://lkml.org/lkml/2012/7/5/624
+>>
+>>   [RFC PATCH v2 4/13]
+>>     * remove a firmware_memmap_entry allocated by kzmalloc()
+>>
+>> change log of v2:
+>>   [RFC PATCH v2 2/13]
+>>     * check whether memory block is offline or not before calling offline_memory()
+>>     * check whether section is valid or not in is_memblk_offline()
+>>     * call kobject_put() for each memory_block in is_memblk_offline()
+>>
+>>   [RFC PATCH v2 3/13]
+>>     * unify the end argument of firmware_map_add_early/hotplug
+>>
+>>   [RFC PATCH v2 4/13]
+>>     * add release_firmware_map_entry() for freeing firmware_map_entry
+>>
+>>   [RFC PATCH v2 6/13]
+>>    * add release_memory_block() for freeing memory_block
+>>
+>>   [RFC PATCH v2 11/13]
+>>    * fix wrong arguments of free_pages()
+>>
+>>
+>> Wen Congyang (8):
+>>    memory-hotplug: implement offline_memory()
+>>    memory-hotplug: store the node id in acpi_memory_device
+>>    memory-hotplug: export the function acpi_bus_remove()
+>>    memory-hotplug: call acpi_bus_remove() to remove memory device
+>>    memory-hotplug: introduce new function arch_remove_memory()
+>>    memory-hotplug: remove sysfs file of node
+>>    memory-hotplug: clear hwpoisoned flag when onlining pages
+>>    memory-hotplug: auto offline page_cgroup when onlining memory block
+>>      failed
+>>
+>> Yasuaki Ishimatsu (13):
+>>    memory-hotplug: rename remove_memory() to
+>>      offline_memory()/offline_pages()
+>>    memory-hotplug: offline and remove memory when removing the memory
+>>      device
+>>    memory-hotplug: check whether memory is present or not
+>>    memory-hotplug: remove /sys/firmware/memmap/X sysfs
+>>    memory-hotplug: does not release memory region in PAGES_PER_SECTION
+>>      chunks
+>>    memory-hotplug: add memory_block_release
+>>    memory-hotplug: remove_memory calls __remove_pages
+>>    memory-hotplug: check page type in get_page_bootmem
+>>    memory-hotplug: move register_page_bootmem_info_node and
+>>      put_page_bootmem for sparse-vmemmap
+>>    memory-hotplug: implement register_page_bootmem_info_section of
+>>      sparse-vmemmap
+>>    memory-hotplug: free memmap of sparse-vmemmap
+>>    memory_hotplug: clear zone when the memory is removed
+>>    memory-hotplug: add node_device_release
+>>
+>>   arch/ia64/mm/discontig.c                        |   14 +
+>>   arch/ia64/mm/init.c                             |   16 +
+>>   arch/powerpc/mm/init_64.c                       |   14 +
+>>   arch/powerpc/mm/mem.c                           |   14 +
+>>   arch/powerpc/platforms/pseries/hotplug-memory.c |   16 +-
+>>   arch/s390/mm/init.c                             |   12 +
+>>   arch/s390/mm/vmem.c                             |   14 +
+>>   arch/sh/mm/init.c                               |   15 +
+>>   arch/sparc/mm/init_64.c                         |   14 +
+>>   arch/tile/mm/init.c                             |    8 +
+>>   arch/x86/include/asm/pgtable_types.h            |    1 +
+>>   arch/x86/mm/init_32.c                           |   10 +
+>>   arch/x86/mm/init_64.c                           |  331 ++++++++++++++++++
+>>   arch/x86/mm/pageattr.c                          |   47 ++--
+>>   drivers/acpi/acpi_memhotplug.c                  |   54 +++-
+>>   drivers/acpi/scan.c                             |    3 +-
+>>   drivers/base/memory.c                           |   88 ++++-
+>>   drivers/base/node.c                             |   11 +
+>>   drivers/firmware/memmap.c                       |   98 +++++-
+>>   include/acpi/acpi_bus.h                         |    1 +
+>>   include/linux/firmware-map.h                    |    6 +
+>>   include/linux/memory.h                          |    5 +
+>>   include/linux/memory_hotplug.h                  |   25 +-
+>>   include/linux/mm.h                              |    5 +-
+>>   include/linux/mmzone.h                          |   19 +
+>>   mm/memory_hotplug.c                             |  424 +++++++++++++++++++++--
+>>   mm/page_cgroup.c                                |    3 +
+>>   mm/sparse.c                                     |    5 +-
+>>   28 files changed, 1181 insertions(+), 92 deletions(-)
+>>
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>>
 >
