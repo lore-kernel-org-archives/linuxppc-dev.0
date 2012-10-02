@@ -1,28 +1,30 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 70B1E2C0101
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 10:58:49 +1000 (EST)
-Message-ID: <1349139509.3847.2.camel@pasglop>
-Subject: Re: [REGRESSION] nfsd crashing with 3.6.0-rc7 on PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Tue, 02 Oct 2012 10:58:29 +1000
-In-Reply-To: <2A52FC96-148C-4F7A-9950-E152E0C6698D@suse.de>
-References: <3BDA9E62-7031-42D6-8CA9-5327B61700F5@suse.de>
- <CA+55aFyXwB1QcXE4Z_FAGnXROSgvP2x2+wjnX9OWPa4Dfaaf0A@mail.gmail.com>
- <DC545CD9-8745-47DD-B13B-3385C0EB5B27@suse.de>
- <20120928151043.GA19102@fieldses.org>
- <2A52FC96-148C-4F7A-9950-E152E0C6698D@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-nfs@vger.kernel.org, Jan Kara <jack@suse.cz>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- LKML List <linux-kernel@vger.kernel.org>,
- "J. Bruce Fields" <bfields@fieldses.org>, anton@samba.org,
- skinsbursky@parallels.com, bfields@redhat.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B378E2C00F7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 11:00:39 +1000 (EST)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Mon, 1 Oct 2012 21:00:36 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q920xHjD30998558
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2012 20:59:17 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q920xHBZ012386
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2012 21:59:17 -0300
+Date: Mon, 1 Oct 2012 17:59:13 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: [PATCH] powerpc: fix VMX fix for memcpy case
+Message-ID: <20121002005912.GA27768@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,54 +34,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-10-01 at 16:03 +0200, Alexander Graf wrote:
-> Phew. Here we go :). It looks to be more of a PPC specific problem than it appeared as at first:
+[urgh, sorry Anton, Ben & Paul, inadvertently hit send before adding
+linuxppc-dev to the cc!]
 
-Ok, so I suspect the problem is the pushing down of the locks which
-breaks with iommu backends that have a separate flush callback. In
-that case, the flush moves out of the allocator lock.
+Hi Anton,
 
-Now we do call flush before we return, still, but it becomes racy
-I suspect, but somebody needs to give it a closer look. I'm hoping
-Anton or Nish will later today.
+In 2fae7cdb60240e2e2d9b378afbf6d9fcce8a3890 ("powerpc: Fix VMX in
+interrupt check in POWER7 copy loops"), I think you inadvertently
+introduced a regression for memcpy on POWER7 machines. copyuer and
+memcpy diverge slightly in their use of cr1 (copyuser doesn't use it,
+but memcpy does) and you end up clobbering that register with your fix.
+That results in (taken from an FC18 kernel):
 
-Cheers,
-Ben.
+[   18.824604] Unrecoverable VMX/Altivec Unavailable Exception f20 at c000000000052f40
+[   18.824618] Oops: Unrecoverable VMX/Altivec Unavailable Exception, sig: 6 [#1]
+[   18.824623] SMP NR_CPUS=1024 NUMA pSeries
+[   18.824633] Modules linked in: tg3(+) be2net(+) cxgb4(+) ipr(+) sunrpc xts lrw gf128mul dm_crypt dm_round_robin dm_multipath linear raid10 raid456 async_raid6_recov async_memcpy async_pq raid6_pq async_xor xor async_tx raid1 raid0 scsi_dh_rdac scsi_dh_hp_sw scsi_dh_emc scsi_dh_alua squashfs cramfs
+[   18.824705] NIP: c000000000052f40 LR: c00000000020b874 CTR: 0000000000000512
+[   18.824709] REGS: c000001f1fef7790 TRAP: 0f20   Not tainted  (3.6.0-0.rc6.git0.2.fc18.ppc64)
+[   18.824713] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 4802802e  XER: 20000010
+[   18.824726] SOFTE: 0
+[   18.824728] CFAR: 0000000000000f20
+[   18.824731] TASK = c000000fa7128400[0] 'swapper/24' THREAD: c000000fa7480000 CPU: 24
+GPR00: 00000000ffffffc0 c000001f1fef7a10 c00000000164edc0 c000000f9b9a8120
+GPR04: c000000f9b9a8124 0000000000001438 0000000000000060 03ffffff064657ee
+GPR08: 0000000080000000 0000000000000010 0000000000000020 0000000000000030
+GPR12: 0000000028028022 c00000000ff25400 0000000000000001 0000000000000000
+GPR16: 0000000000000000 7fffffffffffffff c0000000016b2180 c00000000156a500
+GPR20: c000000f968c7a90 c0000000131c31d8 c000001f1fef4000 c000000001561d00
+GPR24: 000000000000000a 0000000000000000 0000000000000001 0000000000000012
+GPR28: c000000fa5c04f80 00000000000008bc c0000000015c0a28 000000000000022e
+[   18.824792] NIP [c000000000052f40] .memcpy_power7+0x5a0/0x7c4
+[   18.824797] LR [c00000000020b874] .pcpu_free_area+0x174/0x2d0
+[   18.824800] Call Trace:
+[   18.824803] [c000001f1fef7a10] [c000000000052c14] .memcpy_power7+0x274/0x7c4 (unreliable)
+[   18.824809] [c000001f1fef7b10] [c00000000020b874] .pcpu_free_area+0x174/0x2d0
+[   18.824813] [c000001f1fef7bb0] [c00000000020ba88] .free_percpu+0xb8/0x1b0
+[   18.824819] [c000001f1fef7c50] [c00000000043d144] .throtl_pd_exit+0x94/0xd0
+[   18.824824] [c000001f1fef7cf0] [c00000000043acf8] .blkg_free+0x88/0xe0
+[   18.824829] [c000001f1fef7d90] [c00000000018c048] .rcu_process_callbacks+0x2e8/0x8a0
+[   18.824835] [c000001f1fef7e90] [c0000000000a8ce8] .__do_softirq+0x158/0x4d0
+[   18.824840] [c000001f1fef7f90] [c000000000025ecc] .call_do_softirq+0x14/0x24
+[   18.824845] [c000000fa7483650] [c000000000010e80] .do_softirq+0x160/0x1a0
+[   18.824850] [c000000fa74836f0] [c0000000000a94a4] .irq_exit+0xf4/0x120
+[   18.824854] [c000000fa7483780] [c000000000020c44] .timer_interrupt+0x154/0x4d0
+[   18.824859] [c000000fa7483830] [c000000000003be0] decrementer_common+0x160/0x180
+[   18.824866] --- Exception: 901 at .plpar_hcall_norets+0x84/0xd4
+[   18.824866]     LR = .check_and_cede_processor+0x48/0x80
+[   18.824871] [c000000fa7483b20] [c00000000007f018] .check_and_cede_processor+0x18/0x80 (unreliable)
+[   18.824877] [c000000fa7483b90] [c00000000007f104] .dedicated_cede_loop+0x84/0x150
+[   18.824883] [c000000fa7483c50] [c0000000006bc030] .cpuidle_enter+0x30/0x50
+[   18.824887] [c000000fa7483cc0] [c0000000006bc9f4] .cpuidle_idle_call+0x104/0x720
+[   18.824892] [c000000fa7483d80] [c000000000070af8] .pSeries_idle+0x18/0x40
+[   18.824897] [c000000fa7483df0] [c000000000019084] .cpu_idle+0x1a4/0x380
+[   18.824902] [c000000fa7483ec0] [c0000000008a4c18] .start_secondary+0x520/0x528
+[   18.824907] [c000000fa7483f90] [c0000000000093f0] .start_secondary_prolog+0x10/0x14
+[   18.824911] Instruction dump:
+[   18.824914] 38840008 90030000 90e30004 38630008 7ca62850 7cc300d0 78c7e102 7cf01120
+[   18.824923] 78c60660 39200010 39400020 39600030 <7e00200c> 7c0020ce 38840010 409f001c
+[   18.824935] ---[ end trace 0bb95124affaaa45 ]---
+[   18.825046] Unrecoverable VMX/Altivec Unavailable Exception f20 at c000000000052d08
 
-> 
-> b4c3a8729ae57b4f84d661e16a192f828eca1d03 is first bad commit
-> commit b4c3a8729ae57b4f84d661e16a192f828eca1d03
-> Author: Anton Blanchard <anton@samba.org>
-> Date:   Thu Jun 7 18:14:48 2012 +0000
-> 
->     powerpc/iommu: Implement IOMMU pools to improve multiqueue adapter performance
->     
->     At the moment all queues in a multiqueue adapter will serialise
->     against the IOMMU table lock. This is proving to be a big issue,
->     especially with 10Gbit ethernet.
->     
->     This patch creates 4 pools and tries to spread the load across
->     them. If the table is under 1GB in size we revert back to the
->     original behaviour of 1 pool and 1 largealloc pool.
->     
->     We create a hash to map CPUs to pools. Since we prefer interrupts to
->     be affinitised to primary CPUs, without some form of hashing we are
->     very likely to end up using the same pool. As an example, POWER7
->     has 4 way SMT and with 4 pools all primary threads will map to the
->     same pool.
->     
->     The largealloc pool is reduced from 1/2 to 1/4 of the space to
->     partially offset the overhead of breaking the table up into pools.
->     
->     Some performance numbers were obtained with a Chelsio T3 adapter on
->     two POWER7 boxes, running a 100 session TCP round robin test.
->     
->     Performance improved 69% with this patch applied.
->     
->     Signed-off-by: Anton Blanchard <anton@samba.org>
->     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> :040000 040000 039ae3cbdcfded9c6b13e58a3fc67609f1b587b0 6755a8c4a690cc80dcf834d1127f21db925476d6 M	arch
-> 
-> 
-> Alex
+I believe the right fix is to make memcpy match usercopy and not use
+cr1.
+
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
+
+---
+I've not tested this fix yet, but I think it's logically correct.
+Probably needs to go to 3.6-stable as well.
+
+diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
+index 7ba6c96..0663630 100644
+--- a/arch/powerpc/lib/memcpy_power7.S
++++ b/arch/powerpc/lib/memcpy_power7.S
+@@ -239,8 +239,8 @@ _GLOBAL(memcpy_power7)
+ 	ori	r9,r9,1		/* stream=1 */
+ 
+ 	srdi	r7,r5,7		/* length in cachelines, capped at 0x3FF */
+-	cmpldi	cr1,r7,0x3FF
+-	ble	cr1,1f
++	cmpldi	r7,0x3FF
++	ble	1f
+ 	li	r7,0x3FF
+ 1:	lis	r0,0x0E00	/* depth=7 */
+ 	sldi	r7,r7,7
