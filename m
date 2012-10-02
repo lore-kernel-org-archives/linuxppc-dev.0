@@ -1,30 +1,28 @@
-Return-Path: <nizhan.chen@gmail.com>
-Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
- [209.85.220.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B662D2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 10:34:53 +1000 (EST)
-Received: by pabkq12 with SMTP id kq12so4708392pab.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Oct 2012 17:34:51 -0700 (PDT)
-Message-ID: <506A36A1.6030709@gmail.com>
-Date: Tue, 02 Oct 2012 08:34:41 +0800
-From: Ni zhan Chen <nizhan.chen@gmail.com>
-MIME-Version: 1.0
-To: wency@cn.fujitsu.com
-Subject: Re: [RFC v9 PATCH 06/21] memory-hotplug: export the function
- acpi_bus_remove()
-References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
- <1346837155-534-7-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1346837155-534-7-git-send-email-wency@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
- sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, liuj97@gmail.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 70B1E2C0101
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 10:58:49 +1000 (EST)
+Message-ID: <1349139509.3847.2.camel@pasglop>
+Subject: Re: [REGRESSION] nfsd crashing with 3.6.0-rc7 on PowerPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alexander Graf <agraf@suse.de>
+Date: Tue, 02 Oct 2012 10:58:29 +1000
+In-Reply-To: <2A52FC96-148C-4F7A-9950-E152E0C6698D@suse.de>
+References: <3BDA9E62-7031-42D6-8CA9-5327B61700F5@suse.de>
+ <CA+55aFyXwB1QcXE4Z_FAGnXROSgvP2x2+wjnX9OWPa4Dfaaf0A@mail.gmail.com>
+ <DC545CD9-8745-47DD-B13B-3385C0EB5B27@suse.de>
+ <20120928151043.GA19102@fieldses.org>
+ <2A52FC96-148C-4F7A-9950-E152E0C6698D@suse.de>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-nfs@vger.kernel.org, Jan Kara <jack@suse.cz>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ LKML List <linux-kernel@vger.kernel.org>,
+ "J. Bruce Fields" <bfields@fieldses.org>, anton@samba.org,
+ skinsbursky@parallels.com, bfields@redhat.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,63 +32,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09/05/2012 05:25 PM, wency@cn.fujitsu.com wrote:
-> From: Wen Congyang <wency@cn.fujitsu.com>
->
-> The function acpi_bus_remove() can remove a acpi device from acpi device.
+On Mon, 2012-10-01 at 16:03 +0200, Alexander Graf wrote:
+> Phew. Here we go :). It looks to be more of a PPC specific problem than it appeared as at first:
 
-IIUC, s/acpi device/acpi bus
+Ok, so I suspect the problem is the pushing down of the locks which
+breaks with iommu backends that have a separate flush callback. In
+that case, the flush moves out of the allocator lock.
 
->   
-> When a acpi device is removed, we need to call this function to remove
-> the acpi device from acpi bus. So export this function.
->
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
-> ---
->   drivers/acpi/scan.c     |    3 ++-
->   include/acpi/acpi_bus.h |    1 +
->   2 files changed, 3 insertions(+), 1 deletions(-)
->
-> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-> index d1ecca2..1cefc34 100644
-> --- a/drivers/acpi/scan.c
-> +++ b/drivers/acpi/scan.c
-> @@ -1224,7 +1224,7 @@ static int acpi_device_set_context(struct acpi_device *device)
->   	return -ENODEV;
->   }
->   
-> -static int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
-> +int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
->   {
->   	if (!dev)
->   		return -EINVAL;
-> @@ -1246,6 +1246,7 @@ static int acpi_bus_remove(struct acpi_device *dev, int rmdevice)
->   
->   	return 0;
->   }
-> +EXPORT_SYMBOL(acpi_bus_remove);
->   
->   static int acpi_add_single_object(struct acpi_device **child,
->   				  acpi_handle handle, int type,
-> diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-> index bde976e..2ccf109 100644
-> --- a/include/acpi/acpi_bus.h
-> +++ b/include/acpi/acpi_bus.h
-> @@ -360,6 +360,7 @@ bool acpi_bus_power_manageable(acpi_handle handle);
->   bool acpi_bus_can_wakeup(acpi_handle handle);
->   int acpi_power_resource_register_device(struct device *dev, acpi_handle handle);
->   void acpi_power_resource_unregister_device(struct device *dev, acpi_handle handle);
-> +int acpi_bus_remove(struct acpi_device *dev, int rmdevice);
->   #ifdef CONFIG_ACPI_PROC_EVENT
->   int acpi_bus_generate_proc_event(struct acpi_device *device, u8 type, int data);
->   int acpi_bus_generate_proc_event4(const char *class, const char *bid, u8 type, int data);
+Now we do call flush before we return, still, but it becomes racy
+I suspect, but somebody needs to give it a closer look. I'm hoping
+Anton or Nish will later today.
+
+Cheers,
+Ben.
+
+> 
+> b4c3a8729ae57b4f84d661e16a192f828eca1d03 is first bad commit
+> commit b4c3a8729ae57b4f84d661e16a192f828eca1d03
+> Author: Anton Blanchard <anton@samba.org>
+> Date:   Thu Jun 7 18:14:48 2012 +0000
+> 
+>     powerpc/iommu: Implement IOMMU pools to improve multiqueue adapter performance
+>     
+>     At the moment all queues in a multiqueue adapter will serialise
+>     against the IOMMU table lock. This is proving to be a big issue,
+>     especially with 10Gbit ethernet.
+>     
+>     This patch creates 4 pools and tries to spread the load across
+>     them. If the table is under 1GB in size we revert back to the
+>     original behaviour of 1 pool and 1 largealloc pool.
+>     
+>     We create a hash to map CPUs to pools. Since we prefer interrupts to
+>     be affinitised to primary CPUs, without some form of hashing we are
+>     very likely to end up using the same pool. As an example, POWER7
+>     has 4 way SMT and with 4 pools all primary threads will map to the
+>     same pool.
+>     
+>     The largealloc pool is reduced from 1/2 to 1/4 of the space to
+>     partially offset the overhead of breaking the table up into pools.
+>     
+>     Some performance numbers were obtained with a Chelsio T3 adapter on
+>     two POWER7 boxes, running a 100 session TCP round robin test.
+>     
+>     Performance improved 69% with this patch applied.
+>     
+>     Signed-off-by: Anton Blanchard <anton@samba.org>
+>     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> :040000 040000 039ae3cbdcfded9c6b13e58a3fc67609f1b587b0 6755a8c4a690cc80dcf834d1127f21db925476d6 M	arch
+> 
+> 
+> Alex
