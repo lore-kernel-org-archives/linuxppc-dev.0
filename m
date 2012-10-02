@@ -1,34 +1,23 @@
-Return-Path: <kosaki.motohiro@gmail.com>
-Received: from mail-oa0-f51.google.com (mail-oa0-f51.google.com
- [209.85.219.51])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
+ [209.85.220.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D7C8E2C0133
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2012 03:29:41 +1000 (EST)
-Received: by oagn12 with SMTP id n12so6730668oag.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Oct 2012 10:29:39 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 1E8C82C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2012 04:38:53 +1000 (EST)
+Received: by vcbf13 with SMTP id f13so6881389vcb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Oct 2012 11:38:50 -0700 (PDT)
 MIME-Version: 1.0
-Sender: kosaki.motohiro@gmail.com
-In-Reply-To: <506A4100.7070305@jp.fujitsu.com>
-References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
- <1346837155-534-2-git-send-email-wency@cn.fujitsu.com>
- <506509E4.1090000@gmail.com> <50651E68.3040208@jp.fujitsu.com>
- <CAHGf_=oJ_Jmjqcdr4cPJghf7PX+vfmZe=CV2sdQQhS5agzG15w@mail.gmail.com>
- <506A4100.7070305@jp.fujitsu.com>
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Tue, 2 Oct 2012 13:29:19 -0400
-Message-ID: <CAHGf_=rNSmtxw2JL2g+b-yq9KTFZPWBp90KtERJouDS-vv3zWw@mail.gmail.com>
-Subject: Re: [RFC v9 PATCH 01/21] memory-hotplug: rename remove_memory() to
- offline_memory()/offline_pages()
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- wency@cn.fujitsu.com, linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org,
- len.brown@intel.com, x86@kernel.org, Ni zhan Chen <nizhan.chen@gmail.com>,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- paulus@samba.org, minchan.kim@gmail.com, rientjes@google.com,
- sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
- akpm@linux-foundation.org, liuj97@gmail.com
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1349202763-1601-1-git-send-email-geert@linux-m68k.org>
+References: <1349202763-1601-1-git-send-email-geert@linux-m68k.org>
+Date: Tue, 2 Oct 2012 20:38:50 +0200
+Message-ID: <CAMuHMdXcMVkcqTJdH2zdo9=a2efeeQmPGUr9GZqRMuRrAuMBvw@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.6
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: Chris Zankel <chris@zankel.net>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,8 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->> Then, you introduced bisect breakage. It is definitely unacceptable.
->
-> What is "bisect breakage" meaning?
+On Tue, Oct 2, 2012 at 8:32 PM, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.6 to v3.6-rc7[3], the summaries are:
+>   - build errors: +4/-1
 
-Think what's happen when only applying path [1/21].
+  + arch/powerpc/platforms/512x/mpc512x_shared.c: error:
+'FSL_DIU_PORT_DVI' undeclared (first use in this function):  => 189:9
+  + arch/powerpc/platforms/512x/mpc512x_shared.c: error: parameter 1
+('port') has incomplete type:  => 187:54, 83:56, 88:57, 69:56
+  + arch/powerpc/platforms/512x/mpc512x_shared.c: error: return type
+is an incomplete type:  => 187:1
+
+powerpc-randconfig
+
+  + drivers/net/ethernet/realtek/r8169.c: error: expected identifier
+before numeric constant:  => 451:2
+
+xtensa-allmodconfig (hmm, this is not a new one, it felt through the
+cracks in -rc7 because
+of log line interleaving).
+
+Ugh, arch/xtensa/include/asm/regs.h defines way to generic symbols,
+like "MISC" (which
+causes the above breakage), and even a few 2-letter symbols, which
+surprisingly don't
+cause conflicts...
+
+> [1] http://kisskb.ellerman.id.au/kisskb/head/5469/ (all 117 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/5445/ (all 117 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
