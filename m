@@ -1,30 +1,45 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B378E2C00F7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 11:00:39 +1000 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Mon, 1 Oct 2012 21:00:36 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q920xHjD30998558
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2012 20:59:17 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q920xHBZ012386
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Oct 2012 21:59:17 -0300
-Date: Mon, 1 Oct 2012 17:59:13 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Anton Blanchard <anton@samba.org>
-Subject: [PATCH] powerpc: fix VMX fix for memcpy case
-Message-ID: <20121002005912.GA27768@linux.vnet.ibm.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 54A252C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 11:19:41 +1000 (EST)
+Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id A9DAE3EE0BC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 10:19:37 +0900 (JST)
+Received: from smail (m3 [127.0.0.1])
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 8F1A445DEBF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 10:19:37 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 735F245DEB6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 10:19:37 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 663D61DB8044
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 10:19:37 +0900 (JST)
+Received: from g01jpexchyt23.g01.fujitsu.local
+ (g01jpexchyt23.g01.fujitsu.local [10.128.193.106])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 1136B1DB8043
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Oct 2012 10:19:37 +0900 (JST)
+Message-ID: <506A4100.7070305@jp.fujitsu.com>
+Date: Tue, 2 Oct 2012 10:18:56 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC v9 PATCH 01/21] memory-hotplug: rename remove_memory() to
+ offline_memory()/offline_pages()
+References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
+ <1346837155-534-2-git-send-email-wency@cn.fujitsu.com>
+ <506509E4.1090000@gmail.com> <50651E68.3040208@jp.fujitsu.com>
+ <CAHGf_=oJ_Jmjqcdr4cPJghf7PX+vfmZe=CV2sdQQhS5agzG15w@mail.gmail.com>
+In-Reply-To: <CAHGf_=oJ_Jmjqcdr4cPJghf7PX+vfmZe=CV2sdQQhS5agzG15w@mail.gmail.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ wency@cn.fujitsu.com, linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org,
+ len.brown@intel.com, x86@kernel.org, Ni zhan Chen <nizhan.chen@gmail.com>,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ paulus@samba.org, minchan.kim@gmail.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, cl@linux.com, linuxppc-dev@lists.ozlabs.org,
+ akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,88 +49,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[urgh, sorry Anton, Ben & Paul, inadvertently hit send before adding
-linuxppc-dev to the cc!]
+Hi Kosaki-san,
 
-Hi Anton,
+2012/09/29 7:15, KOSAKI Motohiro wrote:
+> On Thu, Sep 27, 2012 at 11:50 PM, Yasuaki Ishimatsu
+> <isimatu.yasuaki@jp.fujitsu.com> wrote:
+>> Hi Chen,
+>>
+>>
+>> 2012/09/28 11:22, Ni zhan Chen wrote:
+>>>
+>>> On 09/05/2012 05:25 PM, wency@cn.fujitsu.com wrote:
+>>>>
+>>>> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>>>
+>>>> remove_memory() only try to offline pages. It is called in two cases:
+>>>> 1. hot remove a memory device
+>>>> 2. echo offline >/sys/devices/system/memory/memoryXX/state
+>>>>
+>>>> In the 1st case, we should also change memory block's state, and notify
+>>>> the userspace that the memory block's state is changed after offlining
+>>>> pages.
+>>>>
+>>>> So rename remove_memory() to offline_memory()/offline_pages(). And in
+>>>> the 1st case, offline_memory() will be used. The function
+>>>> offline_memory()
+>>>> is not implemented. In the 2nd case, offline_pages() will be used.
+>>>
+>>>
+>>> But this time there is not a function associated with add_memory.
+>>
+>>
+>> To associate with add_memory() later, we renamed it.
+>
+> Then, you introduced bisect breakage. It is definitely unacceptable.
 
-In 2fae7cdb60240e2e2d9b378afbf6d9fcce8a3890 ("powerpc: Fix VMX in
-interrupt check in POWER7 copy loops"), I think you inadvertently
-introduced a regression for memcpy on POWER7 machines. copyuer and
-memcpy diverge slightly in their use of cr1 (copyuser doesn't use it,
-but memcpy does) and you end up clobbering that register with your fix.
-That results in (taken from an FC18 kernel):
+What is "bisect breakage" meaning?
 
-[   18.824604] Unrecoverable VMX/Altivec Unavailable Exception f20 at c000000000052f40
-[   18.824618] Oops: Unrecoverable VMX/Altivec Unavailable Exception, sig: 6 [#1]
-[   18.824623] SMP NR_CPUS=1024 NUMA pSeries
-[   18.824633] Modules linked in: tg3(+) be2net(+) cxgb4(+) ipr(+) sunrpc xts lrw gf128mul dm_crypt dm_round_robin dm_multipath linear raid10 raid456 async_raid6_recov async_memcpy async_pq raid6_pq async_xor xor async_tx raid1 raid0 scsi_dh_rdac scsi_dh_hp_sw scsi_dh_emc scsi_dh_alua squashfs cramfs
-[   18.824705] NIP: c000000000052f40 LR: c00000000020b874 CTR: 0000000000000512
-[   18.824709] REGS: c000001f1fef7790 TRAP: 0f20   Not tainted  (3.6.0-0.rc6.git0.2.fc18.ppc64)
-[   18.824713] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 4802802e  XER: 20000010
-[   18.824726] SOFTE: 0
-[   18.824728] CFAR: 0000000000000f20
-[   18.824731] TASK = c000000fa7128400[0] 'swapper/24' THREAD: c000000fa7480000 CPU: 24
-GPR00: 00000000ffffffc0 c000001f1fef7a10 c00000000164edc0 c000000f9b9a8120
-GPR04: c000000f9b9a8124 0000000000001438 0000000000000060 03ffffff064657ee
-GPR08: 0000000080000000 0000000000000010 0000000000000020 0000000000000030
-GPR12: 0000000028028022 c00000000ff25400 0000000000000001 0000000000000000
-GPR16: 0000000000000000 7fffffffffffffff c0000000016b2180 c00000000156a500
-GPR20: c000000f968c7a90 c0000000131c31d8 c000001f1fef4000 c000000001561d00
-GPR24: 000000000000000a 0000000000000000 0000000000000001 0000000000000012
-GPR28: c000000fa5c04f80 00000000000008bc c0000000015c0a28 000000000000022e
-[   18.824792] NIP [c000000000052f40] .memcpy_power7+0x5a0/0x7c4
-[   18.824797] LR [c00000000020b874] .pcpu_free_area+0x174/0x2d0
-[   18.824800] Call Trace:
-[   18.824803] [c000001f1fef7a10] [c000000000052c14] .memcpy_power7+0x274/0x7c4 (unreliable)
-[   18.824809] [c000001f1fef7b10] [c00000000020b874] .pcpu_free_area+0x174/0x2d0
-[   18.824813] [c000001f1fef7bb0] [c00000000020ba88] .free_percpu+0xb8/0x1b0
-[   18.824819] [c000001f1fef7c50] [c00000000043d144] .throtl_pd_exit+0x94/0xd0
-[   18.824824] [c000001f1fef7cf0] [c00000000043acf8] .blkg_free+0x88/0xe0
-[   18.824829] [c000001f1fef7d90] [c00000000018c048] .rcu_process_callbacks+0x2e8/0x8a0
-[   18.824835] [c000001f1fef7e90] [c0000000000a8ce8] .__do_softirq+0x158/0x4d0
-[   18.824840] [c000001f1fef7f90] [c000000000025ecc] .call_do_softirq+0x14/0x24
-[   18.824845] [c000000fa7483650] [c000000000010e80] .do_softirq+0x160/0x1a0
-[   18.824850] [c000000fa74836f0] [c0000000000a94a4] .irq_exit+0xf4/0x120
-[   18.824854] [c000000fa7483780] [c000000000020c44] .timer_interrupt+0x154/0x4d0
-[   18.824859] [c000000fa7483830] [c000000000003be0] decrementer_common+0x160/0x180
-[   18.824866] --- Exception: 901 at .plpar_hcall_norets+0x84/0xd4
-[   18.824866]     LR = .check_and_cede_processor+0x48/0x80
-[   18.824871] [c000000fa7483b20] [c00000000007f018] .check_and_cede_processor+0x18/0x80 (unreliable)
-[   18.824877] [c000000fa7483b90] [c00000000007f104] .dedicated_cede_loop+0x84/0x150
-[   18.824883] [c000000fa7483c50] [c0000000006bc030] .cpuidle_enter+0x30/0x50
-[   18.824887] [c000000fa7483cc0] [c0000000006bc9f4] .cpuidle_idle_call+0x104/0x720
-[   18.824892] [c000000fa7483d80] [c000000000070af8] .pSeries_idle+0x18/0x40
-[   18.824897] [c000000fa7483df0] [c000000000019084] .cpu_idle+0x1a4/0x380
-[   18.824902] [c000000fa7483ec0] [c0000000008a4c18] .start_secondary+0x520/0x528
-[   18.824907] [c000000fa7483f90] [c0000000000093f0] .start_secondary_prolog+0x10/0x14
-[   18.824911] Instruction dump:
-[   18.824914] 38840008 90030000 90e30004 38630008 7ca62850 7cc300d0 78c7e102 7cf01120
-[   18.824923] 78c60660 39200010 39400020 39600030 <7e00200c> 7c0020ce 38840010 409f001c
-[   18.824935] ---[ end trace 0bb95124affaaa45 ]---
-[   18.825046] Unrecoverable VMX/Altivec Unavailable Exception f20 at c000000000052d08
+Thanks,
+Yasuaki Ishimatsu
 
-I believe the right fix is to make memcpy match usercopy and not use
-cr1.
-
-Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
-
----
-I've not tested this fix yet, but I think it's logically correct.
-Probably needs to go to 3.6-stable as well.
-
-diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
-index 7ba6c96..0663630 100644
---- a/arch/powerpc/lib/memcpy_power7.S
-+++ b/arch/powerpc/lib/memcpy_power7.S
-@@ -239,8 +239,8 @@ _GLOBAL(memcpy_power7)
- 	ori	r9,r9,1		/* stream=1 */
- 
- 	srdi	r7,r5,7		/* length in cachelines, capped at 0x3FF */
--	cmpldi	cr1,r7,0x3FF
--	ble	cr1,1f
-+	cmpldi	r7,0x3FF
-+	ble	1f
- 	li	r7,0x3FF
- 1:	lis	r0,0x0E00	/* depth=7 */
- 	sldi	r7,r7,7
+>
+> NAK.
+>
