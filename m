@@ -1,22 +1,21 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e36.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E57582C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2012 04:12:17 +1000 (EST)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 2 Oct 2012 12:12:13 -0600
-Message-ID: <506B2E63.5090900@linux.vnet.ibm.com>
-Date: Tue, 02 Oct 2012 13:11:47 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Return-Path: <marc@tensilica.com>
+Received: from mailgw.tensilica.com (mailgw.tensilica.com [65.119.96.134])
+ by ozlabs.org (Postfix) with ESMTP id C04122C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2012 07:57:02 +1000 (EST)
+From: Marc Gauthier <marc@tensilica.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>, "linux-kernel@vger.kernel.org"
+ <linux-kernel@vger.kernel.org>
+Date: Tue, 2 Oct 2012 14:33:46 -0700
+Subject: RE: [LKML] Re: Build regressions/improvements in v3.6
+Message-ID: <522C1DF17AF50042AD8AE87F7887BD3D05BF604843@exch.hq.tensilica.com>
+References: <1349202763-1601-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdXcMVkcqTJdH2zdo9=a2efeeQmPGUr9GZqRMuRrAuMBvw@mail.gmail.com>
+In-Reply-To: <CAMuHMdXcMVkcqTJdH2zdo9=a2efeeQmPGUr9GZqRMuRrAuMBvw@mail.gmail.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: devicetree-discuss@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/5] Move some OF functionality from pseries to generic OF code
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: Chris Zankel <chris@zankel.net>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Max Filippov <jcmvbkbc@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,16 +25,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This set of patches moves some OF code that has been living
-in the pseries tree over to the generic OF code base. The
-functionality being migrated over is something that, I believe,
-should live in the generic code base. The specific functionality
-being migrated to generic OF code is;
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> xtensa-allmodconfig (hmm, this is not a new one, it felt through the
+> cracks in -rc7 because of log line interleaving).
+>
+> Ugh, arch/xtensa/include/asm/regs.h defines way to generic symbols,
+> like "MISC" (which causes the above breakage), and even a few
+> 2-letter symbols, which surprisingly don't cause conflicts...
 
-o Updating the device tree in /proc when adding/removing a node.
-o Adding a notification chain for adding/removing nodes and
-  properties of the device tree.
-o Re-naming the base OF code prom_* routines to of_* to better go
-  with the naming used for OF code.
+This particular one is already fixed in the xtensa linux-next tree
+at git://github.com/czankel/xtensa-linux.git#for_next
+(commit 36c74c2a16678e9ee6f08ef89eeebfdd1a96693d).
 
--Nathan 
+The short names in that header are for historical reasons.
+It is indeed due for a cleanup.
+
+-Marc
