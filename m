@@ -1,27 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E49872C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2012 14:22:54 +1000 (EST)
-Message-ID: <1349238166.3847.38.camel@pasglop>
-Subject: Re: [REGRESSION] nfsd crashing with 3.6.0-rc7 on PowerPC
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Date: Wed, 03 Oct 2012 14:22:46 +1000
-In-Reply-To: <20121002214327.GA29218@linux.vnet.ibm.com>
-References: <3BDA9E62-7031-42D6-8CA9-5327B61700F5@suse.de>
- <CA+55aFyXwB1QcXE4Z_FAGnXROSgvP2x2+wjnX9OWPa4Dfaaf0A@mail.gmail.com>
- <DC545CD9-8745-47DD-B13B-3385C0EB5B27@suse.de>
- <20120928151043.GA19102@fieldses.org>
- <2A52FC96-148C-4F7A-9950-E152E0C6698D@suse.de>
- <1349139509.3847.2.camel@pasglop>
- <20121002214327.GA29218@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Alexander Graf <agraf@suse.de>, anton@samba.org,
- LKML List <linux-kernel@vger.kernel.org>
+Return-Path: <dongsheng.wds@gmail.com>
+Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 898592C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Oct 2012 20:35:00 +1000 (EST)
+Received: by dajt11 with SMTP id t11so2273703daj.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Oct 2012 03:34:58 -0700 (PDT)
+From: Wang Dongsheng <dongsheng.wds@gmail.com>
+To: b07421@freescale.com,
+	galak@kernel.crashing.org
+Subject: [PATCH] powerpc/mpic: add global timer support
+Date: Wed,  3 Oct 2012 18:38:30 +0800
+Message-Id: <1349260710-15718-1-git-send-email-dongsheng.wds@gmail.com>
+Cc: Wang Dongsheng <dongsheng.wds@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Wang Dongsheng <Dongsheng.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,22 +24,713 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-10-02 at 14:43 -0700, Nishanth Aravamudan wrote:
-> 
-> Started looking into this. If your suspicion were accurate, wouldn't
-> the
-> bisection have stopped at 0e4bc95d87394364f408627067238453830bdbf3
-> ("powerpc/iommu: Reduce spinlock coverage in iommu_alloc and
-> iommu_free")?
-> 
-> Alex, the error is reproducible, right? Does it go away by reverting
-> that commit against mainline? Just trying to narrow down my focus.
+The MPIC global timer is a hardware timer inside the Freescale PIC comply
+to Open-PIC standard. When the timer is timeout of the specified interval,
+the hardware timer generates an interrupt. The driver currently is only
+tested on fsl chip, but it can potentially support other global timers
+complying to Open-PIC standard.
+The two independent groups of global timer on fsl chip, group A and group B,
+are identical in their functionality, except that they appear at different
+locations within the PIC register map. The hardware timer can be cascaded to
+create timers larger than the default 31-bit global timers. Timer cascade
+fields allow configuration of up to two 63-bit timers. But These two groups
+of timers cannot be cascaded together.
+It can be used as a wakeup source for low power modes. It also could be used
+as periodical timer for protocols, drivers and etc.
 
-My suspiction is, I'm afraid, a real bug but not that bug since it would
-only happen on U3 and this is an U4 machine ... so we have two bugs, one
-of them still unidentified.
+Signed-off-by: Wang Dongsheng <Dongsheng.Wang@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/include/asm/mpic_timer.h |   39 +++
+ arch/powerpc/platforms/Kconfig        |   12 +
+ arch/powerpc/sysdev/Makefile          |    1 +
+ arch/powerpc/sysdev/mpic_timer.c      |  597 +++++++++++++++++++++++++++++++++
+ 4 files changed, 649 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/mpic_timer.h
+ create mode 100644 arch/powerpc/sysdev/mpic_timer.c
 
-Cleaning up the CC list for now...
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/include/asm/mpic_timer.h b/arch/powerpc/include/asm/mpic_timer.h
+new file mode 100644
+index 0000000..2428972
+--- /dev/null
++++ b/arch/powerpc/include/asm/mpic_timer.h
+@@ -0,0 +1,39 @@
++/*
++ * arch/powerpc/include/asm/mpic_timer.h
++ *
++ * Mpic Global Timer Header
++ *
++ * Copyright 2012 Freescale Semicondutor, Inc.
++ *
++ * Author: Wang Dongsheng <Dongsheng.Wang@freescale.com>
++ *	   Li Yang <leoli@freescale.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#ifndef __MPIC_TIMER__
++#define __MPIC_TIMER__
++
++#include <linux/interrupt.h>
++#include <linux/time.h>
++
++#ifdef CONFIG_MPIC_TIMER
++struct mpic_timer *mpic_request_timer(irq_handler_t fn,  void *dev,
++		const struct timeval *time);
++void mpic_start_timer(struct mpic_timer *handle);
++void mpic_stop_timer(struct mpic_timer *handle);
++void mpic_get_remain_time(struct mpic_timer *handle, struct timeval *time);
++void mpic_free_timer(struct mpic_timer *handle);
++#else
++struct mpic_timer *mpic_request_timer(irq_handler_t fn,  void *dev,
++		const struct timeval *time) { return NULL; }
++void mpic_start_timer(struct mpic_timer *handle) { }
++void mpic_stop_timer(struct mpic_timer *handle) { }
++void mpic_get_remain_time(struct mpic_timer *handle, struct timeval *time) { }
++void mpic_free_timer(struct mpic_timer *handle) { }
++#endif
++
++#endif
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index e7a896a..b190a6e 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -87,6 +87,18 @@ config MPIC
+ 	bool
+ 	default n
+ 
++config MPIC_TIMER
++	bool "MPIC Global Timer"
++	depends on MPIC && FSL_SOC
++	default n
++	help
++	  The MPIC global timer is a hardware timer inside the
++	  Freescale PIC comply to Open-PIC standard. When the
++	  timer is timeout of the specified interval, the hardware
++	  timer generates an interrupt. The driver currently is
++	  only tested on fsl chip, but it can potentially support
++	  other global timers complying to Open-PIC standard.
++
+ config PPC_EPAPR_HV_PIC
+ 	bool
+ 	default n
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 1bd7ecb..b1a9e4d 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -6,6 +6,7 @@ mpic-msi-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o mpic_u3msi.o mpic_pasemi_msi.o
+ obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y)
+ mpic-msgr-obj-$(CONFIG_MPIC_MSGR)	+= mpic_msgr.o
+ obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-obj-y) $(mpic-msgr-obj-y)
++obj-$(CONFIG_MPIC_TIMER)	+= mpic_timer.o
+ obj-$(CONFIG_PPC_EPAPR_HV_PIC)	+= ehv_pic.o
+ fsl-msi-obj-$(CONFIG_PCI_MSI)	+= fsl_msi.o
+ obj-$(CONFIG_PPC_MSI_BITMAP)	+= msi_bitmap.o
+diff --git a/arch/powerpc/sysdev/mpic_timer.c b/arch/powerpc/sysdev/mpic_timer.c
+new file mode 100644
+index 0000000..20a4b5e
+--- /dev/null
++++ b/arch/powerpc/sysdev/mpic_timer.c
+@@ -0,0 +1,597 @@
++/*
++ * Copyright 2012 Freescale Semiconductor, Inc.
++ * Author: Dongsheng Wang <Dongsheng.Wang@freescale.com>
++ *	   Li Yang <leoli@freescale.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/errno.h>
++#include <asm/io.h>
++#include <linux/mm.h>
++#include <linux/interrupt.h>
++#include <linux/slab.h>
++#include <linux/of.h>
++#include <linux/of_device.h>
++
++#include <sysdev/fsl_soc.h>
++#include <asm/mpic_timer.h>
++
++#define FSL_GLOBAL_TIMER		0x1
++
++#define MPIC_TIMER_TCR_CLKDIV_64	0x00000300
++#define MPIC_TIMER_TCR_ROVR_OFFSET	24
++
++#define TIMER_STOP			0x80000000
++#define TIMERS_PER_GROUP		4
++#define MAX_TICKS			(~0U>>1)
++#define MAX_TICKS_CASCADE		(~0U)
++#define TIMER_OFFSET(num)		(1 << (TIMERS_PER_GROUP - 1 - num))
++
++/* tv_usec should be less than ONE_SECOND, otherwise use tv_sec */
++#define ONE_SECOND			1000000
++
++struct timer_regs {
++	u32	gtccr;
++	u32	res0[3];
++	u32	gtbcr;
++	u32	res1[3];
++	u32	gtvpr;
++	u32	res2[3];
++	u32	gtdr;
++	u32	res3[3];
++};
++
++struct cascade_priv {
++	u32 tcr_value;			/* TCR register: CASC & ROVR value */
++	unsigned int cascade_map;	/* cascade map */
++	unsigned int timer_num;		/* cascade control timer */
++};
++
++struct mpic_timer {
++	void			*dev;
++	struct cascade_priv	*cascade_handle;
++	unsigned int		num;
++	int			irq;
++};
++
++struct timer_group_priv {
++	struct timer_regs __iomem	*regs;
++	struct mpic_timer		timer[TIMERS_PER_GROUP];
++	struct list_head		node;
++	u32				ccbfreq;
++	unsigned int			timerfreq;
++	unsigned int			idle;
++	unsigned int			flags;
++	spinlock_t			lock;
++	void __iomem			*group_tcr;
++};
++
++static struct cascade_priv cascade_timer[] = {
++	/* cascade timer 0 and 1 */
++	{0x1, 0xc, 0x1},
++	/* cascade timer 1 and 2 */
++	{0x2, 0x6, 0x2},
++	/* cascade timer 2 and 3 */
++	{0x4, 0x3, 0x3}
++};
++
++static LIST_HEAD(timer_group_list);
++
++static void convert_ticks_to_time(struct timer_group_priv *priv,
++		const u64 ticks, struct timeval *time)
++{
++	u64 tmp_sec;
++	u32 rem_us;
++	u32 div;
++
++	if (!(priv->flags & FSL_GLOBAL_TIMER)) {
++		time->tv_sec = (long)div_u64_rem(ticks, priv->timerfreq,
++						&rem_us);
++		tmp_sec = (u64)time->tv_sec * (u64)priv->timerfreq;
++		time->tv_usec = (long)div_u64((ticks - tmp_sec) * (u64)1000000,
++						priv->timerfreq);
++
++		return;
++	}
++
++	div = (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
++
++	time->tv_sec = (long)div_u64(ticks, priv->ccbfreq / div);
++	tmp_sec = div_u64((u64)time->tv_sec * (u64)priv->ccbfreq, div);
++
++	time->tv_usec = (long)div_u64((ticks - tmp_sec) * (u64)1000000,
++					priv->ccbfreq / div);
++
++	return;
++}
++
++/* the time set by the user is converted to "ticks" */
++static int convert_time_to_ticks(struct timer_group_priv *priv,
++		const struct timeval *time, u64 *ticks)
++{
++	u64 max_value;		/* prevent u64 overflow */
++	u64 tmp = 0;
++
++	u64 tmp_sec;
++	u64 tmp_ms;
++	u64 tmp_us;
++	u32 div;
++
++	if (priv->flags & FSL_GLOBAL_TIMER)
++		max_value = div_u64(ULLONG_MAX, priv->ccbfreq);
++	else
++		max_value = div_u64(ULLONG_MAX, priv->timerfreq);
++
++	if (time->tv_sec > max_value ||
++			(time->tv_sec == max_value && time->tv_usec > 0))
++		return -EINVAL;
++
++	if (!(priv->flags & FSL_GLOBAL_TIMER)) {
++		tmp_sec = time->tv_sec * priv->timerfreq;
++		tmp_ms = time->tv_usec / 1000 * priv->timerfreq / 1000;
++		tmp_us = time->tv_usec % 1000 * priv->timerfreq / 1000000;
++
++		*ticks = tmp_sec + tmp_ms + tmp_us;
++
++		return 0;
++	}
++
++	div = (1 << (MPIC_TIMER_TCR_CLKDIV_64 >> 8)) * 8;
++
++	tmp_sec = div_u64((u64)time->tv_sec * (u64)priv->ccbfreq, div);
++	tmp += tmp_sec;
++
++	tmp_ms = time->tv_usec / 1000;
++	tmp_ms = div_u64((u64)tmp_ms * (u64)priv->ccbfreq, div * 1000);
++	tmp += tmp_ms;
++
++	tmp_us = time->tv_usec % 1000;
++	tmp_us = div_u64((u64)tmp_us * (u64)priv->ccbfreq, div * 1000000);
++	tmp += tmp_us;
++
++	*ticks = tmp;
++
++	return 0;
++}
++
++/* detect whether there is a cascade timer available */
++static struct mpic_timer *detect_idle_cascade_timer(
++					struct timer_group_priv *priv)
++{
++	struct cascade_priv *casc_priv;
++	unsigned int tmp;
++	unsigned int array_size = ARRAY_SIZE(cascade_timer);
++	unsigned int num;
++	unsigned int i;
++	unsigned long flags;
++
++	casc_priv = cascade_timer;
++	for (i = 0; i < array_size; i++) {
++		spin_lock_irqsave(&priv->lock, flags);
++		tmp = casc_priv->cascade_map & priv->idle;
++		if (tmp == casc_priv->cascade_map) {
++			num = casc_priv->timer_num;
++			priv->timer[num].cascade_handle = casc_priv;
++
++			/* set timer busy */
++			priv->idle &= ~casc_priv->cascade_map;
++			spin_unlock_irqrestore(&priv->lock, flags);
++			return &priv->timer[num];
++		}
++		spin_unlock_irqrestore(&priv->lock, flags);
++		casc_priv++;
++	}
++
++	return NULL;
++}
++
++static int set_cascade_timer(struct timer_group_priv *priv, u64 ticks,
++		unsigned int num)
++{
++	struct cascade_priv *casc_priv;
++	u32 tmp;
++	u32 tmp_ticks;
++	u32 rem_ticks;
++
++	/* set group tcr reg for cascade */
++	casc_priv = priv->timer[num].cascade_handle;
++	if (!casc_priv)
++		return -EINVAL;
++
++	tmp = casc_priv->tcr_value |
++		(casc_priv->tcr_value << MPIC_TIMER_TCR_ROVR_OFFSET);
++	setbits32(priv->group_tcr, tmp);
++
++	tmp_ticks = div_u64_rem(ticks, MAX_TICKS_CASCADE, &rem_ticks);
++
++	out_be32(&priv->regs[num].gtccr, 0);
++	out_be32(&priv->regs[num].gtbcr, tmp_ticks | TIMER_STOP);
++
++	out_be32(&priv->regs[num - 1].gtccr, 0);
++	out_be32(&priv->regs[num - 1].gtbcr, rem_ticks);
++
++	return 0;
++}
++
++static struct mpic_timer *get_cascade_timer(struct timer_group_priv *priv,
++					u64 ticks)
++{
++	struct mpic_timer *allocated_timer = NULL;
++
++	/* Two cascade timers: Support the maximum time */
++	const u64 max_ticks = (u64)MAX_TICKS * (u64)MAX_TICKS_CASCADE;
++	int ret;
++
++	if (ticks > max_ticks)
++		return NULL;
++
++	/* detect idle timer */
++	allocated_timer = detect_idle_cascade_timer(priv);
++	if (!allocated_timer)
++		return NULL;
++
++	/* set ticks to timer */
++	ret = set_cascade_timer(priv, ticks, allocated_timer->num);
++	if (ret < 0)
++		return NULL;
++
++	return allocated_timer;
++}
++
++static struct mpic_timer *get_timer(const struct timeval *time)
++{
++	struct timer_group_priv *priv;
++	struct mpic_timer *timer = NULL;
++
++	u64 ticks = 0;
++	unsigned int num;
++	unsigned int i;
++	unsigned long flags;
++	int ret = 0;
++
++	list_for_each_entry(priv, &timer_group_list, node) {
++		ret = convert_time_to_ticks(priv, time, &ticks);
++		if (ret < 0)
++			return NULL;
++
++		if (ticks > MAX_TICKS) {
++			if (!(priv->flags & FSL_GLOBAL_TIMER))
++				return NULL;
++
++			timer = get_cascade_timer(priv, ticks);
++			if (!timer)
++				continue;
++			else
++				return timer;
++		}
++
++		for (i = 0; i < TIMERS_PER_GROUP; i++) {
++			/* one timer: Reverse allocation */
++			num = TIMERS_PER_GROUP - 1 - i;
++			spin_lock_irqsave(&priv->lock, flags);
++			if (priv->idle & (1 << i)) {
++				/* set timer busy */
++				priv->idle &= ~(1 << i);
++				/* set ticks & stop timer */
++				out_be32(&priv->regs[num].gtbcr,
++					ticks | TIMER_STOP);
++				out_be32(&priv->regs[num].gtccr, 0);
++				priv->timer[num].cascade_handle = NULL;
++				spin_unlock_irqrestore(&priv->lock, flags);
++				return &priv->timer[num];
++			}
++			spin_unlock_irqrestore(&priv->lock, flags);
++		}
++	}
++
++	return NULL;
++}
++
++/**
++ * mpic_start_timer - start hardware timer
++ * @handle: the timer to be started.
++ *
++ * It will do ->fn(->dev) callback from the hardware interrupt at
++ * the ->timeval point in the future.
++ */
++void mpic_start_timer(struct mpic_timer *handle)
++{
++	struct timer_group_priv *priv = container_of(handle,
++			struct timer_group_priv, timer[handle->num]);
++
++	clrbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
++}
++EXPORT_SYMBOL(mpic_start_timer);
++
++/**
++ * mpic_stop_timer - stop hardware timer
++ * @handle: the timer to be stoped
++ *
++ * The timer periodically generates an interrupt. Unless user stops the timer.
++ */
++void mpic_stop_timer(struct mpic_timer *handle)
++{
++	struct timer_group_priv *priv = container_of(handle,
++			struct timer_group_priv, timer[handle->num]);
++	struct cascade_priv *casc_priv;
++
++	setbits32(&priv->regs[handle->num].gtbcr, TIMER_STOP);
++
++	casc_priv = priv->timer[handle->num].cascade_handle;
++	if (casc_priv) {
++		out_be32(&priv->regs[handle->num].gtccr, 0);
++		out_be32(&priv->regs[handle->num - 1].gtccr, 0);
++	} else {
++		out_be32(&priv->regs[handle->num].gtccr, 0);
++	}
++}
++EXPORT_SYMBOL(mpic_stop_timer);
++
++/**
++ * mpic_get_remain_time - get timer time
++ * @handle: the timer to be selected.
++ * @time: time for timer
++ *
++ * Query timer remaining time.
++ */
++void mpic_get_remain_time(struct mpic_timer *handle, struct timeval *time)
++{
++	struct timer_group_priv *priv = container_of(handle,
++			struct timer_group_priv, timer[handle->num]);
++	struct cascade_priv *casc_priv = NULL;
++
++	u64 ticks;
++	u64 tmp_ticks;
++
++	casc_priv = priv->timer[handle->num].cascade_handle;
++	if (casc_priv) {
++		tmp_ticks = in_be32(&priv->regs[handle->num].gtccr);
++		ticks = tmp_ticks * (u64)MAX_TICKS_CASCADE;
++		tmp_ticks = in_be32(&priv->regs[handle->num - 1].gtccr);
++		ticks += tmp_ticks;
++	} else {
++		ticks = in_be32(&priv->regs[handle->num].gtccr);
++	}
++
++	convert_ticks_to_time(priv, ticks, time);
++}
++EXPORT_SYMBOL(mpic_get_remain_time);
++
++/**
++ * mpic_free_timer - free hardware timer
++ * @handle: the timer to be removed.
++ *
++ * Free the timer.
++ *
++ * Note: can not be used in interrupt context.
++ */
++void mpic_free_timer(struct mpic_timer *handle)
++{
++	struct timer_group_priv *priv = container_of(handle,
++			struct timer_group_priv, timer[handle->num]);
++
++	struct cascade_priv *casc_priv = NULL;
++	unsigned long flags;
++
++	mpic_stop_timer(handle);
++
++	casc_priv = priv->timer[handle->num].cascade_handle;
++
++	free_irq(priv->timer[handle->num].irq, priv->timer[handle->num].dev);
++
++	spin_lock_irqsave(&priv->lock, flags);
++	if (casc_priv) {
++		u32 tmp;
++		tmp = casc_priv->tcr_value | (casc_priv->tcr_value <<
++					MPIC_TIMER_TCR_ROVR_OFFSET);
++		clrbits32(priv->group_tcr, tmp);
++		priv->idle |= casc_priv->cascade_map;
++		priv->timer[handle->num].cascade_handle = NULL;
++	} else {
++		priv->idle |= TIMER_OFFSET(handle->num);
++	}
++	spin_unlock_irqrestore(&priv->lock, flags);
++}
++EXPORT_SYMBOL(mpic_free_timer);
++
++/**
++ * mpic_request_timer - get a hardware timer
++ * @fn: interrupt handler function
++ * @dev: callback function of the data
++ * @time: time for timer
++ *
++ * This executes the "request_irq", returning NULL
++ * else "handle" on success.
++ */
++struct mpic_timer *mpic_request_timer(irq_handler_t fn, void *dev,
++					const struct timeval *time)
++{
++	struct mpic_timer *allocated_timer = NULL;
++
++	int ret = 0;
++
++	if (list_empty(&timer_group_list))
++		return NULL;
++
++	if ((time->tv_sec + time->tv_usec) == 0 ||
++			time->tv_sec < 0 || time->tv_usec < 0)
++		return NULL;
++
++	if (time->tv_usec > ONE_SECOND)
++		return NULL;
++
++	allocated_timer = get_timer(time);
++	if (!allocated_timer)
++		return NULL;
++
++	ret = request_irq(allocated_timer->irq, fn,
++			IRQF_TRIGGER_LOW | IRQF_NO_SUSPEND,
++			"global-timer", dev);
++	if (ret) {
++		mpic_free_timer(allocated_timer);
++		return NULL;
++	}
++
++	allocated_timer->dev = dev;
++
++	return allocated_timer;
++}
++EXPORT_SYMBOL(mpic_request_timer);
++
++static int timer_group_get_freq(struct device_node *np,
++			struct timer_group_priv *priv)
++{
++	if (priv->flags & FSL_GLOBAL_TIMER) {
++		priv->ccbfreq = fsl_get_sys_freq();
++		priv->timerfreq = priv->ccbfreq;
++	} else {
++		const u32 *timerfreq;
++		int size;
++
++		timerfreq = of_get_property(np, "clock-frequency", &size);
++		if (!timerfreq || size != sizeof(*timerfreq) ||
++				*timerfreq == 0)
++			priv->timerfreq = 0;
++		else
++			priv->timerfreq = *timerfreq;
++	}
++
++	if (priv->timerfreq == 0)
++		return -EINVAL;
++
++	return 0;
++}
++
++static int timer_group_get_irq(struct device_node *np,
++		struct timer_group_priv *priv)
++{
++	const u32 all_timer[] = { 0, TIMERS_PER_GROUP };
++	const u32 *p = NULL;
++	u32 offset;
++	u32 count;
++
++	unsigned int i = 0;
++	unsigned int j = 0;
++	unsigned int irq_index = 0;
++	int irq = 0;
++	int len = 0;
++
++	p = of_get_property(np, "available-ranges", &len);
++	if (!p)
++		p = of_get_property(np, "fsl,available-ranges", &len);
++
++	if (p && len % (2 * sizeof(u32)) != 0) {
++		pr_err("%s: malformed available-ranges property.\n",
++				np->full_name);
++		return -EINVAL;
++	}
++
++	if (!p) {
++		p = all_timer;
++		len = sizeof(all_timer);
++	}
++
++	len /= 2 * sizeof(u32);
++
++	for (i = 0; i < len; i++) {
++		offset = p[i * 2];
++		count = p[i * 2 + 1];
++		for (j = 0; j < count; j++) {
++			irq = irq_of_parse_and_map(np, irq_index);
++			if (!irq)
++				break;
++			/* Set timer idle */
++			priv->idle |= TIMER_OFFSET((offset + j));
++			priv->timer[offset + j].irq = irq;
++			priv->timer[offset + j].num = offset + j;
++			irq_index++;
++		}
++	}
++
++	return 0;
++}
++
++static void timer_group_init(struct device_node *np)
++{
++	struct timer_group_priv *priv = NULL;
++	unsigned int i = 0;
++	int ret = 0;
++
++	priv = kzalloc(sizeof(struct timer_group_priv), GFP_KERNEL);
++	if (!priv) {
++		pr_err("%s: cannot allocate memory for group.\n",
++				np->full_name);
++		return;
++	}
++
++	if (of_device_is_compatible(np, "fsl,mpic-global-timer"))
++		priv->flags |= FSL_GLOBAL_TIMER;
++
++	priv->regs = of_iomap(np, i++);
++	if (!priv->regs) {
++		pr_err("%s: cannot ioremap timer register address.\n",
++				np->full_name);
++		goto out;
++	}
++
++	if (priv->flags & FSL_GLOBAL_TIMER) {
++		priv->group_tcr = of_iomap(np, i++);
++		if (!priv->group_tcr) {
++			pr_err("%s: cannot ioremap tcr address.\n",
++					np->full_name);
++			goto out;
++		}
++	}
++
++	ret = timer_group_get_freq(np, priv);
++	if (ret < 0)
++		goto out;
++
++	ret = timer_group_get_irq(np, priv);
++	if (ret < 0)
++		goto out;
++
++	spin_lock_init(&priv->lock);
++
++	/* Init FSL timer hardware */
++	if (priv->flags & FSL_GLOBAL_TIMER)
++		setbits32(priv->group_tcr, MPIC_TIMER_TCR_CLKDIV_64);
++
++	list_add_tail(&priv->node, &timer_group_list);
++
++	return;
++
++out:
++	if (priv->regs)
++		iounmap(priv->regs);
++
++	if (priv->group_tcr)
++		iounmap(priv->group_tcr);
++
++	kfree(priv);
++}
++
++static const struct of_device_id mpic_timer_ids[] = {
++	{ .compatible = "fsl,mpic-global-timer", },
++	{},
++};
++
++static int __init mpic_timer_init(void)
++{
++	struct device_node *np = NULL;
++
++	for_each_matching_node(np, mpic_timer_ids)
++		timer_group_init(np);
++
++	if (list_empty(&timer_group_list))
++		return -ENODEV;
++
++	return 0;
++}
++subsys_initcall(mpic_timer_init);
+-- 
+1.7.9.5
