@@ -2,14 +2,16 @@ Return-Path: <abounine@idt.com>
 Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C8A0A2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 06:18:02 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id D22292C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 06:18:03 +1000 (EST)
 From: Alexandre Bounine <alexandre.bounine@idt.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/5] rapidio: patches to support multiple master ports
-Date: Wed,  3 Oct 2012 15:18:38 -0400
-Message-Id: <1349291923-22860-1-git-send-email-alexandre.bounine@idt.com>
+Subject: [PATCH 2/5] rapidio: use device lists handling on per-net basis
+Date: Wed,  3 Oct 2012 15:18:40 -0400
+Message-Id: <1349291923-22860-3-git-send-email-alexandre.bounine@idt.com>
+In-Reply-To: <1349291923-22860-1-git-send-email-alexandre.bounine@idt.com>
+References: <1349291923-22860-1-git-send-email-alexandre.bounine@idt.com>
 Cc: Alexandre Bounine <alexandre.bounine@idt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,95 +22,191 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following set of patches provides modifications targeting support of multiple
-RapidIO master port (mport) devices on a CPU-side of RapidIO-capable board.
-While the RapidIO subsystem code has definitions suitable for
-multi-controller/multi-net support, the existing implementation cannot be
-considered ready for multiple mport configurations.   
+Modify handling of device lists to resolve issues caused by using single global
+list of RIO devices during enumeration/discovery. The most common sign of
+existing issue is incorrect contents of switch routing tables in systems with
+multiple mport controllers while single-port configuration performs as expected.
 
-=========== NOTES: =============
-a) The patches below do not address RapidIO side view of multiport processing
-elements defined in Part 6 of RapidIO spec Rev.2.1 (section 6.4.1).
-These devices have Base Device ID CSR (0x60) and Component Tag CSR (0x6C) shared
-by all SRIO ports. For example, Freescale's P4080, P3041 and P5020 have a
-dual-port SRIO controller implemented according the specification.
-Enumeration/discovery of such devices from RapidIO side may require
-device-specific fixups.
-b) Devices referenced above may also require implementation specific code to setup
-a host device ID for mport device. These operations are not addressed by patches
-in this package. 
-=================================
+Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Matt Porter <mporter@kernel.crashing.org>
+Cc: Li Yang <leoli@freescale.com>
+---
+ drivers/rapidio/rio-scan.c |   60 ++++++++++++++++++++++---------------------
+ include/linux/rio.h        |    1 +
+ 2 files changed, 32 insertions(+), 29 deletions(-)
 
-Details about provided patches:
-
-1. Fix blocking wait for discovery ready
-
-While it does not happen on PowerPC based platforms, there is possibility of
-stalled CPU warning dump on x86 based platforms that run RapidIO discovery
-process if they wait too long for being enumerated.
-Currently users can avoid it by disabling the soft-lockup detector using
-"nosoftlockup" kernel parameter OR by ensuring that enumeration is completed
-before soft-lockup is detected.
-
-This patch eliminates blocking wait and keeps a scheduler running.
-It also is required for patch 3 below which introduces asynchronous discovery
-process.
-
-2. Use device lists handling on per-net basis
-
-This patch allows to correctly support multiple RapidIO nets and resolves possible
-issues caused by using single global list of devices during RapidIO system
-enumeration/discovery. The most common sign of existing issue is incorrect
-contents of switch routing tables in systems with multiple mport controllers
-while single-port configuration performs as expected.
-
-The patch does not eliminate the global RapidIO device list but changes some
-routines in enumeration/discovery to use per-net device lists instead. This way
-compatibility with upper layer RIO routines is preserved.
+diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
+index 0a27253..8b7c4bc 100644
+--- a/drivers/rapidio/rio-scan.c
++++ b/drivers/rapidio/rio-scan.c
+@@ -38,7 +38,6 @@
+ #include "rio.h"
  
-3. Run discovery as an asynchronous process
-
-This patch modifies RapidIO initialization routine to asynchronously run the
-discovery process for each corresponding mport. This allows having an arbitrary
-order of enumerating and discovering mports without creating a deadlock situation
-if an enumerator port was registered after a discovering one.
-
-On boards with multiple discovering mports it also eliminates order dependency
-between mports and may reduce total time of RapidIO subsystem initialization.
-
-Making netID matching to mportID ensures consistent netID assignment in
-multiport RapidIO systems with asynchronous discovery process (global counter
-implementation is affected by race between threads).
-
-4. Rework RIONET to support multiple RIO master ports
-
-In the current version of the driver rionet_probe() has comment
-"XXX Make multi-net safe". Now it is a good time to address this comment.
-
-This patch makes RIONET driver multi-net safe/capable by introducing per-net
-lists of RapidIO network peers. It also enables to register network adapters for
-all available mport devices.
-
-5. Add destination ID allocation mechanism
-
-The patch replaces a single global destination ID counter with per-net allocation
-mechanism to allow independent destID management for each available RapidIO
-network. Using bitmap based mechanism instead of counters allows destination ID
-release and reuse in systems that support hot-swap.
-
-
-Alexandre Bounine (5):
-  rapidio: fix blocking wait for discovery ready
-  rapidio: use device lists handling on per-net basis
-  rapidio: run discovery as an asynchronous process
-  rapidio/rionet: rework to support multiple RIO master ports
-  rapidio: add destination ID allocation mechanism
-
- drivers/net/rionet.c       |  133 ++++++++++---------
- drivers/rapidio/rio-scan.c |  326 +++++++++++++++++++++++++++++--------------
- drivers/rapidio/rio.c      |   51 +++++++-
- include/linux/rio.h        |   10 ++
- 4 files changed, 349 insertions(+), 171 deletions(-)
-
+ LIST_HEAD(rio_devices);
+-static LIST_HEAD(rio_switches);
+ 
+ static void rio_init_em(struct rio_dev *rdev);
+ 
+@@ -104,14 +103,15 @@ static void rio_local_set_device_id(struct rio_mport *port, u16 did)
+ 
+ /**
+  * rio_clear_locks- Release all host locks and signal enumeration complete
+- * @port: Master port to issue transaction
++ * @net: RIO network to run on
+  *
+  * Marks the component tag CSR on each device with the enumeration
+  * complete flag. When complete, it then release the host locks on
+  * each device. Returns 0 on success or %-EINVAL on failure.
+  */
+-static int rio_clear_locks(struct rio_mport *port)
++static int rio_clear_locks(struct rio_net *net)
+ {
++	struct rio_mport *port = net->hport;
+ 	struct rio_dev *rdev;
+ 	u32 result;
+ 	int ret = 0;
+@@ -126,7 +126,7 @@ static int rio_clear_locks(struct rio_mport *port)
+ 		       result);
+ 		ret = -EINVAL;
+ 	}
+-	list_for_each_entry(rdev, &rio_devices, global_list) {
++	list_for_each_entry(rdev, &net->devices, net_list) {
+ 		rio_write_config_32(rdev, RIO_HOST_DID_LOCK_CSR,
+ 				    port->host_deviceid);
+ 		rio_read_config_32(rdev, RIO_HOST_DID_LOCK_CSR, &result);
+@@ -479,7 +479,7 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
+ 			rswitch->clr_table(port, destid, hopcount,
+ 					   RIO_GLOBAL_TABLE);
+ 
+-		list_add_tail(&rswitch->node, &rio_switches);
++		list_add_tail(&rswitch->node, &net->switches);
+ 
+ 	} else {
+ 		if (do_enum)
+@@ -1058,6 +1058,7 @@ static struct rio_net __devinit *rio_alloc_net(struct rio_mport *port)
+ 	if (net) {
+ 		INIT_LIST_HEAD(&net->node);
+ 		INIT_LIST_HEAD(&net->devices);
++		INIT_LIST_HEAD(&net->switches);
+ 		INIT_LIST_HEAD(&net->mports);
+ 		list_add_tail(&port->nnode, &net->mports);
+ 		net->hport = port;
+@@ -1068,24 +1069,24 @@ static struct rio_net __devinit *rio_alloc_net(struct rio_mport *port)
+ 
+ /**
+  * rio_update_route_tables- Updates route tables in switches
+- * @port: Master port associated with the RIO network
++ * @net: RIO network to run update on
+  *
+  * For each enumerated device, ensure that each switch in a system
+  * has correct routing entries. Add routes for devices that where
+  * unknown dirung the first enumeration pass through the switch.
+  */
+-static void rio_update_route_tables(struct rio_mport *port)
++static void rio_update_route_tables(struct rio_net *net)
+ {
+ 	struct rio_dev *rdev, *swrdev;
+ 	struct rio_switch *rswitch;
+ 	u8 sport;
+ 	u16 destid;
+ 
+-	list_for_each_entry(rdev, &rio_devices, global_list) {
++	list_for_each_entry(rdev, &net->devices, net_list) {
+ 
+ 		destid = rdev->destid;
+ 
+-		list_for_each_entry(rswitch, &rio_switches, node) {
++		list_for_each_entry(rswitch, &net->switches, node) {
+ 
+ 			if (rio_is_switch(rdev)	&& (rdev->rswitch == rswitch))
+ 				continue;
+@@ -1181,12 +1182,12 @@ int __devinit rio_enum_mport(struct rio_mport *mport)
+ 			printk(KERN_INFO
+ 			       "RIO: master port %d device has lost enumeration to a remote host\n",
+ 			       mport->id);
+-			rio_clear_locks(mport);
++			rio_clear_locks(net);
+ 			rc = -EBUSY;
+ 			goto out;
+ 		}
+-		rio_update_route_tables(mport);
+-		rio_clear_locks(mport);
++		rio_update_route_tables(net);
++		rio_clear_locks(net);
+ 		rio_pw_enable(mport, 1);
+ 	} else {
+ 		printk(KERN_INFO "RIO: master port %d link inactive\n",
+@@ -1200,33 +1201,34 @@ int __devinit rio_enum_mport(struct rio_mport *mport)
+ 
+ /**
+  * rio_build_route_tables- Generate route tables from switch route entries
++ * @net: RIO network to run route tables scan on
+  *
+  * For each switch device, generate a route table by copying existing
+  * route entries from the switch.
+  */
+-static void rio_build_route_tables(void)
++static void rio_build_route_tables(struct rio_net *net)
+ {
++	struct rio_switch *rswitch;
+ 	struct rio_dev *rdev;
+ 	int i;
+ 	u8 sport;
+ 
+-	list_for_each_entry(rdev, &rio_devices, global_list)
+-		if (rio_is_switch(rdev)) {
+-			rio_lock_device(rdev->net->hport, rdev->destid,
+-					rdev->hopcount, 1000);
+-			for (i = 0;
+-			     i < RIO_MAX_ROUTE_ENTRIES(rdev->net->hport->sys_size);
+-			     i++) {
+-				if (rio_route_get_entry(rdev,
+-					RIO_GLOBAL_TABLE, i, &sport, 0) < 0)
+-					continue;
+-				rdev->rswitch->route_table[i] = sport;
+-			}
++	list_for_each_entry(rswitch, &net->switches, node) {
++		rdev = sw_to_rio_dev(rswitch);
+ 
+-			rio_unlock_device(rdev->net->hport,
+-					  rdev->destid,
+-					  rdev->hopcount);
++		rio_lock_device(net->hport, rdev->destid,
++				rdev->hopcount, 1000);
++		for (i = 0;
++		     i < RIO_MAX_ROUTE_ENTRIES(net->hport->sys_size);
++		     i++) {
++			if (rio_route_get_entry(rdev, RIO_GLOBAL_TABLE,
++						i, &sport, 0) < 0)
++				continue;
++			rswitch->route_table[i] = sport;
+ 		}
++
++		rio_unlock_device(net->hport, rdev->destid, rdev->hopcount);
++	}
+ }
+ 
+ /**
+@@ -1284,7 +1286,7 @@ enum_done:
+ 			goto bail;
+ 		}
+ 
+-		rio_build_route_tables();
++		rio_build_route_tables(net);
+ 	}
+ 
+ 	return 0;
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index 4d1a104..7ea02c4 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -275,6 +275,7 @@ struct rio_mport {
+ struct rio_net {
+ 	struct list_head node;	/* node in list of networks */
+ 	struct list_head devices;	/* list of devices in this net */
++	struct list_head switches;	/* list of switches in this net */
+ 	struct list_head mports;	/* list of ports accessing net */
+ 	struct rio_mport *hport;	/* primary port for accessing net */
+ 	unsigned char id;	/* RIO network ID */
 -- 
 1.7.8.4
