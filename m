@@ -1,15 +1,15 @@
 Return-Path: <akpm@linux-foundation.org>
 Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id B20F22C031A
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 08:29:55 +1000 (EST)
-Date: Wed, 3 Oct 2012 15:29:53 -0700
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 896AC2C0324
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 08:36:27 +1000 (EST)
+Date: Wed, 3 Oct 2012 15:36:25 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Alexandre Bounine <alexandre.bounine@idt.com>
-Subject: Re: [PATCH 3/5] rapidio: run discovery as an asynchronous process
-Message-Id: <20121003152953.79aecece.akpm@linux-foundation.org>
-In-Reply-To: <1349291923-22860-4-git-send-email-alexandre.bounine@idt.com>
+Subject: Re: [PATCH 5/5] rapidio: add destination ID allocation mechanism
+Message-Id: <20121003153625.39fd5af7.akpm@linux-foundation.org>
+In-Reply-To: <1349291923-22860-6-git-send-email-alexandre.bounine@idt.com>
 References: <1349291923-22860-1-git-send-email-alexandre.bounine@idt.com>
- <1349291923-22860-4-git-send-email-alexandre.bounine@idt.com>
+ <1349291923-22860-6-git-send-email-alexandre.bounine@idt.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
@@ -22,103 +22,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  3 Oct 2012 15:18:41 -0400
+On Wed,  3 Oct 2012 15:18:43 -0400
 Alexandre Bounine <alexandre.bounine@idt.com> wrote:
 
-> Modify mport initialization routine to run the RapidIO discovery process
-> asynchronously. This allows to have an arbitrary order of enumerating and
-> discovering ports in systems with multiple RapidIO controllers without
-> creating a deadlock situation if enumerator port is registered after a
-> discovering one.
-> 
-> Making netID matching to mportID ensures consistent net ID assignment in
-> multiport RapidIO systems with asynchronous discovery process (global counter
-> implementation is affected by race between threads).
+> Replace the single global destination ID counter with per-net allocation
+> mechanism to allow independent destID management for each available RapidIO
+> network. Using bitmap based mechanism instead of counters allows
+> destination ID release and reuse in systems that support hot-swap.
 > 
 >
 > ...
 >
-> +static void __devinit disc_work_handler(struct work_struct *_work)
+> +static u16 rio_destid_alloc(struct rio_net *net)
 > +{
-> +	struct rio_disc_work *work = container_of(_work,
-> +						  struct rio_disc_work, work);
-
-There's a nice simple way to avoid such ugliness:
-
---- a/drivers/rapidio/rio.c~rapidio-run-discovery-as-an-asynchronous-process-fix
-+++ a/drivers/rapidio/rio.c
-@@ -1269,9 +1269,9 @@ struct rio_disc_work {
- 
- static void __devinit disc_work_handler(struct work_struct *_work)
- {
--	struct rio_disc_work *work = container_of(_work,
--						  struct rio_disc_work, work);
-+	struct rio_disc_work *work;
- 
-+	work = container_of(_work, struct rio_disc_work, work);
- 	pr_debug("RIO: discovery work for mport %d %s\n",
- 		 work->mport->id, work->mport->name);
- 	rio_disc_mport(work->mport);
-_
-
-> +	pr_debug("RIO: discovery work for mport %d %s\n",
-> +		 work->mport->id, work->mport->name);
-> +	rio_disc_mport(work->mport);
+> +	int destid;
+> +	struct rio_id_table *idtab = &net->destid_table;
 > +
-> +	kfree(work);
+> +	spin_lock(&idtab->lock);
+> +	destid = find_next_zero_bit(idtab->table, idtab->max, idtab->next);
+> +	if (destid >= idtab->max)
+> +		destid = find_first_zero_bit(idtab->table, idtab->max);
+> +
+> +	if (destid < idtab->max) {
+> +		idtab->next = destid + 1;
+> +		if (idtab->next >= idtab->max)
+> +			idtab->next = 0;
+> +		set_bit(destid, idtab->table);
+> +		destid += idtab->start;
+> +	} else
+> +		destid = RIO_INVALID_DESTID;
+> +
+> +	spin_unlock(&idtab->lock);
+> +	return (u16)destid;
+> +}
+
+This is round-robin rather than the simpler first-fit, and this reader
+doesn't know why.  Suggest the addition of a code comment explaining
+this decision.
+
+> +/*
+> + * rio_destid_reserve - Reserve the specivied destID
+> + * net: RIO network
+> + * destid: destID to reserve
+> + *
+> + * Tries to reserve the specified destID.
+> + * Returns 0 if successfull.
+> + */
+> +static int rio_destid_reserve(struct rio_net *net, u16 destid)
+> +{
+> +	int oldbit;
+> +	struct rio_id_table *idtab = &net->destid_table;
+> +
+> +	destid -= idtab->start;
+> +	spin_lock(&idtab->lock);
+> +	oldbit = test_and_set_bit(destid, idtab->table);
+> +	spin_unlock(&idtab->lock);
+> +	return oldbit;
 > +}
 > +
->  int __devinit rio_init_mports(void)
+> +/*
+> + * rio_destid_free - free a previously allocated destID
+> + * net: RIO network
+> + * destid: destID to free
+> + *
+> + * Makes the specified destID available for use.
+> + */
+> +static void rio_destid_free(struct rio_net *net, u16 destid)
+> +{
+> +	struct rio_id_table *idtab = &net->destid_table;
+> +
+> +	destid -= idtab->start;
+> +	spin_lock(&idtab->lock);
+> +	clear_bit(destid, idtab->table);
+> +	spin_unlock(&idtab->lock);
+> +}
+> +
+> +/*
+> + * rio_destid_first - return first destID in use
+> + * net: RIO network
+> + */
+> +static u16 rio_destid_first(struct rio_net *net)
+> +{
+> +	int destid;
+> +	struct rio_id_table *idtab = &net->destid_table;
+> +
+> +	spin_lock(&idtab->lock);
+> +	destid = find_first_bit(idtab->table, idtab->max);
+> +	if (destid >= idtab->max)
+> +		destid = RIO_INVALID_DESTID;
+> +	else
+> +		destid += idtab->start;
+> +	spin_unlock(&idtab->lock);
+> +	return (u16)destid;
+> +}
+> +
+> +/*
+> + * rio_destid_next - return next destID in use
+> + * net: RIO network
+> + * from: destination ID from which search shall continue
+> + */
+
+All these code comments look like kerneldoc, but they aren't.  kerneldoc
+uses /** and identifiers have a leading `@'.  And that's OK - one
+doesn't *have* to use kerneldoc.  But a lot of
+drivers/rapidio/rio-scan.c is already using kerneldoc so the
+inconsistency is odd.
+
+>
+> ...
+>
+> -static struct rio_net __devinit *rio_alloc_net(struct rio_mport *port)
+> +static struct rio_net __devinit *rio_alloc_net(struct rio_mport *port,
+> +					       int do_enum, u16 start)
 >  {
->  	struct rio_mport *port;
-> +	struct rio_disc_work *work;
-> +	int no_disc = 0;
+>  	struct rio_net *net;
 >  
->  	list_for_each_entry(port, &rio_mports, node) {
->  		if (port->host_deviceid >= 0)
->  			rio_enum_mport(port);
-> -		else
-> -			rio_disc_mport(port);
-> +		else if (!no_disc) {
-> +			if (!rio_wq) {
-> +				rio_wq = alloc_workqueue("riodisc", 0, 0);
-> +				if (!rio_wq) {
-> +					pr_err("RIO: unable allocate rio_wq\n");
-> +					no_disc = 1;
-> +					continue;
-> +				}
-> +			}
-> +
-> +			work = kzalloc(sizeof *work, GFP_KERNEL);
-> +			if (!work) {
-> +				pr_err("RIO: no memory for work struct\n");
-> +				no_disc = 1;
-> +				continue;
-> +			}
-> +
-> +			work->mport = port;
-> +			INIT_WORK(&work->work, disc_work_handler);
-> +			queue_work(rio_wq, &work->work);
+>  	net = kzalloc(sizeof(struct rio_net), GFP_KERNEL);
+> +	if (net && do_enum) {
+> +		net->destid_table.table = kzalloc(
+> +			BITS_TO_LONGS(RIO_MAX_ROUTE_ENTRIES(port->sys_size)) *
+> +			sizeof(long),
+> +			GFP_KERNEL);
+
+kcalloc() would be idiomatic here.
+
+> +		if (net->destid_table.table == NULL) {
+> +			pr_err("RIO: failed to allocate destID table\n");
+> +			kfree(net);
+> +			net = NULL;
+> +		} else {
+> +			net->destid_table.start = start;
+> +			net->destid_table.next = 0;
+> +			net->destid_table.max =
+> +					RIO_MAX_ROUTE_ENTRIES(port->sys_size);
+> +			spin_lock_init(&net->destid_table.lock);
 > +		}
 > +	}
-
-I'm having a lot of trouble with `no_disc'.  afacit what it does is to
-cease running async discovery for any remaining devices if the workqueue
-allocation failed (vaguely reasonable) or if the allocation of a single
-work item failed (incomprehensible).
-
-But if we don't run discovery, the subsystem is permanently busted for
-at least some devices, isn't it?
-
-And this code is basically untestable unless the programmer does
-deliberate fault injection, which makes it pretty much unmaintainable.
-
-So...  if I haven't totally misunderstood, I suggest a rethink is in
-order?
-
-> +	if (rio_wq) {
-> +		pr_debug("RIO: flush discovery workqueue\n");
-> +		flush_workqueue(rio_wq);
-> +		pr_debug("RIO: flush discovery workqueue finished\n");
-> +		destroy_workqueue(rio_wq);
->  	}
+> +
+>
+> ...
+>
