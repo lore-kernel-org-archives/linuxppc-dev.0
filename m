@@ -2,17 +2,19 @@ Return-Path: <abounine@idt.com>
 Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4BD0B2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 06:18:05 +1000 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8CEF02C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 06:18:08 +1000 (EST)
 From: Alexandre Bounine <alexandre.bounine@idt.com>
 To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 5/5] rapidio: add destination ID allocation mechanism
-Date: Wed,  3 Oct 2012 15:18:43 -0400
-Message-Id: <1349291923-22860-6-git-send-email-alexandre.bounine@idt.com>
+Subject: [PATCH 4/5] rapidio/rionet: rework to support multiple RIO master
+ ports
+Date: Wed,  3 Oct 2012 15:18:42 -0400
+Message-Id: <1349291923-22860-5-git-send-email-alexandre.bounine@idt.com>
 In-Reply-To: <1349291923-22860-1-git-send-email-alexandre.bounine@idt.com>
 References: <1349291923-22860-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+Cc: Alexandre Bounine <alexandre.bounine@idt.com>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,365 +24,306 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace the single global destination ID counter with per-net allocation
-mechanism to allow independent destID management for each available RapidIO
-network. Using bitmap based mechanism instead of counters allows
-destination ID release and reuse in systems that support hot-swap.
+Make RIONET driver multi-net safe/capable by introducing per-net lists of
+RapidIO network peers. Rework registration of network adapters to support
+all available RIO master port devices.
 
 Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
 Cc: Matt Porter <mporter@kernel.crashing.org>
 Cc: Li Yang <leoli@freescale.com>
+Cc: David S. Miller <davem@davemloft.net>
 ---
- drivers/rapidio/rio-scan.c |  205 ++++++++++++++++++++++++++++++++++++--------
- include/linux/rio.h        |    9 ++
- 2 files changed, 179 insertions(+), 35 deletions(-)
+ drivers/net/rionet.c |  133 ++++++++++++++++++++++++++------------------------
+ 1 files changed, 70 insertions(+), 63 deletions(-)
 
-diff --git a/drivers/rapidio/rio-scan.c b/drivers/rapidio/rio-scan.c
-index 745670f..48e9041 100644
---- a/drivers/rapidio/rio-scan.c
-+++ b/drivers/rapidio/rio-scan.c
-@@ -54,6 +54,114 @@ static int rio_mport_phys_table[] = {
- 	-1,
+diff --git a/drivers/net/rionet.c b/drivers/net/rionet.c
+index 1470d3e..d8b9b1e 100644
+--- a/drivers/net/rionet.c
++++ b/drivers/net/rionet.c
+@@ -26,7 +26,7 @@
+ #include <linux/ethtool.h>
+ 
+ #define DRV_NAME        "rionet"
+-#define DRV_VERSION     "0.2"
++#define DRV_VERSION     "0.3"
+ #define DRV_AUTHOR      "Matt Porter <mporter@kernel.crashing.org>"
+ #define DRV_DESC        "Ethernet over RapidIO"
+ 
+@@ -47,8 +47,7 @@ MODULE_LICENSE("GPL");
+ 
+ #define RIONET_TX_RING_SIZE	CONFIG_RIONET_TX_SIZE
+ #define RIONET_RX_RING_SIZE	CONFIG_RIONET_RX_SIZE
+-
+-static LIST_HEAD(rionet_peers);
++#define RIONET_MAX_NETS		8
+ 
+ struct rionet_private {
+ 	struct rio_mport *mport;
+@@ -69,17 +68,14 @@ struct rionet_peer {
+ 	struct resource *res;
  };
  
-+
-+/*
-+ * rio_destid_alloc - Allocate next available destID for given network
-+ * net: RIO network
-+ *
-+ * Returns next available device destination ID for the specified RIO network.
-+ * Marks allocated ID as one in use.
-+ * Returns RIO_INVALID_DESTID if new destID is not available.
-+ */
-+static u16 rio_destid_alloc(struct rio_net *net)
-+{
-+	int destid;
-+	struct rio_id_table *idtab = &net->destid_table;
-+
-+	spin_lock(&idtab->lock);
-+	destid = find_next_zero_bit(idtab->table, idtab->max, idtab->next);
-+	if (destid >= idtab->max)
-+		destid = find_first_zero_bit(idtab->table, idtab->max);
-+
-+	if (destid < idtab->max) {
-+		idtab->next = destid + 1;
-+		if (idtab->next >= idtab->max)
-+			idtab->next = 0;
-+		set_bit(destid, idtab->table);
-+		destid += idtab->start;
-+	} else
-+		destid = RIO_INVALID_DESTID;
-+
-+	spin_unlock(&idtab->lock);
-+	return (u16)destid;
-+}
-+
-+/*
-+ * rio_destid_reserve - Reserve the specivied destID
-+ * net: RIO network
-+ * destid: destID to reserve
-+ *
-+ * Tries to reserve the specified destID.
-+ * Returns 0 if successfull.
-+ */
-+static int rio_destid_reserve(struct rio_net *net, u16 destid)
-+{
-+	int oldbit;
-+	struct rio_id_table *idtab = &net->destid_table;
-+
-+	destid -= idtab->start;
-+	spin_lock(&idtab->lock);
-+	oldbit = test_and_set_bit(destid, idtab->table);
-+	spin_unlock(&idtab->lock);
-+	return oldbit;
-+}
-+
-+/*
-+ * rio_destid_free - free a previously allocated destID
-+ * net: RIO network
-+ * destid: destID to free
-+ *
-+ * Makes the specified destID available for use.
-+ */
-+static void rio_destid_free(struct rio_net *net, u16 destid)
-+{
-+	struct rio_id_table *idtab = &net->destid_table;
-+
-+	destid -= idtab->start;
-+	spin_lock(&idtab->lock);
-+	clear_bit(destid, idtab->table);
-+	spin_unlock(&idtab->lock);
-+}
-+
-+/*
-+ * rio_destid_first - return first destID in use
-+ * net: RIO network
-+ */
-+static u16 rio_destid_first(struct rio_net *net)
-+{
-+	int destid;
-+	struct rio_id_table *idtab = &net->destid_table;
-+
-+	spin_lock(&idtab->lock);
-+	destid = find_first_bit(idtab->table, idtab->max);
-+	if (destid >= idtab->max)
-+		destid = RIO_INVALID_DESTID;
-+	else
-+		destid += idtab->start;
-+	spin_unlock(&idtab->lock);
-+	return (u16)destid;
-+}
-+
-+/*
-+ * rio_destid_next - return next destID in use
-+ * net: RIO network
-+ * from: destination ID from which search shall continue
-+ */
-+static u16 rio_destid_next(struct rio_net *net, u16 from)
-+{
-+	int destid;
-+	struct rio_id_table *idtab = &net->destid_table;
-+
-+	spin_lock(&idtab->lock);
-+	destid = find_next_bit(idtab->table, idtab->max, from);
-+	if (destid >= idtab->max)
-+		destid = RIO_INVALID_DESTID;
-+	else
-+		destid += idtab->start;
-+	spin_unlock(&idtab->lock);
-+	return (u16)destid;
-+}
-+
- /**
-  * rio_get_device_id - Get the base/extended device id for a device
-  * @port: RIO master port
-@@ -171,10 +279,6 @@ static int rio_enum_host(struct rio_mport *port)
+-static int rionet_check = 0;
+-static int rionet_capable = 1;
++struct rionet_net {
++	struct net_device *ndev;
++	struct list_head peers;
++	struct rio_dev **active;
++	int nact;	/* number of active peers */
++};
  
- 	/* Set master port destid and init destid ctr */
- 	rio_local_set_device_id(port, port->host_deviceid);
--
--	if (next_destid == port->host_deviceid)
--		next_destid++;
--
- 	return 0;
+-/*
+- * This is a fast lookup table for translating TX
+- * Ethernet packets into a destination RIO device. It
+- * could be made into a hash table to save memory depending
+- * on system trade-offs.
+- */
+-static struct rio_dev **rionet_active;
+-static int nact;	/* total number of active rionet peers */
++static struct rionet_net nets[RIONET_MAX_NETS];
+ 
+ #define is_rionet_capable(src_ops, dst_ops)			\
+ 			((src_ops & RIO_SRC_OPS_DATA_MSG) &&	\
+@@ -185,7 +181,7 @@ static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 	}
+ 
+ 	if (is_multicast_ether_addr(eth->h_dest))
+-		add_num = nact;
++		add_num = nets[rnet->mport->id].nact;
+ 
+ 	if ((rnet->tx_cnt + add_num) > RIONET_TX_RING_SIZE) {
+ 		netif_stop_queue(ndev);
+@@ -197,19 +193,21 @@ static int rionet_start_xmit(struct sk_buff *skb, struct net_device *ndev)
+ 
+ 	if (is_multicast_ether_addr(eth->h_dest)) {
+ 		int count = 0;
++
+ 		for (i = 0; i < RIO_MAX_ROUTE_ENTRIES(rnet->mport->sys_size);
+ 				i++)
+-			if (rionet_active[i]) {
++			if (nets[rnet->mport->id].active[i]) {
+ 				rionet_queue_tx_msg(skb, ndev,
+-						    rionet_active[i]);
++					nets[rnet->mport->id].active[i]);
+ 				if (count)
+ 					atomic_inc(&skb->users);
+ 				count++;
+ 			}
+ 	} else if (RIONET_MAC_MATCH(eth->h_dest)) {
+ 		destid = RIONET_GET_DESTID(eth->h_dest);
+-		if (rionet_active[destid])
+-			rionet_queue_tx_msg(skb, ndev, rionet_active[destid]);
++		if (nets[rnet->mport->id].active[destid])
++			rionet_queue_tx_msg(skb, ndev,
++					nets[rnet->mport->id].active[destid]);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&rnet->tx_lock, flags);
+@@ -228,19 +226,21 @@ static void rionet_dbell_event(struct rio_mport *mport, void *dev_id, u16 sid, u
+ 		printk(KERN_INFO "%s: doorbell sid %4.4x tid %4.4x info %4.4x",
+ 		       DRV_NAME, sid, tid, info);
+ 	if (info == RIONET_DOORBELL_JOIN) {
+-		if (!rionet_active[sid]) {
+-			list_for_each_entry(peer, &rionet_peers, node) {
++		if (!nets[rnet->mport->id].active[sid]) {
++			list_for_each_entry(peer,
++					   &nets[rnet->mport->id].peers, node) {
+ 				if (peer->rdev->destid == sid) {
+-					rionet_active[sid] = peer->rdev;
+-					nact++;
++					nets[rnet->mport->id].active[sid] =
++								peer->rdev;
++					nets[rnet->mport->id].nact++;
+ 				}
+ 			}
+ 			rio_mport_send_doorbell(mport, sid,
+ 						RIONET_DOORBELL_JOIN);
+ 		}
+ 	} else if (info == RIONET_DOORBELL_LEAVE) {
+-		rionet_active[sid] = NULL;
+-		nact--;
++		nets[rnet->mport->id].active[sid] = NULL;
++		nets[rnet->mport->id].nact--;
+ 	} else {
+ 		if (netif_msg_intr(rnet))
+ 			printk(KERN_WARNING "%s: unhandled doorbell\n",
+@@ -334,7 +334,8 @@ static int rionet_open(struct net_device *ndev)
+ 	netif_carrier_on(ndev);
+ 	netif_start_queue(ndev);
+ 
+-	list_for_each_entry_safe(peer, tmp, &rionet_peers, node) {
++	list_for_each_entry_safe(peer, tmp,
++				 &nets[rnet->mport->id].peers, node) {
+ 		if (!(peer->res = rio_request_outb_dbell(peer->rdev,
+ 							 RIONET_DOORBELL_JOIN,
+ 							 RIONET_DOORBELL_LEAVE)))
+@@ -359,7 +360,7 @@ static int rionet_close(struct net_device *ndev)
+ 	int i;
+ 
+ 	if (netif_msg_ifup(rnet))
+-		printk(KERN_INFO "%s: close\n", DRV_NAME);
++		printk(KERN_INFO "%s: close %s\n", DRV_NAME, ndev->name);
+ 
+ 	netif_stop_queue(ndev);
+ 	netif_carrier_off(ndev);
+@@ -367,10 +368,11 @@ static int rionet_close(struct net_device *ndev)
+ 	for (i = 0; i < RIONET_RX_RING_SIZE; i++)
+ 		kfree_skb(rnet->rx_skb[i]);
+ 
+-	list_for_each_entry_safe(peer, tmp, &rionet_peers, node) {
+-		if (rionet_active[peer->rdev->destid]) {
++	list_for_each_entry_safe(peer, tmp,
++				 &nets[rnet->mport->id].peers, node) {
++		if (nets[rnet->mport->id].active[peer->rdev->destid]) {
+ 			rio_send_doorbell(peer->rdev, RIONET_DOORBELL_LEAVE);
+-			rionet_active[peer->rdev->destid] = NULL;
++			nets[rnet->mport->id].active[peer->rdev->destid] = NULL;
+ 		}
+ 		rio_release_outb_dbell(peer->rdev, peer->res);
+ 	}
+@@ -386,17 +388,21 @@ static int rionet_close(struct net_device *ndev)
+ static void rionet_remove(struct rio_dev *rdev)
+ {
+ 	struct net_device *ndev = rio_get_drvdata(rdev);
++	unsigned char netid = rdev->net->hport->id;
+ 	struct rionet_peer *peer, *tmp;
+ 
+-	free_pages((unsigned long)rionet_active, get_order(sizeof(void *) *
+-			RIO_MAX_ROUTE_ENTRIES(rdev->net->hport->sys_size)));
+ 	unregister_netdev(ndev);
+-	free_netdev(ndev);
+ 
+-	list_for_each_entry_safe(peer, tmp, &rionet_peers, node) {
++	free_pages((unsigned long)nets[netid].active, get_order(sizeof(void *) *
++			RIO_MAX_ROUTE_ENTRIES(rdev->net->hport->sys_size)));
++	nets[netid].active = NULL;
++
++	list_for_each_entry_safe(peer, tmp, &nets[netid].peers, node) {
+ 		list_del(&peer->node);
+ 		kfree(peer);
+ 	}
++
++	free_netdev(ndev);
  }
  
-@@ -441,9 +545,8 @@ static struct rio_dev __devinit *rio_setup_device(struct rio_net *net,
- 	if (rio_device_has_destid(port, rdev->src_ops, rdev->dst_ops)) {
- 		if (do_enum) {
- 			rio_set_device_id(port, destid, hopcount, next_destid);
--			rdev->destid = next_destid++;
--			if (next_destid == port->host_deviceid)
--				next_destid++;
-+			rdev->destid = next_destid;
-+			next_destid = rio_destid_alloc(net);
- 		} else
- 			rdev->destid = rio_get_device_id(port, destid, hopcount);
+ static void rionet_get_drvinfo(struct net_device *ndev,
+@@ -448,13 +454,13 @@ static int rionet_setup_netdev(struct rio_mport *mport, struct net_device *ndev)
+ 	const size_t rionet_active_bytes = sizeof(void *) *
+ 				RIO_MAX_ROUTE_ENTRIES(mport->sys_size);
  
-@@ -742,12 +845,7 @@ static u16 rio_get_host_deviceid_lock(struct rio_mport *port, u8 hopcount)
- static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
- 			 u8 hopcount, struct rio_dev *prev, int prev_port)
- {
--	int port_num;
--	int cur_destid;
--	int sw_destid;
--	int sw_inport;
- 	struct rio_dev *rdev;
--	u16 destid;
- 	u32 regval;
- 	int tmp;
+-	rionet_active = (struct rio_dev **)__get_free_pages(GFP_KERNEL,
+-			get_order(rionet_active_bytes));
+-	if (!rionet_active) {
++	nets[mport->id].active = (struct rio_dev **)__get_free_pages(GFP_KERNEL,
++						get_order(rionet_active_bytes));
++	if (!nets[mport->id].active) {
+ 		rc = -ENOMEM;
+ 		goto out;
+ 	}
+-	memset((void *)rionet_active, 0, rionet_active_bytes);
++	memset((void *)nets[mport->id].active, 0, rionet_active_bytes);
  
-@@ -813,19 +911,26 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
- 		return -1;
+ 	/* Set up private area */
+ 	rnet = netdev_priv(ndev);
+@@ -483,61 +489,62 @@ static int rionet_setup_netdev(struct rio_mport *mport, struct net_device *ndev)
+ 	if (rc != 0)
+ 		goto out;
  
- 	if (rio_is_switch(rdev)) {
-+		int sw_destid;
-+		int cur_destid;
-+		int sw_inport;
-+		u16 destid;
-+		int port_num;
+-	printk("%s: %s %s Version %s, MAC %pM\n",
++	printk(KERN_INFO "%s: %s %s Version %s, MAC %pM, %s\n",
+ 	       ndev->name,
+ 	       DRV_NAME,
+ 	       DRV_DESC,
+ 	       DRV_VERSION,
+-	       ndev->dev_addr);
++	       ndev->dev_addr,
++	       mport->name);
+ 
+       out:
+ 	return rc;
+ }
+ 
+-/*
+- * XXX Make multi-net safe
+- */
++static unsigned long net_table[RIONET_MAX_NETS/sizeof(unsigned long) + 1];
 +
- 		sw_inport = RIO_GET_PORT_NUM(rdev->swpinfo);
- 		rio_route_add_entry(rdev, RIO_GLOBAL_TABLE,
- 				    port->host_deviceid, sw_inport, 0);
- 		rdev->rswitch->route_table[port->host_deviceid] = sw_inport;
+ static int rionet_probe(struct rio_dev *rdev, const struct rio_device_id *id)
+ {
+ 	int rc = -ENODEV;
+ 	u32 lsrc_ops, ldst_ops;
+ 	struct rionet_peer *peer;
+ 	struct net_device *ndev = NULL;
++	unsigned char netid = rdev->net->hport->id;
++	int oldnet;
  
--		for (destid = 0; destid < next_destid; destid++) {
--			if (destid == port->host_deviceid)
--				continue;
--			rio_route_add_entry(rdev, RIO_GLOBAL_TABLE,
--					    destid, sw_inport, 0);
--			rdev->rswitch->route_table[destid] = sw_inport;
-+		destid = rio_destid_first(net);
-+		while (destid != RIO_INVALID_DESTID && destid < next_destid) {
-+			if (destid != port->host_deviceid) {
-+				rio_route_add_entry(rdev, RIO_GLOBAL_TABLE,
-+						    destid, sw_inport, 0);
-+				rdev->rswitch->route_table[destid] = sw_inport;
-+			}
-+			destid = rio_destid_next(net, destid + 1);
+-	/* If local device is not rionet capable, give up quickly */
+-	if (!rionet_capable)
+-		goto out;
++	if (netid >= RIONET_MAX_NETS)
++		return rc;
+ 
+-	/* Allocate our net_device structure */
+-	ndev = alloc_etherdev(sizeof(struct rionet_private));
+-	if (ndev == NULL) {
+-		rc = -ENOMEM;
+-		goto out;
+-	}
++	oldnet = test_and_set_bit(netid, net_table);
+ 
+ 	/*
+ 	 * First time through, make sure local device is rionet
+-	 * capable, setup netdev,  and set flags so this is skipped
+-	 * on later probes
++	 * capable, setup netdev (will be skipped on later probes)
+ 	 */
+-	if (!rionet_check) {
++	if (!oldnet) {
+ 		rio_local_read_config_32(rdev->net->hport, RIO_SRC_OPS_CAR,
+ 					 &lsrc_ops);
+ 		rio_local_read_config_32(rdev->net->hport, RIO_DST_OPS_CAR,
+ 					 &ldst_ops);
+ 		if (!is_rionet_capable(lsrc_ops, ldst_ops)) {
+ 			printk(KERN_ERR
+-			       "%s: local device is not network capable\n",
+-			       DRV_NAME);
+-			rionet_check = 1;
+-			rionet_capable = 0;
++			       "%s: local device %s is not network capable\n",
++			       DRV_NAME, rdev->net->hport->name);
+ 			goto out;
  		}
--
- 		pr_debug(
- 		    "RIO: found %s (vid %4.4x did %4.4x) with %d ports\n",
- 		    rio_name(rdev), rdev->vid, rdev->did,
-@@ -863,19 +968,22 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
- 					return -1;
  
- 				/* Update routing tables */
--				if (next_destid > cur_destid) {
-+				destid = rio_destid_next(net, cur_destid + 1);
-+				if (destid != RIO_INVALID_DESTID) {
- 					for (destid = cur_destid;
--					     destid < next_destid; destid++) {
--						if (destid == port->host_deviceid)
--							continue;
--						rio_route_add_entry(rdev,
-+					     destid < next_destid;) {
-+						if (destid != port->host_deviceid) {
-+							rio_route_add_entry(rdev,
- 								    RIO_GLOBAL_TABLE,
- 								    destid,
- 								    port_num,
- 								    0);
--						rdev->rswitch->
--						    route_table[destid] =
--						    port_num;
-+							rdev->rswitch->
-+								route_table[destid] =
-+								port_num;
-+						}
-+						destid = rio_destid_next(net,
-+								destid + 1);
- 					}
- 				}
- 			} else {
-@@ -901,11 +1009,8 @@ static int __devinit rio_enum_peer(struct rio_net *net, struct rio_mport *port,
- 		rio_init_em(rdev);
- 
- 		/* Check for empty switch */
--		if (next_destid == sw_destid) {
--			next_destid++;
--			if (next_destid == port->host_deviceid)
--				next_destid++;
--		}
-+		if (next_destid == sw_destid)
-+			next_destid = rio_destid_alloc(net);
- 
- 		rdev->destid = sw_destid;
- 	} else
-@@ -1043,17 +1148,39 @@ static int rio_mport_is_active(struct rio_mport *port)
- /**
-  * rio_alloc_net- Allocate and configure a new RIO network
-  * @port: Master port associated with the RIO network
-+ * @do_enum: Enumeration/Discovery mode flag
-+ * @start: logical minimal start id for new net
-  *
-  * Allocates a RIO network structure, initializes per-network
-  * list heads, and adds the associated master port to the
-  * network list of associated master ports. Returns a
-  * RIO network pointer on success or %NULL on failure.
-  */
--static struct rio_net __devinit *rio_alloc_net(struct rio_mport *port)
-+static struct rio_net __devinit *rio_alloc_net(struct rio_mport *port,
-+					       int do_enum, u16 start)
- {
- 	struct rio_net *net;
- 
- 	net = kzalloc(sizeof(struct rio_net), GFP_KERNEL);
-+	if (net && do_enum) {
-+		net->destid_table.table = kzalloc(
-+			BITS_TO_LONGS(RIO_MAX_ROUTE_ENTRIES(port->sys_size)) *
-+			sizeof(long),
-+			GFP_KERNEL);
-+
-+		if (net->destid_table.table == NULL) {
-+			pr_err("RIO: failed to allocate destID table\n");
-+			kfree(net);
-+			net = NULL;
-+		} else {
-+			net->destid_table.start = start;
-+			net->destid_table.next = 0;
-+			net->destid_table.max =
-+					RIO_MAX_ROUTE_ENTRIES(port->sys_size);
-+			spin_lock_init(&net->destid_table.lock);
++		/* Allocate our net_device structure */
++		ndev = alloc_etherdev(sizeof(struct rionet_private));
++		if (ndev == NULL) {
++			rc = -ENOMEM;
++			goto out;
 +		}
-+	}
-+
- 	if (net) {
- 		INIT_LIST_HEAD(&net->node);
- 		INIT_LIST_HEAD(&net->devices);
-@@ -1163,12 +1290,16 @@ int __devinit rio_enum_mport(struct rio_mport *mport)
++		nets[netid].ndev = ndev;
+ 		rc = rionet_setup_netdev(rdev->net->hport, ndev);
+-		rionet_check = 1;
+-		nact = 0;
+-	}
++		INIT_LIST_HEAD(&nets[netid].peers);
++		nets[netid].nact = 0;
++	} else if (nets[netid].ndev == NULL)
++		goto out;
  
- 	/* If master port has an active link, allocate net and enum peers */
- 	if (rio_mport_is_active(mport)) {
--		if (!(net = rio_alloc_net(mport))) {
-+		net = rio_alloc_net(mport, 1, 0);
-+		if (!net) {
- 			printk(KERN_ERR "RIO: failed to allocate new net\n");
- 			rc = -ENOMEM;
+ 	/*
+ 	 * If the remote device has mailbox/doorbell capabilities,
+@@ -549,10 +556,10 @@ static int rionet_probe(struct rio_dev *rdev, const struct rio_device_id *id)
  			goto out;
  		}
+ 		peer->rdev = rdev;
+-		list_add_tail(&peer->node, &rionet_peers);
++		list_add_tail(&peer->node, &nets[netid].peers);
+ 	}
  
-+		/* reserve mport destID in new net */
-+		rio_destid_reserve(net, mport->host_deviceid);
-+
- 		/* Enable Input Output Port (transmitter reviever) */
- 		rio_enable_rx_tx_port(mport, 1, 0, 0, 0);
+-	rio_set_drvdata(rdev, ndev);
++	rio_set_drvdata(rdev, nets[netid].ndev);
  
-@@ -1176,6 +1307,8 @@ int __devinit rio_enum_mport(struct rio_mport *mport)
- 		rio_local_write_config_32(mport, RIO_COMPONENT_TAG_CSR,
- 					  next_comptag++);
- 
-+		next_destid = rio_destid_alloc(net);
-+
- 		if (rio_enum_peer(net, mport, 0, NULL, 0) < 0) {
- 			/* A higher priority host won enumeration, bail. */
- 			printk(KERN_INFO
-@@ -1185,6 +1318,8 @@ int __devinit rio_enum_mport(struct rio_mport *mport)
- 			rc = -EBUSY;
- 			goto out;
- 		}
-+		/* free the last allocated destID (unused) */
-+		rio_destid_free(net, next_destid);
- 		rio_update_route_tables(net);
- 		rio_clear_locks(net);
- 		rio_pw_enable(mport, 1);
-@@ -1265,7 +1400,7 @@ int __devinit rio_disc_mport(struct rio_mport *mport)
- enum_done:
- 		pr_debug("RIO: ... enumeration done\n");
- 
--		net = rio_alloc_net(mport);
-+		net = rio_alloc_net(mport, 0, 0);
- 		if (!net) {
- 			printk(KERN_ERR "RIO: Failed to allocate new net\n");
- 			goto bail;
-diff --git a/include/linux/rio.h b/include/linux/rio.h
-index 7ea02c4..d2dff22 100644
---- a/include/linux/rio.h
-+++ b/include/linux/rio.h
-@@ -264,6 +264,14 @@ struct rio_mport {
- #endif
- };
- 
-+struct rio_id_table {
-+	u16 start;	/* logical minimal id */
-+	u16 next;	/* hint for find */
-+	u32 max;	/* max number of IDs in table */
-+	spinlock_t lock;
-+	unsigned long *table;
-+};
-+
- /**
-  * struct rio_net - RIO network info
-  * @node: Node in global list of RIO networks
-@@ -279,6 +287,7 @@ struct rio_net {
- 	struct list_head mports;	/* list of ports accessing net */
- 	struct rio_mport *hport;	/* primary port for accessing net */
- 	unsigned char id;	/* RIO network ID */
-+	struct rio_id_table destid_table;  /* destID allocation table */
- };
- 
- /* Definitions used by switch sysfs initialization callback */
+       out:
+ 	return rc;
 -- 
 1.7.8.4
