@@ -1,24 +1,18 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C5CB12C037B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 08:20:21 +1000 (EST)
-Date: Wed, 3 Oct 2012 17:20:07 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [RFC PATCH] powerpc/fsl: add timer wakeup source
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <6170650E-9D3C-4686-BF13-6C41DBFFB79D@kernel.crashing.org>
- (from galak@kernel.crashing.org on Wed Oct  3 08:35:58 2012)
-Message-ID: <1349302807.31013.20@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Wood Scott-B07421 <b07421@freescale.com>, linux-pm@vger.kernel.org,
- Wang Dongsheng <dongsheng.wds@gmail.com>,
- Wang Dongsheng <dongsheng.wang@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id B20F22C031A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 08:29:55 +1000 (EST)
+Date: Wed, 3 Oct 2012 15:29:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alexandre Bounine <alexandre.bounine@idt.com>
+Subject: Re: [PATCH 3/5] rapidio: run discovery as an asynchronous process
+Message-Id: <20121003152953.79aecece.akpm@linux-foundation.org>
+In-Reply-To: <1349291923-22860-4-git-send-email-alexandre.bounine@idt.com>
+References: <1349291923-22860-1-git-send-email-alexandre.bounine@idt.com>
+ <1349291923-22860-4-git-send-email-alexandre.bounine@idt.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,132 +22,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/03/2012 08:35:58 AM, Kumar Gala wrote:
->=20
-> On Oct 3, 2012, at 5:42 AM, Wang Dongsheng wrote:
->=20
-> > This is only for freescale powerpc platform. The driver provides a =20
-> way
-> > to wake up system. Proc =20
-> interface(/proc/powerpc/wakeup_timer_seconds).
-> >
-> > eg: "echo 5 > /proc/powerpc/wakeup_timer_seconds", 5 seconds
-> > after the system will be woken up. echo another time into proc =20
-> interface
-> > to update the time.
-> >
-> > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
-> > Signed-off-by: Li Yang <leoli@freescale.com>
-> > ---
-> > arch/powerpc/platforms/Kconfig            |   23 +++
-> > arch/powerpc/platforms/Makefile           |    1 +
-> > arch/powerpc/platforms/fsl_timer_wakeup.c |  217 =20
-> +++++++++++++++++++++++++++++
-> > 3 files changed, 241 insertions(+)
-> > create mode 100644 arch/powerpc/platforms/fsl_timer_wakeup.c
->=20
-> Adding the Linux PM list to see if there is some existing support for =20
-> this on other arch's in kernel.
->=20
-> I'm pretty sure /proc/ is NOT where we want this exposed.
+On Wed,  3 Oct 2012 15:18:41 -0400
+Alexandre Bounine <alexandre.bounine@idt.com> wrote:
 
-Should probably go under the sysfs directory of the mpic device.  Or =20
-better, make a generic interface for timer-based suspend wakeup (if =20
-there isn't one already).  This current approach sits in an unpleasant =20
-middle ground between generic and device-specific.
+> Modify mport initialization routine to run the RapidIO discovery process
+> asynchronously. This allows to have an arbitrary order of enumerating and
+> discovering ports in systems with multiple RapidIO controllers without
+> creating a deadlock situation if enumerator port is registered after a
+> discovering one.
+> 
+> Making netID matching to mportID ensures consistent net ID assignment in
+> multiport RapidIO systems with asynchronous discovery process (global counter
+> implementation is affected by race between threads).
+> 
+>
+> ...
+>
+> +static void __devinit disc_work_handler(struct work_struct *_work)
+> +{
+> +	struct rio_disc_work *work = container_of(_work,
+> +						  struct rio_disc_work, work);
 
-> > diff --git a/arch/powerpc/platforms/Kconfig =20
-> b/arch/powerpc/platforms/Kconfig
-> > index b190a6e..7b9232a 100644
-> > --- a/arch/powerpc/platforms/Kconfig
-> > +++ b/arch/powerpc/platforms/Kconfig
-> > @@ -99,6 +99,29 @@ config MPIC_TIMER
-> > 	  only tested on fsl chip, but it can potentially support
-> > 	  other global timers complying to Open-PIC standard.
-> >
-> > +menuconfig FSL_WAKEUP_SOURCE
-> > +	bool "Freescale wakeup source"
-> > +	depends on FSL_SOC && SUSPEND
-> > +	default n
-> > +	help
-> > +	  This option enables wakeup source for wake up system
-> > +	  features. This is only for freescale powerpc platform.
-> > +
-> > +if FSL_WAKEUP_SOURCE
-> > +
-> > +config FSL_TIMER_WAKEUP
-> > +	tristate "Freescale mpic global timer wakeup event"
-> > +	default n
-> > +	help
-> > +	  This is only for freescale powerpc platform. The driver
-> > +	  provides a way to wake up system.
-> > +	  Proc interface(/proc/powerpc/wakeup_timer_seconds).
-> > +	  eg: "echo 5 > /proc/powerpc/wakeup_timer_seconds",
-> > +	  5 seconds after the system will be woken up. echo another
-> > +	  time into proc interface to update the time.
-> > +
-> > +endif
+There's a nice simple way to avoid such ugliness:
 
-Use depends rather than if/else.  Why do you need FSL_WAKEUP_SOURCE?
+--- a/drivers/rapidio/rio.c~rapidio-run-discovery-as-an-asynchronous-process-fix
++++ a/drivers/rapidio/rio.c
+@@ -1269,9 +1269,9 @@ struct rio_disc_work {
+ 
+ static void __devinit disc_work_handler(struct work_struct *_work)
+ {
+-	struct rio_disc_work *work = container_of(_work,
+-						  struct rio_disc_work, work);
++	struct rio_disc_work *work;
+ 
++	work = container_of(_work, struct rio_disc_work, work);
+ 	pr_debug("RIO: discovery work for mport %d %s\n",
+ 		 work->mport->id, work->mport->name);
+ 	rio_disc_mport(work->mport);
+_
 
-These names are overly broad -- this is only for FSL MPIC, not for =20
-other FSL chips (e.g. mpc83xx has a different global timer =20
-implementation, and there's FSL ARM chips, etc).
+> +	pr_debug("RIO: discovery work for mport %d %s\n",
+> +		 work->mport->id, work->mport->name);
+> +	rio_disc_mport(work->mport);
+> +
+> +	kfree(work);
+> +}
+> +
+>  int __devinit rio_init_mports(void)
+>  {
+>  	struct rio_mport *port;
+> +	struct rio_disc_work *work;
+> +	int no_disc = 0;
+>  
+>  	list_for_each_entry(port, &rio_mports, node) {
+>  		if (port->host_deviceid >= 0)
+>  			rio_enum_mport(port);
+> -		else
+> -			rio_disc_mport(port);
+> +		else if (!no_disc) {
+> +			if (!rio_wq) {
+> +				rio_wq = alloc_workqueue("riodisc", 0, 0);
+> +				if (!rio_wq) {
+> +					pr_err("RIO: unable allocate rio_wq\n");
+> +					no_disc = 1;
+> +					continue;
+> +				}
+> +			}
+> +
+> +			work = kzalloc(sizeof *work, GFP_KERNEL);
+> +			if (!work) {
+> +				pr_err("RIO: no memory for work struct\n");
+> +				no_disc = 1;
+> +				continue;
+> +			}
+> +
+> +			work->mport = port;
+> +			INIT_WORK(&work->work, disc_work_handler);
+> +			queue_work(rio_wq, &work->work);
+> +		}
+> +	}
 
-> > +static ssize_t timer_wakeup_write(struct file *file, const char =20
-> __user *buf,
-> > +		size_t count, loff_t *off)
-> > +{
-> > +	struct fsl_timer_wakeup *priv;
-> > +	struct inode *inode =3D file->f_path.dentry->d_inode;
-> > +	struct proc_dir_entry *dp;
-> > +	struct timeval time;
-> > +	char *kbuf;
-> > +
-> > +	dp =3D PDE(inode);
-> > +	priv =3D dp->data;
-> > +
-> > +	kbuf =3D kzalloc(count + 1, GFP_KERNEL);
-> > +	if (!kbuf)
-> > +		return -ENOMEM;
-> > +
-> > +	if (copy_from_user(kbuf, buf, count)) {
-> > +		kfree(kbuf);
-> > +		return -EFAULT;
-> > +	}
-> > +
-> > +	kbuf[count] =3D '\0';
-> > +
-> > +	if (kstrtol(kbuf, 0, &time.tv_sec)) {
-> > +		kfree(kbuf);
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	kfree(kbuf);
-> > +
-> > +	time.tv_usec =3D 0;
-> > +
-> > +	mutex_lock(&priv->mutex);
-> > +
-> > +	if (!time.tv_sec) {
-> > +		if (priv->timer) {
-> > +			mpic_free_timer(priv->timer);
-> > +			priv->timer =3D NULL;
-> > +		}
-> > +		mutex_unlock(&priv->mutex);
-> > +
-> > +		return count;
-> > +	}
-> > +
-> > +	if (priv->timer) {
-> > +		mpic_free_timer(priv->timer);
-> > +		priv->timer =3D NULL;
-> > +	}
-> > +
-> > +	priv->timer =3D mpic_request_timer(timer_event_interrupt, priv, =20
-> &time);
+I'm having a lot of trouble with `no_disc'.  afacit what it does is to
+cease running async discovery for any remaining devices if the workqueue
+allocation failed (vaguely reasonable) or if the allocation of a single
+work item failed (incomprehensible).
 
-If the new time is zero, consider that a cancellation of the timer and =20
-don't request a new one or return -EINVAL.
+But if we don't run discovery, the subsystem is permanently busted for
+at least some devices, isn't it?
 
--Scott=
+And this code is basically untestable unless the programmer does
+deliberate fault injection, which makes it pretty much unmaintainable.
+
+So...  if I haven't totally misunderstood, I suggest a rethink is in
+order?
+
+> +	if (rio_wq) {
+> +		pr_debug("RIO: flush discovery workqueue\n");
+> +		flush_workqueue(rio_wq);
+> +		pr_debug("RIO: flush discovery workqueue finished\n");
+> +		destroy_workqueue(rio_wq);
+>  	}
