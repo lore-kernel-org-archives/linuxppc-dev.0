@@ -1,27 +1,20 @@
-Return-Path: <B16395@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 574DD2C0355
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 02:31:19 +1000 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: RE: [RFC][PATCH 1/3] iommu/fsl: Store iommu domain information
- pointer in archdata.
-Date: Thu, 4 Oct 2012 16:30:58 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D1EFD59@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1348060632-12997-1-git-send-email-b16395@freescale.com>
- <1348060632-12997-2-git-send-email-b16395@freescale.com>
- <5BDB4D18-CB0D-4EBA-B38F-A278B7C00A61@kernel.crashing.org>
-In-Reply-To: <5BDB4D18-CB0D-4EBA-B38F-A278B7C00A61@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <jgunthorpe@obsidianresearch.com>
+Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 82BC12C034F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 03:08:48 +1000 (EST)
+Date: Thu, 4 Oct 2012 11:08:41 -0600
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] PPC: Correct the tophys/tovirt macros
+Message-ID: <20121004170841.GA2994@obsidianresearch.com>
+References: <20120930232847.GG30637@obsidianresearch.com>
+ <1349349544.4260.24.camel@pasglop>
 MIME-Version: 1.0
-Cc: "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1349349544.4260.24.camel@pasglop>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Oct 04, 2012 at 09:19:04PM +1000, Benjamin Herrenschmidt wrote:
+> On Sun, 2012-09-30 at 17:28 -0600, Jason Gunthorpe wrote:
+> > asm/page.h discusses the calculation for v2p and p2v, it should be:
+> >  va = pa + KERNELBASE - PHYSICAL_START
+> > which is the same as:
+> >  va = pa + LOAD_OFFSET
+> > 
+> > tophys/tovirt were using PAGE_OFFSET, which as page.h says, is almost
+> > always the same thing.
+> > 
+> > Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+> 
+> It's a bit gross tho in that KERNEL_BASE, PHYSICAL_START and LOAD_OFFSET
+> are about where the kernel is linked/running, and while the value ends
+> up happening to also be the p->v offset (and indeed not by accident), it
+> makes the code less clear and more confusing.
 
+Yes, I found the three names confusing.. However LOAD_OFFSET is the
+name that include/asm-generic/vmlinux.lds.h and many arch's use for
+P2V translation in the linker script, so at least there is some
+precedent.
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Sent: Wednesday, September 19, 2012 7:20 PM
-> To: Sethi Varun-B16395
-> Cc: iommu@lists.linux-foundation.org; joerg.roedel@amd.com; linux-
-> kernel@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Sethi Varun-B16395
-> Subject: Re: [RFC][PATCH 1/3] iommu/fsl: Store iommu domain information
-> pointer in archdata.
->=20
->=20
-> On Sep 19, 2012, at 8:17 AM, <b16395@freescale.com>
-> <b16395@freescale.com> wrote:
->=20
-> > From: Varun Sethi <Varun.Sethi@freescale.com>
-> >
-> > Add a new field in the device (powerpc) archdata structure for storing
-> > iommu domain information pointer. This pointer is stored when the
-> > device is attached to a particular domain.
-> >
-> > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> > ---
-> > arch/powerpc/include/asm/device.h |    4 ++++
-> > 1 files changed, 4 insertions(+), 0 deletions(-)
->=20
-> Not too familiar, but what does the IBM Server IOMMU do for iommu_domain?
->
-[Sethi Varun-B16395] I am not sure if the IBM iommu driver implements the i=
-ommu
-API.
+> I don't have the bandwidth to revisit all that, but I really think that
+> whole are area where PAGE_OFFSET doesn't map 0 needs revisiting.
 
--Varun
-=20
+Something like that is also outside my scope.. This patch does fix a
+bug I hit when CONFIG_PHYSICAL_START is used, are there problems with
+it in other cases?
+
+FWIW, this is part of a larger work that makes CONFIG_PHYSICAL_START
+work on PPC404, which is not yet clean enough to post:
+https://github.com/jgunthorpe/linux/commit/90df2d247c9db5d39c32dbbada0815f15d7b3be7
+
+Regards,
+Jason
