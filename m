@@ -2,15 +2,15 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 250162C0330
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 21:06:01 +1000 (EST)
-Message-ID: <1349348756.4260.15.camel@pasglop>
-Subject: Re: [PATCH] PPC: Enable the Watchdog vector for 405
+ by ozlabs.org (Postfix) with ESMTPS id 453C72C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 21:19:09 +1000 (EST)
+Message-ID: <1349349544.4260.24.camel@pasglop>
+Subject: Re: [PATCH] PPC: Correct the tophys/tovirt macros
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Date: Thu, 04 Oct 2012 21:05:56 +1000
-In-Reply-To: <20120930232723.GF30637@obsidianresearch.com>
-References: <20120930232723.GF30637@obsidianresearch.com>
+Date: Thu, 04 Oct 2012 21:19:04 +1000
+In-Reply-To: <20120930232847.GG30637@obsidianresearch.com>
+References: <20120930232847.GG30637@obsidianresearch.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -23,91 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2012-09-30 at 17:27 -0600, Jason Gunthorpe wrote:
-> diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-> index 4989661..7edd7b1 100644
-> --- a/arch/powerpc/kernel/head_40x.S
-> +++ b/arch/powerpc/kernel/head_40x.S
-> @@ -431,29 +431,19 @@ label:
->  
->  /* 0x1000 - Programmable Interval Timer (PIT) Exception */
->  	START_EXCEPTION(0x1000, Decrementer)
-> -	NORMAL_EXCEPTION_PROLOG
-> -	lis	r0,TSR_PIS@h
-> -	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
-> -	addi	r3,r1,STACK_FRAME_OVERHEAD
-> -	EXC_XFER_LITE(0x1000, timer_interrupt)
-> +	b pit_longer
+On Sun, 2012-09-30 at 17:28 -0600, Jason Gunthorpe wrote:
+> asm/page.h discusses the calculation for v2p and p2v, it should be:
+>  va = pa + KERNELBASE - PHYSICAL_START
+> which is the same as:
+>  va = pa + LOAD_OFFSET
+> 
+> tophys/tovirt were using PAGE_OFFSET, which as page.h says, is almost
+> always the same thing.
+> 
+> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 
-Looks like you indeed have no choice but move it down, though I dislike
-the label name :-)
+It's a bit gross tho in that KERNEL_BASE, PHYSICAL_START and LOAD_OFFSET
+are about where the kernel is linked/running, and while the value ends
+up happening to also be the p->v offset (and indeed not by accident), it
+makes the code less clear and more confusing.
 
-Look at how we do a similar thing in exceptions-64.S, we basically just
-don't use START_EXCEPTION at that location. We put a .=xxxx and a
-branch, and use the real exception name at the target label.
+I think the main issue is that we did things wrong when implementing
+non-0 based setups. PAGE_OFFSET should have remained what its name
+implies which is the offset between p and v.
 
-Or just name it "pit_exception" if you want to keep things simple. I
-just don't like "pit_longer" :-)
- 
-> -#if 0
->  /* NOTE:
-> - * FIT and WDT handlers are not implemented yet.
-> + * FIT handler is not implemented yet.
->   */
+I don't have the bandwidth to revisit all that, but I really think that
+whole are area where PAGE_OFFSET doesn't map 0 needs revisiting.
 
-Any reason to comment that out ? Better off also branching out of line
-to a stub similar to the PIT one that then calls unknown_exception. That
-way if it triggers by accident, you'll get a clean trace.
-
->  /* 0x1010 - Fixed Interval Timer (FIT) Exception
->  */
-> -	STND_EXCEPTION(0x1010,	FITException,		unknown_exception)
-> +//	STND_EXCEPTION(0x1010,	FITException,		unknown_exception)
->  
->  /* 0x1020 - Watchdog Timer (WDT) Exception
->  */
-> -#ifdef CONFIG_BOOKE_WDT
->  	CRITICAL_EXCEPTION(0x1020, WDTException, WatchdogException)
-> -#else
-> -	CRITICAL_EXCEPTION(0x1020, WDTException, unknown_exception)
-> -#endif
-> -#endif
-
-Move it out of line too please. When a given vector "slot" gets crowded,
-I prefer moving everything in it out of line to keep things consistent.
- 
->  /* 0x1100 - Data TLB Miss Exception
->   * As the name implies, translation is not in the MMU, so search the
-> @@ -738,6 +728,16 @@ label:
->  		(MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
->  		NOCOPY, crit_transfer_to_handler, ret_from_crit_exc)
->  
-> +	/* Programmable Interval Timer (PIT) Exception. The PIT runs into
-> +	   the space reserved for other exceptions, so we branch down
-> +	   to here. */
-> +pit_longer:
-> +	NORMAL_EXCEPTION_PROLOG
-> +	lis	r0,TSR_PIS@h
-> +	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
-> +	addi	r3,r1,STACK_FRAME_OVERHEAD
-> +	EXC_XFER_LITE(0x1000, timer_interrupt)
-> +
->  /*
->   * The other Data TLB exceptions bail out to this point
->   * if they can't resolve the lightweight TLB fault.
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index ae0843f..0701ec1 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -1514,7 +1514,7 @@ void unrecoverable_exception(struct pt_regs *regs)
->  	die("Unrecoverable exception", regs, SIGABRT);
->  }
->  
-> -#ifdef CONFIG_BOOKE_WDT
-> +#if defined(CONFIG_BOOKE_WDT) | defined(CONFIG_40x)
->  /*
->   * Default handler for a Watchdog exception,
->   * spins until a reboot occurs
-
-Cheers,
 Ben.
+
+> ---
+>  arch/powerpc/include/asm/ppc_asm.h |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
+> index ea2a86e..44edc3a 100644
+> --- a/arch/powerpc/include/asm/ppc_asm.h
+> +++ b/arch/powerpc/include/asm/ppc_asm.h
+> @@ -461,14 +461,14 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
+>  #define fromreal(rd)	tovirt(rd,rd)
+>  
+>  #define tophys(rd,rs)				\
+> -0:	addis	rd,rs,-PAGE_OFFSET@h;		\
+> +0:	addis	rd,rs,-LOAD_OFFSET@h;		\
+>  	.section ".vtop_fixup","aw";		\
+>  	.align  1;				\
+>  	.long   0b;				\
+>  	.previous
+>  
+>  #define tovirt(rd,rs)				\
+> -0:	addis	rd,rs,PAGE_OFFSET@h;		\
+> +0:	addis	rd,rs,LOAD_OFFSET@h;		\
+>  	.section ".ptov_fixup","aw";		\
+>  	.align  1;				\
+>  	.long   0b;				\
