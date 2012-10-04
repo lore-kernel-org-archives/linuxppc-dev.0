@@ -2,18 +2,22 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AF72D2C036D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 23:14:45 +1000 (EST)
-Subject: Re: PCI device not working
+ by ozlabs.org (Postfix) with ESMTPS id C181C2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 23:18:17 +1000 (EST)
+Subject: Re: [PATCH 2/3 v2] iommu/fsl: Add iommu domain attributes required by
+ fsl PAMU driver.
 Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=windows-1252
+Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <11976036.82651349353479389.JavaMail.defaultUser@defaultHost>
-Date: Thu, 4 Oct 2012 08:14:31 -0500
-Message-Id: <62666FBA-F62E-44B7-814E-0718AE957EC0@kernel.crashing.org>
-References: <11976036.82651349353479389.JavaMail.defaultUser@defaultHost>
-To: Davide Viti <zinosat@tiscali.it>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1349351808-7156-3-git-send-email-b16395@freescale.com>
+Date: Thu, 4 Oct 2012 08:17:24 -0500
+Message-Id: <43F13A8A-BF97-427C-8736-8F2E55B7A3D1@kernel.crashing.org>
+References: <1349351808-7156-1-git-send-email-b16395@freescale.com>
+ <1349351808-7156-3-git-send-email-b16395@freescale.com>
+To: "<b16395@freescale.com>" <b16395@freescale.com>
+Cc: joerg.roedel@amd.com, iommu@lists.linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,479 +28,92 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Oct 4, 2012, at 7:24 AM, Davide Viti wrote:
+On Oct 4, 2012, at 6:56 AM, <b16395@freescale.com> =
+<b16395@freescale.com> wrote:
 
-> Hi,
-> it turns out that if define CONFIG_PCI_NOSCAN in u-boot (as per [1]), =
-the=20
-> devide behind the second controller is detected by the  Linux kernel.
+> From: Varun Sethi <Varun.Sethi@freescale.com>
 >=20
-> Would=20
-> you suggest any particular patch I should apply to fix this (I'm using =
-kernel=20
-> 2.6.34)
+> Added the following domain attributes required by FSL PAMU driver:
+> 1. Subwindows field added to the iommu domain geometry attribute.
+> 2. Added new iommu stash attribute, which allows setting of the
+>   LIODN specific stash id parameter through IOMMU API.
+> 3. Added an attribute for enabling/disabling DMA to a particular
+>   memory window.
 >=20
-> thanx alot in advance
-> Davide
+> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> ---
+> include/linux/iommu.h |   35 +++++++++++++++++++++++++++++++++++
+> 1 files changed, 35 insertions(+), 0 deletions(-)
 >=20
-> [1] http://permalink.gmane.org/gmane.
-> linux.ports.ppc.embedded/20140
+> diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+> index f3b99e1..62e22f0 100644
+> --- a/include/linux/iommu.h
+> +++ b/include/linux/iommu.h
+> @@ -44,6 +44,33 @@ struct iommu_domain_geometry {
+> 	dma_addr_t aperture_start; /* First address that can be mapped   =
+ */
+> 	dma_addr_t aperture_end;   /* Last address that can be mapped    =
+ */
+> 	bool force_aperture;       /* DMA only allowed in mappable =
+range? */
+> +
+> +	/* The subwindows field indicates number of DMA subwindows =
+supported
+> +	 * by the geometry. Following is the interpretation of
+> +	 * values for this field:
+> +	 * 0 : This implies that the supported geometry size is 1 MB
+> +         * with each subwindow size being 4KB. Thus number of =
+subwindows
+> +	 * being =3D 1MB/4KB =3D 256.
+> +	 * 1 : Only one DMA window i.e. no subwindows.
+> +	 * value other than 0 or 1 would indicate actual number of =
+subwindows.
+> +	 */
+> +	u32 subwindows;
+> +};
+> +
+> +/* cache stash targets */
+> +#define L1_CACHE 1
+> +#define L2_CACHE 2
+> +#define L3_CACHE 3
 
-My suggestion would be to try and dump all the controller registers =
-between the case that works and doesn't and compare.  There's some minor =
-setting difference that I'm guessing is causing issues.
+These names are way to generic for being exposed to user space
 
-- k
-
+> +
+> +/* This attribute corresponds to IOMMUs capable of generating
+> + * a stash transaction. A stash transaction is typically a
+> + * hardware initiated prefetch of data from memory to cache.
+> + * This attribute allows configuring stashig specific parameters
+> + * in the IOMMU hardware.
+> + */
+> +struct iommu_stash_attribute {
+> +	u32 	cpu;	/* cpu number */
+> +	u32 	cache;	/* cache to stash to: L1,L2,L3 */
+> };
 >=20
->> ----Messaggio originale----
->> Da:=20
-> zinosat@tiscali.it
->> Data: 28/09/2012 16.48
->> A: <galak@kernel.crashing.org>
->> Cc:=20
-> <linuxppc-dev@lists.ozlabs.org>
->> Ogg: R: Re: PCI device not working
->>=20
->> Hi=20
-> Kumar,
->>=20
->>>=20
->>> It was, can you figure out in u-boot what exact config read on=20
+> struct iommu_domain {
+> @@ -60,6 +87,14 @@ struct iommu_domain {
+> enum iommu_attr {
+> 	DOMAIN_ATTR_MAX,
+> 	DOMAIN_ATTR_GEOMETRY,
+> +	/* Set the IOMMU hardware stashing
+> +	 * parameters.
+> +	 */
+> +	DOMAIN_ATTR_STASH,
+> +	/* Explicity enable/disable DMA for a
+> +         * particular memory window.
+> +         */
+> +	DOMAIN_ATTR_ENABLE,
+> };
 >=20
->> the bus would return the correct thing.
->>>=20
->>> The fact that when we probe the=20
->=20
->> device at 0001:03 we should get back something like =
-cfg_data=3D0xabba1b65
->>>=20
->>=20
->=20
->> here=20
->> follow some details about what is going on inside u-boot; verbosity=20=
-
-> increases=20
->> from [1] to [3]
->>=20
->> [1] PCI printouts when the board come up
->> [2]=20
-> output of "pci=20
->> [0-3] long" u-boot command
->> [3] same as [1] but with debug=20
-> print inside=20
->> indirect_read_config_##size() [drivers/pci/pci_indirect.c]
->>=20
->> if=20
-> you were curious=20
->> about our u-boot board settings, please refer to:
->> http:
-> //www.mail-archive.
->> com/linuxppc-dev@lists.ozlabs.org/msg62007.html
->>=20
->> thanx=20
-> alot,
->> Davide
->>=20
->>=20
->>=20
->> *************
->> *    [1]    *
->> *************
->>   PCIE1=20
-> used as Root Complex (base=20
->> addr ffe09000)
->>              Scanning PCI bus 01
->=20
->>       01  00  1b65  abba =20
->> 0280  00
->>       cfg_addr:ffe09000  cfg_data:
-> ffe09004  indirect_type:0
->>=20
->> PCIE1 on bus 00 - 01
->>=20
->>=20
->>   PCIE2 used as=20
-> Root Complex (base addr ffe0a000)
->>=20
->>              Scanning PCI bus 03
->=20
->>       03  00  1b65  abba  0280  00
->>=20
->> cfg_addr:ffe0a000  cfg_data:
-> ffe0a004  indirect_type:0
->>   PCIE2 on bus 02 - 03
->>=20
->>=20
->> *************
->> *   =20
-> [2]    *
->> *************
->>=20
->> =3D> pci 0 long
->> Scanning PCI devices=20
->> on bus 0
->>=20
->=20
->> Found PCI device 00.00.00:
->> vendor ID =3D                   0x1957
->>=20
->> device=20
-> ID =3D                   0x0100
->> command register =3D            0x0006
->>=20
->=20
->> status register =3D             0x0010
->> revision ID =3D                 0x11
->>=20
->=20
->> class code =3D                  0x0b (Processor)
->> sub class code=20
-> =3D             =20
->> 0x20
->> programming interface =3D       0x00
->> cache line=20
-> =3D                  0x08
->>=20
->> latency time =3D                0x00
->> header type=20
-> =3D                 0x01
->>=20
->> BIST =3D                        0x00
->> base address=20
-> 0 =3D              0xfff00000
->>=20
->> base address 1 =3D              0x00000000
->>=20
-> primary bus number =3D          0x00
->>=20
->> secondary bus number =3D        0x01
->>=20
-> subordinate bus number =3D      0x01
->>=20
->> secondary latency timer =3D     0x00
->>=20
-> IO base =3D                     0x00
->> IO=20
->> limit =3D                    0x00
->>=20
-> secondary status =3D            0x0000
->> memory=20
->> base =3D                 0xa000
->=20
->> memory limit =3D                0xa000
->> prefetch=20
->> memory base =3D       =20
-> 0x1001
->> prefetch memory limit =3D       0x0001
->> prefetch=20
->> memory base upper=20
-> =3D  0x00000000
->> prefetch memory limit upper =3D 0x00000000
->> IO=20
->> base upper 16=20
-> bits =3D       0x0000
->> IO limit upper 16 bits =3D      0x0000
->>=20
->> expansion ROM=20
-> base address =3D  0x00000000
->> interrupt line =3D              0x00
->>=20
->> interrupt=20
-> pin =3D               0x00
->> bridge control =3D              0x0000
->>=20
->> =3D>=20
->> pci 1=20
-> long
->> Scanning PCI devices on bus 1
->>=20
->> Found PCI device 01.00.00:kk
->> vendor=20
->=20
->> ID =3D                   0x1b65
->> device ID =3D                   0xabba
->>=20
-> command=20
->> register =3D            0x0006
->> status register =3D             0x0010
->=20
->> revision=20
->> ID =3D                 0x01
->> class code =3D                  0x02=20
-> (Network=20
->> controller)
->> sub class code =3D              0x80
->> programming=20
-> interface=20
->> =3D       0x00
->> cache line =3D                  0x08
->> latency time=20
->=20
->> =3D                0x00
->> header type =3D                 0x00
->> BIST=20
->=20
->> =3D                        0x00
->> base address 0 =3D              0xa0000000
->>=20
-> base=20
->> address 1 =3D              0xa0010000
->> base address 2 =3D             =20
-> 0x00000000
->>=20
->> base address 3 =3D              0x00000000
->> base address 4=20
-> =3D             =20
->> 0x00000000
->> base address 5 =3D              0x00000000
->>=20
-> cardBus CIS pointer=20
->> =3D         0x00000000
->> sub system vendor ID =3D       =20
-> 0x0000
->> sub system ID=20
->> =3D               0x0000
->> expansion ROM base address=20
-> =3D  0x00000000
->> interrupt=20
->> line =3D              0x00
->> interrupt pin=20
-> =3D               0x01
->> min Grant=20
->> =3D                   0x00
->> max Latency=20
-> =3D                 0x00
->>=20
->> =3D> pci 2 long
->>=20
->> Scanning PCI devices on bus 2
->>=20
->=20
->> Found PCI device 02.00.00:
->> vendor ID=20
->> =3D                   0x1957
->> device=20
-> ID =3D                   0x0100
->> command=20
->> register =3D            0x0006
->>=20
-> status register =3D             0x0010
->> revision=20
->> ID =3D                 0x11
->>=20
-> class code =3D                  0x0b (Processor)
->>=20
->> sub class code=20
-> =3D              0x20
->> programming interface =3D       0x00
->> cache=20
->> line=20
-> =3D                  0x08
->> latency time =3D                0x00
->> header type=20
->=20
->> =3D                 0x01
->> BIST =3D                        0x00
->> base address=20
-> 0=20
->> =3D              0xfff00000
->> base address 1 =3D              0x00000000
->>=20
-> primary=20
->> bus number =3D          0x00
->> secondary bus number =3D        0x01
->>=20
-> subordinate=20
->> bus number =3D      0x01
->> secondary latency timer =3D     0x00
->>=20
-> IO base=20
->> =3D                     0x00
->> IO limit =3D                    0x00
->>=20
-> secondary=20
->> status =3D            0x0000
->> memory base =3D                 0xb000
->=20
->> memory=20
->> limit =3D                0xb000
->> prefetch memory base =3D       =20
-> 0x1001
->> prefetch=20
->> memory limit =3D       0x0001
->> prefetch memory base upper=20
-> =3D  0x00000000
->>=20
->> prefetch memory limit upper =3D 0x00000000
->> IO base upper 16=20
-> bits =3D       0x0000
->>=20
->> IO limit upper 16 bits =3D      0x0000
->> expansion ROM=20
-> base address =3D =20
->> 0x00000000
->> interrupt line =3D              0x00
->> interrupt=20
-> pin =3D              =20
->> 0x00
->> bridge control =3D              0x0000
->>=20
->> =3D> pci 3=20
-> long
->> Scanning PCI devices=20
->> on bus 3
->>=20
->> Found PCI device 03.00.00:
->> vendor=20
-> ID =3D                   0x1b65
->>=20
->> device ID =3D                   0xabba
->>=20
-> command register =3D            0x0006
->>=20
->> status register =3D             0x0010
->=20
->> revision ID =3D                 0x01
->>=20
->> class code =3D                  0x02=20
-> (Network controller)
->> sub class code=20
->> =3D              0x80
->> programming=20
-> interface =3D       0x00
->> cache line=20
->> =3D                  0x08
->> latency time=20
-> =3D                0x00
->> header type=20
->> =3D                 0x00
->> BIST=20
-> =3D                        0x00
->> base address 0=20
->> =3D              0xb0000000
->>=20
-> base address 1 =3D              0xb0010000
->> base=20
->> address 2 =3D             =20
-> 0x00000000
->> base address 3 =3D              0x00000000
->>=20
->> base address 4=20
-> =3D              0x00000000
->> base address 5 =3D             =20
->> 0x00000000
->>=20
-> cardBus CIS pointer =3D         0x00000000
->> sub system vendor ID=20
->> =3D       =20
-> 0x0000
->> sub system ID =3D               0x0000
->> expansion ROM base=20
->> address=20
-> =3D  0x00000000
->> interrupt line =3D              0x00
->> interrupt pin=20
->=20
->> =3D               0x01
->> min Grant =3D                   0x00
->> max Latency=20
->=20
->> =3D                 0x00
->>=20
->>=20
->> *************
->> *    [3]    *
->> *************
->>=20
->>=20
-> PCIE1=20
->> used as Root Complex (base addr ffe09000)
->> b=3D0 d=3D0 f=3D0 (fbusno=3D0=20
-> itype=3D0=20
->> cfg_adr=3Dffe09000 cfg_data=3Dffe09004) ofs=3D10 mask=3D0
->> ...
->=20
->>              Scanning=20
->> PCI bus 01
->> b=3D1 d=3D0 f=3D0 (fbusno=3D0 itype=3D0=20
-> cfg_adr=3Dffe09000 cfg_data=3Dffe09004)=20
->> ofs=3De mask=3D3
->> ...
->> b=3D1 d=3D0 f=3D0 (fbusno=3D0=20
-> itype=3D0 cfg_adr=3Dffe09000=20
->> cfg_data=3Dffe09004) ofs=3D3c mask=3D3
->>       01  00 =20
-> 1b65  abba  0280  00
->> b=3D1 d=3D1=20
->> f=3D0 (fbusno=3D0 itype=3D0 cfg_adr=3Dffe09000=20
-> cfg_data=3Dffe09004) ofs=3De mask=3D3
->> b=3D1 d=3D1=20
->> f=3D0 (fbusno=3D0 itype=3D0=20
-> cfg_adr=3Dffe09000 cfg_data=3Dffe09004) ofs=3D0 mask=3D2
->> ...
->> b=3D0=20
->> d=3D0 f=3D0 (fbusno=3D0=20
-> itype=3D0 cfg_adr=3Dffe09000 cfg_data=3Dffe09004) ofs=3D9 mask=3D3
->>=20
->> PCIE1 on bus 00=20
-> - 01
->>=20
->>   PCIE2 used as Root Complex (base addr ffe0a000)
->> b=3D0=20
->> d=3D0 f=3D0=20
-> (fbusno=3D2 itype=3D0 cfg_adr=3Dffe0a000 cfg_data=3Dffe0a004) ofs=3D10 =
-mask=3D0
->> b=3D0=20
->> d=3D0=20
-> f=3D0 (fbusno=3D2 itype=3D0 cfg_adr=3Dffe0a000 cfg_data=3Dffe0a004) =
-ofs=3D10 mask=3D0
->> ...
->>=20
->=20
->> b=3D0 d=3D0 f=3D0 (fbusno=3D2 itype=3D0 cfg_adr=3Dffe0a000 =
-cfg_data=3Dffe0a004) ofs=3D9 mask=3D3
->=20
->>=20
->>              Scanning PCI bus 03
->> b=3D1 d=3D0 f=3D0 (fbusno=3D2 itype=3D0=20
->=20
->> cfg_adr=3Dffe0a000 cfg_data=3Dffe0a004) ofs=3De mask=3D3
->> b=3D1 d=3D0 f=3D0 (fbusno=3D2=20
-> itype=3D0=20
->> cfg_adr=3Dffe0a000 cfg_data=3Dffe0a004) ofs=3D0 mask=3D2
->> ...
->> b=3D1 d=3D0 f=3D0=20
-> (fbusno=3D2=20
->> itype=3D0 cfg_adr=3Dffe0a000 cfg_data=3Dffe0a004) ofs=3D3c mask=3D3
->>=20
-> 03  00  1b65 =20
->> abba  0280  00
->>       cfg_addr:ffe0a000  cfg_data:ffe0a004 =20
-> indirect_type:0
->>=20
->> b=3D1 d=3D1 f=3D0 (fbusno=3D2 itype=3D0 cfg_adr=3Dffe0a000=20
-> cfg_data=3Dffe0a004) ofs=3De mask=3D3
->>=20
->> ...
->> b=3D0 d=3D0 f=3D0 (fbusno=3D2 itype=3D0=20
-> cfg_adr=3Dffe0a000 cfg_data=3Dffe0a004) ofs=3D9=20
->> mask=3D3
->>   PCIE2 on bus 02 - 03
->>=20
->=20
->>=20
->>=20
->> Invita i tuoi amici e Tiscali ti premia! Il consiglio di un amico =
-vale pi=F9=20
-> di uno spot in TV. Per ogni nuovo abbonato 30 =80 di premio per te e =
-per lui! Un=20
-> amico al mese e parli e navighi sempre gratis: =
-http://freelosophy.tiscali.it/
+> #ifdef CONFIG_IOMMU_API
+> --=20
+> 1.7.4.1
 >=20
 >=20
->=20
-> Invita i tuoi amici e Tiscali ti premia! Il consiglio di un amico vale =
-pi=F9 di uno spot in TV. Per ogni nuovo abbonato 30 =80 di premio per te =
-e per lui! Un amico al mese e parli e navighi sempre gratis: =
-http://freelosophy.tiscali.it/
+> --
+> To unsubscribe from this list: send the line "unsubscribe =
+linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
