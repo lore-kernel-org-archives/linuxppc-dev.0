@@ -1,23 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3AAED2C039F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 23:21:10 +1000 (EST)
-Subject: Re: [PATCH 3/3 v2] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1349351808-7156-4-git-send-email-b16395@freescale.com>
-Date: Thu, 4 Oct 2012 08:20:25 -0500
-Message-Id: <91BA7E6D-4B29-4CCF-80EB-947EBBCF51F4@kernel.crashing.org>
-References: <1349351808-7156-1-git-send-email-b16395@freescale.com>
- <1349351808-7156-4-git-send-email-b16395@freescale.com>
-To: "<b16395@freescale.com>" <b16395@freescale.com>
-Cc: joerg.roedel@amd.com, iommu@lists.linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Varun Sethi <Varun.Sethi@freescale.com>
+Return-Path: <linus971@gmail.com>
+Received: from mail-we0-f170.google.com (mail-we0-f170.google.com
+ [74.125.82.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E40962C03A2
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2012 02:00:37 +1000 (EST)
+Received: by mail-we0-f170.google.com with SMTP id x10so406202wey.15
+ for <linuxppc-dev@ozlabs.org>; Thu, 04 Oct 2012 09:00:34 -0700 (PDT)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <1349339900.4260.10.camel@pasglop>
+References: <1349339900.4260.10.camel@pasglop>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 4 Oct 2012 09:00:14 -0700
+Message-ID: <CA+55aFxbzeNG=sAQvPcE56rEpAbACqM04m2s73BzXVgK+PCnaQ@mail.gmail.com>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,55 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Oct 4, 2012 at 1:38 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+>
+> First, however, a note about the pull request details ... the diffstat looks
+> completely on crack, any idea what's up ? It sees piles of files modified
+> in various other archs & generic code but I see no patch in that branch
+> that touches any of them.
 
-On Oct 4, 2012, at 6:56 AM, <b16395@freescale.com> =
-<b16395@freescale.com> wrote:
+So this happens if you have "reverse merges" (ie you've pulled my
+tree, or some other tree I've pulled), and there is no longer a single
+clear common point that you started from. In that case, there is no
+simple diff for the "what has changed since that original point", and
+to get the diff for the merge you actually have to do the merge and
+check the end result. git-request-pull doesn't do that, it just
+assumes it's the simple case of some single common point.
 
-> From: Varun Sethi <Varun.Sethi@freescale.com>
->=20
-> Following is a brief description of the PAMU hardware:
-> PAMU determines what action to take and whether to authorize the =
-action on the basis
-> of the memory address, a Logical IO Device Number (LIODN), and PAACT =
-table (logically)
-> indexed by LIODN and address. Hardware devices which need to access =
-memory must provide
-> an LIODN in addition to the memory address.
->=20
-> Peripheral Access Authorization and Control Tables (PAACTs) are the =
-primary data structures
-> used by PAMU. A PAACT is a table of peripheral access authorization =
-and control entries (PAACE).
-> Each PAACE defines the range of I/O bus address space that is =
-accessible by the LIOD and the
-> associated access capabilities.
->=20
-> There are two types of PAACTs: primary PAACT (PPAACT) and secondary =
-PAACT (SPAACT). A given physical
-> I/O device may be able to act as one or more independent logical I/O =
-devices (LIODs). Each such
-> logical I/O device is assigned an identifier called logical I/O device =
-number (LIODN). A LIOD is
-> allocated a contiguous portion of the I/O bus address space called the =
-DSA window for performing
-> DSA operations. The DSA window may optionally be divided into multiple =
-sub-windows, each of which
-> may be used to map to a region in system storage space. The first =
-sub-window is referred to
-> as the primary sub-window and the remaining are called secondary =
-sub-windows.
->=20
-> This patch provides the PAMU driver (fsl_pamu.c) and the corresponding =
-IOMMU API implementation
-> (fsl_pamu_domain.c). The PAMU hardware driver (fsl_pamu.c) has been =
-derived from the work done
-> by Ashish Kalra and Timur Tabi (timur@freescale.com).
->=20
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
+The fact that you haven't seen it until now just means that you've
+generally done a good job at keeping your powerpc tree "clean" from
+other trees, and containing only your own work.
 
-I'm not seeing any of the comments I made addressed.
-
-What changed in this version?
-
-- k=
+               Linus
