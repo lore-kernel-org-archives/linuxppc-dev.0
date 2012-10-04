@@ -1,33 +1,19 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 228AB2C0368
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 20:55:02 +1000 (EST)
-Subject: Re: [PATCH] powerpc/iommu: Fix multiple issues with IOMMU pools code
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <20121004145710.2cf95dcd@kryten>
-Date: Thu, 4 Oct 2012 12:54:45 +0200
-Message-Id: <96119AB6-3DCC-460E-BD40-98DC3BB8D4B4@suse.de>
-References: <3BDA9E62-7031-42D6-8CA9-5327B61700F5@suse.de>
- <CA+55aFyXwB1QcXE4Z_FAGnXROSgvP2x2+wjnX9OWPa4Dfaaf0A@mail.gmail.com>
- <DC545CD9-8745-47DD-B13B-3385C0EB5B27@suse.de>
- <20120928151043.GA19102@fieldses.org>
- <2A52FC96-148C-4F7A-9950-E152E0C6698D@suse.de>
- <1349139509.3847.2.camel@pasglop> <20121002214327.GA29218@linux.vnet.ibm.com>
- <9257E705-4EF9-4347-945C-B4A7582C427F@suse.de>
- <20121002221736.GB29218@linux.vnet.ibm.com>
- <E141CA01-F58C-47B1-8ED5-A314D1DEC968@suse.de>
- <20121004145710.2cf95dcd@kryten>
-To: Anton Blanchard <anton@samba.org>
-Cc: linux-nfs@vger.kernel.org, Jan Kara <jack@suse.cz>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML List <linux-kernel@vger.kernel.org>,
- "J. Bruce Fields" <bfields@fieldses.org>, skinsbursky@parallels.com,
- bfields@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 250162C0330
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 21:06:01 +1000 (EST)
+Message-ID: <1349348756.4260.15.camel@pasglop>
+Subject: Re: [PATCH] PPC: Enable the Watchdog vector for 405
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Date: Thu, 04 Oct 2012 21:05:56 +1000
+In-Reply-To: <20120930232723.GF30637@obsidianresearch.com>
+References: <20120930232723.GF30637@obsidianresearch.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,41 +23,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anton,
+On Sun, 2012-09-30 at 17:27 -0600, Jason Gunthorpe wrote:
+> diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
+> index 4989661..7edd7b1 100644
+> --- a/arch/powerpc/kernel/head_40x.S
+> +++ b/arch/powerpc/kernel/head_40x.S
+> @@ -431,29 +431,19 @@ label:
+>  
+>  /* 0x1000 - Programmable Interval Timer (PIT) Exception */
+>  	START_EXCEPTION(0x1000, Decrementer)
+> -	NORMAL_EXCEPTION_PROLOG
+> -	lis	r0,TSR_PIS@h
+> -	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
+> -	addi	r3,r1,STACK_FRAME_OVERHEAD
+> -	EXC_XFER_LITE(0x1000, timer_interrupt)
+> +	b pit_longer
 
-On 04.10.2012, at 06:57, Anton Blanchard wrote:
+Looks like you indeed have no choice but move it down, though I dislike
+the label name :-)
 
-> 
-> Hi Alex,
-> 
-> Looks to be a preempt issue with the iommu pools code. I did find a
-> couple more bugs along the way too.
-> 
-> Anton
-> --
-> 
-> There are a number of issues in the recent IOMMU pools code:
-> 
-> - On a preempt kernel we might switch CPUs in the middle of building
->  a scatter gather list. When this happens the handle hint passed in
->  no longer falls within the local CPU's pool. Check for this and
->  fall back to the pool hint.
-> 
-> - We were missing a spin_unlock/spin_lock in one spot where we
->  switch pools.
-> 
-> - We need to provide locking around dart_tlb_invalidate_all and
->  dart_tlb_invalidate_one now that the global lock is gone.
-> 
-> Reported-by: Alexander Graf <agraf@suse.de>
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
-> 
-> There is still an issue with the lazy u3 flushing, but I wanted
-> to get this out for testing.
+Look at how we do a similar thing in exceptions-64.S, we basically just
+don't use START_EXCEPTION at that location. We put a .=xxxx and a
+branch, and use the real exception name at the target label.
 
-Yup. It fixes the nfs problem on my U4 based machine.
+Or just name it "pit_exception" if you want to keep things simple. I
+just don't like "pit_longer" :-)
+ 
+> -#if 0
+>  /* NOTE:
+> - * FIT and WDT handlers are not implemented yet.
+> + * FIT handler is not implemented yet.
+>   */
 
-Tested-by: Alexander Graf <agraf@suse.de>
+Any reason to comment that out ? Better off also branching out of line
+to a stub similar to the PIT one that then calls unknown_exception. That
+way if it triggers by accident, you'll get a clean trace.
 
-Alex
+>  /* 0x1010 - Fixed Interval Timer (FIT) Exception
+>  */
+> -	STND_EXCEPTION(0x1010,	FITException,		unknown_exception)
+> +//	STND_EXCEPTION(0x1010,	FITException,		unknown_exception)
+>  
+>  /* 0x1020 - Watchdog Timer (WDT) Exception
+>  */
+> -#ifdef CONFIG_BOOKE_WDT
+>  	CRITICAL_EXCEPTION(0x1020, WDTException, WatchdogException)
+> -#else
+> -	CRITICAL_EXCEPTION(0x1020, WDTException, unknown_exception)
+> -#endif
+> -#endif
+
+Move it out of line too please. When a given vector "slot" gets crowded,
+I prefer moving everything in it out of line to keep things consistent.
+ 
+>  /* 0x1100 - Data TLB Miss Exception
+>   * As the name implies, translation is not in the MMU, so search the
+> @@ -738,6 +728,16 @@ label:
+>  		(MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
+>  		NOCOPY, crit_transfer_to_handler, ret_from_crit_exc)
+>  
+> +	/* Programmable Interval Timer (PIT) Exception. The PIT runs into
+> +	   the space reserved for other exceptions, so we branch down
+> +	   to here. */
+> +pit_longer:
+> +	NORMAL_EXCEPTION_PROLOG
+> +	lis	r0,TSR_PIS@h
+> +	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
+> +	addi	r3,r1,STACK_FRAME_OVERHEAD
+> +	EXC_XFER_LITE(0x1000, timer_interrupt)
+> +
+>  /*
+>   * The other Data TLB exceptions bail out to this point
+>   * if they can't resolve the lightweight TLB fault.
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index ae0843f..0701ec1 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -1514,7 +1514,7 @@ void unrecoverable_exception(struct pt_regs *regs)
+>  	die("Unrecoverable exception", regs, SIGABRT);
+>  }
+>  
+> -#ifdef CONFIG_BOOKE_WDT
+> +#if defined(CONFIG_BOOKE_WDT) | defined(CONFIG_40x)
+>  /*
+>   * Default handler for a Watchdog exception,
+>   * spins until a reboot occurs
+
+Cheers,
+Ben.
