@@ -1,28 +1,37 @@
-Return-Path: <anton@samba.org>
-Date: Thu, 4 Oct 2012 14:57:10 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Alexander Graf <agraf@suse.de>
-Subject: [PATCH] powerpc/iommu: Fix multiple issues with IOMMU pools code
-Message-ID: <20121004145710.2cf95dcd@kryten>
-In-Reply-To: <E141CA01-F58C-47B1-8ED5-A314D1DEC968@suse.de>
-References: <3BDA9E62-7031-42D6-8CA9-5327B61700F5@suse.de>
- <CA+55aFyXwB1QcXE4Z_FAGnXROSgvP2x2+wjnX9OWPa4Dfaaf0A@mail.gmail.com>
- <DC545CD9-8745-47DD-B13B-3385C0EB5B27@suse.de>
- <20120928151043.GA19102@fieldses.org>
- <2A52FC96-148C-4F7A-9950-E152E0C6698D@suse.de>
- <1349139509.3847.2.camel@pasglop>
- <20121002214327.GA29218@linux.vnet.ibm.com>
- <9257E705-4EF9-4347-945C-B4A7582C427F@suse.de>
- <20121002221736.GB29218@linux.vnet.ibm.com>
- <E141CA01-F58C-47B1-8ED5-A314D1DEC968@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-nfs@vger.kernel.org, Jan Kara <jack@suse.cz>,
- Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML List <linux-kernel@vger.kernel.org>,
- "J. Bruce Fields" <bfields@fieldses.org>, skinsbursky@parallels.com,
- bfields@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3DDD52C0340
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 15:31:44 +1000 (EST)
+Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 8F03D3EE0AE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 14:31:41 +0900 (JST)
+Received: from smail (m3 [127.0.0.1])
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 73F5845DEB6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 14:31:41 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 5336645DEB5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 14:31:41 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 447021DB8040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 14:31:41 +0900 (JST)
+Received: from G01JPEXCHKW23.g01.fujitsu.local
+ (G01JPEXCHKW23.g01.fujitsu.local [10.0.193.106])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id EBE711DB803B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 14:31:40 +0900 (JST)
+Message-ID: <506D1F1D.9000301@jp.fujitsu.com>
+Date: Thu, 4 Oct 2012 14:31:09 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+MIME-Version: 1.0
+To: <x86@kernel.org>, <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>
+Subject: memory-hotplug : suppres "Trying to free nonexistent resource
+ <XXXXXXXXXXXXXXXX-YYYYYYYYYYYYYYYY>" warning
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: len.brown@intel.com, wency@cn.fujitsu.com, paulus@samba.org,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ cl@linux.com, akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,104 +41,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When our x86 box calls __remove_pages(), release_mem_region() shows
+many warnings. And x86 box cannot unregister iomem_resource.
 
-Hi Alex,
+"Trying to free nonexistent resource <XXXXXXXXXXXXXXXX-YYYYYYYYYYYYYYYY>"
 
-Looks to be a preempt issue with the iommu pools code. I did find a
-couple more bugs along the way too.
+release_mem_region() has been changed as called in each PAGES_PER_SECTION
+chunk since applying a patch(de7f0cba96786c). Because powerpc registers
+iomem_resource in each PAGES_PER_SECTION chunk. But when I hot add memory
+on x86 box, iomem_resource is register in each _CRS not PAGES_PER_SECTION
+chunk. So x86 box unregisters iomem_resource.
 
-Anton
---
+The patch fixes the problem.
 
-There are a number of issues in the recent IOMMU pools code:
-
-- On a preempt kernel we might switch CPUs in the middle of building
-  a scatter gather list. When this happens the handle hint passed in
-  no longer falls within the local CPU's pool. Check for this and
-  fall back to the pool hint.
-
-- We were missing a spin_unlock/spin_lock in one spot where we
-  switch pools.
-
-- We need to provide locking around dart_tlb_invalidate_all and
-  dart_tlb_invalidate_one now that the global lock is gone.
-
-Reported-by: Alexander Graf <agraf@suse.de>
-Signed-off-by: Anton Blanchard <anton@samba.org>
+CC: David Rientjes <rientjes@google.com>
+CC: Jiang Liu <liuj97@gmail.com>
+CC: Len Brown <len.brown@intel.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Christoph Lameter <cl@linux.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Wen Congyang <wency@cn.fujitsu.com>
+Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 ---
+ arch/powerpc/platforms/pseries/hotplug-memory.c |   13 +++++++++----
+ mm/memory_hotplug.c                             |    4 ++--
+ 2 files changed, 11 insertions(+), 6 deletions(-)
 
-There is still an issue with the lazy u3 flushing, but I wanted
-to get this out for testing.
-
-Index: b/arch/powerpc/kernel/iommu.c
+Index: linux-3.6/arch/powerpc/platforms/pseries/hotplug-memory.c
 ===================================================================
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -215,7 +215,8 @@ static unsigned long iommu_range_alloc(s
- 	spin_lock_irqsave(&(pool->lock), flags);
+--- linux-3.6.orig/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-10-04 14:22:59.833520792 +0900
++++ linux-3.6/arch/powerpc/platforms/pseries/hotplug-memory.c	2012-10-04 14:23:05.150521411 +0900
+@@ -77,7 +77,8 @@ static int pseries_remove_memblock(unsig
+ {
+ 	unsigned long start, start_pfn;
+ 	struct zone *zone;
+-	int ret;
++	int i, ret;
++	int sections_to_remove;
  
- again:
--	if ((pass == 0) && handle && *handle)
-+	if ((pass == 0) && handle && *handle &&
-+	    (*handle >= pool->start) && (*handle < pool->end))
- 		start = *handle;
- 	else
- 		start = pool->hint;
-@@ -236,7 +237,9 @@ again:
- 		 * but on second pass, start at 0 in pool 0.
- 		 */
- 		if ((start & mask) >= limit || pass > 0) {
-+			spin_unlock(&(pool->lock));
- 			pool = &(tbl->pools[0]);
-+			spin_lock(&(pool->lock));
- 			start = pool->start;
- 		} else {
- 			start &= mask;
-Index: b/arch/powerpc/sysdev/dart_iommu.c
+ 	start_pfn = base >> PAGE_SHIFT;
+ 
+@@ -97,9 +98,13 @@ static int pseries_remove_memblock(unsig
+ 	 * to sysfs "state" file and we can't remove sysfs entries
+ 	 * while writing to it. So we have to defer it to here.
+ 	 */
+-	ret = __remove_pages(zone, start_pfn, memblock_size >> PAGE_SHIFT);
+-	if (ret)
+-		return ret;
++	sections_to_remove = (memblock_size >> PAGE_SHIFT) / PAGES_PER_SECTION;
++	for (i = 0; i < sections_to_remove; i++) {
++		unsigned long pfn = start_pfn + i * PAGES_PER_SECTION;
++		ret = __remove_pages(zone, start_pfn,  PAGES_PER_SECTION);
++		if (ret)
++			return ret;
++	}
+ 
+ 	/*
+ 	 * Update memory regions for memory remove
+Index: linux-3.6/mm/memory_hotplug.c
 ===================================================================
---- a/arch/powerpc/sysdev/dart_iommu.c
-+++ b/arch/powerpc/sysdev/dart_iommu.c
-@@ -74,11 +74,16 @@ static int dart_is_u4;
+--- linux-3.6.orig/mm/memory_hotplug.c	2012-10-04 14:22:59.829520788 +0900
++++ linux-3.6/mm/memory_hotplug.c	2012-10-04 14:23:25.860527278 +0900
+@@ -362,11 +362,11 @@ int __remove_pages(struct zone *zone, un
+ 	BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
+ 	BUG_ON(nr_pages % PAGES_PER_SECTION);
  
- #define DBG(...)
- 
-+static DEFINE_SPINLOCK(invalidate_lock);
++	release_mem_region(phys_start_pfn << PAGE_SHIFT, nr_pages * PAGE_SIZE);
 +
- static inline void dart_tlb_invalidate_all(void)
- {
- 	unsigned long l = 0;
- 	unsigned int reg, inv_bit;
- 	unsigned long limit;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&invalidate_lock, flags);
- 
- 	DBG("dart: flush\n");
- 
-@@ -111,12 +116,17 @@ retry:
- 			panic("DART: TLB did not flush after waiting a long "
- 			      "time. Buggy U3 ?");
- 	}
-+
-+	spin_unlock_irqrestore(&invalidate_lock, flags);
- }
- 
- static inline void dart_tlb_invalidate_one(unsigned long bus_rpn)
- {
- 	unsigned int reg;
- 	unsigned int l, limit;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&invalidate_lock, flags);
- 
- 	reg = DART_CNTL_U4_ENABLE | DART_CNTL_U4_IONE |
- 		(bus_rpn & DART_CNTL_U4_IONE_MASK);
-@@ -138,6 +148,8 @@ wait_more:
- 			panic("DART: TLB did not flush after waiting a long "
- 			      "time. Buggy U4 ?");
- 	}
-+
-+	spin_unlock_irqrestore(&invalidate_lock, flags);
- }
- 
- static void dart_flush(struct iommu_table *tbl)
+ 	sections_to_remove = nr_pages / PAGES_PER_SECTION;
+ 	for (i = 0; i < sections_to_remove; i++) {
+ 		unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
+-		release_mem_region(pfn << PAGE_SHIFT,
+-				   PAGES_PER_SECTION << PAGE_SHIFT);
+ 		ret = __remove_section(zone, __pfn_to_section(pfn));
+ 		if (ret)
+ 			break;
