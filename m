@@ -1,27 +1,30 @@
 Return-Path: <varuns@nmglablinux27.zin33.ap.freescale.net>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7BBDA2C0371
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 22:00:31 +1000 (EST)
-Received: from mail110-co1 (localhost [127.0.0.1])	by
- mail110-co1-R.bigfish.com (Postfix) with ESMTP id 2788A3A00E8	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 12:00:25 +0000 (UTC)
-Received: from CO1EHSMHS020.bigfish.com (unknown [10.243.78.237])	by
- mail110-co1.bigfish.com (Postfix) with ESMTP id CEF87C80019	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 12:00:22 +0000 (UTC)
+ by ozlabs.org (Postfix) with ESMTPS id AA8232C0371
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 22:00:33 +1000 (EST)
+Received: from mail131-ch1 (localhost [127.0.0.1])	by
+ mail131-ch1-R.bigfish.com (Postfix) with ESMTP id 827054007C	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 12:00:27 +0000 (UTC)
+Received: from CH1EHSMHS016.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.244])	by mail131-ch1.bigfish.com (Postfix) with ESMTP id
+ 1D0982600AA	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 12:00:25
+ +0000 (UTC)
 Received: from nmglablinux27.zin33.ap.freescale.net ([10.213.130.145])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q94C0H3x019811	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Oct 2012 05:00:18 -0700
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q94C0KwP019833	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Oct 2012 05:00:21 -0700
 From: <b16395@freescale.com>
 To: <joerg.roedel@amd.com>, <iommu@lists.linux-foundation.org>,
  <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/3 v2] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-Date: Thu, 4 Oct 2012 17:26:45 +0530
-Message-ID: <1349351808-7156-1-git-send-email-b16395@freescale.com>
+Subject: [PATCH 2/3 v2] iommu/fsl: Add iommu domain attributes required by fsl
+ PAMU driver.
+Date: Thu, 4 Oct 2012 17:26:47 +0530
+Message-ID: <1349351808-7156-3-git-send-email-b16395@freescale.com>
+In-Reply-To: <1349351808-7156-1-git-send-email-b16395@freescale.com>
+References: <1349351808-7156-1-git-send-email-b16395@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Varun Sethi <Varun.Sethi@freescale.com>
@@ -36,39 +39,70 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Varun Sethi <Varun.Sethi@freescale.com>
 
-This patchset provides the Freescale PAMU (Peripheral Access Management Unit) driver
-and the corresponding IOMMU API implementation. PAMU is the IOMMU present on Freescale
-QorIQ platforms. PAMU can authorize memory access, remap the memory address, and remap 
-the I/O transaction type.
+Added the following domain attributes required by FSL PAMU driver:
+1. Subwindows field added to the iommu domain geometry attribute.
+2. Added new iommu stash attribute, which allows setting of the
+   LIODN specific stash id parameter through IOMMU API.
+3. Added an attribute for enabling/disabling DMA to a particular
+   memory window.
 
-This set consists of the following patches:
-1. Addition of new field in the device (powerpc) archdata structure for storing iommu domain information
-   pointer. This pointer is stored when the device is attached to a particular iommu domain.
-2. Addition of domain attributes required by the PAMU driver IOMMU API.
-3. PAMU driver and IOMMU API implementation.
+Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+---
+ include/linux/iommu.h |   35 +++++++++++++++++++++++++++++++++++
+ 1 files changed, 35 insertions(+), 0 deletions(-)
 
-This patch set is based on the next branch of the iommu git tree maintained by Joerg.
-
-Varun Sethi (3):
-  Store iommu domain information pointer in archdata.
-  Add iommu domain attributes required by fsl PAMU driver.
-  FSL PAMU driver and IOMMU API implementation.
-
- arch/powerpc/include/asm/device.h |    4 +
- drivers/iommu/Kconfig             |    7 +
- drivers/iommu/Makefile            |    1 +
- drivers/iommu/fsl_pamu.c          | 1033 +++++++++++++++++++++++++++++++++++++
- drivers/iommu/fsl_pamu.h          |  377 ++++++++++++++
- drivers/iommu/fsl_pamu_domain.c   |  990 +++++++++++++++++++++++++++++++++++
- drivers/iommu/fsl_pamu_domain.h   |   94 ++++
- drivers/iommu/fsl_pamu_proto.h    |   49 ++
- include/linux/iommu.h             |   30 ++
- 9 files changed, 2585 insertions(+), 0 deletions(-)
- create mode 100644 drivers/iommu/fsl_pamu.c
- create mode 100644 drivers/iommu/fsl_pamu.h
- create mode 100644 drivers/iommu/fsl_pamu_domain.c
- create mode 100644 drivers/iommu/fsl_pamu_domain.h
- create mode 100644 drivers/iommu/fsl_pamu_proto.h
-
+diff --git a/include/linux/iommu.h b/include/linux/iommu.h
+index f3b99e1..62e22f0 100644
+--- a/include/linux/iommu.h
++++ b/include/linux/iommu.h
+@@ -44,6 +44,33 @@ struct iommu_domain_geometry {
+ 	dma_addr_t aperture_start; /* First address that can be mapped    */
+ 	dma_addr_t aperture_end;   /* Last address that can be mapped     */
+ 	bool force_aperture;       /* DMA only allowed in mappable range? */
++
++	/* The subwindows field indicates number of DMA subwindows supported
++	 * by the geometry. Following is the interpretation of
++	 * values for this field:
++	 * 0 : This implies that the supported geometry size is 1 MB
++         * with each subwindow size being 4KB. Thus number of subwindows
++	 * being = 1MB/4KB = 256.
++	 * 1 : Only one DMA window i.e. no subwindows.
++	 * value other than 0 or 1 would indicate actual number of subwindows.
++	 */
++	u32 subwindows;
++};
++
++/* cache stash targets */
++#define L1_CACHE 1
++#define L2_CACHE 2
++#define L3_CACHE 3
++
++/* This attribute corresponds to IOMMUs capable of generating
++ * a stash transaction. A stash transaction is typically a
++ * hardware initiated prefetch of data from memory to cache.
++ * This attribute allows configuring stashig specific parameters
++ * in the IOMMU hardware.
++ */
++struct iommu_stash_attribute {
++	u32 	cpu;	/* cpu number */
++	u32 	cache;	/* cache to stash to: L1,L2,L3 */
+ };
+ 
+ struct iommu_domain {
+@@ -60,6 +87,14 @@ struct iommu_domain {
+ enum iommu_attr {
+ 	DOMAIN_ATTR_MAX,
+ 	DOMAIN_ATTR_GEOMETRY,
++	/* Set the IOMMU hardware stashing
++	 * parameters.
++	 */
++	DOMAIN_ATTR_STASH,
++	/* Explicity enable/disable DMA for a
++         * particular memory window.
++         */
++	DOMAIN_ATTR_ENABLE,
+ };
+ 
+ #ifdef CONFIG_IOMMU_API
 -- 
 1.7.4.1
