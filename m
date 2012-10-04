@@ -1,28 +1,31 @@
 Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 29C782C00DC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Oct 2012 14:42:08 +1000 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A6AB02C0371
+ for <linuxppc-dev@ozlabs.org>; Thu,  4 Oct 2012 14:42:16 +1000 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Thu, 4 Oct 2012 14:39:32 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q944WJlW65142788
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Oct 2012 14:32:20 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q944g1EH031273
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 4 Oct 2012 14:42:01 +1000
+ for <linuxppc-dev@ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Thu, 4 Oct 2012 10:12:13 +0530
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q944g9iN065852
+ for <linuxppc-dev@ozlabs.org>; Thu, 4 Oct 2012 10:12:09 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q94ABXYT025579
+ for <linuxppc-dev@ozlabs.org>; Thu, 4 Oct 2012 20:11:33 +1000
 From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-Subject: [PATCH v1 0/3] cpuidle: (pSeries) pseries idle driver fixes. 
+Subject: [PATCH v1 1/3] cpuidle: (POWER) Fix target residency initialisation
+ in pseries cpuidle
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@ozlabs.org
-Date: Thu, 04 Oct 2012 10:12:01 +0530
-Message-ID: <20121004044154.15921.51256.stgit@deepthi.in.ibm.com>
+Date: Thu, 04 Oct 2012 10:12:10 +0530
+Message-ID: <20121004044207.15921.36114.stgit@deepthi.in.ibm.com>
+In-Reply-To: <20121004044154.15921.51256.stgit@deepthi.in.ibm.com>
+References: <20121004044154.15921.51256.stgit@deepthi.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -34,27 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following series consists of a bunch of fixes for 
-cpuidle back-end driver for ppc64 (pSeries) platform.
+Remove the redundant target residency initialisation in pseries_cpuidle_driver_init().
+This is currently over-writing the residency time updated as part of the static
+table, resulting in  all the idle states having the same target
+residency of 100us which is incorrect. This may result in the menu governor making
+wrong state decisions.
 
-The series applies on 3.6-rc7 and has been tested on ppc64 pSeries
-POWER7 system with snooze and nap states.
+Signed-off-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+---
 
-With these fixes, avg idle residency for nap on 50 percent idle system
-increased from 96 to 99.4 percent and idle residency for snooze for
-the same decreased from 4 to 0.6 percent, determined running spec power
-benchmark runs.
+ arch/powerpc/platforms/pseries/processor_idle.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
- Deepthi Dharwar (3):
-      cpuidle: (POWER) Fix snooze state problem persistant in the current cpuidle design on pseries.
-      cpuidle: (POWER) Fix smt_snooze_delay functionality.
-      cpuidle: (POWER) Fix target residency initialisation in pseries cpuidle
-
-
-  arch/powerpc/include/asm/processor.h            |    4 +
- arch/powerpc/kernel/sysfs.c                     |    2 -
- arch/powerpc/platforms/pseries/processor_idle.c |   62 +++++++++++------------
- 3 files changed, 32 insertions(+), 36 deletions(-)
-
-
--- Deepthi
+diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+index 455760b..02e425a 100644
+--- a/arch/powerpc/platforms/pseries/processor_idle.c
++++ b/arch/powerpc/platforms/pseries/processor_idle.c
+@@ -246,10 +246,6 @@ static int pseries_cpuidle_driver_init(void)
+ 		drv->states[drv->state_count] =	/* structure copy */
+ 			cpuidle_state_table[idle_state];
+ 
+-		if (cpuidle_state_table == dedicated_states)
+-			drv->states[drv->state_count].target_residency =
+-				__get_cpu_var(smt_snooze_delay);
+-
+ 		drv->state_count += 1;
+ 	}
+ 
