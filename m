@@ -1,20 +1,28 @@
-Return-Path: <jgunthorpe@obsidianresearch.com>
-Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A236C2C0040
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2012 04:07:21 +1000 (EST)
-Date: Fri, 5 Oct 2012 12:07:15 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCHv2] PPC: Enable the Watchdog vector for 405
-Message-ID: <20121005180715.GA818@obsidianresearch.com>
-References: <20120930232723.GF30637@obsidianresearch.com>
- <1349348756.4260.15.camel@pasglop>
+Return-Path: <kosaki.motohiro@gmail.com>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EFA902C031E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2012 05:02:07 +1000 (EST)
+Received: by mail-ob0-f179.google.com with SMTP id lz20so1947251obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2012 12:02:05 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1349348756.4260.15.camel@pasglop>
-Cc: linuxppc-dev@lists.ozlabs.org
+Sender: kosaki.motohiro@gmail.com
+In-Reply-To: <506D1F1D.9000301@jp.fujitsu.com>
+References: <506D1F1D.9000301@jp.fujitsu.com>
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Date: Fri, 5 Oct 2012 15:01:44 -0400
+Message-ID: <CAHGf_=pA-FPZ7YhM5RRWLOVdNHZhjkO+8HoXSMx0_vWNT-1ngg@mail.gmail.com>
+Subject: Re: memory-hotplug : suppres "Trying to free nonexistent resource
+ <XXXXXXXXXXXXXXXX-YYYYYYYYYYYYYYYY>" warning
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org,
+ Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org, paulus@samba.org,
+ minchan.kim@gmail.com, rientjes@google.com, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,144 +32,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The watchdog and FIT code has been #if 0'd for ever, if the CPU takes
-an exception to either of those vectors it will jump into the middle
-of the PIT or Data TLB code and surely crash.
+CC to Dave Hanse.
 
-At least some (all?) 405 cores have both the WDT and FIT
-vectors defined, so lets have proper entry points for them.
+Hello Dave,
 
-Tested that the WDT vector works on a 405F6 core.
+I think following patch works both x86 and ppc. but I'm not ppc
+expert. So I'm glad
+if you double check it.
 
-Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
----
- arch/powerpc/kernel/head_40x.S |   47 ++++++++++++++++++++++++---------------
- arch/powerpc/kernel/traps.c    |    2 +-
- 2 files changed, 30 insertions(+), 19 deletions(-)
+thank you.
 
-Changes in v2:
- - Move all three exception vectors out of line with an explicit
-   branch like exceptions-64.S (Benjamin)
- - Fix the #if .. | .. typo to be || (Josh)
- - Include the stub for FITException, and figured out what the very
-   obsolete STDN_EXCEPTION might have done. (Benjamin)
- - I kept the WatchdogException trap unconditional, but this would be
-   trivial to change, per Josh's comments
 
-The disadvantage to moving the WDT out of line is that the
-CRITICAL_EXCEPTION macro has to be expanded..
+<intentional full quote>
 
-Thanks everyone
-
-Action shot:
-
-PowerPC Book-E Watchdog Exception
-Oops: Watchdog Timeout
-NIP: c0006b54 LR: c0006ad4 CTR: c003c800
-REGS: c3ffbf50 TRAP: 1022   Not tainted  (3.6.0-00040-ga9db8b3)
-MSR: 00029030 <EE,ME,IR,DR>  CR: 24002482  XER: 00000007
-TASK = c03c32b0[0] 'swapper' THREAD: c03e0000
-GPR00: 00000008 c03e1f90 c03c32b0 00000000 c1872f00 00000001 00000000 00000000 
-GPR08: 01000000 c03e73c0 00000000 00000000 22000482 10152d00 7ffe7b60 7ffe7b70 
-GPR16: 7ffe7be0 7ffe7d20 100f7560 7ffe7d9c 7ffe7db4 7ffe7d30 7ffe7dcc 7ffe7dd0 
-GPR24: 00000000 00000000 00000000 c049e680 c03e0000 c03e003c 00000008 c03e0000 
-NIP [c0006b54] cpu_idle+0xd0/0xe8
-LR [c0006ad4] cpu_idle+0x50/0xe8
-Call Trace:
-[c03e1f90] [c0006ad4] cpu_idle+0x50/0xe8 (unreliable)
-[c03e1fb0] [c0002990] rest_init+0x64/0x74
-[c03e1fc0] [c0296774] start_kernel+0x2cc/0x2d4
-[c03e1ff0] [c0002440] start_here+0x34/0x84
-Instruction dump:
-40820010 7c0000a6 60008000 7c000124 7c00e828 7c00f378 7c00e92d 40a2fff4 
-4800000c 7c210b78 7ffffb78 801f003c <700b0004> 4182ff80 7c421378 48048585 
-Kernel panic - not syncing: Watchdog Timeout
-Call Trace:
-Rebooting in 180 seconds..
-
-diff --git a/arch/powerpc/kernel/head_40x.S b/arch/powerpc/kernel/head_40x.S
-index 4989661..8a9b6f5 100644
---- a/arch/powerpc/kernel/head_40x.S
-+++ b/arch/powerpc/kernel/head_40x.S
-@@ -430,30 +430,18 @@ label:
- 	EXCEPTION(0x0F00, Trap_0F, unknown_exception, EXC_XFER_EE)
- 
- /* 0x1000 - Programmable Interval Timer (PIT) Exception */
--	START_EXCEPTION(0x1000, Decrementer)
--	NORMAL_EXCEPTION_PROLOG
--	lis	r0,TSR_PIS@h
--	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
--	addi	r3,r1,STACK_FRAME_OVERHEAD
--	EXC_XFER_LITE(0x1000, timer_interrupt)
--
--#if 0
--/* NOTE:
-- * FIT and WDT handlers are not implemented yet.
-- */
-+	. = 0x1000
-+	b Decrementer
- 
- /* 0x1010 - Fixed Interval Timer (FIT) Exception
- */
--	STND_EXCEPTION(0x1010,	FITException,		unknown_exception)
-+	. = 0x1010
-+	b FITException
- 
- /* 0x1020 - Watchdog Timer (WDT) Exception
- */
--#ifdef CONFIG_BOOKE_WDT
--	CRITICAL_EXCEPTION(0x1020, WDTException, WatchdogException)
--#else
--	CRITICAL_EXCEPTION(0x1020, WDTException, unknown_exception)
--#endif
--#endif
-+	. = 0x1020
-+	b WDTException
- 
- /* 0x1100 - Data TLB Miss Exception
-  * As the name implies, translation is not in the MMU, so search the
-@@ -738,6 +726,29 @@ label:
- 		(MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)), \
- 		NOCOPY, crit_transfer_to_handler, ret_from_crit_exc)
- 
-+	/* Programmable Interval Timer (PIT) Exception. (from 0x1000) */
-+Decrementer:
-+	NORMAL_EXCEPTION_PROLOG
-+	lis	r0,TSR_PIS@h
-+	mtspr	SPRN_TSR,r0		/* Clear the PIT exception */
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	EXC_XFER_LITE(0x1000, timer_interrupt)
-+
-+	/* Fixed Interval Timer (FIT) Exception. (from 0x1010) */
-+FITException:
-+	NORMAL_EXCEPTION_PROLOG
-+	addi	r3,r1,STACK_FRAME_OVERHEAD;
-+	EXC_XFER_EE(0x1010, unknown_exception)
-+
-+	/* Watchdog Timer (WDT) Exception. (from 0x1020) */
-+WDTException:
-+	CRITICAL_EXCEPTION_PROLOG;
-+	addi	r3,r1,STACK_FRAME_OVERHEAD;
-+	EXC_XFER_TEMPLATE(WatchdogException, 0x1020+2,
-+	                  (MSR_KERNEL & ~(MSR_ME|MSR_DE|MSR_CE)),
-+			  NOCOPY, crit_transfer_to_handler,
-+			  ret_from_crit_exc)
-+
- /*
-  * The other Data TLB exceptions bail out to this point
-  * if they can't resolve the lightweight TLB fault.
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index ae0843f..eac1abf 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1514,7 +1514,7 @@ void unrecoverable_exception(struct pt_regs *regs)
- 	die("Unrecoverable exception", regs, SIGABRT);
- }
- 
--#ifdef CONFIG_BOOKE_WDT
-+#if defined(CONFIG_BOOKE_WDT) || defined(CONFIG_40x)
- /*
-  * Default handler for a Watchdog exception,
-  * spins until a reboot occurs
--- 
-1.7.5.4
+> When our x86 box calls __remove_pages(), release_mem_region() shows
+> many warnings. And x86 box cannot unregister iomem_resource.
+>
+> "Trying to free nonexistent resource <XXXXXXXXXXXXXXXX-YYYYYYYYYYYYYYYY>"
+>
+> release_mem_region() has been changed as called in each PAGES_PER_SECTION
+> chunk since applying a patch(de7f0cba96786c). Because powerpc registers
+> iomem_resource in each PAGES_PER_SECTION chunk. But when I hot add memory
+> on x86 box, iomem_resource is register in each _CRS not PAGES_PER_SECTION
+> chunk. So x86 box unregisters iomem_resource.
+>
+> The patch fixes the problem.
+>
+> CC: David Rientjes <rientjes@google.com>
+> CC: Jiang Liu <liuj97@gmail.com>
+> CC: Len Brown <len.brown@intel.com>
+> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> CC: Paul Mackerras <paulus@samba.org>
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Wen Congyang <wency@cn.fujitsu.com>
+> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> ---
+>  arch/powerpc/platforms/pseries/hotplug-memory.c |   13 +++++++++----
+>  mm/memory_hotplug.c                             |    4 ++--
+>  2 files changed, 11 insertions(+), 6 deletions(-)
+>
+> Index: linux-3.6/arch/powerpc/platforms/pseries/hotplug-memory.c
+> ===================================================================
+> --- linux-3.6.orig/arch/powerpc/platforms/pseries/hotplug-memory.c      2012-10-04 14:22:59.833520792 +0900
+> +++ linux-3.6/arch/powerpc/platforms/pseries/hotplug-memory.c   2012-10-04 14:23:05.150521411 +0900
+> @@ -77,7 +77,8 @@ static int pseries_remove_memblock(unsig
+>  {
+>         unsigned long start, start_pfn;
+>         struct zone *zone;
+> -       int ret;
+> +       int i, ret;
+> +       int sections_to_remove;
+>
+>         start_pfn = base >> PAGE_SHIFT;
+>
+> @@ -97,9 +98,13 @@ static int pseries_remove_memblock(unsig
+>          * to sysfs "state" file and we can't remove sysfs entries
+>          * while writing to it. So we have to defer it to here.
+>          */
+> -       ret = __remove_pages(zone, start_pfn, memblock_size >> PAGE_SHIFT);
+> -       if (ret)
+> -               return ret;
+> +       sections_to_remove = (memblock_size >> PAGE_SHIFT) / PAGES_PER_SECTION;
+> +       for (i = 0; i < sections_to_remove; i++) {
+> +               unsigned long pfn = start_pfn + i * PAGES_PER_SECTION;
+> +               ret = __remove_pages(zone, start_pfn,  PAGES_PER_SECTION);
+> +               if (ret)
+> +                       return ret;
+> +       }
+>
+>         /*
+>          * Update memory regions for memory remove
+> Index: linux-3.6/mm/memory_hotplug.c
+> ===================================================================
+> --- linux-3.6.orig/mm/memory_hotplug.c  2012-10-04 14:22:59.829520788 +0900
+> +++ linux-3.6/mm/memory_hotplug.c       2012-10-04 14:23:25.860527278 +0900
+> @@ -362,11 +362,11 @@ int __remove_pages(struct zone *zone, un
+>         BUG_ON(phys_start_pfn & ~PAGE_SECTION_MASK);
+>         BUG_ON(nr_pages % PAGES_PER_SECTION);
+>
+> +       release_mem_region(phys_start_pfn << PAGE_SHIFT, nr_pages * PAGE_SIZE);
+> +
+>         sections_to_remove = nr_pages / PAGES_PER_SECTION;
+>         for (i = 0; i < sections_to_remove; i++) {
+>                 unsigned long pfn = phys_start_pfn + i*PAGES_PER_SECTION;
+> -               release_mem_region(pfn << PAGE_SHIFT,
+> -                                  PAGES_PER_SECTION << PAGE_SHIFT);
+>                 ret = __remove_section(zone, __pfn_to_section(pfn));
+>                 if (ret)
+>                         break;
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
