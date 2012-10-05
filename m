@@ -1,28 +1,23 @@
-Return-Path: <kosaki.motohiro@gmail.com>
-Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
- [209.85.214.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CD4DA2C0335
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2012 05:42:10 +1000 (EST)
-Received: by mail-ob0-f179.google.com with SMTP id lz20so1978739obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2012 12:42:08 -0700 (PDT)
-MIME-Version: 1.0
-Sender: kosaki.motohiro@gmail.com
-In-Reply-To: <506E4571.4090608@jp.fujitsu.com>
-References: <506E43E0.70507@jp.fujitsu.com> <506E4571.4090608@jp.fujitsu.com>
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Fri, 5 Oct 2012 15:36:52 -0400
-Message-ID: <CAHGf_=rc9z7OmuH-pamQmPE=dpy3zPX3fXab=-APo2_NX7=KpQ@mail.gmail.com>
-Subject: Re: [PATCH 2/10] memory-hotplug : remove /sys/firmware/memmap/X sysfs
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- wency@cn.fujitsu.com, len.brown@intel.com, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com, linux-mm@kvack.org, minchan.kim@gmail.com,
- rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4DB0F2C0337
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Oct 2012 06:23:28 +1000 (EST)
+Received: from frontend1.mail.m-online.net (unknown [192.168.8.180])
+ by mail-out.m-online.net (Postfix) with ESMTP id 3XYMqG1K4wz4KK4M
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 22:23:21 +0200 (CEST)
+Received: from localhost (p4FDE7C05.dip.t-dialin.net [79.222.124.5])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by mail.mnet-online.de (Postfix) with ESMTPSA id 3XYMqF5lbbzbbcl
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 22:23:21 +0200 (CEST)
+From: Anatolij Gustschin <agust@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/mpc5200: move lpbfifo node and fix its interrupt
+ property
+Date: Fri,  5 Oct 2012 22:23:10 +0200
+Message-Id: <1349468590-24009-1-git-send-email-agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,266 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 4, 2012 at 10:26 PM, Yasuaki Ishimatsu
-<isimatu.yasuaki@jp.fujitsu.com> wrote:
-> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
-> sysfs files are created. But there is no code to remove these files. The patch
-> implements the function to remove them.
->
-> Note : The code does not free firmware_map_entry since there is no way to free
->        memory which is allocated by bootmem.
+The LPB FIFO interrupt is a peripheral interrupt, thus its L1 cell
+has to be 2 instead of 3. Fix it and while at it, move the lpbfifo
+node to the common dtsi file.
 
-You have to explain why this is ok. I guess the unfreed
-firmware_map_entry is reused
-at next online memory and don't make memory leak, right?
+Reported-by: Stefan Roese <sr@denx.de>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ arch/powerpc/boot/dts/mpc5200b.dtsi |    6 ++++++
+ arch/powerpc/boot/dts/o2d.dtsi      |    6 ------
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-
-
->
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->
-> ---
->  drivers/firmware/memmap.c    |   98 ++++++++++++++++++++++++++++++++++++++++++-
->  include/linux/firmware-map.h |    6 ++
->  mm/memory_hotplug.c          |    7 ++-
->  3 files changed, 108 insertions(+), 3 deletions(-)
->
-> Index: linux-3.6/drivers/firmware/memmap.c
-> ===================================================================
-> --- linux-3.6.orig/drivers/firmware/memmap.c    2012-10-04 18:27:05.195500420 +0900
-> +++ linux-3.6/drivers/firmware/memmap.c 2012-10-04 18:27:18.901514330 +0900
-> @@ -21,6 +21,7 @@
->  #include <linux/types.h>
->  #include <linux/bootmem.h>
->  #include <linux/slab.h>
-> +#include <linux/mm.h>
->
->  /*
->   * Data types ------------------------------------------------------------------
-> @@ -41,6 +42,7 @@ struct firmware_map_entry {
->         const char              *type;  /* type of the memory range */
->         struct list_head        list;   /* entry for the linked list */
->         struct kobject          kobj;   /* kobject for each entry */
-> +       unsigned int            bootmem:1; /* allocated from bootmem */
-
-Use bool.
-
-
->  };
->
->  /*
-> @@ -79,7 +81,26 @@ static const struct sysfs_ops memmap_att
->         .show = memmap_attr_show,
->  };
->
-> +
-> +static inline struct firmware_map_entry *
-> +to_memmap_entry(struct kobject *kobj)
-> +{
-> +       return container_of(kobj, struct firmware_map_entry, kobj);
-> +}
-> +
-> +static void release_firmware_map_entry(struct kobject *kobj)
-> +{
-> +       struct firmware_map_entry *entry = to_memmap_entry(kobj);
-> +
-> +       if (entry->bootmem)
-> +               /* There is no way to free memory allocated from bootmem */
-> +               return;
-> +
-> +       kfree(entry);
-> +}
-> +
->  static struct kobj_type memmap_ktype = {
-> +       .release        = release_firmware_map_entry,
->         .sysfs_ops      = &memmap_attr_ops,
->         .default_attrs  = def_attrs,
->  };
-> @@ -94,6 +115,7 @@ static struct kobj_type memmap_ktype = {
->   * in firmware initialisation code in one single thread of execution.
->   */
->  static LIST_HEAD(map_entries);
-> +static DEFINE_SPINLOCK(map_entries_lock);
->
->  /**
->   * firmware_map_add_entry() - Does the real work to add a firmware memmap entry.
-> @@ -118,11 +140,25 @@ static int firmware_map_add_entry(u64 st
->         INIT_LIST_HEAD(&entry->list);
->         kobject_init(&entry->kobj, &memmap_ktype);
->
-> +       spin_lock(&map_entries_lock);
->         list_add_tail(&entry->list, &map_entries);
-> +       spin_unlock(&map_entries_lock);
->
->         return 0;
->  }
->
-> +/**
-> + * firmware_map_remove_entry() - Does the real work to remove a firmware
-> + * memmap entry.
-> + * @entry: removed entry.
-> + **/
-> +static inline void firmware_map_remove_entry(struct firmware_map_entry *entry)
-
-Don't use inline in *.c file. gcc is wise than you.
-
-> +{
-> +       spin_lock(&map_entries_lock);
-> +       list_del(&entry->list);
-> +       spin_unlock(&map_entries_lock);
-> +}
-> +
->  /*
->   * Add memmap entry on sysfs
->   */
-> @@ -144,6 +180,35 @@ static int add_sysfs_fw_map_entry(struct
->         return 0;
->  }
->
-> +/*
-> + * Remove memmap entry on sysfs
-> + */
-> +static inline void remove_sysfs_fw_map_entry(struct firmware_map_entry *entry)
-> +{
-> +       kobject_put(&entry->kobj);
-> +}
-> +
-> +/*
-> + * Search memmap entry
-> + */
-> +
-> +static struct firmware_map_entry * __meminit
-> +firmware_map_find_entry(u64 start, u64 end, const char *type)
-> +{
-> +       struct firmware_map_entry *entry;
-> +
-> +       spin_lock(&map_entries_lock);
-> +       list_for_each_entry(entry, &map_entries, list)
-> +               if ((entry->start == start) && (entry->end == end) &&
-> +                   (!strcmp(entry->type, type))) {
-> +                       spin_unlock(&map_entries_lock);
-> +                       return entry;
-> +               }
-> +
-> +       spin_unlock(&map_entries_lock);
-> +       return NULL;
-> +}
-> +
->  /**
->   * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
->   * memory hotplug.
-> @@ -193,9 +258,36 @@ int __init firmware_map_add_early(u64 st
->         if (WARN_ON(!entry))
->                 return -ENOMEM;
->
-> +       entry->bootmem = 1;
->         return firmware_map_add_entry(start, end, type, entry);
->  }
->
-> +/**
-> + * firmware_map_remove() - remove a firmware mapping entry
-> + * @start: Start of the memory range.
-> + * @end:   End of the memory range.
-> + * @type:  Type of the memory range.
-> + *
-> + * removes a firmware mapping entry.
-> + *
-> + * Returns 0 on success, or -EINVAL if no entry.
-> + **/
-> +int __meminit firmware_map_remove(u64 start, u64 end, const char *type)
-
-Remove type argument if this is always passed "System RAM".
-
-> +{
-> +       struct firmware_map_entry *entry;
-> +
-> +       entry = firmware_map_find_entry(start, end - 1, type);
-> +       if (!entry)
-> +               return -EINVAL;
-> +
-> +       firmware_map_remove_entry(entry);
-> +
-> +       /* remove the memmap entry */
-> +       remove_sysfs_fw_map_entry(entry);
-> +
-> +       return 0;
-> +}
-> +
->  /*
->   * Sysfs functions -------------------------------------------------------------
->   */
-> @@ -217,8 +309,10 @@ static ssize_t type_show(struct firmware
->         return snprintf(buf, PAGE_SIZE, "%s\n", entry->type);
->  }
->
-> -#define to_memmap_attr(_attr) container_of(_attr, struct memmap_attribute, attr)
-> -#define to_memmap_entry(obj) container_of(obj, struct firmware_map_entry, kobj)
-> +static inline struct memmap_attribute *to_memmap_attr(struct attribute *attr)
-> +{
-> +       return container_of(attr, struct memmap_attribute, attr);
-> +}
->
->  static ssize_t memmap_attr_show(struct kobject *kobj,
->                                 struct attribute *attr, char *buf)
-> Index: linux-3.6/include/linux/firmware-map.h
-> ===================================================================
-> --- linux-3.6.orig/include/linux/firmware-map.h 2012-10-04 18:27:05.197500422 +0900
-> +++ linux-3.6/include/linux/firmware-map.h      2012-10-04 18:27:18.904514333 +0900
-> @@ -25,6 +25,7 @@
->
->  int firmware_map_add_early(u64 start, u64 end, const char *type);
->  int firmware_map_add_hotplug(u64 start, u64 end, const char *type);
-> +int firmware_map_remove(u64 start, u64 end, const char *type);
->
->  #else /* CONFIG_FIRMWARE_MEMMAP */
->
-> @@ -38,6 +39,11 @@ static inline int firmware_map_add_hotpl
->         return 0;
->  }
->
-> +static inline int firmware_map_remove(u64 start, u64 end, const char *type)
-> +{
-> +       return 0;
-> +}
-> +
->  #endif /* CONFIG_FIRMWARE_MEMMAP */
->
->  #endif /* _LINUX_FIRMWARE_MAP_H */
-> Index: linux-3.6/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-3.6.orig/mm/memory_hotplug.c  2012-10-04 18:27:03.000000000 +0900
-> +++ linux-3.6/mm/memory_hotplug.c       2012-10-04 18:28:42.851599524 +0900
-> @@ -1043,7 +1043,7 @@ int offline_memory(u64 start, u64 size)
->         return 0;
->  }
->
-> -int remove_memory(int nid, u64 start, u64 size)
-> +int __ref remove_memory(int nid, u64 start, u64 size)
->  {
->         int ret = 0;
->         lock_memory_hotplug();
-> @@ -1056,8 +1056,13 @@ int remove_memory(int nid, u64 start, u6
->                         "because the memmory range is online\n",
->                         start, start + size);
->                 ret = -EAGAIN;
-> +               goto out;
->         }
->
-> +       /* remove memmap entry */
-> +       firmware_map_remove(start, start + size, "System RAM");
-> +
-> +out:
->         unlock_memory_hotplug();
->         return ret;
->  }
-
-
-Other than that, looks ok to me.
+diff --git a/arch/powerpc/boot/dts/mpc5200b.dtsi b/arch/powerpc/boot/dts/mpc5200b.dtsi
+index 7ab286a..39ed65a 100644
+--- a/arch/powerpc/boot/dts/mpc5200b.dtsi
++++ b/arch/powerpc/boot/dts/mpc5200b.dtsi
+@@ -231,6 +231,12 @@
+ 			interrupts = <2 7 0>;
+ 		};
+ 
++		sclpc@3c00 {
++			compatible = "fsl,mpc5200-lpbfifo";
++			reg = <0x3c00 0x60>;
++			interrupts = <2 23 0>;
++		};
++
+ 		i2c@3d00 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+diff --git a/arch/powerpc/boot/dts/o2d.dtsi b/arch/powerpc/boot/dts/o2d.dtsi
+index 3444eb8..24f6680 100644
+--- a/arch/powerpc/boot/dts/o2d.dtsi
++++ b/arch/powerpc/boot/dts/o2d.dtsi
+@@ -86,12 +86,6 @@
+ 				reg = <0>;
+ 			};
+ 		};
+-
+-		sclpc@3c00 {
+-			compatible = "fsl,mpc5200-lpbfifo";
+-			reg = <0x3c00 0x60>;
+-			interrupts = <3 23 0>;
+-		};
+ 	};
+ 
+ 	localbus {
+-- 
+1.7.5.4
