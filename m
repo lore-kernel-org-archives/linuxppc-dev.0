@@ -1,42 +1,24 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 377702C00E1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 12:38:52 +1000 (EST)
-Received: from m4.gw.fujitsu.co.jp (unknown [10.0.50.74])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 77EEA3EE0C3
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 11:38:50 +0900 (JST)
-Received: from smail (m4 [127.0.0.1])
- by outgoing.m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 4CEAE45DE55
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 11:38:50 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (s4.gw.fujitsu.co.jp [10.0.50.94])
- by m4.gw.fujitsu.co.jp (Postfix) with ESMTP id 2CDD545DE4D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 11:38:50 +0900 (JST)
-Received: from s4.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id 0D1F01DB8044
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 11:38:50 +0900 (JST)
-Received: from g01jpexchyt01.g01.fujitsu.local
- (g01jpexchyt01.g01.fujitsu.local [10.128.194.40])
- by s4.gw.fujitsu.co.jp (Postfix) with ESMTP id A26BC1DB8041
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 11:38:49 +0900 (JST)
-Message-ID: <506E481C.8050804@jp.fujitsu.com>
-Date: Fri, 5 Oct 2012 11:38:20 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <zinosat@gmail.com>
+Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
+ [209.85.220.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1AB092C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 18:54:02 +1000 (EST)
+Received: by mail-pa0-f51.google.com with SMTP id kq12so1492885pab.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2012 01:54:00 -0700 (PDT)
 MIME-Version: 1.0
-To: <x86@kernel.org>, <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-acpi@vger.kernel.org>,
- <linux-s390@vger.kernel.org>, <linux-sh@vger.kernel.org>,
- <linux-ia64@vger.kernel.org>, <cmetcalf@tilera.com>,
- <sparclinux@vger.kernel.org>
-Subject: [PATCH 10/10] memory-hotplug : remove sysfs file of node
-References: <506E43E0.70507@jp.fujitsu.com>
-In-Reply-To: <506E43E0.70507@jp.fujitsu.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-Cc: len.brown@intel.com, wency@cn.fujitsu.com,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, minchan.kim@gmail.com,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
- akpm@linux-foundation.org, liuj97@gmail.com
+Sender: zinosat@gmail.com
+In-Reply-To: <CAKpAL0m3YnsbbGxL+ejfyE4zfGE5LD9Qxb7oobHVaAZGE1_Jnw@mail.gmail.com>
+References: <11976036.82651349353479389.JavaMail.defaultUser@defaultHost>
+ <62666FBA-F62E-44B7-814E-0718AE957EC0@kernel.crashing.org>
+ <CAKpAL0m3YnsbbGxL+ejfyE4zfGE5LD9Qxb7oobHVaAZGE1_Jnw@mail.gmail.com>
+Date: Fri, 5 Oct 2012 10:54:00 +0200
+Message-ID: <CAKpAL0mErR3vR4AdSAT_vJG_kM=GvHnZR+b3dtSCN0GMU56pAw@mail.gmail.com>
+Subject: Fwd: PCI device not working
+From: Davide Viti <zinosat@tiscali.it>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,102 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wen Congyang <wency@cn.fujitsu.com>
+(just realized I did not send this to the mailing list: sorry for the noise)
 
-This patch introduces a new function try_offline_node() to
-remove sysfs file of node when all memory sections of this
-node are removed. If some memory sections of this node are
-not removed, this function does nothing.
+Hi Kumar,
 
-CC: David Rientjes <rientjes@google.com>
-CC: Jiang Liu <liuj97@gmail.com>
-CC: Len Brown <len.brown@intel.com>
-CC: Christoph Lameter <cl@linux.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
----
- mm/memory_hotplug.c |   54 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 54 insertions(+)
+2012/10/4 Kumar Gala <galak@kernel.crashing.org>:
+>
+> On Oct 4, 2012, at 7:24 AM, Davide Viti wrote:
+>
+>> Hi,
+>> it turns out that if define CONFIG_PCI_NOSCAN in u-boot (as per [1]), the
+>> device behind the second controller is detected by the  Linux kernel.
+>>
+>> Would
+>> you suggest any particular patch I should apply to fix this (I'm using kernel
+>> 2.6.34)
+>>
+>> thanx alot in advance
+>> Davide
+>>
+>> [1] http://permalink.gmane.org/gmane.linux.ports.ppc.embedded/20140
+>
+> My suggestion would be to try and dump all the controller registers between the case that works and doesn't and compare.  There's some minor setting difference that I'm guessing is causing issues.
+>
+> - k
 
-Index: linux-3.6/mm/memory_hotplug.c
-===================================================================
---- linux-3.6.orig/mm/memory_hotplug.c	2012-10-04 18:30:31.767709165 +0900
-+++ linux-3.6/mm/memory_hotplug.c	2012-10-04 18:32:46.907842637 +0900
-@@ -29,6 +29,7 @@
- #include <linux/suspend.h>
- #include <linux/mm_inline.h>
- #include <linux/firmware-map.h>
-+#include <linux/stop_machine.h>
- 
- #include <asm/tlbflush.h>
- 
-@@ -1276,6 +1277,57 @@ int offline_memory(u64 start, u64 size)
- 	return 0;
- }
- 
-+static int check_cpu_on_node(void *data)
-+{
-+	struct pglist_data *pgdat = data;
-+	int cpu;
-+
-+	for_each_online_cpu(cpu) {
-+		if (cpu_to_node(cpu) == pgdat->node_id)
-+			/*
-+			 * the cpu on this node is onlined, and we can't
-+			 * offline this node.
-+			 */
-+			return -EBUSY;
-+	}
-+
-+	return 0;
-+}
-+
-+/* offline the node if all memory sections of this node are removed */
-+static void try_offline_node(int nid)
-+{
-+	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
-+	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
-+	unsigned long pfn;
-+
-+	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
-+		unsigned long section_nr = pfn_to_section_nr(pfn);
-+
-+		if (!present_section_nr(section_nr))
-+			continue;
-+
-+		if (pfn_to_nid(pfn) != nid)
-+			continue;
-+
-+		/*
-+		 * some memory sections of this node are not removed, and we
-+		 * can't offline node now.
-+		 */
-+		return;
-+	}
-+
-+	if (stop_machine(check_cpu_on_node, NODE_DATA(nid), NULL))
-+		return;
-+
-+	/*
-+	 * all memory sections of this node are removed, we can offline this
-+	 * node now.
-+	 */
-+	node_set_offline(nid);
-+	unregister_one_node(nid);
-+}
-+
- int __ref remove_memory(int nid, u64 start, u64 size)
- {
- 	int ret = 0;
-@@ -1296,6 +1348,8 @@ int __ref remove_memory(int nid, u64 sta
- 	firmware_map_remove(start, start + size, "System RAM");
- 
- 	arch_remove_memory(start, size);
-+
-+	try_offline_node(nid);
- out:
- 	unlock_memory_hotplug();
- 	return ret;
+Here's a diff for the configurations for the controller, obtained via
+
+hexdump -C /sys/bus/pci/devices/0001\:02\:00.0/config
+
+--- cfg0_2_NOK.txt      2012-10-05 09:37:44.854607000 +0200
++++ cfg0_2_OK.txt       2012-10-05 09:36:58.337399000 +0200
+
+ 00000400  00 00 00 00 16 00 00 00  e2 04 00 00 00 00 00 00  |................|
+ 00000410  04 00 00 00 01 00 00 00  00 00 00 00 40 40 00 00  |............@@..|
+ 00000420  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+-00000430  00 00 00 00 00 00 00 00  21 81 9e 00 1a 90 01 00  |........!.......|
++00000430  00 00 00 00 00 00 00 00  21 81 9e 00 83 20 08 00  |........!.... ..|
+ 00000440  10 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+ 00000450  ce d7 14 00 20 1e fc 01  00 00 00 00 5c 0c 00 00  |.... .......\...|
+ 00000460  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+ 00000470  57 19 00 01 11 00 20 0b  00 00 00 00 01 00 00 00  |W..... .........|
+ 00000480  44 3d 00 00 00 00 00 00  f0 07 00 00 00 00 00 00  |D=..............|
+ 00000490  c0 07 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+-000004a0  00 00 00 00 00 00 00 00  00 00 00 00 3c 01 00 00  |............<...|
++000004a0  00 00 00 00 00 00 00 00  00 00 00 00 7e 01 00 00  |............~...|
+ 000004b0  00 00 00 00 00 00 00 00  28 04 01 80 85 20 00 00  |........(.... ..|
+ 000004c0  ff 00 00 00 00 00 00 00  00 00 00 00 11 00 00 00  |................|
+ 000004d0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+ 000004e0  00 00 00 00 01 01 00 00  01 01 00 00 00 00 00 00  |................|
+-000004f0  0a 00 00 00 01 00 20 04  00 00 00 00 79 47 0e eb  |...... .....yG..|
++000004f0  4a 00 00 01 03 00 00 04  00 00 00 00 01 00 01 00  |J...............|
+ 00000500  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+ 00000510  00 00 00 00 00 00 00 00  21 01 00 00 00 00 00 00  |........!.......|
+ 00000520  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+
+Hope this mail client will not screw up the text...
+Just in case,
+I've pasted the entire register dumps to [1].
+
+thank you so much for your time,
+D.
+
+[1] http://pastebin.com/zzAtzCeS
