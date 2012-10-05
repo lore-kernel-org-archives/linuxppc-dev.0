@@ -1,24 +1,21 @@
-Return-Path: <zinosat@gmail.com>
-Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
- [209.85.220.51])
+Return-Path: <patrickdepinguin@gmail.com>
+Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
+ [209.85.160.42])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1AB092C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Oct 2012 18:54:02 +1000 (EST)
-Received: by mail-pa0-f51.google.com with SMTP id kq12so1492885pab.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Oct 2012 01:54:00 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 12F802C032B
+ for <linuxppc-dev@ozlabs.org>; Fri,  5 Oct 2012 19:47:46 +1000 (EST)
+Received: by mail-pb0-f42.google.com with SMTP id ro2so1358354pbb.15
+ for <linuxppc-dev@ozlabs.org>; Fri, 05 Oct 2012 02:47:45 -0700 (PDT)
 MIME-Version: 1.0
-Sender: zinosat@gmail.com
-In-Reply-To: <CAKpAL0m3YnsbbGxL+ejfyE4zfGE5LD9Qxb7oobHVaAZGE1_Jnw@mail.gmail.com>
-References: <11976036.82651349353479389.JavaMail.defaultUser@defaultHost>
- <62666FBA-F62E-44B7-814E-0718AE957EC0@kernel.crashing.org>
- <CAKpAL0m3YnsbbGxL+ejfyE4zfGE5LD9Qxb7oobHVaAZGE1_Jnw@mail.gmail.com>
-Date: Fri, 5 Oct 2012 10:54:00 +0200
-Message-ID: <CAKpAL0mErR3vR4AdSAT_vJG_kM=GvHnZR+b3dtSCN0GMU56pAw@mail.gmail.com>
-Subject: Fwd: PCI device not working
-From: Davide Viti <zinosat@tiscali.it>
-To: linuxppc-dev@lists.ozlabs.org
+Sender: patrickdepinguin@gmail.com
+Date: Fri, 5 Oct 2012 11:47:44 +0200
+Message-ID: <CAAXf6LVxFHGytLiiGXs77kqJkBF24H7e3yOOzkWsnvuEkhU6iw@mail.gmail.com>
+Subject: Changing TASK_UNMAPPED_BASE to a low address
+From: Thomas De Schampheleire <patrickdepinguin+linuxppc@gmail.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain; charset=ISO-8859-1
+Cc: Ronny Meeus <Ronny.Meeus@gmail.com>, patrickdepinguin+linuxppc@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +25,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(just realized I did not send this to the mailing list: sorry for the noise)
+Hi,
 
-Hi Kumar,
+The current virtual address space of a 32-bit userspace process looks
+like this on powerpc:
+# cat /proc/28922/maps
+00100000-00102000 r-xp 00000000 00:00 0          [vdso]
+0fe70000-0ffd8000 r-xp 00000000 00:01 754        /lib/libc-2.10.1.so
+0ffd8000-0ffe8000 ---p 00168000 00:01 754        /lib/libc-2.10.1.so
+0ffe8000-0ffea000 r--p 00168000 00:01 754        /lib/libc-2.10.1.so
+0ffea000-0ffed000 rwxp 0016a000 00:01 754        /lib/libc-2.10.1.so
+0ffed000-0fff0000 rwxp 00000000 00:00 0
+10000000-10001000 r-xp 00000000 00:12 73         /tmp/memory_alloc
+10010000-10011000 rwxp 00000000 00:12 73         /tmp/memory_alloc
+10011000-47a32000 rwxp 00000000 00:00 0          [heap]
+48000000-4801d000 r-xp 00000000 00:01 793        /lib/ld-2.10.1.so
+4801d000-4801f000 rw-p 00000000 00:00 0
+4801f000-48021000 rw-p 00000000 00:00 0
+4802d000-4802e000 r--p 0001d000 00:01 793        /lib/ld-2.10.1.so
+4802e000-4802f000 rwxp 0001e000 00:01 793        /lib/ld-2.10.1.so
+4802f000-bf6ee000 rw-p 00000000 00:00 0
+bfa18000-bfa39000 rw-p 00000000 00:00 0          [stack]
 
-2012/10/4 Kumar Gala <galak@kernel.crashing.org>:
->
-> On Oct 4, 2012, at 7:24 AM, Davide Viti wrote:
->
->> Hi,
->> it turns out that if define CONFIG_PCI_NOSCAN in u-boot (as per [1]), the
->> device behind the second controller is detected by the  Linux kernel.
->>
->> Would
->> you suggest any particular patch I should apply to fix this (I'm using kernel
->> 2.6.34)
->>
->> thanx alot in advance
->> Davide
->>
->> [1] http://permalink.gmane.org/gmane.linux.ports.ppc.embedded/20140
->
-> My suggestion would be to try and dump all the controller registers between the case that works and doesn't and compare.  There's some minor setting difference that I'm guessing is causing issues.
->
-> - k
+The process text and data area are at 0x10000000 (fixed), the
+mmap_base is at 0x48000000 (TASK_UNMAPPED_BASE = 3/8*0xc0000000), and
+shared libraries are put directly above 0x10000000.
 
-Here's a diff for the configurations for the controller, obtained via
+When your application starts allocating memory, the first blocks are
+taken starting from mmap_base (0x48000000) until you reached the stack
+area (0xbfa18000 in this example). Then, a 'heap' region is created
+after the process text/data area (0x10011000 in this example) and the
+mmap_base (0x48000000). When this is also filled, any further
+allocation fails.
+However, between 0x0 and the first shared library, there is still
+plenty of space. Without any shared library, there would be approx.
+256 MB free. Even with a few shared libraries, this typically is >200
+MB, at least in the type of applications I'm envisioning.
 
-hexdump -C /sys/bus/pci/devices/0001\:02\:00.0/config
+Because of the 3GB/1GB userspace/kernelspace virtual address split,
+one expects an application to be able to allocate close to 3GB = 3072
+MB. Due to the 256MB 'unused' area mentioned, you can only allocate
+something like 2800 MB. If your application needs more than that, and
+you're bound to 32-bit processors, this is a problem.
 
---- cfg0_2_NOK.txt      2012-10-05 09:37:44.854607000 +0200
-+++ cfg0_2_OK.txt       2012-10-05 09:36:58.337399000 +0200
+I've been looking at two ways to use the extra memory:
+1. do an anonymous mmap with an address hint in that range, e.g. at
+address 0x00110000. This does return memory, and if you know how much
+is free there, you can take all of it.
 
- 00000400  00 00 00 00 16 00 00 00  e2 04 00 00 00 00 00 00  |................|
- 00000410  04 00 00 00 01 00 00 00  00 00 00 00 40 40 00 00  |............@@..|
- 00000420  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
--00000430  00 00 00 00 00 00 00 00  21 81 9e 00 1a 90 01 00  |........!.......|
-+00000430  00 00 00 00 00 00 00 00  21 81 9e 00 83 20 08 00  |........!.... ..|
- 00000440  10 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
- 00000450  ce d7 14 00 20 1e fc 01  00 00 00 00 5c 0c 00 00  |.... .......\...|
- 00000460  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
- 00000470  57 19 00 01 11 00 20 0b  00 00 00 00 01 00 00 00  |W..... .........|
- 00000480  44 3d 00 00 00 00 00 00  f0 07 00 00 00 00 00 00  |D=..............|
- 00000490  c0 07 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
--000004a0  00 00 00 00 00 00 00 00  00 00 00 00 3c 01 00 00  |............<...|
-+000004a0  00 00 00 00 00 00 00 00  00 00 00 00 7e 01 00 00  |............~...|
- 000004b0  00 00 00 00 00 00 00 00  28 04 01 80 85 20 00 00  |........(.... ..|
- 000004c0  ff 00 00 00 00 00 00 00  00 00 00 00 11 00 00 00  |................|
- 000004d0  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
- 000004e0  00 00 00 00 01 01 00 00  01 01 00 00 00 00 00 00  |................|
--000004f0  0a 00 00 00 01 00 20 04  00 00 00 00 79 47 0e eb  |...... .....yG..|
-+000004f0  4a 00 00 01 03 00 00 04  00 00 00 00 01 00 01 00  |J...............|
- 00000500  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
- 00000510  00 00 00 00 00 00 00 00  21 01 00 00 00 00 00 00  |........!.......|
- 00000520  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+2. change the TASK_UNMAPPED_BASE setting in the kernel
+(arch/powerpc/include/asm/processor.h) to a low address, e.g. 0x40000.
+The advantage of this is that applications need no change.
 
-Hope this mail client will not screw up the text...
-Just in case,
-I've pasted the entire register dumps to [1].
+The second approach seems to work fine. The memory map changes to:
 
-thank you so much for your time,
-D.
+# cat /proc/6954/maps
+00040000-0005d000 r-xp 00000000 00:01 787        /lib/ld-2.10.1.so
+0005d000-0005f000 rw-p 00000000 00:00 0
+0005f000-00061000 rw-p 00000000 00:00 0
+0006d000-0006e000 r--p 0001d000 00:01 787        /lib/ld-2.10.1.so
+0006e000-0006f000 rwxp 0001e000 00:01 787        /lib/ld-2.10.1.so
+00100000-00102000 r-xp 00000000 00:00 0          [vdso]
+00102000-0c904000 rw-p 00000000 00:00 0
+0ca00000-0ca21000 rw-p 00000000 00:00 0
+0ca21000-0cb00000 ---p 00000000 00:00 0
+0fe70000-0ffd8000 r-xp 00000000 00:01 750        /lib/libc-2.10.1.so
+0ffd8000-0ffe8000 ---p 00168000 00:01 750        /lib/libc-2.10.1.so
+0ffe8000-0ffea000 r--p 00168000 00:01 750        /lib/libc-2.10.1.so
+0ffea000-0ffed000 rwxp 0016a000 00:01 750        /lib/libc-2.10.1.so
+0ffed000-0fff0000 rwxp 00000000 00:00 0
+10000000-10001000 r-xp 00000000 00:12 119
+/mnt/repo/tdescham/reborn/isam-linux-target-apps/memory_alloc
+10010000-10011000 rwxp 00000000 00:12 119
+/mnt/repo/tdescham/reborn/isam-linux-target-apps/memory_alloc
+10011000-cb82f000 rw-p 00000000 00:00 0          [heap]
+bffaf000-bffd0000 rw-p 00000000 00:00 0          [stack]
 
-[1] http://pastebin.com/zzAtzCeS
+
+I have not seen anything 'weird' about this change.
+I found the following thread that also discusses such a change:
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2004-February/016513.html
+The thread talks about a few problems, but later concludes that these
+have been fixed. Since the thread dates from 2004, I assume that
+indeed this has been fixed.
+
+Is there any reason why this change is not OK? I'm not necessarily
+talking about mainlining the change. I first would like to know if it
+is 'dangerous' or if there are other reasons not to do it.
+
+This post is using linux-2.6.36.4 as base, but I looked at more recent
+kernels and the settings seem the same.
+
+Thanks,
+Thomas
