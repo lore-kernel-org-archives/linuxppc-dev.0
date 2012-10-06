@@ -1,30 +1,34 @@
-Return-Path: <nizhan.chen@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 38CFC2C0209
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Oct 2012 00:18:42 +1000 (EST)
-Received: by mail-pb0-f51.google.com with SMTP id rp16so2838844pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Oct 2012 07:18:40 -0700 (PDT)
-Message-ID: <50703DAA.20407@gmail.com>
-Date: Sat, 06 Oct 2012 22:18:18 +0800
-From: Ni zhan Chen <nizhan.chen@gmail.com>
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0B6E22C0339
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Oct 2012 01:19:33 +1000 (EST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Sun, 7 Oct 2012 01:16:45 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q96FJOdj19595300
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Oct 2012 01:19:25 +1000
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q96FJO9u011903
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 7 Oct 2012 01:19:24 +1000
+Date: Sat, 6 Oct 2012 20:49:14 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: fix VMX fix for memcpy case
+Message-ID: <20121006151914.GA3927@dirshya.in.ibm.com>
+References: <20121002005912.GA27768@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [RFC v9 PATCH 16/21] memory-hotplug: free memmap of sparse-vmemmap
-References: <1346837155-534-1-git-send-email-wency@cn.fujitsu.com>
- <1346837155-534-17-git-send-email-wency@cn.fujitsu.com>
- <506A6BDC.3010400@gmail.com> <506D2C1C.5060706@jp.fujitsu.com>
-In-Reply-To: <506D2C1C.5060706@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- paulus@samba.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
- rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20121002005912.GA27768@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org,
+ Anton Blanchard <anton@samba.org>
+Reply-To: svaidy@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,367 +38,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/04/2012 02:26 PM, Yasuaki Ishimatsu wrote:
-> Hi Chen,
->
-> Sorry for late reply.
->
-> 2012/10/02 13:21, Ni zhan Chen wrote:
->> On 09/05/2012 05:25 PM, wency@cn.fujitsu.com wrote:
->>> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>>
->>> All pages of virtual mapping in removed memory cannot be freed, 
->>> since some pages
->>> used as PGD/PUD includes not only removed memory but also other 
->>> memory. So the
->>> patch checks whether page can be freed or not.
->>>
->>> How to check whether page can be freed or not?
->>>   1. When removing memory, the page structs of the revmoved memory 
->>> are filled
->>>      with 0FD.
->>>   2. All page structs are filled with 0xFD on PT/PMD, PT/PMD can be 
->>> cleared.
->>>      In this case, the page used as PT/PMD can be freed.
->>>
->>> Applying patch, __remove_section() of CONFIG_SPARSEMEM_VMEMMAP is 
->>> integrated
->>> into one. So __remove_section() of CONFIG_SPARSEMEM_VMEMMAP is deleted.
->>>
->>> Note:  vmemmap_kfree() and vmemmap_free_bootmem() are not 
->>> implemented for ia64,
->>> ppc, s390, and sparc.
->>>
->>> CC: David Rientjes <rientjes@google.com>
->>> CC: Jiang Liu <liuj97@gmail.com>
->>> CC: Len Brown <len.brown@intel.com>
->>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->>> CC: Paul Mackerras <paulus@samba.org>
->>> CC: Christoph Lameter <cl@linux.com>
->>> Cc: Minchan Kim <minchan.kim@gmail.com>
->>> CC: Andrew Morton <akpm@linux-foundation.org>
->>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->>> CC: Wen Congyang <wency@cn.fujitsu.com>
->>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>> ---
->>>   arch/ia64/mm/discontig.c  |    8 +++
->>>   arch/powerpc/mm/init_64.c |    8 +++
->>>   arch/s390/mm/vmem.c       |    8 +++
->>>   arch/sparc/mm/init_64.c   |    8 +++
->>>   arch/x86/mm/init_64.c     |  119 
->>> +++++++++++++++++++++++++++++++++++++++++++++
->>>   include/linux/mm.h        |    2 +
->>>   mm/memory_hotplug.c       |   17 +------
->>>   mm/sparse.c               |    5 +-
->>>   8 files changed, 158 insertions(+), 17 deletions(-)
->>>
->>> diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
->>> index 33943db..0d23b69 100644
->>> --- a/arch/ia64/mm/discontig.c
->>> +++ b/arch/ia64/mm/discontig.c
->>> @@ -823,6 +823,14 @@ int __meminit vmemmap_populate(struct page 
->>> *start_page,
->>>       return vmemmap_populate_basepages(start_page, size, node);
->>>   }
->>> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +}
->>> +
->>> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +}
->>> +
->>>   void register_page_bootmem_memmap(unsigned long section_nr,
->>>                     struct page *start_page, unsigned long size)
->>>   {
->>> diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
->>> index 3690c44..835a2b3 100644
->>> --- a/arch/powerpc/mm/init_64.c
->>> +++ b/arch/powerpc/mm/init_64.c
->>> @@ -299,6 +299,14 @@ int __meminit vmemmap_populate(struct page 
->>> *start_page,
->>>       return 0;
->>>   }
->>> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +}
->>> +
->>> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +}
->>> +
->>>   void register_page_bootmem_memmap(unsigned long section_nr,
->>>                     struct page *start_page, unsigned long size)
->>>   {
->>> diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
->>> index eda55cd..4b42b0b 100644
->>> --- a/arch/s390/mm/vmem.c
->>> +++ b/arch/s390/mm/vmem.c
->>> @@ -227,6 +227,14 @@ out:
->>>       return ret;
->>>   }
->>> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +}
->>> +
->>> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +}
->>> +
->>>   void register_page_bootmem_memmap(unsigned long section_nr,
->>>                     struct page *start_page, unsigned long size)
->>>   {
->>> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
->>> index add1cc7..1384826 100644
->>> --- a/arch/sparc/mm/init_64.c
->>> +++ b/arch/sparc/mm/init_64.c
->>> @@ -2078,6 +2078,14 @@ void __meminit vmemmap_populate_print_last(void)
->>>       }
->>>   }
->>> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +}
->>> +
->>> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +}
->>> +
->>>   void register_page_bootmem_memmap(unsigned long section_nr,
->>>                     struct page *start_page, unsigned long size)
->>>   {
->>> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
->>> index 0075592..4e8f8a4 100644
->>> --- a/arch/x86/mm/init_64.c
->>> +++ b/arch/x86/mm/init_64.c
->>> @@ -1138,6 +1138,125 @@ vmemmap_populate(struct page *start_page, 
->>> unsigned long size, int node)
->>>       return 0;
->>>   }
->>> +#define PAGE_INUSE 0xFD
->>> +
->>> +unsigned long find_and_clear_pte_page(unsigned long addr, unsigned 
->>> long end,
->>> +                struct page **pp, int *page_size)
->>> +{
->>> +    pgd_t *pgd;
->>> +    pud_t *pud;
->>> +    pmd_t *pmd;
->>> +    pte_t *pte;
->>> +    void *page_addr;
->>> +    unsigned long next;
->>> +
->>> +    *pp = NULL;
->>> +
->>> +    pgd = pgd_offset_k(addr);
->>> +    if (pgd_none(*pgd))
->>> +        return pgd_addr_end(addr, end);
->>> +
->>> +    pud = pud_offset(pgd, addr);
->>> +    if (pud_none(*pud))
->>> +        return pud_addr_end(addr, end);
->>> +
->>> +    if (!cpu_has_pse) {
->>> +        next = (addr + PAGE_SIZE) & PAGE_MASK;
->>> +        pmd = pmd_offset(pud, addr);
->>> +        if (pmd_none(*pmd))
->>> +            return next;
->>> +
->>> +        pte = pte_offset_kernel(pmd, addr);
->>> +        if (pte_none(*pte))
->>> +            return next;
->>> +
->>> +        *page_size = PAGE_SIZE;
->>> +        *pp = pte_page(*pte);
->>> +    } else {
->>> +        next = pmd_addr_end(addr, end);
->>> +
->>> +        pmd = pmd_offset(pud, addr);
->>> +        if (pmd_none(*pmd))
->>> +            return next;
->>> +
->>> +        *page_size = PMD_SIZE;
->>> +        *pp = pmd_page(*pmd);
->>> +    }
->>> +
->>> +    /*
->>> +     * Removed page structs are filled with 0xFD.
->>> +     */
->>> +    memset((void *)addr, PAGE_INUSE, next - addr);
->>> +
->>> +    page_addr = page_address(*pp);
->>> +
->>> +    /*
->>> +     * Check the page is filled with 0xFD or not.
->>> +     * memchr_inv() returns the address. In this case, we cannot
->>> +     * clear PTE/PUD entry, since the page is used by other.
->>> +     * So we cannot also free the page.
->>> +     *
->>> +     * memchr_inv() returns NULL. In this case, we can clear
->>> +     * PTE/PUD entry, since the page is not used by other.
->>> +     * So we can also free the page.
->>> +     */
->>> +    if (memchr_inv(page_addr, PAGE_INUSE, *page_size)) {
->>> +        *pp = NULL;
->>> +        return next;
->>> +    }
->>> +
->>
->> Hi Yasuaki,
->>
->> why call memchr_inv check after memset, this time the page can always 
->> be filled with 0xFD.
->
-> The page is not always filled with 0xFD. find_and_clear_pte_page()
-> is calld in each section. So the function fills the page
-> section size/sizeof(page) byte with 0xFD one time. Thus if section 
-> size is
-> small, the page is filled with 0xFD.
+* Nishanth Aravamudan <nacc@linux.vnet.ibm.com> [2012-10-01 17:59:13]:
 
-Hi Yasuaki,
+> [urgh, sorry Anton, Ben & Paul, inadvertently hit send before adding
+> linuxppc-dev to the cc!]
+> 
+> Hi Anton,
+> 
+> In 2fae7cdb60240e2e2d9b378afbf6d9fcce8a3890 ("powerpc: Fix VMX in
+> interrupt check in POWER7 copy loops"), I think you inadvertently
+> introduced a regression for memcpy on POWER7 machines. copyuer and
+> memcpy diverge slightly in their use of cr1 (copyuser doesn't use it,
+> but memcpy does) and you end up clobbering that register with your fix.
+> That results in (taken from an FC18 kernel):
+> 
+> [   18.824604] Unrecoverable VMX/Altivec Unavailable Exception f20 at c000000000052f40
+> [   18.824618] Oops: Unrecoverable VMX/Altivec Unavailable Exception, sig: 6 [#1]
+> [   18.824623] SMP NR_CPUS=1024 NUMA pSeries
+> [   18.824633] Modules linked in: tg3(+) be2net(+) cxgb4(+) ipr(+) sunrpc xts lrw gf128mul dm_crypt dm_round_robin dm_multipath linear raid10 raid456 async_raid6_recov async_memcpy async_pq raid6_pq async_xor xor async_tx raid1 raid0 scsi_dh_rdac scsi_dh_hp_sw scsi_dh_emc scsi_dh_alua squashfs cramfs
+> [   18.824705] NIP: c000000000052f40 LR: c00000000020b874 CTR: 0000000000000512
+> [   18.824709] REGS: c000001f1fef7790 TRAP: 0f20   Not tainted  (3.6.0-0.rc6.git0.2.fc18.ppc64)
+> [   18.824713] MSR: 8000000000009032 <SF,EE,ME,IR,DR,RI>  CR: 4802802e  XER: 20000010
+> [   18.824726] SOFTE: 0
+> [   18.824728] CFAR: 0000000000000f20
+> [   18.824731] TASK = c000000fa7128400[0] 'swapper/24' THREAD: c000000fa7480000 CPU: 24
+> GPR00: 00000000ffffffc0 c000001f1fef7a10 c00000000164edc0 c000000f9b9a8120
+> GPR04: c000000f9b9a8124 0000000000001438 0000000000000060 03ffffff064657ee
+> GPR08: 0000000080000000 0000000000000010 0000000000000020 0000000000000030
+> GPR12: 0000000028028022 c00000000ff25400 0000000000000001 0000000000000000
+> GPR16: 0000000000000000 7fffffffffffffff c0000000016b2180 c00000000156a500
+> GPR20: c000000f968c7a90 c0000000131c31d8 c000001f1fef4000 c000000001561d00
+> GPR24: 000000000000000a 0000000000000000 0000000000000001 0000000000000012
+> GPR28: c000000fa5c04f80 00000000000008bc c0000000015c0a28 000000000000022e
+> [   18.824792] NIP [c000000000052f40] .memcpy_power7+0x5a0/0x7c4
+> [   18.824797] LR [c00000000020b874] .pcpu_free_area+0x174/0x2d0
+> [   18.824800] Call Trace:
+> [   18.824803] [c000001f1fef7a10] [c000000000052c14] .memcpy_power7+0x274/0x7c4 (unreliable)
+> [   18.824809] [c000001f1fef7b10] [c00000000020b874] .pcpu_free_area+0x174/0x2d0
+> [   18.824813] [c000001f1fef7bb0] [c00000000020ba88] .free_percpu+0xb8/0x1b0
+> [   18.824819] [c000001f1fef7c50] [c00000000043d144] .throtl_pd_exit+0x94/0xd0
+> [   18.824824] [c000001f1fef7cf0] [c00000000043acf8] .blkg_free+0x88/0xe0
+> [   18.824829] [c000001f1fef7d90] [c00000000018c048] .rcu_process_callbacks+0x2e8/0x8a0
+> [   18.824835] [c000001f1fef7e90] [c0000000000a8ce8] .__do_softirq+0x158/0x4d0
+> [   18.824840] [c000001f1fef7f90] [c000000000025ecc] .call_do_softirq+0x14/0x24
+> [   18.824845] [c000000fa7483650] [c000000000010e80] .do_softirq+0x160/0x1a0
+> [   18.824850] [c000000fa74836f0] [c0000000000a94a4] .irq_exit+0xf4/0x120
+> [   18.824854] [c000000fa7483780] [c000000000020c44] .timer_interrupt+0x154/0x4d0
+> [   18.824859] [c000000fa7483830] [c000000000003be0] decrementer_common+0x160/0x180
+> [   18.824866] --- Exception: 901 at .plpar_hcall_norets+0x84/0xd4
+> [   18.824866]     LR = .check_and_cede_processor+0x48/0x80
+> [   18.824871] [c000000fa7483b20] [c00000000007f018] .check_and_cede_processor+0x18/0x80 (unreliable)
+> [   18.824877] [c000000fa7483b90] [c00000000007f104] .dedicated_cede_loop+0x84/0x150
+> [   18.824883] [c000000fa7483c50] [c0000000006bc030] .cpuidle_enter+0x30/0x50
+> [   18.824887] [c000000fa7483cc0] [c0000000006bc9f4] .cpuidle_idle_call+0x104/0x720
+> [   18.824892] [c000000fa7483d80] [c000000000070af8] .pSeries_idle+0x18/0x40
+> [   18.824897] [c000000fa7483df0] [c000000000019084] .cpu_idle+0x1a4/0x380
+> [   18.824902] [c000000fa7483ec0] [c0000000008a4c18] .start_secondary+0x520/0x528
+> [   18.824907] [c000000fa7483f90] [c0000000000093f0] .start_secondary_prolog+0x10/0x14
+> [   18.824911] Instruction dump:
+> [   18.824914] 38840008 90030000 90e30004 38630008 7ca62850 7cc300d0 78c7e102 7cf01120
+> [   18.824923] 78c60660 39200010 39400020 39600030 <7e00200c> 7c0020ce 38840010 409f001c
+> [   18.824935] ---[ end trace 0bb95124affaaa45 ]---
+> [   18.825046] Unrecoverable VMX/Altivec Unavailable Exception f20 at c000000000052d08
+> 
+> I believe the right fix is to make memcpy match usercopy and not use
+> cr1.
+> 
+> Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-But when section size will be small?
+Tested-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-Regards,
-Chen
+> ---
+> I've not tested this fix yet, but I think it's logically correct.
+> Probably needs to go to 3.6-stable as well.
+> 
+> diff --git a/arch/powerpc/lib/memcpy_power7.S b/arch/powerpc/lib/memcpy_power7.S
+> index 7ba6c96..0663630 100644
+> --- a/arch/powerpc/lib/memcpy_power7.S
+> +++ b/arch/powerpc/lib/memcpy_power7.S
+> @@ -239,8 +239,8 @@ _GLOBAL(memcpy_power7)
+>  	ori	r9,r9,1		/* stream=1 */
+> 
+>  	srdi	r7,r5,7		/* length in cachelines, capped at 0x3FF */
+> -	cmpldi	cr1,r7,0x3FF
+> -	ble	cr1,1f
+> +	cmpldi	r7,0x3FF
+> +	ble	1f
+>  	li	r7,0x3FF
+>  1:	lis	r0,0x0E00	/* depth=7 */
+>  	sldi	r7,r7,7
 
->
-> Thanks,
-> Yasuaki Ishimatsu
->
->
->>> +    if (!cpu_has_pse)
->>> +        pte_clear(&init_mm, addr, pte);
->>> +    else
->>> +        pmd_clear(pmd);
->>> +
->>> +    return next;
->>> +}
->>> +
->>> +void vmemmap_kfree(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +    unsigned long addr = (unsigned long)memmap;
->>> +    unsigned long end = (unsigned long)(memmap + nr_pages);
->>> +    unsigned long next;
->>> +    struct page *page;
->>> +    int page_size;
->>> +
->>> +    for (; addr < end; addr = next) {
->>> +        page = NULL;
->>> +        page_size = 0;
->>> +        next = find_and_clear_pte_page(addr, end, &page, &page_size);
->>> +        if (!page)
->>> +            continue;
->>> +
->>> +        free_pages((unsigned long)page_address(page),
->>> +                get_order(page_size));
->>> +        __flush_tlb_one(addr);
->>> +    }
->>> +}
->>> +
->>> +void vmemmap_free_bootmem(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +    unsigned long addr = (unsigned long)memmap;
->>> +    unsigned long end = (unsigned long)(memmap + nr_pages);
->>> +    unsigned long next;
->>> +    struct page *page;
->>> +    int page_size;
->>> +    unsigned long magic;
->>> +
->>> +    for (; addr < end; addr = next) {
->>> +        page = NULL;
->>> +        page_size = 0;
->>> +        next = find_and_clear_pte_page(addr, end, &page, &page_size);
->>> +        if (!page)
->>> +            continue;
->>> +
->>> +        magic = (unsigned long) page->lru.next;
->>> +        if (magic == SECTION_INFO)
->>> +            put_page_bootmem(page);
->>> +        flush_tlb_kernel_range(addr, end);
->>> +    }
->>> +}
->>> +
->>>   void register_page_bootmem_memmap(unsigned long section_nr,
->>>                     struct page *start_page, unsigned long size)
->>>   {
->>> diff --git a/include/linux/mm.h b/include/linux/mm.h
->>> index c607913..fb0d1fc 100644
->>> --- a/include/linux/mm.h
->>> +++ b/include/linux/mm.h
->>> @@ -1620,6 +1620,8 @@ int vmemmap_populate(struct page *start_page, 
->>> unsigned long pages, int node);
->>>   void vmemmap_populate_print_last(void);
->>>   void register_page_bootmem_memmap(unsigned long section_nr, struct 
->>> page *map,
->>>                     unsigned long size);
->>> +void vmemmap_kfree(struct page *memmpa, unsigned long nr_pages);
->>> +void vmemmap_free_bootmem(struct page *memmpa, unsigned long 
->>> nr_pages);
->>>   enum mf_flags {
->>>       MF_COUNT_INCREASED = 1 << 0,
->>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->>> index 647a7f2..c54922c 100644
->>> --- a/mm/memory_hotplug.c
->>> +++ b/mm/memory_hotplug.c
->>> @@ -308,19 +308,6 @@ static int __meminit __add_section(int nid, 
->>> struct zone *zone,
->>>       return register_new_memory(nid, 
->>> __pfn_to_section(phys_start_pfn));
->>>   }
->>> -#ifdef CONFIG_SPARSEMEM_VMEMMAP
->>> -static int __remove_section(struct zone *zone, struct mem_section *ms)
->>> -{
->>> -    int ret = -EINVAL;
->>> -
->>> -    if (!valid_section(ms))
->>> -        return ret;
->>> -
->>> -    ret = unregister_memory_section(ms);
->>> -
->>> -    return ret;
->>> -}
->>> -#else
->>>   static int __remove_section(struct zone *zone, struct mem_section 
->>> *ms)
->>>   {
->>>       unsigned long flags;
->>> @@ -337,9 +324,9 @@ static int __remove_section(struct zone *zone, 
->>> struct mem_section *ms)
->>>       pgdat_resize_lock(pgdat, &flags);
->>>       sparse_remove_one_section(zone, ms);
->>>       pgdat_resize_unlock(pgdat, &flags);
->>> -    return 0;
->>> +
->>> +    return ret;
->>>   }
->>> -#endif
->>>   /*
->>>    * Reasonably generic function for adding memory.  It is
->>> diff --git a/mm/sparse.c b/mm/sparse.c
->>> index fac95f2..ab9d755 100644
->>> --- a/mm/sparse.c
->>> +++ b/mm/sparse.c
->>> @@ -613,12 +613,13 @@ static inline struct page 
->>> *kmalloc_section_memmap(unsigned long pnum, int nid,
->>>       /* This will make the necessary allocations eventually. */
->>>       return sparse_mem_map_populate(pnum, nid);
->>>   }
->>> -static void __kfree_section_memmap(struct page *memmap, unsigned 
->>> long nr_pages)
->>> +static void __kfree_section_memmap(struct page *page, unsigned long 
->>> nr_pages)
->>>   {
->>> -    return; /* XXX: Not implemented yet */
->>> +    vmemmap_kfree(page, nr_pages);
->>>   }
->>>   static void free_map_bootmem(struct page *page, unsigned long 
->>> nr_pages)
->>>   {
->>> +    vmemmap_free_bootmem(page, nr_pages);
->>>   }
->>>   #else
->>>   static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
->>
->
->
->
+This change on v3.6 mainline tree allows kernel to boot without exception.
+
+--Vaidy
