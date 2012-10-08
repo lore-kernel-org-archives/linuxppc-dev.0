@@ -1,28 +1,25 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EE6CA2C0318
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 00:10:48 +1100 (EST)
-Subject: Re: [Qemu-ppc] [RFC PATCH 05/17] KVM: PPC: booke: Extend MAS2 EPN
- mask for 64-bit
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Alexander Graf <agraf@suse.de>
-In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF20D198@039-SN2MPN1-012.039d.mgd.msft.net>
-Date: Mon, 8 Oct 2012 15:10:42 +0200
-Message-Id: <B9761AA9-F295-4EFD-8251-305A4832ED08@suse.de>
-References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
- <1340627195-11544-6-git-send-email-mihai.caraman@freescale.com>
- <D3F90478-D3C9-4699-ADFD-CE752D9A569F@suse.de>
- <300B73AA675FCE4A93EB4FC1D42459FF15B15F@039-SN2MPN1-013.039d.mgd.msft.net>
- <0A87124F-B5D0-475C-A33C-A1F36C1B56D9@suse.de>
- <300B73AA675FCE4A93EB4FC1D42459FF20D198@039-SN2MPN1-012.039d.mgd.msft.net>
-To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
+Return-Path: <B07421@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe003.messaging.microsoft.com [213.199.154.206])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CAF402C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 07:55:21 +1100 (EST)
+Date: Mon, 8 Oct 2012 15:55:05 -0500
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [RFC PATCH] powerpc/fsl: add timer wakeup source
+To: Wang Dongsheng-B40534 <B40534@freescale.com>
+In-Reply-To: <ABB05CD9C9F68C46A5CEDC7F15439259DF1A14@039-SN2MPN1-021.039d.mgd.msft.net>
+ (from B40534@freescale.com on Mon Oct  8 02:13:26 2012)
+Message-ID: <1349729705.3721.8@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Wang Dongsheng <dongsheng.wds@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,114 +29,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On 08.10.2012, at 15:06, Caraman Mihai Claudiu-B02008 wrote:
-
->> -----Original Message-----
->> From: Alexander Graf [mailto:agraf@suse.de]
->> Sent: Monday, October 08, 2012 1:11 PM
->> To: Caraman Mihai Claudiu-B02008
->> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
->> dev@lists.ozlabs.org; qemu-ppc@nongnu.org
->> Subject: Re: [Qemu-ppc] [RFC PATCH 05/17] KVM: PPC: booke: Extend =
-MAS2
->> EPN mask for 64-bit
->>=20
->>=20
->> On 05.07.2012, at 13:14, Caraman Mihai Claudiu-B02008 wrote:
->>=20
->>>=20
->>>=20
->>>> -----Original Message-----
->>>> From: Alexander Graf [mailto:agraf@suse.de]
->>>> Sent: Wednesday, July 04, 2012 4:50 PM
->>>> To: Caraman Mihai Claudiu-B02008
->>>> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
->>>> dev@lists.ozlabs.org; qemu-ppc@nongnu.org
->>>> Subject: Re: [Qemu-ppc] [RFC PATCH 05/17] KVM: PPC: booke: Extend =
-MAS2
->>>> EPN mask for 64-bit
->>>>=20
->>>>=20
->>>> On 25.06.2012, at 14:26, Mihai Caraman wrote:
->>>>=20
->>>>> Extend MAS2 EPN mask for 64-bit hosts, to retain most significant
->> bits.
->>>>> Change get tlb eaddr to use this mask.
->>>>=20
->>>> Please see section 6.11.4.8 in the PowerISA 2.06b:
->>>>=20
->>>> MMU behavior is largely unaffected by whether the thread is in =
-32-bit
->>>> computation mode (MSRCM=3D0) or 64- bit computation mode (MSRCM=3D1).=
- The
->>>> only differ- ences occur in the EPN field of the TLB entry and the =
-EPN
->>>> field of MAS2. The differences are summarized here.
->>>>=20
->>>> 	*  Executing a tlbwe instruction in 32-bit mode will set bits =
-0:31
->>>> of the TLB EPN field to zero unless MAS0ATSEL is set, in which case
->> those
->>>> bits are not written to zero.
->>>> 	*  In 32-bit implementations, MAS2U can be used to read or write
->>>> EPN0:31 of MAS2.
->>>>=20
->>>> So if MSR.CM is not set tlbwe should mask the upper 32 bits out -
->> which
->>>> can happen regardless of CONFIG_64BIT.
->>>=20
->>> MAS2_EPN reflects EPN field of MAS2 aka bits 0:51 (for MAV =3D 1.0)
->> according
->>> to section 6.10.3.10 in the PowerISA 2.06b.
->>>=20
->>> MAS2_EPN is not used in tlbwe execution emulation, we have MAS2_VAL
->> define
->>> for this case.
->>=20
->> So tlbe->mas2 is guaranteed to have the upper bits be 0 when =
-MSR.CM=3D0?
+On 10/08/2012 02:13:26 AM, Wang Dongsheng-B40534 wrote:
 >=20
-> We chose to mask out mas2 upper bits on tlbwe emulation so gtlbe->mas2 =
-will
-> respect this but vcpu->arch.shared->mas2 will not. tlb entry selection =
-does not
-> require this treatment since EPN upper bits are not taken into =
-consideration anyway.
-
-That's fine. We don't control the contents of shared->mas2 anyway.
-
 >=20
->>=20
->>>=20
->>>> Also, we need to implement MAS2U, to potentially make the upper =
-32bits
->> of
->>>> MAS2 available, right? But that one isn't as important as the first
->> bit.
->>>=20
->>> MAS2U is guest privileged why does it need special care?
->>=20
->> Maybe it's mapped to the upper bits of GMAS2 automatically?
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, October 04, 2012 6:20 AM
+> > To: Kumar Gala
+> > Cc: Wang Dongsheng; Wood Scott-B07421; =20
+> linuxppc-dev@lists.ozlabs.org list;
+> > Wang Dongsheng-B40534; Li Yang-R58472; linux-pm@vger.kernel.org
+> > Subject: Re: [RFC PATCH] powerpc/fsl: add timer wakeup source
+> >
+> > On 10/03/2012 08:35:58 AM, Kumar Gala wrote:
+> > >
+> > > On Oct 3, 2012, at 5:42 AM, Wang Dongsheng wrote:
+> > >
+> > > > This is only for freescale powerpc platform. The driver =20
+> provides a
+> > > way
+> > > > to wake up system. Proc
+> > > interface(/proc/powerpc/wakeup_timer_seconds).
+> > > >
+> > > > eg: "echo 5 > /proc/powerpc/wakeup_timer_seconds", 5 seconds =20
+> after
+> > > > the system will be woken up. echo another time into proc
+> > > interface
+> > > > to update the time.
+> > > >
+> > > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > > Signed-off-by: Li Yang <leoli@freescale.com>
+> > > > ---
+> > > > arch/powerpc/platforms/Kconfig            |   23 +++
+> > > > arch/powerpc/platforms/Makefile           |    1 +
+> > > > arch/powerpc/platforms/fsl_timer_wakeup.c |  217
+> > > +++++++++++++++++++++++++++++
+> > > > 3 files changed, 241 insertions(+)
+> > > > create mode 100644 arch/powerpc/platforms/fsl_timer_wakeup.c
+> > >
+> > > Adding the Linux PM list to see if there is some existing support =20
+> for
+> > > this on other arch's in kernel.
+> > >
+> > > I'm pretty sure /proc/ is NOT where we want this exposed.
+> >
+> > Should probably go under the sysfs directory of the mpic device.  Or
+> > better, make a generic interface for timer-based suspend wakeup (if =20
+> there
+> > isn't one already).  This current approach sits in an unpleasant =20
+> middle
+> > ground between generic and device-specific.
+> > =09
+> /sys/power/wakeup_timer_seconds how about this?
+> I think it is a freescale generic interface, this interface control by
+> FSL_SOC && SUSPEND.
+
+There's no such thing as a "Freescale generic interface".  Linux APIs =20
+are not organized by hardware vendor.  Either make a truly generic =20
+interface, reuse an existing one, or do something that is attached to =20
+the specific driver.
+
+> > > > diff --git a/arch/powerpc/platforms/Kconfig
+> > > b/arch/powerpc/platforms/Kconfig
+> > > > index b190a6e..7b9232a 100644
+> > > > --- a/arch/powerpc/platforms/Kconfig
+> > > > +++ b/arch/powerpc/platforms/Kconfig
+> > > > @@ -99,6 +99,29 @@ config MPIC_TIMER
+> > > > 	  only tested on fsl chip, but it can potentially =20
+> support
+> > > > 	  other global timers complying to Open-PIC standard.
+> > > >
+> > > > +menuconfig FSL_WAKEUP_SOURCE
+> > > > +	bool "Freescale wakeup source"
+> > > > +	depends on FSL_SOC && SUSPEND
+> > > > +	default n
+> > > > +	help
+> > > > +	  This option enables wakeup source for wake up system
+> > > > +	  features. This is only for freescale powerpc platform.
+> > > > +
+> > > > +if FSL_WAKEUP_SOURCE
+> > > > +
+> > > > +config FSL_TIMER_WAKEUP
+> > > > +	tristate "Freescale mpic global timer wakeup event"
+> > > > +	default n
+> > > > +	help
+> > > > +	  This is only for freescale powerpc platform. The =20
+> driver
+> > > > +	  provides a way to wake up system.
+> > > > +	  Proc interface(/proc/powerpc/wakeup_timer_seconds).
+> > > > +	  eg: "echo 5 > /proc/powerpc/wakeup_timer_seconds",
+> > > > +	  5 seconds after the system will be woken up. echo =20
+> another
+> > > > +	  time into proc interface to update the time.
+> > > > +
+> > > > +endif
+> >
+> > Use depends rather than if/else.  Why do you need FSL_WAKEUP_SOURCE?
+> >
+> It lists all wake up source. If later have wakeup source can be =20
+> improved by
+> it to control. Buttons event wakeup source will be added after the =20
+> timer.
+
+It does not list all wake up sources -- there's also ethernet, USB, etc.
+
+> > These names are overly broad -- this is only for FSL MPIC, not for =20
+> other
+> > FSL chips (e.g. mpc83xx has a different global timer =20
+> implementation, and
+> > there's FSL ARM chips, etc).
+> >
+> Yes, thanks. Change to FSL_MPIC_TIMER_WAKEUP.
 >=20
-> GMAS2?
-
-Ah. The guest has direct control over the real MAS2. Oh well.
-
+> > > > +static ssize_t timer_wakeup_write(struct file *file, const char
+> > > __user *buf,
+> > > > +		size_t count, loff_t *off)
+> > > > +{
+> > > > +	struct fsl_timer_wakeup *priv;
+> > > > +	struct inode *inode =3D file->f_path.dentry->d_inode;
+> > > > +	struct proc_dir_entry *dp;
+> > > > +	struct timeval time;
+> > > > +	char *kbuf;
+> > > > +
+> > > > +	dp =3D PDE(inode);
+> > > > +	priv =3D dp->data;
+> > > > +
+> > > > +	kbuf =3D kzalloc(count + 1, GFP_KERNEL);
+> > > > +	if (!kbuf)
+> > > > +		return -ENOMEM;
+> > > > +
+> > > > +	if (copy_from_user(kbuf, buf, count)) {
+> > > > +		kfree(kbuf);
+> > > > +		return -EFAULT;
+> > > > +	}
+> > > > +
+> > > > +	kbuf[count] =3D '\0';
+> > > > +
+> > > > +	if (kstrtol(kbuf, 0, &time.tv_sec)) {
+> > > > +		kfree(kbuf);
+> > > > +		return -EINVAL;
+> > > > +	}
+> > > > +
+> > > > +	kfree(kbuf);
+> > > > +
+> > > > +	time.tv_usec =3D 0;
+> > > > +
+> > > > +	mutex_lock(&priv->mutex);
+> > > > +
+> > > > +	if (!time.tv_sec) {
+> > > > +		if (priv->timer) {
+> > > > +			mpic_free_timer(priv->timer);
+> > > > +			priv->timer =3D NULL;
+> > > > +		}
+> > > > +		mutex_unlock(&priv->mutex);
+> > > > +
+> > > > +		return count;
+> > > > +	}
+> > > > +
+> > > > +	if (priv->timer) {
+> > > > +		mpic_free_timer(priv->timer);
+> > > > +		priv->timer =3D NULL;
+> > > > +	}
+> > > > +
+> > > > +	priv->timer =3D mpic_request_timer(timer_event_interrupt, =20
+> priv,
+> > > &time);
+> >
+> > If the new time is zero, consider that a cancellation of the timer =20
+> and
+> > don't request a new one or return -EINVAL.
+> >
+> Thanks, I think i should add comments. Let this patch easy to read.
+> Here is get a new timer.
+> If the new time is zero, consider that has been checked.
 >=20
->>=20
->>> Freescale core Manuals and EREF does not mention MAS2U so I think I =
-our
->> case
->>> it is not implemented.
->>=20
->> Please check with a simple mfspr() test on real hw to see if it =
-really
->> isn't implemented.
->=20
-> I will try this with SPR number 0x277.
+> if (!time.tv_sec) {...} this is check zero.
+> The "mpic_request_timer" before this code.
 
-Thanks :)
+Ah, I see.  Wouldn't it be simpler to remove that block and just test =20
+time.tv_sec when requesting the new timer?
 
-
-Alex
+-Scott=
