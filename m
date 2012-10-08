@@ -1,23 +1,26 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 715042C01E6
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2012 16:20:43 +1100 (EST)
-Message-ID: <507263F8.9040200@cn.fujitsu.com>
-Date: Mon, 08 Oct 2012 13:26:16 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <B40534@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 15CE72C01FA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Oct 2012 18:13:52 +1100 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>, Kumar Gala
+ <galak@kernel.crashing.org>
+Subject: RE: [RFC PATCH] powerpc/fsl: add timer wakeup source
+Date: Mon, 8 Oct 2012 07:13:26 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DF1A14@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <6170650E-9D3C-4686-BF13-6C41DBFFB79D@kernel.crashing.org>	(from
+ galak@kernel.crashing.org on Wed Oct  3 08:35:58 2012)
+ <1349302807.31013.20@snotra>
+In-Reply-To: <1349302807.31013.20@snotra>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH 0/10] memory-hotplug: hot-remove physical memory
-References: <506E43E0.70507@jp.fujitsu.com>
- <CAHGf_=qCZvL7xcOkea80Y995sZWkOMQLLVnuvLUto4W+qpUbWA@mail.gmail.com>
-In-Reply-To: <CAHGf_=qCZvL7xcOkea80Y995sZWkOMQLLVnuvLUto4W+qpUbWA@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, minchan.kim@gmail.com,
- rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
+Cc: Wang Dongsheng <dongsheng.wds@gmail.com>, "linuxppc-dev@lists.ozlabs.org
+ list" <linuxppc-dev@lists.ozlabs.org>, Li Yang-R58472 <r58472@freescale.com>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +30,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 10/06/2012 03:06 AM, KOSAKI Motohiro Wrote:
->> Known problems:
->> 1. memory can't be offlined when CONFIG_MEMCG is selected.
->>    For example: there is a memory device on node 1. The address range
->>    is [1G, 1.5G). You will find 4 new directories memory8, memory9, memory10,
->>    and memory11 under the directory /sys/devices/system/memory/.
->>    If CONFIG_MEMCG is selected, we will allocate memory to store page cgroup
->>    when we online pages. When we online memory8, the memory stored page cgroup
->>    is not provided by this memory device. But when we online memory9, the memory
->>    stored page cgroup may be provided by memory8. So we can't offline memory8
->>    now. We should offline the memory in the reversed order.
->>    When the memory device is hotremoved, we will auto offline memory provided
->>    by this memory device. But we don't know which memory is onlined first, so
->>    offlining memory may fail. In such case, you should offline the memory by
->>    hand before hotremoving the memory device.
-> 
-> Just iterate twice. 1st iterate: offline every non primary memory
-> block. 2nd iterate:
-> offline primary (i.e. first added) memory block. It may work.
-> 
 
-OK, I will try it.
 
-Thanks
-Wen Congyang
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Thursday, October 04, 2012 6:20 AM
+> To: Kumar Gala
+> Cc: Wang Dongsheng; Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org list=
+;
+> Wang Dongsheng-B40534; Li Yang-R58472; linux-pm@vger.kernel.org
+> Subject: Re: [RFC PATCH] powerpc/fsl: add timer wakeup source
+>=20
+> On 10/03/2012 08:35:58 AM, Kumar Gala wrote:
+> >
+> > On Oct 3, 2012, at 5:42 AM, Wang Dongsheng wrote:
+> >
+> > > This is only for freescale powerpc platform. The driver provides a
+> > way
+> > > to wake up system. Proc
+> > interface(/proc/powerpc/wakeup_timer_seconds).
+> > >
+> > > eg: "echo 5 > /proc/powerpc/wakeup_timer_seconds", 5 seconds after
+> > > the system will be woken up. echo another time into proc
+> > interface
+> > > to update the time.
+> > >
+> > > Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+> > > Signed-off-by: Li Yang <leoli@freescale.com>
+> > > ---
+> > > arch/powerpc/platforms/Kconfig            |   23 +++
+> > > arch/powerpc/platforms/Makefile           |    1 +
+> > > arch/powerpc/platforms/fsl_timer_wakeup.c |  217
+> > +++++++++++++++++++++++++++++
+> > > 3 files changed, 241 insertions(+)
+> > > create mode 100644 arch/powerpc/platforms/fsl_timer_wakeup.c
+> >
+> > Adding the Linux PM list to see if there is some existing support for
+> > this on other arch's in kernel.
+> >
+> > I'm pretty sure /proc/ is NOT where we want this exposed.
+>=20
+> Should probably go under the sysfs directory of the mpic device.  Or
+> better, make a generic interface for timer-based suspend wakeup (if there
+> isn't one already).  This current approach sits in an unpleasant middle
+> ground between generic and device-specific.
+> =09
+/sys/power/wakeup_timer_seconds how about this?
+I think it is a freescale generic interface, this interface control by
+FSL_SOC && SUSPEND.
+
+> > > diff --git a/arch/powerpc/platforms/Kconfig
+> > b/arch/powerpc/platforms/Kconfig
+> > > index b190a6e..7b9232a 100644
+> > > --- a/arch/powerpc/platforms/Kconfig
+> > > +++ b/arch/powerpc/platforms/Kconfig
+> > > @@ -99,6 +99,29 @@ config MPIC_TIMER
+> > > 	  only tested on fsl chip, but it can potentially support
+> > > 	  other global timers complying to Open-PIC standard.
+> > >
+> > > +menuconfig FSL_WAKEUP_SOURCE
+> > > +	bool "Freescale wakeup source"
+> > > +	depends on FSL_SOC && SUSPEND
+> > > +	default n
+> > > +	help
+> > > +	  This option enables wakeup source for wake up system
+> > > +	  features. This is only for freescale powerpc platform.
+> > > +
+> > > +if FSL_WAKEUP_SOURCE
+> > > +
+> > > +config FSL_TIMER_WAKEUP
+> > > +	tristate "Freescale mpic global timer wakeup event"
+> > > +	default n
+> > > +	help
+> > > +	  This is only for freescale powerpc platform. The driver
+> > > +	  provides a way to wake up system.
+> > > +	  Proc interface(/proc/powerpc/wakeup_timer_seconds).
+> > > +	  eg: "echo 5 > /proc/powerpc/wakeup_timer_seconds",
+> > > +	  5 seconds after the system will be woken up. echo another
+> > > +	  time into proc interface to update the time.
+> > > +
+> > > +endif
+>=20
+> Use depends rather than if/else.  Why do you need FSL_WAKEUP_SOURCE?
+>
+It lists all wake up source. If later have wakeup source can be improved by
+it to control. Buttons event wakeup source will be added after the timer.
+
+> These names are overly broad -- this is only for FSL MPIC, not for other
+> FSL chips (e.g. mpc83xx has a different global timer implementation, and
+> there's FSL ARM chips, etc).
+>=20
+Yes, thanks. Change to FSL_MPIC_TIMER_WAKEUP.
+
+> > > +static ssize_t timer_wakeup_write(struct file *file, const char
+> > __user *buf,
+> > > +		size_t count, loff_t *off)
+> > > +{
+> > > +	struct fsl_timer_wakeup *priv;
+> > > +	struct inode *inode =3D file->f_path.dentry->d_inode;
+> > > +	struct proc_dir_entry *dp;
+> > > +	struct timeval time;
+> > > +	char *kbuf;
+> > > +
+> > > +	dp =3D PDE(inode);
+> > > +	priv =3D dp->data;
+> > > +
+> > > +	kbuf =3D kzalloc(count + 1, GFP_KERNEL);
+> > > +	if (!kbuf)
+> > > +		return -ENOMEM;
+> > > +
+> > > +	if (copy_from_user(kbuf, buf, count)) {
+> > > +		kfree(kbuf);
+> > > +		return -EFAULT;
+> > > +	}
+> > > +
+> > > +	kbuf[count] =3D '\0';
+> > > +
+> > > +	if (kstrtol(kbuf, 0, &time.tv_sec)) {
+> > > +		kfree(kbuf);
+> > > +		return -EINVAL;
+> > > +	}
+> > > +
+> > > +	kfree(kbuf);
+> > > +
+> > > +	time.tv_usec =3D 0;
+> > > +
+> > > +	mutex_lock(&priv->mutex);
+> > > +
+> > > +	if (!time.tv_sec) {
+> > > +		if (priv->timer) {
+> > > +			mpic_free_timer(priv->timer);
+> > > +			priv->timer =3D NULL;
+> > > +		}
+> > > +		mutex_unlock(&priv->mutex);
+> > > +
+> > > +		return count;
+> > > +	}
+> > > +
+> > > +	if (priv->timer) {
+> > > +		mpic_free_timer(priv->timer);
+> > > +		priv->timer =3D NULL;
+> > > +	}
+> > > +
+> > > +	priv->timer =3D mpic_request_timer(timer_event_interrupt, priv,
+> > &time);
+>=20
+> If the new time is zero, consider that a cancellation of the timer and
+> don't request a new one or return -EINVAL.
+>=20
+Thanks, I think i should add comments. Let this patch easy to read.
+Here is get a new timer.
+If the new time is zero, consider that has been checked.
+
+if (!time.tv_sec) {...} this is check zero.
+The "mpic_request_timer" before this code.
+
+ - Dongsheng
