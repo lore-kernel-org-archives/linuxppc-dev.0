@@ -1,21 +1,29 @@
-Return-Path: <weiyj.lk@gmail.com>
-Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
- [209.85.216.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B13382C0316
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 00:00:06 +1100 (EST)
-Received: by mail-qa0-f51.google.com with SMTP id j40so2064269qab.17
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Oct 2012 06:00:04 -0700 (PDT)
+Return-Path: <B02008@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe001.messaging.microsoft.com [213.199.154.139])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 422A32C031A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 00:06:44 +1100 (EST)
+From: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
+To: Alexander Graf <agraf@suse.de>
+Subject: RE: [Qemu-ppc] [RFC PATCH 05/17] KVM: PPC: booke: Extend MAS2 EPN
+ mask for 64-bit
+Date: Mon, 8 Oct 2012 13:06:32 +0000
+Message-ID: <300B73AA675FCE4A93EB4FC1D42459FF20D198@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1340627195-11544-1-git-send-email-mihai.caraman@freescale.com>
+ <1340627195-11544-6-git-send-email-mihai.caraman@freescale.com>
+ <D3F90478-D3C9-4699-ADFD-CE752D9A569F@suse.de>
+ <300B73AA675FCE4A93EB4FC1D42459FF15B15F@039-SN2MPN1-013.039d.mgd.msft.net>
+ <0A87124F-B5D0-475C-A33C-A1F36C1B56D9@suse.de>
+In-Reply-To: <0A87124F-B5D0-475C-A33C-A1F36C1B56D9@suse.de>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Date: Mon, 8 Oct 2012 21:00:04 +0800
-Message-ID: <CAPgLHd9GT2LPyujNJyHAxJf_94cJJKsLcqCRuuHn2h9yVGBK_A@mail.gmail.com>
-Subject: [PATCH] powerpc/windfarm: use module_i2c_driver to simplify the code
-From: Wei Yongjun <weiyj.lk@gmail.com>
-To: benh@kernel.crashing.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: yongjun_wei@trendmicro.com.cn, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "qemu-ppc@nongnu.org" <qemu-ppc@nongnu.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,120 +33,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> -----Original Message-----
+> From: Alexander Graf [mailto:agraf@suse.de]
+> Sent: Monday, October 08, 2012 1:11 PM
+> To: Caraman Mihai Claudiu-B02008
+> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; qemu-ppc@nongnu.org
+> Subject: Re: [Qemu-ppc] [RFC PATCH 05/17] KVM: PPC: booke: Extend MAS2
+> EPN mask for 64-bit
+>=20
+>=20
+> On 05.07.2012, at 13:14, Caraman Mihai Claudiu-B02008 wrote:
+>=20
+> >
+> >
+> >> -----Original Message-----
+> >> From: Alexander Graf [mailto:agraf@suse.de]
+> >> Sent: Wednesday, July 04, 2012 4:50 PM
+> >> To: Caraman Mihai Claudiu-B02008
+> >> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
+> >> dev@lists.ozlabs.org; qemu-ppc@nongnu.org
+> >> Subject: Re: [Qemu-ppc] [RFC PATCH 05/17] KVM: PPC: booke: Extend MAS2
+> >> EPN mask for 64-bit
+> >>
+> >>
+> >> On 25.06.2012, at 14:26, Mihai Caraman wrote:
+> >>
+> >>> Extend MAS2 EPN mask for 64-bit hosts, to retain most significant
+> bits.
+> >>> Change get tlb eaddr to use this mask.
+> >>
+> >> Please see section 6.11.4.8 in the PowerISA 2.06b:
+> >>
+> >> MMU behavior is largely unaffected by whether the thread is in 32-bit
+> >> computation mode (MSRCM=3D0) or 64- bit computation mode (MSRCM=3D1). =
+The
+> >> only differ- ences occur in the EPN field of the TLB entry and the EPN
+> >> field of MAS2. The differences are summarized here.
+> >>
+> >> 	*  Executing a tlbwe instruction in 32-bit mode will set bits 0:31
+> >> of the TLB EPN field to zero unless MAS0ATSEL is set, in which case
+> those
+> >> bits are not written to zero.
+> >> 	*  In 32-bit implementations, MAS2U can be used to read or write
+> >> EPN0:31 of MAS2.
+> >>
+> >> So if MSR.CM is not set tlbwe should mask the upper 32 bits out -
+> which
+> >> can happen regardless of CONFIG_64BIT.
+> >
+> > MAS2_EPN reflects EPN field of MAS2 aka bits 0:51 (for MAV =3D 1.0)
+> according
+> > to section 6.10.3.10 in the PowerISA 2.06b.
+> >
+> > MAS2_EPN is not used in tlbwe execution emulation, we have MAS2_VAL
+> define
+> > for this case.
+>=20
+> So tlbe->mas2 is guaranteed to have the upper bits be 0 when MSR.CM=3D0?
 
-Use the module_i2c_driver() macro to make the code smaller
-and a bit simpler.
+We chose to mask out mas2 upper bits on tlbwe emulation so gtlbe->mas2 will
+respect this but vcpu->arch.shared->mas2 will not. tlb entry selection does=
+ not
+require this treatment since EPN upper bits are not taken into consideratio=
+n anyway.
 
-dpatch engine is used to auto generate this patch.
-(https://github.com/weiyj/dpatch)
+>=20
+> >
+> >> Also, we need to implement MAS2U, to potentially make the upper 32bits
+> of
+> >> MAS2 available, right? But that one isn't as important as the first
+> bit.
+> >
+> > MAS2U is guest privileged why does it need special care?
+>=20
+> Maybe it's mapped to the upper bits of GMAS2 automatically?
 
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
----
- drivers/macintosh/windfarm_smu_sat.c        | 13 +------------
- drivers/macintosh/windfarm_max6690_sensor.c | 13 +------------
- drivers/macintosh/windfarm_lm75_sensor.c    | 14 +-------------
- drivers/macintosh/windfarm_fcu_controls.c   | 14 +-------------
- 4 files changed, 4 insertions(+), 50 deletions(-)
+GMAS2?
 
-diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windfarm_smu_sat.c
-index 426e810..d87f5ee 100644
---- a/drivers/macintosh/windfarm_smu_sat.c
-+++ b/drivers/macintosh/windfarm_smu_sat.c
-@@ -364,18 +364,7 @@ static struct i2c_driver wf_sat_driver = {
- 	.id_table	= wf_sat_id,
- };
- 
--static int __init sat_sensors_init(void)
--{
--	return i2c_add_driver(&wf_sat_driver);
--}
--
--static void __exit sat_sensors_exit(void)
--{
--	i2c_del_driver(&wf_sat_driver);
--}
--
--module_init(sat_sensors_init);
--module_exit(sat_sensors_exit);
-+module_i2c_driver(wf_sat_driver);
- 
- MODULE_AUTHOR("Paul Mackerras <paulus@samba.org>");
- MODULE_DESCRIPTION("SMU satellite sensors for PowerMac thermal control");
+>=20
+> > Freescale core Manuals and EREF does not mention MAS2U so I think I our
+> case
+> > it is not implemented.
+>=20
+> Please check with a simple mfspr() test on real hw to see if it really
+> isn't implemented.
 
-diff --git a/drivers/macintosh/windfarm_max6690_sensor.c b/drivers/macintosh/windfarm_max6690_sensor.c
-index 371b058..945a25b 100644
---- a/drivers/macintosh/windfarm_max6690_sensor.c
-+++ b/drivers/macintosh/windfarm_max6690_sensor.c
-@@ -130,18 +130,7 @@ static struct i2c_driver wf_max6690_driver = {
- 	.id_table	= wf_max6690_id,
- };
- 
--static int __init wf_max6690_sensor_init(void)
--{
--	return i2c_add_driver(&wf_max6690_driver);
--}
--
--static void __exit wf_max6690_sensor_exit(void)
--{
--	i2c_del_driver(&wf_max6690_driver);
--}
--
--module_init(wf_max6690_sensor_init);
--module_exit(wf_max6690_sensor_exit);
-+module_i2c_driver(wf_max6690_driver);
- 
- MODULE_AUTHOR("Paul Mackerras <paulus@samba.org>");
- MODULE_DESCRIPTION("MAX6690 sensor objects for PowerMac thermal control");
+I will try this with SPR number 0x277.
 
-diff --git a/drivers/macintosh/windfarm_lm75_sensor.c b/drivers/macintosh/windfarm_lm75_sensor.c
-index b0c2d36..9ef32b3 100644
---- a/drivers/macintosh/windfarm_lm75_sensor.c
-+++ b/drivers/macintosh/windfarm_lm75_sensor.c
-@@ -174,19 +174,7 @@ static struct i2c_driver wf_lm75_driver = {
- 	.id_table	= wf_lm75_id,
- };
- 
--static int __init wf_lm75_sensor_init(void)
--{
--	return i2c_add_driver(&wf_lm75_driver);
--}
--
--static void __exit wf_lm75_sensor_exit(void)
--{
--	i2c_del_driver(&wf_lm75_driver);
--}
--
--
--module_init(wf_lm75_sensor_init);
--module_exit(wf_lm75_sensor_exit);
-+module_i2c_driver(wf_lm75_driver);
- 
- MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
- MODULE_DESCRIPTION("LM75 sensor objects for PowerMacs thermal control");
-
-diff --git a/drivers/macintosh/windfarm_fcu_controls.c b/drivers/macintosh/windfarm_fcu_controls.c
-index b3411ed..fd6ed15 100644
---- a/drivers/macintosh/windfarm_fcu_controls.c
-+++ b/drivers/macintosh/windfarm_fcu_controls.c
-@@ -593,19 +593,7 @@ static struct i2c_driver wf_fcu_driver = {
- 	.id_table	= wf_fcu_id,
- };
- 
--static int __init wf_fcu_init(void)
--{
--	return i2c_add_driver(&wf_fcu_driver);
--}
--
--static void __exit wf_fcu_exit(void)
--{
--	i2c_del_driver(&wf_fcu_driver);
--}
--
--
--module_init(wf_fcu_init);
--module_exit(wf_fcu_exit);
-+module_i2c_driver(wf_fcu_driver);
- 
- MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
- MODULE_DESCRIPTION("FCU control objects for PowerMacs thermal control");
+-Mike
