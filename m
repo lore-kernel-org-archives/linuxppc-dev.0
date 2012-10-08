@@ -1,15 +1,16 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Eric Dumazet <edumazet@google.com>
-Subject: net: fix typo in freescale/ucc_geth.c
-In-reply-to: <20121008173653.1d17895964980c98af59c8ea@canb.auug.org.au>
-References: <20121008173653.1d17895964980c98af59c8ea@canb.auug.org.au>
-Date: Tue, 09 Oct 2012 10:52:25 +1100
-Message-ID: <23452.1349740345@neuling.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
- linux-next@vger.kernel.org, Maxime Bizon <mbizon@freebox.fr>,
- "David S. Miller" <davem@davemloft.net>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1349740469.32656.2.camel@concordia>
+Subject: Re: [PATCH 0/5] Move some OF functionality from pseries to generic
+ OF code
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Date: Tue, 09 Oct 2012 10:54:29 +1100
+In-Reply-To: <506B2E63.5090900@linux.vnet.ibm.com>
+References: <506B2E63.5090900@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: cbe-oss-dev@lists.ozlabs.org, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,26 +20,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following patch: 
-  acb600d net: remove skb recycling
-added dev_free_skb() to drivers/net/ethernet/freescale/ucc_geth.c
+On Tue, 2012-10-02 at 13:11 -0500, Nathan Fontenot wrote:
+> This set of patches moves some OF code that has been living
+> in the pseries tree over to the generic OF code base. The
+> functionality being migrated over is something that, I believe,
+> should live in the generic code base. The specific functionality
+> being migrated to generic OF code is;
 
-This is a typo and should be dev_kfree_skb().  This fixes this.
+Your changes collide with commit 475d0094293:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=475d0094293b51353e342d1198377967dbc48169
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
-This hit as a compile error in next-20121008 with mpc85xx_defconfig.
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index dfa0aaa..0a70bb5 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -3268,7 +3268,7 @@ static int ucc_geth_rx(struct ucc_geth_private *ugeth, u8 rxQ, int rx_work_limit
- 			if (netif_msg_rx_err(ugeth))
- 				ugeth_err("%s, %d: ERROR!!! skb - 0x%08x",
- 					   __func__, __LINE__, (u32) skb);
--			dev_free_skb(skb);
-+			dev_kfree_skb(skb);
- 
- 			ugeth->rx_skbuff[rxQ][ugeth->skb_currx[rxQ]] = NULL;
- 			dev->stats.rx_dropped++;
+At a quick glance they don't look like they conflict in concept, just
+textually.
+
+cheers
