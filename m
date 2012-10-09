@@ -1,15 +1,27 @@
-Return-Path: <Avi.Tsarfati@alvarion.com>
-Received: from alvarion.com (mailyoq1.alvarion.com [95.35.11.187])
- by ozlabs.org (Postfix) with ESMTP id 0F2A72C00D6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 23:29:05 +1100 (EST)
+Return-Path: <B40534@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe006.messaging.microsoft.com [216.32.180.16])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0E4132C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2012 00:57:07 +1100 (EST)
+From: Wang Dongsheng-B40534 <B40534@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: =?big5?B?tarOYDogW1JGQyBQQVRDSF0gcG93ZXJwYy9mc2w6IGFkZCB0aW1lciB3YWtldXAg?=
+ =?big5?Q?source?=
+Date: Tue, 9 Oct 2012 13:56:53 +0000
+Message-ID: <ABB05CD9C9F68C46A5CEDC7F15439259DF3F7F@039-SN2MPN1-021.039d.mgd.msft.net>
+References: <ABB05CD9C9F68C46A5CEDC7F15439259DF1A14@039-SN2MPN1-021.039d.mgd.msft.net>
+ (from B40534@freescale.com on Mon Oct  8 02:13:26
+ 2012),<1349729705.3721.8@snotra>
+In-Reply-To: <1349729705.3721.8@snotra>
+Content-Type: text/plain; charset="big5"
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
- boundary="----_=_NextPart_001_01CDA618.BAFB8270"
-Subject: Re: gianfar driver crash on P1020
-Date: Tue, 9 Oct 2012 14:22:18 +0200
-Message-ID: <56439212F1FB0D45B3354883689F4245559383@yoqex01.alvarion.com>
-From: "Avi Tsarfati" <Avi.Tsarfati@alvarion.com>
-To: <linuxppc-dev@lists.ozlabs.org>
+Cc: "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Wang Dongsheng <dongsheng.wds@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org list" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,129 +31,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
-
-------_=_NextPart_001_01CDA618.BAFB8270
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-Hi,=20
-
-=20
-
-I have the same problem as you do.=20
-
-Have you found the CPU stuck reason (or fix) in P1020RDB board ?
-
-=20
-
-Thanks,
-
-Avi Tsarfati.
-
-=20
-
-
-************************************************************************************ 
-This footnote confirms that this email message has been scanned by 
-PineApp Mail-SeCure for the presence of malicious code, vandals & computer viruses(187). 
-************************************************************************************
-
-
-
-------_=_NextPart_001_01CDA618.BAFB8270
-Content-Type: text/html; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:x=3D"urn:schemas-microsoft-com:office:excel" =
-xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:"Cambria Math";
-	panose-1:2 4 5 3 5 4 6 3 2 4;}
-@font-face
-	{font-family:Calibri;
-	panose-1:2 15 5 2 2 2 4 3 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:11.0pt;
-	font-family:"Calibri","sans-serif";}
-a:link, span.MsoHyperlink
-	{mso-style-priority:99;
-	color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{mso-style-priority:99;
-	color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:"Calibri","sans-serif";
-	color:windowtext;}
-.MsoChpDefault
-	{mso-style-type:export-only;}
-@page Section1
-	{size:612.0pt 792.0pt;
-	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal>Hi, <o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal>I have the same problem as you do. <o:p></o:p></p>
-
-<p class=3DMsoNormal>Have you found the CPU stuck reason (or fix) in =
-P1020RDB
-board ?<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-<p class=3DMsoNormal =
-style=3D'mso-margin-top-alt:5.0pt;margin-right:0cm;margin-bottom:
-5.0pt;margin-left:0cm'>Thanks,<o:p></o:p></p>
-
-<p class=3DMsoNormal =
-style=3D'mso-margin-top-alt:5.0pt;margin-right:0cm;margin-bottom:
-5.0pt;margin-left:0cm'>Avi Tsarfati.<o:p></o:p></p>
-
-<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
-
-</div>
-
-<br><br>
-************************************************************************************ <br>This footnote confirms that this email message has been scanned by <br>PineApp Mail-SeCure for the presence of malicious code, vandals & computer viruses(187). <br>************************************************************************************<br>
-</body>
-
-</html>
-
-
-
-------_=_NextPart_001_01CDA618.BAFB8270--
+DQo+ID4gPiA+IEknbSBwcmV0dHkgc3VyZSAvcHJvYy8gaXMgTk9UIHdoZXJlIHdlIHdhbnQgdGhp
+cyBleHBvc2VkLg0KPiA+ID4NCj4gPiA+IFNob3VsZCBwcm9iYWJseSBnbyB1bmRlciB0aGUgc3lz
+ZnMgZGlyZWN0b3J5IG9mIHRoZSBtcGljIGRldmljZS4gIE9yDQo+ID4gPiBiZXR0ZXIsIG1ha2Ug
+YSBnZW5lcmljIGludGVyZmFjZSBmb3IgdGltZXItYmFzZWQgc3VzcGVuZCB3YWtldXAgKGlmDQo+
+ID4gdGhlcmUNCj4gPiA+IGlzbid0IG9uZSBhbHJlYWR5KS4gIFRoaXMgY3VycmVudCBhcHByb2Fj
+aCBzaXRzIGluIGFuIHVucGxlYXNhbnQNCj4gbWlkZGxlDQo+ID4gPiBncm91bmQgYmV0d2VlbiBn
+ZW5lcmljIGFuZCBkZXZpY2Utc3BlY2lmaWMuDQo+ID4gPg0KPiA+IC9zeXMvcG93ZXIvd2FrZXVw
+X3RpbWVyX3NlY29uZHMgaG93IGFib3V0IHRoaXM/DQo+ID4gSSB0aGluayBpdCBpcyBhIGZyZWVz
+Y2FsZSBnZW5lcmljIGludGVyZmFjZSwgdGhpcyBpbnRlcmZhY2UgY29udHJvbCBieQ0KPiA+IEZT
+TF9TT0MgJiYgU1VTUEVORC4NCg0KPiBUaGVyZSdzIG5vIHN1Y2ggdGhpbmcgYXMgYSAiRnJlZXNj
+YWxlIGdlbmVyaWMgaW50ZXJmYWNlIi4gIExpbnV4IEFQSXMNCj4gYXJlIG5vdCBvcmdhbml6ZWQg
+YnkgaGFyZHdhcmUgdmVuZG9yLiAgRWl0aGVyIG1ha2UgYSB0cnVseSBnZW5lcmljDQo+IGludGVy
+ZmFjZSwgcmV1c2UgYW4gZXhpc3Rpbmcgb25lLCBvciBkbyBzb21ldGhpbmcgdGhhdCBpcyBhdHRh
+Y2hlZCB0bw0KPiB0aGUgc3BlY2lmaWMgZHJpdmVyLg0KVGhhbmtzLCBJIHRoaW5rIGkgY2FuIGNo
+YW5nZSBtcGljIHRpbWVyIHJlZ2lzdHJhdGlvbiwgaSB3aWxsIHVzZSBwbGF0Zm9ybV9kcml2ZXJf
+cmVnaXN0ZXIuDQpJIHdpbGwgbWVyZ2UgIm1waWMgdGltZXIiIGFuZCAidGltZXIgd2FrZXVwIi4g
+SW4gIm1waWMgdGltZXIiIHRoZSB3YWtldXAgZnVuY3Rpb24NCmNvbnRyb2xzIGJ5IFNVU1BFTkQu
+IFRoZSBzeXMgcGF0aCBpcyAiL3N5cy9kZXZpY2VzL3NvYzg1NzIuNC9mZmU0MTEwMC50aW1lci93
+YWtldXBfc2Vjb25kcyIuDQpkbyB5b3UgaGF2ZSBhbnkgc3VnZ2VzdGlvbnMgZm9yIHRoaXM/IG9y
+IGhhdmUgYSBiZXR0ZXIgaWRlYSBhYm91dCB0aGUgc3lzIHBhdGg/DQoNCj4gPiA+IFVzZSBkZXBl
+bmRzIHJhdGhlciB0aGFuIGlmL2Vsc2UuICBXaHkgZG8geW91IG5lZWQgRlNMX1dBS0VVUF9TT1VS
+Q0U/DQo+ID4gPg0KPiA+IEl0IGxpc3RzIGFsbCB3YWtlIHVwIHNvdXJjZS4gSWYgbGF0ZXIgaGF2
+ZSB3YWtldXAgc291cmNlIGNhbiBiZQ0KPiA+IGltcHJvdmVkIGJ5DQo+ID4gaXQgdG8gY29udHJv
+bC4gQnV0dG9ucyBldmVudCB3YWtldXAgc291cmNlIHdpbGwgYmUgYWRkZWQgYWZ0ZXIgdGhlDQo+
+ID4gdGltZXIuDQoNCj4gSXQgZG9lcyBub3QgbGlzdCBhbGwgd2FrZSB1cCBzb3VyY2VzIC0tIHRo
+ZXJlJ3MgYWxzbyBldGhlcm5ldCwgVVNCLCBldGMuDQpmaW5lLCBjaGFuZ2UgdG8gZGVwZW5kcy4g
+dGhhbmtzLg0KDQo+ID4gPg0KPiA+ID4gSWYgdGhlIG5ldyB0aW1lIGlzIHplcm8sIGNvbnNpZGVy
+IHRoYXQgYSBjYW5jZWxsYXRpb24gb2YgdGhlIHRpbWVyDQo+ID4gYW5kDQo+ID4gPiBkb24ndCBy
+ZXF1ZXN0IGEgbmV3IG9uZSBvciByZXR1cm4gLUVJTlZBTC4NCj4gPiA+DQo+ID4gVGhhbmtzLCBJ
+IHRoaW5rIGkgc2hvdWxkIGFkZCBjb21tZW50cy4gTGV0IHRoaXMgcGF0Y2ggZWFzeSB0byByZWFk
+Lg0KPiA+IEhlcmUgaXMgZ2V0IGEgbmV3IHRpbWVyLg0KPiA+IElmIHRoZSBuZXcgdGltZSBpcyB6
+ZXJvLCBjb25zaWRlciB0aGF0IGhhcyBiZWVuIGNoZWNrZWQuDQo+ID4NCj4gPiBpZiAoIXRpbWUu
+dHZfc2VjKSB7Li4ufSB0aGlzIGlzIGNoZWNrIHplcm8uDQo+ID4gVGhlICJtcGljX3JlcXVlc3Rf
+dGltZXIiIGJlZm9yZSB0aGlzIGNvZGUuDQoNCj4gQWgsIEkgc2VlLiAgV291bGRuJ3QgaXQgYmUg
+c2ltcGxlciB0byByZW1vdmUgdGhhdCBibG9jayBhbmQganVzdCB0ZXN0DQo+IHRpbWUudHZfc2Vj
+IHdoZW4gcmVxdWVzdGluZyB0aGUgbmV3IHRpbWVyPw0KWWVzLCB3YWtlIHVwIGZ1bmN0aW9uIG9u
+bHkgbmVlZCBzZWNvbmRzIGxldmVsLCBhbmQgaXQncyBqdXN0IGhvbGQgYSB0aW1lci4NCmVjaG8g
+emVybyB0byBjYW5jZWwsIGFuZCBlY2hvIGEgbmV3IHRpbWUgdG8gdXBkYXRlIHRoZSB0aW1lciB0
+aW1lLg==
