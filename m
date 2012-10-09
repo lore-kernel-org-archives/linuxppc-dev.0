@@ -1,9 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 19/20] powerpc/xmon: Remove externs for non-existant routines
-Date: Wed, 10 Oct 2012 01:20:46 +1100
-Message-Id: <1349792447-15714-19-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 20/20] powerpc/xmon: Fallback to printk() in xmon_printf() if
+ udbg is not setup
+Date: Wed, 10 Oct 2012 01:20:47 +1100
+Message-Id: <1349792447-15714-20-git-send-email-michael@ellerman.id.au>
 In-Reply-To: <1349792447-15714-1-git-send-email-michael@ellerman.id.au>
 References: <1349792447-15714-1-git-send-email-michael@ellerman.id.au>
 Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
@@ -16,39 +17,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The implementation of both xmon_enter() & xmon_leave() was removed in
-commit 51d3082 "Unify udbg (#2)".
+It is possible to configure a kernel which has xmon enabled, but has no
+udbg backend to provide IO. This can make xmon rather confusing, as it
+produces no output, blocks for two seconds, and then returns.
 
-I can't find any reference to exc_prolog or dec_exc since the epoch.
+As a last resort we can instead try to printk(), which may deadlock or
+otherwise crash, but tries quite hard not to.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/xmon/xmon.c |    6 ------
- 1 file changed, 6 deletions(-)
+ arch/powerpc/xmon/nonstdio.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 9eb1d34..ded6c56 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -155,9 +155,6 @@ static void dump_tlb_book3e(void);
+diff --git a/arch/powerpc/xmon/nonstdio.c b/arch/powerpc/xmon/nonstdio.c
+index 942d0f6..bce3dcf 100644
+--- a/arch/powerpc/xmon/nonstdio.c
++++ b/arch/powerpc/xmon/nonstdio.c
+@@ -111,13 +111,19 @@ char *xmon_gets(char *str, int nb)
+ void xmon_printf(const char *format, ...)
+ {
+ 	va_list args;
+-	int n;
+ 	static char xmon_outbuf[1024];
++	int rc, n;
  
- static int xmon_no_auto_backtrace;
- 
--extern void xmon_enter(void);
--extern void xmon_leave(void);
--
- #ifdef CONFIG_PPC64
- #define REG		"%.16lx"
- #else
-@@ -1629,9 +1626,6 @@ write_spr(int n, unsigned long val)
- 	}
+ 	va_start(args, format);
+ 	n = vsnprintf(xmon_outbuf, sizeof(xmon_outbuf), format, args);
+ 	va_end(args);
+-	xmon_write(xmon_outbuf, n);
++
++	rc = xmon_write(xmon_outbuf, n);
++
++	if (n && rc == 0) {
++		/* No udbg hooks, fallback to printk() - dangerous */
++		printk(xmon_outbuf);
++	}
  }
  
--extern char exc_prolog;
--extern char dec_exc;
--
- static void super_regs(void)
- {
- 	static unsigned long regno;
+ void xmon_puts(const char *str)
 -- 
 1.7.9.5
