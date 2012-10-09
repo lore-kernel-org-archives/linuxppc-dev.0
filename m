@@ -1,24 +1,17 @@
-Return-Path: <phdm@macqel.be>
-Received: from smtp2.macqel.be (smtp2.macqel.be [194.78.208.39])
- by ozlabs.org (Postfix) with ESMTP id D7F1E2C0095
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 20:18:29 +1100 (EST)
-Date: Tue, 9 Oct 2012 11:07:58 +0200
-From: Philippe De Muyter <phdm@macqel.be>
-To: Greg Ungerer <gerg@snapgear.com>
-Subject: [m68k,powerpc,dma,ethernet,freescale RFA] Coldfire m54xx FEC
- ethernet driver
-Message-ID: <20121009090758.GA14142@frolo.macqel>
-References: <1348473919-30257-1-git-send-email-phdm@macqel.be>
- <1348473919-30257-4-git-send-email-phdm@macqel.be>
- <506D3323.4000205@snapgear.com> <20121004073448.GA4339@frolo.macqel>
- <506D902C.30902@snapgear.com> <20121004145601.GA15358@frolo.macqel>
- <20121004150329.GB15358@frolo.macqel> <5073C05C.2080809@snapgear.com>
+Return-Path: <acmay@acmay.org>
+Received: from biz61.inmotionhosting.com (biz61.inmotionhosting.com
+ [74.124.213.197])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id BAFCF2C00D0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 17:43:57 +1100 (EST)
+Message-ID: <5073C2E7.4050903@acmay.org>
+Date: Mon, 08 Oct 2012 23:23:35 -0700
+From: Andrew May <acmay@acmay.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5073C05C.2080809@snapgear.com>
-Cc: uClinux development list <uclinux-dev@uclinux.org>, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- stany.marcel@novasys-ingenierie.com, linuxppc-dev@lists.ozlabs.org
+To: linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+Subject: [RFC Patch] 405gp IBM EMAC Phy probe fails with no link
+Content-Type: multipart/mixed; boundary="------------080308060202010005060400"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,155 +21,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[CCing lkml, linux-ppc, netdev, linux-m68k]
+This is a multi-part message in MIME format.
+--------------080308060202010005060400
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Hello kernel sources architects
+I have an older PPC 405GP board with a 2.6.33 kernel that fails to 
+install a eth0 instance because the phy probe fails when there is no 
+good ethernet link.
+I have looked at the latest kernel code and it seems just about the same 
+in this area, but I have not tried it.
 
-I have a working driver for the m54xx FEC ethernet driver that I
-would like to integrate in the kernel tree.  Problems are that
-- this driver needs an associated DMA driver (provided by FreeScale)
-wich is not dma-engine enabled
-- they're are already many fec drivers in the kernel tree, and
-at least one, fec_mpc52xx.c, seems to be very similar (information
-below), to the one for the mcf54xx, except it uses a differently
-named associated DMA driver (BestComm/SmartDma/SDMA) which is also
-not dma-engine enabled, and even kept hidden in /arch/powerpc where
-it is inaccessible when compiling for m68k.  The underlying DMA part
-from Freescale however seems similar to the one used in the
-m54xx. (again, see information below)
+Does anyone else still have a 405GP board to try and see if eth0 comes 
+up with not enet cable?
 
-So, now I am lost, what should I do ?
+I tried to probe the phy earlier and skip the emac_configure() call in 
+emac_init_phy() to avoid doing the MR0_SRST bit set.
+But the phy read still times out.
 
-The current state of my patches
-[http://mailman.uclinux.org/pipermail/uclinux-dev/2012-September/052147.html]
-is pushing the freescale provided MCD_DMA dma driver to /drivers/dma,
-without adding the dma-engine compatibility layer, and adding the specific
-fec_m54xx ethernet driver to /drivers/net/ethernet/freescale
+I then went with this approach to re-call emac_init_phy() after the 
+emac_reset() finally completes when a cable is plugged in.
+Does anyone else have any ideas why the phy probe fails on the first pass?
 
-Best regards
+--------------080308060202010005060400
+Content-Type: text/x-patch;
+ name="ibm_phyprobe.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="ibm_phyprobe.patch"
 
-Philippe
+diff -ur linux.orig/drivers/net/ibm_newemac/core.c linux/drivers/net/ibm_newemac/core.c
+--- linux.orig/drivers/net/ibm_newemac/core.c	2012-10-08 12:38:33.000000000 -0700
++++ linux/drivers/net/ibm_newemac/core.c	2012-10-08 14:31:35.797089192 -0700
+@@ -106,6 +106,7 @@
+  */
+ static DECLARE_WAIT_QUEUE_HEAD(emac_probe_wait);
+ 
++static int emac_init_phy(struct emac_instance *dev);
+ /* Having stable interface names is a doomed idea. However, it would be nice
+  * if we didn't have completely random interface names at boot too :-) It's
+  * just a matter of making everybody's life easier. Since we are doing
+@@ -135,7 +136,7 @@
+ 				  EMAC_FTR_440EP_PHY_CLK_FIX))
+ 		DBG(dev, "%s" NL, error);
+ 	else if (net_ratelimit())
+-		printk(KERN_ERR "%s: %s\n", dev->ofdev->node->full_name, error);
++		printk(KERN_INFO "%s: %s\n", dev->ofdev->node->full_name, error);
+ }
+ 
+ /* EMAC PHY clock workaround:
+@@ -161,6 +162,7 @@
+ }
+ 
+ /* PHY polling intervals */
++#define PHY_POLL_NO_PHY 	(5 * HZ)
+ #define PHY_POLL_LINK_ON	HZ
+ #define PHY_POLL_LINK_OFF	(HZ / 5)
+ 
+@@ -1156,8 +1158,12 @@
+ 
+ 	/* Start PHY polling now.
+ 	 */
+-	if (dev->phy.address >= 0) {
++	if (dev->phy.address >= 0 || dev->phy.address == -2) {
+ 		int link_poll_interval;
++		if (dev->phy.address == -2) {
++			netif_carrier_off(dev->ndev);
++			link_poll_interval = PHY_POLL_NO_PHY;
++		}else 
+ 		if (dev->phy.def->ops->poll_link(&dev->phy)) {
+ 			dev->phy.def->ops->read_link(&dev->phy);
+ 			emac_rx_clk_default(dev);
+@@ -1243,7 +1249,17 @@
+ 	if (!dev->opened)
+ 		goto bail;
+ 
+-	if (dev->phy.def->ops->poll_link(&dev->phy)) {
++
++	if (!dev->phy.def) {
++		/* If the reset finally clears, because the phy now
++		 * has a link, then reprobe for the phy.
++		 */
++		if (emac_reset(dev) == 0)
++		{
++			emac_init_phy(dev);
++		}
++		link_poll_interval = PHY_POLL_NO_PHY;
++	}else if (dev->phy.def->ops->poll_link(&dev->phy)) {
+ 		if (!netif_carrier_ok(dev->ndev)) {
+ 			emac_rx_clk_default(dev);
+ 			/* Get new link parameters */
+@@ -2376,7 +2392,7 @@
+ 	return 0;
+ }
+ 
+-static int __devinit emac_init_phy(struct emac_instance *dev)
++static int emac_init_phy(struct emac_instance *dev)
+ {
+ 	struct device_node *np = dev->ofdev->node;
+ 	struct net_device *ndev = dev->ndev;
+@@ -2470,7 +2486,9 @@
+ 	mutex_unlock(&emac_phy_map_lock);
+ 	if (i == 0x20) {
+ 		printk(KERN_WARNING "%s: can't find PHY!\n", np->full_name);
+-		return -ENXIO;
++		busy_phy_map = 0;
++		dev->phy.address = -2;
++		return 0;
+ 	}
+ 
+ 	/* Init PHY */
 
-On Tue, Oct 09, 2012 at 04:12:44PM +1000, Greg Ungerer wrote:
-> Hi Philippe,
->
-> On 05/10/12 01:03, Philippe De Muyter wrote:
->> On Thu, Oct 04, 2012 at 04:56:01PM +0200, Philippe De Muyter wrote:
->>> On Thu, Oct 04, 2012 at 11:33:32PM +1000, Greg Ungerer wrote:
->>>>
->>>> My biggest concern is the amount of MCD/DMA support code. And it is
->>>> all done quite differently to everything else in the kernel. We may
->>>> get a bit of push back from kernel folk who look after DMA.
->>>
->>> Actually, there is already a similar code in arch/powerpc/sysdev/bestcomm
->>> (also from freescale, maybe an identical part, but I did not find any
->>> usable doc), but the powerpc folks kept that hidden in the arch/powerpc
->>> tree, instead of installing it in drivers/dma.
->>
->> The MCD DMA or DMA FEC code from freescale has a comment implying that 
->> this
->> was first used in the MPC8220 part.  And Montavista has a MPC8220 port, 
->> but
->> I did not find it, so I do not know where they installed the MCD DMA 
->> driver.
->
-> Ok, looks like there is a bit a variance in all this.
-
-I also began to read the mpc5200 user's guide parts about the fec and
-BestComm/SmartDma/SDMA (not sure which one is the official FreeScale name)
-and they look very similar, but not identical, to their m54xx counterparts.
-
-It seems possible to make the fec_mpc52xx.c driver work for the m54xx
-but that needs at least:
-- moving some files or part of them from /arch/powerpc/sysdev and
-  /arch/powerpc/include/asm to /drivers/dma and /include/linux,
-- renaming the fec_mpc52xx files to a more sensible name,
-- providing out_be32 and in_be32 in /arch/m68k/include/asm/io.h,
-- and then unifying the interface to BestComm/SmartDma/SDMA and MCD_DMA
-  in mcf_52xx.c.
-
-An additional problem is that the freescale docs for powerpcs and for
-coldfires do not use the same mnemonics for the same registers.
-
-e.g. FEC registers
-	offset	MPC5200		MCF5484
-	======	=======		=======
-	000	FEC_ID		n/a
-	004	IEVENT		EIR
-	008	IMASK		EIMR
-	010	R_DES_ACTIVE	n/a
-	014	X_DES_ACTIVE	n/a
-	024	ECNTRL		ECR
-	040	MII_DATA	MDATA
-	044	MII_SPEED	MSCR
-	064	MIB_CONTROL	MIBC
-	084	R_CNTRL		RCR
-	088	R_HASH		RHR
-	0C4	X_CNTRL		TCR
-	0E4	PADDR1		PALR
-	0E8	PADDR2		PAHR
-	0EC	OP_PAUSE	OPD
-	118	IADDR1		IAUR
-	11C	IADDR1		IALR
-	120	GADDR1		GAUR
-	124	GADDR2		GALR
-	144	X_WMRK		FECTFWR
-	184	RFIFO_DATA	FECRFDR
-	188	RFIFO_STATUS	FECRFSR
-	18C	RFIFO_CONTROL	FECRFCR
-	190	RFIFO_LRF_PTR	FECRLRFP
-	194	RFIFO_LWF_PTR	FECRLWFP
-	198	RFIFO_ALARM	FECRFAR
-	19C	RFIFO_RDPTR	FECRFRP
-	1A0	RFIFO_WRPTR	FECRFWP
-	1A4	TFIFO_DATA	FECTFDR
-	1A8	TFIFO_STATUS	FECTFSR
-	1AC	TFIFO_CONTROL	FECTFCR
-	1B0	TFIFO_LRF_PTR	FECTLRFP
-	1B4	TFIFO_LWF_PTR	FECTLWFP
-	1B8	TFIFO_ALARM	FECTFAR
-	1BC	TFIFO_RDPTR	FECTFRP
-	1C0	TFIFO_WRPTR	FECTFWP
-	1C4	RESET_CNTRL	FECFRST
-	1C8	XMIT_FSM	FECCTCWR
-
-> Probably the best thing to do is post the patches on the linux kernel
-> mailing list then, asking for direction on a dma driver.
->
-> I have no problem with it going into the arch/m68k area. So that is
-> always an option.
-
-For the dma engines, the similarity is also obvious.  For example, find
-below side by side mpc52xx and m54xx definitions for the
-main DMA registers :
-
-from mpc52xx.h				from MCD_dma.h
-/* SDMA */				/* MCD_DMA */
-struct mpc52xx_sdma {			struct dmaRegs { 
- u32 taskBar; /* 0x00 */		        u32 taskbar;
- u32 currentPointer; /* 0x04 */		        u32 currPtr;
- u32 endPointer; /* 0x08 */		        u32 endPtr;
- u32 variablePointer; /* 0x0c */	        u32 varTablePtr;
-
- u8 IntVect1; /* 0x10 */		        u16 dma_rsvd0;
- u8 IntVect2; /* 0x11 */
- u16 PtdCntrl; /* 0x12 */		        u16 ptdControl;
-
- u32 IntPend; /* 0x14 */		        u32 intPending;
- u32 IntMask; /* 0x18 */		        u32 intMask;
-
- u16 tcr[16]; /* 0x1c .. 0x3a */	        u16 taskControl[16];
-
- u8 ipr[32]; /* 0x3c .. 0x5b */		        u8  priority[32];
-
- u32 cReqSelect; /* 0x5c */		        u32 initiatorMux;
- u32 task_size0; /* 0x60 */		        u32 taskSize0;
- u32 task_size1; /* 0x64 */		        u32 taskSize1;
- u32 MDEDebug; /* 0x68 */		        u32 dma_rsvd1;
- u32 ADSDebug; /* 0x6c */		        u32 dma_rsvd2;
- u32 Value1; /* 0x70 */			        u32 debugComp1;
- u32 Value2; /* 0x74 */			        u32 debugComp2;
- u32 Control; /* 0x78 */		        u32 debugControl;
- u32 Status; /* 0x7c */			        u32 debugStatus;
- u32 PTDDebug; /* 0x80 */		        u32 ptdDebug;
-};					};
+--------------080308060202010005060400--
