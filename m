@@ -1,19 +1,15 @@
-Return-Path: <b.romanous@gmail.com>
-Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
- [209.85.217.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 13F232C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 18:39:02 +1100 (EST)
-Received: by mail-lb0-f179.google.com with SMTP id c1so3100824lbg.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Oct 2012 00:38:54 -0700 (PDT)
+Return-Path: <Avi.Tsarfati@alvarion.com>
+Received: from alvarion.com (mailyoq1.alvarion.com [95.35.11.187])
+ by ozlabs.org (Postfix) with ESMTP id 0F2A72C00D6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 23:29:05 +1100 (EST)
 MIME-Version: 1.0
-From: Bashar Romanous <b.romanous@gmail.com>
-Date: Tue, 9 Oct 2012 10:38:34 +0300
-Message-ID: <CAO2nRsvfec4-6+eVZhS63j473jT10fe9wjpScUpA2bdknsbLRQ@mail.gmail.com>
-Subject: support for Xilinx PCIe BUS IP core
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=f46d04016d5b1c970204cb9b6e20
+Content-Type: multipart/alternative;
+ boundary="----_=_NextPart_001_01CDA618.BAFB8270"
+Subject: Re: gianfar driver crash on P1020
+Date: Tue, 9 Oct 2012 14:22:18 +0200
+Message-ID: <56439212F1FB0D45B3354883689F4245559383@yoqex01.alvarion.com>
+From: "Avi Tsarfati" <Avi.Tsarfati@alvarion.com>
+To: <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,61 +19,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d04016d5b1c970204cb9b6e20
-Content-Type: text/plain; charset=ISO-8859-1
+This is a multi-part message in MIME format.
 
-Dear All,
-
-This is the first thread in the list, I'm working on research project that
-requires me to have "PCI Express Bus Support" for Xilinx FPGA board
-ML605 running PetaLinux (kernel 2.6.37.6) on MicroBlaze. I'm using Xilinx
-soft IP core "PLB2PCIe bridge" configured as Root Complex. the problem is
-that on the Linux Kernel side, in the "Bus Options", there is no support
-for Xilinx PCIe Bus.
-
-Has anybody written Linux Driver for this IP core? what about Xilinx' (*AXI
-RC*/*EP* Bridge for *PCI Express)? any drivers for this?*
-
-Best Regards,
-Bashar
-
---f46d04016d5b1c970204cb9b6e20
-Content-Type: text/html; charset=ISO-8859-1
+------_=_NextPart_001_01CDA618.BAFB8270
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr"><font face=3D"tahoma,sans-serif">Dear All,</font><div><fon=
-t face=3D"tahoma,sans-serif"><br></font></div><div><font face=3D"tahoma,san=
-s-serif">This is the first thread in the list, I&#39;m working on research =
-project that requires me=A0to have &quot;PCI Express Bus Support&quot; for =
-Xilinx FPGA board</font></div>
+Hi,=20
 
-<div><font face=3D"tahoma,sans-serif">ML605 running PetaLinux (kernel 2.6.3=
-7.6) on MicroBlaze. I&#39;m</font><font face=3D"tahoma,sans-serif">=A0using=
-=A0</font><span style=3D"background-color:rgb(255,255,255)"><font color=3D"=
-#222222" face=3D"arial, helvetica, sans-serif"><span style=3D"line-height:1=
-9px">Xilinx soft IP core &quot;PLB2PCIe bridge&quot; configured as Root Com=
-plex. the problem is that on the Linux Kernel side, in the &quot;Bus Option=
-s&quot;, there is no support for=A0Xilinx=A0PCIe Bus.</span></font></span><=
-/div>
+=20
 
-<div><br></div><div><font color=3D"#222222" face=3D"arial, helvetica, sans-=
-serif"><span style=3D"line-height:19px">Has anybody written Linux Driver fo=
-r this IP core? what about Xilinx&#39; (</span></font><em style=3D"color:rg=
-b(34,34,34);font-family:arial,sans-serif;white-space:nowrap;font-style:norm=
-al">AXI RC</em><span style=3D"background-color:rgb(255,255,255);color:rgb(3=
-4,34,34);font-family:arial,sans-serif;white-space:nowrap">/</span><em style=
-=3D"color:rgb(34,34,34);font-family:arial,sans-serif;white-space:nowrap;fon=
-t-style:normal">EP</em><span style=3D"background-color:rgb(255,255,255);col=
-or:rgb(34,34,34);font-family:arial,sans-serif;white-space:nowrap">=A0</span=
-><span style=3D"background-color:rgb(255,255,255);color:rgb(34,34,34);font-=
-family:arial,sans-serif;white-space:nowrap">Bridge for</span><span style=3D=
-"background-color:rgb(255,255,255);color:rgb(34,34,34);font-family:arial,sa=
-ns-serif;white-space:nowrap">=A0</span><em style=3D"color:rgb(34,34,34);fon=
-t-family:arial,sans-serif;white-space:nowrap;font-style:normal">PCI Express=
-)? any drivers for this?</em></div>
+I have the same problem as you do.=20
 
-<div><div dir=3D"ltr"><div><br></div>Best Regards,<div>Bashar</div></div><b=
-r>
-</div></div>
+Have you found the CPU stuck reason (or fix) in P1020RDB board ?
 
---f46d04016d5b1c970204cb9b6e20--
+=20
+
+Thanks,
+
+Avi Tsarfati.
+
+=20
+
+
+************************************************************************************ 
+This footnote confirms that this email message has been scanned by 
+PineApp Mail-SeCure for the presence of malicious code, vandals & computer viruses(187). 
+************************************************************************************
+
+
+
+------_=_NextPart_001_01CDA618.BAFB8270
+Content-Type: text/html; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns:x=3D"urn:schemas-microsoft-com:office:excel" =
+xmlns:m=3D"http://schemas.microsoft.com/office/2004/12/omml" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 12 (filtered medium)">
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:"Cambria Math";
+	panose-1:2 4 5 3 5 4 6 3 2 4;}
+@font-face
+	{font-family:Calibri;
+	panose-1:2 15 5 2 2 2 4 3 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:11.0pt;
+	font-family:"Calibri","sans-serif";}
+a:link, span.MsoHyperlink
+	{mso-style-priority:99;
+	color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{mso-style-priority:99;
+	color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:"Calibri","sans-serif";
+	color:windowtext;}
+.MsoChpDefault
+	{mso-style-type:export-only;}
+@page Section1
+	{size:612.0pt 792.0pt;
+	margin:72.0pt 90.0pt 72.0pt 90.0pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal>Hi, <o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal>I have the same problem as you do. <o:p></o:p></p>
+
+<p class=3DMsoNormal>Have you found the CPU stuck reason (or fix) in =
+P1020RDB
+board ?<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=3DMsoNormal =
+style=3D'mso-margin-top-alt:5.0pt;margin-right:0cm;margin-bottom:
+5.0pt;margin-left:0cm'>Thanks,<o:p></o:p></p>
+
+<p class=3DMsoNormal =
+style=3D'mso-margin-top-alt:5.0pt;margin-right:0cm;margin-bottom:
+5.0pt;margin-left:0cm'>Avi Tsarfati.<o:p></o:p></p>
+
+<p class=3DMsoNormal><o:p>&nbsp;</o:p></p>
+
+</div>
+
+<br><br>
+************************************************************************************ <br>This footnote confirms that this email message has been scanned by <br>PineApp Mail-SeCure for the presence of malicious code, vandals & computer viruses(187). <br>************************************************************************************<br>
+</body>
+
+</html>
+
+
+
+------_=_NextPart_001_01CDA618.BAFB8270--
