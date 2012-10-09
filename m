@@ -1,9 +1,9 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 03/20] powerpc/xmon: Remove empty xmon_map_scc()
-Date: Wed, 10 Oct 2012 01:20:30 +1100
-Message-Id: <1349792447-15714-3-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 04/20] powerpc/xmon: Make xmon_getchar() static
+Date: Wed, 10 Oct 2012 01:20:31 +1100
+Message-Id: <1349792447-15714-4-git-send-email-michael@ellerman.id.au>
 In-Reply-To: <1349792447-15714-1-git-send-email-michael@ellerman.id.au>
 References: <1349792447-15714-1-git-send-email-michael@ellerman.id.au>
 Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
@@ -16,52 +16,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This has been empty since 2005, commit 51d3082 "Unify udbg (#2)".
+xmon_getchar() is only called from within nonstdio.c, so make it static.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
+ arch/powerpc/xmon/nonstdio.c |    2 +-
  arch/powerpc/xmon/nonstdio.h |    1 -
- arch/powerpc/xmon/start.c    |    4 ----
- arch/powerpc/xmon/xmon.c     |    1 -
- 3 files changed, 6 deletions(-)
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/xmon/nonstdio.c b/arch/powerpc/xmon/nonstdio.c
+index a225d80..2209485 100644
+--- a/arch/powerpc/xmon/nonstdio.c
++++ b/arch/powerpc/xmon/nonstdio.c
+@@ -23,7 +23,7 @@ static char line[256];
+ static char *lineptr;
+ static int lineleft;
+ 
+-int xmon_getchar(void)
++static int xmon_getchar(void)
+ {
+ 	int c;
+ 
 diff --git a/arch/powerpc/xmon/nonstdio.h b/arch/powerpc/xmon/nonstdio.h
-index d8cec38..8799ccf 100644
+index 8799ccf..321284f 100644
 --- a/arch/powerpc/xmon/nonstdio.h
 +++ b/arch/powerpc/xmon/nonstdio.h
-@@ -8,6 +8,5 @@ extern int xmon_getchar(void);
+@@ -4,7 +4,6 @@
+ #define putchar	xmon_putchar
+ 
+ extern int xmon_putchar(int c);
+-extern int xmon_getchar(void);
  extern void xmon_puts(const char *);
  extern char *xmon_gets(char *, int);
  extern void xmon_printf(const char *, ...);
--extern void xmon_map_scc(void);
- extern int xmon_write(const void *ptr, int nb);
- extern int xmon_readchar(void);
-diff --git a/arch/powerpc/xmon/start.c b/arch/powerpc/xmon/start.c
-index 84f3a15..7769cb5 100644
---- a/arch/powerpc/xmon/start.c
-+++ b/arch/powerpc/xmon/start.c
-@@ -10,10 +10,6 @@
- #include <asm/udbg.h>
- #include "nonstdio.h"
- 
--void xmon_map_scc(void)
--{
--}
--
- int xmon_write(const void *ptr, int nb)
- {
- 	return udbg_write(ptr, nb);
-diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 3a56a63..67d36ab 100644
---- a/arch/powerpc/xmon/xmon.c
-+++ b/arch/powerpc/xmon/xmon.c
-@@ -2943,7 +2943,6 @@ static void xmon_init(int enable)
- 		__debugger_dabr_match = NULL;
- 		__debugger_fault_handler = NULL;
- 	}
--	xmon_map_scc();
- }
- 
- #ifdef CONFIG_MAGIC_SYSRQ
 -- 
 1.7.9.5
