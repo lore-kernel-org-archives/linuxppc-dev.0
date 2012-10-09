@@ -1,12 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 20/20] powerpc/xmon: Fallback to printk() in xmon_printf() if
- udbg is not setup
-Date: Wed, 10 Oct 2012 01:20:47 +1100
-Message-Id: <1349792447-15714-20-git-send-email-michael@ellerman.id.au>
-In-Reply-To: <1349792447-15714-1-git-send-email-michael@ellerman.id.au>
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from mx0.aculab.com (mx0.aculab.com [213.249.233.131])
+ by ozlabs.org (Postfix) with SMTP id CF0282C00A7
+ for <linuxppc-dev@ozlabs.org>; Wed, 10 Oct 2012 02:11:37 +1100 (EST)
+Received: from mx0.aculab.com ([127.0.0.1])
+ by localhost (mx0.aculab.com [127.0.0.1]) (amavisd-new, port 10024) with SMTP
+ id 26095-10 for <linuxppc-dev@ozlabs.org>;
+ Tue,  9 Oct 2012 16:04:55 +0100 (BST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="Windows-1252"
+Subject: RE: [PATCH 06/20] powerpc/xmon: Remove renaming #defines of scanhex()
+ and skipbl()
+Date: Tue, 9 Oct 2012 15:59:24 +0100
+Message-ID: <AE90C24D6B3A694183C094C60CF0A2F6026B7028@saturn3.aculab.com>
+In-Reply-To: <1349792447-15714-6-git-send-email-michael@ellerman.id.au>
 References: <1349792447-15714-1-git-send-email-michael@ellerman.id.au>
+ <1349792447-15714-6-git-send-email-michael@ellerman.id.au>
+From: "David Laight" <David.Laight@ACULAB.COM>
+To: "Michael Ellerman" <michael@ellerman.id.au>,
+	<linuxppc-dev@ozlabs.org>
 Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -17,43 +29,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It is possible to configure a kernel which has xmon enabled, but has no
-udbg backend to provide IO. This can make xmon rather confusing, as it
-produces no output, blocks for two seconds, and then returns.
+> We have two #defines that rename scanhex() and skipbl() to
+> xmon_scanhex() and xmon_skipbl() - but no one ever uses those
+> names.
 
-As a last resort we can instead try to printk(), which may deadlock or
-otherwise crash, but tries quite hard not to.
+It looks like they are there for namespace protection.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
- arch/powerpc/xmon/nonstdio.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/xmon/nonstdio.c b/arch/powerpc/xmon/nonstdio.c
-index 942d0f6..bce3dcf 100644
---- a/arch/powerpc/xmon/nonstdio.c
-+++ b/arch/powerpc/xmon/nonstdio.c
-@@ -111,13 +111,19 @@ char *xmon_gets(char *str, int nb)
- void xmon_printf(const char *format, ...)
- {
- 	va_list args;
--	int n;
- 	static char xmon_outbuf[1024];
-+	int rc, n;
- 
- 	va_start(args, format);
- 	n = vsnprintf(xmon_outbuf, sizeof(xmon_outbuf), format, args);
- 	va_end(args);
--	xmon_write(xmon_outbuf, n);
-+
-+	rc = xmon_write(xmon_outbuf, n);
-+
-+	if (n && rc == 0) {
-+		/* No udbg hooks, fallback to printk() - dangerous */
-+		printk(xmon_outbuf);
-+	}
- }
- 
- void xmon_puts(const char *str)
--- 
-1.7.9.5
+	David
