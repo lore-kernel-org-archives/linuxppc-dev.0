@@ -1,9 +1,9 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 80F502C00C8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 17:10:38 +1100 (EST)
-Message-ID: <5073C129.4080001@cn.fujitsu.com>
-Date: Tue, 09 Oct 2012 14:16:09 +0800
+ by ozlabs.org (Postfix) with ESMTP id F3C272C00D6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 19:06:02 +1100 (EST)
+Message-ID: <5073DC33.10404@cn.fujitsu.com>
+Date: Tue, 09 Oct 2012 16:11:31 +0800
 From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
 To: Vasilis Liaskovitis <vasilis.liaskovitis@profitbricks.com>
@@ -39,14 +39,11 @@ At 09/27/2012 12:46 AM, Vasilis Liaskovitis Wrote:
 > After succesfull hot-add and online, I am doing a hot-remove with "echo 1 > /sys/bus/acpi/devices/PNP/eject"
 > When I do the OSPM-eject, I often get slab corruption in "acpi-state" cache, or in other caches
 
-I found the reason: when you do OSPM-eject, the kernel will auto offline and remove the memory.
-But, offlining memory fails, and the memory is still used by the kernel. But device_release_driver()
-doesn't tell this error to the caller acpi_bus_remove(). The kernel will poweroff and eject
-the device by emulate _PS3 and _EJ0. The kernel uses some memory which doesn't exist. It's
-very dangerous.
+The following patch can fix this problem:
+https://lkml.org/lkml/2012/7/12/186
 
 Thanks
-Wen Conyang
+Wen Congyang
 
 > 
 > [  170.566995] Slab corruption (Not tainted): Acpi-State start=ffff88009fc1e548, len=80
