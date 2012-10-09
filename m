@@ -1,10 +1,10 @@
 Return-Path: <michael@ozlabs.org>
 From: Michael Ellerman <michael@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 12/20] powerpc/xmon: Do so simple conversions to
- start/end_bus_error_jump()
-Date: Wed, 10 Oct 2012 01:20:39 +1100
-Message-Id: <1349792447-15714-12-git-send-email-michael@ellerman.id.au>
+Subject: [PATCH 13/20] powerpc/xmon: Use start/end_bus_error_jump() in more
+ routines
+Date: Wed, 10 Oct 2012 01:20:40 +1100
+Message-Id: <1349792447-15714-13-git-send-email-michael@ellerman.id.au>
 In-Reply-To: <1349792447-15714-1-git-send-email-michael@ellerman.id.au>
 References: <1349792447-15714-1-git-send-email-michael@ellerman.id.au>
 Cc: Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
@@ -17,206 +17,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+These are not entirely equivalent to the old code. In most cases they
+just gain a call to __delay() via end_bus_error_jump().
+
+In symbol_lookup() we also move the printf() outside the protected area,
+this should be safe as we are not derefencing the value we lookup, just
+printing its value.
+
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/xmon/xmon.c |   79 +++++++++++-----------------------------------
- 1 file changed, 18 insertions(+), 61 deletions(-)
+ arch/powerpc/xmon/xmon.c |   39 +++++++++++++--------------------------
+ 1 file changed, 13 insertions(+), 26 deletions(-)
 
 diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
-index 65c3d22..45be9ce 100644
+index 45be9ce..ddae5cf 100644
 --- a/arch/powerpc/xmon/xmon.c
 +++ b/arch/powerpc/xmon/xmon.c
-@@ -1503,19 +1503,14 @@ static void prregs(struct pt_regs *fp)
- 	struct pt_regs regs;
- 
- 	if (scanhex(&base)) {
--		if (setjmp(bus_error_jmp) == 0) {
--			catch_memory_errors = 1;
--			sync();
-+		if (start_bus_error_jump() == 0) {
- 			regs = *(struct pt_regs *)base;
--			sync();
--			__delay(200);
-+			end_bus_error_jump();
- 		} else {
--			catch_memory_errors = 0;
- 			printf("*** Error reading registers from "REG"\n",
- 			       base);
- 			return;
- 		}
--		catch_memory_errors = 0;
- 		fp = &regs;
- 	}
- 
-@@ -1569,10 +1564,7 @@ static void cacheflush(void)
- 	nflush = 1;
- 	scanhex(&nflush);
- 	nflush = (nflush + L1_CACHE_BYTES - 1) / L1_CACHE_BYTES;
+@@ -1321,17 +1321,16 @@ static void get_function_bounds(unsigned long pc, unsigned long *startp,
+ 	*startp = *endp = 0;
+ 	if (pc == 0)
+ 		return;
 -	if (setjmp(bus_error_jmp) == 0) {
 -		catch_memory_errors = 1;
 -		sync();
--
++
 +	if (start_bus_error_jump() == 0) {
- 		if (cmd != 'i') {
- 			for (; nflush > 0; --nflush, adrs += L1_CACHE_BYTES)
- 				cflush((void *) adrs);
-@@ -1580,11 +1572,9 @@ static void cacheflush(void)
- 			for (; nflush > 0; --nflush, adrs += L1_CACHE_BYTES)
- 				cinval((void *) adrs);
+ 		name = kallsyms_lookup(pc, &size, &offset, NULL, tmpstr);
+ 		if (name != NULL) {
+ 			*startp = pc - offset;
+ 			*endp = pc - offset + size;
  		}
 -		sync();
--		/* wait a little while to see if we get a machine check */
--		__delay(200);
 +
 +		end_bus_error_jump();
  	}
 -	catch_memory_errors = 0;
  }
  
- static unsigned long
-@@ -1710,9 +1700,7 @@ mread(unsigned long adrs, void *buf, int size)
- 	char *p, *q;
- 
- 	n = 0;
--	if (setjmp(bus_error_jmp) == 0) {
--		catch_memory_errors = 1;
--		sync();
-+	if (start_bus_error_jump() == 0) {
- 		p = (char *)adrs;
- 		q = (char *)buf;
- 		switch (size) {
-@@ -1731,12 +1719,9 @@ mread(unsigned long adrs, void *buf, int size)
- 				sync();
- 			}
- 		}
--		sync();
--		/* wait a little while to see if we get a machine check */
--		__delay(200);
-+		end_bus_error_jump();
- 		n = size;
- 	}
--	catch_memory_errors = 0;
- 	return n;
- }
- 
-@@ -1747,9 +1732,7 @@ mwrite(unsigned long adrs, void *buf, int size)
- 	char *p, *q;
- 
- 	n = 0;
--	if (setjmp(bus_error_jmp) == 0) {
--		catch_memory_errors = 1;
--		sync();
-+	if (start_bus_error_jump() == 0) {
- 		p = (char *) adrs;
- 		q = (char *) buf;
- 		switch (size) {
-@@ -1768,14 +1751,11 @@ mwrite(unsigned long adrs, void *buf, int size)
- 				sync();
- 			}
- 		}
--		sync();
--		/* wait a little while to see if we get a machine check */
--		__delay(200);
-+		end_bus_error_jump();
- 		n = size;
- 	} else {
- 		printf("*** Error writing address %x\n", adrs + n);
- 	}
--	catch_memory_errors = 0;
- 	return n;
- }
- 
-@@ -2272,24 +2252,18 @@ dump_log_buf(void)
- 	unsigned char buf[128];
- 	size_t len;
+ #define LRSAVE_OFFSET		(STACK_FRAME_LR_SAVE * sizeof(unsigned long))
+@@ -2016,14 +2015,11 @@ static void dump_one_paca(int cpu)
+ {
+ 	struct paca_struct *p;
  
 -	if (setjmp(bus_error_jmp) != 0) {
 +	if (start_bus_error_jump() != 0) {
- 		printf("Error dumping printk buffer!\n");
+ 		printf("*** Error dumping paca for cpu 0x%x!\n", cpu);
  		return;
  	}
  
 -	catch_memory_errors = 1;
 -	sync();
 -
- 	kmsg_dump_rewind_nolock(&dumper);
- 	while (kmsg_dump_get_line_nolock(&dumper, false, buf, sizeof(buf), &len)) {
- 		buf[len] = '\0';
- 		printf("%s", buf);
- 	}
+ 	p = &paca[cpu];
  
--	sync();
--	/* wait a little while to see if we get a machine check */
--	__delay(200);
+ 	printf("paca for cpu 0x%x @ %p:\n", cpu, p);
+@@ -2063,8 +2059,7 @@ static void dump_one_paca(int cpu)
+ 
+ #undef DUMP
+ 
 -	catch_memory_errors = 0;
+-	sync();
 +	end_bus_error_jump();
  }
  
- /*
-@@ -2672,18 +2646,12 @@ static void xmon_print_symbol(unsigned long address, const char *mid,
- 	unsigned long offset, size;
- 
- 	printf(REG, address);
--	if (setjmp(bus_error_jmp) == 0) {
--		catch_memory_errors = 1;
--		sync();
-+	if (start_bus_error_jump() == 0) {
- 		name = kallsyms_lookup(address, &size, &offset, &modname,
- 				       tmpstr);
--		sync();
--		/* wait a little while to see if we get a machine check */
--		__delay(200);
-+		end_bus_error_jump();
+ static void dump_all_pacas(void)
+@@ -2402,17 +2397,14 @@ static void proccall(void)
  	}
- 
--	catch_memory_errors = 0;
--
- 	if (name) {
- 		printf("%s%s+%#lx/%#lx", mid, name, offset, size);
- 		if (modname)
-@@ -3123,19 +3091,13 @@ static void restart_spus(void)
- #define DUMP_WIDTH	23
- #define DUMP_VALUE(format, field, value)				\
- do {									\
--	if (setjmp(bus_error_jmp) == 0) {				\
--		catch_memory_errors = 1;				\
--		sync();							\
-+	if (start_bus_error_jump() == 0) {				\
- 		printf("  %-*s = "format"\n", DUMP_WIDTH,		\
- 				#field, value);				\
--		sync();							\
--		__delay(200);						\
--	} else {							\
--		catch_memory_errors = 0;				\
-+		end_bus_error_jump();					\
-+	} else								\
- 		printf("  %-*s = *** Error reading field.\n",		\
- 					DUMP_WIDTH, #field);		\
--	}								\
--	catch_memory_errors = 0;					\
- } while (0)
- 
- #define DUMP_FIELD(obj, format, field)	\
-@@ -3187,18 +3149,13 @@ static void dump_spu_ls(unsigned long num, int subcmd)
- {
- 	unsigned long offset, addr, ls_addr;
- 
+ 	func = (callfunc_t) adrs;
+ 	ret = 0;
 -	if (setjmp(bus_error_jmp) == 0) {
 -		catch_memory_errors = 1;
 -		sync();
 +	if (start_bus_error_jump() == 0) {
- 		ls_addr = (unsigned long)spu_info[num].spu->local_store;
+ 		ret = func(args[0], args[1], args[2], args[3],
+ 			   args[4], args[5], args[6], args[7]);
 -		sync();
--		__delay(200);
 +		end_bus_error_jump();
+ 		printf("return value is %x\n", ret);
  	} else {
--		catch_memory_errors = 0;
- 		printf("*** Error: accessing spu info for spu %d\n", num);
- 		return;
+ 		printf("*** %x exception occurred\n", fault_except);
  	}
 -	catch_memory_errors = 0;
+ }
  
- 	if (scanhex(&offset))
- 		addr = ls_addr + offset;
+ /* Input scanning routines */
+@@ -2507,13 +2499,10 @@ scanhex(unsigned long *vp)
+ 		}
+ 		tmpstr[i++] = 0;
+ 		*vp = 0;
+-		if (setjmp(bus_error_jmp) == 0) {
+-			catch_memory_errors = 1;
+-			sync();
++		if (start_bus_error_jump() == 0) {
+ 			*vp = kallsyms_lookup_name(tmpstr);
+-			sync();
++			end_bus_error_jump();
+ 		}
+-		catch_memory_errors = 0;
+ 		if (!(*vp)) {
+ 			printf("unknown symbol '%s'\n", tmpstr);
+ 			return 0;
+@@ -2620,17 +2609,15 @@ symbol_lookup(void)
+ 		break;
+ 	case 's':
+ 		getstring(tmp, 64);
+-		if (setjmp(bus_error_jmp) == 0) {
+-			catch_memory_errors = 1;
+-			sync();
++		if (start_bus_error_jump() == 0) {
+ 			addr = kallsyms_lookup_name(tmp);
++			end_bus_error_jump();
++
+ 			if (addr)
+ 				printf("%s: %lx\n", tmp, addr);
+ 			else
+ 				printf("Symbol '%s' not found.\n", tmp);
+-			sync();
+ 		}
+-		catch_memory_errors = 0;
+ 		termch = 0;
+ 		break;
+ 	}
 -- 
 1.7.9.5
