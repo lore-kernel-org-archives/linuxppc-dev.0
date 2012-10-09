@@ -1,18 +1,25 @@
-Return-Path: <abounine@idt.com>
-Received: from mxout1.idt.com (mxout1.idt.com [157.165.5.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mxout1.idt.com", Issuer "idt.com" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 639922C00BA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2012 07:00:05 +1100 (EST)
-From: Alexandre Bounine <alexandre.bounine@idt.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/3] rapidio: update asynchronous discovery initialization
-Date: Tue,  9 Oct 2012 15:57:55 -0400
-Message-Id: <1349812676-27057-3-git-send-email-alexandre.bounine@idt.com>
-In-Reply-To: <1349812676-27057-1-git-send-email-alexandre.bounine@idt.com>
-References: <1349812676-27057-1-git-send-email-alexandre.bounine@idt.com>
-Cc: Alexandre Bounine <alexandre.bounine@idt.com>
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id B4A9F2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Oct 2012 08:39:38 +1100 (EST)
+Date: Tue, 9 Oct 2012 14:39:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: Re: memory-hotplug : suppres
+ "Trying to free nonexistent resource <XXXXXXXXXXXXXXXX-YYYYYYYYYYYYYYYY>"
+ warning
+Message-Id: <20121009143936.1f74a7fb.akpm@linux-foundation.org>
+In-Reply-To: <5073913A.3080103@jp.fujitsu.com>
+References: <506D1F1D.9000301@jp.fujitsu.com>
+ <20121005140938.e3e1e196.akpm@linux-foundation.org>
+ <5073913A.3080103@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: len.brown@intel.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
+ linux-mm@kvack.org, paulus@samba.org, minchan.kim@gmail.com,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,120 +29,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Update discovery process initialization based on Andrew Morton's comments:
-https://lkml.org/lkml/2012/10/3/552.
+On Tue, 9 Oct 2012 11:51:38 +0900
+Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com> wrote:
 
-This update processes all enumerating mports first and schedules discovery
-work after that. If the initialization routine fails to allocate resources
-needed to execute discovery, it abandons discovery for all ports. 
+> > Anyway, please have a think, and see if we can come up with the best
+> > and most accurate choice of types and identifiers in this code.
+> 
+> Your concern is right. Overflow bug may occur in the future.
+> So I changed type of "i" and "sections_to_remove" to "unsigned long".
+> Please merge it into your tree instead of previous patch.
 
-Signed-off-by: Alexandre Bounine <alexandre.bounine@idt.com>
-Cc: Matt Porter <mporter@kernel.crashing.org>
-Cc: Li Yang <leoli@freescale.com>
+Too late, the original patch was merged.  So I generated the delta.
+
+I remain allergic to the `i' identifier so I renamed it to `section'. 
+That's not 100% accurate, but it is better.
+
+> __remove_pages() also has same concern. So I'll fix it.
+
+Thanks.
+
+
+
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Subject: arch/powerpc/platforms/pseries/hotplug-memory.c: section removal cleanups
+
+Followups to d760afd4d25 ("memory-hotplug: suppress "Trying to free
+nonexistent resource <XXXXXXXXXXXXXXXX-YYYYYYYYYYYYYYYY>" warning").
+
+- use unsigned long type, as overflows are conceivable
+
+- rename `i' to the less-misleading and more informative `section'
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/rapidio/rio.c |   75 ++++++++++++++++++++++++++++++------------------
- 1 files changed, 47 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
-index d4bd690..c17ae22 100644
---- a/drivers/rapidio/rio.c
-+++ b/drivers/rapidio/rio.c
-@@ -1275,49 +1275,68 @@ static void __devinit disc_work_handler(struct work_struct *_work)
- 	pr_debug("RIO: discovery work for mport %d %s\n",
- 		 work->mport->id, work->mport->name);
- 	rio_disc_mport(work->mport);
--
--	kfree(work);
- }
- 
- int __devinit rio_init_mports(void)
+ arch/powerpc/platforms/pseries/hotplug-memory.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+diff -puN arch/powerpc/platforms/pseries/hotplug-memory.c~arch-powerpc-platforms-pseries-hotplug-memoryc-section-removal-cleanups arch/powerpc/platforms/pseries/hotplug-memory.c
+--- a/arch/powerpc/platforms/pseries/hotplug-memory.c~arch-powerpc-platforms-pseries-hotplug-memoryc-section-removal-cleanups
++++ a/arch/powerpc/platforms/pseries/hotplug-memory.c
+@@ -77,8 +77,9 @@ static int pseries_remove_memblock(unsig
  {
- 	struct rio_mport *port;
- 	struct rio_disc_work *work;
--	int no_disc = 0;
-+	int n = 0;
-+
-+	if (!next_portid)
-+		return -ENODEV;
+ 	unsigned long start, start_pfn;
+ 	struct zone *zone;
+-	int i, ret;
+-	int sections_to_remove;
++	int ret;
++	unsigned long section;
++	unsigned long sections_to_remove;
  
-+	/*
-+	 * First, run enumerations and check if we need to perform discovery
-+	 * on any of the registered mports.
-+	 */
- 	list_for_each_entry(port, &rio_mports, node) {
- 		if (port->host_deviceid >= 0)
- 			rio_enum_mport(port);
--		else if (!no_disc) {
--			if (!rio_wq) {
--				rio_wq = alloc_workqueue("riodisc", 0, 0);
--				if (!rio_wq) {
--					pr_err("RIO: unable allocate rio_wq\n");
--					no_disc = 1;
--					continue;
--				}
--			}
--
--			work = kzalloc(sizeof *work, GFP_KERNEL);
--			if (!work) {
--				pr_err("RIO: no memory for work struct\n");
--				no_disc = 1;
--				continue;
--			}
--
--			work->mport = port;
--			INIT_WORK(&work->work, disc_work_handler);
--			queue_work(rio_wq, &work->work);
--		}
-+		else
-+			n++;
-+	}
-+
-+	if (!n)
-+		goto no_disc;
-+
-+	/*
-+	 * If we have mports that require discovery schedule a discovery work
-+	 * for each of them. If the code below fails to allocate needed
-+	 * resources, exit without error to keep results of enumeration
-+	 * process (if any).
-+	 * TODO: Implement restart of dicovery process for all or
-+	 * individual discovering mports.
-+	 */
-+	rio_wq = alloc_workqueue("riodisc", 0, 0);
-+	if (!rio_wq) {
-+		pr_err("RIO: unable allocate rio_wq\n");
-+		goto no_disc;
- 	}
+ 	start_pfn = base >> PAGE_SHIFT;
  
--	if (rio_wq) {
--		pr_debug("RIO: flush discovery workqueue\n");
--		flush_workqueue(rio_wq);
--		pr_debug("RIO: flush discovery workqueue finished\n");
-+	work = kcalloc(n, sizeof *work, GFP_KERNEL);
-+	if (!work) {
-+		pr_err("RIO: no memory for work struct\n");
- 		destroy_workqueue(rio_wq);
-+		goto no_disc;
- 	}
- 
-+	n = 0;
-+	list_for_each_entry(port, &rio_mports, node) {
-+		if (port->host_deviceid < 0) {
-+			work[n].mport = port;
-+			INIT_WORK(&work[n].work, disc_work_handler);
-+			queue_work(rio_wq, &work[n].work);
-+			n++;
-+		}
-+	}
-+
-+	flush_workqueue(rio_wq);
-+	pr_debug("RIO: destroy discovery workqueue\n");
-+	destroy_workqueue(rio_wq);
-+	kfree(work);
-+
-+no_disc:
- 	rio_init();
- 
- 	return 0;
--- 
-1.7.8.4
+@@ -99,8 +100,8 @@ static int pseries_remove_memblock(unsig
+ 	 * while writing to it. So we have to defer it to here.
+ 	 */
+ 	sections_to_remove = (memblock_size >> PAGE_SHIFT) / PAGES_PER_SECTION;
+-	for (i = 0; i < sections_to_remove; i++) {
+-		unsigned long pfn = start_pfn + i * PAGES_PER_SECTION;
++	for (section = 0; section < sections_to_remove; section++) {
++		unsigned long pfn = start_pfn + section * PAGES_PER_SECTION;
+ 		ret = __remove_pages(zone, start_pfn,  PAGES_PER_SECTION);
+ 		if (ret)
+ 			return ret;
+diff -puN mm/memory_hotplug.c~arch-powerpc-platforms-pseries-hotplug-memoryc-section-removal-cleanups mm/memory_hotplug.c
+_
