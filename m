@@ -1,30 +1,14 @@
-Return-Path: <wujianguo106@gmail.com>
-Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
- [209.85.220.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BC8EC2C00D6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 19:27:10 +1100 (EST)
-Received: by mail-pa0-f51.google.com with SMTP id kq12so4851830pab.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Oct 2012 01:27:08 -0700 (PDT)
-Message-ID: <5073DFC0.3010400@gmail.com>
-Date: Tue, 09 Oct 2012 16:26:40 +0800
-From: wujianguo <wujianguo106@gmail.com>
-MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [PATCH 8/10] memory-hotplug : remove page table of x86_64
- architecture
-References: <506E43E0.70507@jp.fujitsu.com> <506E4799.30407@jp.fujitsu.com>
-In-Reply-To: <506E4799.30407@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com,
- linux-ia64@vger.kernel.org, wency@cn.fujitsu.com, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, wujianguo@huawei.com,
- x86@kernel.org, linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
- linux-mm@kvack.org, minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
- rientjes@google.com, sparclinux@vger.kernel.org, qiuxishi@huawei.com,
- cl@linux.com, linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org,
- liuj97@gmail.com
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id F26F82C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Oct 2012 20:15:56 +1100 (EST)
+From: David Howells <dhowells@redhat.com>
+To: benh@kernel.crashing.org
+Subject: [GIT PULL] Disintegrate UAPI for powerpc [ver #2]
+Date: Tue, 09 Oct 2012 10:15:49 +0100
+Message-ID: <21173.1349774149@warthog.procyon.org.uk>
+Cc: dhowells@redhat.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,496 +18,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Congyang,
-	I think we should also free pages which are used by page tables after removing
-page tables of the memory.
+Can you merge the following branch into the powerpc tree please.
 
-From: Jianguo Wu <wujianguo@huawei.com>
+This is to complete part of the UAPI disintegration for which the preparatory
+patches were pulled recently.
 
-Signed-off-by: Jianguo Wu <wujianguo@huawei.com>
-Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
----
- arch/x86/mm/init_64.c |  110 +++++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 89 insertions(+), 21 deletions(-)
+Now that the fixups and the asm-generic chunk have been merged, I've
+regenerated the patches to get rid of those dependencies and to take account of
+any changes made so far in the merge window.  If you have already pulled the
+older version of the branch aimed at you, then please feel free to ignore this
+request.
 
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 5596dfa..81f9c3b 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -675,6 +675,74 @@ int arch_add_memory(int nid, u64 start, u64 size)
- }
- EXPORT_SYMBOL_GPL(arch_add_memory);
+The following changes since commit 9e2d8656f5e8aa214e66b462680cf86b210b74a8:
 
-+static inline void free_pagetable(struct page *page)
-+{
-+	struct zone *zone;
-+
-+	__ClearPageReserved(page);
-+	__free_page(page);
-+
-+	zone = page_zone(page);
-+	zone_span_writelock(zone);
-+	zone->present_pages++;
-+	zone_span_writeunlock(zone);
-+	totalram_pages++;
-+}
-+
-+static void free_pte_table(pte_t *pte_start, pmd_t *pmd)
-+{
-+	pte_t *pte;
-+	int i;
-+
-+	for (i = 0; i < PTRS_PER_PTE; i++) {
-+		pte = pte_start + i;
-+		if (pte_val(*pte))
-+			break;
-+	}
-+
-+	/* free a pte talbe */
-+	if (i == PTRS_PER_PTE) {
-+		free_pagetable(pmd_page(*pmd));
-+		pmd_clear(pmd);
-+	}
-+}
-+
-+static void free_pmd_table(pmd_t *pmd_start, pud_t *pud)
-+{
-+	pmd_t *pmd;
-+	int i;
-+
-+	for (i = 0; i < PTRS_PER_PMD; i++) {
-+		pmd = pmd_start + i;
-+		if (pmd_val(*pmd))
-+			break;
-+	}
-+
-+	/* free a pmd talbe */
-+	if (i == PTRS_PER_PMD) {
-+		free_pagetable(pud_page(*pud));
-+		pud_clear(pud);
-+	}
-+}
-+
-+static void free_pud_table(pud_t *pud_start, pgd_t *pgd)
-+{
-+	pud_t *pud;
-+	int i;
-+
-+	for (i = 0; i < PTRS_PER_PUD; i++) {
-+		pud = pud_start + i;
-+		if (pud_val(*pud))
-+			break;
-+	}
-+
-+	/* free a pud table */
-+	if (i == PTRS_PER_PUD) {
-+		free_pagetable(pgd_page(*pgd));
-+		pgd_clear(pgd);
-+	}
-+}
-+
- static void __meminit
- phys_pte_remove(pte_t *pte_page, unsigned long addr, unsigned long end)
- {
-@@ -704,21 +772,19 @@ phys_pmd_remove(pmd_t *pmd_page, unsigned long addr, unsigned long end)
- 	unsigned long pages = 0, next;
- 	int i = pmd_index(addr);
+  Merge branch 'akpm' (Andrew's patch-bomb) (2012-10-09 16:23:15 +0900)
 
--	for (; i < PTRS_PER_PMD; i++, addr = next) {
-+	for (; i < PTRS_PER_PMD && addr < end; i++, addr = next) {
- 		unsigned long pte_phys;
- 		pmd_t *pmd = pmd_page + pmd_index(addr);
- 		pte_t *pte;
-
--		if (addr >= end)
--			break;
--
--		next = (addr & PMD_MASK) + PMD_SIZE;
-+		next = pmd_addr_end(addr, end);
-
- 		if (!pmd_present(*pmd))
- 			continue;
-
- 		if (pmd_large(*pmd)) {
--			if ((addr & ~PMD_MASK) == 0 && next <= end) {
-+			if (IS_ALIGNED(addr, PMD_SIZE) &&
-+			    IS_ALIGNED(next, PMD_SIZE)) {
- 				set_pmd(pmd, __pmd(0));
- 				pages++;
- 				continue;
-@@ -729,7 +795,8 @@ phys_pmd_remove(pmd_t *pmd_page, unsigned long addr, unsigned long end)
- 			 * so split 2M page to 4K page.
- 			 */
- 			pte = alloc_low_page(&pte_phys);
--			__split_large_page((pte_t *)pmd, addr, pte);
-+			__split_large_page((pte_t *)pmd,
-+					   (unsigned long)__va(addr), pte);
-
- 			spin_lock(&init_mm.page_table_lock);
- 			pmd_populate_kernel(&init_mm, pmd, __va(pte_phys));
-@@ -738,7 +805,8 @@ phys_pmd_remove(pmd_t *pmd_page, unsigned long addr, unsigned long end)
-
- 		spin_lock(&init_mm.page_table_lock);
- 		pte = map_low_page((pte_t *)pmd_page_vaddr(*pmd));
--		phys_pte_remove(pte, addr, end);
-+		phys_pte_remove(pte, addr, next);
-+		free_pte_table(pte, pmd);
- 		unmap_low_page(pte);
- 		spin_unlock(&init_mm.page_table_lock);
- 	}
-@@ -751,21 +819,19 @@ phys_pud_remove(pud_t *pud_page, unsigned long addr, unsigned long end)
- 	unsigned long pages = 0, next;
- 	int i = pud_index(addr);
-
--	for (; i < PTRS_PER_PUD; i++, addr = next) {
-+	for (; i < PTRS_PER_PUD && addr < end; i++, addr = next) {
- 		unsigned long pmd_phys;
- 		pud_t *pud = pud_page + pud_index(addr);
- 		pmd_t *pmd;
-
--		if (addr >= end)
--			break;
--
--		next = (addr & PUD_MASK) + PUD_SIZE;
-+		next = pud_addr_end(addr, end);
-
- 		if (!pud_present(*pud))
- 			continue;
-
- 		if (pud_large(*pud)) {
--			if ((addr & ~PUD_MASK) == 0 && next <= end) {
-+			if (IS_ALIGNED(addr, PUD_SIZE) &&
-+			    IS_ALIGNED(next, PUD_SIZE)) {
- 				set_pud(pud, __pud(0));
- 				pages++;
- 				continue;
-@@ -776,15 +842,18 @@ phys_pud_remove(pud_t *pud_page, unsigned long addr, unsigned long end)
- 			 * so split 1G page to 2M page.
- 			 */
- 			pmd = alloc_low_page(&pmd_phys);
--			__split_large_page((pte_t *)pud, addr, (pte_t *)pmd);
-+			__split_large_page((pte_t *)pud,
-+					   (unsigned long)__va(addr),
-+					   (pte_t *)pmd);
-
- 			spin_lock(&init_mm.page_table_lock);
- 			pud_populate(&init_mm, pud, __va(pmd_phys));
- 			spin_unlock(&init_mm.page_table_lock);
- 		}
-
--		pmd = map_low_page(pmd_offset(pud, 0));
--		phys_pmd_remove(pmd, addr, end);
-+		pmd = map_low_page((pmd_t *)pud_page_vaddr(*pud));
-+		phys_pmd_remove(pmd, addr, next);
-+		free_pmd_table(pmd, pud);
- 		unmap_low_page(pmd);
- 		__flush_tlb_all();
- 	}
-@@ -805,15 +874,14 @@ kernel_physical_mapping_remove(unsigned long start, unsigned long end)
- 		pgd_t *pgd = pgd_offset_k(start);
- 		pud_t *pud;
-
--		next = (start + PGDIR_SIZE) & PGDIR_MASK;
--		if (next > end)
--			next = end;
-+		next = pgd_addr_end(start, end);
-
- 		if (!pgd_present(*pgd))
- 			continue;
-
- 		pud = map_low_page((pud_t *)pgd_page_vaddr(*pgd));
--		phys_pud_remove(pud, __pa(start), __pa(end));
-+		phys_pud_remove(pud, __pa(start), __pa(next));
-+		free_pud_table(pud, pgd);
- 		unmap_low_page(pud);
- 	}
-
--- 1.7.6.1 .
+are available in the git repository at:
 
 
-On 2012-10-5 10:36, Yasuaki Ishimatsu wrote:
-> From: Wen Congyang <wency@cn.fujitsu.com>
-> 
-> For hot removing memory, we sholud remove page table about the memory.
-> So the patch searches a page table about the removed memory, and clear
-> page table.
-> 
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
-> ---
->  arch/x86/include/asm/pgtable_types.h |    1 
->  arch/x86/mm/init_64.c                |  147 +++++++++++++++++++++++++++++++++++
->  arch/x86/mm/pageattr.c               |   47 +++++------
->  3 files changed, 173 insertions(+), 22 deletions(-)
-> 
-> Index: linux-3.6/arch/x86/mm/init_64.c
-> ===================================================================
-> --- linux-3.6.orig/arch/x86/mm/init_64.c	2012-10-04 18:30:21.171698416 +0900
-> +++ linux-3.6/arch/x86/mm/init_64.c	2012-10-04 18:30:27.317704652 +0900
-> @@ -675,6 +675,151 @@ int arch_add_memory(int nid, u64 start, 
->  }
->  EXPORT_SYMBOL_GPL(arch_add_memory);
->  
-> +static void __meminit
-> +phys_pte_remove(pte_t *pte_page, unsigned long addr, unsigned long end)
-> +{
-> +	unsigned pages = 0;
-> +	int i = pte_index(addr);
-> +
-> +	pte_t *pte = pte_page + pte_index(addr);
-> +
-> +	for (; i < PTRS_PER_PTE; i++, addr += PAGE_SIZE, pte++) {
-> +
-> +		if (addr >= end)
-> +			break;
-> +
-> +		if (!pte_present(*pte))
-> +			continue;
-> +
-> +		pages++;
-> +		set_pte(pte, __pte(0));
-> +	}
-> +
-> +	update_page_count(PG_LEVEL_4K, -pages);
-> +}
-> +
-> +static void __meminit
-> +phys_pmd_remove(pmd_t *pmd_page, unsigned long addr, unsigned long end)
-> +{
-> +	unsigned long pages = 0, next;
-> +	int i = pmd_index(addr);
-> +
-> +	for (; i < PTRS_PER_PMD; i++, addr = next) {
-> +		unsigned long pte_phys;
-> +		pmd_t *pmd = pmd_page + pmd_index(addr);
-> +		pte_t *pte;
-> +
-> +		if (addr >= end)
-> +			break;
-> +
-> +		next = (addr & PMD_MASK) + PMD_SIZE;
-> +
-> +		if (!pmd_present(*pmd))
-> +			continue;
-> +
-> +		if (pmd_large(*pmd)) {
-> +			if ((addr & ~PMD_MASK) == 0 && next <= end) {
-> +				set_pmd(pmd, __pmd(0));
-> +				pages++;
-> +				continue;
-> +			}
-> +
-> +			/*
-> +			 * We use 2M page, but we need to remove part of them,
-> +			 * so split 2M page to 4K page.
-> +			 */
-> +			pte = alloc_low_page(&pte_phys);
-> +			__split_large_page((pte_t *)pmd, addr, pte);
-> +
-> +			spin_lock(&init_mm.page_table_lock);
-> +			pmd_populate_kernel(&init_mm, pmd, __va(pte_phys));
-> +			spin_unlock(&init_mm.page_table_lock);
-> +		}
-> +
-> +		spin_lock(&init_mm.page_table_lock);
-> +		pte = map_low_page((pte_t *)pmd_page_vaddr(*pmd));
-> +		phys_pte_remove(pte, addr, end);
-> +		unmap_low_page(pte);
-> +		spin_unlock(&init_mm.page_table_lock);
-> +	}
-> +	update_page_count(PG_LEVEL_2M, -pages);
-> +}
-> +
-> +static void __meminit
-> +phys_pud_remove(pud_t *pud_page, unsigned long addr, unsigned long end)
-> +{
-> +	unsigned long pages = 0, next;
-> +	int i = pud_index(addr);
-> +
-> +	for (; i < PTRS_PER_PUD; i++, addr = next) {
-> +		unsigned long pmd_phys;
-> +		pud_t *pud = pud_page + pud_index(addr);
-> +		pmd_t *pmd;
-> +
-> +		if (addr >= end)
-> +			break;
-> +
-> +		next = (addr & PUD_MASK) + PUD_SIZE;
-> +
-> +		if (!pud_present(*pud))
-> +			continue;
-> +
-> +		if (pud_large(*pud)) {
-> +			if ((addr & ~PUD_MASK) == 0 && next <= end) {
-> +				set_pud(pud, __pud(0));
-> +				pages++;
-> +				continue;
-> +			}
-> +
-> +			/*
-> +			 * We use 1G page, but we need to remove part of them,
-> +			 * so split 1G page to 2M page.
-> +			 */
-> +			pmd = alloc_low_page(&pmd_phys);
-> +			__split_large_page((pte_t *)pud, addr, (pte_t *)pmd);
-> +
-> +			spin_lock(&init_mm.page_table_lock);
-> +			pud_populate(&init_mm, pud, __va(pmd_phys));
-> +			spin_unlock(&init_mm.page_table_lock);
-> +		}
-> +
-> +		pmd = map_low_page(pmd_offset(pud, 0));
-> +		phys_pmd_remove(pmd, addr, end);
-> +		unmap_low_page(pmd);
-> +		__flush_tlb_all();
-> +	}
-> +	__flush_tlb_all();
-> +
-> +	update_page_count(PG_LEVEL_1G, -pages);
-> +}
-> +
-> +void __meminit
-> +kernel_physical_mapping_remove(unsigned long start, unsigned long end)
-> +{
-> +	unsigned long next;
-> +
-> +	start = (unsigned long)__va(start);
-> +	end = (unsigned long)__va(end);
-> +
-> +	for (; start < end; start = next) {
-> +		pgd_t *pgd = pgd_offset_k(start);
-> +		pud_t *pud;
-> +
-> +		next = (start + PGDIR_SIZE) & PGDIR_MASK;
-> +		if (next > end)
-> +			next = end;
-> +
-> +		if (!pgd_present(*pgd))
-> +			continue;
-> +
-> +		pud = map_low_page((pud_t *)pgd_page_vaddr(*pgd));
-> +		phys_pud_remove(pud, __pa(start), __pa(end));
-> +		unmap_low_page(pud);
-> +	}
-> +
-> +	__flush_tlb_all();
-> +}
-> +
->  #ifdef CONFIG_MEMORY_HOTREMOVE
->  int __ref arch_remove_memory(u64 start, u64 size)
->  {
-> @@ -687,6 +832,8 @@ int __ref arch_remove_memory(u64 start, 
->  	ret = __remove_pages(zone, start_pfn, nr_pages);
->  	WARN_ON_ONCE(ret);
->  
-> +	kernel_physical_mapping_remove(start, start + size);
-> +
->  	return ret;
->  }
->  #endif
-> Index: linux-3.6/arch/x86/include/asm/pgtable_types.h
-> ===================================================================
-> --- linux-3.6.orig/arch/x86/include/asm/pgtable_types.h	2012-10-04 18:26:51.925486954 +0900
-> +++ linux-3.6/arch/x86/include/asm/pgtable_types.h	2012-10-04 18:30:27.322704656 +0900
-> @@ -334,6 +334,7 @@ static inline void update_page_count(int
->   * as a pte too.
->   */
->  extern pte_t *lookup_address(unsigned long address, unsigned int *level);
-> +extern int __split_large_page(pte_t *kpte, unsigned long address, pte_t *pbase);
->  
->  #endif	/* !__ASSEMBLY__ */
->  
-> Index: linux-3.6/arch/x86/mm/pageattr.c
-> ===================================================================
-> --- linux-3.6.orig/arch/x86/mm/pageattr.c	2012-10-04 18:26:51.923486952 +0900
-> +++ linux-3.6/arch/x86/mm/pageattr.c	2012-10-04 18:30:27.328704662 +0900
-> @@ -501,21 +501,13 @@ out_unlock:
->  	return do_split;
->  }
->  
-> -static int split_large_page(pte_t *kpte, unsigned long address)
-> +int __split_large_page(pte_t *kpte, unsigned long address, pte_t *pbase)
->  {
->  	unsigned long pfn, pfninc = 1;
->  	unsigned int i, level;
-> -	pte_t *pbase, *tmp;
-> +	pte_t *tmp;
->  	pgprot_t ref_prot;
-> -	struct page *base;
-> -
-> -	if (!debug_pagealloc)
-> -		spin_unlock(&cpa_lock);
-> -	base = alloc_pages(GFP_KERNEL | __GFP_NOTRACK, 0);
-> -	if (!debug_pagealloc)
-> -		spin_lock(&cpa_lock);
-> -	if (!base)
-> -		return -ENOMEM;
-> +	struct page *base = virt_to_page(pbase);
->  
->  	spin_lock(&pgd_lock);
->  	/*
-> @@ -523,10 +515,11 @@ static int split_large_page(pte_t *kpte,
->  	 * up for us already:
->  	 */
->  	tmp = lookup_address(address, &level);
-> -	if (tmp != kpte)
-> -		goto out_unlock;
-> +	if (tmp != kpte) {
-> +		spin_unlock(&pgd_lock);
-> +		return 1;
-> +	}
->  
-> -	pbase = (pte_t *)page_address(base);
->  	paravirt_alloc_pte(&init_mm, page_to_pfn(base));
->  	ref_prot = pte_pgprot(pte_clrhuge(*kpte));
->  	/*
-> @@ -579,17 +572,27 @@ static int split_large_page(pte_t *kpte,
->  	 * going on.
->  	 */
->  	__flush_tlb_all();
-> +	spin_unlock(&pgd_lock);
->  
-> -	base = NULL;
-> +	return 0;
-> +}
->  
-> -out_unlock:
-> -	/*
-> -	 * If we dropped out via the lookup_address check under
-> -	 * pgd_lock then stick the page back into the pool:
-> -	 */
-> -	if (base)
-> +static int split_large_page(pte_t *kpte, unsigned long address)
-> +{
-> +	pte_t *pbase;
-> +	struct page *base;
-> +
-> +	if (!debug_pagealloc)
-> +		spin_unlock(&cpa_lock);
-> +	base = alloc_pages(GFP_KERNEL | __GFP_NOTRACK, 0);
-> +	if (!debug_pagealloc)
-> +		spin_lock(&cpa_lock);
-> +	if (!base)
-> +		return -ENOMEM;
-> +
-> +	pbase = (pte_t *)page_address(base);
-> +	if (__split_large_page(kpte, address, pbase))
->  		__free_page(base);
-> -	spin_unlock(&pgd_lock);
->  
->  	return 0;
->  }
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> 
+  git://git.infradead.org/users/dhowells/linux-headers.git tags/disintegrate-powerpc-20121009
+
+for you to fetch changes up to c3617f72036c909e1f6086b5b9e364e0ef90a6da:
+
+  UAPI: (Scripted) Disintegrate arch/powerpc/include/asm (2012-10-09 09:47:26 +0100)
+
+----------------------------------------------------------------
+UAPI Disintegration 2012-10-09
+
+----------------------------------------------------------------
+David Howells (1):
+      UAPI: (Scripted) Disintegrate arch/powerpc/include/asm
+
+ arch/powerpc/include/asm/Kbuild                   |  35 --
+ arch/powerpc/include/asm/bootx.h                  | 123 +------
+ arch/powerpc/include/asm/cputable.h               |  35 +-
+ arch/powerpc/include/asm/elf.h                    | 311 +-----------------
+ arch/powerpc/include/asm/kvm_para.h               |  70 +---
+ arch/powerpc/include/asm/mman.h                   |  27 +-
+ arch/powerpc/include/asm/nvram.h                  |  55 +---
+ arch/powerpc/include/asm/ptrace.h                 | 242 +-------------
+ arch/powerpc/include/asm/signal.h                 | 143 +-------
+ arch/powerpc/include/asm/spu_info.h               |  29 +-
+ arch/powerpc/include/asm/swab.h                   |  15 +-
+ arch/powerpc/include/asm/termios.h                |  69 +---
+ arch/powerpc/include/asm/types.h                  |  30 +-
+ arch/powerpc/include/asm/unistd.h                 | 374 +--------------------
+ arch/powerpc/include/uapi/asm/Kbuild              |  41 +++
+ arch/powerpc/include/{ => uapi}/asm/auxvec.h      |   0
+ arch/powerpc/include/{ => uapi}/asm/bitsperlong.h |   0
+ arch/powerpc/include/uapi/asm/bootx.h             | 132 ++++++++
+ arch/powerpc/include/{ => uapi}/asm/byteorder.h   |   0
+ arch/powerpc/include/uapi/asm/cputable.h          |  36 ++
+ arch/powerpc/include/uapi/asm/elf.h               | 307 +++++++++++++++++
+ arch/powerpc/include/{ => uapi}/asm/errno.h       |   0
+ arch/powerpc/include/{ => uapi}/asm/fcntl.h       |   0
+ arch/powerpc/include/{ => uapi}/asm/ioctl.h       |   0
+ arch/powerpc/include/{ => uapi}/asm/ioctls.h      |   0
+ arch/powerpc/include/{ => uapi}/asm/ipcbuf.h      |   0
+ arch/powerpc/include/{ => uapi}/asm/kvm.h         |   0
+ arch/powerpc/include/uapi/asm/kvm_para.h          |  90 +++++
+ arch/powerpc/include/{ => uapi}/asm/linkage.h     |   0
+ arch/powerpc/include/uapi/asm/mman.h              |  31 ++
+ arch/powerpc/include/{ => uapi}/asm/msgbuf.h      |   0
+ arch/powerpc/include/uapi/asm/nvram.h             |  62 ++++
+ arch/powerpc/include/{ => uapi}/asm/param.h       |   0
+ arch/powerpc/include/{ => uapi}/asm/poll.h        |   0
+ arch/powerpc/include/{ => uapi}/asm/posix_types.h |   0
+ arch/powerpc/include/{ => uapi}/asm/ps3fb.h       |   0
+ arch/powerpc/include/uapi/asm/ptrace.h            | 259 +++++++++++++++
+ arch/powerpc/include/{ => uapi}/asm/resource.h    |   0
+ arch/powerpc/include/{ => uapi}/asm/seccomp.h     |   0
+ arch/powerpc/include/{ => uapi}/asm/sembuf.h      |   0
+ arch/powerpc/include/{ => uapi}/asm/setup.h       |   0
+ arch/powerpc/include/{ => uapi}/asm/shmbuf.h      |   0
+ arch/powerpc/include/{ => uapi}/asm/sigcontext.h  |   0
+ arch/powerpc/include/{ => uapi}/asm/siginfo.h     |   0
+ arch/powerpc/include/uapi/asm/signal.h            | 145 +++++++++
+ arch/powerpc/include/{ => uapi}/asm/socket.h      |   0
+ arch/powerpc/include/{ => uapi}/asm/sockios.h     |   0
+ arch/powerpc/include/uapi/asm/spu_info.h          |  53 +++
+ arch/powerpc/include/{ => uapi}/asm/stat.h        |   0
+ arch/powerpc/include/{ => uapi}/asm/statfs.h      |   0
+ arch/powerpc/include/uapi/asm/swab.h              |  23 ++
+ arch/powerpc/include/{ => uapi}/asm/termbits.h    |   0
+ arch/powerpc/include/uapi/asm/termios.h           |  76 +++++
+ arch/powerpc/include/uapi/asm/types.h             |  40 +++
+ arch/powerpc/include/{ => uapi}/asm/ucontext.h    |   0
+ arch/powerpc/include/uapi/asm/unistd.h            | 380 ++++++++++++++++++++++
+ 56 files changed, 1705 insertions(+), 1528 deletions(-)
+ rename arch/powerpc/include/{ => uapi}/asm/auxvec.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/bitsperlong.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/bootx.h
+ rename arch/powerpc/include/{ => uapi}/asm/byteorder.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/cputable.h
+ create mode 100644 arch/powerpc/include/uapi/asm/elf.h
+ rename arch/powerpc/include/{ => uapi}/asm/errno.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/fcntl.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/ioctl.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/ioctls.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/ipcbuf.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/kvm.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/kvm_para.h
+ rename arch/powerpc/include/{ => uapi}/asm/linkage.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/mman.h
+ rename arch/powerpc/include/{ => uapi}/asm/msgbuf.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/nvram.h
+ rename arch/powerpc/include/{ => uapi}/asm/param.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/poll.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/posix_types.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/ps3fb.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/ptrace.h
+ rename arch/powerpc/include/{ => uapi}/asm/resource.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/seccomp.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/sembuf.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/setup.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/shmbuf.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/sigcontext.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/siginfo.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/signal.h
+ rename arch/powerpc/include/{ => uapi}/asm/socket.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/sockios.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/spu_info.h
+ rename arch/powerpc/include/{ => uapi}/asm/stat.h (100%)
+ rename arch/powerpc/include/{ => uapi}/asm/statfs.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/swab.h
+ rename arch/powerpc/include/{ => uapi}/asm/termbits.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/termios.h
+ create mode 100644 arch/powerpc/include/uapi/asm/types.h
+ rename arch/powerpc/include/{ => uapi}/asm/ucontext.h (100%)
+ create mode 100644 arch/powerpc/include/uapi/asm/unistd.h
+.
