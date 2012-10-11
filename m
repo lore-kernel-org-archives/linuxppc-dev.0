@@ -4,25 +4,23 @@ Received: from ch1outboundpool.messaging.microsoft.com
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BE5D92C00EC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2012 03:14:24 +1100 (EST)
-Received: from mail15-ch1 (localhost [127.0.0.1])	by mail15-ch1-R.bigfish.com
- (Postfix) with ESMTP id 7F555220124	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,
- 11 Oct 2012 16:14:19 +0000 (UTC)
-Received: from CH1EHSMHS017.bigfish.com (snatpool1.int.messaging.microsoft.com
- [10.43.68.254])	by mail15-ch1.bigfish.com (Postfix) with ESMTP id
- 097C9160068
+ by ozlabs.org (Postfix) with ESMTPS id AA5DD2C0323
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2012 03:14:25 +1100 (EST)
+Received: from mail109-ch1 (localhost [127.0.0.1])	by
+ mail109-ch1-R.bigfish.com (Postfix) with ESMTP id 303E5360214	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 16:14:21 +0000 (UTC)
+Received: from CH1EHSMHS035.bigfish.com (snatpool1.int.messaging.microsoft.com
+ [10.43.68.248])	by mail109-ch1.bigfish.com (Postfix) with ESMTP id
+ 77FB92004C
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 16:14:18 +0000 (UTC)
 Received: from mcaraman-VirtualBox.ea.freescale.net ([10.213.130.145])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q9BGEBaQ028132	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 09:14:12 -0700
+ az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q9BGEFvW003817	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 09:14:16 -0700
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 05/12] KVM: PPC: e500: Add emulation helper for getting
- instruction ea
-Date: Thu, 11 Oct 2012 19:13:22 +0300
-Message-ID: <1349972009-23027-6-git-send-email-mihai.caraman@freescale.com>
+Subject: [PATCH 04/12] KVM: PPC64: bookehv: Add support for interrupt handling
+Date: Thu, 11 Oct 2012 19:13:21 +0300
+Message-ID: <1349972009-23027-5-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1349972009-23027-1-git-send-email-mihai.caraman@freescale.com>
 References: <1349972009-23027-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -38,188 +36,246 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add emulation helper for getting instruction ea and refactor tlb instruction
-emulation to use it.
+Add interrupt handling support for 64-bit bookehv hosts. Unify 32 and 64 bit
+implementations using a common stack layout and a common execution flow starting
+from kvm_handler_common macro. Update documentation for 64-bit input register
+values. This patch only address the bolted TLB miss exception handlers version.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
-v1: use _t_ype instead of _t_arget _r_egister in tlbilx emulation.
+v1: updated CRIT and TLB exception handling following core side changes.
 
- arch/powerpc/include/asm/kvm_ppc.h |   11 +++++++++++
- arch/powerpc/kvm/e500.h            |    6 +++---
- arch/powerpc/kvm/e500_emulate.c    |   15 ++++++++++-----
- arch/powerpc/kvm/e500_tlb.c        |   33 +++++++++++----------------------
- 4 files changed, 35 insertions(+), 30 deletions(-)
+ arch/powerpc/include/asm/kvm_booke_hv_asm.h |   25 +++++
+ arch/powerpc/kvm/bookehv_interrupts.S       |  138 +++++++++++++++++++++++++--
+ 2 files changed, 155 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/kvm_ppc.h b/arch/powerpc/include/asm/kvm_ppc.h
-index 609cca3..a08e756 100644
---- a/arch/powerpc/include/asm/kvm_ppc.h
-+++ b/arch/powerpc/include/asm/kvm_ppc.h
-@@ -293,4 +293,15 @@ static inline void kvmppc_lazy_ee_enable(void)
- #endif
- }
+diff --git a/arch/powerpc/include/asm/kvm_booke_hv_asm.h b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
+index a37a12a..7ad5af7 100644
+--- a/arch/powerpc/include/asm/kvm_booke_hv_asm.h
++++ b/arch/powerpc/include/asm/kvm_booke_hv_asm.h
+@@ -17,6 +17,7 @@
+  * there are no exceptions for which we fall through directly to
+  * the normal host handler.
+  *
++ * 32-bit host
+  * Expected inputs (normal exceptions):
+  *   SCRATCH0 = saved r10
+  *   r10 = thread struct
+@@ -33,6 +34,30 @@
+  *   *(r8 + GPR9) = saved r9
+  *   *(r8 + GPR10) = saved r10 (r10 not yet clobbered)
+  *   *(r8 + GPR11) = saved r11
++ *
++ * 64-bit host
++ * Expected inputs (GEN/GDBELL/DBG/MC exception types):
++ *  r10 = saved CR 
++ *  r13 = PACA_POINTER
++ *  *(r13 + PACA_EX##type + EX_R10) = saved r10
++ *  *(r13 + PACA_EX##type + EX_R11) = saved r11
++ *  SPRN_SPRG_##type##_SCRATCH = saved r13 
++ *
++  * Expected inputs (CRIT exception type):
++ *  r10 = saved CR
++ *  r13 = PACA_POINTER
++ *  *(r13 + PACA_EX##type + EX_R10) = saved r10
++ *  *(r13 + PACA_EX##type + EX_R11) = saved r11
++ *  *(r13 + PACA_EX##type + EX_R13) = saved r13
++ *
++ * Expected inputs (TLB exception type):
++ *  r10 = saved CR
++ *  r13 = PACA_POINTER
++ *  *(r13 + PACA_EX##type + EX_TLB_R10) = saved r10
++ *  *(r13 + PACA_EX##type + EX_TLB_R11) = saved r11
++ *  SPRN_SPRG_GEN_SCRATCH = saved r13
++ *
++ * Only the bolted version of TLB miss exception handlers is supported now.
+  */
+ .macro DO_KVM intno srr1
+ #ifdef CONFIG_KVM_BOOKE_HV
+diff --git a/arch/powerpc/kvm/bookehv_interrupts.S b/arch/powerpc/kvm/bookehv_interrupts.S
+index fa6d552..e8ed7d6 100644
+--- a/arch/powerpc/kvm/bookehv_interrupts.S
++++ b/arch/powerpc/kvm/bookehv_interrupts.S
+@@ -16,6 +16,7 @@
+  *
+  * Author: Varun Sethi <varun.sethi@freescale.com>
+  * Author: Scott Wood <scotwood@freescale.com>
++ * Author: Mihai Caraman <mihai.caraman@freescale.com>
+  *
+  * This file is derived from arch/powerpc/kvm/booke_interrupts.S
+  */
+@@ -30,28 +31,33 @@
+ #include <asm/bitsperlong.h>
+ #include <asm/thread_info.h>
  
-+static inline ulong kvmppc_get_ea_indexed(struct kvm_vcpu *vcpu, int ra, int rb)
-+{
-+	ulong ea;
++#ifdef CONFIG_64BIT
++#include <asm/exception-64e.h>
++#else
+ #include "../kernel/head_booke.h" /* for THREAD_NORMSAVE() */
++#endif
+ 
+ #define LONGBYTES		(BITS_PER_LONG / 8)
+ 
+ #define VCPU_GUEST_SPRG(n)	(VCPU_GUEST_SPRGS + (n * LONGBYTES))
+ 
+ /* The host stack layout: */
+-#define HOST_R1         (0 * LONGBYTES) /* Implied by stwu. */
+-#define HOST_CALLEE_LR  (1 * LONGBYTES)
+-#define HOST_RUN        (2 * LONGBYTES) /* struct kvm_run */
++#define HOST_R1         0 /* Implied by stwu. */
++#define HOST_CALLEE_LR  PPC_LR_STKOFF
++#define HOST_RUN        (HOST_CALLEE_LR + LONGBYTES)
+ /*
+  * r2 is special: it holds 'current', and it made nonvolatile in the
+  * kernel with the -ffixed-r2 gcc option.
+  */
+-#define HOST_R2         (3 * LONGBYTES)
+-#define HOST_CR         (4 * LONGBYTES)
+-#define HOST_NV_GPRS    (5 * LONGBYTES)
++#define HOST_R2         (HOST_RUN + LONGBYTES)
++#define HOST_CR         (HOST_R2 + LONGBYTES)
++#define HOST_NV_GPRS    (HOST_CR + LONGBYTES)
+ #define __HOST_NV_GPR(n)  (HOST_NV_GPRS + ((n - 14) * LONGBYTES))
+ #define HOST_NV_GPR(n)  __HOST_NV_GPR(__REG_##n)
+ #define HOST_MIN_STACK_SIZE (HOST_NV_GPR(R31) + LONGBYTES)
+ #define HOST_STACK_SIZE ((HOST_MIN_STACK_SIZE + 15) & ~15) /* Align. */
+-#define HOST_STACK_LR   (HOST_STACK_SIZE + LONGBYTES) /* In caller stack frame. */
++/* LR in caller stack frame. */
++#define HOST_STACK_LR	(HOST_STACK_SIZE + PPC_LR_STKOFF)
+ 
+ #define NEED_EMU		0x00000001 /* emulation -- save nv regs */
+ #define NEED_DEAR		0x00000002 /* save faulting DEAR */
+@@ -198,6 +204,122 @@
+ 	b	kvmppc_resume_host
+ .endm
+ 
++#ifdef CONFIG_64BIT
++/* Exception types */
++#define EX_GEN			1
++#define EX_GDBELL		2
++#define EX_DBG			3
++#define EX_MC			4
++#define EX_CRIT			5
++#define EX_TLB			6
 +
-+	ea = kvmppc_get_gpr(vcpu, rb);
-+	if (ra)
-+		ea += kvmppc_get_gpr(vcpu, ra);
++/*
++ * For input register values, see arch/powerpc/include/asm/kvm_booke_hv_asm.h
++ */
++.macro kvm_handler intno type scratch, paca_ex, ex_r10, ex_r11, srr0, srr1, flags
++ _GLOBAL(kvmppc_handler_\intno\()_\srr1)
++	mr	r11, r4
++	/*
++	 * Get vcpu from Paca: paca->__current.thread->kvm_vcpu
++	 */
++	PPC_LL	r4, PACACURRENT(r13)
++	PPC_LL	r4, (THREAD + THREAD_KVM_VCPU)(r4)
++	stw	r10, VCPU_CR(r4)
++	PPC_STL r11, VCPU_GPR(R4)(r4)
++	PPC_STL	r5, VCPU_GPR(R5)(r4)
++	.if \type == EX_CRIT
++	PPC_LL	r5, (\paca_ex + EX_R13)(r13)
++	.else
++	mfspr	r5, \scratch
++	.endif
++	PPC_STL	r6, VCPU_GPR(R6)(r4)
++	PPC_STL	r8, VCPU_GPR(R8)(r4)
++	PPC_STL	r9, VCPU_GPR(R9)(r4)
++	PPC_STL r5, VCPU_GPR(R13)(r4)
++	PPC_LL	r6, (\paca_ex + \ex_r10)(r13)
++	PPC_LL	r8, (\paca_ex + \ex_r11)(r13)
++	PPC_STL r3, VCPU_GPR(R3)(r4)
++	PPC_STL r7, VCPU_GPR(R7)(r4)
++	PPC_STL r12, VCPU_GPR(R12)(r4)
++	PPC_STL r6, VCPU_GPR(R10)(r4)
++	PPC_STL r8, VCPU_GPR(R11)(r4)
++	mfctr	r5
++	PPC_STL	r5, VCPU_CTR(r4)
++	mfspr	r5, \srr0
++	mfspr	r6, \srr1
++	kvm_handler_common \intno, \srr0, \flags
++.endm
 +
-+	return ea;
-+}
++#define EX_PARAMS(type) \
++	EX_##type, \
++	SPRN_SPRG_##type##_SCRATCH, \
++	PACA_EX##type, \
++	EX_R10, \
++	EX_R11
 +
- #endif /* __POWERPC_KVM_PPC_H__ */
-diff --git a/arch/powerpc/kvm/e500.h b/arch/powerpc/kvm/e500.h
-index d162286..32e98a7 100644
---- a/arch/powerpc/kvm/e500.h
-+++ b/arch/powerpc/kvm/e500.h
-@@ -129,9 +129,9 @@ int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *vcpu_e500,
- 				ulong value);
- int kvmppc_e500_emul_tlbwe(struct kvm_vcpu *vcpu);
- int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu);
--int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb);
--int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int rt, int ra, int rb);
--int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb);
-+int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, gva_t ea);
-+int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int type, gva_t ea);
-+int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, gva_t ea);
- int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 *vcpu_e500);
- void kvmppc_e500_tlb_uninit(struct kvmppc_vcpu_e500 *vcpu_e500);
- 
-diff --git a/arch/powerpc/kvm/e500_emulate.c b/arch/powerpc/kvm/e500_emulate.c
-index e04b0ef..3bf2486 100644
---- a/arch/powerpc/kvm/e500_emulate.c
-+++ b/arch/powerpc/kvm/e500_emulate.c
-@@ -88,7 +88,7 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 	int emulated = EMULATE_DONE;
- 	int ra = get_ra(inst);
- 	int rb = get_rb(inst);
--	int rt = get_rt(inst);
-+	gva_t ea;
- 
- 	switch (get_op(inst)) {
- 	case 31:
-@@ -113,15 +113,20 @@ int kvmppc_core_emulate_op(struct kvm_run *run, struct kvm_vcpu *vcpu,
- 			break;
- 
- 		case XOP_TLBSX:
--			emulated = kvmppc_e500_emul_tlbsx(vcpu,rb);
-+			ea = kvmppc_get_ea_indexed(vcpu, ra, rb);
-+			emulated = kvmppc_e500_emul_tlbsx(vcpu, ea);
- 			break;
- 
--		case XOP_TLBILX:
--			emulated = kvmppc_e500_emul_tlbilx(vcpu, rt, ra, rb);
-+		case XOP_TLBILX: {
-+			int t = (inst >> 21) & 0x3;
-+			ea = kvmppc_get_ea_indexed(vcpu, ra, rb);
-+			emulated = kvmppc_e500_emul_tlbilx(vcpu, t, ea);
- 			break;
-+		}
- 
- 		case XOP_TLBIVAX:
--			emulated = kvmppc_e500_emul_tlbivax(vcpu, ra, rb);
-+			ea = kvmppc_get_ea_indexed(vcpu, ra, rb);
-+			emulated = kvmppc_e500_emul_tlbivax(vcpu, ea);
- 			break;
- 
- 		default:
-diff --git a/arch/powerpc/kvm/e500_tlb.c b/arch/powerpc/kvm/e500_tlb.c
-index 23b3de6..b5a188a 100644
---- a/arch/powerpc/kvm/e500_tlb.c
-+++ b/arch/powerpc/kvm/e500_tlb.c
-@@ -689,14 +689,11 @@ int kvmppc_e500_emul_mt_mmucsr0(struct kvmppc_vcpu_e500 *vcpu_e500, ulong value)
- 	return EMULATE_DONE;
- }
- 
--int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb)
-+int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, gva_t ea)
- {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
- 	unsigned int ia;
- 	int esel, tlbsel;
--	gva_t ea;
++#define EX_PARAMS_TLB \
++	EX_TLB, \
++	SPRN_SPRG_GEN_SCRATCH, \
++	PACA_EXTLB, \
++	EX_TLB_R10, \
++	EX_TLB_R11
++
++kvm_handler BOOKE_INTERRUPT_CRITICAL, EX_PARAMS(CRIT), \
++	SPRN_CSRR0, SPRN_CSRR1, 0
++kvm_handler BOOKE_INTERRUPT_MACHINE_CHECK, EX_PARAMS(MC), \
++	SPRN_MCSRR0, SPRN_MCSRR1, 0
++kvm_handler BOOKE_INTERRUPT_DATA_STORAGE, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1,(NEED_EMU | NEED_DEAR | NEED_ESR)
++kvm_handler BOOKE_INTERRUPT_INST_STORAGE, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, NEED_ESR
++kvm_handler BOOKE_INTERRUPT_EXTERNAL, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_ALIGNMENT, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1,(NEED_DEAR | NEED_ESR)
++kvm_handler BOOKE_INTERRUPT_PROGRAM, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1,NEED_ESR
++kvm_handler BOOKE_INTERRUPT_FP_UNAVAIL, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_AP_UNAVAIL, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_DECREMENTER, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_FIT, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_WATCHDOG, EX_PARAMS(CRIT),\
++	SPRN_CSRR0, SPRN_CSRR1, 0
++/*
++ * Only bolted TLB miss exception handlers are supported for now
++ */
++kvm_handler BOOKE_INTERRUPT_DTLB_MISS, EX_PARAMS_TLB, \
++	SPRN_SRR0, SPRN_SRR1, (NEED_EMU | NEED_DEAR | NEED_ESR)
++kvm_handler BOOKE_INTERRUPT_ITLB_MISS, EX_PARAMS_TLB, \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_SPE_UNAVAIL, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_SPE_FP_DATA, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_SPE_FP_ROUND, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_PERFORMANCE_MONITOR, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_DOORBELL, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_DOORBELL_CRITICAL, EX_PARAMS(CRIT), \
++	SPRN_CSRR0, SPRN_CSRR1, 0
++kvm_handler BOOKE_INTERRUPT_HV_PRIV, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, NEED_EMU
++kvm_handler BOOKE_INTERRUPT_HV_SYSCALL, EX_PARAMS(GEN), \
++	SPRN_SRR0, SPRN_SRR1, 0
++kvm_handler BOOKE_INTERRUPT_GUEST_DBELL, EX_PARAMS(GDBELL), \
++	SPRN_GSRR0, SPRN_GSRR1, 0
++kvm_handler BOOKE_INTERRUPT_GUEST_DBELL_CRIT, EX_PARAMS(CRIT), \
++	SPRN_CSRR0, SPRN_CSRR1, 0
++kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(DBG), \
++	SPRN_DSRR0, SPRN_DSRR1, 0
++kvm_handler BOOKE_INTERRUPT_DEBUG, EX_PARAMS(CRIT), \
++	SPRN_CSRR0, SPRN_CSRR1, 0
++#else
+ /*
+  * For input register values, see arch/powerpc/include/asm/kvm_booke_hv_asm.h
+  */
+@@ -292,7 +414,7 @@ kvm_lvl_handler BOOKE_INTERRUPT_DEBUG, \
+ 	SPRN_SPRG_RSCRATCH_CRIT, SPRN_CSRR0, SPRN_CSRR1, 0
+ kvm_lvl_handler BOOKE_INTERRUPT_DEBUG, \
+ 	SPRN_SPRG_RSCRATCH_DBG, SPRN_DSRR0, SPRN_DSRR1, 0
 -
--	ea = ((ra) ? kvmppc_get_gpr(vcpu, ra) : 0) + kvmppc_get_gpr(vcpu, rb);
++#endif
  
- 	ia = (ea >> 2) & 0x1;
- 
-@@ -723,7 +720,7 @@ int kvmppc_e500_emul_tlbivax(struct kvm_vcpu *vcpu, int ra, int rb)
- }
- 
- static void tlbilx_all(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
--		       int pid, int rt)
-+		       int pid, int type)
- {
- 	struct kvm_book3e_206_tlb_entry *tlbe;
- 	int tid, esel;
-@@ -732,7 +729,7 @@ static void tlbilx_all(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
- 	for (esel = 0; esel < vcpu_e500->gtlb_params[tlbsel].entries; esel++) {
- 		tlbe = get_entry(vcpu_e500, tlbsel, esel);
- 		tid = get_tlb_tid(tlbe);
--		if (rt == 0 || tid == pid) {
-+		if (type == 0 || tid == pid) {
- 			inval_gtlbe_on_host(vcpu_e500, tlbsel, esel);
- 			kvmppc_e500_gtlbe_invalidate(vcpu_e500, tlbsel, esel);
- 		}
-@@ -740,14 +737,9 @@ static void tlbilx_all(struct kvmppc_vcpu_e500 *vcpu_e500, int tlbsel,
- }
- 
- static void tlbilx_one(struct kvmppc_vcpu_e500 *vcpu_e500, int pid,
--		       int ra, int rb)
-+		       gva_t ea)
- {
- 	int tlbsel, esel;
--	gva_t ea;
--
--	ea = kvmppc_get_gpr(&vcpu_e500->vcpu, rb);
--	if (ra)
--		ea += kvmppc_get_gpr(&vcpu_e500->vcpu, ra);
- 
- 	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
- 		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel, pid, -1);
-@@ -759,16 +751,16 @@ static void tlbilx_one(struct kvmppc_vcpu_e500 *vcpu_e500, int pid,
- 	}
- }
- 
--int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int rt, int ra, int rb)
-+int kvmppc_e500_emul_tlbilx(struct kvm_vcpu *vcpu, int type, gva_t ea)
- {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
- 	int pid = get_cur_spid(vcpu);
- 
--	if (rt == 0 || rt == 1) {
--		tlbilx_all(vcpu_e500, 0, pid, rt);
--		tlbilx_all(vcpu_e500, 1, pid, rt);
--	} else if (rt == 3) {
--		tlbilx_one(vcpu_e500, pid, ra, rb);
-+	if (type == 0 || type == 1) {
-+		tlbilx_all(vcpu_e500, 0, pid, type);
-+		tlbilx_all(vcpu_e500, 1, pid, type);
-+	} else if (type == 3) {
-+		tlbilx_one(vcpu_e500, pid, ea);
- 	}
- 
- 	return EMULATE_DONE;
-@@ -793,16 +785,13 @@ int kvmppc_e500_emul_tlbre(struct kvm_vcpu *vcpu)
- 	return EMULATE_DONE;
- }
- 
--int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, int rb)
-+int kvmppc_e500_emul_tlbsx(struct kvm_vcpu *vcpu, gva_t ea)
- {
- 	struct kvmppc_vcpu_e500 *vcpu_e500 = to_e500(vcpu);
- 	int as = !!get_cur_sas(vcpu);
- 	unsigned int pid = get_cur_spid(vcpu);
- 	int esel, tlbsel;
- 	struct kvm_book3e_206_tlb_entry *gtlbe = NULL;
--	gva_t ea;
--
--	ea = kvmppc_get_gpr(vcpu, rb);
- 
- 	for (tlbsel = 0; tlbsel < 2; tlbsel++) {
- 		esel = kvmppc_e500_tlb_index(vcpu_e500, ea, tlbsel, pid, as);
+ /* Registers:
+  *  SPRG_SCRATCH0: guest r10
 -- 
 1.7.4.1
