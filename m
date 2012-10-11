@@ -1,23 +1,26 @@
-Return-Path: <B07421@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe004.messaging.microsoft.com [213.199.154.142])
+Return-Path: <B04825@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D886B2C008A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2012 02:50:17 +1100 (EST)
-Date: Thu, 11 Oct 2012 10:50:03 -0500
-From: Scott Wood <scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id C2F3B2C00B9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2012 02:55:50 +1100 (EST)
+Message-ID: <5076EBFE.5060208@freescale.com>
+Date: Thu, 11 Oct 2012 10:55:42 -0500
+From: Timur Tabi <B04825@freescale.com>
+MIME-Version: 1.0
+To: Alexander Graf <agraf@suse.de>
 Subject: Re: linux-next: manual merge of the kvm-ppc tree with the
  powerpc-merge tree
-To: Alexander Graf <agraf@suse.de>
-In-Reply-To: <6201AAAD-F575-4D2C-9A97-3EB41DA3491C@suse.de> (from
- agraf@suse.de on Thu Oct 11 08:04:58 2012)
-Message-ID: <1349970603.6903.2@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+References: <20121011121841.1b946f996cba995d9a5a2be7@canb.auug.org.au>
+ <6AE080B68D46FC4BA2D2769E68D765B7080FA8F8@039-SN2MPN1-023.039d.mgd.msft.net>
+ <20121011134754.2e2cbb24842fa991e61cf97c@canb.auug.org.au>
+ <6AE080B68D46FC4BA2D2769E68D765B7080FA9F8@039-SN2MPN1-023.039d.mgd.msft.net>
+ <6201AAAD-F575-4D2C-9A97-3EB41DA3491C@suse.de>
+In-Reply-To: <6201AAAD-F575-4D2C-9A97-3EB41DA3491C@suse.de>
+Content-Type: text/plain; charset="ISO-8859-1"
 Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
- Tabi Timur-B04825 <B04825@freescale.com>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  David Howells <dhowells@redhat.com>,
  "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
@@ -32,42 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/11/2012 08:04:58 AM, Alexander Graf wrote:
->=20
-> On 11.10.2012, at 05:32, Tabi Timur-B04825 wrote:
->=20
-> > On Wed, Oct 10, 2012 at 9:47 PM, Stephen Rothwell =20
-> <sfr@canb.auug.org.au> wrote:
-> >
-> >> Commit 549d62d889b4 ("KVM: PPC: use definitions in epapr header
-> >> for hcalls") from the kvm-ppc tree added an include of =20
-> asm/epapr_hcall.h
-> >> to the user visible part of asm/kvm_para.h so asm/epapr_hcall.h =20
-> became a
-> >> user visible header file.
-> >
-> > Any real user-space code that tries to call any of the functions in
-> > epapr_hcall.h will cause an exception.
+Alexander Graf wrote:
 
-Actually it'll cause a linker error, as of the "Don't use hardcoded =20
-opcode for ePAPR hcall invocation" patch.
 
-> > Claiming that kernel header files that KVM needs are suddenly
-> > user-space header files doesn't make much sense to me, but I guess
-> > it's not my decision.
->=20
-> This is about kvm_host.h, which is the part that is exported to user =20
-> space. It usually contains constants and structs that are required =20
-> for the API.
+> This is about kvm_host.h, which is the part that is exported to user
+> space. It usually contains constants and structs that are required for
+> the API.
 
-s/kvm_host/kvm_para/
+Which API?  I'm not familiar with KVM internals.
 
-I'm not sure anything in kvm_para.h or epapr_hcalls.h would be of use =20
-to userspace, but it would be of use to the guest OS, so it's still not =20
-kernel-internal.
+My concern is that when I think of a user-space header file, I think of a
+user-space application that calls ioctls.  I know that KVM guest kernels
+run as user-space processes, but that does not seem like a reason to
+combine all of the header files that the KVM guest kernel needs with
+"real" user-space header files.
 
-The variable externs should be #ifdef __KERNEL__ as David points out.  =20
-The asm stuff could still be useful in a guest OS if the guest provides =20
-epapr_hypercall_start.
-
--Scott=
+-- 
+Timur Tabi
+Linux kernel developer at Freescale
