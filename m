@@ -1,22 +1,29 @@
-Return-Path: <dhowells@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id EDE5A2C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2012 03:06:10 +1100 (EST)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <4C573632-7629-4E7A-8A67-FD4698B7430D@suse.de>
-References: <4C573632-7629-4E7A-8A67-FD4698B7430D@suse.de>
- <20121011120502.0211f1267dedf3776e4cf85b@canb.auug.org.au>
- <13876.1349947620@warthog.procyon.org.uk>
-To: Alexander Graf <agraf@suse.de>
-Subject: Re: linux-next: manual merge of the kvm-ppc tree with the
- powerpc-merge tree
-Date: Thu, 11 Oct 2012 17:05:57 +0100
-Message-ID: <14077.1349971557@warthog.procyon.org.uk>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Liu Yu <yu.liu@freescale.com>,
- B04825@freescale.com, linux-kernel@vger.kernel.org,
- Stuart Yoder <stuart.yoder@freescale.com>, dhowells@redhat.com,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <mcaraman@mcaraman-VirtualBox.ea.freescale.net>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D50512C00EC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2012 03:14:22 +1100 (EST)
+Received: from mail184-co1 (localhost [127.0.0.1])	by
+ mail184-co1-R.bigfish.com (Postfix) with ESMTP id 94A83D40136	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 16:14:17 +0000 (UTC)
+Received: from CO1EHSMHS009.bigfish.com (unknown [10.243.78.240])	by
+ mail184-co1.bigfish.com (Postfix) with ESMTP id DDF5C2C008D	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 16:14:14 +0000 (UTC)
+Received: from mcaraman-VirtualBox.ea.freescale.net ([10.213.130.145])	by
+ az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q9BGEBt3003738	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 09:14:11 -0700
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH 00/12] KVM: PPC: 64-bit Book3E arch support
+Date: Thu, 11 Oct 2012 19:13:17 +0300
+Message-ID: <1349972009-23027-1-git-send-email-mihai.caraman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,26 +33,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Alexander Graf <agraf@suse.de> wrote:
+This patchset adds arch support to KVM for 64-bit Book3E PowerPC procesosrs
+with Embedded.Hypervisor category. The support is limited to the bolted TLB miss
+exception handlers version and was validated on Freescale's e5500 cores
+using P5020DS boards.
 
-> Do I have to move them to their own header file or can I just #ifdef
-> __KERNEL__ around the place where __ASSEMBLY__ starts to the end of the
-> file?
+This patchset is based on Alex G. kvm-ppc-next branch with the following
+core prerequisites:
 
-That depends on whether it happens before or after my disintegration script is
-run on the header.  Ben has pulled my powerpc thing into the powerpc tree
-already.  If he doesn't mind repulling, then if you give me a patch or a git
-branch to fix it, I can apply that and regenerate the powerpc branch.
+The changes since commit 8b7b80b9ebb46dd88fbb94e918297295cf312b59:
 
-Otherwise, you need to disintegrate manually:
+    powerpc: Uprobes port to powerpc
 
- (1) Move the public part to arch/powerpc/include/uapi/asm/epapr_hcalls.h
+up to commit 8b64a9dfb091f1eca8b7e58da82f1e7d1d5fe0ad:
 
- (2) #include the public part from arch/powerpc/include/asm/epapr_hcalls.h
+    powerpc/booke64: Use SPRG0/3 scratch for bolted TLB miss & crit int
 
- (3) Move the "headers-y += epapr_hcalls.h" line from .../asm/Kbuild to
-     .../uapi/asm/Kbuild.
 
-You should not then need __KERNEL__ guards in either header.
+and the changes since commit d0832a75075b1119635e0f48549e378040cf5e67:
 
-David
+    powerpc/85xx: add HOTPLUG_CPU support
+
+up to commit 39be5b4a7f232870aad0b3c130791eacd0d34347:
+
+    powerpc/booke: Add CPU_FTR_EMB_HV check for e5500.
+
+
+available in the git repository
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+
+
+
+Mihai Caraman (12):
+  KVM: PPC: e500: Silence bogus GCC warning in tlb code
+  KVM: PPC: booke: Fix get_tb() compile error on 64-bit
+  KVM: PPC: bookehv: Remove GET_VCPU macro from exception handler
+  KVM: PPC64: bookehv: Add support for interrupt handling
+  KVM: PPC: Add emulation helper for getting instruction ea
+  KVM: PPC: Mask ea's high 32-bits in 32/64 instr emulation
+  KVM: PPC: e500: Mask MAS2 EPN high 32-bits in 32/64 tlbwe emulation
+  KVM: PPC: booke: Extend MAS2 EPN mask for 64-bit
+  KVM: PPC: bookehv: Add guest computation mode for irq delivery
+  KVM: PPC: bookehv: Add EPCR support in mtspr/mfspr emulation
+  KVM: PPC: booke: Add EPCR support in sregs
+  KVM: PPC: booke: Get/set guest EPCR register using ONE_REG interface
+
+ Documentation/virtual/kvm/api.txt           |    1 +
+ arch/powerpc/include/asm/kvm.h              |    2 +
+ arch/powerpc/include/asm/kvm_booke_hv_asm.h |   25 +++++
+ arch/powerpc/include/asm/kvm_ppc.h          |   21 ++++
+ arch/powerpc/include/asm/mmu-book3e.h       |    2 +-
+ arch/powerpc/kvm/booke.c                    |   43 ++++++++-
+ arch/powerpc/kvm/booke.h                    |    1 +
+ arch/powerpc/kvm/booke_emulate.c            |   12 ++-
+ arch/powerpc/kvm/bookehv_interrupts.S       |  145 ++++++++++++++++++++++++---
+ arch/powerpc/kvm/e500.h                     |    8 +-
+ arch/powerpc/kvm/e500_emulate.c             |   15 ++-
+ arch/powerpc/kvm/e500_tlb.c                 |   38 +++----
+ 12 files changed, 265 insertions(+), 48 deletions(-)
+
+-- 
+1.7.4.1
