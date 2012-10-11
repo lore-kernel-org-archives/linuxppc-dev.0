@@ -1,26 +1,26 @@
 Return-Path: <mcaraman@mcaraman-VirtualBox.ea.freescale.net>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E8AF82C03E5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2012 03:14:34 +1100 (EST)
-Received: from mail216-va3 (localhost [127.0.0.1])	by
- mail216-va3-R.bigfish.com (Postfix) with ESMTP id DB6A784027E	for
+ by ozlabs.org (Postfix) with ESMTPS id 180D92C03F4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2012 03:14:36 +1100 (EST)
+Received: from mail215-ch1 (localhost [127.0.0.1])	by
+ mail215-ch1-R.bigfish.com (Postfix) with ESMTP id 085282A00BF	for
  <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 16:14:21 +0000 (UTC)
-Received: from VA3EHSMHS010.bigfish.com (unknown [10.7.14.237])	by
- mail216-va3.bigfish.com (Postfix) with ESMTP id 2A570180075	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 16:14:19 +0000 (UTC)
+Received: from CH1EHSMHS035.bigfish.com (snatpool2.int.messaging.microsoft.com
+ [10.43.68.232])	by mail215-ch1.bigfish.com (Postfix) with ESMTP id
+ 74E6C4E007E	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 16:14:17
+ +0000 (UTC)
 Received: from mcaraman-VirtualBox.ea.freescale.net ([10.213.130.145])	by
- az84smr01.freescale.net (8.14.3/8.14.0) with ESMTP id q9BGEBO1003747	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 09:14:12 -0700
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id q9BGEEAD028169	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Oct 2012 09:14:15 -0700
 From: Mihai Caraman <mihai.caraman@freescale.com>
 To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 09/12] KVM: PPC: bookehv: Add guest computation mode for irq
- delivery
-Date: Thu, 11 Oct 2012 19:13:26 +0300
-Message-ID: <1349972009-23027-10-git-send-email-mihai.caraman@freescale.com>
+Subject: [PATCH 02/12] KVM: PPC: booke: Fix get_tb() compile error on 64-bit
+Date: Thu, 11 Oct 2012 19:13:19 +0300
+Message-ID: <1349972009-23027-3-git-send-email-mihai.caraman@freescale.com>
 In-Reply-To: <1349972009-23027-1-git-send-email-mihai.caraman@freescale.com>
 References: <1349972009-23027-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
@@ -36,42 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When delivering guest IRQs, update MSR computation mode according to guest
-interrupt computation mode found in EPCR.
+Include header file for get_tb() declaration.
 
 Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
 ---
-v1: added intermediate msr variable.
-
- arch/powerpc/kvm/booke.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+ arch/powerpc/kvm/booke.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/kvm/booke.c b/arch/powerpc/kvm/booke.c
-index 7c9c389..86f0d0d 100644
+index 3d1f35d..7c9c389 100644
 --- a/arch/powerpc/kvm/booke.c
 +++ b/arch/powerpc/kvm/booke.c
-@@ -312,6 +312,7 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- 	bool crit;
- 	bool keep_irq = false;
- 	enum int_class int_class;
-+	ulong new_msr = vcpu->arch.shared->msr;
+@@ -36,6 +36,7 @@
+ #include <asm/dbell.h>
+ #include <asm/hw_irq.h>
+ #include <asm/irq.h>
++#include <asm/time.h>
  
- 	/* Truncate crit indicators in 32 bit mode */
- 	if (!(vcpu->arch.shared->msr & MSR_SF)) {
-@@ -407,7 +408,13 @@ static int kvmppc_booke_irqprio_deliver(struct kvm_vcpu *vcpu,
- 			set_guest_esr(vcpu, vcpu->arch.queued_esr);
- 		if (update_dear == true)
- 			set_guest_dear(vcpu, vcpu->arch.queued_dear);
--		kvmppc_set_msr(vcpu, vcpu->arch.shared->msr & msr_mask);
-+
-+		new_msr &= msr_mask;
-+#if defined(CONFIG_64BIT) && defined(CONFIG_KVM_BOOKE_HV)
-+		if (vcpu->arch.epcr & SPRN_EPCR_ICM)
-+			new_msr |= MSR_CM;
-+#endif
-+		kvmppc_set_msr(vcpu, new_msr);
- 
- 		if (!keep_irq)
- 			clear_bit(priority, &vcpu->arch.pending_exceptions);
+ #include "timing.h"
+ #include "booke.h"
 -- 
 1.7.4.1
