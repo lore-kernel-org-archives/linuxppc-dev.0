@@ -1,19 +1,23 @@
 Return-Path: <devendra.aaru@gmail.com>
-Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
- [209.85.220.51])
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0F5432C0095
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2012 06:03:14 +1100 (EST)
-Received: by mail-pa0-f51.google.com with SMTP id kq12so3768724pab.38
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2012 12:03:12 -0700 (PDT)
-From: Devendra Naga <devendra.aaru@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id AAD312C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2012 06:04:24 +1100 (EST)
+Received: by mail-pb0-f51.google.com with SMTP id rp16so3865788pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2012 12:04:22 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1350154986-1478-1-git-send-email-devendra.aaru@gmail.com>
+References: <1350154986-1478-1-git-send-email-devendra.aaru@gmail.com>
+Date: Sat, 13 Oct 2012 15:04:22 -0400
+Message-ID: <CAHdPZaNGst9KsqNme=dwx6kF3Uib_qje4AdaCetZaTCSm3HduQ@mail.gmail.com>
+Subject: Re: [PATCH 1/9] powerpc: 83xx: use module_i2c_driver macro
+From: "devendra.aaru" <devendra.aaru@gmail.com>
 To: Kumar Gala <galak@kernel.crashing.org>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/9] powerpc: 83xx: use module_i2c_driver macro
-Date: Sat, 13 Oct 2012 15:03:05 -0400
-Message-Id: <1350154986-1478-1-git-send-email-devendra.aaru@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: Devendra Naga <devendra.aaru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,40 +28,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-replace the module init and exit calls containing the
-i2c_add_driver and i2c_del_driver with the module_i2c_driver
-macro as it does the same things as the code that is removed
+whoops, sorry, i made mistake in the patchset numbering,
 
-Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
----
+please ignore this patch i will send a patch with the updated correct
+number. actually there is only one patch. no 9 patches,
 
- Not compile tested, because i dont have a ppc cross toolchain
- arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   13 +------------
- 1 files changed, 1 insertions(+), 12 deletions(-)
+sorry for the noise,
 
-diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-index ef6537b..d27477b 100644
---- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-+++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-@@ -232,18 +232,7 @@ static struct i2c_driver mcu_driver = {
- 	.id_table = mcu_ids,
- };
- 
--static int __init mcu_init(void)
--{
--	return i2c_add_driver(&mcu_driver);
--}
--module_init(mcu_init);
--
--static void __exit mcu_exit(void)
--{
--	i2c_del_driver(&mcu_driver);
--}
--module_exit(mcu_exit);
--
-+module_i2c_driver(mcu_driver);
- MODULE_DESCRIPTION("Power Management and GPIO expander driver for "
- 		   "MPC8349E-mITX-compatible MCU");
- MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
--- 
-1.7.1
+devendra
