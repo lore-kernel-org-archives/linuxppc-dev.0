@@ -1,29 +1,20 @@
-Return-Path: <kosaki.motohiro@gmail.com>
-Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
- [209.85.214.179])
+Return-Path: <devendra.aaru@gmail.com>
+Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
+ [209.85.220.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C2A962C0093
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2012 06:28:46 +1100 (EST)
-Received: by mail-ob0-f179.google.com with SMTP id lz20so3101618obb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Oct 2012 12:28:43 -0700 (PDT)
-MIME-Version: 1.0
-Sender: kosaki.motohiro@gmail.com
-In-Reply-To: <506E46B6.3060502@jp.fujitsu.com>
-References: <506E43E0.70507@jp.fujitsu.com> <506E46B6.3060502@jp.fujitsu.com>
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Date: Fri, 12 Oct 2012 15:28:23 -0400
-Message-ID: <CAHGf_=raSH5C8ye90F1PLZ8mGQUGggB=J0HYU8UhkKVDTV5JXQ@mail.gmail.com>
-Subject: Re: [PATCH 5/10] memory-hotplug : memory-hotplug: check page type in
- get_page_bootmem
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- wency@cn.fujitsu.com, len.brown@intel.com, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com, linux-mm@kvack.org, minchan.kim@gmail.com,
- rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
+ by ozlabs.org (Postfix) with ESMTPS id 0F5432C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2012 06:03:14 +1100 (EST)
+Received: by mail-pa0-f51.google.com with SMTP id kq12so3768724pab.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Oct 2012 12:03:12 -0700 (PDT)
+From: Devendra Naga <devendra.aaru@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/9] powerpc: 83xx: use module_i2c_driver macro
+Date: Sat, 13 Oct 2012 15:03:05 -0400
+Message-Id: <1350154986-1478-1-git-send-email-devendra.aaru@gmail.com>
+Cc: Devendra Naga <devendra.aaru@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,64 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Oct 4, 2012 at 10:32 PM, Yasuaki Ishimatsu
-<isimatu.yasuaki@jp.fujitsu.com> wrote:
-> The function get_page_bootmem() may be called more than one time to the same
-> page. There is no need to set page's type, private if the function is not
-> the first time called to the page.
->
-> Note: the patch is just optimization and does not fix any problem.
->
-> CC: David Rientjes <rientjes@google.com>
-> CC: Jiang Liu <liuj97@gmail.com>
-> CC: Len Brown <len.brown@intel.com>
-> CC: Christoph Lameter <cl@linux.com>
-> Cc: Minchan Kim <minchan.kim@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> CC: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> ---
->  mm/memory_hotplug.c |   15 +++++++++++----
->  1 file changed, 11 insertions(+), 4 deletions(-)
->
-> Index: linux-3.6/mm/memory_hotplug.c
-> ===================================================================
-> --- linux-3.6.orig/mm/memory_hotplug.c  2012-10-04 18:29:58.284676075 +0900
-> +++ linux-3.6/mm/memory_hotplug.c       2012-10-04 18:30:03.454680542 +0900
-> @@ -95,10 +95,17 @@ static void release_memory_resource(stru
->  static void get_page_bootmem(unsigned long info,  struct page *page,
->                              unsigned long type)
->  {
-> -       page->lru.next = (struct list_head *) type;
-> -       SetPagePrivate(page);
-> -       set_page_private(page, info);
-> -       atomic_inc(&page->_count);
-> +       unsigned long page_type;
-> +
-> +       page_type = (unsigned long)page->lru.next;
+replace the module init and exit calls containing the
+i2c_add_driver and i2c_del_driver with the module_i2c_driver
+macro as it does the same things as the code that is removed
 
-If I understand correctly, page->lru.next might be uninitialized yet.
+Signed-off-by: Devendra Naga <devendra.aaru@gmail.com>
+---
 
-Moreover, I have no seen any good effect in this patch. I don't understand
-why we need to increase code complexity.
+ Not compile tested, because i dont have a ppc cross toolchain
+ arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c |   13 +------------
+ 1 files changed, 1 insertions(+), 12 deletions(-)
 
-
-
-> +       if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
-> +           page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
-> +               page->lru.next = (struct list_head *)type;
-> +               SetPagePrivate(page);
-> +               set_page_private(page, info);
-> +               atomic_inc(&page->_count);
-> +       } else
-> +               atomic_inc(&page->_count);
->  }
->
->  /* reference to __meminit __free_pages_bootmem is valid
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+index ef6537b..d27477b 100644
+--- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
++++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
+@@ -232,18 +232,7 @@ static struct i2c_driver mcu_driver = {
+ 	.id_table = mcu_ids,
+ };
+ 
+-static int __init mcu_init(void)
+-{
+-	return i2c_add_driver(&mcu_driver);
+-}
+-module_init(mcu_init);
+-
+-static void __exit mcu_exit(void)
+-{
+-	i2c_del_driver(&mcu_driver);
+-}
+-module_exit(mcu_exit);
+-
++module_i2c_driver(mcu_driver);
+ MODULE_DESCRIPTION("Power Management and GPIO expander driver for "
+ 		   "MPC8349E-mITX-compatible MCU");
+ MODULE_AUTHOR("Anton Vorontsov <avorontsov@ru.mvista.com>");
+-- 
+1.7.1
