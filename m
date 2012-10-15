@@ -1,21 +1,24 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A54BA2C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2012 19:51:12 +1100 (EST)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH -V8 04/11] arch/powerpc: Convert virtual address to vpn
-References: <1346945351-7672-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1346945351-7672-5-git-send-email-aneesh.kumar__43423.5424655073$1346945525$gmane$org@linux.vnet.ibm.com>
-Date: Mon, 15 Oct 2012 10:51:07 +0200
-In-Reply-To: <1346945351-7672-5-git-send-email-aneesh.kumar__43423.5424655073$1346945525$gmane$org@linux.vnet.ibm.com>
- (Aneesh Kumar K. V.'s message of "Thu, 6 Sep 2012 20:59:04 +0530")
-Message-ID: <m2y5j8qft0.fsf@igel.home>
+Return-Path: <robert.richter@amd.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E085E2C009F
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2012 02:55:46 +1100 (EST)
+Date: Mon, 15 Oct 2012 17:55:34 +0200
+From: Robert Richter <robert.richter@amd.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [RFC][PATCH] perf: Add a few generic stalled-cycles events
+Message-ID: <20121015155534.GR8285@erda.amd.com>
+References: <20121012012839.GA15348@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20121012012839.GA15348@us.ibm.com>
+Cc: peterz@infradead.org, Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, eranian@google.com, acme@redhat.com,
+ linuxppc-dev@ozlabs.org, paulus@samba.org, mpjohn@us.ibm.com, mingo@kernel.org,
+ asharma@fb.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
+On 11.10.12 18:28:39, Sukadev Bhattiprolu wrote:
+> +  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_STALLED_CYCLES_FIXED_POINT },
+> +  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_STALLED_CYCLES_LOAD_STORE },
+> +  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_STALLED_CYCLES_INSTRUCTION_FETCH },
+> +  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_STALLED_CYCLES_BRANCH },
 
-> diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
-> index 837f13e..00aa612 100644
-> --- a/arch/powerpc/kvm/book3s_32_mmu_host.c
-> +++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
-> @@ -141,7 +141,7 @@ extern char etext[];
->  int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
->  {
->  	pfn_t hpaddr;
-> -	u64 va;
-> +	u64 vpn;
->  	u64 vsid;
->  	struct kvmppc_sid_map *map;
->  	volatile u32 *pteg;
-> @@ -173,7 +173,7 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
->  	BUG_ON(!map);
->  
->  	vsid = map->host_vsid;
-> -	va = (vsid << SID_SHIFT) | (eaddr & ~ESID_MASK);
-> +	vpn = (vsid << (SID_SHIFT - VPN_SHIFT)) | ((eaddr & ~ESID_MASK) >> VPN_SHIFT)
+Instead of adding new hardware event types I would prefer to use raw
+events in conjunction with sysfs, see e.g. the intel-uncore
+implementation. Something like:
 
-Where is VPN_SHIFT?  Where is the semicolon?
+ $ find /sys/bus/event_source/devices/cpu/events/
+ ...
+ /sys/bus/event_source/devices/cpu/events/stalled-cycles-fixed-point
+ /sys/bus/event_source/devices/cpu/events/stalled-cycles-load-store
+ /sys/bus/event_source/devices/cpu/events/stalled-cycles-instruction-fetch
+ /sys/bus/event_source/devices/cpu/events/stalled-cycles-branch
+ ...
+ $ cat /sys/bus/event_source/devices/cpu/events/stalled-cycles-fixed-point
+ event=0xff,umask=0x00
 
-Andreas.
+Perf tool works then out-of-the-box with:
+
+ $ perf record -e cpu/stalled-cycles-fixed-point/ ...
+
+The event string can easily be reused by other architectures as a
+quasi standard.
+
+-Robert
 
 -- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+Advanced Micro Devices, Inc.
+Operating System Research Center
