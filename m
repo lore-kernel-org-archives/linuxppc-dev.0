@@ -1,35 +1,20 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 21E072C008A
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2012 16:25:47 +1100 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 15 Oct 2012 10:55:43 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q9F5Pea132833686
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2012 10:55:40 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q9FAt6nc027462
- for <linuxppc-dev@ozlabs.org>; Mon, 15 Oct 2012 21:55:07 +1100
-Message-ID: <507B9E6B.9010208@linux.vnet.ibm.com>
-Date: Mon, 15 Oct 2012 10:56:03 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH] perf: Add a few generic stalled-cycles events
-References: <20121012012839.GA15348@us.ibm.com>
-In-Reply-To: <20121012012839.GA15348@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, peterz@infradead.org,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- eranian@google.com, acme@redhat.com, robert.richter@amd.com, mpjohn@us.ibm.com,
- paulus@samba.org, mingo@kernel.org, asharma@fb.com
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 23A4B2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Oct 2012 17:18:44 +1100 (EST)
+Received: by mail-ob0-f179.google.com with SMTP id lz20so4438067obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Oct 2012 23:18:41 -0700 (PDT)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: added DSCR support to ptrace
+Date: Mon, 15 Oct 2012 17:18:30 +1100
+Message-Id: <1350281910-5238-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,84 +24,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/12/2012 06:58 AM, Sukadev Bhattiprolu wrote:
-> 
-> From 89cb6a25b9f714e55a379467a832ee015014ed11 Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Tue, 18 Sep 2012 10:59:01 -0700
-> Subject: [PATCH] perf: Add a few generic stalled-cycles events
-> 
-> The existing generic event 'stalled-cycles-backend' corresponds to
-> PM_CMPLU_STALL event in Power7. While this event is useful, detailed
-> performance analysis often requires us to find more specific reasons
-> for the stalled cycle. For instance, stalled cycles in Power7 can
-> occur due to, among others:
-> 
-> 	- instruction fetch unit (IFU),
-> 	- Load-store-unit (LSU),
-> 	- Fixed point unit (FXU)
-> 	- Branch unit (BRU)
-> 
-> While it is possible to use raw codes to monitor these events, it quickly
-> becomes cumbersome with performance analysis frequently requiring mapping
-> the raw event codes in reports to their symbolic names.
-> 
-> This patch is a proposal to try and generalize such perf events. Since
-> the code changes are quite simple, I bunched all the 4 events together.
-> 
-> I am not familiar with how readily these events would map to other
-> architectures. Here is some information on the events for Power7:
-> 
-> 	stalled-cycles-fixed-point (PM_CMPLU_STALL_FXU)
-> 
-> 		Following a completion stall, the last instruction to finish
-> 		before completion resumes was from the Fixed Point Unit.
-> 
-> 		Completion stall is any period when no groups completed and
-> 		the completion table was not empty for that thread.
-> 
-> 	stalled-cycles-load-store (PM_CMPLU_STALL_LSU)
-> 
-> 		Following a completion stall, the last instruction to finish
-> 		before completion resumes was from the Load-Store Unit.
-> 
-> 	stalled-cycles-instruction-fetch (PM_CMPLU_STALL_IFU)
-> 
-> 		Following a completion stall, the last instruction to finish
-> 		before completion resumes was from the Instruction Fetch Unit.
-> 
-> 	stalled-cycles-branch (PM_CMPLU_STALL_BRU)
-> 
-> 		Following a completion stall, the last instruction to finish
-> 		before completion resumes was from the Branch Unit.
-> 
-> Looking for feedback on this approach and if this can be further extended.
-> Power7 has 530 events[2] out of which a "CPI stack analysis"[1] uses about 26
-> events.
-> 
-> 
-> [1] CPI Stack analysis
-> 	https://www.power.org/documentation/commonly-used-metrics-for-performance-analysis
-> 
-> [2] Power7 events:
-> 	https://www.power.org/documentation/comprehensive-pmu-event-reference-power7/
+The DSCR (aka Data Stream Control Register) is supported on some
+server PowerPC chips and allow some control over the prefetch
+of data streams.
 
-Here we should try to come up with a generic list of places in the processor where
-the cycles can stall.
+The kernel already supports DSCR value per thread but there is also
+a need in a ability to change it from an external process for
+the specific pid.
 
-PERF_COUNT_HW_STALLED_CYCLES_FIXED_POINT
-PERF_COUNT_HW_STALLED_CYCLES_LOAD_STORE
-PERF_COUNT_HW_STALLED_CYCLES_INSTRUCTION_FETCH
-PERF_COUNT_HW_STALLED_CYCLES_BRANCH
-PERF_COUNT_HW_STALLED_CYCLES_<ANY_OTHER_PLACE1>
-PERF_COUNT_HW_STALLED_CYCLES_<ANY_OTHER_PLACE2>
-PERF_COUNT_HW_STALLED_CYCLES_<ANY_OTHER_PLACE3>
------------------------------------------------
+The patch adds new register index PT_DSCR (index=44) which can be
+set/get by:
+  ptrace(PTRACE_POKEUSER, traced_process, PT_DSCR << 3, dscr);
+  dscr = ptrace(PTRACE_PEEKUSER, traced_process, PT_DSCR << 3, NULL);
 
-This generic list can be a superset which can accommodate all the architecture
-giving the flexibility to implement selectively there after. Stall locations are
-very important from CPI analysis stand point with real world use cases. This will
-definitely help us in that direction.
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/include/asm/ptrace.h |    3 ++-
+ arch/powerpc/kernel/ptrace.c      |   16 ++++++++++++++++
+ 2 files changed, 18 insertions(+), 1 deletion(-)
 
-Regards
-Anshuman
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index 84cc784..946c556 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -276,7 +276,8 @@ static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
+ #define PT_DAR	41
+ #define PT_DSISR 42
+ #define PT_RESULT 43
+-#define PT_REGS_COUNT 44
++#define PT_DSCR 44
++#define PT_REGS_COUNT 45
+ 
+ #define PT_FPR0	48	/* each FP reg occupies 2 slots in this space */
+ 
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 8d8e028..4798acf 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -179,6 +179,17 @@ static int set_user_msr(struct task_struct *task, unsigned long msr)
+ 	return 0;
+ }
+ 
++static unsigned long get_user_dscr(struct task_struct *task)
++{
++	return task->thread.dscr;
++}
++
++static int set_user_dscr(struct task_struct *task, unsigned long dscr)
++{
++	task->thread.dscr = dscr;
++	return 0;
++}
++
+ /*
+  * We prevent mucking around with the reserved area of trap
+  * which are used internally by the kernel.
+@@ -200,6 +211,9 @@ unsigned long ptrace_get_reg(struct task_struct *task, int regno)
+ 	if (regno == PT_MSR)
+ 		return get_user_msr(task);
+ 
++	if (regno == PT_DSCR)
++		return get_user_dscr(task);
++
+ 	if (regno < (sizeof(struct pt_regs) / sizeof(unsigned long)))
+ 		return ((unsigned long *)task->thread.regs)[regno];
+ 
+@@ -218,6 +232,8 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data)
+ 		return set_user_msr(task, data);
+ 	if (regno == PT_TRAP)
+ 		return set_user_trap(task, data);
++	if (regno == PT_DSCR)
++		return set_user_dscr(task, data);
+ 
+ 	if (regno <= PT_MAX_PUT_REG) {
+ 		((unsigned long *)task->thread.regs)[regno] = data;
+-- 
+1.7.10.4
