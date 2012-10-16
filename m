@@ -1,21 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2EEDE2C009A
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2012 06:33:43 +1100 (EST)
-Message-ID: <1350416012.4678.54.camel@pasglop>
-Subject: Re: [PATCH] kvm/powerpc: Handle errors in secondary thread grabbing
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexander Graf <agraf@suse.de>
-Date: Wed, 17 Oct 2012 06:33:32 +1100
-In-Reply-To: <1350367235.32704.1.camel@concordia>
-References: <1350346550-32539-1-git-send-email-michael@ellerman.id.au>
- <20121016031352.GK1218@drongo> <1350367235.32704.1.camel@concordia>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>, agraf@suse.de,
- kvm-ppc@vger.kernel.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc: Build fix for powerpc KVM
+In-reply-to: <1350389744-24627-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1350389744-24627-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Wed, 17 Oct 2012 09:15:21 +1100
+Message-ID: <26771.1350425721@neuling.org>
+Cc: schwab@linux-m68k.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,15 +16,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-10-16 at 17:00 +1100, Michael Ellerman wrote:
-> > Thanks for looking at this - but in fact this is fixed by my patch
-> > entitled "KVM: PPC: Book3S HV: Fix some races in starting secondary
-> > threads" submitted back on August 28.
-> 
-> OK thanks. It seems that patch didn't make 3.7 ?
-> 
-> I don't see it in kvm-ppc-next either.
+Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-Alex, WTF ?
+> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+> 
+> Fix build failure for powerpc KVM
 
-Ben.
+What was the failure?
+
+> 
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/kvm_book3s_32.h |    1 +
+>  arch/powerpc/kvm/book3s_32_mmu_host.c    |    4 ++--
+>  2 files changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/kvm_book3s_32.h b/arch/powerpc/include/asm/kvm_book3s_32.h
+> index 38040ff..ce0ef6c 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s_32.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s_32.h
+> @@ -42,5 +42,6 @@ static inline void svcpu_put(struct kvmppc_book3s_shadow_vcpu *svcpu)
+>  #define SID_SHIFT	28
+>  #define ESID_MASK	0xf0000000
+>  #define VSID_MASK	0x00fffffff0000000ULL
+> +#define VPN_SHIFT	12
+
+Is this the fix?
+
+>  
+>  #endif /* __ASM_KVM_BOOK3S_32_H__ */
+> diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
+> index 00aa612..b0f625a 100644
+> --- a/arch/powerpc/kvm/book3s_32_mmu_host.c
+> +++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
+> @@ -173,8 +173,8 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
+>  	BUG_ON(!map);
+>  
+>  	vsid = map->host_vsid;
+> -	vpn = (vsid << (SID_SHIFT - VPN_SHIFT)) | ((eaddr & ~ESID_MASK) >> VPN_SHIFT)
+> -
+> +	vpn = (vsid << (SID_SHIFT - VPN_SHIFT)) |
+> +		((eaddr & ~ESID_MASK) >> VPN_SHIFT);
+
+This just seems to be a white space change.
+
+Mikey
+
+>  next_pteg:
+>  	if (rr == 16) {
+>  		primary = !primary;
+> -- 
+> 1.7.10
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
