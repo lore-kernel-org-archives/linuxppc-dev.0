@@ -1,29 +1,29 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4928A2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2012 23:15:57 +1100 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 16 Oct 2012 22:13:24 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q9GC5qD262980326
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2012 23:05:53 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q9GCFmXI012301
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Oct 2012 23:15:49 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, schwab@linux-m68k.org
-Subject: [PATCH] powerpc: Build fix for powerpc KVM
-Date: Tue, 16 Oct 2012 17:45:44 +0530
-Message-Id: <1350389744-24627-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <eranian@google.com>
+Received: from mail-la0-f42.google.com (mail-la0-f42.google.com
+ [209.85.215.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1C5792C009F
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2012 23:21:42 +1100 (EST)
+Received: by mail-la0-f42.google.com with SMTP id e6so3746430lah.15
+ for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2012 05:21:38 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20121016100809.GS8285@erda.amd.com>
+References: <20121012012839.GA15348@us.ibm.com>
+ <20121015155534.GR8285@erda.amd.com>
+ <20121016100809.GS8285@erda.amd.com>
+Date: Tue, 16 Oct 2012 14:21:38 +0200
+Message-ID: <CABPqkBRd2wfjd1ObCkM+TSSwt7C9WP65dEE9POSyDK1ccvNL8A@mail.gmail.com>
+Subject: Re: [RFC][PATCH] perf: Add a few generic stalled-cycles events
+From: Stephane Eranian <eranian@google.com>
+To: Robert Richter <robert.richter@amd.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Peter Zijlstra <peterz@infradead.org>, Anton Blanchard <anton@au1.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, linuxppc-dev@ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, mpjohn@us.ibm.com,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>, Arun Sharma <asharma@fb.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,41 +33,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+On Tue, Oct 16, 2012 at 12:08 PM, Robert Richter <robert.richter@amd.com> wrote:
+> Sukadev,
+>
+> On 15.10.12 17:55:34, Robert Richter wrote:
+>> On 11.10.12 18:28:39, Sukadev Bhattiprolu wrote:
+>> > +  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_STALLED_CYCLES_FIXED_POINT },
+>> > +  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_STALLED_CYCLES_LOAD_STORE },
+>> > +  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_STALLED_CYCLES_INSTRUCTION_FETCH },
+>> > +  { .type = PERF_TYPE_HARDWARE, .config = PERF_COUNT_HW_STALLED_CYCLES_BRANCH },
+>>
+>> Instead of adding new hardware event types I would prefer to use raw
+>> events in conjunction with sysfs, see e.g. the intel-uncore
+>> implementation. Something like:
+>>
+In general, I don't like generic events and especially stall events. I
+have not seen a clear definition of
+what they mean. Without it, there is no way to understand how to map
+them across architecture. If
+the definition is too precise, you may not be able to find an exact
+mapping. If the definition is to loose
+then it is unclear what you are measuring.
 
-Fix build failure for powerpc KVM
+Also this opens another can of worms which is that on some processors,
+you may need more than
+one event to encapsulate what the generic event is supposed to
+measure. That means developing
+a lot of code in the kernel to express and manage that. And of course,
+you would not be able
+to sample on those events (you cannot sample on a difference, for
+instance). So all in all, I think
+this is not a very good idea. You have to put this into the tool or a
+library that auto-detects the
+host CPU and programs the right set of events.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/kvm_book3s_32.h |    1 +
- arch/powerpc/kvm/book3s_32_mmu_host.c    |    4 ++--
- 2 files changed, 3 insertions(+), 2 deletions(-)
+We've had that discussion many times. Just reiterating my personal
+opinion on this.
 
-diff --git a/arch/powerpc/include/asm/kvm_book3s_32.h b/arch/powerpc/include/asm/kvm_book3s_32.h
-index 38040ff..ce0ef6c 100644
---- a/arch/powerpc/include/asm/kvm_book3s_32.h
-+++ b/arch/powerpc/include/asm/kvm_book3s_32.h
-@@ -42,5 +42,6 @@ static inline void svcpu_put(struct kvmppc_book3s_shadow_vcpu *svcpu)
- #define SID_SHIFT	28
- #define ESID_MASK	0xf0000000
- #define VSID_MASK	0x00fffffff0000000ULL
-+#define VPN_SHIFT	12
- 
- #endif /* __ASM_KVM_BOOK3S_32_H__ */
-diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
-index 00aa612..b0f625a 100644
---- a/arch/powerpc/kvm/book3s_32_mmu_host.c
-+++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
-@@ -173,8 +173,8 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
- 	BUG_ON(!map);
- 
- 	vsid = map->host_vsid;
--	vpn = (vsid << (SID_SHIFT - VPN_SHIFT)) | ((eaddr & ~ESID_MASK) >> VPN_SHIFT)
--
-+	vpn = (vsid << (SID_SHIFT - VPN_SHIFT)) |
-+		((eaddr & ~ESID_MASK) >> VPN_SHIFT);
- next_pteg:
- 	if (rr == 16) {
- 		primary = !primary;
--- 
-1.7.10
+>>  $ find /sys/bus/event_source/devices/cpu/events/
+>>  ...
+>>  /sys/bus/event_source/devices/cpu/events/stalled-cycles-fixed-point
+>>  /sys/bus/event_source/devices/cpu/events/stalled-cycles-load-store
+>>  /sys/bus/event_source/devices/cpu/events/stalled-cycles-instruction-fetch
+>>  /sys/bus/event_source/devices/cpu/events/stalled-cycles-branch
+>>  ...
+>>  $ cat /sys/bus/event_source/devices/cpu/events/stalled-cycles-fixed-point
+>>  event=0xff,umask=0x00
+>>
+>> Perf tool works then out-of-the-box with:
+>>
+>>  $ perf record -e cpu/stalled-cycles-fixed-point/ ...
+>
+> I refer here to arch/x86/kernel/cpu/perf_event_intel_uncore.c (should
+> be in v3.7-rc1 or tip:perf/core). See the INTEL_UNCORE_EVENT_DESC()
+> macro and 'if (type->event_descs) ...' in uncore_type_init(). The code
+> should be reworked to be non-architectural.
+>
+> PMU registration is implemented for a longer time already for all
+> architectures and pmu types:
+>
+>  /sys/bus/event_source/devices/*
+>
+> But
+>
+>  /sys/bus/event_source/devices/*/events/
+>
+> exists only for a small number of pmus. Perf tool support of this was
+> implemented with:
+>
+>  a6146d5 perf/tool: Add PMU event alias support
+>
+> -Robert
+>
+> --
+> Advanced Micro Devices, Inc.
+> Operating System Research Center
+>
