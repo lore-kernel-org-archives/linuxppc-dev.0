@@ -1,37 +1,15 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D858C2C00A3
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2012 16:28:42 +1100 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 16 Oct 2012 15:24:53 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q9G5SbIX52887710
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2012 16:28:38 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q9G5Sa3v015862
- for <linuxppc-dev@ozlabs.org>; Tue, 16 Oct 2012 16:28:37 +1100
-Message-ID: <507CF098.9080703@linux.vnet.ibm.com>
-Date: Tue, 16 Oct 2012 10:58:56 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Arun Sharma <asharma@fb.com>
-Subject: Re: [RFC][PATCH] perf: Add a few generic stalled-cycles events
-References: <20121012012839.GA15348@us.ibm.com>
- <20121015155534.GR8285@erda.amd.com> <507C467E.8010205@fb.com>
-In-Reply-To: <507C467E.8010205@fb.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Robert Richter <robert.richter@amd.com>,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- eranian@google.com, acme@redhat.com, peterz@infradead.org, paulus@samba.org,
- mpjohn@us.ibm.com, Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- mingo@kernel.org
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1350367235.32704.1.camel@concordia>
+Subject: Re: [PATCH] kvm/powerpc: Handle errors in secondary thread grabbing
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Date: Tue, 16 Oct 2012 17:00:35 +1100
+In-Reply-To: <20121016031352.GK1218@drongo>
+References: <1350346550-32539-1-git-send-email-michael@ellerman.id.au>
+ <20121016031352.GK1218@drongo>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, agraf@suse.de, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,33 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/15/2012 10:53 PM, Arun Sharma wrote:
-> On 10/15/12 8:55 AM, Robert Richter wrote:
+On Tue, 2012-10-16 at 14:13 +1100, Paul Mackerras wrote:
+> Michael,
 > 
-> [..]
->> Perf tool works then out-of-the-box with:
->>
->>   $ perf record -e cpu/stalled-cycles-fixed-point/ ...
->>
->> The event string can easily be reused by other architectures as a
->> quasi standard.
+> On Tue, Oct 16, 2012 at 11:15:50AM +1100, Michael Ellerman wrote:
+> > In the Book3s HV code, kvmppc_run_core() has logic to grab the secondary
+> > threads of the physical core.
+> > 
+> > If for some reason a thread is stuck, kvmppc_grab_hwthread() can fail,
+> > but currently we ignore the failure and continue into the guest. If the
+> > stuck thread is in the kernel badness ensues.
+> > 
+> > Instead we should check for failure and bail out.
+> > 
+> > I've moved the grabbing prior to the startup of runnable threads, to simplify
+> > the error case. AFAICS this is harmless, but I could be missing something
+> > subtle.
 > 
-> I like Robert's proposal better. It's hard to model all the stall events
-> (eg: instruction decoder related stalls on x86) in a hardware
-> independent way.
-> 
-> Another area to think about: software engineers are generally busy and
-> have a limited amount of time to devote to hardware event based
-> optimizations. The most common question I hear is: what is the expected
-> perf gain if I fix this? It's hard to answer that with just the stall
-> events.
-> 
+> Thanks for looking at this - but in fact this is fixed by my patch
+> entitled "KVM: PPC: Book3S HV: Fix some races in starting secondary
+> threads" submitted back on August 28.
 
-Hardware event based optimization is a very important aspect of real world application
-tuning. CPI stack analysis is a good reason why perf should have stall events as generic
-ones. But I am not clear on situations where we consider adding these new generic events
-into linux/perf_event.h and the situations where we should go with the sys fs interface.
-Could you please elaborate on this ?
+OK thanks. It seems that patch didn't make 3.7 ?
 
-Regards
-Anshuman
+I don't see it in kvm-ppc-next either.
+
+cheers
