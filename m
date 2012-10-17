@@ -1,13 +1,22 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc: Build fix for powerpc KVM
-In-reply-to: <87fw5dhe70.fsf@linux.vnet.ibm.com>
-References: <1350389744-24627-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <26771.1350425721@neuling.org> <87fw5dhe70.fsf@linux.vnet.ibm.com>
-Date: Wed, 17 Oct 2012 16:22:32 +1100
-Message-ID: <22453.1350451352@neuling.org>
-Cc: schwab@linux-m68k.org, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0ACBC2C00AC
+ for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2012 17:25:57 +1100 (EST)
+Subject: Re: [PATCH] kvm/powerpc: Handle errors in secondary thread grabbing
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1350416012.4678.54.camel@pasglop>
+Date: Wed, 17 Oct 2012 08:25:48 +0200
+Message-Id: <DE13C878-5E14-46A0-BB63-D32D7A24E001@suse.de>
+References: <1350346550-32539-1-git-send-email-michael@ellerman.id.au>
+ <20121016031352.GK1218@drongo> <1350367235.32704.1.camel@concordia>
+ <1350416012.4678.54.camel@pasglop>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,73 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-> Michael Neuling <mikey@neuling.org> writes:
-> 
-> > Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
-> >
-> >> From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-> >> 
-> >> Fix build failure for powerpc KVM
-> >
-> > What was the failure?
-> 
-> 
-> arch/powerpc/kvm/book3s_32_mmu_host.c: In function 'kvmppc_mmu_map_page':
-> arch/powerpc/kvm/book3s_32_mmu_host.c:176: error: 'VPN_SHIFT' undeclared (first use in this function)
-> arch/powerpc/kvm/book3s_32_mmu_host.c:176: error: (Each undeclared identifier is reported only once
-> arch/powerpc/kvm/book3s_32_mmu_host.c:176: error: for each function it appears in.)
-> arch/powerpc/kvm/book3s_32_mmu_host.c:178: error: expected ';' before 'next_pteg'
-> arch/powerpc/kvm/book3s_32_mmu_host.c:190: error: label 'next_pteg' used but not defined
-> make[1]: *** [arch/powerpc/kvm/book3s_32_mmu_host.o] Error 1
+On 16.10.2012, at 21:33, Benjamin Herrenschmidt wrote:
 
-OK, can you repost with this and what changed too (added VPN_SHIFT and
-missing ';') in the comment.
+> On Tue, 2012-10-16 at 17:00 +1100, Michael Ellerman wrote:
+>>> Thanks for looking at this - but in fact this is fixed by my patch
+>>> entitled "KVM: PPC: Book3S HV: Fix some races in starting secondary
+>>> threads" submitted back on August 28.
+>>=20
+>> OK thanks. It seems that patch didn't make 3.7 ?
+>>=20
+>> I don't see it in kvm-ppc-next either.
+>=20
+> Alex, WTF ?
 
-Mikey
+Hrm. Not sure what happened there. I think I waited for your ack, but =
+never actually applied things when it came. My bad :)
 
-> 
-> 
-> >
-> >> 
-> >> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >> ---
-> >>  arch/powerpc/include/asm/kvm_book3s_32.h |    1 +
-> >>  arch/powerpc/kvm/book3s_32_mmu_host.c    |    4 ++--
-> >>  2 files changed, 3 insertions(+), 2 deletions(-)
-> >> 
-> >> diff --git a/arch/powerpc/include/asm/kvm_book3s_32.h b/arch/powerpc/include/asm/kvm_book3s_32.h
-> >> index 38040ff..ce0ef6c 100644
-> >> --- a/arch/powerpc/include/asm/kvm_book3s_32.h
-> >> +++ b/arch/powerpc/include/asm/kvm_book3s_32.h
-> >> @@ -42,5 +42,6 @@ static inline void svcpu_put(struct kvmppc_book3s_shadow_vcpu *svcpu)
-> >>  #define SID_SHIFT	28
-> >>  #define ESID_MASK	0xf0000000
-> >>  #define VSID_MASK	0x00fffffff0000000ULL
-> >> +#define VPN_SHIFT	12
-> >
-> > Is this the fix?
-> >
-> >>  
-> >>  #endif /* __ASM_KVM_BOOK3S_32_H__ */
-> >> diff --git a/arch/powerpc/kvm/book3s_32_mmu_host.c b/arch/powerpc/kvm/book3s_32_mmu_host.c
-> >> index 00aa612..b0f625a 100644
-> >> --- a/arch/powerpc/kvm/book3s_32_mmu_host.c
-> >> +++ b/arch/powerpc/kvm/book3s_32_mmu_host.c
-> >> @@ -173,8 +173,8 @@ int kvmppc_mmu_map_page(struct kvm_vcpu *vcpu, struct kvmppc_pte *orig_pte)
-> >>  	BUG_ON(!map);
-> >>  
-> >>  	vsid = map->host_vsid;
-> >> -	vpn = (vsid << (SID_SHIFT - VPN_SHIFT)) | ((eaddr & ~ESID_MASK) >> VPN_SHIFT)
-> >> -
-> >> +	vpn = (vsid << (SID_SHIFT - VPN_SHIFT)) |
-> >> +		((eaddr & ~ESID_MASK) >> VPN_SHIFT);
-> >
-> > This just seems to be a white space change.
-> 
-> There is a missing ';'
-> 
-> 
-> -aneesh
-> 
+
+Alex
