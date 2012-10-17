@@ -1,19 +1,23 @@
-Return-Path: <robert.karl.berger@gmail.com>
-Received: from mail-bk0-f42.google.com (mail-bk0-f42.google.com
- [209.85.214.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 969FA2C008E
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2012 05:15:24 +1100 (EST)
-Received: by mail-bk0-f42.google.com with SMTP id j5so3236893bkw.15
- for <linuxppc-dev@ozlabs.org>; Wed, 17 Oct 2012 11:15:20 -0700 (PDT)
-Message-ID: <507EF5AD.5070203@gmail.com>
-Date: Wed, 17 Oct 2012 21:15:09 +0300
-From: Robert Berger <robert.karl.berger@gmail.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: ELDK 4.2/kilauea/3.5+ kernel broken
-Content-Type: multipart/mixed; boundary="------------050003040008060809060100"
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 004442C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2012 10:54:25 +1100 (EST)
+Message-ID: <1350518056.4678.113.camel@pasglop>
+Subject: Re: [RFC PATCH powerpc] Fix a lazy irq related WARING in
+ arch_local_irq_restore()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Date: Thu, 18 Oct 2012 10:54:16 +1100
+In-Reply-To: <1348654234.2635.31.camel@ThinkPad-T420>
+References: <1348458962.2475.8.camel@ThinkPad-T420>
+ <1348464657.1132.86.camel@pasglop> <1348654234.2635.31.camel@ThinkPad-T420>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,203 +27,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------050003040008060809060100
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Wed, 2012-09-26 at 18:10 +0800, Li Zhong wrote:
 
-Hi,
+ ../...
 
-The attached patch from here:
-http://thread.gmane.org/gmane.linux.ports.ppc.embedded/49637/focus=49903
-works as far as I can say from > 3.2 kernels until 3.4.12 and applies
-happily even on 3.5.
+Sorry got distracted, got back on this patch today:
 
-Unfortunately the last kernel version which boots on a kilauea with ELDK
-4.2 is v3.4.12 (with the attached patch applied). BTW v3.6 does not need
-the patch anymore, but exposes the same behavior as described below.
+> > We might need to "sanitize" the enable state in the PACA before we
+> > actually enter NAP or in the return from NAP code, like we do for normal
+> > idle code...
+> 
+> Hi Ben, 
+> 
+> After some further reading of the code, I updated the code as following,
+> but I'm not very sure, and guess it most probably has some issues ...
+> Could you please help to review and give your comments? 
 
-A default config with PPC_EARLY_DEBUG_40x makes the board stuck instead
-of rebooting, which happens from v3.5 onwards (with patch applied):
+I think it's still not right, see below
 
-U-Boot 2012.10-classic-rber-dirty (Oct 17 2012 - 11:35:47)
+> In extended_cede_processor(), if there is still lazy irq pending, I used
+> local_irq_enable() to make sure the irq replayed and flags cleared, but
+> I'm not sure whether it is a proper way. 
 
-CPU:   AMCC PowerPC 405EX Rev. A at 533.333 MHz (PLB=177 OPB=88 EBC=88)
-       Security support
-       Bootstrap Option H - Boot ROM Location I2C (Addr 0x52)
-       16 kB I-Cache 16 kB D-Cache
-Board: Kilauea - AMCC PPC405EX Evaluation Board (CPLD rev. 0)
-I2C:   ready
-DRAM:  256 MiB (ECC not enabled, 355 MHz, CL4)
-Reserving 16384k for kernel logbuffer at 0fffb000
-Top of RAM usable for U-Boot at: 0fffb000
-Reserving 432k for U-Boot at: 0ff8e000
-Reserving 1040k for malloc() at: 0fe8a000
-Reserving 132 Bytes for Board Info at: 0fe89f7c
-Reserving 104 Bytes for Global Data at: 0fe89f14
-Stack Pointer at: 0fe89f00
-New Stack Pointer is: 0fe89f00
-Now running in RAM - U-Boot at: 0ff8e000
-Flash: 64 MiB
-NAND:  64 MiB
-PCI:   Bus Dev VenId DevId Class Int
-PCIE0: link is not up.
-PCIE1: link is not up.
-U-Boot relocated to 0ff8e000
-Net:   ppc_4xx_eth0, ppc_4xx_eth1
+Right but that will break things for idle. In idle, if you have
+re-enabled interrupts, you need to return and essentially abort the
+attempt at going to nap mode, because the interrupt might have set need
+resched. That's why we normally just check if something's pending and
+return, letting the upper levels re-enable interrupts and do all the
+dirty work for us.
 
-Hit any key to stop autoboot:  0
-=> run rootfs_nfs
+Now, hotplug might differ here in what it needs, but in any case,
+extended_cede_processor doesn't seem to be the right place to handle it,
+at best that function should return if it thinks there's something that
+needs to be done and let the upper layers deal with it appropriately.
 
-Waiting for PHY auto negotiation to complete... done
-ENET Speed is 1000 Mbps - FULL duplex connection (EMAC0)
-Using ppc_4xx_eth0 device
-TFTP from server 192.168.5.5; our IP address is 192.168.5.11
-Filename 'kilauea/uImage'.
-Load address: 0x400000
-Loading: #################################################################
-         ######################################################
-done
-Bytes transferred = 1738410 (1a86aa hex)
-Using ppc_4xx_eth0 device
-TFTP from server 192.168.5.5; our IP address is 192.168.5.11
-Filename 'kilauea/kilauea.dtb'.
-Load address: 0x800000
-Loading: #
-done
-Bytes transferred = 8667 (21db hex)
-## Booting kernel from Legacy Image at 00400000 ...
-   Image Name:   Linux-3.5.0-classic-rber-dirty
-   Created:      2012-10-17  16:48:39 UTC
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    1738346 Bytes = 1.7 MiB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-## Flattened Device Tree blob at 00800000
-   Booting using the fdt blob at 0x00800000
-   Uncompressing Kernel Image ... OK
-   Loading Device Tree to 00ffa000, end 00fff1da ... OK
+> In pseries_mach_cpu_die(), I added local_irq_disable() after cede, and
+> prepare for the start_secondary_resume(), but I'm not sure whether we
+> also need a hard_irq_disable() here. 
 
+You probably do if it's going to go back to the start secondary path. It
+shouldn't hurt in any case as long as start_secondary_resume()
+eventually does a local_irq_enable().
 
----> here the board reboots into u-boot <---
+> I'm still a little confused by the meaning of PACA_IRQ_HARD_DIS in
+> irq_happened. From the checking at the warning point, it seems only
+> irq_happened equaling 0x1(PACA_IRQ_HARD_DIS) means hard irqs are
+> disabled.
 
-U-Boot 2012.10-classic-rber-dirty (Oct 17 2012 - 11:35:47)
+No. They are disabled if any bit in there corresponding to a "level"
+interrupt is set as well. Only the "edge" interrupts (and decrementer
+which we treat as edge and reset to a high value when it kicks) are
+ignored for the sake of HW irq state.
 
-CPU:   AMCC PowerPC 405EX Rev. A at 533.333 MHz (PLB=177 OPB=88 EBC=88)
-       Security support
-       Bootstrap Option H - Boot ROM Location I2C (Addr 0x52)
-       16 kB I-Cache 16 kB D-Cache
-Board: Kilauea - AMCC PPC405EX Evaluation Board (CPLD rev. 0)
-...
+The reason we have this IRQ_HARD_DIS bit is to indicate that a 'manual'
+hard disabling occurred (by opposition to one happening as a result of
+an external interrupt).
 
+We need that so we can avoid doing an mfspr() in local_irq_enable() and
+entirely rely on the content of irq_happened to know whether interrupts
+are hard enabled or hard disabled.
 
-Please advise.
+We do that because mfspr is a fairly expensive instruction. But that
+means that we need to make sure we always have a consistent content in
+irq_happened. That's also why I've added all those sanity checks if you
+enable IRQ tracing.
 
-Regards,
+> Is it possible to set this bit at anyplace the hard irqs are disabled,
+> so then we could check whether this bit is set to know whether hard irqs
+> are disabled? Then it seems that in MASKED_INTERRUPT, we need set this
+> bit where MSR_EE is cleared for something other than decrementer. Maybe
+> I missed too much things?
 
-Robert
+Either that bit or PACA_IRQ_EE. Both indicate that interrupts are hard
+disabled.
 
-..."Teaching of beginners should be done by a master, not by a
-hack." - Deming
-
-My public pgp key is available,at:
-http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x90320BF1
-
-
-
---------------050003040008060809060100
-Content-Type: text/x-patch;
- name="bake-your-noodle.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="bake-your-noodle.patch"
-
->From e0b1ac84bfd539482bc88b943724e577e6b8dfb3 Mon Sep 17 00:00:00 2001
-From: Tony Breeds <tony@bakeyournoodle.com>
-Date: Mon, 2 Apr 2012 16:20:35 +1000
-Subject: [PATCH] powerpc/boot: Only build board support files when required.
-
-Currently we build all board files regardless of the final zImage
-target.  This is sub-optimal (in terms on compilation) and leads to
-problems in one platform needlessly causing failures for other
-platforms.
-
-Use the Kconfig variables to selectively construct this board files to
-build.
-
-Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
----
- arch/powerpc/boot/Makefile |   56 +++++++++++++++++++++++++++++++++----------
- 1 files changed, 43 insertions(+), 13 deletions(-)
-
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index e8461cb..a3c4ae0 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -69,19 +69,49 @@ src-wlib := string.S crt0.S crtsavres.S stdio.c main.c \
- 		4xx.c ebony.c mv64x60.c mpsc.c mv64x60_i2c.c cuboot.c bamboo.c \
- 		cpm-serial.c stdlib.c mpc52xx-psc.c planetcore.c uartlite.c \
- 		fsl-soc.c mpc8xx.c pq2.c ugecon.c
--src-plat := of.c cuboot-52xx.c cuboot-824x.c cuboot-83xx.c cuboot-85xx.c holly.c \
--		cuboot-ebony.c cuboot-hotfoot.c epapr.c treeboot-ebony.c \
--		prpmc2800.c \
--		ps3-head.S ps3-hvcall.S ps3.c treeboot-bamboo.c cuboot-8xx.c \
--		cuboot-pq2.c cuboot-sequoia.c treeboot-walnut.c \
--		cuboot-bamboo.c cuboot-mpc7448hpc2.c cuboot-taishan.c \
--		fixed-head.S ep88xc.c ep405.c cuboot-c2k.c \
--		cuboot-katmai.c cuboot-rainier.c redboot-8xx.c ep8248e.c \
--		cuboot-warp.c cuboot-85xx-cpm2.c cuboot-yosemite.c simpleboot.c \
--		virtex405-head.S virtex.c redboot-83xx.c cuboot-sam440ep.c \
--		cuboot-acadia.c cuboot-amigaone.c cuboot-kilauea.c \
--		gamecube-head.S gamecube.c wii-head.S wii.c treeboot-iss4xx.c \
--		treeboot-currituck.c
-+src-plat := of.c
-+ifeq ($(CONFIG_40x),y)
-+src-plat += fixed-head.S ep405.c cuboot-hotfoot.c treeboot-walnut.c \
-+		cuboot-acadia.c cuboot-kilauea.c \
-+		simpleboot.c virtex405-head.S virtex.c
-+endif
-+ifeq ($(CONFIG_44x),y)
-+src-plat  += treeboot-ebony cuboot-ebony treeboot-bamboo cuboot-bamboo \
-+		cuboot-sam440ep.c cuboot-sequoia.c cuboot-rainier.c \
-+		cuboot-taishan.c cuboot-katmai.c cuboot-warp.c \
-+		cuboot-yosemite.c treeboot-iss4xx.c treeboot-currituck.c \
-+		simpleboot.c fixed-head.S virtex.c
-+endif
-+ifeq ($(CONFIG_8xx),y)
-+src-plat  += cuboot-8xx.c fixed-head.S ep88xc.c redboot-8xx.c
-+endif
-+ifeq ($(CONFIG_PPC_MPC52xx),y)
-+src-plat  += cuboot-52xx.c
-+endif
-+ifeq ($(CONFIG_PPC_82xx),y)
-+src-plat  += cuboot-pq2.c fixed-head.S ep8248e.c cuboot-824x.c
-+endif
-+ifeq ($(CONFIG_PPC_82xx),y)
-+src-plat  += cuboot-83xx.c fixed-head.S redboot-83xx.c
-+endif
-+ifeq ($(CONFIG_FSL_SOC_BOOKE),y)
-+src-plat  += cuboot-85xx.c cuboot-85xx-cpm2.c
-+endif
-+ifeq ($(CONFIG_EMBEDDED6xx),y)
-+src-plat  += cuboot-pq2.c cuboot-mpc7448hpc2.c cuboot-c2k.c \
-+		gamecube-head.S gamecube.c wii-head.S wii.c holly.c \
-+		prpmc2800.c
-+endif
-+ifeq ($(CONFIG_AMIGAONE),y)
-+src-plat  += cuboot-amigaone.c
-+endif
-+ifeq ($(CONFIG_PPC_PS3),y)
-+src-plat  += ps3-head.S ps3-hvcall.S ps3.c
-+endif
-+ifeq ($(CONFIG_EPAPR_BOOT),y)
-+src-plat  += epapr.c
-+endif
-+src-plat  := $(sort $(src-plat))
- src-boot := $(src-wlib) $(src-plat) empty.c
+There are some rare cases where do do change MSR:EE without touching
+those bits, only when we're going to restore it shortly afterward in the
+kernel asm exception entry/exit path for example.
  
- src-boot := $(addprefix $(obj)/, $(src-boot))
--- 1.7.7.6 
+Cheers,
+Ben.
 
---------------050003040008060809060100--
+> Thanks, Zhong 
+> 
+> ===================
+> diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> index 64c97d8..b5f7597 100644
+> --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> @@ -130,6 +130,8 @@ static void pseries_mach_cpu_die(void)
+>  			extended_cede_processor(cede_latency_hint);
+>  		}
+>  
+> +		local_irq_disable();
+> +
+>  		if (!get_lppaca()->shared_proc)
+>  			get_lppaca()->donate_dedicated_cpu = 0;
+>  		get_lppaca()->idle = 0;
+> diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+> index 13e8cc4..07560d8 100644
+> --- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
+> +++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
+> @@ -2,6 +2,7 @@
+>  #define _PSERIES_PLPAR_WRAPPERS_H
+>  
+>  #include <linux/string.h>
+> +#include <linux/irqflags.h>
+>  
+>  #include <asm/hvcall.h>
+>  #include <asm/paca.h>
+> @@ -41,7 +42,19 @@ static inline long extended_cede_processor(unsigned long latency_hint)
+>  	u8 old_latency_hint = get_cede_latency_hint();
+>  
+>  	set_cede_latency_hint(latency_hint);
+> +
+> +	while (!prep_irq_for_idle()) {
+> +		local_irq_enable();
+> +		local_irq_disable();
+> +	}
+> +
+>  	rc = cede_processor();
+> +#ifdef CONFIG_TRACE_IRQFLAGS
+> +		/* Ensure that H_CEDE returns with IRQs on */
+> +		if (WARN_ON(!(mfmsr() & MSR_EE)))
+> +			__hard_irq_enable();
+> +#endif
+> +
+>  	set_cede_latency_hint(old_latency_hint);
+>  
+>  	return rc;
+> ===================
+> 
+> 
+> > 
+> > Cheers,
+> > Ben.
+> > 
+> > > [   56.618846] WARNING: at arch/powerpc/kernel/irq.c:240
+> > > [   56.618851] Modules linked in: rcutorture ipv6 dm_mod ext3 jbd mbcache sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt ibmveth
+> > > [   56.618883] NIP: c00000000000ff94 LR: c00000000067a5e0 CTR: 0000000000000001
+> > > [   56.618889] REGS: c0000001fef6bbe0 TRAP: 0700   Not tainted  (3.6.0-rc1-autokern1)
+> > > [   56.618894] MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 42000082  XER: 20000000
+> > > [   56.618913] SOFTE: 1
+> > > [   56.618916] CFAR: c00000000067a5dc
+> > > [   56.618920] TASK = c0000001feed79a0[0] 'swapper/5' THREAD: c0000001fef68000 CPU: 5
+> > > GPR00: 0000000000000001 c0000001fef6be60 c000000000f9ca08 0000000000000001 
+> > > GPR04: 0000000000000001 0000000000000008 0000000000000001 0000000000000000 
+> > > GPR08: 0000000000000000 c0000001feed79a0 0008a80000000000 0000000000000000 
+> > > GPR12: 0000000022000082 c00000000f330f00 c0000001fef6bf90 000000000f394b4c 
+> > > GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> > > GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
+> > > GPR24: c000000000fe8f80 0000000000000008 0000000000000028 0000000000000000 
+> > > GPR28: 0000000000000000 0000000000000020 c000000000f1ab40 0000000000000001 
+> > > [   56.619014] NIP [c00000000000ff94] .arch_local_irq_restore+0x34/0xa0
+> > > [   56.619020] LR [c00000000067a5e0] .start_secondary+0x368/0x37c
+> > > [   56.619025] Call Trace:
+> > > [   56.619030] [c0000001fef6be60] [c000000001ba0500] 0xc000000001ba0500 (unreliable)
+> > > [   56.619038] [c0000001fef6bed0] [c00000000067a5e0] .start_secondary+0x368/0x37c
+> > > [   56.619046] [c0000001fef6bf90] [c000000000009380] .start_secondary_resume+0x10/0x14
+> > > [   56.619052] Instruction dump:
+> > > [   56.619056] f8010010 f821ff91 986d022a 2fa30000 419e0054 880d022b 78000621 41820048 
+> > > [   56.619071] 2f800001 40de0064 7c0000a6 78008fe2 <0b000000> 2fa00000 40de0050 38000000 
+> > > [   56.619088] ---[ end trace 0199c0d783d7f9ba ]---
+> > > 
+> > > Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+> > > ---
+> > >  arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 ++
+> > >  1 files changed, 2 insertions(+), 0 deletions(-)
+> > > 
+> > > diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> > > index 64c97d8..8de539a 100644
+> > > --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> > > +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
+> > > @@ -137,6 +137,8 @@ static void pseries_mach_cpu_die(void)
+> > >  		if (get_preferred_offline_state(cpu) == CPU_STATE_ONLINE) {
+> > >  			unregister_slb_shadow(hwcpu);
+> > >  
+> > > +			__hard_irq_disable();
+> > > +
+> > >  			/*
+> > >  			 * Call to start_secondary_resume() will not return.
+> > >  			 * Kernel stack will be reset and start_secondary()
+> > 
+> > 
+> 
