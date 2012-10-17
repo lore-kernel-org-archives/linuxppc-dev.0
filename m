@@ -1,15 +1,18 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 202432C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2012 21:50:36 +1100 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH 1/2] powerpc/kgdb: Fix a single stgep case of lazy IRQ
-Date: Wed, 17 Oct 2012 18:50:10 +0800
-Message-ID: <1350471011-2478-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <whitebox@nefkom.net>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.10])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 562302C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2012 23:07:17 +1100 (EST)
+From: Andreas Schwab <schwab@linux-m68k.org>
+To: Tiejun Chen <tiejun.chen@windriver.com>
+Subject: Re: [PATCH 2/2] PPC_BOOK3E/KGDB: support kgdb kernel space
+References: <1350471011-2478-1-git-send-email-tiejun.chen@windriver.com>
+ <1350471011-2478-2-git-send-email-tiejun.chen__24766.2045098425$1350471081$gmane$org@windriver.com>
+Date: Wed, 17 Oct 2012 14:07:07 +0200
+In-Reply-To: <1350471011-2478-2-git-send-email-tiejun.chen__24766.2045098425$1350471081$gmane$org@windriver.com>
+ (Tiejun Chen's message of "Wed, 17 Oct 2012 18:50:11 +0800")
+Message-ID: <m28vb5s3o4.fsf@igel.home>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@lists.ozlabs.org, jason.wessel@windriver.com
@@ -22,71 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When we're in kgdb_singlestep(), we have to work around to get
-thread_info by copying from the kernel stack before calling
-kgdb_handle_exception(), then copying it back afterwards.
+Tiejun Chen <tiejun.chen@windriver.com> writes:
 
-But for PPC64, we have a lazy interrupt implementation. So after
-copying thread info frome kernle stack, if we need to replay an
-interrupt, we shouldn't restore that previous backup thread info
-to make sure we can replay an interrupt lately with a proper
-thread info.
+> diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+> index 4684e33..ed5862d 100644
+> --- a/arch/powerpc/kernel/exceptions-64e.S
+> +++ b/arch/powerpc/kernel/exceptions-64e.S
+> @@ -539,11 +539,15 @@ kernel_dbg_exc:
+>  	rfdi
+>  
+>  	/* Normal debug exception */
+> +#ifndef CONFIG_KGDB
+>  	/* XXX We only handle coming from userspace for now since we can't
+>  	 *     quite save properly an interrupted kernel state yet
+>  	 */
+>  1:	andi.	r14,r11,MSR_PR;		/* check for userspace again */
+>  	beq	kernel_dbg_exc;		/* if from kernel mode */
+> +#else
+> +1:
+> +#endif
 
-This patch use __check_irq_replay() to guarantee this process.
+You could move the label before the conditional.
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/kernel/irq.c  |   12 +++++++++++-
- arch/powerpc/kernel/kgdb.c |    7 ++++---
- 2 files changed, 15 insertions(+), 4 deletions(-)
+Andreas.
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 71413f4..a773789 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -332,7 +332,17 @@ bool prep_irq_for_idle(void)
- 	return true;
- }
- 
--#endif /* CONFIG_PPC64 */
-+notrace unsigned int check_irq_replay(void)
-+{
-+	return __check_irq_replay();
-+}
-+#else /* CONFIG_PPC64 */
-+notrace unsigned int check_irq_replay(void)
-+{
-+	return 0;
-+}
-+#endif /* !CONFIG_PPC64 */
-+EXPORT_SYMBOL(check_irq_replay);
- 
- int arch_show_interrupts(struct seq_file *p, int prec)
- {
-diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index c470a40..c4af341 100644
---- a/arch/powerpc/kernel/kgdb.c
-+++ b/arch/powerpc/kernel/kgdb.c
-@@ -151,6 +151,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
- 	return 1;
- }
- 
-+extern notrace unsigned int check_irq_replay(void);
- static int kgdb_singlestep(struct pt_regs *regs)
- {
- 	struct thread_info *thread_info, *exception_thread_info;
-@@ -181,9 +182,9 @@ static int kgdb_singlestep(struct pt_regs *regs)
- 
- 	kgdb_handle_exception(0, SIGTRAP, 0, regs);
- 
--	if (thread_info != exception_thread_info)
--		/* Restore current_thread_info lastly. */
--		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
-+	if ((thread_info != exception_thread_info) && (!check_irq_replay()))
-+		/* Restore current_thread_info lastly only if we don't replay interrupt. */
-+			memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
- 
- 	return 1;
- }
 -- 
-1.7.9.5
+Andreas Schwab, schwab@linux-m68k.org
+GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
