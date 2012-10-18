@@ -1,31 +1,20 @@
-Return-Path: <shangw@linux.vnet.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e1.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 29C092C008F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2012 13:47:36 +1100 (EST)
-Received: from /spool/local
- by e1.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
- Wed, 17 Oct 2012 22:47:28 -0400
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A92AFC90043
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2012 22:46:54 -0400 (EDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q9I2krIS261342
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2012 22:46:54 -0400
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q9I2kq3i030693
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Oct 2012 20:46:53 -0600
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/pnv: Avoid bogus output
-Date: Thu, 18 Oct 2012 10:46:44 +0800
-Message-Id: <1350528404-8009-1-git-send-email-shangw@linux.vnet.ibm.com>
-Cc: Gavin Shan <shangw@linux.vnet.ibm.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6C5302C0361
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Oct 2012 13:48:00 +1100 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: [v2][PATCH 2/2] PPC_BOOK3E/KGDB: support kgdb kernel space
+Date: Thu, 18 Oct 2012 10:47:35 +0800
+Message-ID: <1350528455-4751-2-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1350528455-4751-1-git-send-email-tiejun.chen@windriver.com>
+References: <1350528455-4751-1-git-send-email-tiejun.chen@windriver.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, jason.wessel@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,69 +24,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There're couples of functions defined to print debugging messages
-during initializing P7IOC. However, we got bogus output from those
-functions like pe_info(). The problem here is that the message
-level (the first parameter to printk()) isn't printable and that
-caused the bogus output.
+We can support KGDB with current debug exception for BOOK3E, so we
+should initial specific dbg_kstack to avoid overwriting other thing.
 
-The patch fixes the issue by merging __pe_printk() to the macro
-define_pe_printk_level() so that we can pass the message level
-directly to printk().
-
-Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |   25 +++++++++++--------------
- 1 files changed, 11 insertions(+), 14 deletions(-)
+v2: 
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 07ce33c..ff7e7a1 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -34,24 +34,12 @@
- #include "powernv.h"
- #include "pci.h"
+Move the label before the conditional
+
+ arch/powerpc/kernel/exceptions-64e.S |    5 ++++-
+ arch/powerpc/kernel/paca.c           |   10 ++++++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 4684e33..73ce1a7 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -538,12 +538,15 @@ kernel_dbg_exc:
+ 	mfspr	r13,SPRN_SPRG_DBG_SCRATCH
+ 	rfdi
  
--static int __pe_printk(const char *level, const struct pnv_ioda_pe *pe,
--		       struct va_format *vaf)
--{
--	char pfix[32];
--
--	if (pe->pdev)
--		strlcpy(pfix, dev_name(&pe->pdev->dev), sizeof(pfix));
--	else
--		sprintf(pfix, "%04x:%02x     ",
--			pci_domain_nr(pe->pbus), pe->pbus->number);
--	return printk("pci %s%s: [PE# %.3d] %pV", level, pfix, pe->pe_number, vaf);
--}
--
- #define define_pe_printk_level(func, kern_level)		\
- static int func(const struct pnv_ioda_pe *pe, const char *fmt, ...)	\
- {								\
- 	struct va_format vaf;					\
- 	va_list args;						\
-+	char pfix[32];						\
- 	int r;							\
- 								\
- 	va_start(args, fmt);					\
-@@ -59,7 +47,16 @@ static int func(const struct pnv_ioda_pe *pe, const char *fmt, ...)	\
- 	vaf.fmt = fmt;						\
- 	vaf.va = &args;						\
- 								\
--	r = __pe_printk(kern_level, pe, &vaf);			\
-+	if (pe->pdev)						\
-+		strlcpy(pfix, dev_name(&pe->pdev->dev),		\
-+			sizeof(pfix));				\
-+        else							\
-+                sprintf(pfix, "%04x:%02x     ",			\
-+                        pci_domain_nr(pe->pbus),		\
-+			pe->pbus->number);			\
-+	r = printk(kern_level "pci %s: [PE# %.3d] %pV",		\
-+		   pfix, pe->pe_number, &vaf);			\
-+								\
- 	va_end(args);						\
- 								\
- 	return r;						\
++1:
+ 	/* Normal debug exception */
++#ifndef CONFIG_KGDB
+ 	/* XXX We only handle coming from userspace for now since we can't
+ 	 *     quite save properly an interrupted kernel state yet
+ 	 */
+-1:	andi.	r14,r11,MSR_PR;		/* check for userspace again */
++	andi.	r14,r11,MSR_PR;		/* check for userspace again */
+ 	beq	kernel_dbg_exc;		/* if from kernel mode */
++#endif
+ 
+ 	/* Now we mash up things to make it look like we are coming on a
+ 	 * normal exception
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index cd6da85..28a5141 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -122,6 +122,13 @@ EXPORT_SYMBOL(paca);
+ 
+ struct paca_struct boot_paca;
+ 
++void *debug_kstack;
++static void allocate_dbg_kstack(unsigned long limit)
++{
++	debug_kstack = __va(memblock_alloc_base(THREAD_SIZE,
++					THREAD_SIZE, limit));
++}
++
+ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
+ {
+        /* The TOC register (GPR2) points 32kB into the TOC, so that 64kB
+@@ -133,6 +140,7 @@ void __init initialise_paca(struct paca_struct *new_paca, int cpu)
+ 	new_paca->lppaca_ptr = new_lppaca(cpu);
+ #else
+ 	new_paca->kernel_pgd = swapper_pg_dir;
++	new_paca->dbg_kstack = debug_kstack;
+ #endif
+ 	new_paca->lock_token = 0x8000;
+ 	new_paca->paca_index = cpu;
+@@ -192,6 +200,8 @@ void __init allocate_pacas(void)
+ 
+ 	allocate_lppacas(nr_cpu_ids, limit);
+ 
++	allocate_dbg_kstack(limit);
++
+ 	/* Can't use for_each_*_cpu, as they aren't functional yet */
+ 	for (cpu = 0; cpu < nr_cpu_ids; cpu++)
+ 		initialise_paca(&paca[cpu], cpu);
 -- 
-1.7.5.4
+1.7.9.5
