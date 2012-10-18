@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2D16A2C0082
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2012 20:23:57 +1100 (EST)
-Message-ID: <1350552198.2476.5.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 18 Oct 2012 20:23:18 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <robert.karl.berger@gmail.com>
+Received: from mail-bk0-f42.google.com (mail-bk0-f42.google.com
+ [209.85.214.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AA8D32C007E
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 03:33:40 +1100 (EST)
+Received: by mail-bk0-f42.google.com with SMTP id j5so3660340bkw.15
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2012 09:33:37 -0700 (PDT)
+Message-ID: <50802F4C.3000309@gmail.com>
+Date: Thu, 18 Oct 2012 19:33:16 +0300
+From: Robert Berger <robert.karl.berger@gmail.com>
+MIME-Version: 1.0
+To: linuxppc-dev@ozlabs.org
+Subject: Re: ELDK 4.2/kilauea/3.5+ kernel broken
+References: <507EF5AD.5070203__24977.4320669987$1350497770$gmane$org@gmail.com>
+In-Reply-To: <507EF5AD.5070203__24977.4320669987$1350497770$gmane$org@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: mla@apm.com, Robert Berger <robert.karl.berger@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
+git bisect tells us this:
 
-Here are a handful of powerpc related fixes for you to pull.
+247540b03bfcbbe26b86692c9424195d76eb67f0 is the first bad commit
+commit 247540b03bfcbbe26b86692c9424195d76eb67f0
+Author: Mai La <mla@apm.com>
+Date:   Sun Mar 18 17:59:08 2012 +0000
 
-Cheers,
-Ben.
+    powerpc/44x: Fix PCI MSI support for Maui APM821xx SoC and Bluestone
+board
 
-The following changes since commit 18673533256a2953ccefded52df2679de8640685:
+    This patch consists of:
+    - Enable PCI MSI as default for Bluestone board
+    - Change definition of number of MSI interrupts as it depends on SoC
+    - Fix returning ENODEV as finding MSI node
+    - Fix MSI physical high and low address
+    - Keep MSI data logically
 
-  Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net (2012-10-17 12:41:18 -0700)
+    Signed-off-by: Mai La <mla@apm.com>
+    Signed-off-by: Josh Boyer <jwboyer@gmail.com>
 
-are available in the git repository at:
+:040000 040000 607afba6ee61212756f2bcf5acd687d6266c39a8
+2868a82b0ede19c9e38ec8a571a1004e555e1098 M      arch
 
+Which I can confirm:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+this works:
+git checkout 47da421981571c69ef29740cc55fa7248682e167
+save this version of arch/powerpc/sysdev/ppc4xx_msi.c
 
-for you to fetch changes up to 83dac59409387789b88bed40b1be86a8abc572be:
+this reboots:
+git checkout 247540b03bfcbbe26b86692c9424195d76eb67f0
 
-  cpuidle/powerpc: Fix snooze state problem in the cpuidle design on pseries. (2012-10-18 10:57:25 +1100)
+fix .config
+CONFIG_PPC_DISABLE_WERROR=y
+#CONDIF_PPC_WERROR is not used
 
-----------------------------------------------------------------
-Aneesh Kumar K.V (1):
-      powerpc: Build fix for powerpc KVM
+cp ../ppc4xx_msi.c from 47da421981571c69ef29740cc55fa7248682e167 to
+arch/powerpc/sysdev/ppc4xx_msi.c and voila this works.
 
-Benjamin Herrenschmidt (1):
-      Revert "powerpc/perf: Use pmc_overflow() to detect rolled back events"
+Regards,
 
-Deepthi Dharwar (3):
-      cpuidle/powerpc: Fix target residency initialisation in pseries cpuidle
-      cpuidle/powerpc: Fix smt_snooze_delay functionality.
-      cpuidle/powerpc: Fix snooze state problem in the cpuidle design on pseries.
+Robert
 
- arch/powerpc/include/asm/kvm_book3s_32.h        |    1 +
- arch/powerpc/include/asm/processor.h            |    4 +-
- arch/powerpc/kernel/sysfs.c                     |    2 +-
- arch/powerpc/kvm/book3s_32_mmu_host.c           |    4 +-
- arch/powerpc/perf/core-book3s.c                 |    2 +-
- arch/powerpc/platforms/pseries/processor_idle.c |   62 +++++++++++------------
- 6 files changed, 36 insertions(+), 39 deletions(-)
+..."I don't understand why people are frightened of new ideas. It's the
+old ideas that frighten me." -- John Cage
+
+My public pgp key is available,at:
+http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x90320BF1
