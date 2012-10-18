@@ -1,26 +1,26 @@
-Return-Path: <gmane@reliableembeddedsystems.com>
-Received: from delivery.mailspamprotection.com
- (delivery.mailspamprotection.com [184.154.48.173])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 801DA2C008E
- for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 04:16:10 +1100 (EST)
-Received: from ns1.siteground150.com ([184.154.230.7]
- helo=serv01.siteground150.com)
- by se5.mailspamprotection.com with esmtps (TLSv1:DHE-RSA-AES256-SHA:256)
- (Exim 4.80) (envelope-from <gmane@reliableembeddedsystems.com>)
- id 1TOsx2-000743-Aq
- for linuxppc-dev@ozlabs.org; Thu, 18 Oct 2012 11:28:16 -0500
-Message-ID: <50802E05.10204@reliableembeddedsystems.com>
-Date: Thu, 18 Oct 2012 19:27:49 +0300
-From: Robert Berger <gmane@reliableembeddedsystems.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pb0-f42.google.com (mail-pb0-f42.google.com
+ [209.85.160.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BB7AD2C0092
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 09:44:45 +1100 (EST)
+Received: by mail-pb0-f42.google.com with SMTP id ro2so7425924pbb.15
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2012 15:44:43 -0700 (PDT)
 MIME-Version: 1.0
-To: Robert Berger <robert.karl.berger@gmail.com>
-Subject: Re: ELDK 4.2/kilauea/3.5+ kernel broken
-References: <507EF5AD.5070203__24977.4320669987$1350497770$gmane$org@gmail.com>
-In-Reply-To: <507EF5AD.5070203__24977.4320669987$1350497770$gmane$org@gmail.com>
+Sender: glikely@secretlab.ca
+In-Reply-To: <3999612.yr3XeWjcOk@ernie>
+References: <5521875.6lkx8Qvfk5@ernie> <2594570.cnhHoOP5cq@ernie>
+ <CACxGe6tdpCiZtpvrb7VUz9=mc6DqG6wO-Z5axaBMzuU2Y14GmA@mail.gmail.com>
+ <3999612.yr3XeWjcOk@ernie>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 18 Oct 2012 23:44:22 +0100
+Message-ID: <CACxGe6uehfQZOxhtBfUYR47mQq+620A=pvpRM=9O8FoUX9eg7w@mail.gmail.com>
+Subject: Re: PROBLEM: Linux 3.6.2 fails to boot on IBM Cell
+To: Dennis Schridde <devurandom@gmx.net>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, mla@apm.com
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,51 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-git bisect tells us this:
+On Thu, Oct 18, 2012 at 10:59 PM, Dennis Schridde <devurandom@gmx.net> wrote:
+> Am Donnerstag, 18. Oktober 2012, 22:32:55 schrieb Grant Likely:
+>> Unfortunately the debug messages don't show up in the console log by
+>> default. Can you either send the output of 'dmesg' after booting, or
+>> add "loglevel=8" to the kernel boot parameters?
+> Here you go.
+>
+> I also see some lines like:
+> irq: no irq domain found for /axon@10000000000/plb5/pciex-utl@a00000a000004000
+> Is that also a problem?
 
-247540b03bfcbbe26b86692c9424195d76eb67f0 is the first bad commit
-commit 247540b03bfcbbe26b86692c9424195d76eb67f0
-Author: Mai La <mla@apm.com>
-Date:   Sun Mar 18 17:59:08 2012 +0000
+[cc'ing linuxppc-dev]
 
-    powerpc/44x: Fix PCI MSI support for Maui APM821xx SoC and Bluestone
-board
+Okay, so what is happening is that the function cbe_init_pm_irq() is
+trying to set up hwirq numbers 0x7e, 0x17e, 0x27e and continuing up
+every 0x100 to 0xff7e. This happens because that function is
+calculating the hwirq number used for_each_node, and shifts the node
+number up 8 bits to make up the upper bits of the hwirq number.
+However, according the the header file, only '0' and '1' are actual
+valid values for the upper bits.
 
-    This patch consists of:
-    - Enable PCI MSI as default for Bluestone board
-    - Change definition of number of MSI interrupts as it depends on SoC
-    - Fix returning ENODEV as finding MSI node
-    - Fix MSI physical high and low address
-    - Keep MSI data logically
+CONFIG_NODES_SHIFT = 8 for PowerPC 64, which accounts for the range 0..0xff.
 
-    Signed-off-by: Mai La <mla@apm.com>
-    Signed-off-by: Josh Boyer <jwboyer@gmail.com>
+arch/powerpc/platforms/cell/interrupt.h defines the values of
+IIC_IRQ_NODE_SHIFT = 8 and IIC_IRQ_NODE_MASK 0x100.
 
-:040000 040000 607afba6ee61212756f2bcf5acd687d6266c39a8
-2868a82b0ede19c9e38ec8a571a1004e555e1098 M      arch
+So, from the context, I assume the function is trying to set up a PM
+interrupt for each CPU in the Cell processor; and that there are 2 of
+them. for_each_node() knows nothing of this and dutifully tries to set
+up the irq for 256 processors; way beyond what is valid for the irq
+controller.
 
-Which I can confirm:
+Also, it should be noted that the irq does actually get set up by
+irqdomain.c, but because everything above 0x1ff is larger than the
+lookup table, it complains. The new code complains loudly (as you
+discovered) if someone tries to use a hwirq larger than the map where
+the old code didn't.
 
-this works:
-git checkout 47da421981571c69ef29740cc55fa7248682e167
-save this version of arch/powerpc/sysdev/ppc4xx_msi.c
+Looks to me like the fix is to change for_each_node() to something as
+simple as "for (i = 0; i < 2; i++)"
 
-this reboots:
-git checkout 247540b03bfcbbe26b86692c9424195d76eb67f0
+g.
 
-fix .config
-CONFIG_PPC_DISABLE_WERROR=y
-#CONDIF_PPC_WERROR is not used
-
-cp ../ppc4xx_msi.c from 47da421981571c69ef29740cc55fa7248682e167 to
-arch/powerpc/sysdev/ppc4xx_msi.c and voila this works.
-
-Regards,
-
-Robert
-
-..."I don't understand why people are frightened of new ideas. It's the
-old ideas that frighten me." -- John Cage
-
-My public pgp key is available,at:
-http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x90320BF1
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
