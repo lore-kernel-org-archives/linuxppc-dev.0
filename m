@@ -1,24 +1,26 @@
-Return-Path: <robert.karl.berger@gmail.com>
-Received: from mail-ea0-f170.google.com (mail-ea0-f170.google.com
- [209.85.215.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 76B262C0093
- for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 07:05:31 +1100 (EST)
-Received: by mail-ea0-f170.google.com with SMTP id a13so2748216eaa.15
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2012 13:05:27 -0700 (PDT)
-Message-ID: <508060FD.3040202@gmail.com>
-Date: Thu, 18 Oct 2012 23:05:17 +0300
-From: Robert Berger <robert.karl.berger@gmail.com>
+Return-Path: <gmane@reliableembeddedsystems.com>
+Received: from delivery.mailspamprotection.com
+ (delivery.mailspamprotection.com [184.154.48.173])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 801DA2C008E
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 04:16:10 +1100 (EST)
+Received: from ns1.siteground150.com ([184.154.230.7]
+ helo=serv01.siteground150.com)
+ by se5.mailspamprotection.com with esmtps (TLSv1:DHE-RSA-AES256-SHA:256)
+ (Exim 4.80) (envelope-from <gmane@reliableembeddedsystems.com>)
+ id 1TOsx2-000743-Aq
+ for linuxppc-dev@ozlabs.org; Thu, 18 Oct 2012 11:28:16 -0500
+Message-ID: <50802E05.10204@reliableembeddedsystems.com>
+Date: Thu, 18 Oct 2012 19:27:49 +0300
+From: Robert Berger <gmane@reliableembeddedsystems.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Robert Berger <robert.karl.berger@gmail.com>
 Subject: Re: ELDK 4.2/kilauea/3.5+ kernel broken
 References: <507EF5AD.5070203__24977.4320669987$1350497770$gmane$org@gmail.com>
- <50802F4C.3000309__36526.1883860969$1350578085$gmane$org@gmail.com>
- <50804020.30505@gmail.com> <1350587006.2476.12.camel@pasglop>
-In-Reply-To: <1350587006.2476.12.camel@pasglop>
+In-Reply-To: <507EF5AD.5070203__24977.4320669987$1350497770$gmane$org@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, wd@denx.de, mla@apm.com
+Cc: linuxppc-dev@ozlabs.org, mla@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,64 +30,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+git bisect tells us this:
 
-On 10/18/2012 10:03 PM, Benjamin Herrenschmidt wrote:
-> On Thu, 2012-10-18 at 20:45 +0300, Robert Berger wrote:
->> -       mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));      /*HIGH addr */
->> -       mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));  /* Low addr */
->> +       SDR0_WRITE(sdr_addr, (u64)res.start >> 32);      /*HIGH addr */
->> +       SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
->> +
->>  
->>         msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
->> -       if (!msi->msi_dev)
->> +       if (msi->msi_dev)
->>                 return -ENODEV; 
-> 
-> The above changes look bad. The first one is stupid, the second one is clearly broken.
-> 
-> The diff us from good to bad right ? Looks like somebody added a very busted patch.
+247540b03bfcbbe26b86692c9424195d76eb67f0 is the first bad commit
+commit 247540b03bfcbbe26b86692c9424195d76eb67f0
+Author: Mai La <mla@apm.com>
+Date:   Sun Mar 18 17:59:08 2012 +0000
 
-this (from 3.6) does not work:
+    powerpc/44x: Fix PCI MSI support for Maui APM821xx SoC and Bluestone
+board
 
--       mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));      /*HIGH
-addr */
--       mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));  /* Low
-addr */
+    This patch consists of:
+    - Enable PCI MSI as default for Bluestone board
+    - Change definition of number of MSI interrupts as it depends on SoC
+    - Fix returning ENODEV as finding MSI node
+    - Fix MSI physical high and low address
+    - Keep MSI data logically
 
-The good old file (which works) is this:
+    Signed-off-by: Mai La <mla@apm.com>
+    Signed-off-by: Josh Boyer <jwboyer@gmail.com>
 
-+       SDR0_WRITE(sdr_addr, (u64)res.start >> 32);      /*HIGH addr */
-+       SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
-+
+:040000 040000 607afba6ee61212756f2bcf5acd687d6266c39a8
+2868a82b0ede19c9e38ec8a571a1004e555e1098 M      arch
 
-> 
-> If I look at the code in current upstream, I see:
-> 
-> 	mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));	/*HIGH addr */
-> 	mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));	/* Low addr */
-> 
-> 	msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
-> 	if (!msi->msi_dev)
-> 		return -ENODEV;
-> 
-> 
-> Which looks correct. So this might be something specific to ELDK ?
+Which I can confirm:
 
-I will be on the road from tomorrow for a week or so, but maybe I can
-isolate the exact lines which break it. I can also try a newer compiler
-to see if this changes anything.
+this works:
+git checkout 47da421981571c69ef29740cc55fa7248682e167
+save this version of arch/powerpc/sysdev/ppc4xx_msi.c
 
-Is there someone out there with a kilauea board who can boot a 3.6.
-mainline kernel with a default config with a rootfs over nfs?
+this reboots:
+git checkout 247540b03bfcbbe26b86692c9424195d76eb67f0
 
-> 
-> Cheers,
-> Ben.
-> 
-> 
+fix .config
+CONFIG_PPC_DISABLE_WERROR=y
+#CONDIF_PPC_WERROR is not used
+
+cp ../ppc4xx_msi.c from 47da421981571c69ef29740cc55fa7248682e167 to
+arch/powerpc/sysdev/ppc4xx_msi.c and voila this works.
 
 Regards,
 
 Robert
+
+..."I don't understand why people are frightened of new ideas. It's the
+old ideas that frighten me." -- John Cage
+
+My public pgp key is available,at:
+http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x90320BF1
