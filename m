@@ -1,31 +1,24 @@
-Return-Path: <balbi@ti.com>
-Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 097802C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 21:36:27 +1100 (EST)
-Date: Fri, 19 Oct 2012 13:30:39 +0300
-From: Felipe Balbi <balbi@ti.com>
-To: Christoph Fritz <chf.fritz@googlemail.com>
-Subject: Re: [PATCH 5/7] usb: gadget: fsl_udc: postpone freeing current dTD
-Message-ID: <20121019103039.GF11191@arwen.pp.htv.fi>
-References: <1350642156-8034-1-git-send-email-chf.fritz@googlemail.com>
- <1350642285-8145-5-git-send-email-chf.fritz@googlemail.com>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 9DA362C00F4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 21:39:01 +1100 (EST)
+Message-ID: <50812F13.20503@cn.fujitsu.com>
+Date: Fri, 19 Oct 2012 18:44:35 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="4f28nU6agdXSinmL"
-In-Reply-To: <1350642285-8145-5-git-send-email-chf.fritz@googlemail.com>
-Cc: Estevam Fabio-R49496 <r49496@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Chen Peter-B29397 <B29397@freescale.com>,
- Sascha Hauer <s.hauer@pengutronix.de>, linux-usb@vger.kernel.org,
- Felipe Balbi <balbi@ti.com>, "Hans J. Koch" <hjk@hansjkoch.de>,
- Daniel Mack <daniel@caiaq.de>, Christian Hemp <c.hemp@phytec.de>,
- linuxppc-dev@lists.ozlabs.org, Teresa Gamez <T.Gamez@phytec.de>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Reply-To: balbi@ti.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH 1/10] memory-hotplug : check whether memory is offline
+ or not when removing memory
+References: <506E43E0.70507@jp.fujitsu.com> <506E451E.1050403@jp.fujitsu.com>
+ <CAHGf_=rVDm-JygjPoLHbmF28Dgd52HFc4-b5KCxhEieG60okuw@mail.gmail.com>
+In-Reply-To: <CAHGf_=rVDm-JygjPoLHbmF28Dgd52HFc4-b5KCxhEieG60okuw@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, minchan.kim@gmail.com,
+ rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,54 +28,164 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---4f28nU6agdXSinmL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+At 10/06/2012 03:27 AM, KOSAKI Motohiro Wrote:
+> On Thu, Oct 4, 2012 at 10:25 PM, Yasuaki Ishimatsu
+> <isimatu.yasuaki@jp.fujitsu.com> wrote:
+>> When calling remove_memory(), the memory should be offline. If the function
+>> is used to online memory, kernel panic may occur.
+>>
+>> So the patch checks whether memory is offline or not.
+> 
+> You don't explain WHY we need the check.
 
-On Fri, Oct 19, 2012 at 12:24:43PM +0200, Christoph Fritz wrote:
-> USB controller may access a wrong address for the dTD (endpoint transfer
-> descriptor) and then hang. This happens a lot when doing tests with
-> g_ether module and iperf, a tool for measuring maximum TCP and UDP
-> bandwidth.
->=20
-> This hardware bug is explained in detail by errata number 2858 for i.MX23:
-> http://cache.freescale.com/files/dsp/doc/errata/IMX23CE.pdf
->=20
-> All (?) SOCs with an IP from chipidea suffer from this problem.
-> mv_udc_core fixes this bug by commit daec765.  There still may be
-> unfixed drivers.
+This patch is no necessary now, because the newest kernel has checked
+it.
 
-why aren't you using that driver instead ? Is it really necessary to
-keep this driver around ? I would really like to see uniformization
-towards that, if you use the same IP, then the same driver ought to
-suffice.
+Thanks
+Wen Congyang
 
-What's the reason for not using drivers/usb/chipidea ?
-
---=20
-balbi
-
---4f28nU6agdXSinmL
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQgSvPAAoJEIaOsuA1yqREKK4QAJ5qWR7kNXr1dwvZJqheLgH/
-RBEo/bmtRqFGM+xbBpbrtBMlZ+fOgdH3hEcP5QIi8Yw7qG8N0OYpb4ywOTf8jGYp
-Fp6LIZUaT6OW64TtWXgAcZtISS2QbSp5vK/+/+5bcC9dtRqsUAfAglBe/SmIxF4R
-NTTKtnTkgSf0qfrcQbdLGHLmBcn4QvFLqAeUZM7LUmNDJXXC1FwnnfJrZpkOzje2
-A/7nkqXdmDFgMFy1gGvt2lRMVep7dpPmMK2GrfXpSvspHvSlPfh8dqi4z1J5BeU5
-4oqjmH7werV5PEthnShHNtl/trVS+wVS9Af1tmwW3JzjO5hs5QJV98vmEIViF9f/
-TIYWcRJFWJJ/3ninlaK9OIZzb9fzSLI9VfLs9dn3CnRT6RLPKGjywDK7fAOuUnqg
-qqbie4ri9XHkc+EWd54CMGk7SErGrno/a79Vjx0jOC773O4GU73Dv9gv/omh3I/I
-Arhjf5hCZISgZlxmP2iOX7lq8tFiMnC+YAN+/nC3XGb94d03tVP/nugYGwsHb/cO
-1F6JP5rCOQTRnHjiUL0xyDmxWCiB7bKqu1b1WPJKR0kGh6KPrSIWIRi5NB6GSqlG
-uJwfCd2IdjL6wzg0qBu7V+P6nwO5ABBKH3WTdBr1sDuxeteuF2ap3R+wgZwLq9mk
-kdiRMxGCjTB/NTFp0xIr
-=6xlf
------END PGP SIGNATURE-----
-
---4f28nU6agdXSinmL--
+> 
+> 
+>> CC: David Rientjes <rientjes@google.com>
+>> CC: Jiang Liu <liuj97@gmail.com>
+>> CC: Len Brown <len.brown@intel.com>
+>> CC: Christoph Lameter <cl@linux.com>
+>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>> CC: Andrew Morton <akpm@linux-foundation.org>
+>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>
+>> ---
+>>  drivers/base/memory.c  |   39 +++++++++++++++++++++++++++++++++++++++
+>>  include/linux/memory.h |    5 +++++
+>>  mm/memory_hotplug.c    |   17 +++++++++++++++--
+>>  3 files changed, 59 insertions(+), 2 deletions(-)
+>>
+>> Index: linux-3.6/drivers/base/memory.c
+>> ===================================================================
+>> --- linux-3.6.orig/drivers/base/memory.c        2012-10-04 14:22:57.000000000 +0900
+>> +++ linux-3.6/drivers/base/memory.c     2012-10-04 14:45:46.653585860 +0900
+>> @@ -70,6 +70,45 @@ void unregister_memory_isolate_notifier(
+>>  }
+>>  EXPORT_SYMBOL(unregister_memory_isolate_notifier);
+>>
+>> +bool is_memblk_offline(unsigned long start, unsigned long size)
+> 
+> Don't use memblk. Usually memblk mean struct numa_meminfo for x86/numa.
+> Maybe memory_range_offlined() is better.
+> 
+> And, this function don't take struct memory_block, then this file may be no good
+> place.
+> 
+> And you need to write down function comment.
+> 
+> 
+>> +{
+>> +       struct memory_block *mem = NULL;
+>> +       struct mem_section *section;
+>> +       unsigned long start_pfn, end_pfn;
+>> +       unsigned long pfn, section_nr;
+>> +
+>> +       start_pfn = PFN_DOWN(start);
+>> +       end_pfn = PFN_UP(start + size);
+>> +
+>> +       for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+>> +               section_nr = pfn_to_section_nr(pfn);
+>> +               if (!present_section_nr(section_nr))
+>> +                       continue;
+>> +
+>> +               section = __nr_to_section(section_nr);
+>> +               /* same memblock? */
+>> +               if (mem)
+>> +                       if ((section_nr >= mem->start_section_nr) &&
+>> +                           (section_nr <= mem->end_section_nr))
+>> +                               continue;
+>> +
+>> +               mem = find_memory_block_hinted(section, mem);
+>> +               if (!mem)
+>> +                       continue;
+>> +               if (mem->state == MEM_OFFLINE)
+>> +                       continue;
+>> +
+>> +               kobject_put(&mem->dev.kobj);
+>> +               return false;
+>> +       }
+>> +
+>> +       if (mem)
+>> +               kobject_put(&mem->dev.kobj);
+>> +
+>> +       return true;
+>> +}
+>> +EXPORT_SYMBOL(is_memblk_offline);
+>> +
+>>  /*
+>>   * register_memory - Setup a sysfs device for a memory block
+>>   */
+>> Index: linux-3.6/include/linux/memory.h
+>> ===================================================================
+>> --- linux-3.6.orig/include/linux/memory.h       2012-10-02 18:00:22.000000000 +0900
+>> +++ linux-3.6/include/linux/memory.h    2012-10-04 14:44:40.902581028 +0900
+>> @@ -106,6 +106,10 @@ static inline int memory_isolate_notify(
+>>  {
+>>         return 0;
+>>  }
+>> +static inline bool is_memblk_offline(unsigned long start, unsigned long size)
+>> +{
+>> +       return false;
+>> +}
+>>  #else
+>>  extern int register_memory_notifier(struct notifier_block *nb);
+>>  extern void unregister_memory_notifier(struct notifier_block *nb);
+>> @@ -120,6 +124,7 @@ extern int memory_isolate_notify(unsigne
+>>  extern struct memory_block *find_memory_block_hinted(struct mem_section *,
+>>                                                         struct memory_block *);
+>>  extern struct memory_block *find_memory_block(struct mem_section *);
+>> +extern bool is_memblk_offline(unsigned long start, unsigned long size);
+>>  #define CONFIG_MEM_BLOCK_SIZE  (PAGES_PER_SECTION<<PAGE_SHIFT)
+>>  enum mem_add_context { BOOT, HOTPLUG };
+>>  #endif /* CONFIG_MEMORY_HOTPLUG_SPARSE */
+>> Index: linux-3.6/mm/memory_hotplug.c
+>> ===================================================================
+>> --- linux-3.6.orig/mm/memory_hotplug.c  2012-10-04 14:31:08.000000000 +0900
+>> +++ linux-3.6/mm/memory_hotplug.c       2012-10-04 14:58:22.449687986 +0900
+>> @@ -1045,8 +1045,21 @@ int offline_memory(u64 start, u64 size)
+>>
+>>  int remove_memory(int nid, u64 start, u64 size)
+>>  {
+> 
+> Your remove_memory() don't remove anything. that's strange.
+> 
+> 
+>> -       /* It is not implemented yet*/
+>> -       return 0;
+>> +       int ret = 0;
+>> +       lock_memory_hotplug();
+>> +       /*
+>> +        * The memory might become online by other task, even if you offine it.
+>> +        * So we check whether the memory has been onlined or not.
+>> +        */
+>> +       if (!is_memblk_offline(start, size)) {
+>> +               pr_warn("memory removing [mem %#010llx-%#010llx] failed, "
+>> +                       "because the memmory range is online\n",
+>> +                       start, start + size);
+> 
+> No good warning. You should output which memory block can't be
+> offlined, I think.
+> 
+> 
+>> +               ret = -EAGAIN;
+>> +       }
+>> +
+>> +       unlock_memory_hotplug();
+>> +       return ret;
+>>  }
+>>  EXPORT_SYMBOL_GPL(remove_memory);
+>>  #else
+>>
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
