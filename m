@@ -1,25 +1,31 @@
-Return-Path: <robert.karl.berger@gmail.com>
-Received: from mail-ee0-f42.google.com (mail-ee0-f42.google.com [74.125.83.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D92CA2C0089
- for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 17:36:03 +1100 (EST)
-Received: by mail-ee0-f42.google.com with SMTP id l10so39328eei.15
- for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2012 23:36:00 -0700 (PDT)
-Message-ID: <5080F4C8.4000007@gmail.com>
-Date: Fri, 19 Oct 2012 09:35:52 +0300
-From: Robert Berger <robert.karl.berger@gmail.com>
-MIME-Version: 1.0
-To: Mai La <mla@apm.com>
-Subject: Re: ELDK 4.2/kilauea/3.5+ kernel broken
-References: <507EF5AD.5070203__24977.4320669987$1350497770$gmane$org@gmail.com>
- <50802F4C.3000309__36526.1883860969$1350578085$gmane$org@gmail.com>
- <50804020.30505@gmail.com> <1350587006.2476.12.camel@pasglop>
- <508060FD.3040202@gmail.com>
- <CAJ0-vuiccVbFk8=0TXO=Ak_a-0_yr55E2hs-GRVXLuKLNYjfCQ@mail.gmail.com>
-In-Reply-To: <CAJ0-vuiccVbFk8=0TXO=Ak_a-0_yr55E2hs-GRVXLuKLNYjfCQ@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: wd@denx.de, linuxppc-dev@ozlabs.org
+Return-Path: <eric.dumazet@gmail.com>
+Subject: Re: [PATCH net-next 00/21] treewide: Use consistent api style for
+ address testing
+From: Eric Dumazet <eric.dumazet@gmail.com>
+To: Joe Perches <joe@perches.com>
+In-Reply-To: <cover.1350618006.git.joe@perches.com>
+References: <cover.1350618006.git.joe@perches.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 19 Oct 2012 09:04:14 +0200
+Message-ID: <1350630254.2293.183.camel@edumazet-glaptop>
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, linux-usb@vger.kernel.org,
+ linux-doc@vger.kernel.org, brcm80211-dev-list@broadcom.com,
+ linux-kernel@vger.kernel.org, linux-sctp@vger.kernel.org, devel@open-fcoe.org,
+ dev@openvswitch.org, linux-s390@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net, linux-scsi@vger.kernel.org,
+ linux-rdma@vger.kernel.org, bridge@lists.linux-foundation.org,
+ lvs-devel@vger.kernel.org, coreteam@netfilter.org, b43-dev@lists.infradead.org,
+ cbe-oss-dev@lists.ozlabs.org, devel@driverdev.osuosl.org, wimax@linuxwimax.org,
+ devicetree-discuss@lists.ozlabs.org, linux-nfs@vger.kernel.org,
+ netfilter@vger.kernel.org, user-mode-linux-user@lists.sourceforge.net,
+ linux-arm-kernel@lists.infradead.org,
+ davinci-linux-open-source@linux.davincidsp.com, linux-parisc@vger.kernel.org,
+ netdev@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org,
+ linux-wireless@vger.kernel.org, users@rt2x00.serialmonkey.com,
+ e1000-devel@lists.sourceforge.net, ath9k-devel@lists.ath9k.org,
+ netfilter-devel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,59 +35,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 2012-10-18 at 20:55 -0700, Joe Perches wrote:
+> ethernet, ipv4, and ipv6 address testing uses 3 different api naming styles.
+> 
+> ethernet uses:	is_<foo>_ether_addr
+> ipv4 uses:	ipv4_is_<foo>
+> ipv6 uses:	ipv6_addr_<foo>
+> 
+> Standardize on the ipv6 style of <prefix>_addr_<type> to reduce
+> the number of styles to remember.
+> 
+> The new consistent styles are:
+> 
+> eth_addr_<foo>(const u8 *)
+> ipv4_addr_<foo>(__be32)
+> ipv6_addr_<foo>(const struct in6_addr *)
+> 
+> Add temporary backward compatibility #defines for the old names too.
+> 
+> Joe Perches (21):
+>   etherdevice: Rename is_<foo>_ether_addr tests to eth_addr_<foo>
+>   net: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   arch: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   wireless: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   drivers: net: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   staging: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   infiniband: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   scsi: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   of: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   s390: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   usb: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   uwb: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   Documentation: networking: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   llc_if.h: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
+>   in.h: Rename ipv4_is_<foo> functions to ipv4_addr_<foo>
+>   net: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
+>   infiniband: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
+>   ath6kl: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
+>   parisc: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
+>   lockd: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
+>   sctp: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
 
-On 10/19/2012 06:16 AM, Mai La wrote:
-> Hi,
-> 
-> My patch was:
-> 
-> @@ -150,12 +157,11 @@ static int ppc4xx_setup_pcieh_hw(struct
-> platform_device *dev,
->         if (!sdr_addr)
->                 return -1;
-> 
-> -       SDR0_WRITE(sdr_addr, (u64)res.start >> 32);      /*HIGH addr */
-> -       SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
-> -
-> +       mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));      /*HIGH
-> addr */
-> +       mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));  /* Low
-> addr */
-> 
->         msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
-> -       if (msi->msi_dev)
-> +       if (!msi->msi_dev)
->                 return -ENODEV;
-> 
->         msi->msi_regs = of_iomap(msi->msi_dev, 0);
-> 
-> 
-> 1. The first few lines: change from SDR0_WRITE to mtdcri since the old
-> one cause crash. I use ELDK 4.2.
+Yes they are some names discrepancies, thats a big deal.
 
-The old one does not cause a crash for me.  As I said on a kilauea board
-with ELDK 4.2 a 3.6 kernel, default config and everything reverted to
-the good old file I can boot happily with a rootfs from nfs.
+And we have alloc_skb() / kfree_skb() / skb_clone() 
 
-If I use the file as it is in 3.6 I don't see the kernel booting. but it
-crashes.
+Why not skb_alloc() / skb_free() / skb_clone() ?
 
-> 
-> 2. The second one should mean that: if not find any node then return
-> error. So it should be "!msi->msi_dev"
+Some people actually know current code by name of functions, they dont
+want to change their mind and having to grep include files and git log
+to learn the new names of an old function, especially when traveling and
+using a laptop.
 
-In the 3.6 kernel it's with ! the old file (which works for me) is
-without the !
+Sure, when we want to use eth_random_addr(), a grep into include files
+to check if its still the right name (old one was random_ether_addr())
+is OK because we dont use this one often.
 
-... very strange ...
+If you think about it, eth_random_addr() was not the perfect name.
 
-> 
-> Regards,
-> Mai La.
-> 
-> 
+Think about all the documentation you can find outside of kernel tree,
+RFC and things like that, copy/pasting some linux kernel code.
 
-Regards,
+This kind of changes make our life more difficult, when we have to
+backport patches or rebase code, or even perform some searches to find
+prior issues/discussions.
 
-Robert
+Life of a kernel developer is not only dealing with latest Linus (or
+-next) tree, and using automatic 'tools'.
+
+Thats a real pain for me at least.
