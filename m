@@ -1,26 +1,32 @@
-Return-Path: <balbi@ti.com>
-Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A1A72C0089
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Oct 2012 04:42:58 +1100 (EST)
-Date: Fri, 19 Oct 2012 20:37:19 +0300
-From: Felipe Balbi <balbi@ti.com>
-To: Simon Haggett <simon.haggett@realvnc.com>
-Subject: Re: [PATCH 1/1] usb: gadget: Don't attempt to dequeue requests for a
- disabled USB endpoint on Freescale hardware
-Message-ID: <20121019173718.GA2738@arwen.pp.htv.fi>
-References: <1350667166-3559-1-git-send-email-simon.haggett@realvnc.com>
+Return-Path: <kosaki.motohiro@gmail.com>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 231B42C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Oct 2012 05:33:41 +1100 (EST)
+Received: by mail-ob0-f179.google.com with SMTP id lz20so669804obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 11:33:38 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="AqsLC8rIMeq19msA"
-In-Reply-To: <1350667166-3559-1-git-send-email-simon.haggett@realvnc.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, Felipe Balbi <balbi@ti.com>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- linuxppc-dev@lists.ozlabs.org
-Reply-To: balbi@ti.com
+Sender: kosaki.motohiro@gmail.com
+In-Reply-To: <5081609C.9080702@gmail.com>
+References: <506E43E0.70507@jp.fujitsu.com> <506E451E.1050403@jp.fujitsu.com>
+ <CAHGf_=rVDm-JygjPoLHbmF28Dgd52HFc4-b5KCxhEieG60okuw@mail.gmail.com>
+ <50812F13.20503@cn.fujitsu.com> <5081609C.9080702@gmail.com>
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Date: Fri, 19 Oct 2012 14:33:17 -0400
+Message-ID: <CAHGf_=q=Agidyj_j6jhBdhNmJBy2u1dP+UMAoXbM=_=DyZJs_w@mail.gmail.com>
+Subject: Re: [PATCH 1/10] memory-hotplug : check whether memory is offline or
+ not when removing memory
+To: Wen Congyang <wencongyang@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
+ linux-sh@vger.kernel.org, len.brown@intel.com, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, minchan.kim@gmail.com,
+ rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,93 +36,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---AqsLC8rIMeq19msA
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> I think it again, and found that this check is necessary. Because we only
+> lock memory hotplug when offlining pages. Here is the steps to offline and
+> remove memory:
+>
+> 1. lock memory hotplug
+> 2. offline a memory section
+> 3. unlock memory hotplug
+> 4. repeat 1-3 to offline all memory sections
+> 5. lock memory hotplug
+> 6. remove memory
+> 7. unlock memory hotplug
+>
+> All memory sections must be offlined before removing memory. But we don't
+> hold
+> the lock in the whole operation. So we should check whether all memory
+> sections
+> are offlined before step6.
 
-Hi,
-
-On Fri, Oct 19, 2012 at 06:19:26PM +0100, Simon Haggett wrote:
-> Some gadget drivers may attempt to dequeue requests for an endpoint that =
-has
-> already been disabled. For example, in the UVC gadget driver, uvc_functio=
-n_set_alt()
-> will call usb_ep_disable() when alt setting 0 is selected. When the users=
-pace
-> application subsequently issues the VIDIOC_STREAMOFF ioctl, uvc_video_ena=
-ble()
-> invokes usb_ep_dequeue() to ensure that all requests have been cancelled.
-
-bug is on uvc gadget, then. Laurent ?
-
-Also, fsl should be removed from the tree, I'm trying to persuade iMX
-folks to use drivers/usb/chipidea instead.
-
-> For the Freescale High Speed Dual-Role USB controller, fsl_ep_dequeue() p=
-rovides
-> the implementation of usb_ep_dequeue(). If this is called for a disabled =
-endpoint,
-> a kernel oops will occur when the ep->ep.desc field is dereferenced (by e=
-p_index()).
-> fsl_ep_disable() sets this field to NULL, as well as deleting all pending=
- requests
-> for the endpoint.
->=20
-> This patch adds an additional check to fsl_ep_dequeue() to ensure that the
-> endpoint has not already been disabled before attempting to dequeue reque=
-sts.
->=20
-> Signed-off-by: Simon Haggett <simon.haggett@realvnc.com>
-> ---
->  drivers/usb/gadget/fsl_udc_core.c |    5 ++++-
->  1 files changed, 4 insertions(+), 1 deletions(-)
->=20
-> diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_u=
-dc_core.c
-> index 6ae70cb..acd513b 100644
-> --- a/drivers/usb/gadget/fsl_udc_core.c
-> +++ b/drivers/usb/gadget/fsl_udc_core.c
-> @@ -955,7 +955,10 @@ static int fsl_ep_dequeue(struct usb_ep *_ep, struct=
- usb_request *_req)
->  	int ep_num, stopped, ret =3D 0;
->  	u32 epctrl;
-> =20
-> -	if (!_ep || !_req)
-> +	/* Ensure that the ep and request are valid, and the ep is not
-> +	 * disabled
-> +	 */
-> +	if (!_ep || !_req || !ep->ep.desc)
->  		return -EINVAL;
-> =20
->  	spin_lock_irqsave(&ep->udc->lock, flags);
-> --=20
-> 1.7.4.1
->=20
-
---=20
-balbi
-
---AqsLC8rIMeq19msA
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQgY/OAAoJEIaOsuA1yqRE9eMP+wUsM1/1Gfw+t5rlLkUsJlJL
-fygKxCgyQ+ZZKfkH3R7jzByWE3rs54sBwduB0HBaGT5bGeWaSgAoUs96UY78DiAC
-eLDl78iL8rMGkYhU4pRYWuZewue/dlmIkd84c5f9lQ5hg/6guD721aT7gaaC+nzb
-PnluAUizkD5hYt5ixv3I7DlXAyw0OwrCOBVwByHSKScQp1a2KBL8L75vCMK2YkFZ
-ssI5NfW18k/8XcjkMw22MyeCfaTuuwAl+Pv1v5eBZbhinFvdhpe75IxvwO867d6J
-EHw3p2UI3YP8c8SYHACIqW8a70eC8ESLLN42ObslUe8EcK8/j+pb0Xqu9yA/NbbL
-LG1ApoebAmRsKuZ55NgztZS9SG1Vrfk+qdO7s8nG5E6B3I0TCsxmL5LpovZc8tIQ
-uLERkGwdNfQq4QdViIYDy7iwLTOzwomNos4rMrlHwIdtmKPPf5TphhiISGd099co
-mIIFiYJXWfeiEZfEQHETnuithA7oqhPm3p1EnOAdQ8xxzzxoArEgJ2c71zM3HFUF
-JbHTzJGB59xoKZvMrwtX+GzINbUN2qup5AdTjN3cunxVQzJdd8QsJH7uhNRy928e
-I65LRfEGOmDDbaNjqNJ5Z/s/wTzAYgCh4r2TyyIIMR3c9TsDwZhcr92qx1dFCbZ2
-M+LmoCOGHmg3bV3gHbvI
-=1zoX
------END PGP SIGNATURE-----
-
---AqsLC8rIMeq19msA--
+You should describe the race scenario in the patch description. OK?
