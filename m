@@ -3,15 +3,15 @@ Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
  [209.85.214.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9805A2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 21:25:17 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id AB8DE2C036F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 21:25:25 +1100 (EST)
 Received: by mail-bk0-f51.google.com with SMTP id e19so111780bku.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 03:25:14 -0700 (PDT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 03:25:25 -0700 (PDT)
 From: Christoph Fritz <chf.fritz@googlemail.com>
 To: Felipe Balbi <balbi@ti.com>
-Subject: [PATCH 1/7] usb: gadget: fsl_udc: simplify driver init
-Date: Fri, 19 Oct 2012 12:24:39 +0200
-Message-Id: <1350642285-8145-1-git-send-email-chf.fritz@googlemail.com>
+Subject: [PATCH 2/7] usb: gadget: fsl_udc: protect fsl_pullup() with spin_lock
+Date: Fri, 19 Oct 2012 12:24:40 +0200
+Message-Id: <1350642285-8145-2-git-send-email-chf.fritz@googlemail.com>
 In-Reply-To: <1350642156-8034-1-git-send-email-chf.fritz@googlemail.com>
 References: <1350642156-8034-1-git-send-email-chf.fritz@googlemail.com>
 Cc: Estevam Fabio-R49496 <r49496@freescale.com>,
@@ -32,78 +32,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To initialize this driver use 'module_platform_driver' instead
-of '__init' and '__exit'.
+This patch reworks fsl_pullup() against the background of switching over
+to udc_start()/udc_stop() style:
+
+Protect function fsl_pullup() with a spin_lock. Also set vbus_active as
+default to true. This prevents disabling USB controller if there is no
+driver support for an external transceiver (or GPIO) that detects a VBUS
+power session starting.
 
 Signed-off-by: Christoph Fritz <chf.fritz@googlemail.com>
 ---
- drivers/usb/gadget/fsl_udc_core.c |   37 +++++++++++--------------------------
- 1 files changed, 11 insertions(+), 26 deletions(-)
+ drivers/usb/gadget/fsl_udc_core.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-index 6ae70cb..340451d 100644
+index 340451d..0a0d6a6 100644
 --- a/drivers/usb/gadget/fsl_udc_core.c
 +++ b/drivers/usb/gadget/fsl_udc_core.c
-@@ -49,13 +49,14 @@
+@@ -1242,8 +1242,10 @@ static int fsl_vbus_draw(struct usb_gadget *gadget, unsigned mA)
+ static int fsl_pullup(struct usb_gadget *gadget, int is_on)
+ {
+ 	struct fsl_udc *udc;
++	unsigned long flags;
  
- #include "fsl_usb2_udc.h"
+ 	udc = container_of(gadget, struct fsl_udc, gadget);
++	spin_lock_irqsave(&udc->lock, flags);
+ 	udc->softconnect = (is_on != 0);
+ 	if (can_pullup(udc))
+ 		fsl_writel((fsl_readl(&dr_regs->usbcmd) | USB_CMD_RUN_STOP),
+@@ -1251,6 +1253,7 @@ static int fsl_pullup(struct usb_gadget *gadget, int is_on)
+ 	else
+ 		fsl_writel((fsl_readl(&dr_regs->usbcmd) & ~USB_CMD_RUN_STOP),
+ 				&dr_regs->usbcmd);
++	spin_unlock_irqrestore(&udc->lock, flags);
  
-+#define	DRIVER_NAME	"fsl-usb2-udc"
- #define	DRIVER_DESC	"Freescale High-Speed USB SOC Device Controller driver"
- #define	DRIVER_AUTHOR	"Li Yang/Jiang Bo"
- #define	DRIVER_VERSION	"Apr 20, 2007"
+ 	return 0;
+ }
+@@ -2557,6 +2560,7 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
+ 	INIT_LIST_HEAD(&udc_controller->gadget.ep_list);
+ 	udc_controller->gadget.speed = USB_SPEED_UNKNOWN;
+ 	udc_controller->gadget.name = driver_name;
++	udc->vbus_active = true;
  
- #define	DMA_ADDR_INVALID	(~(dma_addr_t)0)
- 
--static const char driver_name[] = "fsl-usb2-udc";
-+static const char driver_name[] = DRIVER_NAME;
- static const char driver_desc[] = DRIVER_DESC;
- 
- static struct usb_dr_device *dr_regs;
-@@ -2761,35 +2762,19 @@ static int fsl_udc_otg_resume(struct device *dev)
- 	Register entry point for the peripheral controller driver
- --------------------------------------------------------------------------*/
- 
--static struct platform_driver udc_driver = {
--	.remove  = __exit_p(fsl_udc_remove),
--	/* these suspend and resume are not usb suspend and resume */
--	.suspend = fsl_udc_suspend,
--	.resume  = fsl_udc_resume,
--	.driver  = {
--		.name = (char *)driver_name,
--		.owner = THIS_MODULE,
--		/* udc suspend/resume called from OTG driver */
-+static struct platform_driver fsl_udc_driver = {
-+	.probe		= fsl_udc_probe,
-+	.remove		= __devexit_p(fsl_udc_remove),
-+	.suspend	= fsl_udc_suspend,
-+	.resume		= fsl_udc_resume,
-+	.driver		= {
-+		.name	= DRIVER_NAME,
-+		.owner	= THIS_MODULE,
- 		.suspend = fsl_udc_otg_suspend,
- 		.resume  = fsl_udc_otg_resume,
- 	},
- };
--
--static int __init udc_init(void)
--{
--	printk(KERN_INFO "%s (%s)\n", driver_desc, DRIVER_VERSION);
--	return platform_driver_probe(&udc_driver, fsl_udc_probe);
--}
--
--module_init(udc_init);
--
--static void __exit udc_exit(void)
--{
--	platform_driver_unregister(&udc_driver);
--	printk(KERN_WARNING "%s unregistered\n", driver_desc);
--}
--
--module_exit(udc_exit);
-+module_platform_driver(fsl_udc_driver);
- 
- MODULE_DESCRIPTION(DRIVER_DESC);
- MODULE_AUTHOR(DRIVER_AUTHOR);
+ 	/* Setup gadget.dev and register with kernel */
+ 	dev_set_name(&udc_controller->gadget.dev, "gadget");
 -- 
 1.7.2.5
