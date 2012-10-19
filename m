@@ -1,25 +1,35 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 8064C2C0081
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 12:49:56 +1100 (EST)
-Message-ID: <5080B310.50608@cn.fujitsu.com>
-Date: Fri, 19 Oct 2012 09:55:28 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 649042C007F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 15:15:28 +1100 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: RE: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM support
+Date: Fri, 19 Oct 2012 04:15:20 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01ADA549@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1347934234-18223-1-git-send-email-B38951@freescale.com>
+ <86ADF4ED-B84C-4560-8781-D9FA4486D854@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AAA35A@039-SN1MPN1-002.039d.mgd.msft.net>,
+ <36119932-E4BF-4DF6-8D33-C9A832883272@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AAA4E8@039-SN1MPN1-002.039d.mgd.msft.net>
+ <8086D08B-62B7-4838-8DB6-0F6158DE581A@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AB4A6F@039-SN1MPN1-004.039d.mgd.msft.net>
+ <94F013E7935FF44C83EBE7784D62AD3F09432A5F@039-SN2MPN1-021.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01AB6AE7@039-SN1MPN1-004.039d.mgd.msft.net>
+ <95B12FA1-EC53-4632-8DFB-64109668BA9C@kernel.crashing.org>
+ <412C8208B4A0464FA894C5F0C278CD5D01AB8317@039-SN1MPN1-004.039d.mgd.msft.net>
+ <412C8208B4A0464FA894C5F0C278CD5D01AC2B34@039-SN1MPN1-004.039d.mgd.msft.net>
+ <30C76F52-4022-459D-8B84-876B1A572ABE@kernel.crashing.org>
+In-Reply-To: <30C76F52-4022-459D-8B84-876B1A572ABE@kernel.crashing.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-Subject: Re: [PATCH 5/10] memory-hotplug : memory-hotplug: check page type
- in get_page_bootmem
-References: <506E43E0.70507@jp.fujitsu.com> <506E46B6.3060502@jp.fujitsu.com>
- <CAHGf_=raSH5C8ye90F1PLZ8mGQUGggB=J0HYU8UhkKVDTV5JXQ@mail.gmail.com>
- <5080A394.2000409@jp.fujitsu.com>
-In-Reply-To: <5080A394.2000409@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, len.brown@intel.com,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- minchan.kim@gmail.com, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- rientjes@google.com, sparclinux@vger.kernel.org, cl@linux.com,
- linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,104 +39,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 10/19/2012 08:49 AM, Yasuaki Ishimatsu Wrote:
-> Hi Kosaki,
-> 
-> Sorry for late reply.
-> 
-> 2012/10/13 4:28, KOSAKI Motohiro wrote:
->> On Thu, Oct 4, 2012 at 10:32 PM, Yasuaki Ishimatsu
->> <isimatu.yasuaki@jp.fujitsu.com> wrote:
->>> The function get_page_bootmem() may be called more than one time to
->>> the same
->>> page. There is no need to set page's type, private if the function is
->>> not
->>> the first time called to the page.
->>>
->>> Note: the patch is just optimization and does not fix any problem.
->>>
->>> CC: David Rientjes <rientjes@google.com>
->>> CC: Jiang Liu <liuj97@gmail.com>
->>> CC: Len Brown <len.brown@intel.com>
->>> CC: Christoph Lameter <cl@linux.com>
->>> Cc: Minchan Kim <minchan.kim@gmail.com>
->>> CC: Andrew Morton <akpm@linux-foundation.org>
->>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->>> CC: Wen Congyang <wency@cn.fujitsu.com>
->>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>> ---
->>>   mm/memory_hotplug.c |   15 +++++++++++----
->>>   1 file changed, 11 insertions(+), 4 deletions(-)
->>>
->>> Index: linux-3.6/mm/memory_hotplug.c
->>> ===================================================================
->>> --- linux-3.6.orig/mm/memory_hotplug.c  2012-10-04 18:29:58.284676075
->>> +0900
->>> +++ linux-3.6/mm/memory_hotplug.c       2012-10-04 18:30:03.454680542
->>> +0900
->>> @@ -95,10 +95,17 @@ static void release_memory_resource(stru
->>>   static void get_page_bootmem(unsigned long info,  struct page *page,
->>>                               unsigned long type)
->>>   {
->>> -       page->lru.next = (struct list_head *) type;
->>> -       SetPagePrivate(page);
->>> -       set_page_private(page, info);
->>> -       atomic_inc(&page->_count);
->>> +       unsigned long page_type;
->>> +
->>> +       page_type = (unsigned long)page->lru.next;
->>
->> If I understand correctly, page->lru.next might be uninitialized yet.
-> 
-> Ah yes. I was misunderstanding...
-> 
-> Hi Wen,
-> 
-> When you update the physical hot remove patch-set, please drop the patch.
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, September 27, 2012 8:06 PM
+> To: Jia Hongtao-B38951
+> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472
+> Subject: Re: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM
+> support
+>=20
+> >>>>>>>>>>
+> >>>>>>>>>> On Sep 17, 2012, at 9:10 PM, Jia Hongtao wrote:
+> >>>>>>>>>>
+> >>>>>>>>>>> Power supply for PCI inbound/outbound window registers is
+> >>>>>>>>>>> off when system go to deep-sleep state. We save the values
+> >>>>>>>>>>> of registers
+> >>>>>>> before
+> >>>>>>>>>>> suspend and restore to registers after resume.
+> >>>>>>>>>>>
+> >>>>>>>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
+> >>>>>>>>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
+> >>>>>>>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
+> >>>>>>>>>>> ---
+> >>>>>>>>>>> Changes for V4:
+> >>>>>>>>>>> We just rebase the patch upon following patch:
+> >>>>>>>>>>> powerpc/fsl-pci: Unify pci/pcie initialization code
+> >>>>>>>>>>>
+> >>>>>>>>>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
+> >>>>>>>>>>> arch/powerpc/sysdev/fsl_pci.c         |  121
+> >>>>>>>>>> +++++++++++++++++++++++++++++++++
+> >>>>>>>>>>> 2 files changed, 122 insertions(+), 1 deletions(-)
+> >>>>>>>>>>
+> >>>>>>>>>> Did you ever compare this to just re-parsing device tree
+> method?
+> >>>>>>>>>>
+> >>>>>>>>>> - k
+> >>>>>>>>>
+> >>>>>>>>> I tested the re-parsing way by using setup_pci_atmu() when
+> >> resume.
+> >>>>>>>>> And I found out that re-parsing will *change* outbound IO
+> >>>>>>>>> translation address regitster.
+> >>>>>>>>>
+> >>>>>>>>> It seems that in the first bootup, after setup_atmu()
+> >>>>>>>>> pcibios_setup_phb_resources() may update hose->io_resource,
+> >>>>>>>>> but atmu is not updated according to the new hose->io_resource
+> value.
+> >>>>>>>>> In resume from sleep setup_atmu() will reset atmu according to
+> >>>>>>>>> the new hose->io_resource value. So the setup_atmu() will
+> >>>>>>>>> cause different result on outbound IO register between first
+> >>>>>>>>> bootup and resume from sleep.
+> >>>>>>>>>
+> >>>>>>>>> So... There's a possibility that in the first bootup atmu is
+> >>>>>>>>> not setup properly.
+> >>>>>>>>
+> >>>>>>>> [Are you seeing this happen in your testing?  If so its a bug
+> >>>>>>>> we need
+> >>>>>>> to look at fixing.]
+> >>>>>>>>
+> >>>>>>>> Yes, I see this in my testing.
+> >>>>>>>> Also PCIe ethernet card works well after resuming from sleep in
+> >>>>>>>> both
+> >>>>>>> save/restore
+> >>>>>>>> and re-parsing way. (Maybe PCIe ethernet card don't need
+> >>>>>>>> outbound IO
+> >>>>>>> resource)
+> >>>>>>>> So, I guess the result of re-parsing (actually it's re-setup)
+> >>>>>>>> is right
+> >>>>>>> and ATMU is not setup
+> >>>>>>>> properly at the first bootup.
+> >>>>>>>
+> >>>>>>> Are you seeing the following message - "PCI: I/O resource not
+> >>>>>>> set for host bridge" ?
+> >>>>>>
+> >>>>>> No.
+> >>>>>>
+> >>>>>>>
+> >>>>>>> Trying to understand why you'd hit the reassignment of
+> io_resource.
+> >>>>>>>
+> >>>>>>> - k
+> >>>>>>>
+> >>>>>>
+> >>>>>> I did some investigations and the conclusion is:
+> >>>>>>
+> >>>>>> io_resource.flags & IORESOURCE_IO are both positive but
+> >>>>>> io_resource.start is 0 before pcibios_setup_phb_io_space() is done=
+.
+> >>>>>>
+> >>>>>> The sequence of related process listed below:
+> >>>>>> fsl_add_bridge() -> setup_pci_atmu()
+> >>>>>> pcibios_init() -> pcibios_scan_phb() ->
+> >>>>>> pcibios_setup_phb_io_space()
+> >>>>>>
+> >>>>>> Because fsl_add_bridge() must be finished before pcibios_init()
+> >>>>>> so ATMU is set when io_resource.start is 0. That means outbound
+> >>>>>> IO regs are not set.
+> >>>>>>
+> >>>>>> If system re-setup ATMU the io_resource.start has already updated
+> >>>>>> so outbound IO regs are set.
+> >>>>>>
+> >>>>>> My question is:
+> >>>>>> Is there any problem if outbound IO regs are not set in first
+> >> bootup?
+> >>>
+> >>> Yes, it means that IO transactions would not work.
+> >>
+> >> I agree.
+> >>
+> >>>
+> >>>>> Please also provide the IO resource address range before and after
+> >>>>> the pci scan.  Then we can evaluate if the range is needed to be
+> >>>>> mapped
+> >>> via
+> >>>>> ATMU.
+> >>>>>
+> >>>>> Leo
+> >>>>
+> >>>> Since potar is set by out_be32(&pci->pow[j].potar, (hose-
+> >>>> io_resource.start >> 12);  I provide the result of
+> >>>> hose->io_resource.start >> 12 as follows:
+> >>>>
+> >>>> pcie@ffe09000:
+> >>>> before pci scan: io_resource.start >> 12: 0 after pci scan :
+> >>>> io_resource.start >> 12: ff7ed
+> >>>>
+> >>>> pcie@ffe0a000:
+> >>>> before pci scan: io_resource.start >> 12: 0 after pci scan :
+> >>>> io_resource.start >> 12: ff7db
+> >>>>
+> >>>> pcie@ffe0b000:
+> >>>> before pci scan: io_resource.start >> 12: 0 after pci scan :
+> >>>> io_resource.start >> 12: ff7c9
+> >>>>
+> >>>> Note that I tested on P1022DS.
+> >>>>
+> >>>> - Hongtao.
+> >>>
+> >>> 1. What's the device tree nodes for PCIe look like?
+> >>> 2. Can you get the pr_debug() in setup_pci_atmu() to print and
+> >>> report results (as well as full boot log)
+> >>
+> >> Please refer to the attached file.
+> >> In the log file I also print the device tree.
+> >>
+> >> - Hongtao.
+> >>
+> >>>
+> >>> However, I think the change of the io_resource.start is normal and
+> >>> correct behavior.
+> >>>
+> >>> - k
+> >>>
+> >>
+> >
+> > Hi Kumar,
+> > I have already sent the log.
+> > Do you have any comment on it?
+> >
+> > Thanks.
+> > - Hongtao.
+> >
+>=20
+> Hongtao,
+>=20
+> You mentioned:
+>=20
+> > I tested the re-parsing way by using setup_pci_atmu() when resume.
+> > And I found out that re-parsing will *change* outbound IO translation
+> > address regitster.
+>=20
+> What do the values look like in both ATMU registers and io_resource if
+> you reparse?
+>=20
+> - k
 
-OK
 
-Thanks
-Wen Congyang
+Hi Kumar,
 
-> 
-> Thanks,
-> Yasuaki Ishimatsu   
->> Moreover, I have no seen any good effect in this patch. I don't
->> understand
->> why we need to increase code complexity.
->>
->>
->>
->>> +       if (page_type < MEMORY_HOTPLUG_MIN_BOOTMEM_TYPE ||
->>> +           page_type > MEMORY_HOTPLUG_MAX_BOOTMEM_TYPE){
->>> +               page->lru.next = (struct list_head *)type;
->>> +               SetPagePrivate(page);
->>> +               set_page_private(page, info);
->>> +               atomic_inc(&page->_count);
->>> +       } else
->>> +               atomic_inc(&page->_count);
->>>   }
->>>
->>>   /* reference to __meminit __free_pages_bootmem is valid
->>>
->>> -- 
->>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
->>> the body to majordomo@kvack.org.  For more info on Linux MM,
->>> see: http://www.linux-mm.org/ .
->>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->> -- 
->> To unsubscribe from this list: send the line "unsubscribe
->> linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
-> 
-> 
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+About this topic do you have any further comments?
+
+Thanks.
+- Hongtao.
