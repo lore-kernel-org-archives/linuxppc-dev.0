@@ -1,27 +1,22 @@
-Return-Path: <joe@perches.com>
-From: Joe Perches <joe@perches.com>
-To: davinci-linux-open-source@linux.davincidsp.com,
- linux-arm-kernel@lists.infradead.org, linux-rdma@vger.kernel.org,
- netdev@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
- linuxppc-dev@lists.ozlabs.org, e1000-devel@lists.sourceforge.net,
- cbe-oss-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
- wimax@linuxwimax.org, linux-wireless@vger.kernel.org,
- ath9k-devel@lists.ath9k.org, b43-dev@lists.infradead.org,
- users@rt2x00.serialmonkey.com, devicetree-discuss@lists.ozlabs.org,
- linux-parisc@vger.kernel.org, linux-s390@vger.kernel.org,
- linux-scsi@vger.kernel.org, devel@open-fcoe.org, linux-nfs@vger.kernel.org,
- linux-sctp@vger.kernel.org, b.a.t.m.a.n@lists.open-mesh.org,
- bridge@lists.linux-foundation.org, netfilter-devel@vger.kernel.org,
- netfilter@vger.kernel.org, coreteam@netfilter.org,
- lvs-devel@vger.kernel.org, dev@openvswitch.org
-Subject: [PATCH net-next 00/21] treewide: Use consistent api style for address
- testing
-Date: Thu, 18 Oct 2012 20:55:31 -0700
-Message-Id: <cover.1350618006.git.joe@perches.com>
-Cc: devel@driverdev.osuosl.org, linux-mips@linux-mips.org,
- user-mode-linux-devel@lists.sourceforge.net, linux-doc@vger.kernel.org,
- brcm80211-dev-list@broadcom.com, linux-kernel@vger.kernel.org,
- user-mode-linux-user@lists.sourceforge.net
+Return-Path: <mla@apm.com>
+Received: from exprod5og101.obsmtp.com (exprod5og101.obsmtp.com [64.18.0.141])
+ by ozlabs.org (Postfix) with SMTP id 5C2DF2C0096
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 14:24:09 +1100 (EST)
+Received: by mail-ia0-f198.google.com with SMTP id l29so48020iag.9
+ for <linuxppc-dev@ozlabs.org>; Thu, 18 Oct 2012 20:24:08 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <508060FD.3040202@gmail.com>
+References: <507EF5AD.5070203__24977.4320669987$1350497770$gmane$org@gmail.com>
+ <50802F4C.3000309__36526.1883860969$1350578085$gmane$org@gmail.com>
+ <50804020.30505@gmail.com> <1350587006.2476.12.camel@pasglop>
+ <508060FD.3040202@gmail.com>
+From: Mai La <mla@apm.com>
+Date: Fri, 19 Oct 2012 10:16:07 +0700
+Message-ID: <CAJ0-vuiccVbFk8=0TXO=Ak_a-0_yr55E2hs-GRVXLuKLNYjfCQ@mail.gmail.com>
+Subject: Re: ELDK 4.2/kilauea/3.5+ kernel broken
+To: Robert Berger <robert.karl.berger@gmail.com>
+Content-Type: multipart/alternative; boundary=14dae934061ff758b604cc60edb0
+Cc: wd@denx.de, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,378 +26,225 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ethernet, ipv4, and ipv6 address testing uses 3 different api naming styles.
+--14dae934061ff758b604cc60edb0
+Content-Type: text/plain; charset=ISO-8859-1
 
-ethernet uses:	is_<foo>_ether_addr
-ipv4 uses:	ipv4_is_<foo>
-ipv6 uses:	ipv6_addr_<foo>
+Hi,
 
-Standardize on the ipv6 style of <prefix>_addr_<type> to reduce
-the number of styles to remember.
+My patch was:
 
-The new consistent styles are:
+@@ -150,12 +157,11 @@ static int ppc4xx_setup_pcieh_hw(struct
+platform_device *dev,
+        if (!sdr_addr)
+                return -1;
 
-eth_addr_<foo>(const u8 *)
-ipv4_addr_<foo>(__be32)
-ipv6_addr_<foo>(const struct in6_addr *)
+-       SDR0_WRITE(sdr_addr, (u64)res.start >> 32);      /*HIGH addr */
+-       SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
+-
++       mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));      /*HIGH addr
+*/
++       mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));  /* Low addr
+*/
 
-Add temporary backward compatibility #defines for the old names too.
+        msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
+-       if (msi->msi_dev)
++       if (!msi->msi_dev)
+                return -ENODEV;
 
-Joe Perches (21):
-  etherdevice: Rename is_<foo>_ether_addr tests to eth_addr_<foo>
-  net: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  arch: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  wireless: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  drivers: net: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  staging: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  infiniband: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  scsi: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  of: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  s390: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  usb: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  uwb: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  Documentation: networking: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  llc_if.h: Convert is_<foo>_ether_addr uses to eth_addr_<foo>
-  in.h: Rename ipv4_is_<foo> functions to ipv4_addr_<foo>
-  net: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
-  infiniband: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
-  ath6kl: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
-  parisc: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
-  lockd: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
-  sctp: Convert ipv4_is_<foo> uses to ipv4_addr_<foo>
+        msi->msi_regs = of_iomap(msi->msi_dev, 0);
 
- Documentation/networking/driver.txt                |    2 +-
- arch/arm/mach-davinci/board-mityomapl138.c         |    2 +-
- arch/arm/mach-pxa/colibri-pxa3xx.c                 |    2 +-
- arch/avr32/boards/atngw100/setup.c                 |    2 +-
- arch/avr32/boards/atstk1000/atstk1002.c            |    2 +-
- arch/avr32/boards/favr-32/setup.c                  |    2 +-
- arch/avr32/boards/hammerhead/setup.c               |    2 +-
- arch/avr32/boards/merisc/setup.c                   |    2 +-
- arch/avr32/boards/mimc200/setup.c                  |    2 +-
- arch/mips/alchemy/common/platform.c                |    4 +-
- arch/um/drivers/net_kern.c                         |    6 +-
- drivers/infiniband/core/cma.c                      |    4 +-
- drivers/infiniband/hw/amso1100/c2.c                |    2 +-
- drivers/infiniband/hw/nes/nes_nic.c                |    2 +-
- drivers/net/bonding/bond_3ad.c                     |    2 +-
- drivers/net/bonding/bond_alb.c                     |    2 +-
- drivers/net/bonding/bond_main.c                    |    6 +-
- drivers/net/dummy.c                                |    2 +-
- drivers/net/ethernet/3com/3c59x.c                  |    2 +-
- drivers/net/ethernet/3com/typhoon.c                |    2 +-
- drivers/net/ethernet/8390/etherh.c                 |    2 +-
- drivers/net/ethernet/adi/bfin_mac.c                |    6 +-
- drivers/net/ethernet/aeroflex/greth.c              |    4 +-
- drivers/net/ethernet/amd/au1000_eth.c              |    2 +-
- drivers/net/ethernet/amd/depca.c                   |    4 +-
- drivers/net/ethernet/amd/pcnet32.c                 |    8 ++--
- drivers/net/ethernet/atheros/atl1c/atl1c_hw.c      |    2 +-
- drivers/net/ethernet/atheros/atl1c/atl1c_main.c    |    2 +-
- drivers/net/ethernet/atheros/atl1e/atl1e_hw.c      |    4 +-
- drivers/net/ethernet/atheros/atl1e/atl1e_main.c    |    2 +-
- drivers/net/ethernet/atheros/atlx/atl1.c           |   10 ++--
- drivers/net/ethernet/atheros/atlx/atl2.c           |   14 +++---
- drivers/net/ethernet/atheros/atlx/atlx.c           |    2 +-
- drivers/net/ethernet/broadcom/b44.c                |    4 +-
- drivers/net/ethernet/broadcom/bnx2.c               |    2 +-
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.c    |    6 +-
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_cmn.h    |    4 +-
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_main.c   |    6 +-
- drivers/net/ethernet/broadcom/bnx2x/bnx2x_sp.c     |    2 +-
- drivers/net/ethernet/broadcom/cnic.c               |    2 +-
- drivers/net/ethernet/broadcom/tg3.c                |    6 +-
- drivers/net/ethernet/brocade/bna/bnad.c            |    6 +-
- drivers/net/ethernet/cadence/at91_ether.c          |    6 +-
- drivers/net/ethernet/cadence/macb.c                |    4 +-
- drivers/net/ethernet/calxeda/xgmac.c               |    6 +-
- drivers/net/ethernet/chelsio/cxgb3/cxgb3_main.c    |    2 +-
- drivers/net/ethernet/chelsio/cxgb4/cxgb4_main.c    |    2 +-
- .../net/ethernet/chelsio/cxgb4vf/cxgb4vf_main.c    |    2 +-
- drivers/net/ethernet/cirrus/ep93xx_eth.c           |    2 +-
- drivers/net/ethernet/cirrus/mac89x0.c              |    2 +-
- drivers/net/ethernet/cisco/enic/enic_dev.c         |    4 +-
- drivers/net/ethernet/cisco/enic/enic_main.c        |   10 ++--
- drivers/net/ethernet/cisco/enic/enic_pp.c          |   10 ++--
- drivers/net/ethernet/davicom/dm9000.c              |    6 +-
- drivers/net/ethernet/dec/ewrk3.c                   |    4 +-
- drivers/net/ethernet/dec/tulip/de4x5.c             |    4 +-
- drivers/net/ethernet/dlink/sundance.c              |    2 +-
- drivers/net/ethernet/dnet.c                        |    6 +-
- drivers/net/ethernet/emulex/benet/be_main.c        |    8 ++--
- drivers/net/ethernet/ethoc.c                       |    6 +-
- drivers/net/ethernet/faraday/ftgmac100.c           |    2 +-
- drivers/net/ethernet/faraday/ftmac100.c            |    2 +-
- drivers/net/ethernet/freescale/fec.c               |    8 ++--
- drivers/net/ethernet/freescale/fec_mpc52xx.c       |    2 +-
- drivers/net/ethernet/freescale/gianfar_ethtool.c   |   12 ++--
- drivers/net/ethernet/freescale/ucc_geth.c          |    2 +-
- drivers/net/ethernet/i825xx/ether1.c               |    2 +-
- drivers/net/ethernet/ibm/ehea/ehea_main.c          |    4 +-
- drivers/net/ethernet/intel/e100.c                  |    4 +-
- drivers/net/ethernet/intel/e1000/e1000_main.c      |    4 +-
- drivers/net/ethernet/intel/e1000e/mac.c            |    2 +-
- drivers/net/ethernet/intel/e1000e/netdev.c         |    4 +-
- drivers/net/ethernet/intel/igb/e1000_mac.c         |    2 +-
- drivers/net/ethernet/intel/igb/igb_main.c          |    8 ++--
- drivers/net/ethernet/intel/igbvf/netdev.c          |    6 +-
- drivers/net/ethernet/intel/ixgb/ixgb_hw.c          |    6 +-
- drivers/net/ethernet/intel/ixgb/ixgb_main.c        |    6 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_fcoe.c      |    2 +-
- drivers/net/ethernet/intel/ixgbe/ixgbe_main.c      |   14 +++---
- drivers/net/ethernet/intel/ixgbe/ixgbe_sriov.c     |    6 +-
- drivers/net/ethernet/intel/ixgbevf/ixgbevf_main.c  |    8 ++--
- drivers/net/ethernet/lantiq_etop.c                 |    2 +-
- drivers/net/ethernet/marvell/mv643xx_eth.c         |    4 +-
- drivers/net/ethernet/marvell/pxa168_eth.c          |    2 +-
- drivers/net/ethernet/marvell/skge.c                |    6 +-
- drivers/net/ethernet/marvell/sky2.c                |    2 +-
- drivers/net/ethernet/mellanox/mlx4/en_netdev.c     |    2 +-
- .../net/ethernet/mellanox/mlx4/resource_tracker.c  |    4 +-
- drivers/net/ethernet/micrel/ks8695net.c            |    6 +-
- drivers/net/ethernet/micrel/ks8842.c               |    4 +-
- drivers/net/ethernet/micrel/ks8851.c               |    4 +-
- drivers/net/ethernet/micrel/ks8851_mll.c           |    2 +-
- drivers/net/ethernet/microchip/enc28j60.c          |    4 +-
- drivers/net/ethernet/myricom/myri10ge/myri10ge.c   |    2 +-
- drivers/net/ethernet/neterion/s2io.c               |    2 +-
- drivers/net/ethernet/neterion/vxge/vxge-config.c   |    2 +-
- drivers/net/ethernet/neterion/vxge/vxge-main.c     |   12 ++--
- drivers/net/ethernet/netx-eth.c                    |    2 +-
- drivers/net/ethernet/nuvoton/w90p910_ether.c       |    4 +-
- drivers/net/ethernet/nvidia/forcedeth.c            |    4 +-
- drivers/net/ethernet/nxp/lpc_eth.c                 |    8 ++--
- drivers/net/ethernet/octeon/octeon_mgmt.c          |    2 +-
- .../net/ethernet/oki-semi/pch_gbe/pch_gbe_main.c   |    6 +-
- drivers/net/ethernet/pasemi/pasemi_mac.c           |    4 +-
- .../net/ethernet/qlogic/netxen/netxen_nic_main.c   |    4 +-
- drivers/net/ethernet/qlogic/qla3xxx.c              |    2 +-
- drivers/net/ethernet/qlogic/qlcnic/qlcnic_main.c   |    4 +-
- drivers/net/ethernet/qlogic/qlge/qlge_main.c       |    6 +-
- drivers/net/ethernet/realtek/8139cp.c              |    2 +-
- drivers/net/ethernet/realtek/8139too.c             |    2 +-
- drivers/net/ethernet/realtek/r8169.c               |    2 +-
- drivers/net/ethernet/renesas/sh_eth.c              |    4 +-
- drivers/net/ethernet/seeq/ether3.c                 |    2 +-
- drivers/net/ethernet/sfc/efx.c                     |    2 +-
- drivers/net/ethernet/sfc/ethtool.c                 |    6 +-
- drivers/net/ethernet/sfc/siena_sriov.c             |    6 +-
- drivers/net/ethernet/sis/sis900.c                  |    2 +-
- drivers/net/ethernet/smsc/smc911x.c                |    4 +-
- drivers/net/ethernet/smsc/smc91x.c                 |    4 +-
- drivers/net/ethernet/smsc/smsc911x.c               |   10 ++--
- drivers/net/ethernet/smsc/smsc9420.c               |    6 +-
- drivers/net/ethernet/stmicro/stmmac/stmmac_main.c  |    4 +-
- drivers/net/ethernet/sun/niu.c                     |    8 ++--
- drivers/net/ethernet/sun/sungem.c                  |    2 +-
- drivers/net/ethernet/ti/cpsw.c                     |    2 +-
- drivers/net/ethernet/ti/davinci_emac.c             |    6 +-
- drivers/net/ethernet/tile/tilegx.c                 |    4 +-
- drivers/net/ethernet/tile/tilepro.c                |    4 +-
- drivers/net/ethernet/toshiba/ps3_gelic_net.c       |    2 +-
- drivers/net/ethernet/toshiba/ps3_gelic_wireless.c  |    2 +-
- drivers/net/ethernet/toshiba/spider_net.c          |    4 +-
- drivers/net/ethernet/toshiba/tc35815.c             |    4 +-
- drivers/net/ethernet/tundra/tsi108_eth.c           |    8 ++--
- drivers/net/ethernet/via/via-rhine.c               |    2 +-
- drivers/net/ethernet/wiznet/w5100.c                |    6 +-
- drivers/net/ethernet/wiznet/w5300.c                |    6 +-
- drivers/net/ethernet/xilinx/ll_temac_main.c        |    2 +-
- drivers/net/ethernet/xilinx/xilinx_axienet_main.c  |    2 +-
- drivers/net/hamradio/bpqether.c                    |    2 +-
- drivers/net/ifb.c                                  |    2 +-
- drivers/net/macvlan.c                              |   16 +++---
- drivers/net/phy/at803x.c                           |    2 +-
- drivers/net/rionet.c                               |    4 +-
- drivers/net/team/team.c                            |    4 +-
- drivers/net/tun.c                                  |    4 +-
- drivers/net/usb/asix_common.c                      |    2 +-
- drivers/net/usb/dm9601.c                           |    4 +-
- drivers/net/usb/mcs7830.c                          |    2 +-
- drivers/net/usb/smsc75xx.c                         |    2 +-
- drivers/net/usb/smsc95xx.c                         |    2 +-
- drivers/net/veth.c                                 |    2 +-
- drivers/net/vxlan.c                                |    4 +-
- drivers/net/wimax/i2400m/driver.c                  |    2 +-
- drivers/net/wireless/adm8211.c                     |    2 +-
- drivers/net/wireless/airo.c                        |    4 +-
- drivers/net/wireless/at76c50x-usb.c                |    8 ++--
- drivers/net/wireless/ath/ath6kl/cfg80211.c         |    8 ++--
- drivers/net/wireless/ath/ath6kl/main.c             |    8 ++--
- drivers/net/wireless/ath/ath6kl/txrx.c             |   10 ++--
- drivers/net/wireless/ath/ath6kl/wmi.c              |    4 +-
- drivers/net/wireless/ath/ath9k/recv.c              |    8 ++--
- drivers/net/wireless/b43/main.c                    |    2 +-
- drivers/net/wireless/b43legacy/main.c              |    2 +-
- .../net/wireless/brcm80211/brcmfmac/dhd_linux.c    |    4 +-
- .../net/wireless/brcm80211/brcmfmac/wl_cfg80211.c  |    2 +-
- .../net/wireless/brcm80211/brcmsmac/mac80211_if.c  |    2 +-
- drivers/net/wireless/brcm80211/brcmsmac/main.c     |   16 +++---
- drivers/net/wireless/hostap/hostap_info.c          |    2 +-
- drivers/net/wireless/hostap/hostap_ioctl.c         |    8 ++--
- drivers/net/wireless/hostap/hostap_main.c          |    2 +-
- drivers/net/wireless/ipw2x00/ipw2100.c             |    6 +-
- drivers/net/wireless/ipw2x00/ipw2200.c             |   18 +++---
- drivers/net/wireless/ipw2x00/libipw_rx.c           |   12 ++--
- drivers/net/wireless/ipw2x00/libipw_tx.c           |    4 +-
- drivers/net/wireless/iwlegacy/3945-mac.c           |    2 +-
- drivers/net/wireless/iwlegacy/4965-mac.c           |    2 +-
- drivers/net/wireless/iwlegacy/common.c             |    2 +-
- drivers/net/wireless/iwlwifi/dvm/sta.c             |    2 +-
- drivers/net/wireless/libertas_tf/main.c            |    2 +-
- drivers/net/wireless/mwifiex/join.c                |    2 +-
- drivers/net/wireless/mwifiex/scan.c                |    2 +-
- drivers/net/wireless/mwifiex/sta_cmd.c             |    2 +-
- drivers/net/wireless/mwifiex/sta_cmdresp.c         |    2 +-
- drivers/net/wireless/mwifiex/uap_txrx.c            |    2 +-
- drivers/net/wireless/mwl8k.c                       |    2 +-
- drivers/net/wireless/orinoco/wext.c                |    4 +-
- drivers/net/wireless/p54/eeprom.c                  |    2 +-
- drivers/net/wireless/rndis_wlan.c                  |   18 +++---
- drivers/net/wireless/rt2x00/rt2400pci.c            |    2 +-
- drivers/net/wireless/rt2x00/rt2500pci.c            |    2 +-
- drivers/net/wireless/rt2x00/rt2500usb.c            |    2 +-
- drivers/net/wireless/rt2x00/rt2800lib.c            |    8 ++--
- drivers/net/wireless/rt2x00/rt61pci.c              |    2 +-
- drivers/net/wireless/rt2x00/rt73usb.c              |    2 +-
- drivers/net/wireless/rtl818x/rtl8180/dev.c         |    4 +-
- drivers/net/wireless/rtl818x/rtl8187/dev.c         |    4 +-
- drivers/net/wireless/rtlwifi/base.c                |    6 +-
- drivers/net/wireless/rtlwifi/cam.c                 |    2 +-
- drivers/net/wireless/rtlwifi/pci.c                 |    8 ++--
- drivers/net/wireless/rtlwifi/rc.c                  |    4 +-
- drivers/net/wireless/rtlwifi/rtl8192ce/trx.c       |    4 +-
- drivers/net/wireless/rtlwifi/rtl8192cu/trx.c       |    4 +-
- drivers/net/wireless/rtlwifi/usb.c                 |   12 ++--
- drivers/net/wireless/ti/wl1251/main.c              |   12 ++--
- drivers/net/wireless/ti/wlcore/cmd.c               |    2 +-
- drivers/net/wireless/ti/wlcore/main.c              |    6 +-
- drivers/net/wireless/ti/wlcore/tx.c                |    2 +-
- drivers/net/wireless/wl3501_cs.c                   |    2 +-
- drivers/net/wireless/zd1211rw/zd_mac.c             |    2 +-
- drivers/of/of_net.c                                |    6 +-
- drivers/parisc/led.c                               |    2 +-
- drivers/s390/net/qeth_l2_main.c                    |    4 +-
- drivers/scsi/bnx2fc/bnx2fc_els.c                   |    4 +-
- drivers/scsi/bnx2fc/bnx2fc_fcoe.c                  |    2 +-
- drivers/scsi/fcoe/fcoe.c                           |   12 ++--
- drivers/scsi/fcoe/fcoe_ctlr.c                      |    8 ++--
- drivers/scsi/fnic/fnic_fcs.c                       |    6 +-
- drivers/staging/ccg/u_ether.c                      |    6 +-
- drivers/staging/csr/sme_wext.c                     |    2 +-
- drivers/staging/et131x/et131x.c                    |    4 +-
- drivers/staging/gdm72xx/gdm_wimax.c                |    2 +-
- drivers/staging/octeon/ethernet.c                  |    2 +-
- drivers/staging/ozwpan/ozcdev.c                    |    2 +-
- .../rtl8187se/ieee80211/ieee80211_softmac.c        |    2 +-
- .../rtl8187se/ieee80211/ieee80211_softmac_wx.c     |    2 +-
- drivers/staging/rtl8187se/ieee80211/ieee80211_tx.c |    2 +-
- drivers/staging/rtl8187se/r8180_core.c             |    2 +-
- drivers/staging/rtl8192e/rtl8192e/rtl_core.c       |    6 +-
- drivers/staging/rtl8192e/rtl819x_TSProc.c          |    2 +-
- drivers/staging/rtl8192e/rtllib_rx.c               |    8 ++--
- drivers/staging/rtl8192e/rtllib_softmac.c          |    4 +-
- drivers/staging/rtl8192e/rtllib_softmac_wx.c       |    4 +-
- drivers/staging/rtl8192e/rtllib_tx.c               |   12 ++--
- drivers/staging/rtl8192u/ieee80211/ieee80211_rx.c  |    4 +-
- .../staging/rtl8192u/ieee80211/ieee80211_softmac.c |    2 +-
- .../rtl8192u/ieee80211/ieee80211_softmac_wx.c      |    2 +-
- drivers/staging/rtl8192u/ieee80211/ieee80211_tx.c  |   12 ++--
- .../staging/rtl8192u/ieee80211/rtl819x_TSProc.c    |    2 +-
- drivers/staging/rtl8192u/r8192U_core.c             |    8 ++--
- drivers/staging/rtl8712/rtl871x_ioctl_linux.c      |    2 +-
- drivers/staging/rtl8712/rtl871x_ioctl_set.c        |    2 +-
- drivers/staging/rtl8712/rtl871x_mlme.c             |    2 +-
- drivers/staging/rtl8712/rtl871x_recv.c             |    8 ++--
- drivers/staging/slicoss/slicoss.c                  |    2 +-
- drivers/staging/vt6655/bssdb.c                     |    2 +-
- drivers/staging/vt6655/card.c                      |    2 +-
- drivers/staging/vt6655/device_main.c               |    2 +-
- drivers/staging/vt6655/dpc.c                       |    4 +-
- drivers/staging/vt6655/hostap.c                    |    4 +-
- drivers/staging/vt6655/iwctl.c                     |    2 +-
- drivers/staging/vt6655/key.c                       |    2 +-
- drivers/staging/vt6655/mib.c                       |    8 ++--
- drivers/staging/vt6655/rxtx.c                      |   10 ++--
- drivers/staging/vt6655/wpactl.c                    |    4 +-
- drivers/staging/vt6656/bssdb.c                     |    2 +-
- drivers/staging/vt6656/dpc.c                       |    4 +-
- drivers/staging/vt6656/hostap.c                    |    4 +-
- drivers/staging/vt6656/iwctl.c                     |    2 +-
- drivers/staging/vt6656/key.c                       |    2 +-
- drivers/staging/vt6656/rxtx.c                      |   14 +++---
- drivers/staging/vt6656/wpactl.c                    |    2 +-
- drivers/staging/wlags49_h2/wl_wext.c               |    2 +-
- drivers/usb/gadget/u_ether.c                       |    6 +-
- drivers/uwb/address.c                              |    2 +-
- include/linux/etherdevice.h                        |   36 ++++++++-----
- include/linux/in.h                                 |   40 ++++++++++----
- include/linux/lockd/lockd.h                        |    4 +-
- include/net/llc_if.h                               |    4 +-
- include/net/sctp/constants.h                       |   12 ++--
- net/802/stp.c                                      |    4 +-
- net/8021q/vlan_dev.c                               |    6 +-
- net/8021q/vlan_netlink.c                           |    2 +-
- net/batman-adv/bat_iv_ogm.c                        |    2 +-
- net/batman-adv/bridge_loop_avoidance.c             |    8 ++--
- net/batman-adv/routing.c                           |   20 ++++----
- net/batman-adv/soft-interface.c                    |    4 +-
- net/batman-adv/unicast.c                           |    2 +-
- net/batman-adv/vis.c                               |    4 +-
- net/bridge/br_device.c                             |    6 +-
- net/bridge/br_fdb.c                                |    2 +-
- net/bridge/br_if.c                                 |    2 +-
- net/bridge/br_input.c                              |    8 ++--
- net/bridge/br_multicast.c                          |    4 +-
- net/bridge/br_netlink.c                            |    2 +-
- net/core/netpoll.c                                 |    2 +-
- net/core/pktgen.c                                  |   14 +++---
- net/core/rtnetlink.c                               |    2 +-
- net/dsa/slave.c                                    |    2 +-
- net/ethernet/eth.c                                 |    6 +-
- net/ipv4/arp.c                                     |    4 +-
- net/ipv4/datagram.c                                |    2 +-
- net/ipv4/devinet.c                                 |    4 +-
- net/ipv4/fib_frontend.c                            |   12 ++--
- net/ipv4/igmp.c                                    |   12 ++--
- net/ipv4/ip_gre.c                                  |   22 ++++----
- net/ipv4/ipmr.c                                    |    4 +-
- net/ipv4/netfilter/ipt_rpfilter.c                  |   10 ++--
- net/ipv4/ping.c                                    |    2 +-
- net/ipv4/raw.c                                     |    2 +-
- net/ipv4/route.c                                   |   58 ++++++++++----------
- net/ipv4/udp.c                                     |    2 +-
- net/ipv6/addrconf.c                                |   12 ++--
- net/ipv6/ip6_gre.c                                 |    2 +-
- net/l2tp/l2tp_ip.c                                 |    2 +-
- net/l2tp/l2tp_ip6.c                                |    2 +-
- net/mac80211/cfg.c                                 |    2 +-
- net/mac80211/ibss.c                                |    8 ++--
- net/mac80211/ieee80211_i.h                         |    2 +-
- net/mac80211/iface.c                               |   12 ++--
- net/mac80211/mesh.c                                |    2 +-
- net/mac80211/mesh_hwmp.c                           |    4 +-
- net/mac80211/mesh_pathtbl.c                        |    4 +-
- net/mac80211/mesh_plink.c                          |    2 +-
- net/mac80211/mlme.c                                |    4 +-
- net/mac80211/rx.c                                  |   50 +++++++++---------
- net/mac80211/sta_info.c                            |    2 +-
- net/mac80211/status.c                              |    6 +-
- net/mac80211/tx.c                                  |   22 ++++----
- net/mac80211/wme.c                                 |    4 +-
- net/netfilter/ipvs/ip_vs_xmit.c                    |    6 +-
- net/netfilter/xt_cluster.c                         |    2 +-
- net/netfilter/xt_pkttype.c                         |    2 +-
- net/openvswitch/flow.c                             |    4 +-
- net/openvswitch/vport-internal_dev.c               |    2 +-
- net/sctp/protocol.c                                |   10 ++--
- net/wireless/core.c                                |    2 +-
- net/wireless/ibss.c                                |    2 +-
- net/wireless/nl80211.c                             |    4 +-
- net/wireless/util.c                                |    4 +-
- net/wireless/wext-compat.c                         |    2 +-
- net/wireless/wext-sme.c                            |    2 +-
- 331 files changed, 833 insertions(+), 809 deletions(-)
 
--- 
-1.7.8.111.gad25c.dirty
+1. The first few lines: change from SDR0_WRITE to mtdcri since the old one
+cause crash. I use ELDK 4.2.
+
+2. The second one should mean that: if not find any node then return error.
+So it should be "!msi->msi_dev"
+
+Regards,
+Mai La.
+
+
+On Fri, Oct 19, 2012 at 3:05 AM, Robert Berger <robert.karl.berger@gmail.com
+> wrote:
+
+> Hi,
+>
+> On 10/18/2012 10:03 PM, Benjamin Herrenschmidt wrote:
+> > On Thu, 2012-10-18 at 20:45 +0300, Robert Berger wrote:
+> >> -       mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));      /*HIGH
+> addr */
+> >> -       mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));  /* Low
+> addr */
+> >> +       SDR0_WRITE(sdr_addr, (u64)res.start >> 32);      /*HIGH addr */
+> >> +       SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
+> >> +
+> >>
+> >>         msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
+> >> -       if (!msi->msi_dev)
+> >> +       if (msi->msi_dev)
+> >>                 return -ENODEV;
+> >
+> > The above changes look bad. The first one is stupid, the second one is
+> clearly broken.
+> >
+> > The diff us from good to bad right ? Looks like somebody added a very
+> busted patch.
+>
+> this (from 3.6) does not work:
+>
+> -       mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));      /*HIGH
+> addr */
+> -       mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));  /* Low
+> addr */
+>
+> The good old file (which works) is this:
+>
+> +       SDR0_WRITE(sdr_addr, (u64)res.start >> 32);      /*HIGH addr */
+> +       SDR0_WRITE(sdr_addr + 1, res.start & 0xFFFFFFFF); /* Low addr */
+> +
+>
+> >
+> > If I look at the code in current upstream, I see:
+> >
+> >       mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start));      /*HIGH
+> addr */
+> >       mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));  /* Low
+> addr */
+> >
+> >       msi->msi_dev = of_find_node_by_name(NULL, "ppc4xx-msi");
+> >       if (!msi->msi_dev)
+> >               return -ENODEV;
+> >
+> >
+> > Which looks correct. So this might be something specific to ELDK ?
+>
+> I will be on the road from tomorrow for a week or so, but maybe I can
+> isolate the exact lines which break it. I can also try a newer compiler
+> to see if this changes anything.
+>
+> Is there someone out there with a kilauea board who can boot a 3.6.
+> mainline kernel with a default config with a rootfs over nfs?
+>
+> >
+> > Cheers,
+> > Ben.
+> >
+> >
+>
+> Regards,
+>
+> Robert
+>
+
+--14dae934061ff758b604cc60edb0
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hi,<br><br>My patch was:<br><br>@@ -150,12 +157,11 @@ static int ppc4xx_set=
+up_pcieh_hw(struct platform_device *dev,<br>=A0=A0=A0=A0=A0=A0=A0 if (!sdr_=
+addr)<br>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 return -1;<br><br>-=
+=A0=A0=A0=A0=A0=A0 SDR0_WRITE(sdr_addr, (u64)res.start &gt;&gt; 32);=A0=A0=
+=A0=A0=A0 /*HIGH addr */<br>
+
+-=A0=A0=A0=A0=A0=A0 SDR0_WRITE(sdr_addr + 1, res.start &amp; 0xFFFFFFFF); /=
+* Low addr */<br>-<br>+=A0=A0=A0=A0=A0=A0 mtdcri(SDR0, *sdr_addr, upper_32_=
+bits(res.start));=A0=A0=A0=A0=A0 /*HIGH addr */<br>+=A0=A0=A0=A0=A0=A0 mtdc=
+ri(SDR0, *sdr_addr + 1, lower_32_bits(res.start));=A0 /* Low addr */<br>
+
+<br>=A0=A0=A0=A0=A0=A0=A0 msi-&gt;msi_dev =3D of_find_node_by_name(NULL, &q=
+uot;ppc4xx-msi&quot;);<br>-=A0=A0=A0=A0=A0=A0 if (msi-&gt;msi_dev)<br>+=A0=
+=A0=A0=A0=A0=A0 if (!msi-&gt;msi_dev)<br>=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
+=A0=A0=A0=A0 return -ENODEV;<br><br>=A0=A0=A0=A0=A0=A0=A0 msi-&gt;msi_regs =
+=3D of_iomap(msi-&gt;msi_dev, 0);<br>
+
+<br><br>1. The first few lines: change from SDR0_WRITE to mtdcri since the =
+old one cause crash. I use ELDK 4.2.<br><br>2. The second one should mean t=
+hat: if not find any node then return error. So it should be &quot;!msi-&gt=
+;msi_dev&quot;<br>
+
+<br>Regards,<br>Mai La.<br><br><br><div class=3D"gmail_quote">On Fri, Oct 1=
+9, 2012 at 3:05 AM, Robert Berger <span dir=3D"ltr">&lt;<a href=3D"mailto:r=
+obert.karl.berger@gmail.com" target=3D"_blank">robert.karl.berger@gmail.com=
+</a>&gt;</span> wrote:<br>
+
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">Hi,<br>
+<div class=3D"im"><br>
+On 10/18/2012 10:03 PM, Benjamin Herrenschmidt wrote:<br>
+&gt; On Thu, 2012-10-18 at 20:45 +0300, Robert Berger wrote:<br>
+&gt;&gt; - =A0 =A0 =A0 mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start)); =
+=A0 =A0 =A0/*HIGH addr */<br>
+&gt;&gt; - =A0 =A0 =A0 mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start)=
+); =A0/* Low addr */<br>
+&gt;&gt; + =A0 =A0 =A0 SDR0_WRITE(sdr_addr, (u64)res.start &gt;&gt; 32); =
+=A0 =A0 =A0/*HIGH addr */<br>
+&gt;&gt; + =A0 =A0 =A0 SDR0_WRITE(sdr_addr + 1, res.start &amp; 0xFFFFFFFF)=
+; /* Low addr */<br>
+&gt;&gt; +<br>
+&gt;&gt;<br>
+&gt;&gt; =A0 =A0 =A0 =A0 msi-&gt;msi_dev =3D of_find_node_by_name(NULL, &qu=
+ot;ppc4xx-msi&quot;);<br>
+&gt;&gt; - =A0 =A0 =A0 if (!msi-&gt;msi_dev)<br>
+&gt;&gt; + =A0 =A0 =A0 if (msi-&gt;msi_dev)<br>
+&gt;&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;<br>
+&gt;<br>
+&gt; The above changes look bad. The first one is stupid, the second one is=
+ clearly broken.<br>
+&gt;<br>
+&gt; The diff us from good to bad right ? Looks like somebody added a very =
+busted patch.<br>
+<br>
+</div>this (from 3.6) does not work:<br>
+<div class=3D"im"><br>
+- =A0 =A0 =A0 mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start)); =A0 =A0 =
+=A0/*HIGH<br>
+addr */<br>
+- =A0 =A0 =A0 mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start)); =A0/* =
+Low<br>
+addr */<br>
+<br>
+</div>The good old file (which works) is this:<br>
+<div class=3D"im"><br>
++ =A0 =A0 =A0 SDR0_WRITE(sdr_addr, (u64)res.start &gt;&gt; 32); =A0 =A0 =A0=
+/*HIGH addr */<br>
++ =A0 =A0 =A0 SDR0_WRITE(sdr_addr + 1, res.start &amp; 0xFFFFFFFF); /* Low =
+addr */<br>
++<br>
+<br>
+&gt;<br>
+</div><div class=3D"im">&gt; If I look at the code in current upstream, I s=
+ee:<br>
+&gt;<br>
+&gt; =A0 =A0 =A0 mtdcri(SDR0, *sdr_addr, upper_32_bits(res.start)); =A0 =A0=
+ =A0/*HIGH addr */<br>
+&gt; =A0 =A0 =A0 mtdcri(SDR0, *sdr_addr + 1, lower_32_bits(res.start)); =A0=
+/* Low addr */<br>
+&gt;<br>
+&gt; =A0 =A0 =A0 msi-&gt;msi_dev =3D of_find_node_by_name(NULL, &quot;ppc4x=
+x-msi&quot;);<br>
+&gt; =A0 =A0 =A0 if (!msi-&gt;msi_dev)<br>
+&gt; =A0 =A0 =A0 =A0 =A0 =A0 =A0 return -ENODEV;<br>
+&gt;<br>
+&gt;<br>
+&gt; Which looks correct. So this might be something specific to ELDK ?<br>
+<br>
+</div>I will be on the road from tomorrow for a week or so, but maybe I can=
+<br>
+isolate the exact lines which break it. I can also try a newer compiler<br>
+to see if this changes anything.<br>
+<br>
+Is there someone out there with a kilauea board who can boot a 3.6.<br>
+mainline kernel with a default config with a rootfs over nfs?<br>
+<br>
+&gt;<br>
+&gt; Cheers,<br>
+&gt; Ben.<br>
+&gt;<br>
+&gt;<br>
+<br>
+Regards,<br>
+<br>
+Robert<br>
+</blockquote></div><br>
+
+--14dae934061ff758b604cc60edb0--
