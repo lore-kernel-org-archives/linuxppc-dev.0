@@ -3,15 +3,15 @@ Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
  [209.85.214.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F09CD2C033D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 21:25:36 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 92FE92C03DE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 21:25:39 +1100 (EST)
 Received: by mail-bk0-f51.google.com with SMTP id e19so111780bku.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 03:25:36 -0700 (PDT)
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 03:25:39 -0700 (PDT)
 From: Christoph Fritz <chf.fritz@googlemail.com>
 To: Felipe Balbi <balbi@ti.com>
-Subject: [PATCH 5/7] usb: gadget: fsl_udc: postpone freeing current dTD
-Date: Fri, 19 Oct 2012 12:24:43 +0200
-Message-Id: <1350642285-8145-5-git-send-email-chf.fritz@googlemail.com>
+Subject: [PATCH 6/7] usb: gadget: fsl_udc: purge global pointer usb_sys_regs
+Date: Fri, 19 Oct 2012 12:24:44 +0200
+Message-Id: <1350642285-8145-6-git-send-email-chf.fritz@googlemail.com>
 In-Reply-To: <1350642156-8034-1-git-send-email-chf.fritz@googlemail.com>
 References: <1350642156-8034-1-git-send-email-chf.fritz@googlemail.com>
 Cc: Estevam Fabio-R49496 <r49496@freescale.com>,
@@ -32,76 +32,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-USB controller may access a wrong address for the dTD (endpoint transfer
-descriptor) and then hang. This happens a lot when doing tests with
-g_ether module and iperf, a tool for measuring maximum TCP and UDP
-bandwidth.
-
-This hardware bug is explained in detail by errata number 2858 for i.MX23:
-http://cache.freescale.com/files/dsp/doc/errata/IMX23CE.pdf
-
-All (?) SOCs with an IP from chipidea suffer from this problem.
-mv_udc_core fixes this bug by commit daec765.  There still may be
-unfixed drivers.
+Move global driver pointer usb_sys_regs to private struct fsl_udc.
 
 Signed-off-by: Christoph Fritz <chf.fritz@googlemail.com>
-Signed-off-by: Christian Hemp <c.hemp@phytec.de>
-Reviewed-by: Peter Chen <peter.chen@freescale.com>
+Reviewed-by: Teresa Gamez <T.Gamez@phytec.de>
 ---
- drivers/usb/gadget/fsl_udc_core.c |   12 +++++++++++-
- drivers/usb/gadget/fsl_usb2_udc.h |    2 ++
- 2 files changed, 13 insertions(+), 1 deletions(-)
+ drivers/usb/gadget/fsl_udc_core.c |   26 ++++++++++++--------------
+ drivers/usb/gadget/fsl_usb2_udc.h |    1 +
+ 2 files changed, 13 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-index 53df9c0..deaab62 100644
+index deaab62..35ebcd4 100644
 --- a/drivers/usb/gadget/fsl_udc_core.c
 +++ b/drivers/usb/gadget/fsl_udc_core.c
-@@ -88,8 +88,13 @@ static void done(struct fsl_ep *ep, struct fsl_req *req, int status)
- 		curr_td = next_td;
- 		if (j != req->dtd_count - 1) {
- 			next_td = curr_td->next_td_virt;
-+			dma_pool_free(udc->td_pool, curr_td, curr_td->td_dma);
-+		} else {
-+			if (udc->last_free_td != NULL)
-+				dma_pool_free(udc->td_pool, udc->last_free_td,
-+						udc->last_free_td->td_dma);
-+			udc->last_free_td = curr_td;
+@@ -43,8 +43,6 @@ static const char driver_desc[] = DRIVER_DESC;
+ 
+ static struct usb_dr_device *dr_regs;
+ 
+-static struct usb_sys_interface *usb_sys_regs;
+-
+ static const struct usb_endpoint_descriptor
+ fsl_ep0_desc = {
+ 	.bLength =		USB_DT_ENDPOINT_SIZE,
+@@ -170,10 +168,10 @@ static int dr_controller_setup(struct fsl_udc *udc)
+ 		if (udc->pdata->have_sysif_regs) {
+ 			if (udc->pdata->controller_ver) {
+ 				/* controller version 1.6 or above */
+-				ctrl = __raw_readl(&usb_sys_regs->control);
++				ctrl = readl(&udc->usb_sys_regs->control);
+ 				ctrl &= ~USB_CTRL_UTMI_PHY_EN;
+ 				ctrl |= USB_CTRL_USB_EN;
+-				__raw_writel(ctrl, &usb_sys_regs->control);
++				writel(ctrl, &udc->usb_sys_regs->control);
+ 			}
  		}
--		dma_pool_free(udc->td_pool, curr_td, curr_td->td_dma);
+ 		portctrl |= PORTSCX_PTS_ULPI;
+@@ -185,10 +183,10 @@ static int dr_controller_setup(struct fsl_udc *udc)
+ 		if (udc->pdata->have_sysif_regs) {
+ 			if (udc->pdata->controller_ver) {
+ 				/* controller version 1.6 or above */
+-				ctrl = __raw_readl(&usb_sys_regs->control);
++				ctrl = readl(&udc->usb_sys_regs->control);
+ 				ctrl |= (USB_CTRL_UTMI_PHY_EN |
+ 					USB_CTRL_USB_EN);
+-				__raw_writel(ctrl, &usb_sys_regs->control);
++				writel(ctrl, &udc->usb_sys_regs->control);
+ 				mdelay(FSL_UTMI_PHY_DLY); /* Delay for UTMI
+ 					PHY CLK to become stable - 10ms*/
+ 			}
+@@ -254,9 +252,9 @@ static int dr_controller_setup(struct fsl_udc *udc)
+ 	/* Config control enable i/o output, cpu endian register */
+ #ifndef CONFIG_ARCH_MXC
+ 	if (udc->pdata->have_sysif_regs) {
+-		ctrl = __raw_readl(&usb_sys_regs->control);
++		ctrl = readl(&udc->usb_sys_regs->control);
+ 		ctrl |= USB_CTRL_IOENB;
+-		__raw_writel(ctrl, &usb_sys_regs->control);
++		writel(ctrl, &udc->usb_sys_regs->control);
  	}
+ #endif
  
- 	if (req->mapped) {
-@@ -2439,6 +2444,7 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
- 	udc->gadget.speed = USB_SPEED_UNKNOWN;
- 	udc->gadget.name = driver_name;
- 	udc->vbus_active = true;
-+	udc->last_free_td = NULL;
+@@ -267,9 +265,9 @@ static int dr_controller_setup(struct fsl_udc *udc)
+ 	if (udc->pdata->have_sysif_regs) {
+ 		/* Setup Snooping for all the 4GB space */
+ 		tmp = SNOOP_SIZE_2GB;	/* starts from 0x0, size 2G */
+-		__raw_writel(tmp, &usb_sys_regs->snoop1);
++		writel(tmp, &udc->usb_sys_regs->snoop1);
+ 		tmp |= 0x80000000;	/* starts from 0x8000000, size 2G */
+-		__raw_writel(tmp, &usb_sys_regs->snoop2);
++		writel(tmp, &udc->usb_sys_regs->snoop2);
+ 	}
+ #endif
  
- 	/* Setup gadget.dev and register with kernel */
- 	dev_set_name(&udc->gadget.dev, "gadget");
-@@ -2533,6 +2539,10 @@ static int __exit fsl_udc_remove(struct platform_device *pdev)
- 	kfree(udc->status_req);
- 	kfree(udc->eps);
+@@ -326,7 +324,7 @@ static void dr_controller_stop(struct fsl_udc *udc)
+ 	udc->stopped = 1;
  
-+	if (udc->last_free_td != NULL)
-+		dma_pool_free(udc->td_pool, udc->last_free_td,
-+			udc->last_free_td->td_dma);
-+
- 	dma_pool_destroy(udc->td_pool);
- 	free_irq(udc->irq, udc);
- 	iounmap(dr_regs);
+ 	/* disable IO output */
+-/*	usb_sys_regs->control = 0; */
++/*	udc->usb_sys_regs->control = 0; */
+ 
+ 	/* set controller to Stop */
+ 	tmp = readl(&dr_regs->usbcmd);
+@@ -2130,12 +2128,12 @@ static int fsl_proc_read(char *page, char **start, off_t off, int count,
+ 
+ #ifndef CONFIG_ARCH_MXC
+ 	if (udc->pdata->have_sysif_regs) {
+-		tmp_reg = usb_sys_regs->snoop1;
++		tmp_reg = udc->usb_sys_regs->snoop1;
+ 		t = scnprintf(next, size, "Snoop1 Reg : = [0x%x]\n\n", tmp_reg);
+ 		size -= t;
+ 		next += t;
+ 
+-		tmp_reg = usb_sys_regs->control;
++		tmp_reg = udc->usb_sys_regs->control;
+ 		t = scnprintf(next, size, "General Control Reg : = [0x%x]\n\n",
+ 				tmp_reg);
+ 		size -= t;
+@@ -2388,7 +2386,7 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
+ 
+ #ifndef CONFIG_ARCH_MXC
+ 	if (pdata->have_sysif_regs)
+-		usb_sys_regs = (void *)dr_regs + USB_DR_SYS_OFFSET;
++		udc->usb_sys_regs = (void *)dr_regs + USB_DR_SYS_OFFSET;
+ #endif
+ 
+ 	/* Initialize USB clocks */
 diff --git a/drivers/usb/gadget/fsl_usb2_udc.h b/drivers/usb/gadget/fsl_usb2_udc.h
-index f61a967..a0123ae 100644
+index a0123ae..0d888f4 100644
 --- a/drivers/usb/gadget/fsl_usb2_udc.h
 +++ b/drivers/usb/gadget/fsl_usb2_udc.h
-@@ -497,6 +497,8 @@ struct fsl_udc {
- 	size_t ep_qh_size;		/* size after alignment adjustment*/
+@@ -498,6 +498,7 @@ struct fsl_udc {
  	dma_addr_t ep_qh_dma;		/* dma address of QH */
  
-+	struct ep_td_struct *last_free_td;
-+
+ 	struct ep_td_struct *last_free_td;
++	struct usb_sys_interface *usb_sys_regs;
+ 
  	u32 max_pipes;          /* Device max pipes */
  	u32 bus_reset;		/* Device is bus resetting */
- 	u32 resume_state;	/* USB state to resume */
 -- 
 1.7.2.5
