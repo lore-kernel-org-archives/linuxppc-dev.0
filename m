@@ -1,34 +1,44 @@
-Return-Path: <proski@gnu.org>
-Date: Fri, 19 Oct 2012 11:55:17 -0400
-From: Pavel Roskin <proski@gnu.org>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Subject: Re: [ath9k-devel] [PATCH net-next 00/21] treewide: Use consistent
- api style for address testing
-Message-ID: <20121019115517.7b8514a8@mj>
-In-Reply-To: <1350630254.2293.183.camel@edumazet-glaptop>
-References: <cover.1350618006.git.joe@perches.com>
- <1350630254.2293.183.camel@edumazet-glaptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-mips@linux-mips.org, b.a.t.m.a.n@lists.open-mesh.org,
- linux-doc@vger.kernel.org, brcm80211-dev-list@broadcom.com,
- users@rt2x00.serialmonkey.com, linux-sctp@vger.kernel.org, devel@open-fcoe.org,
- dev@openvswitch.org, linux-s390@vger.kernel.org, wimax@linuxwimax.org,
- linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org,
- bridge@lists.linux-foundation.org, lvs-devel@vger.kernel.org,
- coreteam@netfilter.org, b43-dev@lists.infradead.org,
- cbe-oss-dev@lists.ozlabs.org, devel@driverdev.osuosl.org,
- user-mode-linux-devel@lists.sourceforge.net,
- devicetree-discuss@lists.ozlabs.org,
- davinci-linux-open-source@linux.davincidsp.com, netfilter@vger.kernel.org,
- user-mode-linux-user@lists.sourceforge.net,
- linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org,
- linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
- linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
- linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
- ath9k-devel@lists.ath9k.org, netfilter-devel@vger.kernel.org,
- Joe Perches <joe@perches.com>, uclinux-dist-devel@blackfin.uclinux.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e33.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2E4F22C007D
+ for <linuxppc-dev@ozlabs.org>; Sat, 20 Oct 2012 04:06:56 +1100 (EST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 19 Oct 2012 11:06:53 -0600
+Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
+ [9.17.195.226])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7EF1D19D8043
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 11:06:49 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q9JH6Ce4176964
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 11:06:12 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q9JH4bvI002073
+ for <linuxppc-dev@ozlabs.org>; Fri, 19 Oct 2012 11:04:38 -0600
+Date: Fri, 19 Oct 2012 10:05:39 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Stephane Eranian <eranian@google.com>
+Subject: Re: [RFC][PATCH] perf: Add a few generic stalled-cycles events
+Message-ID: <20121019170538.GB28183@us.ibm.com>
+References: <20121012012839.GA15348@us.ibm.com>
+ <20121015155534.GR8285@erda.amd.com>
+ <20121016100809.GS8285@erda.amd.com>
+ <CABPqkBRd2wfjd1ObCkM+TSSwt7C9WP65dEE9POSyDK1ccvNL8A@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CABPqkBRd2wfjd1ObCkM+TSSwt7C9WP65dEE9POSyDK1ccvNL8A@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Robert Richter <robert.richter@amd.com>,
+ Anton Blanchard <anton@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Peter Zijlstra <peterz@infradead.org>, Paul Mackerras <paulus@samba.org>,
+ mpjohn@us.ibm.com, Ingo Molnar <mingo@kernel.org>,
+ Arun Sharma <asharma@fb.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,29 +48,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 19 Oct 2012 09:04:14 +0200
-Eric Dumazet <eric.dumazet@gmail.com> wrote:
+Stephane Eranian [eranian@google.com] wrote:
+| So all in all, I think this is not a very good idea. You have to put
+| this into the tool or a library that auto-detects the
+| host CPU and programs the right set of events.
+| 
+| We've had that discussion many times. Just reiterating my personal
+| opinion on this.
 
-> Yes they are some names discrepancies, thats a big deal.
-> 
-> And we have alloc_skb() / kfree_skb() / skb_clone() 
-> 
-> Why not skb_alloc() / skb_free() / skb_clone() ?
-> 
-> Some people actually know current code by name of functions, they dont
-> want to change their mind and having to grep include files and git log
-> to learn the new names of an old function, especially when traveling
-> and using a laptop.
+Yes that would work too. One drawback is that the hardware events
+will be in the tool, while the software/tracepoint events in the
+kernel sysfs representation.
 
-I agree.
+Or is that the reason we want all events in one place (sysfs) ?
 
-Also, it makes sense to introduce a more consistent name for a function
-when it's improved in some way and the callers need to be adjusted or
-re-checked.
-
-That way, the old name can be phased out as the code is made compatible
-with the new function.
-
--- 
-Regards,
-Pavel Roskin
+Sukadev
