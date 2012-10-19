@@ -1,21 +1,22 @@
 Return-Path: <balbi@ti.com>
-Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CF0E62C0082
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 21:30:42 +1100 (EST)
-Date: Fri, 19 Oct 2012 13:24:36 +0300
+ by ozlabs.org (Postfix) with ESMTPS id 1F9A92C03F4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 21:31:16 +1100 (EST)
+Date: Fri, 19 Oct 2012 13:25:26 +0300
 From: Felipe Balbi <balbi@ti.com>
 To: Christoph Fritz <chf.fritz@googlemail.com>
-Subject: Re: [PATCH 1/7] usb: gadget: fsl_udc: simplify driver init
-Message-ID: <20121019102436.GB11191@arwen.pp.htv.fi>
+Subject: Re: [PATCH 2/7] usb: gadget: fsl_udc: protect fsl_pullup() with
+ spin_lock
+Message-ID: <20121019102526.GC11191@arwen.pp.htv.fi>
 References: <1350642156-8034-1-git-send-email-chf.fritz@googlemail.com>
- <1350642285-8145-1-git-send-email-chf.fritz@googlemail.com>
+ <1350642285-8145-2-git-send-email-chf.fritz@googlemail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="uZ3hkaAS1mZxFaxD"
-In-Reply-To: <1350642285-8145-1-git-send-email-chf.fritz@googlemail.com>
+ protocol="application/pgp-signature"; boundary="GZVR6ND4mMseVXL/"
+In-Reply-To: <1350642285-8145-2-git-send-email-chf.fritz@googlemail.com>
 Cc: Estevam Fabio-R49496 <r49496@freescale.com>,
  Li Yang-R58472 <r58472@freescale.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -35,89 +36,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---uZ3hkaAS1mZxFaxD
+--GZVR6ND4mMseVXL/
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Oct 19, 2012 at 12:24:39PM +0200, Christoph Fritz wrote:
-> To initialize this driver use 'module_platform_driver' instead
-> of '__init' and '__exit'.
+On Fri, Oct 19, 2012 at 12:24:40PM +0200, Christoph Fritz wrote:
+> This patch reworks fsl_pullup() against the background of switching over
+> to udc_start()/udc_stop() style:
+>=20
+> Protect function fsl_pullup() with a spin_lock. Also set vbus_active as
+> default to true. This prevents disabling USB controller if there is no
+
+the vbus_active part should be in a separate patch as it has no relation
+with $SUBJECT
+
+> driver support for an external transceiver (or GPIO) that detects a VBUS
+> power session starting.
 >=20
 > Signed-off-by: Christoph Fritz <chf.fritz@googlemail.com>
 > ---
->  drivers/usb/gadget/fsl_udc_core.c |   37 +++++++++++--------------------=
-------
->  1 files changed, 11 insertions(+), 26 deletions(-)
+>  drivers/usb/gadget/fsl_udc_core.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 >=20
 > diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_u=
 dc_core.c
-> index 6ae70cb..340451d 100644
+> index 340451d..0a0d6a6 100644
 > --- a/drivers/usb/gadget/fsl_udc_core.c
 > +++ b/drivers/usb/gadget/fsl_udc_core.c
-> @@ -49,13 +49,14 @@
+> @@ -1242,8 +1242,10 @@ static int fsl_vbus_draw(struct usb_gadget *gadget=
+, unsigned mA)
+>  static int fsl_pullup(struct usb_gadget *gadget, int is_on)
+>  {
+>  	struct fsl_udc *udc;
+> +	unsigned long flags;
 > =20
->  #include "fsl_usb2_udc.h"
+>  	udc =3D container_of(gadget, struct fsl_udc, gadget);
+> +	spin_lock_irqsave(&udc->lock, flags);
+>  	udc->softconnect =3D (is_on !=3D 0);
+>  	if (can_pullup(udc))
+>  		fsl_writel((fsl_readl(&dr_regs->usbcmd) | USB_CMD_RUN_STOP),
+> @@ -1251,6 +1253,7 @@ static int fsl_pullup(struct usb_gadget *gadget, in=
+t is_on)
+>  	else
+>  		fsl_writel((fsl_readl(&dr_regs->usbcmd) & ~USB_CMD_RUN_STOP),
+>  				&dr_regs->usbcmd);
+> +	spin_unlock_irqrestore(&udc->lock, flags);
 > =20
-> +#define	DRIVER_NAME	"fsl-usb2-udc"
->  #define	DRIVER_DESC	"Freescale High-Speed USB SOC Device Controller driv=
-er"
->  #define	DRIVER_AUTHOR	"Li Yang/Jiang Bo"
->  #define	DRIVER_VERSION	"Apr 20, 2007"
+>  	return 0;
+>  }
+> @@ -2557,6 +2560,7 @@ static int __init fsl_udc_probe(struct platform_dev=
+ice *pdev)
+>  	INIT_LIST_HEAD(&udc_controller->gadget.ep_list);
+>  	udc_controller->gadget.speed =3D USB_SPEED_UNKNOWN;
+>  	udc_controller->gadget.name =3D driver_name;
+> +	udc->vbus_active =3D true;
 > =20
->  #define	DMA_ADDR_INVALID	(~(dma_addr_t)0)
-> =20
-> -static const char driver_name[] =3D "fsl-usb2-udc";
-> +static const char driver_name[] =3D DRIVER_NAME;
->  static const char driver_desc[] =3D DRIVER_DESC;
-> =20
->  static struct usb_dr_device *dr_regs;
-> @@ -2761,35 +2762,19 @@ static int fsl_udc_otg_resume(struct device *dev)
->  	Register entry point for the peripheral controller driver
->  ------------------------------------------------------------------------=
---*/
-> =20
-> -static struct platform_driver udc_driver =3D {
-> -	.remove  =3D __exit_p(fsl_udc_remove),
-> -	/* these suspend and resume are not usb suspend and resume */
-> -	.suspend =3D fsl_udc_suspend,
-> -	.resume  =3D fsl_udc_resume,
-> -	.driver  =3D {
-> -		.name =3D (char *)driver_name,
-> -		.owner =3D THIS_MODULE,
-> -		/* udc suspend/resume called from OTG driver */
-> +static struct platform_driver fsl_udc_driver =3D {
-> +	.probe		=3D fsl_udc_probe,
-
-NAK, probe() lies in .init.text section. You need to change __init to
-__devinit. Likewise for all functions which are only called during
-probe() and for remove() which needs s/__exit/__devexit.
+>  	/* Setup gadget.dev and register with kernel */
+>  	dev_set_name(&udc_controller->gadget.dev, "gadget");
+> --=20
+> 1.7.2.5
+>=20
 
 --=20
 balbi
 
---uZ3hkaAS1mZxFaxD
+--GZVR6ND4mMseVXL/
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBAgAGBQJQgSpkAAoJEIaOsuA1yqREMWMP/2fGbYLJqqMQTtdqKHI/xB6W
-kgP7+dr5GoKPRF/nwW1ubih7WUDt6e6qMJSnpMrDe8hYbfetyWchmhL/69wxGATM
-IiucDEUrdJuaFTiv2/9FECObRs/TKJCRngh/7psz7dH+EHDW2du65vWjuNXlSG5W
-X7vuF/A4uj/SvaGN8WOFl2EHi0cgXk6xNbFLFWzJKfIEzLZvIzeGErpk1c1vpZA9
-Jcg/hZy5mLN4owDlT3XcAl3ZXPphd38sOZCcoWvA9t4g3JvOf4QV6ZPWFSlpNQYu
-XJhhCeUh3Xz1QeleEoTp6JKtJoY9AZgFkby99q0OtMfvbA92CuaMJ0f60rOcFZCA
-f9qS73rlt63Dru16x+9CdafEwyOEsTVIJPd79h09q4ueUqKzfTRXJZbMdFpc5LhF
-9ieU9c9ZA2fdGownnO8ZJ4EN6m+xvH6p8DrxJVwaZaie6hs14m0TxzI6ZIaLKZS3
-7iSJyxSDW46z3Wghrii3ymDjV5r53A1pXJEkkyg2Viy70VEkpmfMNekRRMnDr20S
-xl1I/ZdlYH+hYOlbTFfM+hqeG5DGheHZZUYMxASM9u8VYCfiU2PnLPjGnXoERNUm
-BAC5oULrvw5gp3u18b1tp1sPTBzJvjo93Ilw1HpZw9aj5BgYfejA6BCC75fe4Ykp
-9mcbTjTP0+ABMI3ZyfpC
-=Cpx7
+iQIcBAEBAgAGBQJQgSqWAAoJEIaOsuA1yqREtKcP/2AQQqEjj6WeB6KgwB6ut0Ia
+Qr/fo8K9D+lCMjMuHNleJdRZbdfaoR0pcpYbkYy3W6DlHfqHKy3vrGgAMKKpSIEJ
+I2304zuBO+rLXZtYsxE681VsmmAuUHvD8Dd20UOeS3I82SsZiHCRyqaAxwcqiP1p
+IzUVQIuU8Jw+QGH0IY3CfxT5QFgp1DsJatnWZA/vumFRlg9c27Sv+CnZd1jstMza
+smIJTCiPNGMguVSKYXrkx++G6aILWU3JrkQuV/dk2vgOQcBFmUZ63pOChIM2C0p3
+KYroHcP17rthD93hkHZsMFe5x1QLuGvMzDqYiX43dBa7h72S03TEQN6hZXCp9/JF
+Mw0vvmGu+9YaqVfjN/FOhezouUzxnkC/cortlA/JtdzASblDkrXMWskLepoKUlhh
+U3/fztBGSybAQ68qCUQh3Mqu+jOqeiqnIfNrEoX6MeDqcXL0v9F2elQ6dUW0Lk+B
+XmaFpsu8c8lJj8iwmyORNX6xwjmvZpbxVdeezeI+hWuAHY0yXMg6k2cd+lSCgOnm
+PQZfKikT9wUT5jVy1Rp+1D/23mVOoon2eppzGM9MCCw19kzkgjywW5WgVhc1d77Q
+GledCaJ1nKgq7DpE18tWOnh8vhvDX8vCCsx2TwytrphdKirj2UAXZLcAdy5ckaFR
+k3NDRK258lqTKietD4IC
+=34lp
 -----END PGP SIGNATURE-----
 
---uZ3hkaAS1mZxFaxD--
+--GZVR6ND4mMseVXL/--
