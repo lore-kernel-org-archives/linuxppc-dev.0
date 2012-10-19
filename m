@@ -1,33 +1,34 @@
-Return-Path: <balbi@ti.com>
-Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D71552C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Oct 2012 21:50:07 +1100 (EST)
-Date: Fri, 19 Oct 2012 13:44:16 +0300
-From: Felipe Balbi <balbi@ti.com>
-To: Christoph Fritz <chf.fritz@googlemail.com>
-Subject: Re: [PATCH 5/7] usb: gadget: fsl_udc: postpone freeing current dTD
-Message-ID: <20121019104416.GH11191@arwen.pp.htv.fi>
-References: <1350642156-8034-1-git-send-email-chf.fritz@googlemail.com>
- <1350642285-8145-5-git-send-email-chf.fritz@googlemail.com>
- <20121019103039.GF11191@arwen.pp.htv.fi>
- <1350643608.3709.78.camel@mars>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="6lXr1rPCNTf1w0X8"
-In-Reply-To: <1350643608.3709.78.camel@mars>
-Cc: Estevam Fabio-R49496 <r49496@freescale.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Chen Peter-B29397 <B29397@freescale.com>,
- Sascha Hauer <s.hauer@pengutronix.de>, linux-usb@vger.kernel.org, balbi@ti.com,
- "Hans J. Koch" <hjk@hansjkoch.de>, Daniel Mack <daniel@caiaq.de>,
- Christian Hemp <c.hemp@phytec.de>, linuxppc-dev@lists.ozlabs.org,
- Teresa Gamez <T.Gamez@phytec.de>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Reply-To: balbi@ti.com
+Return-Path: <proski@gnu.org>
+Date: Fri, 19 Oct 2012 11:55:17 -0400
+From: Pavel Roskin <proski@gnu.org>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Subject: Re: [ath9k-devel] [PATCH net-next 00/21] treewide: Use consistent
+ api style for address testing
+Message-ID: <20121019115517.7b8514a8@mj>
+In-Reply-To: <1350630254.2293.183.camel@edumazet-glaptop>
+References: <cover.1350618006.git.joe@perches.com>
+ <1350630254.2293.183.camel@edumazet-glaptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-mips@linux-mips.org, b.a.t.m.a.n@lists.open-mesh.org,
+ linux-doc@vger.kernel.org, brcm80211-dev-list@broadcom.com,
+ users@rt2x00.serialmonkey.com, linux-sctp@vger.kernel.org, devel@open-fcoe.org,
+ dev@openvswitch.org, linux-s390@vger.kernel.org, wimax@linuxwimax.org,
+ linux-scsi@vger.kernel.org, linux-rdma@vger.kernel.org,
+ bridge@lists.linux-foundation.org, lvs-devel@vger.kernel.org,
+ coreteam@netfilter.org, b43-dev@lists.infradead.org,
+ cbe-oss-dev@lists.ozlabs.org, devel@driverdev.osuosl.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ devicetree-discuss@lists.ozlabs.org,
+ davinci-linux-open-source@linux.davincidsp.com, netfilter@vger.kernel.org,
+ user-mode-linux-user@lists.sourceforge.net,
+ linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org,
+ linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
+ linux-usb@vger.kernel.org, linux-wireless@vger.kernel.org,
+ linux-kernel@vger.kernel.org, e1000-devel@lists.sourceforge.net,
+ ath9k-devel@lists.ath9k.org, netfilter-devel@vger.kernel.org,
+ Joe Perches <joe@perches.com>, uclinux-dist-devel@blackfin.uclinux.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,67 +38,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---6lXr1rPCNTf1w0X8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 19 Oct 2012 09:04:14 +0200
+Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-Hi,
+> Yes they are some names discrepancies, thats a big deal.
+> 
+> And we have alloc_skb() / kfree_skb() / skb_clone() 
+> 
+> Why not skb_alloc() / skb_free() / skb_clone() ?
+> 
+> Some people actually know current code by name of functions, they dont
+> want to change their mind and having to grep include files and git log
+> to learn the new names of an old function, especially when traveling
+> and using a laptop.
 
-On Fri, Oct 19, 2012 at 12:46:48PM +0200, Christoph Fritz wrote:
-> On Fri, 2012-10-19 at 13:30 +0300, Felipe Balbi wrote:
-> > On Fri, Oct 19, 2012 at 12:24:43PM +0200, Christoph Fritz wrote:
-> > > USB controller may access a wrong address for the dTD (endpoint trans=
-fer
-> > > descriptor) and then hang. This happens a lot when doing tests with
-> > > g_ether module and iperf, a tool for measuring maximum TCP and UDP
-> > > bandwidth.
-> > >=20
-> > > This hardware bug is explained in detail by errata number 2858 for i.=
-MX23:
-> > > http://cache.freescale.com/files/dsp/doc/errata/IMX23CE.pdf
-> > >=20
-> > > All (?) SOCs with an IP from chipidea suffer from this problem.
-> > > mv_udc_core fixes this bug by commit daec765.  There still may be
-> > > unfixed drivers.
-> >=20
-> > why aren't you using that driver instead ? Is it really necessary to
-> > keep this driver around ? I would really like to see uniformization
-> > towards that, if you use the same IP, then the same driver ought to
-> > suffice.
-> >=20
-> > What's the reason for not using drivers/usb/chipidea ?
-> >=20
->=20
-> I thought about this too but wasn't able to use chipidea with
-> MXC_EHCI_INTERNAL_PHY as it's called in fsl_udc.
+I agree.
 
-that's a matter of writing the PHY driver, right ;-) It has nothing to
-do with chipidea, actually :-)
+Also, it makes sense to introduce a more consistent name for a function
+when it's improved in some way and the callers need to be adjusted or
+re-checked.
 
---=20
-balbi
+That way, the old name can be phased out as the code is made compatible
+with the new function.
 
---6lXr1rPCNTf1w0X8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQgS8AAAoJEIaOsuA1yqREqqsP/RCEO5N3cSYg+9eHqekUUlaO
-NGDDLZzU0XeCtEaLw+pA3vP7iw+TpUfuu90FD4kH3QLDEWAdQbLZyps4wXBwa0/y
-2mmYW/phMKBVhaBlDefles+ddHuIVktOkZC9YhcfDAeGtQoODq/Zv9n4Q2Am9/l+
-HH+7M0U3FqLIbjKeyATjqEDvdGMpKhscPemNjicRTcww5VZOp3VBA11Fofif4KK7
-IjsYPOXBJsKMuBeQnUD5RhLtCQwSi3m7U5e5sw5yvxdEYc0XTOu6ttllVMNbTIIM
-fUbFBX65fkBh9ojYGyu+lzawWPh7CrI8SrvQoo5t8L3lek64pcVecQwgwlWSetMW
-Yo7Qk50RXzBJSj9Tb49CegMZQUH9dVvKNN0m5C2Sdg6zfN87MzYZPEvCD5KQbZhO
-+5OwQV9+mOOnqIcST8uiZEd934SObaE0VQCryE0I4mMBURp0P2pPaxLKsc4l9cMz
-cQ1XQFJlAEF9iOZ6Dn1uZ8zuthE4rB5kIcAOZyB3DkXpVzW59gtBhhb0SBF6GP7e
-iDohYyBN4EBom9xCzYkVV8gWvw6FjSWt2UfZS8OxoC6SE4DlUpCbzhe+bjsa5Ehv
-OJniHp8QgOTQiJ3MBRmi5uO9myoBBKMYCkqtaRrLdJ2u2cbim7YUwDAxptFrvzt+
-T26hmlOSOfxD4rCNN1bp
-=oEiE
------END PGP SIGNATURE-----
-
---6lXr1rPCNTf1w0X8--
+-- 
+Regards,
+Pavel Roskin
