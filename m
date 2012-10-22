@@ -1,26 +1,23 @@
-Return-Path: <simon.haggett@realvnc.com>
-Received: from mail.realvnc.com (mail.realvnc.com [212.69.41.2])
- by ozlabs.org (Postfix) with ESMTP id 5270E2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 23:00:00 +1100 (EST)
-Message-ID: <508532DF.7050809@realvnc.com>
-Date: Mon, 22 Oct 2012 12:49:51 +0100
-From: Simon Haggett <simon.haggett@realvnc.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
+ [209.85.217.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D41742C0100
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 06:50:30 +1100 (EST)
+Received: by mail-lb0-f179.google.com with SMTP id c1so1780978lbg.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 12:50:26 -0700 (PDT)
 MIME-Version: 1.0
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH 1/1] usb: gadget: Don't attempt to dequeue requests for
- a disabled USB endpoint on Freescale hardware
-References: <1350667166-3559-1-git-send-email-simon.haggett@realvnc.com>
- <20121019173718.GA2738@arwen.pp.htv.fi>
- <94F013E7935FF44C83EBE7784D62AD3F094730DB@039-SN2MPN1-023.039d.mgd.msft.net>
- <1535820.NU10ADjvOZ@avalon>
-In-Reply-To: <1535820.NU10ADjvOZ@avalon>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Li Yang-R58472 <r58472@freescale.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "balbi@ti.com" <balbi@ti.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <alpine.DEB.2.00.1210222146440.12209@ayla.of.borg>
+References: <alpine.DEB.2.00.1210222146440.12209@ayla.of.borg>
+Date: Mon, 22 Oct 2012 21:50:26 +0200
+Message-ID: <CAMuHMdVS-qz0BAHXFGD01+w1GxyQ2M7DpLnLRQKtdZSiDfYgHw@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.7-rc2
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,91 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi
+On Mon, Oct 22, 2012 at 9:47 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.7-rc2 to v3.7-rc1[3], the summaries are:
+>   - build errors: +4/-44
 
-On 22/10/12 11:47, Laurent Pinchart wrote:
-> Hi,
->
-> On Monday 22 October 2012 03:33:19 Li Yang-R58472 wrote:
->> On Saturday, October 20, 2012 1:37 AM Felipe Balbi wrote:
->>> On Fri, Oct 19, 2012 at 06:19:26PM +0100, Simon Haggett wrote:
->>>> Some gadget drivers may attempt to dequeue requests for an endpoint
->>>> that has already been disabled. For example, in the UVC gadget driver,
->>>> uvc_function_set_alt() will call usb_ep_disable() when alt setting 0
->>>> is selected. When the userspace application subsequently issues the
->>>> VIDIOC_STREAMOFF ioctl, uvc_video_enable() invokes usb_ep_dequeue() to
->>>
->>> ensure that all requests have been cancelled.
->>>
->>> bug is on uvc gadget, then. Laurent ?
->
-> We've discussed this topic a couple of months before. I believe that's not a
-> bug.
->
-> http://68.183.106.108/lists/linux-usb/msg68869.html
->
->>> Also, fsl should be removed from the tree, I'm trying to persuade iMX
->>> folks to use drivers/usb/chipidea instead.
->>
->> Besides the iMX usage, the driver is also being used by many Freescale
->> PowerPC/Coldfire SoCs.  I agree that it's ideal to move to a common driver.
->> But it is a large task to make the chipidea driver works for all the
->> hardware that fsl_udc had supported and been tested on.
->>
->>>> For the Freescale High Speed Dual-Role USB controller,
->>>> fsl_ep_dequeue() provides the implementation of usb_ep_dequeue(). If
->>>> this is called for a disabled endpoint, a kernel oops will occur when
->>>
->>> the ep->ep.desc field is dereferenced (by ep_index()).
->>>
->>>> fsl_ep_disable() sets this field to NULL, as well as deleting all
->>>> pending requests for the endpoint.
->>>>
->>>> This patch adds an additional check to fsl_ep_dequeue() to ensure that
->>>> the endpoint has not already been disabled before attempting to dequeue
->>>
->>> requests.
->>>
->>>> Signed-off-by: Simon Haggett <simon.haggett@realvnc.com>
->>>> ---
->>>>
->>>>   drivers/usb/gadget/fsl_udc_core.c |    5 ++++-
->>>>   1 files changed, 4 insertions(+), 1 deletions(-)
->>>>
->>>> diff --git a/drivers/usb/gadget/fsl_udc_core.c
->>>> b/drivers/usb/gadget/fsl_udc_core.c
->>>> index 6ae70cb..acd513b 100644
->>>> --- a/drivers/usb/gadget/fsl_udc_core.c
->>>> +++ b/drivers/usb/gadget/fsl_udc_core.c
->>>> @@ -955,7 +955,10 @@ static int fsl_ep_dequeue(struct usb_ep *_ep,
->>> struct usb_request *_req)
->>>
->>>>   	int ep_num, stopped, ret = 0;
->>>>   	u32 epctrl;
->>>>
->>>> -	if (!_ep || !_req)
->>>> +	/* Ensure that the ep and request are valid, and the ep is not
->>>> +	 * disabled
->>>> +	 */
->>>> +	if (!_ep || !_req || !ep->ep.desc)
->>>>   		return -EINVAL;
->
-> Shouldn't that last check be done with a lock taken ?
+  + arch/s390/include/asm/kvm_para.h: error: redefinition of
+'kvm_arch_para_features':  => 147:28, 147:99
+  + arch/s390/include/asm/kvm_para.h: error: redefinition of
+'kvm_check_and_clear_guest_paused':  => 152:91, 152:20
 
-I had presumed a lock wasn't necessary because ep->ep.desc is only set 
-to NULL by fsl_ep_disable() which, since it is called by 
-usb_ep_disable(), should only be invoked when no other task is using the 
-endpoint (according to include/linux/usb/gadget.h). Furthermore, the 
-chipidea UDC driver does check the equivalent of this field is not NULL 
-without taking a lock (ep_dequeue() in drivers/usb/chipidea/udc.c).
+s390-allmodconfig/s390-allyesconfig/s390-defconfig
 
-However, it is possible that I'm misunderstanding something here, so 
-apologies if I am.
+  + error: phy_n.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `._mcount' defined in .text section in
+arch/powerpc/kernel/entry_64.o:  => (.text+0x1ff9500)
+  + error: relocation truncated to fit: R_PPC64_REL24 against symbol
+`_savegpr0_24' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ffac7c)
 
->
->>>>   	spin_lock_irqsave(&ep->udc->lock, flags);
->
+powerpc-allyesconfig
 
-Many thanks
+> [1] http://kisskb.ellerman.id.au/kisskb/head/5550/ (all 117 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/5526/ (all 117 configs)
 
-Simon
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
