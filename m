@@ -1,37 +1,26 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B85362C007A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 18:23:49 +1100 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Mon, 22 Oct 2012 12:53:44 +0530
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q9M7NSAu36372586
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 12:53:28 +0530
-Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q9MCrKk0032669
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 12:53:20 GMT
-Message-ID: <1350890599.2904.40.camel@ThinkPad-T420>
-Subject: Re: [RFC PATCH powerpc] Fix a lazy irq related WARING in
- arch_local_irq_restore()
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 22 Oct 2012 15:23:19 +0800
-In-Reply-To: <1350518056.4678.113.camel@pasglop>
-References: <1348458962.2475.8.camel@ThinkPad-T420>
- <1348464657.1132.86.camel@pasglop> <1348654234.2635.31.camel@ThinkPad-T420>
- <1350518056.4678.113.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id BE2B32C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 18:48:19 +1100 (EST)
+Message-ID: <5084F195.6030908@cn.fujitsu.com>
+Date: Mon, 22 Oct 2012 15:11:17 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
+MIME-Version: 1.0
+To: wujianguo <wujianguo106@gmail.com>
+Subject: Re: [PATCH 8/10] memory-hotplug : remove page table of x86_64
+ architecture
+References: <506E43E0.70507@jp.fujitsu.com> <506E4799.30407@jp.fujitsu.com>
+ <5073DFC0.3010400@gmail.com>
+In-Reply-To: <5073DFC0.3010400@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ jiang.liu@huawei.com, len.brown@intel.com, linux-acpi@vger.kernel.org,
+ linux-sh@vger.kernel.org, wujianguo@huawei.com, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, minchan.kim@gmail.com,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ sparclinux@vger.kernel.org, qiuxishi@huawei.com, cl@linux.com,
+ linuxppc-dev@lists.ozlabs.org, akpm@linux-foundation.org, liuj97@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,235 +30,521 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-10-18 at 10:54 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2012-09-26 at 18:10 +0800, Li Zhong wrote:
+Hi, Wu
+
+Sorry for late reply.
+
+At 10/09/2012 04:26 PM, wujianguo Wrote:
+> Hi Congyang,
+> 	I think we should also free pages which are used by page tables after removing
+> page tables of the memory.
+
+It is OK to do it.
+
 > 
->  ../...
+> From: Jianguo Wu <wujianguo@huawei.com>
 > 
-> Sorry got distracted, got back on this patch today:
+> Signed-off-by: Jianguo Wu <wujianguo@huawei.com>
+> Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
+> ---
+>  arch/x86/mm/init_64.c |  110 +++++++++++++++++++++++++++++++++++++++---------
+>  1 files changed, 89 insertions(+), 21 deletions(-)
 > 
-> > > We might need to "sanitize" the enable state in the PACA before we
-> > > actually enter NAP or in the return from NAP code, like we do for normal
-> > > idle code...
-> > 
-> > Hi Ben, 
-> > 
-> > After some further reading of the code, I updated the code as following,
-> > but I'm not very sure, and guess it most probably has some issues ...
-> > Could you please help to review and give your comments? 
+> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+> index 5596dfa..81f9c3b 100644
+> --- a/arch/x86/mm/init_64.c
+> +++ b/arch/x86/mm/init_64.c
+> @@ -675,6 +675,74 @@ int arch_add_memory(int nid, u64 start, u64 size)
+>  }
+>  EXPORT_SYMBOL_GPL(arch_add_memory);
 > 
-> I think it's still not right, see below
+> +static inline void free_pagetable(struct page *page)
+> +{
+> +	struct zone *zone;
+> +
+> +	__ClearPageReserved(page);
+> +	__free_page(page);
+> +
+> +	zone = page_zone(page);
+> +	zone_span_writelock(zone);
+> +	zone->present_pages++;
+> +	zone_span_writeunlock(zone);
+> +	totalram_pages++;
+
+Why do you update zone and totalram_pages here?
+
+> +}
+> +
+> +static void free_pte_table(pte_t *pte_start, pmd_t *pmd)
+> +{
+> +	pte_t *pte;
+> +	int i;
+> +
+> +	for (i = 0; i < PTRS_PER_PTE; i++) {
+> +		pte = pte_start + i;
+> +		if (pte_val(*pte))
+> +			break;
+> +	}
+> +
+> +	/* free a pte talbe */
+> +	if (i == PTRS_PER_PTE) {
+> +		free_pagetable(pmd_page(*pmd));
+
+The memory may be allocated at booting. So it is very dangerous to
+free it without any check.
+
+> +		pmd_clear(pmd);
+> +	}
+> +}
+> +
+> +static void free_pmd_table(pmd_t *pmd_start, pud_t *pud)
+> +{
+> +	pmd_t *pmd;
+> +	int i;
+> +
+> +	for (i = 0; i < PTRS_PER_PMD; i++) {
+> +		pmd = pmd_start + i;
+> +		if (pmd_val(*pmd))
+> +			break;
+> +	}
+> +
+> +	/* free a pmd talbe */
+> +	if (i == PTRS_PER_PMD) {
+> +		free_pagetable(pud_page(*pud));
+> +		pud_clear(pud);
+> +	}
+> +}
+> +
+> +static void free_pud_table(pud_t *pud_start, pgd_t *pgd)
+> +{
+> +	pud_t *pud;
+> +	int i;
+> +
+> +	for (i = 0; i < PTRS_PER_PUD; i++) {
+> +		pud = pud_start + i;
+> +		if (pud_val(*pud))
+> +			break;
+> +	}
+> +
+> +	/* free a pud table */
+> +	if (i == PTRS_PER_PUD) {
+> +		free_pagetable(pgd_page(*pgd));
+> +		pgd_clear(pgd);
+> +	}
+> +}
+> +
+>  static void __meminit
+>  phys_pte_remove(pte_t *pte_page, unsigned long addr, unsigned long end)
+>  {
+> @@ -704,21 +772,19 @@ phys_pmd_remove(pmd_t *pmd_page, unsigned long addr, unsigned long end)
+>  	unsigned long pages = 0, next;
+>  	int i = pmd_index(addr);
 > 
-> > In extended_cede_processor(), if there is still lazy irq pending, I used
-> > local_irq_enable() to make sure the irq replayed and flags cleared, but
-> > I'm not sure whether it is a proper way. 
+> -	for (; i < PTRS_PER_PMD; i++, addr = next) {
+> +	for (; i < PTRS_PER_PMD && addr < end; i++, addr = next) {
+>  		unsigned long pte_phys;
+>  		pmd_t *pmd = pmd_page + pmd_index(addr);
+>  		pte_t *pte;
 > 
-> Right but that will break things for idle. In idle, if you have
-> re-enabled interrupts, you need to return and essentially abort the
-> attempt at going to nap mode, because the interrupt might have set need
-> resched. That's why we normally just check if something's pending and
-> return, letting the upper levels re-enable interrupts and do all the
-> dirty work for us.
+> -		if (addr >= end)
+> -			break;
+> -
+> -		next = (addr & PMD_MASK) + PMD_SIZE;
+> +		next = pmd_addr_end(addr, end);
 > 
-> Now, hotplug might differ here in what it needs, but in any case,
-> extended_cede_processor doesn't seem to be the right place to handle it,
-> at best that function should return if it thinks there's something that
-> needs to be done and let the upper layers deal with it appropriately.
+>  		if (!pmd_present(*pmd))
+>  			continue;
 > 
-> > In pseries_mach_cpu_die(), I added local_irq_disable() after cede, and
-> > prepare for the start_secondary_resume(), but I'm not sure whether we
-> > also need a hard_irq_disable() here. 
+>  		if (pmd_large(*pmd)) {
+> -			if ((addr & ~PMD_MASK) == 0 && next <= end) {
+> +			if (IS_ALIGNED(addr, PMD_SIZE) &&
+> +			    IS_ALIGNED(next, PMD_SIZE)) {
+>  				set_pmd(pmd, __pmd(0));
+>  				pages++;
+>  				continue;
+> @@ -729,7 +795,8 @@ phys_pmd_remove(pmd_t *pmd_page, unsigned long addr, unsigned long end)
+>  			 * so split 2M page to 4K page.
+>  			 */
+>  			pte = alloc_low_page(&pte_phys);
+> -			__split_large_page((pte_t *)pmd, addr, pte);
+> +			__split_large_page((pte_t *)pmd,
+> +					   (unsigned long)__va(addr), pte);
 > 
-> You probably do if it's going to go back to the start secondary path. It
-> shouldn't hurt in any case as long as start_secondary_resume()
-> eventually does a local_irq_enable().
+>  			spin_lock(&init_mm.page_table_lock);
+>  			pmd_populate_kernel(&init_mm, pmd, __va(pte_phys));
+> @@ -738,7 +805,8 @@ phys_pmd_remove(pmd_t *pmd_page, unsigned long addr, unsigned long end)
 > 
-> > I'm still a little confused by the meaning of PACA_IRQ_HARD_DIS in
-> > irq_happened. From the checking at the warning point, it seems only
-> > irq_happened equaling 0x1(PACA_IRQ_HARD_DIS) means hard irqs are
-> > disabled.
-
-Hi Ben, 
-
-Below are my current understandings and a few more questions, please
-correct me if there are any misunderstandings. Thank you. 
-
-> No. They are disabled if any bit in there corresponding to a "level"
-> interrupt is set as well. Only the "edge" interrupts (and decrementer
-> which we treat as edge and reset to a high value when it kicks) are
-> ignored for the sake of HW irq state.
-
->From the code, it seems that the hardware_interrupt/external_input
-(corresponding to PACA_IRQ_EE) are "level" interrupts. For "level"
-interrupts, is it because we will see it again, so we need to hard
-disable? or else we might enter into an infinite loop? 
-
-> The reason we have this IRQ_HARD_DIS bit is to indicate that a 'manual'
-> hard disabling occurred (by opposition to one happening as a result of
-> an external interrupt).
-
-The external interrupt causing the hard disabling, is done in the code
-of masked_##_H##interrupt: for book3s, or masked_interrupt_book3e
-PACA_IRQ_EE 1 for book3e ?
- 
-> We need that so we can avoid doing an mfspr() in local_irq_enable() and
-> entirely rely on the content of irq_happened to know whether interrupts
-> are hard enabled or hard disabled.
-
-Is this about the code in arch_local_irq_restore()? so if (!
-irq_happended), we could return directly as we know it is hard enabled. 
-
-And here
-        if (unlikely(irq_happened != PACA_IRQ_HARD_DIS))
-                __hard_irq_disable();
-
-We don't need to hard disable if (irq_happened == PACA_IRQ_HARD_DIS), as
-we know it is hard disabled ('manual'). 
-
-Then here, can we save a few more mtmsrd by also checking PACA_IRQ_EE
-bit? like following: 
-
--	if (unlikely(irq_happened != PACA_IRQ_HARD_DIS))
-+	if (unlikely(!(irq_happened & (PACA_IRQ_HARD_DIS | PACA_IRQ_EE))))
- 
-> We do that because mfspr is a fairly expensive instruction. But that
-> means that we need to make sure we always have a consistent content in
-> irq_happened. That's also why I've added all those sanity checks if you
-> enable IRQ tracing.
-
-See. 
- 
-> > Is it possible to set this bit at anyplace the hard irqs are disabled,
-> > so then we could check whether this bit is set to know whether hard irqs
-> > are disabled? Then it seems that in MASKED_INTERRUPT, we need set this
-> > bit where MSR_EE is cleared for something other than decrementer. Maybe
-> > I missed too much things?
+>  		spin_lock(&init_mm.page_table_lock);
+>  		pte = map_low_page((pte_t *)pmd_page_vaddr(*pmd));
+> -		phys_pte_remove(pte, addr, end);
+> +		phys_pte_remove(pte, addr, next);
+> +		free_pte_table(pte, pmd);
+>  		unmap_low_page(pte);
+>  		spin_unlock(&init_mm.page_table_lock);
+>  	}
+> @@ -751,21 +819,19 @@ phys_pud_remove(pud_t *pud_page, unsigned long addr, unsigned long end)
+>  	unsigned long pages = 0, next;
+>  	int i = pud_index(addr);
 > 
-> Either that bit or PACA_IRQ_EE. Both indicate that interrupts are hard
-> disabled.
+> -	for (; i < PTRS_PER_PUD; i++, addr = next) {
+> +	for (; i < PTRS_PER_PUD && addr < end; i++, addr = next) {
+>  		unsigned long pmd_phys;
+>  		pud_t *pud = pud_page + pud_index(addr);
+>  		pmd_t *pmd;
 > 
-> There are some rare cases where do do change MSR:EE without touching
-> those bits, only when we're going to restore it shortly afterward in the
-> kernel asm exception entry/exit path for example.
-
-I don't get it very clearly here. I might need some more time to read
-and understand all the related asm codes. 
-
-Currently, it seems to me in EXCEPTION_COMMON,  SOFT_DISABLE_INTS is
-called to set PACA_IRQ_HARD_DIS, and other bits might be set when
-__SOFTEN_TEST (or masked_interrupt_book3e) is called. And in the
-exception exit path,  something like
-SOFT_DISABLE_INTS, .restore_interrupts, restore_check_irq_replay, etc
-are called to handle the irq_happened bits. 
-
-Thanks, Zhong
- 
-> Cheers,
-> Ben.
+> -		if (addr >= end)
+> -			break;
+> -
+> -		next = (addr & PUD_MASK) + PUD_SIZE;
+> +		next = pud_addr_end(addr, end);
 > 
-> > Thanks, Zhong 
-> > 
-> > ===================
-> > diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> > index 64c97d8..b5f7597 100644
-> > --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> > +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> > @@ -130,6 +130,8 @@ static void pseries_mach_cpu_die(void)
-> >  			extended_cede_processor(cede_latency_hint);
-> >  		}
-> >  
-> > +		local_irq_disable();
-> > +
-> >  		if (!get_lppaca()->shared_proc)
-> >  			get_lppaca()->donate_dedicated_cpu = 0;
-> >  		get_lppaca()->idle = 0;
-> > diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-> > index 13e8cc4..07560d8 100644
-> > --- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
-> > +++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-> > @@ -2,6 +2,7 @@
-> >  #define _PSERIES_PLPAR_WRAPPERS_H
-> >  
-> >  #include <linux/string.h>
-> > +#include <linux/irqflags.h>
-> >  
-> >  #include <asm/hvcall.h>
-> >  #include <asm/paca.h>
-> > @@ -41,7 +42,19 @@ static inline long extended_cede_processor(unsigned long latency_hint)
-> >  	u8 old_latency_hint = get_cede_latency_hint();
-> >  
-> >  	set_cede_latency_hint(latency_hint);
-> > +
-> > +	while (!prep_irq_for_idle()) {
-> > +		local_irq_enable();
-> > +		local_irq_disable();
-> > +	}
-> > +
-> >  	rc = cede_processor();
-> > +#ifdef CONFIG_TRACE_IRQFLAGS
-> > +		/* Ensure that H_CEDE returns with IRQs on */
-> > +		if (WARN_ON(!(mfmsr() & MSR_EE)))
-> > +			__hard_irq_enable();
-> > +#endif
-> > +
-> >  	set_cede_latency_hint(old_latency_hint);
-> >  
-> >  	return rc;
-> > ===================
-> > 
-> > 
-> > > 
-> > > Cheers,
-> > > Ben.
-> > > 
-> > > > [   56.618846] WARNING: at arch/powerpc/kernel/irq.c:240
-> > > > [   56.618851] Modules linked in: rcutorture ipv6 dm_mod ext3 jbd mbcache sg sd_mod crc_t10dif ibmvscsic scsi_transport_srp scsi_tgt ibmveth
-> > > > [   56.618883] NIP: c00000000000ff94 LR: c00000000067a5e0 CTR: 0000000000000001
-> > > > [   56.618889] REGS: c0000001fef6bbe0 TRAP: 0700   Not tainted  (3.6.0-rc1-autokern1)
-> > > > [   56.618894] MSR: 8000000000029032 <SF,EE,ME,IR,DR,RI>  CR: 42000082  XER: 20000000
-> > > > [   56.618913] SOFTE: 1
-> > > > [   56.618916] CFAR: c00000000067a5dc
-> > > > [   56.618920] TASK = c0000001feed79a0[0] 'swapper/5' THREAD: c0000001fef68000 CPU: 5
-> > > > GPR00: 0000000000000001 c0000001fef6be60 c000000000f9ca08 0000000000000001 
-> > > > GPR04: 0000000000000001 0000000000000008 0000000000000001 0000000000000000 
-> > > > GPR08: 0000000000000000 c0000001feed79a0 0008a80000000000 0000000000000000 
-> > > > GPR12: 0000000022000082 c00000000f330f00 c0000001fef6bf90 000000000f394b4c 
-> > > > GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> > > > GPR20: 0000000000000000 0000000000000000 0000000000000000 0000000000000000 
-> > > > GPR24: c000000000fe8f80 0000000000000008 0000000000000028 0000000000000000 
-> > > > GPR28: 0000000000000000 0000000000000020 c000000000f1ab40 0000000000000001 
-> > > > [   56.619014] NIP [c00000000000ff94] .arch_local_irq_restore+0x34/0xa0
-> > > > [   56.619020] LR [c00000000067a5e0] .start_secondary+0x368/0x37c
-> > > > [   56.619025] Call Trace:
-> > > > [   56.619030] [c0000001fef6be60] [c000000001ba0500] 0xc000000001ba0500 (unreliable)
-> > > > [   56.619038] [c0000001fef6bed0] [c00000000067a5e0] .start_secondary+0x368/0x37c
-> > > > [   56.619046] [c0000001fef6bf90] [c000000000009380] .start_secondary_resume+0x10/0x14
-> > > > [   56.619052] Instruction dump:
-> > > > [   56.619056] f8010010 f821ff91 986d022a 2fa30000 419e0054 880d022b 78000621 41820048 
-> > > > [   56.619071] 2f800001 40de0064 7c0000a6 78008fe2 <0b000000> 2fa00000 40de0050 38000000 
-> > > > [   56.619088] ---[ end trace 0199c0d783d7f9ba ]---
-> > > > 
-> > > > Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > > > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-> > > > ---
-> > > >  arch/powerpc/platforms/pseries/hotplug-cpu.c |    2 ++
-> > > >  1 files changed, 2 insertions(+), 0 deletions(-)
-> > > > 
-> > > > diff --git a/arch/powerpc/platforms/pseries/hotplug-cpu.c b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> > > > index 64c97d8..8de539a 100644
-> > > > --- a/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> > > > +++ b/arch/powerpc/platforms/pseries/hotplug-cpu.c
-> > > > @@ -137,6 +137,8 @@ static void pseries_mach_cpu_die(void)
-> > > >  		if (get_preferred_offline_state(cpu) == CPU_STATE_ONLINE) {
-> > > >  			unregister_slb_shadow(hwcpu);
-> > > >  
-> > > > +			__hard_irq_disable();
-> > > > +
-> > > >  			/*
-> > > >  			 * Call to start_secondary_resume() will not return.
-> > > >  			 * Kernel stack will be reset and start_secondary()
-> > > 
-> > > 
-> > 
+>  		if (!pud_present(*pud))
+>  			continue;
+> 
+>  		if (pud_large(*pud)) {
+> -			if ((addr & ~PUD_MASK) == 0 && next <= end) {
+> +			if (IS_ALIGNED(addr, PUD_SIZE) &&
+> +			    IS_ALIGNED(next, PUD_SIZE)) {
+>  				set_pud(pud, __pud(0));
+>  				pages++;
+>  				continue;
+> @@ -776,15 +842,18 @@ phys_pud_remove(pud_t *pud_page, unsigned long addr, unsigned long end)
+>  			 * so split 1G page to 2M page.
+>  			 */
+>  			pmd = alloc_low_page(&pmd_phys);
+> -			__split_large_page((pte_t *)pud, addr, (pte_t *)pmd);
+> +			__split_large_page((pte_t *)pud,
+> +					   (unsigned long)__va(addr),
+> +					   (pte_t *)pmd);
+> 
+>  			spin_lock(&init_mm.page_table_lock);
+>  			pud_populate(&init_mm, pud, __va(pmd_phys));
+>  			spin_unlock(&init_mm.page_table_lock);
+>  		}
+> 
+> -		pmd = map_low_page(pmd_offset(pud, 0));
+> -		phys_pmd_remove(pmd, addr, end);
+> +		pmd = map_low_page((pmd_t *)pud_page_vaddr(*pud));
+
+Hmm, pmd_offset(pud, 0) is equal to (pmd_t *)pud_page_vaddr(*pud).
+
+Is it OK to merge your patch into my patch?
+
+Thanks
+Wen Congyang
+
+> +		phys_pmd_remove(pmd, addr, next);
+> +		free_pmd_table(pmd, pud);
+>  		unmap_low_page(pmd);
+>  		__flush_tlb_all();
+>  	}
+> @@ -805,15 +874,14 @@ kernel_physical_mapping_remove(unsigned long start, unsigned long end)
+>  		pgd_t *pgd = pgd_offset_k(start);
+>  		pud_t *pud;
+> 
+> -		next = (start + PGDIR_SIZE) & PGDIR_MASK;
+> -		if (next > end)
+> -			next = end;
+> +		next = pgd_addr_end(start, end);
+> 
+>  		if (!pgd_present(*pgd))
+>  			continue;
+> 
+>  		pud = map_low_page((pud_t *)pgd_page_vaddr(*pgd));
+> -		phys_pud_remove(pud, __pa(start), __pa(end));
+> +		phys_pud_remove(pud, __pa(start), __pa(next));
+> +		free_pud_table(pud, pgd);
+>  		unmap_low_page(pud);
+>  	}
+> 
+> -- 1.7.6.1 .
+> 
+> 
+> On 2012-10-5 10:36, Yasuaki Ishimatsu wrote:
+>> From: Wen Congyang <wency@cn.fujitsu.com>
+>>
+>> For hot removing memory, we sholud remove page table about the memory.
+>> So the patch searches a page table about the removed memory, and clear
+>> page table.
+>>
+>> CC: David Rientjes <rientjes@google.com>
+>> CC: Jiang Liu <liuj97@gmail.com>
+>> CC: Len Brown <len.brown@intel.com>
+>> CC: Christoph Lameter <cl@linux.com>
+>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>> CC: Andrew Morton <akpm@linux-foundation.org>
+>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+>> ---
+>>  arch/x86/include/asm/pgtable_types.h |    1 
+>>  arch/x86/mm/init_64.c                |  147 +++++++++++++++++++++++++++++++++++
+>>  arch/x86/mm/pageattr.c               |   47 +++++------
+>>  3 files changed, 173 insertions(+), 22 deletions(-)
+>>
+>> Index: linux-3.6/arch/x86/mm/init_64.c
+>> ===================================================================
+>> --- linux-3.6.orig/arch/x86/mm/init_64.c	2012-10-04 18:30:21.171698416 +0900
+>> +++ linux-3.6/arch/x86/mm/init_64.c	2012-10-04 18:30:27.317704652 +0900
+>> @@ -675,6 +675,151 @@ int arch_add_memory(int nid, u64 start, 
+>>  }
+>>  EXPORT_SYMBOL_GPL(arch_add_memory);
+>>  
+>> +static void __meminit
+>> +phys_pte_remove(pte_t *pte_page, unsigned long addr, unsigned long end)
+>> +{
+>> +	unsigned pages = 0;
+>> +	int i = pte_index(addr);
+>> +
+>> +	pte_t *pte = pte_page + pte_index(addr);
+>> +
+>> +	for (; i < PTRS_PER_PTE; i++, addr += PAGE_SIZE, pte++) {
+>> +
+>> +		if (addr >= end)
+>> +			break;
+>> +
+>> +		if (!pte_present(*pte))
+>> +			continue;
+>> +
+>> +		pages++;
+>> +		set_pte(pte, __pte(0));
+>> +	}
+>> +
+>> +	update_page_count(PG_LEVEL_4K, -pages);
+>> +}
+>> +
+>> +static void __meminit
+>> +phys_pmd_remove(pmd_t *pmd_page, unsigned long addr, unsigned long end)
+>> +{
+>> +	unsigned long pages = 0, next;
+>> +	int i = pmd_index(addr);
+>> +
+>> +	for (; i < PTRS_PER_PMD; i++, addr = next) {
+>> +		unsigned long pte_phys;
+>> +		pmd_t *pmd = pmd_page + pmd_index(addr);
+>> +		pte_t *pte;
+>> +
+>> +		if (addr >= end)
+>> +			break;
+>> +
+>> +		next = (addr & PMD_MASK) + PMD_SIZE;
+>> +
+>> +		if (!pmd_present(*pmd))
+>> +			continue;
+>> +
+>> +		if (pmd_large(*pmd)) {
+>> +			if ((addr & ~PMD_MASK) == 0 && next <= end) {
+>> +				set_pmd(pmd, __pmd(0));
+>> +				pages++;
+>> +				continue;
+>> +			}
+>> +
+>> +			/*
+>> +			 * We use 2M page, but we need to remove part of them,
+>> +			 * so split 2M page to 4K page.
+>> +			 */
+>> +			pte = alloc_low_page(&pte_phys);
+>> +			__split_large_page((pte_t *)pmd, addr, pte);
+>> +
+>> +			spin_lock(&init_mm.page_table_lock);
+>> +			pmd_populate_kernel(&init_mm, pmd, __va(pte_phys));
+>> +			spin_unlock(&init_mm.page_table_lock);
+>> +		}
+>> +
+>> +		spin_lock(&init_mm.page_table_lock);
+>> +		pte = map_low_page((pte_t *)pmd_page_vaddr(*pmd));
+>> +		phys_pte_remove(pte, addr, end);
+>> +		unmap_low_page(pte);
+>> +		spin_unlock(&init_mm.page_table_lock);
+>> +	}
+>> +	update_page_count(PG_LEVEL_2M, -pages);
+>> +}
+>> +
+>> +static void __meminit
+>> +phys_pud_remove(pud_t *pud_page, unsigned long addr, unsigned long end)
+>> +{
+>> +	unsigned long pages = 0, next;
+>> +	int i = pud_index(addr);
+>> +
+>> +	for (; i < PTRS_PER_PUD; i++, addr = next) {
+>> +		unsigned long pmd_phys;
+>> +		pud_t *pud = pud_page + pud_index(addr);
+>> +		pmd_t *pmd;
+>> +
+>> +		if (addr >= end)
+>> +			break;
+>> +
+>> +		next = (addr & PUD_MASK) + PUD_SIZE;
+>> +
+>> +		if (!pud_present(*pud))
+>> +			continue;
+>> +
+>> +		if (pud_large(*pud)) {
+>> +			if ((addr & ~PUD_MASK) == 0 && next <= end) {
+>> +				set_pud(pud, __pud(0));
+>> +				pages++;
+>> +				continue;
+>> +			}
+>> +
+>> +			/*
+>> +			 * We use 1G page, but we need to remove part of them,
+>> +			 * so split 1G page to 2M page.
+>> +			 */
+>> +			pmd = alloc_low_page(&pmd_phys);
+>> +			__split_large_page((pte_t *)pud, addr, (pte_t *)pmd);
+>> +
+>> +			spin_lock(&init_mm.page_table_lock);
+>> +			pud_populate(&init_mm, pud, __va(pmd_phys));
+>> +			spin_unlock(&init_mm.page_table_lock);
+>> +		}
+>> +
+>> +		pmd = map_low_page(pmd_offset(pud, 0));
+>> +		phys_pmd_remove(pmd, addr, end);
+>> +		unmap_low_page(pmd);
+>> +		__flush_tlb_all();
+>> +	}
+>> +	__flush_tlb_all();
+>> +
+>> +	update_page_count(PG_LEVEL_1G, -pages);
+>> +}
+>> +
+>> +void __meminit
+>> +kernel_physical_mapping_remove(unsigned long start, unsigned long end)
+>> +{
+>> +	unsigned long next;
+>> +
+>> +	start = (unsigned long)__va(start);
+>> +	end = (unsigned long)__va(end);
+>> +
+>> +	for (; start < end; start = next) {
+>> +		pgd_t *pgd = pgd_offset_k(start);
+>> +		pud_t *pud;
+>> +
+>> +		next = (start + PGDIR_SIZE) & PGDIR_MASK;
+>> +		if (next > end)
+>> +			next = end;
+>> +
+>> +		if (!pgd_present(*pgd))
+>> +			continue;
+>> +
+>> +		pud = map_low_page((pud_t *)pgd_page_vaddr(*pgd));
+>> +		phys_pud_remove(pud, __pa(start), __pa(end));
+>> +		unmap_low_page(pud);
+>> +	}
+>> +
+>> +	__flush_tlb_all();
+>> +}
+>> +
+>>  #ifdef CONFIG_MEMORY_HOTREMOVE
+>>  int __ref arch_remove_memory(u64 start, u64 size)
+>>  {
+>> @@ -687,6 +832,8 @@ int __ref arch_remove_memory(u64 start, 
+>>  	ret = __remove_pages(zone, start_pfn, nr_pages);
+>>  	WARN_ON_ONCE(ret);
+>>  
+>> +	kernel_physical_mapping_remove(start, start + size);
+>> +
+>>  	return ret;
+>>  }
+>>  #endif
+>> Index: linux-3.6/arch/x86/include/asm/pgtable_types.h
+>> ===================================================================
+>> --- linux-3.6.orig/arch/x86/include/asm/pgtable_types.h	2012-10-04 18:26:51.925486954 +0900
+>> +++ linux-3.6/arch/x86/include/asm/pgtable_types.h	2012-10-04 18:30:27.322704656 +0900
+>> @@ -334,6 +334,7 @@ static inline void update_page_count(int
+>>   * as a pte too.
+>>   */
+>>  extern pte_t *lookup_address(unsigned long address, unsigned int *level);
+>> +extern int __split_large_page(pte_t *kpte, unsigned long address, pte_t *pbase);
+>>  
+>>  #endif	/* !__ASSEMBLY__ */
+>>  
+>> Index: linux-3.6/arch/x86/mm/pageattr.c
+>> ===================================================================
+>> --- linux-3.6.orig/arch/x86/mm/pageattr.c	2012-10-04 18:26:51.923486952 +0900
+>> +++ linux-3.6/arch/x86/mm/pageattr.c	2012-10-04 18:30:27.328704662 +0900
+>> @@ -501,21 +501,13 @@ out_unlock:
+>>  	return do_split;
+>>  }
+>>  
+>> -static int split_large_page(pte_t *kpte, unsigned long address)
+>> +int __split_large_page(pte_t *kpte, unsigned long address, pte_t *pbase)
+>>  {
+>>  	unsigned long pfn, pfninc = 1;
+>>  	unsigned int i, level;
+>> -	pte_t *pbase, *tmp;
+>> +	pte_t *tmp;
+>>  	pgprot_t ref_prot;
+>> -	struct page *base;
+>> -
+>> -	if (!debug_pagealloc)
+>> -		spin_unlock(&cpa_lock);
+>> -	base = alloc_pages(GFP_KERNEL | __GFP_NOTRACK, 0);
+>> -	if (!debug_pagealloc)
+>> -		spin_lock(&cpa_lock);
+>> -	if (!base)
+>> -		return -ENOMEM;
+>> +	struct page *base = virt_to_page(pbase);
+>>  
+>>  	spin_lock(&pgd_lock);
+>>  	/*
+>> @@ -523,10 +515,11 @@ static int split_large_page(pte_t *kpte,
+>>  	 * up for us already:
+>>  	 */
+>>  	tmp = lookup_address(address, &level);
+>> -	if (tmp != kpte)
+>> -		goto out_unlock;
+>> +	if (tmp != kpte) {
+>> +		spin_unlock(&pgd_lock);
+>> +		return 1;
+>> +	}
+>>  
+>> -	pbase = (pte_t *)page_address(base);
+>>  	paravirt_alloc_pte(&init_mm, page_to_pfn(base));
+>>  	ref_prot = pte_pgprot(pte_clrhuge(*kpte));
+>>  	/*
+>> @@ -579,17 +572,27 @@ static int split_large_page(pte_t *kpte,
+>>  	 * going on.
+>>  	 */
+>>  	__flush_tlb_all();
+>> +	spin_unlock(&pgd_lock);
+>>  
+>> -	base = NULL;
+>> +	return 0;
+>> +}
+>>  
+>> -out_unlock:
+>> -	/*
+>> -	 * If we dropped out via the lookup_address check under
+>> -	 * pgd_lock then stick the page back into the pool:
+>> -	 */
+>> -	if (base)
+>> +static int split_large_page(pte_t *kpte, unsigned long address)
+>> +{
+>> +	pte_t *pbase;
+>> +	struct page *base;
+>> +
+>> +	if (!debug_pagealloc)
+>> +		spin_unlock(&cpa_lock);
+>> +	base = alloc_pages(GFP_KERNEL | __GFP_NOTRACK, 0);
+>> +	if (!debug_pagealloc)
+>> +		spin_lock(&cpa_lock);
+>> +	if (!base)
+>> +		return -ENOMEM;
+>> +
+>> +	pbase = (pte_t *)page_address(base);
+>> +	if (__split_large_page(kpte, address, pbase))
+>>  		__free_page(base);
+>> -	spin_unlock(&pgd_lock);
+>>  
+>>  	return 0;
+>>  }
+>>
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>>
 > 
 > 
