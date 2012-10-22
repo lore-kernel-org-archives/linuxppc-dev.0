@@ -1,30 +1,34 @@
 Return-Path: <balbi@ti.com>
-Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
+Received: from devils.ext.ti.com (devils.ext.ti.com [198.47.26.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6ADE32C007A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 18:58:52 +1100 (EST)
-Date: Mon, 22 Oct 2012 10:53:08 +0300
+ by ozlabs.org (Postfix) with ESMTPS id 1FC1F2C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 19:00:24 +1100 (EST)
+Date: Mon, 22 Oct 2012 10:54:23 +0300
 From: Felipe Balbi <balbi@ti.com>
-To: Li Yang-R58472 <r58472@freescale.com>
-Subject: Re: [PATCH 1/1] usb: gadget: Don't attempt to dequeue requests for a
- disabled USB endpoint on Freescale hardware
-Message-ID: <20121022075308.GA14033@arwen.pp.htv.fi>
-References: <1350667166-3559-1-git-send-email-simon.haggett@realvnc.com>
- <20121019173718.GA2738@arwen.pp.htv.fi>
- <94F013E7935FF44C83EBE7784D62AD3F094730DB@039-SN2MPN1-023.039d.mgd.msft.net>
+To: Christoph Fritz <chf.fritz@googlemail.com>
+Subject: Re: [PATCH 5/7] usb: gadget: fsl_udc: postpone freeing current dTD
+Message-ID: <20121022075423.GB14033@arwen.pp.htv.fi>
+References: <1350642156-8034-1-git-send-email-chf.fritz@googlemail.com>
+ <1350642285-8145-5-git-send-email-chf.fritz@googlemail.com>
+ <20121019103039.GF11191@arwen.pp.htv.fi>
+ <1350643608.3709.78.camel@mars>
+ <20121019104416.GH11191@arwen.pp.htv.fi>
+ <1350760347.3669.3.camel@mars>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="hUH5gZbnpyIv7Mn4"
-In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F094730DB@039-SN2MPN1-023.039d.mgd.msft.net>
-Cc: Simon Haggett <simon.haggett@realvnc.com>,
+ protocol="application/pgp-signature"; boundary="B8ONY/mu/bqBak9m"
+In-Reply-To: <1350760347.3669.3.camel@mars>
+Cc: Estevam Fabio-R49496 <r49496@freescale.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "balbi@ti.com" <balbi@ti.com>,
- Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ Chen Peter-B29397 <B29397@freescale.com>,
+ Sascha Hauer <s.hauer@pengutronix.de>, linux-usb@vger.kernel.org, balbi@ti.com,
+ "Hans J. Koch" <hjk@hansjkoch.de>, Daniel Mack <daniel@caiaq.de>,
+ Christian Hemp <c.hemp@phytec.de>, linuxppc-dev@lists.ozlabs.org,
+ Teresa Gamez <T.Gamez@phytec.de>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,75 +39,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---hUH5gZbnpyIv7Mn4
+--B8ONY/mu/bqBak9m
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Oct 22, 2012 at 03:33:19AM +0000, Li Yang-R58472 wrote:
->=20
->=20
-> > -----Original Message-----
-> > From: Felipe Balbi [mailto:balbi@ti.com]
-> > Sent: Saturday, October 20, 2012 1:37 AM
-> > To: Simon Haggett
-> > Cc: Li Yang-R58472; Felipe Balbi; Greg Kroah-Hartman; linux-
-> > usb@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; linux-
-> > kernel@vger.kernel.org; Laurent Pinchart
-> > Subject: Re: [PATCH 1/1] usb: gadget: Don't attempt to dequeue requests
-> > for a disabled USB endpoint on Freescale hardware
-> >=20
-> > Hi,
-> >=20
-> > On Fri, Oct 19, 2012 at 06:19:26PM +0100, Simon Haggett wrote:
-> > > Some gadget drivers may attempt to dequeue requests for an endpoint
-> > > that has already been disabled. For example, in the UVC gadget driver,
-> > > uvc_function_set_alt() will call usb_ep_disable() when alt setting 0
-> > > is selected. When the userspace application subsequently issues the
-> > > VIDIOC_STREAMOFF ioctl, uvc_video_enable() invokes usb_ep_dequeue() to
-> > ensure that all requests have been cancelled.
-> >=20
-> > bug is on uvc gadget, then. Laurent ?
-> >=20
-> > Also, fsl should be removed from the tree, I'm trying to persuade iMX
-> > folks to use drivers/usb/chipidea instead.
->=20
-> Besides the iMX usage, the driver is also being used by many Freescale
-> PowerPC/Coldfire SoCs.  I agree that it's ideal to move to a common
-> driver.  But it is a large task to make the chipidea driver works for
-> all the hardware that fsl_udc had supported and been tested on.
+Hi,
 
-I understand that, but we just can't keep so many duplicated drivers in
-mainline. chipidea udc had at least 3 different implementations. Now
-it's the time to combine all of those and stick to a single driver.
+On Sat, Oct 20, 2012 at 09:12:27PM +0200, Christoph Fritz wrote:
+> On Fri, 2012-10-19 at 13:44 +0300, Felipe Balbi wrote:
+> > > I thought about this too but wasn't able to use chipidea with
+> > > MXC_EHCI_INTERNAL_PHY as it's called in fsl_udc.
+> >=20
+> > that's a matter of writing the PHY driver, right ;-) It has nothing to
+> > do with chipidea, actually :-)
+>=20
+> Okay, I'll do. But then we should purge the old buggy fsl_udc.
 
-Just make a plan to slowly move towards chipidea in the upcoming few
-merge windows. I can continue to take in bugfixes for fsl_udc, but only
-if I see that you guys are working towards merging with chipidea driver.
+I'm all for that. We shouldn't have multiple copies of a single driver
+hanging around.
+
+cheers
 
 --=20
 balbi
 
---hUH5gZbnpyIv7Mn4
+--B8ONY/mu/bqBak9m
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBAgAGBQJQhPtkAAoJEIaOsuA1yqREJjsP/iibVj4fB03dHEu9GRKmuWcz
-CB6ZfyFqpdcwQHT4AZ0/Dc8dfuDh3Tl58PPW6jshkyVd1s55vjarW8YTVagD7TQz
-3idDHHjPSvXz9ZgDa1u3+dF07kKrehLXEuJNHxwbFLXZiRKGDhHSwr39swRv3CHP
-6a63FeOopBuT7anPvWK0jJ4ywaXioKB4OctNTSeplaHg8EPGmjnzO2O4UhBVamSi
-1n9znfm0UaXwVsDE1dpVgy2jFTV1NFCs50o8qheW8qiqeb9xPxkJqsoWivJgqwXI
-H8Ss7hglR6YVzzeLJE2e2994enNSFSEPmYSBT39vq14sviaRbT5vhsPqeqEvebFC
-uLAIuWx4xbPfNZfe9c/GJ5RndOW8K7cQ6h//zrv0bLCOAHhheFs7gHDwF1MdNn1+
-NFpKFUs8XNQ6G5YUHHIBd5MdAELysAwsafzqlnYRw3VYNOIdcAHqjxJd7u6daYSF
-G923H2IDhdkfltv2zXe4myEjYvVfmL4zYaGCrc9VSA5ZgNfL+ytPCn9tYEt65Ljq
-8RjTHEUkEjGv/K+8H88g6ZTi0p+2/6vzlD7CX1Is38T/wfI39EGuADML7l8RrKmY
-mhHf9Heysu+clKDs0Q+UH8oy8/igGi8PjWec5fjQm9vP3OSlleMyk+INhlkoPQDc
-v1nECQC76RS0om4Nf17B
-=khOJ
+iQIcBAEBAgAGBQJQhPuvAAoJEIaOsuA1yqREHpoP/02g2L8dSBFq+qIYTKqbacux
+5D46t4R9ah7KIDeqHuv7Tl1oCf6xiT9cAMMEOh+/OVXbom4CgqkCh3HrWOQHEYMm
+1SwBaEmuoL4wXxiwf3rqFkaTBE4hZTq3eZ6kq+NfVaxqQnWpOBMxK+S4nm1hsxBo
+HaFRdinYga06yA1NT693Uifm0Pn9O/Vhi/pnKnYVG2BdNJ67Nj87XwA2dos4+fae
+TjS1IyIlqSix8Ana0Vqz4P0DjrNttTSoEyvPORMJjCztVhZ9ej/sDaUofP+UUkM5
+V2EZoYT3zFWAptCKQJJF3ELTJDK36tC2EGZ6gxJY+oKX4Wm7IMEL2dqX6EVvyNfz
+f3sdH+RSPaqTxrwU1ZqxZcuV9Xd3EZI2WPu8CMzGYZRw/GQcTrW31chrb+xbzxpb
+F5F0PLTiYF7gdTNVEcA7JkiOwygE8vYua4UI35WPfzz2qhapZQKEDlMUxAL8f/aA
+Q6Vv4AK8MNKvW+8O/x35dtD5kytpMh568bG8D5Em0XNBYV138Yxh20m6xoLoq0Bt
+7NxDrzX+elTyCUxoF8T2xBoOsgUm/XivRno8eEtqR6H8bi/lyVBNHSM7mMVLFw7T
+rf6SwfNMTR2qIkym6VhcSMMb6FmcnuJwsvUCtDPNGXisYGCH5KQOoChqJqnQqBK8
+utG8fyKXy3505bo/5N3v
+=2Ir7
 -----END PGP SIGNATURE-----
 
---hUH5gZbnpyIv7Mn4--
+--B8ONY/mu/bqBak9m--
