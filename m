@@ -1,32 +1,28 @@
-Return-Path: <balbi@ti.com>
-Received: from devils.ext.ti.com (devils.ext.ti.com [198.47.26.153])
+Return-Path: <laurent.pinchart@ideasonboard.com>
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com
+ [95.142.166.194])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8434B2C008C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 22:01:55 +1100 (EST)
-Date: Mon, 22 Oct 2012 13:56:01 +0300
-From: Felipe Balbi <balbi@ti.com>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 845592C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Oct 2012 21:54:49 +1100 (EST)
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Li Yang-R58472 <r58472@freescale.com>
 Subject: Re: [PATCH 1/1] usb: gadget: Don't attempt to dequeue requests for a
  disabled USB endpoint on Freescale hardware
-Message-ID: <20121022105601.GS14033@arwen.pp.htv.fi>
+Date: Mon, 22 Oct 2012 12:47:21 +0200
+Message-ID: <1535820.NU10ADjvOZ@avalon>
+In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F094730DB@039-SN2MPN1-023.039d.mgd.msft.net>
 References: <1350667166-3559-1-git-send-email-simon.haggett@realvnc.com>
  <20121019173718.GA2738@arwen.pp.htv.fi>
  <94F013E7935FF44C83EBE7784D62AD3F094730DB@039-SN2MPN1-023.039d.mgd.msft.net>
- <1535820.NU10ADjvOZ@avalon>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ggC1wwkyYWqEab//"
-In-Reply-To: <1535820.NU10ADjvOZ@avalon>
+Content-Type: text/plain; charset="us-ascii"
 Cc: Simon Haggett <simon.haggett@realvnc.com>,
- Li Yang-R58472 <r58472@freescale.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "balbi@ti.com" <balbi@ti.com>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,66 +32,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---ggC1wwkyYWqEab//
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
 Hi,
 
-On Mon, Oct 22, 2012 at 12:47:21PM +0200, Laurent Pinchart wrote:
-> Hi,
->=20
-> On Monday 22 October 2012 03:33:19 Li Yang-R58472 wrote:
-> > On Saturday, October 20, 2012 1:37 AM Felipe Balbi wrote:
-> > > On Fri, Oct 19, 2012 at 06:19:26PM +0100, Simon Haggett wrote:
-> > > > Some gadget drivers may attempt to dequeue requests for an endpoint
-> > > > that has already been disabled. For example, in the UVC gadget driv=
-er,
-> > > > uvc_function_set_alt() will call usb_ep_disable() when alt setting 0
-> > > > is selected. When the userspace application subsequently issues the
-> > > > VIDIOC_STREAMOFF ioctl, uvc_video_enable() invokes usb_ep_dequeue()=
- to
-> > >=20
-> > > ensure that all requests have been cancelled.
-> > >=20
-> > > bug is on uvc gadget, then. Laurent ?
->=20
-> We've discussed this topic a couple of months before. I believe that's no=
-t a=20
-> bug.
->=20
-> http://68.183.106.108/lists/linux-usb/msg68869.html
+On Monday 22 October 2012 03:33:19 Li Yang-R58472 wrote:
+> On Saturday, October 20, 2012 1:37 AM Felipe Balbi wrote:
+> > On Fri, Oct 19, 2012 at 06:19:26PM +0100, Simon Haggett wrote:
+> > > Some gadget drivers may attempt to dequeue requests for an endpoint
+> > > that has already been disabled. For example, in the UVC gadget driver,
+> > > uvc_function_set_alt() will call usb_ep_disable() when alt setting 0
+> > > is selected. When the userspace application subsequently issues the
+> > > VIDIOC_STREAMOFF ioctl, uvc_video_enable() invokes usb_ep_dequeue() to
+> > 
+> > ensure that all requests have been cancelled.
+> > 
+> > bug is on uvc gadget, then. Laurent ?
 
-fair enough :-)
+We've discussed this topic a couple of months before. I believe that's not a 
+bug.
 
-That's a different case, however. At the link above we're discussing
-dequeueing a request which is already being dequeued. $SUBJECT is trying
-to fix dequeueing of a request for an endpoint which isn't even enabled.
+http://68.183.106.108/lists/linux-usb/msg68869.html
 
---=20
-balbi
+> > Also, fsl should be removed from the tree, I'm trying to persuade iMX
+> > folks to use drivers/usb/chipidea instead.
+> 
+> Besides the iMX usage, the driver is also being used by many Freescale
+> PowerPC/Coldfire SoCs.  I agree that it's ideal to move to a common driver.
+> But it is a large task to make the chipidea driver works for all the
+> hardware that fsl_udc had supported and been tested on.
+>
+> > > For the Freescale High Speed Dual-Role USB controller,
+> > > fsl_ep_dequeue() provides the implementation of usb_ep_dequeue(). If
+> > > this is called for a disabled endpoint, a kernel oops will occur when
+> > 
+> > the ep->ep.desc field is dereferenced (by ep_index()).
+> > 
+> > > fsl_ep_disable() sets this field to NULL, as well as deleting all
+> > > pending requests for the endpoint.
+> > > 
+> > > This patch adds an additional check to fsl_ep_dequeue() to ensure that
+> > > the endpoint has not already been disabled before attempting to dequeue
+> > 
+> > requests.
+> > 
+> > > Signed-off-by: Simon Haggett <simon.haggett@realvnc.com>
+> > > ---
+> > > 
+> > >  drivers/usb/gadget/fsl_udc_core.c |    5 ++++-
+> > >  1 files changed, 4 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/drivers/usb/gadget/fsl_udc_core.c
+> > > b/drivers/usb/gadget/fsl_udc_core.c
+> > > index 6ae70cb..acd513b 100644
+> > > --- a/drivers/usb/gadget/fsl_udc_core.c
+> > > +++ b/drivers/usb/gadget/fsl_udc_core.c
+> > > @@ -955,7 +955,10 @@ static int fsl_ep_dequeue(struct usb_ep *_ep,
+> > struct usb_request *_req)
+> > 
+> > >  	int ep_num, stopped, ret = 0;
+> > >  	u32 epctrl;
+> > > 
+> > > -	if (!_ep || !_req)
+> > > +	/* Ensure that the ep and request are valid, and the ep is not
+> > > +	 * disabled
+> > > +	 */
+> > > +	if (!_ep || !_req || !ep->ep.desc)
+> > >  		return -EINVAL;
 
---ggC1wwkyYWqEab//
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+Shouldn't that last check be done with a lock taken ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+> > >  	spin_lock_irqsave(&ep->udc->lock, flags);
 
-iQIcBAEBAgAGBQJQhSZBAAoJEIaOsuA1yqREtvcP/ikDgBcQnGMnmLx0B46yUH8B
-vl0tI2pdTM5vEKj1a0wQrx5sClIVcYCMxGI1F4lwhEZ4fJOSCi7RW5f2UFq48ndh
-Nb8XkmRtGyDOgpW5XZ1YLhOR/JCM5/xDHH4guv8i+kL09Kn+Rp881SlsjMiMRK0n
-pi6W8ZZ9FEtqSY3cmMIkQnbQzo3lsu+k9c6nVjC+kx9PJytCGpk5jXxWva9LUO4q
-DCEtXkHz64slgz7Ok01cYGJ/q8qs8soWHLRaYepHUrsoPcHwZ89kgMhhmlfz2E9A
-t+154yO+ZO4NaRYgHVMhRVRsiLlZpNDx5ljTZgPPhQIxQD6/GIXCLkgGNpqSCpa3
-MUdKSap3VmWbWaF9jxi6otNynHckUyX2CS7Jnp+l4URALhcsRzZjt3LFaAs9VI1l
-jguLJRnTaZw4JtIPrMJYqOqkGR9l1Km5ogphZxzO0czkFx7P+G3ZryeqFvJD7YmR
-dbN5QQPuMDVzBsl6lhdQBIAndRlEeqGR6dg51aYdAURey2HQEQ3XX5UxJTsF3oZb
-u0AfUxtm8jnrcQG1TiC6gBVKiQAwRNMbXbRx9kIAqf6441RZ/8IGnGOUGQsNpGyA
-KhCP0kv9nPdim2mite7td3+ICZIJh+Q2tvHcAT1eVEgS8czJnDpfeDLy4HBskyhb
-NimFSvjXETC5tXwCcF/g
-=8aST
------END PGP SIGNATURE-----
+-- 
+Regards,
 
---ggC1wwkyYWqEab//--
+Laurent Pinchart
