@@ -1,26 +1,36 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 755212C0134
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 10:53:12 +1100 (EST)
-Date: Mon, 22 Oct 2012 18:53:02 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/3 v3] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-To: Tabi Timur-B04825 <B04825@freescale.com>
-In-Reply-To: <6AE080B68D46FC4BA2D2769E68D765B7081084A7@039-SN2MPN1-023.039d.mgd.msft.net>
- (from B04825@freescale.com on Mon Oct 22 16:18:07 2012)
-Message-ID: <1350949982.30970.11@snotra>
+Return-Path: <heiko.carstens@de.ibm.com>
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e06smtp16.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F300A2C0168
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 17:55:20 +1100 (EST)
+Received: from /spool/local
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <heiko.carstens@de.ibm.com>;
+ Tue, 23 Oct 2012 07:55:14 +0100
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q9N6t4YN55509126
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 06:55:04 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q9N6tB3Q009969
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 00:55:11 -0600
+Date: Tue, 23 Oct 2012 08:55:48 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: Build regressions/improvements in v3.7-rc2
+Message-ID: <20121023065548.GA4164@osiris.de.ibm.com>
+References: <alpine.DEB.2.00.1210222146440.12209@ayla.of.borg>
+ <CAMuHMdVS-qz0BAHXFGD01+w1GxyQ2M7DpLnLRQKtdZSiDfYgHw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Sethi Varun-B16395 <B16395@freescale.com>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "joerg.roedel@amd.com" <joerg.roedel@amd.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAMuHMdVS-qz0BAHXFGD01+w1GxyQ2M7DpLnLRQKtdZSiDfYgHw@mail.gmail.com>
+Cc: linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,131 +40,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/22/2012 04:18:07 PM, Tabi Timur-B04825 wrote:
-> On Wed, Oct 17, 2012 at 12:32 PM, Varun Sethi =20
-> <Varun.Sethi@freescale.com> wrote:
-> > +}
-> > +
-> > +static unsigned long pamu_get_fspi_and_allocate(u32 subwin_cnt)
-> > +{
->=20
-> subwin_cnt should probably be an unsigned int.
->=20
-> This function needs to be documented.  What value is being returned?
+On Mon, Oct 22, 2012 at 09:50:26PM +0200, Geert Uytterhoeven wrote:
+> On Mon, Oct 22, 2012 at 9:47 PM, Geert Uytterhoeven
+> <geert@linux-m68k.org> wrote:
+> > JFYI, when comparing v3.7-rc2 to v3.7-rc1[3], the summaries are:
+> >   - build errors: +4/-44
+> 
+>   + arch/s390/include/asm/kvm_para.h: error: redefinition of
+> 'kvm_arch_para_features':  => 147:28, 147:99
+>   + arch/s390/include/asm/kvm_para.h: error: redefinition of
+> 'kvm_check_and_clear_guest_paused':  => 152:91, 152:20
+> 
+> s390-allmodconfig/s390-allyesconfig/s390-defconfig
 
-spaact offset (yes, this needs to be documented)
-
-> > +       unsigned long spaace_addr;
-> > +
-> > +       spaace_addr =3D gen_pool_alloc(spaace_pool, subwin_cnt * =20
-> sizeof(paace_t));
-> > +       if (!spaace_addr)
-> > +               return ULONG_MAX;
->=20
-> What's wrong with returning 0 on error?
-
-0 is a valid spaact offset
-
-> > +
-> > +       return (spaace_addr - (unsigned long)spaact) / =20
-> (sizeof(paace_t));
->=20
-> Is this supposed to be a virtual address?  If so, then return void*
-> instead of an unsigned long.
-
-It's not a virtual address.  How often does subtraction followed by =20
-division result in a valid virtual address?
-
-> > +int  pamu_update_paace_stash(int liodn, u32 subwin, u32 value)
-
-Whitespace
-
-> > +#define PAMU_PAGE_SHIFT 12
-> > +#define PAMU_PAGE_SIZE  4096ULL
->=20
-> 4096ULL?  Why not just 4096?
-
-This lets it be used in phys_addr_t expressions without needing casts
-everywhere or dropping bits.
-
-> > +/* This bitmap advertises the page sizes supported by PAMU hardware
-> > + * to the IOMMU API.
-> > + */
-> > +#define FSL_PAMU_PGSIZES       (~0xFFFUL)
->=20
-> There should be a better way to define this.  ~(PAMU_PAGE_SIZE-1) =20
-> maybe?
-
-Is it even true?  We don't support IOMMU pages larger than the SoC can
-address.
-
-The (~0xFFFUL) version also discards some valid IOMMU page sizes on
-32-bit kernels.  One use case for windows larger than the CPU virtual
-address space is creating one big identity-map window to effectively
-disable translation.  If we're to support that, the size of =20
-pgsize_bitmap
-will need to change as well.
-
-> > +static int map_liodn(int liodn, struct fsl_dma_domain *dma_domain)
-> > +{
-> > +       u32 subwin_cnt =3D dma_domain->subwin_cnt;
-> > +       unsigned long rpn;
-> > +       int ret =3D 0, i;
-> > +
-> > +       if (subwin_cnt) {
-> > +               struct dma_subwindow *sub_win_ptr =3D
-> > +                                       &dma_domain->sub_win_arr[0];
-> > +               for (i =3D 0; i < subwin_cnt; i++) {
-> > +                       if (sub_win_ptr[i].valid) {
-> > +                               rpn =3D sub_win_ptr[i].paddr >>
-> > +                                        PAMU_PAGE_SHIFT,
-> > +                               spin_lock(&iommu_lock);
-> > +                               ret =3D pamu_config_spaace(liodn, =20
-> subwin_cnt, i,
-> > +                                                        =20
-> sub_win_ptr[i].size,
-> > +                                                        -1,
-> > +                                                        rpn,
-> > +                                                        =20
-> dma_domain->snoop_id,
-> > +                                                        =20
-> dma_domain->stash_id,
-> > +                                                        (i > 0) ? =20
-> 1 : 0,
-> > +                                                        =20
-> sub_win_ptr[i].prot);
-> > +                               spin_unlock(&iommu_lock);
-> > +                               if (ret) {
-> > +                                       pr_err("PAMU SPAACE =20
-> configuration failed for liodn %d\n",
-> > +                                                liodn);
-> > +                                       return ret;
-> > +                               }
-> > +                       }
-> > +               }
-
-Break up that nesting with some subfunctions.
-
-> > +       while (!list_empty(&dma_domain->devices)) {
-> > +               info =3D list_entry(dma_domain->devices.next,
-> > +                       struct device_domain_info, link);
-> > +               remove_domain_ref(info, dma_domain->subwin_cnt);
-> > +       }
->=20
-> I wonder if you should use list_for_each_safe() instead.
-
-The above is simpler if you're destroying the entire list.
-
-> > +}
-> > +
-> > +static int configure_domain_dma_state(struct fsl_dma_domain =20
-> *dma_domain, int enable)
->=20
-> bool enable
->=20
-> Finally, please CC: me on all IOMMU and PAMU patches you post =20
-> upstream.
-
-Me too.
-
--Scott=
+Thanks Geert. We have already a build fix for this from David Howells
+which is waiting to be merged upstream.
