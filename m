@@ -1,15 +1,18 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id E7C952C02BC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 21:25:22 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 299762C032F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 21:25:23 +1100 (EST)
 From: wency@cn.fujitsu.com
 To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [PATCH v2 00/12] memory-hotplug: hot-remove physical memory
-Date: Tue, 23 Oct 2012 18:30:38 +0800
-Message-Id: <1350988250-31294-1-git-send-email-wency@cn.fujitsu.com>
+Subject: [PATCH v2 12/12] memory-hotplug: free node_data when a node is
+ offlined
+Date: Tue, 23 Oct 2012 18:30:50 +0800
+Message-Id: <1350988250-31294-13-git-send-email-wency@cn.fujitsu.com>
+In-Reply-To: <1350988250-31294-1-git-send-email-wency@cn.fujitsu.com>
+References: <1350988250-31294-1-git-send-email-wency@cn.fujitsu.com>
 Cc: len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>,
  isimatu.yasuaki@jp.fujitsu.com, paulus@samba.org, minchan.kim@gmail.com,
  kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, cl@linux.com,
@@ -25,113 +28,63 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wen Congyang <wency@cn.fujitsu.com>
 
-The patch-set was divided from following thread's patch-set.
+We call hotadd_new_pgdat() to allocate memory to store node_data. So we
+should free it when removing a node.
 
-https://lkml.org/lkml/2012/9/5/201
+CC: David Rientjes <rientjes@google.com>
+CC: Jiang Liu <liuj97@gmail.com>
+CC: Len Brown <len.brown@intel.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Christoph Lameter <cl@linux.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+---
+ mm/memory_hotplug.c |   20 +++++++++++++++++++-
+ 1 files changed, 19 insertions(+), 1 deletions(-)
 
-The last version of this patchset:
-https://lkml.org/lkml/2012/10/5/469
-
-If you want to know the reason, please read following thread.
-
-https://lkml.org/lkml/2012/10/2/83
-
-The patch-set has only the function of kernel core side for physical
-memory hot remove. So if you use the patch, please apply following
-patches.
-
-- bug fix for memory hot remove
-  https://lkml.org/lkml/2012/10/19/56
-  
-- acpi framework
-  https://lkml.org/lkml/2012/10/19/156
-
-The patches can free/remove the following things:
-
-  - /sys/firmware/memmap/X/{end, start, type} : [PATCH 2/10]
-  - mem_section and related sysfs files       : [PATCH 3-4/10]
-  - memmap of sparse-vmemmap                  : [PATCH 5-7/10]
-  - page table of removed memory              : [RFC PATCH 8/10]
-  - node and related sysfs files              : [RFC PATCH 9-10/10]
-
-* [PATCH 2/10] checks whether the memory can be removed or not.
-
-If you find lack of function for physical memory hot-remove, please let me
-know.
-
-How to test this patchset?
-1. apply this patchset and build the kernel. MEMORY_HOTPLUG, MEMORY_HOTREMOVE,
-   ACPI_HOTPLUG_MEMORY must be selected.
-2. load the module acpi_memhotplug
-3. hotplug the memory device(it depends on your hardware)
-   You will see the memory device under the directory /sys/bus/acpi/devices/.
-   Its name is PNP0C80:XX.
-4. online/offline pages provided by this memory device
-   You can write online/offline to /sys/devices/system/memory/memoryX/state to
-   online/offline pages provided by this memory device
-5. hotremove the memory device
-   You can hotremove the memory device by the hardware, or writing 1 to
-   /sys/bus/acpi/devices/PNP0C80:XX/eject.
-
-Note: if the memory provided by the memory device is used by the kernel, it
-can't be offlined. It is not a bug.
-
-Known problems:
-1. hotremoving memory device may cause kernel panicked
-   This bug will be fixed by Liu Jiang's patch:
-   https://lkml.org/lkml/2012/7/3/1
-
-
-Changelogs from v1 to v2:
- Patch1: new patch, offline memory twice. 1st iterate: offline every non primary
-         memory block. 2nd iterate: offline primary (i.e. first added) memory
-         block.
-
- Patch3: new patch, no logical change, just remove reduntant codes.
-
- Patch9: merge the patch from wujianguo into this patch. flush tlb on all cpu
-         after the pagetable is changed.
-
- Patch12: new patch, free node_data when a node is offlined
-
-Wen Congyang (6):
-  memory-hotplug: try to offline the memory twice to avoid dependence
-  memory-hotplug: remove redundant codes
-  memory-hotplug: introduce new function arch_remove_memory() for
-    removing page table depends on architecture
-  memory-hotplug: remove page table of x86_64 architecture
-  memory-hotplug: remove sysfs file of node
-  memory-hotplug: free node_data when a node is offlined
-
-Yasuaki Ishimatsu (6):
-  memory-hotplug: check whether all memory blocks are offlined or not
-    when removing memory
-  memory-hotplug: remove /sys/firmware/memmap/X sysfs
-  memory-hotplug: unregister memory section on SPARSEMEM_VMEMMAP
-  memory-hotplug: implement register_page_bootmem_info_section of
-    sparse-vmemmap
-  memory-hotplug: remove memmap of sparse-vmemmap
-  memory-hotplug: memory_hotplug: clear zone when removing the memory
-
- arch/ia64/mm/discontig.c             |   14 ++
- arch/ia64/mm/init.c                  |   18 ++
- arch/powerpc/mm/init_64.c            |   14 ++
- arch/powerpc/mm/mem.c                |   12 +
- arch/s390/mm/init.c                  |   12 +
- arch/s390/mm/vmem.c                  |   14 ++
- arch/sh/mm/init.c                    |   17 ++
- arch/sparc/mm/init_64.c              |   14 ++
- arch/tile/mm/init.c                  |    8 +
- arch/x86/include/asm/pgtable_types.h |    1 +
- arch/x86/mm/init_32.c                |   12 +
- arch/x86/mm/init_64.c                |  409 ++++++++++++++++++++++++++++++++++
- arch/x86/mm/pageattr.c               |   47 ++--
- drivers/acpi/acpi_memhotplug.c       |    8 +-
- drivers/base/memory.c                |    6 +
- drivers/firmware/memmap.c            |   98 ++++++++-
- include/linux/firmware-map.h         |    6 +
- include/linux/memory_hotplug.h       |   15 +-
- include/linux/mm.h                   |    5 +-
- mm/memory_hotplug.c                  |  409 ++++++++++++++++++++++++++++++++--
- mm/sparse.c                          |    5 +-
- 21 files changed, 1087 insertions(+), 57 deletions(-)
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index b1fe41d..6b4cd53 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -1320,9 +1320,12 @@ static int check_cpu_on_node(void *data)
+ /* offline the node if all memory sections of this node are removed */
+ static void try_offline_node(int nid)
+ {
++	pg_data_t *pgdat = NODE_DATA(nid);
+ 	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
+-	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
++	unsigned long end_pfn = start_pfn + pgdat->node_spanned_pages;
+ 	unsigned long pfn;
++	struct page *pgdat_page = virt_to_page(pgdat);
++	int i;
+ 
+ 	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+ 		unsigned long section_nr = pfn_to_section_nr(pfn);
+@@ -1349,6 +1352,21 @@ static void try_offline_node(int nid)
+ 	 */
+ 	node_set_offline(nid);
+ 	unregister_one_node(nid);
++
++	if (!PageSlab(pgdat_page) && !PageCompound(pgdat_page))
++		/* node data is allocated from boot memory */
++		return;
++
++	/* free waittable in each zone */
++	for (i = 0; i < MAX_NR_ZONES; i++) {
++		struct zone *zone = pgdat->node_zones + i;
++
++		if (zone->wait_table)
++			vfree(zone->wait_table);
++	}
++
++	arch_refresh_nodedata(nid, NULL);
++	arch_free_nodedata(pgdat);
+ }
+ 
+ int __ref remove_memory(int nid, u64 start, u64 size)
+-- 
+1.7.1
