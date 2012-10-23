@@ -1,23 +1,24 @@
-Return-Path: <cbouatmailru@gmail.com>
-Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
- [209.85.220.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 39EBD2C0168
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 19:29:49 +1100 (EST)
-Received: by mail-pa0-f51.google.com with SMTP id kq12so2337257pab.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 01:29:47 -0700 (PDT)
-Date: Tue, 23 Oct 2012 01:26:48 -0700
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: r66093@freescale.com
-Subject: Re: [PATCH] powerpc/esdhc: enable the card insert/remove interrupt
-Message-ID: <20121023082648.GA21690@lizard>
+Return-Path: <r66093@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9DA812C01C2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Oct 2012 19:39:53 +1100 (EST)
+From: Huang Changming-R66093 <r66093@freescale.com>
+To: Anton Vorontsov <cbouatmailru@gmail.com>
+Subject: RE: [PATCH] powerpc/esdhc: enable the card insert/remove interrupt
+Date: Tue, 23 Oct 2012 08:39:44 +0000
+Message-ID: <110EED8CC96DFC488B7E717A2027A27C1C68D9@039-SN1MPN1-003.039d.mgd.msft.net>
 References: <1350975677-8195-1-git-send-email-r66093@freescale.com>
+ <20121023082648.GA21690@lizard>
+In-Reply-To: <20121023082648.GA21690@lizard>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1350975677-8195-1-git-send-email-r66093@freescale.com>
-Cc: Jerry Huang <Chang-Ming.Huang@freescale.com>, Chris Ball <cjb@laptop.org>,
- linux-mmc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Chris Ball <cjb@laptop.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,57 +28,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Oct 23, 2012 at 03:01:17PM +0800, r66093@freescale.com wrote:
-> From: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> 
-> The current eSDHC driver use the poll mode to detect
-> if the SD/MMC card is inserted or removed, which will generate
-> many interrupts and impact the performance. 
-> Therefore, change the default card detect to interrupt mode,
-> if the board can't support this mode, we still use the poll mode.
-> 
-> Signed-off-by: Jerry Huang <Chang-Ming.Huang@freescale.com>
-> CC: Anton Vorontsov <cbouatmailru@gmail.com>
-> CC: Chris Ball <cjb@laptop.org>
-> ---
-
-IIRC, the card detection is broken SOC-revision-wise, not board-wise. So
-the change seems wrong.
-
-Also, take a look at this:
-
-	http://lkml.org/lkml/2010/7/14/127
-
-I started the work but never finished, unfortunately it caused some
-regressions for non-FSL hardware...
-
->  drivers/mmc/host/sdhci-of-esdhc.c |    7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-> index ffc1226..5dc362f 100644
-> --- a/drivers/mmc/host/sdhci-of-esdhc.c
-> +++ b/drivers/mmc/host/sdhci-of-esdhc.c
-> @@ -196,6 +196,11 @@ static void esdhc_of_detect_limitation(struct platform_device *pdev,
->  	if (vvn == VENDOR_V_22)
->  		pdata->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
->  
-> +	/* P4080DS and MPC837XMDS board don't support interrupt mode */
-> +	if (of_machine_is_compatible("fsl,mpc837xmds") ||
-> +	    of_machine_is_compatible("fsl,P4080DS"))
-> +		pdata->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
-> +
->  	iounmap(ioaddr);
->  end:
->  	return;
-> @@ -223,7 +228,7 @@ static struct sdhci_pltfm_data sdhci_esdhc_pdata = {
->  	 * card detection could be handled via GPIO
->  	 * eSDHC cannot support End Attribute in NOP ADMA descriptor
->  	 */
-> -	.quirks = ESDHC_DEFAULT_QUIRKS | SDHCI_QUIRK_BROKEN_CARD_DETECTION
-> +	.quirks = ESDHC_DEFAULT_QUIRKS
->  		| SDHCI_QUIRK_NO_CARD_NO_RESET
->  		| SDHCI_QUIRK_NO_ENDATTR_IN_NOPDESC,
->  	.ops = &sdhci_esdhc_ops,
-> -- 
-> 1.7.9.5
+SGksIEFudG9uDQpGb3IgRlNMIFNPQ3MsIHRoZSBpbnRlcnJ1cHQgbW9kZSBpcyBzdXBwb3J0IGZv
+ciBjYXJkIGRldGVjdC4NCkZvciBzb21lIHJlYXNvbnMsIHNvbWUgYm9hcmQgY2FuJ3Qgc3VwcG9y
+dCB0aGlzIGZlYXR1cmUsIHN1Y2ggYXMgbXBjODM3eG1kcyBib2FyZCwNCmJ1dCBtcGM4Mzd4cmRi
+IGJvYXJkIHN1cHBvcnQgaXQuDQoNCkkgc2VlIHlvdXIgbGlua3MsIGl0IGlzIGFib3V0IHRoZSBE
+TUEgKHRoZSBmaXJzdCB2ZXJzaW9uIG9mIHAyMDIwIGRvbid0IHN1cHBvcnQgRE1BLCBuZWVkIHRv
+IGVuYWJsZSB0aGUgUElPIG1vZGUsIGJ1dCB0aGUgbGF0ZXIgdmVyc2lvbiBoYXMgZml4ZWQgdGhp
+cyBpc3N1ZSkuDQoNCkJlc3QgUmVnYXJkcw0KSmVycnkgSHVhbmcNCg0KDQo+IC0tLS0tT3JpZ2lu
+YWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IGxpbnV4LW1tYy1vd25lckB2Z2VyLmtlcm5lbC5vcmcg
+W21haWx0bzpsaW51eC1tbWMtDQo+IG93bmVyQHZnZXIua2VybmVsLm9yZ10gT24gQmVoYWxmIE9m
+IEFudG9uIFZvcm9udHNvdg0KPiBTZW50OiBUdWVzZGF5LCBPY3RvYmVyIDIzLCAyMDEyIDQ6Mjcg
+UE0NCj4gVG86IEh1YW5nIENoYW5nbWluZy1SNjYwOTMNCj4gQ2M6IGxpbnV4LW1tY0B2Z2VyLmtl
+cm5lbC5vcmc7IEh1YW5nIENoYW5nbWluZy1SNjYwOTM7IENocmlzIEJhbGw7IEt1bWFyDQo+IEdh
+bGE7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hd
+IHBvd2VycGMvZXNkaGM6IGVuYWJsZSB0aGUgY2FyZCBpbnNlcnQvcmVtb3ZlDQo+IGludGVycnVw
+dA0KPiANCj4gT24gVHVlLCBPY3QgMjMsIDIwMTIgYXQgMDM6MDE6MTdQTSArMDgwMCwgcjY2MDkz
+QGZyZWVzY2FsZS5jb20gd3JvdGU6DQo+ID4gRnJvbTogSmVycnkgSHVhbmcgPENoYW5nLU1pbmcu
+SHVhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IFRoZSBjdXJyZW50IGVTREhDIGRyaXZlciB1
+c2UgdGhlIHBvbGwgbW9kZSB0byBkZXRlY3QgaWYgdGhlIFNEL01NQw0KPiA+IGNhcmQgaXMgaW5z
+ZXJ0ZWQgb3IgcmVtb3ZlZCwgd2hpY2ggd2lsbCBnZW5lcmF0ZSBtYW55IGludGVycnVwdHMgYW5k
+DQo+ID4gaW1wYWN0IHRoZSBwZXJmb3JtYW5jZS4NCj4gPiBUaGVyZWZvcmUsIGNoYW5nZSB0aGUg
+ZGVmYXVsdCBjYXJkIGRldGVjdCB0byBpbnRlcnJ1cHQgbW9kZSwgaWYgdGhlDQo+ID4gYm9hcmQg
+Y2FuJ3Qgc3VwcG9ydCB0aGlzIG1vZGUsIHdlIHN0aWxsIHVzZSB0aGUgcG9sbCBtb2RlLg0KPiA+
+DQo+ID4gU2lnbmVkLW9mZi1ieTogSmVycnkgSHVhbmcgPENoYW5nLU1pbmcuSHVhbmdAZnJlZXNj
+YWxlLmNvbT4NCj4gPiBDQzogQW50b24gVm9yb250c292IDxjYm91YXRtYWlscnVAZ21haWwuY29t
+Pg0KPiA+IENDOiBDaHJpcyBCYWxsIDxjamJAbGFwdG9wLm9yZz4NCj4gPiAtLS0NCj4gDQo+IElJ
+UkMsIHRoZSBjYXJkIGRldGVjdGlvbiBpcyBicm9rZW4gU09DLXJldmlzaW9uLXdpc2UsIG5vdCBi
+b2FyZC13aXNlLiBTbw0KPiB0aGUgY2hhbmdlIHNlZW1zIHdyb25nLg0KPiANCj4gQWxzbywgdGFr
+ZSBhIGxvb2sgYXQgdGhpczoNCj4gDQo+IAlodHRwOi8vbGttbC5vcmcvbGttbC8yMDEwLzcvMTQv
+MTI3DQo+IA0KPiBJIHN0YXJ0ZWQgdGhlIHdvcmsgYnV0IG5ldmVyIGZpbmlzaGVkLCB1bmZvcnR1
+bmF0ZWx5IGl0IGNhdXNlZCBzb21lDQo+IHJlZ3Jlc3Npb25zIGZvciBub24tRlNMIGhhcmR3YXJl
+Li4uDQo+IA0KPiA+ICBkcml2ZXJzL21tYy9ob3N0L3NkaGNpLW9mLWVzZGhjLmMgfCAgICA3ICsr
+KysrKy0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDYgaW5zZXJ0aW9ucygrKSwgMSBkZWxldGlvbigt
+KQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL2RyaXZlcnMvbW1jL2hvc3Qvc2RoY2ktb2YtZXNkaGMu
+Yw0KPiA+IGIvZHJpdmVycy9tbWMvaG9zdC9zZGhjaS1vZi1lc2RoYy5jDQo+ID4gaW5kZXggZmZj
+MTIyNi4uNWRjMzYyZiAxMDA2NDQNCj4gPiAtLS0gYS9kcml2ZXJzL21tYy9ob3N0L3NkaGNpLW9m
+LWVzZGhjLmMNCj4gPiArKysgYi9kcml2ZXJzL21tYy9ob3N0L3NkaGNpLW9mLWVzZGhjLmMNCj4g
+PiBAQCAtMTk2LDYgKzE5NiwxMSBAQCBzdGF0aWMgdm9pZCBlc2RoY19vZl9kZXRlY3RfbGltaXRh
+dGlvbihzdHJ1Y3QNCj4gcGxhdGZvcm1fZGV2aWNlICpwZGV2LA0KPiA+ICAJaWYgKHZ2biA9PSBW
+RU5ET1JfVl8yMikNCj4gPiAgCQlwZGF0YS0+cXVpcmtzMiB8PSBTREhDSV9RVUlSSzJfSE9TVF9O
+T19DTUQyMzsNCj4gPg0KPiA+ICsJLyogUDQwODBEUyBhbmQgTVBDODM3WE1EUyBib2FyZCBkb24n
+dCBzdXBwb3J0IGludGVycnVwdCBtb2RlICovDQo+ID4gKwlpZiAob2ZfbWFjaGluZV9pc19jb21w
+YXRpYmxlKCJmc2wsbXBjODM3eG1kcyIpIHx8DQo+ID4gKwkgICAgb2ZfbWFjaGluZV9pc19jb21w
+YXRpYmxlKCJmc2wsUDQwODBEUyIpKQ0KPiA+ICsJCXBkYXRhLT5xdWlya3MgfD0gU0RIQ0lfUVVJ
+UktfQlJPS0VOX0NBUkRfREVURUNUSU9OOw0KPiA+ICsNCj4gPiAgCWlvdW5tYXAoaW9hZGRyKTsN
+Cj4gPiAgZW5kOg0KPiA+ICAJcmV0dXJuOw0KPiA+IEBAIC0yMjMsNyArMjI4LDcgQEAgc3RhdGlj
+IHN0cnVjdCBzZGhjaV9wbHRmbV9kYXRhIHNkaGNpX2VzZGhjX3BkYXRhID0NCj4gew0KPiA+ICAJ
+ICogY2FyZCBkZXRlY3Rpb24gY291bGQgYmUgaGFuZGxlZCB2aWEgR1BJTw0KPiA+ICAJICogZVNE
+SEMgY2Fubm90IHN1cHBvcnQgRW5kIEF0dHJpYnV0ZSBpbiBOT1AgQURNQSBkZXNjcmlwdG9yDQo+
+ID4gIAkgKi8NCj4gPiAtCS5xdWlya3MgPSBFU0RIQ19ERUZBVUxUX1FVSVJLUyB8IFNESENJX1FV
+SVJLX0JST0tFTl9DQVJEX0RFVEVDVElPTg0KPiA+ICsJLnF1aXJrcyA9IEVTREhDX0RFRkFVTFRf
+UVVJUktTDQo+ID4gIAkJfCBTREhDSV9RVUlSS19OT19DQVJEX05PX1JFU0VUDQo+ID4gIAkJfCBT
+REhDSV9RVUlSS19OT19FTkRBVFRSX0lOX05PUERFU0MsDQo+ID4gIAkub3BzID0gJnNkaGNpX2Vz
+ZGhjX29wcywNCj4gPiAtLQ0KPiA+IDEuNy45LjUNCj4gLS0NCj4gVG8gdW5zdWJzY3JpYmUgZnJv
+bSB0aGlzIGxpc3Q6IHNlbmQgdGhlIGxpbmUgInVuc3Vic2NyaWJlIGxpbnV4LW1tYyIgaW4NCj4g
+dGhlIGJvZHkgb2YgYSBtZXNzYWdlIHRvIG1ham9yZG9tb0B2Z2VyLmtlcm5lbC5vcmcgTW9yZSBt
+YWpvcmRvbW8gaW5mbyBhdA0KPiBodHRwOi8vdmdlci5rZXJuZWwub3JnL21ham9yZG9tby1pbmZv
+Lmh0bWwNCg0K
