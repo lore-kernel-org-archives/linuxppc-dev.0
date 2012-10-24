@@ -1,25 +1,21 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (casper.infradead.org
- [IPv6:2001:770:15f::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sebastian@breakpoint.cc>
+Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc
+ [IPv6:2001:4d88:1ffa:82:880:aa0:9009:64ae])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DA2E62C0168
- for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2012 23:28:10 +1100 (EST)
-Message-ID: <1351081662.22332.13.camel@twins>
-Subject: Re: [RFC][PATCH] perf: Add a few generic stalled-cycles events
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Wed, 24 Oct 2012 14:27:42 +0200
-In-Reply-To: <20121016183148.GA25482@us.ibm.com>
-References: <20121012012839.GA15348@us.ibm.com>
- <20121015155534.GR8285@erda.amd.com> <20121016100809.GS8285@erda.amd.com>
- <20121016183148.GA25482@us.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
-Cc: Robert Richter <robert.richter@amd.com>,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- eranian@google.com, acme@redhat.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
- mpjohn@us.ibm.com, mingo@kernel.org, asharma@fb.com
+ by ozlabs.org (Postfix) with ESMTPS id 9B00D2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2012 01:26:39 +1100 (EST)
+Date: Wed, 24 Oct 2012 16:01:32 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH] powerpc/usb: fix build warning
+Message-ID: <20121024140132.GB4368@breakpoint.cc>
+References: <20121008164731.75483b961a01e824731c552b@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20121008164731.75483b961a01e824731c552b@freescale.com>
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,72 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-10-16 at 11:31 -0700, Sukadev Bhattiprolu wrote:
-> On a side note, how does the kernel on x86 use the 'config' information i=
-n=20
-> say /sys/bus/event_source/devices/cpu/format/cccr ? On Power7, the raw
-> code encodes the information such as the PMC to use for the event. Is tha=
-t
-> how the 'config' info in Intel is used ?
->=20
-> Does the 'config' info change from system to system or is it static for
-> a given event on a given CPU ?=20
+> index 9bfde82..968f751 100644
+> --- a/drivers/usb/host/ehci-fsl.c
+> +++ b/drivers/usb/host/ehci-fsl.c
+> @@ -222,7 +222,7 @@ static int ehci_fsl_setup_phy(struct usb_hcd *hcd,
+>  
+>  	if (pdata->controller_ver < 0) {
+>  		dev_warn(hcd->self.controller, "Could not get controller version\n");
+> -		return;
+> +		return -EINVAL;
+>  	}
+>  
+>  	portsc = ehci_readl(ehci, &ehci->regs->port_status[port_offset]);
 
-Have a look at commits (tip/master):
+Another patch (USB: ehci-fsl: Return valid error in ehci_fsl_setup_phy)
+by-passed Greg and went via Linus into tree and is available in v3.7-rc2.
 
-  641cc938815dfd09f8fa1ec72deb814f0938ac33
-  a47473939db20e3961b200eb00acf5fcf084d755
-  43c032febde48aabcf6d59f47cdcb7b5debbdc63
-
-
-So basically
-
- /sys/bus/event_source/devices/cpu/format/event
-
-contains something like:
-
-  config:0-7
-
-Which says that for the 'cpu' PMU, field 'event' fills
-perf_event_attr::config bits 0 through 7 (for type=3DPERF_TYPE_RAW).
-
-The perf tool syntax for this is:
-
-  perf stat -e 'cpu/event=3D0x3c/'
-
-This basically allows you to expose bitfields in the 'raw' event format
-for ease of writing raw events. I do not know if the Power PMU has such
-or not.
-
-Using this,
-
-  /sys/bus/event_source/devices/cpu/events/cpu-cycles
-
-would contain something like:
-
-  event=3D0x3c
-
-which one can use as:
-
-  perf stat -e 'cpu/event=3Dcpu-cycles/'
-  perf stat -e 'cpu/cpu-cycles/'
-
-The tool will then read the sysfs file, substitute the content to
-obtain:
-
-  perf stat -e 'cpu/event=3D0x3c/'
-
-and run with that.
-
-Within all this, the perf_event_attr::config* field names are hard-coded
-special, so 'cpu/config=3D0xffff/' will always work, even without sysfs
-format/ specification and is equivalent to the raw event stuff we had
-before.
-
-
-If the Power PMU lacks any structure to the raw config, you could simply
-provide sysfs event/ files with:
-
-  config=3D0xdeadbeef
-
-like content.
+Sebastian
