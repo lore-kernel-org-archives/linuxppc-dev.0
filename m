@@ -1,35 +1,26 @@
-Return-Path: <B38951@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 290AC2C0123
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Oct 2012 13:09:40 +1100 (EST)
-From: Jia Hongtao-B38951 <B38951@freescale.com>
-To: Jia Hongtao-B38951 <B38951@freescale.com>, Kumar Gala
- <galak@kernel.crashing.org>
-Subject: RE: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM support
-Date: Wed, 24 Oct 2012 01:58:58 +0000
-Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01ADB25D@039-SN1MPN1-003.039d.mgd.msft.net>
-References: <1347934234-18223-1-git-send-email-B38951@freescale.com>
- <86ADF4ED-B84C-4560-8781-D9FA4486D854@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01AAA35A@039-SN1MPN1-002.039d.mgd.msft.net>,
- <36119932-E4BF-4DF6-8D33-C9A832883272@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01AAA4E8@039-SN1MPN1-002.039d.mgd.msft.net>
- <8086D08B-62B7-4838-8DB6-0F6158DE581A@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01AB4A6F@039-SN1MPN1-004.039d.mgd.msft.net>
- <94F013E7935FF44C83EBE7784D62AD3F09432A5F@039-SN2MPN1-021.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01AB6AE7@039-SN1MPN1-004.039d.mgd.msft.net>
- <95B12FA1-EC53-4632-8DFB-64109668BA9C@kernel.crashing.org>
- <412C8208B4A0464FA894C5F0C278CD5D01AB8317@039-SN1MPN1-004.039d.mgd.msft.net>
- <412C8208B4A0464FA894C5F0C278CD5D01AC2B34@039-SN1MPN1-004.039d.mgd.msft.net>
- <30C76F52-4022-459D-8B84-876B1A572ABE@kernel.crashing.org>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <robert.karl.berger@gmail.com>
+Received: from mail-ee0-f42.google.com (mail-ee0-f42.google.com [74.125.83.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F24D62C0109
+ for <linuxppc-dev@ozlabs.org>; Wed, 24 Oct 2012 16:45:56 +1100 (EST)
+Received: by mail-ee0-f42.google.com with SMTP id l10so30254eei.15
+ for <linuxppc-dev@ozlabs.org>; Tue, 23 Oct 2012 22:45:53 -0700 (PDT)
+Message-ID: <50878089.6060301@gmail.com>
+Date: Wed, 24 Oct 2012 08:45:45 +0300
+From: Robert Berger <robert.karl.berger@gmail.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Li Yang-R58472 <r58472@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: ELDK 4.2/kilauea/3.5+ kernel broken
+References: <507EF5AD.5070203__24977.4320669987$1350497770$gmane$org@gmail.com>
+ <50802F4C.3000309__36526.1883860969$1350578085$gmane$org@gmail.com>
+ <50804020.30505@gmail.com>
+ <1350587006.2476.12.camel__24873.815305955$1350587085$gmane$org@pasglop>
+ <50841653.4050301@reliableembeddedsystems.com>
+ <1350849666.2476.138.camel__11705.9888471433$1350849778$gmane$org@pasglop>
+In-Reply-To: <1350849666.2476.138.camel__11705.9888471433$1350849778$gmane$org@pasglop>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, rsarmah@apm.com, mla@apm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,201 +30,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+Hi Ben,
+>
+> Remind me what is the symptom ? A specific device isn't working ? Or the
+> whole kernel goes toast ?
 
-This PCI controller PM thing is pending for nearly a month without
-further discussion. Maybe it's time now to reach an agreement.
+The whole kernel goes toast! Just reboots without saying much before;)
 
-- Hongtao.
+> My feeling is that those patches make MSIs
+> work (well that's what they are supposed to do) and for some reason that
+> doesn't agree with whatever you have connected to the PCIe slot...
 
+I have nothing connected to the PCIe slot. Just a standard kilauea eval
+board with a defconfig and a 3.6 kernel, so if someone has a kilauea
+board it should be very easy to reproduce.
 
+Mai, Rupjyoti do you have a kilauea bard lying around to test?
 
-> -----Original Message-----
-> From: Jia Hongtao-B38951
-> Sent: Friday, October 19, 2012 12:15 PM
-> To: 'Kumar Gala'
-> Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472
-> Subject: RE: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM
-> support
->=20
-> > -----Original Message-----
-> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> > Sent: Thursday, September 27, 2012 8:06 PM
-> > To: Jia Hongtao-B38951
-> > Cc: Wood Scott-B07421; linuxppc-dev@lists.ozlabs.org; Li Yang-R58472
-> > Subject: Re: [PATCH][V4] powerpc/fsl-pci: Add pci inbound/outbound PM
-> > support
-> >
-> > >>>>>>>>>>
-> > >>>>>>>>>> On Sep 17, 2012, at 9:10 PM, Jia Hongtao wrote:
-> > >>>>>>>>>>
-> > >>>>>>>>>>> Power supply for PCI inbound/outbound window registers is
-> > >>>>>>>>>>> off when system go to deep-sleep state. We save the values
-> > >>>>>>>>>>> of registers
-> > >>>>>>> before
-> > >>>>>>>>>>> suspend and restore to registers after resume.
-> > >>>>>>>>>>>
-> > >>>>>>>>>>> Signed-off-by: Jiang Yutang <b14898@freescale.com>
-> > >>>>>>>>>>> Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> > >>>>>>>>>>> Signed-off-by: Li Yang <leoli@freescale.com>
-> > >>>>>>>>>>> ---
-> > >>>>>>>>>>> Changes for V4:
-> > >>>>>>>>>>> We just rebase the patch upon following patch:
-> > >>>>>>>>>>> powerpc/fsl-pci: Unify pci/pcie initialization code
-> > >>>>>>>>>>>
-> > >>>>>>>>>>> arch/powerpc/include/asm/pci-bridge.h |    2 +-
-> > >>>>>>>>>>> arch/powerpc/sysdev/fsl_pci.c         |  121
-> > >>>>>>>>>> +++++++++++++++++++++++++++++++++
-> > >>>>>>>>>>> 2 files changed, 122 insertions(+), 1 deletions(-)
-> > >>>>>>>>>>
-> > >>>>>>>>>> Did you ever compare this to just re-parsing device tree
-> > method?
-> > >>>>>>>>>>
-> > >>>>>>>>>> - k
-> > >>>>>>>>>
-> > >>>>>>>>> I tested the re-parsing way by using setup_pci_atmu() when
-> > >> resume.
-> > >>>>>>>>> And I found out that re-parsing will *change* outbound IO
-> > >>>>>>>>> translation address regitster.
-> > >>>>>>>>>
-> > >>>>>>>>> It seems that in the first bootup, after setup_atmu()
-> > >>>>>>>>> pcibios_setup_phb_resources() may update hose->io_resource,
-> > >>>>>>>>> but atmu is not updated according to the new
-> > >>>>>>>>> hose->io_resource
-> > value.
-> > >>>>>>>>> In resume from sleep setup_atmu() will reset atmu according
-> > >>>>>>>>> to the new hose->io_resource value. So the setup_atmu() will
-> > >>>>>>>>> cause different result on outbound IO register between first
-> > >>>>>>>>> bootup and resume from sleep.
-> > >>>>>>>>>
-> > >>>>>>>>> So... There's a possibility that in the first bootup atmu is
-> > >>>>>>>>> not setup properly.
-> > >>>>>>>>
-> > >>>>>>>> [Are you seeing this happen in your testing?  If so its a bug
-> > >>>>>>>> we need
-> > >>>>>>> to look at fixing.]
-> > >>>>>>>>
-> > >>>>>>>> Yes, I see this in my testing.
-> > >>>>>>>> Also PCIe ethernet card works well after resuming from sleep
-> > >>>>>>>> in both
-> > >>>>>>> save/restore
-> > >>>>>>>> and re-parsing way. (Maybe PCIe ethernet card don't need
-> > >>>>>>>> outbound IO
-> > >>>>>>> resource)
-> > >>>>>>>> So, I guess the result of re-parsing (actually it's re-setup)
-> > >>>>>>>> is right
-> > >>>>>>> and ATMU is not setup
-> > >>>>>>>> properly at the first bootup.
-> > >>>>>>>
-> > >>>>>>> Are you seeing the following message - "PCI: I/O resource not
-> > >>>>>>> set for host bridge" ?
-> > >>>>>>
-> > >>>>>> No.
-> > >>>>>>
-> > >>>>>>>
-> > >>>>>>> Trying to understand why you'd hit the reassignment of
-> > io_resource.
-> > >>>>>>>
-> > >>>>>>> - k
-> > >>>>>>>
-> > >>>>>>
-> > >>>>>> I did some investigations and the conclusion is:
-> > >>>>>>
-> > >>>>>> io_resource.flags & IORESOURCE_IO are both positive but
-> > >>>>>> io_resource.start is 0 before pcibios_setup_phb_io_space() is
-> done.
-> > >>>>>>
-> > >>>>>> The sequence of related process listed below:
-> > >>>>>> fsl_add_bridge() -> setup_pci_atmu()
-> > >>>>>> pcibios_init() -> pcibios_scan_phb() ->
-> > >>>>>> pcibios_setup_phb_io_space()
-> > >>>>>>
-> > >>>>>> Because fsl_add_bridge() must be finished before pcibios_init()
-> > >>>>>> so ATMU is set when io_resource.start is 0. That means outbound
-> > >>>>>> IO regs are not set.
-> > >>>>>>
-> > >>>>>> If system re-setup ATMU the io_resource.start has already
-> > >>>>>> updated so outbound IO regs are set.
-> > >>>>>>
-> > >>>>>> My question is:
-> > >>>>>> Is there any problem if outbound IO regs are not set in first
-> > >> bootup?
-> > >>>
-> > >>> Yes, it means that IO transactions would not work.
-> > >>
-> > >> I agree.
-> > >>
-> > >>>
-> > >>>>> Please also provide the IO resource address range before and
-> > >>>>> after the pci scan.  Then we can evaluate if the range is needed
-> > >>>>> to be mapped
-> > >>> via
-> > >>>>> ATMU.
-> > >>>>>
-> > >>>>> Leo
-> > >>>>
-> > >>>> Since potar is set by out_be32(&pci->pow[j].potar, (hose-
-> > >>>> io_resource.start >> 12);  I provide the result of
-> > >>>> hose->io_resource.start >> 12 as follows:
-> > >>>>
-> > >>>> pcie@ffe09000:
-> > >>>> before pci scan: io_resource.start >> 12: 0 after pci scan :
-> > >>>> io_resource.start >> 12: ff7ed
-> > >>>>
-> > >>>> pcie@ffe0a000:
-> > >>>> before pci scan: io_resource.start >> 12: 0 after pci scan :
-> > >>>> io_resource.start >> 12: ff7db
-> > >>>>
-> > >>>> pcie@ffe0b000:
-> > >>>> before pci scan: io_resource.start >> 12: 0 after pci scan :
-> > >>>> io_resource.start >> 12: ff7c9
-> > >>>>
-> > >>>> Note that I tested on P1022DS.
-> > >>>>
-> > >>>> - Hongtao.
-> > >>>
-> > >>> 1. What's the device tree nodes for PCIe look like?
-> > >>> 2. Can you get the pr_debug() in setup_pci_atmu() to print and
-> > >>> report results (as well as full boot log)
-> > >>
-> > >> Please refer to the attached file.
-> > >> In the log file I also print the device tree.
-> > >>
-> > >> - Hongtao.
-> > >>
-> > >>>
-> > >>> However, I think the change of the io_resource.start is normal and
-> > >>> correct behavior.
-> > >>>
-> > >>> - k
-> > >>>
-> > >>
-> > >
-> > > Hi Kumar,
-> > > I have already sent the log.
-> > > Do you have any comment on it?
-> > >
-> > > Thanks.
-> > > - Hongtao.
-> > >
-> >
-> > Hongtao,
-> >
-> > You mentioned:
-> >
-> > > I tested the re-parsing way by using setup_pci_atmu() when resume.
-> > > And I found out that re-parsing will *change* outbound IO
-> > > translation address regitster.
-> >
-> > What do the values look like in both ATMU registers and io_resource if
-> > you reparse?
-> >
-> > - k
->=20
->=20
-> Hi Kumar,
->=20
-> About this topic do you have any further comments?
->=20
-> Thanks.
-> - Hongtao.
+Maybe it's the kilauea fdt?
+
+If I hard code NR_MSI_IRQS (as it used to be) at least the kernel boots
+and I can work with the board. (I don't think MSI interrupts work).
+
+23c23
+< #define DEBUG
+---
+>
+47d46
+< #define NR_MSI_IRQS	4
+55c54
+< 	int msi_virqs[NR_MSI_IRQS];
+---
+> 	int *msi_virqs;
+67c66
+< 	err = msi_bitmap_alloc(&msi_data->bitmap, NR_MSI_IRQS,
+---
+> 	err = msi_bitmap_alloc(&msi_data->bitmap, msi_irqs,
+88a88,92
+> 	msi_data->msi_virqs = kmalloc((msi_irqs) * sizeof(int),
+> 					    GFP_KERNEL);
+> 	if (!msi_data->msi_virqs)
+> 		return -ENOMEM;
+>
+192a197,198
+> 	dma_free_coherent(&dev->dev, 64, msi_virt, msi_phys);
+>
+202c208
+< 	for (i = 0; i < NR_MSI_IRQS; i++) {
+---
+> 	for (i = 0; i < msi_irqs; i++) {
+223,224d228
+< 	/*msi = &ppc4xx_msi;*//*keep the msi data for further use*/
+<
+
+Regards,
+
+Robert
+
+>
+> Cheers,
+> Ben.
+>
+
+...If it's there, and you can see it, it's real. - If it's not there,
+and you can see it, it's virtual.- If it's there, and you can't see it,
+it's transparent.- If it's not there, and you can't see it, you erased
+it. (from some mailing list)
+
+My public pgp key is available,at:
+http://pgp.mit.edu:11371/pks/lookup?op=get&search=0x90320BF1
