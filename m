@@ -1,31 +1,16 @@
-Return-Path: <balbi@ti.com>
-Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
+Return-Path: <sr@denx.de>
+Received: from mo6-p05-ob.rzone.de (mo6-p05-ob.rzone.de
+ [IPv6:2a01:238:20a:202:5305::1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A77BB2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2012 19:20:39 +1100 (EST)
-Date: Fri, 26 Oct 2012 11:14:48 +0300
-From: Felipe Balbi <balbi@ti.com>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Subject: Re: [PATCH 1/1] usb: gadget: Don't attempt to dequeue requests for a
- disabled USB endpoint on Freescale hardware
-Message-ID: <20121026081448.GD23501@arwen.pp.htv.fi>
-References: <1350667166-3559-1-git-send-email-simon.haggett@realvnc.com>
- <1535820.NU10ADjvOZ@avalon>
- <20121022105601.GS14033@arwen.pp.htv.fi>
- <3862785.b8vaFMSbLQ@avalon>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="J5MfuwkIyy7RmF4Q"
-In-Reply-To: <3862785.b8vaFMSbLQ@avalon>
-Cc: Simon Haggett <simon.haggett@realvnc.com>,
- Li Yang-R58472 <r58472@freescale.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, balbi@ti.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Reply-To: balbi@ti.com
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 28D172C008C
+ for <linuxppc-dev@ozlabs.org>; Sat, 27 Oct 2012 02:56:13 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: mpc5200: Add a3m071 board support
+Date: Fri, 26 Oct 2012 17:49:56 +0200
+Message-Id: <1351266596-5172-1-git-send-email-sr@denx.de>
+Cc: Anatolij Gustschin <agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,79 +20,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---J5MfuwkIyy7RmF4Q
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch adds the MPC5200B based a3m071 board.
 
-Hi,
+Signed-off-by: Stefan Roese <sr@denx.de>
+Cc: Anatolij Gustschin <agust@denx.de>
+---
+ arch/powerpc/boot/dts/a3m071.dts             | 153 +++++++++++++++++++++++++++
+ arch/powerpc/platforms/52xx/mpc5200_simple.c |   1 +
+ 2 files changed, 154 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/a3m071.dts
 
-On Thu, Oct 25, 2012 at 02:36:24AM +0200, Laurent Pinchart wrote:
-> Hi Felipe,
->=20
-> On Monday 22 October 2012 13:56:01 Felipe Balbi wrote:
-> > On Mon, Oct 22, 2012 at 12:47:21PM +0200, Laurent Pinchart wrote:
-> > > On Monday 22 October 2012 03:33:19 Li Yang-R58472 wrote:
-> > > > On Saturday, October 20, 2012 1:37 AM Felipe Balbi wrote:
-> > > > > On Fri, Oct 19, 2012 at 06:19:26PM +0100, Simon Haggett wrote:
-> > > > > > Some gadget drivers may attempt to dequeue requests for an endp=
-oint
-> > > > > > that has already been disabled. For example, in the UVC gadget
-> > > > > > driver, uvc_function_set_alt() will call usb_ep_disable() when =
-alt
-> > > > > > setting 0 is selected. When the userspace application subsequen=
-tly
-> > > > > > issues the VIDIOC_STREAMOFF ioctl, uvc_video_enable() invokes
-> > > > > > usb_ep_dequeue() to ensure that all requests have been cancelle=
-d.
-> > > > >=20
-> > > > > bug is on uvc gadget, then. Laurent ?
-> > >=20
-> > > We've discussed this topic a couple of months before. I believe that'=
-s not
-> > > a bug.
-> > >=20
-> > > http://68.183.106.108/lists/linux-usb/msg68869.html
-> >=20
-> > fair enough :-)
-> >=20
-> > That's a different case, however. At the link above we're discussing
-> > dequeueing a request which is already being dequeued. $SUBJECT is trying
-> > to fix dequeueing of a request for an endpoint which isn't even enabled.
->=20
-> You've got a point there :-) That's a different case indeed, I'm open to =
-(at=20
-> least evaluating) a fix in the UVC gadget driver if you think that's bett=
-er.
-
-I _do_ think that's better. If the endpoint isn't even enabled, why are
-you trying to dequeue a request ? :-)
-
-cheers
-
---=20
-balbi
-
---J5MfuwkIyy7RmF4Q
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQikZ4AAoJEIaOsuA1yqRE3+0P/i23khVOl6XHW6nheK2QsTTh
-vljymPE3/DjIF0gpSo3CmE/iJI2Rfv3WLOppfiTZLz8tPsidyJ81D6A43fIUFqbn
-LRt8LGmsYmXHivetORjmkbn9tY5Bq8FwwS2HCTrxMKArhhMo3heTohNAfPMv3+F7
-pGnbFpci5GabUygU2OOZnxZKNmAcA3+yYtfGV3PIDsx3Kws+O44OBF4AM3X1F5cw
-irIbPAGiMMsJp4siSWnTjQRRHI7S64M5n8DE494DrnqEP0lLeeIZ72x8ETndZ4N2
-dmuE8nPf63F4UoGV+UeOjej2xgzLOJ4DOzBJeBAJVefb2VMb7n+RCdncNyLv6Hrq
-98NkJDTc1D1C91+KMMl4tkIY4Ji2M1/po9XUfhvWNl8CzHYO380wYqUCOqhIQ2sK
-0MhNVJ1kgeAIA5rywyOsX84ZCo3LnCrTZkq95rhG2PKwgZiPlMju1XSVUyxXLepm
-X/8mtnDuo1Kw3u86/EZ49d99VH53nsYso5blBgC4sJ/YEVeEkSZSzbAhWA86K2Gk
-ezftfTCyfvV2w4VbL8sw06g1gYzD2ExYNyV35zunjr/ioEOoPKK5mBz31f+gnZc4
-Fis0rHCmukzgn8Oj+DU4j/pQ7hD0bXUvsGbhSF/6ekL7/2/a7rgkmN/ZMuuwGb5Z
-x3XcZZMgzC1FE7y1rsP/
-=vNTh
------END PGP SIGNATURE-----
-
---J5MfuwkIyy7RmF4Q--
+diff --git a/arch/powerpc/boot/dts/a3m071.dts b/arch/powerpc/boot/dts/a3m071.dts
+new file mode 100644
+index 0000000..46b30f2
+--- /dev/null
++++ b/arch/powerpc/boot/dts/a3m071.dts
+@@ -0,0 +1,153 @@
++/*
++ * a3m071 board Device Tree Source
++ *
++ * Copyright 2012 Stefan Roese <sr@denx.de>
++ *
++ * Copyright (C) 2011 DENX Software Engineering GmbH
++ * Heiko Schocher <hs@denx.de>
++ *
++ * Copyright (C) 2007 Semihalf
++ * Marian Balakowicz <m8@semihalf.com>
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++/include/ "mpc5200b.dtsi"
++
++/ {
++	model = "anonymous,a3m071";
++	compatible = "anonymous,a3m071";
++
++	soc5200@f0000000 {
++		#address-cells = <1>;
++		#size-cells = <1>;
++		compatible = "fsl,mpc5200b-immr";
++		ranges = <0 0xf0000000 0x0000c000>;
++		reg = <0xf0000000 0x00000100>;
++		bus-frequency = <0>; /* From boot loader */
++		system-frequency = <0>; /* From boot loader */
++
++		cdm@200 {
++			fsl,init-ext-48mhz-en = <0x0>;
++			fsl,init-fd-enable = <0x01>;
++			fsl,init-fd-counters = <0x3333>;
++		};
++
++		timer@600 {
++			fsl,has-wdt;
++		};
++
++		spi@f00 {
++			status = "disabled";
++		};
++
++		usb: usb@1000 {
++			status = "disabled";
++		};
++
++		psc@2000 {
++			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
++			reg = <0x2000 0x100>;
++			interrupts = <2 1 0>;
++		};
++
++		psc@2200 {
++			status = "disabled";
++		};
++
++		psc@2400 {
++			status = "disabled";
++		};
++
++		psc@2600 {
++			status = "disabled";
++		};
++
++		psc@2800 {
++			status = "disabled";
++		};
++
++		psc@2c00 {		// PSC6
++			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
++			reg = <0x2c00 0x100>;
++			interrupts = <2 4 0>;
++		};
++
++		ethernet@3000 {
++			phy-handle = <&phy0>;
++		};
++
++		mdio@3000 {
++			phy0: ethernet-phy@3 {
++				reg = <0x03>;
++			};
++		};
++
++		ata@3a00 {
++			status = "disabled";
++		};
++
++		i2c@3d00 {
++			status = "disabled";
++		};
++
++		i2c@3d40 {
++			rtc@51 {
++				compatible = "epson,pcf8563";
++				reg = <0x51>;
++			};
++		};
++	};
++
++	localbus {
++		compatible = "fsl,mpc5200b-lpb","simple-bus";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges = <0 0 0xfc000000 0x02000000
++			  3 0 0xe9000000 0x00080000
++			  5 0 0xe8000000 0x00010000>;
++
++		flash@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			reg = <0 0x0 0x02000000>;
++			compatible = "cfi-flash";
++			bank-width = <2>;
++			partition@0x0 {
++				label = "u-boot";
++				reg = <0x00000000 0x00040000>;
++				read-only;
++			};
++			partition@0x00040000 {
++				label = "env";
++				reg = <0x00040000 0x00020000>;
++			};
++			partition@0x00060000 {
++				label = "dtb";
++				reg = <0x00060000 0x00020000>;
++			};
++			partition@0x00080000 {
++				label = "kernel";
++				reg = <0x00080000 0x00500000>;
++			};
++			partition@0x00580000 {
++				label = "root";
++				reg = <0x00580000 0x00A80000>;
++			};
++		};
++
++		fpga@3,0 {
++			compatible = "anonymous,a3m071-fpga";
++			reg = <3 0x0 0x00080000
++			       5 0x0 0x00010000>;
++			interrupts = <0 0 3>;  /* level low */
++		};
++	};
++
++	pci@f0000d00 {
++		status = "disabled";
++	};
++};
+diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+index 9cf3602..792a301 100644
+--- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
++++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
+@@ -50,6 +50,7 @@ static void __init mpc5200_simple_setup_arch(void)
+ 
+ /* list of the supported boards */
+ static const char *board[] __initdata = {
++	"anonymous,a3m071",
+ 	"anonymous,a4m072",
+ 	"anon,charon",
+ 	"ifm,o2d",
+-- 
+1.8.0
