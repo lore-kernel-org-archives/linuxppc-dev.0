@@ -1,35 +1,31 @@
-Return-Path: <michael_barry@ie.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Return-Path: <balbi@ti.com>
+Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e06smtp17.uk.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 571042C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2012 14:01:25 +1100 (EST)
-Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <michael_barry@ie.ibm.com>;
- Fri, 26 Oct 2012 04:01:19 +0100
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q9Q31AVk38142100
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2012 03:01:10 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (loopback [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q9Q31Hrk009978
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2012 21:01:17 -0600
-Received: from d06ml093.portsmouth.uk.ibm.com (d06ml093.portsmouth.uk.ibm.com
- [9.149.104.171])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.13.1/NCO v10.0 AVin) with ESMTP id
- q9Q31Hbn009975
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Oct 2012 21:01:17 -0600
-Subject: AUTO: Michael Barry is out of the office (returning 30/10/2012)
-From: Michael Barry <michael_barry@ie.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <OF37EC65A9.3DADEA03-ON80257AA3.001095BB-80257AA3.001095BB@ie.ibm.com>
-Date: Fri, 26 Oct 2012 04:01:09 +0100
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A77BB2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 26 Oct 2012 19:20:39 +1100 (EST)
+Date: Fri, 26 Oct 2012 11:14:48 +0300
+From: Felipe Balbi <balbi@ti.com>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Subject: Re: [PATCH 1/1] usb: gadget: Don't attempt to dequeue requests for a
+ disabled USB endpoint on Freescale hardware
+Message-ID: <20121026081448.GD23501@arwen.pp.htv.fi>
+References: <1350667166-3559-1-git-send-email-simon.haggett@realvnc.com>
+ <1535820.NU10ADjvOZ@avalon>
+ <20121022105601.GS14033@arwen.pp.htv.fi>
+ <3862785.b8vaFMSbLQ@avalon>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="J5MfuwkIyy7RmF4Q"
+In-Reply-To: <3862785.b8vaFMSbLQ@avalon>
+Cc: Simon Haggett <simon.haggett@realvnc.com>,
+ Li Yang-R58472 <r58472@freescale.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, balbi@ti.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,13 +35,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--J5MfuwkIyy7RmF4Q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I am out of the office until 30/10/2012.
+Hi,
 
+On Thu, Oct 25, 2012 at 02:36:24AM +0200, Laurent Pinchart wrote:
+> Hi Felipe,
+>=20
+> On Monday 22 October 2012 13:56:01 Felipe Balbi wrote:
+> > On Mon, Oct 22, 2012 at 12:47:21PM +0200, Laurent Pinchart wrote:
+> > > On Monday 22 October 2012 03:33:19 Li Yang-R58472 wrote:
+> > > > On Saturday, October 20, 2012 1:37 AM Felipe Balbi wrote:
+> > > > > On Fri, Oct 19, 2012 at 06:19:26PM +0100, Simon Haggett wrote:
+> > > > > > Some gadget drivers may attempt to dequeue requests for an endp=
+oint
+> > > > > > that has already been disabled. For example, in the UVC gadget
+> > > > > > driver, uvc_function_set_alt() will call usb_ep_disable() when =
+alt
+> > > > > > setting 0 is selected. When the userspace application subsequen=
+tly
+> > > > > > issues the VIDIOC_STREAMOFF ioctl, uvc_video_enable() invokes
+> > > > > > usb_ep_dequeue() to ensure that all requests have been cancelle=
+d.
+> > > > >=20
+> > > > > bug is on uvc gadget, then. Laurent ?
+> > >=20
+> > > We've discussed this topic a couple of months before. I believe that'=
+s not
+> > > a bug.
+> > >=20
+> > > http://68.183.106.108/lists/linux-usb/msg68869.html
+> >=20
+> > fair enough :-)
+> >=20
+> > That's a different case, however. At the link above we're discussing
+> > dequeueing a request which is already being dequeued. $SUBJECT is trying
+> > to fix dequeueing of a request for an endpoint which isn't even enabled.
+>=20
+> You've got a point there :-) That's a different case indeed, I'm open to =
+(at=20
+> least evaluating) a fix in the UVC gadget driver if you think that's bett=
+er.
 
+I _do_ think that's better. If the endpoint isn't even enabled, why are
+you trying to dequeue a request ? :-)
 
+cheers
 
-Note: This is an automated response to your message  "Linuxppc-dev Digest,
-Vol 98, Issue 83" sent on 26/10/2012 1:32:27.
+--=20
+balbi
 
-This is the only notification you will receive while this person is away.
+--J5MfuwkIyy7RmF4Q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQikZ4AAoJEIaOsuA1yqRE3+0P/i23khVOl6XHW6nheK2QsTTh
+vljymPE3/DjIF0gpSo3CmE/iJI2Rfv3WLOppfiTZLz8tPsidyJ81D6A43fIUFqbn
+LRt8LGmsYmXHivetORjmkbn9tY5Bq8FwwS2HCTrxMKArhhMo3heTohNAfPMv3+F7
+pGnbFpci5GabUygU2OOZnxZKNmAcA3+yYtfGV3PIDsx3Kws+O44OBF4AM3X1F5cw
+irIbPAGiMMsJp4siSWnTjQRRHI7S64M5n8DE494DrnqEP0lLeeIZ72x8ETndZ4N2
+dmuE8nPf63F4UoGV+UeOjej2xgzLOJ4DOzBJeBAJVefb2VMb7n+RCdncNyLv6Hrq
+98NkJDTc1D1C91+KMMl4tkIY4Ji2M1/po9XUfhvWNl8CzHYO380wYqUCOqhIQ2sK
+0MhNVJ1kgeAIA5rywyOsX84ZCo3LnCrTZkq95rhG2PKwgZiPlMju1XSVUyxXLepm
+X/8mtnDuo1Kw3u86/EZ49d99VH53nsYso5blBgC4sJ/YEVeEkSZSzbAhWA86K2Gk
+ezftfTCyfvV2w4VbL8sw06g1gYzD2ExYNyV35zunjr/ioEOoPKK5mBz31f+gnZc4
+Fis0rHCmukzgn8Oj+DU4j/pQ7hD0bXUvsGbhSF/6ekL7/2/a7rgkmN/ZMuuwGb5Z
+x3XcZZMgzC1FE7y1rsP/
+=vNTh
+-----END PGP SIGNATURE-----
+
+--J5MfuwkIyy7RmF4Q--
