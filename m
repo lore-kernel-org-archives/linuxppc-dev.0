@@ -1,25 +1,22 @@
-Return-Path: <shuah.khan@hp.com>
-Received: from g5t0008.atlanta.hp.com (g5t0008.atlanta.hp.com [15.192.0.45])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C0E8F2C0097
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Oct 2012 03:18:43 +1100 (EST)
-Message-ID: <1351267705.4013.18.camel@lorien2>
-Subject: [PATCH RFT RESEND linux-next] powerpc: dma-mapping: support
- debug_dma_mapping_error
-From: Shuah Khan <shuah.khan@hp.com>
-To: benh@kernel.crashing.org, kyungmin.park@samsung.com, paulus@samba.org,
- m.szyprowski@samsung.com, david@gibson.dropbear.id.au, arnd@arndb.de,
- andrzej.p@samsung.com
-Date: Fri, 26 Oct 2012 10:08:25 -0600
-In-Reply-To: <1351210584.6851.21.camel@lorien2>
-References: <1351210584.6851.21.camel@lorien2>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- shuahkhan@gmail.com
-Reply-To: shuah.khan@hp.com
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2C6682C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Oct 2012 04:27:14 +1100 (EST)
+Date: Fri, 26 Oct 2012 12:26:50 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Jimi Xenidis <jimix@pobox.com>
+Subject: Re: [PATCH v2] powerpc: book3e: WSP: Add Chroma as a new WSP/PowerEN
+ platform.
+Message-ID: <20121026172649.GA24322@buserror.net>
+References: <DD04A5E8-2850-4DDC-9E7A-B899B0EEEF11@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <DD04A5E8-2850-4DDC-9E7A-B899B0EEEF11@pobox.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,27 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for debug_dma_mapping_error() call to avoid warning from
-debug_dma_unmap() interface when it checks for mapping error checked
-status. Without this patch, device driver failed to check map error
-warning is generated.
+On Tue, Oct 11, 2011 at 09:47:36AM -0500, Jimi Xenidis wrote:
+> On Tue Oct 4 05:02:41 EST 2011, Scott Wood wrote:
+> 
+> Looking at your comments below, will the following be acceptable
+> 
+> > On 09/29/2011 09:27 PM, Jimi Xenidis wrote:
+> > > diff --git a/arch/powerpc/platforms/wsp/Kconfig b/arch/powerpc/platforms/wsp/Kconfig
+> > > index ea2811c..a3eef8e 100644
+> > > --- a/arch/powerpc/platforms/wsp/Kconfig
+> > > +++ b/arch/powerpc/platforms/wsp/Kconfig
+> > > @@ -1,6 +1,7 @@
+> > >  config PPC_WSP
+> > >  	bool
+> > >  	select PPC_A2
+> > > +	select GENERIC_TBSYNC
+> > >  	select PPC_ICSWX
+> > >  	select PPC_SCOM
+> > >  	select PPC_XICS
+> > > @@ -8,14 +9,20 @@ config PPC_WSP
+> > >  	select PCI
+> > >  	select PPC_IO_WORKAROUNDS if PCI
+> > >  	select PPC_INDIRECT_PIO if PCI
+> > > +	select PPC_WSP_COPRO
+> > >  	default n
+> > >  
+> > >  menu "WSP platform selection"
+> > >  	depends on PPC_BOOK3E_64
+> 
+> add "&& SMP"
+> 
+> > >  
+> > >  config PPC_PSR2
+> > > -	bool "PSR-2 platform"
+> > > -	select GENERIC_TBSYNC
+> > > +	bool "PowerEN System Reference Platform 2"
+> > > +	select EPAPR_BOOT
+> > > +	select PPC_WSP
+> > > +	default y
+> 
+> Make these "default n"
+> 
+> Will that address everything?
+> -jx
 
-Signed-off-by: Shuah Khan <shuah.khan@hp.com>
----
- arch/powerpc/include/asm/dma-mapping.h |    1 +
- 1 file changed, 1 insertion(+)
+Did a patch ever get submitted for this?
 
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 7816087..e27e9ad 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -172,6 +172,7 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- {
- 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
- 
-+	debug_dma_mapping_error(dev, dma_addr);
- 	if (dma_ops->mapping_error)
- 		return dma_ops->mapping_error(dev, dma_addr);
- 
--- 
-1.7.9.5
+-Scott
