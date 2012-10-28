@@ -1,17 +1,22 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 328102C0090
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Oct 2012 04:57:36 +1100 (EST)
-From: Alexander Graf <agraf@suse.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] PPC: ePAPR: Convert header to uapi
-Date: Sat, 27 Oct 2012 19:57:26 +0200
-Message-Id: <1351360646-19112-1-git-send-email-agraf@suse.de>
-Cc: kvm@vger.kernel.org, Timur Tabi <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org List" <linux-kernel@vger.kernel.org>,
- kvm-ppc <kvm-ppc@vger.kernel.org>, David Howells <dhowells@redhat.com>
+Return-Path: <crsrivatstechnical@gmail.com>
+Received: from mail-ee0-f51.google.com (mail-ee0-f51.google.com [74.125.83.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3DE3C2C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Oct 2012 11:46:28 +1100 (EST)
+Received: by mail-ee0-f51.google.com with SMTP id d49so1579266eek.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Oct 2012 17:46:23 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1351297672.23094.13@snotra>
+References: <CAO_L5k-D2jMZaoxpxk_tu_=nT5T0PSSp_PUesh9gm-rNq0Qhcg@mail.gmail.com>
+ <1351297672.23094.13@snotra>
+Date: Sat, 27 Oct 2012 20:46:23 -0400
+Message-ID: <CAO_L5k-gKswyECKRbnyxGwT-KrN9yUuLdCkCx2=+T+M_ep_y7w@mail.gmail.com>
+Subject: Re: Power Management issues in MPC8313 processor
+From: Srivatsan Canchivaram <crsrivatstechnical@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=047d7b622822d2538b04cd13e181
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,212 +26,263 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The new uapi framework splits kernel internal and user space exported
-bits of header files more cleanly. Adjust the ePAPR header accordingly.
+--047d7b622822d2538b04cd13e181
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/include/asm/Kbuild              |    1 -
- arch/powerpc/include/asm/epapr_hcalls.h      |   56 +--------------
- arch/powerpc/include/uapi/asm/Kbuild         |    1 +
- arch/powerpc/include/uapi/asm/epapr_hcalls.h |   98 ++++++++++++++++++++++++++
- 4 files changed, 100 insertions(+), 56 deletions(-)
- create mode 100644 arch/powerpc/include/uapi/asm/epapr_hcalls.h
+Hello Scott,
 
-diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
-index 13d6b7b..7e313f1 100644
---- a/arch/powerpc/include/asm/Kbuild
-+++ b/arch/powerpc/include/asm/Kbuild
-@@ -34,6 +34,5 @@ header-y += termios.h
- header-y += types.h
- header-y += ucontext.h
- header-y += unistd.h
--header-y += epapr_hcalls.h
- 
- generic-y += rwsem.h
-diff --git a/arch/powerpc/include/asm/epapr_hcalls.h b/arch/powerpc/include/asm/epapr_hcalls.h
-index b8d9445..22defe7 100644
---- a/arch/powerpc/include/asm/epapr_hcalls.h
-+++ b/arch/powerpc/include/asm/epapr_hcalls.h
-@@ -50,65 +50,11 @@
- #ifndef _EPAPR_HCALLS_H
- #define _EPAPR_HCALLS_H
- 
--#define EV_BYTE_CHANNEL_SEND		1
--#define EV_BYTE_CHANNEL_RECEIVE		2
--#define EV_BYTE_CHANNEL_POLL		3
--#define EV_INT_SET_CONFIG		4
--#define EV_INT_GET_CONFIG		5
--#define EV_INT_SET_MASK			6
--#define EV_INT_GET_MASK			7
--#define EV_INT_IACK			9
--#define EV_INT_EOI			10
--#define EV_INT_SEND_IPI			11
--#define EV_INT_SET_TASK_PRIORITY	12
--#define EV_INT_GET_TASK_PRIORITY	13
--#define EV_DOORBELL_SEND		14
--#define EV_MSGSND			15
--#define EV_IDLE				16
--
--/* vendor ID: epapr */
--#define EV_LOCAL_VENDOR_ID		0	/* for private use */
--#define EV_EPAPR_VENDOR_ID		1
--#define EV_FSL_VENDOR_ID		2	/* Freescale Semiconductor */
--#define EV_IBM_VENDOR_ID		3	/* IBM */
--#define EV_GHS_VENDOR_ID		4	/* Green Hills Software */
--#define EV_ENEA_VENDOR_ID		5	/* Enea */
--#define EV_WR_VENDOR_ID			6	/* Wind River Systems */
--#define EV_AMCC_VENDOR_ID		7	/* Applied Micro Circuits */
--#define EV_KVM_VENDOR_ID		42	/* KVM */
--
--/* The max number of bytes that a byte channel can send or receive per call */
--#define EV_BYTE_CHANNEL_MAX_BYTES	16
--
--
--#define _EV_HCALL_TOKEN(id, num) (((id) << 16) | (num))
--#define EV_HCALL_TOKEN(hcall_num) _EV_HCALL_TOKEN(EV_EPAPR_VENDOR_ID, hcall_num)
--
--/* epapr return codes */
--#define EV_SUCCESS		0
--#define EV_EPERM		1	/* Operation not permitted */
--#define EV_ENOENT		2	/*  Entry Not Found */
--#define EV_EIO			3	/* I/O error occured */
--#define EV_EAGAIN		4	/* The operation had insufficient
--					 * resources to complete and should be
--					 * retried
--					 */
--#define EV_ENOMEM		5	/* There was insufficient memory to
--					 * complete the operation */
--#define EV_EFAULT		6	/* Bad guest address */
--#define EV_ENODEV		7	/* No such device */
--#define EV_EINVAL		8	/* An argument supplied to the hcall
--					   was out of range or invalid */
--#define EV_INTERNAL		9	/* An internal error occured */
--#define EV_CONFIG		10	/* A configuration error was detected */
--#define EV_INVALID_STATE	11	/* The object is in an invalid state */
--#define EV_UNIMPLEMENTED	12	/* Unimplemented hypercall */
--#define EV_BUFFER_OVERFLOW	13	/* Caller-supplied buffer too small */
--
- #ifndef __ASSEMBLY__
- #include <linux/types.h>
- #include <linux/errno.h>
- #include <asm/byteorder.h>
-+#include <uapi/asm/epapr_hcalls.h>
- 
- /*
-  * Hypercall register clobber list
-diff --git a/arch/powerpc/include/uapi/asm/Kbuild b/arch/powerpc/include/uapi/asm/Kbuild
-index baebb3d..e6b5be8 100644
---- a/arch/powerpc/include/uapi/asm/Kbuild
-+++ b/arch/powerpc/include/uapi/asm/Kbuild
-@@ -1,3 +1,4 @@
- # UAPI Header export list
- include include/uapi/asm-generic/Kbuild.asm
- 
-+header-y += epapr_hcalls.h
-diff --git a/arch/powerpc/include/uapi/asm/epapr_hcalls.h b/arch/powerpc/include/uapi/asm/epapr_hcalls.h
-new file mode 100644
-index 0000000..046c793
---- /dev/null
-+++ b/arch/powerpc/include/uapi/asm/epapr_hcalls.h
-@@ -0,0 +1,98 @@
-+/*
-+ * ePAPR hcall interface
-+ *
-+ * Copyright 2008-2011 Freescale Semiconductor, Inc.
-+ *
-+ * Author: Timur Tabi <timur@freescale.com>
-+ *
-+ * This file is provided under a dual BSD/GPL license.  When using or
-+ * redistributing this file, you may do so under either license.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifndef _UAPI__EPAPR_HCALLS_H
-+#define _UAPI__EPAPR_HCALLS_H
-+
-+#define EV_BYTE_CHANNEL_SEND		1
-+#define EV_BYTE_CHANNEL_RECEIVE		2
-+#define EV_BYTE_CHANNEL_POLL		3
-+#define EV_INT_SET_CONFIG		4
-+#define EV_INT_GET_CONFIG		5
-+#define EV_INT_SET_MASK			6
-+#define EV_INT_GET_MASK			7
-+#define EV_INT_IACK			9
-+#define EV_INT_EOI			10
-+#define EV_INT_SEND_IPI			11
-+#define EV_INT_SET_TASK_PRIORITY	12
-+#define EV_INT_GET_TASK_PRIORITY	13
-+#define EV_DOORBELL_SEND		14
-+#define EV_MSGSND			15
-+#define EV_IDLE				16
-+
-+/* vendor ID: epapr */
-+#define EV_LOCAL_VENDOR_ID		0	/* for private use */
-+#define EV_EPAPR_VENDOR_ID		1
-+#define EV_FSL_VENDOR_ID		2	/* Freescale Semiconductor */
-+#define EV_IBM_VENDOR_ID		3	/* IBM */
-+#define EV_GHS_VENDOR_ID		4	/* Green Hills Software */
-+#define EV_ENEA_VENDOR_ID		5	/* Enea */
-+#define EV_WR_VENDOR_ID			6	/* Wind River Systems */
-+#define EV_AMCC_VENDOR_ID		7	/* Applied Micro Circuits */
-+#define EV_KVM_VENDOR_ID		42	/* KVM */
-+
-+/* The max number of bytes that a byte channel can send or receive per call */
-+#define EV_BYTE_CHANNEL_MAX_BYTES	16
-+
-+
-+#define _EV_HCALL_TOKEN(id, num) (((id) << 16) | (num))
-+#define EV_HCALL_TOKEN(hcall_num) _EV_HCALL_TOKEN(EV_EPAPR_VENDOR_ID, hcall_num)
-+
-+/* epapr return codes */
-+#define EV_SUCCESS		0
-+#define EV_EPERM		1	/* Operation not permitted */
-+#define EV_ENOENT		2	/*  Entry Not Found */
-+#define EV_EIO			3	/* I/O error occured */
-+#define EV_EAGAIN		4	/* The operation had insufficient
-+					 * resources to complete and should be
-+					 * retried
-+					 */
-+#define EV_ENOMEM		5	/* There was insufficient memory to
-+					 * complete the operation */
-+#define EV_EFAULT		6	/* Bad guest address */
-+#define EV_ENODEV		7	/* No such device */
-+#define EV_EINVAL		8	/* An argument supplied to the hcall
-+					   was out of range or invalid */
-+#define EV_INTERNAL		9	/* An internal error occured */
-+#define EV_CONFIG		10	/* A configuration error was detected */
-+#define EV_INVALID_STATE	11	/* The object is in an invalid state */
-+#define EV_UNIMPLEMENTED	12	/* Unimplemented hypercall */
-+#define EV_BUFFER_OVERFLOW	13	/* Caller-supplied buffer too small */
-+
-+#endif /* _UAPI__EPAPR_HCALLS_H */
--- 
-1.6.0.2
+I am using 2.6.27 - I am trying to add Power Management support to an older
+product.
+
+Thanks,
+Srivatsan
+
+On Fri, Oct 26, 2012 at 8:27 PM, Scott Wood <scottwood@freescale.com> wrote=
+:
+
+> On 10/25/2012 05:07:01 PM, Srivatsan Canchivaram wrote:
+>
+>> Hi,
+>>
+>>
+>> I have a modem with a Freescale MPC8313E processor. I am trying to enabl=
+e
+>> power savings in the processor by placing it in Standby mode and resume
+>> normal operation with a Wake-On-LAN magic packet.
+>>
+>>
+>> Following the directions in the Freescale Power Management app note, I
+>> enabled Power Management Support in the Linux kernel and device tree
+>> configurations.
+>>
+>>
+>> I ran the following command on the board:
+>>
+>> echo standby > /sys/power/state
+>>
+>>
+>> This caused the console to hang and there was no further response to
+>> keyboard inputs. I enabled =91no_console_suspend=92 in the kernel and wh=
+en I
+>> loaded the new build and enabled standby mode, I observed an Oops trace:
+>>
+>>
+>>
+>> RASCOM_QCU.7.0.0013 $ echo standby > /sys/power/state
+>>
+>> <6>PM: Syncing fFreezing user space processes ... ilesystems ... <7>PM:
+>> Entering standby sleep
+>>
+>> Unable to handle kernel paging request for instruction fetch
+>>
+>> Faulting instruction address: 0x616d6570
+>>
+>> Oops: Kernel access of bad area, sig: 11 [#1]
+>>
+>> MPC831x RDB
+>>
+>> Modules linked in: dsp rcspi modem i2c_mpc thermal_sys lm92 hwmon [last
+>> unloaded: modem]
+>>
+>> NIP: 616d6570 LR: c0165224 CTR: 616d6573
+>>
+>> REGS: cd087d30 TRAP: 0400   Not tainted  (2.6.27)
+>>
+>> MSR: 20001032 <ME,IR,DR>  CR: 28002024  XER: 20000000
+>>
+>> TASK =3D cc312400[1196] 'echo' THREAD: cd086000
+>>
+>> GPR00: 00000002 cd087de0 cc312400 cf821800 cd087de8 00000002 c06e0000
+>> c06da4a0
+>>
+>> GPR08: c06da948 616d6573 00003fff c06c6308 28002022 10091248 0fffc000
+>> 100050b8
+>>
+>> GPR16: 1008a270 10068810 100687c8 10068814 00000000 1008c284 1008c294
+>> c0246180
+>>
+>> GPR24: c02ab9e4 c02ab9dc c06cc4f4 00000006 cd087e08 00000002 c06c595c
+>> cf821808
+>>
+>> NIP [616d6570] 0x616d6570
+>>
+>> LR [c0165224] platform_pm_suspend_noirq+**0x84/0x88
+>>
+>
+> What kernel are you using?  platform_pm_suspend_noirq was removed by this
+> commit:
+>
+> commit 9b39e73d0c2b265a7f8748b0e9a9f0**9be84079a8
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Sun Dec 18 00:34:24 2011 +0100
+>
+>     PM / Sleep: Remove forward-only callbacks from platform bus type
+>
+>     The forward-only PM callbacks provided by the platform bus type are
+>     not necessary any more, because the PM core executes driver callbacks
+>     when the corresponding subsystem callbacks are not present, so drop
+>     them.
+>
+>     Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> It seems that a driver's pm ops are getting corrupted -- maybe used after
+> freeing?  Have you tried enabling slab/slub debug?
+>
+> Can you instrument the code to see if there are any fields in the device
+> struct that aren't corrupt, that could point out which device this is?
+>
+>
+>  I found another thread that dealt with Power Management issues on the
+>> Freescale MPC8313 processor:
+>>
+>> https://lists.ozlabs.org/**pipermail/linuxppc-dev/2012-**
+>> January/095240.html<https://lists.ozlabs.org/pipermail/linuxppc-dev/2012=
+-January/095240.html>
+>>
+>> The resolution of this issue seems to be related to the JTAG TRST pin
+>> being
+>> disabled. This is not relevant in my case as the TRST on my board is
+>> already inactive.
+>>
+>
+> If you were seeing that, you'd see a hang rather than an oops.
+>
+> -Scott
+>
+
+--047d7b622822d2538b04cd13e181
+Content-Type: text/html; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
+
+Hello Scott,<div><br></div><div>I am using 2.6.27 - I am trying to add Powe=
+r Management support to an older product.</div><div><br></div><div>Thanks,<=
+/div><div>Srivatsan<br><br><div class=3D"gmail_quote">On Fri, Oct 26, 2012 =
+at 8:27 PM, Scott Wood <span dir=3D"ltr">&lt;<a href=3D"mailto:scottwood@fr=
+eescale.com" target=3D"_blank">scottwood@freescale.com</a>&gt;</span> wrote=
+:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex"><div class=3D"HOEnZb"><div class=3D"h5">On 1=
+0/25/2012 05:07:01 PM, Srivatsan Canchivaram wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">
+Hi,<br>
+<br>
+<br>
+I have a modem with a Freescale MPC8313E processor. I am trying to enable<b=
+r>
+power savings in the processor by placing it in Standby mode and resume<br>
+normal operation with a Wake-On-LAN magic packet.<br>
+<br>
+<br>
+Following the directions in the Freescale Power Management app note, I<br>
+enabled Power Management Support in the Linux kernel and device tree<br>
+configurations.<br>
+<br>
+<br>
+I ran the following command on the board:<br>
+<br>
+echo standby &gt; /sys/power/state<br>
+<br>
+<br>
+This caused the console to hang and there was no further response to<br>
+keyboard inputs. I enabled =91no_console_suspend=92 in the kernel and when =
+I<br>
+loaded the new build and enabled standby mode, I observed an Oops trace:<br=
+>
+<br>
+<br>
+<br>
+RASCOM_QCU.7.0.0013 $ echo standby &gt; /sys/power/state<br>
+<br>
+&lt;6&gt;PM: Syncing fFreezing user space processes ... ilesystems ... &lt;=
+7&gt;PM:<br>
+Entering standby sleep<br>
+<br>
+Unable to handle kernel paging request for instruction fetch<br>
+<br>
+Faulting instruction address: 0x616d6570<br>
+<br>
+Oops: Kernel access of bad area, sig: 11 [#1]<br>
+<br>
+MPC831x RDB<br>
+<br>
+Modules linked in: dsp rcspi modem i2c_mpc thermal_sys lm92 hwmon [last<br>
+unloaded: modem]<br>
+<br>
+NIP: 616d6570 LR: c0165224 CTR: 616d6573<br>
+<br>
+REGS: cd087d30 TRAP: 0400 =A0 Not tainted =A0(2.6.27)<br>
+<br>
+MSR: 20001032 &lt;ME,IR,DR&gt; =A0CR: 28002024 =A0XER: 20000000<br>
+<br>
+TASK =3D cc312400[1196] &#39;echo&#39; THREAD: cd086000<br>
+<br>
+GPR00: 00000002 cd087de0 cc312400 cf821800 cd087de8 00000002 c06e0000<br>
+c06da4a0<br>
+<br>
+GPR08: c06da948 616d6573 00003fff c06c6308 28002022 10091248 0fffc000<br>
+100050b8<br>
+<br>
+GPR16: 1008a270 10068810 100687c8 10068814 00000000 1008c284 1008c294<br>
+c0246180<br>
+<br>
+GPR24: c02ab9e4 c02ab9dc c06cc4f4 00000006 cd087e08 00000002 c06c595c<br>
+cf821808<br>
+<br>
+NIP [616d6570] 0x616d6570<br>
+<br>
+LR [c0165224] platform_pm_suspend_noirq+<u></u>0x84/0x88<br>
+</blockquote>
+<br></div></div>
+What kernel are you using? =A0platform_pm_suspend_noirq was removed by this=
+ commit:<br>
+<br>
+commit 9b39e73d0c2b265a7f8748b0e9a9f0<u></u>9be84079a8<br>
+Author: Rafael J. Wysocki &lt;<a href=3D"mailto:rjw@sisk.pl" target=3D"_bla=
+nk">rjw@sisk.pl</a>&gt;<br>
+Date: =A0 Sun Dec 18 00:34:24 2011 +0100<br>
+<br>
+=A0 =A0 PM / Sleep: Remove forward-only callbacks from platform bus type<br=
+>
+<br>
+=A0 =A0 The forward-only PM callbacks provided by the platform bus type are=
+<br>
+=A0 =A0 not necessary any more, because the PM core executes driver callbac=
+ks<br>
+=A0 =A0 when the corresponding subsystem callbacks are not present, so drop=
+<br>
+=A0 =A0 them.<br>
+<br>
+=A0 =A0 Signed-off-by: Rafael J. Wysocki &lt;<a href=3D"mailto:rjw@sisk.pl"=
+ target=3D"_blank">rjw@sisk.pl</a>&gt;<br>
+<br>
+It seems that a driver&#39;s pm ops are getting corrupted -- maybe used aft=
+er freeing? =A0Have you tried enabling slab/slub debug?<br>
+<br>
+Can you instrument the code to see if there are any fields in the device st=
+ruct that aren&#39;t corrupt, that could point out which device this is?<di=
+v class=3D"im"><br>
+<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">
+I found another thread that dealt with Power Management issues on the<br>
+Freescale MPC8313 processor:<br>
+<br>
+<a href=3D"https://lists.ozlabs.org/pipermail/linuxppc-dev/2012-January/095=
+240.html" target=3D"_blank">https://lists.ozlabs.org/<u></u>pipermail/linux=
+ppc-dev/2012-<u></u>January/095240.html</a><br>
+<br>
+The resolution of this issue seems to be related to the JTAG TRST pin being=
+<br>
+disabled. This is not relevant in my case as the TRST on my board is<br>
+already inactive.<br>
+</blockquote>
+<br></div>
+If you were seeing that, you&#39;d see a hang rather than an oops.<span cla=
+ss=3D"HOEnZb"><font color=3D"#888888"><br>
+<br>
+-Scott<br>
+</font></span></blockquote></div><br></div>
+
+--047d7b622822d2538b04cd13e181--
