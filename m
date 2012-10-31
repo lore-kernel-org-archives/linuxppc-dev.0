@@ -1,20 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <balbi@ti.com>
+Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 543BE2C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2012 00:25:57 +1100 (EST)
-Subject: Re: [PATCH 2/6] powerpc: Define CPU_FTR_HAS_PPR
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1351666334.32304.13.camel@hbabu-laptop>
-Date: Wed, 31 Oct 2012 08:25:35 -0500
-Message-Id: <423B952B-AB58-4BAB-87EE-9F666615AB6C@kernel.crashing.org>
-References: <1351666334.32304.13.camel@hbabu-laptop>
-To: Haren Myneni <haren@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, anton@au1.ibm.com, paulus@samba.org,
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1DA1B2C01C6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2012 00:32:50 +1100 (EST)
+Date: Wed, 31 Oct 2012 15:26:50 +0200
+From: Felipe Balbi <balbi@ti.com>
+To: Xiaotian Feng <xtfeng@gmail.com>
+Subject: Re: [PATCH 2/3] usb: gadget: fsl_qe_udc: do not use tasklet_disable
+ before tasklet_kill
+Message-ID: <20121031132650.GP10998@arwen.pp.htv.fi>
+References: <1351670761-26749-1-git-send-email-xtfeng@gmail.com>
+ <1351670761-26749-2-git-send-email-xtfeng@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="BouVgDkIlpb7X6Bk"
+In-Reply-To: <1351670761-26749-2-git-send-email-xtfeng@gmail.com>
+Cc: Xiaotian Feng <dannyfeng@tencent.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Felipe Balbi <balbi@ti.com>,
  linuxppc-dev@lists.ozlabs.org
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +31,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--BouVgDkIlpb7X6Bk
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Oct 31, 2012, at 1:52 AM, Haren Myneni wrote:
+On Wed, Oct 31, 2012 at 04:06:00PM +0800, Xiaotian Feng wrote:
+> If tasklet_disable() is called before related tasklet handled,
+> tasklet_kill will never be finished. tasklet_kill is enough.
 
-> [PATCH 2/6] powerpc: Define CPU_FTR_HAS_PPR
-> 
-> CPU_FTR_HAS_PPR is defined for POWER7.
+how did you test this ? Why changing FSL driver instead of switching
+over to chipidea which is supposed to be shared by every licensee of the
+chipidea core ?
 
-Would be nice if commit message spelled out what PPR is.
-
-> 
-> Signed-off-by: Haren Myneni <haren@us.ibm.com>
+> Signed-off-by: Xiaotian Feng <dannyfeng@tencent.com>
+> Cc: Li Yang <leoli@freescale.com>
+> Cc: Felipe Balbi <balbi@ti.com>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-usb@vger.kernel.org
+> Cc: linuxppc-dev@lists.ozlabs.org
 > ---
-> arch/powerpc/include/asm/cputable.h |    6 ++++--
-> 1 files changed, 4 insertions(+), 2 deletions(-)
+>  drivers/usb/gadget/fsl_qe_udc.c |    4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_=
+udc.c
+> index b09452d..4ad3b82 100644
+> --- a/drivers/usb/gadget/fsl_qe_udc.c
+> +++ b/drivers/usb/gadget/fsl_qe_udc.c
+> @@ -2661,7 +2661,7 @@ static int __devexit qe_udc_remove(struct platform_=
+device *ofdev)
+>  	usb_del_gadget_udc(&udc->gadget);
+> =20
+>  	udc->done =3D &done;
+> -	tasklet_disable(&udc->rx_tasklet);
+> +	tasklet_kill(&udc->rx_tasklet);
+> =20
+>  	if (udc->nullmap) {
+>  		dma_unmap_single(udc->gadget.dev.parent,
+> @@ -2698,8 +2698,6 @@ static int __devexit qe_udc_remove(struct platform_=
+device *ofdev)
+>  	free_irq(udc->usb_irq, udc);
+>  	irq_dispose_mapping(udc->usb_irq);
+> =20
+> -	tasklet_kill(&udc->rx_tasklet);
+> -
+>  	iounmap(udc->usb_regs);
+> =20
+>  	device_unregister(&udc->gadget.dev);
+> --=20
+> 1.7.9.5
+>=20
+
+--=20
+balbi
+
+--BouVgDkIlpb7X6Bk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQkScaAAoJEIaOsuA1yqREeZQP/1rjEi3brod38FD+F1pcIJFk
+t9sVwMsFgbTRJop+BmB1cnwxgtDpwSkUTuLJAhC6iGOgBdMPr4sxyGtPLmteTech
+kYZWaWTKwlTom3EGdsx3yMittfFOdwSZG9+mgy9AbuA7+FzdVGmdBcvh+e5FzMOd
+sxbP2bhEQDE1wPqgdotstUiWSykfDS3uttXeet1u0GPlLrWWLSL6HZkuTZE5jyDM
+bOnBnyjmToUv/AjhzPriiiStIIUTBPzlAXiqjLAMk8rbH5WQK03dfmqmZ5p98wWi
+pCM/qrEB5Yc37e1ozWrqU7fkdcWAis++/pLa46Tao8XJDeWeL+xCO/+rpS76Q2DA
+y5jpf5FRVlDEsYaKfZ2LGd/iBkePnb64rideCJwwAwKvwTGoG4iNrPlQnrm5ebx6
+frCQx9q1vuo+8gtUyrA06rO2FPkjTgZdHb3AD8VVSYSbcMC1GWIlF9S8Kxyl5KUl
+ishUW/qCCnthTr8gF34pV1OTh8M7lWfz+/GC/po8Nef0i/4ESO3UHPnMHFq8kFAN
+iGK+MK9IhFf1I3E07SOuuDI7nWn4/Sw2+UX889l4cvx3zvHOaNRMG2xYAh15DvQp
+N7tF0hoiUNBt/Y/q9MwUrzhplxHTpD1EhgptYkmIQXt53lxjHLgmGQUDBX55hh6E
+DvlgxXrgWGVQafp7m9hO
+=CINo
+-----END PGP SIGNATURE-----
+
+--BouVgDkIlpb7X6Bk--
