@@ -1,42 +1,34 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <haren@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 291EF2C009F
- for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2012 17:40:42 +1100 (EST)
+ (Client CN "e1.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 55C0F2C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 17:49:40 +1100 (EST)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e1.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 31 Oct 2012 02:40:39 -0400
-Received: from d01relay03.pok.ibm.com (d01relay03.pok.ibm.com [9.56.227.235])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 8E3736E8036
- for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2012 02:39:47 -0400 (EDT)
+ for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
+ Wed, 31 Oct 2012 02:49:36 -0400
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 7D058C9003C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 02:49:34 -0400 (EDT)
 Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by d01relay03.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q9V6dlkY309284
- for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2012 02:39:47 -0400
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ q9V6nYrC65798162
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 02:49:34 -0400
 Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
  by d01av03.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q9V6dkdi007610
- for <linuxppc-dev@ozlabs.org>; Wed, 31 Oct 2012 04:39:47 -0200
-Date: Tue, 30 Oct 2012 23:40:56 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [RFC][PATCH] perf: Add a few generic stalled-cycles events
-Message-ID: <20121031064056.GA12061@us.ibm.com>
-References: <20121012012839.GA15348@us.ibm.com>
- <20121015155534.GR8285@erda.amd.com>
- <20121016100809.GS8285@erda.amd.com>
- <20121016183148.GA25482@us.ibm.com>
- <1351081662.22332.13.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1351081662.22332.13.camel@twins>
-Cc: Robert Richter <robert.richter@amd.com>,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- eranian@google.com, acme@redhat.com, linuxppc-dev@ozlabs.org, paulus@samba.org,
- mpjohn@us.ibm.com, mingo@kernel.org, asharma@fb.com
+ q9V6nX37030185
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 04:49:34 -0200
+Subject: [PATCH 0/6] powerpc: SMT priority (PPR) save and restore
+From: Haren Myneni <haren@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, anton@au1.ibm.com,
+ mikey@neuling.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 30 Oct 2012 23:49:31 -0700
+Message-ID: <1351666171.32304.10.camel@hbabu-laptop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,53 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Peter Zijlstra [peterz@infradead.org] wrote:
-| On Tue, 2012-10-16 at 11:31 -0700, Sukadev Bhattiprolu wrote:
-| > On a side note, how does the kernel on x86 use the 'config' information in 
-| > say /sys/bus/event_source/devices/cpu/format/cccr ? On Power7, the raw
-| > code encodes the information such as the PMC to use for the event. Is that
-| > how the 'config' info in Intel is used ?
-| > 
-| > Does the 'config' info change from system to system or is it static for
-| > a given event on a given CPU ? 
-| 
-| Have a look at commits (tip/master):
-| 
-|   641cc938815dfd09f8fa1ec72deb814f0938ac33
-|   a47473939db20e3961b200eb00acf5fcf084d755
-|   43c032febde48aabcf6d59f47cdcb7b5debbdc63
-| 
-| 
-| So basically
-| 
-|  /sys/bus/event_source/devices/cpu/format/event
-| 
-| contains something like:
-| 
-|   config:0-7
-| 
-| Which says that for the 'cpu' PMU, field 'event' fills
-| perf_event_attr::config bits 0 through 7 (for type=PERF_TYPE_RAW).
-| 
-| The perf tool syntax for this is:
-| 
-|   perf stat -e 'cpu/event=0x3c/'
-| 
-| This basically allows you to expose bitfields in the 'raw' event format
-| for ease of writing raw events. I do not know if the Power PMU has such
-| or not.
+[PATCH 0/6] powerpc: SMT priority (PPR) save and restore
 
-Thanks for the detailed explanation.
+On P7 systems, users can define SMT priority levels 2,3 and 4 for
+processes so that some can run higher priority than the other ones.
+In the current kernel, the default priority is set to 4 which prohibits
+processes for using higher priority. Also the kernel boosts the priority to
+4 during exceptions without saving the user defined priorities when
+the task enters the kernel. So we will be loosing the process PPR value
+and can not be restored it back when the task exits the kernel.
 
-Power does not support this yet, but I have started working on it now.
+This patchset implements saving and restore the user defined PPR value
+for all tasks.
 
-BTW, does this mean that we can use arch-specific names for the sysfs entries
-within:
+With null_syscall testcase (http://ozlabs.org/~anton/junkcode/null_syscall.c),
+this feature takes around extra 10 CPU cycles on average for 25 samples. 
 
-	/sys/bus/event_source/devices/cpu/events/
+Haren Myneni (6):
+  powerpc: Move branch instruction from ACCOUNT_CPU_USER_ENTRY to caller
+  powerpc: Define CPU_FTR_HAS_PPR
+  powerpc: Increase exceptions arrays in paca struct to save PPR
+  powerpc: Define ppr in thread_struct
+  powerpc: Macros for saving/restore PPR
+  powerpc: Implement PPR save/restore
 
-So instead of the names I came up with in this patch, stalled-cycles-fixed-point
-we could use the name used in the CPU spec - 'cmplu_stall_fxu' in the arch
-specific code ?
-
-Sukadev
+ arch/powerpc/include/asm/cputable.h      |    6 ++-
+ arch/powerpc/include/asm/exception-64s.h |   45 ++++++++++++++++++++++++++----
+ arch/powerpc/include/asm/paca.h          |    6 ++--
+ arch/powerpc/include/asm/ppc_asm.h       |   27 ++++++++++++++++-
+ arch/powerpc/include/asm/processor.h     |    6 ++++
+ arch/powerpc/include/asm/reg.h           |    1 +
+ arch/powerpc/kernel/asm-offsets.c        |    1 +
+ arch/powerpc/kernel/entry_64.S           |    6 +++-
+ arch/powerpc/kernel/exceptions-64e.S     |    3 +-
+ arch/powerpc/kernel/exceptions-64s.S     |   15 +++++----
+ arch/powerpc/kernel/process.c            |    2 +
+ 11 files changed, 96 insertions(+), 22 deletions(-)
