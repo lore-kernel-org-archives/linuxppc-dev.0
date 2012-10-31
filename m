@@ -2,33 +2,32 @@ Return-Path: <haren@linux.vnet.ibm.com>
 Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e32.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 425942C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 17:51:17 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A7BB72C00B1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 17:52:20 +1100 (EST)
 Received: from /spool/local
  by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Wed, 31 Oct 2012 00:51:14 -0600
+ Wed, 31 Oct 2012 00:52:18 -0600
 Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
  [9.17.195.227])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7A34319D803E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 00:51:12 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 380D01FF003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 00:52:15 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
  by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- q9V6pC7m256724
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 00:51:12 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- q9V6pB4r006443
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 00:51:12 -0600
-Subject: [PATCH 1/6] powerpc: Move branch instruction from
- ACCOUNT_CPU_USER_ENTRY to caller
+ q9V6qGts238176
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 00:52:16 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ q9V6qGHJ029114
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 31 Oct 2012 00:52:16 -0600
+Subject: [PATCH 2/6] powerpc: Define CPU_FTR_HAS_PPR
 From: Haren Myneni <haren@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, anton@au1.ibm.com,
  mikey@neuling.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 30 Oct 2012 23:51:09 -0700
-Message-ID: <1351666269.32304.12.camel@hbabu-laptop>
+Date: Tue, 30 Oct 2012 23:52:14 -0700
+Message-ID: <1351666334.32304.13.camel@hbabu-laptop>
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,85 +39,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[PATCH 1/6] powerpc: Move branch instruction from ACCOUNT_CPU_USER_ENTRY to caller
+[PATCH 2/6] powerpc: Define CPU_FTR_HAS_PPR
 
-The first instruction in ACCOUNT_CPU_USER_ENTRY is 'beq' which checks for
-exceptions coming from kernel mode. PPR value will be saved immediately after
-ACCOUNT_CPU_USER_ENTRY and is also for user level exceptions. So moved this
-branch instruction in the caller code.
+CPU_FTR_HAS_PPR is defined for POWER7.
 
 Signed-off-by: Haren Myneni <haren@us.ibm.com>
 ---
- arch/powerpc/include/asm/exception-64s.h |    3 ++-
- arch/powerpc/include/asm/ppc_asm.h       |    2 --
- arch/powerpc/kernel/entry_64.S           |    3 ++-
- arch/powerpc/kernel/exceptions-64e.S     |    3 ++-
- 4 files changed, 6 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/cputable.h |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index a43c147..45702e0 100644
---- a/arch/powerpc/include/asm/exception-64s.h
-+++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -176,8 +176,9 @@ do_kvm_##n:								\
- 	std	r10,0(r1);		/* make stack chain pointer	*/ \
- 	std	r0,GPR0(r1);		/* save r0 in stackframe	*/ \
- 	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
-+	beq	4f;			/* if from kernel mode		*/ \
- 	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
--	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
-+4:	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
- 	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
- 	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
- 	ld	r9,area+EX_R9(r13);	/* move r9, r10 to stackframe	*/ \
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index ea2a86e..376e36d 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -30,7 +30,6 @@
- #define ACCOUNT_STOLEN_TIME
- #else
- #define ACCOUNT_CPU_USER_ENTRY(ra, rb)					\
--	beq	2f;			/* if from kernel mode */	\
- 	MFTB(ra);			/* get timebase */		\
- 	ld	rb,PACA_STARTTIME_USER(r13);				\
- 	std	ra,PACA_STARTTIME(r13);					\
-@@ -38,7 +37,6 @@
- 	ld	ra,PACA_USER_TIME(r13);					\
- 	add	ra,ra,rb;		/* add on to user time */	\
- 	std	ra,PACA_USER_TIME(r13);					\
--2:
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index 21a0687..12e3a1d 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -171,6 +171,7 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0800000000000000)
+ #define CPU_FTR_ICSWX			LONG_ASM_CONST(0x1000000000000000)
+ #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x2000000000000000)
++#define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x4000000000000000)
  
- #define ACCOUNT_CPU_USER_EXIT(ra, rb)					\
- 	MFTB(ra);			/* get timebase */		\
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index 56e0ff0..72c40dd 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -62,8 +62,9 @@ system_call_common:
- 	std	r12,_MSR(r1)
- 	std	r0,GPR0(r1)
- 	std	r10,GPR1(r1)
-+	beq	2f			/* if from kernel mode */
- 	ACCOUNT_CPU_USER_ENTRY(r10, r11)
--	std	r2,GPR2(r1)
-+2:	std	r2,GPR2(r1)
- 	std	r3,GPR3(r1)
- 	mfcr	r2
- 	std	r4,GPR4(r1)
-diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index 4684e33..709c06b 100644
---- a/arch/powerpc/kernel/exceptions-64e.S
-+++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -159,8 +159,9 @@ exc_##n##_common:							    \
- 	std	r9,GPR9(r1);		/* save r9 in stackframe */	    \
- 	std	r10,_NIP(r1);		/* save SRR0 to stackframe */	    \
- 	std	r11,_MSR(r1);		/* save SRR1 to stackframe */	    \
-+	beq	1f			/* if from kernel mode */
- 	ACCOUNT_CPU_USER_ENTRY(r10,r11);/* accounting (uses cr0+eq) */	    \
--	ld	r3,excf+EX_R10(r13);	/* get back r10 */		    \
-+1:	ld	r3,excf+EX_R10(r13);	/* get back r10 */		    \
- 	ld	r4,excf+EX_R11(r13);	/* get back r11 */		    \
- 	mfspr	r5,SPRN_SPRG_GEN_SCRATCH;/* get back r13 */		    \
- 	std	r12,GPR12(r1);		/* save r12 in stackframe */	    \
+ #ifndef __ASSEMBLY__
+ 
+@@ -400,7 +401,8 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+ 	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
+ 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+-	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY)
++	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
++	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR)
+ #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+@@ -422,7 +424,7 @@ extern const char *powerpc_base_platform;
+ 	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+ 	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
+ 	    CPU_FTRS_POWER7 | CPU_FTRS_CELL | CPU_FTRS_PA6T |		\
+-	    CPU_FTR_VSX)
++	    CPU_FTR_VSX | CPU_FTR_HAS_PPR)
+ #endif
+ #else
+ enum {
 -- 
 1.7.1
