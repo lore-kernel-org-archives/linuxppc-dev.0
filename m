@@ -1,16 +1,15 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 3E76C2C0358
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2012 20:39:05 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 90EB52C037C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2012 20:39:07 +1100 (EST)
 From: Wen Congyang <wency@cn.fujitsu.com>
 To: x86@kernel.org, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, linux-acpi@vger.kernel.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
  linux-ia64@vger.kernel.org, cmetcalf@tilera.com, sparclinux@vger.kernel.org
-Subject: [PATCH v3 02/12] memory-hotplug: check whether all memory blocks are
- offlined or not when removing memory
-Date: Thu, 1 Nov 2012 17:44:33 +0800
-Message-Id: <1351763083-7905-3-git-send-email-wency@cn.fujitsu.com>
+Subject: [PATCH v3 11/12] memory-hotplug: remove sysfs file of node
+Date: Thu, 1 Nov 2012 17:44:42 +0800
+Message-Id: <1351763083-7905-12-git-send-email-wency@cn.fujitsu.com>
 In-Reply-To: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
 References: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
 Cc: Len Brown <len.brown@intel.com>, Wen Congyang <wency@cn.fujitsu.com>,
@@ -29,20 +28,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-
-We remove the memory like this:
-1. lock memory hotplug
-2. offline a memory block
-3. unlock memory hotplug
-4. repeat 1-3 to offline all memory blocks
-5. lock memory hotplug
-6. remove memory(TODO)
-7. unlock memory hotplug
-
-All memory blocks must be offlined before removing memory. But we don't hold
-the lock in the whole operation. So we should check whether all memory blocks
-are offlined before step6. Otherwise, kernel maybe panicked.
+This patch introduces a new function try_offline_node() to
+remove sysfs file of node when all memory sections of this
+node are removed. If some memory sections of this node are
+not removed, this function does nothing.
 
 CC: David Rientjes <rientjes@google.com>
 CC: Jiang Liu <liuj97@gmail.com>
@@ -51,100 +40,143 @@ CC: Christoph Lameter <cl@linux.com>
 Cc: Minchan Kim <minchan.kim@gmail.com>
 CC: Andrew Morton <akpm@linux-foundation.org>
 CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
-Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 ---
- drivers/base/memory.c          |  6 ++++++
- include/linux/memory_hotplug.h |  1 +
- mm/memory_hotplug.c            | 47 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 54 insertions(+)
+ drivers/acpi/acpi_memhotplug.c |  8 +++++-
+ include/linux/memory_hotplug.h |  2 +-
+ mm/memory_hotplug.c            | 58 ++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 64 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/base/memory.c b/drivers/base/memory.c
-index 86c8821..badb025 100644
---- a/drivers/base/memory.c
-+++ b/drivers/base/memory.c
-@@ -675,6 +675,12 @@ int offline_memory_block(struct memory_block *mem)
+diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
+index 24c807f..0780f99 100644
+--- a/drivers/acpi/acpi_memhotplug.c
++++ b/drivers/acpi/acpi_memhotplug.c
+@@ -310,7 +310,9 @@ static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
+ {
+ 	int result;
+ 	struct acpi_memory_info *info, *n;
++	int node;
+ 
++	node = acpi_get_node(mem_device->device->handle);
+ 
+ 	/*
+ 	 * Ask the VM to offline this memory range.
+@@ -318,7 +320,11 @@ static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
+ 	 */
+ 	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
+ 		if (info->enabled) {
+-			result = remove_memory(info->start_addr, info->length);
++			if (node < 0)
++				node = memory_add_physaddr_to_nid(
++					info->start_addr);
++			result = remove_memory(node, info->start_addr,
++				info->length);
+ 			if (result)
+ 				return result;
+ 		}
+diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+index d4c4402..7b4cfe6 100644
+--- a/include/linux/memory_hotplug.h
++++ b/include/linux/memory_hotplug.h
+@@ -231,7 +231,7 @@ extern int arch_add_memory(int nid, u64 start, u64 size);
+ extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
+ extern int offline_memory_block(struct memory_block *mem);
+ extern bool is_memblock_offlined(struct memory_block *mem);
+-extern int remove_memory(u64 start, u64 size);
++extern int remove_memory(int node, u64 start, u64 size);
+ extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+ 								int nr_pages);
+ extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 7bcced0..d965da3 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -29,6 +29,7 @@
+ #include <linux/suspend.h>
+ #include <linux/mm_inline.h>
+ #include <linux/firmware-map.h>
++#include <linux/stop_machine.h>
+ 
+ #include <asm/tlbflush.h>
+ 
+@@ -1299,7 +1300,58 @@ static int is_memblock_offlined_cb(struct memory_block *mem, void *arg)
  	return ret;
  }
  
-+/* return true if the memory block is offlined, otherwise, return false */
-+bool is_memblock_offlined(struct memory_block *mem)
+-int __ref remove_memory(u64 start, u64 size)
++static int check_cpu_on_node(void *data)
 +{
-+	return mem->state == MEM_OFFLINE;
++	struct pglist_data *pgdat = data;
++	int cpu;
++
++	for_each_present_cpu(cpu) {
++		if (cpu_to_node(cpu) == pgdat->node_id)
++			/*
++			 * the cpu on this node isn't removed, and we can't
++			 * offline this node.
++			 */
++			return -EBUSY;
++	}
++
++	return 0;
 +}
 +
- /*
-  * Initialize the sysfs support for memory devices...
-  */
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index 95573ec..38675e9 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -236,6 +236,7 @@ extern int add_memory(int nid, u64 start, u64 size);
- extern int arch_add_memory(int nid, u64 start, u64 size);
- extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
- extern int offline_memory_block(struct memory_block *mem);
-+extern bool is_memblock_offlined(struct memory_block *mem);
- extern int remove_memory(u64 start, u64 size);
- extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
- 								int nr_pages);
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 600e200..f4fdedd 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1061,6 +1061,53 @@ repeat:
- 		goto repeat;
- 	}
- 
-+	lock_memory_hotplug();
-+
-+	/*
-+	 * we have offlined all memory blocks like this:
-+	 *   1. lock memory hotplug
-+	 *   2. offline a memory block
-+	 *   3. unlock memory hotplug
-+	 *
-+	 * repeat step1-3 to offline the memory block. All memory blocks
-+	 * must be offlined before removing memory. But we don't hold the
-+	 * lock in the whole operation. So we should check whether all
-+	 * memory blocks are offlined.
-+	 */
++/* offline the node if all memory sections of this node are removed */
++static void try_offline_node(int nid)
++{
++	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
++	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
++	unsigned long pfn;
 +
 +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
-+		section_nr = pfn_to_section_nr(pfn);
++		unsigned long section_nr = pfn_to_section_nr(pfn);
++
 +		if (!present_section_nr(section_nr))
 +			continue;
 +
-+		section = __nr_to_section(section_nr);
-+		/* same memblock? */
-+		if (mem)
-+			if ((section_nr >= mem->start_section_nr) &&
-+			    (section_nr <= mem->end_section_nr))
-+				continue;
-+
-+		mem = find_memory_block_hinted(section, mem);
-+		if (!mem)
++		if (pfn_to_nid(pfn) != nid)
 +			continue;
 +
-+		ret = is_memblock_offlined(mem);
-+		if (!ret) {
-+			pr_warn("removing memory fails, because memory "
-+				"[%#010llx-%#010llx] is onlined\n",
-+				PFN_PHYS(section_nr_to_pfn(mem->start_section_nr)),
-+				PFN_PHYS(section_nr_to_pfn(mem->end_section_nr + 1)) - 1);
-+
-+			kobject_put(&mem->dev.kobj);
-+			unlock_memory_hotplug();
-+			return ret;
-+		}
++		/*
++		 * some memory sections of this node are not removed, and we
++		 * can't offline node now.
++		 */
++		return;
 +	}
 +
-+	if (mem)
-+		kobject_put(&mem->dev.kobj);
-+	unlock_memory_hotplug();
++	if (stop_machine(check_cpu_on_node, NODE_DATA(nid), NULL))
++		return;
 +
++	/*
++	 * all memory/cpu of this node are removed, we can offline this
++	 * node now.
++	 */
++	node_set_offline(nid);
++	unregister_one_node(nid);
++}
++
++int __ref remove_memory(int nid, u64 start, u64 size)
+ {
+ 	unsigned long start_pfn, end_pfn;
+ 	int ret = 0;
+@@ -1346,6 +1398,8 @@ repeat:
+ 
+ 	arch_remove_memory(start, size);
+ 
++	try_offline_node(nid);
++
+ 	unlock_memory_hotplug();
+ 
  	return 0;
+@@ -1355,7 +1409,7 @@ int offline_pages(unsigned long start_pfn, unsigned long nr_pages)
+ {
+ 	return -EINVAL;
  }
- #else
+-int remove_memory(u64 start, u64 size)
++int remove_memory(int nid, u64 start, u64 size)
+ {
+ 	return -EINVAL;
+ }
 -- 
 1.8.0
