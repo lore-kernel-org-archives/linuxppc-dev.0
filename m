@@ -1,10 +1,19 @@
-Return-Path: <rusty@ozlabs.org>
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: add finit_module syscall.
-Date: Thu,  1 Nov 2012 11:28:27 +1030
-Message-Id: <1351731507-9758-1-git-send-email-rusty@rustcorp.com.au>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
+Return-Path: <B38951@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6AA402C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2012 14:02:07 +1100 (EST)
+From: Jia Hongtao <B38951@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH] powerpc/fsl-pci: Add PCI controller ATMU PM support
+Date: Thu, 1 Nov 2012 10:19:08 +0800
+Message-ID: <1351736348-26754-1-git-send-email-B38951@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: B07421@freescale.com, b38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -14,49 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(This is just for Acks: this won't work without the actual syscall patches,
- sitting in my tree for -next at the moment).
+Power supply for PCI controller ATMU registers is off when system go to
+deep-sleep state. So ATMU registers should be re-setup during PCI
+controllers resume from sleep.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Jia Hongtao <B38951@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/powerpc/include/asm/systbl.h      |    1 +
- arch/powerpc/include/asm/unistd.h      |    2 +-
- arch/powerpc/include/uapi/asm/unistd.h |    1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/sysdev/fsl_pci.c |   21 +++++++++++++++++++--
+ 1 files changed, 19 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 8408387..d0b27f8 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -356,3 +356,4 @@ COMPAT_SYS_SPU(sendmmsg)
- SYSCALL_SPU(setns)
- COMPAT_SYS(process_vm_readv)
- COMPAT_SYS(process_vm_writev)
-+SYSCALL(finit_module)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 921dce6..8d219a0 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index ffb93ae..793a017 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -89,7 +89,7 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+ 	return 0;
+ }
  
+-static int __init setup_one_atmu(struct ccsr_pci __iomem *pci,
++static int setup_one_atmu(struct ccsr_pci __iomem *pci,
+ 	unsigned int index, const struct resource *res,
+ 	resource_size_t offset)
+ {
+@@ -126,7 +126,7 @@ static int __init setup_one_atmu(struct ccsr_pci __iomem *pci,
+ }
  
--#define __NR_syscalls		353
-+#define __NR_syscalls		354
+ /* atmu setup for fsl pci/pcie controller */
+-static void __init setup_pci_atmu(struct pci_controller *hose,
++static void setup_pci_atmu(struct pci_controller *hose,
+ 				  struct resource *rsrc)
+ {
+ 	struct ccsr_pci __iomem *pci;
+@@ -902,12 +902,29 @@ static int __devinit fsl_pci_probe(struct platform_device *pdev)
+ 	return 0;
+ }
  
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index 380b5d3..8c478c6 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -375,6 +375,7 @@
- #define __NR_setns		350
- #define __NR_process_vm_readv	351
- #define __NR_process_vm_writev	352
-+#define __NR_finit_module	353
++#ifdef CONFIG_SUSPEND
++static int fsl_pci_resume(struct platform_device *pdev)
++{
++	struct pci_controller *hose;
++	struct resource pci_rsrc;
++
++	hose = pci_find_hose_for_OF_device(pdev->dev.of_node);
++	of_address_to_resource(pdev->dev.of_node, 0, &pci_rsrc);
++	setup_pci_atmu(hose, &pci_rsrc);
++
++	return 0;
++}
++#endif
++
+ static struct platform_driver fsl_pci_driver = {
+ 	.driver = {
+ 		.name = "fsl-pci",
+ 		.of_match_table = pci_ids,
+ 	},
+ 	.probe = fsl_pci_probe,
++#ifdef CONFIG_SUSPEND
++	.resume	= fsl_pci_resume,
++#endif
+ };
  
- 
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
+ static int __init fsl_pci_init(void)
 -- 
-1.7.10.4
+1.7.5.1
