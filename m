@@ -1,22 +1,24 @@
-Return-Path: <B04825@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 98D3F2C0168
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2012 00:26:07 +1100 (EST)
-Message-ID: <50927862.9080909@freescale.com>
-Date: Thu, 1 Nov 2012 08:25:54 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
+ [209.85.220.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 69CB22C032E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2012 01:21:48 +1100 (EST)
+Received: by mail-vc0-f179.google.com with SMTP id f13so2596804vcb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 Nov 2012 07:21:44 -0700 (PDT)
 MIME-Version: 1.0
-To: Jia Hongtao <B38951@freescale.com>
-Subject: Re: [linuxppc-release] [PATCH] powerpc/fsl-pci: Add PCI controller
- ATMU PM support
-References: <1351736348-26754-1-git-send-email-B38951@freescale.com>
-In-Reply-To: <1351736348-26754-1-git-send-email-B38951@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <1348179051.1132.32.camel@pasglop>
+References: <1348179051.1132.32.camel@pasglop>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 1 Nov 2012 15:21:23 +0100
+Message-ID: <CACxGe6sAXBJ9KkA8Urioe-VsbaLUO+=C_tb1vU+i_VKuedi=eg@mail.gmail.com>
+Subject: Re: Deprecating reserve-map in favor of properties
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Cyril Chemparathy <cyril@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jia Hongtao wrote:
+On Fri, Sep 21, 2012 at 12:10 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> Hi folks !
+>
+> The reserve map is, imho, my biggest mistake when coming up with the FDT
+> format.
+>
+> The main problem is that it doesn't survive the transition via a real
+> Open Firmware interface. There is no practical way to indicate reserved
+> regions of memory accross in that case, unless you have an OS that is
+> nice enough to try to keep OF alive and accomodate its advertised
+> "available" properties, but that's typically not the case of Linux on
+> ppc.
+>
+> So I would like to propose that we add a new "better" way to convey
+> reserved memory information, via properties in the tree.
+>
+> I originally though of having these in the "memory" nodes themselves but
+> this can be tricky on machines that have multiple nodes (ie, NUMA
+> generally means a memory node per NUMA node) since the reserved regions
+> can spawn accross nodes and I don't want to complicate FW life too much
+> by requiring breaking them up in that case.
+>
+> So what about something at the root of the tree:
+>
+> reserved-ranges: An array of ranges of reserved memory
+>
+> reserved-names: A list of zero terminated strings, one for each entry in
+> the reserved-ranges array, providing optional "names" for the reserved
+> ranges.
 
-> +#ifdef CONFIG_SUSPEND
-> +static int fsl_pci_resume(struct platform_device *pdev)
-> +{
-> +	struct pci_controller *hose;
-> +	struct resource pci_rsrc;
-> +
-> +	hose = pci_find_hose_for_OF_device(pdev->dev.of_node);
-> +	of_address_to_resource(pdev->dev.of_node, 0, &pci_rsrc);
-> +	setup_pci_atmu(hose, &pci_rsrc);
-> +
-> +	return 0;
-> +}
+I think this makes sense. Cyril and I are just talking about what he
+needs. He wants to set aside per-device reserved regions and would
+like to have the ability to reference a particular reserved region
+from a device node, probably with a phandle. I like the look of the
+reserved-{ranges,names} properties in the root, but I see the argument
+that it isn't very flexible. What about something like this:
 
-Some of these functions can fail, so they should return an error code if
-they do.
+reserved-memory {
+        reserved@0x10000000 { reg = <0x10000000 0x08000000>; };
+        reserved@0x01000000 { reg = <0x01000000 0x00200000>; };
+}
 
-> +#endif
-> +
->  static struct platform_driver fsl_pci_driver = {
->  	.driver = {
->  		.name = "fsl-pci",
->  		.of_match_table = pci_ids,
->  	},
->  	.probe = fsl_pci_probe,
-> +#ifdef CONFIG_SUSPEND
-> +	.resume	= fsl_pci_resume,
-> +#endif
+The node name of the child nodes could be different of course.
 
-Do this instead:
+>
+> The idea here is that we could have well defined names (using a similar
+> prefix we use for properties) such as linux,initrd, which indicates
+> clearly to the kernel that the only reason that range is reserved is
+> because it contains an initrd (ie, it can be freed once that's been
+> extracted).
+>
+> It would also be generally handy in case a reserved area is meant to be
+> used by a specific driver, such as an in-memory framebuffer
+> pre-initialized by the firmware. The generic memory management code
+> doesn't need to know, but later on, the gfx driver can pick it up easily
+> provided the name is part of the binding for that device.
 
-#ifdef CONFIG_SUSPEND
-static int fsl_pci_resume(struct platform_device *pdev)
-...
-#else
-#define fsl_pci_resume NULL
-#endif
+Right, that would work also even though I prefer phandle references in
+general. Is it conceivable that additional data would want to be
+attached to a particular reserved region?
 
--- 
-Timur Tabi
-Linux kernel developer at Freescale
+g.
