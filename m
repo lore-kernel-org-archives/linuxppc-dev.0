@@ -1,37 +1,19 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E37612C0326
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2012 12:20:44 +1100 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Thu, 1 Nov 2012 19:20:42 -0600
-Received: from d03relay05.boulder.ibm.com (d03relay05.boulder.ibm.com
- [9.17.195.107])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E199319D8046
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 Nov 2012 19:20:19 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay05.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qA21KJsZ262436
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Nov 2012 19:20:19 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qA21KIJJ010573
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 1 Nov 2012 19:20:19 -0600
-Message-ID: <50931FD1.6040905@linux.vnet.ibm.com>
-Date: Thu, 01 Nov 2012 18:20:17 -0700
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 0/6] powerpc: SMT priority (PPR) save and restore
-References: <1351666171.32304.10.camel@hbabu-laptop>
- <25370.1351730689@neuling.org>
-In-Reply-To: <25370.1351730689@neuling.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, anton@au1.ibm.com, paulus@samba.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 70F602C034A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2012 14:24:24 +1100 (EST)
+Message-ID: <1351826636.12271.246.camel@pasglop>
+Subject: Re: [PATCH] powerpc: add finit_module syscall.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Date: Fri, 02 Nov 2012 14:23:56 +1100
+In-Reply-To: <1351731507-9758-1-git-send-email-rusty@rustcorp.com.au>
+References: <1351731507-9758-1-git-send-email-rusty@rustcorp.com.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,73 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/31/2012 05:44 PM, Michael Neuling wrote:
-> Haren Myneni <haren@linux.vnet.ibm.com> wrote:
+On Thu, 2012-11-01 at 11:28 +1030, Rusty Russell wrote:
+> (This is just for Acks: this won't work without the actual syscall patches,
+>  sitting in my tree for -next at the moment).
 > 
->> [PATCH 0/6] powerpc: SMT priority (PPR) save and restore
->>
->> On P7 systems, users can define SMT priority levels 2,3 and 4 for
->> processes so that some can run higher priority than the other ones.
->> In the current kernel, the default priority is set to 4 which prohibits
->> processes for using higher priority. Also the kernel boosts the priority to
->> 4 during exceptions without saving the user defined priorities when
->> the task enters the kernel. So we will be loosing the process PPR value
->> and can not be restored it back when the task exits the kernel.
->>
->> This patchset implements saving and restore the user defined PPR value
->> for all tasks.
->>
->> With null_syscall testcase (http://ozlabs.org/~anton/junkcode/null_syscall.c),
->> this feature takes around extra 10 CPU cycles on average for 25 samples. 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+>  arch/powerpc/include/asm/systbl.h      |    1 +
+>  arch/powerpc/include/asm/unistd.h      |    2 +-
+>  arch/powerpc/include/uapi/asm/unistd.h |    1 +
+>  3 files changed, 3 insertions(+), 1 deletion(-)
 > 
-> Haren,
+> diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+> index 8408387..d0b27f8 100644
+> --- a/arch/powerpc/include/asm/systbl.h
+> +++ b/arch/powerpc/include/asm/systbl.h
+> @@ -356,3 +356,4 @@ COMPAT_SYS_SPU(sendmmsg)
+>  SYSCALL_SPU(setns)
+>  COMPAT_SYS(process_vm_readv)
+>  COMPAT_SYS(process_vm_writev)
+> +SYSCALL(finit_module)
+> diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
+> index 921dce6..8d219a0 100644
+> --- a/arch/powerpc/include/asm/unistd.h
+> +++ b/arch/powerpc/include/asm/unistd.h
+> @@ -12,7 +12,7 @@
+>  #include <uapi/asm/unistd.h>
+>  
 > 
-> This version doesn't do PPR save/restore over syscall, so is this above
-> statement still true?  null_syscall shouldn't be effected at all, right?
+> -#define __NR_syscalls		353
+> +#define __NR_syscalls		354
+>  
+>  #define __NR__exit __NR_exit
+>  #define NR_syscalls	__NR_syscalls
+> diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
+> index 380b5d3..8c478c6 100644
+> --- a/arch/powerpc/include/uapi/asm/unistd.h
+> +++ b/arch/powerpc/include/uapi/asm/unistd.h
+> @@ -375,6 +375,7 @@
+>  #define __NR_setns		350
+>  #define __NR_process_vm_readv	351
+>  #define __NR_process_vm_writev	352
+> +#define __NR_finit_module	353
+>  
 > 
-> Mikey
-> 
-
-Mikey,
-
-Yes this version does not save/ restore for syscall entries. But we set
-default priority 3 for each syscall exit -  set HMT_MEDIUM_LOW for
-normal return, and set 3 in thread.ppr so that this value will be set
-for fast return path.
-
-So I was using null_syscall test case to find out the performance
-overhead with this patch-set.
-
-Thanks
-Haren
-
-
->>
->> Haren Myneni (6):
->>   powerpc: Move branch instruction from ACCOUNT_CPU_USER_ENTRY to caller
->>   powerpc: Define CPU_FTR_HAS_PPR
->>   powerpc: Increase exceptions arrays in paca struct to save PPR
->>   powerpc: Define ppr in thread_struct
->>   powerpc: Macros for saving/restore PPR
->>   powerpc: Implement PPR save/restore
->>
->>  arch/powerpc/include/asm/cputable.h      |    6 ++-
->>  arch/powerpc/include/asm/exception-64s.h |   45 ++++++++++++++++++++++++++----
->>  arch/powerpc/include/asm/paca.h          |    6 ++--
->>  arch/powerpc/include/asm/ppc_asm.h       |   27 ++++++++++++++++-
->>  arch/powerpc/include/asm/processor.h     |    6 ++++
->>  arch/powerpc/include/asm/reg.h           |    1 +
->>  arch/powerpc/kernel/asm-offsets.c        |    1 +
->>  arch/powerpc/kernel/entry_64.S           |    6 +++-
->>  arch/powerpc/kernel/exceptions-64e.S     |    3 +-
->>  arch/powerpc/kernel/exceptions-64s.S     |   15 +++++----
->>  arch/powerpc/kernel/process.c            |    2 +
->>  11 files changed, 96 insertions(+), 22 deletions(-)
->>
->>
->>
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+>  #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
