@@ -1,23 +1,33 @@
-Return-Path: <B07421@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2D3722C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Nov 2012 03:36:25 +1100 (EST)
-Date: Fri, 2 Nov 2012 11:36:04 -0500
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: powerpc: Don't silently handle machine checks from userspace
-To: Martijn de Gouw <martijn.de.gouw@prodrive.nl>
-References: <5093B318.9040305@prodrive.nl>
-In-Reply-To: <5093B318.9040305@prodrive.nl> (from
- martijn.de.gouw@prodrive.nl on Fri Nov  2 06:48:40 2012)
-Message-ID: <1351874164.5089.1@snotra>
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0310D2C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  3 Nov 2012 04:17:57 +1100 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 2 Nov 2012 12:47:08 -0400
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 6E373C90041
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 Nov 2012 12:47:04 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qA2Gl3Go66322480
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Nov 2012 12:47:04 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qA2Gl3t2013653
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 2 Nov 2012 12:47:03 -0400
+Date: Fri, 2 Nov 2012 09:48:12 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: acme@ghostprotocols.net, a.p.zijlstra@chello.nl, paulus@samba.org
+Subject: [PATCH] perf: powerpc: Use uapi/unistd.h to fix build error
+Message-ID: <20121102164812.GA25300@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Micha Nelissen <micha.nelissen@prodrive.nl>, linuxppc-dev@lists.ozlabs.org,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +37,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/02/2012 06:48:40 AM, Martijn de Gouw wrote:
-> Hi,
->=20
-> The following commit:
->=20
-> http://git.kernel.org/?p=3Dlinux/kernel/git/stable/linux-stable.git;a=3Dc=
-ommit;h=3De49b1fae0ba4d06b29bd753a961abb447566bf4a
->=20
-> causes confusion, because it prints "Machine check in kernel mode" =20
-> also when the bus error is actually in user space. When using RapidIO =20
-> memory mapped access, and the device is removed or powered off, then =20
-> a bus error is generated. This is on a freescale mpc8548 powerpc. Due =20
-> to removing the user_mode check, the kernel calls "die" which causes =20
-> the process to die with a BUS error, regardless of having a SIGBUS =20
-> handler or not.
->=20
-> Therefore I request to put this check back, and even to put the =20
-> removed code at the top of the machine check handler because there is =20
-> no point in trying to recover from a user space bus error anyway.
 
-Why is there no point trying to recover?  For example, see MCSR_ICPERR =20
-and MCSR_DCPERR_MC in machine_check_e500mc.  The machine check is just =20
-letting us know that there was an error and the read-only cache got =20
-dumped (i.e. it was a correctable error).
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Wed, 31 Oct 2012 11:21:28 -0700
+Subject: [PATCH] perf: powerpc: Use uapi/unistd.h to fix build error
 
--Scott=
+Use the 'unistd.h' from arch/powerpc/include/uapi to build the perf tool.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ tools/perf/perf.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/tools/perf/perf.h b/tools/perf/perf.h
+index 054182e..f4952da 100644
+--- a/tools/perf/perf.h
++++ b/tools/perf/perf.h
+@@ -26,7 +26,7 @@ void get_term_dimensions(struct winsize *ws);
+ #endif
+ 
+ #ifdef __powerpc__
+-#include "../../arch/powerpc/include/asm/unistd.h"
++#include "../../arch/powerpc/include/uapi/asm/unistd.h"
+ #define rmb()		asm volatile ("sync" ::: "memory")
+ #define cpu_relax()	asm volatile ("" ::: "memory");
+ #define CPUINFO_PROC	"cpu"
+-- 
+1.7.1
