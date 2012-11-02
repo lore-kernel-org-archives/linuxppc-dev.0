@@ -1,16 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Message-ID: <1351798896.12271.241.camel@pasglop>
-Subject: Re: Deprecating reserve-map in favor of properties
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Date: Fri, 02 Nov 2012 06:41:36 +1100
-In-Reply-To: <CACxGe6sAXBJ9KkA8Urioe-VsbaLUO+=C_tb1vU+i_VKuedi=eg@mail.gmail.com>
-References: <1348179051.1132.32.camel@pasglop>
- <CACxGe6sAXBJ9KkA8Urioe-VsbaLUO+=C_tb1vU+i_VKuedi=eg@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <anton@samba.org>
+Date: Fri, 2 Nov 2012 11:55:04 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, sfr@ozlabs.org,
+ dhowells@redhat.com, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc: Move most of setup.h out of uapi
+Message-ID: <20121102115504.02c7fe4c@kryten>
 Mime-Version: 1.0
-Cc: devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Cyril Chemparathy <cyril@ti.com>
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,61 +16,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-11-01 at 15:21 +0100, Grant Likely wrote:
 
-> I think this makes sense. Cyril and I are just talking about what he
-> needs. He wants to set aside per-device reserved regions and would
-> like to have the ability to reference a particular reserved region
-> from a device node, probably with a phandle. I like the look of the
-> reserved-{ranges,names} properties in the root, but I see the argument
-> that it isn't very flexible. What about something like this:
-> 
-> reserved-memory {
->         reserved@0x10000000 { reg = <0x10000000 0x08000000>; };
->         reserved@0x01000000 { reg = <0x01000000 0x00200000>; };
-> }
-> 
-> The node name of the child nodes could be different of course.
+Most of setup.h should not be exported to userspace, so move it
+back. All we are left with is the asm-generic include to pick
+up the COMMAND_LINE_SIZE define.
 
-I'm not that fan of different nodes, especially nodes with nodes in them
-for that purpose. Seems overkill.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
-Can't he reference reserved entries as <phandle>,<index> pairs ?
-
-I still think a single property would do fine. We could mandate those be
-in the respective "memory" nodes but them you have potentially to break
-up reserved regions if you have multiple memory nodes (NUMA) etc...
-
-I'd vote for the simpler approach here...
-
-> > The idea here is that we could have well defined names (using a similar
-> > prefix we use for properties) such as linux,initrd, which indicates
-> > clearly to the kernel that the only reason that range is reserved is
-> > because it contains an initrd (ie, it can be freed once that's been
-> > extracted).
-> >
-> > It would also be generally handy in case a reserved area is meant to be
-> > used by a specific driver, such as an in-memory framebuffer
-> > pre-initialized by the firmware. The generic memory management code
-> > doesn't need to know, but later on, the gfx driver can pick it up easily
-> > provided the name is part of the binding for that device.
-> 
-> Right, that would work also even though I prefer phandle references in
-> general. Is it conceivable that additional data would want to be
-> attached to a particular reserved region?
-
-phandle references and names aren't exclusive from each other. The name
-remains a useful diagnostic tool.
-
-If you want additional data, make a node somewhere to represent that
-region along with its additional data, that node can have a reference to
-the reserved map entry.
-
-I'd keep the reserve map itself simple. It's a "synthetic property" a
-bit like the memory nodes. IE. The "memory" nodes don't have to
-represent physical memory controllers & DIMMs. They represent the
-overall view of memory by the CPUs. You can represent the MCs and the
-DIMMs elsewhere in the SoC node.
-
-Cheers,
-Ben.
+Index: b/arch/powerpc/include/asm/setup.h
+===================================================================
+--- /dev/null
++++ b/arch/powerpc/include/asm/setup.h
+@@ -0,0 +1,33 @@
++#ifndef _ASM_POWERPC_SETUP_H
++#define _ASM_POWERPC_SETUP_H
++
++#include <uapi/asm/setup.h>
++
++#ifndef __ASSEMBLY__
++extern void ppc_printk_progress(char *s, unsigned short hex);
++
++extern unsigned int rtas_data;
++extern int mem_init_done;	/* set on boot once kmalloc can be called */
++extern int init_bootmem_done;	/* set once bootmem is available */
++extern unsigned long long memory_limit;
++extern unsigned long klimit;
++extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
++
++extern void via_cuda_init(void);
++extern void read_rtc_time(void);
++extern void pmac_find_display(void);
++
++struct device_node;
++extern void note_scsi_host(struct device_node *, void *);
++
++/* Used in very early kernel initialization. */
++extern unsigned long reloc_offset(void);
++extern unsigned long add_reloc_offset(unsigned long);
++extern void reloc_got2(unsigned long);
++
++#define PTRRELOC(x)	((typeof(x)) add_reloc_offset((unsigned long)(x)))
++
++#endif /* !__ASSEMBLY__ */
++
++#endif	/* _ASM_POWERPC_SETUP_H */
++
+Index: b/arch/powerpc/include/uapi/asm/setup.h
+===================================================================
+--- a/arch/powerpc/include/uapi/asm/setup.h
++++ b/arch/powerpc/include/uapi/asm/setup.h
+@@ -1,32 +1 @@
+-#ifndef _ASM_POWERPC_SETUP_H
+-#define _ASM_POWERPC_SETUP_H
+-
+ #include <asm-generic/setup.h>
+-
+-#ifndef __ASSEMBLY__
+-extern void ppc_printk_progress(char *s, unsigned short hex);
+-
+-extern unsigned int rtas_data;
+-extern int mem_init_done;	/* set on boot once kmalloc can be called */
+-extern int init_bootmem_done;	/* set once bootmem is available */
+-extern unsigned long long memory_limit;
+-extern unsigned long klimit;
+-extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
+-
+-extern void via_cuda_init(void);
+-extern void read_rtc_time(void);
+-extern void pmac_find_display(void);
+-
+-struct device_node;
+-extern void note_scsi_host(struct device_node *, void *);
+-
+-/* Used in very early kernel initialization. */
+-extern unsigned long reloc_offset(void);
+-extern unsigned long add_reloc_offset(unsigned long);
+-extern void reloc_got2(unsigned long);
+-
+-#define PTRRELOC(x)	((typeof(x)) add_reloc_offset((unsigned long)(x)))
+-
+-#endif /* !__ASSEMBLY__ */
+-
+-#endif	/* _ASM_POWERPC_SETUP_H */
