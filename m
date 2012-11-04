@@ -1,20 +1,21 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
+Return-Path: <xenidis@gmail.com>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7560A2C00BD
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  4 Nov 2012 23:04:15 +1100 (EST)
-Received: by mail-pb0-f51.google.com with SMTP id rp16so3049199pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Nov 2012 04:04:15 -0800 (PST)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: use asm-generic/bitops/le.h
-Date: Sun,  4 Nov 2012 21:03:45 +0900
-Message-Id: <1352030625-3471-3-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1352030625-3471-1-git-send-email-akinobu.mita@gmail.com>
-References: <1352030625-3471-1-git-send-email-akinobu.mita@gmail.com>
-Cc: Paul Mackerras <paulus@samba.org>, Akinobu Mita <akinobu.mita@gmail.com>
+ by ozlabs.org (Postfix) with ESMTPS id 1EC902C00C2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Nov 2012 03:32:48 +1100 (EST)
+Received: by mail-ob0-f179.google.com with SMTP id lz20so4568941obb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Nov 2012 08:32:46 -0800 (PST)
+Sender: Jimi Xenidis <xenidis@gmail.com>
+From: Jimi Xenidis <jimix@pobox.com>
+Content-Type: text/plain; charset=us-ascii
+Subject: RFC: book3e: DCR MMIO for IBM Blue Gene/Q
+Date: Sun, 4 Nov 2012 10:32:43 -0600
+Message-Id: <020B0706-E2BD-4A6C-8644-D235278655ED@pobox.com>
+To: Ben Herrenschmidt <benh@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v1283)
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,88 +25,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The only difference between powerpc and asm-generic le-bitops is
-test_bit_le().  Usually all bitops require a long aligned bitmap.
-But powerpc test_bit_le() can take an unaligned address.
+I want to use the stuff in arch/platform/sysdev/dcr.c and I have a =
+couple of questions:
+1) anyone have a good devtree binding for this?
+I'm thinking:
+	bgq {
+		#address-cells =3D <2>;
+		#size-cells =3D <2>;
+		...
 
-There is no special callsite of test_bit_le() that needs unaligned
-access in powerpc as far as I can see.  So convert to use
-asm-generic/bitops/le.h for powerpc.
+		dcr {
+			reg =3D <0x3ff 0xe0000000 0x0 0x08000000>;
+			compatible =3D "ibm,bgq-dcr";
+			dcr-controller;
+			dcr-access-method =3D "mmio";
+			dcr-mmio-stride =3D <??>;
+		};
+	};
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/bitops.h | 55 +--------------------------------------
- 1 file changed, 1 insertion(+), 54 deletions(-)
+I'm not sure what stride I will use since I have yet to figure out the =
+DCR numbering in play at the moment, which will be painful.
+Also, some clarity to the following would be nice:
+	/* Stride is not properly defined yet, default to 0x10 for Axon =
+*/
+	p =3D of_get_property(dp, "dcr-mmio-stride", NULL);
+	stride =3D (p =3D=3D NULL) ? 0x10 : *p;
 
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 920596f..ef918a2 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -278,61 +278,8 @@ unsigned long __arch_hweight64(__u64 w);
- #include <asm-generic/bitops/find.h>
- 
- /* Little-endian versions */
-+#include <asm-generic/bitops/le.h>
- 
--static __inline__ int test_bit_le(unsigned long nr,
--				  __const__ void *addr)
--{
--	__const__ unsigned char	*tmp = (__const__ unsigned char *) addr;
--	return (tmp[nr >> 3] >> (nr & 7)) & 1;
--}
--
--static inline void set_bit_le(int nr, void *addr)
--{
--	set_bit(nr ^ BITOP_LE_SWIZZLE, addr);
--}
--
--static inline void clear_bit_le(int nr, void *addr)
--{
--	clear_bit(nr ^ BITOP_LE_SWIZZLE, addr);
--}
--
--static inline void __set_bit_le(int nr, void *addr)
--{
--	__set_bit(nr ^ BITOP_LE_SWIZZLE, addr);
--}
--
--static inline void __clear_bit_le(int nr, void *addr)
--{
--	__clear_bit(nr ^ BITOP_LE_SWIZZLE, addr);
--}
--
--static inline int test_and_set_bit_le(int nr, void *addr)
--{
--	return test_and_set_bit(nr ^ BITOP_LE_SWIZZLE, addr);
--}
--
--static inline int test_and_clear_bit_le(int nr, void *addr)
--{
--	return test_and_clear_bit(nr ^ BITOP_LE_SWIZZLE, addr);
--}
--
--static inline int __test_and_set_bit_le(int nr, void *addr)
--{
--	return __test_and_set_bit(nr ^ BITOP_LE_SWIZZLE, addr);
--}
--
--static inline int __test_and_clear_bit_le(int nr, void *addr)
--{
--	return __test_and_clear_bit(nr ^ BITOP_LE_SWIZZLE, addr);
--}
--
--#define find_first_zero_bit_le(addr, size) \
--	find_next_zero_bit_le((addr), (size), 0)
--unsigned long find_next_zero_bit_le(const void *addr,
--				    unsigned long size, unsigned long offset);
--
--unsigned long find_next_bit_le(const void *addr,
--				    unsigned long size, unsigned long offset);
- /* Bitmap functions for the ext2 filesystem */
- 
- #include <asm-generic/bitops/ext2-atomic-setbit.h>
--- 
-1.7.11.7
+	/* XXX FIXME: Which property name is to use of the 2 following ? =
+*/
+	p =3D of_get_property(dp, "dcr-mmio-range", NULL);
+	if (p =3D=3D NULL)
+		p =3D of_get_property(dp, "dcr-mmio-space", NULL);
+	if (p =3D=3D NULL)
+		goto done;
+
+I guess my "reg" property is not useful to the code?
+Is there a preference over dcr-mmio-range/space or in the absence of =
+these to we should use "reg"?
+
+2) I need 64 bit reads and writes
+My intention is to have dcr_{read,write}_generic_{mmio,native} take an =
+unsigned long for value all the way down.
+For the native case, this would make is similar to mtspr and mfspr.
+For the MMIO case, the selected in/out size would be based on "#ifdef =
+__powerpc64__"
+
+Thoughts?
+
+-jx
