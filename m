@@ -1,25 +1,25 @@
-Return-Path: <b10812@nmglablinux19.freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BB9A92C0342
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Nov 2012 22:20:14 +1100 (EST)
-From: Varun Sethi <Varun.Sethi@freescale.com>
-To: <joerg.roedel@amd.com>, <iommu@lists.linux-foundation.org>,
- <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <timur@freescale.com>, <scottwood@freescale.com>
-Subject: [PATCH 3/4 v4] iommu/fsl: Add iommu domain attributes required by fsl
- PAMU driver.
-Date: Mon, 5 Nov 2012 16:49:20 +0530
-Message-ID: <1352114361-25192-3-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1352114361-25192-2-git-send-email-Varun.Sethi@freescale.com>
-References: <1352114361-25192-1-git-send-email-Varun.Sethi@freescale.com>
- <1352114361-25192-2-git-send-email-Varun.Sethi@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Varun Sethi <Varun.Sethi@freescale.com>
+Return-Path: <xenidis@gmail.com>
+Received: from mail-oa0-f51.google.com (mail-oa0-f51.google.com
+ [209.85.219.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 34B232C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2012 02:25:40 +1100 (EST)
+Received: by mail-oa0-f51.google.com with SMTP id n12so5348309oag.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Nov 2012 07:25:38 -0800 (PST)
+Sender: Jimi Xenidis <xenidis@gmail.com>
+Subject: Re: RFC: book3e: DCR MMIO for IBM Blue Gene/Q
+Mime-Version: 1.0 (Apple Message framework v1283)
+Content-Type: text/plain; charset=us-ascii
+From: Jimi Xenidis <jimix@pobox.com>
+In-Reply-To: <BDD4B115-9D17-4063-A957-65775AEBD0F3@pobox.com>
+Date: Mon, 5 Nov 2012 09:25:34 -0600
+Message-Id: <749146C7-B9A8-4001-9580-3B87A041A580@pobox.com>
+References: <020B0706-E2BD-4A6C-8644-D235278655ED@pobox.com>
+ <1352073062.12271.268.camel@pasglop>
+ <BDD4B115-9D17-4063-A957-65775AEBD0F3@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,76 +29,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added the following domain attributes required by FSL PAMU driver:
-1. Subwindows field added to the iommu domain geometry attribute.
-2. Added new iommu stash attribute, which allows setting of the
-   LIODN specific stash id parameter through IOMMU API.
-3. Added an attribute for enabling/disabling DMA to a particular
-   memory window.
+
+On Nov 4, 2012, at 9:23 PM, Jimi Xenidis wrote:
+
+>=20
+>=20
+> On Nov 4, 2012, at 5:51 PM, Benjamin Herrenschmidt =
+<benh@kernel.crashing.org> wrote:
+>=20
+>> On Sun, 2012-11-04 at 10:32 -0600, Jimi Xenidis wrote:
+>>> I want to use the stuff in arch/platform/sysdev/dcr.c and I have a =
+couple of questions:
+>>> 1) anyone have a good devtree binding for this?
+>>=20
+>> Not really, I think the cell stuff was the last we looked at this.
+>>=20
+>>> I'm thinking:
+>>>   bgq {
+>>>       #address-cells =3D <2>;
+>>>       #size-cells =3D <2>;
+>>>       ...
+>>>=20
+>>>       dcr {
+>>>           reg =3D <0x3ff 0xe0000000 0x0 0x08000000>;
+>>>           compatible =3D "ibm,bgq-dcr";
+>>>           dcr-controller;
+>>>           dcr-access-method =3D "mmio";
+>>>           dcr-mmio-stride =3D <??>;
+>>>       };
+>>>   };
+>>>=20
+>>> I'm not sure what stride I will use since I have yet to figure out =
+the DCR numbering in play at the moment, which will be painful.
+>>> Also, some clarity to the following would be nice:
+>>>   /* Stride is not properly defined yet, default to 0x10 for Axon */
+>>>   p =3D of_get_property(dp, "dcr-mmio-stride", NULL);
+>>>   stride =3D (p =3D=3D NULL) ? 0x10 : *p;
+>>>=20
+>>>   /* XXX FIXME: Which property name is to use of the 2 following ? =
+*/
+>>>   p =3D of_get_property(dp, "dcr-mmio-range", NULL);
+>>>   if (p =3D=3D NULL)
+>>>       p =3D of_get_property(dp, "dcr-mmio-space", NULL);
+>>>   if (p =3D=3D NULL)
+>>>       goto done;
+>>=20
+>> Not sure what SLOF did back then. dcr-mmio-range sounds better to me.
+>>=20
+>>> I guess my "reg" property is not useful to the code?
+>>=20
+>> Right, unless the DCR "bridge" has some registers of its own. It's =
+also
+>> handy to have as a "standard" way of representing the memory used by =
+the
+>> DCR bridge, tho that does mean duplication... but then it allows you =
+to
+>> have a nice unit address.
+>=20
+> umm, was there a conclusion here? :-)
+> -jx
+>=20
+>>=20
+>>> Is there a preference over dcr-mmio-range/space or in the absence of =
+these to we should use "reg"?
+>>>=20
+>>> 2) I need 64 bit reads and writes
+>>> My intention is to have dcr_{read,write}_generic_{mmio,native} take =
+an unsigned long for value all the way down.
+>>> For the native case, this would make is similar to mtspr and mfspr.
+>>> For the MMIO case, the selected in/out size would be based on =
+"#ifdef __powerpc64__"
+>>=20
+>> As long as it doesn't break Axon...
+
+So Axon, being 64-bit, would break with the changes proposed, since it =
+is 64-bit bit and assumes 32bit accessors.
+I'll simply add 64bit accessors for now.
+
+-jx
 
 
-Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
----
-changes in v4:
-- Updated comment explaining subwindows(as mentioned by Scott).
-change in v3:
--renamed the stash attribute targets
- include/linux/iommu.h |   36 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 36 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/iommu.h b/include/linux/iommu.h
-index f3b99e1..e72f5e5 100644
---- a/include/linux/iommu.h
-+++ b/include/linux/iommu.h
-@@ -44,6 +44,34 @@ struct iommu_domain_geometry {
- 	dma_addr_t aperture_start; /* First address that can be mapped    */
- 	dma_addr_t aperture_end;   /* Last address that can be mapped     */
- 	bool force_aperture;       /* DMA only allowed in mappable range? */
-+
-+	/**
-+	 * There could be a single contiguous window tha maps the entire
-+	 * geometry or it could be split in to multiple subwindows.
-+	 * Subwindows allow for supporting physically discontiguous mappings.
-+	 * This attribute indicates number of DMA subwindows supported by
-+	 * the geometry. If there is a single window that maps the entire
-+	 * geometry, attribute must be set to "1". A value of "0" implies
-+	 * that there are 256 subwindows each of size 4K. Value other than
-+	 * "0" or "1" indicates the actual number of subwindows.
-+	 */
-+	u32 subwindows;
-+};
-+
-+/* cache stash targets */
-+#define IOMMU_ATTR_CACHE_L1 1
-+#define IOMMU_ATTR_CACHE_L2 2
-+#define IOMMU_ATTR_CACHE_L3 3
-+
-+/* This attribute corresponds to IOMMUs capable of generating
-+ * a stash transaction. A stash transaction is typically a
-+ * hardware initiated prefetch of data from memory to cache.
-+ * This attribute allows configuring stashig specific parameters
-+ * in the IOMMU hardware.
-+ */
-+struct iommu_stash_attribute {
-+	u32 	cpu;	/* cpu number */
-+	u32 	cache;	/* cache to stash to: L1,L2,L3 */
- };
- 
- struct iommu_domain {
-@@ -60,6 +88,14 @@ struct iommu_domain {
- enum iommu_attr {
- 	DOMAIN_ATTR_MAX,
- 	DOMAIN_ATTR_GEOMETRY,
-+	/* Set the IOMMU hardware stashing
-+	 * parameters.
-+	 */
-+	DOMAIN_ATTR_STASH,
-+	/* Explicity enable/disable DMA for a
-+         * particular memory window.
-+         */
-+	DOMAIN_ATTR_ENABLE,
- };
- 
- #ifdef CONFIG_IOMMU_API
--- 
-1.7.4.1
+>>=20
+>> Cheers,
+>> Ben.
+>>=20
+>>> Thoughts?
+>>>=20
+>>> -jx
+>>=20
+>>=20
