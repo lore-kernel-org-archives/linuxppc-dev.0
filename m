@@ -1,19 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2F4302C00FE
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Nov 2012 10:51:10 +1100 (EST)
-Message-ID: <1352073062.12271.268.camel@pasglop>
-Subject: Re: RFC: book3e: DCR MMIO for IBM Blue Gene/Q
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jimi Xenidis <jimix@pobox.com>
-Date: Mon, 05 Nov 2012 10:51:02 +1100
-In-Reply-To: <020B0706-E2BD-4A6C-8644-D235278655ED@pobox.com>
-References: <020B0706-E2BD-4A6C-8644-D235278655ED@pobox.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B38951@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe002.messaging.microsoft.com [213.199.154.205])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BA7DF2C01C6
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 Nov 2012 13:40:35 +1100 (EST)
+From: Jia Hongtao-B38951 <B38951@freescale.com>
+To: Tabi Timur-B04825 <B04825@freescale.com>
+Subject: RE: [linuxppc-release] [PATCH] powerpc/fsl-pci: Add PCI controller
+ ATMU PM support
+Date: Mon, 5 Nov 2012 02:40:24 +0000
+Message-ID: <412C8208B4A0464FA894C5F0C278CD5D01B2F820@039-SN1MPN1-004.039d.mgd.msft.net>
+References: <1351736348-26754-1-git-send-email-B38951@freescale.com>
+ <50927862.9080909@freescale.com>
+In-Reply-To: <50927862.9080909@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Li Yang-R58472 <r58472@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,62 +29,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2012-11-04 at 10:32 -0600, Jimi Xenidis wrote:
-> I want to use the stuff in arch/platform/sysdev/dcr.c and I have a couple of questions:
-> 1) anyone have a good devtree binding for this?
 
-Not really, I think the cell stuff was the last we looked at this.
 
-> I'm thinking:
-> 	bgq {
-> 		#address-cells = <2>;
-> 		#size-cells = <2>;
-> 		...
-> 
-> 		dcr {
-> 			reg = <0x3ff 0xe0000000 0x0 0x08000000>;
-> 			compatible = "ibm,bgq-dcr";
-> 			dcr-controller;
-> 			dcr-access-method = "mmio";
-> 			dcr-mmio-stride = <??>;
-> 		};
-> 	};
-> 
-> I'm not sure what stride I will use since I have yet to figure out the DCR numbering in play at the moment, which will be painful.
-> Also, some clarity to the following would be nice:
-> 	/* Stride is not properly defined yet, default to 0x10 for Axon */
-> 	p = of_get_property(dp, "dcr-mmio-stride", NULL);
-> 	stride = (p == NULL) ? 0x10 : *p;
->
-> 	/* XXX FIXME: Which property name is to use of the 2 following ? */
-> 	p = of_get_property(dp, "dcr-mmio-range", NULL);
-> 	if (p == NULL)
-> 		p = of_get_property(dp, "dcr-mmio-space", NULL);
-> 	if (p == NULL)
-> 		goto done;
+> -----Original Message-----
+> From: Tabi Timur-B04825
+> Sent: Thursday, November 01, 2012 9:26 PM
+> To: Jia Hongtao-B38951
+> Cc: linuxppc-dev@lists.ozlabs.org; galak@kernel.crashing.org; Wood Scott-
+> B07421; Li Yang-R58472
+> Subject: Re: [linuxppc-release] [PATCH] powerpc/fsl-pci: Add PCI
+> controller ATMU PM support
+>=20
+> Jia Hongtao wrote:
+>=20
+> > +#ifdef CONFIG_SUSPEND
+> > +static int fsl_pci_resume(struct platform_device *pdev)
+> > +{
+> > +	struct pci_controller *hose;
+> > +	struct resource pci_rsrc;
+> > +
+> > +	hose =3D pci_find_hose_for_OF_device(pdev->dev.of_node);
+> > +	of_address_to_resource(pdev->dev.of_node, 0, &pci_rsrc);
+> > +	setup_pci_atmu(hose, &pci_rsrc);
+> > +
+> > +	return 0;
+> > +}
+>=20
+> Some of these functions can fail, so they should return an error code if
+> they do.
 
-Not sure what SLOF did back then. dcr-mmio-range sounds better to me.
+I checked the of_address_to_resource function now.
+Is that necessary to check other two fuctions?
 
-> I guess my "reg" property is not useful to the code?
+>=20
+> > +#endif
+> > +
+> >  static struct platform_driver fsl_pci_driver =3D {
+> >  	.driver =3D {
+> >  		.name =3D "fsl-pci",
+> >  		.of_match_table =3D pci_ids,
+> >  	},
+> >  	.probe =3D fsl_pci_probe,
+> > +#ifdef CONFIG_SUSPEND
+> > +	.resume	=3D fsl_pci_resume,
+> > +#endif
+>=20
+> Do this instead:
+>=20
+> #ifdef CONFIG_SUSPEND
+> static int fsl_pci_resume(struct platform_device *pdev)
+> ...
+> #else
+> #define fsl_pci_resume NULL
+> #endif
 
-Right, unless the DCR "bridge" has some registers of its own. It's also
-handy to have as a "standard" way of representing the memory used by the
-DCR bridge, tho that does mean duplication... but then it allows you to
-have a nice unit address.
+Ok, I will update this.
 
-> Is there a preference over dcr-mmio-range/space or in the absence of these to we should use "reg"?
-> 
-> 2) I need 64 bit reads and writes
-> My intention is to have dcr_{read,write}_generic_{mmio,native} take an unsigned long for value all the way down.
-> For the native case, this would make is similar to mtspr and mfspr.
-> For the MMIO case, the selected in/out size would be based on "#ifdef __powerpc64__"
-
-As long as it doesn't break Axon...
-
-Cheers,
-Ben.
-
-> Thoughts?
-> 
-> -jx
-> 
+-Hongtao.
