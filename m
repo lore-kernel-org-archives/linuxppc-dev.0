@@ -1,19 +1,16 @@
-Return-Path: <micha.nelissen@Prodrive.nl>
-Received: from mail.prodrive.nl (mail.prodrive.nl [212.61.153.67])
- by ozlabs.org (Postfix) with ESMTP id A1B642C009F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 Nov 2012 20:48:07 +1100 (EST)
-From: Micha Nelissen <micha.nelissen@Prodrive.nl>
-To: 'Scott Wood' <scottwood@freescale.com>, Martijn de Gouw
- <martijn.de.gouw@prodrive.nl>
-Subject: RE: powerpc: Don't silently handle machine checks from userspace
-Date: Tue, 6 Nov 2012 09:21:37 +0000
-Message-ID: <39F93B8F6D09AC4DA45E2F19603FA69C324EEDCD@exc02.bk.prodrive.nl>
-References: <5093B318.9040305@prodrive.nl> <1351874164.5089.1@snotra>
-In-Reply-To: <1351874164.5089.1@snotra>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] powerpc/perf: Fix finding overflowed PMC in interrupt
+In-reply-to: <5098B28B.2070703@linux.vnet.ibm.com>
+References: <20121106122559.38ea906f@kryten>
+ <1352166835-27980-1-git-send-email-mikey@neuling.org>
+ <5098B28B.2070703@linux.vnet.ibm.com>
+Date: Tue, 06 Nov 2012 21:19:42 +1100
+Message-ID: <21513.1352197182@neuling.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Linux PPC dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Scott Wood [mailto:scottwood@freescale.com]
-> > Therefore I request to put this check back, and even to put the
-> > removed code at the top of the machine check handler because there is
-> > no point in trying to recover from a user space bus error anyway.
->=20
-> Why is there no point trying to recover?  For example, see MCSR_ICPERR
-> and MCSR_DCPERR_MC in machine_check_e500mc.  The machine check is just
-> letting us know that there was an error and the read-only cache got
-> dumped (i.e. it was a correctable error).
+Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
 
-Oh I overlooked those cases; those correctable errors shouldn't be bus erro=
-rs for the user space process?
+> On 11/06/2012 07:23 AM, Michael Neuling wrote:
+> 
+> > +	if (!found && pvr_version_is(PVR_POWER7)) {
+> > +		/* check active counters for special buggy p7 overflow */
+> > +		for (i = 0; i < cpuhw->n_events; ++i) {
+> > +			event = cpuhw->event[i];
+> > +			if (!event->hw.idx || is_limited_pmc(event->hw.idx))
+> >  				continue;
+> > -			val = read_pmc(i + 1);
+> > -			if (pmc_overflow(val))
+> > -				write_pmc(i + 1, 0);
+> > +			if (pmc_overflow_power7(val[event->hw.idx - 1])) {
+> 
+> 
+> I have couple of questions. 
+> 
+> Can the buggy overflow happen on any of the available counters PMC1-PMC4 ?
 
-Hmm I guess there is no simple solution then, since the "recover" function =
-also prints the kernel messages about the machine check being in kernel mod=
-e without having checked whether it really was in kernel mode. In the past =
-the user mode check was in between.
+No.  It's limited to certain events and I believe it can only happen on
+PMC2 and 4.  This code doesn't bother trying to make this distinction
+though.
 
-Micha
+> Will this approach never reset an actual user defined event (with
+> sample period < 256) ? Is this related to the counter or the event
+> which it is counting ? Just wondering if we have to do something more
+> than checking for the count < 256. Just a thought.
+
+
+I don't understand what you mean by these questions.  Can you explain a
+bit more?
+
+Mikey
