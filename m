@@ -1,12 +1,15 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Enable hardware breakpoint upon re-registering
-In-reply-to: <20121105081527.29141.11384.stgit@aravinda>
-References: <20121105081527.29141.11384.stgit@aravinda>
-Date: Wed, 07 Nov 2012 07:53:26 +1100
-Message-ID: <24260.1352235206@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, fweisbec@redhat.com
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id AA26E2C00F3
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2012 10:57:21 +1100 (EST)
+Date: Tue, 6 Nov 2012 15:51:15 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 3.7-rc4: BUG: MAX_STACK_TRACE_ENTRIES too low!
+Message-ID: <alpine.DEB.2.01.1211061543400.20449@trent.utfs.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,51 +19,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Aravinda Prasad <aravinda@linux.vnet.ibm.com> wrote:
+Hi,
 
-> On powerpc, ptrace will disable hardware breakpoint request once the
-> breakpoint is hit. It is the responsibility of the caller to set it
-> again. However, when the caller sets the hardware breakpoint again
-> using ptrace(PTRACE_SET_DEBUGREG, child_pid, 0, addr), the hardware
-> breakpoint is not enabled.
-> 
-> While gdb's approach is to unregister and re-register the hardware
-> breakpoint every time the breakpoint is hit - which is working fine,
-> this could affect other programs trying to re-register hardware
-> breakpoint without unregistering.
-> 
-> This patch enables hardware breakpoint if the caller is re-registering.
-> 
-> Signed-off-by: Aravinda Prasad <aravinda@linux.vnet.ibm.com>
+after upgrading from 3.6.0-08492-gd43 to 3.7.0-rc4 and running it for a 
+day or so, this happened:
 
-Passes my tests here and I don't think it'll break existing gdb.  So FWIW
+[27148.965634] BUG: MAX_STACK_TRACE_ENTRIES too low!
+[27148.967356] turning off the locking correctness validator.
+[27148.968967] Call Trace:
+[27148.970577] [ec633d00] [c0009064] show_stack+0x70/0x1bc (unreliable)
+[27148.972229] [ec633d40] [c0077460] save_trace+0xfc/0x114
+[27148.973855] [ec633d50] [c0078578] mark_lock+0x1b4/0x678
+[27148.975472] [ec633d80] [c007ad70] __lock_acquire+0x4b8/0x19b8
+[27148.977098] [ec633e20] [c007c2c0] lock_acquire+0x50/0x70
+[27148.978717] [ec633e40] [c004ee88] process_one_work+0x1c4/0x49c
+[27148.980302] [ec633e80] [c004f644] worker_thread+0x14c/0x400
+[27148.981866] [ec633eb0] [c0057634] kthread+0xbc/0xc0
+[27148.983385] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
 
-Acked-by: Michael Neuling <mikey@neuling.org>
+The last message is repeated several times, see below. The machine 
+(PowerPC G4) is still up & running and no ill behaviour can be seen for
+now. I still wonder if this would be a sign for trouble...
 
-Thanks!
+Christian.
 
-> ---
->  arch/powerpc/kernel/ptrace.c |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index 79d8e56..09371d0 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -952,6 +952,10 @@ int ptrace_set_debugreg(struct task_struct *task, unsigned long addr,
->  		arch_bp_generic_fields(data &
->  					(DABR_DATA_WRITE | DABR_DATA_READ),
->  							&attr.bp_type);
-> +
-> +		/* Enable breakpoint */
-> +		attr.disabled = false;
-> +
->  		ret =  modify_user_hw_breakpoint(bp, &attr);
->  		if (ret) {
->  			ptrace_put_breakpoints(task);
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+[27148.984860] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.986259] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.987583] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.988854] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.990086] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.991305] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.992495] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.993668] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.994809] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.995947] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.997070] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.998182] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27148.999282] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.000365] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.001436] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.002450] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.003417] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.004378] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.005324] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.006260] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.007181] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.008087] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.008972] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.009833] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.010656] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.011443] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.012203] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.012935] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.013642] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.014314] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.014951] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.015568] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.016168] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.016744] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.017293] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.017814] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.018313] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.018796] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.019257] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.019701] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.020120] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.020519] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.020900] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.021283] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.021880] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.022275] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.022659] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.023043] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.023427] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.023810] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.024191] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.024573] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.024955] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.025339] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.025723] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+[27149.026106] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+
+$ zgrep DEBUG /proc/config.gz | grep =y
+CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
+CONFIG_SLUB_DEBUG=y
+CONFIG_HAVE_DMA_API_DEBUG=y
+CONFIG_DEBUG_KERNEL=y
+CONFIG_DEBUG_SHIRQ=y
+CONFIG_HAVE_DEBUG_KMEMLEAK=y
+CONFIG_DEBUG_RT_MUTEXES=y
+CONFIG_DEBUG_PI_LIST=y
+CONFIG_DEBUG_SPINLOCK=y
+CONFIG_DEBUG_MUTEXES=y
+CONFIG_DEBUG_LOCK_ALLOC=y
+CONFIG_DEBUG_ATOMIC_SLEEP=y
+CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
+CONFIG_DEBUG_BUGVERBOSE=y
+CONFIG_DEBUG_MEMORY_INIT=y
+CONFIG_DEBUG_STACKOVERFLOW=y
+CONFIG_DEBUGGER=y
+
+-- 
+BOFH excuse #248:
+
+Too much radiation coming from the soil.
