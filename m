@@ -1,15 +1,12 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id AA26E2C00F3
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2012 10:57:21 +1100 (EST)
-Date: Tue, 6 Nov 2012 15:51:15 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: 3.7-rc4: BUG: MAX_STACK_TRACE_ENTRIES too low!
-Message-ID: <alpine.DEB.2.01.1211061543400.20449@trent.utfs.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc/pseries: Allow firmware features to match partial
+ strings
+Date: Wed,  7 Nov 2012 11:49:15 +1100
+Message-Id: <1352249356-29671-1-git-send-email-mikey@neuling.org>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,107 +16,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+This allows firmware_features_table names to add a '*' at the end so that only
+partial strings are matched.
 
-after upgrading from 3.6.0-08492-gd43 to 3.7.0-rc4 and running it for a 
-day or so, this happened:
+When a '*' is added, only upto the '*' is matched when setting firmware feature
+bits.
 
-[27148.965634] BUG: MAX_STACK_TRACE_ENTRIES too low!
-[27148.967356] turning off the locking correctness validator.
-[27148.968967] Call Trace:
-[27148.970577] [ec633d00] [c0009064] show_stack+0x70/0x1bc (unreliable)
-[27148.972229] [ec633d40] [c0077460] save_trace+0xfc/0x114
-[27148.973855] [ec633d50] [c0078578] mark_lock+0x1b4/0x678
-[27148.975472] [ec633d80] [c007ad70] __lock_acquire+0x4b8/0x19b8
-[27148.977098] [ec633e20] [c007c2c0] lock_acquire+0x50/0x70
-[27148.978717] [ec633e40] [c004ee88] process_one_work+0x1c4/0x49c
-[27148.980302] [ec633e80] [c004f644] worker_thread+0x14c/0x400
-[27148.981866] [ec633eb0] [c0057634] kthread+0xbc/0xc0
-[27148.983385] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+This is useful for the matching best energy feature.
 
-The last message is repeated several times, see below. The machine 
-(PowerPC G4) is still up & running and no ill behaviour can be seen for
-now. I still wonder if this would be a sign for trouble...
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+cc: Linux PPC dev <linuxppc-dev@ozlabs.org>
+---
+ arch/powerpc/platforms/pseries/firmware.c |   20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-Christian.
-
-[27148.984860] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.986259] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.987583] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.988854] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.990086] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.991305] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.992495] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.993668] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.994809] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.995947] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.997070] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.998182] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27148.999282] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.000365] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.001436] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.002450] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.003417] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.004378] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.005324] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.006260] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.007181] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.008087] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.008972] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.009833] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.010656] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.011443] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.012203] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.012935] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.013642] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.014314] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.014951] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.015568] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.016168] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.016744] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.017293] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.017814] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.018313] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.018796] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.019257] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.019701] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.020120] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.020519] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.020900] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.021283] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.021880] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.022275] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.022659] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.023043] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.023427] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.023810] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.024191] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.024573] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.024955] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.025339] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.025723] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-[27149.026106] [ec633f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-
-$ zgrep DEBUG /proc/config.gz | grep =y
-CONFIG_ARCH_SUPPORTS_DEBUG_PAGEALLOC=y
-CONFIG_SLUB_DEBUG=y
-CONFIG_HAVE_DMA_API_DEBUG=y
-CONFIG_DEBUG_KERNEL=y
-CONFIG_DEBUG_SHIRQ=y
-CONFIG_HAVE_DEBUG_KMEMLEAK=y
-CONFIG_DEBUG_RT_MUTEXES=y
-CONFIG_DEBUG_PI_LIST=y
-CONFIG_DEBUG_SPINLOCK=y
-CONFIG_DEBUG_MUTEXES=y
-CONFIG_DEBUG_LOCK_ALLOC=y
-CONFIG_DEBUG_ATOMIC_SLEEP=y
-CONFIG_DEBUG_LOCKING_API_SELFTESTS=y
-CONFIG_DEBUG_BUGVERBOSE=y
-CONFIG_DEBUG_MEMORY_INIT=y
-CONFIG_DEBUG_STACKOVERFLOW=y
-CONFIG_DEBUGGER=y
-
+diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
+index 0b0eff0..448c053 100644
+--- a/arch/powerpc/platforms/pseries/firmware.c
++++ b/arch/powerpc/platforms/pseries/firmware.c
+@@ -33,6 +33,11 @@ typedef struct {
+     char * name;
+ } firmware_feature_t;
+ 
++/*
++ * The names in this table match names in rtas/ibm,hypertas-functions.  If the
++ * entry ends in a '*', only upto the '*' is matched.  Otherwise the entire
++ * string must match.
++ */
+ static __initdata firmware_feature_t
+ firmware_features_table[FIRMWARE_MAX_FEATURES] = {
+ 	{FW_FEATURE_PFT,		"hcall-pft"},
+@@ -71,9 +76,20 @@ void __init fw_feature_init(const char *hypertas, unsigned long len)
+ 
+ 	for (s = hypertas; s < hypertas + len; s += strlen(s) + 1) {
+ 		for (i = 0; i < FIRMWARE_MAX_FEATURES; i++) {
++			const char *name = firmware_features_table[i].name;
++			size_t size;
+ 			/* check value against table of strings */
+-			if (!firmware_features_table[i].name ||
+-			    strcmp(firmware_features_table[i].name, s))
++			if (!name)
++				continue;
++			/*
++			 * If there is a '*' at the end of name, only check
++			 * upto there
++			 */
++			size = strlen(name);
++			if (size && name[size - 1] == '*') {
++				if (strncmp(name, s, size - 1))
++					continue;
++			} else if (strcmp(name, s))
+ 				continue;
+ 
+ 			/* we have a match */
 -- 
-BOFH excuse #248:
-
-Too much radiation coming from the soil.
+1.7.9.5
