@@ -1,21 +1,38 @@
-Return-Path: <B04825@freescale.com>
-Received: from db3outboundpool.messaging.microsoft.com
- (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5B6292C0180
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Nov 2012 02:58:01 +1100 (EST)
-Message-ID: <509A84FA.7050809@freescale.com>
-Date: Wed, 7 Nov 2012 09:57:46 -0600
-From: Timur Tabi <b04825@freescale.com>
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e4.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EBB582C00B9
+ for <linuxppc-dev@ozlabs.org>; Thu,  8 Nov 2012 06:17:39 +1100 (EST)
+Received: from /spool/local
+ by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 7 Nov 2012 14:17:35 -0500
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E08506E803C
+ for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2012 14:17:32 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qA7JHWUr62914624
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Nov 2012 14:17:32 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qA7JHV8e010578
+ for <linuxppc-dev@ozlabs.org>; Wed, 7 Nov 2012 14:17:32 -0500
+Date: Wed, 7 Nov 2012 11:18:47 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
+ Ingo Molnar <mingo@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Anton Blanchard <anton@au1.ibm.com>, robert.richter@amd.com
+Subject: [PATCH 2/4] perf/Power7: Use macros to identify perf events
+Message-ID: <20121107191846.GB16211@us.ibm.com>
+References: <20121107191818.GA16211@us.ibm.com>
 MIME-Version: 1.0
-To: Jia Hongtao <B38951@freescale.com>
-Subject: Re: [PATCH][V2] powerpc/fsl-pci: Add PCI controller ATMU PM support
-References: <1352275806-5754-1-git-send-email-B38951@freescale.com>
-In-Reply-To: <1352275806-5754-1-git-send-email-B38951@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20121107191818.GA16211@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,91 +42,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jia Hongtao wrote:
-> Power supply for PCI controller ATMU registers is off when system go to
-> deep-sleep state. So ATMU registers should be re-setup during PCI
-> controllers resume from sleep.
-> 
-> Signed-off-by: Jia Hongtao <B38951@freescale.com>
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
->  arch/powerpc/sysdev/fsl_pci.c |   37 +++++++++++++++++++++++++++++++++++--
->  1 files changed, 35 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-> index ffb93ae..e6ab952 100644
-> --- a/arch/powerpc/sysdev/fsl_pci.c
-> +++ b/arch/powerpc/sysdev/fsl_pci.c
-> @@ -89,7 +89,7 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
->  	return 0;
->  }
->  
-> -static int __init setup_one_atmu(struct ccsr_pci __iomem *pci,
-> +static int setup_one_atmu(struct ccsr_pci __iomem *pci,
->  	unsigned int index, const struct resource *res,
->  	resource_size_t offset)
->  {
-> @@ -126,7 +126,7 @@ static int __init setup_one_atmu(struct ccsr_pci __iomem *pci,
->  }
->  
->  /* atmu setup for fsl pci/pcie controller */
-> -static void __init setup_pci_atmu(struct pci_controller *hose,
-> +static void setup_pci_atmu(struct pci_controller *hose,
->  				  struct resource *rsrc)
->  {
->  	struct ccsr_pci __iomem *pci;
-> @@ -902,9 +902,42 @@ static int __devinit fsl_pci_probe(struct platform_device *pdev)
->  	return 0;
->  }
->  
-> +#ifdef CONFIG_PM
-> +static int fsl_pci_resume(struct device *dev)
-> +{
-> +	struct pci_controller *hose;
-> +	struct resource pci_rsrc;
-> +
-> +	hose = pci_find_hose_for_OF_device(dev->of_node);
-> +	if (!hose)
-> +		return -ENODEV;
-> +
-> +	if (of_address_to_resource(dev->of_node, 0, &pci_rsrc)) {
-> +		pr_warning("Get pci register base failed");
-> +		return -ENOMEM;
 
-dev_err
+>From 8a0dbd8f3fce2834292efa50c15ca64d4f6a6536 Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Wed, 7 Nov 2012 09:36:14 -0800
+Subject: [PATCH 2/4] perf/Power7: Use macros to identify perf events
 
-and it's not -ENOMEM.  ENOMEM means that you've run out of memory.  This
-should also be ENODEV.
+Define and use macros to identify perf events codes This would make it
+easier and more readable when these event codes need to be used in more
+than one place.
 
-> +	}
-> +
-> +	setup_pci_atmu(hose, &pci_rsrc);
-> +
-> +	return 0;
-> +}
-> +
-> +static const struct dev_pm_ops pci_pm_ops = {
-> +	.resume = fsl_pci_resume,
-> +};
-> +
-> +#define PCI_PM_OPS (&pci_pm_ops)
-> +
-> +#else
-> +
-> +#define PCI_PM_OPS NULL
-> +
-> +#endif
-> +
->  static struct platform_driver fsl_pci_driver = {
->  	.driver = {
->  		.name = "fsl-pci",
-> +		.pm = PCI_PM_OPS,
->  		.of_match_table = pci_ids,
->  	},
->  	.probe = fsl_pci_probe,
-> 
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/power7-pmu.c |   25 +++++++++++++++++--------
+ 1 files changed, 17 insertions(+), 8 deletions(-)
 
-
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 441af08..256db4f 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -295,15 +295,24 @@ static void power7_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+ 		mmcr[1] &= ~(0xffUL << MMCR1_PMCSEL_SH(pmc));
+ }
+ 
++#define	PM_CYC				0x1e
++#define	PM_GCT_NOSLOT_CYC		0x100f8
++#define	PM_CMPLU_STALL			0x4000a
++#define	PM_INST_CMPL			0x2
++#define	PM_LD_REF_L1			0xc880
++#define	PM_LD_MISS_L1			0x400f0
++#define	PM_BRU_FIN			0x10068
++#define	PM_BRU_MPRED			0x400f6
++
+ static int power7_generic_events[] = {
+-	[PERF_COUNT_HW_CPU_CYCLES] = 0x1e,
+-	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] = 0x100f8, /* GCT_NOSLOT_CYC */
+-	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] = 0x4000a,  /* CMPLU_STALL */
+-	[PERF_COUNT_HW_INSTRUCTIONS] = 2,
+-	[PERF_COUNT_HW_CACHE_REFERENCES] = 0xc880,	/* LD_REF_L1_LSU*/
+-	[PERF_COUNT_HW_CACHE_MISSES] = 0x400f0,		/* LD_MISS_L1	*/
+-	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] = 0x10068,	/* BRU_FIN	*/
+-	[PERF_COUNT_HW_BRANCH_MISSES] = 0x400f6,	/* BR_MPRED	*/
++	[PERF_COUNT_HW_CPU_CYCLES] = 			PM_CYC,
++	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] = 	PM_GCT_NOSLOT_CYC,
++	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] = 	PM_CMPLU_STALL,
++	[PERF_COUNT_HW_INSTRUCTIONS] = 			PM_INST_CMPL,
++	[PERF_COUNT_HW_CACHE_REFERENCES] = 		PM_LD_REF_L1,
++	[PERF_COUNT_HW_CACHE_MISSES] = 			PM_LD_MISS_L1,
++	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] = 		PM_BRU_FIN,
++	[PERF_COUNT_HW_BRANCH_MISSES] = 		PM_BRU_MPRED,
+ };
+ 
+ #define C(x)	PERF_COUNT_HW_CACHE_##x
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+1.7.1
