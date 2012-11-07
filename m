@@ -1,21 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id CCFA32C00DB
- for <linuxppc-dev@ozlabs.org>; Wed,  7 Nov 2012 16:30:06 +1100 (EST)
-Date: Wed, 7 Nov 2012 16:30:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH 1/2] powerpc/pseries: Allow firmware features to match
- partial strings
-Message-Id: <20121107163000.2d5c347e182ee8072eb78f7c@canb.auug.org.au>
-In-Reply-To: <1352249356-29671-1-git-send-email-mikey@neuling.org>
-References: <1352249356-29671-1-git-send-email-mikey@neuling.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Wed__7_Nov_2012_16_30_00_+1100_tTd+rXSzW3E/3TXJ"
-Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>
+Return-Path: <B38951@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 649E02C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 Nov 2012 19:54:15 +1100 (EST)
+From: Jia Hongtao <B38951@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>
+Subject: [PATCH][V2] powerpc/fsl-pci: Add PCI controller ATMU PM support
+Date: Wed, 7 Nov 2012 16:10:06 +0800
+Message-ID: <1352275806-5754-1-git-send-email-B38951@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: B07421@freescale.com, B04825@freescale.com, b38951@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Wed__7_Nov_2012_16_30_00_+1100_tTd+rXSzW3E/3TXJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Power supply for PCI controller ATMU registers is off when system go to
+deep-sleep state. So ATMU registers should be re-setup during PCI
+controllers resume from sleep.
 
-Hi Mikey,
+Signed-off-by: Jia Hongtao <B38951@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_pci.c |   37 +++++++++++++++++++++++++++++++++++--
+ 1 files changed, 35 insertions(+), 2 deletions(-)
 
-On Wed,  7 Nov 2012 11:49:15 +1100 Michael Neuling <mikey@neuling.org> wrot=
-e:
->
-> This allows firmware_features_table names to add a '*' at the end so that=
- only
-> partial strings are matched.
->=20
-> When a '*' is added, only upto the '*' is matched when setting firmware f=
-eature
-> bits.
->=20
-> This is useful for the matching best energy feature.
->=20
-> Signed-off-by: Michael Neuling <mikey@neuling.org>
-> cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-> cc: Linux PPC dev <linuxppc-dev@ozlabs.org>
-
-Reviewed-by: Stephen Rothwell <sfr@canb.auug.org.au>
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Wed__7_Nov_2012_16_30_00_+1100_tTd+rXSzW3E/3TXJ
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJQmfHYAAoJEECxmPOUX5FEgdQP/0FzmDTyNV1lrvaQKixz/nq7
-HJja0rcAliDq8glxouk9R0cY+oc/loceyI81phraaN3AEq/3+iFxY/5fE5EPYuUu
-m2+KIwdsZEDGMgSMBk5A6CJUA9OggtMeitu4PWP1K6zco3fbZRABdtjtVDbNUlZ2
-JVpcnuq10PiIEIyV7XPo9ZR0jzxvBZXFJXNKKHSyIk040Y2kdxnhFn7Txc//i/7e
-7dGcv+QvvHBVJYm39GdfMpr2ZarN3Fos9yKmhZF+MxCu/A/YH+lXHv7UPX4X5UYR
-Mpxf37odccHwYS7BSWxAOgpAGhv/Y5LEerL4Adx21i95zz5C2JCPfgasb4tBkbrl
-5+RbMX8RXd9KT6evE0dpl1llWQEEzUrM2ijdcNu182bt4FpJqlk4T3zCgMyLpd+E
-562CBRHiAhgbKG40muqDN7+V9RL8uFu6RrYgMmqof2d/Dv7GjeQ5y7GR3zsnHLFa
-HGuDDMUE6D8NXc0tICaIsdLe6nn/hJ3Dfns1aBG9F4J3IG0ItAVCpg4mcQvraAve
-HJN8fkiQSzMJzjp7YJQrNnEGjMkRlyBOoGVo7k5Nb4P5lz2/fMcnc0VYQDZZIZkW
-/dT/8Ys/402SbHJgK9Vw4mb8nh3zzcykfy8Bvmlrj2byhYheuos4GWdr7SEvOO7f
-YeoO4h6WbsnAGj0dkSGY
-=+hiZ
------END PGP SIGNATURE-----
-
---Signature=_Wed__7_Nov_2012_16_30_00_+1100_tTd+rXSzW3E/3TXJ--
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index ffb93ae..e6ab952 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -89,7 +89,7 @@ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+ 	return 0;
+ }
+ 
+-static int __init setup_one_atmu(struct ccsr_pci __iomem *pci,
++static int setup_one_atmu(struct ccsr_pci __iomem *pci,
+ 	unsigned int index, const struct resource *res,
+ 	resource_size_t offset)
+ {
+@@ -126,7 +126,7 @@ static int __init setup_one_atmu(struct ccsr_pci __iomem *pci,
+ }
+ 
+ /* atmu setup for fsl pci/pcie controller */
+-static void __init setup_pci_atmu(struct pci_controller *hose,
++static void setup_pci_atmu(struct pci_controller *hose,
+ 				  struct resource *rsrc)
+ {
+ 	struct ccsr_pci __iomem *pci;
+@@ -902,9 +902,42 @@ static int __devinit fsl_pci_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM
++static int fsl_pci_resume(struct device *dev)
++{
++	struct pci_controller *hose;
++	struct resource pci_rsrc;
++
++	hose = pci_find_hose_for_OF_device(dev->of_node);
++	if (!hose)
++		return -ENODEV;
++
++	if (of_address_to_resource(dev->of_node, 0, &pci_rsrc)) {
++		pr_warning("Get pci register base failed");
++		return -ENOMEM;
++	}
++
++	setup_pci_atmu(hose, &pci_rsrc);
++
++	return 0;
++}
++
++static const struct dev_pm_ops pci_pm_ops = {
++	.resume = fsl_pci_resume,
++};
++
++#define PCI_PM_OPS (&pci_pm_ops)
++
++#else
++
++#define PCI_PM_OPS NULL
++
++#endif
++
+ static struct platform_driver fsl_pci_driver = {
+ 	.driver = {
+ 		.name = "fsl-pci",
++		.pm = PCI_PM_OPS,
+ 		.of_match_table = pci_ids,
+ 	},
+ 	.probe = fsl_pci_probe,
+-- 
+1.7.5.1
