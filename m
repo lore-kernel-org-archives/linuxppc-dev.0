@@ -1,10 +1,11 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/2] powerpc/pseries: Allow firmware features to match partial
- strings
-Date: Wed,  7 Nov 2012 11:49:15 +1100
-Message-Id: <1352249356-29671-1-git-send-email-mikey@neuling.org>
+Subject: [PATCH 2/2] powerpc/pseries: Cleanup best_energy_hcall detection
+Date: Wed,  7 Nov 2012 11:49:16 +1100
+Message-Id: <1352249356-29671-2-git-send-email-mikey@neuling.org>
+In-Reply-To: <1352249356-29671-1-git-send-email-mikey@neuling.org>
+References: <1352249356-29671-1-git-send-email-mikey@neuling.org>
 Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>,
  Michael Neuling <mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -16,59 +17,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This allows firmware_features_table names to add a '*' at the end so that only
-partial strings are matched.
-
-When a '*' is added, only upto the '*' is matched when setting firmware feature
-bits.
-
-This is useful for the matching best energy feature.
+Currently we search for the best_energy hcall using a custom function.  Move
+this to using the firmware_feature_table.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 cc: Linux PPC dev <linuxppc-dev@ozlabs.org>
 ---
- arch/powerpc/platforms/pseries/firmware.c |   20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/firmware.h             |    4 ++-
+ arch/powerpc/platforms/pseries/firmware.c       |    1 +
+ arch/powerpc/platforms/pseries/pseries_energy.c |   37 ++---------------------
+ 3 files changed, 6 insertions(+), 36 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index ad0b751..ecec46a 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -49,6 +49,7 @@
+ #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
+ #define FW_FEATURE_OPAL		ASM_CONST(0x0000000010000000)
+ #define FW_FEATURE_OPALv2	ASM_CONST(0x0000000020000000)
++#define FW_FEATURE_BEST_ENERGY	ASM_CONST(0x0000000040000000)
+ 
+ #ifndef __ASSEMBLY__
+ 
+@@ -62,7 +63,8 @@ enum {
+ 		FW_FEATURE_VIO | FW_FEATURE_RDMA | FW_FEATURE_LLAN |
+ 		FW_FEATURE_BULK_REMOVE | FW_FEATURE_XDABR |
+ 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
+-		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO,
++		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO | 
++	        FW_FEATURE_BEST_ENERGY,
+ 	FW_FEATURE_PSERIES_ALWAYS = 0,
+ 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL | FW_FEATURE_OPALv2,
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
 diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index 0b0eff0..448c053 100644
+index 448c053..5bc10cb 100644
 --- a/arch/powerpc/platforms/pseries/firmware.c
 +++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -33,6 +33,11 @@ typedef struct {
-     char * name;
- } firmware_feature_t;
+@@ -61,6 +61,7 @@ firmware_features_table[FIRMWARE_MAX_FEATURES] = {
+ 	{FW_FEATURE_MULTITCE,		"hcall-multi-tce"},
+ 	{FW_FEATURE_SPLPAR,		"hcall-splpar"},
+ 	{FW_FEATURE_VPHN,		"hcall-vphn"},
++	{FW_FEATURE_BEST_ENERGY,	"hcall-best-energy-1*"},
+ };
  
-+/*
-+ * The names in this table match names in rtas/ibm,hypertas-functions.  If the
-+ * entry ends in a '*', only upto the '*' is matched.  Otherwise the entire
-+ * string must match.
-+ */
- static __initdata firmware_feature_t
- firmware_features_table[FIRMWARE_MAX_FEATURES] = {
- 	{FW_FEATURE_PFT,		"hcall-pft"},
-@@ -71,9 +76,20 @@ void __init fw_feature_init(const char *hypertas, unsigned long len)
+ /* Build up the firmware features bitmask using the contents of
+diff --git a/arch/powerpc/platforms/pseries/pseries_energy.c b/arch/powerpc/platforms/pseries/pseries_energy.c
+index af281dc..a91e6da 100644
+--- a/arch/powerpc/platforms/pseries/pseries_energy.c
++++ b/arch/powerpc/platforms/pseries/pseries_energy.c
+@@ -21,6 +21,7 @@
+ #include <asm/cputhreads.h>
+ #include <asm/page.h>
+ #include <asm/hvcall.h>
++#include <asm/firmware.h>
  
- 	for (s = hypertas; s < hypertas + len; s += strlen(s) + 1) {
- 		for (i = 0; i < FIRMWARE_MAX_FEATURES; i++) {
-+			const char *name = firmware_features_table[i].name;
-+			size_t size;
- 			/* check value against table of strings */
--			if (!firmware_features_table[i].name ||
--			    strcmp(firmware_features_table[i].name, s))
-+			if (!name)
-+				continue;
-+			/*
-+			 * If there is a '*' at the end of name, only check
-+			 * upto there
-+			 */
-+			size = strlen(name);
-+			if (size && name[size - 1] == '*') {
-+				if (strncmp(name, s, size - 1))
-+					continue;
-+			} else if (strcmp(name, s))
- 				continue;
  
- 			/* we have a match */
+ #define MODULE_VERS "1.0"
+@@ -32,40 +33,6 @@ static int sysfs_entries;
+ 
+ /* Helper routines */
+ 
+-/*
+- * Routine to detect firmware support for hcall
+- * return 1 if H_BEST_ENERGY is supported
+- * else return 0
+- */
+-
+-static int check_for_h_best_energy(void)
+-{
+-	struct device_node *rtas = NULL;
+-	const char *hypertas, *s;
+-	int length;
+-	int rc = 0;
+-
+-	rtas = of_find_node_by_path("/rtas");
+-	if (!rtas)
+-		return 0;
+-
+-	hypertas = of_get_property(rtas, "ibm,hypertas-functions", &length);
+-	if (!hypertas) {
+-		of_node_put(rtas);
+-		return 0;
+-	}
+-
+-	/* hypertas will have list of strings with hcall names */
+-	for (s = hypertas; s < hypertas + length; s += strlen(s) + 1) {
+-		if (!strncmp("hcall-best-energy-1", s, 19)) {
+-			rc = 1; /* Found the string */
+-			break;
+-		}
+-	}
+-	of_node_put(rtas);
+-	return rc;
+-}
+-
+ /* Helper Routines to convert between drc_index to cpu numbers */
+ 
+ static u32 cpu_to_drc_index(int cpu)
+@@ -262,7 +229,7 @@ static int __init pseries_energy_init(void)
+ 	int cpu, err;
+ 	struct device *cpu_dev;
+ 
+-	if (!check_for_h_best_energy()) {
++	if (!firmware_has_feature(FW_FEATURE_BEST_ENERGY)) {
+ 		printk(KERN_INFO "Hypercall H_BEST_ENERGY not supported\n");
+ 		return 0;
+ 	}
 -- 
 1.7.9.5
