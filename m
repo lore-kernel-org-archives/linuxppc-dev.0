@@ -1,13 +1,21 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Add POWER8 architected mode to cputable
-In-reply-to: <1351661656-6986-4-git-send-email-mikey@neuling.org>
-References: <1351661656-6986-1-git-send-email-mikey@neuling.org>
- <1351661656-6986-4-git-send-email-mikey@neuling.org>
-Date: Fri, 09 Nov 2012 17:26:42 +1100
-Message-ID: <30282.1352442402@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <paubert@iram.es>
+Received: from torres.puc.rediris.es (unknown [IPv6:2001:720:418:ca00::9])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E951D2C01FA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2012 19:58:28 +1100 (EST)
+Date: Fri, 9 Nov 2012 09:58:15 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH 00/14] powerpc: Add support for POWER8 relocation on
+ exceptions
+Message-ID: <20121109085815.GB13221@visitor2.iram.es>
+References: <1352441953-29096-1-git-send-email-mikey@neuling.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1352441953-29096-1-git-send-email-mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,33 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A PVR of 0x0F000004 means we are arch v2.07 complicate ie, POWER8.
-    
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+On Fri, Nov 09, 2012 at 05:18:58PM +1100, Michael Neuling wrote:
+> This set of patches adds support for taking exceptions with the MMU on which is
+> supported by POWER8.
+> 
+> A new set of exception vectors is added at 0xc000_0000_0000_4xxx.  When the HW
+> takes us here, MSR IR/DR will be set already and we no longer need a costly
+> RFID to turn the MMU back on again.
+> 
+> The original 0x0 based exception vectors remain for when the HW can't leave the
+> MMU on.  Examples of this are when we can't trust the current the MMU mappings,
+                                                                ^^^
+Extra "the" (here and in a couple of patches). 
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 216ff84..75a3d71 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -435,6 +435,21 @@ static struct cpu_spec __initdata cpu_specs[] = {
- 		.cpu_restore		= __restore_cpu_power7,
- 		.platform		= "power7",
- 	},
-+	{	/* 2.07-compliant processor, i.e. Power8 "architected" mode */
-+		.pvr_mask		= 0xffffffff,
-+		.pvr_value		= 0x0f000004,
-+		.cpu_name		= "POWER8 (architected)",
-+		.cpu_features		= CPU_FTRS_POWER8,
-+		.cpu_user_features	= COMMON_USER_POWER8,
-+		.mmu_features		= MMU_FTRS_POWER8,
-+		.icache_bsize		= 128,
-+		.dcache_bsize		= 128,
-+		.oprofile_type		= PPC_OPROFILE_POWER4,
-+		.oprofile_cpu_type	= "ppc64/ibm-compat-v1",
-+		.cpu_setup		= __setup_cpu_power8,
-+		.cpu_restore		= __restore_cpu_power8,
-+		.platform		= "power8",
-+	},
- 	{	/* Power7 */
- 		.pvr_mask		= 0xffff0000,
- 		.pvr_value		= 0x003f0000,
+Can't do much more since I don't have any hardware past G5, but the series
+looks nice and avoiding transient excursions to real mode is a good thing.
+
+	Gabriel
+
+
+> like when we are changing from guest to hypervisor (HV 0 -> 1) or when the MMU
+> was off already.  In these cases the HW will take us to the original 0x0 based
+> exception vectors with the MMU off as before.
+> 
+> The core of these patches were originally written by Matt Evans.  
+> 
+> Ian Munsie (5):
+>   powerpc: Add set_mode hcall
+>   powerpc: Add wrappers to enable/disable relocation on exceptions
+>   powerpc: Move get_longbusy_msecs into hvcall.h and remove duplicate
+>     function
+>   powerpc: Enable relocation on during exceptions at boot
+>   powerpc: Disable relocation on exceptions when kexecing
+> 
+> Michael Neuling (9):
+>   powerpc: Add POWER8 architected mode to cputable
+>   powerpc: Whitespace changes in exception64s.S
+>   powerpc: Remove unessessary 0x3000 location enforcement
+>   powerpc: Make load_hander handle upto 64k offset
+>   powerpc: Turn syscall handler into macros
+>   powerpc: Add new macros needed for relocation on exceptions
+>   powerpc: Add relocation on exception vector handlers
+>   powerpc: Move initial mfspr LPCR out of __init_LPCR
+>   powerpc: Setup relocation on exceptions for bare metal systems
+> 
+>  arch/powerpc/include/asm/exception-64s.h        |   97 ++++++-
+>  arch/powerpc/include/asm/firmware.h             |    4 +-
+>  arch/powerpc/include/asm/hvcall.h               |   23 +-
+>  arch/powerpc/include/asm/reg.h                  |    2 +
+>  arch/powerpc/kernel/cpu_setup_power.S           |    8 +-
+>  arch/powerpc/kernel/cputable.c                  |   15 ++
+>  arch/powerpc/kernel/exceptions-64s.S            |  306 +++++++++++++++++++----
+>  arch/powerpc/kernel/head_64.S                   |    3 +-
+>  arch/powerpc/kernel/setup_64.c                  |    5 +
+>  arch/powerpc/platforms/pseries/firmware.c       |    1 +
+>  arch/powerpc/platforms/pseries/plpar_wrappers.h |   36 +++
+>  arch/powerpc/platforms/pseries/setup.c          |   71 ++++++
+>  drivers/infiniband/hw/ehca/hcp_if.c             |   20 --
+>  drivers/net/ethernet/ibm/ehea/ehea_phyp.h       |   20 --
+>  14 files changed, 516 insertions(+), 95 deletions(-)
+> 
+> -- 
+> 1.7.9.5
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
