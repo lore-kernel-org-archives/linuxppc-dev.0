@@ -1,9 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 10/14] powerpc: Add set_mode hcall
-Date: Fri,  9 Nov 2012 17:19:08 +1100
-Message-Id: <1352441953-29096-11-git-send-email-mikey@neuling.org>
+Subject: [PATCH 10/12] powerpc: Move get_longbusy_msecs into hvcall.h and
+ remove duplicate function
+Date: Fri,  9 Nov 2012 17:19:09 +1100
+Message-Id: <1352441953-29096-12-git-send-email-mikey@neuling.org>
 In-Reply-To: <1352441953-29096-1-git-send-email-mikey@neuling.org>
 References: <1352441953-29096-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -19,81 +20,109 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-This new hcall in POWER8 is used to set various resource mode registers.
-eg. it can set address translation mode on interrupt (note: partition wide
-scope)
+I am going to use this in the next patch, better to have this code in
+one place rather than three.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/firmware.h             |    4 +++-
- arch/powerpc/include/asm/hvcall.h               |    3 ++-
- arch/powerpc/platforms/pseries/firmware.c       |    1 +
- arch/powerpc/platforms/pseries/plpar_wrappers.h |    6 ++++++
- 4 files changed, 12 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/hvcall.h         |   20 ++++++++++++++++++++
+ drivers/infiniband/hw/ehca/hcp_if.c       |   20 --------------------
+ drivers/net/ethernet/ibm/ehea/ehea_phyp.h |   20 --------------------
+ 3 files changed, 20 insertions(+), 40 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
-index ad0b751..973cc3b 100644
---- a/arch/powerpc/include/asm/firmware.h
-+++ b/arch/powerpc/include/asm/firmware.h
-@@ -49,6 +49,7 @@
- #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
- #define FW_FEATURE_OPAL		ASM_CONST(0x0000000010000000)
- #define FW_FEATURE_OPALv2	ASM_CONST(0x0000000020000000)
-+#define FW_FEATURE_SET_MODE	ASM_CONST(0x0000000040000000)
- 
- #ifndef __ASSEMBLY__
- 
-@@ -62,7 +63,8 @@ enum {
- 		FW_FEATURE_VIO | FW_FEATURE_RDMA | FW_FEATURE_LLAN |
- 		FW_FEATURE_BULK_REMOVE | FW_FEATURE_XDABR |
- 		FW_FEATURE_MULTITCE | FW_FEATURE_SPLPAR | FW_FEATURE_LPAR |
--		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO,
-+		FW_FEATURE_CMO | FW_FEATURE_VPHN | FW_FEATURE_XCMO |
-+		FW_FEATURE_SET_MODE,
- 	FW_FEATURE_PSERIES_ALWAYS = 0,
- 	FW_FEATURE_POWERNV_POSSIBLE = FW_FEATURE_OPAL | FW_FEATURE_OPALv2,
- 	FW_FEATURE_POWERNV_ALWAYS = 0,
 diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 7a86706..a3d26d8 100644
+index a3d26d8..0975e5c 100644
 --- a/arch/powerpc/include/asm/hvcall.h
 +++ b/arch/powerpc/include/asm/hvcall.h
-@@ -267,7 +267,8 @@
- #define H_RANDOM		0x300
- #define H_COP			0x304
- #define H_GET_MPP_X		0x314
--#define MAX_HCALL_OPCODE	H_GET_MPP_X
-+#define H_SET_MODE		0x31C
-+#define MAX_HCALL_OPCODE	H_SET_MODE
+@@ -356,6 +356,26 @@ struct hvcall_mpp_x_data {
  
- #ifndef __ASSEMBLY__
+ int h_get_mpp_x(struct hvcall_mpp_x_data *mpp_x_data);
  
-diff --git a/arch/powerpc/platforms/pseries/firmware.c b/arch/powerpc/platforms/pseries/firmware.c
-index 0b0eff0..7b56118 100644
---- a/arch/powerpc/platforms/pseries/firmware.c
-+++ b/arch/powerpc/platforms/pseries/firmware.c
-@@ -56,6 +56,7 @@ firmware_features_table[FIRMWARE_MAX_FEATURES] = {
- 	{FW_FEATURE_MULTITCE,		"hcall-multi-tce"},
- 	{FW_FEATURE_SPLPAR,		"hcall-splpar"},
- 	{FW_FEATURE_VPHN,		"hcall-vphn"},
-+	{FW_FEATURE_SET_MODE,		"hcall-set-mode"},
- };
- 
- /* Build up the firmware features bitmask using the contents of
-diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-index 13e8cc4..44ad214 100644
---- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
-+++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-@@ -273,4 +273,10 @@ static inline long plpar_put_term_char(unsigned long termno, unsigned long len,
- 			lbuf[1]);
- }
- 
-+/* Set various resource mode parameters */
-+static inline long plpar_set_mode(unsigned long mflags, unsigned long resource,
-+		unsigned long value1, unsigned long value2)
++static inline unsigned int get_longbusy_msecs(int longbusy_rc)
 +{
-+	return plpar_hcall_norets(H_SET_MODE, mflags, resource, value1, value2);
++	switch (longbusy_rc) {
++	case H_LONG_BUSY_ORDER_1_MSEC:
++		return 1;
++	case H_LONG_BUSY_ORDER_10_MSEC:
++		return 10;
++	case H_LONG_BUSY_ORDER_100_MSEC:
++		return 100;
++	case H_LONG_BUSY_ORDER_1_SEC:
++		return 1000;
++	case H_LONG_BUSY_ORDER_10_SEC:
++		return 10000;
++	case H_LONG_BUSY_ORDER_100_SEC:
++		return 100000;
++	default:
++		return 1;
++	}
 +}
- #endif /* _PSERIES_PLPAR_WRAPPERS_H */
++
+ #ifdef CONFIG_PPC_PSERIES
+ extern int CMO_PrPSP;
+ extern int CMO_SecPSP;
+diff --git a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+index 2d41d04..89517ff 100644
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -90,26 +90,6 @@
+ 
+ static DEFINE_SPINLOCK(hcall_lock);
+ 
+-static u32 get_longbusy_msecs(int longbusy_rc)
+-{
+-	switch (longbusy_rc) {
+-	case H_LONG_BUSY_ORDER_1_MSEC:
+-		return 1;
+-	case H_LONG_BUSY_ORDER_10_MSEC:
+-		return 10;
+-	case H_LONG_BUSY_ORDER_100_MSEC:
+-		return 100;
+-	case H_LONG_BUSY_ORDER_1_SEC:
+-		return 1000;
+-	case H_LONG_BUSY_ORDER_10_SEC:
+-		return 10000;
+-	case H_LONG_BUSY_ORDER_100_SEC:
+-		return 100000;
+-	default:
+-		return 1;
+-	}
+-}
+-
+ static long ehca_plpar_hcall_norets(unsigned long opcode,
+ 				    unsigned long arg1,
+ 				    unsigned long arg2,
+diff --git a/drivers/net/ethernet/ibm/ehea/ehea_phyp.h b/drivers/net/ethernet/ibm/ehea/ehea_phyp.h
+index 8364815..99b6c2a 100644
+--- a/drivers/net/ethernet/ibm/ehea/ehea_phyp.h
++++ b/drivers/net/ethernet/ibm/ehea/ehea_phyp.h
+@@ -39,26 +39,6 @@
+  * hcp_*  - structures, variables and functions releated to Hypervisor Calls
+  */
+ 
+-static inline u32 get_longbusy_msecs(int long_busy_ret_code)
+-{
+-	switch (long_busy_ret_code) {
+-	case H_LONG_BUSY_ORDER_1_MSEC:
+-		return 1;
+-	case H_LONG_BUSY_ORDER_10_MSEC:
+-		return 10;
+-	case H_LONG_BUSY_ORDER_100_MSEC:
+-		return 100;
+-	case H_LONG_BUSY_ORDER_1_SEC:
+-		return 1000;
+-	case H_LONG_BUSY_ORDER_10_SEC:
+-		return 10000;
+-	case H_LONG_BUSY_ORDER_100_SEC:
+-		return 100000;
+-	default:
+-		return 1;
+-	}
+-}
+-
+ /* Number of pages which can be registered at once by H_REGISTER_HEA_RPAGES */
+ #define EHEA_MAX_RPAGE 512
+ 
 -- 
 1.7.9.5
