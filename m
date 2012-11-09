@@ -1,13 +1,13 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 13/14] powerpc: Enable relocation on during exceptions at boot
-Date: Fri,  9 Nov 2012 17:19:12 +1100
-Message-Id: <1352441953-29096-15-git-send-email-mikey@neuling.org>
+Subject: [PATCH 14/14] powerpc: Disable relocation on exceptions when kexecing
+Date: Fri,  9 Nov 2012 17:19:13 +1100
+Message-Id: <1352441953-29096-16-git-send-email-mikey@neuling.org>
 In-Reply-To: <1352441953-29096-1-git-send-email-mikey@neuling.org>
 References: <1352441953-29096-1-git-send-email-mikey@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Matt Evans <matt@ozlabs.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>, Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,74 +19,75 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-We currently do this synchronously at boot from setup_arch. On a large
-system this could hypothetically take a little while to complete, so
-currently we will give up if we are asked to wait for more than a second
-in total.
+Since we don't know if they new kernel we are kexecing into has been
+built to support relocation on exceptions, we disable them before we
+kexec.
 
-If we actually start hitting that timeout in practice we can always move
-this code into a kernel thread to take care of it in the background.
+We do NOT disable them if we are execing a kdump kernel, because we
+want to change as little state as possible and it is likely that we are
+execing ourselves and will be able to handle them anyway.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/platforms/pseries/setup.c |   38 ++++++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c |   33 ++++++++++++++++++++++++++++++++
+ 1 file changed, 33 insertions(+)
 
 diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index e3cb7ae..4c4adc0 100644
+index 4c4adc0..47d2a7e 100644
 --- a/arch/powerpc/platforms/pseries/setup.c
 +++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -367,6 +367,36 @@ static void pSeries_idle(void)
+@@ -40,6 +40,7 @@
+ #include <linux/seq_file.h>
+ #include <linux/root_dev.h>
+ #include <linux/cpuidle.h>
++#include <linux/kexec.h>
+ 
+ #include <asm/mmu.h>
+ #include <asm/processor.h>
+@@ -397,6 +398,35 @@ static int __init pSeries_enable_reloc_on_exc(void)
  	}
  }
  
-+/*
-+ * Enable relocation on during exceptions. This has partition wide scope and
-+ * may take a while to complete, if it takes longer than one second we will
-+ * just give up rather than wasting any more time on this - if that turns out
-+ * to ever be a problem in practice we can move this into a kernel thread to
-+ * finish off the process later in boot.
-+ */
-+static int __init pSeries_enable_reloc_on_exc(void)
++#ifdef CONFIG_KEXEC
++static long pSeries_disable_reloc_on_exc(void)
 +{
 +	long rc;
-+	unsigned int delay, total_delay = 0;
 +
 +	while (1) {
-+		rc = enable_reloc_on_exceptions();
++		rc = disable_reloc_on_exceptions();
 +		if (!H_IS_LONG_BUSY(rc))
 +			return rc;
-+
-+		delay = get_longbusy_msecs(rc);
-+		total_delay += delay;
-+		if (total_delay > 1000) {
-+			pr_warn("Warning: Giving up waiting to enable "
-+				"relocation on exceptions (%u msec)!\n",
-+				total_delay);
-+			return rc;
-+		}
-+
-+		mdelay(delay);
++		mdelay(get_longbusy_msecs(rc));
 +	}
 +}
++
++static void pSeries_machine_kexec(struct kimage *image)
++{
++	long rc;
++
++	if (firmware_has_feature(FW_FEATURE_SET_MODE) &&
++	    (image->type != KEXEC_TYPE_CRASH)) {
++		rc = pSeries_disable_reloc_on_exc();
++		if (rc != H_SUCCESS)
++			pr_warning("Warning: Failed to disable relocation on "
++				   "exceptions: %ld\n", rc);
++	}
++
++	default_machine_kexec(image);
++}
++#endif
 +
  static void __init pSeries_setup_arch(void)
  {
  	panic_timeout = 10;
-@@ -402,6 +432,14 @@ static void __init pSeries_setup_arch(void)
- 		ppc_md.enable_pmcs = pseries_lpar_enable_pmcs;
- 	else
- 		ppc_md.enable_pmcs = power4_enable_pmcs;
-+
-+	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
-+		long rc;
-+		if ((rc = pSeries_enable_reloc_on_exc()) != H_SUCCESS) {
-+			pr_warn("Unable to enable relocation on exceptions: "
-+				"%ld\n", rc);
-+		}
-+	}
- }
- 
- static int __init pSeries_init_panel(void)
+@@ -697,4 +727,7 @@ define_machine(pseries) {
+ 	.progress		= rtas_progress,
+ 	.system_reset_exception = pSeries_system_reset_exception,
+ 	.machine_check_exception = pSeries_machine_check_exception,
++#ifdef CONFIG_KEXEC
++	.machine_kexec          = pSeries_machine_kexec,
++#endif
+ };
 -- 
 1.7.9.5
