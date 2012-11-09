@@ -1,19 +1,11 @@
-Return-Path: <Shan.Hai@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 26B412C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 Nov 2012 12:58:36 +1100 (EST)
-Date: Fri, 9 Nov 2012 09:57:49 +0800
-From: Shan Hai <shan.hai@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH 0/1] powerpc/vdso: remove redundant locking in
- update_vsyscall_tz()
-Message-ID: <20121109015718.GA6124@debian.corp.ad.wrs.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="2B/JsCI69OhZNC5r"
-Cc: john.stultz@linaro.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 00/14] powerpc: Add support for POWER8 relocation on exceptions
+Date: Fri,  9 Nov 2012 17:18:58 +1100
+Message-Id: <1352441953-29096-1-git-send-email-mikey@neuling.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Ian Munsie <imunsie@au1.ibm.com>, Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,85 +15,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---2B/JsCI69OhZNC5r
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
+This set of patches adds support for taking exceptions with the MMU on which is
+supported by POWER8.
 
-The locking in update_vsyscall_tz() is not only unnecessary because the vdso
-code copies the data unproteced in __kernel_gettimeofday() but also
-introduces a hard to reproduce race condition between update_vsyscall()
-and update_vsyscall_tz(), which causes user space process to loop
-forever in vdso code.
+A new set of exception vectors is added at 0xc000_0000_0000_4xxx.  When the HW
+takes us here, MSR IR/DR will be set already and we no longer need a costly
+RFID to turn the MMU back on again.
 
-The following patch removes the locking from update_vsyscall_tz().
+The original 0x0 based exception vectors remain for when the HW can't leave the
+MMU on.  Examples of this are when we can't trust the current the MMU mappings,
+like when we are changing from guest to hypervisor (HV 0 -> 1) or when the MMU
+was off already.  In these cases the HW will take us to the original 0x0 based
+exception vectors with the MMU off as before.
 
----
- arch/powerpc/kernel/time.c |    5 -----
- 1 file changed, 5 deletions(-)
+The core of these patches were originally written by Matt Evans.  
 
-Thanks
-Shan Hai
+Ian Munsie (5):
+  powerpc: Add set_mode hcall
+  powerpc: Add wrappers to enable/disable relocation on exceptions
+  powerpc: Move get_longbusy_msecs into hvcall.h and remove duplicate
+    function
+  powerpc: Enable relocation on during exceptions at boot
+  powerpc: Disable relocation on exceptions when kexecing
 
---2B/JsCI69OhZNC5r
-Content-Type: text/x-diff; charset="us-ascii"
-Content-Disposition: attachment;
-	filename="0001-powerpc-vdso-remove-redundant-locking-in-update_vsys.patch"
+Michael Neuling (9):
+  powerpc: Add POWER8 architected mode to cputable
+  powerpc: Whitespace changes in exception64s.S
+  powerpc: Remove unessessary 0x3000 location enforcement
+  powerpc: Make load_hander handle upto 64k offset
+  powerpc: Turn syscall handler into macros
+  powerpc: Add new macros needed for relocation on exceptions
+  powerpc: Add relocation on exception vector handlers
+  powerpc: Move initial mfspr LPCR out of __init_LPCR
+  powerpc: Setup relocation on exceptions for bare metal systems
 
->From 167eac293b07e0ee201ffe5043ec442d52495a48 Mon Sep 17 00:00:00 2001
-From: Shan Hai <shan.hai@windriver.com>
-Date: Mon, 5 Nov 2012 18:24:22 +0800
-Subject: [PATCH 1/1] powerpc/vdso: remove redundant locking in
- update_vsyscall_tz()
+ arch/powerpc/include/asm/exception-64s.h        |   97 ++++++-
+ arch/powerpc/include/asm/firmware.h             |    4 +-
+ arch/powerpc/include/asm/hvcall.h               |   23 +-
+ arch/powerpc/include/asm/reg.h                  |    2 +
+ arch/powerpc/kernel/cpu_setup_power.S           |    8 +-
+ arch/powerpc/kernel/cputable.c                  |   15 ++
+ arch/powerpc/kernel/exceptions-64s.S            |  306 +++++++++++++++++++----
+ arch/powerpc/kernel/head_64.S                   |    3 +-
+ arch/powerpc/kernel/setup_64.c                  |    5 +
+ arch/powerpc/platforms/pseries/firmware.c       |    1 +
+ arch/powerpc/platforms/pseries/plpar_wrappers.h |   36 +++
+ arch/powerpc/platforms/pseries/setup.c          |   71 ++++++
+ drivers/infiniband/hw/ehca/hcp_if.c             |   20 --
+ drivers/net/ethernet/ibm/ehea/ehea_phyp.h       |   20 --
+ 14 files changed, 516 insertions(+), 95 deletions(-)
 
-Locking is not only unnecessary because the vdso code copies the data
-unprotected in __kernel_gettimeofday() but also erroneous because updating
-the tb_update_count is not atomic and introduces a hard to reproduce race
-condition between update_vsyscall() and update_vsyscall_tz(), which further
-causes user space process to loop forever in vdso code.
-
-The below scenario describes the race condition,
-x==0	Boot CPU			other CPU
-	proc_P: x==0
-	    timer interrupt
-		update_vsyscall
-x==1		    x++;sync		settimeofday
-					    update_vsyscall_tz
-x==2						x++;sync
-x==3		    sync;x++
-						sync;x++
-	proc_P: x==3 (loops until x becomes even)
-
-Because the ++ operator would be implemented as three instructions and not
-atomic on powerpc.
-
-A similar change was made for x86 in commit 6c260d58634
-("x86: vdso: Remove bogus locking in update_vsyscall_tz")
-
-Signed-off-by: Shan Hai <shan.hai@windriver.com>
----
- arch/powerpc/kernel/time.c |    5 -----
- 1 file changed, 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 03b29a6..426141f 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -859,13 +859,8 @@ void update_vsyscall(struct timespec *wall_time, struct timespec *wtm,
- 
- void update_vsyscall_tz(void)
- {
--	/* Make userspace gettimeofday spin until we're done. */
--	++vdso_data->tb_update_count;
--	smp_mb();
- 	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
- 	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
--	smp_mb();
--	++vdso_data->tb_update_count;
- }
- 
- static void __init clocksource_init(void)
 -- 
-1.7.10.4
-
-
---2B/JsCI69OhZNC5r--
+1.7.9.5
