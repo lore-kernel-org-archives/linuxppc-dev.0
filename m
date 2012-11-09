@@ -1,14 +1,13 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 12/14] powerpc: Move get_longbusy_msecs into hvcall.h and
- remove duplicate function
-In-reply-to: <20121109202655.3a2b2876b97b39c581a36637@canb.auug.org.au>
+Return-Path: <michael.neuling@au1.ibm.com>
+From: Michael Neuling <michael.neuling@au1.ibm.com>
+To: Gabriel Paubert <paubert@iram.es>
+Subject: Re: [PATCH 00/14] powerpc: Add support for POWER8 relocation on
+ exceptions
+In-reply-to: <20121109085815.GB13221@visitor2.iram.es>
 References: <1352441953-29096-1-git-send-email-mikey@neuling.org>
- <1352441953-29096-14-git-send-email-mikey@neuling.org>
- <20121109202655.3a2b2876b97b39c581a36637@canb.auug.org.au>
-Date: Fri, 09 Nov 2012 20:49:53 +1100
-Message-ID: <2392.1352454593@neuling.org>
+ <20121109085815.GB13221@visitor2.iram.es>
+Date: Fri, 09 Nov 2012 20:51:07 +1100
+Message-ID: <2489.1352454667@neuling.org>
 Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
  Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,31 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-
-> Hi Mikey,
-> 
-> On Fri,  9 Nov 2012 17:19:11 +1100 Michael Neuling <mikey@neuling.org> wrote:
-> >
-> > From: Ian Munsie <imunsie@au1.ibm.com>
+> > This set of patches adds support for taking exceptions with the MMU on which is
+> > supported by POWER8.
 > > 
-> > I am going to use this in the next patch, better to have this code in
-> > one place rather than three.
+> > A new set of exception vectors is added at 0xc000_0000_0000_4xxx.  When the HW
+> > takes us here, MSR IR/DR will be set already and we no longer need a costly
+> > RFID to turn the MMU back on again.
 > > 
-> > Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-> > Signed-off-by: Michael Neuling <mikey@neuling.org>
-> > ---
-> >  arch/powerpc/include/asm/hvcall.h         |   20 ++++++++++++++++++++
-> >  drivers/infiniband/hw/ehca/hcp_if.c       |   20 --------------------
-> >  drivers/net/ethernet/ibm/ehea/ehea_phyp.h |   20 --------------------
-> >  3 files changed, 20 insertions(+), 40 deletions(-)
-> 
-> This is identical to patch 10/14 ...
+> > The original 0x0 based exception vectors remain for when the HW can't leave the
+> > MMU on.  Examples of this are when we can't trust the current the MMU mappings,
+>                                                                 ^^^
+> Extra "the" (here and in a couple of patches). 
 
-Actually, it's the same as 10/12.  Looks like i didn't clear out my send
-directory correctly.
+Thanks, I'll fix.
 
-10/14 is correct.
+> Can't do much more since I don't have any hardware past G5, but the
+> series looks nice and avoiding transient excursions to real mode is a
+> good thing.
 
-Thanks,
+Thanks.
+
 Mikey
