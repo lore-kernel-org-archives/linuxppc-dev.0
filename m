@@ -1,14 +1,26 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Gabriel Paubert <paubert@iram.es>
-Subject: Re: [PATCH] powerpc: Add POWER8 architected mode to cputable
-In-reply-to: <20121109084708.GA13221@visitor2.iram.es>
-References: <1351661656-6986-1-git-send-email-mikey@neuling.org>
- <1351661656-6986-4-git-send-email-mikey@neuling.org>
- <30282.1352442402@neuling.org> <20121109084708.GA13221@visitor2.iram.es>
-Date: Fri, 09 Nov 2012 20:56:21 +1100
-Message-ID: <4149.1352454981@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <eranian@google.com>
+Received: from mail-la0-f42.google.com (mail-la0-f42.google.com
+ [209.85.215.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D2D512C0123
+ for <linuxppc-dev@ozlabs.org>; Fri,  9 Nov 2012 21:26:30 +1100 (EST)
+Received: by mail-la0-f42.google.com with SMTP id v3so322395lag.15
+ for <linuxppc-dev@ozlabs.org>; Fri, 09 Nov 2012 02:26:26 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <20121108011035.GA20670@us.ibm.com>
+References: <20121108011035.GA20670@us.ibm.com>
+Date: Fri, 9 Nov 2012 11:26:26 +0100
+Message-ID: <CABPqkBQrUVTY9rfeaO+pdaNwZcAgXF45SHnAYJfTvi4HAsPPeQ@mail.gmail.com>
+Subject: Re: perf: POWER-event translation questions
+From: Stephane Eranian <eranian@google.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Robert Richter <robert.richter@amd.com>, Anton Blanchard <anton@au1.ibm.com>,
+ LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,17 +30,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Fri, Nov 09, 2012 at 05:26:42PM +1100, Michael Neuling wrote:
-> > A PVR of 0x0F000004 means we are arch v2.07 complicate ie, POWER8.
-> 
-> Huh? 
-> 
-> s/complicate/compliant/ ?
+On Thu, Nov 8, 2012 at 2:10 AM, Sukadev Bhattiprolu
+<sukadev@linux.vnet.ibm.com> wrote:
+>
+>
+> Looking for feedback on this prototype for making POWER-specific event
+> translations available in sysfs. It is based on the patchset:
+>
+>         https://lkml.org/lkml/2012/11/7/402
+>
+> which makes the translations for _generic_ events in POWER available in sysfs:
+>
+> Since this is in POWER7 specific code I am assigning the names given in the
+> POWER7 CPU spec for now.
+>
+> I had earlier tried mapping these events to generic names outside sysfs:
+>
+>         Power7 name             Generic name
+>
+>         cmpl-stall-fxu          stalled-cycles-fixed-point
+>         cmpl-stall-lsu          stalled-cycles-load-store
+>         cmpl-stall-ifu          stalled-cycles-instruction-fetch
+>         cmpl-stall-bru          stalled-cycles-branch-unit
+>
+> But like Stephane Eranian pointed out mapping such events across architectures
+> can be confusing.
+>
+> Another challenge I suspect we will have is the extremely long generic names
+> we could end up with as the events get more specific.
+>
+> 1. Can we have more than one name for an event ? i.e two sysfs entries,
+>    eg: 'cmpl-stall-fxu' and 'stalled-cycles-fixed-point' for an event ?
+>
+Yes, you can. What is really used is the content of the file and two files
+can have the same content.
 
-Yes, compliant.  Thanks
+> 2. Can we allow hyphens in the {name} token  (please see my change to
+>    util/parse-events.l below). With this change, I can run:
+>
+The current code does not support this but Andi fixed that in his HSW patch
+and I use it for the PEBS-LL patch series as well.
 
-> Also ie has to be written with dots (i.e.).
+>           perf stat -e cpu/cmplu-stall-bru /tmp/nop
+>
+>    without any changes to the user level tool (parse-events.l) I have
+>    tested some common cases, not sure if it will break something :-)
+>
+>    If we are going to create generic or arch specific sysfs entries in
+>    /sys/bus/event_source/devices/cpu/events, do we need to add corresponding
+>    entry in tools/perf/util/parse-events.l ?
+>
+Shouldn't be necessary. perf should grab those events automatically from sysfs.
+As per Jiri, the hardcoded tables are only used to support backward
+compatibility
+for kernels without sysfs event entries.
 
-Thanks.
-
-Mikey
+> Sukadev
+>
+> ---
+>  arch/powerpc/perf/power7-pmu.c |   13 +++++++++++++
+>  tools/perf/util/parse-events.l |    2 +-
+>  2 files changed, 14 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+> index aa9f588..9f46abc 100644
+> --- a/arch/powerpc/perf/power7-pmu.c
+> +++ b/arch/powerpc/perf/power7-pmu.c
+> @@ -303,6 +303,10 @@ static void power7_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+>  #define        PM_LD_MISS_L1                   0x400f0
+>  #define        PM_BRU_FIN                      0x10068
+>  #define        PM_BRU_MPRED                    0x400f6
+> +#define        PM_CMPLU_STALL_FXU              0x20014
+> +#define        PM_CMPLU_STALL_LSU              0x20012
+> +#define        PM_CMPLU_STALL_IFU              0x4004c
+> +#define        PM_CMPLU_STALL_BRU              0x4004e
+>
+>  static int power7_generic_events[] = {
+>         [PERF_COUNT_HW_CPU_CYCLES] =                    PM_CYC,
+> @@ -369,6 +373,11 @@ EVENT_ATTR(cache-misses,               LD_MISS_L1);
+>  EVENT_ATTR(branch-instructions,        BRU_FIN);
+>  EVENT_ATTR(branch-misses,              BRU_MPRED);
+>
+> +EVENT_ATTR(cmplu-stall-fxu,            CMPLU_STALL_FXU);
+> +EVENT_ATTR(cmplu-stall-lsu,            CMPLU_STALL_LSU);
+> +EVENT_ATTR(cmplu-stall-ifu,            CMPLU_STALL_IFU);
+> +EVENT_ATTR(cmplu-stall-bru,            CMPLU_STALL_BRU);
+> +
+>  static struct attribute *power7_events_attr[] = {
+>         EVENT_PTR(CYC),
+>         EVENT_PTR(GCT_NOSLOT_CYC),
+> @@ -378,6 +387,10 @@ static struct attribute *power7_events_attr[] = {
+>         EVENT_PTR(LD_MISS_L1),
+>         EVENT_PTR(BRU_FIN),
+>         EVENT_PTR(BRU_MPRED),
+> +       EVENT_PTR(CMPLU_STALL_FXU),
+> +       EVENT_PTR(CMPLU_STALL_LSU),
+> +       EVENT_PTR(CMPLU_STALL_IFU),
+> +       EVENT_PTR(CMPLU_STALL_BRU),
+>         NULL,
+>  };
+>
+> diff --git a/tools/perf/util/parse-events.l b/tools/perf/util/parse-events.l
+> index c87efc1..1967bb2 100644
+> --- a/tools/perf/util/parse-events.l
+> +++ b/tools/perf/util/parse-events.l
+> @@ -80,7 +80,7 @@ event         [^,{}/]+
+>  num_dec                [0-9]+
+>  num_hex                0x[a-fA-F0-9]+
+>  num_raw_hex    [a-fA-F0-9]+
+> -name           [a-zA-Z_*?][a-zA-Z0-9_*?]*
+> +name           [-a-zA-Z_*?][-a-zA-Z0-9_*?]*
+>  modifier_event [ukhpGH]{1,8}
+>  modifier_bp    [rwx]{1,3}
+>
+> --
+> 1.7.1
+>
