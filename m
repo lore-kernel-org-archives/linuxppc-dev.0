@@ -1,13 +1,14 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 14/14] powerpc: Disable relocation on exceptions when kexecing
-Date: Fri,  9 Nov 2012 17:19:13 +1100
-Message-Id: <1352441953-29096-16-git-send-email-mikey@neuling.org>
-In-Reply-To: <1352441953-29096-1-git-send-email-mikey@neuling.org>
-References: <1352441953-29096-1-git-send-email-mikey@neuling.org>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Ian Munsie <imunsie@au1.ibm.com>, Matt Evans <matt@ozlabs.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pseries: Update ibm,
+ architecture.vec for PAPR 2.7/POWER8
+In-reply-to: <1351661656-6986-4-git-send-email-mikey@neuling.org>
+References: <1351661656-6986-1-git-send-email-mikey@neuling.org>
+ <1351661656-6986-4-git-send-email-mikey@neuling.org>
+Date: Fri, 09 Nov 2012 17:23:11 +1100
+Message-ID: <30008.1352442191@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,77 +18,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+Update ibm,architecture.vec for POWER8 and allows us to support more
+than one parition per core.
 
-Since we don't know if they new kernel we are kexecing into has been
-built to support relocation on exceptions, we disable them before we
-kexec.
-
-We do NOT disable them if we are execing a kdump kernel, because we
-want to change as little state as possible and it is likely that we are
-execing ourselves and will be able to handle them anyway.
-
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/platforms/pseries/setup.c |   33 ++++++++++++++++++++++++++++++++
- 1 file changed, 33 insertions(+)
+v2: Missed some bits in the original post..
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 4c4adc0..47d2a7e 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -40,6 +40,7 @@
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
- #include <linux/cpuidle.h>
-+#include <linux/kexec.h>
+ arch/powerpc/kernel/prom_init.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom_init.c b/arch/powerpc/kernel/prom_init.c
+index cb6c123..9ffb542 100644
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -671,6 +671,7 @@ static void __init early_cmdline_parse(void)
+ #define OV1_PPC_2_04		0x08	/* set if we support PowerPC 2.04 */
+ #define OV1_PPC_2_05		0x04	/* set if we support PowerPC 2.05 */
+ #define OV1_PPC_2_06		0x02	/* set if we support PowerPC 2.06 */
++#define OV1_PPC_2_07		0x01	/* set if we support PowerPC 2.07 */
  
- #include <asm/mmu.h>
- #include <asm/processor.h>
-@@ -397,6 +398,35 @@ static int __init pSeries_enable_reloc_on_exc(void)
- 	}
- }
+ /* Option vector 2: Open Firmware options supported */
+ #define OV2_REAL_MODE		0x20	/* set if we want OF in real mode */
+@@ -707,6 +708,7 @@ static void __init early_cmdline_parse(void)
+ #define OV5_PFO_HW_RNG		0x80	/* PFO Random Number Generator */
+ #define OV5_PFO_HW_842		0x40	/* PFO Compression Accelerator */
+ #define OV5_PFO_HW_ENCR		0x20	/* PFO Encryption Accelerator */
++#define OV5_SUB_PROCESSORS	0x01    /* 1,2,or 4 Sub-Processors supported */
  
-+#ifdef CONFIG_KEXEC
-+static long pSeries_disable_reloc_on_exc(void)
-+{
-+	long rc;
-+
-+	while (1) {
-+		rc = disable_reloc_on_exceptions();
-+		if (!H_IS_LONG_BUSY(rc))
-+			return rc;
-+		mdelay(get_longbusy_msecs(rc));
-+	}
-+}
-+
-+static void pSeries_machine_kexec(struct kimage *image)
-+{
-+	long rc;
-+
-+	if (firmware_has_feature(FW_FEATURE_SET_MODE) &&
-+	    (image->type != KEXEC_TYPE_CRASH)) {
-+		rc = pSeries_disable_reloc_on_exc();
-+		if (rc != H_SUCCESS)
-+			pr_warning("Warning: Failed to disable relocation on "
-+				   "exceptions: %ld\n", rc);
-+	}
-+
-+	default_machine_kexec(image);
-+}
-+#endif
-+
- static void __init pSeries_setup_arch(void)
- {
- 	panic_timeout = 10;
-@@ -697,4 +727,7 @@ define_machine(pseries) {
- 	.progress		= rtas_progress,
- 	.system_reset_exception = pSeries_system_reset_exception,
- 	.machine_check_exception = pSeries_machine_check_exception,
-+#ifdef CONFIG_KEXEC
-+	.machine_kexec          = pSeries_machine_kexec,
-+#endif
- };
+ /* Option Vector 6: IBM PAPR hints */
+ #define OV6_LINUX		0x02	/* Linux is our OS */
+@@ -719,6 +721,8 @@ static unsigned char ibm_architecture_vec[] = {
+ 	W(0xfffe0000), W(0x003a0000),	/* POWER5/POWER5+ */
+ 	W(0xffff0000), W(0x003e0000),	/* POWER6 */
+ 	W(0xffff0000), W(0x003f0000),	/* POWER7 */
++	W(0xffff0000), W(0x004b0000),	/* POWER8 */
++	W(0xffffffff), W(0x0f000004),	/* all 2.07-compliant */
+ 	W(0xffffffff), W(0x0f000003),	/* all 2.06-compliant */
+ 	W(0xffffffff), W(0x0f000002),	/* all 2.05-compliant */
+ 	W(0xfffffffe), W(0x0f000001),	/* all 2.04-compliant and earlier */
+@@ -728,7 +732,7 @@ static unsigned char ibm_architecture_vec[] = {
+ 	3 - 2,				/* length */
+ 	0,				/* don't ignore, don't halt */
+ 	OV1_PPC_2_00 | OV1_PPC_2_01 | OV1_PPC_2_02 | OV1_PPC_2_03 |
+-	OV1_PPC_2_04 | OV1_PPC_2_05 | OV1_PPC_2_06,
++	OV1_PPC_2_04 | OV1_PPC_2_05 | OV1_PPC_2_06 | OV1_PPC_2_07,
+ 
+ 	/* option vector 2: Open Firmware options supported */
+ 	34 - 2,				/* length */
+@@ -755,7 +759,7 @@ static unsigned char ibm_architecture_vec[] = {
+ 	OV4_MIN_ENT_CAP,		/* minimum VP entitled capacity */
+ 
+ 	/* option vector 5: PAPR/OF options */
+-	18 - 2,				/* length */
++	19 - 2,				/* length */
+ 	0,				/* don't ignore, don't halt */
+ 	OV5_LPAR | OV5_SPLPAR | OV5_LARGE_PAGES | OV5_DRCONF_MEMORY |
+ 	OV5_DONATE_DEDICATE_CPU | OV5_MSI,
+@@ -776,6 +780,7 @@ static unsigned char ibm_architecture_vec[] = {
+ 	0,
+ 	0,
+ 	OV5_PFO_HW_RNG | OV5_PFO_HW_ENCR | OV5_PFO_HW_842,
++	OV5_SUB_PROCESSORS,
+ 	/* option vector 6: IBM PAPR hints */
+ 	4 - 2,				/* length */
+ 	0,
 -- 
 1.7.9.5
