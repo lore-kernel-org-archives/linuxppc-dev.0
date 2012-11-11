@@ -1,15 +1,24 @@
-Return-Path: <robherring2@gmail.com>
-Message-ID: <509F217D.8020901@gmail.com>
-Date: Sat, 10 Nov 2012 21:54:37 -0600
-From: Rob Herring <robherring2@gmail.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
+ [209.85.220.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4F1682C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Nov 2012 21:00:24 +1100 (EST)
+Received: by mail-vc0-f179.google.com with SMTP id f13so5047803vcb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Nov 2012 02:00:20 -0800 (PST)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] of/fdt: Don't copy garbage after "/" in root node path
-References: <1350865950.2476.145.camel@pasglop>
-In-Reply-To: <1350865950.2476.145.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1352627709-12732-1-git-send-email-geert@linux-m68k.org>
+References: <1352627709-12732-1-git-send-email-geert@linux-m68k.org>
+Date: Sun, 11 Nov 2012 11:00:20 +0100
+Message-ID: <CAMuHMdUzvFfJLmvRL0f_ghXBFfzOhx-uKVU0a8E2mNRH=RzfVw@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.7-rc4
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: sparclinux <sparclinux@vger.kernel.org>,
+ the arch/x86 maintainers <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,41 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10/21/2012 07:32 PM, Benjamin Herrenschmidt wrote:
-> The root node path must be internally converted to "/", or various
-> pieces of code looking for it that way will fail. The code to do
-> that however had a bug where we might incorrectly append pieces
-> of the original path from the fdt to the "/".
-> 
-> We should probably add a proper dedicated accessor for the root node
-> but in the meantime this patch should fix it.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Sun, Nov 11, 2012 at 10:55 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.7-rc4 to v3.7-rc3[3], the summaries are:
+>   - build errors: +4/-235
 
-Applied. Thanks.
+  + error: No rule to make target include/config/auto.conf:  => N/A
 
-Rob
+x86_64-randconfig
 
-> ---
->  drivers/of/fdt.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
-> index 91a375f..c2b08dc 100644
-> --- a/drivers/of/fdt.c
-> +++ b/drivers/of/fdt.c
-> @@ -186,6 +186,7 @@ static unsigned long unflatten_dt_node(struct boot_param_header *blob,
->  			 */
->  			fpsize = 1;
->  			allocl = 2;
-> +			l = 0;
->  		} else {
->  			/* account for '/' and path size minus terminal 0
->  			 * already in 'l'
-> 
-> 
-> _______________________________________________
-> devicetree-discuss mailing list
-> devicetree-discuss@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/devicetree-discuss
-> 
+  + error: phy_n.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `._mcount' defined in .text section in
+arch/powerpc/kernel/entry_64.o: (.text+0x1ff96e8) =>
+(.text+0x1ff8348), (.text+0x1ff7c54), (.text+0x1ff96fc),
+(.text+0x1ff8048), (.text+0x1ff90b4)
+  + error: phy_n.c: relocation truncated to fit: R_PPC64_REL24 against
+symbol `_restgpr0_21' defined in .text.save.restore section in
+arch/powerpc/lib/built-in.o:  => (.text+0x1ff9e80)
+  + error: relocation truncated to fit: R_PPC64_REL24 against symbol
+`.memset' defined in .text section in arch/powerpc/lib/built-in.o:  =>
+(.text+0x1ffa004)
+
+powerpc-allyesconfig
+
+>   - build warnings: +2027/-170
+
+Scary, but the majority (+1987) turn out to be those pesky sparc-allmodconfig
+"__mcount_loc already exists" warnings. Can they please be fixed?
+
+> As I haven't mastered kup yet, there's no verbose summary at
+> http://www.kernel.org/pub/linux/kernel/people/geert/linux-log/v3.7-rc4.summary.gz
+>
+> Happy fixing! ;-)
+>
+> Thanks to the linux-next team for providing the build service.
+>
+> [1] http://kisskb.ellerman.id.au/kisskb/head/5600/ (all 117 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/5580/ (all 117 configs)
+
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
