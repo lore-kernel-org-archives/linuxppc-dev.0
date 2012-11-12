@@ -1,24 +1,22 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
- [209.85.220.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4F1682C008F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Nov 2012 21:00:24 +1100 (EST)
-Received: by mail-vc0-f179.google.com with SMTP id f13so5047803vcb.38
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Nov 2012 02:00:20 -0800 (PST)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1352627709-12732-1-git-send-email-geert@linux-m68k.org>
-References: <1352627709-12732-1-git-send-email-geert@linux-m68k.org>
-Date: Sun, 11 Nov 2012 11:00:20 +0100
-Message-ID: <CAMuHMdUzvFfJLmvRL0f_ghXBFfzOhx-uKVU0a8E2mNRH=RzfVw@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.7-rc4
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Cc: sparclinux <sparclinux@vger.kernel.org>,
- the arch/x86 maintainers <x86@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3227C2C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Nov 2012 12:31:18 +1100 (EST)
+In-Reply-To: <1352441953-29096-10-git-send-email-mikey@neuling.org>
+References: <1352441953-29096-1-git-send-email-mikey@neuling.org>
+ <1352441953-29096-10-git-send-email-mikey@neuling.org>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B2250515-36A9-4826-B50B-49298A28FB39@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 09/14] powerpc: Setup relocation on exceptions for bare
+ metal systems
+Date: Mon, 12 Nov 2012 02:32:28 +0100
+To: Michael Neuling <mikey@neuling.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,51 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Nov 11, 2012 at 10:55 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v3.7-rc4 to v3.7-rc3[3], the summaries are:
->   - build errors: +4/-235
+> --- a/arch/powerpc/include/asm/reg.h
+> +++ b/arch/powerpc/include/asm/reg.h
+> @@ -249,6 +249,8 @@
+>  #define   LPCR_RMLS    0x1C000000      /* impl dependent rmo limit  
+> sel */
+>  #define	  LPCR_RMLS_SH	(63-37)
+>  #define   LPCR_ILE     0x02000000      /* !HV irqs set MSR:LE */
+> +#define   LPCR_AIL_0	0x00000000	/* MMU off IRQ location 0x0 */
+> +#define   LPCR_AIL_3	0x01800000	/* MMU on IRQ location  
+> 0xc00...4xxx */
 
-  + error: No rule to make target include/config/auto.conf:  => N/A
+s/IRQ location/exception offset/ ?
 
-x86_64-randconfig
+> --- a/arch/powerpc/kernel/cpu_setup_power.S
+> +++ b/arch/powerpc/kernel/cpu_setup_power.S
+> @@ -54,6 +54,7 @@ _GLOBAL(__setup_cpu_power8)
+>  	li	r0,0
+>  	mtspr	SPRN_LPID,r0
+>  	mfspr	r3,SPRN_LPCR
+> +	oris	r3, r3, LPCR_AIL_3@h
 
-  + error: phy_n.c: relocation truncated to fit: R_PPC64_REL24 against
-symbol `._mcount' defined in .text section in
-arch/powerpc/kernel/entry_64.o: (.text+0x1ff96e8) =>
-(.text+0x1ff8348), (.text+0x1ff7c54), (.text+0x1ff96fc),
-(.text+0x1ff8048), (.text+0x1ff90b4)
-  + error: phy_n.c: relocation truncated to fit: R_PPC64_REL24 against
-symbol `_restgpr0_21' defined in .text.save.restore section in
-arch/powerpc/lib/built-in.o:  => (.text+0x1ff9e80)
-  + error: relocation truncated to fit: R_PPC64_REL24 against symbol
-`.memset' defined in .text section in arch/powerpc/lib/built-in.o:  =>
-(.text+0x1ffa004)
+Is the AIL field only two bits?  If not, you probably want to clear
+the other bits.
 
-powerpc-allyesconfig
+This series looks really nice btw :-)
 
->   - build warnings: +2027/-170
 
-Scary, but the majority (+1987) turn out to be those pesky sparc-allmodconfig
-"__mcount_loc already exists" warnings. Can they please be fixed?
-
-> As I haven't mastered kup yet, there's no verbose summary at
-> http://www.kernel.org/pub/linux/kernel/people/geert/linux-log/v3.7-rc4.summary.gz
->
-> Happy fixing! ;-)
->
-> Thanks to the linux-next team for providing the build service.
->
-> [1] http://kisskb.ellerman.id.au/kisskb/head/5600/ (all 117 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/5580/ (all 117 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Segher
