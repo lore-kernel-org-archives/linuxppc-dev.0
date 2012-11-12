@@ -1,16 +1,12 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 09/14] powerpc: Setup relocation on exceptions for bare
- metal systems
-In-reply-to: <B2250515-36A9-4826-B50B-49298A28FB39@kernel.crashing.org>
-References: <1352441953-29096-1-git-send-email-mikey@neuling.org>
- <1352441953-29096-10-git-send-email-mikey@neuling.org>
- <B2250515-36A9-4826-B50B-49298A28FB39@kernel.crashing.org>
-Date: Mon, 12 Nov 2012 13:08:59 +1100
-Message-ID: <474.1352686139@neuling.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Matt Evans <matt@ozlabs.org>
+Return-Path: <anton@samba.org>
+Date: Mon, 12 Nov 2012 16:01:05 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org
+Subject: [PATCH] powerpc: Fix CONFIG_RELOCATABLE=y CONFIG_CRASH_DUMP=n build
+Message-ID: <20121112160105.3500c602@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,36 +16,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
-> > --- a/arch/powerpc/include/asm/reg.h
-> > +++ b/arch/powerpc/include/asm/reg.h
-> > @@ -249,6 +249,8 @@
-> >  #define   LPCR_RMLS    0x1C000000      /* impl dependent rmo limit sel */
-> >  #define	  LPCR_RMLS_SH	(63-37)
-> >  #define   LPCR_ILE     0x02000000      /* !HV irqs set MSR:LE */
-> > +#define   LPCR_AIL_0	0x00000000	/* MMU off IRQ location 0x0 */
-> > +#define   LPCR_AIL_3	0x01800000	/* MMU on IRQ location 0xc00...4xxx */
-> 
-> s/IRQ location/exception offset/ ?
+If we build a kernel with CONFIG_RELOCATABLE=y CONFIG_CRASH_DUMP=n,
+the kernel fails when we run at a non zero offset. It turns out
+we were incorrectly wrapping some of the relocatable kernel code
+with CONFIG_CRASH_DUMP.
 
-Sure, updated.
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Cc: <stable@kernel.org>
+---
 
-> 
-> > --- a/arch/powerpc/kernel/cpu_setup_power.S
-> > +++ b/arch/powerpc/kernel/cpu_setup_power.S
-> > @@ -54,6 +54,7 @@ _GLOBAL(__setup_cpu_power8)
-> >  	li	r0,0
-> >  	mtspr	SPRN_LPID,r0
-> >  	mfspr	r3,SPRN_LPCR
-> > +	oris	r3, r3, LPCR_AIL_3@h
-> 
-> Is the AIL field only two bits?  If not, you probably want to clear
-> the other bits.
-
-Yes it only 2 bits.
-
-> This series looks really nice btw :-)
-
-Cheers,
-Mikey
+Index: b/arch/powerpc/kernel/head_64.S
+===================================================================
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -422,7 +422,7 @@ _STATIC(__after_prom_start)
+ 	tovirt(r6,r6)			/* on booke, we already run at PAGE_OFFSET */
+ #endif
+ 
+-#ifdef CONFIG_CRASH_DUMP
++#ifdef CONFIG_RELOCATABLE
+ /*
+  * Check if the kernel has to be running as relocatable kernel based on the
+  * variable __run_at_load, if it is set the kernel is treated as relocatable
