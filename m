@@ -1,33 +1,28 @@
-Return-Path: <tony.luck@intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by ozlabs.org (Postfix) with ESMTP id D55482C0093
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 08:28:14 +1100 (EST)
-From: "Luck, Tony" <tony.luck@intel.com>
-To: James Hogan <james.hogan@imgtec.com>, "linux-kernel@vger.kernel.org"
- <linux-kernel@vger.kernel.org>
-Subject: RE: [PATCH 1/1] arch Kconfig: remove references to IRQ_PER_CPU
-Date: Tue, 13 Nov 2012 21:28:11 +0000
-Message-ID: <3908561D78D1C84285E8C5FCA982C28F19D5F453@ORSMSX108.amr.corp.intel.com>
-References: <1352807948-26920-1-git-send-email-james.hogan@imgtec.com>
-In-Reply-To: <1352807948-26920-1-git-send-email-james.hogan@imgtec.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linux-arch@vger.kernel.org" <linux-arch@vger.kernel.org>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "linux-parisc@vger.kernel.org" <linux-parisc@vger.kernel.org>,
- "linux-sh@vger.kernel.org" <linux-sh@vger.kernel.org>,
- "linux-hexagon@vger.kernel.org" <linux-hexagon@vger.kernel.org>,
- Helge Deller <deller@gmx.de>, "James
- E.J. Bottomley" <jejb@parisc-linux.org>, "Yu,
- Fenghua" <fenghua.yu@intel.com>, Richard Kuo <rkuo@codeaurora.org>,
- Paul Mundt <lethal@linux-sh.org>, Mike Frysinger <vapier@gentoo.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- "uclinux-dist-devel@blackfin.uclinux.org"
- <uclinux-dist-devel@blackfin.uclinux.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Paul Mackerras <paulus@samba.org>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (unknown
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by ozlabs.org (Postfix) with ESMTP id 1EED62C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 09:17:41 +1100 (EST)
+Date: Tue, 13 Nov 2012 17:17:36 -0500 (EST)
+Message-Id: <20121113.171736.561094209116852795.davem@davemloft.net>
+To: joe@perches.com
+Subject: Re: [PATCH V2] wanrouter: Remove it and the drivers that depend on it
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1352837845.12850.3.camel@joe-AO722>
+References: <67fe0c5701a8c7cfe06b178cf04b1c5c06592714.1352548454.git.joe@perches.com>
+ <20121113.144406.1610017702502358739.davem@davemloft.net>
+ <1352837845.12850.3.camel@joe-AO722>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-mips@linux-mips.org, linux-doc@vger.kernel.org, jcmvbkbc@gmail.com,
+ harryxiyou@gmail.com, paulus@samba.org, linux@arm.linux.org.uk, richard@nod.at,
+ linux-xtensa@linux-xtensa.org, rob@landley.net,
+ user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com,
+ xiyoulinuxkernelgroup@googlegroups.com,
+ user-mode-linux-user@lists.sourceforge.net,
+ linux-arm-kernel@lists.infradead.org, chris@zankel.net, isdn@linux-pingi.de,
+ netdev@vger.kernel.org, linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+ linux-kernel@zh-kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,11 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> But IRQ_PER_CPU wasn't removed from any of the architecture Kconfig
-> files where it was defined or selected. It's completely unused so remove
-> the remaining references.
+From: Joe Perches <joe@perches.com>
+Date: Tue, 13 Nov 2012 12:17:25 -0800
 
-Acked-by: Tony Luck <tony.luck@intel.com>
+> That seems an odd workflow as it leaves dangling CONFIG_<foo>
+> options set, but I guess it doesn't hurt so here it is.
 
-[Hope someone picks up this whole patch ... otherwise I can take the ia64 h=
-unk]
+As you said it's harmless, and more importantly it avoids
+unnecessary conflicts.
+
+> I just removed the modified arch/.../<foo>defconfig files.
+
+Something is not right here:
+
+[davem@drr net-next]$ git am --signoff V2-wanrouter-Remove-it-and-the-drivers-that-depend-on-it.patch 
+Applying: wanrouter: Remove it and the drivers that depend on it
+error: removal patch leaves file contents
+error: net/wanrouter/Kconfig: patch does not apply
+error: removal patch leaves file contents
+error: net/wanrouter/Makefile: patch does not apply
+error: removal patch leaves file contents
+error: net/wanrouter/patchlevel: patch does not apply
+error: removal patch leaves file contents
+error: net/wanrouter/wanmain.c: patch does not apply
+error: removal patch leaves file contents
+error: net/wanrouter/wanproc.c: patch does not apply
+error: removal patch leaves file contents
+error: drivers/net/wan/cycx_drv.c: patch does not apply
+error: removal patch leaves file contents
+error: drivers/net/wan/cycx_main.c: patch does not apply
+error: removal patch leaves file contents
+error: drivers/net/wan/cycx_x25.c: patch does not apply
+error: removal patch leaves file contents
+error: include/linux/cyclomx.h: patch does not apply
+error: removal patch leaves file contents
+error: include/linux/cycx_drv.h: patch does not apply
+error: removal patch leaves file contents
+error: include/linux/wanrouter.h: patch does not apply
+error: removal patch leaves file contents
+error: include/uapi/linux/wanrouter.h: patch does not apply
