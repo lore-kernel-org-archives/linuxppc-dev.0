@@ -1,30 +1,13 @@
-Return-Path: <joe@perches.com>
-Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
- (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 7D2D72C0093
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 09:32:40 +1100 (EST)
-Message-ID: <1352845961.17444.13.camel@joe-AO722>
-Subject: Re: [PATCH V2] wanrouter: Remove it and the drivers that depend on it
-From: Joe Perches <joe@perches.com>
-To: David Miller <davem@davemloft.net>
-Date: Tue, 13 Nov 2012 14:32:41 -0800
-In-Reply-To: <20121113.171736.561094209116852795.davem@davemloft.net>
-References: <67fe0c5701a8c7cfe06b178cf04b1c5c06592714.1352548454.git.joe@perches.com>
- <20121113.144406.1610017702502358739.davem@davemloft.net>
- <1352837845.12850.3.camel@joe-AO722>
- <20121113.171736.561094209116852795.davem@davemloft.net>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-doc@vger.kernel.org, jcmvbkbc@gmail.com,
- harryxiyou@gmail.com, paulus@samba.org, linux@arm.linux.org.uk, richard@nod.at,
- linux-xtensa@linux-xtensa.org, rob@landley.net,
- user-mode-linux-devel@lists.sourceforge.net, jdike@addtoit.com,
- xiyoulinuxkernelgroup@googlegroups.com,
- user-mode-linux-user@lists.sourceforge.net,
- linux-arm-kernel@lists.infradead.org, chris@zankel.net, isdn@linux-pingi.de,
- netdev@vger.kernel.org, linux-kernel@vger.kernel.org, ralf@linux-mips.org,
- linux-kernel@zh-kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <wolfram@the-dreams.de>
+From: Wolfram Sang <wolfram@the-dreams.de>
+To: linux-i2c@vger.kernel.org
+Subject: [PATCH] bindings: i2c: use consistent naming for i2c binding
+ descriptions
+Date: Tue, 13 Nov 2012 18:16:43 +0100
+Message-Id: <1352827003-24287-1-git-send-email-wolfram@the-dreams.de>
+Cc: devicetree-discuss@ozlabs.org, Wolfram Sang <wolfram@the-dreams.de>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Rob Herring <robherring2@gmail.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,61 +17,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-11-13 at 17:17 -0500, David Miller wrote:
-> From: Joe Perches <joe@perches.com>
-> Date: Tue, 13 Nov 2012 12:17:25 -0800
-> 
-> > That seems an odd workflow as it leaves dangling CONFIG_<foo>
-> > options set, but I guess it doesn't hurt so here it is.
-> 
-> As you said it's harmless, and more importantly it avoids
-> unnecessary conflicts.
-> 
-> > I just removed the modified arch/.../<foo>defconfig files.
-> 
-> Something is not right here:
+Filenames of devictree binding documentation seems to be arbitrary and
+for me it is unneeded hazzle to find the corresponding documentation for
+a specific driver.
 
-> [davem@drr net-next]$ git am --signoff V2-wanrouter-Remove-it-and-the-drivers-that-depend-on-it.patch 
-> Applying: wanrouter: Remove it and the drivers that depend on it
-> error: removal patch leaves file contents
-> error: net/wanrouter/Kconfig: patch does not apply
-> error: removal patch leaves file contents
-> error: net/wanrouter/Makefile: patch does not apply
-> error: removal patch leaves file contents
-> error: net/wanrouter/patchlevel: patch does not apply
-> error: removal patch leaves file contents
-> error: net/wanrouter/wanmain.c: patch does not apply
-> error: removal patch leaves file contents
-> error: net/wanrouter/wanproc.c: patch does not apply
-> error: removal patch leaves file contents
-> error: drivers/net/wan/cycx_drv.c: patch does not apply
-> error: removal patch leaves file contents
-> error: drivers/net/wan/cycx_main.c: patch does not apply
-> error: removal patch leaves file contents
-> error: drivers/net/wan/cycx_x25.c: patch does not apply
-> error: removal patch leaves file contents
-> error: include/linux/cyclomx.h: patch does not apply
-> error: removal patch leaves file contents
-> error: include/linux/cycx_drv.h: patch does not apply
-> error: removal patch leaves file contents
-> error: include/linux/wanrouter.h: patch does not apply
-> error: removal patch leaves file contents
-> error: include/uapi/linux/wanrouter.h: patch does not apply
+Naming the description the same as the driver is a lot easier and makes
+sense to me since the driver defines the binding it understands.
 
-Right, that is unexpected/odd/interesting.
+Also, remove a reference in one source to the binding documentation, since path
+information easily gets stale.
 
-I was trying to save mailing list bandwidth by reducing
-the patch size.
+Signed-off-by: Wolfram Sang <wolfram@the-dreams.de>
+Cc: Rob Herring <robherring2@gmail.com>
+Cc: Grant Likely <grant.likely@secretlab.ca>
+---
 
-I generated this with
-	$ git format-patch -M -D
-but it doesn't apply here either. :(
+I think it would be helpful if other subsystems would follow if we can agree on
+this pattern.
 
-Using
-	$ git format-patch -M
-does apply correctly.
+Thanks,
 
-It's quite a bit larger though. (120KB vs 14)
-I'll send the large patch just to netdev.
+   Wolfram
 
-Joe
+ .../bindings/i2c/{atmel-i2c.txt => i2c-at91.txt}     |    0
+ .../bindings/i2c/{davinci.txt => i2c-davinci.txt}    |    0
+ .../bindings/i2c/{gpio-i2c.txt => i2c-gpio.txt}      |    0
+ .../bindings/i2c/{fsl-imx-i2c.txt => i2c-imx.txt}    |    0
+ .../bindings/i2c/{fsl-i2c.txt => i2c-mpc.txt}        |    0
+ .../devicetree/bindings/i2c/{mux.txt => i2c-mux.txt} |    0
+ .../devicetree/bindings/i2c/i2c-mv64xxx.txt          |   18 ++++++++++++++++++
+ .../bindings/i2c/{nomadik.txt => i2c-nomadik.txt}    |    0
+ .../bindings/i2c/{cavium-i2c.txt => i2c-octeon.txt}  |    0
+ .../bindings/i2c/{omap-i2c.txt => i2c-omap.txt}      |    0
+ .../devicetree/bindings/i2c/{pnx.txt => i2c-pnx.txt} |    0
+ .../i2c/{ce4100-i2c.txt => i2c-pxa-pci-ce4100.txt}   |    0
+ .../bindings/i2c/{mrvl-i2c.txt => i2c-pxa.txt}       |   18 ------------------
+ .../i2c/{samsung-i2c.txt => i2c-s3c2410.txt}         |    0
+ .../bindings/i2c/{sirf-i2c.txt => i2c-sirf.txt}      |    0
+ .../i2c/{arm-versatile.txt => i2c-versatile.txt}     |    0
+ .../bindings/i2c/{xiic.txt => i2c-xiic.txt}          |    0
+ drivers/i2c/busses/i2c-ocores.c                      |    4 ----
+ 18 files changed, 18 insertions(+), 22 deletions(-)
+ rename Documentation/devicetree/bindings/i2c/{atmel-i2c.txt => i2c-at91.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{davinci.txt => i2c-davinci.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{gpio-i2c.txt => i2c-gpio.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{fsl-imx-i2c.txt => i2c-imx.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{fsl-i2c.txt => i2c-mpc.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{mux.txt => i2c-mux.txt} (100%)
+ create mode 100644 Documentation/devicetree/bindings/i2c/i2c-mv64xxx.txt
+ rename Documentation/devicetree/bindings/i2c/{nomadik.txt => i2c-nomadik.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{cavium-i2c.txt => i2c-octeon.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{omap-i2c.txt => i2c-omap.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{pnx.txt => i2c-pnx.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{ce4100-i2c.txt => i2c-pxa-pci-ce4100.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{mrvl-i2c.txt => i2c-pxa.txt} (70%)
+ rename Documentation/devicetree/bindings/i2c/{samsung-i2c.txt => i2c-s3c2410.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{sirf-i2c.txt => i2c-sirf.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{arm-versatile.txt => i2c-versatile.txt} (100%)
+ rename Documentation/devicetree/bindings/i2c/{xiic.txt => i2c-xiic.txt} (100%)
+
+diff --git a/Documentation/devicetree/bindings/i2c/atmel-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-at91.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/atmel-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-at91.txt
+diff --git a/Documentation/devicetree/bindings/i2c/davinci.txt b/Documentation/devicetree/bindings/i2c/i2c-davinci.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/davinci.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-davinci.txt
+diff --git a/Documentation/devicetree/bindings/i2c/gpio-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-gpio.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/gpio-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-gpio.txt
+diff --git a/Documentation/devicetree/bindings/i2c/fsl-imx-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-imx.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/fsl-imx-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-imx.txt
+diff --git a/Documentation/devicetree/bindings/i2c/fsl-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-mpc.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/fsl-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-mpc.txt
+diff --git a/Documentation/devicetree/bindings/i2c/mux.txt b/Documentation/devicetree/bindings/i2c/i2c-mux.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/mux.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-mux.txt
+diff --git a/Documentation/devicetree/bindings/i2c/i2c-mv64xxx.txt b/Documentation/devicetree/bindings/i2c/i2c-mv64xxx.txt
+new file mode 100644
+index 0000000..f46d928
+--- /dev/null
++++ b/Documentation/devicetree/bindings/i2c/i2c-mv64xxx.txt
+@@ -0,0 +1,18 @@
++
++* Marvell MV64XXX I2C controller
++
++Required properties :
++
++ - reg             : Offset and length of the register set for the device
++ - compatible      : Should be "marvell,mv64xxx-i2c"
++ - interrupts      : The interrupt number
++ - clock-frequency : Desired I2C bus clock frequency in Hz.
++
++Examples:
++
++	i2c@11000 {
++		compatible = "marvell,mv64xxx-i2c";
++		reg = <0x11000 0x20>;
++		interrupts = <29>;
++		clock-frequency = <100000>;
++	};
+diff --git a/Documentation/devicetree/bindings/i2c/nomadik.txt b/Documentation/devicetree/bindings/i2c/i2c-nomadik.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/nomadik.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-nomadik.txt
+diff --git a/Documentation/devicetree/bindings/i2c/cavium-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-octeon.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/cavium-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-octeon.txt
+diff --git a/Documentation/devicetree/bindings/i2c/omap-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-omap.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/omap-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-omap.txt
+diff --git a/Documentation/devicetree/bindings/i2c/pnx.txt b/Documentation/devicetree/bindings/i2c/i2c-pnx.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/pnx.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-pnx.txt
+diff --git a/Documentation/devicetree/bindings/i2c/ce4100-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-pxa-pci-ce4100.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/ce4100-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-pxa-pci-ce4100.txt
+diff --git a/Documentation/devicetree/bindings/i2c/mrvl-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-pxa.txt
+similarity index 70%
+rename from Documentation/devicetree/bindings/i2c/mrvl-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-pxa.txt
+index 0f79450..12b78ac 100644
+--- a/Documentation/devicetree/bindings/i2c/mrvl-i2c.txt
++++ b/Documentation/devicetree/bindings/i2c/i2c-pxa.txt
+@@ -31,21 +31,3 @@ Examples:
+ 		reg = <0xd4025000 0x1000>;
+ 		interrupts = <58>;
+ 	};
+-
+-* Marvell MV64XXX I2C controller
+-
+-Required properties :
+-
+- - reg             : Offset and length of the register set for the device
+- - compatible      : Should be "marvell,mv64xxx-i2c"
+- - interrupts      : The interrupt number
+- - clock-frequency : Desired I2C bus clock frequency in Hz.
+-
+-Examples:
+-
+-	i2c@11000 {
+-		compatible = "marvell,mv64xxx-i2c";
+-		reg = <0x11000 0x20>;
+-		interrupts = <29>;
+-		clock-frequency = <100000>;
+-	};
+diff --git a/Documentation/devicetree/bindings/i2c/samsung-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-s3c2410.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/samsung-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-s3c2410.txt
+diff --git a/Documentation/devicetree/bindings/i2c/sirf-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-sirf.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/sirf-i2c.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-sirf.txt
+diff --git a/Documentation/devicetree/bindings/i2c/arm-versatile.txt b/Documentation/devicetree/bindings/i2c/i2c-versatile.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/arm-versatile.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-versatile.txt
+diff --git a/Documentation/devicetree/bindings/i2c/xiic.txt b/Documentation/devicetree/bindings/i2c/i2c-xiic.txt
+similarity index 100%
+rename from Documentation/devicetree/bindings/i2c/xiic.txt
+rename to Documentation/devicetree/bindings/i2c/i2c-xiic.txt
+diff --git a/drivers/i2c/busses/i2c-ocores.c b/drivers/i2c/busses/i2c-ocores.c
+index bffd550..15da1ac 100644
+--- a/drivers/i2c/busses/i2c-ocores.c
++++ b/drivers/i2c/busses/i2c-ocores.c
+@@ -9,10 +9,6 @@
+  * kind, whether express or implied.
+  */
+ 
+-/*
+- * This driver can be used from the device tree, see
+- *     Documentation/devicetree/bindings/i2c/ocore-i2c.txt
+- */
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+-- 
+1.7.10.4
