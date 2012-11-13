@@ -1,24 +1,27 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
- [209.85.212.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A1CA92C00B9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2012 21:39:16 +1100 (EST)
-Received: by mail-vb0-f51.google.com with SMTP id fn1so6920693vbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2012 02:39:14 -0800 (PST)
+Return-Path: <James.Hogan@imgtec.com>
+Received: from multi.imgtec.com (multi.imgtec.com [194.200.65.239])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "*.imgtec.com",
+ Issuer "DigiCert High Assurance CA-3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 66DA32C00BD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2012 23:01:53 +1100 (EST)
+From: James Hogan <james.hogan@imgtec.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/1] arch Kconfig: remove references to IRQ_PER_CPU
+Date: Tue, 13 Nov 2012 11:59:08 +0000
+Message-ID: <1352807948-26920-1-git-send-email-james.hogan@imgtec.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1352757066.32153.5@snotra>
-References: <CAMuHMdXE0yJNivpirGgx08zqLH2086ydeOU6zswXj-+zn8OsWQ@mail.gmail.com>
- <1352757066.32153.5@snotra>
-Date: Tue, 13 Nov 2012 11:39:13 +0100
-Message-ID: <CAMuHMdVytJ6YcDb1-MAaqwgTKXDLi3tJaVW3vh9aE5smNwJR=g@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.7-rc5
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ James Hogan <james.hogan@imgtec.com>, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ Paul Mundt <lethal@linux-sh.org>, "James E.J.
+ Bottomley" <jejb@parisc-linux.org>, Fenghua Yu <fenghua.yu@intel.com>,
+ Richard Kuo <rkuo@codeaurora.org>, Tony Luck <tony.luck@intel.com>,
+ Mike Frysinger <vapier@gentoo.org>, Ralf Baechle <ralf@linux-mips.org>,
+ uclinux-dist-devel@blackfin.uclinux.org, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,59 +31,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+The IRQ_PER_CPU Kconfig symbol was removed in the following commit:
 
-On Mon, Nov 12, 2012 at 10:51 PM, Scott Wood <scottwood@freescale.com> wrote:
-> On 11/12/2012 03:02:46 PM, Geert Uytterhoeven wrote:
->> On Mon, Nov 12, 2012 at 9:58 PM, Geert Uytterhoeven
->> <geert@linux-m68k.org> wrote:
->> > JFYI, when comparing v3.7-rc5 to v3.7-rc4[3], the summaries are:
->> >   - build errors: +14/-4
->>
->> 14 regressions:
->>   + drivers/virt/fsl_hypervisor.c: error: 'MSR_GS' undeclared (first
->> use in this function):  => 799:93
->
-> These reports would be more useful if the actual .config were provided,
-> rather than just saying "powerpc randconfig".
+Commit 6a58fb3bad099076f36f0f30f44507bc3275cdb6 ("genirq: Remove
+CONFIG_IRQ_PER_CPU") merged in v2.6.39-rc1.
 
-This can be obtained from the kissb build system.
-[1] http://kisskb.ellerman.id.au/kisskb/head/5614/ (all 117 configs)
+But IRQ_PER_CPU wasn't removed from any of the architecture Kconfig
+files where it was defined or selected. It's completely unused so remove
+the remaining references.
 
-> I doubt this particular one is a regression; it looks like the dependencies
+Signed-off-by: James Hogan <james.hogan@imgtec.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Mike Frysinger <vapier@gentoo.org>
+Cc: Richard Kuo <rkuo@codeaurora.org>
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Paul Mundt <lethal@linux-sh.org>
+---
+Based on v3.7-rc5.
 
-Yeah, regressions in randconfigs can be misleading.
-Still, they're build failures.
+Compile tested defconfigs for bfin, ia64, mips, parisc, powerpc, sh, but
+not hexagon.
 
-> have always been too weak (patch sent) and you're just comparing different
-> randomly-generated configs.
+Grepped entire tree to check no references to CONFIG_IRQ_PER_CPU, and
+grepped arch/ for Kconfig files referencing IRQ_PER_CPU.
 
-Thanks for your patch!
+ arch/blackfin/Kconfig |    1 -
+ arch/hexagon/Kconfig  |    1 -
+ arch/ia64/Kconfig     |    1 -
+ arch/mips/Kconfig     |    1 -
+ arch/parisc/Kconfig   |    1 -
+ arch/powerpc/Kconfig  |    1 -
+ arch/sh/Kconfig       |    3 ---
+ 7 files changed, 0 insertions(+), 9 deletions(-)
 
->> powerpc-randconfig
->>
->>   + error: relocation truncated to fit: R_PPC64_REL24 against symbol
->> `._mcount' defined in .text section in arch/powerpc/kernel/entry_64.o:
->> (.text+0x1ff9eb8) => (.text+0x1ffa274), (.text+0x1ff7840)
->>
->> powerpc-allyesconfig
->
->
-> It's been over 3 years since powerpc-allyesconfig built (it's just too big
-> for the relocation model the kernel uses) -- how is this a regression?
-
-It's a regression because it didn't complain about ".mcount" in the
-previous run.
-
-But I'll start stripping them from the rc-incremental reports.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
+index b6f3ad5..c709715 100644
+--- a/arch/blackfin/Kconfig
++++ b/arch/blackfin/Kconfig
+@@ -38,7 +38,6 @@ config BLACKFIN
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select GENERIC_ATOMIC64
+ 	select GENERIC_IRQ_PROBE
+-	select IRQ_PER_CPU if SMP
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+ 	select HAVE_NMI_WATCHDOG if NMI_WATCHDOG
+ 	select GENERIC_SMP_IDLE_THREAD
+diff --git a/arch/hexagon/Kconfig b/arch/hexagon/Kconfig
+index 0744f7d..800dd9c 100644
+--- a/arch/hexagon/Kconfig
++++ b/arch/hexagon/Kconfig
+@@ -12,7 +12,6 @@ config HEXAGON
+ 	# select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	# select ARCH_REQUIRE_GPIOLIB
+ 	# select HAVE_CLK
+-	# select IRQ_PER_CPU
+ 	# select GENERIC_PENDING_IRQ if SMP
+ 	select HAVE_IRQ_WORK
+ 	select GENERIC_ATOMIC64
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 3279646..00c2e88 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -29,7 +29,6 @@ config IA64
+ 	select ARCH_DISCARD_MEMBLOCK
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_PENDING_IRQ if SMP
+-	select IRQ_PER_CPU
+ 	select GENERIC_IRQ_SHOW
+ 	select ARCH_WANT_OPTIONAL_GPIOLIB
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index dba9390..d47de79 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -2197,7 +2197,6 @@ source "mm/Kconfig"
+ config SMP
+ 	bool "Multi-Processing support"
+ 	depends on SYS_SUPPORTS_SMP
+-	select IRQ_PER_CPU
+ 	select USE_GENERIC_SMP_HELPERS
+ 	help
+ 	  This enables support for systems with more than one CPU. If you have
+diff --git a/arch/parisc/Kconfig b/arch/parisc/Kconfig
+index 11def45..6d37987 100644
+--- a/arch/parisc/Kconfig
++++ b/arch/parisc/Kconfig
+@@ -16,7 +16,6 @@ config PARISC
+ 	select BROKEN_RODATA
+ 	select GENERIC_IRQ_PROBE
+ 	select GENERIC_PCI_IOMAP
+-	select IRQ_PER_CPU
+ 	select ARCH_HAVE_NMI_SAFE_CMPXCHG
+ 	select GENERIC_SMP_IDLE_THREAD
+ 	select GENERIC_STRNCPY_FROM_USER
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a902a5c..721dd7b 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -125,7 +125,6 @@ config PPC
+ 	select HAVE_GENERIC_HARDIRQS
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select SPARSE_IRQ
+-	select IRQ_PER_CPU
+ 	select IRQ_DOMAIN
+ 	select GENERIC_IRQ_SHOW
+ 	select GENERIC_IRQ_SHOW_LEVEL
+diff --git a/arch/sh/Kconfig b/arch/sh/Kconfig
+index babc2b8..6f799ec 100644
+--- a/arch/sh/Kconfig
++++ b/arch/sh/Kconfig
+@@ -91,9 +91,6 @@ config GENERIC_CSUM
+ config GENERIC_HWEIGHT
+ 	def_bool y
+ 
+-config IRQ_PER_CPU
+-	def_bool y
+-
+ config GENERIC_GPIO
+ 	def_bool n
+ 
+-- 
+1.7.7.6
