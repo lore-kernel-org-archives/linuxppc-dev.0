@@ -1,13 +1,25 @@
-Return-Path: <wolfram@the-dreams.de>
-From: Wolfram Sang <wolfram@the-dreams.de>
-To: linux-i2c@vger.kernel.org
-Subject: [PATCH] bindings: i2c: use consistent naming for i2c binding
- descriptions
-Date: Tue, 13 Nov 2012 18:16:43 +0100
-Message-Id: <1352827003-24287-1-git-send-email-wolfram@the-dreams.de>
-Cc: devicetree-discuss@ozlabs.org, Wolfram Sang <wolfram@the-dreams.de>,
- linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Rob Herring <robherring2@gmail.com>, linux-arm-kernel@lists.infradead.org
+Return-Path: <jwerner@chromium.org>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 08E822C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 08:56:00 +1100 (EST)
+Received: by mail-pb0-f51.google.com with SMTP id rp16so4926192pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2012 13:55:58 -0800 (PST)
+From: Julius Werner <jwerner@chromium.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] cpuidle: Measure idle state durations with monotonic clock
+Date: Tue, 13 Nov 2012 13:52:43 -0800
+Message-Id: <1352843563-16392-1-git-send-email-jwerner@chromium.org>
+Cc: Kevin Hilman <khilman@ti.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
+ Trinabh Gupta <g.trinabh@gmail.com>, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+ linux-acpi@vger.kernel.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Julius Werner <jwerner@chromium.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Sameer Nanda <snanda@chromium.org>, Len Brown <lenb@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,192 +29,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Filenames of devictree binding documentation seems to be arbitrary and
-for me it is unneeded hazzle to find the corresponding documentation for
-a specific driver.
+Many cpuidle drivers measure their time spent in an idle state by
+reading the wallclock time before and after idling and calculating the
+difference. This leads to erroneous results when the wallclock time gets
+updated by another processor in the meantime, adding that clock
+adjustment to the idle state's time counter.
 
-Naming the description the same as the driver is a lot easier and makes
-sense to me since the driver defines the binding it understands.
+If the clock adjustment was negative, the result is even worse due to an
+erroneous cast from int to unsigned long long of the last_residency
+variable. The negative 32 bit integer will zero-extend and result in a
+forward time jump of roughly four billion milliseconds or 1.3 hours on
+the idle state residency counter.
 
-Also, remove a reference in one source to the binding documentation, since path
-information easily gets stale.
+This patch changes all affected cpuidle drivers to use the monotonic
+clock for their measurements instead. It also removes the erroneous
+cast, making sure that negative residency values are applied correctly
+even though they should not appear anymore.
 
-Signed-off-by: Wolfram Sang <wolfram@the-dreams.de>
-Cc: Rob Herring <robherring2@gmail.com>
-Cc: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Julius Werner <jwerner@chromium.org>
 ---
+ arch/powerpc/platforms/pseries/processor_idle.c |    4 ++--
+ drivers/acpi/processor_idle.c                   |   12 ++++++------
+ drivers/cpuidle/cpuidle.c                       |    3 +--
+ drivers/idle/intel_idle.c                       |   13 ++++---------
+ 4 files changed, 13 insertions(+), 19 deletions(-)
 
-I think it would be helpful if other subsystems would follow if we can agree on
-this pattern.
-
-Thanks,
-
-   Wolfram
-
- .../bindings/i2c/{atmel-i2c.txt => i2c-at91.txt}     |    0
- .../bindings/i2c/{davinci.txt => i2c-davinci.txt}    |    0
- .../bindings/i2c/{gpio-i2c.txt => i2c-gpio.txt}      |    0
- .../bindings/i2c/{fsl-imx-i2c.txt => i2c-imx.txt}    |    0
- .../bindings/i2c/{fsl-i2c.txt => i2c-mpc.txt}        |    0
- .../devicetree/bindings/i2c/{mux.txt => i2c-mux.txt} |    0
- .../devicetree/bindings/i2c/i2c-mv64xxx.txt          |   18 ++++++++++++++++++
- .../bindings/i2c/{nomadik.txt => i2c-nomadik.txt}    |    0
- .../bindings/i2c/{cavium-i2c.txt => i2c-octeon.txt}  |    0
- .../bindings/i2c/{omap-i2c.txt => i2c-omap.txt}      |    0
- .../devicetree/bindings/i2c/{pnx.txt => i2c-pnx.txt} |    0
- .../i2c/{ce4100-i2c.txt => i2c-pxa-pci-ce4100.txt}   |    0
- .../bindings/i2c/{mrvl-i2c.txt => i2c-pxa.txt}       |   18 ------------------
- .../i2c/{samsung-i2c.txt => i2c-s3c2410.txt}         |    0
- .../bindings/i2c/{sirf-i2c.txt => i2c-sirf.txt}      |    0
- .../i2c/{arm-versatile.txt => i2c-versatile.txt}     |    0
- .../bindings/i2c/{xiic.txt => i2c-xiic.txt}          |    0
- drivers/i2c/busses/i2c-ocores.c                      |    4 ----
- 18 files changed, 18 insertions(+), 22 deletions(-)
- rename Documentation/devicetree/bindings/i2c/{atmel-i2c.txt => i2c-at91.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{davinci.txt => i2c-davinci.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{gpio-i2c.txt => i2c-gpio.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{fsl-imx-i2c.txt => i2c-imx.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{fsl-i2c.txt => i2c-mpc.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{mux.txt => i2c-mux.txt} (100%)
- create mode 100644 Documentation/devicetree/bindings/i2c/i2c-mv64xxx.txt
- rename Documentation/devicetree/bindings/i2c/{nomadik.txt => i2c-nomadik.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{cavium-i2c.txt => i2c-octeon.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{omap-i2c.txt => i2c-omap.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{pnx.txt => i2c-pnx.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{ce4100-i2c.txt => i2c-pxa-pci-ce4100.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{mrvl-i2c.txt => i2c-pxa.txt} (70%)
- rename Documentation/devicetree/bindings/i2c/{samsung-i2c.txt => i2c-s3c2410.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{sirf-i2c.txt => i2c-sirf.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{arm-versatile.txt => i2c-versatile.txt} (100%)
- rename Documentation/devicetree/bindings/i2c/{xiic.txt => i2c-xiic.txt} (100%)
-
-diff --git a/Documentation/devicetree/bindings/i2c/atmel-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-at91.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/atmel-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-at91.txt
-diff --git a/Documentation/devicetree/bindings/i2c/davinci.txt b/Documentation/devicetree/bindings/i2c/i2c-davinci.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/davinci.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-davinci.txt
-diff --git a/Documentation/devicetree/bindings/i2c/gpio-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-gpio.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/gpio-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-gpio.txt
-diff --git a/Documentation/devicetree/bindings/i2c/fsl-imx-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-imx.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/fsl-imx-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-imx.txt
-diff --git a/Documentation/devicetree/bindings/i2c/fsl-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-mpc.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/fsl-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-mpc.txt
-diff --git a/Documentation/devicetree/bindings/i2c/mux.txt b/Documentation/devicetree/bindings/i2c/i2c-mux.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/mux.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-mux.txt
-diff --git a/Documentation/devicetree/bindings/i2c/i2c-mv64xxx.txt b/Documentation/devicetree/bindings/i2c/i2c-mv64xxx.txt
-new file mode 100644
-index 0000000..f46d928
---- /dev/null
-+++ b/Documentation/devicetree/bindings/i2c/i2c-mv64xxx.txt
-@@ -0,0 +1,18 @@
-+
-+* Marvell MV64XXX I2C controller
-+
-+Required properties :
-+
-+ - reg             : Offset and length of the register set for the device
-+ - compatible      : Should be "marvell,mv64xxx-i2c"
-+ - interrupts      : The interrupt number
-+ - clock-frequency : Desired I2C bus clock frequency in Hz.
-+
-+Examples:
-+
-+	i2c@11000 {
-+		compatible = "marvell,mv64xxx-i2c";
-+		reg = <0x11000 0x20>;
-+		interrupts = <29>;
-+		clock-frequency = <100000>;
-+	};
-diff --git a/Documentation/devicetree/bindings/i2c/nomadik.txt b/Documentation/devicetree/bindings/i2c/i2c-nomadik.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/nomadik.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-nomadik.txt
-diff --git a/Documentation/devicetree/bindings/i2c/cavium-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-octeon.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/cavium-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-octeon.txt
-diff --git a/Documentation/devicetree/bindings/i2c/omap-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-omap.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/omap-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-omap.txt
-diff --git a/Documentation/devicetree/bindings/i2c/pnx.txt b/Documentation/devicetree/bindings/i2c/i2c-pnx.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/pnx.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-pnx.txt
-diff --git a/Documentation/devicetree/bindings/i2c/ce4100-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-pxa-pci-ce4100.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/ce4100-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-pxa-pci-ce4100.txt
-diff --git a/Documentation/devicetree/bindings/i2c/mrvl-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-pxa.txt
-similarity index 70%
-rename from Documentation/devicetree/bindings/i2c/mrvl-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-pxa.txt
-index 0f79450..12b78ac 100644
---- a/Documentation/devicetree/bindings/i2c/mrvl-i2c.txt
-+++ b/Documentation/devicetree/bindings/i2c/i2c-pxa.txt
-@@ -31,21 +31,3 @@ Examples:
- 		reg = <0xd4025000 0x1000>;
- 		interrupts = <58>;
- 	};
--
--* Marvell MV64XXX I2C controller
--
--Required properties :
--
-- - reg             : Offset and length of the register set for the device
-- - compatible      : Should be "marvell,mv64xxx-i2c"
-- - interrupts      : The interrupt number
-- - clock-frequency : Desired I2C bus clock frequency in Hz.
--
--Examples:
--
--	i2c@11000 {
--		compatible = "marvell,mv64xxx-i2c";
--		reg = <0x11000 0x20>;
--		interrupts = <29>;
--		clock-frequency = <100000>;
--	};
-diff --git a/Documentation/devicetree/bindings/i2c/samsung-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-s3c2410.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/samsung-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-s3c2410.txt
-diff --git a/Documentation/devicetree/bindings/i2c/sirf-i2c.txt b/Documentation/devicetree/bindings/i2c/i2c-sirf.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/sirf-i2c.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-sirf.txt
-diff --git a/Documentation/devicetree/bindings/i2c/arm-versatile.txt b/Documentation/devicetree/bindings/i2c/i2c-versatile.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/arm-versatile.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-versatile.txt
-diff --git a/Documentation/devicetree/bindings/i2c/xiic.txt b/Documentation/devicetree/bindings/i2c/i2c-xiic.txt
-similarity index 100%
-rename from Documentation/devicetree/bindings/i2c/xiic.txt
-rename to Documentation/devicetree/bindings/i2c/i2c-xiic.txt
-diff --git a/drivers/i2c/busses/i2c-ocores.c b/drivers/i2c/busses/i2c-ocores.c
-index bffd550..15da1ac 100644
---- a/drivers/i2c/busses/i2c-ocores.c
-+++ b/drivers/i2c/busses/i2c-ocores.c
-@@ -9,10 +9,6 @@
-  * kind, whether express or implied.
-  */
+diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+index 45d00e5..4d806b4 100644
+--- a/arch/powerpc/platforms/pseries/processor_idle.c
++++ b/arch/powerpc/platforms/pseries/processor_idle.c
+@@ -36,7 +36,7 @@ static struct cpuidle_state *cpuidle_state_table;
+ static inline void idle_loop_prolog(unsigned long *in_purr, ktime_t *kt_before)
+ {
  
--/*
-- * This driver can be used from the device tree, see
-- *     Documentation/devicetree/bindings/i2c/ocore-i2c.txt
-- */
+-	*kt_before = ktime_get_real();
++	*kt_before = ktime_get();
+ 	*in_purr = mfspr(SPRN_PURR);
+ 	/*
+ 	 * Indicate to the HV that we are idle. Now would be
+@@ -50,7 +50,7 @@ static inline  s64 idle_loop_epilog(unsigned long in_purr, ktime_t kt_before)
+ 	get_lppaca()->wait_state_cycles += mfspr(SPRN_PURR) - in_purr;
+ 	get_lppaca()->idle = 0;
+ 
+-	return ktime_to_us(ktime_sub(ktime_get_real(), kt_before));
++	return ktime_to_us(ktime_sub(ktime_get(), kt_before));
+ }
+ 
+ static int snooze_loop(struct cpuidle_device *dev,
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index e8086c7..8c98d73 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -751,9 +751,9 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
+ 
+ 
+ 	lapic_timer_state_broadcast(pr, cx, 1);
+-	kt1 = ktime_get_real();
++	kt1 = ktime_get();
+ 	acpi_idle_do_entry(cx);
+-	kt2 = ktime_get_real();
++	kt2 = ktime_get();
+ 	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
+ 
+ 	/* Update device last_residency*/
+@@ -843,11 +843,11 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+ 	if (cx->type == ACPI_STATE_C3)
+ 		ACPI_FLUSH_CPU_CACHE();
+ 
+-	kt1 = ktime_get_real();
++	kt1 = ktime_get();
+ 	/* Tell the scheduler that we are going deep-idle: */
+ 	sched_clock_idle_sleep_event();
+ 	acpi_idle_do_entry(cx);
+-	kt2 = ktime_get_real();
++	kt2 = ktime_get();
+ 	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
+ 	idle_time = idle_time_ns;
+ 	do_div(idle_time, NSEC_PER_USEC);
+@@ -934,7 +934,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 	 */
+ 	lapic_timer_state_broadcast(pr, cx, 1);
+ 
+-	kt1 = ktime_get_real();
++	kt1 = ktime_get();
+ 	/*
+ 	 * disable bus master
+ 	 * bm_check implies we need ARB_DIS
+@@ -965,7 +965,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 		c3_cpu_count--;
+ 		raw_spin_unlock(&c3_lock);
+ 	}
+-	kt2 = ktime_get_real();
++	kt2 = ktime_get();
+ 	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
+ 	idle_time = idle_time_ns;
+ 	do_div(idle_time, NSEC_PER_USEC);
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 7f15b85..1536edd 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -109,8 +109,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 		/* This can be moved to within driver enter routine
+ 		 * but that results in multiple copies of same code.
+ 		 */
+-		dev->states_usage[entered_state].time +=
+-				(unsigned long long)dev->last_residency;
++		dev->states_usage[entered_state].time += dev->last_residency;
+ 		dev->states_usage[entered_state].usage++;
+ 	} else {
+ 		dev->last_residency = 0;
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index b0f6b4c..6329a97 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -56,7 +56,7 @@
  #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/init.h>
+ #include <linux/cpuidle.h>
+ #include <linux/clockchips.h>
+-#include <linux/hrtimer.h>	/* ktime_get_real() */
++#include <linux/hrtimer.h>	/* ktime_get() */
+ #include <trace/events/power.h>
+ #include <linux/sched.h>
+ #include <linux/notifier.h>
+@@ -281,8 +281,7 @@ static int intel_idle(struct cpuidle_device *dev,
+ 	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
+ 	unsigned long eax = (unsigned long)cpuidle_get_statedata(state_usage);
+ 	unsigned int cstate;
+-	ktime_t kt_before, kt_after;
+-	s64 usec_delta;
++	ktime_t kt_before;
+ 	int cpu = smp_processor_id();
+ 
+ 	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1;
+@@ -297,7 +296,7 @@ static int intel_idle(struct cpuidle_device *dev,
+ 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+ 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
+ 
+-	kt_before = ktime_get_real();
++	kt_before = ktime_get();
+ 
+ 	stop_critical_timings();
+ 	if (!need_resched()) {
+@@ -310,17 +309,13 @@ static int intel_idle(struct cpuidle_device *dev,
+ 
+ 	start_critical_timings();
+ 
+-	kt_after = ktime_get_real();
+-	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
++	dev->last_residency = ktime_to_us(ktime_sub(ktime_get(), kt_before));
+ 
+ 	local_irq_enable();
+ 
+ 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+ 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
+ 
+-	/* Update cpuidle counters */
+-	dev->last_residency = (int)usec_delta;
+-
+ 	return index;
+ }
+ 
 -- 
-1.7.10.4
+1.7.8.6
