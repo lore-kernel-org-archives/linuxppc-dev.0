@@ -1,25 +1,30 @@
-Return-Path: <jwerner@chromium.org>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 08E822C0092
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 08:56:00 +1100 (EST)
-Received: by mail-pb0-f51.google.com with SMTP id rp16so4926192pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Nov 2012 13:55:58 -0800 (PST)
-From: Julius Werner <jwerner@chromium.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] cpuidle: Measure idle state durations with monotonic clock
-Date: Tue, 13 Nov 2012 13:52:43 -0800
-Message-Id: <1352843563-16392-1-git-send-email-jwerner@chromium.org>
-Cc: Kevin Hilman <khilman@ti.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
- Trinabh Gupta <g.trinabh@gmail.com>, linux-pm@vger.kernel.org,
- Daniel Lezcano <daniel.lezcano@linaro.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
- linux-acpi@vger.kernel.org,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Julius Werner <jwerner@chromium.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Sameer Nanda <snanda@chromium.org>, Len Brown <lenb@kernel.org>
+Return-Path: <rkuo@codeaurora.org>
+Received: from wolverine02.qualcomm.com (wolverine02.qualcomm.com
+ [199.106.114.251])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "wolverine02.qualcomm.com",
+ Issuer "VeriSign Class 3 Secure Server CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0C1B02C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 12:03:55 +1100 (EST)
+Date: Tue, 13 Nov 2012 18:53:41 -0600
+From: Richard Kuo <rkuo@codeaurora.org>
+To: James Hogan <james.hogan@imgtec.com>
+Subject: Re: [PATCH 1/1] arch Kconfig: remove references to IRQ_PER_CPU
+Message-ID: <20121114005341.GA6917@codeaurora.org>
+References: <1352807948-26920-1-git-send-email-james.hogan@imgtec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1352807948-26920-1-git-send-email-james.hogan@imgtec.com>
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+ linux-parisc@vger.kernel.org, linux-sh@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, Helge Deller <deller@gmx.de>,
+ linux-kernel@vger.kernel.org, Fenghua Yu <fenghua.yu@intel.com>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ Paul Mundt <lethal@linux-sh.org>, Mike Frysinger <vapier@gentoo.org>,
+ Ralf Baechle <ralf@linux-mips.org>, uclinux-dist-devel@blackfin.uclinux.org,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,165 +34,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Many cpuidle drivers measure their time spent in an idle state by
-reading the wallclock time before and after idling and calculating the
-difference. This leads to erroneous results when the wallclock time gets
-updated by another processor in the meantime, adding that clock
-adjustment to the idle state's time counter.
+On Tue, Nov 13, 2012 at 11:59:08AM +0000, James Hogan wrote:
+> The IRQ_PER_CPU Kconfig symbol was removed in the following commit:
+> 
+> Commit 6a58fb3bad099076f36f0f30f44507bc3275cdb6 ("genirq: Remove
+> CONFIG_IRQ_PER_CPU") merged in v2.6.39-rc1.
+> 
+> But IRQ_PER_CPU wasn't removed from any of the architecture Kconfig
+> files where it was defined or selected. It's completely unused so remove
+> the remaining references.
+> 
+> Signed-off-by: James Hogan <james.hogan@imgtec.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Mike Frysinger <vapier@gentoo.org>
+> Cc: Richard Kuo <rkuo@codeaurora.org>
+> Cc: Tony Luck <tony.luck@intel.com>
+> Cc: Fenghua Yu <fenghua.yu@intel.com>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
+> Cc: Helge Deller <deller@gmx.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> ---
+> Based on v3.7-rc5.
+> 
+> Compile tested defconfigs for bfin, ia64, mips, parisc, powerpc, sh, but
+> not hexagon.
+> 
+> Grepped entire tree to check no references to CONFIG_IRQ_PER_CPU, and
+> grepped arch/ for Kconfig files referencing IRQ_PER_CPU.
+> 
+>  arch/blackfin/Kconfig |    1 -
+>  arch/hexagon/Kconfig  |    1 -
+>  arch/ia64/Kconfig     |    1 -
+>  arch/mips/Kconfig     |    1 -
+>  arch/parisc/Kconfig   |    1 -
+>  arch/powerpc/Kconfig  |    1 -
+>  arch/sh/Kconfig       |    3 ---
+>  7 files changed, 0 insertions(+), 9 deletions(-)
+> 
 
-If the clock adjustment was negative, the result is even worse due to an
-erroneous cast from int to unsigned long long of the last_residency
-variable. The negative 32 bit integer will zero-extend and result in a
-forward time jump of roughly four billion milliseconds or 1.3 hours on
-the idle state residency counter.
+Hexagon's was commented out anyways, but thanks for pointing it out.
 
-This patch changes all affected cpuidle drivers to use the monotonic
-clock for their measurements instead. It also removes the erroneous
-cast, making sure that negative residency values are applied correctly
-even though they should not appear anymore.
+Acked-by: Richard Kuo <rkuo@codeaurora.org>
 
-Signed-off-by: Julius Werner <jwerner@chromium.org>
----
- arch/powerpc/platforms/pseries/processor_idle.c |    4 ++--
- drivers/acpi/processor_idle.c                   |   12 ++++++------
- drivers/cpuidle/cpuidle.c                       |    3 +--
- drivers/idle/intel_idle.c                       |   13 ++++---------
- 4 files changed, 13 insertions(+), 19 deletions(-)
-
-diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-index 45d00e5..4d806b4 100644
---- a/arch/powerpc/platforms/pseries/processor_idle.c
-+++ b/arch/powerpc/platforms/pseries/processor_idle.c
-@@ -36,7 +36,7 @@ static struct cpuidle_state *cpuidle_state_table;
- static inline void idle_loop_prolog(unsigned long *in_purr, ktime_t *kt_before)
- {
- 
--	*kt_before = ktime_get_real();
-+	*kt_before = ktime_get();
- 	*in_purr = mfspr(SPRN_PURR);
- 	/*
- 	 * Indicate to the HV that we are idle. Now would be
-@@ -50,7 +50,7 @@ static inline  s64 idle_loop_epilog(unsigned long in_purr, ktime_t kt_before)
- 	get_lppaca()->wait_state_cycles += mfspr(SPRN_PURR) - in_purr;
- 	get_lppaca()->idle = 0;
- 
--	return ktime_to_us(ktime_sub(ktime_get_real(), kt_before));
-+	return ktime_to_us(ktime_sub(ktime_get(), kt_before));
- }
- 
- static int snooze_loop(struct cpuidle_device *dev,
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index e8086c7..8c98d73 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -751,9 +751,9 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
- 
- 
- 	lapic_timer_state_broadcast(pr, cx, 1);
--	kt1 = ktime_get_real();
-+	kt1 = ktime_get();
- 	acpi_idle_do_entry(cx);
--	kt2 = ktime_get_real();
-+	kt2 = ktime_get();
- 	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
- 
- 	/* Update device last_residency*/
-@@ -843,11 +843,11 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 	if (cx->type == ACPI_STATE_C3)
- 		ACPI_FLUSH_CPU_CACHE();
- 
--	kt1 = ktime_get_real();
-+	kt1 = ktime_get();
- 	/* Tell the scheduler that we are going deep-idle: */
- 	sched_clock_idle_sleep_event();
- 	acpi_idle_do_entry(cx);
--	kt2 = ktime_get_real();
-+	kt2 = ktime_get();
- 	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
- 	idle_time = idle_time_ns;
- 	do_div(idle_time, NSEC_PER_USEC);
-@@ -934,7 +934,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 	 */
- 	lapic_timer_state_broadcast(pr, cx, 1);
- 
--	kt1 = ktime_get_real();
-+	kt1 = ktime_get();
- 	/*
- 	 * disable bus master
- 	 * bm_check implies we need ARB_DIS
-@@ -965,7 +965,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 		c3_cpu_count--;
- 		raw_spin_unlock(&c3_lock);
- 	}
--	kt2 = ktime_get_real();
-+	kt2 = ktime_get();
- 	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
- 	idle_time = idle_time_ns;
- 	do_div(idle_time, NSEC_PER_USEC);
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 7f15b85..1536edd 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -109,8 +109,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 		/* This can be moved to within driver enter routine
- 		 * but that results in multiple copies of same code.
- 		 */
--		dev->states_usage[entered_state].time +=
--				(unsigned long long)dev->last_residency;
-+		dev->states_usage[entered_state].time += dev->last_residency;
- 		dev->states_usage[entered_state].usage++;
- 	} else {
- 		dev->last_residency = 0;
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index b0f6b4c..6329a97 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -56,7 +56,7 @@
- #include <linux/kernel.h>
- #include <linux/cpuidle.h>
- #include <linux/clockchips.h>
--#include <linux/hrtimer.h>	/* ktime_get_real() */
-+#include <linux/hrtimer.h>	/* ktime_get() */
- #include <trace/events/power.h>
- #include <linux/sched.h>
- #include <linux/notifier.h>
-@@ -281,8 +281,7 @@ static int intel_idle(struct cpuidle_device *dev,
- 	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
- 	unsigned long eax = (unsigned long)cpuidle_get_statedata(state_usage);
- 	unsigned int cstate;
--	ktime_t kt_before, kt_after;
--	s64 usec_delta;
-+	ktime_t kt_before;
- 	int cpu = smp_processor_id();
- 
- 	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1;
-@@ -297,7 +296,7 @@ static int intel_idle(struct cpuidle_device *dev,
- 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
- 
--	kt_before = ktime_get_real();
-+	kt_before = ktime_get();
- 
- 	stop_critical_timings();
- 	if (!need_resched()) {
-@@ -310,17 +309,13 @@ static int intel_idle(struct cpuidle_device *dev,
- 
- 	start_critical_timings();
- 
--	kt_after = ktime_get_real();
--	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
-+	dev->last_residency = ktime_to_us(ktime_sub(ktime_get(), kt_before));
- 
- 	local_irq_enable();
- 
- 	if (!(lapic_timer_reliable_states & (1 << (cstate))))
- 		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
- 
--	/* Update cpuidle counters */
--	dev->last_residency = (int)usec_delta;
--
- 	return index;
- }
- 
 -- 
-1.7.8.6
+
+Sent by an employee of the Qualcomm Innovation Center, Inc.
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+hosted by The Linux Foundation
