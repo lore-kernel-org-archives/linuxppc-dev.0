@@ -1,22 +1,29 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 746D52C007E
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2012 21:28:09 +1100 (EST)
-Date: Wed, 14 Nov 2012 11:27:55 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/4] perf: Create a sysfs entry for Power event format
-Message-ID: <20121114102755.GB2220@krava.brq.redhat.com>
-References: <20121107191818.GA16211@us.ibm.com>
- <20121107191951.GD16211@us.ibm.com>
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
+ [209.85.217.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E5C3E2C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 21:57:47 +1100 (EST)
+Received: by mail-lb0-f179.google.com with SMTP id c1so252351lbg.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 02:57:42 -0800 (PST)
+Message-ID: <50A37921.7050909@linaro.org>
+Date: Wed, 14 Nov 2012 11:57:37 +0100
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20121107191951.GD16211@us.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, robert.richter@amd.com,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+To: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Subject: Re: [PATCH] cpuidle: Measure idle state durations with monotonic clock
+References: <1352843563-16392-1-git-send-email-jwerner@chromium.org>
+ <50A35F21.9040003@linux.vnet.ibm.com>
+In-Reply-To: <50A35F21.9040003@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Kevin Hilman <khilman@ti.com>, Trinabh Gupta <g.trinabh@gmail.com>,
+ linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Julius Werner <jwerner@chromium.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Sameer Nanda <snanda@chromium.org>, Len Brown <lenb@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,62 +33,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Nov 07, 2012 at 11:19:52AM -0800, Sukadev Bhattiprolu wrote:
+On 11/14/2012 10:06 AM, Deepthi Dharwar wrote:
+> On 11/14/2012 03:22 AM, Julius Werner wrote:
+>> Many cpuidle drivers measure their time spent in an idle state by
+>> reading the wallclock time before and after idling and calculating the
+>> difference. This leads to erroneous results when the wallclock time gets
+>> updated by another processor in the meantime, adding that clock
+>> adjustment to the idle state's time counter.
+>>
+>> If the clock adjustment was negative, the result is even worse due to an
+>> erroneous cast from int to unsigned long long of the last_residency
+>> variable. The negative 32 bit integer will zero-extend and result in a
+>> forward time jump of roughly four billion milliseconds or 1.3 hours on
+>> the idle state residency counter.
+>>
+>> This patch changes all affected cpuidle drivers to use the monotonic
+>> clock for their measurements instead. It also removes the erroneous
+>> cast, making sure that negative residency values are applied correctly
+>> even though they should not appear anymore.
 > 
-> From bafc551c31ce23c1cba0b75d23de6c46aba90f26 Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Tue, 6 Nov 2012 16:30:28 -0800
-> Subject: [PATCH 4/4] perf: Create a sysfs entry for Power event format
-> 
-> Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
-> which describes the format of a POWER cpu.
-> 
-> 	$ cat /sys/bus/event_source/devices/cpu/format/event
-> 	config:0-20
-> 
-> The format of the event is the same for all POWER cpus, so bulk of this
-> change is in the code common to POWER cpus.
-> 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/perf_event_server.h |    8 ++++++++
->  arch/powerpc/perf/core-book3s.c              |   19 +++++++++++++++++++
->  arch/powerpc/perf/power7-pmu.c               |    1 +
->  3 files changed, 28 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-> index ad84f73..20a49bf 100644
-> --- a/arch/powerpc/include/asm/perf_event_server.h
-> +++ b/arch/powerpc/include/asm/perf_event_server.h
-> @@ -130,3 +130,11 @@ extern ssize_t power_events_sysfs_show(struct device *dev,
->  		.attr = __ATTR(_name, 0444, power_events_sysfs_show, NULL),\
->  		.id   = PM_##_id,                                               \
->  	};
-> +
-> +/*
-> + * Format of a perf event is the same on all POWER cpus. Declare a
-> + * common sysfs attribute group that individual POWER cpus can share.
-> + */
-> +extern struct attribute_group power_pmu_format_group;
-> +
-> +
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 19b23bd..388e2a1 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -1315,6 +1315,25 @@ ssize_t power_events_sysfs_show(struct device *dev,
->         return sprintf(page, "event=0x%02llx\n", pmu_attr->id);
->  }
->  
-> +static ssize_t power_config_sysfs_show(struct device *dev,
-> +				struct device_attribute *attr, char *page)
-> +{
-> +	return sprintf(page, "config:0-20\n");
-> +}
-> +
-> +static struct device_attribute config_dev_attr = \
-> +			__ATTR(event, 0444, power_config_sysfs_show, NULL);
+> Currently tegra/cpuidle uses ktime_get(). Good to have it for all
+> the other arch idle residency time logging too.
 
-there's PMU_FORMAT_ATTR in include/linux/perf_event.h macro doing this
+Actually it is used by all arm cpuidle drivers through the wrapper
+"cpuidle_wrap_enter" and the en_core_tk_irqen flag.
 
-jirka
+> Tested patch on pseries.
+> 
+> Reviewed-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+> 
+> Cheers,
+> Deepthi
+> 
+>>
+>> Signed-off-by: Julius Werner <jwerner@chromium.org>
+>> ---
+>>  arch/powerpc/platforms/pseries/processor_idle.c |    4 ++--
+>>  drivers/acpi/processor_idle.c                   |   12 ++++++------
+>>  drivers/cpuidle/cpuidle.c                       |    3 +--
+>>  drivers/idle/intel_idle.c                       |   13 ++++---------
+>>  4 files changed, 13 insertions(+), 19 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+>> index 45d00e5..4d806b4 100644
+>> --- a/arch/powerpc/platforms/pseries/processor_idle.c
+>> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
+>> @@ -36,7 +36,7 @@ static struct cpuidle_state *cpuidle_state_table;
+>>  static inline void idle_loop_prolog(unsigned long *in_purr, ktime_t *kt_before)
+>>  {
+>>
+>> -	*kt_before = ktime_get_real();
+>> +	*kt_before = ktime_get();
+>>  	*in_purr = mfspr(SPRN_PURR);
+>>  	/*
+>>  	 * Indicate to the HV that we are idle. Now would be
+>> @@ -50,7 +50,7 @@ static inline  s64 idle_loop_epilog(unsigned long in_purr, ktime_t kt_before)
+>>  	get_lppaca()->wait_state_cycles += mfspr(SPRN_PURR) - in_purr;
+>>  	get_lppaca()->idle = 0;
+>>
+>> -	return ktime_to_us(ktime_sub(ktime_get_real(), kt_before));
+>> +	return ktime_to_us(ktime_sub(ktime_get(), kt_before));
+>>  }
+>>
+>>  static int snooze_loop(struct cpuidle_device *dev,
+>> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+>> index e8086c7..8c98d73 100644
+>> --- a/drivers/acpi/processor_idle.c
+>> +++ b/drivers/acpi/processor_idle.c
+>> @@ -751,9 +751,9 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
+>>
+>>
+>>  	lapic_timer_state_broadcast(pr, cx, 1);
+>> -	kt1 = ktime_get_real();
+>> +	kt1 = ktime_get();
+>>  	acpi_idle_do_entry(cx);
+>> -	kt2 = ktime_get_real();
+>> +	kt2 = ktime_get();
+>>  	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
+>>
+>>  	/* Update device last_residency*/
+>> @@ -843,11 +843,11 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+>>  	if (cx->type == ACPI_STATE_C3)
+>>  		ACPI_FLUSH_CPU_CACHE();
+>>
+>> -	kt1 = ktime_get_real();
+>> +	kt1 = ktime_get();
+>>  	/* Tell the scheduler that we are going deep-idle: */
+>>  	sched_clock_idle_sleep_event();
+>>  	acpi_idle_do_entry(cx);
+>> -	kt2 = ktime_get_real();
+>> +	kt2 = ktime_get();
+>>  	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
+>>  	idle_time = idle_time_ns;
+>>  	do_div(idle_time, NSEC_PER_USEC);
+>> @@ -934,7 +934,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>>  	 */
+>>  	lapic_timer_state_broadcast(pr, cx, 1);
+>>
+>> -	kt1 = ktime_get_real();
+>> +	kt1 = ktime_get();
+>>  	/*
+>>  	 * disable bus master
+>>  	 * bm_check implies we need ARB_DIS
+>> @@ -965,7 +965,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>>  		c3_cpu_count--;
+>>  		raw_spin_unlock(&c3_lock);
+>>  	}
+>> -	kt2 = ktime_get_real();
+>> +	kt2 = ktime_get();
+>>  	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
+>>  	idle_time = idle_time_ns;
+>>  	do_div(idle_time, NSEC_PER_USEC);
+>> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+>> index 7f15b85..1536edd 100644
+>> --- a/drivers/cpuidle/cpuidle.c
+>> +++ b/drivers/cpuidle/cpuidle.c
+>> @@ -109,8 +109,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>>  		/* This can be moved to within driver enter routine
+>>  		 * but that results in multiple copies of same code.
+>>  		 */
+>> -		dev->states_usage[entered_state].time +=
+>> -				(unsigned long long)dev->last_residency;
+>> +		dev->states_usage[entered_state].time += dev->last_residency;
+>>  		dev->states_usage[entered_state].usage++;
+>>  	} else {
+>>  		dev->last_residency = 0;
+>> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+>> index b0f6b4c..6329a97 100644
+>> --- a/drivers/idle/intel_idle.c
+>> +++ b/drivers/idle/intel_idle.c
+>> @@ -56,7 +56,7 @@
+>>  #include <linux/kernel.h>
+>>  #include <linux/cpuidle.h>
+>>  #include <linux/clockchips.h>
+>> -#include <linux/hrtimer.h>	/* ktime_get_real() */
+>> +#include <linux/hrtimer.h>	/* ktime_get() */
+>>  #include <trace/events/power.h>
+>>  #include <linux/sched.h>
+>>  #include <linux/notifier.h>
+>> @@ -281,8 +281,7 @@ static int intel_idle(struct cpuidle_device *dev,
+>>  	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
+>>  	unsigned long eax = (unsigned long)cpuidle_get_statedata(state_usage);
+>>  	unsigned int cstate;
+>> -	ktime_t kt_before, kt_after;
+>> -	s64 usec_delta;
+>> +	ktime_t kt_before;
+>>  	int cpu = smp_processor_id();
+>>
+>>  	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1;
+>> @@ -297,7 +296,7 @@ static int intel_idle(struct cpuidle_device *dev,
+>>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
+>>
+>> -	kt_before = ktime_get_real();
+>> +	kt_before = ktime_get();
+>>
+>>  	stop_critical_timings();
+>>  	if (!need_resched()) {
+>> @@ -310,17 +309,13 @@ static int intel_idle(struct cpuidle_device *dev,
+>>
+>>  	start_critical_timings();
+>>
+>> -	kt_after = ktime_get_real();
+>> -	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
+>> +	dev->last_residency = ktime_to_us(ktime_sub(ktime_get(), kt_before));
+>>
+>>  	local_irq_enable();
+>>
+>>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
+>>
+>> -	/* Update cpuidle counters */
+>> -	dev->last_residency = (int)usec_delta;
+>> -
+>>  	return index;
+>>  }
+>>
+> 
+
+
+-- 
+ <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
