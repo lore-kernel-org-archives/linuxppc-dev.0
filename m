@@ -1,22 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id AAA872C007E
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2012 23:48:11 +1100 (EST)
-Message-ID: <1352897279.23412.22.camel@pasglop>
-Subject: Re: [PATCH] TTY: hvc_console, fix port reference count going to
- zero prematurely
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jiri Slaby <jslaby@suse.cz>
-Date: Wed, 14 Nov 2012 23:47:59 +1100
-In-Reply-To: <50A36844.7080207@suse.cz>
-References: <20121114081547.GA573@bloggs.ozlabs.ibm.com>
- <50A36844.7080207@suse.cz>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, gregkh@linuxfoundation.org,
- Paul Mackerras <paulus@samba.org>, anton@samba.org, alan@linux.intel.com
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-wi0-f173.google.com (mail-wi0-f173.google.com
+ [209.85.212.173])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E8D502C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 01:38:51 +1100 (EST)
+Received: by mail-wi0-f173.google.com with SMTP id hm2so3559043wib.14
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 06:38:46 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 1/5] Add /proc device tree updating to of node add/remove
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ devicetree-discuss@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <506BA905.4090000@linux.vnet.ibm.com>
+References: <506B2E63.5090900@linux.vnet.ibm.com>
+ <506BA905.4090000@linux.vnet.ibm.com>
+Date: Wed, 14 Nov 2012 14:38:27 +0000
+Message-Id: <20121114143827.19DB73E0AA8@localhost>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,57 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-11-14 at 10:45 +0100, Jiri Slaby wrote:
-
-> > This fixes it by removing the extra kref_put() and tty_kref_put() calls.
+On Tue, 02 Oct 2012 21:55:01 -0500, Nathan Fontenot <nfont@linux.vnet.ibm.com> wrote:
+> When adding or removing a device tree node we should also update
+> the device tree in /proc/device-tree. This action is already done in the
+> generic OF code for adding/removing properties of a node. This patch adds
+> this functionality for nodes.
 > 
-> Oh yeah. Thanks.
-> 
-> Acked-by: Jiri Slaby <jslaby@suse.cz>
+> Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com> 
 
-So who's merging it ?
+For the whole series:
 
-Cheers,
-Ben.
-
-> > Signed-off-by: Paul Mackerras <paulus@samba.org>
-> > Cc: stable@vger.kernel.org
-> > ---
-> >  drivers/tty/hvc/hvc_console.c |    7 -------
-> >  1 file changed, 7 deletions(-)
-> > 
-> > diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-> > index a5dec1c..13ee53b 100644
-> > --- a/drivers/tty/hvc/hvc_console.c
-> > +++ b/drivers/tty/hvc/hvc_console.c
-> > @@ -424,7 +424,6 @@ static void hvc_hangup(struct tty_struct *tty)
-> >  {
-> >  	struct hvc_struct *hp = tty->driver_data;
-> >  	unsigned long flags;
-> > -	int temp_open_count;
-> >  
-> >  	if (!hp)
-> >  		return;
-> > @@ -444,7 +443,6 @@ static void hvc_hangup(struct tty_struct *tty)
-> >  		return;
-> >  	}
-> >  
-> > -	temp_open_count = hp->port.count;
-> >  	hp->port.count = 0;
-> >  	spin_unlock_irqrestore(&hp->port.lock, flags);
-> >  	tty_port_tty_set(&hp->port, NULL);
-> > @@ -453,11 +451,6 @@ static void hvc_hangup(struct tty_struct *tty)
-> >  
-> >  	if (hp->ops->notifier_hangup)
-> >  		hp->ops->notifier_hangup(hp, hp->data);
-> > -
-> > -	while(temp_open_count) {
-> > -		--temp_open_count;
-> > -		tty_port_put(&hp->port);
-> > -	}
-> >  }
-> >  
-> >  /*
-> > 
-> 
-> 
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
