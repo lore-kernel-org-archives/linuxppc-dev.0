@@ -1,31 +1,21 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
- [209.85.220.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ECA9B2C0091
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:15:32 +1100 (EST)
-Received: by mail-pa0-f51.google.com with SMTP id kq12so152857pab.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 01:15:29 -0800 (PST)
-Date: Wed, 14 Nov 2012 01:15:28 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 4/4] mm, oom: remove statically defined arch functions of
- same name
-In-Reply-To: <alpine.DEB.2.00.1211140111190.32125@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.1211140111190.32125@chino.kir.corp.google.com>
+Return-Path: <Shan.Hai@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 813BB2C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:39:39 +1100 (EST)
+Date: Wed, 14 Nov 2012 17:39:15 +0800
+From: Shan Hai <shan.hai@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/1] powerpc/vdso: remove redundant locking in
+ update_vsyscall_tz()
+Message-ID: <20121114093914.GA14139@debian.corp.ad.wrs.com>
+References: <20121109015718.GA6124@debian.corp.ad.wrs.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org,
- linux-kernel@vger.kernel.org, Michal Hocko <mhocko@suse.cz>,
- linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20121109015718.GA6124@debian.corp.ad.wrs.com>
+Cc: linuxppc-dev@lists.ozlabs.org, john.stultz@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,142 +25,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-out_of_memory() is a globally defined function to call the oom killer.
-x86, sh, and powerpc all use a function of the same name within file
-scope in their respective fault.c unnecessarily.  Inline the functions
-into the pagefault handlers to clean the code up.
+On Fri, Nov 09, 2012 at 09:57:49AM +0800, Shan Hai wrote:
+> The locking in update_vsyscall_tz() is not only unnecessary because the vdso
+> code copies the data unproteced in __kernel_gettimeofday() but also
+> introduces a hard to reproduce race condition between update_vsyscall()
+> and update_vsyscall_tz(), which causes user space process to loop
+> forever in vdso code.
+> 
+> The following patch removes the locking from update_vsyscall_tz().
+> 
+> ---
+>  arch/powerpc/kernel/time.c |    5 -----
+>  1 file changed, 5 deletions(-)
+>
 
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Signed-off-by: David Rientjes <rientjes@google.com>
+Hi Ben,
+
+Would you please review this one?
+ 
+>From 167eac293b07e0ee201ffe5043ec442d52495a48 Mon Sep 17 00:00:00 2001
+From: Shan Hai <shan.hai@windriver.com>
+Date: Mon, 5 Nov 2012 18:24:22 +0800
+Subject: [PATCH 1/1] powerpc/vdso: remove redundant locking in
+ update_vsyscall_tz()
+
+Locking is not only unnecessary because the vdso code copies the data
+unprotected in __kernel_gettimeofday() but also erroneous because updating
+the tb_update_count is not atomic and introduces a hard to reproduce race
+condition between update_vsyscall() and update_vsyscall_tz(), which further
+causes user space process to loop forever in vdso code.
+
+The below scenario describes the race condition,
+x==0	Boot CPU			other CPU
+	proc_P: x==0
+	    timer interrupt
+		update_vsyscall
+x==1		    x++;sync		settimeofday
+					    update_vsyscall_tz
+x==2						x++;sync
+x==3		    sync;x++
+						sync;x++
+	proc_P: x==3 (loops until x becomes even)
+
+Because the ++ operator would be implemented as three instructions and not
+atomic on powerpc.
+
+A similar change was made for x86 in commit 6c260d58634
+("x86: vdso: Remove bogus locking in update_vsyscall_tz")
+
+Signed-off-by: Shan Hai <shan.hai@windriver.com>
 ---
- arch/powerpc/mm/fault.c |   27 ++++++++++++---------------
- arch/sh/mm/fault.c      |   19 +++++++------------
- arch/x86/mm/fault.c     |   23 ++++++++---------------
- 3 files changed, 27 insertions(+), 42 deletions(-)
+ arch/powerpc/kernel/time.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
---- a/arch/powerpc/mm/fault.c
-+++ b/arch/powerpc/mm/fault.c
-@@ -113,19 +113,6 @@ static int store_updates_sp(struct pt_regs *regs)
- #define MM_FAULT_CONTINUE	-1
- #define MM_FAULT_ERR(sig)	(sig)
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 03b29a6..426141f 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -859,13 +859,8 @@ void update_vsyscall(struct timespec *wall_time, struct timespec *wtm,
  
--static int out_of_memory(struct pt_regs *regs)
--{
--	/*
--	 * We ran out of memory, or some other thing happened to us that made
--	 * us unable to handle the page fault gracefully.
--	 */
--	up_read(&current->mm->mmap_sem);
--	if (!user_mode(regs))
--		return MM_FAULT_ERR(SIGKILL);
--	pagefault_out_of_memory();
--	return MM_FAULT_RETURN;
--}
--
- static int do_sigbus(struct pt_regs *regs, unsigned long address)
+ void update_vsyscall_tz(void)
  {
- 	siginfo_t info;
-@@ -169,8 +156,18 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
- 		return MM_FAULT_CONTINUE;
- 
- 	/* Out of memory */
--	if (fault & VM_FAULT_OOM)
--		return out_of_memory(regs);
-+	if (fault & VM_FAULT_OOM) {
-+		up_read(&current->mm->mmap_sem);
-+
-+		/*
-+		 * We ran out of memory, or some other thing happened to us that
-+		 * made us unable to handle the page fault gracefully.
-+		 */
-+		if (!user_mode(regs))
-+			return MM_FAULT_ERR(SIGKILL);
-+		pagefault_out_of_memory();
-+		return MM_FAULT_RETURN;
-+	}
- 
- 	/* Bus error. x86 handles HWPOISON here, we'll add this if/when
- 	 * we support the feature in HW
-diff --git a/arch/sh/mm/fault.c b/arch/sh/mm/fault.c
---- a/arch/sh/mm/fault.c
-+++ b/arch/sh/mm/fault.c
-@@ -301,17 +301,6 @@ bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
- 	__bad_area(regs, error_code, address, SEGV_ACCERR);
+-	/* Make userspace gettimeofday spin until we're done. */
+-	++vdso_data->tb_update_count;
+-	smp_mb();
+ 	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
+ 	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
+-	smp_mb();
+-	++vdso_data->tb_update_count;
  }
  
--static void out_of_memory(void)
--{
--	/*
--	 * We ran out of memory, call the OOM killer, and return the userspace
--	 * (which will retry the fault, or kill us if we got oom-killed):
--	 */
--	up_read(&current->mm->mmap_sem);
--
--	pagefault_out_of_memory();
--}
--
- static void
- do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address)
- {
-@@ -353,8 +342,14 @@ mm_fault_error(struct pt_regs *regs, unsigned long error_code,
- 			no_context(regs, error_code, address);
- 			return 1;
- 		}
-+		up_read(&current->mm->mmap_sem);
- 
--		out_of_memory();
-+		/*
-+		 * We ran out of memory, call the OOM killer, and return the
-+		 * userspace (which will retry the fault, or kill us if we got
-+		 * oom-killed):
-+		 */
-+		pagefault_out_of_memory();
- 	} else {
- 		if (fault & VM_FAULT_SIGBUS)
- 			do_sigbus(regs, error_code, address);
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -803,20 +803,6 @@ bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
- 	__bad_area(regs, error_code, address, SEGV_ACCERR);
- }
- 
--/* TODO: fixup for "mm-invoke-oom-killer-from-page-fault.patch" */
--static void
--out_of_memory(struct pt_regs *regs, unsigned long error_code,
--	      unsigned long address)
--{
--	/*
--	 * We ran out of memory, call the OOM killer, and return the userspace
--	 * (which will retry the fault, or kill us if we got oom-killed):
--	 */
--	up_read(&current->mm->mmap_sem);
--
--	pagefault_out_of_memory();
--}
--
- static void
- do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
- 	  unsigned int fault)
-@@ -879,7 +865,14 @@ mm_fault_error(struct pt_regs *regs, unsigned long error_code,
- 			return 1;
- 		}
- 
--		out_of_memory(regs, error_code, address);
-+		up_read(&current->mm->mmap_sem);
-+
-+		/*
-+		 * We ran out of memory, call the OOM killer, and return the
-+		 * userspace (which will retry the fault, or kill us if we got
-+		 * oom-killed):
-+		 */
-+		pagefault_out_of_memory();
- 	} else {
- 		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|
- 			     VM_FAULT_HWPOISON_LARGE))
+ static void __init clocksource_init(void)
+-- 
+1.7.10.4
+
+Best Regards
+Shan Hai
+
+> Thanks
+> Shan Hai
+
+> From 167eac293b07e0ee201ffe5043ec442d52495a48 Mon Sep 17 00:00:00 2001
+> From: Shan Hai <shan.hai@windriver.com>
+> Date: Mon, 5 Nov 2012 18:24:22 +0800
+> Subject: [PATCH 1/1] powerpc/vdso: remove redundant locking in
+>  update_vsyscall_tz()
+> 
+> Locking is not only unnecessary because the vdso code copies the data
+> unprotected in __kernel_gettimeofday() but also erroneous because updating
+> the tb_update_count is not atomic and introduces a hard to reproduce race
+> condition between update_vsyscall() and update_vsyscall_tz(), which further
+> causes user space process to loop forever in vdso code.
+> 
+> The below scenario describes the race condition,
+> x==0	Boot CPU			other CPU
+> 	proc_P: x==0
+> 	    timer interrupt
+> 		update_vsyscall
+> x==1		    x++;sync		settimeofday
+> 					    update_vsyscall_tz
+> x==2						x++;sync
+> x==3		    sync;x++
+> 						sync;x++
+> 	proc_P: x==3 (loops until x becomes even)
+> 
+> Because the ++ operator would be implemented as three instructions and not
+> atomic on powerpc.
+> 
+> A similar change was made for x86 in commit 6c260d58634
+> ("x86: vdso: Remove bogus locking in update_vsyscall_tz")
+> 
+> Signed-off-by: Shan Hai <shan.hai@windriver.com>
+> ---
+>  arch/powerpc/kernel/time.c |    5 -----
+>  1 file changed, 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+> index 03b29a6..426141f 100644
+> --- a/arch/powerpc/kernel/time.c
+> +++ b/arch/powerpc/kernel/time.c
+> @@ -859,13 +859,8 @@ void update_vsyscall(struct timespec *wall_time, struct timespec *wtm,
+>  
+>  void update_vsyscall_tz(void)
+>  {
+> -	/* Make userspace gettimeofday spin until we're done. */
+> -	++vdso_data->tb_update_count;
+> -	smp_mb();
+>  	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
+>  	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
+> -	smp_mb();
+> -	++vdso_data->tb_update_count;
+>  }
+>  
+>  static void __init clocksource_init(void)
+> -- 
+> 1.7.10.4
+> 
+
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
