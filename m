@@ -1,24 +1,23 @@
-Return-Path: <jirislaby@gmail.com>
-Received: from mail-ee0-f42.google.com (mail-ee0-f42.google.com [74.125.83.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CEC9C2C009A
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2012 20:45:48 +1100 (EST)
-Received: by mail-ee0-f42.google.com with SMTP id t10so125796eei.15
- for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2012 01:45:43 -0800 (PST)
-Sender: Jiri Slaby <jirislaby@gmail.com>
-Message-ID: <50A36844.7080207@suse.cz>
-Date: Wed, 14 Nov 2012 10:45:40 +0100
-From: Jiri Slaby <jslaby@suse.cz>
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id C74302C00E1
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2012 21:25:51 +1100 (EST)
+Date: Wed, 14 Nov 2012 11:25:34 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/4] perf/POWER7: Make event translations available in
+ sysfs
+Message-ID: <20121114102534.GA2220@krava.brq.redhat.com>
+References: <20121107191818.GA16211@us.ibm.com>
+ <20121107191927.GC16211@us.ibm.com>
 MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] TTY: hvc_console, fix port reference count going to zero
- prematurely
-References: <20121114081547.GA573@bloggs.ozlabs.ibm.com>
-In-Reply-To: <20121114081547.GA573@bloggs.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, alan@linux.intel.com, anton@samba.org,
- gregkh@linuxfoundation.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20121107191927.GC16211@us.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, robert.richter@amd.com,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/14/2012 09:15 AM, Paul Mackerras wrote:
-> Commit bdb498c20040 "TTY: hvc_console, add tty install" took the port
-> refcounting out of hvc_open()/hvc_close(), but failed to remove the
-> kref_put() and tty_kref_put() calls in hvc_hangup() that were there to
-> remove the extra references that hvc_open() had taken.
-> 
-> The result was that doing a vhangup() when the current terminal was
-> a hvc_console, then closing the current terminal, would end up calling
-> destroy_hvc_struct() and making the port disappear entirely.  This
-> meant that Fedora 17 systems would boot up but then not display the
-> login prompt on the console, and attempts to open /dev/hvc0 would
-> give a "No such device" error.
-> 
-> This fixes it by removing the extra kref_put() and tty_kref_put() calls.
+On Wed, Nov 07, 2012 at 11:19:28AM -0800, Sukadev Bhattiprolu wrote:
 
-Oh yeah. Thanks.
+SNIP
 
-Acked-by: Jiri Slaby <jslaby@suse.cz>
+> +struct perf_pmu_events_attr {
+> +	struct device_attribute attr;
+> +	u64 id;
+> +};
+> +
+> +extern ssize_t power_events_sysfs_show(struct device *dev,
+> +				struct device_attribute *attr, char *page);
+> +
+> +#define EVENT_VAR(_id)	event_attr_##_id
+> +#define EVENT_PTR(_id) &event_attr_##_id.attr.attr
+> +
+> +#define EVENT_ATTR(_name, _id)                                             \
+> +	static struct perf_pmu_events_attr EVENT_VAR(_id) = {              \
+> +		.attr = __ATTR(_name, 0444, power_events_sysfs_show, NULL),\
+> +		.id   = PM_##_id,                                               \
+> +	};
 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
-> Cc: stable@vger.kernel.org
-> ---
->  drivers/tty/hvc/hvc_console.c |    7 -------
->  1 file changed, 7 deletions(-)
-> 
-> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-> index a5dec1c..13ee53b 100644
-> --- a/drivers/tty/hvc/hvc_console.c
-> +++ b/drivers/tty/hvc/hvc_console.c
-> @@ -424,7 +424,6 @@ static void hvc_hangup(struct tty_struct *tty)
->  {
->  	struct hvc_struct *hp = tty->driver_data;
->  	unsigned long flags;
-> -	int temp_open_count;
->  
->  	if (!hp)
->  		return;
-> @@ -444,7 +443,6 @@ static void hvc_hangup(struct tty_struct *tty)
->  		return;
->  	}
->  
-> -	temp_open_count = hp->port.count;
->  	hp->port.count = 0;
->  	spin_unlock_irqrestore(&hp->port.lock, flags);
->  	tty_port_tty_set(&hp->port, NULL);
-> @@ -453,11 +451,6 @@ static void hvc_hangup(struct tty_struct *tty)
->  
->  	if (hp->ops->notifier_hangup)
->  		hp->ops->notifier_hangup(hp, hp->data);
-> -
-> -	while(temp_open_count) {
-> -		--temp_open_count;
-> -		tty_port_put(&hp->port);
-> -	}
+this is duplicating the x86 code, perhaps it could be moved
+to include/linux/perf_event.h and shared globaly
+
+
+> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+> index aa2465e..19b23bd 100644
+> --- a/arch/powerpc/perf/core-book3s.c
+> +++ b/arch/powerpc/perf/core-book3s.c
+> @@ -1305,6 +1305,16 @@ static int power_pmu_event_idx(struct perf_event *event)
+>  	return event->hw.idx;
 >  }
 >  
->  /*
-> 
+> +ssize_t power_events_sysfs_show(struct device *dev,
+> +				struct device_attribute *attr, char *page)
+> +{
+> +       struct perf_pmu_events_attr *pmu_attr;
+> +       
+> +       pmu_attr = container_of(attr, struct perf_pmu_events_attr, attr);
+> +        
+> +       return sprintf(page, "event=0x%02llx\n", pmu_attr->id);
+
+whitespace issues
 
 
--- 
-js
-suse labs
+jirka
