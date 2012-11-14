@@ -1,21 +1,24 @@
-Return-Path: <Shan.Hai@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 813BB2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:39:39 +1100 (EST)
-Date: Wed, 14 Nov 2012 17:39:15 +0800
-From: Shan Hai <shan.hai@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/1] powerpc/vdso: remove redundant locking in
- update_vsyscall_tz()
-Message-ID: <20121114093914.GA14139@debian.corp.ad.wrs.com>
-References: <20121109015718.GA6124@debian.corp.ad.wrs.com>
+Return-Path: <jirislaby@gmail.com>
+Received: from mail-ee0-f42.google.com (mail-ee0-f42.google.com [74.125.83.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CEC9C2C009A
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2012 20:45:48 +1100 (EST)
+Received: by mail-ee0-f42.google.com with SMTP id t10so125796eei.15
+ for <linuxppc-dev@ozlabs.org>; Wed, 14 Nov 2012 01:45:43 -0800 (PST)
+Sender: Jiri Slaby <jirislaby@gmail.com>
+Message-ID: <50A36844.7080207@suse.cz>
+Date: Wed, 14 Nov 2012 10:45:40 +0100
+From: Jiri Slaby <jslaby@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20121109015718.GA6124@debian.corp.ad.wrs.com>
-Cc: linuxppc-dev@lists.ozlabs.org, john.stultz@linaro.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] TTY: hvc_console, fix port reference count going to zero
+ prematurely
+References: <20121114081547.GA573@bloggs.ozlabs.ibm.com>
+In-Reply-To: <20121114081547.GA573@bloggs.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org, alan@linux.intel.com, anton@samba.org,
+ gregkh@linuxfoundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,144 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 09, 2012 at 09:57:49AM +0800, Shan Hai wrote:
-> The locking in update_vsyscall_tz() is not only unnecessary because the vdso
-> code copies the data unproteced in __kernel_gettimeofday() but also
-> introduces a hard to reproduce race condition between update_vsyscall()
-> and update_vsyscall_tz(), which causes user space process to loop
-> forever in vdso code.
+On 11/14/2012 09:15 AM, Paul Mackerras wrote:
+> Commit bdb498c20040 "TTY: hvc_console, add tty install" took the port
+> refcounting out of hvc_open()/hvc_close(), but failed to remove the
+> kref_put() and tty_kref_put() calls in hvc_hangup() that were there to
+> remove the extra references that hvc_open() had taken.
 > 
-> The following patch removes the locking from update_vsyscall_tz().
+> The result was that doing a vhangup() when the current terminal was
+> a hvc_console, then closing the current terminal, would end up calling
+> destroy_hvc_struct() and making the port disappear entirely.  This
+> meant that Fedora 17 systems would boot up but then not display the
+> login prompt on the console, and attempts to open /dev/hvc0 would
+> give a "No such device" error.
 > 
+> This fixes it by removing the extra kref_put() and tty_kref_put() calls.
+
+Oh yeah. Thanks.
+
+Acked-by: Jiri Slaby <jslaby@suse.cz>
+
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> Cc: stable@vger.kernel.org
 > ---
->  arch/powerpc/kernel/time.c |    5 -----
->  1 file changed, 5 deletions(-)
->
-
-Hi Ben,
-
-Would you please review this one?
- 
->From 167eac293b07e0ee201ffe5043ec442d52495a48 Mon Sep 17 00:00:00 2001
-From: Shan Hai <shan.hai@windriver.com>
-Date: Mon, 5 Nov 2012 18:24:22 +0800
-Subject: [PATCH 1/1] powerpc/vdso: remove redundant locking in
- update_vsyscall_tz()
-
-Locking is not only unnecessary because the vdso code copies the data
-unprotected in __kernel_gettimeofday() but also erroneous because updating
-the tb_update_count is not atomic and introduces a hard to reproduce race
-condition between update_vsyscall() and update_vsyscall_tz(), which further
-causes user space process to loop forever in vdso code.
-
-The below scenario describes the race condition,
-x==0	Boot CPU			other CPU
-	proc_P: x==0
-	    timer interrupt
-		update_vsyscall
-x==1		    x++;sync		settimeofday
-					    update_vsyscall_tz
-x==2						x++;sync
-x==3		    sync;x++
-						sync;x++
-	proc_P: x==3 (loops until x becomes even)
-
-Because the ++ operator would be implemented as three instructions and not
-atomic on powerpc.
-
-A similar change was made for x86 in commit 6c260d58634
-("x86: vdso: Remove bogus locking in update_vsyscall_tz")
-
-Signed-off-by: Shan Hai <shan.hai@windriver.com>
----
- arch/powerpc/kernel/time.c |    5 -----
- 1 file changed, 5 deletions(-)
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 03b29a6..426141f 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -859,13 +859,8 @@ void update_vsyscall(struct timespec *wall_time, struct timespec *wtm,
- 
- void update_vsyscall_tz(void)
- {
--	/* Make userspace gettimeofday spin until we're done. */
--	++vdso_data->tb_update_count;
--	smp_mb();
- 	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
- 	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
--	smp_mb();
--	++vdso_data->tb_update_count;
- }
- 
- static void __init clocksource_init(void)
--- 
-1.7.10.4
-
-Best Regards
-Shan Hai
-
-> Thanks
-> Shan Hai
-
-> From 167eac293b07e0ee201ffe5043ec442d52495a48 Mon Sep 17 00:00:00 2001
-> From: Shan Hai <shan.hai@windriver.com>
-> Date: Mon, 5 Nov 2012 18:24:22 +0800
-> Subject: [PATCH 1/1] powerpc/vdso: remove redundant locking in
->  update_vsyscall_tz()
+>  drivers/tty/hvc/hvc_console.c |    7 -------
+>  1 file changed, 7 deletions(-)
 > 
-> Locking is not only unnecessary because the vdso code copies the data
-> unprotected in __kernel_gettimeofday() but also erroneous because updating
-> the tb_update_count is not atomic and introduces a hard to reproduce race
-> condition between update_vsyscall() and update_vsyscall_tz(), which further
-> causes user space process to loop forever in vdso code.
-> 
-> The below scenario describes the race condition,
-> x==0	Boot CPU			other CPU
-> 	proc_P: x==0
-> 	    timer interrupt
-> 		update_vsyscall
-> x==1		    x++;sync		settimeofday
-> 					    update_vsyscall_tz
-> x==2						x++;sync
-> x==3		    sync;x++
-> 						sync;x++
-> 	proc_P: x==3 (loops until x becomes even)
-> 
-> Because the ++ operator would be implemented as three instructions and not
-> atomic on powerpc.
-> 
-> A similar change was made for x86 in commit 6c260d58634
-> ("x86: vdso: Remove bogus locking in update_vsyscall_tz")
-> 
-> Signed-off-by: Shan Hai <shan.hai@windriver.com>
-> ---
->  arch/powerpc/kernel/time.c |    5 -----
->  1 file changed, 5 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-> index 03b29a6..426141f 100644
-> --- a/arch/powerpc/kernel/time.c
-> +++ b/arch/powerpc/kernel/time.c
-> @@ -859,13 +859,8 @@ void update_vsyscall(struct timespec *wall_time, struct timespec *wtm,
->  
->  void update_vsyscall_tz(void)
+> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+> index a5dec1c..13ee53b 100644
+> --- a/drivers/tty/hvc/hvc_console.c
+> +++ b/drivers/tty/hvc/hvc_console.c
+> @@ -424,7 +424,6 @@ static void hvc_hangup(struct tty_struct *tty)
 >  {
-> -	/* Make userspace gettimeofday spin until we're done. */
-> -	++vdso_data->tb_update_count;
-> -	smp_mb();
->  	vdso_data->tz_minuteswest = sys_tz.tz_minuteswest;
->  	vdso_data->tz_dsttime = sys_tz.tz_dsttime;
-> -	smp_mb();
-> -	++vdso_data->tb_update_count;
+>  	struct hvc_struct *hp = tty->driver_data;
+>  	unsigned long flags;
+> -	int temp_open_count;
+>  
+>  	if (!hp)
+>  		return;
+> @@ -444,7 +443,6 @@ static void hvc_hangup(struct tty_struct *tty)
+>  		return;
+>  	}
+>  
+> -	temp_open_count = hp->port.count;
+>  	hp->port.count = 0;
+>  	spin_unlock_irqrestore(&hp->port.lock, flags);
+>  	tty_port_tty_set(&hp->port, NULL);
+> @@ -453,11 +451,6 @@ static void hvc_hangup(struct tty_struct *tty)
+>  
+>  	if (hp->ops->notifier_hangup)
+>  		hp->ops->notifier_hangup(hp, hp->data);
+> -
+> -	while(temp_open_count) {
+> -		--temp_open_count;
+> -		tty_port_put(&hp->port);
+> -	}
 >  }
 >  
->  static void __init clocksource_init(void)
-> -- 
-> 1.7.10.4
+>  /*
 > 
 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+-- 
+js
+suse labs
