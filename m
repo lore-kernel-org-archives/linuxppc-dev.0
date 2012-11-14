@@ -1,28 +1,22 @@
-Return-Path: <mhocko@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 288532C009F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 00:47:59 +1100 (EST)
-Date: Wed, 14 Nov 2012 14:47:52 +0100
-From: Michal Hocko <mhocko@suse.cz>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [patch 4/4] mm, oom: remove statically defined arch functions of
- same name
-Message-ID: <20121114134752.GD4929@dhcp22.suse.cz>
-References: <alpine.DEB.2.00.1211140111190.32125@chino.kir.corp.google.com>
- <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <gvormayr@gmail.com>
+Received: from mail-ea0-f179.google.com (mail-ea0-f179.google.com
+ [209.85.215.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1A0D12C00D6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 03:59:32 +1100 (EST)
+Received: by mail-ea0-f179.google.com with SMTP id f14so270082eaa.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 08:59:28 -0800 (PST)
+From: Gernot Vormayr <gvormayr@gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 1/1] powerpc: dts: virtex440: add ethernet phy to
+ virtex440-ml507
+Date: Wed, 14 Nov 2012 17:59:09 +0100
+Message-Id: <1352912349-15538-1-git-send-email-gvormayr@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Gernot Vormayr <gvormayr@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,154 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 14-11-12 01:15:28, David Rientjes wrote:
-> out_of_memory() is a globally defined function to call the oom killer.
-> x86, sh, and powerpc all use a function of the same name within file
-> scope in their respective fault.c unnecessarily.  Inline the functions
-> into the pagefault handlers to clean the code up.
+This adds the marvel phy which is present on the ml507 board.
+Without this ethtool causes kernel-oopses.
 
-Yes I like it. It is really confusing to have a local function with the
-same name.
+Tested on ml507 board.
 
-> 
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Signed-off-by: David Rientjes <rientjes@google.com>
+Signed-off-by: Gernot Vormayr <gvormayr@gmail.com>
+---
+ arch/powerpc/boot/dts/virtex440-ml507.dts |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Reviewed-by: Michal Hocko <mhocko@suse.cz>
-
-> ---
->  arch/powerpc/mm/fault.c |   27 ++++++++++++---------------
->  arch/sh/mm/fault.c      |   19 +++++++------------
->  arch/x86/mm/fault.c     |   23 ++++++++---------------
->  3 files changed, 27 insertions(+), 42 deletions(-)
-> 
-> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
-> --- a/arch/powerpc/mm/fault.c
-> +++ b/arch/powerpc/mm/fault.c
-> @@ -113,19 +113,6 @@ static int store_updates_sp(struct pt_regs *regs)
->  #define MM_FAULT_CONTINUE	-1
->  #define MM_FAULT_ERR(sig)	(sig)
->  
-> -static int out_of_memory(struct pt_regs *regs)
-> -{
-> -	/*
-> -	 * We ran out of memory, or some other thing happened to us that made
-> -	 * us unable to handle the page fault gracefully.
-> -	 */
-> -	up_read(&current->mm->mmap_sem);
-> -	if (!user_mode(regs))
-> -		return MM_FAULT_ERR(SIGKILL);
-> -	pagefault_out_of_memory();
-> -	return MM_FAULT_RETURN;
-> -}
-> -
->  static int do_sigbus(struct pt_regs *regs, unsigned long address)
->  {
->  	siginfo_t info;
-> @@ -169,8 +156,18 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
->  		return MM_FAULT_CONTINUE;
->  
->  	/* Out of memory */
-> -	if (fault & VM_FAULT_OOM)
-> -		return out_of_memory(regs);
-> +	if (fault & VM_FAULT_OOM) {
-> +		up_read(&current->mm->mmap_sem);
-> +
-> +		/*
-> +		 * We ran out of memory, or some other thing happened to us that
-> +		 * made us unable to handle the page fault gracefully.
-> +		 */
-> +		if (!user_mode(regs))
-> +			return MM_FAULT_ERR(SIGKILL);
-> +		pagefault_out_of_memory();
-> +		return MM_FAULT_RETURN;
-> +	}
->  
->  	/* Bus error. x86 handles HWPOISON here, we'll add this if/when
->  	 * we support the feature in HW
-> diff --git a/arch/sh/mm/fault.c b/arch/sh/mm/fault.c
-> --- a/arch/sh/mm/fault.c
-> +++ b/arch/sh/mm/fault.c
-> @@ -301,17 +301,6 @@ bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
->  	__bad_area(regs, error_code, address, SEGV_ACCERR);
->  }
->  
-> -static void out_of_memory(void)
-> -{
-> -	/*
-> -	 * We ran out of memory, call the OOM killer, and return the userspace
-> -	 * (which will retry the fault, or kill us if we got oom-killed):
-> -	 */
-> -	up_read(&current->mm->mmap_sem);
-> -
-> -	pagefault_out_of_memory();
-> -}
-> -
->  static void
->  do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address)
->  {
-> @@ -353,8 +342,14 @@ mm_fault_error(struct pt_regs *regs, unsigned long error_code,
->  			no_context(regs, error_code, address);
->  			return 1;
->  		}
-> +		up_read(&current->mm->mmap_sem);
->  
-> -		out_of_memory();
-> +		/*
-> +		 * We ran out of memory, call the OOM killer, and return the
-> +		 * userspace (which will retry the fault, or kill us if we got
-> +		 * oom-killed):
-> +		 */
-> +		pagefault_out_of_memory();
->  	} else {
->  		if (fault & VM_FAULT_SIGBUS)
->  			do_sigbus(regs, error_code, address);
-> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-> --- a/arch/x86/mm/fault.c
-> +++ b/arch/x86/mm/fault.c
-> @@ -803,20 +803,6 @@ bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
->  	__bad_area(regs, error_code, address, SEGV_ACCERR);
->  }
->  
-> -/* TODO: fixup for "mm-invoke-oom-killer-from-page-fault.patch" */
-> -static void
-> -out_of_memory(struct pt_regs *regs, unsigned long error_code,
-> -	      unsigned long address)
-> -{
-> -	/*
-> -	 * We ran out of memory, call the OOM killer, and return the userspace
-> -	 * (which will retry the fault, or kill us if we got oom-killed):
-> -	 */
-> -	up_read(&current->mm->mmap_sem);
-> -
-> -	pagefault_out_of_memory();
-> -}
-> -
->  static void
->  do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
->  	  unsigned int fault)
-> @@ -879,7 +865,14 @@ mm_fault_error(struct pt_regs *regs, unsigned long error_code,
->  			return 1;
->  		}
->  
-> -		out_of_memory(regs, error_code, address);
-> +		up_read(&current->mm->mmap_sem);
-> +
-> +		/*
-> +		 * We ran out of memory, call the OOM killer, and return the
-> +		 * userspace (which will retry the fault, or kill us if we got
-> +		 * oom-killed):
-> +		 */
-> +		pagefault_out_of_memory();
->  	} else {
->  		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|
->  			     VM_FAULT_HWPOISON_LARGE))
-
+diff --git a/arch/powerpc/boot/dts/virtex440-ml507.dts b/arch/powerpc/boot/dts/virtex440-ml507.dts
+index 52d8c1a..fc7073b 100644
+--- a/arch/powerpc/boot/dts/virtex440-ml507.dts
++++ b/arch/powerpc/boot/dts/virtex440-ml507.dts
+@@ -272,6 +272,12 @@
+ 				xlnx,temac-type = <0>;
+ 				xlnx,txcsum = <1>;
+ 				xlnx,txfifo = <0x1000>;
++                                phy-handle = <&phy7>;
++                                clock-frequency = <100000000>;
++                                phy7: phy@7 {
++                                          compatible = "marvell,88e1111";
++                                          reg = <7>;
++                                } ;
+ 			} ;
+ 		} ;
+ 		IIC_EEPROM: i2c@81600000 {
 -- 
-Michal Hocko
-SUSE Labs
+1.7.9.5
