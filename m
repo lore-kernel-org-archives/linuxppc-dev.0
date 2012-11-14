@@ -1,14 +1,38 @@
-Return-Path: <paulus@ozlabs.org>
-Date: Wed, 14 Nov 2012 19:15:47 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: jslaby@suse.cz, benh@kernel.crashing.org, anton@samba.org,
- gregkh@linuxfoundation.org, alan@linux.intel.com
-Subject: [PATCH] TTY: hvc_console, fix port reference count going to zero
- prematurely
-Message-ID: <20121114081547.GA573@bloggs.ozlabs.ibm.com>
+Return-Path: <deepthi@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 48C1A2C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:09:04 +1100 (EST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
+ Wed, 14 Nov 2012 19:05:45 +1000
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qAE98uFV53739712
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:08:57 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qAE98tfL002138
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:08:56 +1100
+Message-ID: <50A35F21.9040003@linux.vnet.ibm.com>
+Date: Wed, 14 Nov 2012 14:36:41 +0530
+From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+To: Julius Werner <jwerner@chromium.org>
+Subject: Re: [PATCH] cpuidle: Measure idle state durations with monotonic clock
+References: <1352843563-16392-1-git-send-email-jwerner@chromium.org>
+In-Reply-To: <1352843563-16392-1-git-send-email-jwerner@chromium.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Kevin Hilman <khilman@ti.com>, Trinabh Gupta <g.trinabh@gmail.com>,
+ linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+ linux-acpi@vger.kernel.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Sameer Nanda <snanda@chromium.org>, Len Brown <lenb@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,57 +42,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit bdb498c20040 "TTY: hvc_console, add tty install" took the port
-refcounting out of hvc_open()/hvc_close(), but failed to remove the
-kref_put() and tty_kref_put() calls in hvc_hangup() that were there to
-remove the extra references that hvc_open() had taken.
+On 11/14/2012 03:22 AM, Julius Werner wrote:
+> Many cpuidle drivers measure their time spent in an idle state by
+> reading the wallclock time before and after idling and calculating the
+> difference. This leads to erroneous results when the wallclock time gets
+> updated by another processor in the meantime, adding that clock
+> adjustment to the idle state's time counter.
+> 
+> If the clock adjustment was negative, the result is even worse due to an
+> erroneous cast from int to unsigned long long of the last_residency
+> variable. The negative 32 bit integer will zero-extend and result in a
+> forward time jump of roughly four billion milliseconds or 1.3 hours on
+> the idle state residency counter.
+> 
+> This patch changes all affected cpuidle drivers to use the monotonic
+> clock for their measurements instead. It also removes the erroneous
+> cast, making sure that negative residency values are applied correctly
+> even though they should not appear anymore.
 
-The result was that doing a vhangup() when the current terminal was
-a hvc_console, then closing the current terminal, would end up calling
-destroy_hvc_struct() and making the port disappear entirely.  This
-meant that Fedora 17 systems would boot up but then not display the
-login prompt on the console, and attempts to open /dev/hvc0 would
-give a "No such device" error.
+Currently tegra/cpuidle uses ktime_get(). Good to have it for all
+the other arch idle residency time logging too.
+Tested patch on pseries.
 
-This fixes it by removing the extra kref_put() and tty_kref_put() calls.
+Reviewed-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: stable@vger.kernel.org
----
- drivers/tty/hvc/hvc_console.c |    7 -------
- 1 file changed, 7 deletions(-)
+Cheers,
+Deepthi
 
-diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
-index a5dec1c..13ee53b 100644
---- a/drivers/tty/hvc/hvc_console.c
-+++ b/drivers/tty/hvc/hvc_console.c
-@@ -424,7 +424,6 @@ static void hvc_hangup(struct tty_struct *tty)
- {
- 	struct hvc_struct *hp = tty->driver_data;
- 	unsigned long flags;
--	int temp_open_count;
- 
- 	if (!hp)
- 		return;
-@@ -444,7 +443,6 @@ static void hvc_hangup(struct tty_struct *tty)
- 		return;
- 	}
- 
--	temp_open_count = hp->port.count;
- 	hp->port.count = 0;
- 	spin_unlock_irqrestore(&hp->port.lock, flags);
- 	tty_port_tty_set(&hp->port, NULL);
-@@ -453,11 +451,6 @@ static void hvc_hangup(struct tty_struct *tty)
- 
- 	if (hp->ops->notifier_hangup)
- 		hp->ops->notifier_hangup(hp, hp->data);
--
--	while(temp_open_count) {
--		--temp_open_count;
--		tty_port_put(&hp->port);
--	}
- }
- 
- /*
--- 
-1.7.10.rc3.219.g53414
+> 
+> Signed-off-by: Julius Werner <jwerner@chromium.org>
+> ---
+>  arch/powerpc/platforms/pseries/processor_idle.c |    4 ++--
+>  drivers/acpi/processor_idle.c                   |   12 ++++++------
+>  drivers/cpuidle/cpuidle.c                       |    3 +--
+>  drivers/idle/intel_idle.c                       |   13 ++++---------
+>  4 files changed, 13 insertions(+), 19 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+> index 45d00e5..4d806b4 100644
+> --- a/arch/powerpc/platforms/pseries/processor_idle.c
+> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
+> @@ -36,7 +36,7 @@ static struct cpuidle_state *cpuidle_state_table;
+>  static inline void idle_loop_prolog(unsigned long *in_purr, ktime_t *kt_before)
+>  {
+> 
+> -	*kt_before = ktime_get_real();
+> +	*kt_before = ktime_get();
+>  	*in_purr = mfspr(SPRN_PURR);
+>  	/*
+>  	 * Indicate to the HV that we are idle. Now would be
+> @@ -50,7 +50,7 @@ static inline  s64 idle_loop_epilog(unsigned long in_purr, ktime_t kt_before)
+>  	get_lppaca()->wait_state_cycles += mfspr(SPRN_PURR) - in_purr;
+>  	get_lppaca()->idle = 0;
+> 
+> -	return ktime_to_us(ktime_sub(ktime_get_real(), kt_before));
+> +	return ktime_to_us(ktime_sub(ktime_get(), kt_before));
+>  }
+> 
+>  static int snooze_loop(struct cpuidle_device *dev,
+> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> index e8086c7..8c98d73 100644
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -751,9 +751,9 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
+> 
+> 
+>  	lapic_timer_state_broadcast(pr, cx, 1);
+> -	kt1 = ktime_get_real();
+> +	kt1 = ktime_get();
+>  	acpi_idle_do_entry(cx);
+> -	kt2 = ktime_get_real();
+> +	kt2 = ktime_get();
+>  	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
+> 
+>  	/* Update device last_residency*/
+> @@ -843,11 +843,11 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+>  	if (cx->type == ACPI_STATE_C3)
+>  		ACPI_FLUSH_CPU_CACHE();
+> 
+> -	kt1 = ktime_get_real();
+> +	kt1 = ktime_get();
+>  	/* Tell the scheduler that we are going deep-idle: */
+>  	sched_clock_idle_sleep_event();
+>  	acpi_idle_do_entry(cx);
+> -	kt2 = ktime_get_real();
+> +	kt2 = ktime_get();
+>  	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
+>  	idle_time = idle_time_ns;
+>  	do_div(idle_time, NSEC_PER_USEC);
+> @@ -934,7 +934,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  	 */
+>  	lapic_timer_state_broadcast(pr, cx, 1);
+> 
+> -	kt1 = ktime_get_real();
+> +	kt1 = ktime_get();
+>  	/*
+>  	 * disable bus master
+>  	 * bm_check implies we need ARB_DIS
+> @@ -965,7 +965,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  		c3_cpu_count--;
+>  		raw_spin_unlock(&c3_lock);
+>  	}
+> -	kt2 = ktime_get_real();
+> +	kt2 = ktime_get();
+>  	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
+>  	idle_time = idle_time_ns;
+>  	do_div(idle_time, NSEC_PER_USEC);
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 7f15b85..1536edd 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -109,8 +109,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  		/* This can be moved to within driver enter routine
+>  		 * but that results in multiple copies of same code.
+>  		 */
+> -		dev->states_usage[entered_state].time +=
+> -				(unsigned long long)dev->last_residency;
+> +		dev->states_usage[entered_state].time += dev->last_residency;
+>  		dev->states_usage[entered_state].usage++;
+>  	} else {
+>  		dev->last_residency = 0;
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index b0f6b4c..6329a97 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -56,7 +56,7 @@
+>  #include <linux/kernel.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/clockchips.h>
+> -#include <linux/hrtimer.h>	/* ktime_get_real() */
+> +#include <linux/hrtimer.h>	/* ktime_get() */
+>  #include <trace/events/power.h>
+>  #include <linux/sched.h>
+>  #include <linux/notifier.h>
+> @@ -281,8 +281,7 @@ static int intel_idle(struct cpuidle_device *dev,
+>  	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
+>  	unsigned long eax = (unsigned long)cpuidle_get_statedata(state_usage);
+>  	unsigned int cstate;
+> -	ktime_t kt_before, kt_after;
+> -	s64 usec_delta;
+> +	ktime_t kt_before;
+>  	int cpu = smp_processor_id();
+> 
+>  	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1;
+> @@ -297,7 +296,7 @@ static int intel_idle(struct cpuidle_device *dev,
+>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
+> 
+> -	kt_before = ktime_get_real();
+> +	kt_before = ktime_get();
+> 
+>  	stop_critical_timings();
+>  	if (!need_resched()) {
+> @@ -310,17 +309,13 @@ static int intel_idle(struct cpuidle_device *dev,
+> 
+>  	start_critical_timings();
+> 
+> -	kt_after = ktime_get_real();
+> -	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
+> +	dev->last_residency = ktime_to_us(ktime_sub(ktime_get(), kt_before));
+> 
+>  	local_irq_enable();
+> 
+>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
+> 
+> -	/* Update cpuidle counters */
+> -	dev->last_residency = (int)usec_delta;
+> -
+>  	return index;
+>  }
+> 
