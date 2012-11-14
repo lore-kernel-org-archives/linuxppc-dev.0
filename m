@@ -1,30 +1,28 @@
-Return-Path: <jwerner@google.com>
-Received: from mail-wg0-f45.google.com (mail-wg0-f45.google.com [74.125.82.45])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6B16A2C0081
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 04:16:02 +1100 (EST)
-Received: by mail-wg0-f45.google.com with SMTP id dq12so323189wgb.14
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 09:15:58 -0800 (PST)
+Return-Path: <mhocko@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 288532C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 00:47:59 +1100 (EST)
+Date: Wed, 14 Nov 2012 14:47:52 +0100
+From: Michal Hocko <mhocko@suse.cz>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [patch 4/4] mm, oom: remove statically defined arch functions of
+ same name
+Message-ID: <20121114134752.GD4929@dhcp22.suse.cz>
+References: <alpine.DEB.2.00.1211140111190.32125@chino.kir.corp.google.com>
+ <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Sender: jwerner@google.com
-In-Reply-To: <50A37ADD.8040000@linaro.org>
-References: <1352843563-16392-1-git-send-email-jwerner@chromium.org>
- <50A37ADD.8040000@linaro.org>
-Date: Wed, 14 Nov 2012 09:15:58 -0800
-Message-ID: <CAODwPW873M32d9zFT9fpJT9+PuMbz8htzUxdF1TNE+J1zR3jYA@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle: Measure idle state durations with monotonic clock
-From: Julius Werner <jwerner@chromium.org>
-To: Daniel Lezcano <daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Kevin Hilman <khilman@ti.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
- Trinabh Gupta <g.trinabh@gmail.com>,
- Lists Linaro-dev <linaro-dev@lists.linaro.org>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
- linux-acpi@vger.kernel.org,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Sameer Nanda <snanda@chromium.org>, Len Brown <lenb@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,15 +32,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Maybe you can remove all these computations and set the flag
-> en_core_tk_irqen for the driver ? That will be handled by the cpuidle
-> framework, no ?
->
-> Same comment for the intel_idle driver.
+On Wed 14-11-12 01:15:28, David Rientjes wrote:
+> out_of_memory() is a globally defined function to call the oom killer.
+> x86, sh, and powerpc all use a function of the same name within file
+> scope in their respective fault.c unnecessarily.  Inline the functions
+> into the pagefault handlers to clean the code up.
 
-Yeah, I thought about that, too. I was a little too afraid of touching
-the sched_clock_idle_wakeup_event() parameter that is tied to the
-measurement, but it seems to have been vestigial for some time now and
-other drivers also just set it 0. I will whip up another version of
-the patch (won't change the PPC further though, if this version works
-I would just leave it at that... thanks for testing, Deepthi).
+Yes I like it. It is really confusing to have a local function with the
+same name.
+
+> 
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+
+Reviewed-by: Michal Hocko <mhocko@suse.cz>
+
+> ---
+>  arch/powerpc/mm/fault.c |   27 ++++++++++++---------------
+>  arch/sh/mm/fault.c      |   19 +++++++------------
+>  arch/x86/mm/fault.c     |   23 ++++++++---------------
+>  3 files changed, 27 insertions(+), 42 deletions(-)
+> 
+> diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+> --- a/arch/powerpc/mm/fault.c
+> +++ b/arch/powerpc/mm/fault.c
+> @@ -113,19 +113,6 @@ static int store_updates_sp(struct pt_regs *regs)
+>  #define MM_FAULT_CONTINUE	-1
+>  #define MM_FAULT_ERR(sig)	(sig)
+>  
+> -static int out_of_memory(struct pt_regs *regs)
+> -{
+> -	/*
+> -	 * We ran out of memory, or some other thing happened to us that made
+> -	 * us unable to handle the page fault gracefully.
+> -	 */
+> -	up_read(&current->mm->mmap_sem);
+> -	if (!user_mode(regs))
+> -		return MM_FAULT_ERR(SIGKILL);
+> -	pagefault_out_of_memory();
+> -	return MM_FAULT_RETURN;
+> -}
+> -
+>  static int do_sigbus(struct pt_regs *regs, unsigned long address)
+>  {
+>  	siginfo_t info;
+> @@ -169,8 +156,18 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
+>  		return MM_FAULT_CONTINUE;
+>  
+>  	/* Out of memory */
+> -	if (fault & VM_FAULT_OOM)
+> -		return out_of_memory(regs);
+> +	if (fault & VM_FAULT_OOM) {
+> +		up_read(&current->mm->mmap_sem);
+> +
+> +		/*
+> +		 * We ran out of memory, or some other thing happened to us that
+> +		 * made us unable to handle the page fault gracefully.
+> +		 */
+> +		if (!user_mode(regs))
+> +			return MM_FAULT_ERR(SIGKILL);
+> +		pagefault_out_of_memory();
+> +		return MM_FAULT_RETURN;
+> +	}
+>  
+>  	/* Bus error. x86 handles HWPOISON here, we'll add this if/when
+>  	 * we support the feature in HW
+> diff --git a/arch/sh/mm/fault.c b/arch/sh/mm/fault.c
+> --- a/arch/sh/mm/fault.c
+> +++ b/arch/sh/mm/fault.c
+> @@ -301,17 +301,6 @@ bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
+>  	__bad_area(regs, error_code, address, SEGV_ACCERR);
+>  }
+>  
+> -static void out_of_memory(void)
+> -{
+> -	/*
+> -	 * We ran out of memory, call the OOM killer, and return the userspace
+> -	 * (which will retry the fault, or kill us if we got oom-killed):
+> -	 */
+> -	up_read(&current->mm->mmap_sem);
+> -
+> -	pagefault_out_of_memory();
+> -}
+> -
+>  static void
+>  do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address)
+>  {
+> @@ -353,8 +342,14 @@ mm_fault_error(struct pt_regs *regs, unsigned long error_code,
+>  			no_context(regs, error_code, address);
+>  			return 1;
+>  		}
+> +		up_read(&current->mm->mmap_sem);
+>  
+> -		out_of_memory();
+> +		/*
+> +		 * We ran out of memory, call the OOM killer, and return the
+> +		 * userspace (which will retry the fault, or kill us if we got
+> +		 * oom-killed):
+> +		 */
+> +		pagefault_out_of_memory();
+>  	} else {
+>  		if (fault & VM_FAULT_SIGBUS)
+>  			do_sigbus(regs, error_code, address);
+> diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+> --- a/arch/x86/mm/fault.c
+> +++ b/arch/x86/mm/fault.c
+> @@ -803,20 +803,6 @@ bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
+>  	__bad_area(regs, error_code, address, SEGV_ACCERR);
+>  }
+>  
+> -/* TODO: fixup for "mm-invoke-oom-killer-from-page-fault.patch" */
+> -static void
+> -out_of_memory(struct pt_regs *regs, unsigned long error_code,
+> -	      unsigned long address)
+> -{
+> -	/*
+> -	 * We ran out of memory, call the OOM killer, and return the userspace
+> -	 * (which will retry the fault, or kill us if we got oom-killed):
+> -	 */
+> -	up_read(&current->mm->mmap_sem);
+> -
+> -	pagefault_out_of_memory();
+> -}
+> -
+>  static void
+>  do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
+>  	  unsigned int fault)
+> @@ -879,7 +865,14 @@ mm_fault_error(struct pt_regs *regs, unsigned long error_code,
+>  			return 1;
+>  		}
+>  
+> -		out_of_memory(regs, error_code, address);
+> +		up_read(&current->mm->mmap_sem);
+> +
+> +		/*
+> +		 * We ran out of memory, call the OOM killer, and return the
+> +		 * userspace (which will retry the fault, or kill us if we got
+> +		 * oom-killed):
+> +		 */
+> +		pagefault_out_of_memory();
+>  	} else {
+>  		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|
+>  			     VM_FAULT_HWPOISON_LARGE))
+
+-- 
+Michal Hocko
+SUSE Labs
