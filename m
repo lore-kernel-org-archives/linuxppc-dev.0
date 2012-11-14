@@ -1,38 +1,31 @@
-Return-Path: <deepthi@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 48C1A2C008C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:09:04 +1100 (EST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <deepthi@linux.vnet.ibm.com>;
- Wed, 14 Nov 2012 19:05:45 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qAE98uFV53739712
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:08:57 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qAE98tfL002138
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:08:56 +1100
-Message-ID: <50A35F21.9040003@linux.vnet.ibm.com>
-Date: Wed, 14 Nov 2012 14:36:41 +0530
-From: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
+Return-Path: <rientjes@google.com>
+Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
+ [209.85.220.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ECA9B2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 20:15:32 +1100 (EST)
+Received: by mail-pa0-f51.google.com with SMTP id kq12so152857pab.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 14 Nov 2012 01:15:29 -0800 (PST)
+Date: Wed, 14 Nov 2012 01:15:28 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [patch 4/4] mm, oom: remove statically defined arch functions of
+ same name
+In-Reply-To: <alpine.DEB.2.00.1211140111190.32125@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.1211140111190.32125@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: Julius Werner <jwerner@chromium.org>
-Subject: Re: [PATCH] cpuidle: Measure idle state durations with monotonic clock
-References: <1352843563-16392-1-git-send-email-jwerner@chromium.org>
-In-Reply-To: <1352843563-16392-1-git-send-email-jwerner@chromium.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Kevin Hilman <khilman@ti.com>, Trinabh Gupta <g.trinabh@gmail.com>,
- linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>,
- linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
- linux-acpi@vger.kernel.org,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Sameer Nanda <snanda@chromium.org>, Len Brown <lenb@kernel.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org,
+ linux-kernel@vger.kernel.org, Michal Hocko <mhocko@suse.cz>,
+ linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org,
+ KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,174 +35,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/14/2012 03:22 AM, Julius Werner wrote:
-> Many cpuidle drivers measure their time spent in an idle state by
-> reading the wallclock time before and after idling and calculating the
-> difference. This leads to erroneous results when the wallclock time gets
-> updated by another processor in the meantime, adding that clock
-> adjustment to the idle state's time counter.
-> 
-> If the clock adjustment was negative, the result is even worse due to an
-> erroneous cast from int to unsigned long long of the last_residency
-> variable. The negative 32 bit integer will zero-extend and result in a
-> forward time jump of roughly four billion milliseconds or 1.3 hours on
-> the idle state residency counter.
-> 
-> This patch changes all affected cpuidle drivers to use the monotonic
-> clock for their measurements instead. It also removes the erroneous
-> cast, making sure that negative residency values are applied correctly
-> even though they should not appear anymore.
+out_of_memory() is a globally defined function to call the oom killer.
+x86, sh, and powerpc all use a function of the same name within file
+scope in their respective fault.c unnecessarily.  Inline the functions
+into the pagefault handlers to clean the code up.
 
-Currently tegra/cpuidle uses ktime_get(). Good to have it for all
-the other arch idle residency time logging too.
-Tested patch on pseries.
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ arch/powerpc/mm/fault.c |   27 ++++++++++++---------------
+ arch/sh/mm/fault.c      |   19 +++++++------------
+ arch/x86/mm/fault.c     |   23 ++++++++---------------
+ 3 files changed, 27 insertions(+), 42 deletions(-)
 
-Reviewed-by: Deepthi Dharwar <deepthi@linux.vnet.ibm.com>
-
-Cheers,
-Deepthi
-
-> 
-> Signed-off-by: Julius Werner <jwerner@chromium.org>
-> ---
->  arch/powerpc/platforms/pseries/processor_idle.c |    4 ++--
->  drivers/acpi/processor_idle.c                   |   12 ++++++------
->  drivers/cpuidle/cpuidle.c                       |    3 +--
->  drivers/idle/intel_idle.c                       |   13 ++++---------
->  4 files changed, 13 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
-> index 45d00e5..4d806b4 100644
-> --- a/arch/powerpc/platforms/pseries/processor_idle.c
-> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
-> @@ -36,7 +36,7 @@ static struct cpuidle_state *cpuidle_state_table;
->  static inline void idle_loop_prolog(unsigned long *in_purr, ktime_t *kt_before)
->  {
-> 
-> -	*kt_before = ktime_get_real();
-> +	*kt_before = ktime_get();
->  	*in_purr = mfspr(SPRN_PURR);
->  	/*
->  	 * Indicate to the HV that we are idle. Now would be
-> @@ -50,7 +50,7 @@ static inline  s64 idle_loop_epilog(unsigned long in_purr, ktime_t kt_before)
->  	get_lppaca()->wait_state_cycles += mfspr(SPRN_PURR) - in_purr;
->  	get_lppaca()->idle = 0;
-> 
-> -	return ktime_to_us(ktime_sub(ktime_get_real(), kt_before));
-> +	return ktime_to_us(ktime_sub(ktime_get(), kt_before));
->  }
-> 
->  static int snooze_loop(struct cpuidle_device *dev,
-> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-> index e8086c7..8c98d73 100644
-> --- a/drivers/acpi/processor_idle.c
-> +++ b/drivers/acpi/processor_idle.c
-> @@ -751,9 +751,9 @@ static int acpi_idle_enter_c1(struct cpuidle_device *dev,
-> 
-> 
->  	lapic_timer_state_broadcast(pr, cx, 1);
-> -	kt1 = ktime_get_real();
-> +	kt1 = ktime_get();
->  	acpi_idle_do_entry(cx);
-> -	kt2 = ktime_get_real();
-> +	kt2 = ktime_get();
->  	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
-> 
->  	/* Update device last_residency*/
-> @@ -843,11 +843,11 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
->  	if (cx->type == ACPI_STATE_C3)
->  		ACPI_FLUSH_CPU_CACHE();
-> 
-> -	kt1 = ktime_get_real();
-> +	kt1 = ktime_get();
->  	/* Tell the scheduler that we are going deep-idle: */
->  	sched_clock_idle_sleep_event();
->  	acpi_idle_do_entry(cx);
-> -	kt2 = ktime_get_real();
-> +	kt2 = ktime_get();
->  	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
->  	idle_time = idle_time_ns;
->  	do_div(idle_time, NSEC_PER_USEC);
-> @@ -934,7 +934,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
->  	 */
->  	lapic_timer_state_broadcast(pr, cx, 1);
-> 
-> -	kt1 = ktime_get_real();
-> +	kt1 = ktime_get();
->  	/*
->  	 * disable bus master
->  	 * bm_check implies we need ARB_DIS
-> @@ -965,7 +965,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
->  		c3_cpu_count--;
->  		raw_spin_unlock(&c3_lock);
->  	}
-> -	kt2 = ktime_get_real();
-> +	kt2 = ktime_get();
->  	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
->  	idle_time = idle_time_ns;
->  	do_div(idle_time, NSEC_PER_USEC);
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 7f15b85..1536edd 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -109,8 +109,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
->  		/* This can be moved to within driver enter routine
->  		 * but that results in multiple copies of same code.
->  		 */
-> -		dev->states_usage[entered_state].time +=
-> -				(unsigned long long)dev->last_residency;
-> +		dev->states_usage[entered_state].time += dev->last_residency;
->  		dev->states_usage[entered_state].usage++;
->  	} else {
->  		dev->last_residency = 0;
-> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-> index b0f6b4c..6329a97 100644
-> --- a/drivers/idle/intel_idle.c
-> +++ b/drivers/idle/intel_idle.c
-> @@ -56,7 +56,7 @@
->  #include <linux/kernel.h>
->  #include <linux/cpuidle.h>
->  #include <linux/clockchips.h>
-> -#include <linux/hrtimer.h>	/* ktime_get_real() */
-> +#include <linux/hrtimer.h>	/* ktime_get() */
->  #include <trace/events/power.h>
->  #include <linux/sched.h>
->  #include <linux/notifier.h>
-> @@ -281,8 +281,7 @@ static int intel_idle(struct cpuidle_device *dev,
->  	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
->  	unsigned long eax = (unsigned long)cpuidle_get_statedata(state_usage);
->  	unsigned int cstate;
-> -	ktime_t kt_before, kt_after;
-> -	s64 usec_delta;
-> +	ktime_t kt_before;
->  	int cpu = smp_processor_id();
-> 
->  	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1;
-> @@ -297,7 +296,7 @@ static int intel_idle(struct cpuidle_device *dev,
->  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
->  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
-> 
-> -	kt_before = ktime_get_real();
-> +	kt_before = ktime_get();
-> 
->  	stop_critical_timings();
->  	if (!need_resched()) {
-> @@ -310,17 +309,13 @@ static int intel_idle(struct cpuidle_device *dev,
-> 
->  	start_critical_timings();
-> 
-> -	kt_after = ktime_get_real();
-> -	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
-> +	dev->last_residency = ktime_to_us(ktime_sub(ktime_get(), kt_before));
-> 
->  	local_irq_enable();
-> 
->  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
->  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
-> 
-> -	/* Update cpuidle counters */
-> -	dev->last_residency = (int)usec_delta;
-> -
->  	return index;
->  }
-> 
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -113,19 +113,6 @@ static int store_updates_sp(struct pt_regs *regs)
+ #define MM_FAULT_CONTINUE	-1
+ #define MM_FAULT_ERR(sig)	(sig)
+ 
+-static int out_of_memory(struct pt_regs *regs)
+-{
+-	/*
+-	 * We ran out of memory, or some other thing happened to us that made
+-	 * us unable to handle the page fault gracefully.
+-	 */
+-	up_read(&current->mm->mmap_sem);
+-	if (!user_mode(regs))
+-		return MM_FAULT_ERR(SIGKILL);
+-	pagefault_out_of_memory();
+-	return MM_FAULT_RETURN;
+-}
+-
+ static int do_sigbus(struct pt_regs *regs, unsigned long address)
+ {
+ 	siginfo_t info;
+@@ -169,8 +156,18 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
+ 		return MM_FAULT_CONTINUE;
+ 
+ 	/* Out of memory */
+-	if (fault & VM_FAULT_OOM)
+-		return out_of_memory(regs);
++	if (fault & VM_FAULT_OOM) {
++		up_read(&current->mm->mmap_sem);
++
++		/*
++		 * We ran out of memory, or some other thing happened to us that
++		 * made us unable to handle the page fault gracefully.
++		 */
++		if (!user_mode(regs))
++			return MM_FAULT_ERR(SIGKILL);
++		pagefault_out_of_memory();
++		return MM_FAULT_RETURN;
++	}
+ 
+ 	/* Bus error. x86 handles HWPOISON here, we'll add this if/when
+ 	 * we support the feature in HW
+diff --git a/arch/sh/mm/fault.c b/arch/sh/mm/fault.c
+--- a/arch/sh/mm/fault.c
++++ b/arch/sh/mm/fault.c
+@@ -301,17 +301,6 @@ bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
+ 	__bad_area(regs, error_code, address, SEGV_ACCERR);
+ }
+ 
+-static void out_of_memory(void)
+-{
+-	/*
+-	 * We ran out of memory, call the OOM killer, and return the userspace
+-	 * (which will retry the fault, or kill us if we got oom-killed):
+-	 */
+-	up_read(&current->mm->mmap_sem);
+-
+-	pagefault_out_of_memory();
+-}
+-
+ static void
+ do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address)
+ {
+@@ -353,8 +342,14 @@ mm_fault_error(struct pt_regs *regs, unsigned long error_code,
+ 			no_context(regs, error_code, address);
+ 			return 1;
+ 		}
++		up_read(&current->mm->mmap_sem);
+ 
+-		out_of_memory();
++		/*
++		 * We ran out of memory, call the OOM killer, and return the
++		 * userspace (which will retry the fault, or kill us if we got
++		 * oom-killed):
++		 */
++		pagefault_out_of_memory();
+ 	} else {
+ 		if (fault & VM_FAULT_SIGBUS)
+ 			do_sigbus(regs, error_code, address);
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -803,20 +803,6 @@ bad_area_access_error(struct pt_regs *regs, unsigned long error_code,
+ 	__bad_area(regs, error_code, address, SEGV_ACCERR);
+ }
+ 
+-/* TODO: fixup for "mm-invoke-oom-killer-from-page-fault.patch" */
+-static void
+-out_of_memory(struct pt_regs *regs, unsigned long error_code,
+-	      unsigned long address)
+-{
+-	/*
+-	 * We ran out of memory, call the OOM killer, and return the userspace
+-	 * (which will retry the fault, or kill us if we got oom-killed):
+-	 */
+-	up_read(&current->mm->mmap_sem);
+-
+-	pagefault_out_of_memory();
+-}
+-
+ static void
+ do_sigbus(struct pt_regs *regs, unsigned long error_code, unsigned long address,
+ 	  unsigned int fault)
+@@ -879,7 +865,14 @@ mm_fault_error(struct pt_regs *regs, unsigned long error_code,
+ 			return 1;
+ 		}
+ 
+-		out_of_memory(regs, error_code, address);
++		up_read(&current->mm->mmap_sem);
++
++		/*
++		 * We ran out of memory, call the OOM killer, and return the
++		 * userspace (which will retry the fault, or kill us if we got
++		 * oom-killed):
++		 */
++		pagefault_out_of_memory();
+ 	} else {
+ 		if (fault & (VM_FAULT_SIGBUS|VM_FAULT_HWPOISON|
+ 			     VM_FAULT_HWPOISON_LARGE))
