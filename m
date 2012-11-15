@@ -1,20 +1,47 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5C2482C03F6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 20:40:19 +1100 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH 6/6] book3e/kexec/kdump: redefine VIRT_PHYS_OFFSET
-Date: Thu, 15 Nov 2012 17:39:56 +0800
-Message-ID: <1352972396-13489-7-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1352972396-13489-1-git-send-email-tiejun.chen@windriver.com>
-References: <1352972396-13489-1-git-send-email-tiejun.chen@windriver.com>
+Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
+Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 69DC02C0617
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 20:41:58 +1100 (EST)
+Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+ by fgwmail7.fujitsu.co.jp (Postfix) with ESMTP id 5B89D1793210
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:18 +0900 (JST)
+Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
+ by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id EC1FE3EE0C1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
+Received: from smail (m3 [127.0.0.1])
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id D1DE445DEC3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id A914C45DEBE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 95E591DB8048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
+Received: from m1001.s.css.fujitsu.com (m1001.s.css.fujitsu.com
+ [10.240.81.139])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 490031DB8041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
+Message-ID: <50A4AC67.5000102@jp.fujitsu.com>
+Date: Thu, 15 Nov 2012 17:48:39 +0900
+From: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [patch 4/4] mm, oom: remove statically defined arch functions
+ of same name
+References: <alpine.DEB.2.00.1211140111190.32125@chino.kir.corp.google.com>
+ <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org,
+ linux-kernel@vger.kernel.org, Michal Hocko <mhocko@suse.cz>,
+ linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +51,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Book3e is always aligned 1GB to create TLB so we should
-use (KERNELBASE - MEMORY_START) as VIRT_PHYS_OFFSET to
-get __pa/__va properly while boot kdump.
+(2012/11/14 18:15), David Rientjes wrote:
+> out_of_memory() is a globally defined function to call the oom killer.
+> x86, sh, and powerpc all use a function of the same name within file
+> scope in their respective fault.c unnecessarily.  Inline the functions
+> into the pagefault handlers to clean the code up.
+>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
- arch/powerpc/include/asm/page.h |    2 ++
- 1 file changed, 2 insertions(+)
+I think this is good.
 
-diff --git a/arch/powerpc/include/asm/page.h b/arch/powerpc/include/asm/page.h
-index f072e97..2cba08a 100644
---- a/arch/powerpc/include/asm/page.h
-+++ b/arch/powerpc/include/asm/page.h
-@@ -112,6 +112,8 @@ extern long long virt_phys_offset;
- /* See Description below for VIRT_PHYS_OFFSET */
- #ifdef CONFIG_RELOCATABLE_PPC32
- #define VIRT_PHYS_OFFSET virt_phys_offset
-+#elif defined(CONFIG_PPC_BOOK3E_64)
-+#define VIRT_PHYS_OFFSET (KERNELBASE - MEMORY_START)
- #else
- #define VIRT_PHYS_OFFSET (KERNELBASE - PHYSICAL_START)
- #endif
--- 
-1.7.9.5
+Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
