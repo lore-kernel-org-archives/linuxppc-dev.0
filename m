@@ -1,47 +1,31 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail7.fujitsu.co.jp (fgwmail7.fujitsu.co.jp [192.51.44.37])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 69DC02C0617
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 20:41:58 +1100 (EST)
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- by fgwmail7.fujitsu.co.jp (Postfix) with ESMTP id 5B89D1793210
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:18 +0900 (JST)
-Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id EC1FE3EE0C1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
-Received: from smail (m3 [127.0.0.1])
- by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id D1DE445DEC3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
- by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id A914C45DEBE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 95E591DB8048
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
-Received: from m1001.s.css.fujitsu.com (m1001.s.css.fujitsu.com
- [10.240.81.139])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 490031DB8041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 17:49:12 +0900 (JST)
-Message-ID: <50A4AC67.5000102@jp.fujitsu.com>
-Date: Thu, 15 Nov 2012 17:48:39 +0900
-From: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Return-Path: <preeti.lkml@gmail.com>
+Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
+ [209.85.220.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 21E972C01FA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 20:04:43 +1100 (EST)
+Received: by mail-vc0-f179.google.com with SMTP id f13so1363865vcb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 01:04:41 -0800 (PST)
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [patch 4/4] mm, oom: remove statically defined arch functions
- of same name
-References: <alpine.DEB.2.00.1211140111190.32125@chino.kir.corp.google.com>
- <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.1211140113480.32125@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh@vger.kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, x86@kernel.org,
- linux-kernel@vger.kernel.org, Michal Hocko <mhocko@suse.cz>,
- linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- "H. Peter Anvin" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1352944590-8776-1-git-send-email-jwerner@chromium.org>
+References: <CAODwPW873M32d9zFT9fpJT9+PuMbz8htzUxdF1TNE+J1zR3jYA@mail.gmail.com>
+ <1352944590-8776-1-git-send-email-jwerner@chromium.org>
+Date: Thu, 15 Nov 2012 14:34:41 +0530
+Message-ID: <CAM4v1pPhaP=pVnFMXUU_nmrOxhY5yPNtbBdQsT5MH37MndK6LQ@mail.gmail.com>
+Subject: Re: [PATCH] cpuidle: Measure idle state durations with monotonic clock
+From: Preeti Murthy <preeti.lkml@gmail.com>
+To: Julius Werner <jwerner@chromium.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Kevin Hilman <khilman@ti.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
+ Trinabh Gupta <g.trinabh@gmail.com>,
+ Lists Linaro-dev <linaro-dev@lists.linaro.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Sameer Nanda <snanda@chromium.org>, Len Brown <lenb@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,20 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2012/11/14 18:15), David Rientjes wrote:
-> out_of_memory() is a globally defined function to call the oom killer.
-> x86, sh, and powerpc all use a function of the same name within file
-> scope in their respective fault.c unnecessarily.  Inline the functions
-> into the pagefault handlers to clean the code up.
->
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Signed-off-by: David Rientjes <rientjes@google.com>
+Hi all,
 
-I think this is good.
+The code looks correct and inviting to me as it has led to good cleanups.
+I dont think passing 0 as the argument to the function
+sched_clock_idle_wakeup_event()
+should lead to problems,as it does not do anything useful with the
+passed arguments.
 
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+My only curiosity is what was the purpose of passing idle residency time to
+sched_clock_idle_wakeup_event() when this data could always be retrieved from
+dev->last_residency for each cpu,which gets almost immediately updated.
+
+But this does not seem to come in way of this patch for now.Anyway I
+have added Peter to
+the list so that he can opine about this issue if possible and needed.
+
+Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+
+
+Regards
+Preeti U Murthy
