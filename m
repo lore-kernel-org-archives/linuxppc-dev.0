@@ -1,24 +1,26 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-wi0-f180.google.com (mail-wi0-f180.google.com
- [209.85.212.180])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7B5A72C0491
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2012 04:58:41 +1100 (EST)
-Received: by mail-wi0-f180.google.com with SMTP id x18so1128031wia.3
- for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2012 09:58:38 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: PROBLEM: Linux 3.6.2 fails to boot on IBM Cell
-To: Dennis Schridde <devurandom@gmx.net>
-In-Reply-To: <1573571.I7ElC3JheV@ernie>
-References: <5521875.6lkx8Qvfk5@ernie>
- <CACxGe6t103JQ8mY1Q0nZBrEPW9+MH3oB49gatEEd2UCj7=XrUg@mail.gmail.com>
- <6566742.NTPeeo2QHT@ernie> <1573571.I7ElC3JheV@ernie>
-Date: Thu, 15 Nov 2012 17:58:35 +0000
-Message-Id: <20121115175835.652C43E197F@localhost>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <shuah.khan@hp.com>
+Received: from g6t0184.atlanta.hp.com (g6t0184.atlanta.hp.com [15.193.32.61])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CCFB82C048A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 Nov 2012 05:05:18 +1100 (EST)
+Message-ID: <1353002712.2532.42.camel@lorien2>
+Subject: Re: [PATCH RFT RESEND linux-next] powerpc: dma-mapping: support
+ debug_dma_mapping_error
+From: Shuah Khan <shuah.khan@hp.com>
+To: benh@kernel.crashing.org, m.szyprowski@samsung.com
+Date: Thu, 15 Nov 2012 11:05:12 -0700
+In-Reply-To: <1351267705.4013.18.camel@lorien2>
+References: <1351210584.6851.21.camel@lorien2>
+ <1351267705.4013.18.camel@lorien2>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: arnd@arndb.de, LKML <linux-kernel@vger.kernel.org>,
+ kyungmin.park@samsung.com, paulus@samba.org, shuahkhan@gmail.com,
+ andrzej.p@samsung.com, linuxppc-dev@lists.ozlabs.org,
+ david@gibson.dropbear.id.au
+Reply-To: shuah.khan@hp.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 25 Oct 2012 21:33:41 +0200, Dennis Schridde <devurandom@gmx.net> wrote:
-> Hello everyone!
+On Fri, 2012-10-26 at 10:08 -0600, Shuah Khan wrote:
+> Add support for debug_dma_mapping_error() call to avoid warning from
+> debug_dma_unmap() interface when it checks for mapping error checked
+> status. Without this patch, device driver failed to check map error
+> warning is generated.
 > 
-> Am Freitag, 19. Oktober 2012, 09:04:08 schrieb Dennis Schridde:
-> > Am Freitag, 19. Oktober 2012, 00:17:55 schrieb Grant Likely:
-> > > What does the boot log look like with the attached patch? (compiled
-> > > only, I haven't booted with it)
-> > 
-> > Please find the log attached.
-> Have you found the cause or a fix for the problem?
+> Signed-off-by: Shuah Khan <shuah.khan@hp.com>
+> ---
+>  arch/powerpc/include/asm/dma-mapping.h |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> index 7816087..e27e9ad 100644
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -172,6 +172,7 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+>  {
+>  	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+>  
+> +	debug_dma_mapping_error(dev, dma_addr);
+>  	if (dma_ops->mapping_error)
+>  		return dma_ops->mapping_error(dev, dma_addr);
+>  
 
-Umm, no. Some suggestions were made so I assumed you'd try those.
+Marek,
 
-Anyway, here is a real patch. Try this:
+This one is for powerpc to go through your tree with the other arch
+debug_dma_mapping_error() patches.
 
-g.
-
-diff --git a/arch/powerpc/platforms/cell/pmu.c b/arch/powerpc/platforms/cell/pmu.c
-index 59c1a16..348a27b 100644
---- a/arch/powerpc/platforms/cell/pmu.c
-+++ b/arch/powerpc/platforms/cell/pmu.c
-@@ -382,7 +382,7 @@ static int __init cbe_init_pm_irq(void)
- 	unsigned int irq;
- 	int rc, node;
- 
--	for_each_node(node) {
-+	for_each_online_node(node) {
- 		irq = irq_create_mapping(NULL, IIC_IRQ_IOEX_PMI |
- 					       (node << IIC_IRQ_NODE_SHIFT));
- 		if (irq == NO_IRQ) {
+Thanks,
+-- Shuah
