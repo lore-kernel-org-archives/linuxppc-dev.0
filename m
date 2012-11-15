@@ -1,30 +1,24 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
+ [74.125.82.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4F3BE2C033E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 21:52:27 +1100 (EST)
-Received: by mail-bk0-f51.google.com with SMTP id ik5so602206bkc.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 02:52:24 -0800 (PST)
-Message-ID: <50A4C963.9060808@linaro.org>
-Date: Thu, 15 Nov 2012 11:52:19 +0100
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
-MIME-Version: 1.0
-To: Julius Werner <jwerner@chromium.org>
-Subject: Re: [PATCH] cpuidle: Measure idle state durations with monotonic clock
-References: <CAODwPW873M32d9zFT9fpJT9+PuMbz8htzUxdF1TNE+J1zR3jYA@mail.gmail.com>
- <1352944590-8776-1-git-send-email-jwerner@chromium.org>
-In-Reply-To: <1352944590-8776-1-git-send-email-jwerner@chromium.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Kevin Hilman <khilman@ti.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
- Trinabh Gupta <g.trinabh@gmail.com>,
- Lists Linaro-dev <linaro-dev@lists.linaro.org>, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
- linux-acpi@vger.kernel.org,
- "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Sameer Nanda <snanda@chromium.org>, Len Brown <lenb@kernel.org>
+ by ozlabs.org (Postfix) with ESMTPS id 408292C0389
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 23:12:01 +1100 (EST)
+Received: by mail-we0-f179.google.com with SMTP id z49so514871wey.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 04:11:58 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Deprecating reserve-map in favor of properties
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1351798896.12271.241.camel@pasglop>
+References: <1348179051.1132.32.camel@pasglop>
+ <CACxGe6sAXBJ9KkA8Urioe-VsbaLUO+=C_tb1vU+i_VKuedi=eg@mail.gmail.com>
+ <1351798896.12271.241.camel@pasglop>
+Date: Thu, 15 Nov 2012 12:11:55 +0000
+Message-Id: <20121115121155.7B2353E0B12@localhost>
+Cc: devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Cyril Chemparathy <cyril@ti.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,41 +28,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/15/2012 02:56 AM, Julius Werner wrote:
-> Many cpuidle drivers measure their time spent in an idle state by
-> reading the wallclock time before and after idling and calculating the
-> difference. This leads to erroneous results when the wallclock time gets
-> updated by another processor in the meantime, adding that clock
-> adjustment to the idle state's time counter.
+On Fri, 02 Nov 2012 06:41:36 +1100, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> On Thu, 2012-11-01 at 15:21 +0100, Grant Likely wrote:
 > 
-> If the clock adjustment was negative, the result is even worse due to an
-> erroneous cast from int to unsigned long long of the last_residency
-> variable. The negative 32 bit integer will zero-extend and result in a
-> forward time jump of roughly four billion milliseconds or 1.3 hours on
-> the idle state residency counter.
+> > I think this makes sense. Cyril and I are just talking about what he
+> > needs. He wants to set aside per-device reserved regions and would
+> > like to have the ability to reference a particular reserved region
+> > from a device node, probably with a phandle. I like the look of the
+> > reserved-{ranges,names} properties in the root, but I see the argument
+> > that it isn't very flexible. What about something like this:
+> > 
+> > reserved-memory {
+> >         reserved@0x10000000 { reg = <0x10000000 0x08000000>; };
+> >         reserved@0x01000000 { reg = <0x01000000 0x00200000>; };
+> > }
+> > 
+> > The node name of the child nodes could be different of course.
 > 
-> This patch changes all affected cpuidle drivers to either use the
-> monotonic clock for their measurements or make use of the generic time
-> measurement wrapper in cpuidle.c, which was already working correctly.
-> Some superfluous CLIs/STIs in the ACPI code are removed (interrupts
-> should always already be disabled before entering the idle function, and
-> not get reenabled until the generic wrapper has performed its second
-> measurement). It also removes the erroneous cast, making sure that
-> negative residency values are applied correctly even though they should
-> not appear anymore.
+> I'm not that fan of different nodes, especially nodes with nodes in them
+> for that purpose. Seems overkill.
 > 
-> Signed-off-by: Julius Werner <jwerner@chromium.org>
+> Can't he reference reserved entries as <phandle>,<index> pairs ?
 
-Tested on a Core 2 Duo (processor_idle driver).
+That would work too.
 
-Tested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> I still think a single property would do fine. We could mandate those be
+> in the respective "memory" nodes but them you have potentially to break
+> up reserved regions if you have multiple memory nodes (NUMA) etc...
 
+It makes sense to me for the reserved ranges to be kept with the memory
+nodes themselves, even if it does mean that sometimes they need to be
+split up for multiple memory nodes.
 
+> > Right, that would work also even though I prefer phandle references in
+> > general. Is it conceivable that additional data would want to be
+> > attached to a particular reserved region?
+> 
+> phandle references and names aren't exclusive from each other. The name
+> remains a useful diagnostic tool.
+> 
+> If you want additional data, make a node somewhere to represent that
+> region along with its additional data, that node can have a reference to
+> the reserved map entry.
+> 
+> I'd keep the reserve map itself simple. It's a "synthetic property" a
+> bit like the memory nodes. IE. The "memory" nodes don't have to
+> represent physical memory controllers & DIMMs. They represent the
+> overall view of memory by the CPUs. You can represent the MCs and the
+> DIMMs elsewhere in the SoC node.
 
--- 
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+okay.
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+g.
