@@ -1,32 +1,17 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp08.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A95DD2C0350
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 15:50:22 +1100 (EST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Thu, 15 Nov 2012 14:49:20 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qAF4daYl64094448
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 15:39:36 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qAF4nxgj028259
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 15:50:00 +1100
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 6/7] powerpc: Update Kconfig + Makefile to prepare for server
- doorbells
-Date: Thu, 15 Nov 2012 15:49:49 +1100
-Message-Id: <1352954990-2858-7-git-send-email-imunsie@au1.ibm.com>
-In-Reply-To: <1352954990-2858-1-git-send-email-imunsie@au1.ibm.com>
-References: <1352954990-2858-1-git-send-email-imunsie@au1.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Ian Munsie <imunsie@au1.ibm.com>
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by ozlabs.org (Postfix) with ESMTP id 2E8332C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 16:27:10 +1100 (EST)
+Date: Thu, 15 Nov 2012 13:26:28 +0800
+From: kbuild test robot <fengguang.wu@intel.com>
+To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Subject: [powerpc:dt 10/10]
+ lib/pSeries-reconfig-notifier-error-inject.c:4:34: fatal error:
+ asm/pSeries_reconfig.h: No such file or directory
+Message-ID: <50a47d04.6N+SxZ6/xKVFPteg%fengguang.wu@intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,63 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+tree:   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git dt
+head:   f459d63e1689b16a2f5a965557e19b25bad5dbdc
+commit: f459d63e1689b16a2f5a965557e19b25bad5dbdc [10/10] powerpc+of: Remove the pSeries_reconfig.h file
+config: make ARCH=powerpc allmodconfig
 
-Move the rule to build doorbell support out of the Makefile and into a
-new Kconfig boolean that platforms can select.
+All error/warnings:
 
-We will add doorbell support to pseries as well in the next patch.
+lib/pSeries-reconfig-notifier-error-inject.c:4:34: fatal error: asm/pSeries_reconfig.h: No such file or directory
+compilation terminated.
 
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-Tested-by: Michael Neuling <mikey@neuling.org>
+vim +4 lib/pSeries-reconfig-notifier-error-inject.c
+
+08dfb4dd Akinobu Mita 2012-07-30   1  #include <linux/kernel.h>
+08dfb4dd Akinobu Mita 2012-07-30   2  #include <linux/module.h>
+08dfb4dd Akinobu Mita 2012-07-30   3  
+08dfb4dd Akinobu Mita 2012-07-30  @4  #include <asm/pSeries_reconfig.h>
+08dfb4dd Akinobu Mita 2012-07-30   5  
+08dfb4dd Akinobu Mita 2012-07-30   6  #include "notifier-error-inject.h"
+08dfb4dd Akinobu Mita 2012-07-30   7  
+08dfb4dd Akinobu Mita 2012-07-30   8  static int priority;
+08dfb4dd Akinobu Mita 2012-07-30   9  module_param(priority, int, 0);
+08dfb4dd Akinobu Mita 2012-07-30  10  MODULE_PARM_DESC(priority, "specify pSeries reconfig notifier priority");
+08dfb4dd Akinobu Mita 2012-07-30  11  
+08dfb4dd Akinobu Mita 2012-07-30  12  static struct notifier_err_inject reconfig_err_inject = {
+
 ---
- arch/powerpc/kernel/Makefile           |    4 ++--
- arch/powerpc/platforms/Kconfig.cputype |    6 ++++++
- 2 files changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 8f61934..44fbbea 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -75,8 +75,8 @@ endif
- obj64-$(CONFIG_HIBERNATION)	+= swsusp_asm64.o
- obj-$(CONFIG_MODULES)		+= module.o module_$(CONFIG_WORD_SIZE).o
- obj-$(CONFIG_44x)		+= cpu_setup_44x.o
--obj-$(CONFIG_PPC_FSL_BOOK3E)	+= cpu_setup_fsl_booke.o dbell.o
--obj-$(CONFIG_PPC_BOOK3E_64)	+= dbell.o
-+obj-$(CONFIG_PPC_FSL_BOOK3E)	+= cpu_setup_fsl_booke.o
-+obj-$(CONFIG_PPC_DOORBELL)	+= dbell.o
- obj-$(CONFIG_JUMP_LABEL)	+= jump_label.o
- 
- extra-y				:= head_$(CONFIG_WORD_SIZE).o
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 72afd28..cea2f09 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -76,6 +76,7 @@ config PPC_BOOK3E_64
- 	bool "Embedded processors"
- 	select PPC_FPU # Make it a choice ?
- 	select PPC_SMP_MUXED_IPI
-+	select PPC_DOORBELL
- 
- endchoice
- 
-@@ -208,6 +209,7 @@ config PPC_FSL_BOOK3E
- 	select FSL_EMB_PERFMON
- 	select PPC_SMP_MUXED_IPI
- 	select SYS_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
-+	select PPC_DOORBELL
- 	default y if FSL_BOOKE
- 
- config PTE_64BIT
-@@ -382,4 +384,8 @@ config NOT_COHERENT_CACHE
- config CHECK_CACHE_COHERENCY
- 	bool
- 
-+config PPC_DOORBELL
-+	bool
-+	default n
-+
- endmenu
--- 
-1.7.10.4
+0-DAY kernel build testing backend         Open Source Technology Center
+Fengguang Wu, Yuanhan Liu                              Intel Corporation
