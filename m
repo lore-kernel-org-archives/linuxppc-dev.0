@@ -3,13 +3,15 @@ Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 716002C030E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 20:40:06 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C065F2C031D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 Nov 2012 20:40:07 +1100 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [PATCH 0/6] powerpc/book3e: support kexec and kdump
-Date: Thu, 15 Nov 2012 17:39:50 +0800
-Message-ID: <1352972396-13489-1-git-send-email-tiejun.chen@windriver.com>
+Subject: [PATCH 1/6] powerpc/book3e: support CONFIG_RELOCATABLE
+Date: Thu, 15 Nov 2012 17:39:51 +0800
+Message-ID: <1352972396-13489-2-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1352972396-13489-1-git-send-email-tiejun.chen@windriver.com>
+References: <1352972396-13489-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
@@ -22,28 +24,156 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset is used to support kexec and kdump on book3e.
+book3e is different with book3s since 3s includes the exception
+vectors code in head_64.S as it relies on absolute addressing
+which is only possible within this compilation unit. So we have
+to get that label address with got.
 
-Tested on fsl-p5040 DS.
+And when boot a relocated kernel, we should reset ipvr properly again
+after .relocate.
 
-Tiejun Chen (6):
-      powerpc/book3e: support CONFIG_RELOCATABLE
-      book3e/kexec/kdump: enable kexec for kernel
-      book3e/kexec/kdump: create a 1:1 TLB mapping
-      book3e/kexec/kdump: introduce a kexec kernel flag
-      book3e/kexec/kdump: skip ppc32 kexec specfic
-      book3e/kexec/kdump: redefine VIRT_PHYS_OFFSET
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/include/asm/exception-64e.h |    8 ++++++++
+ arch/powerpc/kernel/exceptions-64e.S     |   15 ++++++++++++++-
+ arch/powerpc/kernel/head_64.S            |   22 ++++++++++++++++++++++
+ arch/powerpc/lib/feature-fixups.c        |    7 +++++++
+ 4 files changed, 51 insertions(+), 1 deletion(-)
 
- arch/powerpc/Kconfig                     |    2 +-
- arch/powerpc/include/asm/exception-64e.h |    8 ++++
- arch/powerpc/include/asm/page.h          |    2 +
- arch/powerpc/include/asm/smp.h           |    3 ++
- arch/powerpc/kernel/exceptions-64e.S     |   15 ++++++-
- arch/powerpc/kernel/head_64.S            |   43 +++++++++++++++++--
- arch/powerpc/kernel/machine_kexec_64.c   |    6 +++
- arch/powerpc/kernel/misc_64.S            |   67 +++++++++++++++++++++++++++++-
- arch/powerpc/lib/feature-fixups.c        |    7 ++++
- arch/powerpc/platforms/85xx/smp.c        |   26 ++++++++++++
- 10 files changed, 173 insertions(+), 6 deletions(-)
-
-Tiejun
+diff --git a/arch/powerpc/include/asm/exception-64e.h b/arch/powerpc/include/asm/exception-64e.h
+index 51fa43e..89e940d 100644
+--- a/arch/powerpc/include/asm/exception-64e.h
++++ b/arch/powerpc/include/asm/exception-64e.h
+@@ -214,10 +214,18 @@ exc_##label##_book3e:
+ #define TLB_MISS_STATS_SAVE_INFO_BOLTED
+ #endif
+ 
++#ifndef CONFIG_RELOCATABLE
+ #define SET_IVOR(vector_number, vector_offset)	\
+ 	li	r3,vector_offset@l; 		\
+ 	ori	r3,r3,interrupt_base_book3e@l;	\
+ 	mtspr	SPRN_IVOR##vector_number,r3;
++#else
++#define SET_IVOR(vector_number, vector_offset)	\
++	LOAD_REG_ADDR(r3,interrupt_base_book3e);\
++	rlwinm	r3,r3,0,15,0;			\
++	ori	r3,r3,vector_offset@l;		\
++	mtspr	SPRN_IVOR##vector_number,r3;
++#endif
+ 
+ #endif /* _ASM_POWERPC_EXCEPTION_64E_H */
+ 
+diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
+index 4e7083e..82be30b 100644
+--- a/arch/powerpc/kernel/exceptions-64e.S
++++ b/arch/powerpc/kernel/exceptions-64e.S
+@@ -1104,7 +1104,15 @@ skpinv:	addi	r6,r6,1				/* Increment */
+  * r4 = MAS0 w/TLBSEL & ESEL for the temp mapping
+  */
+ 	/* Now we branch the new virtual address mapped by this entry */
++#ifdef CONFIG_RELOCATABLE
++	/* We have to find out address from lr. */
++	bl	1f		/* Find our address */
++1:	mflr	r6
++	addi	r6,r6,(2f - 1b)
++	tovirt(r6,r6)
++#else
+ 	LOAD_REG_IMMEDIATE(r6,2f)
++#endif
+ 	lis	r7,MSR_KERNEL@h
+ 	ori	r7,r7,MSR_KERNEL@l
+ 	mtspr	SPRN_SRR0,r6
+@@ -1355,9 +1363,14 @@ _GLOBAL(book3e_secondary_thread_init)
+ 	mflr	r28
+ 	b	3b
+ 
+-_STATIC(init_core_book3e)
++_GLOBAL(init_core_book3e)
+ 	/* Establish the interrupt vector base */
++#ifdef CONFIG_RELOCATABLE
++	tovirt(r2,r2)
++	LOAD_REG_ADDR(r3, interrupt_base_book3e)
++#else
+ 	LOAD_REG_IMMEDIATE(r3, interrupt_base_book3e)
++#endif
+ 	mtspr	SPRN_IVPR,r3
+ 	sync
+ 	blr
+diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
+index 9e07bd0..aa7df52 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -395,12 +395,22 @@ _STATIC(__after_prom_start)
+ 	/* process relocations for the final address of the kernel */
+ 	lis	r25,PAGE_OFFSET@highest	/* compute virtual base of kernel */
+ 	sldi	r25,r25,32
++#if defined(CONFIG_PPC_BOOK3E)
++	tovirt(r26,r26)			/* on booke, we already run at PAGE_OFFSET */
++#endif
+ 	lwz	r7,__run_at_load-_stext(r26)
++#if defined(CONFIG_PPC_BOOK3E)
++	tophys(r26,r26)			/* Restore for the remains. */
++#endif
+ 	cmplwi	cr0,r7,1	/* flagged to stay where we are ? */
+ 	bne	1f
+ 	add	r25,r25,r26
+ 1:	mr	r3,r25
+ 	bl	.relocate
++#if defined(CONFIG_PPC_BOOK3E)
++	/* We should set ivpr again after .relocate. */
++	bl	.init_core_book3e
++#endif
+ #endif
+ 
+ /*
+@@ -428,11 +438,23 @@ _STATIC(__after_prom_start)
+  * variable __run_at_load, if it is set the kernel is treated as relocatable
+  * kernel, otherwise it will be moved to PHYSICAL_START
+  */
++#if defined(CONFIG_PPC_BOOK3E)
++	tovirt(r26,r26)			/* on booke, we already run at PAGE_OFFSET */
++#endif
+ 	lwz	r7,__run_at_load-_stext(r26)
++#if defined(CONFIG_PPC_BOOK3E)
++	tophys(r26,r26)			/* Restore for the remains. */
++#endif
+ 	cmplwi	cr0,r7,1
+ 	bne	3f
+ 
++#ifdef CONFIG_PPC_BOOK3E
++	LOAD_REG_ADDR(r5, interrupt_end_book3e)
++	LOAD_REG_ADDR(r11, _stext)
++	sub	r5,r5,r11
++#else
+ 	li	r5,__end_interrupts - _stext	/* just copy interrupts */
++#endif
+ 	b	5f
+ 3:
+ #endif
+diff --git a/arch/powerpc/lib/feature-fixups.c b/arch/powerpc/lib/feature-fixups.c
+index 7a8a748..13f20ed 100644
+--- a/arch/powerpc/lib/feature-fixups.c
++++ b/arch/powerpc/lib/feature-fixups.c
+@@ -135,13 +135,20 @@ void do_final_fixups(void)
+ #if defined(CONFIG_PPC64) && defined(CONFIG_RELOCATABLE)
+ 	int *src, *dest;
+ 	unsigned long length;
++#ifdef CONFIG_PPC_BOOK3E
++	extern char interrupt_end_book3e[];
++#endif
+ 
+ 	if (PHYSICAL_START == 0)
+ 		return;
+ 
+ 	src = (int *)(KERNELBASE + PHYSICAL_START);
+ 	dest = (int *)KERNELBASE;
++#ifdef CONFIG_PPC_BOOK3E
++	length = (interrupt_end_book3e - _stext) / sizeof(int);
++#else
+ 	length = (__end_interrupts - _stext) / sizeof(int);
++#endif
+ 
+ 	while (length--) {
+ 		patch_instruction(dest, *src);
+-- 
+1.7.9.5
