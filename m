@@ -1,18 +1,22 @@
-Return-Path: <devurandom@gmx.net>
-Received: from mailout-de.gmx.net (mailout-de.gmx.net [213.165.64.22])
- by ozlabs.org (Postfix) with SMTP id CD2AE2C041B
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2012 03:13:17 +1100 (EST)
-From: Dennis Schridde <devurandom@gmx.net>
-To: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-wi0-f180.google.com (mail-wi0-f180.google.com
+ [209.85.212.180])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7B5A72C0491
+ for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2012 04:58:41 +1100 (EST)
+Received: by mail-wi0-f180.google.com with SMTP id x18so1128031wia.3
+ for <linuxppc-dev@ozlabs.org>; Thu, 15 Nov 2012 09:58:38 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: PROBLEM: Linux 3.6.2 fails to boot on IBM Cell
-Date: Thu, 15 Nov 2012 17:13:07 +0100
-Message-ID: <1934324.hNQ4TJncWD@ernie>
+To: Dennis Schridde <devurandom@gmx.net>
 In-Reply-To: <1573571.I7ElC3JheV@ernie>
-References: <5521875.6lkx8Qvfk5@ernie> <6566742.NTPeeo2QHT@ernie>
- <1573571.I7ElC3JheV@ernie>
-MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart3960358.6G2tRb6I4g";
- micalg="pgp-sha1"; protocol="application/pgp-signature"
+References: <5521875.6lkx8Qvfk5@ernie>
+ <CACxGe6t103JQ8mY1Q0nZBrEPW9+MH3oB49gatEEd2UCj7=XrUg@mail.gmail.com>
+ <6566742.NTPeeo2QHT@ernie> <1573571.I7ElC3JheV@ernie>
+Date: Thu, 15 Nov 2012 17:58:35 +0000
+Message-Id: <20121115175835.652C43E197F@localhost>
 Cc: Thomas Gleixner <tglx@linutronix.de>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,39 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---nextPart3960358.6G2tRb6I4g
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset="utf-8"
-
-Hello again!
-
-Am Donnerstag, 25. Oktober 2012, 21:33:41 schrieb Dennis Schridde:
+On Thu, 25 Oct 2012 21:33:41 +0200, Dennis Schridde <devurandom@gmx.net> wrote:
+> Hello everyone!
+> 
 > Am Freitag, 19. Oktober 2012, 09:04:08 schrieb Dennis Schridde:
 > > Am Freitag, 19. Oktober 2012, 00:17:55 schrieb Grant Likely:
-> > > What does the boot log look like with the attached patch? (compil=
-ed
+> > > What does the boot log look like with the attached patch? (compiled
 > > > only, I haven't booted with it)
-> >=20
+> > 
 > > Please find the log attached.
->=20
 > Have you found the cause or a fix for the problem?
-It's been a while =E2=80=94 are you still working on this? Is there a p=
-atch I could=20
-try?
 
-Best regards,
-Dennis
---nextPart3960358.6G2tRb6I4g
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part.
+Umm, no. Some suggestions were made so I assumed you'd try those.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
+Anyway, here is a real patch. Try this:
 
-iEYEABECAAYFAlClFJgACgkQjqfyF1DtJW5jQQCeK0dirQ+VxSvZ/7YXuJEhK/tv
-yG8An2h1NsKDg0bU2BvFBLXAIjzi24Gw
-=YyFU
------END PGP SIGNATURE-----
+g.
 
---nextPart3960358.6G2tRb6I4g--
+diff --git a/arch/powerpc/platforms/cell/pmu.c b/arch/powerpc/platforms/cell/pmu.c
+index 59c1a16..348a27b 100644
+--- a/arch/powerpc/platforms/cell/pmu.c
++++ b/arch/powerpc/platforms/cell/pmu.c
+@@ -382,7 +382,7 @@ static int __init cbe_init_pm_irq(void)
+ 	unsigned int irq;
+ 	int rc, node;
+ 
+-	for_each_node(node) {
++	for_each_online_node(node) {
+ 		irq = irq_create_mapping(NULL, IIC_IRQ_IOEX_PMI |
+ 					       (node << IIC_IRQ_NODE_SHIFT));
+ 		if (irq == NO_IRQ) {
