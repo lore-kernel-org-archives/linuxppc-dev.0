@@ -1,45 +1,23 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e31.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DFB5B2C0093
- for <linuxppc-dev@ozlabs.org>; Sat, 17 Nov 2012 06:34:25 +1100 (EST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 16 Nov 2012 12:34:22 -0700
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
- [9.17.195.106])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id BDCBD3E4003E
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2012 12:34:16 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qAGJYGfR187636
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2012 12:34:17 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qAGJYF5R028309
- for <linuxppc-dev@ozlabs.org>; Fri, 16 Nov 2012 12:34:15 -0700
-Date: Fri, 16 Nov 2012 11:35:37 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Subject: Re: [PATCH 3/4] perf/POWER7: Make event translations available in
- sysfs
-Message-ID: <20121116193537.GA11800@us.ibm.com>
-References: <20121107191818.GA16211@us.ibm.com>
- <20121107191927.GC16211@us.ibm.com>
- <20121114102534.GA2220@krava.brq.redhat.com>
- <20121114182045.GA2240@us.ibm.com>
- <20121116125154.GB1121@krava.brq.redhat.com>
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-vb0-f51.google.com (mail-vb0-f51.google.com
+ [209.85.212.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A4E102C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2012 20:20:47 +1100 (EST)
+Received: by mail-vb0-f51.google.com with SMTP id fq11so466225vbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 18 Nov 2012 01:20:42 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20121116125154.GB1121@krava.brq.redhat.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, robert.richter@amd.com,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1353230222-3464-1-git-send-email-geert@linux-m68k.org>
+References: <1353230222-3464-1-git-send-email-geert@linux-m68k.org>
+Date: Sun, 18 Nov 2012 10:20:42 +0100
+Message-ID: <CAMuHMdXuoAhW=CLogzprPe+6=8Oe5y0J6SuZnYKQzhMv=dpuTg@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v3.7-rc6
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@lists.ozlabs.org, Linux-sh list <linux-sh@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,44 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jiri Olsa [jolsa@redhat.com] wrote:
-| > 
-| > Can we remove the assumption that the event id is a generic event that
-| > has PERF_COUNT_HW_ prefix and also let the architectures pass in a "show"
-| > function ? This would allow architectures to display any arch specific
-| > events that don't yet have a generic counterpart.
-| > 
-| > IOW, can we do something like this (untested) and make PERF_EVENT_ATTR global:
-| 
-| hm, then you probably can use following:
-| 
-| http://www.spinics.net/lists/kernel/msg1434233.html
+On Sun, Nov 18, 2012 at 10:17 AM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v3.7-rc6 to v3.7-rc5[3], the summaries are:
+>   - build errors: +2/-12
 
-For now, power events can simply be u64 - so am hoping to have something
-like this and replace the raw codes:
+Just some broken dependencies, I guess:
 
-#define PM_CYC			0x1e
-#define PM_GCT_NOSLOT_CYC	0x100f8
+2 regressions:
+  + arch/powerpc/sysdev/mpic.c: error: case label does not reduce to
+an integer constant:  => 890:9, 898:9, 886:9, 894:9
 
-EVENT_ATTR_STR() is interesting, but would require new/extra macros like
+powerpc/powerpc-randconfig
 
-#define PM_CYC_STR		"0x1e"
-#define PM_GCT_NOSLOT_CYC_STR	"0x100f8"
+  + error: "__ashrdi3" [fs/ext4/ext4.ko] undefined!:  => N/A
 
-I went down the path we discussed earlier - to have x86 and Power share
-the EVENT_ATTR() macros. This is making the x86 code less concise
+sh4/sh-randconfig
 
-	EVENT_ATTR(cpu-cycles,	CPU_CYCLES)
+> [1] http://kisskb.ellerman.id.au/kisskb/head/5628/ (all 117 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/5614/ (all 117 configs)
 
-becomes
+Gr{oetje,eeting}s,
 
-	EVENT_ATTR(cpu-cycles,	PERF_COUNT_HW_CPU_CYCLES, events_sysfs_show)
+                        Geert
 
-with each EVENT_ATTR() explcitly adding events_sysfs_show or needing another
-wrapper around the wrappers.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Still tweaking it, but would it be flexible to make 'struct pmu_events_attr'
-common and let architectures define the EVENT_ATTR() as needed ? Would
-duplicate some code but hopefully not a lot.
-
-Sukadev
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
