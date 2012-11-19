@@ -1,30 +1,29 @@
-Return-Path: <jwboyer@gmail.com>
-Received: from mail-vc0-f170.google.com (mail-vc0-f170.google.com
- [209.85.220.170])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 81C542C00F8
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2012 02:18:40 +1100 (EST)
-Received: by mail-vc0-f170.google.com with SMTP id fl11so1927556vcb.15
- for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2012 07:18:37 -0800 (PST)
+Return-Path: <balbi@ti.com>
+Received: from devils.ext.ti.com (devils.ext.ti.com [198.47.26.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 467C82C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 07:21:46 +1100 (EST)
+Date: Mon, 19 Nov 2012 22:14:54 +0200
+From: Felipe Balbi <balbi@ti.com>
+To: Bill Pemberton <wfp5p@virginia.edu>
+Subject: Re: [PATCH 119/493] usb: remove use of __devexit_p
+Message-ID: <20121119201454.GA24309@arwen.pp.htv.fi>
+References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
+ <1353349642-3677-119-git-send-email-wfp5p@virginia.edu>
 MIME-Version: 1.0
-In-Reply-To: <20121119150733.GD13607@infradead.org>
-References: <1353248997-30763-1-git-send-email-acme@infradead.org>
- <1353248997-30763-32-git-send-email-acme@infradead.org>
- <CA+5PVA6uj3f5f9Gp=7Zp8CE+0mP7zgCknqmkUX_ootzDxUXRcA@mail.gmail.com>
- <20121119150733.GD13607@infradead.org>
-Date: Mon, 19 Nov 2012 10:18:37 -0500
-Message-ID: <CA+5PVA7m5EWT+9eVxUDNiS2WMov+RDFogDLemhWGmChd4BmwLQ@mail.gmail.com>
-Subject: Re: [PATCH 31/32] perf powerpc: Use uapi/unistd.h to fix build error
-From: Josh Boyer <jwboyer@gmail.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Robert Richter <robert.richter@amd.com>, Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
- linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="2oS5YaxWCcQjTEyO"
+In-Reply-To: <1353349642-3677-119-git-send-email-wfp5p@virginia.edu>
+Cc: Kukjin Kim <kgene.kim@samsung.com>, Wan ZongShun <mcuos.com@gmail.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ Felipe Balbi <balbi@ti.com>, linux-omap@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+ Ben Dooks <ben-linux@fluff.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,34 +33,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 19, 2012 at 10:07 AM, Arnaldo Carvalho de Melo
-<acme@ghostprotocols.net> wrote:
-> Em Mon, Nov 19, 2012 at 08:29:09AM -0500, Josh Boyer escreveu:
->> On Sun, Nov 18, 2012 at 9:29 AM, Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
->> > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
->
->> > Use the 'unistd.h' from arch/powerpc/include/uapi to build the perf tool.
->>
->> This would work for powerpc, but at least s390x and ARM have the same
->> build issue.  Why would we fix this piecemeal per-arch?
->>
->> David Howells has a patch that _should_ fix it for all of them at once.
->> Is there a reason that isn't going in?
->
-> David rebased his patch on top of my perf/core branch, I just tested it
-> and all works as expected, so I'd say he should push that branch
-> upstream as I can't just cherry pick some csets, it needs a merge that
-> involves more than just tools/perf AFAIK.
+--2oS5YaxWCcQjTEyO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK...  is perf/core (all 32 commits) headed into 3.7?  Because the perf
-build is broken in 3.7-rcX, and we're at the point where Linus gets kind
-of picky about what he accepts.  So we'd need your branch and David's to
-fix compile issues.  And then we'd need Xiao Guangrong's fixes for 'perf
-kvm' to only build on x86.  That's quite a number of fixes we need just
-to get perf to compile.  Is someone other than me keeping track of
-that?
+Hi,
 
-I would just like people to stop wondering when perf builds on non-x86
-architectures will work.
+On Mon, Nov 19, 2012 at 01:21:08PM -0500, Bill Pemberton wrote:
+> CONFIG_HOTPLUG is going away as an option so __devexit_p is no longer
+> needed.
+>=20
+> Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
+> Cc: Peter Korsgaard <jacmet@sunsite.dk>=20
+> Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>=20
+> Cc: Felipe Balbi <balbi@ti.com>=20
+> Cc: Li Yang <leoli@freescale.com>=20
+> Cc: Alan Stern <stern@rowland.harvard.edu>=20
+> Cc: Wan ZongShun <mcuos.com@gmail.com>=20
+> Cc: Ben Dooks <ben-linux@fluff.org>=20
+> Cc: Kukjin Kim <kgene.kim@samsung.com>=20
+> Cc: linux-usb@vger.kernel.org=20
+> Cc: linux-omap@vger.kernel.org=20
+> Cc: linuxppc-dev@lists.ozlabs.org=20
+> Cc: linux-arm-kernel@lists.infradead.org=20
+> Cc: linux-samsung-soc@vger.kernel.org=20
+> ---
+>  drivers/usb/c67x00/c67x00-drv.c      | 2 +-
+>  drivers/usb/chipidea/ci13xxx_imx.c   | 2 +-
+>  drivers/usb/chipidea/ci13xxx_msm.c   | 2 +-
+>  drivers/usb/chipidea/ci13xxx_pci.c   | 2 +-
+>  drivers/usb/chipidea/core.c          | 2 +-
+>  drivers/usb/chipidea/usbmisc_imx6q.c | 2 +-
+>  drivers/usb/dwc3/core.c              | 2 +-
+>  drivers/usb/dwc3/dwc3-exynos.c       | 2 +-
+>  drivers/usb/dwc3/dwc3-omap.c         | 2 +-
+>  drivers/usb/dwc3/dwc3-pci.c          | 2 +-
+>  drivers/usb/gadget/bcm63xx_udc.c     | 2 +-
+>  drivers/usb/gadget/fsl_qe_udc.c      | 2 +-
+>  drivers/usb/gadget/hid.c             | 2 +-
+>  drivers/usb/gadget/lpc32xx_udc.c     | 2 +-
+>  drivers/usb/gadget/net2272.c         | 4 ++--
+>  drivers/usb/gadget/omap_udc.c        | 2 +-
+>  drivers/usb/gadget/s3c-hsotg.c       | 2 +-
+>  drivers/usb/host/bcma-hcd.c          | 2 +-
+>  drivers/usb/host/ehci-atmel.c        | 2 +-
+>  drivers/usb/host/ehci-msm.c          | 2 +-
+>  drivers/usb/host/ehci-platform.c     | 2 +-
+>  drivers/usb/host/ehci-s5p.c          | 2 +-
+>  drivers/usb/host/ehci-w90x900.c      | 2 +-
+>  drivers/usb/host/fhci-hcd.c          | 2 +-
+>  drivers/usb/host/fsl-mph-dr-of.c     | 2 +-
+>  drivers/usb/host/isp1362-hcd.c       | 2 +-
+>  drivers/usb/host/isp1760-if.c        | 2 +-
+>  drivers/usb/host/ohci-at91.c         | 2 +-
+>  drivers/usb/host/ohci-exynos.c       | 2 +-
+>  drivers/usb/host/ohci-jz4740.c       | 2 +-
+>  drivers/usb/host/ohci-omap3.c        | 2 +-
+>  drivers/usb/host/ohci-platform.c     | 2 +-
+>  drivers/usb/host/ohci-s3c2410.c      | 2 +-
+>  drivers/usb/host/ohci-tmio.c         | 2 +-
+>  drivers/usb/host/r8a66597-hcd.c      | 2 +-
+>  drivers/usb/host/sl811-hcd.c         | 2 +-
+>  drivers/usb/host/ssb-hcd.c           | 2 +-
+>  drivers/usb/host/u132-hcd.c          | 2 +-
+>  drivers/usb/musb/am35x.c             | 2 +-
+>  drivers/usb/musb/da8xx.c             | 2 +-
+>  drivers/usb/musb/davinci.c           | 2 +-
+>  drivers/usb/musb/musb_core.c         | 2 +-
+>  drivers/usb/musb/musb_dsps.c         | 2 +-
+>  drivers/usb/musb/omap2430.c          | 2 +-
+>  drivers/usb/musb/tusb6010.c          | 2 +-
+>  drivers/usb/musb/ux500.c             | 2 +-
+>  drivers/usb/otg/ab8500-usb.c         | 2 +-
+>  drivers/usb/otg/fsl_otg.c            | 2 +-
+>  drivers/usb/otg/msm_otg.c            | 2 +-
+>  drivers/usb/otg/mxs-phy.c            | 2 +-
+>  drivers/usb/otg/nop-usb-xceiv.c      | 2 +-
+>  drivers/usb/phy/mv_u3d_phy.c         | 2 +-
+>  drivers/usb/phy/omap-usb2.c          | 2 +-
+>  drivers/usb/phy/rcar-phy.c           | 2 +-
+>  drivers/usb/renesas_usbhs/common.c   | 2 +-
+>  55 files changed, 56 insertions(+), 56 deletions(-)
 
-josh
+For drivers/usb/gadget, drivers/usb/dwc3/, drivers/usb/musb/,
+drivers/usb/otg/, drivers/usb/phy, and drivers/usb/renesas_usbhs:
+
+Acked-by: Felipe Balbi <balbi@ti.com>
+
+--=20
+balbi
+
+--2oS5YaxWCcQjTEyO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQqpM9AAoJEIaOsuA1yqREWjQQAIXXAJx5+kSOe2m3cZ9ihY9h
+kNSeWwzGQzkWj5ZjJ0+PbI6ivH32XT83gnojK5ZiI4ZY+z12Qg2GdKonjKD2p2Ay
+m/HKSWBbuM21YmDbEKMnnTrBjoPpDisBpV+0wfkJWn8czmkWsFIYmvovZcg7bWF3
+75B3lI8lrqxeM/cFKm+3iq800BHQ6j0oakvNFOM/I3e/hitJ/SOZbSiVrIJk2Y70
+49rTGAKeyiXRHTOmIdPfl7/AJGwUkXkpdNygHwuRfCFjgERkRJfyQpIu3Fyc13/F
+caVJqrImlJHT6GJUZcPICybxYfbG8FKxl62PvTEW1Q+3pgtM2P2RSWq8LGrwLiX+
+QzFIIddhhPAxhyxQeRLNdpdQQojKT65vlRWUgnVqmVnR3XCrbJVoUqVHxYWYZjK3
+D0OJ79gd4kmj8MtkjEzyGYywCxkPswDZuxB7Nj+ycZ9AkQpnqMnayJoybDAGMTuO
+L1VD4ExGzOwMC8NEK6yC1sEKXe46eEmRuJGFw8ppDyGs2qGu85bfC1+KJIpsYtYs
+tLGvMSZ2za7/aLOuyI5UdA0ZzXPjtVgPSJezObuG+oZMgs3DoB1naMxC/dFfA/u6
+vS4PTB3MWW+BKMV6WHJYmAzGQFJGpMz8UjaYTTCo0wvd7stJ0Nz2KH+uMasV5/Os
+C7YHTUcUEg5VWWj0gCTG
+=JUhY
+-----END PGP SIGNATURE-----
+
+--2oS5YaxWCcQjTEyO--
