@@ -1,35 +1,32 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 325E72C008F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 17:14:57 +1100 (EST)
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id EB28F2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 17:16:59 +1100 (EST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 19 Nov 2012 16:10:52 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qAJ64PeV64553072
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 17:04:25 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qAJ6Er3J012035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 17:14:54 +1100
-Message-ID: <50A9CE6A.3080208@linux.vnet.ibm.com>
-Date: Mon, 19 Nov 2012 11:45:06 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] powerpc, perf: Change PMU flag values representation
- from decimal to hex
-References: <1353056344-1392-1-git-send-email-khandual@linux.vnet.ibm.com>
- <20121116114219.GA5745@bloggs.ozlabs.ibm.com>
-In-Reply-To: <20121116114219.GA5745@bloggs.ozlabs.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@lists.ozlabs.org, michael.neuling@au1.ibm.com,
- linux-kernel@vger.kernel.org
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Mon, 19 Nov 2012 11:46:56 +0530
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qAJ6Grea26935470
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 11:46:53 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qAJBinn7007718
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 22:44:50 +1100
+Message-ID: <1353305799.3694.9.camel@ThinkPad-T5421.cn.ibm.com>
+Subject: [RFC PATCH powerpc ] Protect smp_processor_id() in
+ arch_spin_unlock_wait()
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 19 Nov 2012 14:16:39 +0800
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,21 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/16/2012 05:12 PM, Paul Mackerras wrote:
-> On Fri, Nov 16, 2012 at 02:29:04PM +0530, Anshuman Khandual wrote:
->> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> 
-> That's not a sufficient description of why you are making this
-> change.  In particular, what is the motivation for and impact of using
-> LONG_ASM_CONST?
-> 
-> Paul.
+This patch tries to disable preemption for using smp_processor_id() in arch_spin_unlock_wait(), 
+to avoid following report:
 
-Hey Paul,
+[   17.279377] BUG: using smp_processor_id() in preemptible [00000000] code: autorun/1024
+[   17.279407] caller is .arch_spin_unlock_wait+0x34/0x80
+[   17.279415] Call Trace:
+[   17.279423] [c00000000911fb30] [c000000000015230] .show_stack+0x70/0x1c0 (unreliable)
+[   17.279441] [c00000000911fbe0] [c0000000003e13b0] .debug_smp_processor_id+0x110/0x130
+[   17.279455] [c00000000911fc80] [c00000000004c2b4] .arch_spin_unlock_wait+0x34/0x80
+[   17.279470] [c00000000911fd00] [c0000000000b0e50] .task_work_run+0x80/0x160
+[   17.279482] [c00000000911fdb0] [c000000000018744] .do_notify_resume+0x94/0xa0
+[   17.279495] [c00000000911fe30] [c000000000009d1c] .ret_from_except_lite+0x48/0x4c
 
-I have just sent out a revised patch where I have updated the description
-and dropped the usage of LONG_ASM_CONST.
+Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+---
+ arch/powerpc/lib/locks.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Regards
-Anshuman 
- 
+diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
+index bb7cfec..7a7c31b 100644
+--- a/arch/powerpc/lib/locks.c
++++ b/arch/powerpc/lib/locks.c
+@@ -72,8 +72,10 @@ void arch_spin_unlock_wait(arch_spinlock_t *lock)
+ {
+ 	while (lock->slock) {
+ 		HMT_low();
++		preempt_disable();
+ 		if (SHARED_PROCESSOR)
+ 			__spin_yield(lock);
++		preempt_enable();
+ 	}
+ 	HMT_medium();
+ }
+-- 
+1.7.9.5
