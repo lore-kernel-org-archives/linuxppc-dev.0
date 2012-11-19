@@ -1,15 +1,15 @@
 Return-Path: <wfp5p@viridian.itc.virginia.edu>
 Received: from viridian.itc.virginia.edu (viridian.itc.Virginia.EDU
- [128.143.12.139]) by ozlabs.org (Postfix) with ESMTP id E83F32C00A5
+ [128.143.12.139]) by ozlabs.org (Postfix) with ESMTP id E51C32C00A4
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 05:32:59 +1100 (EST)
 From: Bill Pemberton <wfp5p@virginia.edu>
 To: gregkh@linuxfoundation.org
-Subject: [PATCH 035/493] powerpc: remove use of __devexit_p
-Date: Mon, 19 Nov 2012 13:19:44 -0500
-Message-Id: <1353349642-3677-35-git-send-email-wfp5p@virginia.edu>
+Subject: [PATCH 024/493] powerpc: remove CONFIG_HOTPLUG ifdefs
+Date: Mon, 19 Nov 2012 13:19:33 -0500
+Message-Id: <1353349642-3677-24-git-send-email-wfp5p@virginia.edu>
 In-Reply-To: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
 References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
-Cc: Anatolij Gustschin <agust@denx.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,57 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_HOTPLUG is going away as an option so __devexit_p is no longer
-needed.
+Remove conditional code based on CONFIG_HOTPLUG being false.  It's
+always on now in preparation of it going away as an option.
 
 Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
-Cc: Anatolij Gustschin <agust@denx.de> 
-Cc: Kumar Gala <galak@kernel.crashing.org> 
 Cc: linuxppc-dev@lists.ozlabs.org 
 ---
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c  | 2 +-
- arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c | 2 +-
- arch/powerpc/sysdev/fsl_85xx_l2ctlr.c          | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/mm/tlb_hash64.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-index 2351f9e..459fa49 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c
-@@ -576,7 +576,7 @@ static struct platform_driver mpc52xx_lpbfifo_driver = {
- 		.of_match_table = mpc52xx_lpbfifo_match,
- 	},
- 	.probe = mpc52xx_lpbfifo_probe,
--	.remove = __devexit_p(mpc52xx_lpbfifo_remove),
-+	.remove = mpc52xx_lpbfifo_remove,
- };
- 
- /***********************************************************************
-diff --git a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-index ef6537b..fe27e4a 100644
---- a/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-+++ b/arch/powerpc/platforms/83xx/mcu_mpc8349emitx.c
-@@ -228,7 +228,7 @@ static struct i2c_driver mcu_driver = {
- 		.of_match_table = mcu_of_match_table,
- 	},
- 	.probe = mcu_probe,
--	.remove	= __devexit_p(mcu_remove),
-+	.remove	= mcu_remove,
- 	.id_table = mcu_ids,
- };
- 
-diff --git a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-index d131c8a..103c94a 100644
---- a/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-+++ b/arch/powerpc/sysdev/fsl_85xx_l2ctlr.c
-@@ -213,7 +213,7 @@ static struct platform_driver mpc85xx_l2ctlr_of_platform_driver = {
- 		.of_match_table	= mpc85xx_l2ctlr_of_match,
- 	},
- 	.probe		= mpc85xx_l2ctlr_of_probe,
--	.remove		= __devexit_p(mpc85xx_l2ctlr_of_remove),
-+	.remove		= mpc85xx_l2ctlr_of_remove,
- };
- 
- static __init int mpc85xx_l2ctlr_of_init(void)
+diff --git a/arch/powerpc/mm/tlb_hash64.c b/arch/powerpc/mm/tlb_hash64.c
+index ae758b3..841afee 100644
+--- a/arch/powerpc/mm/tlb_hash64.c
++++ b/arch/powerpc/mm/tlb_hash64.c
+@@ -183,11 +183,9 @@ void tlb_flush(struct mmu_gather *tlb)
+  * since 64K pages may overlap with other bridges when using 64K pages
+  * with 4K HW pages on IO space.
+  *
+- * Because of that usage pattern, it's only available with CONFIG_HOTPLUG
+- * and is implemented for small size rather than speed.
++ * Because of that usage pattern, it is implemented for small size
++ * rather than speed.
+  */
+-#ifdef CONFIG_HOTPLUG
+-
+ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+ 			      unsigned long end)
+ {
+@@ -221,5 +219,3 @@ void __flush_hash_table_range(struct mm_struct *mm, unsigned long start,
+ 	arch_leave_lazy_mmu_mode();
+ 	local_irq_restore(flags);
+ }
+-
+-#endif /* CONFIG_HOTPLUG */
 -- 
 1.8.0
