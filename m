@@ -1,30 +1,29 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6FE762C009A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 22:11:41 +1100 (EST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 19 Nov 2012 16:41:37 +0530
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qAJBBYMc6094884
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 16:41:34 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qAJGfO38012715
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 03:41:25 +1100
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] powerpc,
- perf: Change PMU flag representation from decimal to hex
-Date: Mon, 19 Nov 2012 16:41:46 +0530
-Message-Id: <1353323506-17970-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: michael.neuling@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Return-Path: <jwboyer@gmail.com>
+Received: from mail-vb0-f42.google.com (mail-vb0-f42.google.com
+ [209.85.212.42])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9AFB32C00A8
+ for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2012 00:29:13 +1100 (EST)
+Received: by mail-vb0-f42.google.com with SMTP id fs19so755177vbb.15
+ for <linuxppc-dev@ozlabs.org>; Mon, 19 Nov 2012 05:29:10 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1353248997-30763-32-git-send-email-acme@infradead.org>
+References: <1353248997-30763-1-git-send-email-acme@infradead.org>
+ <1353248997-30763-32-git-send-email-acme@infradead.org>
+Date: Mon, 19 Nov 2012 08:29:09 -0500
+Message-ID: <CA+5PVA6uj3f5f9Gp=7Zp8CE+0mP7zgCknqmkUX_ootzDxUXRcA@mail.gmail.com>
+Subject: Re: [PATCH 31/32] perf powerpc: Use uapi/unistd.h to fix build error
+From: Josh Boyer <jwboyer@gmail.com>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Robert Richter <robert.richter@amd.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+ linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,37 +33,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change the representation of the PMU flags from decimal to hex since they
-are bitfields which are easier to read in hex.
+On Sun, Nov 18, 2012 at 9:29 AM, Arnaldo Carvalho de Melo
+<acme@infradead.org> wrote:
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+>
+> Use the 'unistd.h' from arch/powerpc/include/uapi to build the perf tool.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- Changed the 64 bit constants into 32 bit constants as it would apply to
- 32 bit variable power_pmu.flags
+This would work for powerpc, but at least s390x and ARM have the same
+build issue.  Why would we fix this piecemeal per-arch?
 
- arch/powerpc/include/asm/perf_event_server.h | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+David Howells has a patch that _should_ fix it for all of them at once.
+Is there a reason that isn't going in?
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 9710be3..d3e9748 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -45,11 +45,11 @@ struct power_pmu {
- /*
-  * Values for power_pmu.flags
-  */
--#define PPMU_LIMITED_PMC5_6	1	/* PMC5/6 have limited function */
--#define PPMU_ALT_SIPR		2	/* uses alternate posn for SIPR/HV */
--#define PPMU_NO_SIPR		4	/* no SIPR/HV in MMCRA at all */
--#define PPMU_NO_CONT_SAMPLING	8	/* no continuous sampling */
--#define PPMU_SIAR_VALID		16	/* Processor has SIAR Valid bit */
-+#define PPMU_LIMITED_PMC5_6	0x00000001 /* PMC5/6 have limited function */
-+#define PPMU_ALT_SIPR		0x00000002 /* uses alternate posn for SIPR/HV */
-+#define PPMU_NO_SIPR		0x00000004 /* no SIPR/HV in MMCRA at all */
-+#define PPMU_NO_CONT_SAMPLING	0x00000008 /* no continuous sampling */
-+#define PPMU_SIAR_VALID		0x00000010 /* Processor has SIAR Valid bit */
- 
- /*
-  * Values for flags to get_alternatives()
--- 
-1.7.11.7
+josh
