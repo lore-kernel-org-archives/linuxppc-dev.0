@@ -1,16 +1,18 @@
 Return-Path: <wfp5p@viridian.itc.virginia.edu>
+Received: from viridian.itc.virginia.edu (viridian.itc.Virginia.EDU
+ [128.143.12.139]) by ozlabs.org (Postfix) with ESMTP id 1B6CB2C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 05:38:01 +1100 (EST)
 From: Bill Pemberton <wfp5p@virginia.edu>
 To: gregkh@linuxfoundation.org
-Subject: [PATCH 247/493] drivers/block: remove use of __devinit
-Date: Mon, 19 Nov 2012 13:23:16 -0500
-Message-Id: <1353349642-3677-247-git-send-email-wfp5p@virginia.edu>
+Subject: [PATCH 415/493] mtd: remove use of __devexit
+Date: Mon, 19 Nov 2012 13:26:04 -0500
+Message-Id: <1353349642-3677-415-git-send-email-wfp5p@virginia.edu>
 In-Reply-To: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
 References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
-Cc: cbe-oss-dev@lists.ozlabs.org, iss_storagedev@hp.com,
- "Michael S. Tsirkin" <mst@redhat.com>, Geoff Levand <geoff@infradead.org>,
- Rusty Russell <rusty@rustcorp.com.au>, Jim Paris <jim@jtan.com>,
- virtualization@lists.linux-foundation.org,
- Chirag Kantharia <chirag.kantharia@hp.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Wan ZongShun <mcuos.com@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Joern Engel <joern@lazybastard.org>, Kyungmin Park <kyungmin.park@samsung.com>,
+ linux-mtd@lists.infradead.org, Olof Johansson <olof@lixom.net>,
+ David Woodhouse <dwmw2@infradead.org>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,553 +22,700 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CONFIG_HOTPLUG is going away as an option so __devinit is no longer
-needed.
+CONFIG_HOTPLUG is going away as an option so __devexit is no
+longer needed.
 
 Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
-Cc: Chirag Kantharia <chirag.kantharia@hp.com> 
-Cc: Geoff Levand <geoff@infradead.org> 
-Cc: Jim Paris <jim@jtan.com> 
-Cc: Rusty Russell <rusty@rustcorp.com.au> 
-Cc: "Michael S. Tsirkin" <mst@redhat.com> 
-Cc: Grant Likely <grant.likely@secretlab.ca> 
-Cc: iss_storagedev@hp.com 
+Cc: David Woodhouse <dwmw2@infradead.org> 
+Cc: Joern Engel <joern@lazybastard.org> 
+Cc: Wan ZongShun <mcuos.com@gmail.com> 
+Cc: Olof Johansson <olof@lixom.net> 
+Cc: Kyungmin Park <kyungmin.park@samsung.com> 
+Cc: linux-mtd@lists.infradead.org 
+Cc: linux-arm-kernel@lists.infradead.org 
 Cc: linuxppc-dev@lists.ozlabs.org 
-Cc: cbe-oss-dev@lists.ozlabs.org 
-Cc: virtualization@lists.linux-foundation.org 
 ---
- drivers/block/cciss.c      | 62 +++++++++++++++++++++++-----------------------
- drivers/block/cpqarray.c   |  6 ++---
- drivers/block/nvme.c       | 10 ++++----
- drivers/block/ps3disk.c    |  2 +-
- drivers/block/ps3vram.c    |  4 +--
- drivers/block/sunvdc.c     |  6 ++---
- drivers/block/swim.c       |  6 ++---
- drivers/block/swim3.c      |  2 +-
- drivers/block/umem.c       |  2 +-
- drivers/block/virtio_blk.c |  4 +--
- drivers/block/xsysace.c    |  6 ++---
- 11 files changed, 55 insertions(+), 55 deletions(-)
+ drivers/mtd/devices/bcm47xxsflash.c    | 2 +-
+ drivers/mtd/devices/block2mtd.c        | 2 +-
+ drivers/mtd/devices/m25p80.c           | 2 +-
+ drivers/mtd/devices/mtd_dataflash.c    | 2 +-
+ drivers/mtd/devices/spear_smi.c        | 2 +-
+ drivers/mtd/devices/sst25l.c           | 2 +-
+ drivers/mtd/maps/amd76xrom.c           | 2 +-
+ drivers/mtd/maps/autcpu12-nvram.c      | 2 +-
+ drivers/mtd/maps/bfin-async-flash.c    | 2 +-
+ drivers/mtd/maps/ck804xrom.c           | 2 +-
+ drivers/mtd/maps/esb2rom.c             | 2 +-
+ drivers/mtd/maps/gpio-addr-flash.c     | 2 +-
+ drivers/mtd/maps/ichxrom.c             | 2 +-
+ drivers/mtd/maps/intel_vr_nor.c        | 8 ++++----
+ drivers/mtd/maps/lantiq-flash.c        | 2 +-
+ drivers/mtd/maps/pci.c                 | 2 +-
+ drivers/mtd/maps/pismo.c               | 2 +-
+ drivers/mtd/maps/pxa2xx-flash.c        | 2 +-
+ drivers/mtd/maps/scb2_flash.c          | 2 +-
+ drivers/mtd/maps/sun_uflash.c          | 2 +-
+ drivers/mtd/maps/vmu-flash.c           | 4 ++--
+ drivers/mtd/nand/ams-delta.c           | 2 +-
+ drivers/mtd/nand/au1550nd.c            | 2 +-
+ drivers/mtd/nand/bf5xx_nand.c          | 2 +-
+ drivers/mtd/nand/cafe_nand.c           | 2 +-
+ drivers/mtd/nand/denali_dt.c           | 2 +-
+ drivers/mtd/nand/denali_pci.c          | 2 +-
+ drivers/mtd/nand/fsl_upm.c             | 2 +-
+ drivers/mtd/nand/gpio.c                | 2 +-
+ drivers/mtd/nand/gpmi-nand/gpmi-nand.c | 2 +-
+ drivers/mtd/nand/jz4740_nand.c         | 2 +-
+ drivers/mtd/nand/lpc32xx_mlc.c         | 2 +-
+ drivers/mtd/nand/lpc32xx_slc.c         | 2 +-
+ drivers/mtd/nand/mpc5121_nfc.c         | 2 +-
+ drivers/mtd/nand/mxc_nand.c            | 2 +-
+ drivers/mtd/nand/ndfc.c                | 2 +-
+ drivers/mtd/nand/nuc900_nand.c         | 2 +-
+ drivers/mtd/nand/orion_nand.c          | 2 +-
+ drivers/mtd/nand/pasemi_nand.c         | 2 +-
+ drivers/mtd/nand/plat_nand.c           | 2 +-
+ drivers/mtd/nand/sh_flctl.c            | 2 +-
+ drivers/mtd/nand/sharpsl.c             | 2 +-
+ drivers/mtd/nand/socrates_nand.c       | 2 +-
+ drivers/mtd/onenand/generic.c          | 2 +-
+ drivers/mtd/onenand/omap2.c            | 2 +-
+ drivers/mtd/onenand/samsung.c          | 2 +-
+ 46 files changed, 50 insertions(+), 50 deletions(-)
 
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index b40068f..3096c79 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -181,8 +181,8 @@ static void cciss_geometry_inquiry(ctlr_info_t *h, int logvol,
- 			sector_t total_size,
- 			unsigned int block_size, InquiryData_struct *inq_buff,
- 				   drive_info_struct *drv);
--static void __devinit cciss_interrupt_mode(ctlr_info_t *);
--static int __devinit cciss_enter_simple_mode(struct ctlr_info *h);
-+static void cciss_interrupt_mode(ctlr_info_t *);
-+static int cciss_enter_simple_mode(struct ctlr_info *h);
- static void start_io(ctlr_info_t *h);
- static int sendcmd_withirq(ctlr_info_t *h, __u8 cmd, void *buff, size_t size,
- 			__u8 page_code, unsigned char scsi3addr[],
-@@ -199,13 +199,13 @@ static void cciss_device_release(struct device *dev);
- static void cciss_free_gendisk(ctlr_info_t *h, int drv_index);
- static void cciss_free_drive_info(ctlr_info_t *h, int drv_index);
- static inline u32 next_command(ctlr_info_t *h);
--static int __devinit cciss_find_cfg_addrs(struct pci_dev *pdev,
-+static int cciss_find_cfg_addrs(struct pci_dev *pdev,
- 	void __iomem *vaddr, u32 *cfg_base_addr, u64 *cfg_base_addr_index,
- 	u64 *cfg_offset);
--static int __devinit cciss_pci_find_memory_BAR(struct pci_dev *pdev,
-+static int cciss_pci_find_memory_BAR(struct pci_dev *pdev,
- 	unsigned long *memory_bar);
- static inline u32 cciss_tag_discard_error_bits(ctlr_info_t *h, u32 tag);
--static __devinit int write_driver_ver_to_cfgtable(
-+static int write_driver_ver_to_cfgtable(
- 	CfgTable_struct __iomem *cfgtable);
+diff --git a/drivers/mtd/devices/bcm47xxsflash.c b/drivers/mtd/devices/bcm47xxsflash.c
+index 113aced..4714584 100644
+--- a/drivers/mtd/devices/bcm47xxsflash.c
++++ b/drivers/mtd/devices/bcm47xxsflash.c
+@@ -66,7 +66,7 @@ out:
+ 	return err;
+ }
  
- /* performant mode helper functions */
-@@ -550,7 +550,7 @@ static const struct file_operations cciss_proc_fops = {
- 	.write	 = cciss_proc_write,
- };
- 
--static void __devinit cciss_procinit(ctlr_info_t *h)
-+static void cciss_procinit(ctlr_info_t *h)
+-static int __devexit bcm47xxsflash_remove(struct platform_device *pdev)
++static int bcm47xxsflash_remove(struct platform_device *pdev)
  {
- 	struct proc_dir_entry *pde;
+ 	struct bcma_sflash *sflash = dev_get_platdata(&pdev->dev);
  
-@@ -2663,7 +2663,7 @@ static int fill_cmd(ctlr_info_t *h, CommandList_struct *c, __u8 cmd, void *buff,
+diff --git a/drivers/mtd/devices/block2mtd.c b/drivers/mtd/devices/block2mtd.c
+index 681e2ee..8debac9 100644
+--- a/drivers/mtd/devices/block2mtd.c
++++ b/drivers/mtd/devices/block2mtd.c
+@@ -433,7 +433,7 @@ static int __init block2mtd_init(void)
+ }
+ 
+ 
+-static void __devexit block2mtd_exit(void)
++static void block2mtd_exit(void)
+ {
+ 	struct list_head *pos, *next;
+ 
+diff --git a/drivers/mtd/devices/m25p80.c b/drivers/mtd/devices/m25p80.c
+index 700f991..4064dba 100644
+--- a/drivers/mtd/devices/m25p80.c
++++ b/drivers/mtd/devices/m25p80.c
+@@ -971,7 +971,7 @@ static int m25p_probe(struct spi_device *spi)
+ }
+ 
+ 
+-static int __devexit m25p_remove(struct spi_device *spi)
++static int m25p_remove(struct spi_device *spi)
+ {
+ 	struct m25p	*flash = dev_get_drvdata(&spi->dev);
+ 	int		status;
+diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
+index 0b3f173..0caefb4 100644
+--- a/drivers/mtd/devices/mtd_dataflash.c
++++ b/drivers/mtd/devices/mtd_dataflash.c
+@@ -897,7 +897,7 @@ static int dataflash_probe(struct spi_device *spi)
  	return status;
  }
  
--static int __devinit cciss_send_reset(ctlr_info_t *h, unsigned char *scsi3addr,
-+static int cciss_send_reset(ctlr_info_t *h, unsigned char *scsi3addr,
- 	u8 reset_type)
+-static int __devexit dataflash_remove(struct spi_device *spi)
++static int dataflash_remove(struct spi_device *spi)
  {
- 	CommandList_struct *c;
-@@ -3919,7 +3919,7 @@ static void  calc_bucket_map(int bucket[], int num_buckets,
- 	}
- }
- 
--static void __devinit cciss_wait_for_mode_change_ack(ctlr_info_t *h)
-+static void cciss_wait_for_mode_change_ack(ctlr_info_t *h)
- {
- 	int i;
- 
-@@ -3933,7 +3933,7 @@ static void __devinit cciss_wait_for_mode_change_ack(ctlr_info_t *h)
- 	}
- }
- 
--static __devinit void cciss_enter_performant_mode(ctlr_info_t *h,
-+static void cciss_enter_performant_mode(ctlr_info_t *h,
- 	u32 use_short_tags)
- {
- 	/* This is a bit complicated.  There are 8 registers on
-@@ -4000,7 +4000,7 @@ static __devinit void cciss_enter_performant_mode(ctlr_info_t *h,
- 					" performant mode\n");
- }
- 
--static void __devinit cciss_put_controller_into_performant_mode(ctlr_info_t *h)
-+static void cciss_put_controller_into_performant_mode(ctlr_info_t *h)
- {
- 	__u32 trans_support;
- 
-@@ -4062,7 +4062,7 @@ clean_up:
-  * controllers that are capable. If not, we use IO-APIC mode.
+ 	struct dataflash	*flash = dev_get_drvdata(&spi->dev);
+ 	int			status;
+diff --git a/drivers/mtd/devices/spear_smi.c b/drivers/mtd/devices/spear_smi.c
+index a30cd27..2d2c2a5 100644
+--- a/drivers/mtd/devices/spear_smi.c
++++ b/drivers/mtd/devices/spear_smi.c
+@@ -1016,7 +1016,7 @@ err:
+  *
+  * free all allocations and delete the partitions.
   */
- 
--static void __devinit cciss_interrupt_mode(ctlr_info_t *h)
-+static void cciss_interrupt_mode(ctlr_info_t *h)
+-static int __devexit spear_smi_remove(struct platform_device *pdev)
++static int spear_smi_remove(struct platform_device *pdev)
  {
- #ifdef CONFIG_PCI_MSI
- 	int err;
-@@ -4108,7 +4108,7 @@ default_int_mode:
- 	return;
- }
- 
--static int __devinit cciss_lookup_board_id(struct pci_dev *pdev, u32 *board_id)
-+static int cciss_lookup_board_id(struct pci_dev *pdev, u32 *board_id)
- {
- 	int i;
- 	u32 subsystem_vendor_id, subsystem_device_id;
-@@ -4134,7 +4134,7 @@ static inline bool cciss_board_disabled(ctlr_info_t *h)
- 	return ((command & PCI_COMMAND_MEMORY) == 0);
- }
- 
--static int __devinit cciss_pci_find_memory_BAR(struct pci_dev *pdev,
-+static int cciss_pci_find_memory_BAR(struct pci_dev *pdev,
- 	unsigned long *memory_bar)
- {
- 	int i;
-@@ -4151,7 +4151,7 @@ static int __devinit cciss_pci_find_memory_BAR(struct pci_dev *pdev,
- 	return -ENODEV;
- }
- 
--static int __devinit cciss_wait_for_board_state(struct pci_dev *pdev,
-+static int cciss_wait_for_board_state(struct pci_dev *pdev,
- 	void __iomem *vaddr, int wait_for_ready)
- #define BOARD_READY 1
- #define BOARD_NOT_READY 0
-@@ -4179,7 +4179,7 @@ static int __devinit cciss_wait_for_board_state(struct pci_dev *pdev,
- 	return -ENODEV;
- }
- 
--static int __devinit cciss_find_cfg_addrs(struct pci_dev *pdev,
-+static int cciss_find_cfg_addrs(struct pci_dev *pdev,
- 	void __iomem *vaddr, u32 *cfg_base_addr, u64 *cfg_base_addr_index,
- 	u64 *cfg_offset)
- {
-@@ -4195,7 +4195,7 @@ static int __devinit cciss_find_cfg_addrs(struct pci_dev *pdev,
+ 	struct spear_smi *dev;
+ 	struct spear_snor_flash *flash;
+diff --git a/drivers/mtd/devices/sst25l.c b/drivers/mtd/devices/sst25l.c
+index e4f2339..8091b01 100644
+--- a/drivers/mtd/devices/sst25l.c
++++ b/drivers/mtd/devices/sst25l.c
+@@ -411,7 +411,7 @@ static int sst25l_probe(struct spi_device *spi)
  	return 0;
  }
  
--static int __devinit cciss_find_cfgtables(ctlr_info_t *h)
-+static int cciss_find_cfgtables(ctlr_info_t *h)
+-static int __devexit sst25l_remove(struct spi_device *spi)
++static int sst25l_remove(struct spi_device *spi)
  {
- 	u64 cfg_offset;
- 	u32 cfg_base_addr;
-@@ -4224,7 +4224,7 @@ static int __devinit cciss_find_cfgtables(ctlr_info_t *h)
+ 	struct sst25l_flash *flash = dev_get_drvdata(&spi->dev);
+ 	int ret;
+diff --git a/drivers/mtd/maps/amd76xrom.c b/drivers/mtd/maps/amd76xrom.c
+index 1a4f671..31ee5c8 100644
+--- a/drivers/mtd/maps/amd76xrom.c
++++ b/drivers/mtd/maps/amd76xrom.c
+@@ -289,7 +289,7 @@ static int amd76xrom_init_one (struct pci_dev *pdev,
+ }
+ 
+ 
+-static void __devexit amd76xrom_remove_one (struct pci_dev *pdev)
++static void amd76xrom_remove_one (struct pci_dev *pdev)
+ {
+ 	struct amd76xrom_window *window = &amd76xrom_window;
+ 
+diff --git a/drivers/mtd/maps/autcpu12-nvram.c b/drivers/mtd/maps/autcpu12-nvram.c
+index b8c8589..a2dc2ae 100644
+--- a/drivers/mtd/maps/autcpu12-nvram.c
++++ b/drivers/mtd/maps/autcpu12-nvram.c
+@@ -105,7 +105,7 @@ static int autcpu12_nvram_probe(struct platform_device *pdev)
+ 	return -ENOMEM;
+ }
+ 
+-static int __devexit autcpu12_nvram_remove(struct platform_device *pdev)
++static int autcpu12_nvram_remove(struct platform_device *pdev)
+ {
+ 	struct autcpu12_nvram_priv *priv = platform_get_drvdata(pdev);
+ 
+diff --git a/drivers/mtd/maps/bfin-async-flash.c b/drivers/mtd/maps/bfin-async-flash.c
+index 6057c64..7d484de 100644
+--- a/drivers/mtd/maps/bfin-async-flash.c
++++ b/drivers/mtd/maps/bfin-async-flash.c
+@@ -172,7 +172,7 @@ static int bfin_flash_probe(struct platform_device *pdev)
  	return 0;
  }
  
--static void __devinit cciss_get_max_perf_mode_cmds(struct ctlr_info *h)
-+static void cciss_get_max_perf_mode_cmds(struct ctlr_info *h)
+-static int __devexit bfin_flash_remove(struct platform_device *pdev)
++static int bfin_flash_remove(struct platform_device *pdev)
  {
- 	h->max_commands = readl(&(h->cfgtable->MaxPerformantModeCommands));
- 
-@@ -4245,7 +4245,7 @@ static void __devinit cciss_get_max_perf_mode_cmds(struct ctlr_info *h)
-  * max commands, max SG elements without chaining, and with chaining,
-  * SG chain block size, etc.
-  */
--static void __devinit cciss_find_board_params(ctlr_info_t *h)
-+static void cciss_find_board_params(ctlr_info_t *h)
- {
- 	cciss_get_max_perf_mode_cmds(h);
- 	h->nr_cmds = h->max_commands - 4 - cciss_tape_cmds;
-@@ -4304,7 +4304,7 @@ static inline void cciss_p600_dma_prefetch_quirk(ctlr_info_t *h)
- 	pci_write_config_dword(h->pdev, PCI_COMMAND_PARITY, dma_refetch);
+ 	struct async_state *state = platform_get_drvdata(pdev);
+ 	gpio_free(state->enet_flash_pin);
+diff --git a/drivers/mtd/maps/ck804xrom.c b/drivers/mtd/maps/ck804xrom.c
+index 65fedb9..0ac41f2 100644
+--- a/drivers/mtd/maps/ck804xrom.c
++++ b/drivers/mtd/maps/ck804xrom.c
+@@ -320,7 +320,7 @@ static int ck804xrom_init_one (struct pci_dev *pdev,
  }
  
--static int __devinit cciss_pci_init(ctlr_info_t *h)
-+static int cciss_pci_init(ctlr_info_t *h)
- {
- 	int prod_index, err;
  
-@@ -4424,7 +4424,7 @@ static void free_hba(ctlr_info_t *h)
- }
- 
- /* Send a message CDB to the firmware. */
--static __devinit int cciss_message(struct pci_dev *pdev, unsigned char opcode, unsigned char type)
-+static int cciss_message(struct pci_dev *pdev, unsigned char opcode, unsigned char type)
+-static void __devexit ck804xrom_remove_one (struct pci_dev *pdev)
++static void ck804xrom_remove_one (struct pci_dev *pdev)
  {
- 	typedef struct {
- 		CommandListHeader_struct CommandHeader;
-@@ -4571,13 +4571,13 @@ static int cciss_controller_hard_reset(struct pci_dev *pdev,
+ 	struct ck804xrom_window *window = &ck804xrom_window;
+ 
+diff --git a/drivers/mtd/maps/esb2rom.c b/drivers/mtd/maps/esb2rom.c
+index 664303f..6d6cb88 100644
+--- a/drivers/mtd/maps/esb2rom.c
++++ b/drivers/mtd/maps/esb2rom.c
+@@ -378,7 +378,7 @@ static int esb2rom_init_one(struct pci_dev *pdev,
  	return 0;
  }
  
--static __devinit void init_driver_version(char *driver_version, int len)
-+static void init_driver_version(char *driver_version, int len)
+-static void __devexit esb2rom_remove_one (struct pci_dev *pdev)
++static void esb2rom_remove_one (struct pci_dev *pdev)
  {
- 	memset(driver_version, 0, len);
- 	strncpy(driver_version, "cciss " DRIVER_NAME, len - 1);
- }
- 
--static __devinit int write_driver_ver_to_cfgtable(
-+static int write_driver_ver_to_cfgtable(
- 	CfgTable_struct __iomem *cfgtable)
- {
- 	char *driver_version;
-@@ -4594,7 +4594,7 @@ static __devinit int write_driver_ver_to_cfgtable(
+ 	struct esb2rom_window *window = &esb2rom_window;
+ 	esb2rom_cleanup(window);
+diff --git a/drivers/mtd/maps/gpio-addr-flash.c b/drivers/mtd/maps/gpio-addr-flash.c
+index 4babe04..41aa8db 100644
+--- a/drivers/mtd/maps/gpio-addr-flash.c
++++ b/drivers/mtd/maps/gpio-addr-flash.c
+@@ -258,7 +258,7 @@ static int gpio_flash_probe(struct platform_device *pdev)
  	return 0;
  }
  
--static __devinit void read_driver_ver_from_cfgtable(
-+static void read_driver_ver_from_cfgtable(
- 	CfgTable_struct __iomem *cfgtable, unsigned char *driver_ver)
+-static int __devexit gpio_flash_remove(struct platform_device *pdev)
++static int gpio_flash_remove(struct platform_device *pdev)
  {
- 	int i;
-@@ -4603,7 +4603,7 @@ static __devinit void read_driver_ver_from_cfgtable(
- 		driver_ver[i] = readb(&cfgtable->driver_version[i]);
+ 	struct async_state *state = platform_get_drvdata(pdev);
+ 	size_t i = 0;
+diff --git a/drivers/mtd/maps/ichxrom.c b/drivers/mtd/maps/ichxrom.c
+index 9673601..03d60ef 100644
+--- a/drivers/mtd/maps/ichxrom.c
++++ b/drivers/mtd/maps/ichxrom.c
+@@ -315,7 +315,7 @@ static int ichxrom_init_one (struct pci_dev *pdev,
  }
  
--static __devinit int controller_reset_failed(
-+static int controller_reset_failed(
- 	CfgTable_struct __iomem *cfgtable)
- {
  
-@@ -4627,7 +4627,7 @@ static __devinit int controller_reset_failed(
- 
- /* This does a hard reset of the controller using PCI power management
-  * states or using the doorbell register. */
--static __devinit int cciss_kdump_hard_reset_controller(struct pci_dev *pdev)
-+static int cciss_kdump_hard_reset_controller(struct pci_dev *pdev)
+-static void __devexit ichxrom_remove_one (struct pci_dev *pdev)
++static void ichxrom_remove_one (struct pci_dev *pdev)
  {
- 	u64 cfg_offset;
- 	u32 cfg_base_addr;
-@@ -4772,7 +4772,7 @@ unmap_vaddr:
- 	return rc;
+ 	struct ichxrom_window *window = &ichxrom_window;
+ 	ichxrom_cleanup(window);
+diff --git a/drivers/mtd/maps/intel_vr_nor.c b/drivers/mtd/maps/intel_vr_nor.c
+index 1694c03..3ee2ad1 100644
+--- a/drivers/mtd/maps/intel_vr_nor.c
++++ b/drivers/mtd/maps/intel_vr_nor.c
+@@ -63,7 +63,7 @@ struct vr_nor_mtd {
+ #define TIMING_BYTE_EN		(1 <<  0)	/* 8-bit vs 16-bit bus */
+ #define TIMING_MASK		0x3FFF0000
+ 
+-static void __devexit vr_nor_destroy_partitions(struct vr_nor_mtd *p)
++static void vr_nor_destroy_partitions(struct vr_nor_mtd *p)
+ {
+ 	mtd_device_unregister(p->info);
+ }
+@@ -75,7 +75,7 @@ static int vr_nor_init_partitions(struct vr_nor_mtd *p)
+ 	return mtd_device_parse_register(p->info, NULL, NULL, NULL, 0);
  }
  
--static __devinit int cciss_init_reset_devices(struct pci_dev *pdev)
-+static int cciss_init_reset_devices(struct pci_dev *pdev)
+-static void __devexit vr_nor_destroy_mtd_setup(struct vr_nor_mtd *p)
++static void vr_nor_destroy_mtd_setup(struct vr_nor_mtd *p)
  {
- 	int rc, i;
- 
-@@ -4806,7 +4806,7 @@ static __devinit int cciss_init_reset_devices(struct pci_dev *pdev)
+ 	map_destroy(p->info);
+ }
+@@ -96,7 +96,7 @@ static int vr_nor_mtd_setup(struct vr_nor_mtd *p)
  	return 0;
  }
  
--static __devinit int cciss_allocate_cmd_pool(ctlr_info_t *h)
-+static int cciss_allocate_cmd_pool(ctlr_info_t *h)
+-static void __devexit vr_nor_destroy_maps(struct vr_nor_mtd *p)
++static void vr_nor_destroy_maps(struct vr_nor_mtd *p)
  {
- 	h->cmd_pool_bits = kmalloc(BITS_TO_LONGS(h->nr_cmds) *
- 		sizeof(unsigned long), GFP_KERNEL);
-@@ -4825,7 +4825,7 @@ static __devinit int cciss_allocate_cmd_pool(ctlr_info_t *h)
- 	return 0;
- }
+ 	unsigned int exp_timing_cs0;
  
--static __devinit int cciss_allocate_scatterlists(ctlr_info_t *h)
-+static int cciss_allocate_scatterlists(ctlr_info_t *h)
- {
- 	int i;
- 
-@@ -4893,7 +4893,7 @@ static int cciss_request_irq(ctlr_info_t *h,
- 	return -1;
- }
- 
--static int __devinit cciss_kdump_soft_reset(ctlr_info_t *h)
-+static int cciss_kdump_soft_reset(ctlr_info_t *h)
- {
- 	if (cciss_send_reset(h, CTLR_LUNID, CCISS_RESET_TYPE_CONTROLLER)) {
- 		dev_warn(&h->pdev->dev, "Resetting array controller failed.\n");
-@@ -4952,7 +4952,7 @@ static void cciss_undo_allocations_after_kdump_soft_reset(ctlr_info_t *h)
-  *  stealing all these major device numbers.
-  *  returns the number of block devices registered.
-  */
--static int __devinit cciss_init_one(struct pci_dev *pdev,
-+static int cciss_init_one(struct pci_dev *pdev,
- 				    const struct pci_device_id *ent)
- {
- 	int i;
-@@ -5207,7 +5207,7 @@ static void cciss_shutdown(struct pci_dev *pdev)
- 	free_irq(h->intr[h->intr_mode], h);
- }
- 
--static int __devinit cciss_enter_simple_mode(struct ctlr_info *h)
-+static int cciss_enter_simple_mode(struct ctlr_info *h)
- {
- 	u32 trans_support;
- 
-diff --git a/drivers/block/cpqarray.c b/drivers/block/cpqarray.c
-index 389e314..34973bc 100644
---- a/drivers/block/cpqarray.c
-+++ b/drivers/block/cpqarray.c
-@@ -388,7 +388,7 @@ static void __devexit cpqarray_remove_one_eisa (int i)
- }
- 
- /* pdev is NULL for eisa */
--static int __devinit cpqarray_register_ctlr( int i, struct pci_dev *pdev)
-+static int cpqarray_register_ctlr( int i, struct pci_dev *pdev)
- {
- 	struct request_queue *q;
- 	int j;
-@@ -505,7 +505,7 @@ Enomem4:
- 	return -1;
- }
- 
--static int __devinit cpqarray_init_one( struct pci_dev *pdev,
-+static int cpqarray_init_one( struct pci_dev *pdev,
- 	const struct pci_device_id *ent)
- {
- 	int i;
-@@ -742,7 +742,7 @@ __setup("smart2=", cpqarray_setup);
- /*
-  * Find an EISA controller's signature.  Set up an hba if we find it.
-  */
--static int __devinit cpqarray_eisa_detect(void)
-+static int cpqarray_eisa_detect(void)
- {
- 	int i=0, j;
- 	__u32 board_id;
-diff --git a/drivers/block/nvme.c b/drivers/block/nvme.c
-index 1f7acff..8a7dc4c 100644
---- a/drivers/block/nvme.c
-+++ b/drivers/block/nvme.c
-@@ -975,7 +975,7 @@ static int queue_request_irq(struct nvme_dev *dev, struct nvme_queue *nvmeq,
- 				IRQF_DISABLED | IRQF_SHARED, name, nvmeq);
- }
- 
--static __devinit struct nvme_queue *nvme_create_queue(struct nvme_dev *dev,
-+static struct nvme_queue *nvme_create_queue(struct nvme_dev *dev,
- 					int qid, int cq_size, int vector)
- {
- 	int result;
-@@ -1011,7 +1011,7 @@ static __devinit struct nvme_queue *nvme_create_queue(struct nvme_dev *dev,
- 	return ERR_PTR(result);
- }
- 
--static int __devinit nvme_configure_admin_queue(struct nvme_dev *dev)
-+static int nvme_configure_admin_queue(struct nvme_dev *dev)
- {
- 	int result = 0;
- 	u32 aqa;
-@@ -1408,7 +1408,7 @@ static int set_queue_count(struct nvme_dev *dev, int count)
- 	return min(result & 0xffff, result >> 16) + 1;
- }
- 
--static int __devinit nvme_setup_io_queues(struct nvme_dev *dev)
-+static int nvme_setup_io_queues(struct nvme_dev *dev)
- {
- 	int result, cpu, i, nr_io_queues, db_bar_size, q_depth;
- 
-@@ -1481,7 +1481,7 @@ static void nvme_free_queues(struct nvme_dev *dev)
- 		nvme_free_queue(dev, i);
- }
- 
--static int __devinit nvme_dev_add(struct nvme_dev *dev)
-+static int nvme_dev_add(struct nvme_dev *dev)
- {
- 	int res, nn, i;
- 	struct nvme_ns *ns, *next;
-@@ -1619,7 +1619,7 @@ static void nvme_release_instance(struct nvme_dev *dev)
- 	spin_unlock(&dev_list_lock);
- }
- 
--static int __devinit nvme_probe(struct pci_dev *pdev,
-+static int nvme_probe(struct pci_dev *pdev,
- 						const struct pci_device_id *id)
- {
- 	int bars, result = -ENOMEM;
-diff --git a/drivers/block/ps3disk.c b/drivers/block/ps3disk.c
-index da0abc1..d754a88 100644
---- a/drivers/block/ps3disk.c
-+++ b/drivers/block/ps3disk.c
-@@ -401,7 +401,7 @@ static unsigned long ps3disk_mask;
- 
- static DEFINE_MUTEX(ps3disk_mask_mutex);
- 
--static int __devinit ps3disk_probe(struct ps3_system_bus_device *_dev)
-+static int ps3disk_probe(struct ps3_system_bus_device *_dev)
- {
- 	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
- 	struct ps3disk_private *priv;
-diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index f58cdcf..75e112d 100644
---- a/drivers/block/ps3vram.c
-+++ b/drivers/block/ps3vram.c
-@@ -536,7 +536,7 @@ static const struct file_operations ps3vram_proc_fops = {
- 	.release	= single_release,
+@@ -176,7 +176,7 @@ static struct pci_device_id vr_nor_pci_ids[] = {
+ 	{0,}
  };
  
--static void __devinit ps3vram_proc_init(struct ps3_system_bus_device *dev)
-+static void ps3vram_proc_init(struct ps3_system_bus_device *dev)
+-static void __devexit vr_nor_pci_remove(struct pci_dev *dev)
++static void vr_nor_pci_remove(struct pci_dev *dev)
  {
- 	struct ps3vram_priv *priv = ps3_system_bus_get_drvdata(dev);
- 	struct proc_dir_entry *pde;
-@@ -618,7 +618,7 @@ static void ps3vram_make_request(struct request_queue *q, struct bio *bio)
- 	} while (bio);
- }
+ 	struct vr_nor_mtd *p = pci_get_drvdata(dev);
  
--static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
-+static int ps3vram_probe(struct ps3_system_bus_device *dev)
- {
- 	struct ps3vram_priv *priv;
- 	int error, status;
-diff --git a/drivers/block/sunvdc.c b/drivers/block/sunvdc.c
-index 9dcf76a..9af2797 100644
---- a/drivers/block/sunvdc.c
-+++ b/drivers/block/sunvdc.c
-@@ -592,7 +592,7 @@ static int generic_request(struct vdc_port *port, u8 op, void *buf, int len)
+diff --git a/drivers/mtd/maps/lantiq-flash.c b/drivers/mtd/maps/lantiq-flash.c
+index 0cf6c73..3c3c791 100644
+--- a/drivers/mtd/maps/lantiq-flash.c
++++ b/drivers/mtd/maps/lantiq-flash.c
+@@ -185,7 +185,7 @@ err_out:
  	return err;
  }
  
--static int __devinit vdc_alloc_tx_ring(struct vdc_port *port)
-+static int vdc_alloc_tx_ring(struct vdc_port *port)
- {
- 	struct vio_dring_state *dr = &port->vio.drings[VIO_DRIVER_TX_RING];
- 	unsigned long len, entry_size;
-@@ -725,7 +725,7 @@ static struct vio_driver_ops vdc_vio_ops = {
- 	.handshake_complete	= vdc_handshake_complete,
- };
- 
--static void __devinit print_version(void)
-+static void print_version(void)
- {
- 	static int version_printed;
- 
-@@ -733,7 +733,7 @@ static void __devinit print_version(void)
- 		printk(KERN_INFO "%s", version);
- }
- 
--static int __devinit vdc_port_probe(struct vio_dev *vdev,
-+static int vdc_port_probe(struct vio_dev *vdev,
- 				    const struct vio_device_id *id)
- {
- 	struct mdesc_handle *hp;
-diff --git a/drivers/block/swim.c b/drivers/block/swim.c
-index 314f0b4..989f5bd 100644
---- a/drivers/block/swim.c
-+++ b/drivers/block/swim.c
-@@ -788,7 +788,7 @@ static struct kobject *floppy_find(dev_t dev, int *part, void *data)
- 	return get_disk(swd->unit[drive].disk);
- }
- 
--static int __devinit swim_add_floppy(struct swim_priv *swd,
-+static int swim_add_floppy(struct swim_priv *swd,
- 				     enum drive_location location)
- {
- 	struct floppy_state *fs = &swd->unit[swd->floppy_count];
-@@ -812,7 +812,7 @@ static int __devinit swim_add_floppy(struct swim_priv *swd,
- 	return 0;
- }
- 
--static int __devinit swim_floppy_init(struct swim_priv *swd)
-+static int swim_floppy_init(struct swim_priv *swd)
- {
- 	int err;
- 	int drive;
-@@ -875,7 +875,7 @@ exit_put_disks:
- 	return err;
- }
- 
--static int __devinit swim_probe(struct platform_device *dev)
-+static int swim_probe(struct platform_device *dev)
- {
- 	struct resource *res;
- 	struct swim __iomem *swim_base;
-diff --git a/drivers/block/swim3.c b/drivers/block/swim3.c
-index 89ddab1..83a97d9 100644
---- a/drivers/block/swim3.c
-+++ b/drivers/block/swim3.c
-@@ -1194,7 +1194,7 @@ static int swim3_add_device(struct macio_dev *mdev, int index)
- 	return rc;
- }
- 
--static int __devinit swim3_attach(struct macio_dev *mdev, const struct of_device_id *match)
-+static int swim3_attach(struct macio_dev *mdev, const struct of_device_id *match)
- {
- 	struct gendisk *disk;
- 	int index, rc;
-diff --git a/drivers/block/umem.c b/drivers/block/umem.c
-index eb0d821..970d107 100644
---- a/drivers/block/umem.c
-+++ b/drivers/block/umem.c
-@@ -789,7 +789,7 @@ static const struct block_device_operations mm_fops = {
- 	.revalidate_disk = mm_revalidate,
- };
- 
--static int __devinit mm_pci_probe(struct pci_dev *dev,
-+static int mm_pci_probe(struct pci_dev *dev,
- 				const struct pci_device_id *id)
- {
- 	int ret = -ENODEV;
-diff --git a/drivers/block/virtio_blk.c b/drivers/block/virtio_blk.c
-index dbba5cf..9f64e5cb 100644
---- a/drivers/block/virtio_blk.c
-+++ b/drivers/block/virtio_blk.c
-@@ -696,7 +696,7 @@ static const struct device_attribute dev_attr_cache_type_rw =
- 	__ATTR(cache_type, S_IRUGO|S_IWUSR,
- 	       virtblk_cache_type_show, virtblk_cache_type_store);
- 
--static int __devinit virtblk_probe(struct virtio_device *vdev)
-+static int virtblk_probe(struct virtio_device *vdev)
- {
- 	struct virtio_blk *vblk;
- 	struct request_queue *q;
-@@ -963,7 +963,7 @@ static unsigned int features[] = {
- 
- /*
-  * virtio_blk causes spurious section mismatch warning by
-- * simultaneously referring to a __devinit and a __devexit function.
-+ * simultaneously referring to a and a __devexit function.
-  * Use __refdata to avoid this warning.
-  */
- static struct virtio_driver __refdata virtio_blk = {
-diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
-index d925121..cc49230 100644
---- a/drivers/block/xsysace.c
-+++ b/drivers/block/xsysace.c
-@@ -961,7 +961,7 @@ static const struct block_device_operations ace_fops = {
- /* --------------------------------------------------------------------
-  * SystemACE device setup/teardown code
-  */
--static int __devinit ace_setup(struct ace_device *ace)
-+static int ace_setup(struct ace_device *ace)
- {
- 	u16 version;
- 	u16 val;
-@@ -1092,7 +1092,7 @@ static void __devexit ace_teardown(struct ace_device *ace)
- 	iounmap(ace->baseaddr);
- }
- 
--static int __devinit
+-static int __devexit
 +static int
- ace_alloc(struct device *dev, int id, resource_size_t physaddr,
- 	  int irq, int bus_width)
+ ltq_mtd_remove(struct platform_device *pdev)
  {
-@@ -1151,7 +1151,7 @@ static void __devexit ace_free(struct device *dev)
-  * Platform Bus Support
-  */
+ 	struct ltq_mtd *ltq_mtd = platform_get_drvdata(pdev);
+diff --git a/drivers/mtd/maps/pci.c b/drivers/mtd/maps/pci.c
+index 81a8caf..ed82914 100644
+--- a/drivers/mtd/maps/pci.c
++++ b/drivers/mtd/maps/pci.c
+@@ -308,7 +308,7 @@ out:
+ 	return err;
+ }
  
--static int __devinit ace_probe(struct platform_device *dev)
-+static int ace_probe(struct platform_device *dev)
+-static void __devexit
++static void
+ mtd_pci_remove(struct pci_dev *dev)
  {
- 	resource_size_t physaddr = 0;
- 	int bus_width = ACE_BUS_WIDTH_16; /* FIXME: should not be hard coded */
+ 	struct mtd_info *mtd = pci_get_drvdata(dev);
+diff --git a/drivers/mtd/maps/pismo.c b/drivers/mtd/maps/pismo.c
+index 01db0d0..afea93b 100644
+--- a/drivers/mtd/maps/pismo.c
++++ b/drivers/mtd/maps/pismo.c
+@@ -197,7 +197,7 @@ static void pismo_add_one(struct pismo_data *pismo, int i,
+ 	}
+ }
+ 
+-static int __devexit pismo_remove(struct i2c_client *client)
++static int pismo_remove(struct i2c_client *client)
+ {
+ 	struct pismo_data *pismo = i2c_get_clientdata(client);
+ 	int i;
+diff --git a/drivers/mtd/maps/pxa2xx-flash.c b/drivers/mtd/maps/pxa2xx-flash.c
+index b5120f9..43e3dbb 100644
+--- a/drivers/mtd/maps/pxa2xx-flash.c
++++ b/drivers/mtd/maps/pxa2xx-flash.c
+@@ -105,7 +105,7 @@ static int pxa2xx_flash_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int __devexit pxa2xx_flash_remove(struct platform_device *dev)
++static int pxa2xx_flash_remove(struct platform_device *dev)
+ {
+ 	struct pxa2xx_flash_info *info = platform_get_drvdata(dev);
+ 
+diff --git a/drivers/mtd/maps/scb2_flash.c b/drivers/mtd/maps/scb2_flash.c
+index bb1857f..71796137 100644
+--- a/drivers/mtd/maps/scb2_flash.c
++++ b/drivers/mtd/maps/scb2_flash.c
+@@ -197,7 +197,7 @@ scb2_flash_probe(struct pci_dev *dev, const struct pci_device_id *ent)
+ 	return 0;
+ }
+ 
+-static void __devexit
++static void
+ scb2_flash_remove(struct pci_dev *dev)
+ {
+ 	if (!scb2_mtd)
+diff --git a/drivers/mtd/maps/sun_uflash.c b/drivers/mtd/maps/sun_uflash.c
+index 2618e4d..d467f3b 100644
+--- a/drivers/mtd/maps/sun_uflash.c
++++ b/drivers/mtd/maps/sun_uflash.c
+@@ -121,7 +121,7 @@ static int uflash_probe(struct platform_device *op)
+ 	return uflash_devinit(op, dp);
+ }
+ 
+-static int __devexit uflash_remove(struct platform_device *op)
++static int uflash_remove(struct platform_device *op)
+ {
+ 	struct uflash_dev *up = dev_get_drvdata(&op->dev);
+ 
+diff --git a/drivers/mtd/maps/vmu-flash.c b/drivers/mtd/maps/vmu-flash.c
+index 84c3f5a..6b223cf 100644
+--- a/drivers/mtd/maps/vmu-flash.c
++++ b/drivers/mtd/maps/vmu-flash.c
+@@ -690,7 +690,7 @@ fail_nomem:
+ 	return error;
+ }
+ 
+-static void __devexit vmu_disconnect(struct maple_device *mdev)
++static void vmu_disconnect(struct maple_device *mdev)
+ {
+ 	struct memcard *card;
+ 	struct mdev_part *mpart;
+@@ -789,7 +789,7 @@ static int probe_maple_vmu(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int __devexit remove_maple_vmu(struct device *dev)
++static int remove_maple_vmu(struct device *dev)
+ {
+ 	struct maple_device *mdev = to_maple_dev(dev);
+ 
+diff --git a/drivers/mtd/nand/ams-delta.c b/drivers/mtd/nand/ams-delta.c
+index 703e373..f1d71cd 100644
+--- a/drivers/mtd/nand/ams-delta.c
++++ b/drivers/mtd/nand/ams-delta.c
+@@ -270,7 +270,7 @@ out_free:
+ /*
+  * Clean up routine
+  */
+-static int __devexit ams_delta_cleanup(struct platform_device *pdev)
++static int ams_delta_cleanup(struct platform_device *pdev)
+ {
+ 	void __iomem *io_base = platform_get_drvdata(pdev);
+ 
+diff --git a/drivers/mtd/nand/au1550nd.c b/drivers/mtd/nand/au1550nd.c
+index 73d6423..217459d 100644
+--- a/drivers/mtd/nand/au1550nd.c
++++ b/drivers/mtd/nand/au1550nd.c
+@@ -491,7 +491,7 @@ out1:
+ 	return ret;
+ }
+ 
+-static int __devexit au1550nd_remove(struct platform_device *pdev)
++static int au1550nd_remove(struct platform_device *pdev)
+ {
+ 	struct au1550nd_ctx *ctx = platform_get_drvdata(pdev);
+ 	struct resource *r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+diff --git a/drivers/mtd/nand/bf5xx_nand.c b/drivers/mtd/nand/bf5xx_nand.c
+index 56de9b6..4271e94 100644
+--- a/drivers/mtd/nand/bf5xx_nand.c
++++ b/drivers/mtd/nand/bf5xx_nand.c
+@@ -667,7 +667,7 @@ static int bf5xx_nand_add_partition(struct bf5xx_nand_info *info)
+ 	return mtd_device_register(mtd, parts, nr);
+ }
+ 
+-static int __devexit bf5xx_nand_remove(struct platform_device *pdev)
++static int bf5xx_nand_remove(struct platform_device *pdev)
+ {
+ 	struct bf5xx_nand_info *info = to_nand_info(pdev);
+ 
+diff --git a/drivers/mtd/nand/cafe_nand.c b/drivers/mtd/nand/cafe_nand.c
+index 480834a..010d612 100644
+--- a/drivers/mtd/nand/cafe_nand.c
++++ b/drivers/mtd/nand/cafe_nand.c
+@@ -821,7 +821,7 @@ static int cafe_nand_probe(struct pci_dev *pdev,
+ 	return err;
+ }
+ 
+-static void __devexit cafe_nand_remove(struct pci_dev *pdev)
++static void cafe_nand_remove(struct pci_dev *pdev)
+ {
+ 	struct mtd_info *mtd = pci_get_drvdata(pdev);
+ 	struct cafe_priv *cafe = mtd->priv;
+diff --git a/drivers/mtd/nand/denali_dt.c b/drivers/mtd/nand/denali_dt.c
+index f9b593c..546f8cb 100644
+--- a/drivers/mtd/nand/denali_dt.c
++++ b/drivers/mtd/nand/denali_dt.c
+@@ -129,7 +129,7 @@ out_disable_clk:
+ 	return ret;
+ }
+ 
+-static int __devexit denali_dt_remove(struct platform_device *ofdev)
++static int denali_dt_remove(struct platform_device *ofdev)
+ {
+ 	struct denali_dt *dt = platform_get_drvdata(ofdev);
+ 
+diff --git a/drivers/mtd/nand/denali_pci.c b/drivers/mtd/nand/denali_pci.c
+index f1f8f89..e3e4662 100644
+--- a/drivers/mtd/nand/denali_pci.c
++++ b/drivers/mtd/nand/denali_pci.c
+@@ -137,7 +137,7 @@ static int denali_init_pci(void)
+ }
+ module_init(denali_init_pci);
+ 
+-static void __devexit denali_exit_pci(void)
++static void denali_exit_pci(void)
+ {
+ 	pci_unregister_driver(&denali_pci_driver);
+ }
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index a564325..5a8f5c4 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -318,7 +318,7 @@ err1:
+ 	return ret;
+ }
+ 
+-static int __devexit fun_remove(struct platform_device *ofdev)
++static int fun_remove(struct platform_device *ofdev)
+ {
+ 	struct fsl_upm_nand *fun = dev_get_drvdata(&ofdev->dev);
+ 	int i;
+diff --git a/drivers/mtd/nand/gpio.c b/drivers/mtd/nand/gpio.c
+index 45f1a24..7aec569 100644
+--- a/drivers/mtd/nand/gpio.c
++++ b/drivers/mtd/nand/gpio.c
+@@ -231,7 +231,7 @@ gpio_nand_get_io_sync(struct platform_device *pdev)
+ 	return platform_get_resource(pdev, IORESOURCE_MEM, 1);
+ }
+ 
+-static int __devexit gpio_nand_remove(struct platform_device *dev)
++static int gpio_nand_remove(struct platform_device *dev)
+ {
+ 	struct gpiomtd *gpiomtd = platform_get_drvdata(dev);
+ 	struct resource *res;
+diff --git a/drivers/mtd/nand/gpmi-nand/gpmi-nand.c b/drivers/mtd/nand/gpmi-nand/gpmi-nand.c
+index 2a251c9..5cd141f 100644
+--- a/drivers/mtd/nand/gpmi-nand/gpmi-nand.c
++++ b/drivers/mtd/nand/gpmi-nand/gpmi-nand.c
+@@ -1675,7 +1675,7 @@ exit_acquire_resources:
+ 	return ret;
+ }
+ 
+-static int __devexit gpmi_nand_remove(struct platform_device *pdev)
++static int gpmi_nand_remove(struct platform_device *pdev)
+ {
+ 	struct gpmi_nand_data *this = platform_get_drvdata(pdev);
+ 
+diff --git a/drivers/mtd/nand/jz4740_nand.c b/drivers/mtd/nand/jz4740_nand.c
+index 5396b6c..72ac26e 100644
+--- a/drivers/mtd/nand/jz4740_nand.c
++++ b/drivers/mtd/nand/jz4740_nand.c
+@@ -541,7 +541,7 @@ err_free:
+ 	return ret;
+ }
+ 
+-static int __devexit jz_nand_remove(struct platform_device *pdev)
++static int jz_nand_remove(struct platform_device *pdev)
+ {
+ 	struct jz_nand *nand = platform_get_drvdata(pdev);
+ 	struct jz_nand_platform_data *pdata = pdev->dev.platform_data;
+diff --git a/drivers/mtd/nand/lpc32xx_mlc.c b/drivers/mtd/nand/lpc32xx_mlc.c
+index bb83daf..f182bef 100644
+--- a/drivers/mtd/nand/lpc32xx_mlc.c
++++ b/drivers/mtd/nand/lpc32xx_mlc.c
+@@ -845,7 +845,7 @@ err_exit1:
+ /*
+  * Remove NAND device
+  */
+-static int __devexit lpc32xx_nand_remove(struct platform_device *pdev)
++static int lpc32xx_nand_remove(struct platform_device *pdev)
+ {
+ 	struct lpc32xx_nand_host *host = platform_get_drvdata(pdev);
+ 	struct mtd_info *mtd = &host->mtd;
+diff --git a/drivers/mtd/nand/lpc32xx_slc.c b/drivers/mtd/nand/lpc32xx_slc.c
+index 17267f2..030b78c 100644
+--- a/drivers/mtd/nand/lpc32xx_slc.c
++++ b/drivers/mtd/nand/lpc32xx_slc.c
+@@ -949,7 +949,7 @@ err_exit1:
+ /*
+  * Remove NAND device.
+  */
+-static int __devexit lpc32xx_nand_remove(struct platform_device *pdev)
++static int lpc32xx_nand_remove(struct platform_device *pdev)
+ {
+ 	uint32_t tmp;
+ 	struct lpc32xx_nand_host *host = platform_get_drvdata(pdev);
+diff --git a/drivers/mtd/nand/mpc5121_nfc.c b/drivers/mtd/nand/mpc5121_nfc.c
+index 09f75a5..3c9cdcb 100644
+--- a/drivers/mtd/nand/mpc5121_nfc.c
++++ b/drivers/mtd/nand/mpc5121_nfc.c
+@@ -827,7 +827,7 @@ error:
+ 	return retval;
+ }
+ 
+-static int __devexit mpc5121_nfc_remove(struct platform_device *op)
++static int mpc5121_nfc_remove(struct platform_device *op)
+ {
+ 	struct device *dev = &op->dev;
+ 	struct mtd_info *mtd = dev_get_drvdata(dev);
+diff --git a/drivers/mtd/nand/mxc_nand.c b/drivers/mtd/nand/mxc_nand.c
+index 0887c2c..d316324 100644
+--- a/drivers/mtd/nand/mxc_nand.c
++++ b/drivers/mtd/nand/mxc_nand.c
+@@ -1561,7 +1561,7 @@ escan:
+ 	return err;
+ }
+ 
+-static int __devexit mxcnd_remove(struct platform_device *pdev)
++static int mxcnd_remove(struct platform_device *pdev)
+ {
+ 	struct mxc_nand_host *host = platform_get_drvdata(pdev);
+ 
+diff --git a/drivers/mtd/nand/ndfc.c b/drivers/mtd/nand/ndfc.c
+index 6fa4588..8e148f1 100644
+--- a/drivers/mtd/nand/ndfc.c
++++ b/drivers/mtd/nand/ndfc.c
+@@ -256,7 +256,7 @@ static int ndfc_probe(struct platform_device *ofdev)
+ 	return 0;
+ }
+ 
+-static int __devexit ndfc_remove(struct platform_device *ofdev)
++static int ndfc_remove(struct platform_device *ofdev)
+ {
+ 	struct ndfc_controller *ndfc = dev_get_drvdata(&ofdev->dev);
+ 
+diff --git a/drivers/mtd/nand/nuc900_nand.c b/drivers/mtd/nand/nuc900_nand.c
+index 00766df..a619119 100644
+--- a/drivers/mtd/nand/nuc900_nand.c
++++ b/drivers/mtd/nand/nuc900_nand.c
+@@ -317,7 +317,7 @@ fail1:	kfree(nuc900_nand);
+ 	return retval;
+ }
+ 
+-static int __devexit nuc900_nand_remove(struct platform_device *pdev)
++static int nuc900_nand_remove(struct platform_device *pdev)
+ {
+ 	struct nuc900_nand *nuc900_nand = platform_get_drvdata(pdev);
+ 	struct resource *res;
+diff --git a/drivers/mtd/nand/orion_nand.c b/drivers/mtd/nand/orion_nand.c
+index e6b296d..cd72b92 100644
+--- a/drivers/mtd/nand/orion_nand.c
++++ b/drivers/mtd/nand/orion_nand.c
+@@ -194,7 +194,7 @@ no_res:
+ 	return ret;
+ }
+ 
+-static int __devexit orion_nand_remove(struct platform_device *pdev)
++static int orion_nand_remove(struct platform_device *pdev)
+ {
+ 	struct mtd_info *mtd = platform_get_drvdata(pdev);
+ 	struct nand_chip *nc = mtd->priv;
+diff --git a/drivers/mtd/nand/pasemi_nand.c b/drivers/mtd/nand/pasemi_nand.c
+index 2e477cb..5a67082 100644
+--- a/drivers/mtd/nand/pasemi_nand.c
++++ b/drivers/mtd/nand/pasemi_nand.c
+@@ -184,7 +184,7 @@ static int pasemi_nand_probe(struct platform_device *ofdev)
+ 	return err;
+ }
+ 
+-static int __devexit pasemi_nand_remove(struct platform_device *ofdev)
++static int pasemi_nand_remove(struct platform_device *ofdev)
+ {
+ 	struct nand_chip *chip;
+ 
+diff --git a/drivers/mtd/nand/plat_nand.c b/drivers/mtd/nand/plat_nand.c
+index 32e2996..c004566 100644
+--- a/drivers/mtd/nand/plat_nand.c
++++ b/drivers/mtd/nand/plat_nand.c
+@@ -134,7 +134,7 @@ out_free:
+ /*
+  * Remove a NAND device.
+  */
+-static int __devexit plat_nand_remove(struct platform_device *pdev)
++static int plat_nand_remove(struct platform_device *pdev)
+ {
+ 	struct plat_nand_data *data = platform_get_drvdata(pdev);
+ 	struct platform_nand_data *pdata = pdev->dev.platform_data;
+diff --git a/drivers/mtd/nand/sh_flctl.c b/drivers/mtd/nand/sh_flctl.c
+index 607e6bd..57b3971 100644
+--- a/drivers/mtd/nand/sh_flctl.c
++++ b/drivers/mtd/nand/sh_flctl.c
+@@ -1200,7 +1200,7 @@ err_iomap:
+ 	return ret;
+ }
+ 
+-static int __devexit flctl_remove(struct platform_device *pdev)
++static int flctl_remove(struct platform_device *pdev)
+ {
+ 	struct sh_flctl *flctl = platform_get_drvdata(pdev);
+ 
+diff --git a/drivers/mtd/nand/sharpsl.c b/drivers/mtd/nand/sharpsl.c
+index 870f0ff..127bc42 100644
+--- a/drivers/mtd/nand/sharpsl.c
++++ b/drivers/mtd/nand/sharpsl.c
+@@ -205,7 +205,7 @@ err_get_res:
+ /*
+  * Clean up routine
+  */
+-static int __devexit sharpsl_nand_remove(struct platform_device *pdev)
++static int sharpsl_nand_remove(struct platform_device *pdev)
+ {
+ 	struct sharpsl_nand *sharpsl = platform_get_drvdata(pdev);
+ 
+diff --git a/drivers/mtd/nand/socrates_nand.c b/drivers/mtd/nand/socrates_nand.c
+index c9791fd..09dde7d 100644
+--- a/drivers/mtd/nand/socrates_nand.c
++++ b/drivers/mtd/nand/socrates_nand.c
+@@ -220,7 +220,7 @@ out:
+ /*
+  * Remove a NAND device.
+  */
+-static int __devexit socrates_nand_remove(struct platform_device *ofdev)
++static int socrates_nand_remove(struct platform_device *ofdev)
+ {
+ 	struct socrates_nand_host *host = dev_get_drvdata(&ofdev->dev);
+ 	struct mtd_info *mtd = &host->mtd;
+diff --git a/drivers/mtd/onenand/generic.c b/drivers/mtd/onenand/generic.c
+index 03e6af3..9f11562 100644
+--- a/drivers/mtd/onenand/generic.c
++++ b/drivers/mtd/onenand/generic.c
+@@ -88,7 +88,7 @@ out_free_info:
+ 	return err;
+ }
+ 
+-static int __devexit generic_onenand_remove(struct platform_device *pdev)
++static int generic_onenand_remove(struct platform_device *pdev)
+ {
+ 	struct onenand_info *info = platform_get_drvdata(pdev);
+ 	struct resource *res = pdev->resource;
+diff --git a/drivers/mtd/onenand/omap2.c b/drivers/mtd/onenand/omap2.c
+index 0c75bcc..5ca4dcd 100644
+--- a/drivers/mtd/onenand/omap2.c
++++ b/drivers/mtd/onenand/omap2.c
+@@ -799,7 +799,7 @@ err_kfree:
+ 	return r;
+ }
+ 
+-static int __devexit omap2_onenand_remove(struct platform_device *pdev)
++static int omap2_onenand_remove(struct platform_device *pdev)
+ {
+ 	struct omap2_onenand *c = dev_get_drvdata(&pdev->dev);
+ 
+diff --git a/drivers/mtd/onenand/samsung.c b/drivers/mtd/onenand/samsung.c
+index 3d462cb..33f2a8f 100644
+--- a/drivers/mtd/onenand/samsung.c
++++ b/drivers/mtd/onenand/samsung.c
+@@ -1053,7 +1053,7 @@ onenand_fail:
+ 	return err;
+ }
+ 
+-static int __devexit s3c_onenand_remove(struct platform_device *pdev)
++static int s3c_onenand_remove(struct platform_device *pdev)
+ {
+ 	struct mtd_info *mtd = platform_get_drvdata(pdev);
+ 
 -- 
 1.8.0
