@@ -1,32 +1,44 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
+Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EB28F2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 17:16:59 +1100 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Mon, 19 Nov 2012 11:46:56 +0530
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qAJ6Grea26935470
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 11:46:53 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qAJBinn7007718
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 22:44:50 +1100
-Message-ID: <1353305799.3694.9.camel@ThinkPad-T5421.cn.ibm.com>
-Subject: [RFC PATCH powerpc ] Protect smp_processor_id() in
- arch_spin_unlock_wait()
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: PowerPC email list <linuxppc-dev@lists.ozlabs.org>
-Date: Mon, 19 Nov 2012 14:16:39 +0800
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CCCC72C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 21:09:57 +1100 (EST)
+Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
+ by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 473C73EE0C5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 19:09:52 +0900 (JST)
+Received: from smail (m3 [127.0.0.1])
+ by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 2495345DEB7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 19:09:52 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
+ by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 024AA45DEBE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 19:09:52 +0900 (JST)
+Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id E25641DB8042
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 19:09:51 +0900 (JST)
+Received: from g01jpexchyt09.g01.fujitsu.local
+ (g01jpexchyt09.g01.fujitsu.local [10.128.194.48])
+ by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 895A91DB803E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 19:09:51 +0900 (JST)
+Message-ID: <50AA0537.1000501@jp.fujitsu.com>
+Date: Mon, 19 Nov 2012 19:08:55 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+MIME-Version: 1.0
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [PATCH v3 11/12] memory-hotplug: remove sysfs file of node
+References: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
+ <1351763083-7905-12-git-send-email-wency@cn.fujitsu.com>
+In-Reply-To: <1351763083-7905-12-git-send-email-wency@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-2022-JP"
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+ linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ cmetcalf@tilera.com, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
+ paulus@samba.org, Minchan Kim <minchan.kim@gmail.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,39 +48,317 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch tries to disable preemption for using smp_processor_id() in arch_spin_unlock_wait(), 
-to avoid following report:
+Hi Wen,
 
-[   17.279377] BUG: using smp_processor_id() in preemptible [00000000] code: autorun/1024
-[   17.279407] caller is .arch_spin_unlock_wait+0x34/0x80
-[   17.279415] Call Trace:
-[   17.279423] [c00000000911fb30] [c000000000015230] .show_stack+0x70/0x1c0 (unreliable)
-[   17.279441] [c00000000911fbe0] [c0000000003e13b0] .debug_smp_processor_id+0x110/0x130
-[   17.279455] [c00000000911fc80] [c00000000004c2b4] .arch_spin_unlock_wait+0x34/0x80
-[   17.279470] [c00000000911fd00] [c0000000000b0e50] .task_work_run+0x80/0x160
-[   17.279482] [c00000000911fdb0] [c000000000018744] .do_notify_resume+0x94/0xa0
-[   17.279495] [c00000000911fe30] [c000000000009d1c] .ret_from_except_lite+0x48/0x4c
+This patch cannot be applied, if I apply latest acpi framework's patch-set:
 
-Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+https://lkml.org/lkml/2012/11/15/21
+
+Because acpi_memory_disable_device() is gone by the patch-set.
+
+I updated the patch and attached it on the mail.
+
+2012/11/01 18:44, Wen Congyang wrote:
+> This patch introduces a new function try_offline_node() to
+> remove sysfs file of node when all memory sections of this
+> node are removed. If some memory sections of this node are
+> not removed, this function does nothing.
+> 
+> CC: David Rientjes <rientjes@google.com>
+> CC: Jiang Liu <liuj97@gmail.com>
+> CC: Len Brown <len.brown@intel.com>
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+> ---
+>   drivers/acpi/acpi_memhotplug.c |  8 +++++-
+>   include/linux/memory_hotplug.h |  2 +-
+>   mm/memory_hotplug.c            | 58 ++++++++++++++++++++++++++++++++++++++++--
+>   3 files changed, 64 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
+> index 24c807f..0780f99 100644
+> --- a/drivers/acpi/acpi_memhotplug.c
+> +++ b/drivers/acpi/acpi_memhotplug.c
+> @@ -310,7 +310,9 @@ static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
+>   {
+>   	int result;
+>   	struct acpi_memory_info *info, *n;
+> +	int node;
+>   
+> +	node = acpi_get_node(mem_device->device->handle);
+>   
+>   	/*
+>   	 * Ask the VM to offline this memory range.
+> @@ -318,7 +320,11 @@ static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
+>   	 */
+>   	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
+>   		if (info->enabled) {
+> -			result = remove_memory(info->start_addr, info->length);
+> +			if (node < 0)
+> +				node = memory_add_physaddr_to_nid(
+> +					info->start_addr);
+> +			result = remove_memory(node, info->start_addr,
+> +				info->length);
+>   			if (result)
+>   				return result;
+>   		}
+> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+> index d4c4402..7b4cfe6 100644
+> --- a/include/linux/memory_hotplug.h
+> +++ b/include/linux/memory_hotplug.h
+> @@ -231,7 +231,7 @@ extern int arch_add_memory(int nid, u64 start, u64 size);
+>   extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
+>   extern int offline_memory_block(struct memory_block *mem);
+>   extern bool is_memblock_offlined(struct memory_block *mem);
+> -extern int remove_memory(u64 start, u64 size);
+> +extern int remove_memory(int node, u64 start, u64 size);
+>   extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+>   								int nr_pages);
+>   extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index 7bcced0..d965da3 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -29,6 +29,7 @@
+>   #include <linux/suspend.h>
+>   #include <linux/mm_inline.h>
+>   #include <linux/firmware-map.h>
+> +#include <linux/stop_machine.h>
+>   
+>   #include <asm/tlbflush.h>
+>   
+> @@ -1299,7 +1300,58 @@ static int is_memblock_offlined_cb(struct memory_block *mem, void *arg)
+>   	return ret;
+>   }
+>   
+> -int __ref remove_memory(u64 start, u64 size)
+> +static int check_cpu_on_node(void *data)
+> +{
+> +	struct pglist_data *pgdat = data;
+> +	int cpu;
+> +
+> +	for_each_present_cpu(cpu) {
+> +		if (cpu_to_node(cpu) == pgdat->node_id)
+> +			/*
+> +			 * the cpu on this node isn't removed, and we can't
+> +			 * offline this node.
+> +			 */
+> +			return -EBUSY;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/* offline the node if all memory sections of this node are removed */
+> +static void try_offline_node(int nid)
+> +{
+> +	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
+> +	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
+> +	unsigned long pfn;
+> +
+> +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+> +		unsigned long section_nr = pfn_to_section_nr(pfn);
+> +
+> +		if (!present_section_nr(section_nr))
+> +			continue;
+> +
+> +		if (pfn_to_nid(pfn) != nid)
+> +			continue;
+> +
+> +		/*
+> +		 * some memory sections of this node are not removed, and we
+> +		 * can't offline node now.
+> +		 */
+> +		return;
+> +	}
+> +
+> +	if (stop_machine(check_cpu_on_node, NODE_DATA(nid), NULL))
+> +		return;
+> +
+> +	/*
+> +	 * all memory/cpu of this node are removed, we can offline this
+> +	 * node now.
+> +	 */
+> +	node_set_offline(nid);
+> +	unregister_one_node(nid);
+> +}
+> +
+> +int __ref remove_memory(int nid, u64 start, u64 size)
+>   {
+>   	unsigned long start_pfn, end_pfn;
+>   	int ret = 0;
+> @@ -1346,6 +1398,8 @@ repeat:
+>   
+>   	arch_remove_memory(start, size);
+>   
+> +	try_offline_node(nid);
+> +
+>   	unlock_memory_hotplug();
+>   
+>   	return 0;
+> @@ -1355,7 +1409,7 @@ int offline_pages(unsigned long start_pfn, unsigned long nr_pages)
+>   {
+>   	return -EINVAL;
+>   }
+> -int remove_memory(u64 start, u64 size)
+> +int remove_memory(int nid, u64 start, u64 size)
+>   {
+>   	return -EINVAL;
+>   }
+> 
+
 ---
- arch/powerpc/lib/locks.c |    2 ++
- 1 file changed, 2 insertions(+)
+This patch introduces a new function try_offline_node() to
+remove sysfs file of node when all memory sections of this
+node are removed. If some memory sections of this node are
+not removed, this function does nothing.
 
-diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-index bb7cfec..7a7c31b 100644
---- a/arch/powerpc/lib/locks.c
-+++ b/arch/powerpc/lib/locks.c
-@@ -72,8 +72,10 @@ void arch_spin_unlock_wait(arch_spinlock_t *lock)
+CC: David Rientjes <rientjes@google.com>
+CC: Jiang Liu <liuj97@gmail.com>
+CC: Len Brown <len.brown@intel.com>
+CC: Christoph Lameter <cl@linux.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+---
+ drivers/acpi/acpi_memhotplug.c |    9 +++++-
+ include/linux/memory_hotplug.h |    2 -
+ mm/memory_hotplug.c            |   58 +++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 65 insertions(+), 4 deletions(-)
+
+Index: linux-3.7-rc6/drivers/acpi/acpi_memhotplug.c
+===================================================================
+--- linux-3.7-rc6.orig/drivers/acpi/acpi_memhotplug.c	2012-11-19 16:16:55.161912688 +0900
++++ linux-3.7-rc6/drivers/acpi/acpi_memhotplug.c	2012-11-19 16:17:05.346912109 +0900
+@@ -295,6 +295,9 @@ static int acpi_memory_remove_memory(str
  {
- 	while (lock->slock) {
- 		HMT_low();
-+		preempt_disable();
- 		if (SHARED_PROCESSOR)
- 			__spin_yield(lock);
-+		preempt_enable();
- 	}
- 	HMT_medium();
+ 	int result = 0;
+ 	struct acpi_memory_info *info, *n;
++	int node;
++
++	node = acpi_get_node(mem_device->device->handle);
+ 
+ 	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
+ 		if (info->failed)
+@@ -308,7 +311,11 @@ static int acpi_memory_remove_memory(str
+ 			 */
+ 			return -EBUSY;
+ 
+-		result = remove_memory(info->start_addr, info->length);
++		if (node < 0)
++			node = memory_add_physaddr_to_nid(
++				info->start_addr);
++		result = remove_memory(node, info->start_addr,
++			info->length);
+ 		if (result)
+ 			return result;
+ 
+Index: linux-3.7-rc6/include/linux/memory_hotplug.h
+===================================================================
+--- linux-3.7-rc6.orig/include/linux/memory_hotplug.h	2012-11-19 16:16:55.167912687 +0900
++++ linux-3.7-rc6/include/linux/memory_hotplug.h	2012-11-19 16:17:05.348912109 +0900
+@@ -242,7 +242,7 @@ extern int arch_add_memory(int nid, u64 
+ extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
+ extern int offline_memory_block(struct memory_block *mem);
+ extern bool is_memblock_offlined(struct memory_block *mem);
+-extern int remove_memory(u64 start, u64 size);
++extern int remove_memory(int node, u64 start, u64 size);
+ extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+ 								int nr_pages);
+ extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
+Index: linux-3.7-rc6/mm/memory_hotplug.c
+===================================================================
+--- linux-3.7-rc6.orig/mm/memory_hotplug.c	2012-11-19 16:16:55.164912687 +0900
++++ linux-3.7-rc6/mm/memory_hotplug.c	2012-11-19 16:17:05.356912108 +0900
+@@ -29,6 +29,7 @@
+ #include <linux/suspend.h>
+ #include <linux/mm_inline.h>
+ #include <linux/firmware-map.h>
++#include <linux/stop_machine.h>
+ 
+ #include <asm/tlbflush.h>
+ 
+@@ -1652,7 +1653,58 @@ static int is_memblock_offlined_cb(struc
+ 	return ret;
  }
--- 
-1.7.9.5
+ 
+-int __ref remove_memory(u64 start, u64 size)
++static int check_cpu_on_node(void *data)
++{
++	struct pglist_data *pgdat = data;
++	int cpu;
++
++	for_each_present_cpu(cpu) {
++		if (cpu_to_node(cpu) == pgdat->node_id)
++			/*
++			 * the cpu on this node isn't removed, and we can't
++			 * offline this node.
++			 */
++			return -EBUSY;
++	}
++
++	return 0;
++}
++
++/* offline the node if all memory sections of this node are removed */
++static void try_offline_node(int nid)
++{
++	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
++	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
++	unsigned long pfn;
++
++	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
++		unsigned long section_nr = pfn_to_section_nr(pfn);
++
++		if (!present_section_nr(section_nr))
++			continue;
++
++		if (pfn_to_nid(pfn) != nid)
++			continue;
++
++		/*
++		 * some memory sections of this node are not removed, and we
++		 * can't offline node now.
++		 */
++		return;
++	}
++
++	if (stop_machine(check_cpu_on_node, NODE_DATA(nid), NULL))
++		return;
++
++	/*
++	 * all memory/cpu of this node are removed, we can offline this
++	 * node now.
++	 */
++	node_set_offline(nid);
++	unregister_one_node(nid);
++}
++
++int __ref remove_memory(int nid, u64 start, u64 size)
+ {
+ 	unsigned long start_pfn, end_pfn;
+ 	int ret = 0;
+@@ -1699,6 +1751,8 @@ repeat:
+ 
+ 	arch_remove_memory(start, size);
+ 
++	try_offline_node(nid);
++
+ 	unlock_memory_hotplug();
+ 
+ 	return 0;
+@@ -1708,7 +1762,7 @@ int offline_pages(unsigned long start_pf
+ {
+ 	return -EINVAL;
+ }
+-int remove_memory(u64 start, u64 size)
++int remove_memory(int nid, u64 start, u64 size)
+ {
+ 	return -EINVAL;
+ }
