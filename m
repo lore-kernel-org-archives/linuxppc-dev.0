@@ -1,19 +1,19 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A359F2C0080
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2012 19:28:21 +1100 (EST)
-Date: Tue, 20 Nov 2012 09:27:59 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Please pull 'merge' branch of 5xxx tree
-Message-ID: <20121120092759.5741aeef@wker>
-In-Reply-To: <20121025224113.5a67a77d@wker>
-References: <20121025224113.5a67a77d@wker>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tushar.behera@linaro.org>
+Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B2F7A2C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 15:38:08 +1100 (EST)
+Received: by mail-da0-f51.google.com with SMTP id i30so741627dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 20:38:05 -0800 (PST)
+From: Tushar Behera <tushar.behera@linaro.org>
+To: linuxppc-dev@lists.ozlabs.org,
+	devicetree-discuss@lists.ozlabs.org
+Subject: [PATCH 1/2] powerpc/85xx: p1022ds: Use NULL instead of 0 for pointers
+Date: Tue, 20 Nov 2012 10:01:51 +0530
+Message-Id: <1353385912-25882-1-git-send-email-tushar.behera@linaro.org>
+Cc: patches@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,13 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+The third argument for of_get_property() is a pointer, hence pass
+NULL instead of 0.
 
-On Thu, 25 Oct 2012 22:41:13 +0200
-Anatolij Gustschin <agust@denx.de> wrote:
+Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+---
+ arch/powerpc/platforms/85xx/p1022_ds.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> Hi Ben,
-> 
-> please pull three mpc5200 fixes for 3.7:
-
-Ping.
+diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+index 8fb1257..7328b8d 100644
+--- a/arch/powerpc/platforms/85xx/p1022_ds.c
++++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+@@ -249,7 +249,7 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
+ 		goto exit;
+ 	}
+ 
+-	iprop = of_get_property(law_node, "fsl,num-laws", 0);
++	iprop = of_get_property(law_node, "fsl,num-laws", NULL);
+ 	if (!iprop) {
+ 		pr_err("p1022ds: LAW node is missing fsl,num-laws property\n");
+ 		goto exit;
+-- 
+1.7.4.1
