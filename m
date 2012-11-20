@@ -1,29 +1,24 @@
-Return-Path: <rric.net@gmail.com>
-Received: from mail-bk0-f42.google.com (mail-bk0-f42.google.com
- [209.85.214.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 06FF72C0091
- for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2012 03:50:31 +1100 (EST)
-Received: by mail-bk0-f42.google.com with SMTP id ji2so2376727bkc.15
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2012 08:50:27 -0800 (PST)
-Sender: Robert Richter <rric.net@gmail.com>
-Date: Tue, 20 Nov 2012 17:50:19 +0100
-From: Robert Richter <rric@kernel.org>
-To: Stephane Eranian <eranian@google.com>
-Subject: Re: perf: POWER-event translation questions
-Message-ID: <20121120165019.GP2504@rric.localhost>
-References: <20121108011035.GA20670@us.ibm.com>
- <CABPqkBQrUVTY9rfeaO+pdaNwZcAgXF45SHnAYJfTvi4HAsPPeQ@mail.gmail.com>
+Return-Path: <stern+50b2734e@rowland.harvard.edu>
+Received: from iolanthe.rowland.org (iolanthe.rowland.org [192.131.102.54])
+ by ozlabs.org (Postfix) with SMTP id 1F0872C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 08:50:55 +1100 (EST)
+Date: Tue, 20 Nov 2012 16:44:13 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Bill Pemberton <wfp5p@virginia.edu>
+Subject: Re: [PATCH 159/493] usb: remove use of __devinit
+In-Reply-To: <1353349642-3677-159-git-send-email-wfp5p@virginia.edu>
+Message-ID: <Pine.LNX.4.44L0.1211201642540.1692-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CABPqkBQrUVTY9rfeaO+pdaNwZcAgXF45SHnAYJfTvi4HAsPPeQ@mail.gmail.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
- Anton Blanchard <anton@au1.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
- linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: cbe-oss-dev@lists.ozlabs.org, Kukjin Kim <kgene.kim@samsung.com>,
+ Wan ZongShun <mcuos.com@gmail.com>,
+ Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Felipe Balbi <balbi@ti.com>,
+ Geoff Levand <geoff@infradead.org>, linux-omap@vger.kernel.org,
+ linux-samsung-soc@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>,
+ Olav Kongas <ok@artecdesign.ee>, Lennert Buytenhek <kernel@wantstofly.org>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,39 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09.11.12 11:26:26, Stephane Eranian wrote:
-> On Thu, Nov 8, 2012 at 2:10 AM, Sukadev Bhattiprolu
-> <sukadev@linux.vnet.ibm.com> wrote:
+On Mon, 19 Nov 2012, Bill Pemberton wrote:
 
-> > 2. Can we allow hyphens in the {name} token  (please see my change to
-> >    util/parse-events.l below). With this change, I can run:
-> >
-> The current code does not support this but Andi fixed that in his HSW patch
-> and I use it for the PEBS-LL patch series as well.
->
-> >           perf stat -e cpu/cmplu-stall-bru /tmp/nop
-> >
-> >    without any changes to the user level tool (parse-events.l) I have
-> >    tested some common cases, not sure if it will break something :-)
+> CONFIG_HOTPLUG is going away as an option so __devinit is no longer
+> needed.
+> 
+> Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
 
-But ...
+For all the __devinit* annotations and all the EHCI, OHCI, and UHCI 
+drivers:
 
-> > diff --git a/tools/perf/util/parse-events.l b/tools/perf/util/parse-events.l
-> > index c87efc1..1967bb2 100644
-> > --- a/tools/perf/util/parse-events.l
-> > +++ b/tools/perf/util/parse-events.l
-> > @@ -80,7 +80,7 @@ event         [^,{}/]+
-> >  num_dec                [0-9]+
-> >  num_hex                0x[a-fA-F0-9]+
-> >  num_raw_hex    [a-fA-F0-9]+
-> > -name           [a-zA-Z_*?][a-zA-Z0-9_*?]*
-> > +name           [-a-zA-Z_*?][-a-zA-Z0-9_*?]*
-                     ^
-
-... I wouldn't allow hyphens at the beginning of a name.
-
-And, I am wondering if parsing reserved names like 'cpu-cycles' works
-too, e.g. cpu/cpu-cycles-foobar/. There are many reserved words in the
-lexer with hyphens in it. This might cause unexpected problems.
-
--Robert
+Acked-by: Alan Stern <stern@rowland.harvard.edu>
