@@ -1,21 +1,34 @@
-Return-Path: <tushar.behera@linaro.org>
-Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
- [209.85.210.51])
+Return-Path: <jaegeuk.hanse@gmail.com>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A01F22C007E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 15:38:09 +1100 (EST)
-Received: by mail-da0-f51.google.com with SMTP id i30so741627dad.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 20:38:09 -0800 (PST)
-From: Tushar Behera <tushar.behera@linaro.org>
-To: linuxppc-dev@lists.ozlabs.org,
-	devicetree-discuss@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc/pseries: pci: Use NULL instead of 0 for pointers
-Date: Tue, 20 Nov 2012 10:01:52 +0530
-Message-Id: <1353385912-25882-2-git-send-email-tushar.behera@linaro.org>
-In-Reply-To: <1353385912-25882-1-git-send-email-tushar.behera@linaro.org>
-References: <1353385912-25882-1-git-send-email-tushar.behera@linaro.org>
-Cc: patches@linaro.org
+ by ozlabs.org (Postfix) with ESMTPS id 5B7D92C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 17:22:42 +1100 (EST)
+Received: by mail-ob0-f179.google.com with SMTP id eq6so5272361obc.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 22:22:40 -0800 (PST)
+Message-ID: <50AB21A4.8050709@gmail.com>
+Date: Tue, 20 Nov 2012 14:22:28 +0800
+From: Jaegeuk Hanse <jaegeuk.hanse@gmail.com>
+MIME-Version: 1.0
+To: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
+ Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [PATCH v3 06/12] memory-hotplug: unregister memory section on
+ SPARSEMEM_VMEMMAP
+References: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
+ <1351763083-7905-7-git-send-email-wency@cn.fujitsu.com>
+In-Reply-To: <1351763083-7905-7-git-send-email-wency@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+ linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ cmetcalf@tilera.com, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ Minchan Kim <minchan.kim@gmail.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,32 +38,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The third argument for of_get_property() is a pointer, hence pass
-NULL instead of 0.
+On 11/01/2012 05:44 PM, Wen Congyang wrote:
+> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>
+> Currently __remove_section for SPARSEMEM_VMEMMAP does nothing. But even if
+> we use SPARSEMEM_VMEMMAP, we can unregister the memory_section.
+>
+> So the patch add unregister_memory_section() into __remove_section().
 
-Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
----
-This code is in a '#if 0' section, but I went ahead with the patch as
-this is the only location in kernel where of_get_property is passed 0
-as the third argument. If this function is not going to be used again,
-then we may consider removing the code altogether.
+Hi Yasuaki,
 
- arch/powerpc/platforms/pseries/pci.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+In order to review this patch, I should dig sparse memory codes in 
+advance. But I have some confuse of codes. Why need encode/decode mem 
+map instead of set mem_map to ms->section_mem_map directly?
 
-diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
-index 56b864d..0b580f4 100644
---- a/arch/powerpc/platforms/pseries/pci.c
-+++ b/arch/powerpc/platforms/pseries/pci.c
-@@ -40,7 +40,8 @@ void pcibios_name_device(struct pci_dev *dev)
- 	 */
- 	dn = pci_device_to_OF_node(dev);
- 	if (dn) {
--		const char *loc_code = of_get_property(dn, "ibm,loc-code", 0);
-+		const char *loc_code = of_get_property(dn, "ibm,loc-code",
-+				NULL);
- 		if (loc_code) {
- 			int loc_len = strlen(loc_code);
- 			if (loc_len < sizeof(dev->dev.name)) {
--- 
-1.7.4.1
+Regards,
+Jaegeuk
+
+>
+> CC: David Rientjes <rientjes@google.com>
+> CC: Jiang Liu <liuj97@gmail.com>
+> CC: Len Brown <len.brown@intel.com>
+> CC: Christoph Lameter <cl@linux.com>
+> Cc: Minchan Kim <minchan.kim@gmail.com>
+> CC: Andrew Morton <akpm@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> CC: Wen Congyang <wency@cn.fujitsu.com>
+> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+> ---
+>   mm/memory_hotplug.c | 13 ++++++++-----
+>   1 file changed, 8 insertions(+), 5 deletions(-)
+>
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index ca07433..66a79a7 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -286,11 +286,14 @@ static int __meminit __add_section(int nid, struct zone *zone,
+>   #ifdef CONFIG_SPARSEMEM_VMEMMAP
+>   static int __remove_section(struct zone *zone, struct mem_section *ms)
+>   {
+> -	/*
+> -	 * XXX: Freeing memmap with vmemmap is not implement yet.
+> -	 *      This should be removed later.
+> -	 */
+> -	return -EBUSY;
+> +	int ret = -EINVAL;
+> +
+> +	if (!valid_section(ms))
+> +		return ret;
+> +
+> +	ret = unregister_memory_section(ms);
+> +
+> +	return ret;
+>   }
+>   #else
+>   static int __remove_section(struct zone *zone, struct mem_section *ms)
