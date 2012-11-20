@@ -1,29 +1,25 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 481322C008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 17:49:18 +1100 (EST)
-Message-ID: <50AB2967.5010302@cn.fujitsu.com>
-Date: Tue, 20 Nov 2012 14:55:35 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Jaegeuk Hanse <jaegeuk.hanse@gmail.com>
-Subject: Re: [PATCH v3 06/12] memory-hotplug: unregister memory section on
- SPARSEMEM_VMEMMAP
-References: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
- <1351763083-7905-7-git-send-email-wency@cn.fujitsu.com>
- <50AB21A4.8050709@gmail.com>
-In-Reply-To: <50AB21A4.8050709@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CFCF72C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 18:20:50 +1100 (EST)
+Message-ID: <1353396032.17856.7.camel@pasglop>
+Subject: Re: [PATCH] PCI: MSI: Restore read_msi_msg_desc(); add
+ get_cached_msi_msg_desc()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ben Hutchings <bhutchings@solarflare.com>
+Date: Tue, 20 Nov 2012 18:20:32 +1100
+In-Reply-To: <1279893388.2089.9.camel@achroite.uk.solarflarecom.com>
+References: <20100723102202.871a3131.sfr@canb.auug.org.au>
+ <1279847985.4883.391.camel@localhost> <1279850740.6381.19.camel@concordia>
+ <1279893388.2089.9.camel@achroite.uk.solarflarecom.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+ linux-pci <linux-pci@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+ Jesse Barnes <jbarnes@virtuousgeek.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,70 +29,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 11/20/2012 02:22 PM, Jaegeuk Hanse Wrote:
-> On 11/01/2012 05:44 PM, Wen Congyang wrote:
->> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>
->> Currently __remove_section for SPARSEMEM_VMEMMAP does nothing. But
->> even if
->> we use SPARSEMEM_VMEMMAP, we can unregister the memory_section.
->>
->> So the patch add unregister_memory_section() into __remove_section().
-> 
-> Hi Yasuaki,
-> 
-> In order to review this patch, I should dig sparse memory codes in
-> advance. But I have some confuse of codes. Why need encode/decode mem
-> map instead of set mem_map to ms->section_mem_map directly?
+On Fri, 2010-07-23 at 14:56 +0100, Ben Hutchings wrote:
+> commit 2ca1af9aa3285c6a5f103ed31ad09f7399fc65d7 "PCI: MSI: Remove
+> unsafe and unnecessary hardware access" changed read_msi_msg_desc() to
+> return the last MSI message written instead of reading it from the
+> device, since it may be called while the device is in a reduced
+> power state.
 
-The memmap is aligned, and the low bits are zero. We store some information
-in these bits. So we need to encode/decode memmap here.
+Looks reasonable... Jesse ?
 
-Thanks
-Wen Congyang
+Cheers,
+Ben.
 
+> However, the pSeries platform code really does need to read messages
+> from the device, since they are initially written by firmware.
+> Therefore:
+> - Restore the previous behaviour of read_msi_msg_desc()
+> - Add new functions get_cached_msi_msg{,_desc}() which return the
+>   last MSI message written
+> - Use the new functions where appropriate
 > 
-> Regards,
-> Jaegeuk
+> Signed-off-by: Ben Hutchings <bhutchings@solarflare.com>
+> ---
+> Compile-tested only.
 > 
->>
->> CC: David Rientjes <rientjes@google.com>
->> CC: Jiang Liu <liuj97@gmail.com>
->> CC: Len Brown <len.brown@intel.com>
->> CC: Christoph Lameter <cl@linux.com>
->> Cc: Minchan Kim <minchan.kim@gmail.com>
->> CC: Andrew Morton <akpm@linux-foundation.org>
->> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> CC: Wen Congyang <wency@cn.fujitsu.com>
->> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->> ---
->>   mm/memory_hotplug.c | 13 ++++++++-----
->>   1 file changed, 8 insertions(+), 5 deletions(-)
->>
->> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->> index ca07433..66a79a7 100644
->> --- a/mm/memory_hotplug.c
->> +++ b/mm/memory_hotplug.c
->> @@ -286,11 +286,14 @@ static int __meminit __add_section(int nid,
->> struct zone *zone,
->>   #ifdef CONFIG_SPARSEMEM_VMEMMAP
->>   static int __remove_section(struct zone *zone, struct mem_section *ms)
->>   {
->> -    /*
->> -     * XXX: Freeing memmap with vmemmap is not implement yet.
->> -     *      This should be removed later.
->> -     */
->> -    return -EBUSY;
->> +    int ret = -EINVAL;
->> +
->> +    if (!valid_section(ms))
->> +        return ret;
->> +
->> +    ret = unregister_memory_section(ms);
->> +
->> +    return ret;
->>   }
->>   #else
->>   static int __remove_section(struct zone *zone, struct mem_section *ms)
+> Ben.
 > 
+>  arch/ia64/kernel/msi_ia64.c    |    2 +-
+>  arch/ia64/sn/kernel/msi_sn.c   |    2 +-
+>  arch/x86/kernel/apic/io_apic.c |    2 +-
+>  drivers/pci/msi.c              |   47 +++++++++++++++++++++++++++++++++++----
+>  include/linux/msi.h            |    2 +
+>  5 files changed, 47 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/ia64/kernel/msi_ia64.c b/arch/ia64/kernel/msi_ia64.c
+> index 6c89228..4a746ea 100644
+> --- a/arch/ia64/kernel/msi_ia64.c
+> +++ b/arch/ia64/kernel/msi_ia64.c
+> @@ -25,7 +25,7 @@ static int ia64_set_msi_irq_affinity(unsigned int irq,
+>  	if (irq_prepare_move(irq, cpu))
+>  		return -1;
+>  
+> -	read_msi_msg(irq, &msg);
+> +	get_cached_msi_msg(irq, &msg);
+>  
+>  	addr = msg.address_lo;
+>  	addr &= MSI_ADDR_DEST_ID_MASK;
+> diff --git a/arch/ia64/sn/kernel/msi_sn.c b/arch/ia64/sn/kernel/msi_sn.c
+> index ebfdd6a..0c72dd4 100644
+> --- a/arch/ia64/sn/kernel/msi_sn.c
+> +++ b/arch/ia64/sn/kernel/msi_sn.c
+> @@ -175,7 +175,7 @@ static int sn_set_msi_irq_affinity(unsigned int irq,
+>  	 * Release XIO resources for the old MSI PCI address
+>  	 */
+>  
+> -	read_msi_msg(irq, &msg);
+> +	get_cached_msi_msg(irq, &msg);
+>          sn_pdev = (struct pcidev_info *)sn_irq_info->irq_pciioinfo;
+>  	pdev = sn_pdev->pdi_linux_pcidev;
+>  	provider = SN_PCIDEV_BUSPROVIDER(pdev);
+> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+> index e41ed24..4dc0084 100644
+> --- a/arch/x86/kernel/apic/io_apic.c
+> +++ b/arch/x86/kernel/apic/io_apic.c
+> @@ -3397,7 +3397,7 @@ static int set_msi_irq_affinity(unsigned int irq, const struct cpumask *mask)
+>  
+>  	cfg = desc->chip_data;
+>  
+> -	read_msi_msg_desc(desc, &msg);
+> +	get_cached_msi_msg_desc(desc, &msg);
+>  
+>  	msg.data &= ~MSI_DATA_VECTOR_MASK;
+>  	msg.data |= MSI_DATA_VECTOR(cfg->vector);
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> index 4c14f31..69b7be3 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -197,9 +197,46 @@ void read_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg)
+>  {
+>  	struct msi_desc *entry = get_irq_desc_msi(desc);
+>  
+> -	/* We do not touch the hardware (which may not even be
+> -	 * accessible at the moment) but return the last message
+> -	 * written.  Assert that this is valid, assuming that
+> +	BUG_ON(entry->dev->current_state != PCI_D0);
+> +
+> +	if (entry->msi_attrib.is_msix) {
+> +		void __iomem *base = entry->mask_base +
+> +			entry->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE;
+> +
+> +		msg->address_lo = readl(base + PCI_MSIX_ENTRY_LOWER_ADDR);
+> +		msg->address_hi = readl(base + PCI_MSIX_ENTRY_UPPER_ADDR);
+> +		msg->data = readl(base + PCI_MSIX_ENTRY_DATA);
+> +	} else {
+> +		struct pci_dev *dev = entry->dev;
+> +		int pos = entry->msi_attrib.pos;
+> +		u16 data;
+> +
+> +		pci_read_config_dword(dev, msi_lower_address_reg(pos),
+> +					&msg->address_lo);
+> +		if (entry->msi_attrib.is_64) {
+> +			pci_read_config_dword(dev, msi_upper_address_reg(pos),
+> +						&msg->address_hi);
+> +			pci_read_config_word(dev, msi_data_reg(pos, 1), &data);
+> +		} else {
+> +			msg->address_hi = 0;
+> +			pci_read_config_word(dev, msi_data_reg(pos, 0), &data);
+> +		}
+> +		msg->data = data;
+> +	}
+> +}
+> +
+> +void read_msi_msg(unsigned int irq, struct msi_msg *msg)
+> +{
+> +	struct irq_desc *desc = irq_to_desc(irq);
+> +
+> +	read_msi_msg_desc(desc, msg);
+> +}
+> +
+> +void get_cached_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg)
+> +{
+> +	struct msi_desc *entry = get_irq_desc_msi(desc);
+> +
+> +	/* Assert that the cache is valid, assuming that
+>  	 * valid messages are not all-zeroes. */
+>  	BUG_ON(!(entry->msg.address_hi | entry->msg.address_lo |
+>  		 entry->msg.data));
+> @@ -207,11 +244,11 @@ void read_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg)
+>  	*msg = entry->msg;
+>  }
+>  
+> -void read_msi_msg(unsigned int irq, struct msi_msg *msg)
+> +void get_cached_msi_msg(unsigned int irq, struct msi_msg *msg)
+>  {
+>  	struct irq_desc *desc = irq_to_desc(irq);
+>  
+> -	read_msi_msg_desc(desc, msg);
+> +	get_cached_msi_msg_desc(desc, msg);
+>  }
+>  
+>  void write_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg)
+> diff --git a/include/linux/msi.h b/include/linux/msi.h
+> index 6991ab5..91b05c1 100644
+> --- a/include/linux/msi.h
+> +++ b/include/linux/msi.h
+> @@ -14,8 +14,10 @@ struct irq_desc;
+>  extern void mask_msi_irq(unsigned int irq);
+>  extern void unmask_msi_irq(unsigned int irq);
+>  extern void read_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg);
+> +extern void get_cached_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg);
+>  extern void write_msi_msg_desc(struct irq_desc *desc, struct msi_msg *msg);
+>  extern void read_msi_msg(unsigned int irq, struct msi_msg *msg);
+> +extern void get_cached_msi_msg(unsigned int irq, struct msi_msg *msg);
+>  extern void write_msi_msg(unsigned int irq, struct msi_msg *msg);
+>  
+>  struct msi_desc {
+> -- 
+> 1.6.2.5
 > 
