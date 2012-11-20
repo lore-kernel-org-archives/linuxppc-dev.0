@@ -1,28 +1,25 @@
-Return-Path: <omaplinuxkernel@gmail.com>
-Received: from mail-ie0-f179.google.com (mail-ie0-f179.google.com
- [209.85.223.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B73A12C008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 17:59:31 +1100 (EST)
-Received: by mail-ie0-f179.google.com with SMTP id c10so7525220ieb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 19 Nov 2012 22:59:29 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1353349642-3677-65-git-send-email-wfp5p@virginia.edu>
-References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
- <1353349642-3677-65-git-send-email-wfp5p@virginia.edu>
-Date: Tue, 20 Nov 2012 12:29:29 +0530
-Message-ID: <CAM=Q2ct2tzxV70CZ1ua8B-jSPFugDYTQJ3T6z7StKT1m3F-VsA@mail.gmail.com>
-Subject: Re: [PATCH 065/493] i2c: remove use of __devexit_p
-From: Shubhrajyoti Datta <omaplinuxkernel@gmail.com>
+Return-Path: <khali@linux-fr.org>
+Received: from services.gcu-squad.org (zoneX.GCU-Squad.org [194.213.125.0])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id B1A2B2C0419
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 19:49:08 +1100 (EST)
+Date: Tue, 20 Nov 2012 09:20:46 +0100
+From: Jean Delvare <khali@linux-fr.org>
 To: Bill Pemberton <wfp5p@virginia.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: [PATCH 207/493] i2c: remove use of __devinit
+Message-ID: <20121120092046.24496415@endymion.delvare>
+In-Reply-To: <1353349642-3677-207-git-send-email-wfp5p@virginia.edu>
+References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
+ <1353349642-3677-207-git-send-email-wfp5p@virginia.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: Rudolf Marek <r.marek@assembler.cz>, Tony Lindgren <tony@atomide.com>,
  gregkh@linuxfoundation.org, Wolfram Sang <w.sang@pengutronix.de>,
- Olof Johansson <olof@lixom.net>, linux-omap@vger.kernel.org,
- "Mark M. Hoffman" <mhoffman@lightlink.com>, linux-i2c@vger.kernel.org,
- Ben Dooks <ben-linux@fluff.org>, Barry Song <baohua.song@csr.com>,
- Jean Delvare <khali@linux-fr.org>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ "Mark M. Hoffman" <mhoffman@lightlink.com>, linux-omap@vger.kernel.org,
+ linux-i2c@vger.kernel.org, Ben
+ Dooks  <ben-linux@fluff.org>, Barry Song <baohua.song@csr.com>,
+ Olof Johansson <olof@lixom.net>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -33,8 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 19, 2012 at 11:50 PM, Bill Pemberton <wfp5p@virginia.edu> wrote:
-> CONFIG_HOTPLUG is going away as an option so __devexit_p is no longer
+Hi Bill,
+
+On Mon, 19 Nov 2012 13:22:36 -0500, Bill Pemberton wrote:
+> CONFIG_HOTPLUG is going away as an option so __devinit is no longer
 > needed.
->
- Reviewed-by: Shubhrajyoti D <shubhrajyoti@ti.com>
+
+Can you please point me/us to the discussion explaining the rationale
+behind this move, and the explanation of what will be done exactly?
+While I can easily understand that we want to drop CONFIG_HOTPLUG and
+always enable hot-plug support, I don't see where we are going with
+removing __devinit annotations and the like.
+
+Thanks,
+-- 
+Jean Delvare
