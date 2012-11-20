@@ -1,36 +1,35 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9B4542C008F
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2012 21:43:52 +1100 (EST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <suzuki@in.ibm.com>;
- Tue, 20 Nov 2012 20:38:31 +1000
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qAKAXDs356950792
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2012 21:33:14 +1100
-Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qAKAhgdH011805
- for <linuxppc-dev@ozlabs.org>; Tue, 20 Nov 2012 21:43:43 +1100
-Message-ID: <50AB5EDC.20009@in.ibm.com>
-Date: Tue, 20 Nov 2012 16:13:40 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Return-Path: <jaegeuk.hanse@gmail.com>
+Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 506AB2C0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 22:03:44 +1100 (EST)
+Received: by mail-da0-f51.google.com with SMTP id i30so865299dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 Nov 2012 03:03:42 -0800 (PST)
+Message-ID: <50AB6382.40004@gmail.com>
+Date: Tue, 20 Nov 2012 19:03:30 +0800
+From: Jaegeuk Hanse <jaegeuk.hanse@gmail.com>
 MIME-Version: 1.0
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/4] perf/powerpc: Use uapi/unistd.h to fix build error
-References: <20121107191818.GA16211@us.ibm.com>
-In-Reply-To: <20121107191818.GA16211@us.ibm.com>
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [PATCH v3 06/12] memory-hotplug: unregister memory section on
+ SPARSEMEM_VMEMMAP
+References: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
+ <1351763083-7905-7-git-send-email-wency@cn.fujitsu.com>
+ <50AB21A4.8050709@gmail.com> <50AB2967.5010302@cn.fujitsu.com>
+ <50AB2A1A.6040606@gmail.com> <50AB4F6D.3050002@cn.fujitsu.com>
+In-Reply-To: <50AB4F6D.3050002@cn.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, robert.richter@amd.com,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+ linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ cmetcalf@tilera.com, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ Minchan Kim <minchan.kim@gmail.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,37 +39,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/08/2012 12:48 AM, Sukadev Bhattiprolu wrote:
->
->  From b8beef080260c1625c8f801105504a82005295e5 Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Wed, 31 Oct 2012 11:21:28 -0700
-> Subject: [PATCH 1/4] perf/powerpc: Use uapi/unistd.h to fix build error
->
-> Use the 'unistd.h' from arch/powerpc/include/uapi to build the perf tool.
->
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Without this patch, I couldn't build perf on powerpc, with 3.7.0-rc2
+On 11/20/2012 05:37 PM, Wen Congyang wrote:
+> At 11/20/2012 02:58 PM, Jaegeuk Hanse Wrote:
+>> On 11/20/2012 02:55 PM, Wen Congyang wrote:
+>>> At 11/20/2012 02:22 PM, Jaegeuk Hanse Wrote:
+>>>> On 11/01/2012 05:44 PM, Wen Congyang wrote:
+>>>>> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>>>>
+>>>>> Currently __remove_section for SPARSEMEM_VMEMMAP does nothing. But
+>>>>> even if
+>>>>> we use SPARSEMEM_VMEMMAP, we can unregister the memory_section.
+>>>>>
+>>>>> So the patch add unregister_memory_section() into __remove_section().
+>>>> Hi Yasuaki,
+>>>>
+>>>> In order to review this patch, I should dig sparse memory codes in
+>>>> advance. But I have some confuse of codes. Why need encode/decode mem
+>>>> map instead of set mem_map to ms->section_mem_map directly?
+>>> The memmap is aligned, and the low bits are zero. We store some
+>>> information
+>>> in these bits. So we need to encode/decode memmap here.
+>> Hi Congyang,
+>>
+>> Thanks for you reponse. But I mean why return (unsigned long)(mem_map -
+>> (section_nr_to_pfn(pnum))); in function sparse_encode_mem_map, and then
+>> return ((struct page *)coded_mem_map) + section_nr_to_pfn(pnum); in
+>> funtion sparse_decode_mem_map instead of just store mem_map in
+>> ms->section_mep_map directly.
+> I don't know why. I try to find the reason, but I don't find any
+> place to use the pfn stored in the mem_map except in the decode
+> function. Maybe the designer doesn't want us to access the mem_map
+> directly.
 
-Tested-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+It seems that mem_map is per node, but pfn is real pfn.
+you can check __page_to_pfn.
 
-Thanks
-Suzuki
-> ---
->   tools/perf/perf.h |    2 +-
->   1 files changed, 1 insertions(+), 1 deletions(-)
 >
-> diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-> index 054182e..f4952da 100644
-> --- a/tools/perf/perf.h
-> +++ b/tools/perf/perf.h
-> @@ -26,7 +26,7 @@ void get_term_dimensions(struct winsize *ws);
->   #endif
+> Thanks
+> Wen Congyang
 >
->   #ifdef __powerpc__
-> -#include "../../arch/powerpc/include/asm/unistd.h"
-> +#include "../../arch/powerpc/include/uapi/asm/unistd.h"
->   #define rmb()		asm volatile ("sync" ::: "memory")
->   #define cpu_relax()	asm volatile ("" ::: "memory");
->   #define CPUINFO_PROC	"cpu"
->
+>> Regards,
+>> Jaegeuk
+>>
+>>> Thanks
+>>> Wen Congyang
+>>>
+>>>> Regards,
+>>>> Jaegeuk
+>>>>
+>>>>> CC: David Rientjes <rientjes@google.com>
+>>>>> CC: Jiang Liu <liuj97@gmail.com>
+>>>>> CC: Len Brown <len.brown@intel.com>
+>>>>> CC: Christoph Lameter <cl@linux.com>
+>>>>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>>>>> CC: Andrew Morton <akpm@linux-foundation.org>
+>>>>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>>>>> CC: Wen Congyang <wency@cn.fujitsu.com>
+>>>>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>>>> ---
+>>>>>     mm/memory_hotplug.c | 13 ++++++++-----
+>>>>>     1 file changed, 8 insertions(+), 5 deletions(-)
+>>>>>
+>>>>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>>>>> index ca07433..66a79a7 100644
+>>>>> --- a/mm/memory_hotplug.c
+>>>>> +++ b/mm/memory_hotplug.c
+>>>>> @@ -286,11 +286,14 @@ static int __meminit __add_section(int nid,
+>>>>> struct zone *zone,
+>>>>>     #ifdef CONFIG_SPARSEMEM_VMEMMAP
+>>>>>     static int __remove_section(struct zone *zone, struct mem_section
+>>>>> *ms)
+>>>>>     {
+>>>>> -    /*
+>>>>> -     * XXX: Freeing memmap with vmemmap is not implement yet.
+>>>>> -     *      This should be removed later.
+>>>>> -     */
+>>>>> -    return -EBUSY;
+>>>>> +    int ret = -EINVAL;
+>>>>> +
+>>>>> +    if (!valid_section(ms))
+>>>>> +        return ret;
+>>>>> +
+>>>>> +    ret = unregister_memory_section(ms);
+>>>>> +
+>>>>> +    return ret;
+>>>>>     }
+>>>>>     #else
+>>>>>     static int __remove_section(struct zone *zone, struct mem_section
+>>>>> *ms)
+>>
