@@ -1,32 +1,28 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
- [IPv6:2002:4e20:1eda::1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id EEDFF2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 23:03:02 +1100 (EST)
-Date: Wed, 21 Nov 2012 12:00:40 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Return-Path: <SRS0=kCvi=JR=gmx.de=g.liakhovetski@srs.kundenserver.de>
+Date: Wed, 21 Nov 2012 13:13:50 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 To: Bill Pemberton <wfp5p@virginia.edu>
-Subject: Re: [PATCH 298/493] video: remove use of __devinitdata
-Message-ID: <20121121120040.GJ3290@n2100.arm.linux.org.uk>
+Subject: Re: =?UTF-8?q?=5BPATCH=20192/493=5D=20scsi=3A=20remove=20use=20of=20=5F=5Fdevinit?=
+In-Reply-To: <1353349642-3677-192-git-send-email-wfp5p@virginia.edu>
+Message-ID: <Pine.LNX.4.64.1211211311530.842@axis700.grange>
 References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
- <1353349642-3677-298-git-send-email-wfp5p@virginia.edu>
+ <1353349642-3677-192-git-send-email-wfp5p@virginia.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1353349642-3677-298-git-send-email-wfp5p@virginia.edu>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: cbe-oss-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org,
- Maik Broemme <mbroemme@plusserver.de>, Antonino Daplas <adaplas@gmail.com>,
- Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
- Geoff Levand <geoff@infradead.org>, gregkh@linuxfoundation.org,
- Thomas Winischhofer <thomas@winischhofer.net>, linux-geode@lists.infradead.org,
- Kristoffer Ericson <kristoffer.ericson@gmail.com>,
- Ferenc Bakonyi <fero@drama.obuda.kando.hu>,
- Michal Januszewski <spock@gentoo.org>, Peter Jones <pjones@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linux-nvidia@lists.surfsouth.com,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Jaya Kumar <jayalk@intworks.biz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Oliver Neukum <oliver@neukum.org>,
+ VMware PV-Drivers <pv-drivers@vmware.com>, Kurt Garloff <garloff@suse.de>,
+ =?UTF-8?q?Kai=20M=C3=A4kisara?= <Kai.Makisara@kolumbus.fi>,
+ GOTO Masanori <gotom@debian.or.jp>, Russell King <linux@arm.linux.org.uk>,
+ linux-scsi@vger.kernel.org, Jamie Lenehan <lenehan@twibble.org>,
+ osst-users@lists.sourceforge.net, Michael Reed <mdr@sgi.com>,
+ cbe-oss-dev@lists.ozlabs.org, iss_storagedev@hp.com,
+ Matthew Wilcox <matthew@wil.cx>, Ali Akcaagac <aliakc@web.de>,
+ dc395x@twibble.org, linux-arm-kernel@lists.infradead.org,
+ Neela Syam Kolli <megaraidlinux@lsi.com>, Geoff Levand <geoff@infradead.org>,
+ gregkh@linuxfoundation.org, Arvind Kumar <arvindkumar@vmware.com>,
+ "James E.J. Bottomley" <JBottomley@parallels.com>,
+ Willem Riede <osst@riede.org>, YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,11 +32,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Nov 19, 2012 at 01:24:07PM -0500, Bill Pemberton wrote:
->  drivers/video/acornfb.c                |  8 +++---
->  drivers/video/cyber2000fb.c            |  2 +-
->  drivers/video/sa1100fb.c               |  2 +-
+On Mon, 19 Nov 2012, Bill Pemberton wrote:
 
-For these three,
+>  drivers/scsi/tmscsim.c                    | 16 +++---
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Acked-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
