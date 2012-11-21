@@ -1,31 +1,22 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 998BE2C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 16:22:22 +1100 (EST)
-Message-ID: <50AC668B.3050201@cn.fujitsu.com>
-Date: Wed, 21 Nov 2012 13:28:43 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <B29237@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe004.messaging.microsoft.com [213.199.154.207])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E4CF62C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 20:48:08 +1100 (EST)
+From: <b29237@freescale.com>
+To: <dan.j.williams@gmail.com>, <vinod.koul@intel.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] powerpc/dma/raidengine: add raidengine device
+Date: Wed, 21 Nov 2012 17:01:20 +0800
+Message-ID: <1353488481-14371-1-git-send-email-b29237@freescale.com>
 MIME-Version: 1.0
-To: Jaegeuk Hanse <jaegeuk.hanse@gmail.com>
-Subject: Re: [PATCH v3 06/12] memory-hotplug: unregister memory section on
- SPARSEMEM_VMEMMAP
-References: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
- <1351763083-7905-7-git-send-email-wency@cn.fujitsu.com>
- <50AB669D.3060007@gmail.com> <50AC4505.1000007@cn.fujitsu.com>
- <50AC571C.4030504@gmail.com> <50AC5BC1.9050200@cn.fujitsu.com>
- <50AC608F.2020307@gmail.com>
-In-Reply-To: <50AC608F.2020307@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
+Content-Type: text/plain
+Cc: Harninder Rai <harninder.rai@freescale.com>,
+ Xuelin Shi <b29237@freescale.com>, Naveen Burmi <naveenburmi@freescale.com>,
+ iws@ovro.caltech.edu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,166 +26,230 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 11/21/2012 01:03 PM, Jaegeuk Hanse Wrote:
-> On 11/21/2012 12:42 PM, Wen Congyang wrote:
->> At 11/21/2012 12:22 PM, Jaegeuk Hanse Wrote:
->>> On 11/21/2012 11:05 AM, Wen Congyang wrote:
->>>> At 11/20/2012 07:16 PM, Jaegeuk Hanse Wrote:
->>>>> On 11/01/2012 05:44 PM, Wen Congyang wrote:
->>>>>> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>>>>>
->>>>>> Currently __remove_section for SPARSEMEM_VMEMMAP does nothing. But
->>>>>> even if
->>>>>> we use SPARSEMEM_VMEMMAP, we can unregister the memory_section.
->>>>>>
->>>>>> So the patch add unregister_memory_section() into __remove_section().
->>>>> Hi Yasuaki,
->>>>>
->>>>> I have a question about these sparse vmemmap memory related
->>>>> patches. Hot
->>>>> add memory need allocated vmemmap pages, but this time is allocated by
->>>>> buddy system. How can gurantee virtual address is continuous to the
->>>>> address allocated before? If not continuous, page_to_pfn and
->>>>> pfn_to_page
->>>>> can't work correctly.
->>>> vmemmap has its virtual address range:
->>>> ffffea0000000000 - ffffeaffffffffff (=40 bits) virtual memory map (1TB)
->>>>
->>>> We allocate memory from buddy system to store struct page, and its
->>>> virtual
->>>> address isn't in this range. So we should update the page table:
->>>>
->>>> kmalloc_section_memmap()
->>>>       sparse_mem_map_populate()
->>>>           pfn_to_page() // get the virtual address in the vmemmap range
->>>>           vmemmap_populate() // we update page table here
->>>>
->>>> When we use vmemmap, page_to_pfn() always returns address in the
->>>> vmemmap
->>>> range, not the address that kmalloc() returns. So the virtual address
->>>> is continuous.
->>> Hi Congyang,
->>>
->>> Another question about memory hotplug. During hot remove memory, it will
->>> also call memblock_remove to remove related memblock.
->> IIRC, we don't touch memblock when hot-add/hot-remove memory. memblock is
->> only used for bootmem allocator. I think it isn't used after booting.
-> 
-> In IBM pseries servers.
-> 
-> pseries_remove_memory()
->     pseries_remove_memblock()
->         memblock_remove()
+From: Xuelin Shi <b29237@freescale.com>
 
-It seems that pseries servers don't use ACPI(ACPI is only supported for
-ia64 and x86 now. arm will be supported in the furture).
+The RaidEngine is a new Freescale hardware that used for parity
+computation offloading in RAID5/6.
 
-I am not ppc expert, and I don't know why we touch memblock when hotadding
-memory in ppc case. But IIRC, we don't need memblock after the machine has
-booted up in x86 case. So there is no need to touch it when hotadd/hotremove
-the memory in x86 case.
+This patch adds the device node in device tree and related binding
+documentation.
 
-Thanks
-Wen Congyang
+Signed-off-by: Harninder Rai <harninder.rai@freescale.com>
+Signed-off-by: Naveen Burmi <naveenburmi@freescale.com>
+Signed-off-by: Xuelin Shi <b29237@freescale.com>
+---
+ .../devicetree/bindings/powerpc/fsl/raideng.txt    |   81 +++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |    1 +
+ arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi         |    6 ++
+ arch/powerpc/boot/dts/fsl/qoriq-raid1.0-0.dtsi     |   85 ++++++++++++++++++++
+ 4 files changed, 173 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/raideng.txt
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-raid1.0-0.dtsi
 
-> 
-> Furthermore, memblock is set to record available memory ranges get from
-> e820 map(you can check it in memblock_x86_fill()) in x86 case, after
-> hot-remove memory, this range of memory can't be available, why not
-> remove them as pseries servers' codes do.
-> 
->>> memblock_remove()
->>>             __memblock_remove()memory-hotplug: unregister memory
->>> section on SPARSEMEM_VMEMMAP
->>>
->>>                     memblock_isolate_range()
->>>                     memblock_remove_region()
->>>
->>> But memblock_isolate_range() only record fully contained regions,
->>> regions which are partial overlapped just be splitted instead of record.
->>> So these partial overlapped regions can't be removed. Where I miss?
->> No, memblock_isolate_range() can deal with partial overlapped region.
->> =====================
->>         if (rbase < base) {
->>             /*
->>              * @rgn intersects from below.  Split and continue
->>              * to process the next region - the new top half.
->>              */
->>             rgn->base = base;
->>             rgn->size -= base - rbase;
->>             type->total_size -= base - rbase;
->>             memblock_insert_region(type, i, rbase, base - rbase,
->>                            memblock_get_region_node(rgn));
->>         } else if (rend > end) {
->>             /*
->>              * @rgn intersects from above.  Split and redo the
->>              * current region - the new bottom half.
->>              */
->>             rgn->base = end;
->>             rgn->size -= end - rbase;
->>             type->total_size -= end - rbase;
->>             memblock_insert_region(type, i--, rbase, end - rbase,
->>                            memblock_get_region_node(rgn));
->> =====================
->>
->> If the region is partial overlapped region, we will split the old
->> region into
->> two regions. After doing this, it is full contained region now.
-> 
-> You are right, I misunderstand the codes.
-> 
->>
->> Thanks
->> Wen Congyang
->>
->>> Regards,
->>> Jaegeuk
->>>
->>>> Thanks
->>>> Wen Congyang
->>>>> Regards,
->>>>> Jaegeuk
->>>>>
->>>>>> CC: David Rientjes <rientjes@google.com>
->>>>>> CC: Jiang Liu <liuj97@gmail.com>
->>>>>> CC: Len Brown <len.brown@intel.com>
->>>>>> CC: Christoph Lameter <cl@linux.com>
->>>>>> Cc: Minchan Kim <minchan.kim@gmail.com>
->>>>>> CC: Andrew Morton <akpm@linux-foundation.org>
->>>>>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->>>>>> CC: Wen Congyang <wency@cn.fujitsu.com>
->>>>>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>>>>> ---
->>>>>>     mm/memory_hotplug.c | 13 ++++++++-----
->>>>>>     1 file changed, 8 insertions(+), 5 deletions(-)
->>>>>>
->>>>>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->>>>>> index ca07433..66a79a7 100644
->>>>>> --- a/mm/memory_hotplug.c
->>>>>> +++ b/mm/memory_hotplug.c
->>>>>> @@ -286,11 +286,14 @@ static int __meminit __add_section(int nid,
->>>>>> struct zone *zone,
->>>>>>     #ifdef CONFIG_SPARSEMEM_VMEMMAP
->>>>>>     static int __remove_section(struct zone *zone, struct mem_section
->>>>>> *ms)
->>>>>>     {
->>>>>> -    /*
->>>>>> -     * XXX: Freeing memmap with vmemmap is not implement yet.
->>>>>> -     *      This should be removed later.
->>>>>> -     */
->>>>>> -    return -EBUSY;
->>>>>> +    int ret = -EINVAL;
->>>>>> +
->>>>>> +    if (!valid_section(ms))
->>>>>> +        return ret;
->>>>>> +
->>>>>> +    ret = unregister_memory_section(ms);
->>>>>> +
->>>>>> +    return ret;
->>>>>>     }
->>>>>>     #else
->>>>>>     static int __remove_section(struct zone *zone, struct mem_section
->>>>>> *ms)
->>>
-> 
-> 
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/raideng.txt b/Documentation/devicetree/bindings/powerpc/fsl/raideng.txt
+new file mode 100644
+index 0000000..4ad29b9
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/raideng.txt
+@@ -0,0 +1,81 @@
++* Freescale 85xx RAID Engine nodes
++
++RAID Engine nodes are defined to describe on-chip RAID accelerators.  Each RAID
++Engine should have a separate node.
++
++Supported chips:
++P5020, P5040
++
++Required properties:
++
++- compatible:	Should contain "fsl,raideng-v1.0" as the value
++		This identifies RAID Engine block. 1 in 1.0 represents
++		major number whereas 0 represents minor number. The
++		version matches the hardware IP version.
++- reg:		offset and length of the register set for the device
++- ranges:	standard ranges property specifying the translation
++		between child address space and parent address space
++
++Example:
++	/* P5020 */
++	raideng: raideng@320000 {
++		compatible = "fsl,raideng-v1.0";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg	= <0x320000 0x10000>;
++		ranges	= <0 0x320000 0x10000>;
++	};
++
++
++There must be a sub-node for each job queue present in RAID Engine
++This node must be a sub-node of the main RAID Engine node
++
++- compatible:	Should contain "fsl,raideng-v1.0-job-queue" as the value
++		This identifies the job queue interface
++- reg:		offset and length of the register set for job queue
++- ranges:	standard ranges property specifying the translation
++		between child address space and parent address space
++
++Example:
++	/* P5020 */
++	raideng_jq0@1000 {
++		compatible = "fsl,raideng-v1.0-job-queue";
++		reg	   = <0x1000 0x1000>;
++		ranges	   = <0x0 0x1000 0x1000>;
++	};
++
++
++There must be a sub-node for each job ring present in RAID Engine
++This node must be a sub-node of job queue node
++
++- compatible:	Must contain "fsl,raideng-v1.0-job-ring" as the value
++		This identifies job ring. Should contain either
++		"fsl,raideng-v1.0-hp-ring" or "fsl,raideng-v1.0-lp-ring"
++		depending upon whether ring has high or low priority
++- reg:		offset and length of the register set for job ring
++- interrupts:	interrupt mapping for job ring IRQ
++
++Optional property:
++
++- fsl,liodn:	Specifies the LIODN to be used for Job Ring. This
++		property is normally set by firmware. Value
++		is of 12-bits which is the LIODN number for this JR.
++		This property is used by the IOMMU (PAMU) to distinquish
++		transactions from this JR and than be able to do address
++		translation & protection accordingly.
++
++Example:
++	/* P5020 */
++	raideng_jq0@1000 {
++		compatible = "fsl,raideng-v1.0-job-queue";
++		reg	   = <0x1000 0x1000>;
++		ranges	   = <0x0 0x1000 0x1000>;
++
++		raideng_jr0: jr@0 {
++			compatible = "fsl,raideng-v1.0-job-ring", "fsl,raideng-v1.0-hp-ring";
++			reg	   = <0x0 0x400>;
++			interrupts = <139 2 0 0>;
++			interrupt-parent = <&mpic>;
++			fsl,liodn = <0x41>;
++		};
++	};
+diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
+index 64b6abe..5d7205b 100644
+--- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
+@@ -354,4 +354,5 @@
+ /include/ "qoriq-sata2-0.dtsi"
+ /include/ "qoriq-sata2-1.dtsi"
+ /include/ "qoriq-sec4.2-0.dtsi"
++/include/ "qoriq-raid1.0-0.dtsi"
+ };
+diff --git a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
+index 0a198b0..8df47fc 100644
+--- a/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi
+@@ -73,6 +73,12 @@
+ 		rtic_c = &rtic_c;
+ 		rtic_d = &rtic_d;
+ 		sec_mon = &sec_mon;
++
++		raideng = &raideng;
++		raideng_jr0 = &raideng_jr0;
++		raideng_jr1 = &raideng_jr1;
++		raideng_jr2 = &raideng_jr2;
++		raideng_jr3 = &raideng_jr3;
+ 	};
+ 
+ 	cpus {
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-raid1.0-0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-raid1.0-0.dtsi
+new file mode 100644
+index 0000000..8d2e8aa
+--- /dev/null
++++ b/arch/powerpc/boot/dts/fsl/qoriq-raid1.0-0.dtsi
+@@ -0,0 +1,85 @@
++/*
++ * QorIQ RAID 1.0 device tree stub [ controller @ offset 0x320000 ]
++ *
++ * Copyright 2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++raideng: raideng@320000 {
++	compatible = "fsl,raideng-v1.0";
++	#address-cells = <1>;
++	#size-cells = <1>;
++	reg = <0x320000 0x10000>;
++	ranges = <0 0x320000 0x10000>;
++
++	raideng_jq0@1000 {
++		compatible = "fsl,raideng-v1.0-job-queue";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0x1000 0x1000>;
++		ranges = <0x0 0x1000 0x1000>;
++
++		raideng_jr0: jr@0 {
++			compatible = "fsl,raideng-v1.0-job-ring", "fsl,raideng-v1.0-hp-ring";
++			reg = <0x0 0x400>;
++			interrupts = <139 2 0 0>;
++			interrupt-parent = <&mpic>;
++		};
++
++		raideng_jr1: jr@400 {
++			compatible = "fsl,raideng-v1.0-job-ring", "fsl,raideng-v1.0-lp-ring";
++			reg = <0x400 0x400>;
++			interrupts = <140 2 0 0>;
++			interrupt-parent = <&mpic>;
++		};
++	};
++
++	raideng_jq1@2000 {
++		compatible = "fsl,raideng-v1.0-job-queue";
++		#address-cells = <1>;
++		#size-cells = <1>;
++		reg = <0x2000 0x1000>;
++		ranges = <0x0 0x2000 0x1000>;
++
++		raideng_jr2: jr@0 {
++			compatible = "fsl,raideng-v1.0-job-ring", "fsl,raideng-v1.0-hp-ring";
++			reg = <0x0 0x400>;
++			interrupts = <141 2 0 0>;
++			interrupt-parent = <&mpic>;
++		};
++
++		raideng_jr3: jr@400 {
++			compatible = "fsl,raideng-v1.0-job-ring", "fsl,raideng-v1.0-lp-ring";
++			reg = <0x400 0x400>;
++			interrupts = <142 2 0 0>;
++			interrupt-parent = <&mpic>;
++		};
++	};
++};
+-- 
+1.7.9.5
