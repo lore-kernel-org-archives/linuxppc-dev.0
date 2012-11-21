@@ -1,25 +1,26 @@
-Return-Path: <B04825@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CA7442C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 09:53:05 +1100 (EST)
-Message-ID: <50AC09C5.3030402@freescale.com>
-Date: Tue, 20 Nov 2012 16:52:53 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <rjw@sisk.pl>
+Received: from ogre.sisk.pl (ogre.sisk.pl [193.178.161.156])
+ by ozlabs.org (Postfix) with ESMTP id 765582C00A8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 11:42:56 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>, Len Brown <len.brown@intel.com>
+Subject: Re: [PATCH] cpuidle: Measure idle state durations with monotonic clock
+Date: Wed, 21 Nov 2012 01:17:08 +0100
+Message-ID: <3364211.o5ZCq4Y6Je@vostro.rjw.lan>
+In-Reply-To: <1352944590-8776-1-git-send-email-jwerner@chromium.org>
+References: <CAODwPW873M32d9zFT9fpJT9+PuMbz8htzUxdF1TNE+J1zR3jYA@mail.gmail.com>
+ <1352944590-8776-1-git-send-email-jwerner@chromium.org>
 MIME-Version: 1.0
-To: Varun Sethi <Varun.Sethi@freescale.com>
-Subject: Re: [PATCH 4/4 v5] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-References: <1353419697-31269-1-git-send-email-Varun.Sethi@freescale.com>
- <1353419697-31269-5-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1353419697-31269-5-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: scottwood@freescale.com, joerg.roedel@amd.com,
- iommu@lists.linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Kevin Hilman <khilman@ti.com>, Deepthi Dharwar <deepthi@linux.vnet.ibm.com>,
+ Trinabh Gupta <g.trinabh@gmail.com>,
+ Lists Linaro-dev <linaro-dev@lists.linaro.org>, linux-pm@vger.kernel.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, linux-kernel@vger.kernel.org,
+ linux-acpi@vger.kernel.org,
+ "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
+ Julius Werner <jwerner@chromium.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Sameer Nanda <snanda@chromium.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,457 +30,300 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Varun Sethi wrote:
+On Wednesday, November 14, 2012 05:56:30 PM Julius Werner wrote:
+> Many cpuidle drivers measure their time spent in an idle state by
+> reading the wallclock time before and after idling and calculating the
+> difference. This leads to erroneous results when the wallclock time gets
+> updated by another processor in the meantime, adding that clock
+> adjustment to the idle state's time counter.
+> 
+> If the clock adjustment was negative, the result is even worse due to an
+> erroneous cast from int to unsigned long long of the last_residency
+> variable. The negative 32 bit integer will zero-extend and result in a
+> forward time jump of roughly four billion milliseconds or 1.3 hours on
+> the idle state residency counter.
+> 
+> This patch changes all affected cpuidle drivers to either use the
+> monotonic clock for their measurements or make use of the generic time
+> measurement wrapper in cpuidle.c, which was already working correctly.
+> Some superfluous CLIs/STIs in the ACPI code are removed (interrupts
+> should always already be disabled before entering the idle function, and
+> not get reenabled until the generic wrapper has performed its second
+> measurement). It also removes the erroneous cast, making sure that
+> negative residency values are applied correctly even though they should
+> not appear anymore.
+> 
+> Signed-off-by: Julius Werner <jwerner@chromium.org>
+
+Len, I need your ACK on intel_idle change in this patch if you agree with it.
+
+Thanks,
+Rafael
 
 
-> diff --git a/drivers/iommu/fsl_pamu.h b/drivers/iommu/fsl_pamu.h
-> new file mode 100644
-> index 0000000..6d32fb5
-> --- /dev/null
-> +++ b/drivers/iommu/fsl_pamu.h
-> @@ -0,0 +1,398 @@
-> +/*
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License, version 2, as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-> + *
-> + * Copyright (C) 2012 Freescale Semiconductor, Inc.
-> + *
-> + */
-> +
-> +#ifndef __FSL_PAMU_H
-> +#define __FSL_PAMU_H
-> +
-> +/* Bit Field macros
-> + * 	v = bit field variable; m = mask, m##_SHIFT = shift, x = value to load
-> + */
-> +#define set_bf(v, m, x)		(v = ((v) & ~(m)) | (((x) << (m##_SHIFT)) & (m)))
-> +#define get_bf(v, m)		(((v) & (m)) >> (m##_SHIFT))
-> +
-> +/* PAMU CCSR space */
-> +#define PAMU_PGC 0x00000000     /* Allows all peripheral accesses */
-> +#define PAMU_PE 0x40000000      /* enable PAMU                    */
-> +
-> +/* PAMU_OFFSET to the next pamu space in ccsr */
-> +#define PAMU_OFFSET 0x1000
-> +
-> +#define PAMU_MMAP_REGS_BASE 0
-> +
-> +struct pamu_mmap_regs {
-> +	u32 ppbah;
-> +	u32 ppbal;
-> +	u32 pplah;
-> +	u32 pplal;
-> +	u32 spbah;
-> +	u32 spbal;
-> +	u32 splah;
-> +	u32 splal;
-> +	u32 obah;
-> +	u32 obal;
-> +	u32 olah;
-> +	u32 olal;
-> +};
-> +
-> +/* PAMU Error Registers */
-> +#define PAMU_POES1 0x0040
-> +#define PAMU_POES2 0x0044
-> +#define PAMU_POEAH 0x0048
-> +#define PAMU_POEAL 0x004C
-> +#define PAMU_AVS1  0x0050
-> +#define PAMU_AVS1_AV    0x1
-> +#define PAMU_AVS1_OTV   0x6
-> +#define PAMU_AVS1_APV   0x78
-> +#define PAMU_AVS1_WAV   0x380
-> +#define PAMU_AVS1_LAV   0x1c00
-> +#define PAMU_AVS1_GCV   0x2000
-> +#define PAMU_AVS1_PDV   0x4000
-> +#define PAMU_AV_MASK    (PAMU_AVS1_AV | PAMU_AVS1_OTV | PAMU_AVS1_APV | PAMU_AVS1_WAV \
-> +			| PAMU_AVS1_LAV | PAMU_AVS1_GCV | PAMU_AVS1_PDV)
-> +#define PAMU_AVS1_LIODN_SHIFT 16
-> +#define PAMU_LAV_LIODN_NOT_IN_PPAACT 0x400
-
-I think you can move most of macros in this .h file into one of the .c files.
-
-> diff --git a/drivers/iommu/fsl_pamu_domain.c b/drivers/iommu/fsl_pamu_domain.c
-> new file mode 100644
-> index 0000000..d473447
-> --- /dev/null
-> +++ b/drivers/iommu/fsl_pamu_domain.c
-
-The code in this file is generally hard to read because you
-
-1) have very few comments
-2) you have a lot of expressions that span several lines, like this one:
-
-		if ((iova >= geom_attr->aperture_start &&
-			iova < geom_attr->aperture_end - 1 &&
-			size <= geom_size) &&
-			!align_check) {
-
-Try adding a few more comments (e.g. each function should be commented)
-and maybe try to break up a few of these lines.
-
-> @@ -0,0 +1,978 @@
-> +/*
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License, version 2, as
-> + * published by the Free Software Foundation.
-> + *
-> + * This program is distributed in the hope that it will be useful,
-> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-> + * GNU General Public License for more details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-> + *
-> + * Copyright (C) 2012 Freescale Semiconductor, Inc.
-> + * Author: Varun Sethi <varun.sethi@freescale.com>
-> + *
-> + */
-> +
-> +#define pr_fmt(fmt)    "fsl-pamu-domain: %s: " fmt, __func__
-
-You don't use this macro.
-
-> +
-> +#include <linux/init.h>
-> +#include <linux/iommu.h>
-> +#include <linux/notifier.h>
-> +#include <linux/slab.h>
-> +#include <linux/module.h>
-> +#include <linux/types.h>
-> +#include <linux/mm.h>
-> +#include <linux/interrupt.h>
-> +#include <linux/device.h>
-> +#include <linux/of_platform.h>
-> +#include <linux/bootmem.h>
-> +#include <linux/err.h>
-> +#include <asm/io.h>
-> +#include <asm/bitops.h>
-> +
-> +#include "fsl_pamu_domain.h"
-> +
-> +/* This bitmap advertises the page sizes supported by PAMU hardware
-> + * to the IOMMU API.
-> + */
-> +#define FSL_PAMU_PGSIZES	(~0xFFFUL)
-> +
-> +/* global spinlock that needs to be held while
-> + * configuring PAMU.
-> + */
-> +static DEFINE_SPINLOCK(iommu_lock);
-> +
-> +static struct kmem_cache *fsl_pamu_domain_cache;
-> +static struct kmem_cache *iommu_devinfo_cache;
-> +static DEFINE_SPINLOCK(device_domain_lock);
-> +
-> +int __init iommu_init_mempool(void)
-> +{
-> +
-> +	fsl_pamu_domain_cache = kmem_cache_create("fsl_pamu_domain",
-> +					 sizeof(struct fsl_dma_domain),
-> +					 0,
-> +					 SLAB_HWCACHE_ALIGN,
-> +
-> +					 NULL);
-> +	if (!fsl_pamu_domain_cache) {
-> +		pr_err("Couldn't create fsl iommu_domain cache\n");
-
-ALL of these pr_xxx functions (in the entire file) need to have a
-"fsl-pamu-domain:" prefix.  Maybe that's why you created pr_fmt(), but you
-forgot to use it.
-
-The above message should look like this:
-
-	pr_err("fsl-pamu-domain: could not create iommu domain cache\n");
-
-> +		return -ENOMEM;
-> +	}
-> +
-> +	iommu_devinfo_cache = kmem_cache_create("iommu_devinfo",
-> +					 sizeof(struct device_domain_info),
-> +					 0,
-> +					 SLAB_HWCACHE_ALIGN,
-> +					 NULL);
-> +	if (!iommu_devinfo_cache) {
-> +		pr_err("Couldn't create devinfo cache\n");
-> +		kmem_cache_destroy(fsl_pamu_domain_cache);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +static int reconfig_win(int liodn, struct fsl_dma_domain *domain)
-> +{
-> +	int ret;
-> +
-> +	spin_lock(&iommu_lock);
-> +	ret = pamu_config_ppaace(liodn, domain->mapped_iova,
-> +				 domain->mapped_size,
-> +				 ~(u32)0,
-> +				 domain->paddr >> PAMU_PAGE_SHIFT,
-> +				 domain->snoop_id, domain->stash_id,
-> +				 0, domain->prot);
-> +	spin_unlock(&iommu_lock);
-> +	if (ret) {
-> +		pr_err("PAMU PAACE configuration failed for liodn %d\n",
-> +			 liodn);
-> +	}
-> +	return ret;
-> +}
-> +
-> +static void update_domain_subwin(struct fsl_dma_domain *dma_domain,
-> +				unsigned long iova, size_t size,
-> +				phys_addr_t paddr, int prot, int status)
-> +{
-> +	struct iommu_domain *domain = dma_domain->iommu_domain;
-> +	u32 subwin_cnt = dma_domain->subwin_cnt;
-> +	dma_addr_t geom_size = dma_domain->geom_size;
-> +	u32 subwin_size;
-> +	u32 mapped_subwin;
-> +	u32 mapped_subwin_cnt;
-> +	struct dma_subwindow *sub_win_ptr;
-> +	int i;
-> +
-> +	subwin_size = geom_size >> ilog2(subwin_cnt);
-> +	mapped_subwin = (iova - domain->geometry.aperture_start)
-> +				 >> ilog2(subwin_size);
-> +	sub_win_ptr = &dma_domain->sub_win_arr[mapped_subwin];
-> +	mapped_subwin_cnt = (size < subwin_size) ? 1 :
-> +				size >> ilog2(subwin_size);
-> +	for (i = 0; i < mapped_subwin_cnt; i++) {
-> +		if (status) {
-> +			sub_win_ptr[i].paddr = paddr;
-> +			sub_win_ptr[i].size = (size < subwin_size) ?
-> +						 size : subwin_size;
-> +			paddr += subwin_size;
-> +			sub_win_ptr[i].iova = iova;
-> +			iova += subwin_size;
-> +		}
-> +		sub_win_ptr[i].valid = status;
-> +		sub_win_ptr[i].prot = prot;
-> +	}
-> +
-> +	dma_domain->mapped_subwin = mapped_subwin;
-> +	dma_domain->mapped_subwin_cnt =  mapped_subwin_cnt;
-> +}
-> +
-> +static int reconfig_subwin(int liodn, struct fsl_dma_domain *dma_domain)
-> +{
-> +	u32 subwin_cnt = dma_domain->subwin_cnt;
-> +	int ret = 0;
-> +	u32 mapped_subwin;
-> +	u32 mapped_subwin_cnt;
-> +	struct dma_subwindow *sub_win_ptr;
-> +	unsigned long rpn;
-> +	int i;
-> +
-> +	mapped_subwin = dma_domain->mapped_subwin;
-> +	mapped_subwin_cnt = dma_domain->mapped_subwin_cnt;
-> +	sub_win_ptr = &dma_domain->sub_win_arr[mapped_subwin];
-> +
-> +	for (i = 0; i < mapped_subwin_cnt; i++) {
-> +		rpn = sub_win_ptr[i].paddr >> PAMU_PAGE_SHIFT,
-> +	
-> +		spin_lock(&iommu_lock);
-> +		ret = pamu_config_spaace(liodn, subwin_cnt, mapped_subwin,
-> +					 sub_win_ptr[i].size,
-> +					 ~(u32)0, 
-> +					 rpn, dma_domain->snoop_id,
-> +					 dma_domain->stash_id, 
-> +					 (mapped_subwin == 0 &&
-> +					 !dma_domain->enabled) ?
-> +					 0 : sub_win_ptr[i].valid,
-
-Break out this expression into another variable.  This code is illegible.
-
-	int enabled = 0;
-	
-	for (...
-		if (mapped_subwin || dma_domain->enabled)
-			enabled = sub_win_ptr[i].valid;
-
-> +					 sub_win_ptr[i].prot);
-> +		spin_unlock(&iommu_lock);
-> +		if (ret) {
-> +			pr_err("PAMU SPAACE configuration failed for liodn %d\n",liodn);
-> +			return ret;
-> +		}
-> +		mapped_subwin++;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static phys_addr_t get_phys_addr(struct fsl_dma_domain *dma_domain, unsigned long iova)
-> +{
-> +	u32 subwin_cnt = dma_domain->subwin_cnt;
-> +
-> +	if (subwin_cnt) {
-> +		int i;
-> +		struct dma_subwindow *sub_win_ptr = 
-> +					&dma_domain->sub_win_arr[0];
-> +
-> +		for (i = 0; i < subwin_cnt; i++) {
-> +			if (sub_win_ptr[i].valid &&
-> +			    iova >= sub_win_ptr[i].iova &&
-> +			    iova < (sub_win_ptr[i].iova +
-> +			    sub_win_ptr[i].size - 1))
-> +				return (sub_win_ptr[i].paddr + (iova &
-> +					(sub_win_ptr[i].size - 1)));
-> +		}
-> +	} else {
-> +		return (dma_domain->paddr + (iova & (dma_domain->mapped_size - 1)));
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +static int map_liodn_subwins(int liodn, struct fsl_dma_domain *dma_domain, u32 subwin_cnt)
-> +{
-> +	struct dma_subwindow *sub_win_ptr = 
-> +				&dma_domain->sub_win_arr[0];
-> +	int i, ret;
-> +	unsigned long rpn;
-> +
-> +	for (i = 0; i < subwin_cnt; i++) {
-> +		if (sub_win_ptr[i].valid) {
-> +			rpn = sub_win_ptr[i].paddr >>
-> +				 PAMU_PAGE_SHIFT,
-> +			spin_lock(&iommu_lock);
-> +			ret = pamu_config_spaace(liodn, subwin_cnt, i,
-> +						 sub_win_ptr[i].size,
-> +						 ~(u32)0,
-> +						 rpn,
-> +						 dma_domain->snoop_id,
-> +						 dma_domain->stash_id,
-> +						 (i > 0) ? 1 : 0,
-> +						 sub_win_ptr[i].prot);
-> +			spin_unlock(&iommu_lock);
-> +			if (ret) {
-> +				pr_err("PAMU SPAACE configuration failed for liodn %d\n",
-> +					 liodn);
-> +				return ret;
-> +			}
-> +		}
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static int map_liodn_win(int liodn, struct fsl_dma_domain *dma_domain)
-> +{
-> +	unsigned long rpn;
-> +	int ret;
-> +
-> +	rpn = dma_domain->paddr >> PAMU_PAGE_SHIFT;
-> +	spin_lock(&iommu_lock);
-> +	ret = pamu_config_ppaace(liodn, dma_domain->mapped_iova,
-> +				 dma_domain->mapped_size,
-> +				 ~(u32)0,
-> +				 rpn,
-> +				dma_domain->snoop_id, dma_domain->stash_id,
-> +				0, dma_domain->prot);
-
-Indentation problem
-
-> +	spin_unlock(&iommu_lock);
-> +	if (ret)
-> +		pr_err("PAMU PAACE configuration failed for liodn %d\n",
-> +			liodn);
-> +
-> +	return ret;
-> +}
-> +
-> +static int map_liodn(int liodn, struct fsl_dma_domain *dma_domain)
-> +{
-> +	u32 subwin_cnt = dma_domain->subwin_cnt;
-> +
-> +	if (subwin_cnt)
-> +		return map_liodn_subwins(liodn, dma_domain, subwin_cnt);
-> +	else
-> +		return map_liodn_win(liodn, dma_domain);
-> +
-> +}
-> +
-> +static int update_liodn(int liodn, struct fsl_dma_domain *dma_domain)
-> +{
-> +	int ret;
-> +
-> +	if (dma_domain->subwin_cnt) {
-> +		ret = reconfig_subwin(liodn, dma_domain);
-> +		if (ret)
-> +			pr_err("Subwindow reconfiguration failed for liodn %d\n", liodn);
-> +	} else {
-> +		ret = reconfig_win(liodn, dma_domain);
-> +		if (ret)
-> +			pr_err("Window reconfiguration failed for liodn %d\n", liodn);
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static int update_liodn_stash(int liodn, struct fsl_dma_domain *dma_domain,
-> +				 u32 val)
-> +{
-> +	int ret = 0, i;
-> +
-> +	spin_lock(&iommu_lock);
-> +	if (!dma_domain->subwin_cnt) {
-> +		ret = pamu_update_paace_stash(liodn, 0, val);
-> +		if (ret) {
-> +			pr_err("Failed to update PAACE field for liodn %d\n ", liodn);
-> +			spin_unlock(&iommu_lock);
-> +			return ret;
-> +		}
-> +	} else {
-> +		for (i = 0; i < dma_domain->subwin_cnt; i++) {
-> +			ret = pamu_update_paace_stash(liodn, i, val);
-> +			if (ret) {
-> +				pr_err("Failed to update SPAACE %d field for liodn %d\n ", i, liodn);
-> +				spin_unlock(&iommu_lock);
-> +				return ret;
-> +			}
-> +		}
-> +	}
-> +	spin_unlock(&iommu_lock);
-> +
-> +	return ret;
-> +}
-> +
-> +static int configure_liodn(int liodn, struct device *dev,
-> +			   struct fsl_dma_domain *dma_domain,
-> +			   struct iommu_domain_geometry *geom_attr,
-> +			   u32 subwin_cnt)
-> +{
-> +	phys_addr_t window_addr, window_size;
-> +	phys_addr_t subwin_size;
-> +	int ret = 0, i;
-> +	u32 omi_index = ~(u32)0;
-> +
-> +	/* Configure the omi_index at the geometry setup time.
-> +	 * This is a static value which depends on the type of
-> +	 * device and would not change thereafter.
-> +	 */
-
-	/*
-	 * multi-line comments
-	 * look like this
-	 */
-
+> ---
+>  arch/powerpc/platforms/pseries/processor_idle.c |    4 +-
+>  drivers/acpi/processor_idle.c                   |   57 +---------------------
+>  drivers/cpuidle/cpuidle.c                       |    3 +-
+>  drivers/idle/intel_idle.c                       |   14 +-----
+>  4 files changed, 7 insertions(+), 71 deletions(-)
+> 
+> diff --git a/arch/powerpc/platforms/pseries/processor_idle.c b/arch/powerpc/platforms/pseries/processor_idle.c
+> index 45d00e5..4d806b4 100644
+> --- a/arch/powerpc/platforms/pseries/processor_idle.c
+> +++ b/arch/powerpc/platforms/pseries/processor_idle.c
+> @@ -36,7 +36,7 @@ static struct cpuidle_state *cpuidle_state_table;
+>  static inline void idle_loop_prolog(unsigned long *in_purr, ktime_t *kt_before)
+>  {
+>  
+> -	*kt_before = ktime_get_real();
+> +	*kt_before = ktime_get();
+>  	*in_purr = mfspr(SPRN_PURR);
+>  	/*
+>  	 * Indicate to the HV that we are idle. Now would be
+> @@ -50,7 +50,7 @@ static inline  s64 idle_loop_epilog(unsigned long in_purr, ktime_t kt_before)
+>  	get_lppaca()->wait_state_cycles += mfspr(SPRN_PURR) - in_purr;
+>  	get_lppaca()->idle = 0;
+>  
+> -	return ktime_to_us(ktime_sub(ktime_get_real(), kt_before));
+> +	return ktime_to_us(ktime_sub(ktime_get(), kt_before));
+>  }
+>  
+>  static int snooze_loop(struct cpuidle_device *dev,
+> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> index e8086c7..f1a5da4 100644
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -735,31 +735,18 @@ static inline void acpi_idle_do_entry(struct acpi_processor_cx *cx)
+>  static int acpi_idle_enter_c1(struct cpuidle_device *dev,
+>  		struct cpuidle_driver *drv, int index)
+>  {
+> -	ktime_t  kt1, kt2;
+> -	s64 idle_time;
+>  	struct acpi_processor *pr;
+>  	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
+>  	struct acpi_processor_cx *cx = cpuidle_get_statedata(state_usage);
+>  
+>  	pr = __this_cpu_read(processors);
+> -	dev->last_residency = 0;
+>  
+>  	if (unlikely(!pr))
+>  		return -EINVAL;
+>  
+> -	local_irq_disable();
+> -
+> -
+>  	lapic_timer_state_broadcast(pr, cx, 1);
+> -	kt1 = ktime_get_real();
+>  	acpi_idle_do_entry(cx);
+> -	kt2 = ktime_get_real();
+> -	idle_time =  ktime_to_us(ktime_sub(kt2, kt1));
+> -
+> -	/* Update device last_residency*/
+> -	dev->last_residency = (int)idle_time;
+>  
+> -	local_irq_enable();
+>  	lapic_timer_state_broadcast(pr, cx, 0);
+>  
+>  	return index;
+> @@ -806,19 +793,12 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+>  	struct acpi_processor *pr;
+>  	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
+>  	struct acpi_processor_cx *cx = cpuidle_get_statedata(state_usage);
+> -	ktime_t  kt1, kt2;
+> -	s64 idle_time_ns;
+> -	s64 idle_time;
+>  
+>  	pr = __this_cpu_read(processors);
+> -	dev->last_residency = 0;
+>  
+>  	if (unlikely(!pr))
+>  		return -EINVAL;
+>  
+> -	local_irq_disable();
+> -
+> -
+>  	if (cx->entry_method != ACPI_CSTATE_FFH) {
+>  		current_thread_info()->status &= ~TS_POLLING;
+>  		/*
+> @@ -829,7 +809,6 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+>  
+>  		if (unlikely(need_resched())) {
+>  			current_thread_info()->status |= TS_POLLING;
+> -			local_irq_enable();
+>  			return -EINVAL;
+>  		}
+>  	}
+> @@ -843,22 +822,12 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+>  	if (cx->type == ACPI_STATE_C3)
+>  		ACPI_FLUSH_CPU_CACHE();
+>  
+> -	kt1 = ktime_get_real();
+>  	/* Tell the scheduler that we are going deep-idle: */
+>  	sched_clock_idle_sleep_event();
+>  	acpi_idle_do_entry(cx);
+> -	kt2 = ktime_get_real();
+> -	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
+> -	idle_time = idle_time_ns;
+> -	do_div(idle_time, NSEC_PER_USEC);
+>  
+> -	/* Update device last_residency*/
+> -	dev->last_residency = (int)idle_time;
+> +	sched_clock_idle_wakeup_event(0);
+>  
+> -	/* Tell the scheduler how much we idled: */
+> -	sched_clock_idle_wakeup_event(idle_time_ns);
+> -
+> -	local_irq_enable();
+>  	if (cx->entry_method != ACPI_CSTATE_FFH)
+>  		current_thread_info()->status |= TS_POLLING;
+>  
+> @@ -883,13 +852,8 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  	struct acpi_processor *pr;
+>  	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
+>  	struct acpi_processor_cx *cx = cpuidle_get_statedata(state_usage);
+> -	ktime_t  kt1, kt2;
+> -	s64 idle_time_ns;
+> -	s64 idle_time;
+> -
+>  
+>  	pr = __this_cpu_read(processors);
+> -	dev->last_residency = 0;
+>  
+>  	if (unlikely(!pr))
+>  		return -EINVAL;
+> @@ -899,16 +863,11 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  			return drv->states[drv->safe_state_index].enter(dev,
+>  						drv, drv->safe_state_index);
+>  		} else {
+> -			local_irq_disable();
+>  			acpi_safe_halt();
+> -			local_irq_enable();
+>  			return -EBUSY;
+>  		}
+>  	}
+>  
+> -	local_irq_disable();
+> -
+> -
+>  	if (cx->entry_method != ACPI_CSTATE_FFH) {
+>  		current_thread_info()->status &= ~TS_POLLING;
+>  		/*
+> @@ -919,7 +878,6 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  
+>  		if (unlikely(need_resched())) {
+>  			current_thread_info()->status |= TS_POLLING;
+> -			local_irq_enable();
+>  			return -EINVAL;
+>  		}
+>  	}
+> @@ -934,7 +892,6 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  	 */
+>  	lapic_timer_state_broadcast(pr, cx, 1);
+>  
+> -	kt1 = ktime_get_real();
+>  	/*
+>  	 * disable bus master
+>  	 * bm_check implies we need ARB_DIS
+> @@ -965,18 +922,9 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  		c3_cpu_count--;
+>  		raw_spin_unlock(&c3_lock);
+>  	}
+> -	kt2 = ktime_get_real();
+> -	idle_time_ns = ktime_to_ns(ktime_sub(kt2, kt1));
+> -	idle_time = idle_time_ns;
+> -	do_div(idle_time, NSEC_PER_USEC);
+> -
+> -	/* Update device last_residency*/
+> -	dev->last_residency = (int)idle_time;
+>  
+> -	/* Tell the scheduler how much we idled: */
+> -	sched_clock_idle_wakeup_event(idle_time_ns);
+> +	sched_clock_idle_wakeup_event(0);
+>  
+> -	local_irq_enable();
+>  	if (cx->entry_method != ACPI_CSTATE_FFH)
+>  		current_thread_info()->status |= TS_POLLING;
+>  
+> @@ -987,6 +935,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+>  struct cpuidle_driver acpi_idle_driver = {
+>  	.name =		"acpi_idle",
+>  	.owner =	THIS_MODULE,
+> +	.en_core_tk_irqen = 1,
+>  };
+>  
+>  /**
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 7f15b85..1536edd 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -109,8 +109,7 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  		/* This can be moved to within driver enter routine
+>  		 * but that results in multiple copies of same code.
+>  		 */
+> -		dev->states_usage[entered_state].time +=
+> -				(unsigned long long)dev->last_residency;
+> +		dev->states_usage[entered_state].time += dev->last_residency;
+>  		dev->states_usage[entered_state].usage++;
+>  	} else {
+>  		dev->last_residency = 0;
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index b0f6b4c..c49c04d 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -56,7 +56,6 @@
+>  #include <linux/kernel.h>
+>  #include <linux/cpuidle.h>
+>  #include <linux/clockchips.h>
+> -#include <linux/hrtimer.h>	/* ktime_get_real() */
+>  #include <trace/events/power.h>
+>  #include <linux/sched.h>
+>  #include <linux/notifier.h>
+> @@ -72,6 +71,7 @@
+>  static struct cpuidle_driver intel_idle_driver = {
+>  	.name = "intel_idle",
+>  	.owner = THIS_MODULE,
+> +	.en_core_tk_irqen = 1,
+>  };
+>  /* intel_idle.max_cstate=0 disables driver */
+>  static int max_cstate = MWAIT_MAX_NUM_CSTATES - 1;
+> @@ -281,8 +281,6 @@ static int intel_idle(struct cpuidle_device *dev,
+>  	struct cpuidle_state_usage *state_usage = &dev->states_usage[index];
+>  	unsigned long eax = (unsigned long)cpuidle_get_statedata(state_usage);
+>  	unsigned int cstate;
+> -	ktime_t kt_before, kt_after;
+> -	s64 usec_delta;
+>  	int cpu = smp_processor_id();
+>  
+>  	cstate = (((eax) >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) + 1;
+> @@ -297,8 +295,6 @@ static int intel_idle(struct cpuidle_device *dev,
+>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, &cpu);
+>  
+> -	kt_before = ktime_get_real();
+> -
+>  	stop_critical_timings();
+>  	if (!need_resched()) {
+>  
+> @@ -310,17 +306,9 @@ static int intel_idle(struct cpuidle_device *dev,
+>  
+>  	start_critical_timings();
+>  
+> -	kt_after = ktime_get_real();
+> -	usec_delta = ktime_to_us(ktime_sub(kt_after, kt_before));
+> -
+> -	local_irq_enable();
+> -
+>  	if (!(lapic_timer_reliable_states & (1 << (cstate))))
+>  		clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_EXIT, &cpu);
+>  
+> -	/* Update cpuidle counters */
+> -	dev->last_residency = (int)usec_delta;
+> -
+>  	return index;
+>  }
+>  
+> 
 -- 
-Timur Tabi
-Linux kernel developer at Freescale
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
