@@ -1,30 +1,35 @@
-Return-Path: <21cnbao@gmail.com>
-Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
- [209.85.217.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 828172C008F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 22:02:53 +1100 (EST)
-Received: by mail-lb0-f179.google.com with SMTP id gm13so3481546lbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 03:02:49 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1353349642-3677-207-git-send-email-wfp5p@virginia.edu>
-References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
- <1353349642-3677-207-git-send-email-wfp5p@virginia.edu>
-From: Barry Song <21cnbao@gmail.com>
-Date: Wed, 21 Nov 2012 19:02:28 +0800
-Message-ID: <CAGsJ_4y7zFmTZ4c6VsKbzyVsbivFQGXM4uv87obMXyrqfg5HLg@mail.gmail.com>
-Subject: Re: [PATCH 207/493] i2c: remove use of __devinit
+Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+ [78.32.30.218])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 792842C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 22:57:03 +1100 (EST)
+Date: Wed, 21 Nov 2012 11:51:14 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 To: Bill Pemberton <wfp5p@virginia.edu>
-Content-Type: text/plain; charset=UTF-8
-Cc: Rudolf Marek <r.marek@assembler.cz>, Tony Lindgren <tony@atomide.com>,
- gregkh@linuxfoundation.org, Wolfram Sang <w.sang@pengutronix.de>,
- DL-SHA-WorkGroupLinux <workgroup.linux@csr.com>,
- Olof Johansson <olof@lixom.net>, linux-omap@vger.kernel.org,
- "Mark M. Hoffman" <mhoffman@lightlink.com>, linux-i2c@vger.kernel.org,
- Ben Dooks <ben-linux@fluff.org>, Barry Song <baohua.song@csr.com>,
- Jean Delvare <khali@linux-fr.org>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 192/493] scsi: remove use of __devinit
+Message-ID: <20121121115114.GF3290@n2100.arm.linux.org.uk>
+References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
+ <1353349642-3677-192-git-send-email-wfp5p@virginia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1353349642-3677-192-git-send-email-wfp5p@virginia.edu>
+Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Oliver Neukum <oliver@neukum.org>,
+ VMware PV-Drivers <pv-drivers@vmware.com>, Kurt Garloff <garloff@suse.de>,
+ Kai =?iso-8859-1?Q?M=E4kisara?= <Kai.Makisara@kolumbus.fi>,
+ GOTO Masanori <gotom@debian.or.jp>, linux-scsi@vger.kernel.org,
+ Jamie Lenehan <lenehan@twibble.org>, osst-users@lists.sourceforge.net,
+ Michael Reed <mdr@sgi.com>, cbe-oss-dev@lists.ozlabs.org,
+ iss_storagedev@hp.com, Matthew Wilcox <matthew@wil.cx>,
+ Ali Akcaagac <aliakc@web.de>, dc395x@twibble.org,
+ linux-arm-kernel@lists.infradead.org, Neela Syam Kolli <megaraidlinux@lsi.com>,
+ Geoff Levand <geoff@infradead.org>, gregkh@linuxfoundation.org,
+ Arvind Kumar <arvindkumar@vmware.com>,
+ "James E.J. Bottomley" <JBottomley@parallels.com>,
+ Willem Riede <osst@riede.org>, YOKOTA Hiroshi <yokota@netlab.is.tsukuba.ac.jp>,
+ linuxppc-dev@lists.ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,82 +39,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2012/11/20 Bill Pemberton <wfp5p@virginia.edu>:
-> CONFIG_HOTPLUG is going away as an option so __devinit is no longer
-> needed.
->
-> Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
-> Cc: Jean Delvare <khali@linux-fr.org>
-> Cc: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: "Ben Dooks " <ben-linux@fluff.org>
-> Cc: Rudolf Marek <r.marek@assembler.cz>
-> Cc: Jochen Friedrich <jochen@scram.de>
-> Cc: Peter Korsgaard <jacmet@sunsite.dk>
-> Cc: Tony Lindgren <tony@atomide.com>
-> Cc: Olof Johansson <olof@lixom.net>
-> Cc: Vitaly Wool <vitalywool@gmail.com>
-> Cc: Guan Xuetao <gxt@mprc.pku.edu.cn>
-> Cc: Barry Song <baohua.song@csr.com>
-> Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>
-> Cc: linux-i2c@vger.kernel.org
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-omap@vger.kernel.org
-> Cc: linux-arm-kernel@lists.infradead.org
-> ---
+On Mon, Nov 19, 2012 at 01:22:21PM -0500, Bill Pemberton wrote:
+>  drivers/scsi/arm/acornscsi.c              |  2 +-
+>  drivers/scsi/arm/arxescsi.c               |  2 +-
+>  drivers/scsi/arm/cumana_1.c               |  2 +-
+>  drivers/scsi/arm/cumana_2.c               |  2 +-
+>  drivers/scsi/arm/eesox.c                  |  2 +-
+>  drivers/scsi/arm/oak.c                    |  2 +-
+>  drivers/scsi/arm/powertec.c               |  2 +-
 
-Acked-by: Barry Song <baohua.song@csr.com>
+For these,
 
->  drivers/i2c/busses/i2c-ali1535.c            |  4 ++--
->  drivers/i2c/busses/i2c-ali1563.c            |  4 ++--
->  drivers/i2c/busses/i2c-ali15x3.c            |  4 ++--
->  drivers/i2c/busses/i2c-amd756.c             |  2 +-
->  drivers/i2c/busses/i2c-amd8111.c            |  2 +-
->  drivers/i2c/busses/i2c-at91.c               |  6 +++---
->  drivers/i2c/busses/i2c-au1550.c             |  2 +-
->  drivers/i2c/busses/i2c-cpm.c                |  4 ++--
->  drivers/i2c/busses/i2c-designware-pcidrv.c  |  2 +-
->  drivers/i2c/busses/i2c-designware-platdrv.c |  2 +-
->  drivers/i2c/busses/i2c-eg20t.c              |  2 +-
->  drivers/i2c/busses/i2c-elektor.c            |  4 ++--
->  drivers/i2c/busses/i2c-gpio.c               |  4 ++--
->  drivers/i2c/busses/i2c-highlander.c         |  2 +-
->  drivers/i2c/busses/i2c-hydra.c              |  2 +-
->  drivers/i2c/busses/i2c-i801.c               | 14 +++++++-------
->  drivers/i2c/busses/i2c-ibm_iic.c            |  4 ++--
->  drivers/i2c/busses/i2c-intel-mid.c          |  2 +-
->  drivers/i2c/busses/i2c-isch.c               |  2 +-
->  drivers/i2c/busses/i2c-mpc.c                | 20 ++++++++++----------
->  drivers/i2c/busses/i2c-mv64xxx.c            | 12 ++++++------
->  drivers/i2c/busses/i2c-mxs.c                |  2 +-
->  drivers/i2c/busses/i2c-nforce2.c            |  4 ++--
->  drivers/i2c/busses/i2c-nuc900.c             |  2 +-
->  drivers/i2c/busses/i2c-ocores.c             |  2 +-
->  drivers/i2c/busses/i2c-octeon.c             |  6 +++---
->  drivers/i2c/busses/i2c-omap.c               |  2 +-
->  drivers/i2c/busses/i2c-parport-light.c      |  2 +-
->  drivers/i2c/busses/i2c-pasemi.c             |  2 +-
->  drivers/i2c/busses/i2c-pca-isa.c            |  4 ++--
->  drivers/i2c/busses/i2c-pca-platform.c       |  2 +-
->  drivers/i2c/busses/i2c-piix4.c              | 10 +++++-----
->  drivers/i2c/busses/i2c-pmcmsp.c             |  2 +-
->  drivers/i2c/busses/i2c-pnx.c                |  2 +-
->  drivers/i2c/busses/i2c-powermac.c           | 12 ++++++------
->  drivers/i2c/busses/i2c-puv3.c               |  2 +-
->  drivers/i2c/busses/i2c-pxa-pci.c            |  2 +-
->  drivers/i2c/busses/i2c-rcar.c               |  2 +-
->  drivers/i2c/busses/i2c-s6000.c              |  4 ++--
->  drivers/i2c/busses/i2c-sh7760.c             |  4 ++--
->  drivers/i2c/busses/i2c-sirf.c               |  2 +-
->  drivers/i2c/busses/i2c-sis5595.c            |  4 ++--
->  drivers/i2c/busses/i2c-sis630.c             |  4 ++--
->  drivers/i2c/busses/i2c-sis96x.c             |  2 +-
->  drivers/i2c/busses/i2c-tegra.c              |  2 +-
->  drivers/i2c/busses/i2c-via.c                |  2 +-
->  drivers/i2c/busses/i2c-viapro.c             |  2 +-
->  drivers/i2c/busses/i2c-xiic.c               |  2 +-
->  drivers/i2c/busses/i2c-xlr.c                |  2 +-
->  drivers/i2c/busses/scx200_acb.c             | 10 +++++-----
->  drivers/i2c/muxes/i2c-mux-gpio.c            |  4 ++--
->  drivers/i2c/muxes/i2c-mux-pinctrl.c         |  2 +-
->  52 files changed, 103 insertions(+), 103 deletions(-)
->
+Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
