@@ -1,30 +1,18 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 4083D2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 Nov 2012 15:36:21 +1100 (EST)
-Message-ID: <50AC5BC1.9050200@cn.fujitsu.com>
-Date: Wed, 21 Nov 2012 12:42:41 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Jaegeuk Hanse <jaegeuk.hanse@gmail.com>
-Subject: Re: [PATCH v3 06/12] memory-hotplug: unregister memory section on
- SPARSEMEM_VMEMMAP
-References: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
- <1351763083-7905-7-git-send-email-wency@cn.fujitsu.com>
- <50AB669D.3060007@gmail.com> <50AC4505.1000007@cn.fujitsu.com>
- <50AC571C.4030504@gmail.com>
-In-Reply-To: <50AC571C.4030504@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id C690B2C00A7
+ for <linuxppc-dev@ozlabs.org>; Wed, 21 Nov 2012 15:37:20 +1100 (EST)
+Message-ID: <1353472633.17856.37.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 21 Nov 2012 15:37:13 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,136 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 11/21/2012 12:22 PM, Jaegeuk Hanse Wrote:
-> On 11/21/2012 11:05 AM, Wen Congyang wrote:
->> At 11/20/2012 07:16 PM, Jaegeuk Hanse Wrote:
->>> On 11/01/2012 05:44 PM, Wen Congyang wrote:
->>>> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>>>
->>>> Currently __remove_section for SPARSEMEM_VMEMMAP does nothing. But
->>>> even if
->>>> we use SPARSEMEM_VMEMMAP, we can unregister the memory_section.
->>>>
->>>> So the patch add unregister_memory_section() into __remove_section().
->>> Hi Yasuaki,
->>>
->>> I have a question about these sparse vmemmap memory related patches. Hot
->>> add memory need allocated vmemmap pages, but this time is allocated by
->>> buddy system. How can gurantee virtual address is continuous to the
->>> address allocated before? If not continuous, page_to_pfn and pfn_to_page
->>> can't work correctly.
->> vmemmap has its virtual address range:
->> ffffea0000000000 - ffffeaffffffffff (=40 bits) virtual memory map (1TB)
->>
->> We allocate memory from buddy system to store struct page, and its
->> virtual
->> address isn't in this range. So we should update the page table:
->>
->> kmalloc_section_memmap()
->>      sparse_mem_map_populate()
->>          pfn_to_page() // get the virtual address in the vmemmap range
->>          vmemmap_populate() // we update page table here
->>
->> When we use vmemmap, page_to_pfn() always returns address in the vmemmap
->> range, not the address that kmalloc() returns. So the virtual address
->> is continuous.
-> 
-> Hi Congyang,
-> 
-> Another question about memory hotplug. During hot remove memory, it will
-> also call memblock_remove to remove related memblock.
+Hi Linus !
 
-IIRC, we don't touch memblock when hot-add/hot-remove memory. memblock is
-only used for bootmem allocator. I think it isn't used after booting.
+Here are small 52xx fixes that Anatolij asked me to pull a while back
+and that I completely missed. The stuff is local to that platform code,
+and was in next for a while, so it should still go into 3.7.
 
-> memblock_remove()
->            __memblock_remove()
->                    memblock_isolate_range()
->                    memblock_remove_region()
-> 
-> But memblock_isolate_range() only record fully contained regions,
-> regions which are partial overlapped just be splitted instead of record.
-> So these partial overlapped regions can't be removed. Where I miss?
+Thanks,
+Ben.
 
-No, memblock_isolate_range() can deal with partial overlapped region.
-=====================
-		if (rbase < base) {
-			/*
-			 * @rgn intersects from below.  Split and continue
-			 * to process the next region - the new top half.
-			 */
-			rgn->base = base;
-			rgn->size -= base - rbase;
-			type->total_size -= base - rbase;
-			memblock_insert_region(type, i, rbase, base - rbase,
-					       memblock_get_region_node(rgn));
-		} else if (rend > end) {
-			/*
-			 * @rgn intersects from above.  Split and redo the
-			 * current region - the new bottom half.
-			 */
-			rgn->base = end;
-			rgn->size -= end - rbase;
-			type->total_size -= end - rbase;
-			memblock_insert_region(type, i--, rbase, end - rbase,
-					       memblock_get_region_node(rgn));
-=====================
+The following changes since commit 8c23f406c6d86808726ace580657186bc3b44587:
 
-If the region is partial overlapped region, we will split the old region into
-two regions. After doing this, it is full contained region now.
+  Merge git://git.kernel.org/pub/scm/virt/kvm/kvm (2012-11-01 08:27:02 -0700)
 
-Thanks
-Wen Congyang
+are available in the git repository at:
 
-> 
-> Regards,
-> Jaegeuk
-> 
->> Thanks
->> Wen Congyang
->>> Regards,
->>> Jaegeuk
->>>
->>>> CC: David Rientjes <rientjes@google.com>
->>>> CC: Jiang Liu <liuj97@gmail.com>
->>>> CC: Len Brown <len.brown@intel.com>
->>>> CC: Christoph Lameter <cl@linux.com>
->>>> Cc: Minchan Kim <minchan.kim@gmail.com>
->>>> CC: Andrew Morton <akpm@linux-foundation.org>
->>>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->>>> CC: Wen Congyang <wency@cn.fujitsu.com>
->>>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>>> ---
->>>>    mm/memory_hotplug.c | 13 ++++++++-----
->>>>    1 file changed, 8 insertions(+), 5 deletions(-)
->>>>
->>>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
->>>> index ca07433..66a79a7 100644
->>>> --- a/mm/memory_hotplug.c
->>>> +++ b/mm/memory_hotplug.c
->>>> @@ -286,11 +286,14 @@ static int __meminit __add_section(int nid,
->>>> struct zone *zone,
->>>>    #ifdef CONFIG_SPARSEMEM_VMEMMAP
->>>>    static int __remove_section(struct zone *zone, struct mem_section
->>>> *ms)
->>>>    {
->>>> -    /*
->>>> -     * XXX: Freeing memmap with vmemmap is not implement yet.
->>>> -     *      This should be removed later.
->>>> -     */
->>>> -    return -EBUSY;
->>>> +    int ret = -EINVAL;
->>>> +
->>>> +    if (!valid_section(ms))
->>>> +        return ret;
->>>> +
->>>> +    ret = unregister_memory_section(ms);
->>>> +
->>>> +    return ret;
->>>>    }
->>>>    #else
->>>>    static int __remove_section(struct zone *zone, struct mem_section
->>>> *ms)
->>>
-> 
-> 
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git merge
+
+for you to fetch changes up to d6dc24613c222f9057131ccbd5264a10bcba9f97:
+
+  Merge remote-tracking branch 'agust/merge' into merge (2012-11-21 13:24:49 +1100)
+
+----------------------------------------------------------------
+
+Anatolij Gustschin (1):
+      powerpc/mpc5200: move lpbfifo node and fix its interrupt property
+
+Benjamin Herrenschmidt (1):
+      Merge remote-tracking branch 'agust/merge' into merge
+
+Eric Millbrandt (1):
+      powerpc/pcm030: add pcm030-audio-fabric to dts
+
+Wolfram Sang (1):
+      powerpc: 52xx: nop out unsupported critical IRQs
+
+ arch/powerpc/boot/dts/mpc5200b.dtsi       |    6 ++++++
+ arch/powerpc/boot/dts/o2d.dtsi            |    6 ------
+ arch/powerpc/boot/dts/pcm030.dts          |    7 ++++++-
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c |    9 +++++----
+ 4 files changed, 17 insertions(+), 11 deletions(-)
