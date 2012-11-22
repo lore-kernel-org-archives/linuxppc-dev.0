@@ -1,44 +1,21 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id ACA492C0098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2012 12:34:36 +1100 (EST)
-Received: from m2.gw.fujitsu.co.jp (unknown [10.0.50.72])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id B130F3EE0B6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2012 10:34:32 +0900 (JST)
-Received: from smail (m2 [127.0.0.1])
- by outgoing.m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 97F7445DE53
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2012 10:34:32 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (s2.gw.fujitsu.co.jp [10.0.50.92])
- by m2.gw.fujitsu.co.jp (Postfix) with ESMTP id 7F58F45DD74
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2012 10:34:32 +0900 (JST)
-Received: from s2.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 735DD1DB803E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2012 10:34:32 +0900 (JST)
-Received: from g01jpexchkw24.g01.fujitsu.local
- (g01jpexchkw24.g01.fujitsu.local [10.0.193.107])
- by s2.gw.fujitsu.co.jp (Postfix) with ESMTP id 2BA1E1DB8038
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2012 10:34:32 +0900 (JST)
-Message-ID: <50AD80EC.8050101@jp.fujitsu.com>
-Date: Thu, 22 Nov 2012 10:33:32 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <B25806@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe001.messaging.microsoft.com [216.32.180.11])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B1B742C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2012 19:13:56 +1100 (EST)
+From: Chunhe Lan <Chunhe.Lan@freescale.com>
+To: <linux-mmc@vger.kernel.org>
+Subject: [PATCH] mmc: esdhi: Add SDHCI_QUIRK_QORIQ_CIRCUIT_SUPPORT_VS33 quirk
+ support
+Date: Thu, 22 Nov 2012 16:14:44 +0800
+Message-ID: <1353572084-3196-1-git-send-email-Chunhe.Lan@freescale.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v3 00/12] memory-hotplug: hot-remove physical memory
-References: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
-Content-Type: text/plain; charset="ISO-2022-JP"
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
- Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Jiang Liu <liuj97@gmail.com>
+Content-Type: text/plain
+Cc: kumar.gala@freescale.com, cjb@laptop.org, linuxppc-dev@lists.ozlabs.org,
+ Chunhe Lan <Chunhe.Lan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,135 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andrew,
+On the some platforms of Freescale, sdhci controller can only
+support 1.8V voltage, but the peripheral hardware circuit has
+capability to support 3.3V voltage.
 
-The patch-set aims to linux-3.8. So we would like you to merge
-the patch-set into your tree.
+Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
+---
+ drivers/mmc/host/sdhci.c  |    3 +++
+ include/linux/mmc/sdhci.h |    4 ++++
+ 2 files changed, 7 insertions(+), 0 deletions(-)
 
-The patch-set applied many comments. Currently there is no
-comment to the patch-set.
-
-Additionally, we have spent a lot of time on the verification
-of the patch-set. And we found many bugs, and fixed them.
-
-So we believe that Linux on x86_64 can support memory hot remove
-by the patch-set. 
-
-Thanks,
-Yasuaki Ishimatsu
-
-2012/11/01 18:44, Wen Congyang wrote:
-> The patch-set was divided from following thread's patch-set.
->      https://lkml.org/lkml/2012/9/5/201
-> 
-> The last version of this patchset:
->      https://lkml.org/lkml/2012/10/23/213
-> 
-> If you want to know the reason, please read following thread.
-> 
-> https://lkml.org/lkml/2012/10/2/83
-> 
-> The patch-set has only the function of kernel core side for physical
-> memory hot remove. So if you use the patch, please apply following
-> patches.
-> 
-> - bug fix for memory hot remove
->    https://lkml.org/lkml/2012/10/31/269
->    
-> - acpi framework
->    https://lkml.org/lkml/2012/10/26/175
-> 
-> The patches can free/remove the following things:
-> 
->    - /sys/firmware/memmap/X/{end, start, type} : [PATCH 2/10]
->    - mem_section and related sysfs files       : [PATCH 3-4/10]
->    - memmap of sparse-vmemmap                  : [PATCH 5-7/10]
->    - page table of removed memory              : [RFC PATCH 8/10]
->    - node and related sysfs files              : [RFC PATCH 9-10/10]
-> 
-> * [PATCH 2/10] checks whether the memory can be removed or not.
-> 
-> If you find lack of function for physical memory hot-remove, please let me
-> know.
-> 
-> How to test this patchset?
-> 1. apply this patchset and build the kernel. MEMORY_HOTPLUG, MEMORY_HOTREMOVE,
->     ACPI_HOTPLUG_MEMORY must be selected.
-> 2. load the module acpi_memhotplug
-> 3. hotplug the memory device(it depends on your hardware)
->     You will see the memory device under the directory /sys/bus/acpi/devices/.
->     Its name is PNP0C80:XX.
-> 4. online/offline pages provided by this memory device
->     You can write online/offline to /sys/devices/system/memory/memoryX/state to
->     online/offline pages provided by this memory device
-> 5. hotremove the memory device
->     You can hotremove the memory device by the hardware, or writing 1 to
->     /sys/bus/acpi/devices/PNP0C80:XX/eject.
-> 
-> Note: if the memory provided by the memory device is used by the kernel, it
-> can't be offlined. It is not a bug.
-> 
-> Known problems:
-> 1. hotremoving memory device may cause kernel panicked
->     This bug will be fixed by Liu Jiang's patch:
->     https://lkml.org/lkml/2012/7/3/1
-> 
-> 
-> Changelogs from v2 to v3:
->   Patch9: call sync_global_pgds() if pgd is changed
->   Patch10: fix a problem int the patch
-> 
-> Changelogs from v1 to v2:
->   Patch1: new patch, offline memory twice. 1st iterate: offline every non primary
->           memory block. 2nd iterate: offline primary (i.e. first added) memory
->           block.
-> 
->   Patch3: new patch, no logical change, just remove reduntant codes.
-> 
->   Patch9: merge the patch from wujianguo into this patch. flush tlb on all cpu
->           after the pagetable is changed.
-> 
->   Patch12: new patch, free node_data when a node is offlined
-> 
-> Wen Congyang (6):
->    memory-hotplug: try to offline the memory twice to avoid dependence
->    memory-hotplug: remove redundant codes
->    memory-hotplug: introduce new function arch_remove_memory() for
->      removing page table depends on architecture
->    memory-hotplug: remove page table of x86_64 architecture
->    memory-hotplug: remove sysfs file of node
->    memory-hotplug: free node_data when a node is offlined
-> 
-> Yasuaki Ishimatsu (6):
->    memory-hotplug: check whether all memory blocks are offlined or not
->      when removing memory
->    memory-hotplug: remove /sys/firmware/memmap/X sysfs
->    memory-hotplug: unregister memory section on SPARSEMEM_VMEMMAP
->    memory-hotplug: implement register_page_bootmem_info_section of
->      sparse-vmemmap
->    memory-hotplug: remove memmap of sparse-vmemmap
->    memory-hotplug: memory_hotplug: clear zone when removing the memory
-> 
->   arch/ia64/mm/discontig.c             |  14 ++
->   arch/ia64/mm/init.c                  |  18 ++
->   arch/powerpc/mm/init_64.c            |  14 ++
->   arch/powerpc/mm/mem.c                |  12 +
->   arch/s390/mm/init.c                  |  12 +
->   arch/s390/mm/vmem.c                  |  14 ++
->   arch/sh/mm/init.c                    |  17 ++
->   arch/sparc/mm/init_64.c              |  14 ++
->   arch/tile/mm/init.c                  |   8 +
->   arch/x86/include/asm/pgtable_types.h |   1 +
->   arch/x86/mm/init_32.c                |  12 +
->   arch/x86/mm/init_64.c                | 417 +++++++++++++++++++++++++++++++++++
->   arch/x86/mm/pageattr.c               |  47 ++--
->   drivers/acpi/acpi_memhotplug.c       |   8 +-
->   drivers/base/memory.c                |   6 +
->   drivers/firmware/memmap.c            |  98 +++++++-
->   include/linux/firmware-map.h         |   6 +
->   include/linux/memory_hotplug.h       |  15 +-
->   include/linux/mm.h                   |   5 +-
->   mm/memory_hotplug.c                  | 409 ++++++++++++++++++++++++++++++++--
->   mm/sparse.c                          |   5 +-
->   21 files changed, 1095 insertions(+), 57 deletions(-)
-> 
+diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+index 4fe2de8..e4a537d 100644
+--- a/drivers/mmc/host/sdhci.c
++++ b/drivers/mmc/host/sdhci.c
+@@ -2682,6 +2682,9 @@ int sdhci_add_host(struct sdhci_host *host)
+ 			host->caps1 :
+ 			sdhci_readl(host, SDHCI_CAPABILITIES_1);
+ 
++	if (host->quirks & SDHCI_QUIRK_QORIQ_CIRCUIT_SUPPORT_VS33)
++		caps[0] = caps[0] | SDHCI_CAN_VDD_330;
++
+ 	if (host->quirks & SDHCI_QUIRK_FORCE_DMA)
+ 		host->flags |= SDHCI_USE_SDMA;
+ 	else if (!(caps[0] & SDHCI_CAN_DO_SDMA))
+diff --git a/include/linux/mmc/sdhci.h b/include/linux/mmc/sdhci.h
+index 1edcb4d..78eced5 100644
+--- a/include/linux/mmc/sdhci.h
++++ b/include/linux/mmc/sdhci.h
+@@ -87,6 +87,10 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_BROKEN_ADMA_ZEROLEN_DESC		(1<<30)
+ /* The read-only detection via SDHCI_PRESENT_STATE register is unstable */
+ #define SDHCI_QUIRK_UNSTABLE_RO_DETECT			(1<<31)
++/* Controller can only supports 1.8V, but the peripheral hardware
++ * circuit has capability to support 3.3V
++ */
++#define SDHCI_QUIRK_QORIQ_CIRCUIT_SUPPORT_VS33		(1U<<32)
+ 
+ 	unsigned int quirks2;	/* More deviations from spec. */
+ 
+-- 
+1.7.6.5
