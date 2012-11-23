@@ -1,26 +1,27 @@
-Return-Path: <B41889@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2D2E02C0093
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2012 15:29:16 +1100 (EST)
-Received: from mail4-am1 (localhost [127.0.0.1])	by mail4-am1-R.bigfish.com
- (Postfix) with ESMTP id 7731B2A0054	for <linuxppc-dev@lists.ozlabs.org>; Fri,
- 23 Nov 2012 04:29:10 +0000 (UTC)
-Received: from AM1EHSMHS003.bigfish.com (unknown [10.3.201.243])	by
- mail4-am1.bigfish.com (Postfix) with ESMTP id 34797400B7	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2012 04:29:09 +0000 (UTC)
-From: Yuanquan Chen <B41889@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/pci-hotplug: fix the rescanned pci device's
- dma_set_mask issue
-Date: Fri, 23 Nov 2012 12:29:28 +0800
-Message-ID: <1353644968-29469-1-git-send-email-B41889@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: r61911@freescale.com, Yuanquan Chen <B41889@freescale.com>
+Return-Path: <shuah.khan@hp.com>
+Received: from g6t0184.atlanta.hp.com (g6t0184.atlanta.hp.com [15.193.32.61])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 185422C00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Nov 2012 08:31:29 +1100 (EST)
+Message-ID: <1353706269.5270.96.camel@lorien2>
+Subject: [PATCH 1/9] ARM64: dma_debug: add debug_dma_mapping_error support
+From: Shuah Khan <shuah.khan@hp.com>
+To: Joerg Roedel <joro@8bytes.org>, a-jacquiot@ti.com, fenghua.yu@intel.com,
+ catalin.marinas@arm.com, lethal@linux-sh.org, benh@kernel.crashing.org,
+ ralf@linux-mips.org, tony.luck@intel.com, davem@davemloft.net,
+ m.szyprowski@samsung.com, msalter@redhat.com, monstr@monstr.eu, Ming Lei
+ <ming.lei@canonical.com>
+Date: Fri, 23 Nov 2012 14:31:09 -0700
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, linux-sh@vger.kernel.org,
+ microblaze-uclinux@itee.uq.edu.au, LKML <linux-kernel@vger.kernel.org>,
+ shuahkhan@gmail.com, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Reply-To: shuah.khan@hp.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc arch, dma_ops of rescanned pci device after system's booting up won't be
-initialized by system, so it will fail to execute the dma_set_mask in the device's
-driver. Initialize it to solve this issue.
+Add dma-debug interface debug_dma_mapping_error() to debug drivers that fail
+to check dma mapping errors on addresses returned by dma_map_single() and
+dma_map_page() interfaces.
 
-Signed-off-by: Yuanquan Chen <B41889@freescale.com>
+Signed-off-by: Shuah Khan <shuah.khan@hp.com>
+Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 ---
- arch/powerpc/include/asm/dma-mapping.h |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/arm64/include/asm/dma-mapping.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-index 7816087..22eae53 100644
---- a/arch/powerpc/include/asm/dma-mapping.h
-+++ b/arch/powerpc/include/asm/dma-mapping.h
-@@ -126,8 +126,11 @@ static inline int dma_supported(struct device *dev, u64 mask)
+diff --git a/arch/arm64/include/asm/dma-mapping.h b/arch/arm64/include/asm/dma-mapping.h
+index 538f4b4..9947768 100644
+--- a/arch/arm64/include/asm/dma-mapping.h
++++ b/arch/arm64/include/asm/dma-mapping.h
+@@ -50,6 +50,7 @@ static inline phys_addr_t dma_to_phys(struct device *dev, dma_addr_t dev_addr)
+ static inline int dma_mapping_error(struct device *dev, dma_addr_t dev_addr)
  {
- 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
++	debug_dma_mapping_error(dev, dev_addr);
+ 	return ops->mapping_error(dev, dev_addr);
+ }
  
--	if (unlikely(dma_ops == NULL))
--		return 0;
-+	if (unlikely(dma_ops == NULL)) {
-+		set_dma_ops(dev, &dma_direct_ops);
-+		set_dma_offset(dev, PCI_DRAM_OFFSET);
-+		dma_ops = &dma_direct_ops;
-+	}
- 	if (dma_ops->dma_supported == NULL)
- 		return 1;
- 	return dma_ops->dma_supported(dev, mask);
 -- 
 1.7.9.5
