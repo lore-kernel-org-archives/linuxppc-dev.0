@@ -1,19 +1,19 @@
 Return-Path: <shuah.khan@hp.com>
-Received: from g5t0008.atlanta.hp.com (g5t0008.atlanta.hp.com [15.192.0.45])
+Received: from g1t0026.austin.hp.com (g1t0026.austin.hp.com [15.216.28.33])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "smtp.hp.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A5792C05A3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Nov 2012 08:38:02 +1100 (EST)
-Message-ID: <1353706674.5270.105.camel@lorien2>
-Subject: [PATCH 9/9] tile: dma_debug: add debug_dma_mapping_error support
+ by ozlabs.org (Postfix) with ESMTPS id 07D052C030D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Nov 2012 08:40:59 +1100 (EST)
+Message-ID: <1353706496.5270.101.camel@lorien2>
+Subject: [PATCH 5/9] mips: dma_debug: add debug_dma_mapping_error support
 From: Shuah Khan <shuah.khan@hp.com>
 To: Joerg Roedel <joro@8bytes.org>, a-jacquiot@ti.com, fenghua.yu@intel.com,
  catalin.marinas@arm.com, lethal@linux-sh.org, benh@kernel.crashing.org,
  ralf@linux-mips.org, tony.luck@intel.com, davem@davemloft.net,
  m.szyprowski@samsung.com, msalter@redhat.com, monstr@monstr.eu, Ming Lei
  <ming.lei@canonical.com>
-Date: Fri, 23 Nov 2012 14:37:54 -0700
+Date: Fri, 23 Nov 2012 14:34:56 -0700
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
@@ -37,19 +37,20 @@ dma_map_page() interfaces.
 
 Signed-off-by: Shuah Khan <shuah.khan@hp.com>
 ---
- arch/tile/include/asm/dma-mapping.h |    1 +
- 1 file changed, 1 insertion(+)
+ arch/mips/include/asm/dma-mapping.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/tile/include/asm/dma-mapping.h b/arch/tile/include/asm/dma-mapping.h
-index 4b6247d..f2ff191 100644
---- a/arch/tile/include/asm/dma-mapping.h
-+++ b/arch/tile/include/asm/dma-mapping.h
-@@ -72,6 +72,7 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
- static inline int
- dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+diff --git a/arch/mips/include/asm/dma-mapping.h b/arch/mips/include/asm/dma-mapping.h
+index be39a12..006b43e 100644
+--- a/arch/mips/include/asm/dma-mapping.h
++++ b/arch/mips/include/asm/dma-mapping.h
+@@ -40,6 +40,8 @@ static inline int dma_supported(struct device *dev, u64 mask)
+ static inline int dma_mapping_error(struct device *dev, u64 mask)
  {
-+	debug_dma_mapping_error(dev, dma_addr);
- 	return get_dma_ops(dev)->mapping_error(dev, dma_addr);
+ 	struct dma_map_ops *ops = get_dma_ops(dev);
++
++	debug_dma_mapping_error(dev, mask);
+ 	return ops->mapping_error(dev, mask);
  }
  
 -- 
