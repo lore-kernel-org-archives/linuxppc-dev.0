@@ -1,19 +1,19 @@
 Return-Path: <shuah.khan@hp.com>
-Received: from g6t0184.atlanta.hp.com (g6t0184.atlanta.hp.com [15.193.32.61])
+Received: from g5t0008.atlanta.hp.com (g5t0008.atlanta.hp.com [15.192.0.45])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "smtp.hp.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 39D7F2C0322
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Nov 2012 08:37:28 +1100 (EST)
-Message-ID: <1353706642.5270.104.camel@lorien2>
-Subject: [PATCH 8/9] sparc: dma_debug: add debug_dma_mapping_error support
+ by ozlabs.org (Postfix) with ESMTPS id 7A5792C05A3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Nov 2012 08:38:02 +1100 (EST)
+Message-ID: <1353706674.5270.105.camel@lorien2>
+Subject: [PATCH 9/9] tile: dma_debug: add debug_dma_mapping_error support
 From: Shuah Khan <shuah.khan@hp.com>
 To: Joerg Roedel <joro@8bytes.org>, a-jacquiot@ti.com, fenghua.yu@intel.com,
  catalin.marinas@arm.com, lethal@linux-sh.org, benh@kernel.crashing.org,
  ralf@linux-mips.org, tony.luck@intel.com, davem@davemloft.net,
  m.szyprowski@samsung.com, msalter@redhat.com, monstr@monstr.eu, Ming Lei
  <ming.lei@canonical.com>
-Date: Fri, 23 Nov 2012 14:37:22 -0700
+Date: Fri, 23 Nov 2012 14:37:54 -0700
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org,
@@ -36,21 +36,20 @@ to check dma mapping errors on addresses returned by dma_map_single() and
 dma_map_page() interfaces.
 
 Signed-off-by: Shuah Khan <shuah.khan@hp.com>
-Acked-by: David S. Miller <davem@davemloft.net>
 ---
- arch/sparc/include/asm/dma-mapping.h |    1 +
+ arch/tile/include/asm/dma-mapping.h |    1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/arch/sparc/include/asm/dma-mapping.h b/arch/sparc/include/asm/dma-mapping.h
-index 8493fd3..05fe53f 100644
---- a/arch/sparc/include/asm/dma-mapping.h
-+++ b/arch/sparc/include/asm/dma-mapping.h
-@@ -59,6 +59,7 @@ static inline void dma_free_attrs(struct device *dev, size_t size,
- 
- static inline int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
+diff --git a/arch/tile/include/asm/dma-mapping.h b/arch/tile/include/asm/dma-mapping.h
+index 4b6247d..f2ff191 100644
+--- a/arch/tile/include/asm/dma-mapping.h
++++ b/arch/tile/include/asm/dma-mapping.h
+@@ -72,6 +72,7 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+ static inline int
+ dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
  {
 +	debug_dma_mapping_error(dev, dma_addr);
- 	return (dma_addr == DMA_ERROR_CODE);
+ 	return get_dma_ops(dev)->mapping_error(dev, dma_addr);
  }
  
 -- 
