@@ -1,20 +1,12 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-ie0-f179.google.com (mail-ie0-f179.google.com
- [209.85.223.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9E5992C009A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2012 13:51:32 +1100 (EST)
-Received: by mail-ie0-f179.google.com with SMTP id 9so3451867iec.38
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 22 Nov 2012 18:51:29 -0800 (PST)
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/pseries: Fix kernel crash caused by NULL PE
-Date: Fri, 23 Nov 2012 13:51:10 +1100
-Message-Id: <1353639070-11195-1-git-send-email-aik@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <shangw@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Return-Path: <michael.neuling@au1.ibm.com>
+From: Michael Neuling <michael.neuling@au1.ibm.com>
+To: Haren Myneni <haren@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/6] powerpc: Define ppr in thread_struct
+In-reply-to: <1351666515.32304.17.camel@hbabu-laptop>
+References: <1351666515.32304.17.camel@hbabu-laptop>
+Date: Fri, 23 Nov 2012 14:21:55 +1100
+Message-ID: <26608.1353640915@neuling.org>
+Cc: anton@au1.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,46 +16,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Gavin Shan <shangw@linux.vnet.ibm.com>
+Haren Myneni <haren@linux.vnet.ibm.com> wrote:
 
-While hooking MSI interrupts, the corresponding device tree node
-of the PE that the PCI device has been put into should be checked.
-However, those PCI devices (e.g. VirtIO based PCI devices) that
-don't have EEH capability shouldn't have the associated PE. So we
-shouldn't try to get the PE's device tree node. Otherwise, it
-would cause kernel crash.
+> [PATCH 4/6] powerpc: Define ppr in thread_struct
+> 
+> ppr in thread_struct is used to save PPR and restore it before process exits
+> from kernel.
+> 
+> This patch sets the default priority to 3 when tasks are created such
+> that users can use 4 for higher priority tasks.
+> 
+> Signed-off-by: Haren Myneni <haren@us.ibm.com>
+> ---
+>  arch/powerpc/include/asm/processor.h |    6 ++++++
+>  arch/powerpc/kernel/asm-offsets.c    |    1 +
+>  arch/powerpc/kernel/process.c        |    2 ++
+>  3 files changed, 9 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+> index 8750204..7db5df4 100644
+> --- a/arch/powerpc/include/asm/processor.h
+> +++ b/arch/powerpc/include/asm/processor.h
+> @@ -245,6 +245,7 @@ struct thread_struct {
+>  #ifdef CONFIG_PPC64
+>  	unsigned long	dscr;
+>  	int		dscr_inherit;
+> +	unsigned long	ppr;
+>  #endif
+>  };
+>  
+> @@ -270,6 +271,10 @@ struct thread_struct {
+>  	SPEFSCR_INIT \
+>  }
+>  #else
+> +/* Default SMT priority is 3. Use 11- 13bits to save priority. */
+> +/* .ppr is used to save/restore only on P7 or later processors */
+> +#define INIT_PPR (3ull << 50)
 
-Actually, it was introduced by commit 66523d9f ("powerpc/eeh: Trace
-error based on PE from beginning").
+Can you split this into two macros so that we can use the '3' elsewhere.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Signed-off-by: Gavin Shan <shangw@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/msi.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
+Like in patch 5, you do this:
 
-diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
-index d19f497..9284e42 100644
---- a/arch/powerpc/platforms/pseries/msi.c
-+++ b/arch/powerpc/platforms/pseries/msi.c
-@@ -218,9 +218,16 @@ static struct device_node *find_pe_dn(struct pci_dev *dev, int *total)
- 	if (!dn)
- 		return NULL;
- 
--	/* Get the top level device in the PE */
-+	/*
-+	 * Get the top level device in the PE, but some PCI devices
-+	 * without EEH capability (e.g. VirtIO based PCI devices)
-+	 * don't have the associated PE. So we should not get the
-+	 * top level device from PE for those PCI devices.
-+	 */
- 	edev = of_node_to_eeh_dev(dn);
--	edev = list_first_entry(&edev->pe->edevs, struct eeh_dev, list);
-+	if (edev->pe)
-+		edev = list_first_entry(&edev->pe->edevs,
-+				struct eeh_dev, list);
- 	dn = eeh_dev_to_of_node(edev);
- 	if (!dn)
- 		return NULL;
--- 
-1.7.5.4
++	lis	ra,0xc;		/* default ppr=3 */			\
+
+where you could reuse the '3' so that we don't have to change it in two
+places later.
+
+Mikey
+
+> +
+>  #define INIT_THREAD  { \
+>  	.ksp = INIT_SP, \
+>  	.ksp_limit = INIT_SP_LIMIT, \
+> @@ -278,6 +283,7 @@ struct thread_struct {
+>  	.fpr = {{0}}, \
+>  	.fpscr = { .val = 0, }, \
+>  	.fpexc_mode = 0, \
+> +	.ppr = INIT_PPR, \
+>  }
+>  #endif
+>  
+> diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+> index 7523539..41f65ec 100644
+> --- a/arch/powerpc/kernel/asm-offsets.c
+> +++ b/arch/powerpc/kernel/asm-offsets.c
+> @@ -77,6 +77,7 @@ int main(void)
+>  	DEFINE(NMI_MASK, NMI_MASK);
+>  	DEFINE(THREAD_DSCR, offsetof(struct thread_struct, dscr));
+>  	DEFINE(THREAD_DSCR_INHERIT, offsetof(struct thread_struct, dscr_inherit));
+> +	DEFINE(TASKTHREADPPR, offsetof(struct task_struct, thread.ppr));
+>  #else
+>  	DEFINE(THREAD_INFO, offsetof(struct task_struct, stack));
+>  #endif /* CONFIG_PPC64 */
+> diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+> index ba48233..2563acc 100644
+> --- a/arch/powerpc/kernel/process.c
+> +++ b/arch/powerpc/kernel/process.c
+> @@ -814,6 +814,8 @@ int copy_thread(unsigned long clone_flags, unsigned long usp,
+>  		p->thread.dscr_inherit = current->thread.dscr_inherit;
+>  		p->thread.dscr = current->thread.dscr;
+>  	}
+> +	if (cpu_has_feature(CPU_FTR_HAS_PPR))
+> +		p->thread.ppr = INIT_PPR;
+>  #endif
+>  	/*
+>  	 * The PPC64 ABI makes use of a TOC to contain function 
+> -- 
+> 1.7.1
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
