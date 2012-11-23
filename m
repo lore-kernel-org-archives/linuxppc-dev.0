@@ -1,33 +1,26 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
- [209.85.210.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4B30C2C007A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Nov 2012 03:39:10 +1100 (EST)
-Received: by mail-da0-f51.google.com with SMTP id i30so2165274dad.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2012 08:39:09 -0800 (PST)
-Date: Fri, 23 Nov 2012 08:40:24 -0800
-From: Greg KH <gregkh@linuxfoundation.org>
-To: Borislav Petkov <bp@alien8.de>
-Subject: Re: [PATCH 056/493] edac: remove use of __devexit_p
-Message-ID: <20121123164024.GB5471@kroah.com>
-References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
- <1353349642-3677-56-git-send-email-wfp5p@virginia.edu>
- <20121122134451.GG17147@x1.alien8.de>
- <20121122182222.GB25392@kroah.com>
- <20121123100635.GC18765@x1.alien8.de>
+Return-Path: <B41889@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2D2E02C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2012 15:29:16 +1100 (EST)
+Received: from mail4-am1 (localhost [127.0.0.1])	by mail4-am1-R.bigfish.com
+ (Postfix) with ESMTP id 7731B2A0054	for <linuxppc-dev@lists.ozlabs.org>; Fri,
+ 23 Nov 2012 04:29:10 +0000 (UTC)
+Received: from AM1EHSMHS003.bigfish.com (unknown [10.3.201.243])	by
+ mail4-am1.bigfish.com (Postfix) with ESMTP id 34797400B7	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 23 Nov 2012 04:29:09 +0000 (UTC)
+From: Yuanquan Chen <B41889@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] powerpc/pci-hotplug: fix the rescanned pci device's
+ dma_set_mask issue
+Date: Fri, 23 Nov 2012 12:29:28 +0800
+Message-ID: <1353644968-29469-1-git-send-email-B41889@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20121123100635.GC18765@x1.alien8.de>
-Cc: "Arvind R." <arvino55@gmail.com>, Mark Gross <mark.gross@intel.com>,
- Mauro Carvalho Chehab <mchehab@redhat.com>,
- Jason Uhlenkott <juhlenko@akamai.com>,
- Ranganathan Desikan <ravi@jetztechnologies.com>,
- Bill Pemberton <wfp5p@virginia.edu>, Egor Martovetsky <egor@pasemi.com>,
- Doug Thompson <dougthompson@xmission.com>, Olof Johansson <olof@lixom.net>,
- linux-edac@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Tim Small <tim@buttersideup.com>
+Content-Type: text/plain
+Cc: r61911@freescale.com, Yuanquan Chen <B41889@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,45 +30,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Nov 23, 2012 at 11:06:35AM +0100, Borislav Petkov wrote:
-> On Thu, Nov 22, 2012 at 10:22:22AM -0800, Greg KH wrote:
-> > On Thu, Nov 22, 2012 at 02:44:51PM +0100, Borislav Petkov wrote:
-> > > On Mon, Nov 19, 2012 at 01:20:05PM -0500, Bill Pemberton wrote:
-> > > > CONFIG_HOTPLUG is going away as an option so __devexit_p is no longer
-> > > > needed.
-> > > 
-> > > Erm, I don't understand. __devexit_p is defined also for modules not
-> > > only for CONFIG_HOTPLUG:
-> > > 
-> > > #if defined(MODULE) || defined(CONFIG_HOTPLUG)
-> > > #define __devexit_p(x) x
-> > > #else
-> > > #define __devexit_p(x) NULL
-> > > #endif
-> > > 
-> > > AFAICT, we cannot remove it yet no?
-> > 
-> > If MODULE is defined, it defaults to nothing.  And now that
-> > CONFIG_HOTPLUG is always set to Y, this always defaults to nothing.
-> 
-> Huh, if MODULE is defined, __devexit_p(x) evaluates to the function name
-> 'x' itself, AFAICT.
+On powerpc arch, dma_ops of rescanned pci device after system's booting up won't be
+initialized by system, so it will fail to execute the dma_set_mask in the device's
+driver. Initialize it to solve this issue.
 
-Yes, sorry, that is what I was trying to say here, I meant "nothing" in
-that the macro did not do anything, not that it was setting it to NULL.
+Signed-off-by: Yuanquan Chen <B41889@freescale.com>
+---
+ arch/powerpc/include/asm/dma-mapping.h |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-> So, if MODULE is defined and we have a reference from retained sections
-> to a discarded section (I'm rereading the comment over __devexit_p in
-> <include/linux/init.h> btw) then we'll get linker errors so we'd still
-> need the ifdef thing, no?
-
-No, as there will not be any discarded sections anymore because
-CONFIG_HOTPLUG is always enabled.  We will just delete this whole
-#if/#endif section once all users of __devexit_p() are gone from the
-tree.
-
-Does that help out?
-
-thanks,
-
-greg k-h
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 7816087..22eae53 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -126,8 +126,11 @@ static inline int dma_supported(struct device *dev, u64 mask)
+ {
+ 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+ 
+-	if (unlikely(dma_ops == NULL))
+-		return 0;
++	if (unlikely(dma_ops == NULL)) {
++		set_dma_ops(dev, &dma_direct_ops);
++		set_dma_offset(dev, PCI_DRAM_OFFSET);
++		dma_ops = &dma_direct_ops;
++	}
+ 	if (dma_ops->dma_supported == NULL)
+ 		return 1;
+ 	return dma_ops->dma_supported(dev, mask);
+-- 
+1.7.9.5
