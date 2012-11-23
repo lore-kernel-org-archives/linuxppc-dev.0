@@ -1,11 +1,11 @@
-Return-Path: <michael.neuling@au1.ibm.com>
-From: Michael Neuling <michael.neuling@au1.ibm.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
 To: Haren Myneni <haren@linux.vnet.ibm.com>
-Subject: Re: [PATCH 5/6] powerpc: Macros for saving/restore PPR
-In-reply-to: <1351666574.32304.18.camel@hbabu-laptop>
-References: <1351666574.32304.18.camel@hbabu-laptop>
-Date: Fri, 23 Nov 2012 14:39:57 +1100
-Message-ID: <27433.1353641997@neuling.org>
+Subject: Re: [PATCH 2/6] powerpc: Define CPU_FTR_HAS_PPR
+In-reply-to: <1351666334.32304.13.camel@hbabu-laptop>
+References: <1351666334.32304.13.camel@hbabu-laptop>
+Date: Fri, 23 Nov 2012 15:01:42 +1100
+Message-ID: <28905.1353643302@neuling.org>
 Cc: anton@au1.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -16,139 +16,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Haren Myneni <haren@linux.vnet.ibm.com> wrote:
+Heaven Myneni <haren@linux.vnet.ibm.com> wrote:
 
-> [PATCH 5/6] powerpc: Macros for saving/restore PPR
+> [PATCH 2/6] powerpc: Define CPU_FTR_HAS_PPR
 > 
-> Several macros are defined for saving and restore user defined PPR value.
+> CPU_FTR_HAS_PPR is defined for POWER7.
 > 
 > Signed-off-by: Haren Myneni <haren@us.ibm.com>
 > ---
->  arch/powerpc/include/asm/exception-64s.h |   29 +++++++++++++++++++++++++++++
->  arch/powerpc/include/asm/ppc_asm.h       |   25 +++++++++++++++++++++++++
->  arch/powerpc/include/asm/reg.h           |    1 +
->  3 files changed, 55 insertions(+), 0 deletions(-)
+>  arch/powerpc/include/asm/cputable.h |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-> index bfd3f1f..880ef7d 100644
-> --- a/arch/powerpc/include/asm/exception-64s.h
-> +++ b/arch/powerpc/include/asm/exception-64s.h
-> @@ -62,6 +62,35 @@
->  #define EXC_HV	H
->  #define EXC_STD
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index 21a0687..12e3a1d 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -171,6 +171,7 @@ extern const char *powerpc_base_platform;
+>  #define CPU_FTR_POPCNTD			LONG_ASM_CONST(0x0800000000000000)
+>  #define CPU_FTR_ICSWX			LONG_ASM_CONST(0x1000000000000000)
+>  #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x2000000000000000)
+> +#define	CPU_FTR_HAS_PPR			LONG_ASM_CONST(0x4000000000000000)
 >  
-> +/*
-> + * PPR save/restore macros used in exceptions_64s.S  
-> + * Used for P7 or later processors
-> + */
-> +#define SAVE_PPR(area, ra, rb)						\
-> +BEGIN_FTR_SECTION_NESTED(940)						\
-> +	ld	ra,PACACURRENT(r13);					\
-> +	ld	rb,area+EX_PPR(r13);	/* Read PPR from paca */	\
-> +	std	rb,TASKTHREADPPR(ra);					\
-> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,940)
-> +
-> +#define RESTORE_PPR_PACA(area, ra)					\
-> +BEGIN_FTR_SECTION_NESTED(941)						\
-> +	ld	ra,area+EX_PPR(r13);					\
-> +	mtspr	SPRN_PPR,ra;						\
-> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,941)
-> +
+>  #ifndef __ASSEMBLY__
+>  
+> @@ -400,7 +401,8 @@ extern const char *powerpc_base_platform;
+>  	    CPU_FTR_PURR | CPU_FTR_SPURR | CPU_FTR_REAL_LE | \
+>  	    CPU_FTR_DSCR | CPU_FTR_SAO  | CPU_FTR_ASYM_SMT | \
+>  	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+> -	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY)
+> +	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | \
+> +	    CPU_FTR_VMX_COPY | CPU_FTR_HAS_PPR)
+>  #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+>  	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+>  	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> @@ -422,7 +424,7 @@ extern const char *powerpc_base_platform;
+>  	    (CPU_FTRS_POWER3 | CPU_FTRS_RS64 | CPU_FTRS_POWER4 |	\
+>  	    CPU_FTRS_PPC970 | CPU_FTRS_POWER5 | CPU_FTRS_POWER6 |	\
+>  	    CPU_FTRS_POWER7 | CPU_FTRS_CELL | CPU_FTRS_PA6T |		\
+> -	    CPU_FTR_VSX)
+> +	    CPU_FTR_VSX | CPU_FTR_HAS_PPR)
 
-Can you add some documentation here on why we should use the different
-versions.
-
-I'm trying to read the next patch and it's not clear to my why some have
-HMT_MEDIUM_NO_PPR and other times HMT_MEDIUM and others
-HTM_MEDIUM_HAS_PPR.
-
-Looks like HTM_MEDIUM_NO_PPR sets the priority to medium on systems
-where we can't save/restore the PPR, hence it can be called earlier in
-the exception handler before we have free GPRs.  HTM_MEDIUM_HAS_PPR
-saves the priority on systems where it can, and then sets the priority
-to medium.
-
-Maybe we should change the names 
-  HTM_MEDIUM_NO_PPR  => HTM_MEDIUM_PPR_DISCARD   and
-  HTM_MEDIUM_HAS_PPR => HTM_MEDIUM_PPR_SAVE
-But now I'm heading into bike shedding territory... plus I think I
-suggested the names you have currently, so I'm feeling a bit dumb now
-:-)
+FYI, there is no need to add this to POSSIBLE, since you are adding it
+to POWER7 anyway.
 
 Mikey
-
-> +#define HMT_MEDIUM_NO_PPR						\
-> +BEGIN_FTR_SECTION_NESTED(942)						\
-> +	HMT_MEDIUM;							\
-> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,0,942)  /*non P7*/		
-> +
-> +#define HMT_MEDIUM_HAS_PPR(area, ra)					\
-> +BEGIN_FTR_SECTION_NESTED(943)						\
-> +	mfspr	ra,SPRN_PPR;						\
-> +	std	ra,area+EX_PPR(r13);					\
-> +	HMT_MEDIUM;							\
-> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,943) 
-> +
->  #define __EXCEPTION_PROLOG_1(area, extra, vec)				\
->  	GET_PACA(r13);							\
->  	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
-
-
-> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-> index 376e36d..52649cc 100644
-> --- a/arch/powerpc/include/asm/ppc_asm.h
-> +++ b/arch/powerpc/include/asm/ppc_asm.h
-> @@ -389,6 +389,31 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
->  	FTR_SECTION_ELSE_NESTED(848);	\
->  	mtocrf (FXM), RS;		\
->  	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_NOEXECUTE, 848)
-> +
-> +/*
-> + * PPR restore macros used in entry_64.S
-> + * Used for P7 or later processors
-> + */
-> +#define HMT_MEDIUM_LOW_HAS_PPR						\
-> +BEGIN_FTR_SECTION_NESTED(944)						\
-> +	HMT_MEDIUM_LOW;							\
-> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,944)
-> +
-> +#define SET_DEFAULT_THREAD_PPR(ra, rb)					\
-> +BEGIN_FTR_SECTION_NESTED(945)						\
-> +	lis	ra,0xc;		/* default ppr=3 */			\
-> +	ld	rb,PACACURRENT(r13);					\
-> +	sldi	ra,ra,32;	/* 11- 13 bits are used for ppr */	\
-> +	std	ra,TASKTHREADPPR(rb);					\
-> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,945)
-> +
-> +#define RESTORE_PPR(ra, rb)						\
-> +BEGIN_FTR_SECTION_NESTED(946)						\
-> +	ld	ra,PACACURRENT(r13);					\
-> +	ld	rb,TASKTHREADPPR(ra);					\
-> +	mtspr	SPRN_PPR,rb;	/* Restore PPR */			\
-> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,946)
-> +
->  #endif
->  
->  /*
-> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-> index d24c141..1723be3 100644
-> --- a/arch/powerpc/include/asm/reg.h
-> +++ b/arch/powerpc/include/asm/reg.h
-> @@ -287,6 +287,7 @@
->  #define SPRN_DBAT6U	0x23C	/* Data BAT 6 Upper Register */
->  #define SPRN_DBAT7L	0x23F	/* Data BAT 7 Lower Register */
->  #define SPRN_DBAT7U	0x23E	/* Data BAT 7 Upper Register */
-> +#define SPRN_PPR	0x380	/* SMT Thread status Register */
->  
->  #define SPRN_DEC	0x016		/* Decrement Register */
->  #define SPRN_DER	0x095		/* Debug Enable Regsiter */
-> -- 
-> 1.7.1
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
