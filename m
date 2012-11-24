@@ -1,31 +1,29 @@
-Return-Path: <acme@infradead.org>
-Received: from merlin.infradead.org (merlin.infradead.org
- [IPv6:2001:4978:20e::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 3B7DD2C0081
- for <linuxppc-dev@ozlabs.org>; Sat, 24 Nov 2012 11:21:21 +1100 (EST)
-From: Arnaldo Carvalho de Melo <acme@infradead.org>
-To: Ingo Molnar <mingo@kernel.org>
-Subject: [GIT PULL 0/8] perf/urgent fixes
-Date: Fri, 23 Nov 2012 21:20:45 -0300
-Message-Id: <1353716453-9693-1-git-send-email-acme@infradead.org>
+Return-Path: <bp@alien8.de>
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:120:8448::d00d])
+ by ozlabs.org (Postfix) with ESMTP id 12E032C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 Nov 2012 20:14:57 +1100 (EST)
+Date: Sat, 24 Nov 2012 10:14:53 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 056/493] edac: remove use of __devexit_p
+Message-ID: <20121124091453.GC25143@x1.alien8.de>
+References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
+ <1353349642-3677-56-git-send-email-wfp5p@virginia.edu>
+ <20121122134451.GG17147@x1.alien8.de>
+ <20121122182222.GB25392@kroah.com>
+ <20121123100635.GC18765@x1.alien8.de>
+ <20121123164024.GB5471@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: David Howells <dhowells@redhat.com>, linuxppc-dev@ozlabs.org,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@infradead.org>,
- Robert Richter <robert.richter@amd.com>, x86@kernel.org,
- Xiao Guangrong <xiaoguangrong@linux.vnet.ibm.com>, acme@ghostprotocols.net,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, linux-arch@vger.kernel.org,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, Namhyung Kim <namhyung@gmail.com>,
- Anton Blanchard <anton@au1.ibm.com>,
- Arnaldo Carvalho de Melo <acme@redhat.com>,
- Dong Hao <haodong@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
- Runzhen Wang <runzhen@linux.vnet.ibm.com>,
- Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
- David Ahern <dsahern@gmail.com>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20121123164024.GB5471@kroah.com>
+Cc: "Arvind R." <arvino55@gmail.com>, Mark Gross <mark.gross@intel.com>,
+ Mauro Carvalho Chehab <mchehab@redhat.com>,
+ Jason Uhlenkott <juhlenko@akamai.com>,
+ Ranganathan Desikan <ravi@jetztechnologies.com>,
+ Bill Pemberton <wfp5p@virginia.edu>, Egor Martovetsky <egor@pasemi.com>,
+ Doug Thompson <dougthompson@xmission.com>, Olof Johansson <olof@lixom.net>,
+ linux-edac@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Tim Small <tim@buttersideup.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,75 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ingo,
+On Fri, Nov 23, 2012 at 08:40:24AM -0800, Greg KH wrote:
+> No, as there will not be any discarded sections anymore because
+> CONFIG_HOTPLUG is always enabled. We will just delete this whole
+> #if/#endif section once all users of __devexit_p() are gone from the
+> tree.
+>
+> Does that help out?
 
-	Tested using a cross-compiler and directly on a Raspberry pi (ARM) with
-raspbian.
+Yes, I missed the fact that there won't be any discarded sections
+anymore. Btw, in that case, you'd probably need to remove all those
 
-	Please consider pulling.
+#ifdef CONFIG_HOTPLUG
 
-- Arnaldo
+...
 
-The following changes since commit 18423d3562f396206e0928a71177eeb2edfed077:
+#endif
 
-  Merge tag 'perf-urgent-for-mingo' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/urgent (2012-11-13 18:51:51 +0100)
+stanzas surrounding different places in the kernel (I see 40ish
+currenty) now that HOTPLUG is def_bool y and if you haven't done so yet.
 
-are available in the git repository at:
+Thanks for explaining.
 
+Btw, you can have my
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-urgent-for-mingo
+Acked-by: Borislav Petkov <bp@alien8.de>
 
-for you to fetch changes up to 7321090f6751c9987c26a8c81c63680d16a614d7:
+for the amd64_edac pieces.
 
-  perf kvm: Fix building perf kvm on non x86 arches (2012-11-23 20:40:17 -0300)
-
-----------------------------------------------------------------
-perf/urgent fixes
-
-. Don't build 'perf kvm stat" on non-x86 arches, fix from Xiao Guangrong.
-
-. UAPI fixes to get perf building again in non-x86 arches, from David Howells.
-
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-
-----------------------------------------------------------------
-Arnaldo Carvalho de Melo (1):
-      Merge tag 'perf-uapi-20121119' of git://git.infradead.org/users/dhowells/linux-headers into perf/urgent
-
-David Howells (6):
-      x86: Export asm/{svm.h,vmx.h,perf_regs.h}
-      Merge branch 'x86-pre-uapi' into perf-uapi
-      tools: Define a Makefile function to do subdir processing
-      tools: Honour the O= flag when tool build called from a higher Makefile
-      tools: Pass the target in descend
-      perf: Make perf build for x86 with UAPI disintegration applied
-
-Sukadev Bhattiprolu (1):
-      perf powerpc: Use uapi/unistd.h to fix build error
-
-Xiao Guangrong (2):
-      perf kvm: Rename perf_kvm to perf_kvm_stat
-      perf kvm: Fix building perf kvm on non x86 arches
-
- Makefile                                |    6 +-
- arch/x86/include/asm/Kbuild             |    3 +
- include/linux/hw_breakpoint.h           |   31 +-------
- include/uapi/linux/Kbuild               |    1 +
- include/uapi/linux/hw_breakpoint.h      |   30 ++++++++
- tools/Makefile                          |   24 +++---
- tools/perf/Makefile                     |   29 +++++++-
- tools/perf/arch/x86/include/perf_regs.h |    2 +-
- tools/perf/builtin-kvm.c                |  121 +++++++++++++++++--------------
- tools/perf/builtin-test.c               |    2 +-
- tools/perf/perf.h                       |   16 +---
- tools/perf/util/evsel.c                 |    4 +-
- tools/perf/util/evsel.h                 |    3 +-
- tools/perf/util/header.h                |    2 +-
- tools/perf/util/parse-events-test.c     |    2 +-
- tools/perf/util/parse-events.c          |    2 +-
- tools/perf/util/parse-events.h          |    2 +-
- tools/perf/util/pmu.h                   |    2 +-
- tools/perf/util/session.h               |    2 +-
- tools/scripts/Makefile.include          |   23 +++++-
- 20 files changed, 181 insertions(+), 126 deletions(-)
- create mode 100644 include/uapi/linux/hw_breakpoint.h
+-- 
+Regards/Gruss,
+Boris.
