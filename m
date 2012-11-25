@@ -1,17 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 98B192C007E
- for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2012 00:27:27 +1100 (EST)
-Date: Sun, 25 Nov 2012 07:27:21 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [git pull] Please pull powerpc.git next branch
-Message-ID: <alpine.LFD.2.00.1211250726550.14762@right.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 2F19E2C0082
+ for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2012 09:07:38 +1100 (EST)
+Message-ID: <1353881249.16666.4.camel@pasglop>
+Subject: [git pull] Please pull powerpc.git merge branch
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 26 Nov 2012 09:07:29 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,48 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The following changes since commit cedddd812a79a4fda3885a15711aee3de78c4a24:
+Hi Linus !
 
-  powerpc: Disable relocation on exceptions when kexecing (2012-11-15 15:08:08 +1100)
+Here's a patch that would be good to still have in 3.7. It's a one liner fixing
+a regression introduced by the new EEH code in .37 (potential oops on some
+PCI setups when configuring MSIs).
+
+Cheers,
+Ben.
+
+The following changes since commit d6dc24613c222f9057131ccbd5264a10bcba9f97:
+
+  Merge remote-tracking branch 'agust/merge' into merge (2012-11-21 13:24:49 +1100)
 
 are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git next
 
-for you to fetch changes up to 1723d90915d4689fa2e8cd4151d45ea38c96cb99:
+  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git 
 
-  powerpc/dma/raidengine: add raidengine device (2012-11-25 07:19:51 -0600)
+for you to fetch changes up to bb4618823a3389086f157fafb2a0d97cade8d89f:
+
+  powerpc/pseries: Fix oops with MSIs when missing EEH PEs (2012-11-23 13:26:05 +1100)
 
 ----------------------------------------------------------------
-Jia Hongtao (1):
-      powerpc/fsl-pci: Add PCI controller ATMU PM support
+Alexey Kardashevskiy (1):
+      powerpc/pseries: Fix oops with MSIs when missing EEH PEs
 
-Timur Tabi (2):
-      drivers/virt: the Freescale hypervisor driver doesn't need to check MSR[GS]
-      powerpc/86xx: fsl_pcibios_fixup_bus requires CONFIG_PCI
-
-Tushar Behera (1):
-      powerpc/85xx: p1022ds: Use NULL instead of 0 for pointers
-
-Varun Sethi (1):
-      powerpc/iommu/fsl: Add PAMU bypass enable register to ccsr_guts struct
-
-Xuelin Shi (1):
-      powerpc/dma/raidengine: add raidengine device
-
-York Sun (1):
-      powerpc/mpc85xx: Change spin table to cached memory
-
- .../devicetree/bindings/powerpc/fsl/raideng.txt    |   81 +++++++++++++++++++
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |    1 +
- arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi         |    6 ++
- arch/powerpc/boot/dts/fsl/qoriq-raid1.0-0.dtsi     |   85 ++++++++++++++++++++
- arch/powerpc/include/asm/fsl_guts.h                |    4 +-
- arch/powerpc/platforms/85xx/p1022_ds.c             |    2 +-
- arch/powerpc/platforms/85xx/smp.c                  |   49 ++++++++---
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c         |    2 +
- arch/powerpc/sysdev/fsl_pci.c                      |   37 ++++++++-
- drivers/virt/fsl_hypervisor.c                      |    3 -
- 10 files changed, 250 insertions(+), 20 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/raideng.txt
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-raid1.0-0.dtsi
+ arch/powerpc/platforms/pseries/msi.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
