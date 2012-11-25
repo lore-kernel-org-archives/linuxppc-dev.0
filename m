@@ -1,16 +1,22 @@
 Return-Path: <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] powerpc/85xx: p1022ds: Use NULL instead of 0 for
- pointers
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 0CE222C00D8
+ for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2012 00:08:04 +1100 (EST)
+Subject: Re: [PATCH 2/2] powerpc/86xx: fsl_pcibios_fixup_bus requires
+ CONFIG_PCI
 Mime-Version: 1.0 (Apple Message framework v1278)
 Content-Type: text/plain; charset=us-ascii
 From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1353385912-25882-1-git-send-email-tushar.behera@linaro.org>
-Date: Sun, 25 Nov 2012 07:07:33 -0600
-Message-Id: <CB1A6013-AB16-4373-86FC-844B6C48EC05@kernel.crashing.org>
-References: <1353385912-25882-1-git-send-email-tushar.behera@linaro.org>
-To: Tushar Behera <tushar.behera@linaro.org>
-Cc: devicetree-discuss@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- patches@linaro.org
+In-Reply-To: <1350330741-11390-2-git-send-email-timur@freescale.com>
+Date: Sun, 25 Nov 2012 07:07:35 -0600
+Message-Id: <E39D0E6D-C855-44C3-B8DB-FBF044CCA4D6@kernel.crashing.org>
+References: <1350330741-11390-1-git-send-email-timur@freescale.com>
+ <1350330741-11390-2-git-send-email-timur@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+Cc: paul.gortmaker@windriver.com, Anatolij Gustschin <agust@denx.de>,
+ linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,15 +27,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Nov 19, 2012, at 10:31 PM, Tushar Behera wrote:
+On Oct 15, 2012, at 2:52 PM, Timur Tabi wrote:
 
-> The third argument for of_get_property() is a pointer, hence pass
-> NULL instead of 0.
+> Function fsl_pcibios_fixup_bus() is available only if PCI is enabled.  The
+> MPC8610 HPCD platform file was not protecting the assigned with an #ifdef,
+> which results in a link failure when PCI is disabled.  Every other platform
+> already has this #ifdef.
 > 
-> Signed-off-by: Tushar Behera <tushar.behera@linaro.org>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> arch/powerpc/platforms/85xx/p1022_ds.c |    2 +-
-> 1 files changed, 1 insertions(+), 1 deletions(-)
+> arch/powerpc/platforms/86xx/mpc8610_hpcd.c |    2 ++
+> 1 files changed, 2 insertions(+), 0 deletions(-)
 
 applied to next
 
