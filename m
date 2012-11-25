@@ -1,20 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 9D3B82C0084
- for <linuxppc-dev@ozlabs.org>; Mon, 26 Nov 2012 10:08:11 +1100 (EST)
-Message-ID: <1353881283.16666.5.camel@pasglop>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 26 Nov 2012 09:08:03 +1100
-In-Reply-To: <1353881249.16666.4.camel@pasglop>
-References: <1353881249.16666.4.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <sachin.surendran@gmail.com>
+Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8C0A22C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 09:19:58 +1100 (EST)
+Received: by mail-da0-f51.google.com with SMTP id i30so2714119dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 25 Nov 2012 14:19:55 -0800 (PST)
+From: sachin.surendran@gmail.com
+To: galak@kernel.crashing.org,
+	jochen@scram.de
+Subject: [PATCH 1/1] i2c-cpm: Fix to takeback i2c bus master-ship after a
+ collision
+Date: Mon, 26 Nov 2012 11:20:01 +1300
+Message-Id: <1353882001-30744-1-git-send-email-sachin.surendran@gmail.com>
+In-Reply-To: <sachin.surendran@gmail.com>
+References: <sachin.surendran@gmail.com>
+Cc: Sachin Surendran <sachin.surendran@alliedtelesis.co.nz>,
+ sachin.surendran@gmail.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-11-26 at 09:07 +1100, Benjamin Herrenschmidt wrote:
-> Hi Linus !
-> 
-> Here's a patch that would be good to still have in 3.7. It's a one liner fixing
-> a regression introduced by the new EEH code in .37 (potential oops on some
-> PCI setups when configuring MSIs).
-> 
-> Cheers,
-> Ben.
-> 
-> The following changes since commit d6dc24613c222f9057131ccbd5264a10bcba9f97:
-> 
->   Merge remote-tracking branch 'agust/merge' into merge (2012-11-21 13:24:49 +1100)
-> 
-> are available in the git repository at:
-> 
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git 
+From: Sachin Surendran <sachin.surendran@alliedtelesis.co.nz>
 
-And the branch is "merge".
+In case of collision on i2c bus the controller which lost bus mastership
+stays as a slave for all subsequent transfers. This results in the i2c
+controller never writing to the bus for future transactions, resulting
+in i2c transfer timeouts.
+  This fix checks for a collision on last I2C transaction and sets the
+I2COM_MASTER bit for the new transaction.
 
-Cheers,
-Ben.
+Signed-off-by: Sachin Surendran <sachin.surendran@alliedtelesis.co.nz>
+---
+ drivers/i2c/busses/i2c-cpm.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-> 
-> for you to fetch changes up to bb4618823a3389086f157fafb2a0d97cade8d89f:
-> 
->   powerpc/pseries: Fix oops with MSIs when missing EEH PEs (2012-11-23 13:26:05 +1100)
-> 
-> ----------------------------------------------------------------
-> Alexey Kardashevskiy (1):
->       powerpc/pseries: Fix oops with MSIs when missing EEH PEs
-> 
->  arch/powerpc/platforms/pseries/msi.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
+diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+index c1e1096..bb94c6d 100644
+--- a/drivers/i2c/busses/i2c-cpm.c
++++ b/drivers/i2c/busses/i2c-cpm.c
+@@ -338,6 +338,14 @@ static int cpm_i2c_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
+ 	tptr = 0;
+ 	rptr = 0;
+ 
++	/*
++	 * If there was a collision in the last i2c transaction,
++	 * Set I2COM_MASTER as it was cleared during collision.
++	 */
++	if (in_be16(&tbdf->cbd_sc) & BD_SC_CL) {
++		out_8(&cpm->i2c_reg->i2com, I2COM_MASTER);
++	}
++
+ 	while (tptr < num) {
+ 		pmsg = &msgs[tptr];
+ 		dev_dbg(&adap->dev, "R: %d T: %d\n", rptr, tptr);
+-- 
+1.7.9.5
