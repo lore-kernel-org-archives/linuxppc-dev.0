@@ -1,28 +1,22 @@
-Return-Path: <joro@8bytes.org>
-Received: from mail.8bytes.org (8bytes.org [85.214.48.195])
- by ozlabs.org (Postfix) with ESMTP id E24052C00C2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 22:42:00 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
- by mail.8bytes.org (Postfix) with SMTP id 841A512B07B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 12:22:21 +0100 (CET)
-Date: Mon, 26 Nov 2012 12:22:17 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Shuah Khan <shuah.khan@hp.com>
-Subject: Re: [PATCH 0/9] dma_debug: add debug_dma_mapping_error support to
- architectures that support DMA_DEBUG_API
-Message-ID: <20121126112217.GG25742@8bytes.org>
-References: <1353706142.5270.93.camel@lorien2>
+Return-Path: <wfp5p@viridian.itc.virginia.edu>
+Received: from viridian.itc.virginia.edu (viridian.itc.Virginia.EDU
+ [128.143.12.139]) by ozlabs.org (Postfix) with ESMTP id 9F6212C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 00:52:21 +1100 (EST)
+Subject: Re: [PATCH 065/493] i2c: remove use of __devexit_p
+To: w.sang@pengutronix.de (Wolfram Sang)
+Date: Mon, 26 Nov 2012 08:52:18 -0500
+In-Reply-To: <20121122214915.GD14851@pengutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1353706142.5270.93.camel@lorien2>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org, a-jacquiot@ti.com,
- catalin.marinas@arm.com, Ming Lei <ming.lei@canonical.com>,
- shuahkhan@gmail.com, sparclinux@vger.kernel.org, m.szyprowski@samsung.com,
- linux-c6x-dev@linux-c6x.org, linux-sh@vger.kernel.org, msalter@redhat.com,
- fenghua.yu@intel.com, microblaze-uclinux@itee.uq.edu.au,
- linux-arm-kernel@lists.infradead.org, monstr@monstr.eu, tony.luck@intel.com,
- LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, lethal@linux-sh.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Message-Id: <20121126135218.45F6780157@viridian.itc.virginia.edu>
+From: wfp5p@viridian.itc.virginia.edu (Bill Pemberton)
+Cc: Rudolf Marek <r.marek@assembler.cz>, Tony Lindgren <tony@atomide.com>,
+ gregkh@linuxfoundation.org, Olof Johansson <olof@lixom.net>,
+ linux-omap@vger.kernel.org, "Mark M. Hoffman" <mhoffman@lightlink.com>,
+ linux-i2c@vger.kernel.org, Ben Dooks <ben-linux@fluff.org>,
+ Barry Song <baohua.song@csr.com>, Jean Delvare <khali@linux-fr.org>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,22 +26,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Shuah,
-
-On Fri, Nov 23, 2012 at 02:29:02PM -0700, Shuah Khan wrote:
-> x86 - done in the first patch that added the feature.
+Wolfram Sang writes:
 > 
-> ARM64: dma_debug: add debug_dma_mapping_error support
-> c6x: dma_debug: add debug_dma_mapping_error support
-> ia64: dma_debug: add debug_dma_mapping_error support
-> microblaze: dma-mapping: support debug_dma_mapping_error
-> mips: dma_debug: add debug_dma_mapping_error support
-> powerpc: dma_debug: add debug_dma_mapping_error support
-> sh: dma_debug: add debug_dma_mapping_error support
-> sparc: dma_debug: add debug_dma_mapping_error support
-> tile: dma_debug: add debug_dma_mapping_error support
+> 
+> --osDK9TLjxFScVI/L
+> Content-Type: text/plain; charset=us-ascii
+> Content-Disposition: inline
+> Content-Transfer-Encoding: quoted-printable
+> 
+> On Tue, Nov 20, 2012 at 02:46:21PM +0100, Jean Delvare wrote:
+> > On Mon, 19 Nov 2012 13:20:14 -0500, Bill Pemberton wrote:
+> > > CONFIG_HOTPLUG is going away as an option so __devexit_p is no longer
+> > > needed.
+> >=20
+> > As mentioned on the lm-sensors list for hwmon patches already, I think
+> > it would be much clearer to not split __devexit, __devexit_p, __devinit
+> > etc. removal into separate patches. One patch per subsystem would be
+> > easier to review and apply. If patches grow too large then you'd rather
+> > split in a different direction, for example drivers/i2c/muxes vs.
+> > drivers/i2c/busses or even grouped by related bus drivers (see entries
+> > "I2C OVER PARALLEL PORT" and "I2C/SMBUS CONTROLLER DRIVERS FOR PC" in
+> > MAINTAINERS for examples of meaningful groups.)
+> 
+> I agree with Jean here. Is there a V2 planned? With a change like this?
+> 
 
-Have you compile-tested the invididual archs you are changing here?
+Yes, my plan is to redo the patches for the i2c subsystem.
 
-
-	Joerg
+-- 
+Bill
