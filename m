@@ -1,28 +1,23 @@
-Return-Path: <B16395@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Return-Path: <B41889@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6FA622C0087
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 16:24:47 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: "joerg.roedel@amd.com" <joerg.roedel@amd.com>
-Subject: RE: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes required
- by fsl PAMU driver.
-Date: Mon, 26 Nov 2012 05:24:37 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D29AE2A@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1353419697-31269-1-git-send-email-Varun.Sethi@freescale.com>
- <1353419697-31269-4-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1353419697-31269-4-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+ by ozlabs.org (Postfix) with ESMTPS id 8EC862C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 16:29:38 +1100 (EST)
+Message-ID: <50B2FE56.4080605@freescale.com>
+Date: Mon, 26 Nov 2012 13:29:58 +0800
+From: Chen Yuanquan-B41889 <B41889@freescale.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Sethi Varun-B16395 <B16395@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/pci-hotplug: fix the rescanned pci device's
+ dma_set_mask issue
+References: <1353644968-29469-1-git-send-email-B41889@freescale.com>
+ <455E76A9-ABB3-4FF6-A19E-612E43223C4A@kernel.crashing.org>
+In-Reply-To: <455E76A9-ABB3-4FF6-A19E-612E43223C4A@kernel.crashing.org>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, r61911@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,102 +27,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joerg,
-Any comments? Can we apply this patch?
+On 11/25/2012 08:41 PM, Kumar Gala wrote:
+> On Nov 22, 2012, at 10:29 PM, Yuanquan Chen wrote:
+>
+>> On powerpc arch, dma_ops of rescanned pci device after system's booting up won't be
+>> initialized by system, so it will fail to execute the dma_set_mask in the device's
+>> driver. Initialize it to solve this issue.
+>>
+>> Signed-off-by: Yuanquan Chen <B41889@freescale.com>
+>> ---
+>> arch/powerpc/include/asm/dma-mapping.h |    7 +++++--
+>> 1 file changed, 5 insertions(+), 2 deletions(-)
+> This is not the right way to get the dma_ops setup.  You need to find some other point for the hotplug scenario to get the dma_ops setup.
+>
+> - k
 
-Regards
-Varun
+Hi Kumar,
 
-> -----Original Message-----
-> From: Sethi Varun-B16395
-> Sent: Tuesday, November 20, 2012 7:25 PM
-> To: joerg.roedel@amd.com; iommu@lists.linux-foundation.org; linuxppc-
-> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood Scott-B07421;
-> Tabi Timur-B04825
-> Cc: Sethi Varun-B16395
-> Subject: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes required
-> by fsl PAMU driver.
->=20
-> Added the following domain attributes required by FSL PAMU driver:
-> 1. Subwindows field added to the iommu domain geometry attribute.
-> 2. Added new iommu stash attribute, which allows setting of the
->    LIODN specific stash id parameter through IOMMU API.
-> 3. Added an attribute for enabling/disabling DMA to a particular
->    memory window.
->=20
-> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
-> ---
-> changes in v5:
-> - Updated description of the subwindows field.
-> changes in v4:
-> - Updated comment explaining subwindows(as mentioned by Scott).
-> change in v3:
-> -renamed the stash attribute targets
->  include/linux/iommu.h |   43 +++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 43 insertions(+), 0 deletions(-)
->=20
-> diff --git a/include/linux/iommu.h b/include/linux/iommu.h index
-> f3b99e1..7ca1cda 100644
-> --- a/include/linux/iommu.h
-> +++ b/include/linux/iommu.h
-> @@ -44,6 +44,41 @@ struct iommu_domain_geometry {
->  	dma_addr_t aperture_start; /* First address that can be mapped
-> */
->  	dma_addr_t aperture_end;   /* Last address that can be mapped
-> */
->  	bool force_aperture;       /* DMA only allowed in mappable range?
-> */
-> +
-> +	/*
-> +	 * A geometry mapping can be created in one of the following ways
-> +	 * for an IOMMU:
-> +	 * 1. A single contiguous window
-> +	 * 2. Through arbritary paging throughout the aperture.
-> +	 * 3. Using multiple subwindows
-> +	 *
-> +	 * In absence of arbritary paging, subwindows allow for supporting
-> +	 * physically discontiguous mappings.
-> +	 *
-> +	 * This attribute indicates number of DMA subwindows supported by
-> +	 * the geometry. If there is a single window that maps the entire
-> +	 * geometry, attribute must be set to "1". A value of "0" implies
-> +	 * that this mechanism is not used at all(normal paging is used).
-> +	 * Value other than* "0" or "1" indicates the actual number of
-> +	 * subwindows.
-> +	 */
-> +	u32 subwindows;
-> +};
-> +
-> +/* cache stash targets */
-> +#define IOMMU_ATTR_CACHE_L1 1
-> +#define IOMMU_ATTR_CACHE_L2 2
-> +#define IOMMU_ATTR_CACHE_L3 3
-> +
-> +/* This attribute corresponds to IOMMUs capable of generating
-> + * a stash transaction. A stash transaction is typically a
-> + * hardware initiated prefetch of data from memory to cache.
-> + * This attribute allows configuring stashig specific parameters
-> + * in the IOMMU hardware.
-> + */
-> +struct iommu_stash_attribute {
-> +	u32 	cpu;	/* cpu number */
-> +	u32 	cache;	/* cache to stash to: L1,L2,L3 */
->  };
->=20
->  struct iommu_domain {
-> @@ -60,6 +95,14 @@ struct iommu_domain {  enum iommu_attr {
->  	DOMAIN_ATTR_MAX,
->  	DOMAIN_ATTR_GEOMETRY,
-> +	/* Set the IOMMU hardware stashing
-> +	 * parameters.
-> +	 */
-> +	DOMAIN_ATTR_STASH,
-> +	/* Explicity enable/disable DMA for a
-> +         * particular memory window.
-> +         */
-> +	DOMAIN_ATTR_ENABLE,
->  };
->=20
->  #ifdef CONFIG_IOMMU_API
-> --
-> 1.7.4.1
+I read the code about pci bus scan and rescan. Only the 
+pcibios_fixup_bus in pci_scan_child_bus and
+pcibios_enable_device in pci_rescan_bus are arch related code. The 
+pcibios_fixup_bus won't be called
+for the rescanned PCI devices due to the bus->is_added has been set for 
+the first scanning at boot time.
+So I think it's more reasonable to do the same work as pcibios_fixup_bus 
+for rescanned PCI device in
+pcibios_enable_device. The patch code is a copy of 
+pcibios_setup_bus_devices called by pcibios_fixup_bus,
+It can solve the dma_set_mask and irq related issues of rescanned PCI 
+device on powerpc arch. What's
+your opinion?
+
+Thanks,
+yuanquan
+
+diff --git a/arch/powerpc/kernel/pci-common.c 
+b/arch/powerpc/kernel/pci-common.c
+index 7f94f76..30f7d61 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1496,6 +1496,23 @@ int pcibios_enable_device(struct pci_dev *dev, 
+int mask)
+                 if (ppc_md.pcibios_enable_device_hook(dev))
+                         return -EINVAL;
+
++       if (!dev->is_added) {
++               set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
++
++               /* Hook up default DMA ops */
++               set_dma_ops(&dev->dev, pci_dma_ops);
++               set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
++
++               /* Additional platform DMA/iommu setup */
++               if (ppc_md.pci_dma_dev_setup)
++                       ppc_md.pci_dma_dev_setup(dev);
++
++               /* Read default IRQs and fixup if necessary */
++               pci_read_irq_line(dev);
++               if (ppc_md.pci_irq_fixup)
++                       ppc_md.pci_irq_fixup(dev);
++       }
++
+         return pci_enable_resources(dev, mask);
+  }
+
+>> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+>> index 7816087..22eae53 100644
+>> --- a/arch/powerpc/include/asm/dma-mapping.h
+>> +++ b/arch/powerpc/include/asm/dma-mapping.h
+>> @@ -126,8 +126,11 @@ static inline int dma_supported(struct device *dev, u64 mask)
+>> {
+>> 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
+>>
+>> -	if (unlikely(dma_ops == NULL))
+>> -		return 0;
+>> +	if (unlikely(dma_ops == NULL)) {
+>> +		set_dma_ops(dev, &dma_direct_ops);
+>> +		set_dma_offset(dev, PCI_DRAM_OFFSET);
+>> +		dma_ops = &dma_direct_ops;
+>> +	}
+>> 	if (dma_ops->dma_supported == NULL)
+>> 		return 1;
+>> 	return dma_ops->dma_supported(dev, mask);
+>> -- 
+>> 1.7.9.5
+>>
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>
+>
