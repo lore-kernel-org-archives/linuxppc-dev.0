@@ -1,21 +1,41 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id A43682C009B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 05:20:45 +1100 (EST)
-Message-ID: <1353954038.1809.114.camel@bling.home>
-Subject: Re: [PATCH 1/2] vfio powerpc: implemented IOMMU driver for VFIO
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 26 Nov 2012 11:20:38 -0700
-In-Reply-To: <1353661396-14374-2-git-send-email-aik@ozlabs.ru>
-References: <1353435584.2234.87.camel@bling.home>
- <1353661396-14374-1-git-send-email-aik@ozlabs.ru>
- <1353661396-14374-2-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <key@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2540E2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 07:37:15 +1100 (EST)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <key@linux.vnet.ibm.com>;
+ Mon, 26 Nov 2012 15:37:12 -0500
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 721CA38C8042
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 15:37:10 -0500 (EST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qAQKb2LX38469758
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 15:37:03 -0500
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qAQKaxhV020920
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 13:37:01 -0700
+Date: Mon, 26 Nov 2012 14:36:09 -0600
+From: Kent Yoder <key@linux.vnet.ibm.com>
+To: Bill Pemberton <wfp5p@virginia.edu>
+Subject: Re: [PATCH 437/493] char: remove use of __devexit
+Message-ID: <20121126203608.GG12737@ennui.austin.ibm.com>
+References: <1353349642-3677-1-git-send-email-wfp5p@virginia.edu>
+ <1353349642-3677-437-git-send-email-wfp5p@virginia.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1353349642-3677-437-git-send-email-wfp5p@virginia.edu>
+Cc: David Airlie <airlied@linux.ie>, gregkh@linuxfoundation.org,
+ Marcel Selhorst <tpmdd@selhorst.net>, platform-driver-x86@vger.kernel.org,
+ Rajiv Andrade <mail@srajiv.net>, Mattia Dongili <malattia@linux.it>,
+ tpmdd-devel@lists.sourceforge.net, Olof Johansson <olof@lixom.net>,
+ openipmi-developer@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ Sirrix AG <tpmdd@sirrix.com>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,389 +45,476 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-11-23 at 20:03 +1100, Alexey Kardashevskiy wrote:
-> VFIO implements platform independent stuff such as
-> a PCI driver, BAR access (via read/write on a file descriptor
-> or direct mapping when possible) and IRQ signaling.
+On Mon, Nov 19, 2012 at 01:26:26PM -0500, Bill Pemberton wrote:
+> CONFIG_HOTPLUG is going away as an option so __devexit is no
+> longer needed.
 > 
-> The platform dependent part includes IOMMU initialization
-> and handling. This patch implements an IOMMU driver for VFIO
-> which does mapping/unmapping pages for the guest IO and
-> provides information about DMA window (required by a POWERPC
-> guest).
-> 
-> The counterpart in QEMU is required to support this functionality.
-> 
-> Cc: David Gibson <david@gibson.dropbear.id.au>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
+> Cc: David Airlie <airlied@linux.ie> 
+> Cc: Olof Johansson <olof@lixom.net> 
+> Cc: Mattia Dongili <malattia@linux.it> 
+> Cc: Kent Yoder <key@linux.vnet.ibm.com> 
+> Cc: Rajiv Andrade <mail@srajiv.net> 
+> Cc: Marcel Selhorst <tpmdd@selhorst.net> 
+> Cc: Sirrix AG <tpmdd@sirrix.com> 
+> Cc: linuxppc-dev@lists.ozlabs.org 
+> Cc: linux-arm-kernel@lists.infradead.org 
+> Cc: openipmi-developer@lists.sourceforge.net 
+> Cc: platform-driver-x86@vger.kernel.org 
+> Cc: tpmdd-devel@lists.sourceforge.net 
+
+Acked-by: Kent Yoder <key@linux.vnet.ibm.com>
+
 > ---
->  drivers/vfio/Kconfig                |    6 +
->  drivers/vfio/Makefile               |    1 +
->  drivers/vfio/vfio_iommu_spapr_tce.c |  247 +++++++++++++++++++++++++++++++++++
->  include/linux/vfio.h                |   20 +++
->  4 files changed, 274 insertions(+)
->  create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
+>  drivers/char/agp/ali-agp.c                 | 2 +-
+>  drivers/char/agp/amd-k7-agp.c              | 2 +-
+>  drivers/char/agp/amd64-agp.c               | 2 +-
+>  drivers/char/agp/ati-agp.c                 | 2 +-
+>  drivers/char/agp/efficeon-agp.c            | 2 +-
+>  drivers/char/agp/i460-agp.c                | 2 +-
+>  drivers/char/agp/intel-agp.c               | 2 +-
+>  drivers/char/agp/nvidia-agp.c              | 2 +-
+>  drivers/char/agp/sgi-agp.c                 | 2 +-
+>  drivers/char/agp/sis-agp.c                 | 2 +-
+>  drivers/char/agp/sworks-agp.c              | 2 +-
+>  drivers/char/agp/uninorth-agp.c            | 2 +-
+>  drivers/char/agp/via-agp.c                 | 2 +-
+>  drivers/char/hw_random/atmel-rng.c         | 2 +-
+>  drivers/char/hw_random/bcm63xx-rng.c       | 2 +-
+>  drivers/char/hw_random/exynos-rng.c        | 2 +-
+>  drivers/char/hw_random/n2-drv.c            | 2 +-
+>  drivers/char/hw_random/pasemi-rng.c        | 2 +-
+>  drivers/char/hw_random/picoxcell-rng.c     | 2 +-
+>  drivers/char/hw_random/ppc4xx-rng.c        | 2 +-
+>  drivers/char/hw_random/timeriomem-rng.c    | 2 +-
+>  drivers/char/hw_random/virtio-rng.c        | 2 +-
+>  drivers/char/ipmi/ipmi_si_intf.c           | 6 +++---
+>  drivers/char/sonypi.c                      | 2 +-
+>  drivers/char/tb0219.c                      | 2 +-
+>  drivers/char/tpm/tpm_i2c_infineon.c        | 2 +-
+>  drivers/char/tpm/tpm_ibmvtpm.c             | 2 +-
+>  drivers/char/tpm/tpm_infineon.c            | 2 +-
+>  drivers/char/tpm/tpm_tis.c                 | 2 +-
+>  drivers/char/xilinx_hwicap/xilinx_hwicap.c | 4 ++--
+>  30 files changed, 33 insertions(+), 33 deletions(-)
 > 
-> diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
-> index 7cd5dec..b464687 100644
-> --- a/drivers/vfio/Kconfig
-> +++ b/drivers/vfio/Kconfig
-> @@ -3,10 +3,16 @@ config VFIO_IOMMU_TYPE1
->  	depends on VFIO
->  	default n
->  
-> +config VFIO_IOMMU_SPAPR_TCE
-> +	tristate
-> +	depends on VFIO && SPAPR_TCE_IOMMU
-> +	default n
-> +
->  menuconfig VFIO
->  	tristate "VFIO Non-Privileged userspace driver framework"
->  	depends on IOMMU_API
->  	select VFIO_IOMMU_TYPE1 if X86
-> +	select VFIO_IOMMU_SPAPR_TCE if PPC_POWERNV
->  	help
->  	  VFIO provides a framework for secure userspace device drivers.
->  	  See Documentation/vfio.txt for more details.
-> diff --git a/drivers/vfio/Makefile b/drivers/vfio/Makefile
-> index 2398d4a..72bfabc 100644
-> --- a/drivers/vfio/Makefile
-> +++ b/drivers/vfio/Makefile
-> @@ -1,3 +1,4 @@
->  obj-$(CONFIG_VFIO) += vfio.o
->  obj-$(CONFIG_VFIO_IOMMU_TYPE1) += vfio_iommu_type1.o
-> +obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_spapr_tce.o
->  obj-$(CONFIG_VFIO_PCI) += pci/
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> new file mode 100644
-> index 0000000..46a6298
-> --- /dev/null
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -0,0 +1,247 @@
-> +/*
-> + * VFIO: IOMMU DMA mapping support for TCE on POWER
-> + *
-> + * Copyright (C) 2012 IBM Corp.  All rights reserved.
-> + *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + *
-> + * Derived from original vfio_iommu_type1.c:
-> + * Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
-> + *     Author: Alex Williamson <alex.williamson@redhat.com>
-> + */
-> +
-> +#include <linux/module.h>
-> +#include <linux/pci.h>
-> +#include <linux/slab.h>
-> +#include <linux/uaccess.h>
-> +#include <linux/err.h>
-> +#include <linux/vfio.h>
-> +#include <asm/iommu.h>
-> +
-> +#define DRIVER_VERSION  "0.1"
-> +#define DRIVER_AUTHOR   "aik@ozlabs.ru"
-> +#define DRIVER_DESC     "VFIO IOMMU SPAPR TCE"
-> +
-> +static void tce_iommu_detach_group(void *iommu_data,
-> +		struct iommu_group *iommu_group);
-> +
-> +/*
-> + * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
-> + */
-> +
-> +/*
-> + * The container descriptor supports only a single group per container.
-> + * Required by the API as the container is not supplied with the IOMMU group
-> + * at the moment of initialization.
-> + */
-> +struct tce_container {
-> +	struct mutex lock;
-> +	struct iommu_table *tbl;
-> +};
-> +
-> +static void *tce_iommu_open(unsigned long arg)
-> +{
-> +	struct tce_container *container;
-> +
-> +	if (arg != VFIO_SPAPR_TCE_IOMMU) {
-> +		printk(KERN_ERR "tce_vfio: Wrong IOMMU type\n");
-> +		return ERR_PTR(-EINVAL);
-> +	}
-> +
-> +	container = kzalloc(sizeof(*container), GFP_KERNEL);
-> +	if (!container)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	mutex_init(&container->lock);
-> +
-> +	return container;
-> +}
-> +
-> +static void tce_iommu_release(void *iommu_data)
-> +{
-> +	struct tce_container *container = iommu_data;
-> +
-> +	WARN_ON(container->tbl && !container->tbl->it_group);
-
-I think your patch ordering is backwards here.  it_group isn't added
-until 2/2.  I'd really like to see the arch/powerpc code approved and
-merged by the powerpc maintainer before we add the code that makes use
-of it into vfio.  Otherwise we just get lots of churn if interfaces
-change or they disapprove of it altogether.
-
-> +	if (container->tbl && container->tbl->it_group)
-> +		tce_iommu_detach_group(iommu_data, container->tbl->it_group);
-> +
-> +	mutex_destroy(&container->lock);
-> +
-> +	kfree(container);
-> +}
-> +
-> +static long tce_iommu_ioctl(void *iommu_data,
-> +				 unsigned int cmd, unsigned long arg)
-> +{
-> +	struct tce_container *container = iommu_data;
-> +	unsigned long minsz;
-> +
-> +	switch (cmd) {
-> +	case VFIO_CHECK_EXTENSION: {
-> +		return (arg == VFIO_SPAPR_TCE_IOMMU) ? 1 : 0;
-> +	}
-> +	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
-> +		struct vfio_iommu_spapr_tce_info info;
-> +		struct iommu_table *tbl = container->tbl;
-> +
-> +		if (WARN_ON(!tbl))
-> +			return -ENXIO;
-> +
-> +		minsz = offsetofend(struct vfio_iommu_spapr_tce_info,
-> +				dma64_window_size);
-> +
-> +		if (copy_from_user(&info, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (info.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT;
-> +		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT;
-> +		info.dma64_window_start = 0;
-> +		info.dma64_window_size = 0;
-> +		info.flags = 0;
-> +
-> +		if (copy_to_user((void __user *)arg, &info, minsz))
-> +			return -EFAULT;
-> +
-> +		return 0;
-> +	}
-> +	case VFIO_IOMMU_MAP_DMA: {
-> +		vfio_iommu_spapr_tce_dma_map param;
-> +		struct iommu_table *tbl = container->tbl;
-> +		enum dma_data_direction direction = DMA_NONE;
-> +
-> +		if (WARN_ON(!tbl))
-> +			return -ENXIO;
-> +
-> +		minsz = offsetofend(vfio_iommu_spapr_tce_dma_map, size);
-> +
-> +		if (copy_from_user(&param, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (param.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		if ((param.flags & VFIO_DMA_MAP_FLAG_READ) &&
-> +				(param.flags & VFIO_DMA_MAP_FLAG_WRITE)) {
-> +			direction = DMA_BIDIRECTIONAL;
-> +		} else if (param.flags & VFIO_DMA_MAP_FLAG_READ) {
-> +			direction = DMA_TO_DEVICE;
-> +		} else if (param.flags & VFIO_DMA_MAP_FLAG_WRITE) {
-> +			direction = DMA_FROM_DEVICE;
-> +		}
-> +
-> +		param.size += param.iova & ~IOMMU_PAGE_MASK;
-> +		param.size = _ALIGN_UP(param.size, IOMMU_PAGE_SIZE);
-
-On x86 we force iova, vaddr, and size to all be aligned to the smallest
-page granularity of the iommu and return -EINVAL if it doesn't fit.
-What does it imply to the user if they're always aligned to work here?
-Won't this interface happily map overlapping entries with no indication
-to the user that the previous mapping is no longer valid?
-
-Maybe another reason why a combined unmap/map makes me nervous, we have
-to assume the user knows what they're doing.
-
-> +
-> +		return iommu_put_tces(tbl, param.iova >> IOMMU_PAGE_SHIFT,
-> +				param.vaddr & IOMMU_PAGE_MASK, direction,
-> +				param.size >> IOMMU_PAGE_SHIFT);
-> +	}
-> +	case VFIO_IOMMU_UNMAP_DMA: {
-> +		vfio_iommu_spapr_tce_dma_unmap param;
-> +		struct iommu_table *tbl = container->tbl;
-> +
-> +		if (WARN_ON(!tbl))
-> +			return -ENXIO;
-> +
-> +		minsz = offsetofend(vfio_iommu_spapr_tce_dma_unmap, size);
-> +
-> +		if (copy_from_user(&param, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (param.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		param.size += param.iova & ~IOMMU_PAGE_MASK;
-> +		param.size = _ALIGN_UP(param.size, IOMMU_PAGE_SIZE);
-> +
-> +		return iommu_put_tces(tbl, param.iova >> IOMMU_PAGE_SHIFT,
-> +				0, DMA_NONE, param.size >> IOMMU_PAGE_SHIFT);
-> +	}
-> +	default:
-> +		printk(KERN_WARNING "tce_vfio: unexpected cmd %x\n", cmd);
-
-pr_warn
-
-> +	}
-> +
-> +	return -ENOTTY;
-> +}
-> +
-> +static int tce_iommu_attach_group(void *iommu_data,
-> +		struct iommu_group *iommu_group)
-> +{
-> +	struct tce_container *container = iommu_data;
-> +	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
-> +
-> +	BUG_ON(!tbl);
-> +	mutex_lock(&container->lock);
-> +	pr_debug("tce_vfio: Attaching group #%u to iommu %p\n",
-> +			iommu_group_id(iommu_group), iommu_group);
-> +	if (container->tbl) {
-> +		printk(KERN_WARNING "tce_vfio: Only one group per IOMMU container is allowed, existing id=%d, attaching id=%d\n",
-
-pr_warn
-
-> +				iommu_group_id(container->tbl->it_group),
-> +				iommu_group_id(iommu_group));
-> +		mutex_unlock(&container->lock);
-> +		return -EBUSY;
-> +	}
-> +
-> +	container->tbl = tbl;
-
-Would it be too much paranoia to clear all the tce here as you do below
-on detach?  ie. is there any risk that there's leftover programming?
-x86 allocates a new domain on open of the iommu, so we always start out
-clean.
-
-> +	mutex_unlock(&container->lock);
-> +
-> +	return 0;
-> +}
-> +
-> +static void tce_iommu_detach_group(void *iommu_data,
-> +		struct iommu_group *iommu_group)
-> +{
-> +	struct tce_container *container = iommu_data;
-> +	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
-> +
-> +	BUG_ON(!tbl);
-> +	mutex_lock(&container->lock);
-> +	if (tbl != container->tbl) {
-> +		printk(KERN_WARNING "tce_vfio: detaching group #%u, expected group is #%u\n",
-
-pr_warn
-
-> +				iommu_group_id(iommu_group),
-> +				iommu_group_id(tbl->it_group));
-> +	} else {
-> +
-> +		pr_debug("tce_vfio: detaching group #%u from iommu %p\n",
-> +				iommu_group_id(iommu_group), iommu_group);
-> +
-> +		iommu_put_tces(tbl, tbl->it_offset, 0, DMA_NONE, tbl->it_size);
-
-So this cleans out any mappings when vfio is closed, good.
-
-> +		container->tbl = NULL;
-> +	}
-> +	mutex_unlock(&container->lock);
-> +}
-> +
-> +const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
-> +	.name		= "iommu-vfio-powerpc",
-> +	.owner		= THIS_MODULE,
-> +	.open		= tce_iommu_open,
-> +	.release	= tce_iommu_release,
-> +	.ioctl		= tce_iommu_ioctl,
-> +	.attach_group	= tce_iommu_attach_group,
-> +	.detach_group	= tce_iommu_detach_group,
-> +};
-> +
-> +static int __init tce_iommu_init(void)
-> +{
-> +	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
-> +}
-> +
-> +static void __exit tce_iommu_cleanup(void)
-> +{
-> +	vfio_unregister_iommu_driver(&tce_iommu_driver_ops);
-> +}
-> +
-> +module_init(tce_iommu_init);
-> +module_exit(tce_iommu_cleanup);
-> +
-> +MODULE_VERSION(DRIVER_VERSION);
-> +MODULE_LICENSE("GPL v2");
-> +MODULE_AUTHOR(DRIVER_AUTHOR);
-> +MODULE_DESCRIPTION(DRIVER_DESC);
-> +
-> diff --git a/include/linux/vfio.h b/include/linux/vfio.h
-> index 0a4f180..3ecd65c 100644
-> --- a/include/linux/vfio.h
-> +++ b/include/linux/vfio.h
-> @@ -99,6 +99,7 @@ extern void vfio_unregister_iommu_driver(
->  /* Extensions */
->  
->  #define VFIO_TYPE1_IOMMU		1
-> +#define VFIO_SPAPR_TCE_IOMMU		2
->  
->  /*
->   * The IOCTL interface is designed for extensibility by embedding the
-> @@ -442,4 +443,23 @@ struct vfio_iommu_type1_dma_unmap {
->  
->  #define VFIO_IOMMU_UNMAP_DMA _IO(VFIO_TYPE, VFIO_BASE + 14)
->  
-> +/* -------- Additional API for SPAPR TCE (Server POWERPC) IOMMU -------- */
-> +
-> +struct vfio_iommu_spapr_tce_info {
-> +	__u32 argsz;
-> +	__u32 flags;
-> +	__u32 dma32_window_start;
-> +	__u32 dma32_window_size;
-> +	__u64 dma64_window_start;
-> +	__u64 dma64_window_size;
-> +};
-
-Is there anything we can document about this?  It should probably list
-that size is in bytes.  Is there any need to communicate the IOMMU page
-size here?
-
-> +
-> +#define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
-> +
-> +/* Reuse type1 map/unmap structs as they are the same at the moment */
-> +typedef struct vfio_iommu_type1_dma_map vfio_iommu_spapr_tce_dma_map;
-> +typedef struct vfio_iommu_type1_dma_unmap vfio_iommu_spapr_tce_dma_unmap;
-> +
-> +/* ***************************************************************** */
-> +
->  #endif /* VFIO_H */
-
-Thanks,
-
-Alex
+> diff --git a/drivers/char/agp/ali-agp.c b/drivers/char/agp/ali-agp.c
+> index 9eb629b..0e69e60 100644
+> --- a/drivers/char/agp/ali-agp.c
+> +++ b/drivers/char/agp/ali-agp.c
+> @@ -374,7 +374,7 @@ found:
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_ali_remove(struct pci_dev *pdev)
+> +static void agp_ali_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/amd-k7-agp.c b/drivers/char/agp/amd-k7-agp.c
+> index 2e1efa9..cb9c9f9 100644
+> --- a/drivers/char/agp/amd-k7-agp.c
+> +++ b/drivers/char/agp/amd-k7-agp.c
+> @@ -480,7 +480,7 @@ static int agp_amdk7_probe(struct pci_dev *pdev,
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_amdk7_remove(struct pci_dev *pdev)
+> +static void agp_amdk7_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/amd64-agp.c b/drivers/char/agp/amd64-agp.c
+> index f4086c5..280c0d5 100644
+> --- a/drivers/char/agp/amd64-agp.c
+> +++ b/drivers/char/agp/amd64-agp.c
+> @@ -579,7 +579,7 @@ static int agp_amd64_probe(struct pci_dev *pdev,
+>  	return 0;
+>  }
+> 
+> -static void __devexit agp_amd64_remove(struct pci_dev *pdev)
+> +static void agp_amd64_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/ati-agp.c b/drivers/char/agp/ati-agp.c
+> index 6aeb624..485b15c 100644
+> --- a/drivers/char/agp/ati-agp.c
+> +++ b/drivers/char/agp/ati-agp.c
+> @@ -533,7 +533,7 @@ found:
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_ati_remove(struct pci_dev *pdev)
+> +static void agp_ati_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/efficeon-agp.c b/drivers/char/agp/efficeon-agp.c
+> index bf80cf1..08a465e 100644
+> --- a/drivers/char/agp/efficeon-agp.c
+> +++ b/drivers/char/agp/efficeon-agp.c
+> @@ -407,7 +407,7 @@ static int agp_efficeon_probe(struct pci_dev *pdev,
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_efficeon_remove(struct pci_dev *pdev)
+> +static void agp_efficeon_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/i460-agp.c b/drivers/char/agp/i460-agp.c
+> index bda2215..0436bf1 100644
+> --- a/drivers/char/agp/i460-agp.c
+> +++ b/drivers/char/agp/i460-agp.c
+> @@ -611,7 +611,7 @@ static int agp_intel_i460_probe(struct pci_dev *pdev,
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_intel_i460_remove(struct pci_dev *pdev)
+> +static void agp_intel_i460_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+> index ad6739e..362e744 100644
+> --- a/drivers/char/agp/intel-agp.c
+> +++ b/drivers/char/agp/intel-agp.c
+> @@ -819,7 +819,7 @@ found_gmch:
+>  	return err;
+>  }
+> 
+> -static void __devexit agp_intel_remove(struct pci_dev *pdev)
+> +static void agp_intel_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/nvidia-agp.c b/drivers/char/agp/nvidia-agp.c
+> index 1f7fddf..adaa47b 100644
+> --- a/drivers/char/agp/nvidia-agp.c
+> +++ b/drivers/char/agp/nvidia-agp.c
+> @@ -388,7 +388,7 @@ static int agp_nvidia_probe(struct pci_dev *pdev,
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_nvidia_remove(struct pci_dev *pdev)
+> +static void agp_nvidia_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/sgi-agp.c b/drivers/char/agp/sgi-agp.c
+> index 8356e89..05b8d02 100644
+> --- a/drivers/char/agp/sgi-agp.c
+> +++ b/drivers/char/agp/sgi-agp.c
+> @@ -327,7 +327,7 @@ static int agp_sgi_init(void)
+>  	return 0;
+>  }
+> 
+> -static void __devexit agp_sgi_cleanup(void)
+> +static void agp_sgi_cleanup(void)
+>  {
+>  	kfree(sgi_tioca_agp_bridges);
+>  	sgi_tioca_agp_bridges = NULL;
+> diff --git a/drivers/char/agp/sis-agp.c b/drivers/char/agp/sis-agp.c
+> index 7d6f3c6..37ee0eb 100644
+> --- a/drivers/char/agp/sis-agp.c
+> +++ b/drivers/char/agp/sis-agp.c
+> @@ -211,7 +211,7 @@ static int agp_sis_probe(struct pci_dev *pdev,
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_sis_remove(struct pci_dev *pdev)
+> +static void agp_sis_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/sworks-agp.c b/drivers/char/agp/sworks-agp.c
+> index d1b063b..d046de9 100644
+> --- a/drivers/char/agp/sworks-agp.c
+> +++ b/drivers/char/agp/sworks-agp.c
+> @@ -518,7 +518,7 @@ static int agp_serverworks_probe(struct pci_dev *pdev,
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_serverworks_remove(struct pci_dev *pdev)
+> +static void agp_serverworks_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
+> index d7168ca..2d29f04 100644
+> --- a/drivers/char/agp/uninorth-agp.c
+> +++ b/drivers/char/agp/uninorth-agp.c
+> @@ -663,7 +663,7 @@ static int agp_uninorth_probe(struct pci_dev *pdev,
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_uninorth_remove(struct pci_dev *pdev)
+> +static void agp_uninorth_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/agp/via-agp.c b/drivers/char/agp/via-agp.c
+> index 774fe1e..8b2c285 100644
+> --- a/drivers/char/agp/via-agp.c
+> +++ b/drivers/char/agp/via-agp.c
+> @@ -485,7 +485,7 @@ static int agp_via_probe(struct pci_dev *pdev,
+>  	return agp_add_bridge(bridge);
+>  }
+> 
+> -static void __devexit agp_via_remove(struct pci_dev *pdev)
+> +static void agp_via_remove(struct pci_dev *pdev)
+>  {
+>  	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/hw_random/atmel-rng.c b/drivers/char/hw_random/atmel-rng.c
+> index 0f6ca8f..7c73d4a 100644
+> --- a/drivers/char/hw_random/atmel-rng.c
+> +++ b/drivers/char/hw_random/atmel-rng.c
+> @@ -98,7 +98,7 @@ err_enable:
+>  	return ret;
+>  }
+> 
+> -static int __devexit atmel_trng_remove(struct platform_device *pdev)
+> +static int atmel_trng_remove(struct platform_device *pdev)
+>  {
+>  	struct atmel_trng *trng = platform_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/hw_random/bcm63xx-rng.c b/drivers/char/hw_random/bcm63xx-rng.c
+> index c46fc74..f343b7d 100644
+> --- a/drivers/char/hw_random/bcm63xx-rng.c
+> +++ b/drivers/char/hw_random/bcm63xx-rng.c
+> @@ -145,7 +145,7 @@ out:
+>  	return ret;
+>  }
+> 
+> -static int __devexit bcm63xx_rng_remove(struct platform_device *pdev)
+> +static int bcm63xx_rng_remove(struct platform_device *pdev)
+>  {
+>  	struct hwrng *rng = platform_get_drvdata(pdev);
+>  	struct bcm63xx_rng_priv *priv = to_rng_priv(rng);
+> diff --git a/drivers/char/hw_random/exynos-rng.c b/drivers/char/hw_random/exynos-rng.c
+> index 92d302a..48bbfec 100644
+> --- a/drivers/char/hw_random/exynos-rng.c
+> +++ b/drivers/char/hw_random/exynos-rng.c
+> @@ -134,7 +134,7 @@ static int exynos_rng_probe(struct platform_device *pdev)
+>  	return hwrng_register(&exynos_rng->rng);
+>  }
+> 
+> -static int __devexit exynos_rng_remove(struct platform_device *pdev)
+> +static int exynos_rng_remove(struct platform_device *pdev)
+>  {
+>  	struct exynos_rng *exynos_rng = platform_get_drvdata(pdev);
+> 
+> diff --git a/drivers/char/hw_random/n2-drv.c b/drivers/char/hw_random/n2-drv.c
+> index 5819c7b..20b962e 100644
+> --- a/drivers/char/hw_random/n2-drv.c
+> +++ b/drivers/char/hw_random/n2-drv.c
+> @@ -719,7 +719,7 @@ out:
+>  	return err;
+>  }
+> 
+> -static int __devexit n2rng_remove(struct platform_device *op)
+> +static int n2rng_remove(struct platform_device *op)
+>  {
+>  	struct n2rng *np = dev_get_drvdata(&op->dev);
+> 
+> diff --git a/drivers/char/hw_random/pasemi-rng.c b/drivers/char/hw_random/pasemi-rng.c
+> index da5dfb5..c6df5b2 100644
+> --- a/drivers/char/hw_random/pasemi-rng.c
+> +++ b/drivers/char/hw_random/pasemi-rng.c
+> @@ -122,7 +122,7 @@ static int rng_probe(struct platform_device *ofdev)
+>  	return err;
+>  }
+> 
+> -static int __devexit rng_remove(struct platform_device *dev)
+> +static int rng_remove(struct platform_device *dev)
+>  {
+>  	void __iomem *rng_regs = (void __iomem *)pasemi_rng.priv;
+> 
+> diff --git a/drivers/char/hw_random/picoxcell-rng.c b/drivers/char/hw_random/picoxcell-rng.c
+> index b4f7f06..973b951 100644
+> --- a/drivers/char/hw_random/picoxcell-rng.c
+> +++ b/drivers/char/hw_random/picoxcell-rng.c
+> @@ -151,7 +151,7 @@ err_enable:
+>  	return ret;
+>  }
+> 
+> -static int __devexit picoxcell_trng_remove(struct platform_device *pdev)
+> +static int picoxcell_trng_remove(struct platform_device *pdev)
+>  {
+>  	hwrng_unregister(&picoxcell_trng);
+>  	clk_disable(rng_clk);
+> diff --git a/drivers/char/hw_random/ppc4xx-rng.c b/drivers/char/hw_random/ppc4xx-rng.c
+> index c4b89c2..732c330 100644
+> --- a/drivers/char/hw_random/ppc4xx-rng.c
+> +++ b/drivers/char/hw_random/ppc4xx-rng.c
+> @@ -111,7 +111,7 @@ static int ppc4xx_rng_probe(struct platform_device *dev)
+>  	return err;
+>  }
+> 
+> -static int __devexit ppc4xx_rng_remove(struct platform_device *dev)
+> +static int ppc4xx_rng_remove(struct platform_device *dev)
+>  {
+>  	void __iomem *rng_regs = (void __iomem *) ppc4xx_rng.priv;
+> 
+> diff --git a/drivers/char/hw_random/timeriomem-rng.c b/drivers/char/hw_random/timeriomem-rng.c
+> index 0153d0c..849db19 100644
+> --- a/drivers/char/hw_random/timeriomem-rng.c
+> +++ b/drivers/char/hw_random/timeriomem-rng.c
+> @@ -130,7 +130,7 @@ failed:
+>  	return ret;
+>  }
+> 
+> -static int __devexit timeriomem_rng_remove(struct platform_device *pdev)
+> +static int timeriomem_rng_remove(struct platform_device *pdev)
+>  {
+>  	del_timer_sync(&timeriomem_rng_timer);
+>  	hwrng_unregister(&timeriomem_rng_ops);
+> diff --git a/drivers/char/hw_random/virtio-rng.c b/drivers/char/hw_random/virtio-rng.c
+> index bb78033..b65c103 100644
+> --- a/drivers/char/hw_random/virtio-rng.c
+> +++ b/drivers/char/hw_random/virtio-rng.c
+> @@ -119,7 +119,7 @@ static int virtrng_probe(struct virtio_device *vdev)
+>  	return probe_common(vdev);
+>  }
+> 
+> -static void __devexit virtrng_remove(struct virtio_device *vdev)
+> +static void virtrng_remove(struct virtio_device *vdev)
+>  {
+>  	remove_common(vdev);
+>  }
+> diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
+> index 94c5b88..14ab4c4 100644
+> --- a/drivers/char/ipmi/ipmi_si_intf.c
+> +++ b/drivers/char/ipmi/ipmi_si_intf.c
+> @@ -2228,7 +2228,7 @@ err_free:
+>  	return -EINVAL;
+>  }
+> 
+> -static void __devexit ipmi_pnp_remove(struct pnp_dev *dev)
+> +static void ipmi_pnp_remove(struct pnp_dev *dev)
+>  {
+>  	struct smi_info *info = pnp_get_drvdata(dev);
+> 
+> @@ -2529,7 +2529,7 @@ static int ipmi_pci_probe(struct pci_dev *pdev,
+>  	return 0;
+>  }
+> 
+> -static void __devexit ipmi_pci_remove(struct pci_dev *pdev)
+> +static void ipmi_pci_remove(struct pci_dev *pdev)
+>  {
+>  	struct smi_info *info = pci_get_drvdata(pdev);
+>  	cleanup_one_si(info);
+> @@ -2635,7 +2635,7 @@ static int ipmi_probe(struct platform_device *dev)
+>  	return 0;
+>  }
+> 
+> -static int __devexit ipmi_remove(struct platform_device *dev)
+> +static int ipmi_remove(struct platform_device *dev)
+>  {
+>  #ifdef CONFIG_OF
+>  	cleanup_one_si(dev_get_drvdata(&dev->dev));
+> diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+> index 861efa4..d780295 100644
+> --- a/drivers/char/sonypi.c
+> +++ b/drivers/char/sonypi.c
+> @@ -1428,7 +1428,7 @@ static int sonypi_probe(struct platform_device *dev)
+>  	return error;
+>  }
+> 
+> -static int __devexit sonypi_remove(struct platform_device *dev)
+> +static int sonypi_remove(struct platform_device *dev)
+>  {
+>  	sonypi_disable();
+> 
+> diff --git a/drivers/char/tb0219.c b/drivers/char/tb0219.c
+> index 76e3aea..34c63f8 100644
+> --- a/drivers/char/tb0219.c
+> +++ b/drivers/char/tb0219.c
+> @@ -318,7 +318,7 @@ static int tb0219_probe(struct platform_device *dev)
+>  	return 0;
+>  }
+> 
+> -static int __devexit tb0219_remove(struct platform_device *dev)
+> +static int tb0219_remove(struct platform_device *dev)
+>  {
+>  	_machine_restart = old_machine_restart;
+> 
+> diff --git a/drivers/char/tpm/tpm_i2c_infineon.c b/drivers/char/tpm/tpm_i2c_infineon.c
+> index bcdb078..fb447bd 100644
+> --- a/drivers/char/tpm/tpm_i2c_infineon.c
+> +++ b/drivers/char/tpm/tpm_i2c_infineon.c
+> @@ -656,7 +656,7 @@ static int tpm_tis_i2c_probe(struct i2c_client *client,
+>  	return rc;
+>  }
+> 
+> -static int __devexit tpm_tis_i2c_remove(struct i2c_client *client)
+> +static int tpm_tis_i2c_remove(struct i2c_client *client)
+>  {
+>  	struct tpm_chip *chip = tpm_dev.chip;
+>  	release_locality(chip, chip->vendor.locality, 1);
+> diff --git a/drivers/char/tpm/tpm_ibmvtpm.c b/drivers/char/tpm/tpm_ibmvtpm.c
+> index a027bd8..9978609 100644
+> --- a/drivers/char/tpm/tpm_ibmvtpm.c
+> +++ b/drivers/char/tpm/tpm_ibmvtpm.c
+> @@ -267,7 +267,7 @@ static int ibmvtpm_crq_send_init(struct ibmvtpm_dev *ibmvtpm)
+>   * Return value:
+>   *	0
+>   */
+> -static int __devexit tpm_ibmvtpm_remove(struct vio_dev *vdev)
+> +static int tpm_ibmvtpm_remove(struct vio_dev *vdev)
+>  {
+>  	struct ibmvtpm_dev *ibmvtpm = ibmvtpm_get_data(&vdev->dev);
+>  	int rc = 0;
+> diff --git a/drivers/char/tpm/tpm_infineon.c b/drivers/char/tpm/tpm_infineon.c
+> index 0126e80..2b480c2 100644
+> --- a/drivers/char/tpm/tpm_infineon.c
+> +++ b/drivers/char/tpm/tpm_infineon.c
+> @@ -594,7 +594,7 @@ err_last:
+>  	return rc;
+>  }
+> 
+> -static __devexit void tpm_inf_pnp_remove(struct pnp_dev *dev)
+> +static void tpm_inf_pnp_remove(struct pnp_dev *dev)
+>  {
+>  	struct tpm_chip *chip = pnp_get_drvdata(dev);
+> 
+> diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+> index 419a7e0..ea31daf 100644
+> --- a/drivers/char/tpm/tpm_tis.c
+> +++ b/drivers/char/tpm/tpm_tis.c
+> @@ -783,7 +783,7 @@ static struct pnp_device_id tpm_pnp_tbl[] = {
+>  };
+>  MODULE_DEVICE_TABLE(pnp, tpm_pnp_tbl);
+> 
+> -static __devexit void tpm_tis_pnp_remove(struct pnp_dev *dev)
+> +static void tpm_tis_pnp_remove(struct pnp_dev *dev)
+>  {
+>  	struct tpm_chip *chip = pnp_get_drvdata(dev);
+> 
+> diff --git a/drivers/char/xilinx_hwicap/xilinx_hwicap.c b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+> index d10085f..5224da52 100644
+> --- a/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+> +++ b/drivers/char/xilinx_hwicap/xilinx_hwicap.c
+> @@ -717,7 +717,7 @@ static struct hwicap_driver_config fifo_icap_config = {
+>  	.reset = fifo_icap_reset,
+>  };
+> 
+> -static int __devexit hwicap_remove(struct device *dev)
+> +static int hwicap_remove(struct device *dev)
+>  {
+>  	struct hwicap_drvdata *drvdata;
+> 
+> @@ -822,7 +822,7 @@ static int hwicap_drv_probe(struct platform_device *pdev)
+>  			&buffer_icap_config, regs);
+>  }
+> 
+> -static int __devexit hwicap_drv_remove(struct platform_device *pdev)
+> +static int hwicap_drv_remove(struct platform_device *pdev)
+>  {
+>  	return hwicap_remove(&pdev->dev);
+>  }
+> -- 
+> 1.8.0
+> 
