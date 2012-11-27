@@ -1,28 +1,15 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id D311B2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 06:33:20 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch v4 00/12] memory-hotplug: hot-remove physical memory
-Date: Tue, 27 Nov 2012 20:38 +0100
-Message-ID: <10123014.y84J4456RW@vostro.rjw.lan>
-In-Reply-To: <20121127112741.b616c2f6.akpm@linux-foundation.org>
-References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
- <20121127112741.b616c2f6.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
- Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Jiang Liu <liuj97@gmail.com>
+Return-Path: <wfp5p@viridian.itc.virginia.edu>
+Received: from viridian.itc.virginia.edu (viridian.itc.Virginia.EDU
+ [128.143.12.139]) by ozlabs.org (Postfix) with ESMTP id 548B42C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 07:59:56 +1100 (EST)
+From: Bill Pemberton <wfp5p@virginia.edu>
+To: linux-i2c@vger.kernel.org
+Subject: [PATCH 05/16] i2c: i2c-cpm: remove __dev* attributes
+Date: Tue, 27 Nov 2012 15:59:42 -0500
+Message-Id: <1354049993-12718-6-git-send-email-wfp5p@virginia.edu>
+In-Reply-To: <1354049993-12718-1-git-send-email-wfp5p@virginia.edu>
+References: <1354049993-12718-1-git-send-email-wfp5p@virginia.edu>
+Cc: gregkh@linuxfoundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,58 +19,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, November 27, 2012 11:27:41 AM Andrew Morton wrote:
-> On Tue, 27 Nov 2012 18:00:10 +0800
-> Wen Congyang <wency@cn.fujitsu.com> wrote:
-> 
-> > The patch-set was divided from following thread's patch-set.
-> >     https://lkml.org/lkml/2012/9/5/201
-> > 
-> > The last version of this patchset:
-> >     https://lkml.org/lkml/2012/11/1/93
-> 
-> As we're now at -rc7 I'd prefer to take a look at all of this after the
-> 3.7 release - please resend everything shortly after 3.8-rc1.
-> 
-> > If you want to know the reason, please read following thread.
-> > 
-> > https://lkml.org/lkml/2012/10/2/83
-> 
-> Please include the rationale within each version of the patchset rather
-> than by linking to an old email.  Because
-> 
-> a) this way, more people are likely to read it
-> 
-> b) it permits the text to be maimtained as the code evolves
-> 
-> c) it permits the text to be included in the mainlnie commit, where
->    people can find it.
-> 
-> > The patch-set has only the function of kernel core side for physical
-> > memory hot remove. So if you use the patch, please apply following
-> > patches.
-> > 
-> > - bug fix for memory hot remove
-> >   https://lkml.org/lkml/2012/10/31/269
-> >   
-> > - acpi framework
-> >   https://lkml.org/lkml/2012/10/26/175
-> 
-> What's happening with the acpi framework?  has it received any feedback
-> from the ACPI developers?
+CONFIG_HOTPLUG is going away as an option.  As result the __dev*
+markings will be going away.
 
-This particular series is in my tree waiting for the v3.8 merge window.
+Remove use of __devinit, __devexit_p, __devinitdata, __devinitconst,
+and __devexit.
 
-There's a new one sent yesterday and this one is pending a review.  I'm
-not sure if the $subject patchset depends on it, though.
+Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
+Cc: Jochen Friedrich <jochen@scram.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ drivers/i2c/busses/i2c-cpm.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-It looks like there are too many hotplug patchsets flying left and right and
-it's getting hard to keep track of them all.
-
-Thanks,
-Rafael
-
-
+diff --git a/drivers/i2c/busses/i2c-cpm.c b/drivers/i2c/busses/i2c-cpm.c
+index c1e1096..2e79c10 100644
+--- a/drivers/i2c/busses/i2c-cpm.c
++++ b/drivers/i2c/busses/i2c-cpm.c
+@@ -426,7 +426,7 @@ static const struct i2c_adapter cpm_ops = {
+ 	.algo		= &cpm_i2c_algo,
+ };
+ 
+-static int __devinit cpm_i2c_setup(struct cpm_i2c *cpm)
++static int cpm_i2c_setup(struct cpm_i2c *cpm)
+ {
+ 	struct platform_device *ofdev = cpm->ofdev;
+ 	const u32 *data;
+@@ -634,7 +634,7 @@ static void cpm_i2c_shutdown(struct cpm_i2c *cpm)
+ 		cpm_muram_free(cpm->i2c_addr);
+ }
+ 
+-static int __devinit cpm_i2c_probe(struct platform_device *ofdev)
++static int cpm_i2c_probe(struct platform_device *ofdev)
+ {
+ 	int result, len;
+ 	struct cpm_i2c *cpm;
+@@ -688,7 +688,7 @@ out_free:
+ 	return result;
+ }
+ 
+-static int __devexit cpm_i2c_remove(struct platform_device *ofdev)
++static int cpm_i2c_remove(struct platform_device *ofdev)
+ {
+ 	struct cpm_i2c *cpm = dev_get_drvdata(&ofdev->dev);
+ 
+@@ -716,7 +716,7 @@ MODULE_DEVICE_TABLE(of, cpm_i2c_match);
+ 
+ static struct platform_driver cpm_i2c_driver = {
+ 	.probe		= cpm_i2c_probe,
+-	.remove		= __devexit_p(cpm_i2c_remove),
++	.remove		= cpm_i2c_remove,
+ 	.driver = {
+ 		.name = "fsl-i2c-cpm",
+ 		.owner = THIS_MODULE,
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.8.0.1
