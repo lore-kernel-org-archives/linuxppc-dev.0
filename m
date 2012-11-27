@@ -1,31 +1,12 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-ie0-f179.google.com (mail-ie0-f179.google.com
- [209.85.223.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3F2C22C008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 14:28:30 +1100 (EST)
-Received: by mail-ie0-f179.google.com with SMTP id 9so7790648iec.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 19:28:27 -0800 (PST)
-Message-ID: <50B4334E.2010802@ozlabs.ru>
-Date: Tue, 27 Nov 2012 14:28:14 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH] vfio powerpc: enabled and supported on powernv platform
-References: <20121113033832.GW4696@truffula.fritz.box>
- <1353372530-25205-1-git-send-email-aik@ozlabs.ru>
- <1353435584.2234.87.camel@bling.home>
- <C5ECD7A89D1DC44195F34B25E172658D294605@039-SN2MPN1-013.039d.mgd.msft.net>
- <50AED94E.4000006@ozlabs.ru> <1353943130.1809.29.camel@bling.home>
- <1353953070.1809.103.camel@bling.home>
-In-Reply-To: <1353953070.1809.103.camel@bling.home>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Sethi Varun-B16395 <B16395@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <anton@samba.org>
+Date: Tue, 27 Nov 2012 14:39:03 +1100
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, amodra@gmail.com
+Subject: [PATCH 1/3] powerpc: Relocate prom_init.c on 64bit
+Message-ID: <20121127143903.4b5cab17@kryten>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,338 +16,245 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27/11/12 05:04, Alex Williamson wrote:
-> On Mon, 2012-11-26 at 08:18 -0700, Alex Williamson wrote:
->> On Fri, 2012-11-23 at 13:02 +1100, Alexey Kardashevskiy wrote:
->>> On 22/11/12 22:56, Sethi Varun-B16395 wrote:
->>>>
->>>>
->>>>> -----Original Message-----
->>>>> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
->>>>> owner@vger.kernel.org] On Behalf Of Alex Williamson
->>>>> Sent: Tuesday, November 20, 2012 11:50 PM
->>>>> To: Alexey Kardashevskiy
->>>>> Cc: Benjamin Herrenschmidt; Paul Mackerras; linuxppc-
->>>>> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; kvm@vger.kernel.org;
->>>>> David Gibson
->>>>> Subject: Re: [PATCH] vfio powerpc: enabled and supported on powernv
->>>>> platform
->>>>>
->>>>> On Tue, 2012-11-20 at 11:48 +1100, Alexey Kardashevskiy wrote:
->>>>>> VFIO implements platform independent stuff such as a PCI driver, BAR
->>>>>> access (via read/write on a file descriptor or direct mapping when
->>>>>> possible) and IRQ signaling.
->>>>>> The platform dependent part includes IOMMU initialization and
->>>>>> handling.
->>>>>>
->>>>>> This patch initializes IOMMU groups based on the IOMMU configuration
->>>>>> discovered during the PCI scan, only POWERNV platform is supported at
->>>>>> the moment.
->>>>>>
->>>>>> Also the patch implements an VFIO-IOMMU driver which manages DMA
->>>>>> mapping/unmapping requests coming from the client (now QEMU). It also
->>>>>> returns a DMA window information to let the guest initialize the
->>>>>> device tree for a guest OS properly. Although this driver has been
->>>>>> tested only on POWERNV, it should work on any platform supporting TCE
->>>>>> tables.
->>>>>>
->>>>>> To enable VFIO on POWER, enable SPAPR_TCE_IOMMU config option.
->>>>>>
->>>>>> Cc: David Gibson <david@gibson.dropbear.id.au>
->>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>>> ---
->>>>>>    arch/powerpc/include/asm/iommu.h     |    6 +
->>>>>>    arch/powerpc/kernel/iommu.c          |  140 +++++++++++++++++++
->>>>>>    arch/powerpc/platforms/powernv/pci.c |  135 +++++++++++++++++++
->>>>>>    drivers/iommu/Kconfig                |    8 ++
->>>>>>    drivers/vfio/Kconfig                 |    6 +
->>>>>>    drivers/vfio/Makefile                |    1 +
->>>>>>    drivers/vfio/vfio_iommu_spapr_tce.c  |  247
->>>>> ++++++++++++++++++++++++++++++++++
->>>>>>    include/linux/vfio.h                 |   20 +++
->>>>>>    8 files changed, 563 insertions(+)
->>>>>>    create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
->>>>>>
->>>>>> diff --git a/arch/powerpc/include/asm/iommu.h
->>>>>> b/arch/powerpc/include/asm/iommu.h
->>>>>> index cbfe678..5ba66cb 100644
->>>>>> --- a/arch/powerpc/include/asm/iommu.h
->>>>>> +++ b/arch/powerpc/include/asm/iommu.h
->>>>>> @@ -64,30 +64,33 @@ struct iommu_pool {  }
->>>>>> ____cacheline_aligned_in_smp;
->>>>>>
->>>>>>    struct iommu_table {
->>>>>>    	unsigned long  it_busno;     /* Bus number this table belongs to */
->>>>>>    	unsigned long  it_size;      /* Size of iommu table in entries */
->>>>>>    	unsigned long  it_offset;    /* Offset into global table */
->>>>>>    	unsigned long  it_base;      /* mapped address of tce table */
->>>>>>    	unsigned long  it_index;     /* which iommu table this is */
->>>>>>    	unsigned long  it_type;      /* type: PCI or Virtual Bus */
->>>>>>    	unsigned long  it_blocksize; /* Entries in each block (cacheline)
->>>>> */
->>>>>>    	unsigned long  poolsize;
->>>>>>    	unsigned long  nr_pools;
->>>>>>    	struct iommu_pool large_pool;
->>>>>>    	struct iommu_pool pools[IOMMU_NR_POOLS];
->>>>>>    	unsigned long *it_map;       /* A simple allocation bitmap for now
->>>>> */
->>>>>> +#ifdef CONFIG_IOMMU_API
->>>>>> +	struct iommu_group *it_group;
->>>>>> +#endif
->>>>>>    };
->>>>>>
->>>>>>    struct scatterlist;
->>>>>>
->>>>>>    static inline void set_iommu_table_base(struct device *dev, void
->>>>>> *base)  {
->>>>>>    	dev->archdata.dma_data.iommu_table_base = base;  }
->>>>>>
->>>>>>    static inline void *get_iommu_table_base(struct device *dev)  {
->>>>>>    	return dev->archdata.dma_data.iommu_table_base;
->>>>>>    }
->>>>>>
->>>>>>    /* Frees table for an individual device node */ @@ -135,17 +138,20 @@
->>>>>> static inline void pci_iommu_init(void) { }  extern void
->>>>>> alloc_dart_table(void);  #if defined(CONFIG_PPC64) &&
->>>>>> defined(CONFIG_PM)  static inline void iommu_save(void)  {
->>>>>>    	if (ppc_md.iommu_save)
->>>>>>    		ppc_md.iommu_save();
->>>>>>    }
->>>>>>
->>>>>>    static inline void iommu_restore(void)  {
->>>>>>    	if (ppc_md.iommu_restore)
->>>>>>    		ppc_md.iommu_restore();
->>>>>>    }
->>>>>>    #endif
->>>>>>
->>>>>> +extern long iommu_put_tces(struct iommu_table *tbl, unsigned long
->>>>> entry, uint64_t tce,
->>>>>> +		enum dma_data_direction direction, unsigned long pages);
->>>>>> +
->>>>>>    #endif /* __KERNEL__ */
->>>>>>    #endif /* _ASM_IOMMU_H */
->>>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->>>>>> index ff5a6ce..94f614b 100644
->>>>>> --- a/arch/powerpc/kernel/iommu.c
->>>>>> +++ b/arch/powerpc/kernel/iommu.c
->>>>>> @@ -32,30 +32,31 @@
->>>>>>    #include <linux/dma-mapping.h>
->>>>>>    #include <linux/bitmap.h>
->>>>>>    #include <linux/iommu-helper.h>
->>>>>>    #include <linux/crash_dump.h>
->>>>>>    #include <linux/hash.h>
->>>>>>    #include <linux/fault-inject.h>
->>>>>>    #include <linux/pci.h>
->>>>>>    #include <asm/io.h>
->>>>>>    #include <asm/prom.h>
->>>>>>    #include <asm/iommu.h>
->>>>>>    #include <asm/pci-bridge.h>
->>>>>>    #include <asm/machdep.h>
->>>>>>    #include <asm/kdump.h>
->>>>>>    #include <asm/fadump.h>
->>>>>>    #include <asm/vio.h>
->>>>>> +#include <asm/tce.h>
->>>>>>
->>>>>>    #define DBG(...)
->>>>>>
->>>>>>    static int novmerge;
->>>>>>
->>>>>>    static void __iommu_free(struct iommu_table *, dma_addr_t, unsigned
->>>>>> int);
->>>>>>
->>>>>>    static int __init setup_iommu(char *str)  {
->>>>>>    	if (!strcmp(str, "novmerge"))
->>>>>>    		novmerge = 1;
->>>>>>    	else if (!strcmp(str, "vmerge"))
->>>>>>    		novmerge = 0;
->>>>>>    	return 1;
->>>>>>    }
->>>>>> @@ -844,15 +845,154 @@ void *iommu_alloc_coherent(struct device *dev,
->>>>>> struct iommu_table *tbl,  }
->>>>>>
->>>>>>    void iommu_free_coherent(struct iommu_table *tbl, size_t size,
->>>>>>    			 void *vaddr, dma_addr_t dma_handle)  {
->>>>>>    	if (tbl) {
->>>>>>    		unsigned int nio_pages;
->>>>>>
->>>>>>    		size = PAGE_ALIGN(size);
->>>>>>    		nio_pages = size >> IOMMU_PAGE_SHIFT;
->>>>>>    		iommu_free(tbl, dma_handle, nio_pages);
->>>>>>    		size = PAGE_ALIGN(size);
->>>>>>    		free_pages((unsigned long)vaddr, get_order(size));
->>>>>>    	}
->>>>>>    }
->>>>>> +
->>>>>> +#ifdef CONFIG_IOMMU_API
->>>>>> +/*
->>>>>> + * SPAPR TCE API
->>>>>> + */
->>>>>> +static struct page *free_tce(struct iommu_table *tbl, unsigned long
->>>>>> +entry) {
->>>>>> +	struct page *page = NULL;
->>>>>
->>>>> NULL initialization doesn't appear to be necessary
->>>>>
->>>>>> +	unsigned long oldtce;
->>>>>> +
->>>>>> +	oldtce = ppc_md.tce_get(tbl, entry);
->>>>>> +
->>>>>> +	if (!(oldtce & (TCE_PCI_WRITE | TCE_PCI_READ)))
->>>>>> +		return NULL;
->>>>>> +
->>>>>> +	page = pfn_to_page(oldtce >> PAGE_SHIFT);
->>>>>> +
->>>>>> +	WARN_ON(!page);
->>>>>> +	if (page && (oldtce & TCE_PCI_WRITE))
->>>>>> +		SetPageDirty(page);
->>>>>> +	ppc_md.tce_free(tbl, entry, 1);
->>>>>> +
->>>>>> +	return page;
->>>>>> +}
->>>>>> +
->>>>>> +static int put_tce(struct iommu_table *tbl, unsigned long entry,
->>>>>> +		uint64_t tce, enum dma_data_direction direction) {
->>>>>> +	int ret;
->>>>>> +	struct page *page = NULL;
->>>>>> +	unsigned long kva, offset;
->>>>>> +
->>>>>> +	/* Map new TCE */
->>>>>> +	offset = (tce & IOMMU_PAGE_MASK) - (tce & PAGE_MASK);
->>>>>> +	ret = get_user_pages_fast(tce & PAGE_MASK, 1,
->>>>>> +			direction != DMA_TO_DEVICE, &page);
->>>>>> +	if (ret < 1) {
->>>>>> +		printk(KERN_ERR "tce_vfio: get_user_pages_fast failed
->>>>> tce=%llx ioba=%lx ret=%d\n",
->>>>>> +				tce, entry << IOMMU_PAGE_SHIFT, ret);
->>>>>> +		if (!ret)
->>>>>> +			ret = -EFAULT;
->>>>>
->>>>> Missing return ret?  Otherwise we've got some bogus uses of page below
->>>>> and we're setting ret for no reason here.
->>>>>
->>>>>> +	}
->>>>>> +
->>>>>> +	kva = (unsigned long) page_address(page);
->>>>>> +	kva += offset;
->>>>>> +
->>>>>> +	/* tce_build receives a virtual address */
->>>>>> +	entry += tbl->it_offset; /* Offset into real TCE table */
->>>>>> +	ret = ppc_md.tce_build(tbl, entry, 1, kva, direction, NULL);
->>>>>> +
->>>>>> +	/* tce_build() only returns non-zero for transient errors */
->>>>>> +	if (unlikely(ret)) {
->>>>>> +		printk(KERN_ERR "tce_vfio: tce_put failed on tce=%llx
->>>>> ioba=%lx kva=%lx ret=%d\n",
->>>>>> +				tce, entry << IOMMU_PAGE_SHIFT, kva, ret);
->>>>>> +		put_page(page);
->>>>>> +		return -EIO;
->>>>>> +	}
->>>>>> +
->>>>>> +	return 0;
->>>>>> +}
->>>>>> +
->>>>>> +static void tce_flush(struct iommu_table *tbl) {
->>>>>> +	/* Flush/invalidate TLB caches if necessary */
->>>>>> +	if (ppc_md.tce_flush)
->>>>>> +		ppc_md.tce_flush(tbl);
->>>>>> +
->>>>>> +	/* Make sure updates are seen by hardware */
->>>>>> +	mb();
->>>>>> +}
->>>>>> +
->>>>>> +long iommu_put_tces(struct iommu_table *tbl, unsigned long entry,
->>>>> uint64_t tce,
->>>>>> +		enum dma_data_direction direction, unsigned long pages) {
->>>>>> +	int i, ret = 0, pages_to_put = 0;
->>>>>> +	struct page *page;
->>>>>> +	struct iommu_pool *pool = get_pool(tbl, entry);
->>>>>> +	struct page **oldpages;
->>>>>> +	const int oldpagesnum = PAGE_SIZE/sizeof(*oldpages);
->>>>>> +
->>>>>> +	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE);
->>>>>> +
->>>>>> +	/* Handle a single page request without allocation
->>>>>> +	   of pages-to-release array */
->>>>>> +	if (pages == 1) {
->>>>>> +		spin_lock(&(pool->lock));
->>>>>> +		page = free_tce(tbl, entry);
->>>>>> +
->>>>>> +		if (direction != DMA_NONE)
->>>>>> +			ret = put_tce(tbl, entry, tce, direction);
->>>>>> +
->>>>>> +		tce_flush(tbl);
->>>>>> +
->>>>>> +		if (page)
->>>>>> +			put_page(page);
->>>>>> +
->>>>>> +		spin_unlock(&(pool->lock));
->>>>>> +		return ret;
->>>>>> +	}
->>>>>> +
->>>>>> +	/* Releasing multiple pages */
->>>>>> +	/* Allocate an array for pages to be released after TCE table
->>>>>> +	   is updated */
->>>>>> +	oldpages = kmalloc(PAGE_SIZE, GFP_KERNEL);
->>>>>> +	if (!oldpages)
->>>>>> +		return -ENOMEM;
->>>>>> +
->>>>>> +	spin_lock(&(pool->lock));
->>>>>> +
->>>>>> +	for (i = 0; (i < pages) && !ret; ++i, ++entry, tce +=
->>>>> IOMMU_PAGE_SIZE) {
->>>>>> +		page = free_tce(tbl, entry);
->>>>>> +		if (page) {
->>>>>> +			oldpages[pages_to_put] = page;
->>>>>> +			++pages_to_put;
->>>>>> +		}
->>>>>> +
->>>>>> +		if (direction != DMA_NONE)
->>>>>> +			ret = put_tce(tbl, entry, tce, direction);
->>>>>> +
->>>>>> +		/* Release old pages if we reached the end of oldpages[] or
->>>>>> +		   it is the last page or we are about to exit the loop */
->>>>>> +		if ((pages_to_put == oldpagesnum) || (i == pages - 1) || ret)
->>>>> {
->>>>>> +			tce_flush(tbl);
->>>>>
->>>>> Avoiding tce_flush() is the reason for all this extra overhead, right?
->>>>> I wonder if it'd be cleaner separating map vs unmap, where the map case
->>>>> can avoid the oldpages array... but that means inserting new mappings on
->>>>> top of old ones wouldn't put the pages.
->>>
->>>
->>> Yes, we do not want to loose pages if the guest forgot to unmap them.
->>
->> Hmm, does that mean we're not actively clearing tce entries or somehow
->> disabling the iommu window when the iommu is released through vfio?
->
-> Ok, I see tces are put on shutdown via tce_iommu_detach_group, so you're
-> more concerned about the guest simply mapping over top of it's own
-> mappings.  Is that common?  Is it common enough for every multi-page
-> mapping to assume it will happen?  I know this is a performance
-> sensitive path for you and it seems like a map-only w/ fallback to
-> unmap, remap would be better in the general case.
 
+The ppc64 kernel can get loaded at any address which means
+our very early init code in prom_init.c must be relocatable. We do
+this with a pretty nasty RELOC() macro that we wrap accesses of
+variables with. It is very fragile and sometimes we forget to add a
+RELOC() to an uncommon path or sometimes a compiler change breaks it.
 
-I do not get it. Where exactly does the performance suffer?
-iommu_put_tces() with non zero "tce" (i.e. "map") has to check if the entry 
-is not used, at least to return EBUSY when it is, and this check is 
-performed. If it is zero, there is no overhead at all. And it is going to 
-be the 99.(9)% case as the guest (un)maps one page per call.
+32bit has a much more elegant solution where we build prom_init.c
+with -mrelocatable and then process the relocations manually.
+Unfortunately we can't do the equivalent on 64bit and we would
+have to build the entire kernel relocatable (-pie), resulting in a
+large increase in kernel footprint (megabytes of relocation data).
+The relocation data will be marked __initdata but it still creates
+more pressure on our already tight memory layout at boot.
 
-Generally speaking we want to move "put tce" completely to the kernel for 
-the (much) better performance and vfio won't be dealing with it all.
+Alan Modra pointed out that the 64bit ABI is relocatable even
+if we don't build with -pie, we just need to relocate the TOC.
+This patch implements that idea and relocates the TOC entries of
+prom_init.c. An added bonus is there are very few relocations to
+process which helps keep boot times on simulators down.
 
-We already agreed that SPAPR TCE driver uses x86 (aka type1) API but I do 
-not see why the powerpc implementation should look x86 alike as it still 
-operates with powerpc machine dependent callbacks so the reader has to have 
-some powerpc knowledge.
+gcc does not put 64bit integer constants into the TOC but to be
+safe we may want a build time script which passes through the
+prom_init.c TOC entries to make sure everything looks reasonable.
 
+Signed-off-by: Anton Blanchard <anton@samba.org>
+--- 
 
-> On x86 we do exactly that, but we do the unmap, remap from userspace
-> when we get an EBUSY.  Thanks,
+To keep the patch small and reviewable, I separated the removal
+of the RELOC macro into a follow up patch.
 
+For simplicity I do the relocation in C but if self brain surgery
+keeps people up at night we can move it into assembly.
 
-
--- 
-Alexey
+Index: b/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -66,8 +66,8 @@
+  * is running at whatever address it has been loaded at.
+  * On ppc32 we compile with -mrelocatable, which means that references
+  * to extern and static variables get relocated automatically.
+- * On ppc64 we have to relocate the references explicitly with
+- * RELOC.  (Note that strings count as static variables.)
++ * ppc64 objects are always relocatable, we just need to relocate the
++ * TOC.
+  *
+  * Because OF may have mapped I/O devices into the area starting at
+  * KERNELBASE, particularly on CHRP machines, we can't safely call
+@@ -79,13 +79,12 @@
+  * On ppc64, 64 bit values are truncated to 32 bits (and
+  * fortunately don't get interpreted as two arguments).
+  */
++#define RELOC(x)	(x)
++#define ADDR(x)		(u32)(unsigned long)(x)
++
+ #ifdef CONFIG_PPC64
+-#define RELOC(x)        (*PTRRELOC(&(x)))
+-#define ADDR(x)		(u32) add_reloc_offset((unsigned long)(x))
+ #define OF_WORKAROUNDS	0
+ #else
+-#define RELOC(x)	(x)
+-#define ADDR(x)		(u32) (x)
+ #define OF_WORKAROUNDS	of_workarounds
+ int of_workarounds;
+ #endif
+@@ -334,9 +333,6 @@ static void __init prom_printf(const cha
+ 	struct prom_t *_prom = &RELOC(prom);
+ 
+ 	va_start(args, format);
+-#ifdef CONFIG_PPC64
+-	format = PTRRELOC(format);
+-#endif
+ 	for (p = format; *p != 0; p = q) {
+ 		for (q = p; *q != 0 && *q != '\n' && *q != '%'; ++q)
+ 			;
+@@ -437,9 +433,6 @@ static unsigned int __init prom_claim(un
+ 
+ static void __init __attribute__((noreturn)) prom_panic(const char *reason)
+ {
+-#ifdef CONFIG_PPC64
+-	reason = PTRRELOC(reason);
+-#endif
+ 	prom_print(reason);
+ 	/* Do not call exit because it clears the screen on pmac
+ 	 * it also causes some sort of double-fault on early pmacs */
+@@ -929,7 +922,7 @@ static void __init prom_send_capabilitie
+ 		 * (we assume this is the same for all cores) and use it to
+ 		 * divide NR_CPUS.
+ 		 */
+-		cores = (u32 *)PTRRELOC(&ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET]);
++		cores = (u32 *)&ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET];
+ 		if (*cores != NR_CPUS) {
+ 			prom_printf("WARNING ! "
+ 				    "ibm_architecture_vec structure inconsistent: %lu!\n",
+@@ -2850,6 +2843,53 @@ static void __init prom_check_initrd(uns
+ #endif /* CONFIG_BLK_DEV_INITRD */
+ }
+ 
++#ifdef CONFIG_PPC64
++#ifdef CONFIG_RELOCATABLE
++static void reloc_toc(void)
++{
++}
++
++static void unreloc_toc(void)
++{
++}
++#else
++static void __reloc_toc(void *tocstart, unsigned long offset,
++			unsigned long nr_entries)
++{
++	unsigned long i;
++	unsigned long *toc_entry = (unsigned long *)tocstart;
++
++	for (i = 0; i < nr_entries; i++) {
++		*toc_entry = *toc_entry + offset;
++		toc_entry++;
++	}
++}
++
++static void reloc_toc(void)
++{
++	unsigned long offset = reloc_offset();
++	unsigned long nr_entries =
++		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
++
++	/* Need to add offset to get at __prom_init_toc_start */
++	__reloc_toc(__prom_init_toc_start + offset, offset, nr_entries);
++
++	mb();
++}
++
++static void unreloc_toc(void)
++{
++	unsigned long offset = reloc_offset();
++	unsigned long nr_entries =
++		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
++
++	mb();
++
++	/* __prom_init_toc_start has been relocated, no need to add offset */
++	__reloc_toc(__prom_init_toc_start, -offset, nr_entries);
++}
++#endif
++#endif
+ 
+ /*
+  * We enter here early on, when the Open Firmware prom is still
+@@ -2867,6 +2907,8 @@ unsigned long __init prom_init(unsigned
+ #ifdef CONFIG_PPC32
+ 	unsigned long offset = reloc_offset();
+ 	reloc_got2(offset);
++#else
++	reloc_toc();
+ #endif
+ 
+ 	_prom = &RELOC(prom);
+@@ -3061,6 +3103,8 @@ unsigned long __init prom_init(unsigned
+ 
+ #ifdef CONFIG_PPC32
+ 	reloc_got2(-offset);
++#else
++	unreloc_toc();
+ #endif
+ 
+ #ifdef CONFIG_PPC_EARLY_DEBUG_OPAL
+Index: b/arch/powerpc/kernel/prom_init_check.sh
+===================================================================
+--- a/arch/powerpc/kernel/prom_init_check.sh
++++ b/arch/powerpc/kernel/prom_init_check.sh
+@@ -22,7 +22,7 @@ __secondary_hold_acknowledge __secondary
+ strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
+ reloc_got2 kernstart_addr memstart_addr linux_banner _stext
+ opal_query_takeover opal_do_takeover opal_enter_rtas opal_secondary_entry
+-boot_command_line"
++boot_command_line __prom_init_toc_start __prom_init_toc_end"
+ 
+ NM="$1"
+ OBJ="$2"
+Index: b/arch/powerpc/kernel/vmlinux.lds.S
+===================================================================
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -218,6 +218,11 @@ SECTIONS
+ 
+ 	.got : AT(ADDR(.got) - LOAD_OFFSET) {
+ 		__toc_start = .;
++#ifndef CONFIG_RELOCATABLE
++		__prom_init_toc_start = .;
++		arch/powerpc/kernel/prom_init.o*(.toc .got)
++		__prom_init_toc_end = .;
++#endif
+ 		*(.got)
+ 		*(.toc)
+ 	}
+Index: b/arch/powerpc/Makefile
+===================================================================
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -136,6 +136,7 @@ head-$(CONFIG_FSL_BOOKE)	:= arch/powerpc
+ head-$(CONFIG_PPC64)		+= arch/powerpc/kernel/entry_64.o
+ head-$(CONFIG_PPC_FPU)		+= arch/powerpc/kernel/fpu.o
+ head-$(CONFIG_ALTIVEC)		+= arch/powerpc/kernel/vector.o
++head-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)  += arch/powerpc/kernel/prom_init.o
+ 
+ core-y				+= arch/powerpc/kernel/ \
+ 				   arch/powerpc/mm/ \
+Index: b/arch/powerpc/kernel/Makefile
+===================================================================
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -91,7 +91,6 @@ obj-$(CONFIG_RELOCATABLE_PPC32)	+= reloc
+ obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
+ obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
+ obj-$(CONFIG_KGDB)		+= kgdb.o
+-obj-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init.o
+ obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
+ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+ obj-$(CONFIG_SMP)		+= smp.o
+@@ -142,6 +141,7 @@ GCOV_PROFILE_kprobes.o := n
+ extra-$(CONFIG_PPC_FPU)		+= fpu.o
+ extra-$(CONFIG_ALTIVEC)		+= vector.o
+ extra-$(CONFIG_PPC64)		+= entry_64.o
++extra-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init.o
+ 
+ extra-y				+= systbl_chk.i
+ $(obj)/systbl.o:		systbl_chk
+Index: b/arch/powerpc/include/asm/sections.h
+===================================================================
+--- a/arch/powerpc/include/asm/sections.h
++++ b/arch/powerpc/include/asm/sections.h
+@@ -10,6 +10,9 @@
+ 
+ extern char __end_interrupts[];
+ 
++extern char __prom_init_toc_start[];
++extern char __prom_init_toc_end[];
++
+ static inline int in_kernel_text(unsigned long addr)
+ {
+ 	if (addr >= (unsigned long)_stext && addr < (unsigned long)__init_end)
