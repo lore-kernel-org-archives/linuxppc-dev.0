@@ -1,37 +1,28 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 63F642C0085
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 12:49:36 +1100 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Mon, 26 Nov 2012 18:49:34 -0700
-Received: from d03relay01.boulder.ibm.com (d03relay01.boulder.ibm.com
- [9.17.195.226])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 5E8551FF0046
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 18:49:26 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d03relay01.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qAR1nU26290548
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 18:49:30 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qAR1nTq7028125
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 18:49:30 -0700
-Message-ID: <50B41C27.4020905@linux.vnet.ibm.com>
-Date: Mon, 26 Nov 2012 17:49:27 -0800
-From: Haren Myneni <haren@linux.vnet.ibm.com>
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 399862C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 13:18:24 +1100 (EST)
+Message-ID: <50B42471.6060403@cn.fujitsu.com>
+Date: Tue, 27 Nov 2012 10:24:49 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Michael Neuling <michael.neuling@au1.ibm.com>
-Subject: Re: [PATCH 5/6] powerpc: Macros for saving/restore PPR
-References: <1351666574.32304.18.camel@hbabu-laptop>
- <27433.1353641997@neuling.org>
-In-Reply-To: <27433.1353641997@neuling.org>
+To: Jianguo Wu <wujianguo106@gmail.com>
+Subject: Re: [PATCH v3 11/12] memory-hotplug: remove sysfs file of node
+References: <1351763083-7905-1-git-send-email-wency@cn.fujitsu.com>
+ <1351763083-7905-12-git-send-email-wency@cn.fujitsu.com>
+ <50B37C52.2060301@gmail.com>
+In-Reply-To: <50B37C52.2060301@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Cc: anton@au1.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
+ linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ cmetcalf@tilera.com, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ Minchan Kim <minchan.kim@gmail.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,158 +32,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/22/2012 07:39 PM, Michael Neuling wrote:
-> Haren Myneni <haren@linux.vnet.ibm.com> wrote:
-> 
->> [PATCH 5/6] powerpc: Macros for saving/restore PPR
+At 11/26/2012 10:27 PM, Jianguo Wu Wrote:
+> On 2012/11/1 17:44, Wen Congyang wrote:
+>> This patch introduces a new function try_offline_node() to
+>> remove sysfs file of node when all memory sections of this
+>> node are removed. If some memory sections of this node are
+>> not removed, this function does nothing.
 >>
->> Several macros are defined for saving and restore user defined PPR value.
->>
->> Signed-off-by: Haren Myneni <haren@us.ibm.com>
+>> CC: David Rientjes <rientjes@google.com>
+>> CC: Jiang Liu <liuj97@gmail.com>
+>> CC: Len Brown <len.brown@intel.com>
+>> CC: Christoph Lameter <cl@linux.com>
+>> Cc: Minchan Kim <minchan.kim@gmail.com>
+>> CC: Andrew Morton <akpm@linux-foundation.org>
+>> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> CC: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
 >> ---
->>  arch/powerpc/include/asm/exception-64s.h |   29 +++++++++++++++++++++++++++++
->>  arch/powerpc/include/asm/ppc_asm.h       |   25 +++++++++++++++++++++++++
->>  arch/powerpc/include/asm/reg.h           |    1 +
->>  3 files changed, 55 insertions(+), 0 deletions(-)
+>>  drivers/acpi/acpi_memhotplug.c |  8 +++++-
+>>  include/linux/memory_hotplug.h |  2 +-
+>>  mm/memory_hotplug.c            | 58 ++++++++++++++++++++++++++++++++++++++++--
+>>  3 files changed, 64 insertions(+), 4 deletions(-)
 >>
->> diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
->> index bfd3f1f..880ef7d 100644
->> --- a/arch/powerpc/include/asm/exception-64s.h
->> +++ b/arch/powerpc/include/asm/exception-64s.h
->> @@ -62,6 +62,35 @@
->>  #define EXC_HV	H
->>  #define EXC_STD
+>> diff --git a/drivers/acpi/acpi_memhotplug.c b/drivers/acpi/acpi_memhotplug.c
+>> index 24c807f..0780f99 100644
+>> --- a/drivers/acpi/acpi_memhotplug.c
+>> +++ b/drivers/acpi/acpi_memhotplug.c
+>> @@ -310,7 +310,9 @@ static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
+>>  {
+>>  	int result;
+>>  	struct acpi_memory_info *info, *n;
+>> +	int node;
 >>  
->> +/*
->> + * PPR save/restore macros used in exceptions_64s.S  
->> + * Used for P7 or later processors
->> + */
->> +#define SAVE_PPR(area, ra, rb)						\
->> +BEGIN_FTR_SECTION_NESTED(940)						\
->> +	ld	ra,PACACURRENT(r13);					\
->> +	ld	rb,area+EX_PPR(r13);	/* Read PPR from paca */	\
->> +	std	rb,TASKTHREADPPR(ra);					\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,940)
+>> +	node = acpi_get_node(mem_device->device->handle);
+>>  
+>>  	/*
+>>  	 * Ask the VM to offline this memory range.
+>> @@ -318,7 +320,11 @@ static int acpi_memory_disable_device(struct acpi_memory_device *mem_device)
+>>  	 */
+>>  	list_for_each_entry_safe(info, n, &mem_device->res_list, list) {
+>>  		if (info->enabled) {
+>> -			result = remove_memory(info->start_addr, info->length);
+>> +			if (node < 0)
+>> +				node = memory_add_physaddr_to_nid(
+>> +					info->start_addr);
+>> +			result = remove_memory(node, info->start_addr,
+>> +				info->length);
+>>  			if (result)
+>>  				return result;
+>>  		}
+>> diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
+>> index d4c4402..7b4cfe6 100644
+>> --- a/include/linux/memory_hotplug.h
+>> +++ b/include/linux/memory_hotplug.h
+>> @@ -231,7 +231,7 @@ extern int arch_add_memory(int nid, u64 start, u64 size);
+>>  extern int offline_pages(unsigned long start_pfn, unsigned long nr_pages);
+>>  extern int offline_memory_block(struct memory_block *mem);
+>>  extern bool is_memblock_offlined(struct memory_block *mem);
+>> -extern int remove_memory(u64 start, u64 size);
+>> +extern int remove_memory(int node, u64 start, u64 size);
+>>  extern int sparse_add_one_section(struct zone *zone, unsigned long start_pfn,
+>>  								int nr_pages);
+>>  extern void sparse_remove_one_section(struct zone *zone, struct mem_section *ms);
+>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>> index 7bcced0..d965da3 100644
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -29,6 +29,7 @@
+>>  #include <linux/suspend.h>
+>>  #include <linux/mm_inline.h>
+>>  #include <linux/firmware-map.h>
+>> +#include <linux/stop_machine.h>
+>>  
+>>  #include <asm/tlbflush.h>
+>>  
+>> @@ -1299,7 +1300,58 @@ static int is_memblock_offlined_cb(struct memory_block *mem, void *arg)
+>>  	return ret;
+>>  }
+>>  
+>> -int __ref remove_memory(u64 start, u64 size)
+>> +static int check_cpu_on_node(void *data)
+>> +{
+>> +	struct pglist_data *pgdat = data;
+>> +	int cpu;
 >> +
->> +#define RESTORE_PPR_PACA(area, ra)					\
->> +BEGIN_FTR_SECTION_NESTED(941)						\
->> +	ld	ra,area+EX_PPR(r13);					\
->> +	mtspr	SPRN_PPR,ra;						\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,941)
+>> +	for_each_present_cpu(cpu) {
+>> +		if (cpu_to_node(cpu) == pgdat->node_id)
+>> +			/*
+>> +			 * the cpu on this node isn't removed, and we can't
+>> +			 * offline this node.
+>> +			 */
+>> +			return -EBUSY;
+>> +	}
 >> +
+>> +	return 0;
+>> +}
+>> +
+>> +/* offline the node if all memory sections of this node are removed */
+>> +static void try_offline_node(int nid)
+>> +{
+>> +	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
+>> +	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
+>> +	unsigned long pfn;
+>> +
+>> +	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+>> +		unsigned long section_nr = pfn_to_section_nr(pfn);
+>> +
+>> +		if (!present_section_nr(section_nr))
+>> +			continue;
+>> +
+>> +		if (pfn_to_nid(pfn) != nid)
+>> +			continue;
+>> +
+>> +		/*
+>> +		 * some memory sections of this node are not removed, and we
+>> +		 * can't offline node now.
+>> +		 */
+>> +		return;
+>> +	}
+>> +
+>> +	if (stop_machine(check_cpu_on_node, NODE_DATA(nid), NULL))
+>> +		return;
 > 
-> Can you add some documentation here on why we should use the different
-> versions.
-> 
-> I'm trying to read the next patch and it's not clear to my why some have
-> HMT_MEDIUM_NO_PPR and other times HMT_MEDIUM and others
-> HTM_MEDIUM_HAS_PPR.
-> 
-> Looks like HTM_MEDIUM_NO_PPR sets the priority to medium on systems
-> where we can't save/restore the PPR, hence it can be called earlier in
-> the exception handler before we have free GPRs.  HTM_MEDIUM_HAS_PPR
-> saves the priority on systems where it can, and then sets the priority
-> to medium.
-> 
-> Maybe we should change the names 
->   HTM_MEDIUM_NO_PPR  => HTM_MEDIUM_PPR_DISCARD   and
->   HTM_MEDIUM_HAS_PPR => HTM_MEDIUM_PPR_SAVE
-> But now I'm heading into bike shedding territory... plus I think I
-> suggested the names you have currently, so I'm feeling a bit dumb now
-> :-)
+> how about:
+> 	if (nr_cpus_node(nid))
 
-No problem, We can change these macro names if HTM_MEDIUM_PPR_DISCARD/
-HTM_MEDIUM_PPR_SAVE gives better description.
+If all cpus on the node is offlined, but not removed, nr_cpus_node(nid) will
+return 0. In this case, we still can't offline the node.
 
-Right, HTM_MEDIUM_NO_PPR is used on systems where we do not save/restore
-PPR. So the behaviour is same as before - just increases the priority.
-HTM_MEDIUM_HAS_PPR will be executed on systems where CPU_FTR_HAS_PPR is
-enabled. I will write some comments around these macros to make it clear.
-
-We can also name them HMT_MEDIUM_CPU_NO_PPR_SAVE and
-HMT_MEDIUM_CPU_HAS_PPR_SAVE since we are enabling PPR save/restore using
-CPU_FTR macro.
-
-Otherwise I will follow with your suggestions.
-
+Another purpose to use stop_machine() is to prevent cpu hotplug. We can't lock
+cpuhotplug here.
 
 Thanks
-Haren
+Wen Congyang
 
-> Mikey
-> 
->> +#define HMT_MEDIUM_NO_PPR						\
->> +BEGIN_FTR_SECTION_NESTED(942)						\
->> +	HMT_MEDIUM;							\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,0,942)  /*non P7*/		
+> 		return;
 >> +
->> +#define HMT_MEDIUM_HAS_PPR(area, ra)					\
->> +BEGIN_FTR_SECTION_NESTED(943)						\
->> +	mfspr	ra,SPRN_PPR;						\
->> +	std	ra,area+EX_PPR(r13);					\
->> +	HMT_MEDIUM;							\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,943) 
+>> +	/*
+>> +	 * all memory/cpu of this node are removed, we can offline this
+>> +	 * node now.
+>> +	 */
+>> +	node_set_offline(nid);
+>> +	unregister_one_node(nid);
+>> +}
 >> +
->>  #define __EXCEPTION_PROLOG_1(area, extra, vec)				\
->>  	GET_PACA(r13);							\
->>  	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
-> 
-> 
->> diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
->> index 376e36d..52649cc 100644
->> --- a/arch/powerpc/include/asm/ppc_asm.h
->> +++ b/arch/powerpc/include/asm/ppc_asm.h
->> @@ -389,6 +389,31 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
->>  	FTR_SECTION_ELSE_NESTED(848);	\
->>  	mtocrf (FXM), RS;		\
->>  	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_NOEXECUTE, 848)
->> +
->> +/*
->> + * PPR restore macros used in entry_64.S
->> + * Used for P7 or later processors
->> + */
->> +#define HMT_MEDIUM_LOW_HAS_PPR						\
->> +BEGIN_FTR_SECTION_NESTED(944)						\
->> +	HMT_MEDIUM_LOW;							\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,944)
->> +
->> +#define SET_DEFAULT_THREAD_PPR(ra, rb)					\
->> +BEGIN_FTR_SECTION_NESTED(945)						\
->> +	lis	ra,0xc;		/* default ppr=3 */			\
->> +	ld	rb,PACACURRENT(r13);					\
->> +	sldi	ra,ra,32;	/* 11- 13 bits are used for ppr */	\
->> +	std	ra,TASKTHREADPPR(rb);					\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,945)
->> +
->> +#define RESTORE_PPR(ra, rb)						\
->> +BEGIN_FTR_SECTION_NESTED(946)						\
->> +	ld	ra,PACACURRENT(r13);					\
->> +	ld	rb,TASKTHREADPPR(ra);					\
->> +	mtspr	SPRN_PPR,rb;	/* Restore PPR */			\
->> +END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,946)
->> +
->>  #endif
+>> +int __ref remove_memory(int nid, u64 start, u64 size)
+>>  {
+>>  	unsigned long start_pfn, end_pfn;
+>>  	int ret = 0;
+>> @@ -1346,6 +1398,8 @@ repeat:
 >>  
->>  /*
->> diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
->> index d24c141..1723be3 100644
->> --- a/arch/powerpc/include/asm/reg.h
->> +++ b/arch/powerpc/include/asm/reg.h
->> @@ -287,6 +287,7 @@
->>  #define SPRN_DBAT6U	0x23C	/* Data BAT 6 Upper Register */
->>  #define SPRN_DBAT7L	0x23F	/* Data BAT 7 Lower Register */
->>  #define SPRN_DBAT7U	0x23E	/* Data BAT 7 Upper Register */
->> +#define SPRN_PPR	0x380	/* SMT Thread status Register */
+>>  	arch_remove_memory(start, size);
 >>  
->>  #define SPRN_DEC	0x016		/* Decrement Register */
->>  #define SPRN_DER	0x095		/* Debug Enable Regsiter */
->> -- 
->> 1.7.1
+>> +	try_offline_node(nid);
+>> +
+>>  	unlock_memory_hotplug();
+>>  
+>>  	return 0;
+>> @@ -1355,7 +1409,7 @@ int offline_pages(unsigned long start_pfn, unsigned long nr_pages)
+>>  {
+>>  	return -EINVAL;
+>>  }
+>> -int remove_memory(u64 start, u64 size)
+>> +int remove_memory(int nid, u64 start, u64 size)
+>>  {
+>>  	return -EINVAL;
+>>  }
 >>
->>
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>
+> 
+> 
