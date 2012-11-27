@@ -1,9 +1,9 @@
 Return-Path: <wency@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id C6A462C008C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 18:00:46 +1100 (EST)
-Message-ID: <50B4603B.1040600@cn.fujitsu.com>
-Date: Tue, 27 Nov 2012 14:39:55 +0800
+ by ozlabs.org (Postfix) with ESMTP id 8177D2C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 18:00:48 +1100 (EST)
+Message-ID: <50B4625F.1050307@cn.fujitsu.com>
+Date: Tue, 27 Nov 2012 14:49:03 +0800
 From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
 To: Jianguo Wu <wujianguo@huawei.com>
@@ -350,14 +350,6 @@ At 11/27/2012 01:47 PM, Jianguo Wu Wrote:
 > Hi Congyang,
 > 	For vmemmap, nr_pages should be PAGES_PER_SECTION for free_map_bootmem(),
 > which is passed by free_section_usemap(), right? 
-
-Yes, you are right. I will merge it into my patchset.
-
-I will sent the new patchset later today.
-
-Thanks
-Wen Congyang
-
 > But now, nr_pages = PAGE_ALIGN(PAGES_PER_SECTION * sizeof(struct page)) >> PAGE_SHIFT.
 > 
 > Signed-off-by: Jianguo Wu <wujianguo@huawei.com>
@@ -379,6 +371,13 @@ Wen Congyang
 >  		nr_pages = PAGE_ALIGN(PAGES_PER_SECTION * sizeof(struct page))
 >  			>> PAGE_SHIFT;
 > +#endif
+
+Hmm, to avoid using ifdef, I think we can pass PAGE_PER_SECTION to free_map_bootmem(),
+and calculate how many pages is used to store struct page.
+
+Thanks
+Wen Congyang
+
 >  
 >  		free_map_bootmem(memmap_page, nr_pages);
 >  	}
