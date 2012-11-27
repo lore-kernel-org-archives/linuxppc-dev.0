@@ -1,20 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 27 Nov 2012 16:06:00 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH 1/2] vfio powerpc: implemented IOMMU driver for VFIO
-Message-ID: <20121127050600.GC4745@truffula.fritz.box>
-References: <1353435584.2234.87.camel@bling.home>
- <1353661396-14374-1-git-send-email-aik@ozlabs.ru>
- <1353661396-14374-2-git-send-email-aik@ozlabs.ru>
- <1353954038.1809.114.camel@bling.home> <50B43C36.60707@ozlabs.ru>
- <1353990588.1809.148.camel@bling.home> <50B44866.5000905@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <50B44866.5000905@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
- kvm@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8A9292C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 16:22:33 +1100 (EST)
+Message-ID: <1353993743.2179.28.camel@pasglop>
+Subject: Re: [PATCH 1/3] powerpc: Relocate prom_init.c on 64bit
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Anton Blanchard <anton@samba.org>
+Date: Tue, 27 Nov 2012 16:22:23 +1100
+In-Reply-To: <20121127143903.4b5cab17@kryten>
+References: <20121127143903.4b5cab17@kryten>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org, amodra@gmail.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,312 +23,251 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Nov 27, 2012 at 03:58:14PM +1100, Alexey Kardashevskiy wrote:
-> On 27/11/12 15:29, Alex Williamson wrote:
-> >On Tue, 2012-11-27 at 15:06 +1100, Alexey Kardashevskiy wrote:
-> >>On 27/11/12 05:20, Alex Williamson wrote:
-> >>>On Fri, 2012-11-23 at 20:03 +1100, Alexey Kardashevskiy wrote:
-> >>>>VFIO implements platform independent stuff such as
-> >>>>a PCI driver, BAR access (via read/write on a file descriptor
-> >>>>or direct mapping when possible) and IRQ signaling.
-> >>>>
-> >>>>The platform dependent part includes IOMMU initialization
-> >>>>and handling. This patch implements an IOMMU driver for VFIO
-> >>>>which does mapping/unmapping pages for the guest IO and
-> >>>>provides information about DMA window (required by a POWERPC
-> >>>>guest).
-> >>>>
-> >>>>The counterpart in QEMU is required to support this functionality.
-> >>>>
-> >>>>Cc: David Gibson <david@gibson.dropbear.id.au>
-> >>>>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>>---
-> >>>>   drivers/vfio/Kconfig                |    6 +
-> >>>>   drivers/vfio/Makefile               |    1 +
-> >>>>   drivers/vfio/vfio_iommu_spapr_tce.c |  247 +++++++++++++++++++++++++++++++++++
-> >>>>   include/linux/vfio.h                |   20 +++
-> >>>>   4 files changed, 274 insertions(+)
-> >>>>   create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>>
-> >>>>diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
-> >>>>index 7cd5dec..b464687 100644
-> >>>>--- a/drivers/vfio/Kconfig
-> >>>>+++ b/drivers/vfio/Kconfig
-> >>>>@@ -3,10 +3,16 @@ config VFIO_IOMMU_TYPE1
-> >>>>   	depends on VFIO
-> >>>>   	default n
-> >>>>
-> >>>>+config VFIO_IOMMU_SPAPR_TCE
-> >>>>+	tristate
-> >>>>+	depends on VFIO && SPAPR_TCE_IOMMU
-> >>>>+	default n
-> >>>>+
-> >>>>   menuconfig VFIO
-> >>>>   	tristate "VFIO Non-Privileged userspace driver framework"
-> >>>>   	depends on IOMMU_API
-> >>>>   	select VFIO_IOMMU_TYPE1 if X86
-> >>>>+	select VFIO_IOMMU_SPAPR_TCE if PPC_POWERNV
-> >>>>   	help
-> >>>>   	  VFIO provides a framework for secure userspace device drivers.
-> >>>>   	  See Documentation/vfio.txt for more details.
-> >>>>diff --git a/drivers/vfio/Makefile b/drivers/vfio/Makefile
-> >>>>index 2398d4a..72bfabc 100644
-> >>>>--- a/drivers/vfio/Makefile
-> >>>>+++ b/drivers/vfio/Makefile
-> >>>>@@ -1,3 +1,4 @@
-> >>>>   obj-$(CONFIG_VFIO) += vfio.o
-> >>>>   obj-$(CONFIG_VFIO_IOMMU_TYPE1) += vfio_iommu_type1.o
-> >>>>+obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_spapr_tce.o
-> >>>>   obj-$(CONFIG_VFIO_PCI) += pci/
-> >>>>diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>>new file mode 100644
-> >>>>index 0000000..46a6298
-> >>>>--- /dev/null
-> >>>>+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>>@@ -0,0 +1,247 @@
-> >>>>+/*
-> >>>>+ * VFIO: IOMMU DMA mapping support for TCE on POWER
-> >>>>+ *
-> >>>>+ * Copyright (C) 2012 IBM Corp.  All rights reserved.
-> >>>>+ *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>>+ *
-> >>>>+ * This program is free software; you can redistribute it and/or modify
-> >>>>+ * it under the terms of the GNU General Public License version 2 as
-> >>>>+ * published by the Free Software Foundation.
-> >>>>+ *
-> >>>>+ * Derived from original vfio_iommu_type1.c:
-> >>>>+ * Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
-> >>>>+ *     Author: Alex Williamson <alex.williamson@redhat.com>
-> >>>>+ */
-> >>>>+
-> >>>>+#include <linux/module.h>
-> >>>>+#include <linux/pci.h>
-> >>>>+#include <linux/slab.h>
-> >>>>+#include <linux/uaccess.h>
-> >>>>+#include <linux/err.h>
-> >>>>+#include <linux/vfio.h>
-> >>>>+#include <asm/iommu.h>
-> >>>>+
-> >>>>+#define DRIVER_VERSION  "0.1"
-> >>>>+#define DRIVER_AUTHOR   "aik@ozlabs.ru"
-> >>>>+#define DRIVER_DESC     "VFIO IOMMU SPAPR TCE"
-> >>>>+
-> >>>>+static void tce_iommu_detach_group(void *iommu_data,
-> >>>>+		struct iommu_group *iommu_group);
-> >>>>+
-> >>>>+/*
-> >>>>+ * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
-> >>>>+ */
-> >>>>+
-> >>>>+/*
-> >>>>+ * The container descriptor supports only a single group per container.
-> >>>>+ * Required by the API as the container is not supplied with the IOMMU group
-> >>>>+ * at the moment of initialization.
-> >>>>+ */
-> >>>>+struct tce_container {
-> >>>>+	struct mutex lock;
-> >>>>+	struct iommu_table *tbl;
-> >>>>+};
-> >>>>+
-> >>>>+static void *tce_iommu_open(unsigned long arg)
-> >>>>+{
-> >>>>+	struct tce_container *container;
-> >>>>+
-> >>>>+	if (arg != VFIO_SPAPR_TCE_IOMMU) {
-> >>>>+		printk(KERN_ERR "tce_vfio: Wrong IOMMU type\n");
-> >>>>+		return ERR_PTR(-EINVAL);
-> >>>>+	}
-> >>>>+
-> >>>>+	container = kzalloc(sizeof(*container), GFP_KERNEL);
-> >>>>+	if (!container)
-> >>>>+		return ERR_PTR(-ENOMEM);
-> >>>>+
-> >>>>+	mutex_init(&container->lock);
-> >>>>+
-> >>>>+	return container;
-> >>>>+}
-> >>>>+
-> >>>>+static void tce_iommu_release(void *iommu_data)
-> >>>>+{
-> >>>>+	struct tce_container *container = iommu_data;
-> >>>>+
-> >>>>+	WARN_ON(container->tbl && !container->tbl->it_group);
-> >>>
-> >>>I think your patch ordering is backwards here.  it_group isn't added
-> >>>until 2/2.  I'd really like to see the arch/powerpc code approved and
-> >>>merged by the powerpc maintainer before we add the code that makes use
-> >>>of it into vfio.  Otherwise we just get lots of churn if interfaces
-> >>>change or they disapprove of it altogether.
-> >>
-> >>
-> >>Makes sense, thanks.
-> >>
-> >>
-> >>>>+	if (container->tbl && container->tbl->it_group)
-> >>>>+		tce_iommu_detach_group(iommu_data, container->tbl->it_group);
-> >>>>+
-> >>>>+	mutex_destroy(&container->lock);
-> >>>>+
-> >>>>+	kfree(container);
-> >>>>+}
-> >>>>+
-> >>>>+static long tce_iommu_ioctl(void *iommu_data,
-> >>>>+				 unsigned int cmd, unsigned long arg)
-> >>>>+{
-> >>>>+	struct tce_container *container = iommu_data;
-> >>>>+	unsigned long minsz;
-> >>>>+
-> >>>>+	switch (cmd) {
-> >>>>+	case VFIO_CHECK_EXTENSION: {
-> >>>>+		return (arg == VFIO_SPAPR_TCE_IOMMU) ? 1 : 0;
-> >>>>+	}
-> >>>>+	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
-> >>>>+		struct vfio_iommu_spapr_tce_info info;
-> >>>>+		struct iommu_table *tbl = container->tbl;
-> >>>>+
-> >>>>+		if (WARN_ON(!tbl))
-> >>>>+			return -ENXIO;
-> >>>>+
-> >>>>+		minsz = offsetofend(struct vfio_iommu_spapr_tce_info,
-> >>>>+				dma64_window_size);
-> >>>>+
-> >>>>+		if (copy_from_user(&info, (void __user *)arg, minsz))
-> >>>>+			return -EFAULT;
-> >>>>+
-> >>>>+		if (info.argsz < minsz)
-> >>>>+			return -EINVAL;
-> >>>>+
-> >>>>+		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT;
-> >>>>+		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT;
-> >>>>+		info.dma64_window_start = 0;
-> >>>>+		info.dma64_window_size = 0;
-> >>>>+		info.flags = 0;
-> >>>>+
-> >>>>+		if (copy_to_user((void __user *)arg, &info, minsz))
-> >>>>+			return -EFAULT;
-> >>>>+
-> >>>>+		return 0;
-> >>>>+	}
-> >>>>+	case VFIO_IOMMU_MAP_DMA: {
-> >>>>+		vfio_iommu_spapr_tce_dma_map param;
-> >>>>+		struct iommu_table *tbl = container->tbl;
-> >>>>+		enum dma_data_direction direction = DMA_NONE;
-> >>>>+
-> >>>>+		if (WARN_ON(!tbl))
-> >>>>+			return -ENXIO;
-> >>>>+
-> >>>>+		minsz = offsetofend(vfio_iommu_spapr_tce_dma_map, size);
-> >>>>+
-> >>>>+		if (copy_from_user(&param, (void __user *)arg, minsz))
-> >>>>+			return -EFAULT;
-> >>>>+
-> >>>>+		if (param.argsz < minsz)
-> >>>>+			return -EINVAL;
-> >>>>+
-> >>>>+		if ((param.flags & VFIO_DMA_MAP_FLAG_READ) &&
-> >>>>+				(param.flags & VFIO_DMA_MAP_FLAG_WRITE)) {
-> >>>>+			direction = DMA_BIDIRECTIONAL;
-> >>>>+		} else if (param.flags & VFIO_DMA_MAP_FLAG_READ) {
-> >>>>+			direction = DMA_TO_DEVICE;
-> >>>>+		} else if (param.flags & VFIO_DMA_MAP_FLAG_WRITE) {
-> >>>>+			direction = DMA_FROM_DEVICE;
-> >>>>+		}
-> >>>>+
-> >>>>+		param.size += param.iova & ~IOMMU_PAGE_MASK;
-> >>>>+		param.size = _ALIGN_UP(param.size, IOMMU_PAGE_SIZE);
-> >>>
-> >>>On x86 we force iova, vaddr, and size to all be aligned to the smallest
-> >>>page granularity of the iommu and return -EINVAL if it doesn't fit.
-> >>>What does it imply to the user if they're always aligned to work here?
-> >>>Won't this interface happily map overlapping entries with no indication
-> >>>to the user that the previous mapping is no longer valid?
-> >>>Maybe another reason why a combined unmap/map makes me nervous, we have
-> >>>to assume the user knows what they're doing.
-> >>
-> >>
-> >>I got used to guests which do know what they are doing so I am pretty calm :)
-> >>but ok, I'll move alignment to the QEMU, it makes sense.
-> >>
-> >>
-> >>>>+
-> >>>>+		return iommu_put_tces(tbl, param.iova >> IOMMU_PAGE_SHIFT,
-> >>>>+				param.vaddr & IOMMU_PAGE_MASK, direction,
-> >>>>+				param.size >> IOMMU_PAGE_SHIFT);
-> >>>>+	}
-> >>>>+	case VFIO_IOMMU_UNMAP_DMA: {
-> >>>>+		vfio_iommu_spapr_tce_dma_unmap param;
-> >>>>+		struct iommu_table *tbl = container->tbl;
-> >>>>+
-> >>>>+		if (WARN_ON(!tbl))
-> >>>>+			return -ENXIO;
-> >>>>+
-> >>>>+		minsz = offsetofend(vfio_iommu_spapr_tce_dma_unmap, size);
-> >>>>+
-> >>>>+		if (copy_from_user(&param, (void __user *)arg, minsz))
-> >>>>+			return -EFAULT;
-> >>>>+
-> >>>>+		if (param.argsz < minsz)
-> >>>>+			return -EINVAL;
-> >>>>+
-> >>>>+		param.size += param.iova & ~IOMMU_PAGE_MASK;
-> >>>>+		param.size = _ALIGN_UP(param.size, IOMMU_PAGE_SIZE);
-> >>>>+
-> >>>>+		return iommu_put_tces(tbl, param.iova >> IOMMU_PAGE_SHIFT,
-> >>>>+				0, DMA_NONE, param.size >> IOMMU_PAGE_SHIFT);
-> >>>>+	}
-> >>>>+	default:
-> >>>>+		printk(KERN_WARNING "tce_vfio: unexpected cmd %x\n", cmd);
-> >>>
-> >>>pr_warn
-> >>>
-> >>>>+	}
-> >>>>+
-> >>>>+	return -ENOTTY;
-> >>>>+}
-> >>>>+
-> >>>>+static int tce_iommu_attach_group(void *iommu_data,
-> >>>>+		struct iommu_group *iommu_group)
-> >>>>+{
-> >>>>+	struct tce_container *container = iommu_data;
-> >>>>+	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
-> >>>>+
-> >>>>+	BUG_ON(!tbl);
-> >>>>+	mutex_lock(&container->lock);
-> >>>>+	pr_debug("tce_vfio: Attaching group #%u to iommu %p\n",
-> >>>>+			iommu_group_id(iommu_group), iommu_group);
-> >>>>+	if (container->tbl) {
-> >>>>+		printk(KERN_WARNING "tce_vfio: Only one group per IOMMU container is allowed, existing id=%d, attaching id=%d\n",
-> >>>
-> >>>pr_warn
-> >>>
-> >>>>+				iommu_group_id(container->tbl->it_group),
-> >>>>+				iommu_group_id(iommu_group));
-> >>>>+		mutex_unlock(&container->lock);
-> >>>>+		return -EBUSY;
-> >>>>+	}
-> >>>>+
-> >>>>+	container->tbl = tbl;
-> >>>
-> >>>Would it be too much paranoia to clear all the tce here as you do below
-> >>>on detach?
-> >>
-> >>Guess so. I do unmap on detach() and the guest calls put_tce(0) (i.e.
-> >>unmaps) the whole DMA window at the boot time.
-> >
-> >But that's just one user of this interface, we can't assume they'll all
-> >be so agreeable.  If any tces were enabled here, a malicious user would
-> >have a window to host memory, right?  Thanks,
+On Tue, 2012-11-27 at 14:39 +1100, Anton Blanchard wrote:
+> The ppc64 kernel can get loaded at any address which means
+> our very early init code in prom_init.c must be relocatable. We do
+> this with a pretty nasty RELOC() macro that we wrap accesses of
+> variables with. It is very fragile and sometimes we forget to add a
+> RELOC() to an uncommon path or sometimes a compiler change breaks it.
 > 
+> 32bit has a much more elegant solution where we build prom_init.c
+> with -mrelocatable and then process the relocations manually.
+> Unfortunately we can't do the equivalent on 64bit and we would
+> have to build the entire kernel relocatable (-pie), resulting in a
+> large increase in kernel footprint (megabytes of relocation data).
+> The relocation data will be marked __initdata but it still creates
+> more pressure on our already tight memory layout at boot.
 > 
-> But I still release pages on detach(), how can this code be not
-> called on the guest exit (normal or crashed)?
+> Alan Modra pointed out that the 64bit ABI is relocatable even
+> if we don't build with -pie, we just need to relocate the TOC.
+> This patch implements that idea and relocates the TOC entries of
+> prom_init.c. An added bonus is there are very few relocations to
+> process which helps keep boot times on simulators down.
+> 
+> gcc does not put 64bit integer constants into the TOC but to be
+> safe we may want a build time script which passes through the
+> prom_init.c TOC entries to make sure everything looks reasonable.
 
-I think the concern is about robustness if some bug elsewhere in the
-kernel left some TCE entries in place before the table was handed over
-to VFIO.
+My only potential objection was that it might have been cleaner to
+actually build prom_init.c as a separate binary alltogether and piggy
+back it... 
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Ben.
+
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> --- 
+> 
+> To keep the patch small and reviewable, I separated the removal
+> of the RELOC macro into a follow up patch.
+> 
+> For simplicity I do the relocation in C but if self brain surgery
+> keeps people up at night we can move it into assembly.
+> 
+> Index: b/arch/powerpc/kernel/prom_init.c
+> ===================================================================
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -66,8 +66,8 @@
+>   * is running at whatever address it has been loaded at.
+>   * On ppc32 we compile with -mrelocatable, which means that references
+>   * to extern and static variables get relocated automatically.
+> - * On ppc64 we have to relocate the references explicitly with
+> - * RELOC.  (Note that strings count as static variables.)
+> + * ppc64 objects are always relocatable, we just need to relocate the
+> + * TOC.
+>   *
+>   * Because OF may have mapped I/O devices into the area starting at
+>   * KERNELBASE, particularly on CHRP machines, we can't safely call
+> @@ -79,13 +79,12 @@
+>   * On ppc64, 64 bit values are truncated to 32 bits (and
+>   * fortunately don't get interpreted as two arguments).
+>   */
+> +#define RELOC(x)	(x)
+> +#define ADDR(x)		(u32)(unsigned long)(x)
+> +
+>  #ifdef CONFIG_PPC64
+> -#define RELOC(x)        (*PTRRELOC(&(x)))
+> -#define ADDR(x)		(u32) add_reloc_offset((unsigned long)(x))
+>  #define OF_WORKAROUNDS	0
+>  #else
+> -#define RELOC(x)	(x)
+> -#define ADDR(x)		(u32) (x)
+>  #define OF_WORKAROUNDS	of_workarounds
+>  int of_workarounds;
+>  #endif
+> @@ -334,9 +333,6 @@ static void __init prom_printf(const cha
+>  	struct prom_t *_prom = &RELOC(prom);
+>  
+>  	va_start(args, format);
+> -#ifdef CONFIG_PPC64
+> -	format = PTRRELOC(format);
+> -#endif
+>  	for (p = format; *p != 0; p = q) {
+>  		for (q = p; *q != 0 && *q != '\n' && *q != '%'; ++q)
+>  			;
+> @@ -437,9 +433,6 @@ static unsigned int __init prom_claim(un
+>  
+>  static void __init __attribute__((noreturn)) prom_panic(const char *reason)
+>  {
+> -#ifdef CONFIG_PPC64
+> -	reason = PTRRELOC(reason);
+> -#endif
+>  	prom_print(reason);
+>  	/* Do not call exit because it clears the screen on pmac
+>  	 * it also causes some sort of double-fault on early pmacs */
+> @@ -929,7 +922,7 @@ static void __init prom_send_capabilitie
+>  		 * (we assume this is the same for all cores) and use it to
+>  		 * divide NR_CPUS.
+>  		 */
+> -		cores = (u32 *)PTRRELOC(&ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET]);
+> +		cores = (u32 *)&ibm_architecture_vec[IBM_ARCH_VEC_NRCORES_OFFSET];
+>  		if (*cores != NR_CPUS) {
+>  			prom_printf("WARNING ! "
+>  				    "ibm_architecture_vec structure inconsistent: %lu!\n",
+> @@ -2850,6 +2843,53 @@ static void __init prom_check_initrd(uns
+>  #endif /* CONFIG_BLK_DEV_INITRD */
+>  }
+>  
+> +#ifdef CONFIG_PPC64
+> +#ifdef CONFIG_RELOCATABLE
+> +static void reloc_toc(void)
+> +{
+> +}
+> +
+> +static void unreloc_toc(void)
+> +{
+> +}
+> +#else
+> +static void __reloc_toc(void *tocstart, unsigned long offset,
+> +			unsigned long nr_entries)
+> +{
+> +	unsigned long i;
+> +	unsigned long *toc_entry = (unsigned long *)tocstart;
+> +
+> +	for (i = 0; i < nr_entries; i++) {
+> +		*toc_entry = *toc_entry + offset;
+> +		toc_entry++;
+> +	}
+> +}
+> +
+> +static void reloc_toc(void)
+> +{
+> +	unsigned long offset = reloc_offset();
+> +	unsigned long nr_entries =
+> +		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
+> +
+> +	/* Need to add offset to get at __prom_init_toc_start */
+> +	__reloc_toc(__prom_init_toc_start + offset, offset, nr_entries);
+> +
+> +	mb();
+> +}
+> +
+> +static void unreloc_toc(void)
+> +{
+> +	unsigned long offset = reloc_offset();
+> +	unsigned long nr_entries =
+> +		(__prom_init_toc_end - __prom_init_toc_start) / sizeof(long);
+> +
+> +	mb();
+> +
+> +	/* __prom_init_toc_start has been relocated, no need to add offset */
+> +	__reloc_toc(__prom_init_toc_start, -offset, nr_entries);
+> +}
+> +#endif
+> +#endif
+>  
+>  /*
+>   * We enter here early on, when the Open Firmware prom is still
+> @@ -2867,6 +2907,8 @@ unsigned long __init prom_init(unsigned
+>  #ifdef CONFIG_PPC32
+>  	unsigned long offset = reloc_offset();
+>  	reloc_got2(offset);
+> +#else
+> +	reloc_toc();
+>  #endif
+>  
+>  	_prom = &RELOC(prom);
+> @@ -3061,6 +3103,8 @@ unsigned long __init prom_init(unsigned
+>  
+>  #ifdef CONFIG_PPC32
+>  	reloc_got2(-offset);
+> +#else
+> +	unreloc_toc();
+>  #endif
+>  
+>  #ifdef CONFIG_PPC_EARLY_DEBUG_OPAL
+> Index: b/arch/powerpc/kernel/prom_init_check.sh
+> ===================================================================
+> --- a/arch/powerpc/kernel/prom_init_check.sh
+> +++ b/arch/powerpc/kernel/prom_init_check.sh
+> @@ -22,7 +22,7 @@ __secondary_hold_acknowledge __secondary
+>  strcmp strcpy strlcpy strlen strncmp strstr logo_linux_clut224
+>  reloc_got2 kernstart_addr memstart_addr linux_banner _stext
+>  opal_query_takeover opal_do_takeover opal_enter_rtas opal_secondary_entry
+> -boot_command_line"
+> +boot_command_line __prom_init_toc_start __prom_init_toc_end"
+>  
+>  NM="$1"
+>  OBJ="$2"
+> Index: b/arch/powerpc/kernel/vmlinux.lds.S
+> ===================================================================
+> --- a/arch/powerpc/kernel/vmlinux.lds.S
+> +++ b/arch/powerpc/kernel/vmlinux.lds.S
+> @@ -218,6 +218,11 @@ SECTIONS
+>  
+>  	.got : AT(ADDR(.got) - LOAD_OFFSET) {
+>  		__toc_start = .;
+> +#ifndef CONFIG_RELOCATABLE
+> +		__prom_init_toc_start = .;
+> +		arch/powerpc/kernel/prom_init.o*(.toc .got)
+> +		__prom_init_toc_end = .;
+> +#endif
+>  		*(.got)
+>  		*(.toc)
+>  	}
+> Index: b/arch/powerpc/Makefile
+> ===================================================================
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -136,6 +136,7 @@ head-$(CONFIG_FSL_BOOKE)	:= arch/powerpc
+>  head-$(CONFIG_PPC64)		+= arch/powerpc/kernel/entry_64.o
+>  head-$(CONFIG_PPC_FPU)		+= arch/powerpc/kernel/fpu.o
+>  head-$(CONFIG_ALTIVEC)		+= arch/powerpc/kernel/vector.o
+> +head-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)  += arch/powerpc/kernel/prom_init.o
+>  
+>  core-y				+= arch/powerpc/kernel/ \
+>  				   arch/powerpc/mm/ \
+> Index: b/arch/powerpc/kernel/Makefile
+> ===================================================================
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -91,7 +91,6 @@ obj-$(CONFIG_RELOCATABLE_PPC32)	+= reloc
+>  obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o
+>  obj-$(CONFIG_PPC64)		+= dma-iommu.o iommu.o
+>  obj-$(CONFIG_KGDB)		+= kgdb.o
+> -obj-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init.o
+>  obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
+>  obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+>  obj-$(CONFIG_SMP)		+= smp.o
+> @@ -142,6 +141,7 @@ GCOV_PROFILE_kprobes.o := n
+>  extra-$(CONFIG_PPC_FPU)		+= fpu.o
+>  extra-$(CONFIG_ALTIVEC)		+= vector.o
+>  extra-$(CONFIG_PPC64)		+= entry_64.o
+> +extra-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE)	+= prom_init.o
+>  
+>  extra-y				+= systbl_chk.i
+>  $(obj)/systbl.o:		systbl_chk
+> Index: b/arch/powerpc/include/asm/sections.h
+> ===================================================================
+> --- a/arch/powerpc/include/asm/sections.h
+> +++ b/arch/powerpc/include/asm/sections.h
+> @@ -10,6 +10,9 @@
+>  
+>  extern char __end_interrupts[];
+>  
+> +extern char __prom_init_toc_start[];
+> +extern char __prom_init_toc_end[];
+> +
+>  static inline int in_kernel_text(unsigned long addr)
+>  {
+>  	if (addr >= (unsigned long)_stext && addr < (unsigned long)__init_end)
