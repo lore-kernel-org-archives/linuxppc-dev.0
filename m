@@ -1,14 +1,31 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 16/16] powerpc: Documentation for transactional memory on
- powerpc
-Date: Tue, 27 Nov 2012 13:48:08 +1100
-Message-Id: <1353984488-1283-17-git-send-email-mikey@neuling.org>
-In-Reply-To: <1353984488-1283-1-git-send-email-mikey@neuling.org>
-References: <1353984488-1283-1-git-send-email-mikey@neuling.org>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Matt Evans <matt@ozlabs.org>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-ie0-f179.google.com (mail-ie0-f179.google.com
+ [209.85.223.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3F2C22C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 Nov 2012 14:28:30 +1100 (EST)
+Received: by mail-ie0-f179.google.com with SMTP id 9so7790648iec.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 Nov 2012 19:28:27 -0800 (PST)
+Message-ID: <50B4334E.2010802@ozlabs.ru>
+Date: Tue, 27 Nov 2012 14:28:14 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH] vfio powerpc: enabled and supported on powernv platform
+References: <20121113033832.GW4696@truffula.fritz.box>
+ <1353372530-25205-1-git-send-email-aik@ozlabs.ru>
+ <1353435584.2234.87.camel@bling.home>
+ <C5ECD7A89D1DC44195F34B25E172658D294605@039-SN2MPN1-013.039d.mgd.msft.net>
+ <50AED94E.4000006@ozlabs.ru> <1353943130.1809.29.camel@bling.home>
+ <1353953070.1809.103.camel@bling.home>
+In-Reply-To: <1353953070.1809.103.camel@bling.home>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Cc: "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Paul Mackerras <paulus@samba.org>, Sethi Varun-B16395 <B16395@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,137 +35,338 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Matt Evans <matt@ozlabs.org>
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- Documentation/powerpc/transactional_memory.txt |  119 ++++++++++++++++++++++++
- 1 file changed, 119 insertions(+)
- create mode 100644 Documentation/powerpc/transactional_memory.txt
+On 27/11/12 05:04, Alex Williamson wrote:
+> On Mon, 2012-11-26 at 08:18 -0700, Alex Williamson wrote:
+>> On Fri, 2012-11-23 at 13:02 +1100, Alexey Kardashevskiy wrote:
+>>> On 22/11/12 22:56, Sethi Varun-B16395 wrote:
+>>>>
+>>>>
+>>>>> -----Original Message-----
+>>>>> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
+>>>>> owner@vger.kernel.org] On Behalf Of Alex Williamson
+>>>>> Sent: Tuesday, November 20, 2012 11:50 PM
+>>>>> To: Alexey Kardashevskiy
+>>>>> Cc: Benjamin Herrenschmidt; Paul Mackerras; linuxppc-
+>>>>> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; kvm@vger.kernel.org;
+>>>>> David Gibson
+>>>>> Subject: Re: [PATCH] vfio powerpc: enabled and supported on powernv
+>>>>> platform
+>>>>>
+>>>>> On Tue, 2012-11-20 at 11:48 +1100, Alexey Kardashevskiy wrote:
+>>>>>> VFIO implements platform independent stuff such as a PCI driver, BAR
+>>>>>> access (via read/write on a file descriptor or direct mapping when
+>>>>>> possible) and IRQ signaling.
+>>>>>> The platform dependent part includes IOMMU initialization and
+>>>>>> handling.
+>>>>>>
+>>>>>> This patch initializes IOMMU groups based on the IOMMU configuration
+>>>>>> discovered during the PCI scan, only POWERNV platform is supported at
+>>>>>> the moment.
+>>>>>>
+>>>>>> Also the patch implements an VFIO-IOMMU driver which manages DMA
+>>>>>> mapping/unmapping requests coming from the client (now QEMU). It also
+>>>>>> returns a DMA window information to let the guest initialize the
+>>>>>> device tree for a guest OS properly. Although this driver has been
+>>>>>> tested only on POWERNV, it should work on any platform supporting TCE
+>>>>>> tables.
+>>>>>>
+>>>>>> To enable VFIO on POWER, enable SPAPR_TCE_IOMMU config option.
+>>>>>>
+>>>>>> Cc: David Gibson <david@gibson.dropbear.id.au>
+>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>>> ---
+>>>>>>    arch/powerpc/include/asm/iommu.h     |    6 +
+>>>>>>    arch/powerpc/kernel/iommu.c          |  140 +++++++++++++++++++
+>>>>>>    arch/powerpc/platforms/powernv/pci.c |  135 +++++++++++++++++++
+>>>>>>    drivers/iommu/Kconfig                |    8 ++
+>>>>>>    drivers/vfio/Kconfig                 |    6 +
+>>>>>>    drivers/vfio/Makefile                |    1 +
+>>>>>>    drivers/vfio/vfio_iommu_spapr_tce.c  |  247
+>>>>> ++++++++++++++++++++++++++++++++++
+>>>>>>    include/linux/vfio.h                 |   20 +++
+>>>>>>    8 files changed, 563 insertions(+)
+>>>>>>    create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
+>>>>>>
+>>>>>> diff --git a/arch/powerpc/include/asm/iommu.h
+>>>>>> b/arch/powerpc/include/asm/iommu.h
+>>>>>> index cbfe678..5ba66cb 100644
+>>>>>> --- a/arch/powerpc/include/asm/iommu.h
+>>>>>> +++ b/arch/powerpc/include/asm/iommu.h
+>>>>>> @@ -64,30 +64,33 @@ struct iommu_pool {  }
+>>>>>> ____cacheline_aligned_in_smp;
+>>>>>>
+>>>>>>    struct iommu_table {
+>>>>>>    	unsigned long  it_busno;     /* Bus number this table belongs to */
+>>>>>>    	unsigned long  it_size;      /* Size of iommu table in entries */
+>>>>>>    	unsigned long  it_offset;    /* Offset into global table */
+>>>>>>    	unsigned long  it_base;      /* mapped address of tce table */
+>>>>>>    	unsigned long  it_index;     /* which iommu table this is */
+>>>>>>    	unsigned long  it_type;      /* type: PCI or Virtual Bus */
+>>>>>>    	unsigned long  it_blocksize; /* Entries in each block (cacheline)
+>>>>> */
+>>>>>>    	unsigned long  poolsize;
+>>>>>>    	unsigned long  nr_pools;
+>>>>>>    	struct iommu_pool large_pool;
+>>>>>>    	struct iommu_pool pools[IOMMU_NR_POOLS];
+>>>>>>    	unsigned long *it_map;       /* A simple allocation bitmap for now
+>>>>> */
+>>>>>> +#ifdef CONFIG_IOMMU_API
+>>>>>> +	struct iommu_group *it_group;
+>>>>>> +#endif
+>>>>>>    };
+>>>>>>
+>>>>>>    struct scatterlist;
+>>>>>>
+>>>>>>    static inline void set_iommu_table_base(struct device *dev, void
+>>>>>> *base)  {
+>>>>>>    	dev->archdata.dma_data.iommu_table_base = base;  }
+>>>>>>
+>>>>>>    static inline void *get_iommu_table_base(struct device *dev)  {
+>>>>>>    	return dev->archdata.dma_data.iommu_table_base;
+>>>>>>    }
+>>>>>>
+>>>>>>    /* Frees table for an individual device node */ @@ -135,17 +138,20 @@
+>>>>>> static inline void pci_iommu_init(void) { }  extern void
+>>>>>> alloc_dart_table(void);  #if defined(CONFIG_PPC64) &&
+>>>>>> defined(CONFIG_PM)  static inline void iommu_save(void)  {
+>>>>>>    	if (ppc_md.iommu_save)
+>>>>>>    		ppc_md.iommu_save();
+>>>>>>    }
+>>>>>>
+>>>>>>    static inline void iommu_restore(void)  {
+>>>>>>    	if (ppc_md.iommu_restore)
+>>>>>>    		ppc_md.iommu_restore();
+>>>>>>    }
+>>>>>>    #endif
+>>>>>>
+>>>>>> +extern long iommu_put_tces(struct iommu_table *tbl, unsigned long
+>>>>> entry, uint64_t tce,
+>>>>>> +		enum dma_data_direction direction, unsigned long pages);
+>>>>>> +
+>>>>>>    #endif /* __KERNEL__ */
+>>>>>>    #endif /* _ASM_IOMMU_H */
+>>>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>>>>>> index ff5a6ce..94f614b 100644
+>>>>>> --- a/arch/powerpc/kernel/iommu.c
+>>>>>> +++ b/arch/powerpc/kernel/iommu.c
+>>>>>> @@ -32,30 +32,31 @@
+>>>>>>    #include <linux/dma-mapping.h>
+>>>>>>    #include <linux/bitmap.h>
+>>>>>>    #include <linux/iommu-helper.h>
+>>>>>>    #include <linux/crash_dump.h>
+>>>>>>    #include <linux/hash.h>
+>>>>>>    #include <linux/fault-inject.h>
+>>>>>>    #include <linux/pci.h>
+>>>>>>    #include <asm/io.h>
+>>>>>>    #include <asm/prom.h>
+>>>>>>    #include <asm/iommu.h>
+>>>>>>    #include <asm/pci-bridge.h>
+>>>>>>    #include <asm/machdep.h>
+>>>>>>    #include <asm/kdump.h>
+>>>>>>    #include <asm/fadump.h>
+>>>>>>    #include <asm/vio.h>
+>>>>>> +#include <asm/tce.h>
+>>>>>>
+>>>>>>    #define DBG(...)
+>>>>>>
+>>>>>>    static int novmerge;
+>>>>>>
+>>>>>>    static void __iommu_free(struct iommu_table *, dma_addr_t, unsigned
+>>>>>> int);
+>>>>>>
+>>>>>>    static int __init setup_iommu(char *str)  {
+>>>>>>    	if (!strcmp(str, "novmerge"))
+>>>>>>    		novmerge = 1;
+>>>>>>    	else if (!strcmp(str, "vmerge"))
+>>>>>>    		novmerge = 0;
+>>>>>>    	return 1;
+>>>>>>    }
+>>>>>> @@ -844,15 +845,154 @@ void *iommu_alloc_coherent(struct device *dev,
+>>>>>> struct iommu_table *tbl,  }
+>>>>>>
+>>>>>>    void iommu_free_coherent(struct iommu_table *tbl, size_t size,
+>>>>>>    			 void *vaddr, dma_addr_t dma_handle)  {
+>>>>>>    	if (tbl) {
+>>>>>>    		unsigned int nio_pages;
+>>>>>>
+>>>>>>    		size = PAGE_ALIGN(size);
+>>>>>>    		nio_pages = size >> IOMMU_PAGE_SHIFT;
+>>>>>>    		iommu_free(tbl, dma_handle, nio_pages);
+>>>>>>    		size = PAGE_ALIGN(size);
+>>>>>>    		free_pages((unsigned long)vaddr, get_order(size));
+>>>>>>    	}
+>>>>>>    }
+>>>>>> +
+>>>>>> +#ifdef CONFIG_IOMMU_API
+>>>>>> +/*
+>>>>>> + * SPAPR TCE API
+>>>>>> + */
+>>>>>> +static struct page *free_tce(struct iommu_table *tbl, unsigned long
+>>>>>> +entry) {
+>>>>>> +	struct page *page = NULL;
+>>>>>
+>>>>> NULL initialization doesn't appear to be necessary
+>>>>>
+>>>>>> +	unsigned long oldtce;
+>>>>>> +
+>>>>>> +	oldtce = ppc_md.tce_get(tbl, entry);
+>>>>>> +
+>>>>>> +	if (!(oldtce & (TCE_PCI_WRITE | TCE_PCI_READ)))
+>>>>>> +		return NULL;
+>>>>>> +
+>>>>>> +	page = pfn_to_page(oldtce >> PAGE_SHIFT);
+>>>>>> +
+>>>>>> +	WARN_ON(!page);
+>>>>>> +	if (page && (oldtce & TCE_PCI_WRITE))
+>>>>>> +		SetPageDirty(page);
+>>>>>> +	ppc_md.tce_free(tbl, entry, 1);
+>>>>>> +
+>>>>>> +	return page;
+>>>>>> +}
+>>>>>> +
+>>>>>> +static int put_tce(struct iommu_table *tbl, unsigned long entry,
+>>>>>> +		uint64_t tce, enum dma_data_direction direction) {
+>>>>>> +	int ret;
+>>>>>> +	struct page *page = NULL;
+>>>>>> +	unsigned long kva, offset;
+>>>>>> +
+>>>>>> +	/* Map new TCE */
+>>>>>> +	offset = (tce & IOMMU_PAGE_MASK) - (tce & PAGE_MASK);
+>>>>>> +	ret = get_user_pages_fast(tce & PAGE_MASK, 1,
+>>>>>> +			direction != DMA_TO_DEVICE, &page);
+>>>>>> +	if (ret < 1) {
+>>>>>> +		printk(KERN_ERR "tce_vfio: get_user_pages_fast failed
+>>>>> tce=%llx ioba=%lx ret=%d\n",
+>>>>>> +				tce, entry << IOMMU_PAGE_SHIFT, ret);
+>>>>>> +		if (!ret)
+>>>>>> +			ret = -EFAULT;
+>>>>>
+>>>>> Missing return ret?  Otherwise we've got some bogus uses of page below
+>>>>> and we're setting ret for no reason here.
+>>>>>
+>>>>>> +	}
+>>>>>> +
+>>>>>> +	kva = (unsigned long) page_address(page);
+>>>>>> +	kva += offset;
+>>>>>> +
+>>>>>> +	/* tce_build receives a virtual address */
+>>>>>> +	entry += tbl->it_offset; /* Offset into real TCE table */
+>>>>>> +	ret = ppc_md.tce_build(tbl, entry, 1, kva, direction, NULL);
+>>>>>> +
+>>>>>> +	/* tce_build() only returns non-zero for transient errors */
+>>>>>> +	if (unlikely(ret)) {
+>>>>>> +		printk(KERN_ERR "tce_vfio: tce_put failed on tce=%llx
+>>>>> ioba=%lx kva=%lx ret=%d\n",
+>>>>>> +				tce, entry << IOMMU_PAGE_SHIFT, kva, ret);
+>>>>>> +		put_page(page);
+>>>>>> +		return -EIO;
+>>>>>> +	}
+>>>>>> +
+>>>>>> +	return 0;
+>>>>>> +}
+>>>>>> +
+>>>>>> +static void tce_flush(struct iommu_table *tbl) {
+>>>>>> +	/* Flush/invalidate TLB caches if necessary */
+>>>>>> +	if (ppc_md.tce_flush)
+>>>>>> +		ppc_md.tce_flush(tbl);
+>>>>>> +
+>>>>>> +	/* Make sure updates are seen by hardware */
+>>>>>> +	mb();
+>>>>>> +}
+>>>>>> +
+>>>>>> +long iommu_put_tces(struct iommu_table *tbl, unsigned long entry,
+>>>>> uint64_t tce,
+>>>>>> +		enum dma_data_direction direction, unsigned long pages) {
+>>>>>> +	int i, ret = 0, pages_to_put = 0;
+>>>>>> +	struct page *page;
+>>>>>> +	struct iommu_pool *pool = get_pool(tbl, entry);
+>>>>>> +	struct page **oldpages;
+>>>>>> +	const int oldpagesnum = PAGE_SIZE/sizeof(*oldpages);
+>>>>>> +
+>>>>>> +	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE);
+>>>>>> +
+>>>>>> +	/* Handle a single page request without allocation
+>>>>>> +	   of pages-to-release array */
+>>>>>> +	if (pages == 1) {
+>>>>>> +		spin_lock(&(pool->lock));
+>>>>>> +		page = free_tce(tbl, entry);
+>>>>>> +
+>>>>>> +		if (direction != DMA_NONE)
+>>>>>> +			ret = put_tce(tbl, entry, tce, direction);
+>>>>>> +
+>>>>>> +		tce_flush(tbl);
+>>>>>> +
+>>>>>> +		if (page)
+>>>>>> +			put_page(page);
+>>>>>> +
+>>>>>> +		spin_unlock(&(pool->lock));
+>>>>>> +		return ret;
+>>>>>> +	}
+>>>>>> +
+>>>>>> +	/* Releasing multiple pages */
+>>>>>> +	/* Allocate an array for pages to be released after TCE table
+>>>>>> +	   is updated */
+>>>>>> +	oldpages = kmalloc(PAGE_SIZE, GFP_KERNEL);
+>>>>>> +	if (!oldpages)
+>>>>>> +		return -ENOMEM;
+>>>>>> +
+>>>>>> +	spin_lock(&(pool->lock));
+>>>>>> +
+>>>>>> +	for (i = 0; (i < pages) && !ret; ++i, ++entry, tce +=
+>>>>> IOMMU_PAGE_SIZE) {
+>>>>>> +		page = free_tce(tbl, entry);
+>>>>>> +		if (page) {
+>>>>>> +			oldpages[pages_to_put] = page;
+>>>>>> +			++pages_to_put;
+>>>>>> +		}
+>>>>>> +
+>>>>>> +		if (direction != DMA_NONE)
+>>>>>> +			ret = put_tce(tbl, entry, tce, direction);
+>>>>>> +
+>>>>>> +		/* Release old pages if we reached the end of oldpages[] or
+>>>>>> +		   it is the last page or we are about to exit the loop */
+>>>>>> +		if ((pages_to_put == oldpagesnum) || (i == pages - 1) || ret)
+>>>>> {
+>>>>>> +			tce_flush(tbl);
+>>>>>
+>>>>> Avoiding tce_flush() is the reason for all this extra overhead, right?
+>>>>> I wonder if it'd be cleaner separating map vs unmap, where the map case
+>>>>> can avoid the oldpages array... but that means inserting new mappings on
+>>>>> top of old ones wouldn't put the pages.
+>>>
+>>>
+>>> Yes, we do not want to loose pages if the guest forgot to unmap them.
+>>
+>> Hmm, does that mean we're not actively clearing tce entries or somehow
+>> disabling the iommu window when the iommu is released through vfio?
+>
+> Ok, I see tces are put on shutdown via tce_iommu_detach_group, so you're
+> more concerned about the guest simply mapping over top of it's own
+> mappings.  Is that common?  Is it common enough for every multi-page
+> mapping to assume it will happen?  I know this is a performance
+> sensitive path for you and it seems like a map-only w/ fallback to
+> unmap, remap would be better in the general case.
 
-diff --git a/Documentation/powerpc/transactional_memory.txt b/Documentation/powerpc/transactional_memory.txt
-new file mode 100644
-index 0000000..881df6b
---- /dev/null
-+++ b/Documentation/powerpc/transactional_memory.txt
-@@ -0,0 +1,119 @@
-+Transactional Memory support
-+============================
-+
-+POWER kernel support for this feature is currently limited to supporting
-+its use by user programs.  It is not currently used by the kernel itself.
-+
-+This file aims to sum up how it is supported by Linux and what behaviour you
-+can expect from your user programs.
-+
-+
-+Basic overview
-+==============
-+
-+Hardware Transactional Memory is supported on POWER8 processors, and is a
-+feature that enables a different form of atomic memory access.  Several new
-+instructions are presented to delimit transactions; transactions are
-+guaranteed to either complete atomically or roll back and undo any partial
-+changes.
-+
-+A simple transaction looks like this:
-+
-+begin_move_money:
-+  tbegin
-+  beq   abort_handler
-+
-+  ld    r4, SAVINGS_ACCT(r3)
-+  ld    r5, CURRENT_ACCT(r3)
-+  subi  r5, r5, 1
-+  addi  r4, r4, 1
-+  std   r4, SAVINGS_ACCT(r3)
-+  std   r5, CURRENT_ACCT(r3)
-+
-+  tend
-+
-+  b     continue
-+
-+abort_handler:
-+  ... test for odd failures ...
-+
-+  /* Retry the transaction if it failed because it conflicted with
-+   * someone else: */
-+  b     begin_move_money
-+
-+
-+The 'tbegin' instruction denotes the start point, and 'tend' the end point.
-+Between these points the processor is in 'Transactional' state; any memory
-+references will complete in one go if there are no conflicts with other
-+transactional or non-transactional accesses within the system.  In this
-+example, the transaction completes as though it were normal straight-line code
-+IF no other processor has touched SAVINGS_ACCT(r3) or CURRENT_ACCT(r3); an
-+atomic move of money from the current account to the savings account has been
-+performed.  Even though the normal ld/std instructions are used (note no
-+lwarx/stwcx), either *both* SAVINGS_ACCT(r3) and CURRENT_ACCT(r3) will be
-+updated, or neither will be updated.
-+
-+If, in the meantime, there is a conflict with the locations accessed by the
-+transaction, the transaction will be aborted by the CPU.  Register and memory
-+state will roll back to that at the 'tbegin', and control will continue from
-+'tbegin+4'.  The branch to abort_handler will be taken this second time; the
-+abort handler can check the cause of the failure, and retry.
-+
-+Checkpointed registers include all GPRs, FPRs, VRs/VSRs, LR, CCR/CR, CTR, FPCSR
-+and a few other status/flag regs; see the ISA for details.
-+
-+Causes of transaction aborts
-+============================
-+
-+- Conflicts with cache lines used by other processors
-+- Signals
-+- Context switches
-+- See the ISA for full documentation of everything that will abort transactions.
-+
-+
-+Syscalls
-+========
-+
-+Performing syscalls from within transaction is not recommended, and can lead
-+to unpredictable results.
-+
-+Syscalls do not by design abort transactions, but beware: The kernel code will
-+not be running in transactional state.  The effect of syscalls will always
-+remain visible, but depending on the call they may abort your transaction as a
-+side-effect, read soon-to-be-aborted transactional data that should not remain
-+invisible, etc.  If you constantly retry a transaction that constantly aborts
-+itself by calling a syscall, you'll have a livelock & make no progress.
-+
-+Simple syscalls (e.g. sigprocmask()) "could" be OK.  Even things like write()
-+from, say, printf() should be OK as long as the kernel does not access any
-+memory that was accessed transactionally.
-+
-+Consider any syscalls that happen to work as debug-only -- not recommended for
-+production use.  Best to queue them up till after the transaction is over.
-+
-+
-+Failure cause codes used by kernel
-+==================================
-+
-+These are defined in <asm/reg.h>, and distinguish different reasons why the
-+kernel aborted a transaction:
-+
-+ TM_CAUSE_RESCHED       Thread was rescheduled.
-+ TM_CAUSE_FAC_UNAV      FP/VEC/VSX unavailable trap.
-+ TM_CAUSE_SYSCALL       Currently unused; future syscalls that must abort
-+                        transactions for consistency will use this.
-+ TM_CAUSE_SIGNAL        Signal delivered.
-+ TM_CAUSE_MISC          Currently unused.
-+
-+These can be checked by the user program's abort handler as TEXASR[0:7].
-+
-+
-+GDB
-+===
-+
-+GDB and ptrace are not currently TM-aware.  If one stops during a transaction,
-+it looks like the transaction has just started (the checkpointed state is
-+presented).  The transaction cannot then be continued and will take the failure
-+handler route.  Furthermore, the transactional 2nd register state will be
-+inaccessible.  GDB can currently be used on programs using TM, but not sensibly
-+in parts within transactions.
+
+I do not get it. Where exactly does the performance suffer?
+iommu_put_tces() with non zero "tce" (i.e. "map") has to check if the entry 
+is not used, at least to return EBUSY when it is, and this check is 
+performed. If it is zero, there is no overhead at all. And it is going to 
+be the 99.(9)% case as the guest (un)maps one page per call.
+
+Generally speaking we want to move "put tce" completely to the kernel for 
+the (much) better performance and vfio won't be dealing with it all.
+
+We already agreed that SPAPR TCE driver uses x86 (aka type1) API but I do 
+not see why the powerpc implementation should look x86 alike as it still 
+operates with powerpc machine dependent callbacks so the reader has to have 
+some powerpc knowledge.
+
+
+> On x86 we do exactly that, but we do the unmap, remap from userspace
+> when we get an EBUSY.  Thanks,
+
+
+
 -- 
-1.7.9.5
+Alexey
