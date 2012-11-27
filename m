@@ -1,10 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 05/16] powerpc: Register defines for various transactional
- memory registers
-Date: Tue, 27 Nov 2012 13:47:57 +1100
-Message-Id: <1353984488-1283-6-git-send-email-mikey@neuling.org>
+Subject: [PATCH 06/16] powerpc: Add transactional memory paca scratch register
+ to show_regs
+Date: Tue, 27 Nov 2012 13:47:58 +1100
+Message-Id: <1353984488-1283-7-git-send-email-mikey@neuling.org>
 In-Reply-To: <1353984488-1283-1-git-send-email-mikey@neuling.org>
 References: <1353984488-1283-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -18,60 +18,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Defines for MSR bits and transactional memory related SPRs TFIAR, TEXASR and
-TEXASRU.
+Add transactional memory paca scratch register to show_regs.  This is useful
+for debugging.
 
 Signed-off-by: Matt Evans <matt@ozlabs.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/reg.h |   21 +++++++++++++++++++++
- 1 file changed, 21 insertions(+)
+ arch/powerpc/include/asm/paca.h   |    1 +
+ arch/powerpc/kernel/asm-offsets.c |    1 +
+ arch/powerpc/kernel/entry_64.S    |    4 ++++
+ arch/powerpc/kernel/process.c     |    3 +++
+ 4 files changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 736c6af..bea823f 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -29,6 +29,8 @@
- #define MSR_SF_LG	63              /* Enable 64 bit mode */
- #define MSR_ISF_LG	61              /* Interrupt 64b mode valid on 630 */
- #define MSR_HV_LG 	60              /* Hypervisor state */
-+#define MSR_TS_LG	33		/* Transactional Mem State (2 bits) */
-+#define MSR_TM_LG	32		/* Transactional Mem Available */
- #define MSR_VEC_LG	25	        /* Enable AltiVec */
- #define MSR_VSX_LG	23		/* Enable VSX */
- #define MSR_POW_LG	18		/* Enable Power Management */
-@@ -98,6 +100,21 @@
- #define MSR_RI		__MASK(MSR_RI_LG)	/* Recoverable Exception */
- #define MSR_LE		__MASK(MSR_LE_LG)	/* Little Endian */
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index e9e7a69..0168516 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -137,6 +137,7 @@ struct paca_struct {
+ 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
+ 	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
+ 	u64 sprg3;			/* Saved user-visible sprg */
++	u64 tm_scratch;                 /* TM scratch area for reclaim */
  
-+#define MSR_TM	        __MASK(MSR_TM_LG)	/* Transactional Mem Available */
-+#define MSR_TS_MASK     (__MASK(MSR_TS_LG) | \
-+		         __MASK(MSR_TS_LG+1))   /* Transaction State bits */
-+#define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
-+
-+/* Reason codes describing kernel causes for transaction aborts.  By
-+   convention, bit0 is copied to TEXASR[56] (IBM bit 7) which is set if
-+   the failure is persistent.
-+*/
-+#define TM_CAUSE_RESCHED	0xfe
-+#define TM_CAUSE_TLBI		0xfc
-+#define TM_CAUSE_FAC_UNAV	0xfa
-+#define TM_CAUSE_SYSCALL	0xf9 /* Persistent */
-+#define TM_CAUSE_MISC		0xf6
-+
- #if defined(CONFIG_PPC_BOOK3S_64)
- #define MSR_64BIT	MSR_SF
+ #ifdef CONFIG_PPC_POWERNV
+ 	/* Pointer to OPAL machine check event structure set by the
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 1a70f02..42a4243 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -122,6 +122,7 @@ int main(void)
+ #endif
  
-@@ -193,6 +210,10 @@
- #define SPRN_UAMOR	0x9d	/* User Authority Mask Override Register */
- #define SPRN_AMOR	0x15d	/* Authority Mask Override Register */
- #define SPRN_ACOP	0x1F	/* Available Coprocessor Register */
-+#define SPRN_TFIAR	0x81	/* Transaction Failure Inst Addr   */
-+#define SPRN_TEXASR	0x82	/* Transaction EXception & Summary */
-+#define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
-+#define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
- #define SPRN_CTRLF	0x088
- #define SPRN_CTRLT	0x098
- #define   CTRL_CT	0xc0000000	/* current thread */
+ #ifdef CONFIG_TRANSACTIONAL_MEM
++	DEFINE(PACATMSCRATCH, offsetof(struct paca_struct, tm_scratch));
+ 	DEFINE(THREAD_TM_TFHAR, offsetof(struct thread_struct, tm_tfhar));
+ 	DEFINE(THREAD_TM_TEXASR, offsetof(struct thread_struct, tm_texasr));
+ 	DEFINE(THREAD_TM_TFIAR, offsetof(struct thread_struct, tm_tfiar));
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index df6857f..5ae8e51 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -755,6 +755,10 @@ fast_exception_return:
+ 	andc	r4,r4,r0	 /* r0 contains MSR_RI here */
+ 	mtmsrd	r4,1
+ 
++#ifdef CONFIG_TRANSACTIONAL_MEM
++	/* TM debug */
++	std	r3, PACATMSCRATCH(r13) /* Stash returned-to MSR */
++#endif
+ 	/*
+ 	 * r13 is our per cpu area, only restore it if we are returning to
+ 	 * userspace the value stored in the stack frame may belong to
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 6d66a68..fd5ce1b 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -693,6 +693,9 @@ void show_regs(struct pt_regs * regs)
+ 	printk("NIP ["REG"] %pS\n", regs->nip, (void *)regs->nip);
+ 	printk("LR ["REG"] %pS\n", regs->link, (void *)regs->link);
+ #endif
++#ifdef CONFIG_TRANSACTIONAL_MEM
++	printk("PACATMSCRATCH [%llx]\n", get_paca()->tm_scratch);
++#endif
+ 	show_stack(current, (unsigned long *) regs->gpr[1]);
+ 	if (!user_mode(regs))
+ 		show_instructions(regs);
 -- 
 1.7.9.5
