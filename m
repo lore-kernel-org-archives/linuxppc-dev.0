@@ -1,23 +1,20 @@
-Return-Path: <B41889@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 52AF82C0086
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 13:34:05 +1100 (EST)
-Message-ID: <50B5782A.4050308@freescale.com>
-Date: Wed, 28 Nov 2012 10:34:18 +0800
-From: Chen Yuanquan-B41889 <B41889@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/pci-hotplug: fix the rescanned pci device's
- dma_set_mask issue
-References: <1353644968-29469-1-git-send-email-B41889@freescale.com>
- <455E76A9-ABB3-4FF6-A19E-612E43223C4A@kernel.crashing.org>
-In-Reply-To: <455E76A9-ABB3-4FF6-A19E-612E43223C4A@kernel.crashing.org>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, r61911@freescale.com
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id DE1082C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 14:03:17 +1100 (EST)
+Date: Wed, 28 Nov 2012 14:03:08 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build failure after merge of the powerpc tree
+Message-Id: <20121128140308.abb21ec8f61553a2ed077fe3@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Wed__28_Nov_2012_14_03_08_+1100_1GgkkmxpSg5YS496"
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,96 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/25/2012 08:41 PM, Kumar Gala wrote:
-> On Nov 22, 2012, at 10:29 PM, Yuanquan Chen wrote:
->
->> On powerpc arch, dma_ops of rescanned pci device after system's booting up won't be
->> initialized by system, so it will fail to execute the dma_set_mask in the device's
->> driver. Initialize it to solve this issue.
->>
->> Signed-off-by: Yuanquan Chen <B41889@freescale.com>
->> ---
->> arch/powerpc/include/asm/dma-mapping.h |    7 +++++--
->> 1 file changed, 5 insertions(+), 2 deletions(-)
-> This is not the right way to get the dma_ops setup.  You need to find some other point for the hotplug scenario to get the dma_ops setup.
->
-> - k
+--Signature=_Wed__28_Nov_2012_14_03_08_+1100_1GgkkmxpSg5YS496
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Hi Kumar,
+Hi all,
 
-I read the code about pci bus scan and rescan. Only the 
-pcibios_fixup_bus in pci_scan_child_bus and
-pcibios_enable_device in pci_rescan_bus are arch related code. The 
-pcibios_fixup_bus won't be called
-for the rescanned PCI devices due to the bus->is_added has been set for 
-the first scanning at boot time.
-So I think it's more reasonable to do the same work as pcibios_fixup_bus 
-for rescanned PCI device in
-pcibios_enable_device. The patch code is a copy of 
-pcibios_setup_bus_devices called by pcibios_fixup_bus,
-It can solve the dma_set_mask and irq related issues of rescanned PCI 
-device on powerpc arch. What's
-your opinion?
+After merging the powerpc tree, next-20121115's build (powerpc
+allmodconfig) failed like this:
 
-Thanks,
-yuanquan
+ERROR: ".of_reconfig_notifier_register" [drivers/crypto/nx/nx-compress.ko] =
+undefined!
+ERROR: ".of_reconfig_notifier_unregister" [drivers/crypto/nx/nx-compress.ko=
+] undefined!
 
-diff --git a/arch/powerpc/kernel/pci-common.c 
-b/arch/powerpc/kernel/pci-common.c
-index 7f94f76..30f7d61 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1496,6 +1496,23 @@ int pcibios_enable_device(struct pci_dev *dev, 
-int mask)
-                 if (ppc_md.pcibios_enable_device_hook(dev))
-                         return -EINVAL;
+Caused by commit 1cf3d8b3d24c ("powerpc+of: Add of node/property
+notification chain for adds and removes").
 
-+       if (!dev->is_added) {
-+               set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
-+
-+               /* Hook up default DMA ops */
-+               set_dma_ops(&dev->dev, pci_dma_ops);
-+               set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
-+
-+               /* Additional platform DMA/iommu setup */
-+               if (ppc_md.pci_dma_dev_setup)
-+                       ppc_md.pci_dma_dev_setup(dev);
-+
-+               /* Read default IRQs and fixup if necessary */
-+               pci_read_irq_line(dev);
-+               if (ppc_md.pci_irq_fixup)
-+                       ppc_md.pci_irq_fixup(dev);
-+       }
-+
-         return pci_enable_resources(dev, mask);
-  }
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
->> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
->> index 7816087..22eae53 100644
->> --- a/arch/powerpc/include/asm/dma-mapping.h
->> +++ b/arch/powerpc/include/asm/dma-mapping.h
->> @@ -126,8 +126,11 @@ static inline int dma_supported(struct device *dev, u64 mask)
->> {
->> 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
->>
->> -	if (unlikely(dma_ops == NULL))
->> -		return 0;
->> +	if (unlikely(dma_ops == NULL)) {
->> +		set_dma_ops(dev, &dma_direct_ops);
->> +		set_dma_offset(dev, PCI_DRAM_OFFSET);
->> +		dma_ops = &dma_direct_ops;
->> +	}
->> 	if (dma_ops->dma_supported == NULL)
->> 		return 1;
->> 	return dma_ops->dma_supported(dev, mask);
->> -- 
->> 1.7.9.5
->>
->>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
->
->
+--Signature=_Wed__28_Nov_2012_14_03_08_+1100_1GgkkmxpSg5YS496
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJQtX7sAAoJEECxmPOUX5FEAY8P/R5anO5oaEyz/wut2Cv7W13Y
+IeKiNHSQiTMOg67qDL2OVxHh2PVCIhAFJ+T/Jo3RYuL99EYzW+qzYbZWjaIlzLE9
+Zm51BM5SiY4aiDsUiZSqUcNnKkD+2IQy4idnri635FVGnHfy0GjhMifYhPzmgiuP
+ncyUowEfsHs7IV38ObwUgBloEBImgzRg/kI0uffDBJ2cdHSEeIn4n1YVsaI1R1zK
+cO2Huz/Uo3hBCWjQamsCaWXt6C9J7nqP8Qgicu21xyMvebKh5vRwroffPY6Q2XOL
+Nz1U4bVak4/ARyZT2c3k6NkzqvtEDg8ccQF8l2zYDWk9strrH2Vpjvp94XOnzwY9
+SrbSQORTsi6h8lN+ARNP9lIZTvtvcT7MQpUjHJNnrxU4J1nrbZFHVEY9Zc6LY6Vo
+W7ZT4cBgnNt6SMhigk8ttjTopyFZd2bJoKQXrDYYHEbiD3Rmcj3zTQ0FpTRlJkp5
+yJw9sIr/Fc2BSWdoVGvz35Z6+4JwpjmPc8KPpz/HggiTAbDcIV4VOB4bVKNpkKu0
+POz/pc+8Wjb5uMVF4fBj6uq6s7//Mpp9GB+la8nKic3YW6Dyrca6KcPHHUu05Z72
+qvpK+LuGZNe+J6P99ckAhCsaIU8g9HPAkHdnpByCP39zUuMqL2jsHGTl91NMcsI/
+F78xkJoHXIPnixM9AkpN
+=zloH
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__28_Nov_2012_14_03_08_+1100_1GgkkmxpSg5YS496--
