@@ -1,17 +1,22 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id A76B72C0087
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 14:22:58 +1100 (EST)
-Date: Tue, 27 Nov 2012 19:22:56 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 3.7-rc7: BUG: MAX_STACK_TRACE_ENTRIES too low!
-In-Reply-To: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
-Message-ID: <alpine.DEB.2.01.1211271916160.7378@trent.utfs.org>
-References: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, zhong@linux.vnet.ibm.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5CFF52C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 15:28:56 +1100 (EST)
+Message-ID: <1354076916.2179.99.camel@pasglop>
+Subject: Re: linux-next: build failure after merge of the powerpc tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Wed, 28 Nov 2012 15:28:36 +1100
+In-Reply-To: <20121128140308.abb21ec8f61553a2ed077fe3@canb.auug.org.au>
+References: <20121128140308.abb21ec8f61553a2ed077fe3@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ Ashley Lai <adlai@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, Nathan Fontenot <nfont@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,43 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 27 Nov 2012 at 19:06, Christian Kujau wrote:
-> the same thing[0] happened again in 3.7-rc7, after ~20h uptime:
-
-I found the following on patchwork, but this seems to deal with powerpc64 
-only, while this PowerBook G4 of mine is powerpc32:
-
-  http://patchwork.ozlabs.org/patch/193414/
-
-It looks related, but then again, I fail to parse assember...
-
-Christian.
-
-> [40007.339487] [sched_delayed] sched: RT throttling activated
-> [69731.388717] BUG: MAX_STACK_TRACE_ENTRIES too low!
-> [69731.390371] turning off the locking correctness validator.
-> [69731.391942] Call Trace:
-> [69731.393525] [c9a61c10] [c0009064] show_stack+0x70/0x1bc (unreliable)
-> [69731.395152] [c9a61c50] [c0077460] save_trace+0xfc/0x114
-> [69731.396735] [c9a61c60] [c007be20] __lock_acquire+0x1568/0x19b8
-> [69731.398296] [c9a61d00] [c007c2c0] lock_acquire+0x50/0x70
-> [69731.399857] [c9a61d20] [c0550e28] _raw_spin_lock_irq+0x5c/0x78
-> [69731.401419] [c9a61d40] [c054fb58] __schedule+0xd8/0x534
-> [69731.402972] [c9a61da0] [c0550094] _cond_resched+0x50/0x68
-> [69731.404527] [c9a61db0] [c0479908] dst_gc_task+0xbc/0x258
-> [69731.406070] [c9a61e40] [c004eeb8] process_one_work+0x1f4/0x49c
-> [69731.407585] [c9a61e80] [c004f644] worker_thread+0x14c/0x400
-> [69731.409075] [c9a61eb0] [c0057634] kthread+0xbc/0xc0
-> [69731.410521] [c9a61f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-> [...repeated 54 times...]
+On Wed, 2012-11-28 at 14:03 +1100, Stephen Rothwell wrote:
+> Hi all,
 > 
-> Anyone knows what this is about?
+> After merging the powerpc tree, next-20121115's build (powerpc
+> allmodconfig) failed like this:
 > 
-> Thanks,
-> Christian.
+> ERROR: ".of_reconfig_notifier_register" [drivers/crypto/nx/nx-compress.ko] undefined!
+> ERROR: ".of_reconfig_notifier_unregister" [drivers/crypto/nx/nx-compress.ko] undefined!
 > 
-> [0] http://lkml.indiana.edu/hypermail/linux/kernel/1211.0/03025.html
--- 
-BOFH excuse #191:
+> Caused by commit 1cf3d8b3d24c ("powerpc+of: Add of node/property
+> notification chain for adds and removes").
 
-Just type 'mv * /dev/null'.
+That nx stuff should just have gone through the powerpc tree... that's
+not the first time it trips on generic changes because we miss it
+being in the crypto tree...
+
+Ashley, Nathan, who owns that ? Can you come up with a fixup patch ?
+
+Ben.
