@@ -1,20 +1,37 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id BDD2F2C008E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2012 05:59:40 +1100 (EST)
-Date: Wed, 28 Nov 2012 10:59:35 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Subject: Re: 3.7-rc7: BUG: MAX_STACK_TRACE_ENTRIES too low!
-In-Reply-To: <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
-Message-ID: <alpine.DEB.2.01.1211281051000.7378@trent.utfs.org>
-References: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
- <alpine.DEB.2.01.1211271916160.7378@trent.utfs.org>
- <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e4.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 331EE2C0081
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2012 06:42:46 +1100 (EST)
+Received: from /spool/local
+ by e4.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 28 Nov 2012 14:42:42 -0500
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id AA0A7C90058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 14:42:39 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qASJgRYH37683422
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 14:42:28 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qASJgRgQ008345
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 14:42:27 -0500
+Message-ID: <50B66922.9090209@linux.vnet.ibm.com>
+Date: Wed, 28 Nov 2012 13:42:26 -0600
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH] export of_reconfig_notifier_[register,unregister]
+References: <20121128140308.abb21ec8f61553a2ed077fe3@canb.auug.org.au>
+In-Reply-To: <20121128140308.abb21ec8f61553a2ed077fe3@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,24 +41,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 28 Nov 2012 at 16:41, Li Zhong wrote:
-> Would you please help to try the following fix? I don't have a powerpc32
-> machine for test...
+The of reconfiguration notification chains should be exported for use
+by modules.
 
-I've just applied this to 3.7-rc7 and booted the machine. I don't know how 
-to trigger this bug, so it might take a while until it happens again - or 
-not, now with your patch applied.
-
-It happened only 2 times so far, after ~8h and after ~20h:
-
-Nov  5 13:28:20 alice kernel: [    0.000000] Linux version 3.7.0-rc4 
-Nov  5 21:00:26 alice kernel: [27148.965634] BUG: MAX_STACK_TRACE_ENTRIES too low!
-Nov 26 21:53:43 alice kernel: [    0.000000] Linux version 3.7.0-rc7 
-Nov 27 17:15:29 alice kernel: [69731.388717] BUG: MAX_STACK_TRACE_ENTRIES too low!
-
-Thanks,
-Christian.
--- 
-BOFH excuse #86:
-
-Runt packets
+Signed-off-by:Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
+Index: linux-next/drivers/of/base.c
+===================================================================
+--- linux-next.orig/drivers/of/base.c	2012-11-28 09:18:02.000000000 -0600
++++ linux-next/drivers/of/base.c	2012-11-28 11:05:00.000000000 -0600
+@@ -1282,11 +1282,13 @@
+ {
+ 	return blocking_notifier_chain_register(&of_reconfig_chain, nb);
+ }
++EXPORT_SYMBOL_GPL(of_reconfig_notifier_register);
+ 
+ int of_reconfig_notifier_unregister(struct notifier_block *nb)
+ {
+ 	return blocking_notifier_chain_unregister(&of_reconfig_chain, nb);
+ }
++EXPORT_SYMBOL_GPL(of_reconfig_notifier_unregister);
+ 
+ int of_reconfig_notify(unsigned long action, void *p)
+ {
