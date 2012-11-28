@@ -1,23 +1,20 @@
-Return-Path: <swarren@wwwdotorg.org>
-Received: from avon.wwwdotorg.org (avon.wwwdotorg.org
- [IPv6:2001:470:1f0f:bd7::2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 420F42C0085
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2012 05:43:02 +1100 (EST)
-Message-ID: <50B65903.1050400@wwwdotorg.org>
-Date: Wed, 28 Nov 2012 11:33:39 -0700
-From: Stephen Warren <swarren@wwwdotorg.org>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id BDD2F2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2012 05:59:40 +1100 (EST)
+Date: Wed, 28 Nov 2012 10:59:35 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: 3.7-rc7: BUG: MAX_STACK_TRACE_ENTRIES too low!
+In-Reply-To: <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
+Message-ID: <alpine.DEB.2.01.1211281051000.7378@trent.utfs.org>
+References: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
+ <alpine.DEB.2.01.1211271916160.7378@trent.utfs.org>
+ <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH V7 1/7] kbuild: centralize .dts->.dtb rule
-References: <1354058956-7199-1-git-send-email-swarren@wwwdotorg.org>
-In-Reply-To: <1354058956-7199-1-git-send-email-swarren@wwwdotorg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Michal Marek <mmarek@suse.cz>, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,32 +24,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/27/2012 04:29 PM, Stephen Warren wrote:
-> All architectures that use cmd_dtc do so in almost the same way. Create
-> a central build rule to avoid duplication. The one difference is that
-> most current uses of dtc build $(obj)/%.dtb from $(src)/dts/%.dts rather
-> than building the .dtb in the same directory as the .dts file. This
-> difference will be eliminated arch-by-arch in future patches.
-> 
-> MIPS is the exception here; it already uses the exact same rule as the
-> new common rule, so the duplicate is removed in this patch to avoid any
-> conflict. arch/mips changes courtesy of Ralf Baechle.
-> 
-> Update Documentation/kbuild to remove the explicit call to cmd_dtc from
-> the example, now that the rule exists in a centralized location.
+On Wed, 28 Nov 2012 at 16:41, Li Zhong wrote:
+> Would you please help to try the following fix? I don't have a powerpc32
+> machine for test...
 
-Ben, Paul,
+I've just applied this to 3.7-rc7 and booted the machine. I don't know how 
+to trigger this bug, so it might take a while until it happens again - or 
+not, now with your patch applied.
 
-Following this patch (http://lkml.org/lkml/2012/11/27/555), I posted a
-series of patches to convert almost all architectures to using the
-centralized rule. The one architecture I didn't convert was PowerPC.
+It happened only 2 times so far, after ~8h and after ~20h:
 
-I didn't convert it because arch/powerpc/boot/Makefile contains a large
-number of rules (to generate *Image.% where % is a board name) that
-depend on %.dtb, which is expected to be in arch/powerpc/boot rather
-than arch/powerpc/boot/dts. Now, I guess it's possible to convert them
-all to expect the .dtb files to be in dts/ and also have
-arch/powerpc/boot/Makefile call make in boot/dts/ to make each required
-.dtb file. However, the patch would be a bit larger than all the other
-architecture patches. Do you want me to do that conversion, or would you
-rather I leave PowerPC alone? Thanks for any feedback.
+Nov  5 13:28:20 alice kernel: [    0.000000] Linux version 3.7.0-rc4 
+Nov  5 21:00:26 alice kernel: [27148.965634] BUG: MAX_STACK_TRACE_ENTRIES too low!
+Nov 26 21:53:43 alice kernel: [    0.000000] Linux version 3.7.0-rc7 
+Nov 27 17:15:29 alice kernel: [69731.388717] BUG: MAX_STACK_TRACE_ENTRIES too low!
+
+Thanks,
+Christian.
+-- 
+BOFH excuse #86:
+
+Runt packets
