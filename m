@@ -1,45 +1,23 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 24D492C0081
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 11:44:19 +1100 (EST)
-Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id 1E99F3EE0C0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 09:44:15 +0900 (JST)
-Received: from smail (m3 [127.0.0.1])
- by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 06B8945DEB5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 09:44:15 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
- by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id E332345DEB2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 09:44:14 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id D4A4B1DB803B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 09:44:14 +0900 (JST)
-Received: from g01jpexchkw02.g01.fujitsu.local
- (g01jpexchkw02.g01.fujitsu.local [10.0.194.41])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 923021DB8038
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 09:44:14 +0900 (JST)
-Message-ID: <50B55E28.1030608@jp.fujitsu.com>
-Date: Wed, 28 Nov 2012 09:43:20 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+Return-Path: <B41889@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 52AF82C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 28 Nov 2012 13:34:05 +1100 (EST)
+Message-ID: <50B5782A.4050308@freescale.com>
+Date: Wed, 28 Nov 2012 10:34:18 +0800
+From: Chen Yuanquan-B41889 <B41889@freescale.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch v4 00/12] memory-hotplug: hot-remove physical memory
-References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
- <20121127112741.b616c2f6.akpm@linux-foundation.org>
-In-Reply-To: <20121127112741.b616c2f6.akpm@linux-foundation.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/pci-hotplug: fix the rescanned pci device's
+ dma_set_mask issue
+References: <1353644968-29469-1-git-send-email-B41889@freescale.com>
+ <455E76A9-ABB3-4FF6-A19E-612E43223C4A@kernel.crashing.org>
+In-Reply-To: <455E76A9-ABB3-4FF6-A19E-612E43223C4A@kernel.crashing.org>
 Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
- Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Jiang Liu <liuj97@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, r61911@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,57 +27,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andrew,
-
-2012/11/28 4:27, Andrew Morton wrote:
-> On Tue, 27 Nov 2012 18:00:10 +0800
-> Wen Congyang <wency@cn.fujitsu.com> wrote:
+On 11/25/2012 08:41 PM, Kumar Gala wrote:
+> On Nov 22, 2012, at 10:29 PM, Yuanquan Chen wrote:
 >
->> The patch-set was divided from following thread's patch-set.
->>      https://lkml.org/lkml/2012/9/5/201
+>> On powerpc arch, dma_ops of rescanned pci device after system's booting up won't be
+>> initialized by system, so it will fail to execute the dma_set_mask in the device's
+>> driver. Initialize it to solve this issue.
 >>
->> The last version of this patchset:
->>      https://lkml.org/lkml/2012/11/1/93
+>> Signed-off-by: Yuanquan Chen <B41889@freescale.com>
+>> ---
+>> arch/powerpc/include/asm/dma-mapping.h |    7 +++++--
+>> 1 file changed, 5 insertions(+), 2 deletions(-)
+> This is not the right way to get the dma_ops setup.  You need to find some other point for the hotplug scenario to get the dma_ops setup.
 >
-> As we're now at -rc7 I'd prefer to take a look at all of this after the
-> 3.7 release - please resend everything shortly after 3.8-rc1.
+> - k
 
-Almost patches about memory hotplug has been merged into your and Rafael's
-tree. And these patches are waiting to open the v3.8 merge window.
-Remaining patches are only this patch-set. So we hope that this patch-set
-is merged into v3.8.
+Hi Kumar,
 
-In merging this patch-set into v3.8, Linux on x86_64 makes a memory hot plug
-possible.
+I read the code about pci bus scan and rescan. Only the 
+pcibios_fixup_bus in pci_scan_child_bus and
+pcibios_enable_device in pci_rescan_bus are arch related code. The 
+pcibios_fixup_bus won't be called
+for the rescanned PCI devices due to the bus->is_added has been set for 
+the first scanning at boot time.
+So I think it's more reasonable to do the same work as pcibios_fixup_bus 
+for rescanned PCI device in
+pcibios_enable_device. The patch code is a copy of 
+pcibios_setup_bus_devices called by pcibios_fixup_bus,
+It can solve the dma_set_mask and irq related issues of rescanned PCI 
+device on powerpc arch. What's
+your opinion?
 
 Thanks,
-Yasuaki Ishimatsu
+yuanquan
 
->
->> If you want to know the reason, please read following thread.
+diff --git a/arch/powerpc/kernel/pci-common.c 
+b/arch/powerpc/kernel/pci-common.c
+index 7f94f76..30f7d61 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1496,6 +1496,23 @@ int pcibios_enable_device(struct pci_dev *dev, 
+int mask)
+                 if (ppc_md.pcibios_enable_device_hook(dev))
+                         return -EINVAL;
+
++       if (!dev->is_added) {
++               set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
++
++               /* Hook up default DMA ops */
++               set_dma_ops(&dev->dev, pci_dma_ops);
++               set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
++
++               /* Additional platform DMA/iommu setup */
++               if (ppc_md.pci_dma_dev_setup)
++                       ppc_md.pci_dma_dev_setup(dev);
++
++               /* Read default IRQs and fixup if necessary */
++               pci_read_irq_line(dev);
++               if (ppc_md.pci_irq_fixup)
++                       ppc_md.pci_irq_fixup(dev);
++       }
++
+         return pci_enable_resources(dev, mask);
+  }
+
+>> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+>> index 7816087..22eae53 100644
+>> --- a/arch/powerpc/include/asm/dma-mapping.h
+>> +++ b/arch/powerpc/include/asm/dma-mapping.h
+>> @@ -126,8 +126,11 @@ static inline int dma_supported(struct device *dev, u64 mask)
+>> {
+>> 	struct dma_map_ops *dma_ops = get_dma_ops(dev);
 >>
->> https://lkml.org/lkml/2012/10/2/83
->
-> Please include the rationale within each version of the patchset rather
-> than by linking to an old email.  Because
->
-> a) this way, more people are likely to read it
->
-> b) it permits the text to be maimtained as the code evolves
->
-> c) it permits the text to be included in the mainlnie commit, where
->     people can find it.
->
->> The patch-set has only the function of kernel core side for physical
->> memory hot remove. So if you use the patch, please apply following
->> patches.
+>> -	if (unlikely(dma_ops == NULL))
+>> -		return 0;
+>> +	if (unlikely(dma_ops == NULL)) {
+>> +		set_dma_ops(dev, &dma_direct_ops);
+>> +		set_dma_offset(dev, PCI_DRAM_OFFSET);
+>> +		dma_ops = &dma_direct_ops;
+>> +	}
+>> 	if (dma_ops->dma_supported == NULL)
+>> 		return 1;
+>> 	return dma_ops->dma_supported(dev, mask);
+>> -- 
+>> 1.7.9.5
 >>
->> - bug fix for memory hot remove
->>    https://lkml.org/lkml/2012/10/31/269
 >>
->> - acpi framework
->>    https://lkml.org/lkml/2012/10/26/175
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
 >
-> What's happening with the acpi framework?  has it received any feedback
-> from the ACPI developers?
+>
 >
