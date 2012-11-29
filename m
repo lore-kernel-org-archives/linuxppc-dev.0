@@ -1,34 +1,28 @@
-Return-Path: <cel@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E41532C0082
- for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2012 03:42:27 +1100 (EST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <cel@linux.vnet.ibm.com>;
- Thu, 29 Nov 2012 09:42:24 -0700
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id EB6463E40055
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2012 09:42:18 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
- id qATGg99b232698
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2012 09:42:09 -0700
-Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qATGg8wk030096
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2012 09:42:08 -0700
-Subject: [PATCH] powerpc/oprofile: Fix error in oprofile
- power7_marked_instr_event() function
-From: "Carl E. Love" <cel@linux.vnet.ibm.com>
-To: bherren@au1.ibm.com, linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 29 Nov 2012 08:42:03 -0800
-Message-ID: <1354207323.5963.49.camel@oc5587145178.ibm.com>
-Mime-Version: 1.0
+Return-Path: <R1AAHA@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 593BD2C008F
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2012 08:38:56 +1100 (EST)
+Received: from mail37-ch1 (localhost [127.0.0.1])	by mail37-ch1-R.bigfish.com
+ (Postfix) with ESMTP id 8E3CC3E022B	for <linuxppc-dev@ozlabs.org>;
+ Thu, 29 Nov 2012 21:38:52 +0000 (UTC)
+Received: from CH1EHSMHS016.bigfish.com (snatpool3.int.messaging.microsoft.com
+ [10.43.68.229])	by mail37-ch1.bigfish.com (Postfix) with ESMTP id
+ 8C07720047
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2012 21:38:51 +0000 (UTC)
+Date: Thu, 29 Nov 2012 15:36:26 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Vakul Garg <vakul@freescale.com>
+Subject: Re: [PATCH] dts/t4240: Added SEC-5.0 device tree.
+Message-ID: <20121129153626.ca938530268c54777e335334@freescale.com>
+In-Reply-To: <1354163290-20431-1-git-send-email-vakul@freescale.com>
+References: <1354163290-20431-1-git-send-email-vakul@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,42 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ben:
+On Thu, 29 Nov 2012 09:58:10 +0530
+Vakul Garg <vakul@freescale.com> wrote:
 
-Please review the following patch.  If it is acceptable, will you please
-commit it to the mainline tree.  Thanks.
+> Signed-off-by: Vakul Garg <vakul@freescale.com>
+> ---
+> This patch has a dependency on the patch titled:
+> "Corrected PAMU device address range to encompass 6 PAMU partitions."
+> 
+>  arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi |  109 +++++++++++++++++++++++++
+>  arch/powerpc/boot/dts/fsl/t4240si-post.dtsi   |    2 +
+>  2 files changed, 111 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-sec5.0-0.dtsi
 
-              Carl Love
+um, t4240 support isn't upstream yet.
 
-P.S.  Looks like I sent it to the wrong mailing list the first time to
-get it into the patch queue.
-
---------------------------------------------------------------------------
-powerpc/oprofile: Fix error in oprofile power7_marked_instr_event() function
-
-The calculation for the left shift of the mask OPROFILE_PM_PMCSEL_MSK has an
-error.  The calculation is should be to shift left by (max_cntrs - cntr) times
-the width of the pmsel field width.  However, the #define OPROFILE_MAX_PMC_NUM
-was used instead of OPROFILE_PMSEL_FIELD_WIDTH.  This patch fixes the
-calculation.
-
-Signed-off-by: Carl Love <cel@us.ibm.com>
----
- arch/powerpc/oprofile/op_model_power4.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprofile/op_model_power4.c
-index 315f949..f444b94 100644
---- a/arch/powerpc/oprofile/op_model_power4.c
-+++ b/arch/powerpc/oprofile/op_model_power4.c
-@@ -52,7 +52,7 @@ static int power7_marked_instr_event(u64 mmcr1)
- 	for (pmc = 0; pmc < 4; pmc++) {
- 		psel = mmcr1 & (OPROFILE_PM_PMCSEL_MSK
- 				<< (OPROFILE_MAX_PMC_NUM - pmc)
--				* OPROFILE_MAX_PMC_NUM);
-+				* OPROFILE_PMSEL_FIELD_WIDTH);
- 		psel = (psel >> ((OPROFILE_MAX_PMC_NUM - pmc)
- 				 * OPROFILE_PMSEL_FIELD_WIDTH)) & ~1ULL;
- 		unit = mmcr1 & (OPROFILE_PM_UNIT_MSK
--- 
-1.7.12.rc1.22.gbfbf4d4
+Kim
