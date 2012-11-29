@@ -1,17 +1,17 @@
 Return-Path: <B16394@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe003.messaging.microsoft.com [216.32.180.13])
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 56BD72C0087
- for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2012 15:25:22 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 430812C0082
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2012 15:13:18 +1100 (EST)
 From: Vakul Garg <vakul@freescale.com>
 To: <linuxppc-dev@ozlabs.org>
 Subject: [PATCH] dts/t4240: Corrected PAMU device address range to encompass 6
  PAMU partitions.
-Date: Thu, 29 Nov 2012 09:53:28 +0530
-Message-ID: <1354163008-19707-1-git-send-email-vakul@freescale.com>
+Date: Thu, 29 Nov 2012 09:41:30 +0530
+Message-ID: <1354162290-17945-1-git-send-email-vakul@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Vakul Garg <vakul@freescale.com>
