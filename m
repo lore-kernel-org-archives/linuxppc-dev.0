@@ -1,27 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <cel@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4BD0F2C0193
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 00:05:07 +1100 (EST)
-Subject: Re: [PATCH 1/4 v2] iommu/fsl: Store iommu domain information pointer
- in archdata.
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D29AE62@039-SN2MPN1-013.039d.mgd.msft.net>
-Date: Wed, 28 Nov 2012 11:35:28 -0600
-Message-Id: <93330D7F-0A5A-4C42-A10C-92D6C7694D44@kernel.crashing.org>
-References: <1353419697-31269-1-git-send-email-Varun.Sethi@freescale.com>
- <1353419697-31269-2-git-send-email-Varun.Sethi@freescale.com>
- <C5ECD7A89D1DC44195F34B25E172658D29AE62@039-SN2MPN1-013.039d.mgd.msft.net>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E41532C0082
+ for <linuxppc-dev@ozlabs.org>; Fri, 30 Nov 2012 03:42:27 +1100 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <cel@linux.vnet.ibm.com>;
+ Thu, 29 Nov 2012 09:42:24 -0700
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id EB6463E40055
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2012 09:42:18 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP
+ id qATGg99b232698
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2012 09:42:09 -0700
+Received: from d03av05.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qATGg8wk030096
+ for <linuxppc-dev@ozlabs.org>; Thu, 29 Nov 2012 09:42:08 -0700
+Subject: [PATCH] powerpc/oprofile: Fix error in oprofile
+ power7_marked_instr_event() function
+From: "Carl E. Love" <cel@linux.vnet.ibm.com>
+To: bherren@au1.ibm.com, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 29 Nov 2012 08:42:03 -0800
+Message-ID: <1354207323.5963.49.camel@oc5587145178.ibm.com>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,60 +38,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Ben:
 
-On Nov 25, 2012, at 11:33 PM, Sethi Varun-B16395 wrote:
+Please review the following patch.  If it is acceptable, will you please
+commit it to the mainline tree.  Thanks.
 
-> Hi Kumar,
-> Can you please apply this patch.
->=20
-> Regards
-> Varun
+              Carl Love
 
-Was waiting on the others to apply this all together.  (ie getting an =
-Ack from Joerg, and follow comments from Timur to be resolved)
+P.S.  Looks like I sent it to the wrong mailing list the first time to
+get it into the patch queue.
 
-- k
+--------------------------------------------------------------------------
+powerpc/oprofile: Fix error in oprofile power7_marked_instr_event() function
 
->=20
->> -----Original Message-----
->> From: Sethi Varun-B16395
->> Sent: Tuesday, November 20, 2012 7:25 PM
->> To: joerg.roedel@amd.com; iommu@lists.linux-foundation.org; linuxppc-
->> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood =
-Scott-B07421;
->> Tabi Timur-B04825
->> Cc: Sethi Varun-B16395
->> Subject: [PATCH 1/4 v2] iommu/fsl: Store iommu domain information =
-pointer
->> in archdata.
->>=20
->> Add a new field in the device (powerpc) archdata structure for =
-storing
->> iommu domain information pointer. This pointer is stored when the =
-device
->> is attached to a particular domain.
->>=20
->> Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
->> ---
->> arch/powerpc/include/asm/device.h |    4 ++++
->> 1 files changed, 4 insertions(+), 0 deletions(-)
->>=20
->> diff --git a/arch/powerpc/include/asm/device.h
->> b/arch/powerpc/include/asm/device.h
->> index 77e97dd..6dc79fe 100644
->> --- a/arch/powerpc/include/asm/device.h
->> +++ b/arch/powerpc/include/asm/device.h
->> @@ -28,6 +28,10 @@ struct dev_archdata {
->> 		void		*iommu_table_base;
->> 	} dma_data;
->>=20
->> +	/* IOMMU domain information pointer. This would be set
->> +	 * when this device is attached to an iommu_domain.
->> +	 */
->> +	void			*iommu_domain;
->> #ifdef CONFIG_SWIOTLB
->> 	dma_addr_t		max_direct_dma_addr;
->> #endif
->> --
->> 1.7.4.1
->=20
+The calculation for the left shift of the mask OPROFILE_PM_PMCSEL_MSK has an
+error.  The calculation is should be to shift left by (max_cntrs - cntr) times
+the width of the pmsel field width.  However, the #define OPROFILE_MAX_PMC_NUM
+was used instead of OPROFILE_PMSEL_FIELD_WIDTH.  This patch fixes the
+calculation.
+
+Signed-off-by: Carl Love <cel@us.ibm.com>
+---
+ arch/powerpc/oprofile/op_model_power4.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprofile/op_model_power4.c
+index 315f949..f444b94 100644
+--- a/arch/powerpc/oprofile/op_model_power4.c
++++ b/arch/powerpc/oprofile/op_model_power4.c
+@@ -52,7 +52,7 @@ static int power7_marked_instr_event(u64 mmcr1)
+ 	for (pmc = 0; pmc < 4; pmc++) {
+ 		psel = mmcr1 & (OPROFILE_PM_PMCSEL_MSK
+ 				<< (OPROFILE_MAX_PMC_NUM - pmc)
+-				* OPROFILE_MAX_PMC_NUM);
++				* OPROFILE_PMSEL_FIELD_WIDTH);
+ 		psel = (psel >> ((OPROFILE_MAX_PMC_NUM - pmc)
+ 				 * OPROFILE_PMSEL_FIELD_WIDTH)) & ~1ULL;
+ 		unit = mmcr1 & (OPROFILE_PM_UNIT_MSK
+-- 
+1.7.12.rc1.22.gbfbf4d4
