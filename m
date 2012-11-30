@@ -1,28 +1,22 @@
-Return-Path: <tangchen@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 422EE2C007D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 17:38:45 +1100 (EST)
-Message-ID: <50B85435.8020907@cn.fujitsu.com>
-Date: Fri, 30 Nov 2012 14:37:41 +0800
-From: Tang Chen <tangchen@cn.fujitsu.com>
+Return-Path: <B07421@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe002.messaging.microsoft.com [216.32.180.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4CBC02C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2012 03:46:13 +1100 (EST)
+Date: Fri, 30 Nov 2012 10:45:31 -0600
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: fsl spi questions & patch
+To: Frans Meulenbroeks <fransmeulenbroeks@gmail.com>
+References: <CACW_hTa4eVOfxKus1ma8vB6dVZu4PovasLtn=+7UygqYtC_Vww@mail.gmail.com>
+In-Reply-To: <CACW_hTa4eVOfxKus1ma8vB6dVZu4PovasLtn=+7UygqYtC_Vww@mail.gmail.com>
+ (from fransmeulenbroeks@gmail.com on Wed Nov 28 03:39:22 2012)
+Message-ID: <1354293931.16659.13@tyr>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Patch v4 00/12] memory-hotplug: hot-remove physical memory
-References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
- <20121127112741.b616c2f6.akpm@linux-foundation.org>
-In-Reply-To: <20121127112741.b616c2f6.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com,
- Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Jiang Liu <liuj97@gmail.com>
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,47 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andrew,
+On 11/28/2012 03:39:22 AM, Frans Meulenbroeks wrote:
+> Hi,
+>=20
+> I've been playing with spi on mpc8313e and have some things on
+> spi-fsl-spi.c:
+>=20
+> Is QE useful on 8313?
+> I've tried it (using cpu-qe in my dts file) and see in the boot log =20
+> that it
+> is used, but I do not really see any effect when it comes to =20
+> performance or
+> cpu usage.
 
-On 11/28/2012 03:27 AM, Andrew Morton wrote:
->>
->> - acpi framework
->>    https://lkml.org/lkml/2012/10/26/175
->
-> What's happening with the acpi framework?  has it received any feedback
-> from the ACPI developers?
+8313 does not have a QE.  The "effect" when you do have a QE and use it =20
+is that you can talk to the peripherals that are connected to the QE.  =20
+The effect when you modify the device tree to say the board has =20
+hardware that it doesn't have is generally bad.
 
-About ACPI framework, we are trying to do the following.
-
-     The memory device can be removed by 2 ways:
-     1. send eject request by SCI
-     2. echo 1 >/sys/bus/pci/devices/PNP0C80:XX/eject
-
-     In the 1st case, acpi_memory_disable_device() will be called.
-     In the 2nd case, acpi_memory_device_remove() will be called.
-     acpi_memory_device_remove() will also be called when we unbind the
-     memory device from the driver acpi_memhotplug or a driver
-     initialization fails.
-
-     acpi_memory_disable_device() has already implemented a code which
-     offlines memory and releases acpi_memory_info struct . But
-     acpi_memory_device_remove() has not implemented it yet.
-
-     So the patch prepares the framework for hot removing memory and
-     adds the framework into acpi_memory_device_remove().
-
-All the ACPI related patches have been put into the linux-next branch
-of the linux-pm.git tree as v3.8 material.Please refer to the following
-url.
-https://lkml.org/lkml/2012/11/2/160
-
-So for now, with this patch set, we can do memory hot-remove on x86_64
-linux.
-
-I do hope you would merge them before 3.8-rc1, so that we can use this
-functionality in 3.8.
-
-As we are still testing all memory hotplug related functionalities, I
-hope we can do the bug fix during 3.8 rc.
-
-Thanks. :)
+-Scott=
