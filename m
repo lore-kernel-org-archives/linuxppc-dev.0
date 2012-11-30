@@ -1,46 +1,22 @@
-Return-Path: <isimatu.yasuaki@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D93E62C008E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 13:56:46 +1100 (EST)
-Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 6EA4B3EE0C1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 11:56:43 +0900 (JST)
-Received: from smail (m1 [127.0.0.1])
- by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 5289445DE5B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 11:56:43 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
- by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 3867845DE56
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 11:56:43 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 26B211DB8052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 11:56:43 +0900 (JST)
-Received: from g01jpexchkw06.g01.fujitsu.local
- (g01jpexchkw06.g01.fujitsu.local [10.0.194.45])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id D2EEF1DB804C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 11:56:42 +0900 (JST)
-Message-ID: <50B8202B.80503@jp.fujitsu.com>
-Date: Fri, 30 Nov 2012 11:55:39 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-MIME-Version: 1.0
-To: Jianguo Wu <wujianguo@huawei.com>
-Subject: Re: [Patch v4 08/12] memory-hotplug: remove memmap of sparse-vmemmap
-References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
- <1354010422-19648-9-git-send-email-wency@cn.fujitsu.com>
- <50B5DC00.20103@huawei.com> <50B80FB1.6040906@cn.fujitsu.com>
- <50B81E50.9050101@huawei.com>
-In-Reply-To: <50B81E50.9050101@huawei.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- paulus@samba.org, Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A2F2D2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 17:14:22 +1100 (EST)
+Received: by mail-da0-f51.google.com with SMTP id i30so70237dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 Nov 2012 22:14:20 -0800 (PST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: [PATCH] vfio powerpc: enabled on powernv platform
+Date: Fri, 30 Nov 2012 17:14:03 +1100
+Message-Id: <1354256043-24963-1-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1354162826.1809.241.camel@bling.home>
+References: <1354162826.1809.241.camel@bling.home>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,339 +26,425 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Jianguo,
+This patch initializes IOMMU groups based on the IOMMU
+configuration discovered during the PCI scan on POWERNV
+(POWER non virtualized) platform. The IOMMU groups are
+to be used later by VFIO driver (PCI pass through).
 
-2012/11/30 11:47, Jianguo Wu wrote:
-> Hi Congyang,
->
-> Thanks for your review and comments.
->
-> On 2012/11/30 9:45, Wen Congyang wrote:
->
->> At 11/28/2012 05:40 PM, Jianguo Wu Wrote:
->>> Hi Congyang,
->>>
->>> I think vmemmap's pgtable pages should be freed after all entries are cleared, I have a patch to do this.
->>> The code logic is the same as [Patch v4 09/12] memory-hotplug: remove page table of x86_64 architecture.
->>>
->>> How do you think about this?
->>>
->>> Signed-off-by: Jianguo Wu <wujianguo@huawei.com>
->>> Signed-off-by: Jiang Liu <jiang.liu@huawei.com>
->>> ---
->>>   include/linux/mm.h  |    1 +
->>>   mm/sparse-vmemmap.c |  214 +++++++++++++++++++++++++++++++++++++++++++++++++++
->>>   mm/sparse.c         |    5 +-
->>>   3 files changed, 218 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/include/linux/mm.h b/include/linux/mm.h
->>> index 5657670..1f26af5 100644
->>> --- a/include/linux/mm.h
->>> +++ b/include/linux/mm.h
->>> @@ -1642,6 +1642,7 @@ int vmemmap_populate(struct page *start_page, unsigned long pages, int node);
->>>   void vmemmap_populate_print_last(void);
->>>   void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
->>>   				  unsigned long size);
->>> +void vmemmap_free(struct page *memmap, unsigned long nr_pages);
->>>
->>>   enum mf_flags {
->>>   	MF_COUNT_INCREASED = 1 << 0,
->>> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
->>> index 1b7e22a..242cb28 100644
->>> --- a/mm/sparse-vmemmap.c
->>> +++ b/mm/sparse-vmemmap.c
->>> @@ -29,6 +29,10 @@
->>>   #include <asm/pgalloc.h>
->>>   #include <asm/pgtable.h>
->>>
->>> +#ifdef CONFIG_MEMORY_HOTREMOVE
->>> +#include <asm/tlbflush.h>
->>> +#endif
->>> +
->>>   /*
->>>    * Allocate a block of memory to be used to back the virtual memory map
->>>    * or to back the page tables that are used to create the mapping.
->>> @@ -224,3 +228,213 @@ void __init sparse_mem_maps_populate_node(struct page **map_map,
->>>   		vmemmap_buf_end = NULL;
->>>   	}
->>>   }
->>> +
->>> +#ifdef CONFIG_MEMORY_HOTREMOVE
->>> +static void vmemmap_free_pages(struct page *page, int order)
->>> +{
->>> +	struct zone *zone;
->>> +	unsigned long magic;
->>> +
->>> +	magic = (unsigned long) page->lru.next;
->>> +	if (magic == SECTION_INFO || magic == MIX_SECTION_INFO) {
->>> +		put_page_bootmem(page);
->>> +
->>> +		zone = page_zone(page);
->>> +		zone_span_writelock(zone);
->>> +		zone->present_pages++;
->>> +		zone_span_writeunlock(zone);
->>> +		totalram_pages++;
->>> +	} else {
->>> +		if (is_vmalloc_addr(page_address(page)))
->>> +			vfree(page_address(page));
->>
->> Hmm, vmemmap doesn't use vmalloc() to allocate memory.
->>
->
-> yes, this can be removed.
->
->>> +		else
->>> +			free_pages((unsigned long)page_address(page), order);
->>> +	}
->>> +}
->>> +
->>> +static void free_pte_table(pmd_t *pmd)
->>> +{
->>> +	pte_t *pte, *pte_start;
->>> +	int i;
->>> +
->>> +	pte_start = (pte_t *)pmd_page_vaddr(*pmd);
->>> +	for (i = 0; i < PTRS_PER_PTE; i++) {
->>> +		pte = pte_start + i;
->>> +		if (pte_val(*pte))
->>> +			return;
->>> +	}
->>> +
->>> +	/* free a pte talbe */
->>> +	vmemmap_free_pages(pmd_page(*pmd), 0);
->>> +	spin_lock(&init_mm.page_table_lock);
->>> +	pmd_clear(pmd);
->>> +	spin_unlock(&init_mm.page_table_lock);
->>> +}
->>> +
->>> +static void free_pmd_table(pud_t *pud)
->>> +{
->>> +	pmd_t *pmd, *pmd_start;
->>> +	int i;
->>> +
->>> +	pmd_start = (pmd_t *)pud_page_vaddr(*pud);
->>> +	for (i = 0; i < PTRS_PER_PMD; i++) {
->>> +		pmd = pmd_start + i;
->>> +		if (pmd_val(*pmd))
->>> +			return;
->>> +	}
->>> +
->>> +	/* free a pmd talbe */
->>> +	vmemmap_free_pages(pud_page(*pud), 0);
->>> +	spin_lock(&init_mm.page_table_lock);
->>> +	pud_clear(pud);
->>> +	spin_unlock(&init_mm.page_table_lock);
->>> +}
->>> +
->>> +static void free_pud_table(pgd_t *pgd)
->>> +{
->>> +	pud_t *pud, *pud_start;
->>> +	int i;
->>> +
->>> +	pud_start = (pud_t *)pgd_page_vaddr(*pgd);
->>> +	for (i = 0; i < PTRS_PER_PUD; i++) {
->>> +		pud = pud_start + i;
->>> +		if (pud_val(*pud))
->>> +			return;
->>> +	}
->>> +
->>> +	/* free a pud table */
->>> +	vmemmap_free_pages(pgd_page(*pgd), 0);
->>> +	spin_lock(&init_mm.page_table_lock);
->>> +	pgd_clear(pgd);
->>> +	spin_unlock(&init_mm.page_table_lock);
->>> +}
->>> +
->>> +static int split_large_page(pte_t *kpte, unsigned long address, pte_t *pbase)
->>> +{
->>> +	struct page *page = pmd_page(*(pmd_t *)kpte);
->>> +	int i = 0;
->>> +	unsigned long magic;
->>> +	unsigned long section_nr;
->>> +
->>> +	__split_large_page(kpte, address, pbase);
->>> +	__flush_tlb_all();
->>> +
->>> +	magic = (unsigned long) page->lru.next;
->>> +	if (magic == SECTION_INFO) {
->>> +		section_nr = pfn_to_section_nr(page_to_pfn(page));
->>> +		while (i < PTRS_PER_PMD) {
->>> +			page++;
->>> +			i++;
->>> +			get_page_bootmem(section_nr, page, SECTION_INFO);
->>> +		}
->>> +	}
->>> +
->>> +	return 0;
->>> +}
->>> +
->>> +static void vmemmap_pte_remove(pmd_t *pmd, unsigned long addr, unsigned long end)
->>> +{
->>> +	pte_t *pte;
->>> +	unsigned long next;
->>> +
->>> +	pte = pte_offset_kernel(pmd, addr);
->>> +	for (; addr < end; pte++, addr += PAGE_SIZE) {
->>> +		next = (addr + PAGE_SIZE) & PAGE_MASK;
->>> +		if (next > end)
->>> +			next = end;
->>> +
->>> +		if (pte_none(*pte))
->>> +			continue;
->>> +		if (IS_ALIGNED(addr, PAGE_SIZE) &&
->>> +		    IS_ALIGNED(end, PAGE_SIZE)) {
->>> +			vmemmap_free_pages(pte_page(*pte), 0);
->>> +			spin_lock(&init_mm.page_table_lock);
->>> +			pte_clear(&init_mm, addr, pte);
->>> +			spin_unlock(&init_mm.page_table_lock);
->>
->> If addr or end is not alianed with PAGE_SIZE, you may leak some
->> memory.
->>
->
-> yes, I think we can handle this situation with the method you mentioned in the change log:
-> 1. When removing memory, the page structs of the revmoved memory are filled
->     with 0xFD.
-> 2. All page structs are filled with 0xFD on PT/PMD, PT/PMD can be cleared.
->     In this case, the page used as PT/PMD can be freed.
->
-> By the way, why is 0xFD?
+It also implements an API for mapping/unmapping pages for
+guest PCI drivers and providing DMA window properties.
+This API is going to be used later by QEMU-VFIO to handle
+h_put_tce hypercalls from the KVM guest.
 
-There is no reason. I just filled the page with unique number.
+Although this driver has been tested only on the POWERNV
+platform, it should work on any platform which supports
+TCE tables.
 
-Thanks,
-Yasuaki Ishimatsu
+To enable VFIO on POWER, enable SPAPR_TCE_IOMMU config
+option and configure VFIO as required.
 
->
->>> +		}
->>> +	}
->>> +
->>> +	free_pte_table(pmd);
->>> +	__flush_tlb_all();
->>> +}
->>> +
->>> +static void vmemmap_pmd_remove(pud_t *pud, unsigned long addr, unsigned long end)
->>> +{
->>> +	unsigned long next;
->>> +	pmd_t *pmd;
->>> +
->>> +	pmd = pmd_offset(pud, addr);
->>> +	for (; addr < end; addr = next, pmd++) {
->>> +		next = pmd_addr_end(addr, end);
->>> +		if (pmd_none(*pmd))
->>> +			continue;
->>> +
->>> +		if (cpu_has_pse) {
->>> +			unsigned long pte_base;
->>> +
->>> +			if (IS_ALIGNED(addr, PMD_SIZE) &&
->>> +			    IS_ALIGNED(next, PMD_SIZE)) {
->>> +				vmemmap_free_pages(pmd_page(*pmd),
->>> +						   get_order(PMD_SIZE));
->>> +				spin_lock(&init_mm.page_table_lock);
->>> +				pmd_clear(pmd);
->>> +				spin_unlock(&init_mm.page_table_lock);
->>> +				continue;
->>> +			}
->>> +
->>> +			/*
->>> +			 * We use 2M page, but we need to remove part of them,
->>> +			 * so split 2M page to 4K page.
->>> +			 */
->>> +			pte_base = get_zeroed_page(GFP_ATOMIC | __GFP_NOTRACK);
->>
->> get_zeored_page() may fail. You should handle this error.
->>
->
-> That means system is out of memory, I will trigger a bug_on.
->
->>> +			split_large_page((pte_t *)pmd, addr, (pte_t *)pte_base);
->>> +			__flush_tlb_all();
->>> +
->>> +			spin_lock(&init_mm.page_table_lock);
->>> +			pmd_populate_kernel(&init_mm, pmd, (pte_t *)pte_base);
->>> +			spin_unlock(&init_mm.page_table_lock);
->>> +		}
->>> +
->>> +		vmemmap_pte_remove(pmd, addr, next);
->>> +	}
->>> +
->>> +	free_pmd_table(pud);
->>> +	__flush_tlb_all();
->>> +}
->>> +
->>> +static void vmemmap_pud_remove(pgd_t *pgd, unsigned long addr, unsigned long end)
->>> +{
->>> +	unsigned long next;
->>> +	pud_t *pud;
->>> +
->>> +	pud = pud_offset(pgd, addr);
->>> +	for (; addr < end; addr = next, pud++) {
->>> +		next = pud_addr_end(addr, end);
->>> +		if (pud_none(*pud))
->>> +			continue;
->>> +
->>> +		vmemmap_pmd_remove(pud, addr, next);
->>> +	}
->>> +
->>> +	free_pud_table(pgd);
->>> +	__flush_tlb_all();
->>> +}
->>> +
->>> +void vmemmap_free(struct page *memmap, unsigned long nr_pages)
->>> +{
->>> +	unsigned long addr = (unsigned long)memmap;
->>> +	unsigned long end = (unsigned long)(memmap + nr_pages);
->>> +	unsigned long next;
->>> +
->>> +	for (; addr < end; addr = next) {
->>> +		pgd_t *pgd = pgd_offset_k(addr);
->>> +
->>> +		next = pgd_addr_end(addr, end);
->>> +		if (!pgd_present(*pgd))
->>> +			continue;
->>> +
->>> +		vmemmap_pud_remove(pgd, addr, next);
->>> +		sync_global_pgds(addr, next);
->>
->> The parameter for sync_global_pgds() is [start, end], not
->> [start, end)
->>
->
-> yes, thanks.
->
->>> +	}
->>> +}
->>> +#endif
->>> diff --git a/mm/sparse.c b/mm/sparse.c
->>> index fac95f2..3a16d68 100644
->>> --- a/mm/sparse.c
->>> +++ b/mm/sparse.c
->>> @@ -613,12 +613,13 @@ static inline struct page *kmalloc_section_memmap(unsigned long pnum, int nid,
->>>   	/* This will make the necessary allocations eventually. */
->>>   	return sparse_mem_map_populate(pnum, nid);
->>>   }
->>> -static void __kfree_section_memmap(struct page *memmap, unsigned long nr_pages)
->>> +static void __kfree_section_memmap(struct page *page, unsigned long nr_pages)
->> Why do you change this line?
->>
->
-> 0k, it is no need to change.
->
->>>   {
->>> -	return; /* XXX: Not implemented yet */
->>> +	vmemmap_free(page, nr_pages);
->>>   }
->>>   static void free_map_bootmem(struct page *page, unsigned long nr_pages)
->>>   {
->>> +	vmemmap_free(page, nr_pages);
->>>   }
->>>   #else
->>>   static struct page *__kmalloc_section_memmap(unsigned long nr_pages)
->>
->>
->> .
->>
->
->
->
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/include/asm/iommu.h     |    9 ++
+ arch/powerpc/kernel/iommu.c          |  186 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/pci.c |  135 ++++++++++++++++++++++++
+ drivers/iommu/Kconfig                |    8 ++
+ 4 files changed, 338 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index cbfe678..5c7087a 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -76,6 +76,9 @@ struct iommu_table {
+ 	struct iommu_pool large_pool;
+ 	struct iommu_pool pools[IOMMU_NR_POOLS];
+ 	unsigned long *it_map;       /* A simple allocation bitmap for now */
++#ifdef CONFIG_IOMMU_API
++	struct iommu_group *it_group;
++#endif
+ };
+ 
+ struct scatterlist;
+@@ -147,5 +150,11 @@ static inline void iommu_restore(void)
+ }
+ #endif
+ 
++extern long iommu_clear_tces(struct iommu_table *tbl, unsigned long entry,
++		unsigned long pages);
++extern long iommu_put_tces(struct iommu_table *tbl, unsigned long entry,
++		uint64_t tce, enum dma_data_direction direction,
++		unsigned long pages);
++
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_IOMMU_H */
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index ff5a6ce..0646c50 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -44,6 +44,7 @@
+ #include <asm/kdump.h>
+ #include <asm/fadump.h>
+ #include <asm/vio.h>
++#include <asm/tce.h>
+ 
+ #define DBG(...)
+ 
+@@ -856,3 +857,188 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
+ 		free_pages((unsigned long)vaddr, get_order(size));
+ 	}
+ }
++
++#ifdef CONFIG_IOMMU_API
++/*
++ * SPAPR TCE API
++ */
++
++/*
++ * Returns the number of used IOMMU pages (4K) within
++ * the same system page (4K or 64K).
++ * bitmap_weight is not used as it does not support bigendian maps.
++ */
++static int syspage_weight(unsigned long *map, unsigned long entry)
++{
++	int ret = 0, nbits = PAGE_SIZE/IOMMU_PAGE_SIZE;
++
++	/* Aligns TCE entry number to system page boundary */
++	entry &= PAGE_MASK >> IOMMU_PAGE_SHIFT;
++
++	/* Count used 4K pages */
++	while (nbits--)
++		ret += (test_bit(entry++, map) == 0) ? 0 : 1;
++
++	return ret;
++}
++
++static void tce_flush(struct iommu_table *tbl)
++{
++	/* Flush/invalidate TLB caches if necessary */
++	if (ppc_md.tce_flush)
++		ppc_md.tce_flush(tbl);
++
++	/* Make sure updates are seen by hardware */
++	mb();
++}
++
++/*
++ * iommu_clear_tces clears tces and returned the number of system pages
++ * which it called put_page() on
++ */
++static long clear_tces_nolock(struct iommu_table *tbl, unsigned long entry,
++		unsigned long pages)
++{
++	int i, retpages = 0;
++	unsigned long oldtce, oldweight;
++	struct page *page;
++
++	for (i = 0; i < pages; ++i) {
++		oldtce = ppc_md.tce_get(tbl, entry + i);
++		ppc_md.tce_free(tbl, entry + i, 1);
++
++		oldweight = syspage_weight(tbl->it_map, entry);
++		__clear_bit(entry, tbl->it_map);
++
++		if (!(oldtce & (TCE_PCI_WRITE | TCE_PCI_READ)))
++			continue;
++
++		page = pfn_to_page(oldtce >> PAGE_SHIFT);
++
++		WARN_ON(!page);
++		if (!page)
++			continue;
++
++		if (oldtce & TCE_PCI_WRITE)
++			SetPageDirty(page);
++
++		put_page(page);
++
++		/* That was the last IOMMU page within the system page */
++		if ((oldweight == 1) && !syspage_weight(tbl->it_map, entry))
++			++retpages;
++	}
++
++	return retpages;
++}
++
++/*
++ * iommu_clear_tces clears tces and returned the number
++ / of released system pages
++ */
++long iommu_clear_tces(struct iommu_table *tbl, unsigned long entry,
++		unsigned long pages)
++{
++	int ret;
++	struct iommu_pool *pool = get_pool(tbl, entry);
++
++	spin_lock(&(pool->lock));
++	ret = clear_tces_nolock(tbl, entry, pages);
++	tce_flush(tbl);
++	spin_unlock(&(pool->lock));
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(iommu_clear_tces);
++
++static int put_tce(struct iommu_table *tbl, unsigned long entry,
++		uint64_t tce, enum dma_data_direction direction)
++{
++	int ret;
++	struct page *page = NULL;
++	unsigned long kva, offset, oldweight;
++
++	/* Map new TCE */
++	offset = (tce & IOMMU_PAGE_MASK) - (tce & PAGE_MASK);
++	ret = get_user_pages_fast(tce & PAGE_MASK, 1,
++			direction != DMA_TO_DEVICE, &page);
++	if (ret < 1) {
++		printk(KERN_ERR "tce_vfio: get_user_pages_fast failed tce=%llx ioba=%lx ret=%d\n",
++				tce, entry << IOMMU_PAGE_SHIFT, ret);
++		if (!ret || (ret > 1))
++			ret = -EFAULT;
++		return ret;
++	}
++
++	kva = (unsigned long) page_address(page);
++	kva += offset;
++
++	/* tce_build receives a virtual address */
++	entry += tbl->it_offset; /* Offset into real TCE table */
++	ret = ppc_md.tce_build(tbl, entry, 1, kva, direction, NULL);
++
++	/* tce_build() only returns non-zero for transient errors */
++	if (unlikely(ret)) {
++		printk(KERN_ERR "tce_vfio: tce_put failed on tce=%llx ioba=%lx kva=%lx ret=%d\n",
++				tce, entry << IOMMU_PAGE_SHIFT, kva, ret);
++		put_page(page);
++		return -EIO;
++	}
++
++	/* Calculate if new system page has been locked */
++	oldweight = syspage_weight(tbl->it_map, entry);
++	__set_bit(entry, tbl->it_map);
++
++	return (oldweight == 0) ? 1 : 0;
++}
++
++/*
++ * iommu_put_tces builds tces and returned the number of actually
++ * locked system pages
++ */
++long iommu_put_tces(struct iommu_table *tbl, unsigned long entry,
++		uint64_t tce, enum dma_data_direction direction,
++		unsigned long pages)
++{
++	int i, ret = 0, retpages = 0;
++	struct iommu_pool *pool = get_pool(tbl, entry);
++
++	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE);
++	BUG_ON(direction == DMA_NONE);
++
++	spin_lock(&(pool->lock));
++
++	/* Check if any is in use */
++	for (i = 0; i < pages; ++i) {
++		unsigned long oldtce = ppc_md.tce_get(tbl, entry + i);
++		if ((oldtce & (TCE_PCI_WRITE | TCE_PCI_READ)) ||
++				test_bit(entry + i, tbl->it_map)) {
++			WARN_ON(test_bit(entry + i, tbl->it_map));
++			spin_unlock(&(pool->lock));
++			return -EBUSY;
++		}
++	}
++
++	/* Put tces to the table */
++	for (i = 0; (i < pages) && (ret >= 0); ++i, tce += IOMMU_PAGE_SIZE) {
++		ret = put_tce(tbl, entry + i, tce, direction);
++		if (ret == 1)
++			++retpages;
++	}
++
++	/*
++	 * If failed, release locked pages, otherwise return the number
++	 * of locked system pages
++	 */
++	if (ret < 0)
++		clear_tces_nolock(tbl, entry, i);
++	else
++		ret = retpages;
++
++	tce_flush(tbl);
++	spin_unlock(&(pool->lock));
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(iommu_put_tces);
++#endif /* CONFIG_IOMMU_API */
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 05205cf..21250ef 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -20,6 +20,7 @@
+ #include <linux/irq.h>
+ #include <linux/io.h>
+ #include <linux/msi.h>
++#include <linux/iommu.h>
+ 
+ #include <asm/sections.h>
+ #include <asm/io.h>
+@@ -613,3 +614,137 @@ void __init pnv_pci_init(void)
+ 	ppc_md.teardown_msi_irqs = pnv_teardown_msi_irqs;
+ #endif
+ }
++
++#ifdef CONFIG_IOMMU_API
++/*
++ * IOMMU groups support required by VFIO
++ */
++static int add_device(struct device *dev)
++{
++	struct iommu_table *tbl;
++	int ret = 0;
++
++	if (WARN_ON(dev->iommu_group)) {
++		printk(KERN_WARNING "tce_vfio: device %s is already in iommu group %d, skipping\n",
++				dev_name(dev),
++				iommu_group_id(dev->iommu_group));
++		return -EBUSY;
++	}
++
++	tbl = get_iommu_table_base(dev);
++	if (!tbl) {
++		pr_debug("tce_vfio: skipping device %s with no tbl\n",
++				dev_name(dev));
++		return 0;
++	}
++
++	pr_debug("tce_vfio: adding %s to iommu group %d\n",
++			dev_name(dev), iommu_group_id(tbl->it_group));
++
++	ret = iommu_group_add_device(tbl->it_group, dev);
++	if (ret < 0)
++		printk(KERN_ERR "tce_vfio: %s has not been added, ret=%d\n",
++				dev_name(dev), ret);
++
++	return ret;
++}
++
++static void del_device(struct device *dev)
++{
++	iommu_group_remove_device(dev);
++}
++
++static int iommu_bus_notifier(struct notifier_block *nb,
++			      unsigned long action, void *data)
++{
++	struct device *dev = data;
++
++	switch (action) {
++	case BUS_NOTIFY_ADD_DEVICE:
++		return add_device(dev);
++	case BUS_NOTIFY_DEL_DEVICE:
++		del_device(dev);
++		return 0;
++	default:
++		return 0;
++	}
++}
++
++static struct notifier_block tce_iommu_bus_nb = {
++	.notifier_call = iommu_bus_notifier,
++};
++
++static void group_release(void *iommu_data)
++{
++	struct iommu_table *tbl = iommu_data;
++	tbl->it_group = NULL;
++}
++
++static int __init tce_iommu_init(void)
++{
++	struct pci_dev *pdev = NULL;
++	struct iommu_table *tbl;
++	struct iommu_group *grp;
++
++	/* Allocate and initialize IOMMU groups */
++	for_each_pci_dev(pdev) {
++		tbl = get_iommu_table_base(&pdev->dev);
++		if (!tbl)
++			continue;
++
++		/* Skip already initialized */
++		if (tbl->it_group)
++			continue;
++
++		grp = iommu_group_alloc();
++		if (IS_ERR(grp)) {
++			printk(KERN_INFO "tce_vfio: cannot create "
++					"new IOMMU group, ret=%ld\n",
++					PTR_ERR(grp));
++			return PTR_ERR(grp);
++		}
++		tbl->it_group = grp;
++		iommu_group_set_iommudata(grp, tbl, group_release);
++	}
++
++	bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
++
++	/* Add PCI devices to VFIO groups */
++	for_each_pci_dev(pdev)
++		add_device(&pdev->dev);
++
++	return 0;
++}
++
++static void __exit tce_iommu_cleanup(void)
++{
++	struct pci_dev *pdev = NULL;
++	struct iommu_table *tbl;
++	struct iommu_group *grp = NULL;
++
++	bus_unregister_notifier(&pci_bus_type, &tce_iommu_bus_nb);
++
++	/* Delete PCI devices from VFIO groups */
++	for_each_pci_dev(pdev)
++		del_device(&pdev->dev);
++
++	/* Release VFIO groups */
++	for_each_pci_dev(pdev) {
++		tbl = get_iommu_table_base(&pdev->dev);
++		if (!tbl)
++			continue;
++		grp = tbl->it_group;
++
++		/* Skip (already) uninitialized */
++		if (!grp)
++			continue;
++
++		/* Do actual release, group_release() is expected to work */
++		iommu_group_put(grp);
++		BUG_ON(tbl->it_group);
++	}
++}
++
++module_init(tce_iommu_init);
++module_exit(tce_iommu_cleanup);
++#endif /* CONFIG_IOMMU_API */
+diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
+index 9f69b56..29d11dc 100644
+--- a/drivers/iommu/Kconfig
++++ b/drivers/iommu/Kconfig
+@@ -187,4 +187,12 @@ config EXYNOS_IOMMU_DEBUG
+ 
+ 	  Say N unless you need kernel log message for IOMMU debugging
+ 
++config SPAPR_TCE_IOMMU
++	bool "sPAPR TCE IOMMU Support"
++	depends on PPC_POWERNV
++	select IOMMU_API
++	help
++	  Enables bits of IOMMU API required by VFIO. The iommu_ops is
++	  still not implemented.
++
+ endif # IOMMU_SUPPORT
+-- 
+1.7.10.4
