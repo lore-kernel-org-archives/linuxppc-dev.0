@@ -1,25 +1,25 @@
 Return-Path: <R1AAHA@freescale.com>
 Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
+ (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 64FA42C0089
+ by ozlabs.org (Postfix) with ESMTPS id 681DE2C0092
  for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2012 10:37:34 +1100 (EST)
-Received: from mail108-co1 (localhost [127.0.0.1])	by
- mail108-co1-R.bigfish.com (Postfix) with ESMTP id 04B4B200323	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 23:37:30 +0000 (UTC)
-Received: from CO1EHSMHS029.bigfish.com (unknown [10.243.78.242])	by
- mail108-co1.bigfish.com (Postfix) with ESMTP id 5AD5B88004A	for
+Received: from mail172-co1 (localhost [127.0.0.1])	by
+ mail172-co1-R.bigfish.com (Postfix) with ESMTP id D81CA5C02B0	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 23:37:29 +0000 (UTC)
+Received: from CO1EHSMHS028.bigfish.com (unknown [10.243.78.228])	by
+ mail172-co1.bigfish.com (Postfix) with ESMTP id 7FFCB5A0117	for
  <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 23:37:28 +0000 (UTC)
 Received: from x9.am.freescale.net (x9.am.freescale.net [10.82.120.9])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id qAUNbQ39017956	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 16:37:26 -0700
+ tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id qAUNbQ3B017956	for
+ <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 16:37:27 -0700
 From: Kim Phillips <kim.phillips@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/4] powerpc/fsl: lbc: sparse fixes
-Date: Fri, 30 Nov 2012 17:35:00 -0600
-Message-ID: <1354318502-367-2-git-send-email-kim.phillips@freescale.com>
+Subject: [PATCH 4/4] powerpc/fsl: fsl_soc: sparse fixes
+Date: Fri, 30 Nov 2012 17:35:02 -0600
+Message-ID: <1354318502-367-4-git-send-email-kim.phillips@freescale.com>
 In-Reply-To: <1354318502-367-1-git-send-email-kim.phillips@freescale.com>
 References: <1354318502-367-1-git-send-email-kim.phillips@freescale.com>
 MIME-Version: 1.0
@@ -33,48 +33,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch/powerpc/sysdev/fsl_lbc.c:77:36: warning: incorrect type in initializer (different base types)
-arch/powerpc/sysdev/fsl_lbc.c:77:36:    expected restricted __be32 [usertype] br
-arch/powerpc/sysdev/fsl_lbc.c:77:36:    got unsigned int
-arch/powerpc/sysdev/fsl_lbc.c:78:36: warning: incorrect type in initializer (different base types)
-arch/powerpc/sysdev/fsl_lbc.c:78:36:    expected restricted __be32 [usertype] or
-arch/powerpc/sysdev/fsl_lbc.c:78:36:    got unsigned int
-arch/powerpc/sysdev/fsl_lbc.c:80:21: warning: restricted __be32 degrades to integer
-arch/powerpc/sysdev/fsl_lbc.c:80:38: warning: restricted __be32 degrades to integer
-arch/powerpc/sysdev/fsl_lbc.c:111:12: warning: incorrect type in assignment (different base types)
-arch/powerpc/sysdev/fsl_lbc.c:111:12:    expected restricted __be32 [usertype] br
-arch/powerpc/sysdev/fsl_lbc.c:111:12:    got unsigned int
-arch/powerpc/sysdev/fsl_lbc.c:113:17: warning: restricted __be32 degrades to integer
-arch/powerpc/sysdev/fsl_lbc.c:127:17: warning: restricted __be32 degrades to integer
+arch/powerpc/sysdev/fsl_soc.c:70:67: warning: incorrect type in argument 2 (different base types)
+arch/powerpc/sysdev/fsl_soc.c:70:67:    expected restricted __be32 const [usertype] *addr
+arch/powerpc/sysdev/fsl_soc.c:70:67:    got unsigned int const [usertype] *
 
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 ---
- arch/powerpc/sysdev/fsl_lbc.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_lbc.c b/arch/powerpc/sysdev/fsl_lbc.c
-index 483126d..2ee3967 100644
---- a/arch/powerpc/sysdev/fsl_lbc.c
-+++ b/arch/powerpc/sysdev/fsl_lbc.c
-@@ -74,8 +74,8 @@ int fsl_lbc_find(phys_addr_t addr_base)
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 97118dc..228cf91 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -58,10 +58,10 @@ phys_addr_t get_immrbase(void)
+ 	if (soc) {
+ 		int size;
+ 		u32 naddr;
+-		const u32 *prop = of_get_property(soc, "#address-cells", &size);
++		const __be32 *prop = of_get_property(soc, "#address-cells", &size);
  
- 	lbc = fsl_lbc_ctrl_dev->regs;
- 	for (i = 0; i < ARRAY_SIZE(lbc->bank); i++) {
--		__be32 br = in_be32(&lbc->bank[i].br);
--		__be32 or = in_be32(&lbc->bank[i].or);
-+		u32 br = in_be32(&lbc->bank[i].br);
-+		u32 or = in_be32(&lbc->bank[i].or);
+ 		if (prop && size == 4)
+-			naddr = *prop;
++			naddr = be32_to_cpup(prop);
+ 		else
+ 			naddr = 2;
  
- 		if (br & BR_V && (br & or & BR_BA) == fsl_lbc_addr(addr_base))
- 			return i;
-@@ -97,7 +97,7 @@ EXPORT_SYMBOL(fsl_lbc_find);
- int fsl_upm_find(phys_addr_t addr_base, struct fsl_upm *upm)
- {
- 	int bank;
--	__be32 br;
-+	u32 br;
- 	struct fsl_lbc_regs __iomem *lbc;
- 
- 	bank = fsl_lbc_find(addr_base);
 -- 
 1.8.0.1
