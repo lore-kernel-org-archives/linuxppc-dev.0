@@ -1,27 +1,26 @@
-Return-Path: <R1AAHA@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe003.messaging.microsoft.com [216.32.180.186])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4A40E2C0092
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2012 10:37:37 +1100 (EST)
-Received: from mail137-co1 (localhost [127.0.0.1])	by
- mail137-co1-R.bigfish.com (Postfix) with ESMTP id 80A3F3802AF	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 23:37:31 +0000 (UTC)
-Received: from CO1EHSMHS011.bigfish.com (unknown [10.243.78.245])	by
- mail137-co1.bigfish.com (Postfix) with ESMTP id 0A7FB440212	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 23:37:28 +0000 (UTC)
-Received: from x9.am.freescale.net (x9.am.freescale.net [10.82.120.9])	by
- tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id qAUNbQ38017956	for
- <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 16:37:26 -0700
-From: Kim Phillips <kim.phillips@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/4] powerpc/fsl: msi: sparse fixes
-Date: Fri, 30 Nov 2012 17:34:59 -0600
-Message-ID: <1354318502-367-1-git-send-email-kim.phillips@freescale.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 93FE32C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2012 11:14:54 +1100 (EST)
+Received: by mail-pb0-f51.google.com with SMTP id ro12so676393pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 16:14:52 -0800 (PST)
+Message-ID: <50B94BF0.4080408@ozlabs.ru>
+Date: Sat, 01 Dec 2012 11:14:40 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH] vfio powerpc: enabled on powernv platform
+References: <1354162826.1809.241.camel@bling.home>
+ <1354256043-24963-1-git-send-email-aik@ozlabs.ru>
+ <1354294088.14547.36.camel@ul30vt.home>
+In-Reply-To: <1354294088.14547.36.camel@ul30vt.home>
+Content-Type: text/plain; charset=KOI8-R; format=flowed
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,37 +30,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-arch/powerpc/sysdev/fsl_msi.c:31:1: warning: symbol 'msi_head' was not declared. Should it be static?
-arch/powerpc/sysdev/fsl_msi.c:138:40: warning: incorrect type in argument 1 (different base types)
-arch/powerpc/sysdev/fsl_msi.c:138:40:    expected restricted __be64 const [usertype] *p
-arch/powerpc/sysdev/fsl_msi.c:138:40:    got unsigned long long const [usertype] *[assigned] reg
+On 01/12/12 03:48, Alex Williamson wrote:
+> On Fri, 2012-11-30 at 17:14 +1100, Alexey Kardashevskiy wrote:
+>> This patch initializes IOMMU groups based on the IOMMU
+>> configuration discovered during the PCI scan on POWERNV
+>> (POWER non virtualized) platform. The IOMMU groups are
+>> to be used later by VFIO driver (PCI pass through).
+>>
+>> It also implements an API for mapping/unmapping pages for
+>> guest PCI drivers and providing DMA window properties.
+>> This API is going to be used later by QEMU-VFIO to handle
+>> h_put_tce hypercalls from the KVM guest.
+>>
+>> Although this driver has been tested only on the POWERNV
+>> platform, it should work on any platform which supports
+>> TCE tables.
+>>
+>> To enable VFIO on POWER, enable SPAPR_TCE_IOMMU config
+>> option and configure VFIO as required.
+>>
+>> Cc: David Gibson <david@gibson.dropbear.id.au>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>   arch/powerpc/include/asm/iommu.h     |    9 ++
+>>   arch/powerpc/kernel/iommu.c          |  186 ++++++++++++++++++++++++++++++++++
+>>   arch/powerpc/platforms/powernv/pci.c |  135 ++++++++++++++++++++++++
+>>   drivers/iommu/Kconfig                |    8 ++
+>>   4 files changed, 338 insertions(+)
+>>
+>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>> index cbfe678..5c7087a 100644
+>> --- a/arch/powerpc/include/asm/iommu.h
+>> +++ b/arch/powerpc/include/asm/iommu.h
+>> @@ -76,6 +76,9 @@ struct iommu_table {
+>>   	struct iommu_pool large_pool;
+>>   	struct iommu_pool pools[IOMMU_NR_POOLS];
+>>   	unsigned long *it_map;       /* A simple allocation bitmap for now */
+>> +#ifdef CONFIG_IOMMU_API
+>> +	struct iommu_group *it_group;
+>> +#endif
+>>   };
+>>
+>>   struct scatterlist;
+>> @@ -147,5 +150,11 @@ static inline void iommu_restore(void)
+>>   }
+>>   #endif
+>>
+>> +extern long iommu_clear_tces(struct iommu_table *tbl, unsigned long entry,
+>> +		unsigned long pages);
+>> +extern long iommu_put_tces(struct iommu_table *tbl, unsigned long entry,
+>> +		uint64_t tce, enum dma_data_direction direction,
+>> +		unsigned long pages);
+>> +
+>>   #endif /* __KERNEL__ */
+>>   #endif /* _ASM_IOMMU_H */
+>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>> index ff5a6ce..0646c50 100644
+>> --- a/arch/powerpc/kernel/iommu.c
+>> +++ b/arch/powerpc/kernel/iommu.c
+>> @@ -44,6 +44,7 @@
+>>   #include <asm/kdump.h>
+>>   #include <asm/fadump.h>
+>>   #include <asm/vio.h>
+>> +#include <asm/tce.h>
+>>
+>>   #define DBG(...)
+>>
+>> @@ -856,3 +857,188 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
+>>   		free_pages((unsigned long)vaddr, get_order(size));
+>>   	}
+>>   }
+>> +
+>> +#ifdef CONFIG_IOMMU_API
+>> +/*
+>> + * SPAPR TCE API
+>> + */
+>> +
+>> +/*
+>> + * Returns the number of used IOMMU pages (4K) within
+>> + * the same system page (4K or 64K).
+>> + * bitmap_weight is not used as it does not support bigendian maps.
+>> + */
+>> +static int syspage_weight(unsigned long *map, unsigned long entry)
+>> +{
+>> +	int ret = 0, nbits = PAGE_SIZE/IOMMU_PAGE_SIZE;
+>> +
+>> +	/* Aligns TCE entry number to system page boundary */
+>> +	entry &= PAGE_MASK >> IOMMU_PAGE_SHIFT;
+>> +
+>> +	/* Count used 4K pages */
+>> +	while (nbits--)
+>> +		ret += (test_bit(entry++, map) == 0) ? 0 : 1;
+>
+> Ok, entry is the iova page number.  So presumably it's relative to the
+> start of dma32_window_start since you're unlikely to have a bitmap that
+> covers all of memory.  I hadn't realized that previously.
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
----
- arch/powerpc/sysdev/fsl_msi.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+No, it is zero based. The DMA window is a filter but not offset. But you 
+are right, the it_map does not cover the whole global table (one per PHB, 
+roughly), will fix it, thanks for pointing. On my test system IOMMU group 
+is a whole PHB and DMA window always starts from 0 so tests do not show 
+everything :)
 
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 63c5f04..a57ef97 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -28,7 +28,7 @@
- #include "fsl_msi.h"
- #include "fsl_pci.h"
- 
--LIST_HEAD(msi_head);
-+static LIST_HEAD(msi_head);
- 
- struct fsl_msi_feature {
- 	u32 fsl_pic_ip;
-@@ -130,7 +130,7 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
- 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
- 	u64 address; /* Physical address of the MSIIR */
- 	int len;
--	const u64 *reg;
-+	const __be64 *reg;
- 
- 	/* If the msi-address-64 property exists, then use it */
- 	reg = of_get_property(hose->dn, "msi-address-64", &len);
+> Doesn't that
+> mean that it's actually impossible to create an ioctl based interface to
+> the dma64_window since we're not going to know which window is the
+> target?  I know you're not planning on one, but it seems limiting.
+
+No ,it is not limiting as iova is zero based. Even if it was, there are 
+flags in map/unmap ioctls which we could use, no?
+
+> We
+> at least need some documentation here, but I'm wondering if iova
+> shouldn't be zero based so we can determine which window it hits.  Also,
+> now that I look at it, I can't find any range checking on the iova.
+
+True... Have not hit this problem yet :) Good point, will fix, thanks.
+
+
+
 -- 
-1.8.0.1
+Alexey
