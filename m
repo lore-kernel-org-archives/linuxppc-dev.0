@@ -1,20 +1,27 @@
-Return-Path: <lists@nerdbynature.de>
-Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
- by ozlabs.org (Postfix) with ESMTP id 0D3192C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Dec 2012 07:32:16 +1100 (EST)
-Date: Sat, 1 Dec 2012 12:32:11 -0800 (PST)
-From: Christian Kujau <lists@nerdbynature.de>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Subject: Re: 3.7-rc7: BUG: MAX_STACK_TRACE_ENTRIES too low!
-In-Reply-To: <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
-Message-ID: <alpine.DEB.2.01.1212011229400.7378@trent.utfs.org>
-References: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
- <alpine.DEB.2.01.1211271916160.7378@trent.utfs.org>
- <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
+Return-Path: <B04825@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A23892C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Dec 2012 09:58:56 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Sethi Varun-B16395 <B16395@freescale.com>
+Subject: Re: [PATCH 4/4 v6] iommu/fsl: Freescale PAMU driver and IOMMU API
+ implementation.
+Date: Sat, 1 Dec 2012 22:58:20 +0000
+Message-ID: <6AE080B68D46FC4BA2D2769E68D765B7081BD418@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <1354360921-20850-1-git-send-email-Varun.Sethi@freescale.com>
+In-Reply-To: <1354360921-20850-1-git-send-email-Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,77 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 28 Nov 2012 at 16:41, Li Zhong wrote:
-> On Tue, 2012-11-27 at 19:22 -0800, Christian Kujau wrote:
-> > On Tue, 27 Nov 2012 at 19:06, Christian Kujau wrote:
-> > > the same thing[0] happened again in 3.7-rc7, after ~20h uptime:
-> > 
-> > I found the following on patchwork, but this seems to deal with powerpc64 
-> > only, while this PowerBook G4 of mine is powerpc32:
-> > 
-> >   http://patchwork.ozlabs.org/patch/193414/
-> > 
-> > It looks related, but then again, I fail to parse assember...
-> 
-> Hi Christian, 
-> 
-> Would you please help to try the following fix? I don't have a powerpc32
-> machine for test...
+Varun Sethi wrote:
+> Following is a brief description of the PAMU hardware:
+> PAMU determines what action to take and whether to authorize the action o=
+n
+> the basis of the memory address, a Logical IO Device Number (LIODN), and
+> PAACT table (logically) indexed by LIODN and address. Hardware devices wh=
+ich
+> need to access memory must provide an LIODN in addition to the memory add=
+ress.
+>
+> Peripheral Access Authorization and Control Tables (PAACTs) are the prima=
+ry
+> data structures used by PAMU. A PAACT is a table of peripheral access
+> authorization and control entries (PAACE).Each PAACE defines the range of
+> I/O bus address space that is accessible by the LIOD and the associated a=
+ccess
+> capabilities.
+>
+> There are two types of PAACTs: primary PAACT (PPAACT) and secondary PAACT
+> (SPAACT).A given physical I/O device may be able to act as one or more
+> independent logical I/O devices (LIODs). Each such logical I/O device is
+> assigned an identifier called logical I/O device number (LIODN). A LIODN =
+is
+> allocated a contiguous portion of the I/O bus address space called the DS=
+A window
+> for performing DSA operations. The DSA window may optionally be divided i=
+nto
+> multiple sub-windows, each of which may be used to map to a region in sys=
+tem
+> storage space. The first sub-window is referred to as the primary sub-win=
+dow
+> and the remaining are called secondary sub-windows.
+>
+> This patch provides the PAMU driver (fsl_pamu.c) and the corresponding IO=
+MMU
+> API implementation (fsl_pamu_domain.c). The PAMU hardware driver (fsl_pam=
+u.c)
+> has been derived from the work done by Ashish Kalra and Timur Tabi
+> (timur@freescale.com).
+>
+> Signed-off-by: Timur Tabi<timur@freescale.com>
+> Signed-off-by: Varun Sethi<Varun.Sethi@freescale.com>
+> ---
 
-After 3 days of uptime with your patch applied (and "normal" usage, just 
-as before) no such BUG message occured. So, from my point of view, feel
-free to add:
+Acked-by: Timur Tabi <timur@freescale.com>
 
-   Tested-by: Christian Kujau <lists@nerdbynature.de>
 
-Thanks!
-Christian.
-
-> ==============================================
-> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-> index 9499385..cadebfd 100644
-> --- a/arch/powerpc/kernel/entry_32.S
-> +++ b/arch/powerpc/kernel/entry_32.S
-> @@ -439,6 +439,8 @@ ret_from_fork:
->  ret_from_kernel_thread:
->  	REST_NVGPRS(r1)
->  	bl	schedule_tail
-> +	li	r3,0
-> +	stw	r3,0(r1)
->  	mtlr	r14
->  	mr	r3,r15
->  	PPC440EP_ERR42
-> ==============================================
-> 
-> > 
-> > Christian.
-> > 
-> > > [40007.339487] [sched_delayed] sched: RT throttling activated
-> > > [69731.388717] BUG: MAX_STACK_TRACE_ENTRIES too low!
-> > > [69731.390371] turning off the locking correctness validator.
-> > > [69731.391942] Call Trace:
-> > > [69731.393525] [c9a61c10] [c0009064] show_stack+0x70/0x1bc (unreliable)
-> > > [69731.395152] [c9a61c50] [c0077460] save_trace+0xfc/0x114
-> > > [69731.396735] [c9a61c60] [c007be20] __lock_acquire+0x1568/0x19b8
-> > > [69731.398296] [c9a61d00] [c007c2c0] lock_acquire+0x50/0x70
-> > > [69731.399857] [c9a61d20] [c0550e28] _raw_spin_lock_irq+0x5c/0x78
-> > > [69731.401419] [c9a61d40] [c054fb58] __schedule+0xd8/0x534
-> > > [69731.402972] [c9a61da0] [c0550094] _cond_resched+0x50/0x68
-> > > [69731.404527] [c9a61db0] [c0479908] dst_gc_task+0xbc/0x258
-> > > [69731.406070] [c9a61e40] [c004eeb8] process_one_work+0x1f4/0x49c
-> > > [69731.407585] [c9a61e80] [c004f644] worker_thread+0x14c/0x400
-> > > [69731.409075] [c9a61eb0] [c0057634] kthread+0xbc/0xc0
-> > > [69731.410521] [c9a61f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-> > > [...repeated 54 times...]
-> > > 
-> > > Anyone knows what this is about?
-> > > 
-> > > Thanks,
-> > > Christian.
-> > > 
-> > > [0] http://lkml.indiana.edu/hypermail/linux/kernel/1211.0/03025.html
-
--- 
-BOFH excuse #267:
-
-The UPS is on strike.
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
