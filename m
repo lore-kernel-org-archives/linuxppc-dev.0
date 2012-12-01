@@ -1,26 +1,34 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-ea0-f170.google.com (mail-ea0-f170.google.com
+ [209.85.215.170])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 93FE32C0082
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Dec 2012 11:14:54 +1100 (EST)
-Received: by mail-pb0-f51.google.com with SMTP id ro12so676393pbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 Nov 2012 16:14:52 -0800 (PST)
-Message-ID: <50B94BF0.4080408@ozlabs.ru>
-Date: Sat, 01 Dec 2012 11:14:40 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by ozlabs.org (Postfix) with ESMTPS id 1DD972C0097
+ for <linuxppc-dev@ozlabs.org>; Sat,  1 Dec 2012 22:05:13 +1100 (EST)
+Received: by mail-ea0-f170.google.com with SMTP id d11so631200eaa.15
+ for <linuxppc-dev@ozlabs.org>; Sat, 01 Dec 2012 03:05:09 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Sat, 1 Dec 2012 12:05:04 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Subject: Re: [GIT PULL 0/8] perf/urgent fixes
+Message-ID: <20121201110504.GA14809@gmail.com>
+References: <1353716453-9693-1-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH] vfio powerpc: enabled on powernv platform
-References: <1354162826.1809.241.camel@bling.home>
- <1354256043-24963-1-git-send-email-aik@ozlabs.ru>
- <1354294088.14547.36.camel@ul30vt.home>
-In-Reply-To: <1354294088.14547.36.camel@ul30vt.home>
-Content-Type: text/plain; charset=KOI8-R; format=flowed
-Cc: David Gibson <david@gibson.dropbear.id.au>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1353716453-9693-1-git-send-email-acme@infradead.org>
+Cc: linux-arch@vger.kernel.org, David Howells <dhowells@redhat.com>,
+ x86@kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Robert Richter <robert.richter@amd.com>, Namhyung Kim <namhyung@gmail.com>,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Xiao Guangrong <xiaoguangrong@linux.vnet.ibm.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, linuxppc-dev@ozlabs.org,
+ Dong Hao <haodong@linux.vnet.ibm.com>, Borislav Petkov <bp@alien8.de>,
+ acme@ghostprotocols.net, David Ahern <dsahern@gmail.com>,
+ Runzhen Wang <runzhen@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,124 +38,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/12/12 03:48, Alex Williamson wrote:
-> On Fri, 2012-11-30 at 17:14 +1100, Alexey Kardashevskiy wrote:
->> This patch initializes IOMMU groups based on the IOMMU
->> configuration discovered during the PCI scan on POWERNV
->> (POWER non virtualized) platform. The IOMMU groups are
->> to be used later by VFIO driver (PCI pass through).
->>
->> It also implements an API for mapping/unmapping pages for
->> guest PCI drivers and providing DMA window properties.
->> This API is going to be used later by QEMU-VFIO to handle
->> h_put_tce hypercalls from the KVM guest.
->>
->> Although this driver has been tested only on the POWERNV
->> platform, it should work on any platform which supports
->> TCE tables.
->>
->> To enable VFIO on POWER, enable SPAPR_TCE_IOMMU config
->> option and configure VFIO as required.
->>
->> Cc: David Gibson <david@gibson.dropbear.id.au>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>   arch/powerpc/include/asm/iommu.h     |    9 ++
->>   arch/powerpc/kernel/iommu.c          |  186 ++++++++++++++++++++++++++++++++++
->>   arch/powerpc/platforms/powernv/pci.c |  135 ++++++++++++++++++++++++
->>   drivers/iommu/Kconfig                |    8 ++
->>   4 files changed, 338 insertions(+)
->>
->> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->> index cbfe678..5c7087a 100644
->> --- a/arch/powerpc/include/asm/iommu.h
->> +++ b/arch/powerpc/include/asm/iommu.h
->> @@ -76,6 +76,9 @@ struct iommu_table {
->>   	struct iommu_pool large_pool;
->>   	struct iommu_pool pools[IOMMU_NR_POOLS];
->>   	unsigned long *it_map;       /* A simple allocation bitmap for now */
->> +#ifdef CONFIG_IOMMU_API
->> +	struct iommu_group *it_group;
->> +#endif
->>   };
->>
->>   struct scatterlist;
->> @@ -147,5 +150,11 @@ static inline void iommu_restore(void)
->>   }
->>   #endif
->>
->> +extern long iommu_clear_tces(struct iommu_table *tbl, unsigned long entry,
->> +		unsigned long pages);
->> +extern long iommu_put_tces(struct iommu_table *tbl, unsigned long entry,
->> +		uint64_t tce, enum dma_data_direction direction,
->> +		unsigned long pages);
->> +
->>   #endif /* __KERNEL__ */
->>   #endif /* _ASM_IOMMU_H */
->> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->> index ff5a6ce..0646c50 100644
->> --- a/arch/powerpc/kernel/iommu.c
->> +++ b/arch/powerpc/kernel/iommu.c
->> @@ -44,6 +44,7 @@
->>   #include <asm/kdump.h>
->>   #include <asm/fadump.h>
->>   #include <asm/vio.h>
->> +#include <asm/tce.h>
->>
->>   #define DBG(...)
->>
->> @@ -856,3 +857,188 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
->>   		free_pages((unsigned long)vaddr, get_order(size));
->>   	}
->>   }
->> +
->> +#ifdef CONFIG_IOMMU_API
->> +/*
->> + * SPAPR TCE API
->> + */
->> +
->> +/*
->> + * Returns the number of used IOMMU pages (4K) within
->> + * the same system page (4K or 64K).
->> + * bitmap_weight is not used as it does not support bigendian maps.
->> + */
->> +static int syspage_weight(unsigned long *map, unsigned long entry)
->> +{
->> +	int ret = 0, nbits = PAGE_SIZE/IOMMU_PAGE_SIZE;
->> +
->> +	/* Aligns TCE entry number to system page boundary */
->> +	entry &= PAGE_MASK >> IOMMU_PAGE_SHIFT;
->> +
->> +	/* Count used 4K pages */
->> +	while (nbits--)
->> +		ret += (test_bit(entry++, map) == 0) ? 0 : 1;
->
-> Ok, entry is the iova page number.  So presumably it's relative to the
-> start of dma32_window_start since you're unlikely to have a bitmap that
-> covers all of memory.  I hadn't realized that previously.
 
-No, it is zero based. The DMA window is a filter but not offset. But you 
-are right, the it_map does not cover the whole global table (one per PHB, 
-roughly), will fix it, thanks for pointing. On my test system IOMMU group 
-is a whole PHB and DMA window always starts from 0 so tests do not show 
-everything :)
+* Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
 
-> Doesn't that
-> mean that it's actually impossible to create an ioctl based interface to
-> the dma64_window since we're not going to know which window is the
-> target?  I know you're not planning on one, but it seems limiting.
+> Hi Ingo,
+> 
+> 	Tested using a cross-compiler and directly on a Raspberry pi (ARM) with
+> raspbian.
+> 
+> 	Please consider pulling.
+> 
+> - Arnaldo
+> 
+> The following changes since commit 18423d3562f396206e0928a71177eeb2edfed077:
+> 
+>   Merge tag 'perf-urgent-for-mingo' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/urgent (2012-11-13 18:51:51 +0100)
+> 
+> are available in the git repository at:
+> 
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-urgent-for-mingo
+> 
+> for you to fetch changes up to 7321090f6751c9987c26a8c81c63680d16a614d7:
+> 
+>   perf kvm: Fix building perf kvm on non x86 arches (2012-11-23 20:40:17 -0300)
+> 
+> ----------------------------------------------------------------
+> perf/urgent fixes
+> 
+> . Don't build 'perf kvm stat" on non-x86 arches, fix from Xiao Guangrong.
+> 
+> . UAPI fixes to get perf building again in non-x86 arches, from David Howells.
+> 
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> 
+> ----------------------------------------------------------------
+> Arnaldo Carvalho de Melo (1):
+>       Merge tag 'perf-uapi-20121119' of git://git.infradead.org/users/dhowells/linux-headers into perf/urgent
+> 
+> David Howells (6):
+>       x86: Export asm/{svm.h,vmx.h,perf_regs.h}
+>       Merge branch 'x86-pre-uapi' into perf-uapi
+>       tools: Define a Makefile function to do subdir processing
+>       tools: Honour the O= flag when tool build called from a higher Makefile
+>       tools: Pass the target in descend
+>       perf: Make perf build for x86 with UAPI disintegration applied
+> 
+> Sukadev Bhattiprolu (1):
+>       perf powerpc: Use uapi/unistd.h to fix build error
+> 
+> Xiao Guangrong (2):
+>       perf kvm: Rename perf_kvm to perf_kvm_stat
+>       perf kvm: Fix building perf kvm on non x86 arches
+> 
+>  Makefile                                |    6 +-
+>  arch/x86/include/asm/Kbuild             |    3 +
+>  include/linux/hw_breakpoint.h           |   31 +-------
+>  include/uapi/linux/Kbuild               |    1 +
+>  include/uapi/linux/hw_breakpoint.h      |   30 ++++++++
+>  tools/Makefile                          |   24 +++---
+>  tools/perf/Makefile                     |   29 +++++++-
+>  tools/perf/arch/x86/include/perf_regs.h |    2 +-
+>  tools/perf/builtin-kvm.c                |  121 +++++++++++++++++--------------
+>  tools/perf/builtin-test.c               |    2 +-
+>  tools/perf/perf.h                       |   16 +---
+>  tools/perf/util/evsel.c                 |    4 +-
+>  tools/perf/util/evsel.h                 |    3 +-
+>  tools/perf/util/header.h                |    2 +-
+>  tools/perf/util/parse-events-test.c     |    2 +-
+>  tools/perf/util/parse-events.c          |    2 +-
+>  tools/perf/util/parse-events.h          |    2 +-
+>  tools/perf/util/pmu.h                   |    2 +-
+>  tools/perf/util/session.h               |    2 +-
+>  tools/scripts/Makefile.include          |   23 +++++-
+>  20 files changed, 181 insertions(+), 126 deletions(-)
+>  create mode 100644 include/uapi/linux/hw_breakpoint.h
 
-No ,it is not limiting as iova is zero based. Even if it was, there are 
-flags in map/unmap ioctls which we could use, no?
+Pulled, thanks a lot Arnaldo!
 
-> We
-> at least need some documentation here, but I'm wondering if iova
-> shouldn't be zero based so we can determine which window it hits.  Also,
-> now that I look at it, I can't find any range checking on the iova.
+I'll get this to Linus ASAP.
 
-True... Have not hit this problem yet :) Good point, will fix, thanks.
+Note: got a conflict with perf/core in tools/perf/Makefile, when 
+merging in tip:master. It appeared to me that perf/core already 
+included all the changes to BASIC_CFLAGS that perf/urgent 
+updated, so I picked the perf/core version.
 
+The merged result seems to work fine but please double check it 
+nevertheless.
 
+Thanks,
 
--- 
-Alexey
+	Ingo
