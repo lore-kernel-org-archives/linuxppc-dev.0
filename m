@@ -2,15 +2,20 @@ Return-Path: <agraf@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 338452C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Dec 2012 00:58:30 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3E4672C00AC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Dec 2012 00:59:10 +1100 (EST)
+Subject: Re: [PATCH 10/12] KVM: PPC: bookehv: Add EPCR support in mtspr/mfspr
+ emulation
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
 From: Alexander Graf <agraf@suse.de>
-To: kvm-ppc@vger.kernel.org
-Subject: [PATCH] KVM: PPC: Make EPCR a valid field for booke64 and bookehv
-Date: Sat,  1 Dec 2012 14:58:25 +0100
-Message-Id: <1354370305-12344-1-git-send-email-agraf@suse.de>
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- "kvm@vger.kernel.org list" <kvm@vger.kernel.org>
+In-Reply-To: <1349972009-23027-11-git-send-email-mihai.caraman@freescale.com>
+Date: Sat, 1 Dec 2012 14:59:03 +0100
+Message-Id: <0BB19016-F679-481A-836C-41F717F2CE7A@suse.de>
+References: <1349972009-23027-1-git-send-email-mihai.caraman@freescale.com>
+ <1349972009-23027-11-git-send-email-mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,44 +25,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In BookE, EPCR is defined and valid when either the HV or the 64bit
-category are implemented. Reflect this in the field definition.
 
-Today the only KVM target on 64bit is HV enabled, so there is no
-change in actual source code, but this keeps the code closer to the
-spec and doesn't build up artificial road blocks for a PR KVM
-on 64bit.
+On 11.10.2012, at 18:13, Mihai Caraman wrote:
 
-Signed-off-by: Alexander Graf <agraf@suse.de>
----
- arch/powerpc/include/asm/kvm_host.h |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
+> Add EPCR support in booke mtspr/mfspr emulation. EPCR register is =
+defined only
+> for 64-bit and HV categories, we will expose it at this point only to =
+64-bit
+> virtual processors running on 64-bit HV hosts.
+> Define a reusable setter function for vcpu's EPCR.
+>=20
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+> v1: extended guard defines with CONFIG_KVM_BOOKE_HV required by arch's =
+epcr and
+> shadow_epcr fields.
 
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index 62fbd38..3480526 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -405,14 +405,19 @@ struct kvm_vcpu_arch {
- #ifdef CONFIG_KVM_BOOKE_HV
- 	u32 host_mas4;
- 	u32 host_mas6;
--	u32 shadow_epcr;
--	u32 epcr;
- 	u32 shadow_msrp;
- 	u32 eplc;
- 	u32 epsc;
- 	u32 oldpir;
- #endif
- 
-+#if defined(CONFIG_BOOKE)
-+#if defined(CONFIG_KVM_BOOKE_HV) || defined(CONFIG_64BIT)
-+	u32 shadow_epcr;
-+	u32 epcr;
-+#endif
-+#endif
-+
- #ifdef CONFIG_PPC_BOOK3S
- 	/* For Gekko paired singles */
- 	u32 qpr[32];
--- 
-1.6.0.2
+I removed that constraint in another patch I just sent out and will =
+remove the guards on HV while applying the patch.
+
+
+Alex
