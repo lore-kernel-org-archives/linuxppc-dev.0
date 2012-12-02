@@ -1,21 +1,24 @@
-Return-Path: <weiyj.lk@gmail.com>
-Received: from mail-qa0-f51.google.com (mail-qa0-f51.google.com
- [209.85.216.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 81CF62C00A9
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2012 00:00:12 +1100 (EST)
-Received: by mail-qa0-f51.google.com with SMTP id i20so749050qad.17
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 02 Dec 2012 05:00:09 -0800 (PST)
+Return-Path: <joro@8bytes.org>
+Received: from mail.8bytes.org (8bytes.org [85.214.48.195])
+ by ozlabs.org (Postfix) with ESMTP id B89FC2C007D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2012 01:03:29 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+ by mail.8bytes.org (Postfix) with SMTP id 44AFC12B011
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Dec 2012 15:03:25 +0100 (CET)
+Date: Sun, 2 Dec 2012 15:03:23 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Varun Sethi <Varun.Sethi@freescale.com>
+Subject: Re: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes required
+ by fsl PAMU driver.
+Message-ID: <20121202140323.GO30633@8bytes.org>
+References: <1353419697-31269-1-git-send-email-Varun.Sethi@freescale.com>
+ <1353419697-31269-4-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
-Date: Sun, 2 Dec 2012 08:00:09 -0500
-Message-ID: <CAPgLHd9vUfwYfd71n17QfSinsQQb5KD1T0KRC7ASq+CEqE_6hA@mail.gmail.com>
-Subject: [PATCH] powerpc/windfarm: use for_each_node_by_type() macro
-From: Wei Yongjun <weiyj.lk@gmail.com>
-To: benh@kernel.crashing.org
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: yongjun_wei@trendmicro.com.cn, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1353419697-31269-4-git-send-email-Varun.Sethi@freescale.com>
+Cc: joerg.roedel@amd.com, linux-kernel@vger.kernel.org,
+ iommu@lists.linux-foundation.org, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org, timur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,55 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+Hmm, we need to work out a good abstraction for this.
 
-Use for_each_node_by_type() macro instead of open coding it.
+On Tue, Nov 20, 2012 at 07:24:56PM +0530, Varun Sethi wrote:
+> Added the following domain attributes required by FSL PAMU driver:
+> 1. Subwindows field added to the iommu domain geometry attribute.
 
-Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
----
- drivers/macintosh/windfarm_rm31.c  | 2 +-
- drivers/macintosh/windfarm_pm72.c  | 2 +-
- drivers/macintosh/windfarm_pm112.c | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+Are the Subwindows mapped with full size or do you map only parts of the
+subwindows?
 
-diff --git a/drivers/macintosh/windfarm_rm31.c b/drivers/macintosh/windfarm_rm31.c
-index 3eca6d4..4190b27 100644
---- a/drivers/macintosh/windfarm_rm31.c
-+++ b/drivers/macintosh/windfarm_rm31.c
-@@ -696,7 +696,7 @@ static int __init wf_rm31_init(void)
- 
- 	/* Count the number of CPU cores */
- 	nr_chips = 0;
--	for (cpu = NULL; (cpu = of_find_node_by_type(cpu, "cpu")) != NULL; )
-+	for_each_node_by_type(cpu, "cpu")
- 		++nr_chips;
- 	if (nr_chips > NR_CHIPS)
- 		nr_chips = NR_CHIPS;
+> +	 * This attribute indicates number of DMA subwindows supported by
+> +	 * the geometry. If there is a single window that maps the entire
+> +	 * geometry, attribute must be set to "1". A value of "0" implies
+> +	 * that this mechanism is not used at all(normal paging is used).
+> +	 * Value other than* "0" or "1" indicates the actual number of
+> +	 * subwindows.
+> +	 */
 
-diff --git a/drivers/macintosh/windfarm_pm72.c b/drivers/macintosh/windfarm_pm72.c
-index 84ac913..73f5e24 100644
---- a/drivers/macintosh/windfarm_pm72.c
-+++ b/drivers/macintosh/windfarm_pm72.c
-@@ -804,7 +804,7 @@ static int __init wf_pm72_init(void)
- 
- 	/* Count the number of CPU cores */
- 	nr_chips = 0;
--	for (cpu = NULL; (cpu = of_find_node_by_type(cpu, "cpu")) != NULL; )
-+	for_each_node_by_type(cpu, "cpu")
- 		++nr_chips;
- 	if (nr_chips > NR_CHIPS)
- 		nr_chips = NR_CHIPS;
+This semantic is ugly, how about a feature detection mechanism?
 
-diff --git a/drivers/macintosh/windfarm_pm112.c b/drivers/macintosh/windfarm_pm112.c
-index e0ee807..b479b82 100644
---- a/drivers/macintosh/windfarm_pm112.c
-+++ b/drivers/macintosh/windfarm_pm112.c
-@@ -681,7 +681,7 @@ static int __init wf_pm112_init(void)
- 
- 	/* Count the number of CPU cores */
- 	nr_cores = 0;
--	for (cpu = NULL; (cpu = of_find_node_by_type(cpu, "cpu")) != NULL; )
-+	for_each_node_by_type(cpu, "cpu")
- 		++nr_cores;
- 
- 	printk(KERN_INFO "windfarm: initializing for dual-core desktop G5\n");
+> +struct iommu_stash_attribute {
+> +	u32 	cpu;	/* cpu number */
+> +	u32 	cache;	/* cache to stash to: L1,L2,L3 */
+>  };
+>  
+>  struct iommu_domain {
+> @@ -60,6 +95,14 @@ struct iommu_domain {
+>  enum iommu_attr {
+>  	DOMAIN_ATTR_MAX,
+>  	DOMAIN_ATTR_GEOMETRY,
+> +	/* Set the IOMMU hardware stashing
+> +	 * parameters.
+> +	 */
+> +	DOMAIN_ATTR_STASH,
+> +	/* Explicity enable/disable DMA for a
+> +         * particular memory window.
+> +         */
+> +	DOMAIN_ATTR_ENABLE,
+>  };
+
+When you add implementation specific attributes please add some
+indication to the names that it is only for PAMU. DOMAIN_ATTR_STASH
+sounds too generic.
+
+
+	Joerg
