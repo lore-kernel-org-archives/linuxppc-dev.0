@@ -1,29 +1,30 @@
-Return-Path: <joro@8bytes.org>
-Received: from mail.8bytes.org (8bytes.org
- [IPv6:2a01:238:4242:f000:64f:6c43:3523:e535])
- by ozlabs.org (Postfix) with ESMTP id 247822C007D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2012 01:06:53 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
- by mail.8bytes.org (Postfix) with SMTP id 90DAB12AEB5
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Dec 2012 15:06:48 +0100 (CET)
-Date: Sun, 2 Dec 2012 15:06:45 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: Re: [PATCH 0/9] dma_debug: add debug_dma_mapping_error support to
- architectures that support DMA_DEBUG_API
-Message-ID: <20121202140644.GP30633@8bytes.org>
-References: <1353706142.5270.93.camel@lorien2> <50B34B0F.3080204@samsung.com>
+Return-Path: <B04825@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 9710E2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2012 02:12:02 +1100 (EST)
+From: Tabi Timur-B04825 <B04825@freescale.com>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: Re: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes required
+ by fsl PAMU driver.
+Date: Sun, 2 Dec 2012 15:11:54 +0000
+Message-ID: <6AE080B68D46FC4BA2D2769E68D765B7081BD902@039-SN2MPN1-023.039d.mgd.msft.net>
+References: <1353419697-31269-1-git-send-email-Varun.Sethi@freescale.com>
+ <1353419697-31269-4-git-send-email-Varun.Sethi@freescale.com>
+ <20121202140323.GO30633@8bytes.org>
+In-Reply-To: <20121202140323.GO30633@8bytes.org>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <50B34B0F.3080204@samsung.com>
-Cc: linux-mips@linux-mips.org, linux-ia64@vger.kernel.org, a-jacquiot@ti.com,
- catalin.marinas@arm.com, Ming Lei <ming.lei@canonical.com>,
- shuahkhan@gmail.com, sparclinux@vger.kernel.org, linux-c6x-dev@linux-c6x.org,
- linux-sh@vger.kernel.org, msalter@redhat.com, shuah.khan@hp.com,
- fenghua.yu@intel.com, microblaze-uclinux@itee.uq.edu.au,
- linux-arm-kernel@lists.infradead.org, monstr@monstr.eu, tony.luck@intel.com,
- LKML <linux-kernel@vger.kernel.org>, ralf@linux-mips.org, lethal@linux-sh.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Sethi Varun-B16395 <B16395@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,17 +34,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Marek,
- 
-On Mon, Nov 26, 2012 at 11:57:19AM +0100, Marek Szyprowski wrote:
+Joerg Roedel wrote:
+> When you add implementation specific attributes please add some
+> indication to the names that it is only for PAMU. DOMAIN_ATTR_STASH
+> sounds too generic.
 
-> I've took all the patches to the next-dma-debug branch in my tree, I sorry
-> that You have to wait so long for it. My branch is based on Joerg's
-> dma-debug branch and I've included it for testing in linux-next branch.
+We were thinking that maybe this attribute could be useful to other IOMMUs=
+=20
+in the future.  Stashing is not a concept that would only work on=20
+Freescale processors.
 
-The patches are now two times in next. One version from my tree and one
-from yours. Please remove the version from your tree, the patches should
-go upstream via my dma-debug branch.
+But we'll change it if you insist.
 
-
-	Joerg
+--=20
+Timur Tabi
+Linux kernel developer at Freescale=
