@@ -1,27 +1,26 @@
-Return-Path: <B04825@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe002.messaging.microsoft.com [207.46.163.25])
+Return-Path: <B16395@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A23892C00AE
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Dec 2012 09:58:56 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Subject: Re: [PATCH 4/4 v6] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-Date: Sat, 1 Dec 2012 22:58:20 +0000
-Message-ID: <6AE080B68D46FC4BA2D2769E68D765B7081BD418@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1354360921-20850-1-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1354360921-20850-1-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="iso-8859-1"
+ by ozlabs.org (Postfix) with ESMTPS id 3B8852C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Dec 2012 19:12:40 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: "joerg.roedel@amd.com" <joerg.roedel@amd.com>
+Subject: RE: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes required
+ by fsl PAMU driver.
+Date: Sun, 2 Dec 2012 08:12:31 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D2B0419@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1353419697-31269-1-git-send-email-Varun.Sethi@freescale.com>
+ <1353419697-31269-4-git-send-email-Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
  "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +30,114 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Varun Sethi wrote:
-> Following is a brief description of the PAMU hardware:
-> PAMU determines what action to take and whether to authorize the action o=
-n
-> the basis of the memory address, a Logical IO Device Number (LIODN), and
-> PAACT table (logically) indexed by LIODN and address. Hardware devices wh=
-ich
-> need to access memory must provide an LIODN in addition to the memory add=
-ress.
->
-> Peripheral Access Authorization and Control Tables (PAACTs) are the prima=
-ry
-> data structures used by PAMU. A PAACT is a table of peripheral access
-> authorization and control entries (PAACE).Each PAACE defines the range of
-> I/O bus address space that is accessible by the LIOD and the associated a=
-ccess
-> capabilities.
->
-> There are two types of PAACTs: primary PAACT (PPAACT) and secondary PAACT
-> (SPAACT).A given physical I/O device may be able to act as one or more
-> independent logical I/O devices (LIODs). Each such logical I/O device is
-> assigned an identifier called logical I/O device number (LIODN). A LIODN =
-is
-> allocated a contiguous portion of the I/O bus address space called the DS=
-A window
-> for performing DSA operations. The DSA window may optionally be divided i=
-nto
-> multiple sub-windows, each of which may be used to map to a region in sys=
-tem
-> storage space. The first sub-window is referred to as the primary sub-win=
-dow
-> and the remaining are called secondary sub-windows.
->
-> This patch provides the PAMU driver (fsl_pamu.c) and the corresponding IO=
-MMU
-> API implementation (fsl_pamu_domain.c). The PAMU hardware driver (fsl_pam=
-u.c)
-> has been derived from the work done by Ashish Kalra and Timur Tabi
-> (timur@freescale.com).
->
-> Signed-off-by: Timur Tabi<timur@freescale.com>
-> Signed-off-by: Varun Sethi<Varun.Sethi@freescale.com>
-> ---
+Ping!!
 
-Acked-by: Timur Tabi <timur@freescale.com>
-
-
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+> -----Original Message-----
+> From: Sethi Varun-B16395
+> Sent: Monday, November 26, 2012 10:55 AM
+> To: joerg.roedel@amd.com
+> Cc: Sethi Varun-B16395; iommu@lists.linux-foundation.org; linuxppc-
+> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood Scott-B07421;
+> Tabi Timur-B04825
+> Subject: RE: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes
+> required by fsl PAMU driver.
+>=20
+> Hi Joerg,
+> Any comments? Can we apply this patch?
+>=20
+> Regards
+> Varun
+>=20
+> > -----Original Message-----
+> > From: Sethi Varun-B16395
+> > Sent: Tuesday, November 20, 2012 7:25 PM
+> > To: joerg.roedel@amd.com; iommu@lists.linux-foundation.org; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Wood Scott-B07421;
+> > Tabi Timur-B04825
+> > Cc: Sethi Varun-B16395
+> > Subject: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes
+> > required by fsl PAMU driver.
+> >
+> > Added the following domain attributes required by FSL PAMU driver:
+> > 1. Subwindows field added to the iommu domain geometry attribute.
+> > 2. Added new iommu stash attribute, which allows setting of the
+> >    LIODN specific stash id parameter through IOMMU API.
+> > 3. Added an attribute for enabling/disabling DMA to a particular
+> >    memory window.
+> >
+> > Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+> > ---
+> > changes in v5:
+> > - Updated description of the subwindows field.
+> > changes in v4:
+> > - Updated comment explaining subwindows(as mentioned by Scott).
+> > change in v3:
+> > -renamed the stash attribute targets
+> >  include/linux/iommu.h |   43
+> +++++++++++++++++++++++++++++++++++++++++++
+> >  1 files changed, 43 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/include/linux/iommu.h b/include/linux/iommu.h index
+> > f3b99e1..7ca1cda 100644
+> > --- a/include/linux/iommu.h
+> > +++ b/include/linux/iommu.h
+> > @@ -44,6 +44,41 @@ struct iommu_domain_geometry {
+> >  	dma_addr_t aperture_start; /* First address that can be mapped */
+> >  	dma_addr_t aperture_end;   /* Last address that can be mapped
+> > */
+> >  	bool force_aperture;       /* DMA only allowed in mappable range?
+> > */
+> > +
+> > +	/*
+> > +	 * A geometry mapping can be created in one of the following ways
+> > +	 * for an IOMMU:
+> > +	 * 1. A single contiguous window
+> > +	 * 2. Through arbritary paging throughout the aperture.
+> > +	 * 3. Using multiple subwindows
+> > +	 *
+> > +	 * In absence of arbritary paging, subwindows allow for supporting
+> > +	 * physically discontiguous mappings.
+> > +	 *
+> > +	 * This attribute indicates number of DMA subwindows supported by
+> > +	 * the geometry. If there is a single window that maps the entire
+> > +	 * geometry, attribute must be set to "1". A value of "0" implies
+> > +	 * that this mechanism is not used at all(normal paging is used).
+> > +	 * Value other than* "0" or "1" indicates the actual number of
+> > +	 * subwindows.
+> > +	 */
+> > +	u32 subwindows;
+> > +};
+> > +
+> > +/* cache stash targets */
+> > +#define IOMMU_ATTR_CACHE_L1 1
+> > +#define IOMMU_ATTR_CACHE_L2 2
+> > +#define IOMMU_ATTR_CACHE_L3 3
+> > +
+> > +/* This attribute corresponds to IOMMUs capable of generating
+> > + * a stash transaction. A stash transaction is typically a
+> > + * hardware initiated prefetch of data from memory to cache.
+> > + * This attribute allows configuring stashig specific parameters
+> > + * in the IOMMU hardware.
+> > + */
+> > +struct iommu_stash_attribute {
+> > +	u32 	cpu;	/* cpu number */
+> > +	u32 	cache;	/* cache to stash to: L1,L2,L3 */
+> >  };
+> >
+> >  struct iommu_domain {
+> > @@ -60,6 +95,14 @@ struct iommu_domain {  enum iommu_attr {
+> >  	DOMAIN_ATTR_MAX,
+> >  	DOMAIN_ATTR_GEOMETRY,
+> > +	/* Set the IOMMU hardware stashing
+> > +	 * parameters.
+> > +	 */
+> > +	DOMAIN_ATTR_STASH,
+> > +	/* Explicity enable/disable DMA for a
+> > +         * particular memory window.
+> > +         */
+> > +	DOMAIN_ATTR_ENABLE,
+> >  };
+> >
+> >  #ifdef CONFIG_IOMMU_API
+> > --
+> > 1.7.4.1
