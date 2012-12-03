@@ -1,30 +1,39 @@
-Return-Path: <B04825@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9710E2C008D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2012 02:12:02 +1100 (EST)
-From: Tabi Timur-B04825 <B04825@freescale.com>
-To: Joerg Roedel <joro@8bytes.org>
-Subject: Re: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes required
- by fsl PAMU driver.
-Date: Sun, 2 Dec 2012 15:11:54 +0000
-Message-ID: <6AE080B68D46FC4BA2D2769E68D765B7081BD902@039-SN2MPN1-023.039d.mgd.msft.net>
-References: <1353419697-31269-1-git-send-email-Varun.Sethi@freescale.com>
- <1353419697-31269-4-git-send-email-Varun.Sethi@freescale.com>
- <20121202140323.GO30633@8bytes.org>
-In-Reply-To: <20121202140323.GO30633@8bytes.org>
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Sethi Varun-B16395 <B16395@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 80B142C00AE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2012 13:09:37 +1100 (EST)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Mon, 3 Dec 2012 07:39:29 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 5F0F5125804B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Dec 2012 07:39:11 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qB329RHI12582920
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Dec 2012 07:39:28 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qB37amAY005843
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 3 Dec 2012 18:36:49 +1100
+Message-ID: <1354500564.3243.17.camel@ThinkPad-T5421.cn.ibm.com>
+Subject: Re: 3.7-rc7: BUG: MAX_STACK_TRACE_ENTRIES too low!
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Date: Mon, 03 Dec 2012 10:09:24 +0800
+In-Reply-To: <alpine.DEB.2.01.1212011229400.7378@trent.utfs.org>
+References: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
+ <alpine.DEB.2.01.1211271916160.7378@trent.utfs.org>
+ <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
+ <alpine.DEB.2.01.1212011229400.7378@trent.utfs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,18 +43,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joerg Roedel wrote:
-> When you add implementation specific attributes please add some
-> indication to the names that it is only for PAMU. DOMAIN_ATTR_STASH
-> sounds too generic.
+On Sat, 2012-12-01 at 12:32 -0800, Christian Kujau wrote:
+> On Wed, 28 Nov 2012 at 16:41, Li Zhong wrote:
+> > On Tue, 2012-11-27 at 19:22 -0800, Christian Kujau wrote:
+> > > On Tue, 27 Nov 2012 at 19:06, Christian Kujau wrote:
+> > > > the same thing[0] happened again in 3.7-rc7, after ~20h uptime:
+> > > 
+> > > I found the following on patchwork, but this seems to deal with powerpc64 
+> > > only, while this PowerBook G4 of mine is powerpc32:
+> > > 
+> > >   http://patchwork.ozlabs.org/patch/193414/
+> > > 
+> > > It looks related, but then again, I fail to parse assember...
+> > 
+> > Hi Christian, 
+> > 
+> > Would you please help to try the following fix? I don't have a powerpc32
+> > machine for test...
+> 
+> After 3 days of uptime with your patch applied (and "normal" usage, just 
+> as before) no such BUG message occured. So, from my point of view, feel
+> free to add:
+> 
+>    Tested-by: Christian Kujau <lists@nerdbynature.de>
 
-We were thinking that maybe this attribute could be useful to other IOMMUs=
-=20
-in the future.  Stashing is not a concept that would only work on=20
-Freescale processors.
+Thank you, Christian. 
 
-But we'll change it if you insist.
+I'll try to submit a patch for it.
 
---=20
-Timur Tabi
-Linux kernel developer at Freescale=
+Thanks, Zhong
+
+> 
+> Thanks!
+> Christian.
+> 
+> > ==============================================
+> > diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> > index 9499385..cadebfd 100644
+> > --- a/arch/powerpc/kernel/entry_32.S
+> > +++ b/arch/powerpc/kernel/entry_32.S
+> > @@ -439,6 +439,8 @@ ret_from_fork:
+> >  ret_from_kernel_thread:
+> >  	REST_NVGPRS(r1)
+> >  	bl	schedule_tail
+> > +	li	r3,0
+> > +	stw	r3,0(r1)
+> >  	mtlr	r14
+> >  	mr	r3,r15
+> >  	PPC440EP_ERR42
+> > ==============================================
+> > 
+> > > 
+> > > Christian.
+> > > 
+> > > > [40007.339487] [sched_delayed] sched: RT throttling activated
+> > > > [69731.388717] BUG: MAX_STACK_TRACE_ENTRIES too low!
+> > > > [69731.390371] turning off the locking correctness validator.
+> > > > [69731.391942] Call Trace:
+> > > > [69731.393525] [c9a61c10] [c0009064] show_stack+0x70/0x1bc (unreliable)
+> > > > [69731.395152] [c9a61c50] [c0077460] save_trace+0xfc/0x114
+> > > > [69731.396735] [c9a61c60] [c007be20] __lock_acquire+0x1568/0x19b8
+> > > > [69731.398296] [c9a61d00] [c007c2c0] lock_acquire+0x50/0x70
+> > > > [69731.399857] [c9a61d20] [c0550e28] _raw_spin_lock_irq+0x5c/0x78
+> > > > [69731.401419] [c9a61d40] [c054fb58] __schedule+0xd8/0x534
+> > > > [69731.402972] [c9a61da0] [c0550094] _cond_resched+0x50/0x68
+> > > > [69731.404527] [c9a61db0] [c0479908] dst_gc_task+0xbc/0x258
+> > > > [69731.406070] [c9a61e40] [c004eeb8] process_one_work+0x1f4/0x49c
+> > > > [69731.407585] [c9a61e80] [c004f644] worker_thread+0x14c/0x400
+> > > > [69731.409075] [c9a61eb0] [c0057634] kthread+0xbc/0xc0
+> > > > [69731.410521] [c9a61f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+> > > > [...repeated 54 times...]
+> > > > 
+> > > > Anyone knows what this is about?
+> > > > 
+> > > > Thanks,
+> > > > Christian.
+> > > > 
+> > > > [0] http://lkml.indiana.edu/hypermail/linux/kernel/1211.0/03025.html
+> 
