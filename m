@@ -1,23 +1,28 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+Return-Path: <B16395@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 663362C0079
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 03:47:35 +1100 (EST)
-Date: Mon, 3 Dec 2012 10:47:08 -0600
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] KVM: PPC: Make EPCR a valid field for booke64 and bookehv
-To: Alexander Graf <agraf@suse.de>
-References: <1354370305-12344-1-git-send-email-agraf@suse.de>
-In-Reply-To: <1354370305-12344-1-git-send-email-agraf@suse.de> (from
- agraf@suse.de on Sat Dec  1 07:58:25 2012)
-Message-ID: <1354553228.2960.4@snotra>
+ by ozlabs.org (Postfix) with ESMTPS id 405B02C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 03:57:41 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: RE: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes required
+ by fsl PAMU driver.
+Date: Mon, 3 Dec 2012 16:57:29 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D2B2A51@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1353419697-31269-1-git-send-email-Varun.Sethi@freescale.com>
+ <1353419697-31269-4-git-send-email-Varun.Sethi@freescale.com>
+ <20121202140323.GO30633@8bytes.org>
+In-Reply-To: <20121202140323.GO30633@8bytes.org>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- "kvm@vger.kernel.org list" <kvm@vger.kernel.org>, kvm-ppc@vger.kernel.org
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,46 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/01/2012 07:58:25 AM, Alexander Graf wrote:
-> In BookE, EPCR is defined and valid when either the HV or the 64bit
-> category are implemented. Reflect this in the field definition.
->=20
-> Today the only KVM target on 64bit is HV enabled, so there is no
-> change in actual source code, but this keeps the code closer to the
-> spec and doesn't build up artificial road blocks for a PR KVM
-> on 64bit.
-[snip]
-> Signed-off-by: Alexander Graf <agraf@suse.de>
-> ---
->  arch/powerpc/include/asm/kvm_host.h |    9 +++++++--
->  1 files changed, 7 insertions(+), 2 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/kvm_host.h =20
-> b/arch/powerpc/include/asm/kvm_host.h
-> index 62fbd38..3480526 100644
-> --- a/arch/powerpc/include/asm/kvm_host.h
-> +++ b/arch/powerpc/include/asm/kvm_host.h
-> @@ -405,14 +405,19 @@ struct kvm_vcpu_arch {
->  #ifdef CONFIG_KVM_BOOKE_HV
->  	u32 host_mas4;
->  	u32 host_mas6;
-> -	u32 shadow_epcr;
-> -	u32 epcr;
->  	u32 shadow_msrp;
->  	u32 eplc;
->  	u32 epsc;
->  	u32 oldpir;
->  #endif
->=20
-> +#if defined(CONFIG_BOOKE)
-> +#if defined(CONFIG_KVM_BOOKE_HV) || defined(CONFIG_64BIT)
-> +	u32 shadow_epcr;
-> +	u32 epcr;
-> +#endif
-> +#endif
 
-On a PR-mode implementation, why would we be have a shadow_epcr?  It =20
-would always be set based on the host kernel, just like when running =20
-any other userspace process.
 
--Scott=
+> -----Original Message-----
+> From: iommu-bounces@lists.linux-foundation.org [mailto:iommu-
+> bounces@lists.linux-foundation.org] On Behalf Of Joerg Roedel
+> Sent: Sunday, December 02, 2012 7:33 PM
+> To: Sethi Varun-B16395
+> Cc: linux-kernel@vger.kernel.org; iommu@lists.linux-foundation.org; Wood
+> Scott-B07421; linuxppc-dev@lists.ozlabs.org; Tabi Timur-B04825
+> Subject: Re: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes
+> required by fsl PAMU driver.
+>=20
+> Hmm, we need to work out a good abstraction for this.
+>=20
+> On Tue, Nov 20, 2012 at 07:24:56PM +0530, Varun Sethi wrote:
+> > Added the following domain attributes required by FSL PAMU driver:
+> > 1. Subwindows field added to the iommu domain geometry attribute.
+>=20
+> Are the Subwindows mapped with full size or do you map only parts of the
+> subwindows?
+>=20
+[Sethi Varun-B16395] It's possible to map a part of the subwindow i.e. size=
+ of the mapping can be less than the sub window size.
+
+> > +	 * This attribute indicates number of DMA subwindows supported by
+> > +	 * the geometry. If there is a single window that maps the entire
+> > +	 * geometry, attribute must be set to "1". A value of "0" implies
+> > +	 * that this mechanism is not used at all(normal paging is used).
+> > +	 * Value other than* "0" or "1" indicates the actual number of
+> > +	 * subwindows.
+> > +	 */
+>=20
+> This semantic is ugly, how about a feature detection mechanism?
+>=20
+[Sethi Varun-B16395] A feature mechanism to query the type of IOMMU?
+
+-Varun
