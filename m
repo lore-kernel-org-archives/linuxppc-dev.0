@@ -3,13 +3,13 @@ Received: from bombadil.infradead.org (bombadil.infradead.org
  [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 019122C00A8
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 21:15:52 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B9F152C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 21:15:53 +1100 (EST)
 From: David Woodhouse <dwmw2@infradead.org>
 To: dwmw2@infradead.org
-Subject: [PATCH 4/4] x86: add CONFIG_X86_MOVBE option
-Date: Tue,  4 Dec 2012 10:15:30 +0000
-Message-Id: <1354616130-21587-5-git-send-email-dwmw2@infradead.org>
+Subject: [PATCH 2/4] powerpc: enable ARCH_USE_BUILTIN_BSWAP
+Date: Tue,  4 Dec 2012 10:15:28 +0000
+Message-Id: <1354616130-21587-3-git-send-email-dwmw2@infradead.org>
 In-Reply-To: <1354616130-21587-1-git-send-email-dwmw2@infradead.org>
 References: <1354616130-21587-1-git-send-email-dwmw2@infradead.org>
 Cc: linux-arch@vger.kernel.org, x86@kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -24,41 +24,33 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: David Woodhouse <David.Woodhouse@intel.com>
 
-Currently depends only on CONFIG_MATOM. This will change because big-core
-CPUs are getting movbe too...
+By using the compiler intrinsics instead of hand-crafted opaque inline
+assembler for byte-swapping, we let the compiler see what's actually
+happening and it gets to use lwbrx/stwbrx instructions instead of a
+normal load/store coupled with a sequence of rlwimi instructions to
+move bits around.
+
+Compiled-tested only. It gave a code size reduction of almost 4% for
+ext2, and more like 2.5% for ext3/ext4.
 
 Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 ---
- arch/x86/Kconfig.cpu | 4 ++++
- arch/x86/Makefile    | 1 +
- 2 files changed, 5 insertions(+)
+ arch/powerpc/Kconfig | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
-index f3b86d0..969f7a6 100644
---- a/arch/x86/Kconfig.cpu
-+++ b/arch/x86/Kconfig.cpu
-@@ -353,6 +353,10 @@ config X86_BSWAP
- 	def_bool y
- 	depends on X86_32 && !M386
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a902a5c..b4ea516 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -78,6 +78,9 @@ config ARCH_HAS_ILOG2_U64
+ 	bool
+ 	default y if 64BIT
  
-+config X86_MOVBE
-+	def_bool y
-+	depends on MATOM
++config ARCH_USE_BUILTIN_BSWAP
++       def_bool y
 +
- config X86_POPAD_OK
- 	def_bool y
- 	depends on X86_32 && !M386
-diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 05afcca..0e71d76 100644
---- a/arch/x86/Makefile
-+++ b/arch/x86/Makefile
-@@ -64,6 +64,7 @@ else
-                 $(call cc-option,-march=core2,$(call cc-option,-mtune=generic))
- 	cflags-$(CONFIG_MATOM) += $(call cc-option,-march=atom) \
- 		$(call cc-option,-mtune=atom,$(call cc-option,-mtune=generic))
-+        cflags-$(CONFIG_X86_MOVBE) += $(call cc-option,-mmovbe)
-         cflags-$(CONFIG_GENERIC_CPU) += $(call cc-option,-mtune=generic)
-         KBUILD_CFLAGS += $(cflags-y)
- 
+ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
 -- 
 1.8.0
