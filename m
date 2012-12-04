@@ -1,28 +1,21 @@
-Return-Path: <tangchen@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 13D9F2C007E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 21:32:18 +1100 (EST)
-Message-ID: <50BDD0F4.8040806@cn.fujitsu.com>
-Date: Tue, 04 Dec 2012 18:31:16 +0800
-From: Tang Chen <tangchen@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Wen Congyang <wency@cn.fujitsu.com>
-Subject: Re: [Patch v4 03/12] memory-hotplug: remove redundant codes
-References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
- <1354010422-19648-4-git-send-email-wency@cn.fujitsu.com>
- <50BDC0DE.4010103@cn.fujitsu.com>
-In-Reply-To: <50BDC0DE.4010103@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 976EB2C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 22:02:42 +1100 (EST)
+Date: Tue, 4 Dec 2012 22:02:32 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH 2/4] powerpc: enable ARCH_USE_BUILTIN_BSWAP
+Message-Id: <20121204220232.35c7ece1f96e20cd884106b6@canb.auug.org.au>
+In-Reply-To: <1354616130-21587-3-git-send-email-dwmw2@infradead.org>
+References: <1354616130-21587-1-git-send-email-dwmw2@infradead.org>
+ <1354616130-21587-3-git-send-email-dwmw2@infradead.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Tue__4_Dec_2012_22_02_32_+1100_7M+YI0MirPs/RTAJ"
+Cc: linux-arch@vger.kernel.org, x86@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,27 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/04/2012 05:22 PM, Tang Chen wrote:
-> On 11/27/2012 06:00 PM, Wen Congyang wrote:
->> offlining memory blocks and checking whether memory blocks are offlined
->> are very similar. This patch introduces a new function to remove
->> redundant codes.
->>
->> CC: David Rientjes<rientjes@google.com>
->> CC: Jiang Liu<liuj97@gmail.com>
->> CC: Len Brown<len.brown@intel.com>
->> CC: Christoph Lameter<cl@linux.com>
->> Cc: Minchan Kim<minchan.kim@gmail.com>
->> CC: Andrew Morton<akpm@linux-foundation.org>
->> CC: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
->> CC: Yasuaki Ishimatsu<isimatu.yasuaki@jp.fujitsu.com>
->> Signed-off-by: Wen Congyang<wency@cn.fujitsu.com>
->
-> Can we merge this patch with [PATCH 03/12] ?
+--Signature=_Tue__4_Dec_2012_22_02_32_+1100_7M+YI0MirPs/RTAJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Sorry, I think we can merge this patch into [PATCH 02/12].
-Thanks. :)
+Hi David,
 
+On Tue,  4 Dec 2012 10:15:28 +0000 David Woodhouse <dwmw2@infradead.org> wr=
+ote:
 >
-> Reviewed-by: Tang Chen <tangchen@cn.fujitsu.com>
->
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index a902a5c..b4ea516 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -78,6 +78,9 @@ config ARCH_HAS_ILOG2_U64
+>  	bool
+>  	default y if 64BIT
+> =20
+> +config ARCH_USE_BUILTIN_BSWAP
+> +       def_bool y
+> +
+
+This should be defined as bool in arch/Kconfig (probably in the previous
+patch) and then selected from appropriate architectures.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Tue__4_Dec_2012_22_02_32_+1100_7M+YI0MirPs/RTAJ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJQvdhIAAoJEECxmPOUX5FE5XQP/1Htprg35GkDr2wMNiY5sH6D
+5d+BlOeEvlEkWXew4ytPkyPWRuL5OSf01/dOPgVtrC1xhIZtH8dqHB+GlXGCUT+X
+WAr3zYABvHW/vFkjR5E26FFpN2VzwUlzZVl1RMbLajlFkm4dv8ORcW+nbfEQpONM
+S4FQ7t1bmG/8VVkGMX43o50uGgrNP0QfdGOnIEmCoI34F10viVNWlfyLtwXoFFWR
+/HP3riiLN9WNjtuTCbA+2W9v8doy7ZPtObrDR3/gAVrcJeo7zRcw7wwSLspCVK6U
+ZROQNfbNri8T5ZUp4hIH3/1Kvvs3CsCcBDR9/se+ythSOD9laV+HQyyCS+0zUHky
+sg6PrH8/+dpHwBYW7zHAJFTjNk7plbxluTw7VynQyvUc+42wg9pGglMkfChhKK1K
+A6YXmkgmWG9DKpuG2lplBziS96CKjQIVRsa1GOkofS9lvj/o4deh+oHYV2weiNG6
+OHe2NGQTpxnI6d07p9bZHyvcZmmmUTvddh1r1cdgzrmZiVWob42eIPZRC0252DSi
+B5AAncjilaw8Sb1TWKWl7LrE69thazqKIRDcyHDrgqm5RaSwtfojC80TJNa/ZoTq
+kmmj8W5M6zXA2c/SxxOxlDWyb+1ufMJhXDCYSr12aSLWy9FXYp+MxhCVUYr/vzle
+sPICbn+NO9O5rCwm+MoZ
+=k775
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__4_Dec_2012_22_02_32_+1100_7M+YI0MirPs/RTAJ--
