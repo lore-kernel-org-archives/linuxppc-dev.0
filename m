@@ -1,26 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 1BE642C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 11:05:53 +1100 (EST)
-Date: Tue, 4 Dec 2012 11:05:46 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jon Hunter <jon-hunter@ti.com>
-Subject: Re: omap2plus_defconfig fails to build
-Message-Id: <20121204110546.61973b83030490faa62848a0@canb.auug.org.au>
-In-Reply-To: <50BD37FA.2090501@ti.com>
-References: <CAAfyv37BA4YMRFJsN5n7EeAD7iE3hzQ2PDqBAtqCju7JdxrvTA@mail.gmail.com>
- <20121204102631.3d8d41e3e8a8c0eb71734e55@canb.auug.org.au>
- <50BD37FA.2090501@ti.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Tue__4_Dec_2012_11_05_46_+1100_0hMzYol8m8XgOm3p"
-Cc: Arnd Bergmann <arnd@arndb.de>, Tony Lindgren <tony@atomide.com>,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Belisko Marek <marek.belisko@gmail.com>, Olof Johansson <olof@lixom.net>,
- Nathan Fontenot <nfont@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <xenidis@gmail.com>
+Received: from mail-ob0-f179.google.com (mail-ob0-f179.google.com
+ [209.85.214.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 67B1E2C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 14:05:52 +1100 (EST)
+Received: by mail-ob0-f179.google.com with SMTP id x4so3101935obh.38
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Dec 2012 19:05:49 -0800 (PST)
+Sender: Jimi Xenidis <xenidis@gmail.com>
+From: Jimi Xenidis <jimix@pobox.com>
+Content-Type: text/plain; charset=us-ascii
+Subject: [RFC PATCH] powerpc/kexec: Add kexec "hold" support for Book3e
+ processors
+Date: Mon, 3 Dec 2012 21:05:47 -0600
+Message-Id: <B03278DC-EB22-4335-BACD-4C585856ED15@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Kumar Gala <kumar.gala@gmail.com>
+Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,76 +27,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Tue__4_Dec_2012_11_05_46_+1100_0hMzYol8m8XgOm3p
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Motivation:
+IBM Blue Gene/Q comes with some very strange firmware that I'm trying to =
+get out of using in the kernel.  So instead I spin all the threads in =
+the boot wrapper (using the firmware) and have them enter the kexec =
+stub, pre-translated at the virtual "linear" address, never touching =
+firmware again.
+This works strategy works wonderfully, but I need the following patch in =
+the kexec stub.
+I believe it should not effect Book3S and Book3E does not appear to be =
+here yet so I'd love to get any criticisms up front.=20
 
-On Mon, 3 Dec 2012 17:38:34 -0600 Jon Hunter <jon-hunter@ti.com> wrote:
->
-> On 12/03/2012 05:26 PM, Stephen Rothwell wrote:
-> >=20
-> > On Thu, 29 Nov 2012 11:40:18 +0100 Belisko Marek <marek.belisko@gmail.c=
-om> wrote:
-> >>
-> >> I've update linux-next to next-20121129 and omap2plus_defconfig fails =
-to build:
-> >> arch/arm/mach-omap2/timer.c: In function 'omap_get_timer_dt':
-> >> arch/arm/mach-omap2/timer.c:195: error: implicit declaration of
-> >> function 'prom_add_property'
-> >=20
-> > Caused by commit 9725f4451a9c ("ARM: OMAP: Add DT support for timer
-> > driver") from the arm-soc tree interacting with commit 79d1c712958f
-> > ("powerpc+of: Rename the drivers/of prom_* functions to of_*") from the
-> > powerpc tree.
-> >=20
-> > I will fix this up in today' linux-next (by changing prom_add_property =
-to
-> > of_add_property).  Someone will need to remember to tell Linus when the
-> > latter of those two commits gets merged.
->=20
-> Just to let you know there is a patch available for this problem [1].
->=20
-> Tony, Olof, Arnd, not sure how you guys wish to handle this one.
+This patch adds two items:
+1) Book3e requires that GPR4 survive the "hold" process, so we make
+   sure that happens.
+2) Book3e has no real mode, and the hold code exploits this.  Since
+   these processors ares always translated, we arrange for the kexeced
+   threads to enter the hold code using the normal kernel linear =
+mapping.
 
-They just really need to send this to Linus along with the pull request,
-or Ben does, depending on who gets in first.
+Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+---
+ arch/powerpc/kernel/head_64.S |   19 ++++++++++++++++++-
+ 1 files changed, 18 insertions(+), 1 deletions(-)
 
->=20
-> Cheers
-> Jon
->=20
-> [1] http://www.spinics.net/lists/arm-kernel/msg210179.html
-
-I will apply this to the arm-soc merge in linux-next today.  The error
-will only happen the linux-next at the moment.  Thanks for the pointer -
-I actually fished it out of patchwork.
-
+diff --git a/arch/powerpc/kernel/head_64.S =
+b/arch/powerpc/kernel/head_64.S
+index 58bddee..1b00e95 100644
+--- a/arch/powerpc/kernel/head_64.S
++++ b/arch/powerpc/kernel/head_64.S
+@@ -122,6 +122,8 @@ __secondary_hold:
+ #endif
+ 	/* Grab our physical cpu number */
+ 	mr	r24,r3
++	/* stash r4 for book3e */
++	mr	r25,r4
+=20
+ 	/* Tell the master cpu we're here */
+ 	/* Relocation is off & we are located at an address less */
+@@ -129,16 +131,31 @@ __secondary_hold:
+ 	std	r24,__secondary_hold_acknowledge-_stext(0)
+ 	sync
+=20
++	li	r26,0
++#ifdef CONFIG_PPC_BOOK3E
++	tovirt(r26,r26)
++#endif
+ 	/* All secondary cpus wait here until told to start. */
+-100:	ld	r4,__secondary_hold_spinloop-_stext(0)
++100:	ld	r4,__secondary_hold_spinloop-_stext(r26)
+ 	cmpdi	0,r4,0
+ 	beq	100b
+=20
+ #if defined(CONFIG_SMP) || defined(CONFIG_KEXEC)
++#ifdef CONFIG_PPC_BOOK3E
++	tovirt(r4,r4)
++#endif
+ 	ld	r4,0(r4)		/* deref function descriptor */
+ 	mtctr	r4
+ 	mr	r3,r24
++	/*
++	 * it may be the case that other platforms have r4 right to
++	 * begin with, this gives us some safety in case it is not
++	 */
++#ifdef CONFIG_PPC_BOOK3E
++	mr	r4,r25
++#else
+ 	li	r4,0
++#endif
+ 	/* Make sure that patched code is visible */
+ 	isync
+ 	bctr
 --=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+1.7.1
 
---Signature=_Tue__4_Dec_2012_11_05_46_+1100_0hMzYol8m8XgOm3p
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJQvT5aAAoJEECxmPOUX5FEKJ4P/Rq21lNKmq2jXKOKMCLiDSli
-P6t7v7SfFlfTe7ZLKaSgWWTvvo5taOe4VNUHrWL1sw/RjVxqSKzLyQib13FYozVM
-tgpgvwf9vouBEbTpAms3/ANiDoD4k+li3rFA0doTLvQh4dj0opFLwX6WaFsO2Dz5
-Mc0vyxkniljkUC4zGofPAPNXq4eXhc+W7VSO890+vvA8a4zQFz4VxyPiQ0SViJFQ
-Wvqf2YnUbvaYf0Fs7Ql6+FE3+pWLXYd79FQsBXiVYNZeFT6Teh0NlKBDPvByzYXF
-wHuqFIAp2wkUldXtuY65DDb/Z/PrS4ctjBEPKcf27k/RMoIGnZ1cmxMJ9Xgo6MfK
-4u/PurYyPkMIrLcmvUECj0jxrOY2J/g3/oj/jr2qZxA5fcp+FBY5KggWh5bXntet
-dWMnBQ+oRae4OEmQJbz43inSDlIdBEeUC8ojN20aDIedtP1wd8tvlbxtwv7Sdk5V
-OeZAsT/h9wfm2G40sjGhKzYRkqaJEIAcKyIOdyjp+nijQSNR2gQezHeMZtoCVdYO
-huVxzvAP5CfDaaq6/ft/qkr05BwdvboyAhqhQxZ7ZxXTDRpcGW10y09jfN9+a8JJ
-6Nf9jvWx8lZwd7+QmCF0qeXhfpBXuKA6L726XnoN0yHlwbL/IzEHcZ260AHjGUnI
-kIm6+seJfRQEtIbxESLO
-=LFyp
------END PGP SIGNATURE-----
-
---Signature=_Tue__4_Dec_2012_11_05_46_+1100_0hMzYol8m8XgOm3p--
+freakazoid:bgq=20=
