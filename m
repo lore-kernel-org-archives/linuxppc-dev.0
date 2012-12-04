@@ -1,28 +1,18 @@
-Return-Path: <tangchen@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id AA4072C03DD
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 21:11:12 +1100 (EST)
-Message-ID: <50BDCC05.7090800@cn.fujitsu.com>
-Date: Tue, 04 Dec 2012 18:10:13 +0800
-From: Tang Chen <tangchen@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Wen Congyang <wency@cn.fujitsu.com>
-Subject: Re: [Patch v4 12/12] memory-hotplug: free node_data when a node is
- offlined
-References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
- <1354010422-19648-13-git-send-email-wency@cn.fujitsu.com>
-In-Reply-To: <1354010422-19648-13-git-send-email-wency@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- cmetcalf@tilera.com, Jianguo Wu <wujianguo@huawei.com>, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
+Return-Path: <BATV+bfa31428277ec1635a02+3390+infradead.org+dwmw2@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E5C4B2C00A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Dec 2012 21:15:52 +1100 (EST)
+From: David Woodhouse <dwmw2@infradead.org>
+To: dwmw2@infradead.org
+Subject: [PATCH 3/4] x86: enable ARCH_USE_BUILTIN_BSWAP
+Date: Tue,  4 Dec 2012 10:15:29 +0000
+Message-Id: <1354616130-21587-4-git-send-email-dwmw2@infradead.org>
+In-Reply-To: <1354616130-21587-1-git-send-email-dwmw2@infradead.org>
+References: <1354616130-21587-1-git-send-email-dwmw2@infradead.org>
+Cc: linux-arch@vger.kernel.org, x86@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,65 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/27/2012 06:00 PM, Wen Congyang wrote:
-> We call hotadd_new_pgdat() to allocate memory to store node_data. So we
-> should free it when removing a node.
->
-> CC: David Rientjes<rientjes@google.com>
-> CC: Jiang Liu<liuj97@gmail.com>
-> CC: Len Brown<len.brown@intel.com>
-> CC: Benjamin Herrenschmidt<benh@kernel.crashing.org>
-> CC: Paul Mackerras<paulus@samba.org>
-> CC: Christoph Lameter<cl@linux.com>
-> Cc: Minchan Kim<minchan.kim@gmail.com>
-> CC: Andrew Morton<akpm@linux-foundation.org>
-> CC: KOSAKI Motohiro<kosaki.motohiro@jp.fujitsu.com>
-> CC: Yasuaki Ishimatsu<isimatu.yasuaki@jp.fujitsu.com>
-> Signed-off-by: Wen Congyang<wency@cn.fujitsu.com>
+From: David Woodhouse <David.Woodhouse@intel.com>
 
-Reviewed-by: Tang Chen <tangchen@cn.fujitsu.com>
+With -mmovbe enabled (implicit with -march=atom), this allows the
+compiler to use the movbe instruction. This doesn't have a significant
+effect on code size (unlike on PowerPC), because the movbe instruction
+actually takes as many bytes to encode as a simple mov and a bswap. But
+for Atom in particular I believe it should give a performance win over
+the mov+bswap alternative. That was kind of why movbe was invented in
+the first place, after all...
 
-> ---
->   mm/memory_hotplug.c | 20 +++++++++++++++++++-
->   1 file changed, 19 insertions(+), 1 deletion(-)
->
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 449663e..d1451ab 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -1309,9 +1309,12 @@ static int check_cpu_on_node(void *data)
->   /* offline the node if all memory sections of this node are removed */
->   static void try_offline_node(int nid)
->   {
-> +	pg_data_t *pgdat = NODE_DATA(nid);
->   	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
-> -	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
-> +	unsigned long end_pfn = start_pfn + pgdat->node_spanned_pages;
->   	unsigned long pfn;
-> +	struct page *pgdat_page = virt_to_page(pgdat);
-> +	int i;
->
->   	for (pfn = start_pfn; pfn<  end_pfn; pfn += PAGES_PER_SECTION) {
->   		unsigned long section_nr = pfn_to_section_nr(pfn);
-> @@ -1338,6 +1341,21 @@ static void try_offline_node(int nid)
->   	 */
->   	node_set_offline(nid);
->   	unregister_one_node(nid);
-> +
-> +	if (!PageSlab(pgdat_page)&&  !PageCompound(pgdat_page))
-> +		/* node data is allocated from boot memory */
-> +		return;
-> +
-> +	/* free waittable in each zone */
-> +	for (i = 0; i<  MAX_NR_ZONES; i++) {
-> +		struct zone *zone = pgdat->node_zones + i;
-> +
-> +		if (zone->wait_table)
-> +			vfree(zone->wait_table);
-> +	}
-> +
-> +	arch_refresh_nodedata(nid, NULL);
-> +	arch_free_nodedata(pgdat);
->   }
->
->   int __ref remove_memory(int nid, u64 start, u64 size)
+I've done basic functionality testing with IPv6 and Legacy IP, but no
+performance testing. The EFI firmware on my test box unfortunately no
+longer starts up.
+
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+---
+ arch/x86/Kconfig | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 46c3bff..238f2ea 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -194,6 +194,9 @@ config ARCH_HAS_CACHE_LINE_SIZE
+ config ARCH_HAS_CPU_AUTOPROBE
+ 	def_bool y
+ 
++config ARCH_USE_BUILTIN_BSWAP
++	def_bool y
++
+ config HAVE_SETUP_PER_CPU_AREA
+ 	def_bool y
+ 
+-- 
+1.8.0
