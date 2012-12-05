@@ -1,20 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id F1F462C00BA
- for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2012 17:12:42 +1100 (EST)
-Received: from telerig.nabble.com ([192.168.236.162])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <bounces@nabble.com>) id 1Tg7yG-0004mH-MP
- for linuxppc-dev@ozlabs.org; Tue, 04 Dec 2012 21:56:36 -0800
-Message-ID: <34760537.post@talk.nabble.com>
-Date: Tue, 4 Dec 2012 21:56:36 -0800 (PST)
-From: Pegasus11 <aijazbaig1.new@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Understanding how kernel updates MMU hash table
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by ozlabs.org (Postfix) with ESMTPS id 23FB62C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2012 18:18:15 +1100 (EST)
+Message-ID: <1354691878.2351.2.camel@pasglop>
+Subject: Re: [linuxppc-release][PATCH] powerpc/pci-hotplug: fix init issue
+ of rescanned pci device
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Yuanquan Chen <B41889@freescale.com>
+Date: Wed, 05 Dec 2012 18:17:58 +1100
+In-Reply-To: <1354674717-14426-1-git-send-email-B41889@freescale.com>
+References: <1354674717-14426-1-git-send-email-B41889@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, r61911@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,62 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, 2012-12-05 at 10:31 +0800, Yuanquan Chen wrote:
+> On powerpc arch, some fixup work of PCI/PCI-e device is just done during the
+> first scan at booting time. For the PCI/PCI-e device rescanned after linux OS
+> booting up, the fixup work won't be done, which leads to dma_set_mask error or
+> irq related issue in rescanned PCI/PCI-e device's driver. So, it does the same
+> fixup work for the rescanned device to avoid this issue.
 
-Hello.
+Hrm, the patch is a bit gross. First the code shouldn't be copy/pasted
+that way but factored out.
 
-Ive been trying to understand how an hash PTE is updated. Im on a PPC970MP
-machine which using the IBM PowerPC 604e core. My Linux version is 2.6.10 (I
-am sorry I cannot migrate at the moment. Management issues and I can't help
-:-(( )
+I'm surprised also that is_added is false when pcibios_enable_device()
+gets called ... that looks strange to me. At what point is that enable
+happening in the hotplug sequence ?
 
-Now onto the problem:
-hpte_update is invoked to sync the on-chip MMU cache which Linux uses as its
-TLB. So whenever a change is made to the PTE, it has to be propagated to the
-corresponding TLB entry. And this uses hpte_update for the same. Am I right
-here?
+How do you trigger the rescan anyway ?
 
-Now  http://lxr.linux.no/linux-bk+*/+code=hpte_update hpte_update  is
-declared as
- 
-' void hpte_update(pte_t *ptep, unsigned long pte, int wrprot) '. 
-The arguments to this function is a POINTER to the PTE entry (needed to make
-a change persistent across function call right?), the PTE entry (as in the
-value) as well the wrprot flag.
+I think the problem needs to be solve at a higher level, I'm adding
+linux-pci & Bjorn to the CC list.
 
-Now the code snippet thats bothering me is this:
-'
-  86        ptepage = virt_to_page(ptep);
-  87        mm = (struct mm_struct *) ptepage->mapping;
-  88        addr = ptepage->index +
-  89                (((unsigned long)ptep & ~PAGE_MASK) * PTRS_PER_PTE);
-'
+Cheers,
+Ben.
 
-On line 86, we get the page structure for a given PTE but we pass the
-pointer to PTE not the PTE itself whereas virt_to_page is a macro defined
-as:
-
-#define virt_to_page(kaddr)   pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
-
-Why are passing the POINTER to pte here? I mean are we looking for the PAGE
-that is described by the PTE or are we looking for the PAGE which contains
-the pointer to PTE? Me things it is the later since the former is given by
-the VALUE of the PTE not its POINTER. Right?
-
-So if it indeed the later, what trickery are we here after? Perhaps
-following the snippet will make us understand? As I see from above, after
-that we get the 'address space object' associated with this page. 
-
-What I don't understand is the following line:
- addr = ptepage->index + (((unsigned long)ptep & ~PAGE_MASK) *
-PTRS_PER_PTE);
-
-First we get the index of the page in the file i.e. the number of pages
-preceding the page which holds the address of PTEP. Then we get the lower 12
-bits of this page. Then we shift that these bits to the left by 12 again and
-to it we add the above index. What is this doing?
-
-There are other things in this function that I do not understand. I'd be
-glad if someone could give me a heads up on this.
--- 
-View this message in context: http://old.nabble.com/Understanding-how-kernel-updates-MMU-hash-table-tp34760537p34760537.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> Signed-off-by: Yuanquan Chen <B41889@freescale.com>
+> ---
+>  arch/powerpc/kernel/pci-common.c |   20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+> 
+> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> index 7f94f76..f0fb070 100644
+> --- a/arch/powerpc/kernel/pci-common.c
+> +++ b/arch/powerpc/kernel/pci-common.c
+> @@ -1496,6 +1496,26 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
+>  		if (ppc_md.pcibios_enable_device_hook(dev))
+>  			return -EINVAL;
+>  
+> +	if (!dev->is_added) {
+> +		/* 
+> +		 * Fixup NUMA node as it may not be setup yet by the generic
+> +		 * code and is needed by the DMA init
+> +		 */
+> +		set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
+> +
+> +		/* Hook up default DMA ops */
+> +		set_dma_ops(&dev->dev, pci_dma_ops);
+> +		set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
+> +
+> +		/* Additional platform DMA/iommu setup */
+> +		if (ppc_md.pci_dma_dev_setup)
+> +			ppc_md.pci_dma_dev_setup(dev);
+> +
+> +		/* Read default IRQs and fixup if necessary */
+> +		pci_read_irq_line(dev);
+> +		if (ppc_md.pci_irq_fixup)
+> +			ppc_md.pci_irq_fixup(dev);
+> +	}
+>  	return pci_enable_resources(dev, mask);
+>  }
+>  
