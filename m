@@ -1,30 +1,20 @@
-Return-Path: <wujianguo@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- by ozlabs.org (Postfix) with ESMTP id C6DCE2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2012 14:23:51 +1100 (EST)
-Message-ID: <50BEBE35.4040807@huawei.com>
-Date: Wed, 5 Dec 2012 11:23:33 +0800
-From: Jianguo Wu <wujianguo@huawei.com>
+Return-Path: <bounces@nabble.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id F1F462C00BA
+ for <linuxppc-dev@ozlabs.org>; Wed,  5 Dec 2012 17:12:42 +1100 (EST)
+Received: from telerig.nabble.com ([192.168.236.162])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <bounces@nabble.com>) id 1Tg7yG-0004mH-MP
+ for linuxppc-dev@ozlabs.org; Tue, 04 Dec 2012 21:56:36 -0800
+Message-ID: <34760537.post@talk.nabble.com>
+Date: Tue, 4 Dec 2012 21:56:36 -0800 (PST)
+From: Pegasus11 <aijazbaig1.new@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Understanding how kernel updates MMU hash table
 MIME-Version: 1.0
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Subject: Re: [Patch v4 08/12] memory-hotplug: remove memmap of sparse-vmemmap
-References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
- <1354010422-19648-9-git-send-email-wency@cn.fujitsu.com>
- <50B5DC00.20103@huawei.com> <50B80FB1.6040906@cn.fujitsu.com>
- <50BC0D2D.8040008@huawei.com> <50BDBEB7.3070807@cn.fujitsu.com>
- <50BDEA82.4050809@huawei.com> <50BEAC66.8020500@cn.fujitsu.com>
-In-Reply-To: <50BEAC66.8020500@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,74 +24,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tang,
 
-On 2012/12/5 10:07, Tang Chen wrote:
+Hello.
 
-> Hi Wu,
-> 
-> On 12/04/2012 08:20 PM, Jianguo Wu wrote:
-> (snip)
->>>
->>> Seems that we have different ways to handle pages allocated by bootmem
->>> or by regular allocator. Is the checking way in [PATCH 09/12] available
->>> here ?
->>>
->>> +    /* bootmem page has reserved flag */
->>> +    if (PageReserved(page)) {
->>> ......
->>> +    }
->>>
->>> If so, I think we can just merge these two functions.
->>
->> Hmm, direct mapping table isn't allocated by bootmem allocator such as memblock, can't be free by put_page_bootmem().
->> But I will try to merge these two functions.
->>
-> 
-> Oh, I didn't notice this, thanks. :)
-> 
-> (snip)
-> 
->>>> +
->>>> +    __split_large_page(kpte, address, pbase);
->>>
->>> Is this patch going to replace [PATCH 08/12] ?
->>>
->>
->> I wish to replace [PATCH 08/12], but need Congyang and Yasuaki to confirm first:)
->>
->>> If so, __split_large_page() was added and exported in [PATCH 09/12],
->>> then we should move it here, right ?
->>
->> yes.
->>
->> and what do you think about moving vmemmap_pud[pmd/pte]_remove() to arch/x86/mm/init_64.c,
->> to be consistent with vmemmap_populate() ?
-> 
-> It is a good idea since pud/pmd/pte related code could be platform
-> dependent. And I'm also trying to move vmemmap_free() to
-> arch/x86/mm/init_64.c too. I want to have a common interface just
-> like vmemmap_populate(). :)
-> 
+Ive been trying to understand how an hash PTE is updated. Im on a PPC970MP
+machine which using the IBM PowerPC 604e core. My Linux version is 2.6.10 (I
+am sorry I cannot migrate at the moment. Management issues and I can't help
+:-(( )
 
-Great.
+Now onto the problem:
+hpte_update is invoked to sync the on-chip MMU cache which Linux uses as its
+TLB. So whenever a change is made to the PTE, it has to be propagated to the
+corresponding TLB entry. And this uses hpte_update for the same. Am I right
+here?
 
->>
->> I will rework [PATCH 08/12] and [PATCH 09/12] soon.
-> 
-> I am rebasing the whole patch set now. And I think I chould finish part
-> of your work too. A new patch-set is coming soon, and your rework is
-> also welcome. :)
->
+Now  http://lxr.linux.no/linux-bk+*/+code=hpte_update hpte_update  is
+declared as
+ 
+' void hpte_update(pte_t *ptep, unsigned long pte, int wrprot) '. 
+The arguments to this function is a POINTER to the PTE entry (needed to make
+a change persistent across function call right?), the PTE entry (as in the
+value) as well the wrprot flag.
 
-Since you are rebasing now, I will wait for your new patche-set :).
+Now the code snippet thats bothering me is this:
+'
+  86        ptepage = virt_to_page(ptep);
+  87        mm = (struct mm_struct *) ptepage->mapping;
+  88        addr = ptepage->index +
+  89                (((unsigned long)ptep & ~PAGE_MASK) * PTRS_PER_PTE);
+'
 
-Thanks.
-Jianguo Wu
+On line 86, we get the page structure for a given PTE but we pass the
+pointer to PTE not the PTE itself whereas virt_to_page is a macro defined
+as:
 
-> Thanks. :)
-> 
-> 
-> 
-> .
-> 
+#define virt_to_page(kaddr)   pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
+
+Why are passing the POINTER to pte here? I mean are we looking for the PAGE
+that is described by the PTE or are we looking for the PAGE which contains
+the pointer to PTE? Me things it is the later since the former is given by
+the VALUE of the PTE not its POINTER. Right?
+
+So if it indeed the later, what trickery are we here after? Perhaps
+following the snippet will make us understand? As I see from above, after
+that we get the 'address space object' associated with this page. 
+
+What I don't understand is the following line:
+ addr = ptepage->index + (((unsigned long)ptep & ~PAGE_MASK) *
+PTRS_PER_PTE);
+
+First we get the index of the page in the file i.e. the number of pages
+preceding the page which holds the address of PTEP. Then we get the lower 12
+bits of this page. Then we shift that these bits to the left by 12 again and
+to it we add the above index. What is this doing?
+
+There are other things in this function that I do not understand. I'd be
+glad if someone could give me a heads up on this.
+-- 
+View this message in context: http://old.nabble.com/Understanding-how-kernel-updates-MMU-hash-table-tp34760537p34760537.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
