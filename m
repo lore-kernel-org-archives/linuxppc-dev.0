@@ -1,20 +1,22 @@
-Return-Path: <RAT063@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D66E42C00BF
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2012 09:33:15 +1100 (EST)
-From: Chris Freehill <chrisf@freescale.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc/perf: Add stalled-cycles events
-Date: Wed, 5 Dec 2012 16:32:46 -0600
-Message-ID: <1354746766-29662-1-git-send-email-chrisf@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org, paulus@au.ibm.com,
- chrisf@freescale.com
+Return-Path: <grant.likely@secretlab.ca>
+Received: from mail-wg0-f47.google.com (mail-wg0-f47.google.com [74.125.82.47])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 01C782C0156
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2012 10:37:05 +1100 (EST)
+Received: by mail-wg0-f47.google.com with SMTP id dq11so3333211wgb.14
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2012 15:37:02 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH -next] TTY: hvsi: use for_each_compatible_node() macro
+To: Wei Yongjun <weiyj.lk@gmail.com>, gregkh@linuxfoundation.org,
+ rob.herring@calxeda.com
+In-Reply-To: <CAPgLHd-bpkWo6PeKrB1VqCiYMxCvphvMbs34Raoh89Wm0ubK-A@mail.gmail.com>
+References: <CAPgLHd-bpkWo6PeKrB1VqCiYMxCvphvMbs34Raoh89Wm0ubK-A@mail.gmail.com>
+Date: Wed, 05 Dec 2012 23:36:58 +0000
+Message-Id: <20121205233658.5DCC23E0E22@localhost>
+Cc: yongjun_wei@trendmicro.com.cn, linuxppc-dev@lists.ozlabs.org,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,34 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Support for stalled-cycles-frontend and stalled-cycles-backend is
-added for e500-based processors. 
+On Tue, 4 Dec 2012 00:16:18 -0500, Wei Yongjun <weiyj.lk@gmail.com> wrote:
+> From: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
+> 
+> Use for_each_compatible_node() macro instead of open coding it.
+> 
+> Signed-off-by: Wei Yongjun <yongjun_wei@trendmicro.com.cn>
 
-The following mappings are used:
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-stalled-cycles-frontend or idle-cycles-frontend:
-Com:18 Cycles decode stalled
+> ---
+>  drivers/tty/hvc/hvsi.c | 4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+> 
+> diff --git a/drivers/tty/hvc/hvsi.c b/drivers/tty/hvc/hvsi.c
+> index 5b95b4f..70e0ef7 100644
+> --- a/drivers/tty/hvc/hvsi.c
+> +++ b/drivers/tty/hvc/hvsi.c
+> @@ -1187,9 +1187,7 @@ static int __init hvsi_console_init(void)
+>  	hvsi_wait = poll_for_state; /* no irqs yet; must poll */
+>  
+>  	/* search device tree for vty nodes */
+> -	for (vty = of_find_compatible_node(NULL, "serial", "hvterm-protocol");
+> -			vty != NULL;
+> -			vty = of_find_compatible_node(vty, "serial", "hvterm-protocol")) {
+> +	for_each_compatible_node(vty, "serial", "hvterm-protocol") {
+>  		struct hvsi_struct *hp;
+>  		const uint32_t *vtermno, *irq;
+>  
+> 
+> 
 
-stalled-cycles-backend or idle-cycles-backend
-Com:19 cycles issue stalled
-
-Signed-off-by: Chris Freehill <chrisf@freescale.com>
----
- arch/powerpc/perf/e500-pmu.c |    2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/powerpc/perf/e500-pmu.c b/arch/powerpc/perf/e500-pmu.c
-index cb2e294..fb66492 100644
---- a/arch/powerpc/perf/e500-pmu.c
-+++ b/arch/powerpc/perf/e500-pmu.c
-@@ -24,6 +24,8 @@ static int e500_generic_events[] = {
- 	[PERF_COUNT_HW_CACHE_MISSES] = 41, /* Data L1 cache reloads */
- 	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] = 12,
- 	[PERF_COUNT_HW_BRANCH_MISSES] = 15,
-+	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] = 18,
-+	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] = 19,
- };
- 
- #define C(x)	PERF_COUNT_HW_CACHE_##x
 -- 
-1.7.9.5
+Grant Likely, B.Sc, P.Eng.
+Secret Lab Technologies, Ltd.
