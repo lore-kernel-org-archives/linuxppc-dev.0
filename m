@@ -1,22 +1,26 @@
-Return-Path: <bounces@nabble.com>
-Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BF66F2C009B
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2012 04:14:26 +1100 (EST)
-Received: from telerig.nabble.com ([192.168.236.162])
- by sam.nabble.com with esmtp (Exim 4.72)
- (envelope-from <bounces@nabble.com>) id 1TgIYB-0007YR-GF
- for linuxppc-dev@ozlabs.org; Wed, 05 Dec 2012 09:14:23 -0800
-Message-ID: <34762800.post@talk.nabble.com>
-Date: Wed, 5 Dec 2012 09:14:23 -0800 (PST)
-From: Pegasus11 <aijazbaig1.new@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Understanding how kernel updates MMU hash table
-In-Reply-To: <1354695642.2351.8.camel@pasglop>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-la0-f51.google.com (mail-la0-f51.google.com
+ [209.85.215.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4EE482C00DC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2012 08:31:00 +1100 (EST)
+Received: by mail-la0-f51.google.com with SMTP id e4so4296737lag.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Dec 2012 13:30:55 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <34760537.post@talk.nabble.com> <1354695642.2351.8.camel@pasglop>
+In-Reply-To: <50BF13E1.1000009@freescale.com>
+References: <1354674717-14426-1-git-send-email-B41889@freescale.com>
+ <1354691878.2351.2.camel@pasglop> <50BF03C1.2070304@freescale.com>
+ <1354695989.2351.13.camel@pasglop> <50BF13E1.1000009@freescale.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Wed, 5 Dec 2012 14:30:35 -0700
+Message-ID: <CAErSpo6mCm79m87MchL=Y1jxxgZ2Mio8d2L+Sg8CLvxRKue8sg@mail.gmail.com>
+Subject: Re: [linuxppc-release][PATCH] powerpc/pci-hotplug: fix init issue of
+ rescanned pci device
+To: Chen Yuanquan-B41889 <B41889@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: =?UTF-8?B?5p2+5pys5Y2a6YOO?= <matsumoto.hiroo@jp.fujitsu.com>,
+ linux-pci@vger.kernel.org, r61911@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,158 +30,161 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, Dec 5, 2012 at 2:29 AM, Chen Yuanquan-B41889
+<B41889@freescale.com> wrote:
+> On 12/05/2012 04:26 PM, Benjamin Herrenschmidt wrote:
+>>
+>> On Wed, 2012-12-05 at 16:20 +0800, Chen Yuanquan-B41889 wrote:
+>>>
+>>> On 12/05/2012 03:17 PM, Benjamin Herrenschmidt wrote:
+>>>>
+>>>> On Wed, 2012-12-05 at 10:31 +0800, Yuanquan Chen wrote:
+>>>>>
+>>>>> On powerpc arch, some fixup work of PCI/PCI-e device is just done
+>>>>> during the
+>>>>> first scan at booting time. For the PCI/PCI-e device rescanned after
+>>>>> linux OS
+>>>>> booting up, the fixup work won't be done, which leads to dma_set_mask
+>>>>> error or
+>>>>> irq related issue in rescanned PCI/PCI-e device's driver. So, it does
+>>>>> the same
+>>>>> fixup work for the rescanned device to avoid this issue.
+>>>>
+>>>> Hrm, the patch is a bit gross. First the code shouldn't be copy/pasted
+>>>> that way but factored out.
+>>
+>> Please, at least format your email properly so I can try to undertand
+>> without needing aspirin.
+>>
+>>> There's a judgement "if (!bus->is_added)" before calling of
+>>> pcibios_fixup_bus in pci_scan_child_bus, so for the rescanned device,
+>>> the fixup won't execute, which leads to fatal error in driver of
+>>> rescanned
+>>> device on freescale  powerpc, no this issues on x86 arch.
+>>
+>> First, none of that invalidates my statement that you shouldn't
+>> duplicate a whole block of code like this. Even if your approach is
+>> correct (which is debated separately), at the very least you should
+>> factor the code out into a common function between the two copies.
+>>
+>>> Remove the judgement, let it to do the pcibios_fixup_bus
+>>> directly, the error won't occur for the rescanned device. But it's
+>>> general code, not proper to change here, so copy the pcibios_fixup_bus
+>>> work to  pcibios_enable_device.
+>>>
+>>>> I'm surprised also that is_added is false when pcibios_enable_device()
+>>>> gets called ... that looks strange to me. At what point is that enable
+>>>> happening in the hotplug sequence ?
+>>>
+>>> All devices are rescanned and then call the pci_enable_devices and
+>>> pci_bus_add_devices.
+>>
+>> Where ? How ? What is the sequence happening ? In any case, I think if
+>> we need a proper fixup done per-device like that after scan we ought to
+>> create a new hook at the generic level rather than that sort of hack.
+>>
+>
+> echo 1 > rescan to trigger dev_rescan_store:
+>
+> dev_rescan_store->pci_rescan_bus->pci_scan_child_bus,
+> pci_assign_unassigned_bus_resources,
+> pci_enable_bridges, pci_bus_add_devices
+>
+> pci_enable_bridges->pci_enable_device->__pci_enable_device_flags->do_pci_enable_device->
+> pcibios_enable_device
+>
+> pci_bus_add_devices->pci_bus_add_device->"dev->is_added = 1"
+>
+> Yeah, it's general fixup code for every rescanned PCI/PCI-e device on
+> powerpc at runtime. So if
+> we want to call it in a ppc_md member, we need to wrap it as a function and
+> assign it in every ppc_md,
+> it isn't proper for the general code.
+>
+> Regards,
+> yuanquan
+>
+>
+>>> The patch code will be called by pci_enable_devices. The "dev->is_added"
+>>> is set in pci_bus_add_device
+>>> which is called by pci_bus_add_devices. So "dev->is_added" is false when
+>>> checking it in pcibios_enable_device
+>>> for the rescanned device.
+>>
+>> Who calls pci_enable_device() in the rescan case ? Why isn't it left to
+>> the driver ? I don't think we can rely on that behaviour not to change.
+>>
+>>>> How do you trigger the rescan anyway ?
+>>>
+>>> Use the interface under /sys :
+>>> echo 1 > /sys/bus/pci/devices/xxx/remove
+>>>
+>>> then echo 1 to the pci device which is the bus of the removed device
+>>> echo 1 > /sys/bus/pci/devices/xxxx/rescan
+>>> the removed device will be scanned and it's driver module will be loaded
+>>> automatically.
+>>
+>> Yeah this code path are known to be fishy. I think the problem is at the
+>> generic abstraction level and that's where it needs to be fixed.
+>>
+>> Cheers,
+>> Ben.
+>>
+>>> Regards,
+>>> yuanquan
+>>>>
+>>>> I think the problem needs to be solve at a higher level, I'm adding
+>>>> linux-pci & Bjorn to the CC list.
+>>>>
+>>>> Cheers,
+>>>> Ben.
+>>>>
+>>>>> Signed-off-by: Yuanquan Chen <B41889@freescale.com>
+>>>>> ---
+>>>>>    arch/powerpc/kernel/pci-common.c |   20 ++++++++++++++++++++
+>>>>>    1 file changed, 20 insertions(+)
+>>>>>
+>>>>> diff --git a/arch/powerpc/kernel/pci-common.c
+>>>>> b/arch/powerpc/kernel/pci-common.c
+>>>>> index 7f94f76..f0fb070 100644
+>>>>> --- a/arch/powerpc/kernel/pci-common.c
+>>>>> +++ b/arch/powerpc/kernel/pci-common.c
+>>>>> @@ -1496,6 +1496,26 @@ int pcibios_enable_device(struct pci_dev *dev,
+>>>>> int mask)
+>>>>>                 if (ppc_md.pcibios_enable_device_hook(dev))
+>>>>>                         return -EINVAL;
+>>>>>    +    if (!dev->is_added) {
+>>>>> +               /*
+>>>>> +                * Fixup NUMA node as it may not be setup yet by the
+>>>>> generic
+>>>>> +                * code and is needed by the DMA init
+>>>>> +                */
+>>>>> +               set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
+>>>>> +
+>>>>> +               /* Hook up default DMA ops */
+>>>>> +               set_dma_ops(&dev->dev, pci_dma_ops);
+>>>>> +               set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
+>>>>> +
+>>>>> +               /* Additional platform DMA/iommu setup */
+>>>>> +               if (ppc_md.pci_dma_dev_setup)
+>>>>> +                       ppc_md.pci_dma_dev_setup(dev);
+>>>>> +
+>>>>> +               /* Read default IRQs and fixup if necessary */
+>>>>> +               pci_read_irq_line(dev);
+>>>>> +               if (ppc_md.pci_irq_fixup)
+>>>>> +                       ppc_md.pci_irq_fixup(dev);
+>>>>> +       }
+>>>>>         return pci_enable_resources(dev, mask);
+>>>>>    }
 
-Hi Ben.
+Is this the same issue Hiroo MATSUMOTO was working on earlier?
+(http://comments.gmane.org/gmane.linux.ports.ppc.embedded/50080)
 
-Thanks for your input. Please find my comments inline.
+We went round and round on those patches (partly my fault for
+excessive bike-shedding), and then we stalled out because of an
+ordering issue with CardBus init and an IRQ quirk.
 
+Here's the last status I remember:
+http://marc.info/?l=linux-pci&m=135006501620378&w=2
 
-Benjamin Herrenschmidt wrote:
-> 
-> On Tue, 2012-12-04 at 21:56 -0800, Pegasus11 wrote:
->> Hello.
->> 
->> Ive been trying to understand how an hash PTE is updated. Im on a
->> PPC970MP
->> machine which using the IBM PowerPC 604e core. 
-> 
-> Ben: Ah no, the 970 is a ... 970 core :-) It's a derivative of POWER4+
-> which
-> is quite different from the old 32-bit 604e.
-> 
-> Peg: So the 970 is a 64bit core whereas the 604e is a 32 bit core. The
-> former is used in the embedded segment whereas the latter for server
-> market right?
-> 
->> My Linux version is 2.6.10 (I
->> am sorry I cannot migrate at the moment. Management issues and I can't
->> help
->> :-(( )
->> 
->> Now onto the problem:
->> hpte_update is invoked to sync the on-chip MMU cache which Linux uses as
->> its
->> TLB.
-> 
-> Ben: It's actually in-memory cache. There's also an on-chip TLB.
-> Peg: An in-memory cache of what? You mean the kernel caches the PTEs in
-> its own software cache as well? And is this cache not related in anyway to
-> the on-chip TLB? If that is indeed the case, then ive read a paper on some
-> of the MMU tricks for the PPC by court dougan which says Linux uses (or
-> perhaps used to when he wrote that) the MMU hardware cache as the hardware
-> TLB. What is that all about? Its called : Optimizing the Idle Task and
-> Other MMU Tricks - Usenix
-> 
->>  So whenever a change is made to the PTE, it has to be propagated to the
->> corresponding TLB entry. And this uses hpte_update for the same. Am I
->> right
->> here?
-> 
-> Ben: hpte_update takes care of tracking whether a Linux PTE was also
-> cached
-> into the hash, in which case the hash is marked for invalidation. I
-> don't remember precisely how we did it in 2.6.10 but it's possible that
-> the actual invalidation of the hash and the corresponding TLB
-> invalidations are delayed.
-> Peg: But in 2.6.10, Ive seen the code first check for the existence of the
-> HASHPTE flag in a given PTE and if it exists, only then is this
-> hpte_update function being called. Could you for the love of tux elaborate
-> a bit on how the hash and the underlying TLB entries are related? I'll
-> then try to see how it was done back then..since it would probably be
-> quite similar at least conceptually (if I am lucky :jumping:)
-> 
->> Now  http://lxr.linux.no/linux-bk+*/+code=hpte_update hpte_update  is
->> declared as
->>  
->> ' void hpte_update(pte_t *ptep, unsigned long pte, int wrprot) '. 
->> The arguments to this function is a POINTER to the PTE entry (needed to
->> make
->> a change persistent across function call right?), the PTE entry (as in
->> the
->> value) as well the wrprot flag.
->> 
->> Now the code snippet thats bothering me is this:
->> '
->>   86        ptepage = virt_to_page(ptep);
->>   87        mm = (struct mm_struct *) ptepage->mapping;
->>   88        addr = ptepage->index +
->>   89                (((unsigned long)ptep & ~PAGE_MASK) * PTRS_PER_PTE);
->> '
->> 
->> On line 86, we get the page structure for a given PTE but we pass the
->> pointer to PTE not the PTE itself whereas virt_to_page is a macro defined
->> as:
-> 
-> I don't remember why we did that in 2.6.10 however...
-> 
->> #define virt_to_page(kaddr)   pfn_to_page(__pa(kaddr) >> PAGE_SHIFT)
->> 
->> Why are passing the POINTER to pte here? I mean are we looking for the
->> PAGE
->> that is described by the PTE or are we looking for the PAGE which
->> contains
->> the pointer to PTE? Me things it is the later since the former is given
->> by
->> the VALUE of the PTE not its POINTER. Right?
-> 
-> Ben: The above gets the page that contains the PTEs indeed, in order to
-> get
-> the associated mapping pointer which points to the struct mm_struct, and
-> the index, which together are used to re-constitute the virtual address,
-> probably in order to perform the actual invalidation. Nowadays, we just
-> pass the virtual address down from the call site.
-> Peg: Re-constitute the virtual address of what exactly? The virtual
-> address that led us to the PTE is the most natural thought that comes to
-> mind. However, the page which contains all these PTEs, would be typically
-> categorized as a page directory right? So are we trying to get the page
-> directory here...Sorry for sounding a bit hazy on this one...but I really
-> am on this...:confused:
-> 
-> 
->> So if it indeed the later, what trickery are we here after? Perhaps
->> following the snippet will make us understand? As I see from above, after
->> that we get the 'address space object' associated with this page. 
->> 
->> What I don't understand is the following line:
->>  addr = ptepage->index + (((unsigned long)ptep & ~PAGE_MASK) *
->> PTRS_PER_PTE);
->> 
->> First we get the index of the page in the file i.e. the number of pages
->> preceding the page which holds the address of PTEP. Then we get the lower
->> 12
->> bits of this page. Then we shift that these bits to the left by 12 again
->> and
->> to it we add the above index. What is this doing?
->> 
->> There are other things in this function that I do not understand. I'd be
->> glad if someone could give me a heads up on this.
-> 
-> Ben: It's gross, the point is to rebuild the virtual address. You should
-> *REALLY* update to a more recent kernel, that ancient code is broken in
-> many ways as far as I can tell.
-> Peg: Well Ben, if I could I would..but you do know the higher ups..and the
-> way those baldies think now don't u? Its hard as such to work with
-> them..helping them to a platter of such goodies would only mean that one
-> is trying to undermine them (or so they'll think)...So Im between a rock
-> and a hard place here....hence..i'd rather go with the hard place..and
-> hope nice folks like yourself would help me make my life just a lil bit
-> easier...:handshake:
-> 
-> Thanks again.
-> 
-> Pegasus
-> 
-> Cheers,
-> Ben.
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
-> 
-
--- 
-View this message in context: http://old.nabble.com/Understanding-how-kernel-updates-MMU-hash-table-tp34760537p34762800.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+Bjorn
