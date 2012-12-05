@@ -1,20 +1,30 @@
-Return-Path: <B41889@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E23C62C009B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2012 13:31:57 +1100 (EST)
-From: Yuanquan Chen <B41889@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [linuxppc-release][PATCH] powerpc/pci-hotplug: fix init issue of
- rescanned pci device
-Date: Wed, 5 Dec 2012 10:31:57 +0800
-Message-ID: <1354674717-14426-1-git-send-email-B41889@freescale.com>
+Return-Path: <wujianguo@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ by ozlabs.org (Postfix) with ESMTP id C6DCE2C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Dec 2012 14:23:51 +1100 (EST)
+Message-ID: <50BEBE35.4040807@huawei.com>
+Date: Wed, 5 Dec 2012 11:23:33 +0800
+From: Jianguo Wu <wujianguo@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Yuanquan Chen <B41889@freescale.com>, r61911@freescale.com
+To: Tang Chen <tangchen@cn.fujitsu.com>
+Subject: Re: [Patch v4 08/12] memory-hotplug: remove memmap of sparse-vmemmap
+References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
+ <1354010422-19648-9-git-send-email-wency@cn.fujitsu.com>
+ <50B5DC00.20103@huawei.com> <50B80FB1.6040906@cn.fujitsu.com>
+ <50BC0D2D.8040008@huawei.com> <50BDBEB7.3070807@cn.fujitsu.com>
+ <50BDEA82.4050809@huawei.com> <50BEAC66.8020500@cn.fujitsu.com>
+In-Reply-To: <50BEAC66.8020500@cn.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
+ linux-sh@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
+ Minchan Kim <minchan.kim@gmail.com>,
+ KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+ David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
+ Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,47 +34,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc arch, some fixup work of PCI/PCI-e device is just done during the
-first scan at booting time. For the PCI/PCI-e device rescanned after linux OS
-booting up, the fixup work won't be done, which leads to dma_set_mask error or
-irq related issue in rescanned PCI/PCI-e device's driver. So, it does the same
-fixup work for the rescanned device to avoid this issue.
+Hi Tang,
 
-Signed-off-by: Yuanquan Chen <B41889@freescale.com>
----
- arch/powerpc/kernel/pci-common.c |   20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+On 2012/12/5 10:07, Tang Chen wrote:
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 7f94f76..f0fb070 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1496,6 +1496,26 @@ int pcibios_enable_device(struct pci_dev *dev, int mask)
- 		if (ppc_md.pcibios_enable_device_hook(dev))
- 			return -EINVAL;
- 
-+	if (!dev->is_added) {
-+		/* 
-+		 * Fixup NUMA node as it may not be setup yet by the generic
-+		 * code and is needed by the DMA init
-+		 */
-+		set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
-+
-+		/* Hook up default DMA ops */
-+		set_dma_ops(&dev->dev, pci_dma_ops);
-+		set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
-+
-+		/* Additional platform DMA/iommu setup */
-+		if (ppc_md.pci_dma_dev_setup)
-+			ppc_md.pci_dma_dev_setup(dev);
-+
-+		/* Read default IRQs and fixup if necessary */
-+		pci_read_irq_line(dev);
-+		if (ppc_md.pci_irq_fixup)
-+			ppc_md.pci_irq_fixup(dev);
-+	}
- 	return pci_enable_resources(dev, mask);
- }
- 
--- 
-1.7.9.5
+> Hi Wu,
+> 
+> On 12/04/2012 08:20 PM, Jianguo Wu wrote:
+> (snip)
+>>>
+>>> Seems that we have different ways to handle pages allocated by bootmem
+>>> or by regular allocator. Is the checking way in [PATCH 09/12] available
+>>> here ?
+>>>
+>>> +    /* bootmem page has reserved flag */
+>>> +    if (PageReserved(page)) {
+>>> ......
+>>> +    }
+>>>
+>>> If so, I think we can just merge these two functions.
+>>
+>> Hmm, direct mapping table isn't allocated by bootmem allocator such as memblock, can't be free by put_page_bootmem().
+>> But I will try to merge these two functions.
+>>
+> 
+> Oh, I didn't notice this, thanks. :)
+> 
+> (snip)
+> 
+>>>> +
+>>>> +    __split_large_page(kpte, address, pbase);
+>>>
+>>> Is this patch going to replace [PATCH 08/12] ?
+>>>
+>>
+>> I wish to replace [PATCH 08/12], but need Congyang and Yasuaki to confirm first:)
+>>
+>>> If so, __split_large_page() was added and exported in [PATCH 09/12],
+>>> then we should move it here, right ?
+>>
+>> yes.
+>>
+>> and what do you think about moving vmemmap_pud[pmd/pte]_remove() to arch/x86/mm/init_64.c,
+>> to be consistent with vmemmap_populate() ?
+> 
+> It is a good idea since pud/pmd/pte related code could be platform
+> dependent. And I'm also trying to move vmemmap_free() to
+> arch/x86/mm/init_64.c too. I want to have a common interface just
+> like vmemmap_populate(). :)
+> 
+
+Great.
+
+>>
+>> I will rework [PATCH 08/12] and [PATCH 09/12] soon.
+> 
+> I am rebasing the whole patch set now. And I think I chould finish part
+> of your work too. A new patch-set is coming soon, and your rework is
+> also welcome. :)
+>
+
+Since you are rebasing now, I will wait for your new patche-set :).
+
+Thanks.
+Jianguo Wu
+
+> Thanks. :)
+> 
+> 
+> 
+> .
+> 
