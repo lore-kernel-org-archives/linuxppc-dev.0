@@ -1,16 +1,26 @@
-Return-Path: <sr@denx.de>
-Received: from mo6-p05-ob.rzone.de (mo6-p05-ob.rzone.de
- [IPv6:2a01:238:20a:202:5305::1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E89F82C01C2
- for <linuxppc-dev@ozlabs.org>; Thu,  6 Dec 2012 20:36:25 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] powerpc: mpc5200: Add a3m071 board support
-Date: Thu,  6 Dec 2012 10:30:10 +0100
-Message-Id: <1354786210-10292-1-git-send-email-sr@denx.de>
-Cc: Anatolij Gustschin <agust@denx.de>
+Return-Path: <B41889@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 45ABD2C00BF
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Dec 2012 22:23:47 +1100 (EST)
+Message-ID: <50C08048.3050305@freescale.com>
+Date: Thu, 6 Dec 2012 19:23:52 +0800
+From: Chen Yuanquan-B41889 <B41889@freescale.com>
+MIME-Version: 1.0
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [linuxppc-release][PATCH] powerpc/pci-hotplug: fix init issue
+ of rescanned pci device
+References: <1354674717-14426-1-git-send-email-B41889@freescale.com>
+ <1354691878.2351.2.camel@pasglop> <50BF03C1.2070304@freescale.com>
+ <1354695989.2351.13.camel@pasglop> <50BF13E1.1000009@freescale.com>
+ <CAErSpo6mCm79m87MchL=Y1jxxgZ2Mio8d2L+Sg8CLvxRKue8sg@mail.gmail.com>
+In-Reply-To: <CAErSpo6mCm79m87MchL=Y1jxxgZ2Mio8d2L+Sg8CLvxRKue8sg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: =?UTF-8?B?5p2+5pys5Y2a6YOO?= <matsumoto.hiroo@jp.fujitsu.com>,
+ linux-pci@vger.kernel.org, r61911@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,181 +30,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the MPC5200B based a3m071 board.
+On 12/06/2012 05:30 AM, Bjorn Helgaas wrote:
+> On Wed, Dec 5, 2012 at 2:29 AM, Chen Yuanquan-B41889
+> <B41889@freescale.com> wrote:
+>> On 12/05/2012 04:26 PM, Benjamin Herrenschmidt wrote:
+>>> On Wed, 2012-12-05 at 16:20 +0800, Chen Yuanquan-B41889 wrote:
+>>>> On 12/05/2012 03:17 PM, Benjamin Herrenschmidt wrote:
+>>>>> On Wed, 2012-12-05 at 10:31 +0800, Yuanquan Chen wrote:
+>>>>>> On powerpc arch, some fixup work of PCI/PCI-e device is just done
+>>>>>> during the
+>>>>>> first scan at booting time. For the PCI/PCI-e device rescanned after
+>>>>>> linux OS
+>>>>>> booting up, the fixup work won't be done, which leads to dma_set_mask
+>>>>>> error or
+>>>>>> irq related issue in rescanned PCI/PCI-e device's driver. So, it does
+>>>>>> the same
+>>>>>> fixup work for the rescanned device to avoid this issue.
+>>>>> Hrm, the patch is a bit gross. First the code shouldn't be copy/pasted
+>>>>> that way but factored out.
+>>> Please, at least format your email properly so I can try to undertand
+>>> without needing aspirin.
+>>>
+>>>> There's a judgement "if (!bus->is_added)" before calling of
+>>>> pcibios_fixup_bus in pci_scan_child_bus, so for the rescanned device,
+>>>> the fixup won't execute, which leads to fatal error in driver of
+>>>> rescanned
+>>>> device on freescale  powerpc, no this issues on x86 arch.
+>>> First, none of that invalidates my statement that you shouldn't
+>>> duplicate a whole block of code like this. Even if your approach is
+>>> correct (which is debated separately), at the very least you should
+>>> factor the code out into a common function between the two copies.
+>>>
+>>>> Remove the judgement, let it to do the pcibios_fixup_bus
+>>>> directly, the error won't occur for the rescanned device. But it's
+>>>> general code, not proper to change here, so copy the pcibios_fixup_bus
+>>>> work to  pcibios_enable_device.
+>>>>
+>>>>> I'm surprised also that is_added is false when pcibios_enable_device()
+>>>>> gets called ... that looks strange to me. At what point is that enable
+>>>>> happening in the hotplug sequence ?
+>>>> All devices are rescanned and then call the pci_enable_devices and
+>>>> pci_bus_add_devices.
+>>> Where ? How ? What is the sequence happening ? In any case, I think if
+>>> we need a proper fixup done per-device like that after scan we ought to
+>>> create a new hook at the generic level rather than that sort of hack.
+>>>
+>> echo 1 > rescan to trigger dev_rescan_store:
+>>
+>> dev_rescan_store->pci_rescan_bus->pci_scan_child_bus,
+>> pci_assign_unassigned_bus_resources,
+>> pci_enable_bridges, pci_bus_add_devices
+>>
+>> pci_enable_bridges->pci_enable_device->__pci_enable_device_flags->do_pci_enable_device->
+>> pcibios_enable_device
+>>
+>> pci_bus_add_devices->pci_bus_add_device->"dev->is_added = 1"
+>>
+>> Yeah, it's general fixup code for every rescanned PCI/PCI-e device on
+>> powerpc at runtime. So if
+>> we want to call it in a ppc_md member, we need to wrap it as a function and
+>> assign it in every ppc_md,
+>> it isn't proper for the general code.
+>>
+>> Regards,
+>> yuanquan
+>>
+>>
+>>>> The patch code will be called by pci_enable_devices. The "dev->is_added"
+>>>> is set in pci_bus_add_device
+>>>> which is called by pci_bus_add_devices. So "dev->is_added" is false when
+>>>> checking it in pcibios_enable_device
+>>>> for the rescanned device.
+>>> Who calls pci_enable_device() in the rescan case ? Why isn't it left to
+>>> the driver ? I don't think we can rely on that behaviour not to change.
+>>>
+>>>>> How do you trigger the rescan anyway ?
+>>>> Use the interface under /sys :
+>>>> echo 1 > /sys/bus/pci/devices/xxx/remove
+>>>>
+>>>> then echo 1 to the pci device which is the bus of the removed device
+>>>> echo 1 > /sys/bus/pci/devices/xxxx/rescan
+>>>> the removed device will be scanned and it's driver module will be loaded
+>>>> automatically.
+>>> Yeah this code path are known to be fishy. I think the problem is at the
+>>> generic abstraction level and that's where it needs to be fixed.
+>>>
+>>> Cheers,
+>>> Ben.
+>>>
+>>>> Regards,
+>>>> yuanquan
+>>>>> I think the problem needs to be solve at a higher level, I'm adding
+>>>>> linux-pci & Bjorn to the CC list.
+>>>>>
+>>>>> Cheers,
+>>>>> Ben.
+>>>>>
+>>>>>> Signed-off-by: Yuanquan Chen <B41889@freescale.com>
+>>>>>> ---
+>>>>>>     arch/powerpc/kernel/pci-common.c |   20 ++++++++++++++++++++
+>>>>>>     1 file changed, 20 insertions(+)
+>>>>>>
+>>>>>> diff --git a/arch/powerpc/kernel/pci-common.c
+>>>>>> b/arch/powerpc/kernel/pci-common.c
+>>>>>> index 7f94f76..f0fb070 100644
+>>>>>> --- a/arch/powerpc/kernel/pci-common.c
+>>>>>> +++ b/arch/powerpc/kernel/pci-common.c
+>>>>>> @@ -1496,6 +1496,26 @@ int pcibios_enable_device(struct pci_dev *dev,
+>>>>>> int mask)
+>>>>>>                  if (ppc_md.pcibios_enable_device_hook(dev))
+>>>>>>                          return -EINVAL;
+>>>>>>     +    if (!dev->is_added) {
+>>>>>> +               /*
+>>>>>> +                * Fixup NUMA node as it may not be setup yet by the
+>>>>>> generic
+>>>>>> +                * code and is needed by the DMA init
+>>>>>> +                */
+>>>>>> +               set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
+>>>>>> +
+>>>>>> +               /* Hook up default DMA ops */
+>>>>>> +               set_dma_ops(&dev->dev, pci_dma_ops);
+>>>>>> +               set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
+>>>>>> +
+>>>>>> +               /* Additional platform DMA/iommu setup */
+>>>>>> +               if (ppc_md.pci_dma_dev_setup)
+>>>>>> +                       ppc_md.pci_dma_dev_setup(dev);
+>>>>>> +
+>>>>>> +               /* Read default IRQs and fixup if necessary */
+>>>>>> +               pci_read_irq_line(dev);
+>>>>>> +               if (ppc_md.pci_irq_fixup)
+>>>>>> +                       ppc_md.pci_irq_fixup(dev);
+>>>>>> +       }
+>>>>>>          return pci_enable_resources(dev, mask);
+>>>>>>     }
+> Is this the same issue Hiroo MATSUMOTO was working on earlier?
+> (http://comments.gmane.org/gmane.linux.ports.ppc.embedded/50080)
 
-Signed-off-by: Stefan Roese <sr@denx.de>
-Cc: Anatolij Gustschin <agust@denx.de>
----
-v2:
-- Remove cdm@200 DT node as it's not used
-- Disable i2c controller in dts as its unused on this board
+Yeah, that's the exact problem I encountered. Please push it forward.
 
- arch/powerpc/boot/dts/a3m071.dts             | 144 +++++++++++++++++++++++++++
- arch/powerpc/platforms/52xx/mpc5200_simple.c |   1 +
- 2 files changed, 145 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/a3m071.dts
+Thanks,
+yuanquan
 
-diff --git a/arch/powerpc/boot/dts/a3m071.dts b/arch/powerpc/boot/dts/a3m071.dts
-new file mode 100644
-index 0000000..877a28c
---- /dev/null
-+++ b/arch/powerpc/boot/dts/a3m071.dts
-@@ -0,0 +1,144 @@
-+/*
-+ * a3m071 board Device Tree Source
-+ *
-+ * Copyright 2012 Stefan Roese <sr@denx.de>
-+ *
-+ * Copyright (C) 2011 DENX Software Engineering GmbH
-+ * Heiko Schocher <hs@denx.de>
-+ *
-+ * Copyright (C) 2007 Semihalf
-+ * Marian Balakowicz <m8@semihalf.com>
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+/include/ "mpc5200b.dtsi"
-+
-+/ {
-+	model = "anonymous,a3m071";
-+	compatible = "anonymous,a3m071";
-+
-+	soc5200@f0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		compatible = "fsl,mpc5200b-immr";
-+		ranges = <0 0xf0000000 0x0000c000>;
-+		reg = <0xf0000000 0x00000100>;
-+		bus-frequency = <0>; /* From boot loader */
-+		system-frequency = <0>; /* From boot loader */
-+
-+		timer@600 {
-+			fsl,has-wdt;
-+		};
-+
-+		spi@f00 {
-+			status = "disabled";
-+		};
-+
-+		usb: usb@1000 {
-+			status = "disabled";
-+		};
-+
-+		psc@2000 {
-+			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
-+			reg = <0x2000 0x100>;
-+			interrupts = <2 1 0>;
-+		};
-+
-+		psc@2200 {
-+			status = "disabled";
-+		};
-+
-+		psc@2400 {
-+			status = "disabled";
-+		};
-+
-+		psc@2600 {
-+			status = "disabled";
-+		};
-+
-+		psc@2800 {
-+			status = "disabled";
-+		};
-+
-+		psc@2c00 {		// PSC6
-+			compatible = "fsl,mpc5200b-psc-uart","fsl,mpc5200-psc-uart";
-+			reg = <0x2c00 0x100>;
-+			interrupts = <2 4 0>;
-+		};
-+
-+		ethernet@3000 {
-+			phy-handle = <&phy0>;
-+		};
-+
-+		mdio@3000 {
-+			phy0: ethernet-phy@3 {
-+				reg = <0x03>;
-+			};
-+		};
-+
-+		ata@3a00 {
-+			status = "disabled";
-+		};
-+
-+		i2c@3d00 {
-+			status = "disabled";
-+		};
-+
-+		i2c@3d40 {
-+			status = "disabled";
-+		};
-+	};
-+
-+	localbus {
-+		compatible = "fsl,mpc5200b-lpb","simple-bus";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges = <0 0 0xfc000000 0x02000000
-+			  3 0 0xe9000000 0x00080000
-+			  5 0 0xe8000000 0x00010000>;
-+
-+		flash@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			reg = <0 0x0 0x02000000>;
-+			compatible = "cfi-flash";
-+			bank-width = <2>;
-+			partition@0x0 {
-+				label = "u-boot";
-+				reg = <0x00000000 0x00040000>;
-+				read-only;
-+			};
-+			partition@0x00040000 {
-+				label = "env";
-+				reg = <0x00040000 0x00020000>;
-+			};
-+			partition@0x00060000 {
-+				label = "dtb";
-+				reg = <0x00060000 0x00020000>;
-+			};
-+			partition@0x00080000 {
-+				label = "kernel";
-+				reg = <0x00080000 0x00500000>;
-+			};
-+			partition@0x00580000 {
-+				label = "root";
-+				reg = <0x00580000 0x00A80000>;
-+			};
-+		};
-+
-+		fpga@3,0 {
-+			compatible = "anonymous,a3m071-fpga";
-+			reg = <3 0x0 0x00080000
-+			       5 0x0 0x00010000>;
-+			interrupts = <0 0 3>;  /* level low */
-+		};
-+	};
-+
-+	pci@f0000d00 {
-+		status = "disabled";
-+	};
-+};
-diff --git a/arch/powerpc/platforms/52xx/mpc5200_simple.c b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-index 9cf3602..792a301 100644
---- a/arch/powerpc/platforms/52xx/mpc5200_simple.c
-+++ b/arch/powerpc/platforms/52xx/mpc5200_simple.c
-@@ -50,6 +50,7 @@ static void __init mpc5200_simple_setup_arch(void)
- 
- /* list of the supported boards */
- static const char *board[] __initdata = {
-+	"anonymous,a3m071",
- 	"anonymous,a4m072",
- 	"anon,charon",
- 	"ifm,o2d",
--- 
-1.8.0.1
+> We went round and round on those patches (partly my fault for
+> excessive bike-shedding), and then we stalled out because of an
+> ordering issue with CardBus init and an IRQ quirk.
+>
+> Here's the last status I remember:
+> http://marc.info/?l=linux-pci&m=135006501620378&w=2
+>
+> Bjorn
+>
+>
+>
