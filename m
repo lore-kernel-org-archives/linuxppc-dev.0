@@ -1,32 +1,33 @@
 Return-Path: <haren@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 00E0B2C00EC
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2012 18:50:40 +1100 (EST)
+ (Client CN "e37.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 67A982C04E4
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2012 18:51:11 +1100 (EST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <haren@linux.vnet.ibm.com>;
- Fri, 7 Dec 2012 02:50:38 -0500
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 4A4D338C803B
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2012 02:50:35 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qB77oYZC322986
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2012 02:50:34 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qB77oYfI016538
- for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2012 02:50:34 -0500
-Subject: [PATCH 5/6] powerpc: Macros for saving/restore PPR
+ Fri, 7 Dec 2012 00:51:09 -0700
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 956871FF001C
+ for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2012 00:51:00 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qB77p6j9299318
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2012 00:51:06 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qB77p5No013146
+ for <linuxppc-dev@ozlabs.org>; Fri, 7 Dec 2012 00:51:05 -0700
+Subject: [PATCH 6/6] powerpc: Implement PPR save/restore
 From: Haren Myneni <haren@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, anton@au1.ibm.com,
  michael.neuling@au1.ibm.com, linuxppc-dev@ozlabs.org
 Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 06 Dec 2012 23:50:32 -0800
-Message-ID: <1354866632.1281.18.camel@hbabu-laptop>
+Date: Thu, 06 Dec 2012 23:51:04 -0800
+Message-ID: <1354866664.1281.19.camel@hbabu-laptop>
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,112 +38,250 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[PATCH 5/6] powerpc: Macros for saving/restore PPR
+[PATCH 6/6] powerpc: Implement PPR save/restore
 
-Several macros are defined for saving and restore user defined PPR value.
+When the task enters in to kernel space, the user defined priority (PPR)
+will be saved in to PACA at the beginning of first level exception
+vector and then copy from PACA to thread_info in second level vector.
+PPR will be restored from thread_info before exits the kernel space.
+
+P7/P8 temporarily raises the thread priority to higher level during
+exception until the program executes HMT_* calls. But it will not modify
+PPR register. So we save PPR value whenever some register is available
+to use and then calls HMT_MEDIUM to increase the priority. This feature
+supports on P7 or later processors.
+
+We save/ restore PPR for all exception vectors except system call entry.
+GLIBC will be saving / restore for system calls. So the default PPR
+value (3) will be set for the system call exit when the task returned
+to the user space.
 
 Signed-off-by: Haren Myneni <haren@us.ibm.com>
 ---
- arch/powerpc/include/asm/exception-64s.h |   37 ++++++++++++++++++++++++++++++
- arch/powerpc/include/asm/ppc_asm.h       |   25 ++++++++++++++++++++
- arch/powerpc/include/asm/reg.h           |    1 +
- 3 files changed, 63 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/exception-64s.h |   18 ++++++++++--------
+ arch/powerpc/kernel/entry_64.S           |    3 +++
+ arch/powerpc/kernel/exceptions-64s.S     |   23 +++++++++++++----------
+ 3 files changed, 26 insertions(+), 18 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/exception-64s.h b/arch/powerpc/include/asm/exception-64s.h
-index 3b24ca9..090fcd1 100644
+index 090fcd1..c235867 100644
 --- a/arch/powerpc/include/asm/exception-64s.h
 +++ b/arch/powerpc/include/asm/exception-64s.h
-@@ -108,6 +108,43 @@
- #define RESTORE_LR(reg, area)
- #endif
+@@ -147,8 +147,9 @@ END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,943)
  
-+/*
-+ * PPR save/restore macros used in exceptions_64s.S  
-+ * Used for P7 or later processors
-+ */
-+#define SAVE_PPR(area, ra, rb)						\
-+BEGIN_FTR_SECTION_NESTED(940)						\
-+	ld	ra,PACACURRENT(r13);					\
-+	ld	rb,area+EX_PPR(r13);	/* Read PPR from paca */	\
-+	std	rb,TASKTHREADPPR(ra);					\
-+END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,940)
-+
-+#define RESTORE_PPR_PACA(area, ra)					\
-+BEGIN_FTR_SECTION_NESTED(941)						\
-+	ld	ra,area+EX_PPR(r13);					\
-+	mtspr	SPRN_PPR,ra;						\
-+END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,941)
-+
-+/*
-+ * Increase the priority on systems where PPR save/restore is not
-+ * implemented/ supported.
-+ */
-+#define HMT_MEDIUM_PPR_DISCARD						\
-+BEGIN_FTR_SECTION_NESTED(942)						\
-+	HMT_MEDIUM;							\
-+END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,0,942)  /*non P7*/		
-+
-+/*
-+ * Save PPR in paca whenever some register is available to use.
-+ * Then increase the priority.
-+ */
-+#define HMT_MEDIUM_PPR_SAVE(area, ra)					\
-+BEGIN_FTR_SECTION_NESTED(943)						\
-+	mfspr	ra,SPRN_PPR;						\
-+	std	ra,area+EX_PPR(r13);					\
-+	HMT_MEDIUM;							\
-+END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,943) 
-+
  #define __EXCEPTION_PROLOG_1(area, extra, vec)				\
  	GET_PACA(r13);							\
- 	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
-diff --git a/arch/powerpc/include/asm/ppc_asm.h b/arch/powerpc/include/asm/ppc_asm.h
-index 376e36d..c2d0e58 100644
---- a/arch/powerpc/include/asm/ppc_asm.h
-+++ b/arch/powerpc/include/asm/ppc_asm.h
-@@ -389,6 +389,31 @@ END_FTR_SECTION_IFCLR(CPU_FTR_601)
- 	FTR_SECTION_ELSE_NESTED(848);	\
- 	mtocrf (FXM), RS;		\
- 	ALT_FTR_SECTION_END_NESTED_IFCLR(CPU_FTR_NOEXECUTE, 848)
-+
-+/*
-+ * PPR restore macros used in entry_64.S
-+ * Used for P7 or later processors
-+ */
-+#define HMT_MEDIUM_LOW_HAS_PPR						\
-+BEGIN_FTR_SECTION_NESTED(944)						\
-+	HMT_MEDIUM_LOW;							\
-+END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,944)
-+
-+#define SET_DEFAULT_THREAD_PPR(ra, rb)					\
-+BEGIN_FTR_SECTION_NESTED(945)						\
-+	lis	ra,INIT_PPR@highest;	/* default ppr=3 */		\
-+	ld	rb,PACACURRENT(r13);					\
-+	sldi	ra,ra,32;	/* 11- 13 bits are used for ppr */	\
-+	std	ra,TASKTHREADPPR(rb);					\
-+END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,945)
-+
-+#define RESTORE_PPR(ra, rb)						\
-+BEGIN_FTR_SECTION_NESTED(946)						\
-+	ld	ra,PACACURRENT(r13);					\
-+	ld	rb,TASKTHREADPPR(ra);					\
-+	mtspr	SPRN_PPR,rb;	/* Restore PPR */			\
-+END_FTR_SECTION_NESTED(CPU_FTR_HAS_PPR,CPU_FTR_HAS_PPR,946)
-+
- #endif
+-	std	r9,area+EX_R9(r13);	/* save r9 - r12 */		\
+-	std	r10,area+EX_R10(r13);					\
++	std	r9,area+EX_R9(r13);	/* save r9 */			\
++	HMT_MEDIUM_PPR_SAVE(area, r9);					\
++	std	r10,area+EX_R10(r13);	/* save r10 - r12 */		\
+ 	BEGIN_FTR_SECTION_NESTED(66);					\
+ 	mfspr	r10,SPRN_CFAR;						\
+ 	std	r10,area+EX_CFAR(r13);					\
+@@ -264,6 +265,7 @@ do_kvm_##n:								\
+ 	std	r10,GPR1(r1);		/* save r1 in stackframe	*/ \
+ 	beq	4f;			/* if from kernel mode		*/ \
+ 	ACCOUNT_CPU_USER_ENTRY(r9, r10);				   \
++	SAVE_PPR(area, r9, r10);					   \
+ 4:	std	r2,GPR2(r1);		/* save r2 in stackframe	*/ \
+ 	SAVE_4GPRS(3, r1);		/* save r3 - r6 in stackframe	*/ \
+ 	SAVE_2GPRS(7, r1);		/* save r7, r8 in stackframe	*/ \
+@@ -305,7 +307,7 @@ do_kvm_##n:								\
+ 	. = loc;					\
+ 	.globl label##_pSeries;				\
+ label##_pSeries:					\
+-	HMT_MEDIUM;					\
++	HMT_MEDIUM_PPR_DISCARD;				\
+ 	SET_SCRATCH0(r13);		/* save r13 */		\
+ 	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common,	\
+ 				 EXC_STD, KVMTEST_PR, vec)
+@@ -314,7 +316,7 @@ label##_pSeries:					\
+ 	. = loc;					\
+ 	.globl label##_hv;				\
+ label##_hv:						\
+-	HMT_MEDIUM;					\
++	HMT_MEDIUM_PPR_DISCARD;				\
+ 	SET_SCRATCH0(r13);	/* save r13 */			\
+ 	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, label##_common,	\
+ 				 EXC_HV, KVMTEST, vec)
+@@ -323,7 +325,7 @@ label##_hv:						\
+ 	. = loc;					\
+ 	.globl label##_relon_pSeries;			\
+ label##_relon_pSeries:					\
+-	HMT_MEDIUM;					\
++	HMT_MEDIUM_PPR_DISCARD;				\
+ 	/* No guest interrupts come through here */	\
+ 	SET_SCRATCH0(r13);		/* save r13 */	\
+ 	EXCEPTION_RELON_PROLOG_PSERIES(PACA_EXGEN, label##_common, \
+@@ -333,7 +335,7 @@ label##_relon_pSeries:					\
+ 	. = loc;					\
+ 	.globl label##_relon_hv;			\
+ label##_relon_hv:					\
+-	HMT_MEDIUM;					\
++	HMT_MEDIUM_PPR_DISCARD;				\
+ 	/* No guest interrupts come through here */	\
+ 	SET_SCRATCH0(r13);	/* save r13 */		\
+ 	EXCEPTION_RELON_PROLOG_PSERIES(PACA_EXGEN, label##_common, \
+@@ -368,7 +370,7 @@ label##_relon_hv:					\
+ #define SOFTEN_NOTEST_HV(vec)		_SOFTEN_TEST(EXC_HV, vec)
  
- /*
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 1b853f7..d395426 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -289,6 +289,7 @@
- #define SPRN_DBAT6U	0x23C	/* Data BAT 6 Upper Register */
- #define SPRN_DBAT7L	0x23F	/* Data BAT 7 Lower Register */
- #define SPRN_DBAT7U	0x23E	/* Data BAT 7 Upper Register */
-+#define SPRN_PPR	0x380	/* SMT Thread status Register */
+ #define __MASKABLE_EXCEPTION_PSERIES(vec, label, h, extra)		\
+-	HMT_MEDIUM;							\
++	HMT_MEDIUM_PPR_DISCARD;						\
+ 	SET_SCRATCH0(r13);    /* save r13 */				\
+ 	__EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec);		\
+ 	EXCEPTION_PROLOG_PSERIES_1(label##_common, h);
+@@ -390,7 +392,7 @@ label##_hv:								\
+ 				    EXC_HV, SOFTEN_TEST_HV)
  
- #define SPRN_DEC	0x016		/* Decrement Register */
- #define SPRN_DER	0x095		/* Debug Enable Regsiter */
+ #define __MASKABLE_RELON_EXCEPTION_PSERIES(vec, label, h, extra)	\
+-	HMT_MEDIUM;							\
++	HMT_MEDIUM_PPR_DISCARD;						\
+ 	SET_SCRATCH0(r13);    /* save r13 */				\
+ 	__EXCEPTION_PROLOG_1(PACA_EXGEN, extra, vec);		\
+ 	EXCEPTION_RELON_PROLOG_PSERIES_1(label##_common, h);
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 4e78247..886fc64 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -227,6 +227,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
+ 
+ 	beq-	1f
+ 	ACCOUNT_CPU_USER_EXIT(r11, r12)
++	HMT_MEDIUM_LOW_HAS_PPR
+ 	ld	r13,GPR13(r1)	/* only restore r13 if returning to usermode */
+ 1:	ld	r2,GPR2(r1)
+ 	ld	r1,GPR1(r1)
+@@ -303,6 +304,7 @@ syscall_exit_work:
+ 	subi	r12,r12,TI_FLAGS
+ 
+ 4:	/* Anything else left to do? */
++	SET_DEFAULT_THREAD_PPR(r3, r9)		/* Set thread.ppr = 3 */
+ 	andi.	r0,r9,(_TIF_SYSCALL_T_OR_A|_TIF_SINGLESTEP)
+ 	beq	.ret_from_except_lite
+ 
+@@ -764,6 +766,7 @@ fast_exception_return:
+ 	andi.	r0,r3,MSR_PR
+ 	beq	1f
+ 	ACCOUNT_CPU_USER_EXIT(r2, r4)
++	RESTORE_PPR(r2, r4)
+ 	REST_GPR(13, r1)
+ 1:
+ 	mtspr	SPRN_SRR1,r3
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 4665e82..6f9d83d 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -104,7 +104,7 @@ __start_interrupts:
+ 
+ 	.globl system_reset_pSeries;
+ system_reset_pSeries:
+-	HMT_MEDIUM;
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)
+ #ifdef CONFIG_PPC_P7_NAP
+ BEGIN_FTR_SECTION
+@@ -158,7 +158,7 @@ machine_check_pSeries_1:
+ 	. = 0x300
+ 	.globl data_access_pSeries
+ data_access_pSeries:
+-	HMT_MEDIUM
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)
+ BEGIN_FTR_SECTION
+ 	b	data_access_check_stab
+@@ -170,7 +170,7 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_SLB)
+ 	. = 0x380
+ 	.globl data_access_slb_pSeries
+ data_access_slb_pSeries:
+-	HMT_MEDIUM
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST, 0x380)
+ 	std	r3,PACA_EXSLB+EX_R3(r13)
+@@ -201,7 +201,7 @@ data_access_slb_pSeries:
+ 	. = 0x480
+ 	.globl instruction_access_slb_pSeries
+ instruction_access_slb_pSeries:
+-	HMT_MEDIUM
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_1(PACA_EXSLB, KVMTEST_PR, 0x480)
+ 	std	r3,PACA_EXSLB+EX_R3(r13)
+@@ -322,10 +322,11 @@ vsx_unavailable_pSeries_1:
+ 	. = 0x1500
+ 	.global denorm_exception_hv
+ denorm_exception_hv:
+-	HMT_MEDIUM
++	HMT_MEDIUM_PPR_DISCARD
+ 	mtspr	SPRN_SPRG_HSCRATCH0,r13
+ 	mfspr	r13,SPRN_SPRG_HPACA
+ 	std	r9,PACA_EXGEN+EX_R9(r13)
++	HMT_MEDIUM_PPR_SAVE(PACA_EXGEN, r9)
+ 	std	r10,PACA_EXGEN+EX_R10(r13)
+ 	std	r11,PACA_EXGEN+EX_R11(r13)
+ 	std	r12,PACA_EXGEN+EX_R12(r13)
+@@ -367,7 +368,7 @@ denorm_exception_hv:
+ machine_check_pSeries:
+ 	.globl machine_check_fwnmi
+ machine_check_fwnmi:
+-	HMT_MEDIUM
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)		/* save r13 */
+ 	EXCEPTION_PROLOG_PSERIES(PACA_EXMC, machine_check_common,
+ 				 EXC_STD, KVMTEST, 0x200)
+@@ -496,6 +497,7 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_206)
+ 	mtspr	SPRN_HSRR0,r11
+ 	mtcrf	0x80,r9
+ 	ld	r9,PACA_EXGEN+EX_R9(r13)
++	RESTORE_PPR_PACA(PACA_EXGEN, r10)
+ 	ld	r10,PACA_EXGEN+EX_R10(r13)
+ 	ld	r11,PACA_EXGEN+EX_R11(r13)
+ 	ld	r12,PACA_EXGEN+EX_R12(r13)
+@@ -586,7 +588,7 @@ _GLOBAL(__replay_interrupt)
+ 	.globl system_reset_fwnmi
+       .align 7
+ system_reset_fwnmi:
+-	HMT_MEDIUM
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)		/* save r13 */
+ 	EXCEPTION_PROLOG_PSERIES(PACA_EXGEN, system_reset_common, EXC_STD,
+ 				 NOTEST, 0x100)
+@@ -690,7 +692,7 @@ machine_check_common:
+ 	. = 0x4380
+ 	.globl data_access_slb_relon_pSeries
+ data_access_slb_relon_pSeries:
+-	HMT_MEDIUM
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x380)
+ 	std	r3,PACA_EXSLB+EX_R3(r13)
+@@ -715,7 +717,7 @@ data_access_slb_relon_pSeries:
+ 	. = 0x4480
+ 	.globl instruction_access_slb_relon_pSeries
+ instruction_access_slb_relon_pSeries:
+-	HMT_MEDIUM
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)
+ 	EXCEPTION_PROLOG_1(PACA_EXSLB, NOTEST, 0x480)
+ 	std	r3,PACA_EXSLB+EX_R3(r13)
+@@ -1036,6 +1038,7 @@ _GLOBAL(slb_miss_realmode)
+ 	mtcrf	0x01,r9		/* slb_allocate uses cr0 and cr7 */
+ .machine	pop
+ 
++	RESTORE_PPR_PACA(PACA_EXSLB, r9)
+ 	ld	r9,PACA_EXSLB+EX_R9(r13)
+ 	ld	r10,PACA_EXSLB+EX_R10(r13)
+ 	ld	r11,PACA_EXSLB+EX_R11(r13)
+@@ -1383,7 +1386,7 @@ initial_stab:
+ 
+ #ifdef CONFIG_PPC_POWERNV
+ _GLOBAL(opal_mc_secondary_handler)
+-	HMT_MEDIUM
++	HMT_MEDIUM_PPR_DISCARD
+ 	SET_SCRATCH0(r13)
+ 	GET_PACA(r13)
+ 	clrldi	r3,r3,2
 -- 
 1.7.1
