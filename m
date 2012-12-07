@@ -1,28 +1,25 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-la0-f51.google.com (mail-la0-f51.google.com
- [209.85.215.51])
+Return-Path: <xenidis@gmail.com>
+Received: from mail-ye0-f179.google.com (mail-ye0-f179.google.com
+ [209.85.213.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A08F92C00DE
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2012 08:16:10 +1100 (EST)
-Received: by mail-la0-f51.google.com with SMTP id e4so633431lag.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2012 13:16:06 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <50C08048.3050305@freescale.com>
-References: <1354674717-14426-1-git-send-email-B41889@freescale.com>
- <1354691878.2351.2.camel@pasglop> <50BF03C1.2070304@freescale.com>
- <1354695989.2351.13.camel@pasglop> <50BF13E1.1000009@freescale.com>
- <CAErSpo6mCm79m87MchL=Y1jxxgZ2Mio8d2L+Sg8CLvxRKue8sg@mail.gmail.com>
- <50C08048.3050305@freescale.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Fri, 7 Dec 2012 14:15:46 -0700
-Message-ID: <CAErSpo4skBkgOLRMhZQboP5aD+7HPyARmfFhoxEvnjiVb7Qy1Q@mail.gmail.com>
-Subject: Re: [linuxppc-release][PATCH] powerpc/pci-hotplug: fix init issue of
- rescanned pci device
-To: Chen Yuanquan-B41889 <B41889@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: =?UTF-8?B?5p2+5pys5Y2a6YOO?= <matsumoto.hiroo@jp.fujitsu.com>,
- linux-pci@vger.kernel.org, r61911@freescale.com, linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 8F2CC2C01FD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2012 10:20:18 +1100 (EST)
+Received: by mail-ye0-f179.google.com with SMTP id m4so183337yen.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2012 15:20:15 -0800 (PST)
+Sender: Jimi Xenidis <xenidis@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
+Subject: Re: [PATCH] powerpc: POWER7 optimised memcpy using VMX and enhanced
+ prefetch
+From: Jimi Xenidis <jimix@pobox.com>
+In-Reply-To: <20120531162209.04bd9bdc@kryten>
+Date: Fri, 7 Dec 2012 17:20:06 -0600
+Message-Id: <D5CF6D4A-8F60-4853-9F7C-EFE5133CEB33@pobox.com>
+References: <20120531162209.04bd9bdc@kryten>
+To: Anton Blanchard <anton@samba.org>
+Cc: Kumar Gala <kumar.gala@gmail.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,183 +29,735 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 6, 2012 at 4:23 AM, Chen Yuanquan-B41889
-<B41889@freescale.com> wrote:
-> On 12/06/2012 05:30 AM, Bjorn Helgaas wrote:
->>
->> On Wed, Dec 5, 2012 at 2:29 AM, Chen Yuanquan-B41889
->> <B41889@freescale.com> wrote:
->>>
->>> On 12/05/2012 04:26 PM, Benjamin Herrenschmidt wrote:
->>>>
->>>> On Wed, 2012-12-05 at 16:20 +0800, Chen Yuanquan-B41889 wrote:
->>>>>
->>>>> On 12/05/2012 03:17 PM, Benjamin Herrenschmidt wrote:
->>>>>>
->>>>>> On Wed, 2012-12-05 at 10:31 +0800, Yuanquan Chen wrote:
->>>>>>>
->>>>>>> On powerpc arch, some fixup work of PCI/PCI-e device is just done
->>>>>>> during the
->>>>>>> first scan at booting time. For the PCI/PCI-e device rescanned after
->>>>>>> linux OS
->>>>>>> booting up, the fixup work won't be done, which leads to dma_set_mask
->>>>>>> error or
->>>>>>> irq related issue in rescanned PCI/PCI-e device's driver. So, it does
->>>>>>> the same
->>>>>>> fixup work for the rescanned device to avoid this issue.
->>>>>>
->>>>>> Hrm, the patch is a bit gross. First the code shouldn't be copy/pasted
->>>>>> that way but factored out.
->>>>
->>>> Please, at least format your email properly so I can try to undertand
->>>> without needing aspirin.
->>>>
->>>>> There's a judgement "if (!bus->is_added)" before calling of
->>>>> pcibios_fixup_bus in pci_scan_child_bus, so for the rescanned device,
->>>>> the fixup won't execute, which leads to fatal error in driver of
->>>>> rescanned
->>>>> device on freescale  powerpc, no this issues on x86 arch.
->>>>
->>>> First, none of that invalidates my statement that you shouldn't
->>>> duplicate a whole block of code like this. Even if your approach is
->>>> correct (which is debated separately), at the very least you should
->>>> factor the code out into a common function between the two copies.
->>>>
->>>>> Remove the judgement, let it to do the pcibios_fixup_bus
->>>>> directly, the error won't occur for the rescanned device. But it's
->>>>> general code, not proper to change here, so copy the pcibios_fixup_bus
->>>>> work to  pcibios_enable_device.
->>>>>
->>>>>> I'm surprised also that is_added is false when pcibios_enable_device()
->>>>>> gets called ... that looks strange to me. At what point is that enable
->>>>>> happening in the hotplug sequence ?
->>>>>
->>>>> All devices are rescanned and then call the pci_enable_devices and
->>>>> pci_bus_add_devices.
->>>>
->>>> Where ? How ? What is the sequence happening ? In any case, I think if
->>>> we need a proper fixup done per-device like that after scan we ought to
->>>> create a new hook at the generic level rather than that sort of hack.
->>>>
->>> echo 1 > rescan to trigger dev_rescan_store:
->>>
->>> dev_rescan_store->pci_rescan_bus->pci_scan_child_bus,
->>> pci_assign_unassigned_bus_resources,
->>> pci_enable_bridges, pci_bus_add_devices
->>>
->>>
->>> pci_enable_bridges->pci_enable_device->__pci_enable_device_flags->do_pci_enable_device->
->>> pcibios_enable_device
->>>
->>> pci_bus_add_devices->pci_bus_add_device->"dev->is_added = 1"
->>>
->>> Yeah, it's general fixup code for every rescanned PCI/PCI-e device on
->>> powerpc at runtime. So if
->>> we want to call it in a ppc_md member, we need to wrap it as a function
->>> and
->>> assign it in every ppc_md,
->>> it isn't proper for the general code.
->>>
->>> Regards,
->>> yuanquan
->>>
->>>
->>>>> The patch code will be called by pci_enable_devices. The
->>>>> "dev->is_added"
->>>>> is set in pci_bus_add_device
->>>>> which is called by pci_bus_add_devices. So "dev->is_added" is false
->>>>> when
->>>>> checking it in pcibios_enable_device
->>>>> for the rescanned device.
->>>>
->>>> Who calls pci_enable_device() in the rescan case ? Why isn't it left to
->>>> the driver ? I don't think we can rely on that behaviour not to change.
->>>>
->>>>>> How do you trigger the rescan anyway ?
->>>>>
->>>>> Use the interface under /sys :
->>>>> echo 1 > /sys/bus/pci/devices/xxx/remove
->>>>>
->>>>> then echo 1 to the pci device which is the bus of the removed device
->>>>> echo 1 > /sys/bus/pci/devices/xxxx/rescan
->>>>> the removed device will be scanned and it's driver module will be
->>>>> loaded
->>>>> automatically.
->>>>
->>>> Yeah this code path are known to be fishy. I think the problem is at the
->>>> generic abstraction level and that's where it needs to be fixed.
->>>>
->>>> Cheers,
->>>> Ben.
->>>>
->>>>> Regards,
->>>>> yuanquan
->>>>>>
->>>>>> I think the problem needs to be solve at a higher level, I'm adding
->>>>>> linux-pci & Bjorn to the CC list.
->>>>>>
->>>>>> Cheers,
->>>>>> Ben.
->>>>>>
->>>>>>> Signed-off-by: Yuanquan Chen <B41889@freescale.com>
->>>>>>> ---
->>>>>>>     arch/powerpc/kernel/pci-common.c |   20 ++++++++++++++++++++
->>>>>>>     1 file changed, 20 insertions(+)
->>>>>>>
->>>>>>> diff --git a/arch/powerpc/kernel/pci-common.c
->>>>>>> b/arch/powerpc/kernel/pci-common.c
->>>>>>> index 7f94f76..f0fb070 100644
->>>>>>> --- a/arch/powerpc/kernel/pci-common.c
->>>>>>> +++ b/arch/powerpc/kernel/pci-common.c
->>>>>>> @@ -1496,6 +1496,26 @@ int pcibios_enable_device(struct pci_dev *dev,
->>>>>>> int mask)
->>>>>>>                  if (ppc_md.pcibios_enable_device_hook(dev))
->>>>>>>                          return -EINVAL;
->>>>>>>     +    if (!dev->is_added) {
->>>>>>> +               /*
->>>>>>> +                * Fixup NUMA node as it may not be setup yet by the
->>>>>>> generic
->>>>>>> +                * code and is needed by the DMA init
->>>>>>> +                */
->>>>>>> +               set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
->>>>>>> +
->>>>>>> +               /* Hook up default DMA ops */
->>>>>>> +               set_dma_ops(&dev->dev, pci_dma_ops);
->>>>>>> +               set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
->>>>>>> +
->>>>>>> +               /* Additional platform DMA/iommu setup */
->>>>>>> +               if (ppc_md.pci_dma_dev_setup)
->>>>>>> +                       ppc_md.pci_dma_dev_setup(dev);
->>>>>>> +
->>>>>>> +               /* Read default IRQs and fixup if necessary */
->>>>>>> +               pci_read_irq_line(dev);
->>>>>>> +               if (ppc_md.pci_irq_fixup)
->>>>>>> +                       ppc_md.pci_irq_fixup(dev);
->>>>>>> +       }
->>>>>>>          return pci_enable_resources(dev, mask);
->>>>>>>     }
->>
->> Is this the same issue Hiroo MATSUMOTO was working on earlier?
->> (http://comments.gmane.org/gmane.linux.ports.ppc.embedded/50080)
->
->
-> Yeah, that's the exact problem I encountered. Please push it forward.
 
-Well, as I mentioned, there are unresolved issues, so it's not just a
-matter of applying the most recent patch.  If you're interested in
-this problem and have some hardware to test, you can help by looking
-into some of the things I mentioned in the message at the URL below.
+On May 31, 2012, at 1:22 AM, Anton Blanchard <anton@samba.org> wrote:
 
->> We went round and round on those patches (partly my fault for
->> excessive bike-shedding), and then we stalled out because of an
->> ordering issue with CardBus init and an IRQ quirk.
->>
->> Here's the last status I remember:
->> http://marc.info/?l=linux-pci&m=135006501620378&w=2
->>
->> Bjorn
->>
->>
->>
->
->
+>=20
+> Implement a POWER7 optimised memcpy using VMX and enhanced prefetch
+> instructions.
+
+<<snip>>
+
+>=20
+> Index: linux-build/arch/powerpc/lib/Makefile
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-build.orig/arch/powerpc/lib/Makefile	2012-05-30 =
+15:27:30.000000000 +1000
+> +++ linux-build/arch/powerpc/lib/Makefile	2012-05-31 =
+09:12:27.574372864 +1000
+> @@ -17,7 +17,8 @@ obj-$(CONFIG_HAS_IOMEM)	+=3D devres.o
+> obj-$(CONFIG_PPC64)	+=3D copypage_64.o copyuser_64.o \
+> 			   memcpy_64.o usercopy_64.o mem_64.o string.o \
+> 			   checksum_wrappers_64.o hweight_64.o \
+> -			   copyuser_power7.o string_64.o =
+copypage_power7.o
+> +			   copyuser_power7.o string_64.o =
+copypage_power7.o \
+> +			   memcpy_power7.o
+
+Hi,
+I know this is a little late, but shouldn't these power7 specific =
+thingies be in "obj-$(CONFIG_PPC_BOOK3S_64)".
+The reason I ask is that my compiler pukes on "dcbtst" and as I deal =
+with that I wanted to point this out.
+
+-jx
+
+
+> obj-$(CONFIG_XMON)	+=3D sstep.o ldstfp.o
+> obj-$(CONFIG_KPROBES)	+=3D sstep.o ldstfp.o
+> obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+=3D sstep.o ldstfp.o
+> Index: linux-build/arch/powerpc/lib/memcpy_64.S
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-build.orig/arch/powerpc/lib/memcpy_64.S	2012-05-30 =
+09:39:59.000000000 +1000
+> +++ linux-build/arch/powerpc/lib/memcpy_64.S	2012-05-31 =
+09:12:00.093876936 +1000
+> @@ -11,7 +11,11 @@
+>=20
+> 	.align	7
+> _GLOBAL(memcpy)
+> +BEGIN_FTR_SECTION
+> 	std	r3,48(r1)	/* save destination pointer for return =
+value */
+> +FTR_SECTION_ELSE
+> +	b	memcpy_power7
+> +ALT_FTR_SECTION_END_IFCLR(CPU_FTR_VMX_COPY)
+> 	PPC_MTOCRF(0x01,r5)
+> 	cmpldi	cr1,r5,16
+> 	neg	r6,r3		# LS 3 bits =3D # bytes to 8-byte dest =
+bdry
+> Index: linux-build/arch/powerpc/lib/memcpy_power7.S
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-build/arch/powerpc/lib/memcpy_power7.S	2012-05-31 =
+15:28:03.495781127 +1000
+> @@ -0,0 +1,650 @@
+> +/*
+> + * This program is free software; you can redistribute it and/or =
+modify
+> + * it under the terms of the GNU General Public License as published =
+by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA =
+02111-1307, USA.
+> + *
+> + * Copyright (C) IBM Corporation, 2012
+> + *
+> + * Author: Anton Blanchard <anton@au.ibm.com>
+> + */
+> +#include <asm/ppc_asm.h>
+> +
+> +#define STACKFRAMESIZE	256
+> +#define STK_REG(i)	(112 + ((i)-14)*8)
+> +
+> +_GLOBAL(memcpy_power7)
+> +#ifdef CONFIG_ALTIVEC
+> +	cmpldi	r5,16
+> +	cmpldi	cr1,r5,4096
+> +
+> +	std	r3,48(r1)
+> +
+> +	blt	.Lshort_copy
+> +	bgt	cr1,.Lvmx_copy
+> +#else
+> +	cmpldi	r5,16
+> +
+> +	std	r3,48(r1)
+> +
+> +	blt	.Lshort_copy
+> +#endif
+> +
+> +.Lnonvmx_copy:
+> +	/* Get the source 8B aligned */
+> +	neg	r6,r4
+> +	mtocrf	0x01,r6
+> +	clrldi	r6,r6,(64-3)
+> +
+> +	bf	cr7*4+3,1f
+> +	lbz	r0,0(r4)
+> +	addi	r4,r4,1
+> +	stb	r0,0(r3)
+> +	addi	r3,r3,1
+> +
+> +1:	bf	cr7*4+2,2f
+> +	lhz	r0,0(r4)
+> +	addi	r4,r4,2
+> +	sth	r0,0(r3)
+> +	addi	r3,r3,2
+> +
+> +2:	bf	cr7*4+1,3f
+> +	lwz	r0,0(r4)
+> +	addi	r4,r4,4
+> +	stw	r0,0(r3)
+> +	addi	r3,r3,4
+> +
+> +3:	sub	r5,r5,r6
+> +	cmpldi	r5,128
+> +	blt	5f
+> +
+> +	mflr	r0
+> +	stdu	r1,-STACKFRAMESIZE(r1)
+> +	std	r14,STK_REG(r14)(r1)
+> +	std	r15,STK_REG(r15)(r1)
+> +	std	r16,STK_REG(r16)(r1)
+> +	std	r17,STK_REG(r17)(r1)
+> +	std	r18,STK_REG(r18)(r1)
+> +	std	r19,STK_REG(r19)(r1)
+> +	std	r20,STK_REG(r20)(r1)
+> +	std	r21,STK_REG(r21)(r1)
+> +	std	r22,STK_REG(r22)(r1)
+> +	std	r0,STACKFRAMESIZE+16(r1)
+> +
+> +	srdi	r6,r5,7
+> +	mtctr	r6
+> +
+> +	/* Now do cacheline (128B) sized loads and stores. */
+> +	.align	5
+> +4:
+> +	ld	r0,0(r4)
+> +	ld	r6,8(r4)
+> +	ld	r7,16(r4)
+> +	ld	r8,24(r4)
+> +	ld	r9,32(r4)
+> +	ld	r10,40(r4)
+> +	ld	r11,48(r4)
+> +	ld	r12,56(r4)
+> +	ld	r14,64(r4)
+> +	ld	r15,72(r4)
+> +	ld	r16,80(r4)
+> +	ld	r17,88(r4)
+> +	ld	r18,96(r4)
+> +	ld	r19,104(r4)
+> +	ld	r20,112(r4)
+> +	ld	r21,120(r4)
+> +	addi	r4,r4,128
+> +	std	r0,0(r3)
+> +	std	r6,8(r3)
+> +	std	r7,16(r3)
+> +	std	r8,24(r3)
+> +	std	r9,32(r3)
+> +	std	r10,40(r3)
+> +	std	r11,48(r3)
+> +	std	r12,56(r3)
+> +	std	r14,64(r3)
+> +	std	r15,72(r3)
+> +	std	r16,80(r3)
+> +	std	r17,88(r3)
+> +	std	r18,96(r3)
+> +	std	r19,104(r3)
+> +	std	r20,112(r3)
+> +	std	r21,120(r3)
+> +	addi	r3,r3,128
+> +	bdnz	4b
+> +
+> +	clrldi	r5,r5,(64-7)
+> +
+> +	ld	r14,STK_REG(r14)(r1)
+> +	ld	r15,STK_REG(r15)(r1)
+> +	ld	r16,STK_REG(r16)(r1)
+> +	ld	r17,STK_REG(r17)(r1)
+> +	ld	r18,STK_REG(r18)(r1)
+> +	ld	r19,STK_REG(r19)(r1)
+> +	ld	r20,STK_REG(r20)(r1)
+> +	ld	r21,STK_REG(r21)(r1)
+> +	ld	r22,STK_REG(r22)(r1)
+> +	addi	r1,r1,STACKFRAMESIZE
+> +
+> +	/* Up to 127B to go */
+> +5:	srdi	r6,r5,4
+> +	mtocrf	0x01,r6
+> +
+> +6:	bf	cr7*4+1,7f
+> +	ld	r0,0(r4)
+> +	ld	r6,8(r4)
+> +	ld	r7,16(r4)
+> +	ld	r8,24(r4)
+> +	ld	r9,32(r4)
+> +	ld	r10,40(r4)
+> +	ld	r11,48(r4)
+> +	ld	r12,56(r4)
+> +	addi	r4,r4,64
+> +	std	r0,0(r3)
+> +	std	r6,8(r3)
+> +	std	r7,16(r3)
+> +	std	r8,24(r3)
+> +	std	r9,32(r3)
+> +	std	r10,40(r3)
+> +	std	r11,48(r3)
+> +	std	r12,56(r3)
+> +	addi	r3,r3,64
+> +
+> +	/* Up to 63B to go */
+> +7:	bf	cr7*4+2,8f
+> +	ld	r0,0(r4)
+> +	ld	r6,8(r4)
+> +	ld	r7,16(r4)
+> +	ld	r8,24(r4)
+> +	addi	r4,r4,32
+> +	std	r0,0(r3)
+> +	std	r6,8(r3)
+> +	std	r7,16(r3)
+> +	std	r8,24(r3)
+> +	addi	r3,r3,32
+> +
+> +	/* Up to 31B to go */
+> +8:	bf	cr7*4+3,9f
+> +	ld	r0,0(r4)
+> +	ld	r6,8(r4)
+> +	addi	r4,r4,16
+> +	std	r0,0(r3)
+> +	std	r6,8(r3)
+> +	addi	r3,r3,16
+> +
+> +9:	clrldi	r5,r5,(64-4)
+> +
+> +	/* Up to 15B to go */
+> +.Lshort_copy:
+> +	mtocrf	0x01,r5
+> +	bf	cr7*4+0,12f
+> +	lwz	r0,0(r4)	/* Less chance of a reject with word ops =
+*/
+> +	lwz	r6,4(r4)
+> +	addi	r4,r4,8
+> +	stw	r0,0(r3)
+> +	stw	r6,4(r3)
+> +	addi	r3,r3,8
+> +
+> +12:	bf	cr7*4+1,13f
+> +	lwz	r0,0(r4)
+> +	addi	r4,r4,4
+> +	stw	r0,0(r3)
+> +	addi	r3,r3,4
+> +
+> +13:	bf	cr7*4+2,14f
+> +	lhz	r0,0(r4)
+> +	addi	r4,r4,2
+> +	sth	r0,0(r3)
+> +	addi	r3,r3,2
+> +
+> +14:	bf	cr7*4+3,15f
+> +	lbz	r0,0(r4)
+> +	stb	r0,0(r3)
+> +
+> +15:	ld	r3,48(r1)
+> +	blr
+> +
+> +.Lunwind_stack_nonvmx_copy:
+> +	addi	r1,r1,STACKFRAMESIZE
+> +	b	.Lnonvmx_copy
+> +
+> +#ifdef CONFIG_ALTIVEC
+> +.Lvmx_copy:
+> +	mflr	r0
+> +	std	r4,56(r1)
+> +	std	r5,64(r1)
+> +	std	r0,16(r1)
+> +	stdu	r1,-STACKFRAMESIZE(r1)
+> +	bl	.enter_vmx_copy
+> +	cmpwi	r3,0
+> +	ld	r0,STACKFRAMESIZE+16(r1)
+> +	ld	r3,STACKFRAMESIZE+48(r1)
+> +	ld	r4,STACKFRAMESIZE+56(r1)
+> +	ld	r5,STACKFRAMESIZE+64(r1)
+> +	mtlr	r0
+> +
+> +	/*
+> +	 * We prefetch both the source and destination using enhanced =
+touch
+> +	 * instructions. We use a stream ID of 0 for the load side and
+> +	 * 1 for the store side.
+> +	 */
+> +	clrrdi	r6,r4,7
+> +	clrrdi	r9,r3,7
+> +	ori	r9,r9,1		/* stream=3D1 */
+> +
+> +	srdi	r7,r5,7		/* length in cachelines, capped at 0x3FF =
+*/
+> +	cmpldi	cr1,r7,0x3FF
+> +	ble	cr1,1f
+> +	li	r7,0x3FF
+> +1:	lis	r0,0x0E00	/* depth=3D7 */
+> +	sldi	r7,r7,7
+> +	or	r7,r7,r0
+> +	ori	r10,r7,1	/* stream=3D1 */
+> +
+> +	lis	r8,0x8000	/* GO=3D1 */
+> +	clrldi	r8,r8,32
+> +
+> +.machine push
+> +.machine "power4"
+> +	dcbt	r0,r6,0b01000
+> +	dcbt	r0,r7,0b01010
+> +	dcbtst	r0,r9,0b01000
+> +	dcbtst	r0,r10,0b01010
+> +	eieio
+> +	dcbt	r0,r8,0b01010	/* GO */
+> +.machine pop
+> +
+> +	beq	.Lunwind_stack_nonvmx_copy
+> +
+> +	/*
+> +	 * If source and destination are not relatively aligned we use a
+> +	 * slower permute loop.
+> +	 */
+> +	xor	r6,r4,r3
+> +	rldicl.	r6,r6,0,(64-4)
+> +	bne	.Lvmx_unaligned_copy
+> +
+> +	/* Get the destination 16B aligned */
+> +	neg	r6,r3
+> +	mtocrf	0x01,r6
+> +	clrldi	r6,r6,(64-4)
+> +
+> +	bf	cr7*4+3,1f
+> +	lbz	r0,0(r4)
+> +	addi	r4,r4,1
+> +	stb	r0,0(r3)
+> +	addi	r3,r3,1
+> +
+> +1:	bf	cr7*4+2,2f
+> +	lhz	r0,0(r4)
+> +	addi	r4,r4,2
+> +	sth	r0,0(r3)
+> +	addi	r3,r3,2
+> +
+> +2:	bf	cr7*4+1,3f
+> +	lwz	r0,0(r4)
+> +	addi	r4,r4,4
+> +	stw	r0,0(r3)
+> +	addi	r3,r3,4
+> +
+> +3:	bf	cr7*4+0,4f
+> +	ld	r0,0(r4)
+> +	addi	r4,r4,8
+> +	std	r0,0(r3)
+> +	addi	r3,r3,8
+> +
+> +4:	sub	r5,r5,r6
+> +
+> +	/* Get the desination 128B aligned */
+> +	neg	r6,r3
+> +	srdi	r7,r6,4
+> +	mtocrf	0x01,r7
+> +	clrldi	r6,r6,(64-7)
+> +
+> +	li	r9,16
+> +	li	r10,32
+> +	li	r11,48
+> +
+> +	bf	cr7*4+3,5f
+> +	lvx	vr1,r0,r4
+> +	addi	r4,r4,16
+> +	stvx	vr1,r0,r3
+> +	addi	r3,r3,16
+> +
+> +5:	bf	cr7*4+2,6f
+> +	lvx	vr1,r0,r4
+> +	lvx	vr0,r4,r9
+> +	addi	r4,r4,32
+> +	stvx	vr1,r0,r3
+> +	stvx	vr0,r3,r9
+> +	addi	r3,r3,32
+> +
+> +6:	bf	cr7*4+1,7f
+> +	lvx	vr3,r0,r4
+> +	lvx	vr2,r4,r9
+> +	lvx	vr1,r4,r10
+> +	lvx	vr0,r4,r11
+> +	addi	r4,r4,64
+> +	stvx	vr3,r0,r3
+> +	stvx	vr2,r3,r9
+> +	stvx	vr1,r3,r10
+> +	stvx	vr0,r3,r11
+> +	addi	r3,r3,64
+> +
+> +7:	sub	r5,r5,r6
+> +	srdi	r6,r5,7
+> +
+> +	std	r14,STK_REG(r14)(r1)
+> +	std	r15,STK_REG(r15)(r1)
+> +	std	r16,STK_REG(r16)(r1)
+> +
+> +	li	r12,64
+> +	li	r14,80
+> +	li	r15,96
+> +	li	r16,112
+> +
+> +	mtctr	r6
+> +
+> +	/*
+> +	 * Now do cacheline sized loads and stores. By this stage the
+> +	 * cacheline stores are also cacheline aligned.
+> +	 */
+> +	.align	5
+> +8:
+> +	lvx	vr7,r0,r4
+> +	lvx	vr6,r4,r9
+> +	lvx	vr5,r4,r10
+> +	lvx	vr4,r4,r11
+> +	lvx	vr3,r4,r12
+> +	lvx	vr2,r4,r14
+> +	lvx	vr1,r4,r15
+> +	lvx	vr0,r4,r16
+> +	addi	r4,r4,128
+> +	stvx	vr7,r0,r3
+> +	stvx	vr6,r3,r9
+> +	stvx	vr5,r3,r10
+> +	stvx	vr4,r3,r11
+> +	stvx	vr3,r3,r12
+> +	stvx	vr2,r3,r14
+> +	stvx	vr1,r3,r15
+> +	stvx	vr0,r3,r16
+> +	addi	r3,r3,128
+> +	bdnz	8b
+> +
+> +	ld	r14,STK_REG(r14)(r1)
+> +	ld	r15,STK_REG(r15)(r1)
+> +	ld	r16,STK_REG(r16)(r1)
+> +
+> +	/* Up to 127B to go */
+> +	clrldi	r5,r5,(64-7)
+> +	srdi	r6,r5,4
+> +	mtocrf	0x01,r6
+> +
+> +	bf	cr7*4+1,9f
+> +	lvx	vr3,r0,r4
+> +	lvx	vr2,r4,r9
+> +	lvx	vr1,r4,r10
+> +	lvx	vr0,r4,r11
+> +	addi	r4,r4,64
+> +	stvx	vr3,r0,r3
+> +	stvx	vr2,r3,r9
+> +	stvx	vr1,r3,r10
+> +	stvx	vr0,r3,r11
+> +	addi	r3,r3,64
+> +
+> +9:	bf	cr7*4+2,10f
+> +	lvx	vr1,r0,r4
+> +	lvx	vr0,r4,r9
+> +	addi	r4,r4,32
+> +	stvx	vr1,r0,r3
+> +	stvx	vr0,r3,r9
+> +	addi	r3,r3,32
+> +
+> +10:	bf	cr7*4+3,11f
+> +	lvx	vr1,r0,r4
+> +	addi	r4,r4,16
+> +	stvx	vr1,r0,r3
+> +	addi	r3,r3,16
+> +
+> +	/* Up to 15B to go */
+> +11:	clrldi	r5,r5,(64-4)
+> +	mtocrf	0x01,r5
+> +	bf	cr7*4+0,12f
+> +	ld	r0,0(r4)
+> +	addi	r4,r4,8
+> +	std	r0,0(r3)
+> +	addi	r3,r3,8
+> +
+> +12:	bf	cr7*4+1,13f
+> +	lwz	r0,0(r4)
+> +	addi	r4,r4,4
+> +	stw	r0,0(r3)
+> +	addi	r3,r3,4
+> +
+> +13:	bf	cr7*4+2,14f
+> +	lhz	r0,0(r4)
+> +	addi	r4,r4,2
+> +	sth	r0,0(r3)
+> +	addi	r3,r3,2
+> +
+> +14:	bf	cr7*4+3,15f
+> +	lbz	r0,0(r4)
+> +	stb	r0,0(r3)
+> +
+> +15:	addi	r1,r1,STACKFRAMESIZE
+> +	ld	r3,48(r1)
+> +	b	.exit_vmx_copy		/* tail call optimise */
+> +
+> +.Lvmx_unaligned_copy:
+> +	/* Get the destination 16B aligned */
+> +	neg	r6,r3
+> +	mtocrf	0x01,r6
+> +	clrldi	r6,r6,(64-4)
+> +
+> +	bf	cr7*4+3,1f
+> +	lbz	r0,0(r4)
+> +	addi	r4,r4,1
+> +	stb	r0,0(r3)
+> +	addi	r3,r3,1
+> +
+> +1:	bf	cr7*4+2,2f
+> +	lhz	r0,0(r4)
+> +	addi	r4,r4,2
+> +	sth	r0,0(r3)
+> +	addi	r3,r3,2
+> +
+> +2:	bf	cr7*4+1,3f
+> +	lwz	r0,0(r4)
+> +	addi	r4,r4,4
+> +	stw	r0,0(r3)
+> +	addi	r3,r3,4
+> +
+> +3:	bf	cr7*4+0,4f
+> +	lwz	r0,0(r4)	/* Less chance of a reject with word ops =
+*/
+> +	lwz	r7,4(r4)
+> +	addi	r4,r4,8
+> +	stw	r0,0(r3)
+> +	stw	r7,4(r3)
+> +	addi	r3,r3,8
+> +
+> +4:	sub	r5,r5,r6
+> +
+> +	/* Get the desination 128B aligned */
+> +	neg	r6,r3
+> +	srdi	r7,r6,4
+> +	mtocrf	0x01,r7
+> +	clrldi	r6,r6,(64-7)
+> +
+> +	li	r9,16
+> +	li	r10,32
+> +	li	r11,48
+> +
+> +	lvsl	vr16,0,r4	/* Setup permute control vector */
+> +	lvx	vr0,0,r4
+> +	addi	r4,r4,16
+> +
+> +	bf	cr7*4+3,5f
+> +	lvx	vr1,r0,r4
+> +	vperm	vr8,vr0,vr1,vr16
+> +	addi	r4,r4,16
+> +	stvx	vr8,r0,r3
+> +	addi	r3,r3,16
+> +	vor	vr0,vr1,vr1
+> +
+> +5:	bf	cr7*4+2,6f
+> +	lvx	vr1,r0,r4
+> +	vperm	vr8,vr0,vr1,vr16
+> +	lvx	vr0,r4,r9
+> +	vperm	vr9,vr1,vr0,vr16
+> +	addi	r4,r4,32
+> +	stvx	vr8,r0,r3
+> +	stvx	vr9,r3,r9
+> +	addi	r3,r3,32
+> +
+> +6:	bf	cr7*4+1,7f
+> +	lvx	vr3,r0,r4
+> +	vperm	vr8,vr0,vr3,vr16
+> +	lvx	vr2,r4,r9
+> +	vperm	vr9,vr3,vr2,vr16
+> +	lvx	vr1,r4,r10
+> +	vperm	vr10,vr2,vr1,vr16
+> +	lvx	vr0,r4,r11
+> +	vperm	vr11,vr1,vr0,vr16
+> +	addi	r4,r4,64
+> +	stvx	vr8,r0,r3
+> +	stvx	vr9,r3,r9
+> +	stvx	vr10,r3,r10
+> +	stvx	vr11,r3,r11
+> +	addi	r3,r3,64
+> +
+> +7:	sub	r5,r5,r6
+> +	srdi	r6,r5,7
+> +
+> +	std	r14,STK_REG(r14)(r1)
+> +	std	r15,STK_REG(r15)(r1)
+> +	std	r16,STK_REG(r16)(r1)
+> +
+> +	li	r12,64
+> +	li	r14,80
+> +	li	r15,96
+> +	li	r16,112
+> +
+> +	mtctr	r6
+> +
+> +	/*
+> +	 * Now do cacheline sized loads and stores. By this stage the
+> +	 * cacheline stores are also cacheline aligned.
+> +	 */
+> +	.align	5
+> +8:
+> +	lvx	vr7,r0,r4
+> +	vperm	vr8,vr0,vr7,vr16
+> +	lvx	vr6,r4,r9
+> +	vperm	vr9,vr7,vr6,vr16
+> +	lvx	vr5,r4,r10
+> +	vperm	vr10,vr6,vr5,vr16
+> +	lvx	vr4,r4,r11
+> +	vperm	vr11,vr5,vr4,vr16
+> +	lvx	vr3,r4,r12
+> +	vperm	vr12,vr4,vr3,vr16
+> +	lvx	vr2,r4,r14
+> +	vperm	vr13,vr3,vr2,vr16
+> +	lvx	vr1,r4,r15
+> +	vperm	vr14,vr2,vr1,vr16
+> +	lvx	vr0,r4,r16
+> +	vperm	vr15,vr1,vr0,vr16
+> +	addi	r4,r4,128
+> +	stvx	vr8,r0,r3
+> +	stvx	vr9,r3,r9
+> +	stvx	vr10,r3,r10
+> +	stvx	vr11,r3,r11
+> +	stvx	vr12,r3,r12
+> +	stvx	vr13,r3,r14
+> +	stvx	vr14,r3,r15
+> +	stvx	vr15,r3,r16
+> +	addi	r3,r3,128
+> +	bdnz	8b
+> +
+> +	ld	r14,STK_REG(r14)(r1)
+> +	ld	r15,STK_REG(r15)(r1)
+> +	ld	r16,STK_REG(r16)(r1)
+> +
+> +	/* Up to 127B to go */
+> +	clrldi	r5,r5,(64-7)
+> +	srdi	r6,r5,4
+> +	mtocrf	0x01,r6
+> +
+> +	bf	cr7*4+1,9f
+> +	lvx	vr3,r0,r4
+> +	vperm	vr8,vr0,vr3,vr16
+> +	lvx	vr2,r4,r9
+> +	vperm	vr9,vr3,vr2,vr16
+> +	lvx	vr1,r4,r10
+> +	vperm	vr10,vr2,vr1,vr16
+> +	lvx	vr0,r4,r11
+> +	vperm	vr11,vr1,vr0,vr16
+> +	addi	r4,r4,64
+> +	stvx	vr8,r0,r3
+> +	stvx	vr9,r3,r9
+> +	stvx	vr10,r3,r10
+> +	stvx	vr11,r3,r11
+> +	addi	r3,r3,64
+> +
+> +9:	bf	cr7*4+2,10f
+> +	lvx	vr1,r0,r4
+> +	vperm	vr8,vr0,vr1,vr16
+> +	lvx	vr0,r4,r9
+> +	vperm	vr9,vr1,vr0,vr16
+> +	addi	r4,r4,32
+> +	stvx	vr8,r0,r3
+> +	stvx	vr9,r3,r9
+> +	addi	r3,r3,32
+> +
+> +10:	bf	cr7*4+3,11f
+> +	lvx	vr1,r0,r4
+> +	vperm	vr8,vr0,vr1,vr16
+> +	addi	r4,r4,16
+> +	stvx	vr8,r0,r3
+> +	addi	r3,r3,16
+> +
+> +	/* Up to 15B to go */
+> +11:	clrldi	r5,r5,(64-4)
+> +	addi	r4,r4,-16	/* Unwind the +16 load offset */
+> +	mtocrf	0x01,r5
+> +	bf	cr7*4+0,12f
+> +	lwz	r0,0(r4)	/* Less chance of a reject with word ops =
+*/
+> +	lwz	r6,4(r4)
+> +	addi	r4,r4,8
+> +	stw	r0,0(r3)
+> +	stw	r6,4(r3)
+> +	addi	r3,r3,8
+> +
+> +12:	bf	cr7*4+1,13f
+> +	lwz	r0,0(r4)
+> +	addi	r4,r4,4
+> +	stw	r0,0(r3)
+> +	addi	r3,r3,4
+> +
+> +13:	bf	cr7*4+2,14f
+> +	lhz	r0,0(r4)
+> +	addi	r4,r4,2
+> +	sth	r0,0(r3)
+> +	addi	r3,r3,2
+> +
+> +14:	bf	cr7*4+3,15f
+> +	lbz	r0,0(r4)
+> +	stb	r0,0(r3)
+> +
+> +15:	addi	r1,r1,STACKFRAMESIZE
+> +	ld	r3,48(r1)
+> +	b	.exit_vmx_copy		/* tail call optimise */
+> +#endif /* CONFiG_ALTIVEC */
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
