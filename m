@@ -1,29 +1,22 @@
-Return-Path: <wujianguo@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- by ozlabs.org (Postfix) with ESMTP id D3F0C2C00DA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2012 18:06:47 +1100 (EST)
-Message-ID: <50C19568.7080500@huawei.com>
-Date: Fri, 7 Dec 2012 15:06:16 +0800
-From: Jianguo Wu <wujianguo@huawei.com>
-MIME-Version: 1.0
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Subject: Re: [Patch v4 09/12] memory-hotplug: remove page table of x86_64
- architecture
-References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
- <1354010422-19648-10-git-send-email-wency@cn.fujitsu.com>
- <50C19022.9000501@cn.fujitsu.com>
-In-Reply-To: <50C19022.9000501@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, sparclinux@vger.kernel.org, Christoph Lameter <cl@linux.com>,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, Jiang Liu <liuj97@gmail.com>,
- Len Brown <len.brown@intel.com>, Jiang Liu <jiang.liu@huawei.com>,
- Wen Congyang <wency@cn.fujitsu.com>, cmetcalf@tilera.com,
- linux-kernel@vger.kernel.org, Minchan Kim <minchan.kim@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id AE2622C00BA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2012 18:35:11 +1100 (EST)
+Received: by mail-pb0-f51.google.com with SMTP id ro12so167109pbb.38
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Dec 2012 23:35:09 -0800 (PST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: [PATCH] vfio powerpc: implemented IOMMU driver for VFIO
+Date: Fri,  7 Dec 2012 18:34:53 +1100
+Message-Id: <1354865693-8060-1-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1354557206.1809.377.camel@bling.home>
+References: <1354557206.1809.377.camel@bling.home>
+Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,83 +26,457 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2012/12/7 14:43, Tang Chen wrote:
+VFIO implements platform independent stuff such as
+a PCI driver, BAR access (via read/write on a file descriptor
+or direct mapping when possible) and IRQ signaling.
 
-> On 11/27/2012 06:00 PM, Wen Congyang wrote:
->> For hot removing memory, we sholud remove page table about the memory.
->> So the patch searches a page table about the removed memory, and clear
->> page table.
-> 
-> (snip)
-> 
->> +void __meminit
->> +kernel_physical_mapping_remove(unsigned long start, unsigned long end)
->> +{
->> +    unsigned long next;
->> +    bool pgd_changed = false;
->> +
->> +    start = (unsigned long)__va(start);
->> +    end = (unsigned long)__va(end);
-> 
-> Hi Wu,
-> 
-> Here, you expect start and end are physical addresses. But in
-> phys_xxx_remove() function, I think using virtual addresses is just
-> fine. Functions like pmd_addr_end() and pud_index() only calculate
-> an offset.
->
+The platform dependent part includes IOMMU initialization
+and handling. This patch implements an IOMMU driver for VFIO
+which does mapping/unmapping pages for the guest IO and
+provides information about DMA window (required by a POWERPC
+guest).
 
-Hi Tang,
+The counterpart in QEMU is required to support this functionality.
 
+Cc: David Gibson <david@gibson.dropbear.id.au>
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ drivers/vfio/Kconfig                |    6 +
+ drivers/vfio/Makefile               |    1 +
+ drivers/vfio/vfio_iommu_spapr_tce.c |  348 +++++++++++++++++++++++++++++++++++
+ include/linux/vfio.h                |   30 +++
+ 4 files changed, 385 insertions(+)
+ create mode 100644 drivers/vfio/vfio_iommu_spapr_tce.c
+
+diff --git a/drivers/vfio/Kconfig b/drivers/vfio/Kconfig
+index 7cd5dec..b464687 100644
+--- a/drivers/vfio/Kconfig
++++ b/drivers/vfio/Kconfig
+@@ -3,10 +3,16 @@ config VFIO_IOMMU_TYPE1
+ 	depends on VFIO
+ 	default n
  
-
-Virtual addresses will work fine, I used physical addresses in order to
-keep consistent with phys_pud[pmd/pte]_init(), So I think we should keep this.
-
-Thanks,
-Jianguo Wu
-
-> So, would you please tell me if we have to use physical addresses here ?
-> 
-> Thanks. :)
-> 
->> +
->> +    for (; start<  end; start = next) {
->> +        pgd_t *pgd = pgd_offset_k(start);
->> +        pud_t *pud;
->> +
->> +        next = pgd_addr_end(start, end);
->> +
->> +        if (!pgd_present(*pgd))
->> +            continue;
->> +
->> +        pud = map_low_page((pud_t *)pgd_page_vaddr(*pgd));
->> +        phys_pud_remove(pud, __pa(start), __pa(next));
->> +        if (free_pud_table(pud, pgd))
->> +            pgd_changed = true;
->> +        unmap_low_page(pud);
->> +    }
->> +
->> +    if (pgd_changed)
->> +        sync_global_pgds(start, end - 1);
->> +
->> +    flush_tlb_all();
->> +}
->> +
->>   #ifdef CONFIG_MEMORY_HOTREMOVE
->>   int __ref arch_remove_memory(u64 start, u64 size)
->>   {
->> @@ -692,6 +921,8 @@ int __ref arch_remove_memory(u64 start, u64 size)
->>       ret = __remove_pages(zone, start_pfn, nr_pages);
->>       WARN_ON_ONCE(ret);
->>
->> +    kernel_physical_mapping_remove(start, start + size);
->> +
->>       return ret;
->>   }
->>   #endif
-> 
-> 
-> 
-> .
-> 
++config VFIO_IOMMU_SPAPR_TCE
++	tristate
++	depends on VFIO && SPAPR_TCE_IOMMU
++	default n
++
+ menuconfig VFIO
+ 	tristate "VFIO Non-Privileged userspace driver framework"
+ 	depends on IOMMU_API
+ 	select VFIO_IOMMU_TYPE1 if X86
++	select VFIO_IOMMU_SPAPR_TCE if PPC_POWERNV
+ 	help
+ 	  VFIO provides a framework for secure userspace device drivers.
+ 	  See Documentation/vfio.txt for more details.
+diff --git a/drivers/vfio/Makefile b/drivers/vfio/Makefile
+index 2398d4a..72bfabc 100644
+--- a/drivers/vfio/Makefile
++++ b/drivers/vfio/Makefile
+@@ -1,3 +1,4 @@
+ obj-$(CONFIG_VFIO) += vfio.o
+ obj-$(CONFIG_VFIO_IOMMU_TYPE1) += vfio_iommu_type1.o
++obj-$(CONFIG_VFIO_IOMMU_SPAPR_TCE) += vfio_iommu_spapr_tce.o
+ obj-$(CONFIG_VFIO_PCI) += pci/
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+new file mode 100644
+index 0000000..b0f81fe
+--- /dev/null
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -0,0 +1,348 @@
++/*
++ * VFIO: IOMMU DMA mapping support for TCE on POWER
++ *
++ * Copyright (C) 2012 IBM Corp.  All rights reserved.
++ *     Author: Alexey Kardashevskiy <aik@ozlabs.ru>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Derived from original vfio_iommu_type1.c:
++ * Copyright (C) 2012 Red Hat, Inc.  All rights reserved.
++ *     Author: Alex Williamson <alex.williamson@redhat.com>
++ */
++
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/slab.h>
++#include <linux/uaccess.h>
++#include <linux/err.h>
++#include <linux/vfio.h>
++#include <asm/iommu.h>
++
++#define DRIVER_VERSION  "0.1"
++#define DRIVER_AUTHOR   "aik@ozlabs.ru"
++#define DRIVER_DESC     "VFIO IOMMU SPAPR TCE"
++
++static void tce_iommu_detach_group(void *iommu_data,
++		struct iommu_group *iommu_group);
++
++/*
++ * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
++ */
++
++/*
++ * This code handles mapping and unmapping of user data buffers
++ * into DMA'ble space using the IOMMU
++ */
++
++#define NPAGE_TO_SIZE(npage)	((size_t)(npage) << PAGE_SHIFT)
++
++struct vwork {
++	struct mm_struct	*mm;
++	long			npage;
++	struct work_struct	work;
++};
++
++/* delayed decrement/increment for locked_vm */
++static void lock_acct_bg(struct work_struct *work)
++{
++	struct vwork *vwork = container_of(work, struct vwork, work);
++	struct mm_struct *mm;
++
++	mm = vwork->mm;
++	down_write(&mm->mmap_sem);
++	mm->locked_vm += vwork->npage;
++	up_write(&mm->mmap_sem);
++	mmput(mm);
++	kfree(vwork);
++}
++
++static void lock_acct(long npage)
++{
++	struct vwork *vwork;
++	struct mm_struct *mm;
++
++	if (!current->mm)
++		return; /* process exited */
++
++	if (down_write_trylock(&current->mm->mmap_sem)) {
++		current->mm->locked_vm += npage;
++		up_write(&current->mm->mmap_sem);
++		return;
++	}
++
++	/*
++	 * Couldn't get mmap_sem lock, so must setup to update
++	 * mm->locked_vm later. If locked_vm were atomic, we
++	 * wouldn't need this silliness
++	 */
++	vwork = kmalloc(sizeof(struct vwork), GFP_KERNEL);
++	if (!vwork)
++		return;
++	mm = get_task_mm(current);
++	if (!mm) {
++		kfree(vwork);
++		return;
++	}
++	INIT_WORK(&vwork->work, lock_acct_bg);
++	vwork->mm = mm;
++	vwork->npage = npage;
++	schedule_work(&vwork->work);
++}
++
++/*
++ * The container descriptor supports only a single group per container.
++ * Required by the API as the container is not supplied with the IOMMU group
++ * at the moment of initialization.
++ */
++struct tce_container {
++	struct mutex lock;
++	struct iommu_table *tbl;
++};
++
++static void *tce_iommu_open(unsigned long arg)
++{
++	struct tce_container *container;
++
++	if (arg != VFIO_SPAPR_TCE_IOMMU) {
++		pr_err("tce_vfio: Wrong IOMMU type\n");
++		return ERR_PTR(-EINVAL);
++	}
++
++	container = kzalloc(sizeof(*container), GFP_KERNEL);
++	if (!container)
++		return ERR_PTR(-ENOMEM);
++
++	mutex_init(&container->lock);
++
++	return container;
++}
++
++static void tce_iommu_release(void *iommu_data)
++{
++	struct tce_container *container = iommu_data;
++
++	WARN_ON(container->tbl && !container->tbl->it_group);
++	if (container->tbl && container->tbl->it_group)
++		tce_iommu_detach_group(iommu_data, container->tbl->it_group);
++
++	mutex_destroy(&container->lock);
++
++	kfree(container);
++}
++
++static long tce_iommu_ioctl(void *iommu_data,
++				 unsigned int cmd, unsigned long arg)
++{
++	struct tce_container *container = iommu_data;
++	unsigned long minsz;
++	long ret;
++
++	switch (cmd) {
++	case VFIO_CHECK_EXTENSION:
++		return (arg == VFIO_SPAPR_TCE_IOMMU) ? 1 : 0;
++
++ 	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
++		struct vfio_iommu_spapr_tce_info info;
++		struct iommu_table *tbl = container->tbl;
++
++		if (WARN_ON(!tbl))
++			return -ENXIO;
++
++		minsz = offsetofend(struct vfio_iommu_spapr_tce_info,
++				dma32_window_size);
++
++		if (copy_from_user(&info, (void __user *)arg, minsz))
++			return -EFAULT;
++
++		if (info.argsz < minsz)
++			return -EINVAL;
++
++		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT;
++		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT;
++		info.flags = 0;
++
++		if (copy_to_user((void __user *)arg, &info, minsz))
++			return -EFAULT;
++
++		return 0;
++	}
++	case VFIO_IOMMU_MAP_DMA: {
++		vfio_iommu_spapr_tce_dma_map param;
++		struct iommu_table *tbl = container->tbl;
++		enum dma_data_direction direction;
++		unsigned long locked, lock_limit;
++
++		if (WARN_ON(!tbl))
++			return -ENXIO;
++
++		minsz = offsetofend(vfio_iommu_spapr_tce_dma_map, size);
++
++		if (copy_from_user(&param, (void __user *)arg, minsz))
++			return -EFAULT;
++
++		if (param.argsz < minsz)
++			return -EINVAL;
++
++		if ((param.flags & VFIO_DMA_MAP_FLAG_READ) &&
++				(param.flags & VFIO_DMA_MAP_FLAG_WRITE))
++			direction = DMA_BIDIRECTIONAL;
++		else if (param.flags & VFIO_DMA_MAP_FLAG_READ)
++			direction = DMA_TO_DEVICE;
++		else if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
++			direction = DMA_FROM_DEVICE;
++		else
++			return -EINVAL;
++
++		if ((param.size & ~IOMMU_PAGE_MASK) ||
++				(param.iova & ~IOMMU_PAGE_MASK) ||
++				(param.vaddr & ~IOMMU_PAGE_MASK))
++			return -EINVAL;
++
++		if ((param.iova + param.size) >
++				((tbl->it_offset + tbl->it_size)
++				<< IOMMU_PAGE_SHIFT))
++			return -EINVAL;
++
++		if (param.iova < (tbl->it_offset << IOMMU_PAGE_SHIFT))
++			return -EINVAL;
++
++		/* Account for locked pages */
++		locked = current->mm->locked_vm +
++			(param.size >> PAGE_SHIFT);
++		lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
++		if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
++			pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
++					rlimit(RLIMIT_MEMLOCK));
++			return -ENOMEM;
++		}
++
++		ret = iommu_put_tces(tbl, param.iova >> IOMMU_PAGE_SHIFT,
++				param.vaddr, direction,
++				param.size >> IOMMU_PAGE_SHIFT);
++
++		if (ret > 0)
++			lock_acct(ret);
++
++		return ret;
++	}
++	case VFIO_IOMMU_UNMAP_DMA: {
++		vfio_iommu_spapr_tce_dma_unmap param;
++		struct iommu_table *tbl = container->tbl;
++
++		if (WARN_ON(!tbl))
++			return -ENXIO;
++
++		minsz = offsetofend(vfio_iommu_spapr_tce_dma_unmap, size);
++
++		if (copy_from_user(&param, (void __user *)arg, minsz))
++			return -EFAULT;
++
++		if (param.argsz < minsz)
++			return -EINVAL;
++
++		if ((param.size & ~IOMMU_PAGE_MASK) ||
++				(param.iova & ~IOMMU_PAGE_MASK))
++			return -EINVAL;
++
++		if ((param.iova + param.size) >
++				((tbl->it_offset + tbl->it_size)
++				<< IOMMU_PAGE_SHIFT))
++			return -EINVAL;
++
++		if (param.iova < (tbl->it_offset << IOMMU_PAGE_SHIFT))
++			return -EINVAL;
++
++		ret = iommu_clear_tces(tbl, param.iova >> IOMMU_PAGE_SHIFT,
++				param.size >> IOMMU_PAGE_SHIFT);
++
++		if (ret > 0)
++			lock_acct(-ret);
++
++		return ret;
++	}
++	default:
++		pr_warn("tce_vfio: unexpected cmd %x\n", cmd);
++	}
++
++	return -ENOTTY;
++}
++
++static int tce_iommu_attach_group(void *iommu_data,
++		struct iommu_group *iommu_group)
++{
++	struct tce_container *container = iommu_data;
++	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
++
++	BUG_ON(!tbl);
++	mutex_lock(&container->lock);
++	pr_debug("tce_vfio: Attaching group #%u to iommu %p\n",
++			iommu_group_id(iommu_group), iommu_group);
++	if (container->tbl) {
++		pr_warn("tce_vfio: Only one group per IOMMU container is allowed, existing id=%d, attaching id=%d\n",
++				iommu_group_id(container->tbl->it_group),
++				iommu_group_id(iommu_group));
++		mutex_unlock(&container->lock);
++		return -EBUSY;
++	}
++
++	container->tbl = tbl;
++	iommu_reset_table(tbl, false);
++	mutex_unlock(&container->lock);
++
++	return 0;
++}
++
++static void tce_iommu_detach_group(void *iommu_data,
++		struct iommu_group *iommu_group)
++{
++	struct tce_container *container = iommu_data;
++	struct iommu_table *tbl = iommu_group_get_iommudata(iommu_group);
++
++	BUG_ON(!tbl);
++	mutex_lock(&container->lock);
++	if (tbl != container->tbl) {
++		pr_warn("tce_vfio: detaching group #%u, expected group is #%u\n",
++				iommu_group_id(iommu_group),
++				iommu_group_id(tbl->it_group));
++	} else {
++
++		pr_debug("tce_vfio: detaching group #%u from iommu %p\n",
++				iommu_group_id(iommu_group), iommu_group);
++
++		container->tbl = NULL;
++		iommu_reset_table(tbl, true);
++	}
++	mutex_unlock(&container->lock);
++}
++
++const struct vfio_iommu_driver_ops tce_iommu_driver_ops = {
++	.name		= "iommu-vfio-powerpc",
++	.owner		= THIS_MODULE,
++	.open		= tce_iommu_open,
++	.release	= tce_iommu_release,
++	.ioctl		= tce_iommu_ioctl,
++	.attach_group	= tce_iommu_attach_group,
++	.detach_group	= tce_iommu_detach_group,
++};
++
++static int __init tce_iommu_init(void)
++{
++	return vfio_register_iommu_driver(&tce_iommu_driver_ops);
++}
++
++static void __exit tce_iommu_cleanup(void)
++{
++	vfio_unregister_iommu_driver(&tce_iommu_driver_ops);
++}
++
++module_init(tce_iommu_init);
++module_exit(tce_iommu_cleanup);
++
++MODULE_VERSION(DRIVER_VERSION);
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR(DRIVER_AUTHOR);
++MODULE_DESCRIPTION(DRIVER_DESC);
++
+diff --git a/include/linux/vfio.h b/include/linux/vfio.h
+index 0a4f180..23cfc79 100644
+--- a/include/linux/vfio.h
++++ b/include/linux/vfio.h
+@@ -99,6 +99,7 @@ extern void vfio_unregister_iommu_driver(
+ /* Extensions */
+ 
+ #define VFIO_TYPE1_IOMMU		1
++#define VFIO_SPAPR_TCE_IOMMU		2
+ 
+ /*
+  * The IOCTL interface is designed for extensibility by embedding the
+@@ -442,4 +443,33 @@ struct vfio_iommu_type1_dma_unmap {
+ 
+ #define VFIO_IOMMU_UNMAP_DMA _IO(VFIO_TYPE, VFIO_BASE + 14)
+ 
++/* -------- Additional API for SPAPR TCE (Server POWERPC) IOMMU -------- */
++
++/*
++ * The SPAPR TCE info struct provides the information about the PCI bus
++ * address ranges available for DMA, these values are programmed into
++ * the hardware so the guest has to know that information.
++ *
++ * The DMA 32 bit window start is an absolute PCI bus address.
++ * The IOVA address passed via map/unmap ioctls are absolute PCI bus
++ * addresses too so the window works as a filter rather than an offset
++ * for IOVA addresses.
++ *
++ * At the momen the IOMMU page size is 4K.
++ */
++struct vfio_iommu_spapr_tce_info {
++	__u32 argsz;
++	__u32 flags;			/* reserved for future use */
++	__u32 dma32_window_start;	/* 32 bit window start (bytes) */
++	__u32 dma32_window_size;	/* 32 bit window size (bytes) */
++};
++
++#define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
++
++/* Reuse type1 map/unmap structs as they are the same at the moment */
++typedef struct vfio_iommu_type1_dma_map vfio_iommu_spapr_tce_dma_map;
++typedef struct vfio_iommu_type1_dma_unmap vfio_iommu_spapr_tce_dma_unmap;
++
++/* ***************************************************************** */
++
+ #endif /* VFIO_H */
+-- 
+1.7.10.4
