@@ -3,23 +3,24 @@ Received: from mail-gg0-f179.google.com (mail-gg0-f179.google.com
  [209.85.161.179])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DE1552C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2012 00:12:39 +1100 (EST)
-Received: by mail-gg0-f179.google.com with SMTP id q1so68360gge.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2012 05:12:36 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 417492C00C4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2012 00:38:30 +1100 (EST)
+Received: by mail-gg0-f179.google.com with SMTP id q1so73258gge.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2012 05:38:27 -0800 (PST)
 Sender: Jimi Xenidis <xenidis@gmail.com>
 Content-Type: text/plain; charset=us-ascii
 Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
 Subject: Re: [RFC] Add IBM Blue Gene/Q Platform
 From: Jimi Xenidis <jimix@pobox.com>
-In-Reply-To: <22146.1354858896@neuling.org>
-Date: Fri, 7 Dec 2012 07:12:31 -0600
-Message-Id: <17203923-C5C4-4659-9F3C-786D20C5C62E@pobox.com>
+In-Reply-To: <22874.1354859652@neuling.org>
+Date: Fri, 7 Dec 2012 07:38:22 -0600
+Message-Id: <F49F5B26-671F-4D3F-BAC3-67F852E03798@pobox.com>
 References: <958841B4-9626-48A2-A28A-13EA3F1D52AE@pobox.com>
- <22146.1354858896@neuling.org>
+ <22874.1354859652@neuling.org>
 To: Michael Neuling <mikey@neuling.org>
 Cc: Andrew T Tauferner <ataufer@us.ibm.com>, Kumar Gala <kumar.gala@gmail.com>,
- Jay Bryant <jsbryant@us.ibm.com>, Todd Inglett <tinglett@us.ibm.com>,
+ Jay Bryant <jsbryant@us.ibm.com>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+ Todd Inglett <tinglett@us.ibm.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,30 +32,92 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Dec 6, 2012, at 11:41 PM, Michael Neuling <mikey@neuling.org> wrote:
+On Dec 6, 2012, at 11:54 PM, Michael Neuling <mikey@neuling.org> wrote:
 
->> commit f6e3c1f706cb6922349d639a74ff6c50acc8b9f8
+>> commit 279c0615917b959a652e81f4ad0d886e2d426d85
 >> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Wed Dec 5 13:41:25 2012 -0500
+>> Date:   Wed Dec 5 13:43:22 2012 -0500
 >>=20
->>    powerpc: Remove unecessary VSX symbols
+>>    powerpc/book3e: IBM Blue Gene/Q Quad Processing eXtention (QPX)
 >>=20
->>    The symbol THREAD_VSR0 is defined to be the same as THREAD_FPR0.  =
-Its
->>    presence causes build issues with more complex configurations.
+>>    This enables kernel support for the QPX extention and is intended =
+for
+>>    processors that support it, usually an IBM Blue Gene processor.
+>>    Turning it on does not effect other processors but it does add =
+code
+>>    and will quadruple the per thread save and restore area for the =
+FPU
+>>    (hense the name).  If you have enabled VSX it will only double the
+>>    space.
 >>=20
 >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
 >=20
-> Can you explain what these "complex configurations" are?
+> Can you give a diagram of how the QPX registers are layed out.
+>=20
+> +#if defined(CONFIG_PPC_QPX)
+> +#define TS_FPRWIDTH 4
+> +#elif defined(CONFIG_VSX)
+>=20
+> Are they 256 bits wide?
 
-In an earlier email we discussed the possibility that there was the =
-possibility/desire that a single binary could support either FPU, VSX =
-and the new QPX.
-However, if a CONFIG_VSX is not defined then THREAD_VSR0 does not get =
-defined even though there might be some code that refers to it.
-Since it is an alias for the same piece of storage I was hoping to solve =
-my config issue and be simplify the code.
+Yes, this is why we nicknamed it the "Quad Hummer" :)
+ - 4-wide double precision FPU SIMD
+ - 2-wide complex SIMD
+ - 4R/2W register file (32x256 bits per thread)
+ - 32B (256 bits) datapath to/from L1 cache
+
+>=20
+>=20
+> +#define QVLFDXA(QRT,RA,RB)	\
+> +	.long (0x7c00048f | ((QRT) << 21) | ((RA) << 16) | ((RB) << 11))
+>=20
+> Put this in ppc-opcode.h.
+>=20
+> +#if defined(CONFIG_VSX) || defined(CONFIG_PPC_QPX)
+> +	/* they are the same MSR bit */
+>=20
+> OMG!
+
+Ooops, you are correct, this was in the original patch.
+I'll double check the work book, but it should be the architected =
+VEC/SPV bit which is really for VMX.
+I'll track it down.
+
+>=20
+>=20
+> +BEGIN_FTR_SECTION							=
+\
+> +	SAVE_32VSRS(n,c,base);						=
+\
+> +END_FTR_SECTION_IFSET(CPU_FTR_VSX);					=
+\
+> +BEGIN_FTR_SECTION							=
+\
+> +	SAVE_32QRS(n,c,base);						=
+\
+> +END_FTR_SECTION_IFSET(CPU_FTR_QPX);=09
+>=20
+> I don't think we want to do this.  We are going to end up with 64
+> NOPS here somewhere.
+
+Excellent point, NOPs are cheap on most processors but not A2 and a lot =
+of embedded, I can wrap some branches with the FTR instead.
+Do you have a concern on the code size?
+
+>=20
+> I'd like to see this patch broken into different parts.
+
+I'm not sure how _this_ patch:
+  =
+<https://github.com/jimix/linux-bgq/commit/279c0615917b959a652e81f4ad0d886=
+e2d426d85>
+could be broken up, please advise.
+
+>=20
+> Also, have you boot tested this change on a VSX enabled box?
+
+I can try, I may bug you for help.
+Is there a commonly test (or apps) I should run?
 
 -jx
 
