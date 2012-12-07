@@ -1,27 +1,16 @@
-Return-Path: <xenidis@gmail.com>
-Received: from mail-gh0-f179.google.com (mail-gh0-f179.google.com
- [209.85.160.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7D6FF2C0106
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2012 00:44:45 +1100 (EST)
-Received: by mail-gh0-f179.google.com with SMTP id r14so74101ghr.38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2012 05:44:42 -0800 (PST)
-Sender: Jimi Xenidis <xenidis@gmail.com>
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
-Subject: Re: [RFC] Add IBM Blue Gene/Q Platform
-From: Jimi Xenidis <jimix@pobox.com>
-In-Reply-To: <22977.1354859787@neuling.org>
-Date: Fri, 7 Dec 2012 07:44:37 -0600
-Message-Id: <644E8572-68F8-4C31-AA9D-96EBC95BC37F@pobox.com>
-References: <958841B4-9626-48A2-A28A-13EA3F1D52AE@pobox.com>
- <22977.1354859787@neuling.org>
-To: Michael Neuling <mikey@neuling.org>
-Cc: Andrew T Tauferner <ataufer@us.ibm.com>, Kumar Gala <kumar.gala@gmail.com>,
- Jay Bryant <jsbryant@us.ibm.com>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
- Todd Inglett <tinglett@us.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <wfp5p@viridian.itc.virginia.edu>
+Received: from viridian.itc.virginia.edu (viridian.itc.Virginia.EDU
+ [128.143.12.139]) by ozlabs.org (Postfix) with ESMTP id E41A92C00C8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2012 01:26:40 +1100 (EST)
+From: Bill Pemberton <wfp5p@virginia.edu>
+To: alsa-devel@alsa-project.org
+Subject: [PATCH 04/25] ASoC: fsl: remove __dev* attributes
+Date: Fri,  7 Dec 2012 09:26:16 -0500
+Message-Id: <1354890397-28568-5-git-send-email-wfp5p@virginia.edu>
+In-Reply-To: <1354890397-28568-1-git-send-email-wfp5p@virginia.edu>
+References: <1354890397-28568-1-git-send-email-wfp5p@virginia.edu>
+Cc: gregkh@linuxfoundation.org, broonie@opensource.wolfsonmicro.com,
+ linuxppc-dev@lists.ozlabs.org, lrg@ti.com, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,271 +20,490 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+CONFIG_HOTPLUG is going away as an option.  As result the __dev*
+markings will be going away.
 
-On Dec 6, 2012, at 11:56 PM, Michael Neuling <mikey@neuling.org> wrote:
+Remove use of __devinit, __devexit_p, __devinitdata, __devinitconst,
+and __devexit.
 
-> Jimi Xenidis <jimix@pobox.com> wrote:
->=20
->> Rather than flood the mailing list with the patches, I've arranged =
-for a git repo to hold the changesets.
->> You can find the repo here:
->>  <https://github.com/jimix/linux-bgq>
->>=20
->> They are against GregKH's linux-stable.git long-term 3.4.y (y=3D22) =
-branch.
->> The first 9 (6e58088f..) effect common code and the rest are BGQ =
-specific.
->=20
-> Do you actually want this upstream?  I assume no.
+Signed-off-by: Bill Pemberton <wfp5p@virginia.edu>
+Cc: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ sound/soc/fsl/eukrea-tlv320.c       | 6 +++---
+ sound/soc/fsl/fsl_dma.c             | 6 +++---
+ sound/soc/fsl/fsl_ssi.c             | 2 +-
+ sound/soc/fsl/imx-audmux.c          | 8 ++++----
+ sound/soc/fsl/imx-mc13783.c         | 6 +++---
+ sound/soc/fsl/imx-pcm-dma.c         | 6 +++---
+ sound/soc/fsl/imx-pcm-fiq.c         | 6 +++---
+ sound/soc/fsl/imx-sgtl5000.c        | 6 +++---
+ sound/soc/fsl/imx-ssi.c             | 4 ++--
+ sound/soc/fsl/mpc5200_psc_ac97.c    | 8 ++++----
+ sound/soc/fsl/mpc5200_psc_i2s.c     | 8 ++++----
+ sound/soc/fsl/mpc8610_hpcd.c        | 4 ++--
+ sound/soc/fsl/mx27vis-aic32x4.c     | 6 +++---
+ sound/soc/fsl/p1022_ds.c            | 4 ++--
+ sound/soc/fsl/p1022_rdk.c           | 4 ++--
+ sound/soc/fsl/pcm030-audio-fabric.c | 4 ++--
+ 16 files changed, 44 insertions(+), 44 deletions(-)
 
-I needed to get these long-term patches out there for the BGQ community =
-for test.
-I would very much like to get a version of these upstream.
-I expect only the QPX, kexec, and (maybe) the DCR changes to cause any =
-controversy, but I've been wrong before.
-I'll be making those patches soon and hope to get a lot of feedback from =
-these patches.
--jx
-
-
->=20
-> Mikey
->=20
->>=20
->> Here is a are the summary logs:
->>=20
->> $ git log --reverse linux-stable/linux-3.4.y..
->> commit 5a8edb2bdd914597693eed299119ff4c2e6d31f2
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Fri Nov 9 09:26:00 2012 -0600
->>=20
->>    powerpc: Fix cputable #ifdef where CONFIG_PPC_A2 is used for =
-CONFIG_PPC_BOOK3E_64
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit ea51920d7035c8d23801d6de46261e7d0a537dfd
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Fri Nov 9 08:58:27 2012 -0600
->>=20
->>    powerpc/book3e: Remove config for PPC_A2_DD2 since there is no =
-reference to it
->>=20
->>    This must have been leftover from early DD1 days which is not
->>    present in any current kernel code.
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 08151401a5db4ff0d441a1b7bf8ad92bd92b14c5
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Mon Nov 5 09:38:01 2012 -0600
->>=20
->>    powerpc/dcr: Some native DCR fixes
->>=20
->>    The following fixes have been made:
->>     - dcr_read/write_native() must use the indexed version of the
->>       m[ft]dcrx since the non-indexed version only allows a 10-bit
->>       numerical space, but the C interface allows a full 32-bits.
->>     - C bindings for m[ft]dcrx, and the "table" versions, should use
->>       "unsigned long" so that they are 64/32 bit neutral.
->>     - The "table" versions (__m[ft]cdr) should obtain the table =
-address
->>       with LOAD_REG_ADDR(), this will also make it 64/32bit neutral.
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit c8320a5daaceed03992d763302020834ea8e17dd
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Mon Nov 5 09:12:00 2012 -0600
->>=20
->>    powerpc/dcr: Add 64-bit DCR access methods.
->>=20
->>    This patch adds the ability to make 64-bit Device Control Register
->>    (DCR) accesses.
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit a763b3f8453b3bd83d7dded8c6644939863af430
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Thu Nov 29 12:49:24 2012 -0500
->>=20
->>    powerpc/boot: Add a "spin_threads" hook to platform_ops
->>=20
->>    It is useful for the boot program to arrange for all secondary =
-cpus
->>    and threads to enter the kernel in a "kexec" fashion.  This hook =
-makes
->>    it possible.
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 391e43393380b514d4d02a42d059619542c7597b
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Thu Nov 29 13:01:23 2012 -0500
->>=20
->>    powerpc/kexec: Add kexec "hold" support for Book3e processors
->>=20
->>    This patch add two items:
->>    1) Book3e requires that GPR4 survive the "hold" process, so we =
-make
->>       sure that happens.
->>    2) Book3e has no real mode, and the hold code exploits this.  =
-Since
->>       these processors ares always translated, we arrange for the =
-kexeced
->>       threads to enter the hold code using the normal kernel linear =
-mapping.
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit f6e3c1f706cb6922349d639a74ff6c50acc8b9f8
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Wed Dec 5 13:41:25 2012 -0500
->>=20
->>    powerpc: Remove unecessary VSX symbols
->>=20
->>    The symbol THREAD_VSR0 is defined to be the same as THREAD_FPR0.  =
-Its
->>    presence causes build issues with more complex configurations.
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 4e817bb42ec8e3d3689877528dd97c4286a870eb
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Tue Nov 20 10:10:52 2012 -0600
->>=20
->>    Blue Gene/Q wicked optimizing compiler does not know the rfdi =
-instruction yet
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 2071aa58b2f3b33d97c94e3a127f7c5d4ffaeb34
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Tue Nov 20 10:14:22 2012 -0600
->>=20
->>    Blue Gene/Q wicked optimizing compiler does not know the mfdcrx =
-instruction yet
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 6e58088fabedbb2d724637b539ba180c03ed8b68
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Wed Oct 31 16:33:21 2012 -0500
->>=20
->>    powerpc/book3e: IBM Blue Gene/Q Boot
->>=20
->>    This patch specifically deals with the initial program load
->>    environment so that a boot image (dtbImage.bgq) can be loaded by =
-the
->>    BGQ management tools.  The boot code is a little odd because it =
-has to
->>    deal with the following issues:
->>     - Linux boot image wrappers are 32-bit programs
->>     - BGQ Tools only load 64bit ELF programs
->>     - BGQ Firmware information is typically loaded at an address > 4G
->>     - BGQ FW information contains 64-bit ABI function pointers (which =
-are
->>       actually function descriptors) to access firmware methods
->>     - BGQ FW methods must be called in 64-bit mode
->>=20
->>    Includes code contributed from:
->>      Andrew Tauferner <ataufer@us.ibm.com>
->>      Todd Inglett <tinglett@us.ibm.com>
->>      Eric Van Hensbergen <ericvh@gmail.com>
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 3bc841935eb4955ce2b2db69bff16f7928464597
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Wed Oct 31 22:36:54 2012 -0500
->>=20
->>    powerpc/book3e: IBM Blue Gene/Q Platform and SMP
->>=20
->>    This patch introduces BGQ as a platform and adds SMP functionality
->>=20
->>    Includes code contributed from:
->>      Andrew Tauferner <ataufer@us.ibm.com>
->>      Todd Inglett <tinglett@us.ibm.com>
->>      Eric Van Hensbergen <ericvh@gmail.com>
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 279c0615917b959a652e81f4ad0d886e2d426d85
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Wed Dec 5 13:43:22 2012 -0500
->>=20
->>    powerpc/book3e: IBM Blue Gene/Q Quad Processing eXtention (QPX)
->>=20
->>    This enables kernel support for the QPX extention and is intended =
-for
->>    processors that support it, usually an IBM Blue Gene processor.
->>    Turning it on does not effect other processors but it does add =
-code
->>    and will quadruple the per thread save and restore area for the =
-FPU
->>    (hense the name).  If you have enabled VSX it will only double the
->>    space.
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 6ff45170ab0463fb34d7011e08c7e47c396f0fd7
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Fri Nov 23 14:52:14 2012 -0600
->>=20
->>    powerpc/book3e: IBM Blue Gene/Q HVC Based Firmware Console
->>=20
->>    New HVC device that uses the Blue Gene Firmware methods to erad =
-and
->>    write to console.
->>=20
->>        Includes code contributed from:
->>          Andrew Tauferner <ataufer@us.ibm.com>
->>          Todd Inglett <tinglett@us.ibm.com>
->>          Eric Van Hensbergen <ericvh@gmail.com>
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit e4ddc0c2ad8b3f0260d15d73e153095e95da84ac
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Thu Nov 29 15:52:04 2012 -0500
->>=20
->>    powerpc/book3e: IBM Blue Gene/Q PCIe and MSI
->>=20
->>    The following patch adds support for the BG/Q PCIe bridge and MSI =
-interrupts.
->>=20
->>    Includes code contributed from:
->>      Jay S. Bryant <jsbryant@us.ibm.com>
->>      Eric Van Hensbergen <ericvh@gmail.com>
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 9fc0b6f729f7bd7e31338283640a718fa4b1693b
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Wed Dec 5 07:01:49 2012 -0500
->>=20
->>    powerpc/book3e: IBM Blue Gene/Q Character Drivers
->>=20
->>    The following patch adds support for user and administration
->>    applications to access the BG/Q control system.
->>=20
->>    Includes code contributed from:
->>      Jay S. Bryant <jsbryant@us.ibm.com>
->>      Eric Van Hensbergen <ericvh@gmail.com>
->>=20
->>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
->>=20
->> commit 9df2c4dfde0ac75f8b2bfcf565f78c2b7382b031
->> Author: Jimi Xenidis <jimix@pobox.com>
->> Date:   Thu Dec 6 18:07:16 2012 -0500
->>=20
->>    Linux 3.4.22-BGQ-rc1
->>=20
->>=20
->>=20
->>=20
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>=20
+diff --git a/sound/soc/fsl/eukrea-tlv320.c b/sound/soc/fsl/eukrea-tlv320.c
+index 267d5b4..75ffdf0 100644
+--- a/sound/soc/fsl/eukrea-tlv320.c
++++ b/sound/soc/fsl/eukrea-tlv320.c
+@@ -93,7 +93,7 @@ static struct snd_soc_card eukrea_tlv320 = {
+ 	.num_links	= 1,
+ };
+ 
+-static int __devinit eukrea_tlv320_probe(struct platform_device *pdev)
++static int eukrea_tlv320_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+ 	int int_port = 0, ext_port;
+@@ -142,7 +142,7 @@ static int __devinit eukrea_tlv320_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int __devexit eukrea_tlv320_remove(struct platform_device *pdev)
++static int eukrea_tlv320_remove(struct platform_device *pdev)
+ {
+ 	snd_soc_unregister_card(&eukrea_tlv320);
+ 
+@@ -155,7 +155,7 @@ static struct platform_driver eukrea_tlv320_driver = {
+ 		.owner = THIS_MODULE,
+ 	},
+ 	.probe = eukrea_tlv320_probe,
+-	.remove = __devexit_p(eukrea_tlv320_remove),};
++	.remove = eukrea_tlv320_remove,};
+ 
+ module_platform_driver(eukrea_tlv320_driver);
+ 
+diff --git a/sound/soc/fsl/fsl_dma.c b/sound/soc/fsl/fsl_dma.c
+index 6feb265..9cc5c1f 100644
+--- a/sound/soc/fsl/fsl_dma.c
++++ b/sound/soc/fsl/fsl_dma.c
+@@ -894,7 +894,7 @@ static struct snd_pcm_ops fsl_dma_ops = {
+ 	.pointer	= fsl_dma_pointer,
+ };
+ 
+-static int __devinit fsl_soc_dma_probe(struct platform_device *pdev)
++static int fsl_soc_dma_probe(struct platform_device *pdev)
+  {
+ 	struct dma_object *dma;
+ 	struct device_node *np = pdev->dev.of_node;
+@@ -958,7 +958,7 @@ static int __devinit fsl_soc_dma_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int __devexit fsl_soc_dma_remove(struct platform_device *pdev)
++static int fsl_soc_dma_remove(struct platform_device *pdev)
+ {
+ 	struct dma_object *dma = dev_get_drvdata(&pdev->dev);
+ 
+@@ -983,7 +983,7 @@ static struct platform_driver fsl_soc_dma_driver = {
+ 		.of_match_table = fsl_soc_dma_ids,
+ 	},
+ 	.probe = fsl_soc_dma_probe,
+-	.remove = __devexit_p(fsl_soc_dma_remove),
++	.remove = fsl_soc_dma_remove,
+ };
+ 
+ module_platform_driver(fsl_soc_dma_driver);
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 4ed2afd..7decbd9 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -639,7 +639,7 @@ static void make_lowercase(char *s)
+ 	}
+ }
+ 
+-static int __devinit fsl_ssi_probe(struct platform_device *pdev)
++static int fsl_ssi_probe(struct platform_device *pdev)
+ {
+ 	struct fsl_ssi_private *ssi_private;
+ 	int ret = 0;
+diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+index 524ce62..251f4d9 100644
+--- a/sound/soc/fsl/imx-audmux.c
++++ b/sound/soc/fsl/imx-audmux.c
+@@ -162,7 +162,7 @@ static void __init audmux_debugfs_init(void)
+ 	}
+ }
+ 
+-static void __devexit audmux_debugfs_remove(void)
++static void audmux_debugfs_remove(void)
+ {
+ 	debugfs_remove_recursive(audmux_debugfs_root);
+ }
+@@ -244,7 +244,7 @@ int imx_audmux_v2_configure_port(unsigned int port, unsigned int ptcr,
+ }
+ EXPORT_SYMBOL_GPL(imx_audmux_v2_configure_port);
+ 
+-static int __devinit imx_audmux_probe(struct platform_device *pdev)
++static int imx_audmux_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+ 	struct pinctrl *pinctrl;
+@@ -278,7 +278,7 @@ static int __devinit imx_audmux_probe(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static int __devexit imx_audmux_remove(struct platform_device *pdev)
++static int imx_audmux_remove(struct platform_device *pdev)
+ {
+ 	if (audmux_type == IMX31_AUDMUX)
+ 		audmux_debugfs_remove();
+@@ -289,7 +289,7 @@ static int __devexit imx_audmux_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver imx_audmux_driver = {
+ 	.probe		= imx_audmux_probe,
+-	.remove		= __devexit_p(imx_audmux_remove),
++	.remove		= imx_audmux_remove,
+ 	.id_table	= imx_audmux_ids,
+ 	.driver	= {
+ 		.name	= DRIVER_NAME,
+diff --git a/sound/soc/fsl/imx-mc13783.c b/sound/soc/fsl/imx-mc13783.c
+index 549b31f..4ae30f2 100644
+--- a/sound/soc/fsl/imx-mc13783.c
++++ b/sound/soc/fsl/imx-mc13783.c
+@@ -98,7 +98,7 @@ static struct snd_soc_card imx_mc13783 = {
+ 	.num_dapm_routes = ARRAY_SIZE(imx_mc13783_routes),
+ };
+ 
+-static int __devinit imx_mc13783_probe(struct platform_device *pdev)
++static int imx_mc13783_probe(struct platform_device *pdev)
+ {
+ 	int ret;
+ 
+@@ -148,7 +148,7 @@ static int __devinit imx_mc13783_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int __devexit imx_mc13783_remove(struct platform_device *pdev)
++static int imx_mc13783_remove(struct platform_device *pdev)
+ {
+ 	snd_soc_unregister_card(&imx_mc13783);
+ 
+@@ -161,7 +161,7 @@ static struct platform_driver imx_mc13783_audio_driver = {
+ 		.owner = THIS_MODULE,
+ 	},
+ 	.probe = imx_mc13783_probe,
+-	.remove = __devexit_p(imx_mc13783_remove)
++	.remove = imx_mc13783_remove
+ };
+ 
+ module_platform_driver(imx_mc13783_audio_driver);
+diff --git a/sound/soc/fsl/imx-pcm-dma.c b/sound/soc/fsl/imx-pcm-dma.c
+index d85929b..bf363d8 100644
+--- a/sound/soc/fsl/imx-pcm-dma.c
++++ b/sound/soc/fsl/imx-pcm-dma.c
+@@ -154,12 +154,12 @@ static struct snd_soc_platform_driver imx_soc_platform_mx2 = {
+ 	.pcm_free	= imx_pcm_free,
+ };
+ 
+-static int __devinit imx_soc_platform_probe(struct platform_device *pdev)
++static int imx_soc_platform_probe(struct platform_device *pdev)
+ {
+ 	return snd_soc_register_platform(&pdev->dev, &imx_soc_platform_mx2);
+ }
+ 
+-static int __devexit imx_soc_platform_remove(struct platform_device *pdev)
++static int imx_soc_platform_remove(struct platform_device *pdev)
+ {
+ 	snd_soc_unregister_platform(&pdev->dev);
+ 	return 0;
+@@ -171,7 +171,7 @@ static struct platform_driver imx_pcm_driver = {
+ 			.owner = THIS_MODULE,
+ 	},
+ 	.probe = imx_soc_platform_probe,
+-	.remove = __devexit_p(imx_soc_platform_remove),
++	.remove = imx_soc_platform_remove,
+ };
+ 
+ module_platform_driver(imx_pcm_driver);
+diff --git a/sound/soc/fsl/imx-pcm-fiq.c b/sound/soc/fsl/imx-pcm-fiq.c
+index 22c6130..713bd79 100644
+--- a/sound/soc/fsl/imx-pcm-fiq.c
++++ b/sound/soc/fsl/imx-pcm-fiq.c
+@@ -282,7 +282,7 @@ static struct snd_soc_platform_driver imx_soc_platform_fiq = {
+ 	.pcm_free	= imx_pcm_fiq_free,
+ };
+ 
+-static int __devinit imx_soc_platform_probe(struct platform_device *pdev)
++static int imx_soc_platform_probe(struct platform_device *pdev)
+ {
+ 	struct imx_ssi *ssi = platform_get_drvdata(pdev);
+ 	int ret;
+@@ -316,7 +316,7 @@ failed_register:
+ 	return ret;
+ }
+ 
+-static int __devexit imx_soc_platform_remove(struct platform_device *pdev)
++static int imx_soc_platform_remove(struct platform_device *pdev)
+ {
+ 	snd_soc_unregister_platform(&pdev->dev);
+ 	return 0;
+@@ -329,7 +329,7 @@ static struct platform_driver imx_pcm_driver = {
+ 	},
+ 
+ 	.probe = imx_soc_platform_probe,
+-	.remove = __devexit_p(imx_soc_platform_remove),
++	.remove = imx_soc_platform_remove,
+ };
+ 
+ module_platform_driver(imx_pcm_driver);
+diff --git a/sound/soc/fsl/imx-sgtl5000.c b/sound/soc/fsl/imx-sgtl5000.c
+index 3d9b1c4..424347e 100644
+--- a/sound/soc/fsl/imx-sgtl5000.c
++++ b/sound/soc/fsl/imx-sgtl5000.c
+@@ -56,7 +56,7 @@ static const struct snd_soc_dapm_widget imx_sgtl5000_dapm_widgets[] = {
+ 	SND_SOC_DAPM_SPK("Ext Spk", NULL),
+ };
+ 
+-static int __devinit imx_sgtl5000_probe(struct platform_device *pdev)
++static int imx_sgtl5000_probe(struct platform_device *pdev)
+ {
+ 	struct device_node *np = pdev->dev.of_node;
+ 	struct device_node *ssi_np, *codec_np;
+@@ -185,7 +185,7 @@ fail:
+ 	return ret;
+ }
+ 
+-static int __devexit imx_sgtl5000_remove(struct platform_device *pdev)
++static int imx_sgtl5000_remove(struct platform_device *pdev)
+ {
+ 	struct imx_sgtl5000_data *data = platform_get_drvdata(pdev);
+ 
+@@ -211,7 +211,7 @@ static struct platform_driver imx_sgtl5000_driver = {
+ 		.of_match_table = imx_sgtl5000_dt_ids,
+ 	},
+ 	.probe = imx_sgtl5000_probe,
+-	.remove = __devexit_p(imx_sgtl5000_remove),
++	.remove = imx_sgtl5000_remove,
+ };
+ module_platform_driver(imx_sgtl5000_driver);
+ 
+diff --git a/sound/soc/fsl/imx-ssi.c b/sound/soc/fsl/imx-ssi.c
+index 006f7d4..2c8d89e 100644
+--- a/sound/soc/fsl/imx-ssi.c
++++ b/sound/soc/fsl/imx-ssi.c
+@@ -639,7 +639,7 @@ failed_clk:
+ 	return ret;
+ }
+ 
+-static int __devexit imx_ssi_remove(struct platform_device *pdev)
++static int imx_ssi_remove(struct platform_device *pdev)
+ {
+ 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	struct imx_ssi *ssi = platform_get_drvdata(pdev);
+@@ -660,7 +660,7 @@ static int __devexit imx_ssi_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver imx_ssi_driver = {
+ 	.probe = imx_ssi_probe,
+-	.remove = __devexit_p(imx_ssi_remove),
++	.remove = imx_ssi_remove,
+ 
+ 	.driver = {
+ 		.name = "imx-ssi",
+diff --git a/sound/soc/fsl/mpc5200_psc_ac97.c b/sound/soc/fsl/mpc5200_psc_ac97.c
+index a313c0a..a4aec04 100644
+--- a/sound/soc/fsl/mpc5200_psc_ac97.c
++++ b/sound/soc/fsl/mpc5200_psc_ac97.c
+@@ -277,7 +277,7 @@ static struct snd_soc_dai_driver psc_ac97_dai[] = {
+  * - Probe/remove operations
+  * - OF device match table
+  */
+-static int __devinit psc_ac97_of_probe(struct platform_device *op)
++static int psc_ac97_of_probe(struct platform_device *op)
+ {
+ 	int rc;
+ 	struct snd_ac97 ac97;
+@@ -310,7 +310,7 @@ static int __devinit psc_ac97_of_probe(struct platform_device *op)
+ 	return 0;
+ }
+ 
+-static int __devexit psc_ac97_of_remove(struct platform_device *op)
++static int psc_ac97_of_remove(struct platform_device *op)
+ {
+ 	mpc5200_audio_dma_destroy(op);
+ 	snd_soc_unregister_dais(&op->dev, ARRAY_SIZE(psc_ac97_dai));
+@@ -318,7 +318,7 @@ static int __devexit psc_ac97_of_remove(struct platform_device *op)
+ }
+ 
+ /* Match table for of_platform binding */
+-static struct of_device_id psc_ac97_match[] __devinitdata = {
++static struct of_device_id psc_ac97_match[] = {
+ 	{ .compatible = "fsl,mpc5200-psc-ac97", },
+ 	{ .compatible = "fsl,mpc5200b-psc-ac97", },
+ 	{}
+@@ -327,7 +327,7 @@ MODULE_DEVICE_TABLE(of, psc_ac97_match);
+ 
+ static struct platform_driver psc_ac97_driver = {
+ 	.probe = psc_ac97_of_probe,
+-	.remove = __devexit_p(psc_ac97_of_remove),
++	.remove = psc_ac97_of_remove,
+ 	.driver = {
+ 		.name = "mpc5200-psc-ac97",
+ 		.owner = THIS_MODULE,
+diff --git a/sound/soc/fsl/mpc5200_psc_i2s.c b/sound/soc/fsl/mpc5200_psc_i2s.c
+index ba1f0a6..b95b966 100644
+--- a/sound/soc/fsl/mpc5200_psc_i2s.c
++++ b/sound/soc/fsl/mpc5200_psc_i2s.c
+@@ -153,7 +153,7 @@ static struct snd_soc_dai_driver psc_i2s_dai[] = {{
+  * - Probe/remove operations
+  * - OF device match table
+  */
+-static int __devinit psc_i2s_of_probe(struct platform_device *op)
++static int psc_i2s_of_probe(struct platform_device *op)
+ {
+ 	int rc;
+ 	struct psc_dma *psc_dma;
+@@ -205,7 +205,7 @@ static int __devinit psc_i2s_of_probe(struct platform_device *op)
+ 
+ }
+ 
+-static int __devexit psc_i2s_of_remove(struct platform_device *op)
++static int psc_i2s_of_remove(struct platform_device *op)
+ {
+ 	mpc5200_audio_dma_destroy(op);
+ 	snd_soc_unregister_dais(&op->dev, ARRAY_SIZE(psc_i2s_dai));
+@@ -213,7 +213,7 @@ static int __devexit psc_i2s_of_remove(struct platform_device *op)
+ }
+ 
+ /* Match table for of_platform binding */
+-static struct of_device_id psc_i2s_match[] __devinitdata = {
++static struct of_device_id psc_i2s_match[] = {
+ 	{ .compatible = "fsl,mpc5200-psc-i2s", },
+ 	{ .compatible = "fsl,mpc5200b-psc-i2s", },
+ 	{}
+@@ -222,7 +222,7 @@ MODULE_DEVICE_TABLE(of, psc_i2s_match);
+ 
+ static struct platform_driver psc_i2s_driver = {
+ 	.probe = psc_i2s_of_probe,
+-	.remove = __devexit_p(psc_i2s_of_remove),
++	.remove = psc_i2s_of_remove,
+ 	.driver = {
+ 		.name = "mpc5200-psc-i2s",
+ 		.owner = THIS_MODULE,
+diff --git a/sound/soc/fsl/mpc8610_hpcd.c b/sound/soc/fsl/mpc8610_hpcd.c
+index 9ff9318..228c52e 100644
+--- a/sound/soc/fsl/mpc8610_hpcd.c
++++ b/sound/soc/fsl/mpc8610_hpcd.c
+@@ -368,7 +368,7 @@ error_alloc:
+  *
+  * This function is called when the platform device is removed.
+  */
+-static int __devexit mpc8610_hpcd_remove(struct platform_device *pdev)
++static int mpc8610_hpcd_remove(struct platform_device *pdev)
+ {
+ 	struct snd_soc_card *card = platform_get_drvdata(pdev);
+ 	struct mpc8610_hpcd_data *machine_data =
+@@ -382,7 +382,7 @@ static int __devexit mpc8610_hpcd_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver mpc8610_hpcd_driver = {
+ 	.probe = mpc8610_hpcd_probe,
+-	.remove = __devexit_p(mpc8610_hpcd_remove),
++	.remove = mpc8610_hpcd_remove,
+ 	.driver = {
+ 		/* The name must match 'compatible' property in the device tree,
+ 		 * in lowercase letters.
+diff --git a/sound/soc/fsl/mx27vis-aic32x4.c b/sound/soc/fsl/mx27vis-aic32x4.c
+index 2b76877..3d10741 100644
+--- a/sound/soc/fsl/mx27vis-aic32x4.c
++++ b/sound/soc/fsl/mx27vis-aic32x4.c
+@@ -180,7 +180,7 @@ static struct snd_soc_card mx27vis_aic32x4 = {
+ 	.num_dapm_routes = ARRAY_SIZE(aic32x4_dapm_routes),
+ };
+ 
+-static int __devinit mx27vis_aic32x4_probe(struct platform_device *pdev)
++static int mx27vis_aic32x4_probe(struct platform_device *pdev)
+ {
+ 	struct snd_mx27vis_platform_data *pdata = pdev->dev.platform_data;
+ 	int ret;
+@@ -219,7 +219,7 @@ static int __devinit mx27vis_aic32x4_probe(struct platform_device *pdev)
+ 	return ret;
+ }
+ 
+-static int __devexit mx27vis_aic32x4_remove(struct platform_device *pdev)
++static int mx27vis_aic32x4_remove(struct platform_device *pdev)
+ {
+ 	snd_soc_unregister_card(&mx27vis_aic32x4);
+ 
+@@ -232,7 +232,7 @@ static struct platform_driver mx27vis_aic32x4_audio_driver = {
+ 		.owner = THIS_MODULE,
+ 	},
+ 	.probe = mx27vis_aic32x4_probe,
+-	.remove = __devexit_p(mx27vis_aic32x4_remove),
++	.remove = mx27vis_aic32x4_remove,
+ };
+ 
+ module_platform_driver(mx27vis_aic32x4_audio_driver);
+diff --git a/sound/soc/fsl/p1022_ds.c b/sound/soc/fsl/p1022_ds.c
+index 144d496..ba59c23 100644
+--- a/sound/soc/fsl/p1022_ds.c
++++ b/sound/soc/fsl/p1022_ds.c
+@@ -376,7 +376,7 @@ error_put:
+  *
+  * This function is called when the platform device is removed.
+  */
+-static int __devexit p1022_ds_remove(struct platform_device *pdev)
++static int p1022_ds_remove(struct platform_device *pdev)
+ {
+ 	struct snd_soc_card *card = platform_get_drvdata(pdev);
+ 	struct machine_data *mdata =
+@@ -390,7 +390,7 @@ static int __devexit p1022_ds_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver p1022_ds_driver = {
+ 	.probe = p1022_ds_probe,
+-	.remove = __devexit_p(p1022_ds_remove),
++	.remove = p1022_ds_remove,
+ 	.driver = {
+ 		/*
+ 		 * The name must match 'compatible' property in the device tree,
+diff --git a/sound/soc/fsl/p1022_rdk.c b/sound/soc/fsl/p1022_rdk.c
+index 897e32f..f215519 100644
+--- a/sound/soc/fsl/p1022_rdk.c
++++ b/sound/soc/fsl/p1022_rdk.c
+@@ -326,7 +326,7 @@ error_put:
+  *
+  * This function is called when the platform device is removed.
+  */
+-static int __devexit p1022_rdk_remove(struct platform_device *pdev)
++static int p1022_rdk_remove(struct platform_device *pdev)
+ {
+ 	struct snd_soc_card *card = platform_get_drvdata(pdev);
+ 	struct machine_data *mdata =
+@@ -340,7 +340,7 @@ static int __devexit p1022_rdk_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver p1022_rdk_driver = {
+ 	.probe = p1022_rdk_probe,
+-	.remove = __devexit_p(p1022_rdk_remove),
++	.remove = p1022_rdk_remove,
+ 	.driver = {
+ 		/*
+ 		 * The name must match 'compatible' property in the device tree,
+diff --git a/sound/soc/fsl/pcm030-audio-fabric.c b/sound/soc/fsl/pcm030-audio-fabric.c
+index 4d26192..8e52c148 100644
+--- a/sound/soc/fsl/pcm030-audio-fabric.c
++++ b/sound/soc/fsl/pcm030-audio-fabric.c
+@@ -101,7 +101,7 @@ static int __init pcm030_fabric_probe(struct platform_device *op)
+ 	return ret;
+ }
+ 
+-static int __devexit pcm030_fabric_remove(struct platform_device *op)
++static int pcm030_fabric_remove(struct platform_device *op)
+ {
+ 	struct pcm030_audio_data *pdata = platform_get_drvdata(op);
+ 	int ret;
+@@ -120,7 +120,7 @@ MODULE_DEVICE_TABLE(of, pcm030_audio_match);
+ 
+ static struct platform_driver pcm030_fabric_driver = {
+ 	.probe		= pcm030_fabric_probe,
+-	.remove		= __devexit_p(pcm030_fabric_remove),
++	.remove		= pcm030_fabric_remove,
+ 	.driver		= {
+ 		.name	= DRV_NAME,
+ 		.owner	= THIS_MODULE,
+-- 
+1.8.0.1
