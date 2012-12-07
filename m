@@ -1,20 +1,26 @@
-Return-Path: <B16394@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8F5B62C00C6
- for <linuxppc-dev@ozlabs.org>; Fri,  7 Dec 2012 19:59:22 +1100 (EST)
-From: Vakul Garg <vakul@freescale.com>
-To: <linux-crypto@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
- <devicetree-discuss@lists.ozlabs.org>
-Subject: [PATCH] Revert "crypto: caam - Updated SEC-4.0 device tree binding
- for ERA information."
-Date: Fri, 7 Dec 2012 14:27:29 +0530
-Message-ID: <1354870649-3656-1-git-send-email-vakul@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+Return-Path: <xenidis@gmail.com>
+Received: from mail-gg0-f179.google.com (mail-gg0-f179.google.com
+ [209.85.161.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DE1552C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2012 00:12:39 +1100 (EST)
+Received: by mail-gg0-f179.google.com with SMTP id q1so68360gge.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2012 05:12:36 -0800 (PST)
+Sender: Jimi Xenidis <xenidis@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
+Subject: Re: [RFC] Add IBM Blue Gene/Q Platform
+From: Jimi Xenidis <jimix@pobox.com>
+In-Reply-To: <22146.1354858896@neuling.org>
+Date: Fri, 7 Dec 2012 07:12:31 -0600
+Message-Id: <17203923-C5C4-4659-9F3C-786D20C5C62E@pobox.com>
+References: <958841B4-9626-48A2-A28A-13EA3F1D52AE@pobox.com>
+ <22146.1354858896@neuling.org>
+To: Michael Neuling <mikey@neuling.org>
+Cc: Andrew T Tauferner <ataufer@us.ibm.com>, Kumar Gala <kumar.gala@gmail.com>,
+ Jay Bryant <jsbryant@us.ibm.com>, Todd Inglett <tinglett@us.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,38 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This reverts commit a2c0911c09190125f52c9941b9d187f601c2f7be.
 
-Signed-off-by: Vakul Garg <vakul@freescale.com>
----
-Instead of adding SEC era information in crypto node's compatible, a new
-property 'fsl,sec-era' is being introduced into crypto node.
+On Dec 6, 2012, at 11:41 PM, Michael Neuling <mikey@neuling.org> wrote:
 
- .../devicetree/bindings/crypto/fsl-sec4.txt        |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+>> commit f6e3c1f706cb6922349d639a74ff6c50acc8b9f8
+>> Author: Jimi Xenidis <jimix@pobox.com>
+>> Date:   Wed Dec 5 13:41:25 2012 -0500
+>>=20
+>>    powerpc: Remove unecessary VSX symbols
+>>=20
+>>    The symbol THREAD_VSR0 is defined to be the same as THREAD_FPR0.  =
+Its
+>>    presence causes build issues with more complex configurations.
+>>=20
+>>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>=20
+>=20
+> Can you explain what these "complex configurations" are?
 
-diff --git a/Documentation/devicetree/bindings/crypto/fsl-sec4.txt b/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
-index fc9ce6f..bd7ce12 100644
---- a/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
-+++ b/Documentation/devicetree/bindings/crypto/fsl-sec4.txt
-@@ -54,8 +54,7 @@ PROPERTIES
-    - compatible
-       Usage: required
-       Value type: <string>
--      Definition: Must include "fsl,sec-v4.0". Also includes SEC
--           ERA versions (optional) with which the device is compatible.
-+      Definition: Must include "fsl,sec-v4.0"
- 
-    - #address-cells
-        Usage: required
-@@ -107,7 +106,7 @@ PROPERTIES
- 
- EXAMPLE
- 	crypto@300000 {
--		compatible = "fsl,sec-v4.0", "fsl,sec-era-v2.0";
-+		compatible = "fsl,sec-v4.0";
- 		#address-cells = <1>;
- 		#size-cells = <1>;
- 		reg = <0x300000 0x10000>;
--- 
-1.7.7.6
+In an earlier email we discussed the possibility that there was the =
+possibility/desire that a single binary could support either FPU, VSX =
+and the new QPX.
+However, if a CONFIG_VSX is not defined then THREAD_VSR0 does not get =
+defined even though there might be some code that refers to it.
+Since it is an alias for the same piece of storage I was hoping to solve =
+my config issue and be simplify the code.
+
+-jx
+
+
+>=20
+> Mikey
