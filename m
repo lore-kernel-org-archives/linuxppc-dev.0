@@ -1,29 +1,15 @@
-Return-Path: <wujianguo@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- by ozlabs.org (Postfix) with ESMTP id EB1CC2C00BE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Dec 2012 13:21:42 +1100 (EST)
-Message-ID: <50C15260.3050608@huawei.com>
-Date: Fri, 7 Dec 2012 10:20:16 +0800
-From: Jianguo Wu <wujianguo@huawei.com>
-MIME-Version: 1.0
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Subject: Re: [Patch v4 08/12] memory-hotplug: remove memmap of sparse-vmemmap
-References: <1354010422-19648-1-git-send-email-wency@cn.fujitsu.com>
- <1354010422-19648-9-git-send-email-wency@cn.fujitsu.com>
- <50B5DC00.20103@huawei.com> <50B80FB1.6040906@cn.fujitsu.com>
- <50BC0D2D.8040008@huawei.com> <50C14976.2050606@cn.fujitsu.com>
-In-Reply-To: <50C14976.2050606@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- Wen Congyang <wency@cn.fujitsu.com>, linux-acpi@vger.kernel.org,
- linux-sh@vger.kernel.org, Len Brown <len.brown@intel.com>, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>, paulus@samba.org,
- Minchan Kim <minchan.kim@gmail.com>,
- KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
- David Rientjes <rientjes@google.com>, sparclinux@vger.kernel.org,
- Christoph Lameter <cl@linux.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Jiang Liu <liuj97@gmail.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Jimi Xenidis <jimix@pobox.com>
+Subject: Re: [RFC] Add IBM Blue Gene/Q Platform
+In-reply-to: <958841B4-9626-48A2-A28A-13EA3F1D52AE@pobox.com>
+References: <958841B4-9626-48A2-A28A-13EA3F1D52AE@pobox.com>
+Date: Fri, 07 Dec 2012 16:41:36 +1100
+Message-ID: <22146.1354858896@neuling.org>
+Cc: Andrew T Tauferner <ataufer@us.ibm.com>, Kumar Gala <kumar.gala@gmail.com>,
+ Jay Bryant <jsbryant@us.ibm.com>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
+ Todd Inglett <tinglett@us.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,216 +19,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tang,
-
-On 2012/12/7 9:42, Tang Chen wrote:
-
-> Hi Wu,
+> commit f6e3c1f706cb6922349d639a74ff6c50acc8b9f8
+> Author: Jimi Xenidis <jimix@pobox.com>
+> Date:   Wed Dec 5 13:41:25 2012 -0500
 > 
-> I met some problems when I was digging into the code. It's very
-> kind of you if you could help me with that. :)
-> 
-> If I misunderstood your code, please tell me.
-> Please see below. :)
-> 
-> On 12/03/2012 10:23 AM, Jianguo Wu wrote:
->> Signed-off-by: Jianguo Wu<wujianguo@huawei.com>
->> Signed-off-by: Jiang Liu<jiang.liu@huawei.com>
->> ---
->>   include/linux/mm.h  |    1 +
->>   mm/sparse-vmemmap.c |  231 +++++++++++++++++++++++++++++++++++++++++++++++++++
->>   mm/sparse.c         |    3 +-
->>   3 files changed, 234 insertions(+), 1 deletions(-)
->>
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index 5657670..1f26af5 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -1642,6 +1642,7 @@ int vmemmap_populate(struct page *start_page, unsigned long pages, int node);
->>   void vmemmap_populate_print_last(void);
->>   void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
->>                     unsigned long size);
->> +void vmemmap_free(struct page *memmap, unsigned long nr_pages);
->>
->>   enum mf_flags {
->>       MF_COUNT_INCREASED = 1<<  0,
->> diff --git a/mm/sparse-vmemmap.c b/mm/sparse-vmemmap.c
->> index 1b7e22a..748732d 100644
->> --- a/mm/sparse-vmemmap.c
->> +++ b/mm/sparse-vmemmap.c
->> @@ -29,6 +29,10 @@
->>   #include<asm/pgalloc.h>
->>   #include<asm/pgtable.h>
->>
->> +#ifdef CONFIG_MEMORY_HOTREMOVE
->> +#include<asm/tlbflush.h>
->> +#endif
->> +
->>   /*
->>    * Allocate a block of memory to be used to back the virtual memory map
->>    * or to back the page tables that are used to create the mapping.
->> @@ -224,3 +228,230 @@ void __init sparse_mem_maps_populate_node(struct page **map_map,
->>           vmemmap_buf_end = NULL;
->>       }
->>   }
->> +
->> +#ifdef CONFIG_MEMORY_HOTREMOVE
->> +
->> +#define PAGE_INUSE 0xFD
->> +
->> +static void vmemmap_free_pages(struct page *page, int order)
->> +{
->> +    struct zone *zone;
->> +    unsigned long magic;
->> +
->> +    magic = (unsigned long) page->lru.next;
->> +    if (magic == SECTION_INFO || magic == MIX_SECTION_INFO) {
->> +        put_page_bootmem(page);
->> +
->> +        zone = page_zone(page);
->> +        zone_span_writelock(zone);
->> +        zone->present_pages++;
->> +        zone_span_writeunlock(zone);
->> +        totalram_pages++;
->> +    } else
->> +        free_pages((unsigned long)page_address(page), order);
-> 
-> Here, I think SECTION_INFO and MIX_SECTION_INFO pages are all allocated
-> by bootmem, so I put this function this way.
-> 
-> I'm not sure if parameter order is necessary here. It will always be 0
-> in your code. Is this OK to you ?
+>     powerpc: Remove unecessary VSX symbols
+>     
+>     The symbol THREAD_VSR0 is defined to be the same as THREAD_FPR0.  Its
+>     presence causes build issues with more complex configurations.
+>     
+>     Signed-off-by: Jimi Xenidis <jimix@pobox.com>
 > 
 
-parameter order is necessary in cpu_has_pse case:
-	vmemmap_pmd_remove
-		free_pagetable(pmd_page(*pmd), get_order(PMD_SIZE))
+Can you explain what these "complex configurations" are?
 
-> static void free_pagetable(struct page *page)
-> {
->         struct zone *zone;
->         bool bootmem = false;
->         unsigned long magic;
-> 
->         /* bootmem page has reserved flag */
->         if (PageReserved(page)) {
->                 __ClearPageReserved(page);
->                 bootmem = true;
->         }
-> 
->         magic = (unsigned long) page->lru.next;
->         if (magic == SECTION_INFO || magic == MIX_SECTION_INFO)
->                 put_page_bootmem(page);
->         else
->                 __free_page(page);
-> 
->         /*
->          * SECTION_INFO pages and MIX_SECTION_INFO pages
->          * are all allocated by bootmem.
->          */
->         if (bootmem) {
->                 zone = page_zone(page);
->                 zone_span_writelock(zone);
->                 zone->present_pages++;
->                 zone_span_writeunlock(zone);
->                 totalram_pages++;
->         }
-> }
-> 
-> (snip)
-> 
->> +
->> +static void vmemmap_pte_remove(pmd_t *pmd, unsigned long addr, unsigned long end)
->> +{
->> +    pte_t *pte;
->> +    unsigned long next;
->> +    void *page_addr;
->> +
->> +    pte = pte_offset_kernel(pmd, addr);
->> +    for (; addr<  end; pte++, addr += PAGE_SIZE) {
->> +        next = (addr + PAGE_SIZE)&  PAGE_MASK;
->> +        if (next>  end)
->> +            next = end;
->> +
->> +        if (pte_none(*pte))
-> 
-> Here, you checked xxx_none() in your vmemmap_xxx_remove(), but you used
-> !xxx_present() in your x86_64 patches. Is it OK if I only check
-> !xxx_present() ?
-
-It is Ok.
-
-> 
->> +            continue;
->> +        if (IS_ALIGNED(addr, PAGE_SIZE)&&
->> +            IS_ALIGNED(next, PAGE_SIZE)) {
->> +            vmemmap_free_pages(pte_page(*pte), 0);
->> +            spin_lock(&init_mm.page_table_lock);
->> +            pte_clear(&init_mm, addr, pte);
->> +            spin_unlock(&init_mm.page_table_lock);
->> +        } else {
->> +            /*
->> +             * Removed page structs are filled with 0xFD.
->> +             */
->> +            memset((void *)addr, PAGE_INUSE, next - addr);
->> +            page_addr = page_address(pte_page(*pte));
->> +
->> +            if (!memchr_inv(page_addr, PAGE_INUSE, PAGE_SIZE)) {
->> +                spin_lock(&init_mm.page_table_lock);
->> +                pte_clear(&init_mm, addr, pte);
->> +                spin_unlock(&init_mm.page_table_lock);
-> 
-> Here, since we clear pte, we should also free the page, right ?
-> 
-
-Right, I forgot here, sorry.
-
->> +            }
->> +        }
->> +    }
->> +
->> +    free_pte_table(pmd);
->> +    __flush_tlb_all();
->> +}
->> +
->> +static void vmemmap_pmd_remove(pud_t *pud, unsigned long addr, unsigned long end)
->> +{
->> +    unsigned long next;
->> +    pmd_t *pmd;
->> +
->> +    pmd = pmd_offset(pud, addr);
->> +    for (; addr<  end; addr = next, pmd++) {
->> +        next = (addr, end);
-> 
-> And by the way, there isn't pte_addr_end() in kernel, why ?
-> I saw you calculated it like this:
-> 
->                 next = (addr + PAGE_SIZE) & PAGE_MASK;
->                 if (next > end)
->                         next = end;
-> 
-> This logic is very similar to {pmd|pud|pgd}_addr_end(). Shall we add a
-> pte_addr_end() or something ? :)
-
-Maybe just keep this for now if no other place need pte_addr_end()?
-
-> Since there is no such code in kernel for a long time, I think there
-> must be some reasons.
-
-Maybe in current kernel, doesn't deal not PTE_SIZE alignment address？
- 
-
-> 
-> I merged free_xxx_table() and remove_xxx_table() as common interfaces.
-
-Greate!
-
-Thanks for your work:).
-
-> 
-> And again, thanks for your patient and nice explanation. :)
-> 
-> (snip)
-> 
-> .
-> 
+Mikey
