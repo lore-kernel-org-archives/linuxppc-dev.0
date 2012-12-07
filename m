@@ -1,20 +1,28 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id A9ABE2C01C2
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2012 04:38:51 +1100 (EST)
-Message-ID: <1354901926.3224.96.camel@bling.home>
-Subject: Re: [PATCH] vfio powerpc: enabled on powernv platform
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Fri, 07 Dec 2012 10:38:46 -0700
-In-Reply-To: <1354865750-8104-1-git-send-email-aik@ozlabs.ru>
-References: <1354636299.1809.431.camel@bling.home>
- <1354865750-8104-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <bhelgaas@google.com>
+Received: from mail-la0-f51.google.com (mail-la0-f51.google.com
+ [209.85.215.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A08F92C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Dec 2012 08:16:10 +1100 (EST)
+Received: by mail-la0-f51.google.com with SMTP id e4so633431lag.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Dec 2012 13:16:06 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <50C08048.3050305@freescale.com>
+References: <1354674717-14426-1-git-send-email-B41889@freescale.com>
+ <1354691878.2351.2.camel@pasglop> <50BF03C1.2070304@freescale.com>
+ <1354695989.2351.13.camel@pasglop> <50BF13E1.1000009@freescale.com>
+ <CAErSpo6mCm79m87MchL=Y1jxxgZ2Mio8d2L+Sg8CLvxRKue8sg@mail.gmail.com>
+ <50C08048.3050305@freescale.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Fri, 7 Dec 2012 14:15:46 -0700
+Message-ID: <CAErSpo4skBkgOLRMhZQboP5aD+7HPyARmfFhoxEvnjiVb7Qy1Q@mail.gmail.com>
+Subject: Re: [linuxppc-release][PATCH] powerpc/pci-hotplug: fix init issue of
+ rescanned pci device
+To: Chen Yuanquan-B41889 <B41889@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: =?UTF-8?B?5p2+5pys5Y2a6YOO?= <matsumoto.hiroo@jp.fujitsu.com>,
+ linux-pci@vger.kernel.org, r61911@freescale.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,482 +32,183 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2012-12-07 at 18:35 +1100, Alexey Kardashevskiy wrote:
-> This patch initializes IOMMU groups based on the IOMMU
-> configuration discovered during the PCI scan on POWERNV
-> (POWER non virtualized) platform. The IOMMU groups are
-> to be used later by VFIO driver (PCI pass through).
-> 
-> It also implements an API for mapping/unmapping pages for
-> guest PCI drivers and providing DMA window properties.
-> This API is going to be used later by QEMU-VFIO to handle
-> h_put_tce hypercalls from the KVM guest.
-> 
-> Although this driver has been tested only on the POWERNV
-> platform, it should work on any platform which supports
-> TCE tables.
-> 
-> To enable VFIO on POWER, enable SPAPR_TCE_IOMMU config
-> option and configure VFIO as required.
-> 
-> Cc: David Gibson <david@gibson.dropbear.id.au>
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/include/asm/iommu.h     |   10 ++
->  arch/powerpc/kernel/iommu.c          |  214 ++++++++++++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/pci.c |  134 +++++++++++++++++++++
->  drivers/iommu/Kconfig                |    8 ++
->  4 files changed, 366 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index cbfe678..be3b11b 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -76,6 +76,9 @@ struct iommu_table {
->  	struct iommu_pool large_pool;
->  	struct iommu_pool pools[IOMMU_NR_POOLS];
->  	unsigned long *it_map;       /* A simple allocation bitmap for now */
-> +#ifdef CONFIG_IOMMU_API
-> +	struct iommu_group *it_group;
-> +#endif
->  };
->  
->  struct scatterlist;
-> @@ -147,5 +150,12 @@ static inline void iommu_restore(void)
->  }
->  #endif
->  
-> +extern void iommu_reset_table(struct iommu_table *tbl, bool release);
-> +extern long iommu_clear_tces(struct iommu_table *tbl, unsigned long entry,
-> +		unsigned long pages);
-> +extern long iommu_put_tces(struct iommu_table *tbl, unsigned long entry,
-> +		uint64_t tce, enum dma_data_direction direction,
-> +		unsigned long pages);
-> +
->  #endif /* __KERNEL__ */
->  #endif /* _ASM_IOMMU_H */
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index ff5a6ce..123431a 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -44,6 +44,7 @@
->  #include <asm/kdump.h>
->  #include <asm/fadump.h>
->  #include <asm/vio.h>
-> +#include <asm/tce.h>
->  
->  #define DBG(...)
->  
-> @@ -856,3 +857,216 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
->  		free_pages((unsigned long)vaddr, get_order(size));
->  	}
->  }
-> +
-> +#ifdef CONFIG_IOMMU_API
-> +/*
-> + * SPAPR TCE API
-> + */
-> +
-> +/*
-> + * iommu_reset_table is called when it started/stopped being used
-> + */
-> +void iommu_reset_table(struct iommu_table *tbl, bool release)
-> +{
-> +	/*
-> +	 * Page at 0 is marked as used in iommu_init_table,
-> +	 * so here we clear it when called with release=false...
-> +	 */
-> +	if (!release && (tbl->it_offset == 0))
-> +		clear_bit(0, tbl->it_map);
+On Thu, Dec 6, 2012 at 4:23 AM, Chen Yuanquan-B41889
+<B41889@freescale.com> wrote:
+> On 12/06/2012 05:30 AM, Bjorn Helgaas wrote:
+>>
+>> On Wed, Dec 5, 2012 at 2:29 AM, Chen Yuanquan-B41889
+>> <B41889@freescale.com> wrote:
+>>>
+>>> On 12/05/2012 04:26 PM, Benjamin Herrenschmidt wrote:
+>>>>
+>>>> On Wed, 2012-12-05 at 16:20 +0800, Chen Yuanquan-B41889 wrote:
+>>>>>
+>>>>> On 12/05/2012 03:17 PM, Benjamin Herrenschmidt wrote:
+>>>>>>
+>>>>>> On Wed, 2012-12-05 at 10:31 +0800, Yuanquan Chen wrote:
+>>>>>>>
+>>>>>>> On powerpc arch, some fixup work of PCI/PCI-e device is just done
+>>>>>>> during the
+>>>>>>> first scan at booting time. For the PCI/PCI-e device rescanned after
+>>>>>>> linux OS
+>>>>>>> booting up, the fixup work won't be done, which leads to dma_set_mask
+>>>>>>> error or
+>>>>>>> irq related issue in rescanned PCI/PCI-e device's driver. So, it does
+>>>>>>> the same
+>>>>>>> fixup work for the rescanned device to avoid this issue.
+>>>>>>
+>>>>>> Hrm, the patch is a bit gross. First the code shouldn't be copy/pasted
+>>>>>> that way but factored out.
+>>>>
+>>>> Please, at least format your email properly so I can try to undertand
+>>>> without needing aspirin.
+>>>>
+>>>>> There's a judgement "if (!bus->is_added)" before calling of
+>>>>> pcibios_fixup_bus in pci_scan_child_bus, so for the rescanned device,
+>>>>> the fixup won't execute, which leads to fatal error in driver of
+>>>>> rescanned
+>>>>> device on freescale  powerpc, no this issues on x86 arch.
+>>>>
+>>>> First, none of that invalidates my statement that you shouldn't
+>>>> duplicate a whole block of code like this. Even if your approach is
+>>>> correct (which is debated separately), at the very least you should
+>>>> factor the code out into a common function between the two copies.
+>>>>
+>>>>> Remove the judgement, let it to do the pcibios_fixup_bus
+>>>>> directly, the error won't occur for the rescanned device. But it's
+>>>>> general code, not proper to change here, so copy the pcibios_fixup_bus
+>>>>> work to  pcibios_enable_device.
+>>>>>
+>>>>>> I'm surprised also that is_added is false when pcibios_enable_device()
+>>>>>> gets called ... that looks strange to me. At what point is that enable
+>>>>>> happening in the hotplug sequence ?
+>>>>>
+>>>>> All devices are rescanned and then call the pci_enable_devices and
+>>>>> pci_bus_add_devices.
+>>>>
+>>>> Where ? How ? What is the sequence happening ? In any case, I think if
+>>>> we need a proper fixup done per-device like that after scan we ought to
+>>>> create a new hook at the generic level rather than that sort of hack.
+>>>>
+>>> echo 1 > rescan to trigger dev_rescan_store:
+>>>
+>>> dev_rescan_store->pci_rescan_bus->pci_scan_child_bus,
+>>> pci_assign_unassigned_bus_resources,
+>>> pci_enable_bridges, pci_bus_add_devices
+>>>
+>>>
+>>> pci_enable_bridges->pci_enable_device->__pci_enable_device_flags->do_pci_enable_device->
+>>> pcibios_enable_device
+>>>
+>>> pci_bus_add_devices->pci_bus_add_device->"dev->is_added = 1"
+>>>
+>>> Yeah, it's general fixup code for every rescanned PCI/PCI-e device on
+>>> powerpc at runtime. So if
+>>> we want to call it in a ppc_md member, we need to wrap it as a function
+>>> and
+>>> assign it in every ppc_md,
+>>> it isn't proper for the general code.
+>>>
+>>> Regards,
+>>> yuanquan
+>>>
+>>>
+>>>>> The patch code will be called by pci_enable_devices. The
+>>>>> "dev->is_added"
+>>>>> is set in pci_bus_add_device
+>>>>> which is called by pci_bus_add_devices. So "dev->is_added" is false
+>>>>> when
+>>>>> checking it in pcibios_enable_device
+>>>>> for the rescanned device.
+>>>>
+>>>> Who calls pci_enable_device() in the rescan case ? Why isn't it left to
+>>>> the driver ? I don't think we can rely on that behaviour not to change.
+>>>>
+>>>>>> How do you trigger the rescan anyway ?
+>>>>>
+>>>>> Use the interface under /sys :
+>>>>> echo 1 > /sys/bus/pci/devices/xxx/remove
+>>>>>
+>>>>> then echo 1 to the pci device which is the bus of the removed device
+>>>>> echo 1 > /sys/bus/pci/devices/xxxx/rescan
+>>>>> the removed device will be scanned and it's driver module will be
+>>>>> loaded
+>>>>> automatically.
+>>>>
+>>>> Yeah this code path are known to be fishy. I think the problem is at the
+>>>> generic abstraction level and that's where it needs to be fixed.
+>>>>
+>>>> Cheers,
+>>>> Ben.
+>>>>
+>>>>> Regards,
+>>>>> yuanquan
+>>>>>>
+>>>>>> I think the problem needs to be solve at a higher level, I'm adding
+>>>>>> linux-pci & Bjorn to the CC list.
+>>>>>>
+>>>>>> Cheers,
+>>>>>> Ben.
+>>>>>>
+>>>>>>> Signed-off-by: Yuanquan Chen <B41889@freescale.com>
+>>>>>>> ---
+>>>>>>>     arch/powerpc/kernel/pci-common.c |   20 ++++++++++++++++++++
+>>>>>>>     1 file changed, 20 insertions(+)
+>>>>>>>
+>>>>>>> diff --git a/arch/powerpc/kernel/pci-common.c
+>>>>>>> b/arch/powerpc/kernel/pci-common.c
+>>>>>>> index 7f94f76..f0fb070 100644
+>>>>>>> --- a/arch/powerpc/kernel/pci-common.c
+>>>>>>> +++ b/arch/powerpc/kernel/pci-common.c
+>>>>>>> @@ -1496,6 +1496,26 @@ int pcibios_enable_device(struct pci_dev *dev,
+>>>>>>> int mask)
+>>>>>>>                  if (ppc_md.pcibios_enable_device_hook(dev))
+>>>>>>>                          return -EINVAL;
+>>>>>>>     +    if (!dev->is_added) {
+>>>>>>> +               /*
+>>>>>>> +                * Fixup NUMA node as it may not be setup yet by the
+>>>>>>> generic
+>>>>>>> +                * code and is needed by the DMA init
+>>>>>>> +                */
+>>>>>>> +               set_dev_node(&dev->dev, pcibus_to_node(dev->bus));
+>>>>>>> +
+>>>>>>> +               /* Hook up default DMA ops */
+>>>>>>> +               set_dma_ops(&dev->dev, pci_dma_ops);
+>>>>>>> +               set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
+>>>>>>> +
+>>>>>>> +               /* Additional platform DMA/iommu setup */
+>>>>>>> +               if (ppc_md.pci_dma_dev_setup)
+>>>>>>> +                       ppc_md.pci_dma_dev_setup(dev);
+>>>>>>> +
+>>>>>>> +               /* Read default IRQs and fixup if necessary */
+>>>>>>> +               pci_read_irq_line(dev);
+>>>>>>> +               if (ppc_md.pci_irq_fixup)
+>>>>>>> +                       ppc_md.pci_irq_fixup(dev);
+>>>>>>> +       }
+>>>>>>>          return pci_enable_resources(dev, mask);
+>>>>>>>     }
+>>
+>> Is this the same issue Hiroo MATSUMOTO was working on earlier?
+>> (http://comments.gmane.org/gmane.linux.ports.ppc.embedded/50080)
+>
+>
+> Yeah, that's the exact problem I encountered. Please push it forward.
 
-Isn't this redundant to the memset below?
+Well, as I mentioned, there are unresolved issues, so it's not just a
+matter of applying the most recent patch.  If you're interested in
+this problem and have some hardware to test, you can help by looking
+into some of the things I mentioned in the message at the URL below.
 
-> +
-> +	iommu_clear_tces(tbl, tbl->it_offset, tbl->it_size);
-> +
-> +	memset(tbl->it_map, 0, (tbl->it_size + 7) >> 3);
-> +
-> +	/*
-> +	 * ... or restore when release=true
-> +	 */
-> +	if (release && (tbl->it_offset == 0))
-> +		set_bit(0, tbl->it_map);
-
-"release" to me implies something is freed, maybe this should just be
-called "restore".
-
-> +}
-> +EXPORT_SYMBOL_GPL(iommu_reset_table);
-> +
-> +/*
-> + * Returns the number of used IOMMU pages (4K) within
-> + * the same system page (4K or 64K).
-> + * bitmap_weight is not used as it does not support bigendian maps.
-> + * "offset" is an IOMMU page number relative to DMA window start.
-> + */
-> +static int syspage_weight(unsigned long *map, unsigned long offset)
-> +{
-> +	int ret = 0, nbits = PAGE_SIZE/IOMMU_PAGE_SIZE;
-> +
-> +	/* Aligns TCE entry number to system page boundary */
-> +	offset &= PAGE_MASK >> IOMMU_PAGE_SHIFT;
-> +
-> +	/* Count used 4K pages */
-> +	while (nbits) {
-> +		if (test_bit(offset, map))
-> +			++ret;
-> +		--nbits;
-> +		++offset;
-> +	}
-> +
-> +	return ret;
-> +}
-> +
-> +static void tce_flush(struct iommu_table *tbl)
-> +{
-> +	/* Flush/invalidate TLB caches if necessary */
-> +	if (ppc_md.tce_flush)
-> +		ppc_md.tce_flush(tbl);
-> +
-> +	/* Make sure updates are seen by hardware */
-> +	mb();
-> +}
-> +
-> +/*
-> + * iommu_clear_tces clears tces and returned the number of system pages
-> + * which it called put_page() on
-> + */
-> +static long clear_tces_nolock(struct iommu_table *tbl, unsigned long entry,
-> +		unsigned long pages)
-> +{
-> +	int i, retpages = 0, clr;
-> +	unsigned long oldtce, oldweight;
-> +	struct page *page;
-> +
-> +	for (i = 0; i < pages; ++i) {
-
-Any reason not to increment "entry" and avoid the 5 cases of "entry + i"
-below?
-
-> +		if (!test_bit(entry + i - tbl->it_offset, tbl->it_map))
-> +			continue;
-> +
-> +		oldtce = ppc_md.tce_get(tbl, entry + i);
-> +		ppc_md.tce_free(tbl, entry + i, 1);
-> +
-> +		oldweight = syspage_weight(tbl->it_map,
-> +				entry + i - tbl->it_offset);
-> +		clr = __test_and_clear_bit(entry + i - tbl->it_offset,
-> +				tbl->it_map);
-> +
-> +		if (WARN_ON(!(oldtce & (TCE_PCI_WRITE | TCE_PCI_READ))))
-> +			continue;
-> +
-> +		page = pfn_to_page(oldtce >> PAGE_SHIFT);
-> +
-> +		if (WARN_ON(!page))
-> +			continue;
-> +
-> +		if (oldtce & TCE_PCI_WRITE)
-> +			SetPageDirty(page);
-> +
-> +		put_page(page);
-> +
-> +		/* That was the last IOMMU page within the system page */
-> +		if ((oldweight == 1) && clr)
-> +			++retpages;
-> +	}
-> +
-> +	return retpages;
-> +}
-> +
-> +/*
-> + * iommu_clear_tces clears tces and returned the number
-> + * of released system pages
-> + */
-> +long iommu_clear_tces(struct iommu_table *tbl, unsigned long entry,
-> +		unsigned long pages)
-> +{
-> +	int ret;
-> +	struct iommu_pool *pool = get_pool(tbl, entry);
-> +
-> +	spin_lock(&(pool->lock));
-> +	ret = clear_tces_nolock(tbl, entry, pages);
-> +	tce_flush(tbl);
-> +	spin_unlock(&(pool->lock));
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(iommu_clear_tces);
-> +
-> +static int put_tce(struct iommu_table *tbl, unsigned long entry,
-> +		uint64_t tce, enum dma_data_direction direction)
-> +{
-> +	int ret;
-> +	struct page *page = NULL;
-> +	unsigned long kva, offset, oldweight;
-> +
-> +	/* Map new TCE */
-> +	offset = (tce & IOMMU_PAGE_MASK) - (tce & PAGE_MASK);
-> +	ret = get_user_pages_fast(tce & PAGE_MASK, 1,
-> +			direction != DMA_TO_DEVICE, &page);
-> +	if (ret != 1) {
-> +		pr_err("tce_vfio: get_user_pages_fast failed tce=%llx ioba=%lx ret=%d\n",
-> +				tce, entry << IOMMU_PAGE_SHIFT, ret);
-> +		return -EFAULT;
-> +	}
-> +
-> +	kva = (unsigned long) page_address(page);
-> +	kva += offset;
-> +
-> +	/* tce_build receives a virtual address */
-> +	ret = ppc_md.tce_build(tbl, entry, 1, kva, direction, NULL);
-> +
-> +	/* tce_build() only returns non-zero for transient errors */
-> +	if (unlikely(ret)) {
-> +		pr_err("tce_vfio: tce_put failed on tce=%llx ioba=%lx kva=%lx ret=%d\n",
-> +				tce, entry << IOMMU_PAGE_SHIFT, kva, ret);
-> +		put_page(page);
-> +		return -EIO;
-> +	}
-> +
-> +	/* Calculate if new system page has been locked */
-> +	oldweight = syspage_weight(tbl->it_map, entry - tbl->it_offset);
-> +	__set_bit(entry - tbl->it_offset, tbl->it_map);
-> +
-> +	return (oldweight == 0) ? 1 : 0;
-
-It seems like there's an optimization for syspage_weight since you only
-care about two cases, ie. syspage_weight_one and syspage_weight_zero.
-The zero test is easy, just mask and return !! the value.  Testing
-weight 1 means you don't have to find more than 2 bits set.  I won't
-hold you to that optimization, just fyi.
-
-> +}
-> +
-> +/*
-> + * iommu_put_tces builds tces and returned the number of actually
-> + * locked system pages
-> + */
-> +long iommu_put_tces(struct iommu_table *tbl, unsigned long entry,
-> +		uint64_t tce, enum dma_data_direction direction,
-> +		unsigned long pages)
-> +{
-> +	int i, ret = 0, retpages = 0;
-> +	struct iommu_pool *pool = get_pool(tbl, entry);
-> +
-> +	BUILD_BUG_ON(PAGE_SIZE < IOMMU_PAGE_SIZE);
-> +	BUG_ON(direction == DMA_NONE);
-> +
-> +	spin_lock(&(pool->lock));
-> +
-> +	/* Check if any is in use */
-> +	for (i = 0; i < pages; ++i) {
-> +		if (test_bit(entry + i - tbl->it_offset, tbl->it_map)) {
-
-Again, seems like there's an optimization here that avoids individually
-testing bits since you only care about zero or non-zero for a sequential
-run.
-
-> +			spin_unlock(&(pool->lock));
-> +			return -EBUSY;
-> +		}
-> +	}
-> +
-> +	/* Put tces to the table */
-> +	for (i = 0; (i < pages) && (ret >= 0); ++i, tce += IOMMU_PAGE_SIZE) {
-> +		ret = put_tce(tbl, entry + i, tce, direction);
-> +		if (ret == 1)
-> +			++retpages;
-> +	}
-> +
-> +	/*
-> +	 * If failed, release locked pages, otherwise return the number
-> +	 * of locked system pages
-> +	 */
-> +	if (ret < 0)
-> +		clear_tces_nolock(tbl, entry, i);
-> +	else
-> +		ret = retpages;
-> +
-> +	tce_flush(tbl);
-> +	spin_unlock(&(pool->lock));
-> +
-> +	return ret;
-> +}
-> +EXPORT_SYMBOL_GPL(iommu_put_tces);
-> +
-> +#endif /* CONFIG_IOMMU_API */
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index 05205cf..1b970bf 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -20,6 +20,7 @@
->  #include <linux/irq.h>
->  #include <linux/io.h>
->  #include <linux/msi.h>
-> +#include <linux/iommu.h>
->  
->  #include <asm/sections.h>
->  #include <asm/io.h>
-> @@ -613,3 +614,136 @@ void __init pnv_pci_init(void)
->  	ppc_md.teardown_msi_irqs = pnv_teardown_msi_irqs;
->  #endif
->  }
-> +
-> +#ifdef CONFIG_IOMMU_API
-> +/*
-> + * IOMMU groups support required by VFIO
-> + */
-> +static int add_device(struct device *dev)
-> +{
-> +	struct iommu_table *tbl;
-> +	int ret = 0;
-> +
-> +	if (WARN_ON(dev->iommu_group)) {
-> +		pr_warn("tce_vfio: device %s is already in iommu group %d, skipping\n",
-> +				dev_name(dev),
-> +				iommu_group_id(dev->iommu_group));
-> +		return -EBUSY;
-> +	}
-> +
-> +	tbl = get_iommu_table_base(dev);
-> +	if (!tbl) {
-> +		pr_debug("tce_vfio: skipping device %s with no tbl\n",
-> +				dev_name(dev));
-> +		return 0;
-> +	}
-> +
-> +	pr_debug("tce_vfio: adding %s to iommu group %d\n",
-> +			dev_name(dev), iommu_group_id(tbl->it_group));
-> +
-> +	ret = iommu_group_add_device(tbl->it_group, dev);
-> +	if (ret < 0)
-> +		pr_err("tce_vfio: %s has not been added, ret=%d\n",
-> +				dev_name(dev), ret);
-> +
-> +	return ret;
-> +}
-> +
-> +static void del_device(struct device *dev)
-> +{
-> +	iommu_group_remove_device(dev);
-> +}
-> +
-> +static int iommu_bus_notifier(struct notifier_block *nb,
-> +			      unsigned long action, void *data)
-> +{
-> +	struct device *dev = data;
-> +
-> +	switch (action) {
-> +	case BUS_NOTIFY_ADD_DEVICE:
-> +		return add_device(dev);
-> +	case BUS_NOTIFY_DEL_DEVICE:
-> +		del_device(dev);
-> +		return 0;
-> +	default:
-> +		return 0;
-> +	}
-> +}
-> +
-> +static struct notifier_block tce_iommu_bus_nb = {
-> +	.notifier_call = iommu_bus_notifier,
-> +};
-> +
-> +static void group_release(void *iommu_data)
-> +{
-> +	struct iommu_table *tbl = iommu_data;
-> +	tbl->it_group = NULL;
-> +}
-> +
-> +static int __init tce_iommu_init(void)
-> +{
-> +	struct pci_dev *pdev = NULL;
-> +	struct iommu_table *tbl;
-> +	struct iommu_group *grp;
-> +
-> +	/* Allocate and initialize IOMMU groups */
-> +	for_each_pci_dev(pdev) {
-> +		tbl = get_iommu_table_base(&pdev->dev);
-> +		if (!tbl)
-> +			continue;
-> +
-> +		/* Skip already initialized */
-> +		if (tbl->it_group)
-> +			continue;
-> +
-> +		grp = iommu_group_alloc();
-> +		if (IS_ERR(grp)) {
-> +			pr_info("tce_vfio: cannot create new IOMMU group, ret=%ld\n",
-> +					PTR_ERR(grp));
-> +			return PTR_ERR(grp);
-> +		}
-> +		tbl->it_group = grp;
-> +		iommu_group_set_iommudata(grp, tbl, group_release);
-
-BTW, groups have a name property that shows up in sysfs that can be set
-with iommu_group_set_name().  IIRC, this was a feature David requested
-for PEs.  It'd be nice if it was used for PEs...  Thanks,
-
-Alex
-
-> +	}
-> +
-> +	bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
-> +
-> +	/* Add PCI devices to VFIO groups */
-> +	for_each_pci_dev(pdev)
-> +		add_device(&pdev->dev);
-> +
-> +	return 0;
-> +}
-> +
-> +static void __exit tce_iommu_cleanup(void)
-> +{
-> +	struct pci_dev *pdev = NULL;
-> +	struct iommu_table *tbl;
-> +	struct iommu_group *grp = NULL;
-> +
-> +	bus_unregister_notifier(&pci_bus_type, &tce_iommu_bus_nb);
-> +
-> +	/* Delete PCI devices from VFIO groups */
-> +	for_each_pci_dev(pdev)
-> +		del_device(&pdev->dev);
-> +
-> +	/* Release VFIO groups */
-> +	for_each_pci_dev(pdev) {
-> +		tbl = get_iommu_table_base(&pdev->dev);
-> +		if (!tbl)
-> +			continue;
-> +		grp = tbl->it_group;
-> +
-> +		/* Skip (already) uninitialized */
-> +		if (!grp)
-> +			continue;
-> +
-> +		/* Do actual release, group_release() is expected to work */
-> +		iommu_group_put(grp);
-> +		BUG_ON(tbl->it_group);
-> +	}
-> +}
-> +
-> +module_init(tce_iommu_init);
-> +module_exit(tce_iommu_cleanup);
-> +#endif /* CONFIG_IOMMU_API */
-> diff --git a/drivers/iommu/Kconfig b/drivers/iommu/Kconfig
-> index 9f69b56..29d11dc 100644
-> --- a/drivers/iommu/Kconfig
-> +++ b/drivers/iommu/Kconfig
-> @@ -187,4 +187,12 @@ config EXYNOS_IOMMU_DEBUG
->  
->  	  Say N unless you need kernel log message for IOMMU debugging
->  
-> +config SPAPR_TCE_IOMMU
-> +	bool "sPAPR TCE IOMMU Support"
-> +	depends on PPC_POWERNV
-> +	select IOMMU_API
-> +	help
-> +	  Enables bits of IOMMU API required by VFIO. The iommu_ops is
-> +	  still not implemented.
-> +
->  endif # IOMMU_SUPPORT
+>> We went round and round on those patches (partly my fault for
+>> excessive bike-shedding), and then we stalled out because of an
+>> ordering issue with CardBus init and an IRQ quirk.
+>>
+>> Here's the last status I remember:
+>> http://marc.info/?l=linux-pci&m=135006501620378&w=2
+>>
+>> Bjorn
+>>
+>>
+>>
+>
+>
