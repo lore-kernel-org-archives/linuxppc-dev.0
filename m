@@ -2,12 +2,13 @@ Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Jimi Xenidis <jimix@pobox.com>
 Subject: Re: [RFC] Add IBM Blue Gene/Q Platform
-In-reply-to: <644E8572-68F8-4C31-AA9D-96EBC95BC37F@pobox.com>
+In-reply-to: <1ECB6402-9BC0-4468-B405-A6F6E971486B@pobox.com>
 References: <958841B4-9626-48A2-A28A-13EA3F1D52AE@pobox.com>
- <22977.1354859787@neuling.org>
- <644E8572-68F8-4C31-AA9D-96EBC95BC37F@pobox.com>
-Date: Mon, 10 Dec 2012 11:26:07 +1100
-Message-ID: <1852.1355099167@neuling.org>
+ <22874.1354859652@neuling.org>
+ <F49F5B26-671F-4D3F-BAC3-67F852E03798@pobox.com>
+ <1ECB6402-9BC0-4468-B405-A6F6E971486B@pobox.com>
+Date: Mon, 10 Dec 2012 11:47:05 +1100
+Message-ID: <3051.1355100425@neuling.org>
 Cc: Andrew T Tauferner <ataufer@us.ibm.com>, Kumar Gala <kumar.gala@gmail.com>,
  Jay Bryant <jsbryant@us.ibm.com>, Josh Boyer <jwboyer@linux.vnet.ibm.com>,
  Todd Inglett <tinglett@us.ibm.com>,
@@ -24,255 +25,260 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Jimi Xenidis <jimix@pobox.com> wrote:
 
 > 
-> On Dec 6, 2012, at 11:56 PM, Michael Neuling <mikey@neuling.org> wrote:
+> On Dec 7, 2012, at 7:38 AM, Jimi Xenidis <jimix@pobox.com> wrote:
 > 
-> > Jimi Xenidis <jimix@pobox.com> wrote:
 > > 
-> >> Rather than flood the mailing list with the patches, I've arranged for a git repo to hold the changesets.
-> >> You can find the repo here:
-> >>  <https://github.com/jimix/linux-bgq>
+> > On Dec 6, 2012, at 11:54 PM, Michael Neuling <mikey@neuling.org> wrote:
+> > 
+> >>> commit 279c0615917b959a652e81f4ad0d886e2d426d85
+> >>> Author: Jimi Xenidis <jimix@pobox.com>
+> >>> Date:   Wed Dec 5 13:43:22 2012 -0500
+> >>> 
+> >>>   powerpc/book3e: IBM Blue Gene/Q Quad Processing eXtention (QPX)
+> >>> 
+> >>>   This enables kernel support for the QPX extention and is intended for
+> >>>   processors that support it, usually an IBM Blue Gene processor.
+> >>>   Turning it on does not effect other processors but it does add code
+> >>>   and will quadruple the per thread save and restore area for the FPU
+> >>>   (hense the name).  If you have enabled VSX it will only double the
+> >>>   space.
+> >>> 
+> >>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
 > >> 
-> >> They are against GregKH's linux-stable.git long-term 3.4.y (y=22) branch.
-> >> The first 9 (6e58088f..) effect common code and the rest are BGQ specific.
-> > 
-> > Do you actually want this upstream?  I assume no.
 > 
-> I needed to get these long-term patches out there for the BGQ
-> community for test.  I would very much like to get a version of these
-> upstream.
+> <<snip>>
+> >> 
+> >> 
+> >> 
+> >> +BEGIN_FTR_SECTION							\
+> >> +	SAVE_32VSRS(n,c,base);						\
+> >> +END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
+> >> +BEGIN_FTR_SECTION							\
+> >> +	SAVE_32QRS(n,c,base);						\
+> >> +END_FTR_SECTION_IFSET(CPU_FTR_QPX);	
+> >> 
+> >> I don't think we want to do this.  We are going to end up with 64
+> >> NOPS here somewhere.
+> > 
+> > Excellent point, NOPs are cheap on most processors but not A2 and a lot of embedded, I can wrap some branches with the FTR instead.
+> > Do you have a concern on the code size?
+> 
+> Thought about it a bit and came up with this solution for arch/powerpc/kernel/fpu.S.
+> This should address the following issues
+>  - MSR_VSX vs MSR_VEC
+>  - Big chunks of NOPs in the code path
+>  - Less FTR space fixups at boot time.
+>  - IMNHSO easier to read especially when disassembled
 
-Ok, cool.  
+Indeed, I think it looks better.  I was going to mention that it was
+already pretty complex to read, so a rewrite like this was probably
+needed.  So thanks!!
 
-> I expect only the QPX, kexec, and (maybe) the DCR changes to cause any controversy, but I've been wrong before.
+That being said, there is a pretty complex testing matrix of
+CONFIG_VSX/VMX/FPU/QPX/SMP/64/32 CPU_FTR/VSX/FPU/QPX/VMX so I'd need to
+look/test more carefully to make sure all of these are covered.
 
->From my perspective, the QPX stuff should be fine to get upstream once
-we beat the patches into shape.  No comment on kexec and DCR.  
+Also, transactional memory (see
+http://lists.ozlabs.org/pipermail/linuxppc-dev/2012-November/102216.html)
+will change this code.  You should rebase on top of that if you really
+want it considered for upstream.
 
 Mikey
 
-> I'll be making those patches soon and hope to get a lot of feedback
-> from these patches.  -jx
+> 
+> I did consider using the LR and BLR, but the !CONFIG_SMP case only adds one more special block and uses a different register set.
+> Also if this is agreeable I would like us to consider removing the *_32FPVSRS* macros entirely and put the FTR tests in the actual code.
+> This would allow us to use #ifdefs and reduce the amount of code that actually gets compiled.
+> 
+> Thoughts?
+> 
+> diff --git a/arch/powerpc/kernel/fpu.S b/arch/powerpc/kernel/fpu.S
+> index e0ada05..5964067 100644
+> --- a/arch/powerpc/kernel/fpu.S
+> +++ b/arch/powerpc/kernel/fpu.S
+> @@ -25,30 +25,81 @@
+>  #include <asm/asm-offsets.h>
+>  #include <asm/ptrace.h>
+>  
+> -#ifdef CONFIG_VSX
+> -#define __REST_32FPVSRS(n,c,base)					\
+> -BEGIN_FTR_SECTION							\
+> -	b	2f;							\
+> -END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
+> -	REST_32FPRS(n,base);						\
+> -	b	3f;							\
+> -2:	REST_32VSRS(n,c,base);						\
+> -3:
+> -
+> -#define __SAVE_32FPVSRS(n,c,base)					\
+> -BEGIN_FTR_SECTION							\
+> -	b	2f;							\
+> -END_FTR_SECTION_IFSET(CPU_FTR_VSX);					\
+> -	SAVE_32FPRS(n,base);						\
+> -	b	3f;							\
+> -2:	SAVE_32VSRS(n,c,base);						\
+> -3:
+> -#else
+> -#define __REST_32FPVSRS(n,b,base)	REST_32FPRS(n, base)
+> -#define __SAVE_32FPVSRS(n,b,base)	SAVE_32FPRS(n, base)
+> -#endif
+> -#define REST_32FPVSRS(n,c,base) __REST_32FPVSRS(n,__REG_##c,__REG_##base)
+> -#define SAVE_32FPVSRS(n,c,base) __SAVE_32FPVSRS(n,__REG_##c,__REG_##base)
+> +
+> +/*
+> + * Restore subroutines, R4 is scratch and R5 is base
+> + */
+> +vsx_restore:
+> +	REST_32VSRS(0, __REG_R4, __REG_R5)
+> +	b after_restore
+> +qpx_restore:
+> +	REST_32QRS(0, __REG_R4, __REG_R5)
+> +	b after_restore
+> +fpu_restore:
+> +	REST_32FPRS(0, __REG_R5)
+> +	b after_restore
+> +
+> +#define REST_32FPVSRS(n, c, base)		\
+> +BEGIN_FTR_SECTION				\
+> +	b vsx_restore;				\
+> +END_FTR_SECTION_IFSET(CPU_FTR_VSX)		\
+> +BEGIN_FTR_SECTION				\
+> +	b qpx_restore;				\
+> +END_FTR_SECTION_IFSET(CPU_FTR_QPX)		\
+> +	b fpu_restore;				\
+> +after_restore:
+> +
+> +/*
+> + * Save subroutines, R4 is scratch and R3 is base
+> + */
+> +vsx_save:
+> +	SAVE_32VSRS(0, __REG_R4, __REG_R3)
+> +	b after_save
+> +qpx_save:
+> +	SAVE_32QRS(0, __REG_R4, __REG_R3)
+> +	b after_save
+> +fpu_save:
+> +	SAVE_32FPRS(0, __REG_R3)
+> +	b after_save
+> +
+> +#define SAVE_32FPVSRS(n, c, base)		\
+> +BEGIN_FTR_SECTION				\
+> +	b vsx_save;				\
+> +END_FTR_SECTION_IFSET(CPU_FTR_VSX)		\
+> +BEGIN_FTR_SECTION				\
+> +	b qpx_save;				\
+> +END_FTR_SECTION_IFSET(CPU_FTR_QPX)		\
+> +	b fpu_save;				\
+> +after_save:
+> +
+> +#ifndef CONFIG_SMP
+> +/*
+> + * we need an extra save set for the !CONFIG_SMP case, see below
+> + * Scratch it R5 and base is R4
+> + */
+> +vsx_save_nosmp:
+> +	SAVE_32VSRS(0,R5,R4)
+> +	b after_save_nosmp
+> +
+> +qpx_save_nosmp:
+> +	SAVE_32QRS(0,R5,R4)
+> +	b after_save_nosmp
+> +
+> +fpu_save_nosmp:
+> +	SAVE_32FPRS(0,R4)
+> +	b after_save_nosmp
+> +
+> +#define SAVE_32FPVSRS_NOSMP(n,c,base)		\
+> +BEGIN_FTR_SECTION				\
+> +	b vsx_save_nosmp;			\
+> +END_FTR_SECTION_IFSET(CPU_FTR_VSX)		\
+> +BEGIN_FTR_SECTION				\
+> +	b qpx_save_nosmp;			\
+> +END_FTR_SECTION_IFSET(CPU_FTR_QPX)		\
+> +	b fpu_save_nosmp;			\
+> +after_save_nosmp:
+> +
+> +#endif /* !CONFIG_SMP */
+>  
+>  /*
+>   * This task wants to use the FPU now.
+> @@ -65,6 +116,11 @@ BEGIN_FTR_SECTION
+>  	oris	r5,r5,MSR_VSX@h
+>  END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+>  #endif
+> +#ifdef CONFIG_PPC_QPX
+> +BEGIN_FTR_SECTION
+> +	oris	r5,r5,MSR_VEC@h
+> +END_FTR_SECTION_IFSET(CPU_FTR_QPX)
+> +#endif
+>  	SYNC
+>  	MTMSRD(r5)			/* enable use of fpu now */
+>  	isync
+> @@ -81,7 +137,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+>  	beq	1f
+>  	toreal(r4)
+>  	addi	r4,r4,THREAD		/* want last_task_used_math->thread */
+> -	SAVE_32FPVSRS(0, R5, R4)
+> +	SAVE_32FPVSRS_NOSMP(0, R5, R4)
+>  	mffs	fr0
+>  	stfd	fr0,THREAD_FPSCR(r4)
+>  	PPC_LL	r5,PT_REGS(r4)
+> @@ -94,7 +150,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+>  #endif /* CONFIG_SMP */
+>  	/* enable use of FP after return */
+>  #ifdef CONFIG_PPC32
+> -	mfspr	r5,SPRN_SPRG_THREAD		/* current task's THREAD (phys) */
+> +	mfspr	r5,SPRN_SPRG_THREAD	/* current task's THREAD (phys) */
+>  	lwz	r4,THREAD_FPEXC_MODE(r5)
+>  	ori	r9,r9,MSR_FP		/* enable FP for current */
+>  	or	r9,r9,r4
+> @@ -132,6 +188,11 @@ BEGIN_FTR_SECTION
+>  	oris	r5,r5,MSR_VSX@h
+>  END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+>  #endif
+> +#ifdef CONFIG_PPC_QPX
+> +BEGIN_FTR_SECTION
+> +	oris	r5,r5,MSR_VEC@h
+> +END_FTR_SECTION_IFSET(CPU_FTR_QPX)
+> +#endif
+>  	SYNC_601
+>  	ISYNC_601
+>  	MTMSRD(r5)			/* enable use of fpu now */
+> @@ -148,10 +209,10 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+>  	beq	1f
+>  	PPC_LL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+>  	li	r3,MSR_FP|MSR_FE0|MSR_FE1
+> -#ifdef CONFIG_VSX
+> +#if defined(CONFIG_VSX) || defined(CONFIG_PPC_QPX)
+>  BEGIN_FTR_SECTION
+>  	oris	r3,r3,MSR_VSX@h
+> -END_FTR_SECTION_IFSET(CPU_FTR_VSX)
+> +END_FTR_SECTION_IFSET(CPU_FTR_VSX | CPU_FTR_QPX)
+>  #endif
+>  	andc	r4,r4,r3		/* disable FP for previous task */
+>  	PPC_STL	r4,_MSR-STACK_FRAME_OVERHEAD(r5)
+> 
+> -jx
 > 
 > 
 > > 
-> > Mikey
+> >> 
+> >> I'd like to see this patch broken into different parts.
+> > 
+> > I'm not sure how _this_ patch:
+> >  <https://github.com/jimix/linux-bgq/commit/279c0615917b959a652e81f4ad0d886e2d426d85>
+> > could be broken up, please advise.
 > > 
 > >> 
-> >> Here is a are the summary logs:
-> >> 
-> >> $ git log --reverse linux-stable/linux-3.4.y..
-> >> commit 5a8edb2bdd914597693eed299119ff4c2e6d31f2
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Fri Nov 9 09:26:00 2012 -0600
-> >> 
-> >>    powerpc: Fix cputable #ifdef where CONFIG_PPC_A2 is used for CONFIG_PPC_BOOK3E_64
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit ea51920d7035c8d23801d6de46261e7d0a537dfd
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Fri Nov 9 08:58:27 2012 -0600
-> >> 
-> >>    powerpc/book3e: Remove config for PPC_A2_DD2 since there is no reference to it
-> >> 
-> >>    This must have been leftover from early DD1 days which is not
-> >>    present in any current kernel code.
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 08151401a5db4ff0d441a1b7bf8ad92bd92b14c5
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Mon Nov 5 09:38:01 2012 -0600
-> >> 
-> >>    powerpc/dcr: Some native DCR fixes
-> >> 
-> >>    The following fixes have been made:
-> >>     - dcr_read/write_native() must use the indexed version of the
-> >>       m[ft]dcrx since the non-indexed version only allows a 10-bit
-> >>       numerical space, but the C interface allows a full 32-bits.
-> >>     - C bindings for m[ft]dcrx, and the "table" versions, should use
-> >>       "unsigned long" so that they are 64/32 bit neutral.
-> >>     - The "table" versions (__m[ft]cdr) should obtain the table address
-> >>       with LOAD_REG_ADDR(), this will also make it 64/32bit neutral.
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit c8320a5daaceed03992d763302020834ea8e17dd
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Mon Nov 5 09:12:00 2012 -0600
-> >> 
-> >>    powerpc/dcr: Add 64-bit DCR access methods.
-> >> 
-> >>    This patch adds the ability to make 64-bit Device Control Register
-> >>    (DCR) accesses.
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit a763b3f8453b3bd83d7dded8c6644939863af430
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Thu Nov 29 12:49:24 2012 -0500
-> >> 
-> >>    powerpc/boot: Add a "spin_threads" hook to platform_ops
-> >> 
-> >>    It is useful for the boot program to arrange for all secondary cpus
-> >>    and threads to enter the kernel in a "kexec" fashion.  This hook makes
-> >>    it possible.
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 391e43393380b514d4d02a42d059619542c7597b
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Thu Nov 29 13:01:23 2012 -0500
-> >> 
-> >>    powerpc/kexec: Add kexec "hold" support for Book3e processors
-> >> 
-> >>    This patch add two items:
-> >>    1) Book3e requires that GPR4 survive the "hold" process, so we make
-> >>       sure that happens.
-> >>    2) Book3e has no real mode, and the hold code exploits this.  Since
-> >>       these processors ares always translated, we arrange for the kexeced
-> >>       threads to enter the hold code using the normal kernel linear mapping.
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit f6e3c1f706cb6922349d639a74ff6c50acc8b9f8
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Wed Dec 5 13:41:25 2012 -0500
-> >> 
-> >>    powerpc: Remove unecessary VSX symbols
-> >> 
-> >>    The symbol THREAD_VSR0 is defined to be the same as THREAD_FPR0.  Its
-> >>    presence causes build issues with more complex configurations.
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 4e817bb42ec8e3d3689877528dd97c4286a870eb
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Tue Nov 20 10:10:52 2012 -0600
-> >> 
-> >>    Blue Gene/Q wicked optimizing compiler does not know the rfdi instruction yet
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 2071aa58b2f3b33d97c94e3a127f7c5d4ffaeb34
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Tue Nov 20 10:14:22 2012 -0600
-> >> 
-> >>    Blue Gene/Q wicked optimizing compiler does not know the mfdcrx instruction yet
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 6e58088fabedbb2d724637b539ba180c03ed8b68
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Wed Oct 31 16:33:21 2012 -0500
-> >> 
-> >>    powerpc/book3e: IBM Blue Gene/Q Boot
-> >> 
-> >>    This patch specifically deals with the initial program load
-> >>    environment so that a boot image (dtbImage.bgq) can be loaded by the
-> >>    BGQ management tools.  The boot code is a little odd because it has to
-> >>    deal with the following issues:
-> >>     - Linux boot image wrappers are 32-bit programs
-> >>     - BGQ Tools only load 64bit ELF programs
-> >>     - BGQ Firmware information is typically loaded at an address > 4G
-> >>     - BGQ FW information contains 64-bit ABI function pointers (which are
-> >>       actually function descriptors) to access firmware methods
-> >>     - BGQ FW methods must be called in 64-bit mode
-> >> 
-> >>    Includes code contributed from:
-> >>      Andrew Tauferner <ataufer@us.ibm.com>
-> >>      Todd Inglett <tinglett@us.ibm.com>
-> >>      Eric Van Hensbergen <ericvh@gmail.com>
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 3bc841935eb4955ce2b2db69bff16f7928464597
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Wed Oct 31 22:36:54 2012 -0500
-> >> 
-> >>    powerpc/book3e: IBM Blue Gene/Q Platform and SMP
-> >> 
-> >>    This patch introduces BGQ as a platform and adds SMP functionality
-> >> 
-> >>    Includes code contributed from:
-> >>      Andrew Tauferner <ataufer@us.ibm.com>
-> >>      Todd Inglett <tinglett@us.ibm.com>
-> >>      Eric Van Hensbergen <ericvh@gmail.com>
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 279c0615917b959a652e81f4ad0d886e2d426d85
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Wed Dec 5 13:43:22 2012 -0500
-> >> 
-> >>    powerpc/book3e: IBM Blue Gene/Q Quad Processing eXtention (QPX)
-> >> 
-> >>    This enables kernel support for the QPX extention and is intended for
-> >>    processors that support it, usually an IBM Blue Gene processor.
-> >>    Turning it on does not effect other processors but it does add code
-> >>    and will quadruple the per thread save and restore area for the FPU
-> >>    (hense the name).  If you have enabled VSX it will only double the
-> >>    space.
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 6ff45170ab0463fb34d7011e08c7e47c396f0fd7
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Fri Nov 23 14:52:14 2012 -0600
-> >> 
-> >>    powerpc/book3e: IBM Blue Gene/Q HVC Based Firmware Console
-> >> 
-> >>    New HVC device that uses the Blue Gene Firmware methods to erad and
-> >>    write to console.
-> >> 
-> >>        Includes code contributed from:
-> >>          Andrew Tauferner <ataufer@us.ibm.com>
-> >>          Todd Inglett <tinglett@us.ibm.com>
-> >>          Eric Van Hensbergen <ericvh@gmail.com>
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit e4ddc0c2ad8b3f0260d15d73e153095e95da84ac
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Thu Nov 29 15:52:04 2012 -0500
-> >> 
-> >>    powerpc/book3e: IBM Blue Gene/Q PCIe and MSI
-> >> 
-> >>    The following patch adds support for the BG/Q PCIe bridge and MSI interrupts.
-> >> 
-> >>    Includes code contributed from:
-> >>      Jay S. Bryant <jsbryant@us.ibm.com>
-> >>      Eric Van Hensbergen <ericvh@gmail.com>
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 9fc0b6f729f7bd7e31338283640a718fa4b1693b
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Wed Dec 5 07:01:49 2012 -0500
-> >> 
-> >>    powerpc/book3e: IBM Blue Gene/Q Character Drivers
-> >> 
-> >>    The following patch adds support for user and administration
-> >>    applications to access the BG/Q control system.
-> >> 
-> >>    Includes code contributed from:
-> >>      Jay S. Bryant <jsbryant@us.ibm.com>
-> >>      Eric Van Hensbergen <ericvh@gmail.com>
-> >> 
-> >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> >> 
-> >> commit 9df2c4dfde0ac75f8b2bfcf565f78c2b7382b031
-> >> Author: Jimi Xenidis <jimix@pobox.com>
-> >> Date:   Thu Dec 6 18:07:16 2012 -0500
-> >> 
-> >>    Linux 3.4.22-BGQ-rc1
-> >> 
-> >> 
-> >> 
-> >> 
-> >> _______________________________________________
-> >> Linuxppc-dev mailing list
-> >> Linuxppc-dev@lists.ozlabs.org
-> >> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> >> 
+> >> Also, have you boot tested this change on a VSX enabled box?
+> > 
+> > I can try, I may bug you for help.
+> > Is there a commonly test (or apps) I should run?
+> > 
+> > -jx
+> > 
+> > 
+> >> 
+> >> Mikey
+> > 
 > 
