@@ -1,24 +1,16 @@
-Return-Path: <monstr@monstr.eu>
-Received: from mail-lb0-f179.google.com (mail-lb0-f179.google.com
- [209.85.217.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 44DB42C0134
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2012 23:20:31 +1100 (EST)
-Received: by mail-lb0-f179.google.com with SMTP id gm13so1821369lbb.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2012 04:20:27 -0800 (PST)
-Message-ID: <50C5D387.90908@monstr.eu>
-Date: Mon, 10 Dec 2012 13:20:23 +0100
-From: Michal Simek <monstr@monstr.eu>
+Return-Path: <robherring2@gmail.com>
+Message-ID: <50C5F11D.9060006@gmail.com>
+Date: Mon, 10 Dec 2012 08:26:37 -0600
+From: Rob Herring <robherring2@gmail.com>
 MIME-Version: 1.0
-To: devicetree-discuss@lists.ozlabs.org,
- Grant Likely <grant.likely@secretlab.ca>,
- linux-pci@vger.kernel.org, Rob Herring <rob.herring@calxeda.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: pci and pcie device-tree binding - range No cells
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: monstr@monstr.eu
+To: monstr@monstr.eu
+Subject: Re: pci and pcie device-tree binding - range No cells
+References: <50C5D387.90908@monstr.eu>
+In-Reply-To: <50C5D387.90908@monstr.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-pci@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ Rob Herring <rob.herring@calxeda.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,31 +20,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant and others,
+On 12/10/2012 06:20 AM, Michal Simek wrote:
+> Hi Grant and others,
+> 
+> I have a question regarding number of cells in ranges property
+> for pci and pcie nodes.
+> 
+> Linux pci/pcie powerpc DTSes contain 7 cells (xpedite5370.dts,
+> sequoia.dts, etc)
+> but also 6 cells format too (mpc832x_mds.dts)
+> 
+> Here is shown 6 cells ranges format and describe
+> http://devicetree.org/Device_Tree_Usage#PCI_Host_Bridge
+> 
+> And also in documentation in the linux
+> Documentation/devicetree/bindings/pci/83xx-512x-pci.txt
+> 
+> Both format uses:
+> #size-cells = <2>;
+> #address-cells = <3>;
+> 
+> What is valid format?
 
-I have a question regarding number of cells in ranges property
-for pci and pcie nodes.
+Both. 7 cells are valid when the host (parent) bus is 64-bit and 6 cells
+are valid when the host bus is 32-bit. The ranges property is <<child
+address> <parent address> <size>>. The parent address #address-cells is
+taken from the parent node.
 
-Linux pci/pcie powerpc DTSes contain 7 cells (xpedite5370.dts, sequoia.dts, etc)
-but also 6 cells format too (mpc832x_mds.dts)
-
-Here is shown 6 cells ranges format and describe
-http://devicetree.org/Device_Tree_Usage#PCI_Host_Bridge
-
-And also in documentation in the linux
-Documentation/devicetree/bindings/pci/83xx-512x-pci.txt
-
-Both format uses:
-#size-cells = <2>;
-#address-cells = <3>;
-
-What is valid format?
-
-Thanks,
-Michal
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+Rob
