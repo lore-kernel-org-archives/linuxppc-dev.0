@@ -1,24 +1,19 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-we0-f179.google.com (mail-we0-f179.google.com
- [74.125.82.179])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2C74C2C030C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2012 09:32:04 +1100 (EST)
-Received: by mail-we0-f179.google.com with SMTP id r6so1423789wey.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2012 14:32:01 -0800 (PST)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
+Return-Path: <benh@kernel.crashing.org>
+Message-ID: <1355179097.19932.5.camel@pasglop>
 Subject: Re: pci and pcie device-tree binding - range No cells
-To: Rob Herring <robherring2@gmail.com>, monstr@monstr.eu
-In-Reply-To: <50C5FE0F.3050108@gmail.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Date: Tue, 11 Dec 2012 09:38:17 +1100
+In-Reply-To: <20121210214323.6EA733E0921@localhost>
 References: <50C5D387.90908@monstr.eu> <50C5F11D.9060006@gmail.com>
  <50C5FA3E.9030303@monstr.eu> <50C5FE0F.3050108@gmail.com>
-Date: Mon, 10 Dec 2012 21:41:27 +0000
-Message-Id: <20121210214127.D51773E0796@localhost>
-Cc: linux-pci@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ <50C601B6.2080107@monstr.eu> <20121210214323.6EA733E0921@localhost>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: monstr@monstr.eu, linux-pci@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org,
  Thierry Reding <thierry.reding@avionic-design.de>,
- Rob Herring <rob.herring@calxeda.com>,
+ Rob Herring <rob.herring@calxeda.com>, Rob Herring <robherring2@gmail.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,85 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 10 Dec 2012 09:21:51 -0600, Rob Herring <robherring2@gmail.com> wrote:
-> On 12/10/2012 09:05 AM, Michal Simek wrote:
-> > On 12/10/2012 03:26 PM, Rob Herring wrote:
-> >> On 12/10/2012 06:20 AM, Michal Simek wrote:
-> >>> Hi Grant and others,
-> >>>
-> >>> I have a question regarding number of cells in ranges property
-> >>> for pci and pcie nodes.
-> >>>
-> >>> Linux pci/pcie powerpc DTSes contain 7 cells (xpedite5370.dts,
-> >>> sequoia.dts, etc)
-> >>> but also 6 cells format too (mpc832x_mds.dts)
-> >>>
-> >>> Here is shown 6 cells ranges format and describe
-> >>> http://devicetree.org/Device_Tree_Usage#PCI_Host_Bridge
-> >>>
-> >>> And also in documentation in the linux
-> >>> Documentation/devicetree/bindings/pci/83xx-512x-pci.txt
-> >>>
-> >>> Both format uses:
-> >>> #size-cells = <2>;
-> >>> #address-cells = <3>;
-> >>>
-> >>> What is valid format?
-> >>
-> >> Both. 7 cells are valid when the host (parent) bus is 64-bit and 6 cells
-> >> are valid when the host bus is 32-bit. The ranges property is <<child
-> >> address> <parent address> <size>>. The parent address #address-cells is
-> >> taken from the parent node.
+On Mon, 2012-12-10 at 21:43 +0000, Grant Likely wrote:
+> > Sorry for my pci ignorance (have never got hw for mb/zynq)
+> > I just want to get better overview how we should we our drivers to
+> be compatible.
 > > 
-> > Ok. Got it.
-> > 
-> > Here is what we use on zynq and microblaze - both 32bit which should be
-> > fine.
-> > 
-> >     ps7_axi_interconnect_0: axi@0 {
-> >         #address-cells = <1>;
-> >         #size-cells = <1>;
-> >         axi_pcie_0: axi-pcie@50000000 {
-> >             #address-cells = <3>;
-> >             #size-cells = <2>;
-> >             compatible = "xlnx,axi-pcie-1.05.a";
-> >             ranges = < 0x02000000 0 0x60000000 0x60000000 0 0x10000000 >;
-> >             ...
-> >         }
-> >     }
-> > 
-> > What I am wondering is pci_process_bridge_OF_ranges() at
-> > arch/powerpc/kernel/pci-common.c
-> > where there are used some hardcoded values which should be probably
-> > loaded from device-tree.
-> > 
-> > For example:
-> > 683         int np = pna + 5;
-> > ...
-> > 702                 pci_addr = of_read_number(ranges + 1, 2);
-> > 703                 cpu_addr = of_translate_address(dev, ranges + 3);
-> > 704                 size = of_read_number(ranges + pna + 3, 2);
+> > Does it mean that pci is supposed be always 64 bit wide?
+> > And there is no option to have just 32bit values.
 > 
-> These would always be correct whether you have 6 or 7 cells. pna is the
-> parent bus address cells size. The pci address is fixed at 3 cells.
-> 
-> > 
-> > 
-> > Unfortunately we have copied it to microblaze.
-> 
-> I look at the PCI DT code in powerpc and see a whole bunch of code that
-> seems like it should be common. The different per arch pci structs
-> complicates that. No one has really gotten to looking at PCI DT on ARM
-> yet except you and Thierry for Tegra. We definitely don't want to create
-> a 3rd copy. Starting the process of moving it to something like
-> drivers/pci/pci-of.c would be great.
+> Yes, PCIe addressing is always 64 bits wide. Even on 32bit PCI systems
+> we use 64 bit PCI addressing in the device tree.
 
-A lot of it should be common. The microblaze code is a copy of the
-powerpc version. I'll strongly nack any attempt to add a third!  :-)
+Right. The size & format of an address cell for PCI is specified in the
+OF PCI bindings and we follow that binding. It's always 3 cells.
 
-drivers/pci/pci-of.c would be good. I'd also accept drivers/of/pci.c
-which might actually be a good idea in the short term so that it gets
-appropriate supervision while being generalized before being moved into
-the pci directory.
-
-g.
+Cheers,
+Ben.
