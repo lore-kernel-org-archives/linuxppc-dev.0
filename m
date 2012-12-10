@@ -1,24 +1,25 @@
 Return-Path: <xenidis@gmail.com>
-Received: from mail-ye0-f179.google.com (mail-ye0-f179.google.com
- [209.85.213.179])
+Received: from mail-yh0-f43.google.com (mail-yh0-f43.google.com
+ [209.85.213.43])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 576332C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2012 08:32:28 +1100 (EST)
-Received: by mail-ye0-f179.google.com with SMTP id m4so602888yen.38
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2012 13:32:25 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id CDC7B2C0216
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2012 08:33:51 +1100 (EST)
+Received: by mail-yh0-f43.google.com with SMTP id 3so664949yhp.16
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Dec 2012 13:33:49 -0800 (PST)
 Sender: Jimi Xenidis <xenidis@gmail.com>
 Content-Type: text/plain; charset=us-ascii
 Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
 Subject: Re: [RFC] Add IBM Blue Gene/Q Platform
 From: Jimi Xenidis <jimix@pobox.com>
-In-Reply-To: <OFD0D3396A.6EC5ADFF-ON86257ACD.004F1662-86257ACD.004FC5B0@us.ibm.com>
-Date: Mon, 10 Dec 2012 15:32:16 -0600
-Message-Id: <A2E5C016-9052-49EB-97E4-DB06C7B6DDC1@pobox.com>
+In-Reply-To: <A2E5C016-9052-49EB-97E4-DB06C7B6DDC1@pobox.com>
+Date: Mon, 10 Dec 2012 15:33:43 -0600
+Message-Id: <65465B5F-D1C8-4F02-A4DB-CB48BEF664C0@pobox.com>
 References: <958841B4-9626-48A2-A28A-13EA3F1D52AE@pobox.com>
  <22977.1354859787@neuling.org>
  <644E8572-68F8-4C31-AA9D-96EBC95BC37F@pobox.com>
  <OFD0D3396A.6EC5ADFF-ON86257ACD.004F1662-86257ACD.004FC5B0@us.ibm.com>
+ <A2E5C016-9052-49EB-97E4-DB06C7B6DDC1@pobox.com>
 To: Andrew Tauferner <ataufer@us.ibm.com>
 Cc: Michael Neuling <mikey@neuling.org>, Kumar Gala <kumar.gala@gmail.com>,
  Jay Bryant <jsbryant@us.ibm.com>, Todd Inglett <tinglett@us.ibm.com>,
@@ -33,307 +34,312 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On Dec 7, 2012, at 8:31 AM, Andrew Tauferner <ataufer@us.ibm.com> wrote:
+On Dec 10, 2012, at 3:32 PM, Jimi Xenidis <jimix@pobox.com> wrote:
 
-> Jimi,
 >=20
-> > > Do you actually want this upstream?  I assume no.
-> >=20
-> > I needed to get these long-term patches out there for the BGQ=20
-> > community for test.
+> On Dec 7, 2012, at 8:31 AM, Andrew Tauferner <ataufer@us.ibm.com> =
+wrote:
 >=20
-> To which BGQ community are you referring?
-
-This work is being done by IBM Research (me) and made possible by the =
+>> Jimi,
+>>=20
+>>>> Do you actually want this upstream?  I assume no.
+>>>=20
+>>> I needed to get these long-term patches out there for the BGQ=20
+>>> community for test.
+>>=20
+>> To which BGQ community are you referring?
+>=20
+> This work is being done by IBM Research (me) and made possible by the =
 US-DOE via:
-  <https://sites.google.com/site/foxxstack/project-updates>
-
->  What is the motivation for this work?
-
-Maintain a modern kernel that has a "reasonable" set of patches that, =
+>  <https://sites.google.com/site/foxxstack/project-updates>
+>=20
+>> What is the motivation for this work?
+>=20
+> Maintain a modern kernel that has a "reasonable" set of patches that, =
 with the much appreciated feedback from the Linux community, _could_ go =
 upstream.
-
 >=20
-> > I would very much like to get a version of these upstream.
-> > I expect only the QPX, kexec, and (maybe) the DCR changes to cause=20=
+>>=20
+>>> I would very much like to get a version of these upstream.
+>>> I expect only the QPX, kexec, and (maybe) the DCR changes to cause=20=
 
-> > any controversy, but I've been wrong before.
+>>> any controversy, but I've been wrong before.
+>>=20
+>> Hehe.  Ben had a variety of issues with the BG/Q firmware when he=20
+>> gave me some feedback a few years ago.
 >=20
-> Hehe.  Ben had a variety of issues with the BG/Q firmware when he=20
-> gave me some feedback a few years ago.
-
-Yup, I think I have addressed these issues.
-
+> Yup, I think I have addressed these issues.
 >=20
-> > I'll be making those patches soon and hope to get a lot of feedback=20=
+>>=20
+>>> I'll be making those patches soon and hope to get a lot of feedback=20=
 
-> > from these patches.
+>>> from these patches.
+>>=20
+>> What was the starting point for this work?  On what is it based?
 >=20
-> What was the starting point for this work?  On what is it based?
-
-  =
+>  =
 <https://repo.anl-external.org/viewvc/bgq-driver/V1R1M2/?sortdir=3Ddown>>
 
+I should add that these patches have been heavily modified to meet =
+requirements and suggestions of BenH and others.
 -jx
 
 
 >=20
-> > -jx
-> >=20
-> >=20
-> > >=20
-> > > Mikey
-> > >=20
-> > >>=20
-> > >> Here is a are the summary logs:
-> > >>=20
-> > >> $ git log --reverse linux-stable/linux-3.4.y..
-> > >> commit 5a8edb2bdd914597693eed299119ff4c2e6d31f2
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Fri Nov 9 09:26:00 2012 -0600
-> > >>=20
-> > >>    powerpc: Fix cputable #ifdef where CONFIG_PPC_A2 is used for=20=
-
-> > CONFIG_PPC_BOOK3E_64
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit ea51920d7035c8d23801d6de46261e7d0a537dfd
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Fri Nov 9 08:58:27 2012 -0600
-> > >>=20
-> > >>    powerpc/book3e: Remove config for PPC_A2_DD2 since there is no
-> > reference to it
-> > >>=20
-> > >>    This must have been leftover from early DD1 days which is not
-> > >>    present in any current kernel code.
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 08151401a5db4ff0d441a1b7bf8ad92bd92b14c5
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Mon Nov 5 09:38:01 2012 -0600
-> > >>=20
-> > >>    powerpc/dcr: Some native DCR fixes
-> > >>=20
-> > >>    The following fixes have been made:
-> > >>     - dcr_read/write_native() must use the indexed version of the
-> > >>       m[ft]dcrx since the non-indexed version only allows a =
-10-bit
-> > >>       numerical space, but the C interface allows a full 32-bits.
-> > >>     - C bindings for m[ft]dcrx, and the "table" versions, should =
+> -jx
+>=20
+>=20
+>>=20
+>>> -jx
+>>>=20
+>>>=20
+>>>>=20
+>>>> Mikey
+>>>>=20
+>>>>>=20
+>>>>> Here is a are the summary logs:
+>>>>>=20
+>>>>> $ git log --reverse linux-stable/linux-3.4.y..
+>>>>> commit 5a8edb2bdd914597693eed299119ff4c2e6d31f2
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Fri Nov 9 09:26:00 2012 -0600
+>>>>>=20
+>>>>>   powerpc: Fix cputable #ifdef where CONFIG_PPC_A2 is used for=20
+>>> CONFIG_PPC_BOOK3E_64
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit ea51920d7035c8d23801d6de46261e7d0a537dfd
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Fri Nov 9 08:58:27 2012 -0600
+>>>>>=20
+>>>>>   powerpc/book3e: Remove config for PPC_A2_DD2 since there is no
+>>> reference to it
+>>>>>=20
+>>>>>   This must have been leftover from early DD1 days which is not
+>>>>>   present in any current kernel code.
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 08151401a5db4ff0d441a1b7bf8ad92bd92b14c5
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Mon Nov 5 09:38:01 2012 -0600
+>>>>>=20
+>>>>>   powerpc/dcr: Some native DCR fixes
+>>>>>=20
+>>>>>   The following fixes have been made:
+>>>>>    - dcr_read/write_native() must use the indexed version of the
+>>>>>      m[ft]dcrx since the non-indexed version only allows a 10-bit
+>>>>>      numerical space, but the C interface allows a full 32-bits.
+>>>>>    - C bindings for m[ft]dcrx, and the "table" versions, should =
 use
-> > >>       "unsigned long" so that they are 64/32 bit neutral.
-> > >>     - The "table" versions (__m[ft]cdr) should obtain the table =
+>>>>>      "unsigned long" so that they are 64/32 bit neutral.
+>>>>>    - The "table" versions (__m[ft]cdr) should obtain the table =
 address
-> > >>       with LOAD_REG_ADDR(), this will also make it 64/32bit =
+>>>>>      with LOAD_REG_ADDR(), this will also make it 64/32bit =
 neutral.
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit c8320a5daaceed03992d763302020834ea8e17dd
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Mon Nov 5 09:12:00 2012 -0600
-> > >>=20
-> > >>    powerpc/dcr: Add 64-bit DCR access methods.
-> > >>=20
-> > >>    This patch adds the ability to make 64-bit Device Control =
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit c8320a5daaceed03992d763302020834ea8e17dd
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Mon Nov 5 09:12:00 2012 -0600
+>>>>>=20
+>>>>>   powerpc/dcr: Add 64-bit DCR access methods.
+>>>>>=20
+>>>>>   This patch adds the ability to make 64-bit Device Control =
 Register
-> > >>    (DCR) accesses.
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit a763b3f8453b3bd83d7dded8c6644939863af430
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Thu Nov 29 12:49:24 2012 -0500
-> > >>=20
-> > >>    powerpc/boot: Add a "spin_threads" hook to platform_ops
-> > >>=20
-> > >>    It is useful for the boot program to arrange for all secondary =
+>>>>>   (DCR) accesses.
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit a763b3f8453b3bd83d7dded8c6644939863af430
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Thu Nov 29 12:49:24 2012 -0500
+>>>>>=20
+>>>>>   powerpc/boot: Add a "spin_threads" hook to platform_ops
+>>>>>=20
+>>>>>   It is useful for the boot program to arrange for all secondary =
 cpus
-> > >>    and threads to enter the kernel in a "kexec" fashion.  This =
-hook makes
-> > >>    it possible.
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 391e43393380b514d4d02a42d059619542c7597b
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Thu Nov 29 13:01:23 2012 -0500
-> > >>=20
-> > >>    powerpc/kexec: Add kexec "hold" support for Book3e processors
-> > >>=20
-> > >>    This patch add two items:
-> > >>    1) Book3e requires that GPR4 survive the "hold" process, so we =
+>>>>>   and threads to enter the kernel in a "kexec" fashion.  This hook =
+makes
+>>>>>   it possible.
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 391e43393380b514d4d02a42d059619542c7597b
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Thu Nov 29 13:01:23 2012 -0500
+>>>>>=20
+>>>>>   powerpc/kexec: Add kexec "hold" support for Book3e processors
+>>>>>=20
+>>>>>   This patch add two items:
+>>>>>   1) Book3e requires that GPR4 survive the "hold" process, so we =
 make
-> > >>       sure that happens.
-> > >>    2) Book3e has no real mode, and the hold code exploits this.  =
+>>>>>      sure that happens.
+>>>>>   2) Book3e has no real mode, and the hold code exploits this.  =
 Since
-> > >>       these processors ares always translated, we arrange for the =
+>>>>>      these processors ares always translated, we arrange for the =
 kexeced
-> > >>       threads to enter the hold code using the normal kernel=20
-> > linear mapping.
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit f6e3c1f706cb6922349d639a74ff6c50acc8b9f8
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Wed Dec 5 13:41:25 2012 -0500
-> > >>=20
-> > >>    powerpc: Remove unecessary VSX symbols
-> > >>=20
-> > >>    The symbol THREAD_VSR0 is defined to be the same as =
-THREAD_FPR0.  Its
-> > >>    presence causes build issues with more complex configurations.
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 4e817bb42ec8e3d3689877528dd97c4286a870eb
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Tue Nov 20 10:10:52 2012 -0600
-> > >>=20
-> > >>    Blue Gene/Q wicked optimizing compiler does not know the rfdi=20=
-
-> > instruction yet
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 2071aa58b2f3b33d97c94e3a127f7c5d4ffaeb34
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Tue Nov 20 10:14:22 2012 -0600
-> > >>=20
-> > >>    Blue Gene/Q wicked optimizing compiler does not know the=20
-> > mfdcrx instruction yet
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 6e58088fabedbb2d724637b539ba180c03ed8b68
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Wed Oct 31 16:33:21 2012 -0500
-> > >>=20
-> > >>    powerpc/book3e: IBM Blue Gene/Q Boot
-> > >>=20
-> > >>    This patch specifically deals with the initial program load
-> > >>    environment so that a boot image (dtbImage.bgq) can be loaded =
-by the
-> > >>    BGQ management tools.  The boot code is a little odd because =
-it has to
-> > >>    deal with the following issues:
-> > >>     - Linux boot image wrappers are 32-bit programs
-> > >>     - BGQ Tools only load 64bit ELF programs
-> > >>     - BGQ Firmware information is typically loaded at an address =
-> 4G
-> > >>     - BGQ FW information contains 64-bit ABI function pointers =
-(which are
-> > >>       actually function descriptors) to access firmware methods
-> > >>     - BGQ FW methods must be called in 64-bit mode
-> > >>=20
-> > >>    Includes code contributed from:
-> > >>      Andrew Tauferner <ataufer@us.ibm.com>
-> > >>      Todd Inglett <tinglett@us.ibm.com>
-> > >>      Eric Van Hensbergen <ericvh@gmail.com>
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 3bc841935eb4955ce2b2db69bff16f7928464597
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Wed Oct 31 22:36:54 2012 -0500
-> > >>=20
-> > >>    powerpc/book3e: IBM Blue Gene/Q Platform and SMP
-> > >>=20
-> > >>    This patch introduces BGQ as a platform and adds SMP =
-functionality
-> > >>=20
-> > >>    Includes code contributed from:
-> > >>      Andrew Tauferner <ataufer@us.ibm.com>
-> > >>      Todd Inglett <tinglett@us.ibm.com>
-> > >>      Eric Van Hensbergen <ericvh@gmail.com>
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 279c0615917b959a652e81f4ad0d886e2d426d85
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Wed Dec 5 13:43:22 2012 -0500
-> > >>=20
-> > >>    powerpc/book3e: IBM Blue Gene/Q Quad Processing eXtention =
-(QPX)
-> > >>=20
-> > >>    This enables kernel support for the QPX extention and is =
-intended for
-> > >>    processors that support it, usually an IBM Blue Gene =
-processor.
-> > >>    Turning it on does not effect other processors but it does add =
-code
-> > >>    and will quadruple the per thread save and restore area for =
-the FPU
-> > >>    (hense the name).  If you have enabled VSX it will only double =
+>>>>>      threads to enter the hold code using the normal kernel=20
+>>> linear mapping.
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit f6e3c1f706cb6922349d639a74ff6c50acc8b9f8
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Wed Dec 5 13:41:25 2012 -0500
+>>>>>=20
+>>>>>   powerpc: Remove unecessary VSX symbols
+>>>>>=20
+>>>>>   The symbol THREAD_VSR0 is defined to be the same as THREAD_FPR0. =
+ Its
+>>>>>   presence causes build issues with more complex configurations.
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 4e817bb42ec8e3d3689877528dd97c4286a870eb
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Tue Nov 20 10:10:52 2012 -0600
+>>>>>=20
+>>>>>   Blue Gene/Q wicked optimizing compiler does not know the rfdi=20
+>>> instruction yet
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 2071aa58b2f3b33d97c94e3a127f7c5d4ffaeb34
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Tue Nov 20 10:14:22 2012 -0600
+>>>>>=20
+>>>>>   Blue Gene/Q wicked optimizing compiler does not know the=20
+>>> mfdcrx instruction yet
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 6e58088fabedbb2d724637b539ba180c03ed8b68
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Wed Oct 31 16:33:21 2012 -0500
+>>>>>=20
+>>>>>   powerpc/book3e: IBM Blue Gene/Q Boot
+>>>>>=20
+>>>>>   This patch specifically deals with the initial program load
+>>>>>   environment so that a boot image (dtbImage.bgq) can be loaded by =
 the
-> > >>    space.
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 6ff45170ab0463fb34d7011e08c7e47c396f0fd7
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Fri Nov 23 14:52:14 2012 -0600
-> > >>=20
-> > >>    powerpc/book3e: IBM Blue Gene/Q HVC Based Firmware Console
-> > >>=20
-> > >>    New HVC device that uses the Blue Gene Firmware methods to =
-erad and
-> > >>    write to console.
-> > >>=20
-> > >>        Includes code contributed from:
-> > >>          Andrew Tauferner <ataufer@us.ibm.com>
-> > >>          Todd Inglett <tinglett@us.ibm.com>
-> > >>          Eric Van Hensbergen <ericvh@gmail.com>
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit e4ddc0c2ad8b3f0260d15d73e153095e95da84ac
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Thu Nov 29 15:52:04 2012 -0500
-> > >>=20
-> > >>    powerpc/book3e: IBM Blue Gene/Q PCIe and MSI
-> > >>=20
-> > >>    The following patch adds support for the BG/Q PCIe bridge and=20=
-
-> > MSI interrupts.
-> > >>=20
-> > >>    Includes code contributed from:
-> > >>      Jay S. Bryant <jsbryant@us.ibm.com>
-> > >>      Eric Van Hensbergen <ericvh@gmail.com>
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 9fc0b6f729f7bd7e31338283640a718fa4b1693b
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Wed Dec 5 07:01:49 2012 -0500
-> > >>=20
-> > >>    powerpc/book3e: IBM Blue Gene/Q Character Drivers
-> > >>=20
-> > >>    The following patch adds support for user and administration
-> > >>    applications to access the BG/Q control system.
-> > >>=20
-> > >>    Includes code contributed from:
-> > >>      Jay S. Bryant <jsbryant@us.ibm.com>
-> > >>      Eric Van Hensbergen <ericvh@gmail.com>
-> > >>=20
-> > >>    Signed-off-by: Jimi Xenidis <jimix@pobox.com>
-> > >>=20
-> > >> commit 9df2c4dfde0ac75f8b2bfcf565f78c2b7382b031
-> > >> Author: Jimi Xenidis <jimix@pobox.com>
-> > >> Date:   Thu Dec 6 18:07:16 2012 -0500
-> > >>=20
-> > >>    Linux 3.4.22-BGQ-rc1
-> > >>=20
-> > >>=20
-> > >>=20
-> > >>=20
-> > >> _______________________________________________
-> > >> Linuxppc-dev mailing list
-> > >> Linuxppc-dev@lists.ozlabs.org
-> > >> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> > >>=20
-> >=20
+>>>>>   BGQ management tools.  The boot code is a little odd because it =
+has to
+>>>>>   deal with the following issues:
+>>>>>    - Linux boot image wrappers are 32-bit programs
+>>>>>    - BGQ Tools only load 64bit ELF programs
+>>>>>    - BGQ Firmware information is typically loaded at an address > =
+4G
+>>>>>    - BGQ FW information contains 64-bit ABI function pointers =
+(which are
+>>>>>      actually function descriptors) to access firmware methods
+>>>>>    - BGQ FW methods must be called in 64-bit mode
+>>>>>=20
+>>>>>   Includes code contributed from:
+>>>>>     Andrew Tauferner <ataufer@us.ibm.com>
+>>>>>     Todd Inglett <tinglett@us.ibm.com>
+>>>>>     Eric Van Hensbergen <ericvh@gmail.com>
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 3bc841935eb4955ce2b2db69bff16f7928464597
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Wed Oct 31 22:36:54 2012 -0500
+>>>>>=20
+>>>>>   powerpc/book3e: IBM Blue Gene/Q Platform and SMP
+>>>>>=20
+>>>>>   This patch introduces BGQ as a platform and adds SMP =
+functionality
+>>>>>=20
+>>>>>   Includes code contributed from:
+>>>>>     Andrew Tauferner <ataufer@us.ibm.com>
+>>>>>     Todd Inglett <tinglett@us.ibm.com>
+>>>>>     Eric Van Hensbergen <ericvh@gmail.com>
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 279c0615917b959a652e81f4ad0d886e2d426d85
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Wed Dec 5 13:43:22 2012 -0500
+>>>>>=20
+>>>>>   powerpc/book3e: IBM Blue Gene/Q Quad Processing eXtention (QPX)
+>>>>>=20
+>>>>>   This enables kernel support for the QPX extention and is =
+intended for
+>>>>>   processors that support it, usually an IBM Blue Gene processor.
+>>>>>   Turning it on does not effect other processors but it does add =
+code
+>>>>>   and will quadruple the per thread save and restore area for the =
+FPU
+>>>>>   (hense the name).  If you have enabled VSX it will only double =
+the
+>>>>>   space.
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 6ff45170ab0463fb34d7011e08c7e47c396f0fd7
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Fri Nov 23 14:52:14 2012 -0600
+>>>>>=20
+>>>>>   powerpc/book3e: IBM Blue Gene/Q HVC Based Firmware Console
+>>>>>=20
+>>>>>   New HVC device that uses the Blue Gene Firmware methods to erad =
+and
+>>>>>   write to console.
+>>>>>=20
+>>>>>       Includes code contributed from:
+>>>>>         Andrew Tauferner <ataufer@us.ibm.com>
+>>>>>         Todd Inglett <tinglett@us.ibm.com>
+>>>>>         Eric Van Hensbergen <ericvh@gmail.com>
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit e4ddc0c2ad8b3f0260d15d73e153095e95da84ac
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Thu Nov 29 15:52:04 2012 -0500
+>>>>>=20
+>>>>>   powerpc/book3e: IBM Blue Gene/Q PCIe and MSI
+>>>>>=20
+>>>>>   The following patch adds support for the BG/Q PCIe bridge and=20
+>>> MSI interrupts.
+>>>>>=20
+>>>>>   Includes code contributed from:
+>>>>>     Jay S. Bryant <jsbryant@us.ibm.com>
+>>>>>     Eric Van Hensbergen <ericvh@gmail.com>
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 9fc0b6f729f7bd7e31338283640a718fa4b1693b
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Wed Dec 5 07:01:49 2012 -0500
+>>>>>=20
+>>>>>   powerpc/book3e: IBM Blue Gene/Q Character Drivers
+>>>>>=20
+>>>>>   The following patch adds support for user and administration
+>>>>>   applications to access the BG/Q control system.
+>>>>>=20
+>>>>>   Includes code contributed from:
+>>>>>     Jay S. Bryant <jsbryant@us.ibm.com>
+>>>>>     Eric Van Hensbergen <ericvh@gmail.com>
+>>>>>=20
+>>>>>   Signed-off-by: Jimi Xenidis <jimix@pobox.com>
+>>>>>=20
+>>>>> commit 9df2c4dfde0ac75f8b2bfcf565f78c2b7382b031
+>>>>> Author: Jimi Xenidis <jimix@pobox.com>
+>>>>> Date:   Thu Dec 6 18:07:16 2012 -0500
+>>>>>=20
+>>>>>   Linux 3.4.22-BGQ-rc1
+>>>>>=20
+>>>>>=20
+>>>>>=20
+>>>>>=20
+>>>>> _______________________________________________
+>>>>> Linuxppc-dev mailing list
+>>>>> Linuxppc-dev@lists.ozlabs.org
+>>>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>>>>>=20
+>>>=20
+>>=20
 >=20
