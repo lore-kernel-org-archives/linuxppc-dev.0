@@ -1,24 +1,25 @@
-Return-Path: <ben@decadent.org.uk>
-Received: from shadbolt.e.decadent.org.uk (shadbolt.e.decadent.org.uk
- [88.96.1.126]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id B8BD02C00A6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2012 05:55:53 +1100 (EST)
-Date: Mon, 10 Dec 2012 18:55:27 +0000
-From: Ben Hutchings <ben@decadent.org.uk>
-To: Shuah Khan <shuah.khan@hp.com>
-Message-ID: <20121210185527.GI13292@decadent.org.uk>
-References: <1354932445.7407.15.camel@lorien2>
- <1354987359.20838.67.camel@deadeye.wl.decadent.org.uk>
- <CAKocOOPYv0L5dnVJ-jcKw6u3Axbe-tFRdz+F8FvE6fq-xRQH5A@mail.gmail.com>
- <1355160196.2739.12.camel@lorien2>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1355160196.2739.12.camel@lorien2>
-Subject: Re: [PATCH v2] powerpc: fix wii_memory_fixups() compile error on
- 3.0.y tree
-Cc: Greg KH <gregkh@linuxfoundation.org>, stable <stable@vger.kernel.org>,
- paulus@samba.org, shuahkhan@gmail.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <thomas.petazzoni@free-electrons.com>
+Received: from mail.free-electrons.com (mail.free-electrons.com [88.190.12.23])
+ by ozlabs.org (Postfix) with ESMTP id A028B2C032B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2012 04:22:51 +1100 (EST)
+Date: Mon, 10 Dec 2012 18:15:25 +0100
+From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+To: monstr@monstr.eu
+Subject: Re: pci and pcie device-tree binding - range No cells
+Message-ID: <20121210181525.3ccd87c6@skate>
+In-Reply-To: <50C60839.70603@monstr.eu>
+References: <50C5D387.90908@monstr.eu> <50C5F11D.9060006@gmail.com>
+ <50C5FA3E.9030303@monstr.eu> <50C5FE0F.3050108@gmail.com>
+ <50C601B6.2080107@monstr.eu>
+ <AE90C24D6B3A694183C094C60CF0A2F6026B70E7@saturn3.aculab.com>
+ <50C60839.70603@monstr.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linux-pci@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ Rob Herring <rob.herring@calxeda.com>, David Laight <David.Laight@ACULAB.COM>,
+ Rob Herring <robherring2@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,46 +29,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 10, 2012 at 10:23:16AM -0700, Shuah Khan wrote:
-> Fix wii_memory_fixups() the following compile error on 3.0.y tree with 
-> wii_defconfig on 3.0.y tree.
-> 
->   CC      arch/powerpc/platforms/embedded6xx/wii.o
-> arch/powerpc/platforms/embedded6xx/wii.c: In function ‘wii_memory_fixups’:
-> arch/powerpc/platforms/embedded6xx/wii.c:88:2: error: format ‘%llx’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘phys_addr_t’ [-Werror=format]
-> arch/powerpc/platforms/embedded6xx/wii.c:88:2: error: format ‘%llx’ expects argument of type ‘long long unsigned int’, but argument 3 has type ‘phys_addr_t’ [-Werror=format]
-> arch/powerpc/platforms/embedded6xx/wii.c:90:2: error: format ‘%llx’ expects argument of type ‘long long unsigned int’, but argument 2 has type ‘phys_addr_t’ [-Werror=format]
-> arch/powerpc/platforms/embedded6xx/wii.c:90:2: error: format ‘%llx’ expects argument of type ‘long long unsigned int’, but argument 3 has type ‘phys_addr_t’ [-Werror=format]
-> cc1: all warnings being treated as errors
-> make[2]: *** [arch/powerpc/platforms/embedded6xx/wii.o] Error 1
-> make[1]: *** [arch/powerpc/platforms/embedded6xx] Error 2
-> make: *** [arch/powerpc/platforms] Error 2
-> 
-> Signed-off-by: Shuah Khan <shuah.khan@hp.com>
-> CC: stable@vger.kernel.org 3.0.y
-> ---
->  arch/powerpc/platforms/embedded6xx/wii.c |    6 ++++--
->  1 file changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/embedded6xx/wii.c b/arch/powerpc/platforms/embedded6xx/wii.c
-> index 1b5dc1a..d8ff38f 100644
-> --- a/arch/powerpc/platforms/embedded6xx/wii.c
-> +++ b/arch/powerpc/platforms/embedded6xx/wii.c
-> @@ -85,9 +85,11 @@ void __init wii_memory_fixups(void)
->  	wii_hole_start = p[0].base + p[0].size;
->  	wii_hole_size = p[1].base - wii_hole_start;
->  
-> -	pr_info("MEM1: <%08llx %08llx>\n", p[0].base, p[0].size);
-> +	pr_info("MEM1: <%08ulx %08ulx>\n",
-> +		(phys_addr_t) p[0].base, (phys_addr_t) p[0].size);
-[...]
+Dear Michal Simek,
 
-This is incorrect in exactly the same way as the last version,
-but with extra redundant casts.
+On Mon, 10 Dec 2012 17:05:13 +0100, Michal Simek wrote:
 
-Ben.
+> CC: Thomas: I think it will be interesting to see this discussion
+> because you are using size-cell/address-cells equal 1.
+> http://www.spinics.net/lists/arm-kernel/msg211839.html
 
+Thanks for Cc'ing me.
+
+The thing is that on Marvell SoCs, we don't need to describe statically
+in the Device Tree the translation between CPU addresses and PCI device
+addresses, because those translations are set up dynamically at run
+time through address decoding windows.
+
+Marvell SoCs have up to 20 configurable address windows, which allow
+you, at run time, to say "I would like the range from physical address
+0xYYYYYYYY to 0xZZZZZZZZ to correspond to the PCIe device in port 1,
+lane 2, or to the NAND, or to this or that device". Therefore, in the
+PCIe driver I proposed for the Armada 370/XP SoCs [1], there is no need
+to encode all those ranges statically in the DT.
+
+The only "ranges" property I'm using is to allow the DT sub-nodes
+describing each PCIe port/lane to access the CPU registers that allow
+to see if the PCIe link is up or down, access the PCI configuration
+space and so on. So all ranges in my "ranges" property correspond to
+normal CPU registers, like the one you would put in the "reg" property
+for any device. The fact that those devices are PCIe is really
+orthogonal here.
+
+Of course, I have no idea if I'm doing a correct usage of the DT, but I
+certainly don't need those 6 values ranges with bits to say if it's I/O
+space, memory space, bus number, device number and so on. The physical
+addresses at which I'm setting up my address decoding windows are
+decided dynamically at runtime, depending on the number of PCIe devices
+that are found in the different PCIe slots (for now, those windows have
+a statically defined size, but I'd ideally would like to size them to
+match exactly the size of the PCIe device memory, in order to avoid
+wasting physical address space, but I haven't found how to get the size
+needed for each PCIe device during the ARM pcibios initialization
+sequence).
+
+For those willing to have a look at the PCIe patch set for Armada
+370/XP, see:
+http://lists.infradead.org/pipermail/linux-arm-kernel/2012-December/136455.html.
+The core of the PCIe driver and its DT binding documentation is at
+http://lists.infradead.org/pipermail/linux-arm-kernel/2012-December/136711.html.
+
+Thanks a lot for your comments,
+
+Thomas
+
+[1] that I hope to extend to cover previous Marvell SoCs as well, they
+    work basically the same way
 -- 
-Ben Hutchings
-We get into the habit of living before acquiring the habit of thinking.
-                                                              - Albert Camus
+Thomas Petazzoni, Free Electrons
+Kernel, drivers, real-time and embedded Linux
+development, consulting, training and support.
+http://free-electrons.com
