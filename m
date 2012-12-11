@@ -1,17 +1,20 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 1DF522C0090
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 19:23:54 +1100 (EST)
-Date: Tue, 11 Dec 2012 09:23:47 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Please pull 'next' branch of 5xxx tree
-Message-ID: <20121211092347.543f29ca@wker>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <B02008@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ED9D02C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2012 00:38:40 +1100 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH] KVM: PPC: Fix SREGS documentation reference
+Date: Tue, 11 Dec 2012 15:38:23 +0200
+Message-ID: <1355233103-14587-1-git-send-email-mihai.caraman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,38 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+Reflect the uapi folder change in SREGS API documentation.
 
-please pull mpc5xxx patches for v3.8. There is a dts for a
-new a3m071 board, a fix for optional mpc5121 DIU support and
-minor changes to mpc5200 lpbfifo driver to simplify module
-init/exit code. These patches have already been in linux-next
-for a while. Thanks!
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+ Documentation/virtual/kvm/api.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Anatolij
-
-The following changes since commit b69f0859dc8e633c5d8c06845811588fe17e68b3:
-
-  Linux 3.7-rc8 (2012-12-03 11:22:37 -0800)
-
-are available in the git repository at:
-  git://git.denx.de/linux-2.6-agust.git next
-
-Srinivas Kandagatla (1):
-      powerpc/mpc52xx: use module_platform_driver macro
-
-Stefan Roese (1):
-      powerpc: mpc5200: Add a3m071 board support
-
-Timur Tabi (1):
-      powerpc/512x: don't compile any platform DIU code if the DIU is not enabled
-
- arch/powerpc/boot/dts/a3m071.dts              |  144 +++++++++++++++++++++++++
- arch/powerpc/platforms/512x/Kconfig           |    1 -
- arch/powerpc/platforms/512x/mpc5121_ads.c     |    3 +
- arch/powerpc/platforms/512x/mpc512x.h         |   11 ++-
- arch/powerpc/platforms/512x/mpc512x_shared.c  |   25 +----
- arch/powerpc/platforms/52xx/mpc5200_simple.c  |    1 +
- arch/powerpc/platforms/52xx/mpc52xx_lpbfifo.c |   16 +---
- 7 files changed, 162 insertions(+), 39 deletions(-)
- create mode 100644 arch/powerpc/boot/dts/a3m071.dts
+diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+index a4df553..9cf591d 100644
+--- a/Documentation/virtual/kvm/api.txt
++++ b/Documentation/virtual/kvm/api.txt
+@@ -345,7 +345,7 @@ struct kvm_sregs {
+ 	__u64 interrupt_bitmap[(KVM_NR_INTERRUPTS + 63) / 64];
+ };
+ 
+-/* ppc -- see arch/powerpc/include/asm/kvm.h */
++/* ppc -- see arch/powerpc/include/uapi/asm/kvm.h */
+ 
+ interrupt_bitmap is a bitmap of pending external interrupts.  At most
+ one bit may be set.  This interrupt has been acknowledged by the APIC
+-- 
+1.7.4.1
