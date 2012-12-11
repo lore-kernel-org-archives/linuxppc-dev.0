@@ -1,28 +1,39 @@
-Return-Path: <B16395@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe001.messaging.microsoft.com [65.55.88.11])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C40862C008E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2012 15:50:37 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes required
- by fsl PAMU driver.
-Date: Tue, 11 Dec 2012 04:50:29 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D2C4AEE@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <C5ECD7A89D1DC44195F34B25E172658D2B70EE@039-SN2MPN1-013.039d.mgd.msft.net>
- <1354645371.16710.15@snotra>
- <C5ECD7A89D1DC44195F34B25E172658D2C09A4@039-SN2MPN1-013.039d.mgd.msft.net>
- <1355187644.5334.23@snotra>
-In-Reply-To: <1355187644.5334.23@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <suzuki@in.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4AF022C0082
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 16:48:53 +1100 (EST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <suzuki@in.ibm.com>;
+ Tue, 11 Dec 2012 15:44:03 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B680F357804F
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 16:48:42 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qBB5bb3244761150
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 16:37:38 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qBB5mewj003057
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 16:48:41 +1100
+Message-ID: <50C6C930.90206@in.ibm.com>
+Date: Tue, 11 Dec 2012 11:18:32 +0530
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
 MIME-Version: 1.0
-Cc: Tabi Timur-B04825 <B04825@freescale.com>, Joerg Roedel <joro@8bytes.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>
+To: benh@kernel.crashing.org, Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2 1/4] kprobes/powerpc: Do not disable External interrupts
+ during single step
+References: <20121203150438.7727.74924.stgit@suzukikp>
+ <20121203150720.7727.91582.stgit@suzukikp>
+In-Reply-To: <20121203150720.7727.91582.stgit@suzukikp>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: srikar@linux.vnet.ibm.com, peterz@infradead.org, bigeasy@linutronix.de,
+ oleg@redhat.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ "Suzuki K. Poulose" <suzuki@in.ibm.com>, anton@redhat.com, mingo@elte.hu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,147 +43,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 12/03/2012 08:37 PM, Suzuki K. Poulose wrote:
+> From: Suzuki K. Poulose <suzuki@in.ibm.com>
+>
+> External/Decrement exceptions have lower priority than the Debug Exception.
+> So, we don't have to disable the External interrupts before a single step.
+> However, on BookE, Critical Input Exception(CE) has higher priority than a
+> Debug Exception. Hence we mask them.
+>
+> Signed-off-by: 	Suzuki K. Poulose <suzuki@in.ibm.com>
+> Cc:		Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Cc:		Ananth N Mavinakaynahalli <ananth@in.ibm.com>
+> Cc:		Kumar Gala <galak@kernel.crashing.org>
+> Cc:		linuxppc-dev@ozlabs.org
+> ---
+>   arch/powerpc/kernel/kprobes.c |   10 +++++-----
+>   1 file changed, 5 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
+> index e88c643..4901b34 100644
+> --- a/arch/powerpc/kernel/kprobes.c
+> +++ b/arch/powerpc/kernel/kprobes.c
+> @@ -104,13 +104,13 @@ void __kprobes arch_remove_kprobe(struct kprobe *p)
+>
+>   static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
+>   {
+> -	/* We turn off async exceptions to ensure that the single step will
+> -	 * be for the instruction we have the kprobe on, if we dont its
+> -	 * possible we'd get the single step reported for an exception handler
+> -	 * like Decrementer or External Interrupt */
+> -	regs->msr &= ~MSR_EE;
+>   	regs->msr |= MSR_SINGLESTEP;
+>   #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+> +	/*
+> +	 * We turn off Critical Input Exception(CE) to ensure that the single
+> +	 * step will be for the instruction we have the probe on; if we don't,
+> +	 * it is possible we'd get the single step reported for CE.
+> +	 */
+>   	regs->msr &= ~MSR_CE;
+>   	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
+>   #ifdef CONFIG_PPC_47x
+>
+
+Ben, Kumar,
+
+Could you please review this patch ?
 
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Tuesday, December 11, 2012 6:31 AM
-> To: Sethi Varun-B16395
-> Cc: Wood Scott-B07421; Joerg Roedel; linux-kernel@vger.kernel.org;
-> iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org; Tabi
-> Timur-B04825
-> Subject: Re: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes
-> required by fsl PAMU driver.
->=20
-> On 12/10/2012 04:10:06 AM, Sethi Varun-B16395 wrote:
-> >
-> >
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Tuesday, December 04, 2012 11:53 PM
-> > > To: Sethi Varun-B16395
-> > > Cc: Wood Scott-B07421; Joerg Roedel; linux-kernel@vger.kernel.org;
-> > > iommu@lists.linux-foundation.org; linuxppc-dev@lists.ozlabs.org;
-> > Tabi
-> > > Timur-B04825
-> > > Subject: Re: [PATCH 3/4 v5] iommu/fsl: Add iommu domain attributes
-> > > required by fsl PAMU driver.
-> > >
-> > > On 12/04/2012 05:53:33 AM, Sethi Varun-B16395 wrote:
-> > > >
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: Wood Scott-B07421
-> > > > > Sent: Monday, December 03, 2012 10:34 PM
-> > > > > To: Sethi Varun-B16395
-> > > > > Cc: Joerg Roedel; linux-kernel@vger.kernel.org;
-> > iommu@lists.linux-
-> > > > > foundation.org; Wood Scott-B07421;
-> > linuxppc-dev@lists.ozlabs.org;
-> > > > Tabi
-> > > > > Timur-B04825
-> > > > > Subject: Re: [PATCH 3/4 v5] iommu/fsl: Add iommu domain
-> > attributes
-> > > > > required by fsl PAMU driver.
-> > > > >
-> > > > > On 12/03/2012 10:57:29 AM, Sethi Varun-B16395 wrote:
-> > > > > >
-> > > > > >
-> > > > > > > -----Original Message-----
-> > > > > > > From: iommu-bounces@lists.linux-foundation.org
-> > [mailto:iommu-
-> > > > > > > bounces@lists.linux-foundation.org] On Behalf Of Joerg
-> > Roedel
-> > > > > > > Sent: Sunday, December 02, 2012 7:33 PM
-> > > > > > > To: Sethi Varun-B16395
-> > > > > > > Cc: linux-kernel@vger.kernel.org;
-> > > > iommu@lists.linux-foundation.org;
-> > > > > > Wood
-> > > > > > > Scott-B07421; linuxppc-dev@lists.ozlabs.org; Tabi
-> > Timur-B04825
-> > > > > > > Subject: Re: [PATCH 3/4 v5] iommu/fsl: Add iommu domain
-> > > > attributes
-> > > > > > > required by fsl PAMU driver.
-> > > > > > >
-> > > > > > > Hmm, we need to work out a good abstraction for this.
-> > > > > > >
-> > > > > > > On Tue, Nov 20, 2012 at 07:24:56PM +0530, Varun Sethi wrote:
-> > > > > > > > Added the following domain attributes required by FSL PAMU
-> > > > driver:
-> > > > > > > > 1. Subwindows field added to the iommu domain geometry
-> > > > attribute.
-> > > > > > >
-> > > > > > > Are the Subwindows mapped with full size or do you map only
-> > > > parts
-> > > > > > of the
-> > > > > > > subwindows?
-> > > > > > >
-> > > > > > [Sethi Varun-B16395] It's possible to map a part of the
-> > subwindow
-> > > > i.e.
-> > > > > > size of the mapping can be less than the sub window size.
-> > > > > >
-> > > > > > > > +	 * This attribute indicates number of DMA subwindows
-> > > > > supported
-> > > > > > by
-> > > > > > > > +	 * the geometry. If there is a single window that maps
-> > > > the
-> > > > > > entire
-> > > > > > > > +	 * geometry, attribute must be set to "1". A value of
-> > > > "0"
-> > > > > > implies
-> > > > > > > > +	 * that this mechanism is not used at all(normal paging
-> > > > is
-> > > > > > used).
-> > > > > > > > +	 * Value other than* "0" or "1" indicates the actual
-> > > > number
-> > > > > of
-> > > > > > > > +	 * subwindows.
-> > > > > > > > +	 */
-> > > > > > >
-> > > > > > > This semantic is ugly, how about a feature detection
-> > mechanism?
-> > > > > > >
-> > > > > > [Sethi Varun-B16395] A feature mechanism to query the type of
-> > > > IOMMU?
-> > > > >
-> > > > > A feature mechanism to determine whether this subwindow
-> > mechanism is
-> > > > > available, and what the limits are.
-> > > > >
-> > > > So, we use the IOMMU capability interface to find out if IOMMU
-> > > > supports sub windows or not, right? But still number of sub
-> > windows
-> > > > would be specified as a part of the geometry and the valid value
-> > for
-> > > > sub windows would  0,1 or actual number of sub windows.
-> > >
-> > > How does a user of the interface find out what values are possible
-> > for
-> > > the "actual number of subwindows"?  How does a user of the
-> > interface find
-> > > out whether there are any limitations on specifying a value of zero
-> > (in
-> > > the case of PAMU, that would be a maximum 1 MiB naturally-aligned
-> > > aperture to support arbitrary 4KiB mappings)?
-> > How about if we say that the default value for subwindows is zero and
-> > this what you get when you read the geometry (iommu_get_attr) after
-> > initializing the domain? In that case the user would know that
-> > implication of setting subwindows to zero with respect to the aperture
-> > size.
->=20
-> So it would default to the maximum aperture size possible with no
-> subwindows?  That might be OK, though is there a way to reset the domain
-> later on to get back to that informational state?
->=20
-[Sethi Varun-B16395] Yes, that can be done via iommu_set_attr API.
-
-> How about finding out the maximum number of subwindows?
-[Sethi Varun-B16395] We can introduce an API to determine the permissible r=
-ange of values for an attribute, but it may be redundant for other IOMMU im=
-plementations. For the IOMMU implementations where geometry is just a read =
-only attribute, iommu_get_attr returns the set of permissible values. I thi=
-nk it would be better if we can add a read only field (for the users) "max_=
-subwindows" to the geometry.
-
--Varun
+Thanks
+Suzuki
