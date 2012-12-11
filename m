@@ -1,39 +1,25 @@
-Return-Path: <suzuki@in.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp09.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4AF022C0082
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 16:48:53 +1100 (EST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <suzuki@in.ibm.com>;
- Tue, 11 Dec 2012 15:44:03 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B680F357804F
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 16:48:42 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qBB5bb3244761150
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 16:37:38 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qBB5mewj003057
- for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 16:48:41 +1100
-Message-ID: <50C6C930.90206@in.ibm.com>
-Date: Tue, 11 Dec 2012 11:18:32 +0530
-From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Return-Path: <bounces@nabble.com>
+Received: from sam.nabble.com (sam.nabble.com [216.139.236.26])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 4BC9D2C007E
+ for <linuxppc-dev@ozlabs.org>; Tue, 11 Dec 2012 18:28:00 +1100 (EST)
+Received: from telerig.nabble.com ([192.168.236.162])
+ by sam.nabble.com with esmtp (Exim 4.72)
+ (envelope-from <bounces@nabble.com>) id 1TiKFy-0000dj-5U
+ for linuxppc-dev@ozlabs.org; Mon, 10 Dec 2012 23:27:58 -0800
+Message-ID: <34782747.post@talk.nabble.com>
+Date: Mon, 10 Dec 2012 23:27:58 -0800 (PST)
+From: Pegasus11 <aijazbaig1.new@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Understanding how kernel updates MMU hash table
+In-Reply-To: <1355087457.28585.61.camel@pasglop>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2 1/4] kprobes/powerpc: Do not disable External interrupts
- during single step
-References: <20121203150438.7727.74924.stgit@suzukikp>
- <20121203150720.7727.91582.stgit@suzukikp>
-In-Reply-To: <20121203150720.7727.91582.stgit@suzukikp>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: srikar@linux.vnet.ibm.com, peterz@infradead.org, bigeasy@linutronix.de,
- oleg@redhat.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
- "Suzuki K. Poulose" <suzuki@in.ibm.com>, anton@redhat.com, mingo@elte.hu
+Content-Type: text/plain; charset=us-ascii
+References: <34760537.post@talk.nabble.com> <1354695642.2351.8.camel@pasglop>
+ <34762800.post@talk.nabble.com> <1354766337.2351.41.camel@pasglop>
+ <34765222.post@talk.nabble.com> <1354794967.28585.16.camel@pasglop>
+ <34775807.post@talk.nabble.com> <1355087457.28585.61.camel@pasglop>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,52 +29,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/03/2012 08:37 PM, Suzuki K. Poulose wrote:
-> From: Suzuki K. Poulose <suzuki@in.ibm.com>
->
-> External/Decrement exceptions have lower priority than the Debug Exception.
-> So, we don't have to disable the External interrupts before a single step.
-> However, on BookE, Critical Input Exception(CE) has higher priority than a
-> Debug Exception. Hence we mask them.
->
-> Signed-off-by: 	Suzuki K. Poulose <suzuki@in.ibm.com>
-> Cc:		Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-> Cc:		Ananth N Mavinakaynahalli <ananth@in.ibm.com>
-> Cc:		Kumar Gala <galak@kernel.crashing.org>
-> Cc:		linuxppc-dev@ozlabs.org
-> ---
->   arch/powerpc/kernel/kprobes.c |   10 +++++-----
->   1 file changed, 5 insertions(+), 5 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/kprobes.c b/arch/powerpc/kernel/kprobes.c
-> index e88c643..4901b34 100644
-> --- a/arch/powerpc/kernel/kprobes.c
-> +++ b/arch/powerpc/kernel/kprobes.c
-> @@ -104,13 +104,13 @@ void __kprobes arch_remove_kprobe(struct kprobe *p)
->
->   static void __kprobes prepare_singlestep(struct kprobe *p, struct pt_regs *regs)
->   {
-> -	/* We turn off async exceptions to ensure that the single step will
-> -	 * be for the instruction we have the kprobe on, if we dont its
-> -	 * possible we'd get the single step reported for an exception handler
-> -	 * like Decrementer or External Interrupt */
-> -	regs->msr &= ~MSR_EE;
->   	regs->msr |= MSR_SINGLESTEP;
->   #ifdef CONFIG_PPC_ADV_DEBUG_REGS
-> +	/*
-> +	 * We turn off Critical Input Exception(CE) to ensure that the single
-> +	 * step will be for the instruction we have the probe on; if we don't,
-> +	 * it is possible we'd get the single step reported for CE.
-> +	 */
->   	regs->msr &= ~MSR_CE;
->   	mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
->   #ifdef CONFIG_PPC_47x
->
 
-Ben, Kumar,
+Hi ben
 
-Could you please review this patch ?
+Now that many things are becoming clear let me sum up my understanding until
+this point. Do correct it if there are mistakes.
 
+1. Linux page table structure (PGD, PUD, PMD and PTE) is directly used in
+case of architecture that lend themselves to such a tree structure for
+maintaining virtual memory information. Otherwise Linux needs to maintain
+two seperate constructs like it does in case of PowerPC. Right?
+2. PowerPC's hash table as you said is pretty large. However isn't it still
+smaller than Linux's VM infrastructure such that the chances of it being
+'FULL' are a lot more. It is also possible that there could be two entries
+in the table that points to the same Real address. Like a page being shared
+by two processes?
 
-Thanks
-Suzuki
+My main concern here is to understand if having such an inverted page table
+aka the hash table helps us in any way when doing TLB flushes. You mentioned
+and I also read  in a paper by Paul Mackerras that every Linux PTE (LPTE) in
+case of ppc64 contains 4 extra bits that help us to get to the very slot in
+the hash table that houses the corresponding hashtable PTE(HPTE). Now this
+(at least to me) is smartness on the part of the kernel and I do not think
+the architecture per se is doing us any favor by having that hash table
+right? Or am I missing something here? 
+
+His paper is (or rather was) on how one can optimize the Linux ppc kernel
+and time and again he mentions the fact that one can first record the LPTEs
+being invalidated and then remove the corresponding HPTEs in a batched
+format. In his own words "Alternatively, it would be possible to make a list
+of virtual addresses when LPTEs are changed and then use that list in the
+TLB flush routines to avoid the search through the Linux page tables". So do
+we skip looking for the corresponding LPTEs or perhaps we've already
+invalidated them and we remove the corresponding HPTEs in a batch as you
+mentioned earlier?? Could you shed some light on how this optimization
+actually developed over time? He had results for an "immediate update"
+kernel and "batched update" kernel for both ppc32 and ppc64. For ppc32 the
+batched update is actually a bit worse than immediate update however for
+ppc64, the batched update performs better than immediate update. What
+exactly is helping ppc64 perform better with the so called "batched update"?
+Is it the encoding of the HPTE address in the LPTE as mentioned above? Or
+some aspect of ppc64 that I am unaware of? :thinking:
+
+Also on a generic note, how come we have 4 spare bits in the PTE for 64bit
+address space? Large pages perhaps?
+-- 
+View this message in context: http://old.nabble.com/Understanding-how-kernel-updates-MMU-hash-table-tp34760537p34782747.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
