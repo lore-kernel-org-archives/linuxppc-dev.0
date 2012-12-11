@@ -1,20 +1,22 @@
-Return-Path: <B02008@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ED9D02C007E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2012 00:38:40 +1100 (EST)
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH] KVM: PPC: Fix SREGS documentation reference
-Date: Tue, 11 Dec 2012 15:38:23 +0200
-Message-ID: <1355233103-14587-1-git-send-email-mihai.caraman@freescale.com>
+Return-Path: <kongjianjun@gmail.com>
+Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
+ [209.85.220.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D4FB62C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2012 01:22:24 +1100 (EST)
+Received: by mail-vc0-f179.google.com with SMTP id p1so3399619vcq.38
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Dec 2012 06:22:21 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org
+In-Reply-To: <1355233103-14587-1-git-send-email-mihai.caraman@freescale.com>
+References: <1355233103-14587-1-git-send-email-mihai.caraman@freescale.com>
+Date: Tue, 11 Dec 2012 22:22:21 +0800
+Message-ID: <CAFeW=pb9Afawnp7hi6Muzs7HU=TVeKDX4RD6Tw0bMkkY9-TTBw@mail.gmail.com>
+Subject: Re: [PATCH] KVM: PPC: Fix SREGS documentation reference
+From: Amos Kong <kongjianjun@gmail.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,25 +26,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Reflect the uapi folder change in SREGS API documentation.
+On Tue, Dec 11, 2012 at 9:38 PM, Mihai Caraman
+<mihai.caraman@freescale.com> wrote:
+>
+> Reflect the uapi folder change in SREGS API documentation.
+>
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+>  Documentation/virtual/kvm/api.txt |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
+> index a4df553..9cf591d 100644
+> --- a/Documentation/virtual/kvm/api.txt
+> +++ b/Documentation/virtual/kvm/api.txt
+> @@ -345,7 +345,7 @@ struct kvm_sregs {
+>         __u64 interrupt_bitmap[(KVM_NR_INTERRUPTS + 63) / 64];
+>  };
+>
+> -/* ppc -- see arch/powerpc/include/asm/kvm.h */
+> +/* ppc -- see arch/powerpc/include/uapi/asm/kvm.h */
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
----
- Documentation/virtual/kvm/api.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Trivial fix.
+Reviewed-by: Amos Kong <kongjianjun@gmail.com>
 
-diff --git a/Documentation/virtual/kvm/api.txt b/Documentation/virtual/kvm/api.txt
-index a4df553..9cf591d 100644
---- a/Documentation/virtual/kvm/api.txt
-+++ b/Documentation/virtual/kvm/api.txt
-@@ -345,7 +345,7 @@ struct kvm_sregs {
- 	__u64 interrupt_bitmap[(KVM_NR_INTERRUPTS + 63) / 64];
- };
- 
--/* ppc -- see arch/powerpc/include/asm/kvm.h */
-+/* ppc -- see arch/powerpc/include/uapi/asm/kvm.h */
- 
- interrupt_bitmap is a bitmap of pending external interrupts.  At most
- one bit may be set.  This interrupt has been acknowledged by the APIC
--- 
-1.7.4.1
+>
+>  interrupt_bitmap is a bitmap of pending external interrupts.  At most
+>  one bit may be set.  This interrupt has been acknowledged by the APIC
+> --
+> 1.7.4.1
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
