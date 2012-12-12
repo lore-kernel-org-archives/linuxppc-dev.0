@@ -1,22 +1,19 @@
-Return-Path: <thierry.reding@avionic-design.de>
-Date: Wed, 12 Dec 2012 14:34:24 +0100
-From: Thierry Reding <thierry.reding@avionic-design.de>
-To: Andrew Murray <andrew.murray@arm.com>
-Subject: Re: pci and pcie device-tree binding - range No cells
-Message-ID: <20121212133424.GA26280@avionic-0098.adnet.avionic-design.de>
-References: <50C5D387.90908@monstr.eu> <50C5F11D.9060006@gmail.com>
- <50C5FA3E.9030303@monstr.eu> <50C5FE0F.3050108@gmail.com>
- <20121210214127.D51773E0796@localhost> <50C85E7D.5080006@monstr.eu>
- <CACxGe6udeSbEfibC53v0wu8vFRE6K3Fd_P6EX-3JS9F2M=wUeA@mail.gmail.com>
- <CAPcvp5EJH-Q6wd7my+V+FUVE1=hzwMN-yOfHiukGvDmkcoRcsQ@mail.gmail.com>
- <20121212121912.GA2776@arm.com>
+Return-Path: <andrew.murray@arm.com>
+Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
+ by ozlabs.org (Postfix) with ESMTP id 277C62C00A4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2012 03:41:02 +1100 (EST)
+Date: Wed, 12 Dec 2012 16:37:50 +0000
+From: Andrew Murray <Andrew.Murray@arm.com>
+To: linux-pci@vger.kernel.org
+Subject: [PATCH] pci: Provide support for parsing PCI DT ranges property
+Message-ID: <20121212163749.GA17371@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
-In-Reply-To: <20121212121912.GA2776@arm.com>
-Cc: Michal Simek <monstr@monstr.eu>, linux-pci@vger.kernel.org,
+Content-Type: text/plain; charset=WINDOWS-1252
+Cc: Michal Simek <monstr@monstr.eu>,
  devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
- Rob Herring <rob.herring@calxeda.com>, Rob Herring <robherring2@gmail.com>,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ Liviu Dudau <liviu.dudau@arm.com>, Rob Herring <rob.herring@calxeda.com>,
+ Rob Herring <robherring2@gmail.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,83 +24,147 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+DT bindings for PCI host bridges often use the ranges property to describe
+memory and IO ranges - this binding tends to be the same across architectur=
+es
+yet several parsing implementations exist, e.g. arch/mips/pci/pci.c,
+arch/powerpc/kernel/pci-common.c, arch/sparc/kernel/pci.c and
+arch/microblaze/pci/pci-common.c (clone of PPC). Some of these duplicate
+functionality provided by drivers/of/address.c.
 
---yrj/dFKFPuw6o+aM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch provides a common iterator-based parser for the ranges property,=
+ it
+is hoped this will reduce DT representation differences between architectur=
+es
+and that architectures will migrate in part to this new parser.
 
-On Wed, Dec 12, 2012 at 12:19:12PM +0000, Andrew Murray wrote:
-> On Wed, Dec 12, 2012 at 10:49 AM, Grant Likely wrote:
-> > On Wed, Dec 12, 2012 at 10:37 AM, Michal Simek <monstr@monstr.eu<mailto=
-:monstr@monstr.eu>> wrote:
-> > > On 12/10/2012 10:41 PM, Grant Likely wrote:
-> > >> drivers/pci/pci-of.c would be good. I'd also accept drivers/of/pci.c
-> > >> which might actually be a good idea in the short term so that it gets
-> > >> appropriate supervision while being generalized before being moved i=
-nto
-> > >> the pci directory.
-> > >
-> > > Ben: Are you willing to move that ppc code to this location?
-> > > It is probably not good idea that I should do it when I even don't ha=
-ve
-> > > hardware available for testing (Asking someone else).
-> >=20
-> > You're a clever guy, you are more than capable of crafting the patch,
-> > even if you can't test on hardware. :-)
-> >=20
-> > I refactored most of the OF support code without having access to most
-> > of the affected hardware. Once I got the changes out there for review
-> > I also asked for spot testing before getting it into linux-next for
-> > even more testing.
->=20
-> I've been working on a relatively architecture agnostic PCI host bridge d=
-river
-> and also wanted to avoid duplicating more generic DT parsing code for PCI
-> bindings.
->=20
-> I've ended up with a patch which provides an iterator for returning resou=
-rces
-> based on the the typical 'ranges' binding. This has ended up living in
-> drivers/of/address.c. I originally started out in drivers/of/pci.c and
-> drivers/pci/pci-of.c but found there were good (and static) implementatio=
-ns in
-> drivers/of/address.c which can be reused (e.g. of_bus_pci_get_flags,
-> bus->count_cells).
->=20
-> I'm not just ready to post it - but can do before early next week if you =
-can
-> wait.
+It is also hoped (and the motativation for the patch) that this patch will
+reduce duplication of code when writing host bridge drivers that are suppor=
+ted
+by multiple architectures.
 
-I already posted a similar patch[0] as part of a larger series to bring
-DT support to Tegra PCIe back in July. I suppose what you have must be
-something pretty close to that. Most of the stuff that had me occupied
-since then should be done soon and I was planning on resurrecting the
-series one of these days.
+This patch provides struct resources from a device tree node, e.g.:
 
-Thierry
+=09u32 *last =3D NULL;
+=09struct resource res;
+=09while ((last =3D of_pci_process_ranges(np, res, last))) {
+=09=09//do something with res
+=09}
 
-[0]: https://patchwork.kernel.org/patch/1244451/
+Platforms with quirks can then do what they like with the resource or migra=
+te
+common quirk handling to the parser. In an ideal world drivers can just req=
+uest
+the obtained resources and pass them on (e.g. pci_add_resource_offset).
 
---yrj/dFKFPuw6o+aM
-Content-Type: application/pgp-signature
+Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
+Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
+---
+ drivers/of/address.c       |   53 ++++++++++++++++++++++++++++++++++++++++=
++++-
+ include/linux/of_address.h |    7 +++++
+ 2 files changed, 59 insertions(+), 1 deletions(-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.19 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQyIfgAAoJEN0jrNd/PrOhFsIQALy+Bnja2iVLAKqdX7H3ITNx
-1DWh1zbQ59ZE9Whag1bS3ZU9C4qNLUhOiNxlnDzK6wpEL6m7uaCmO2CVtDjVXl3c
-mOMrfa4Y+Yzxs7/jy6t2PYzxoPUSbE5hp75KpKyvW1vb3TCUHunybxSJ7Yk8VWJC
-5l2adBsqlnD9qDl/hiJOM+CVIcMyaNn9WwXtpX1/8LCHq4Q1oG0rgz+ngbms1Ya4
-yVN0FUZ6DZ/OUxTrPBedqN7FcB0FuATa+qyBI6nhG3ILAhkrWbsyYsOiPM3sVhhE
-i74TTs5cqVy7TKcDpu430Mn0hXR6Pd9ICIcioBwy0SydYy8NAxduiH4ZXz0wvDI/
-tGCBJ5R7+Qz2hpB/os8e4wh8ydq/tSiItdCmt2MHY5UuiVNdP1xAHSXcSQ0H4qE2
-RtJ7I6Y4vSohQGQmCl7FIgXmXSEMUQ4og96/vpoDvkUk3mdStWtyXdq74prig+nM
-QsfeSc4n56L84SEkvnUTB3IWC15hR25YmNjRqZrurm+gfm0M7k9SoxpfOn0fl8eQ
-m9RiP/sjNyeBLdRtlPczClJe9Wd7wF0a+aqoonJNgEZyhNkBH3rZjXZQlViPlVaE
-JaZYJzPyzaclzQmlnxQAekxAz1BD1Z8ugBrWuxFNjUJHyd/itUrg7UOlqr+rq/az
-L3OrozmnuKVCZp+yFYA4
-=W+xV
------END PGP SIGNATURE-----
-
---yrj/dFKFPuw6o+aM--
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index 7e262a6..03bfe61 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -219,6 +219,57 @@ int of_pci_address_to_resource(struct device_node *dev=
+, int bar,
+ =09return __of_address_to_resource(dev, addrp, size, flags, NULL, r);
+ }
+ EXPORT_SYMBOL_GPL(of_pci_address_to_resource);
++
++const __be32 *of_pci_process_ranges(struct device_node *node,
++=09=09=09=09    struct resource *res, const __be32 *from)
++{
++=09const __be32 *start, *end;
++=09int na, ns, np, pna;
++=09int rlen;
++=09struct of_bus *bus;
++=09WARN_ON(!res);
++
++=09bus =3D of_match_bus(node);
++=09bus->count_cells(node, &na, &ns);
++=09if (!OF_CHECK_COUNTS(na, ns)) {
++=09=09pr_err("Bad cell count for %s\n", node->full_name);
++=09=09return NULL;
++=09}
++
++=09pna =3D of_n_addr_cells(node);
++=09np =3D pna + na + ns;
++
++=09start =3D of_get_property(node, "ranges", &rlen);
++=09if (start =3D=3D NULL)
++=09=09return NULL;
++
++=09end =3D start + rlen;
++
++=09if (!from)
++=09=09from =3D start;
++
++=09while (from + np <=3D end) {
++=09=09u64 cpu_addr, size;
++
++=09=09cpu_addr =3D of_translate_address(node, from + na);
++=09=09size =3D of_read_number(from + na + pna, ns);
++=09=09res->flags =3D bus->get_flags(from);
++=09=09from +=3D np;
++
++=09=09if (cpu_addr =3D=3D OF_BAD_ADDR || size =3D=3D 0)
++=09=09=09continue;
++
++=09=09res->name =3D node->full_name;
++=09=09res->start =3D cpu_addr;
++=09=09res->end =3D res->start + size - 1;
++=09=09res->parent =3D res->child =3D res->sibling =3D NULL;
++=09=09return from;
++=09}
++
++=09return NULL;
++}
++EXPORT_SYMBOL_GPL(of_pci_process_ranges);
++
+ #endif /* CONFIG_PCI */
+=20
+ /*
+@@ -421,7 +472,7 @@ u64 __of_translate_address(struct device_node *dev, con=
+st __be32 *in_addr,
+ =09=09goto bail;
+ =09bus =3D of_match_bus(parent);
+=20
+-=09/* Cound address cells & copy address locally */
++=09/* Count address cells & copy address locally */
+ =09bus->count_cells(dev, &na, &ns);
+ =09if (!OF_CHECK_COUNTS(na, ns)) {
+ =09=09printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
+diff --git a/include/linux/of_address.h b/include/linux/of_address.h
+index 01b925a..4582b20 100644
+--- a/include/linux/of_address.h
++++ b/include/linux/of_address.h
+@@ -26,6 +26,8 @@ static inline unsigned long pci_address_to_pio(phys_addr_=
+t addr) { return -1; }
+ #define pci_address_to_pio pci_address_to_pio
+ #endif
+=20
++const __be32 *of_pci_process_ranges(struct device_node *node,
++=09=09=09=09    struct resource *res, const __be32 *from);
+ #else /* CONFIG_OF_ADDRESS */
+ static inline int of_address_to_resource(struct device_node *dev, int inde=
+x,
+ =09=09=09=09=09 struct resource *r)
+@@ -48,6 +50,11 @@ static inline const u32 *of_get_address(struct device_no=
+de *dev, int index,
+ {
+ =09return NULL;
+ }
++const __be32 *of_pci_process_ranges(struct device_node *node,
++=09=09=09=09    struct resource *res, const __be32 *from)
++{
++=09return NULL;
++}
+ #endif /* CONFIG_OF_ADDRESS */
+=20
+=20
+--=20
+1.7.0.4
