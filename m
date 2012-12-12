@@ -2,24 +2,18 @@ Return-Path: <joe@perches.com>
 Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
  (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 028D62C0097
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2012 05:19:37 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 45A902C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2012 05:21:18 +1100 (EST)
 From: Joe Perches <joe@perches.com>
-To: Jiri Kosina <trivial@kernel.org>, linux-doc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
- linux-edac@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- user-mode-linux-user@lists.sourceforge.net, cluster-devel@redhat.com,
- linux-mm@kvack.org
-Subject: [TRIVIAL PATCH 00/26] treewide: Add and use vsprintf extension %pSR
-Date: Wed, 12 Dec 2012 10:18:49 -0800
-Message-Id: <cover.1355335227.git.joe@perches.com>
-Cc: linux-m32r-ja@ml.linux-m32r.org, linux-s390@vger.kernel.org,
- linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
- linux-c6x-dev@linux-c6x.org, linux-sh@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux@lists.openrisc.net,
- linux-kernel@vger.kernel.org, linux-am33-list@redhat.com,
- linux-kernel@zh-kernel.org, linux-alpha@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
+To: Jiri Kosina <trivial@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>
+Subject: [TRIVIAL PATCH 11/26] powerpc: Convert print_symbol to %pSR
+Date: Wed, 12 Dec 2012 10:19:00 -0800
+Message-Id: <8c901014a0f571011023ed98b9a22bc690925b73.1355335228.git.joe@perches.com>
+In-Reply-To: <cover.1355335227.git.joe@perches.com>
+References: <cover.1355335227.git.joe@perches.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,91 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove the somewhat awkward uses of print_symbol and convert all the
-existing uses to a new vsprintf pointer type of %pSR.
+Use the new vsprintf extension to avoid any possible
+message interleaving.
 
-print_symbol can be interleaved when it is used in a sequence like:
+Convert the #ifdef DEBUG block to a single pr_debug.
 
-	printk("something: ...");
-	print_symbol("%s", addr);
-	printk("\n");
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ arch/powerpc/platforms/cell/spu_callbacks.c |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
 
-Instead use:
-
-	printk("something: %pSR\n", (void *)addr);
-
-Add a new %p[SsFf]R vsprintf extension that can perform the same
-symbol function/address/offset formatting as print_symbol to
-reduce the number and styles of message logging functions.
-
-print_symbol used __builtin_extract_return_addr for those architectures
-like S/390 and SPARC that have offset or masked addressing.
-%p[FfSs]R uses the same gcc __builtin
-
-Joe Perches (26):
-  vsprintf: Add extension %pSR - print_symbol replacement
-  alpha: Convert print_symbol to %pSR
-  arm: Convert print_symbol to %pSR
-  arm64: Convert print_symbol to %pSR
-  avr32: Convert print_symbol to %pSR
-  c6x: Convert print_symbol to %pSR
-  ia64: Convert print_symbol to %pSR
-  m32r: Convert print_symbol to %pSR
-  mn10300: Convert print_symbol to %pSR
-  openrisc: Convert print_symbol to %pSR
-  powerpc: Convert print_symbol to %pSR
-  s390: Convert print_symbol to %pSR
-  sh: Convert print_symbol to %pSR
-  um: Convert print_symbol to %pSR
-  unicore32: Convert print_symbol to %pSR
-  x86: Convert print_symbol to %pSR
-  xtensa: Convert print_symbol to %pSR
-  drivers: base: Convert print_symbol to %pSR
-  gfs2: Convert print_symbol to %pSR
-  sysfs: Convert print_symbol to %pSR
-  irq: Convert print_symbol to %pSR
-  smp_processor_id: Convert print_symbol to %pSR
-  mm: Convert print_symbol to %pSR
-  xtensa: Convert print_symbol to %pSR
-  x86: head_64.S: Use vsprintf extension %pSR not print_symbol
-  kallsyms: Remove print_symbol
-
- Documentation/filesystems/sysfs.txt         |    4 +-
- Documentation/printk-formats.txt            |    2 +
- Documentation/zh_CN/filesystems/sysfs.txt   |    4 +-
- arch/alpha/kernel/traps.c                   |    8 ++----
- arch/arm/kernel/process.c                   |    4 +-
- arch/arm64/kernel/process.c                 |    4 +-
- arch/avr32/kernel/process.c                 |   25 ++++++-----------------
- arch/c6x/kernel/traps.c                     |    3 +-
- arch/ia64/kernel/process.c                  |   13 ++++-------
- arch/m32r/kernel/traps.c                    |    6 +---
- arch/mn10300/kernel/traps.c                 |    8 +++---
- arch/openrisc/kernel/traps.c                |    7 +----
- arch/powerpc/platforms/cell/spu_callbacks.c |   12 ++++------
- arch/s390/kernel/traps.c                    |   28 +++++++++++++++-----------
- arch/sh/kernel/process_32.c                 |    4 +-
- arch/um/kernel/sysrq.c                      |    6 +---
- arch/unicore32/kernel/process.c             |    5 ++-
- arch/x86/kernel/cpu/mcheck/mce.c            |   13 ++++++-----
- arch/x86/kernel/dumpstack.c                 |    5 +--
- arch/x86/kernel/head_64.S                   |    4 +-
- arch/x86/kernel/process_32.c                |    2 +-
- arch/x86/mm/mmio-mod.c                      |    4 +-
- arch/x86/um/sysrq_32.c                      |    9 ++-----
- arch/xtensa/kernel/traps.c                  |    6 +---
- drivers/base/core.c                         |    4 +-
- fs/gfs2/glock.c                             |    4 +-
- fs/gfs2/trans.c                             |    3 +-
- fs/sysfs/file.c                             |    4 +-
- include/linux/kallsyms.h                    |   18 -----------------
- kernel/irq/debug.h                          |   15 ++++++-------
- kernel/kallsyms.c                           |   11 ----------
- lib/smp_processor_id.c                      |    2 +-
- lib/vsprintf.c                              |   18 ++++++++++++----
- mm/memory.c                                 |    8 +++---
- mm/slab.c                                   |    8 ++----
- 35 files changed, 117 insertions(+), 164 deletions(-)
-
+diff --git a/arch/powerpc/platforms/cell/spu_callbacks.c b/arch/powerpc/platforms/cell/spu_callbacks.c
+index 75d6133..c5fe6d2 100644
+--- a/arch/powerpc/platforms/cell/spu_callbacks.c
++++ b/arch/powerpc/platforms/cell/spu_callbacks.c
+@@ -60,13 +60,11 @@ long spu_sys_callback(struct spu_syscall_block *s)
+ 
+ 	syscall = spu_syscall_table[s->nr_ret];
+ 
+-#ifdef DEBUG
+-	print_symbol(KERN_DEBUG "SPU-syscall %s:", (unsigned long)syscall);
+-	printk("syscall%ld(%lx, %lx, %lx, %lx, %lx, %lx)\n",
+-			s->nr_ret,
+-			s->parm[0], s->parm[1], s->parm[2],
+-			s->parm[3], s->parm[4], s->parm[5]);
+-#endif
++	pr_debug("SPU-syscall %pSR:syscall%ld(%lx, %lx, %lx, %lx, %lx, %lx)\n",
++		 syscall,
++		 s->nr_ret,
++		 s->parm[0], s->parm[1], s->parm[2],
++		 s->parm[3], s->parm[4], s->parm[5]);
+ 
+ 	return syscall(s->parm[0], s->parm[1], s->parm[2],
+ 		       s->parm[3], s->parm[4], s->parm[5]);
 -- 
 1.7.8.112.g3fd21
