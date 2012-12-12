@@ -1,23 +1,25 @@
-Return-Path: <robherring2@gmail.com>
-Message-ID: <50C8BEF1.7060200@gmail.com>
-Date: Wed, 12 Dec 2012 11:29:21 -0600
-From: Rob Herring <robherring2@gmail.com>
-MIME-Version: 1.0
-To: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-Subject: Re: pci and pcie device-tree binding - range No cells
-References: <50C5D387.90908@monstr.eu> <50C5F11D.9060006@gmail.com>
- <50C5FA3E.9030303@monstr.eu> <50C5FE0F.3050108@gmail.com>
- <50C601B6.2080107@monstr.eu>
- <AE90C24D6B3A694183C094C60CF0A2F6026B70E7@saturn3.aculab.com>
- <50C60839.70603@monstr.eu> <20121210181525.3ccd87c6@skate>
- <50C66F3C.3010204@gmail.com> <20121212171651.346b81ab@skate>
-In-Reply-To: <20121212171651.346b81ab@skate>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: monstr@monstr.eu, Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org,
- Thierry Reding <thierry.reding@avionic-design.de>,
- Rob Herring <rob.herring@calxeda.com>, David Laight <David.Laight@ACULAB.COM>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <joe@perches.com>
+Received: from labridge.com (perches-mx.perches.com [206.117.179.246])
+ (using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 028D62C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2012 05:19:37 +1100 (EST)
+From: Joe Perches <joe@perches.com>
+To: Jiri Kosina <trivial@kernel.org>, linux-doc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, cbe-oss-dev@lists.ozlabs.org,
+ linux-edac@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ user-mode-linux-user@lists.sourceforge.net, cluster-devel@redhat.com,
+ linux-mm@kvack.org
+Subject: [TRIVIAL PATCH 00/26] treewide: Add and use vsprintf extension %pSR
+Date: Wed, 12 Dec 2012 10:18:49 -0800
+Message-Id: <cover.1355335227.git.joe@perches.com>
+Cc: linux-m32r-ja@ml.linux-m32r.org, linux-s390@vger.kernel.org,
+ linux-m32r@ml.linux-m32r.org, linux-ia64@vger.kernel.org,
+ linux-c6x-dev@linux-c6x.org, linux-sh@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux@lists.openrisc.net,
+ linux-kernel@vger.kernel.org, linux-am33-list@redhat.com,
+ linux-kernel@zh-kernel.org, linux-alpha@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,100 +29,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/12/2012 10:16 AM, Thomas Petazzoni wrote:
-> Dear Rob Herring,
-> 
-> On Mon, 10 Dec 2012 17:24:44 -0600, Rob Herring wrote:
-> 
->>> Marvell SoCs have up to 20 configurable address windows, which allow
->>> you, at run time, to say "I would like the range from physical
->>> address 0xYYYYYYYY to 0xZZZZZZZZ to correspond to the PCIe device
->>> in port 1, lane 2, or to the NAND, or to this or that device".
->>> Therefore, in the PCIe driver I proposed for the Armada 370/XP SoCs
->>> [1], there is no need to encode all those ranges statically in the
->>> DT.
->>
->> That's not a unique feature. I'm not sure if any powerpc systems do
->> that though.
-> 
-> Yes, probably not an unique feature.
-> 
->>> The only "ranges" property I'm using is to allow the DT sub-nodes
->>> describing each PCIe port/lane to access the CPU registers that
->>> allow to see if the PCIe link is up or down, access the PCI
->>> configuration space and so on. So all ranges in my "ranges"
->>> property correspond to normal CPU registers, like the one you would
->>> put in the "reg" property for any device. The fact that those
->>> devices are PCIe is really orthogonal here.
->>
->> That doesn't really sound right.
-> 
-> Very likely, but I still don't get what is "the right way".
-> 
->> I don't think deviating from the normal binding is the right approach.
->> Perhaps the host driver should fill in the ranges property with the
->> addresses it uses. Then any child devices will get the right address
->> translation.
-> 
-> I don't really understand what you mean here. If you look at the host
-> driver code (arch/arm/mach-mvebu/pcie.c), for each PCIe interface
-> is simply does:
-> 
->  * Create an address decoding window for the memory BAR
->  * Create an address decoding window for the I/O BAR
->  * Associate the memory BAR window address and the I/O bar window
->    address with the PCIe interface
-> 
-> And that's it. See
-> https://github.com/MISL-EBU-System-SW/mainline-public/blob/marvell-pcie-v1/arch/arm/mach-mvebu/pcie.c#L107.
-> 
-> So this driver is both "deciding" of the physical addresses for each
-> PCIe interface, and "associating" them with the PCIe interfaces. How is
-> it useful to feed some addresses back into the Device Tree?
+Remove the somewhat awkward uses of print_symbol and convert all the
+existing uses to a new vsprintf pointer type of %pSR.
 
-I'm not completely sure for PCI, but the ranges is necessary to
-translate addresses of child nodes.
+print_symbol can be interleaved when it is used in a sequence like:
 
-If you don't need ranges then you could omit it. If you need ranges,
-then you should follow the PCI binding whether it is put in the DTS or
-you dynamically fill it in. This could be filled in by the bootloader as
-well if you have PCI devices you need to boot from.
+	printk("something: ...");
+	print_symbol("%s", addr);
+	printk("\n");
 
->> Also, while the h/w may support practically any config, there are
->> practical constraints of what Linux will use like there's no reason to
->> support more than 64K i/o space. PCI memory addresses generally start
->> at 0x100000. You probably don't need more than 1 memory window per
->> root complex (although prefetchable memory may also be needed).
-> 
-> I allocate one 64K I/O window and one memory window per PCIe interface
-> whose link is up (i.e a PCIe device is connected).
-> 
->> You could let the DT settings drive the address window configuration.
-> 
-> No, because I don't want to have absolute addresses for the windows: I
-> have 10 PCIe interfaces, but often, only a few of them are used. So I
-> don't want in the Device Tree to over-allocate hundreds of MB of
-> physical address space if it's not useful.
+Instead use:
 
-How many you have is probably board dependent and not probe-able, right?
-So you would at least know the subset of root complexes that you are
-using. I know you want to find the size of all the cards up front and
-size windows based on that, but I don't think that is going to be possible.
+	printk("something: %pSR\n", (void *)addr);
 
-> 
-> PCIe is dynamic, address window configuration is dynamic. And we should
-> hardcode all this configuration statically in the DT? Doesn't seem like
-> the right solution.
+Add a new %p[SsFf]R vsprintf extension that can perform the same
+symbol function/address/offset formatting as print_symbol to
+reduce the number and styles of message logging functions.
 
-I'm just throwing out ideas. There are many cases of flexibility in h/w
-designs which are never used. H/w is often designed in a vacuum without
-s/w input. Not saying that is the case here, but you do have to consider
-that.
+print_symbol used __builtin_extract_return_addr for those architectures
+like S/390 and SPARC that have offset or masked addressing.
+%p[FfSs]R uses the same gcc __builtin
 
-Rob
+Joe Perches (26):
+  vsprintf: Add extension %pSR - print_symbol replacement
+  alpha: Convert print_symbol to %pSR
+  arm: Convert print_symbol to %pSR
+  arm64: Convert print_symbol to %pSR
+  avr32: Convert print_symbol to %pSR
+  c6x: Convert print_symbol to %pSR
+  ia64: Convert print_symbol to %pSR
+  m32r: Convert print_symbol to %pSR
+  mn10300: Convert print_symbol to %pSR
+  openrisc: Convert print_symbol to %pSR
+  powerpc: Convert print_symbol to %pSR
+  s390: Convert print_symbol to %pSR
+  sh: Convert print_symbol to %pSR
+  um: Convert print_symbol to %pSR
+  unicore32: Convert print_symbol to %pSR
+  x86: Convert print_symbol to %pSR
+  xtensa: Convert print_symbol to %pSR
+  drivers: base: Convert print_symbol to %pSR
+  gfs2: Convert print_symbol to %pSR
+  sysfs: Convert print_symbol to %pSR
+  irq: Convert print_symbol to %pSR
+  smp_processor_id: Convert print_symbol to %pSR
+  mm: Convert print_symbol to %pSR
+  xtensa: Convert print_symbol to %pSR
+  x86: head_64.S: Use vsprintf extension %pSR not print_symbol
+  kallsyms: Remove print_symbol
 
-> 
-> Best regards,
-> 
-> Thomas
-> 
+ Documentation/filesystems/sysfs.txt         |    4 +-
+ Documentation/printk-formats.txt            |    2 +
+ Documentation/zh_CN/filesystems/sysfs.txt   |    4 +-
+ arch/alpha/kernel/traps.c                   |    8 ++----
+ arch/arm/kernel/process.c                   |    4 +-
+ arch/arm64/kernel/process.c                 |    4 +-
+ arch/avr32/kernel/process.c                 |   25 ++++++-----------------
+ arch/c6x/kernel/traps.c                     |    3 +-
+ arch/ia64/kernel/process.c                  |   13 ++++-------
+ arch/m32r/kernel/traps.c                    |    6 +---
+ arch/mn10300/kernel/traps.c                 |    8 +++---
+ arch/openrisc/kernel/traps.c                |    7 +----
+ arch/powerpc/platforms/cell/spu_callbacks.c |   12 ++++------
+ arch/s390/kernel/traps.c                    |   28 +++++++++++++++-----------
+ arch/sh/kernel/process_32.c                 |    4 +-
+ arch/um/kernel/sysrq.c                      |    6 +---
+ arch/unicore32/kernel/process.c             |    5 ++-
+ arch/x86/kernel/cpu/mcheck/mce.c            |   13 ++++++-----
+ arch/x86/kernel/dumpstack.c                 |    5 +--
+ arch/x86/kernel/head_64.S                   |    4 +-
+ arch/x86/kernel/process_32.c                |    2 +-
+ arch/x86/mm/mmio-mod.c                      |    4 +-
+ arch/x86/um/sysrq_32.c                      |    9 ++-----
+ arch/xtensa/kernel/traps.c                  |    6 +---
+ drivers/base/core.c                         |    4 +-
+ fs/gfs2/glock.c                             |    4 +-
+ fs/gfs2/trans.c                             |    3 +-
+ fs/sysfs/file.c                             |    4 +-
+ include/linux/kallsyms.h                    |   18 -----------------
+ kernel/irq/debug.h                          |   15 ++++++-------
+ kernel/kallsyms.c                           |   11 ----------
+ lib/smp_processor_id.c                      |    2 +-
+ lib/vsprintf.c                              |   18 ++++++++++++----
+ mm/memory.c                                 |    8 +++---
+ mm/slab.c                                   |    8 ++----
+ 35 files changed, 117 insertions(+), 164 deletions(-)
+
+-- 
+1.7.8.112.g3fd21
