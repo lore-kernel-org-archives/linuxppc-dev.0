@@ -1,16 +1,16 @@
 Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 421B72C0098
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2012 01:34:56 +1100 (EST)
-Message-ID: <1355322875.3224.201.camel@bling.home>
-Subject: Re: [PATCH] vfio powerpc: enabled on powernv platform
+ by ozlabs.org (Postfix) with ESMTP id EFF992C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2012 01:36:20 +1100 (EST)
+Message-ID: <1355322973.3224.203.camel@bling.home>
+Subject: Re: [PATCH] vfio powerpc: implemented IOMMU driver for VFIO
 From: Alex Williamson <alex.williamson@redhat.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Wed, 12 Dec 2012 07:34:35 -0700
-In-Reply-To: <50C820AF.8050804@ozlabs.ru>
-References: <1354636299.1809.431.camel@bling.home>
- <1354865750-8104-1-git-send-email-aik@ozlabs.ru>
- <1354901926.3224.96.camel@bling.home> <50C820AF.8050804@ozlabs.ru>
+Date: Wed, 12 Dec 2012 07:36:13 -0700
+In-Reply-To: <50C82B3C.1060006@ozlabs.ru>
+References: <1354557206.1809.377.camel@bling.home>
+ <1354865693-8060-1-git-send-email-aik@ozlabs.ru>
+ <1354899707.3224.86.camel@bling.home> <50C82B3C.1060006@ozlabs.ru>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
@@ -25,45 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2012-12-12 at 17:14 +1100, Alexey Kardashevskiy wrote:
-> On 08/12/12 04:38, Alex Williamson wrote:
-> >> +static int __init tce_iommu_init(void)
-> >> +{
-> >> +	struct pci_dev *pdev = NULL;
-> >> +	struct iommu_table *tbl;
-> >> +	struct iommu_group *grp;
+On Wed, 2012-12-12 at 17:59 +1100, Alexey Kardashevskiy wrote:
+> On 08/12/12 04:01, Alex Williamson wrote:
+> >> +	case VFIO_IOMMU_MAP_DMA: {
+> >> +		vfio_iommu_spapr_tce_dma_map param;
+> >> +		struct iommu_table *tbl = container->tbl;
+> >> +		enum dma_data_direction direction;
+> >> +		unsigned long locked, lock_limit;
 > >> +
-> >> +	/* Allocate and initialize IOMMU groups */
-> >> +	for_each_pci_dev(pdev) {
-> >> +		tbl = get_iommu_table_base(&pdev->dev);
-> >> +		if (!tbl)
-> >> +			continue;
+> >> +		if (WARN_ON(!tbl))
+> >> +			return -ENXIO;
 > >> +
-> >> +		/* Skip already initialized */
-> >> +		if (tbl->it_group)
-> >> +			continue;
+> >> +		minsz = offsetofend(vfio_iommu_spapr_tce_dma_map, size);
 > >> +
-> >> +		grp = iommu_group_alloc();
-> >> +		if (IS_ERR(grp)) {
-> >> +			pr_info("tce_vfio: cannot create new IOMMU group, ret=%ld\n",
-> >> +					PTR_ERR(grp));
-> >> +			return PTR_ERR(grp);
-> >> +		}
-> >> +		tbl->it_group = grp;
-> >> +		iommu_group_set_iommudata(grp, tbl, group_release);
+> >> +		if (copy_from_user(&param, (void __user *)arg, minsz))
+> >> +			return -EFAULT;
+> >> +
+> >> +		if (param.argsz < minsz)
+> >> +			return -EINVAL;
+> >> +
+> >> +		if ((param.flags & VFIO_DMA_MAP_FLAG_READ) &&
+> >> +				(param.flags & VFIO_DMA_MAP_FLAG_WRITE))
+> >> +			direction = DMA_BIDIRECTIONAL;
+> >> +		else if (param.flags & VFIO_DMA_MAP_FLAG_READ)
+> >> +			direction = DMA_TO_DEVICE;
+> >> +		else if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+> >> +			direction = DMA_FROM_DEVICE;
+> >> +		else
+> >> +			return -EINVAL;
 > >
-> > BTW, groups have a name property that shows up in sysfs that can be set
-> > with iommu_group_set_name().  IIRC, this was a feature David requested
-> > for PEs.  It'd be nice if it was used for PEs...  Thanks,
+> > flags needs to be sanitized too.  Return EINVAL if any unknown bit is
+> > set or else sloppy users may make it very difficult to make use of those
+> > flag bits later.
 > 
 > 
-> 
-> But what would I put there?... IOMMU ID is more than enough at the moment 
-> and struct iommu_table does not have anything what would have made sense to 
-> show in the sysfs...
+> It already returns -EINVAL on any bit set except READ/WRITE, no?
 
-I believe David mentioned that PEs had user visible names.  Perhaps they
-match an enclosure location or something.  Group numbers are rather
-arbitrary and really have no guarantee of persistence.  Thanks,
+No.  I could pass flags ~0 through there to get a read/write mapping and
+cause you problems if you later want to define another bit.  Thanks,
 
 Alex
