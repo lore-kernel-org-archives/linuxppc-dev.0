@@ -1,28 +1,29 @@
-Return-Path: <monstr@monstr.eu>
-Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
- [209.85.214.51])
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
+ [209.85.210.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 21E192C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2012 21:37:55 +1100 (EST)
-Received: by mail-bk0-f51.google.com with SMTP id ik5so230007bkc.38
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2012 02:37:52 -0800 (PST)
-Message-ID: <50C85E7D.5080006@monstr.eu>
-Date: Wed, 12 Dec 2012 11:37:49 +0100
-From: Michal Simek <monstr@monstr.eu>
+ by ozlabs.org (Postfix) with ESMTPS id 9958F2C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2012 21:49:38 +1100 (EST)
+Received: by mail-da0-f51.google.com with SMTP id i30so196181dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2012 02:49:35 -0800 (PST)
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: pci and pcie device-tree binding - range No cells
+Sender: glikely@secretlab.ca
+In-Reply-To: <50C85E7D.5080006@monstr.eu>
 References: <50C5D387.90908@monstr.eu> <50C5F11D.9060006@gmail.com>
  <50C5FA3E.9030303@monstr.eu> <50C5FE0F.3050108@gmail.com>
- <20121210214127.D51773E0796@localhost>
-In-Reply-To: <20121210214127.D51773E0796@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-pci@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ <20121210214127.D51773E0796@localhost> <50C85E7D.5080006@monstr.eu>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Wed, 12 Dec 2012 10:49:14 +0000
+Message-ID: <CACxGe6udeSbEfibC53v0wu8vFRE6K3Fd_P6EX-3JS9F2M=wUeA@mail.gmail.com>
+Subject: Re: pci and pcie device-tree binding - range No cells
+To: Michal Simek <monstr@monstr.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-pci@vger.kernel.org,
+ devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
  Thierry Reding <thierry.reding@avionic-design.de>,
  Rob Herring <rob.herring@calxeda.com>, Rob Herring <robherring2@gmail.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Reply-To: monstr@monstr.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,102 +33,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/10/2012 10:41 PM, Grant Likely wrote:
-> On Mon, 10 Dec 2012 09:21:51 -0600, Rob Herring <robherring2@gmail.com> wrote:
->> On 12/10/2012 09:05 AM, Michal Simek wrote:
->>> On 12/10/2012 03:26 PM, Rob Herring wrote:
->>>> On 12/10/2012 06:20 AM, Michal Simek wrote:
->>>>> Hi Grant and others,
->>>>>
->>>>> I have a question regarding number of cells in ranges property
->>>>> for pci and pcie nodes.
->>>>>
->>>>> Linux pci/pcie powerpc DTSes contain 7 cells (xpedite5370.dts,
->>>>> sequoia.dts, etc)
->>>>> but also 6 cells format too (mpc832x_mds.dts)
->>>>>
->>>>> Here is shown 6 cells ranges format and describe
->>>>> http://devicetree.org/Device_Tree_Usage#PCI_Host_Bridge
->>>>>
->>>>> And also in documentation in the linux
->>>>> Documentation/devicetree/bindings/pci/83xx-512x-pci.txt
->>>>>
->>>>> Both format uses:
->>>>> #size-cells = <2>;
->>>>> #address-cells = <3>;
->>>>>
->>>>> What is valid format?
->>>>
->>>> Both. 7 cells are valid when the host (parent) bus is 64-bit and 6 cells
->>>> are valid when the host bus is 32-bit. The ranges property is <<child
->>>> address> <parent address> <size>>. The parent address #address-cells is
->>>> taken from the parent node.
->>>
->>> Ok. Got it.
->>>
->>> Here is what we use on zynq and microblaze - both 32bit which should be
->>> fine.
->>>
->>>      ps7_axi_interconnect_0: axi@0 {
->>>          #address-cells = <1>;
->>>          #size-cells = <1>;
->>>          axi_pcie_0: axi-pcie@50000000 {
->>>              #address-cells = <3>;
->>>              #size-cells = <2>;
->>>              compatible = "xlnx,axi-pcie-1.05.a";
->>>              ranges = < 0x02000000 0 0x60000000 0x60000000 0 0x10000000 >;
->>>              ...
->>>          }
->>>      }
->>>
->>> What I am wondering is pci_process_bridge_OF_ranges() at
->>> arch/powerpc/kernel/pci-common.c
->>> where there are used some hardcoded values which should be probably
->>> loaded from device-tree.
->>>
->>> For example:
->>> 683         int np = pna + 5;
->>> ...
->>> 702                 pci_addr = of_read_number(ranges + 1, 2);
->>> 703                 cpu_addr = of_translate_address(dev, ranges + 3);
->>> 704                 size = of_read_number(ranges + pna + 3, 2);
->>
->> These would always be correct whether you have 6 or 7 cells. pna is the
->> parent bus address cells size. The pci address is fixed at 3 cells.
->>
->>>
->>>
->>> Unfortunately we have copied it to microblaze.
->>
->> I look at the PCI DT code in powerpc and see a whole bunch of code that
->> seems like it should be common. The different per arch pci structs
->> complicates that. No one has really gotten to looking at PCI DT on ARM
->> yet except you and Thierry for Tegra. We definitely don't want to create
->> a 3rd copy. Starting the process of moving it to something like
->> drivers/pci/pci-of.c would be great.
+On Wed, Dec 12, 2012 at 10:37 AM, Michal Simek <monstr@monstr.eu> wrote:
+> On 12/10/2012 10:41 PM, Grant Likely wrote:
+>> drivers/pci/pci-of.c would be good. I'd also accept drivers/of/pci.c
+>> which might actually be a good idea in the short term so that it gets
+>> appropriate supervision while being generalized before being moved into
+>> the pci directory.
 >
-> A lot of it should be common. The microblaze code is a copy of the
-> powerpc version. I'll strongly nack any attempt to add a third!  :-)
+> Ben: Are you willing to move that ppc code to this location?
+> It is probably not good idea that I should do it when I even don't have
+> hardware available for testing (Asking someone else).
 
-Yes it. There are some things which we had fixed because that powerpc
-port is big endian only and we support PCIe on little endian too.
-But changes are really cosmetic.
+You're a clever guy, you are more than capable of crafting the patch,
+even if you can't test on hardware. :-)
 
+I refactored most of the OF support code without having access to most
+of the affected hardware. Once I got the changes out there for review
+I also asked for spot testing before getting it into linux-next for
+even more testing.
 
-> drivers/pci/pci-of.c would be good. I'd also accept drivers/of/pci.c
-> which might actually be a good idea in the short term so that it gets
-> appropriate supervision while being generalized before being moved into
-> the pci directory.
-
-Ben: Are you willing to move that ppc code to this location?
-It is probably not good idea that I should do it when I even don't have
-hardware available for testing (Asking someone else).
-
-Thanks,
-Michal
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
-Microblaze U-BOOT custodian
+g.
