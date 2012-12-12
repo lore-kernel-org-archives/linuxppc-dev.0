@@ -1,23 +1,30 @@
-Return-Path: <thomas.petazzoni@free-electrons.com>
-Date: Wed, 12 Dec 2012 17:16:51 +0100
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
-To: Rob Herring <robherring2@gmail.com>
+Return-Path: <monstr@monstr.eu>
+Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
+ [209.85.214.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 69F282C008A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2012 03:56:04 +1100 (EST)
+Received: by mail-bk0-f51.google.com with SMTP id ik5so503578bkc.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2012 08:56:00 -0800 (PST)
+Message-ID: <50C8B71E.90704@monstr.eu>
+Date: Wed, 12 Dec 2012 17:55:58 +0100
+From: Michal Simek <monstr@monstr.eu>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: pci and pcie device-tree binding - range No cells
-Message-ID: <20121212171651.346b81ab@skate>
-In-Reply-To: <50C66F3C.3010204@gmail.com>
 References: <50C5D387.90908@monstr.eu> <50C5F11D.9060006@gmail.com>
  <50C5FA3E.9030303@monstr.eu> <50C5FE0F.3050108@gmail.com>
- <50C601B6.2080107@monstr.eu>
- <AE90C24D6B3A694183C094C60CF0A2F6026B70E7@saturn3.aculab.com>
- <50C60839.70603@monstr.eu> <20121210181525.3ccd87c6@skate>
- <50C66F3C.3010204@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: monstr@monstr.eu, Arnd Bergmann <arnd@arndb.de>, linux-pci@vger.kernel.org,
- devicetree-discuss@lists.ozlabs.org,
+ <20121210214127.D51773E0796@localhost> <50C85E7D.5080006@monstr.eu>
+ <CACxGe6udeSbEfibC53v0wu8vFRE6K3Fd_P6EX-3JS9F2M=wUeA@mail.gmail.com>
+In-Reply-To: <CACxGe6udeSbEfibC53v0wu8vFRE6K3Fd_P6EX-3JS9F2M=wUeA@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-pci@vger.kernel.org,
+ devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
  Thierry Reding <thierry.reding@avionic-design.de>,
- Rob Herring <rob.herring@calxeda.com>, David Laight <David.Laight@ACULAB.COM>,
+ Rob Herring <rob.herring@calxeda.com>, Rob Herring <robherring2@gmail.com>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Reply-To: monstr@monstr.eu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,81 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Rob Herring,
+On 12/12/2012 11:49 AM, Grant Likely wrote:
+> On Wed, Dec 12, 2012 at 10:37 AM, Michal Simek <monstr@monstr.eu> wrote:
+>> On 12/10/2012 10:41 PM, Grant Likely wrote:
+>>> drivers/pci/pci-of.c would be good. I'd also accept drivers/of/pci.c
+>>> which might actually be a good idea in the short term so that it gets
+>>> appropriate supervision while being generalized before being moved into
+>>> the pci directory.
+>>
+>> Ben: Are you willing to move that ppc code to this location?
+>> It is probably not good idea that I should do it when I even don't have
+>> hardware available for testing (Asking someone else).
+>
+> You're a clever guy, you are more than capable of crafting the patch,
+> even if you can't test on hardware. :-)
+>
+> I refactored most of the OF support code without having access to most
+> of the affected hardware. Once I got the changes out there for review
+> I also asked for spot testing before getting it into linux-next for
+> even more testing.
 
-On Mon, 10 Dec 2012 17:24:44 -0600, Rob Herring wrote:
+Fair enough. :-)
 
-> > Marvell SoCs have up to 20 configurable address windows, which allow
-> > you, at run time, to say "I would like the range from physical
-> > address 0xYYYYYYYY to 0xZZZZZZZZ to correspond to the PCIe device
-> > in port 1, lane 2, or to the NAND, or to this or that device".
-> > Therefore, in the PCIe driver I proposed for the Armada 370/XP SoCs
-> > [1], there is no need to encode all those ranges statically in the
-> > DT.
-> 
-> That's not a unique feature. I'm not sure if any powerpc systems do
-> that though.
+Good time to start to look for how to work with board farm.
 
-Yes, probably not an unique feature.
+Thanks,
+Michal
 
-> > The only "ranges" property I'm using is to allow the DT sub-nodes
-> > describing each PCIe port/lane to access the CPU registers that
-> > allow to see if the PCIe link is up or down, access the PCI
-> > configuration space and so on. So all ranges in my "ranges"
-> > property correspond to normal CPU registers, like the one you would
-> > put in the "reg" property for any device. The fact that those
-> > devices are PCIe is really orthogonal here.
-> 
-> That doesn't really sound right.
 
-Very likely, but I still don't get what is "the right way".
-
-> I don't think deviating from the normal binding is the right approach.
-> Perhaps the host driver should fill in the ranges property with the
-> addresses it uses. Then any child devices will get the right address
-> translation.
-
-I don't really understand what you mean here. If you look at the host
-driver code (arch/arm/mach-mvebu/pcie.c), for each PCIe interface
-is simply does:
-
- * Create an address decoding window for the memory BAR
- * Create an address decoding window for the I/O BAR
- * Associate the memory BAR window address and the I/O bar window
-   address with the PCIe interface
-
-And that's it. See
-https://github.com/MISL-EBU-System-SW/mainline-public/blob/marvell-pcie-v1/arch/arm/mach-mvebu/pcie.c#L107.
-
-So this driver is both "deciding" of the physical addresses for each
-PCIe interface, and "associating" them with the PCIe interfaces. How is
-it useful to feed some addresses back into the Device Tree?
-
-> Also, while the h/w may support practically any config, there are
-> practical constraints of what Linux will use like there's no reason to
-> support more than 64K i/o space. PCI memory addresses generally start
-> at 0x100000. You probably don't need more than 1 memory window per
-> root complex (although prefetchable memory may also be needed).
-
-I allocate one 64K I/O window and one memory window per PCIe interface
-whose link is up (i.e a PCIe device is connected).
-
-> You could let the DT settings drive the address window configuration.
-
-No, because I don't want to have absolute addresses for the windows: I
-have 10 PCIe interfaces, but often, only a few of them are used. So I
-don't want in the Device Tree to over-allocate hundreds of MB of
-physical address space if it's not useful.
-
-PCIe is dynamic, address window configuration is dynamic. And we should
-hardcode all this configuration statically in the DT? Doesn't seem like
-the right solution.
-
-Best regards,
-
-Thomas
 -- 
-Thomas Petazzoni, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
+Maintainer of Linux kernel 2.6 Microblaze Linux - http://www.monstr.eu/fdt/
+Microblaze U-BOOT custodian
