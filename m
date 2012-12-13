@@ -1,21 +1,19 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 4FBCD2C007C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2012 14:22:43 +1100 (EST)
-Message-ID: <1355368956.3224.357.camel@bling.home>
-Subject: Re: [PATCH] vfio powerpc: enabled on powernv platform
-From: Alex Williamson <alex.williamson@redhat.com>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2ED132C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Dec 2012 14:50:35 +1100 (EST)
+Received: by mail-da0-f51.google.com with SMTP id i30so509219dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Dec 2012 19:50:33 -0800 (PST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 12 Dec 2012 20:22:36 -0700
-In-Reply-To: <1355367458.19932.84.camel@pasglop>
-References: <1354901926.3224.96.camel@bling.home>
- <1355315657-31153-1-git-send-email-aik@ozlabs.ru>
- <1355355035.3224.343.camel@bling.home> <1355367458.19932.84.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Subject: [PATCH] powerpc: added DSCR support to ptrace
+Date: Thu, 13 Dec 2012 14:50:23 +1100
+Message-Id: <1355370623-22707-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,39 +23,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-12-13 at 13:57 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2012-12-12 at 16:30 -0700, Alex Williamson wrote:
-> > Locked page accounting in this version is very, very broken.  How do
-> > powerpc folks feel about seemingly generic kernel iommu interfaces
-> > messing with the current task mm?  Besides that, more problems
-> > below...
-> 
-> After a second look & thought...
-> 
-> This whole accounting business is fucked. First, we simply can't just
-> randomly return errors from H_PUT_TCE because the process reached some
-> rlimit. This is not a proper failure mode. That means that the guest
-> will probably panic() ... possibly right in the middle of some disk
-> writeback or god knows what. Not good.
-> 
-> Also the overhead of doing all that crap on every TCE map/unmap is
-> ridiculous.
-> 
-> Finally, it's just not going to work for real mode which we really want,
-> since we can't take the mmap-sem in real mode anyway, so unless we
-> convert that counter to an atomic, we can't do it.
-> 
-> I'd suggest just not bothering, or if you want to bother, check once
-> when creating a TCE table that the rlimit is enough to bolt as many
-> pages as can be populated in that table and fail to create *that*. The
-> failure mode is much better, ie, qemu failing to create a PCI bus due to
-> insufficient rlimits.
+The DSCR (aka Data Stream Control Register) is supported on some
+server PowerPC chips and allow some control over the prefetch
+of data streams.
 
-I agree, we don't seem to be headed in the right direction.  x86 needs
-to track rlimits or else a user can exploit the interface to pin all the
-memory in the system.  On power, only the iova window can be pinned, so
-it's a fixed amount.  I could see it as granting access to a group
-implicitly grants access to pinning the iova window.  We can still make
-it more explicit by handling the rlimit accounting upfront.  Thanks,
+The kernel already supports DSCR value per thread but there is also
+a need in a ability to change it from an external process for
+the specific pid.
 
-Alex
+The patch adds new register index PT_DSCR (index=44) which can be
+set/get by:
+  ptrace(PTRACE_POKEUSER, traced_process, PT_DSCR << 3, dscr);
+  dscr = ptrace(PTRACE_PEEKUSER, traced_process, PT_DSCR << 3, NULL);
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/include/asm/ptrace.h |    1 +
+ arch/powerpc/kernel/ptrace.c      |   16 ++++++++++++++++
+ 2 files changed, 17 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index 9c21ed4..340fe36 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -276,6 +276,7 @@ static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
+ #define PT_DAR	41
+ #define PT_DSISR 42
+ #define PT_RESULT 43
++#define PT_DSCR 44
+ #define PT_REGS_COUNT 44
+ 
+ #define PT_FPR0	48	/* each FP reg occupies 2 slots in this space */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index c10fc28..d3ba67b 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -179,6 +179,17 @@ static int set_user_msr(struct task_struct *task, unsigned long msr)
+ 	return 0;
+ }
+ 
++static unsigned long get_user_dscr(struct task_struct *task)
++{
++	return task->thread.dscr;
++}
++
++static int set_user_dscr(struct task_struct *task, unsigned long dscr)
++{
++	task->thread.dscr = dscr;
++	return 0;
++}
++
+ /*
+  * We prevent mucking around with the reserved area of trap
+  * which are used internally by the kernel.
+@@ -200,6 +211,9 @@ unsigned long ptrace_get_reg(struct task_struct *task, int regno)
+ 	if (regno == PT_MSR)
+ 		return get_user_msr(task);
+ 
++	if (regno == PT_DSCR)
++		return get_user_dscr(task);
++
+ 	if (regno < (sizeof(struct pt_regs) / sizeof(unsigned long)))
+ 		return ((unsigned long *)task->thread.regs)[regno];
+ 
+@@ -218,6 +232,8 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data)
+ 		return set_user_msr(task, data);
+ 	if (regno == PT_TRAP)
+ 		return set_user_trap(task, data);
++	if (regno == PT_DSCR)
++		return set_user_dscr(task, data);
+ 
+ 	if (regno <= PT_MAX_PUT_REG) {
+ 		((unsigned long *)task->thread.regs)[regno] = data;
+-- 
+1.7.10.4
