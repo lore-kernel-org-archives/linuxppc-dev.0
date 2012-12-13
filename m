@@ -1,27 +1,19 @@
-Return-Path: <aijazbaig1.new@gmail.com>
-Received: from joe.nabble.com (216-139-250-139.aus.us.siteprotect.com
- [216.139.250.139])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DF1072C0089
- for <linuxppc-dev@ozlabs.org>; Thu, 13 Dec 2012 20:06:37 +1100 (EST)
-Received: from tom.nabble.com ([192.168.236.105])
- by joe.nabble.com with esmtp (Exim 4.72)
- (envelope-from <aijazbaig1.new@gmail.com>) id 1Tj4TA-00087W-Qh
- for linuxppc-dev@ozlabs.org; Thu, 13 Dec 2012 00:48:40 -0800
-Date: Thu, 13 Dec 2012 00:48:40 -0800 (PST)
-From: pegasus <aijazbaig1.new@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1355388520814-67313.post@n7.nabble.com>
-In-Reply-To: <1355087457.28585.61.camel@pasglop>
-References: <1355388520814-59509.post@n7.nabble.com>
- <1354695642.2351.8.camel@pasglop> <1355388520815-59512.post@n7.nabble.com>
- <1354766337.2351.41.camel@pasglop> <1355388520815-59514.post@n7.nabble.com>
- <1354794967.28585.16.camel@pasglop> <1355388520816-59516.post@n7.nabble.com>
- <1355087457.28585.61.camel@pasglop>
-Subject: Re: Understanding how kernel updates MMU hash table
+Return-Path: <thierry.reding@avionic-design.de>
+Date: Thu, 13 Dec 2012 10:13:33 +0100
+From: Thierry Reding <thierry.reding@avionic-design.de>
+To: Andrew Murray <Andrew.Murray@arm.com>
+Subject: Re: [PATCH] pci: Provide support for parsing PCI DT ranges property
+Message-ID: <20121213091333.GA14828@avionic-0098.adnet.avionic-design.de>
+References: <20121212163749.GA17371@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="UlVJffcvxoiEqYs2"
+In-Reply-To: <20121212163749.GA17371@arm.com>
+Cc: Michal Simek <monstr@monstr.eu>, linux-pci@vger.kernel.org,
+ devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+ Liviu Dudau <liviu.dudau@arm.com>, Rob Herring <rob.herring@calxeda.com>,
+ Rob Herring <robherring2@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,59 +23,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben
- 
-There has been quite much confusion with my post disappearing from the new
-nabble system to it having getting posted twice..Im sorry for all this.
-Nevertheless, Id like to continue where we left off. Here I again repost my
-response which initially disappeared and then showed up twice. Ive removed
-the duplicate. So here it goes:
 
-Now that many things are becoming clear let me sum up my understanding until
-this point. Do correct it if there are mistakes. 
+--UlVJffcvxoiEqYs2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-1. Linux page table structure (PGD, PUD, PMD and PTE) is directly used in
-case of architecture that lend themselves to such a tree structure for
-maintaining virtual memory information. Otherwise Linux needs to maintain
-two seperate constructs like it does in case of PowerPC. Right? 
-2. PowerPC's hash table as you said is pretty large. However isn't it still
-smaller than Linux's VM infrastructure such that the chances of it being
-'FULL' are a lot more. It is also possible that there could be two entries
-in the table that points to the same Real address. Like a page being shared
-by two processes? 
+On Wed, Dec 12, 2012 at 04:37:50PM +0000, Andrew Murray wrote:
+> DT bindings for PCI host bridges often use the ranges property to describe
+> memory and IO ranges - this binding tends to be the same across architect=
+ures
+> yet several parsing implementations exist, e.g. arch/mips/pci/pci.c,
+> arch/powerpc/kernel/pci-common.c, arch/sparc/kernel/pci.c and
+> arch/microblaze/pci/pci-common.c (clone of PPC). Some of these duplicate
+> functionality provided by drivers/of/address.c.
+>=20
+> This patch provides a common iterator-based parser for the ranges propert=
+y, it
+> is hoped this will reduce DT representation differences between architect=
+ures
+> and that architectures will migrate in part to this new parser.
+>=20
+> It is also hoped (and the motativation for the patch) that this patch will
+> reduce duplication of code when writing host bridge drivers that are supp=
+orted
+> by multiple architectures.
+>=20
+> This patch provides struct resources from a device tree node, e.g.:
+>=20
+> 	u32 *last =3D NULL;
+> 	struct resource res;
+> 	while ((last =3D of_pci_process_ranges(np, res, last))) {
+> 		//do something with res
+> 	}
+>=20
+> Platforms with quirks can then do what they like with the resource or mig=
+rate
+> common quirk handling to the parser. In an ideal world drivers can just r=
+equest
+> the obtained resources and pass them on (e.g. pci_add_resource_offset).
+>=20
+> Signed-off-by: Andrew Murray <Andrew.Murray@arm.com>
+> Signed-off-by: Liviu Dudau <Liviu.Dudau@arm.com>
+> ---
+>  drivers/of/address.c       |   53 ++++++++++++++++++++++++++++++++++++++=
++++++-
+>  include/linux/of_address.h |    7 +++++
+>  2 files changed, 59 insertions(+), 1 deletions(-)
 
-My main concern here is to understand if having such an inverted page table
-aka the hash table helps us in any way when doing TLB flushes. You mentioned
-and I also read  in a paper by Paul Mackerras that every Linux PTE (LPTE) in
-case of ppc64 contains 4 extra bits that help us to get to the very slot in
-the hash table that houses the corresponding hashtable PTE (HPTE). Now this
-(at least to me) is smartness on the part of the kernel and I do not think
-the architecture per se is doing us any favor by having that hash table
-right? Or am I missing something here? 
+Hi Andrew,
 
-His paper is (or rather was) on how one can optimize the Linux ppc kernel
-and time and again he mentions the fact that one can first record the LPTEs
-being invalidated and then remove the corresponding HPTEs in a batched
-format. In his own words "Alternatively, it would be possible to make a list
-of virtual addresses when LPTEs are changed and then use that list in the
-TLB flush routines to avoid the search through the Linux page tables". So do
-we skip looking for the corresponding LPTEs or perhaps we've already
-invalidated them and we remove the corresponding HPTEs in a batch as you
-mentioned earlier?? Could you shed some light on how this optimization
-actually developed over time? He had results for an "immediate update"
-kernel 
-and "batched update" kernel for both ppc32 and ppc64. For ppc32 the batched
-update is actually a bit worse than immediate update however for ppc64, the
-batched update performs better than immediate update. What exactly is
-helping ppc64 perform better with the so called "batched update"? Is it the
-encoding of the HPTE address in the LPTE as mentioned above? Or some aspect
-of ppc64 that I am unaware of? 
+I don't like iterator interfaces too much, but I can live with that.
+Other than that the patch looks good to me and I'll try to work it into
+my Tegra PCIe patch series.
 
-Also on a generic note, how come we have 4 spare bits in the PTE for 64bit
-address space? Large pages perhaps? 
+Just two minor comments below.
 
+> diff --git a/drivers/of/address.c b/drivers/of/address.c
+[...]
+> @@ -421,7 +472,7 @@ u64 __of_translate_address(struct device_node *dev, c=
+onst __be32 *in_addr,
+>  		goto bail;
+>  	bus =3D of_match_bus(parent);
+> =20
+> -	/* Cound address cells & copy address locally */
+> +	/* Count address cells & copy address locally */
+>  	bus->count_cells(dev, &na, &ns);
+>  	if (!OF_CHECK_COUNTS(na, ns)) {
+>  		printk(KERN_ERR "prom_parse: Bad cell count for %s\n",
 
+This is really minor, but it should still go into a separate patch.
 
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/Understanding-how-kernel-updates-MMU-hash-table-tp59509p67313.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+> diff --git a/include/linux/of_address.h b/include/linux/of_address.h
+> index 01b925a..4582b20 100644
+> --- a/include/linux/of_address.h
+> +++ b/include/linux/of_address.h
+> @@ -26,6 +26,8 @@ static inline unsigned long pci_address_to_pio(phys_add=
+r_t addr) { return -1; }
+>  #define pci_address_to_pio pci_address_to_pio
+>  #endif
+> =20
+> +const __be32 *of_pci_process_ranges(struct device_node *node,
+> +				    struct resource *res, const __be32 *from);
+>  #else /* CONFIG_OF_ADDRESS */
+>  static inline int of_address_to_resource(struct device_node *dev, int in=
+dex,
+>  					 struct resource *r)
+> @@ -48,6 +50,11 @@ static inline const u32 *of_get_address(struct device_=
+node *dev, int index,
+>  {
+>  	return NULL;
+>  }
+> +const __be32 *of_pci_process_ranges(struct device_node *node,
+
+There should be a blank line to separate the above two lines.
+
+Thierry
+
+--UlVJffcvxoiEqYs2
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.19 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQyZw9AAoJEN0jrNd/PrOh27oQAJK1LVSVPt2bdH+fhBhgNB76
+gYZmzRFSFbl2BnyahjOCX2QODhZTuNbhKwoEIFFWN8cyBKg+gdNiTRsSTmlbhpFn
+ifkaZ9dt5oP2bmOvTB+m4NI7LxSAkf8HtAJm8ZSULaLJR49U9QoJvY3fp+fF2oXt
+CfGkqMgiWh42gi/H3CXnomZUGtgSLsWxPXsWj1rEs73HdnEyUdZNx7Q83qOigBay
+5y4lWsaApyHdYOOPq4eDhWDFQJ8UikwYSJi/gq/fPow7g+obXxRmarkYD4I6gFMS
+4uXtRWzrlQjm0fFmviYG8ad2ultAts29SXFsImCGwdglbozV22z8OuxPxkHdlFNT
+/iX8dtlWlFToI1TCacS0N1cSDZ9zBEh6nNjJot2w4o7/Q47O0kkYnyf0EhxfwTTV
+EtObKtwbZPrddN1xcWEa02DdJPjTw6i4KwQyv2K0Bi9Z21nPkcEecTXrxNymqjdp
+3Gx+Qt25xJIDDnSS/qTafbg72uckTpFVAukOrQ1wTO2qohZNvgnDSv5NAiQh7Lvx
+NtxHDMtirkjPnN30YUD5ZYHKXukcPw8SLcuQg/pezCNcjn/xByk04bKyjlj3hfI6
+TOKQArS9/BJ+UMMXRY7HvwLIjl6oZSVi+XDkhoZG4y3CN5klkK9lpcl2Kcq33bwG
+CpniZNOorw/oX5+taazQ
+=W+t0
+-----END PGP SIGNATURE-----
+
+--UlVJffcvxoiEqYs2--
