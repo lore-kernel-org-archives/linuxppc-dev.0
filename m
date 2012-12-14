@@ -1,38 +1,24 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g4t0015.houston.hp.com (g4t0015.houston.hp.com [15.201.24.18])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 324192C009B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2012 13:08:50 +1100 (EST)
-Message-ID: <1355449872.18964.295.camel@misato.fc.hp.com>
-Subject: Re: [RFC PATCH 00/11] Hot-plug and Online/Offline framework
-From: Toshi Kani <toshi.kani@hp.com>
-To: Greg KH <gregkh@linuxfoundation.org>
-Date: Thu, 13 Dec 2012 18:51:12 -0700
-In-Reply-To: <20121213183021.GC9606@kroah.com>
-References: <1355354243-18657-1-git-send-email-toshi.kani@hp.com>
- <20121212235657.GD22764@kroah.com>
- <1355359176.18964.41.camel@misato.fc.hp.com>
- <20121213005510.GA9220@kroah.com>
- <1355369864.18964.68.camel@misato.fc.hp.com>
- <20121213041627.GA14083@kroah.com>
- <1355414634.18964.158.camel@misato.fc.hp.com>
- <20121213183021.GC9606@kroah.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-s390@vger.kernel.org, "jiang.liu@huawei.com" <jiang.liu@huawei.com>,
- "wency@cn.fujitsu.com" <wency@cn.fujitsu.com>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>, linuxppc-dev@lists.ozlabs.org,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "rjw@sisk.pl" <rjw@sisk.pl>,
- "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
- "isimatu.yasuaki@jp.fujitsu.com" <isimatu.yasuaki@jp.fujitsu.com>,
- "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>,
- "guohanjun@huawei.com" <guohanjun@huawei.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "yinghai@kernel.org" <yinghai@kernel.org>, "lenb@kernel.org" <lenb@kernel.org>
+Return-Path: <B16395@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B9B792C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2012 00:57:21 +1100 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: <joerg.roedel@amd.com>, <iommu@lists.linux-foundation.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <timur@freescale.com>, <scottwood@freescale.com>
+Subject: [PATCH 1/4 v7] iommu/fsl: Store iommu domain information pointer in
+ archdata.
+Date: Fri, 14 Dec 2012 19:21:52 +0530
+Message-ID: <1355493114-21776-2-git-send-email-Varun.Sethi@freescale.com>
+In-Reply-To: <1355493114-21776-1-git-send-email-Varun.Sethi@freescale.com>
+References: <1355493114-21776-1-git-send-email-Varun.Sethi@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,205 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2012-12-13 at 10:30 -0800, Greg KH wrote:
-> On Thu, Dec 13, 2012 at 09:03:54AM -0700, Toshi Kani wrote:
-> > On Thu, 2012-12-13 at 04:16 +0000, Greg KH wrote:
-> > > On Wed, Dec 12, 2012 at 08:37:44PM -0700, Toshi Kani wrote:
-> > > > On Wed, 2012-12-12 at 16:55 -0800, Greg KH wrote:
-> > > > > On Wed, Dec 12, 2012 at 05:39:36PM -0700, Toshi Kani wrote:
-> > > > > > On Wed, 2012-12-12 at 15:56 -0800, Greg KH wrote:
-> > > > > > > On Wed, Dec 12, 2012 at 04:17:12PM -0700, Toshi Kani wrote:
-> > > > > > > > This patchset is an initial prototype of proposed hot-plug framework
-> > > > > > > > for design review.  The hot-plug framework is designed to provide 
-> > > > > > > > the common framework for hot-plugging and online/offline operations
-> > > > > > > > of system devices, such as CPU, Memory and Node.  While this patchset
-> > > > > > > > only supports ACPI-based hot-plug operations, the framework itself is
-> > > > > > > > designed to be platform-neural and can support other FW architectures
-> > > > > > > > as necessary.
-> > > > > > > > 
-> > > > > > > > The patchset has not been fully tested yet, esp. for memory hot-plug.
-> > > > > > > > Any help for testing will be very appreciated since my test setup
-> > > > > > > > is limited.
-> > > > > > > > 
-> > > > > > > > The patchset is based on the linux-next branch of linux-pm.git tree.
-> > > > > > > > 
-> > > > > > > > Overview of the Framework
-> > > > > > > > =========================
-> > > > > > > 
-> > > > > > > <snip>
-> > > > > > > 
-> > > > > > > Why all the new framework, doesn't the existing bus infrastructure
-> > > > > > > provide everything you need here?  Shouldn't you just be putting your
-> > > > > > > cpus and memory sticks on a bus and handle stuff that way?  What makes
-> > > > > > > these types of devices so unique from all other devices that Linux has
-> > > > > > > been handling in a dynamic manner (i.e. hotplugging them) for many many
-> > > > > > > years?
-> > > > > > > 
-> > > > > > > Why are you reinventing the wheel?
-> > > > > > 
-> > > > > > Good question.  Yes, USB and PCI hotplug operate based on their bus
-> > > > > > structures.  USB and PCI cards only work under USB and PCI bus
-> > > > > > controllers.  So, their framework can be composed within the bus
-> > > > > > structures as you pointed out.
-> > > > > > 
-> > > > > > However, system devices such CPU and memory do not have their standard
-> > > > > > bus.  ACPI allows these system devices to be enumerated, but it does not
-> > > > > > make ACPI as the HW bus hierarchy for CPU and memory, unlike PCI and
-> > > > > > USB.  Therefore, CPU and memory modules manage CPU and memory outside of
-> > > > > > ACPI.  This makes sense because CPU and memory can be used without ACPI.
-> > > > > > 
-> > > > > > This leads us an issue when we try to manage system device hotplug
-> > > > > > within ACPI, because ACPI does not control everything.  This patchset
-> > > > > > provides a common hotplug framework for system devices, which both ACPI
-> > > > > > and non-ACPI modules (i.e. CPU and memory modules) can participate and
-> > > > > > are coordinated for their hotplug operations.  This is analogous to the
-> > > > > > boot-up sequence, which ACPI and non-ACPI modules can participate to
-> > > > > > enable CPU and memory.
-> > > > > 
-> > > > > Then create a "virtual" bus and put the devices you wish to control on
-> > > > > that.  That is what the "system bus" devices were supposed to be, it's
-> > > > > about time someone took that code and got it all working properly in
-> > > > > this way, that is why it was created oh so long ago.
-> > > > 
-> > > > It may be the ideal, but it will take us great effort to make such
-> > > > things to happen based on where we are now.  It is going to be a long
-> > > > way.  I believe the first step is to make the boot-up flow and hot-plug
-> > > > flow consistent for system devices.  This is what this patchset is
-> > > > trying to do.
-> > > 
-> > > If you use the system "bus" for this, the "flow" will be identical, that
-> > > is what the driver core provides for you.  I don't see why you need to
-> > > implement something that sits next to it and not just use what we
-> > > already have here.
-> > 
-> > Here is very brief boot-up flow.  
-> > 
-> > start_kernel()
-> >   boot_cpu_init()         // init cpu0
-> >   setup_arch()
-> >     x86_init.paging.pagetable_init() // init mem pagetable
-> >   :
-> > kernel_init()
-> >   kernel_init_freeable()
-> >     smp_init()            // init other CPUs
-> >       :
-> >     do_basic_setup()
-> >       driver_init()
-> >         cpu_dev_init()    // build system/cpu tree
-> >         memory_dev_init() // build system/memory tree
-> >       do_initcalls()
-> >         acpi_init()       // build ACPI device tree
-> > 
-> > CPU and memory are initialized at early boot.  The system device tree is
-> > built at the last step of the boot sequence and is only used for
-> > providing sysfs interfaces.
-> 
-> Then fix that and create the system device tree earlier.
+Add a new field in the device (powerpc) archdata structure for storing iommu domain
+information pointer. This pointer is stored when the device is attached to a particular
+domain.
 
-# I added ppc and s390 to the list as you suggested... and because
-# I may be wrong in my code reading...  This thread is:
-# https://lkml.org/lkml/2012/12/13/452
+Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+---
+- no change in this version
+ arch/powerpc/include/asm/device.h |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-I looked at s390 and powerpc hotplug code.  Their boot flow is
-consistent as above since most of the funcs above are actually common.
-
-For hotplug, pSeries (powerpc) supports CPU, Memory and I/O hotplug.
-s390 seems to support less capability, so I looked at pSeries mostly.
-
-pSeries supports DLPAR, and all hotplug code is put under
-pSeries-specific code, such as arch/powerpc/platforms/pseries/dlpar.c.
-The code is implemented outside of the OF module.  Therefore, I think
-the OF module itself works consistently at boot and hot-add.  It has its
-own hotplug framework with pSeries_reconfig_chain, which calls all
-registered handlers for reconfig events.
-
-So, it looks to me that pSeries has somewhat a similar framework, but
-put everything under pSeries specific code.  pSeries and s390 hotplug
-implementations do not use the bus structure you suggested, either.
-
-
-> > That is, the system bus structure has nothing to do with the actual
-> > CPU and memory initialization at boot.
-> 
-> Then that should be fixed, right?
-
-The boot-up sequence is shared by all architectures, and it is nearly
-impossible to make such changes to work on all architectures.
-
-
-> > Similarly, ACPI drivers do not initialize actual CPU and memory at boot
-> > as they are also called at the last step.
-> 
-> That should also probably be fixed, right?
-
-Since the boot flow is consistent for all architectures, I do not think
-other FW modules initialize CPU and memory, either.
-
-
-> > Further, the ACPI device tree and system bus tree are separate
-> > entities.
-> 
-> That's because ACPI seems to be getting crazy these days, and creating
-> lots of different devices and tieing it back into the existing device
-> trees.  Which is fine, see how it's being done with USB for one example
-> of how this can be done correctly, _if_ you want to keep them separate
-> (doing so is your own choice, nothing that I'm saying is necessary.)
-> 
-> > Hotplug events are sent to ACPI.
-> 
-> Your hotplug events are being sent there, that's your decision to do so,
-> it doesn't happen that way with other subsystems that get hotplug events
-> from ACPI (i.e. PCI hotplug, right?)
-
-ACPICA sends a notification to an ACPI notify handler, so it has to go
-with ACPI.  The "system/cpu" and "system/memory" sysfs drivers are
-platform neutral and do not depend on ACPI.  PCIe hotplug is based on
-PCIe spec, and does not use ACPI.  ACPI PCI hotplug (for PCIx) uses ACPI
-and its notification is sent to an ACPI notify handler. 
-
-
-> > In order to keep the boot flow and hotplug flow consistent, I believe
-> > the first step is to keep the role of modules consistent between boot
-> > and hotplug.
-> 
-> I agree, see above for how to resolve that :)
->
-> > For instance, acpi_init() only builds ACPI tree at boot, so ACPI
-> > should only build ACPI tree at hot-add as well.  This keeps ACPI
-> > drivers to do the same for both boot and hot-add.
-> 
-> Agreed.
-
-Great!  Yes, we just need to agree on a solution. :)
-
-
-> > The framework is designed to provide the consistency along with other
-> > high-availability features such as rollback.
-> 
-> I want my tiny, USB-powered device to have "high-availability", don't
-> think of that type of functionality as somehow being special, it's what
-> we have been doing with other subsystems for _years_ now.
-> 
-> Again, I think if you properly tie the system bus code into the CPU work
-> at the correct location, you can achieve everything you need.  I base
-> this on the fact that this is what other subsystems and architectures
-> have been doing for years.  Just because this is ACPI is no reason to
-> think that it needs to be done differently.
-> 
-> Odds are, s390 has been doing this for 10+ years and none of us realize
-> this, they are usually that far ahead of the curve if history is any
-> lesson.
-
-I looked at pSeries and s390, and they have their own framework.  Their
-cases are also unique because their implementations are tied with
-specific platforms / products.  In high-level, however, their approach
-is similar to mine.  I have also worked on hotplug for years on other
-OS, so I am not coming from nowhere, either. :)
-
-If your concern is having a common hotplug framework, I can try to
-address it by putting this framework under ACPI.  This makes it less
-capable/cleaner, but it keeps it within ACPI.  That makes it more
-similar to how pSeries and s390 did.
-
-Thanks,
--Toshi
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index 77e97dd..6dc79fe 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -28,6 +28,10 @@ struct dev_archdata {
+ 		void		*iommu_table_base;
+ 	} dma_data;
+ 
++	/* IOMMU domain information pointer. This would be set
++	 * when this device is attached to an iommu_domain.
++	 */
++	void			*iommu_domain;
+ #ifdef CONFIG_SWIOTLB
+ 	dma_addr_t		max_direct_dma_addr;
+ #endif
+-- 
+1.7.4.1
