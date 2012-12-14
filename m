@@ -1,18 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 2A5242C0092
- for <linuxppc-dev@ozlabs.org>; Sat, 15 Dec 2012 07:45:36 +1100 (EST)
-Message-ID: <1355517897.19932.136.camel@pasglop>
-Subject: [git pull] Please pull powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 15 Dec 2012 07:44:57 +1100
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <phileas-fogg@mail.ru>
+Received: from fallback3.mail.ru (fallback3.mail.ru [94.100.176.58])
+ by ozlabs.org (Postfix) with ESMTP id 581412C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2012 23:42:52 +1100 (EST)
+Received: from f147.mail.ru (f147.mail.ru [217.69.128.102])
+ by fallback3.mail.ru (mPOP.Fallback_MX) with ESMTP id 1186EC9E1D17
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2012 16:35:12 +0400 (MSK)
+Received: from mail by f147.mail.ru with local (envelope-from
+ <phileas-fogg@mail.ru>) id 1TjUTq-0001Ij-Ft
+ for linuxppc-dev@lists.ozlabs.org; Fri, 14 Dec 2012 16:35:06 +0400
+From: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: =?UTF-8?B?UFMzIHBsYXRmb3JtIGlzIGJyb2tlbiBvbiBMaW51eCAzLjcuMA==?=
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Date: Fri, 14 Dec 2012 16:35:06 +0400
+Message-ID: <1355488506.55692113@f147.mail.ru>
+Content-Type: multipart/alternative;
+	boundary="--ALT--r2cGfv7e1355488506"
+Reply-To: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,286 +26,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Linus !
 
-Finally managed to get my head away from some other distractions
-to put this pull request together, sorry for the lateness :-)
+----ALT--r2cGfv7e1355488506
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: base64
 
-The main highlight is probably some base POWER8 support. There's
-more to come such as transactional memory support but that will
-wait for the next one.
+IEhpLAoKSSB3YW50ZWQgdG8gYnJpbmcgdG8geW91ciBhdHRlbnRpb24gdGhlIGZhY3QgdGhhdCB0
+aGUgUFMzIHBsYXRmb3JtIGlzIGJyb2tlbiBvbiBMaW51eCAzLjcuMC4KCmknbSBub3QgYWJsZSB0
+byBib290IExpbnV4IDMuNy4wIG9uIG15IFBTMyBzbGltLiBMaW51eCAzLjYuMTAgYm9vdHMganVz
+dCBmaW5lIGJ1dCBub3QgMy43LjAKV2hlbiBpIHRyeSB0byBib290IExpbnV4IDMuNy4wIHRoZW4g
+bXkgUFMzwqAgc2h1dHMgZG93bi4KClNvIGkgY2xvbmVkIHRoZSBMaW51eCBwb3dlcnBjIEdJVCBy
+ZXBvc2l0b3J5IGFuZCB0cmllZCB0byBmaW5kIG91dCB3aGljaCBjb21taXRzIGJyb2tlIHRoZSBQ
+UzMgcGxhdGZvcm0uCkFmdGVyIHNvbWUgdGltZSBJIHRyYWNrZWQgaXQgZG93biB0byAyIGNvbW1p
+dHM6CgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCmNvbW1pdCA0MDc4MjFh
+MzRmY2U4OWI0ZjBiMDMxZGJhYjVjZWM3ZDA1OWY0NmJjCkF1dGhvcjogTWljaGFlbCBFbGxlcm1h
+biA8bWljaGFlbEBlbGxlcm1hbi5pZC5hdT4KRGF0ZTrCoMKgIEZyaSBTZXAgNyAxNTozMTo0NCAy
+MDEyICswMDAwCgrCoMKgwqAgcG93ZXJwYzogSW5pdGlhbGlzZSBwYWNhLmRhdGFfb2Zmc2V0IHdp
+dGggcG9pc29uCsKgwqAgwqAKwqDCoMKgIEl0J3MgcG9zc2libGUgZm9yIHRoZSBjcHVfcG9zc2li
+bGVfbWFzayB0byBjaGFuZ2UgYmV0d2VlbiB0aGUgdGltZSB3ZQrCoMKgwqAgaW5pdGlhbGlzZSB0
+aGUgcGFjYXMgYW5kIHRoZSB0aW1lIHdlIHNldHVwIHBlcl9jcHUgYXJlYXMuCsKgwqAgwqAKwqDC
+oMKgIE9idmlvdXNseSBpbXBvc3NpYmxlIGNwdXMgc2hvdWxkbid0IGV2ZXIgYmUgcnVubmluZywg
+YnV0IHN0cmFuZ2VyIHRoaW5ncwrCoMKgwqAgaGF2ZSBoYXBwZW5lZC4gU28gYmUgcGFyYW5vaWQg
+YW5kIGluaXRpYWxpc2UgZGF0YV9vZmZzZXQgd2l0aCBhIHBvaXNvbgrCoMKgwqAgdmFsdWUgaW4g
+Y2FzZSB3ZSBkb24ndCBzZXQgaXQgdXAgbGF0ZXIuCsKgwqAgwqAKwqDCoMKgIEJhc2VkIG9uIGEg
+cGF0Y2ggZnJvbSBBbnRvbiBCbGFuY2hhcmQuCsKgwqAgwqAKwqDCoMKgIFNpZ25lZC1vZmYtYnk6
+IE1pY2hhZWwgRWxsZXJtYW4gPG1pY2hhZWxAZWxsZXJtYW4uaWQuYXU+CsKgwqDCoCBTaWduZWQt
+b2ZmLWJ5OiBCZW5qYW1pbiBIZXJyZW5zY2htaWR0IDxiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc+
+CgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpjb21taXQgMDQ4ZWUw
+OTkzZWM4MzYwYWJiMGI1MWJkZjhmODcyMWU5ZWQ2MmVjNApBdXRob3I6IEFuZWVzaCBLdW1hciBL
+LlYgPGFuZWVzaC5rdW1hckBsaW51eC52bmV0LmlibS5jb20+CkRhdGU6wqDCoCBNb24gU2VwIDEw
+IDAyOjUyOjU1IDIwMTIgKzAwMDAKCsKgwqDCoCBwb3dlcnBjL21tOiBBZGQgNjRUQiBzdXBwb3J0
+CsKgwqAgwqAKwqDCoMKgIEluY3JlYXNlIG1heCBhZGRyZXNzYWJsZSByYW5nZSB0byA2NFRCLiBU
+aGlzIGlzIG5vdCB0ZXN0ZWQgb24KwqDCoMKgIHJlYWwgaGFyZHdhcmUgeWV0LgrCoMKgIMKgCsKg
+wqDCoCBSZXZpZXdlZC1ieTogUGF1bCBNYWNrZXJyYXMgPHBhdWx1c0BzYW1iYS5vcmc+CsKgwqDC
+oCBTaWduZWQtb2ZmLWJ5OiBBbmVlc2ggS3VtYXIgSy5WIDxhbmVlc2gua3VtYXJAbGludXgudm5l
+dC5pYm0uY29tPgrCoMKgwqAgU2lnbmVkLW9mZi1ieTogQmVuamFtaW4gSGVycmVuc2NobWlkdCA8
+YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnPgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLQoKVGhlIGZpcnN0IGNvbW1pdCBjYXVzZXMgbXkgUFMzIHRvIHNo
+dXQgZG93bi4gSWYgaSByZXZlcnQgaXQgdGhlbiBpJ20gYWJsZSB0byBib290IExpbnV4IDMuNy4w
+IGFuZCBldmVuIHNlZSBzb21lIGJvb3QgbWVzc2FnZXMKb24gbXkgc2NyZWVuLiBCdXQgdGhlbiBp
+dCBoYW5ncy4gVGhlIHNlY29uZCBjb21taXQgaXMgdGhlIHJlYXNvbiBmb3IgdGhlIGhhbmcgYXMg
+aSBmaWd1cmVkIGl0IG91dC4KCkkgcmV2ZXJ0ZWQgYm90aCBjb21taXRzIGluIGN1cnJlbnQgTGlu
+dXggMy43LjAgYW5kIHdhcyBhYmxlIHRvIGJvb3QgTGludXggMy43LjAgb24gbXkgUFMzIHNsaW0g
+c3VjY2Vzc2Z1bGx5LgoKUmVnYXJkcwoK
 
-Overall it's pretty quiet, or rather I've been pretty poor at
-picking things up from patchwork and reviewing them this time
-around and Kumar no better on the FSL side it seems...
+----ALT--r2cGfv7e1355488506
+Content-Type: text/html; charset=utf-8
+Content-Transfer-Encoding: base64
 
-Cheers,
-Ben.
+CjxIVE1MPjxCT0RZPkhpLDxicj48YnI+SSB3YW50ZWQgdG8gYnJpbmcgdG8geW91ciBhdHRlbnRp
+b24gdGhlIGZhY3QgdGhhdCB0aGUgUFMzIHBsYXRmb3JtIGlzIGJyb2tlbiBvbiBMaW51eCAzLjcu
+MC48YnI+PGJyPmknbSBub3QgYWJsZSB0byBib290IExpbnV4IDMuNy4wIG9uIG15IFBTMyBzbGlt
+LiBMaW51eCAzLjYuMTAgYm9vdHMganVzdCBmaW5lIGJ1dCBub3QgMy43LjA8YnI+V2hlbiBpIHRy
+eSB0byBib290IExpbnV4IDMuNy4wIHRoZW4gbXkgUFMzJm5ic3A7IHNodXRzIGRvd24uPGJyPjxi
+cj5TbyBpIGNsb25lZCB0aGUgTGludXggcG93ZXJwYyBHSVQgcmVwb3NpdG9yeSBhbmQgdHJpZWQg
+dG8gZmluZCBvdXQgd2hpY2ggY29tbWl0cyBicm9rZSB0aGUgUFMzIHBsYXRmb3JtLjxicj5BZnRl
+ciBzb21lIHRpbWUgSSB0cmFja2VkIGl0IGRvd24gdG8gMiBjb21taXRzOjxicj48YnI+LS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPGJyPjxicj5jb21taXQgNDA3ODIxYTM0ZmNl
+ODliNGYwYjAzMWRiYWI1Y2VjN2QwNTlmNDZiYzxicj5BdXRob3I6IE1pY2hhZWwgRWxsZXJtYW4g
+Jmx0O21pY2hhZWxAZWxsZXJtYW4uaWQuYXUmZ3Q7PGJyPkRhdGU6Jm5ic3A7Jm5ic3A7IEZyaSBT
+ZXAgNyAxNTozMTo0NCAyMDEyICswMDAwPGJyPjxicj4mbmJzcDsmbmJzcDsmbmJzcDsgcG93ZXJw
+YzogSW5pdGlhbGlzZSBwYWNhLmRhdGFfb2Zmc2V0IHdpdGggcG9pc29uPGJyPiZuYnNwOyZuYnNw
+OyAmbmJzcDs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEl0J3MgcG9zc2libGUgZm9yIHRoZSBjcHVf
+cG9zc2libGVfbWFzayB0byBjaGFuZ2UgYmV0d2VlbiB0aGUgdGltZSB3ZTxicj4mbmJzcDsmbmJz
+cDsmbmJzcDsgaW5pdGlhbGlzZSB0aGUgcGFjYXMgYW5kIHRoZSB0aW1lIHdlIHNldHVwIHBlcl9j
+cHUgYXJlYXMuPGJyPiZuYnNwOyZuYnNwOyAmbmJzcDs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IE9i
+dmlvdXNseSBpbXBvc3NpYmxlIGNwdXMgc2hvdWxkbid0IGV2ZXIgYmUgcnVubmluZywgYnV0IHN0
+cmFuZ2VyIHRoaW5nczxicj4mbmJzcDsmbmJzcDsmbmJzcDsgaGF2ZSBoYXBwZW5lZC4gU28gYmUg
+cGFyYW5vaWQgYW5kIGluaXRpYWxpc2UgZGF0YV9vZmZzZXQgd2l0aCBhIHBvaXNvbjxicj4mbmJz
+cDsmbmJzcDsmbmJzcDsgdmFsdWUgaW4gY2FzZSB3ZSBkb24ndCBzZXQgaXQgdXAgbGF0ZXIuPGJy
+PiZuYnNwOyZuYnNwOyAmbmJzcDs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEJhc2VkIG9uIGEgcGF0
+Y2ggZnJvbSBBbnRvbiBCbGFuY2hhcmQuPGJyPiZuYnNwOyZuYnNwOyAmbmJzcDs8YnI+Jm5ic3A7
+Jm5ic3A7Jm5ic3A7IFNpZ25lZC1vZmYtYnk6IE1pY2hhZWwgRWxsZXJtYW4gJmx0O21pY2hhZWxA
+ZWxsZXJtYW4uaWQuYXUmZ3Q7PGJyPiZuYnNwOyZuYnNwOyZuYnNwOyBTaWduZWQtb2ZmLWJ5OiBC
+ZW5qYW1pbiBIZXJyZW5zY2htaWR0ICZsdDtiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcmZ3Q7PGJy
+Pjxicj48YnI+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPGJyPjxicj5j
+b21taXQgMDQ4ZWUwOTkzZWM4MzYwYWJiMGI1MWJkZjhmODcyMWU5ZWQ2MmVjNDxicj5BdXRob3I6
+IEFuZWVzaCBLdW1hciBLLlYgJmx0O2FuZWVzaC5rdW1hckBsaW51eC52bmV0LmlibS5jb20mZ3Q7
+PGJyPkRhdGU6Jm5ic3A7Jm5ic3A7IE1vbiBTZXAgMTAgMDI6NTI6NTUgMjAxMiArMDAwMDxicj48
+YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IHBvd2VycGMvbW06IEFkZCA2NFRCIHN1cHBvcnQ8YnI+Jm5i
+c3A7Jm5ic3A7ICZuYnNwOzxicj4mbmJzcDsmbmJzcDsmbmJzcDsgSW5jcmVhc2UgbWF4IGFkZHJl
+c3NhYmxlIHJhbmdlIHRvIDY0VEIuIFRoaXMgaXMgbm90IHRlc3RlZCBvbjxicj4mbmJzcDsmbmJz
+cDsmbmJzcDsgcmVhbCBoYXJkd2FyZSB5ZXQuPGJyPiZuYnNwOyZuYnNwOyAmbmJzcDs8YnI+Jm5i
+c3A7Jm5ic3A7Jm5ic3A7IFJldmlld2VkLWJ5OiBQYXVsIE1hY2tlcnJhcyAmbHQ7cGF1bHVzQHNh
+bWJhLm9yZyZndDs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IFNpZ25lZC1vZmYtYnk6IEFuZWVzaCBL
+dW1hciBLLlYgJmx0O2FuZWVzaC5rdW1hckBsaW51eC52bmV0LmlibS5jb20mZ3Q7PGJyPiZuYnNw
+OyZuYnNwOyZuYnNwOyBTaWduZWQtb2ZmLWJ5OiBCZW5qYW1pbiBIZXJyZW5zY2htaWR0ICZsdDti
+ZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcmZ3Q7PGJyPjxicj4tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPGJyPjxicj5UaGUgZmlyc3QgY29tbWl0IGNhdXNl
+cyBteSBQUzMgdG8gc2h1dCBkb3duLiBJZiBpIHJldmVydCBpdCB0aGVuIGknbSBhYmxlIHRvIGJv
+b3QgTGludXggMy43LjAgYW5kIGV2ZW4gc2VlIHNvbWUgYm9vdCBtZXNzYWdlczxicj5vbiBteSBz
+Y3JlZW4uIEJ1dCB0aGVuIGl0IGhhbmdzLiBUaGUgc2Vjb25kIGNvbW1pdCBpcyB0aGUgcmVhc29u
+IGZvciB0aGUgaGFuZyBhcyBpIGZpZ3VyZWQgaXQgb3V0Ljxicj48YnI+SSByZXZlcnRlZCBib3Ro
+IGNvbW1pdHMgaW4gY3VycmVudCBMaW51eCAzLjcuMCBhbmQgd2FzIGFibGUgdG8gYm9vdCBMaW51
+eCAzLjcuMCBvbiBteSBQUzMgc2xpbSBzdWNjZXNzZnVsbHkuPGJyPjxicj5SZWdhcmRzPGJyPjxi
+ciBkYXRhLW1jZS1ib2d1cz0iMSI+PC9CT0RZPjwvSFRNTD4K
 
-The following changes since commit d6dc24613c222f9057131ccbd5264a10bcba9f97:
-
-  Merge remote-tracking branch 'agust/merge' into merge (2012-11-21 13:24:49 +1100)
-
-are available in the git repository at:
-
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
-
-for you to fetch changes up to d526e85f60fce9aa2a1432cbd06e3cf20c1644c8:
-
-  powerpc+of: Rename and fix OF reconfig notifier error inject module (2012-12-14 10:32:52 +1100)
-
-----------------------------------------------------------------
-Akinobu Mita (3):
-      powerpc/iommu: Use bitmap library
-      powerpc: Remove BITOP_MASK and BITOP_WORD from asm/bitops.h
-      powerpc: Use asm-generic/bitops/le.h
-
-Alexey Kardashevskiy (1):
-      powerpc/pseries: Fix oops with MSIs when missing EEH PEs
-
-Andreas Schwab (1):
-      powerpc/powermac/cpufreq_32: Set non-infinite transition time for 7447A driver
-
-Anton Blanchard (3):
-      powerpc: Move most of setup.h out of uapi
-      powerpc: Remove stale function prototypes from setup.h
-      powerpc: Fix CONFIG_RELOCATABLE=y CONFIG_CRASH_DUMP=n build
-
-Aravinda Prasad (1):
-      powerpc/ptrace: Enable hardware breakpoint upon re-registering
-
-Benjamin Herrenschmidt (5):
-      powerpc/powernv: Fix OPAL debug entry
-      Merge branch 'dt' into next
-      Merge branch 'merge' into next
-      Merge remote-tracking branch 'kumar/next' into next
-      powerpc+of: Rename and fix OF reconfig notifier error inject module
-
-Dan Horák (1):
-      fbdev: Add GXT4000P and GXT6500P support to the gxt4500 driver
-
-Gavin Shan (2):
-      powerpc/pnv: Avoid bogus output
-      powerpc/eeh: Do not invalidate PE properly
-
-Ian Munsie (5):
-      powerpc: Add set_mode hcall
-      powerpc: Add wrappers to enable/disable relocation on exceptions
-      powerpc: Move get_longbusy_msecs into hvcall.h and remove duplicate function
-      powerpc: Enable relocation on during exceptions at boot
-      powerpc: Disable relocation on exceptions when kexecing
-
-Jia Hongtao (1):
-      powerpc/fsl-pci: Add PCI controller ATMU PM support
-
-JoonSoo Kim (1):
-      powerpc: Change free_bootmem() to kfree()
-
-Julia Lawall (1):
-      powerpc/rtas_flash: Eliminate possible double free
-
-K.Prasad (1):
-      powerpc/hw-breakpoint: Use generic hw-breakpoint interfaces for new PPC ptrace flags
-
-Li Zhong (1):
-      powerpc: Fix MAX_STACK_TRACE_ENTRIES too low warning !
-
-Matthew McClintock (1):
-      powerpc: dtc is required to build dtb files
-
-Michael Ellerman (12):
-      powerpc/udbg: Remove unused udbg_read()
-      powerpc/xmon: Remove unused xmon_expect() & xmon_read_poll()
-      powerpc/xmon: Remove empty xmon_map_scc()
-      powerpc/xmon: Make xmon_getchar() static
-      powerpc/xmon: Merge start.c into nonstdio.c
-      powerpc/xmon: Remove renaming #defines of scanhex() and skipbl()
-      powerpc/xmon: Remove unused #defines
-      powerpc/xmon: Use STACK_FRAME_OVERHEAD in xmon_show_stack()
-      powerpc/xmon: Fiddle xmon_depth_to_print logic in xmon_show_stack()
-      powerpc/xmon: Fallback to printk() in xmon_printf() if udbg is not setup
-      powerpc: Remove no longer used ppc_md.idle_loop()
-      powerpc/perf: Add missing L2 constraint handling in Power7 PMU
-
-Michael Neuling (16):
-      powerpc/ptrace: Fix spelling mistake
-      powerpc/ptrace: Remove unused addr parameter in ppc_del_hwdebug()
-      powerpc: make POWER7 setup code name generic
-      powerpc: Add POWER8 setup code
-      powerpc: POWER8 cputable entry
-      powerpc: Fix denorm symbol name
-      powerpc/pseries: Update ibm,architecture.vec for PAPR 2.7/POWER8
-      powerpc: Add POWER8 architected mode to cputable
-      powerpc: Whitespace changes in exception64s.S
-      powerpc: Remove unessessary 0x3000 location enforcement
-      powerpc: Make load_hander handle upto 64k offset
-      powerpc: Turn syscall handler into macros
-      powerpc: Add new macros needed for relocation on exceptions
-      powerpc: Add relocation on exception vector handlers
-      powerpc: Move initial mfspr LPCR out of __init_LPCR
-      powerpc: Setup relocation on exceptions for bare metal systems
-
-Nathan Fontenot (6):
-      powerpc+of: Add /proc device tree updating to of node add/remove
-      powerpc+of: Move of_drconf_cell struct definition to asm/prom.h
-      powerpc+of: Add of node/property notification chain for adds and removes
-      powerpc+of: Rename the drivers/of prom_* functions to of_*
-      powerpc+of: Remove the pSeries_reconfig.h file
-      powerpc+of: Export of_reconfig_notifier_[register,unregister]
-
-Nishanth Aravamudan (1):
-      powerpc/pseries: Double NR_CPUS in defconfig
-
-Srinivas Kandagatla (1):
-      powerpc/sysdev: Use module_platform_driver macro
-
-Sukadev Bhattiprolu (1):
-      powerpc/perf: Use uapi/unistd.h to fix build error
-
-Timur Tabi (2):
-      drivers/virt: the Freescale hypervisor driver doesn't need to check MSR[GS]
-      powerpc/86xx: fsl_pcibios_fixup_bus requires CONFIG_PCI
-
-Tony Breeds (2):
-      powerpc/47x: Use the new ppc-opcode infrastructure
-      powerpc: Add asm/debug.h to get powerpc_debugfs_root
-
-Tushar Behera (1):
-      powerpc/85xx: p1022ds: Use NULL instead of 0 for pointers
-
-Varun Sethi (1):
-      powerpc/iommu/fsl: Add PAMU bypass enable register to ccsr_guts struct
-
-Wei Yongjun (1):
-      powerpc/windfarm: Use module_i2c_driver to simplify the code
-
-Xuelin Shi (1):
-      powerpc/dma/raidengine: add raidengine device
-
-Yang Li (1):
-      powerpc: Fix typos in Freescale copyright claims
-
-York Sun (1):
-      powerpc/mpc85xx: Change spin table to cached memory
-
- .../devicetree/bindings/powerpc/fsl/raideng.txt    |   81 +++++
- Documentation/powerpc/ptrace.txt                   |   16 +
- arch/arm/mach-mxs/mach-mxs.c                       |    2 +-
- arch/powerpc/Makefile                              |    2 +-
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |    1 +
- arch/powerpc/boot/dts/fsl/p5020si-pre.dtsi         |    6 +
- arch/powerpc/boot/dts/fsl/qoriq-raid1.0-0.dtsi     |   85 ++++++
- arch/powerpc/configs/pseries_defconfig             |    2 +-
- arch/powerpc/include/asm/bitops.h                  |   75 +----
- arch/powerpc/include/asm/cputable.h                |   12 +-
- arch/powerpc/include/asm/dbell.h                   |    2 +-
- arch/powerpc/include/asm/exception-64s.h           |   97 +++++-
- arch/powerpc/include/asm/firmware.h                |    4 +-
- arch/powerpc/include/asm/fsl_gtm.h                 |    2 +-
- arch/powerpc/include/asm/fsl_guts.h                |    4 +-
- arch/powerpc/include/asm/hvcall.h                  |   23 +-
- arch/powerpc/include/asm/immap_qe.h                |    2 +-
- arch/powerpc/include/asm/machdep.h                 |    3 -
- arch/powerpc/include/asm/mmu.h                     |    1 +
- arch/powerpc/include/asm/pSeries_reconfig.h        |   47 ---
- arch/powerpc/include/asm/ppc-opcode.h              |    6 +-
- arch/powerpc/include/asm/prom.h                    |   16 +
- arch/powerpc/include/asm/qe.h                      |    2 +-
- arch/powerpc/include/asm/qe_ic.h                   |    2 +-
- arch/powerpc/include/asm/reg.h                     |    3 +
- arch/powerpc/include/asm/rtas.h                    |    5 +
- arch/powerpc/include/asm/setup.h                   |   29 ++
- arch/powerpc/include/asm/ucc.h                     |    2 +-
- arch/powerpc/include/asm/ucc_fast.h                |    2 +-
- arch/powerpc/include/asm/ucc_slow.h                |    2 +-
- arch/powerpc/include/asm/udbg.h                    |    1 -
- arch/powerpc/include/uapi/asm/setup.h              |   31 --
- arch/powerpc/kernel/Makefile                       |    2 +-
- .../{cpu_setup_power7.S => cpu_setup_power.S}      |   32 +-
- arch/powerpc/kernel/cputable.c                     |   38 +++
- arch/powerpc/kernel/entry_64.S                     |    2 +
- arch/powerpc/kernel/exceptions-64s.S               |  308 ++++++++++++++++----
- arch/powerpc/kernel/head_64.S                      |    6 +-
- arch/powerpc/kernel/idle.c                         |    3 -
- arch/powerpc/kernel/iommu.c                        |   16 +-
- arch/powerpc/kernel/machine_kexec.c                |   14 +-
- arch/powerpc/kernel/machine_kexec_64.c             |    8 +-
- arch/powerpc/kernel/pci_32.c                       |    2 +-
- arch/powerpc/kernel/prom.c                         |    7 +-
- arch/powerpc/kernel/prom_init.c                    |   11 +-
- arch/powerpc/kernel/ptrace.c                       |   90 +++++-
- arch/powerpc/kernel/rtas.c                         |    1 -
- arch/powerpc/kernel/rtas_flash.c                   |    4 +-
- arch/powerpc/kernel/setup_64.c                     |    5 +
- arch/powerpc/kernel/udbg.c                         |   23 --
- arch/powerpc/mm/numa.c                             |   12 -
- arch/powerpc/mm/tlb_nohash_low.S                   |   15 +-
- arch/powerpc/perf/power7-pmu.c                     |   17 +-
- arch/powerpc/platforms/52xx/lite5200.c             |    2 +-
- arch/powerpc/platforms/82xx/pq2ads-pci-pic.c       |    8 +-
- arch/powerpc/platforms/83xx/mpc832x_mds.c          |    2 +-
- arch/powerpc/platforms/83xx/mpc836x_mds.c          |    2 +-
- arch/powerpc/platforms/83xx/mpc836x_rdk.c          |    2 +-
- arch/powerpc/platforms/83xx/mpc837x_rdb.c          |    2 +-
- arch/powerpc/platforms/85xx/mpc85xx_mds.c          |    2 +-
- arch/powerpc/platforms/85xx/p1022_ds.c             |    8 +-
- arch/powerpc/platforms/85xx/smp.c                  |   49 +++-
- arch/powerpc/platforms/86xx/mpc8610_hpcd.c         |    2 +
- arch/powerpc/platforms/powermac/cpufreq_32.c       |    5 +-
- arch/powerpc/platforms/powernv/pci-ioda.c          |   25 +-
- arch/powerpc/platforms/ps3/os-area.c               |    6 +-
- arch/powerpc/platforms/pseries/dlpar.c             |   34 +--
- arch/powerpc/platforms/pseries/eeh_pe.c            |    2 +-
- arch/powerpc/platforms/pseries/firmware.c          |    1 +
- arch/powerpc/platforms/pseries/hotplug-cpu.c       |    8 +-
- arch/powerpc/platforms/pseries/hotplug-memory.c    |   60 ++--
- arch/powerpc/platforms/pseries/iommu.c             |   10 +-
- arch/powerpc/platforms/pseries/mobility.c          |    4 +-
- arch/powerpc/platforms/pseries/msi.c               |    3 +-
- arch/powerpc/platforms/pseries/plpar_wrappers.h    |   31 ++
- arch/powerpc/platforms/pseries/reconfig.c          |  119 +-------
- arch/powerpc/platforms/pseries/setup.c             |   77 ++++-
- arch/powerpc/platforms/pseries/smp.c               |    1 -
- arch/powerpc/sysdev/fsl_gtm.c                      |    2 +-
- arch/powerpc/sysdev/fsl_pci.c                      |   37 ++-
- arch/powerpc/sysdev/pmi.c                          |   13 +-
- arch/powerpc/sysdev/qe_lib/qe.c                    |    2 +-
- arch/powerpc/sysdev/qe_lib/qe_ic.c                 |    2 +-
- arch/powerpc/sysdev/qe_lib/qe_ic.h                 |    2 +-
- arch/powerpc/sysdev/qe_lib/qe_io.c                 |    2 +-
- arch/powerpc/sysdev/qe_lib/ucc.c                   |    2 +-
- arch/powerpc/sysdev/qe_lib/ucc_fast.c              |    2 +-
- arch/powerpc/sysdev/qe_lib/ucc_slow.c              |    2 +-
- arch/powerpc/sysdev/qe_lib/usb.c                   |    2 +-
- arch/powerpc/xmon/Makefile                         |    2 +-
- arch/powerpc/xmon/nonstdio.c                       |   53 ++--
- arch/powerpc/xmon/nonstdio.h                       |    6 -
- arch/powerpc/xmon/start.c                          |   34 ---
- arch/powerpc/xmon/xmon.c                           |   26 +-
- drivers/crypto/nx/nx-842.c                         |   20 +-
- drivers/crypto/nx/nx.c                             |    1 -
- drivers/infiniband/hw/ehca/hcp_if.c                |   20 --
- drivers/macintosh/smu.c                            |    2 +-
- drivers/macintosh/windfarm_fcu_controls.c          |   14 +-
- drivers/macintosh/windfarm_lm75_sensor.c           |   14 +-
- drivers/macintosh/windfarm_max6690_sensor.c        |   13 +-
- drivers/macintosh/windfarm_smu_sat.c               |   13 +-
- drivers/net/ethernet/ibm/ehea/ehea_phyp.h          |   20 --
- drivers/of/base.c                                  |  142 ++++++++-
- drivers/video/Kconfig                              |    8 +-
- drivers/video/gxt4500.c                            |   15 +-
- drivers/virt/fsl_hypervisor.c                      |    3 -
- include/linux/of.h                                 |   29 +-
- lib/Kconfig.debug                                  |   10 +-
- lib/Makefile                                       |    4 +-
- ...nject.c => of-reconfig-notifier-error-inject.c} |   22 +-
- tools/perf/perf.h                                  |    2 +-
- 112 files changed, 1387 insertions(+), 803 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/raideng.txt
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-raid1.0-0.dtsi
- delete mode 100644 arch/powerpc/include/asm/pSeries_reconfig.h
- create mode 100644 arch/powerpc/include/asm/setup.h
- rename arch/powerpc/kernel/{cpu_setup_power7.S => cpu_setup_power.S} (80%)
- delete mode 100644 arch/powerpc/xmon/start.c
- rename lib/{pSeries-reconfig-notifier-error-inject.c => of-reconfig-notifier-error-inject.c} (51%)
+----ALT--r2cGfv7e1355488506--
