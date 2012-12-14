@@ -1,22 +1,24 @@
-Return-Path: <phileas-fogg@mail.ru>
-Received: from fallback3.mail.ru (fallback3.mail.ru [94.100.176.58])
- by ozlabs.org (Postfix) with ESMTP id 581412C008E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2012 23:42:52 +1100 (EST)
-Received: from f147.mail.ru (f147.mail.ru [217.69.128.102])
- by fallback3.mail.ru (mPOP.Fallback_MX) with ESMTP id 1186EC9E1D17
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2012 16:35:12 +0400 (MSK)
-Received: from mail by f147.mail.ru with local (envelope-from
- <phileas-fogg@mail.ru>) id 1TjUTq-0001Ij-Ft
- for linuxppc-dev@lists.ozlabs.org; Fri, 14 Dec 2012 16:35:06 +0400
-From: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: =?UTF-8?B?UFMzIHBsYXRmb3JtIGlzIGJyb2tlbiBvbiBMaW51eCAzLjcuMA==?=
-Mime-Version: 1.0
-Date: Fri, 14 Dec 2012 16:35:06 +0400
-Message-ID: <1355488506.55692113@f147.mail.ru>
-Content-Type: multipart/alternative;
-	boundary="--ALT--r2cGfv7e1355488506"
-Reply-To: =?UTF-8?B?UGhpbGVhcyBGb2dn?= <phileas-fogg@mail.ru>
+Return-Path: <john.stultz@linaro.org>
+Received: from mail-ie0-f179.google.com (mail-ie0-f179.google.com
+ [209.85.223.179])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6BC022C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2012 10:41:17 +1100 (EST)
+Received: by mail-ie0-f179.google.com with SMTP id k14so6541471iea.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2012 15:41:14 -0800 (PST)
+Message-ID: <50CBB917.7090502@linaro.org>
+Date: Fri, 14 Dec 2012 15:41:11 -0800
+From: John Stultz <john.stultz@linaro.org>
+MIME-Version: 1.0
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH v2] NTP: Add a CONFIG_RTC_SYSTOHC configuration
+References: <20121214231933.GA15796@obsidianresearch.com>
+In-Reply-To: <20121214231933.GA15796@obsidianresearch.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
+ linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,106 +28,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 12/14/2012 03:19 PM, Jason Gunthorpe wrote:
+> The purpose of this option is to allow ARM/etc systems that rely on the
+> class RTC subsystem to have the same kind of automatic NTP based
+> synchronization that we have on PC platforms. Today ARM does not
+> implement update_persistent_clock and makes extensive use of the class
+> RTC system.
+>
+> When enabled CONFIG_RTC_SYSTOHC will provide a generic
+> rtc_update_persistent_clock that stores the current time in the RTC and
+> is intended complement the existing CONFIG_RTC_HCTOSYS option that loads
+> the RTC at boot.
+>
+> Like with RTC_HCTOSYS the platform's update_persistent_clock is used
+> first, if it works. Platforms with mixed class RTC and non-RTC drivers
+> need to return ENODEV when class RTC should be used. Such an update for
+> PPC is included in this patch.
+>
+> Long term, implementations of update_persistent_clock should migrate to
+> proper class RTC drivers and use CONFIG_RTC_SYSTOHC instead.
 
-----ALT--r2cGfv7e1355488506
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: base64
+Ok. This all sounds good.
 
-IEhpLAoKSSB3YW50ZWQgdG8gYnJpbmcgdG8geW91ciBhdHRlbnRpb24gdGhlIGZhY3QgdGhhdCB0
-aGUgUFMzIHBsYXRmb3JtIGlzIGJyb2tlbiBvbiBMaW51eCAzLjcuMC4KCmknbSBub3QgYWJsZSB0
-byBib290IExpbnV4IDMuNy4wIG9uIG15IFBTMyBzbGltLiBMaW51eCAzLjYuMTAgYm9vdHMganVz
-dCBmaW5lIGJ1dCBub3QgMy43LjAKV2hlbiBpIHRyeSB0byBib290IExpbnV4IDMuNy4wIHRoZW4g
-bXkgUFMzwqAgc2h1dHMgZG93bi4KClNvIGkgY2xvbmVkIHRoZSBMaW51eCBwb3dlcnBjIEdJVCBy
-ZXBvc2l0b3J5IGFuZCB0cmllZCB0byBmaW5kIG91dCB3aGljaCBjb21taXRzIGJyb2tlIHRoZSBQ
-UzMgcGxhdGZvcm0uCkFmdGVyIHNvbWUgdGltZSBJIHRyYWNrZWQgaXQgZG93biB0byAyIGNvbW1p
-dHM6CgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KCmNvbW1pdCA0MDc4MjFh
-MzRmY2U4OWI0ZjBiMDMxZGJhYjVjZWM3ZDA1OWY0NmJjCkF1dGhvcjogTWljaGFlbCBFbGxlcm1h
-biA8bWljaGFlbEBlbGxlcm1hbi5pZC5hdT4KRGF0ZTrCoMKgIEZyaSBTZXAgNyAxNTozMTo0NCAy
-MDEyICswMDAwCgrCoMKgwqAgcG93ZXJwYzogSW5pdGlhbGlzZSBwYWNhLmRhdGFfb2Zmc2V0IHdp
-dGggcG9pc29uCsKgwqAgwqAKwqDCoMKgIEl0J3MgcG9zc2libGUgZm9yIHRoZSBjcHVfcG9zc2li
-bGVfbWFzayB0byBjaGFuZ2UgYmV0d2VlbiB0aGUgdGltZSB3ZQrCoMKgwqAgaW5pdGlhbGlzZSB0
-aGUgcGFjYXMgYW5kIHRoZSB0aW1lIHdlIHNldHVwIHBlcl9jcHUgYXJlYXMuCsKgwqAgwqAKwqDC
-oMKgIE9idmlvdXNseSBpbXBvc3NpYmxlIGNwdXMgc2hvdWxkbid0IGV2ZXIgYmUgcnVubmluZywg
-YnV0IHN0cmFuZ2VyIHRoaW5ncwrCoMKgwqAgaGF2ZSBoYXBwZW5lZC4gU28gYmUgcGFyYW5vaWQg
-YW5kIGluaXRpYWxpc2UgZGF0YV9vZmZzZXQgd2l0aCBhIHBvaXNvbgrCoMKgwqAgdmFsdWUgaW4g
-Y2FzZSB3ZSBkb24ndCBzZXQgaXQgdXAgbGF0ZXIuCsKgwqAgwqAKwqDCoMKgIEJhc2VkIG9uIGEg
-cGF0Y2ggZnJvbSBBbnRvbiBCbGFuY2hhcmQuCsKgwqAgwqAKwqDCoMKgIFNpZ25lZC1vZmYtYnk6
-IE1pY2hhZWwgRWxsZXJtYW4gPG1pY2hhZWxAZWxsZXJtYW4uaWQuYXU+CsKgwqDCoCBTaWduZWQt
-b2ZmLWJ5OiBCZW5qYW1pbiBIZXJyZW5zY2htaWR0IDxiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmc+
-CgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCgpjb21taXQgMDQ4ZWUw
-OTkzZWM4MzYwYWJiMGI1MWJkZjhmODcyMWU5ZWQ2MmVjNApBdXRob3I6IEFuZWVzaCBLdW1hciBL
-LlYgPGFuZWVzaC5rdW1hckBsaW51eC52bmV0LmlibS5jb20+CkRhdGU6wqDCoCBNb24gU2VwIDEw
-IDAyOjUyOjU1IDIwMTIgKzAwMDAKCsKgwqDCoCBwb3dlcnBjL21tOiBBZGQgNjRUQiBzdXBwb3J0
-CsKgwqAgwqAKwqDCoMKgIEluY3JlYXNlIG1heCBhZGRyZXNzYWJsZSByYW5nZSB0byA2NFRCLiBU
-aGlzIGlzIG5vdCB0ZXN0ZWQgb24KwqDCoMKgIHJlYWwgaGFyZHdhcmUgeWV0LgrCoMKgIMKgCsKg
-wqDCoCBSZXZpZXdlZC1ieTogUGF1bCBNYWNrZXJyYXMgPHBhdWx1c0BzYW1iYS5vcmc+CsKgwqDC
-oCBTaWduZWQtb2ZmLWJ5OiBBbmVlc2ggS3VtYXIgSy5WIDxhbmVlc2gua3VtYXJAbGludXgudm5l
-dC5pYm0uY29tPgrCoMKgwqAgU2lnbmVkLW9mZi1ieTogQmVuamFtaW4gSGVycmVuc2NobWlkdCA8
-YmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnPgoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLQoKVGhlIGZpcnN0IGNvbW1pdCBjYXVzZXMgbXkgUFMzIHRvIHNo
-dXQgZG93bi4gSWYgaSByZXZlcnQgaXQgdGhlbiBpJ20gYWJsZSB0byBib290IExpbnV4IDMuNy4w
-IGFuZCBldmVuIHNlZSBzb21lIGJvb3QgbWVzc2FnZXMKb24gbXkgc2NyZWVuLiBCdXQgdGhlbiBp
-dCBoYW5ncy4gVGhlIHNlY29uZCBjb21taXQgaXMgdGhlIHJlYXNvbiBmb3IgdGhlIGhhbmcgYXMg
-aSBmaWd1cmVkIGl0IG91dC4KCkkgcmV2ZXJ0ZWQgYm90aCBjb21taXRzIGluIGN1cnJlbnQgTGlu
-dXggMy43LjAgYW5kIHdhcyBhYmxlIHRvIGJvb3QgTGludXggMy43LjAgb24gbXkgUFMzIHNsaW0g
-c3VjY2Vzc2Z1bGx5LgoKUmVnYXJkcwoK
 
-----ALT--r2cGfv7e1355488506
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: base64
+Still one minor question below.
+> diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
+> index 19c03ab..7b3702b 100644
+> --- a/drivers/rtc/Kconfig
+> +++ b/drivers/rtc/Kconfig
+> @@ -28,6 +28,7 @@ config RTC_HCTOSYS
+>   config RTC_HCTOSYS_DEVICE
+>   	string "RTC used to set the system time"
+>   	depends on RTC_HCTOSYS = y
+> +	depends on RTC_SYSTOHC = y
 
-CjxIVE1MPjxCT0RZPkhpLDxicj48YnI+SSB3YW50ZWQgdG8gYnJpbmcgdG8geW91ciBhdHRlbnRp
-b24gdGhlIGZhY3QgdGhhdCB0aGUgUFMzIHBsYXRmb3JtIGlzIGJyb2tlbiBvbiBMaW51eCAzLjcu
-MC48YnI+PGJyPmknbSBub3QgYWJsZSB0byBib290IExpbnV4IDMuNy4wIG9uIG15IFBTMyBzbGlt
-LiBMaW51eCAzLjYuMTAgYm9vdHMganVzdCBmaW5lIGJ1dCBub3QgMy43LjA8YnI+V2hlbiBpIHRy
-eSB0byBib290IExpbnV4IDMuNy4wIHRoZW4gbXkgUFMzJm5ic3A7IHNodXRzIGRvd24uPGJyPjxi
-cj5TbyBpIGNsb25lZCB0aGUgTGludXggcG93ZXJwYyBHSVQgcmVwb3NpdG9yeSBhbmQgdHJpZWQg
-dG8gZmluZCBvdXQgd2hpY2ggY29tbWl0cyBicm9rZSB0aGUgUFMzIHBsYXRmb3JtLjxicj5BZnRl
-ciBzb21lIHRpbWUgSSB0cmFja2VkIGl0IGRvd24gdG8gMiBjb21taXRzOjxicj48YnI+LS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPGJyPjxicj5jb21taXQgNDA3ODIxYTM0ZmNl
-ODliNGYwYjAzMWRiYWI1Y2VjN2QwNTlmNDZiYzxicj5BdXRob3I6IE1pY2hhZWwgRWxsZXJtYW4g
-Jmx0O21pY2hhZWxAZWxsZXJtYW4uaWQuYXUmZ3Q7PGJyPkRhdGU6Jm5ic3A7Jm5ic3A7IEZyaSBT
-ZXAgNyAxNTozMTo0NCAyMDEyICswMDAwPGJyPjxicj4mbmJzcDsmbmJzcDsmbmJzcDsgcG93ZXJw
-YzogSW5pdGlhbGlzZSBwYWNhLmRhdGFfb2Zmc2V0IHdpdGggcG9pc29uPGJyPiZuYnNwOyZuYnNw
-OyAmbmJzcDs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEl0J3MgcG9zc2libGUgZm9yIHRoZSBjcHVf
-cG9zc2libGVfbWFzayB0byBjaGFuZ2UgYmV0d2VlbiB0aGUgdGltZSB3ZTxicj4mbmJzcDsmbmJz
-cDsmbmJzcDsgaW5pdGlhbGlzZSB0aGUgcGFjYXMgYW5kIHRoZSB0aW1lIHdlIHNldHVwIHBlcl9j
-cHUgYXJlYXMuPGJyPiZuYnNwOyZuYnNwOyAmbmJzcDs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IE9i
-dmlvdXNseSBpbXBvc3NpYmxlIGNwdXMgc2hvdWxkbid0IGV2ZXIgYmUgcnVubmluZywgYnV0IHN0
-cmFuZ2VyIHRoaW5nczxicj4mbmJzcDsmbmJzcDsmbmJzcDsgaGF2ZSBoYXBwZW5lZC4gU28gYmUg
-cGFyYW5vaWQgYW5kIGluaXRpYWxpc2UgZGF0YV9vZmZzZXQgd2l0aCBhIHBvaXNvbjxicj4mbmJz
-cDsmbmJzcDsmbmJzcDsgdmFsdWUgaW4gY2FzZSB3ZSBkb24ndCBzZXQgaXQgdXAgbGF0ZXIuPGJy
-PiZuYnNwOyZuYnNwOyAmbmJzcDs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEJhc2VkIG9uIGEgcGF0
-Y2ggZnJvbSBBbnRvbiBCbGFuY2hhcmQuPGJyPiZuYnNwOyZuYnNwOyAmbmJzcDs8YnI+Jm5ic3A7
-Jm5ic3A7Jm5ic3A7IFNpZ25lZC1vZmYtYnk6IE1pY2hhZWwgRWxsZXJtYW4gJmx0O21pY2hhZWxA
-ZWxsZXJtYW4uaWQuYXUmZ3Q7PGJyPiZuYnNwOyZuYnNwOyZuYnNwOyBTaWduZWQtb2ZmLWJ5OiBC
-ZW5qYW1pbiBIZXJyZW5zY2htaWR0ICZsdDtiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcmZ3Q7PGJy
-Pjxicj48YnI+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPGJyPjxicj5j
-b21taXQgMDQ4ZWUwOTkzZWM4MzYwYWJiMGI1MWJkZjhmODcyMWU5ZWQ2MmVjNDxicj5BdXRob3I6
-IEFuZWVzaCBLdW1hciBLLlYgJmx0O2FuZWVzaC5rdW1hckBsaW51eC52bmV0LmlibS5jb20mZ3Q7
-PGJyPkRhdGU6Jm5ic3A7Jm5ic3A7IE1vbiBTZXAgMTAgMDI6NTI6NTUgMjAxMiArMDAwMDxicj48
-YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IHBvd2VycGMvbW06IEFkZCA2NFRCIHN1cHBvcnQ8YnI+Jm5i
-c3A7Jm5ic3A7ICZuYnNwOzxicj4mbmJzcDsmbmJzcDsmbmJzcDsgSW5jcmVhc2UgbWF4IGFkZHJl
-c3NhYmxlIHJhbmdlIHRvIDY0VEIuIFRoaXMgaXMgbm90IHRlc3RlZCBvbjxicj4mbmJzcDsmbmJz
-cDsmbmJzcDsgcmVhbCBoYXJkd2FyZSB5ZXQuPGJyPiZuYnNwOyZuYnNwOyAmbmJzcDs8YnI+Jm5i
-c3A7Jm5ic3A7Jm5ic3A7IFJldmlld2VkLWJ5OiBQYXVsIE1hY2tlcnJhcyAmbHQ7cGF1bHVzQHNh
-bWJhLm9yZyZndDs8YnI+Jm5ic3A7Jm5ic3A7Jm5ic3A7IFNpZ25lZC1vZmYtYnk6IEFuZWVzaCBL
-dW1hciBLLlYgJmx0O2FuZWVzaC5rdW1hckBsaW51eC52bmV0LmlibS5jb20mZ3Q7PGJyPiZuYnNw
-OyZuYnNwOyZuYnNwOyBTaWduZWQtb2ZmLWJ5OiBCZW5qYW1pbiBIZXJyZW5zY2htaWR0ICZsdDti
-ZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcmZ3Q7PGJyPjxicj4tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPGJyPjxicj5UaGUgZmlyc3QgY29tbWl0IGNhdXNl
-cyBteSBQUzMgdG8gc2h1dCBkb3duLiBJZiBpIHJldmVydCBpdCB0aGVuIGknbSBhYmxlIHRvIGJv
-b3QgTGludXggMy43LjAgYW5kIGV2ZW4gc2VlIHNvbWUgYm9vdCBtZXNzYWdlczxicj5vbiBteSBz
-Y3JlZW4uIEJ1dCB0aGVuIGl0IGhhbmdzLiBUaGUgc2Vjb25kIGNvbW1pdCBpcyB0aGUgcmVhc29u
-IGZvciB0aGUgaGFuZyBhcyBpIGZpZ3VyZWQgaXQgb3V0Ljxicj48YnI+SSByZXZlcnRlZCBib3Ro
-IGNvbW1pdHMgaW4gY3VycmVudCBMaW51eCAzLjcuMCBhbmQgd2FzIGFibGUgdG8gYm9vdCBMaW51
-eCAzLjcuMCBvbiBteSBQUzMgc2xpbSBzdWNjZXNzZnVsbHkuPGJyPjxicj5SZWdhcmRzPGJyPjxi
-ciBkYXRhLW1jZS1ib2d1cz0iMSI+PC9CT0RZPjwvSFRNTD4K
+Is this right?
 
-----ALT--r2cGfv7e1355488506--
+This should probably be a depends on RTC_HCTOSYS OR RTC_SYSTOCH.. 
+Otherwise you have to select both in order to change the default device.
+
+> diff --git a/drivers/rtc/systohc.c b/drivers/rtc/systohc.c
+> new file mode 100644
+> index 0000000..a625740
+> --- /dev/null
+> +++ b/drivers/rtc/systohc.c
+> @@ -0,0 +1,44 @@
+> +/*
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License version 2 as published by
+> + * the Free Software Foundation.
+> + *
+> + */
+> +#include <linux/rtc.h>
+> +#include <linux/time.h>
+> +
+> +/**
+> + * rtc_update_persistent_clock - Save NTP synchronized time to the RTC
+> + * @now: Current time of day
+> + *
+> + * Replacement for the NTP platform function update_persistent_clock
+> + * that stores time for later retrieval by rtc_hctosys
+> + *
+> + * Returns 0 on successful RTC update, -ENODEV if a RTC update is not
+> + * possible at all, and various other -errno for specific temporary failure
+> + * cases.
+> + *
+> + * If temporary failure is indicated the caller should try again 'soon'
+> + */
+> +int rtc_update_persistent_clock(struct timespec now)
+
+If we're going to move away from update_persistent_clock across the 
+board (and as the update path doesn't have the same constraints of the 
+read_persistent_clock interface), might it be better just to name this: 
+rtc_update_clock()  (or something similar)?
+
+That way if/when we do finally remove the other users of 
+update_persistent_clock() and move them to an RTC driver, we will avoid 
+any confusion between read/update.
+
+This is in the similar vein of your suggestion of changing 
+update_persistent_clock to platform_save_ntp_time_to_rtc()..
+
+Sorry for the last minute nit! Other then these two issues, I'm happy to 
+queue this (if Alessandro doesn't object).  Although with the merge 
+window already open it may have to wait to 3.9, but I'll see what Thomas 
+says.
+
+thanks
+-john
