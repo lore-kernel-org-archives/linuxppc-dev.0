@@ -1,19 +1,28 @@
-Return-Path: <jgunthorpe@obsidianresearch.com>
-Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
- (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 6EFCE2C009F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2012 10:55:33 +1100 (EST)
-Date: Fri, 14 Dec 2012 16:19:33 -0700
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: John Stultz <john.stultz@linaro.org>
-Subject: [PATCH v2] NTP: Add a CONFIG_RTC_SYSTOHC configuration
-Message-ID: <20121214231933.GA15796@obsidianresearch.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-da0-f51.google.com (mail-da0-f51.google.com
+ [209.85.210.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 947C12C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Dec 2012 12:07:04 +1100 (EST)
+Received: by mail-da0-f51.google.com with SMTP id i30so1593086dad.38
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Dec 2012 17:07:02 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Alessandro Zummo <a.zummo@towertech.it>, rtc-linux@googlegroups.com,
- linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Sender: glikely@secretlab.ca
+In-Reply-To: <20121212163749.GA17371@arm.com>
+References: <20121212163749.GA17371@arm.com>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Sat, 15 Dec 2012 01:06:41 +0000
+Message-ID: <CACxGe6uZATX2uBjuDUsJ489-jmvFbLm-NQ6Q3SGqRVky9XGJYg@mail.gmail.com>
+Subject: Re: [PATCH] pci: Provide support for parsing PCI DT ranges property
+To: Andrew Murray <Andrew.Murray@arm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Michal Simek <monstr@monstr.eu>, linux-pci@vger.kernel.org,
+ devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
+ Thierry Reding <thierry.reding@avionic-design.de>,
+ Liviu Dudau <liviu.dudau@arm.com>, Rob Herring <rob.herring@calxeda.com>,
+ Rob Herring <robherring2@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,203 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The purpose of this option is to allow ARM/etc systems that rely on the
-class RTC subsystem to have the same kind of automatic NTP based
-synchronization that we have on PC platforms. Today ARM does not
-implement update_persistent_clock and makes extensive use of the class
-RTC system.
+On Wed, Dec 12, 2012 at 4:37 PM, Andrew Murray <Andrew.Murray@arm.com> wrote:
+> DT bindings for PCI host bridges often use the ranges property to describe
+> memory and IO ranges - this binding tends to be the same across architectures
+> yet several parsing implementations exist, e.g. arch/mips/pci/pci.c,
+> arch/powerpc/kernel/pci-common.c, arch/sparc/kernel/pci.c and
+> arch/microblaze/pci/pci-common.c (clone of PPC). Some of these duplicate
+> functionality provided by drivers/of/address.c.
 
-When enabled CONFIG_RTC_SYSTOHC will provide a generic
-rtc_update_persistent_clock that stores the current time in the RTC and
-is intended complement the existing CONFIG_RTC_HCTOSYS option that loads
-the RTC at boot.
+Hi Andrew,
 
-Like with RTC_HCTOSYS the platform's update_persistent_clock is used
-first, if it works. Platforms with mixed class RTC and non-RTC drivers
-need to return ENODEV when class RTC should be used. Such an update for
-PPC is included in this patch.
+Thanks for looking into this. This definitely needs to be done.
 
-Long term, implementations of update_persistent_clock should migrate to
-proper class RTC drivers and use CONFIG_RTC_SYSTOHC instead.
+However, I cannot merge this patch as-is because it actually makes
+things worse by adding yet another implementation of the parsing code.
+Plus it doesn't actually have any users.  :-)
 
-Tested on ARM kirkwood and PPC405
+Instead, move the existing code that you need out of
+arch/powerpc/kernel/pci-common.c into a shared place and add in the
+features you need. Bonus points if you fixup microblaze or others at
+the same time.
 
-Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
----
- arch/powerpc/kernel/time.c |    2 +-
- drivers/rtc/Kconfig        |    9 +++++++++
- drivers/rtc/Makefile       |    1 +
- drivers/rtc/systohc.c      |   44 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/time.h       |    1 +
- kernel/time/ntp.c          |   15 +++++++++++----
- 6 files changed, 67 insertions(+), 5 deletions(-)
- create mode 100644 drivers/rtc/systohc.c
-
-v2 updates:
- - Be very careful to return ENODEV from rtc_update_persistent_clock,
-   we don't want to loop on the fast retry path of sync_cmos_clock
-   if there is no RTC set support available
- - Call the platform update_persistent_clock first. Only try
-   the RTC version if it is compiled out, or explicitly returns ENODEV
- - Added 'depends on RTC_SYSTOHC = y' to KConfig
- - Don't fast rety in sync_cmos_clock if ENODEV is returned
- - Update PPC to return ENODEV if there is no mach specific function
-   available in ppc_md. This will give rtc_update_persistent_clock
-   a chance.
- - Use rtc_set_time not mms since rtc_hctosys assumes UTC.
-
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index ce4cb77..bc844a8 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -667,7 +667,7 @@ int update_persistent_clock(struct timespec now)
- 	struct rtc_time tm;
- 
- 	if (!ppc_md.set_rtc_time)
--		return 0;
-+		return -ENODEV;
- 
- 	to_tm(now.tv_sec + 1 + timezone_offset, &tm);
- 	tm.tm_year -= 1900;
-diff --git a/drivers/rtc/Kconfig b/drivers/rtc/Kconfig
-index 19c03ab..7b3702b 100644
---- a/drivers/rtc/Kconfig
-+++ b/drivers/rtc/Kconfig
-@@ -28,6 +28,7 @@ config RTC_HCTOSYS
- config RTC_HCTOSYS_DEVICE
- 	string "RTC used to set the system time"
- 	depends on RTC_HCTOSYS = y
-+	depends on RTC_SYSTOHC = y
- 	default "rtc0"
- 	help
- 	  The RTC device that will be used to (re)initialize the system
-@@ -48,6 +49,14 @@ config RTC_HCTOSYS_DEVICE
- 	  sleep states. Do not specify an RTC here unless it stays powered
- 	  during all this system's supported sleep states.
- 
-+config RTC_SYSTOHC
-+	bool "Set the RTC time based on NTP synchronization"
-+	default y
-+	help
-+	  If you say yes here, the system time (wall clock) will be stored
-+          in the RTC specified by RTC_HCTOSYS_DEVICE approximately every 11
-+  	  minutes if userspace reports synchronized NTP status.
-+
- config RTC_DEBUG
- 	bool "RTC debug support"
- 	help
-diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
-index 56297f0..69d11f1 100644
---- a/drivers/rtc/Makefile
-+++ b/drivers/rtc/Makefile
-@@ -6,6 +6,7 @@ ccflags-$(CONFIG_RTC_DEBUG)	:= -DDEBUG
- 
- obj-$(CONFIG_RTC_LIB)		+= rtc-lib.o
- obj-$(CONFIG_RTC_HCTOSYS)	+= hctosys.o
-+obj-$(CONFIG_RTC_SYSTOHC)	+= systohc.o
- obj-$(CONFIG_RTC_CLASS)		+= rtc-core.o
- rtc-core-y			:= class.o interface.o
- 
-diff --git a/drivers/rtc/systohc.c b/drivers/rtc/systohc.c
-new file mode 100644
-index 0000000..a625740
---- /dev/null
-+++ b/drivers/rtc/systohc.c
-@@ -0,0 +1,44 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published by
-+ * the Free Software Foundation.
-+ *
-+ */
-+#include <linux/rtc.h>
-+#include <linux/time.h>
-+
-+/**
-+ * rtc_update_persistent_clock - Save NTP synchronized time to the RTC
-+ * @now: Current time of day
-+ *
-+ * Replacement for the NTP platform function update_persistent_clock
-+ * that stores time for later retrieval by rtc_hctosys
-+ *
-+ * Returns 0 on successful RTC update, -ENODEV if a RTC update is not
-+ * possible at all, and various other -errno for specific temporary failure
-+ * cases.
-+ *
-+ * If temporary failure is indicated the caller should try again 'soon'
-+ */
-+int rtc_update_persistent_clock(struct timespec now)
-+{
-+	struct rtc_device *rtc;
-+	struct rtc_time tm;
-+	int err = -ENODEV;
-+
-+	if (now.tv_nsec < (NSEC_PER_SEC >> 1))
-+		rtc_time_to_tm(now.tv_sec, &tm);
-+	else
-+		rtc_time_to_tm(now.tv_sec + 1, &tm);
-+
-+	rtc = rtc_class_open(CONFIG_RTC_HCTOSYS_DEVICE);
-+	if (rtc) {
-+		/* rtc_hctosys exclusively uses UTC, so we call set_time here,
-+		 * not set_mmss. */
-+		if (rtc->ops && (rtc->ops->set_time && rtc->ops->set_mmss))
-+			err = rtc_set_time(rtc, &tm);
-+		rtc_class_close(rtc);
-+	}
-+
-+	return err;
-+}
-diff --git a/include/linux/time.h b/include/linux/time.h
-index 4d358e9..d668f9c 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -118,6 +118,7 @@ static inline bool timespec_valid_strict(const struct timespec *ts)
- extern void read_persistent_clock(struct timespec *ts);
- extern void read_boot_clock(struct timespec *ts);
- extern int update_persistent_clock(struct timespec now);
-+extern int rtc_update_persistent_clock(struct timespec now);
- void timekeeping_init(void);
- extern int timekeeping_suspended;
- 
-diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
-index 24174b4..0c5d1a1 100644
---- a/kernel/time/ntp.c
-+++ b/kernel/time/ntp.c
-@@ -483,8 +483,7 @@ out:
- 	return leap;
- }
- 
--#ifdef CONFIG_GENERIC_CMOS_UPDATE
--
-+#if defined(CONFIG_GENERIC_CMOS_UPDATE) || defined(CONFIG_RTC_SYSTOHC)
- static void sync_cmos_clock(struct work_struct *work);
- 
- static DECLARE_DELAYED_WORK(sync_cmos_work, sync_cmos_clock);
-@@ -510,14 +509,22 @@ static void sync_cmos_clock(struct work_struct *work)
- 	}
- 
- 	getnstimeofday(&now);
--	if (abs(now.tv_nsec - (NSEC_PER_SEC / 2)) <= tick_nsec / 2)
-+	if (abs(now.tv_nsec - (NSEC_PER_SEC / 2)) <= tick_nsec / 2) {
-+		fail = -ENODEV;
-+#ifdef CONFIG_GENERIC_CMOS_UPDATE
- 		fail = update_persistent_clock(now);
-+#endif
-+#ifdef CONFIG_RTC_SYSTOHC
-+		if (fail == -ENODEV)
-+			fail = rtc_update_persistent_clock(now);
-+#endif
-+	}
- 
- 	next.tv_nsec = (NSEC_PER_SEC / 2) - now.tv_nsec - (TICK_NSEC / 2);
- 	if (next.tv_nsec <= 0)
- 		next.tv_nsec += NSEC_PER_SEC;
- 
--	if (!fail)
-+	if (!fail || fail == -ENODEV)
- 		next.tv_sec = 659;
- 	else
- 		next.tv_sec = 0;
--- 
-1.7.5.4
+g.
