@@ -1,18 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net
+ [IPv6:2001:a60:0:28:0:1:25:1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5A4022C0092
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2012 21:06:40 +1100 (EST)
-Message-ID: <1355738785.5397.17.camel@pasglop>
+ by ozlabs.org (Postfix) with ESMTPS id CB1DE2C008E
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2012 21:24:05 +1100 (EST)
+Date: Mon, 17 Dec 2012 11:15:36 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [git pull] Please pull powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anatolij Gustschin <agust@denx.de>
-Date: Mon, 17 Dec 2012 21:06:25 +1100
-In-Reply-To: <20121217093036.65cb7cef@wker>
+Message-ID: <20121217111536.01fe2a99@wker>
+In-Reply-To: <1355738785.5397.17.camel@pasglop>
 References: <1355517897.19932.136.camel@pasglop> <20121217093036.65cb7cef@wker>
-Content-Type: text/plain; charset="UTF-8"
+ <1355738785.5397.17.camel@pasglop>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
  Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -24,19 +26,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-12-17 at 09:30 +0100, Anatolij Gustschin wrote:
-> > Overall it's pretty quiet, or rather I've been pretty poor at
-> > picking things up from patchwork and reviewing them this time
-> > around and Kumar no better on the FSL side it seems...
-> 
-> Could you please also include some 5xxx patches for v3.8 in your pull
-> request? I've submitted a pull request for them last week
-> 
->   http://patchwork.ozlabs.org/patch/205138 
+On Mon, 17 Dec 2012 21:06:25 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+...
+> Last week is a bit late :-) However, I think your tree was in -next
+> before that wasn't it ? In which case it's ok, I can include it tomorrow
+> and ask Linus to pick it up.
 
-Last week is a bit late :-) However, I think your tree was in -next
-before that wasn't it ? In which case it's ok, I can include it tomorrow
-and ask Linus to pick it up.
+yes, 5xxx tree was in -next before that.
 
-Cheers,
-Ben
+Thanks,
+Anatolij
