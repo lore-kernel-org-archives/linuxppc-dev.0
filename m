@@ -1,22 +1,17 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net
- [IPv6:2001:a60:0:28:0:1:25:1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CB1DE2C008E
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2012 21:24:05 +1100 (EST)
-Date: Mon, 17 Dec 2012 11:15:36 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [git pull] Please pull powerpc.git next branch
-Message-ID: <20121217111536.01fe2a99@wker>
-In-Reply-To: <1355738785.5397.17.camel@pasglop>
-References: <1355517897.19932.136.camel@pasglop> <20121217093036.65cb7cef@wker>
- <1355738785.5397.17.camel@pasglop>
+Return-Path: <anton@samba.org>
+Date: Mon, 17 Dec 2012 22:33:33 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Jimi Xenidis <jimix@pobox.com>
+Subject: Re: [PATCH] powerpc: POWER7 optimised memcpy using VMX and enhanced
+ prefetch
+Message-ID: <20121217223333.6cb00476@kryten>
+In-Reply-To: <D5CF6D4A-8F60-4853-9F7C-EFE5133CEB33@pobox.com>
+References: <20120531162209.04bd9bdc@kryten>
+ <D5CF6D4A-8F60-4853-9F7C-EFE5133CEB33@pobox.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Kumar Gala <kumar.gala@gmail.com>, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,14 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 17 Dec 2012 21:06:25 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-...
-> Last week is a bit late :-) However, I think your tree was in -next
-> before that wasn't it ? In which case it's ok, I can include it tomorrow
-> and ask Linus to pick it up.
 
-yes, 5xxx tree was in -next before that.
+Hi Jimi,
 
-Thanks,
-Anatolij
+> I know this is a little late, but shouldn't these power7 specific
+> thingies be in "obj-$(CONFIG_PPC_BOOK3S_64)". The reason I ask is
+> that my compiler pukes on "dcbtst" and as I deal with that I wanted
+> to point this out.
+
+I guess we could do that. It's a bit strange your assembler is
+complaining about the dcbtst instructions since we wrap them with
+power4:
+
+.machine push
+.machine "power4"
+        dcbt    r0,r4,0b01000
+        dcbt    r0,r7,0b01010
+        dcbtst  r0,r9,0b01000
+        dcbtst  r0,r10,0b01010
+        eieio
+        dcbt    r0,r8,0b01010   /* GO */
+.machine pop
+
+Anton
