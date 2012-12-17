@@ -1,19 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id A8F192C00A6
- for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2012 09:25:08 +1100 (EST)
-Message-ID: <1355696686.5397.1.camel@pasglop>
-Subject: Re: [git pull] Please pull powerpc.git next branch
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Date: Mon, 17 Dec 2012 09:24:46 +1100
-In-Reply-To: <1355517897.19932.136.camel@pasglop>
-References: <1355517897.19932.136.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <sfr@canb.auug.org.au>
+Received: from members.tip.net.au (haggis.tip.net.au
+ [IPv6:2402:b800:7003:1::20])
+ by ozlabs.org (Postfix) with ESMTP id 9A4DB2C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2012 14:22:42 +1100 (EST)
+Date: Mon, 17 Dec 2012 14:22:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: build warning after merge of the final tree
+Message-Id: <20121217142238.a0840563304419bb345ac25f@canb.auug.org.au>
 Mime-Version: 1.0
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA256";
+ boundary="Signature=_Mon__17_Dec_2012_14_22_38_+1100_85E9_IajO6cS+Kl3"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,19 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2012-12-15 at 07:44 +1100, Benjamin Herrenschmidt wrote:
-> Finally managed to get my head away from some other distractions
-> to put this pull request together, sorry for the lateness :-)
-> 
-> The main highlight is probably some base POWER8 support. There's
-> more to come such as transactional memory support but that will
-> wait for the next one.
+--Signature=_Mon__17_Dec_2012_14_22_38_+1100_85E9_IajO6cS+Kl3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-To clear up some misunderstanding, here I meant next merge window.
+Hi all,
 
-> Overall it's pretty quiet, or rather I've been pretty poor at
-> picking things up from patchwork and reviewing them this time
-> around and Kumar no better on the FSL side it seems... 
+After merging the final tree, today's linux-next build (powerpc allnoconfig)
+produced this warning:
 
+warning: (PPC) selects SPARSE_IRQ which has unmet direct dependencies (HAVE=
+_GENERIC_HARDIRQS && (IRQ_DOMAIN && DEBUG_FS || MAY_HAVE_SPARSE_IRQ))
+
+I don't know what introduced that.
+--=20
 Cheers,
-Ben.
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Signature=_Mon__17_Dec_2012_14_22_38_+1100_85E9_IajO6cS+Kl3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBCAAGBQJQzo/+AAoJEECxmPOUX5FE0P4P/3zQxSNb+bPM8E7yin12ZsIF
+Soc/tN4SGO7nMJYud64ar5yhk3POPwhy6jsLm97eNzHofVaFJBc9YmkBF+XY1RYR
++vi5JLeSDhx1RR/GlUY4lXTrN2fCZqlBDLb9b2QXzT/mCp/d0jDP5gMBqh98vzcc
+fIF1lOBW4wYhjBh2YVXdT3x3CZham826j2U0YMABxf6xdqoZYSGxF+hcUHxvl/IJ
+3QN2KDtXrnceufvkNCmnxYystu+++++dZK7KtiFD1Ug31Pfgka/PPwPT6QpN42t4
+mxszJnDOCLc5YtlZWf/XV2+nUrHtpM0Cb6V2M6z5/Ugq3QgYzYYGbQnHLggA1ZKl
+QZL4CckogOTxre16r9XBTIDSp4kIAo5ek+WcKiHajLCOz5ZsBO1zIZEgPVTpF4XR
+aRdzGUq1SEBSMjMygtevkj6EcnNj3Dmgnz1IlCSf8F8aFQoRmVRhyCDavlNUExf0
+Tl0Oj7rcImPwux30RcyanzBvBZGRkbABMq/NUJLzHS1mWZbg8EJvIhz4J1i0NiSO
+g+GNOZ3J1qnkdiHN12Wmq5fZ73UwkLb/bQ7bWfNxo3qZ8QLo35KIvxwWrWgm6aue
+pZ7Ahr9bvWfWpMSFWceg9qu6rq6s0X6dDMpgJfbMTl5u9ij1sKXN0B2mhM3vyO99
+MZW4QkGeDh9UtWT9V09o
+=DDnX
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__17_Dec_2012_14_22_38_+1100_85E9_IajO6cS+Kl3--
