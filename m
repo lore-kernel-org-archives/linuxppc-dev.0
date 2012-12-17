@@ -1,22 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 287BA2C008D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2012 14:34:23 +1100 (EST)
-Date: Mon, 17 Dec 2012 14:34:15 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: linux-next: build warning after merge of the final tree
-Message-Id: <20121217143415.252a2f60076d1ba03807df55@canb.auug.org.au>
-In-Reply-To: <20121217142238.a0840563304419bb345ac25f@canb.auug.org.au>
-References: <20121217142238.a0840563304419bb345ac25f@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Mon__17_Dec_2012_14_34_15_+1100_Byx752Tfexmx3J6+"
-Cc: Paul Thompson <set.mailinglist@gmail.com>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 5B9752C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2012 18:27:51 +1100 (EST)
+From: Heiko Schocher <hs@denx.de>
+To: linux-mmc@vger.kernel.org
+Subject: [PATCH][RFC] mmc, sd: do not read switch,
+ if the host do not support high speed
+Date: Mon, 17 Dec 2012 08:27:42 +0100
+Message-Id: <1355729262-21269-1-git-send-email-hs@denx.de>
+Cc: Heiko Schocher <hs@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ Wolfgang Denk <wd@denx.de>, Dieter Schaffner <Dieter.Schaffner@ids.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,51 +21,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__17_Dec_2012_14_34_15_+1100_Byx752Tfexmx3J6+
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If the host controller do not support high speed, do not send the
+read switch CMD 6. Same as done in mmc_sd_switch_hs().
 
-Hi all,
+Signed-off-by: Heiko Schocher <hs@denx.de>
+Cc: Wolfgang Denk <wd@denx.de>
+Cc: Dieter Schaffner <Dieter.Schaffner@ids.de>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-mmc@vger.kernel.org
 
-On Mon, 17 Dec 2012 14:22:38 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
-wrote:
->
-> After merging the final tree, today's linux-next build (powerpc allnoconf=
-ig)
-> produced this warning:
->=20
-> warning: (PPC) selects SPARSE_IRQ which has unmet direct dependencies (HA=
-VE_GENERIC_HARDIRQS && (IRQ_DOMAIN && DEBUG_FS || MAY_HAVE_SPARSE_IRQ))
->=20
-> I don't know what introduced that.
+---
+ drivers/mmc/core/sd.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-Actually probably caused by commit a1eaa3bc8247 ("Kconfig: fix Irq
-Subsystem menu") from the akpm tree.
+Found this on a MPC8313 based system with mmc over spi and a Transcend
+2 GB SD card running a 2.6.37.6 kernel. Without this patch I get this
+when reading the CMD6:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+mmc1: starting CMD6 arg 00fffff1 flags 000000b5
+mmc1:     blksz 64 blocks 1 flags 00000200 tsac 100 ms nsac 0
+mmc_spi spi1.2:   mmc_spi: CMD6, resp R1
+mmc_spi spi1.2:     mmc_spi: read block, 64 bytes
+mmc_spi spi1.2: read error ffffff92 (-110)
+mmc_spi spi1.2: read status -110
+mmc1: req done (CMD6): 0: 00000000 00000000 00000000 00000000
+mmc1:     0 bytes transferred: -110
 
---Signature=_Mon__17_Dec_2012_14_34_15_+1100_Byx752Tfexmx3J6+
-Content-Type: application/pgp-signature
+Adding for example a longer timeout for the CMD6 did not helped.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+With this patch the transcend card gets detected and can be used
+fine. Here the infos from the card, shown in the sysfs:
 
-iQIcBAEBCAAGBQJQzpK3AAoJEECxmPOUX5FEF7wP/1U3FzTfBB14A5qFbRWk/TyC
-OgLEObXrGx6H0h2jLPTds76rgoapM6/UkmiTuN4szleml6FaL1C29FULeUVDlfhT
-afGiKo6ndF+6rLiu45bU/FXKzkDUtCd4P1CR54hlXtEyyuzGATkLlHh7zQkHbUni
-08ZXRl+Elucy4YQLtAuJjxTzLB9JEHOU3YaWxIBf59i0wVetb93frOX5mw40/C7U
-cUsAIlTHE3iq7xH0g2W3UJ6pw0CfLdSkfQJfhJk8mDkaHfpvQkC7Jj0yiHWMT/aW
-NFqmfRM2/YO/YCK3vQBaqKswE9RwswHTn2fQ9o8txRHp0dL5QVhvRdzzurVKk33K
-ctXhBCeu1Nis+avWSsGjiVpQnmbkXkufg8TxsoMyEJ8Rv+oCQoaqXl7AItXK5OZy
-w5f2EZGWwzHOTNsULW/uyoGiU8/UORz0tGu1l+yNNovI120jTPHIFh+gf4cVtNVi
-9x9pBxH6y61AEv9sygkvJ/63OXDJSPlOsaTCCTfbSv5eqC8AjrQaZWYcji1E3ofv
-rI+q3i9yobdUnsVoRn4Jg84SQjq46HSkF7wptntDVfTrOnV9Bk/HV/UFZ7aOTHMT
-q8CdwfAkD7Q6iR3QVeM+XcZjjOIMU/A1zej6TjNV0JOdkI6RitKmdCpuInUz6phG
-f50HwwXoss5al21BOmcO
-=VeTh
------END PGP SIGNATURE-----
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/cid 
+1b534d3030303030100bc3874c00c10b
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/csd 
+007fff325b5a83baf6dbdfff0e8000b5
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/date 
+01/2012
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/erase_size 
+512
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/fwrev      
+0x0
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/hwrev 
+0x1
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/manfid 
+0x00001b
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/name   
+00000
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/oemid 
+0x534d
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/preferred_erase_size 
+4194304
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/scr                  
+0225800000000000
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/serial 
+0x0bc3874c
+-bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/type 
+SD
 
---Signature=_Mon__17_Dec_2012_14_34_15_+1100_Byx752Tfexmx3J6+--
+So the question raises, is this a known bug and/or a valid patch?
+Other patches known to help here?
+
+diff --git a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
+index 49da4df..3142df0 100644
+--- a/drivers/mmc/core/sd.c
++++ b/drivers/mmc/core/sd.c
+@@ -268,6 +268,10 @@ static int mmc_read_switch(struct mmc_card *card)
+ 		return 0;
+ 	}
+ 
++	/* no need, if the host do not support high speed */
++	if (!(card->host->caps & MMC_CAP_SD_HIGHSPEED))
++		return 0;
++
+ 	err = -EIO;
+ 
+ 	status = kmalloc(64, GFP_KERNEL);
+-- 
+1.7.7.6
