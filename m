@@ -1,19 +1,22 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from members.tip.net.au (haggis.tip.net.au
  [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id 9A4DB2C009B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2012 14:22:42 +1100 (EST)
-Date: Mon, 17 Dec 2012 14:22:38 +1100
+ by ozlabs.org (Postfix) with ESMTP id 287BA2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2012 14:34:23 +1100 (EST)
+Date: Mon, 17 Dec 2012 14:34:15 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build warning after merge of the final tree
-Message-Id: <20121217142238.a0840563304419bb345ac25f@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: linux-next: build warning after merge of the final tree
+Message-Id: <20121217143415.252a2f60076d1ba03807df55@canb.auug.org.au>
+In-Reply-To: <20121217142238.a0840563304419bb345ac25f@canb.auug.org.au>
+References: <20121217142238.a0840563304419bb345ac25f@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: multipart/signed; protocol="application/pgp-signature";
  micalg="PGP-SHA256";
- boundary="Signature=_Mon__17_Dec_2012_14_22_38_+1100_85E9_IajO6cS+Kl3"
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+ boundary="Signature=_Mon__17_Dec_2012_14_34_15_+1100_Byx752Tfexmx3J6+"
+Cc: Paul Thompson <set.mailinglist@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Mon__17_Dec_2012_14_22_38_+1100_85E9_IajO6cS+Kl3
+--Signature=_Mon__17_Dec_2012_14_34_15_+1100_Byx752Tfexmx3J6+
 Content-Type: text/plain; charset=US-ASCII
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi all,
 
-After merging the final tree, today's linux-next build (powerpc allnoconfig)
-produced this warning:
+On Mon, 17 Dec 2012 14:22:38 +1100 Stephen Rothwell <sfr@canb.auug.org.au> =
+wrote:
+>
+> After merging the final tree, today's linux-next build (powerpc allnoconf=
+ig)
+> produced this warning:
+>=20
+> warning: (PPC) selects SPARSE_IRQ which has unmet direct dependencies (HA=
+VE_GENERIC_HARDIRQS && (IRQ_DOMAIN && DEBUG_FS || MAY_HAVE_SPARSE_IRQ))
+>=20
+> I don't know what introduced that.
 
-warning: (PPC) selects SPARSE_IRQ which has unmet direct dependencies (HAVE=
-_GENERIC_HARDIRQS && (IRQ_DOMAIN && DEBUG_FS || MAY_HAVE_SPARSE_IRQ))
+Actually probably caused by commit a1eaa3bc8247 ("Kconfig: fix Irq
+Subsystem menu") from the akpm tree.
 
-I don't know what introduced that.
 --=20
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
---Signature=_Mon__17_Dec_2012_14_22_38_+1100_85E9_IajO6cS+Kl3
+--Signature=_Mon__17_Dec_2012_14_34_15_+1100_Byx752Tfexmx3J6+
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.12 (GNU/Linux)
 
-iQIcBAEBCAAGBQJQzo/+AAoJEECxmPOUX5FE0P4P/3zQxSNb+bPM8E7yin12ZsIF
-Soc/tN4SGO7nMJYud64ar5yhk3POPwhy6jsLm97eNzHofVaFJBc9YmkBF+XY1RYR
-+vi5JLeSDhx1RR/GlUY4lXTrN2fCZqlBDLb9b2QXzT/mCp/d0jDP5gMBqh98vzcc
-fIF1lOBW4wYhjBh2YVXdT3x3CZham826j2U0YMABxf6xdqoZYSGxF+hcUHxvl/IJ
-3QN2KDtXrnceufvkNCmnxYystu+++++dZK7KtiFD1Ug31Pfgka/PPwPT6QpN42t4
-mxszJnDOCLc5YtlZWf/XV2+nUrHtpM0Cb6V2M6z5/Ugq3QgYzYYGbQnHLggA1ZKl
-QZL4CckogOTxre16r9XBTIDSp4kIAo5ek+WcKiHajLCOz5ZsBO1zIZEgPVTpF4XR
-aRdzGUq1SEBSMjMygtevkj6EcnNj3Dmgnz1IlCSf8F8aFQoRmVRhyCDavlNUExf0
-Tl0Oj7rcImPwux30RcyanzBvBZGRkbABMq/NUJLzHS1mWZbg8EJvIhz4J1i0NiSO
-g+GNOZ3J1qnkdiHN12Wmq5fZ73UwkLb/bQ7bWfNxo3qZ8QLo35KIvxwWrWgm6aue
-pZ7Ahr9bvWfWpMSFWceg9qu6rq6s0X6dDMpgJfbMTl5u9ij1sKXN0B2mhM3vyO99
-MZW4QkGeDh9UtWT9V09o
-=DDnX
+iQIcBAEBCAAGBQJQzpK3AAoJEECxmPOUX5FEF7wP/1U3FzTfBB14A5qFbRWk/TyC
+OgLEObXrGx6H0h2jLPTds76rgoapM6/UkmiTuN4szleml6FaL1C29FULeUVDlfhT
+afGiKo6ndF+6rLiu45bU/FXKzkDUtCd4P1CR54hlXtEyyuzGATkLlHh7zQkHbUni
+08ZXRl+Elucy4YQLtAuJjxTzLB9JEHOU3YaWxIBf59i0wVetb93frOX5mw40/C7U
+cUsAIlTHE3iq7xH0g2W3UJ6pw0CfLdSkfQJfhJk8mDkaHfpvQkC7Jj0yiHWMT/aW
+NFqmfRM2/YO/YCK3vQBaqKswE9RwswHTn2fQ9o8txRHp0dL5QVhvRdzzurVKk33K
+ctXhBCeu1Nis+avWSsGjiVpQnmbkXkufg8TxsoMyEJ8Rv+oCQoaqXl7AItXK5OZy
+w5f2EZGWwzHOTNsULW/uyoGiU8/UORz0tGu1l+yNNovI120jTPHIFh+gf4cVtNVi
+9x9pBxH6y61AEv9sygkvJ/63OXDJSPlOsaTCCTfbSv5eqC8AjrQaZWYcji1E3ofv
+rI+q3i9yobdUnsVoRn4Jg84SQjq46HSkF7wptntDVfTrOnV9Bk/HV/UFZ7aOTHMT
+q8CdwfAkD7Q6iR3QVeM+XcZjjOIMU/A1zej6TjNV0JOdkI6RitKmdCpuInUz6phG
+f50HwwXoss5al21BOmcO
+=VeTh
 -----END PGP SIGNATURE-----
 
---Signature=_Mon__17_Dec_2012_14_22_38_+1100_85E9_IajO6cS+Kl3--
+--Signature=_Mon__17_Dec_2012_14_34_15_+1100_Byx752Tfexmx3J6+--
