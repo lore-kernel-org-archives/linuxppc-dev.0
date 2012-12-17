@@ -1,17 +1,20 @@
-Return-Path: <hs@denx.de>
+Return-Path: <agust@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 5B9752C0092
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Dec 2012 18:27:51 +1100 (EST)
-From: Heiko Schocher <hs@denx.de>
-To: linux-mmc@vger.kernel.org
-Subject: [PATCH][RFC] mmc, sd: do not read switch,
- if the host do not support high speed
-Date: Mon, 17 Dec 2012 08:27:42 +0100
-Message-Id: <1355729262-21269-1-git-send-email-hs@denx.de>
-Cc: Heiko Schocher <hs@denx.de>, linuxppc-dev@lists.ozlabs.org,
- Wolfgang Denk <wd@denx.de>, Dieter Schaffner <Dieter.Schaffner@ids.de>
+ by ozlabs.org (Postfix) with ESMTPS id D885C2C0089
+ for <linuxppc-dev@ozlabs.org>; Mon, 17 Dec 2012 19:30:56 +1100 (EST)
+Date: Mon, 17 Dec 2012 09:30:36 +0100
+From: Anatolij Gustschin <agust@denx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [git pull] Please pull powerpc.git next branch
+Message-ID: <20121217093036.65cb7cef@wker>
+In-Reply-To: <1355517897.19932.136.camel@pasglop>
+References: <1355517897.19932.136.camel@pasglop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,81 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If the host controller do not support high speed, do not send the
-read switch CMD 6. Same as done in mmc_sd_switch_hs().
+Hi Ben,
 
-Signed-off-by: Heiko Schocher <hs@denx.de>
-Cc: Wolfgang Denk <wd@denx.de>
-Cc: Dieter Schaffner <Dieter.Schaffner@ids.de>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-mmc@vger.kernel.org
+On Sat, 15 Dec 2012 07:44:57 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+...
+> Overall it's pretty quiet, or rather I've been pretty poor at
+> picking things up from patchwork and reviewing them this time
+> around and Kumar no better on the FSL side it seems...
 
----
- drivers/mmc/core/sd.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Could you please also include some 5xxx patches for v3.8 in your pull
+request? I've submitted a pull request for them last week
 
-Found this on a MPC8313 based system with mmc over spi and a Transcend
-2 GB SD card running a 2.6.37.6 kernel. Without this patch I get this
-when reading the CMD6:
+  http://patchwork.ozlabs.org/patch/205138
 
-mmc1: starting CMD6 arg 00fffff1 flags 000000b5
-mmc1:     blksz 64 blocks 1 flags 00000200 tsac 100 ms nsac 0
-mmc_spi spi1.2:   mmc_spi: CMD6, resp R1
-mmc_spi spi1.2:     mmc_spi: read block, 64 bytes
-mmc_spi spi1.2: read error ffffff92 (-110)
-mmc_spi spi1.2: read status -110
-mmc1: req done (CMD6): 0: 00000000 00000000 00000000 00000000
-mmc1:     0 bytes transferred: -110
-
-Adding for example a longer timeout for the CMD6 did not helped.
-
-With this patch the transcend card gets detected and can be used
-fine. Here the infos from the card, shown in the sysfs:
-
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/cid 
-1b534d3030303030100bc3874c00c10b
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/csd 
-007fff325b5a83baf6dbdfff0e8000b5
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/date 
-01/2012
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/erase_size 
-512
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/fwrev      
-0x0
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/hwrev 
-0x1
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/manfid 
-0x00001b
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/name   
-00000
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/oemid 
-0x534d
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/preferred_erase_size 
-4194304
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/scr                  
-0225800000000000
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/serial 
-0x0bc3874c
--bash-3.2# cat /sys/bus/mmc/devices/mmc0\:0000/type 
-SD
-
-So the question raises, is this a known bug and/or a valid patch?
-Other patches known to help here?
-
-diff --git a/drivers/mmc/core/sd.c b/drivers/mmc/core/sd.c
-index 49da4df..3142df0 100644
---- a/drivers/mmc/core/sd.c
-+++ b/drivers/mmc/core/sd.c
-@@ -268,6 +268,10 @@ static int mmc_read_switch(struct mmc_card *card)
- 		return 0;
- 	}
- 
-+	/* no need, if the host do not support high speed */
-+	if (!(card->host->caps & MMC_CAP_SD_HIGHSPEED))
-+		return 0;
-+
- 	err = -EIO;
- 
- 	status = kmalloc(64, GFP_KERNEL);
--- 
-1.7.7.6
+Thanks,
+Anatolij
