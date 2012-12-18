@@ -1,40 +1,25 @@
-Return-Path: <bergner@vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 674EA2C0087
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2012 03:31:57 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <bergner@vnet.ibm.com>;
- Tue, 18 Dec 2012 11:31:51 -0500
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 48351C9005C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2012 11:31:48 -0500 (EST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qBIGVlma261378
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2012 11:31:47 -0500
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qBIGVP5M021011
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2012 09:31:26 -0700
-Subject: Re: [PATCH] powerpc: POWER7 optimised memcpy using VMX and
- enhanced prefetch
-From: Peter Bergner <bergner@vnet.ibm.com>
-To: Jimi Xenidis <jimix@pobox.com>
-In-Reply-To: <16080DCD-0E42-43E9-93E3-D3076637DCB1@pobox.com>
-References: <20120531162209.04bd9bdc@kryten>
- <D5CF6D4A-8F60-4853-9F7C-EFE5133CEB33@pobox.com>
- <20121217223333.6cb00476@kryten> <1355790373.5180.26.camel@otta>
- <16080DCD-0E42-43E9-93E3-D3076637DCB1@pobox.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 18 Dec 2012 10:31:09 -0600
-Message-ID: <1355848269.5180.41.camel@otta>
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Kumar Gala <kumar.gala@gmail.com>, Anton Blanchard <anton@samba.org>
+Return-Path: <linus971@gmail.com>
+Received: from mail-wi0-f177.google.com (mail-wi0-f177.google.com
+ [209.85.212.177])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 04C972C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2012 05:02:35 +1100 (EST)
+Received: by mail-wi0-f177.google.com with SMTP id hm2so604080wib.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Dec 2012 10:02:31 -0800 (PST)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <1355787094.5397.30.camel@pasglop>
+References: <1355517897.19932.136.camel@pasglop>
+ <1355787094.5397.30.camel@pasglop>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 18 Dec 2012 10:02:11 -0800
+Message-ID: <CA+55aFw-cRskrvW07FVJd9HfrBhn41Ogi1Vv_v1U12zahzFu=A@mail.gmail.com>
+Subject: Re: [git pull] Please pull powerpc.git next branch
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,39 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2012-12-18 at 07:28 -0600, Jimi Xenidis wrote:
-> On Dec 17, 2012, at 6:26 PM, Peter Bergner <bergner@vnet.ibm.com> wrote:
-> > Jimi, are you using an "old" binutils from before my patch that
-> > changed the operand order for these types of instructions?
-> > 
-> >    http://sourceware.org/ml/binutils/2009-02/msg00044.html
-> 
-> Actually, this confused me as well, that embedded has the same instruction
-> encoding but different mnemonic.
+On Mon, Dec 17, 2012 at 3:31 PM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Sat, 2012-12-15 at 07:44 +1100, Benjamin Herrenschmidt wrote:
+>> Hi Linus !
+>>
+>> Finally managed to get my head away from some other distractions
+>> to put this pull request together, sorry for the lateness :-)
+>>
+>> The main highlight is probably some base POWER8 support. There's
+>> more to come such as transactional memory support but that will
+>> wait for the next one. (next merge window)
+>>
+>> Overall it's pretty quiet, or rather I've been pretty poor at
+>> picking things up from patchwork and reviewing them this time
+>> around and Kumar no better on the FSL side it seems...
+>
+> So it looks like I'm an idiot and totally failed to put your email
+> address on the CC list of that pull request :-)
 
-The mnemonic is the same (ie, dcbtst), and yes, the encoding is the same.
-All that is different is the accepted operand ordering...and yes, it is
-very unfortunate the operand ordering is different between embedded and
-server. :(
+.. yeah, that helps.
 
+Anyway, I've pulled it in, but got a conflict on the kernel_thread
+cleanups from Al. And since the conflict was in the powerpc assembly
+code that I don't really know the details of, I did the
+straightforward resolve of it, but I'd like you to check it out.
 
-> I was under the impression that the assembler made no instruction decisions
-> based on CPU.  So your only hint would be that '0b' prefix.
-> Does AS even see that?
+(I haven't pushed it out yet, I'm waiting for the allmodconfig to
+finish compiling, so if you see this email quickly, but don't see the
+powerpc merge yet, just wait a few minutes)
 
-GAS definitely makes decisions based on CPU (ie, -m<cpu> option).  Below is
-the GAS code used in recognizing the dcbtst instruction.  This shows that
-the "server" operand ordering is enabled for POWER4 and later cpus while
-the "embedded" operand ordering is enabled for pre POWER4 cpus (yes, not
-exactly a server versus embedded trigger, but that's we agreed on to
-mitigate breaking any old asm code out there).
-
-{"dcbtst",	X(31,246),	X_MASK,      POWER4,	PPCNONE,	{RA0, RB, CT}},
-{"dcbtst",	X(31,246),	X_MASK,      PPC|PPCVLE, POWER4,	{CT, RA0, RB}},
-
-GAS doesn't look at how the operands are written to try and guess what
-operand ordering you are attempting to use.  Rather, it knows what ordering
-it expects and the values had better match that ordering.
-
-
-Peter
+                Linus
