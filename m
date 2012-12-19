@@ -1,39 +1,21 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 833C32C00AA
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 18:30:36 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 19 Dec 2012 02:30:34 -0500
-Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1E2A96E8036
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 02:30:31 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qBJ7UVpb320700
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 02:30:31 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qBJ7USl6025008
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 02:30:31 -0500
-Date: Tue, 18 Dec 2012 23:30:18 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
- Ingo Molnar <mingo@redhat.com>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
- Anton Blanchard <anton@au1.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
- robert.richter@amd.com, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] perf: Create a sysfs entry for Power event format
-Message-ID: <20121219073018.GD30790@us.ibm.com>
-References: <20121219072646.GA30580@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20121219072646.GA30580@us.ibm.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-wi0-x22a.google.com (mail-wi0-x22a.google.com
+ [IPv6:2a00:1450:400c:c05::22a])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 420C72C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2012 21:58:46 +1100 (EST)
+Received: by mail-wi0-f170.google.com with SMTP id hq7so285099wib.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Dec 2012 02:58:40 -0800 (PST)
+Sender: Grant Likely <glikely@secretlab.ca>
+From: Grant Likely <grant.likely@secretlab.ca>
+To: linux-kernel@vger.kernel.org, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] of: Fix export of of_find_matching_node_and_match()
+Date: Wed, 19 Dec 2012 10:58:36 +0000
+Message-Id: <1355914716-19469-1-git-send-email-grant.likely@secretlab.ca>
+Cc: Anatolij Gustschin <agust@denx.de>, Stephen Warren <swarren@nvidia.com>,
+ Rob Herring <rob.herring@calxeda.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,73 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Commit 50c8af4cf9, "of: introduce for_each_matching_node_and_match()"
+renamed of_find_matching_node() to of_find_matching_node_and_match() and
+created a new static inline of_find_matching_node() wrapper around the
+new name. However, the change neglected to change the EXPORT_SYMBOL()
+reference causing build errors for modules.
 
-Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
-which describes the format of a POWER cpu.
+This patch fixes the EXPORT_SYMBOL() statement. Discovered on a PowerPC
+Efika build with the mpc52xx_uart driver being built as a module.
 
-The format of the event is the same for all POWER cpus at least in
-(Power6, Power7), so bulk of this change is common in the code common
-to POWER cpus.
-
-This code is based on corresponding code in x86.
-
-Changelog[v2]: [Jiri Osla] Use PMU_FORMAT_ATTR() rather than duplicating it.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Reported-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Stephen Warren <swarren@nvidia.com>
+Cc: Rob Herring <rob.herring@calxeda.com>
+Cc: Anatolij Gustschin <agust@denx.de>
 ---
- arch/powerpc/include/asm/perf_event_server.h |    6 ++++++
- arch/powerpc/perf/core-book3s.c              |   12 ++++++++++++
- arch/powerpc/perf/power7-pmu.c               |    1 +
- 3 files changed, 19 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 4315bc9..f8f7240 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -136,3 +136,9 @@ extern ssize_t power_events_sysfs_show(struct device *dev,
- 
- #define	POWER_EVENT_ATTR(_name, _id)	EVENT_ATTR(PM_##_name, _id, _p)
- #define	POWER_EVENT_PTR(_id)		EVENT_PTR(_id, _p)
-+
-+/*
-+ * Format of a perf event is the same on all POWER cpus. Declare a
-+ * common sysfs attribute group that individual POWER cpus can share.
-+ */
-+extern struct attribute_group power_pmu_format_group;
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index fa476d5..4ae044b 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -1315,6 +1315,18 @@ ssize_t power_events_sysfs_show(struct device *dev,
- 	return sprintf(page, "event=0x%02llx\n", pmu_attr->id);
+I'll push this patch out to my tree ASAP.
+
+ drivers/of/base.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/of/base.c b/drivers/of/base.c
+index db8d211..2390ddb 100644
+--- a/drivers/of/base.c
++++ b/drivers/of/base.c
+@@ -629,7 +629,7 @@ struct device_node *of_find_matching_node_and_match(struct device_node *from,
+ 	read_unlock(&devtree_lock);
+ 	return np;
  }
+-EXPORT_SYMBOL(of_find_matching_node);
++EXPORT_SYMBOL(of_find_matching_node_and_match);
  
-+PMU_FORMAT_ATTR(event, "config:0-20");
-+
-+static struct attribute *power_pmu_format_attr[] = {
-+	&format_attr_event.attr,
-+	NULL,
-+};
-+
-+struct attribute_group power_pmu_format_group = {
-+	.name = "format",
-+	.attrs = power_pmu_format_attr,
-+};
-+
- struct pmu power_pmu = {
- 	.pmu_enable	= power_pmu_enable,
- 	.pmu_disable	= power_pmu_disable,
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index 5627940..5fb3c9b 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -410,6 +410,7 @@ static struct attribute_group power7_pmu_events_group = {
- };
- 
- static const struct attribute_group *power7_pmu_attr_groups[] = {
-+	&power_pmu_format_group,
- 	&power7_pmu_events_group,
- 	NULL,
- };
+ /**
+  * of_modalias_node - Lookup appropriate modalias for a device node
 -- 
-1.7.1
+1.7.10.4
