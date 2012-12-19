@@ -1,27 +1,26 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e34.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5E8F02C00B4
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 18:29:45 +1100 (EST)
+ (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 833C32C00AA
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 18:30:36 +1100 (EST)
 Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 19 Dec 2012 00:29:42 -0700
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1C5FB19D803C
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 00:29:40 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qBJ7TdCr284838
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 00:29:40 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qBJ7TdkV014514
- for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 00:29:39 -0700
-Date: Tue, 18 Dec 2012 23:29:29 -0800
+ Wed, 19 Dec 2012 02:30:34 -0500
+Received: from d01relay05.pok.ibm.com (d01relay05.pok.ibm.com [9.56.227.237])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1E2A96E8036
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 02:30:31 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay05.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ qBJ7UVpb320700
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 02:30:31 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ qBJ7USl6025008
+ for <linuxppc-dev@ozlabs.org>; Wed, 19 Dec 2012 02:30:31 -0500
+Date: Tue, 18 Dec 2012 23:30:18 -0800
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
  Ingo Molnar <mingo@redhat.com>,
@@ -29,8 +28,8 @@ To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Paul Mackerras <paulus@samba.org>,
  Anton Blanchard <anton@au1.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
  robert.richter@amd.com, linuxppc-dev@ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] perf/POWER7: Make some POWER7 events available in sysfs
-Message-ID: <20121219072929.GC30790@us.ibm.com>
+Subject: [PATCH 5/5] perf: Create a sysfs entry for Power event format
+Message-ID: <20121219073018.GD30790@us.ibm.com>
 References: <20121219072646.GA30580@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -45,85 +44,72 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-Make some POWER7-specific perf events available in sysfs.
+Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
+which describes the format of a POWER cpu.
 
-	$ /bin/ls -1 /sys/bus/event_source/devices/cpu/events/
-	branch-instructions
-	branch-misses
-	cache-misses
-	cache-references
-	cpu-cycles
-	instructions
-	PM_BRU_FIN
-	PM_BRU_MPRED
-	PM_CMPLU_STALL
-	PM_CYC
-	PM_GCT_NOSLOT_CYC
-	PM_INST_CMPL
-	PM_LD_MISS_L1
-	PM_LD_REF_L1
-	stalled-cycles-backend
-	stalled-cycles-frontend
+The format of the event is the same for all POWER cpus at least in
+(Power6, Power7), so bulk of this change is common in the code common
+to POWER cpus.
 
-where the 'PM_*' events are POWER specific and the others are the
-generic events.
+This code is based on corresponding code in x86.
 
-This will enable users to specify these events with their symbolic
-names rather than with their raw code.
-
-	perf stat -e 'cpu/PM_CYC' ...
+Changelog[v2]: [Jiri Osla] Use PMU_FORMAT_ATTR() rather than duplicating it.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/perf_event_server.h |    2 ++
- arch/powerpc/perf/power7-pmu.c               |   18 ++++++++++++++++++
- 2 files changed, 20 insertions(+), 0 deletions(-)
+ arch/powerpc/include/asm/perf_event_server.h |    6 ++++++
+ arch/powerpc/perf/core-book3s.c              |   12 ++++++++++++
+ arch/powerpc/perf/power7-pmu.c               |    1 +
+ 3 files changed, 19 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index 20ca90f..4315bc9 100644
+index 4315bc9..f8f7240 100644
 --- a/arch/powerpc/include/asm/perf_event_server.h
 +++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -134,3 +134,5 @@ extern ssize_t power_events_sysfs_show(struct device *dev,
- #define	GENERIC_EVENT_ATTR(_name, _id)	EVENT_ATTR(_name, _id, _g)
- #define	GENERIC_EVENT_PTR(_id)		EVENT_PTR(_id, _g)
+@@ -136,3 +136,9 @@ extern ssize_t power_events_sysfs_show(struct device *dev,
  
-+#define	POWER_EVENT_ATTR(_name, _id)	EVENT_ATTR(PM_##_name, _id, _p)
-+#define	POWER_EVENT_PTR(_id)		EVENT_PTR(_id, _p)
+ #define	POWER_EVENT_ATTR(_name, _id)	EVENT_ATTR(PM_##_name, _id, _p)
+ #define	POWER_EVENT_PTR(_id)		EVENT_PTR(_id, _p)
++
++/*
++ * Format of a perf event is the same on all POWER cpus. Declare a
++ * common sysfs attribute group that individual POWER cpus can share.
++ */
++extern struct attribute_group power_pmu_format_group;
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index fa476d5..4ae044b 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -1315,6 +1315,18 @@ ssize_t power_events_sysfs_show(struct device *dev,
+ 	return sprintf(page, "event=0x%02llx\n", pmu_attr->id);
+ }
+ 
++PMU_FORMAT_ATTR(event, "config:0-20");
++
++static struct attribute *power_pmu_format_attr[] = {
++	&format_attr_event.attr,
++	NULL,
++};
++
++struct attribute_group power_pmu_format_group = {
++	.name = "format",
++	.attrs = power_pmu_format_attr,
++};
++
+ struct pmu power_pmu = {
+ 	.pmu_enable	= power_pmu_enable,
+ 	.pmu_disable	= power_pmu_disable,
 diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index ae5d757..5627940 100644
+index 5627940..5fb3c9b 100644
 --- a/arch/powerpc/perf/power7-pmu.c
 +++ b/arch/powerpc/perf/power7-pmu.c
-@@ -373,6 +373,15 @@ GENERIC_EVENT_ATTR(cache-misses,		LD_MISS_L1);
- GENERIC_EVENT_ATTR(branch-instructions,		BRU_FIN);
- GENERIC_EVENT_ATTR(branch-misses,		BRU_MPRED);
- 
-+POWER_EVENT_ATTR(CYC,				CYC);
-+POWER_EVENT_ATTR(GCT_NOSLOT_CYC,		GCT_NOSLOT_CYC);
-+POWER_EVENT_ATTR(CMPLU_STALL,			CMPLU_STALL);
-+POWER_EVENT_ATTR(INST_CMPL,			INST_CMPL);
-+POWER_EVENT_ATTR(LD_REF_L1,			LD_REF_L1);
-+POWER_EVENT_ATTR(LD_MISS_L1,			LD_MISS_L1);
-+POWER_EVENT_ATTR(BRU_FIN,			BRU_FIN)
-+POWER_EVENT_ATTR(BRU_MPRED,			BRU_MPRED);
-+
- static struct attribute *power7_events_attr[] = {
- 	GENERIC_EVENT_PTR(CYC),
- 	GENERIC_EVENT_PTR(GCT_NOSLOT_CYC),
-@@ -382,6 +391,15 @@ static struct attribute *power7_events_attr[] = {
- 	GENERIC_EVENT_PTR(LD_MISS_L1),
- 	GENERIC_EVENT_PTR(BRU_FIN),
- 	GENERIC_EVENT_PTR(BRU_MPRED),
-+
-+	POWER_EVENT_PTR(CYC),
-+	POWER_EVENT_PTR(GCT_NOSLOT_CYC),
-+	POWER_EVENT_PTR(CMPLU_STALL),
-+	POWER_EVENT_PTR(INST_CMPL),
-+	POWER_EVENT_PTR(LD_REF_L1),
-+	POWER_EVENT_PTR(LD_MISS_L1),
-+	POWER_EVENT_PTR(BRU_FIN),
-+	POWER_EVENT_PTR(BRU_MPRED),
- 	NULL
+@@ -410,6 +410,7 @@ static struct attribute_group power7_pmu_events_group = {
  };
  
+ static const struct attribute_group *power7_pmu_attr_groups[] = {
++	&power_pmu_format_group,
+ 	&power7_pmu_events_group,
+ 	NULL,
+ };
 -- 
 1.7.1
