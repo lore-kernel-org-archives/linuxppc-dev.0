@@ -1,21 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <juhosg@openwrt.org>
+Received: from arrakis.dune.hu (arrakis.dune.hu [78.24.191.176])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 21A0B2C0094
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2012 05:41:58 +1100 (EST)
-Subject: Re: [v1][PATCH 3/6] book3e/kgdb: update thread's dbcr0
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1355994510-11934-4-git-send-email-tiejun.chen@windriver.com>
-Date: Thu, 20 Dec 2012 12:41:53 -0600
-Message-Id: <A47C9236-0744-45BC-B25A-3DDEB05CD8A1@kernel.crashing.org>
-References: <1355994510-11934-1-git-send-email-tiejun.chen@windriver.com>
- <1355994510-11934-4-git-send-email-tiejun.chen@windriver.com>
-To: Tiejun Chen <tiejun.chen@windriver.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- jason.wessel@windriver.com
+ by ozlabs.org (Postfix) with ESMTPS id DB7802C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2012 00:53:33 +1100 (EST)
+From: Gabor Juhos <juhosg@openwrt.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: add missing NULL terminator to avoid boot panic on
+ PPC40x
+Date: Thu, 20 Dec 2012 14:44:28 +0100
+Message-Id: <1356011068-26349-1-git-send-email-juhosg@openwrt.org>
+Cc: Gabor Juhos <juhosg@openwrt.org>, linuxppc-dev@lists.ozlabs.org,
+ stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +21,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The missing NULL terminator can cause a panic on
+PPC405 boards during boot:
 
-On Dec 20, 2012, at 3:08 AM, Tiejun Chen wrote:
+  Linux/PowerPC load: console=ttyS0,115200 root=/dev/mtdblock1 rootfstype=squashfs,jffs2 noinitrd init=/etc/preinit
+  Finalizing device tree... flat tree at 0x6a5160
+  bootconsole [udbg0] enabled
+  Page fault in user mode with in_atomic() = 1 mm = (null)
+  NIP = c0275f50  MSR = fffffffe
+  Oops: Weird page fault, sig: 11 [#1]
+  PowerPC 40x Platform
+  Modules linked in:
+  NIP: c0275f50 LR: c0275f60 CTR: c0280000
+  REGS: c0275eb0 TRAP: 636f7265   Not tainted  (3.7.1)
+  MSR: fffffffe <VEC,VSX,EE,PR,FP,ME,SE,BE,IR,DR,PMM,RI> CR: c06a6190  XER: 00000001
+  TASK = c02662a8[0] 'swapper' THREAD: c0274000
+  GPR00: c0275ec0 c000c658 c027c4bf 00000000 c0275ee0 c000a0ec c020a1a8 c020a1f0
+  GPR08: c020f631 c020f404 c025f078 c025f080 c0275f10
+   Call Trace:
+   ---[ end trace 31fd0ba7d8756001 ]---
 
-> gdb always need to generate a single step properly to invoke
-> a kgdb state. But with lazy interrupt, book3e can't always
-> trigger a debug exception with a single step since the current
-> is blocked for handling those pending exception, then we miss
-> that expected dbcr configuration at last to generate a debug
-> exception.
->=20
-> So here we also update thread's dbcr0 to make sure the current
-> can go back with that missed dbcr0 configuration.
->=20
-> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
-> ---
-> arch/powerpc/kernel/kgdb.c |   10 ++++++++++
-> 1 file changed, 10 insertions(+)
->=20
-> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-> index c470a40..516b44b 100644
-> --- a/arch/powerpc/kernel/kgdb.c
-> +++ b/arch/powerpc/kernel/kgdb.c
-> @@ -426,8 +426,18 @@ int kgdb_arch_handle_exception(int vector, int =
-signo, int err_code,
-> 		/* set the trace bit if we're stepping */
-> 		if (remcom_in_buffer[0] =3D=3D 's') {
-> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
-> +#ifdef CONFIG_PPC_BOOK3E
+  Kernel panic - not syncing: Attempted to kill the idle task!
 
-Should this really be CONFIG_PPC64 or CONFIG_PPC_BOOK3E_64?
+The panic happens since commit 9597abe00c1bab2aedce6b49866bf6d1e81c9eed
+(sections: fix section conflicts in arch/powerpc), however the root
+cause of this is that the NULL terminator were not added in commit
+a4f740cf33f7f6c164bbde3c0cdbcc77b0c4997c (of/flattree: Add of_flat_dt_match()
+helper function).
 
-> +			/* With lazy interrut we have to update thread =
-dbcr0 here
-> +			 * to make sure we can set debug properly at =
-last to invoke
-> +			 * kgdb again to work well.
-> +			 */
-> +			current->thread.dbcr0 =3D
-> +				mfspr(SPRN_DBCR0) | DBCR0_IC | =
-DBCR0_IDM;
-> +			mtspr(SPRN_DBCR0, current->thread.dbcr0);
-> +#else
-> 			mtspr(SPRN_DBCR0,
-> 			      mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
-> +#endif
+Cc: Grant Likely <grant.likely@secretlab.ca>
+Cc: <stable@vger.kernel.org>
+Signed-off-by: Gabor Juhos <juhosg@openwrt.org>
+---
+ arch/powerpc/platforms/40x/ppc40x_simple.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Can we code this so we don't need the #else?
-
-> 			linux_regs->msr |=3D MSR_DE;
-> #else
-> 			linux_regs->msr |=3D MSR_SE;
-> --=20
-> 1.7.9.5
->=20
-> --
-> To unsubscribe from this list: send the line "unsubscribe =
-linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
+index 969dddc..8f3920e 100644
+--- a/arch/powerpc/platforms/40x/ppc40x_simple.c
++++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
+@@ -57,7 +57,8 @@ static const char * const board[] __initconst = {
+ 	"amcc,makalu",
+ 	"apm,klondike",
+ 	"est,hotfoot",
+-	"plathome,obs600"
++	"plathome,obs600",
++	NULL
+ };
+ 
+ static int __init ppc40x_probe(void)
+-- 
+1.7.10
