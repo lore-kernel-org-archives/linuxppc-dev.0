@@ -1,24 +1,25 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EDF292C00FB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2012 20:14:24 +1100 (EST)
-Message-ID: <50D2D6E6.2080609@windriver.com>
-Date: Thu, 20 Dec 2012 17:14:14 +0800
-From: "tiejun.chen" <tiejun.chen@windriver.com>
+Return-Path: <glikely@secretlab.ca>
+Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
+ [209.85.160.51])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DA7062C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2012 00:57:02 +1100 (EST)
+Received: by mail-pb0-f51.google.com with SMTP id ro12so2003137pbb.24
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2012 05:56:59 -0800 (PST)
 MIME-Version: 1.0
-To: Tabi Timur-B04825 <B04825@freescale.com>
-Subject: Re: [PATCH 1/3] powerpc/book3e: load critical/machine/debug exception
- stack
-References: <1351147410-17452-1-git-send-email-tiejun.chen@windriver.com>
- <6AE080B68D46FC4BA2D2769E68D765B7081D305D@039-SN2MPN1-023.039d.mgd.msft.net>
-In-Reply-To: <6AE080B68D46FC4BA2D2769E68D765B7081D305D@039-SN2MPN1-023.039d.mgd.msft.net>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Sender: glikely@secretlab.ca
+In-Reply-To: <1356011068-26349-1-git-send-email-juhosg@openwrt.org>
+References: <1356011068-26349-1-git-send-email-juhosg@openwrt.org>
+From: Grant Likely <grant.likely@secretlab.ca>
+Date: Thu, 20 Dec 2012 13:56:39 +0000
+Message-ID: <CACxGe6sGRavnufQA2YMMyGeJW1eS3L2ZTinai5taFckJ=AtAjQ@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: add missing NULL terminator to avoid boot panic
+ on PPC40x
+To: Gabor Juhos <juhosg@openwrt.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "jason.wessel@windriver.com" <jason.wessel@windriver.com>
+ stable <stable@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 12/19/2012 06:10 AM, Tabi Timur-B04825 wrote:
-> On Thu, Oct 25, 2012 at 1:43 AM, Tiejun Chen <tiejun.chen@windriver.com> wrote:
->> We always alloc critical/machine/debug check exceptions. This is
->> different from the normal exception. So we should load these exception
->> stack properly like we did for booke.
+On Thu, Dec 20, 2012 at 1:44 PM, Gabor Juhos <juhosg@openwrt.org> wrote:
+> The missing NULL terminator can cause a panic on
+> PPC405 boards during boot:
 >
-> Tiejun,
+>   Linux/PowerPC load: console=ttyS0,115200 root=/dev/mtdblock1 rootfstype=squashfs,jffs2 noinitrd init=/etc/preinit
+>   Finalizing device tree... flat tree at 0x6a5160
+>   bootconsole [udbg0] enabled
+>   Page fault in user mode with in_atomic() = 1 mm = (null)
+>   NIP = c0275f50  MSR = fffffffe
+>   Oops: Weird page fault, sig: 11 [#1]
+>   PowerPC 40x Platform
+>   Modules linked in:
+>   NIP: c0275f50 LR: c0275f60 CTR: c0280000
+>   REGS: c0275eb0 TRAP: 636f7265   Not tainted  (3.7.1)
+>   MSR: fffffffe <VEC,VSX,EE,PR,FP,ME,SE,BE,IR,DR,PMM,RI> CR: c06a6190  XER: 00000001
+>   TASK = c02662a8[0] 'swapper' THREAD: c0274000
+>   GPR00: c0275ec0 c000c658 c027c4bf 00000000 c0275ee0 c000a0ec c020a1a8 c020a1f0
+>   GPR08: c020f631 c020f404 c025f078 c025f080 c0275f10
+>    Call Trace:
+>    ---[ end trace 31fd0ba7d8756001 ]---
 >
-> I'm a little confused by these patches, because the actual critical
-> exception handlers are still commented out:
+>   Kernel panic - not syncing: Attempted to kill the idle task!
 >
-> /* Critical Input Interrupt */
-> 	START_EXCEPTION(critical_input);
-> 	CRIT_EXCEPTION_PROLOG(0x100, BOOKE_INTERRUPT_CRITICAL,
-> 			      PROLOG_ADDITION_NONE)
-> //	EXCEPTION_COMMON(0x100, PACA_EXCRIT, INTS_DISABLE)
-> //	bl	special_reg_save_crit
-> //	CHECK_NAPPING();
-> //	addi	r3,r1,STACK_FRAME_OVERHEAD
-> //	bl	.critical_exception
-> //	b	ret_from_crit_except
-> 	b	.
+> The panic happens since commit 9597abe00c1bab2aedce6b49866bf6d1e81c9eed
+> (sections: fix section conflicts in arch/powerpc), however the root
+> cause of this is that the NULL terminator were not added in commit
+> a4f740cf33f7f6c164bbde3c0cdbcc77b0c4997c (of/flattree: Add of_flat_dt_match()
+> helper function).
 >
-> Are you working on fixing this?  I'm trying to fix it, too, but I
+> Cc: Grant Likely <grant.likely@secretlab.ca>
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Gabor Juhos <juhosg@openwrt.org>
+> ---
+>  arch/powerpc/platforms/40x/ppc40x_simple.c |    3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
+> index 969dddc..8f3920e 100644
+> --- a/arch/powerpc/platforms/40x/ppc40x_simple.c
+> +++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
+> @@ -57,7 +57,8 @@ static const char * const board[] __initconst = {
+>         "amcc,makalu",
+>         "apm,klondike",
+>         "est,hotfoot",
+> -       "plathome,obs600"
+> +       "plathome,obs600",
+> +       NULL
+>  };
 
-No, I have no approach to Crit/MC and currently I'm focus only on Debug so 
-please do this as you expect :)
+Obviously correct. Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-BTW, I send next version just now since there are something needed to 
-correct/improve.
+>
+>  static int __init ppc40x_probe(void)
+> --
+> 1.7.10
+>
 
-Tiejun
+
+
+--
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
