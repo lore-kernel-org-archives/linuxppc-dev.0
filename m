@@ -1,15 +1,15 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail1.windriver.com",
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 514122C0193
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2012 20:08:45 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 0EB0C2C0338
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2012 20:08:48 +1100 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>
-Subject: [v1][PATCH 3/6] book3e/kgdb: update thread's dbcr0
-Date: Thu, 20 Dec 2012 17:08:27 +0800
-Message-ID: <1355994510-11934-4-git-send-email-tiejun.chen@windriver.com>
+Subject: [v1][PATCH 4/6] book3e/kgdb: Fix a single stgep case of lazy IRQ
+Date: Thu, 20 Dec 2012 17:08:28 +0800
+Message-ID: <1355994510-11934-5-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1355994510-11934-1-git-send-email-tiejun.chen@windriver.com>
 References: <1355994510-11934-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -25,43 +25,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-gdb always need to generate a single step properly to invoke
-a kgdb state. But with lazy interrupt, book3e can't always
-trigger a debug exception with a single step since the current
-is blocked for handling those pending exception, then we miss
-that expected dbcr configuration at last to generate a debug
-exception.
+When we're in kgdb_singlestep(), we have to work around to get
+thread_info by copying from the kernel stack before calling
+kgdb_handle_exception(), then copying it back afterwards.
 
-So here we also update thread's dbcr0 to make sure the current
-can go back with that missed dbcr0 configuration.
+But for PPC64, we have a lazy interrupt implementation. So after
+copying thread info frome kernle stack, if we need to replay an
+interrupt, we shouldn't restore that previous backup thread info
+to make sure we can replay an interrupt lately with a proper
+thread info.
+
+This patch use __check_irq_replay() to guarantee this process.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/kgdb.c |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/kernel/irq.c  |   10 ++++++++++
+ arch/powerpc/kernel/kgdb.c |    3 ++-
+ 2 files changed, 12 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 71413f4..30a9cb0 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -332,7 +332,17 @@ bool prep_irq_for_idle(void)
+ 	return true;
+ }
+ 
++notrace unsigned int check_irq_replay(void)
++{
++	return __check_irq_replay();
++}
++#else
++notrace unsigned int check_irq_replay(void)
++{
++	return 0;
++}
+ #endif /* CONFIG_PPC64 */
++EXPORT_SYMBOL(check_irq_replay);
+ 
+ int arch_show_interrupts(struct seq_file *p, int prec)
+ {
 diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
-index c470a40..516b44b 100644
+index 516b44b..6a48db9 100644
 --- a/arch/powerpc/kernel/kgdb.c
 +++ b/arch/powerpc/kernel/kgdb.c
-@@ -426,8 +426,18 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
- 		/* set the trace bit if we're stepping */
- 		if (remcom_in_buffer[0] == 's') {
- #ifdef CONFIG_PPC_ADV_DEBUG_REGS
-+#ifdef CONFIG_PPC_BOOK3E
-+			/* With lazy interrut we have to update thread dbcr0 here
-+			 * to make sure we can set debug properly at last to invoke
-+			 * kgdb again to work well.
-+			 */
-+			current->thread.dbcr0 =
-+				mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM;
-+			mtspr(SPRN_DBCR0, current->thread.dbcr0);
-+#else
- 			mtspr(SPRN_DBCR0,
- 			      mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
-+#endif
- 			linux_regs->msr |= MSR_DE;
- #else
- 			linux_regs->msr |= MSR_SE;
+@@ -151,6 +151,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+ 	return 1;
+ }
+ 
++extern notrace unsigned int check_irq_replay(void);
+ static int kgdb_singlestep(struct pt_regs *regs)
+ {
+ 	struct thread_info *thread_info, *exception_thread_info;
+@@ -181,7 +182,7 @@ static int kgdb_singlestep(struct pt_regs *regs)
+ 
+ 	kgdb_handle_exception(0, SIGTRAP, 0, regs);
+ 
+-	if (thread_info != exception_thread_info)
++	if ((thread_info != exception_thread_info) && (!check_irq_replay()))
+ 		/* Restore current_thread_info lastly. */
+ 		memcpy(exception_thread_info, backup_current_thread_info, sizeof *thread_info);
+ 
 -- 
 1.7.9.5
