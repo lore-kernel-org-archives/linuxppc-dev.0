@@ -1,25 +1,20 @@
-Return-Path: <glikely@secretlab.ca>
-Received: from mail-pb0-f51.google.com (mail-pb0-f51.google.com
- [209.85.160.51])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DA7062C0085
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2012 00:57:02 +1100 (EST)
-Received: by mail-pb0-f51.google.com with SMTP id ro12so2003137pbb.24
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2012 05:56:59 -0800 (PST)
+Return-Path: <B02008@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe006.messaging.microsoft.com [216.32.181.186])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6CCE92C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2012 01:53:00 +1100 (EST)
+From: Mihai Caraman <mihai.caraman@freescale.com>
+To: <kvm-ppc@vger.kernel.org>
+Subject: [PATCH] KVM: PPC: Fix mfspr/mtspr MMUCFG emulation
+Date: Thu, 20 Dec 2012 16:52:39 +0200
+Message-ID: <1356015159-7777-1-git-send-email-mihai.caraman@freescale.com>
 MIME-Version: 1.0
-Sender: glikely@secretlab.ca
-In-Reply-To: <1356011068-26349-1-git-send-email-juhosg@openwrt.org>
-References: <1356011068-26349-1-git-send-email-juhosg@openwrt.org>
-From: Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 20 Dec 2012 13:56:39 +0000
-Message-ID: <CACxGe6sGRavnufQA2YMMyGeJW1eS3L2ZTinai5taFckJ=AtAjQ@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: add missing NULL terminator to avoid boot panic
- on PPC40x
-To: Gabor Juhos <juhosg@openwrt.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- stable <stable@vger.kernel.org>
+Content-Type: text/plain
+Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,65 +24,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 20, 2012 at 1:44 PM, Gabor Juhos <juhosg@openwrt.org> wrote:
-> The missing NULL terminator can cause a panic on
-> PPC405 boards during boot:
->
->   Linux/PowerPC load: console=ttyS0,115200 root=/dev/mtdblock1 rootfstype=squashfs,jffs2 noinitrd init=/etc/preinit
->   Finalizing device tree... flat tree at 0x6a5160
->   bootconsole [udbg0] enabled
->   Page fault in user mode with in_atomic() = 1 mm = (null)
->   NIP = c0275f50  MSR = fffffffe
->   Oops: Weird page fault, sig: 11 [#1]
->   PowerPC 40x Platform
->   Modules linked in:
->   NIP: c0275f50 LR: c0275f60 CTR: c0280000
->   REGS: c0275eb0 TRAP: 636f7265   Not tainted  (3.7.1)
->   MSR: fffffffe <VEC,VSX,EE,PR,FP,ME,SE,BE,IR,DR,PMM,RI> CR: c06a6190  XER: 00000001
->   TASK = c02662a8[0] 'swapper' THREAD: c0274000
->   GPR00: c0275ec0 c000c658 c027c4bf 00000000 c0275ee0 c000a0ec c020a1a8 c020a1f0
->   GPR08: c020f631 c020f404 c025f078 c025f080 c0275f10
->    Call Trace:
->    ---[ end trace 31fd0ba7d8756001 ]---
->
->   Kernel panic - not syncing: Attempted to kill the idle task!
->
-> The panic happens since commit 9597abe00c1bab2aedce6b49866bf6d1e81c9eed
-> (sections: fix section conflicts in arch/powerpc), however the root
-> cause of this is that the NULL terminator were not added in commit
-> a4f740cf33f7f6c164bbde3c0cdbcc77b0c4997c (of/flattree: Add of_flat_dt_match()
-> helper function).
->
-> Cc: Grant Likely <grant.likely@secretlab.ca>
-> Cc: <stable@vger.kernel.org>
-> Signed-off-by: Gabor Juhos <juhosg@openwrt.org>
-> ---
->  arch/powerpc/platforms/40x/ppc40x_simple.c |    3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/arch/powerpc/platforms/40x/ppc40x_simple.c b/arch/powerpc/platforms/40x/ppc40x_simple.c
-> index 969dddc..8f3920e 100644
-> --- a/arch/powerpc/platforms/40x/ppc40x_simple.c
-> +++ b/arch/powerpc/platforms/40x/ppc40x_simple.c
-> @@ -57,7 +57,8 @@ static const char * const board[] __initconst = {
->         "amcc,makalu",
->         "apm,klondike",
->         "est,hotfoot",
-> -       "plathome,obs600"
-> +       "plathome,obs600",
-> +       NULL
->  };
+On mfspr/mtspr emulation path Book3E's MMUCFG SPR with value 1015 clashes
+with G4's MSSSR0 SPR. Move MSSSR0 emulation from generic part to Books3S.
+MSSSR0 also clashes with Book3S's DABRX SPR. DABRX was not explicitly
+handled so Book3S execution flow will behave as before.
 
-Obviously correct. Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+---
+ arch/powerpc/kvm/book3s_emulate.c |    2 ++
+ arch/powerpc/kvm/emulate.c        |    5 -----
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
->
->  static int __init ppc40x_probe(void)
-> --
-> 1.7.10
->
-
-
-
---
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
+diff --git a/arch/powerpc/kvm/book3s_emulate.c b/arch/powerpc/kvm/book3s_emulate.c
+index d31a716..4800a7b 100644
+--- a/arch/powerpc/kvm/book3s_emulate.c
++++ b/arch/powerpc/kvm/book3s_emulate.c
+@@ -427,6 +427,7 @@ int kvmppc_core_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, ulong spr_val)
+ 	case SPRN_PMC3_GEKKO:
+ 	case SPRN_PMC4_GEKKO:
+ 	case SPRN_WPAR_GEKKO:
++	case SPRN_MSSSR0:
+ 		break;
+ unprivileged:
+ 	default:
+@@ -523,6 +524,7 @@ int kvmppc_core_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, ulong *spr_val)
+ 	case SPRN_PMC3_GEKKO:
+ 	case SPRN_PMC4_GEKKO:
+ 	case SPRN_WPAR_GEKKO:
++	case SPRN_MSSSR0:
+ 		*spr_val = 0;
+ 		break;
+ 	default:
+diff --git a/arch/powerpc/kvm/emulate.c b/arch/powerpc/kvm/emulate.c
+index b0855e5..71abcf4 100644
+--- a/arch/powerpc/kvm/emulate.c
++++ b/arch/powerpc/kvm/emulate.c
+@@ -149,8 +149,6 @@ static int kvmppc_emulate_mtspr(struct kvm_vcpu *vcpu, int sprn, int rs)
+ 	case SPRN_TBWL: break;
+ 	case SPRN_TBWU: break;
+ 
+-	case SPRN_MSSSR0: break;
+-
+ 	case SPRN_DEC:
+ 		vcpu->arch.dec = spr_val;
+ 		kvmppc_emulate_dec(vcpu);
+@@ -201,9 +199,6 @@ static int kvmppc_emulate_mfspr(struct kvm_vcpu *vcpu, int sprn, int rt)
+ 	case SPRN_PIR:
+ 		spr_val = vcpu->vcpu_id;
+ 		break;
+-	case SPRN_MSSSR0:
+-		spr_val = 0;
+-		break;
+ 
+ 	/* Note: mftb and TBRL/TBWL are user-accessible, so
+ 	 * the guest can always access the real TB anyways.
+-- 
+1.7.4.1
