@@ -1,18 +1,19 @@
-Return-Path: <R.Patil@mei-india.com>
-Received: from antispam.messung.com (outbond.messung.com [210.212.173.45])
- by ozlabs.org (Postfix) with ESMTP id 1291A2C0093
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2012 19:39:02 +1100 (EST)
-In-Reply-To: 
-Subject: Adding 'of_platform' bus support to the platform driver
-From: R.Patil@mei-india.com
-To: linuxppc-dev@lists.ozlabs.org
-Message-ID: <OFC91E62B9.4D486BD1-ON65257ADA.002E22B1-65257ADA.002E22B7@LocalDomain>
-Date: Thu, 20 Dec 2012 13:53:55 +0530
-Content-Type: text/plain;
-	charset=ISO-8859-1
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BD44E2C00B4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Dec 2012 20:08:41 +1100 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: [v1][PATCH 0/6] powerpc/book3e: make kgdb to work well
+Date: Thu, 20 Dec 2012 17:08:24 +0800
+Message-ID: <1355994510-11934-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
-References: 
-MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ jason.wessel@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,27 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+v1:
+* Copy thread info only when we are from !user mode since we'll get kernel stack
+  coming from usr directly.
+* remove save/restore EX_R14/EX_R15 since DBG_EXCEPTION_PROLOG already covered
+  this.
+* use CURRENT_THREAD_INFO() conveniently to get thread.
+* fix some typos
+* add a patch to make sure gdb can generate a single step properly to invoke a
+  kgdb state.
+* add a patch to if we need to replay an interrupt, we shouldn't restore that
+  previous backup thread info to make sure we can replay an interrupt lately
+  with a proper thread info.
+* rebase latest powerpc git tree
 
-We are working on one of the platform drivers for our board (based on MPC83=
-13ERDB). Previously, this driver was supporting platform bus but now we wan=
-t to change it to support 'of=5Fplatform' bus. While supporting platform bu=
-s, the platform device structure is initialised in board setup file, and pl=
-atform device is registered using 'platform=5Fdevice=5Fregister=5Fsimple' c=
-all.=20
+v0:
+This patchset is used to support kgdb for book3e.
 
-Now if we want to support 'of=5Fplatform' bus, the information related to t=
-he the device will be extracted from device tree in the platform driver its=
-elf and we would not be required to call 'platform=5Fdevice=5Fregister=5Fsi=
-mple' to register the platform device. Is this understanding correct?
+Tiejun Chen (6):
+      powerpc/book3e: load critical/machine/debug exception stack
+      powerpc/book3e: store critical/machine/debug exception thread info
+      book3e/kgdb: update thread's dbcr0
+      book3e/kgdb: Fix a single stgep case of lazy IRQ
+      powerpc/book3e: support kgdb for kernel space
+      kgdb/kgdbts: support ppc64
 
-Thanks and Regards,
-RahulEmail Disclaimer:
-  ---------------------------
+ arch/powerpc/kernel/exceptions-64e.S |   60 +++++++++++++++++++++++++++++++---
+ arch/powerpc/kernel/irq.c            |   10 ++++++
+ arch/powerpc/kernel/kgdb.c           |   13 +++++++-
+ drivers/misc/kgdbts.c                |    2 ++
+ 4 files changed, 80 insertions(+), 5 deletions(-)
 
-This e-mail and any files transmitted with it are for the sole use of the i=
-ntended recipient(s) and may contain confidential and  privileged informati=
-on. Computer viruses can be transmitted via email.The recipient should chec=
-k this email and any  attachments for the presence of viruses. The company =
-accepts no liability for any damage caused by any virus transmitted by this=
- email.
+Tiejun
