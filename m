@@ -1,13 +1,28 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 7/7] powerpc: Add the DAWR support to the set_break()
-Date: Fri, 21 Dec 2012 11:06:45 +1100
-Message-Id: <1356048405-20560-8-git-send-email-mikey@neuling.org>
-In-Reply-To: <1356048405-20560-1-git-send-email-mikey@neuling.org>
-References: <1356048405-20560-1-git-send-email-mikey@neuling.org>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Ian Munsie <imunsie@au1.ibm.com>
+Return-Path: <B16395@freescale.com>
+Received: from co1outboundpool.messaging.microsoft.com
+ (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E8BF22C00A3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2012 12:47:06 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: RE: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
+ implementation.
+Date: Fri, 21 Dec 2012 01:46:56 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D2DFA6A@039-SN2MPN1-012.039d.mgd.msft.net>
+References: <1355493114-21776-1-git-send-email-Varun.Sethi@freescale.com>
+In-Reply-To: <1355493114-21776-1-git-send-email-Varun.Sethi@freescale.com>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ Sethi Varun-B16395 <B16395@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -17,109 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds DAWR supoprt to the set_break().
+ping!!
 
-It does both bare metal and PAPR versions of setting the DAWR.
-
-There is still some work we can do to make full use of the watchpoint but that
-will come later.
-
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/include/asm/machdep.h     |    4 ++++
- arch/powerpc/kernel/process.c          |   23 +++++++++++++++++++++++
- arch/powerpc/platforms/pseries/setup.c |   12 ++++++++++++
- 3 files changed, 39 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 19d9d96..3d6b410 100644
---- a/arch/powerpc/include/asm/machdep.h
-+++ b/arch/powerpc/include/asm/machdep.h
-@@ -180,6 +180,10 @@ struct machdep_calls {
- 	int		(*set_dabr)(unsigned long dabr,
- 				    unsigned long dabrx);
- 
-+	/* Set DAWR for this platform, leave empty for default implemenation */
-+	int		(*set_dawr)(unsigned long dawr,
-+				    unsigned long dawrx);
-+
- #ifdef CONFIG_PPC32	/* XXX for now */
- 	/* A general init function, called by ppc_init in init/main.c.
- 	   May be NULL. */
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index 5a64028..fec5f46 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -412,10 +412,33 @@ static inline int set_dabr(struct arch_hw_breakpoint *brk)
- 	return 0;
- }
- 
-+static inline int set_dawr(struct arch_hw_breakpoint *brk)
-+{
-+	unsigned long dawr, dawrx;
-+
-+	dawr = brk->address;
-+
-+	dawrx  = (brk->type & (HW_BRK_TYPE_READ | HW_BRK_TYPE_WRITE)) \
-+		                   << (63 - 58); //* read/write bits */
-+	dawrx |= ((brk->type & (HW_BRK_TYPE_TRANSLATE)) >> 2) \
-+		                   << (63 - 59); //* translate */
-+	dawrx |= (brk->type & (HW_BRK_TYPE_PRIV_ALL)) \
-+		                   >> 3; //* PRIM bits */
-+
-+	if (ppc_md.set_dawr)
-+		return ppc_md.set_dawr(dawr, dawrx);
-+	mtspr(SPRN_DAWR, dawr);
-+	mtspr(SPRN_DAWRX, dawrx);
-+	return 0;
-+}
-+
- int set_break(struct arch_hw_breakpoint *brk)
- {
- 	__get_cpu_var(current_brk) = *brk;
- 
-+	if (cpu_has_feature(CPU_FTR_DAWR))
-+		return set_dawr(brk);
-+
- 	return set_dabr(brk);
- }
- 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 1890730..b1f60d1 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -65,6 +65,7 @@
- #include <asm/smp.h>
- #include <asm/firmware.h>
- #include <asm/eeh.h>
-+#include <asm/reg.h>
- 
- #include "plpar_wrappers.h"
- #include "pseries.h"
-@@ -500,6 +501,14 @@ static int pseries_set_xdabr(unsigned long dabr, unsigned long dabrx)
- 	return plpar_hcall_norets(H_SET_XDABR, dabr, dabrx);
- }
- 
-+static int pseries_set_dawr(unsigned long dawr, unsigned long dawrx)
-+{
-+	/* PAPR says we can't set HYP */
-+	dawrx &= ~DAWRX_HYP;
-+
-+	return  plapr_set_watchpoint0(dawr, dawrx);
-+}
-+
- #define CMO_CHARACTERISTICS_TOKEN 44
- #define CMO_MAXLENGTH 1026
- 
-@@ -606,6 +615,9 @@ static void __init pSeries_init_early(void)
- 	else if (firmware_has_feature(FW_FEATURE_DABR))
- 		ppc_md.set_dabr = pseries_set_dabr;
- 
-+	if (firmware_has_feature(FW_FEATURE_SET_MODE))
-+		ppc_md.set_dawr = pseries_set_dawr;
-+
- 	pSeries_cmo_feature_init();
- 	iommu_init_early_pSeries();
- 
--- 
-1.7.10.4
+> -----Original Message-----
+> From: Sethi Varun-B16395
+> Sent: Friday, December 14, 2012 7:22 PM
+> To: joerg.roedel@amd.com; iommu@lists.linux-foundation.org; linuxppc-
+> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Tabi Timur-B04825;
+> Wood Scott-B07421
+> Cc: Sethi Varun-B16395
+> Subject: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
+> implementation.
+>=20
+> This patchset provides the Freescale PAMU (Peripheral Access Management
+> Unit) driver and the corresponding IOMMU API implementation. PAMU is the
+> IOMMU present on Freescale QorIQ platforms. PAMU can authorize memory
+> access, remap the memory address, and remap the I/O transaction type.
+>=20
+> This set consists of the following patches:
+> 1. Addition of new field in the device (powerpc) archdata structure for
+> storing iommu domain information
+>    pointer. This pointer is stored when the device is attached to a
+> particular iommu domain.
+> 2. Add PAMU bypass enable register to the ccsr_guts structure.
+> 3. Addition of domain attributes required by the PAMU driver IOMMU API.
+> 4. PAMU driver and IOMMU API implementation.
+>=20
+> This patch set is based on the next branch of the iommu git tree
+> maintained by Joerg.
+>=20
+> Varun Sethi (4):
+>   store iommu domain info in device arch data.
+>   add pamu bypass enable register to guts.
+>   Add iommu attributes for PAMU
+>   FSL PAMU driver.
+>=20
+>  arch/powerpc/include/asm/device.h   |    4 +
+>  arch/powerpc/include/asm/fsl_guts.h |    4 +-
+>  drivers/iommu/Kconfig               |    8 +
+>  drivers/iommu/Makefile              |    1 +
+>  drivers/iommu/fsl_pamu.c            | 1152
+> +++++++++++++++++++++++++++++++++++
+>  drivers/iommu/fsl_pamu.h            |  398 ++++++++++++
+>  drivers/iommu/fsl_pamu_domain.c     | 1033
+> +++++++++++++++++++++++++++++++
+>  drivers/iommu/fsl_pamu_domain.h     |   96 +++
+>  include/linux/iommu.h               |   49 ++
+>  9 files changed, 2744 insertions(+), 1 deletions(-)  create mode 100644
+> drivers/iommu/fsl_pamu.c  create mode 100644 drivers/iommu/fsl_pamu.h
+> create mode 100644 drivers/iommu/fsl_pamu_domain.c  create mode 100644
+> drivers/iommu/fsl_pamu_domain.h
+>=20
+> --
+> 1.7.4.1
