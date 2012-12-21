@@ -1,28 +1,23 @@
-Return-Path: <B16395@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe006.messaging.microsoft.com [216.32.180.189])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E8BF22C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2012 12:47:06 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Joerg Roedel <joro@8bytes.org>
-Subject: RE: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-Date: Fri, 21 Dec 2012 01:46:56 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D2DFA6A@039-SN2MPN1-012.039d.mgd.msft.net>
-References: <1355493114-21776-1-git-send-email-Varun.Sethi@freescale.com>
-In-Reply-To: <1355493114-21776-1-git-send-email-Varun.Sethi@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F2C6E2C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Dec 2012 13:02:43 +1100 (EST)
+Message-ID: <50D3C339.5000201@windriver.com>
+Date: Fri, 21 Dec 2012 10:02:33 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- Sethi Varun-B16395 <B16395@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [v1][PATCH 3/6] book3e/kgdb: update thread's dbcr0
+References: <1355994510-11934-1-git-send-email-tiejun.chen@windriver.com>
+ <1355994510-11934-4-git-send-email-tiejun.chen@windriver.com>
+ <A47C9236-0744-45BC-B25A-3DDEB05CD8A1@kernel.crashing.org>
+In-Reply-To: <A47C9236-0744-45BC-B25A-3DDEB05CD8A1@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ jason.wessel@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,56 +27,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ping!!
+On 12/21/2012 02:41 AM, Kumar Gala wrote:
+>
+> On Dec 20, 2012, at 3:08 AM, Tiejun Chen wrote:
+>
+>> gdb always need to generate a single step properly to invoke
+>> a kgdb state. But with lazy interrupt, book3e can't always
+>> trigger a debug exception with a single step since the current
+>> is blocked for handling those pending exception, then we miss
+>> that expected dbcr configuration at last to generate a debug
+>> exception.
+>>
+>> So here we also update thread's dbcr0 to make sure the current
+>> can go back with that missed dbcr0 configuration.
+>>
+>> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+>> ---
+>> arch/powerpc/kernel/kgdb.c |   10 ++++++++++
+>> 1 file changed, 10 insertions(+)
+>>
+>> diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+>> index c470a40..516b44b 100644
+>> --- a/arch/powerpc/kernel/kgdb.c
+>> +++ b/arch/powerpc/kernel/kgdb.c
+>> @@ -426,8 +426,18 @@ int kgdb_arch_handle_exception(int vector, int signo, int err_code,
+>> 		/* set the trace bit if we're stepping */
+>> 		if (remcom_in_buffer[0] == 's') {
+>> #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+>> +#ifdef CONFIG_PPC_BOOK3E
+>
+> Should this really be CONFIG_PPC64 or CONFIG_PPC_BOOK3E_64?
 
-> -----Original Message-----
-> From: Sethi Varun-B16395
-> Sent: Friday, December 14, 2012 7:22 PM
-> To: joerg.roedel@amd.com; iommu@lists.linux-foundation.org; linuxppc-
-> dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Tabi Timur-B04825;
-> Wood Scott-B07421
-> Cc: Sethi Varun-B16395
-> Subject: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
-> implementation.
->=20
-> This patchset provides the Freescale PAMU (Peripheral Access Management
-> Unit) driver and the corresponding IOMMU API implementation. PAMU is the
-> IOMMU present on Freescale QorIQ platforms. PAMU can authorize memory
-> access, remap the memory address, and remap the I/O transaction type.
->=20
-> This set consists of the following patches:
-> 1. Addition of new field in the device (powerpc) archdata structure for
-> storing iommu domain information
->    pointer. This pointer is stored when the device is attached to a
-> particular iommu domain.
-> 2. Add PAMU bypass enable register to the ccsr_guts structure.
-> 3. Addition of domain attributes required by the PAMU driver IOMMU API.
-> 4. PAMU driver and IOMMU API implementation.
->=20
-> This patch set is based on the next branch of the iommu git tree
-> maintained by Joerg.
->=20
-> Varun Sethi (4):
->   store iommu domain info in device arch data.
->   add pamu bypass enable register to guts.
->   Add iommu attributes for PAMU
->   FSL PAMU driver.
->=20
->  arch/powerpc/include/asm/device.h   |    4 +
->  arch/powerpc/include/asm/fsl_guts.h |    4 +-
->  drivers/iommu/Kconfig               |    8 +
->  drivers/iommu/Makefile              |    1 +
->  drivers/iommu/fsl_pamu.c            | 1152
-> +++++++++++++++++++++++++++++++++++
->  drivers/iommu/fsl_pamu.h            |  398 ++++++++++++
->  drivers/iommu/fsl_pamu_domain.c     | 1033
-> +++++++++++++++++++++++++++++++
->  drivers/iommu/fsl_pamu_domain.h     |   96 +++
->  include/linux/iommu.h               |   49 ++
->  9 files changed, 2744 insertions(+), 1 deletions(-)  create mode 100644
-> drivers/iommu/fsl_pamu.c  create mode 100644 drivers/iommu/fsl_pamu.h
-> create mode 100644 drivers/iommu/fsl_pamu_domain.c  create mode 100644
-> drivers/iommu/fsl_pamu_domain.h
->=20
-> --
-> 1.7.4.1
+Yes, I think CONFIG_PPC_BOOK3E_64 is better currently. Because I didn't validate 
+this on power arch since I have no a real machine :)
+
+>
+>> +			/* With lazy interrut we have to update thread dbcr0 here
+>> +			 * to make sure we can set debug properly at last to invoke
+>> +			 * kgdb again to work well.
+>> +			 */
+>> +			current->thread.dbcr0 =
+>> +				mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM;
+>> +			mtspr(SPRN_DBCR0, current->thread.dbcr0);
+>> +#else
+>> 			mtspr(SPRN_DBCR0,
+>> 			      mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
+>> +#endif
+>
+> Can we code this so we don't need the #else?
+
+I guess you're saying something like this:
+
+---
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index c470a40..b2df42a 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -409,7 +409,7 @@ int kgdb_arch_handle_exception(int vector, int signo, int 
+err_code,
+  			       struct pt_regs *linux_regs)
+  {
+  	char *ptr = &remcom_in_buffer[1];
+-	unsigned long addr;
++	unsigned long addr, dbcr0;
+
+  	switch (remcom_in_buffer[0]) {
+  		/*
+@@ -426,8 +426,15 @@ int kgdb_arch_handle_exception(int vector, int signo, int 
+err_code,
+  		/* set the trace bit if we're stepping */
+  		if (remcom_in_buffer[0] == 's') {
+  #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+-			mtspr(SPRN_DBCR0,
+-			      mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM);
++			dbcr0 = mfspr(SPRN_DBCR0) | DBCR0_IC | DBCR0_IDM;
++			mtspr(SPRN_DBCR0, dbcr0);
++#ifdef CONFIG_PPC_BOOK3E_64
++			/* With lazy interrut we have to update thread dbcr0 here
++			 * to make sure we can set debug properly at last to invoke
++			 * kgdb again to work well.
++			 */
++			current->thread.dbcr0 = dbcr0;
++#endif
+  			linux_regs->msr |= MSR_DE;
+  #else
+  			linux_regs->msr |= MSR_SE;
+-- 
+1.7.9.5
+
+Tiejun
