@@ -1,10 +1,9 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 3/7] powerpc: Add helper functions set the DAWR and CIABR
- using set_mode
-Date: Fri, 21 Dec 2012 11:06:41 +1100
-Message-Id: <1356048405-20560-4-git-send-email-mikey@neuling.org>
+Subject: [PATCH 4/7] powerpc: Add DAWR CPU feature bit definition
+Date: Fri, 21 Dec 2012 11:06:42 +1100
+Message-Id: <1356048405-20560-5-git-send-email-mikey@neuling.org>
 In-Reply-To: <1356048405-20560-1-git-send-email-mikey@neuling.org>
 References: <1356048405-20560-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -18,34 +17,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+.. and add it to POWER8 cpu features.
 
-These are just wrappers around the new set_mode HCALL.
-
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/platforms/pseries/plpar_wrappers.h |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/powerpc/include/asm/cputable.h |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/pseries/plpar_wrappers.h b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-index e6cc34a..fd09183 100644
---- a/arch/powerpc/platforms/pseries/plpar_wrappers.h
-+++ b/arch/powerpc/platforms/pseries/plpar_wrappers.h
-@@ -304,4 +304,14 @@ static inline long disable_reloc_on_exceptions(void) {
- 	return plpar_set_mode(0, 3, 0, 0);
- }
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index d1f5911..2134e26 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -173,6 +173,7 @@ extern const char *powerpc_base_platform;
+ #define CPU_FTR_VMX_COPY		LONG_ASM_CONST(0x0040000000000000)
+ #define CPU_FTR_TM			LONG_ASM_CONST(0x0080000000000000)
+ #define CPU_FTR_BCTAR			LONG_ASM_CONST(0x0100000000000000)
++#define CPU_FTR_DAWR			LONG_ASM_CONST(0x0200000000000000)
  
-+static inline long plapr_set_ciabr(unsigned long ciabr)
-+{
-+	return plpar_set_mode(0, 1, ciabr, 0);
-+}
-+
-+static inline long plapr_set_watchpoint0(unsigned long dawr0, unsigned long dawrx0)
-+{
-+	return plpar_set_mode(0, 2, dawr0, dawrx0);
-+}
-+
- #endif /* _PSERIES_PLPAR_WRAPPERS_H */
+ #ifndef __ASSEMBLY__
+ 
+@@ -418,7 +419,7 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_DSCR | CPU_FTR_SAO  | \
+ 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
+ 	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
+-	    CPU_FTR_DBELL | CPU_FTR_TM_COMP | CPU_FTR_BCTAR)
++	    CPU_FTR_DBELL | CPU_FTR_TM_COMP | CPU_FTR_BCTAR | CPU_FTR_DAWR)
+ #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
+ 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
+ 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
 -- 
 1.7.10.4
