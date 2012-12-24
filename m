@@ -1,7 +1,7 @@
 Return-Path: <tangchen@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 889572C017D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Dec 2012 23:10:31 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id 679D12C0310
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Dec 2012 23:10:33 +1100 (EST)
 From: Tang Chen <tangchen@cn.fujitsu.com>
 To: akpm@linux-foundation.org, rientjes@google.com, liuj97@gmail.com,
  len.brown@intel.com, benh@kernel.crashing.org, paulus@samba.org,
@@ -10,10 +10,10 @@ To: akpm@linux-foundation.org, rientjes@google.com, liuj97@gmail.com,
  wency@cn.fujitsu.com, tangchen@cn.fujitsu.com, hpa@zytor.com,
  linfeng@cn.fujitsu.com, laijs@cn.fujitsu.com, mgorman@suse.de,
  yinghai@kernel.org
-Subject: [PATCH v5 06/14] memory-hotplug: implement
- register_page_bootmem_info_section of sparse-vmemmap
-Date: Mon, 24 Dec 2012 20:09:16 +0800
-Message-Id: <1356350964-13437-7-git-send-email-tangchen@cn.fujitsu.com>
+Subject: [PATCH v5 07/14] memory-hotplug: move pgdat_resize_lock into
+ sparse_remove_one_section()
+Date: Mon, 24 Dec 2012 20:09:17 +0800
+Message-Id: <1356350964-13437-8-git-send-email-tangchen@cn.fujitsu.com>
 In-Reply-To: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
 References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
 Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
@@ -29,259 +29,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+In __remove_section(), we locked pgdat_resize_lock when calling
+sparse_remove_one_section(). This lock will disable irq. But we don't need
+to lock the whole function. If we do some work to free pagetables in
+free_section_usemap(), we need to call flush_tlb_all(), which need
+irq enabled. Otherwise the WARN_ON_ONCE() in smp_call_function_many()
+will be triggered.
 
-For removing memmap region of sparse-vmemmap which is allocated bootmem,
-memmap region of sparse-vmemmap needs to be registered by get_page_bootmem().
-So the patch searches pages of virtual mapping and registers the pages by
-get_page_bootmem().
-
-Note: register_page_bootmem_memmap() is not implemented for ia64, ppc, s390,
-and sparc.
-
+Signed-off-by: Tang Chen <tangchen@cn.fujitsu.com>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
-Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 ---
- arch/ia64/mm/discontig.c       |    6 ++++
- arch/powerpc/mm/init_64.c      |    6 ++++
- arch/s390/mm/vmem.c            |    6 ++++
- arch/sparc/mm/init_64.c        |    6 ++++
- arch/x86/mm/init_64.c          |   52 ++++++++++++++++++++++++++++++++++++++++
- include/linux/memory_hotplug.h |   11 +-------
- include/linux/mm.h             |    3 +-
- mm/memory_hotplug.c            |   33 ++++++++++++++++++++++---
- 8 files changed, 109 insertions(+), 14 deletions(-)
+ mm/memory_hotplug.c |    4 ----
+ mm/sparse.c         |    5 ++++-
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
-index c641333..33943db 100644
---- a/arch/ia64/mm/discontig.c
-+++ b/arch/ia64/mm/discontig.c
-@@ -822,4 +822,10 @@ int __meminit vmemmap_populate(struct page *start_page,
- {
- 	return vmemmap_populate_basepages(start_page, size, node);
- }
-+
-+void register_page_bootmem_memmap(unsigned long section_nr,
-+				  struct page *start_page, unsigned long size)
-+{
-+	/* TODO */
-+}
- #endif
-diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
-index 95a4529..6466440 100644
---- a/arch/powerpc/mm/init_64.c
-+++ b/arch/powerpc/mm/init_64.c
-@@ -297,5 +297,11 @@ int __meminit vmemmap_populate(struct page *start_page,
- 
- 	return 0;
- }
-+
-+void register_page_bootmem_memmap(unsigned long section_nr,
-+				  struct page *start_page, unsigned long size)
-+{
-+	/* TODO */
-+}
- #endif /* CONFIG_SPARSEMEM_VMEMMAP */
- 
-diff --git a/arch/s390/mm/vmem.c b/arch/s390/mm/vmem.c
-index 6ed1426..2c14bc2 100644
---- a/arch/s390/mm/vmem.c
-+++ b/arch/s390/mm/vmem.c
-@@ -272,6 +272,12 @@ out:
- 	return ret;
- }
- 
-+void register_page_bootmem_memmap(unsigned long section_nr,
-+				  struct page *start_page, unsigned long size)
-+{
-+	/* TODO */
-+}
-+
- /*
-  * Add memory segment to the segment list if it doesn't overlap with
-  * an already present segment.
-diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-index 85be1ca..7e28c9e 100644
---- a/arch/sparc/mm/init_64.c
-+++ b/arch/sparc/mm/init_64.c
-@@ -2231,6 +2231,12 @@ void __meminit vmemmap_populate_print_last(void)
- 		node_start = 0;
- 	}
- }
-+
-+void register_page_bootmem_memmap(unsigned long section_nr,
-+				  struct page *start_page, unsigned long size)
-+{
-+	/* TODO */
-+}
- #endif /* CONFIG_SPARSEMEM_VMEMMAP */
- 
- static void prot_init_common(unsigned long page_none,
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index f78509c..aeaa27e 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -1000,6 +1000,58 @@ vmemmap_populate(struct page *start_page, unsigned long size, int node)
- 	return 0;
- }
- 
-+void register_page_bootmem_memmap(unsigned long section_nr,
-+				  struct page *start_page, unsigned long size)
-+{
-+	unsigned long addr = (unsigned long)start_page;
-+	unsigned long end = (unsigned long)(start_page + size);
-+	unsigned long next;
-+	pgd_t *pgd;
-+	pud_t *pud;
-+	pmd_t *pmd;
-+
-+	for (; addr < end; addr = next) {
-+		pte_t *pte = NULL;
-+
-+		pgd = pgd_offset_k(addr);
-+		if (pgd_none(*pgd)) {
-+			next = (addr + PAGE_SIZE) & PAGE_MASK;
-+			continue;
-+		}
-+		get_page_bootmem(section_nr, pgd_page(*pgd), MIX_SECTION_INFO);
-+
-+		pud = pud_offset(pgd, addr);
-+		if (pud_none(*pud)) {
-+			next = (addr + PAGE_SIZE) & PAGE_MASK;
-+			continue;
-+		}
-+		get_page_bootmem(section_nr, pud_page(*pud), MIX_SECTION_INFO);
-+
-+		if (!cpu_has_pse) {
-+			next = (addr + PAGE_SIZE) & PAGE_MASK;
-+			pmd = pmd_offset(pud, addr);
-+			if (pmd_none(*pmd))
-+				continue;
-+			get_page_bootmem(section_nr, pmd_page(*pmd),
-+					 MIX_SECTION_INFO);
-+
-+			pte = pte_offset_kernel(pmd, addr);
-+			if (pte_none(*pte))
-+				continue;
-+			get_page_bootmem(section_nr, pte_page(*pte),
-+					 SECTION_INFO);
-+		} else {
-+			next = pmd_addr_end(addr, end);
-+
-+			pmd = pmd_offset(pud, addr);
-+			if (pmd_none(*pmd))
-+				continue;
-+			get_page_bootmem(section_nr, pmd_page(*pmd),
-+					 SECTION_INFO);
-+		}
-+	}
-+}
-+
- void __meminit vmemmap_populate_print_last(void)
- {
- 	if (p_start) {
-diff --git a/include/linux/memory_hotplug.h b/include/linux/memory_hotplug.h
-index 31a563b..2441f36 100644
---- a/include/linux/memory_hotplug.h
-+++ b/include/linux/memory_hotplug.h
-@@ -174,17 +174,10 @@ static inline void arch_refresh_nodedata(int nid, pg_data_t *pgdat)
- #endif /* CONFIG_NUMA */
- #endif /* CONFIG_HAVE_ARCH_NODEDATA_EXTENSION */
- 
--#ifdef CONFIG_SPARSEMEM_VMEMMAP
--static inline void register_page_bootmem_info_node(struct pglist_data *pgdat)
--{
--}
--static inline void put_page_bootmem(struct page *page)
--{
--}
--#else
- extern void register_page_bootmem_info_node(struct pglist_data *pgdat);
- extern void put_page_bootmem(struct page *page);
--#endif
-+extern void get_page_bootmem(unsigned long ingo, struct page *page,
-+			     unsigned long type);
- 
- /*
-  * Lock for memory hotplug guarantees 1) all callbacks for memory hotplug
-diff --git a/include/linux/mm.h b/include/linux/mm.h
-index 6320407..1eca498 100644
---- a/include/linux/mm.h
-+++ b/include/linux/mm.h
-@@ -1709,7 +1709,8 @@ int vmemmap_populate_basepages(struct page *start_page,
- 						unsigned long pages, int node);
- int vmemmap_populate(struct page *start_page, unsigned long pages, int node);
- void vmemmap_populate_print_last(void);
--
-+void register_page_bootmem_memmap(unsigned long section_nr, struct page *map,
-+				  unsigned long size);
- 
- enum mf_flags {
- 	MF_COUNT_INCREASED = 1 << 0,
 diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 2c5d734..34c656b 100644
+index 34c656b..c12bd55 100644
 --- a/mm/memory_hotplug.c
 +++ b/mm/memory_hotplug.c
-@@ -91,9 +91,8 @@ static void release_memory_resource(struct resource *res)
- }
- 
- #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
--#ifndef CONFIG_SPARSEMEM_VMEMMAP
--static void get_page_bootmem(unsigned long info,  struct page *page,
--			     unsigned long type)
-+void get_page_bootmem(unsigned long info,  struct page *page,
-+		      unsigned long type)
+@@ -442,8 +442,6 @@ static int __remove_section(struct zone *zone, struct mem_section *ms)
+ #else
+ static int __remove_section(struct zone *zone, struct mem_section *ms)
  {
- 	page->lru.next = (struct list_head *) type;
- 	SetPagePrivate(page);
-@@ -128,6 +127,7 @@ void __ref put_page_bootmem(struct page *page)
+-	unsigned long flags;
+-	struct pglist_data *pgdat = zone->zone_pgdat;
+ 	int ret = -EINVAL;
  
+ 	if (!valid_section(ms))
+@@ -453,9 +451,7 @@ static int __remove_section(struct zone *zone, struct mem_section *ms)
+ 	if (ret)
+ 		return ret;
+ 
+-	pgdat_resize_lock(pgdat, &flags);
+ 	sparse_remove_one_section(zone, ms);
+-	pgdat_resize_unlock(pgdat, &flags);
+ 	return 0;
  }
- 
-+#ifndef CONFIG_SPARSEMEM_VMEMMAP
- static void register_page_bootmem_info_section(unsigned long start_pfn)
+ #endif
+diff --git a/mm/sparse.c b/mm/sparse.c
+index aadbb2a..05ca73a 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -796,8 +796,10 @@ static inline void clear_hwpoisoned_pages(struct page *memmap, int nr_pages)
+ void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
  {
- 	unsigned long *usemap, mapsize, section_nr, i;
-@@ -161,6 +161,32 @@ static void register_page_bootmem_info_section(unsigned long start_pfn)
- 		get_page_bootmem(section_nr, page, MIX_SECTION_INFO);
+ 	struct page *memmap = NULL;
+-	unsigned long *usemap = NULL;
++	unsigned long *usemap = NULL, flags;
++	struct pglist_data *pgdat = zone->zone_pgdat;
  
- }
-+#else
-+static void register_page_bootmem_info_section(unsigned long start_pfn)
-+{
-+	unsigned long *usemap, mapsize, section_nr, i;
-+	struct mem_section *ms;
-+	struct page *page, *memmap;
-+
-+	if (!pfn_valid(start_pfn))
-+		return;
-+
-+	section_nr = pfn_to_section_nr(start_pfn);
-+	ms = __nr_to_section(section_nr);
-+
-+	memmap = sparse_decode_mem_map(ms->section_mem_map, section_nr);
-+
-+	register_page_bootmem_memmap(section_nr, memmap, PAGES_PER_SECTION);
-+
-+	usemap = __nr_to_section(section_nr)->pageblock_flags;
-+	page = virt_to_page(usemap);
-+
-+	mapsize = PAGE_ALIGN(usemap_size()) >> PAGE_SHIFT;
-+
-+	for (i = 0; i < mapsize; i++, page++)
-+		get_page_bootmem(section_nr, page, MIX_SECTION_INFO);
-+}
-+#endif
- 
- void register_page_bootmem_info_node(struct pglist_data *pgdat)
- {
-@@ -203,7 +229,6 @@ void register_page_bootmem_info_node(struct pglist_data *pgdat)
- 			register_page_bootmem_info_section(pfn);
++	pgdat_resize_lock(pgdat, &flags);
+ 	if (ms->section_mem_map) {
+ 		usemap = ms->pageblock_flags;
+ 		memmap = sparse_decode_mem_map(ms->section_mem_map,
+@@ -805,6 +807,7 @@ void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
+ 		ms->section_mem_map = 0;
+ 		ms->pageblock_flags = NULL;
  	}
- }
--#endif /* !CONFIG_SPARSEMEM_VMEMMAP */
++	pgdat_resize_unlock(pgdat, &flags);
  
- static void grow_zone_span(struct zone *zone, unsigned long start_pfn,
- 			   unsigned long end_pfn)
+ 	clear_hwpoisoned_pages(memmap, PAGES_PER_SECTION);
+ 	free_section_usemap(memmap, usemap);
 -- 
 1.7.1
