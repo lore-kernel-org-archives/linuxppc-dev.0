@@ -1,26 +1,29 @@
-Return-Path: <B16395@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id EF6882C00D0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2012 17:02:20 +1100 (EST)
-From: Sethi Varun-B16395 <B16395@freescale.com>
-To: Joerg Roedel <joro@8bytes.org>
-Subject: RE: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-Date: Thu, 27 Dec 2012 06:02:00 +0000
-Message-ID: <C5ECD7A89D1DC44195F34B25E172658D2EEFD3@039-SN2MPN1-013.039d.mgd.msft.net>
-References: <1355493114-21776-1-git-send-email-Varun.Sethi@freescale.com> 
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 8E3CC2C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2012 23:09:59 +1100 (EST)
+Message-ID: <50DC3C26.6060308@cn.fujitsu.com>
+Date: Thu, 27 Dec 2012 20:16:38 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
 MIME-Version: 1.0
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH v5 14/14] memory-hotplug: free node_data when a node is
+ offlined
+References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1356350964-13437-15-git-send-email-tangchen@cn.fujitsu.com>
+ <50DA7533.6060407@jp.fujitsu.com>
+In-Reply-To: <50DA7533.6060407@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-mm@kvack.org, paulus@samba.org,
+ hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, liuj97@gmail.com,
+ len.brown@intel.com, cmetcalf@tilera.com, wujianguo@huawei.com,
+ yinghai@kernel.org, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+ minchan.kim@gmail.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,75 +33,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joerg,
-Do you have any comments on the patchset?
+At 12/26/2012 11:55 AM, Kamezawa Hiroyuki Wrote:
+> (2012/12/24 21:09), Tang Chen wrote:
+>> From: Wen Congyang <wency@cn.fujitsu.com>
+>>
+>> We call hotadd_new_pgdat() to allocate memory to store node_data. So we
+>> should free it when removing a node.
+>>
+>> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+> 
+> I'm sorry but is it safe to remove pgdat ? All zone cache and zonelists are
+> properly cleared/rebuilded in synchronous way ? and No threads are visinting
+> zone in vmscan.c ?
 
-Regards
-Varun
+We have rebuilt zonelists when a zone has no memory after offlining some pages.
 
-> -----Original Message-----
-> From: Sethi Varun-B16395
-> Sent: Friday, December 21, 2012 7:17 AM
-> To: 'Joerg Roedel'
-> Cc: Sethi Varun-B16395; joerg.roedel@amd.com; iommu@lists.linux-
-> foundation.org; linuxppc-dev@lists.ozlabs.org; linux-
-> kernel@vger.kernel.org; Tabi Timur-B04825; Wood Scott-B07421
-> Subject: RE: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
-> implementation.
->=20
-> ping!!
->=20
-> > -----Original Message-----
-> > From: Sethi Varun-B16395
-> > Sent: Friday, December 14, 2012 7:22 PM
-> > To: joerg.roedel@amd.com; iommu@lists.linux-foundation.org; linuxppc-
-> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Tabi Timur-B04825;
-> > Wood Scott-B07421
-> > Cc: Sethi Varun-B16395
-> > Subject: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
-> > implementation.
-> >
-> > This patchset provides the Freescale PAMU (Peripheral Access
-> > Management
-> > Unit) driver and the corresponding IOMMU API implementation. PAMU is
-> > the IOMMU present on Freescale QorIQ platforms. PAMU can authorize
-> > memory access, remap the memory address, and remap the I/O transaction
-> type.
-> >
-> > This set consists of the following patches:
-> > 1. Addition of new field in the device (powerpc) archdata structure
-> > for storing iommu domain information
-> >    pointer. This pointer is stored when the device is attached to a
-> > particular iommu domain.
-> > 2. Add PAMU bypass enable register to the ccsr_guts structure.
-> > 3. Addition of domain attributes required by the PAMU driver IOMMU API.
-> > 4. PAMU driver and IOMMU API implementation.
-> >
-> > This patch set is based on the next branch of the iommu git tree
-> > maintained by Joerg.
-> >
-> > Varun Sethi (4):
-> >   store iommu domain info in device arch data.
-> >   add pamu bypass enable register to guts.
-> >   Add iommu attributes for PAMU
-> >   FSL PAMU driver.
-> >
-> >  arch/powerpc/include/asm/device.h   |    4 +
-> >  arch/powerpc/include/asm/fsl_guts.h |    4 +-
-> >  drivers/iommu/Kconfig               |    8 +
-> >  drivers/iommu/Makefile              |    1 +
-> >  drivers/iommu/fsl_pamu.c            | 1152
-> > +++++++++++++++++++++++++++++++++++
-> >  drivers/iommu/fsl_pamu.h            |  398 ++++++++++++
-> >  drivers/iommu/fsl_pamu_domain.c     | 1033
-> > +++++++++++++++++++++++++++++++
-> >  drivers/iommu/fsl_pamu_domain.h     |   96 +++
-> >  include/linux/iommu.h               |   49 ++
-> >  9 files changed, 2744 insertions(+), 1 deletions(-)  create mode
-> > 100644 drivers/iommu/fsl_pamu.c  create mode 100644
-> > drivers/iommu/fsl_pamu.h create mode 100644
-> > drivers/iommu/fsl_pamu_domain.c  create mode 100644
-> > drivers/iommu/fsl_pamu_domain.h
-> >
-> > --
-> > 1.7.4.1
+Thanks
+Wen Congyang
+
+> 
+> Thanks,
+> -Kame
+> 
+>> ---
+>>   mm/memory_hotplug.c |   20 +++++++++++++++++++-
+>>   1 files changed, 19 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>> index f8a1d2f..447fa24 100644
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -1680,9 +1680,12 @@ static int check_cpu_on_node(void *data)
+>>   /* offline the node if all memory sections of this node are removed */
+>>   static void try_offline_node(int nid)
+>>   {
+>> +	pg_data_t *pgdat = NODE_DATA(nid);
+>>   	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
+>> -	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
+>> +	unsigned long end_pfn = start_pfn + pgdat->node_spanned_pages;
+>>   	unsigned long pfn;
+>> +	struct page *pgdat_page = virt_to_page(pgdat);
+>> +	int i;
+>>   
+>>   	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+>>   		unsigned long section_nr = pfn_to_section_nr(pfn);
+>> @@ -1709,6 +1712,21 @@ static void try_offline_node(int nid)
+>>   	 */
+>>   	node_set_offline(nid);
+>>   	unregister_one_node(nid);
+>> +
+>> +	if (!PageSlab(pgdat_page) && !PageCompound(pgdat_page))
+>> +		/* node data is allocated from boot memory */
+>> +		return;
+>> +
+>> +	/* free waittable in each zone */
+>> +	for (i = 0; i < MAX_NR_ZONES; i++) {
+>> +		struct zone *zone = pgdat->node_zones + i;
+>> +
+>> +		if (zone->wait_table)
+>> +			vfree(zone->wait_table);
+>> +	}
+>> +
+>> +	arch_refresh_nodedata(nid, NULL);
+>> +	arch_free_nodedata(pgdat);
+>>   }
+>>   
+>>   int __ref remove_memory(int nid, u64 start, u64 size)
+>>
+> 
+> 
+> 
