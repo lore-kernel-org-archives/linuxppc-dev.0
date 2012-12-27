@@ -1,34 +1,19 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp04.br.ibm.com (e24smtp04.br.ibm.com [32.104.18.25])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp04.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3AB5D2C00D2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Dec 2012 03:34:52 +1100 (EST)
-Received: from /spool/local
- by e24smtp04.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Thu, 27 Dec 2012 14:34:49 -0200
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id 105EC1DC0050
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2012 11:34:46 -0500 (EST)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qBRGYNoI33816770
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2012 14:34:23 -0200
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qBRGYjkP016737
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2012 14:34:45 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Return-Path: <thomas.waldecker@gmail.com>
+Received: from mail-bk0-f48.google.com (mail-bk0-f48.google.com
+ [209.85.214.48])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 07BA22C009B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Dec 2012 01:08:26 +1100 (EST)
+Received: by mail-bk0-f48.google.com with SMTP id jc3so4260073bkc.21
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Dec 2012 06:08:22 -0800 (PST)
+From: Thomas Waldecker <thomas.waldecker@gmail.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] ppc/EEH: fix crash when adding a device in a slot with DDW
-Date: Thu, 27 Dec 2012 14:34:00 -0200
-Message-Id: <1356626040-9384-1-git-send-email-cascardo@linux.vnet.ibm.com>
-Cc: shangw@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, paulus@samba.org,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- bhelgaas@google.com
+Subject: [PATCH] PowerPC documentation: fixed path to the powerpc directory
+Date: Thu, 27 Dec 2012 15:07:27 +0100
+Message-Id: <1356617247-13523-1-git-send-email-thomas.waldecker@gmail.com>
+Cc: Thomas Waldecker <thomas.waldecker@gmail.com>, linux-kernel@vger.kernel.org,
+ linux-doc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,111 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The DDW code uses a eeh_dev struct from the pci_dev. However, this is
-not set until eeh_add_device_late is called.
+ppc -> powerpc
 
-Since pci_bus_add_devices is called before eeh_add_device_late, the PCI
-devices are added to the bus, making drivers' probe hooks to be called.
-These will call set_dma_mask, which will call the DDW code, which will
-require the eeh_dev struct from pci_dev. This would result in a crash,
-due to a NULL dereference.
-
-Calling eeh_add_device_late after pci_bus_add_devices would make the
-system BUG, because device files shouldn't be added to devices there
-were not added to the system. So, a new function is needed to add such
-files only after pci_bus_add_devices have been called.
-
-Cc: stable@vger.kernel.org
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Signed-off-by: Thomas Waldecker <thomas.waldecker@gmail.com>
 ---
- arch/powerpc/include/asm/eeh.h       |    3 +++
- arch/powerpc/kernel/pci-common.c     |    7 +++++--
- arch/powerpc/platforms/pseries/eeh.c |   24 +++++++++++++++++++++++-
- 3 files changed, 31 insertions(+), 3 deletions(-)
+ Documentation/powerpc/cpu_features.txt | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index b0ef738..71aac19 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -201,6 +201,7 @@ int eeh_dev_check_failure(struct eeh_dev *edev);
- void __init eeh_addr_cache_build(void);
- void eeh_add_device_tree_early(struct device_node *);
- void eeh_add_device_tree_late(struct pci_bus *);
-+void eeh_add_device_tree_files(struct pci_bus *);
- void eeh_remove_bus_device(struct pci_dev *, int);
+diff --git a/Documentation/powerpc/cpu_features.txt b/Documentation/powerpc/cpu_features.txt
+index ffa4183..ae09df8 100644
+--- a/Documentation/powerpc/cpu_features.txt
++++ b/Documentation/powerpc/cpu_features.txt
+@@ -11,10 +11,10 @@ split instruction and data caches, and if the CPU supports the DOZE and NAP
+ sleep modes.
  
- /**
-@@ -240,6 +241,8 @@ static inline void eeh_add_device_tree_early(struct device_node *dn) { }
+ Detection of the feature set is simple. A list of processors can be found in
+-arch/ppc/kernel/cputable.c. The PVR register is masked and compared with each
+-value in the list. If a match is found, the cpu_features of cur_cpu_spec is
+-assigned to the feature bitmask for this processor and a __setup_cpu function
+-is called.
++arch/powerpc/kernel/cputable.c. The PVR register is masked and compared with
++each value in the list. If a match is found, the cpu_features of cur_cpu_spec
++is assigned to the feature bitmask for this processor and a __setup_cpu
++function is called.
  
- static inline void eeh_add_device_tree_late(struct pci_bus *bus) { }
+ C code may test 'cur_cpu_spec[smp_processor_id()]->cpu_features' for a
+ particular feature bit. This is done in quite a few places, for example
+@@ -51,6 +51,6 @@ should be used in the majority of cases.
  
-+static inline void eeh_add_device_tree_files(struct pci_bus *bus) { }
-+
- static inline void eeh_remove_bus_device(struct pci_dev *dev, int purge_pe) { }
- 
- static inline void eeh_lock(void) { }
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 7f94f76..7b1f14c 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1480,11 +1480,14 @@ void pcibios_finish_adding_to_bus(struct pci_bus *bus)
- 	pcibios_allocate_bus_resources(bus);
- 	pcibios_claim_one_bus(bus);
- 
-+	/* Fixup EEH */
-+	eeh_add_device_tree_late(bus);
-+
- 	/* Add new devices to global lists.  Register in proc, sysfs. */
- 	pci_bus_add_devices(bus);
- 
--	/* Fixup EEH */
--	eeh_add_device_tree_late(bus);
-+	/* Add EEH sysfs files */
-+	eeh_add_device_tree_files(bus);
- }
- EXPORT_SYMBOL_GPL(pcibios_finish_adding_to_bus);
- 
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 9a04322..a667a34 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -788,7 +788,6 @@ static void eeh_add_device_late(struct pci_dev *dev)
- 	dev->dev.archdata.edev = edev;
- 
- 	eeh_addr_cache_insert_dev(dev);
--	eeh_sysfs_add_device(dev);
- }
- 
- /**
-@@ -815,6 +814,29 @@ void eeh_add_device_tree_late(struct pci_bus *bus)
- EXPORT_SYMBOL_GPL(eeh_add_device_tree_late);
- 
- /**
-+ * eeh_add_device_tree_files - Add EEH sysfs files for the indicated PCI bus
-+ * @bus: PCI bus
-+ *
-+ * This routine must be used to add EEH sysfs files for PCI
-+ * devices which are attached to the indicated PCI bus. The PCI bus
-+ * is added after system boot through hotplug or dlpar.
-+ */
-+void eeh_add_device_tree_files(struct pci_bus *bus)
-+{
-+	struct pci_dev *dev;
-+
-+	list_for_each_entry(dev, &bus->devices, bus_list) {
-+		eeh_sysfs_add_device(dev);
-+		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE) {
-+			struct pci_bus *subbus = dev->subordinate;
-+			if (subbus)
-+				eeh_add_device_tree_files(subbus);
-+		}
-+	}
-+}
-+EXPORT_SYMBOL_GPL(eeh_add_device_tree_files);
-+
-+/**
-  * eeh_remove_device - Undo EEH setup for the indicated pci device
-  * @dev: pci device to be removed
-  * @purge_pe: remove the PE or not
+ The END_FTR_SECTION macros are implemented by storing information about this
+ code in the '__ftr_fixup' ELF section. When do_cpu_ftr_fixups
+-(arch/ppc/kernel/misc.S) is invoked, it will iterate over the records in
++(arch/powerpc/kernel/misc.S) is invoked, it will iterate over the records in
+ __ftr_fixup, and if the required feature is not present it will loop writing
+ nop's from each BEGIN_FTR_SECTION to END_FTR_SECTION.
 -- 
-1.7.1
+1.8.0.2
