@@ -1,35 +1,29 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e24smtp03.br.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B9F612C00E7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 29 Dec 2012 06:13:39 +1100 (EST)
-Received: from /spool/local
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Fri, 28 Dec 2012 17:13:27 -0200
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 9FC0E3520052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Dec 2012 14:13:24 -0500 (EST)
-Received: from d24av01.br.ibm.com (d24av01.br.ibm.com [9.8.31.91])
- by d24relay02.br.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- qBSJD1oc35913774
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Dec 2012 17:13:01 -0200
-Received: from d24av01.br.ibm.com (loopback [127.0.0.1])
- by d24av01.br.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- qBSJDND2004983
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Dec 2012 17:13:24 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] EEH/OF: checking for CONFIG_EEH is not needed
-Date: Fri, 28 Dec 2012 17:13:18 -0200
-Message-Id: <1356721999-25159-1-git-send-email-cascardo@linux.vnet.ibm.com>
-In-Reply-To: <20121228120616.GB21831@oc0268524204.ibm.com>
-References: <20121228120616.GB21831@oc0268524204.ibm.com>
-Cc: bhelgaas@google.com, paulus@samba.org, linux-kernel@vger.kernel.org,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- shangw@linux.vnet.ibm.com
+Return-Path: <wency@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 854072C00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2012 16:43:06 +1100 (EST)
+Message-ID: <50DFD5FF.7050609@cn.fujitsu.com>
+Date: Sun, 30 Dec 2012 13:49:51 +0800
+From: Wen Congyang <wency@cn.fujitsu.com>
+MIME-Version: 1.0
+To: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH v5 01/14] memory-hotplug: try to offline the memory twice
+ to avoid dependence
+References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1356350964-13437-2-git-send-email-tangchen@cn.fujitsu.com>
+ <50DA68A8.4060001@jp.fujitsu.com>
+In-Reply-To: <50DA68A8.4060001@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-mm@kvack.org, paulus@samba.org,
+ hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, liuj97@gmail.com,
+ len.brown@intel.com, cmetcalf@tilera.com, wujianguo@huawei.com,
+ yinghai@kernel.org, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+ minchan.kim@gmail.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,38 +33,109 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The functions used are already defined as empty inline functions for the
-case where EEH is disabled.
+At 12/26/2012 11:02 AM, Kamezawa Hiroyuki Wrote:
+> (2012/12/24 21:09), Tang Chen wrote:
+>> From: Wen Congyang <wency@cn.fujitsu.com>
+>>
+>> memory can't be offlined when CONFIG_MEMCG is selected.
+>> For example: there is a memory device on node 1. The address range
+>> is [1G, 1.5G). You will find 4 new directories memory8, memory9, memory10,
+>> and memory11 under the directory /sys/devices/system/memory/.
+>>
+>> If CONFIG_MEMCG is selected, we will allocate memory to store page cgroup
+>> when we online pages. When we online memory8, the memory stored page cgroup
+>> is not provided by this memory device. But when we online memory9, the memory
+>> stored page cgroup may be provided by memory8. So we can't offline memory8
+>> now. We should offline the memory in the reversed order.
+>>
+> 
+> If memory8 is onlined as NORMAL memory ...right ?
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
----
- arch/powerpc/kernel/of_platform.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
+Yes, memory8 is onlined as NORMAL memory. And when we online memory9, we allocate
+memory from memory8 to store page cgroup information.
 
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index 2049f2d..c5fc6b2 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -71,10 +71,8 @@ static int __devinit of_pci_phb_probe(struct platform_device *dev)
- 	eeh_dev_phb_init_dynamic(phb);
- 
- 	/* Register devices with EEH */
--#ifdef CONFIG_EEH
- 	if (dev->dev.of_node->child)
- 		eeh_add_device_tree_early(dev->dev.of_node);
--#endif /* CONFIG_EEH */
- 
- 	/* Scan the bus */
- 	pcibios_scan_phb(phb);
-@@ -88,9 +86,7 @@ static int __devinit of_pci_phb_probe(struct platform_device *dev)
- 	pcibios_claim_one_bus(phb->bus);
- 
- 	/* Finish EEH setup */
--#ifdef CONFIG_EEH
- 	eeh_add_device_tree_late(phb->bus);
--#endif
- 
- 	/* Add probed PCI devices to the device model */
- 	pci_bus_add_devices(phb->bus);
--- 
-1.7.1
+> 
+> IIUC, vmalloc() uses __GFP_HIGHMEM but doesn't use __GFP_MOVABLE.
+> 
+>> When the memory device is hotremoved, we will auto offline memory provided
+>> by this memory device. But we don't know which memory is onlined first, so
+>> offlining memory may fail. In such case, iterate twice to offline the memory.
+>> 1st iterate: offline every non primary memory block.
+>> 2nd iterate: offline primary (i.e. first added) memory block.
+>>
+>> This idea is suggested by KOSAKI Motohiro.
+>>
+>> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+> 
+> I'm not sure but the whole DIMM should be onlined as MOVABLE mem ?
+
+If the whole DIMM is onlined as MOVABLE mem, we can offline it, and don't
+retry again.
+
+> 
+> Anyway, I agree this kind of retry is required if memory is onlined as NORMAL mem.
+> But retry-once is ok ?
+
+I'am not sure, but I think in most cases the user may online the memory according first
+which is hot-added first. So we may always fail in the first time, and retry-once can
+success.
+
+Thanks
+Wen Congyang
+
+> 
+> Thanks,
+> -Kame
+> 
+>> ---
+>>   mm/memory_hotplug.c |   16 ++++++++++++++--
+>>   1 files changed, 14 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>> index d04ed87..62e04c9 100644
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -1388,10 +1388,13 @@ int remove_memory(u64 start, u64 size)
+>>   	unsigned long start_pfn, end_pfn;
+>>   	unsigned long pfn, section_nr;
+>>   	int ret;
+>> +	int return_on_error = 0;
+>> +	int retry = 0;
+>>   
+>>   	start_pfn = PFN_DOWN(start);
+>>   	end_pfn = start_pfn + PFN_DOWN(size);
+>>   
+>> +repeat:
+>>   	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
+>>   		section_nr = pfn_to_section_nr(pfn);
+>>   		if (!present_section_nr(section_nr))
+>> @@ -1410,14 +1413,23 @@ int remove_memory(u64 start, u64 size)
+>>   
+>>   		ret = offline_memory_block(mem);
+>>   		if (ret) {
+>> -			kobject_put(&mem->dev.kobj);
+>> -			return ret;
+>> +			if (return_on_error) {
+>> +				kobject_put(&mem->dev.kobj);
+>> +				return ret;
+>> +			} else {
+>> +				retry = 1;
+>> +			}
+>>   		}
+>>   	}
+>>   
+>>   	if (mem)
+>>   		kobject_put(&mem->dev.kobj);
+>>   
+>> +	if (retry) {
+>> +		return_on_error = 1;
+>> +		goto repeat;
+>> +	}
+>> +
+>>   	return 0;
+>>   }
+>>   #else
+>>
+> 
+> 
+> 
