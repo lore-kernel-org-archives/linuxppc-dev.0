@@ -1,29 +1,21 @@
-Return-Path: <0000013bfba5f7f2-ba70da31-0707-48fd-949e-0bad11ba0e10-000000@amazonses.com>
-Received: from a193-30.smtp-out.amazonses.com (a193-30.smtp-out.amazonses.com
- [199.255.193.30]) by ozlabs.org (Postfix) with ESMTP id BB2432C0086
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jan 2013 01:24:20 +1100 (EST)
-Date: Wed, 2 Jan 2013 14:24:17 +0000
-From: Christoph Lameter <cl@linux.com>
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Subject: Re: [PATCH v5 04/14] memory-hotplug: remove /sys/firmware/memmap/X
- sysfs
-In-Reply-To: <50DBBBEF.70701@cn.fujitsu.com>
-Message-ID: <0000013bfba5f7f2-ba70da31-0707-48fd-949e-0bad11ba0e10-000000@email.amazonses.com>
-References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
- <1356350964-13437-5-git-send-email-tangchen@cn.fujitsu.com>
- <50DA6F5A.2070601@jp.fujitsu.com> <50DBBBEF.70701@cn.fujitsu.com>
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id D06E32C0080
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2013 01:59:11 +1100 (EST)
+Date: Wed, 2 Jan 2013 15:58:50 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2/5] perf: Make EVENT_ATTR and EVENT_PTR global
+Message-ID: <20130102145850.GE931@krava.brq.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, liuj97@gmail.com,
- len.brown@intel.com, wency@cn.fujitsu.com, cmetcalf@tilera.com,
- wujianguo@huawei.com, yinghai@kernel.org,
- Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, laijs@cn.fujitsu.com,
- linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20121219072802.GA30790@us.ibm.com>
+Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ robert.richter@amd.com, Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+ linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,33 +25,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 27 Dec 2012, Tang Chen wrote:
+On Tue, Dec 18, 2012 at 11:28:02PM -0800, Sukadev Bhattiprolu wrote:
+> 
+> Rename EVENT_ATTR() and EVENT_PTR() PMU_EVENT_ATTR() and PMU_EVENT_PTR().
+> Make them global so they are available to all architectures.
+> 
+> Further to allow architectures flexibility, have PMU_EVENT_PTR() pass in the
+> variable name as a parameter.
+> 
+hi,
+the change looks ok apart from some nits below.
 
-> On 12/26/2012 11:30 AM, Kamezawa Hiroyuki wrote:
-> >> @@ -41,6 +42,7 @@ struct firmware_map_entry {
-> >>    	const char		*type;	/* type of the memory range */
-> >>    	struct list_head	list;	/* entry for the linked list */
-> >>    	struct kobject		kobj;   /* kobject for each entry */
-> >> +	unsigned int		bootmem:1; /* allocated from bootmem */
-> >>    };
-> >
-> > Can't we detect from which the object is allocated from, slab or bootmem ?
-> >
-> > Hm, for example,
-> >
-> >      PageReserved(virt_to_page(address_of_obj)) ?
-> >      PageSlab(virt_to_page(address_of_obj)) ?
-> >
->
-> Hi Kamezawa-san,
->
-> I think we can detect it without a new member. I think bootmem:1 member
-> is just for convenience. I think I can remove it. :)
+There' another version of the x86 event attributes change
+I mentioned earlier:
 
-Larger size slab allocations may fall back to the page allocator but then
-the slabs do not track this allocation. That memory can be freed using the
-page allocator.
+http://marc.info/?l=linux-kernel&m=135601815224373&w=2
 
-If you see pageslab then you can always remove using the slab allocator.
-Otherwise the page allocator should work (unless it was some
-special case bootmem allocation).
+I'm not sure which one will make it in first, but you
+guys need to sync ;-) CC-ing Andi and Stephane.
+
+thanks,
+jirka
+
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+>  arch/x86/kernel/cpu/perf_event.c |   17 +++++------------
+>  include/linux/perf_event.h       |   13 +++++++++++++
+>  2 files changed, 18 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
+> index 4428fd1..24bc505 100644
+> --- a/arch/x86/kernel/cpu/perf_event.c
+> +++ b/arch/x86/kernel/cpu/perf_event.c
+> @@ -1316,11 +1316,6 @@ static struct attribute_group x86_pmu_format_group = {
+>  	.attrs = NULL,
+>  };
+>  
+> -struct perf_pmu_events_attr {
+> -	struct device_attribute attr;
+> -	u64 id;
+> -};
+> -
+>  /*
+>   * Remove all undefined events (x86_pmu.event_map(id) == 0)
+>   * out of events_attr attributes.
+> @@ -1351,14 +1346,12 @@ static ssize_t events_sysfs_show(struct device *dev, struct device_attribute *at
+>  	return x86_pmu.events_sysfs_show(page, config);
+>  }
+>  
+> -#define EVENT_VAR(_id)  event_attr_##_id
+> -#define EVENT_PTR(_id) &event_attr_##_id.attr.attr
+> +#define EVENT_VAR(_id)	event_attr_##_id
+> +#define EVENT_ID(_id)	PERF_COUNT_HW_##_id
+> +#define EVENT_PTR(_id)	PMU_EVENT_PTR(EVENT_VAR(_id))
+>  
+> -#define EVENT_ATTR(_name, _id)					\
+> -static struct perf_pmu_events_attr EVENT_VAR(_id) = {		\
+> -	.attr = __ATTR(_name, 0444, events_sysfs_show, NULL),	\
+> -	.id   =  PERF_COUNT_HW_##_id,				\
+> -};
+> +#define EVENT_ATTR(_name, _id)						\
+> +	PMU_EVENT_ATTR(_name, EVENT_VAR(_id), EVENT_ID(_id), events_sysfs_show)
+
+probably no need to define EVENT_ID macro if it's used on just one place
+
+>  
+>  EVENT_ATTR(cpu-cycles,			CPU_CYCLES		);
+>  EVENT_ATTR(instructions,		INSTRUCTIONS		);
+> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+> index 6bfb2fa..31692cb 100644
+> --- a/include/linux/perf_event.h
+> +++ b/include/linux/perf_event.h
+> @@ -817,6 +817,19 @@ do {									\
+>  } while (0)
+>  
+>  
+> +struct perf_pmu_events_attr {
+> +	struct device_attribute attr;
+> +	u64 id;
+> +};
+> +
+> +#define PMU_EVENT_PTR(_var)	&_var.attr.attr
+
+this one seems superfluous as well, could be replaced by '&'
