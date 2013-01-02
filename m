@@ -1,30 +1,20 @@
-Return-Path: <wency@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id D4BCD2C009A
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 30 Dec 2012 16:55:40 +1100 (EST)
-Message-ID: <50DFD8F4.7040301@cn.fujitsu.com>
-Date: Sun, 30 Dec 2012 14:02:28 +0800
-From: Wen Congyang <wency@cn.fujitsu.com>
+Return-Path: <B37400@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E4CDF2C007B
+ for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2013 00:25:31 +1100 (EST)
+From: Sandeep Singh <Sandeep@freescale.com>
+To: <devicetree-discuss@lists.ozlabs.org>, <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Added device tree binding for TDM and TDM phy
+Date: Wed, 2 Jan 2013 18:55:20 +0530
+Message-ID: <1357133120-2271-1-git-send-email-Sandeep@freescale.com>
 MIME-Version: 1.0
-To: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH v5 14/14] memory-hotplug: free node_data when a node is
- offlined
-References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
- <1356350964-13437-15-git-send-email-tangchen@cn.fujitsu.com>
- <50DA7533.6060407@jp.fujitsu.com> <50DC3C26.6060308@cn.fujitsu.com>
- <50DCE7C0.8070407@jp.fujitsu.com>
-In-Reply-To: <50DCE7C0.8070407@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Tang Chen <tangchen@cn.fujitsu.com>, linux-mm@kvack.org, paulus@samba.org,
- hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, liuj97@gmail.com,
- len.brown@intel.com, cmetcalf@tilera.com, wujianguo@huawei.com,
- yinghai@kernel.org, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
- minchan.kim@gmail.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Sandeep Singh <Sandeep@freescale.com>,
+ Poonam Aggrwal <poonam.aggrwal@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,39 +24,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At 12/28/2012 08:28 AM, Kamezawa Hiroyuki Wrote:
-> (2012/12/27 21:16), Wen Congyang wrote:
->> At 12/26/2012 11:55 AM, Kamezawa Hiroyuki Wrote:
->>> (2012/12/24 21:09), Tang Chen wrote:
->>>> From: Wen Congyang <wency@cn.fujitsu.com>
->>>>
->>>> We call hotadd_new_pgdat() to allocate memory to store node_data. So we
->>>> should free it when removing a node.
->>>>
->>>> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
->>>
->>> I'm sorry but is it safe to remove pgdat ? All zone cache and zonelists are
->>> properly cleared/rebuilded in synchronous way ? and No threads are visinting
->>> zone in vmscan.c ?
->>
->> We have rebuilt zonelists when a zone has no memory after offlining some pages.
->>
-> 
-> How do you guarantee that the address of pgdat/zone is not on stack of any kernel
-> threads or other kernel objects without reference counting or other syncing method ?
+This controller is available on many Freescale SOCs like MPC8315, P1020, P1010
+and P1022
 
-No way to guarentee this. But, the kernel should not use the address of pgdat/zone when
-it is offlined.
+Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+---
+ .../devicetree/bindings/powerpc/fsl/fsl-tdm.txt    |   63 ++++++++++++++++++++
+ .../devicetree/bindings/powerpc/fsl/tdm-phy.txt    |   38 ++++++++++++
+ 2 files changed, 101 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
+ create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
 
-Hmm, what about this: reuse the memory when the node is onlined again?
-
-Thanks
-Wen Congyang
-
-> 
-> 
-> Thanks,
-> -Kame
-> 
-> 
-> 
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt b/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
+new file mode 100644
+index 0000000..ceb2ef1
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
+@@ -0,0 +1,63 @@
++TDM Device Tree Binding
++
++NOTE: The bindings described in this document are preliminary
++and subject to change.
++
++TDM (Time Division Multiplexing)
++
++Description:
++
++The TDM is full duplex serial port designed to allow various devices including
++digital signal processors (DSPs) to communicate with a variety of serial devices
++including industry standard framers, codecs, other DSPs and microprocessors.
++
++The below properties describe the device tree bindings for Freescale TDM
++controller. This TDM controller is available on various Freescale Processors
++like MPC8315, P1020, P1022 and P1010.
++
++Required properties:
++
++- compatible
++    Value type: <string>
++    Definition: Should contain "fsl,tdm1.0".
++
++- reg
++    Definition: A standard property. The first reg specifier describes the TDM
++    registers, and the second describes the TDM DMAC registers.
++
++- tdm_tx_clk
++    Value type: <u32 or u64>
++    Definition: This specifies the value of transmit clock. It should not
++    exceed 50Mhz.
++
++- tdm_rx_clk
++    Value type: <u32 or u64>
++    Definition: This specifies the value of receive clock. Its value could be
++    zero, in which case tdm will operate in shared mode. Its value should not
++    exceed 50Mhz.
++
++- interrupts
++    Definition: Two interrupt specifiers. The first is TDM error, and the
++    second is TDM DMAC.
++
++- phy-handle
++    Value type: <phandle>
++    Definition: Phandle of the line controller node or framer node eg. SLIC,
++    E1/T1 etc. (Refer Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt)
++
++- fsl,max-time-slots
++    Value type: <u32>
++    Definition: Maximum number of 8-bit time slots in one TDM frame. This is
++    the maximum number which TDM hardware supports.
++
++Example:
++
++	tdm@16000 {
++		compatible = "fsl,tdm1.0";
++		reg = <0x16000 0x200 0x2c000 0x2000>;
++		tdm_tx_clk = <2048000>;
++		tdm_rx_clk = <0>;
++		interrupts = <16 8 62 8>;
++		phy-handle = <&tdm-phy>;
++		fsl,max-time-slots = <128>;
++	};
+diff --git a/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt b/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
+new file mode 100644
+index 0000000..2563934
+--- /dev/null
++++ b/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
+@@ -0,0 +1,38 @@
++TDM PHY Device Tree Binding
++
++NOTE: The bindings described in this document are preliminary
++and subject to change.
++
++Description:
++TDM PHY is the terminal interface of TDM subsystem. It is typically a line
++control device like E1/T1 framer or SLIC. A TDM device can have multiple TDM
++PHYs.
++
++Required properties:
++
++- compatible
++    Value type: <string>
++    Definition: Should contain generic compatibility like "tdm-phy-slic" or
++    "tdm-phy-e1" or "tdm-phy-t1".
++
++- max-num-ports
++    Value type: <u32>
++    Definition: Defines the maximum number of ports supported by the SLIC
++    device. Only required if the device is SLIC. For E1/T1 devices the number
++    of ports are predefined i.e. (24 in case of T1 and 32 in case of E1).
++
++Apart from the above, there may be other properties required because of the
++bus/interface this device is connected on. It could be SPI/local bus, etc.
++
++Example:
++
++	tdm-phy@0 {
++		compatible = "zarlink,le88266","tdm-phy-slic";
++		reg = <0>;
++		max-num-ports = <4>;
++		spi-max-frequency = <8000000>;
++	};
++
++In the above example properties "reg" and "spi-max-frequency" are SPI specific
++as the SLIC device is connected on SPI interface. These properties might vary
++depending on the specific interface the device is using.
+-- 
+1.7.6.GIT
