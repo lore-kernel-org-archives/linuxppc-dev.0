@@ -1,21 +1,26 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id D06E32C0080
- for <linuxppc-dev@ozlabs.org>; Thu,  3 Jan 2013 01:59:11 +1100 (EST)
-Date: Wed, 2 Jan 2013 15:58:50 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/5] perf: Make EVENT_ATTR and EVENT_PTR global
-Message-ID: <20130102145850.GE931@krava.brq.redhat.com>
+Return-Path: <B16395@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CD0352C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jan 2013 16:21:20 +1100 (EST)
+From: Sethi Varun-B16395 <B16395@freescale.com>
+To: Joerg Roedel <joro@8bytes.org>
+Subject: RE: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
+ implementation.
+Date: Thu, 3 Jan 2013 05:21:09 +0000
+Message-ID: <C5ECD7A89D1DC44195F34B25E172658D2F58B0@039-SN2MPN1-013.039d.mgd.msft.net>
+References: <1355493114-21776-1-git-send-email-Varun.Sethi@freescale.com> 
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20121219072802.GA30790@us.ibm.com>
-Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- robert.richter@amd.com, Anton Blanchard <anton@au1.ibm.com>,
- linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
- linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Cc: Wood Scott-B07421 <B07421@freescale.com>,
+ "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
+ Tabi Timur-B04825 <B04825@freescale.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,86 +30,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Dec 18, 2012 at 11:28:02PM -0800, Sukadev Bhattiprolu wrote:
-> 
-> Rename EVENT_ATTR() and EVENT_PTR() PMU_EVENT_ATTR() and PMU_EVENT_PTR().
-> Make them global so they are available to all architectures.
-> 
-> Further to allow architectures flexibility, have PMU_EVENT_PTR() pass in the
-> variable name as a parameter.
-> 
-hi,
-the change looks ok apart from some nits below.
+Hi Joerg,
+It's been a while since I submitted this patch. I have tried to address you=
+r comments regarding the subwindow attribute. I would really appreciate if =
+I can get some feedback on this patch.
 
-There' another version of the x86 event attributes change
-I mentioned earlier:
+Regards
+Varun
 
-http://marc.info/?l=linux-kernel&m=135601815224373&w=2
-
-I'm not sure which one will make it in first, but you
-guys need to sync ;-) CC-ing Andi and Stephane.
-
-thanks,
-jirka
-
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
->  arch/x86/kernel/cpu/perf_event.c |   17 +++++------------
->  include/linux/perf_event.h       |   13 +++++++++++++
->  2 files changed, 18 insertions(+), 12 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/cpu/perf_event.c b/arch/x86/kernel/cpu/perf_event.c
-> index 4428fd1..24bc505 100644
-> --- a/arch/x86/kernel/cpu/perf_event.c
-> +++ b/arch/x86/kernel/cpu/perf_event.c
-> @@ -1316,11 +1316,6 @@ static struct attribute_group x86_pmu_format_group = {
->  	.attrs = NULL,
->  };
->  
-> -struct perf_pmu_events_attr {
-> -	struct device_attribute attr;
-> -	u64 id;
-> -};
-> -
->  /*
->   * Remove all undefined events (x86_pmu.event_map(id) == 0)
->   * out of events_attr attributes.
-> @@ -1351,14 +1346,12 @@ static ssize_t events_sysfs_show(struct device *dev, struct device_attribute *at
->  	return x86_pmu.events_sysfs_show(page, config);
->  }
->  
-> -#define EVENT_VAR(_id)  event_attr_##_id
-> -#define EVENT_PTR(_id) &event_attr_##_id.attr.attr
-> +#define EVENT_VAR(_id)	event_attr_##_id
-> +#define EVENT_ID(_id)	PERF_COUNT_HW_##_id
-> +#define EVENT_PTR(_id)	PMU_EVENT_PTR(EVENT_VAR(_id))
->  
-> -#define EVENT_ATTR(_name, _id)					\
-> -static struct perf_pmu_events_attr EVENT_VAR(_id) = {		\
-> -	.attr = __ATTR(_name, 0444, events_sysfs_show, NULL),	\
-> -	.id   =  PERF_COUNT_HW_##_id,				\
-> -};
-> +#define EVENT_ATTR(_name, _id)						\
-> +	PMU_EVENT_ATTR(_name, EVENT_VAR(_id), EVENT_ID(_id), events_sysfs_show)
-
-probably no need to define EVENT_ID macro if it's used on just one place
-
->  
->  EVENT_ATTR(cpu-cycles,			CPU_CYCLES		);
->  EVENT_ATTR(instructions,		INSTRUCTIONS		);
-> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-> index 6bfb2fa..31692cb 100644
-> --- a/include/linux/perf_event.h
-> +++ b/include/linux/perf_event.h
-> @@ -817,6 +817,19 @@ do {									\
->  } while (0)
->  
->  
-> +struct perf_pmu_events_attr {
-> +	struct device_attribute attr;
-> +	u64 id;
-> +};
-> +
-> +#define PMU_EVENT_PTR(_var)	&_var.attr.attr
-
-this one seems superfluous as well, could be replaced by '&'
+> -----Original Message-----
+> From: Sethi Varun-B16395
+> Sent: Friday, December 21, 2012 7:17 AM
+> To: 'Joerg Roedel'
+> Cc: Sethi Varun-B16395; joerg.roedel@amd.com; iommu@lists.linux-
+> foundation.org; linuxppc-dev@lists.ozlabs.org; linux-
+> kernel@vger.kernel.org; Tabi Timur-B04825; Wood Scott-B07421
+> Subject: RE: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
+> implementation.
+>=20
+> ping!!
+>=20
+> > -----Original Message-----
+> > From: Sethi Varun-B16395
+> > Sent: Friday, December 14, 2012 7:22 PM
+> > To: joerg.roedel@amd.com; iommu@lists.linux-foundation.org; linuxppc-
+> > dev@lists.ozlabs.org; linux-kernel@vger.kernel.org; Tabi Timur-B04825;
+> > Wood Scott-B07421
+> > Cc: Sethi Varun-B16395
+> > Subject: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
+> > implementation.
+> >
+> > This patchset provides the Freescale PAMU (Peripheral Access
+> > Management
+> > Unit) driver and the corresponding IOMMU API implementation. PAMU is
+> > the IOMMU present on Freescale QorIQ platforms. PAMU can authorize
+> > memory access, remap the memory address, and remap the I/O transaction
+> type.
+> >
+> > This set consists of the following patches:
+> > 1. Addition of new field in the device (powerpc) archdata structure
+> > for storing iommu domain information
+> >    pointer. This pointer is stored when the device is attached to a
+> > particular iommu domain.
+> > 2. Add PAMU bypass enable register to the ccsr_guts structure.
+> > 3. Addition of domain attributes required by the PAMU driver IOMMU API.
+> > 4. PAMU driver and IOMMU API implementation.
+> >
+> > This patch set is based on the next branch of the iommu git tree
+> > maintained by Joerg.
+> >
+> > Varun Sethi (4):
+> >   store iommu domain info in device arch data.
+> >   add pamu bypass enable register to guts.
+> >   Add iommu attributes for PAMU
+> >   FSL PAMU driver.
+> >
+> >  arch/powerpc/include/asm/device.h   |    4 +
+> >  arch/powerpc/include/asm/fsl_guts.h |    4 +-
+> >  drivers/iommu/Kconfig               |    8 +
+> >  drivers/iommu/Makefile              |    1 +
+> >  drivers/iommu/fsl_pamu.c            | 1152
+> > +++++++++++++++++++++++++++++++++++
+> >  drivers/iommu/fsl_pamu.h            |  398 ++++++++++++
+> >  drivers/iommu/fsl_pamu_domain.c     | 1033
+> > +++++++++++++++++++++++++++++++
+> >  drivers/iommu/fsl_pamu_domain.h     |   96 +++
+> >  include/linux/iommu.h               |   49 ++
+> >  9 files changed, 2744 insertions(+), 1 deletions(-)  create mode
+> > 100644 drivers/iommu/fsl_pamu.c  create mode 100644
+> > drivers/iommu/fsl_pamu.h create mode 100644
+> > drivers/iommu/fsl_pamu_domain.c  create mode 100644
+> > drivers/iommu/fsl_pamu_domain.h
+> >
+> > --
+> > 1.7.4.1
