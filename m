@@ -1,20 +1,39 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <shangw@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DB77F2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jan 2013 07:59:02 +1100 (EST)
-Message-ID: <1357246738.2500.11.camel@pasglop>
-Subject: Re: [PATCH] powerpc/pasemi: enable PRINTK_TIME in defconfig
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-Date: Fri, 04 Jan 2013 07:58:58 +1100
-In-Reply-To: <CAOesGMjE1xHVMwhA_Hv4BL5CGmuReuTTGmRfntmXQ5R90khSLA@mail.gmail.com>
-References: <1353912688-6649-1-git-send-email-olof@lixom.net>
- <CAOesGMjE1xHVMwhA_Hv4BL5CGmuReuTTGmRfntmXQ5R90khSLA@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B6C5E2C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Jan 2013 13:24:45 +1100 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shangw@linux.vnet.ibm.com>;
+ Thu, 3 Jan 2013 19:24:40 -0700
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+ [9.17.195.106])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id F28F819D8041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jan 2013 19:24:37 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r042ObhC389950
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Jan 2013 19:24:38 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r042ObQZ002982
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 3 Jan 2013 19:24:37 -0700
+Date: Fri, 4 Jan 2013 10:24:39 +0800
+From: Gavin Shan <shangw@linux.vnet.ibm.com>
+To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] EEH/OF: checking for CONFIG_EEH is not needed
+Message-ID: <20130104022439.GA15123@shangw.(null)>
+References: <20121228120616.GB21831@oc0268524204.ibm.com>
+ <1356721999-25159-1-git-send-email-cascardo@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1356721999-25159-1-git-send-email-cascardo@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, shangw@linux.vnet.ibm.com
+Reply-To: Gavin Shan <shangw@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,17 +43,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-01-03 at 12:54 -0800, Olof Johansson wrote:
-> On Sun, Nov 25, 2012 at 10:51 PM, Olof Johansson <olof@lixom.net> wrote:
-> > Enable PRINTK_TIME in pasemi_defconfig. Also regenerate it, it seems
-> > that a lot of options have moved around since last time savedefconfig
-> > was ran on it.
-> >
-> > Signed-off-by: Olof Johansson <olof@lixom.net>
-> 
-> Ping?
+On Fri, Dec 28, 2012 at 05:13:18PM -0200, Thadeu Lima de Souza Cascardo wrote:
+>The functions used are already defined as empty inline functions for the
+>case where EEH is disabled.
+>
+>Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
 
-I'm in the middle of harvesting stuff from patchwork for -next, this is one of them.
+Acked-by: Gavin Shan <shangw@linux.vnet.ibm.com>
 
-Cheers,
-Ben.
+>---
+> arch/powerpc/kernel/of_platform.c |    4 ----
+> 1 files changed, 0 insertions(+), 4 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
+>index 2049f2d..c5fc6b2 100644
+>--- a/arch/powerpc/kernel/of_platform.c
+>+++ b/arch/powerpc/kernel/of_platform.c
+>@@ -71,10 +71,8 @@ static int __devinit of_pci_phb_probe(struct platform_device *dev)
+> 	eeh_dev_phb_init_dynamic(phb);
+>
+> 	/* Register devices with EEH */
+>-#ifdef CONFIG_EEH
+> 	if (dev->dev.of_node->child)
+> 		eeh_add_device_tree_early(dev->dev.of_node);
+>-#endif /* CONFIG_EEH */
+>
+> 	/* Scan the bus */
+> 	pcibios_scan_phb(phb);
+>@@ -88,9 +86,7 @@ static int __devinit of_pci_phb_probe(struct platform_device *dev)
+> 	pcibios_claim_one_bus(phb->bus);
+>
+> 	/* Finish EEH setup */
+>-#ifdef CONFIG_EEH
+> 	eeh_add_device_tree_late(phb->bus);
+>-#endif
+>
+> 	/* Add probed PCI devices to the device model */
+> 	pci_bus_add_devices(phb->bus);
+
+Thanks,
+Gavin
