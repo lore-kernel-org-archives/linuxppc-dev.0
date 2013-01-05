@@ -1,35 +1,15 @@
-Return-Path: <sshtylyov@mvista.com>
-Received: from mail-la0-f42.google.com (mail-la0-f42.google.com
- [209.85.215.42])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 645EF2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  5 Jan 2013 06:44:17 +1100 (EST)
-Received: by mail-la0-f42.google.com with SMTP id fe20so10365020lab.15
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 04 Jan 2013 11:44:14 -0800 (PST)
-Message-ID: <50E73EB6.9090100@mvista.com>
-Date: Fri, 04 Jan 2013 23:42:30 +0300
-From: Sergei Shtylyov <sshtylyov@mvista.com>
+Return-Path: <paulus@ozlabs.org>
+Date: Sat, 5 Jan 2013 11:55:50 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: "Carl E. Love" <cel@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/oprofile: Fix error in oprofile
+ power7_marked_instr_event() function
+Message-ID: <20130105005550.GH20724@iris.ozlabs.ibm.com>
+References: <1354207323.5963.49.camel@oc5587145178.ibm.com>
 MIME-Version: 1.0
-To: Srivatsa Vaddagiri <vatsa@codeaurora.org>
-Subject: Re: [PATCH 2/2] Revert "nohz: Fix idle ticks in cpu summary line
- of /proc/stat" (commit 7386cdbf2f57ea8cff3c9fde93f206e58b9fe13f).
-References: <1357268337-8025-1-git-send-email-vatsa@codeaurora.org>
- <50E6C776.7060707@mvista.com> <20130104192934.GB29866@quicinc.com>
-In-Reply-To: <20130104192934.GB29866@quicinc.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org, mhocko@suse.cz,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Mike Frysinger <vapier@gentoo.org>, linux-arm-msm@vger.kernel.org,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Mundt <lethal@linux-sh.org>,
- srivatsa.bhat@linux.vnet.ibm.com, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1354207323.5963.49.camel@oc5587145178.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, bherren@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,23 +19,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello.
+On Thu, Nov 29, 2012 at 08:42:03AM -0800, Carl E. Love wrote:
+> powerpc/oprofile: Fix error in oprofile power7_marked_instr_event() function
+> 
+> The calculation for the left shift of the mask OPROFILE_PM_PMCSEL_MSK has an
+> error.  The calculation is should be to shift left by (max_cntrs - cntr) times
+> the width of the pmsel field width.  However, the #define OPROFILE_MAX_PMC_NUM
+> was used instead of OPROFILE_PMSEL_FIELD_WIDTH.  This patch fixes the
+> calculation.
+> 
+> Signed-off-by: Carl Love <cel@us.ibm.com>
+> ---
+>  arch/powerpc/oprofile/op_model_power4.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/oprofile/op_model_power4.c b/arch/powerpc/oprofile/op_model_power4.c
+> index 315f949..f444b94 100644
+> --- a/arch/powerpc/oprofile/op_model_power4.c
+> +++ b/arch/powerpc/oprofile/op_model_power4.c
+> @@ -52,7 +52,7 @@ static int power7_marked_instr_event(u64 mmcr1)
+>  	for (pmc = 0; pmc < 4; pmc++) {
+>  		psel = mmcr1 & (OPROFILE_PM_PMCSEL_MSK
+>  				<< (OPROFILE_MAX_PMC_NUM - pmc)
+> -				* OPROFILE_MAX_PMC_NUM);
+> +				* OPROFILE_PMSEL_FIELD_WIDTH);
+>  		psel = (psel >> ((OPROFILE_MAX_PMC_NUM - pmc)
+>  				 * OPROFILE_PMSEL_FIELD_WIDTH)) & ~1ULL;
 
-On 01/04/2013 10:29 PM, Srivatsa Vaddagiri wrote:
+Apart from the fact that those two statements would be simpler and
+better as:
 
->>> With offline cpus no longer beeing seen in nohz mode (ts->idle_active=0), we
->>> don't need the check for cpu_online() introduced in commit 7386cdbf. Offline
+		psel = mmcr1 >> ((OPROFILE_MAX_PMC_NUM - pmc)
+  				 * OPROFILE_PMSEL_FIELD_WIDTH);
+		psel &= OPROFILE_PM_PMCSEL_MSK & ~1ULL;
 
->>    Please also specify the summary of that commit in parens (or
->> however you like).
+the change looks correct, so:
 
-> I had that in Subject line, but yes would be good to include in commit message
-> as well. I will incorporate that change alongwith anything else required in
-> next version of this patch.
-
-   Ah, that was a revert with atypical subject -- didn't notice. Then there's no
-need to specify it twice.
-
-> - vatsa
-
-WBR, Sergei
+Acked-by: Paul Mackerras <paulus@samba.org>
