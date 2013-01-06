@@ -1,27 +1,19 @@
-Return-Path: <joro@8bytes.org>
-Received: from mail.8bytes.org (8bytes.org [85.214.48.195])
- by ozlabs.org (Postfix) with ESMTP id 58F872C0080
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jan 2013 20:51:40 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
- by mail.8bytes.org (Postfix) with SMTP id 7D53E12AF4A
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jan 2013 10:51:34 +0100 (CET)
-Date: Sun, 6 Jan 2013 10:51:33 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Sethi Varun-B16395 <B16395@freescale.com>
-Subject: Re: [PATCH 0/4] iommu/fsl: Freescale PAMU driver and IOMMU API
- implementation.
-Message-ID: <20130106095133.GE25591@8bytes.org>
-References: <1355493114-21776-1-git-send-email-Varun.Sethi@freescale.com>
- <C5ECD7A89D1DC44195F34B25E172658D2F58B0@039-SN2MPN1-013.039d.mgd.msft.net>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A93C22C0080
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Jan 2013 21:49:43 +1100 (EST)
+From: Tiejun Chen <tiejun.chen@windriver.com>
+To: <benh@kernel.crashing.org>
+Subject: [v0][PATCH 1/1] powerpc/book3e: disable interrupt after
+ preempt_schedule_irq
+Date: Sun, 6 Jan 2013 18:49:34 +0800
+Message-ID: <1357469374-25719-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <C5ECD7A89D1DC44195F34B25E172658D2F58B0@039-SN2MPN1-013.039d.mgd.msft.net>
-Cc: Wood Scott-B07421 <B07421@freescale.com>,
- "joerg.roedel@amd.com" <joerg.roedel@amd.com>,
- Tabi Timur-B04825 <B04825@freescale.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,16 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Varun,
+In preempt case current arch_local_irq_restore() from
+preempt_schedule_irq() may enable hard interrupt but we really
+should disable interrupts when we return from the interrupt,
+and so that we don't get interrupted after loading SRR0/1.
 
-On Thu, Jan 03, 2013 at 05:21:09AM +0000, Sethi Varun-B16395 wrote:
-> It's been a while since I submitted this patch. I have tried to
-> address your comments regarding the subwindow attribute. I would
-> really appreciate if I can get some feedback on this patch.
+Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+---
+ arch/powerpc/kernel/entry_64.S |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-I have some ideas in mind how we can abstract this in the IOMMU-API
-(with an extension to the API). I will send a RFC patchset soon to add
-these changes and then we can discuss it.
-
-
-	Joerg
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index e9a906c..4e1de34 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -662,6 +662,19 @@ resume_kernel:
+ 	ld	r4,TI_FLAGS(r9)
+ 	andi.	r0,r4,_TIF_NEED_RESCHED
+ 	bne	1b
++
++	/*
++	 * arch_local_irq_restore() from preempt_schedule_irq above may
++	 * enable hard interrupt but we really should disable interrupts
++	 * when we return from the interrupt, and so that we don't get
++	 * interrupted after loading SRR0/1.
++	 */
++#ifdef CONFIG_PPC_BOOK3E
++	wrteei	0
++#else
++	ld	r10,PACAKMSR(r13) /* Get kernel MSR without EE */
++	mtmsrd	r10,1		  /* Update machine state */
++#endif /* CONFIG_PPC_BOOK3E */
+ #endif /* CONFIG_PREEMPT */
+ 
+ 	.globl	fast_exc_return_irq
+-- 
+1.7.9.5
