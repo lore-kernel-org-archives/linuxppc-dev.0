@@ -1,48 +1,34 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail5.fujitsu.co.jp (fgwmail5.fujitsu.co.jp [192.51.44.35])
+Return-Path: <suzuki@in.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id DA0502C007A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2013 16:31:34 +1100 (EST)
-Received: from m1.gw.fujitsu.co.jp (unknown [10.0.50.71])
- by fgwmail5.fujitsu.co.jp (Postfix) with ESMTP id BB9FE3EE081
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2013 14:31:30 +0900 (JST)
-Received: from smail (m1 [127.0.0.1])
- by outgoing.m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 9F22145DE5D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2013 14:31:30 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (s1.gw.fujitsu.co.jp [10.0.50.91])
- by m1.gw.fujitsu.co.jp (Postfix) with ESMTP id 8163745DE58
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2013 14:31:30 +0900 (JST)
-Received: from s1.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 6508EE08007
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2013 14:31:30 +0900 (JST)
-Received: from m1000.s.css.fujitsu.com (m1000.s.css.fujitsu.com
- [10.240.81.136])
- by s1.gw.fujitsu.co.jp (Postfix) with ESMTP id 1C3DCE08003
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  7 Jan 2013 14:31:30 +0900 (JST)
-Message-ID: <50EA5D7D.7000703@jp.fujitsu.com>
-Date: Mon, 07 Jan 2013 14:30:37 +0900
-From: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+ (Client CN "e28smtp02.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 34CDF2C008C
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2013 21:27:05 +1100 (EST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <suzuki@in.ibm.com>;
+ Mon, 7 Jan 2013 15:55:34 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 0D308E004B
+ for <linuxppc-dev@ozlabs.org>; Mon,  7 Jan 2013 15:57:10 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r07AQtHC46661688
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2013 15:56:56 +0530
+Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r07AQvhE015564
+ for <linuxppc-dev@ozlabs.org>; Mon, 7 Jan 2013 21:26:58 +1100
+Subject: [PATCH] uprobes/powerpc: Add dependency on single step emulation
+To: benh@kernel.crashing.org
+From: "Suzuki K. Poulose" <suzuki@in.ibm.com>
+Date: Mon, 07 Jan 2013 15:56:57 +0530
+Message-ID: <20130107102648.27826.85082.stgit@suzukikp>
 MIME-Version: 1.0
-To: Wen Congyang <wency@cn.fujitsu.com>
-Subject: Re: [PATCH v5 14/14] memory-hotplug: free node_data when a node is
- offlined
-References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
- <1356350964-13437-15-git-send-email-tangchen@cn.fujitsu.com>
- <50DA7533.6060407@jp.fujitsu.com> <50DC3C26.6060308@cn.fujitsu.com>
- <50DCE7C0.8070407@jp.fujitsu.com> <50DFD8F4.7040301@cn.fujitsu.com>
-In-Reply-To: <50DFD8F4.7040301@cn.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Tang Chen <tangchen@cn.fujitsu.com>, linux-mm@kvack.org, paulus@samba.org,
- hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, liuj97@gmail.com,
- len.brown@intel.com, cmetcalf@tilera.com, wujianguo@huawei.com,
- yinghai@kernel.org, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
- minchan.kim@gmail.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,35 +38,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2012/12/30 15:02), Wen Congyang wrote:
-> At 12/28/2012 08:28 AM, Kamezawa Hiroyuki Wrote:
->> (2012/12/27 21:16), Wen Congyang wrote:
->>> At 12/26/2012 11:55 AM, Kamezawa Hiroyuki Wrote:
->>>> (2012/12/24 21:09), Tang Chen wrote:
->>>>> From: Wen Congyang <wency@cn.fujitsu.com>
->>>>>
->>>>> We call hotadd_new_pgdat() to allocate memory to store node_data. So we
->>>>> should free it when removing a node.
->>>>>
->>>>> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
->>>>
->>>> I'm sorry but is it safe to remove pgdat ? All zone cache and zonelists are
->>>> properly cleared/rebuilded in synchronous way ? and No threads are visinting
->>>> zone in vmscan.c ?
->>>
->>> We have rebuilt zonelists when a zone has no memory after offlining some pages.
->>>
->>
->> How do you guarantee that the address of pgdat/zone is not on stack of any kernel
->> threads or other kernel objects without reference counting or other syncing method ?
-> 
-> No way to guarentee this. But, the kernel should not use the address of pgdat/zone when
-> it is offlined.
-> 
-> Hmm, what about this: reuse the memory when the node is onlined again?
-> 
+From: Suzuki K. Poulose <suzuki@in.ibm.com>
 
-That's the only way which we can go now. Please don't free it.
+Uprobes uses emulate_step in sstep.c, but we haven't explicitly specified
+the dependency. On pseries HAVE_HW_BREAKPOINT protects us, but 44x has no
+such luxury.
 
-Thanks,
--Kame
+Consolidate other users that depend on sstep and create a new config option.
+
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Signed-off-by: Suzuki K. Poulose <suzuki@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Cc: stable@vger.kernel.org
+---
+ arch/powerpc/Kconfig      |    4 ++++
+ arch/powerpc/lib/Makefile |    4 +---
+ 2 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 17903f1..dabe429 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -275,6 +275,10 @@ config PPC_ADV_DEBUG_DAC_RANGE
+ 	depends on PPC_ADV_DEBUG_REGS && 44x
+ 	default y
+ 
++config PPC_EMULATE_SSTEP
++	bool
++	default y if KPROBES || UPROBES || XMON || HAVE_HW_BREAKPOINT
++
+ source "init/Kconfig"
+ 
+ source "kernel/Kconfig.freezer"
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 746e0c8..35baad9 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -19,9 +19,7 @@ obj-$(CONFIG_PPC64)	+= copypage_64.o copyuser_64.o \
+ 			   checksum_wrappers_64.o hweight_64.o \
+ 			   copyuser_power7.o string_64.o copypage_power7.o \
+ 			   memcpy_power7.o
+-obj-$(CONFIG_XMON)	+= sstep.o ldstfp.o
+-obj-$(CONFIG_KPROBES)	+= sstep.o ldstfp.o
+-obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= sstep.o ldstfp.o
++obj-$(CONFIG_PPC_EMULATE_SSTEP)	+= sstep.o ldstfp.o
+ 
+ ifeq ($(CONFIG_PPC64),y)
+ obj-$(CONFIG_SMP)	+= locks.o
