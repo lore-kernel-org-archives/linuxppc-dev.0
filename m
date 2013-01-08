@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 01E142C0091
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2013 03:42:14 +1100 (EST)
-Subject: Re: [PATCH] powerpc/mm: eliminate unneeded for_each_memblock
-Mime-Version: 1.0 (Apple Message framework v1278)
-Content-Type: text/plain; charset=us-ascii
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1357322760-12197-1-git-send-email-cody@linux.vnet.ibm.com>
-Date: Mon, 7 Jan 2013 10:42:02 -0600
-Message-Id: <82A31E2D-FA24-44CF-9812-9E8062AFA6F4@kernel.crashing.org>
-References: <1357322760-12197-1-git-send-email-cody@linux.vnet.ibm.com>
-To: Cody P Schafer <cody@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>
+ by ozlabs.org (Postfix) with ESMTPS id B21CF2C0093
+ for <linuxppc-dev@ozlabs.org>; Tue,  8 Jan 2013 13:12:44 +1100 (EST)
+Message-ID: <1357611149.16285.54.camel@pasglop>
+Subject: Re: [PATCH] lsprop: Fixes to work correctly when built little endian
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 08 Jan 2013 13:12:29 +1100
+In-Reply-To: <1357532610-19416-1-git-send-email-michael@ellerman.id.au>
+References: <1357532610-19416-1-git-send-email-michael@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: nfont@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,19 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-On Jan 4, 2013, at 12:06 PM, Cody P Schafer wrote:
-
-> The only persistent change made by this loop is calling
-> memblock_set_node() once for each memblock, which is not useful (and has
-> no effect) as memblock_set_node() is not called with any
-> memblock-specific parameters.
+On Mon, 2013-01-07 at 15:23 +1100, Michael Ellerman wrote:
+> Add and use dt_swap_int() to byte swap on little endian.
 > 
-> Subsistute a single memblock_set_node().
+> Also declare buf as unsigned char, so that we don't sign extend when
+> printing values from it.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 > ---
-> arch/powerpc/mm/mem.c | 9 ++-------
-> 1 file changed, 2 insertions(+), 7 deletions(-)
+> 
+> Ben, based on your patch, can you add your s-o-b? :
+>   https://lists.ozlabs.org/pipermail/linuxppc-dev/2008-May/056088.html
 
-Missing a signed-off-by
+I didn't know powerpc-utils required sob's :-)
 
-- k
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> ---
+>  src/lsprop.c |   17 ++++++++++++++---
+>  1 file changed, 14 insertions(+), 3 deletions(-)
+> 
+> diff --git a/src/lsprop.c b/src/lsprop.c
+> index 5969a97..38a8fa5 100644
+> --- a/src/lsprop.c
+> +++ b/src/lsprop.c
+> @@ -13,11 +13,22 @@
+>  #include <sys/stat.h>
+>  #include <sys/types.h>
+>  #include <dirent.h>
+> +#include <endian.h>
+> +#include <byteswap.h>
+> +
+> +static inline unsigned int dt_swap_int(unsigned int data)
+> +{
+> +#if __BYTE_ORDER == __LITTLE_ENDIAN
+> +	return bswap_32(data);
+> +#else
+> +	return data;
+> +#endif
+> +}
+>  
+>  int recurse;
+>  int maxbytes = 128;
+>  int words_per_line = 0;
+> -char *buf;
+> +unsigned char *buf;
+>  
+>  void lsprop(FILE *f, char *name);
+>  void lsdir(char *name);
+> @@ -183,7 +194,7 @@ void lsprop(FILE *f, char *name)
+>      } else if ((n & 3) == 0) {
+>  	nw = n >> 2;
+>  	if (nw == 1) {
+> -	    i = *(int *)buf;
+> +	    i = dt_swap_int(*(int *)buf);
+>  	    printf(" %.8x", i);
+>  	    if (i > -0x10000 && !(i >= 0 && i <= 9))
+>  		printf(" (%d)", i);
+> @@ -201,7 +212,7 @@ void lsprop(FILE *f, char *name)
+>  		if (i != 0)
+>  		    printf("\n\t\t");
+>  		for (j = 0; j < npl && i + j < nw; ++j)
+> -		    printf(" %.8x", ((unsigned int *)buf)[i+j]);
+> +		    printf(" %.8x", dt_swap_int(((unsigned int *)buf)[i+j]));
+>  	    }
+>  	}
+>      } else {
