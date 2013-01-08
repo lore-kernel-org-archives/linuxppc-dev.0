@@ -1,51 +1,34 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A5DD82C008D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2013 17:57:47 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 8 Jan 2013 16:52:49 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id AD4652CE804D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jan 2013 17:57:37 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r086k9a558785846
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Jan 2013 17:46:09 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r086vYQm022837
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 8 Jan 2013 17:57:36 +1100
-Message-ID: <50EBC2F9.70303@linux.vnet.ibm.com>
-Date: Tue, 08 Jan 2013 12:25:53 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Return-Path: <dmitry.torokhov@gmail.com>
+Received: from mail-da0-f49.google.com (mail-da0-f49.google.com
+ [209.85.210.49])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id F14262C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2013 05:16:52 +1100 (EST)
+Received: by mail-da0-f49.google.com with SMTP id v40so310145dad.36
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Jan 2013 10:16:50 -0800 (PST)
+Date: Tue, 8 Jan 2013 10:16:46 -0800
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Yuanhan Liu <yuanhan.liu@linux.intel.com>
+Subject: Re: [PATCH 5/5] kfifo: log based kfifo API
+Message-ID: <20130108181645.GA7972@core.coreip.homeip.net>
+References: <1357657073-27352-1-git-send-email-yuanhan.liu@linux.intel.com>
+ <1357657073-27352-6-git-send-email-yuanhan.liu@linux.intel.com>
 MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 1/2] cpuhotplug/nohz: Remove offline cpus from nohz-idle
- state
-References: <1357268318-7993-1-git-send-email-vatsa@codeaurora.org>
- <20130105103627.GU2631@n2100.arm.linux.org.uk>
-In-Reply-To: <20130105103627.GU2631@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-mips@linux-mips.org, linux-sh@vger.kernel.org,
- Peter Zijlstra <peterz@infradead.org>,
- Srivatsa Vaddagiri <vatsa@codeaurora.org>, mhocko@suse.cz,
- "H. Peter Anvin" <hpa@zytor.com>, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Mike Frysinger <vapier@gentoo.org>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, linux-arm-msm@vger.kernel.org,
- "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- Stephen Boyd <sboyd@codeaurora.org>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Paul Mundt <lethal@linux-sh.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- uclinux-dist-devel@blackfin.uclinux.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1357657073-27352-6-git-send-email-yuanhan.liu@linux.intel.com>
+Cc: linux-iio@vger.kernel.org, linux-mmc@vger.kernel.org,
+ platform-driver-x86@vger.kernel.org, linux-mm@kvack.org,
+ linux-sctp@vger.kernel.org, linux-mtd@lists.infradead.org,
+ devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org,
+ libertas-dev@lists.infradead.org, linux-rdma@vger.kernel.org,
+ Stefani Seibold <stefani@seibold.net>, linux-serial@vger.kernel.org,
+ linux-pci@vger.kernel.org, open-iscsi@googlegroups.com,
+ linux-media@vger.kernel.org, linux-input@vger.kernel.org,
+ linux-omap@vger.kernel.org, netdev@vger.kernel.org, linux-usb@vger.kernel.org,
+ linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+ dccp@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,41 +38,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/05/2013 04:06 PM, Russell King - ARM Linux wrote:
-> On Thu, Jan 03, 2013 at 06:58:38PM -0800, Srivatsa Vaddagiri wrote:
->> I also think that the
->> wait_for_completion() based wait in ARM's __cpu_die() can be replaced with a
->> busy-loop based one, as the wait there in general should be terminated within
->> few cycles.
+Hi Yuanhan,
+
+On Tue, Jan 08, 2013 at 10:57:53PM +0800, Yuanhan Liu wrote:
+> The current kfifo API take the kfifo size as input, while it rounds
+>  _down_ the size to power of 2 at __kfifo_alloc. This may introduce
+> potential issue.
 > 
-> Why open-code this stuff when we have infrastructure already in the kernel
-> for waiting for stuff to happen?  I chose to use the standard infrastructure
-> because its better tested, and avoids having to think about whether we need
-> CPU barriers and such like to ensure that updates are seen in a timely
-> manner.
+> Take the code at drivers/hid/hid-logitech-dj.c as example:
 > 
-> My stance on a lot of this idle/cpu dying code is that much of it can
-> probably be cleaned up and merged into a single common implementation -
-> in which case the use of standard infrastructure for things like waiting
-> for other CPUs do stuff is even more justified.
+> 	if (kfifo_alloc(&djrcv_dev->notif_fifo,
+>                        DJ_MAX_NUMBER_NOTIFICATIONS * sizeof(struct dj_report),
+>                        GFP_KERNEL)) {
+> 
+> Where, DJ_MAX_NUMBER_NOTIFICATIONS is 8, and sizeo of(struct dj_report)
+> is 15.
+> 
+> Which means it wants to allocate a kfifo buffer which can store 8
+> dj_report entries at once. The expected kfifo buffer size would be
+> 8 * 15 = 120 then. While, in the end, __kfifo_alloc will turn the
+> size to rounddown_power_of_2(120) =  64, and then allocate a buf
+> with 64 bytes, which I don't think this is the original author want.
+> 
+> With the new log API, we can do like following:
+> 
+> 	int kfifo_size_order = order_base_2(DJ_MAX_NUMBER_NOTIFICATIONS *
+> 					    sizeof(struct dj_report));
+> 
+> 	if (kfifo_alloc(&djrcv_dev->notif_fifo, kfifo_size_order, GFP_KERNEL)) {
+> 
+> This make sure we will allocate enough kfifo buffer for holding
+> DJ_MAX_NUMBER_NOTIFICATIONS dj_report entries.
 
-On similar lines, Nikunj (in CC) and I had posted a patchset sometime ago to
-consolidate some of the CPU hotplug related code in the various architectures
-into a common standard implementation [1].
+Why don't you simply change __kfifo_alloc to round the allocation up
+instead of down?
 
-However, we ended up hitting a problem with Xen, because its existing code
-was unlike the other arch/ pieces [2]. At that time, we decided that we will
-first make the CPU online and offline paths symmetric in the generic code and
-then provide a common implementation of the duplicated bits in arch/, for the
-new CPU hotplug model [3].
+Thanks.
 
-I guess we should probably revisit it sometime, consolidating the code in
-incremental steps if not all at a time...
-
---
-[1]. http://lwn.net/Articles/500185/
-[2]. http://thread.gmane.org/gmane.linux.kernel.cross-arch/14342/focus=14430
-[3]. http://thread.gmane.org/gmane.linux.kernel.cross-arch/14342/focus=15567
-
-Regards,
-Srivatsa S. Bhat
+-- 
+Dmitry
