@@ -1,7 +1,7 @@
 Return-Path: <tangchen@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 4A60C2C00D9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2013 20:33:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTP id B33492C00EC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2013 21:00:08 +1100 (EST)
 From: Tang Chen <tangchen@cn.fujitsu.com>
 To: akpm@linux-foundation.org, rientjes@google.com, len.brown@intel.com,
  benh@kernel.crashing.org, paulus@samba.org, cl@linux.com,
@@ -10,10 +10,10 @@ To: akpm@linux-foundation.org, rientjes@google.com, len.brown@intel.com,
  wency@cn.fujitsu.com, tangchen@cn.fujitsu.com, hpa@zytor.com,
  linfeng@cn.fujitsu.com, laijs@cn.fujitsu.com, mgorman@suse.de,
  yinghai@kernel.org, glommer@parallels.com
-Subject: [PATCH v6 14/15] memory-hotplug: free node_data when a node is
- offlined
-Date: Wed, 9 Jan 2013 17:32:38 +0800
-Message-Id: <1357723959-5416-15-git-send-email-tangchen@cn.fujitsu.com>
+Subject: [PATCH v6 11/15] memory-hotplug: Integrated __remove_section() of
+ CONFIG_SPARSEMEM_VMEMMAP.
+Date: Wed, 9 Jan 2013 17:32:35 +0800
+Message-Id: <1357723959-5416-12-git-send-email-tangchen@cn.fujitsu.com>
 In-Reply-To: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
 References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
 Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
@@ -29,72 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wen Congyang <wency@cn.fujitsu.com>
+Currently __remove_section for SPARSEMEM_VMEMMAP does nothing. But even if
+we use SPARSEMEM_VMEMMAP, we can unregister the memory_section.
 
-We call hotadd_new_pgdat() to allocate memory to store node_data. So we
-should free it when removing a node.
-
+Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
-Reviewed-by: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Tang Chen <tangchen@cn.fujitsu.com>
 ---
- mm/memory_hotplug.c |   30 +++++++++++++++++++++++++++---
- 1 files changed, 27 insertions(+), 3 deletions(-)
+ mm/memory_hotplug.c |   11 -----------
+ 1 files changed, 0 insertions(+), 11 deletions(-)
 
 diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index a8703f7..8b67752 100644
+index 674e791..b20c4c7 100644
 --- a/mm/memory_hotplug.c
 +++ b/mm/memory_hotplug.c
-@@ -1699,9 +1699,12 @@ static int check_cpu_on_node(void *data)
- /* offline the node if all memory sections of this node are removed */
- static void try_offline_node(int nid)
- {
--	unsigned long start_pfn = NODE_DATA(nid)->node_start_pfn;
--	unsigned long end_pfn = start_pfn + NODE_DATA(nid)->node_spanned_pages;
-+	pg_data_t *pgdat = NODE_DATA(nid);
-+	unsigned long start_pfn = pgdat->node_start_pfn;
-+	unsigned long end_pfn = start_pfn + pgdat->node_spanned_pages;
- 	unsigned long pfn;
-+	struct page *pgdat_page = virt_to_page(pgdat);
-+	int i;
- 
- 	for (pfn = start_pfn; pfn < end_pfn; pfn += PAGES_PER_SECTION) {
- 		unsigned long section_nr = pfn_to_section_nr(pfn);
-@@ -1719,7 +1722,7 @@ static void try_offline_node(int nid)
- 		return;
- 	}
- 
--	if (stop_machine(check_cpu_on_node, NODE_DATA(nid), NULL))
-+	if (stop_machine(check_cpu_on_node, pgdat, NULL))
- 		return;
- 
- 	/*
-@@ -1728,6 +1731,27 @@ static void try_offline_node(int nid)
- 	 */
- 	node_set_offline(nid);
- 	unregister_one_node(nid);
-+
-+	if (!PageSlab(pgdat_page) && !PageCompound(pgdat_page))
-+		/* node data is allocated from boot memory */
-+		return;
-+
-+	/* free waittable in each zone */
-+	for (i = 0; i < MAX_NR_ZONES; i++) {
-+		struct zone *zone = pgdat->node_zones + i;
-+
-+		if (zone->wait_table)
-+			vfree(zone->wait_table);
-+	}
-+
-+	/*
-+	 * Since there is no way to guarentee the address of pgdat/zone is not
-+	 * on stack of any kernel threads or used by other kernel objects
-+	 * without reference counting or other symchronizing method, do not
-+	 * reset node_data and free pgdat here. Just reset it to 0 and reuse
-+	 * the memory when the node is online again.
-+	 */
-+	memset(pgdat, 0, sizeof(*pgdat));
+@@ -430,16 +430,6 @@ static int __meminit __add_section(int nid, struct zone *zone,
+ 	return register_new_memory(nid, __pfn_to_section(phys_start_pfn));
  }
  
- int __ref remove_memory(int nid, u64 start, u64 size)
+-#ifdef CONFIG_SPARSEMEM_VMEMMAP
+-static int __remove_section(struct zone *zone, struct mem_section *ms)
+-{
+-	/*
+-	 * XXX: Freeing memmap with vmemmap is not implement yet.
+-	 *      This should be removed later.
+-	 */
+-	return -EBUSY;
+-}
+-#else
+ static int __remove_section(struct zone *zone, struct mem_section *ms)
+ {
+ 	int ret = -EINVAL;
+@@ -454,7 +444,6 @@ static int __remove_section(struct zone *zone, struct mem_section *ms)
+ 	sparse_remove_one_section(zone, ms);
+ 	return 0;
+ }
+-#endif
+ 
+ /*
+  * Reasonably generic function for adding memory.  It is
 -- 
 1.7.1
