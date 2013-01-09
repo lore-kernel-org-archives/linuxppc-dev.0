@@ -1,26 +1,30 @@
-Return-Path: <riel@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id D83D22C018B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 08:56:23 +1100 (EST)
-Message-ID: <50EDE403.4070208@redhat.com>
-Date: Wed, 09 Jan 2013 16:41:23 -0500
-From: Rik van Riel <riel@redhat.com>
-MIME-Version: 1.0
-To: Michel Lespinasse <walken@google.com>
-Subject: Re: [PATCH 7/8] mm: use vm_unmapped_area() on powerpc architecture
-References: <1357694895-520-1-git-send-email-walken@google.com>
- <1357694895-520-8-git-send-email-walken@google.com>
- <1357697739.4838.30.camel@pasglop>
- <CANN689EJV_7Q7J4j1ttDxZuqbwD53PAuCHb5DhiE-AVbmNSR7Q@mail.gmail.com>
- <1357702376.4838.32.camel@pasglop> <20130109112313.GA4905@google.com>
-In-Reply-To: <20130109112313.GA4905@google.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
- linux-parisc@vger.kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
- linux-mm@kvack.org, linux-alpha@vger.kernel.org,
- Matt Turner <mattst88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <xenidis@gmail.com>
+Received: from mail-ie0-f180.google.com (mail-ie0-f180.google.com
+ [209.85.223.180])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E5E0D2C018B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 09:19:53 +1100 (EST)
+Received: by mail-ie0-f180.google.com with SMTP id c10so2747476ieb.39
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jan 2013 14:19:51 -0800 (PST)
+Sender: Jimi Xenidis <xenidis@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 6.2 \(1499\))
+Subject: Re: [PATCH] powerpc: POWER7 optimised memcpy using VMX and enhanced
+ prefetch
+From: Jimi Xenidis <jimix@pobox.com>
+In-Reply-To: <1355848269.5180.41.camel@otta>
+Date: Wed, 9 Jan 2013 16:19:53 -0600
+Message-Id: <9A768D6E-D4DC-4F8B-ADAC-A1E953B38462@pobox.com>
+References: <20120531162209.04bd9bdc@kryten>
+ <D5CF6D4A-8F60-4853-9F7C-EFE5133CEB33@pobox.com>
+ <20121217223333.6cb00476@kryten> <1355790373.5180.26.camel@otta>
+ <16080DCD-0E42-43E9-93E3-D3076637DCB1@pobox.com>
+ <1355848269.5180.41.camel@otta>
+To: Peter Bergner <bergner@vnet.ibm.com>
+Cc: "paulus@samba.org Mackerras" <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Kumar Gala <kumar.gala@gmail.com>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +34,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/09/2013 06:23 AM, Michel Lespinasse wrote:
-> On Wed, Jan 09, 2013 at 02:32:56PM +1100, Benjamin Herrenschmidt wrote:
->> Ok. I think at least you can move that construct:
->>
->> +               if (addr < SLICE_LOW_TOP) {
->> +                       slice = GET_LOW_SLICE_INDEX(addr);
->> +                       addr = (slice + 1) << SLICE_LOW_SHIFT;
->> +                       if (!(available.low_slices & (1u << slice)))
->> +                               continue;
->> +               } else {
->> +                       slice = GET_HIGH_SLICE_INDEX(addr);
->> +                       addr = (slice + 1) << SLICE_HIGH_SHIFT;
->> +                       if (!(available.high_slices & (1u << slice)))
->> +                               continue;
->> +               }
->>
->> Into some kind of helper. It will probably compile to the same thing but
->> at least it's more readable and it will avoid a fuckup in the future if
->> somebody changes the algorithm and forgets to update one of the
->> copies :-)
->
-> All right, does the following look more palatable then ?
-> (didn't re-test it, though)
 
-Looks equivalent. I have also not tested :)
+On Dec 18, 2012, at 10:31 AM, Peter Bergner <bergner@vnet.ibm.com> =
+wrote:
 
-> Signed-off-by: Michel Lespinasse <walken@google.com>
+> On Tue, 2012-12-18 at 07:28 -0600, Jimi Xenidis wrote:
+>> On Dec 17, 2012, at 6:26 PM, Peter Bergner <bergner@vnet.ibm.com> =
+wrote:
+>>> Jimi, are you using an "old" binutils from before my patch that
+>>> changed the operand order for these types of instructions?
+>>>=20
+>>>   http://sourceware.org/ml/binutils/2009-02/msg00044.html
+>>=20
+>> Actually, this confused me as well, that embedded has the same =
+instruction
+>> encoding but different mnemonic.
+>=20
+> The mnemonic is the same (ie, dcbtst), and yes, the encoding is the =
+same.
+> All that is different is the accepted operand ordering...and yes, it =
+is
+> very unfortunate the operand ordering is different between embedded =
+and
+> server. :(
+>=20
+>=20
+>> I was under the impression that the assembler made no instruction =
+decisions
+>> based on CPU.  So your only hint would be that '0b' prefix.
+>> Does AS even see that?
+>=20
+> GAS definitely makes decisions based on CPU (ie, -m<cpu> option).  =
+Below is
+> the GAS code used in recognizing the dcbtst instruction.  This shows =
+that
+> the "server" operand ordering is enabled for POWER4 and later cpus =
+while
+> the "embedded" operand ordering is enabled for pre POWER4 cpus (yes, =
+not
+> exactly a server versus embedded trigger, but that's we agreed on to
+> mitigate breaking any old asm code out there).
+>=20
+> {"dcbtst",	X(31,246),	X_MASK,      POWER4,	PPCNONE,	=
+{RA0, RB, CT}},
+> {"dcbtst",	X(31,246),	X_MASK,      PPC|PPCVLE, POWER4,	=
+{CT, RA0, RB}},
+>=20
+> GAS doesn't look at how the operands are written to try and guess what
+> operand ordering you are attempting to use.  Rather, it knows what =
+ordering
+> it expects and the values had better match that ordering.
+>=20
 
-Acked-by: Rik van Riel <riel@redhat.com>
+I agree, but that means it is impossible for the same .S file can be =
+compiled but -mcpu=3De500mc and -mcpu=3Dpowerpc?
+So either these files have to be Book3S versus Book3E --or-- we use a =
+CPP macro to get them right.
+FWIW, I prefer the latter which allows more code reuse.
+
+-jx
+
+
+>=20
+> Peter
+>=20
+>=20
+>=20
