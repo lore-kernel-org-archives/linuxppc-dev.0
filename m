@@ -1,31 +1,31 @@
-Return-Path: <walken@google.com>
-Received: from mail-da0-f52.google.com (mail-da0-f52.google.com
- [209.85.210.52])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D8C242C00DE
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2013 22:23:20 +1100 (EST)
-Received: by mail-da0-f52.google.com with SMTP id f10so701773dak.25
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 09 Jan 2013 03:23:18 -0800 (PST)
-Date: Wed, 9 Jan 2013 03:23:13 -0800
-From: Michel Lespinasse <walken@google.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 7/8] mm: use vm_unmapped_area() on powerpc architecture
-Message-ID: <20130109112313.GA4905@google.com>
-References: <1357694895-520-1-git-send-email-walken@google.com>
- <1357694895-520-8-git-send-email-walken@google.com>
- <1357697739.4838.30.camel@pasglop>
- <CANN689EJV_7Q7J4j1ttDxZuqbwD53PAuCHb5DhiE-AVbmNSR7Q@mail.gmail.com>
- <1357702376.4838.32.camel@pasglop>
+Return-Path: <glommer@parallels.com>
+Received: from mx2.parallels.com (mx2.parallels.com [64.131.90.16])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 1AADB2C00EC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 02:09:48 +1100 (EST)
+Message-ID: <50ED8834.1090804@parallels.com>
+Date: Wed, 9 Jan 2013 19:09:40 +0400
+From: Glauber Costa <glommer@parallels.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1357702376.4838.32.camel@pasglop>
-Cc: Rik van Riel <riel@redhat.com>, Tony Luck <tony.luck@intel.com>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- "James E.J. Bottomley" <jejb@parisc-linux.org>, linux-kernel@vger.kernel.org,
- David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, Matt Turner <mattst88@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+To: Wen Congyang <wency@cn.fujitsu.com>
+Subject: Re: [PATCH v5 01/14] memory-hotplug: try to offline the memory twice
+ to avoid dependence
+References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1356350964-13437-2-git-send-email-tangchen@cn.fujitsu.com>
+ <50D96543.6010903@parallels.com> <50DFD7F7.5090408@cn.fujitsu.com>
+In-Reply-To: <50DFD7F7.5090408@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-mm@kvack.org, paulus@samba.org,
+ hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, liuj97@gmail.com,
+ len.brown@intel.com, cmetcalf@tilera.com, wujianguo@huawei.com,
+ yinghai@kernel.org, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+ laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,195 +35,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Jan 09, 2013 at 02:32:56PM +1100, Benjamin Herrenschmidt wrote:
-> Ok. I think at least you can move that construct:
+On 12/30/2012 09:58 AM, Wen Congyang wrote:
+> At 12/25/2012 04:35 PM, Glauber Costa Wrote:
+>> On 12/24/2012 04:09 PM, Tang Chen wrote:
+>>> From: Wen Congyang <wency@cn.fujitsu.com>
+>>>
+>>> memory can't be offlined when CONFIG_MEMCG is selected.
+>>> For example: there is a memory device on node 1. The address range
+>>> is [1G, 1.5G). You will find 4 new directories memory8, memory9, memory10,
+>>> and memory11 under the directory /sys/devices/system/memory/.
+>>>
+>>> If CONFIG_MEMCG is selected, we will allocate memory to store page cgroup
+>>> when we online pages. When we online memory8, the memory stored page cgroup
+>>> is not provided by this memory device. But when we online memory9, the memory
+>>> stored page cgroup may be provided by memory8. So we can't offline memory8
+>>> now. We should offline the memory in the reversed order.
+>>>
+>>> When the memory device is hotremoved, we will auto offline memory provided
+>>> by this memory device. But we don't know which memory is onlined first, so
+>>> offlining memory may fail. In such case, iterate twice to offline the memory.
+>>> 1st iterate: offline every non primary memory block.
+>>> 2nd iterate: offline primary (i.e. first added) memory block.
+>>>
+>>> This idea is suggested by KOSAKI Motohiro.
+>>>
+>>> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+>>
+>> Maybe there is something here that I am missing - I admit that I came
+>> late to this one, but this really sounds like a very ugly hack, that
+>> really has no place in here.
+>>
+>> Retrying, of course, may make sense, if we have reasonable belief that
+>> we may now succeed. If this is the case, you need to document - in the
+>> code - while is that.
+>>
+>> The memcg argument, however, doesn't really cut it. Why can't we make
+>> all page_cgroup allocations local to the node they are describing? If
+>> memcg is the culprit here, we should fix it, and not retry. If there is
+>> still any benefit in retrying, then we retry being very specific about why.
 > 
-> +               if (addr < SLICE_LOW_TOP) {
-> +                       slice = GET_LOW_SLICE_INDEX(addr);
-> +                       addr = (slice + 1) << SLICE_LOW_SHIFT;
-> +                       if (!(available.low_slices & (1u << slice)))
-> +                               continue;
-> +               } else {
-> +                       slice = GET_HIGH_SLICE_INDEX(addr);
-> +                       addr = (slice + 1) << SLICE_HIGH_SHIFT;
-> +                       if (!(available.high_slices & (1u << slice)))
-> +                               continue;
-> +               }
+> We try to make all page_cgroup allocations local to the node they are describing
+> now. If the memory is the first memory onlined in this node, we will allocate
+> it from the other node.
 > 
-> Into some kind of helper. It will probably compile to the same thing but
-> at least it's more readable and it will avoid a fuckup in the future if
-> somebody changes the algorithm and forgets to update one of the
-> copies :-)
+> For example, node1 has 4 memory blocks: 8-11, and we online it from 8 to 11
+> 1. memory block 8, page_cgroup allocations are in the other nodes
+> 2. memory block 9, page_cgroup allocations are in memory block 8
+> 
+> So we should offline memory block 9 first. But we don't know in which order
+> the user online the memory block.
+> 
+> I think we can modify memcg like this:
+> allocate the memory from the memory block they are describing
+> 
+> I am not sure it is OK to do so.
 
-All right, does the following look more palatable then ?
-(didn't re-test it, though)
+I don't see a reason why not.
 
-Signed-off-by: Michel Lespinasse <walken@google.com>
+You would have to tweak a bit the lookup function for page_cgroup, but
+assuming you will always have the pfns and limits, it should be easy to do.
 
----
- arch/powerpc/mm/slice.c |  123 ++++++++++++++++++++++++++++++-----------------
- 1 files changed, 78 insertions(+), 45 deletions(-)
+I think the only tricky part is that today we have a single
+node_page_cgroup, and we would of course have to have one per memory
+block. My assumption is that the number of memory blocks is limited and
+likely not very big. So even a static array would do.
 
-diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
-index 999a74f25ebe..3e99c149271a 100644
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -237,36 +237,69 @@ static void slice_convert(struct mm_struct *mm, struct slice_mask mask, int psiz
- #endif
- }
- 
-+/*
-+ * Compute which slice addr is part of;
-+ * set *boundary_addr to the start or end boundary of that slice
-+ * (depending on 'end' parameter);
-+ * return boolean indicating if the slice is marked as available in the
-+ * 'available' slice_mark.
-+ */
-+static bool slice_scan_available(unsigned long addr,
-+				 struct slice_mask available,
-+				 int end,
-+				 unsigned long *boundary_addr)
-+{
-+	unsigned long slice;
-+	if (addr < SLICE_LOW_TOP) {
-+		slice = GET_LOW_SLICE_INDEX(addr);
-+		*boundary_addr = (slice + end) << SLICE_LOW_SHIFT;
-+		return !!(available.low_slices & (1u << slice));
-+	} else {
-+		slice = GET_HIGH_SLICE_INDEX(addr);
-+		*boundary_addr = (slice + end) ?
-+			((slice + end) << SLICE_HIGH_SHIFT) : SLICE_LOW_TOP;
-+		return !!(available.high_slices & (1u << slice));
-+	}
-+}
-+
- static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
- 					      unsigned long len,
- 					      struct slice_mask available,
- 					      int psize)
- {
--	struct vm_area_struct *vma;
--	unsigned long addr;
--	struct slice_mask mask;
- 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
-+	unsigned long addr, found, next_end;
-+	struct vm_unmapped_area_info info;
- 
--	addr = TASK_UNMAPPED_BASE;
--
--	for (;;) {
--		addr = _ALIGN_UP(addr, 1ul << pshift);
--		if ((TASK_SIZE - len) < addr)
--			break;
--		vma = find_vma(mm, addr);
--		BUG_ON(vma && (addr >= vma->vm_end));
-+	info.flags = 0;
-+	info.length = len;
-+	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
-+	info.align_offset = 0;
- 
--		mask = slice_range_to_mask(addr, len);
--		if (!slice_check_fit(mask, available)) {
--			if (addr < SLICE_LOW_TOP)
--				addr = _ALIGN_UP(addr + 1,  1ul << SLICE_LOW_SHIFT);
--			else
--				addr = _ALIGN_UP(addr + 1,  1ul << SLICE_HIGH_SHIFT);
-+	addr = TASK_UNMAPPED_BASE;
-+	while (addr < TASK_SIZE) {
-+		info.low_limit = addr;
-+		if (!slice_scan_available(addr, available, 1, &addr))
- 			continue;
-+
-+ next_slice:
-+		/*
-+		 * At this point [info.low_limit; addr) covers
-+		 * available slices only and ends at a slice boundary.
-+		 * Check if we need to reduce the range, or if we can
-+		 * extend it to cover the next available slice.
-+		 */
-+		if (addr >= TASK_SIZE)
-+			addr = TASK_SIZE;
-+		else if (slice_scan_available(addr, available, 1, &next_end)) {
-+			addr = next_end;
-+			goto next_slice;
- 		}
--		if (!vma || addr + len <= vma->vm_start)
--			return addr;
--		addr = vma->vm_end;
-+		info.high_limit = addr;
-+
-+		found = vm_unmapped_area(&info);
-+		if (!(found & ~PAGE_MASK))
-+			return found;
- 	}
- 
- 	return -ENOMEM;
-@@ -277,39 +310,39 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
- 					     struct slice_mask available,
- 					     int psize)
- {
--	struct vm_area_struct *vma;
--	unsigned long addr;
--	struct slice_mask mask;
- 	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
-+	unsigned long addr, found, prev;
-+	struct vm_unmapped_area_info info;
- 
--	addr = mm->mmap_base;
--	while (addr > len) {
--		/* Go down by chunk size */
--		addr = _ALIGN_DOWN(addr - len, 1ul << pshift);
-+	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
-+	info.length = len;
-+	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
-+	info.align_offset = 0;
- 
--		/* Check for hit with different page size */
--		mask = slice_range_to_mask(addr, len);
--		if (!slice_check_fit(mask, available)) {
--			if (addr < SLICE_LOW_TOP)
--				addr = _ALIGN_DOWN(addr, 1ul << SLICE_LOW_SHIFT);
--			else if (addr < (1ul << SLICE_HIGH_SHIFT))
--				addr = SLICE_LOW_TOP;
--			else
--				addr = _ALIGN_DOWN(addr, 1ul << SLICE_HIGH_SHIFT);
-+	addr = mm->mmap_base;
-+	while (addr > PAGE_SIZE) {
-+		info.high_limit = addr;
-+		if (!slice_scan_available(addr - 1, available, 0, &addr))
- 			continue;
--		}
- 
-+ prev_slice:
- 		/*
--		 * Lookup failure means no vma is above this address,
--		 * else if new region fits below vma->vm_start,
--		 * return with success:
-+		 * At this point [addr; info.high_limit) covers
-+		 * available slices only and starts at a slice boundary.
-+		 * Check if we need to reduce the range, or if we can
-+		 * extend it to cover the previous available slice.
- 		 */
--		vma = find_vma(mm, addr);
--		if (!vma || (addr + len) <= vma->vm_start)
--			return addr;
-+		if (addr < PAGE_SIZE)
-+			addr = PAGE_SIZE;
-+		else if (slice_scan_available(addr - 1, available, 0, &prev)) {
-+			addr = prev;
-+			goto prev_slice;
-+		}
-+		info.low_limit = addr;
- 
--		/* try just below the current vma->vm_start */
--		addr = vma->vm_start;
-+		found = vm_unmapped_area(&info);
-+		if (!(found & ~PAGE_MASK))
-+			return found;
- 	}
- 
- 	/*
-
--- 
-Michel "Walken" Lespinasse
-A program is never fully debugged until the last user dies.
+Kamezawa, do you have any input in here?
