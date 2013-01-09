@@ -1,16 +1,14 @@
 Return-Path: <akpm@linux-foundation.org>
 Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id DCD9F2C00C4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 10:19:22 +1100 (EST)
-Date: Wed, 9 Jan 2013 15:19:20 -0800
+ [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id 0107A2C01C8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 10:33:27 +1100 (EST)
+Date: Wed, 9 Jan 2013 15:33:24 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
 To: Tang Chen <tangchen@cn.fujitsu.com>
-Subject: Re: [PATCH v6 04/15] memory-hotplug: remove /sys/firmware/memmap/X
- sysfs
-Message-Id: <20130109151920.fb9b4029.akpm@linux-foundation.org>
-In-Reply-To: <1357723959-5416-5-git-send-email-tangchen@cn.fujitsu.com>
+Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
+Message-Id: <20130109153324.bbd019b3.akpm@linux-foundation.org>
+In-Reply-To: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
 References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
- <1357723959-5416-5-git-send-email-tangchen@cn.fujitsu.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
@@ -31,63 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 9 Jan 2013 17:32:28 +0800
+On Wed, 9 Jan 2013 17:32:24 +0800
 Tang Chen <tangchen@cn.fujitsu.com> wrote:
 
-> From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> 
-> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
-> sysfs files are created. But there is no code to remove these files. The patch
-> implements the function to remove them.
-> 
-> Note: The code does not free firmware_map_entry which is allocated by bootmem.
->       So the patch makes memory leak. But I think the memory leak size is
->       very samll. And it does not affect the system.
-> 
-> ...
->
-> +static struct firmware_map_entry * __meminit
-> +firmware_map_find_entry(u64 start, u64 end, const char *type)
-> +{
-> +	struct firmware_map_entry *entry;
-> +
-> +	spin_lock(&map_entries_lock);
-> +	list_for_each_entry(entry, &map_entries, list)
-> +		if ((entry->start == start) && (entry->end == end) &&
-> +		    (!strcmp(entry->type, type))) {
-> +			spin_unlock(&map_entries_lock);
-> +			return entry;
-> +		}
-> +
-> +	spin_unlock(&map_entries_lock);
-> +	return NULL;
-> +}
->
-> ...
->
-> +	entry = firmware_map_find_entry(start, end - 1, type);
-> +	if (!entry)
-> +		return -EINVAL;
-> +
-> +	firmware_map_remove_entry(entry);
->
-> ...
->
+> This patch-set aims to implement physical memory hot-removing.
 
-The above code looks racy.  After firmware_map_find_entry() does the
-spin_unlock() there is nothing to prevent a concurrent
-firmware_map_remove_entry() from removing the entry, so the kernel ends
-up calling firmware_map_remove_entry() twice against the same entry.
-
-An easy fix for this is to hold the spinlock across the entire
-lookup/remove operation.
+As you were on th patch delivery path, all of these patches should have
+your Signed-off-by:.  But some were missing it.  I fixed this in my
+copy of the patches.
 
 
-This problem is inherent to firmware_map_find_entry() as you have
-implemented it, so this function simply should not exist in the current
-form - no caller can use it without being buggy!  A simple fix for this
-is to remove the spin_lock()/spin_unlock() from
-firmware_map_find_entry() and add locking documentation to
-firmware_map_find_entry(), explaining that the caller must hold
-map_entries_lock and must not release that lock until processing of
-firmware_map_find_entry()'s return value has completed.
+I suspect this patchset adds a significant amount of code which will
+not be used if CONFIG_MEMORY_HOTPLUG=n.  "[PATCH v6 06/15]
+memory-hotplug: implement register_page_bootmem_info_section of
+sparse-vmemmap", for example.  This is not a good thing, so please go
+through the patchset (in fact, go through all the memhotplug code) and
+let's see if we can reduce the bloat for CONFIG_MEMORY_HOTPLUG=n
+kernels.
+
+This needn't be done immediately - it would be OK by me if you were to
+defer this exercise until all the new memhotplug code is largely in
+place.  But please, let's do it.
