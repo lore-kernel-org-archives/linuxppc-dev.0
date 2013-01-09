@@ -1,28 +1,25 @@
-Return-Path: <walken@google.com>
-Received: from mail-vb0-f48.google.com (mail-vb0-f48.google.com
- [209.85.212.48])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5113C2C073E
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2013 12:32:09 +1100 (EST)
-Received: by mail-vb0-f48.google.com with SMTP id fc21so1073935vbb.35
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 08 Jan 2013 17:32:05 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1357694895-520-1-git-send-email-walken@google.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8E89E2C00DE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2013 13:16:00 +1100 (EST)
+Message-ID: <1357697739.4838.30.camel@pasglop>
+Subject: Re: [PATCH 7/8] mm: use vm_unmapped_area() on powerpc architecture
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michel Lespinasse <walken@google.com>
+Date: Wed, 09 Jan 2013 13:15:39 +1100
+In-Reply-To: <1357694895-520-8-git-send-email-walken@google.com>
 References: <1357694895-520-1-git-send-email-walken@google.com>
-Date: Tue, 8 Jan 2013 17:32:05 -0800
-Message-ID: <CANN689EMBPqVCZdTZm1G0PznGpYR6Y5tMUOspE+emHaX=TkVtA@mail.gmail.com>
-Subject: Re: [PATCH 0/8] vm_unmapped_area: finish the mission
-From: Michel Lespinasse <walken@google.com>
-To: Rik van Riel <riel@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Matt Turner <mattst88@gmail.com>,
- David Howells <dhowells@redhat.com>, Tony Luck <tony.luck@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-alpha@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+ <1357694895-520-8-git-send-email-walken@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Rik van Riel <riel@redhat.com>, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, linux-kernel@vger.kernel.org,
+ David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+ linux-alpha@vger.kernel.org, Matt Turner <mattst88@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,14 +29,179 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Whoops, I was supposed to find a more appropriate subject line before
-sending this :]
+On Tue, 2013-01-08 at 17:28 -0800, Michel Lespinasse wrote:
+> Update the powerpc slice_get_unmapped_area function to make use of
+> vm_unmapped_area() instead of implementing a brute force search.
+> 
+> Signed-off-by: Michel Lespinasse <walken@google.com>
+> 
+> ---
+>  arch/powerpc/mm/slice.c |  128 +++++++++++++++++++++++++++++-----------------
+>  1 files changed, 81 insertions(+), 47 deletions(-)
 
-On Tue, Jan 8, 2013 at 5:28 PM, Michel Lespinasse <walken@google.com> wrote:
-> These patches, which apply on top of v3.8-rc kernels, are to complete the
-> VMA gap finding code I introduced (following Rik's initial proposal) in
-> v3.8-rc1.
+That doesn't look good ... the resulting code is longer than the
+original, which makes me wonder how it is an improvement...
 
--- 
-Michel "Walken" Lespinasse
-A program is never fully debugged until the last user dies.
+Now it could just be a matter of how the code is factored, I see
+quite a bit of duplication of the whole slice mask test...
+
+Cheers,
+Ben.
+
+> diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+> index 999a74f25ebe..048346b7eed5 100644
+> --- a/arch/powerpc/mm/slice.c
+> +++ b/arch/powerpc/mm/slice.c
+> @@ -242,31 +242,51 @@ static unsigned long slice_find_area_bottomup(struct mm_struct *mm,
+>  					      struct slice_mask available,
+>  					      int psize)
+>  {
+> -	struct vm_area_struct *vma;
+> -	unsigned long addr;
+> -	struct slice_mask mask;
+>  	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+> +	unsigned long addr, found, slice;
+> +	struct vm_unmapped_area_info info;
+>  
+> -	addr = TASK_UNMAPPED_BASE;
+> +	info.flags = 0;
+> +	info.length = len;
+> +	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
+> +	info.align_offset = 0;
+>  
+> -	for (;;) {
+> -		addr = _ALIGN_UP(addr, 1ul << pshift);
+> -		if ((TASK_SIZE - len) < addr)
+> -			break;
+> -		vma = find_vma(mm, addr);
+> -		BUG_ON(vma && (addr >= vma->vm_end));
+> +	addr = TASK_UNMAPPED_BASE;
+> +	while (addr < TASK_SIZE) {
+> +		info.low_limit = addr;
+> +		if (addr < SLICE_LOW_TOP) {
+> +			slice = GET_LOW_SLICE_INDEX(addr);
+> +			addr = (slice + 1) << SLICE_LOW_SHIFT;
+> +			if (!(available.low_slices & (1u << slice)))
+> +				continue;
+> +		} else {
+> +			slice = GET_HIGH_SLICE_INDEX(addr);
+> +			addr = (slice + 1) << SLICE_HIGH_SHIFT;
+> +			if (!(available.high_slices & (1u << slice)))
+> +				continue;
+> +		}
+>  
+> -		mask = slice_range_to_mask(addr, len);
+> -		if (!slice_check_fit(mask, available)) {
+> -			if (addr < SLICE_LOW_TOP)
+> -				addr = _ALIGN_UP(addr + 1,  1ul << SLICE_LOW_SHIFT);
+> -			else
+> -				addr = _ALIGN_UP(addr + 1,  1ul << SLICE_HIGH_SHIFT);
+> -			continue;
+> + next_slice:
+> +		if (addr >= TASK_SIZE)
+> +			addr = TASK_SIZE;
+> +		else if (addr < SLICE_LOW_TOP) {
+> +			slice = GET_LOW_SLICE_INDEX(addr);
+> +			if (available.low_slices & (1u << slice)) {
+> +				addr = (slice + 1) << SLICE_LOW_SHIFT;
+> +				goto next_slice;
+> +			}
+> +		} else {
+> +			slice = GET_HIGH_SLICE_INDEX(addr);
+> +			if (available.high_slices & (1u << slice)) {
+> +				addr = (slice + 1) << SLICE_HIGH_SHIFT;
+> +				goto next_slice;
+> +			}
+>  		}
+> -		if (!vma || addr + len <= vma->vm_start)
+> -			return addr;
+> -		addr = vma->vm_end;
+> +		info.high_limit = addr;
+> +
+> +		found = vm_unmapped_area(&info);
+> +		if (!(found & ~PAGE_MASK))
+> +			return found;
+>  	}
+>  
+>  	return -ENOMEM;
+> @@ -277,39 +297,53 @@ static unsigned long slice_find_area_topdown(struct mm_struct *mm,
+>  					     struct slice_mask available,
+>  					     int psize)
+>  {
+> -	struct vm_area_struct *vma;
+> -	unsigned long addr;
+> -	struct slice_mask mask;
+>  	int pshift = max_t(int, mmu_psize_defs[psize].shift, PAGE_SHIFT);
+> +	unsigned long addr, found, slice;
+> +	struct vm_unmapped_area_info info;
+>  
+> -	addr = mm->mmap_base;
+> -	while (addr > len) {
+> -		/* Go down by chunk size */
+> -		addr = _ALIGN_DOWN(addr - len, 1ul << pshift);
+> +	info.flags = VM_UNMAPPED_AREA_TOPDOWN;
+> +	info.length = len;
+> +	info.align_mask = PAGE_MASK & ((1ul << pshift) - 1);
+> +	info.align_offset = 0;
+>  
+> -		/* Check for hit with different page size */
+> -		mask = slice_range_to_mask(addr, len);
+> -		if (!slice_check_fit(mask, available)) {
+> -			if (addr < SLICE_LOW_TOP)
+> -				addr = _ALIGN_DOWN(addr, 1ul << SLICE_LOW_SHIFT);
+> -			else if (addr < (1ul << SLICE_HIGH_SHIFT))
+> -				addr = SLICE_LOW_TOP;
+> -			else
+> -				addr = _ALIGN_DOWN(addr, 1ul << SLICE_HIGH_SHIFT);
+> -			continue;
+> +	addr = mm->mmap_base;
+> +	while (addr > PAGE_SIZE) {
+> +		info.high_limit = addr;
+> +                if (addr < SLICE_LOW_TOP) {
+> +			slice = GET_LOW_SLICE_INDEX(addr - 1);
+> +			addr = slice << SLICE_LOW_SHIFT;
+> +			if (!(available.low_slices & (1u << slice)))
+> +				continue;
+> +		} else {
+> +			slice = GET_HIGH_SLICE_INDEX(addr - 1);
+> +			addr = slice ? (slice << SLICE_HIGH_SHIFT) :
+> +								SLICE_LOW_TOP;
+> +			if (!(available.high_slices & (1u << slice)))
+> +				continue;
+>  		}
+>  
+> -		/*
+> -		 * Lookup failure means no vma is above this address,
+> -		 * else if new region fits below vma->vm_start,
+> -		 * return with success:
+> -		 */
+> -		vma = find_vma(mm, addr);
+> -		if (!vma || (addr + len) <= vma->vm_start)
+> -			return addr;
+> + next_slice:
+> +		if (addr < PAGE_SIZE)
+> +			addr = PAGE_SIZE;
+> +		else if (addr < SLICE_LOW_TOP) {
+> +			slice = GET_LOW_SLICE_INDEX(addr - 1);
+> +			if (available.low_slices & (1u << slice)) {
+> +				addr = slice << SLICE_LOW_SHIFT;
+> +				goto next_slice;
+> +			}
+> +		} else {
+> +			slice = GET_HIGH_SLICE_INDEX(addr - 1);
+> +			if (available.high_slices & (1u << slice)) {
+> +				addr = slice ? (slice << SLICE_HIGH_SHIFT) :
+> +								SLICE_LOW_TOP;
+> +				goto next_slice;
+> +			}
+> +		}
+> +		info.low_limit = addr;
+>  
+> -		/* try just below the current vma->vm_start */
+> -		addr = vma->vm_start;
+> +		found = vm_unmapped_area(&info);
+> +		if (!(found & ~PAGE_MASK))
+> +			return found;
+>  	}
+>  
+>  	/*
