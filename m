@@ -1,17 +1,16 @@
 Return-Path: <riel@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 49C5C2C014C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 05:33:05 +1100 (EST)
-Message-ID: <50EDB7D9.8000403@redhat.com>
-Date: Wed, 09 Jan 2013 13:32:57 -0500
+ by ozlabs.org (Postfix) with ESMTP id 26F142C0172
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 07:57:14 +1100 (EST)
+Message-ID: <50EDD9A5.8060404@redhat.com>
+Date: Wed, 09 Jan 2013 15:57:09 -0500
 From: Rik van Riel <riel@redhat.com>
 MIME-Version: 1.0
 To: Michel Lespinasse <walken@google.com>
-Subject: Re: [PATCH 5/8] mm: use vm_unmapped_area() in hugetlbfs on ia64
- architecture
+Subject: Re: [PATCH 6/8] mm: remove free_area_cache use in powerpc architecture
 References: <1357694895-520-1-git-send-email-walken@google.com>
- <1357694895-520-6-git-send-email-walken@google.com>
-In-Reply-To: <1357694895-520-6-git-send-email-walken@google.com>
+ <1357694895-520-7-git-send-email-walken@google.com>
+In-Reply-To: <1357694895-520-7-git-send-email-walken@google.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: Tony Luck <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
  linux-parisc@vger.kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
@@ -29,8 +28,13 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 01/08/2013 08:28 PM, Michel Lespinasse wrote:
-> Update the ia64 hugetlb_get_unmapped_area function to make use of
-> vm_unmapped_area() instead of implementing a brute force search.
+> As all other architectures have been converted to use vm_unmapped_area(),
+> we are about to retire the free_area_cache.
+>
+> This change simply removes the use of that cache in
+> slice_get_unmapped_area(), which will most certainly have a
+> performance cost. Next one will convert that function to use the
+> vm_unmapped_area() infrastructure and regain the performance.
 >
 > Signed-off-by: Michel Lespinasse <walken@google.com>
 
