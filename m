@@ -1,25 +1,35 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12]) by ozlabs.org (Postfix) with ESMTP id C8BD72C0193
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 09:23:17 +1100 (EST)
-Date: Wed, 9 Jan 2013 14:23:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
-Message-Id: <20130109142314.1ce04a96.akpm@linux-foundation.org>
-In-Reply-To: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
-References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
- wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
- wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
- linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <cody@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 78B6D2C0193
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 09:41:11 +1100 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cody@linux.vnet.ibm.com>;
+ Wed, 9 Jan 2013 15:41:07 -0700
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id BCA801FF003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2013 15:40:45 -0700 (MST)
+Received: from d03av06.boulder.ibm.com (d03av06.boulder.ibm.com [9.17.195.245])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r09MeiOC104158
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jan 2013 15:40:45 -0700
+Received: from d03av06.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av06.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r09MggVu029173
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 9 Jan 2013 15:42:43 -0700
+From: Cody P Schafer <cody@linux.vnet.ibm.com>
+To: Linux PPC <linuxppc-dev@lists.ozlabs.org>, galak@kernel.crashing.org
+Subject: [PATCH v2] powerpc/mm: eliminate unneeded for_each_memblock
+Date: Wed,  9 Jan 2013 14:40:18 -0800
+Message-Id: <1357771218-6499-1-git-send-email-cody@linux.vnet.ibm.com>
+In-Reply-To: <82A31E2D-FA24-44CF-9812-9E8062AFA6F4@kernel.crashing.org>
+References: <82A31E2D-FA24-44CF-9812-9E8062AFA6F4@kernel.crashing.org>
+Cc: Cody P Schafer <cody@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,77 +39,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 9 Jan 2013 17:32:24 +0800
-Tang Chen <tangchen@cn.fujitsu.com> wrote:
+The only persistent change made by this loop is calling
+memblock_set_node() once for each memblock, which is not useful (and has
+no effect) as memblock_set_node() is not called with any
+memblock-specific parameters.
 
-> Here is the physical memory hot-remove patch-set based on 3.8rc-2.
-> 
-> This patch-set aims to implement physical memory hot-removing.
-> 
-> The patches can free/remove the following things:
-> 
->   - /sys/firmware/memmap/X/{end, start, type} : [PATCH 4/15]
->   - memmap of sparse-vmemmap                  : [PATCH 6,7,8,10/15]
->   - page table of removed memory              : [RFC PATCH 7,8,10/15]
->   - node and related sysfs files              : [RFC PATCH 13-15/15]
-> 
-> 
-> Existing problem:
-> If CONFIG_MEMCG is selected, we will allocate memory to store page cgroup
-> when we online pages.
-> 
-> For example: there is a memory device on node 1. The address range
-> is [1G, 1.5G). You will find 4 new directories memory8, memory9, memory10,
-> and memory11 under the directory /sys/devices/system/memory/.
-> 
-> If CONFIG_MEMCG is selected, when we online memory8, the memory stored page
-> cgroup is not provided by this memory device. But when we online memory9, the
-> memory stored page cgroup may be provided by memory8. So we can't offline
-> memory8 now. We should offline the memory in the reversed order.
-> 
-> When the memory device is hotremoved, we will auto offline memory provided
-> by this memory device. But we don't know which memory is onlined first, so
-> offlining memory may fail.
+Subsistute a single memblock_set_node().
 
-This does sound like a significant problem.  We should assume that
-mmecg is available and in use.
+Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
+---
 
-> In patch1, we provide a solution which is not good enough:
-> Iterate twice to offline the memory.
-> 1st iterate: offline every non primary memory block.
-> 2nd iterate: offline primary (i.e. first added) memory block.
+Now with a signoff & wrapped comment line.
 
-Let's flesh this out a bit.
+ arch/powerpc/mm/mem.c | 11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
 
-If we online memory8, memory9, memory10 and memory11 then I'd have
-thought that they would need to offlined in reverse order, which will
-require four iterations, not two.  Is this wrong and if so, why?
-
-Also, what happens if we wish to offline only memory9?  Do we offline
-memory11 then memory10 then memory9 and then re-online memory10 and
-memory11?
-
-> And a new idea from Wen Congyang <wency@cn.fujitsu.com> is:
-> allocate the memory from the memory block they are describing.
-
-Yes.
-
-> But we are not sure if it is OK to do so because there is not existing API
-> to do so, and we need to move page_cgroup memory allocation from MEM_GOING_ONLINE
-> to MEM_ONLINE.
-
-This all sounds solvable - can we proceed in this fashion?
-
-> And also, it may interfere the hugepage.
-
-Please provide full details on this problem.
-
-> Note: if the memory provided by the memory device is used by the kernel, it
-> can't be offlined. It is not a bug.
-
-Right.  But how often does this happen in testing?  In other words,
-please provide an overall description of how well memory hot-remove is
-presently operating.  Is it reliable?  What is the success rate in
-real-world situations?  Are there precautions which the administrator
-can take to improve the success rate?  What are the remaining problems
-and are there plans to address them?
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index 0dba506..40df7c8 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -195,13 +195,10 @@ void __init do_init_bootmem(void)
+ 	min_low_pfn = MEMORY_START >> PAGE_SHIFT;
+ 	boot_mapsize = init_bootmem_node(NODE_DATA(0), start >> PAGE_SHIFT, min_low_pfn, max_low_pfn);
+ 
+-	/* Add active regions with valid PFNs */
+-	for_each_memblock(memory, reg) {
+-		unsigned long start_pfn, end_pfn;
+-		start_pfn = memblock_region_memory_base_pfn(reg);
+-		end_pfn = memblock_region_memory_end_pfn(reg);
+-		memblock_set_node(0, (phys_addr_t)ULLONG_MAX, 0);
+-	}
++	/* Place all memblock_regions in the same node and merge contiguous
++	 * memblock_regions
++	 */
++	memblock_set_node(0, (phys_addr_t)ULLONG_MAX, 0);
+ 
+ 	/* Add all physical memory to the bootmem map, mark each area
+ 	 * present.
+-- 
+1.8.0.3
