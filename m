@@ -1,23 +1,25 @@
-Return-Path: <B37400@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe004.messaging.microsoft.com [216.32.181.184])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D69742C00AC
- for <linuxppc-dev@ozlabs.org>; Wed,  9 Jan 2013 18:10:37 +1100 (EST)
-From: Singh Sandeep-B37400 <B37400@freescale.com>
-To: "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>, "linuxppc-dev@ozlabs.org"
- <linuxppc-dev@ozlabs.org>
-Subject: RE: [PATCH] Added device tree binding for TDM and TDM phy
-Date: Wed, 9 Jan 2013 07:10:24 +0000
-Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E69CEB8@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1357133120-2271-1-git-send-email-Sandeep@freescale.com>
-In-Reply-To: <1357133120-2271-1-git-send-email-Sandeep@freescale.com>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: Aggrwal Poonam-B10812 <B10812@freescale.com>
+Return-Path: <tangchen@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 753D02C00D2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Jan 2013 20:33:33 +1100 (EST)
+From: Tang Chen <tangchen@cn.fujitsu.com>
+To: akpm@linux-foundation.org, rientjes@google.com, len.brown@intel.com,
+ benh@kernel.crashing.org, paulus@samba.org, cl@linux.com,
+ minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
+ isimatu.yasuaki@jp.fujitsu.com, wujianguo@huawei.com,
+ wency@cn.fujitsu.com, tangchen@cn.fujitsu.com, hpa@zytor.com,
+ linfeng@cn.fujitsu.com, laijs@cn.fujitsu.com, mgorman@suse.de,
+ yinghai@kernel.org, glommer@parallels.com
+Subject: [PATCH v6 07/15] memory-hotplug: move pgdat_resize_lock into
+ sparse_remove_one_section()
+Date: Wed, 9 Jan 2013 17:32:31 +0800
+Message-Id: <1357723959-5416-8-git-send-email-tangchen@cn.fujitsu.com>
+In-Reply-To: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,162 +29,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A gentle reminder.
-Any comments are appreciated.
+In __remove_section(), we locked pgdat_resize_lock when calling
+sparse_remove_one_section(). This lock will disable irq. But we don't need
+to lock the whole function. If we do some work to free pagetables in
+free_section_usemap(), we need to call flush_tlb_all(), which need
+irq enabled. Otherwise the WARN_ON_ONCE() in smp_call_function_many()
+will be triggered.
 
-Regards,
-Sandeep
+If we lock the whole sparse_remove_one_section(), then we come to this call trace:
 
-> -----Original Message-----
-> From: Singh Sandeep-B37400
-> Sent: Wednesday, January 02, 2013 6:55 PM
-> To: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@ozlabs.org
-> Cc: Singh Sandeep-B37400; Aggrwal Poonam-B10812
-> Subject: [PATCH] Added device tree binding for TDM and TDM phy
->=20
-> This controller is available on many Freescale SOCs like MPC8315, P1020,
-> P1010 and P1022
->=20
-> Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
-> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> ---
->  .../devicetree/bindings/powerpc/fsl/fsl-tdm.txt    |   63
-> ++++++++++++++++++++
->  .../devicetree/bindings/powerpc/fsl/tdm-phy.txt    |   38 ++++++++++++
->  2 files changed, 101 insertions(+), 0 deletions(-)  create mode 100644
-> Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
->  create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/tdm-
-> phy.txt
->=20
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
-> b/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
-> new file mode 100644
-> index 0000000..ceb2ef1
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
-> @@ -0,0 +1,63 @@
-> +TDM Device Tree Binding
-> +
-> +NOTE: The bindings described in this document are preliminary and
-> +subject to change.
-> +
-> +TDM (Time Division Multiplexing)
-> +
-> +Description:
-> +
-> +The TDM is full duplex serial port designed to allow various devices
-> +including digital signal processors (DSPs) to communicate with a
-> +variety of serial devices including industry standard framers, codecs,
-> other DSPs and microprocessors.
-> +
-> +The below properties describe the device tree bindings for Freescale
-> +TDM controller. This TDM controller is available on various Freescale
-> +Processors like MPC8315, P1020, P1022 and P1010.
-> +
-> +Required properties:
-> +
-> +- compatible
-> +    Value type: <string>
-> +    Definition: Should contain "fsl,tdm1.0".
-> +
-> +- reg
-> +    Definition: A standard property. The first reg specifier describes
-> the TDM
-> +    registers, and the second describes the TDM DMAC registers.
-> +
-> +- tdm_tx_clk
-> +    Value type: <u32 or u64>
-> +    Definition: This specifies the value of transmit clock. It should
-> not
-> +    exceed 50Mhz.
-> +
-> +- tdm_rx_clk
-> +    Value type: <u32 or u64>
-> +    Definition: This specifies the value of receive clock. Its value
-> could be
-> +    zero, in which case tdm will operate in shared mode. Its value
-> should not
-> +    exceed 50Mhz.
-> +
-> +- interrupts
-> +    Definition: Two interrupt specifiers. The first is TDM error, and
-> the
-> +    second is TDM DMAC.
-> +
-> +- phy-handle
-> +    Value type: <phandle>
-> +    Definition: Phandle of the line controller node or framer node eg.
-> SLIC,
-> +    E1/T1 etc. (Refer
-> +Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt)
-> +
-> +- fsl,max-time-slots
-> +    Value type: <u32>
-> +    Definition: Maximum number of 8-bit time slots in one TDM frame.
-> This is
-> +    the maximum number which TDM hardware supports.
-> +
-> +Example:
-> +
-> +	tdm@16000 {
-> +		compatible =3D "fsl,tdm1.0";
-> +		reg =3D <0x16000 0x200 0x2c000 0x2000>;
-> +		tdm_tx_clk =3D <2048000>;
-> +		tdm_rx_clk =3D <0>;
-> +		interrupts =3D <16 8 62 8>;
-> +		phy-handle =3D <&tdm-phy>;
-> +		fsl,max-time-slots =3D <128>;
-> +	};
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
-> b/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
-> new file mode 100644
-> index 0000000..2563934
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
-> @@ -0,0 +1,38 @@
-> +TDM PHY Device Tree Binding
-> +
-> +NOTE: The bindings described in this document are preliminary and
-> +subject to change.
-> +
-> +Description:
-> +TDM PHY is the terminal interface of TDM subsystem. It is typically a
-> +line control device like E1/T1 framer or SLIC. A TDM device can have
-> +multiple TDM PHYs.
-> +
-> +Required properties:
-> +
-> +- compatible
-> +    Value type: <string>
-> +    Definition: Should contain generic compatibility like "tdm-phy-slic"
-> or
-> +    "tdm-phy-e1" or "tdm-phy-t1".
-> +
-> +- max-num-ports
-> +    Value type: <u32>
-> +    Definition: Defines the maximum number of ports supported by the
-> SLIC
-> +    device. Only required if the device is SLIC. For E1/T1 devices the
-> number
-> +    of ports are predefined i.e. (24 in case of T1 and 32 in case of
-> E1).
-> +
-> +Apart from the above, there may be other properties required because of
-> +the bus/interface this device is connected on. It could be SPI/local
-> bus, etc.
-> +
-> +Example:
-> +
-> +	tdm-phy@0 {
-> +		compatible =3D "zarlink,le88266","tdm-phy-slic";
-> +		reg =3D <0>;
-> +		max-num-ports =3D <4>;
-> +		spi-max-frequency =3D <8000000>;
-> +	};
-> +
-> +In the above example properties "reg" and "spi-max-frequency" are SPI
-> +specific as the SLIC device is connected on SPI interface. These
-> +properties might vary depending on the specific interface the device is
-> using.
-> --
-> 1.7.6.GIT
+[  454.796248] ------------[ cut here ]------------
+[  454.851408] WARNING: at kernel/smp.c:461 smp_call_function_many+0xbd/0x260()
+[  454.935620] Hardware name: PRIMEQUEST 1800E
+......
+[  455.652201] Call Trace:
+[  455.681391]  [<ffffffff8106e73f>] warn_slowpath_common+0x7f/0xc0
+[  455.753151]  [<ffffffff810560a0>] ? leave_mm+0x50/0x50
+[  455.814527]  [<ffffffff8106e79a>] warn_slowpath_null+0x1a/0x20
+[  455.884208]  [<ffffffff810e7a9d>] smp_call_function_many+0xbd/0x260
+[  455.959082]  [<ffffffff810e7ecb>] smp_call_function+0x3b/0x50
+[  456.027722]  [<ffffffff810560a0>] ? leave_mm+0x50/0x50
+[  456.089098]  [<ffffffff810e7f4b>] on_each_cpu+0x3b/0xc0
+[  456.151512]  [<ffffffff81055f0c>] flush_tlb_all+0x1c/0x20
+[  456.216004]  [<ffffffff8104f8de>] remove_pagetable+0x14e/0x1d0
+[  456.285683]  [<ffffffff8104f978>] vmemmap_free+0x18/0x20
+[  456.349139]  [<ffffffff811b8797>] sparse_remove_one_section+0xf7/0x100
+[  456.427126]  [<ffffffff811c5fc2>] __remove_section+0xa2/0xb0
+[  456.494726]  [<ffffffff811c6070>] __remove_pages+0xa0/0xd0
+[  456.560258]  [<ffffffff81669c7b>] arch_remove_memory+0x6b/0xc0
+[  456.629937]  [<ffffffff8166ad28>] remove_memory+0xb8/0xf0
+[  456.694431]  [<ffffffff813e686f>] acpi_memory_device_remove+0x53/0x96
+[  456.771379]  [<ffffffff813b33c4>] acpi_device_remove+0x90/0xb2
+[  456.841059]  [<ffffffff8144b02c>] __device_release_driver+0x7c/0xf0
+[  456.915928]  [<ffffffff8144b1af>] device_release_driver+0x2f/0x50
+[  456.988719]  [<ffffffff813b4476>] acpi_bus_remove+0x32/0x6d
+[  457.055285]  [<ffffffff813b4542>] acpi_bus_trim+0x91/0x102
+[  457.120814]  [<ffffffff813b463b>] acpi_bus_hot_remove_device+0x88/0x16b
+[  457.199840]  [<ffffffff813afda7>] acpi_os_execute_deferred+0x27/0x34
+[  457.275756]  [<ffffffff81091ece>] process_one_work+0x20e/0x5c0
+[  457.345434]  [<ffffffff81091e5f>] ? process_one_work+0x19f/0x5c0
+[  457.417190]  [<ffffffff813afd80>] ? acpi_os_wait_events_complete+0x23/0x23
+[  457.499332]  [<ffffffff81093f6e>] worker_thread+0x12e/0x370
+[  457.565896]  [<ffffffff81093e40>] ? manage_workers+0x180/0x180
+[  457.635574]  [<ffffffff8109a09e>] kthread+0xee/0x100
+[  457.694871]  [<ffffffff810dfaf9>] ? __lock_release+0x129/0x190
+[  457.764552]  [<ffffffff81099fb0>] ? __init_kthread_worker+0x70/0x70
+[  457.839427]  [<ffffffff81690aac>] ret_from_fork+0x7c/0xb0
+[  457.903914]  [<ffffffff81099fb0>] ? __init_kthread_worker+0x70/0x70
+[  457.978784] ---[ end trace 25e85300f542aa01 ]---
+
+Signed-off-by: Tang Chen <tangchen@cn.fujitsu.com>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memory_hotplug.c |    4 ----
+ mm/sparse.c         |    5 ++++-
+ 2 files changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 0682d2a..674e791 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -442,8 +442,6 @@ static int __remove_section(struct zone *zone, struct mem_section *ms)
+ #else
+ static int __remove_section(struct zone *zone, struct mem_section *ms)
+ {
+-	unsigned long flags;
+-	struct pglist_data *pgdat = zone->zone_pgdat;
+ 	int ret = -EINVAL;
+ 
+ 	if (!valid_section(ms))
+@@ -453,9 +451,7 @@ static int __remove_section(struct zone *zone, struct mem_section *ms)
+ 	if (ret)
+ 		return ret;
+ 
+-	pgdat_resize_lock(pgdat, &flags);
+ 	sparse_remove_one_section(zone, ms);
+-	pgdat_resize_unlock(pgdat, &flags);
+ 	return 0;
+ }
+ #endif
+diff --git a/mm/sparse.c b/mm/sparse.c
+index aadbb2a..05ca73a 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -796,8 +796,10 @@ static inline void clear_hwpoisoned_pages(struct page *memmap, int nr_pages)
+ void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
+ {
+ 	struct page *memmap = NULL;
+-	unsigned long *usemap = NULL;
++	unsigned long *usemap = NULL, flags;
++	struct pglist_data *pgdat = zone->zone_pgdat;
+ 
++	pgdat_resize_lock(pgdat, &flags);
+ 	if (ms->section_mem_map) {
+ 		usemap = ms->pageblock_flags;
+ 		memmap = sparse_decode_mem_map(ms->section_mem_map,
+@@ -805,6 +807,7 @@ void sparse_remove_one_section(struct zone *zone, struct mem_section *ms)
+ 		ms->section_mem_map = 0;
+ 		ms->pageblock_flags = NULL;
+ 	}
++	pgdat_resize_unlock(pgdat, &flags);
+ 
+ 	clear_hwpoisoned_pages(memmap, PAGES_PER_SECTION);
+ 	free_section_usemap(memmap, usemap);
+-- 
+1.7.1
