@@ -1,19 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <glommer@parallels.com>
+Received: from mx2.parallels.com (mx2.parallels.com [64.131.90.16])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id D174F2C0315
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 17:45:50 +1100 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
- by gate.crashing.org (8.14.1/8.13.8) with ESMTP id r0A6jjbQ006579
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 00:45:46 -0600
-Message-ID: <1357800345.4838.91.camel@pasglop>
-Subject: [PATCH] powerpc: Make room in exception vector area
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Date: Thu, 10 Jan 2013 17:45:45 +1100
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by ozlabs.org (Postfix) with ESMTPS id 804FA2C0328
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 18:14:24 +1100 (EST)
+Message-ID: <50EE6A48.7060307@parallels.com>
+Date: Thu, 10 Jan 2013 11:14:16 +0400
+From: Glauber Costa <glommer@parallels.com>
+MIME-Version: 1.0
+To: Tang Chen <tangchen@cn.fujitsu.com>
+Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
+References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+ <20130109142314.1ce04a96.akpm@linux-foundation.org>
+ <50EE24A4.8020601@cn.fujitsu.com>
+In-Reply-To: <50EE24A4.8020601@cn.fujitsu.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
+ wency@cn.fujitsu.com, cmetcalf@tilera.com, wujianguo@huawei.com,
+ yinghai@kernel.org, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+ minchan.kim@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,139 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The FWNMI region is fixed at 0x7000 and the vector are now
-overflowing that with some configurations. Fix that by moving
-some hash management code out of that region as it doesn't need
-to be that close to the call sites (isn't accessed using
-conditional branches).
+On 01/10/2013 06:17 AM, Tang Chen wrote:
+>>> Note: if the memory provided by the memory device is used by the
+>>> kernel, it
+>>> can't be offlined. It is not a bug.
+>>
+>> Right.  But how often does this happen in testing?  In other words,
+>> please provide an overall description of how well memory hot-remove is
+>> presently operating.  Is it reliable?  What is the success rate in
+>> real-world situations?
+> 
+> We test the hot-remove functionality mostly with movable_online used.
+> And the memory used by kernel is not allowed to be removed.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
- arch/powerpc/kernel/exceptions-64s.S |  110 +++++++++++++++++-----------------
- 1 file changed, 55 insertions(+), 55 deletions(-)
+Can you try doing this using cpusets configured to hardwall ?
+It is my understanding that the object allocators will try hard not to
+allocate anything outside the walls defined by cpuset. Which means that
+if you have one process per node, and they are hardwalled, your kernel
+memory will be spread evenly among the machine. With a big enough load,
+they should eventually be present in all blocks.
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index a28a65f..7a1c87c 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1180,6 +1180,61 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	.globl	__end_handlers
- __end_handlers:
- 
-+	/* Equivalents to the above handlers for relocation-on interrupt vectors */
-+	STD_RELON_EXCEPTION_HV(., 0xe00, h_data_storage)
-+	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe00)
-+	STD_RELON_EXCEPTION_HV(., 0xe20, h_instr_storage)
-+	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe20)
-+	STD_RELON_EXCEPTION_HV(., 0xe40, emulation_assist)
-+	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe40)
-+	STD_RELON_EXCEPTION_HV(., 0xe60, hmi_exception)
-+	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe60)
-+	MASKABLE_RELON_EXCEPTION_HV(., 0xe80, h_doorbell)
-+	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe80)
-+
-+	STD_RELON_EXCEPTION_PSERIES(., 0xf00, performance_monitor)
-+	STD_RELON_EXCEPTION_PSERIES(., 0xf20, altivec_unavailable)
-+	STD_RELON_EXCEPTION_PSERIES(., 0xf40, vsx_unavailable)
-+
-+#if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
-+/*
-+ * Data area reserved for FWNMI option.
-+ * This address (0x7000) is fixed by the RPA.
-+ */
-+	.= 0x7000
-+	.globl fwnmi_data_area
-+fwnmi_data_area:
-+
-+	/* pseries and powernv need to keep the whole page from
-+	 * 0x7000 to 0x8000 free for use by the firmware
-+	 */
-+	. = 0x8000
-+#endif /* defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
-+
-+/* Space for CPU0's segment table */
-+	.balign 4096
-+	.globl initial_stab
-+initial_stab:
-+	.space	4096
-+
-+#ifdef CONFIG_PPC_POWERNV
-+_GLOBAL(opal_mc_secondary_handler)
-+	HMT_MEDIUM_PPR_DISCARD
-+	SET_SCRATCH0(r13)
-+	GET_PACA(r13)
-+	clrldi	r3,r3,2
-+	tovirt(r3,r3)
-+	std	r3,PACA_OPAL_MC_EVT(r13)
-+	ld	r13,OPAL_MC_SRR0(r3)
-+	mtspr	SPRN_SRR0,r13
-+	ld	r13,OPAL_MC_SRR1(r3)
-+	mtspr	SPRN_SRR1,r13
-+	ld	r3,OPAL_MC_GPR3(r3)
-+	GET_SCRATCH0(r13)
-+	b	machine_check_pSeries
-+#endif /* CONFIG_PPC_POWERNV */
-+
-+
- /*
-  * Hash table stuff
-  */
-@@ -1373,58 +1428,3 @@ _GLOBAL(do_stab_bolted)
- 	ld	r13,PACA_EXSLB+EX_R13(r13)
- 	rfid
- 	b	.	/* prevent speculative execution */
--
--
--	/* Equivalents to the above handlers for relocation-on interrupt vectors */
--	STD_RELON_EXCEPTION_HV(., 0xe00, h_data_storage)
--	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe00)
--	STD_RELON_EXCEPTION_HV(., 0xe20, h_instr_storage)
--	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe20)
--	STD_RELON_EXCEPTION_HV(., 0xe40, emulation_assist)
--	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe40)
--	STD_RELON_EXCEPTION_HV(., 0xe60, hmi_exception)
--	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe60)
--	MASKABLE_RELON_EXCEPTION_HV(., 0xe80, h_doorbell)
--	KVM_HANDLER(PACA_EXGEN, EXC_HV, 0xe80)
--
--	STD_RELON_EXCEPTION_PSERIES(., 0xf00, performance_monitor)
--	STD_RELON_EXCEPTION_PSERIES(., 0xf20, altivec_unavailable)
--	STD_RELON_EXCEPTION_PSERIES(., 0xf40, vsx_unavailable)
--
--#if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
--/*
-- * Data area reserved for FWNMI option.
-- * This address (0x7000) is fixed by the RPA.
-- */
--	.= 0x7000
--	.globl fwnmi_data_area
--fwnmi_data_area:
--
--	/* pseries and powernv need to keep the whole page from
--	 * 0x7000 to 0x8000 free for use by the firmware
--	 */
--	. = 0x8000
--#endif /* defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV) */
--
--/* Space for CPU0's segment table */
--	.balign 4096
--	.globl initial_stab
--initial_stab:
--	.space	4096
--
--#ifdef CONFIG_PPC_POWERNV
--_GLOBAL(opal_mc_secondary_handler)
--	HMT_MEDIUM_PPR_DISCARD
--	SET_SCRATCH0(r13)
--	GET_PACA(r13)
--	clrldi	r3,r3,2
--	tovirt(r3,r3)
--	std	r3,PACA_OPAL_MC_EVT(r13)
--	ld	r13,OPAL_MC_SRR0(r3)
--	mtspr	SPRN_SRR0,r13
--	ld	r13,OPAL_MC_SRR1(r3)
--	mtspr	SPRN_SRR1,r13
--	ld	r3,OPAL_MC_GPR3(r3)
--	GET_SCRATCH0(r13)
--	b	machine_check_pSeries
--#endif /* CONFIG_PPC_POWERNV */
+Another question I have for you: Have you considering calling
+shrink_slab to try to deplete the caches and therefore free at least
+slab memory in the nodes that can't be offlined? Is it relevant?
