@@ -1,17 +1,17 @@
 Return-Path: <toshi.kani@hp.com>
-Received: from g6t0187.atlanta.hp.com (g6t0187.atlanta.hp.com [15.193.32.64])
+Received: from g5t0009.atlanta.hp.com (g5t0009.atlanta.hp.com [15.192.0.46])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "smtp.hp.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id D11E12C00DC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 11:00:38 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id C1FF82C0431
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 11:00:58 +1100 (EST)
 From: Toshi Kani <toshi.kani@hp.com>
 To: rjw@sisk.pl, lenb@kernel.org, gregkh@linuxfoundation.org,
  akpm@linux-foundation.org
-Subject: [RFC PATCH v2 08/12] ACPI: Update processor driver for hotplug
+Subject: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
  framework
-Date: Thu, 10 Jan 2013 16:40:26 -0700
-Message-Id: <1357861230-29549-9-git-send-email-toshi.kani@hp.com>
+Date: Thu, 10 Jan 2013 16:40:19 -0700
+Message-Id: <1357861230-29549-2-git-send-email-toshi.kani@hp.com>
 In-Reply-To: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
 References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
 Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
@@ -28,245 +28,209 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added acpi_processor_resource() for the .resource() interface,
-which sets CPU information to a hotplug request.
+Added include/linux/sys_hotplug.h, which defines the system device
+hotplug framework interfaces used by the framework itself and
+handlers.
 
-Changed acpi_processor_hotplug_notify() to request a hotplug
-operation by calling shp_submit_req().  It no longer initiates
-hot-add or hot-delete operation by calling acpi_bus_add() or
-acpi_bus_hot_remove_device() directly.
+The order values define the calling sequence of handlers.  For add
+execute, the ordering is ACPI->MEM->CPU.  Memory is onlined before
+CPU so that threads on new CPUs can start using their local memory.
+The ordering of the delete execute is symmetric to the add execute.
 
-acpi_processor_handle_eject() is changed not to call cpu_down()
-since .add() / .remove() may not online / offline a device.
+struct shp_request defines a hot-plug request information.  The
+device resource information is managed with a list so that a single
+request may target to multiple devices.
 
 Signed-off-by: Toshi Kani <toshi.kani@hp.com>
 ---
- drivers/acpi/processor_driver.c |  150 ++++++++++++++++++---------------------
- 1 file changed, 70 insertions(+), 80 deletions(-)
+ include/linux/sys_hotplug.h |  181 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 181 insertions(+)
+ create mode 100644 include/linux/sys_hotplug.h
 
-diff --git a/drivers/acpi/processor_driver.c b/drivers/acpi/processor_driver.c
-index e83311b..f630c2c 100644
---- a/drivers/acpi/processor_driver.c
-+++ b/drivers/acpi/processor_driver.c
-@@ -57,6 +57,7 @@
- #include <acpi/acpi_bus.h>
- #include <acpi/acpi_drivers.h>
- #include <acpi/processor.h>
-+#include <acpi/sys_hotplug.h>
- 
- #define PREFIX "ACPI: "
- 
-@@ -83,6 +84,8 @@ MODULE_LICENSE("GPL");
- static int acpi_processor_add(struct acpi_device *device);
- static int acpi_processor_remove(struct acpi_device *device, int type);
- static void acpi_processor_notify(struct acpi_device *device, u32 event);
-+static int acpi_processor_resource(struct acpi_device *device,
-+		struct shp_request *shp_req);
- static acpi_status acpi_processor_hotadd_init(struct acpi_processor *pr);
- static int acpi_processor_handle_eject(struct acpi_processor *pr);
- static int acpi_processor_start(struct acpi_processor *pr);
-@@ -105,6 +108,7 @@ static struct acpi_driver acpi_processor_driver = {
- 		.add = acpi_processor_add,
- 		.remove = acpi_processor_remove,
- 		.notify = acpi_processor_notify,
-+		.resource = acpi_processor_resource,
- 		},
- 	.drv.pm = &acpi_processor_pm,
- };
-@@ -649,6 +653,33 @@ free:
- 	return 0;
- }
- 
-+static int
-+acpi_processor_resource(struct acpi_device *device, struct shp_request *shp_req)
+diff --git a/include/linux/sys_hotplug.h b/include/linux/sys_hotplug.h
+new file mode 100644
+index 0000000..86674dd
+--- /dev/null
++++ b/include/linux/sys_hotplug.h
+@@ -0,0 +1,181 @@
++/*
++ * sys_hotplug.h - System device hot-plug framework
++ *
++ * Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
++ *	Toshi Kani <toshi.kani@hp.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _LINUX_SYS_HOTPLUG_H
++#define _LINUX_SYS_HOTPLUG_H
++
++#include <linux/list.h>
++#include <linux/device.h>
++
++/*
++ * System device hot-plug operation proceeds in the following order.
++ *   Validate phase -> Execute phase -> Commit phase
++ *
++ * The order values below define the calling sequence of platform
++ * neutral handlers for each phase in ascending order.  The order
++ * values of firmware-specific handlers are defined in sys_hotplug.h
++ * under firmware specific directories.
++ */
++
++/* All order values must be smaller than this value */
++#define SHP_ORDER_MAX				0xffffff
++
++/* Add Validate order values */
++
++/* Add Execute order values */
++#define SHP_MEM_ADD_EXECUTE_ORDER		100
++#define SHP_CPU_ADD_EXECUTE_ORDER		110
++
++/* Add Commit order values */
++
++/* Delete Validate order values */
++#define SHP_CPU_DEL_VALIDATE_ORDER		100
++#define SHP_MEM_DEL_VALIDATE_ORDER		110
++
++/* Delete Execute order values */
++#define SHP_CPU_DEL_EXECUTE_ORDER		10
++#define SHP_MEM_DEL_EXECUTE_ORDER		20
++
++/* Delete Commit order values */
++
++/*
++ * Hot-plug request types
++ */
++#define SHP_REQ_ADD		0x000000
++#define SHP_REQ_DELETE		0x000001
++#define SHP_REQ_MASK		0x0000ff
++
++/*
++ * Hot-plug phase types
++ */
++#define SHP_PH_VALIDATE		0x000000
++#define SHP_PH_EXECUTE		0x000100
++#define SHP_PH_COMMIT		0x000200
++#define SHP_PH_MASK		0x00ff00
++
++/*
++ * Hot-plug operation types
++ */
++#define SHP_OP_HOTPLUG		0x000000
++#define SHP_OP_ONLINE		0x010000
++#define SHP_OP_MASK		0xff0000
++
++/*
++ * Hot-plug phases
++ */
++enum shp_phase {
++	SHP_ADD_VALIDATE	= (SHP_REQ_ADD|SHP_PH_VALIDATE),
++	SHP_ADD_EXECUTE		= (SHP_REQ_ADD|SHP_PH_EXECUTE),
++	SHP_ADD_COMMIT		= (SHP_REQ_ADD|SHP_PH_COMMIT),
++	SHP_DEL_VALIDATE	= (SHP_REQ_DELETE|SHP_PH_VALIDATE),
++	SHP_DEL_EXECUTE		= (SHP_REQ_DELETE|SHP_PH_EXECUTE),
++	SHP_DEL_COMMIT		= (SHP_REQ_DELETE|SHP_PH_COMMIT)
++};
++
++/*
++ * Hot-plug operations
++ */
++enum shp_operation {
++	SHP_HOTPLUG_ADD		= (SHP_OP_HOTPLUG|SHP_REQ_ADD),
++	SHP_HOTPLUG_DEL		= (SHP_OP_HOTPLUG|SHP_REQ_DELETE),
++	SHP_ONLINE_ADD		= (SHP_OP_ONLINE|SHP_REQ_ADD),
++	SHP_ONLINE_DEL		= (SHP_OP_ONLINE|SHP_REQ_DELETE)
++};
++
++/*
++ * Hot-plug device classes
++ */
++enum shp_class {
++	SHP_CLS_INVALID		= 0,
++	SHP_CLS_CPU		= 1,
++	SHP_CLS_MEMORY		= 2,
++	SHP_CLS_HOSTBRIDGE	= 3,
++	SHP_CLS_CONTAINER	= 4,
++};
++
++/*
++ * Hot-plug device information
++ */
++union shp_dev_info {
++	struct shp_cpu {
++		u32		cpu_id;
++	} cpu;
++
++	struct shp_memory {
++		int		node;
++		u64		start_addr;
++		u64		length;
++	} mem;
++
++	struct shp_hostbridge {
++	} hb;
++
++	struct shp_node {
++	} node;
++};
++
++struct shp_device {
++	struct list_head	list;
++	struct device		*device;
++	enum shp_class		class;
++	union shp_dev_info	info;
++};
++
++/*
++ * Hot-plug request
++ */
++struct shp_request {
++	/* common info */
++	enum shp_operation	operation;	/* operation */
++
++	/* hot-plug event info: only valid for hot-plug operations */
++	void			*handle;	/* FW handle */
++	u32			event;		/* FW event */
++
++	/* device resource info */
++	struct list_head	dev_list;	/* shp_device list */
++};
++
++/*
++ * Inline Utility Functions
++ */
++static inline bool shp_is_hotplug_op(enum shp_operation operation)
 +{
-+	struct acpi_processor *pr;
-+	struct shp_device *shp_dev;
-+
-+	pr = acpi_driver_data(device);
-+	if (!pr) {
-+		dev_err(&device->dev, "Driver data missing\n");
-+		return -EINVAL;
-+	}
-+
-+	shp_dev = kzalloc(sizeof(*shp_dev), GFP_KERNEL);
-+	if (!shp_dev) {
-+		dev_err(&device->dev, "Failed to allocate shp_dev\n");
-+		return -EINVAL;
-+	}
-+
-+	shp_dev->device = &device->dev;
-+	shp_dev->class = SHP_CLS_CPU;
-+	shp_dev->info.cpu.cpu_id = pr->id;
-+
-+	shp_add_dev_info(shp_req, shp_dev);
-+
-+	return 0;
++	return (operation & SHP_OP_MASK) == SHP_OP_HOTPLUG;
 +}
 +
- #ifdef CONFIG_ACPI_HOTPLUG_CPU
- /****************************************************************************
-  * 	Acpi processor hotplug support 				       	    *
-@@ -677,97 +708,68 @@ static int is_processor_present(acpi_handle handle)
- 	return 0;
- }
- 
--static
--int acpi_processor_device_add(acpi_handle handle, struct acpi_device **device)
--{
--	acpi_handle phandle;
--	struct acpi_device *pdev;
--
--
--	if (acpi_get_parent(handle, &phandle)) {
--		return -ENODEV;
--	}
--
--	if (acpi_bus_get_device(phandle, &pdev)) {
--		return -ENODEV;
--	}
--
--	if (acpi_bus_add(device, pdev, handle, ACPI_BUS_TYPE_PROCESSOR)) {
--		return -ENODEV;
--	}
--
--	return 0;
--}
--
- static void acpi_processor_hotplug_notify(acpi_handle handle,
- 					  u32 event, void *data)
- {
- 	struct acpi_device *device = NULL;
--	struct acpi_eject_event *ej_event = NULL;
-+	struct shp_request *shp_req;
-+	enum shp_operation shp_op;
- 	u32 ost_code = ACPI_OST_SC_NON_SPECIFIC_FAILURE; /* default */
--	int result;
- 
- 	switch (event) {
- 	case ACPI_NOTIFY_BUS_CHECK:
- 	case ACPI_NOTIFY_DEVICE_CHECK:
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--		"Processor driver received %s event\n",
--		       (event == ACPI_NOTIFY_BUS_CHECK) ?
--		       "ACPI_NOTIFY_BUS_CHECK" : "ACPI_NOTIFY_DEVICE_CHECK"));
--
--		if (!is_processor_present(handle))
--			break;
--
--		if (!acpi_bus_get_device(handle, &device))
--			break;
-+		if (!is_processor_present(handle)) {
-+			acpi_handle_err(handle, "Device not enabled\n");
-+			goto err;
-+		}
- 
--		result = acpi_processor_device_add(handle, &device);
--		if (result) {
--			acpi_handle_err(handle, "Unable to add the device\n");
--			break;
-+		if (!acpi_bus_get_device(handle, &device)) {
-+			acpi_handle_err(handle, "Device added already\n");
-+			goto err;
- 		}
- 
--		ost_code = ACPI_OST_SC_SUCCESS;
-+		shp_op = SHP_HOTPLUG_ADD;
- 		break;
- 
- 	case ACPI_NOTIFY_EJECT_REQUEST:
--		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
--				  "received ACPI_NOTIFY_EJECT_REQUEST\n"));
--
- 		if (acpi_bus_get_device(handle, &device)) {
--			acpi_handle_err(handle,
--				"Device don't exist, dropping EJECT\n");
--			break;
-+			acpi_handle_err(handle, "Device not added yet\n");
-+			goto err;
- 		}
- 		if (!acpi_driver_data(device)) {
--			acpi_handle_err(handle,
--				"Driver data is NULL, dropping EJECT\n");
--			break;
-+			acpi_handle_err(handle, "Driver data missing\n");
-+			goto err;
- 		}
- 
--		ej_event = kmalloc(sizeof(*ej_event), GFP_KERNEL);
--		if (!ej_event) {
--			acpi_handle_err(handle, "No memory, dropping EJECT\n");
--			break;
--		}
--
--		ej_event->handle = handle;
--		ej_event->event = ACPI_NOTIFY_EJECT_REQUEST;
--		acpi_os_hotplug_execute(acpi_bus_hot_remove_device,
--					(void *)ej_event);
--
--		/* eject is performed asynchronously */
--		return;
-+		shp_op = SHP_HOTPLUG_DEL;
-+		break;
- 
- 	default:
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
- 				  "Unsupported event [0x%x]\n", event));
--
--		/* non-hotplug event; possibly handled by other handler */
- 		return;
- 	}
- 
--	/* Inform firmware that the hotplug operation has completed */
-+	shp_req = shp_alloc_request(shp_op);
-+	if (!shp_req) {
-+		acpi_handle_err(handle, "No memory to request hotplug\n");
-+		goto err;
-+	}
++static inline bool shp_is_online_op(enum shp_operation operation)
++{
++	return (operation & SHP_OP_MASK) == SHP_OP_ONLINE;
++}
 +
-+	shp_req->handle = (void *)handle;
-+	shp_req->event = event;
++static inline bool shp_is_add_op(enum shp_operation operation)
++{
++	return (operation & SHP_REQ_MASK) == SHP_REQ_ADD;
++}
 +
-+	if (shp_submit_req(shp_req)) {
-+		acpi_handle_err(handle, "Failed to request hotplug\n");
-+		kfree(shp_req);
-+		goto err;
-+	}
++static inline bool shp_is_add_phase(enum shp_phase phase)
++{
++	return (phase & SHP_REQ_MASK) == SHP_REQ_ADD;
++}
 +
-+	return;
++/*
++ * Externs
++ */
++typedef int (*shp_func)(struct shp_request *req, int rollback);
++extern int shp_register_handler(enum shp_phase phase, shp_func func, u32 order);
++extern int shp_unregister_handler(enum shp_phase phase, shp_func func);
++extern int shp_submit_req(struct shp_request *req);
++extern struct shp_request *shp_alloc_request(enum shp_operation operation);
++extern void shp_add_dev_info(struct shp_request *shp_req,
++		struct shp_device *shp_dev);
 +
-+err:
-+	/* Inform firmware that the hotplug operation completed w/ error */
- 	(void) acpi_evaluate_hotplug_ost(handle, event, ost_code, NULL);
- 	return;
- }
-@@ -865,25 +867,13 @@ static acpi_status acpi_processor_hotadd_init(struct acpi_processor *pr)
- 
- static int acpi_processor_handle_eject(struct acpi_processor *pr)
- {
--	if (cpu_online(pr->id))
--		cpu_down(pr->id);
--
--	get_online_cpus();
--	/*
--	 * The cpu might become online again at this point. So we check whether
--	 * the cpu has been onlined or not. If the cpu became online, it means
--	 * that someone wants to use the cpu. So acpi_processor_handle_eject()
--	 * returns -EAGAIN.
--	 */
--	if (unlikely(cpu_online(pr->id))) {
--		put_online_cpus();
--		pr_warn("Failed to remove CPU %d, because other task "
--			"brought the CPU back online\n", pr->id);
--		return -EAGAIN;
-+	if (cpu_online(pr->id)) {
-+		pr_err("ACPI: cpu %d not off-lined\n", pr->id);
-+		return -EINVAL;
- 	}
-+
- 	arch_unregister_cpu(pr->id);
- 	acpi_unmap_lsapic(pr->id);
--	put_online_cpus();
- 	return (0);
- }
- #else
++#endif	/* _LINUX_SYS_HOTPLUG_H */
