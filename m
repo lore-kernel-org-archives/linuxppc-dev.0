@@ -1,16 +1,17 @@
 Return-Path: <toshi.kani@hp.com>
-Received: from g5t0008.atlanta.hp.com (g5t0008.atlanta.hp.com [15.192.0.45])
+Received: from g6t0187.atlanta.hp.com (g6t0187.atlanta.hp.com [15.193.32.64])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "smtp.hp.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E1CAA2C0331
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 11:01:16 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id B33CF2C0C73
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 11:05:38 +1100 (EST)
 From: Toshi Kani <toshi.kani@hp.com>
 To: rjw@sisk.pl, lenb@kernel.org, gregkh@linuxfoundation.org,
  akpm@linux-foundation.org
-Subject: [RFC PATCH v2 04/12] cpu: Add cpu hotplug handlers
-Date: Thu, 10 Jan 2013 16:40:22 -0700
-Message-Id: <1357861230-29549-5-git-send-email-toshi.kani@hp.com>
+Subject: [RFC PATCH v2 11/12] cpu: Update sysfs cpu/online for hotplug
+ framework
+Date: Thu, 10 Jan 2013 16:40:29 -0700
+Message-Id: <1357861230-29549-12-git-send-email-toshi.kani@hp.com>
 In-Reply-To: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
 References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
 Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
@@ -27,144 +28,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added cpu hotplug handlers.  cpu_add_execute() onlines requested
-cpus for hot-add & online operations, and cpu_del_execute()
-offlines them for hot-delete & offline operations.  They are
-also used for rollback as well.
-
-cpu_del_validate() fails a request if cpu0 is requested to delete.
+Changed store_online() to request a cpu online or offline
+operation by calling shp_submit_req().  It sets a target cpu
+device information with shp_add_dev_info() for the request.
 
 Signed-off-by: Toshi Kani <toshi.kani@hp.com>
 ---
- drivers/base/cpu.c |  107 ++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 107 insertions(+)
+ drivers/base/cpu.c |   40 ++++++++++++++++++++++++++++------------
+ 1 file changed, 28 insertions(+), 12 deletions(-)
 
 diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 6345294..05534ad 100644
+index 05534ad..cd1cbdc 100644
 --- a/drivers/base/cpu.c
 +++ b/drivers/base/cpu.c
-@@ -13,6 +13,8 @@
- #include <linux/gfp.h>
- #include <linux/slab.h>
- #include <linux/percpu.h>
-+#include <linux/list.h>
-+#include <linux/sys_hotplug.h>
- 
- #include "base.h"
- 
-@@ -324,10 +326,115 @@ static void __init cpu_dev_register_generic(void)
- #endif
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+static int cpu_del_execute(struct shp_request *req, int rollback);
-+
-+static int cpu_add_execute(struct shp_request *req, int rollback)
-+{
-+	struct shp_device *shp_dev;
-+	u32 cpu;
-+	int ret;
-+
-+	if (rollback)
-+		return cpu_del_execute(req, 0);
-+
-+	list_for_each_entry(shp_dev, &req->dev_list, list) {
-+		if (shp_dev->class != SHP_CLS_CPU)
-+			continue;
-+
-+		cpu = shp_dev->info.cpu.cpu_id;
-+
-+		if (cpu_online(cpu))
-+			continue;
-+
-+		ret = cpu_up(cpu);
-+		if (!ret) {
-+			/* REVISIT: need a way to set a cpu dev for hot-plug */
-+			if (shp_is_online_op(req->operation))
-+				kobject_uevent(&shp_dev->device->kobj,
-+							KOBJ_ONLINE);
-+		} else {
-+			pr_err("cpu: Failed to online cpu %d\n", cpu);
-+			/* fall-thru */
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int cpu_del_validate(struct shp_request *req, int rollback)
-+{
-+	struct shp_device *shp_dev;
-+
-+	if (rollback)
-+		return 0;
-+
-+	list_for_each_entry(shp_dev, &req->dev_list, list) {
-+		if (shp_dev->class != SHP_CLS_CPU)
-+			continue;
-+
-+		/*
-+		 * cpu 0 cannot be offlined.  This check can be removed when
-+		 * cpu 0 offline is supported.
-+		 */
-+		if (shp_dev->info.cpu.cpu_id == 0)
-+			return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int cpu_del_execute(struct shp_request *req, int rollback)
-+{
-+	struct shp_device *shp_dev;
-+	u32 cpu;
-+	int ret;
-+
-+	if (rollback)
-+		return cpu_add_execute(req, 0);
-+
-+	list_for_each_entry(shp_dev, &req->dev_list, list) {
-+		if (shp_dev->class != SHP_CLS_CPU)
-+			continue;
-+
-+		cpu = shp_dev->info.cpu.cpu_id;
-+
-+		if (!cpu_online(cpu))
-+			continue;
-+
-+		ret = cpu_down(cpu);
-+		if (!ret) {
-+			/* REVISIT: need a way to set a cpu dev for hot-plug */
-+			if (shp_is_online_op(req->operation))
-+				kobject_uevent(&shp_dev->device->kobj,
-+							KOBJ_OFFLINE);
-+		} else {
-+			pr_err("cpu: Failed to offline cpu %d\n", cpu);
-+			return ret;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static void __init cpu_shp_init(void)
-+{
-+	shp_register_handler(SHP_ADD_EXECUTE, cpu_add_execute,
-+				SHP_CPU_ADD_EXECUTE_ORDER);
-+	shp_register_handler(SHP_DEL_VALIDATE, cpu_del_validate,
-+				SHP_CPU_DEL_VALIDATE_ORDER);
-+	shp_register_handler(SHP_DEL_EXECUTE, cpu_del_execute,
-+				SHP_CPU_DEL_EXECUTE_ORDER);
-+}
-+#endif	/* CONFIG_HOTPLUG_CPU */
-+
- void __init cpu_dev_init(void)
+@@ -41,27 +41,43 @@ static ssize_t __ref store_online(struct device *dev,
+ 				  const char *buf, size_t count)
  {
- 	if (subsys_system_register(&cpu_subsys, cpu_root_attr_groups))
- 		panic("Failed to register CPU subsystem");
+ 	struct cpu *cpu = container_of(dev, struct cpu, dev);
+-	ssize_t ret;
++	struct shp_request *shp_req;
++	struct shp_device *shp_dev;
++	enum shp_operation operation;
++	ssize_t ret = count;
  
- 	cpu_dev_register_generic();
-+#ifdef CONFIG_HOTPLUG_CPU
-+	cpu_shp_init();
-+#endif
+-	cpu_hotplug_driver_lock();
+ 	switch (buf[0]) {
+ 	case '0':
+-		ret = cpu_down(cpu->dev.id);
+-		if (!ret)
+-			kobject_uevent(&dev->kobj, KOBJ_OFFLINE);
++		operation = SHP_ONLINE_DEL;
+ 		break;
+ 	case '1':
+-		ret = cpu_up(cpu->dev.id);
+-		if (!ret)
+-			kobject_uevent(&dev->kobj, KOBJ_ONLINE);
++		operation = SHP_ONLINE_ADD;
+ 		break;
+ 	default:
+-		ret = -EINVAL;
++		return -EINVAL;
++	}
++
++	shp_req = shp_alloc_request(operation);
++	if (!shp_req)
++		return -ENOMEM;
++
++	shp_dev = kzalloc(sizeof(*shp_dev), GFP_KERNEL);
++	if (!shp_dev) {
++		kfree(shp_req);
++		return -ENOMEM;
++	}
++
++	shp_dev->device = dev;
++	shp_dev->class = SHP_CLS_CPU;
++	shp_dev->info.cpu.cpu_id = cpu->dev.id;
++	shp_add_dev_info(shp_req, shp_dev);
++
++	if (shp_submit_req(shp_req)) {
++		kfree(shp_dev);
++		kfree(shp_req);
++		return -EINVAL;
+ 	}
+-	cpu_hotplug_driver_unlock();
+ 
+-	if (ret >= 0)
+-		ret = count;
+ 	return ret;
  }
+ static DEVICE_ATTR(online, 0644, show_online, store_online);
