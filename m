@@ -1,21 +1,18 @@
-Return-Path: <balbi@ti.com>
-Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1EDF52C0291
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 21:08:53 +1100 (EST)
-Date: Thu, 10 Jan 2013 12:08:35 +0200
-From: Felipe Balbi <balbi@ti.com>
-To: <leoli@freescale.com>, <gregkh@linuxfoundation.org>,
- <linux-usb@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [BUILD BREAK] usb: gadget: fsl_mxc_udc can't compile on current
- v3.8-rc3
-Message-ID: <20130110100835.GB28920@arwen.pp.htv.fi>
+Return-Path: <fengguang.wu@intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by ozlabs.org (Postfix) with ESMTP id 3198A2C032A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 21:55:19 +1100 (EST)
+Date: Thu, 10 Jan 2013 18:55:13 +0800
+From: Fengguang Wu <fengguang.wu@intel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [powerpc:next 54/54] arch/powerpc/kernel/exceptions-64s.S:1204:
+ Error: attempt to move .org backwards
+Message-ID: <20130110105513.GA19224@localhost>
+References: <50ee8554.VPKmpSyDNCfRKVZL%yuanhan.liu@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="IpbVkmxF4tDyP/Kb"
-Reply-To: balbi@ti.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <50ee8554.VPKmpSyDNCfRKVZL%yuanhan.liu@linux.intel.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---IpbVkmxF4tDyP/Kb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi Benjamin,
 
-Some recent patch has caused fsl_mxc_udc.c driver to fail compilation
-because it can't find <mach/hardware.h> anymore.
+FYI, kernel build failed on
 
-I would like this to be fixed still during this -rc cycle.
+tree:   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
+head:   61383407677aef05928541a00678591abea2d84c
+config: make ARCH=powerpc allmodconfig
 
-Thank you
+All error/warnings:
 
---=20
-balbi
+WARNING: arch/powerpc/mm/built-in.o(.cpuinit.text+0x292): Section mismatch in reference from the function .fake_numa_create_new_node() to the variable .init.data:cmdline
+The function __cpuinit .fake_numa_create_new_node() references
+a variable __initdata cmdline.
+If cmdline is only used by .fake_numa_create_new_node then
+annotate cmdline with a matching annotation.
+--
+arch/powerpc/kernel/kgdb.c: In function 'kgdb_arch_exit':
+arch/powerpc/kernel/kgdb.c:492:2: error: '__debugger_breakx_match' undeclared (first use in this function)
+arch/powerpc/kernel/kgdb.c:492:2: note: each undeclared identifier is reported only once for each function it appears in
+--
+arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
+arch/powerpc/kernel/exceptions-64s.S:1204: Error: attempt to move .org backwards
+--
+drivers/tty/synclink_gt.c:160:12: error: conflicting types for 'set_break'
+arch/powerpc/include/asm/debug.h:49:5: note: previous declaration of 'set_break' was here
+--
+drivers/tty/synclinkmp.c:526:12: error: conflicting types for 'set_break'
+arch/powerpc/include/asm/debug.h:49:5: note: previous declaration of 'set_break' was here
 
---IpbVkmxF4tDyP/Kb
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+vim +1204 arch/powerpc/kernel/exceptions-64s.S
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
+61383407 Benjamin Herrenschmidt 2013-01-10  1198  
+61383407 Benjamin Herrenschmidt 2013-01-10  1199  #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
+61383407 Benjamin Herrenschmidt 2013-01-10  1200  /*
+61383407 Benjamin Herrenschmidt 2013-01-10  1201   * Data area reserved for FWNMI option.
+61383407 Benjamin Herrenschmidt 2013-01-10  1202   * This address (0x7000) is fixed by the RPA.
+61383407 Benjamin Herrenschmidt 2013-01-10  1203   */
+61383407 Benjamin Herrenschmidt 2013-01-10 @1204  	.= 0x7000
+61383407 Benjamin Herrenschmidt 2013-01-10  1205  	.globl fwnmi_data_area
+61383407 Benjamin Herrenschmidt 2013-01-10  1206  fwnmi_data_area:
+61383407 Benjamin Herrenschmidt 2013-01-10  1207  
 
-iQIcBAEBAgAGBQJQ7pMjAAoJEIaOsuA1yqRESewP/34cZGKSCRKD6OUpal7bi4f3
-2K0eVrt1k8A6nYUfgf2rUuQhtvGjAHtfPQg5Ml92/MBe+eH/0bIqAq6Lxv6vF6h1
-6Bp9IkX2OH7Xlq4fm+PVADMHlTcNGH9CD6tONNwng01bRhungmdQKvY6zmsaUWT4
-pXvloftJyp4z8ULMU3pHtUQqUblacJrdtsNaxUdLXo7j9NbF9O81KD66YjO3djp5
-9dHTo7l4nPamS8CzxQ4QWtB7a1XRvkwYGgJGg1JCU+BwrZxaqH1kVznqboZzR4Sw
-32ui8zp+8jX1SfDr1GBdKjVAc4duG3GR8uaFLM9d/LWVax9aOD91CS6TkbkOvHMZ
-dsYCkRgbUIIJyMqduL1BSFBnhfghIfqXA4xVXPobSsss4Vvy7fKwfNMti5+ECfHU
-ZYbkXhA/WufPSG0IorVUEOBnsIspQkrDRms0RkHAp7Il25qOe4lR5ooFStZY6C6/
-pncP4LLeDBnvhIX6hlnSPfPdqiZDSH3wdhdxXYIQ+X2lrL7lE6Tz3xgtDOXvlOT0
-HFrBukDc3v3EK/58OzX4JonHgaHs+Bkc0p3fFH0hM8ALLD4cBqgcLOOMU8T7pfoO
-9o3dyqQwyEuvdTzzzQN0NaU6OuiIEPX/+HyARRwBc1SimtIvS07crhD3YPZSLv4E
-x7qOwSIubwmljXoB3GXL
-=mf0L
------END PGP SIGNATURE-----
-
---IpbVkmxF4tDyP/Kb--
+---
+0-DAY kernel build testing backend         Open Source Technology Center
+Fengguang Wu, Yuanhan Liu                              Intel Corporation
