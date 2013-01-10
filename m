@@ -1,18 +1,19 @@
-Return-Path: <fengguang.wu@intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by ozlabs.org (Postfix) with ESMTP id 3198A2C032A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 21:55:19 +1100 (EST)
-Date: Thu, 10 Jan 2013 18:55:13 +0800
-From: Fengguang Wu <fengguang.wu@intel.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [powerpc:next 54/54] arch/powerpc/kernel/exceptions-64s.S:1204:
- Error: attempt to move .org backwards
-Message-ID: <20130110105513.GA19224@localhost>
-References: <50ee8554.VPKmpSyDNCfRKVZL%yuanhan.liu@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <50ee8554.VPKmpSyDNCfRKVZL%yuanhan.liu@linux.intel.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <thomas.waldecker@gmail.com>
+Received: from mail-wg0-f48.google.com (mail-wg0-f48.google.com [74.125.82.48])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 693032C031A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 23:07:56 +1100 (EST)
+Received: by mail-wg0-f48.google.com with SMTP id dt10so205353wgb.15
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 04:07:51 -0800 (PST)
+From: Thomas Waldecker <thomas.waldecker@gmail.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH] PowerPC documentation: fixed path to the powerpc directory
+Date: Thu, 10 Jan 2013 13:07:12 +0100
+Message-Id: <1357819632-30814-1-git-send-email-thomas.waldecker@gmail.com>
+Cc: linux-doc@vger.kernel.org, Thomas Waldecker <thomas.waldecker@gmail.com>,
+ linux-kernel@vger.kernel.org, paulus@samba.org, rob@landley.net,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,49 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+ppc -> powerpc
 
-Hi Benjamin,
-
-FYI, kernel build failed on
-
-tree:   git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git next
-head:   61383407677aef05928541a00678591abea2d84c
-config: make ARCH=powerpc allmodconfig
-
-All error/warnings:
-
-WARNING: arch/powerpc/mm/built-in.o(.cpuinit.text+0x292): Section mismatch in reference from the function .fake_numa_create_new_node() to the variable .init.data:cmdline
-The function __cpuinit .fake_numa_create_new_node() references
-a variable __initdata cmdline.
-If cmdline is only used by .fake_numa_create_new_node then
-annotate cmdline with a matching annotation.
---
-arch/powerpc/kernel/kgdb.c: In function 'kgdb_arch_exit':
-arch/powerpc/kernel/kgdb.c:492:2: error: '__debugger_breakx_match' undeclared (first use in this function)
-arch/powerpc/kernel/kgdb.c:492:2: note: each undeclared identifier is reported only once for each function it appears in
---
-arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-arch/powerpc/kernel/exceptions-64s.S:1204: Error: attempt to move .org backwards
---
-drivers/tty/synclink_gt.c:160:12: error: conflicting types for 'set_break'
-arch/powerpc/include/asm/debug.h:49:5: note: previous declaration of 'set_break' was here
---
-drivers/tty/synclinkmp.c:526:12: error: conflicting types for 'set_break'
-arch/powerpc/include/asm/debug.h:49:5: note: previous declaration of 'set_break' was here
-
-vim +1204 arch/powerpc/kernel/exceptions-64s.S
-
-61383407 Benjamin Herrenschmidt 2013-01-10  1198  
-61383407 Benjamin Herrenschmidt 2013-01-10  1199  #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
-61383407 Benjamin Herrenschmidt 2013-01-10  1200  /*
-61383407 Benjamin Herrenschmidt 2013-01-10  1201   * Data area reserved for FWNMI option.
-61383407 Benjamin Herrenschmidt 2013-01-10  1202   * This address (0x7000) is fixed by the RPA.
-61383407 Benjamin Herrenschmidt 2013-01-10  1203   */
-61383407 Benjamin Herrenschmidt 2013-01-10 @1204  	.= 0x7000
-61383407 Benjamin Herrenschmidt 2013-01-10  1205  	.globl fwnmi_data_area
-61383407 Benjamin Herrenschmidt 2013-01-10  1206  fwnmi_data_area:
-61383407 Benjamin Herrenschmidt 2013-01-10  1207  
-
+Signed-off-by: Thomas Waldecker <thomas.waldecker@gmail.com>
 ---
-0-DAY kernel build testing backend         Open Source Technology Center
-Fengguang Wu, Yuanhan Liu                              Intel Corporation
+ Documentation/powerpc/cpu_features.txt | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/Documentation/powerpc/cpu_features.txt b/Documentation/powerpc/cpu_features.txt
+index ffa4183..ae09df8 100644
+--- a/Documentation/powerpc/cpu_features.txt
++++ b/Documentation/powerpc/cpu_features.txt
+@@ -11,10 +11,10 @@ split instruction and data caches, and if the CPU supports the DOZE and NAP
+ sleep modes.
+ 
+ Detection of the feature set is simple. A list of processors can be found in
+-arch/ppc/kernel/cputable.c. The PVR register is masked and compared with each
+-value in the list. If a match is found, the cpu_features of cur_cpu_spec is
+-assigned to the feature bitmask for this processor and a __setup_cpu function
+-is called.
++arch/powerpc/kernel/cputable.c. The PVR register is masked and compared with
++each value in the list. If a match is found, the cpu_features of cur_cpu_spec
++is assigned to the feature bitmask for this processor and a __setup_cpu
++function is called.
+ 
+ C code may test 'cur_cpu_spec[smp_processor_id()]->cpu_features' for a
+ particular feature bit. This is done in quite a few places, for example
+@@ -51,6 +51,6 @@ should be used in the majority of cases.
+ 
+ The END_FTR_SECTION macros are implemented by storing information about this
+ code in the '__ftr_fixup' ELF section. When do_cpu_ftr_fixups
+-(arch/ppc/kernel/misc.S) is invoked, it will iterate over the records in
++(arch/powerpc/kernel/misc.S) is invoked, it will iterate over the records in
+ __ftr_fixup, and if the required feature is not present it will loop writing
+ nop's from each BEGIN_FTR_SECTION to END_FTR_SECTION.
+-- 
+1.8.0.2
