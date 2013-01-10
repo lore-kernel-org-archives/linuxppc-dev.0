@@ -1,26 +1,21 @@
-Return-Path: <B37400@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 568352C032C
- for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2013 20:24:28 +1100 (EST)
-From: Singh Sandeep-B37400 <B37400@freescale.com>
-To: Wood Scott-B07421 <B07421@freescale.com>
-Subject: RE: [PATCH] Added device tree binding for TDM and TDM phy
-Date: Thu, 10 Jan 2013 09:24:21 +0000
-Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E69E4F0@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <1357133120-2271-1-git-send-email-Sandeep@freescale.com>
- <3F1D9DCAAB49B94D88DBE05911FA4E6E69CEB8@039-SN1MPN1-005.039d.mgd.msft.net>
- <1357776425.18196.18@snotra>
-In-Reply-To: <1357776425.18196.18@snotra>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <balbi@ti.com>
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1EDF52C0291
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 21:08:53 +1100 (EST)
+Date: Thu, 10 Jan 2013 12:08:35 +0200
+From: Felipe Balbi <balbi@ti.com>
+To: <leoli@freescale.com>, <gregkh@linuxfoundation.org>,
+ <linux-usb@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [BUILD BREAK] usb: gadget: fsl_mxc_udc can't compile on current
+ v3.8-rc3
+Message-ID: <20130110100835.GB28920@arwen.pp.htv.fi>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- "devicetree-discuss@lists.ozlabs.org"
- <devicetree-discuss@lists.ozlabs.org>,
- Aggrwal Poonam-B10812 <B10812@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="IpbVkmxF4tDyP/Kb"
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,150 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: Wood Scott-B07421
-> Sent: Thursday, January 10, 2013 5:37 AM
-> To: Singh Sandeep-B37400
-> Cc: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@ozlabs.org; Aggrwal
-> Poonam-B10812
-> Subject: Re: [PATCH] Added device tree binding for TDM and TDM phy
->=20
-> On 01/09/2013 01:10:24 AM, Singh Sandeep-B37400 wrote:
-> > A gentle reminder.
-> > Any comments are appreciated.
-> >
-> > Regards,
-> > Sandeep
-> >
-> > > -----Original Message-----
-> > > From: Singh Sandeep-B37400
-> > > Sent: Wednesday, January 02, 2013 6:55 PM
-> > > To: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@ozlabs.org
-> > > Cc: Singh Sandeep-B37400; Aggrwal Poonam-B10812
-> > > Subject: [PATCH] Added device tree binding for TDM and TDM phy
-> > >
-> > > This controller is available on many Freescale SOCs like MPC8315,
-> > P1020,
-> > > P1010 and P1022
-> > >
-> > > Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
-> > > Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> > > ---
-> > >  .../devicetree/bindings/powerpc/fsl/fsl-tdm.txt    |   63
-> > > ++++++++++++++++++++
-> > >  .../devicetree/bindings/powerpc/fsl/tdm-phy.txt    |   38
-> > ++++++++++++
-> > >  2 files changed, 101 insertions(+), 0 deletions(-)  create mode
-> > 100644
-> > > Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
-> > >  create mode 100644
-> > Documentation/devicetree/bindings/powerpc/fsl/tdm-
-> > > phy.txt
-> > >
-> > > diff --git
-> > a/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
-> > > b/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
-> > > new file mode 100644
-> > > index 0000000..ceb2ef1
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
-> > > @@ -0,0 +1,63 @@
-> > > +TDM Device Tree Binding
-> > > +
-> > > +NOTE: The bindings described in this document are preliminary and
-> > > +subject to change.
-> > > +
-> > > +TDM (Time Division Multiplexing)
-> > > +
-> > > +Description:
-> > > +
-> > > +The TDM is full duplex serial port designed to allow various
-> > devices
-> > > +including digital signal processors (DSPs) to communicate with a
-> > > +variety of serial devices including industry standard framers,
-> > codecs,
-> > > other DSPs and microprocessors.
-> > > +
-> > > +The below properties describe the device tree bindings for
-> > Freescale
-> > > +TDM controller. This TDM controller is available on various
-> > Freescale
-> > > +Processors like MPC8315, P1020, P1022 and P1010.
-> > > +
-> > > +Required properties:
-> > > +
-> > > +- compatible
-> > > +    Value type: <string>
-> > > +    Definition: Should contain "fsl,tdm1.0".
-> > > +
-> > > +- reg
-> > > +    Definition: A standard property. The first reg specifier
-> > describes
-> > > the TDM
-> > > +    registers, and the second describes the TDM DMAC registers.
-> > > +
-> > > +- tdm_tx_clk
-> > > +    Value type: <u32 or u64>
-> > > +    Definition: This specifies the value of transmit clock. It
-> > should
-> > > not
-> > > +    exceed 50Mhz.
-> > > +
-> > > +- tdm_rx_clk
-> > > +    Value type: <u32 or u64>
-> > > +    Definition: This specifies the value of receive clock. Its
-> > value
-> > > could be
-> > > +    zero, in which case tdm will operate in shared mode. Its value
-> > > should not
-> > > +    exceed 50Mhz.
->=20
-> Please don't use underscores in property names, and use the vendor
-> prefix: "fsl,tdm-tx-clk" and "fsl,tdm-rx-clk".
+--IpbVkmxF4tDyP/Kb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok.
+Hi,
 
->=20
-> > > diff --git
-> > a/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
-> > > b/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
-> > > new file mode 100644
-> > > index 0000000..2563934
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
-> > > @@ -0,0 +1,38 @@
-> > > +TDM PHY Device Tree Binding
-> > > +
-> > > +NOTE: The bindings described in this document are preliminary and
-> > > +subject to change.
-> > > +
-> > > +Description:
-> > > +TDM PHY is the terminal interface of TDM subsystem. It is
-> > typically a
-> > > +line control device like E1/T1 framer or SLIC. A TDM device can
-> > have
-> > > +multiple TDM PHYs.
-> > > +
-> > > +Required properties:
-> > > +
-> > > +- compatible
-> > > +    Value type: <string>
-> > > +    Definition: Should contain generic compatibility like
-> > "tdm-phy-slic"
-> > > or
-> > > +    "tdm-phy-e1" or "tdm-phy-t1".
->=20
-> Does this "generic" string (plus the other properties) tell you all you
-> need to know about the device?  If there are other possible "generic"
-> compatibles, they should be listed or else different people will make up
-> different strings for the same thing.
+Some recent patch has caused fsl_mxc_udc.c driver to fail compilation
+because it can't find <mach/hardware.h> anymore.
 
-This property will describe the type of device, and will help TDM framework
-to know if it is E1/T1/SLIC device. Further details can be extracted from o=
-ther
-compatible strings.
-There are only three generic compatibles field types, which are already men=
-tioned
-in definition. Do I need to make this thing more clear.
->=20
-> -Scott
+I would like this to be fixed still during this -rc cycle.
+
+Thank you
+
+--=20
+balbi
+
+--IpbVkmxF4tDyP/Kb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQ7pMjAAoJEIaOsuA1yqRESewP/34cZGKSCRKD6OUpal7bi4f3
+2K0eVrt1k8A6nYUfgf2rUuQhtvGjAHtfPQg5Ml92/MBe+eH/0bIqAq6Lxv6vF6h1
+6Bp9IkX2OH7Xlq4fm+PVADMHlTcNGH9CD6tONNwng01bRhungmdQKvY6zmsaUWT4
+pXvloftJyp4z8ULMU3pHtUQqUblacJrdtsNaxUdLXo7j9NbF9O81KD66YjO3djp5
+9dHTo7l4nPamS8CzxQ4QWtB7a1XRvkwYGgJGg1JCU+BwrZxaqH1kVznqboZzR4Sw
+32ui8zp+8jX1SfDr1GBdKjVAc4duG3GR8uaFLM9d/LWVax9aOD91CS6TkbkOvHMZ
+dsYCkRgbUIIJyMqduL1BSFBnhfghIfqXA4xVXPobSsss4Vvy7fKwfNMti5+ECfHU
+ZYbkXhA/WufPSG0IorVUEOBnsIspQkrDRms0RkHAp7Il25qOe4lR5ooFStZY6C6/
+pncP4LLeDBnvhIX6hlnSPfPdqiZDSH3wdhdxXYIQ+X2lrL7lE6Tz3xgtDOXvlOT0
+HFrBukDc3v3EK/58OzX4JonHgaHs+Bkc0p3fFH0hM8ALLD4cBqgcLOOMU8T7pfoO
+9o3dyqQwyEuvdTzzzQN0NaU6OuiIEPX/+HyARRwBc1SimtIvS07crhD3YPZSLv4E
+x7qOwSIubwmljXoB3GXL
+=mf0L
+-----END PGP SIGNATURE-----
+
+--IpbVkmxF4tDyP/Kb--
