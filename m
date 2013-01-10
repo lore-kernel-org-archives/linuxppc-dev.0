@@ -1,48 +1,39 @@
-Return-Path: <kamezawa.hiroyu@jp.fujitsu.com>
-Received: from fgwmail6.fujitsu.co.jp (fgwmail6.fujitsu.co.jp [192.51.44.36])
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 83A3C2C00AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 19:40:53 +1100 (EST)
-Received: from m3.gw.fujitsu.co.jp (unknown [10.0.50.73])
- by fgwmail6.fujitsu.co.jp (Postfix) with ESMTP id 1F6C83EE0C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 17:40:50 +0900 (JST)
-Received: from smail (m3 [127.0.0.1])
- by outgoing.m3.gw.fujitsu.co.jp (Postfix) with ESMTP id 010FA45DEC1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 17:40:50 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (s3.gw.fujitsu.co.jp [10.0.50.93])
- by m3.gw.fujitsu.co.jp (Postfix) with ESMTP id DDD2A45DEB7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 17:40:49 +0900 (JST)
-Received: from s3.gw.fujitsu.co.jp (localhost.localdomain [127.0.0.1])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id CD9ED1DB8042
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 17:40:49 +0900 (JST)
-Received: from m1001.s.css.fujitsu.com (m1001.s.css.fujitsu.com
- [10.240.81.139])
- by s3.gw.fujitsu.co.jp (Postfix) with ESMTP id 38FE61DB8043
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 17:40:49 +0900 (JST)
-Message-ID: <50EE7E5A.9090402@jp.fujitsu.com>
-Date: Thu, 10 Jan 2013 17:39:54 +0900
-From: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-To: Glauber Costa <glommer@parallels.com>
-Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
-References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
- <20130109142314.1ce04a96.akpm@linux-foundation.org>
- <50EE24A4.8020601@cn.fujitsu.com> <50EE6A48.7060307@parallels.com>
- <50EE6E50.3040609@jp.fujitsu.com> <50EE73DE.30208@parallels.com>
- <50EE7A6B.7020005@jp.fujitsu.com> <50EE7D75.8080100@parallels.com>
-In-Reply-To: <50EE7D75.8080100@parallels.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
- Tang Chen <tangchen@cn.fujitsu.com>, linux-mm@kvack.org, paulus@samba.org,
- hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
- wency@cn.fujitsu.com, cmetcalf@tilera.com, wujianguo@huawei.com,
- yinghai@kernel.org, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
- minchan.kim@gmail.com, Andrew Morton <akpm@linux-foundation.org>,
- linuxppc-dev@lists.ozlabs.org
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BABF72C0216
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 20:00:35 +1100 (EST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Thu, 10 Jan 2013 14:29:07 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id D1B681258051
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 14:30:42 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0A90Q7u34406464
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 14:30:26 +0530
+Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0A90QDt026160
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 20:00:28 +1100
+Message-ID: <1357808418.10378.16.camel@ThinkPad-T5421.cn.ibm.com>
+Subject: [PATCH powerpc ] Avoid debug_smp_processor_id() check in
+ arch_spin_unlock_wait()
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 10 Jan 2013 17:00:18 +0800
+In-Reply-To: <1357797726.4838.89.camel@pasglop>
+References: <1353305799.3694.9.camel@ThinkPad-T5421.cn.ibm.com>
+ <1357797726.4838.89.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,17 +43,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-(2013/01/10 17:36), Glauber Costa wrote:
-  
->> BTW, shrink_slab() is now node/zone aware ? If not, fixing that first will
->> be better direction I guess.
->>
-> It is not upstream, but there are patches for this that I am already
-> using in my private tree.
->
+Use local_paca directly in arch_spin_unlock_wait(), as all processors have the
+same value for the field shared_proc, so we don't need care racy here.
 
-Oh, I see. If it's merged, it's worth add "shrink_slab() if ZONE_NORMAL"
-code.
+Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
+---
+ arch/powerpc/lib/locks.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Thanks,
--Kame
+diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
+index bb7cfec..850bea6 100644
+--- a/arch/powerpc/lib/locks.c
++++ b/arch/powerpc/lib/locks.c
+@@ -72,7 +72,7 @@ void arch_spin_unlock_wait(arch_spinlock_t *lock)
+ {
+ 	while (lock->slock) {
+ 		HMT_low();
+-		if (SHARED_PROCESSOR)
++		if (local_paca->lppaca_ptr->shared_proc)
+ 			__spin_yield(lock);
+ 	}
+ 	HMT_medium();
+-- 
+1.7.9.5
