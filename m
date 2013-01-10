@@ -1,29 +1,25 @@
 Return-Path: <tangchen@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 57FBC2C00A3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 13:00:13 +1100 (EST)
-Message-ID: <50EE1B82.4090601@cn.fujitsu.com>
-Date: Thu, 10 Jan 2013 09:38:10 +0800
+ by ozlabs.org (Postfix) with ESMTP id 901AC2C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 13:17:57 +1100 (EST)
+Message-ID: <50EE24A4.8020601@cn.fujitsu.com>
+Date: Thu, 10 Jan 2013 10:17:08 +0800
 From: Tang Chen <tangchen@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Glauber Costa <glommer@parallels.com>
-Subject: Re: [PATCH v5 01/14] memory-hotplug: try to offline the memory twice
- to avoid dependence
-References: <1356350964-13437-1-git-send-email-tangchen@cn.fujitsu.com>
- <1356350964-13437-2-git-send-email-tangchen@cn.fujitsu.com>
- <50D96543.6010903@parallels.com> <50DFD7F7.5090408@cn.fujitsu.com>
- <50ED8834.1090804@parallels.com>
-In-Reply-To: <50ED8834.1090804@parallels.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
+References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+ <20130109142314.1ce04a96.akpm@linux-foundation.org>
+In-Reply-To: <20130109142314.1ce04a96.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
  paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
  linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
  isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, liuj97@gmail.com,
- len.brown@intel.com, Wen Congyang <wency@cn.fujitsu.com>, cmetcalf@tilera.com,
- wujianguo@huawei.com, yinghai@kernel.org,
- KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>, laijs@cn.fujitsu.com,
- linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
+ wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
+ wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
+ linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,44 +30,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Glauber,
+Hi Andrew,
 
-On 01/09/2013 11:09 PM, Glauber Costa wrote:
->>
->> We try to make all page_cgroup allocations local to the node they are describing
->> now. If the memory is the first memory onlined in this node, we will allocate
->> it from the other node.
->>
->> For example, node1 has 4 memory blocks: 8-11, and we online it from 8 to 11
->> 1. memory block 8, page_cgroup allocations are in the other nodes
->> 2. memory block 9, page_cgroup allocations are in memory block 8
->>
->> So we should offline memory block 9 first. But we don't know in which order
->> the user online the memory block.
->>
->> I think we can modify memcg like this:
->> allocate the memory from the memory block they are describing
->>
->> I am not sure it is OK to do so.
+Thank you very much for your pushing. :)
+
+On 01/10/2013 06:23 AM, Andrew Morton wrote:
 >
-> I don't see a reason why not.
+> This does sound like a significant problem.  We should assume that
+> mmecg is available and in use.
+>
+>> In patch1, we provide a solution which is not good enough:
+>> Iterate twice to offline the memory.
+>> 1st iterate: offline every non primary memory block.
+>> 2nd iterate: offline primary (i.e. first added) memory block.
+>
+> Let's flesh this out a bit.
+>
+> If we online memory8, memory9, memory10 and memory11 then I'd have
+> thought that they would need to offlined in reverse order, which will
+> require four iterations, not two.  Is this wrong and if so, why?
 
-I'm not sure, but if we do this, we could bring in a fragment for each
-memory block (a memory section, 128MB, right?). Is this a problem when
-we use large page (such as 1GB page) ?
+Well, we may need more than two iterations if all memory8, memory9,
+memory10 are in use by kernel, and 10 depends on 9, 9 depends on 8.
 
-Even if not, will these fragments make any bad effects ?
+So, as you see here, the iteration method is not good enough.
 
-Thank. :)
+But this only happens when the memory is used by kernel, which will not
+be able to be migrated. So if we can use a boot option, such as
+movablecore_map, or movable_online functionality to limit the memory as 
+movable, the kernel will not use this memory. So it is safe when we are
+doing node hot-remove.
 
 >
-> You would have to tweak a bit the lookup function for page_cgroup, but
-> assuming you will always have the pfns and limits, it should be easy to do.
+> Also, what happens if we wish to offline only memory9?  Do we offline
+> memory11 then memory10 then memory9 and then re-online memory10 and
+> memory11?
+
+In this case, offlining memory9 could fail if user do this by himself,
+for example using sysfs.
+
+In this path, it is in memory hot-remove path. So when we remove a
+memory device, it will automatically offline all pages, and it is in
+reverse order by itself.
+
+And again, this is not good enough. We will figure out a reasonable way
+to solve it soon.
+
 >
-> I think the only tricky part is that today we have a single
-> node_page_cgroup, and we would of course have to have one per memory
-> block. My assumption is that the number of memory blocks is limited and
-> likely not very big. So even a static array would do.
+>> And a new idea from Wen Congyang<wency@cn.fujitsu.com>  is:
+>> allocate the memory from the memory block they are describing.
 >
-> Kamezawa, do you have any input in here?
+> Yes.
+>
+>> But we are not sure if it is OK to do so because there is not existing API
+>> to do so, and we need to move page_cgroup memory allocation from MEM_GOING_ONLINE
+>> to MEM_ONLINE.
+>
+> This all sounds solvable - can we proceed in this fashion?
+
+Yes, we are in progress now.
+
+>
+>> And also, it may interfere the hugepage.
+>
+> Please provide full details on this problem.
+
+It is not very clear now, and if I find something, I'll share it out.
+
+>
+>> Note: if the memory provided by the memory device is used by the kernel, it
+>> can't be offlined. It is not a bug.
+>
+> Right.  But how often does this happen in testing?  In other words,
+> please provide an overall description of how well memory hot-remove is
+> presently operating.  Is it reliable?  What is the success rate in
+> real-world situations?
+
+We test the hot-remove functionality mostly with movable_online used.
+And the memory used by kernel is not allowed to be removed.
+
+We will do some tests in the kernel memory offline cases, and tell you
+the test results soon.
+
+And since we are trying out some other ways, I think the problem will
+be solved soon.
+
+> Are there precautions which the administrator
+> can take to improve the success rate?
+
+Administrator could use movablecore_map boot option or movable_online
+functionality (which is now in kernel) to limit memory as movable to
+avoid this problem.
+
+> What are the remaining problems
+> and are there plans to address them?
+
+For now, we will try to allocate page_group on the memory block which
+itself is describing. And all the other parts seems work well now.
+
+And we are still testing. If we have any problem, we will share.
+
+Thanks. :)
+
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 >
