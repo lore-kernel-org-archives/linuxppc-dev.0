@@ -1,22 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 270FB2C030F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 17:02:16 +1100 (EST)
-Message-ID: <1357797726.4838.89.camel@pasglop>
-Subject: Re: [RFC PATCH powerpc ] Protect smp_processor_id() in
- arch_spin_unlock_wait()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Date: Thu, 10 Jan 2013 17:02:06 +1100
-In-Reply-To: <1353305799.3694.9.camel@ThinkPad-T5421.cn.ibm.com>
-References: <1353305799.3694.9.camel@ThinkPad-T5421.cn.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <tangchen@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 2696F2C02BC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 17:08:32 +1100 (EST)
+Message-ID: <50EE5AA9.3090401@cn.fujitsu.com>
+Date: Thu, 10 Jan 2013 14:07:37 +0800
+From: Tang Chen <tangchen@cn.fujitsu.com>
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v6 04/15] memory-hotplug: remove /sys/firmware/memmap/X
+ sysfs
+References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1357723959-5416-5-git-send-email-tangchen@cn.fujitsu.com>
+ <20130109144905.8993886a.akpm@linux-foundation.org>
+In-Reply-To: <20130109144905.8993886a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
+ wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
+ wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
+ linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,32 +32,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2012-11-19 at 14:16 +0800, Li Zhong wrote:
-> This patch tries to disable preemption for using smp_processor_id() in arch_spin_unlock_wait(), 
-> to avoid following report:
+Hi Andrew,
 
- .../...
+On 01/10/2013 06:49 AM, Andrew Morton wrote:
+> On Wed, 9 Jan 2013 17:32:28 +0800
+> Tang Chen<tangchen@cn.fujitsu.com>  wrote:
+>
+>> When (hot)adding memory into system, /sys/firmware/memmap/X/{end, start, type}
+>> sysfs files are created. But there is no code to remove these files. The patch
+>> implements the function to remove them.
+>>
+>> Note: The code does not free firmware_map_entry which is allocated by bootmem.
+>>        So the patch makes memory leak. But I think the memory leak size is
+>>        very samll. And it does not affect the system.
+>
+> Well that's bad.  Can we remember the address of that memory and then
+> reuse the storage if/when the memory is re-added?  That at least puts an upper
+> bound on the leak.
 
-> diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-> index bb7cfec..7a7c31b 100644
-> --- a/arch/powerpc/lib/locks.c
-> +++ b/arch/powerpc/lib/locks.c
-> @@ -72,8 +72,10 @@ void arch_spin_unlock_wait(arch_spinlock_t *lock)
->  {
->  	while (lock->slock) {
->  		HMT_low();
-> +		preempt_disable();
->  		if (SHARED_PROCESSOR)
->  			__spin_yield(lock);
-> +		preempt_enable();
->  	}
+I think we can do this. I'll post a new patch to do so.
 
-I assume what you are protecting is the PACA access in SHARED_PROCESSOR
-or is there more ?
+Thanks. :)
 
-In that case I'd say just make it use local_paca-> directly or something
-like that. It doesn't matter if the access is racy, all processors will
-have the same value for that field as far as I can tell.
-
-Cheers,
-Ben.
+>
+>
