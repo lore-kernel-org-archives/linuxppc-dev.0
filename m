@@ -1,39 +1,26 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BABF72C0216
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 20:00:35 +1100 (EST)
-Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Thu, 10 Jan 2013 14:29:07 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id D1B681258051
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 14:30:42 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0A90Q7u34406464
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 14:30:26 +0530
-Received: from d28av02.in.ibm.com (loopback [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0A90QDt026160
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 20:00:28 +1100
-Message-ID: <1357808418.10378.16.camel@ThinkPad-T5421.cn.ibm.com>
-Subject: [PATCH powerpc ] Avoid debug_smp_processor_id() check in
- arch_spin_unlock_wait()
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 10 Jan 2013 17:00:18 +0800
-In-Reply-To: <1357797726.4838.89.camel@pasglop>
-References: <1353305799.3694.9.camel@ThinkPad-T5421.cn.ibm.com>
- <1357797726.4838.89.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B37400@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 568352C032C
+ for <linuxppc-dev@ozlabs.org>; Thu, 10 Jan 2013 20:24:28 +1100 (EST)
+From: Singh Sandeep-B37400 <B37400@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] Added device tree binding for TDM and TDM phy
+Date: Thu, 10 Jan 2013 09:24:21 +0000
+Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E69E4F0@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1357133120-2271-1-git-send-email-Sandeep@freescale.com>
+ <3F1D9DCAAB49B94D88DBE05911FA4E6E69CEB8@039-SN1MPN1-005.039d.mgd.msft.net>
+ <1357776425.18196.18@snotra>
+In-Reply-To: <1357776425.18196.18@snotra>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ Aggrwal Poonam-B10812 <B10812@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,27 +30,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use local_paca directly in arch_spin_unlock_wait(), as all processors have the
-same value for the field shared_proc, so we don't need care racy here.
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Thursday, January 10, 2013 5:37 AM
+> To: Singh Sandeep-B37400
+> Cc: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@ozlabs.org; Aggrwal
+> Poonam-B10812
+> Subject: Re: [PATCH] Added device tree binding for TDM and TDM phy
+>=20
+> On 01/09/2013 01:10:24 AM, Singh Sandeep-B37400 wrote:
+> > A gentle reminder.
+> > Any comments are appreciated.
+> >
+> > Regards,
+> > Sandeep
+> >
+> > > -----Original Message-----
+> > > From: Singh Sandeep-B37400
+> > > Sent: Wednesday, January 02, 2013 6:55 PM
+> > > To: devicetree-discuss@lists.ozlabs.org; linuxppc-dev@ozlabs.org
+> > > Cc: Singh Sandeep-B37400; Aggrwal Poonam-B10812
+> > > Subject: [PATCH] Added device tree binding for TDM and TDM phy
+> > >
+> > > This controller is available on many Freescale SOCs like MPC8315,
+> > P1020,
+> > > P1010 and P1022
+> > >
+> > > Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+> > > Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+> > > ---
+> > >  .../devicetree/bindings/powerpc/fsl/fsl-tdm.txt    |   63
+> > > ++++++++++++++++++++
+> > >  .../devicetree/bindings/powerpc/fsl/tdm-phy.txt    |   38
+> > ++++++++++++
+> > >  2 files changed, 101 insertions(+), 0 deletions(-)  create mode
+> > 100644
+> > > Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
+> > >  create mode 100644
+> > Documentation/devicetree/bindings/powerpc/fsl/tdm-
+> > > phy.txt
+> > >
+> > > diff --git
+> > a/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
+> > > b/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
+> > > new file mode 100644
+> > > index 0000000..ceb2ef1
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/powerpc/fsl/fsl-tdm.txt
+> > > @@ -0,0 +1,63 @@
+> > > +TDM Device Tree Binding
+> > > +
+> > > +NOTE: The bindings described in this document are preliminary and
+> > > +subject to change.
+> > > +
+> > > +TDM (Time Division Multiplexing)
+> > > +
+> > > +Description:
+> > > +
+> > > +The TDM is full duplex serial port designed to allow various
+> > devices
+> > > +including digital signal processors (DSPs) to communicate with a
+> > > +variety of serial devices including industry standard framers,
+> > codecs,
+> > > other DSPs and microprocessors.
+> > > +
+> > > +The below properties describe the device tree bindings for
+> > Freescale
+> > > +TDM controller. This TDM controller is available on various
+> > Freescale
+> > > +Processors like MPC8315, P1020, P1022 and P1010.
+> > > +
+> > > +Required properties:
+> > > +
+> > > +- compatible
+> > > +    Value type: <string>
+> > > +    Definition: Should contain "fsl,tdm1.0".
+> > > +
+> > > +- reg
+> > > +    Definition: A standard property. The first reg specifier
+> > describes
+> > > the TDM
+> > > +    registers, and the second describes the TDM DMAC registers.
+> > > +
+> > > +- tdm_tx_clk
+> > > +    Value type: <u32 or u64>
+> > > +    Definition: This specifies the value of transmit clock. It
+> > should
+> > > not
+> > > +    exceed 50Mhz.
+> > > +
+> > > +- tdm_rx_clk
+> > > +    Value type: <u32 or u64>
+> > > +    Definition: This specifies the value of receive clock. Its
+> > value
+> > > could be
+> > > +    zero, in which case tdm will operate in shared mode. Its value
+> > > should not
+> > > +    exceed 50Mhz.
+>=20
+> Please don't use underscores in property names, and use the vendor
+> prefix: "fsl,tdm-tx-clk" and "fsl,tdm-rx-clk".
 
-Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/lib/locks.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Ok.
 
-diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-index bb7cfec..850bea6 100644
---- a/arch/powerpc/lib/locks.c
-+++ b/arch/powerpc/lib/locks.c
-@@ -72,7 +72,7 @@ void arch_spin_unlock_wait(arch_spinlock_t *lock)
- {
- 	while (lock->slock) {
- 		HMT_low();
--		if (SHARED_PROCESSOR)
-+		if (local_paca->lppaca_ptr->shared_proc)
- 			__spin_yield(lock);
- 	}
- 	HMT_medium();
--- 
-1.7.9.5
+>=20
+> > > diff --git
+> > a/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
+> > > b/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
+> > > new file mode 100644
+> > > index 0000000..2563934
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/powerpc/fsl/tdm-phy.txt
+> > > @@ -0,0 +1,38 @@
+> > > +TDM PHY Device Tree Binding
+> > > +
+> > > +NOTE: The bindings described in this document are preliminary and
+> > > +subject to change.
+> > > +
+> > > +Description:
+> > > +TDM PHY is the terminal interface of TDM subsystem. It is
+> > typically a
+> > > +line control device like E1/T1 framer or SLIC. A TDM device can
+> > have
+> > > +multiple TDM PHYs.
+> > > +
+> > > +Required properties:
+> > > +
+> > > +- compatible
+> > > +    Value type: <string>
+> > > +    Definition: Should contain generic compatibility like
+> > "tdm-phy-slic"
+> > > or
+> > > +    "tdm-phy-e1" or "tdm-phy-t1".
+>=20
+> Does this "generic" string (plus the other properties) tell you all you
+> need to know about the device?  If there are other possible "generic"
+> compatibles, they should be listed or else different people will make up
+> different strings for the same thing.
+
+This property will describe the type of device, and will help TDM framework
+to know if it is E1/T1/SLIC device. Further details can be extracted from o=
+ther
+compatible strings.
+There are only three generic compatibles field types, which are already men=
+tioned
+in definition. Do I need to make this thing more clear.
+>=20
+> -Scott
