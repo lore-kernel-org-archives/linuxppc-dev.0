@@ -1,16 +1,16 @@
 Return-Path: <toshi.kani@hp.com>
-Received: from g5t0009.atlanta.hp.com (g5t0009.atlanta.hp.com [15.192.0.46])
+Received: from g5t0007.atlanta.hp.com (g5t0007.atlanta.hp.com [15.192.0.44])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "smtp.hp.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8754B2C0420
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 11:00:59 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4C5C02C0438
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 11:01:01 +1100 (EST)
 From: Toshi Kani <toshi.kani@hp.com>
 To: rjw@sisk.pl, lenb@kernel.org, gregkh@linuxfoundation.org,
  akpm@linux-foundation.org
-Subject: [RFC PATCH v2 07/12] ACPI: Add ACPI resource hotplug handler
-Date: Thu, 10 Jan 2013 16:40:25 -0700
-Message-Id: <1357861230-29549-8-git-send-email-toshi.kani@hp.com>
+Subject: [RFC PATCH v2 03/12] drivers/base: Add system device hotplug framework
+Date: Thu, 10 Jan 2013 16:40:21 -0700
+Message-Id: <1357861230-29549-4-git-send-email-toshi.kani@hp.com>
 In-Reply-To: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
 References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
 Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
@@ -27,73 +27,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added ACPI resource handler for hotplug operations.  The handler,
-acpi_set_shp_device(), sets device resource information to a hotplug
-request, which is consumed by the CPU and memory handlers.
-For setting the device resource information, acpi_scan_shp_devices()
-walks the acpi_device tree from a target device, and calls .resource
-of ACPI drivers.
+Added sys_hotplug.c, which is the system device hotplug framework code.
 
-For hot-add, acpi_set_shp_device() is called right after the ACPI bus
-handler so that it can walk through new acpi_device objects.  For
-hot-delete, it is called at the begging of the validate phase so that
-other validate handlers can use the device resource information for
-their validations.
+shp_register_handler() allows modules to register their hotplug handlers
+to the framework.  shp_submit_req() provides the interface to submit
+a hotplug or online/offline request of system devices.  The request is
+then put into hp_workqueue.  shp_start_req() calls all registered handlers
+in ascending order for each phase.  If any handler failed in validate or
+execute phase, shp_start_req() initiates its rollback procedure.
 
 Signed-off-by: Toshi Kani <toshi.kani@hp.com>
 ---
- drivers/acpi/Makefile       |    1 +
- drivers/acpi/bus.c          |    1 +
- drivers/acpi/internal.h     |    1 +
- drivers/acpi/shp_resource.c |   86 +++++++++++++++++++++++++++++++++++++++++++
- include/acpi/acpi_bus.h     |    4 ++
- 5 files changed, 93 insertions(+)
- create mode 100644 drivers/acpi/shp_resource.c
+ drivers/base/Makefile      |    1 
+ drivers/base/sys_hotplug.c |  313 ++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 314 insertions(+)
+ create mode 100644 drivers/base/sys_hotplug.c
 
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefile
-index 2a4502b..205be23 100644
---- a/drivers/acpi/Makefile
-+++ b/drivers/acpi/Makefile
-@@ -34,6 +34,7 @@ acpi-$(CONFIG_ACPI_SLEEP)	+= proc.o
- acpi-y				+= bus.o glue.o
- acpi-y				+= scan.o
- acpi-y				+= resource.o
-+acpi-y				+= shp_resource.o
- acpi-y				+= processor_core.o
- acpi-y				+= ec.o
- acpi-$(CONFIG_ACPI_DOCK)	+= dock.o
-diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
-index 31a1911..69b5edb 100644
---- a/drivers/acpi/bus.c
-+++ b/drivers/acpi/bus.c
-@@ -1236,6 +1236,7 @@ static int __init acpi_init(void)
- 	acpi_sleep_proc_init();
- 	acpi_wakeup_device_init();
- 	acpi_shp_init();
-+	acpi_shp_res_init();
- 	return 0;
- }
+diff --git a/drivers/base/Makefile b/drivers/base/Makefile
+index 5aa2d70..2e9b2f1 100644
+--- a/drivers/base/Makefile
++++ b/drivers/base/Makefile
+@@ -21,6 +21,7 @@ endif
+ obj-$(CONFIG_SYS_HYPERVISOR) += hypervisor.o
+ obj-$(CONFIG_REGMAP)	+= regmap/
+ obj-$(CONFIG_SOC_BUS) += soc.o
++obj-y			+= sys_hotplug.o
  
-diff --git a/drivers/acpi/internal.h b/drivers/acpi/internal.h
-index 3c407cd..51aa740 100644
---- a/drivers/acpi/internal.h
-+++ b/drivers/acpi/internal.h
-@@ -26,6 +26,7 @@
- int init_acpi_device_notify(void);
- int acpi_scan_init(void);
- int acpi_sysfs_init(void);
-+void acpi_shp_res_init(void);
+ ccflags-$(CONFIG_DEBUG_DRIVER) := -DDEBUG
  
- #ifdef CONFIG_DEBUG_FS
- extern struct dentry *acpi_debugfs_dir;
-diff --git a/drivers/acpi/shp_resource.c b/drivers/acpi/shp_resource.c
+diff --git a/drivers/base/sys_hotplug.c b/drivers/base/sys_hotplug.c
 new file mode 100644
-index 0000000..51ab968
+index 0000000..c5f5285
 --- /dev/null
-+++ b/drivers/acpi/shp_resource.c
-@@ -0,0 +1,86 @@
++++ b/drivers/base/sys_hotplug.c
+@@ -0,0 +1,313 @@
 +/*
-+ * shp_resource.c - Setup system device hot-plug resource information
++ * sys_hotplug.c - System device hot-plug framework
 + *
 + * Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
 + *	Toshi Kani <toshi.kani@hp.com>
@@ -105,105 +74,303 @@ index 0000000..51ab968
 +
 +#include <linux/kernel.h>
 +#include <linux/init.h>
++#include <linux/slab.h>
 +#include <linux/module.h>
-+#include <linux/device.h>
 +#include <linux/list.h>
-+#include <linux/acpi.h>
-+#include <acpi/sys_hotplug.h>
++#include <linux/workqueue.h>
++#include <linux/sys_hotplug.h>
++#include <linux/kallsyms.h>
 +
-+#include "internal.h"
++/*
++ * Hot-plug handler list
++ */
++struct shp_handler {
++	struct list_head	shp_list;
++	int			shp_order;
++	shp_func		shp_func;
++};
 +
-+static int
-+acpi_set_shp_device(struct acpi_device *device, struct shp_request *req)
++LIST_HEAD(shp_add_list_head);
++LIST_HEAD(shp_del_list_head);
++
++static DEFINE_MUTEX(shp_hdr_list_lock);
++
++#define SHP_VALIDATE_ORDER_BASE		(SHP_ORDER_MAX+1)
++#define SHP_EXECUTE_ORDER_BASE		((SHP_ORDER_MAX+1) << 1)
++#define SHP_COMMIT_ORDER_BASE		((SHP_ORDER_MAX+1) << 2)
++
++/*
++ * Hot-plug request work queue
++ */
++struct shp_work {
++	struct shp_request	*request;
++	struct work_struct	work;
++};
++
++static struct workqueue_struct *shp_workqueue;
++
++/* trace messages */
++static int shp_trace = 1;
++static char shp_ksym_buf[KSYM_NAME_LEN];
++module_param(shp_trace, int, 0644);
++MODULE_PARM_DESC(shp_trace, "Enable system device hot-plug trace messages");
++
++static char *shp_operation_string(enum shp_operation operation)
 +{
++	switch (operation) {
++	case SHP_HOTPLUG_ADD:
++		return "Hot-Add";
++	case SHP_HOTPLUG_DEL:
++		return "Hot-Delete";
++	case SHP_ONLINE_ADD:
++		return "Online";
++	case SHP_ONLINE_DEL:
++		return "Offline";
++	}
++
++	return "n/a";
++}
++
++static u32 shp_get_order_base(enum shp_phase phase)
++{
++	switch (phase) {
++	case SHP_ADD_VALIDATE:
++	case SHP_DEL_VALIDATE:
++		return SHP_VALIDATE_ORDER_BASE;
++	case SHP_ADD_EXECUTE:
++	case SHP_DEL_EXECUTE:
++		return SHP_EXECUTE_ORDER_BASE;
++	case SHP_ADD_COMMIT:
++	case SHP_DEL_COMMIT:
++		return SHP_COMMIT_ORDER_BASE;
++	}
++
++	return 0;
++}
++
++/**
++ * shp_register_handler - register a hot-plug handler to the framework
++ * @phase: hot-plug phase
++ * @func: Hot-plug function
++ * @order: Pre-defined order value
++ */
++int shp_register_handler(enum shp_phase phase, shp_func func, u32 order)
++{
++	struct list_head *head;
++	struct shp_handler *hdr, *cur;
++	u32 order_base;
++	int insert = 0;
++
++	if (!func || order > SHP_ORDER_MAX)
++		return -EINVAL;
++
++	if (shp_is_add_phase(phase))
++		head = &shp_add_list_head;
++	else
++		head = &shp_del_list_head;
++
++	order_base = shp_get_order_base(phase);
++
++	hdr = kzalloc(sizeof(*hdr), GFP_KERNEL);
++	if (!hdr)
++		return -ENOMEM;
++
++	hdr->shp_order = order + order_base;
++	hdr->shp_func = func;
++
++	/*
++	 * Add this handler to the list in ascending order
++	 */
++	mutex_lock(&shp_hdr_list_lock);
++	if (list_empty(head)) {
++		list_add(&hdr->shp_list, head);
++	} else {
++		list_for_each_entry(cur, head, shp_list)
++			if (cur->shp_order > hdr->shp_order) {
++				insert = 1;
++				break;
++			}
++
++		if (insert)
++			__list_add(&hdr->shp_list,
++				cur->shp_list.prev, &cur->shp_list);
++		else
++			list_add_tail(&hdr->shp_list, head);
++	}
++	mutex_unlock(&shp_hdr_list_lock);
++
++	return 0;
++}
++EXPORT_SYMBOL(shp_register_handler);
++
++/**
++ * shp_unregister_handler - unregister a hot-plug handler from the framework
++ * @phase: hot-plug phase
++ * @func: Hot-plug function
++ */
++int shp_unregister_handler(enum shp_phase phase, shp_func func)
++{
++	struct list_head *head;
++	struct shp_handler *cur;
++
++	if (!func)
++		return -EINVAL;
++
++	if (shp_is_add_phase(phase))
++		head = &shp_add_list_head;
++	else
++		head = &shp_del_list_head;
++
++	/*
++	 * Delete this handler from the list
++	 */
++	mutex_lock(&shp_hdr_list_lock);
++	list_for_each_entry(cur, head, shp_list)
++		if (cur->shp_func == func) {
++			list_del(&cur->shp_list);
++			kfree(cur);
++			break;
++		}
++	mutex_unlock(&shp_hdr_list_lock);
++
++	return 0;
++}
++EXPORT_SYMBOL(shp_unregister_handler);
++
++static void shp_start_req(struct work_struct *work)
++{
++	struct shp_work *shp_work = container_of(work, struct shp_work, work);
++	struct shp_request *req = shp_work->request;
++	struct shp_handler *hdr;
++	struct shp_device *shp_dev, *tmp;
++	struct list_head *head;
++	int rollback = 0;
 +	int ret;
 +
-+	if (!device->driver) {
-+		dev_dbg(&device->dev, "driver not bound\n");
-+		return 0;
++	if (shp_is_add_op(req->operation))
++		head = &shp_add_list_head;
++	else
++		head = &shp_del_list_head;
++
++	if (shp_trace)
++		pr_info("Starting %s Operation\n",
++				shp_operation_string(req->operation));
++
++	/*
++	 * Call hot-plug handlers in the list
++	 */
++	mutex_lock(&shp_hdr_list_lock);
++	list_for_each_entry(hdr, head, shp_list) {
++		if (shp_trace)
++			pr_info("-> %s\n",
++				kallsyms_lookup((unsigned long)hdr->shp_func,
++					NULL, NULL, NULL, shp_ksym_buf));
++
++		ret = hdr->shp_func(req, 0);
++		if (ret) {
++			if (hdr->shp_order < SHP_COMMIT_ORDER_BASE) {
++				if (shp_trace)
++					pr_info("Initiating Rollback\n");
++				rollback = 1;
++				break;
++			} else {
++				pr_err("Commit handler failed: continuing\n");
++				continue;
++			}
++		}
 +	}
 +
-+	if (!device->driver->ops.resource)
-+		return 0;
++	/*
++	 * If rollback is requested, call hot-plug handlers in the reversed
++	 * order from the failed handler.  The failed handler is not called
++	 * again.
++	 */
++	if (rollback) {
++		list_for_each_entry_continue_reverse(hdr, head, shp_list) {
++			if (shp_trace)
++				pr_info("RB-> %s\n",
++					kallsyms_lookup(
++					   (unsigned long)hdr->shp_func,
++					   NULL, NULL, NULL, shp_ksym_buf));
 +
-+	ret = device->driver->ops.resource(device, req);
-+	if (ret) {
-+		dev_err(&device->dev, "ops.resource failed (%d)\n", ret);
++			ret = hdr->shp_func(req, 1);
++			if (ret)
++				pr_err("Rollback handler failed: continuing\n");
++		}
++	}
++	mutex_unlock(&shp_hdr_list_lock);
++
++	/* free up the hot-plug request information */
++	list_for_each_entry_safe(shp_dev, tmp, &req->dev_list, list) {
++		list_del(&shp_dev->list);
++		kfree(shp_dev);
++	}
++	kfree(req);
++	kfree(shp_work);
++}
++
++/**
++ * shp_submit_req - submit a hot-plug request
++ * @req: Hot-plug request pointer
++ */
++int shp_submit_req(struct shp_request *req)
++{
++	struct shp_work *shp_work;
++
++	shp_work = kzalloc(sizeof(*shp_work), GFP_KERNEL);
++	if (!shp_work)
++		return -ENOMEM;
++
++	shp_work->request = req;
++	INIT_WORK(&shp_work->work, shp_start_req);
++
++	if (!queue_work(shp_workqueue, &shp_work->work)) {
++		kfree(shp_work);
 +		return -EINVAL;
 +	}
 +
 +	return 0;
 +}
++EXPORT_SYMBOL(shp_submit_req);
 +
-+static int
-+acpi_scan_shp_devices(struct acpi_device *device, struct shp_request *req)
++/**
++ * shp_alloc_request - allocate a hot-plug request
++ * @operation: Hot-plug operation
++ */
++struct shp_request *shp_alloc_request(enum shp_operation operation)
 +{
-+	struct acpi_device *child = NULL;
++	struct shp_request *shp_req;
 +
-+	if (acpi_set_shp_device(device, req))
-+		return 0;
++	shp_req = kzalloc(sizeof(*shp_req), GFP_KERNEL);
++	if (!shp_req)
++		return NULL;
 +
-+	list_for_each_entry(child, &device->children, node)
-+		acpi_scan_shp_devices(child, req);
++	shp_req->operation = operation;
++	INIT_LIST_HEAD(&shp_req->dev_list);
++
++	return shp_req;
++}
++EXPORT_SYMBOL(shp_alloc_request);
++
++/**
++ * shp_add_dev_info - add shp_device to the hotplug request
++ * @shp_req: hot-plug request pointer
++ * @shp_dev: hot-plug device info pointer
++ */
++void shp_add_dev_info(struct shp_request *shp_req, struct shp_device *shp_dev)
++{
++	list_add_tail(&shp_dev->list, &shp_req->dev_list);
++}
++EXPORT_SYMBOL(shp_add_dev_info);
++
++static int __init shp_init(void)
++{
++	/*
++	 * Allocate shp_workqueue with max_active set to 1.  This serializes
++	 * hot-plug and online/offline operations on the workqueue.
++	 */
++	shp_workqueue = alloc_workqueue("hotplug", 0, 1);
 +
 +	return 0;
 +}
-+
-+static int acpi_set_shp_resources(struct shp_request *req, int rollback)
-+{
-+	acpi_handle handle = (acpi_handle) req->handle;
-+	struct acpi_device *device = NULL;
-+
-+	if (rollback)
-+		return 0;
-+
-+	/* only handle hot-plug operation */
-+	if (!shp_is_hotplug_op(req->operation))
-+		return 0;
-+
-+	if (acpi_bus_get_device(handle, &device)) {
-+		acpi_handle_err(handle, "acpi_bus_get_device failed\n");
-+		return -EINVAL;
-+	}
-+
-+	acpi_scan_shp_devices(device, req);
-+
-+	return 0;
-+}
-+
-+void __init acpi_shp_res_init(void)
-+{
-+	shp_register_handler(SHP_ADD_EXECUTE, acpi_set_shp_resources,
-+				SHP_ACPI_RES_ADD_EXECUTE_ORDER);
-+	shp_register_handler(SHP_DEL_VALIDATE, acpi_set_shp_resources,
-+				SHP_ACPI_RES_DEL_VALIDATE_ORDER);
-+}
-diff --git a/include/acpi/acpi_bus.h b/include/acpi/acpi_bus.h
-index 7ced5dc..6bf002e 100644
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -27,6 +27,7 @@
- #define __ACPI_BUS_H__
- 
- #include <linux/device.h>
-+#include <acpi/sys_hotplug.h>
- 
- #include <acpi/acpi.h>
- 
-@@ -94,6 +95,8 @@ typedef int (*acpi_op_start) (struct acpi_device * device);
- typedef int (*acpi_op_bind) (struct acpi_device * device);
- typedef int (*acpi_op_unbind) (struct acpi_device * device);
- typedef void (*acpi_op_notify) (struct acpi_device * device, u32 event);
-+typedef int (*acpi_op_resource) (struct acpi_device *device,
-+			struct shp_request *shp_req);
- 
- struct acpi_bus_ops {
- 	u32 acpi_op_add:1;
-@@ -107,6 +110,7 @@ struct acpi_device_ops {
- 	acpi_op_bind bind;
- 	acpi_op_unbind unbind;
- 	acpi_op_notify notify;
-+	acpi_op_resource resource;
- };
- 
- #define ACPI_DRIVER_ALL_NOTIFY_EVENTS	0x1	/* system AND device events */
++device_initcall(shp_init);
