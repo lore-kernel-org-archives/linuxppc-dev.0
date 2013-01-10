@@ -3,15 +3,14 @@ Received: from g5t0009.atlanta.hp.com (g5t0009.atlanta.hp.com [15.192.0.46])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "smtp.hp.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C1FF82C0431
+ by ozlabs.org (Postfix) with ESMTPS id C21272C0432
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 11:00:58 +1100 (EST)
 From: Toshi Kani <toshi.kani@hp.com>
 To: rjw@sisk.pl, lenb@kernel.org, gregkh@linuxfoundation.org,
  akpm@linux-foundation.org
-Subject: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
- framework
-Date: Thu, 10 Jan 2013 16:40:19 -0700
-Message-Id: <1357861230-29549-2-git-send-email-toshi.kani@hp.com>
+Subject: [RFC PATCH v2 06/12] ACPI: Add ACPI bus hotplug handlers
+Date: Thu, 10 Jan 2013 16:40:24 -0700
+Message-Id: <1357861230-29549-7-git-send-email-toshi.kani@hp.com>
 In-Reply-To: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
 References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
 Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
@@ -28,209 +27,184 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added include/linux/sys_hotplug.h, which defines the system device
-hotplug framework interfaces used by the framework itself and
-handlers.
+Added ACPI bus hotplug handlers.  acpi_add_execute() calls
+acpi_bus_add() to construct new acpi_device objects for hot-add
+operation, and acpi_del_execute() calls acpi_bus_trim() to destruct
+them for hot-delete operation.  They are also used for rollback
+as well.
 
-The order values define the calling sequence of handlers.  For add
-execute, the ordering is ACPI->MEM->CPU.  Memory is onlined before
-CPU so that threads on new CPUs can start using their local memory.
-The ordering of the delete execute is symmetric to the add execute.
+acpi_del_commit() calls _EJ0 to eject a target object for hot-delete.
 
-struct shp_request defines a hot-plug request information.  The
-device resource information is managed with a list so that a single
-request may target to multiple devices.
+acpi_validate_ost() calls _OST to inform FW that a hot-plug operation
+completed with error in case of rollback.
 
 Signed-off-by: Toshi Kani <toshi.kani@hp.com>
 ---
- include/linux/sys_hotplug.h |  181 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 181 insertions(+)
- create mode 100644 include/linux/sys_hotplug.h
+ drivers/acpi/bus.c |  133 ++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 133 insertions(+)
 
-diff --git a/include/linux/sys_hotplug.h b/include/linux/sys_hotplug.h
-new file mode 100644
-index 0000000..86674dd
---- /dev/null
-+++ b/include/linux/sys_hotplug.h
-@@ -0,0 +1,181 @@
-+/*
-+ * sys_hotplug.h - System device hot-plug framework
-+ *
-+ * Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-+ *	Toshi Kani <toshi.kani@hp.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
+diff --git a/drivers/acpi/bus.c b/drivers/acpi/bus.c
+index 1f0d457..31a1911 100644
+--- a/drivers/acpi/bus.c
++++ b/drivers/acpi/bus.c
+@@ -42,6 +42,7 @@
+ #include <acpi/apei.h>
+ #include <linux/dmi.h>
+ #include <linux/suspend.h>
++#include <acpi/sys_hotplug.h>
+ 
+ #include "internal.h"
+ 
+@@ -52,6 +53,9 @@ struct acpi_device *acpi_root;
+ struct proc_dir_entry *acpi_root_dir;
+ EXPORT_SYMBOL(acpi_root_dir);
+ 
++static int acpi_add_execute(struct shp_request *req, int rollback);
++static int acpi_del_execute(struct shp_request *req, int rollback);
 +
-+#ifndef _LINUX_SYS_HOTPLUG_H
-+#define _LINUX_SYS_HOTPLUG_H
+ #define STRUCT_TO_INT(s)	(*((int*)&s))
+ 
+ 
+@@ -859,6 +863,134 @@ static void acpi_bus_notify(acpi_handle handle, u32 type, void *data)
+ }
+ 
+ /* --------------------------------------------------------------------------
++			Hot-plug Handling
++   -------------------------------------------------------------------------- */
 +
-+#include <linux/list.h>
-+#include <linux/device.h>
-+
-+/*
-+ * System device hot-plug operation proceeds in the following order.
-+ *   Validate phase -> Execute phase -> Commit phase
-+ *
-+ * The order values below define the calling sequence of platform
-+ * neutral handlers for each phase in ascending order.  The order
-+ * values of firmware-specific handlers are defined in sys_hotplug.h
-+ * under firmware specific directories.
-+ */
-+
-+/* All order values must be smaller than this value */
-+#define SHP_ORDER_MAX				0xffffff
-+
-+/* Add Validate order values */
-+
-+/* Add Execute order values */
-+#define SHP_MEM_ADD_EXECUTE_ORDER		100
-+#define SHP_CPU_ADD_EXECUTE_ORDER		110
-+
-+/* Add Commit order values */
-+
-+/* Delete Validate order values */
-+#define SHP_CPU_DEL_VALIDATE_ORDER		100
-+#define SHP_MEM_DEL_VALIDATE_ORDER		110
-+
-+/* Delete Execute order values */
-+#define SHP_CPU_DEL_EXECUTE_ORDER		10
-+#define SHP_MEM_DEL_EXECUTE_ORDER		20
-+
-+/* Delete Commit order values */
-+
-+/*
-+ * Hot-plug request types
-+ */
-+#define SHP_REQ_ADD		0x000000
-+#define SHP_REQ_DELETE		0x000001
-+#define SHP_REQ_MASK		0x0000ff
-+
-+/*
-+ * Hot-plug phase types
-+ */
-+#define SHP_PH_VALIDATE		0x000000
-+#define SHP_PH_EXECUTE		0x000100
-+#define SHP_PH_COMMIT		0x000200
-+#define SHP_PH_MASK		0x00ff00
-+
-+/*
-+ * Hot-plug operation types
-+ */
-+#define SHP_OP_HOTPLUG		0x000000
-+#define SHP_OP_ONLINE		0x010000
-+#define SHP_OP_MASK		0xff0000
-+
-+/*
-+ * Hot-plug phases
-+ */
-+enum shp_phase {
-+	SHP_ADD_VALIDATE	= (SHP_REQ_ADD|SHP_PH_VALIDATE),
-+	SHP_ADD_EXECUTE		= (SHP_REQ_ADD|SHP_PH_EXECUTE),
-+	SHP_ADD_COMMIT		= (SHP_REQ_ADD|SHP_PH_COMMIT),
-+	SHP_DEL_VALIDATE	= (SHP_REQ_DELETE|SHP_PH_VALIDATE),
-+	SHP_DEL_EXECUTE		= (SHP_REQ_DELETE|SHP_PH_EXECUTE),
-+	SHP_DEL_COMMIT		= (SHP_REQ_DELETE|SHP_PH_COMMIT)
-+};
-+
-+/*
-+ * Hot-plug operations
-+ */
-+enum shp_operation {
-+	SHP_HOTPLUG_ADD		= (SHP_OP_HOTPLUG|SHP_REQ_ADD),
-+	SHP_HOTPLUG_DEL		= (SHP_OP_HOTPLUG|SHP_REQ_DELETE),
-+	SHP_ONLINE_ADD		= (SHP_OP_ONLINE|SHP_REQ_ADD),
-+	SHP_ONLINE_DEL		= (SHP_OP_ONLINE|SHP_REQ_DELETE)
-+};
-+
-+/*
-+ * Hot-plug device classes
-+ */
-+enum shp_class {
-+	SHP_CLS_INVALID		= 0,
-+	SHP_CLS_CPU		= 1,
-+	SHP_CLS_MEMORY		= 2,
-+	SHP_CLS_HOSTBRIDGE	= 3,
-+	SHP_CLS_CONTAINER	= 4,
-+};
-+
-+/*
-+ * Hot-plug device information
-+ */
-+union shp_dev_info {
-+	struct shp_cpu {
-+		u32		cpu_id;
-+	} cpu;
-+
-+	struct shp_memory {
-+		int		node;
-+		u64		start_addr;
-+		u64		length;
-+	} mem;
-+
-+	struct shp_hostbridge {
-+	} hb;
-+
-+	struct shp_node {
-+	} node;
-+};
-+
-+struct shp_device {
-+	struct list_head	list;
-+	struct device		*device;
-+	enum shp_class		class;
-+	union shp_dev_info	info;
-+};
-+
-+/*
-+ * Hot-plug request
-+ */
-+struct shp_request {
-+	/* common info */
-+	enum shp_operation	operation;	/* operation */
-+
-+	/* hot-plug event info: only valid for hot-plug operations */
-+	void			*handle;	/* FW handle */
-+	u32			event;		/* FW event */
-+
-+	/* device resource info */
-+	struct list_head	dev_list;	/* shp_device list */
-+};
-+
-+/*
-+ * Inline Utility Functions
-+ */
-+static inline bool shp_is_hotplug_op(enum shp_operation operation)
++static int acpi_validate_ost(struct shp_request *req, int rollback)
 +{
-+	return (operation & SHP_OP_MASK) == SHP_OP_HOTPLUG;
++	/* If hotplug request failed, inform firmware with error */
++	if (rollback && shp_is_hotplug_op(req->operation))
++		(void) acpi_evaluate_hotplug_ost(req->handle, req->event,
++				ACPI_OST_SC_NON_SPECIFIC_FAILURE, NULL);
++
++	return 0;
 +}
 +
-+static inline bool shp_is_online_op(enum shp_operation operation)
++static int acpi_add_execute(struct shp_request *req, int rollback)
 +{
-+	return (operation & SHP_OP_MASK) == SHP_OP_ONLINE;
++	acpi_handle handle = (acpi_handle) req->handle;
++	acpi_handle phandle;
++	struct acpi_device *device = NULL;
++	struct acpi_device *pdev;
++	int ret;
++
++	if (rollback)
++		return acpi_del_execute(req, 0);
++
++	/* only handle hot-plug operation */
++	if (!shp_is_hotplug_op(req->operation))
++		return 0;
++
++	if (acpi_get_parent(handle, &phandle))
++		return -ENODEV;
++
++	if (acpi_bus_get_device(phandle, &pdev))
++		return -ENODEV;
++
++	ret = acpi_bus_add(&device, pdev, handle, ACPI_BUS_TYPE_DEVICE);
++
++	return ret;
 +}
 +
-+static inline bool shp_is_add_op(enum shp_operation operation)
++static int acpi_add_commit(struct shp_request *req, int rollback)
 +{
-+	return (operation & SHP_REQ_MASK) == SHP_REQ_ADD;
++	/* Inform firmware that the hotplug operation has completed */
++	(void) acpi_evaluate_hotplug_ost(req->handle, req->event,
++					ACPI_OST_SC_SUCCESS, NULL);
++
++	return 0;
 +}
 +
-+static inline bool shp_is_add_phase(enum shp_phase phase)
++static int acpi_del_execute(struct shp_request *req, int rollback)
 +{
-+	return (phase & SHP_REQ_MASK) == SHP_REQ_ADD;
++	acpi_handle handle = (acpi_handle) req->handle;
++	struct acpi_device *device;
++
++	if (rollback)
++		return acpi_add_execute(req, 0);
++
++	/* only handle hot-plug operation */
++	if (!shp_is_hotplug_op(req->operation))
++		return 0;
++
++	if (acpi_bus_get_device(handle, &device)) {
++		acpi_handle_err(handle, "Failed to obtain device\n");
++		return -EINVAL;
++	}
++
++	if (acpi_bus_trim(device, 1)) {
++		dev_err(&device->dev, "Removing device failed\n");
++		return -EINVAL;
++	}
++
++	return 0;
 +}
 +
-+/*
-+ * Externs
-+ */
-+typedef int (*shp_func)(struct shp_request *req, int rollback);
-+extern int shp_register_handler(enum shp_phase phase, shp_func func, u32 order);
-+extern int shp_unregister_handler(enum shp_phase phase, shp_func func);
-+extern int shp_submit_req(struct shp_request *req);
-+extern struct shp_request *shp_alloc_request(enum shp_operation operation);
-+extern void shp_add_dev_info(struct shp_request *shp_req,
-+		struct shp_device *shp_dev);
++static int acpi_del_commit(struct shp_request *req, int rollback)
++{
++	acpi_handle handle = (acpi_handle) req->handle;
++	acpi_handle temp;
++	struct acpi_object_list arg_list;
++	union acpi_object arg;
++	acpi_status status;
 +
-+#endif	/* _LINUX_SYS_HOTPLUG_H */
++	/* only handle hot-plug operation */
++	if (!shp_is_hotplug_op(req->operation))
++		return 0;
++
++	/* power off device */
++	status = acpi_evaluate_object(handle, "_PS3", NULL, NULL);
++	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND)
++		acpi_handle_warn(handle, "Power-off device failed\n");
++
++	if (ACPI_SUCCESS(acpi_get_handle(handle, "_LCK", &temp))) {
++		arg_list.count = 1;
++		arg_list.pointer = &arg;
++		arg.type = ACPI_TYPE_INTEGER;
++		arg.integer.value = 0;
++		acpi_evaluate_object(handle, "_LCK", &arg_list, NULL);
++	}
++
++	arg_list.count = 1;
++	arg_list.pointer = &arg;
++	arg.type = ACPI_TYPE_INTEGER;
++	arg.integer.value = 1;
++
++	status = acpi_evaluate_object(handle, "_EJ0", &arg_list, NULL);
++	if (ACPI_FAILURE(status) && (status != AE_NOT_FOUND))
++			acpi_handle_warn(handle, "Eject device failed\n");
++
++	return 0;
++}
++
++static void __init acpi_shp_init(void)
++{
++	shp_register_handler(SHP_ADD_VALIDATE, acpi_validate_ost,
++				SHP_ACPI_BUS_ADD_VALIDATE_ORDER);
++	shp_register_handler(SHP_ADD_EXECUTE, acpi_add_execute,
++				SHP_ACPI_BUS_ADD_EXECUTE_ORDER);
++	shp_register_handler(SHP_ADD_COMMIT, acpi_add_commit,
++				SHP_ACPI_BUS_ADD_COMMIT_ORDER);
++
++	shp_register_handler(SHP_DEL_VALIDATE, acpi_validate_ost,
++				SHP_ACPI_BUS_DEL_VALIDATE_ORDER);
++	shp_register_handler(SHP_DEL_EXECUTE, acpi_del_execute,
++				SHP_ACPI_BUS_DEL_EXECUTE_ORDER);
++	shp_register_handler(SHP_DEL_COMMIT, acpi_del_commit,
++				SHP_ACPI_BUS_DEL_COMMIT_ORDER);
++}
++
++/* --------------------------------------------------------------------------
+                              Initialization/Cleanup
+    -------------------------------------------------------------------------- */
+ 
+@@ -1103,6 +1235,7 @@ static int __init acpi_init(void)
+ 	acpi_debugfs_init();
+ 	acpi_sleep_proc_init();
+ 	acpi_wakeup_device_init();
++	acpi_shp_init();
+ 	return 0;
+ }
+ 
