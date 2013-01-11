@@ -1,24 +1,22 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 76AE62C035D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2013 08:26:43 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Toshi Kani <toshi.kani@hp.com>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
- framework
-Date: Fri, 11 Jan 2013 22:23:34 +0100
-Message-ID: <5036592.TuXAnGzk4M@vostro.rjw.lan>
-In-Reply-To: <1357861230-29549-2-git-send-email-toshi.kani@hp.com>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <1357861230-29549-2-git-send-email-toshi.kani@hp.com>
+Return-Path: <B07421@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A10772C035A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2013 10:38:53 +1100 (EST)
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 2/2] powerpc/fsl: remove CONFIG_IRQ_ALL_CPUS from
+ mpc85xx/mpc86xx defconfig
+Date: Fri, 11 Jan 2013 17:38:41 -0600
+Message-ID: <1357947521-26680-2-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1357947521-26680-1-git-send-email-scottwood@freescale.com>
+References: <1357947521-26680-1-git-send-email-scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
- linux-acpi@vger.kernel.org, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,221 +26,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, January 10, 2013 04:40:19 PM Toshi Kani wrote:
-> Added include/linux/sys_hotplug.h, which defines the system device
-> hotplug framework interfaces used by the framework itself and
-> handlers.
-> 
-> The order values define the calling sequence of handlers.  For add
-> execute, the ordering is ACPI->MEM->CPU.  Memory is onlined before
-> CPU so that threads on new CPUs can start using their local memory.
-> The ordering of the delete execute is symmetric to the add execute.
-> 
-> struct shp_request defines a hot-plug request information.  The
-> device resource information is managed with a list so that a single
-> request may target to multiple devices.
-> 
-> Signed-off-by: Toshi Kani <toshi.kani@hp.com>
-> ---
->  include/linux/sys_hotplug.h |  181 +++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 181 insertions(+)
->  create mode 100644 include/linux/sys_hotplug.h
-> 
-> diff --git a/include/linux/sys_hotplug.h b/include/linux/sys_hotplug.h
-> new file mode 100644
-> index 0000000..86674dd
-> --- /dev/null
-> +++ b/include/linux/sys_hotplug.h
-> @@ -0,0 +1,181 @@
-> +/*
-> + * sys_hotplug.h - System device hot-plug framework
-> + *
-> + * Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-> + *	Toshi Kani <toshi.kani@hp.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify
-> + * it under the terms of the GNU General Public License version 2 as
-> + * published by the Free Software Foundation.
-> + */
-> +
-> +#ifndef _LINUX_SYS_HOTPLUG_H
-> +#define _LINUX_SYS_HOTPLUG_H
-> +
-> +#include <linux/list.h>
-> +#include <linux/device.h>
-> +
-> +/*
-> + * System device hot-plug operation proceeds in the following order.
-> + *   Validate phase -> Execute phase -> Commit phase
-> + *
-> + * The order values below define the calling sequence of platform
-> + * neutral handlers for each phase in ascending order.  The order
-> + * values of firmware-specific handlers are defined in sys_hotplug.h
-> + * under firmware specific directories.
-> + */
-> +
-> +/* All order values must be smaller than this value */
-> +#define SHP_ORDER_MAX				0xffffff
-> +
-> +/* Add Validate order values */
-> +
-> +/* Add Execute order values */
-> +#define SHP_MEM_ADD_EXECUTE_ORDER		100
-> +#define SHP_CPU_ADD_EXECUTE_ORDER		110
-> +
-> +/* Add Commit order values */
-> +
-> +/* Delete Validate order values */
-> +#define SHP_CPU_DEL_VALIDATE_ORDER		100
-> +#define SHP_MEM_DEL_VALIDATE_ORDER		110
-> +
-> +/* Delete Execute order values */
-> +#define SHP_CPU_DEL_EXECUTE_ORDER		10
-> +#define SHP_MEM_DEL_EXECUTE_ORDER		20
-> +
-> +/* Delete Commit order values */
-> +
-> +/*
-> + * Hot-plug request types
-> + */
-> +#define SHP_REQ_ADD		0x000000
-> +#define SHP_REQ_DELETE		0x000001
-> +#define SHP_REQ_MASK		0x0000ff
-> +
-> +/*
-> + * Hot-plug phase types
-> + */
-> +#define SHP_PH_VALIDATE		0x000000
-> +#define SHP_PH_EXECUTE		0x000100
-> +#define SHP_PH_COMMIT		0x000200
-> +#define SHP_PH_MASK		0x00ff00
-> +
-> +/*
-> + * Hot-plug operation types
-> + */
-> +#define SHP_OP_HOTPLUG		0x000000
-> +#define SHP_OP_ONLINE		0x010000
-> +#define SHP_OP_MASK		0xff0000
-> +
-> +/*
-> + * Hot-plug phases
-> + */
-> +enum shp_phase {
-> +	SHP_ADD_VALIDATE	= (SHP_REQ_ADD|SHP_PH_VALIDATE),
-> +	SHP_ADD_EXECUTE		= (SHP_REQ_ADD|SHP_PH_EXECUTE),
-> +	SHP_ADD_COMMIT		= (SHP_REQ_ADD|SHP_PH_COMMIT),
-> +	SHP_DEL_VALIDATE	= (SHP_REQ_DELETE|SHP_PH_VALIDATE),
-> +	SHP_DEL_EXECUTE		= (SHP_REQ_DELETE|SHP_PH_EXECUTE),
-> +	SHP_DEL_COMMIT		= (SHP_REQ_DELETE|SHP_PH_COMMIT)
-> +};
-> +
-> +/*
-> + * Hot-plug operations
-> + */
-> +enum shp_operation {
-> +	SHP_HOTPLUG_ADD		= (SHP_OP_HOTPLUG|SHP_REQ_ADD),
-> +	SHP_HOTPLUG_DEL		= (SHP_OP_HOTPLUG|SHP_REQ_DELETE),
-> +	SHP_ONLINE_ADD		= (SHP_OP_ONLINE|SHP_REQ_ADD),
-> +	SHP_ONLINE_DEL		= (SHP_OP_ONLINE|SHP_REQ_DELETE)
-> +};
-> +
-> +/*
-> + * Hot-plug device classes
-> + */
-> +enum shp_class {
-> +	SHP_CLS_INVALID		= 0,
-> +	SHP_CLS_CPU		= 1,
-> +	SHP_CLS_MEMORY		= 2,
-> +	SHP_CLS_HOSTBRIDGE	= 3,
-> +	SHP_CLS_CONTAINER	= 4,
-> +};
-> +
-> +/*
-> + * Hot-plug device information
-> + */
-> +union shp_dev_info {
-> +	struct shp_cpu {
-> +		u32		cpu_id;
-> +	} cpu;
-> +
-> +	struct shp_memory {
-> +		int		node;
-> +		u64		start_addr;
-> +		u64		length;
-> +	} mem;
-> +
-> +	struct shp_hostbridge {
-> +	} hb;
-> +
-> +	struct shp_node {
-> +	} node;
-> +};
-> +
-> +struct shp_device {
-> +	struct list_head	list;
-> +	struct device		*device;
-> +	enum shp_class		class;
-> +	union shp_dev_info	info;
-> +};
-> +
-> +/*
-> + * Hot-plug request
-> + */
-> +struct shp_request {
-> +	/* common info */
-> +	enum shp_operation	operation;	/* operation */
-> +
-> +	/* hot-plug event info: only valid for hot-plug operations */
-> +	void			*handle;	/* FW handle */
+While this should be harmless now that distribute_irqs
+obeys MPIC_SINGLE_DEST_CPU, there's no reason to enable this
+on mpc85xx/mpc86xx since MPIC_SINGLE_DEST_CPU will always be set.
 
-What's the role of handle here?
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/configs/85xx/ge_imp3a_defconfig   |    1 -
+ arch/powerpc/configs/86xx/gef_ppc9a_defconfig  |    1 -
+ arch/powerpc/configs/86xx/gef_sbc310_defconfig |    1 -
+ arch/powerpc/configs/86xx/gef_sbc610_defconfig |    1 -
+ arch/powerpc/configs/86xx/sbc8641d_defconfig   |    1 -
+ arch/powerpc/configs/corenet32_smp_defconfig   |    1 -
+ arch/powerpc/configs/corenet64_smp_defconfig   |    1 -
+ arch/powerpc/configs/mpc85xx_smp_defconfig     |    1 -
+ 8 files changed, 8 deletions(-)
 
-
-> +	u32			event;		/* FW event */
-> +
-> +	/* device resource info */
-> +	struct list_head	dev_list;	/* shp_device list */
-> +};
-> +
-> +/*
-> + * Inline Utility Functions
-> + */
-> +static inline bool shp_is_hotplug_op(enum shp_operation operation)
-> +{
-> +	return (operation & SHP_OP_MASK) == SHP_OP_HOTPLUG;
-> +}
-> +
-> +static inline bool shp_is_online_op(enum shp_operation operation)
-> +{
-> +	return (operation & SHP_OP_MASK) == SHP_OP_ONLINE;
-> +}
-> +
-> +static inline bool shp_is_add_op(enum shp_operation operation)
-> +{
-> +	return (operation & SHP_REQ_MASK) == SHP_REQ_ADD;
-> +}
-> +
-> +static inline bool shp_is_add_phase(enum shp_phase phase)
-> +{
-> +	return (phase & SHP_REQ_MASK) == SHP_REQ_ADD;
-> +}
-> +
-> +/*
-> + * Externs
-> + */
-> +typedef int (*shp_func)(struct shp_request *req, int rollback);
-> +extern int shp_register_handler(enum shp_phase phase, shp_func func, u32 order);
-> +extern int shp_unregister_handler(enum shp_phase phase, shp_func func);
-> +extern int shp_submit_req(struct shp_request *req);
-> +extern struct shp_request *shp_alloc_request(enum shp_operation operation);
-> +extern void shp_add_dev_info(struct shp_request *shp_req,
-> +		struct shp_device *shp_dev);
-> +
-> +#endif	/* _LINUX_SYS_HOTPLUG_H */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+diff --git a/arch/powerpc/configs/85xx/ge_imp3a_defconfig b/arch/powerpc/configs/85xx/ge_imp3a_defconfig
+index f8c51a4..c9765b5 100644
+--- a/arch/powerpc/configs/85xx/ge_imp3a_defconfig
++++ b/arch/powerpc/configs/85xx/ge_imp3a_defconfig
+@@ -34,7 +34,6 @@ CONFIG_PREEMPT=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+ CONFIG_BINFMT_MISC=m
+ CONFIG_MATH_EMULATION=y
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_FORCE_MAX_ZONEORDER=17
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
+diff --git a/arch/powerpc/configs/86xx/gef_ppc9a_defconfig b/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
+index da731c2..f2f6734 100644
+--- a/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
++++ b/arch/powerpc/configs/86xx/gef_ppc9a_defconfig
+@@ -25,7 +25,6 @@ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_HZ_1000=y
+ CONFIG_PREEMPT=y
+ CONFIG_BINFMT_MISC=m
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_SPARSE_IRQ=y
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
+diff --git a/arch/powerpc/configs/86xx/gef_sbc310_defconfig b/arch/powerpc/configs/86xx/gef_sbc310_defconfig
+index 2149360..be73219 100644
+--- a/arch/powerpc/configs/86xx/gef_sbc310_defconfig
++++ b/arch/powerpc/configs/86xx/gef_sbc310_defconfig
+@@ -25,7 +25,6 @@ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_HZ_1000=y
+ CONFIG_PREEMPT=y
+ CONFIG_BINFMT_MISC=y
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_SPARSE_IRQ=y
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
+diff --git a/arch/powerpc/configs/86xx/gef_sbc610_defconfig b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
+index af2e8e1..b3e2b10 100644
+--- a/arch/powerpc/configs/86xx/gef_sbc610_defconfig
++++ b/arch/powerpc/configs/86xx/gef_sbc610_defconfig
+@@ -25,7 +25,6 @@ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_HZ_1000=y
+ CONFIG_PREEMPT=y
+ CONFIG_BINFMT_MISC=m
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_SPARSE_IRQ=y
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
+diff --git a/arch/powerpc/configs/86xx/sbc8641d_defconfig b/arch/powerpc/configs/86xx/sbc8641d_defconfig
+index 0a92ca0..1a62baf 100644
+--- a/arch/powerpc/configs/86xx/sbc8641d_defconfig
++++ b/arch/powerpc/configs/86xx/sbc8641d_defconfig
+@@ -23,7 +23,6 @@ CONFIG_SBC8641D=y
+ CONFIG_HIGH_RES_TIMERS=y
+ CONFIG_PREEMPT=y
+ CONFIG_BINFMT_MISC=m
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_SPARSE_IRQ=y
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index 1c0f243..60027c2 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -32,7 +32,6 @@ CONFIG_HIGHMEM=y
+ # CONFIG_CORE_DUMP_DEFAULT_ELF_HEADERS is not set
+ CONFIG_BINFMT_MISC=m
+ CONFIG_KEXEC=y
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_FORCE_MAX_ZONEORDER=13
+ CONFIG_PCI=y
+ CONFIG_PCIEPORTBUS=y
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 88fa5c4..7375961 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -26,7 +26,6 @@ CONFIG_P5020_DS=y
+ CONFIG_P5040_DS=y
+ # CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
+ CONFIG_BINFMT_MISC=m
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_PCIEPORTBUS=y
+ CONFIG_PCI_MSI=y
+ CONFIG_RAPIDIO=y
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+index 502cd9e..8d00ea5b 100644
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ b/arch/powerpc/configs/mpc85xx_smp_defconfig
+@@ -49,7 +49,6 @@ CONFIG_QE_GPIO=y
+ CONFIG_HIGHMEM=y
+ CONFIG_BINFMT_MISC=m
+ CONFIG_MATH_EMULATION=y
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_FORCE_MAX_ZONEORDER=12
+ CONFIG_PCI=y
+ CONFIG_PCI_MSI=y
 -- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+1.7.9.5
