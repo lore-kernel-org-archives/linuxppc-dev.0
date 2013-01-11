@@ -1,22 +1,35 @@
-Return-Path: <B07421@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1031E2C032C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2013 05:16:27 +1100 (EST)
-Date: Fri, 11 Jan 2013 12:16:11 -0600
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: Interrupt handler not executed
-To: <R.Patil@mei-india.com>
-References: <OFFE4470AC.C2444613-ON65257AF0.0029CACD-65257AF0.0029CAD8@LocalDomain>
-In-Reply-To: <OFFE4470AC.C2444613-ON65257AF0.0029CACD-65257AF0.0029CAD8@LocalDomain>
- (from R.Patil@mei-india.com on Fri Jan 11 01:36:29 2013)
-Message-ID: <1357928171.5475.4@snotra>
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 14B132C0349
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2013 06:11:20 +1100 (EST)
+Received: from /spool/local
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 11 Jan 2013 12:11:16 -0700
+Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
+ [9.17.195.228])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 4426319D803F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 12:11:10 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0BJB6ZO161536
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 12:11:09 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0BJB3lt023254
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 12:11:04 -0700
+Date: Fri, 11 Jan 2013 11:11:17 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] perf/Power: PERF_EVENT_IOC_ENABLE does not reenable event
+Message-ID: <20130111191117.GA9407@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Maynard Johnson <mpjohn@us.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,23 +39,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/11/2013 01:36:29 AM, R.Patil@mei-india.com wrote:
-> Hello,
->=20
-> We are working on board based on Freescale MPC8313ERDB. We have =20
-> ported linux 3.0.46 kernel on it. In one of device driver written by =20
-> us, we need to take some action upon asserting IRQ0 interrupt. For =20
-> this we have written interrupt handler which takes care of this. We =20
-> are able register interrupt handler successfully with the help of =20
-> 'request_irq'. We confirmed this by checking respective entry in =20
-> '/proc/interrupts'. We have also confirmed assertion of interrupt =20
-> line (IRQ0) on oscilloscope. The problem is, interrupt handler does =20
-> not execute upon asserting the interrupt line.
+If we disable a perf event because we exceeded the specified ->event_limit,
+power_pmu_stop() sets the PERF_HES_STOPPED flag on the event.
 
-What IRQ number did you pass to request_irq()?  request_irq() takes =20
-virtual interrupt numbers, not anything out of the chip manual.
+If the application then re-enables the event using PERF_EVENT_IOC_ENABLE
+ioctl, we don't seem to ever clear this STOPPED flag. Consequently, the
+user space is never notified of the event.
 
-If that's not the issue, is the interrupt configured properly for level =20
-and sense?
+Following message has more background and test case.
 
--Scott=
+    http://lists.eecs.utk.edu/pipermail/ptools-perfapi/2012-October/002528.html
+
+The problem reported there does not seem to occur on x86. My unverified theory:
+
+Both x86 and Power clear the event->hw.state flag to 0 in their ->pmu_start()
+operations. On X86 x86_pmu_start() is called from x86_pmu_enable(). But on
+Power, power_pmu_start() is not called from power_pmu_enable().
+
+Used the following test cases to verify that this patch works on latest PAPI.
+
+	$ papi.git/src/ctests/nonthread PAPI_TOT_CYC@5000000
+
+	$ papi.git/src/ctests/overflow_single_event
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/core-book3s.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index aa2465e..a6faada 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -880,8 +880,16 @@ static int power_pmu_add(struct perf_event *event, int ef_flags)
+ 	cpuhw->events[n0] = event->hw.config;
+ 	cpuhw->flags[n0] = event->hw.event_base;
+ 
++	/*
++	 * If this event was disabled in record_and_restart() because we
++	 * exceeded the ->event_limit, this is probably a good time to
++	 * re-enable the event ? If we don't reenable the event, we will
++	 * never notify the user again about this event.
++	 */
+ 	if (!(ef_flags & PERF_EF_START))
+ 		event->hw.state = PERF_HES_STOPPED | PERF_HES_UPTODATE;
++	else
++		event->hw.state &= ~PERF_HES_STOPPED;
+ 
+ 	/*
+ 	 * If group events scheduling transaction was started,
+-- 
+1.7.1
