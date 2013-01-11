@@ -1,34 +1,25 @@
-Return-Path: <B31383@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe005.messaging.microsoft.com [216.32.180.188])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 74FBF2C0233
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 21:47:28 +1100 (EST)
-From: Mehresh Ramneek-B31383 <B31383@freescale.com>
-To: "balbi@ti.com" <balbi@ti.com>, Li Yang-R58472 <r58472@freescale.com>
-Subject: RE: [BUILD BREAK] usb: gadget: fsl_mxc_udc can't compile on current
- v3.8-rc3
-Date: Fri, 11 Jan 2013 10:47:20 +0000
-Message-ID: <75A6930FC6B2FE479E2BC468C9240CE0C0096E@039-SN1MPN1-005.039d.mgd.msft.net>
-References: <20130110100835.GB28920@arwen.pp.htv.fi>
- <20130110143006.GC15787@kroah.com>
- <94F013E7935FF44C83EBE7784D62AD3F09526763@039-SN2MPN1-023.039d.mgd.msft.net>
- <F281D0F91ED19E4D8E63A7504E8A649803D63ACE@039-SN2MPN1-022.039d.mgd.msft.net>
- <20130111082731.GA11085@arwen.pp.htv.fi>
- <F281D0F91ED19E4D8E63A7504E8A649803D63DA7@039-SN2MPN1-022.039d.mgd.msft.net>
- <20130111084129.GB11085@arwen.pp.htv.fi>
- <94F013E7935FF44C83EBE7784D62AD3F09526C23@039-SN2MPN1-023.039d.mgd.msft.net>
- <20130111094618.GD11085@arwen.pp.htv.fi>
-In-Reply-To: <20130111094618.GD11085@arwen.pp.htv.fi>
-Content-Type: text/plain; charset="us-ascii"
+Return-Path: <balbi@ti.com>
+Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 82D962C023B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 21:57:14 +1100 (EST)
+Date: Fri, 11 Jan 2013 12:56:51 +0200
+From: Felipe Balbi <balbi@ti.com>
+To: Peter Chen <peter.chen@freescale.com>
+Subject: Re: [PATCH 1/1] usb: fsl-mxc-udc: fix build error due to
+ mach/hardware.h
+Message-ID: <20130111105651.GF11085@arwen.pp.htv.fi>
+References: <1357898188-10540-1-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
-Cc: Chen Peter-B29397 <B29397@freescale.com>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "kernel@pengutronix.de" <kernel@pengutronix.de>,
- Greg KH <gregkh@linuxfoundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="1XWsVB21DFCvn2e8"
+In-Reply-To: <1357898188-10540-1-git-send-email-peter.chen@freescale.com>
+Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ balbi@ti.com, kernel@pengutronix.de, shawn.guo@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,80 +29,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--1XWsVB21DFCvn2e8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi,
 
-> -----Original Message-----
-> From: Felipe Balbi [mailto:balbi@ti.com]
-> Sent: Friday, January 11, 2013 3:18 PM
-> To: Li Yang-R58472
-> Cc: balbi@ti.com; Chen Peter-B29397; Mehresh Ramneek-B31383;
-> kernel@pengutronix.de; Greg KH; linux-usb@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org
-> Subject: Re: [BUILD BREAK] usb: gadget: fsl_mxc_udc can't compile on
-> current v3.8-rc3
+On Fri, Jan 11, 2013 at 05:56:28PM +0800, Peter Chen wrote:
+> It changes the driver to use platform_device_id rather than cpu_is_xxx
+> to determine the SoC type, and updates the platform code accordingly.
 >=20
-> Hi,
+> Compile ok at imx_v6_v7_defconfig with CONFIG_USB_FSL_USB2 enable.
+> Tested at mx51 bbg board, it works ok after enable phy clock
+> (Need another patch to fix this problem)
 >=20
-> On Fri, Jan 11, 2013 at 09:24:16AM +0000, Li Yang-R58472 wrote:
-> >
-> >
-> > > -----Original Message-----
-> > > From: Felipe Balbi [mailto:balbi@ti.com]
-> > > Sent: Friday, January 11, 2013 4:41 PM
-> > > To: Chen Peter-B29397
-> > > Cc: balbi@ti.com; kernel@pengutronix.de; Li Yang-R58472; Greg KH;
-> > > linux- usb@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > > Subject: Re: [BUILD BREAK] usb: gadget: fsl_mxc_udc can't compile on
-> > > current v3.8-rc3
-> > >
-> > > Hi,
-> > >
-> > > On Fri, Jan 11, 2013 at 08:35:29AM +0000, Chen Peter-B29397 wrote:
-> > > > > > I am working on it, but there are two versions, this one and
-> > > chipidea's.
-> > > > > >
-> > > > > > Anyway, I will send a patch to fix this problem.
-> > > > >
-> > > > > if you're already using chipidea, then send me a patch removing
-> > > > > this driver and focus your effort on chipidea.
-> > > > >
-> > > > Added Sascha
-> > > >
-> > > > Now, not all of FSL i.mx USB can move to use chipidea due to some
-> > > > platform and USB PHY problem.
-> > >
-> > > then we need to target fixing those problems and moving to chipidea
-> > > completely at some point. There's no reason to duplicate efforts if
-> > > we already have a re-usable driver in tree, right ?
-> > >
-> > > Let's fix this build break and focus on making sure all i.MX
-> > > platforms can use chipidea so we can drop fsl udc on next merge
-> > > window. That would be a great patchset to see.
-> >
-> > I do agree that we need move to use the chipidea driver and eventually
-> > remove the fsl udc driver, but there were many users of the current
-> > driver such as PowerPC and Coldfire platforms besides the i.MX
-> > platforms.  The support for them with chipidea driver could also be
-> > broken for now.  I would suggest to have a transitional period that
-> > both drivers are kept while new development be based on the new
-> > driver.
->=20
-> right, right. That can be done as long as 'transitional period' isn't 20
-> years. At least make a plan to remove fsl udc, if it doesn't happen in
-> the next 4 merge windows, I will remove it myself to force people to
-> reuse other drivers. There is no reason to keep both drivers around.
->=20
-> > Added Ramneek.  What do you think of the current status for chipidea
-> > driver on PowerPC platforms?
->=20
-> that would be great to know, indeed.
->=20
-> --
-> balbi
+> Signed-off-by: Peter Chen <peter.chen@freescale.com>
 
-As per my info, chipidea drv has never been tested for any ppc platforms we=
- have...
-Also not sure how long chipidea will be used for ppc platforms...
-Let me get back to you on this
+this is too big for -rc, can you break it down into smaller pieces ?
 
--Ramneek=20
+--=20
+balbi
+
+--1XWsVB21DFCvn2e8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQ7+/zAAoJEIaOsuA1yqREZWsQAI+XC266ue3cg3tihIbww78s
+pScXklPgFUXXI0oP+s5AuXFbhP/dVbeEqTzaZFoNTAK4nixVqR7mU68mrk6uThjH
+DV6eAfA/jglrDs5N931h5MkaVzeo8ymjSg7wCb/Jqvs+5MgJ/+pVzn6tnh5NYbwi
+7vKC73CIxVC2+yr6S/yDngqpEeeuNeHyG8rHqGQzp2aQoUbGOlbsOdLB4ruKHHcM
+w2Fde7URBtz51C6akyhjdQTgaxjoFl1Xs7ALhK4xNFcXYPqzVuNgmB31SG25bX2o
+T80Hh8hDC84OVNe4+Zefc1n8DX1jcvANN52+BEaTGqRXMqecdUxUsi37A1THyw9Q
+SaT95SygGTVfJ5SsOfRSXU/C1V2md6RlweUiOaBQ+H9RjjQ14jMEM0P+iL/gU/pM
+pKu2PYTIz29DaRM9H/18Etrbz8SrVHG0Jj2S5I+HXTT+Ypw80JTuUyj6RdLtlEl7
+QDxOnlFh/FA4Q8rw1/cC/ffIfcTz5lRo16hTMjil/hI82acGVpddZ0UGEcL/CbCh
+hrVDVpyD0yS8jwHIhyZcCnJqjwuH2dOkHwEMdMAMKyD+T6TbHePFi9ZlYVQqn5F4
+2s3C5hb8kGVNMhz6bFz8pmAM83nm3bIdZN4NKIX12sRqKrIjckmSCoi4y9WP99KM
+jxzeu3pUuzemYEtorb1I
+=xs4H
+-----END PGP SIGNATURE-----
+
+--1XWsVB21DFCvn2e8--
