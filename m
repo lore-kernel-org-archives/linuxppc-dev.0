@@ -1,26 +1,19 @@
-Return-Path: <B29397@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CEDEF2C0131
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 14:24:06 +1100 (EST)
-From: Chen Peter-B29397 <B29397@freescale.com>
-To: Li Yang-R58472 <r58472@freescale.com>, Greg KH
- <gregkh@linuxfoundation.org>, Felipe Balbi <balbi@ti.com>
-Subject: RE: [BUILD BREAK] usb: gadget: fsl_mxc_udc can't compile on current
- v3.8-rc3
-Date: Fri, 11 Jan 2013 03:23:59 +0000
-Message-ID: <F281D0F91ED19E4D8E63A7504E8A649803D63ACE@039-SN2MPN1-022.039d.mgd.msft.net>
-References: <20130110100835.GB28920@arwen.pp.htv.fi>
- <20130110143006.GC15787@kroah.com>
- <94F013E7935FF44C83EBE7784D62AD3F09526763@039-SN2MPN1-023.039d.mgd.msft.net>
-In-Reply-To: <94F013E7935FF44C83EBE7784D62AD3F09526763@039-SN2MPN1-023.039d.mgd.msft.net>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-ia0-f175.google.com (mail-ia0-f175.google.com
+ [209.85.210.175])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E928B2C018B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 15:18:28 +1100 (EST)
+Received: by mail-ia0-f175.google.com with SMTP id 21so1209006iay.34
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jan 2013 20:18:24 -0800 (PST)
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: added DSCR support to ptrace
+Date: Fri, 11 Jan 2013 15:18:11 +1100
+Message-Id: <1357877891-28219-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +23,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-=20
-> > >
-> > > Some recent patch has caused fsl_mxc_udc.c driver to fail compilation
-> > > because it can't find <mach/hardware.h> anymore.
-> > >
-> > > I would like this to be fixed still during this -rc cycle.
-> >
-> > Me too, who's sending a patch?  :)
->=20
-> Hi Peter,
->=20
-> Who is currently working on the i.mx USB?
->=20
+The DSCR (aka Data Stream Control Register) is supported on some
+server PowerPC chips and allow some control over the prefetch
+of data streams.
 
-I am working on it, but there are two versions, this one and chipidea's.
+The kernel already supports DSCR value per thread but there is also
+a need in a ability to change it from an external process for
+the specific pid.
 
-Anyway, I will send a patch to fix this problem.
+The patch adds new register index PT_DSCR (index=44) which can be
+set/get by:
+  ptrace(PTRACE_POKEUSER, traced_process, PT_DSCR << 3, dscr);
+  dscr = ptrace(PTRACE_PEEKUSER, traced_process, PT_DSCR << 3, NULL);
 
-> Regards,
-> Leo
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ arch/powerpc/include/asm/ptrace.h |    3 +++
+ arch/powerpc/kernel/ptrace.c      |   23 ++++++++++++++++++++++-
+ 2 files changed, 25 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index 48223f9..85eefa8 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -261,6 +261,9 @@ static inline unsigned long regs_get_kernel_stack_nth(struct pt_regs *regs,
+ #define PT_DAR	41
+ #define PT_DSISR 42
+ #define PT_RESULT 43
++#ifdef __powerpc64__
++#define PT_DSCR 44
++#endif
+ #define PT_REGS_COUNT 44
+ 
+ #define PT_FPR0	48	/* each FP reg occupies 2 slots in this space */
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 05b7dd2..444f22a 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -182,6 +182,20 @@ static int set_user_msr(struct task_struct *task, unsigned long msr)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PPC64
++static unsigned long get_user_dscr(struct task_struct *task)
++{
++	return task->thread.dscr;
++}
++
++static int set_user_dscr(struct task_struct *task, unsigned long dscr)
++{
++	task->thread.dscr = dscr;
++	task->thread.dscr_inherit = 1;
++	return 0;
++}
++#endif
++
+ /*
+  * We prevent mucking around with the reserved area of trap
+  * which are used internally by the kernel.
+@@ -203,6 +217,10 @@ unsigned long ptrace_get_reg(struct task_struct *task, int regno)
+ 	if (regno == PT_MSR)
+ 		return get_user_msr(task);
+ 
++#ifdef CONFIG_PPC64
++	if (regno == PT_DSCR)
++		return get_user_dscr(task);
++#endif
+ 	if (regno < (sizeof(struct pt_regs) / sizeof(unsigned long)))
+ 		return ((unsigned long *)task->thread.regs)[regno];
+ 
+@@ -221,7 +239,10 @@ int ptrace_put_reg(struct task_struct *task, int regno, unsigned long data)
+ 		return set_user_msr(task, data);
+ 	if (regno == PT_TRAP)
+ 		return set_user_trap(task, data);
+-
++#ifdef CONFIG_PPC64
++	if (regno == PT_DSCR)
++		return set_user_dscr(task, data);
++#endif
+ 	if (regno <= PT_MAX_PUT_REG) {
+ 		((unsigned long *)task->thread.regs)[regno] = data;
+ 		return 0;
+-- 
+1.7.10.4
