@@ -1,35 +1,24 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e38.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 14B132C0349
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2013 06:11:20 +1100 (EST)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 11 Jan 2013 12:11:16 -0700
-Received: from d03relay03.boulder.ibm.com (d03relay03.boulder.ibm.com
- [9.17.195.228])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 4426319D803F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 12:11:10 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by d03relay03.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0BJB6ZO161536
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 12:11:09 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0BJB3lt023254
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 12:11:04 -0700
-Date: Fri, 11 Jan 2013 11:11:17 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] perf/Power: PERF_EVENT_IOC_ENABLE does not reenable event
-Message-ID: <20130111191117.GA9407@us.ibm.com>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id 7EB852C035F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2013 08:26:43 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Toshi Kani <toshi.kani@hp.com>
+Subject: Re: [RFC PATCH v2 02/12] ACPI: Add sys_hotplug.h for system device
+ hotplug framework
+Date: Fri, 11 Jan 2013 22:25:18 +0100
+Message-ID: <2024927.lMzqqbDSpI@vostro.rjw.lan>
+In-Reply-To: <1357861230-29549-3-git-send-email-toshi.kani@hp.com>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <1357861230-29549-3-git-send-email-toshi.kani@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Maynard Johnson <mpjohn@us.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
- paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
+ linux-acpi@vger.kernel.org, gregkh@linuxfoundation.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
+ srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,54 +28,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we disable a perf event because we exceeded the specified ->event_limit,
-power_pmu_stop() sets the PERF_HES_STOPPED flag on the event.
+On Thursday, January 10, 2013 04:40:20 PM Toshi Kani wrote:
+> Added include/acpi/sys_hotplug.h, which is ACPI-specific system
+> device hotplug header and defines the order values of ACPI-specific
+> handlers.
+> 
+> Signed-off-by: Toshi Kani <toshi.kani@hp.com>
+> ---
+>  include/acpi/sys_hotplug.h |   48 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 48 insertions(+)
+>  create mode 100644 include/acpi/sys_hotplug.h
+> 
+> diff --git a/include/acpi/sys_hotplug.h b/include/acpi/sys_hotplug.h
+> new file mode 100644
+> index 0000000..ad80f61
+> --- /dev/null
+> +++ b/include/acpi/sys_hotplug.h
+> @@ -0,0 +1,48 @@
+> +/*
+> + * sys_hotplug.h - ACPI System device hot-plug framework
+> + *
+> + * Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+> + *	Toshi Kani <toshi.kani@hp.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + */
+> +
+> +#ifndef _ACPI_SYS_HOTPLUG_H
+> +#define _ACPI_SYS_HOTPLUG_H
+> +
+> +#include <linux/list.h>
+> +#include <linux/device.h>
+> +#include <linux/sys_hotplug.h>
+> +
+> +/*
+> + * System device hot-plug operation proceeds in the following order.
+> + *   Validate phase -> Execute phase -> Commit phase
+> + *
+> + * The order values below define the calling sequence of ACPI-specific
+> + * handlers for each phase in ascending order.  The order value of
+> + * platform-neutral handlers are defined in <linux/sys_hotplug.h>.
+> + */
+> +
+> +/* Add Validate order values */
+> +#define SHP_ACPI_BUS_ADD_VALIDATE_ORDER		0	/* must be first */
+> +
+> +/* Add Execute order values */
+> +#define SHP_ACPI_BUS_ADD_EXECUTE_ORDER		10
+> +#define SHP_ACPI_RES_ADD_EXECUTE_ORDER		20
+> +
+> +/* Add Commit order values */
+> +#define SHP_ACPI_BUS_ADD_COMMIT_ORDER		10
+> +
+> +/* Delete Validate order values */
+> +#define SHP_ACPI_BUS_DEL_VALIDATE_ORDER		0	/* must be first */
+> +#define SHP_ACPI_RES_DEL_VALIDATE_ORDER		10
+> +
+> +/* Delete Execute order values */
+> +#define SHP_ACPI_BUS_DEL_EXECUTE_ORDER		100
+> +
+> +/* Delete Commit order values */
+> +#define SHP_ACPI_BUS_DEL_COMMIT_ORDER		100
+> +
+> +#endif	/* _ACPI_SYS_HOTPLUG_H */
+> --
 
-If the application then re-enables the event using PERF_EVENT_IOC_ENABLE
-ioctl, we don't seem to ever clear this STOPPED flag. Consequently, the
-user space is never notified of the event.
+Why did you use the particular values above?
 
-Following message has more background and test case.
+Rafael
 
-    http://lists.eecs.utk.edu/pipermail/ptools-perfapi/2012-October/002528.html
 
-The problem reported there does not seem to occur on x86. My unverified theory:
-
-Both x86 and Power clear the event->hw.state flag to 0 in their ->pmu_start()
-operations. On X86 x86_pmu_start() is called from x86_pmu_enable(). But on
-Power, power_pmu_start() is not called from power_pmu_enable().
-
-Used the following test cases to verify that this patch works on latest PAPI.
-
-	$ papi.git/src/ctests/nonthread PAPI_TOT_CYC@5000000
-
-	$ papi.git/src/ctests/overflow_single_event
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/perf/core-book3s.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index aa2465e..a6faada 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -880,8 +880,16 @@ static int power_pmu_add(struct perf_event *event, int ef_flags)
- 	cpuhw->events[n0] = event->hw.config;
- 	cpuhw->flags[n0] = event->hw.event_base;
- 
-+	/*
-+	 * If this event was disabled in record_and_restart() because we
-+	 * exceeded the ->event_limit, this is probably a good time to
-+	 * re-enable the event ? If we don't reenable the event, we will
-+	 * never notify the user again about this event.
-+	 */
- 	if (!(ef_flags & PERF_EF_START))
- 		event->hw.state = PERF_HES_STOPPED | PERF_HES_UPTODATE;
-+	else
-+		event->hw.state &= ~PERF_HES_STOPPED;
- 
- 	/*
- 	 * If group events scheduling transaction was started,
 -- 
-1.7.1
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
