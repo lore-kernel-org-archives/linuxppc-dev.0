@@ -1,21 +1,28 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from members.tip.net.au (haggis.tip.net.au
- [IPv6:2402:b800:7003:1::20])
- by ozlabs.org (Postfix) with ESMTP id E2DB62C01C8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 16:52:51 +1100 (EST)
-Date: Fri, 11 Jan 2013 16:52:41 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of the final tree (powerpc
- tree related)
-Message-Id: <20130111165241.44a5ede6b24c997810be74e1@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA256";
- boundary="Signature=_Fri__11_Jan_2013_16_52_41_+1100_HYpva/npX.Lrv51c"
-Cc: Michael Neuling <mikey@neuling.org>, linux-next@vger.kernel.org,
- linux-kernel@vger.kernel.org
+Return-Path: <B37400@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2C27D2C0087
+ for <linuxppc-dev@ozlabs.org>; Fri, 11 Jan 2013 17:01:53 +1100 (EST)
+From: Singh Sandeep-B37400 <B37400@freescale.com>
+To: Wood Scott-B07421 <B07421@freescale.com>
+Subject: RE: [PATCH] Added device tree binding for TDM and TDM phy
+Date: Fri, 11 Jan 2013 06:01:47 +0000
+Message-ID: <3F1D9DCAAB49B94D88DBE05911FA4E6E69F5FD@039-SN1MPN1-005.039d.mgd.msft.net>
+References: <1357133120-2271-1-git-send-email-Sandeep@freescale.com>
+ <3F1D9DCAAB49B94D88DBE05911FA4E6E69CEB8@039-SN1MPN1-005.039d.mgd.msft.net>
+ <1357776425.18196.18@snotra>
+ <3F1D9DCAAB49B94D88DBE05911FA4E6E69E4F0@039-SN1MPN1-005.039d.mgd.msft.net>
+ <1357847318.27576.9@snotra>
+In-Reply-To: <1357847318.27576.9@snotra>
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "devicetree-discuss@lists.ozlabs.org"
+ <devicetree-discuss@lists.ozlabs.org>,
+ Aggrwal Poonam-B10812 <B10812@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,54 +32,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Signature=_Fri__11_Jan_2013_16_52_41_+1100_HYpva/npX.Lrv51c
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi all,
-
-After merging the final tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
-
-arch/powerpc/kernel/kgdb.c: In function 'kgdb_arch_exit':
-arch/powerpc/kernel/kgdb.c:492:2: error: '__debugger_breakx_match' undeclar=
-ed (first use in this function)
-
-Caused by commit 9422de3e953d ("powerpc: Hardware breakpoints rewrite to
-handle non DABR breakpoint registers").  I applied "powerpc: Fix typo in
-breakpoint kgdb code" from Mikey for this.
-
-arch/powerpc/kernel/exceptions-64s.S: Assembler messages:
-arch/powerpc/kernel/exceptions-64s.S:1204: Error: attempt to move .org back=
-wards
-
-Not sure what caused that - probably a combination of patches adding code
-low down.  I have just left this broken for today.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Signature=_Fri__11_Jan_2013_16_52_41_+1100_HYpva/npX.Lrv51c
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBCAAGBQJQ76ipAAoJEECxmPOUX5FE7tQQAIFdZpJ78SNjcr9cc+ia823y
-7i+bezSWLUGToKHZJ87ajVtMCpImEVCsQa2Hq1GahBlj9vQJmpkGQ79GD1bxt6wW
-behryfUSf3ORzVKseUsrXQ53FI35jSk38hL4xNqGH5sbtarZb6fPlWN4iPiFwo6k
-5QIoYo5MabgvQEHOJBNiuX2XqEdFYgHM7qZ8SMSImnAJE1MHYt/dmx6AdVFoKNXq
-JXcPPBmmnjXnK1JKst5tnti+AmGimIaHPfsf3FSj1JGApPFIovQtU5kPH2HeNz1S
-v0QY6xski27Dy9CQNkWIa4vov0ok7DJ3vqbRxCfVZWCE0G4/EHRikUclmQE8gsQq
-5xplD+oOAS0pzKMnbFxi62gBv+9tWwoSFrgjneQjHkXpoFmpS/Khn152K0XX4IH+
-4C22CF5HJvLT4MfaU7AiaafBI8GIU53tVXMTecOlPYXZiuoOmBcDvunvyFW0le9k
-bLq3YRh3H4s/cSN/jEgtyuiQUXZxSo45uv0i/xEHpVz3DMe3+KfFCTe0dIiJihIJ
-DktVGtoi+wm2TJC01hV8XammK+OxYL1pkS1CwapD+bUJls1Xctu+UzQ2L+obOdkf
-rJpf/9I2Z5xvrPPeKf8+UVVO6zQvp//Y/pgJnmjLZMZ3dcQ+00rFbx73Fu/+BCwy
-GLOceTmxfvFMH4uLUrUh
-=k6Ic
------END PGP SIGNATURE-----
-
---Signature=_Fri__11_Jan_2013_16_52_41_+1100_HYpva/npX.Lrv51c--
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Friday, January 11, 2013 1:19 AM
+> To: Singh Sandeep-B37400
+> Cc: Wood Scott-B07421; devicetree-discuss@lists.ozlabs.org; linuxppc-
+> dev@ozlabs.org; Aggrwal Poonam-B10812
+> Subject: Re: [PATCH] Added device tree binding for TDM and TDM phy
+>=20
+> On 01/10/2013 03:24:21 AM, Singh Sandeep-B37400 wrote:
+> > > > > +- compatible
+> > > > > +    Value type: <string>
+> > > > > +    Definition: Should contain generic compatibility like
+> > > > "tdm-phy-slic"
+> > > > > or
+> > > > > +    "tdm-phy-e1" or "tdm-phy-t1".
+> > >
+> > > Does this "generic" string (plus the other properties) tell you all
+> > you
+> > > need to know about the device?  If there are other possible
+> > "generic"
+> > > compatibles, they should be listed or else different people will
+> > make up
+> > > different strings for the same thing.
+> >
+> > This property will describe the type of device, and will help TDM
+> > framework to know if it is E1/T1/SLIC device. Further details can be
+> > extracted from other compatible strings.
+> > There are only three generic compatibles field types, which are
+> > already mentioned in definition. Do I need to make this thing more
+> > clear.
+>=20
+> The word "like" suggests that there are other possibilites.  It would be
+> clearer as:
+>=20
+> Definition: One of "tdm-phy-slic", "tdm-phy-e1", or "tdm-phy-t1".
+>=20
+> -Scott
+Ok, thanks for your comments.
