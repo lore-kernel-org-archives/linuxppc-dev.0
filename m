@@ -1,24 +1,13 @@
-Return-Path: <B29397@freescale.com>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe003.messaging.microsoft.com [207.46.163.26])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3BE422C0156
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 12:37:19 +1100 (EST)
-Date: Fri, 11 Jan 2013 09:37:06 +0800
-From: Peter Chen <peter.chen@freescale.com>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [BUILD BREAK] usb: gadget: fsl_mxc_udc can't compile on
- current v3.8-rc3
-Message-ID: <20130111013705.GB27399@nchen-desktop>
-References: <20130110100835.GB28920@arwen.pp.htv.fi>
- <20130110143006.GC15787@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20130110143006.GC15787@kroah.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-usb@vger.kernel.org,
- Felipe Balbi <balbi@ti.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+Subject: [PATCH] powerpc: Fix typo in breakpoint kgdb code.
+In-reply-to: <1356048405-20560-7-git-send-email-mikey@neuling.org>
+References: <1356048405-20560-1-git-send-email-mikey@neuling.org>
+ <1356048405-20560-7-git-send-email-mikey@neuling.org>
+Date: Fri, 11 Jan 2013 13:11:11 +1100
+Message-ID: <19922.1357870271@ale.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +17,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 10, 2013 at 06:30:06AM -0800, Greg KH wrote:
-> On Thu, Jan 10, 2013 at 12:08:35PM +0200, Felipe Balbi wrote:
-> > Hi,
-> > 
-> > Some recent patch has caused fsl_mxc_udc.c driver to fail compilation
-> > because it can't find <mach/hardware.h> anymore.
-> > 
-> > I would like this to be fixed still during this -rc cycle.
-> 
-> Me too, who's sending a patch?  :)
-Let me have a look, and try to send a patch as soon as possible
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Currently we are getting: 
+ arch/powerpc/kernel/kgdb.c: In function 'kgdb_arch_exit':
+ arch/powerpc/kernel/kgdb.c:492:2: error: '__debugger_breakx_match' undeclared (first use in this function)
+ arch/powerpc/kernel/kgdb.c:492:2: note: each undeclared identifier is reported only once for each function it appears in
 
--- 
+Fix the typo.
 
-Best Regards,
-Peter Chen
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Stupid error.  I guess my defconfigs didn't compile this
+code... sorry.
+
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index a05f0e4..8747447 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -489,6 +489,6 @@ void kgdb_arch_exit(void)
+ 	__debugger_bpt = old__debugger_bpt;
+ 	__debugger_sstep = old__debugger_sstep;
+ 	__debugger_iabr_match = old__debugger_iabr_match;
+-	__debugger_breakx_match = old__debugger_break_match;
++	__debugger_break_match = old__debugger_break_match;
+ 	__debugger_fault_handler = old__debugger_fault_handler;
+ }
