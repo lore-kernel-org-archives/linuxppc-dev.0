@@ -1,23 +1,15 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g5t0009.atlanta.hp.com (g5t0009.atlanta.hp.com [15.192.0.46])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 491332C062D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 11:05:59 +1100 (EST)
-From: Toshi Kani <toshi.kani@hp.com>
-To: rjw@sisk.pl, lenb@kernel.org, gregkh@linuxfoundation.org,
- akpm@linux-foundation.org
-Subject: [RFC PATCH v2 05/12] mm: Add memory hotplug handlers
-Date: Thu, 10 Jan 2013 16:40:23 -0700
-Message-Id: <1357861230-29549-6-git-send-email-toshi.kani@hp.com>
-In-Reply-To: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
-Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-mm@kvack.org,
- yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
- guohanjun@huawei.com, bhelgaas@google.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: benh@kernel.crashing.org
+MIME-Version: 1.0
+Subject: [PATCH] powerpc: rename set_break to avoid naming conflict
+In-reply-to: <20130110105513.GA19224@localhost>
+References: <50ee8554.VPKmpSyDNCfRKVZL%yuanhan.liu@linux.intel.com>
+ <20130110105513.GA19224@localhost>
+Date: Fri, 11 Jan 2013 11:25:34 +1100
+Message-ID: <12844.1357863934@ale.ozlabs.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Fengguang Wu <fengguang.wu@intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,139 +19,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added memory hotplug handlers.  mm_add_execute() onlines requested
-memory ranges for hot-add & online operations, and mm_del_execute()
-offlines them for hot-delete & offline operations.  They are also
-used for rollback as well.
+With allmodconfig we are getting:
+  drivers/tty/synclink_gt.c:160:12: error: conflicting types for 'set_break'
+  arch/powerpc/include/asm/debug.h:49:5: note: previous declaration of 'set_break' was here
 
-mm_del_validate() fails a hot-delete request if a requested memory
-range is non-movable when del_movable_only is set.
+  drivers/tty/synclinkmp.c:526:12: error: conflicting types for 'set_break'
+  arch/powerpc/include/asm/debug.h:49:5: note: previous declaration of 'set_break' was here
 
-Signed-off-by: Toshi Kani <toshi.kani@hp.com>
----
- mm/memory_hotplug.c |  101 +++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 101 insertions(+)
+This renames set_break to set_breakpoint to avoid this naming conflict
 
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index d04ed87..ed3d829 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -29,6 +29,8 @@
- #include <linux/suspend.h>
- #include <linux/mm_inline.h>
- #include <linux/firmware-map.h>
-+#include <linux/module.h>
-+#include <linux/sys_hotplug.h>
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Reported-by: Fengguang Wu <fengguang.wu@intel.com>
+
+diff --git a/arch/powerpc/include/asm/debug.h b/arch/powerpc/include/asm/debug.h
+index 8d85ffb..d251630 100644
+--- a/arch/powerpc/include/asm/debug.h
++++ b/arch/powerpc/include/asm/debug.h
+@@ -46,7 +46,7 @@ static inline int debugger_break_match(struct pt_regs *regs) { return 0; }
+ static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
+ #endif
  
- #include <asm/tlbflush.h>
- 
-@@ -45,6 +47,13 @@ static void generic_online_page(struct page *page);
- 
- static online_page_callback_t online_page_callback = generic_online_page;
- 
-+static int mm_add_execute(struct shp_request *req, int rollback);
-+static int mm_del_execute(struct shp_request *req, int rollback);
-+
-+static int del_movable_only = 0;
-+module_param(del_movable_only, int, 0644);
-+MODULE_PARM_DESC(del_movable_only, "Restrict hot-remove to movable memory only");
-+
- DEFINE_MUTEX(mem_hotplug_mutex);
- 
- void lock_memory_hotplug(void)
-@@ -1431,3 +1440,95 @@ int remove_memory(u64 start, u64 size)
+-int set_break(struct arch_hw_breakpoint *brk);
++int set_breakpoint(struct arch_hw_breakpoint *brk);
+ #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+ extern void do_send_trap(struct pt_regs *regs, unsigned long address,
+ 			 unsigned long error_code, int signal_code, int brkpt);
+diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
+index 2c91faf..96437e5 100644
+--- a/arch/powerpc/include/asm/hw_breakpoint.h
++++ b/arch/powerpc/include/asm/hw_breakpoint.h
+@@ -81,7 +81,7 @@ static inline void hw_breakpoint_disable(void)
+ 	brk.address = 0;
+ 	brk.type = 0;
+ 	brk.len = 0;
+-	set_break(&brk);
++	set_breakpoint(&brk);
  }
- #endif /* CONFIG_MEMORY_HOTREMOVE */
- EXPORT_SYMBOL_GPL(remove_memory);
-+
-+static int mm_add_execute(struct shp_request *req, int rollback)
-+{
-+	struct shp_device *shp_dev;
-+	struct shp_memory *shp_mem;
-+	int ret;
-+
-+	if (rollback)
-+		return mm_del_execute(req, 0);
-+
-+	list_for_each_entry(shp_dev, &req->dev_list, list) {
-+		if (shp_dev->class != SHP_CLS_MEMORY)
-+			continue;
-+
-+		shp_mem = &shp_dev->info.mem;
-+
-+		ret = add_memory(shp_mem->node,
-+				shp_mem->start_addr, shp_mem->length);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int mm_del_validate(struct shp_request *req, int rollback)
-+{
-+	struct shp_device *shp_dev;
-+	struct shp_memory *shp_mem;
-+	unsigned long start_pfn, nr_pages;
-+
-+	if (rollback || !del_movable_only)
-+		return 0;
-+
-+	list_for_each_entry(shp_dev, &req->dev_list, list) {
-+		if (shp_dev->class != SHP_CLS_MEMORY)
-+			continue;
-+
-+		shp_mem = &shp_dev->info.mem;
-+		start_pfn = shp_mem->start_addr >> PAGE_SHIFT;
-+		nr_pages = PAGE_ALIGN(shp_mem->length) >> PAGE_SHIFT;
-+
-+		/*
-+		 * Check if this memory range is removable.  This check is
-+		 * enabled when del_movable_only is set.
-+		 */
-+		if (is_mem_section_removable(start_pfn, nr_pages)) {
-+			pr_info("Memory [%#010llx-%#010llx] not removable\n",
-+				shp_mem->start_addr,
-+				shp_mem->start_addr + shp_mem->length-1);
-+			return -EINVAL;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int mm_del_execute(struct shp_request *req, int rollback)
-+{
-+	struct shp_device *shp_dev;
-+	struct shp_memory *shp_mem;
-+	int ret;
-+
-+	if (rollback)
-+		return mm_add_execute(req, 0);
-+
-+	list_for_each_entry(shp_dev, &req->dev_list, list) {
-+		if (shp_dev->class != SHP_CLS_MEMORY)
-+			continue;
-+
-+		shp_mem = &shp_dev->info.mem;
-+
-+		ret = remove_memory(shp_mem->start_addr, shp_mem->length);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init mm_shp_init(void)
-+{
-+	shp_register_handler(SHP_ADD_EXECUTE, mm_add_execute,
-+				SHP_MEM_ADD_EXECUTE_ORDER);
-+	shp_register_handler(SHP_DEL_VALIDATE, mm_del_validate,
-+				SHP_MEM_DEL_VALIDATE_ORDER);
-+	shp_register_handler(SHP_DEL_EXECUTE, mm_del_execute,
-+				SHP_MEM_DEL_EXECUTE_ORDER);
-+
-+	return 0;
-+}
-+module_init(mm_shp_init);
+ extern void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs);
+ 
+diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
+index c7483d0..2a3e8dd 100644
+--- a/arch/powerpc/kernel/hw_breakpoint.c
++++ b/arch/powerpc/kernel/hw_breakpoint.c
+@@ -73,7 +73,7 @@ int arch_install_hw_breakpoint(struct perf_event *bp)
+ 	 * If so, DABR will be populated in single_step_dabr_instruction().
+ 	 */
+ 	if (current->thread.last_hit_ubp != bp)
+-		set_break(info);
++		set_breakpoint(info);
+ 
+ 	return 0;
+ }
+@@ -191,7 +191,7 @@ void thread_change_pc(struct task_struct *tsk, struct pt_regs *regs)
+ 
+ 	info = counter_arch_bp(tsk->thread.last_hit_ubp);
+ 	regs->msr &= ~MSR_SE;
+-	set_break(info);
++	set_breakpoint(info);
+ 	tsk->thread.last_hit_ubp = NULL;
+ }
+ 
+@@ -276,7 +276,7 @@ int __kprobes hw_breakpoint_handler(struct die_args *args)
+ 	if (!(info->type & HW_BRK_TYPE_EXTRANEOUS_IRQ))
+ 		perf_bp_event(bp, regs);
+ 
+-	set_break(info);
++	set_breakpoint(info);
+ out:
+ 	rcu_read_unlock();
+ 	return rc;
+@@ -308,7 +308,7 @@ int __kprobes single_step_dabr_instruction(struct die_args *args)
+ 	if (!(info->type & HW_BRK_TYPE_EXTRANEOUS_IRQ))
+ 		perf_bp_event(bp, regs);
+ 
+-	set_break(info);
++	set_breakpoint(info);
+ 	current->thread.last_hit_ubp = NULL;
+ 
+ 	/*
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 8d56452..99550d3 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -366,7 +366,7 @@ static void set_debug_reg_defaults(struct thread_struct *thread)
+ {
+ 	thread->hw_brk.address = 0;
+ 	thread->hw_brk.type = 0;
+-	set_break(&thread->hw_brk);
++	set_breakpoint(&thread->hw_brk);
+ }
+ #endif /* !CONFIG_HAVE_HW_BREAKPOINT */
+ #endif	/* CONFIG_PPC_ADV_DEBUG_REGS */
+@@ -427,7 +427,7 @@ static inline int set_dawr(struct arch_hw_breakpoint *brk)
+ 	return 0;
+ }
+ 
+-int set_break(struct arch_hw_breakpoint *brk)
++int set_breakpoint(struct arch_hw_breakpoint *brk)
+ {
+ 	__get_cpu_var(current_brk) = *brk;
+ 
+@@ -538,7 +538,7 @@ struct task_struct *__switch_to(struct task_struct *prev,
+  */
+ #ifndef CONFIG_HAVE_HW_BREAKPOINT
+ 	if (unlikely(hw_brk_match(&__get_cpu_var(current_brk), &new->thread.hw_brk)))
+-		set_break(&new->thread.hw_brk);
++		set_breakpoint(&new->thread.hw_brk);
+ #endif /* CONFIG_HAVE_HW_BREAKPOINT */
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index 1f26956..3003d89 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -132,7 +132,7 @@ static int do_signal(struct pt_regs *regs)
+ 	 */
+ 	if (current->thread.hw_brk.address &&
+ 		current->thread.hw_brk.type)
+-		set_break(&current->thread.hw_brk);
++		set_breakpoint(&current->thread.hw_brk);
+ #endif
+ 	/* Re-enable the breakpoints for the signal stack */
+ 	thread_change_pc(current, regs);
+diff --git a/arch/powerpc/xmon/xmon.c b/arch/powerpc/xmon/xmon.c
+index 529c1ed..13f85de 100644
+--- a/arch/powerpc/xmon/xmon.c
++++ b/arch/powerpc/xmon/xmon.c
+@@ -747,7 +747,7 @@ static void insert_cpu_bpts(void)
+ 		brk.address = dabr.address;
+ 		brk.type = (dabr.enabled & HW_BRK_TYPE_DABR) | HW_BRK_TYPE_PRIV_ALL;
+ 		brk.len = 8;
+-		set_break(&brk);
++		set_breakpoint(&brk);
+ 	}
+ 	if (iabr && cpu_has_feature(CPU_FTR_IABR))
+ 		mtspr(SPRN_IABR, iabr->address
