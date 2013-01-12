@@ -1,23 +1,20 @@
-Return-Path: <geoff@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E8BE12C0361
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2013 13:12:45 +1100 (EST)
-Message-ID: <1357956742.20936.11.camel@smoke>
-Subject: Re: PS3 platform is broken on Linux 3.7.0
-From: Geoff Levand <geoff@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
- <michael@ellerman.id.au>, "Aneesh Kumar K.V"
- <aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri, 11 Jan 2013 18:12:22 -0800
-In-Reply-To: <1355954017.5397.53.camel@pasglop>
-References: <1355488506.55692113@f147.mail.ru>
- <1355954017.5397.53.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Phileas Fogg <phileas-fogg@mail.ru>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id DA8C32C00FC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jan 2013 07:43:10 +1100 (EST)
+Date: Sat, 12 Jan 2013 12:43:03 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: 3.7-rc7: BUG: MAX_STACK_TRACE_ENTRIES too low!
+In-Reply-To: <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
+Message-ID: <alpine.DEB.2.01.1301121241340.7378@trent.utfs.org>
+References: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
+ <alpine.DEB.2.01.1211271916160.7378@trent.utfs.org>
+ <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,70 +24,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
-
-On Thu, 2012-12-20 at 08:53 +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2012-12-14 at 16:35 +0400, Phileas Fogg wrote:
-> > Hi,
+On Wed, 28 Nov 2012 at 16:41, Li Zhong wrote:
+> On Tue, 2012-11-27 at 19:22 -0800, Christian Kujau wrote:
+> > On Tue, 27 Nov 2012 at 19:06, Christian Kujau wrote:
+> > > the same thing[0] happened again in 3.7-rc7, after ~20h uptime:
 > > 
-> > I wanted to bring to your attention the fact that the PS3 platform is broken on Linux 3.7.0.
+> > I found the following on patchwork, but this seems to deal with powerpc64 
+> > only, while this PowerBook G4 of mine is powerpc32:
 > > 
-> > i'm not able to boot Linux 3.7.0 on my PS3 slim. Linux 3.6.10 boots just fine but not 3.7.0
-> > When i try to boot Linux 3.7.0 then my PS3  shuts down.
+> >   http://patchwork.ozlabs.org/patch/193414/
 > > 
-> > So i cloned the Linux powerpc GIT repository and tried to find out which commits broke the PS3 platform.
-> > After some time I tracked it down to 2 commits:
+> > It looks related, but then again, I fail to parse assember...
 > 
-> Aneesh, do you have any idea what might be going on there ? Can you look
-> at the PS3 hash code ? It's a bit different from the rest, you might
-> have missed an update or two...
+> Hi Christian, 
+> 
+> Would you please help to try the following fix? I don't have a powerpc32
+> machine for test...
 
+The patch hasn't made it into mainline yet. Any chance that this will be 
+included in 3.8?
 
-> Michael, same deal with PACA...
+Thanks,
+Christian.
 
+> ==============================================
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index 9499385..cadebfd 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -439,6 +439,8 @@ ret_from_fork:
+>  ret_from_kernel_thread:
+>  	REST_NVGPRS(r1)
+>  	bl	schedule_tail
+> +	li	r3,0
+> +	stw	r3,0(r1)
+>  	mtlr	r14
+>  	mr	r3,r15
+>  	PPC440EP_ERR42
+> ==============================================
+> 
+> > 
+> > Christian.
+> > 
+> > > [40007.339487] [sched_delayed] sched: RT throttling activated
+> > > [69731.388717] BUG: MAX_STACK_TRACE_ENTRIES too low!
+> > > [69731.390371] turning off the locking correctness validator.
+> > > [69731.391942] Call Trace:
+> > > [69731.393525] [c9a61c10] [c0009064] show_stack+0x70/0x1bc (unreliable)
+> > > [69731.395152] [c9a61c50] [c0077460] save_trace+0xfc/0x114
+> > > [69731.396735] [c9a61c60] [c007be20] __lock_acquire+0x1568/0x19b8
+> > > [69731.398296] [c9a61d00] [c007c2c0] lock_acquire+0x50/0x70
+> > > [69731.399857] [c9a61d20] [c0550e28] _raw_spin_lock_irq+0x5c/0x78
+> > > [69731.401419] [c9a61d40] [c054fb58] __schedule+0xd8/0x534
+> > > [69731.402972] [c9a61da0] [c0550094] _cond_resched+0x50/0x68
+> > > [69731.404527] [c9a61db0] [c0479908] dst_gc_task+0xbc/0x258
+> > > [69731.406070] [c9a61e40] [c004eeb8] process_one_work+0x1f4/0x49c
+> > > [69731.407585] [c9a61e80] [c004f644] worker_thread+0x14c/0x400
+> > > [69731.409075] [c9a61eb0] [c0057634] kthread+0xbc/0xc0
+> > > [69731.410521] [c9a61f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+> > > [...repeated 54 times...]
+> > > 
+> > > Anyone knows what this is about?
+> > > 
+> > > Thanks,
+> > > Christian.
+> > > 
+> > > [0] http://lkml.indiana.edu/hypermail/linux/kernel/1211.0/03025.html
+> 
+> 
+> 
 
-I checked these, and Michael's 407821a34fce89b4f0b031dbab5cec7d059f46bc
-does indeed cause the LV1 hypervisor to panic early, and if that is
-reverted, Aneesh's 048ee0993ec8360abb0b51bdf8f8721e9ed62ec4 hits a BUG.
+-- 
+BOFH excuse #258:
 
-I'll look at it some more next week.
-
--Geoff
-
-> > ---------------------------------------------------------------------------------------------
-> > 
-> > commit 407821a34fce89b4f0b031dbab5cec7d059f46bc
-> > Author: Michael Ellerman <michael@ellerman.id.au>
-> > Date:   Fri Sep 7 15:31:44 2012 +0000
-> > 
-> >     powerpc: Initialise paca.data_offset with poison
-> >     
-> >     It's possible for the cpu_possible_mask to change between the time we
-> >     initialise the pacas and the time we setup per_cpu areas.
-> >     
-> >     Obviously impossible cpus shouldn't ever be running, but stranger things
-> >     have happened. So be paranoid and initialise data_offset with a poison
-> >     value in case we don't set it up later.
-> >     
-> >     Based on a patch from Anton Blanchard.
-> >     
-> >     Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> >     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > 
-> > 
-> > ------------------------------------------------------------------------------------------------
-> > 
-> > commit 048ee0993ec8360abb0b51bdf8f8721e9ed62ec4
-> > Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> > Date:   Mon Sep 10 02:52:55 2012 +0000
-> > 
-> >     powerpc/mm: Add 64TB support
-> >     
-> >     Increase max addressable range to 64TB. This is not tested on
-> >     real hardware yet.
-> >     
-> >     Reviewed-by: Paul Mackerras <paulus@samba.org>
-> >     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-> >     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > 
-> > ----------------------------------------------------------------------------------------------------------
+That's easy to fix, but I can't be bothered.
