@@ -1,24 +1,23 @@
-Return-Path: <anca.emanuel@gmail.com>
-Received: from mail-vb0-f46.google.com (mail-vb0-f46.google.com
- [209.85.212.46])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4A6C02C034A
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2013 06:48:12 +1100 (EST)
-Received: by mail-vb0-f46.google.com with SMTP id b13so1792222vby.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 11 Jan 2013 11:48:09 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.1301111705170.23005@ayla.of.borg>
-References: <alpine.DEB.2.00.1301111704550.22961@ayla.of.borg>
- <alpine.DEB.2.00.1301111705170.23005@ayla.of.borg>
-Date: Fri, 11 Jan 2013 21:48:08 +0200
-Message-ID: <CAJL_dMsXvEw=UvmodFEK0uefJ_kNVn2NRpbOcWMJwdLBP3nB7A@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v3.8-rc3
-From: Anca Emanuel <anca.emanuel@gmail.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux/PPC Development <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Development <linux-kernel@vger.kernel.org>
+Return-Path: <geoff@infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E8BE12C0361
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 12 Jan 2013 13:12:45 +1100 (EST)
+Message-ID: <1357956742.20936.11.camel@smoke>
+Subject: Re: PS3 platform is broken on Linux 3.7.0
+From: Geoff Levand <geoff@infradead.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
+ <michael@ellerman.id.au>, "Aneesh Kumar K.V"
+ <aneesh.kumar@linux.vnet.ibm.com>
+Date: Fri, 11 Jan 2013 18:12:22 -0800
+In-Reply-To: <1355954017.5397.53.camel@pasglop>
+References: <1355488506.55692113@f147.mail.ru>
+ <1355954017.5397.53.camel@pasglop>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Phileas Fogg <phileas-fogg@mail.ru>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +27,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Spark mantainer ?
+Hi,
 
-"To make this mail fit in the lkml limit, I deleted
-  - 3996 lines about __mcount_loc on sparc64"
+On Thu, 2012-12-20 at 08:53 +1100, Benjamin Herrenschmidt wrote:
+> On Fri, 2012-12-14 at 16:35 +0400, Phileas Fogg wrote:
+> > Hi,
+> > 
+> > I wanted to bring to your attention the fact that the PS3 platform is broken on Linux 3.7.0.
+> > 
+> > i'm not able to boot Linux 3.7.0 on my PS3 slim. Linux 3.6.10 boots just fine but not 3.7.0
+> > When i try to boot Linux 3.7.0 then my PS3  shuts down.
+> > 
+> > So i cloned the Linux powerpc GIT repository and tried to find out which commits broke the PS3 platform.
+> > After some time I tracked it down to 2 commits:
+> 
+> Aneesh, do you have any idea what might be going on there ? Can you look
+> at the PS3 hash code ? It's a bit different from the rest, you might
+> have missed an update or two...
 
-On Fri, Jan 11, 2013 at 6:07 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> On Fri, 11 Jan 2013, Geert Uytterhoeven wrote:
->> JFYI, when comparing v3.8-rc3 to v3.8-rc2[3], the summaries are:
->>   - build errors: +2/-414
->
->   + arch/powerpc/sysdev/mpic.c: error: case label does not reduce to an integer constant:  => 890:9, 898:9, 886:9, 894:9
->   + error: No rule to make target drivers/scsi/aic7xxx/aicasm/*.[chyl]:  => N/A
->
-> powerpc-randconfig
->
->> [1] http://kisskb.ellerman.id.au/kisskb/head/5780/ (all 117 configs)
->> [3] http://kisskb.ellerman.id.au/kisskb/head/5767/ (all 117 configs)
->
-> Gr{oetje,eeting}s,
->
->                                                 Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                                             -- Linus Torvalds
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+> Michael, same deal with PACA...
+
+
+I checked these, and Michael's 407821a34fce89b4f0b031dbab5cec7d059f46bc
+does indeed cause the LV1 hypervisor to panic early, and if that is
+reverted, Aneesh's 048ee0993ec8360abb0b51bdf8f8721e9ed62ec4 hits a BUG.
+
+I'll look at it some more next week.
+
+-Geoff
+
+> > ---------------------------------------------------------------------------------------------
+> > 
+> > commit 407821a34fce89b4f0b031dbab5cec7d059f46bc
+> > Author: Michael Ellerman <michael@ellerman.id.au>
+> > Date:   Fri Sep 7 15:31:44 2012 +0000
+> > 
+> >     powerpc: Initialise paca.data_offset with poison
+> >     
+> >     It's possible for the cpu_possible_mask to change between the time we
+> >     initialise the pacas and the time we setup per_cpu areas.
+> >     
+> >     Obviously impossible cpus shouldn't ever be running, but stranger things
+> >     have happened. So be paranoid and initialise data_offset with a poison
+> >     value in case we don't set it up later.
+> >     
+> >     Based on a patch from Anton Blanchard.
+> >     
+> >     Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> >     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > 
+> > ------------------------------------------------------------------------------------------------
+> > 
+> > commit 048ee0993ec8360abb0b51bdf8f8721e9ed62ec4
+> > Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> > Date:   Mon Sep 10 02:52:55 2012 +0000
+> > 
+> >     powerpc/mm: Add 64TB support
+> >     
+> >     Increase max addressable range to 64TB. This is not tested on
+> >     real hardware yet.
+> >     
+> >     Reviewed-by: Paul Mackerras <paulus@samba.org>
+> >     Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> >     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > 
+> > ----------------------------------------------------------------------------------------------------------
