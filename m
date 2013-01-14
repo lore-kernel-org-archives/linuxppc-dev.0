@@ -1,35 +1,25 @@
-Return-Path: <balbi@ti.com>
-Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F38F72C00A4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 04:57:40 +1100 (EST)
-Date: Mon, 14 Jan 2013 19:57:24 +0200
-From: Felipe Balbi <balbi@ti.com>
-To: Marc Kleine-Budde <mkl@pengutronix.de>
-Subject: Re: [PATCH v3 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
- platform_device_id
-Message-ID: <20130114175724.GD12611@arwen.pp.htv.fi>
-References: <20130114102444.GD10874@arwen.pp.htv.fi>
- <50F3DF1D.3040706@pengutronix.de>
- <20130114103952.GF10874@arwen.pp.htv.fi>
- <50F3E301.7040509@pengutronix.de>
- <20130114105357.GH10874@arwen.pp.htv.fi>
- <50F3E5E8.2000905@pengutronix.de>
- <20130114110600.GI10874@arwen.pp.htv.fi>
- <20130114125632.GA30157@nchen-desktop>
- <20130114174054.GB12611@arwen.pp.htv.fi>
- <50F4464E.7000605@pengutronix.de>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id 4113E2C00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 05:41:55 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Toshi Kani <toshi.kani@hp.com>
+Subject: Re: [RFC PATCH v2 02/12] ACPI: Add sys_hotplug.h for system device
+ hotplug framework
+Date: Mon, 14 Jan 2013 19:47:36 +0100
+Message-ID: <3236298.SULt2IKQv6@vostro.rjw.lan>
+In-Reply-To: <1358178833.14145.65.camel@misato.fc.hp.com>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <2024927.lMzqqbDSpI@vostro.rjw.lan>
+ <1358178833.14145.65.camel@misato.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="uxuisgdDHaNETlh8"
-In-Reply-To: <50F4464E.7000605@pengutronix.de>
-Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- balbi@ti.com, Peter Chen <peter.chen@freescale.com>, kernel@pengutronix.de,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
-Reply-To: balbi@ti.com
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
+ linux-acpi@vger.kernel.org, gregkh@linuxfoundation.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
+ srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,72 +29,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---uxuisgdDHaNETlh8
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Monday, January 14, 2013 08:53:53 AM Toshi Kani wrote:
+> On Fri, 2013-01-11 at 22:25 +0100, Rafael J. Wysocki wrote:
+> > On Thursday, January 10, 2013 04:40:20 PM Toshi Kani wrote:
+> > > Added include/acpi/sys_hotplug.h, which is ACPI-specific system
+> > > device hotplug header and defines the order values of ACPI-specific
+> > > handlers.
+> > > 
+> > > Signed-off-by: Toshi Kani <toshi.kani@hp.com>
+> > > ---
+> > >  include/acpi/sys_hotplug.h |   48 ++++++++++++++++++++++++++++++++++++++++++++
+> > >  1 file changed, 48 insertions(+)
+> > >  create mode 100644 include/acpi/sys_hotplug.h
+> > > 
+> > > diff --git a/include/acpi/sys_hotplug.h b/include/acpi/sys_hotplug.h
+> > > new file mode 100644
+> > > index 0000000..ad80f61
+> > > --- /dev/null
+> > > +++ b/include/acpi/sys_hotplug.h
+> > > @@ -0,0 +1,48 @@
+> > > +/*
+> > > + * sys_hotplug.h - ACPI System device hot-plug framework
+> > > + *
+> > > + * Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
+> > > + *	Toshi Kani <toshi.kani@hp.com>
+> > > + *
+> > > + * This program is free software; you can redistribute it and/or modify
+> > > + * it under the terms of the GNU General Public License version 2 as
+> > > + * published by the Free Software Foundation.
+> > > + */
+> > > +
+> > > +#ifndef _ACPI_SYS_HOTPLUG_H
+> > > +#define _ACPI_SYS_HOTPLUG_H
+> > > +
+> > > +#include <linux/list.h>
+> > > +#include <linux/device.h>
+> > > +#include <linux/sys_hotplug.h>
+> > > +
+> > > +/*
+> > > + * System device hot-plug operation proceeds in the following order.
+> > > + *   Validate phase -> Execute phase -> Commit phase
+> > > + *
+> > > + * The order values below define the calling sequence of ACPI-specific
+> > > + * handlers for each phase in ascending order.  The order value of
+> > > + * platform-neutral handlers are defined in <linux/sys_hotplug.h>.
+> > > + */
+> > > +
+> > > +/* Add Validate order values */
+> > > +#define SHP_ACPI_BUS_ADD_VALIDATE_ORDER		0	/* must be first */
+> > > +
+> > > +/* Add Execute order values */
+> > > +#define SHP_ACPI_BUS_ADD_EXECUTE_ORDER		10
+> > > +#define SHP_ACPI_RES_ADD_EXECUTE_ORDER		20
+> > > +
+> > > +/* Add Commit order values */
+> > > +#define SHP_ACPI_BUS_ADD_COMMIT_ORDER		10
+> > > +
+> > > +/* Delete Validate order values */
+> > > +#define SHP_ACPI_BUS_DEL_VALIDATE_ORDER		0	/* must be first */
+> > > +#define SHP_ACPI_RES_DEL_VALIDATE_ORDER		10
+> > > +
+> > > +/* Delete Execute order values */
+> > > +#define SHP_ACPI_BUS_DEL_EXECUTE_ORDER		100
+> > > +
+> > > +/* Delete Commit order values */
+> > > +#define SHP_ACPI_BUS_DEL_COMMIT_ORDER		100
+> > > +
+> > > +#endif	/* _ACPI_SYS_HOTPLUG_H */
+> > > --
+> > 
+> > Why did you use the particular values above?
+> 
+> The ordering values above are used to define the relative order among
+> handlers.  For instance, the 100 for SHP_ACPI_BUS_DEL_EXECUTE_ORDER can
+> potentially be 21 since it is still larger than 20 for
+> SHP_MEM_DEL_EXECUTE_ORDER defined in linux/sys_hotplug.h.  I picked 100
+> so that more platform-neutral handlers can be added in between 20 and
+> 100 in future.
 
-On Mon, Jan 14, 2013 at 06:54:22PM +0100, Marc Kleine-Budde wrote:
-> On 01/14/2013 06:40 PM, Felipe Balbi wrote:
-> > Hi,
-> >=20
-> > On Mon, Jan 14, 2013 at 08:56:33PM +0800, Peter Chen wrote:
-> >=20
-> > <snip>
-> >=20
-> >>>> Usually there isn't any Changelog between IP cores used in the diffe=
-rent
-> >>>> fsl processors (at least available outside of fsl), that makes it qu=
-ite
-> >>>> difficult to say if something found on one imx is really the same as=
- on
-> >>>> the other one. And they (usually) don't provide any versioning
-> >>>> information in a register or the documentation.
-> >>>>
-> >>>> just my 2=A2
-> >>>
-> >>> $SUBJECT is trying to differentiate a single feature (or maybe two) to
-> >>> replace cpu_is_xxx(), then expose that on driver_data without creating
-> >>> one enum value for each release from fsl.
-> >>
-> >> Felipe, every one or two SoCs may have their special operations for
-> >> integrate PHY interface, clk operation, or workaround for IC
-> >> limitation.
-> >=20
-> > the particular PHY and clk used should be hidden by phy layer and clk
-> > API respectively. Workarounds, fair enough, we need to handle them; but
-> > ideally those should be based on runtime revision detection, not some
-> > hackery using driver_data.
->=20
-> If this is actually possible, I'd love to do this. But IP vendor don't
-> include a version register in their cores. :(
+I thought so, but I don't think it's a good idea to add gaps like this.
 
-then fair enough, driver_data or platform_data is the way to go, still
-my point (a) below is valid.
+Thanks,
+Rafael
 
---=20
-balbi
 
---uxuisgdDHaNETlh8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQ9EcEAAoJEIaOsuA1yqREX5YP/3Ml3NhWU7FAz4/tmb3wnHmp
-sA1xu/aP04C3jor3iWzyoKJVhTWXUAIFrCUdUIFbfLyHY3dP8uJMJewED6RCFlG6
-531rwx1oB9wk3O7R6oQG0+BuTi2Xtdx9TRTbhflSeb4ocgTamJE0bF7z9Zq2AWoR
-U5AcEYR/7kxZ4JCAGcXB7G70p1nuR+Un2kY5KAOGwzFuf4fNpiFdezVd7gHUgxc5
-VDHa3DzrsfN3VzTgVLqEW+NLUtOC6yhgErJV5RwluyWZb5ZK5pINHx7WK3pldIj4
-8oiJk16UwiEl5oMOKrgz1WqYgF7gUixJh8E+gCEJNQm0KRvM+gDetalHHZgA0uuU
-4VEbM1pHXvrsa1niaMeQ39ag3PUMPI4/x+2gGynzOZQh2tkaf17rb31kj1fE3o+y
-V8G67zWVTrn2NtNewTc9ucMOQRZMWbPf9UPdqvTZqR3DiA921XtCiWXyip3ghHOg
-lc7pROTFKOYrub9YV5mlN1sd36kXc8zjSd5zBRpW+aTO+qSixIGs984mvi7WY84m
-EKYRe9sFlssafrFY48dThOfvMmQ9lO0KRbyGdyHaUvKJP0WHqOiQO0YspdnQBZdh
-odByPo7G8xVJ6uioVMN2LmliN8a+x1M7hxEVZZuvns6pxwNWckZrBrnJXDaA7GFS
-V8Ht4oO1Qs28//ZZbLkx
-=kKMk
------END PGP SIGNATURE-----
-
---uxuisgdDHaNETlh8--
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
