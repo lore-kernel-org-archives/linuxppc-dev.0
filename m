@@ -1,25 +1,21 @@
-Return-Path: <andrew.murray@arm.com>
-Received: from service87.mimecast.com (service87.mimecast.com [91.220.42.44])
- by ozlabs.org (Postfix) with ESMTP id 7E69C2C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2013 20:27:58 +1100 (EST)
-Date: Mon, 14 Jan 2013 09:24:45 +0000
-From: Andrew Murray <andrew.murray@arm.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] pci: Provide support for parsing PCI DT ranges property
-Message-ID: <20130114092445.GB23333@arm.com>
-References: <20121212163749.GA17371@arm.com>
- <CACxGe6uZATX2uBjuDUsJ489-jmvFbLm-NQ6Q3SGqRVky9XGJYg@mail.gmail.com>
+Return-Path: <B29397@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe005.messaging.microsoft.com [213.199.154.208])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id CDC0E2C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2013 21:12:55 +1100 (EST)
+From: Peter Chen <peter.chen@freescale.com>
+To: <shawn.guo@linaro.org>, <balbi@ti.com>, <kernel@pengutronix.de>,
+ <gregkh@linuxfoundation.org>, <r58472@freescale.com>
+Subject: [PATCH v3 0/3] Fix the Build error for fsl_mxc_udc.c
+Date: Mon, 14 Jan 2013 18:12:38 +0800
+Message-ID: <1358158361-25550-1-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <CACxGe6uZATX2uBjuDUsJ489-jmvFbLm-NQ6Q3SGqRVky9XGJYg@mail.gmail.com>
-Content-Type: text/plain; charset=WINDOWS-1252
-Cc: Michal Simek <monstr@monstr.eu>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- devicetree-discuss <devicetree-discuss@lists.ozlabs.org>,
- Thierry Reding <thierry.reding@avionic-design.de>,
- Liviu Dudau <Liviu.Dudau@arm.com>,
- "rob.herring@calxeda.com" <rob.herring@calxeda.com>,
- Rob Herring <robherring2@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,42 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, Dec 15, 2012 at 01:06:41AM +0000, Grant Likely wrote:
-> On Wed, Dec 12, 2012 at 4:37 PM, Andrew Murray <Andrew.Murray@arm.com> wr=
-ote:
-> > DT bindings for PCI host bridges often use the ranges property to descr=
-ibe
-> > memory and IO ranges - this binding tends to be the same across archite=
-ctures
-> > yet several parsing implementations exist, e.g. arch/mips/pci/pci.c,
-> > arch/powerpc/kernel/pci-common.c, arch/sparc/kernel/pci.c and
-> > arch/microblaze/pci/pci-common.c (clone of PPC). Some of these duplicat=
-e
-> > functionality provided by drivers/of/address.c.
->=20
-> Hi Andrew,
->=20
-> Thanks for looking into this. This definitely needs to be done.
->=20
-> However, I cannot merge this patch as-is because it actually makes
-> things worse by adding yet another implementation of the parsing code.
-> Plus it doesn't actually have any users.  :-)
+Changes for v3:
+- Split the one big patch into three patches
 
-I understand. Though I see Thierry has included this in his patch set - I
-guess that means there is potentially one user now :).
+Changes for v2:
+- Add const for fsl_udc_devtype
+- Do ioremap for phy address at fsl-mxc-udc
 
->=20
-> Instead, move the existing code that you need out of
-> arch/powerpc/kernel/pci-common.c into a shared place and add in the
-> features you need. Bonus points if you fixup microblaze or others at
-> the same time.
+Peter Chen (3):
+  usb: fsl-mxc-udc: replace cpu_is_xxx() with platform_device_id
+  usb: fsl_mxc_udc: replace MX35_IO_ADDRESS to ioremap
+  ARM: i.MX clock: Change the connection-id for fsl-usb2-udc
 
-In most part the patch I submitted was the common code from powerpc but
-without quirks and tie-ins to powerpc structures. I'd like to convert
-powerpc to using my patch and others but won't get time to do this at
-present :(
-
->=20
-> g.
->=20
-Andrew Murray
+ arch/arm/mach-imx/clk-imx25.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx27.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx31.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx35.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx51-imx53.c               |    6 +-
+ arch/arm/mach-imx/devices/devices-common.h        |    1 +
+ arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c |   15 +++---
+ drivers/usb/gadget/fsl_mxc_udc.c                  |   23 +++++----
+ drivers/usb/gadget/fsl_udc_core.c                 |   52 +++++++++++++-------
+ drivers/usb/gadget/fsl_usb2_udc.h                 |   13 ++++--
+ include/linux/fsl_devices.h                       |    8 +++
+ 11 files changed, 87 insertions(+), 55 deletions(-)
