@@ -1,26 +1,21 @@
 Return-Path: <B29397@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9D3312C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 00:16:40 +1100 (EST)
-Date: Mon, 14 Jan 2013 21:16:20 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 4D8C62C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 01:16:25 +1100 (EST)
 From: Peter Chen <peter.chen@freescale.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH v3 2/3] usb: fsl_mxc_udc: replace MX35_IO_ADDRESS to
- ioremap
-Message-ID: <20130114131619.GC30157@nchen-desktop>
-References: <1358158361-25550-1-git-send-email-peter.chen@freescale.com>
- <1358158361-25550-3-git-send-email-peter.chen@freescale.com>
- <20130114131056.GB23505@n2100.arm.linux.org.uk>
+To: <shawn.guo@linaro.org>, <balbi@ti.com>, <kernel@pengutronix.de>,
+ <gregkh@linuxfoundation.org>, <r58472@freescale.com>
+Subject: [PATCH v4 0/3] Fix the Build error for fsl_mxc_udc.c
+Date: Mon, 14 Jan 2013 22:16:06 +0800
+Message-ID: <1358172969-14898-1-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20130114131056.GB23505@n2100.arm.linux.org.uk>
-Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- balbi@ti.com, kernel@pengutronix.de, shawn.guo@linaro.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,20 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 14, 2013 at 01:10:56PM +0000, Russell King - ARM Linux wrote:
-> On Mon, Jan 14, 2013 at 06:12:40PM +0800, Peter Chen wrote:
-> > @@ -83,15 +84,16 @@ void fsl_udc_clk_finalize(enum fsl_udc_type devtype,
-> >  	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
-> >  	if (devtype == IMX35_UDC) {
-> >  		unsigned int v;
-> > +		void __iomem *phy_regs = ioremap((unsigned long)pdata->regs +
-> > +						MX35_USBPHYCTRL_OFFSET, 512);
-> 
-> Consider that ioremap() can fail.
-> 
-Thanks, will check NULL pointer.
+Changes for v4:
+- Using pdev's struct resource to do ioremap
+- Add ioremap return value check
 
--- 
+Changes for v3:
+- Split the one big patch into three patches
 
-Best Regards,
-Peter Chen
+Changes for v2:
+- Add const for fsl_udc_devtype
+- Do ioremap for phy address at fsl-mxc-udc
+
+Peter Chen (3):
+  usb: fsl-mxc-udc: replace cpu_is_xxx() with platform_device_id
+  usb: fsl_mxc_udc: replace MX35_IO_ADDRESS to ioremap
+  ARM: i.MX clock: Change the connection-id for fsl-usb2-udc
+
+ arch/arm/mach-imx/clk-imx25.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx27.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx31.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx35.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx51-imx53.c               |    6 +-
+ arch/arm/mach-imx/devices/devices-common.h        |    1 +
+ arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c |   15 +++---
+ drivers/usb/gadget/fsl_mxc_udc.c                  |   36 ++++++++++----
+ drivers/usb/gadget/fsl_udc_core.c                 |   54 ++++++++++++++-------
+ drivers/usb/gadget/fsl_usb2_udc.h                 |   13 ++++--
+ include/linux/fsl_devices.h                       |    8 +++
+ 11 files changed, 102 insertions(+), 55 deletions(-)
