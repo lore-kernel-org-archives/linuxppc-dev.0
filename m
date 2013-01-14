@@ -1,28 +1,35 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g6t0184.atlanta.hp.com (g6t0184.atlanta.hp.com [15.193.32.61])
+Return-Path: <balbi@ti.com>
+Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
+ (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 910A22C0095
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 03:03:46 +1100 (EST)
-Message-ID: <1358178833.14145.65.camel@misato.fc.hp.com>
-Subject: Re: [RFC PATCH v2 02/12] ACPI: Add sys_hotplug.h for system device
- hotplug framework
-From: Toshi Kani <toshi.kani@hp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Mon, 14 Jan 2013 08:53:53 -0700
-In-Reply-To: <2024927.lMzqqbDSpI@vostro.rjw.lan>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <1357861230-29549-3-git-send-email-toshi.kani@hp.com>
- <2024927.lMzqqbDSpI@vostro.rjw.lan>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
- linux-acpi@vger.kernel.org, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 7C2B42C00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 04:41:06 +1100 (EST)
+Date: Mon, 14 Jan 2013 19:40:54 +0200
+From: Felipe Balbi <balbi@ti.com>
+To: Peter Chen <peter.chen@freescale.com>
+Subject: Re: [PATCH v3 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
+ platform_device_id
+Message-ID: <20130114174054.GB12611@arwen.pp.htv.fi>
+References: <20130114101642.GB10874@arwen.pp.htv.fi>
+ <50F3DB8D.6050104@pengutronix.de>
+ <20130114102444.GD10874@arwen.pp.htv.fi>
+ <50F3DF1D.3040706@pengutronix.de>
+ <20130114103952.GF10874@arwen.pp.htv.fi>
+ <50F3E301.7040509@pengutronix.de>
+ <20130114105357.GH10874@arwen.pp.htv.fi>
+ <50F3E5E8.2000905@pengutronix.de>
+ <20130114110600.GI10874@arwen.pp.htv.fi>
+ <20130114125632.GA30157@nchen-desktop>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="XOIedfhf+7KOe/yw"
+In-Reply-To: <20130114125632.GA30157@nchen-desktop>
+Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ Felipe Balbi <balbi@ti.com>, Marc Kleine-Budde <mkl@pengutronix.de>,
+ kernel@pengutronix.de, shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,82 +39,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-01-11 at 22:25 +0100, Rafael J. Wysocki wrote:
-> On Thursday, January 10, 2013 04:40:20 PM Toshi Kani wrote:
-> > Added include/acpi/sys_hotplug.h, which is ACPI-specific system
-> > device hotplug header and defines the order values of ACPI-specific
-> > handlers.
-> > 
-> > Signed-off-by: Toshi Kani <toshi.kani@hp.com>
-> > ---
-> >  include/acpi/sys_hotplug.h |   48 ++++++++++++++++++++++++++++++++++++++++++++
-> >  1 file changed, 48 insertions(+)
-> >  create mode 100644 include/acpi/sys_hotplug.h
-> > 
-> > diff --git a/include/acpi/sys_hotplug.h b/include/acpi/sys_hotplug.h
-> > new file mode 100644
-> > index 0000000..ad80f61
-> > --- /dev/null
-> > +++ b/include/acpi/sys_hotplug.h
-> > @@ -0,0 +1,48 @@
-> > +/*
-> > + * sys_hotplug.h - ACPI System device hot-plug framework
-> > + *
-> > + * Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-> > + *	Toshi Kani <toshi.kani@hp.com>
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify
-> > + * it under the terms of the GNU General Public License version 2 as
-> > + * published by the Free Software Foundation.
-> > + */
-> > +
-> > +#ifndef _ACPI_SYS_HOTPLUG_H
-> > +#define _ACPI_SYS_HOTPLUG_H
-> > +
-> > +#include <linux/list.h>
-> > +#include <linux/device.h>
-> > +#include <linux/sys_hotplug.h>
-> > +
-> > +/*
-> > + * System device hot-plug operation proceeds in the following order.
-> > + *   Validate phase -> Execute phase -> Commit phase
-> > + *
-> > + * The order values below define the calling sequence of ACPI-specific
-> > + * handlers for each phase in ascending order.  The order value of
-> > + * platform-neutral handlers are defined in <linux/sys_hotplug.h>.
-> > + */
-> > +
-> > +/* Add Validate order values */
-> > +#define SHP_ACPI_BUS_ADD_VALIDATE_ORDER		0	/* must be first */
-> > +
-> > +/* Add Execute order values */
-> > +#define SHP_ACPI_BUS_ADD_EXECUTE_ORDER		10
-> > +#define SHP_ACPI_RES_ADD_EXECUTE_ORDER		20
-> > +
-> > +/* Add Commit order values */
-> > +#define SHP_ACPI_BUS_ADD_COMMIT_ORDER		10
-> > +
-> > +/* Delete Validate order values */
-> > +#define SHP_ACPI_BUS_DEL_VALIDATE_ORDER		0	/* must be first */
-> > +#define SHP_ACPI_RES_DEL_VALIDATE_ORDER		10
-> > +
-> > +/* Delete Execute order values */
-> > +#define SHP_ACPI_BUS_DEL_EXECUTE_ORDER		100
-> > +
-> > +/* Delete Commit order values */
-> > +#define SHP_ACPI_BUS_DEL_COMMIT_ORDER		100
-> > +
-> > +#endif	/* _ACPI_SYS_HOTPLUG_H */
-> > --
-> 
-> Why did you use the particular values above?
+--XOIedfhf+7KOe/yw
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The ordering values above are used to define the relative order among
-handlers.  For instance, the 100 for SHP_ACPI_BUS_DEL_EXECUTE_ORDER can
-potentially be 21 since it is still larger than 20 for
-SHP_MEM_DEL_EXECUTE_ORDER defined in linux/sys_hotplug.h.  I picked 100
-so that more platform-neutral handlers can be added in between 20 and
-100 in future.
+Hi,
 
-Thanks,
--Toshi
+On Mon, Jan 14, 2013 at 08:56:33PM +0800, Peter Chen wrote:
+
+<snip>
+
+> > > Usually there isn't any Changelog between IP cores used in the differ=
+ent
+> > > fsl processors (at least available outside of fsl), that makes it qui=
+te
+> > > difficult to say if something found on one imx is really the same as =
+on
+> > > the other one. And they (usually) don't provide any versioning
+> > > information in a register or the documentation.
+> > >=20
+> > > just my 2=A2
+> >=20
+> > $SUBJECT is trying to differentiate a single feature (or maybe two) to
+> > replace cpu_is_xxx(), then expose that on driver_data without creating
+> > one enum value for each release from fsl.
+>=20
+> Felipe, every one or two SoCs may have their special operations for
+> integrate PHY interface, clk operation, or workaround for IC
+> limitation.
+
+the particular PHY and clk used should be hidden by phy layer and clk
+API respectively. Workarounds, fair enough, we need to handle them; but
+ideally those should be based on runtime revision detection, not some
+hackery using driver_data.
+
+> Maybe, it will add more future or SoCs (maybe not for this driver) in
+> the future, using enum is easier than string comparison for expanding
+> something.
+
+a) I never told you to *not* use enum. I said that creating DEVICE_A,
+DEVICE_B, DEVICE_C, DEVICE_D and DEVICE_E values when DEVICE_B,
+DEVICE_C and DEVICE_E behave exactly the same is unnecessary.
+
+b) you can't be expecting to add future SoCs support to fsl udc, I have
+already said and will repeat for the last time: move to chipidea ASAP.
+
+New SoCs cannot be added to fsl udc, you *must* use chipidea for
+anything new and move the legacy to chipidea eventually. I will wait for
+a full year for you to do that, but after that I will have to start
+deleting drivers for the sake of avoid duplication of effort.
+
+cheers
+
+--=20
+balbi
+
+--XOIedfhf+7KOe/yw
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQ9EMmAAoJEIaOsuA1yqREY34P/2oWZxsoCtrC58rAaTQHg25l
+BWDotj23XQuAHtZt5u+yyR108KKyAXUTu8MAh3DD1xV6pXZnbu0CFw3sWe7a/sIJ
+zq4G+QL3/TNMh4Tu7W6FT2FZ17ALc28LBlKMx0rJIX4yAER7qucTmCkwdncQtB64
+tWLqcfGVtJtUSi9nsf1dUa2PYBnIf/OSqxFL0bCP3+jX9uNfPyrTLNqyXdk9wep4
+m5rz5EqzhjHTa2gR9q7ScZl0nHV4CBzQtzOLxysdEd+toGYK6Cx9jEX07BDMO/rl
+I6rT5gliBWSiMI9FEkeTAZ+9mJGxq4XY9CWkucHjpJsHXcyKvMHszBkDlBS0qMAq
+aLzIxswiFLSfl8CmRt56cfso0yG/rJcUm9U7Nx0ARXtkVdCejB1G9gHAINyOq6SC
+ruGxCfmzK/PWf8bBkg+VbkGYmtfLgmbuvjcYNVhpu7sFFbKimjmRnRRmzVa6vduz
+lMdIb5uel3WNzhYyg8HjI+wk//6YxGBZ07fZcYSiK2BbWTrkGXiKuujsn91aZTnC
+hTOtl/FLiNHlqrCvgFziVIsPtbUFyDb0fM2ZoL2WZLAut20VmqiHemOtqYQASgLX
+lTu8uve7TGuaQYXmnc6T3VZEC26ZZulocCcESLyQLB0IGZT1eJT5OcfX2acku2I7
+GJ+L2XqUG+WbDCpvl3Nk
+=p8pE
+-----END PGP SIGNATURE-----
+
+--XOIedfhf+7KOe/yw--
