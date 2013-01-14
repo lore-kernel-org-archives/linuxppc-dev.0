@@ -1,26 +1,29 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.19.201])
- by ozlabs.org (Postfix) with ESMTP id 775CE2C00A5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 06:21:42 +1100 (EST)
-Date: Mon, 14 Jan 2013 11:21:34 -0800
-From: Greg KH <gregkh@linuxfoundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Return-Path: <toshi.kani@hp.com>
+Received: from g1t0026.austin.hp.com (g1t0026.austin.hp.com [15.216.28.33])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6D37C2C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 06:31:24 +1100 (EST)
+Message-ID: <1358191290.14145.88.camel@misato.fc.hp.com>
 Subject: Re: [RFC PATCH v2 02/12] ACPI: Add sys_hotplug.h for system device
  hotplug framework
-Message-ID: <20130114192134.GA24215@kroah.com>
+From: Toshi Kani <toshi.kani@hp.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Date: Mon, 14 Jan 2013 12:21:30 -0700
+In-Reply-To: <4116384.4pypaK248y@vostro.rjw.lan>
 References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
  <3236298.SULt2IKQv6@vostro.rjw.lan>
  <1358188929.14145.69.camel@misato.fc.hp.com>
  <4116384.4pypaK248y@vostro.rjw.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4116384.4pypaK248y@vostro.rjw.lan>
-Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
- guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
+ linux-acpi@vger.kernel.org, gregkh@linuxfoundation.org,
+ linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
+ srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,7 +33,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 14, 2013 at 08:07:35PM +0100, Rafael J. Wysocki wrote:
+On Mon, 2013-01-14 at 20:07 +0100, Rafael J. Wysocki wrote:
 > On Monday, January 14, 2013 11:42:09 AM Toshi Kani wrote:
 > > On Mon, 2013-01-14 at 19:47 +0100, Rafael J. Wysocki wrote:
 > > > On Monday, January 14, 2013 08:53:53 AM Toshi Kani wrote:
@@ -117,12 +120,18 @@ On Mon, Jan 14, 2013 at 08:07:35PM +0100, Rafael J. Wysocki wrote:
 > > above example will be changed to 30.  
 > 
 > I wonder why you want to have those gaps at all.
-> 
+
+Oh, I see.  I think some gap is helpful since it allows a new handler to
+come between without recompiling other modules.  For instance, OEM
+vendors may want to add their own handlers with loadable modules after
+the kernel is distributed.
+
 > Anyway, this is just a small detail and it doesn't mean I don't have more
 > comments.  I just need some more time to get the big picture idea of how this
 > is supposed to work and perhaps Greg will have some remarks too.
 
-Yes, give me a few days to catch up on other patches before I get the
-chance to review these.
+Yes, I am well-aware of that. :-)  Please let me know if you have any
+questions.  I'd be happy to explain any details.
 
-greg k-h
+Thanks a lot for reviewing!
+-Toshi
