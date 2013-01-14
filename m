@@ -1,20 +1,21 @@
-Return-Path: <R.Patil@mei-india.com>
-Received: from antispam.messung.com (outbond.messung.com [210.212.173.45])
- by ozlabs.org (Postfix) with ESMTP id 9305D2C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2013 22:34:33 +1100 (EST)
-In-Reply-To: <1357928171.5475.4@snotra>
-Subject: Re: [Solved] Interrupt handler not executed
-From: R.Patil@mei-india.com
-To: Scott Wood <scottwood@freescale.com>
-Message-ID: <OFF2DB166D.6CFADCBA-ON65257AF3.003F9206-65257AF3.003F9210@LocalDomain>
-Date: Mon, 14 Jan 2013 17:04:21 +0530
-Content-Type: text/plain;
-	charset=ISO-8859-1
+Return-Path: <B16395@freescale.com>
+Received: from co9outboundpool.messaging.microsoft.com
+ (co9ehsobe001.messaging.microsoft.com [207.46.163.24])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5BF8D2C0202
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2013 22:34:47 +1100 (EST)
+From: Varun Sethi <Varun.Sethi@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <galak@kernel.crashing.org>,
+ <scottwood@freescale.com>
+Subject: [linuxppc-dev][PATCH] powerpc/fsl_pci: Store the pci controller
+ device pointer in the pci controller structure.
+Date: Mon, 14 Jan 2013 16:58:00 +0530
+Message-ID: <1358162880-16012-1-git-send-email-Varun.Sethi@freescale.com>
 MIME-Version: 1.0
-References: <OFFE4470AC.C2444613-ON65257AF0.0029CACD-65257AF0.0029CAD8@LocalDomain>,
- <1357928171.5475.4@snotra>
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Varun Sethi <Varun.Sethi@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Scott,
+The pci controller structure has a provision to store the device strcuture
+pointer of the corresponding platform device. Currently this information is
+not stored during fsl pci controller initialization. This information is
+required while dealing with iommu groups for pci devices connected to the fsl
+pci controller. For the case where the pci devices can't be paritioned, they 
+would fall under the same device group as the pci controller.
 
-Thanks for your immediate response. The problem has been resolved. Actually=
-, I was wrong in pointing out the problem.=20
+This patch stores the platform device information in the pci controller
+structure during initialization.
 
-The problem was lying in interrupt handler. The first statement in interrup=
-t handler was disable=5Firq() which was leading into a deadlock. I replaced=
- 'disable=5Firq' with 'disable=5Firq=5Fnosync()' and it worked. =20
+Signed-off-by: Varun Sethi <Varun.Sethi@freescale.com>
+---
+ arch/powerpc/sysdev/fsl_pci.c |    9 +++++++--
+ arch/powerpc/sysdev/fsl_pci.h |    2 +-
+ 2 files changed, 8 insertions(+), 3 deletions(-)
 
-Thanks and Regards,
-Rahul Patil
-
------Scott Wood <scottwood@freescale.com> wrote: -----
-
-To: <R.Patil@mei-india.com>
-From: Scott Wood <scottwood@freescale.com>
-Date: 01/11/2013 11:46PM
-Cc: <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: Interrupt handler not executed
-
-On 01/11/2013 01:36:29 AM, R.Patil@mei-india.com wrote:
-> Hello,
->=20
-> We are working on board based on Freescale MPC8313ERDB. We have =20
-> ported linux 3.0.46 kernel on it. In one of device driver written by =20
-> us, we need to take some action upon asserting IRQ0 interrupt. For =20
-> this we have written interrupt handler which takes care of this. We =20
-> are able register interrupt handler successfully with the help of =20
-> 'request=5Firq'. We confirmed this by checking respective entry in =20
-> '/proc/interrupts'. We have also confirmed assertion of interrupt =20
-> line (IRQ0) on oscilloscope. The problem is, interrupt handler does =20
-> not execute upon asserting the interrupt line.
-
-What IRQ number did you pass to request=5Firq()?  request=5Firq() takes =20
-virtual interrupt numbers, not anything out of the chip manual.
-
-If that's not the issue, is the interrupt configured properly for level =20
-and sense?
-
--Scott
-
-Email Disclaimer:
-  ---------------------------
-
-This e-mail and any files transmitted with it are for the sole use of the i=
-ntended recipient(s) and may contain confidential and  privileged informati=
-on. Computer viruses can be transmitted via email.The recipient should chec=
-k this email and any  attachments for the presence of viruses. The company =
-accepts no liability for any damage caused by any virus transmitted by this=
- email.
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 92a5915..b393ae7 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -421,13 +421,16 @@ void fsl_pcibios_fixup_bus(struct pci_bus *bus)
+ 	}
+ }
+ 
+-int __init fsl_add_bridge(struct device_node *dev, int is_primary)
++int __init fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+ 	struct resource rsrc;
+ 	const int *bus_range;
+ 	u8 hdr_type, progif;
++	struct device_node *dev;
++
++	dev = pdev->dev.of_node;
+ 
+ 	if (!of_device_is_available(dev)) {
+ 		pr_warning("%s: disabled\n", dev->full_name);
+@@ -453,6 +456,8 @@ int __init fsl_add_bridge(struct device_node *dev, int is_primary)
+ 	if (!hose)
+ 		return -ENOMEM;
+ 
++	/* set platform device as the parent */
++	hose->parent = &pdev->dev;
+ 	hose->first_busno = bus_range ? bus_range[0] : 0x0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
+ 
+@@ -880,7 +885,7 @@ static int fsl_pci_probe(struct platform_device *pdev)
+ #endif
+ 
+ 	node = pdev->dev.of_node;
+-	ret = fsl_add_bridge(node, fsl_pci_primary == node);
++	ret = fsl_add_bridge(pdev, fsl_pci_primary == node);
+ 
+ #ifdef CONFIG_SWIOTLB
+ 	if (ret == 0) {
+diff --git a/arch/powerpc/sysdev/fsl_pci.h b/arch/powerpc/sysdev/fsl_pci.h
+index d078537..c495c00 100644
+--- a/arch/powerpc/sysdev/fsl_pci.h
++++ b/arch/powerpc/sysdev/fsl_pci.h
+@@ -91,7 +91,7 @@ struct ccsr_pci {
+ 	__be32	pex_err_cap_r3;		/* 0x.e34 - PCIE error capture register 0 */
+ };
+ 
+-extern int fsl_add_bridge(struct device_node *dev, int is_primary);
++extern int fsl_add_bridge(struct platform_device *pdev, int is_primary);
+ extern void fsl_pcibios_fixup_bus(struct pci_bus *bus);
+ extern int mpc83xx_add_bridge(struct device_node *dev);
+ u64 fsl_pci_immrbar_base(struct pci_controller *hose);
+-- 
+1.7.4.1
