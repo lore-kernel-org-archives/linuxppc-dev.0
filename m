@@ -1,29 +1,25 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g4t0017.houston.hp.com (g4t0017.houston.hp.com [15.201.24.20])
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 43FAB2C009B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 06:38:54 +1100 (EST)
-Message-ID: <1358191740.14145.90.camel@misato.fc.hp.com>
-Subject: Re: [RFC PATCH v2 02/12] ACPI: Add sys_hotplug.h for system device
- hotplug framework
-From: Toshi Kani <toshi.kani@hp.com>
-To: Greg KH <gregkh@linuxfoundation.org>
-Date: Mon, 14 Jan 2013 12:29:00 -0700
-In-Reply-To: <20130114192134.GA24215@kroah.com>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <3236298.SULt2IKQv6@vostro.rjw.lan>
- <1358188929.14145.69.camel@misato.fc.hp.com>
- <4116384.4pypaK248y@vostro.rjw.lan> <20130114192134.GA24215@kroah.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
- linux-mm@kvack.org, yinghai@kernel.org, linux-kernel@vger.kernel.org,
- "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
- guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id DF0812C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 07:34:15 +1100 (EST)
+Received: from frontend1.mail.m-online.net (unknown [192.168.8.180])
+ by mail-out.m-online.net (Postfix) with ESMTP id 3YlRH82Ymbz4KK28
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2013 21:34:12 +0100 (CET)
+Received: from localhost (p4FDE760D.dip.t-dialin.net [79.222.118.13])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by mail.mnet-online.de (Postfix) with ESMTPSA id 3YlRH76bWWzbbfY
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Jan 2013 21:34:11 +0100 (CET)
+From: Anatolij Gustschin <agust@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/4] mpc5121: remove obsolete cell-index property from PSC
+ clock code
+Date: Mon, 14 Jan 2013 21:34:07 +0100
+Message-Id: <1358195648-18678-3-git-send-email-agust@denx.de>
+In-Reply-To: <1358195648-18678-1-git-send-email-agust@denx.de>
+References: <1358195648-18678-1-git-send-email-agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,101 +29,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-01-14 at 11:21 -0800, Greg KH wrote:
-> On Mon, Jan 14, 2013 at 08:07:35PM +0100, Rafael J. Wysocki wrote:
-> > On Monday, January 14, 2013 11:42:09 AM Toshi Kani wrote:
-> > > On Mon, 2013-01-14 at 19:47 +0100, Rafael J. Wysocki wrote:
-> > > > On Monday, January 14, 2013 08:53:53 AM Toshi Kani wrote:
-> > > > > On Fri, 2013-01-11 at 22:25 +0100, Rafael J. Wysocki wrote:
-> > > > > > On Thursday, January 10, 2013 04:40:20 PM Toshi Kani wrote:
-> > > > > > > Added include/acpi/sys_hotplug.h, which is ACPI-specific system
-> > > > > > > device hotplug header and defines the order values of ACPI-specific
-> > > > > > > handlers.
-> > > > > > > 
-> > > > > > > Signed-off-by: Toshi Kani <toshi.kani@hp.com>
-> > > > > > > ---
-> > > > > > >  include/acpi/sys_hotplug.h |   48 ++++++++++++++++++++++++++++++++++++++++++++
-> > > > > > >  1 file changed, 48 insertions(+)
-> > > > > > >  create mode 100644 include/acpi/sys_hotplug.h
-> > > > > > > 
-> > > > > > > diff --git a/include/acpi/sys_hotplug.h b/include/acpi/sys_hotplug.h
-> > > > > > > new file mode 100644
-> > > > > > > index 0000000..ad80f61
-> > > > > > > --- /dev/null
-> > > > > > > +++ b/include/acpi/sys_hotplug.h
-> > > > > > > @@ -0,0 +1,48 @@
-> > > > > > > +/*
-> > > > > > > + * sys_hotplug.h - ACPI System device hot-plug framework
-> > > > > > > + *
-> > > > > > > + * Copyright (C) 2012 Hewlett-Packard Development Company, L.P.
-> > > > > > > + *	Toshi Kani <toshi.kani@hp.com>
-> > > > > > > + *
-> > > > > > > + * This program is free software; you can redistribute it and/or modify
-> > > > > > > + * it under the terms of the GNU General Public License version 2 as
-> > > > > > > + * published by the Free Software Foundation.
-> > > > > > > + */
-> > > > > > > +
-> > > > > > > +#ifndef _ACPI_SYS_HOTPLUG_H
-> > > > > > > +#define _ACPI_SYS_HOTPLUG_H
-> > > > > > > +
-> > > > > > > +#include <linux/list.h>
-> > > > > > > +#include <linux/device.h>
-> > > > > > > +#include <linux/sys_hotplug.h>
-> > > > > > > +
-> > > > > > > +/*
-> > > > > > > + * System device hot-plug operation proceeds in the following order.
-> > > > > > > + *   Validate phase -> Execute phase -> Commit phase
-> > > > > > > + *
-> > > > > > > + * The order values below define the calling sequence of ACPI-specific
-> > > > > > > + * handlers for each phase in ascending order.  The order value of
-> > > > > > > + * platform-neutral handlers are defined in <linux/sys_hotplug.h>.
-> > > > > > > + */
-> > > > > > > +
-> > > > > > > +/* Add Validate order values */
-> > > > > > > +#define SHP_ACPI_BUS_ADD_VALIDATE_ORDER		0	/* must be first */
-> > > > > > > +
-> > > > > > > +/* Add Execute order values */
-> > > > > > > +#define SHP_ACPI_BUS_ADD_EXECUTE_ORDER		10
-> > > > > > > +#define SHP_ACPI_RES_ADD_EXECUTE_ORDER		20
-> > > > > > > +
-> > > > > > > +/* Add Commit order values */
-> > > > > > > +#define SHP_ACPI_BUS_ADD_COMMIT_ORDER		10
-> > > > > > > +
-> > > > > > > +/* Delete Validate order values */
-> > > > > > > +#define SHP_ACPI_BUS_DEL_VALIDATE_ORDER		0	/* must be first */
-> > > > > > > +#define SHP_ACPI_RES_DEL_VALIDATE_ORDER		10
-> > > > > > > +
-> > > > > > > +/* Delete Execute order values */
-> > > > > > > +#define SHP_ACPI_BUS_DEL_EXECUTE_ORDER		100
-> > > > > > > +
-> > > > > > > +/* Delete Commit order values */
-> > > > > > > +#define SHP_ACPI_BUS_DEL_COMMIT_ORDER		100
-> > > > > > > +
-> > > > > > > +#endif	/* _ACPI_SYS_HOTPLUG_H */
-> > > > > > > --
-> > > > > > 
-> > > > > > Why did you use the particular values above?
-> > > > > 
-> > > > > The ordering values above are used to define the relative order among
-> > > > > handlers.  For instance, the 100 for SHP_ACPI_BUS_DEL_EXECUTE_ORDER can
-> > > > > potentially be 21 since it is still larger than 20 for
-> > > > > SHP_MEM_DEL_EXECUTE_ORDER defined in linux/sys_hotplug.h.  I picked 100
-> > > > > so that more platform-neutral handlers can be added in between 20 and
-> > > > > 100 in future.
-> > > > 
-> > > > I thought so, but I don't think it's a good idea to add gaps like this.
-> > > 
-> > > OK, I will use an equal gap of 10 for all values.  So, the 100 in the
-> > > above example will be changed to 30.  
-> > 
-> > I wonder why you want to have those gaps at all.
-> > 
-> > Anyway, this is just a small detail and it doesn't mean I don't have more
-> > comments.  I just need some more time to get the big picture idea of how this
-> > is supposed to work and perhaps Greg will have some remarks too.
-> 
-> Yes, give me a few days to catch up on other patches before I get the
-> chance to review these.
+Don't use cell-index from device tree, obtain the PSC number
+from PSCx register offset.
 
-That's great!  Thanks Greg!
--Toshi
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
+---
+ arch/powerpc/platforms/512x/clock.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/arch/powerpc/platforms/512x/clock.c b/arch/powerpc/platforms/512x/clock.c
+index 9f771e0..d0095c8 100644
+--- a/arch/powerpc/platforms/512x/clock.c
++++ b/arch/powerpc/platforms/512x/clock.c
+@@ -680,13 +680,12 @@ static void psc_calc_rate(struct clk *clk, int pscnum, struct device_node *np)
+ static void psc_clks_init(void)
+ {
+ 	struct device_node *np;
+-	const u32 *cell_index;
+ 	struct platform_device *ofdev;
++	u32 reg;
+ 
+ 	for_each_compatible_node(np, NULL, "fsl,mpc5121-psc") {
+-		cell_index = of_get_property(np, "cell-index", NULL);
+-		if (cell_index) {
+-			int pscnum = *cell_index;
++		if (!of_property_read_u32(np, "reg", &reg)) {
++			int pscnum = (reg & 0xf00) >> 8;
+ 			struct clk *clk = psc_dev_clk(pscnum);
+ 
+ 			clk->flags = CLK_HAS_RATE | CLK_HAS_CTRL;
+-- 
+1.7.5.4
