@@ -1,17 +1,18 @@
 Return-Path: <B29397@freescale.com>
 Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (tx2ehsobe002.messaging.microsoft.com [65.55.88.12])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7650F2C00AA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 01:20:12 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 3C1922C00A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 01:21:21 +1100 (EST)
 From: Peter Chen <peter.chen@freescale.com>
 To: <shawn.guo@linaro.org>, <balbi@ti.com>, <kernel@pengutronix.de>,
  <gregkh@linuxfoundation.org>, <r58472@freescale.com>
-Subject: [PATCH v4 2/3] usb: fsl_mxc_udc: replace MX35_IO_ADDRESS to ioremap
-Date: Mon, 14 Jan 2013 22:16:08 +0800
-Message-ID: <1358172969-14898-3-git-send-email-peter.chen@freescale.com>
+Subject: [PATCH v4 3/3] ARM: i.MX clock: Change the connection-id for
+ fsl-usb2-udc
+Date: Mon, 14 Jan 2013 22:16:09 +0800
+Message-ID: <1358172969-14898-4-git-send-email-peter.chen@freescale.com>
 In-Reply-To: <1358172969-14898-1-git-send-email-peter.chen@freescale.com>
 References: <1358172969-14898-1-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
@@ -27,115 +28,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As mach/hardware.h is deleted, we can't visit platform code at driver.
-It has no phy driver to combine with this controller, so it has to use
-ioremap to map phy address as a workaround.
+As we use platform_device_id for fsl-usb2-udc driver, it needs to
+change clk connection-id, or the related devm_clk_get will be failed.
 
 Signed-off-by: Peter Chen <peter.chen@freescale.com>
 ---
- drivers/usb/gadget/fsl_mxc_udc.c  |   27 +++++++++++++++++++++------
- drivers/usb/gadget/fsl_udc_core.c |    4 +++-
- drivers/usb/gadget/fsl_usb2_udc.h |    4 ++--
- 3 files changed, 26 insertions(+), 9 deletions(-)
+ arch/arm/mach-imx/clk-imx25.c       |    6 +++---
+ arch/arm/mach-imx/clk-imx27.c       |    6 +++---
+ arch/arm/mach-imx/clk-imx31.c       |    6 +++---
+ arch/arm/mach-imx/clk-imx35.c       |    6 +++---
+ arch/arm/mach-imx/clk-imx51-imx53.c |    6 +++---
+ 5 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/usb/gadget/fsl_mxc_udc.c b/drivers/usb/gadget/fsl_mxc_udc.c
-index 6df45f7..e505d60 100644
---- a/drivers/usb/gadget/fsl_mxc_udc.c
-+++ b/drivers/usb/gadget/fsl_mxc_udc.c
-@@ -23,7 +23,8 @@ static struct clk *mxc_per_clk;
- static struct clk *mxc_ipg_clk;
- 
- /* workaround ENGcm09152 for i.MX35 */
--#define USBPHYCTRL_OTGBASE_OFFSET	0x608
-+#define MX35_USBPHYCTRL_OFFSET		0x600
-+#define USBPHYCTRL_OTGBASE_OFFSET	0x8
- #define USBPHYCTRL_EVDO			(1 << 23)
- 
- int fsl_udc_clk_init(enum fsl_udc_type devtype, struct platform_device *pdev)
-@@ -77,28 +78,42 @@ eclkrate:
- 	return ret;
- }
- 
--void fsl_udc_clk_finalize(enum fsl_udc_type devtype,
-+int fsl_udc_clk_finalize(enum fsl_udc_type devtype,
- 	struct platform_device *pdev)
- {
- 	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
-+	int ret = 0;
-+
- 	if (devtype == IMX35_UDC) {
- 		unsigned int v;
-+		struct resource *res = platform_get_resource
-+			(pdev, IORESOURCE_MEM, 0);
-+		void __iomem *phy_regs = ioremap(res->start +
-+						MX35_USBPHYCTRL_OFFSET, 512);
-+		if (!phy_regs) {
-+			dev_err(&pdev->dev, "ioremap for phy address fails\n");
-+			ret = -EINVAL;
-+			goto ioremap_err;
-+		}
- 
- 		/* workaround ENGcm09152 for i.MX35 */
- 		if (pdata->workaround & FLS_USB2_WORKAROUND_ENGCM09152) {
--			v = readl(MX35_IO_ADDRESS(MX35_USB_BASE_ADDR +
--					USBPHYCTRL_OTGBASE_OFFSET));
-+			v = readl(phy_regs + USBPHYCTRL_OTGBASE_OFFSET);
- 			writel(v | USBPHYCTRL_EVDO,
--				MX35_IO_ADDRESS(MX35_USB_BASE_ADDR +
--					USBPHYCTRL_OTGBASE_OFFSET));
-+				phy_regs + USBPHYCTRL_OTGBASE_OFFSET);
- 		}
-+
-+		iounmap(phy_regs);
- 	}
- 
-+ioremap_err:
- 	/* ULPI transceivers don't need usbpll */
- 	if (pdata->phy_mode == FSL_USB2_PHY_ULPI) {
- 		clk_disable_unprepare(mxc_per_clk);
- 		mxc_per_clk = NULL;
- 	}
-+
-+	return ret;
- }
- 
- void fsl_udc_clk_release(void)
-diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-index c32119b..4391d49 100644
---- a/drivers/usb/gadget/fsl_udc_core.c
-+++ b/drivers/usb/gadget/fsl_udc_core.c
-@@ -2544,7 +2544,9 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
- 		dr_controller_setup(udc_controller);
- 	}
- 
--	fsl_udc_clk_finalize(udc_controller->devtype, pdev);
-+	ret = fsl_udc_clk_finalize(udc_controller->devtype, pdev);
-+	if (ret)
-+		goto err_free_irq;
- 
- 	/* Setup gadget structure */
- 	udc_controller->gadget.ops = &fsl_gadget_ops;
-diff --git a/drivers/usb/gadget/fsl_usb2_udc.h b/drivers/usb/gadget/fsl_usb2_udc.h
-index bc1f6d0..7ead5f7 100644
---- a/drivers/usb/gadget/fsl_usb2_udc.h
-+++ b/drivers/usb/gadget/fsl_usb2_udc.h
-@@ -594,7 +594,7 @@ static inline struct ep_queue_head *get_qh_by_ep(struct fsl_ep *ep)
- struct platform_device;
- #ifdef CONFIG_ARCH_MXC
- int fsl_udc_clk_init(enum fsl_udc_type devtype, struct platform_device *pdev);
--void fsl_udc_clk_finalize(enum fsl_udc_type devtype,
-+int fsl_udc_clk_finalize(enum fsl_udc_type devtype,
- 		struct platform_device *pdev);
- void fsl_udc_clk_release(void);
- #else
-@@ -603,7 +603,7 @@ static inline int fsl_udc_clk_init(enum fsl_udc_type devtype,
- {
- 	return 0;
- }
--static inline void fsl_udc_clk_finalize(enum fsl_udc_type devtype,
-+static inline int fsl_udc_clk_finalize(enum fsl_udc_type devtype,
- 		struct platform_device *pdev)
- {
- }
+diff --git a/arch/arm/mach-imx/clk-imx25.c b/arch/arm/mach-imx/clk-imx25.c
+index b197aa7..67e353d 100644
+--- a/arch/arm/mach-imx/clk-imx25.c
++++ b/arch/arm/mach-imx/clk-imx25.c
+@@ -254,9 +254,9 @@ int __init mx25_clocks_init(void)
+ 	clk_register_clkdev(clk[ipg], "ipg", "mxc-ehci.2");
+ 	clk_register_clkdev(clk[usbotg_ahb], "ahb", "mxc-ehci.2");
+ 	clk_register_clkdev(clk[usb_div], "per", "mxc-ehci.2");
+-	clk_register_clkdev(clk[ipg], "ipg", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[usbotg_ahb], "ahb", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
++	clk_register_clkdev(clk[ipg], "ipg", "imx-udc-mx25");
++	clk_register_clkdev(clk[usbotg_ahb], "ahb", "imx-udc-mx25");
++	clk_register_clkdev(clk[usb_div], "per", "imx-udc-mx25");
+ 	clk_register_clkdev(clk[nfc_ipg_per], NULL, "imx25-nand.0");
+ 	/* i.mx25 has the i.mx35 type cspi */
+ 	clk_register_clkdev(clk[cspi1_ipg], NULL, "imx35-cspi.0");
+diff --git a/arch/arm/mach-imx/clk-imx27.c b/arch/arm/mach-imx/clk-imx27.c
+index 4c1d1e4..1ffe3b5 100644
+--- a/arch/arm/mach-imx/clk-imx27.c
++++ b/arch/arm/mach-imx/clk-imx27.c
+@@ -236,9 +236,9 @@ int __init mx27_clocks_init(unsigned long fref)
+ 	clk_register_clkdev(clk[lcdc_ahb_gate], "ahb", "imx21-fb.0");
+ 	clk_register_clkdev(clk[csi_ahb_gate], "ahb", "imx27-camera.0");
+ 	clk_register_clkdev(clk[per4_gate], "per", "imx27-camera.0");
+-	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[usb_ahb_gate], "ahb", "fsl-usb2-udc");
++	clk_register_clkdev(clk[usb_div], "per", "imx-udc-mx27");
++	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "imx-udc-mx27");
++	clk_register_clkdev(clk[usb_ahb_gate], "ahb", "imx-udc-mx27");
+ 	clk_register_clkdev(clk[usb_div], "per", "mxc-ehci.0");
+ 	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "mxc-ehci.0");
+ 	clk_register_clkdev(clk[usb_ahb_gate], "ahb", "mxc-ehci.0");
+diff --git a/arch/arm/mach-imx/clk-imx31.c b/arch/arm/mach-imx/clk-imx31.c
+index 8be64e0..ef66eaf 100644
+--- a/arch/arm/mach-imx/clk-imx31.c
++++ b/arch/arm/mach-imx/clk-imx31.c
+@@ -139,9 +139,9 @@ int __init mx31_clocks_init(unsigned long fref)
+ 	clk_register_clkdev(clk[usb_div_post], "per", "mxc-ehci.2");
+ 	clk_register_clkdev(clk[usb_gate], "ahb", "mxc-ehci.2");
+ 	clk_register_clkdev(clk[ipg], "ipg", "mxc-ehci.2");
+-	clk_register_clkdev(clk[usb_div_post], "per", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[usb_gate], "ahb", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[ipg], "ipg", "fsl-usb2-udc");
++	clk_register_clkdev(clk[usb_div_post], "per", "imx-udc-mx31");
++	clk_register_clkdev(clk[usb_gate], "ahb", "imx-udc-mx31");
++	clk_register_clkdev(clk[ipg], "ipg", "imx-udc-mx31");
+ 	clk_register_clkdev(clk[csi_gate], NULL, "mx3-camera.0");
+ 	/* i.mx31 has the i.mx21 type uart */
+ 	clk_register_clkdev(clk[uart1_gate], "per", "imx21-uart.0");
+diff --git a/arch/arm/mach-imx/clk-imx35.c b/arch/arm/mach-imx/clk-imx35.c
+index 66f3d65..69fe9c8 100644
+--- a/arch/arm/mach-imx/clk-imx35.c
++++ b/arch/arm/mach-imx/clk-imx35.c
+@@ -251,9 +251,9 @@ int __init mx35_clocks_init()
+ 	clk_register_clkdev(clk[usb_div], "per", "mxc-ehci.2");
+ 	clk_register_clkdev(clk[ipg], "ipg", "mxc-ehci.2");
+ 	clk_register_clkdev(clk[usbotg_gate], "ahb", "mxc-ehci.2");
+-	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[ipg], "ipg", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[usbotg_gate], "ahb", "fsl-usb2-udc");
++	clk_register_clkdev(clk[usb_div], "per", "imx-udc-mx35");
++	clk_register_clkdev(clk[ipg], "ipg", "imx-udc-mx35");
++	clk_register_clkdev(clk[usbotg_gate], "ahb", "imx-udc-mx35");
+ 	clk_register_clkdev(clk[wdog_gate], NULL, "imx2-wdt.0");
+ 	clk_register_clkdev(clk[nfc_div], NULL, "imx25-nand.0");
+ 	clk_register_clkdev(clk[csi_gate], NULL, "mx3-camera.0");
+diff --git a/arch/arm/mach-imx/clk-imx51-imx53.c b/arch/arm/mach-imx/clk-imx51-imx53.c
+index 579023f..fb7cb84 100644
+--- a/arch/arm/mach-imx/clk-imx51-imx53.c
++++ b/arch/arm/mach-imx/clk-imx51-imx53.c
+@@ -269,9 +269,9 @@ static void __init mx5_clocks_common_init(unsigned long rate_ckil,
+ 	clk_register_clkdev(clk[usboh3_per_gate], "per", "mxc-ehci.2");
+ 	clk_register_clkdev(clk[usboh3_gate], "ipg", "mxc-ehci.2");
+ 	clk_register_clkdev(clk[usboh3_gate], "ahb", "mxc-ehci.2");
+-	clk_register_clkdev(clk[usboh3_per_gate], "per", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[usboh3_gate], "ipg", "fsl-usb2-udc");
+-	clk_register_clkdev(clk[usboh3_gate], "ahb", "fsl-usb2-udc");
++	clk_register_clkdev(clk[usboh3_per_gate], "per", "imx-udc-mx51");
++	clk_register_clkdev(clk[usboh3_gate], "ipg", "imx-udc-mx51");
++	clk_register_clkdev(clk[usboh3_gate], "ahb", "imx-udc-mx51");
+ 	clk_register_clkdev(clk[nfc_gate], NULL, "imx51-nand");
+ 	clk_register_clkdev(clk[ssi1_ipg_gate], NULL, "imx-ssi.0");
+ 	clk_register_clkdev(clk[ssi2_ipg_gate], NULL, "imx-ssi.1");
 -- 
 1.7.0.4
