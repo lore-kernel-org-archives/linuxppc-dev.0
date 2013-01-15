@@ -1,19 +1,29 @@
-Return-Path: <vneethv@gmail.com>
-Received: from mail-vc0-f170.google.com (mail-vc0-f170.google.com
- [209.85.220.170])
+Return-Path: <arnaldo.melo@gmail.com>
+Received: from mail-ye0-f173.google.com (mail-ye0-f173.google.com
+ [209.85.213.173])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ABFF62C0090
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2013 00:05:02 +1100 (EST)
-Received: by mail-vc0-f170.google.com with SMTP id fl11so64458vcb.29
- for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2013 05:05:00 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id D8A272C007E
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2013 05:58:10 +1100 (EST)
+Received: by mail-ye0-f173.google.com with SMTP id l5so90531yen.18
+ for <linuxppc-dev@ozlabs.org>; Tue, 15 Jan 2013 10:58:08 -0800 (PST)
+Sender: Arnaldo Carvalho de Melo <arnaldo.melo@gmail.com>
+Date: Tue, 15 Jan 2013 15:57:59 -0300
+From: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 6/6][v3] perf: Document the ABI of perf sysfs entries
+Message-ID: <20130115185759.GG5826@ghostprotocols.net>
+References: <20130110010347.GA32590@us.ibm.com>
+ <20130110010703.GF32590@us.ibm.com>
 MIME-Version: 1.0
-From: Vineeth <vneethv@gmail.com>
-Date: Tue, 15 Jan 2013 18:34:39 +0530
-Message-ID: <CAFbQSaDmDfcsV03w5jOX-cSC-jr4d4GXk8rkzxs5QZeRd2z+-Q@mail.gmail.com>
-Subject: Issue with USB Mass storage on P5020
-To: linuxppc-dev@ozlabs.org
-Content-Type: multipart/alternative; boundary=14dae9d24a1cbf510304d3536803
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130110010703.GF32590@us.ibm.com>
+Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ robert.richter@amd.com, Greg KH <greg@kroah.com>,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,104 +33,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---14dae9d24a1cbf510304d3536803
-Content-Type: text/plain; charset=ISO-8859-1
+Em Wed, Jan 09, 2013 at 05:07:03PM -0800, Sukadev Bhattiprolu escreveu:
+> [PATCH 6/6][v3] perf: Document the ABI of perf sysfs entries
+> 
+> This patchset addes two new sets of files to sysfs:
+> 
+> 	- generic and POWER-specific perf events in /sys/devices/cpu/events/
+> 	- perf event config format in /sys/devices/cpu/format/event
+> 
+> Document the format of these files which would become part of the ABI.
+> 
+> Changelog[v3]:
+> 	[Greg KH] Include ABI documentation.
 
-When i connect my 500GB seagate HD on a P5020DS, its not getting mounted.
+Jiri, can I have your ack on this one too?
 
-This is the dmesg log;
-am i supposed to change some configuration ?
+Greg, all ok now?
 
-/ # dmesg
-
-usb 1-1: new high speed USB device using fsl-ehci and address 5
-usb 1-1: configuration #1 chosen from 1 choice
-scsi2 : SCSI emulation for USB Mass Storage devices
-usb-storage: device found at 5
-usb-storage: waiting for device to settle before scanning
-
-do_scsi_scan_host
-
-scsi 2:0:0:0: Direct-Access     Seagate  Expansion        0219 PQ: 0 ANSI: 6
-sd 2:0:0:0: Attached scsi generic sg0 type 0
-usb 1-1: USB disconnect, address 5
-sd 2:0:0:0: [sda] the result =  65536
-usb-storage: device scan complete
-sd 2:0:0:0: [sda] sense_valid = 0
-sd 2:0:0:0: [sda] the result =  65536
-sd 2:0:0:0: [sda] sense_valid = 0
-sd 2:0:0:0: [sda] the result =  65536
-sd 2:0:0:0: [sda] sense_valid = 0
-*sd 2:0:0:0: [sda] READ CAPACITY failed*
-sd 2:0:0:0: [sda] Result: hostbyte=0x01 driverbyte=0x00
-sd 2:0:0:0: [sda] Sense not available.
-sd 2:0:0:0: [sda] Write Protect is off
-sd 2:0:0:0: [sda] Mode Sense: ea 0d 20 84
-sd 2:0:0:0: [sda] Assuming drive cache: write through
-sd 2:0:0:0: [sda] the result =  65536
-sd 2:0:0:0: [sda] sense_valid = 0
-sd 2:0:0:0: [sda] the result =  65536
-sd 2:0:0:0: [sda] sense_valid = 0
-sd 2:0:0:0: [sda] the result =  65536
-sd 2:0:0:0: [sda] sense_valid = 0
-*sd 2:0:0:0: [sda] READ CAPACITY failed  *
-sd 2:0:0:0: [sda] Result: hostbyte=0x01 driverbyte=0x00
-sd 2:0:0:0: [sda] Sense not available.
-sd 2:0:0:0: [sda] Assuming drive cache: write through
-sd 2:0:0:0: [sda] Attached SCSI disk
-/ #
-/ #
-/ #
--- VISUAL --
-
---14dae9d24a1cbf510304d3536803
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-When i connect my 500GB seagate HD on a P5020DS, its not getting mounted.<b=
-r><br>This is the dmesg log;<br>am i supposed to change some configuration =
-?<br><br>/ # dmesg<br><br>usb 1-1: new high speed USB device using fsl-ehci=
- and address 5<br>
-
-
-usb 1-1: configuration #1 chosen from 1 choice<br>scsi2 : SCSI emulation fo=
-r USB Mass Storage devices<br>usb-storage: device found at 5<br>usb-storage=
-: waiting for device to settle before scanning<br><br>do_scsi_scan_host<br>
-
-
-<br>scsi 2:0:0:0: Direct-Access=A0=A0=A0=A0 Seagate=A0 Expansion=A0=A0=A0=
-=A0=A0=A0=A0 0219 PQ: 0 ANSI: 6<br>sd 2:0:0:0: Attached scsi generic sg0 ty=
-pe 0<br>usb 1-1: USB disconnect, address 5<br>sd 2:0:0:0: [sda] the result =
-=3D=A0 65536<br>usb-storage: device scan complete<br>
-
-
-sd 2:0:0:0: [sda] sense_valid =3D 0<br>sd 2:0:0:0: [sda] the result =3D=A0 =
-65536<br>sd 2:0:0:0: [sda] sense_valid =3D 0<br>sd 2:0:0:0: [sda] the resul=
-t =3D=A0 65536<br>sd 2:0:0:0: [sda] sense_valid =3D 0<br><b>sd 2:0:0:0: [sd=
-a] READ CAPACITY failed</b><br>
-
-
-sd 2:0:0:0: [sda] Result: hostbyte=3D0x01 driverbyte=3D0x00<br>sd 2:0:0:0: =
-[sda] Sense not available.<br>sd 2:0:0:0: [sda] Write Protect is off<br>sd =
-2:0:0:0: [sda] Mode Sense: ea 0d 20 84<br>sd 2:0:0:0: [sda] Assuming drive =
-cache: write through<br>
-
-
-sd 2:0:0:0: [sda] the result =3D=A0 65536<br>sd 2:0:0:0: [sda] sense_valid =
-=3D 0<br>sd 2:0:0:0: [sda] the result =3D=A0 65536=A0 <br>sd 2:0:0:0: [sda]=
- sense_valid =3D 0=A0 <br>sd 2:0:0:0: [sda] the result =3D=A0 65536=A0 <br>=
-sd 2:0:0:0: [sda] sense_valid =3D 0=A0 <br>
-
-
-<b>sd 2:0:0:0: [sda] READ CAPACITY failed=A0 </b><br>sd 2:0:0:0: [sda] Resu=
-lt: hostbyte=3D0x01 driverbyte=3D0x00 <br>sd 2:0:0:0: [sda] Sense not avail=
-able. <br>sd 2:0:0:0: [sda] Assuming drive cache: write through <br>sd 2:0:=
-0:0: [sda] Attached SCSI disk <br>
-
-
-/ #=A0 <br>/ #=A0 <br>/ #<br>-- VISUAL --=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0<div id=3D":2ut">=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=
-=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 <br></div>
-
---14dae9d24a1cbf510304d3536803--
+- Arnaldo
+ 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+>  Documentation/ABI/stable/sysfs-devices-cpu-events |   54 +++++++++++++++++++++
+>  Documentation/ABI/stable/sysfs-devices-cpu-format |   27 ++++++++++
+>  2 files changed, 81 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/ABI/stable/sysfs-devices-cpu-format
+> 
+> diff --git a/Documentation/ABI/stable/sysfs-devices-cpu-events b/Documentation/ABI/stable/sysfs-devices-cpu-events
+> index e69de29..f37d542 100644
+> --- a/Documentation/ABI/stable/sysfs-devices-cpu-events
+> +++ b/Documentation/ABI/stable/sysfs-devices-cpu-events
+> @@ -0,0 +1,54 @@
+> +What:		/sys/devices/cpu/events/
+> +		/sys/devices/cpu/events/branch-misses
+> +		/sys/devices/cpu/events/cache-references
+> +		/sys/devices/cpu/events/cache-misses
+> +		/sys/devices/cpu/events/stalled-cycles-frontend
+> +		/sys/devices/cpu/events/branch-instructions
+> +		/sys/devices/cpu/events/stalled-cycles-backend
+> +		/sys/devices/cpu/events/instructions
+> +		/sys/devices/cpu/events/cpu-cycles
+> +
+> +Date:		2013/01/08
+> +
+> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +
+> +Description:	Generic performance monitoring events
+> +
+> +		A collection of performance monitoring events that may be
+> +		supported by many/most CPUs. These events can be monitored
+> +		using the 'perf(1)' tool.
+> +
+> +		The contents of each file would look like:
+> +
+> +			event=0xNNNN
+> +
+> +		where 'N' is a hex digit.
+> +
+> +
+> +What: 		/sys/devices/cpu/events/PM_LD_MISS_L1
+> +		/sys/devices/cpu/events/PM_LD_REF_L1
+> +		/sys/devices/cpu/events/PM_CYC
+> +		/sys/devices/cpu/events/PM_BRU_FIN
+> +		/sys/devices/cpu/events/PM_GCT_NOSLOT_CYC
+> +		/sys/devices/cpu/events/PM_BRU_MPRED
+> +		/sys/devices/cpu/events/PM_INST_CMPL
+> +		/sys/devices/cpu/events/PM_CMPLU_STALL
+> +
+> +Date:		2013/01/08
+> +
+> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +		Linux Powerpc mailing list <linuxppc-dev@ozlabs.org>
+> +
+> +Description:	POWER specific performance monitoring events
+> +
+> +		A collection of performance monitoring events that may be
+> +		supported by the POWER CPU. These events can be monitored
+> +		using the 'perf(1)' tool.
+> +
+> +		These events may not be supported by other CPUs.
+> +
+> +		The contents of each file would look like:
+> +
+> +			event=0xNNNN
+> +
+> +		where 'N' is a hex digit.
+> diff --git a/Documentation/ABI/stable/sysfs-devices-cpu-format b/Documentation/ABI/stable/sysfs-devices-cpu-format
+> new file mode 100644
+> index 0000000..b15cfb2
+> --- /dev/null
+> +++ b/Documentation/ABI/stable/sysfs-devices-cpu-format
+> @@ -0,0 +1,27 @@
+> +What:		/sys/devices/cpu/format/
+> +		/sys/devices/cpu/format/event
+> +
+> +Date:		2013/01/08
+> +
+> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +
+> +Description:	Format of performance monitoring events
+> +
+> +		Each CPU/architecture may use different format to represent
+> +		the perf event.  The 'event' file describes the configuration
+> +		format of the performance monitoring event on the CPU/system.
+> +
+> +		The contents of each file would look like:
+> +
+> +			config:m-n
+> +
+> +		where m and n are the starting and ending bits that are
+> +		used to represent the event.
+> +
+> +		For example, on POWER,
+> +
+> +			$ cat /sys/devices/cpu/format/event
+> +			config:0-20
+> +
+> +		meaning that POWER uses the first 20-bits to represent a perf
+> +		event.
+> -- 
+> 1.7.1
