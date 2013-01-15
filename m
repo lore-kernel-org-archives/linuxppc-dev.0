@@ -1,31 +1,30 @@
 Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp04.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AE0712C009F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:39:13 +1100 (EST)
+ (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0D21A2C009F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:39:14 +1100 (EST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Tue, 15 Jan 2013 17:31:30 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4E7A23578051
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:39:06 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0F7d5wc40566934
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:39:05 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0F7d52O008375
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:39:06 +1100
+ Tue, 15 Jan 2013 17:34:31 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id ADD4A2CE804A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:39:09 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0F7RNCS4260182
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:27:23 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0F7d8OF007243
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:39:09 +1100
 From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] irq: Add hw continuous IRQs map to virtual continuous
- IRQs support
-Date: Tue, 15 Jan 2013 15:38:55 +0800
-Message-Id: <1358235536-32741-3-git-send-email-qiudayu@linux.vnet.ibm.com>
+Subject: [PATCH 3/3] powerpc/pci: Enable pSeries multiple MSI feature
+Date: Tue, 15 Jan 2013 15:38:56 +0800
+Message-Id: <1358235536-32741-4-git-send-email-qiudayu@linux.vnet.ibm.com>
 In-Reply-To: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
 References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
 Cc: tglx@linutronix.de, Mike Qiu <qiudayu@linux.vnet.ibm.com>
@@ -38,116 +37,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Adding a function irq_create_mapping_many() which can associate
-multiple MSIs to a continous irq mapping.
+PCI devices support MSI, MSIX as well as multiple MSI.
+But pSeries does not support multiple MSI yet.
 
-This is needed to enable multiple MSI support for pSeries.
+This patch enable multiple MSI feature in pSeries.
 
 Signed-off-by: Mike Qiu <qiudayu@linux.vnet.ibm.com>
 ---
- include/linux/irq.h       |    2 +
- include/linux/irqdomain.h |    3 ++
- kernel/irq/irqdomain.c    |   61 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 66 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/msi.c            |    4 --
+ arch/powerpc/platforms/pseries/msi.c |   62 ++++++++++++++++++++++++++++++++-
+ 2 files changed, 60 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 60ef45b..e00a7ec 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -592,6 +592,8 @@ int __irq_alloc_descs(int irq, unsigned int from, unsigned int cnt, int node,
- #define irq_alloc_desc_from(from, node)		\
- 	irq_alloc_descs(-1, from, 1, node)
+diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
+index 8bbc12d..46b1470 100644
+--- a/arch/powerpc/kernel/msi.c
++++ b/arch/powerpc/kernel/msi.c
+@@ -20,10 +20,6 @@ int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
+ 		return -ENOSYS;
+ 	}
  
-+#define irq_alloc_desc_n(nevc, node)		\
-+	irq_alloc_descs(-1, 0, nevc, node)
- void irq_free_descs(unsigned int irq, unsigned int cnt);
- int irq_reserve_irqs(unsigned int from, unsigned int cnt);
- 
-diff --git a/include/linux/irqdomain.h b/include/linux/irqdomain.h
-index 0d5b17b..831dded 100644
---- a/include/linux/irqdomain.h
-+++ b/include/linux/irqdomain.h
-@@ -168,6 +168,9 @@ extern int irq_create_strict_mappings(struct irq_domain *domain,
- 				      unsigned int irq_base,
- 				      irq_hw_number_t hwirq_base, int count);
- 
-+extern int irq_create_mapping_many(struct irq_domain *domain,
-+					irq_hw_number_t hwirq_base, int count);
-+
- static inline int irq_create_identity_mapping(struct irq_domain *host,
- 					      irq_hw_number_t hwirq)
+-	/* PowerPC doesn't support multiple MSI yet */
+-	if (type == PCI_CAP_ID_MSI && nvec > 1)
+-		return 1;
+-
+ 	if (ppc_md.msi_check_device) {
+ 		pr_debug("msi: Using platform check routine.\n");
+ 		return ppc_md.msi_check_device(dev, nvec, type);
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index e5b0847..6633b18 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -132,13 +132,17 @@ static int rtas_query_irq_number(struct pci_dn *pdn, int offset)
+ static void rtas_teardown_msi_irqs(struct pci_dev *pdev)
  {
-diff --git a/kernel/irq/irqdomain.c b/kernel/irq/irqdomain.c
-index 96f3a1d..38648e6 100644
---- a/kernel/irq/irqdomain.c
-+++ b/kernel/irq/irqdomain.c
-@@ -636,6 +636,67 @@ int irq_create_strict_mappings(struct irq_domain *domain, unsigned int irq_base,
- }
- EXPORT_SYMBOL_GPL(irq_create_strict_mappings);
+ 	struct msi_desc *entry;
++	int nvec, i;
  
-+/**
-+ * irq_create_mapping_many - Map a range of hw IRQs to a range of virtual IRQs
-+ * @domain: domain owning the interrupt range
-+ * @hwirq_base: beginning of continuous hardware IRQ range
-+ * @count: Number of interrupts to map
-+ *
-+ * This routine is used for allocating and mapping a range of hardware
-+ * irqs to virtual IRQs where the virtual irq numbers are not at pre-defined
-+ * locations.
-+ *
-+ * Greater than 0 is returned upon success, while any failure to establish a
-+ * static mapping is treated as an error.
-+ */
-+int irq_create_mapping_many(struct irq_domain *domain,
-+		irq_hw_number_t hwirq_base, int count)
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
+ 		if (entry->irq == NO_IRQ)
+ 			continue;
+ 
+ 		irq_set_msi_desc(entry->irq, NULL);
+-		irq_dispose_mapping(entry->irq);
++		nvec = entry->msi_attrib.is_msix ? 1 : 1 <<
++					entry->msi_attrib.multiple;
++		for (i = 0; i < nvec; i++)
++			irq_dispose_mapping(entry->irq + i);
+ 	}
+ 
+ 	rtas_disable_msi(pdev);
+@@ -392,6 +396,55 @@ static int check_msix_entries(struct pci_dev *pdev)
+ 	return 0;
+ }
+ 
++static int setup_multiple_msi_irqs(struct pci_dev *pdev, int nvec)
 +{
-+	int ret, irq_base;
-+	int virq, i;
++	struct pci_dn *pdn;
++	int hwirq, virq_base, i, hwirq_base = 0;
++	struct msi_desc *entry;
++	struct msi_msg msg;
 +
-+	pr_debug("irq_create_mapping(0x%p, 0x%lx)\n", domain, hwirq_base);
++	pdn = get_pdn(pdev);
++	entry = list_entry(pdev->msi_list.next, typeof(*entry), list);
 +
-+	/* Look for default domain if nececssary */
-+	if (!domain)
-+		domain = irq_default_domain;
-+	if (!domain) {
-+		pr_warn("irq_create_mapping called for NULL domain, hwirq=%lx\n"
-+			, hwirq_base);
-+		WARN_ON(1);
-+		return 0;
-+	}
-+	pr_debug("-> using domain @%p\n", domain);
++	/*
++	 * Get the hardware IRQ base and ensure the retrieved
++	 * hardware IRQs are continuous
++	 */
++	for (i = 0; i < nvec; i++) {
++		hwirq = rtas_query_irq_number(pdn, i);
++		if (i == 0)
++			hwirq_base = hwirq;
 +
-+	/* For IRQ_DOMAIN_MAP_LEGACY, get the first virtual interrupt number */
-+	if (domain->revmap_type == IRQ_DOMAIN_MAP_LEGACY)
-+		return irq_domain_legacy_revmap(domain, hwirq_base);
-+
-+	/* Check if mapping already exists */
-+	for (i = 0; i < count; i++) {
-+		virq = irq_find_mapping(domain, hwirq_base+i);
-+		if (virq) {
-+			pr_debug("existing mapping on virq %d,"
-+					" now dispose it first\n", virq);
-+			irq_dispose_mapping(virq);
++		if (hwirq < 0 || hwirq != (hwirq_base + i)) {
++			pr_debug("rtas_msi: Failure to get %d IRQs on"
++				"PCI device %04x:%02x:%02x.%01x\n", nvec,
++				pci_domain_nr(pdev->bus), pdev->bus->number,
++				PCI_SLOT(pdev->devfn), PCI_FUNC(pdev->devfn));
++			return hwirq;
 +		}
 +	}
 +
-+	/* Allocate the continuous virtual interrupt numbers */
-+	irq_base = irq_alloc_desc_n(count, of_node_to_nid(domain->of_node));
-+	if (unlikely(irq_base < 0))
-+		return  irq_base;
-+
-+	ret = irq_domain_associate_many(domain, irq_base, hwirq_base, count);
-+	if (unlikely(ret < 0)) {
-+		irq_free_descs(irq_base, count);
-+		return ret;
++	virq_base = irq_create_mapping_many(NULL, hwirq_base, nvec);
++	if (virq_base <= 0) {
++		pr_debug("rtas_msi: Failure to map IRQs (%d, %d) "
++			"for PCI device %04x:%02x:%02x.%01x\n",
++			hwirq_base, nvec, pci_domain_nr(pdev->bus),
++			pdev->bus->number, PCI_SLOT(pdev->devfn),
++			PCI_FUNC(pdev->devfn));
++		return -ENOSPC;
 +	}
 +
-+	return irq_base;
-+}
-+EXPORT_SYMBOL_GPL(irq_create_mapping_many);
++	entry->msi_attrib.multiple = ilog2(nvec & 0x3f);
++	irq_set_multiple_msi_desc(virq_base, nvec, entry);
++	for (i = 0; i < nvec; i++) {
++		/* Read config space back so we can restore after reset */
++		read_msi_msg(virq_base + i, &msg);
++		entry->msg = msg;
++	}
 +
- unsigned int irq_create_of_mapping(struct device_node *controller,
- 				   const u32 *intspec, unsigned int intsize)
++	return 0;
++}
++
+ static int rtas_setup_msi_irqs(struct pci_dev *pdev, int nvec_in, int type)
  {
+ 	struct pci_dn *pdn;
+@@ -444,11 +497,16 @@ again:
+ 		return rc;
+ 	}
+ 
++	if (type == PCI_CAP_ID_MSI && nvec > 1) {
++		rc = setup_multiple_msi_irqs(pdev, nvec);
++		return rc;
++	}
++
+ 	i = 0;
+ 	list_for_each_entry(entry, &pdev->msi_list, list) {
+ 		hwirq = rtas_query_irq_number(pdn, i++);
+ 		if (hwirq < 0) {
+-			pr_debug("rtas_msi: error (%d) getting hwirq\n", rc);
++			pr_debug("rtas_msi: error (%d) getting hwirq\n", nvec);
+ 			return hwirq;
+ 		}
+ 
 -- 
 1.7.7.6
