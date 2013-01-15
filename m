@@ -1,24 +1,39 @@
-Return-Path: <B29397@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 21C482C0136
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 13:30:01 +1100 (EST)
-From: Peter Chen <peter.chen@freescale.com>
-To: <shawn.guo@linaro.org>, <balbi@ti.com>, <kernel@pengutronix.de>,
- <gregkh@linuxfoundation.org>, <r58472@freescale.com>
-Subject: [PATCH v5 3/3] ARM: i.MX clock: Change the connection-id for
- fsl-usb2-udc
-Date: Tue, 15 Jan 2013 10:29:35 +0800
-Message-ID: <1358216975-1404-4-git-send-email-peter.chen@freescale.com>
-In-Reply-To: <1358216975-1404-1-git-send-email-peter.chen@freescale.com>
-References: <1358216975-1404-1-git-send-email-peter.chen@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <zhong@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B10CB2C00A0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 17:59:40 +1100 (EST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
+ Tue, 15 Jan 2013 12:28:02 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 39EDF125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 12:29:47 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0F6xQa240960002
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 12:29:26 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0F6xSNe021430
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 17:59:28 +1100
+Message-ID: <1358233164.15371.2.camel@ThinkPad-T5421.cn.ibm.com>
+Subject: Re: 3.7-rc7: BUG: MAX_STACK_TRACE_ENTRIES too low!
+From: Li Zhong <zhong@linux.vnet.ibm.com>
+To: Christian Kujau <lists@nerdbynature.de>
+Date: Tue, 15 Jan 2013 14:59:24 +0800
+In-Reply-To: <alpine.DEB.2.01.1301121241340.7378@trent.utfs.org>
+References: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
+ <alpine.DEB.2.01.1211271916160.7378@trent.utfs.org>
+ <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
+ <alpine.DEB.2.01.1301121241340.7378@trent.utfs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,102 +43,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As we use platform_device_id for fsl-usb2-udc driver, it needs to
-change clk connection-id, or the related devm_clk_get will be failed.
+On Sat, 2013-01-12 at 12:43 -0800, Christian Kujau wrote:
+> On Wed, 28 Nov 2012 at 16:41, Li Zhong wrote:
+> > On Tue, 2012-11-27 at 19:22 -0800, Christian Kujau wrote:
+> > > On Tue, 27 Nov 2012 at 19:06, Christian Kujau wrote:
+> > > > the same thing[0] happened again in 3.7-rc7, after ~20h uptime:
+> > > 
+> > > I found the following on patchwork, but this seems to deal with powerpc64 
+> > > only, while this PowerBook G4 of mine is powerpc32:
+> > > 
+> > >   http://patchwork.ozlabs.org/patch/193414/
+> > > 
+> > > It looks related, but then again, I fail to parse assember...
+> > 
+> > Hi Christian, 
+> > 
+> > Would you please help to try the following fix? I don't have a powerpc32
+> > machine for test...
+> 
+> The patch hasn't made it into mainline yet. Any chance that this will be 
+> included in 3.8?
 
-Signed-off-by: Peter Chen <peter.chen@freescale.com>
----
- arch/arm/mach-imx/clk-imx25.c       |    6 +++---
- arch/arm/mach-imx/clk-imx27.c       |    6 +++---
- arch/arm/mach-imx/clk-imx31.c       |    6 +++---
- arch/arm/mach-imx/clk-imx35.c       |    6 +++---
- arch/arm/mach-imx/clk-imx51-imx53.c |    6 +++---
- 5 files changed, 15 insertions(+), 15 deletions(-)
+I don't know...
 
-diff --git a/arch/arm/mach-imx/clk-imx25.c b/arch/arm/mach-imx/clk-imx25.c
-index b197aa7..67e353d 100644
---- a/arch/arm/mach-imx/clk-imx25.c
-+++ b/arch/arm/mach-imx/clk-imx25.c
-@@ -254,9 +254,9 @@ int __init mx25_clocks_init(void)
- 	clk_register_clkdev(clk[ipg], "ipg", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usbotg_ahb], "ahb", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usb_div], "per", "mxc-ehci.2");
--	clk_register_clkdev(clk[ipg], "ipg", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usbotg_ahb], "ahb", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[ipg], "ipg", "imx-udc-mx25");
-+	clk_register_clkdev(clk[usbotg_ahb], "ahb", "imx-udc-mx25");
-+	clk_register_clkdev(clk[usb_div], "per", "imx-udc-mx25");
- 	clk_register_clkdev(clk[nfc_ipg_per], NULL, "imx25-nand.0");
- 	/* i.mx25 has the i.mx35 type cspi */
- 	clk_register_clkdev(clk[cspi1_ipg], NULL, "imx35-cspi.0");
-diff --git a/arch/arm/mach-imx/clk-imx27.c b/arch/arm/mach-imx/clk-imx27.c
-index 4c1d1e4..1ffe3b5 100644
---- a/arch/arm/mach-imx/clk-imx27.c
-+++ b/arch/arm/mach-imx/clk-imx27.c
-@@ -236,9 +236,9 @@ int __init mx27_clocks_init(unsigned long fref)
- 	clk_register_clkdev(clk[lcdc_ahb_gate], "ahb", "imx21-fb.0");
- 	clk_register_clkdev(clk[csi_ahb_gate], "ahb", "imx27-camera.0");
- 	clk_register_clkdev(clk[per4_gate], "per", "imx27-camera.0");
--	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usb_ahb_gate], "ahb", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[usb_div], "per", "imx-udc-mx27");
-+	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "imx-udc-mx27");
-+	clk_register_clkdev(clk[usb_ahb_gate], "ahb", "imx-udc-mx27");
- 	clk_register_clkdev(clk[usb_div], "per", "mxc-ehci.0");
- 	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "mxc-ehci.0");
- 	clk_register_clkdev(clk[usb_ahb_gate], "ahb", "mxc-ehci.0");
-diff --git a/arch/arm/mach-imx/clk-imx31.c b/arch/arm/mach-imx/clk-imx31.c
-index 8be64e0..ef66eaf 100644
---- a/arch/arm/mach-imx/clk-imx31.c
-+++ b/arch/arm/mach-imx/clk-imx31.c
-@@ -139,9 +139,9 @@ int __init mx31_clocks_init(unsigned long fref)
- 	clk_register_clkdev(clk[usb_div_post], "per", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usb_gate], "ahb", "mxc-ehci.2");
- 	clk_register_clkdev(clk[ipg], "ipg", "mxc-ehci.2");
--	clk_register_clkdev(clk[usb_div_post], "per", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usb_gate], "ahb", "fsl-usb2-udc");
--	clk_register_clkdev(clk[ipg], "ipg", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[usb_div_post], "per", "imx-udc-mx31");
-+	clk_register_clkdev(clk[usb_gate], "ahb", "imx-udc-mx31");
-+	clk_register_clkdev(clk[ipg], "ipg", "imx-udc-mx31");
- 	clk_register_clkdev(clk[csi_gate], NULL, "mx3-camera.0");
- 	/* i.mx31 has the i.mx21 type uart */
- 	clk_register_clkdev(clk[uart1_gate], "per", "imx21-uart.0");
-diff --git a/arch/arm/mach-imx/clk-imx35.c b/arch/arm/mach-imx/clk-imx35.c
-index 66f3d65..69fe9c8 100644
---- a/arch/arm/mach-imx/clk-imx35.c
-+++ b/arch/arm/mach-imx/clk-imx35.c
-@@ -251,9 +251,9 @@ int __init mx35_clocks_init()
- 	clk_register_clkdev(clk[usb_div], "per", "mxc-ehci.2");
- 	clk_register_clkdev(clk[ipg], "ipg", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usbotg_gate], "ahb", "mxc-ehci.2");
--	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
--	clk_register_clkdev(clk[ipg], "ipg", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usbotg_gate], "ahb", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[usb_div], "per", "imx-udc-mx35");
-+	clk_register_clkdev(clk[ipg], "ipg", "imx-udc-mx35");
-+	clk_register_clkdev(clk[usbotg_gate], "ahb", "imx-udc-mx35");
- 	clk_register_clkdev(clk[wdog_gate], NULL, "imx2-wdt.0");
- 	clk_register_clkdev(clk[nfc_div], NULL, "imx25-nand.0");
- 	clk_register_clkdev(clk[csi_gate], NULL, "mx3-camera.0");
-diff --git a/arch/arm/mach-imx/clk-imx51-imx53.c b/arch/arm/mach-imx/clk-imx51-imx53.c
-index 579023f..fb7cb84 100644
---- a/arch/arm/mach-imx/clk-imx51-imx53.c
-+++ b/arch/arm/mach-imx/clk-imx51-imx53.c
-@@ -269,9 +269,9 @@ static void __init mx5_clocks_common_init(unsigned long rate_ckil,
- 	clk_register_clkdev(clk[usboh3_per_gate], "per", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usboh3_gate], "ipg", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usboh3_gate], "ahb", "mxc-ehci.2");
--	clk_register_clkdev(clk[usboh3_per_gate], "per", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usboh3_gate], "ipg", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usboh3_gate], "ahb", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[usboh3_per_gate], "per", "imx-udc-mx51");
-+	clk_register_clkdev(clk[usboh3_gate], "ipg", "imx-udc-mx51");
-+	clk_register_clkdev(clk[usboh3_gate], "ahb", "imx-udc-mx51");
- 	clk_register_clkdev(clk[nfc_gate], NULL, "imx51-nand");
- 	clk_register_clkdev(clk[ssi1_ipg_gate], NULL, "imx-ssi.0");
- 	clk_register_clkdev(clk[ssi2_ipg_gate], NULL, "imx-ssi.1");
--- 
-1.7.0.4
+FYI, it is already in the next of ppc tree 
+http://git.kernel.org/?p=linux/kernel/git/benh/powerpc.git;a=shortlog;h=refs/heads/next
+
+I guess it would get into 3.9, at least. 
+
+Thanks, Zhong
+
+> 
+> Thanks,
+> Christian.
+> 
+> > ==============================================
+> > diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> > index 9499385..cadebfd 100644
+> > --- a/arch/powerpc/kernel/entry_32.S
+> > +++ b/arch/powerpc/kernel/entry_32.S
+> > @@ -439,6 +439,8 @@ ret_from_fork:
+> >  ret_from_kernel_thread:
+> >  	REST_NVGPRS(r1)
+> >  	bl	schedule_tail
+> > +	li	r3,0
+> > +	stw	r3,0(r1)
+> >  	mtlr	r14
+> >  	mr	r3,r15
+> >  	PPC440EP_ERR42
+> > ==============================================
+> > 
+> > > 
+> > > Christian.
+> > > 
+> > > > [40007.339487] [sched_delayed] sched: RT throttling activated
+> > > > [69731.388717] BUG: MAX_STACK_TRACE_ENTRIES too low!
+> > > > [69731.390371] turning off the locking correctness validator.
+> > > > [69731.391942] Call Trace:
+> > > > [69731.393525] [c9a61c10] [c0009064] show_stack+0x70/0x1bc (unreliable)
+> > > > [69731.395152] [c9a61c50] [c0077460] save_trace+0xfc/0x114
+> > > > [69731.396735] [c9a61c60] [c007be20] __lock_acquire+0x1568/0x19b8
+> > > > [69731.398296] [c9a61d00] [c007c2c0] lock_acquire+0x50/0x70
+> > > > [69731.399857] [c9a61d20] [c0550e28] _raw_spin_lock_irq+0x5c/0x78
+> > > > [69731.401419] [c9a61d40] [c054fb58] __schedule+0xd8/0x534
+> > > > [69731.402972] [c9a61da0] [c0550094] _cond_resched+0x50/0x68
+> > > > [69731.404527] [c9a61db0] [c0479908] dst_gc_task+0xbc/0x258
+> > > > [69731.406070] [c9a61e40] [c004eeb8] process_one_work+0x1f4/0x49c
+> > > > [69731.407585] [c9a61e80] [c004f644] worker_thread+0x14c/0x400
+> > > > [69731.409075] [c9a61eb0] [c0057634] kthread+0xbc/0xc0
+> > > > [69731.410521] [c9a61f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+> > > > [...repeated 54 times...]
+> > > > 
+> > > > Anyone knows what this is about?
+> > > > 
+> > > > Thanks,
+> > > > Christian.
+> > > > 
+> > > > [0] http://lkml.indiana.edu/hypermail/linux/kernel/1211.0/03025.html
+> > 
+> > 
+> > 
+> 
