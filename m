@@ -1,20 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CEFA72C007B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2013 05:17:21 +1100 (EST)
-Message-ID: <1358273835.2782.5.camel@pasglop>
-Subject: Re: [PATCH] powerpc: added DSCR support to ptrace
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Wed, 16 Jan 2013 05:17:15 +1100
-In-Reply-To: <1357885749-14042-1-git-send-email-aik@ozlabs.ru>
-References: <1357885749-14042-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id 2653A2C007C
+ for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2013 07:11:56 +1100 (EST)
+From: Timur Tabi <timur@tabi.org>
+To: Kumar Gala <galak@kernel.crashing.org>,
+	linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/fsl: remove extraneous DIU platform functions
+Date: Tue, 15 Jan 2013 14:04:12 -0600
+Message-Id: <1358280252-31261-1-git-send-email-timur@tabi.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +17,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-01-11 at 17:29 +1100, Alexey Kardashevskiy wrote:
-> +static unsigned long get_user_dscr(struct task_struct *task)
-> +{
-> +       return -EIO;
-> +}
-> +
+From: Timur Tabi <timur@freescale.com>
 
-Does it make sense to return an error here ? ptrace_get_reg() doesn't
-seem to have provisions for returning errors, it just return register
-values, there's no way to differenciate an error code from a register
-value as far as I can tell...
+The Freescale DIU driver was recently updated to not require a
+set_monitor_port platform function if there is only one monitor port.  This
+is the case on the P1022 RDK and the MPC5121 ADS boards.  So now we can
+remove those functions.
 
-I'll apply your patch anyway because this is an existing problem with
-that function (it already returns -EIO in other circumstances), but I
-would like if you could submit a followup patch that changes it to
-return the register by value and return a real error code, which can be
-then handled properly in the two call sites (ptrace.c and ptrace32.c).
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/platforms/512x/mpc512x_shared.c |    5 -----
+ arch/powerpc/platforms/85xx/p1022_rdk.c      |   12 ------------
+ 2 files changed, 0 insertions(+), 17 deletions(-)
 
-Cheers,
-Ben.
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index 35f14fd..c7f47cf 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -68,10 +68,6 @@ struct fsl_diu_shared_fb {
+ 	bool		in_use;
+ };
+ 
+-void mpc512x_set_monitor_port(enum fsl_diu_monitor_port port)
+-{
+-}
+-
+ #define DIU_DIV_MASK	0x000000ff
+ void mpc512x_set_pixel_clock(unsigned int pixclock)
+ {
+@@ -303,7 +299,6 @@ void __init mpc512x_setup_diu(void)
+ 		}
+ 	}
+ 
+-	diu_ops.set_monitor_port	= mpc512x_set_monitor_port;
+ 	diu_ops.set_pixel_clock		= mpc512x_set_pixel_clock;
+ 	diu_ops.valid_monitor_port	= mpc512x_valid_monitor_port;
+ 	diu_ops.release_bootmem		= mpc512x_release_bootmem;
+diff --git a/arch/powerpc/platforms/85xx/p1022_rdk.c b/arch/powerpc/platforms/85xx/p1022_rdk.c
+index 55ffa1c..8c92971 100644
+--- a/arch/powerpc/platforms/85xx/p1022_rdk.c
++++ b/arch/powerpc/platforms/85xx/p1022_rdk.c
+@@ -35,17 +35,6 @@
+ #define CLKDVDR_PXCLK_MASK	0x00FF0000
+ 
+ /**
+- * p1022rdk_set_monitor_port: switch the output to a different monitor port
+- */
+-static void p1022rdk_set_monitor_port(enum fsl_diu_monitor_port port)
+-{
+-	if (port != FSL_DIU_PORT_DVI) {
+-		pr_err("p1022rdk: unsupported monitor port %i\n", port);
+-		return;
+-	}
+-}
+-
+-/**
+  * p1022rdk_set_pixel_clock: program the DIU's clock
+  *
+  * @pixclock: the wavelength, in picoseconds, of the clock
+@@ -124,7 +113,6 @@ static void __init p1022_rdk_setup_arch(void)
+ 		ppc_md.progress("p1022_rdk_setup_arch()", 0);
+ 
+ #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
+-	diu_ops.set_monitor_port	= p1022rdk_set_monitor_port;
+ 	diu_ops.set_pixel_clock		= p1022rdk_set_pixel_clock;
+ 	diu_ops.valid_monitor_port	= p1022rdk_valid_monitor_port;
+ #endif
+-- 
+1.7.3.4
