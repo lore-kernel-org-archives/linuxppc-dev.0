@@ -1,25 +1,25 @@
-Return-Path: <tangchen@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id A11342C00E9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 21:55:44 +1100 (EST)
-From: Tang Chen <tangchen@cn.fujitsu.com>
-To: akpm@linux-foundation.org, rientjes@google.com, len.brown@intel.com,
- benh@kernel.crashing.org, paulus@samba.org, cl@linux.com,
- minchan.kim@gmail.com, kosaki.motohiro@jp.fujitsu.com,
- isimatu.yasuaki@jp.fujitsu.com, wujianguo@huawei.com,
- wency@cn.fujitsu.com, tangchen@cn.fujitsu.com, hpa@zytor.com,
- linfeng@cn.fujitsu.com, laijs@cn.fujitsu.com, mgorman@suse.de,
- yinghai@kernel.org, glommer@parallels.com, jiang.liu@huawei.com
-Subject: [BUG Fix Patch 6/6] Bug fix: Reuse the storage of
- /sys/firmware/memmap/X/ allocated by bootmem.
-Date: Tue, 15 Jan 2013 18:54:27 +0800
-Message-Id: <1358247267-18089-7-git-send-email-tangchen@cn.fujitsu.com>
-In-Reply-To: <1358247267-18089-1-git-send-email-tangchen@cn.fujitsu.com>
-References: <1358247267-18089-1-git-send-email-tangchen@cn.fujitsu.com>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-acpi@vger.kernel.org, linux-sh@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, cmetcalf@tilera.com, linux-mm@kvack.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <shawn.guo@linaro.org>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe006.messaging.microsoft.com [213.199.154.209])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C1A5C2C007A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2013 01:03:32 +1100 (EST)
+Date: Tue, 15 Jan 2013 22:03:46 +0800
+From: Shawn Guo <shawn.guo@linaro.org>
+To: Peter Chen <peter.chen@freescale.com>
+Subject: Re: [PATCH v5 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
+ platform_device_id
+Message-ID: <20130115140344.GB6574@S2101-09.ap.freescale.net>
+References: <1358216975-1404-1-git-send-email-peter.chen@freescale.com>
+ <1358216975-1404-2-git-send-email-peter.chen@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1358216975-1404-2-git-send-email-peter.chen@freescale.com>
+Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ balbi@ti.com, kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,189 +29,142 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we don't free firmware_map_entry which is allocated by bootmem because
-there is no way to do so when the system is up. But we can at least remember
-the address of that memory and reuse the storage when the memory is added
-next time.
+On Tue, Jan 15, 2013 at 10:29:33AM +0800, Peter Chen wrote:
+> As mach/hardware.h is deleted, we need to use platform_device_id to
+> differentiate SoCs. Besides, one cpu_is_mx35 is useless as it has
+> already used pdata to differentiate runtime
+> 
+> Meanwhile we update the platform code accordingly.
+> 
+> Signed-off-by: Peter Chen <peter.chen@freescale.com>
+> ---
+>  arch/arm/mach-imx/devices/devices-common.h        |    1 +
+>  arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c |   15 ++++---
+>  drivers/usb/gadget/fsl_mxc_udc.c                  |   24 +++++-------
+>  drivers/usb/gadget/fsl_udc_core.c                 |   42 +++++++++++++--------
+>  4 files changed, 45 insertions(+), 37 deletions(-)
 
-This patch introduces a new list map_entries_bootmem to link the map entries
-allocated by bootmem when they are removed, and a lock to protect it.
-And these entries will be reused when the memory is hot-added again.
+Since we are splitting the original patch anyway, it's a bit strange
+to me that you are mixing arch/arm/mach-imx and drivers/usb/gadget
+in this patch.  I'm fine with it, since I assume all the patches to
+go via USB tree anyway.
 
-The idea is suggestted by Andrew Morton <akpm@linux-foundation.org>
+> 
+> diff --git a/arch/arm/mach-imx/devices/devices-common.h b/arch/arm/mach-imx/devices/devices-common.h
+> index 6277baf..9bd5777 100644
+> --- a/arch/arm/mach-imx/devices/devices-common.h
+> +++ b/arch/arm/mach-imx/devices/devices-common.h
+> @@ -63,6 +63,7 @@ struct platform_device *__init imx_add_flexcan(
+>  
+>  #include <linux/fsl_devices.h>
+>  struct imx_fsl_usb2_udc_data {
+> +	const char *devid;
+>  	resource_size_t iobase;
+>  	resource_size_t irq;
+>  };
+> diff --git a/arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c b/arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c
+> index 37e4439..fb527c7 100644
+> --- a/arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c
+> +++ b/arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c
+> @@ -11,35 +11,36 @@
+>  #include "../hardware.h"
+>  #include "devices-common.h"
+>  
+> -#define imx_fsl_usb2_udc_data_entry_single(soc)				\
+> +#define imx_fsl_usb2_udc_data_entry_single(soc, _devid)			\
+>  	{								\
+> +		.devid = _devid,					\
+>  		.iobase = soc ## _USB_OTG_BASE_ADDR,			\
+>  		.irq = soc ## _INT_USB_OTG,				\
+>  	}
+>  
+>  #ifdef CONFIG_SOC_IMX25
+>  const struct imx_fsl_usb2_udc_data imx25_fsl_usb2_udc_data __initconst =
+> -	imx_fsl_usb2_udc_data_entry_single(MX25);
+> +	imx_fsl_usb2_udc_data_entry_single(MX25, "imx-udc-mx25");
+>  #endif /* ifdef CONFIG_SOC_IMX25 */
+>  
+>  #ifdef CONFIG_SOC_IMX27
+>  const struct imx_fsl_usb2_udc_data imx27_fsl_usb2_udc_data __initconst =
+> -	imx_fsl_usb2_udc_data_entry_single(MX27);
+> +	imx_fsl_usb2_udc_data_entry_single(MX27, "imx-udc-mx27");
+>  #endif /* ifdef CONFIG_SOC_IMX27 */
+>  
+>  #ifdef CONFIG_SOC_IMX31
+>  const struct imx_fsl_usb2_udc_data imx31_fsl_usb2_udc_data __initconst =
+> -	imx_fsl_usb2_udc_data_entry_single(MX31);
+> +	imx_fsl_usb2_udc_data_entry_single(MX31, "imx-udc-mx31");
+>  #endif /* ifdef CONFIG_SOC_IMX31 */
+>  
+>  #ifdef CONFIG_SOC_IMX35
+>  const struct imx_fsl_usb2_udc_data imx35_fsl_usb2_udc_data __initconst =
+> -	imx_fsl_usb2_udc_data_entry_single(MX35);
+> +	imx_fsl_usb2_udc_data_entry_single(MX35, "imx-udc-mx35");
+>  #endif /* ifdef CONFIG_SOC_IMX35 */
+>  
+>  #ifdef CONFIG_SOC_IMX51
+>  const struct imx_fsl_usb2_udc_data imx51_fsl_usb2_udc_data __initconst =
+> -	imx_fsl_usb2_udc_data_entry_single(MX51);
+> +	imx_fsl_usb2_udc_data_entry_single(MX51, "imx-udc-mx51");
+>  #endif
+>  
+>  struct platform_device *__init imx_add_fsl_usb2_udc(
+> @@ -57,7 +58,7 @@ struct platform_device *__init imx_add_fsl_usb2_udc(
+>  			.flags = IORESOURCE_IRQ,
+>  		},
+>  	};
+> -	return imx_add_platform_device_dmamask("fsl-usb2-udc", -1,
+> +	return imx_add_platform_device_dmamask(data->devid, -1,
+>  			res, ARRAY_SIZE(res),
+>  			pdata, sizeof(*pdata), DMA_BIT_MASK(32));
+>  }
 
-Signed-off-by: Tang Chen <tangchen@cn.fujitsu.com>
----
- drivers/firmware/memmap.c |  103 ++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 88 insertions(+), 15 deletions(-)
+<snip>
 
-diff --git a/drivers/firmware/memmap.c b/drivers/firmware/memmap.c
-index ae823b4..0710179 100644
---- a/drivers/firmware/memmap.c
-+++ b/drivers/firmware/memmap.c
-@@ -53,6 +53,9 @@ static ssize_t start_show(struct firmware_map_entry *entry, char *buf);
- static ssize_t end_show(struct firmware_map_entry *entry, char *buf);
- static ssize_t type_show(struct firmware_map_entry *entry, char *buf);
- 
-+static struct firmware_map_entry * __meminit
-+firmware_map_find_entry(u64 start, u64 end, const char *type);
-+
- /*
-  * Static data -----------------------------------------------------------------
-  */
-@@ -80,6 +83,19 @@ static const struct sysfs_ops memmap_attr_ops = {
- 	.show = memmap_attr_show,
- };
- 
-+/* Firmware memory map entries. */
-+static LIST_HEAD(map_entries);
-+static DEFINE_SPINLOCK(map_entries_lock);
-+
-+/*
-+ * For memory hotplug, there is no way to free memory map entries allocated
-+ * by boot mem after the system is up. So when we hot-remove memory whose
-+ * map entry is allocated by bootmem, we need to remember the storage and
-+ * reuse it when the memory is hot-added again.
-+ */
-+static LIST_HEAD(map_entries_bootmem);
-+static DEFINE_SPINLOCK(map_entries_bootmem_lock);
-+
- 
- static inline struct firmware_map_entry *
- to_memmap_entry(struct kobject *kobj)
-@@ -91,9 +107,22 @@ static void release_firmware_map_entry(struct kobject *kobj)
- {
- 	struct firmware_map_entry *entry = to_memmap_entry(kobj);
- 
--	if (PageReserved(virt_to_page(entry)))
--		/* There is no way to free memory allocated from bootmem */
-+	if (PageReserved(virt_to_page(entry))) {
-+		/*
-+		 * Remember the storage allocated by bootmem, and reuse it when
-+		 * the memory is hot-added again. The entry will be added to
-+		 * map_entries_bootmem here, and deleted from &map_entries in
-+		 * firmware_map_remove_entry().
-+		 */
-+		if (firmware_map_find_entry(entry->start, entry->end,
-+		    entry->type)) {
-+			spin_lock(&map_entries_bootmem_lock);
-+			list_add(&entry->list, &map_entries_bootmem);
-+			spin_unlock(&map_entries_bootmem_lock);
-+		}
-+
- 		return;
-+	}
- 
- 	kfree(entry);
- }
-@@ -108,10 +137,6 @@ static struct kobj_type memmap_ktype = {
-  * Registration functions ------------------------------------------------------
-  */
- 
--/* Firmware memory map entries. */
--static LIST_HEAD(map_entries);
--static DEFINE_SPINLOCK(map_entries_lock);
--
- /**
-  * firmware_map_add_entry() - Does the real work to add a firmware memmap entry.
-  * @start: Start of the memory range.
-@@ -184,23 +209,25 @@ static inline void remove_sysfs_fw_map_entry(struct firmware_map_entry *entry)
- }
- 
- /*
-- * firmware_map_find_entry: Search memmap entry.
-+ * firmware_map_find_entry_in_list: Search memmap entry in a given list.
-  * @start: Start of the memory range.
-  * @end:   End of the memory range (exclusive).
-  * @type:  Type of the memory range.
-+ * @list:  In which to find the entry.
-  *
-- * This function is to find the memmap entey of a given memory range.
-- * The caller must hold map_entries_lock, and must not release the lock
-- * until the processing of the returned entry has completed.
-+ * This function is to find the memmap entey of a given memory range in a
-+ * given list. The caller must hold map_entries_lock, and must not release
-+ * the lock until the processing of the returned entry has completed.
-  *
-  * Return pointer to the entry to be found on success, or NULL on failure.
-  */
- static struct firmware_map_entry * __meminit
--firmware_map_find_entry(u64 start, u64 end, const char *type)
-+firmware_map_find_entry_in_list(u64 start, u64 end, const char *type,
-+				struct list_head *list)
- {
- 	struct firmware_map_entry *entry;
- 
--	list_for_each_entry(entry, &map_entries, list)
-+	list_for_each_entry(entry, list, list)
- 		if ((entry->start == start) && (entry->end == end) &&
- 		    (!strcmp(entry->type, type))) {
- 			return entry;
-@@ -209,6 +236,42 @@ firmware_map_find_entry(u64 start, u64 end, const char *type)
- 	return NULL;
- }
- 
-+/*
-+ * firmware_map_find_entry: Search memmap entry in map_entries.
-+ * @start: Start of the memory range.
-+ * @end:   End of the memory range (exclusive).
-+ * @type:  Type of the memory range.
-+ *
-+ * This function is to find the memmap entey of a given memory range.
-+ * The caller must hold map_entries_lock, and must not release the lock
-+ * until the processing of the returned entry has completed.
-+ *
-+ * Return pointer to the entry to be found on success, or NULL on failure.
-+ */
-+static struct firmware_map_entry * __meminit
-+firmware_map_find_entry(u64 start, u64 end, const char *type)
-+{
-+	return firmware_map_find_entry_in_list(start, end, type, &map_entries);
-+}
-+
-+/*
-+ * firmware_map_find_entry_bootmem: Search memmap entry in map_entries_bootmem.
-+ * @start: Start of the memory range.
-+ * @end:   End of the memory range (exclusive).
-+ * @type:  Type of the memory range.
-+ *
-+ * This function is similar to firmware_map_find_entry except that it find the
-+ * given entry in map_entries_bootmem.
-+ *
-+ * Return pointer to the entry to be found on success, or NULL on failure.
-+ */
-+static struct firmware_map_entry * __meminit
-+firmware_map_find_entry_bootmem(u64 start, u64 end, const char *type)
-+{
-+	return firmware_map_find_entry_in_list(start, end, type,
-+					       &map_entries_bootmem);
-+}
-+
- /**
-  * firmware_map_add_hotplug() - Adds a firmware mapping entry when we do
-  * memory hotplug.
-@@ -226,9 +289,19 @@ int __meminit firmware_map_add_hotplug(u64 start, u64 end, const char *type)
- {
- 	struct firmware_map_entry *entry;
- 
--	entry = kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
--	if (!entry)
--		return -ENOMEM;
-+	entry = firmware_map_find_entry_bootmem(start, end, type);
-+	if (!entry) {
-+		entry = kzalloc(sizeof(struct firmware_map_entry), GFP_ATOMIC);
-+		if (!entry)
-+			return -ENOMEM;
-+	} else {
-+		/* Reuse storage allocated by bootmem. */
-+		spin_lock(&map_entries_bootmem_lock);
-+		list_del(&entry->list);
-+		spin_unlock(&map_entries_bootmem_lock);
-+
-+		memset(entry, 0, sizeof(*entry));
-+	}
- 
- 	firmware_map_add_entry(start, end, type, entry);
- 	/* create the memmap entry */
--- 
-1.7.1
+> +static const struct platform_device_id fsl_udc_devtype[] = {
+> +	{
+> +		.name = "imx-udc-mx25",
+> +	}, {
+> +		.name = "imx-udc-mx27",
+> +	}, {
+> +		.name = "imx-udc-mx31",
+> +	}, {
+> +		.name = "imx-udc-mx35",
+> +	}, {
+> +		.name = "imx-udc-mx51",
+> +	}
+> +};
+
+>From what I understand balbi's comment, he dislikes this full list of
+device id.  Instead, he prefers to something like below.
+
+static const struct platform_device_id fsl_udc_devtype[] = {
+	{
+		.name = "imx-udc-mx27",
+	}, {
+		.name = "imx-udc-mx51",
+	}
+};
+
+It basically tells that we are handling two type of devices here, one
+is imx-udc-mx27 type and the other is imx-udc-mx51 type, with mx25/31/35
+completely compatible with mx27 type.  We choose mx27 instead of mx25
+to define the type because mx27 Si came out earlier than mx25.  That
+said, we generally choose the earlies SoC name to define a particular
+version of IP block, since hardware version is mostly unavailable or
+unreliable.
+
+But that also means in platform code which create the platform_device,
+you will need to use name "imx-udc-mx27" for even mx25/31/35.
+
+	imx_fsl_usb2_udc_data_entry_single(MX25, "imx-udc-mx27");
+	imx_fsl_usb2_udc_data_entry_single(MX31, "imx-udc-mx27");
+	imx_fsl_usb2_udc_data_entry_single(MX35, "imx-udc-mx27");
+
+Considering this is a piece of code we will not use for any new
+hardware, I'm fine with either way.
+
+So, balbi, it's all your call to accept the series as it is or ask for
+another iteration.
+
+Shawn
