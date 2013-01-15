@@ -1,22 +1,34 @@
-Return-Path: <geoff@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 4CDC72C009E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 10:37:38 +1100 (EST)
-Message-ID: <1358206641.4489.8.camel@smoke>
-Subject: Re: PS3 platform is broken on Linux 3.7.0
-From: Geoff Levand <geoff@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 14 Jan 2013 15:37:21 -0800
-In-Reply-To: <1357956742.20936.11.camel@smoke>
-References: <1355488506.55692113@f147.mail.ru>
- <1355954017.5397.53.camel@pasglop> <1357956742.20936.11.camel@smoke>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Phileas Fogg <phileas-fogg@mail.ru>, linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Return-Path: <B29397@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe004.messaging.microsoft.com [65.55.88.14])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1FE1D2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 12:31:46 +1100 (EST)
+Date: Tue, 15 Jan 2013 09:31:31 +0800
+From: Peter Chen <peter.chen@freescale.com>
+To: Felipe Balbi <balbi@ti.com>
+Subject: Re: [PATCH v3 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
+ platform_device_id
+Message-ID: <20130115013130.GA16514@nchen-desktop>
+References: <50F3DF1D.3040706@pengutronix.de>
+ <20130114103952.GF10874@arwen.pp.htv.fi>
+ <50F3E301.7040509@pengutronix.de>
+ <20130114105357.GH10874@arwen.pp.htv.fi>
+ <50F3E5E8.2000905@pengutronix.de>
+ <20130114110600.GI10874@arwen.pp.htv.fi>
+ <20130114125632.GA30157@nchen-desktop>
+ <20130114174054.GB12611@arwen.pp.htv.fi>
+ <50F4464E.7000605@pengutronix.de>
+ <20130114175724.GD12611@arwen.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+In-Reply-To: <20130114175724.GD12611@arwen.pp.htv.fi>
+Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ Marc Kleine-Budde <mkl@pengutronix.de>, kernel@pengutronix.de,
+ shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,21 +38,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Mon, Jan 14, 2013 at 07:57:24PM +0200, Felipe Balbi wrote:
+> On Mon, Jan 14, 2013 at 06:54:22PM +0100, Marc Kleine-Budde wrote:
+> > On 01/14/2013 06:40 PM, Felipe Balbi wrote:
+> > > Hi,
+> > >=20
+> > > On Mon, Jan 14, 2013 at 08:56:33PM +0800, Peter Chen wrote:
+> > >=20
+> > > <snip>
+> > >=20
+> > >>>> Usually there isn't any Changelog between IP cores used in the d=
+ifferent
+> > >>>> fsl processors (at least available outside of fsl), that makes i=
+t quite
+> > >>>> difficult to say if something found on one imx is really the sam=
+e as on
+> > >>>> the other one. And they (usually) don't provide any versioning
+> > >>>> information in a register or the documentation.
+> > >>>>
+> > >>>> just my 2=A2
+> > >>>
+> > >>> $SUBJECT is trying to differentiate a single feature (or maybe tw=
+o) to
+> > >>> replace cpu_is_xxx(), then expose that on driver_data without cre=
+ating
+> > >>> one enum value for each release from fsl.
+> > >>
+> > >> Felipe, every one or two SoCs may have their special operations fo=
+r
+> > >> integrate PHY interface, clk operation, or workaround for IC
+> > >> limitation.
+> > >=20
+> > > the particular PHY and clk used should be hidden by phy layer and c=
+lk
+> > > API respectively. Workarounds, fair enough, we need to handle them;=
+ but
+> > > ideally those should be based on runtime revision detection, not so=
+me
+> > > hackery using driver_data.
+> >=20
+> > If this is actually possible, I'd love to do this. But IP vendor don'=
+t
+> > include a version register in their cores. :(
+>=20
+> then fair enough, driver_data or platform_data is the way to go, still
+> my point (a) below is valid.
+I will send v5 patch with your suggestion.
 
-On Fri, 2013-01-11 at 18:12 -0800, Geoff Levand wrote:
-> I checked these, and Michael's 407821a34fce89b4f0b031dbab5cec7d059f46bc
-> does indeed cause the LV1 hypervisor to panic early, and if that is
-> reverted, Aneesh's 048ee0993ec8360abb0b51bdf8f8721e9ed62ec4 hits a BUG.
+>=20
+> --=20
+> balbi
 
-Just to give an update, I did a little more work on it and found that
-the call to lv1_insert_htab_entry() inside ps3_hpte_insert() is
-failing.
 
-   http://git.kernel.org/?p=linux/kernel/git/geoff/ps3-linux.git;a=blob;f=arch/powerpc/platforms/ps3/htab.c;hb=HEAD#l70
 
-The values of the variables printed all look strange compared with
-commit 048ee0993 reverted.  I'll try do some more work on it this
-week.
+--=20
 
--Geoff
+Best Regards,
+Peter Chen
