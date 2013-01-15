@@ -1,39 +1,31 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Return-Path: <qiudayu@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp01.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B10CB2C00A0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 17:59:40 +1100 (EST)
+ (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 615382C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:39:08 +1100 (EST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Tue, 15 Jan 2013 12:28:02 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 39EDF125804F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 12:29:47 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0F6xQa240960002
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 12:29:26 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0F6xSNe021430
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 17:59:28 +1100
-Message-ID: <1358233164.15371.2.camel@ThinkPad-T5421.cn.ibm.com>
-Subject: Re: 3.7-rc7: BUG: MAX_STACK_TRACE_ENTRIES too low!
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Christian Kujau <lists@nerdbynature.de>
-Date: Tue, 15 Jan 2013 14:59:24 +0800
-In-Reply-To: <alpine.DEB.2.01.1301121241340.7378@trent.utfs.org>
-References: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
- <alpine.DEB.2.01.1211271916160.7378@trent.utfs.org>
- <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
- <alpine.DEB.2.01.1301121241340.7378@trent.utfs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- LKML <linux-kernel@vger.kernel.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
+ Tue, 15 Jan 2013 17:34:06 +1000
+Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 299022CE804A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:39:00 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0F7cxBL48758962
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:38:59 +1100
+Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0F7cwXq031200
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jan 2013 18:38:59 +1100
+From: Mike Qiu <qiudayu@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/3] Enable multiple MSI feature in pSeries
+Date: Tue, 15 Jan 2013 15:38:53 +0800
+Message-Id: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, Mike Qiu <qiudayu@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,84 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2013-01-12 at 12:43 -0800, Christian Kujau wrote:
-> On Wed, 28 Nov 2012 at 16:41, Li Zhong wrote:
-> > On Tue, 2012-11-27 at 19:22 -0800, Christian Kujau wrote:
-> > > On Tue, 27 Nov 2012 at 19:06, Christian Kujau wrote:
-> > > > the same thing[0] happened again in 3.7-rc7, after ~20h uptime:
-> > > 
-> > > I found the following on patchwork, but this seems to deal with powerpc64 
-> > > only, while this PowerBook G4 of mine is powerpc32:
-> > > 
-> > >   http://patchwork.ozlabs.org/patch/193414/
-> > > 
-> > > It looks related, but then again, I fail to parse assember...
-> > 
-> > Hi Christian, 
-> > 
-> > Would you please help to try the following fix? I don't have a powerpc32
-> > machine for test...
-> 
-> The patch hasn't made it into mainline yet. Any chance that this will be 
-> included in 3.8?
+Currently, multiple MSI feature hasn't been enabled in pSeries,
+These patches try to enbale this feature.
 
-I don't know...
+These patches have been tested by using ipr driver, and the driver patch
+has been made by Wen Xiong <wenxiong@linux.vnet.ibm.com>:
 
-FYI, it is already in the next of ppc tree 
-http://git.kernel.org/?p=linux/kernel/git/benh/powerpc.git;a=shortlog;h=refs/heads/next
+[PATCH 0/7] Add support for new IBM SAS controllers
 
-I guess it would get into 3.9, at least. 
+Test platform: One partition of pSeries with one cpu core(4 SMTs) and 
+               RAID bus controller: IBM PCI-E IPR SAS Adapter (ASIC) in POWER7
+OS version: SUSE Linux Enterprise Server 11 SP2  (ppc64) with 3.8-rc3 kernel 
 
-Thanks, Zhong
+IRQ 21 and 22 are assigned to the ipr device which support 2 mutiple MSI.
 
-> 
-> Thanks,
-> Christian.
-> 
-> > ==============================================
-> > diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-> > index 9499385..cadebfd 100644
-> > --- a/arch/powerpc/kernel/entry_32.S
-> > +++ b/arch/powerpc/kernel/entry_32.S
-> > @@ -439,6 +439,8 @@ ret_from_fork:
-> >  ret_from_kernel_thread:
-> >  	REST_NVGPRS(r1)
-> >  	bl	schedule_tail
-> > +	li	r3,0
-> > +	stw	r3,0(r1)
-> >  	mtlr	r14
-> >  	mr	r3,r15
-> >  	PPC440EP_ERR42
-> > ==============================================
-> > 
-> > > 
-> > > Christian.
-> > > 
-> > > > [40007.339487] [sched_delayed] sched: RT throttling activated
-> > > > [69731.388717] BUG: MAX_STACK_TRACE_ENTRIES too low!
-> > > > [69731.390371] turning off the locking correctness validator.
-> > > > [69731.391942] Call Trace:
-> > > > [69731.393525] [c9a61c10] [c0009064] show_stack+0x70/0x1bc (unreliable)
-> > > > [69731.395152] [c9a61c50] [c0077460] save_trace+0xfc/0x114
-> > > > [69731.396735] [c9a61c60] [c007be20] __lock_acquire+0x1568/0x19b8
-> > > > [69731.398296] [c9a61d00] [c007c2c0] lock_acquire+0x50/0x70
-> > > > [69731.399857] [c9a61d20] [c0550e28] _raw_spin_lock_irq+0x5c/0x78
-> > > > [69731.401419] [c9a61d40] [c054fb58] __schedule+0xd8/0x534
-> > > > [69731.402972] [c9a61da0] [c0550094] _cond_resched+0x50/0x68
-> > > > [69731.404527] [c9a61db0] [c0479908] dst_gc_task+0xbc/0x258
-> > > > [69731.406070] [c9a61e40] [c004eeb8] process_one_work+0x1f4/0x49c
-> > > > [69731.407585] [c9a61e80] [c004f644] worker_thread+0x14c/0x400
-> > > > [69731.409075] [c9a61eb0] [c0057634] kthread+0xbc/0xc0
-> > > > [69731.410521] [c9a61f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
-> > > > [...repeated 54 times...]
-> > > > 
-> > > > Anyone knows what this is about?
-> > > > 
-> > > > Thanks,
-> > > > Christian.
-> > > > 
-> > > > [0] http://lkml.indiana.edu/hypermail/linux/kernel/1211.0/03025.html
-> > 
-> > 
-> > 
-> 
+The test results is shown by 'cat /proc/interrups':
+          CPU0       CPU1       CPU2       CPU3       
+16:     240458     261601     226310     200425      XICS Level     IPI
+17:          0          0          0          0      XICS Level     RAS_EPOW
+18:         10          0          3          2      XICS Level     hvc_console
+19:     122182      28481      28527      28864      XICS Level     ibmvscsi
+20:        506    7388226        108        118      XICS Level     eth0
+21:          6          5          5          5      XICS Level     host1-0
+22:        817        814        816        813      XICS Level     host1-1
+LOC:     398077     316725     231882     203049   Local timer interrupts
+SPU:       1659        919        961        903   Spurious interrupts
+CNT:          0          0          0          0   Performance
+monitoring interrupts
+MCE:          0          0          0          0   Machine check exceptions
+
+Mike Qiu (3):
+  irq: Set multiple MSI descriptor data for multiple IRQs
+  irq: Add hw continuous IRQs map to virtual continuous IRQs support
+  powerpc/pci: Enable pSeries multiple MSI feature
+
+ arch/powerpc/kernel/msi.c            |    4 --
+ arch/powerpc/platforms/pseries/msi.c |   62 ++++++++++++++++++++++++++++++++-
+ include/linux/irq.h                  |    4 ++
+ include/linux/irqdomain.h            |    3 ++
+ kernel/irq/chip.c                    |   40 ++++++++++++++++-----
+ kernel/irq/irqdomain.c               |   61 +++++++++++++++++++++++++++++++++
+ 6 files changed, 158 insertions(+), 16 deletions(-)
+
+-- 
+1.7.7.6
