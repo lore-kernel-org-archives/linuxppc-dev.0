@@ -4,19 +4,16 @@ To: <devicetree-discuss@lists.ozlabs.org>, <linux-doc@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>, <linux-omap@vger.kernel.org>,
  <linux-arm-kernel@lists.infradead.org>, <linux-usb@vger.kernel.org>,
  <linux-sh@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, <balbi@ti.com>
-Subject: [RFC PATCH 5/6] usb: otg: add device tree support to otg library
-Date: Wed, 16 Jan 2013 20:31:01 +0530
-Message-ID: <1358348462-27693-6-git-send-email-kishon@ti.com>
-In-Reply-To: <1358348462-27693-1-git-send-email-kishon@ti.com>
-References: <1358348462-27693-1-git-send-email-kishon@ti.com>
+Subject: [RFC PATCH 0/6] USB: Add multiple PHYs of same type
+Date: Wed, 16 Jan 2013 20:30:56 +0530
+Message-ID: <1358348462-27693-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linux@arm.linux.org.uk, b-cousson@ti.com, tony@atomide.com,
  gregkh@linuxfoundation.org, rob.herring@calxeda.com, kishon@ti.com,
  cbou@mail.ru, alexander.shishkin@linux.intel.com, horms@verge.net.au,
  stern@rowland.harvard.edu, haojian.zhuang@gmail.com, rob@landley.net,
- eric.y.miao@gmail.com, Marc Kleine-Budde <mkl@pengutronix.de>,
- dwmw2@infradead.org
+ eric.y.miao@gmail.com, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,146 +23,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Added an API devm_usb_get_phy_by_phandle(), to get usb phy by passing a
-device node phandle value. This function will return a pointer to
-the phy on success, -EPROBE_DEFER if there is a device_node for the phandle,
-but the phy has not been added, or a ERR_PTR() otherwise.
+New platforms are being added which has multiple PHY's (of same type) and
+which has multiple USB controllers. The binding information has to be
+present in the PHY library (otg.c) in order for it to return the
+appropriate PHY whenever the USB controller request for the PHY. So
+added a new API to pass the binding information. This API should be
+called by platform specific initialization code.
 
-Cc: Marc Kleine-Budde <mkl@pengutronix.de>
-Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
----
- drivers/usb/otg/otg.c   |   77 +++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/usb/phy.h |    8 +++++
- 2 files changed, 85 insertions(+)
+So the binding should be done something like
+usb_bind_phy("musb-hdrc.0.auto", 0, "omap-usb2.1.auto"); specifying the USB
+controller device name, index, and the PHY device name.
+I have done this binding for OMAP platforms, but it should be done for
+all the platforms.
 
-diff --git a/drivers/usb/otg/otg.c b/drivers/usb/otg/otg.c
-index dbf2043..e9799bb 100644
---- a/drivers/usb/otg/otg.c
-+++ b/drivers/usb/otg/otg.c
-@@ -13,7 +13,9 @@
- #include <linux/export.h>
- #include <linux/err.h>
- #include <linux/device.h>
-+#include <linux/module.h>
- #include <linux/slab.h>
-+#include <linux/of.h>
- 
- #include <linux/usb/otg.h>
- 
-@@ -34,6 +36,20 @@ static struct usb_phy *__usb_find_phy(struct device *dev, u8 index)
- 	return ERR_PTR(-ENODEV);
- }
- 
-+static struct usb_phy *__of_usb_find_phy(struct device_node *node)
-+{
-+	struct usb_phy  *phy;
-+
-+	list_for_each_entry(phy, &phy_list, head) {
-+		if (node != phy->dev->of_node)
-+			continue;
-+
-+		return phy;
-+	}
-+
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static void devm_usb_phy_release(struct device *dev, void *res)
- {
- 	struct usb_phy *phy = *(struct usb_phy **)res;
-@@ -109,6 +125,67 @@ err0:
- }
- EXPORT_SYMBOL(usb_get_phy);
- 
-+ /**
-+ * devm_usb_get_phy_by_phandle - find the USB PHY by phandle
-+ * @dev - device that requests this phy
-+ * @phandle - name of the property holding the phy phandle value
-+ * @index - the index of the phy
-+ *
-+ * Returns the phy driver associated with the given phandle value,
-+ * after getting a refcount to it, -ENODEV if there is no such phy or
-+ * -EPROBE_DEFER if there is a phandle to the phy, but the device is
-+ * not yet loaded. While at that, it also associates the device with
-+ * the phy using devres. On driver detach, release function is invoked
-+ * on the devres data, then, devres data is freed.
-+ *
-+ * For use by USB host and peripheral drivers.
-+ */
-+struct usb_phy *devm_usb_get_phy_by_phandle(struct device *dev,
-+	const char *phandle, u8 index)
-+{
-+	struct usb_phy	*phy = NULL, **ptr;
-+	unsigned long	flags;
-+	struct device_node *node;
-+
-+	if (!dev->of_node) {
-+		dev_dbg(dev, "device does not have a device node entry\n");
-+		return ERR_PTR(-EINVAL);
-+	}
-+
-+	node = of_parse_phandle(dev->of_node, phandle, index);
-+	if (!node) {
-+		dev_dbg(dev, "failed to get %s phandle in %s node\n", phandle,
-+			dev->of_node->full_name);
-+		return ERR_PTR(-ENODEV);
-+	}
-+
-+	ptr = devres_alloc(devm_usb_phy_release, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr) {
-+		dev_dbg(dev, "failed to allocate memory for devres\n");
-+		return ERR_PTR(-ENOMEM);
-+	}
-+
-+	spin_lock_irqsave(&phy_lock, flags);
-+
-+	phy = __of_usb_find_phy(node);
-+	if (IS_ERR(phy) || !try_module_get(phy->dev->driver->owner)) {
-+		phy = ERR_PTR(-EPROBE_DEFER);
-+		devres_free(ptr);
-+		goto err0;
-+	}
-+
-+	*ptr = phy;
-+	devres_add(dev, ptr);
-+
-+	get_device(phy->dev);
-+
-+err0:
-+	spin_unlock_irqrestore(&phy_lock, flags);
-+
-+	return phy;
-+}
-+EXPORT_SYMBOL(devm_usb_get_phy_by_phandle);
-+
- /**
-  * devm_usb_put_phy - release the USB PHY
-  * @dev - device that wants to release this phy
-diff --git a/include/linux/usb/phy.h b/include/linux/usb/phy.h
-index d133c8b..5836b6d 100644
---- a/include/linux/usb/phy.h
-+++ b/include/linux/usb/phy.h
-@@ -163,6 +163,8 @@ usb_phy_shutdown(struct usb_phy *x)
- #ifdef CONFIG_USB_OTG_UTILS
- extern struct usb_phy *usb_get_phy(struct device *dev, u8 index);
- extern struct usb_phy *devm_usb_get_phy(struct device *dev, u8 index);
-+extern struct usb_phy *devm_usb_get_phy_by_phandle(struct device *dev,
-+	const char *phandle, u8 index);
- extern void usb_put_phy(struct usb_phy *);
- extern void devm_usb_put_phy(struct device *dev, struct usb_phy *x);
- extern struct usb_phy_bind *usb_bind_phy(const char *dev_name, u8 index,
-@@ -178,6 +180,12 @@ static inline struct usb_phy *devm_usb_get_phy(struct device *dev, u8 index)
- 	return NULL;
- }
- 
-+static inline struct usb_phy *devm_usb_get_phy_by_phandle(struct device *dev,
-+	const char *phandle, u8 index)
-+{
-+	return NULL;
-+}
-+
- static inline void usb_put_phy(struct usb_phy *x)
- {
- }
+After this design, the phy can be got by passing the USB controller device
+pointer and the index.
+
+Developed this patch series on
+git://git.kernel.org/pub/scm/linux/kernel/git/balbi/usb.git xceiv
+after applying "usb: musb: add driver for control module" patch series.
+
+Did basic enumeration testing in omap4 panda, omap4 sdp and omap3 beagle.
+
+Kishon Vijay Abraham I (6):
+  usb: otg: Add an API to bind the USB controller and PHY
+  ARM: OMAP: USB: Add phy binding information
+  usb: otg: utils: change the phy lib to support multiple PHYs of same
+    type
+  ARM: dts: OMAP: Add phandle to bind PHY with USB controller
+  usb: otg: add device tree support to otg library
+  USB: MUSB: OMAP: get PHY by phandle for dt boot
+
+ Documentation/devicetree/bindings/usb/omap-usb.txt |    2 +
+ arch/arm/boot/dts/omap3.dtsi                       |    1 +
+ arch/arm/boot/dts/omap4.dtsi                       |    3 +-
+ arch/arm/boot/dts/twl4030.dtsi                     |    2 +-
+ arch/arm/mach-omap2/usb-musb.c                     |    7 +-
+ arch/arm/mach-shmobile/board-marzen.c              |    2 +-
+ drivers/power/ab8500_charger.c                     |    2 +-
+ drivers/power/isp1704_charger.c                    |    2 +-
+ drivers/power/pda_power.c                          |    2 +-
+ drivers/power/twl4030_charger.c                    |    2 +-
+ drivers/usb/chipidea/udc.c                         |    2 +-
+ drivers/usb/dwc3/core.c                            |    4 +-
+ drivers/usb/gadget/fsl_udc_core.c                  |    2 +-
+ drivers/usb/gadget/mv_udc_core.c                   |    2 +-
+ drivers/usb/gadget/omap_udc.c                      |    2 +-
+ drivers/usb/gadget/pxa25x_udc.c                    |    2 +-
+ drivers/usb/gadget/pxa27x_udc.c                    |    2 +-
+ drivers/usb/gadget/s3c-hsudc.c                     |    2 +-
+ drivers/usb/host/ehci-fsl.c                        |    2 +-
+ drivers/usb/host/ehci-msm.c                        |    2 +-
+ drivers/usb/host/ehci-mv.c                         |    2 +-
+ drivers/usb/host/ehci-tegra.c                      |    2 +-
+ drivers/usb/host/ohci-omap.c                       |    2 +-
+ drivers/usb/musb/am35x.c                           |    2 +-
+ drivers/usb/musb/blackfin.c                        |    2 +-
+ drivers/usb/musb/da8xx.c                           |    2 +-
+ drivers/usb/musb/davinci.c                         |    2 +-
+ drivers/usb/musb/musb_dsps.c                       |    2 +-
+ drivers/usb/musb/omap2430.c                        |    7 +-
+ drivers/usb/musb/tusb6010.c                        |    2 +-
+ drivers/usb/musb/ux500.c                           |    2 +-
+ drivers/usb/otg/ab8500-usb.c                       |    3 +-
+ drivers/usb/otg/fsl_otg.c                          |    5 +-
+ drivers/usb/otg/gpio_vbus.c                        |    3 +-
+ drivers/usb/otg/isp1301_omap.c                     |    3 +-
+ drivers/usb/otg/msm_otg.c                          |    3 +-
+ drivers/usb/otg/mv_otg.c                           |    3 +-
+ drivers/usb/otg/nop-usb-xceiv.c                    |    3 +-
+ drivers/usb/otg/otg.c                              |  175 ++++++++++++++++----
+ drivers/usb/otg/twl4030-usb.c                      |    3 +-
+ drivers/usb/phy/mv_u3d_phy.c                       |    3 +-
+ drivers/usb/phy/omap-usb2.c                        |   11 +-
+ drivers/usb/phy/rcar-phy.c                         |    3 +-
+ include/linux/usb/phy.h                            |   42 ++++-
+ 44 files changed, 245 insertions(+), 89 deletions(-)
+
 -- 
 1.7.9.5
