@@ -1,24 +1,17 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 74F3A2C0089
- for <linuxppc-dev@ozlabs.org>; Wed, 16 Jan 2013 22:53:57 +1100 (EST)
-Date: Wed, 16 Jan 2013 12:30:13 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: Re: [PATCH 6/6][v3] perf: Document the ABI of perf sysfs entries
-Message-ID: <20130116113013.GA1042@krava.brq.redhat.com>
-References: <20130110010347.GA32590@us.ibm.com>
- <20130110010703.GF32590@us.ibm.com>
- <20130115185759.GG5826@ghostprotocols.net>
+Return-Path: <R.Patil@mei-india.com>
+Received: from antispam.messung.com (outbond.messung.com [210.212.173.45])
+ by ozlabs.org (Postfix) with ESMTP id 986B32C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 00:31:02 +1100 (EST)
+In-Reply-To: 
+Subject: SD Card over SPI, not working for MPC8313 
+From: R.Patil@mei-india.com
+To: linuxppc-dev@lists.ozlabs.org
+Message-ID: <OF36C99B74.048D73FE-ON65257AF5.004A3F3C-65257AF5.004A3F44@LocalDomain>
+Date: Wed, 16 Jan 2013 19:00:58 +0530
+Content-Type: multipart/alternative;
+ boundary="=_alternative 004A3F3E65257AF5_="
+References: 
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130115185759.GG5826@ghostprotocols.net>
-Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- robert.richter@amd.com, Greg KH <greg@kroah.com>,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,134 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 15, 2013 at 03:57:59PM -0300, Arnaldo Carvalho de Melo wrote:
-> Em Wed, Jan 09, 2013 at 05:07:03PM -0800, Sukadev Bhattiprolu escreveu:
-> > [PATCH 6/6][v3] perf: Document the ABI of perf sysfs entries
-> > 
-> > This patchset addes two new sets of files to sysfs:
-> > 
-> > 	- generic and POWER-specific perf events in /sys/devices/cpu/events/
-> > 	- perf event config format in /sys/devices/cpu/format/event
-> > 
-> > Document the format of these files which would become part of the ABI.
-> > 
-> > Changelog[v3]:
-> > 	[Greg KH] Include ABI documentation.
-> 
-> Jiri, can I have your ack on this one too?
 
-hm, we already already 'format' definition but in testing section
-(and we are missing 'events' definition there.. my bad)
+--=_alternative 004A3F3E65257AF5_=
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=ISO-8859-1
+MIME-Version: 1.0
 
-anyway, after reading Documentation/ABI/README looks like we
-should go for 'testing' section with this as well.. stable
-seems scary at this point ;-)
+ Hello,
 
-jirka
+We are working on board based on Freescale MPC8313ERDB. We have ported linu=
+x 3.0.46 kernel on it. We have to use SD card over SPI. We are trying to us=
+e 'mmc=5Fspi' driver for the same. We are able to detect SD card insertion =
+by the interrupt (gpio interrupt is used to detect card insertion). But we =
+are not able to initialise the card. Is the 'mmc=5Fspi' support for MPC8313=
+ERDB broken?=20
 
-> 
-> Greg, all ok now?
-> 
-> - Arnaldo
->  
-> > Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> > ---
-> >  Documentation/ABI/stable/sysfs-devices-cpu-events |   54 +++++++++++++++++++++
-> >  Documentation/ABI/stable/sysfs-devices-cpu-format |   27 ++++++++++
-> >  2 files changed, 81 insertions(+), 0 deletions(-)
-> >  create mode 100644 Documentation/ABI/stable/sysfs-devices-cpu-format
-> > 
-> > diff --git a/Documentation/ABI/stable/sysfs-devices-cpu-events b/Documentation/ABI/stable/sysfs-devices-cpu-events
-> > index e69de29..f37d542 100644
-> > --- a/Documentation/ABI/stable/sysfs-devices-cpu-events
-> > +++ b/Documentation/ABI/stable/sysfs-devices-cpu-events
-> > @@ -0,0 +1,54 @@
-> > +What:		/sys/devices/cpu/events/
-> > +		/sys/devices/cpu/events/branch-misses
-> > +		/sys/devices/cpu/events/cache-references
-> > +		/sys/devices/cpu/events/cache-misses
-> > +		/sys/devices/cpu/events/stalled-cycles-frontend
-> > +		/sys/devices/cpu/events/branch-instructions
-> > +		/sys/devices/cpu/events/stalled-cycles-backend
-> > +		/sys/devices/cpu/events/instructions
-> > +		/sys/devices/cpu/events/cpu-cycles
-> > +
-> > +Date:		2013/01/08
-> > +
-> > +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-> > +
-> > +Description:	Generic performance monitoring events
-> > +
-> > +		A collection of performance monitoring events that may be
-> > +		supported by many/most CPUs. These events can be monitored
-> > +		using the 'perf(1)' tool.
-> > +
-> > +		The contents of each file would look like:
-> > +
-> > +			event=0xNNNN
-> > +
-> > +		where 'N' is a hex digit.
-> > +
-> > +
-> > +What: 		/sys/devices/cpu/events/PM_LD_MISS_L1
-> > +		/sys/devices/cpu/events/PM_LD_REF_L1
-> > +		/sys/devices/cpu/events/PM_CYC
-> > +		/sys/devices/cpu/events/PM_BRU_FIN
-> > +		/sys/devices/cpu/events/PM_GCT_NOSLOT_CYC
-> > +		/sys/devices/cpu/events/PM_BRU_MPRED
-> > +		/sys/devices/cpu/events/PM_INST_CMPL
-> > +		/sys/devices/cpu/events/PM_CMPLU_STALL
-> > +
-> > +Date:		2013/01/08
-> > +
-> > +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-> > +		Linux Powerpc mailing list <linuxppc-dev@ozlabs.org>
-> > +
-> > +Description:	POWER specific performance monitoring events
-> > +
-> > +		A collection of performance monitoring events that may be
-> > +		supported by the POWER CPU. These events can be monitored
-> > +		using the 'perf(1)' tool.
-> > +
-> > +		These events may not be supported by other CPUs.
-> > +
-> > +		The contents of each file would look like:
-> > +
-> > +			event=0xNNNN
-> > +
-> > +		where 'N' is a hex digit.
-> > diff --git a/Documentation/ABI/stable/sysfs-devices-cpu-format b/Documentation/ABI/stable/sysfs-devices-cpu-format
-> > new file mode 100644
-> > index 0000000..b15cfb2
-> > --- /dev/null
-> > +++ b/Documentation/ABI/stable/sysfs-devices-cpu-format
-> > @@ -0,0 +1,27 @@
-> > +What:		/sys/devices/cpu/format/
-> > +		/sys/devices/cpu/format/event
-> > +
-> > +Date:		2013/01/08
-> > +
-> > +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-> > +
-> > +Description:	Format of performance monitoring events
-> > +
-> > +		Each CPU/architecture may use different format to represent
-> > +		the perf event.  The 'event' file describes the configuration
-> > +		format of the performance monitoring event on the CPU/system.
-> > +
-> > +		The contents of each file would look like:
-> > +
-> > +			config:m-n
-> > +
-> > +		where m and n are the starting and ending bits that are
-> > +		used to represent the event.
-> > +
-> > +		For example, on POWER,
-> > +
-> > +			$ cat /sys/devices/cpu/format/event
-> > +			config:0-20
-> > +
-> > +		meaning that POWER uses the first 20-bits to represent a perf
-> > +		event.
-> > -- 
-> > 1.7.1
+If no, what could be the reason we are getting timeout error by function 'm=
+mc=5Fspi=5Fresponse=5Fget()'?&nbsp;=20
+
+If anybody could just give a hint to solve or debug the problem.&nbsp;=20
+
+Thanks and Regards,
+Rahul Patil
+Email Disclaimer:
+  ---------------------------
+
+This e-mail and any files transmitted with it are for the sole use of the i=
+ntended recipient(s) and may contain confidential and  privileged informati=
+on. Computer viruses can be transmitted via email.The recipient should chec=
+k this email and any  attachments for the presence of viruses. The company =
+accepts no liability for any damage caused by any virus transmitted by this=
+ email.
+
+--=_alternative 004A3F3E65257AF5_=
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html;
+	charset=ISO-8859-1
+
+<font face=3D"Default Sans Serif,Verdana,Arial,Helvetica,sans-serif" size=
+=3D"2"> <div><font face=3D"Courier New,Courier,monospace" size=3D"3">Hello,=
+<br><br>We are working on board based on Freescale MPC8313ERDB. We have por=
+ted linux 3.0.46 kernel on it. We have to use SD card over SPI. We are tryi=
+ng to use 'mmc=5Fspi' driver for the same. We are able to detect SD card in=
+sertion by the interrupt (gpio interrupt is used to detect card insertion).=
+ But we are not able to initialise the card. Is the 'mmc=5Fspi' support for=
+ MPC8313ERDB broken? <br><br>If no, what could be the reason we are getting=
+ timeout error by function 'mmc=5Fspi=5Fresponse=5Fget()'?&nbsp; <br><br>If=
+ anybody could just give a hint to solve or debug the problem.&nbsp; <br><b=
+r>Thanks and Regards,<br>Rahul Patil<br><br></font></div></font>Email Discl=
+aimer:<BR>
+  ---------------------------<BR>
+<BR>
+This e-mail and any files transmitted with it are for the sole use of the i=
+ntended recipient(s) and may contain confidential and  privileged informati=
+on. Computer viruses can be transmitted via email.The recipient should chec=
+k this email and any  attachments for the presence of viruses. The company =
+accepts no liability for any damage caused by any virus transmitted by this=
+ email.<BR>
+
+--=_alternative 004A3F3E65257AF5_=--
