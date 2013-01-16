@@ -1,28 +1,20 @@
-Return-Path: <tangchen@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 851442C009A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2013 13:12:57 +1100 (EST)
-Message-ID: <50F60C77.9000201@cn.fujitsu.com>
-Date: Wed, 16 Jan 2013 10:12:07 +0800
-From: Tang Chen <tangchen@cn.fujitsu.com>
+Return-Path: <Tiejun.Chen@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B46892C009A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2013 14:01:14 +1100 (EST)
+Message-ID: <50F617E4.4070109@windriver.com>
+Date: Wed, 16 Jan 2013 11:00:52 +0800
+From: "tiejun.chen" <tiejun.chen@windriver.com>
 MIME-Version: 1.0
-To: Julian Calaby <julian.calaby@gmail.com>
-Subject: Re: [BUG Fix Patch 1/6] Bug fix: Hold spinlock across find|remove
- /sys/firmware/memmap/X operation.
-References: <1358247267-18089-1-git-send-email-tangchen@cn.fujitsu.com>
- <1358247267-18089-2-git-send-email-tangchen@cn.fujitsu.com>
- <CAGRGNgWCdvWhp=9+PDRbC9bK100BdBv9kpcsqoM-J6ipq22Szw@mail.gmail.com>
-In-Reply-To: <CAGRGNgWCdvWhp=9+PDRbC9bK100BdBv9kpcsqoM-J6ipq22Szw@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, cmetcalf@tilera.com,
- glommer@parallels.com, wujianguo@huawei.com, yinghai@kernel.org,
- laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
+Subject: Re: [RFC][v0][PATCH 1/1] ppc64: ignore interrupts while offline
+References: <1358245860-6546-1-git-send-email-tiejun.chen@windriver.com>
+In-Reply-To: <1358245860-6546-1-git-send-email-tiejun.chen@windriver.com>
+Content-Type: text/plain; charset="UTF-8"; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/16/2013 06:26 AM, Julian Calaby wrote:
-> Hi Tang,
->
-> One minor point.
->
->>
->>   /*
->> - * Search memmap entry
->> + * firmware_map_find_entry: Search memmap entry.
->> + * @start: Start of the memory range.
->> + * @end:   End of the memory range (exclusive).
->> + * @type:  Type of the memory range.
->> + *
->> + * This function is to find the memmap entey of a given memory range.
->> + * The caller must hold map_entries_lock, and must not release the lock
->> + * until the processing of the returned entry has completed.
->> + *
->> + * Return pointer to the entry to be found on success, or NULL on failure.
->
-> Why not make this completely kernel-doc compliant as you're already
-> re-writing the comment?
+Please ignore this to check next version.
 
-Hi Julian,
+Tiejun
 
-Thank you for reminding me this. I think I may have some more problems
-like this. I'll post a patch to fix as many of them as I can. :)
-
-Thanks.
+On 01/15/2013 06:31 PM, Tiejun Chen wrote:
+> With lazy interrupt, some implementations of hotplug will
+> get some interrupts even while offline, just ignore these.
+>
+> Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
+> ---
+>   arch/powerpc/kernel/irq.c |    6 ++++++
+>   1 file changed, 6 insertions(+)
+>
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 4f97fe3..dbca574 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -144,6 +144,12 @@ notrace unsigned int __check_irq_replay(void)
+>   	 */
+>   	unsigned char happened = local_paca->irq_happened;
+>
+> +	/* Some implementations of hotplug will get some interrupts while
+> +	 * offline, just ignore these.
+> +	 */
+> +	if (cpu_is_offline(smp_processor_id()))
+> +		return 0;
+> +
+>   	/* Clear bit 0 which we wouldn't clear otherwise */
+>   	local_paca->irq_happened &= ~PACA_IRQ_HARD_DIS;
+>
+>
