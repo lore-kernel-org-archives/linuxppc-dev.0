@@ -1,30 +1,22 @@
-Return-Path: <mhocko@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 30BB12C009A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 01:15:12 +1100 (EST)
-Date: Wed, 16 Jan 2013 15:15:08 +0100
-From: Michal Hocko <mhocko@suse.cz>
-To: Lin Feng <linfeng@cn.fujitsu.com>
-Subject: Re: [PATCH v3 0/2] memory-hotplug: introduce
- CONFIG_HAVE_BOOTMEM_INFO_NODE and revert register_page_bootmem_info_node()
- when platform not support
-Message-ID: <20130116141508.GF343@dhcp22.suse.cz>
-References: <1358324059-9608-1-git-send-email-linfeng@cn.fujitsu.com>
+Return-Path: <kishon@ti.com>
+From: Kishon Vijay Abraham I <kishon@ti.com>
+To: <devicetree-discuss@lists.ozlabs.org>, <linux-doc@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>, <linux-omap@vger.kernel.org>,
+ <linux-arm-kernel@lists.infradead.org>, <linux-usb@vger.kernel.org>,
+ <linux-sh@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>, <balbi@ti.com>
+Subject: [RFC PATCH 1/6] usb: otg: Add an API to bind the USB controller and
+ PHY
+Date: Wed, 16 Jan 2013 20:30:57 +0530
+Message-ID: <1358348462-27693-2-git-send-email-kishon@ti.com>
+In-Reply-To: <1358348462-27693-1-git-send-email-kishon@ti.com>
+References: <1358348462-27693-1-git-send-email-kishon@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1358324059-9608-1-git-send-email-linfeng@cn.fujitsu.com>
-Cc: linux-ia64@vger.kernel.org, aquini@redhat.com, heiko.carstens@de.ibm.com,
- tangchen@cn.fujitsu.com, dhowells@redhat.com, paul.gortmaker@windriver.com,
- paulus@samba.org, jbeulich@suse.com, hpa@zytor.com, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, x86@kernel.org, isimatu.yasuaki@jp.fujitsu.com,
- mingo@redhat.com, gerald.schaefer@de.ibm.com, fenghua.yu@intel.com,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, mel@csn.ul.ie, tglx@linutronix.de,
- kamezawa.hiroyu@jp.fujitsu.com, tony.luck@intel.com, laijs@cn.fujitsu.com,
- linux-mm@kvack.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- minchan@kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Content-Type: text/plain
+Cc: linux@arm.linux.org.uk, b-cousson@ti.com, tony@atomide.com,
+ gregkh@linuxfoundation.org, rob.herring@calxeda.com, kishon@ti.com,
+ cbou@mail.ru, alexander.shishkin@linux.intel.com, horms@verge.net.au,
+ stern@rowland.harvard.edu, haojian.zhuang@gmail.com, rob@landley.net,
+ eric.y.miao@gmail.com, dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,19 +26,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 16-01-13 16:14:17, Lin Feng wrote:
-[...]
-> changeLog v2->v3:
-> 1) patch 1/2:
-> - Rename the patch title to conform it's content.
-> - Update memory_hotplug.h and remove the misleading TODO pointed out by Michal.
-> 2) patch 2/2:
-> - New added, remove unimplemented functions suggested by Michal.
+New platforms are added which has multiple PHY's (of same type) and
+which has multiple USB controllers. The binding information has to be
+present in the PHY library (otg.c) in order for it to return the
+appropriate PHY whenever the USB controller request for the PHY. So
+added a new API to pass the binding information. This API should be
+called by platform specific initialization code.
 
-I think that both patches should be merged into one and put to Andrew's
-queue as
-memory-hotplug-implement-register_page_bootmem_info_section-of-sparse-vmemmap-fix.patch
-rather than a separate patch.
+Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+---
+ drivers/usb/otg/otg.c   |   37 +++++++++++++++++++++++++++++++++++++
+ include/linux/usb/phy.h |   22 ++++++++++++++++++++++
+ 2 files changed, 59 insertions(+)
+
+diff --git a/drivers/usb/otg/otg.c b/drivers/usb/otg/otg.c
+index a30c041..492ba2f 100644
+--- a/drivers/usb/otg/otg.c
++++ b/drivers/usb/otg/otg.c
+@@ -18,6 +18,7 @@
+ #include <linux/usb/otg.h>
+ 
+ static LIST_HEAD(phy_list);
++static LIST_HEAD(phy_bind_list);
+ static DEFINE_SPINLOCK(phy_lock);
+ 
+ static struct usb_phy *__usb_find_phy(struct list_head *list,
+@@ -201,6 +202,42 @@ void usb_remove_phy(struct usb_phy *x)
+ }
+ EXPORT_SYMBOL(usb_remove_phy);
+ 
++/**
++ * usb_bind_phy - bind the phy and the controller that uses the phy
++ * @dev_name: the device name of the device that will bind to the phy
++ * @index: index to specify the port number
++ * @phy_dev_name: the device name of the phy
++ *
++ * Fills the phy_bind structure with the dev_name and phy_dev_name. This will
++ * be used when the phy driver registers the phy and when the controller
++ * requests this phy.
++ *
++ * To be used by platform specific initialization code.
++ */
++struct usb_phy_bind __init *usb_bind_phy(const char *dev_name, u8 index,
++				const char *phy_dev_name)
++{
++	struct usb_phy_bind *phy_bind;
++	unsigned long flags;
++
++	phy_bind = kzalloc(sizeof(*phy_bind), GFP_KERNEL);
++	if (!phy_bind) {
++		pr_err("phy_bind(): No memory for phy_bind");
++		return ERR_PTR(-ENOMEM);
++	}
++
++	phy_bind->dev_name = dev_name;
++	phy_bind->phy_dev_name = phy_dev_name;
++	phy_bind->index = index;
++
++	spin_lock_irqsave(&phy_lock, flags);
++	list_add_tail(&phy_bind->list, &phy_bind_list);
++	spin_unlock_irqrestore(&phy_lock, flags);
++
++	return phy_bind;
++}
++EXPORT_SYMBOL_GPL(usb_bind_phy);
++
+ const char *otg_state_string(enum usb_otg_state state)
+ {
+ 	switch (state) {
+diff --git a/include/linux/usb/phy.h b/include/linux/usb/phy.h
+index a29ae1e..fbeab1a 100644
+--- a/include/linux/usb/phy.h
++++ b/include/linux/usb/phy.h
+@@ -106,6 +106,21 @@ struct usb_phy {
+ 			enum usb_device_speed speed);
+ };
+ 
++/**
++ * struct usb_phy_bind - represent the binding for the phy
++ * @dev_name: the device name of the device that will bind to the phy
++ * @phy_dev_name: the device name of the phy
++ * @index: used if a single controller uses multiple phys
++ * @phy: reference to the phy
++ * @list: to maintain a linked list of the binding information
++ */
++struct usb_phy_bind {
++	const char	*dev_name;
++	const char	*phy_dev_name;
++	u8		index;
++	struct usb_phy	*phy;
++	struct list_head list;
++};
+ 
+ /* for board-specific init logic */
+ extern int usb_add_phy(struct usb_phy *, enum usb_phy_type type);
+@@ -151,6 +166,8 @@ extern struct usb_phy *devm_usb_get_phy(struct device *dev,
+ 	enum usb_phy_type type);
+ extern void usb_put_phy(struct usb_phy *);
+ extern void devm_usb_put_phy(struct device *dev, struct usb_phy *x);
++extern struct usb_phy_bind *usb_bind_phy(const char *dev_name, u8 index,
++				const char *phy_dev_name);
+ #else
+ static inline struct usb_phy *usb_get_phy(enum usb_phy_type type)
+ {
+@@ -171,6 +188,11 @@ static inline void devm_usb_put_phy(struct device *dev, struct usb_phy *x)
+ {
+ }
+ 
++static inline struct usb_phy_bind *usb_bind_phy(const char *dev_name, u8 index,
++				const char *phy_dev_name)
++{
++	return NULL;
++}
+ #endif
+ 
+ static inline int
 -- 
-Michal Hocko
-SUSE Labs
+1.7.9.5
