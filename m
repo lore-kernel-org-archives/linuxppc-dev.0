@@ -1,19 +1,26 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3EB162C0114
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2013 14:01:26 +1100 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
-Subject: [v1][PATCH 1/1] ppc64: max next_tb to prevent from replaying timer
- interrupt
-Date: Wed, 16 Jan 2013 11:01:19 +0800
-Message-ID: <1358305279-19068-1-git-send-email-tiejun.chen@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <linfeng@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id E7A8E2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jan 2013 19:15:29 +1100 (EST)
+From: Lin Feng <linfeng@cn.fujitsu.com>
+To: akpm@linux-foundation.org, mhocko@suse.cz, linux-mm@kvack.org,
+ tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com, jbeulich@suse.com,
+ dhowells@redhat.com, wency@cn.fujitsu.com,
+ isimatu.yasuaki@jp.fujitsu.com, paul.gortmaker@windriver.com,
+ laijs@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com, mel@csn.ul.ie,
+ minchan@kernel.org, aquini@redhat.com, jiang.liu@huawei.com,
+ tony.luck@intel.com, fenghua.yu@intel.com, benh@kernel.crashing.org,
+ paulus@samba.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+ davem@davemloft.net, michael@ellerman.id.au,
+ gerald.schaefer@de.ibm.com, gregkh@linuxfoundation.org
+Subject: [PATCH v3 0/2] memory-hotplug: introduce
+ CONFIG_HAVE_BOOTMEM_INFO_NODE and revert register_page_bootmem_info_node()
+ when platform not support
+Date: Wed, 16 Jan 2013 16:14:17 +0800
+Message-Id: <1358324059-9608-1-git-send-email-linfeng@cn.fujitsu.com>
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org, x86@kernel.org,
+ linux-kernel@vger.kernel.org, tangchen@cn.fujitsu.com, linfeng@cn.fujitsu.com,
+ sparclinux@vger.kernel.org, linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,43 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With lazy interrupt, we always call __check_irq_replaysome with
-decrementers_next_tb to check if we need to replay timer interrupt.
-So in hotplug case we also need to set decrementers_next_tb as MAX
-to make sure __check_irq_replay don't replay timer interrupt
-when return as we expect, otherwise we'll trap here infinitely.
+Memory-hotplug codes for x86_64 have been implemented by patchset:
+https://lkml.org/lkml/2013/1/9/124
+While other platforms haven't been completely implemented yet.
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
----
-v1:
+If we enable both CONFIG_MEMORY_HOTPLUG_SPARSE and CONFIG_SPARSEMEM_VMEMMAP,
+register_page_bootmem_info_node() may be buggy, which is a hotplug generic
+function but falling back to call platform related function
+register_page_bootmem_memmap().
 
-* In hotplug case we max decrementers_next_tb to prevent from
-replaying timer interrupt for any offline CPU.
+Other platforms such as powerpc it's not implemented, so on such platforms,
+revert them to empty as they were before.
 
- arch/powerpc/kernel/time.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+It's implemented by adding a new Kconfig option named
+CONFIG_HAVE_BOOTMEM_INFO_NODE, which will be automatically selected by
+memory-hotplug supported archs(currently only on x86_64).
 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 6f6b1cc..127361e 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -494,10 +494,15 @@ void timer_interrupt(struct pt_regs * regs)
- 	set_dec(DECREMENTER_MAX);
- 
- 	/* Some implementations of hotplug will get timer interrupts while
--	 * offline, just ignore these
-+	 * offline, just ignore these and we also need to set
-+	 * decrementers_next_tb as MAX to make sure __check_irq_replay
-+	 * don't replay timer interrupt when return, otherwise we'll trap
-+	 * here infinitely :(
- 	 */
--	if (!cpu_online(smp_processor_id()))
-+	if (!cpu_online(smp_processor_id())) {
-+		*next_tb = ~(u64)0;
- 		return;
-+	}
- 
- 	/* Conditionally hard-enable interrupts now that the DEC has been
- 	 * bumped to its maximum value
--- 
-1.7.9.5
+changeLog v2->v3:
+1) patch 1/2:
+- Rename the patch title to conform it's content.
+- Update memory_hotplug.h and remove the misleading TODO pointed out by Michal.
+2) patch 2/2:
+- New added, remove unimplemented functions suggested by Michal.
+
+ChangeLog v1->v2:
+1) patch 1/2:
+- Add a Kconfig option named HAVE_BOOTMEM_INFO_NODE suggested by Michal, which
+  will be automatically selected by supported archs(currently only on x86_64).
+
+Lin Feng (1):
+  memory-hotplug: revert register_page_bootmem_info_node() to empty
+    when platform related code is not implemented
+
+Michal Hocko (1):
+  memory-hotplug: cleanup: removing the arch specific functions without
+    any implementation
+
+ arch/ia64/mm/discontig.c       |    5 -----
+ arch/powerpc/mm/init_64.c      |    5 -----
+ arch/s390/mm/vmem.c            |    6 ------
+ arch/sparc/mm/init_64.c        |    5 -----
+ arch/x86/mm/init_64.c          |    2 +-
+ include/linux/memory_hotplug.h |    6 ++++++
+ mm/Kconfig                     |    8 ++++++++
+ mm/memory_hotplug.c            |    2 ++
+ 8 files changed, 17 insertions(+), 22 deletions(-)
