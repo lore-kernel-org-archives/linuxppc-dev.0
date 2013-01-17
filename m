@@ -1,26 +1,24 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-vc0-f175.google.com (mail-vc0-f175.google.com
- [209.85.220.175])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A338D2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 22:13:23 +1100 (EST)
-Received: by mail-vc0-f175.google.com with SMTP id fy7so2336152vcb.6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 03:13:20 -0800 (PST)
+Return-Path: <kishon@ti.com>
+Message-ID: <50F7DD2C.90500@ti.com>
+Date: Thu, 17 Jan 2013 16:44:52 +0530
+From: kishon <kishon@ti.com>
 MIME-Version: 1.0
-In-Reply-To: <1358416874-27011-2-git-send-email-peter.chen@freescale.com>
-References: <1358416874-27011-1-git-send-email-peter.chen@freescale.com>
- <1358416874-27011-2-git-send-email-peter.chen@freescale.com>
-Date: Thu, 17 Jan 2013 09:13:19 -0200
-Message-ID: <CAOMZO5Chu0bcXPqn+wWHwAqLu+27DvLx1=Bzaffpd-bA2ahaAQ@mail.gmail.com>
-Subject: Re: [PATCH v6 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
- platform_device_id
-From: Fabio Estevam <festevam@gmail.com>
-To: Peter Chen <peter.chen@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- balbi@ti.com, kernel@pengutronix.de, shawn.guo@linaro.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+To: Roger Quadros <rogerq@ti.com>
+Subject: Re: [RFC PATCH 1/6] usb: otg: Add an API to bind the USB controller
+ and PHY
+References: <1358348462-27693-1-git-send-email-kishon@ti.com>
+ <1358348462-27693-2-git-send-email-kishon@ti.com> <50F7C643.600@ti.com>
+In-Reply-To: <50F7C643.600@ti.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
+ linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
+ stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
+ haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
+ dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,11 +28,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 17, 2013 at 8:01 AM, Peter Chen <peter.chen@freescale.com> wrote:
+Hi,
 
->         /* make sure USB_CLK is running at 60 MHz +/- 1000 Hz */
-> -       if (!cpu_is_mx51()) {
-> +       if (!strcmp(pdev->id_entry->name, "imx-udc-mx27")) {]]
+On Thursday 17 January 2013 03:07 PM, Roger Quadros wrote:
+> On 01/16/2013 05:00 PM, Kishon Vijay Abraham I wrote:
+>> New platforms are added which has multiple PHY's (of same type) and
+>> which has multiple USB controllers. The binding information has to be
+>> present in the PHY library (otg.c) in order for it to return the
+>> appropriate PHY whenever the USB controller request for the PHY. So
+>> added a new API to pass the binding information. This API should be
+>> called by platform specific initialization code.
+>>
+>> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+>> ---
+>>   drivers/usb/otg/otg.c   |   37 +++++++++++++++++++++++++++++++++++++
+>>   include/linux/usb/phy.h |   22 ++++++++++++++++++++++
+>>   2 files changed, 59 insertions(+)
+>>
+>> diff --git a/drivers/usb/otg/otg.c b/drivers/usb/otg/otg.c
+>> index a30c041..492ba2f 100644
+>> --- a/drivers/usb/otg/otg.c
+>> +++ b/drivers/usb/otg/otg.c
+>> @@ -18,6 +18,7 @@
+>>   #include <linux/usb/otg.h>
+>>
+>>   static LIST_HEAD(phy_list);
+>> +static LIST_HEAD(phy_bind_list);
+>>   static DEFINE_SPINLOCK(phy_lock);
+>>
+>>   static struct usb_phy *__usb_find_phy(struct list_head *list,
+>> @@ -201,6 +202,42 @@ void usb_remove_phy(struct usb_phy *x)
+>>   }
+>>   EXPORT_SYMBOL(usb_remove_phy);
+>>
+>> +/**
+>> + * usb_bind_phy - bind the phy and the controller that uses the phy
+>> + * @dev_name: the device name of the device that will bind to the phy
+>> + * @index: index to specify the port number
+>> + * @phy_dev_name: the device name of the phy
+>> + *
+>> + * Fills the phy_bind structure with the dev_name and phy_dev_name. This will
+>> + * be used when the phy driver registers the phy and when the controller
+>> + * requests this phy.
+>> + *
+>> + * To be used by platform specific initialization code.
+>> + */
+>> +struct usb_phy_bind __init *usb_bind_phy(const char *dev_name, u8 index,
+>> +				const char *phy_dev_name)
+>> +{
+>> +	struct usb_phy_bind *phy_bind;
+>> +	unsigned long flags;
+>> +
+>> +	phy_bind = kzalloc(sizeof(*phy_bind), GFP_KERNEL);
+>> +	if (!phy_bind) {
+>> +		pr_err("phy_bind(): No memory for phy_bind");
+>
+> Function name in comment doesn't match the actual.
+> Instead, you could use
+> 	pr_err("%s ...", __func__);
+>
+>> +		return ERR_PTR(-ENOMEM);
+>> +	}
+>> +
+>> +	phy_bind->dev_name = dev_name;
+>> +	phy_bind->phy_dev_name = phy_dev_name;
+>> +	phy_bind->index = index;
+>> +
+>> +	spin_lock_irqsave(&phy_lock, flags);
+>> +	list_add_tail(&phy_bind->list, &phy_bind_list);
+>> +	spin_unlock_irqrestore(&phy_lock, flags);
+>> +
+>> +	return phy_bind;
+>> +}
+>> +EXPORT_SYMBOL_GPL(usb_bind_phy);
+>> +
+>>   const char *otg_state_string(enum usb_otg_state state)
+>>   {
+>>   	switch (state) {
+>> diff --git a/include/linux/usb/phy.h b/include/linux/usb/phy.h
+>> index a29ae1e..fbeab1a 100644
+>> --- a/include/linux/usb/phy.h
+>> +++ b/include/linux/usb/phy.h
+>> @@ -106,6 +106,21 @@ struct usb_phy {
+>>   			enum usb_device_speed speed);
+>>   };
+>>
+>> +/**
+>> + * struct usb_phy_bind - represent the binding for the phy
+>> + * @dev_name: the device name of the device that will bind to the phy
+>> + * @phy_dev_name: the device name of the phy
+>> + * @index: used if a single controller uses multiple phys
+>> + * @phy: reference to the phy
+>> + * @list: to maintain a linked list of the binding information
+>> + */
+>> +struct usb_phy_bind {
+>> +	const char	*dev_name;
+>> +	const char	*phy_dev_name;
+>> +	u8		index;
+>> +	struct usb_phy	*phy;
+>> +	struct list_head list;
+>> +};
+>>
+>>   /* for board-specific init logic */
+>>   extern int usb_add_phy(struct usb_phy *, enum usb_phy_type type);
+>> @@ -151,6 +166,8 @@ extern struct usb_phy *devm_usb_get_phy(struct device *dev,
+>>   	enum usb_phy_type type);
+>>   extern void usb_put_phy(struct usb_phy *);
+>>   extern void devm_usb_put_phy(struct device *dev, struct usb_phy *x);
+>> +extern struct usb_phy_bind *usb_bind_phy(const char *dev_name, u8 index,
+>> +				const char *phy_dev_name);
+>>   #else
+>>   static inline struct usb_phy *usb_get_phy(enum usb_phy_type type)
+>>   {
+>> @@ -171,6 +188,11 @@ static inline void devm_usb_put_phy(struct device *dev, struct usb_phy *x)
+>>   {
+>>   }
+>>
+>> +static inline struct usb_phy_bind *usb_bind_phy(const char *dev_name, u8 index,
+>> +				const char *phy_dev_name)
+>> +{
+>> +	return NULL;
+>> +}
+>>   #endif
+>>
+>>   static inline int
+>>
+>
+> Controllers like ehci-omap which don't need OTG functionality would
+> benefit from this API. Can we make these PHY APIs not dependent on OTG /
+> OTG_UTILS?
 
-Shouldn't this be:
- if (!strcmp(pdev->id_entry->name, "imx-udc-mx51"))
+Actually much of whatever is in otg.c can be used by controllers which 
+don't have OTG functionality (except otg_state_string). I vaguely 
+remember, there was a patch that renamed otg.c to phy.c etc.. I'm not 
+sure what happened to that.
+
+Thanks
+Kishon
