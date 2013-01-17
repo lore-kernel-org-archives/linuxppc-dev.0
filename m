@@ -1,17 +1,19 @@
 Return-Path: <B29397@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe001.messaging.microsoft.com [216.32.180.184])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1BCA72C0661
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 21:03:32 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id E28A92C06A8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 21:03:41 +1100 (EST)
 From: Peter Chen <peter.chen@freescale.com>
 To: <shawn.guo@linaro.org>, <balbi@ti.com>, <kernel@pengutronix.de>,
  <gregkh@linuxfoundation.org>, <r58472@freescale.com>
-Subject: [PATCH v6 0/3] Fix the Build error for fsl_mxc_udc.c
-Date: Thu, 17 Jan 2013 18:03:14 +0800
-Message-ID: <1358416997-29099-1-git-send-email-peter.chen@freescale.com>
+Subject: [PATCH v6 2/3] usb: fsl_mxc_udc: replace MX35_IO_ADDRESS to ioremap
+Date: Thu, 17 Jan 2013 18:03:16 +0800
+Message-ID: <1358416997-29099-3-git-send-email-peter.chen@freescale.com>
+In-Reply-To: <1358416997-29099-1-git-send-email-peter.chen@freescale.com>
+References: <1358416997-29099-1-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -25,44 +27,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Changes for v6:
-- Only using imx-udc-mx27 and imx-udc-mx51 stands for
-all kinds of i.mx udc
-- Fix below build error for platform_device_id at fsl_udc_core.c
-drivers/usb/gadget/fsl_usb2_udc: struct platform_device_id is 24 bytes.? The last of 5 is:
-| 0x69 0x6d 0x78 0x2d 0x75 0x64 0x63 0x2d 0x6d 0x78 0x35 0x31 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
-+0x00 0x00 0x00
-| FATAL: drivers/usb/gadget/fsl_usb2_udc: struct platform_device_id is not terminated with a NULL entry!
-| make[1]: *** [__modpost] Error 1
+As mach/hardware.h is deleted, we can't visit platform code at driver.
+It has no phy driver to combine with this controller, so it has to use
+ioremap to map phy address as a workaround.
 
-Changes for v5:
-- Using strcmp to get specific SoC
-- Delete one cpu_is_mx35() as it has already pdata runtime check
+Signed-off-by: Peter Chen <peter.chen@freescale.com>
+---
+ drivers/usb/gadget/fsl_mxc_udc.c  |   30 +++++++++++++++++++++++-------
+ drivers/usb/gadget/fsl_udc_core.c |    4 +++-
+ drivers/usb/gadget/fsl_usb2_udc.h |    5 +++--
+ 3 files changed, 29 insertions(+), 10 deletions(-)
 
-Changes for v4:
-- Using pdev's struct resource to do ioremap
-- Add ioremap return value check
-
-Changes for v3:
-- Split the one big patch into three patches
-
-Changes for v2:
-- Add const for fsl_udc_devtype
-- Do ioremap for phy address at fsl-mxc-udc
-
-Peter Chen (3):
-  usb: fsl-mxc-udc: replace cpu_is_xxx() with platform_device_id
-  usb: fsl_mxc_udc: replace MX35_IO_ADDRESS to ioremap
-  ARM: i.MX clock: Change the connection-id for fsl-usb2-udc
-
- arch/arm/mach-imx/clk-imx25.c                     |    6 +-
- arch/arm/mach-imx/clk-imx27.c                     |    6 +-
- arch/arm/mach-imx/clk-imx31.c                     |    6 +-
- arch/arm/mach-imx/clk-imx35.c                     |    6 +-
- arch/arm/mach-imx/clk-imx51-imx53.c               |    6 +-
- arch/arm/mach-imx/devices/devices-common.h        |    1 +
- arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c |   15 ++++---
- drivers/usb/gadget/fsl_mxc_udc.c                  |   40 +++++++++++++-------
- drivers/usb/gadget/fsl_udc_core.c                 |   42 ++++++++++++--------
- drivers/usb/gadget/fsl_usb2_udc.h                 |    5 +-
- 10 files changed, 78 insertions(+), 55 deletions(-)
+diff --git a/drivers/usb/gadget/fsl_mxc_udc.c b/drivers/usb/gadget/fsl_mxc_udc.c
+index de851e5..d3bd7b0 100644
+--- a/drivers/usb/gadget/fsl_mxc_udc.c
++++ b/drivers/usb/gadget/fsl_mxc_udc.c
+@@ -23,7 +23,8 @@ static struct clk *mxc_per_clk;
+ static struct clk *mxc_ipg_clk;
+ 
+ /* workaround ENGcm09152 for i.MX35 */
+-#define USBPHYCTRL_OTGBASE_OFFSET	0x608
++#define MX35_USBPHYCTRL_OFFSET		0x600
++#define USBPHYCTRL_OTGBASE_OFFSET	0x8
+ #define USBPHYCTRL_EVDO			(1 << 23)
+ 
+ int fsl_udc_clk_init(struct platform_device *pdev)
+@@ -77,25 +78,40 @@ eclkrate:
+ 	return ret;
+ }
+ 
+-void fsl_udc_clk_finalize(struct platform_device *pdev)
++int fsl_udc_clk_finalize(struct platform_device *pdev)
+ {
+ 	struct fsl_usb2_platform_data *pdata = pdev->dev.platform_data;
+-	unsigned int v;
++	int ret = 0;
+ 
+ 	/* workaround ENGcm09152 for i.MX35 */
+ 	if (pdata->workaround & FLS_USB2_WORKAROUND_ENGCM09152) {
+-		v = readl(MX35_IO_ADDRESS(MX35_USB_BASE_ADDR +
+-				USBPHYCTRL_OTGBASE_OFFSET));
++		unsigned int v;
++		struct resource *res = platform_get_resource
++			(pdev, IORESOURCE_MEM, 0);
++		void __iomem *phy_regs = ioremap(res->start +
++						MX35_USBPHYCTRL_OFFSET, 512);
++		if (!phy_regs) {
++			dev_err(&pdev->dev, "ioremap for phy address fails\n");
++			ret = -EINVAL;
++			goto ioremap_err;
++		}
++
++		v = readl(phy_regs + USBPHYCTRL_OTGBASE_OFFSET);
+ 		writel(v | USBPHYCTRL_EVDO,
+-			MX35_IO_ADDRESS(MX35_USB_BASE_ADDR +
+-				USBPHYCTRL_OTGBASE_OFFSET));
++			phy_regs + USBPHYCTRL_OTGBASE_OFFSET);
++
++		iounmap(phy_regs);
+ 	}
+ 
++
++ioremap_err:
+ 	/* ULPI transceivers don't need usbpll */
+ 	if (pdata->phy_mode == FSL_USB2_PHY_ULPI) {
+ 		clk_disable_unprepare(mxc_per_clk);
+ 		mxc_per_clk = NULL;
+ 	}
++
++	return ret;
+ }
+ 
+ void fsl_udc_clk_release(void)
+diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
+index 5fc1d72..667275c 100644
+--- a/drivers/usb/gadget/fsl_udc_core.c
++++ b/drivers/usb/gadget/fsl_udc_core.c
+@@ -2543,7 +2543,9 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
+ 		dr_controller_setup(udc_controller);
+ 	}
+ 
+-	fsl_udc_clk_finalize(pdev);
++	ret = fsl_udc_clk_finalize(pdev);
++	if (ret)
++		goto err_free_irq;
+ 
+ 	/* Setup gadget structure */
+ 	udc_controller->gadget.ops = &fsl_gadget_ops;
+diff --git a/drivers/usb/gadget/fsl_usb2_udc.h b/drivers/usb/gadget/fsl_usb2_udc.h
+index f61a967..c6703bb 100644
+--- a/drivers/usb/gadget/fsl_usb2_udc.h
++++ b/drivers/usb/gadget/fsl_usb2_udc.h
+@@ -592,15 +592,16 @@ static inline struct ep_queue_head *get_qh_by_ep(struct fsl_ep *ep)
+ struct platform_device;
+ #ifdef CONFIG_ARCH_MXC
+ int fsl_udc_clk_init(struct platform_device *pdev);
+-void fsl_udc_clk_finalize(struct platform_device *pdev);
++int fsl_udc_clk_finalize(struct platform_device *pdev);
+ void fsl_udc_clk_release(void);
+ #else
+ static inline int fsl_udc_clk_init(struct platform_device *pdev)
+ {
+ 	return 0;
+ }
+-static inline void fsl_udc_clk_finalize(struct platform_device *pdev)
++static inline int fsl_udc_clk_finalize(struct platform_device *pdev)
+ {
++	return 0;
+ }
+ static inline void fsl_udc_clk_release(void)
+ {
+-- 
+1.7.0.4
