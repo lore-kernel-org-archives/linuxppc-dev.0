@@ -1,26 +1,23 @@
-Return-Path: <shawn.guo@linaro.org>
-Received: from co9outboundpool.messaging.microsoft.com
- (co9ehsobe004.messaging.microsoft.com [207.46.163.27])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A575A2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 22:00:39 +1100 (EST)
-Date: Thu, 17 Jan 2013 19:01:05 +0800
-From: Shawn Guo <shawn.guo@linaro.org>
-To: Felipe Balbi <balbi@ti.com>
-Subject: Re: [PATCH v6 3/3] ARM: i.MX clock: Change the connection-id for
- fsl-usb2-udc
-Message-ID: <20130117110104.GO26179@S2101-09.ap.freescale.net>
-References: <1358416997-29099-1-git-send-email-peter.chen@freescale.com>
- <1358416997-29099-4-git-send-email-peter.chen@freescale.com>
- <20130117105833.GP10814@arwen.pp.htv.fi>
+Return-Path: <kishon@ti.com>
+Message-ID: <50F7DA74.2020009@ti.com>
+Date: Thu, 17 Jan 2013 16:33:16 +0530
+From: kishon <kishon@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20130117105833.GP10814@arwen.pp.htv.fi>
-Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- Peter Chen <peter.chen@freescale.com>, kernel@pengutronix.de,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+To: Roger Quadros <rogerq@ti.com>
+Subject: Re: [RFC PATCH 2/6] ARM: OMAP: USB: Add phy binding information
+References: <1358348462-27693-1-git-send-email-kishon@ti.com>
+ <1358348462-27693-3-git-send-email-kishon@ti.com> <50F7C6C7.3030400@ti.com>
+In-Reply-To: <50F7C6C7.3030400@ti.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
+ linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
+ stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
+ haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
+ dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,13 +27,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 17, 2013 at 12:58:33PM +0200, Felipe Balbi wrote:
-> On Thu, Jan 17, 2013 at 06:03:17PM +0800, Peter Chen wrote:
-> > As we use platform_device_id for fsl-usb2-udc driver, it needs to
-> > change clk connection-id, or the related devm_clk_get will be failed.
-> > 
-> > Signed-off-by: Peter Chen <peter.chen@freescale.com>
-> 
-> do I get Acked-by for this one ?
+Hi,
 
-Acked-by: Shawn Guo <shawn.guo@linaro.org>
+On Thursday 17 January 2013 03:09 PM, Roger Quadros wrote:
+> On 01/16/2013 05:00 PM, Kishon Vijay Abraham I wrote:
+>> This is in preparation for the changes in PHY library to support adding
+>> and getting multiple PHYs of the same type. In the new design, the
+>> binding information between the PHY and the USB controller should be
+>> specified in the platform specific initialization code. So it's been
+>> done for OMAP platforms here.
+>>
+>> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+>> ---
+>> This kind-of binding should be done in all the platforms (I've done only
+>> for OMAP platform).
+>>   arch/arm/mach-omap2/usb-musb.c |    7 ++++++-
+>>   1 file changed, 6 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/arm/mach-omap2/usb-musb.c b/arch/arm/mach-omap2/usb-musb.c
+>> index 9d27e3f..bbe2fa5 100644
+>> --- a/arch/arm/mach-omap2/usb-musb.c
+>> +++ b/arch/arm/mach-omap2/usb-musb.c
+>> @@ -24,6 +24,7 @@
+>>   #include <linux/dma-mapping.h>
+>>   #include <linux/io.h>
+>>   #include <linux/usb/musb.h>
+>> +#include <linux/usb/phy.h>
+>>
+>>   #include "omap_device.h"
+>>   #include "soc.h"
+>> @@ -85,8 +86,12 @@ void __init usb_musb_init(struct omap_musb_board_data *musb_board_data)
+>>   	musb_plat.mode = board_data->mode;
+>>   	musb_plat.extvbus = board_data->extvbus;
+>>
+>> -	if (cpu_is_omap44xx())
+>> +	if (cpu_is_omap44xx()) {
+>>   		musb_plat.has_mailbox = true;
+>> +		usb_bind_phy("musb-hdrc.0.auto", 0, "omap-usb2.1.auto");
+>> +	} else if (cpu_is_omap34xx()) {
+>> +		usb_bind_phy("musb-hdrc.0.auto", 0, "twl4030_usb");
+>> +	}
+>
+> Are you sure than these OMAP platforms cannot be wired in any other way
+> to the PHY?
+>
+> If they can be then this association must come from the board files or
+> device tree.
+
+I had given some thought about that and since all the existing OMAP 
+platforms had it this way, I added it here.
+You having pointed that out, I'll move these to board files.
+
+Thanks
+Kishon
