@@ -1,23 +1,30 @@
-Return-Path: <kishon@ti.com>
-Message-ID: <50F7DA74.2020009@ti.com>
-Date: Thu, 17 Jan 2013 16:33:16 +0530
-From: kishon <kishon@ti.com>
+Return-Path: <linfeng@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id AB0862C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 22:11:02 +1100 (EST)
+Message-ID: <50F7D456.9000904@cn.fujitsu.com>
+Date: Thu, 17 Jan 2013 18:37:10 +0800
+From: Lin Feng <linfeng@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Roger Quadros <rogerq@ti.com>
-Subject: Re: [RFC PATCH 2/6] ARM: OMAP: USB: Add phy binding information
-References: <1358348462-27693-1-git-send-email-kishon@ti.com>
- <1358348462-27693-3-git-send-email-kishon@ti.com> <50F7C6C7.3030400@ti.com>
-In-Reply-To: <50F7C6C7.3030400@ti.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
- linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
- stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
- haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
- gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
- dwmw2@infradead.org
+To: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH v3 1/2] memory-hotplug: introduce
+ CONFIG_HAVE_BOOTMEM_INFO_NODE
+ and revert register_page_bootmem_info_node() when platform not support
+References: <1358324059-9608-1-git-send-email-linfeng@cn.fujitsu.com>
+ <1358324059-9608-2-git-send-email-linfeng@cn.fujitsu.com>
+ <20130116141436.GE343@dhcp22.suse.cz>
+In-Reply-To: <20130116141436.GE343@dhcp22.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-ia64@vger.kernel.org, aquini@redhat.com, heiko.carstens@de.ibm.com,
+ tangchen@cn.fujitsu.com, dhowells@redhat.com, paul.gortmaker@windriver.com,
+ paulus@samba.org, jbeulich@suse.com, hpa@zytor.com, sparclinux@vger.kernel.org,
+ linux-s390@vger.kernel.org, x86@kernel.org, isimatu.yasuaki@jp.fujitsu.com,
+ mingo@redhat.com, gerald.schaefer@de.ibm.com, fenghua.yu@intel.com,
+ jiang.liu@huawei.com, wency@cn.fujitsu.com, mel@csn.ul.ie, tglx@linutronix.de,
+ kamezawa.hiroyu@jp.fujitsu.com, tony.luck@intel.com, laijs@cn.fujitsu.com,
+ linux-mm@kvack.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ minchan@kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,56 +34,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Michal,
 
-On Thursday 17 January 2013 03:09 PM, Roger Quadros wrote:
-> On 01/16/2013 05:00 PM, Kishon Vijay Abraham I wrote:
->> This is in preparation for the changes in PHY library to support adding
->> and getting multiple PHYs of the same type. In the new design, the
->> binding information between the PHY and the USB controller should be
->> specified in the platform specific initialization code. So it's been
->> done for OMAP platforms here.
->>
->> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
->> ---
->> This kind-of binding should be done in all the platforms (I've done only
->> for OMAP platform).
->>   arch/arm/mach-omap2/usb-musb.c |    7 ++++++-
->>   1 file changed, 6 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/arm/mach-omap2/usb-musb.c b/arch/arm/mach-omap2/usb-musb.c
->> index 9d27e3f..bbe2fa5 100644
->> --- a/arch/arm/mach-omap2/usb-musb.c
->> +++ b/arch/arm/mach-omap2/usb-musb.c
->> @@ -24,6 +24,7 @@
->>   #include <linux/dma-mapping.h>
->>   #include <linux/io.h>
->>   #include <linux/usb/musb.h>
->> +#include <linux/usb/phy.h>
->>
->>   #include "omap_device.h"
->>   #include "soc.h"
->> @@ -85,8 +86,12 @@ void __init usb_musb_init(struct omap_musb_board_data *musb_board_data)
->>   	musb_plat.mode = board_data->mode;
->>   	musb_plat.extvbus = board_data->extvbus;
->>
->> -	if (cpu_is_omap44xx())
->> +	if (cpu_is_omap44xx()) {
->>   		musb_plat.has_mailbox = true;
->> +		usb_bind_phy("musb-hdrc.0.auto", 0, "omap-usb2.1.auto");
->> +	} else if (cpu_is_omap34xx()) {
->> +		usb_bind_phy("musb-hdrc.0.auto", 0, "twl4030_usb");
->> +	}
->
-> Are you sure than these OMAP platforms cannot be wired in any other way
-> to the PHY?
->
-> If they can be then this association must come from the board files or
-> device tree.
+On 01/16/2013 10:14 PM, Michal Hocko wrote:
+> On Wed 16-01-13 16:14:18, Lin Feng wrote:
+> [...]
+>> diff --git a/mm/Kconfig b/mm/Kconfig
+>> index 278e3ab..f8c5799 100644
+>> --- a/mm/Kconfig
+>> +++ b/mm/Kconfig
+>> @@ -162,10 +162,18 @@ config MOVABLE_NODE
+>>  	  Say Y here if you want to hotplug a whole node.
+>>  	  Say N here if you want kernel to use memory on all nodes evenly.
+>>  
+>> +#
+>> +# Only be set on architectures that have completely implemented memory hotplug
+>> +# feature. If you are not sure, don't touch it.
+>> +#
+>> +config HAVE_BOOTMEM_INFO_NODE
+>> +	def_bool n
+>> +
+>>  # eventually, we can have this option just 'select SPARSEMEM'
+>>  config MEMORY_HOTPLUG
+>>  	bool "Allow for memory hot-add"
+>>  	select MEMORY_ISOLATION
+>> +	select HAVE_BOOTMEM_INFO_NODE if X86_64
+>>  	depends on SPARSEMEM || X86_64_ACPI_NUMA
+>>  	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
+>>  	depends on (IA64 || X86 || PPC_BOOK3S_64 || SUPERH || S390)
+> 
+> I am still not sure I understand the relation to MEMORY_HOTREMOVE.
+> Is register_page_bootmem_info_node required/helpful even if
+> !CONFIG_MEMORY_HOTREMOVE?
+>From old kenrel's view register_page_bootmem_info_node() is defined in 
+CONFIG_MEMORY_HOTPLUG_SPARSE, it registers some info for 
+memory hotplug/remove. If we don't use MEMORY_HOTPLUG feature, this
+function is empty, we don't need the info at all.
+So this info is not required/helpful if !CONFIG_MEMORY_HOTREMOVE.
+> 
+> Also, now that I am thinking about that more, maybe it would
+> be cleaner to put the select into arch/x86/Kconfig and do it
+> same as ARCH_ENABLE_MEMORY_{HOTPLUG,HOTREMOVE} (and name it
+> ARCH_HAVE_BOOTMEM_INFO_NODE).
+> 
+Maybe put it in mm/Kconfig is a better choice, because if one day someone implements
+the register_page_bootmem_info_node() for other archs they will get some clues
+here, that's it has been implemented on x86_64. 
+But I'm not so sure...
 
-I had given some thought about that and since all the existing OMAP 
-platforms had it this way, I added it here.
-You having pointed that out, I'll move these to board files.
-
-Thanks
-Kishon
+thanks,
+linfeng
