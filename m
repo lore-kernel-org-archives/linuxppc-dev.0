@@ -1,33 +1,24 @@
-Return-Path: <mhocko@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1A7F12C007A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2013 00:05:18 +1100 (EST)
-Date: Thu, 17 Jan 2013 14:05:09 +0100
-From: Michal Hocko <mhocko@suse.cz>
-To: Lin Feng <linfeng@cn.fujitsu.com>
-Subject: Re: [PATCH v3 1/2] memory-hotplug: introduce
- CONFIG_HAVE_BOOTMEM_INFO_NODE and revert register_page_bootmem_info_node()
- when platform not support
-Message-ID: <20130117130509.GE20538@dhcp22.suse.cz>
-References: <1358324059-9608-1-git-send-email-linfeng@cn.fujitsu.com>
- <1358324059-9608-2-git-send-email-linfeng@cn.fujitsu.com>
- <20130116141436.GE343@dhcp22.suse.cz>
- <50F7D456.9000904@cn.fujitsu.com>
+Return-Path: <rogerq@ti.com>
+Message-ID: <50F7C643.600@ti.com>
+Date: Thu, 17 Jan 2013 11:37:07 +0200
+From: Roger Quadros <rogerq@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <50F7D456.9000904@cn.fujitsu.com>
-Cc: linux-ia64@vger.kernel.org, aquini@redhat.com, heiko.carstens@de.ibm.com,
- tangchen@cn.fujitsu.com, dhowells@redhat.com, paul.gortmaker@windriver.com,
- paulus@samba.org, jbeulich@suse.com, hpa@zytor.com, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, x86@kernel.org, isimatu.yasuaki@jp.fujitsu.com,
- mingo@redhat.com, gerald.schaefer@de.ibm.com, fenghua.yu@intel.com,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, mel@csn.ul.ie, tglx@linutronix.de,
- kamezawa.hiroyu@jp.fujitsu.com, tony.luck@intel.com, laijs@cn.fujitsu.com,
- linux-mm@kvack.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- minchan@kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Subject: Re: [RFC PATCH 1/6] usb: otg: Add an API to bind the USB controller
+ and PHY
+References: <1358348462-27693-1-git-send-email-kishon@ti.com>
+ <1358348462-27693-2-git-send-email-kishon@ti.com>
+In-Reply-To: <1358348462-27693-2-git-send-email-kishon@ti.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
+ linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
+ stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
+ haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
+ dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,37 +28,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu 17-01-13 18:37:10, Lin Feng wrote:
-[...]
-> > I am still not sure I understand the relation to MEMORY_HOTREMOVE.
-> > Is register_page_bootmem_info_node required/helpful even if
-> > !CONFIG_MEMORY_HOTREMOVE?
-> From old kenrel's view register_page_bootmem_info_node() is defined in 
-> CONFIG_MEMORY_HOTPLUG_SPARSE, it registers some info for 
-> memory hotplug/remove. If we don't use MEMORY_HOTPLUG feature, this
-> function is empty, we don't need the info at all.
-> So this info is not required/helpful if !CONFIG_MEMORY_HOTREMOVE.
+On 01/16/2013 05:00 PM, Kishon Vijay Abraham I wrote:
+> New platforms are added which has multiple PHY's (of same type) and
+> which has multiple USB controllers. The binding information has to be
+> present in the PHY library (otg.c) in order for it to return the
+> appropriate PHY whenever the USB controller request for the PHY. So
+> added a new API to pass the binding information. This API should be
+> called by platform specific initialization code.
+> 
+> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+> ---
+>  drivers/usb/otg/otg.c   |   37 +++++++++++++++++++++++++++++++++++++
+>  include/linux/usb/phy.h |   22 ++++++++++++++++++++++
+>  2 files changed, 59 insertions(+)
+> 
+> diff --git a/drivers/usb/otg/otg.c b/drivers/usb/otg/otg.c
+> index a30c041..492ba2f 100644
+> --- a/drivers/usb/otg/otg.c
+> +++ b/drivers/usb/otg/otg.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/usb/otg.h>
+>  
+>  static LIST_HEAD(phy_list);
+> +static LIST_HEAD(phy_bind_list);
+>  static DEFINE_SPINLOCK(phy_lock);
+>  
+>  static struct usb_phy *__usb_find_phy(struct list_head *list,
+> @@ -201,6 +202,42 @@ void usb_remove_phy(struct usb_phy *x)
+>  }
+>  EXPORT_SYMBOL(usb_remove_phy);
+>  
+> +/**
+> + * usb_bind_phy - bind the phy and the controller that uses the phy
+> + * @dev_name: the device name of the device that will bind to the phy
+> + * @index: index to specify the port number
+> + * @phy_dev_name: the device name of the phy
+> + *
+> + * Fills the phy_bind structure with the dev_name and phy_dev_name. This will
+> + * be used when the phy driver registers the phy and when the controller
+> + * requests this phy.
+> + *
+> + * To be used by platform specific initialization code.
+> + */
+> +struct usb_phy_bind __init *usb_bind_phy(const char *dev_name, u8 index,
+> +				const char *phy_dev_name)
+> +{
+> +	struct usb_phy_bind *phy_bind;
+> +	unsigned long flags;
+> +
+> +	phy_bind = kzalloc(sizeof(*phy_bind), GFP_KERNEL);
+> +	if (!phy_bind) {
+> +		pr_err("phy_bind(): No memory for phy_bind");
 
-OK, then I suggest moving it under CONFIG_MEMORY_HOTREMOVE guards rather
-than CONFIG_MEMORY_HOTPLUG.
+Function name in comment doesn't match the actual.
+Instead, you could use
+	pr_err("%s ...", __func__);
 
-> > Also, now that I am thinking about that more, maybe it would
-> > be cleaner to put the select into arch/x86/Kconfig and do it
-> > same as ARCH_ENABLE_MEMORY_{HOTPLUG,HOTREMOVE} (and name it
-> > ARCH_HAVE_BOOTMEM_INFO_NODE).
-> > 
-> Maybe put it in mm/Kconfig is a better choice, because if one day
-> someone implements the register_page_bootmem_info_node() for other
-> archs they will get some clues here, that's it has been implemented on
-> x86_64.
-> But I'm not so sure...
+> +		return ERR_PTR(-ENOMEM);
+> +	}
+> +
+> +	phy_bind->dev_name = dev_name;
+> +	phy_bind->phy_dev_name = phy_dev_name;
+> +	phy_bind->index = index;
+> +
+> +	spin_lock_irqsave(&phy_lock, flags);
+> +	list_add_tail(&phy_bind->list, &phy_bind_list);
+> +	spin_unlock_irqrestore(&phy_lock, flags);
+> +
+> +	return phy_bind;
+> +}
+> +EXPORT_SYMBOL_GPL(usb_bind_phy);
+> +
+>  const char *otg_state_string(enum usb_otg_state state)
+>  {
+>  	switch (state) {
+> diff --git a/include/linux/usb/phy.h b/include/linux/usb/phy.h
+> index a29ae1e..fbeab1a 100644
+> --- a/include/linux/usb/phy.h
+> +++ b/include/linux/usb/phy.h
+> @@ -106,6 +106,21 @@ struct usb_phy {
+>  			enum usb_device_speed speed);
+>  };
+>  
+> +/**
+> + * struct usb_phy_bind - represent the binding for the phy
+> + * @dev_name: the device name of the device that will bind to the phy
+> + * @phy_dev_name: the device name of the phy
+> + * @index: used if a single controller uses multiple phys
+> + * @phy: reference to the phy
+> + * @list: to maintain a linked list of the binding information
+> + */
+> +struct usb_phy_bind {
+> +	const char	*dev_name;
+> +	const char	*phy_dev_name;
+> +	u8		index;
+> +	struct usb_phy	*phy;
+> +	struct list_head list;
+> +};
+>  
+>  /* for board-specific init logic */
+>  extern int usb_add_phy(struct usb_phy *, enum usb_phy_type type);
+> @@ -151,6 +166,8 @@ extern struct usb_phy *devm_usb_get_phy(struct device *dev,
+>  	enum usb_phy_type type);
+>  extern void usb_put_phy(struct usb_phy *);
+>  extern void devm_usb_put_phy(struct device *dev, struct usb_phy *x);
+> +extern struct usb_phy_bind *usb_bind_phy(const char *dev_name, u8 index,
+> +				const char *phy_dev_name);
+>  #else
+>  static inline struct usb_phy *usb_get_phy(enum usb_phy_type type)
+>  {
+> @@ -171,6 +188,11 @@ static inline void devm_usb_put_phy(struct device *dev, struct usb_phy *x)
+>  {
+>  }
+>  
+> +static inline struct usb_phy_bind *usb_bind_phy(const char *dev_name, u8 index,
+> +				const char *phy_dev_name)
+> +{
+> +	return NULL;
+> +}
+>  #endif
+>  
+>  static inline int
+> 
 
-My understanding is that doing that in arch code is more appropriate
-because it makes the generic code less complicated. But I do not have
-any strong opinion on that. Looking at other ARCH_ENABLE_MEMORY_HOTPLUG
-and others suggests that we should be consistent with that.
+Controllers like ehci-omap which don't need OTG functionality would
+benefit from this API. Can we make these PHY APIs not dependent on OTG /
+OTG_UTILS?
 
-Thanks!
--- 
-Michal Hocko
-SUSE Labs
+cheers,
+-roger
