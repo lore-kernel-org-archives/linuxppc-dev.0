@@ -1,24 +1,26 @@
-Return-Path: <B29397@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe001.messaging.microsoft.com [216.32.181.181])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 2E1532C06F6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 21:03:46 +1100 (EST)
-From: Peter Chen <peter.chen@freescale.com>
-To: <shawn.guo@linaro.org>, <balbi@ti.com>, <kernel@pengutronix.de>,
- <gregkh@linuxfoundation.org>, <r58472@freescale.com>
-Subject: [PATCH v6 3/3] ARM: i.MX clock: Change the connection-id for
+Return-Path: <balbi@ti.com>
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mailhost.ti.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id E02722C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 21:58:46 +1100 (EST)
+Date: Thu, 17 Jan 2013 12:58:33 +0200
+From: Felipe Balbi <balbi@ti.com>
+To: Peter Chen <peter.chen@freescale.com>
+Subject: Re: [PATCH v6 3/3] ARM: i.MX clock: Change the connection-id for
  fsl-usb2-udc
-Date: Thu, 17 Jan 2013 18:03:17 +0800
-Message-ID: <1358416997-29099-4-git-send-email-peter.chen@freescale.com>
-In-Reply-To: <1358416997-29099-1-git-send-email-peter.chen@freescale.com>
+Message-ID: <20130117105833.GP10814@arwen.pp.htv.fi>
 References: <1358416997-29099-1-git-send-email-peter.chen@freescale.com>
+ <1358416997-29099-4-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="r7tUYVWcdYzDJoZW"
+In-Reply-To: <1358416997-29099-4-git-send-email-peter.chen@freescale.com>
+Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ balbi@ti.com, kernel@pengutronix.de, shawn.guo@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
+Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,102 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As we use platform_device_id for fsl-usb2-udc driver, it needs to
-change clk connection-id, or the related devm_clk_get will be failed.
+--r7tUYVWcdYzDJoZW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Peter Chen <peter.chen@freescale.com>
----
- arch/arm/mach-imx/clk-imx25.c       |    6 +++---
- arch/arm/mach-imx/clk-imx27.c       |    6 +++---
- arch/arm/mach-imx/clk-imx31.c       |    6 +++---
- arch/arm/mach-imx/clk-imx35.c       |    6 +++---
- arch/arm/mach-imx/clk-imx51-imx53.c |    6 +++---
- 5 files changed, 15 insertions(+), 15 deletions(-)
+On Thu, Jan 17, 2013 at 06:03:17PM +0800, Peter Chen wrote:
+> As we use platform_device_id for fsl-usb2-udc driver, it needs to
+> change clk connection-id, or the related devm_clk_get will be failed.
+>=20
+> Signed-off-by: Peter Chen <peter.chen@freescale.com>
 
-diff --git a/arch/arm/mach-imx/clk-imx25.c b/arch/arm/mach-imx/clk-imx25.c
-index b197aa7..2c570cd 100644
---- a/arch/arm/mach-imx/clk-imx25.c
-+++ b/arch/arm/mach-imx/clk-imx25.c
-@@ -254,9 +254,9 @@ int __init mx25_clocks_init(void)
- 	clk_register_clkdev(clk[ipg], "ipg", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usbotg_ahb], "ahb", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usb_div], "per", "mxc-ehci.2");
--	clk_register_clkdev(clk[ipg], "ipg", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usbotg_ahb], "ahb", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[ipg], "ipg", "imx-udc-mx27");
-+	clk_register_clkdev(clk[usbotg_ahb], "ahb", "imx-udc-mx27");
-+	clk_register_clkdev(clk[usb_div], "per", "imx-udc-mx27");
- 	clk_register_clkdev(clk[nfc_ipg_per], NULL, "imx25-nand.0");
- 	/* i.mx25 has the i.mx35 type cspi */
- 	clk_register_clkdev(clk[cspi1_ipg], NULL, "imx35-cspi.0");
-diff --git a/arch/arm/mach-imx/clk-imx27.c b/arch/arm/mach-imx/clk-imx27.c
-index 4c1d1e4..1ffe3b5 100644
---- a/arch/arm/mach-imx/clk-imx27.c
-+++ b/arch/arm/mach-imx/clk-imx27.c
-@@ -236,9 +236,9 @@ int __init mx27_clocks_init(unsigned long fref)
- 	clk_register_clkdev(clk[lcdc_ahb_gate], "ahb", "imx21-fb.0");
- 	clk_register_clkdev(clk[csi_ahb_gate], "ahb", "imx27-camera.0");
- 	clk_register_clkdev(clk[per4_gate], "per", "imx27-camera.0");
--	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usb_ahb_gate], "ahb", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[usb_div], "per", "imx-udc-mx27");
-+	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "imx-udc-mx27");
-+	clk_register_clkdev(clk[usb_ahb_gate], "ahb", "imx-udc-mx27");
- 	clk_register_clkdev(clk[usb_div], "per", "mxc-ehci.0");
- 	clk_register_clkdev(clk[usb_ipg_gate], "ipg", "mxc-ehci.0");
- 	clk_register_clkdev(clk[usb_ahb_gate], "ahb", "mxc-ehci.0");
-diff --git a/arch/arm/mach-imx/clk-imx31.c b/arch/arm/mach-imx/clk-imx31.c
-index 8be64e0..16ccbd4 100644
---- a/arch/arm/mach-imx/clk-imx31.c
-+++ b/arch/arm/mach-imx/clk-imx31.c
-@@ -139,9 +139,9 @@ int __init mx31_clocks_init(unsigned long fref)
- 	clk_register_clkdev(clk[usb_div_post], "per", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usb_gate], "ahb", "mxc-ehci.2");
- 	clk_register_clkdev(clk[ipg], "ipg", "mxc-ehci.2");
--	clk_register_clkdev(clk[usb_div_post], "per", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usb_gate], "ahb", "fsl-usb2-udc");
--	clk_register_clkdev(clk[ipg], "ipg", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[usb_div_post], "per", "imx-udc-mx27");
-+	clk_register_clkdev(clk[usb_gate], "ahb", "imx-udc-mx27");
-+	clk_register_clkdev(clk[ipg], "ipg", "imx-udc-mx27");
- 	clk_register_clkdev(clk[csi_gate], NULL, "mx3-camera.0");
- 	/* i.mx31 has the i.mx21 type uart */
- 	clk_register_clkdev(clk[uart1_gate], "per", "imx21-uart.0");
-diff --git a/arch/arm/mach-imx/clk-imx35.c b/arch/arm/mach-imx/clk-imx35.c
-index 66f3d65..f0727e8 100644
---- a/arch/arm/mach-imx/clk-imx35.c
-+++ b/arch/arm/mach-imx/clk-imx35.c
-@@ -251,9 +251,9 @@ int __init mx35_clocks_init()
- 	clk_register_clkdev(clk[usb_div], "per", "mxc-ehci.2");
- 	clk_register_clkdev(clk[ipg], "ipg", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usbotg_gate], "ahb", "mxc-ehci.2");
--	clk_register_clkdev(clk[usb_div], "per", "fsl-usb2-udc");
--	clk_register_clkdev(clk[ipg], "ipg", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usbotg_gate], "ahb", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[usb_div], "per", "imx-udc-mx27");
-+	clk_register_clkdev(clk[ipg], "ipg", "imx-udc-mx27");
-+	clk_register_clkdev(clk[usbotg_gate], "ahb", "imx-udc-mx27");
- 	clk_register_clkdev(clk[wdog_gate], NULL, "imx2-wdt.0");
- 	clk_register_clkdev(clk[nfc_div], NULL, "imx25-nand.0");
- 	clk_register_clkdev(clk[csi_gate], NULL, "mx3-camera.0");
-diff --git a/arch/arm/mach-imx/clk-imx51-imx53.c b/arch/arm/mach-imx/clk-imx51-imx53.c
-index 579023f..fb7cb84 100644
---- a/arch/arm/mach-imx/clk-imx51-imx53.c
-+++ b/arch/arm/mach-imx/clk-imx51-imx53.c
-@@ -269,9 +269,9 @@ static void __init mx5_clocks_common_init(unsigned long rate_ckil,
- 	clk_register_clkdev(clk[usboh3_per_gate], "per", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usboh3_gate], "ipg", "mxc-ehci.2");
- 	clk_register_clkdev(clk[usboh3_gate], "ahb", "mxc-ehci.2");
--	clk_register_clkdev(clk[usboh3_per_gate], "per", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usboh3_gate], "ipg", "fsl-usb2-udc");
--	clk_register_clkdev(clk[usboh3_gate], "ahb", "fsl-usb2-udc");
-+	clk_register_clkdev(clk[usboh3_per_gate], "per", "imx-udc-mx51");
-+	clk_register_clkdev(clk[usboh3_gate], "ipg", "imx-udc-mx51");
-+	clk_register_clkdev(clk[usboh3_gate], "ahb", "imx-udc-mx51");
- 	clk_register_clkdev(clk[nfc_gate], NULL, "imx51-nand");
- 	clk_register_clkdev(clk[ssi1_ipg_gate], NULL, "imx-ssi.0");
- 	clk_register_clkdev(clk[ssi2_ipg_gate], NULL, "imx-ssi.1");
--- 
-1.7.0.4
+do I get Acked-by for this one ?
+
+--=20
+balbi
+
+--r7tUYVWcdYzDJoZW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQIcBAEBAgAGBQJQ99lZAAoJEIaOsuA1yqREOMoP/RgSHwKkPv8ZssyyEaTt2RS4
+Hwb4IBVFfUlqZ1XpMwl5LSNrKJP3lclQr3EvsEdsIZy+lW7gFMY6UN4N6JfWr1ag
+dqDKyU78tGQM2YGlYywVcvKiv3UoEH90Ub9igCtzaZiqPwUsRPK/wk4L8Ttpvdys
+/+gZCB1bsBAgnGQb6KMeIp2ilbs0G/YdP43f4UQEKAjw8DgPD4ii9d0rdrfsonAJ
+quQFiyzrfsdMfJIUsW50k1JduKMTO6ZhKL3HgpqBsG5q8t9amFq9E8x7UZT5TPp+
+EzwXRrAd6dxWCBwRxXcfFu0hle/effpyosCer5SuqpabRUhKQv8Jj+yZKTx/iqUL
+LpulZbRt3OZ3vR1nFMaqXhMid+CI1mS5O0Lk7lgihH2DD/KZz3SKwOXWshOKGopz
+asuRX537BcYFepkaFRvS3kiPTFFTWnR8dfB0lFPBUr9C/D+X1M68jatgboIzRWbU
+3fxmKbPsH91gbJRzZBAGAhY2aUBDAf8eANdDrn/DX5YrBEKW+lWGzDDwvx+BNfny
+85BnJBy52Tq2wQw1F4vNuVW4aE9sHkPSnQ9z/KYVSKYI9FlHSRgC+f1jyLvUs2TZ
+2pa9qsDKWkjHuGUr5mAYvOjrwL8fEMFpyZ2OazuIfeR6BipQQtNVQCJvMmR7eZcp
+bprzzoAWOEUxF3M5CeDv
+=dY7b
+-----END PGP SIGNATURE-----
+
+--r7tUYVWcdYzDJoZW--
