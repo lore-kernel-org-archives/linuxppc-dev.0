@@ -1,29 +1,20 @@
-Return-Path: <festevam@gmail.com>
-Received: from mail-vb0-f41.google.com (mail-vb0-f41.google.com
- [209.85.212.41])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 506CD2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2013 01:43:27 +1100 (EST)
-Received: by mail-vb0-f41.google.com with SMTP id l22so2529272vbn.14
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 06:43:24 -0800 (PST)
+Return-Path: <jengelh@inai.de>
+Received: from ares07.inai.de (ares07.inai.de [IPv6:2a01:4f8:161:ffa::1])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E3B8D2C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2013 01:44:20 +1100 (EST)
+Date: Thu, 17 Jan 2013 15:38:24 +0100 (CET)
+From: Jan Engelhardt <jengelh@inai.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: therm_pm72 units, interface
+In-Reply-To: <1345066616.11751.2.camel@pasglop>
+Message-ID: <alpine.LNX.2.01.1301142240140.30171@nerf07.vanv.qr>
+References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
+ <1345066616.11751.2.camel@pasglop>
 MIME-Version: 1.0
-In-Reply-To: <20727.57269.347099.324284@ipc1.ka-ro>
-References: <1358416874-27011-1-git-send-email-peter.chen@freescale.com>
- <1358416874-27011-2-git-send-email-peter.chen@freescale.com>
- <CAOMZO5Chu0bcXPqn+wWHwAqLu+27DvLx1=Bzaffpd-bA2ahaAQ@mail.gmail.com>
- <20727.57269.347099.324284@ipc1.ka-ro>
-Date: Thu, 17 Jan 2013 12:43:23 -0200
-Message-ID: <CAOMZO5DNVMAG3btGR7DeukgWaEaPe2zqm=EKAHQ5ovawq+BiWw@mail.gmail.com>
-Subject: Re: [PATCH v6 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
- platform_device_id
-From: Fabio Estevam <festevam@gmail.com>
-To: =?UTF-8?Q?Lothar_Wa=C3=9Fmann?= <LW@karo-electronics.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- balbi@ti.com, Peter Chen <peter.chen@freescale.com>, kernel@pengutronix.de,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,20 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 17, 2013 at 9:25 AM, Lothar Wa=C3=9Fmann <LW@karo-electronics.d=
-e> wrote:
 
-> The equivalent of !cpu_is_mx51() would be
-> strcmp(pdev->id_entry->name, "imx-udc-mx51") (without the '!') meaning
-> id_entry->name is different from "imx-udc-mx51".
+On Wednesday 2012-08-15 23:36, Benjamin Herrenschmidt wrote:
 
-Yes, agree.
+>BTW... On a somewhat related note ... if you happen to have a spare
+>Xserve G5 PSU I'm interested :-)
 
-strcmp(pdev->id_entry->name, "imx-udc-mx51") is also better than
-!strcmp(pdev->id_entry->name, "imx-udc-mx27"))
+I tried pulling it out, but the PSU stuck so hard in the ATX-like 
+mainboard power socket that removing the PSU would have probably meant 
+ripping apart the MB.
 
-because in the case of another soc entry gets added, let's say
-"imx-udc-mxyy" then
+Anyhow, I did a PMU reset (there's a documented button on the MB),
+and 'lo, it seems the auto-poweroff that plagued this machine are
+gone - but I'll need a longer uptime than 2 hours to find out.
 
-!strcmp(pdev->id_entry->name, "imx-udc-mx27")) will not correspond to
-!cpu_is_mx51() anymore.
+
+Meanwhile, I run Linux 3.7.1 and the software side changed somewhat.
+windfarm_rm31 seems to no longer calm the fans down once loaded,
+whereas therm_pm72 on Linux 3.0 did so.
