@@ -1,25 +1,26 @@
-Return-Path: <gautamvivek1987@gmail.com>
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 88E052C007C
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2013 01:12:09 +1100 (EST)
+Date: Thu, 17 Jan 2013 15:11:45 +0100
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 6/6][v3] perf: Document the ABI of perf sysfs entries
+Message-ID: <20130117141145.GA3817@krava.brq.redhat.com>
+References: <20130110010347.GA32590@us.ibm.com>
+ <20130110010703.GF32590@us.ibm.com>
+ <20130115185759.GG5826@ghostprotocols.net>
+ <20130116113013.GA1042@krava.brq.redhat.com>
+ <20130116185815.GA3351@us.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <50F7EF23.8080903@ti.com>
-References: <1358348462-27693-1-git-send-email-kishon@ti.com>
- <1358348462-27693-3-git-send-email-kishon@ti.com>
- <CAFp+6iGEC9KgfuQz6nqnAY5JrmtPG=HkGw5yjKw7-1=8AG_=dg@mail.gmail.com>
- <50F7EF23.8080903@ti.com>
-Date: Thu, 17 Jan 2013 18:41:04 +0530
-Message-ID: <CAFp+6iH3kxtx2fM9m50Skcb6aqJOhL4d+Vg6W3mo7uUoAp0F1Q@mail.gmail.com>
-Subject: Re: [RFC PATCH 2/6] ARM: OMAP: USB: Add phy binding information
-From: Vivek Gautam <gautamvivek1987@gmail.com>
-To: kishon <kishon@ti.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
- linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
- stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
- haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
- gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
- dwmw2@infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130116185815.GA3351@us.ibm.com>
+Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ robert.richter@amd.com, Greg KH <greg@kroah.com>,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,101 +30,112 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kishon,
+On Wed, Jan 16, 2013 at 10:58:16AM -0800, Sukadev Bhattiprolu wrote:
+> Jiri Olsa [jolsa@redhat.com] wrote:
+> | On Tue, Jan 15, 2013 at 03:57:59PM -0300, Arnaldo Carvalho de Melo wrote:
+> | > Em Wed, Jan 09, 2013 at 05:07:03PM -0800, Sukadev Bhattiprolu escreveu:
+> | > > [PATCH 6/6][v3] perf: Document the ABI of perf sysfs entries
+> | > > 
+> | > > This patchset addes two new sets of files to sysfs:
+> | > > 
+> | > > 	- generic and POWER-specific perf events in /sys/devices/cpu/events/
+> | > > 	- perf event config format in /sys/devices/cpu/format/event
+> | > > 
+> | > > Document the format of these files which would become part of the ABI.
+> | > > 
+> | > > Changelog[v3]:
+> | > > 	[Greg KH] Include ABI documentation.
+> | > 
+> | > Jiri, can I have your ack on this one too?
+> | 
+> | hm, we already already 'format' definition but in testing section
+> | (and we are missing 'events' definition there.. my bad)
+> 
+> I see that file now ! I have removed that documentation from my patch.
+> | 
+> | anyway, after reading Documentation/ABI/README looks like we
+> | should go for 'testing' section with this as well.. stable
+> | seems scary at this point ;-)
+> 
+> Agree.
+> 
+> Here is the updated patch.
+> ---
+> 
+> This patchset addes two new sets of files to sysfs for POWER architecture.
+> 
+> 	- perf event config format in /sys/devices/cpu/format/event
+> 	- generic and POWER-specific perf events in /sys/devices/cpu/events/
+> 
+> The format of the first file is already documented in:
+> 
+> 	Documentation/ABI/testing/sysfs-bus-event_source-devices-format
+> 
+> Document the format of the second set of files '/sys/devices/cpu/events/*'
+> which would also become part of the ABI.
+> 
+> Changelog[v3.1]:
+> 	(small changes to this one patch).
+> 	[Jiri Olsa]: Remove the documentation for the 'config format' file
+> 	as it is already documented.
+> 	[Jiri Olsa]: Move the documentation of 'events' also to 'testing/'
+> 
+> Changelog[v3]:
+> 	[Greg KH] Include ABI documentation.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+>  .../testing/sysfs-bus-event_source-devices-events  |   58 ++++++++++++++++++++
+>  1 files changed, 58 insertions(+), 0 deletions(-)
+>  delete mode 100644 Documentation/ABI/stable/sysfs-devices-cpu-events
+>  create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+> 
+> diff --git a/Documentation/ABI/stable/sysfs-devices-cpu-events b/Documentation/ABI/stable/sysfs-devices-cpu-events
+> deleted file mode 100644
+> index e69de29..0000000
+> diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+> new file mode 100644
+> index 0000000..2c4081e
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+> @@ -0,0 +1,58 @@
+> +What:		/sys/devices/cpu/events/
+> +		/sys/devices/cpu/events/branch-misses
+> +		/sys/devices/cpu/events/cache-references
+> +		/sys/devices/cpu/events/cache-misses
+> +		/sys/devices/cpu/events/stalled-cycles-frontend
+> +		/sys/devices/cpu/events/branch-instructions
+> +		/sys/devices/cpu/events/stalled-cycles-backend
+> +		/sys/devices/cpu/events/instructions
+> +		/sys/devices/cpu/events/cpu-cycles
+> +
+> +Date:		2012/01/NN
+> +
+> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +
+> +Description:	Generic performance monitoring events
+> +
+> +		A collection of performance monitoring events that may be
+> +		supported by many/most CPUs. These events can be monitored
+> +		using the 'perf(1)' tool.
+> +
+> +		The contents of each file would look like:
+> +
+> +			event=0xNNNN
+> +
+> +		where 'N' is a hex digit and the number '0xNNNN' shows the
+> +		"raw code" for the perf event identified by the file's
+> +		"basename".
 
+Maybe it'd worth to mention, that it does not need to be just 'event',
+but anything from /sys/bus/event_source/devices/<dev>/format directory,
+like
 
-Thanks for the explanation.
+		The can be multiple terms like 'event=0xNNNN' specified
+		and separated with comma. All available terms are located
+		in /sys/bus/event_source/devices/<dev>/format file.
 
-On Thu, Jan 17, 2013 at 6:01 PM, kishon <kishon@ti.com> wrote:
-> Hi,
->
->
-> On Thursday 17 January 2013 05:41 PM, Vivek Gautam wrote:
->>
->> Hi Kishon,
->>
->>
->> On Wed, Jan 16, 2013 at 8:30 PM, Kishon Vijay Abraham I <kishon@ti.com>
->> wrote:
->>>
->>> This is in preparation for the changes in PHY library to support adding
->>> and getting multiple PHYs of the same type. In the new design, the
->>> binding information between the PHY and the USB controller should be
->>> specified in the platform specific initialization code. So it's been
->>> done for OMAP platforms here.
->>>
->>> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
->>> ---
->>> This kind-of binding should be done in all the platforms (I've done only
->>> for OMAP platform).
->>>   arch/arm/mach-omap2/usb-musb.c |    7 ++++++-
->>>   1 file changed, 6 insertions(+), 1 deletion(-)
->>>
->>> diff --git a/arch/arm/mach-omap2/usb-musb.c
->>> b/arch/arm/mach-omap2/usb-musb.c
->>> index 9d27e3f..bbe2fa5 100644
->>> --- a/arch/arm/mach-omap2/usb-musb.c
->>> +++ b/arch/arm/mach-omap2/usb-musb.c
->>> @@ -24,6 +24,7 @@
->>>   #include <linux/dma-mapping.h>
->>>   #include <linux/io.h>
->>>   #include <linux/usb/musb.h>
->>> +#include <linux/usb/phy.h>
->>>
->>>   #include "omap_device.h"
->>>   #include "soc.h"
->>> @@ -85,8 +86,12 @@ void __init usb_musb_init(struct omap_musb_board_data
->>> *musb_board_data)
->>>          musb_plat.mode = board_data->mode;
->>>          musb_plat.extvbus = board_data->extvbus;
->>>
->>> -       if (cpu_is_omap44xx())
->>> +       if (cpu_is_omap44xx()) {
->>>                  musb_plat.has_mailbox = true;
->>> +               usb_bind_phy("musb-hdrc.0.auto", 0, "omap-usb2.1.auto");
->>> +       } else if (cpu_is_omap34xx()) {
->>> +               usb_bind_phy("musb-hdrc.0.auto", 0, "twl4030_usb");
->>> +       }
->>
->>
->> Just trying to understand things here.
->> Is the device name we are using here the platform device name (pdev->name)
->> ?
->
->
-> it's pdev->dev.name.
->
->> If i am not wrong then for devices added through device tree
->> the device name would actually include the device address in the string,
->
->
-> Ideally for device tree, devm_usb_get_phy_by_phandle() introduced in the 5th
-> patch of this series should be used.
+Please feel free to rephrase or use proper English ;-)
 
-Ok.
-> usb_bind_phy should be called from platform specific initialization files
-> (like your board file), which won't get executed in dt boot.
->
-Right.
-
->> wouldn't that make things somewhat weird, since we will have to add
->> such bindings
->> using this address string.
->>
->> one more doubt please :)
->> is it possible to bind phy in the controllers' driver somehow ?
->
-> Thats not going to be good. Why do you need to do that?
->
-I was certainly missing something while understanding your patches.
-That's why got some doubt on this. :)
-
-
-> Thanks
-> Kishon
-
-
-
--- 
-Thanks & Regards
-Vivek
+otherwise it's ok,
+jirka
