@@ -1,20 +1,24 @@
-Return-Path: <jengelh@inai.de>
-Received: from ares07.inai.de (ares07.inai.de [IPv6:2a01:4f8:161:ffa::1])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id E3B8D2C0079
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2013 01:44:20 +1100 (EST)
-Date: Thu, 17 Jan 2013 15:38:24 +0100 (CET)
-From: Jan Engelhardt <jengelh@inai.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: therm_pm72 units, interface
-In-Reply-To: <1345066616.11751.2.camel@pasglop>
-Message-ID: <alpine.LNX.2.01.1301142240140.30171@nerf07.vanv.qr>
-References: <alpine.LNX.2.01.1208151941010.22695@frira.zrqbmnf.qr>
- <1345066616.11751.2.camel@pasglop>
+Return-Path: <rogerq@ti.com>
+Message-ID: <50F821DD.1040609@ti.com>
+Date: Thu, 17 Jan 2013 18:07:57 +0200
+From: Roger Quadros <rogerq@ti.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Subject: Re: [RFC PATCH 3/6] usb: otg: utils: change the phy lib to support
+ multiple PHYs of same type
+References: <1358348462-27693-1-git-send-email-kishon@ti.com>
+ <1358348462-27693-4-git-send-email-kishon@ti.com>
+In-Reply-To: <1358348462-27693-4-git-send-email-kishon@ti.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
+ linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
+ stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
+ haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
+ dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 01/16/2013 05:00 PM, Kishon Vijay Abraham I wrote:
+> In order to add support for multipe PHY's of the same type, the API's
+> for adding PHY and getting PHY has been changed. Now the binding
+> information of the PHY and controller should be done in platform file
+> using usb_bind_phy API. And for getting a PHY, the device pointer of the
+> USB controller and an index should be passed. Based on the binding
+> information that is added in the platform file, get_phy will return the
+> approappropriate PHY.
+> 
+> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+> ---
+>  arch/arm/mach-shmobile/board-marzen.c |    2 +-
+>  drivers/power/ab8500_charger.c        |    2 +-
+>  drivers/power/isp1704_charger.c       |    2 +-
+>  drivers/power/pda_power.c             |    2 +-
+>  drivers/power/twl4030_charger.c       |    2 +-
+>  drivers/usb/chipidea/udc.c            |    2 +-
+>  drivers/usb/dwc3/core.c               |    4 +-
+>  drivers/usb/gadget/fsl_udc_core.c     |    2 +-
+>  drivers/usb/gadget/mv_udc_core.c      |    2 +-
+>  drivers/usb/gadget/omap_udc.c         |    2 +-
+>  drivers/usb/gadget/pxa25x_udc.c       |    2 +-
+>  drivers/usb/gadget/pxa27x_udc.c       |    2 +-
+>  drivers/usb/gadget/s3c-hsudc.c        |    2 +-
+>  drivers/usb/host/ehci-fsl.c           |    2 +-
+>  drivers/usb/host/ehci-msm.c           |    2 +-
+>  drivers/usb/host/ehci-mv.c            |    2 +-
+>  drivers/usb/host/ehci-tegra.c         |    2 +-
+>  drivers/usb/host/ohci-omap.c          |    2 +-
+>  drivers/usb/musb/am35x.c              |    2 +-
+>  drivers/usb/musb/blackfin.c           |    2 +-
+>  drivers/usb/musb/da8xx.c              |    2 +-
+>  drivers/usb/musb/davinci.c            |    2 +-
+>  drivers/usb/musb/musb_dsps.c          |    2 +-
+>  drivers/usb/musb/omap2430.c           |    2 +-
+>  drivers/usb/musb/tusb6010.c           |    2 +-
+>  drivers/usb/musb/ux500.c              |    2 +-
+>  drivers/usb/otg/ab8500-usb.c          |    3 +-
+>  drivers/usb/otg/fsl_otg.c             |    5 ++-
+>  drivers/usb/otg/gpio_vbus.c           |    3 +-
+>  drivers/usb/otg/isp1301_omap.c        |    3 +-
+>  drivers/usb/otg/msm_otg.c             |    3 +-
+>  drivers/usb/otg/mv_otg.c              |    3 +-
+>  drivers/usb/otg/nop-usb-xceiv.c       |    3 +-
+>  drivers/usb/otg/otg.c                 |   67 +++++++++++++++------------------
+>  drivers/usb/otg/twl4030-usb.c         |    3 +-
+>  drivers/usb/phy/mv_u3d_phy.c          |    3 +-
+>  drivers/usb/phy/omap-usb2.c           |   11 ++----
+>  drivers/usb/phy/rcar-phy.c            |    3 +-
+>  include/linux/usb/phy.h               |   12 +++---
+>  39 files changed, 87 insertions(+), 89 deletions(-)
 
-On Wednesday 2012-08-15 23:36, Benjamin Herrenschmidt wrote:
+I think it better to leave the existing add/get APIs as they are add add
+new APIs that support multiple PHYs. You could probably mark the old
+ones as deprecated.
 
->BTW... On a somewhat related note ... if you happen to have a spare
->Xserve G5 PSU I'm interested :-)
+That way you don't need to wait till all users are converted and tested.
 
-I tried pulling it out, but the PSU stuck so hard in the ATX-like 
-mainboard power socket that removing the PSU would have probably meant 
-ripping apart the MB.
+e.g. you could name the new APIs as
 
-Anyhow, I did a PMU reset (there's a documented button on the MB),
-and 'lo, it seems the auto-poweroff that plagued this machine are
-gone - but I'll need a longer uptime than 2 hours to find out.
+usb_add_phy_dev(struct usb_phy *phy);
+usb_get_phy_dev(struct device *dev, int index);
 
-
-Meanwhile, I run Linux 3.7.1 and the software side changed somewhat.
-windfarm_rm31 seems to no longer calm the fans down once loaded,
-whereas therm_pm72 on Linux 3.0 did so.
+--
+cheers,
+-roger
