@@ -1,30 +1,26 @@
-Return-Path: <linfeng@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id AB0862C0085
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 22:11:02 +1100 (EST)
-Message-ID: <50F7D456.9000904@cn.fujitsu.com>
-Date: Thu, 17 Jan 2013 18:37:10 +0800
-From: Lin Feng <linfeng@cn.fujitsu.com>
+Return-Path: <festevam@gmail.com>
+Received: from mail-vc0-f175.google.com (mail-vc0-f175.google.com
+ [209.85.220.175])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A338D2C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 22:13:23 +1100 (EST)
+Received: by mail-vc0-f175.google.com with SMTP id fy7so2336152vcb.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 03:13:20 -0800 (PST)
 MIME-Version: 1.0
-To: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH v3 1/2] memory-hotplug: introduce
- CONFIG_HAVE_BOOTMEM_INFO_NODE
- and revert register_page_bootmem_info_node() when platform not support
-References: <1358324059-9608-1-git-send-email-linfeng@cn.fujitsu.com>
- <1358324059-9608-2-git-send-email-linfeng@cn.fujitsu.com>
- <20130116141436.GE343@dhcp22.suse.cz>
-In-Reply-To: <20130116141436.GE343@dhcp22.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-ia64@vger.kernel.org, aquini@redhat.com, heiko.carstens@de.ibm.com,
- tangchen@cn.fujitsu.com, dhowells@redhat.com, paul.gortmaker@windriver.com,
- paulus@samba.org, jbeulich@suse.com, hpa@zytor.com, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, x86@kernel.org, isimatu.yasuaki@jp.fujitsu.com,
- mingo@redhat.com, gerald.schaefer@de.ibm.com, fenghua.yu@intel.com,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, mel@csn.ul.ie, tglx@linutronix.de,
- kamezawa.hiroyu@jp.fujitsu.com, tony.luck@intel.com, laijs@cn.fujitsu.com,
- linux-mm@kvack.org, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- minchan@kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+In-Reply-To: <1358416874-27011-2-git-send-email-peter.chen@freescale.com>
+References: <1358416874-27011-1-git-send-email-peter.chen@freescale.com>
+ <1358416874-27011-2-git-send-email-peter.chen@freescale.com>
+Date: Thu, 17 Jan 2013 09:13:19 -0200
+Message-ID: <CAOMZO5Chu0bcXPqn+wWHwAqLu+27DvLx1=Bzaffpd-bA2ahaAQ@mail.gmail.com>
+Subject: Re: [PATCH v6 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
+ platform_device_id
+From: Fabio Estevam <festevam@gmail.com>
+To: Peter Chen <peter.chen@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ balbi@ti.com, kernel@pengutronix.de, shawn.guo@linaro.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,53 +30,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michal,
+On Thu, Jan 17, 2013 at 8:01 AM, Peter Chen <peter.chen@freescale.com> wrote:
 
-On 01/16/2013 10:14 PM, Michal Hocko wrote:
-> On Wed 16-01-13 16:14:18, Lin Feng wrote:
-> [...]
->> diff --git a/mm/Kconfig b/mm/Kconfig
->> index 278e3ab..f8c5799 100644
->> --- a/mm/Kconfig
->> +++ b/mm/Kconfig
->> @@ -162,10 +162,18 @@ config MOVABLE_NODE
->>  	  Say Y here if you want to hotplug a whole node.
->>  	  Say N here if you want kernel to use memory on all nodes evenly.
->>  
->> +#
->> +# Only be set on architectures that have completely implemented memory hotplug
->> +# feature. If you are not sure, don't touch it.
->> +#
->> +config HAVE_BOOTMEM_INFO_NODE
->> +	def_bool n
->> +
->>  # eventually, we can have this option just 'select SPARSEMEM'
->>  config MEMORY_HOTPLUG
->>  	bool "Allow for memory hot-add"
->>  	select MEMORY_ISOLATION
->> +	select HAVE_BOOTMEM_INFO_NODE if X86_64
->>  	depends on SPARSEMEM || X86_64_ACPI_NUMA
->>  	depends on HOTPLUG && ARCH_ENABLE_MEMORY_HOTPLUG
->>  	depends on (IA64 || X86 || PPC_BOOK3S_64 || SUPERH || S390)
-> 
-> I am still not sure I understand the relation to MEMORY_HOTREMOVE.
-> Is register_page_bootmem_info_node required/helpful even if
-> !CONFIG_MEMORY_HOTREMOVE?
->From old kenrel's view register_page_bootmem_info_node() is defined in 
-CONFIG_MEMORY_HOTPLUG_SPARSE, it registers some info for 
-memory hotplug/remove. If we don't use MEMORY_HOTPLUG feature, this
-function is empty, we don't need the info at all.
-So this info is not required/helpful if !CONFIG_MEMORY_HOTREMOVE.
-> 
-> Also, now that I am thinking about that more, maybe it would
-> be cleaner to put the select into arch/x86/Kconfig and do it
-> same as ARCH_ENABLE_MEMORY_{HOTPLUG,HOTREMOVE} (and name it
-> ARCH_HAVE_BOOTMEM_INFO_NODE).
-> 
-Maybe put it in mm/Kconfig is a better choice, because if one day someone implements
-the register_page_bootmem_info_node() for other archs they will get some clues
-here, that's it has been implemented on x86_64. 
-But I'm not so sure...
+>         /* make sure USB_CLK is running at 60 MHz +/- 1000 Hz */
+> -       if (!cpu_is_mx51()) {
+> +       if (!strcmp(pdev->id_entry->name, "imx-udc-mx27")) {]]
 
-thanks,
-linfeng
+Shouldn't this be:
+ if (!strcmp(pdev->id_entry->name, "imx-udc-mx51"))
