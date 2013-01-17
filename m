@@ -1,25 +1,23 @@
-Return-Path: <LW@KARO-electronics.de>
-Received: from mail.karo-electronics.de (mail.karo-electronics.de
- [81.173.242.67]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id BAA6E2C0079
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 22:42:05 +1100 (EST)
-Message-ID: <20727.57269.347099.324284@ipc1.ka-ro>
-Date: Thu, 17 Jan 2013 12:25:41 +0100
-From: =?utf-8?Q?Lothar_Wa=C3=9Fmann?= <LW@KARO-electronics.de>
-To: Fabio Estevam <festevam@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Subject: Re: [PATCH v6 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
- platform_device_id
-In-Reply-To: <CAOMZO5Chu0bcXPqn+wWHwAqLu+27DvLx1=Bzaffpd-bA2ahaAQ@mail.gmail.com>
-References: <1358416874-27011-1-git-send-email-peter.chen@freescale.com>
- <1358416874-27011-2-git-send-email-peter.chen@freescale.com>
- <CAOMZO5Chu0bcXPqn+wWHwAqLu+27DvLx1=Bzaffpd-bA2ahaAQ@mail.gmail.com>
-Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- balbi@ti.com, Peter Chen <peter.chen@freescale.com>, kernel@pengutronix.de,
- shawn.guo@linaro.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <gautamvivek1987@gmail.com>
+MIME-Version: 1.0
+In-Reply-To: <1358348462-27693-3-git-send-email-kishon@ti.com>
+References: <1358348462-27693-1-git-send-email-kishon@ti.com>
+ <1358348462-27693-3-git-send-email-kishon@ti.com>
+Date: Thu, 17 Jan 2013 17:41:53 +0530
+Message-ID: <CAFp+6iGEC9KgfuQz6nqnAY5JrmtPG=HkGw5yjKw7-1=8AG_=dg@mail.gmail.com>
+Subject: Re: [RFC PATCH 2/6] ARM: OMAP: USB: Add phy binding information
+From: Vivek Gautam <gautamvivek1987@gmail.com>
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
+ linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
+ stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
+ haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
+ dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+Hi Kishon,
 
-Fabio Estevam writes:
-> On Thu, Jan 17, 2013 at 8:01 AM, Peter Chen <peter.chen@freescale.com> wrote:
-> 
-> >         /* make sure USB_CLK is running at 60 MHz +/- 1000 Hz */
-> > -       if (!cpu_is_mx51()) {
-> > +       if (!strcmp(pdev->id_entry->name, "imx-udc-mx27")) {]]
-> 
-> Shouldn't this be:
->  if (!strcmp(pdev->id_entry->name, "imx-udc-mx51"))
+
+On Wed, Jan 16, 2013 at 8:30 PM, Kishon Vijay Abraham I <kishon@ti.com> wrote:
+> This is in preparation for the changes in PHY library to support adding
+> and getting multiple PHYs of the same type. In the new design, the
+> binding information between the PHY and the USB controller should be
+> specified in the platform specific initialization code. So it's been
+> done for OMAP platforms here.
 >
-The equivalent of !cpu_is_mx51() would be
-strcmp(pdev->id_entry->name, "imx-udc-mx51") (without the '!') meaning
-id_entry->name is different from "imx-udc-mx51".
+> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+> ---
+> This kind-of binding should be done in all the platforms (I've done only
+> for OMAP platform).
+>  arch/arm/mach-omap2/usb-musb.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/arm/mach-omap2/usb-musb.c b/arch/arm/mach-omap2/usb-musb.c
+> index 9d27e3f..bbe2fa5 100644
+> --- a/arch/arm/mach-omap2/usb-musb.c
+> +++ b/arch/arm/mach-omap2/usb-musb.c
+> @@ -24,6 +24,7 @@
+>  #include <linux/dma-mapping.h>
+>  #include <linux/io.h>
+>  #include <linux/usb/musb.h>
+> +#include <linux/usb/phy.h>
+>
+>  #include "omap_device.h"
+>  #include "soc.h"
+> @@ -85,8 +86,12 @@ void __init usb_musb_init(struct omap_musb_board_data *musb_board_data)
+>         musb_plat.mode = board_data->mode;
+>         musb_plat.extvbus = board_data->extvbus;
+>
+> -       if (cpu_is_omap44xx())
+> +       if (cpu_is_omap44xx()) {
+>                 musb_plat.has_mailbox = true;
+> +               usb_bind_phy("musb-hdrc.0.auto", 0, "omap-usb2.1.auto");
+> +       } else if (cpu_is_omap34xx()) {
+> +               usb_bind_phy("musb-hdrc.0.auto", 0, "twl4030_usb");
+> +       }
 
-I personally hate the '!strcmp()' notation and prefer 'strcmp() == 0'
-though they are technically equivalent. Using '==' makes it much
-clearer to the reader what is intended.
-!strcmp() lets one assume that it is true when the comparison fails,
-though actually the opposite is true.
+Just trying to understand things here.
+Is the device name we are using here the platform device name (pdev->name) ?
+If i am not wrong then for devices added through device tree
+the device name would actually include the device address in the string,
+wouldn't that make things somewhat weird, since we will have to add
+such bindings
+using this address string.
+
+one more doubt please :)
+is it possible to bind phy in the controllers' driver somehow ?
+
+>
+>         if (soc_is_am35xx()) {
+>                 oh_name = "am35x_otg_hs";
+> --
+> 1.7.9.5
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 
-Lothar Waßmann
+
 -- 
-___________________________________________________________
-
-Ka-Ro electronics GmbH | Pascalstraße 22 | D - 52076 Aachen
-Phone: +49 2408 1402-0 | Fax: +49 2408 1402-10
-Geschäftsführer: Matthias Kaussen
-Handelsregistereintrag: Amtsgericht Aachen, HRB 4996
-
-www.karo-electronics.de | info@karo-electronics.de
-___________________________________________________________
+Thanks & Regards
+Vivek
