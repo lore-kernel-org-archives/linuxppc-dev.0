@@ -1,26 +1,14 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g1t0026.austin.hp.com (g1t0026.austin.hp.com [15.216.28.33])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1E4132C0082
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2013 05:09:47 +1100 (EST)
-Message-ID: <1358445589.14145.352.camel@misato.fc.hp.com>
-Subject: Re: [RFC PATCH v2 00/12] System device hot-plug framework
-From: Toshi Kani <toshi.kani@hp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Thu, 17 Jan 2013 10:59:49 -0700
-In-Reply-To: <2389744.NKfBmfO9at@vostro.rjw.lan>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <2389744.NKfBmfO9at@vostro.rjw.lan>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
- linux-acpi@vger.kernel.org, gregkh@linuxfoundation.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Return-Path: <timur@tabi.org>
+Received: from muin.pair.com (muin.pair.com [209.68.1.55])
+ by ozlabs.org (Postfix) with ESMTP id EC14A2C0089
+ for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2013 09:34:37 +1100 (EST)
+From: Timur Tabi <timur@tabi.org>
+To: Scott Wood <scottwood@freescale.com>,
+ Kumar Gala <kumar.gala@freescale.com>, stuart.yoder@freescale.com,
+ linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] powerpc/85xx: fix various PCI node compatible strings
+Date: Thu, 17 Jan 2013 16:34:32 -0600
+Message-Id: <1358462073-2558-1-git-send-email-timur@tabi.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,248 +18,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-01-17 at 01:50 +0100, Rafael J. Wysocki wrote:
-> On Thursday, January 10, 2013 04:40:18 PM Toshi Kani wrote:
-> > This patchset is a prototype of proposed system device hot-plug framework
-> > for design review.  Unlike other hot-plug environments, such as USB and
-> > PCI, there is no common framework for system device hot-plug [1].
-> > Therefore, this patchset is designed to provide a common framework for
-> > hot-plugging and online/offline operations of system devices, such as CPU,
-> > Memory and Node.  While this patchset only supports ACPI-based hot-plug
-> > operations, the framework itself is designed to be platform-neural and
-> > can support other FW architectures as necessary.
- :
-> At this point I'd like to clearly understand how the code is supposed to work.
+From: Timur Tabi <timur@freescale.com>
 
-Thanks for reviewing!
+Fix and/or improve the compatible strings of the PCI device tree nodes for
+some Freescale SOCs.  This fixes some issues and improves consistency among
+the SOCs.
 
-> From what I can say at the moment it all boils down to having two (ordered)
-> lists of notifiers (shp_add_list, shp_del_list) that can be added to or removed
-> from with shp_register_handler() and shp_unregister_handler(), respectively
+Specifically:
 
-Yes.
+1) The P1022 has a v1 PCIe controller, so the compatible property should just
+say "fsl,mpc8548-pcie".  U-Boot does not look for "fsl,p1022-pcie", so it
+wasn't fixing up the node.
 
-> (BTW, the abbreviation "hdr" makes me think about a "header" rather than a
-> "handler", but maybe that's just me :-)), 
+2) The P4080 has a v2.1 PCIe controller, so add that version-specific string
+to the device tree.  Update the kernel to also look for that string.
+Currently, the kernel looks for "fsl,p4080-pcie" specifically, but
+eventually that check should be deleted.
 
-Well, it makes me think that way as well. :)  How about "hdlr"?
+3) The P1010 device tree claims compatibility with v2.2 and v2.3, but that's
+redundant.  No other device tree does this.  Remove the v2.2 string.
 
-> and a workqueue for requests (why do
-> we need a separate workqueue for that?).
+4) The kernel looks for both "fsl,p1023-pcie" and "fsl,qoriq-pcie-v2.2",
+even though the P1023 device trees has always included both strings.  Remove
+the search for "fsl,p1023-pcie".
 
-This workqueue needs to be platform-neutral and max_active set to 1, and
-preferably is dedicated for hotplug operations.  kacpi_hotplug_wq is
-close, but is ACPI-specific.  So, I decided to create a new workqueue
-for this framework.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/boot/dts/fsl/p1010si-post.dtsi |    4 ++--
+ arch/powerpc/boot/dts/fsl/p1022si-post.dtsi |    6 +++---
+ arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    6 +++---
+ arch/powerpc/sysdev/fsl_pci.c               |   15 ++++++++++-----
+ 4 files changed, 18 insertions(+), 13 deletions(-)
 
-> Whoever needs to carry out a hotplug operation is supposed to prepare a request
-> and then put it into the workqueue with shp_submit_request().  The framework
-> will then execute all of the notifier callbacks from the appropriate notifier
-> list (depending on whether the operation is a hot-add or a hot-remove).  If any
-> of those callbacks returns an error code and it is not too late (the order of
-> the failing notifier is not too high), the already executed notifier callbacks
-> will be run again with the "rollback" argument set to 1 (why not to use bool?)
-
-Agreed.  I will change the rollback to bool.
-
-> to indicate that they are supposed to bring things back to the initial state.
-> Error codes returned in that stage only cause messages to be printed.
->
-> Is the description above correct?
-
-Yes.  It's very good summary!
-
-> If so, it looks like subsystems are supposed to register notifiers (handlers)
-> for hotplug/hot-remove operations of the devices they handle.  They are
-> supposed to use predefined order values to indicate what kinds of devices
-> those are.  Then, hopefully, if they do everything correctly, and the
-> initiator of a hotplug/hot-remove operation prepares the request correctly,
-> the callbacks will be executed in the right order, they will find their
-> devices in the list attached to the request object and they will do what's
-> necessary with them.
-> 
-> Am I still on the right track?
-
-Yes.
-
-> If that's the case, I have a few questions.
-
-Well, there are more than a few :), but they all are excellent
-questions!
-
-> (1) Why is this limited to system devices?
-
-It could be extended to other devices, but is specifically designed for
-system devices as follows.  So, I think it is best to keep it in that
-way.
-
-a) Work with multiple subsystems without bus dependency.  Other hot-plug
-frameworks are designed and implemented for a particular bus and a
-subsystem.  Therefore, they work best for their targeted environment as
-well.
-
-b) Sequence with pre-defined order.  This allows hot-add operation and
-the boot sequence to be consistent.  Other non-system devices are
-initialized within a subsystem, and do not depend on the boot-up
-sequence.
-
-> (2) What's the guarantee that the ordering of hot-removal (for example) of CPU
->     cores with respect to memory and host bridges will always be the same?
->     What if the CPU cores themselves need to be hot-removed in a specific
->     order?
-
-When devices are added in the order of A->B->C, their dependency model
-is:
- - B may depend on A (but A may not depend on B)
- - C may depend on A and B (but A and B may not depend on C)
-
-Therefore, they can be deleted in the order of C->B->A.
-
-The boot sequence defines the order for add.  So, it is important to
-make sure that we hot-add devices in the same order with the boot
-sequence.  Of course, if there is an issue in the order, we need to fix
-it.  But the point is that the add order should be consistent between
-the boot sequence and hot-add.
-
-In your example, the boot sequence adds them in the order of
-memory->CPU->host bridge.  I think this makes sense because cpu may need
-its local memory, and host bridge may need its local memory and local
-cpu for interrupt.  So, hot-add needs to do the same for node hot-add,
-and hot-delete should be able to delete them in the reversed order per
-their dependency model.
-
-> (3) What's the guarantee that the ordering of shp_add_list and shp_del_list
->     will be in agreement with the ordering of the device hierarchy?
-
-Only the ACPI bus handlers (i.e. ACPI core) performs hierarchy based
-initialization / deletion.  This is the case with the boot-up sequence
-as well.
-
-For hot-add, the ACPI core enumerates all devices based on the device
-hierarchy and builds their device tree with "enabled" devices.  The
-hierarchy defines the scope of devices to be added.  Then, all enabled
-system devices are directly accessible without any restriction, so their
-online initialization (cpu and mm handlers) does not have to be based on
-their hierarchy.  It is done by the predefined order.
-
-Similarly, for hot-delete, the ACPI core trims all devices based on the
-device hierarchy after all devices are off-lined with predefined order.
-
-> (4) Why do you think that the ordering of hot-plug operations needs to be
->     independent of the device herarchy ordering?
-
-The ordering of the boot sequence and hot-add need to be consistent, and
-the boot sequence may not be ordered by the hierarchy.  Furthermore, the
-hierarchy does not necessarily dictate the proper order of device
-initialization.  For instance, memory devices and processor devices may
-be described as siblings under a same parent (ex. node, socket), but
-there is no guarantee that memory devices are listed before processor
-devices in order to initialize memory before cpu (or in order to delete
-cpu before memory).
-
-> (5) Why do you think it's a good idea to require every callback routine to
->     browse the entire list of devices attached to the request object?  Wouldn't
->     it be more convenient if they were called only for the types of devices
->     they have declared to handle?  [That would reduce some code duplication,
->     for example.]
-
-This version is aimed for simplicity and yes, there is a room for
-optimization.  One way to do so is to have a separate device list for
-each type in shp_request.  This way, for instance, the cpu handlers only
-check for the cpu list, and do nothing for memory hot-plug since the cpu
-list is empty.  I will make this change if it makes sense.
-
-struct shp_request {
-        /* common info */
-		:
-
-        /* device resource info */
-        struct list_head        cpu_dev_list;   /* cpu device list */
-        struct list_head        mem_dev_list;   /* memory device list */
-		:
-};
-
-> (6) Why is it convenient to use order values (priorities) of notifiers to
->     indicate both the ordering with respect to the other notifiers and the
->     "level" (e.g. whether or not rollback is possible) at the same time?  Those
->     things appear to be conceptually distinct.
-
-It allows a single set of add (shp_add_list_head) and delete (
-shp_del_list_head) lists to list all levels of the handlers.  Otherwise,
-it will need to have a separate list for validate, execute and commit.
-This makes shp_start_req() simpler as it can call all handlers from a
-single list.
-
-Note that this list handling is abstracted within sys_hotplug.c, and is
-not visible from the handlers.  struct shp_handler, order base values
-(ex. SHP_EXECUTE_ORDER_BASE), and the lists are all locally defined in
-sys_hotplug.c.  Therefore, the list handling can be updated without
-impacting the handlers.
-
-> (7) Why callbacks used for "add" operations still need to check if the
->     operation type is "add" (cpu_add_execute() does that for example)?
-
-Such check should not be needed.  Are you referring the check with
-shp_is_online_op() in cpu_add_execute()?  shp_is_online_op() returns
-true for online/offline operations, and false for hot-add/delete
-operations.  This check is a workaround for an inherited issue from the
-original code.  KOBJ_ONLINE needs to be sent to a cpu dev
-under /sys/devices/system/cpu.  However, in case of hot-add/delete
-operations, we only have a device for an ACPI cpu dev (LNXCPU)
-under /sys/bus/acpi/devices.  Hence, we cannot send KOBJ_ONLINE to the
-cpu dev.  Similarly, acpi_processor_handle_eject() in the original code
-cannot send KOBJ_OFFLINE to its cpu dev when it calls cpu_down().
-
->From what I see in udev's behavior, though, this issue does not seem to
-cause any issue.  For hot-add/delete, it still sends
-KOBJ_ADD/KOBJ_REMOVE to a cpu dev, and udev reacts from this event.
-
-> (8) What problems *exactly* this is supposed to address?  Can you give a few
->     examples, please?
-
-Here are a few examples of the problems that this framework will
-address.
-
-1. Race conditions.  The current locking scheme is fine grained.  While
-it protects some critical sections, it does not protect from multiple
-operations running simultaneously and competing each other.  For
-instance, the following case can happen.
- 1) A node hot-delete operation runs, and offlined all CPUs in the node.
- 2) A separate cpu online operation comes in, and onlined a CPU in the
-node.
- 3) The node hot-plug operation ejects the node, and the system gets
-crashed since one of the CPU is online.
-
-The framework provides end-to-end protection to an operation, and
-prevents such case to happen.  We may also remove the current fine
-grained locking for simpler and better code maintainability.
-
-2. ACPI .add/.remove overload.  Currently, ACPI drivers use .add/.remove
-to online/offline a device during hot-plug operations.  The .add/.remove
-ops are defined as attach/detach of the driver to a device, not
-online/offline of the device.  Therefore, .add/.remove may not fail.
-This has caused a major issue in memory hot-delete that it still ejects
-a target memory even if its memory offlining failed.
-
-The framework allows .add/.remove opts to do as they defined, and handle
-failure cases properly.
-
-3. Inconsistency with the boot path.  In the boot-up sequence, system
-devices are initialized in pre-defined order, and ACPI bus walk is done
-as one of the last steps after most system devices are actually
-initialized.  The current hotplug scheme requires all system device
-initialization to proceed in ACPI bus walk, which requires an
-inconsistent role model for hotplug operations compared with the boot-up
-sequence.  Furthermore, it may not properly order system device
-initialization among multiple device types (i.e. Memory -> CPU) for node
-hotplug, unlike the boot-up sequence.
-
-The framework keeps the role model consistent with the boot sequence as
-well as the ordering of the initialization.
-
-> I guess I'll have more questions going forward.
-
-Great!
-
-Thanks a lot!
--Toshi
+diff --git a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
+index 0bde9ee..af12ead 100644
+--- a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
+@@ -41,7 +41,7 @@
+ 
+ /* controller at 0x9000 */
+ &pci0 {
+-	compatible = "fsl,p1010-pcie", "fsl,qoriq-pcie-v2.3", "fsl,qoriq-pcie-v2.2";
++	compatible = "fsl,p1010-pcie", "fsl,qoriq-pcie-v2.3";
+ 	device_type = "pci";
+ 	#size-cells = <2>;
+ 	#address-cells = <3>;
+@@ -69,7 +69,7 @@
+ 
+ /* controller at 0xa000 */
+ &pci1 {
+-	compatible = "fsl,p1010-pcie", "fsl,qoriq-pcie-v2.3", "fsl,qoriq-pcie-v2.2";
++	compatible = "fsl,p1010-pcie", "fsl,qoriq-pcie-v2.3";
+ 	device_type = "pci";
+ 	#size-cells = <2>;
+ 	#address-cells = <3>;
+diff --git a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+index 06216b8..e179803 100644
+--- a/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p1022si-post.dtsi
+@@ -45,7 +45,7 @@
+ 
+ /* controller at 0x9000 */
+ &pci0 {
+-	compatible = "fsl,p1022-pcie";
++	compatible = "fsl,mpc8548-pcie";
+ 	device_type = "pci";
+ 	#size-cells = <2>;
+ 	#address-cells = <3>;
+@@ -73,7 +73,7 @@
+ 
+ /* controller at 0xa000 */
+ &pci1 {
+-	compatible = "fsl,p1022-pcie";
++	compatible = "fsl,mpc8548-pcie";
+ 	device_type = "pci";
+ 	#size-cells = <2>;
+ 	#address-cells = <3>;
+@@ -102,7 +102,7 @@
+ 
+ /* controller at 0xb000 */
+ &pci2 {
+-	compatible = "fsl,p1022-pcie";
++	compatible = "fsl,mpc8548-pcie";
+ 	device_type = "pci";
+ 	#size-cells = <2>;
+ 	#address-cells = <3>;
+diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+index 4f9c9f6..cf4f538 100644
+--- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
++++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
+@@ -41,7 +41,7 @@
+ 
+ /* controller at 0x200000 */
+ &pci0 {
+-	compatible = "fsl,p4080-pcie";
++	compatible = "fsl,p4080-pcie", "fsl,qoriq-pcie-v2.1";
+ 	device_type = "pci";
+ 	#size-cells = <2>;
+ 	#address-cells = <3>;
+@@ -68,7 +68,7 @@
+ 
+ /* controller at 0x201000 */
+ &pci1 {
+-	compatible = "fsl,p4080-pcie";
++	compatible = "fsl,p4080-pcie", "fsl,qoriq-pcie-v2.1";
+ 	device_type = "pci";
+ 	#size-cells = <2>;
+ 	#address-cells = <3>;
+@@ -95,7 +95,7 @@
+ 
+ /* controller at 0x202000 */
+ &pci2 {
+-	compatible = "fsl,p4080-pcie";
++	compatible = "fsl,p4080-pcie", "fsl,qoriq-pcie-v2.1";
+ 	device_type = "pci";
+ 	#size-cells = <2>;
+ 	#address-cells = <3>;
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 92a5915..f213fb6 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -827,13 +827,18 @@ static const struct of_device_id pci_ids[] = {
+ 	{ .compatible = "fsl,mpc8548-pcie", },
+ 	{ .compatible = "fsl,mpc8610-pci", },
+ 	{ .compatible = "fsl,mpc8641-pcie", },
++	{ .compatible = "fsl,qoriq-pcie-v2.1", },
++	{ .compatible = "fsl,qoriq-pcie-v2.2", },
++	{ .compatible = "fsl,qoriq-pcie-v2.3", },
++	{ .compatible = "fsl,qoriq-pcie-v2.4", },
++
++	/*
++	 * The following entries are for compatibility with older device
++	 * trees.
++	 */
+ 	{ .compatible = "fsl,p1022-pcie", },
+-	{ .compatible = "fsl,p1010-pcie", },
+-	{ .compatible = "fsl,p1023-pcie", },
+ 	{ .compatible = "fsl,p4080-pcie", },
+-	{ .compatible = "fsl,qoriq-pcie-v2.4", },
+-	{ .compatible = "fsl,qoriq-pcie-v2.3", },
+-	{ .compatible = "fsl,qoriq-pcie-v2.2", },
++
+ 	{},
+ };
+ 
+-- 
+1.7.3.4
