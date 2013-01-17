@@ -1,31 +1,21 @@
-Return-Path: <balbi@ti.com>
-Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mailhost.ti.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3DD102C0084
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 20:32:21 +1100 (EST)
-Date: Thu, 17 Jan 2013 11:32:07 +0200
-From: Felipe Balbi <balbi@ti.com>
-To: Peter Chen <peter.chen@freescale.com>
-Subject: Re: [PATCH v5 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
- platform_device_id
-Message-ID: <20130117093207.GG10814@arwen.pp.htv.fi>
-References: <1358216975-1404-1-git-send-email-peter.chen@freescale.com>
- <1358216975-1404-2-git-send-email-peter.chen@freescale.com>
- <20130115140344.GB6574@S2101-09.ap.freescale.net>
- <20130116014824.GD16514@nchen-desktop>
- <20130117091422.GF10814@arwen.pp.htv.fi>
- <20130117092829.GA8251@nchen-desktop>
+Return-Path: <B29397@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8803A2C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jan 2013 21:01:29 +1100 (EST)
+From: Peter Chen <peter.chen@freescale.com>
+To: <shawn.guo@linaro.org>, <balbi@ti.com>, <kernel@pengutronix.de>,
+ <gregkh@linuxfoundation.org>, <r58472@freescale.com>
+Subject: [PATCH v6 0/3] *** SUBJECT HERE ***
+Date: Thu, 17 Jan 2013 18:01:11 +0800
+Message-ID: <1358416874-27011-1-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="jRdC2OsRnuV8iIl8"
-In-Reply-To: <20130117092829.GA8251@nchen-desktop>
-Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- Felipe Balbi <balbi@ti.com>, kernel@pengutronix.de,
- Shawn Guo <shawn.guo@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+Content-Type: text/plain
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-arm-kernel@lists.infradead.org
-Reply-To: balbi@ti.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,94 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---jRdC2OsRnuV8iIl8
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Changes for v6:
+- Only using imx-udc-mx27 and imx-udc-mx51 stands for
+all kinds of i.mx udc
+- Fix below build error for platform_device_id at fsl_udc_core.c
+drivers/usb/gadget/fsl_usb2_udc: struct platform_device_id is 24 bytes.? The last of 5 is:
+| 0x69 0x6d 0x78 0x2d 0x75 0x64 0x63 0x2d 0x6d 0x78 0x35 0x31 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
++0x00 0x00 0x00
+| FATAL: drivers/usb/gadget/fsl_usb2_udc: struct platform_device_id is not terminated with a NULL entry!
+| make[1]: *** [__modpost] Error 1
 
-Hi,
+Changes for v5:
+- Using strcmp to get specific SoC
+- Delete one cpu_is_mx35() as it has already pdata runtime check
 
-On Thu, Jan 17, 2013 at 05:28:30PM +0800, Peter Chen wrote:
+Changes for v4:
+- Using pdev's struct resource to do ioremap
+- Add ioremap return value check
 
-<trimming>
+Changes for v3:
+- Split the one big patch into three patches
 
-> > > > From what I understand balbi's comment, he dislikes this full list =
-of
-> > > > device id.  Instead, he prefers to something like below.
-> > > >=20
-> > > > static const struct platform_device_id fsl_udc_devtype[] =3D {
-> > > > 	{
-> > > > 		.name =3D "imx-udc-mx27",
-> > > > 	}, {
-> > > > 		.name =3D "imx-udc-mx51",
-> > > > 	}
-> > > > };
-> > > >=20
-> > > > It basically tells that we are handling two type of devices here, o=
-ne
-> > > > is imx-udc-mx27 type and the other is imx-udc-mx51 type, with mx25/=
-31/35
-> > > > completely compatible with mx27 type.  We choose mx27 instead of mx=
-25
-> > > > to define the type because mx27 Si came out earlier than mx25.  That
-> > > > said, we generally choose the earlies SoC name to define a particul=
-ar
-> > > > version of IP block, since hardware version is mostly unavailable or
-> > > > unreliable.
-> > > >=20
-> > > > But that also means in platform code which create the platform_devi=
-ce,
-> > > > you will need to use name "imx-udc-mx27" for even mx25/31/35.
-> > > >=20
-> > > > 	imx_fsl_usb2_udc_data_entry_single(MX25, "imx-udc-mx27");
-> > > > 	imx_fsl_usb2_udc_data_entry_single(MX31, "imx-udc-mx27");
-> > > > 	imx_fsl_usb2_udc_data_entry_single(MX35, "imx-udc-mx27");
-> > > >=20
-> > > > Considering this is a piece of code we will not use for any new
-> > > > hardware, I'm fine with either way.
-> > > >=20
-> > > > So, balbi, it's all your call to accept the series as it is or ask =
-for
-> > > > another iteration.
-> >=20
-> > right :-)
-> >=20
-> > > Thanks Shawn. Let's see Felipe's comment, nevertheless, I will send v=
-6 patch
-> > > due to a compile error at mx25
-> >=20
-> > Shawn is right.
->=20
-> In fact, this driver is just the temp solution, we will use chipidea
-> in future, so just take all i.mx usb as two kinds of ip are ok.
->=20
-> Do you want me to change like Shawn said, or current version is ok?
+Changes for v2:
+- Add const for fsl_udc_devtype
+- Do ioremap for phy address at fsl-mxc-udc
 
-yes, please resend with changes.
+Peter Chen (3):
+  usb: fsl-mxc-udc: replace cpu_is_xxx() with platform_device_id
+  usb: fsl_mxc_udc: replace MX35_IO_ADDRESS to ioremap
+  ARM: i.MX clock: Change the connection-id for fsl-usb2-udc
 
---=20
-balbi
-
---jRdC2OsRnuV8iIl8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.12 (GNU/Linux)
-
-iQIcBAEBAgAGBQJQ98UXAAoJEIaOsuA1yqRE/uoQAKa5pyVlYhZ2MCLApNHwbUE9
-rgdfxjwHVuXgpSAYEVoIuasF9ss7Payop89c09ZDk/smL+nlNhpeHeB57jyi0wtZ
-dACHLwvfC0CJykjcPihR7Jyl40IrWxvtFyORbDdTq+WxtmysRAUWUhuN8s9+6+gT
-6On4J+aUBl88ZywpBn4vwXjdzYjw33mcfK2t5iWmfYqonoIPMwwvHNiyJwAbEjV0
-0zyBT57oMysvfQsT2X64QQFbYgNb11juNNSMnZdCO1swmokXVu8o3qcjgmDy0PTy
-BXLwdCmJuOU3odCIjapJF9BOBEcpPYdgugT8AqpIaUaWl6XhwUGAcfajDVTALsdh
-3ujdaelnwX0vBGS5yNlyopG80lDMUi/yaMLOCkkCN3kkx2HYTR+Apz8oOaZCj+9h
-yEL4sllJg2EmDKmuyy3wA4e9YRXoK92i3U5jFsTXUp0TrQDp0oWpn/FW0aUn93VL
-eIsH0ITkxOrH/5AzynL3fTiKCTohA9kHEqUoiZ59RpvrsTjbA23NWuU4DqRb2nFh
-iVhiUNY9amqMe3gmq0RprdWyHvmNEUn0ff0Eno4ciw8zHhD+Z6gA0E3YKLA3mQeU
-TsRAogXFifrtYIRnywbgM2bS+5nIA2pxjoq0WJcwDGpgdu4j5KtDjqVFHYt9uZBr
-//lCKaqhZc8O/6i3YnAZ
-=5MG+
------END PGP SIGNATURE-----
-
---jRdC2OsRnuV8iIl8--
+ arch/arm/mach-imx/clk-imx25.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx27.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx31.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx35.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx51-imx53.c               |    6 +-
+ arch/arm/mach-imx/devices/devices-common.h        |    1 +
+ arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c |   15 ++++---
+ drivers/usb/gadget/fsl_mxc_udc.c                  |   40 +++++++++++++-------
+ drivers/usb/gadget/fsl_udc_core.c                 |   42 ++++++++++++--------
+ drivers/usb/gadget/fsl_usb2_udc.h                 |    5 +-
+ 10 files changed, 78 insertions(+), 55 deletions(-)
