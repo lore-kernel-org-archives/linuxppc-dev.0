@@ -1,9 +1,9 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 14/17] powerpc: Add transactional memory to POWER8 cpu features
-Date: Fri, 18 Jan 2013 16:48:34 +1100
-Message-Id: <1358488117-17363-15-git-send-email-mikey@neuling.org>
+Subject: [PATCH 15/17] powerpc: Add config option for transactional memory
+Date: Fri, 18 Jan 2013 16:48:35 +1100
+Message-Id: <1358488117-17363-16-git-send-email-mikey@neuling.org>
 In-Reply-To: <1358488117-17363-1-git-send-email-mikey@neuling.org>
 References: <1358488117-17363-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -17,24 +17,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Kconfig option for transactional memory on powerpc.
+
 Signed-off-by: Matt Evans <matt@ozlabs.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/cputable.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/Kconfig |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-index 71a498b..5ab77f4 100644
---- a/arch/powerpc/include/asm/cputable.h
-+++ b/arch/powerpc/include/asm/cputable.h
-@@ -421,7 +421,7 @@ extern const char *powerpc_base_platform;
- 	    CPU_FTR_DSCR | CPU_FTR_SAO  | \
- 	    CPU_FTR_STCX_CHECKS_ADDRESS | CPU_FTR_POPCNTB | CPU_FTR_POPCNTD | \
- 	    CPU_FTR_ICSWX | CPU_FTR_CFAR | CPU_FTR_HVMODE | CPU_FTR_VMX_COPY | \
--	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR)
-+	    CPU_FTR_DBELL | CPU_FTR_HAS_PPR | CPU_FTR_DAWR | CPU_FTR_TM_COMP)
- #define CPU_FTRS_CELL	(CPU_FTR_USE_TB | CPU_FTR_LWSYNC | \
- 	    CPU_FTR_PPCAS_ARCH_V2 | CPU_FTR_CTRL | \
- 	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 684fa64..349ed12 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -309,6 +309,14 @@ config MATH_EMULATION
+ 	  unit, which will allow programs that use floating-point
+ 	  instructions to run.
+ 
++config TRANSACTIONAL_MEM
++       bool "Transactional Memory support"
++       depends on PPC64
++       depends on SMP
++       default n
++       ---help---
++         Support user-mode Transactional Memory.
++
+ config 8XX_MINIMAL_FPEMU
+ 	bool "Minimal math emulation for 8xx"
+ 	depends on 8xx && !MATH_EMULATION
 -- 
 1.7.10.4
