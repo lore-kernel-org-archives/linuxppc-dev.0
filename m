@@ -1,24 +1,14 @@
-Return-Path: <kishon@ti.com>
-Message-ID: <50F8DD63.8070404@ti.com>
-Date: Fri, 18 Jan 2013 10:58:03 +0530
-From: kishon <kishon@ti.com>
-MIME-Version: 1.0
-To: Roger Quadros <rogerq@ti.com>
-Subject: Re: [RFC PATCH 3/6] usb: otg: utils: change the phy lib to support
- multiple PHYs of same type
-References: <1358348462-27693-1-git-send-email-kishon@ti.com>
- <1358348462-27693-4-git-send-email-kishon@ti.com> <50F821DD.1040609@ti.com>
-In-Reply-To: <50F821DD.1040609@ti.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
- linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
- stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
- haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
- gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
- dwmw2@infradead.org
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 00/17] powerpc: Hardware transactional memory support for
+ POWER8
+Date: Fri, 18 Jan 2013 16:48:20 +1100
+Message-Id: <1358488117-17363-1-git-send-email-mikey@neuling.org>
+In-Reply-To: <1353984488-1283-1-git-send-email-mikey@neuling.org>
+References: <1353984488-1283-1-git-send-email-mikey@neuling.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
+ Matt Evans <matt@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,68 +18,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+POWER8 implements hardware transactional memory support.  This patch series
+adds kernel support so that user programs can use this hardware transactional
+memory and the new state is properly context switched.  It is not currently
+used by the kernel itself.
 
-On Thursday 17 January 2013 09:37 PM, Roger Quadros wrote:
-> On 01/16/2013 05:00 PM, Kishon Vijay Abraham I wrote:
->> In order to add support for multipe PHY's of the same type, the API's
->> for adding PHY and getting PHY has been changed. Now the binding
->> information of the PHY and controller should be done in platform file
->> using usb_bind_phy API. And for getting a PHY, the device pointer of the
->> USB controller and an index should be passed. Based on the binding
->> information that is added in the platform file, get_phy will return the
->> approappropriate PHY.
->>
->> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
->> ---
->>   arch/arm/mach-shmobile/board-marzen.c |    2 +-
->>   drivers/power/ab8500_charger.c        |    2 +-
->>   drivers/power/isp1704_charger.c       |    2 +-
->>   drivers/power/pda_power.c             |    2 +-
->>   drivers/power/twl4030_charger.c       |    2 +-
->>   drivers/usb/chipidea/udc.c            |    2 +-
->>   drivers/usb/dwc3/core.c               |    4 +-
->>   drivers/usb/gadget/fsl_udc_core.c     |    2 +-
->>   drivers/usb/gadget/mv_udc_core.c      |    2 +-
->>   drivers/usb/gadget/omap_udc.c         |    2 +-
->>   drivers/usb/gadget/pxa25x_udc.c       |    2 +-
->>   drivers/usb/gadget/pxa27x_udc.c       |    2 +-
->>   drivers/usb/gadget/s3c-hsudc.c        |    2 +-
->>   drivers/usb/host/ehci-fsl.c           |    2 +-
->>   drivers/usb/host/ehci-msm.c           |    2 +-
->>   drivers/usb/host/ehci-mv.c            |    2 +-
->>   drivers/usb/host/ehci-tegra.c         |    2 +-
->>   drivers/usb/host/ohci-omap.c          |    2 +-
->>   drivers/usb/musb/am35x.c              |    2 +-
->>   drivers/usb/musb/blackfin.c           |    2 +-
->>   drivers/usb/musb/da8xx.c              |    2 +-
->>   drivers/usb/musb/davinci.c            |    2 +-
->>   drivers/usb/musb/musb_dsps.c          |    2 +-
->>   drivers/usb/musb/omap2430.c           |    2 +-
->>   drivers/usb/musb/tusb6010.c           |    2 +-
->>   drivers/usb/musb/ux500.c              |    2 +-
->>   drivers/usb/otg/ab8500-usb.c          |    3 +-
->>   drivers/usb/otg/fsl_otg.c             |    5 ++-
->>   drivers/usb/otg/gpio_vbus.c           |    3 +-
->>   drivers/usb/otg/isp1301_omap.c        |    3 +-
->>   drivers/usb/otg/msm_otg.c             |    3 +-
->>   drivers/usb/otg/mv_otg.c              |    3 +-
->>   drivers/usb/otg/nop-usb-xceiv.c       |    3 +-
->>   drivers/usb/otg/otg.c                 |   67 +++++++++++++++------------------
->>   drivers/usb/otg/twl4030-usb.c         |    3 +-
->>   drivers/usb/phy/mv_u3d_phy.c          |    3 +-
->>   drivers/usb/phy/omap-usb2.c           |   11 ++----
->>   drivers/usb/phy/rcar-phy.c            |    3 +-
->>   include/linux/usb/phy.h               |   12 +++---
->>   39 files changed, 87 insertions(+), 89 deletions(-)
->
-> I think it better to leave the existing add/get APIs as they are add add
-> new APIs that support multiple PHYs. You could probably mark the old
-> ones as deprecated.
->
-> That way you don't need to wait till all users are converted and tested.
+This patch series was originally developed by Matt Evans.
 
-Makes sense. Will do that :-)
+v2 changes
+ Adds signal handling
+ Removes some code for detecting when to restore all register or not
+ Added tabort for local tlb invalidates 
+ Rebased on benh's next tree
 
-Thanks
-Kishon
+Basic overview of a POWER8 hardware transaction memory
+=====================================================
+Hardware transactional memory is a feature that enables a different form of
+atomic memory access.  Several new instructions are presented to delimit
+transactions; transactions are guaranteed to either complete atomically or roll
+back and undo any partial changes.
+
+A simple transaction looks like this:
+
+begin_move_money:
+  tbegin
+  beq   abort_handler
+
+  ld    r4, SAVINGS_ACCT(r3)
+  ld    r5, CURRENT_ACCT(r3)
+  subi  r5, r5, 1
+  addi  r4, r4, 1
+  std   r4, SAVINGS_ACCT(r3)
+  std   r5, CURRENT_ACCT(r3)
+
+  tend
+
+  b     continue
+
+abort_handler:
+  ... test for odd failures ...
+
+  /* Retry the transaction if it failed because it conflicted with
+   * someone else: */
+  b     begin_move_money
+
+
+The 'tbegin' instruction denotes the start point, and 'tend' the end point.
+Between these points the processor is in 'Transactional' state; any memory
+references will complete in one go if there are no conflicts with other
+transactional or non-transactional accesses within the system.  In this
+example, the transaction completes as though it were normal straight-line code
+IF no other processor has touched SAVINGS_ACCT(r3) or CURRENT_ACCT(r3); an
+atomic move of money from the current account to the savings account has been
+performed.  Even though the normal ld/std instructions are used (note no
+lwarx/stwcx), either *both* SAVINGS_ACCT(r3) and CURRENT_ACCT(r3) will be
+updated, or neither will be updated.
+
+If, in the meantime, there is a conflict with the locations accessed by the
+transaction, the transaction will be aborted by the CPU.  Register and memory
+state will roll back to that at the 'tbegin', and control will continue from
+'tbegin+4'.  The branch to abort_handler will be taken this second time; the
+abort handler can check the cause of the failure, and retry.
+
+Checkpointed registers include all GPRs, FPRs, VRs/VSRs, LR, CCR/CR, CTR, FPCSR
+and a few other status/flag regs; 
