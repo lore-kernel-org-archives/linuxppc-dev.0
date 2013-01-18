@@ -1,10 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 05/17] powerpc: Register defines for various transactional
- memory registers
-Date: Fri, 18 Jan 2013 16:48:25 +1100
-Message-Id: <1358488117-17363-6-git-send-email-mikey@neuling.org>
+Subject: [PATCH 06/17] powerpc: Add transactional memory paca scratch register
+ to show_regs
+Date: Fri, 18 Jan 2013 16:48:26 +1100
+Message-Id: <1358488117-17363-7-git-send-email-mikey@neuling.org>
 In-Reply-To: <1358488117-17363-1-git-send-email-mikey@neuling.org>
 References: <1358488117-17363-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -18,66 +18,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Defines for MSR bits and transactional memory related SPRs TFIAR, TEXASR and
-TEXASRU.
+Add transactional memory paca scratch register to show_regs.  This is useful
+for debugging.
 
 Signed-off-by: Matt Evans <matt@ozlabs.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/include/asm/reg.h |   27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ arch/powerpc/include/asm/paca.h   |    1 +
+ arch/powerpc/kernel/asm-offsets.c |    1 +
+ arch/powerpc/kernel/entry_64.S    |    4 ++++
+ arch/powerpc/kernel/process.c     |    3 +++
+ 4 files changed, 9 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
-index 1f59fbb..3acef78 100644
---- a/arch/powerpc/include/asm/reg.h
-+++ b/arch/powerpc/include/asm/reg.h
-@@ -29,6 +29,10 @@
- #define MSR_SF_LG	63              /* Enable 64 bit mode */
- #define MSR_ISF_LG	61              /* Interrupt 64b mode valid on 630 */
- #define MSR_HV_LG 	60              /* Hypervisor state */
-+#define MSR_TS_T_LG	34		/* Trans Mem state: Transactional */
-+#define MSR_TS_S_LG	33		/* Trans Mem state: Suspended */
-+#define MSR_TS_LG	33		/* Trans Mem state (2 bits) */
-+#define MSR_TM_LG	32		/* Trans Mem Available */
- #define MSR_VEC_LG	25	        /* Enable AltiVec */
- #define MSR_VSX_LG	23		/* Enable VSX */
- #define MSR_POW_LG	18		/* Enable Power Management */
-@@ -98,6 +102,25 @@
- #define MSR_RI		__MASK(MSR_RI_LG)	/* Recoverable Exception */
- #define MSR_LE		__MASK(MSR_LE_LG)	/* Little Endian */
+diff --git a/arch/powerpc/include/asm/paca.h b/arch/powerpc/include/asm/paca.h
+index c47d687..07e9851 100644
+--- a/arch/powerpc/include/asm/paca.h
++++ b/arch/powerpc/include/asm/paca.h
+@@ -137,6 +137,7 @@ struct paca_struct {
+ 	u8 irq_work_pending;		/* IRQ_WORK interrupt while soft-disable */
+ 	u8 nap_state_lost;		/* NV GPR values lost in power7_idle */
+ 	u64 sprg3;			/* Saved user-visible sprg */
++	u64 tm_scratch;                 /* TM scratch area for reclaim */
  
-+#define MSR_TM		__MASK(MSR_TM_LG)	/* Transactional Mem Available */
-+#define MSR_TS_N	0			/*  Non-transactional */
-+#define MSR_TS_S	__MASK(MSR_TS_S_LG)	/*  Transaction Suspended */
-+#define MSR_TS_T	__MASK(MSR_TS_T_LG)	/*  Transaction Transactional */
-+#define MSR_TS_MASK	(MSR_TS_T | MSR_TS_S)   /* Transaction State bits */
-+#define MSR_TM_ACTIVE(x) (((x) & MSR_TS_MASK) != 0) /* Transaction active? */
-+#define MSR_TM_TRANSACTIONAL(x)	(((x) & MSR_TS_MASK) == MSR_TS_T)
-+#define MSR_TM_SUSPENDED(x)	(((x) & MSR_TS_MASK) == MSR_TS_S)
-+
-+/* Reason codes describing kernel causes for transaction aborts.  By
-+   convention, bit0 is copied to TEXASR[56] (IBM bit 7) which is set if
-+   the failure is persistent.
-+*/
-+#define TM_CAUSE_RESCHED	0xfe
-+#define TM_CAUSE_TLBI		0xfc
-+#define TM_CAUSE_FAC_UNAV	0xfa
-+#define TM_CAUSE_SYSCALL	0xf9 /* Persistent */
-+#define TM_CAUSE_MISC		0xf6
-+
- #if defined(CONFIG_PPC_BOOK3S_64)
- #define MSR_64BIT	MSR_SF
+ #ifdef CONFIG_PPC_POWERNV
+ 	/* Pointer to OPAL machine check event structure set by the
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index 3b81960..c9cdec4 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -123,6 +123,7 @@ int main(void)
+ #endif
  
-@@ -193,6 +216,10 @@
- #define SPRN_UAMOR	0x9d	/* User Authority Mask Override Register */
- #define SPRN_AMOR	0x15d	/* Authority Mask Override Register */
- #define SPRN_ACOP	0x1F	/* Available Coprocessor Register */
-+#define SPRN_TFIAR	0x81	/* Transaction Failure Inst Addr   */
-+#define SPRN_TEXASR	0x82	/* Transaction EXception & Summary */
-+#define SPRN_TEXASRU	0x83	/* ''	   ''	   ''	 Upper 32  */
-+#define SPRN_TFHAR	0x80	/* Transaction Failure Handler Addr */
- #define SPRN_CTRLF	0x088
- #define SPRN_CTRLT	0x098
- #define   CTRL_CT	0xc0000000	/* current thread */
+ #ifdef CONFIG_TRANSACTIONAL_MEM
++	DEFINE(PACATMSCRATCH, offsetof(struct paca_struct, tm_scratch));
+ 	DEFINE(THREAD_TM_TFHAR, offsetof(struct thread_struct, tm_tfhar));
+ 	DEFINE(THREAD_TM_TEXASR, offsetof(struct thread_struct, tm_texasr));
+ 	DEFINE(THREAD_TM_TFIAR, offsetof(struct thread_struct, tm_tfiar));
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index 6faf51e..283bc61 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -752,6 +752,10 @@ fast_exception_return:
+ 	andc	r4,r4,r0	 /* r0 contains MSR_RI here */
+ 	mtmsrd	r4,1
+ 
++#ifdef CONFIG_TRANSACTIONAL_MEM
++	/* TM debug */
++	std	r3, PACATMSCRATCH(r13) /* Stash returned-to MSR */
++#endif
+ 	/*
+ 	 * r13 is our per cpu area, only restore it if we are returning to
+ 	 * userspace the value stored in the stack frame may belong to
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index 1ab3a2c..cb11fed 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -749,6 +749,9 @@ void show_regs(struct pt_regs * regs)
+ 	printk("NIP ["REG"] %pS\n", regs->nip, (void *)regs->nip);
+ 	printk("LR ["REG"] %pS\n", regs->link, (void *)regs->link);
+ #endif
++#ifdef CONFIG_TRANSACTIONAL_MEM
++	printk("PACATMSCRATCH [%llx]\n", get_paca()->tm_scratch);
++#endif
+ 	show_stack(current, (unsigned long *) regs->gpr[1]);
+ 	if (!user_mode(regs))
+ 		show_instructions(regs);
 -- 
 1.7.10.4
