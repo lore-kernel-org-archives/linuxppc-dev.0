@@ -1,29 +1,21 @@
 Return-Path: <B29397@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe003.messaging.microsoft.com [216.32.181.183])
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B4D822C007E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2013 12:52:00 +1100 (EST)
-Date: Fri, 18 Jan 2013 09:51:41 +0800
+ by ozlabs.org (Postfix) with ESMTPS id 219932C007E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2013 13:16:13 +1100 (EST)
 From: Peter Chen <peter.chen@freescale.com>
-To: Fabio Estevam <festevam@gmail.com>
-Subject: Re: [PATCH v6 1/3] usb: fsl-mxc-udc: replace cpu_is_xxx() with
- platform_device_id
-Message-ID: <20130118015139.GA17155@nchen-desktop>
-References: <1358416874-27011-1-git-send-email-peter.chen@freescale.com>
- <1358416874-27011-2-git-send-email-peter.chen@freescale.com>
- <CAOMZO5Chu0bcXPqn+wWHwAqLu+27DvLx1=Bzaffpd-bA2ahaAQ@mail.gmail.com>
- <20727.57269.347099.324284@ipc1.ka-ro>
- <CAOMZO5DNVMAG3btGR7DeukgWaEaPe2zqm=EKAHQ5ovawq+BiWw@mail.gmail.com>
+To: <shawn.guo@linaro.org>, <balbi@ti.com>, <kernel@pengutronix.de>,
+ <gregkh@linuxfoundation.org>, <r58472@freescale.com>
+Subject: [PATCH v7 0/3] Fix the Build error for fsl_mxc_udc.c
+Date: Fri, 18 Jan 2013 10:15:46 +0800
+Message-ID: <1358475349-27710-1-git-send-email-peter.chen@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-In-Reply-To: <CAOMZO5DNVMAG3btGR7DeukgWaEaPe2zqm=EKAHQ5ovawq+BiWw@mail.gmail.com>
-Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- balbi@ti.com, kernel@pengutronix.de, shawn.guo@linaro.org,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- Lothar =?iso-8859-1?Q?Wa=DFmann?= <LW@karo-electronics.de>
+Content-Type: text/plain
+Cc: linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,32 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 17, 2013 at 12:43:23PM -0200, Fabio Estevam wrote:
-> On Thu, Jan 17, 2013 at 9:25 AM, Lothar Wa=DFmann <LW@karo-electronics.=
-de> wrote:
->=20
-> > The equivalent of !cpu_is_mx51() would be
-> > strcmp(pdev->id_entry->name, "imx-udc-mx51") (without the '!') meanin=
-g
-> > id_entry->name is different from "imx-udc-mx51".
+Changes for v7:
+- Change !strcmp(str1, str2) to strcmp(str1, str2) == 0
 
-Thanks, Lothar and Fabio, I will change, and send v7.
->=20
-> Yes, agree.
->=20
-> strcmp(pdev->id_entry->name, "imx-udc-mx51") is also better than
-> !strcmp(pdev->id_entry->name, "imx-udc-mx27"))
+Changes for v6:
+- Only using imx-udc-mx27 and imx-udc-mx51 stands for
+all kinds of i.mx udc
+- Fix below build error for platform_device_id at fsl_udc_core.c
+drivers/usb/gadget/fsl_usb2_udc: struct platform_device_id is 24 bytes.? The last of 5 is:
+| 0x69 0x6d 0x78 0x2d 0x75 0x64 0x63 0x2d 0x6d 0x78 0x35 0x31 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
++0x00 0x00 0x00
+| FATAL: drivers/usb/gadget/fsl_usb2_udc: struct platform_device_id is not terminated with a NULL entry!
+| make[1]: *** [__modpost] Error 1
 
-We just think this feature only belongs to imx-udc-mx27 type udc
->=20
-> because in the case of another soc entry gets added, let's say
-> "imx-udc-mxyy" then
->=20
-> !strcmp(pdev->id_entry->name, "imx-udc-mx27")) will not correspond to
-> !cpu_is_mx51() anymore.
->=20
+Changes for v5:
+- Using strcmp to get specific SoC
+- Delete one cpu_is_mx35() as it has already pdata runtime check
 
---=20
+Changes for v4:
+- Using pdev's struct resource to do ioremap
+- Add ioremap return value check
 
-Best Regards,
-Peter Chen
+Changes for v3:
+- Split the one big patch into three patches
+
+Changes for v2:
+- Add const for fsl_udc_devtype
+- Do ioremap for phy address at fsl-mxc-udc
+
+Peter Chen (3):
+  usb: fsl-mxc-udc: replace cpu_is_xxx() with platform_device_id
+  usb: fsl_mxc_udc: replace MX35_IO_ADDRESS to ioremap
+  ARM: i.MX clock: Change the connection-id for fsl-usb2-udc
+
+ arch/arm/mach-imx/clk-imx25.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx27.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx31.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx35.c                     |    6 +-
+ arch/arm/mach-imx/clk-imx51-imx53.c               |    6 +-
+ arch/arm/mach-imx/devices/devices-common.h        |    1 +
+ arch/arm/mach-imx/devices/platform-fsl-usb2-udc.c |   15 ++++---
+ drivers/usb/gadget/fsl_mxc_udc.c                  |   46 ++++++++++++++-------
+ drivers/usb/gadget/fsl_udc_core.c                 |   42 +++++++++++--------
+ drivers/usb/gadget/fsl_usb2_udc.h                 |    5 +-
+ 10 files changed, 83 insertions(+), 56 deletions(-)
