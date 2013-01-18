@@ -1,26 +1,24 @@
-Return-Path: <B29397@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe005.messaging.microsoft.com [216.32.180.31])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8F1082C008E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jan 2013 13:45:34 +1100 (EST)
-Date: Fri, 18 Jan 2013 10:45:15 +0800
-From: Peter Chen <peter.chen@freescale.com>
-To: Shawn Guo <shawn.guo@linaro.org>
-Subject: Re: [PATCH v7 3/3] ARM: i.MX clock: Change the connection-id for
- fsl-usb2-udc
-Message-ID: <20130118024513.GB17155@nchen-desktop>
-References: <1358475349-27710-1-git-send-email-peter.chen@freescale.com>
- <1358475349-27710-4-git-send-email-peter.chen@freescale.com>
- <20130118022337.GA29282@S2101-09.ap.freescale.net>
+Return-Path: <kishon@ti.com>
+Message-ID: <50F8DD63.8070404@ti.com>
+Date: Fri, 18 Jan 2013 10:58:03 +0530
+From: kishon <kishon@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20130118022337.GA29282@S2101-09.ap.freescale.net>
-Cc: r58472@freescale.com, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
- balbi@ti.com, kernel@pengutronix.de, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+To: Roger Quadros <rogerq@ti.com>
+Subject: Re: [RFC PATCH 3/6] usb: otg: utils: change the phy lib to support
+ multiple PHYs of same type
+References: <1358348462-27693-1-git-send-email-kishon@ti.com>
+ <1358348462-27693-4-git-send-email-kishon@ti.com> <50F821DD.1040609@ti.com>
+In-Reply-To: <50F821DD.1040609@ti.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
+ linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
+ stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
+ haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
+ dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +28,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 18, 2013 at 10:23:39AM +0800, Shawn Guo wrote:
-> Peter,
-> 
-> On Fri, Jan 18, 2013 at 10:15:49AM +0800, Peter Chen wrote:
-> > As we use platform_device_id for fsl-usb2-udc driver, it needs to
-> > change clk connection-id, or the related devm_clk_get will be failed.
-> > 
-> > Signed-off-by: Peter Chen <peter.chen@freescale.com>
-> 
-> You should have my ACK put after your SoB, since I have provided it
-> on v6 of this patch.  It will make balbi's life a little bit easier
-> when he applies the patch.
-thanks, will do next time
-> 
-> So again,
-> 
-> Acked-by: Shawn Guo <shawn.guo@linaro.org>
-> 
-> Shawn
+Hi,
 
--- 
+On Thursday 17 January 2013 09:37 PM, Roger Quadros wrote:
+> On 01/16/2013 05:00 PM, Kishon Vijay Abraham I wrote:
+>> In order to add support for multipe PHY's of the same type, the API's
+>> for adding PHY and getting PHY has been changed. Now the binding
+>> information of the PHY and controller should be done in platform file
+>> using usb_bind_phy API. And for getting a PHY, the device pointer of the
+>> USB controller and an index should be passed. Based on the binding
+>> information that is added in the platform file, get_phy will return the
+>> approappropriate PHY.
+>>
+>> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+>> ---
+>>   arch/arm/mach-shmobile/board-marzen.c |    2 +-
+>>   drivers/power/ab8500_charger.c        |    2 +-
+>>   drivers/power/isp1704_charger.c       |    2 +-
+>>   drivers/power/pda_power.c             |    2 +-
+>>   drivers/power/twl4030_charger.c       |    2 +-
+>>   drivers/usb/chipidea/udc.c            |    2 +-
+>>   drivers/usb/dwc3/core.c               |    4 +-
+>>   drivers/usb/gadget/fsl_udc_core.c     |    2 +-
+>>   drivers/usb/gadget/mv_udc_core.c      |    2 +-
+>>   drivers/usb/gadget/omap_udc.c         |    2 +-
+>>   drivers/usb/gadget/pxa25x_udc.c       |    2 +-
+>>   drivers/usb/gadget/pxa27x_udc.c       |    2 +-
+>>   drivers/usb/gadget/s3c-hsudc.c        |    2 +-
+>>   drivers/usb/host/ehci-fsl.c           |    2 +-
+>>   drivers/usb/host/ehci-msm.c           |    2 +-
+>>   drivers/usb/host/ehci-mv.c            |    2 +-
+>>   drivers/usb/host/ehci-tegra.c         |    2 +-
+>>   drivers/usb/host/ohci-omap.c          |    2 +-
+>>   drivers/usb/musb/am35x.c              |    2 +-
+>>   drivers/usb/musb/blackfin.c           |    2 +-
+>>   drivers/usb/musb/da8xx.c              |    2 +-
+>>   drivers/usb/musb/davinci.c            |    2 +-
+>>   drivers/usb/musb/musb_dsps.c          |    2 +-
+>>   drivers/usb/musb/omap2430.c           |    2 +-
+>>   drivers/usb/musb/tusb6010.c           |    2 +-
+>>   drivers/usb/musb/ux500.c              |    2 +-
+>>   drivers/usb/otg/ab8500-usb.c          |    3 +-
+>>   drivers/usb/otg/fsl_otg.c             |    5 ++-
+>>   drivers/usb/otg/gpio_vbus.c           |    3 +-
+>>   drivers/usb/otg/isp1301_omap.c        |    3 +-
+>>   drivers/usb/otg/msm_otg.c             |    3 +-
+>>   drivers/usb/otg/mv_otg.c              |    3 +-
+>>   drivers/usb/otg/nop-usb-xceiv.c       |    3 +-
+>>   drivers/usb/otg/otg.c                 |   67 +++++++++++++++------------------
+>>   drivers/usb/otg/twl4030-usb.c         |    3 +-
+>>   drivers/usb/phy/mv_u3d_phy.c          |    3 +-
+>>   drivers/usb/phy/omap-usb2.c           |   11 ++----
+>>   drivers/usb/phy/rcar-phy.c            |    3 +-
+>>   include/linux/usb/phy.h               |   12 +++---
+>>   39 files changed, 87 insertions(+), 89 deletions(-)
+>
+> I think it better to leave the existing add/get APIs as they are add add
+> new APIs that support multiple PHYs. You could probably mark the old
+> ones as deprecated.
+>
+> That way you don't need to wait till all users are converted and tested.
 
-Best Regards,
-Peter Chen
+Makes sense. Will do that :-)
+
+Thanks
+Kishon
