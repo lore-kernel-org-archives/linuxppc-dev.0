@@ -1,10 +1,10 @@
 Return-Path: <mikey@neuling.org>
 From: Michael Neuling <mikey@neuling.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 10/17] powerpc: Add transactional memory unavaliable execption
- handler
-Date: Fri, 18 Jan 2013 16:48:30 +1100
-Message-Id: <1358488117-17363-11-git-send-email-mikey@neuling.org>
+Subject: [PATCH 11/17] powerpc: Assembler routines for FP/VSX/VMX unavailable
+ during a transaction
+Date: Fri, 18 Jan 2013 16:48:31 +1100
+Message-Id: <1358488117-17363-12-git-send-email-mikey@neuling.org>
 In-Reply-To: <1358488117-17363-1-git-send-email-mikey@neuling.org>
 References: <1358488117-17363-1-git-send-email-mikey@neuling.org>
 Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
@@ -18,105 +18,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These should never happen since we always turn on MSR TM when in userspace. We
-don't do lazy TM.
+We do lazy FP but not lazy TM (ie. userspace starts with MSR TM=1 FP=0).  Hence
+if userspace does an FP instruction during a transaction, we'll take an
+fp unavailable exception.
 
-Hence if we hit this, we barf and kill the task as something's gone horribly
-wrong.
+This adds functions needed to handle this case.  We have to inject the current
+FP state into the checkpoint so that the hardware can decide what to do with
+the transaction.  We can't inject only the FP so we have to do a full treclaim
+and recheckpoint to inject just the FP state.  This will cause the transaction
+to be marked as aborted by the hardware.
+
+This just add the routines needed to do this for FP, VMX and VSX.  It doesn't
+hook them into the rest of the code yet.
 
 Signed-off-by: Matt Evans <matt@ozlabs.org>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- arch/powerpc/kernel/exceptions-64s.S |   19 +++++++++++++++++++
- arch/powerpc/kernel/traps.c          |   21 +++++++++++++++++++++
- 2 files changed, 40 insertions(+)
+ arch/powerpc/kernel/traps.c |   95 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 95 insertions(+)
 
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index 7a1c87c..d0cc657 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -313,6 +313,9 @@ vsx_unavailable_pSeries_1:
- 	. = 0xf40
- 	b	vsx_unavailable_pSeries
- 
-+	. = 0xf60
-+	b	tm_unavailable_pSeries
-+
- #ifdef CONFIG_CBE_RAS
- 	STD_EXCEPTION_HV(0x1200, 0x1202, cbe_system_error)
- 	KVM_HANDLER_SKIP(PACA_EXGEN, EXC_HV, 0x1202)
-@@ -528,6 +531,8 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_ARCH_206)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf20)
- 	STD_EXCEPTION_PSERIES(., 0xf40, vsx_unavailable)
- 	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf40)
-+	STD_EXCEPTION_PSERIES(., 0xf60, tm_unavailable)
-+	KVM_HANDLER_PR(PACA_EXGEN, EXC_STD, 0xf60)
- 
- /*
-  * An interrupt came in while soft-disabled. We set paca->irq_happened, then:
-@@ -817,6 +822,10 @@ vsx_unavailable_relon_pSeries_1:
- 	. = 0x4f40
- 	b	vsx_unavailable_relon_pSeries
- 
-+tm_unavailable_relon_pSeries_1:
-+	. = 0x4f60
-+	b	tm_unavailable_relon_pSeries
-+
- #ifdef CONFIG_CBE_RAS
- 	STD_RELON_EXCEPTION_HV(0x5200, 0x1202, cbe_system_error)
- #endif /* CONFIG_CBE_RAS */
-@@ -1177,6 +1186,15 @@ END_FTR_SECTION_IFSET(CPU_FTR_VSX)
- 	b	.ret_from_except
- 
- 	.align	7
-+	.globl tm_unavailable_common
-+tm_unavailable_common:
-+	EXCEPTION_PROLOG_COMMON(0xf60, PACA_EXGEN)
-+	bl	.save_nvgprs
-+	addi	r3,r1,STACK_FRAME_OVERHEAD
-+	bl	.tm_unavailable_exception
-+	b	.ret_from_except
-+
-+	.align	7
- 	.globl	__end_handlers
- __end_handlers:
- 
-@@ -1195,6 +1213,7 @@ __end_handlers:
- 	STD_RELON_EXCEPTION_PSERIES(., 0xf00, performance_monitor)
- 	STD_RELON_EXCEPTION_PSERIES(., 0xf20, altivec_unavailable)
- 	STD_RELON_EXCEPTION_PSERIES(., 0xf40, vsx_unavailable)
-+	STD_RELON_EXCEPTION_PSERIES(., 0xf60, tm_unavailable)
- 
- #if defined(CONFIG_PPC_PSERIES) || defined(CONFIG_PPC_POWERNV)
- /*
 diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 2a62f54..dda0517 100644
+index dda0517..311770d 100644
 --- a/arch/powerpc/kernel/traps.c
 +++ b/arch/powerpc/kernel/traps.c
-@@ -1171,6 +1171,27 @@ void vsx_unavailable_exception(struct pt_regs *regs)
- 	die("Unrecoverable VSX Unavailable Exception", regs, SIGABRT);
+@@ -58,6 +58,7 @@
+ #include <asm/rio.h>
+ #include <asm/fadump.h>
+ #include <asm/switch_to.h>
++#include <asm/tm.h>
+ #include <asm/debug.h>
+ 
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+@@ -1192,6 +1193,100 @@ void tm_unavailable_exception(struct pt_regs *regs)
+ 	die("Unexpected TM unavailable exception", regs, SIGABRT);
  }
  
-+void tm_unavailable_exception(struct pt_regs *regs)
++#ifdef CONFIG_TRANSACTIONAL_MEM
++
++extern void do_load_up_fpu(struct pt_regs *regs);
++
++void fp_unavailable_tm(struct pt_regs *regs)
 +{
++	/* Note:  This does not handle any kind of FP laziness. */
++
 +	/* We restore the interrupt state now */
 +	if (!arch_irq_disabled_regs(regs))
 +		local_irq_enable();
 +
-+	/* Currently we never expect a TMU exception.  Catch
-+	 * this and kill the process!
++	TM_DEBUG("FP Unavailable trap whilst transactional at 0x%lx, MSR=%lx\n",
++		 regs->nip, regs->msr);
++	tm_enable();
++
++        /* We can only have got here if the task started using FP after
++         * beginning the transaction.  So, the transactional regs are just a
++         * copy of the checkpointed ones.  But, we still need to recheckpoint
++         * as we're enabling FP for the process; it will return, abort the
++         * transaction, and probably retry but now with FP enabled.  So the
++         * checkpointed FP registers need to be loaded.
 +	 */
-+	printk(KERN_EMERG "Unexpected TM unavailable exception at %lx "
-+	       "(msr %lx)\n",
-+	       regs->nip, regs->msr);
++	tm_reclaim(&current->thread, current->thread.regs->msr,
++		   TM_CAUSE_FAC_UNAV);
++	/* Reclaim didn't save out any FPRs to transact_fprs. */
 +
-+	if (user_mode(regs)) {
-+		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
-+		return;
-+	}
++	/* Enable FP for the task: */
++	regs->msr |= (MSR_FP | current->thread.fpexc_mode);
 +
-+	die("Unexpected TM unavailable exception", regs, SIGABRT);
++	/* This loads and recheckpoints the FP registers from
++	 * thread.fpr[].  They will remain in registers after the
++	 * checkpoint so we don't need to reload them after.
++	 */
++	tm_recheckpoint(&current->thread, regs->msr);
 +}
++
++#ifdef CONFIG_ALTIVEC
++extern void do_load_up_altivec(struct pt_regs *regs);
++
++void altivec_unavailable_tm(struct pt_regs *regs)
++{
++	/* See the comments in fp_unavailable_tm().  This function operates
++	 * the same way.
++	 */
++
++	/* We restore the interrupt state now */
++	if (!arch_irq_disabled_regs(regs))
++		local_irq_enable();
++
++	TM_DEBUG("Vector Unavailable trap whilst transactional at 0x%lx,"
++		 "MSR=%lx\n",
++		 regs->nip, regs->msr);
++	tm_enable();
++	tm_reclaim(&current->thread, current->thread.regs->msr,
++		   TM_CAUSE_FAC_UNAV);
++	regs->msr |= MSR_VEC;
++	tm_recheckpoint(&current->thread, regs->msr);
++	current->thread.used_vr = 1;
++}
++#endif
++
++#ifdef CONFIG_VSX
++void vsx_unavailable_tm(struct pt_regs *regs)
++{
++	/* See the comments in fp_unavailable_tm().  This works similarly,
++	 * though we're loading both FP and VEC registers in here.
++	 *
++	 * If FP isn't in use, load FP regs.  If VEC isn't in use, load VEC
++	 * regs.  Either way, set MSR_VSX.
++	 */
++
++	/* We restore the interrupt state now */
++	if (!arch_irq_disabled_regs(regs))
++		local_irq_enable();
++
++	TM_DEBUG("VSX Unavailable trap whilst transactional at 0x%lx,"
++		 "MSR=%lx\n",
++		 regs->nip, regs->msr);
++
++	tm_enable();
++	/* This reclaims FP and/or VR regs if they're already enabled */
++	tm_reclaim(&current->thread, current->thread.regs->msr,
++		   TM_CAUSE_FAC_UNAV);
++
++	regs->msr |= MSR_VEC | MSR_FP | current->thread.fpexc_mode |
++		MSR_VSX;
++	/* This loads & recheckpoints FP and VRs. */
++	tm_recheckpoint(&current->thread, regs->msr);
++	current->thread.used_vsr = 1;
++}
++#endif
++#endif /* CONFIG_TRANSACTIONAL_MEM */
 +
  void performance_monitor_exception(struct pt_regs *regs)
  {
