@@ -1,35 +1,19 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e39.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6C71D2C0082
- for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2013 12:30:35 +1100 (EST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Fri, 18 Jan 2013 18:30:32 -0700
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6DC3DC40003
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2013 18:30:18 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0J1USRB153218
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2013 18:30:28 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0J1URrZ014647
- for <linuxppc-dev@ozlabs.org>; Fri, 18 Jan 2013 18:30:28 -0700
-Date: Fri, 18 Jan 2013 17:30:52 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: acme@ghostprotocols.net, Anton Blanchard <anton@au1.ibm.com>,
- paulus@samba.org
-Subject: [PATCH] perf: Fix compile warnings in tests/attr.c
-Message-ID: <20130119013052.GA24693@us.ibm.com>
+Return-Path: <lrakesh05@gmail.com>
+Received: from mail-ie0-f171.google.com (mail-ie0-f171.google.com
+ [209.85.223.171])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B354D2C007B
+ for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2013 21:47:39 +1100 (EST)
+Received: by mail-ie0-f171.google.com with SMTP id 9so3644512iec.2
+ for <linuxppc-dev@ozlabs.org>; Sat, 19 Jan 2013 02:47:37 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, jolsa@redhat.com, linux-kernel@vger.kernel.org
+Date: Sat, 19 Jan 2013 16:11:48 +0530
+Message-ID: <CAMROFi2mJ1B=xpLGNkiVsSuRJ62LoDAVUSQ3rWyZck2=6r8apw@mail.gmail.com>
+Subject: ml510 booting problem.
+From: rakesh l <lrakesh05@gmail.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: multipart/alternative; boundary=90e6ba1efd6209bec504d3a1e08f
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,70 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
->From 4d266e5040c33103f5d226b0d16b89f8ef79e3ad Mon Sep 17 00:00:00 2001
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Fri, 18 Jan 2013 11:14:28 -0800
-Subject: [PATCH] perf: Fix compile warnings in tests/attr.c
+--90e6ba1efd6209bec504d3a1e08f
+Content-Type: text/plain; charset=ISO-8859-1
 
-Replace '%llu' in printf()s with 'PRIu64' in 'tools/perf/tests/attr.c'
-to fix compile warnings (which become errors due to -Werror).
+Hello All,
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- tools/perf/tests/attr.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+              I am trying to port 3.6 linux kernel on ml510 board and i
+have already ported 3.6 kernel on ml403 board but i am unable to do the
+same thing on ml510. I really don't know what i am missing here.
 
-diff --git a/tools/perf/tests/attr.c b/tools/perf/tests/attr.c
-index f61dd3f..5cbb2b3 100644
---- a/tools/perf/tests/attr.c
-+++ b/tools/perf/tests/attr.c
-@@ -65,7 +65,7 @@ static int store_event(struct perf_event_attr *attr, pid_t pid, int cpu,
- 	FILE *file;
- 	char path[PATH_MAX];
- 
--	snprintf(path, PATH_MAX, "%s/event-%d-%llu-%d", dir,
-+	snprintf(path, PATH_MAX, "%s/event-%d-%" PRIu64 "-%d", dir,
- 		 attr->type, attr->config, fd);
- 
- 	file = fopen(path, "w+");
-@@ -74,7 +74,7 @@ static int store_event(struct perf_event_attr *attr, pid_t pid, int cpu,
- 		return -1;
- 	}
- 
--	if (fprintf(file, "[event-%d-%llu-%d]\n",
-+	if (fprintf(file, "[event-%d-%" PRIu64 "-%d]\n",
- 		    attr->type, attr->config, fd) < 0) {
- 		perror("test attr - failed to write event file");
- 		fclose(file);
-@@ -91,10 +91,10 @@ static int store_event(struct perf_event_attr *attr, pid_t pid, int cpu,
- 	/* struct perf_event_attr */
- 	WRITE_ASS(type,   PRIu32);
- 	WRITE_ASS(size,   PRIu32);
--	WRITE_ASS(config,  "llu");
--	WRITE_ASS(sample_period, "llu");
--	WRITE_ASS(sample_type,   "llu");
--	WRITE_ASS(read_format,   "llu");
-+	WRITE_ASS(config,  PRIu64);
-+	WRITE_ASS(sample_period, PRIu64);
-+	WRITE_ASS(sample_type,   PRIu64);
-+	WRITE_ASS(read_format,   PRIu64);
- 	WRITE_ASS(disabled,       "d");
- 	WRITE_ASS(inherit,        "d");
- 	WRITE_ASS(pinned,         "d");
-@@ -119,10 +119,10 @@ static int store_event(struct perf_event_attr *attr, pid_t pid, int cpu,
- 	WRITE_ASS(exclude_callchain_user, "d");
- 	WRITE_ASS(wakeup_events, PRIu32);
- 	WRITE_ASS(bp_type, PRIu32);
--	WRITE_ASS(config1, "llu");
--	WRITE_ASS(config2, "llu");
--	WRITE_ASS(branch_sample_type, "llu");
--	WRITE_ASS(sample_regs_user,   "llu");
-+	WRITE_ASS(config1, PRIu64);
-+	WRITE_ASS(config2, PRIu64);
-+	WRITE_ASS(branch_sample_type, PRIu64);
-+	WRITE_ASS(sample_regs_user,   PRIu64);
- 	WRITE_ASS(sample_stack_user,  PRIu32);
- 
- 	fclose(file);
--- 
-1.7.1
+Tools used :
+
+1) xilinx 13.1 edk
+ 2) linux kernel from git.xilinx.com (downloaded 3.6 kernel)
+ 3) eldk 5.3 (cross compilers tools)
+
+Flow go's like this :
+
+1) I have added necessary peripherals in the edk and generated bit stream
+and exported it to sdk. In sdk i have creted a .dts file.
+ 2) The obtained dts file i have placed in arch/powerpc/boot/dts folder
+ 3) i also got ramdisk image from wiki.xilinx.com/powerpc-linux. (placed in
+/arch/powerpc/boot)
+
+compiled kernel using default configuration. i have also enabled soft fpu's
+
+After compiling i got .elf file in arch/powerpc/boot . i took that elf and
+download.bit in edk project and clubbed it in xmd console inorder to get
+.ace file .
+obtained .ace file is loaded in CF and trying to port through rs232, but i
+am seeing nothing on the console. what to do.... what i am missing here. I
+am breaking my head from past 1 month. Please do reply.
+
+With Regards,
+Rakesh.
+
+--90e6ba1efd6209bec504d3a1e08f
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+Hello All,<div><br></div><div>=A0 =A0 =A0 =A0 =A0 =A0 =A0 I am trying to po=
+rt 3.6 linux kernel on ml510 board and i have already ported 3.6 kernel on =
+ml403 board but i am unable to do the same thing on ml510. I really don&#39=
+;t know what i am missing here.</div>
+<div><br></div><div>Tools used :</div><div><br></div><div>1) xilinx 13.1 ed=
+k</div><div>=A02) linux kernel from <a href=3D"http://git.xilinx.com">git.x=
+ilinx.com</a> (downloaded 3.6 kernel)</div><div>=A03) eldk 5.3 (cross compi=
+lers tools)</div>
+<div><br></div><div>Flow go&#39;s like this :</div><div><br></div><div>1) I=
+ have added necessary peripherals in the edk and generated bit stream and e=
+xported it to sdk. In sdk i have creted a .dts file.</div><div>=A02) The ob=
+tained dts file i have placed in arch/powerpc/boot/dts folder</div>
+<div>=A03) i also got ramdisk image from <a href=3D"http://wiki.xilinx.com/=
+powerpc-linux">wiki.xilinx.com/powerpc-linux</a>. (placed in /arch/powerpc/=
+boot)</div><div><br></div><div>compiled kernel using default configuration.=
+ i have also enabled soft fpu&#39;s</div>
+<div><br></div><div>After compiling i got .elf file in arch/powerpc/boot . =
+i took that elf and download.bit in edk project and=A0clubbed=A0it in xmd c=
+onsole inorder to get .ace file .=A0</div><div>obtained .ace file is loaded=
+ in CF and trying to port through rs232, but i am seeing nothing on the con=
+sole. what to do.... what i am missing here. I am breaking my head from pas=
+t 1 month. Please do reply.</div>
+<div><br></div><div>With Regards,</div><div>Rakesh.</div>
+
+--90e6ba1efd6209bec504d3a1e08f--
