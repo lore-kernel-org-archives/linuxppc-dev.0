@@ -1,20 +1,23 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-Received: from mail4-relais-sop.national.inria.fr
- (mail4-relais-sop.national.inria.fr [192.134.164.105])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
- (Client CN "smtp.inria.fr", Issuer "TERENA SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B173A2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2013 23:14:09 +1100 (EST)
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH 8/15] arch/powerpc/platforms/85xx/p1022_ds.c: adjust duplicate
- test
-Date: Mon, 21 Jan 2013 14:02:52 +0100
-Message-Id: <1358773378-4700-9-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1358773378-4700-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1358773378-4700-1-git-send-email-Julia.Lawall@lip6.fr>
-Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Return-Path: <rogerq@ti.com>
+Message-ID: <50FD4034.5040402@ti.com>
+Date: Mon, 21 Jan 2013 15:18:44 +0200
+From: Roger Quadros <rogerq@ti.com>
+MIME-Version: 1.0
+To: Kishon Vijay Abraham I <kishon@ti.com>
+Subject: Re: [RFC PATCH 6/6] USB: MUSB: OMAP: get PHY by phandle for dt boot
+References: <1358348462-27693-1-git-send-email-kishon@ti.com>
+ <1358348462-27693-7-git-send-email-kishon@ti.com>
+In-Reply-To: <1358348462-27693-7-git-send-email-kishon@ti.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Cc: linux-doc@vger.kernel.org, tony@atomide.com, linux@arm.linux.org.uk,
+ linux-sh@vger.kernel.org, alexander.shishkin@linux.intel.com,
+ stern@rowland.harvard.edu, devicetree-discuss@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, rob.herring@calxeda.com, horms@verge.net.au,
+ haojian.zhuang@gmail.com, linux-omap@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, eric.y.miao@gmail.com, b-cousson@ti.com,
+ gregkh@linuxfoundation.org, linux-usb@vger.kernel.org,
+ linux-kernel@vger.kernel.org, balbi@ti.com, cbou@mail.ru, rob@landley.net,
+ dwmw2@infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,47 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <Julia.Lawall@lip6.fr>
+On 01/16/2013 05:01 PM, Kishon Vijay Abraham I wrote:
+> The OMAP glue has been modified to get PHY by phandle for dt boot.
+> 
+> Signed-off-by: Kishon Vijay Abraham I <kishon@ti.com>
+> ---
+>  drivers/usb/musb/omap2430.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/usb/musb/omap2430.c b/drivers/usb/musb/omap2430.c
+> index 3628a50..08709cf 100644
+> --- a/drivers/usb/musb/omap2430.c
+> +++ b/drivers/usb/musb/omap2430.c
+> @@ -346,7 +346,12 @@ static int omap2430_musb_init(struct musb *musb)
+>  	 * up through ULPI.  TWL4030-family PMICs include one,
+>  	 * which needs a driver, drivers aren't always needed.
+>  	 */
+> -	musb->xceiv = devm_usb_get_phy(dev, 0);
+> +	if (dev->parent->of_node)
+> +		musb->xceiv = devm_usb_get_phy_by_phandle(dev->parent,
+> +		    "usb_phy", 0);
 
-Delete successive tests to the same location.  The code tested the result
-of a previous call, that itself was already tested.  It is changed to test
-the result of the most recent call.
+Why dev->parent and not just dev?
 
-A simplified version of the semantic match that finds this problem is as
-follows: (http://coccinelle.lip6.fr/)
+> +	else
+> +		musb->xceiv = devm_usb_get_phy(dev, 0);
+> +
+>  	if (IS_ERR_OR_NULL(musb->xceiv)) {
+>  		pr_err("HS USB OTG: no transceiver configured\n");
+>  		return -ENODEV;
+> 
 
-// <smpl>
-@s exists@
-local idexpression y;
-expression x,e;
-@@
-
-*if ( \(x == NULL\|IS_ERR(x)\|y != 0\) )
- { ... when forall
-   return ...; }
-... when != \(y = e\|y += e\|y -= e\|y |= e\|y &= e\|y++\|y--\|&y\)
-    when != \(XT_GETPAGE(...,y)\|WMI_CMD_BUF(...)\)
-*if ( \(x == NULL\|IS_ERR(x)\|y != 0\) )
- { ... when forall
-   return ...; }
-// </smpl>
-
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-
----
- arch/powerpc/platforms/85xx/p1022_ds.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
-index e346edf..af5853c 100644
---- a/arch/powerpc/platforms/85xx/p1022_ds.c
-+++ b/arch/powerpc/platforms/85xx/p1022_ds.c
-@@ -302,7 +302,7 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
- 		goto exit;
- 	}
- 	cs1_addr = lbc_br_to_phys(ecm, num_laws, br1);
--	if (!cs0_addr) {
-+	if (!cs1_addr) {
- 		pr_err("p1022ds: could not determine physical address for CS1"
- 		       " (BR1=%08x)\n", br1);
- 		goto exit;
+--
+cheers,
+-roger
