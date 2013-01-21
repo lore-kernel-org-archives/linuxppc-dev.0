@@ -1,21 +1,20 @@
-Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
- Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ECB4F2C00D6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2013 18:44:39 +1100 (EST)
-From: Tiejun Chen <tiejun.chen@windriver.com>
-To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
-Subject: [v2][PATCH 6/6] kgdb/kgdbts: support ppc64
-Date: Mon, 21 Jan 2013 15:44:15 +0800
-Message-ID: <1358754255-31484-7-git-send-email-tiejun.chen@windriver.com>
-In-Reply-To: <1358754255-31484-1-git-send-email-tiejun.chen@windriver.com>
-References: <1358754255-31484-1-git-send-email-tiejun.chen@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- jason.wessel@windriver.com
+Return-Path: <Julia.Lawall@lip6.fr>
+Received: from mail4-relais-sop.national.inria.fr
+ (mail4-relais-sop.national.inria.fr [192.134.164.105])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "smtp.inria.fr", Issuer "TERENA SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B173A2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2013 23:14:09 +1100 (EST)
+From: Julia Lawall <Julia.Lawall@lip6.fr>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 8/15] arch/powerpc/platforms/85xx/p1022_ds.c: adjust duplicate
+ test
+Date: Mon, 21 Jan 2013 14:02:52 +0100
+Message-Id: <1358773378-4700-9-git-send-email-Julia.Lawall@lip6.fr>
+In-Reply-To: <1358773378-4700-1-git-send-email-Julia.Lawall@lip6.fr>
+References: <1358773378-4700-1-git-send-email-Julia.Lawall@lip6.fr>
+Cc: kernel-janitors@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,52 +24,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We can't look up the address of the entry point of the function simply
-via that function symbol for all architectures.
+From: Julia Lawall <Julia.Lawall@lip6.fr>
 
-For PPC64 ABI, actually there is a function descriptors structure.
+Delete successive tests to the same location.  The code tested the result
+of a previous call, that itself was already tested.  It is changed to test
+the result of the most recent call.
 
-A function descriptor is a three doubleword data structure that contains
-the following values:
-	* The first doubleword contains the address of the entry point of
-		the function.
-	* The second doubleword contains the TOC base address for
-		the function.
-	* The third doubleword contains the environment pointer for
-		languages such as Pascal and PL/1.
+A simplified version of the semantic match that finds this problem is as
+follows: (http://coccinelle.lip6.fr/)
 
-So we should call a wapperred dereference_function_descriptor() to get
-the address of the entry point of the function.
+// <smpl>
+@s exists@
+local idexpression y;
+expression x,e;
+@@
 
-Note this is also safe for other architecture after refer to
-"include/asm-generic/sections.h" since:
+*if ( \(x == NULL\|IS_ERR(x)\|y != 0\) )
+ { ... when forall
+   return ...; }
+... when != \(y = e\|y += e\|y -= e\|y |= e\|y &= e\|y++\|y--\|&y\)
+    when != \(XT_GETPAGE(...,y)\|WMI_CMD_BUF(...)\)
+*if ( \(x == NULL\|IS_ERR(x)\|y != 0\) )
+ { ... when forall
+   return ...; }
+// </smpl>
 
-dereference_function_descriptor(p) always is (p) if without arched definition.
+Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
-Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- drivers/misc/kgdbts.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/powerpc/platforms/85xx/p1022_ds.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/misc/kgdbts.c b/drivers/misc/kgdbts.c
-index 3aa9a96..4799e1f 100644
---- a/drivers/misc/kgdbts.c
-+++ b/drivers/misc/kgdbts.c
-@@ -103,6 +103,7 @@
- #include <linux/delay.h>
- #include <linux/kthread.h>
- #include <linux/module.h>
-+#include <asm/sections.h>
- 
- #define v1printk(a...) do { \
- 	if (verbose) \
-@@ -222,6 +223,7 @@ static unsigned long lookup_addr(char *arg)
- 		addr = (unsigned long)do_fork;
- 	else if (!strcmp(arg, "hw_break_val"))
- 		addr = (unsigned long)&hw_break_val;
-+	addr = (unsigned long )dereference_function_descriptor((void *)addr);
- 	return addr;
- }
- 
--- 
-1.7.9.5
+diff --git a/arch/powerpc/platforms/85xx/p1022_ds.c b/arch/powerpc/platforms/85xx/p1022_ds.c
+index e346edf..af5853c 100644
+--- a/arch/powerpc/platforms/85xx/p1022_ds.c
++++ b/arch/powerpc/platforms/85xx/p1022_ds.c
+@@ -302,7 +302,7 @@ static void p1022ds_set_monitor_port(enum fsl_diu_monitor_port port)
+ 		goto exit;
+ 	}
+ 	cs1_addr = lbc_br_to_phys(ecm, num_laws, br1);
+-	if (!cs0_addr) {
++	if (!cs1_addr) {
+ 		pr_err("p1022ds: could not determine physical address for CS1"
+ 		       " (BR1=%08x)\n", br1);
+ 		goto exit;
