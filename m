@@ -1,16 +1,16 @@
 Return-Path: <Tiejun.Chen@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "mail.windriver.com",
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail1.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id AEB2A2C009D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2013 18:44:26 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id ABFB02C00F8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Jan 2013 18:44:32 +1100 (EST)
 From: Tiejun Chen <tiejun.chen@windriver.com>
 To: <benh@kernel.crashing.org>, <galak@kernel.crashing.org>
-Subject: [v2][PATCH 1/6] powerpc/book3e: load critical/machine/debug exception
- stack
-Date: Mon, 21 Jan 2013 15:44:10 +0800
-Message-ID: <1358754255-31484-2-git-send-email-tiejun.chen@windriver.com>
+Subject: [v2][PATCH 2/6] powerpc/book3e: store critical/machine/debug
+ exception thread info
+Date: Mon, 21 Jan 2013 15:44:11 +0800
+Message-ID: <1358754255-31484-3-git-send-email-tiejun.chen@windriver.com>
 In-Reply-To: <1358754255-31484-1-git-send-email-tiejun.chen@windriver.com>
 References: <1358754255-31484-1-git-send-email-tiejun.chen@windriver.com>
 MIME-Version: 1.0
@@ -26,83 +26,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We always alloc critical/machine/debug check exceptions. This is
-different from the normal exception. So we should load these exception
-stack properly like we did for booke.
+We need to store thread info to these exception thread info like something
+we already did for PPC32.
 
 Signed-off-by: Tiejun Chen <tiejun.chen@windriver.com>
 ---
- arch/powerpc/kernel/exceptions-64e.S |   40 +++++++++++++++++++++++++++++++---
- 1 file changed, 37 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/exceptions-64e.S |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
 diff --git a/arch/powerpc/kernel/exceptions-64e.S b/arch/powerpc/kernel/exceptions-64e.S
-index ae54553..767f856 100644
+index 767f856..423a936 100644
 --- a/arch/powerpc/kernel/exceptions-64e.S
 +++ b/arch/powerpc/kernel/exceptions-64e.S
-@@ -36,6 +36,28 @@
-  */
- #define	SPECIAL_EXC_FRAME_SIZE	INT_FRAME_SIZE
+@@ -58,6 +58,18 @@
+ 	std	r10,PACA_##level##_STACK(r13);
+ #endif
  
-+/* only on book3e */
-+#define DBG_STACK_BASE		dbgirq_ctx
-+#define MC_STACK_BASE		mcheckirq_ctx
-+#define CRIT_STACK_BASE		critirq_ctx
-+
-+#ifdef CONFIG_SMP
-+#define BOOK3E_LOAD_EXC_LEVEL_STACK(level)		\
-+	mfspr	r14,SPRN_PIR;				\
-+	slwi	r14,r14,3;				\
-+	LOAD_REG_IMMEDIATE(r10, level##_STACK_BASE);	\
-+	add	r10,r10,r14;				\
-+	ld	r10,0(r10);				\
-+	addi	r10,r10,THREAD_SIZE;			\
-+	std	r10,PACA_##level##_STACK(r13);
-+#else
-+#define BOOK3E_LOAD_EXC_LEVEL_STACK(level)		\
-+	LOAD_REG_IMMEDIATE(r10, level##_STACK_BASE);	\
-+	ld	r10,0(r10);				\
-+	addi	r10,r10,THREAD_SIZE;			\
-+	std	r10,PACA_##level##_STACK(r13);
-+#endif
++/* Store something to exception thread info */
++#define	BOOK3E_STORE_EXC_LEVEL_THEAD_INFO(type)					\
++	ld	r1,PACAKSAVE(r13);						\
++	CURRENT_THREAD_INFO(r14, r14);						\
++	CURRENT_THREAD_INFO(r15, r1);						\
++	ld	r10,TI_FLAGS(r14);		     				\
++	std	r10,TI_FLAGS(r15);			     			\
++	ld	r10,TI_PREEMPT(r14);		     				\
++	std	r10,TI_PREEMPT(r15);		     				\
++	ld	r10,TI_TASK(r14);			     			\
++	std	r10,TI_TASK(r15);
 +
  /* Exception prolog code for all exceptions */
  #define EXCEPTION_PROLOG(n, intnum, type, addition)	    		    \
  	mtspr	SPRN_SPRG_##type##_SCRATCH,r13;	/* get spare registers */   \
-@@ -68,20 +90,32 @@
- #define SPRN_GDBELL_SRR1	SPRN_GSRR1
- 
- #define CRIT_SET_KSTACK						            \
-+	andi.	r10,r11,MSR_PR;							\
-+	bne	1f;								\
-+	BOOK3E_LOAD_EXC_LEVEL_STACK(CRIT);					\
+@@ -95,6 +107,7 @@
+ 	BOOK3E_LOAD_EXC_LEVEL_STACK(CRIT);					\
  	ld	r1,PACA_CRIT_STACK(r13);				    \
--	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-+	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
-+1:
+ 	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
++	BOOK3E_STORE_EXC_LEVEL_THEAD_INFO(CRIT);				\
+ 1:
  #define SPRN_CRIT_SRR0	SPRN_CSRR0
  #define SPRN_CRIT_SRR1	SPRN_CSRR1
- 
- #define DBG_SET_KSTACK						            \
-+	andi.	r10,r11,MSR_PR;							\
-+	bne	1f;								\
-+	BOOK3E_LOAD_EXC_LEVEL_STACK(DBG);					\
+@@ -105,6 +118,7 @@
+ 	BOOK3E_LOAD_EXC_LEVEL_STACK(DBG);					\
  	ld	r1,PACA_DBG_STACK(r13);					    \
--	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-+	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
-+1:
+ 	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
++	BOOK3E_STORE_EXC_LEVEL_THEAD_INFO(DBG);					\
+ 1:
  #define SPRN_DBG_SRR0	SPRN_DSRR0
  #define SPRN_DBG_SRR1	SPRN_DSRR1
- 
- #define MC_SET_KSTACK						            \
-+	andi.	r10,r11,MSR_PR;							\
-+	bne	1f;								\
-+	BOOK3E_LOAD_EXC_LEVEL_STACK(MC);					\
+@@ -115,6 +129,7 @@
+ 	BOOK3E_LOAD_EXC_LEVEL_STACK(MC);					\
  	ld	r1,PACA_MC_STACK(r13);					    \
--	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;
-+	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
-+1:
+ 	subi	r1,r1,SPECIAL_EXC_FRAME_SIZE;					\
++	BOOK3E_STORE_EXC_LEVEL_THEAD_INFO(MC);					\
+ 1:
  #define SPRN_MC_SRR0	SPRN_MCSRR0
  #define SPRN_MC_SRR1	SPRN_MCSRR1
- 
 -- 
 1.7.9.5
