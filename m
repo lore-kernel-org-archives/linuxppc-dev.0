@@ -1,28 +1,27 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 5B8122C0087
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 04:11:06 +1100 (EST)
-Date: Tue, 22 Jan 2013 18:10:13 +0100
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 6/6][v3] perf: Document the ABI of perf sysfs entries
-Message-ID: <20130122171013.GM1037@krava.brq.redhat.com>
-References: <20130110010347.GA32590@us.ibm.com>
- <20130110010703.GF32590@us.ibm.com>
- <20130115185759.GG5826@ghostprotocols.net>
- <20130116113013.GA1042@krava.brq.redhat.com>
- <20130116185815.GA3351@us.ibm.com>
- <20130117141145.GA3817@krava.brq.redhat.com>
- <20130118174654.GA12575@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130118174654.GA12575@us.ibm.com>
-Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
- robert.richter@amd.com, Greg KH <greg@kroah.com>,
- Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Return-Path: <rostedt@goodmis.org>
+Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
+ [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 51DD92C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 06:32:37 +1100 (EST)
+Message-ID: <1358883152.21576.55.camel@gandalf.local.home>
+Subject: Re: [PATCH v5 01/45] percpu_rwlock: Introduce the global
+ reader-writer lock backend
+From: Steven Rostedt <rostedt@goodmis.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Date: Tue, 22 Jan 2013 14:32:32 -0500
+In-Reply-To: <20130122073315.13822.27093.stgit@srivatsabhat.in.ibm.com>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <20130122073315.13822.27093.stgit@srivatsabhat.in.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-15"
+Mime-Version: 1.0
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
+ linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
+ wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,36 +31,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 18, 2013 at 09:46:54AM -0800, Sukadev Bhattiprolu wrote:
-> Jiri Olsa [jolsa@redhat.com] wrote:
+On Tue, 2013-01-22 at 13:03 +0530, Srivatsa S. Bhat wrote:
+> A straight-forward (and obvious) algorithm to implement Per-CPU Reader-Writer
+> locks can also lead to too many deadlock possibilities which can make it very
+> hard/impossible to use. This is explained in the example below, which helps
+> justify the need for a different algorithm to implement flexible Per-CPU
+> Reader-Writer locks.
+> 
+> We can use global rwlocks as shown below safely, without fear of deadlocks:
+> 
+> Readers:
+> 
+>          CPU 0                                CPU 1
+>          ------                               ------
+> 
+> 1.    spin_lock(&random_lock);             read_lock(&my_rwlock);
+> 
+> 
+> 2.    read_lock(&my_rwlock);               spin_lock(&random_lock);
+> 
+> 
+> Writer:
+> 
+>          CPU 2:
+>          ------
+> 
+>        write_lock(&my_rwlock);
+> 
 
-SNIP
+I thought global locks are now fair. That is, a reader will block if a
+writer is waiting. Hence, the above should deadlock on the current
+rwlock_t types.
 
-> +
-> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
-> +		Linux Powerpc mailing list <linuxppc-dev@ozlabs.org>
-> +
-> +Description:	POWER-systems specific performance monitoring events
-> +
-> +		A collection of performance monitoring events that may be
-> +		supported by the POWER CPU. These events can be monitored
-> +		using the 'perf(1)' tool.
-> +
-> +		These events may not be supported by other CPUs.
-> +
-> +		The contents of each file would look like:
-> +
-> +			event=0xNNNN
-> +
-> +		where 'N' is a hex digit and the number '0xNNNN' shows the
-> +		"raw code" for the perf event identified by the file's
-> +		"basename".
-> +
-> +		Further, multiple terms like 'event=0xNNNN' can be specified
-> +		and separated with comma. All available terms are defined in
-> +		the /sys/bus/event_source/devices/<dev>/format file.
+We need to fix those locations (or better yet, remove all rwlocks ;-)
 
-Acked-by: Jiri Olsa <jolsa@redhat.com>
-
-thanks,
-jirka
+-- Steve
