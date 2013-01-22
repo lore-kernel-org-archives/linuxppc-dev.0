@@ -1,20 +1,28 @@
 Return-Path: <jolsa@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- by ozlabs.org (Postfix) with ESMTP id 3B9322C007E
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 00:57:56 +1100 (EST)
-Date: Tue, 22 Jan 2013 14:57:26 +0100
+ by ozlabs.org (Postfix) with ESMTP id 5B8122C0087
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 04:11:06 +1100 (EST)
+Date: Tue, 22 Jan 2013 18:10:13 +0100
 From: Jiri Olsa <jolsa@redhat.com>
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH] perf: Fix compile warnings in tests/attr.c
-Message-ID: <20130122135726.GD1037@krava.brq.redhat.com>
-References: <20130119013052.GA24693@us.ibm.com>
- <20130121135906.GD1995@krava.brq.redhat.com>
- <20130121213823.GA4774@us.ibm.com>
+Subject: Re: [PATCH 6/6][v3] perf: Document the ABI of perf sysfs entries
+Message-ID: <20130122171013.GM1037@krava.brq.redhat.com>
+References: <20130110010347.GA32590@us.ibm.com>
+ <20130110010703.GF32590@us.ibm.com>
+ <20130115185759.GG5826@ghostprotocols.net>
+ <20130116113013.GA1042@krava.brq.redhat.com>
+ <20130116185815.GA3351@us.ibm.com>
+ <20130117141145.GA3817@krava.brq.redhat.com>
+ <20130118174654.GA12575@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130121213823.GA4774@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
- paulus@samba.org, linux-kernel@vger.kernel.org, acme@ghostprotocols.net
+In-Reply-To: <20130118174654.GA12575@us.ibm.com>
+Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ robert.richter@amd.com, Greg KH <greg@kroah.com>,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, linuxppc-dev@ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +32,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jan 21, 2013 at 01:38:23PM -0800, Sukadev Bhattiprolu wrote:
+On Fri, Jan 18, 2013 at 09:46:54AM -0800, Sukadev Bhattiprolu wrote:
 > Jiri Olsa [jolsa@redhat.com] wrote:
-> | On Fri, Jan 18, 2013 at 05:30:52PM -0800, Sukadev Bhattiprolu wrote:
 
 SNIP
 
-> __u64 is 'unsigned long long' on x86 and PRIu64 is 'llu' which is fine.
-> 
-> __u64 is 'unsigned long' on Power and PRIu64 is 'lu' which is again fine.
-> 
-> But __u64 is 'unsigned long long' on x86_64, but PRIu64 is '%lu' bc __WORDSIZE
-> is 64.
-> 
-> On x86_64, shouldn't __u64, be defined as 'unsigned long' rather than
-> 'unsigned long long' - ie include 'int-l64.h' rather than 'int-ll64.h' ?
+> +
+> +Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
+> +		Linux Powerpc mailing list <linuxppc-dev@ozlabs.org>
+> +
+> +Description:	POWER-systems specific performance monitoring events
+> +
+> +		A collection of performance monitoring events that may be
+> +		supported by the POWER CPU. These events can be monitored
+> +		using the 'perf(1)' tool.
+> +
+> +		These events may not be supported by other CPUs.
+> +
+> +		The contents of each file would look like:
+> +
+> +			event=0xNNNN
+> +
+> +		where 'N' is a hex digit and the number '0xNNNN' shows the
+> +		"raw code" for the perf event identified by the file's
+> +		"basename".
+> +
+> +		Further, multiple terms like 'event=0xNNNN' can be specified
+> +		and separated with comma. All available terms are defined in
+> +		the /sys/bus/event_source/devices/<dev>/format file.
 
-hum, not sure ;-) will try to find some time to look on that
+Acked-by: Jiri Olsa <jolsa@redhat.com>
 
-> 
-> BTW, does 'perf' with my patch compile, (with warnings) for you on x86_64
-> with 'WERROR=0 make' ?
-
-this one passes with warnings
-
+thanks,
 jirka
