@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B29192C09EB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:45:30 +1100 (EST)
+ (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 33B0D2C0A2B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:45:53 +1100 (EST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 22 Jan 2013 13:13:40 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 68CA73940050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:15:26 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0M7jN7G47579350
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:15:23 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0M7jNjP029334
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:45:25 +1100
+ Tue, 22 Jan 2013 17:39:32 +1000
+Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 368372BB004E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:45:50 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0M7Y4aA58654860
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:34:04 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0M7jmR3029681
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:45:49 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 38/45] parisc: Use get/put_online_cpus_atomic() to prevent
+Subject: [PATCH v5 39/45] powerpc: Use get/put_online_cpus_atomic() to prevent
  CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Tue, 22 Jan 2013 13:13:39 +0530
-Message-ID: <20130122074335.13822.41002.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 22 Jan 2013 13:13:47 +0530
+Message-ID: <20130122074344.13822.45560.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -55,30 +55,32 @@ going offline from under us.
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
 while invoking from atomic context.
 
-Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
-Cc: linux-parisc@vger.kernel.org
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/parisc/kernel/smp.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/mm/mmu_context_nohash.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/arch/parisc/kernel/smp.c b/arch/parisc/kernel/smp.c
-index 6266730..f7851b7 100644
---- a/arch/parisc/kernel/smp.c
-+++ b/arch/parisc/kernel/smp.c
-@@ -229,11 +229,13 @@ static inline void
- send_IPI_allbutself(enum ipi_message_type op)
- {
- 	int i;
--	
-+
-+	get_online_cpus_atomic();
- 	for_each_online_cpu(i) {
- 		if (i != smp_processor_id())
- 			send_IPI_single(i, op);
- 	}
-+	put_online_cpus_atomic();
- }
+diff --git a/arch/powerpc/mm/mmu_context_nohash.c b/arch/powerpc/mm/mmu_context_nohash.c
+index e779642..29f58cf 100644
+--- a/arch/powerpc/mm/mmu_context_nohash.c
++++ b/arch/powerpc/mm/mmu_context_nohash.c
+@@ -196,6 +196,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
  
+ 	/* No lockless fast path .. yet */
+ 	raw_spin_lock(&context_lock);
++	get_online_cpus_atomic();
+ 
+ 	pr_hard("[%d] activating context for mm @%p, active=%d, id=%d",
+ 		cpu, next, next->context.active, next->context.id);
+@@ -279,6 +280,7 @@ void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next)
+ 	/* Flick the MMU and release lock */
+ 	pr_hardcont(" -> %d\n", id);
+ 	set_context(id, next->pgd);
++	put_online_cpus_atomic();
+ 	raw_spin_unlock(&context_lock);
+ }
  
