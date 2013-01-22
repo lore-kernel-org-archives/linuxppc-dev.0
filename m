@@ -2,32 +2,32 @@ Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ED0E52C031C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:39:41 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4A3422C071E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:40:02 +1100 (EST)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 22 Jan 2013 17:33:20 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6D2622BB0050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:39:38 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0M7db8E58261682
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:39:37 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0M7dajS029135
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:39:38 +1100
+ Tue, 22 Jan 2013 17:33:41 +1000
+Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 625202BB0053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:39:58 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0M7S4Zh4849970
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:28:04 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0M7dudA012415
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:39:57 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 17/45] softirq: Use get/put_online_cpus_atomic() to prevent
- CPU offline
+Subject: [PATCH v5 18/45] irq: Use get/put_online_cpus_atomic() to prevent CPU
+ offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Tue, 22 Jan 2013 13:07:43 +0530
-Message-ID: <20130122073739.13822.99740.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 22 Jan 2013 13:08:00 +0530
+Message-ID: <20130122073757.13822.33489.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -55,33 +55,51 @@ going offline from under us.
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
 while invoking from atomic context.
 
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- kernel/softirq.c |    3 +++
- 1 file changed, 3 insertions(+)
+ kernel/irq/manage.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index ed567ba..98c3e27 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -631,6 +631,7 @@ static void remote_softirq_receive(void *data)
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index e49a288..b4240b9 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -16,6 +16,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/slab.h>
+ #include <linux/sched.h>
++#include <linux/cpu.h>
+ #include <linux/task_work.h>
  
- static int __try_remote_softirq(struct call_single_data *cp, int cpu, int softirq)
- {
+ #include "internals.h"
+@@ -202,7 +203,9 @@ int irq_set_affinity(unsigned int irq, const struct cpumask *mask)
+ 		return -EINVAL;
+ 
+ 	raw_spin_lock_irqsave(&desc->lock, flags);
 +	get_online_cpus_atomic();
- 	if (cpu_online(cpu)) {
- 		cp->func = remote_softirq_receive;
- 		cp->info = cp;
-@@ -638,8 +639,10 @@ static int __try_remote_softirq(struct call_single_data *cp, int cpu, int softir
- 		cp->priv = softirq;
- 
- 		__smp_call_function_single(cpu, cp, 0);
-+		put_online_cpus_atomic();
- 		return 0;
- 	}
+ 	ret =  __irq_set_affinity_locked(irq_desc_get_irq_data(desc), mask);
 +	put_online_cpus_atomic();
- 	return 1;
+ 	raw_spin_unlock_irqrestore(&desc->lock, flags);
+ 	return ret;
  }
- #else /* CONFIG_USE_GENERIC_SMP_HELPERS */
+@@ -343,7 +346,9 @@ int irq_select_affinity_usr(unsigned int irq, struct cpumask *mask)
+ 	int ret;
+ 
+ 	raw_spin_lock_irqsave(&desc->lock, flags);
++	get_online_cpus_atomic();
+ 	ret = setup_affinity(irq, desc, mask);
++	put_online_cpus_atomic();
+ 	raw_spin_unlock_irqrestore(&desc->lock, flags);
+ 	return ret;
+ }
+@@ -1126,7 +1131,9 @@ __setup_irq(unsigned int irq, struct irq_desc *desc, struct irqaction *new)
+ 		}
+ 
+ 		/* Set default affinity mask once everything is setup */
++		get_online_cpus_atomic();
+ 		setup_affinity(irq, desc, mask);
++		put_online_cpus_atomic();
+ 
+ 	} else if (new->flags & IRQF_TRIGGER_MASK) {
+ 		unsigned int nmsk = new->flags & IRQF_TRIGGER_MASK;
