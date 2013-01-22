@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp03.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ECBCE2C07EE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:41:53 +1100 (EST)
+ (Client CN "e28smtp07.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id D3F992C0584
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:42:05 +1100 (EST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 22 Jan 2013 17:36:42 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0ADC82BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:41:51 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0M7U5Q361276212
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:30:05 +1100
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0M7fmP9014312
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:41:50 +1100
+ Tue, 22 Jan 2013 13:10:15 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 10009394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:12:01 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0M7fwPB48627954
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:11:58 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0M7fw4d004822
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 07:42:00 GMT
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 26/45] perf/x86: Use get/put_online_cpus_atomic() to
- prevent CPU offline
+Subject: [PATCH v5 27/45] KVM: Use get/put_online_cpus_atomic() to prevent CPU
+ offline from atomic context
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Tue, 22 Jan 2013 13:09:52 +0530
-Message-ID: <20130122073948.13822.43399.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 22 Jan 2013 13:10:13 +0530
+Message-ID: <20130122074009.13822.3090.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -48,58 +48,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The CPU_DYING notifier modifies the per-cpu pointer pmu->box, and this can
-race with functions such as uncore_pmu_to_box() and uncore_pci_remove() when
-we remove stop_machine() from the CPU offline path. So protect them using
-get/put_online_cpus_atomic().
+Once stop_machine() is gone from the CPU offline path, we won't be able to
+depend on preempt_disable() or local_irq_disable() to prevent CPUs from
+going offline from under us.
 
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: x86@kernel.org
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
+while invoking from atomic context.
+
+Cc: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: Gleb Natapov <gleb@redhat.com>
+Cc: kvm@vger.kernel.org
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- arch/x86/kernel/cpu/perf_event_intel_uncore.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ virt/kvm/kvm_main.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/perf_event_intel_uncore.c b/arch/x86/kernel/cpu/perf_event_intel_uncore.c
-index b43200d..6faae53 100644
---- a/arch/x86/kernel/cpu/perf_event_intel_uncore.c
-+++ b/arch/x86/kernel/cpu/perf_event_intel_uncore.c
-@@ -1,3 +1,4 @@
-+#include <linux/cpu.h>
- #include "perf_event_intel_uncore.h"
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 1cd693a..47f9c30 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -174,7 +174,8 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
  
- static struct intel_uncore_type *empty_uncore[] = { NULL, };
-@@ -1965,6 +1966,7 @@ uncore_pmu_to_box(struct intel_uncore_pmu *pmu, int cpu)
- 	if (box)
- 		return box;
+ 	zalloc_cpumask_var(&cpus, GFP_ATOMIC);
  
+-	me = get_cpu();
 +	get_online_cpus_atomic();
- 	raw_spin_lock(&uncore_box_lock);
- 	list_for_each_entry(box, &pmu->box_list, list) {
- 		if (box->phys_id == topology_physical_package_id(cpu)) {
-@@ -1974,6 +1976,7 @@ uncore_pmu_to_box(struct intel_uncore_pmu *pmu, int cpu)
- 		}
++	me = smp_processor_id();
+ 	kvm_for_each_vcpu(i, vcpu, kvm) {
+ 		kvm_make_request(req, vcpu);
+ 		cpu = vcpu->cpu;
+@@ -192,7 +193,7 @@ static bool make_all_cpus_request(struct kvm *kvm, unsigned int req)
+ 		smp_call_function_many(cpus, ack_flush, NULL, 1);
+ 	else
+ 		called = false;
+-	put_cpu();
++	put_online_cpus_atomic();
+ 	free_cpumask_var(cpus);
+ 	return called;
+ }
+@@ -1621,11 +1622,12 @@ void kvm_vcpu_kick(struct kvm_vcpu *vcpu)
+ 		++vcpu->stat.halt_wakeup;
  	}
- 	raw_spin_unlock(&uncore_box_lock);
-+	put_online_cpus_atomic();
  
- 	return *per_cpu_ptr(pmu->box, cpu);
- }
-@@ -2556,6 +2559,7 @@ static void uncore_pci_remove(struct pci_dev *pdev)
- 	if (WARN_ON_ONCE(phys_id != box->phys_id))
- 		return;
- 
+-	me = get_cpu();
 +	get_online_cpus_atomic();
- 	raw_spin_lock(&uncore_box_lock);
- 	list_del(&box->list);
- 	raw_spin_unlock(&uncore_box_lock);
-@@ -2569,6 +2573,7 @@ static void uncore_pci_remove(struct pci_dev *pdev)
- 
- 	WARN_ON_ONCE(atomic_read(&box->refcnt) != 1);
- 	kfree(box);
++	me = smp_processor_id();
+ 	if (cpu != me && (unsigned)cpu < nr_cpu_ids && cpu_online(cpu))
+ 		if (kvm_arch_vcpu_should_kick(vcpu))
+ 			smp_send_reschedule(cpu);
+-	put_cpu();
 +	put_online_cpus_atomic();
  }
+ #endif /* !CONFIG_S390 */
  
- static int uncore_pci_probe(struct pci_dev *pdev,
