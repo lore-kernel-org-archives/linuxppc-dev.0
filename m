@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp09.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BD7C02C05B4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:41:16 +1100 (EST)
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 4FDD22C07A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:41:25 +1100 (EST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 22 Jan 2013 13:10:02 +0530
+ Tue, 22 Jan 2013 13:09:11 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4E14BE0050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:11:37 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 9C971E004C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:11:46 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay02.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0M7f8xR39583822
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:11:08 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0M7f7uB011796
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:41:09 +1100
+ r0M7fIim43646982
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:11:18 +0530
+Received: from d28av01.in.ibm.com (loopback [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0M7fGP7001113
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 07:41:18 GMT
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 23/45] [SCSI] fcoe: Use get/put_online_cpus_atomic() to
+Subject: [PATCH v5 24/45] staging: octeon: Use get/put_online_cpus_atomic() to
  prevent CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Tue, 22 Jan 2013 13:09:22 +0530
-Message-ID: <20130122073919.13822.73176.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 22 Jan 2013 13:09:31 +0530
+Message-ID: <20130122073928.13822.79334.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -55,53 +55,39 @@ going offline from under us.
 Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
 while invoking from atomic context.
 
-Cc: Robert Love <robert.w.love@intel.com>
-Cc: "James E.J. Bottomley" <JBottomley@parallels.com>
-Cc: devel@open-fcoe.org
-Cc: linux-scsi@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: David Daney <david.daney@cavium.com>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- drivers/scsi/fcoe/fcoe.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/staging/octeon/ethernet-rx.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/scsi/fcoe/fcoe.c b/drivers/scsi/fcoe/fcoe.c
-index 666b7ac..c971a17 100644
---- a/drivers/scsi/fcoe/fcoe.c
-+++ b/drivers/scsi/fcoe/fcoe.c
-@@ -1475,6 +1475,7 @@ static int fcoe_rcv(struct sk_buff *skb, struct net_device *netdev,
- 	 * was originated, otherwise select cpu using rx exchange id
- 	 * or fcoe_select_cpu().
- 	 */
+diff --git a/drivers/staging/octeon/ethernet-rx.c b/drivers/staging/octeon/ethernet-rx.c
+index 34afc16..8588b4d 100644
+--- a/drivers/staging/octeon/ethernet-rx.c
++++ b/drivers/staging/octeon/ethernet-rx.c
+@@ -36,6 +36,7 @@
+ #include <linux/prefetch.h>
+ #include <linux/ratelimit.h>
+ #include <linux/smp.h>
++#include <linux/cpu.h>
+ #include <linux/interrupt.h>
+ #include <net/dst.h>
+ #ifdef CONFIG_XFRM
+@@ -97,6 +98,7 @@ static void cvm_oct_enable_one_cpu(void)
+ 		return;
+ 
+ 	/* ... if a CPU is available, Turn on NAPI polling for that CPU.  */
 +	get_online_cpus_atomic();
- 	if (ntoh24(fh->fh_f_ctl) & FC_FC_EX_CTX)
- 		cpu = ntohs(fh->fh_ox_id) & fc_cpu_mask;
- 	else {
-@@ -1484,8 +1485,10 @@ static int fcoe_rcv(struct sk_buff *skb, struct net_device *netdev,
- 			cpu = ntohs(fh->fh_rx_id) & fc_cpu_mask;
- 	}
- 
--	if (cpu >= nr_cpu_ids)
-+	if (cpu >= nr_cpu_ids) {
-+		put_online_cpus_atomic();
- 		goto err;
-+	}
- 
- 	fps = &per_cpu(fcoe_percpu, cpu);
- 	spin_lock(&fps->fcoe_rx_list.lock);
-@@ -1505,6 +1508,7 @@ static int fcoe_rcv(struct sk_buff *skb, struct net_device *netdev,
- 		spin_lock(&fps->fcoe_rx_list.lock);
- 		if (!fps->thread) {
- 			spin_unlock(&fps->fcoe_rx_list.lock);
-+			put_online_cpus_atomic();
- 			goto err;
+ 	for_each_online_cpu(cpu) {
+ 		if (!cpu_test_and_set(cpu, core_state.cpu_state)) {
+ 			v = smp_call_function_single(cpu, cvm_oct_enable_napi,
+@@ -106,6 +108,7 @@ static void cvm_oct_enable_one_cpu(void)
+ 			break;
  		}
  	}
-@@ -1526,6 +1530,7 @@ static int fcoe_rcv(struct sk_buff *skb, struct net_device *netdev,
- 	if (fps->thread->state == TASK_INTERRUPTIBLE)
- 		wake_up_process(fps->thread);
- 	spin_unlock(&fps->fcoe_rx_list.lock);
 +	put_online_cpus_atomic();
+ }
  
- 	return 0;
- err:
+ static void cvm_oct_no_more_work(void)
