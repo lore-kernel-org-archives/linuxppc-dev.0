@@ -1,18 +1,20 @@
-Return-Path: <michael@ellerman.id.au>
-Message-ID: <1358898333.29791.14.camel@concordia>
-Subject: Re: [PATCH] perf: Fix compile warnings in tests/attr.c
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Wed, 23 Jan 2013 10:45:33 +1100
-In-Reply-To: <20130121213823.GA4774@us.ibm.com>
-References: <20130119013052.GA24693@us.ibm.com>
- <20130121135906.GD1995@krava.brq.redhat.com>
- <20130121213823.GA4774@us.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
- linuxppc-dev@ozlabs.org, paulus@samba.org, acme@ghostprotocols.net,
- mingo <mingo@elte.hu>, Jiri Olsa <jolsa@redhat.com>
+Return-Path: <B08248@freescale.com>
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 5D1B52C007B
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 10:54:53 +1100 (EST)
+From: Stuart Yoder <stuart.yoder@freescale.com>
+To: <agraf@suse.de>, <benh@kernel.crashing.org>
+Subject: [PATCH][v2] KVM: PPC: add paravirt idle loop for 64-bit book E
+Date: Tue, 22 Jan 2013 17:54:43 -0600
+Message-ID: <1358898883-16218-1-git-send-email-stuart.yoder@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
+ Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,86 +24,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2013-01-21 at 13:38 -0800, Sukadev Bhattiprolu wrote:
-> Jiri Olsa [jolsa@redhat.com] wrote:
-> | On Fri, Jan 18, 2013 at 05:30:52PM -0800, Sukadev Bhattiprolu wrote:
-> | > From 4d266e5040c33103f5d226b0d16b89f8ef79e3ad Mon Sep 17 00:00:00 2001
-> | > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> | > Date: Fri, 18 Jan 2013 11:14:28 -0800
-> | > Subject: [PATCH] perf: Fix compile warnings in tests/attr.c
-> | > 
-> | > Replace '%llu' in printf()s with 'PRIu64' in 'tools/perf/tests/attr.c'
-> | > to fix compile warnings (which become errors due to -Werror).
-> | 
-> | i386 and x86_64 compiles fine for me with gcc versions 4.6.3-2 and 4.7.2-2
-> 
-> But is broken on Power for 64bit :-( I am trying to fix that and thought
-> that use of format specifiers like 'PRIu64' was the way to go.
-> 
-> | 
-> | with your patch for x86_64 I'm getting following warnings/errors:
-> 
-> | 
-> |     CC tests/attr.o
-> | tests/attr.c: In function ‘store_event’:
-> | tests/attr.c:69:4: error: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 6 has type ‘__u64’ [-Werror=format]
-> 
-> Here is what I see on an x86_64 box, RHEL6.2 box:
-> 
-> 	$ rpm -qf /usr/include/linux/types.h
-> 	kernel-headers-2.6.32-220.4.2.el6.x86_64
-> 
-> 	$ cat foo.c
-> 	#include <linux/types.h>
-> 
-> 	$ cc -Werror -Wall foo.c
-> 	In file included from /usr/include/asm-generic/types.h:7,
-> 			 from /usr/include/asm/types.h:6,
-> 			 from /usr/include/linux/types.h:4,
-> 			 from foo5.c:1:
-> 	/usr/include/asm-generic/int-ll64.h:31:2: error: #error __u64 defined as unsigned long long
-> 
-> where the #error is my debug message.
-> 
-> <snip>
-> 
-> | make: *** [tests/attr.o] Error 1
-> | 
-> | i386 compiles fine
-> 
-> __u64 is 'unsigned long long' on x86 and PRIu64 is 'llu' which is fine.
-> 
-> __u64 is 'unsigned long' on Power and PRIu64 is 'lu' which is again fine.
-> 
-> But __u64 is 'unsigned long long' on x86_64, but PRIu64 is '%lu' bc __WORDSIZE
-> is 64.
+From: Stuart Yoder <stuart.yoder@freescale.com>
 
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
 
-This is a bit of a mess, but let me see if I can help explain it.
+-v2
+   -macro'ized loop in idle_book3e.S to avoid code 
+    duplication, paravirt loop is now in idle_book3e.S
 
-The root of the problem is that you're mixing up the kernel type __u64,
-with the userspace format specifier PRIu64.
+ arch/powerpc/kernel/epapr_hcalls.S |    2 ++
+ arch/powerpc/kernel/idle_book3e.S  |   30 ++++++++++++++++++++++++++++--
+ 2 files changed, 30 insertions(+), 2 deletions(-)
 
-PRIu64 is the format specifier for printing a uint64_t, it _may_ also be
-the right specifier for a __u64, but there's no guarantee of that - as
-you have discovered.
-
-Inside the kernel both x86 and powerpc use unsigned long long always, in
-32-bit and 64-bit code. That means in the kernel we can always use %llu.
-
-On x86 that definition is also exported to userspace, so on x86 __u64 is
-always unsigned long long. As you noticed this potentially differs from
-uint64_t, which can be confusing. However it means in x86 userspace code
-you can always print a __u64 with %llu.
-
-On powerpc we default to using definitions that match userspace, so
-__u64 changes depending on your wordsize, and so you must use PRIu64
-etc. to print them.
-
-There is however support in recent powerpc kernels to switch to using
-unsigned long long even on 64-bit. See commit 2c9c6ce.
-
-You need to define __SANE_USERSPACE_TYPES__ before including types.h.
-Then you can always use %llu to print __u64.
-
-cheers
+diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
+index 62c0dc2..9f1ebf7 100644
+--- a/arch/powerpc/kernel/epapr_hcalls.S
++++ b/arch/powerpc/kernel/epapr_hcalls.S
+@@ -17,6 +17,7 @@
+ #include <asm/asm-compat.h>
+ #include <asm/asm-offsets.h>
+ 
++#ifndef CONFIG_PPC64
+ /* epapr_ev_idle() was derived from e500_idle() */
+ _GLOBAL(epapr_ev_idle)
+ 	CURRENT_THREAD_INFO(r3, r1)
+@@ -42,6 +43,7 @@ epapr_ev_idle_start:
+ 	 * _TLF_NAPPING.
+ 	 */
+ 	b	idle_loop
++#endif
+ 
+ /* Hypercall entry point. Will be patched with device tree instructions. */
+ .global epapr_hypercall_start
+diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
+index 4c7cb400..e1c9acd 100644
+--- a/arch/powerpc/kernel/idle_book3e.S
++++ b/arch/powerpc/kernel/idle_book3e.S
+@@ -16,11 +16,13 @@
+ #include <asm/ppc-opcode.h>
+ #include <asm/processor.h>
+ #include <asm/thread_info.h>
++#include <asm/epapr_hcalls.h>
+ 
+ /* 64-bit version only for now */
+ #ifdef CONFIG_PPC64
+ 
+-_GLOBAL(book3e_idle)
++.macro BOOK3E_IDLE name loop
++_GLOBAL(\name)
+ 	/* Save LR for later */
+ 	mflr	r0
+ 	std	r0,16(r1)
+@@ -67,7 +69,31 @@ _GLOBAL(book3e_idle)
+ 
+ 	/* We can now re-enable hard interrupts and go to sleep */
+ 	wrteei	1
+-1:	PPC_WAIT(0)
++	\loop
++
++.endm
++
++.macro BOOK3E_IDLE_LOOP
++1:
++	PPC_WAIT(0)
+ 	b	1b
++.endm
++
++.macro EPAPR_EV_IDLE_LOOP
++idle_loop:
++       LOAD_REG_IMMEDIATE(r11, EV_HCALL_TOKEN(EV_IDLE))
++
++.global epapr_ev_idle_start
++epapr_ev_idle_start:
++       li      r3, -1
++       nop
++       nop
++       nop
++       b       idle_loop
++.endm
++
++BOOK3E_IDLE epapr_ev_idle, EPAPR_EV_IDLE_LOOP
++
++BOOK3E_IDLE book3e_idle BOOK3E_IDLE_LOOP
+ 
+ #endif /* CONFIG_PPC64 */
+-- 
+1.7.9.7
