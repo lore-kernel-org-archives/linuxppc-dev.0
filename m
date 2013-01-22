@@ -1,19 +1,18 @@
-Return-Path: <agust@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CD6BB2C0084
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 08:11:01 +1100 (EST)
-Date: Tue, 22 Jan 2013 22:10:49 +0100
-From: Anatolij Gustschin <agust@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 1/2] powerpc/5200: Fix size to request_mem_region() call
-Message-ID: <20130122221049.0bc73953@crub>
-In-Reply-To: <1358473200-17886-1-git-send-email-grant.likely@secretlab.ca>
-References: <1358473200-17886-1-git-send-email-grant.likely@secretlab.ca>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1358898333.29791.14.camel@concordia>
+Subject: Re: [PATCH] perf: Fix compile warnings in tests/attr.c
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Wed, 23 Jan 2013 10:45:33 +1100
+In-Reply-To: <20130121213823.GA4774@us.ibm.com>
+References: <20130119013052.GA24693@us.ibm.com>
+ <20130121135906.GD1995@krava.brq.redhat.com>
+ <20130121213823.GA4774@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, paulus@samba.org, acme@ghostprotocols.net,
+ mingo <mingo@elte.hu>, Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,52 +22,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Grant,
-
-On Fri, 18 Jan 2013 01:39:59 +0000
-Grant Likely <grant.likely@secretlab.ca> wrote:
-
-> The Bestcomm driver requests a memory region larger than the one
-> described in the device tree. This is due to an extra undocumented field
-> in the bestcomm register structure. This hasn't been a problem up to
-> now, but there is a patch pending to make the DT platform_bus support
-> code use platform_device_add() which tightens the rules and provides
-> extra checks for drivers to stay within the specified register regions.
+On Mon, 2013-01-21 at 13:38 -0800, Sukadev Bhattiprolu wrote:
+> Jiri Olsa [jolsa@redhat.com] wrote:
+> | On Fri, Jan 18, 2013 at 05:30:52PM -0800, Sukadev Bhattiprolu wrote:
+> | > From 4d266e5040c33103f5d226b0d16b89f8ef79e3ad Mon Sep 17 00:00:00 2001
+> | > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> | > Date: Fri, 18 Jan 2013 11:14:28 -0800
+> | > Subject: [PATCH] perf: Fix compile warnings in tests/attr.c
+> | > 
+> | > Replace '%llu' in printf()s with 'PRIu64' in 'tools/perf/tests/attr.c'
+> | > to fix compile warnings (which become errors due to -Werror).
+> | 
+> | i386 and x86_64 compiles fine for me with gcc versions 4.6.3-2 and 4.7.2-2
 > 
-> Alternately, I could have removed the extra field from the structure,
-> but I'm not sure if it is still needed for resume to work. Better be
-> safe and leave it in.
+> But is broken on Power for 64bit :-( I am trying to fix that and thought
+> that use of format specifiers like 'PRIu64' was the way to go.
 > 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Anatolij Gustschin <agust@denx.de>
-> ---
->  arch/powerpc/sysdev/bestcomm/bestcomm.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> | 
+> | with your patch for x86_64 I'm getting following warnings/errors:
+> 
+> | 
+> |     CC tests/attr.o
+> | tests/attr.c: In function ‘store_event’:
+> | tests/attr.c:69:4: error: format ‘%lu’ expects argument of type ‘long unsigned int’, but argument 6 has type ‘__u64’ [-Werror=format]
+> 
+> Here is what I see on an x86_64 box, RHEL6.2 box:
+> 
+> 	$ rpm -qf /usr/include/linux/types.h
+> 	kernel-headers-2.6.32-220.4.2.el6.x86_64
+> 
+> 	$ cat foo.c
+> 	#include <linux/types.h>
+> 
+> 	$ cc -Werror -Wall foo.c
+> 	In file included from /usr/include/asm-generic/types.h:7,
+> 			 from /usr/include/asm/types.h:6,
+> 			 from /usr/include/linux/types.h:4,
+> 			 from foo5.c:1:
+> 	/usr/include/asm-generic/int-ll64.h:31:2: error: #error __u64 defined as unsigned long long
+> 
+> where the #error is my debug message.
+> 
+> <snip>
+> 
+> | make: *** [tests/attr.o] Error 1
+> | 
+> | i386 compiles fine
+> 
+> __u64 is 'unsigned long long' on x86 and PRIu64 is 'llu' which is fine.
+> 
+> __u64 is 'unsigned long' on Power and PRIu64 is 'lu' which is again fine.
+> 
+> But __u64 is 'unsigned long long' on x86_64, but PRIu64 is '%lu' bc __WORDSIZE
+> is 64.
 
-There is a patch moving this driver to drivers/dma,
 
-http://patchwork.ozlabs.org/patch/191153/
+This is a bit of a mess, but let me see if I can help explain it.
 
-I've applied it to my 5xxx next branch.
+The root of the problem is that you're mixing up the kernel type __u64,
+with the userspace format specifier PRIu64.
 
-> diff --git a/arch/powerpc/sysdev/bestcomm/bestcomm.c b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-> index d913063..81c3314 100644
-> --- a/arch/powerpc/sysdev/bestcomm/bestcomm.c
-> +++ b/arch/powerpc/sysdev/bestcomm/bestcomm.c
-> @@ -414,7 +414,7 @@ static int mpc52xx_bcom_probe(struct platform_device *op)
->  		goto error_sramclean;
->  	}
->  
-> -	if (!request_mem_region(res_bcom.start, sizeof(struct mpc52xx_sdma),
-> +	if (!request_mem_region(res_bcom.start, resource_size(&res_bcom),
->  				DRIVER_NAME)) {
->  		printk(KERN_ERR DRIVER_NAME ": "
->  			"Can't request registers region\n");
+PRIu64 is the format specifier for printing a uint64_t, it _may_ also be
+the right specifier for a __u64, but there's no guarantee of that - as
+you have discovered.
 
-similar change is needed for release_mem_region() in error path
-and in driver's remove() function.
+Inside the kernel both x86 and powerpc use unsigned long long always, in
+32-bit and 64-bit code. That means in the kernel we can always use %llu.
 
-Thanks,
+On x86 that definition is also exported to userspace, so on x86 __u64 is
+always unsigned long long. As you noticed this potentially differs from
+uint64_t, which can be confusing. However it means in x86 userspace code
+you can always print a __u64 with %llu.
 
-Anatolij
+On powerpc we default to using definitions that match userspace, so
+__u64 changes depending on your wordsize, and so you must use PRIu64
+etc. to print them.
+
+There is however support in recent powerpc kernels to switch to using
+unsigned long long even on 64-bit. See commit 2c9c6ce.
+
+You need to define __SANE_USERSPACE_TYPES__ before including types.h.
+Then you can always use %llu to print __u64.
+
+cheers
