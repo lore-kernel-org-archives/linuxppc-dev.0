@@ -1,33 +1,33 @@
 Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp07.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 56D292C0123
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:40:55 +1100 (EST)
+ (Client CN "e28smtp03.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 3748F2C0767
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:41:07 +1100 (EST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 22 Jan 2013 17:34:34 +1000
-Received: from d23relay05.au.ibm.com (d23relay05.au.ibm.com [9.190.235.152])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id ACCC32BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:40:50 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay05.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0M7SuWG4915684
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:28:56 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0M7emIb030704
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:40:49 +1100
+ Tue, 22 Jan 2013 13:09:32 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 0F2DA125804D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:11:27 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0M7f14q44761174
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 13:11:01 +0530
+Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0M7exjL017488
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 18:41:03 +1100
 From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH v5 21/45] crypto: pcrypt - Protect access to cpu_online_mask
- with get/put_online_cpus()
+Subject: [PATCH v5 22/45] infiniband: ehca: Use get/put_online_cpus_atomic()
+ to prevent CPU offline
 To: tglx@linutronix.de, peterz@infradead.org, tj@kernel.org, oleg@redhat.com,
  paulmck@linux.vnet.ibm.com, rusty@rustcorp.com.au, mingo@kernel.org,
  akpm@linux-foundation.org, namhyung@kernel.org
-Date: Tue, 22 Jan 2013 13:08:52 +0530
-Message-ID: <20130122073848.13822.35451.stgit@srivatsabhat.in.ibm.com>
+Date: Tue, 22 Jan 2013 13:09:13 +0530
+Message-ID: <20130122073909.13822.6220.stgit@srivatsabhat.in.ibm.com>
 In-Reply-To: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
@@ -48,38 +48,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pcrypt_aead_init_tfm() function access the cpu_online_mask without
-disabling CPU hotplug. And it looks like it can afford to sleep, so use
-the get/put_online_cpus() APIs to protect against CPU hotplug.
+Once stop_machine() is gone from the CPU offline path, we won't be able to
+depend on preempt_disable() or local_irq_disable() to prevent CPUs from
+going offline from under us.
 
-Cc: Steffen Klassert <steffen.klassert@secunet.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: linux-crypto@vger.kernel.org
+Use the get/put_online_cpus_atomic() APIs to prevent CPUs from going offline,
+while invoking from atomic context.
+
+Cc: Roland Dreier <roland@kernel.org>
 Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 ---
 
- crypto/pcrypt.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/infiniband/hw/ehca/ehca_irq.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-diff --git a/crypto/pcrypt.c b/crypto/pcrypt.c
-index b2c99dc..10f64e2 100644
---- a/crypto/pcrypt.c
-+++ b/crypto/pcrypt.c
-@@ -280,12 +280,16 @@ static int pcrypt_aead_init_tfm(struct crypto_tfm *tfm)
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+index 8615d7c..d61936c 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.c
++++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -43,6 +43,7 @@
  
- 	ictx->tfm_count++;
+ #include <linux/slab.h>
+ #include <linux/smpboot.h>
++#include <linux/cpu.h>
  
-+	get_online_cpus();
-+
- 	cpu_index = ictx->tfm_count % cpumask_weight(cpu_online_mask);
+ #include "ehca_classes.h"
+ #include "ehca_irq.h"
+@@ -653,6 +654,9 @@ void ehca_tasklet_eq(unsigned long data)
+ 	ehca_process_eq((struct ehca_shca*)data, 1);
+ }
  
- 	ctx->cb_cpu = cpumask_first(cpu_online_mask);
- 	for (cpu = 0; cpu < cpu_index; cpu++)
- 		ctx->cb_cpu = cpumask_next(ctx->cb_cpu, cpu_online_mask);
++/*
++ * Must be called under get_online_cpus_atomic() and put_online_cpus_atomic().
++ */
+ static int find_next_online_cpu(struct ehca_comp_pool *pool)
+ {
+ 	int cpu;
+@@ -703,6 +707,7 @@ static void queue_comp_task(struct ehca_cq *__cq)
+ 	int cq_jobs;
+ 	unsigned long flags;
  
-+	put_online_cpus();
-+
- 	cipher = crypto_spawn_aead(crypto_instance_ctx(inst));
++	get_online_cpus_atomic();
+ 	cpu_id = find_next_online_cpu(pool);
+ 	BUG_ON(!cpu_online(cpu_id));
  
- 	if (IS_ERR(cipher))
+@@ -720,6 +725,7 @@ static void queue_comp_task(struct ehca_cq *__cq)
+ 		BUG_ON(!cct || !thread);
+ 	}
+ 	__queue_comp_task(__cq, cct, thread);
++	put_online_cpus_atomic();
+ }
+ 
+ static void run_comp_task(struct ehca_cpu_comp_task *cct)
+@@ -759,6 +765,7 @@ static void comp_task_park(unsigned int cpu)
+ 	list_splice_init(&cct->cq_list, &list);
+ 	spin_unlock_irq(&cct->task_lock);
+ 
++	get_online_cpus_atomic();
+ 	cpu = find_next_online_cpu(pool);
+ 	target = per_cpu_ptr(pool->cpu_comp_tasks, cpu);
+ 	thread = *per_cpu_ptr(pool->cpu_comp_threads, cpu);
+@@ -768,6 +775,7 @@ static void comp_task_park(unsigned int cpu)
+ 		__queue_comp_task(cq, target, thread);
+ 	}
+ 	spin_unlock_irq(&target->task_lock);
++	put_online_cpus_atomic();
+ }
+ 
+ static void comp_task_stop(unsigned int cpu, bool online)
