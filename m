@@ -1,6 +1,6 @@
 Return-Path: <tangchen@cn.fujitsu.com>
 Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id A01E72C00B8
+ by ozlabs.org (Postfix) with ESMTP id B58FA2C00BC
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 22:44:02 +1100 (EST)
 From: Tang Chen <tangchen@cn.fujitsu.com>
 To: akpm@linux-foundation.org, rientjes@google.com, len.brown@intel.com,
@@ -11,9 +11,10 @@ To: akpm@linux-foundation.org, rientjes@google.com, len.brown@intel.com,
  laijs@cn.fujitsu.com, mgorman@suse.de, yinghai@kernel.org,
  glommer@parallels.com, jiang.liu@huawei.com, julian.calaby@gmail.com,
  sfr@canb.auug.org.au
-Subject: [PATCH Bug fix 2/5] Bug-fix: mempolicy: fix is_valid_nodemask()
-Date: Tue, 22 Jan 2013 19:43:01 +0800
-Message-Id: <1358854984-6073-3-git-send-email-tangchen@cn.fujitsu.com>
+Subject: [PATCH Bug fix 3/5] Bug fix: Do not split pages when freeing
+ pagetable pages.
+Date: Tue, 22 Jan 2013 19:43:02 +0800
+Message-Id: <1358854984-6073-4-git-send-email-tangchen@cn.fujitsu.com>
 In-Reply-To: <1358854984-6073-1-git-send-email-tangchen@cn.fujitsu.com>
 References: <1358854984-6073-1-git-send-email-tangchen@cn.fujitsu.com>
 Cc: linux-mm@kvack.org, x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -27,85 +28,280 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
+The old way we free pagetable pages was wrong.
 
-is_valid_nodemask() is introduced by 19770b32. but it does not match
-its comments, because it does not check the zone which > policy_zone.
+The old way is:
+When we got a hugepage, we split it into smaller pages. And sometimes,
+we only need to free some of the smaller pages because the others are
+still in use. And the whole larger page will be freed if all the smaller
+pages are not in use. All these were done in remove_pmd/pud_table().
 
-Also in b377fd, this commits told us, if highest zone is ZONE_MOVABLE,
-we should also apply memory policies to it. so ZONE_MOVABLE should be valid zone
-for policies. is_valid_nodemask() need to be changed to match it.
+But there is no way to know if the larger page has been split. As a result,
+there is no way to decide when to split.
 
-Fix: check all zones, even its zoneid > policy_zone.
-Use nodes_intersects() instead open code to check it.
+Actually, there is no need to split larger pages into smaller ones.
+
+We do it in the following new way:
+1) For direct mapped pages, all the pages were freed when they were offlined.
+   And since menmory offline is done section by section, all the memory ranges
+   being removed are aligned to PAGE_SIZE. So only need to deal with unaligned
+   pages when freeing vmemmap pages.
+
+2) For vmemmap pages being used to store page_struct, if part of the larger
+   page is still in use, just fill the unused part with 0xFD. And when the
+   whole page is fulfilled with 0xFD, then free the larger page.
+
+This problem is caused by the following related patch:
+memory-hotplug-common-apis-to-support-page-tables-hot-remove.patch
+memory-hotplug-common-apis-to-support-page-tables-hot-remove-fix.patch
+memory-hotplug-common-apis-to-support-page-tables-hot-remove-fix-fix.patch
+memory-hotplug-common-apis-to-support-page-tables-hot-remove-fix-fix-fix.patch
+memory-hotplug-common-apis-to-support-page-tables-hot-remove-fix-fix-fix-fix.patch
+
+This patch will fix the problem based on the above patches.
 
 Reported-by: Wen Congyang <wency@cn.fujitsu.com>
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 Signed-off-by: Tang Chen <tangchen@cn.fujitsu.com>
 ---
- mm/mempolicy.c |   36 ++++++++++++++++++++++--------------
- 1 files changed, 22 insertions(+), 14 deletions(-)
+ arch/x86/mm/init_64.c |  148 +++++++++++++++---------------------------------
+ 1 files changed, 46 insertions(+), 102 deletions(-)
 
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index af8a121..6f7979c 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -161,19 +161,7 @@ static const struct mempolicy_operations {
- /* Check that the nodemask contains at least one populated zone */
- static int is_valid_nodemask(const nodemask_t *nodemask)
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 6d1a768..9fbed24 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -777,7 +777,7 @@ static bool __meminit free_pud_table(pud_t *pud_start, pgd_t *pgd)
+ 
+ static void __meminit
+ remove_pte_table(pte_t *pte_start, unsigned long addr, unsigned long end,
+-		 bool direct, bool split)
++		 bool direct)
  {
--	int nd, k;
+ 	unsigned long next, pages = 0;
+ 	pte_t *pte;
+@@ -807,23 +807,9 @@ remove_pte_table(pte_t *pte_start, unsigned long addr, unsigned long end,
+ 			/*
+ 			 * Do not free direct mapping pages since they were
+ 			 * freed when offlining, or simplely not in use.
+-			 *
+-			 * Do not free pages split from larger page since only
+-			 * the _count of the 1st page struct is available.
+-			 * Free the larger page when it is fulfilled with 0xFD.
+ 			 */
+-			if (!direct) {
+-				if (split) {
+-					/*
+-					 * Fill the split 4KB page with 0xFD.
+-					 * When the whole 2MB page is fulfilled
+-					 * with 0xFD, it could be freed.
+-					 */
+-					memset((void *)addr, PAGE_INUSE,
+-						PAGE_SIZE);
+-				} else
+-					free_pagetable(pte_page(*pte), 0);
+-			}
++			if (!direct)
++				free_pagetable(pte_page(*pte), 0);
+ 
+ 			spin_lock(&init_mm.page_table_lock);
+ 			pte_clear(&init_mm, addr, pte);
+@@ -833,26 +819,24 @@ remove_pte_table(pte_t *pte_start, unsigned long addr, unsigned long end,
+ 			pages++;
+ 		} else {
+ 			/*
++			 * If we are here, we are freeing vmemmap pages since
++			 * direct mapped memory ranges to be freed are aligned.
++			 *
+ 			 * If we are not removing the whole page, it means
+-			 * other ptes in this page are being used and we cannot
+-			 * remove them. So fill the unused ptes with 0xFD, and
+-			 * remove the page when it is wholly filled with 0xFD.
++			 * other page structs in this page are being used and
++			 * we canot remove them. So fill the unused page_structs
++			 * with 0xFD, and remove the page when it is wholly
++			 * filled with 0xFD.
+ 			 */
+ 			memset((void *)addr, PAGE_INUSE, next - addr);
+ 
+-			/*
+-			 * If the range is not aligned to PAGE_SIZE, then the
+-			 * page is definitely not split from larger page.
+-			 */
+ 			page_addr = page_address(pte_page(*pte));
+ 			if (!memchr_inv(page_addr, PAGE_INUSE, PAGE_SIZE)) {
+-				if (!direct)
+-					free_pagetable(pte_page(*pte), 0);
++				free_pagetable(pte_page(*pte), 0);
+ 
+ 				spin_lock(&init_mm.page_table_lock);
+ 				pte_clear(&init_mm, addr, pte);
+ 				spin_unlock(&init_mm.page_table_lock);
+-				pages++;
+ 			}
+ 		}
+ 	}
+@@ -865,13 +849,12 @@ remove_pte_table(pte_t *pte_start, unsigned long addr, unsigned long end,
+ 
+ static void __meminit
+ remove_pmd_table(pmd_t *pmd_start, unsigned long addr, unsigned long end,
+-		 bool direct, bool split)
++		 bool direct)
+ {
+-	unsigned long pte_phys, next, pages = 0;
++	unsigned long next, pages = 0;
+ 	pte_t *pte_base;
+ 	pmd_t *pmd;
+ 	void *page_addr;
+-	bool split_pmd = split, split_pte = false;
+ 
+ 	pmd = pmd_start + pmd_index(addr);
+ 	for (; addr < end; addr = next, pmd++) {
+@@ -883,63 +866,35 @@ remove_pmd_table(pmd_t *pmd_start, unsigned long addr, unsigned long end,
+ 		if (pmd_large(*pmd)) {
+ 			if (IS_ALIGNED(addr, PMD_SIZE) &&
+ 			    IS_ALIGNED(next, PMD_SIZE)) {
+-				if (!direct) {
+-					if (split_pmd) {
+-						/*
+-						 * Fill the split 2MB page with
+-						 * 0xFD. When the whole 1GB page
+-						 * is fulfilled with 0xFD, it
+-						 * could be freed.
+-						 */
+-						memset((void *)addr, PAGE_INUSE,
+-							PMD_SIZE);
+-					} else {
+-						free_pagetable(pmd_page(*pmd),
++				if (!direct)
++					free_pagetable(pmd_page(*pmd),
+ 						       get_order(PMD_SIZE));
+-					}
+-				}
+ 
+ 				spin_lock(&init_mm.page_table_lock);
+ 				pmd_clear(pmd);
+ 				spin_unlock(&init_mm.page_table_lock);
 -
--	for_each_node_mask(nd, *nodemask) {
--		struct zone *z;
+-				/*
+-				 * For non-direct mapping, pages means
+-				 * nothing.
+-				 */
+ 				pages++;
++			} else {
++				/* If here, we are freeing vmemmap pages. */
++				memset((void *)addr, PAGE_INUSE, next - addr);
++
++				page_addr = page_address(pmd_page(*pmd));
++				if (!memchr_inv(page_addr, PAGE_INUSE,
++						PMD_SIZE)) {
++					free_pagetable(pmd_page(*pmd),
++						       get_order(PMD_SIZE));
+ 
+-				continue;
++					spin_lock(&init_mm.page_table_lock);
++					pmd_clear(pmd);
++					spin_unlock(&init_mm.page_table_lock);
++				}
+ 			}
+ 
+-			/*
+-			 * We use 2M page, but we need to remove part of them,
+-			 * so split 2M page to 4K page.
+-			 */
+-			pte_base = (pte_t *)alloc_low_page(&pte_phys);
+-			BUG_ON(!pte_base);
+-			__split_large_page((pte_t *)pmd, addr,
+-					   (pte_t *)pte_base);
+-			split_pte = true;
 -
--		for (k = 0; k <= policy_zone; k++) {
--			z = &NODE_DATA(nd)->node_zones[k];
--			if (z->managed_pages > 0)
--				return 1;
+-			spin_lock(&init_mm.page_table_lock);
+-			pmd_populate_kernel(&init_mm, pmd, __va(pte_phys));
+-			spin_unlock(&init_mm.page_table_lock);
+-
+-			flush_tlb_all();
++			continue;
+ 		}
+ 
+ 		pte_base = (pte_t *)map_low_page((pte_t *)pmd_page_vaddr(*pmd));
+-		remove_pte_table(pte_base, addr, next, direct, split_pte);
+-
+-		if (!direct && split_pte) {
+-			page_addr = page_address(pmd_page(*pmd));
+-			if (!memchr_inv(page_addr, PAGE_INUSE, PMD_SIZE)) {
+-				free_pagetable(pmd_page(*pmd),
+-					       get_order(PMD_SIZE));
+-			}
 -		}
--	}
 -
--	return 0;
-+	return nodes_intersects(*nodemask, node_states[N_MEMORY]);
- }
- 
- static inline int mpol_store_user_nodemask(const struct mempolicy *pol)
-@@ -1644,6 +1632,26 @@ struct mempolicy *get_vma_policy(struct task_struct *task,
- 	return pol;
- }
- 
-+static int apply_policy_zone(struct mempolicy *policy, enum zone_type zone)
-+{
-+	enum zone_type dynamic_policy_zone = policy_zone;
-+
-+	BUG_ON(dynamic_policy_zone == ZONE_MOVABLE);
-+
-+	/*
-+	 * if policy->v.nodes has movable memory only,
-+	 * we apply policy when gfp_zone(gfp) = ZONE_MOVABLE only.
-+	 *
-+	 * policy->v.nodes is intersect with node_states[N_MEMORY].
-+	 * so if the following test faile, it implies
-+	 * policy->v.nodes has movable memory only.
-+	 */
-+	if (!nodes_intersects(policy->v.nodes, node_states[N_HIGH_MEMORY]))
-+		dynamic_policy_zone = ZONE_MOVABLE;
-+
-+	return zone >= dynamic_policy_zone;
-+}
-+
- /*
-  * Return a nodemask representing a mempolicy for filtering nodes for
-  * page allocation
-@@ -1652,7 +1660,7 @@ static nodemask_t *policy_nodemask(gfp_t gfp, struct mempolicy *policy)
++		remove_pte_table(pte_base, addr, next, direct);
+ 		free_pte_table(pte_base, pmd);
+ 		unmap_low_page(pte_base);
+ 	}
+@@ -953,11 +908,10 @@ static void __meminit
+ remove_pud_table(pud_t *pud_start, unsigned long addr, unsigned long end,
+ 		 bool direct)
  {
- 	/* Lower zones don't get a nodemask applied for MPOL_BIND */
- 	if (unlikely(policy->mode == MPOL_BIND) &&
--			gfp_zone(gfp) >= policy_zone &&
-+			apply_policy_zone(policy, gfp_zone(gfp)) &&
- 			cpuset_nodemask_valid_mems_allowed(&policy->v.nodes))
- 		return &policy->v.nodes;
+-	unsigned long pmd_phys, next, pages = 0;
++	unsigned long next, pages = 0;
+ 	pmd_t *pmd_base;
+ 	pud_t *pud;
+ 	void *page_addr;
+-	bool split_pmd = false;
  
+ 	pud = pud_start + pud_index(addr);
+ 	for (; addr < end; addr = next, pud++) {
+@@ -977,37 +931,27 @@ remove_pud_table(pud_t *pud_start, unsigned long addr, unsigned long end,
+ 				pud_clear(pud);
+ 				spin_unlock(&init_mm.page_table_lock);
+ 				pages++;
+-				continue;
+-			}
++			} else {
++				/* If here, we are freeing vmemmap pages. */
++				memset((void *)addr, PAGE_INUSE, next - addr);
+ 
+-			/*
+-			 * We use 1G page, but we need to remove part of them,
+-			 * so split 1G page to 2M page.
+-			 */
+-			pmd_base = (pmd_t *)alloc_low_page(&pmd_phys);
+-			BUG_ON(!pmd_base);
+-			__split_large_page((pte_t *)pud, addr,
+-					   (pte_t *)pmd_base);
+-			split_pmd = true;
++				page_addr = page_address(pud_page(*pud));
++				if (!memchr_inv(page_addr, PAGE_INUSE,
++						PUD_SIZE)) {
++					free_pagetable(pud_page(*pud),
++						       get_order(PUD_SIZE));
+ 
+-			spin_lock(&init_mm.page_table_lock);
+-			pud_populate(&init_mm, pud, __va(pmd_phys));
+-			spin_unlock(&init_mm.page_table_lock);
++					spin_lock(&init_mm.page_table_lock);
++					pud_clear(pud);
++					spin_unlock(&init_mm.page_table_lock);
++				}
++			}
+ 
+-			flush_tlb_all();
++			continue;
+ 		}
+ 
+ 		pmd_base = (pmd_t *)map_low_page((pmd_t *)pud_page_vaddr(*pud));
+-		remove_pmd_table(pmd_base, addr, next, direct, split_pmd);
+-
+-		if (!direct && split_pmd) {
+-			page_addr = page_address(pud_page(*pud));
+-			if (!memchr_inv(page_addr, PAGE_INUSE, PUD_SIZE)) {
+-				free_pagetable(pud_page(*pud),
+-					       get_order(PUD_SIZE));
+-			}
+-		}
+-
++		remove_pmd_table(pmd_base, addr, next, direct);
+ 		free_pmd_table(pmd_base, pud);
+ 		unmap_low_page(pmd_base);
+ 	}
 -- 
 1.7.1
