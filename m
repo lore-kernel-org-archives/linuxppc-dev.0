@@ -1,26 +1,29 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from hrndva-omtalb.mail.rr.com (hrndva-omtalb.mail.rr.com
- [71.74.56.122]) by ozlabs.org (Postfix) with ESMTP id 087412C0079
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 07:54:26 +1100 (EST)
-Message-ID: <1358888061.21576.57.camel@gandalf.local.home>
+Return-Path: <stephen@networkplumber.org>
+Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
+ [209.85.220.49])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6662F2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 05:45:15 +1100 (EST)
+Received: by mail-pa0-f49.google.com with SMTP id bi1so4207907pad.8
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Jan 2013 10:45:13 -0800 (PST)
+Date: Tue, 22 Jan 2013 10:45:06 -0800
+From: Stephen Hemminger <stephen@networkplumber.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
 Subject: Re: [PATCH v5 01/45] percpu_rwlock: Introduce the global
  reader-writer lock backend
-From: Steven Rostedt <rostedt@goodmis.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Date: Tue, 22 Jan 2013 15:54:21 -0500
-In-Reply-To: <50FEEF5D.6080302@linux.vnet.ibm.com>
+Message-ID: <20130122104506.32b4e581@nehalam.linuxnetplumber.net>
+In-Reply-To: <20130122073315.13822.27093.stgit@srivatsabhat.in.ibm.com>
 References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
  <20130122073315.13822.27093.stgit@srivatsabhat.in.ibm.com>
- <1358883152.21576.55.camel@gandalf.local.home>
- <50FEEF5D.6080302@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="ISO-8859-15"
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
  linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
  linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
  wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
  nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
  linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
  sbw@mit.edu, tj@kernel.org, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org
@@ -33,16 +36,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-01-23 at 01:28 +0530, Srivatsa S. Bhat wrote:
+On Tue, 22 Jan 2013 13:03:22 +0530
+"Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com> wrote:
 
-> > I thought global locks are now fair. That is, a reader will block if a
-> > writer is waiting. Hence, the above should deadlock on the current
-> > rwlock_t types.
-> > 
+> A straight-forward (and obvious) algorithm to implement Per-CPU Reader-Writer
+> locks can also lead to too many deadlock possibilities which can make it very
+> hard/impossible to use. This is explained in the example below, which helps
+> justify the need for a different algorithm to implement flexible Per-CPU
+> Reader-Writer locks.
 > 
-> Oh is it? Last I checked, lockdep didn't complain about this ABBA scenario!
+> We can use global rwlocks as shown below safely, without fear of deadlocks:
+> 
+> Readers:
+> 
+>          CPU 0                                CPU 1
+>          ------                               ------
+> 
+> 1.    spin_lock(&random_lock);             read_lock(&my_rwlock);
+> 
+> 
+> 2.    read_lock(&my_rwlock);               spin_lock(&random_lock);
+> 
+> 
+> Writer:
+> 
+>          CPU 2:
+>          ------
+> 
+>        write_lock(&my_rwlock);
+> 
+> 
+> We can observe that there is no possibility of deadlocks or circular locking
+> dependencies here. Its perfectly safe.
+> 
+> Now consider a blind/straight-forward conversion of global rwlocks to per-CPU
+> rwlocks like this:
+> 
+> The reader locks its own per-CPU rwlock for read, and proceeds.
+> 
+> Something like: read_lock(per-cpu rwlock of this cpu);
+> 
+> The writer acquires all per-CPU rwlocks for write and only then proceeds.
+> 
+> Something like:
+> 
+>   for_each_online_cpu(cpu)
+> 	write_lock(per-cpu rwlock of 'cpu');
+> 
+> 
+> Now let's say that for performance reasons, the above scenario (which was
+> perfectly safe when using global rwlocks) was converted to use per-CPU rwlocks.
+> 
+> 
+>          CPU 0                                CPU 1
+>          ------                               ------
+> 
+> 1.    spin_lock(&random_lock);             read_lock(my_rwlock of CPU 1);
+> 
+> 
+> 2.    read_lock(my_rwlock of CPU 0);       spin_lock(&random_lock);
+> 
+> 
+> Writer:
+> 
+>          CPU 2:
+>          ------
+> 
+>       for_each_online_cpu(cpu)
+>         write_lock(my_rwlock of 'cpu');
+> 
+> 
+> Consider what happens if the writer begins his operation in between steps 1
+> and 2 at the reader side. It becomes evident that we end up in a (previously
+> non-existent) deadlock due to a circular locking dependency between the 3
+> entities, like this:
+> 
+> 
+> (holds              Waiting for
+>  random_lock) CPU 0 -------------> CPU 2  (holds my_rwlock of CPU 0
+>                                                for write)
+>                ^                   |
+>                |                   |
+>         Waiting|                   | Waiting
+>           for  |                   |  for
+>                |                   V
+>                 ------ CPU 1 <------
+> 
+>                 (holds my_rwlock of
+>                  CPU 1 for read)
+> 
+> 
+> 
+> So obviously this "straight-forward" way of implementing percpu rwlocks is
+> deadlock-prone. One simple measure for (or characteristic of) safe percpu
+> rwlock should be that if a user replaces global rwlocks with per-CPU rwlocks
+> (for performance reasons), he shouldn't suddenly end up in numerous deadlock
+> possibilities which never existed before. The replacement should continue to
+> remain safe, and perhaps improve the performance.
+> 
+> Observing the robustness of global rwlocks in providing a fair amount of
+> deadlock safety, we implement per-CPU rwlocks as nothing but global rwlocks,
+> as a first step.
+> 
+> 
+> Cc: David Howells <dhowells@redhat.com>
+> Signed-off-by: Srivatsa S. Bhat <srivatsa.bhat@linux.vnet.ibm.com>
 
-It doesn't and Peter Zijlstra said we need to fix that ;-)  It only
-recently became an issue with the new "fair" locking of rwlocks.
-
--- Steve
+We got rid of brlock years ago, do we have to reintroduce it like this?
+The problem was that brlock caused starvation.
