@@ -3,14 +3,14 @@ Received: from mail.windriver.com (unknown [147.11.1.11])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mail.windriver.com",
  Issuer "Intel External Basic Issuing CA 3A" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 12E0D2C00A9
+ by ozlabs.org (Postfix) with ESMTPS id 0C4902C008C
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 07:14:03 +1100 (EST)
 From: Paul Gortmaker <paul.gortmaker@windriver.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/4] powerpc: update sbc8548 flash information to match recent
- u-boot
-Date: Wed, 23 Jan 2013 15:13:31 -0500
-Message-Id: <1358972013-5271-3-git-send-email-paul.gortmaker@windriver.com>
+Subject: [PATCH 3/4] powerpc: add alternate dts file for sbc8548 boot via
+ SODIMM
+Date: Wed, 23 Jan 2013 15:13:32 -0500
+Message-Id: <1358972013-5271-4-git-send-email-paul.gortmaker@windriver.com>
 In-Reply-To: <1358972013-5271-1-git-send-email-paul.gortmaker@windriver.com>
 References: <1358972013-5271-1-git-send-email-paul.gortmaker@windriver.com>
 Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
@@ -23,113 +23,193 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The original memory map for the sbc8548 had the 64MB SODIMM flash
-device misaligned by 8MB to allow a window of address space for
-the soldered on 8MB device -- i.e.
+By moving the two JP12 jumpers 90 degrees, and switching the
+setting of SW2.8, the sbc8548 can be configured to boot off
+the alternate 64MB SODIMM, which when populated with u-boot
+can be a handy recovery option, in case the u-boot in the
+8MB soldered on flash gets corrupted.  Here we add an alternate
+dts file to match that configuration.
 
- start           end             CS<n>   width   Desc.
- ----------------------------------------------------------
- fb80_0000       ff7f_ffff       CS6     32      SODIMM flash (64MB)
- ff80_0000       ffff_ffff       CS0     8       Boot flash (8MB)
+To better highlight the differences, the output from the u-boot
+"fli" command is shown for the normal configuration and then
+the alternate configuration.
 
-However, if we want to change the configuration so that it boots
-off the 64MB flash, it is in turn then aligned with a 64MB boundary,
-starting at fc00_0000 (and the 8MB @ fb80_0000 -> fbff_ffff).
+Normal:
+ -----------------------
+Bank # 1: CFI conformant flash (8 x 8)  Size: 8 MB in 64 Sectors
+  Intel Extended command set, Manufacturer ID: 0x89, Device ID: 0x17
+  Erase timeout: 4096 ms, write timeout: 1 ms
+  Buffer write timeout: 2 ms, buffer size: 32 bytes
 
-This makes for complicated updates, since what is the beginning
-of the physical device is 8MB into its address space in the default
-configuration shown above.
+  Sector Start Addresses:
+  FF800000 E      FF820000 E      FF840000 E      FF860000 E      FF880000 E
+ [...]
+  FFEE0000 E      FFF00000 E      FFF20000 E      FFF40000 E      FFF60000 E
+  FFF80000        FFFA0000   RO   FFFC0000   RO   FFFE0000   RO
 
-This issue was fixed as of u-boot commit 3fd673cf363bc86ed42eff713d4
-("sbc8548: relocate 64MB user flash to sane boundary") -- in which
-the SODIMM was mapped to ec00_0000 (natively aligned under efff_ffff)
-and so when JP12/SW2.8 are switched, it will be a a simple 0xec --> 0xfc
-mapping between the two instances.
+Bank # 2: CFI conformant flash (32 x 8)  Size: 64 MB in 128 Sectors
+  Intel Extended command set, Manufacturer ID: 0x89, Device ID: 0x18
+  Erase timeout: 4096 ms, write timeout: 1 ms
+  Buffer write timeout: 2 ms, buffer size: 32 bytes
 
-Here we make the associated changes in the localbus flash memory
-map in the dts file:  indicating the 64MB device starts at ec00_0000
-and that the tail end of the 64MB device (last 2 sectors) can contain
-a bootloader image.
+  Sector Start Addresses:
+  EC000000 E      EC080000 E      EC100000 E      EC180000 E      EC200000 E
+ [...]
+  EFC00000 E      EFC80000 E      EFD00000 E      EFD80000 E      EFE00000 E
+  EFE80000 E      EFF00000        EFF80000
+ -----------------------
 
-The partitions for both flash devices get a clean-up; there were
-non-meaningful assignments in there that probably originated from
-the MPC8548CDS on which the file was based on.  Now there is just
-the categorization of free space and bootloader images.
+Alternate:
+ -----------------------
+Bank # 1: CFI conformant flash (32 x 8)  Size: 64 MB in 128 Sectors
+  Intel Extended command set, Manufacturer ID: 0x89, Device ID: 0x18
+  Erase timeout: 4096 ms, write timeout: 1 ms
+  Buffer write timeout: 2 ms, buffer size: 32 bytes
+
+  Sector Start Addresses:
+  FC000000 E      FC080000 E      FC100000 E      FC180000 E      FC200000 E
+ [...]
+  FFC00000 E      FFC80000 E      FFD00000 E      FFD80000 E      FFE00000 E
+  FFE80000 E      FFF00000   RO   FFF80000   RO
+
+Bank # 2: CFI conformant flash (8 x 8)  Size: 8 MB in 64 Sectors
+  Intel Extended command set, Manufacturer ID: 0x89, Device ID: 0x17
+  Erase timeout: 4096 ms, write timeout: 1 ms
+  Buffer write timeout: 2 ms, buffer size: 32 bytes
+
+  Sector Start Addresses:
+  EF800000 E      EF820000 E      EF840000 E      EF860000 E      EF880000 E
+ [...]
+  EFEE0000 E      EFF00000 E      EFF20000 E      EFF40000 E      EFF60000 E
+  EFF80000 E      EFFA0000        EFFC0000        EFFE0000
+ -----------------------
 
 Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 ---
- arch/powerpc/boot/dts/sbc8548.dts | 34 +++++++++++++++-------------------
- 1 file changed, 15 insertions(+), 19 deletions(-)
+ arch/powerpc/boot/dts/sbc8548-altflash.dts | 115 +++++++++++++++++++++++++++++
+ 1 file changed, 115 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/sbc8548-altflash.dts
 
-diff --git a/arch/powerpc/boot/dts/sbc8548.dts b/arch/powerpc/boot/dts/sbc8548.dts
-index ad8dc68..1df2a09 100644
---- a/arch/powerpc/boot/dts/sbc8548.dts
-+++ b/arch/powerpc/boot/dts/sbc8548.dts
-@@ -28,23 +28,25 @@
- 			  0x3 0x0 0xf0000000 0x04000000		/*64MB SDRAM*/
- 			  0x4 0x0 0xf4000000 0x04000000 	/*64MB SDRAM*/
- 			  0x5 0x0 0xf8000000 0x00b10000		/* EPLD */
--			  0x6 0x0 0xfb800000 0x04000000>;	/*64MB Flash*/
-+			  0x6 0x0 0xec000000 0x04000000>;	/*64MB Flash*/
- 
- 
- 		flash@0,0 {
- 			#address-cells = <1>;
- 			#size-cells = <1>;
--			compatible = "cfi-flash";
-+			compatible = "intel,JS28F640", "cfi-flash";
- 			reg = <0x0 0x0 0x800000>;
- 			bank-width = <1>;
- 			device-width = <1>;
- 			partition@0x0 {
- 				label = "space";
--				reg = <0x00000000 0x00100000>;
-+				/* FF800000 -> FFF9FFFF */
-+				reg = <0x00000000 0x007a0000>;
- 			};
--			partition@0x100000 {
-+			partition@0x7a0000 {
- 				label = "bootloader";
--				reg = <0x00100000 0x00700000>;
-+				/* FFFA0000 -> FFFFFFFF */
-+				reg = <0x007a0000 0x00060000>;
- 				read-only;
- 			};
- 		};
-@@ -87,26 +89,20 @@
- 			#address-cells = <1>;
- 			#size-cells = <1>;
- 			reg = <0x6 0x0 0x04000000>;
--			compatible = "cfi-flash";
+diff --git a/arch/powerpc/boot/dts/sbc8548-altflash.dts b/arch/powerpc/boot/dts/sbc8548-altflash.dts
+new file mode 100644
+index 0000000..0b38a0d
+--- /dev/null
++++ b/arch/powerpc/boot/dts/sbc8548-altflash.dts
+@@ -0,0 +1,115 @@
++/*
++ * SBC8548 Device Tree Source
++ *
++ * Configured for booting off the alternate (64MB SODIMM) flash.
++ * Requires switching JP12 jumpers and changing SW2.8 setting.
++ *
++ * Copyright 2013 Wind River Systems Inc.
++ *
++ * Paul Gortmaker (see MAINTAINERS for contact information)
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++
++/dts-v1/;
++
++/include/ "sbc8548-pre.dtsi"
++
++/{
++	localbus@e0000000 {
++		#address-cells = <2>;
++		#size-cells = <1>;
++		compatible = "simple-bus";
++		reg = <0xe0000000 0x5000>;
++		interrupt-parent = <&mpic>;
++
++		ranges = <0x0 0x0 0xfc000000 0x04000000		/*64MB Flash*/
++			  0x3 0x0 0xf0000000 0x04000000		/*64MB SDRAM*/
++			  0x4 0x0 0xf4000000 0x04000000 	/*64MB SDRAM*/
++			  0x5 0x0 0xf8000000 0x00b10000		/* EPLD */
++			  0x6 0x0 0xef800000 0x00800000>;	/*8MB Flash*/
++
++		flash@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			reg = <0x0 0x0 0x04000000>;
 +			compatible = "intel,JS28F128", "cfi-flash";
- 			bank-width = <4>;
- 			device-width = <1>;
- 			partition@0x0 {
++			bank-width = <4>;
++			device-width = <1>;
++			partition@0x0 {
 +				label = "space";
-+				/* EC000000 -> EFEFFFFF */
++				/* FC000000 -> FFEFFFFF */
 +				reg = <0x00000000 0x03f00000>;
 +			};
 +			partition@0x03f00000 {
- 				label = "bootloader";
--				reg = <0x00000000 0x00100000>;
-+				/* EFF00000 -> EFFFFFFF */
++				label = "bootloader";
++				/* FFF00000 -> FFFFFFFF */
 +				reg = <0x03f00000 0x00100000>;
- 				read-only;
- 			};
--			partition@0x00100000 {
--				label = "file-system";
--				reg = <0x00100000 0x01f00000>;
--			};
--			partition@0x02000000 {
--				label = "boot-config";
--				reg = <0x02000000 0x00100000>;
--			};
--			partition@0x02100000 {
--				label = "space";
--				reg = <0x02100000 0x01f00000>;
--			};
-                 };
-         };
- };
++				read-only;
++			};
++                };
++
++
++		epld@5,0 {
++			compatible = "wrs,epld-localbus";
++			#address-cells = <2>;
++			#size-cells = <1>;
++			reg = <0x5 0x0 0x00b10000>;
++			ranges = <
++				0x0 0x0 0x5 0x000000 0x1fff	/* LED */
++				0x1 0x0 0x5 0x100000 0x1fff	/* Switches */
++				0x3 0x0 0x5 0x300000 0x1fff	/* HW Rev. */
++				0xb 0x0	0x5 0xb00000 0x1fff	/* EEPROM */
++			>;
++
++			led@0,0 {
++				compatible = "led";
++				reg = <0x0 0x0 0x1fff>;
++			};
++
++			switches@1,0 {
++				compatible = "switches";
++				reg = <0x1 0x0 0x1fff>;
++			};
++
++			hw-rev@3,0 {
++				compatible = "hw-rev";
++				reg = <0x3 0x0 0x1fff>;
++			};
++
++			eeprom@b,0 {
++				compatible = "eeprom";
++				reg = <0xb 0 0x1fff>;
++			};
++
++		};
++
++		alt-flash@6,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "intel,JS28F640", "cfi-flash";
++			reg = <0x6 0x0 0x800000>;
++			bank-width = <1>;
++			device-width = <1>;
++			partition@0x0 {
++				label = "space";
++				/* EF800000 -> EFF9FFFF */
++				reg = <0x00000000 0x007a0000>;
++			};
++			partition@0x7a0000 {
++				label = "bootloader";
++				/* EFFA0000 -> EFFFFFFF */
++				reg = <0x007a0000 0x00060000>;
++				read-only;
++			};
++		};
++
++
++        };
++};
++
++/include/ "sbc8548-post.dtsi"
 -- 
 1.8.1
