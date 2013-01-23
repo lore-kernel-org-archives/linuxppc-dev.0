@@ -1,24 +1,32 @@
-Return-Path: <B07421@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3AD0C2C0082
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 04:28:44 +1100 (EST)
-Date: Wed, 23 Jan 2013 11:28:33 -0600
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/mpic: allow coreint to be determined by
- MPIC version
-To: Kumar Gala <galak@kernel.crashing.org>
-References: <1358819804-28665-1-git-send-email-scottwood@freescale.com>
- <AAD002DB-C259-4054-A126-950B69BF1B5D@kernel.crashing.org>
-In-Reply-To: <AAD002DB-C259-4054-A126-950B69BF1B5D@kernel.crashing.org>
- (from galak@kernel.crashing.org on Wed Jan 23 11:23:51 2013)
-Message-ID: <1358962113.9710.2@snotra>
+Return-Path: <htejun@gmail.com>
+Received: from mail-qc0-f170.google.com (mail-qc0-f170.google.com
+ [209.85.216.170])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7CD872C007C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 05:55:33 +1100 (EST)
+Received: by mail-qc0-f170.google.com with SMTP id d42so3919339qca.29
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 10:55:30 -0800 (PST)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Wed, 23 Jan 2013 10:55:22 -0800
+From: Tejun Heo <tj@kernel.org>
+To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
+ Per-CPU Reader-Writer Locks
+Message-ID: <20130123185522.GG2373@mtj.dyndns.org>
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
+ linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
+ wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
+ rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +36,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/23/2013 11:23:51 AM, Kumar Gala wrote:
->=20
-> On Jan 21, 2013, at 7:56 PM, Scott Wood wrote:
->=20
-> > This will be used by the qemu-e500 platform, as the MPIC version =20
-> (and
-> > thus whether we have coreint) depends on how QEMU is configured.
-> >
-> > Signed-off-by: Scott Wood <scottwood@freescale.com>
-> > ---
-> > arch/powerpc/sysdev/mpic.c |   26 +++++++++++++++++++++++---
-> > 1 file changed, 23 insertions(+), 3 deletions(-)
->=20
-> Is the idea that we'd set mpic->flags such that MPIC_ENABLE_COREINT =20
-> was set, but based on the controller version we'd ignore the flag?
+Hello, Srivatsa.
 
-Yes, at least for platforms like qemu-e500 where both are posssible =20
-(see patch 2/2).
+First of all, I'm not sure whether we need to be this step-by-step
+when introducing something new.  It's not like we're transforming an
+existing implementation and it doesn't seem to help understanding the
+series that much either.
 
--Scott=
+On Tue, Jan 22, 2013 at 01:03:53PM +0530, Srivatsa S. Bhat wrote:
+> Using global rwlocks as the backend for per-CPU rwlocks helps us avoid many
+> lock-ordering related problems (unlike per-cpu locks). However, global
+
+So, unfortunately, this already seems broken, right?  The problem here
+seems to be that previously, say, read_lock() implied
+preempt_disable() but as this series aims to move away from it, it
+introduces the problem of locking order between such locks and the new
+contruct.
+
+The only two options are either punishing writers or identifying and
+updating all such possible deadlocks.  percpu_rwsem does the former,
+right?  I don't know how feasible the latter would be.  Srivatsa,
+you've been looking at all the places which would require conversion,
+how difficult would doing the latter be?
+
+> +#define reader_uses_percpu_refcnt(pcpu_rwlock, cpu)			\
+> +		(ACCESS_ONCE(per_cpu(*((pcpu_rwlock)->reader_refcnt), cpu)))
+> +
+> +#define reader_nested_percpu(pcpu_rwlock)				\
+> +			(__this_cpu_read(*((pcpu_rwlock)->reader_refcnt)) > 1)
+> +
+> +#define writer_active(pcpu_rwlock)					\
+> +			(__this_cpu_read(*((pcpu_rwlock)->writer_signal)))
+
+Why are these in the public header file?  Are they gonna be used to
+inline something?
+
+> +static inline void raise_writer_signal(struct percpu_rwlock *pcpu_rwlock,
+> +				       unsigned int cpu)
+> +{
+> +	per_cpu(*pcpu_rwlock->writer_signal, cpu) = true;
+> +}
+> +
+> +static inline void drop_writer_signal(struct percpu_rwlock *pcpu_rwlock,
+> +				      unsigned int cpu)
+> +{
+> +	per_cpu(*pcpu_rwlock->writer_signal, cpu) = false;
+> +}
+> +
+> +static void announce_writer_active(struct percpu_rwlock *pcpu_rwlock)
+> +{
+> +	unsigned int cpu;
+> +
+> +	for_each_online_cpu(cpu)
+> +		raise_writer_signal(pcpu_rwlock, cpu);
+> +
+> +	smp_mb(); /* Paired with smp_rmb() in percpu_read_[un]lock() */
+> +}
+> +
+> +static void announce_writer_inactive(struct percpu_rwlock *pcpu_rwlock)
+> +{
+> +	unsigned int cpu;
+> +
+> +	drop_writer_signal(pcpu_rwlock, smp_processor_id());
+> +
+> +	for_each_online_cpu(cpu)
+> +		drop_writer_signal(pcpu_rwlock, cpu);
+> +
+> +	smp_mb(); /* Paired with smp_rmb() in percpu_read_[un]lock() */
+> +}
+
+It could be just personal preference but I find the above one line
+wrappers more obfuscating than anything else.  What's the point of
+wrapping writer_signal = true/false into a separate function?  These
+simple wrappers just add layers that people have to dig through to
+figure out what's going on without adding anything of value.  I'd much
+prefer collapsing these into the percpu_write_[un]lock().
+
+Thanks.
+
+-- 
+tejun
