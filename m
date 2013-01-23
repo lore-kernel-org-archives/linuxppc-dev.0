@@ -1,34 +1,18 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qc0-f174.google.com (mail-qc0-f174.google.com
- [209.85.216.174])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E785D2C008C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 06:57:51 +1100 (EST)
-Received: by mail-qc0-f174.google.com with SMTP id z24so2407532qcq.19
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 11:57:48 -0800 (PST)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Wed, 23 Jan 2013 11:57:40 -0800
-From: Tejun Heo <tj@kernel.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-Message-ID: <20130123195740.GI2373@mtj.dyndns.org>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
- <20130123185522.GG2373@mtj.dyndns.org>
- <51003B20.2060506@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <51003B20.2060506@linux.vnet.ibm.com>
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <paul.gortmaker@windriver.com>
+Received: from mail.windriver.com (unknown [147.11.1.11])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mail.windriver.com",
+ Issuer "Intel External Basic Issuing CA 3A" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 1608C2C00AA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 07:14:03 +1100 (EST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 4/4] powerpc: enable MTD options in sbc8548 defconfig
+Date: Wed, 23 Jan 2013 15:13:33 -0500
+Message-Id: <1358972013-5271-5-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1358972013-5271-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1358972013-5271-1-git-send-email-paul.gortmaker@windriver.com>
+Cc: Paul Gortmaker <paul.gortmaker@windriver.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,54 +22,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Srivatsa.
+This board has soldered on flash, and a SODIMM flash module.
+Both can be used for booting, via switching JP12 and SW2.8
+and using the sbc8548-altflash.dts when booting from SODIMM.
 
-On Thu, Jan 24, 2013 at 01:03:52AM +0530, Srivatsa S. Bhat wrote:
-> Hmm.. I split it up into steps to help explain the reasoning behind
-> the code sufficiently, rather than spring all of the intricacies at
-> one go (which would make it very hard to write the changelog/comments
-> also). The split made it easier for me to document it well in the
-> changelog, because I could deal with reasonable chunks of code/complexity
-> at a time. IMHO that helps people reading it for the first time to
-> understand the logic easily.
+Here we enable MTD in kernel so that we can see the bootloader
+(and other flash sectors) from linux.
 
-I don't know.  It's a judgement call I guess.  I personally would much
-prefer having ample documentation as comments in the source itself or
-as a separate Documentation/ file as that's what most people are gonna
-be looking at to figure out what's going on.  Maybe just compact it a
-bit and add more in-line documentation instead?
+Normal configuration:
 
-> > The only two options are either punishing writers or identifying and
-> > updating all such possible deadlocks.  percpu_rwsem does the former,
-> > right?  I don't know how feasible the latter would be.
-> 
-> I don't think we can avoid looking into all the possible deadlocks,
-> as long as we use rwlocks inside get/put_online_cpus_atomic() (assuming
-> rwlocks are fair). Even with Oleg's idea of using synchronize_sched()
-> at the writer, we still need to take care of locking rules, because the
-> synchronize_sched() only helps avoid the memory barriers at the reader,
-> and doesn't help get rid of the rwlocks themselves.
+ root@sbc8548:~# cat /proc/mtd
+ dev:    size   erasesize  name
+ mtd0: 007a0000 00020000 "space"
+ mtd1: 00060000 00020000 "bootloader"
+ mtd2: 03f00000 00080000 "space"
+ mtd3: 00100000 00080000 "bootloader"
+ root@sbc8548:~# dd if=/dev/mtd1 count=1 bs=48|hexdump -C
+ 1+0 records in
+ 1+0 records out
+ 00000000  27 05 19 56 55 2d 42 6f  6f 74 20 32 30 31 32 2e  |'..VU-Boot 2012.|
+ 00000010  31 30 2d 64 69 72 74 79  20 28 4a 61 6e 20 31 39  |10-dirty (Jan 19|
+ 00000020  20 32 30 31 33 20 2d 20  31 39 3a 34 30 3a 31 31  | 2013 - 19:40:11|
+ 00000030
+ root@sbc8548:~# dd if=/dev/mtd3 count=1 bs=48|hexdump -C
+ 1+0 records in
+ 1+0 records out
+ 00000000  27 05 19 56 55 2d 42 6f  6f 74 20 32 30 31 32 2e  |'..VU-Boot 2012.|
+ 00000010  31 30 2d 64 69 72 74 79  20 28 44 65 63 20 31 33  |10-dirty (Dec 13|
+ 00000020  20 32 30 31 32 20 2d 20  31 35 3a 30 30 3a 30 37  | 2012 - 15:00:07|
+ 00000030
+ root@sbc8548:~#
 
-Well, percpu_rwlock don't have to use rwlock for the slow path.  It
-can implement its own writer starving locking scheme.  It's not like
-implementing slow path global rwlock logic is difficult.
+Alternate configuration, with sbc8548-altflash.dts:
 
-> CPU 0                          CPU 1
-> 
-> read_lock(&rwlock)
-> 
->                               write_lock(&rwlock) //spins, because CPU 0
->                               //has acquired the lock for read
-> 
-> read_lock(&rwlock)
->    ^^^^^
-> What happens here? Does CPU 0 start spinning (and hence deadlock) or will
-> it continue realizing that it already holds the rwlock for read?
+ root@sbc8548:~# cat /proc/mtd
+ dev:    size   erasesize  name
+ mtd0: 03f00000 00080000 "space"
+ mtd1: 00100000 00080000 "bootloader"
+ mtd2: 007a0000 00020000 "space"
+ mtd3: 00060000 00020000 "bootloader"
+ root@sbc8548:~# dd if=/dev/mtd1 count=1 bs=48|hexdump -C
+ 1+0 records in
+ 1+0 records out
+ 00000000  27 05 19 56 55 2d 42 6f  6f 74 20 32 30 31 32 2e  |'..VU-Boot 2012.|
+ 00000010  31 30 2d 64 69 72 74 79  20 28 44 65 63 20 31 33  |10-dirty (Dec 13|
+ 00000020  20 32 30 31 32 20 2d 20  31 35 3a 30 30 3a 30 37  | 2012 - 15:00:07|
+ 00000030
+ root@sbc8548:~# dd if=/dev/mtd3 count=1 bs=48|hexdump -C
+ 1+0 records in
+ 1+0 records out
+ 00000000  27 05 19 56 55 2d 42 6f  6f 74 20 32 30 31 32 2e  |'..VU-Boot 2012.|
+ 00000010  31 30 2d 64 69 72 74 79  20 28 4a 61 6e 20 31 39  |10-dirty (Jan 19|
+ 00000020  20 32 30 31 33 20 2d 20  31 39 3a 34 30 3a 31 31  | 2013 - 19:40:11|
+ 00000030
+ root@sbc8548:~#
 
-I don't think rwlock allows nesting write lock inside read lock.
-read_lock(); write_lock() will always deadlock.
+Note that in the latter, the larger SODIMM device appears 1st,
+as mtd0 and mtd1, as indicated in the sizes, and in the date
+of the u-boot image.
 
-Thanks.
+The kernel configuration is the same in both cases; only the dtb
+needs to be changed in accordance with the JP12/SW2.8 settings.
 
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/configs/85xx/sbc8548_defconfig | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
+
+diff --git a/arch/powerpc/configs/85xx/sbc8548_defconfig b/arch/powerpc/configs/85xx/sbc8548_defconfig
+index 5b2b651..008a7a4 100644
+--- a/arch/powerpc/configs/85xx/sbc8548_defconfig
++++ b/arch/powerpc/configs/85xx/sbc8548_defconfig
+@@ -55,3 +55,22 @@ CONFIG_ROOT_NFS=y
+ # CONFIG_RCU_CPU_STALL_DETECTOR is not set
+ CONFIG_SYSCTL_SYSCALL_CHECK=y
+ # CONFIG_CRYPTO_ANSI_CPRNG is not set
++CONFIG_MTD=y
++CONFIG_MTD_OF_PARTS=y
++CONFIG_MTD_CHAR=y
++CONFIG_MTD_BLKDEVS=y
++CONFIG_MTD_BLOCK=y
++CONFIG_MTD_CFI=y
++CONFIG_MTD_GEN_PROBE=y
++CONFIG_MTD_CFI_ADV_OPTIONS=y
++CONFIG_MTD_CFI_NOSWAP=y
++CONFIG_MTD_CFI_GEOMETRY=y
++CONFIG_MTD_MAP_BANK_WIDTH_1=y
++CONFIG_MTD_MAP_BANK_WIDTH_2=y
++CONFIG_MTD_MAP_BANK_WIDTH_4=y
++CONFIG_MTD_CFI_I1=y
++CONFIG_MTD_CFI_I2=y
++CONFIG_MTD_CFI_I4=y
++CONFIG_MTD_CFI_INTELEXT=y
++CONFIG_MTD_CFI_UTIL=y
++CONFIG_MTD_PHYSMAP_OF=y
 -- 
-tejun
+1.8.1
