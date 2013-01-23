@@ -1,20 +1,20 @@
-Return-Path: <B08248@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5D1B52C007B
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 10:54:53 +1100 (EST)
-From: Stuart Yoder <stuart.yoder@freescale.com>
-To: <agraf@suse.de>, <benh@kernel.crashing.org>
-Subject: [PATCH][v2] KVM: PPC: add paravirt idle loop for 64-bit book E
-Date: Tue, 22 Jan 2013 17:54:43 -0600
-Message-ID: <1358898883-16218-1-git-send-email-stuart.yoder@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@ozlabs.org, kvm-ppc@vger.kernel.org, kvm@vger.kernel.org,
- Stuart Yoder <stuart.yoder@freescale.com>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1358913038.29791.26.camel@concordia>
+Subject: Re: [PATCH 1/6][v3] perf/Power7: Use macros to identify perf events
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Wed, 23 Jan 2013 14:50:38 +1100
+In-Reply-To: <20130110010347.GA32590@us.ibm.com>
+References: <20130110010347.GA32590@us.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ robert.richter@amd.com, Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+ linuxppc-dev@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>,
+ Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+ Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,90 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stuart Yoder <stuart.yoder@freescale.com>
+On Wed, 2013-01-09 at 17:03 -0800, Sukadev Bhattiprolu wrote:
+> [PATCH 1/6][v3] perf/Power7: Use macros to identify perf events
+> 
+> Define and use macros to identify perf events codes. This would make it
+> easier and more readable when these event codes need to be used in more
+> than one place.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/perf/power7-pmu.c |   28 ++++++++++++++++++++--------
+>  1 files changed, 20 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+> index 441af08..44e70d2 100644
+> --- a/arch/powerpc/perf/power7-pmu.c
+> +++ b/arch/powerpc/perf/power7-pmu.c
+> @@ -51,6 +51,18 @@
+>  #define MMCR1_PMCSEL_MSK	0xff
+>  
+>  /*
+> + * Power7 event codes.
+> + */
+> +#define	PME_PM_CYC			0x1e
+> +#define	PME_PM_GCT_NOSLOT_CYC		0x100f8
+> +#define	PME_PM_CMPLU_STALL		0x4000a
+> +#define	PME_PM_INST_CMPL		0x2
+> +#define	PME_PM_LD_REF_L1		0xc880
+> +#define	PME_PM_LD_MISS_L1		0x400f0
+> +#define	PME_PM_BRU_FIN			0x10068
+> +#define	PME_PM_BRU_MPRED		0x400f6
+> +
+> +/*
+>   * Layout of constraint bits:
+>   * 6666555555555544444444443333333333222222222211111111110000000000
+>   * 3210987654321098765432109876543210987654321098765432109876543210
+> @@ -296,14 +308,14 @@ static void power7_disable_pmc(unsigned int pmc, unsigned long mmcr[])
+>  }
+>  
+>  static int power7_generic_events[] = {
+> -	[PERF_COUNT_HW_CPU_CYCLES] = 0x1e,
+> -	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] = 0x100f8, /* GCT_NOSLOT_CYC */
+> -	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] = 0x4000a,  /* CMPLU_STALL */
+> -	[PERF_COUNT_HW_INSTRUCTIONS] = 2,
+> -	[PERF_COUNT_HW_CACHE_REFERENCES] = 0xc880,	/* LD_REF_L1_LSU*/
+> -	[PERF_COUNT_HW_CACHE_MISSES] = 0x400f0,		/* LD_MISS_L1	*/
+> -	[PERF_COUNT_HW_BRANCH_INSTRUCTIONS] = 0x10068,	/* BRU_FIN	*/
+> -	[PERF_COUNT_HW_BRANCH_MISSES] = 0x400f6,	/* BR_MPRED	*/
+> +	[PERF_COUNT_HW_CPU_CYCLES] =			PME_PM_CYC,
+> +	[PERF_COUNT_HW_STALLED_CYCLES_FRONTEND] =	PME_PM_GCT_NOSLOT_CYC,
+> +	[PERF_COUNT_HW_STALLED_CYCLES_BACKEND] =	PME_PM_CMPLU_STALL,
+> +	[PERF_COUNT_HW_INSTRUCTIONS] =			PME_PM_INST_CMPL,
+> +	[PERF_COUNT_HW_CACHE_REFERENCES] =		PME_PM_LD_REF_L1,
+> +	[PERF_COUNT_HW_CACHE_MISSES] =			PME_PM_LD_MISS_L1,
 
-Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
----
 
--v2
-   -macro'ized loop in idle_book3e.S to avoid code 
-    duplication, paravirt loop is now in idle_book3e.S
+Your patch is good, but raises the question why we're using L1 events
+for HW_CACHE.
 
- arch/powerpc/kernel/epapr_hcalls.S |    2 ++
- arch/powerpc/kernel/idle_book3e.S  |   30 ++++++++++++++++++++++++++++--
- 2 files changed, 30 insertions(+), 2 deletions(-)
+AFAICS on Intel they use 0x42fe/0x412e, which are last-level-cache (LLC)
+events.
+        
+        PMU name : ix86arch (Intel X86 architectural PMU)
+        Name     : LLC_REFERENCES
+        Desc     : count each request originating from the core to
+        reference a cache line in the last level cache. The count may
+        include speculation, but excludes cache line fills due to
+        hardware prefetch
+        Code     : 0x4f2e
 
-diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
-index 62c0dc2..9f1ebf7 100644
---- a/arch/powerpc/kernel/epapr_hcalls.S
-+++ b/arch/powerpc/kernel/epapr_hcalls.S
-@@ -17,6 +17,7 @@
- #include <asm/asm-compat.h>
- #include <asm/asm-offsets.h>
- 
-+#ifndef CONFIG_PPC64
- /* epapr_ev_idle() was derived from e500_idle() */
- _GLOBAL(epapr_ev_idle)
- 	CURRENT_THREAD_INFO(r3, r1)
-@@ -42,6 +43,7 @@ epapr_ev_idle_start:
- 	 * _TLF_NAPPING.
- 	 */
- 	b	idle_loop
-+#endif
- 
- /* Hypercall entry point. Will be patched with device tree instructions. */
- .global epapr_hypercall_start
-diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
-index 4c7cb400..e1c9acd 100644
---- a/arch/powerpc/kernel/idle_book3e.S
-+++ b/arch/powerpc/kernel/idle_book3e.S
-@@ -16,11 +16,13 @@
- #include <asm/ppc-opcode.h>
- #include <asm/processor.h>
- #include <asm/thread_info.h>
-+#include <asm/epapr_hcalls.h>
- 
- /* 64-bit version only for now */
- #ifdef CONFIG_PPC64
- 
--_GLOBAL(book3e_idle)
-+.macro BOOK3E_IDLE name loop
-+_GLOBAL(\name)
- 	/* Save LR for later */
- 	mflr	r0
- 	std	r0,16(r1)
-@@ -67,7 +69,31 @@ _GLOBAL(book3e_idle)
- 
- 	/* We can now re-enable hard interrupts and go to sleep */
- 	wrteei	1
--1:	PPC_WAIT(0)
-+	\loop
-+
-+.endm
-+
-+.macro BOOK3E_IDLE_LOOP
-+1:
-+	PPC_WAIT(0)
- 	b	1b
-+.endm
-+
-+.macro EPAPR_EV_IDLE_LOOP
-+idle_loop:
-+       LOAD_REG_IMMEDIATE(r11, EV_HCALL_TOKEN(EV_IDLE))
-+
-+.global epapr_ev_idle_start
-+epapr_ev_idle_start:
-+       li      r3, -1
-+       nop
-+       nop
-+       nop
-+       b       idle_loop
-+.endm
-+
-+BOOK3E_IDLE epapr_ev_idle, EPAPR_EV_IDLE_LOOP
-+
-+BOOK3E_IDLE book3e_idle BOOK3E_IDLE_LOOP
- 
- #endif /* CONFIG_PPC64 */
--- 
-1.7.9.7
+        PMU name : ix86arch (Intel X86 architectural PMU)
+        Name     : LLC_MISSES
+        Desc     : count each cache miss condition for references to the
+        last level cache. The event count may include speculation, but
+        excludes cache line fills due to hardware prefetch
+        Code     : 0x412e
+
+
+That would seem to more closely match our PM_L3_LD_HIT/MISS?
+
+cheers
