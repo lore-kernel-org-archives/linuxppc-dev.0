@@ -1,45 +1,29 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0DD4E2C0089
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 06:35:50 +1100 (EST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Thu, 24 Jan 2013 01:04:27 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E841D394004C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 01:05:43 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0NJZf9C42008770
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 01:05:41 +0530
-Received: from d28av04.in.ibm.com (loopback [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0NJZfTe025522
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 06:35:43 +1100
-Message-ID: <51003B20.2060506@linux.vnet.ibm.com>
-Date: Thu, 24 Jan 2013 01:03:52 +0530
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
- <20130123185522.GG2373@mtj.dyndns.org>
-In-Reply-To: <20130123185522.GG2373@mtj.dyndns.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <simon.jeons@gmail.com>
+Received: from mail-ia0-x236.google.com (mail-ia0-x236.google.com
+ [IPv6:2607:f8b0:4001:c02::236])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 8B4CB2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 23:29:46 +1100 (EST)
+Received: by mail-ia0-f182.google.com with SMTP id w33so3983794iag.27
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 04:29:42 -0800 (PST)
+Message-ID: <1358944171.3351.1.camel@kernel>
+Subject: Re: [PATCH Bug fix 0/5] Bug fix for physical memory hot-remove.
+From: Simon Jeons <simon.jeons@gmail.com>
+To: Tang Chen <tangchen@cn.fujitsu.com>
+Date: Wed, 23 Jan 2013 06:29:31 -0600
+In-Reply-To: <1358854984-6073-1-git-send-email-tangchen@cn.fujitsu.com>
+References: <1358854984-6073-1-git-send-email-tangchen@cn.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-mm@kvack.org, paulus@samba.org, hpa@zytor.com, cl@linux.com,
+ sfr@canb.auug.org.au, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
+ jiang.liu@huawei.com, wency@cn.fujitsu.com, julian.calaby@gmail.com,
+ glommer@parallels.com, wujianguo@huawei.com, yinghai@kernel.org,
+ laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,147 +33,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/24/2013 12:25 AM, Tejun Heo wrote:
-> Hello, Srivatsa.
+On Tue, 2013-01-22 at 19:42 +0800, Tang Chen wrote:
+> Here are some bug fix patches for physical memory hot-remove. All these
+> patches are based on the latest -mm tree.
+> git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git akpm
 > 
-> First of all, I'm not sure whether we need to be this step-by-step
-> when introducing something new.  It's not like we're transforming an
-> existing implementation and it doesn't seem to help understanding the
-> series that much either.
+> And patch1 and patch3 are very important.
+> patch1: free compound pages when freeing memmap, otherwise the kernel
+>         will panic the next time memory is hot-added.
+> patch3: the old way of freeing pagetable pages was wrong. We should never
+>         split larger pages into small ones.
 > 
-
-Hmm.. I split it up into steps to help explain the reasoning behind
-the code sufficiently, rather than spring all of the intricacies at
-one go (which would make it very hard to write the changelog/comments
-also). The split made it easier for me to document it well in the
-changelog, because I could deal with reasonable chunks of code/complexity
-at a time. IMHO that helps people reading it for the first time to
-understand the logic easily.
-
-> On Tue, Jan 22, 2013 at 01:03:53PM +0530, Srivatsa S. Bhat wrote:
->> Using global rwlocks as the backend for per-CPU rwlocks helps us avoid many
->> lock-ordering related problems (unlike per-cpu locks). However, global
-> 
-> So, unfortunately, this already seems broken, right?  The problem here
-> seems to be that previously, say, read_lock() implied
-> preempt_disable() but as this series aims to move away from it, it
-> introduces the problem of locking order between such locks and the new
-> contruct.
->
-
-Not sure I got your point correctly. Are you referring to Steve's comment
-that rwlocks are probably fair now (and hence not really safe when used
-like this)? If yes, I haven't actually verified that yet, but yes, that
-will make this hard to use, since we need to take care of locking rules.
-
-But suppose rwlocks are unfair (as I had assumed them to be), then we
-have absolutely no problems and no lock-ordering to worry about.
- 
-> The only two options are either punishing writers or identifying and
-> updating all such possible deadlocks.  percpu_rwsem does the former,
-> right?  I don't know how feasible the latter would be.
-
-I don't think we can avoid looking into all the possible deadlocks,
-as long as we use rwlocks inside get/put_online_cpus_atomic() (assuming
-rwlocks are fair). Even with Oleg's idea of using synchronize_sched()
-at the writer, we still need to take care of locking rules, because the
-synchronize_sched() only helps avoid the memory barriers at the reader,
-and doesn't help get rid of the rwlocks themselves.
-So in short, I don't see how we can punish the writers and thereby somehow
-avoid looking into possible deadlocks (if rwlocks are fair).
-
->  Srivatsa,
-> you've been looking at all the places which would require conversion,
-> how difficult would doing the latter be?
 > 
 
-The problem is that some APIs like smp_call_function() will need to use
-get/put_online_cpus_atomic(). That is when the locking becomes tricky
-in the subsystem which invokes these APIs with other (subsystem-specific,
-internal) locks held. So we could potentially use a convention such as
-"Make get/put_online_cpus_atomic() your outer-most calls, within which
-you nest the other locks" to rule out all ABBA deadlock possibilities...
-But we might still hit some hard-to-convert places.. 
+Hi Tang,
 
-BTW, Steve, fair rwlocks doesn't mean the following scenario will result
-in a deadlock right?
+I remember your big physical memory hot-remove patchset has already
+merged by Andrew, but where I can find it? Could you give me git tree 
+address?
 
-CPU 0                          CPU 1
-
-read_lock(&rwlock)
-
-                              write_lock(&rwlock) //spins, because CPU 0
-                              //has acquired the lock for read
-
-read_lock(&rwlock)
-   ^^^^^
-What happens here? Does CPU 0 start spinning (and hence deadlock) or will
-it continue realizing that it already holds the rwlock for read?
-
-If the above ends in a deadlock, then its next to impossible to convert
-all the places safely (because the above mentioned convention will simply
-fall apart).
-
->> +#define reader_uses_percpu_refcnt(pcpu_rwlock, cpu)			\
->> +		(ACCESS_ONCE(per_cpu(*((pcpu_rwlock)->reader_refcnt), cpu)))
->> +
->> +#define reader_nested_percpu(pcpu_rwlock)				\
->> +			(__this_cpu_read(*((pcpu_rwlock)->reader_refcnt)) > 1)
->> +
->> +#define writer_active(pcpu_rwlock)					\
->> +			(__this_cpu_read(*((pcpu_rwlock)->writer_signal)))
+> Lai Jiangshan (1):
+>   Bug-fix: mempolicy: fix is_valid_nodemask()
 > 
-> Why are these in the public header file?  Are they gonna be used to
-> inline something?
->
-
-No, I can put it in the .c file itself. Will do.
- 
->> +static inline void raise_writer_signal(struct percpu_rwlock *pcpu_rwlock,
->> +				       unsigned int cpu)
->> +{
->> +	per_cpu(*pcpu_rwlock->writer_signal, cpu) = true;
->> +}
->> +
->> +static inline void drop_writer_signal(struct percpu_rwlock *pcpu_rwlock,
->> +				      unsigned int cpu)
->> +{
->> +	per_cpu(*pcpu_rwlock->writer_signal, cpu) = false;
->> +}
->> +
->> +static void announce_writer_active(struct percpu_rwlock *pcpu_rwlock)
->> +{
->> +	unsigned int cpu;
->> +
->> +	for_each_online_cpu(cpu)
->> +		raise_writer_signal(pcpu_rwlock, cpu);
->> +
->> +	smp_mb(); /* Paired with smp_rmb() in percpu_read_[un]lock() */
->> +}
->> +
->> +static void announce_writer_inactive(struct percpu_rwlock *pcpu_rwlock)
->> +{
->> +	unsigned int cpu;
->> +
->> +	drop_writer_signal(pcpu_rwlock, smp_processor_id());
->> +
->> +	for_each_online_cpu(cpu)
->> +		drop_writer_signal(pcpu_rwlock, cpu);
->> +
->> +	smp_mb(); /* Paired with smp_rmb() in percpu_read_[un]lock() */
->> +}
+> Tang Chen (3):
+>   Bug fix: Do not split pages when freeing pagetable pages.
+>   Bug fix: Fix section mismatch problem of
+>     release_firmware_map_entry().
+>   Bug fix: Fix the doc format in drivers/firmware/memmap.c
 > 
-> It could be just personal preference but I find the above one line
-> wrappers more obfuscating than anything else.  What's the point of
-> wrapping writer_signal = true/false into a separate function?  These
-> simple wrappers just add layers that people have to dig through to
-> figure out what's going on without adding anything of value.  I'd much
-> prefer collapsing these into the percpu_write_[un]lock().
->
-
-Sure, I see your point. I'll change that.
-
-Thanks a lot for your feedback Tejun!
-
-Regards,
-Srivatsa S. Bhat
+> Wen Congyang (1):
+>   Bug fix: consider compound pages when free memmap
+> 
+>  arch/x86/mm/init_64.c     |  148 ++++++++++++++-------------------------------
+>  drivers/firmware/memmap.c |   16 +++---
+>  mm/mempolicy.c            |   36 +++++++----
+>  mm/sparse.c               |    2 +-
+>  4 files changed, 77 insertions(+), 125 deletions(-)
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
