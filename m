@@ -1,16 +1,16 @@
 Return-Path: <balbi@ti.com>
-Received: from devils.ext.ti.com (devils.ext.ti.com [198.47.26.153])
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 32A252C0164
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:19 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id DC52F2C0118
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:20 +1100 (EST)
 From: Felipe Balbi <balbi@ti.com>
 To: Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: [RFC/PATCH 10/32] usb: gadget: fsl_qe_udc: let udc-core manage
+Subject: [RFC/PATCH 12/32] usb: gadget: fusb300_udc: let udc-core manage
  gadget->dev
-Date: Thu, 24 Jan 2013 17:45:48 +0200
-Message-ID: <1359042370-4358-11-git-send-email-balbi@ti.com>
+Date: Thu, 24 Jan 2013 17:45:50 +0200
+Message-ID: <1359042370-4358-13-git-send-email-balbi@ti.com>
 In-Reply-To: <1359042370-4358-1-git-send-email-balbi@ti.com>
 References: <1359042370-4358-1-git-send-email-balbi@ti.com>
 MIME-Version: 1.0
@@ -37,59 +37,49 @@ boilerplate code.
 
 Signed-off-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/usb/gadget/fsl_qe_udc.c | 15 ++-------------
- 1 file changed, 2 insertions(+), 13 deletions(-)
+ drivers/usb/gadget/fusb300_udc.c | 14 +-------------
+ 1 file changed, 1 insertion(+), 13 deletions(-)
 
-diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-index ec50f18..08c8432 100644
---- a/drivers/usb/gadget/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/fsl_qe_udc.c
-@@ -2523,13 +2523,9 @@ static int qe_udc_probe(struct platform_device *ofdev)
+diff --git a/drivers/usb/gadget/fusb300_udc.c b/drivers/usb/gadget/fusb300_udc.c
+index 8c2372f..798a25b 100644
+--- a/drivers/usb/gadget/fusb300_udc.c
++++ b/drivers/usb/gadget/fusb300_udc.c
+@@ -1422,15 +1422,12 @@ static int __init fusb300_probe(struct platform_device *pdev)
  
- 	/* name: Identifies the controller hardware type. */
- 	udc->gadget.name = driver_name;
--
--	device_initialize(&udc->gadget.dev);
--
--	dev_set_name(&udc->gadget.dev, "gadget");
--
- 	udc->gadget.dev.release = qe_udc_release;
- 	udc->gadget.dev.parent = &ofdev->dev;
-+	udc->gadget.register_my_device = true;
+ 	fusb300->gadget.ops = &fusb300_gadget_ops;
  
- 	/* initialize qe_ep struct */
- 	for (i = 0; i < USB_MAX_ENDPOINTS ; i++) {
-@@ -2592,13 +2588,9 @@ static int qe_udc_probe(struct platform_device *ofdev)
- 		goto err5;
- 	}
- 
--	ret = device_add(&udc->gadget.dev);
--	if (ret)
--		goto err6;
+-	device_initialize(&fusb300->gadget.dev);
 -
- 	ret = usb_add_gadget_udc(&ofdev->dev, &udc->gadget);
+-	dev_set_name(&fusb300->gadget.dev, "gadget");
+-
+ 	fusb300->gadget.max_speed = USB_SPEED_HIGH;
+ 	fusb300->gadget.dev.parent = &pdev->dev;
+ 	fusb300->gadget.dev.dma_mask = pdev->dev.dma_mask;
+ 	fusb300->gadget.dev.release = pdev->dev.release;
+ 	fusb300->gadget.name = udc_name;
++	fusb300->gadget.register_my_device = true;
+ 	fusb300->reg = reg;
+ 
+ 	ret = request_irq(ires->start, fusb300_irq, IRQF_SHARED,
+@@ -1478,19 +1475,10 @@ static int __init fusb300_probe(struct platform_device *pdev)
  	if (ret)
--		goto err7;
-+		goto err6;
+ 		goto err_add_udc;
  
- 	dev_set_drvdata(&ofdev->dev, udc);
- 	dev_info(udc->dev,
-@@ -2606,8 +2598,6 @@ static int qe_udc_probe(struct platform_device *ofdev)
- 			(udc->soc_type == PORT_QE) ? "QE" : "CPM");
+-	ret = device_add(&fusb300->gadget.dev);
+-	if (ret) {
+-		pr_err("device_add error (%d)\n", ret);
+-		goto err_add_device;
+-	}
+-
+ 	dev_info(&pdev->dev, "version %s\n", DRIVER_VERSION);
+ 
  	return 0;
  
--err7:
--	device_unregister(&udc->gadget.dev);
- err6:
- 	free_irq(udc->usb_irq, udc);
- err5:
-@@ -2702,7 +2692,6 @@ static int qe_udc_remove(struct platform_device *ofdev)
- 
- 	iounmap(udc->usb_regs);
- 
--	device_unregister(&udc->gadget.dev);
- 	/* wait for release() of gadget.dev to free udc */
- 	wait_for_completion(&done);
+-err_add_device:
+-	usb_del_gadget_udc(&fusb300->gadget);
+-
+ err_add_udc:
+ 	fusb300_free_request(&fusb300->ep[0]->ep, fusb300->ep0_req);
  
 -- 
 1.8.1.rc1.5.g7e0651a
