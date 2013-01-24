@@ -3,14 +3,14 @@ Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 28F412C01E0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:37 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 77E032C0113
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:39 +1100 (EST)
 From: Felipe Balbi <balbi@ti.com>
 To: Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: [RFC/PATCH 26/32] usb: gadget: s3c2410_udc: let udc-core manage
+Subject: [RFC/PATCH 25/32] usb: gadget: s3c-hsudc: let udc-core manage
  gadget->dev
-Date: Thu, 24 Jan 2013 17:46:04 +0200
-Message-ID: <1359042370-4358-27-git-send-email-balbi@ti.com>
+Date: Thu, 24 Jan 2013 17:46:03 +0200
+Message-ID: <1359042370-4358-26-git-send-email-balbi@ti.com>
 In-Reply-To: <1359042370-4358-1-git-send-email-balbi@ti.com>
 References: <1359042370-4358-1-git-send-email-balbi@ti.com>
 MIME-Version: 1.0
@@ -37,45 +37,53 @@ boilerplate code.
 
 Signed-off-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/usb/gadget/s3c2410_udc.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+ drivers/usb/gadget/s3c-hsudc.c | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
 
-diff --git a/drivers/usb/gadget/s3c2410_udc.c b/drivers/usb/gadget/s3c2410_udc.c
-index fc07b43..302e137 100644
---- a/drivers/usb/gadget/s3c2410_udc.c
-+++ b/drivers/usb/gadget/s3c2410_udc.c
-@@ -1677,13 +1677,6 @@ static int s3c2410_udc_start(struct usb_gadget *g,
- 	udc->driver = driver;
- 	udc->gadget.dev.driver = &driver->driver;
+diff --git a/drivers/usb/gadget/s3c-hsudc.c b/drivers/usb/gadget/s3c-hsudc.c
+index 4a3d620..dee6810 100644
+--- a/drivers/usb/gadget/s3c-hsudc.c
++++ b/drivers/usb/gadget/s3c-hsudc.c
+@@ -1304,18 +1304,16 @@ static int s3c_hsudc_probe(struct platform_device *pdev)
  
--	/* Bind the driver */
--	retval = device_add(&udc->gadget.dev);
--	if (retval) {
--		dev_err(&udc->gadget.dev, "Error in device_add() : %d\n", retval);
--		goto register_error;
+ 	spin_lock_init(&hsudc->lock);
+ 
+-	dev_set_name(&hsudc->gadget.dev, "gadget");
+-
+ 	hsudc->gadget.max_speed = USB_SPEED_HIGH;
+ 	hsudc->gadget.ops = &s3c_hsudc_gadget_ops;
+ 	hsudc->gadget.name = dev_name(dev);
+ 	hsudc->gadget.dev.parent = dev;
+ 	hsudc->gadget.dev.dma_mask = dev->dma_mask;
+ 	hsudc->gadget.ep0 = &hsudc->ep[0].ep;
+-
+ 	hsudc->gadget.is_otg = 0;
+ 	hsudc->gadget.is_a_peripheral = 0;
+ 	hsudc->gadget.speed = USB_SPEED_UNKNOWN;
++	hsudc->gadget.register_my_device = true;
+ 
+ 	s3c_hsudc_setup_ep(hsudc);
+ 
+@@ -1346,12 +1344,6 @@ static int s3c_hsudc_probe(struct platform_device *pdev)
+ 	disable_irq(hsudc->irq);
+ 	local_irq_enable();
+ 
+-	ret = device_register(&hsudc->gadget.dev);
+-	if (ret) {
+-		put_device(&hsudc->gadget.dev);
+-		goto err_add_device;
 -	}
 -
- 	/* Enable udc */
- 	s3c2410_udc_enable(udc);
+ 	ret = usb_add_gadget_udc(&pdev->dev, &hsudc->gadget);
+ 	if (ret)
+ 		goto err_add_udc;
+@@ -1360,7 +1352,6 @@ static int s3c_hsudc_probe(struct platform_device *pdev)
  
-@@ -1700,7 +1693,6 @@ static int s3c2410_udc_stop(struct usb_gadget *g,
- {
- 	struct s3c2410_udc *udc = to_s3c2410(g);
- 
--	device_del(&udc->gadget.dev);
- 	udc->driver = NULL;
- 
- 	/* Disable udc */
-@@ -1838,9 +1830,9 @@ static int s3c2410_udc_probe(struct platform_device *pdev)
- 		goto err_mem;
- 	}
- 
--	device_initialize(&udc->gadget.dev);
- 	udc->gadget.dev.parent = &pdev->dev;
- 	udc->gadget.dev.dma_mask = pdev->dev.dma_mask;
-+	udc->gadget.register_my_device = true;
- 
- 	the_controller = udc;
- 	platform_set_drvdata(pdev, udc);
+ 	return 0;
+ err_add_udc:
+-	device_unregister(&hsudc->gadget.dev);
+ err_add_device:
+ 	clk_disable(hsudc->uclk);
+ err_res:
 -- 
 1.8.1.rc1.5.g7e0651a
