@@ -1,41 +1,25 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp01.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1F8272C00DE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 21:13:26 +1100 (EST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Thu, 24 Jan 2013 20:08:26 +1000
-Received: from d23relay04.au.ibm.com (d23relay04.au.ibm.com [9.190.234.120])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 65FB12BB004A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 21:13:19 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay04.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0OA1Ulb11534612
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 21:01:31 +1100
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0OADHLv002565
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 21:13:18 +1100
-Message-ID: <1359022384.2666.46.camel@ThinkPad-T5421.cn.ibm.com>
-Subject: Re: [PATCH powerpc ] Avoid debug_smp_processor_id() check in
- arch_spin_unlock_wait()
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 24 Jan 2013 18:13:04 +0800
-In-Reply-To: <1358999231.29726.9.camel@pasglop>
-References: <1353305799.3694.9.camel@ThinkPad-T5421.cn.ibm.com>
- <1357797726.4838.89.camel@pasglop>
- <1357808418.10378.16.camel@ThinkPad-T5421.cn.ibm.com>
- <1358999231.29726.9.camel@pasglop>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <James.Bottomley@HansenPartnership.com>
+Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
+ [66.63.167.143]) by ozlabs.org (Postfix) with ESMTP id 864472C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 21:40:02 +1100 (EST)
+Message-ID: <1359023612.2394.17.camel@dabdike.int.hansenpartnership.com>
+Subject: Re: [PATCH 1/8] mm: use vm_unmapped_area() on parisc architecture
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Michel Lespinasse <walken@google.com>
+Date: Thu, 24 Jan 2013 10:33:32 +0000
+In-Reply-To: <1358990991-21316-2-git-send-email-walken@google.com>
+References: <1358990991-21316-1-git-send-email-walken@google.com>
+ <1358990991-21316-2-git-send-email-walken@google.com>
+Content-Type: text/plain; charset="ISO-8859-15"
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
+ linux-mm@kvack.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+ linux-alpha@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Matt Turner <mattst88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>, Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,57 +29,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-01-24 at 14:47 +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2013-01-10 at 17:00 +0800, Li Zhong wrote:
-> > Use local_paca directly in arch_spin_unlock_wait(), as all processors have the
-> > same value for the field shared_proc, so we don't need care racy here.
+On Wed, 2013-01-23 at 17:29 -0800, Michel Lespinasse wrote:
+> Update the parisc arch_get_unmapped_area function to make use of
+> vm_unmapped_area() instead of implementing a brute force search.
 > 
-> Of course that won't build if CONFIG_PPC_SPLPAR isn't defined...
-
-...ah, I didn't notice that lppaca_ptr is only defined under
-CONFIG_PPC_BOOK3S, and the whole paca is only defined under
-CONFIG_PPC64; while the function changed seems could be used by any
-configuration. Sorry about the carelessness. 
-
+> Signed-off-by: Michel Lespinasse <walken@google.com>
+> Acked-by: Rik van Riel <riel@redhat.com>
 > 
-> Maybe you could change the definition of the SHARED_PROCESSOR
-> macro itself. The only possible "risk" would be a stale lppaca
-> if we preempt & hot unplug the CPU at the wrong time (provided
-> we no longer stop_machine either), I suppose if that's a real
-> concern we could delay freeing of lppaca's via RCU or such.
-
-I'm not very clear about the "risk" you mentioned above. It seems to me
-that the freeing of lppaca only appeared in free_unused_pacas(), called
-by early setup code, at which time hotplug seems impossible. 
-
-I must missed something ...
-
-I'll update the SHARED_PROCESSOR directly, it seems better to me now.
-(wonder why I gave it up immediately when it first came into my mind
-while I was doing the last update...)
-
-Thanks, Zhong
-
-> Ben.
+> ---
+>  arch/parisc/kernel/sys_parisc.c |   46 ++++++++++++++------------------------
+>  1 files changed, 17 insertions(+), 29 deletions(-)
 > 
-> > Reported-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
-> > ---
-> >  arch/powerpc/lib/locks.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-> > index bb7cfec..850bea6 100644
-> > --- a/arch/powerpc/lib/locks.c
-> > +++ b/arch/powerpc/lib/locks.c
-> > @@ -72,7 +72,7 @@ void arch_spin_unlock_wait(arch_spinlock_t *lock)
-> >  {
-> >  	while (lock->slock) {
-> >  		HMT_low();
-> > -		if (SHARED_PROCESSOR)
-> > +		if (local_paca->lppaca_ptr->shared_proc)
-> >  			__spin_yield(lock);
-> >  	}
-> >  	HMT_medium();
-> 
-> 
+> diff --git a/arch/parisc/kernel/sys_parisc.c b/arch/parisc/kernel/sys_parisc.c
+> index f76c10863c62..6ab138088076 100644
+> --- a/arch/parisc/kernel/sys_parisc.c
+> +++ b/arch/parisc/kernel/sys_parisc.c
+> @@ -35,18 +35,15 @@
+>  
+>  static unsigned long get_unshared_area(unsigned long addr, unsigned long len)
+>  {
+> -	struct vm_area_struct *vma;
+> +	struct vm_unmapped_area_info info;
+>  
+> -	addr = PAGE_ALIGN(addr);
+> -
+> -	for (vma = find_vma(current->mm, addr); ; vma = vma->vm_next) {
+> -		/* At this point:  (!vma || addr < vma->vm_end). */
+> -		if (TASK_SIZE - len < addr)
+> -			return -ENOMEM;
+> -		if (!vma || addr + len <= vma->vm_start)
+> -			return addr;
+> -		addr = vma->vm_end;
+> -	}
+> +	info.flags = 0;
+> +	info.length = len;
+> +	info.low_limit = PAGE_ALIGN(addr);
+> +	info.high_limit = TASK_SIZE;
+> +	info.align_mask = 0;
+> +	info.align_offset = 0;
+> +	return vm_unmapped_area(&info);
+>  }
+>  
+>  #define DCACHE_ALIGN(addr) (((addr) + (SHMLBA - 1)) &~ (SHMLBA - 1))
+
+This macro is now redundant and can be removed.
+
+> @@ -63,30 +60,21 @@ static unsigned long get_unshared_area(unsigned long addr, unsigned long len)
+>   */
+>  static int get_offset(struct address_space *mapping)
+>  {
+> -	int offset = (unsigned long) mapping << (PAGE_SHIFT - 8);
+> -	return offset & 0x3FF000;
+> +	return (unsigned long) mapping >> 8;
+
+I'm not sure I agree with this shift (but I think the original was wrong
+as well so the comment probably needs updating.)  Trying to derive
+entropy from the mapping address is always nasty.  Mostly they're
+embedded in the inode, so the right shift should be something like
+log2(sizeof(inode)) + 1 and since the inode size is usually somewhere
+between 512 and 1024 bytes, that comes out to 10 I think.
+
+>  }
+>  
+>  static unsigned long get_shared_area(struct address_space *mapping,
+>  		unsigned long addr, unsigned long len, unsigned long pgoff)
+>  {
+> -	struct vm_area_struct *vma;
+> -	int offset = mapping ? get_offset(mapping) : 0;
+> -
+> -	offset = (offset + (pgoff << PAGE_SHIFT)) & 0x3FF000;
+> +	struct vm_unmapped_area_info info;
+>  
+> -	addr = DCACHE_ALIGN(addr - offset) + offset;
+> -
+> -	for (vma = find_vma(current->mm, addr); ; vma = vma->vm_next) {
+> -		/* At this point:  (!vma || addr < vma->vm_end). */
+> -		if (TASK_SIZE - len < addr)
+> -			return -ENOMEM;
+> -		if (!vma || addr + len <= vma->vm_start)
+> -			return addr;
+> -		addr = DCACHE_ALIGN(vma->vm_end - offset) + offset;
+> -		if (addr < vma->vm_end) /* handle wraparound */
+> -			return -ENOMEM;
+> -	}
+> +	info.flags = 0;
+> +	info.length = len;
+> +	info.low_limit = PAGE_ALIGN(addr);
+> +	info.high_limit = TASK_SIZE;
+> +	info.align_mask = PAGE_MASK & (SHMLBA - 1);
+> +	info.align_offset = (get_offset(mapping) + pgoff) << PAGE_SHIFT;
+> +	return vm_unmapped_area(&info);
+>  }
+>  
+>  unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
+
+Other than that, I think this will work, but I'd like to test it.
+
+James
