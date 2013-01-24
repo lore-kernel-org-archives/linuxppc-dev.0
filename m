@@ -1,36 +1,25 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A666D2C0080
- for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2013 16:44:44 +1100 (EST)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 23 Jan 2013 22:44:42 -0700
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
- [9.17.195.227])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CCA633E40039
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 22:44:32 -0700 (MST)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0O5id72284612
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 22:44:39 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0O5icr6015192
- for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 22:44:38 -0700
-Date: Wed, 23 Jan 2013 21:44:39 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Subject: [PATCH][v2] perf tools, powerpc: Fix compile warnings in tests/attr.c
-Message-ID: <20130124054439.GA31588@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, ellerman@au1.ibm.com,
- Anton Blanchard <anton@au1.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
- linux-kernel@vger.kernel.org
+Return-Path: <tangchen@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id B04882C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 20:39:02 +1100 (EST)
+From: Tang Chen <tangchen@cn.fujitsu.com>
+To: akpm@linux-foundation.org, rjw@sisk.pl, len.brown@intel.com,
+ mingo@redhat.com, tglx@linutronix.de, minchan.kim@gmail.com,
+ rientjes@google.com, benh@kernel.crashing.org, paulus@samba.org,
+ cl@linux.com, kosaki.motohiro@jp.fujitsu.com,
+ isimatu.yasuaki@jp.fujitsu.com, wujianguo@huawei.com,
+ wency@cn.fujitsu.com, hpa@zytor.com, linfeng@cn.fujitsu.com,
+ laijs@cn.fujitsu.com, mgorman@suse.de, yinghai@kernel.org,
+ glommer@parallels.com, jiang.liu@huawei.com, julian.calaby@gmail.com,
+ sfr@canb.auug.org.au, guz.fnst@cn.fujitsu.com
+Subject: [PATCH 1/2] cpu_hotplug: Remove __cpuinitdata declaration of
+ __apicid_to_node[].
+Date: Thu, 24 Jan 2013 17:38:06 +0800
+Message-Id: <1359020287-11661-2-git-send-email-tangchen@cn.fujitsu.com>
+In-Reply-To: <1359020287-11661-1-git-send-email-tangchen@cn.fujitsu.com>
+References: <1359020287-11661-1-git-send-email-tangchen@cn.fujitsu.com>
+Cc: linux-mm@kvack.org, x86@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,41 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+__apicid_to_node[] will be used by acpi_unmap_lsapic() when we do
+node hotplug. So it is no longer an init data. Do not declare
+__apicid_to_node[] as a __cpuinitdata, otherwise it will cause
+section mismatch warning when compiling.
 
-[PATCH][v2] perf tools, powerpc: Fix compile warnings in tests/attr.c
-
-We print several '__u64' quantities using '%llu'. On powerpc, we by
-default include '<asm-generic/int-l64.h> which results in __u64 being
-an unsigned long. This causes compile warnings which are treated as
-errors due to '-Werror'.
-
-By defining __SANE_USERSPACE_TYPES__ we include <asm-generic/int-ll64.h>
-and define __u64 as unsigned long long.
-
-Changelog[v2]:
-	[Michael Ellerman] Use __SANE_USERSPACE_TYPES__ and avoid PRIu64
-	format specifier - which as Jiri Olsa pointed out, breaks on x86-64.
-
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Signed-off-by: Tang Chen <tangchen@cn.fujitsu.com>
 ---
- tools/perf/tests/attr.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ arch/x86/mm/numa.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/tests/attr.c b/tools/perf/tests/attr.c
-index f61dd3f..bdcceb8 100644
---- a/tools/perf/tests/attr.c
-+++ b/tools/perf/tests/attr.c
-@@ -19,6 +19,11 @@
-  * permissions. All the event text files are stored there.
+diff --git a/arch/x86/mm/numa.c b/arch/x86/mm/numa.c
+index 9b31ed5..0624c85 100644
+--- a/arch/x86/mm/numa.c
++++ b/arch/x86/mm/numa.c
+@@ -56,7 +56,7 @@ early_param("numa", numa_setup);
+ /*
+  * apicid, cpu, node mappings
   */
+-s16 __apicid_to_node[MAX_LOCAL_APIC] __cpuinitdata = {
++s16 __apicid_to_node[MAX_LOCAL_APIC] = {
+ 	[0 ... MAX_LOCAL_APIC-1] = NUMA_NO_NODE
+ };
  
-+/*
-+ * Powerpc needs __SANE_USERSPACE_TYPES__ before <linux/types.h> to select
-+ * 'int-ll64.h' and avoid compile warnings when printing __u64 with %llu.
-+ */
-+#define __SANE_USERSPACE_TYPES__
- #include <stdlib.h>
- #include <stdio.h>
- #include <inttypes.h>
 -- 
 1.7.1
