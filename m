@@ -1,18 +1,36 @@
-Return-Path: <gang.chen@asianux.com>
-Received: from intranet.asianux.com (intranet.asianux.com [58.214.24.6])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 8ADFF2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 15:43:41 +1100 (EST)
-Message-ID: <5100B53C.3030109@asianux.com>
-Date: Thu, 24 Jan 2013 12:14:52 +0800
-From: Chen Gang <gang.chen@asianux.com>
+ (Client CN "e35.co.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id A666D2C0080
+ for <linuxppc-dev@ozlabs.org>; Thu, 24 Jan 2013 16:44:44 +1100 (EST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 23 Jan 2013 22:44:42 -0700
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+ [9.17.195.227])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id CCA633E40039
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 22:44:32 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0O5id72284612
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 22:44:39 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0O5icr6015192
+ for <linuxppc-dev@ozlabs.org>; Wed, 23 Jan 2013 22:44:38 -0700
+Date: Wed, 23 Jan 2013 21:44:39 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: [PATCH][v2] perf tools, powerpc: Fix compile warnings in tests/attr.c
+Message-ID: <20130124054439.GA31588@us.ibm.com>
 MIME-Version: 1.0
-To: benh@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] arch/powerpc/kernel: using %12.12s instead of %12s for
- avoiding memory overflow.
-Content-Type: text/plain; charset=GB2312
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, ellerman@au1.ibm.com,
+ Anton Blanchard <anton@au1.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +41,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-  for tmp_part->header.name:
-    it is "Terminating null required only for names < 12 chars".
-    so need to limit the %.12s for it in printk
+[PATCH][v2] perf tools, powerpc: Fix compile warnings in tests/attr.c
 
-  additional info:
+We print several '__u64' quantities using '%llu'. On powerpc, we by
+default include '<asm-generic/int-l64.h> which results in __u64 being
+an unsigned long. This causes compile warnings which are treated as
+errors due to '-Werror'.
 
-    %12s  limit the width, not for the original string output length
-          if name length is more than 12, it still can be fully displayed.
-          if name length is less than 12, the ' ' will be filled before name.
+By defining __SANE_USERSPACE_TYPES__ we include <asm-generic/int-ll64.h>
+and define __u64 as unsigned long long.
 
-    %.12s truly limit the original string output length (precision)
+Changelog[v2]:
+	[Michael Ellerman] Use __SANE_USERSPACE_TYPES__ and avoid PRIu64
+	format specifier - which as Jiri Olsa pointed out, breaks on x86-64.
 
-
-Signed-off-by: Chen Gang <gang.chen@asianux.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/nvram_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ tools/perf/tests/attr.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index bec1e93..57bf6d2 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -202,7 +202,7 @@ static void __init nvram_print_partitions(char * label)
- 	printk(KERN_WARNING "--------%s---------\n", label);
- 	printk(KERN_WARNING "indx\t\tsig\tchks\tlen\tname\n");
- 	list_for_each_entry(tmp_part, &nvram_partitions, partition) {
--		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12s\n",
-+		printk(KERN_WARNING "%4d    \t%02x\t%02x\t%d\t%12.12s\n",
- 		       tmp_part->index, tmp_part->header.signature,
- 		       tmp_part->header.checksum, tmp_part->header.length,
- 		       tmp_part->header.name);
+diff --git a/tools/perf/tests/attr.c b/tools/perf/tests/attr.c
+index f61dd3f..bdcceb8 100644
+--- a/tools/perf/tests/attr.c
++++ b/tools/perf/tests/attr.c
+@@ -19,6 +19,11 @@
+  * permissions. All the event text files are stored there.
+  */
+ 
++/*
++ * Powerpc needs __SANE_USERSPACE_TYPES__ before <linux/types.h> to select
++ * 'int-ll64.h' and avoid compile warnings when printing __u64 with %llu.
++ */
++#define __SANE_USERSPACE_TYPES__
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <inttypes.h>
 -- 
-1.7.10.4
+1.7.1
