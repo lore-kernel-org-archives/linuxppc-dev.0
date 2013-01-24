@@ -1,15 +1,16 @@
 Return-Path: <balbi@ti.com>
-Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6E9B92C014C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:46 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 334522C00D7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:49 +1100 (EST)
 From: Felipe Balbi <balbi@ti.com>
 To: Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: [RFC/PATCH 31/32] usb: chipidea: let udc-core manage gadget->dev
-Date: Thu, 24 Jan 2013 17:46:09 +0200
-Message-ID: <1359042370-4358-32-git-send-email-balbi@ti.com>
+Subject: [RFC/PATCH 28/32] usb: gadget: pxa25x_udc: let udc-core manage
+ gadget->dev
+Date: Thu, 24 Jan 2013 17:46:06 +0200
+Message-ID: <1359042370-4358-29-git-send-email-balbi@ti.com>
 In-Reply-To: <1359042370-4358-1-git-send-email-balbi@ti.com>
 References: <1359042370-4358-1-git-send-email-balbi@ti.com>
 MIME-Version: 1.0
@@ -36,59 +37,45 @@ boilerplate code.
 
 Signed-off-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/usb/chipidea/udc.c | 13 ++-----------
- 1 file changed, 2 insertions(+), 11 deletions(-)
+ drivers/usb/gadget/pxa25x_udc.c | 10 +---------
+ 1 file changed, 1 insertion(+), 9 deletions(-)
 
-diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
-index f64fbea..e95e8bb 100644
---- a/drivers/usb/chipidea/udc.c
-+++ b/drivers/usb/chipidea/udc.c
-@@ -1717,11 +1717,11 @@ static int udc_start(struct ci13xxx *ci)
+diff --git a/drivers/usb/gadget/pxa25x_udc.c b/drivers/usb/gadget/pxa25x_udc.c
+index fa9c344..9deffd3 100644
+--- a/drivers/usb/gadget/pxa25x_udc.c
++++ b/drivers/usb/gadget/pxa25x_udc.c
+@@ -1266,13 +1266,6 @@ static int pxa25x_udc_start(struct usb_gadget *g,
+ 	dev->gadget.dev.driver = &driver->driver;
+ 	dev->pullup = 1;
  
- 	INIT_LIST_HEAD(&ci->gadget.ep_list);
- 
--	dev_set_name(&ci->gadget.dev, "gadget");
- 	ci->gadget.dev.dma_mask = dev->dma_mask;
- 	ci->gadget.dev.coherent_dma_mask = dev->coherent_dma_mask;
- 	ci->gadget.dev.parent   = dev;
- 	ci->gadget.dev.release  = udc_release;
-+	ci->gadget.register_my_device = true;
- 
- 	/* alloc resources */
- 	ci->qh_pool = dma_pool_create("ci13xxx_qh", dev,
-@@ -1761,15 +1761,9 @@ static int udc_start(struct ci13xxx *ci)
- 		hw_enable_vbus_intr(ci);
- 	}
- 
--	retval = device_register(&ci->gadget.dev);
+-	retval = device_add (&dev->gadget.dev);
 -	if (retval) {
--		put_device(&ci->gadget.dev);
--		goto put_transceiver;
+-		dev->driver = NULL;
+-		dev->gadget.dev.driver = NULL;
+-		return retval;
 -	}
 -
- 	retval = dbg_create_files(ci->dev);
- 	if (retval)
--		goto unreg_device;
-+		goto put_transceiver;
+ 	/* ... then enable host detection and ep0; and we're ready
+ 	 * for set_configuration as well as eventual disconnect.
+ 	 */
+@@ -1331,7 +1324,6 @@ static int pxa25x_udc_stop(struct usb_gadget*g,
+ 	dev->gadget.dev.driver = NULL;
+ 	dev->driver = NULL;
  
- 	if (!IS_ERR_OR_NULL(ci->transceiver)) {
- 		retval = otg_set_peripheral(ci->transceiver->otg,
-@@ -1797,8 +1791,6 @@ remove_trans:
- 	dev_err(dev, "error = %i\n", retval);
- remove_dbg:
- 	dbg_remove_files(ci->dev);
--unreg_device:
--	device_unregister(&ci->gadget.dev);
- put_transceiver:
- 	if (!IS_ERR_OR_NULL(ci->transceiver) && ci->global_phy)
- 		usb_put_phy(ci->transceiver);
-@@ -1837,7 +1829,6 @@ static void udc_stop(struct ci13xxx *ci)
- 			usb_put_phy(ci->transceiver);
- 	}
- 	dbg_remove_files(ci->dev);
--	device_unregister(&ci->gadget.dev);
- 	/* my kobject is dynamic, I swear! */
- 	memset(&ci->gadget, 0, sizeof(ci->gadget));
- }
+-	device_del (&dev->gadget.dev);
+ 	dump_state(dev);
+ 
+ 	return 0;
+@@ -2140,9 +2132,9 @@ static int __init pxa25x_udc_probe(struct platform_device *pdev)
+ 	dev->timer.function = udc_watchdog;
+ 	dev->timer.data = (unsigned long) dev;
+ 
+-	device_initialize(&dev->gadget.dev);
+ 	dev->gadget.dev.parent = &pdev->dev;
+ 	dev->gadget.dev.dma_mask = pdev->dev.dma_mask;
++	dev->gadget.register_my_device = true;
+ 
+ 	the_controller = dev;
+ 	platform_set_drvdata(pdev, dev);
 -- 
 1.8.1.rc1.5.g7e0651a
