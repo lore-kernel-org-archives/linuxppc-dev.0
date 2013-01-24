@@ -1,16 +1,15 @@
 Return-Path: <balbi@ti.com>
-Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
+Received: from devils.ext.ti.com (devils.ext.ti.com [198.47.26.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1C2652C0239
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id A21302C00C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:45 +1100 (EST)
 From: Felipe Balbi <balbi@ti.com>
 To: Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: [RFC/PATCH 27/32] usb: renesas_usbhs: gadget: let udc-core manage
- gadget->dev
-Date: Thu, 24 Jan 2013 17:46:05 +0200
-Message-ID: <1359042370-4358-28-git-send-email-balbi@ti.com>
+Subject: [RFC/PATCH 30/32] usb: chipidea: register debugging syfs on our device
+Date: Thu, 24 Jan 2013 17:46:08 +0200
+Message-ID: <1359042370-4358-31-git-send-email-balbi@ti.com>
 In-Reply-To: <1359042370-4358-1-git-send-email-balbi@ti.com>
 References: <1359042370-4358-1-git-send-email-balbi@ti.com>
 MIME-Version: 1.0
@@ -32,60 +31,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By simply setting a flag, we can drop some
-boilerplate code.
+Don't register anything non-generic under
+the gadget's device as we don't really *own*
+it.
 
 Signed-off-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/usb/renesas_usbhs/mod_gadget.c | 11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
+ drivers/usb/chipidea/udc.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/usb/renesas_usbhs/mod_gadget.c b/drivers/usb/renesas_usbhs/mod_gadget.c
-index dd41f61..b42d81d 100644
---- a/drivers/usb/renesas_usbhs/mod_gadget.c
-+++ b/drivers/usb/renesas_usbhs/mod_gadget.c
-@@ -981,15 +981,12 @@ int usbhs_mod_gadget_probe(struct usbhs_priv *priv)
- 	/*
- 	 * init gadget
- 	 */
--	dev_set_name(&gpriv->gadget.dev, "gadget");
- 	gpriv->gadget.dev.parent	= dev;
- 	gpriv->gadget.dev.release	= usbhs_mod_gadget_release;
- 	gpriv->gadget.name		= "renesas_usbhs_udc";
- 	gpriv->gadget.ops		= &usbhsg_gadget_ops;
- 	gpriv->gadget.max_speed		= USB_SPEED_HIGH;
--	ret = device_register(&gpriv->gadget.dev);
--	if (ret < 0)
--		goto err_add_udc;
-+	gpriv->gadget.register_my_device = true;
+diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
+index 2f45bba..f64fbea 100644
+--- a/drivers/usb/chipidea/udc.c
++++ b/drivers/usb/chipidea/udc.c
+@@ -1767,7 +1767,7 @@ static int udc_start(struct ci13xxx *ci)
+ 		goto put_transceiver;
+ 	}
  
- 	INIT_LIST_HEAD(&gpriv->gadget.ep_list);
+-	retval = dbg_create_files(&ci->gadget.dev);
++	retval = dbg_create_files(ci->dev);
+ 	if (retval)
+ 		goto unreg_device;
  
-@@ -1018,15 +1015,13 @@ int usbhs_mod_gadget_probe(struct usbhs_priv *priv)
+@@ -1796,7 +1796,7 @@ remove_trans:
  
- 	ret = usb_add_gadget_udc(dev, &gpriv->gadget);
- 	if (ret)
--		goto err_register;
-+		goto err_add_udc;
- 
- 
- 	dev_info(dev, "gadget probed\n");
- 
- 	return 0;
- 
--err_register:
--	device_unregister(&gpriv->gadget.dev);
- err_add_udc:
- 	kfree(gpriv->uep);
- 
-@@ -1042,8 +1037,6 @@ void usbhs_mod_gadget_remove(struct usbhs_priv *priv)
- 
- 	usb_del_gadget_udc(&gpriv->gadget);
- 
--	device_unregister(&gpriv->gadget.dev);
--
- 	kfree(gpriv->uep);
- 	kfree(gpriv);
- }
+ 	dev_err(dev, "error = %i\n", retval);
+ remove_dbg:
+-	dbg_remove_files(&ci->gadget.dev);
++	dbg_remove_files(ci->dev);
+ unreg_device:
+ 	device_unregister(&ci->gadget.dev);
+ put_transceiver:
+@@ -1836,7 +1836,7 @@ static void udc_stop(struct ci13xxx *ci)
+ 		if (ci->global_phy)
+ 			usb_put_phy(ci->transceiver);
+ 	}
+-	dbg_remove_files(&ci->gadget.dev);
++	dbg_remove_files(ci->dev);
+ 	device_unregister(&ci->gadget.dev);
+ 	/* my kobject is dynamic, I swear! */
+ 	memset(&ci->gadget, 0, sizeof(ci->gadget));
 -- 
 1.8.1.rc1.5.g7e0651a
