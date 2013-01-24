@@ -1,26 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 42E802C008C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 08:45:06 +1100 (EST)
-Message-ID: <1359063889.29726.36.camel@pasglop>
-Subject: Re: [PATCH powerpc ] Avoid debug_smp_processor_id() check in
- arch_spin_unlock_wait()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Li Zhong <zhong@linux.vnet.ibm.com>
-Date: Fri, 25 Jan 2013 08:44:49 +1100
-In-Reply-To: <1359022384.2666.46.camel@ThinkPad-T5421.cn.ibm.com>
-References: <1353305799.3694.9.camel@ThinkPad-T5421.cn.ibm.com>
- <1357797726.4838.89.camel@pasglop>
- <1357808418.10378.16.camel@ThinkPad-T5421.cn.ibm.com>
- <1358999231.29726.9.camel@pasglop>
- <1359022384.2666.46.camel@ThinkPad-T5421.cn.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- PowerPC email list <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <B08248@freescale.com>
+Received: from va3outboundpool.messaging.microsoft.com
+ (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7CA1F2C008C
+ for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2013 09:12:24 +1100 (EST)
+From: Stuart Yoder <stuart.yoder@freescale.com>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH][v3] KVM: PPC: add paravirt idle loop for 64-bit book E
+Date: Thu, 24 Jan 2013 16:11:06 -0600
+Message-ID: <1359065466-27355-1-git-send-email-stuart.yoder@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org, agraf@suse.de,
+ kvm@vger.kernel.org, Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,18 +24,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-01-24 at 18:13 +0800, Li Zhong wrote:
-> I'm not very clear about the "risk" you mentioned above. It seems to me
-> that the freeing of lppaca only appeared in free_unused_pacas(), called
-> by early setup code, at which time hotplug seems impossible. 
-> 
-> I must missed something ...
+From: Stuart Yoder <stuart.yoder@freescale.com>
 
-No you are right, we don't free them at the moment.
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
 
-> I'll update the SHARED_PROCESSOR directly, it seems better to me now.
-> (wonder why I gave it up immediately when it first came into my mind
-> while I was doing the last update...)
+-v3
+   -whitespace cleanup, deleted stray comma, added comment
 
-Cheers,
-Ben.
+ arch/powerpc/kernel/epapr_hcalls.S |    2 ++
+ arch/powerpc/kernel/idle_book3e.S  |   32 ++++++++++++++++++++++++++++++--
+ 2 files changed, 32 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
+index 62c0dc2..9f1ebf7 100644
+--- a/arch/powerpc/kernel/epapr_hcalls.S
++++ b/arch/powerpc/kernel/epapr_hcalls.S
+@@ -17,6 +17,7 @@
+ #include <asm/asm-compat.h>
+ #include <asm/asm-offsets.h>
+ 
++#ifndef CONFIG_PPC64
+ /* epapr_ev_idle() was derived from e500_idle() */
+ _GLOBAL(epapr_ev_idle)
+ 	CURRENT_THREAD_INFO(r3, r1)
+@@ -42,6 +43,7 @@ epapr_ev_idle_start:
+ 	 * _TLF_NAPPING.
+ 	 */
+ 	b	idle_loop
++#endif
+ 
+ /* Hypercall entry point. Will be patched with device tree instructions. */
+ .global epapr_hypercall_start
+diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
+index 4c7cb400..bfb73cc 100644
+--- a/arch/powerpc/kernel/idle_book3e.S
++++ b/arch/powerpc/kernel/idle_book3e.S
+@@ -16,11 +16,13 @@
+ #include <asm/ppc-opcode.h>
+ #include <asm/processor.h>
+ #include <asm/thread_info.h>
++#include <asm/epapr_hcalls.h>
+ 
+ /* 64-bit version only for now */
+ #ifdef CONFIG_PPC64
+ 
+-_GLOBAL(book3e_idle)
++.macro BOOK3E_IDLE name loop
++_GLOBAL(\name)
+ 	/* Save LR for later */
+ 	mflr	r0
+ 	std	r0,16(r1)
+@@ -67,7 +69,33 @@ _GLOBAL(book3e_idle)
+ 
+ 	/* We can now re-enable hard interrupts and go to sleep */
+ 	wrteei	1
+-1:	PPC_WAIT(0)
++	\loop
++
++.endm
++
++.macro BOOK3E_IDLE_LOOP
++1:
++	PPC_WAIT(0)
+ 	b	1b
++.endm
++
++/* epapr_ev_idle_start below is patched with the proper hcall
++   opcodes during kernel initialization */
++.macro EPAPR_EV_IDLE_LOOP
++idle_loop:
++	LOAD_REG_IMMEDIATE(r11, EV_HCALL_TOKEN(EV_IDLE))
++
++.global epapr_ev_idle_start
++epapr_ev_idle_start:
++	li      r3, -1
++	nop
++	nop
++	nop
++	b       idle_loop
++.endm
++
++BOOK3E_IDLE epapr_ev_idle EPAPR_EV_IDLE_LOOP
++
++BOOK3E_IDLE book3e_idle BOOK3E_IDLE_LOOP
+ 
+ #endif /* CONFIG_PPC64 */
+-- 
+1.7.9.7
