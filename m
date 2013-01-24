@@ -1,25 +1,22 @@
-Return-Path: <James.Bottomley@HansenPartnership.com>
-Received: from bedivere.hansenpartnership.com (bedivere.hansenpartnership.com
- [66.63.167.143]) by ozlabs.org (Postfix) with ESMTP id 864472C008C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 21:40:02 +1100 (EST)
-Message-ID: <1359023612.2394.17.camel@dabdike.int.hansenpartnership.com>
-Subject: Re: [PATCH 1/8] mm: use vm_unmapped_area() on parisc architecture
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Michel Lespinasse <walken@google.com>
-Date: Thu, 24 Jan 2013 10:33:32 +0000
-In-Reply-To: <1358990991-21316-2-git-send-email-walken@google.com>
-References: <1358990991-21316-1-git-send-email-walken@google.com>
- <1358990991-21316-2-git-send-email-walken@google.com>
-Content-Type: text/plain; charset="ISO-8859-15"
-Mime-Version: 1.0
-Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
- linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
- Helge Deller <deller@gmx.de>, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- linux-kernel@vger.kernel.org, David Howells <dhowells@redhat.com>,
- linux-mm@kvack.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- linux-alpha@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Matt Turner <mattst88@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Andrew Morton <akpm@linux-foundation.org>, Richard Henderson <rth@twiddle.net>
+Return-Path: <jasivkumar@gmail.com>
+Received: from mail-wg0-f50.google.com (mail-wg0-f50.google.com [74.125.82.50])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 007592C0089
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 22:53:55 +1100 (EST)
+Received: by mail-wg0-f50.google.com with SMTP id es5so1843472wgb.29
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 03:53:51 -0800 (PST)
+MIME-Version: 1.0
+In-Reply-To: <1358977222.9710.7@snotra>
+References: <CAJrcUeQCJu2wnMSWdNBSxc_5hzm1NmQw2sQjKQTwvoAF5Q3hYw@mail.gmail.com>
+ <1358977222.9710.7@snotra>
+Date: Thu, 24 Jan 2013 17:23:51 +0530
+Message-ID: <CAJrcUeRfz3m_NcE+HaVA8_3bGGuwaTM0ocPc7SYnhVaEaJyF2w@mail.gmail.com>
+Subject: Re: Freescale P2020 CPU Freeze over PCIe abort signal
+From: siva kumar <jasivkumar@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Content-Type: multipart/alternative; boundary=f46d041826e6eba9e004d4077669
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,100 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2013-01-23 at 17:29 -0800, Michel Lespinasse wrote:
-> Update the parisc arch_get_unmapped_area function to make use of
-> vm_unmapped_area() instead of implementing a brute force search.
-> 
-> Signed-off-by: Michel Lespinasse <walken@google.com>
-> Acked-by: Rik van Riel <riel@redhat.com>
-> 
-> ---
->  arch/parisc/kernel/sys_parisc.c |   46 ++++++++++++++------------------------
->  1 files changed, 17 insertions(+), 29 deletions(-)
-> 
-> diff --git a/arch/parisc/kernel/sys_parisc.c b/arch/parisc/kernel/sys_parisc.c
-> index f76c10863c62..6ab138088076 100644
-> --- a/arch/parisc/kernel/sys_parisc.c
-> +++ b/arch/parisc/kernel/sys_parisc.c
-> @@ -35,18 +35,15 @@
->  
->  static unsigned long get_unshared_area(unsigned long addr, unsigned long len)
->  {
-> -	struct vm_area_struct *vma;
-> +	struct vm_unmapped_area_info info;
->  
-> -	addr = PAGE_ALIGN(addr);
-> -
-> -	for (vma = find_vma(current->mm, addr); ; vma = vma->vm_next) {
-> -		/* At this point:  (!vma || addr < vma->vm_end). */
-> -		if (TASK_SIZE - len < addr)
-> -			return -ENOMEM;
-> -		if (!vma || addr + len <= vma->vm_start)
-> -			return addr;
-> -		addr = vma->vm_end;
-> -	}
-> +	info.flags = 0;
-> +	info.length = len;
-> +	info.low_limit = PAGE_ALIGN(addr);
-> +	info.high_limit = TASK_SIZE;
-> +	info.align_mask = 0;
-> +	info.align_offset = 0;
-> +	return vm_unmapped_area(&info);
->  }
->  
->  #define DCACHE_ALIGN(addr) (((addr) + (SHMLBA - 1)) &~ (SHMLBA - 1))
+--f46d041826e6eba9e004d4077669
+Content-Type: text/plain; charset=ISO-8859-1
 
-This macro is now redundant and can be removed.
+Thank you Scott for the reply.
+May I know did u got out of this issue and   can i get some brief on what
+changes they had suggested.
 
-> @@ -63,30 +60,21 @@ static unsigned long get_unshared_area(unsigned long addr, unsigned long len)
->   */
->  static int get_offset(struct address_space *mapping)
->  {
-> -	int offset = (unsigned long) mapping << (PAGE_SHIFT - 8);
-> -	return offset & 0x3FF000;
-> +	return (unsigned long) mapping >> 8;
+Thanks,
+Siva
 
-I'm not sure I agree with this shift (but I think the original was wrong
-as well so the comment probably needs updating.)  Trying to derive
-entropy from the mapping address is always nasty.  Mostly they're
-embedded in the inode, so the right shift should be something like
-log2(sizeof(inode)) + 1 and since the inode size is usually somewhere
-between 512 and 1024 bytes, that comes out to 10 I think.
+On Thu, Jan 24, 2013 at 3:10 AM, Scott Wood <scottwood@freescale.com> wrote:
 
->  }
->  
->  static unsigned long get_shared_area(struct address_space *mapping,
->  		unsigned long addr, unsigned long len, unsigned long pgoff)
->  {
-> -	struct vm_area_struct *vma;
-> -	int offset = mapping ? get_offset(mapping) : 0;
-> -
-> -	offset = (offset + (pgoff << PAGE_SHIFT)) & 0x3FF000;
-> +	struct vm_unmapped_area_info info;
->  
-> -	addr = DCACHE_ALIGN(addr - offset) + offset;
-> -
-> -	for (vma = find_vma(current->mm, addr); ; vma = vma->vm_next) {
-> -		/* At this point:  (!vma || addr < vma->vm_end). */
-> -		if (TASK_SIZE - len < addr)
-> -			return -ENOMEM;
-> -		if (!vma || addr + len <= vma->vm_start)
-> -			return addr;
-> -		addr = DCACHE_ALIGN(vma->vm_end - offset) + offset;
-> -		if (addr < vma->vm_end) /* handle wraparound */
-> -			return -ENOMEM;
-> -	}
-> +	info.flags = 0;
-> +	info.length = len;
-> +	info.low_limit = PAGE_ALIGN(addr);
-> +	info.high_limit = TASK_SIZE;
-> +	info.align_mask = PAGE_MASK & (SHMLBA - 1);
-> +	info.align_offset = (get_offset(mapping) + pgoff) << PAGE_SHIFT;
-> +	return vm_unmapped_area(&info);
->  }
->  
->  unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
+> On 01/23/2013 11:41:26 AM, siva kumar wrote:
+>
+>> Hi ,
+>>
+>> Is there any update on this , am getting in to the same state .
+>> https://lists.ozlabs.org/**pipermail/linuxppc-dev/2010-**
+>> October/086680.html<https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-October/086680.html>
+>>
+>
+> Eran's initial comment of "This should probably go to the Freescale
+> support" seems right.  You can reach Freescale support at
+> support@freescale.com.
+>
+> -Scott
+>
 
-Other than that, I think this will work, but I'd like to test it.
+--f46d041826e6eba9e004d4077669
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-James
+Thank you Scott for the reply.<div>May I know did u got out of this issue a=
+nd =A0 can i get some brief on what changes they had suggested.</div><div><=
+br></div><div>Thanks,</div><div>Siva<br><br><div class=3D"gmail_quote">On T=
+hu, Jan 24, 2013 at 3:10 AM, Scott Wood <span dir=3D"ltr">&lt;<a href=3D"ma=
+ilto:scottwood@freescale.com" target=3D"_blank">scottwood@freescale.com</a>=
+&gt;</span> wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex"><div class=3D"im">On 01/23/2013 11:41:26 AM,=
+ siva kumar wrote:<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">
+Hi ,<br>
+<br>
+Is there any update on this , am getting in to the same state .<br>
+<a href=3D"https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-October/086=
+680.html" target=3D"_blank">https://lists.ozlabs.org/<u></u>pipermail/linux=
+ppc-dev/2010-<u></u>October/086680.html</a><br>
+</blockquote>
+<br></div>
+Eran&#39;s initial comment of &quot;This should probably go to the Freescal=
+e support&quot; seems right. =A0You can reach Freescale support at <a href=
+=3D"mailto:support@freescale.com" target=3D"_blank">support@freescale.com</=
+a>.<span class=3D"HOEnZb"><font color=3D"#888888"><br>
+
+<br>
+-Scott<br>
+</font></span></blockquote></div><br></div>
+
+--f46d041826e6eba9e004d4077669--
