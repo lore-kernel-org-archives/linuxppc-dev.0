@@ -1,16 +1,16 @@
 Return-Path: <balbi@ti.com>
-Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
+Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8A90A2C0231
+ by ozlabs.org (Postfix) with ESMTPS id 1C2652C0239
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:43 +1100 (EST)
 From: Felipe Balbi <balbi@ti.com>
 To: Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: [RFC/PATCH 29/32] usb: gadget: pxa27x_udc: let udc-core manage
+Subject: [RFC/PATCH 27/32] usb: renesas_usbhs: gadget: let udc-core manage
  gadget->dev
-Date: Thu, 24 Jan 2013 17:46:07 +0200
-Message-ID: <1359042370-4358-30-git-send-email-balbi@ti.com>
+Date: Thu, 24 Jan 2013 17:46:05 +0200
+Message-ID: <1359042370-4358-28-git-send-email-balbi@ti.com>
 In-Reply-To: <1359042370-4358-1-git-send-email-balbi@ti.com>
 References: <1359042370-4358-1-git-send-email-balbi@ti.com>
 MIME-Version: 1.0
@@ -37,44 +37,55 @@ boilerplate code.
 
 Signed-off-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/usb/gadget/pxa27x_udc.c | 9 +--------
- 1 file changed, 1 insertion(+), 8 deletions(-)
+ drivers/usb/renesas_usbhs/mod_gadget.c | 11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/usb/gadget/pxa27x_udc.c b/drivers/usb/gadget/pxa27x_udc.c
-index f7d2579..23a3eed 100644
---- a/drivers/usb/gadget/pxa27x_udc.c
-+++ b/drivers/usb/gadget/pxa27x_udc.c
-@@ -1814,11 +1814,6 @@ static int pxa27x_udc_start(struct usb_gadget *g,
- 	udc->gadget.dev.driver = &driver->driver;
- 	dplus_pullup(udc, 1);
+diff --git a/drivers/usb/renesas_usbhs/mod_gadget.c b/drivers/usb/renesas_usbhs/mod_gadget.c
+index dd41f61..b42d81d 100644
+--- a/drivers/usb/renesas_usbhs/mod_gadget.c
++++ b/drivers/usb/renesas_usbhs/mod_gadget.c
+@@ -981,15 +981,12 @@ int usbhs_mod_gadget_probe(struct usbhs_priv *priv)
+ 	/*
+ 	 * init gadget
+ 	 */
+-	dev_set_name(&gpriv->gadget.dev, "gadget");
+ 	gpriv->gadget.dev.parent	= dev;
+ 	gpriv->gadget.dev.release	= usbhs_mod_gadget_release;
+ 	gpriv->gadget.name		= "renesas_usbhs_udc";
+ 	gpriv->gadget.ops		= &usbhsg_gadget_ops;
+ 	gpriv->gadget.max_speed		= USB_SPEED_HIGH;
+-	ret = device_register(&gpriv->gadget.dev);
+-	if (ret < 0)
+-		goto err_add_udc;
++	gpriv->gadget.register_my_device = true;
  
--	retval = device_add(&udc->gadget.dev);
--	if (retval) {
--		dev_err(udc->dev, "device_add error %d\n", retval);
--		goto fail;
--	}
- 	if (!IS_ERR_OR_NULL(udc->transceiver)) {
- 		retval = otg_set_peripheral(udc->transceiver->otg,
- 						&udc->gadget);
-@@ -1876,8 +1871,6 @@ static int pxa27x_udc_stop(struct usb_gadget *g,
+ 	INIT_LIST_HEAD(&gpriv->gadget.ep_list);
  
- 	udc->driver = NULL;
+@@ -1018,15 +1015,13 @@ int usbhs_mod_gadget_probe(struct usbhs_priv *priv)
  
--	device_del(&udc->gadget.dev);
--
- 	if (!IS_ERR_OR_NULL(udc->transceiver))
- 		return otg_set_peripheral(udc->transceiver->otg, NULL);
+ 	ret = usb_add_gadget_udc(dev, &gpriv->gadget);
+ 	if (ret)
+-		goto err_register;
++		goto err_add_udc;
+ 
+ 
+ 	dev_info(dev, "gadget probed\n");
+ 
  	return 0;
-@@ -2462,9 +2455,9 @@ static int __init pxa_udc_probe(struct platform_device *pdev)
- 		goto err_map;
- 	}
  
--	device_initialize(&udc->gadget.dev);
- 	udc->gadget.dev.parent = &pdev->dev;
- 	udc->gadget.dev.dma_mask = NULL;
-+	udc->gadget.register_my_device = true;
- 	udc->vbus_sensed = 0;
+-err_register:
+-	device_unregister(&gpriv->gadget.dev);
+ err_add_udc:
+ 	kfree(gpriv->uep);
  
- 	the_controller = udc;
+@@ -1042,8 +1037,6 @@ void usbhs_mod_gadget_remove(struct usbhs_priv *priv)
+ 
+ 	usb_del_gadget_udc(&gpriv->gadget);
+ 
+-	device_unregister(&gpriv->gadget.dev);
+-
+ 	kfree(gpriv->uep);
+ 	kfree(gpriv);
+ }
 -- 
 1.8.1.rc1.5.g7e0651a
