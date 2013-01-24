@@ -1,20 +1,26 @@
 Return-Path: <B08248@freescale.com>
-Received: from va3outboundpool.messaging.microsoft.com
- (va3ehsobe010.messaging.microsoft.com [216.32.180.30])
+Received: from tx2outboundpool.messaging.microsoft.com
+ (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
  (using TLSv1 with cipher AES128-SHA (128/128 bits))
  (Client CN "mail.global.frontbridge.com",
  Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7CA1F2C008C
- for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2013 09:12:24 +1100 (EST)
-From: Stuart Yoder <stuart.yoder@freescale.com>
-To: <benh@kernel.crashing.org>
-Subject: [PATCH][v3] KVM: PPC: add paravirt idle loop for 64-bit book E
-Date: Thu, 24 Jan 2013 16:11:06 -0600
-Message-ID: <1359065466-27355-1-git-send-email-stuart.yoder@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5472B2C007E
+ for <linuxppc-dev@ozlabs.org>; Fri, 25 Jan 2013 09:57:21 +1100 (EST)
+From: Yoder Stuart-B08248 <B08248@freescale.com>
+To: Gala Kumar-B11780 <B11780@freescale.com>, Wood Scott-B07421
+ <B07421@freescale.com>
+Subject: RE: [PATCH 2/2] powerpc/85xx: describe the PAMU topology in the
+ device tree
+Date: Thu, 24 Jan 2013 22:57:08 +0000
+Message-ID: <9F6FE96B71CF29479FF1CDC8046E15035266D4@039-SN1MPN1-003.039d.mgd.msft.net>
+References: <1358462073-2558-1-git-send-email-timur@tabi.org>
+ <1358462073-2558-2-git-send-email-timur@tabi.org>
+ <CF1EE7AED478CD48A05574C8E2DA142D6DA7A5@039-SN1MPN1-005.039d.mgd.msft.net>
+In-Reply-To: <CF1EE7AED478CD48A05574C8E2DA142D6DA7A5@039-SN1MPN1-005.039d.mgd.msft.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@ozlabs.org, agraf@suse.de,
- kvm@vger.kernel.org, Stuart Yoder <stuart.yoder@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org list" <linuxppc-dev@ozlabs.org>,
+ Timur Tabi <timur@tabi.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,91 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Stuart Yoder <stuart.yoder@freescale.com>
 
-Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
----
 
--v3
-   -whitespace cleanup, deleted stray comma, added comment
+> -----Original Message-----
+> From: Gala Kumar-B11780
+> Sent: Wednesday, January 23, 2013 11:27 AM
+> To: Wood Scott-B07421; Yoder Stuart-B08248
+> Cc: linuxppc-dev@ozlabs.org list; Timur Tabi
+> Subject: Re: [PATCH 2/2] powerpc/85xx: describe the PAMU topology in the =
+device tree
+>=20
+>=20
+> On Jan 17, 2013, at 4:34 PM, Timur Tabi wrote:
+>=20
+> > From: Timur Tabi <timur@freescale.com>
+> >
+> > The PAMU caches use the LIODNs to determine which cache lines hold the
+> > entries for the corresponding LIODs.  The LIODNs must therefore be
+> > carefully assigned to avoid cache thrashing -- two active LIODs with
+> > LIODNs that put them in the same cache line.
+> >
+> > Currently, LIODNs are statically assigned by U-Boot, but this has
+> > limitations.  LIODNs are assigned even for devices that may be disabled
+> > or unused by the kernel.  Static assignments also do not allow for devi=
+ce
+> > drivers which may know which LIODs can be used simultaneously.  In
+> > other words, we really should assign LIODNs dynamically in Linux.
+> >
+> > To do that, we need to describe the PAMU device and cache topologies in
+> > the device trees.
+> >
+> > Signed-off-by: Timur Tabi <timur@freescale.com>
+> > ---
+> > .../devicetree/bindings/powerpc/fsl/guts.txt       |   14 ++-
+> > .../devicetree/bindings/powerpc/fsl/pamu.txt       |  142 +++++++++++++=
++++++++
+> > arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |   87 +++++++++++--
+> > arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |   87 +++++++++++--
+> > arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |   68 +++++++++-
+> > arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |   92 +++++++++++--
+> > arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |   92 +++++++++++--
+> > 7 files changed, 533 insertions(+), 49 deletions(-)
+> > create mode 100644 Documentation/devicetree/bindings/powerpc/fsl/pamu.t=
+xt
+>=20
+> Scott, Stuart, does this have your guys Ack?
 
- arch/powerpc/kernel/epapr_hcalls.S |    2 ++
- arch/powerpc/kernel/idle_book3e.S  |   32 ++++++++++++++++++++++++++++++--
- 2 files changed, 32 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/epapr_hcalls.S b/arch/powerpc/kernel/epapr_hcalls.S
-index 62c0dc2..9f1ebf7 100644
---- a/arch/powerpc/kernel/epapr_hcalls.S
-+++ b/arch/powerpc/kernel/epapr_hcalls.S
-@@ -17,6 +17,7 @@
- #include <asm/asm-compat.h>
- #include <asm/asm-offsets.h>
- 
-+#ifndef CONFIG_PPC64
- /* epapr_ev_idle() was derived from e500_idle() */
- _GLOBAL(epapr_ev_idle)
- 	CURRENT_THREAD_INFO(r3, r1)
-@@ -42,6 +43,7 @@ epapr_ev_idle_start:
- 	 * _TLF_NAPPING.
- 	 */
- 	b	idle_loop
-+#endif
- 
- /* Hypercall entry point. Will be patched with device tree instructions. */
- .global epapr_hypercall_start
-diff --git a/arch/powerpc/kernel/idle_book3e.S b/arch/powerpc/kernel/idle_book3e.S
-index 4c7cb400..bfb73cc 100644
---- a/arch/powerpc/kernel/idle_book3e.S
-+++ b/arch/powerpc/kernel/idle_book3e.S
-@@ -16,11 +16,13 @@
- #include <asm/ppc-opcode.h>
- #include <asm/processor.h>
- #include <asm/thread_info.h>
-+#include <asm/epapr_hcalls.h>
- 
- /* 64-bit version only for now */
- #ifdef CONFIG_PPC64
- 
--_GLOBAL(book3e_idle)
-+.macro BOOK3E_IDLE name loop
-+_GLOBAL(\name)
- 	/* Save LR for later */
- 	mflr	r0
- 	std	r0,16(r1)
-@@ -67,7 +69,33 @@ _GLOBAL(book3e_idle)
- 
- 	/* We can now re-enable hard interrupts and go to sleep */
- 	wrteei	1
--1:	PPC_WAIT(0)
-+	\loop
-+
-+.endm
-+
-+.macro BOOK3E_IDLE_LOOP
-+1:
-+	PPC_WAIT(0)
- 	b	1b
-+.endm
-+
-+/* epapr_ev_idle_start below is patched with the proper hcall
-+   opcodes during kernel initialization */
-+.macro EPAPR_EV_IDLE_LOOP
-+idle_loop:
-+	LOAD_REG_IMMEDIATE(r11, EV_HCALL_TOKEN(EV_IDLE))
-+
-+.global epapr_ev_idle_start
-+epapr_ev_idle_start:
-+	li      r3, -1
-+	nop
-+	nop
-+	nop
-+	b       idle_loop
-+.endm
-+
-+BOOK3E_IDLE epapr_ev_idle EPAPR_EV_IDLE_LOOP
-+
-+BOOK3E_IDLE book3e_idle BOOK3E_IDLE_LOOP
- 
- #endif /* CONFIG_PPC64 */
--- 
-1.7.9.7
+Ack
