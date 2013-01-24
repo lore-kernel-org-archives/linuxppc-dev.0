@@ -1,22 +1,23 @@
-Return-Path: <jasivkumar@gmail.com>
-Received: from mail-wg0-f50.google.com (mail-wg0-f50.google.com [74.125.82.50])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 007592C0089
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 22:53:55 +1100 (EST)
-Received: by mail-wg0-f50.google.com with SMTP id es5so1843472wgb.29
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 03:53:51 -0800 (PST)
-MIME-Version: 1.0
-In-Reply-To: <1358977222.9710.7@snotra>
-References: <CAJrcUeQCJu2wnMSWdNBSxc_5hzm1NmQw2sQjKQTwvoAF5Q3hYw@mail.gmail.com>
- <1358977222.9710.7@snotra>
-Date: Thu, 24 Jan 2013 17:23:51 +0530
-Message-ID: <CAJrcUeRfz3m_NcE+HaVA8_3bGGuwaTM0ocPc7SYnhVaEaJyF2w@mail.gmail.com>
-Subject: Re: Freescale P2020 CPU Freeze over PCIe abort signal
-From: siva kumar <jasivkumar@gmail.com>
-To: Scott Wood <scottwood@freescale.com>
-Content-Type: multipart/alternative; boundary=f46d041826e6eba9e004d4077669
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ by ozlabs.org (Postfix) with ESMTP id 28DFE2C0084
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 01:13:35 +1100 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1358990991-21316-4-git-send-email-walken@google.com>
+References: <1358990991-21316-4-git-send-email-walken@google.com>
+ <1358990991-21316-1-git-send-email-walken@google.com>
+To: Michel Lespinasse <walken@google.com>
+Subject: Re: [PATCH 3/8] mm: use vm_unmapped_area() on frv architecture
+Date: Thu, 24 Jan 2013 14:13:10 +0000
+Message-ID: <27625.1359036790@warthog.procyon.org.uk>
+Cc: Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ Helge Deller <deller@gmx.de>, "James E.J. Bottomley" <jejb@parisc-linux.org>,
+ linux-kernel@vger.kernel.org, dhowells@redhat.com, linux-mm@kvack.org,
+ Paul Mackerras <paulus@samba.org>, linux-alpha@vger.kernel.org,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Matt Turner <mattst88@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+ Richard Henderson <rth@twiddle.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,64 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d041826e6eba9e004d4077669
-Content-Type: text/plain; charset=ISO-8859-1
+Michel Lespinasse <walken@google.com> wrote:
 
-Thank you Scott for the reply.
-May I know did u got out of this issue and   can i get some brief on what
-changes they had suggested.
+> Update the frv arch_get_unmapped_area function to make use of
+> vm_unmapped_area() instead of implementing a brute force search.
+> 
+> Signed-off-by: Michel Lespinasse <walken@google.com>
+> Acked-by: Rik van Riel <riel@redhat.com>
 
-Thanks,
-Siva
-
-On Thu, Jan 24, 2013 at 3:10 AM, Scott Wood <scottwood@freescale.com> wrote:
-
-> On 01/23/2013 11:41:26 AM, siva kumar wrote:
->
->> Hi ,
->>
->> Is there any update on this , am getting in to the same state .
->> https://lists.ozlabs.org/**pipermail/linuxppc-dev/2010-**
->> October/086680.html<https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-October/086680.html>
->>
->
-> Eran's initial comment of "This should probably go to the Freescale
-> support" seems right.  You can reach Freescale support at
-> support@freescale.com.
->
-> -Scott
->
-
---f46d041826e6eba9e004d4077669
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Thank you Scott for the reply.<div>May I know did u got out of this issue a=
-nd =A0 can i get some brief on what changes they had suggested.</div><div><=
-br></div><div>Thanks,</div><div>Siva<br><br><div class=3D"gmail_quote">On T=
-hu, Jan 24, 2013 at 3:10 AM, Scott Wood <span dir=3D"ltr">&lt;<a href=3D"ma=
-ilto:scottwood@freescale.com" target=3D"_blank">scottwood@freescale.com</a>=
-&gt;</span> wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex"><div class=3D"im">On 01/23/2013 11:41:26 AM,=
- siva kumar wrote:<br>
-<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
-x #ccc solid;padding-left:1ex">
-Hi ,<br>
-<br>
-Is there any update on this , am getting in to the same state .<br>
-<a href=3D"https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-October/086=
-680.html" target=3D"_blank">https://lists.ozlabs.org/<u></u>pipermail/linux=
-ppc-dev/2010-<u></u>October/086680.html</a><br>
-</blockquote>
-<br></div>
-Eran&#39;s initial comment of &quot;This should probably go to the Freescal=
-e support&quot; seems right. =A0You can reach Freescale support at <a href=
-=3D"mailto:support@freescale.com" target=3D"_blank">support@freescale.com</=
-a>.<span class=3D"HOEnZb"><font color=3D"#888888"><br>
-
-<br>
--Scott<br>
-</font></span></blockquote></div><br></div>
-
---f46d041826e6eba9e004d4077669--
+Acked-by: David Howells <dhowells@redhat.com>
