@@ -1,12 +1,12 @@
 Return-Path: <walken@google.com>
-Received: from mail-pa0-f41.google.com (mail-pa0-f41.google.com
- [209.85.220.41])
+Received: from mail-pb0-f49.google.com (mail-pb0-f49.google.com
+ [209.85.160.49])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B9FE02C007C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 12:29:58 +1100 (EST)
-Received: by mail-pa0-f41.google.com with SMTP id bj3so5190127pad.28
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 17:29:56 -0800 (PST)
+ by ozlabs.org (Postfix) with ESMTPS id 9F02C2C0082
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 12:30:01 +1100 (EST)
+Received: by mail-pb0-f49.google.com with SMTP id un15so5042315pbc.22
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 17:29:59 -0800 (PST)
 From: Michel Lespinasse <walken@google.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>,
@@ -15,9 +15,11 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
  Matt Turner <mattst88@gmail.com>, David Howells <dhowells@redhat.com>,
  Tony Luck <tony.luck@intel.com>, Fenghua Yu <fenghua.yu@intel.com>
-Subject: [PATCH 0/8] convert remaining archs to use vm_unmapped_area()
-Date: Wed, 23 Jan 2013 17:29:43 -0800
-Message-Id: <1358990991-21316-1-git-send-email-walken@google.com>
+Subject: [PATCH 1/8] mm: use vm_unmapped_area() on parisc architecture
+Date: Wed, 23 Jan 2013 17:29:44 -0800
+Message-Id: <1358990991-21316-2-git-send-email-walken@google.com>
+In-Reply-To: <1358990991-21316-1-git-send-email-walken@google.com>
+References: <1358990991-21316-1-git-send-email-walken@google.com>
 Cc: linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-mm@kvack.org, linux-alpha@vger.kernel.org,
  Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
@@ -30,66 +32,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a resend of my "finish the mission" patch series. I need arch
-maintainers to approve so I can push this to andrew's -mm tree.
+Update the parisc arch_get_unmapped_area function to make use of
+vm_unmapped_area() instead of implementing a brute force search.
 
-These patches, which apply on top of v3.8-rc kernels, are to complete the
-VMA gap finding code I introduced (following Rik's initial proposal) in
-v3.8-rc1.
+Signed-off-by: Michel Lespinasse <walken@google.com>
+Acked-by: Rik van Riel <riel@redhat.com>
 
-First 5 patches introduce the use of vm_unmapped_area() to replace brute
-force searches on parisc, alpha, frv and ia64 architectures (all relatively
-trivial uses of the vm_unmapped_area() infrastructure)
+---
+ arch/parisc/kernel/sys_parisc.c |   46 ++++++++++++++------------------------
+ 1 files changed, 17 insertions(+), 29 deletions(-)
 
-Next 2 patches do the same as above for the powerpc architecture. This
-change is not as trivial as for the other architectures, because we
-need to account for each address space slice potentially having a
-different page size.
-
-The last patch removes the free_area_cache, which was used by all the
-brute force searches before they got converted to the
-vm_unmapped_area() infrastructure.
-
-I did some basic testing on x86 and powerpc; however the first 5 (simpler)
-patches for parisc, alpha, frv and ia64 architectures are untested.
-
-Michel Lespinasse (8):
-  mm: use vm_unmapped_area() on parisc architecture
-  mm: use vm_unmapped_area() on alpha architecture
-  mm: use vm_unmapped_area() on frv architecture
-  mm: use vm_unmapped_area() on ia64 architecture
-  mm: use vm_unmapped_area() in hugetlbfs on ia64 architecture
-  mm: remove free_area_cache use in powerpc architecture
-  mm: use vm_unmapped_area() on powerpc architecture
-  mm: remove free_area_cache
-
- arch/alpha/kernel/osf_sys.c              |   20 ++--
- arch/arm/mm/mmap.c                       |    2 -
- arch/arm64/mm/mmap.c                     |    2 -
- arch/frv/mm/elf-fdpic.c                  |   49 +++----
- arch/ia64/kernel/sys_ia64.c              |   37 ++----
- arch/ia64/mm/hugetlbpage.c               |   20 ++--
- arch/mips/mm/mmap.c                      |    2 -
- arch/parisc/kernel/sys_parisc.c          |   46 +++----
- arch/powerpc/include/asm/page_64.h       |    3 +-
- arch/powerpc/mm/hugetlbpage.c            |    2 +-
- arch/powerpc/mm/mmap_64.c                |    2 -
- arch/powerpc/mm/slice.c                  |  228 +++++++++++++-----------------
- arch/powerpc/platforms/cell/spufs/file.c |    2 +-
- arch/s390/mm/mmap.c                      |    4 -
- arch/sparc/kernel/sys_sparc_64.c         |    2 -
- arch/tile/mm/mmap.c                      |    2 -
- arch/x86/ia32/ia32_aout.c                |    2 -
- arch/x86/mm/mmap.c                       |    2 -
- fs/binfmt_aout.c                         |    2 -
- fs/binfmt_elf.c                          |    2 -
- include/linux/mm_types.h                 |    3 -
- include/linux/sched.h                    |    2 -
- kernel/fork.c                            |    4 -
- mm/mmap.c                                |   28 ----
- mm/nommu.c                               |    4 -
- mm/util.c                                |    1 -
- 26 files changed, 163 insertions(+), 310 deletions(-)
-
+diff --git a/arch/parisc/kernel/sys_parisc.c b/arch/parisc/kernel/sys_parisc.c
+index f76c10863c62..6ab138088076 100644
+--- a/arch/parisc/kernel/sys_parisc.c
++++ b/arch/parisc/kernel/sys_parisc.c
+@@ -35,18 +35,15 @@
+ 
+ static unsigned long get_unshared_area(unsigned long addr, unsigned long len)
+ {
+-	struct vm_area_struct *vma;
++	struct vm_unmapped_area_info info;
+ 
+-	addr = PAGE_ALIGN(addr);
+-
+-	for (vma = find_vma(current->mm, addr); ; vma = vma->vm_next) {
+-		/* At this point:  (!vma || addr < vma->vm_end). */
+-		if (TASK_SIZE - len < addr)
+-			return -ENOMEM;
+-		if (!vma || addr + len <= vma->vm_start)
+-			return addr;
+-		addr = vma->vm_end;
+-	}
++	info.flags = 0;
++	info.length = len;
++	info.low_limit = PAGE_ALIGN(addr);
++	info.high_limit = TASK_SIZE;
++	info.align_mask = 0;
++	info.align_offset = 0;
++	return vm_unmapped_area(&info);
+ }
+ 
+ #define DCACHE_ALIGN(addr) (((addr) + (SHMLBA - 1)) &~ (SHMLBA - 1))
+@@ -63,30 +60,21 @@ static unsigned long get_unshared_area(unsigned long addr, unsigned long len)
+  */
+ static int get_offset(struct address_space *mapping)
+ {
+-	int offset = (unsigned long) mapping << (PAGE_SHIFT - 8);
+-	return offset & 0x3FF000;
++	return (unsigned long) mapping >> 8;
+ }
+ 
+ static unsigned long get_shared_area(struct address_space *mapping,
+ 		unsigned long addr, unsigned long len, unsigned long pgoff)
+ {
+-	struct vm_area_struct *vma;
+-	int offset = mapping ? get_offset(mapping) : 0;
+-
+-	offset = (offset + (pgoff << PAGE_SHIFT)) & 0x3FF000;
++	struct vm_unmapped_area_info info;
+ 
+-	addr = DCACHE_ALIGN(addr - offset) + offset;
+-
+-	for (vma = find_vma(current->mm, addr); ; vma = vma->vm_next) {
+-		/* At this point:  (!vma || addr < vma->vm_end). */
+-		if (TASK_SIZE - len < addr)
+-			return -ENOMEM;
+-		if (!vma || addr + len <= vma->vm_start)
+-			return addr;
+-		addr = DCACHE_ALIGN(vma->vm_end - offset) + offset;
+-		if (addr < vma->vm_end) /* handle wraparound */
+-			return -ENOMEM;
+-	}
++	info.flags = 0;
++	info.length = len;
++	info.low_limit = PAGE_ALIGN(addr);
++	info.high_limit = TASK_SIZE;
++	info.align_mask = PAGE_MASK & (SHMLBA - 1);
++	info.align_offset = (get_offset(mapping) + pgoff) << PAGE_SHIFT;
++	return vm_unmapped_area(&info);
+ }
+ 
+ unsigned long arch_get_unmapped_area(struct file *filp, unsigned long addr,
 -- 
 1.7.7.3
