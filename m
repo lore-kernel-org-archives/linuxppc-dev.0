@@ -1,16 +1,16 @@
 Return-Path: <balbi@ti.com>
-Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
+Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B75AE2C0214
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:40 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 8A90A2C0231
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:43 +1100 (EST)
 From: Felipe Balbi <balbi@ti.com>
 To: Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: [RFC/PATCH 24/32] usb: gadget: s3c-hsotg: let udc-core manage
+Subject: [RFC/PATCH 29/32] usb: gadget: pxa27x_udc: let udc-core manage
  gadget->dev
-Date: Thu, 24 Jan 2013 17:46:02 +0200
-Message-ID: <1359042370-4358-25-git-send-email-balbi@ti.com>
+Date: Thu, 24 Jan 2013 17:46:07 +0200
+Message-ID: <1359042370-4358-30-git-send-email-balbi@ti.com>
 In-Reply-To: <1359042370-4358-1-git-send-email-balbi@ti.com>
 References: <1359042370-4358-1-git-send-email-balbi@ti.com>
 MIME-Version: 1.0
@@ -37,55 +37,44 @@ boilerplate code.
 
 Signed-off-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/usb/gadget/s3c-hsotg.c | 14 +-------------
- 1 file changed, 1 insertion(+), 13 deletions(-)
+ drivers/usb/gadget/pxa27x_udc.c | 9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
-diff --git a/drivers/usb/gadget/s3c-hsotg.c b/drivers/usb/gadget/s3c-hsotg.c
-index 833d85b..bd8292d 100644
---- a/drivers/usb/gadget/s3c-hsotg.c
-+++ b/drivers/usb/gadget/s3c-hsotg.c
-@@ -3552,17 +3552,13 @@ static int s3c_hsotg_probe(struct platform_device *pdev)
+diff --git a/drivers/usb/gadget/pxa27x_udc.c b/drivers/usb/gadget/pxa27x_udc.c
+index f7d2579..23a3eed 100644
+--- a/drivers/usb/gadget/pxa27x_udc.c
++++ b/drivers/usb/gadget/pxa27x_udc.c
+@@ -1814,11 +1814,6 @@ static int pxa27x_udc_start(struct usb_gadget *g,
+ 	udc->gadget.dev.driver = &driver->driver;
+ 	dplus_pullup(udc, 1);
  
- 	dev_info(dev, "regs %p, irq %d\n", hsotg->regs, hsotg->irq);
- 
--	device_initialize(&hsotg->gadget.dev);
--
--	dev_set_name(&hsotg->gadget.dev, "gadget");
--
- 	hsotg->gadget.max_speed = USB_SPEED_HIGH;
- 	hsotg->gadget.ops = &s3c_hsotg_gadget_ops;
- 	hsotg->gadget.name = dev_name(dev);
--
- 	hsotg->gadget.dev.parent = dev;
- 	hsotg->gadget.dev.dma_mask = dev->dma_mask;
- 	hsotg->gadget.dev.release = s3c_hsotg_release;
-+	hsotg->gadget.register_my_device = true;
- 
- 	/* reset the system */
- 
-@@ -3643,12 +3639,6 @@ static int s3c_hsotg_probe(struct platform_device *pdev)
- 
- 	s3c_hsotg_phy_disable(hsotg);
- 
--	ret = device_add(&hsotg->gadget.dev);
--	if (ret) {
--		put_device(&hsotg->gadget.dev);
--		goto err_ep_mem;
+-	retval = device_add(&udc->gadget.dev);
+-	if (retval) {
+-		dev_err(udc->dev, "device_add error %d\n", retval);
+-		goto fail;
 -	}
+ 	if (!IS_ERR_OR_NULL(udc->transceiver)) {
+ 		retval = otg_set_peripheral(udc->transceiver->otg,
+ 						&udc->gadget);
+@@ -1876,8 +1871,6 @@ static int pxa27x_udc_stop(struct usb_gadget *g,
+ 
+ 	udc->driver = NULL;
+ 
+-	device_del(&udc->gadget.dev);
 -
- 	ret = usb_add_gadget_udc(&pdev->dev, &hsotg->gadget);
- 	if (ret)
- 		goto err_ep_mem;
-@@ -3687,10 +3677,8 @@ static int s3c_hsotg_remove(struct platform_device *pdev)
+ 	if (!IS_ERR_OR_NULL(udc->transceiver))
+ 		return otg_set_peripheral(udc->transceiver->otg, NULL);
+ 	return 0;
+@@ -2462,9 +2455,9 @@ static int __init pxa_udc_probe(struct platform_device *pdev)
+ 		goto err_map;
  	}
  
- 	s3c_hsotg_phy_disable(hsotg);
--
- 	clk_disable_unprepare(hsotg->clk);
+-	device_initialize(&udc->gadget.dev);
+ 	udc->gadget.dev.parent = &pdev->dev;
+ 	udc->gadget.dev.dma_mask = NULL;
++	udc->gadget.register_my_device = true;
+ 	udc->vbus_sensed = 0;
  
--	device_unregister(&hsotg->gadget.dev);
- 	return 0;
- }
- 
+ 	the_controller = udc;
 -- 
 1.8.1.rc1.5.g7e0651a
