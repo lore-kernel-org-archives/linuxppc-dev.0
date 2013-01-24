@@ -3,14 +3,14 @@ Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id F1A4D2C0118
+ by ozlabs.org (Postfix) with ESMTPS id EFB042C0102
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:19 +1100 (EST)
 From: Felipe Balbi <balbi@ti.com>
 To: Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: [RFC/PATCH 11/32] usb: gadget: fsl_udc_core: let udc-core manage
+Subject: [RFC/PATCH 07/32] usb: gadget: atmel_usba_udc: let udc-core manage
  gadget->dev
-Date: Thu, 24 Jan 2013 17:45:49 +0200
-Message-ID: <1359042370-4358-12-git-send-email-balbi@ti.com>
+Date: Thu, 24 Jan 2013 17:45:45 +0200
+Message-ID: <1359042370-4358-8-git-send-email-balbi@ti.com>
 In-Reply-To: <1359042370-4358-1-git-send-email-balbi@ti.com>
 References: <1359042370-4358-1-git-send-email-balbi@ti.com>
 MIME-Version: 1.0
@@ -37,49 +37,55 @@ boilerplate code.
 
 Signed-off-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/usb/gadget/fsl_udc_core.c | 9 ++-------
- 1 file changed, 2 insertions(+), 7 deletions(-)
+ drivers/usb/gadget/atmel_usba_udc.c | 13 +------------
+ 1 file changed, 1 insertion(+), 12 deletions(-)
 
-diff --git a/drivers/usb/gadget/fsl_udc_core.c b/drivers/usb/gadget/fsl_udc_core.c
-index 49642d4..b78b734 100644
---- a/drivers/usb/gadget/fsl_udc_core.c
-+++ b/drivers/usb/gadget/fsl_udc_core.c
-@@ -2526,9 +2526,7 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
- 	udc_controller->gadget.dev.release = fsl_udc_release;
- 	udc_controller->gadget.dev.parent = &pdev->dev;
- 	udc_controller->gadget.dev.of_node = pdev->dev.of_node;
--	ret = device_register(&udc_controller->gadget.dev);
--	if (ret < 0)
--		goto err_free_irq;
-+	udc_controller->gadget.register_my_device = true;
+diff --git a/drivers/usb/gadget/atmel_usba_udc.c b/drivers/usb/gadget/atmel_usba_udc.c
+index a7aed84..f0f9423 100644
+--- a/drivers/usb/gadget/atmel_usba_udc.c
++++ b/drivers/usb/gadget/atmel_usba_udc.c
+@@ -1900,9 +1900,9 @@ static int __init usba_udc_probe(struct platform_device *pdev)
+ 	dev_info(&pdev->dev, "FIFO at 0x%08lx mapped at %p\n",
+ 		 (unsigned long)fifo->start, udc->fifo);
  
- 	if (!IS_ERR_OR_NULL(udc_controller->transceiver))
- 		udc_controller->gadget.is_otg = 1;
-@@ -2561,7 +2559,7 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
- 			DTD_ALIGNMENT, UDC_DMA_BOUNDARY);
- 	if (udc_controller->td_pool == NULL) {
- 		ret = -ENOMEM;
--		goto err_unregister;
-+		goto err_free_irq;
+-	device_initialize(&udc->gadget.dev);
+ 	udc->gadget.dev.parent = &pdev->dev;
+ 	udc->gadget.dev.dma_mask = pdev->dev.dma_mask;
++	udc->gadget.register_my_device = true;
+ 
+ 	platform_set_drvdata(pdev, udc);
+ 
+@@ -1962,12 +1962,6 @@ static int __init usba_udc_probe(struct platform_device *pdev)
+ 	}
+ 	udc->irq = irq;
+ 
+-	ret = device_add(&udc->gadget.dev);
+-	if (ret) {
+-		dev_dbg(&pdev->dev, "Could not add gadget: %d\n", ret);
+-		goto err_device_add;
+-	}
+-
+ 	if (gpio_is_valid(pdata->vbus_pin)) {
+ 		if (!gpio_request(pdata->vbus_pin, "atmel_usba_udc")) {
+ 			udc->vbus_pin = pdata->vbus_pin;
+@@ -2007,9 +2001,6 @@ err_add_udc:
+ 		gpio_free(udc->vbus_pin);
  	}
  
- 	ret = usb_add_gadget_udc(&pdev->dev, &udc_controller->gadget);
-@@ -2573,8 +2571,6 @@ static int __init fsl_udc_probe(struct platform_device *pdev)
+-	device_unregister(&udc->gadget.dev);
+-
+-err_device_add:
+ 	free_irq(irq, udc);
+ err_request_irq:
+ 	kfree(usba_ep);
+@@ -2053,8 +2044,6 @@ static int __exit usba_udc_remove(struct platform_device *pdev)
+ 	clk_put(udc->hclk);
+ 	clk_put(udc->pclk);
  
- err_del_udc:
- 	dma_pool_destroy(udc_controller->td_pool);
--err_unregister:
--	device_unregister(&udc_controller->gadget.dev);
- err_free_irq:
- 	free_irq(udc_controller->irq, udc_controller);
- err_iounmap:
-@@ -2624,7 +2620,6 @@ static int __exit fsl_udc_remove(struct platform_device *pdev)
- 	if (pdata->operating_mode == FSL_USB2_DR_DEVICE)
- 		release_mem_region(res->start, resource_size(res));
- 
--	device_unregister(&udc_controller->gadget.dev);
- 	/* free udc --wait for the release() finished */
- 	wait_for_completion(&done);
+-	device_unregister(&udc->gadget.dev);
+-
+ 	return 0;
+ }
  
 -- 
 1.8.1.rc1.5.g7e0651a
