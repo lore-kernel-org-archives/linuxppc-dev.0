@@ -1,15 +1,15 @@
 Return-Path: <balbi@ti.com>
-Received: from devils.ext.ti.com (devils.ext.ti.com [198.47.26.153])
+Received: from arroyo.ext.ti.com (arroyo.ext.ti.com [192.94.94.40])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id A21302C00C6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:45 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 6E9B92C014C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:46 +1100 (EST)
 From: Felipe Balbi <balbi@ti.com>
 To: Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: [RFC/PATCH 30/32] usb: chipidea: register debugging syfs on our device
-Date: Thu, 24 Jan 2013 17:46:08 +0200
-Message-ID: <1359042370-4358-31-git-send-email-balbi@ti.com>
+Subject: [RFC/PATCH 31/32] usb: chipidea: let udc-core manage gadget->dev
+Date: Thu, 24 Jan 2013 17:46:09 +0200
+Message-ID: <1359042370-4358-32-git-send-email-balbi@ti.com>
 In-Reply-To: <1359042370-4358-1-git-send-email-balbi@ti.com>
 References: <1359042370-4358-1-git-send-email-balbi@ti.com>
 MIME-Version: 1.0
@@ -31,45 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Don't register anything non-generic under
-the gadget's device as we don't really *own*
-it.
+By simply setting a flag, we can drop some
+boilerplate code.
 
 Signed-off-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/usb/chipidea/udc.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/usb/chipidea/udc.c | 13 ++-----------
+ 1 file changed, 2 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/usb/chipidea/udc.c b/drivers/usb/chipidea/udc.c
-index 2f45bba..f64fbea 100644
+index f64fbea..e95e8bb 100644
 --- a/drivers/usb/chipidea/udc.c
 +++ b/drivers/usb/chipidea/udc.c
-@@ -1767,7 +1767,7 @@ static int udc_start(struct ci13xxx *ci)
- 		goto put_transceiver;
+@@ -1717,11 +1717,11 @@ static int udc_start(struct ci13xxx *ci)
+ 
+ 	INIT_LIST_HEAD(&ci->gadget.ep_list);
+ 
+-	dev_set_name(&ci->gadget.dev, "gadget");
+ 	ci->gadget.dev.dma_mask = dev->dma_mask;
+ 	ci->gadget.dev.coherent_dma_mask = dev->coherent_dma_mask;
+ 	ci->gadget.dev.parent   = dev;
+ 	ci->gadget.dev.release  = udc_release;
++	ci->gadget.register_my_device = true;
+ 
+ 	/* alloc resources */
+ 	ci->qh_pool = dma_pool_create("ci13xxx_qh", dev,
+@@ -1761,15 +1761,9 @@ static int udc_start(struct ci13xxx *ci)
+ 		hw_enable_vbus_intr(ci);
  	}
  
--	retval = dbg_create_files(&ci->gadget.dev);
-+	retval = dbg_create_files(ci->dev);
+-	retval = device_register(&ci->gadget.dev);
+-	if (retval) {
+-		put_device(&ci->gadget.dev);
+-		goto put_transceiver;
+-	}
+-
+ 	retval = dbg_create_files(ci->dev);
  	if (retval)
- 		goto unreg_device;
+-		goto unreg_device;
++		goto put_transceiver;
  
-@@ -1796,7 +1796,7 @@ remove_trans:
- 
+ 	if (!IS_ERR_OR_NULL(ci->transceiver)) {
+ 		retval = otg_set_peripheral(ci->transceiver->otg,
+@@ -1797,8 +1791,6 @@ remove_trans:
  	dev_err(dev, "error = %i\n", retval);
  remove_dbg:
--	dbg_remove_files(&ci->gadget.dev);
-+	dbg_remove_files(ci->dev);
- unreg_device:
- 	device_unregister(&ci->gadget.dev);
+ 	dbg_remove_files(ci->dev);
+-unreg_device:
+-	device_unregister(&ci->gadget.dev);
  put_transceiver:
-@@ -1836,7 +1836,7 @@ static void udc_stop(struct ci13xxx *ci)
- 		if (ci->global_phy)
+ 	if (!IS_ERR_OR_NULL(ci->transceiver) && ci->global_phy)
+ 		usb_put_phy(ci->transceiver);
+@@ -1837,7 +1829,6 @@ static void udc_stop(struct ci13xxx *ci)
  			usb_put_phy(ci->transceiver);
  	}
--	dbg_remove_files(&ci->gadget.dev);
-+	dbg_remove_files(ci->dev);
- 	device_unregister(&ci->gadget.dev);
+ 	dbg_remove_files(ci->dev);
+-	device_unregister(&ci->gadget.dev);
  	/* my kobject is dynamic, I swear! */
  	memset(&ci->gadget, 0, sizeof(ci->gadget));
+ }
 -- 
 1.8.1.rc1.5.g7e0651a
