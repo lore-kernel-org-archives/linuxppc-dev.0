@@ -1,31 +1,19 @@
-Return-Path: <simon.jeons@gmail.com>
-Received: from mail-pb0-f54.google.com (mail-pb0-f54.google.com
- [209.85.160.54])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 4F1B02C007E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 12:48:26 +1100 (EST)
-Received: by mail-pb0-f54.google.com with SMTP id rr4so3245423pbb.27
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Jan 2013 17:48:24 -0800 (PST)
-Message-ID: <1358992092.3351.10.camel@kernel>
-Subject: Re: [PATCH Bug fix 0/5] Bug fix for physical memory hot-remove.
-From: Simon Jeons <simon.jeons@gmail.com>
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Date: Wed, 23 Jan 2013 19:48:12 -0600
-In-Reply-To: <51009003.5020901@cn.fujitsu.com>
-References: <1358854984-6073-1-git-send-email-tangchen@cn.fujitsu.com>
- <1358944171.3351.1.camel@kernel> <50FFE2FC.9030401@cn.fujitsu.com>
- <1358987715.3351.3.camel@kernel> <51009003.5020901@cn.fujitsu.com>
+Return-Path: <michael@ellerman.id.au>
+Message-ID: <1358995372.17813.2.camel@concordia>
+Subject: Re: [PATCH] perf: Fix compile warnings in tests/attr.c
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Thu, 24 Jan 2013 13:42:52 +1100
+In-Reply-To: <20130123185733.GA22906@us.ibm.com>
+References: <20130119013052.GA24693@us.ibm.com>
+ <20130121135906.GD1995@krava.brq.redhat.com>
+ <20130121213823.GA4774@us.ibm.com> <1358898333.29791.14.camel@concordia>
+ <20130123185733.GA22906@us.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linux-mm@kvack.org, paulus@samba.org, hpa@zytor.com, cl@linux.com,
- sfr@canb.auug.org.au, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, julian.calaby@gmail.com,
- glommer@parallels.com, wujianguo@huawei.com, yinghai@kernel.org,
- laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, paulus@samba.org, acme@ghostprotocols.net,
+ mingo <mingo@elte.hu>, Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,79 +23,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-01-24 at 09:36 +0800, Tang Chen wrote:
-> On 01/24/2013 08:35 AM, Simon Jeons wrote:
-> > On Wed, 2013-01-23 at 21:17 +0800, Tang Chen wrote:
-> >> On 01/23/2013 08:29 PM, Simon Jeons wrote:
-> >>> Hi Tang,
-> >>>
-> >>> I remember your big physical memory hot-remove patchset has already
-> >>> merged by Andrew, but where I can find it? Could you give me git tree
-> >>> address?
-> >>
-> >> Hi Simon,
-> >>
-> >> You can find all the physical memory hot-remove patches and related bugfix
-> >> patches from the following url:
-> >>
-> >> git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git akpm
-> >
-> > ~/linux-next$ git remote -v
-> > origin git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-> > (fetch)
-> > origin git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-> > (push)
-> > ~/linux-next$ git branch
-> > * akpm
-> >    master
-> > ~/linux-next$ wc -l mm/memory_hotplug.c
-> > 1173 mm/memory_hotplug.c
-> >
-> > I still can't find it. :(
+On Wed, 2013-01-23 at 10:57 -0800, Sukadev Bhattiprolu wrote:
+> Michael Ellerman [michael@ellerman.id.au] wrote:
+> | > | make: *** [tests/attr.o] Error 1
+> | > | 
+> | > | i386 compiles fine
+> | > 
+> | > __u64 is 'unsigned long long' on x86 and PRIu64 is 'llu' which is fine.
+> | > 
+> | > __u64 is 'unsigned long' on Power and PRIu64 is 'lu' which is again fine.
+> | > 
+> | > But __u64 is 'unsigned long long' on x86_64, but PRIu64 is '%lu' bc __WORDSIZE
+> | > is 64.
+> | 
+> | 
+> | This is a bit of a mess, but let me see if I can help explain it.
 > 
-> Hi Simon,
+> Yes it is :-) thanks for explaining it.
 > 
-> It's weird, in my akpm git log, I can find the following commit.
+> | 
+> | The root of the problem is that you're mixing up the kernel type __u64,
+> | with the userspace format specifier PRIu64.
 > 
-> commit deed0460e01b3968f2cf46fb94851936535b7e0d
-> Author: Tang Chen <tangchen@cn.fujitsu.com>
-> Date:   Sat Jan 19 11:07:13 2013 +1100
-> 
->      memory-hotplug: do not allocate pgdat if it was not freed when offline.
-> 
-> And there are 15 related patches following it. And above it, there are 
-> some more related bugfix
-> from me and Andrew. They are all in -mm tree.
-> 
-> This is what I did:
-> 
->    $ git remote add next 
-> http://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
->    $ git remote update next
->    $ git checkout -b next-akpm remotes/next/akpm
-> 
-> Please pull your tree and try again. :)
+> struct perf_event_attr is shared with user space and is using __u64. Should
+> it use uint64_t instead ?
 
-Got it. Thanks! :)
+Absolutely not. That's the whole reason we have __u64, it's so we can
+define it in the kernel but share it with userspace, and not have it
+conflict with any userspace types.
 
+
+> | PRIu64 is the format specifier for printing a uint64_t, it _may_ also be
+> | the right specifier for a __u64, but there's no guarantee of that - as
+> | you have discovered.
+> | 
+> | Inside the kernel both x86 and powerpc use unsigned long long always, in
+> | 32-bit and 64-bit code. That means in the kernel we can always use %llu.
+> | 
+> | On x86 that definition is also exported to userspace, so on x86 __u64 is
+> | always unsigned long long. As you noticed this potentially differs from
+> | uint64_t, which can be confusing. However it means in x86 userspace code
+> | you can always print a __u64 with %llu.
+> | 
+> | On powerpc we default to using definitions that match userspace, so
+> | __u64 changes depending on your wordsize, and so you must use PRIu64
+> | etc. to print them.
 > 
-> Thanks. :)
+> Well, using __u64 and PRIu64 seems breaks x86-64...
+
+Yes, see the previous paragraph.
+
+> | There is however support in recent powerpc kernels to switch to using
+> | unsigned long long even on 64-bit. See commit 2c9c6ce.
+> | 
+> | You need to define __SANE_USERSPACE_TYPES__ before including types.h.
+> | Then you can always use %llu to print __u64.
 > 
-> 
-> >
-> >>
-> >>
-> >> Thanks. :)
-> >>
-> >> --
-> >> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> >> the body to majordomo@kvack.org.  For more info on Linux MM,
-> >> see: http://www.linux-mm.org/ .
-> >> Don't email:<a href=mailto:"dont@kvack.org">  email@kvack.org</a>
-> >
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> >
+> but __SANE_USERSPACE_TYPES__ with __u64 and %llu seems to work on x86,
+> x86-64, powerpc.
+
+> Will modify my patch to add __SANE_USERSPACE_TYPES__ but leave the %llu
+> as is.
+
+Right. It will only work with newer kernel headers, but that's basically
+unsolvable.
+
+cheers
