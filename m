@@ -3,13 +3,14 @@ Received: from bear.ext.ti.com (bear.ext.ti.com [192.94.94.41])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "mailhost.ti.com",
  Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3A53E2C008C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:46:55 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 4CFB22C00EB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 02:47:00 +1100 (EST)
 From: Felipe Balbi <balbi@ti.com>
 To: Linux USB Mailing List <linux-usb@vger.kernel.org>
-Subject: [RFC/PATCH 03/32] usb: musb: gadget: let udc-core manage gadget-dev
-Date: Thu, 24 Jan 2013 17:45:41 +0200
-Message-ID: <1359042370-4358-4-git-send-email-balbi@ti.com>
+Subject: [RFC/PATCH 04/32] usb: gadget: omap_udc: let udc-core manage
+ gadget->dev
+Date: Thu, 24 Jan 2013 17:45:42 +0200
+Message-ID: <1359042370-4358-5-git-send-email-balbi@ti.com>
 In-Reply-To: <1359042370-4358-1-git-send-email-balbi@ti.com>
 References: <1359042370-4358-1-git-send-email-balbi@ti.com>
 MIME-Version: 1.0
@@ -31,52 +32,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By simply setting a flag, we can delete a little
-boilerplate code.
+By simply setting a flag, we drop some boilerplate
+code.
 
 Signed-off-by: Felipe Balbi <balbi@ti.com>
 ---
- drivers/usb/musb/musb_gadget.c | 10 +---------
- 1 file changed, 1 insertion(+), 9 deletions(-)
+ drivers/usb/gadget/omap_udc.c | 12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
-index 8767874..1c4a8e8 100644
---- a/drivers/usb/musb/musb_gadget.c
-+++ b/drivers/usb/musb/musb_gadget.c
-@@ -1871,12 +1871,11 @@ int musb_gadget_setup(struct musb *musb)
- 	musb->g.speed = USB_SPEED_UNKNOWN;
+diff --git a/drivers/usb/gadget/omap_udc.c b/drivers/usb/gadget/omap_udc.c
+index d0c87b1..234e82b 100644
+--- a/drivers/usb/gadget/omap_udc.c
++++ b/drivers/usb/gadget/omap_udc.c
+@@ -2631,10 +2631,9 @@ omap_udc_setup(struct platform_device *odev, struct usb_phy *xceiv)
+ 	udc->gadget.max_speed = USB_SPEED_FULL;
+ 	udc->gadget.name = driver_name;
  
- 	/* this "gadget" abstracts/virtualizes the controller */
--	dev_set_name(&musb->g.dev, "gadget");
- 	musb->g.dev.parent = musb->controller;
- 	musb->g.dev.dma_mask = musb->controller->dma_mask;
- 	musb->g.dev.release = musb_gadget_release;
- 	musb->g.name = musb_driver_name;
--
-+	musb->g.register_my_device = true;
- 	musb->g.is_otg = 1;
+-	device_initialize(&udc->gadget.dev);
+-	dev_set_name(&udc->gadget.dev, "gadget");
+ 	udc->gadget.dev.release = omap_udc_release;
+ 	udc->gadget.dev.parent = &odev->dev;
++	udc->gadget.register_my_device = true;
+ 	if (use_dma)
+ 		udc->gadget.dev.dma_mask = odev->dev.dma_mask;
  
- 	musb_g_init_endpoints(musb);
-@@ -1884,11 +1883,6 @@ int musb_gadget_setup(struct musb *musb)
- 	musb->is_active = 0;
- 	musb_platform_try_idle(musb, 0);
+@@ -2911,14 +2910,12 @@ bad_on_1710:
+ 	}
  
--	status = device_register(&musb->g.dev);
--	if (status != 0) {
--		put_device(&musb->g.dev);
--		return status;
--	}
- 	status = usb_add_gadget_udc(musb->controller, &musb->g);
+ 	create_proc_file();
+-	status = device_add(&udc->gadget.dev);
++	status = usb_add_gadget_udc(&pdev->dev, &udc->gadget);
  	if (status)
- 		goto err;
-@@ -1903,8 +1897,6 @@ err:
- void musb_gadget_cleanup(struct musb *musb)
- {
- 	usb_del_gadget_udc(&musb->g);
--	if (musb->g.dev.parent)
--		device_unregister(&musb->g.dev);
- }
+ 		goto cleanup4;
  
- /*
+-	status = usb_add_gadget_udc(&pdev->dev, &udc->gadget);
+-	if (!status)
+-		return status;
+-	/* If fail, fall through */
++	return 0;
++
+ cleanup4:
+ 	remove_proc_file();
+ 
+@@ -2989,7 +2986,6 @@ static int omap_udc_remove(struct platform_device *pdev)
+ 	release_mem_region(pdev->resource[0].start,
+ 			pdev->resource[0].end - pdev->resource[0].start + 1);
+ 
+-	device_unregister(&udc->gadget.dev);
+ 	wait_for_completion(&done);
+ 
+ 	return 0;
 -- 
 1.8.1.rc1.5.g7e0651a
