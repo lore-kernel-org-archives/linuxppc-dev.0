@@ -1,12 +1,24 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/2] powerpc: Change hardware breakpoint to allow longer ranges
-Date: Fri, 25 Jan 2013 12:02:59 +1100
-Message-Id: <1359075779-27492-2-git-send-email-mikey@neuling.org>
-In-Reply-To: <1359075779-27492-1-git-send-email-mikey@neuling.org>
-References: <1359075779-27492-1-git-send-email-mikey@neuling.org>
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <B07421@freescale.com>
+Received: from ch1outboundpool.messaging.microsoft.com
+ (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C3A3E2C01C7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 12:03:33 +1100 (EST)
+Date: Thu, 24 Jan 2013 19:03:13 -0600
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: Freescale P2020 CPU Freeze over PCIe abort signal
+To: siva kumar <jasivkumar@gmail.com>
+References: <CAJrcUeQCJu2wnMSWdNBSxc_5hzm1NmQw2sQjKQTwvoAF5Q3hYw@mail.gmail.com>
+ <1358977222.9710.7@snotra>
+ <CAJrcUeRfz3m_NcE+HaVA8_3bGGuwaTM0ocPc7SYnhVaEaJyF2w@mail.gmail.com>
+In-Reply-To: <CAJrcUeRfz3m_NcE+HaVA8_3bGGuwaTM0ocPc7SYnhVaEaJyF2w@mail.gmail.com>
+ (from jasivkumar@gmail.com on Thu Jan 24 05:53:51 2013)
+Message-ID: <1359075793.24865.21@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,61 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Change the hardware breakpoint code so that we can support wider ranged
-breakpoints.
+On 01/24/2013 05:53:51 AM, siva kumar wrote:
+> Thank you Scott for the reply.
+> May I know did u got out of this issue and   can i get some brief on =20
+> what
+> changes they had suggested.
 
-This means both ptrace and perf hardware breakpoints can use upto 512 byte long
-breakpoints when using the DAWR and only 8 byte when using the DABR.
+I wasn't the one that had the issue.  Why not send an e-mail to Eran =20
+Liberty?
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
----
- arch/powerpc/include/asm/hw_breakpoint.h |    2 --
- arch/powerpc/kernel/hw_breakpoint.c      |   12 ++++++++++--
- 2 files changed, 10 insertions(+), 4 deletions(-)
+-Scott
 
-diff --git a/arch/powerpc/include/asm/hw_breakpoint.h b/arch/powerpc/include/asm/hw_breakpoint.h
-index 96437e5..eb0f4ac 100644
---- a/arch/powerpc/include/asm/hw_breakpoint.h
-+++ b/arch/powerpc/include/asm/hw_breakpoint.h
-@@ -57,8 +57,6 @@ struct pmu;
- struct perf_sample_data;
- 
- #define HW_BREAKPOINT_ALIGN 0x7
--/* Maximum permissible length of any HW Breakpoint */
--#define HW_BREAKPOINT_LEN 0x8
- 
- extern int hw_breakpoint_slots(int type);
- extern int arch_bp_generic_fields(int type, int *gen_bp_type);
-diff --git a/arch/powerpc/kernel/hw_breakpoint.c b/arch/powerpc/kernel/hw_breakpoint.c
-index 2a3e8dd..a949bdf 100644
---- a/arch/powerpc/kernel/hw_breakpoint.c
-+++ b/arch/powerpc/kernel/hw_breakpoint.c
-@@ -142,7 +142,7 @@ int arch_bp_generic_fields(int type, int *gen_bp_type)
-  */
- int arch_validate_hwbkpt_settings(struct perf_event *bp)
- {
--	int ret = -EINVAL;
-+	int ret = -EINVAL, length_max;
- 	struct arch_hw_breakpoint *info = counter_arch_bp(bp);
- 
- 	if (!bp)
-@@ -171,8 +171,16 @@ int arch_validate_hwbkpt_settings(struct perf_event *bp)
- 	 * HW_BREAKPOINT_ALIGN by rounding off to the lower address, the
- 	 * 'symbolsize' should satisfy the check below.
- 	 */
-+	length_max = 8; /* DABR */
-+	if (cpu_has_feature(CPU_FTR_DAWR)) {
-+		length_max = 512 ; /* 64 doublewords */
-+		/* DAWR region can't cross 512 boundary */
-+		if ((bp->attr.bp_addr >> 10) != 
-+		    ((bp->attr.bp_addr + bp->attr.bp_len) >> 10))
-+			return -EINVAL;
-+	}
- 	if (info->len >
--	    (HW_BREAKPOINT_LEN - (info->address & HW_BREAKPOINT_ALIGN)))
-+	    (length_max - (info->address & HW_BREAKPOINT_ALIGN)))
- 		return -EINVAL;
- 	return 0;
- }
--- 
-1.7.10.4
+> On Thu, Jan 24, 2013 at 3:10 AM, Scott Wood <scottwood@freescale.com> =20
+> wrote:
+>=20
+> > On 01/23/2013 11:41:26 AM, siva kumar wrote:
+> >
+> >> Hi ,
+> >>
+> >> Is there any update on this , am getting in to the same state .
+> >> https://lists.ozlabs.org/**pipermail/linuxppc-dev/2010-**
+> >> =20
+> October/086680.html<https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-=
+October/086680.html>
+> >>
+> >
+> > Eran's initial comment of "This should probably go to the Freescale
+> > support" seems right.  You can reach Freescale support at
+> > support@freescale.com.
+> >
+> > -Scott
+> >
+>=20
+
+=
