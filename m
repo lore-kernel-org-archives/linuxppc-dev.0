@@ -1,24 +1,33 @@
-Return-Path: <B07421@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id C3A3E2C01C7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 12:03:33 +1100 (EST)
-Date: Thu, 24 Jan 2013 19:03:13 -0600
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: Freescale P2020 CPU Freeze over PCIe abort signal
-To: siva kumar <jasivkumar@gmail.com>
-References: <CAJrcUeQCJu2wnMSWdNBSxc_5hzm1NmQw2sQjKQTwvoAF5Q3hYw@mail.gmail.com>
- <1358977222.9710.7@snotra>
- <CAJrcUeRfz3m_NcE+HaVA8_3bGGuwaTM0ocPc7SYnhVaEaJyF2w@mail.gmail.com>
-In-Reply-To: <CAJrcUeRfz3m_NcE+HaVA8_3bGGuwaTM0ocPc7SYnhVaEaJyF2w@mail.gmail.com>
- (from jasivkumar@gmail.com on Thu Jan 24 05:53:51 2013)
-Message-ID: <1359075793.24865.21@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <mcree@orcon.net.nz>
+Received: from nctlincom01.orcon.net.nz (nctlincom01.orcon.net.nz
+ [60.234.4.69])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 8BB042C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 14:57:48 +1100 (EST)
+Received: from mx3.orcon.net.nz (mx3.orcon.net.nz [219.88.242.53])
+ by nctlincom01.orcon.net.nz (8.14.3/8.14.3/Debian-9.4) with ESMTP id
+ r0P3oXsQ005919
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 16:50:33 +1300
+Received: from Debian-exim by mx3.orcon.net.nz with local (Exim 4.69)
+ (envelope-from <mcree@orcon.net.nz>) id 1TyaJE-0008GX-I3
+ for linuxppc-dev@lists.ozlabs.org; Fri, 25 Jan 2013 16:50:32 +1300
+Message-Id: <43E02291-8F84-40CD-B429-847E7533EA18@orcon.net.nz>
+From: Michael Cree <mcree@orcon.net.nz>
+To: Michel Lespinasse <walken@google.com>
+In-Reply-To: <1357694895-520-3-git-send-email-walken@google.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [PATCH 2/8] mm: use vm_unmapped_area() on alpha architecture
+Date: Fri, 25 Jan 2013 16:49:58 +1300
+References: <1357694895-520-1-git-send-email-walken@google.com>
+ <1357694895-520-3-git-send-email-walken@google.com>
+Cc: Rik van Riel <riel@redhat.com>, Tony Luck <tony.luck@intel.com>,
+ linux-ia64@vger.kernel.org, linux-parisc@vger.kernel.org,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, linux-kernel@vger.kernel.org,
+ David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+ linux-alpha@vger.kernel.org, Matt Turner <mattst88@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,37 +37,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/24/2013 05:53:51 AM, siva kumar wrote:
-> Thank you Scott for the reply.
-> May I know did u got out of this issue and   can i get some brief on =20
-> what
-> changes they had suggested.
+On 9/01/2013, at 2:28 PM, Michel Lespinasse wrote:
+> Update the alpha arch_get_unmapped_area function to make use of
+> vm_unmapped_area() instead of implementing a brute force search.
+>
+> Signed-off-by: Michel Lespinasse <walken@google.com>
 
-I wasn't the one that had the issue.  Why not send an e-mail to Eran =20
-Liberty?
+'Tis running fine on my alpha.
 
--Scott
+Tested-by: Michael Cree <mcree@orcon.net.nz>
 
-> On Thu, Jan 24, 2013 at 3:10 AM, Scott Wood <scottwood@freescale.com> =20
-> wrote:
->=20
-> > On 01/23/2013 11:41:26 AM, siva kumar wrote:
-> >
-> >> Hi ,
-> >>
-> >> Is there any update on this , am getting in to the same state .
-> >> https://lists.ozlabs.org/**pipermail/linuxppc-dev/2010-**
-> >> =20
-> October/086680.html<https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-=
-October/086680.html>
-> >>
-> >
-> > Eran's initial comment of "This should probably go to the Freescale
-> > support" seems right.  You can reach Freescale support at
-> > support@freescale.com.
-> >
-> > -Scott
-> >
->=20
-
-=
+Cheers
+Michael.
