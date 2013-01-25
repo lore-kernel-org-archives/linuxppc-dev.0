@@ -1,36 +1,10 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e8.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 1916F2C0080
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 25 Jan 2013 10:29:23 +1100 (EST)
-Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Thu, 24 Jan 2013 18:29:20 -0500
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id BC831C90043
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 18:29:08 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0ONT8XZ260318
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 18:29:08 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0ONT7VN014558
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 24 Jan 2013 21:29:08 -0200
-Date: Thu, 24 Jan 2013 15:29:07 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] perf/Power: PERF_EVENT_IOC_ENABLE does not reenable event
-Message-ID: <20130124232907.GA12233@us.ibm.com>
-References: <20130111191117.GA9407@us.ibm.com> <20130124050505.GA14070@drongo>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20130124050505.GA14070@drongo>
-Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@au1.ibm.com>,
- Maynard Johnson <mpjohn@us.ibm.com>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH 1/2] powerpc: Add length setting to set_dawr
+Date: Fri, 25 Jan 2013 12:02:58 +1100
+Message-Id: <1359075779-27492-1-git-send-email-mikey@neuling.org>
+Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,30 +14,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Paul Mackerras [paulus@samba.org] wrote:
-| > +	/*
-| > +	 * If this event was disabled in record_and_restart() because we
-| > +	 * exceeded the ->event_limit, this is probably a good time to
-| > +	 * re-enable the event ? If we don't reenable the event, we will
-| > +	 * never notify the user again about this event.
-| > +	 */
-| 
-| The comment seems a bit tentative. :)  If the PERF_EF_START bit is set
-| then we are being told to restart the event.
-| 
-| >  	if (!(ef_flags & PERF_EF_START))
-| >  		event->hw.state = PERF_HES_STOPPED | PERF_HES_UPTODATE;
-| > +	else
-| > +		event->hw.state &= ~PERF_HES_STOPPED;
-| 
-| This looks fine, though I think you could equally well just set
-| event->hw.state to 0 in the else clause.  That would clear the
-| UPTODATE flag too, which is appropriate since we are about to put the
-| event on a hardware counter.
+Currently we set the length field in the DAWR to 0 which defaults it to one
+double word (64bits) which is the same as the DABR.
 
-Agree. I submitted a new patch with better comments and patch description
-and cleared the state to 0.
+Change this so that we can set it to longer values as supported by the DAWR.
 
-Thanks for the review.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/kernel/process.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
-Sukadev
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index bccc81b..f49a05f 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -420,7 +420,7 @@ static inline int set_dabr(struct arch_hw_breakpoint *brk)
+ 
+ static inline int set_dawr(struct arch_hw_breakpoint *brk)
+ {
+-	unsigned long dawr, dawrx;
++	unsigned long dawr, dawrx, mrd;
+ 
+ 	dawr = brk->address;
+ 
+@@ -430,6 +430,14 @@ static inline int set_dawr(struct arch_hw_breakpoint *brk)
+ 		                   << (63 - 59); //* translate */
+ 	dawrx |= (brk->type & (HW_BRK_TYPE_PRIV_ALL)) \
+ 		                   >> 3; //* PRIM bits */
++	/* dawr length is stored in field MDR bits 48:53.  Matches range in
++	   doublewords (64 bits) baised by -1 eg. 0b000000=1DW and
++	   0b111111=64DW.
++	   brk->len is in bytes.
++	   This aligns up to double word size, shifts and does the bias.
++	*/
++	mrd = ((brk->len + 7) >> 3) - 1;
++	dawrx |= (mrd & 0x3f) << (63 - 53);
+ 
+ 	if (ppc_md.set_dawr)
+ 		return ppc_md.set_dawr(dawr, dawrx);
+-- 
+1.7.10.4
