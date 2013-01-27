@@ -1,26 +1,19 @@
 Return-Path: <yinghai@kernel.org>
-Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "userp1050.oracle.com",
+ (Client CN "aserp1040.oracle.com",
  Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 85EB22C0184
+ by ozlabs.org (Postfix) with ESMTPS id 44B742C00AE
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 06:24:50 +1100 (EST)
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- by userp1050.oracle.com (Sentrion-MTA-4.2.2/Sentrion-MTA-4.2.2) with ESMTP id
- r0RJOmbe014869
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2013 19:24:48 GMT
 From: Yinghai Lu <yinghai@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jiang Liu <jiang.liu@huawei.com>,
  "Rafael J. Wysocki" <rjw@sisk.pl>,
  Taku Izumi <izumi.taku@jp.fujitsu.com>, Toshi Kani <toshi.kani@hp.com>
-Subject: [PATCH v3 05/22] PCI: Add for_each_pci_host_bridge() and
- pci_get_next_host_bridge
-Date: Sun, 27 Jan 2013 11:23:32 -0800
-Message-Id: <1359314629-18651-6-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1359314629-18651-1-git-send-email-yinghai@kernel.org>
+Subject: [PATCH v3 00/22] PCI: Iterate pci host bridge instead of pci root bus
+Date: Sun, 27 Jan 2013 11:23:27 -0800
+Message-Id: <1359314629-18651-1-git-send-email-yinghai@kernel.org>
+In-Reply-To: <CAE9FiQXHG01NjnYNDbC-KEpbcvY-q4pBe97CxTOGS7W4vZQBYQ@mail.gmail.com>
 References: <CAE9FiQXHG01NjnYNDbC-KEpbcvY-q4pBe97CxTOGS7W4vZQBYQ@mail.gmail.com>
- <1359314629-18651-1-git-send-email-yinghai@kernel.org>
 Cc: linux-ia64@vger.kernel.org, Mauro Carvalho Chehab <mchehab@redhat.com>,
  David Airlie <airlied@linux.ie>, linux-pci@vger.kernel.org,
  dri-devel@lists.freedesktop.org, David Howells <dhowells@redhat.com>,
@@ -48,21 +41,21 @@ Now we have pci_root_buses list, and there is lots of iteration with
 list_of_each of it, that is not safe after we add pci root bus hotplug
 support after booting stage.
 
-Also pci_find_next_bus is pretty misleading name, and it is only finding
-next root bus instead of regular pci bus.
-
 Add pci_get_next_host_bridge and use bus_find_device in driver core to
 iterate host bridge and the same time get root bus.
 
-In folllowing patches will replace searching root bus with searching host_bridge.
-after using with that host-bridge, will need to call put device to release
-reference if break early from the loop.
-
+We replace searching root bus with searching host_bridge,
+as host_bridge->bus is the root bus.
 After those replacing, we even could kill pci_root_buses list.
 
--v2: fixes compiling error when CONFIG_PCI is not defined that Fengguang Wu found.
+based on pci/next
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+could get from
+        git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-yinghai.git for-pci-for-each-host-bridge
+
+-v2: updated after pci_root_bus_hotplug get into pci/next
+-v3: update changelog and add cc for pci core change for arch guys.
+
 Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
 Cc: Doug Thompson <dougthompson@xmission.com>
 Cc: linux-edac@vger.kernel.org
@@ -89,79 +82,56 @@ Cc: linux-am33-list@redhat.com
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
----
- drivers/pci/search.c |   24 ++++++++++++++++++++++++
- include/linux/pci.h  |    9 +++++++++
- 2 files changed, 33 insertions(+)
 
-diff --git a/drivers/pci/search.c b/drivers/pci/search.c
-index d0627fa..db0c3a9 100644
---- a/drivers/pci/search.c
-+++ b/drivers/pci/search.c
-@@ -178,6 +178,30 @@ struct pci_dev *pci_get_domain_bus_and_slot(int domain, unsigned int bus,
- }
- EXPORT_SYMBOL(pci_get_domain_bus_and_slot);
- 
-+static int match_pci_host_bridge(struct device *dev, void *data)
-+{
-+	return 1;
-+}
-+
-+struct pci_host_bridge *pci_get_next_host_bridge(struct pci_host_bridge *from)
-+{
-+	struct device *dev;
-+	struct device *dev_start = NULL;
-+	struct pci_host_bridge *bridge = NULL;
-+
-+	WARN_ON(in_interrupt());
-+	if (from)
-+		dev_start = &from->dev;
-+	dev = bus_find_device(&pci_host_bridge_bus_type, dev_start, NULL,
-+			      match_pci_host_bridge);
-+	if (dev)
-+		bridge = to_pci_host_bridge(dev);
-+	if (from)
-+		put_device(&from->dev);
-+	return bridge;
-+}
-+EXPORT_SYMBOL_GPL(pci_get_next_host_bridge);
-+
- static int match_pci_dev_by_id(struct device *dev, void *data)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 9da06ec..67879cb 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -375,6 +375,8 @@ struct pci_host_bridge {
- };
- 
- #define	to_pci_host_bridge(n) container_of(n, struct pci_host_bridge, dev)
-+#define for_each_pci_host_bridge(d) while ((d = pci_get_next_host_bridge(d)) != NULL)
-+
- void pci_set_host_bridge_release(struct pci_host_bridge *bridge,
- 		     void (*release_fn)(struct pci_host_bridge *),
- 		     void *release_data);
-@@ -763,6 +765,7 @@ int pci_find_ht_capability(struct pci_dev *dev, int ht_cap);
- int pci_find_next_ht_capability(struct pci_dev *dev, int pos, int ht_cap);
- struct pci_bus *pci_find_next_bus(const struct pci_bus *from);
- 
-+struct pci_host_bridge *pci_get_next_host_bridge(struct pci_host_bridge *from);
- struct pci_dev *pci_get_device(unsigned int vendor, unsigned int device,
- 				struct pci_dev *from);
- struct pci_dev *pci_get_subsys(unsigned int vendor, unsigned int device,
-@@ -1418,6 +1421,12 @@ static inline int pci_domain_nr(struct pci_bus *bus)
- static inline struct pci_dev *pci_dev_get(struct pci_dev *dev)
- { return NULL; }
- 
-+static inline struct pci_host_bridge *pci_get_next_host_bridge(
-+			struct pci_host_bridge *host_bridge)
-+{
-+	return NULL;
-+}
-+
- #define dev_is_pci(d) (false)
- #define dev_is_pf(d) (false)
- #define dev_num_vf(d) (0)
+
+Yinghai Lu (22):
+  PCI: Rename pci_release_bus_bridge_dev to pci_release_host_bridge_dev
+  PCI: Add dummy bus_type for pci_host_bridge
+  PCI, libata: remove find_bridge in acpi_bus_type
+  PCI, ACPI: Update comments for find_bridge in acpi_bus_type
+  PCI: Add for_each_pci_host_bridge() and pci_get_next_host_bridge
+  PCI, hotplug: Kill pci_find_next_bus in sgi_hotplug
+  PCI: Kill pci_find_next_bus in pci_sysfs
+  PCI, edac: Kill pci_find_next_bus in edac
+  PCI, x86: Kill pci_find_next_bus in pcibios_scan_root
+  PCI, x86: Kill pci_root_buses in resources reservations
+  PCI, drm: Kill pci_root_buses in alpha hose setting
+  PCI: Kill pci_root_buses in setup-bus
+  PCI, sparc: Kill pci_find_next_bus
+  PCI, ia64: Kill pci_find_next_bus
+  PCI, alpha: Kill pci_root_buses
+  PCI, arm: Kill pci_root_buses
+  PCI, frv: Kill pci_root_buses in resources reservations
+  PCI, microblaze: Kill pci_root_buses in resources reservations
+  PCI, mn10300: Kill pci_root_buses in resources reservations
+  PCI, powerpc: Kill pci_root_buses in resources reservations
+  PCI: Kill pci_find_next_bus
+  PCI: Kill pci_root_buses
+
+ arch/alpha/kernel/pci.c                 |    6 +--
+ arch/arm/kernel/bios32.c                |    9 ++---
+ arch/frv/mb93090-mb00/pci-frv.c         |   37 +++++++++---------
+ arch/ia64/hp/common/sba_iommu.c         |    7 ++--
+ arch/ia64/sn/kernel/io_common.c         |    5 ++-
+ arch/microblaze/pci/pci-common.c        |   10 ++---
+ arch/mn10300/unit-asb2305/pci-asb2305.c |   62 ++++++++++++++++---------------
+ arch/powerpc/kernel/pci-common.c        |   13 +++----
+ arch/powerpc/kernel/pci_64.c            |    8 ++--
+ arch/sparc/kernel/pci.c                 |    6 ++-
+ arch/x86/pci/common.c                   |    9 +++--
+ arch/x86/pci/i386.c                     |   20 +++++-----
+ drivers/ata/libata-acpi.c               |    6 ---
+ drivers/edac/i7core_edac.c              |    6 +--
+ drivers/gpu/drm/drm_fops.c              |   10 +++--
+ drivers/pci/hotplug/sgi_hotplug.c       |    6 ++-
+ drivers/pci/pci-driver.c                |   11 +++++-
+ drivers/pci/pci-sysfs.c                 |    6 +--
+ drivers/pci/probe.c                     |   13 ++-----
+ drivers/pci/search.c                    |   61 +++++++++++++++---------------
+ drivers/pci/setup-bus.c                 |   24 ++++++------
+ include/acpi/acpi_bus.h                 |    2 +-
+ include/linux/pci.h                     |   18 +++++----
+ 23 files changed, 187 insertions(+), 168 deletions(-)
+
 -- 
 1.7.10.4
