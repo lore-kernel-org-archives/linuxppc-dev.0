@@ -1,27 +1,29 @@
 Return-Path: <yinghai@kernel.org>
-Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
+Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "aserp1050.oracle.com",
+ (Client CN "userp1050.oracle.com",
  Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 85BC02C008C
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2013 16:38:49 +1100 (EST)
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- by aserp1050.oracle.com (Sentrion-MTA-4.3.1/Sentrion-MTA-4.3.1) with ESMTP id
- r0R5cktB017085
+ by ozlabs.org (Postfix) with ESMTPS id 5F7E02C0098
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 06:24:38 +1100 (EST)
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ by userp1050.oracle.com (Sentrion-MTA-4.2.2/Sentrion-MTA-4.2.2) with ESMTP id
+ r0RJOZ7W014859
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2013 05:38:47 GMT
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2013 19:24:36 GMT
 From: Yinghai Lu <yinghai@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jiang Liu <jiang.liu@huawei.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, Taku Izumi <izumi.taku@jp.fujitsu.com>
-Subject: [PATCH v2 20/22] PCI,
+ "Rafael J. Wysocki" <rjw@sisk.pl>,
+ Taku Izumi <izumi.taku@jp.fujitsu.com>, Toshi Kani <toshi.kani@hp.com>
+Subject: [PATCH v3 20/22] PCI,
  powerpc: Kill pci_root_buses in resources reservations
-Date: Sat, 26 Jan 2013 21:36:41 -0800
-Message-Id: <1359265003-16166-21-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1359265003-16166-1-git-send-email-yinghai@kernel.org>
-References: <CAE9FiQUhrVPNKcdWbiqHLa5PzH7Dg-uduVc9BP-OjM-eCqSXdw@mail.gmail.com>
- <1359265003-16166-1-git-send-email-yinghai@kernel.org>
-Cc: linux-pci@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Date: Sun, 27 Jan 2013 11:23:47 -0800
+Message-Id: <1359314629-18651-21-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1359314629-18651-1-git-send-email-yinghai@kernel.org>
+References: <CAE9FiQXHG01NjnYNDbC-KEpbcvY-q4pBe97CxTOGS7W4vZQBYQ@mail.gmail.com>
+ <1359314629-18651-1-git-send-email-yinghai@kernel.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,6 +32,8 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+
+Replace that with hotplug-safe version iteration.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
