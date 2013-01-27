@@ -3,27 +3,37 @@ Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client CN "userp1050.oracle.com",
  Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 5F7E02C0098
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 06:24:38 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 944642C0160
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 06:24:48 +1100 (EST)
 Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  by userp1050.oracle.com (Sentrion-MTA-4.2.2/Sentrion-MTA-4.2.2) with ESMTP id
- r0RJOZ7W014859
+ r0RJOkvd014863
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2013 19:24:36 GMT
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2013 19:24:46 GMT
 From: Yinghai Lu <yinghai@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jiang Liu <jiang.liu@huawei.com>,
  "Rafael J. Wysocki" <rjw@sisk.pl>,
  Taku Izumi <izumi.taku@jp.fujitsu.com>, Toshi Kani <toshi.kani@hp.com>
-Subject: [PATCH v3 20/22] PCI,
- powerpc: Kill pci_root_buses in resources reservations
-Date: Sun, 27 Jan 2013 11:23:47 -0800
-Message-Id: <1359314629-18651-21-git-send-email-yinghai@kernel.org>
+Subject: [PATCH v3 02/22] PCI: Add dummy bus_type for pci_host_bridge
+Date: Sun, 27 Jan 2013 11:23:29 -0800
+Message-Id: <1359314629-18651-3-git-send-email-yinghai@kernel.org>
 In-Reply-To: <1359314629-18651-1-git-send-email-yinghai@kernel.org>
 References: <CAE9FiQXHG01NjnYNDbC-KEpbcvY-q4pBe97CxTOGS7W4vZQBYQ@mail.gmail.com>
  <1359314629-18651-1-git-send-email-yinghai@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- Yinghai Lu <yinghai@kernel.org>
+Cc: linux-ia64@vger.kernel.org, Mauro Carvalho Chehab <mchehab@redhat.com>,
+ David Airlie <airlied@linux.ie>, linux-pci@vger.kernel.org,
+ dri-devel@lists.freedesktop.org, David Howells <dhowells@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
+ linux-am33-list@redhat.com, Russell King <linux@arm.linux.org.uk>,
+ x86@kernel.org, linux-altix@sgi.com, Doug Thompson <dougthompson@xmission.com>,
+ Matt Turner <mattst88@gmail.com>, linux-edac@vger.kernel.org,
+ Fenghua Yu <fenghua.yu@intel.com>, microblaze-uclinux@itee.uq.edu.au,
+ Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Yinghai Lu <yinghai@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
+ Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-alpha@vger.kernel.org,
+ Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,76 +43,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Replace that with hotplug-safe version iteration.
+Need to use it for looping registered host_bridge, and kill
+pci_root_buses list.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Doug Thompson <dougthompson@xmission.com>
+Cc: linux-edac@vger.kernel.org
+Cc: x86@kernel.org
+Cc: David Airlie <airlied@linux.ie>
+Cc: dri-devel@lists.freedesktop.org
+Cc: "David S. Miller" <davem@davemloft.net>
+Cc: sparclinux@vger.kernel.org
+Cc: Tony Luck <tony.luck@intel.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: linux-ia64@vger.kernel.org
+Cc: linux-altix@sgi.com
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Matt Turner <mattst88@gmail.com>
+Cc: linux-alpha@vger.kernel.org
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: David Howells <dhowells@redhat.com>
+Cc: Michal Simek <monstr@monstr.eu>
+Cc: microblaze-uclinux@itee.uq.edu.au
+Cc: Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Cc: linux-am33-list@redhat.com
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/kernel/pci-common.c |   13 ++++++-------
- arch/powerpc/kernel/pci_64.c     |    8 ++++----
- 2 files changed, 10 insertions(+), 11 deletions(-)
+ drivers/pci/pci-driver.c |   11 ++++++++++-
+ drivers/pci/probe.c      |    1 +
+ include/linux/pci.h      |    2 ++
+ 3 files changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index abc0d08..9ccecbe 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -1398,11 +1398,11 @@ static void __init pcibios_reserve_legacy_regions(struct pci_bus *bus)
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index acdcc3c..9fb004b 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -1278,11 +1278,20 @@ struct bus_type pci_bus_type = {
+ 	.pm		= PCI_PM_OPS_PTR,
+ };
  
- void __init pcibios_resource_survey(void)
++struct bus_type pci_host_bridge_bus_type = {
++	.name           = "pci_host_bridge",
++};
++
++static int __init pci_host_bridge_driver_init(void)
++{
++	return bus_register(&pci_host_bridge_bus_type);
++}
++postcore_initcall(pci_host_bridge_driver_init);
++
+ static int __init pci_driver_init(void)
  {
--	struct pci_bus *b;
-+	struct pci_host_bridge *host_bridge = NULL;
+ 	return bus_register(&pci_bus_type);
+ }
+-
+ postcore_initcall(pci_driver_init);
  
- 	/* Allocate and assign resources */
--	list_for_each_entry(b, &pci_root_buses, node)
--		pcibios_allocate_bus_resources(b);
-+	for_each_pci_host_bridge(host_bridge)
-+		pcibios_allocate_bus_resources(host_bridge->bus);
- 	pcibios_allocate_resources(0);
- 	pcibios_allocate_resources(1);
+ EXPORT_SYMBOL_GPL(pci_add_dynid);
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index ef50154..04ecf0d 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -1692,6 +1692,7 @@ struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
+ 		goto err_out;
  
-@@ -1410,10 +1410,9 @@ void __init pcibios_resource_survey(void)
- 	 * the low IO area and the VGA memory area if they intersect the
- 	 * bus available resources to avoid allocating things on top of them
- 	 */
--	if (!pci_has_flag(PCI_PROBE_ONLY)) {
--		list_for_each_entry(b, &pci_root_buses, node)
--			pcibios_reserve_legacy_regions(b);
--	}
-+	if (!pci_has_flag(PCI_PROBE_ONLY))
-+		for_each_pci_host_bridge(host_bridge)
-+			pcibios_reserve_legacy_regions(host_bridge->bus);
+ 	bridge->dev.parent = parent;
++	bridge->dev.bus = &pci_host_bridge_bus_type;
+ 	bridge->dev.release = pci_release_host_bridge_dev;
+ 	dev_set_name(&bridge->dev, "pci%04x:%02x", pci_domain_nr(b), bus);
+ 	error = pcibios_root_bridge_prepare(bridge);
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 056d3d6..9da06ec 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -669,6 +669,7 @@ enum pcie_bus_config_types {
  
- 	/* Now, if the platform didn't decide to blindly trust the firmware,
- 	 * we proceed to assigning things that were left unassigned
-diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-index 2cbe676..f848325 100644
---- a/arch/powerpc/kernel/pci_64.c
-+++ b/arch/powerpc/kernel/pci_64.c
-@@ -208,9 +208,9 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
- 			  unsigned long in_devfn)
- {
- 	struct pci_controller* hose;
--	struct list_head *ln;
--	struct pci_bus *bus = NULL;
-+	struct pci_bus *bus;
- 	struct device_node *hose_node;
-+	struct pci_host_bridge *host_bridge = NULL;
+ extern enum pcie_bus_config_types pcie_bus_config;
  
- 	/* Argh ! Please forgive me for that hack, but that's the
- 	 * simplest way to get existing XFree to not lockup on some
-@@ -230,8 +230,8 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
- 	 * used on pre-domains setup. We return the first match
- 	 */
++extern struct bus_type pci_host_bridge_bus_type;
+ extern struct bus_type pci_bus_type;
  
--	for (ln = pci_root_buses.next; ln != &pci_root_buses; ln = ln->next) {
--		bus = pci_bus_b(ln);
-+	for_each_pci_host_bridge(host_bridge) {
-+		bus = host_bridge->bus;
- 		if (in_bus >= bus->number && in_bus <= bus->busn_res.end)
- 			break;
- 		bus = NULL;
+ /* Do NOT directly access these two variables, unless you are arch specific pci
+@@ -740,6 +741,7 @@ void pci_stop_root_bus(struct pci_bus *bus);
+ void pci_remove_root_bus(struct pci_bus *bus);
+ void pci_setup_cardbus(struct pci_bus *bus);
+ extern void pci_sort_breadthfirst(void);
++#define dev_is_pci_host_bridge(d) ((d)->bus == &pci_host_bridge_bus_type)
+ #define dev_is_pci(d) ((d)->bus == &pci_bus_type)
+ #define dev_is_pf(d) ((dev_is_pci(d) ? to_pci_dev(d)->is_physfn : false))
+ #define dev_num_vf(d) ((dev_is_pci(d) ? pci_num_vf(to_pci_dev(d)) : 0))
 -- 
 1.7.10.4
