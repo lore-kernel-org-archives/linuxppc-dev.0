@@ -1,22 +1,17 @@
 Return-Path: <yinghai@kernel.org>
-Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "userp1050.oracle.com",
+ (Client CN "aserp1040.oracle.com",
  Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id BFD4A2C017F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 06:25:00 +1100 (EST)
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- by userp1050.oracle.com (Sentrion-MTA-4.2.2/Sentrion-MTA-4.2.2) with ESMTP id
- r0RJOwOB014899
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2013 19:24:58 GMT
+ by ozlabs.org (Postfix) with ESMTPS id CBD542C015A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 06:25:02 +1100 (EST)
 From: Yinghai Lu <yinghai@kernel.org>
 To: Bjorn Helgaas <bhelgaas@google.com>, Jiang Liu <jiang.liu@huawei.com>,
  "Rafael J. Wysocki" <rjw@sisk.pl>,
  Taku Izumi <izumi.taku@jp.fujitsu.com>, Toshi Kani <toshi.kani@hp.com>
-Subject: [PATCH v3 22/22] PCI: Kill pci_root_buses
-Date: Sun, 27 Jan 2013 11:23:49 -0800
-Message-Id: <1359314629-18651-23-git-send-email-yinghai@kernel.org>
+Subject: [PATCH v3 21/22] PCI: Kill pci_find_next_bus
+Date: Sun, 27 Jan 2013 11:23:48 -0800
+Message-Id: <1359314629-18651-22-git-send-email-yinghai@kernel.org>
 In-Reply-To: <1359314629-18651-1-git-send-email-yinghai@kernel.org>
 References: <CAE9FiQXHG01NjnYNDbC-KEpbcvY-q4pBe97CxTOGS7W4vZQBYQ@mail.gmail.com>
  <1359314629-18651-1-git-send-email-yinghai@kernel.org>
@@ -44,6 +39,8 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 No user now, remove it.
+
+That name is misleading as it only for root buses.
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
@@ -73,49 +70,95 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: linuxppc-dev@lists.ozlabs.org
 ---
- drivers/pci/probe.c |    8 --------
- include/linux/pci.h |    3 ---
- 2 files changed, 11 deletions(-)
+ drivers/pci/search.c |   37 +++++++------------------------------
+ include/linux/pci.h  |    4 ----
+ 2 files changed, 7 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 04ecf0d..8420b9d 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -23,10 +23,6 @@ struct resource busn_resource = {
- 	.flags	= IORESOURCE_BUS,
- };
+diff --git a/drivers/pci/search.c b/drivers/pci/search.c
+index db0c3a9..329c533 100644
+--- a/drivers/pci/search.c
++++ b/drivers/pci/search.c
+@@ -79,44 +79,22 @@ static struct pci_bus *pci_do_find_bus(struct pci_bus *bus, unsigned char busnr)
+  */
+ struct pci_bus * pci_find_bus(int domain, int busnr)
+ {
+-	struct pci_bus *bus = NULL;
++	struct pci_host_bridge *host_bridge = NULL;
+ 	struct pci_bus *tmp_bus;
  
--/* Ugh.  Need to stop exporting this to modules. */
--LIST_HEAD(pci_root_buses);
--EXPORT_SYMBOL(pci_root_buses);
--
- static LIST_HEAD(pci_domain_busn_res_list);
- 
- struct pci_domain_busn_res {
-@@ -1746,10 +1742,6 @@ struct pci_bus *pci_create_root_bus(struct device *parent, int bus,
- 		dev_info(&b->dev, "root bus resource %pR%s\n", res, bus_addr);
+-	while ((bus = pci_find_next_bus(bus)) != NULL)  {
+-		if (pci_domain_nr(bus) != domain)
++	for_each_pci_host_bridge(host_bridge) {
++		if (pci_domain_nr(host_bridge->bus) != domain)
+ 			continue;
+-		tmp_bus = pci_do_find_bus(bus, busnr);
+-		if (tmp_bus)
++		tmp_bus = pci_do_find_bus(host_bridge->bus, busnr);
++		if (tmp_bus) {
++			put_device(&host_bridge->dev);
+ 			return tmp_bus;
++		}
  	}
+ 	return NULL;
+ }
  
--	down_write(&pci_bus_sem);
--	list_add_tail(&b->node, &pci_root_buses);
--	up_write(&pci_bus_sem);
+ /**
+- * pci_find_next_bus - begin or continue searching for a PCI bus
+- * @from: Previous PCI bus found, or %NULL for new search.
+- *
+- * Iterates through the list of known PCI busses.  A new search is
+- * initiated by passing %NULL as the @from argument.  Otherwise if
+- * @from is not %NULL, searches continue from next device on the
+- * global list.
+- */
+-struct pci_bus * 
+-pci_find_next_bus(const struct pci_bus *from)
+-{
+-	struct list_head *n;
+-	struct pci_bus *b = NULL;
 -
- 	return b;
+-	WARN_ON(in_interrupt());
+-	down_read(&pci_bus_sem);
+-	n = from ? from->node.next : pci_root_buses.next;
+-	if (n != &pci_root_buses)
+-		b = pci_bus_b(n);
+-	up_read(&pci_bus_sem);
+-	return b;
+-}
+-
+-/**
+  * pci_get_slot - locate PCI device for a given PCI slot
+  * @bus: PCI bus on which desired PCI device resides
+  * @devfn: encodes number of PCI slot in which the desired PCI 
+@@ -356,7 +334,6 @@ EXPORT_SYMBOL(pci_dev_present);
  
- class_dev_reg_err:
+ /* For boot time work */
+ EXPORT_SYMBOL(pci_find_bus);
+-EXPORT_SYMBOL(pci_find_next_bus);
+ /* For everyone */
+ EXPORT_SYMBOL(pci_get_device);
+ EXPORT_SYMBOL(pci_get_subsys);
 diff --git a/include/linux/pci.h b/include/linux/pci.h
-index bb07db2..b42721b 100644
+index 67879cb..bb07db2 100644
 --- a/include/linux/pci.h
 +++ b/include/linux/pci.h
-@@ -674,9 +674,6 @@ extern enum pcie_bus_config_types pcie_bus_config;
- extern struct bus_type pci_host_bridge_bus_type;
- extern struct bus_type pci_bus_type;
+@@ -763,7 +763,6 @@ int pci_find_ext_capability(struct pci_dev *dev, int cap);
+ int pci_find_next_ext_capability(struct pci_dev *dev, int pos, int cap);
+ int pci_find_ht_capability(struct pci_dev *dev, int ht_cap);
+ int pci_find_next_ht_capability(struct pci_dev *dev, int pos, int ht_cap);
+-struct pci_bus *pci_find_next_bus(const struct pci_bus *from);
  
--/* Do NOT directly access these two variables, unless you are arch specific pci
-- * code, or pci core code. */
--extern struct list_head pci_root_buses;	/* list of all known PCI buses */
- /* Some device drivers need know if pci is initiated */
- extern int no_pci_devices(void);
+ struct pci_host_bridge *pci_get_next_host_bridge(struct pci_host_bridge *from);
+ struct pci_dev *pci_get_device(unsigned int vendor, unsigned int device,
+@@ -1404,9 +1403,6 @@ static inline int pci_block_cfg_access_in_atomic(struct pci_dev *dev)
+ static inline void pci_unblock_cfg_access(struct pci_dev *dev)
+ { }
  
+-static inline struct pci_bus *pci_find_next_bus(const struct pci_bus *from)
+-{ return NULL; }
+-
+ static inline struct pci_dev *pci_get_slot(struct pci_bus *bus,
+ 						unsigned int devfn)
+ { return NULL; }
 -- 
 1.7.10.4
