@@ -1,27 +1,27 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g1t0026.austin.hp.com (g1t0026.austin.hp.com [15.216.28.33])
+Return-Path: <yinghai@kernel.org>
+Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7D9062C0099
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Jan 2013 05:29:45 +1100 (EST)
-Message-ID: <1359137977.14145.417.camel@misato.fc.hp.com>
-Subject: Re: [PATCH Bug fix 0/5] Bug fix for physical memory hot-remove.
-From: Toshi Kani <toshi.kani@hp.com>
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Date: Fri, 25 Jan 2013 11:19:37 -0700
-In-Reply-To: <1358854984-6073-1-git-send-email-tangchen@cn.fujitsu.com>
-References: <1358854984-6073-1-git-send-email-tangchen@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-mm@kvack.org, paulus@samba.org, hpa@zytor.com, cl@linux.com,
- sfr@canb.auug.org.au, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, julian.calaby@gmail.com,
- glommer@parallels.com, wujianguo@huawei.com, yinghai@kernel.org,
- laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org, minchan.kim@gmail.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+ (Client CN "aserp1050.oracle.com",
+ Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 85BC02C008C
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2013 16:38:49 +1100 (EST)
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ by aserp1050.oracle.com (Sentrion-MTA-4.3.1/Sentrion-MTA-4.3.1) with ESMTP id
+ r0R5cktB017085
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Jan 2013 05:38:47 GMT
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>, Jiang Liu <jiang.liu@huawei.com>,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, Taku Izumi <izumi.taku@jp.fujitsu.com>
+Subject: [PATCH v2 20/22] PCI,
+ powerpc: Kill pci_root_buses in resources reservations
+Date: Sat, 26 Jan 2013 21:36:41 -0800
+Message-Id: <1359265003-16166-21-git-send-email-yinghai@kernel.org>
+In-Reply-To: <1359265003-16166-1-git-send-email-yinghai@kernel.org>
+References: <CAE9FiQUhrVPNKcdWbiqHLa5PzH7Dg-uduVc9BP-OjM-eCqSXdw@mail.gmail.com>
+ <1359265003-16166-1-git-send-email-yinghai@kernel.org>
+Cc: linux-pci@vger.kernel.org, Yinghai Lu <yinghai@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +31,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2013-01-22 at 19:42 +0800, Tang Chen wrote:
-> Here are some bug fix patches for physical memory hot-remove. All these
-> patches are based on the latest -mm tree.
-> git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git akpm
-> 
-> And patch1 and patch3 are very important.
-> patch1: free compound pages when freeing memmap, otherwise the kernel
->         will panic the next time memory is hot-added.
-> patch3: the old way of freeing pagetable pages was wrong. We should never
->         split larger pages into small ones.
-> 
-> 
-> Lai Jiangshan (1):
->   Bug-fix: mempolicy: fix is_valid_nodemask()
-> 
-> Tang Chen (3):
->   Bug fix: Do not split pages when freeing pagetable pages.
->   Bug fix: Fix section mismatch problem of
->     release_firmware_map_entry().
->   Bug fix: Fix the doc format in drivers/firmware/memmap.c
-> 
-> Wen Congyang (1):
->   Bug fix: consider compound pages when free memmap
-> 
->  arch/x86/mm/init_64.c     |  148 ++++++++++++++-------------------------------
->  drivers/firmware/memmap.c |   16 +++---
->  mm/mempolicy.c            |   36 +++++++----
->  mm/sparse.c               |    2 +-
->  4 files changed, 77 insertions(+), 125 deletions(-)
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/pci-common.c |   13 ++++++-------
+ arch/powerpc/kernel/pci_64.c     |    8 ++++----
+ 2 files changed, 10 insertions(+), 11 deletions(-)
 
-This patchset fixed a blocker panic I was hitting in my memory hot-plug
-testing.  Memory hotplug works fine with this patchset (for testing my
-hotplug framework patchset :).  For the series:
-
-Tested-by: Toshi Kani <toshi.kani@hp.com>
-
-Thanks,
--Toshi
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index abc0d08..9ccecbe 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1398,11 +1398,11 @@ static void __init pcibios_reserve_legacy_regions(struct pci_bus *bus)
+ 
+ void __init pcibios_resource_survey(void)
+ {
+-	struct pci_bus *b;
++	struct pci_host_bridge *host_bridge = NULL;
+ 
+ 	/* Allocate and assign resources */
+-	list_for_each_entry(b, &pci_root_buses, node)
+-		pcibios_allocate_bus_resources(b);
++	for_each_pci_host_bridge(host_bridge)
++		pcibios_allocate_bus_resources(host_bridge->bus);
+ 	pcibios_allocate_resources(0);
+ 	pcibios_allocate_resources(1);
+ 
+@@ -1410,10 +1410,9 @@ void __init pcibios_resource_survey(void)
+ 	 * the low IO area and the VGA memory area if they intersect the
+ 	 * bus available resources to avoid allocating things on top of them
+ 	 */
+-	if (!pci_has_flag(PCI_PROBE_ONLY)) {
+-		list_for_each_entry(b, &pci_root_buses, node)
+-			pcibios_reserve_legacy_regions(b);
+-	}
++	if (!pci_has_flag(PCI_PROBE_ONLY))
++		for_each_pci_host_bridge(host_bridge)
++			pcibios_reserve_legacy_regions(host_bridge->bus);
+ 
+ 	/* Now, if the platform didn't decide to blindly trust the firmware,
+ 	 * we proceed to assigning things that were left unassigned
+diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
+index 2cbe676..f848325 100644
+--- a/arch/powerpc/kernel/pci_64.c
++++ b/arch/powerpc/kernel/pci_64.c
+@@ -208,9 +208,9 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+ 			  unsigned long in_devfn)
+ {
+ 	struct pci_controller* hose;
+-	struct list_head *ln;
+-	struct pci_bus *bus = NULL;
++	struct pci_bus *bus;
+ 	struct device_node *hose_node;
++	struct pci_host_bridge *host_bridge = NULL;
+ 
+ 	/* Argh ! Please forgive me for that hack, but that's the
+ 	 * simplest way to get existing XFree to not lockup on some
+@@ -230,8 +230,8 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
+ 	 * used on pre-domains setup. We return the first match
+ 	 */
+ 
+-	for (ln = pci_root_buses.next; ln != &pci_root_buses; ln = ln->next) {
+-		bus = pci_bus_b(ln);
++	for_each_pci_host_bridge(host_bridge) {
++		bus = host_bridge->bus;
+ 		if (in_bus >= bus->number && in_bus <= bus->busn_res.end)
+ 			break;
+ 		bus = NULL;
+-- 
+1.7.10.4
