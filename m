@@ -1,34 +1,22 @@
-Return-Path: <yinghai@kernel.org>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "aserp1040.oracle.com",
- Issuer "VeriSign Class 3 International Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id CBD542C015A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 06:25:02 +1100 (EST)
-From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>, Jiang Liu <jiang.liu@huawei.com>,
- "Rafael J. Wysocki" <rjw@sisk.pl>,
- Taku Izumi <izumi.taku@jp.fujitsu.com>, Toshi Kani <toshi.kani@hp.com>
-Subject: [PATCH v3 21/22] PCI: Kill pci_find_next_bus
-Date: Sun, 27 Jan 2013 11:23:48 -0800
-Message-Id: <1359314629-18651-22-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1359314629-18651-1-git-send-email-yinghai@kernel.org>
-References: <CAE9FiQXHG01NjnYNDbC-KEpbcvY-q4pBe97CxTOGS7W4vZQBYQ@mail.gmail.com>
- <1359314629-18651-1-git-send-email-yinghai@kernel.org>
-Cc: linux-ia64@vger.kernel.org, Mauro Carvalho Chehab <mchehab@redhat.com>,
- David Airlie <airlied@linux.ie>, linux-pci@vger.kernel.org,
- dri-devel@lists.freedesktop.org, David Howells <dhowells@redhat.com>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- linux-am33-list@redhat.com, Russell King <linux@arm.linux.org.uk>,
- x86@kernel.org, linux-altix@sgi.com, Doug Thompson <dougthompson@xmission.com>,
- Matt Turner <mattst88@gmail.com>, linux-edac@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>, microblaze-uclinux@itee.uq.edu.au,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>, Yinghai Lu <yinghai@kernel.org>,
- linux-arm-kernel@lists.infradead.org, Richard Henderson <rth@twiddle.net>,
- Michal Simek <monstr@monstr.eu>, Tony Luck <tony.luck@intel.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-alpha@vger.kernel.org,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Return-Path: <lists@nerdbynature.de>
+Received: from trent.utfs.org (trent.utfs.org [94.185.90.103])
+ by ozlabs.org (Postfix) with ESMTP id 6CD062C0092
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 09:56:56 +1100 (EST)
+Date: Sun, 27 Jan 2013 14:56:49 -0800 (PST)
+From: Christian Kujau <lists@nerdbynature.de>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Subject: Re: 3.7-rc7: BUG: MAX_STACK_TRACE_ENTRIES too low!
+In-Reply-To: <1358233164.15371.2.camel@ThinkPad-T5421.cn.ibm.com>
+Message-ID: <alpine.DEB.2.01.1301271451390.7378@trent.utfs.org>
+References: <alpine.DEB.2.01.1211271824120.7378@trent.utfs.org>
+ <alpine.DEB.2.01.1211271916160.7378@trent.utfs.org>
+ <1354092082.3054.19.camel@ThinkPad-T5421.cn.ibm.com>
+ <alpine.DEB.2.01.1301121241340.7378@trent.utfs.org>
+ <1358233164.15371.2.camel@ThinkPad-T5421.cn.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,127 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-No user now, remove it.
+On Tue, 15 Jan 2013 at 14:59, Li Zhong wrote:
+> FYI, it is already in the next of ppc tree 
+> http://git.kernel.org/?p=linux/kernel/git/benh/powerpc.git;a=shortlog;h=refs/heads/next
+> 
+> I guess it would get into 3.9, at least. 
 
-That name is misleading as it only for root buses.
+Hm, is there no chance to get this into 3.8? I've been running with this 
+patch applied since 3.7-rc7 and it got rid of this 
+"MAX_STACK_TRACE_ENTRIES too low" message. I've just upgraded to 3.8-rc5 
+and it's still not in mainline :-\
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
-Cc: Doug Thompson <dougthompson@xmission.com>
-Cc: linux-edac@vger.kernel.org
-Cc: x86@kernel.org
-Cc: David Airlie <airlied@linux.ie>
-Cc: dri-devel@lists.freedesktop.org
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: sparclinux@vger.kernel.org
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-altix@sgi.com
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Matt Turner <mattst88@gmail.com>
-Cc: linux-alpha@vger.kernel.org
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: David Howells <dhowells@redhat.com>
-Cc: Michal Simek <monstr@monstr.eu>
-Cc: microblaze-uclinux@itee.uq.edu.au
-Cc: Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
-Cc: linux-am33-list@redhat.com
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- drivers/pci/search.c |   37 +++++++------------------------------
- include/linux/pci.h  |    4 ----
- 2 files changed, 7 insertions(+), 34 deletions(-)
+Christian.
 
-diff --git a/drivers/pci/search.c b/drivers/pci/search.c
-index db0c3a9..329c533 100644
---- a/drivers/pci/search.c
-+++ b/drivers/pci/search.c
-@@ -79,44 +79,22 @@ static struct pci_bus *pci_do_find_bus(struct pci_bus *bus, unsigned char busnr)
-  */
- struct pci_bus * pci_find_bus(int domain, int busnr)
- {
--	struct pci_bus *bus = NULL;
-+	struct pci_host_bridge *host_bridge = NULL;
- 	struct pci_bus *tmp_bus;
- 
--	while ((bus = pci_find_next_bus(bus)) != NULL)  {
--		if (pci_domain_nr(bus) != domain)
-+	for_each_pci_host_bridge(host_bridge) {
-+		if (pci_domain_nr(host_bridge->bus) != domain)
- 			continue;
--		tmp_bus = pci_do_find_bus(bus, busnr);
--		if (tmp_bus)
-+		tmp_bus = pci_do_find_bus(host_bridge->bus, busnr);
-+		if (tmp_bus) {
-+			put_device(&host_bridge->dev);
- 			return tmp_bus;
-+		}
- 	}
- 	return NULL;
- }
- 
- /**
-- * pci_find_next_bus - begin or continue searching for a PCI bus
-- * @from: Previous PCI bus found, or %NULL for new search.
-- *
-- * Iterates through the list of known PCI busses.  A new search is
-- * initiated by passing %NULL as the @from argument.  Otherwise if
-- * @from is not %NULL, searches continue from next device on the
-- * global list.
-- */
--struct pci_bus * 
--pci_find_next_bus(const struct pci_bus *from)
--{
--	struct list_head *n;
--	struct pci_bus *b = NULL;
--
--	WARN_ON(in_interrupt());
--	down_read(&pci_bus_sem);
--	n = from ? from->node.next : pci_root_buses.next;
--	if (n != &pci_root_buses)
--		b = pci_bus_b(n);
--	up_read(&pci_bus_sem);
--	return b;
--}
--
--/**
-  * pci_get_slot - locate PCI device for a given PCI slot
-  * @bus: PCI bus on which desired PCI device resides
-  * @devfn: encodes number of PCI slot in which the desired PCI 
-@@ -356,7 +334,6 @@ EXPORT_SYMBOL(pci_dev_present);
- 
- /* For boot time work */
- EXPORT_SYMBOL(pci_find_bus);
--EXPORT_SYMBOL(pci_find_next_bus);
- /* For everyone */
- EXPORT_SYMBOL(pci_get_device);
- EXPORT_SYMBOL(pci_get_subsys);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 67879cb..bb07db2 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -763,7 +763,6 @@ int pci_find_ext_capability(struct pci_dev *dev, int cap);
- int pci_find_next_ext_capability(struct pci_dev *dev, int pos, int cap);
- int pci_find_ht_capability(struct pci_dev *dev, int ht_cap);
- int pci_find_next_ht_capability(struct pci_dev *dev, int pos, int ht_cap);
--struct pci_bus *pci_find_next_bus(const struct pci_bus *from);
- 
- struct pci_host_bridge *pci_get_next_host_bridge(struct pci_host_bridge *from);
- struct pci_dev *pci_get_device(unsigned int vendor, unsigned int device,
-@@ -1404,9 +1403,6 @@ static inline int pci_block_cfg_access_in_atomic(struct pci_dev *dev)
- static inline void pci_unblock_cfg_access(struct pci_dev *dev)
- { }
- 
--static inline struct pci_bus *pci_find_next_bus(const struct pci_bus *from)
--{ return NULL; }
--
- static inline struct pci_dev *pci_get_slot(struct pci_bus *bus,
- 						unsigned int devfn)
- { return NULL; }
+[0] http://lkml.indiana.edu/hypermail/linux/kernel/1211.3/01836.html
+
+> > > ==============================================
+> > > diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> > > index 9499385..cadebfd 100644
+> > > --- a/arch/powerpc/kernel/entry_32.S
+> > > +++ b/arch/powerpc/kernel/entry_32.S
+> > > @@ -439,6 +439,8 @@ ret_from_fork:
+> > >  ret_from_kernel_thread:
+> > >  	REST_NVGPRS(r1)
+> > >  	bl	schedule_tail
+> > > +	li	r3,0
+> > > +	stw	r3,0(r1)
+> > >  	mtlr	r14
+> > >  	mr	r3,r15
+> > >  	PPC440EP_ERR42
+> > > ==============================================
+> > > 
+> > > > 
+> > > > Christian.
+> > > > 
+> > > > > [40007.339487] [sched_delayed] sched: RT throttling activated
+> > > > > [69731.388717] BUG: MAX_STACK_TRACE_ENTRIES too low!
+> > > > > [69731.390371] turning off the locking correctness validator.
+> > > > > [69731.391942] Call Trace:
+> > > > > [69731.393525] [c9a61c10] [c0009064] show_stack+0x70/0x1bc (unreliable)
+> > > > > [69731.395152] [c9a61c50] [c0077460] save_trace+0xfc/0x114
+> > > > > [69731.396735] [c9a61c60] [c007be20] __lock_acquire+0x1568/0x19b8
+> > > > > [69731.398296] [c9a61d00] [c007c2c0] lock_acquire+0x50/0x70
+> > > > > [69731.399857] [c9a61d20] [c0550e28] _raw_spin_lock_irq+0x5c/0x78
+> > > > > [69731.401419] [c9a61d40] [c054fb58] __schedule+0xd8/0x534
+> > > > > [69731.402972] [c9a61da0] [c0550094] _cond_resched+0x50/0x68
+> > > > > [69731.404527] [c9a61db0] [c0479908] dst_gc_task+0xbc/0x258
+> > > > > [69731.406070] [c9a61e40] [c004eeb8] process_one_work+0x1f4/0x49c
+> > > > > [69731.407585] [c9a61e80] [c004f644] worker_thread+0x14c/0x400
+> > > > > [69731.409075] [c9a61eb0] [c0057634] kthread+0xbc/0xc0
+> > > > > [69731.410521] [c9a61f40] [c0011ad4] ret_from_kernel_thread+0x5c/0x64
+> > > > > [...repeated 54 times...]
+> > > > > 
+> > > > > Anyone knows what this is about?
+> > > > > 
+> > > > > Thanks,
+> > > > > Christian.
+> > > > > 
+> > > > > [0] http://lkml.indiana.edu/hypermail/linux/kernel/1211.0/03025.html
+
 -- 
-1.7.10.4
+BOFH excuse #238:
+
+You did wha... oh _dear_....
