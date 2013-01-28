@@ -1,34 +1,28 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qc0-f182.google.com (mail-qc0-f182.google.com
- [209.85.216.182])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 795AD2C0098
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 06:06:29 +1100 (EST)
-Received: by mail-qc0-f182.google.com with SMTP id k19so1437070qcs.41
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 11:06:26 -0800 (PST)
+Return-Path: <robert.jarzmik@free.fr>
+Received: from smtp.smtpout.orange.fr (smtp04.smtpout.orange.fr
+ [80.12.242.126]) by ozlabs.org (Postfix) with ESMTP id B67FF2C0097
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 07:18:46 +1100 (EST)
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+To: Felipe Balbi <balbi@ti.com>
+Subject: Re: [RFC/PATCH 29/32] usb: gadget: pxa27x_udc: let udc-core manage
+ gadget->dev
+References: <1359042370-4358-1-git-send-email-balbi@ti.com>
+ <1359042370-4358-30-git-send-email-balbi@ti.com>
+Date: Mon, 28 Jan 2013 21:18:29 +0100
+In-Reply-To: <1359042370-4358-30-git-send-email-balbi@ti.com> (Felipe Balbi's
+ message of "Thu, 24 Jan 2013 17:46:07 +0200")
+Message-ID: <87txq1m57u.fsf@free.fr>
 MIME-Version: 1.0
-Sender: htejun@gmail.com
-In-Reply-To: <CAA_GA1fSLNKSDTGSzHoA+j-mur85BvoSRkARq+DMfORuwrrX4Q@mail.gmail.com>
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122074123.13822.39102.stgit@srivatsabhat.in.ibm.com>
- <CAA_GA1fSLNKSDTGSzHoA+j-mur85BvoSRkARq+DMfORuwrrX4Q@mail.gmail.com>
-Date: Mon, 28 Jan 2013 11:06:25 -0800
-Message-ID: <CAOS58YN_r-ahRvPekOo_84bM7z3YcFw1EA7DcTf0NVyEhv7ssA@mail.gmail.com>
-Subject: Re: [PATCH v5 31/45] blackfin/smp: Use get/put_online_cpus_atomic()
- to prevent CPU offline
-From: Tejun Heo <tj@kernel.org>
-To: Bob Liu <lliubbo@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- nikunj@linux.vnet.ibm.com, linux-pm@vger.kernel.org, rusty@rustcorp.com.au,
- rostedt@goodmis.org, rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: kgene.kim@samsung.com, eric.y.miao@gmail.com,
+ kuninori.morimoto.gx@renesas.com, alexander.shishkin@linux.intel.com,
+ gregkh@linuxfoundation.org, yoshihiro.shimoda.uh@renesas.com,
+ Linux USB Mailing List <linux-usb@vger.kernel.org>, nicolas.ferre@atmel.com,
+ linux-geode@lists.infradead.org, haojian.zhuang@gmail.com,
+ linux-samsung-soc@vger.kernel.org, ben-linux@fluff.org,
+ dahlmann.thomas@arcor.de, linux@arm.linux.org.uk,
+ Linux OMAP Mailing List <linux-omap@vger.kernel.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,17 +32,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello, Bob.
+Felipe Balbi <balbi@ti.com> writes:
 
-On Mon, Jan 28, 2013 at 1:09 AM, Bob Liu <lliubbo@gmail.com> wrote:
-> Thanks, will be applied to my blackfin arch tree.
+> By simply setting a flag, we can drop some
+> boilerplate code.
+>
+> Signed-off-by: Felipe Balbi <balbi@ti.com>
+> ---
+>  drivers/usb/gadget/pxa27x_udc.c | 9 +--------
+Acked-by: Robert Jarzmik <robert.jarzmik@free.fr>
 
-I think we still have some work ahead of us to have this patchset
-ready for inclusion and even then it probably would be best to route
-these patches together, so probably not a very good idea to apply this
-to blackfin right now.
+And I tested also your patch and it works in my environment. For next patches
+I'd like to be CCed for pxa27x_udc stuff as I'm maintaining that one since its
+beginning (and yes, I know, I didn't put that in MAINTAINERS ...).
 
-Thanks.
+Cheers.
 
--- 
-tejun
+--
+Robert
