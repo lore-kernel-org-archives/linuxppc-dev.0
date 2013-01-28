@@ -1,24 +1,30 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [119.145.14.64])
- by ozlabs.org (Postfix) with ESMTP id AB7522C0089
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 14:57:00 +1100 (EST)
-Message-ID: <5105F51A.1060600@huawei.com>
-Date: Mon, 28 Jan 2013 11:48:42 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+Return-Path: <mhocko@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id B56A32C0085
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 19:15:51 +1100 (EST)
+Date: Mon, 28 Jan 2013 09:15:40 +0100
+From: Michal Hocko <mhocko@suse.cz>
+To: Tang Chen <tangchen@cn.fujitsu.com>
+Subject: Re: [PATCH Bug fix 0/5] Bug fix for physical memory hot-remove.
+Message-ID: <20130128081529.GA14241@dhcp22.suse.cz>
+References: <1358854984-6073-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1358944171.3351.1.camel@kernel>
+ <20130125131740.GA1615@dhcp22.suse.cz>
+ <5105D57D.3050900@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH v3 20/22] PCI, powerpc: Kill pci_root_buses in resources
- reservations
-References: <CAE9FiQXHG01NjnYNDbC-KEpbcvY-q4pBe97CxTOGS7W4vZQBYQ@mail.gmail.com>
- <1359314629-18651-1-git-send-email-yinghai@kernel.org>
- <1359314629-18651-21-git-send-email-yinghai@kernel.org>
-In-Reply-To: <1359314629-18651-21-git-send-email-yinghai@kernel.org>
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Toshi Kani <toshi.kani@hp.com>, Jiang Liu <jiang.liu@huawei.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pci@vger.kernel.org,
- Bjorn Helgaas <bhelgaas@google.com>, Taku Izumi <izumi.taku@jp.fujitsu.com>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5105D57D.3050900@cn.fujitsu.com>
+Cc: len.brown@intel.com, linux-mm@kvack.org, paulus@samba.org, hpa@zytor.com,
+ cl@linux.com, sfr@canb.auug.org.au, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com,
+ Simon Jeons <simon.jeons@gmail.com>, jiang.liu@huawei.com,
+ wency@cn.fujitsu.com, julian.calaby@gmail.com, glommer@parallels.com,
+ wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
+ linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,84 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2013/1/28 3:23, Yinghai Lu wrote:
-> Replace that with hotplug-safe version iteration.
+On Mon 28-01-13 09:33:49, Tang Chen wrote:
+> On 01/25/2013 09:17 PM, Michal Hocko wrote:
+> >On Wed 23-01-13 06:29:31, Simon Jeons wrote:
+> >>On Tue, 2013-01-22 at 19:42 +0800, Tang Chen wrote:
+> >>>Here are some bug fix patches for physical memory hot-remove. All these
+> >>>patches are based on the latest -mm tree.
+> >>>git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git akpm
+> >>>
+> >>>And patch1 and patch3 are very important.
+> >>>patch1: free compound pages when freeing memmap, otherwise the kernel
+> >>>         will panic the next time memory is hot-added.
+> >>>patch3: the old way of freeing pagetable pages was wrong. We should never
+> >>>         split larger pages into small ones.
+> >>>
+> >>>
+> >>
+> >>Hi Tang,
+> >>
+> >>I remember your big physical memory hot-remove patchset has already
+> >>merged by Andrew, but where I can find it? Could you give me git tree
+> >>address?
+> >
+> >Andrew tree is also mirrored into a git tree.
+> >http://git.kernel.org/?p=linux/kernel/git/mhocko/mm.git;a=summary
+> >
+> >It contains only Memory management patches on top of the last major
+> >release (since-.X.Y branch).
 > 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  arch/powerpc/kernel/pci-common.c |   13 ++++++-------
->  arch/powerpc/kernel/pci_64.c     |    8 ++++----
->  2 files changed, 10 insertions(+), 11 deletions(-)
+> Hi Michal,
 > 
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index abc0d08..9ccecbe 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -1398,11 +1398,11 @@ static void __init pcibios_reserve_legacy_regions(struct pci_bus *bus)
->  
->  void __init pcibios_resource_survey(void)
->  {
-> -	struct pci_bus *b;
-> +	struct pci_host_bridge *host_bridge = NULL;
->  
->  	/* Allocate and assign resources */
-> -	list_for_each_entry(b, &pci_root_buses, node)
-> -		pcibios_allocate_bus_resources(b);
-> +	for_each_pci_host_bridge(host_bridge)
-> +		pcibios_allocate_bus_resources(host_bridge->bus);
->  	pcibios_allocate_resources(0);
->  	pcibios_allocate_resources(1);
->  
-> @@ -1410,10 +1410,9 @@ void __init pcibios_resource_survey(void)
->  	 * the low IO area and the VGA memory area if they intersect the
->  	 * bus available resources to avoid allocating things on top of them
->  	 */
-> -	if (!pci_has_flag(PCI_PROBE_ONLY)) {
-> -		list_for_each_entry(b, &pci_root_buses, node)
-> -			pcibios_reserve_legacy_regions(b);
-> -	}
-> +	if (!pci_has_flag(PCI_PROBE_ONLY))
-> +		for_each_pci_host_bridge(host_bridge)
-> +			pcibios_reserve_legacy_regions(host_bridge->bus);
->  
->  	/* Now, if the platform didn't decide to blindly trust the firmware,
->  	 * we proceed to assigning things that were left unassigned
-> diff --git a/arch/powerpc/kernel/pci_64.c b/arch/powerpc/kernel/pci_64.c
-> index 2cbe676..f848325 100644
-> --- a/arch/powerpc/kernel/pci_64.c
-> +++ b/arch/powerpc/kernel/pci_64.c
-> @@ -208,9 +208,9 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
->  			  unsigned long in_devfn)
->  {
->  	struct pci_controller* hose;
-> -	struct list_head *ln;
-> -	struct pci_bus *bus = NULL;
-> +	struct pci_bus *bus;
->  	struct device_node *hose_node;
-> +	struct pci_host_bridge *host_bridge = NULL;
->  
->  	/* Argh ! Please forgive me for that hack, but that's the
->  	 * simplest way to get existing XFree to not lockup on some
-> @@ -230,8 +230,8 @@ long sys_pciconfig_iobase(long which, unsigned long in_bus,
->  	 * used on pre-domains setup. We return the first match
->  	 */
->  
-> -	for (ln = pci_root_buses.next; ln != &pci_root_buses; ln = ln->next) {
-> -		bus = pci_bus_b(ln);
-> +	for_each_pci_host_bridge(host_bridge) {
-> +		bus = host_bridge->bus;
->  		if (in_bus >= bus->number && in_bus <= bus->busn_res.end)
+> I'm not sure I got your meaning. :)
 
-Need put_device(&host_bridge->dev).
+Well, the mirror tree gets updated when Andrew releases mmotm and quite
+often even when mmots is released.
+All patches in the mm section are applied.
 
->  			break;
->  		bus = NULL;
+> In http://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git akpm,
+> I can find the following commit.
 > 
+> commit deed0460e01b3968f2cf46fb94851936535b7e0d
+> Author: Tang Chen <tangchen@cn.fujitsu.com>
+> Date:   Sat Jan 19 11:07:13 2013 +1100
+> 
+>     memory-hotplug: do not allocate pgdat if it was not freed when
+> offline.
+> 
+> 
+> This is one of memory hot-remove patches. Please try to update the
+> mirror tree,
+> and try to find the above commit.
 
-
+That one is in my mirror tree as f48bf999 (memory-hotplug: do not
+allocate pdgat if it was not freed when offline.).
 -- 
-Thanks!
-Yijing
+Michal Hocko
+SUSE Labs
