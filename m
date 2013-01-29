@@ -1,32 +1,28 @@
-Return-Path: <simon.jeons@gmail.com>
-Received: from mail-ia0-x22a.google.com (mail-ia0-x22a.google.com
- [IPv6:2607:f8b0:4001:c02::22a])
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ve0-f174.google.com (mail-ve0-f174.google.com
+ [209.85.128.174])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 046BB2C0093
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2013 00:05:03 +1100 (EST)
-Received: by mail-ia0-f170.google.com with SMTP id k20so511008iak.15
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 05:05:01 -0800 (PST)
-Message-ID: <1359464694.1624.18.camel@kernel>
-Subject: Re: [PATCH v6 08/15] memory-hotplug: Common APIs to support page
- tables hot-remove
-From: Simon Jeons <simon.jeons@gmail.com>
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Date: Tue, 29 Jan 2013 07:04:54 -0600
-In-Reply-To: <1357723959-5416-9-git-send-email-tangchen@cn.fujitsu.com>
-References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
- <1357723959-5416-9-git-send-email-tangchen@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
- wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
- wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
- linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 0191D2C0098
+ for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2013 01:14:07 +1100 (EST)
+Received: by mail-ve0-f174.google.com with SMTP id c13so296762vea.19
+ for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2013 06:14:05 -0800 (PST)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1359418161.18955.14.camel@pasglop>
+References: <1359416520.18955.12.camel@pasglop>
+ <CA+55aFw=Gr_UYEjfQ6sjz-5YdoegzxC+A0x6e8GViOSuXtE6hA@mail.gmail.com>
+ <1359418161.18955.14.camel@pasglop>
+Date: Tue, 29 Jan 2013 15:14:04 +0100
+Message-ID: <CAMuHMdXn_W6x-5vNLSSNk-LPs_duz5CggTDJbhmqYcD8ob-dWw@mail.gmail.com>
+Subject: Re: [git pull] Please pull powerpc.git merge branch
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>,
+ Linux Kernel list <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,449 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tang,
-On Wed, 2013-01-09 at 17:32 +0800, Tang Chen wrote:
-> From: Wen Congyang <wency@cn.fujitsu.com>
-> 
-> When memory is removed, the corresponding pagetables should alse be removed.
-> This patch introduces some common APIs to support vmemmap pagetable and x86_64
-> architecture pagetable removing.
+On Tue, Jan 29, 2013 at 1:09 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Mon, 2013-01-28 at 16:03 -0800, Linus Torvalds wrote:
+>> I'll have you know that I haven't quite even left for Au yet, and I
+>> have LCA before diving. So no snarky "in between dives" comments,
+>> please.
+>
+> It wasn't meant to be "snarky", sorry about that...
 
-Why don't need to build_all_zonelists like online_pages does during
-hot-add path(add_memory)?
+Sharky? Sorry, couldn't resist.
 
-> 
-> All pages of virtual mapping in removed memory cannot be freedi if some pages
-> used as PGD/PUD includes not only removed memory but also other memory. So the
-> patch uses the following way to check whether page can be freed or not.
-> 
->  1. When removing memory, the page structs of the revmoved memory are filled
->     with 0FD.
->  2. All page structs are filled with 0xFD on PT/PMD, PT/PMD can be cleared.
->     In this case, the page used as PT/PMD can be freed.
-> 
-> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-> Signed-off-by: Jianguo Wu <wujianguo@huawei.com>
-> Signed-off-by: Wen Congyang <wency@cn.fujitsu.com>
-> Signed-off-by: Tang Chen <tangchen@cn.fujitsu.com>
-> ---
->  arch/x86/include/asm/pgtable_types.h |    1 +
->  arch/x86/mm/init_64.c                |  299 ++++++++++++++++++++++++++++++++++
->  arch/x86/mm/pageattr.c               |   47 +++---
->  include/linux/bootmem.h              |    1 +
->  4 files changed, 326 insertions(+), 22 deletions(-)
-> 
-> diff --git a/arch/x86/include/asm/pgtable_types.h b/arch/x86/include/asm/pgtable_types.h
-> index 3c32db8..4b6fd2a 100644
-> --- a/arch/x86/include/asm/pgtable_types.h
-> +++ b/arch/x86/include/asm/pgtable_types.h
-> @@ -352,6 +352,7 @@ static inline void update_page_count(int level, unsigned long pages) { }
->   * as a pte too.
->   */
->  extern pte_t *lookup_address(unsigned long address, unsigned int *level);
-> +extern int __split_large_page(pte_t *kpte, unsigned long address, pte_t *pbase);
->  
->  #endif	/* !__ASSEMBLY__ */
->  
-> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-> index 9ac1723..fe01116 100644
-> --- a/arch/x86/mm/init_64.c
-> +++ b/arch/x86/mm/init_64.c
-> @@ -682,6 +682,305 @@ int arch_add_memory(int nid, u64 start, u64 size)
->  }
->  EXPORT_SYMBOL_GPL(arch_add_memory);
->  
-> +#define PAGE_INUSE 0xFD
-> +
-> +static void __meminit free_pagetable(struct page *page, int order)
-> +{
-> +	struct zone *zone;
-> +	bool bootmem = false;
-> +	unsigned long magic;
-> +	unsigned int nr_pages = 1 << order;
-> +
-> +	/* bootmem page has reserved flag */
-> +	if (PageReserved(page)) {
-> +		__ClearPageReserved(page);
-> +		bootmem = true;
-> +
-> +		magic = (unsigned long)page->lru.next;
-> +		if (magic == SECTION_INFO || magic == MIX_SECTION_INFO) {
-> +			while (nr_pages--)
-> +				put_page_bootmem(page++);
-> +		} else
-> +			__free_pages_bootmem(page, order);
-> +	} else
-> +		free_pages((unsigned long)page_address(page), order);
-> +
-> +	/*
-> +	 * SECTION_INFO pages and MIX_SECTION_INFO pages
-> +	 * are all allocated by bootmem.
-> +	 */
-> +	if (bootmem) {
-> +		zone = page_zone(page);
-> +		zone_span_writelock(zone);
-> +		zone->present_pages += nr_pages;
-> +		zone_span_writeunlock(zone);
-> +		totalram_pages += nr_pages;
-> +	}
-> +}
-> +
-> +static void __meminit free_pte_table(pte_t *pte_start, pmd_t *pmd)
-> +{
-> +	pte_t *pte;
-> +	int i;
-> +
-> +	for (i = 0; i < PTRS_PER_PTE; i++) {
-> +		pte = pte_start + i;
-> +		if (pte_val(*pte))
-> +			return;
-> +	}
-> +
-> +	/* free a pte talbe */
-> +	free_pagetable(pmd_page(*pmd), 0);
-> +	spin_lock(&init_mm.page_table_lock);
-> +	pmd_clear(pmd);
-> +	spin_unlock(&init_mm.page_table_lock);
-> +}
-> +
-> +static void __meminit free_pmd_table(pmd_t *pmd_start, pud_t *pud)
-> +{
-> +	pmd_t *pmd;
-> +	int i;
-> +
-> +	for (i = 0; i < PTRS_PER_PMD; i++) {
-> +		pmd = pmd_start + i;
-> +		if (pmd_val(*pmd))
-> +			return;
-> +	}
-> +
-> +	/* free a pmd talbe */
-> +	free_pagetable(pud_page(*pud), 0);
-> +	spin_lock(&init_mm.page_table_lock);
-> +	pud_clear(pud);
-> +	spin_unlock(&init_mm.page_table_lock);
-> +}
-> +
-> +/* Return true if pgd is changed, otherwise return false. */
-> +static bool __meminit free_pud_table(pud_t *pud_start, pgd_t *pgd)
-> +{
-> +	pud_t *pud;
-> +	int i;
-> +
-> +	for (i = 0; i < PTRS_PER_PUD; i++) {
-> +		pud = pud_start + i;
-> +		if (pud_val(*pud))
-> +			return false;
-> +	}
-> +
-> +	/* free a pud table */
-> +	free_pagetable(pgd_page(*pgd), 0);
-> +	spin_lock(&init_mm.page_table_lock);
-> +	pgd_clear(pgd);
-> +	spin_unlock(&init_mm.page_table_lock);
-> +
-> +	return true;
-> +}
-> +
-> +static void __meminit
-> +remove_pte_table(pte_t *pte_start, unsigned long addr, unsigned long end,
-> +		 bool direct)
-> +{
-> +	unsigned long next, pages = 0;
-> +	pte_t *pte;
-> +	void *page_addr;
-> +	phys_addr_t phys_addr;
-> +
-> +	pte = pte_start + pte_index(addr);
-> +	for (; addr < end; addr = next, pte++) {
-> +		next = (addr + PAGE_SIZE) & PAGE_MASK;
-> +		if (next > end)
-> +			next = end;
-> +
-> +		if (!pte_present(*pte))
-> +			continue;
-> +
-> +		/*
-> +		 * We mapped [0,1G) memory as identity mapping when
-> +		 * initializing, in arch/x86/kernel/head_64.S. These
-> +		 * pagetables cannot be removed.
-> +		 */
-> +		phys_addr = pte_val(*pte) + (addr & PAGE_MASK);
-> +		if (phys_addr < (phys_addr_t)0x40000000)
-> +			return;
-> +
-> +		if (IS_ALIGNED(addr, PAGE_SIZE) &&
-> +		    IS_ALIGNED(next, PAGE_SIZE)) {
-> +			if (!direct) {
-> +				free_pagetable(pte_page(*pte), 0);
-> +				pages++;
-> +			}
-> +
-> +			spin_lock(&init_mm.page_table_lock);
-> +			pte_clear(&init_mm, addr, pte);
-> +			spin_unlock(&init_mm.page_table_lock);
-> +		} else {
-> +			/*
-> +			 * If we are not removing the whole page, it means
-> +			 * other ptes in this page are being used and we canot
-> +			 * remove them. So fill the unused ptes with 0xFD, and
-> +			 * remove the page when it is wholly filled with 0xFD.
-> +			 */
-> +			memset((void *)addr, PAGE_INUSE, next - addr);
-> +			page_addr = page_address(pte_page(*pte));
-> +
-> +			if (!memchr_inv(page_addr, PAGE_INUSE, PAGE_SIZE)) {
-> +				free_pagetable(pte_page(*pte), 0);
-> +				pages++;
-> +
-> +				spin_lock(&init_mm.page_table_lock);
-> +				pte_clear(&init_mm, addr, pte);
-> +				spin_unlock(&init_mm.page_table_lock);
-> +			}
-> +		}
-> +	}
-> +
-> +	/* Call free_pte_table() in remove_pmd_table(). */
-> +	flush_tlb_all();
-> +	if (direct)
-> +		update_page_count(PG_LEVEL_4K, -pages);
-> +}
-> +
-> +static void __meminit
-> +remove_pmd_table(pmd_t *pmd_start, unsigned long addr, unsigned long end,
-> +		 bool direct)
-> +{
-> +	unsigned long pte_phys, next, pages = 0;
-> +	pte_t *pte_base;
-> +	pmd_t *pmd;
-> +
-> +	pmd = pmd_start + pmd_index(addr);
-> +	for (; addr < end; addr = next, pmd++) {
-> +		next = pmd_addr_end(addr, end);
-> +
-> +		if (!pmd_present(*pmd))
-> +			continue;
-> +
-> +		if (pmd_large(*pmd)) {
-> +			if (IS_ALIGNED(addr, PMD_SIZE) &&
-> +			    IS_ALIGNED(next, PMD_SIZE)) {
-> +				if (!direct) {
-> +					free_pagetable(pmd_page(*pmd),
-> +						       get_order(PMD_SIZE));
-> +					pages++;
-> +				}
-> +
-> +				spin_lock(&init_mm.page_table_lock);
-> +				pmd_clear(pmd);
-> +				spin_unlock(&init_mm.page_table_lock);
-> +				continue;
-> +			}
-> +
-> +			/*
-> +			 * We use 2M page, but we need to remove part of them,
-> +			 * so split 2M page to 4K page.
-> +			 */
-> +			pte_base = (pte_t *)alloc_low_page(&pte_phys);
-> +			BUG_ON(!pte_base);
-> +			__split_large_page((pte_t *)pmd, addr,
-> +					   (pte_t *)pte_base);
-> +
-> +			spin_lock(&init_mm.page_table_lock);
-> +			pmd_populate_kernel(&init_mm, pmd, __va(pte_phys));
-> +			spin_unlock(&init_mm.page_table_lock);
-> +
-> +			flush_tlb_all();
-> +		}
-> +
-> +		pte_base = (pte_t *)map_low_page((pte_t *)pmd_page_vaddr(*pmd));
-> +		remove_pte_table(pte_base, addr, next, direct);
-> +		free_pte_table(pte_base, pmd);
-> +		unmap_low_page(pte_base);
-> +	}
-> +
-> +	/* Call free_pmd_table() in remove_pud_table(). */
-> +	if (direct)
-> +		update_page_count(PG_LEVEL_2M, -pages);
-> +}
-> +
-> +static void __meminit
-> +remove_pud_table(pud_t *pud_start, unsigned long addr, unsigned long end,
-> +		 bool direct)
-> +{
-> +	unsigned long pmd_phys, next, pages = 0;
-> +	pmd_t *pmd_base;
-> +	pud_t *pud;
-> +
-> +	pud = pud_start + pud_index(addr);
-> +	for (; addr < end; addr = next, pud++) {
-> +		next = pud_addr_end(addr, end);
-> +
-> +		if (!pud_present(*pud))
-> +			continue;
-> +
-> +		if (pud_large(*pud)) {
-> +			if (IS_ALIGNED(addr, PUD_SIZE) &&
-> +			    IS_ALIGNED(next, PUD_SIZE)) {
-> +				if (!direct) {
-> +					free_pagetable(pud_page(*pud),
-> +						       get_order(PUD_SIZE));
-> +					pages++;
-> +				}
-> +
-> +				spin_lock(&init_mm.page_table_lock);
-> +				pud_clear(pud);
-> +				spin_unlock(&init_mm.page_table_lock);
-> +				continue;
-> +			}
-> +
-> +			/*
-> +			 * We use 1G page, but we need to remove part of them,
-> +			 * so split 1G page to 2M page.
-> +			 */
-> +			pmd_base = (pmd_t *)alloc_low_page(&pmd_phys);
-> +			BUG_ON(!pmd_base);
-> +			__split_large_page((pte_t *)pud, addr,
-> +					   (pte_t *)pmd_base);
-> +
-> +			spin_lock(&init_mm.page_table_lock);
-> +			pud_populate(&init_mm, pud, __va(pmd_phys));
-> +			spin_unlock(&init_mm.page_table_lock);
-> +
-> +			flush_tlb_all();
-> +		}
-> +
-> +		pmd_base = (pmd_t *)map_low_page((pmd_t *)pud_page_vaddr(*pud));
-> +		remove_pmd_table(pmd_base, addr, next, direct);
-> +		free_pmd_table(pmd_base, pud);
-> +		unmap_low_page(pmd_base);
-> +	}
-> +
-> +	if (direct)
-> +		update_page_count(PG_LEVEL_1G, -pages);
-> +}
-> +
-> +/* start and end are both virtual address. */
-> +static void __meminit
-> +remove_pagetable(unsigned long start, unsigned long end, bool direct)
-> +{
-> +	unsigned long next;
-> +	pgd_t *pgd;
-> +	pud_t *pud;
-> +	bool pgd_changed = false;
-> +
-> +	for (; start < end; start = next) {
-> +		pgd = pgd_offset_k(start);
-> +		if (!pgd_present(*pgd))
-> +			continue;
-> +
-> +		next = pgd_addr_end(start, end);
-> +
-> +		pud = (pud_t *)map_low_page((pud_t *)pgd_page_vaddr(*pgd));
-> +		remove_pud_table(pud, start, next, direct);
-> +		if (free_pud_table(pud, pgd))
-> +			pgd_changed = true;
-> +		unmap_low_page(pud);
-> +	}
-> +
-> +	if (pgd_changed)
-> +		sync_global_pgds(start, end - 1);
-> +
-> +	flush_tlb_all();
-> +}
-> +
->  #ifdef CONFIG_MEMORY_HOTREMOVE
->  int __ref arch_remove_memory(u64 start, u64 size)
->  {
-> diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-> index a718e0d..7dcb6f9 100644
-> --- a/arch/x86/mm/pageattr.c
-> +++ b/arch/x86/mm/pageattr.c
-> @@ -501,21 +501,13 @@ out_unlock:
->  	return do_split;
->  }
->  
-> -static int split_large_page(pte_t *kpte, unsigned long address)
-> +int __split_large_page(pte_t *kpte, unsigned long address, pte_t *pbase)
->  {
->  	unsigned long pfn, pfninc = 1;
->  	unsigned int i, level;
-> -	pte_t *pbase, *tmp;
-> +	pte_t *tmp;
->  	pgprot_t ref_prot;
-> -	struct page *base;
-> -
-> -	if (!debug_pagealloc)
-> -		spin_unlock(&cpa_lock);
-> -	base = alloc_pages(GFP_KERNEL | __GFP_NOTRACK, 0);
-> -	if (!debug_pagealloc)
-> -		spin_lock(&cpa_lock);
-> -	if (!base)
-> -		return -ENOMEM;
-> +	struct page *base = virt_to_page(pbase);
->  
->  	spin_lock(&pgd_lock);
->  	/*
-> @@ -523,10 +515,11 @@ static int split_large_page(pte_t *kpte, unsigned long address)
->  	 * up for us already:
->  	 */
->  	tmp = lookup_address(address, &level);
-> -	if (tmp != kpte)
-> -		goto out_unlock;
-> +	if (tmp != kpte) {
-> +		spin_unlock(&pgd_lock);
-> +		return 1;
-> +	}
->  
-> -	pbase = (pte_t *)page_address(base);
->  	paravirt_alloc_pte(&init_mm, page_to_pfn(base));
->  	ref_prot = pte_pgprot(pte_clrhuge(*kpte));
->  	/*
-> @@ -579,17 +572,27 @@ static int split_large_page(pte_t *kpte, unsigned long address)
->  	 * going on.
->  	 */
->  	__flush_tlb_all();
-> +	spin_unlock(&pgd_lock);
->  
-> -	base = NULL;
-> +	return 0;
-> +}
->  
-> -out_unlock:
-> -	/*
-> -	 * If we dropped out via the lookup_address check under
-> -	 * pgd_lock then stick the page back into the pool:
-> -	 */
-> -	if (base)
-> +static int split_large_page(pte_t *kpte, unsigned long address)
-> +{
-> +	pte_t *pbase;
-> +	struct page *base;
-> +
-> +	if (!debug_pagealloc)
-> +		spin_unlock(&cpa_lock);
-> +	base = alloc_pages(GFP_KERNEL | __GFP_NOTRACK, 0);
-> +	if (!debug_pagealloc)
-> +		spin_lock(&cpa_lock);
-> +	if (!base)
-> +		return -ENOMEM;
-> +
-> +	pbase = (pte_t *)page_address(base);
-> +	if (__split_large_page(kpte, address, pbase))
->  		__free_page(base);
-> -	spin_unlock(&pgd_lock);
->  
->  	return 0;
->  }
-> diff --git a/include/linux/bootmem.h b/include/linux/bootmem.h
-> index 3f778c2..190ff06 100644
-> --- a/include/linux/bootmem.h
-> +++ b/include/linux/bootmem.h
-> @@ -53,6 +53,7 @@ extern void free_bootmem_node(pg_data_t *pgdat,
->  			      unsigned long size);
->  extern void free_bootmem(unsigned long physaddr, unsigned long size);
->  extern void free_bootmem_late(unsigned long physaddr, unsigned long size);
-> +extern void __free_pages_bootmem(struct page *page, unsigned int order);
->  
->  /*
->   * Flags for reserve_bootmem (also if CONFIG_HAVE_ARCH_BOOTMEM_NODE,
+Gr{oetje,eeting}s,
+
+                        Poor Geert without sun, dives, and sharks
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
