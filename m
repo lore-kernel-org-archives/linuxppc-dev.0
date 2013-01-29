@@ -1,38 +1,28 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9A4BC2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2013 07:34:22 +1100 (EST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 29 Jan 2013 15:34:19 -0500
-Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C19F338C806B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 15:34:11 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0TKXqPv65601788
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 15:33:52 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0TKXpiR003213
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 18:33:52 -0200
-Date: Tue, 29 Jan 2013 12:33:46 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/2] pseries/iommu: remove DDW on kexec
-Message-ID: <20130129203346.GA7664@linux.vnet.ibm.com>
-References: <20130129020245.GA12156@linux.vnet.ibm.com>
- <20130129020357.GB12156@linux.vnet.ibm.com>
- <1359457108.26096.7.camel@concordia>
+Return-Path: <f.fainelli@gmail.com>
+Sender: Florian Fainelli <f.fainelli@gmail.com>
+From: Florian Fainelli <florian@openwrt.org>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Subject: Re: [PATCH 5/5] mv643xx_eth: convert to use the Marvell Orion MDIO
+ driver
+Date: Tue, 29 Jan 2013 21:41:03 +0100
+References: <1359473048-26551-1-git-send-email-florian@openwrt.org>
+ <1359473048-26551-6-git-send-email-florian@openwrt.org>
+ <20130129181306.GF25646@obsidianresearch.com>
+In-Reply-To: <20130129181306.GF25646@obsidianresearch.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1359457108.26096.7.camel@concordia>
-Cc: miltonm@bga.com, paulus@samba.org, anton@samba.org,
- nfont@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Message-Id: <201301292141.03931.florian@openwrt.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
+ Jason Cooper <jason@lakedaemon.net>, linux-doc@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Paul Mackerras <paulus@samba.org>, Lennert Buytenhek <buytenh@wantstofly.org>,
+ Rob Landley <rob@landley.net>, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,33 +32,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+Le mardi 29 janvier 2013 19:13:06, Jason Gunthorpe a =E9crit :
+> On Tue, Jan 29, 2013 at 04:24:08PM +0100, Florian Fainelli wrote:
+> > This patch converts the Marvell MV643XX ethernet driver to use the
+> > Marvell Orion MDIO driver. As a result, PowerPC and ARM platforms
+> > registering the Marvell MV643XX ethernet driver are also updated to
+> > register a Marvell Orion MDIO driver. This driver voluntarily overlaps
+> > with the Marvell Ethernet shared registers because it will use a subset
+> > of this shared register (shared_base + 0x4 - shared_base + 0x84). The
+> > Ethernet driver is also updated to look up for a PHY device using the
+> > Orion MDIO bus driver.
+>=20
+> Can you finish off this job by making the mv643xx_eth driver accept
+> the standard phy-handle OF property instead of using a phy address?
 
-On 29.01.2013 [21:58:28 +1100], Michael Ellerman wrote:
-> On Mon, 2013-01-28 at 18:03 -0800, Nishanth Aravamudan wrote:
-> > pseries/iommu: remove DDW on kexec
-> >  ...
-> >     
-> > I believe the simplest, easiest-to-maintain fix is to just change our
-> > initcall to, rather than detecting and updating the new kernel's DDW
-> > knowledge, just remove all DDW configurations. When the drivers
-> > re-initialize, we will set everything back up as it was before.
-> 
-> I don't know this code at all, but this sounds like it will also work
-> for kdump, right? ie. when the original kernel has crashed the 2nd
-> kernel will tear the DDW down and set it back up.
+I can certainly do that, at the same time we need to continue supporting th=
+e=20
+"old" platform device style registration without breaking them (PowerPC in=
+=20
+particular, and the hopefully yet to be converted orion5x). So the phy_scan=
+()=20
+as I modified it will probably still be there.
 
-Yes, my actual test-case (and what was reported as broken) was kdump.
->From my relatively vague (but now growing) understanding of that
-process, kdump does use kexec under the covers to switch to the crash
-kernel, and so does get the same benefit from this change.
+>=20
+> Ie the end result should be something like:
+>=20
+>                 smi0: mdio@72000 {
+>                         device_type =3D "mdio";
+>                         compatible =3D "marvell,orion-mdio";
+>                         reg =3D <0x72004 0x4>;
+>=20
+>                         #address-cells =3D <1>;
+>                         #size-cells =3D <0>;
+>                         PHY1: ethernet-phy@1 {
+>                                 reg =3D <1>;
+>                                 device_type =3D "ethernet-phy";
+>                                 phy-id =3D <0x01410e90>;
+>                         };
+>                 };
+>=20
+>                 egiga0 {
+>                         device_type =3D "network";
+>                         compatible =3D "marvell,mv643xx-eth";
+>                         reg =3D <0x72000 0x4000>;
+>                         port_number =3D <0>;
+>                         phy-handle =3D <&PHY1>;
+>                         interrupts =3D <11>;
+>                         local-mac-address =3D [000000000002];  /* Filled =
+by
+> boot loader */ };
+>=20
+> Regards,
+> Jason
 
-Another datapoint, though, is that it might make sense to recommend (and
-I'm working on figuring this out for the distros, etc) to use
-disable_ddw anyways for the kdump kernel command-line, as DDW isn't
-'free' and it's unclear if performance is a huge concern for the crash
-kernel (sort of varies with where your storage is, and how much you need
-to dump, which for kdump generally doesn't seem like that much?).
-
-Thanks,
-Nish
+=2D-=20
+=46lorian
