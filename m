@@ -1,26 +1,22 @@
-Return-Path: <B21989@freescale.com>
-Received: from co1outboundpool.messaging.microsoft.com
- (co1ehsobe004.messaging.microsoft.com [216.32.180.187])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id B42362C0093
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 18:34:10 +1100 (EST)
-Received: from mail10-co1 (localhost [127.0.0.1])	by mail10-co1-R.bigfish.com
- (Postfix) with ESMTP id 1A60A6800C1	for
- <linuxppc-dev@lists.ozlabs.org>; Tue,
- 29 Jan 2013 07:34:06 +0000 (UTC)
-Received: from CO1EHSMHS028.bigfish.com (unknown [10.243.78.211])	by
- mail10-co1.bigfish.com (Postfix) with ESMTP id 651A94A0048	for
- <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 07:34:04 +0000 (UTC)
-From: Shaohui Xie <Shaohui.Xie@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/p1023/config: enable hugetlbfs support
-Date: Tue, 29 Jan 2013 14:34:09 +0800
-Message-ID: <1359441249-3040-1-git-send-email-Shaohui.Xie@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shaohui Xie <Shaohui.Xie@freescale.com>
+Return-Path: <agust@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id E985B2C008F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 19:09:52 +1100 (EST)
+Received: from frontend1.mail.m-online.net (unknown [192.168.8.180])
+ by mail-out.m-online.net (Postfix) with ESMTP id 3YwL3K0V1Wz4KK7j
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 09:09:48 +0100 (CET)
+Received: from localhost (p4FC46B37.dip.t-dialin.net [79.196.107.55])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by mail.mnet-online.de (Postfix) with ESMTPSA id 3YwL3J48G9zbbh7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 09:09:48 +0100 (CET)
+From: Anatolij Gustschin <agust@denx.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/512x: initialize clocks before bus probing
+Date: Tue, 29 Jan 2013 09:09:47 +0100
+Message-Id: <1359446987-6014-1-git-send-email-agust@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,30 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hugetlbfs is missed in current p1023rds_defconfig, enable it by default.
+Early driver probing can fail due to not available clocks
+(clk_get() fails) since the clk API init didn't take place yet.
+Move clocks init before bus probing.
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
+Signed-off-by: Anatolij Gustschin <agust@denx.de>
 ---
- arch/powerpc/configs/85xx/p1023rds_defconfig |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/512x/mpc512x_shared.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/configs/85xx/p1023rds_defconfig b/arch/powerpc/configs/85xx/p1023rds_defconfig
-index b80bcc6..98125b0 100644
---- a/arch/powerpc/configs/85xx/p1023rds_defconfig
-+++ b/arch/powerpc/configs/85xx/p1023rds_defconfig
-@@ -1,4 +1,5 @@
- CONFIG_PPC_85xx=y
-+CONFIG_PHYS_64BIT=y
- CONFIG_SMP=y
- CONFIG_NR_CPUS=2
- CONFIG_EXPERIMENTAL=y
-@@ -138,6 +139,7 @@ CONFIG_VFAT_FS=y
- CONFIG_NTFS_FS=y
- CONFIG_PROC_KCORE=y
- CONFIG_TMPFS=y
-+CONFIG_HUGETLBFS=y
- CONFIG_ADFS_FS=m
- CONFIG_AFFS_FS=m
- CONFIG_HFS_FS=m
+diff --git a/arch/powerpc/platforms/512x/mpc512x_shared.c b/arch/powerpc/platforms/512x/mpc512x_shared.c
+index 37fc7a3..34bad13 100644
+--- a/arch/powerpc/platforms/512x/mpc512x_shared.c
++++ b/arch/powerpc/platforms/512x/mpc512x_shared.c
+@@ -428,8 +428,8 @@ void __init mpc512x_psc_fifo_init(void)
+ 
+ void __init mpc512x_init(void)
+ {
+-	mpc512x_declare_of_platform_devices();
+ 	mpc5121_clk_init();
++	mpc512x_declare_of_platform_devices();
+ 	mpc512x_restart_init();
+ 	mpc512x_psc_fifo_init();
+ }
 -- 
-1.6.4
+1.7.11.7
