@@ -1,18 +1,18 @@
 Return-Path: <simon.jeons@gmail.com>
-Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
- [209.85.220.48])
+Received: from mail-ia0-x22a.google.com (mail-ia0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c02::22a])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0C81A2C0093
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2013 00:02:34 +1100 (EST)
-Received: by mail-pa0-f48.google.com with SMTP id fa1so382961pad.35
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 05:02:32 -0800 (PST)
-Message-ID: <1359464544.1624.16.camel@kernel>
+ by ozlabs.org (Postfix) with ESMTPS id 046BB2C0093
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2013 00:05:03 +1100 (EST)
+Received: by mail-ia0-f170.google.com with SMTP id k20so511008iak.15
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 05:05:01 -0800 (PST)
+Message-ID: <1359464694.1624.18.camel@kernel>
 Subject: Re: [PATCH v6 08/15] memory-hotplug: Common APIs to support page
  tables hot-remove
 From: Simon Jeons <simon.jeons@gmail.com>
 To: Tang Chen <tangchen@cn.fujitsu.com>
-Date: Tue, 29 Jan 2013 07:02:24 -0600
+Date: Tue, 29 Jan 2013 07:04:54 -0600
 In-Reply-To: <1357723959-5416-9-git-send-email-tangchen@cn.fujitsu.com>
 References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
  <1357723959-5416-9-git-send-email-tangchen@cn.fujitsu.com>
@@ -43,10 +43,11 @@ On Wed, 2013-01-09 at 17:32 +0800, Tang Chen wrote:
 > When memory is removed, the corresponding pagetables should alse be removed.
 > This patch introduces some common APIs to support vmemmap pagetable and x86_64
 > architecture pagetable removing.
+
+Why don't need to build_all_zonelists like online_pages does during
+hot-add path(add_memory)?
+
 > 
-
-When page table of hot-add memory is created?
-
 > All pages of virtual mapping in removed memory cannot be freedi if some pages
 > used as PGD/PUD includes not only removed memory but also other memory. So the
 > patch uses the following way to check whether page can be freed or not.
