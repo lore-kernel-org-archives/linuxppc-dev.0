@@ -1,47 +1,35 @@
-Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id DA2122C008D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 12:16:11 +1100 (EST)
+ (Client CN "e9.ny.us.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 53E2E2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 13:03:00 +1100 (EST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
- Tue, 29 Jan 2013 06:44:40 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 5CDE4394004C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 06:46:03 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0T1G1Ta23527580
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 06:46:01 +0530
-Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0T1G1V9015590
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 12:16:03 +1100
-Message-ID: <5107225A.5040702@linux.vnet.ibm.com>
-Date: Tue, 29 Jan 2013 12:14:02 +1100
-From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Mon, 28 Jan 2013 21:02:56 -0500
+Received: from d01relay07.pok.ibm.com (d01relay07.pok.ibm.com [9.56.227.147])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 18C8B6E8047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 21:02:50 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by d01relay07.pok.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0T22oXk54067360
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 21:02:50 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0T22nqp010648
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 28 Jan 2013 21:02:50 -0500
+Date: Mon, 28 Jan 2013 18:02:46 -0800
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org
+Subject: [PATCH 1/2] pseries/iommu: restore_default_window does not use liobn
+ parameter
+Message-ID: <20130129020245.GA12156@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH v5 31/45] blackfin/smp: Use get/put_online_cpus_atomic()
- to prevent CPU offline
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122074123.13822.39102.stgit@srivatsabhat.in.ibm.com>
- <CAA_GA1fSLNKSDTGSzHoA+j-mur85BvoSRkARq+DMfORuwrrX4Q@mail.gmail.com>
- <CAOS58YN_r-ahRvPekOo_84bM7z3YcFw1EA7DcTf0NVyEhv7ssA@mail.gmail.com>
-In-Reply-To: <CAOS58YN_r-ahRvPekOo_84bM7z3YcFw1EA7DcTf0NVyEhv7ssA@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
- linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
- wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
- Bob Liu <lliubbo@gmail.com>, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
- linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
- sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: nfont@linux.vnet.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ miltonm@bga.com, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,20 +39,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/29/2013 06:06 AM, Tejun Heo wrote:
-> Hello, Bob.
-> 
-> On Mon, Jan 28, 2013 at 1:09 AM, Bob Liu <lliubbo@gmail.com> wrote:
->> Thanks, will be applied to my blackfin arch tree.
-> 
-> I think we still have some work ahead of us to have this patchset
-> ready for inclusion and even then it probably would be best to route
-> these patches together, so probably not a very good idea to apply this
-> to blackfin right now.
-> 
+The parameter is unused, and complicates a following fix. Just remove
+it.
+    
+Signed-off-by: Nishanth Aravamudan <nacc@us.ibm.com>
 
-Thanks Tejun for pointing that out! I'll address the review comments
-soon and respin the patchset.
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index b4bb9e1..a8e99f9 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -884,7 +884,7 @@ static int create_ddw(struct pci_dev *dev, const u32 *ddw_avail,
+ }
  
-Regards,
-Srivatsa S. Bhat
+ static void restore_default_window(struct pci_dev *dev,
+-				u32 ddw_restore_token, unsigned long liobn)
++					u32 ddw_restore_token)
+ {
+ 	struct eeh_dev *edev;
+ 	u32 cfg_addr;
+@@ -1100,7 +1100,7 @@ out_free_prop:
+ 
+ out_restore_window:
+ 	if (ddw_restore_token)
+-		restore_default_window(dev, ddw_restore_token, liobn);
++		restore_default_window(dev, ddw_restore_token);
+ 
+ out_unlock:
+ 	mutex_unlock(&direct_window_init_mutex);
