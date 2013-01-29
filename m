@@ -1,24 +1,25 @@
-Return-Path: <thomas.petazzoni@free-electrons.com>
-Date: Tue, 29 Jan 2013 17:46:09 +0100
-From: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>
+Return-Path: <jgunthorpe@obsidianresearch.com>
+Date: Tue, 29 Jan 2013 11:13:06 -0700
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 To: Florian Fainelli <florian@openwrt.org>
 Subject: Re: [PATCH 5/5] mv643xx_eth: convert to use the Marvell Orion MDIO
  driver
-Message-ID: <20130129174609.6ff6fe03@skate>
-In-Reply-To: <5107F88C.8030002@openwrt.org>
+Message-ID: <20130129181306.GF25646@obsidianresearch.com>
 References: <1359473048-26551-1-git-send-email-florian@openwrt.org>
  <1359473048-26551-6-git-send-email-florian@openwrt.org>
- <20130129170131.7964a110@skate> <5107F88C.8030002@openwrt.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1359473048-26551-6-git-send-email-florian@openwrt.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
  Jason Cooper <jason@lakedaemon.net>, linux-doc@vger.kernel.org,
  devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Rob Herring <rob.herring@calxeda.com>, netdev@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.infradead.org,
- Rob Landley <rob@landley.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Rob Herring <rob.herring@calxeda.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Paul Mackerras <paulus@samba.org>, Lennert Buytenhek <buytenh@wantstofly.org>,
+ Rob Landley <rob@landley.net>, netdev@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, davem@davemloft.net,
- Lennert Buytenhek <buytenh@wantstofly.org>
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,40 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Florian Fainelli,
+On Tue, Jan 29, 2013 at 04:24:08PM +0100, Florian Fainelli wrote:
+> This patch converts the Marvell MV643XX ethernet driver to use the
+> Marvell Orion MDIO driver. As a result, PowerPC and ARM platforms
+> registering the Marvell MV643XX ethernet driver are also updated to
+> register a Marvell Orion MDIO driver. This driver voluntarily overlaps
+> with the Marvell Ethernet shared registers because it will use a subset
+> of this shared register (shared_base + 0x4 - shared_base + 0x84). The
+> Ethernet driver is also updated to look up for a PHY device using the
+> Orion MDIO bus driver.
 
-On Tue, 29 Jan 2013 17:27:56 +0100, Florian Fainelli wrote:
+Can you finish off this job by making the mv643xx_eth driver accept
+the standard phy-handle OF property instead of using a phy address?
 
-> It looks like I introduced two redundant mvmdio instances as ge01
-> refers to the ge00 smi bus (the same applies to ge11 and ge10).
-> Thanks for spotting this.
+Ie the end result should be something like:
 
-Ok, good.
+                smi0: mdio@72000 {
+                        device_type = "mdio";
+                        compatible = "marvell,orion-mdio";
+                        reg = <0x72004 0x4>;
 
-> If you take a closer look at mv643xx_eth you will see that the
-> "shared" driver still handles the mconf bus window configuration,
-> which is not abstracted yet.
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        PHY1: ethernet-phy@1 {
+                                reg = <1>;
+                                device_type = "ethernet-phy";
+                                phy-id = <0x01410e90>;
+                        };
+                };
 
-Indeed, I've seen that. But I don't understand why it's done in the
-mv643xx_eth_shared_probe(). The mbus window configuration registers are
-per-network interface, so this call to mv643xx_eth_conf_mbus_windows()
-could presumably be done in mv643xx_eth_probe().
+                egiga0 {
+                        device_type = "network";
+                        compatible = "marvell,mv643xx-eth";
+                        reg = <0x72000 0x4000>;
+                        port_number = <0>;
+                        phy-handle = <&PHY1>;
+                        interrupts = <11>;
+                        local-mac-address = [000000000002];  /* Filled by boot loader */
+                };
 
-At least in mvneta, we have the same registers, and we do their
-initialization in the driver normal (and only) ->probe() routine.
-
-> Besides that, I would rather do it step by step.
-
-Yes, agreed. But I think it would be good to have followed patches that
-progressively get rid of the shared driver thing, as it will help in
-bringing a proper DT binding in the mv643xx_eth driver. But it
-certainly doesn't need to be part of this specific patch.
-
-Thanks,
-
-Thomas
--- 
-Thomas Petazzoni, Free Electrons
-Kernel, drivers, real-time and embedded Linux
-development, consulting, training and support.
-http://free-electrons.com
+Regards,
+Jason
