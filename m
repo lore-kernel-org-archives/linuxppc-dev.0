@@ -1,15 +1,20 @@
 Return-Path: <jgunthorpe@obsidianresearch.com>
-Date: Tue, 29 Jan 2013 11:13:06 -0700
+Received: from quartz.orcorp.ca (quartz.orcorp.ca [184.70.90.242])
+ (using TLSv1 with cipher AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 73FDB2C0096
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2013 05:25:37 +1100 (EST)
+Date: Tue, 29 Jan 2013 10:59:12 -0700
 From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 To: Florian Fainelli <florian@openwrt.org>
-Subject: Re: [PATCH 5/5] mv643xx_eth: convert to use the Marvell Orion MDIO
- driver
-Message-ID: <20130129181306.GF25646@obsidianresearch.com>
+Subject: Re: [PATCH 4/5] net: mvmdio: allow Device Tree and platform device
+ to coexist
+Message-ID: <20130129175912.GE25646@obsidianresearch.com>
 References: <1359473048-26551-1-git-send-email-florian@openwrt.org>
- <1359473048-26551-6-git-send-email-florian@openwrt.org>
+ <1359473048-26551-5-git-send-email-florian@openwrt.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1359473048-26551-6-git-send-email-florian@openwrt.org>
+In-Reply-To: <1359473048-26551-5-git-send-email-florian@openwrt.org>
 Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
  Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
  Jason Cooper <jason@lakedaemon.net>, linux-doc@vger.kernel.org,
@@ -29,44 +34,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 29, 2013 at 04:24:08PM +0100, Florian Fainelli wrote:
-> This patch converts the Marvell MV643XX ethernet driver to use the
-> Marvell Orion MDIO driver. As a result, PowerPC and ARM platforms
-> registering the Marvell MV643XX ethernet driver are also updated to
-> register a Marvell Orion MDIO driver. This driver voluntarily overlaps
-> with the Marvell Ethernet shared registers because it will use a subset
-> of this shared register (shared_base + 0x4 - shared_base + 0x84). The
-> Ethernet driver is also updated to look up for a PHY device using the
-> Orion MDIO bus driver.
+On Tue, Jan 29, 2013 at 04:24:07PM +0100, Florian Fainelli wrote:
+  
+> -	dev->err_interrupt = irq_of_parse_and_map(pdev->dev.of_node, 0);
+> +	if (pdev->dev.of_node) {
+> +		dev->regs = of_iomap(pdev->dev.of_node, 0);
+> +		if (!dev->regs) {
+> +			dev_err(&pdev->dev, "No SMI register address given in DT\n");
+> +			ret = -ENODEV;
+> +			goto out_free;
+> +		}
+> +
+> +		dev->err_interrupt = irq_of_parse_and_map(pdev->dev.of_node, 0);
+> +	} else {
+> +		r = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +
+> +		dev->regs = ioremap(r->start, resource_size(r));
+> +		if (!dev->regs) {
+> +			dev_err(&pdev->dev, "No SMI register address given\n");
+> +			ret = -ENODEV;
+> +			goto out_free;
+> +		}
+> +
+> +		dev->err_interrupt = platform_get_irq(pdev, 0);
+> +	}
 
-Can you finish off this job by making the mv643xx_eth driver accept
-the standard phy-handle OF property instead of using a phy address?
+Why do you have these different paths for OF and platform? AFAIK these
+days when a OF device is automatically converted into a platform
+device all the struct resources are created too, so you can't you just
+use platform_get_resource and devm_request_and_ioremap for both flows?
 
-Ie the end result should be something like:
+Ditto for the interrupt - platform_get_irq should work in both cases?
 
-                smi0: mdio@72000 {
-                        device_type = "mdio";
-                        compatible = "marvell,orion-mdio";
-                        reg = <0x72004 0x4>;
-
-                        #address-cells = <1>;
-                        #size-cells = <0>;
-                        PHY1: ethernet-phy@1 {
-                                reg = <1>;
-                                device_type = "ethernet-phy";
-                                phy-id = <0x01410e90>;
-                        };
-                };
-
-                egiga0 {
-                        device_type = "network";
-                        compatible = "marvell,mv643xx-eth";
-                        reg = <0x72000 0x4000>;
-                        port_number = <0>;
-                        phy-handle = <&PHY1>;
-                        interrupts = <11>;
-                        local-mac-address = [000000000002];  /* Filled by boot loader */
-                };
-
-Regards,
 Jason
