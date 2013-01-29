@@ -1,28 +1,18 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ve0-f174.google.com (mail-ve0-f174.google.com
- [209.85.128.174])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0191D2C0098
- for <linuxppc-dev@ozlabs.org>; Wed, 30 Jan 2013 01:14:07 +1100 (EST)
-Received: by mail-ve0-f174.google.com with SMTP id c13so296762vea.19
- for <linuxppc-dev@ozlabs.org>; Tue, 29 Jan 2013 06:14:05 -0800 (PST)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1359418161.18955.14.camel@pasglop>
-References: <1359416520.18955.12.camel@pasglop>
- <CA+55aFw=Gr_UYEjfQ6sjz-5YdoegzxC+A0x6e8GViOSuXtE6hA@mail.gmail.com>
- <1359418161.18955.14.camel@pasglop>
-Date: Tue, 29 Jan 2013 15:14:04 +0100
-Message-ID: <CAMuHMdXn_W6x-5vNLSSNk-LPs_duz5CggTDJbhmqYcD8ob-dWw@mail.gmail.com>
-Subject: Re: [git pull] Please pull powerpc.git merge branch
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Linux Kernel list <linux-kernel@vger.kernel.org>
+Return-Path: <florian@openwrt.org>
+From: Florian Fainelli <florian@openwrt.org>
+To: davem@davemloft.net
+Subject: [PATCH 0/5] mv643xx_eth: use mvmdio MDIO bus driver
+Date: Tue, 29 Jan 2013 16:24:03 +0100
+Message-Id: <1359473048-26551-1-git-send-email-florian@openwrt.org>
+Cc: Thomas Petazzoni <thomas.petazzoni@free-electrons.com>,
+ Andrew Lunn <andrew@lunn.ch>, Russell King <linux@arm.linux.org.uk>,
+ Jason Cooper <jason@lakedaemon.net>, linux-doc@vger.kernel.org,
+ devicetree-discuss@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Rob Herring <rob.herring@calxeda.com>, netdev@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.infradead.org,
+ Rob Landley <rob@landley.net>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Florian Fainelli <florian@openwrt.org>,
+ Lennert Buytenhek <buytenh@wantstofly.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,24 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jan 29, 2013 at 1:09 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Mon, 2013-01-28 at 16:03 -0800, Linus Torvalds wrote:
->> I'll have you know that I haven't quite even left for Au yet, and I
->> have LCA before diving. So no snarky "in between dives" comments,
->> please.
->
-> It wasn't meant to be "snarky", sorry about that...
+Hi all,
 
-Sharky? Sorry, couldn't resist.
+This patch converts the mv643xx_eth driver to use the mvmdio MDIO bus driver
+instead of rolling its own implementation. As a result, all users of this
+mv643xx_eth driver are converted to register an "orion-mdio" platform_device.
+The mvmdio driver is also updated to support an interrupt line which reports
+SMI error/completion, and to allow traditionnal platform device registration
+instead of just device tree.
 
-Gr{oetje,eeting}s,
+David, I think it makes sense for you to merge all of this, since we do
+not want the architecture files to be desynchronized from the mv643xx_eth to
+avoid runtime breakage. The potential for merge conflicts should be very small.
 
-                        Poor Geert without sun, dives, and sharks
+You can probably safely merge patches 1 to 4 if Thomas agrees, and we will
+see what kind of feeback I get on patch 5.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Florian Fainelli (5):
+  net: mvmdio: unmap base register address at driver removal
+  net: mvmdio: rename base register cookie from smireg to regs
+  net: mvmdio: enhance driver to support SMI error/done interrupts
+  net: mvmdio: allow Device Tree and platform device to coexist
+  mv643xx_eth: convert to use the Marvell Orion MDIO driver
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+ .../devicetree/bindings/net/marvell-orion-mdio.txt |    3 +
+ arch/arm/plat-orion/common.c                       |   84 +++++++--
+ arch/powerpc/platforms/chrp/pegasos_eth.c          |   20 +++
+ arch/powerpc/sysdev/mv64x60_dev.c                  |   14 +-
+ drivers/net/ethernet/marvell/Kconfig               |    1 +
+ drivers/net/ethernet/marvell/mv643xx_eth.c         |  187 +-------------------
+ drivers/net/ethernet/marvell/mvmdio.c              |  136 +++++++++++---
+ 7 files changed, 226 insertions(+), 219 deletions(-)
+
+-- 
+1.7.10.4
