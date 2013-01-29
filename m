@@ -1,21 +1,47 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <srivatsa.bhat@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id 000282C0098
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 11:36:38 +1100 (EST)
-Message-ID: <1359419756.18955.16.camel@pasglop>
-Subject: Re: [PATCH v2] ppc/iommu: use find_first_bit to look up entries in
- the iommu table
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-Date: Tue, 29 Jan 2013 11:35:56 +1100
-In-Reply-To: <1357846419-13515-1-git-send-email-cascardo@linux.vnet.ibm.com>
-References: <1357846419-13515-1-git-send-email-cascardo@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org, shangw@linux.vnet.ibm.com,
- anton@samba.org
+ (Client CN "e28smtp05.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id DA2122C008D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 12:16:11 +1100 (EST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <srivatsa.bhat@linux.vnet.ibm.com>;
+ Tue, 29 Jan 2013 06:44:40 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 5CDE4394004C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 06:46:03 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r0T1G1Ta23527580
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 06:46:01 +0530
+Received: from d28av05.in.ibm.com (loopback [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
+ r0T1G1V9015590
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 12:16:03 +1100
+Message-ID: <5107225A.5040702@linux.vnet.ibm.com>
+Date: Tue, 29 Jan 2013 12:14:02 +1100
+From: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH v5 31/45] blackfin/smp: Use get/put_online_cpus_atomic()
+ to prevent CPU offline
+References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
+ <20130122074123.13822.39102.stgit@srivatsabhat.in.ibm.com>
+ <CAA_GA1fSLNKSDTGSzHoA+j-mur85BvoSRkARq+DMfORuwrrX4Q@mail.gmail.com>
+ <CAOS58YN_r-ahRvPekOo_84bM7z3YcFw1EA7DcTf0NVyEhv7ssA@mail.gmail.com>
+In-Reply-To: <CAOS58YN_r-ahRvPekOo_84bM7z3YcFw1EA7DcTf0NVyEhv7ssA@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
+ linux-kernel@vger.kernel.org, mingo@kernel.org, linux-arch@vger.kernel.org,
+ linux@arm.linux.org.uk, xiaoguangrong@linux.vnet.ibm.com,
+ wangyun@linux.vnet.ibm.com, paulmck@linux.vnet.ibm.com,
+ Bob Liu <lliubbo@gmail.com>, nikunj@linux.vnet.ibm.com,
+ linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
+ rjw@sisk.pl, namhyung@kernel.org, tglx@linutronix.de,
+ linux-arm-kernel@lists.infradead.org, netdev@vger.kernel.org, oleg@redhat.com,
+ sbw@mit.edu, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +51,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-01-10 at 17:33 -0200, Thadeu Lima de Souza Cascardo wrote:
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>
-> ---
-> v2:
-> Remove the unneeded extra variable i, which caused build failure.
-
-I believe something equivalent is already in -next, can you dbl check ?
-
-Cheers,
-Ben.
-
-> ---
->  arch/powerpc/kernel/iommu.c |    9 ++-------
->  1 files changed, 2 insertions(+), 7 deletions(-)
+On 01/29/2013 06:06 AM, Tejun Heo wrote:
+> Hello, Bob.
 > 
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index 6d48ff8..0fc44d2 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -708,7 +708,7 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
->  
->  void iommu_free_table(struct iommu_table *tbl, const char *node_name)
->  {
-> -	unsigned long bitmap_sz, i;
-> +	unsigned long bitmap_sz;
->  	unsigned int order;
->  
->  	if (!tbl || !tbl->it_map) {
-> @@ -725,14 +725,9 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
->  		clear_bit(0, tbl->it_map);
->  
->  	/* verify that table contains no entries */
-> -	/* it_size is in entries, and we're examining 64 at a time */
-> -	for (i = 0; i < (tbl->it_size/64); i++) {
-> -		if (tbl->it_map[i] != 0) {
-> +	if (find_first_bit(tbl->it_map, tbl->it_size) < tbl->it_size)
->  			printk(KERN_WARNING "%s: Unexpected TCEs for %s\n",
->  				__func__, node_name);
-> -			break;
-> -		}
-> -	}
->  
->  	/* calculate bitmap size in bytes */
->  	bitmap_sz = (tbl->it_size + 7) / 8;
+> On Mon, Jan 28, 2013 at 1:09 AM, Bob Liu <lliubbo@gmail.com> wrote:
+>> Thanks, will be applied to my blackfin arch tree.
+> 
+> I think we still have some work ahead of us to have this patchset
+> ready for inclusion and even then it probably would be best to route
+> these patches together, so probably not a very good idea to apply this
+> to blackfin right now.
+> 
+
+Thanks Tejun for pointing that out! I'll address the review comments
+soon and respin the patchset.
+ 
+Regards,
+Srivatsa S. Bhat
