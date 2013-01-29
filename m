@@ -1,32 +1,29 @@
-Return-Path: <namhyung@kernel.org>
-Received: from LGEMRELSE7Q.lge.com (LGEMRELSE7Q.lge.com [156.147.1.151])
- by ozlabs.org (Postfix) with ESMTP id 6AB842C008F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 22:12:42 +1100 (EST)
-From: Namhyung Kim <namhyung@kernel.org>
-To: "Srivatsa S. Bhat" <srivatsa.bhat@linux.vnet.ibm.com>
-Subject: Re: [PATCH v5 04/45] percpu_rwlock: Implement the core design of
- Per-CPU Reader-Writer Locks
-References: <20130122073210.13822.50434.stgit@srivatsabhat.in.ibm.com>
- <20130122073347.13822.85876.stgit@srivatsabhat.in.ibm.com>
- <20130123185522.GG2373@mtj.dyndns.org>
- <51003B20.2060506@linux.vnet.ibm.com>
- <20130123195740.GI2373@mtj.dyndns.org>
- <5100B8CC.4080406@linux.vnet.ibm.com>
-Date: Tue, 29 Jan 2013 20:12:37 +0900
-In-Reply-To: <5100B8CC.4080406@linux.vnet.ibm.com> (Srivatsa S. Bhat's message
- of "Thu, 24 Jan 2013 10:00:04 +0530")
-Message-ID: <87ip6gutsq.fsf@sejong.aot.lge.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-doc@vger.kernel.org, peterz@infradead.org, fweisbec@gmail.com,
- linux-kernel@vger.kernel.org, walken@google.com, mingo@kernel.org,
- linux-arch@vger.kernel.org, linux@arm.linux.org.uk,
- xiaoguangrong@linux.vnet.ibm.com, wangyun@linux.vnet.ibm.com,
- paulmck@linux.vnet.ibm.com, nikunj@linux.vnet.ibm.com,
- linux-pm@vger.kernel.org, rusty@rustcorp.com.au, rostedt@goodmis.org,
- rjw@sisk.pl, tglx@linutronix.de, linux-arm-kernel@lists.infradead.org,
- netdev@vger.kernel.org, oleg@redhat.com, sbw@mit.edu,
- Tejun Heo <tj@kernel.org>, akpm@linux-foundation.org,
+Return-Path: <simon.jeons@gmail.com>
+Received: from mail-ia0-x231.google.com (mail-ia0-x231.google.com
+ [IPv6:2607:f8b0:4001:c02::231])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 785DF2C0086
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 23:53:03 +1100 (EST)
+Received: by mail-ia0-f177.google.com with SMTP id h8so495349iaa.36
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 04:53:00 -0800 (PST)
+Message-ID: <1359463973.1624.15.camel@kernel>
+Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
+From: Simon Jeons <simon.jeons@gmail.com>
+To: Tang Chen <tangchen@cn.fujitsu.com>
+Date: Tue, 29 Jan 2013 06:52:53 -0600
+In-Reply-To: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
+ wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
+ wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
+ linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -37,88 +34,203 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 24 Jan 2013 10:00:04 +0530, Srivatsa S. Bhat wrote:
-> On 01/24/2013 01:27 AM, Tejun Heo wrote:
->> On Thu, Jan 24, 2013 at 01:03:52AM +0530, Srivatsa S. Bhat wrote:
->>> CPU 0                          CPU 1
->>>
->>> read_lock(&rwlock)
->>>
->>>                               write_lock(&rwlock) //spins, because CPU 0
->>>                               //has acquired the lock for read
->>>
->>> read_lock(&rwlock)
->>>    ^^^^^
->>> What happens here? Does CPU 0 start spinning (and hence deadlock) or will
->>> it continue realizing that it already holds the rwlock for read?
->> 
->> I don't think rwlock allows nesting write lock inside read lock.
->> read_lock(); write_lock() will always deadlock.
->> 
->
-> Sure, I understand that :-) My question was, what happens when *two* CPUs
-> are involved, as in, the read_lock() is invoked only on CPU 0 whereas the
-> write_lock() is invoked on CPU 1.
->
-> For example, the same scenario shown above, but with slightly different
-> timing, will NOT result in a deadlock:
->
-> Scenario 2:
->   CPU 0                                CPU 1
->
-> read_lock(&rwlock)
->
->
-> read_lock(&rwlock) //doesn't spin
->
->                                     write_lock(&rwlock) //spins, because CPU 0
->                                     //has acquired the lock for read
->
->
-> So I was wondering whether the "fairness" logic of rwlocks would cause
-> the second read_lock() to spin (in the first scenario shown above) because
-> a writer is already waiting (and hence new readers should spin) and thus
-> cause a deadlock.
+Hi Tang,
 
-In my understanding, current x86 rwlock does basically this (of course,
-in an atomic fashion):
+On Wed, 2013-01-09 at 17:32 +0800, Tang Chen wrote:
+> Here is the physical memory hot-remove patch-set based on 3.8rc-2.
+
+Some questions ask you, not has relationship with this patchset, but is
+memory hotplug stuff.
+
+1. In function node_states_check_changes_online:
+
+comments:
+* If we don't have HIGHMEM nor movable node,
+* node_states[N_NORMAL_MEMORY] contains nodes which have zones of
+* 0...ZONE_MOVABLE, set zone_last to ZONE_MOVABLE.
+
+How to understand it? Why we don't have HIGHMEM nor movable node and
+node_staes[N_NORMAL_MEMORY] contains 0...ZONE_MOVABLE, IIUC,
+N_NORMAL_MEMORY only means the node has regular memory.
+
+* If we don't have movable node, node_states[N_NORMAL_MEMORY]
+* contains nodes which have zones of 0...ZONE_MOVABLE,
+* set zone_last to ZONE_MOVABLE.
+
+How to understand?
+
+2. In function move_pfn_range_left, why end <= z2->zone_start_pfn is not
+correct? The comments said that must include/overlap, why?
+
+3. In function online_pages, the normal case(w/o online_kenrel,
+online_movable), why not check if the new zone is overlap with adjacent
+zones?
+
+4. Could you summarize the difference implementation between hot-add and
+logic-add, hot-remove and logic-remove?   
 
 
-#define RW_LOCK_BIAS 0x10000
+> 
+> This patch-set aims to implement physical memory hot-removing.
+> 
+> The patches can free/remove the following things:
+> 
+>   - /sys/firmware/memmap/X/{end, start, type} : [PATCH 4/15]
+>   - memmap of sparse-vmemmap                  : [PATCH 6,7,8,10/15]
+>   - page table of removed memory              : [RFC PATCH 7,8,10/15]
+>   - node and related sysfs files              : [RFC PATCH 13-15/15]
+> 
+> 
+> Existing problem:
+> If CONFIG_MEMCG is selected, we will allocate memory to store page cgroup
+> when we online pages.
+> 
+> For example: there is a memory device on node 1. The address range
+> is [1G, 1.5G). You will find 4 new directories memory8, memory9, memory10,
+> and memory11 under the directory /sys/devices/system/memory/.
+> 
+> If CONFIG_MEMCG is selected, when we online memory8, the memory stored page
+> cgroup is not provided by this memory device. But when we online memory9, the
+> memory stored page cgroup may be provided by memory8. So we can't offline
+> memory8 now. We should offline the memory in the reversed order.
+> 
+> When the memory device is hotremoved, we will auto offline memory provided
+> by this memory device. But we don't know which memory is onlined first, so
+> offlining memory may fail.
+> 
+> In patch1, we provide a solution which is not good enough:
+> Iterate twice to offline the memory.
+> 1st iterate: offline every non primary memory block.
+> 2nd iterate: offline primary (i.e. first added) memory block.
+> 
+> And a new idea from Wen Congyang <wency@cn.fujitsu.com> is:
+> allocate the memory from the memory block they are describing.
+> 
+> But we are not sure if it is OK to do so because there is not existing API
+> to do so, and we need to move page_cgroup memory allocation from MEM_GOING_ONLINE
+> to MEM_ONLINE. And also, it may interfere the hugepage.
+> 
+> 
+> 
+> How to test this patchset?
+> 1. apply this patchset and build the kernel. MEMORY_HOTPLUG, MEMORY_HOTREMOVE,
+>    ACPI_HOTPLUG_MEMORY must be selected.
+> 2. load the module acpi_memhotplug
+> 3. hotplug the memory device(it depends on your hardware)
+>    You will see the memory device under the directory /sys/bus/acpi/devices/.
+>    Its name is PNP0C80:XX.
+> 4. online/offline pages provided by this memory device
+>    You can write online/offline to /sys/devices/system/memory/memoryX/state to
+>    online/offline pages provided by this memory device
+> 5. hotremove the memory device
+>    You can hotremove the memory device by the hardware, or writing 1 to
+>    /sys/bus/acpi/devices/PNP0C80:XX/eject.
 
-rwlock_init(rwlock)
-{
-	rwlock->lock = RW_LOCK_BIAS;
-}
+Is there a similar knode to hot-add the memory device?
 
-arch_read_lock(rwlock)
-{
-retry:
-	if (--rwlock->lock >= 0)
-		return;
-
-        rwlock->lock++;
-        while (rwlock->lock < 1)
-        	continue;
-
-        goto retry;
-}
-
-arch_write_lock(rwlock)
-{
-retry:
-	if ((rwlock->lock -= RW_LOCK_BIAS) == 0)
-        	return;
-
-        rwlock->lock += RW_LOCK_BIAS;
-	while (rwlock->lock != RW_LOCK_BIAS)
-		continue;
-
-        goto retry;
-}
-
-
-So I can't find where the 'fairness' logic comes from..
-
-Thanks,
-Namhyung
+> 
+> 
+> Note: if the memory provided by the memory device is used by the kernel, it
+> can't be offlined. It is not a bug.
+> 
+> 
+> Changelogs from v5 to v6:
+>  Patch3: Add some more comments to explain memory hot-remove.
+>  Patch4: Remove bootmem member in struct firmware_map_entry.
+>  Patch6: Repeatedly register bootmem pages when using hugepage.
+>  Patch8: Repeatedly free bootmem pages when using hugepage.
+>  Patch14: Don't free pgdat when offlining a node, just reset it to 0.
+>  Patch15: New patch, pgdat is not freed in patch14, so don't allocate a new
+>           one when online a node.
+> 
+> Changelogs from v4 to v5:
+>  Patch7: new patch, move pgdat_resize_lock into sparse_remove_one_section() to
+>          avoid disabling irq because we need flush tlb when free pagetables.
+>  Patch8: new patch, pick up some common APIs that are used to free direct mapping
+>          and vmemmap pagetables.
+>  Patch9: free direct mapping pagetables on x86_64 arch.
+>  Patch10: free vmemmap pagetables.
+>  Patch11: since freeing memmap with vmemmap has been implemented, the config
+>           macro CONFIG_SPARSEMEM_VMEMMAP when defining __remove_section() is
+>           no longer needed.
+>  Patch13: no need to modify acpi_memory_disable_device() since it was removed,
+>           and add nid parameter when calling remove_memory().
+> 
+> Changelogs from v3 to v4:
+>  Patch7: remove unused codes.
+>  Patch8: fix nr_pages that is passed to free_map_bootmem()
+> 
+> Changelogs from v2 to v3:
+>  Patch9: call sync_global_pgds() if pgd is changed
+>  Patch10: fix a problem int the patch
+> 
+> Changelogs from v1 to v2:
+>  Patch1: new patch, offline memory twice. 1st iterate: offline every non primary
+>          memory block. 2nd iterate: offline primary (i.e. first added) memory
+>          block.
+> 
+>  Patch3: new patch, no logical change, just remove reduntant codes.
+> 
+>  Patch9: merge the patch from wujianguo into this patch. flush tlb on all cpu
+>          after the pagetable is changed.
+> 
+>  Patch12: new patch, free node_data when a node is offlined.
+> 
+> 
+> Tang Chen (6):
+>   memory-hotplug: move pgdat_resize_lock into
+>     sparse_remove_one_section()
+>   memory-hotplug: remove page table of x86_64 architecture
+>   memory-hotplug: remove memmap of sparse-vmemmap
+>   memory-hotplug: Integrated __remove_section() of
+>     CONFIG_SPARSEMEM_VMEMMAP.
+>   memory-hotplug: remove sysfs file of node
+>   memory-hotplug: Do not allocate pdgat if it was not freed when
+>     offline.
+> 
+> Wen Congyang (5):
+>   memory-hotplug: try to offline the memory twice to avoid dependence
+>   memory-hotplug: remove redundant codes
+>   memory-hotplug: introduce new function arch_remove_memory() for
+>     removing page table depends on architecture
+>   memory-hotplug: Common APIs to support page tables hot-remove
+>   memory-hotplug: free node_data when a node is offlined
+> 
+> Yasuaki Ishimatsu (4):
+>   memory-hotplug: check whether all memory blocks are offlined or not
+>     when removing memory
+>   memory-hotplug: remove /sys/firmware/memmap/X sysfs
+>   memory-hotplug: implement register_page_bootmem_info_section of
+>     sparse-vmemmap
+>   memory-hotplug: memory_hotplug: clear zone when removing the memory
+> 
+>  arch/arm64/mm/mmu.c                  |    3 +
+>  arch/ia64/mm/discontig.c             |   10 +
+>  arch/ia64/mm/init.c                  |   18 ++
+>  arch/powerpc/mm/init_64.c            |   10 +
+>  arch/powerpc/mm/mem.c                |   12 +
+>  arch/s390/mm/init.c                  |   12 +
+>  arch/s390/mm/vmem.c                  |   10 +
+>  arch/sh/mm/init.c                    |   17 ++
+>  arch/sparc/mm/init_64.c              |   10 +
+>  arch/tile/mm/init.c                  |    8 +
+>  arch/x86/include/asm/pgtable_types.h |    1 +
+>  arch/x86/mm/init_32.c                |   12 +
+>  arch/x86/mm/init_64.c                |  390 +++++++++++++++++++++++++++++
+>  arch/x86/mm/pageattr.c               |   47 ++--
+>  drivers/acpi/acpi_memhotplug.c       |    8 +-
+>  drivers/base/memory.c                |    6 +
+>  drivers/firmware/memmap.c            |   96 +++++++-
+>  include/linux/bootmem.h              |    1 +
+>  include/linux/firmware-map.h         |    6 +
+>  include/linux/memory_hotplug.h       |   15 +-
+>  include/linux/mm.h                   |    4 +-
+>  mm/memory_hotplug.c                  |  459 +++++++++++++++++++++++++++++++---
+>  mm/sparse.c                          |    8 +-
+>  23 files changed, 1094 insertions(+), 69 deletions(-)
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
