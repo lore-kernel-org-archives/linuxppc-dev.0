@@ -1,22 +1,23 @@
-Return-Path: <B02008@freescale.com>
-Received: from ch1outboundpool.messaging.microsoft.com
- (ch1ehsobe005.messaging.microsoft.com [216.32.181.185])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ECA602C00A2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 00:30:10 +1100 (EST)
-From: Mihai Caraman <mihai.caraman@freescale.com>
-To: <kvm-ppc@vger.kernel.org>
-Subject: [PATCH 5/5] KVM: PPC: e500mc: Enable e6500 cores
-Date: Wed, 30 Jan 2013 15:29:44 +0200
-Message-ID: <1359552584-17861-6-git-send-email-mihai.caraman@freescale.com>
-In-Reply-To: <1359552584-17861-1-git-send-email-mihai.caraman@freescale.com>
-References: <1359552584-17861-1-git-send-email-mihai.caraman@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mihai Caraman <mihai.caraman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- kvm@vger.kernel.org
+Return-Path: <BATV+d275b2856bf31ae0a7e0+3447+infradead.org+acme@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:4830:2446:ff00:4687:fcff:fea6:5117])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 659B52C0040
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2013 01:47:25 +1100 (EST)
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: [PATCH 16/21] perf tools,
+ powerpc: Fix compile warnings in tests/attr.c
+Date: Wed, 30 Jan 2013 11:46:57 -0300
+Message-Id: <1359557222-17547-17-git-send-email-acme@infradead.org>
+In-Reply-To: <1359557222-17547-1-git-send-email-acme@infradead.org>
+References: <1359557222-17547-1-git-send-email-acme@infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, linuxppc-dev@ozlabs.org,
+ Michael Ellerman <ellerman@au1.ibm.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +27,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Extend processor compatibility names to e6500 cores.
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+We print several '__u64' quantities using '%llu'. On powerpc, we by
+default include '<asm-generic/int-l64.h> which results in __u64 being an
+unsigned long. This causes compile warnings which are treated as errors
+due to '-Werror'.
+
+By defining __SANE_USERSPACE_TYPES__ we include <asm-generic/int-ll64.h>
+and define __u64 as unsigned long long.
+
+Changelog[v2]:
+	[Michael Ellerman] Use __SANE_USERSPACE_TYPES__ and avoid PRIu64
+	format specifier - which as Jiri Olsa pointed out, breaks on x86-64.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Anton Blanchard <anton@au1.ibm.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Michael Ellerman <ellerman@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Link: http://lkml.kernel.org/r/20130124054439.GA31588@us.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- arch/powerpc/kvm/e500mc.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ tools/perf/tests/attr.c | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/arch/powerpc/kvm/e500mc.c b/arch/powerpc/kvm/e500mc.c
-index 1f89d26..6c87299 100644
---- a/arch/powerpc/kvm/e500mc.c
-+++ b/arch/powerpc/kvm/e500mc.c
-@@ -172,6 +172,8 @@ int kvmppc_core_check_processor_compat(void)
- 		r = 0;
- 	else if (strcmp(cur_cpu_spec->cpu_name, "e5500") == 0)
- 		r = 0;
-+	else if (strcmp(cur_cpu_spec->cpu_name, "e6500") == 0)
-+		r = 0;
- 	else
- 		r = -ENOTSUPP;
+diff --git a/tools/perf/tests/attr.c b/tools/perf/tests/attr.c
+index f61dd3f..bdcceb8 100644
+--- a/tools/perf/tests/attr.c
++++ b/tools/perf/tests/attr.c
+@@ -19,6 +19,11 @@
+  * permissions. All the event text files are stored there.
+  */
  
++/*
++ * Powerpc needs __SANE_USERSPACE_TYPES__ before <linux/types.h> to select
++ * 'int-ll64.h' and avoid compile warnings when printing __u64 with %llu.
++ */
++#define __SANE_USERSPACE_TYPES__
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <inttypes.h>
 -- 
-1.7.4.1
+1.8.1.1.361.gec3ae6e
