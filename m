@@ -1,22 +1,26 @@
-Return-Path: <vneethv@gmail.com>
-Received: from mail-wi0-f177.google.com (mail-wi0-f177.google.com
- [209.85.212.177])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 9FC9B2C0085
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2013 13:29:39 +1100 (EST)
-Received: by mail-wi0-f177.google.com with SMTP id hm14so1083841wib.16
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jan 2013 18:29:35 -0800 (PST)
+Return-Path: <tangchen@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id A8C012C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jan 2013 21:16:05 +1100 (EST)
+Message-ID: <5108F2B3.3090506@cn.fujitsu.com>
+Date: Wed, 30 Jan 2013 18:15:15 +0800
+From: Tang Chen <tangchen@cn.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <CAFbQSaCxSVDRW=kcjkrbrm=8Sy4N0q29ALfqb4o3UdB3crY64g@mail.gmail.com>
-References: <CAFbQSaBm-0ROHX80JQN6ef4Hgy1PgH8PmYRSRpyJ1+mNo+HnbQ@mail.gmail.com>
- <CAFbQSaCxSVDRW=kcjkrbrm=8Sy4N0q29ALfqb4o3UdB3crY64g@mail.gmail.com>
-From: Vineeth <vneethv@gmail.com>
-Date: Wed, 30 Jan 2013 07:59:14 +0530
-Message-ID: <CAFbQSaB=gw3+P0-yDhjOFnP2z_sYzUHbw+MuFp8QLdF7xyuGUA@mail.gmail.com>
-Subject: Re: PREMPT_RT
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=f46d04428f12f2532904d4784747
+To: Simon Jeons <simon.jeons@gmail.com>
+Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
+References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1359463973.1624.15.camel@kernel>
+In-Reply-To: <1359463973.1624.15.camel@kernel>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
+ wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
+ wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
+ linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,66 +30,282 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d04428f12f2532904d4784747
-Content-Type: text/plain; charset=ISO-8859-1
+Hi Simon,
 
-Hi,
+Please see below. :)
 
-I've added a VDSO patch on my 2.6.32 kernel. When i enabled PREMPT_RT i am
-getting the below oops messages.
-What is the reason for this ? When googled, it was mentioned in many places
-that it is caused by the get_cpu()/put_cpu() preempt disabled region.
-Can someone help me to understand this ?
+On 01/29/2013 08:52 PM, Simon Jeons wrote:
+> Hi Tang,
+>
+> On Wed, 2013-01-09 at 17:32 +0800, Tang Chen wrote:
+>> Here is the physical memory hot-remove patch-set based on 3.8rc-2.
+>
+> Some questions ask you, not has relationship with this patchset, but is
+> memory hotplug stuff.
+>
+> 1. In function node_states_check_changes_online:
+>
+> comments:
+> * If we don't have HIGHMEM nor movable node,
+> * node_states[N_NORMAL_MEMORY] contains nodes which have zones of
+> * 0...ZONE_MOVABLE, set zone_last to ZONE_MOVABLE.
+>
+> How to understand it? Why we don't have HIGHMEM nor movable node and
+> node_staes[N_NORMAL_MEMORY] contains 0...ZONE_MOVABLE, IIUC,
+> N_NORMAL_MEMORY only means the node has regular memory.
+>
 
-BUG: sleeping function called from invalid context at kernel/rtmutex.c:684
-pcnt: 10002 0 in_atomic(): 1, irqs_disabled(): 1, pid: 0, name: swapper
-Call Trace:
-[c0771d40] [c000750c] show_stack+0x44/0x160 (unreliable)
-[c0771d70] [c0021114] __might_sleep+0xe4/0x108
-[c0771d80] [c05700bc] rt_spin_lock+0x38/0xb4
-[c0771d90] [c005a3b0] ntp_tick_length+0x20/0x54
-[c0771db0] [c00594e8] update_wall_time+0xb0/0xa3c
-[c0771e20] [c0040bc0] do_timer+0x38/0x4c
-[c0771e30] [c005f2c4] tick_do_update_jiffies64+0x1cc/0x2a8
-[c0771e70] [c005f494] tick_check_idle+0xf4/0x120
-[c0771ea0] [c0039a50] irq_enter+0x68/0x7c
-[c0771eb0] [c000ae78] timer_interrupt+0xb0/0x168
-[c0771ed0] [c000e84c] ret_from_except+0x0/0x18
-[c0771f90] [c000874c] cpu_idle+0x58/0xf4
-[c0771fb0] [c0002330] rest_init+0xa0/0xb0
-[c0771fc0] [c06fc9d4] start_kernel+0x320/0x334
-[c0771ff0] [c00003f0] skpinv+0x308/0x344
+First of all, I think we need to understand why we need N_MEMORY.
 
+In order to support movable node, which has only ZONE_MOVABLE (the last 
+zone),
+we introduce N_MEMORY to represent the node has normal, highmem and 
+movable memory.
 
-Thanks
+Here, "we have movable node" means you configured CONFIG_MOVABLE_NODE.
+This config option doesn't mean we don't have movable pages, (NO)
+it means we don't have a node which has only movable pages (only have 
+ZONE_MOVABLE). (YES)
 
---f46d04428f12f2532904d4784747
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Here, if we don't have CONFIG_MOVABLE_NODE (we don't have movable node), 
+we don't need a
+separate node_states[] element to represent a particular node because we 
+won't have a node
+which has only ZONE_MOVABLE.
 
-<div class=3D"gmail_quote"><span style=3D"font-family:trebuchet ms,sans-ser=
-if">Hi,<br><br>I&#39;ve added a VDSO patch on my 2.6.32 kernel. When i enab=
-led PREMPT_RT i am getting the below oops messages.<br>What
- is the reason for this ? When googled, it was mentioned in many places=20
-that it is caused by the get_cpu()/put_cpu() preempt disabled region.<br>
+So,
+1) if we don't have highmem nor movable node, N_MEMORY == N_HIGH_MEMORY 
+== N_NORMAL_MEMORY,
+    which means N_NORMAL_MEMORY effects as N_MEMORY. If we online pages 
+as movable, we need
+    to update node_states[N_NORMAL_MEMORY].
 
-Can someone help me to understand this ?<br><br>BUG: sleeping function call=
-ed from invalid context at kernel/rtmutex.c:684<br>pcnt: 10002 0 in_atomic(=
-): 1, irqs_disabled(): 1, pid: 0, name: swapper<br>Call Trace:<br>[c0771d40=
-] [c000750c] show_stack+0x44/0x160 (unreliable)<br>
+Please refer to the definition of enum zone_type, if we don't have 
+CONFIG_HIGHMEM, we won't
+have ZONE_HIGHMEM, but ZONE_NORMAL and ZONE_MOVABLE will always there. 
+So we can have movable
+pages, and the zone_last should be ZONE_MOVABLE.
 
-[c0771d70] [c0021114] __might_sleep+0xe4/0x108<br>[c0771d80] [c05700bc] rt_=
-spin_lock+0x38/0xb4<br>[c0771d90] [c005a3b0] ntp_tick_length+0x20/0x54<br>[=
-c0771db0] [c00594e8] update_wall_time+0xb0/0xa3c<br>[c0771e20] [c0040bc0] d=
-o_timer+0x38/0x4c<br>
+Again, because we won't have a node only having ZONE_MOVABLE, so we just 
+need to update
+node_states[N_NORMAL_MEMORY].
 
-[c0771e30] [c005f2c4] tick_do_update_jiffies64+0x1cc/0x2a8<br>[c0771e70] [c=
-005f494] tick_check_idle+0xf4/0x120<br>[c0771ea0] [c0039a50] irq_enter+0x68=
-/0x7c<br>[c0771eb0] [c000ae78] timer_interrupt+0xb0/0x168<br>[c0771ed0] [c0=
-00e84c] ret_from_except+0x0/0x18<br>
+> * If we don't have movable node, node_states[N_NORMAL_MEMORY]
+> * contains nodes which have zones of 0...ZONE_MOVABLE,
+> * set zone_last to ZONE_MOVABLE.
+>
+> How to understand?
 
-[c0771f90] [c000874c] cpu_idle+0x58/0xf4<br>[c0771fb0] [c0002330] rest_init=
-+0xa0/0xb0<br>[c0771fc0] [c06fc9d4] start_kernel+0x320/0x334<br>[c0771ff0] =
-[c00003f0] skpinv+0x308/0x344<br><br><br>Thanks</span></div><br>
+2) this code is in #ifdef CONFIG_HIGHMEM, which means we have highmem, 
+so if we don't have
+    movable node, N_MEMORY == N_HIGH_MEMORY, and N_HIGH_MEMORY effects 
+as N_MEMORY. If we
+    online pages as movable, we need to update node_states[N_NORMAL_MEMORY].
 
---f46d04428f12f2532904d4784747--
+>
+> 2. In function move_pfn_range_left, why end<= z2->zone_start_pfn is not
+> correct? The comments said that must include/overlap, why?
+>
+
+This one is easy, if I understand you correctly.
+move_pfn_range_left() is used to move the left most part [start_pfn, 
+end_pfn) of z2 to z1.
+So if end_pfn<= z2->zone_start_pfn, it means [start_pfn, end_pfn) is not 
+part of z2.
+Then it fails.
+
+> 3. In function online_pages, the normal case(w/o online_kenrel,
+> online_movable), why not check if the new zone is overlap with adjacent
+> zones?
+>
+
+Can a zone overlap with the others ? I don't think so.
+
+One pfn could only be in one zone,
+    zone = page_zone(pfn_to_page(pfn));
+
+it could overlap with others, I think. :)
+
+But maybe I misunderstand you. :)
+
+> 4. Could you summarize the difference implementation between hot-add and
+> logic-add, hot-remove and logic-remove?
+
+Sorry, I don't quite understand what do you mean by logic-add/remove.
+Would you please explain more ?
+
+If you meant the sys fs interfaces, I think they are just another set of 
+entrances
+of memory hotplug.
+
+Thanks.  :)
+
+>
+>
+>>
+>> This patch-set aims to implement physical memory hot-removing.
+>>
+>> The patches can free/remove the following things:
+>>
+>>    - /sys/firmware/memmap/X/{end, start, type} : [PATCH 4/15]
+>>    - memmap of sparse-vmemmap                  : [PATCH 6,7,8,10/15]
+>>    - page table of removed memory              : [RFC PATCH 7,8,10/15]
+>>    - node and related sysfs files              : [RFC PATCH 13-15/15]
+>>
+>>
+>> Existing problem:
+>> If CONFIG_MEMCG is selected, we will allocate memory to store page cgroup
+>> when we online pages.
+>>
+>> For example: there is a memory device on node 1. The address range
+>> is [1G, 1.5G). You will find 4 new directories memory8, memory9, memory10,
+>> and memory11 under the directory /sys/devices/system/memory/.
+>>
+>> If CONFIG_MEMCG is selected, when we online memory8, the memory stored page
+>> cgroup is not provided by this memory device. But when we online memory9, the
+>> memory stored page cgroup may be provided by memory8. So we can't offline
+>> memory8 now. We should offline the memory in the reversed order.
+>>
+>> When the memory device is hotremoved, we will auto offline memory provided
+>> by this memory device. But we don't know which memory is onlined first, so
+>> offlining memory may fail.
+>>
+>> In patch1, we provide a solution which is not good enough:
+>> Iterate twice to offline the memory.
+>> 1st iterate: offline every non primary memory block.
+>> 2nd iterate: offline primary (i.e. first added) memory block.
+>>
+>> And a new idea from Wen Congyang<wency@cn.fujitsu.com>  is:
+>> allocate the memory from the memory block they are describing.
+>>
+>> But we are not sure if it is OK to do so because there is not existing API
+>> to do so, and we need to move page_cgroup memory allocation from MEM_GOING_ONLINE
+>> to MEM_ONLINE. And also, it may interfere the hugepage.
+>>
+>>
+>>
+>> How to test this patchset?
+>> 1. apply this patchset and build the kernel. MEMORY_HOTPLUG, MEMORY_HOTREMOVE,
+>>     ACPI_HOTPLUG_MEMORY must be selected.
+>> 2. load the module acpi_memhotplug
+>> 3. hotplug the memory device(it depends on your hardware)
+>>     You will see the memory device under the directory /sys/bus/acpi/devices/.
+>>     Its name is PNP0C80:XX.
+>> 4. online/offline pages provided by this memory device
+>>     You can write online/offline to /sys/devices/system/memory/memoryX/state to
+>>     online/offline pages provided by this memory device
+>> 5. hotremove the memory device
+>>     You can hotremove the memory device by the hardware, or writing 1 to
+>>     /sys/bus/acpi/devices/PNP0C80:XX/eject.
+>
+> Is there a similar knode to hot-add the memory device?
+>
+>>
+>>
+>> Note: if the memory provided by the memory device is used by the kernel, it
+>> can't be offlined. It is not a bug.
+>>
+>>
+>> Changelogs from v5 to v6:
+>>   Patch3: Add some more comments to explain memory hot-remove.
+>>   Patch4: Remove bootmem member in struct firmware_map_entry.
+>>   Patch6: Repeatedly register bootmem pages when using hugepage.
+>>   Patch8: Repeatedly free bootmem pages when using hugepage.
+>>   Patch14: Don't free pgdat when offlining a node, just reset it to 0.
+>>   Patch15: New patch, pgdat is not freed in patch14, so don't allocate a new
+>>            one when online a node.
+>>
+>> Changelogs from v4 to v5:
+>>   Patch7: new patch, move pgdat_resize_lock into sparse_remove_one_section() to
+>>           avoid disabling irq because we need flush tlb when free pagetables.
+>>   Patch8: new patch, pick up some common APIs that are used to free direct mapping
+>>           and vmemmap pagetables.
+>>   Patch9: free direct mapping pagetables on x86_64 arch.
+>>   Patch10: free vmemmap pagetables.
+>>   Patch11: since freeing memmap with vmemmap has been implemented, the config
+>>            macro CONFIG_SPARSEMEM_VMEMMAP when defining __remove_section() is
+>>            no longer needed.
+>>   Patch13: no need to modify acpi_memory_disable_device() since it was removed,
+>>            and add nid parameter when calling remove_memory().
+>>
+>> Changelogs from v3 to v4:
+>>   Patch7: remove unused codes.
+>>   Patch8: fix nr_pages that is passed to free_map_bootmem()
+>>
+>> Changelogs from v2 to v3:
+>>   Patch9: call sync_global_pgds() if pgd is changed
+>>   Patch10: fix a problem int the patch
+>>
+>> Changelogs from v1 to v2:
+>>   Patch1: new patch, offline memory twice. 1st iterate: offline every non primary
+>>           memory block. 2nd iterate: offline primary (i.e. first added) memory
+>>           block.
+>>
+>>   Patch3: new patch, no logical change, just remove reduntant codes.
+>>
+>>   Patch9: merge the patch from wujianguo into this patch. flush tlb on all cpu
+>>           after the pagetable is changed.
+>>
+>>   Patch12: new patch, free node_data when a node is offlined.
+>>
+>>
+>> Tang Chen (6):
+>>    memory-hotplug: move pgdat_resize_lock into
+>>      sparse_remove_one_section()
+>>    memory-hotplug: remove page table of x86_64 architecture
+>>    memory-hotplug: remove memmap of sparse-vmemmap
+>>    memory-hotplug: Integrated __remove_section() of
+>>      CONFIG_SPARSEMEM_VMEMMAP.
+>>    memory-hotplug: remove sysfs file of node
+>>    memory-hotplug: Do not allocate pdgat if it was not freed when
+>>      offline.
+>>
+>> Wen Congyang (5):
+>>    memory-hotplug: try to offline the memory twice to avoid dependence
+>>    memory-hotplug: remove redundant codes
+>>    memory-hotplug: introduce new function arch_remove_memory() for
+>>      removing page table depends on architecture
+>>    memory-hotplug: Common APIs to support page tables hot-remove
+>>    memory-hotplug: free node_data when a node is offlined
+>>
+>> Yasuaki Ishimatsu (4):
+>>    memory-hotplug: check whether all memory blocks are offlined or not
+>>      when removing memory
+>>    memory-hotplug: remove /sys/firmware/memmap/X sysfs
+>>    memory-hotplug: implement register_page_bootmem_info_section of
+>>      sparse-vmemmap
+>>    memory-hotplug: memory_hotplug: clear zone when removing the memory
+>>
+>>   arch/arm64/mm/mmu.c                  |    3 +
+>>   arch/ia64/mm/discontig.c             |   10 +
+>>   arch/ia64/mm/init.c                  |   18 ++
+>>   arch/powerpc/mm/init_64.c            |   10 +
+>>   arch/powerpc/mm/mem.c                |   12 +
+>>   arch/s390/mm/init.c                  |   12 +
+>>   arch/s390/mm/vmem.c                  |   10 +
+>>   arch/sh/mm/init.c                    |   17 ++
+>>   arch/sparc/mm/init_64.c              |   10 +
+>>   arch/tile/mm/init.c                  |    8 +
+>>   arch/x86/include/asm/pgtable_types.h |    1 +
+>>   arch/x86/mm/init_32.c                |   12 +
+>>   arch/x86/mm/init_64.c                |  390 +++++++++++++++++++++++++++++
+>>   arch/x86/mm/pageattr.c               |   47 ++--
+>>   drivers/acpi/acpi_memhotplug.c       |    8 +-
+>>   drivers/base/memory.c                |    6 +
+>>   drivers/firmware/memmap.c            |   96 +++++++-
+>>   include/linux/bootmem.h              |    1 +
+>>   include/linux/firmware-map.h         |    6 +
+>>   include/linux/memory_hotplug.h       |   15 +-
+>>   include/linux/mm.h                   |    4 +-
+>>   mm/memory_hotplug.c                  |  459 +++++++++++++++++++++++++++++++---
+>>   mm/sparse.c                          |    8 +-
+>>   23 files changed, 1094 insertions(+), 69 deletions(-)
+>>
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email:<a href=mailto:"dont@kvack.org">  email@kvack.org</a>
+>
+>
+>
