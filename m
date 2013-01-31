@@ -1,35 +1,27 @@
-Return-Path: <qiudayu@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <toshi.kani@hp.com>
+Received: from g6t0185.atlanta.hp.com (g6t0185.atlanta.hp.com [15.193.32.62])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e23smtp02.au.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 239062C0087
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 13:10:44 +1100 (EST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <qiudayu@linux.vnet.ibm.com>;
- Thu, 31 Jan 2013 12:05:09 +1000
-Received: from d23relay03.au.ibm.com (d23relay03.au.ibm.com [9.190.235.21])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id A90322BB006E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 13:10:35 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay03.au.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r0V2AYgg6946866
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 13:10:34 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r0V2AY3q012025
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 13:10:34 +1100
-Message-ID: <1359598231.2347.0.camel@localhost>
-Subject: Re: [PATCH 0/3] Enable multiple MSI feature in pSeries
-From: Mike <qiudayu@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Thu, 31 Jan 2013 10:10:31 +0800
-In-Reply-To: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
-References: <1358235536-32741-1-git-send-email-qiudayu@linux.vnet.ibm.com>
+ (Client CN "smtp.hp.com",
+ Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id C98862C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 14:07:52 +1100 (EST)
+Message-ID: <1359601065.15120.156.camel@misato.fc.hp.com>
+Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device
+ hotplug framework
+From: Toshi Kani <toshi.kani@hp.com>
+To: Greg KH <gregkh@linuxfoundation.org>
+Date: Wed, 30 Jan 2013 19:57:45 -0700
+In-Reply-To: <20130130045830.GH30002@kroah.com>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <1357861230-29549-2-git-send-email-toshi.kani@hp.com>
+ <20130130045830.GH30002@kroah.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org
+Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
+ linux-mm@kvack.org, yinghai@kernel.org, linux-kernel@vger.kernel.org,
+ rjw@sisk.pl, linux-acpi@vger.kernel.org, isimatu.yasuaki@jp.fujitsu.com,
+ srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,53 +31,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi all
+On Tue, 2013-01-29 at 23:58 -0500, Greg KH wrote:
+> On Thu, Jan 10, 2013 at 04:40:19PM -0700, Toshi Kani wrote:
+> > +/*
+> > + * Hot-plug device information
+> > + */
+> 
+> Again, stop it with the "generic" hotplug term here, and everywhere
+> else.  You are doing a very _specific_ type of hotplug devices, so spell
+> it out.  We've worked hard to hotplug _everything_ in Linux, you are
+> going to confuse a lot of people with this type of terms.
 
-Any comments about my patchset?
+Agreed.  I will clarify in all places.
 
-Thanks 
+> > +union shp_dev_info {
+> > +	struct shp_cpu {
+> > +		u32		cpu_id;
+> > +	} cpu;
+> 
+> What is this?  Why not point to the system device for the cpu?
 
-Mike
-在 2013-01-15二的 15:38 +0800，Mike Qiu写道：
-> Currently, multiple MSI feature hasn't been enabled in pSeries,
-> These patches try to enbale this feature.
+This info is used to on-line a new CPU and create its system/cpu device.
+In other word, a system/cpu device is created as a result of CPU
+hotplug.
+
+> > +	struct shp_memory {
+> > +		int		node;
+> > +		u64		start_addr;
+> > +		u64		length;
+> > +	} mem;
 > 
-> These patches have been tested by using ipr driver, and the driver patch
-> has been made by Wen Xiong <wenxiong@linux.vnet.ibm.com>:
+> Same here, why not point to the system device?
+
+Same as above.
+
+> > +	struct shp_hostbridge {
+> > +	} hb;
+> > +
+> > +	struct shp_node {
+> > +	} node;
 > 
-> [PATCH 0/7] Add support for new IBM SAS controllers
+> What happened here with these?  Empty structures?  Huh?
+
+They are place holders for now.  PCI bridge hot-plug and node hot-plug
+are still very much work in progress, so I have not integrated them into
+this framework yet.
+
+> > +};
+> > +
+> > +struct shp_device {
+> > +	struct list_head	list;
+> > +	struct device		*device;
 > 
-> Test platform: One partition of pSeries with one cpu core(4 SMTs) and 
->                RAID bus controller: IBM PCI-E IPR SAS Adapter (ASIC) in POWER7
-> OS version: SUSE Linux Enterprise Server 11 SP2  (ppc64) with 3.8-rc3 kernel 
+> No, make it a "real" device, embed the device into it.
+
+This device pointer is used to send KOBJ_ONLINE/OFFLINE event during CPU
+online/offline operation in order to maintain the current behavior.  CPU
+online/offline operation only changes the state of CPU, so its
+system/cpu device continues to be present before and after an operation.
+(Whereas, CPU hot-add/delete operation creates or removes a system/cpu
+device.)  So, this "*device" needs to be a pointer to reference an
+existing device that is to be on-lined/off-lined.
+
+> But, again, I'm going to ask why you aren't using the existing cpu /
+> memory / bridge / node devices that we have in the kernel.  Please use
+> them, or give me a _really_ good reason why they will not work.
+
+We cannot use the existing system devices or ACPI devices here.  During
+hot-plug, ACPI handler sets this shp_device info, so that cpu and memory
+handlers (drivers/cpu.c and mm/memory_hotplug.c) can obtain their target
+device information in a platform-neutral way.  During hot-add, we first
+creates an ACPI device node (i.e. device under /sys/bus/acpi/devices),
+but platform-neutral modules cannot use them as they are ACPI-specific.
+Also, its system device (i.e. device under /sys/devices/system) has not
+been created until the hot-add operation completes.
+
+> > +	enum shp_class		class;
+> > +	union shp_dev_info	info;
+> > +};
+> > +
+> > +/*
+> > + * Hot-plug request
+> > + */
+> > +struct shp_request {
+> > +	/* common info */
+> > +	enum shp_operation	operation;	/* operation */
+> > +
+> > +	/* hot-plug event info: only valid for hot-plug operations */
+> > +	void			*handle;	/* FW handle */
+> > +	u32			event;		/* FW event */
 > 
-> IRQ 21 and 22 are assigned to the ipr device which support 2 mutiple MSI.
-> 
-> The test results is shown by 'cat /proc/interrups':
->           CPU0       CPU1       CPU2       CPU3       
-> 16:     240458     261601     226310     200425      XICS Level     IPI
-> 17:          0          0          0          0      XICS Level     RAS_EPOW
-> 18:         10          0          3          2      XICS Level     hvc_console
-> 19:     122182      28481      28527      28864      XICS Level     ibmvscsi
-> 20:        506    7388226        108        118      XICS Level     eth0
-> 21:          6          5          5          5      XICS Level     host1-0
-> 22:        817        814        816        813      XICS Level     host1-1
-> LOC:     398077     316725     231882     203049   Local timer interrupts
-> SPU:       1659        919        961        903   Spurious interrupts
-> CNT:          0          0          0          0   Performance
-> monitoring interrupts
-> MCE:          0          0          0          0   Machine check exceptions
-> 
-> Mike Qiu (3):
->   irq: Set multiple MSI descriptor data for multiple IRQs
->   irq: Add hw continuous IRQs map to virtual continuous IRQs support
->   powerpc/pci: Enable pSeries multiple MSI feature
-> 
->  arch/powerpc/kernel/msi.c            |    4 --
->  arch/powerpc/platforms/pseries/msi.c |   62 ++++++++++++++++++++++++++++++++-
->  include/linux/irq.h                  |    4 ++
->  include/linux/irqdomain.h            |    3 ++
->  kernel/irq/chip.c                    |   40 ++++++++++++++++-----
->  kernel/irq/irqdomain.c               |   61 +++++++++++++++++++++++++++++++++
->  6 files changed, 158 insertions(+), 16 deletions(-)
-> 
+> What is this?
+
+The shp_request describes a hotplug or online/offline operation that is
+requested.  In case of hot-plug request, the "*handle" describes a
+target device (which is an ACPI device object) and the "event" describes
+a type of request, such as hot-add or hot-delete.
+
+Thanks,
+-Toshi
