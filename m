@@ -1,25 +1,24 @@
-Return-Path: <B07421@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe005.messaging.microsoft.com [65.55.88.15])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7FABB2C008D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 03:49:12 +1100 (EST)
-Date: Thu, 31 Jan 2013 10:48:24 -0600
-From: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/5] KVM: PPC: e500: Move VCPU's MMUCFG register
- initialization earlier
-To: Caraman Mihai Claudiu-B02008 <B02008@freescale.com>
-In-Reply-To: <300B73AA675FCE4A93EB4FC1D42459FF2F7861@039-SN2MPN1-012.039d.mgd.msft.net>
- (from B02008@freescale.com on Thu Jan 31 09:26:20 2013)
-Message-ID: <1359650904.31540.0@snotra>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Alexander Graf <agraf@suse.de>,
- "kvm-ppc@vger.kernel.org" <kvm-ppc@vger.kernel.org>,
- "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Return-Path: <BATV+6a08737156a33091b2c0+3448+infradead.org+acme@merlin.srs.infradead.org>
+Received: from merlin.infradead.org (merlin.infradead.org
+ [IPv6:2001:4978:20e::2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id CF9BF2C008D
+ for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2013 04:25:43 +1100 (EST)
+From: Arnaldo Carvalho de Melo <acme@infradead.org>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: [PATCH 24/25] perf/POWER7: Make some POWER7 events available in sysfs
+Date: Thu, 31 Jan 2013 14:25:27 -0300
+Message-Id: <1359653128-10433-25-git-send-email-acme@infradead.org>
+In-Reply-To: <1359653128-10433-1-git-send-email-acme@infradead.org>
+References: <1359653128-10433-1-git-send-email-acme@infradead.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: Andi Kleen <ak@linux.intel.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+ Robert Richter <robert.richter@amd.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linux-kernel@vger.kernel.org, Stephane Eranian <eranian@google.com>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>, linuxppc-dev@ozlabs.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,79 +28,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 01/31/2013 09:26:20 AM, Caraman Mihai Claudiu-B02008 wrote:
-> > -----Original Message-----
-> > From: Alexander Graf [mailto:agraf@suse.de]
-> > Sent: Thursday, January 31, 2013 4:58 PM
-> > To: Caraman Mihai Claudiu-B02008
-> > Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
-> > dev@lists.ozlabs.org
-> > Subject: Re: [PATCH 1/5] KVM: PPC: e500: Move VCPU's MMUCFG register
-> > initialization earlier
-> >
-> >
-> > On 31.01.2013, at 15:56, Caraman Mihai Claudiu-B02008 wrote:
-> >
-> > >> -----Original Message-----
-> > >> From: Alexander Graf [mailto:agraf@suse.de]
-> > >> Sent: Thursday, January 31, 2013 3:21 PM
-> > >> To: Caraman Mihai Claudiu-B02008
-> > >> Cc: kvm-ppc@vger.kernel.org; kvm@vger.kernel.org; linuxppc-
-> > >> dev@lists.ozlabs.org
-> > >> Subject: Re: [PATCH 1/5] KVM: PPC: e500: Move VCPU's MMUCFG =20
-> register
-> > >> initialization earlier
-> > >>
-> > >>
-> > >> On 30.01.2013, at 14:29, Mihai Caraman wrote:
-> > >>
-> > >>> VCPU's MMUCFG register initialization should not depend on
-> > >> KVM_CAP_SW_TLB
-> > >>> ioctl call. Move it earlier into tlb initalization phase.
-> > >>
-> > >> Quite the contrary. The fact that there is an mfspr() in =20
-> e500_mmu.c
-> > >> already tells us that the code is broken. The TLB guest code =20
-> should
-> > only
-> > >> depend on input from the SW_TLB configuration. It's completely
-> > orthogonal
-> > >> to the host capabilities.
-> > >
-> > > Then we have the same issue for TLBnCFG registers which need to be
-> > configured
-> > > via SW_TLB ioctl. What is the purpose of guest tlb initalization =20
-> in
-> > e500_mmu.c
-> > > if we rely on SW_TLB?
-> >
-> > It's to provide a fallback to user space that doesn't implement =20
-> SW_TLB
-> > configuration yet.
->=20
-> Do we have such a case now or is it just hypothetical? For the =20
-> fallback we
-> need to initialize the MMUCFG register which I intended to say in the =20
-> commit
-> message.
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-I don't think we need to support a fallback for e6500, since there's =20
-nothing to be backwards compatible with.
+Make some POWER7-specific perf events available in sysfs.
 
-As for use case, I don't see us ever supporting the guest being a =20
-different CPU than the host.  Page sizes probably aren't a problem, but =20
-there are other barriers.
+	$ /bin/ls -1 /sys/bus/event_source/devices/cpu/events/
+	branch-instructions
+	branch-misses
+	cache-misses
+	cache-references
+	cpu-cycles
+	instructions
+	PM_BRU_FIN
+	PM_BRU_MPRED
+	PM_CMPLU_STALL
+	PM_CYC
+	PM_GCT_NOSLOT_CYC
+	PM_INST_CMPL
+	PM_LD_MISS_L1
+	PM_LD_REF_L1
+	stalled-cycles-backend
+	stalled-cycles-frontend
 
-The main reasons that TLBnCFG are settable through SW_TLB are:
-1. The guest TLB can be enlarged as a performance hack (like in Topaz, =20
-though QEMU doesn't currently do this),
-2. The legacy default in KVM is based on the e500v1 TLB0 size, which is =20
-half of what e500v2/e500mc have, and
-3. QEMU needs to know the exact geometry of the TLB so that it can =20
-interpret the shared data properly.
+where the 'PM_*' events are POWER specific and the others are the
+generic events.
 
-#3 seems like a compelling reason here, to avoid silent weirdness if =20
-there's a slight mismatch between what QEMU thinks it's modelling and =20
-what we're actually running on.
+This will enable users to specify these events with their symbolic
+names rather than with their raw code.
 
--Scott=
+	perf stat -e 'cpu/PM_CYC' ...
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Anton Blanchard <anton@au1.ibm.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Robert Richter <robert.richter@amd.com>
+Cc: Stephane Eranian <eranian@google.com>
+Cc: linuxppc-dev@ozlabs.org
+Link: http://lkml.kernel.org/r/20130123062528.GE13720@us.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ arch/powerpc/include/asm/perf_event_server.h |  3 +++
+ arch/powerpc/perf/power7-pmu.c               | 18 ++++++++++++++++++
+ 2 files changed, 21 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
+index b9b6c55..b29fcc6 100644
+--- a/arch/powerpc/include/asm/perf_event_server.h
++++ b/arch/powerpc/include/asm/perf_event_server.h
+@@ -132,3 +132,6 @@ extern ssize_t power_events_sysfs_show(struct device *dev,
+ 
+ #define	GENERIC_EVENT_ATTR(_name, _id)	EVENT_ATTR(_name, _id, _g)
+ #define	GENERIC_EVENT_PTR(_id)		EVENT_PTR(_id, _g)
++
++#define	POWER_EVENT_ATTR(_name, _id)	EVENT_ATTR(PM_##_name, _id, _p)
++#define	POWER_EVENT_PTR(_id)		EVENT_PTR(_id, _p)
+diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
+index 269bf24..b554879 100644
+--- a/arch/powerpc/perf/power7-pmu.c
++++ b/arch/powerpc/perf/power7-pmu.c
+@@ -384,6 +384,15 @@ GENERIC_EVENT_ATTR(cache-misses,		LD_MISS_L1);
+ GENERIC_EVENT_ATTR(branch-instructions,		BRU_FIN);
+ GENERIC_EVENT_ATTR(branch-misses,		BRU_MPRED);
+ 
++POWER_EVENT_ATTR(CYC,				CYC);
++POWER_EVENT_ATTR(GCT_NOSLOT_CYC,		GCT_NOSLOT_CYC);
++POWER_EVENT_ATTR(CMPLU_STALL,			CMPLU_STALL);
++POWER_EVENT_ATTR(INST_CMPL,			INST_CMPL);
++POWER_EVENT_ATTR(LD_REF_L1,			LD_REF_L1);
++POWER_EVENT_ATTR(LD_MISS_L1,			LD_MISS_L1);
++POWER_EVENT_ATTR(BRU_FIN,			BRU_FIN)
++POWER_EVENT_ATTR(BRU_MPRED,			BRU_MPRED);
++
+ static struct attribute *power7_events_attr[] = {
+ 	GENERIC_EVENT_PTR(CYC),
+ 	GENERIC_EVENT_PTR(GCT_NOSLOT_CYC),
+@@ -393,6 +402,15 @@ static struct attribute *power7_events_attr[] = {
+ 	GENERIC_EVENT_PTR(LD_MISS_L1),
+ 	GENERIC_EVENT_PTR(BRU_FIN),
+ 	GENERIC_EVENT_PTR(BRU_MPRED),
++
++	POWER_EVENT_PTR(CYC),
++	POWER_EVENT_PTR(GCT_NOSLOT_CYC),
++	POWER_EVENT_PTR(CMPLU_STALL),
++	POWER_EVENT_PTR(INST_CMPL),
++	POWER_EVENT_PTR(LD_REF_L1),
++	POWER_EVENT_PTR(LD_MISS_L1),
++	POWER_EVENT_PTR(BRU_FIN),
++	POWER_EVENT_PTR(BRU_MPRED),
+ 	NULL
+ };
+ 
+-- 
+1.8.1.1.361.gec3ae6e
