@@ -1,27 +1,26 @@
-Return-Path: <tangchen@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 4119D2C029A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 14:32:36 +1100 (EST)
-Message-ID: <5109E59F.5080104@cn.fujitsu.com>
-Date: Thu, 31 Jan 2013 11:31:43 +0800
-From: Tang Chen <tangchen@cn.fujitsu.com>
+Return-Path: <B40534@freescale.com>
+Received: from am1outboundpool.messaging.microsoft.com
+ (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 0B4262C0296
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 15:10:42 +1100 (EST)
+Received: from mail13-am1 (localhost [127.0.0.1])	by mail13-am1-R.bigfish.com
+ (Postfix) with ESMTP id 92AC7160119	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu,
+ 31 Jan 2013 04:10:36 +0000 (UTC)
+Received: from AM1EHSMHS002.bigfish.com (unknown [10.3.201.243])	by
+ mail13-am1.bigfish.com (Postfix) with ESMTP id 253A0A003F	for
+ <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 04:10:35 +0000 (UTC)
+From: Wang Dongsheng <dongsheng.wang@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
+Date: Thu, 31 Jan 2013 11:10:23 +0800
+Message-ID: <1359601823-9861-1-git-send-email-dongsheng.wang@freescale.com>
 MIME-Version: 1.0
-To: Simon Jeons <simon.jeons@gmail.com>
-Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
-References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
- <1359463973.1624.15.camel@kernel> <5108F2B3.3090506@cn.fujitsu.com>
- <1359595344.1557.13.camel@kernel>
-In-Reply-To: <1359595344.1557.13.camel@kernel>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
- wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
- wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
- linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
+Cc: Wang Dongsheng <dongsheng.wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,73 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Simon,
+Add irq_set_wake support. Just add IRQF_NO_SUSPEND to desc->action->flag.
+So the wake up interrupt will not be disable in suspend_device_irqs.
 
-Please see below. :)
+Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
+---
+ arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
+ 1 files changed, 15 insertions(+), 0 deletions(-)
 
-On 01/31/2013 09:22 AM, Simon Jeons wrote:
->
-> Sorry, I still confuse. :(
-> update node_states[N_NORMAL_MEMORY] to node_states[N_MEMORY] or
-> node_states[N_NORMAL_MEMOR] present 0...ZONE_MOVABLE?
->
-> node_states is what? node_states[N_NORMAL_MEMOR] or
-> node_states[N_MEMORY]?
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index 9c6e535..2ed0220 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d, unsigned int flow_type)
+ 	return IRQ_SET_MASK_OK_NOCOPY;
+ }
 
-Are you asking what node_states[] is ?
++static int mpic_irq_set_wake(struct irq_data *d, unsigned int on)
++{
++	struct irq_desc *desc = container_of(d, struct irq_desc, irq_data);
++
++	if (on)
++		desc->action->flags |= IRQF_NO_SUSPEND;
++	else
++		desc->action->flags &= ~IRQF_NO_SUSPEND;
++
++	return 0;
++}
++
+ void mpic_set_vector(unsigned int virq, unsigned int vector)
+ {
+ 	struct mpic *mpic = mpic_from_irq(virq);
+@@ -957,6 +969,7 @@ static struct irq_chip mpic_irq_chip = {
+ 	.irq_unmask	= mpic_unmask_irq,
+ 	.irq_eoi	= mpic_end_irq,
+ 	.irq_set_type	= mpic_set_irq_type,
++	.irq_set_wake	= mpic_irq_set_wake,
+ };
 
-node_states[] is an array of nodemask,
+ #ifdef CONFIG_SMP
+@@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip = {
+ 	.irq_mask	= mpic_mask_tm,
+ 	.irq_unmask	= mpic_unmask_tm,
+ 	.irq_eoi	= mpic_end_irq,
++	.irq_set_wake	= mpic_irq_set_wake,
+ };
 
-     extern nodemask_t node_states[NR_NODE_STATES];
+ #ifdef CONFIG_MPIC_U3_HT_IRQS
+@@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip = {
+ 	.irq_unmask	= mpic_unmask_ht_irq,
+ 	.irq_eoi	= mpic_end_ht_irq,
+ 	.irq_set_type	= mpic_set_irq_type,
++	.irq_set_wake	= mpic_irq_set_wake,
+ };
+ #endif /* CONFIG_MPIC_U3_HT_IRQS */
 
-For example, node_states[N_NORMAL_MEMOR] represents which nodes have 
-normal memory.
-If N_MEMORY == N_HIGH_MEMORY == N_NORMAL_MEMORY, node_states[N_MEMORY] is
-node_states[N_NORMAL_MEMOR]. So it represents which nodes have 0 ... 
-ZONE_MOVABLE.
-
-
-> Why check !z1->wait_table in function move_pfn_range_left and function
-> __add_zone? I think zone->wait_table is initialized in
-> free_area_init_core, which will be called during system initialization
-> and hotadd_new_pgdat path.
-
-I think,
-
-free_area_init_core(), in the for loop,
-  |--> size = zone_spanned_pages_in_node();
-  |--> if (!size)
-               continue;  ----------------  If zone is empty, we jump 
-out the for loop.
-  |--> init_currently_empty_zone()
-
-So, if the zone is empty, wait_table is not initialized.
-
-In move_pfn_range_left(z1, z2), we move pages from z2 to z1. But z1 
-could be empty.
-So we need to check it and initialize z1->wait_table because we are 
-moving pages into it.
-
-
-> There is a zone populated check in function online_pages. But zone is
-> populated in free_area_init_core which will be called during system
-> initialization and hotadd_new_pgdat path. Why still need this check?
->
-
-Because we could also rebuild zone list when we offline pages.
-
-__offline_pages()
-  |--> zone->present_pages -= offlined_pages;
-  |--> if (!populated_zone(zone)) {
-               build_all_zonelists(NULL, NULL);
-       }
-
-If the zone is empty, and other zones on the same node is not empty, the 
-node
-won't be offlined, and next time we online pages of this zone, the pgdat 
-won't
-be initialized again, and we need to check populated_zone(zone) when 
-onlining
-pages.
-
-Thanks. :)
+--
+1.7.5.1
