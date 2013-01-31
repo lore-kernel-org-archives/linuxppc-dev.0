@@ -1,33 +1,38 @@
-Return-Path: <simon.jeons@gmail.com>
-Received: from mail-ia0-x22d.google.com (mail-ia0-x22d.google.com
- [IPv6:2607:f8b0:4001:c02::22d])
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-bk0-f51.google.com (mail-bk0-f51.google.com
+ [209.85.214.51])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 6D4732C0040
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 19:17:20 +1100 (EST)
-Received: by mail-ia0-f173.google.com with SMTP id l29so3596703iag.18
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 00:17:15 -0800 (PST)
-Message-ID: <1359620228.1391.0.camel@kernel>
-Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
-From: Simon Jeons <simon.jeons@gmail.com>
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Date: Thu, 31 Jan 2013 02:17:08 -0600
-In-Reply-To: <510A18FA.2010107@cn.fujitsu.com>
-References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
- <1359463973.1624.15.camel@kernel> <5108F2B3.3090506@cn.fujitsu.com>
- <1359595344.1557.13.camel@kernel> <5109E59F.5080104@cn.fujitsu.com>
- <1359613162.1587.0.camel@kernel> <510A18FA.2010107@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
- wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
- wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
- linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 8A37D2C029A
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2013 20:27:38 +1100 (EST)
+Received: by mail-bk0-f51.google.com with SMTP id ik5so1257836bkc.38
+ for <linuxppc-dev@ozlabs.org>; Thu, 31 Jan 2013 01:27:35 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Thu, 31 Jan 2013 10:27:29 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Subject: Re: [GIT PULL 00/21] perf/core improvements and fixes
+Message-ID: <20130131092729.GA28761@gmail.com>
+References: <1359557222-17547-1-git-send-email-acme@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1359557222-17547-1-git-send-email-acme@infradead.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ Stephane Eranian <eranian@google.com>, arnaldo.melo@gmail.com,
+ linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Jiri Olsa <jolsa@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+ Andi Kleen <ak@linux.intel.com>, Hugh Dickins <hughd@google.com>,
+ Mel Gorman <mgorman@suse.de>, Michael Ellerman <ellerman@au1.ibm.com>,
+ Borislav Petkov <bp@suse.de>, Thomas Jarosch <thomas.jarosch@intra2net.com>,
+ Rik van Riel <riel@redhat.com>, Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+ Namhyung Kim <namhyung@gmail.com>, Anton Blanchard <anton@au1.ibm.com>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Peter Hurley <peter@hurleysoftware.com>, Mike Galbraith <efault@gmx.de>,
+ linux-kernel@vger.kernel.org, David Ahern <dsahern@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,110 +42,129 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tang,
-On Thu, 2013-01-31 at 15:10 +0800, Tang Chen wrote:
-> On 01/31/2013 02:19 PM, Simon Jeons wrote:
-> > Hi Tang,
-> > On Thu, 2013-01-31 at 11:31 +0800, Tang Chen wrote:
-> >> Hi Simon,
-> >>
-> >> Please see below. :)
-> >>
-> >> On 01/31/2013 09:22 AM, Simon Jeons wrote:
-> >>>
-> >>> Sorry, I still confuse. :(
-> >>> update node_states[N_NORMAL_MEMORY] to node_states[N_MEMORY] or
-> >>> node_states[N_NORMAL_MEMOR] present 0...ZONE_MOVABLE?
-> >>>
-> >>> node_states is what? node_states[N_NORMAL_MEMOR] or
-> >>> node_states[N_MEMORY]?
-> >>
-> >> Are you asking what node_states[] is ?
-> >>
-> >> node_states[] is an array of nodemask,
-> >>
-> >>       extern nodemask_t node_states[NR_NODE_STATES];
-> >>
-> >> For example, node_states[N_NORMAL_MEMOR] represents which nodes have
-> >> normal memory.
-> >> If N_MEMORY == N_HIGH_MEMORY == N_NORMAL_MEMORY, node_states[N_MEMORY] is
-> >> node_states[N_NORMAL_MEMOR]. So it represents which nodes have 0 ...
-> >> ZONE_MOVABLE.
-> >>
-> >
-> > Sorry, how can nodes_state[N_NORMAL_MEMORY] represents a node have 0 ...
-> > *ZONE_MOVABLE*, the comment of enum nodes_states said that
-> > N_NORMAL_MEMORY just means the node has regular memory.
-> >
-> 
-> Hi Simon,
-> 
-> Let's say it in this way.
-> 
-> If we don't have CONFIG_HIGHMEM, N_HIGH_MEMORY == N_NORMAL_MEMORY. We 
-> don't have a separate
-> macro to represent highmem because we don't have highmem.
-> This is easy to understand, right ?
-> 
-> Now, think it just like above:
-> If we don't have CONFIG_MOVABLE_NODE, N_MEMORY == N_HIGH_MEMORY == 
-> N_NORMAL_MEMORY.
-> This means we don't allow a node to have only movable memory, not we 
-> don't have movable memory.
-> A node could have normal memory and movable memory. So 
-> nodes_state[N_NORMAL_MEMORY] represents
-> a node have 0 ... *ZONE_MOVABLE*.
-> 
-> I think the point is: CONFIG_MOVABLE_NODE means we allow a node to have 
-> only movable memory.
-> So without CONFIG_MOVABLE_NODE, it doesn't mean a node cannot have 
-> movable memory. It means
-> the node cannot have only movable memory. It can have normal memory and 
-> movable memory.
-> 
-> 1) With CONFIG_MOVABLE_NODE:
->     N_NORMAL_MEMORY: nodes who have normal memory.
->                      normal memory only
->                      normal and highmem
->                      normal and highmem and movablemem
->                      normal and movablemem
->     N_MEMORY: nodes who has memory (any memory)
->                      normal memory only
->                      normal and highmem
->                      normal and highmem and movablemem
->                      normal and movablemem ---------------- We can have 
-> movablemem.
->                      highmem only -------------------------
->                      highmem and movablemem ---------------
->                      movablemem only ---------------------- We can have 
-> movablemem only.    ***
-> 
-> 2) With out CONFIG_MOVABLE_NODE:
->     N_MEMORY == N_NORMAL_MEMORY: (Here, I omit N_HIGH_MEMORY)
->                      normal memory only
->                      normal and highmem
->                      normal and highmem and movablemem
->                      normal and movablemem ---------------- We can have 
-> movablemem.
->                      No movablemem only ------------------- We cannot 
-> have movablemem only. ***
-> 
-> The semantics is not that clear here. So we can only try to understand 
-> it from the code where
-> we use N_MEMORY. :)
-> 
-> That is my understanding of this.
 
-Thanks for your clarify, very clear now. :)
+* Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
 
+> Hi Ingo,
 > 
-> Thanks. :)
+> 	Please consider pulling.
+> 
+> 	Namhyung, Jiri, the 'group report' patches are at acme/perf/group,
+> will send a pull req later if it survives further testing.
+> 
+> - Arnaldo
+> 
+> The following changes since commit a2d28d0c198b65fac28ea6212f5f8edc77b29c27:
+> 
+>   Merge tag 'perf-core-for-mingo' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/core (2013-01-25 11:34:00 +0100)
+> 
+> are available in the git repository at:
 > 
 > 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-core-for-mingo
 > 
+> for you to fetch changes up to 5809fde040de2afa477a6c593ce2e8fd2c11d9d3:
 > 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>   perf header: Fix double fclose() on do_write(fd, xxx) failure (2013-01-30 10:40:44 -0300)
+> 
+> ----------------------------------------------------------------
+> perf/core improvements and fixes:
+> 
+> . Fix some leaks in exit paths.
+> 
+> . Use memdup where applicable
+> 
+> . Remove some die() calls, allowing callers to handle exit paths
+>   gracefully.
+> 
+> . Correct typo in tools Makefile, fix from Borislav Petkov.
+> 
+> . Add 'perf bench numa mem' NUMA performance measurement suite, from Ingo Molnar.
+> 
+> . Handle dynamic array's element size properly, fix from Jiri Olsa.
+> 
+> . Fix memory leaks on evsel->counts, from Namhyung Kim.
+> 
+> . Make numa benchmark optional, allowing the build in machines where required
+>   numa libraries are not present, fix from Peter Hurley.
+> 
+> . Add interval printing in 'perf stat', from Stephane Eranian.
+> 
+> . Fix compile warnings in tests/attr.c, from Sukadev Bhattiprolu.
+> 
+> . Fix double free, pclose instead of fclose, leaks and double fclose errors
+>   found with the cppcheck tool, from Thomas Jarosch.
+> 
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> 
+> ----------------------------------------------------------------
+> Arnaldo Carvalho de Melo (8):
+>       perf tools: Stop using 'self' in strlist
+>       perf tools: Stop using 'self' in map.[ch]
+>       perf tools: Use memdup in map__clone
+>       perf kmem: Use memdup()
+>       perf header: Stop using die() calls when processing tracing data
+>       perf ui browser: Free browser->helpline() on ui_browser__hide()
+>       perf tests: Call machine__exit in the vmlinux matches kallsyms test
+>       perf tests: Fix leaks on PERF_RECORD_* test
+> 
+> Borislav Petkov (1):
+>       tools: Correct typo in tools Makefile
+> 
+> Ingo Molnar (1):
+>       perf: Add 'perf bench numa mem' NUMA performance measurement suite
+> 
+> Jiri Olsa (1):
+>       tools lib traceevent: Handle dynamic array's element size properly
+> 
+> Namhyung Kim (1):
+>       perf evsel: Fix memory leaks on evsel->counts
+> 
+> Peter Hurley (1):
+>       perf tools: Make numa benchmark optional
+> 
+> Stephane Eranian (2):
+>       perf evsel: Add prev_raw_count field
+>       perf stat: Add interval printing
+> 
+> Sukadev Bhattiprolu (1):
+>       perf tools, powerpc: Fix compile warnings in tests/attr.c
+> 
+> Thomas Jarosch (5):
+>       perf tools: Fix possible double free on error
+>       perf sort: Use pclose() instead of fclose() on pipe stream
+>       perf tools: Fix memory leak on error
+>       perf header: Fix memory leak for the "Not caching a kptr_restrict'ed /proc/kallsyms" case
+>       perf header: Fix double fclose() on do_write(fd, xxx) failure
+> 
+>  tools/Makefile                           |    2 +-
+>  tools/lib/traceevent/event-parse.c       |   39 +-
+>  tools/perf/Documentation/perf-stat.txt   |    4 +
+>  tools/perf/Makefile                      |   13 +
+>  tools/perf/arch/common.c                 |    1 +
+>  tools/perf/bench/bench.h                 |    1 +
+>  tools/perf/bench/numa.c                  | 1731 ++++++++++++++++++++++++++++++
+>  tools/perf/builtin-bench.c               |   17 +
+>  tools/perf/builtin-kmem.c                |    6 +-
+>  tools/perf/builtin-stat.c                |  158 ++-
+>  tools/perf/config/feature-tests.mak      |   11 +
+>  tools/perf/tests/attr.c                  |    5 +
+>  tools/perf/tests/open-syscall-all-cpus.c |    1 +
+>  tools/perf/tests/perf-record.c           |   12 +-
+>  tools/perf/tests/vmlinux-kallsyms.c      |    4 +-
+>  tools/perf/ui/browser.c                  |    2 +
+>  tools/perf/util/event.c                  |    4 +-
+>  tools/perf/util/evsel.c                  |   31 +
+>  tools/perf/util/evsel.h                  |    2 +
+>  tools/perf/util/header.c                 |   25 +-
+>  tools/perf/util/map.c                    |  118 +-
+>  tools/perf/util/map.h                    |   24 +-
+>  tools/perf/util/sort.c                   |    7 +-
+>  tools/perf/util/strlist.c                |   54 +-
+>  tools/perf/util/strlist.h                |   42 +-
+>  25 files changed, 2154 insertions(+), 160 deletions(-)
+>  create mode 100644 tools/perf/bench/numa.c
+
+Pulled, thanks a lot Arnaldo!
+
+	Ingo
