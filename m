@@ -3,13 +3,13 @@ Received: from merlin.infradead.org (merlin.infradead.org
  [IPv6:2001:4978:20e::2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (Client did not present a certificate)
- by ozlabs.org (Postfix) with ESMTPS id CF9BF2C008D
- for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2013 04:25:43 +1100 (EST)
+ by ozlabs.org (Postfix) with ESMTPS id 234FF2C02F7
+ for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2013 04:25:47 +1100 (EST)
 From: Arnaldo Carvalho de Melo <acme@infradead.org>
 To: Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH 24/25] perf/POWER7: Make some POWER7 events available in sysfs
-Date: Thu, 31 Jan 2013 14:25:27 -0300
-Message-Id: <1359653128-10433-25-git-send-email-acme@infradead.org>
+Subject: [PATCH 25/25] perf: Document the ABI of perf sysfs entries
+Date: Thu, 31 Jan 2013 14:25:28 -0300
+Message-Id: <1359653128-10433-26-git-send-email-acme@infradead.org>
 In-Reply-To: <1359653128-10433-1-git-send-email-acme@infradead.org>
 References: <1359653128-10433-1-git-send-email-acme@infradead.org>
 Content-Type: text/plain; charset="utf-8"
@@ -30,35 +30,30 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Make some POWER7-specific perf events available in sysfs.
+This patchset addes two new sets of files to sysfs for POWER architecture.
 
-	$ /bin/ls -1 /sys/bus/event_source/devices/cpu/events/
-	branch-instructions
-	branch-misses
-	cache-misses
-	cache-references
-	cpu-cycles
-	instructions
-	PM_BRU_FIN
-	PM_BRU_MPRED
-	PM_CMPLU_STALL
-	PM_CYC
-	PM_GCT_NOSLOT_CYC
-	PM_INST_CMPL
-	PM_LD_MISS_L1
-	PM_LD_REF_L1
-	stalled-cycles-backend
-	stalled-cycles-frontend
+	- perf event config format in /sys/devices/cpu/format/event
+	- generic and POWER-specific perf events in /sys/devices/cpu/events/
 
-where the 'PM_*' events are POWER specific and the others are the
-generic events.
+The format of the first file is already documented in:
 
-This will enable users to specify these events with their symbolic
-names rather than with their raw code.
+	sysfs-bus-event_source-devices-format
 
-	perf stat -e 'cpu/PM_CYC' ...
+Document the format of the second set of files '/sys/devices/cpu/events/*'
+which would also become part of the ABI.
+
+Changelog[v4]:
+	[Jiri Olsa]: Mention that multiple event= like terms can be specified
+	in the 'events' file.
+	[Jiri Olsa]: Remove the documentation for the 'config format' file
+	as it is already documented in 'Documentation/ABI/testing/'.
+	[Jiri Olsa]: Move ABI documentation from 'stable/' to 'testing/'
+
+Changelog[v3]:
+	[Greg KH] Include ABI documentation.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Acked-by: Jiri Olsa <jolsa@redhat.com>
 Cc: Andi Kleen <ak@linux.intel.com>
 Cc: Anton Blanchard <anton@au1.ibm.com>
 Cc: Ingo Molnar <mingo@redhat.com>
@@ -68,59 +63,85 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Robert Richter <robert.richter@amd.com>
 Cc: Stephane Eranian <eranian@google.com>
 Cc: linuxppc-dev@ozlabs.org
-Link: http://lkml.kernel.org/r/20130123062528.GE13720@us.ibm.com
+Link: http://lkml.kernel.org/r/20130123062645.GG13720@us.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- arch/powerpc/include/asm/perf_event_server.h |  3 +++
- arch/powerpc/perf/power7-pmu.c               | 18 ++++++++++++++++++
- 2 files changed, 21 insertions(+)
+ Documentation/ABI/stable/sysfs-devices-cpu-events  |  0
+ .../testing/sysfs-bus-event_source-devices-events  | 62 ++++++++++++++++++++++
+ 2 files changed, 62 insertions(+)
+ delete mode 100644 Documentation/ABI/stable/sysfs-devices-cpu-events
+ create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-events
 
-diff --git a/arch/powerpc/include/asm/perf_event_server.h b/arch/powerpc/include/asm/perf_event_server.h
-index b9b6c55..b29fcc6 100644
---- a/arch/powerpc/include/asm/perf_event_server.h
-+++ b/arch/powerpc/include/asm/perf_event_server.h
-@@ -132,3 +132,6 @@ extern ssize_t power_events_sysfs_show(struct device *dev,
- 
- #define	GENERIC_EVENT_ATTR(_name, _id)	EVENT_ATTR(_name, _id, _g)
- #define	GENERIC_EVENT_PTR(_id)		EVENT_PTR(_id, _g)
+diff --git a/Documentation/ABI/stable/sysfs-devices-cpu-events b/Documentation/ABI/stable/sysfs-devices-cpu-events
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-events b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+new file mode 100644
+index 0000000..0adeb52
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-events
+@@ -0,0 +1,62 @@
++What:		/sys/devices/cpu/events/
++		/sys/devices/cpu/events/branch-misses
++		/sys/devices/cpu/events/cache-references
++		/sys/devices/cpu/events/cache-misses
++		/sys/devices/cpu/events/stalled-cycles-frontend
++		/sys/devices/cpu/events/branch-instructions
++		/sys/devices/cpu/events/stalled-cycles-backend
++		/sys/devices/cpu/events/instructions
++		/sys/devices/cpu/events/cpu-cycles
 +
-+#define	POWER_EVENT_ATTR(_name, _id)	EVENT_ATTR(PM_##_name, _id, _p)
-+#define	POWER_EVENT_PTR(_id)		EVENT_PTR(_id, _p)
-diff --git a/arch/powerpc/perf/power7-pmu.c b/arch/powerpc/perf/power7-pmu.c
-index 269bf24..b554879 100644
---- a/arch/powerpc/perf/power7-pmu.c
-+++ b/arch/powerpc/perf/power7-pmu.c
-@@ -384,6 +384,15 @@ GENERIC_EVENT_ATTR(cache-misses,		LD_MISS_L1);
- GENERIC_EVENT_ATTR(branch-instructions,		BRU_FIN);
- GENERIC_EVENT_ATTR(branch-misses,		BRU_MPRED);
- 
-+POWER_EVENT_ATTR(CYC,				CYC);
-+POWER_EVENT_ATTR(GCT_NOSLOT_CYC,		GCT_NOSLOT_CYC);
-+POWER_EVENT_ATTR(CMPLU_STALL,			CMPLU_STALL);
-+POWER_EVENT_ATTR(INST_CMPL,			INST_CMPL);
-+POWER_EVENT_ATTR(LD_REF_L1,			LD_REF_L1);
-+POWER_EVENT_ATTR(LD_MISS_L1,			LD_MISS_L1);
-+POWER_EVENT_ATTR(BRU_FIN,			BRU_FIN)
-+POWER_EVENT_ATTR(BRU_MPRED,			BRU_MPRED);
++Date:		2013/01/08
 +
- static struct attribute *power7_events_attr[] = {
- 	GENERIC_EVENT_PTR(CYC),
- 	GENERIC_EVENT_PTR(GCT_NOSLOT_CYC),
-@@ -393,6 +402,15 @@ static struct attribute *power7_events_attr[] = {
- 	GENERIC_EVENT_PTR(LD_MISS_L1),
- 	GENERIC_EVENT_PTR(BRU_FIN),
- 	GENERIC_EVENT_PTR(BRU_MPRED),
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
 +
-+	POWER_EVENT_PTR(CYC),
-+	POWER_EVENT_PTR(GCT_NOSLOT_CYC),
-+	POWER_EVENT_PTR(CMPLU_STALL),
-+	POWER_EVENT_PTR(INST_CMPL),
-+	POWER_EVENT_PTR(LD_REF_L1),
-+	POWER_EVENT_PTR(LD_MISS_L1),
-+	POWER_EVENT_PTR(BRU_FIN),
-+	POWER_EVENT_PTR(BRU_MPRED),
- 	NULL
- };
- 
++Description:	Generic performance monitoring events
++
++		A collection of performance monitoring events that may be
++		supported by many/most CPUs. These events can be monitored
++		using the 'perf(1)' tool.
++
++		The contents of each file would look like:
++
++			event=0xNNNN
++
++		where 'N' is a hex digit and the number '0xNNNN' shows the
++		"raw code" for the perf event identified by the file's
++		"basename".
++
++
++What: 		/sys/devices/cpu/events/PM_LD_MISS_L1
++		/sys/devices/cpu/events/PM_LD_REF_L1
++		/sys/devices/cpu/events/PM_CYC
++		/sys/devices/cpu/events/PM_BRU_FIN
++		/sys/devices/cpu/events/PM_GCT_NOSLOT_CYC
++		/sys/devices/cpu/events/PM_BRU_MPRED
++		/sys/devices/cpu/events/PM_INST_CMPL
++		/sys/devices/cpu/events/PM_CMPLU_STALL
++
++Date:		2013/01/08
++
++Contact:	Linux kernel mailing list <linux-kernel@vger.kernel.org>
++		Linux Powerpc mailing list <linuxppc-dev@ozlabs.org>
++
++Description:	POWER-systems specific performance monitoring events
++
++		A collection of performance monitoring events that may be
++		supported by the POWER CPU. These events can be monitored
++		using the 'perf(1)' tool.
++
++		These events may not be supported by other CPUs.
++
++		The contents of each file would look like:
++
++			event=0xNNNN
++
++		where 'N' is a hex digit and the number '0xNNNN' shows the
++		"raw code" for the perf event identified by the file's
++		"basename".
++
++		Further, multiple terms like 'event=0xNNNN' can be specified
++		and separated with comma. All available terms are defined in
++		the /sys/bus/event_source/devices/<dev>/format file.
 -- 
 1.8.1.1.361.gec3ae6e
