@@ -1,34 +1,21 @@
-Return-Path: <simon.jeons@gmail.com>
-Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
- [IPv6:2607:f8b0:4001:c03::22f])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id ADDBA2C0297
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 21:38:35 +1100 (EST)
-Received: by mail-ie0-f175.google.com with SMTP id c12so2112467ieb.20
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 02:38:32 -0800 (PST)
-Message-ID: <1359628705.2048.5.camel@kernel>
-Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
-From: Simon Jeons <simon.jeons@gmail.com>
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Date: Thu, 31 Jan 2013 04:38:25 -0600
-In-Reply-To: <510A3CE6.202@cn.fujitsu.com>
-References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
- <1359463973.1624.15.camel@kernel> <5108F2B3.3090506@cn.fujitsu.com>
- <1359595344.1557.13.camel@kernel> <5109E59F.5080104@cn.fujitsu.com>
- <1359613162.1587.0.camel@kernel> <510A18FA.2010107@cn.fujitsu.com>
- <1359622123.1391.19.camel@kernel> <510A3CE6.202@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
- linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
- isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
- kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
- wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
- wujianguo@huawei.com, yinghai@kernel.org, laijs@cn.fujitsu.com,
- linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client CN "mx2.suse.de", Issuer "CAcert Class 3 Root" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 49E982C0087
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 00:21:13 +1100 (EST)
+Subject: Re: [PATCH 1/5] KVM: PPC: e500: Move VCPU's MMUCFG register
+ initialization earlier
+Mime-Version: 1.0 (Apple Message framework v1278)
+Content-Type: text/plain; charset=us-ascii
+From: Alexander Graf <agraf@suse.de>
+In-Reply-To: <1359552584-17861-2-git-send-email-mihai.caraman@freescale.com>
+Date: Thu, 31 Jan 2013 14:21:00 +0100
+Message-Id: <FE5499BE-EC13-47EA-806C-345F7135B677@suse.de>
+References: <1359552584-17861-1-git-send-email-mihai.caraman@freescale.com>
+ <1359552584-17861-2-git-send-email-mihai.caraman@freescale.com>
+To: Mihai Caraman <mihai.caraman@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, kvm-ppc@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,77 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tang,
-On Thu, 2013-01-31 at 17:44 +0800, Tang Chen wrote:
-> Hi Simon,
-> 
-> On 01/31/2013 04:48 PM, Simon Jeons wrote:
-> > Hi Tang,
-> > On Thu, 2013-01-31 at 15:10 +0800, Tang Chen wrote:
-> >
-> > 1. IIUC, there is a button on machine which supports hot-remove memory,
-> > then what's the difference between press button and echo to /sys?
-> 
-> No important difference, I think. Since I don't have the machine you are
-> saying, I cannot surely answer you. :)
-> AFAIK, pressing the button means trigger the hotplug from hardware, sysfs
-> is just another entrance. At last, they will run into the same code.
-> 
-> > 2. Since kernel memory is linear mapping(I mean direct mapping part),
-> > why can't put kernel direct mapping memory into one memory device, and
-> > other memory into the other devices?
-> 
-> We cannot do that because in that way, we will lose NUMA performance.
-> 
-> If you know NUMA, you will understand the following example:
-> 
-> node0:                    node1:
->     cpu0~cpu15                cpu16~cpu31
->     memory0~memory511         memory512~memory1023
-> 
-> cpu16~cpu31 access memory16~memory1023 much faster than memory0~memory511.
-> If we set direct mapping area in node0, and movable area in node1, then
-> the kernel code running on cpu16~cpu31 will have to access 
-> memory0~memory511.
-> This is a terrible performance down.
 
-So if config NUMA, kernel memory will not be linear mapping anymore? For
-example, 
+On 30.01.2013, at 14:29, Mihai Caraman wrote:
 
-Node 0  Node 1 
+> VCPU's MMUCFG register initialization should not depend on =
+KVM_CAP_SW_TLB
+> ioctl call. Move it earlier into tlb initalization phase.
 
-0 ~ 10G 11G~14G
+Quite the contrary. The fact that there is an mfspr() in e500_mmu.c =
+already tells us that the code is broken. The TLB guest code should only =
+depend on input from the SW_TLB configuration. It's completely =
+orthogonal to the host capabilities.
 
-kernel memory only at Node 0? Can part of kernel memory also at Node 1?
 
-How big is kernel direct mapping memory in x86_64? Is there max limit?
-It seems that only around 896MB on x86_32. 
+Alex
 
-> 
-> >As you know x86_64 don't need
-> > highmem, IIUC, all kernel memory will linear mapping in this case. Is my
-> > idea available? If is correct, x86_32 can't implement in the same way
-> > since highmem(kmap/kmap_atomic/vmalloc) can map any address, so it's
-> > hard to focus kernel memory on single memory device.
-> 
-> Sorry, I'm not quite familiar with x86_32 box.
-> 
-> > 3. In current implementation, if memory hotplug just need memory
-> > subsystem and ACPI codes support? Or also needs firmware take part in?
-> > Hope you can explain in details, thanks in advance. :)
-> 
-> We need firmware take part in, such as SRAT in ACPI BIOS, or the firmware
-> based memory migration mentioned by Liu Jiang.
-
-Is there any material about firmware based memory migration?
-
-> 
-> So far, I only know this. :)
-> 
-> > 4. What's the status of memory hotplug? Apart from can't remove kernel
-> > memory, other things are fully implementation?
-> 
-> I think the main job is done for now. And there are still bugs to fix.
-> And this functionality is not stable.
-> 
-> Thanks. :)
+>=20
+> Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
+> ---
+> arch/powerpc/kvm/e500_mmu.c |    4 ++--
+> 1 files changed, 2 insertions(+), 2 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kvm/e500_mmu.c b/arch/powerpc/kvm/e500_mmu.c
+> index 5c44759..bb1b2b0 100644
+> --- a/arch/powerpc/kvm/e500_mmu.c
+> +++ b/arch/powerpc/kvm/e500_mmu.c
+> @@ -692,8 +692,6 @@ int kvm_vcpu_ioctl_config_tlb(struct kvm_vcpu =
+*vcpu,
+> 	vcpu_e500->gtlb_offset[0] =3D 0;
+> 	vcpu_e500->gtlb_offset[1] =3D params.tlb_sizes[0];
+>=20
+> -	vcpu->arch.mmucfg =3D mfspr(SPRN_MMUCFG) & ~MMUCFG_LPIDSIZE;
+> -
+> 	vcpu->arch.tlbcfg[0] &=3D ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
+> 	if (params.tlb_sizes[0] <=3D 2048)
+> 		vcpu->arch.tlbcfg[0] |=3D params.tlb_sizes[0];
+> @@ -781,6 +779,8 @@ int kvmppc_e500_tlb_init(struct kvmppc_vcpu_e500 =
+*vcpu_e500)
+> 	if (!vcpu_e500->g2h_tlb1_map)
+> 		goto err;
+>=20
+> +	vcpu->arch.mmucfg =3D mfspr(SPRN_MMUCFG) & ~MMUCFG_LPIDSIZE;
+> +
+> 	/* Init TLB configuration register */
+> 	vcpu->arch.tlbcfg[0] =3D mfspr(SPRN_TLB0CFG) &
+> 			     ~(TLBnCFG_N_ENTRY | TLBnCFG_ASSOC);
+> --=20
+> 1.7.4.1
+>=20
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm-ppc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
