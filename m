@@ -1,26 +1,29 @@
-Return-Path: <B40534@freescale.com>
-Received: from am1outboundpool.messaging.microsoft.com
- (am1ehsobe001.messaging.microsoft.com [213.199.154.204])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0B4262C0296
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 15:10:42 +1100 (EST)
-Received: from mail13-am1 (localhost [127.0.0.1])	by mail13-am1-R.bigfish.com
- (Postfix) with ESMTP id 92AC7160119	for
- <linuxppc-dev@lists.ozlabs.org>; Thu,
- 31 Jan 2013 04:10:36 +0000 (UTC)
-Received: from AM1EHSMHS002.bigfish.com (unknown [10.3.201.243])	by
- mail13-am1.bigfish.com (Postfix) with ESMTP id 253A0A003F	for
- <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 04:10:35 +0000 (UTC)
-From: Wang Dongsheng <dongsheng.wang@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH][UPSTEAM] powerpc/mpic: add irq_set_wake support
-Date: Thu, 31 Jan 2013 11:10:23 +0800
-Message-ID: <1359601823-9861-1-git-send-email-dongsheng.wang@freescale.com>
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.19.201])
+ by ozlabs.org (Postfix) with ESMTP id E762E2C0296
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 16:22:54 +1100 (EST)
+Date: Thu, 31 Jan 2013 06:24:48 +0100
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Toshi Kani <toshi.kani@hp.com>
+Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
+ framework
+Message-ID: <20130131052448.GC3228@kroah.com>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <5036592.TuXAnGzk4M@vostro.rjw.lan>
+ <1358177628.14145.49.camel@misato.fc.hp.com>
+ <2154272.qDAyBlTr8z@vostro.rjw.lan>
+ <1358190124.14145.79.camel@misato.fc.hp.com>
+ <20130130044859.GD30002@kroah.com>
+ <1359594912.15120.85.camel@misato.fc.hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Wang Dongsheng <dongsheng.wang@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1359594912.15120.85.camel@misato.fc.hp.com>
+Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
+ linux-mm@kvack.org, yinghai@kernel.org, linux-kernel@vger.kernel.org,
+ "Rafael J. Wysocki" <rjw@sisk.pl>, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
+ guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,60 +33,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add irq_set_wake support. Just add IRQF_NO_SUSPEND to desc->action->flag.
-So the wake up interrupt will not be disable in suspend_device_irqs.
+On Wed, Jan 30, 2013 at 06:15:12PM -0700, Toshi Kani wrote:
+> > Please make it a "real" pointer, and not a void *, those shouldn't be
+> > used at all if possible.
+> 
+> How about changing the "void *handle" to acpi_dev_node below?   
+> 
+>    struct acpi_dev_node    acpi_node;
+> 
+> Basically, it has the same challenge as struct device, which uses
+> acpi_dev_node as well.  We can add other FW node when needed (just like
+> device also has *of_node).
 
-Signed-off-by: Wang Dongsheng <dongsheng.wang@freescale.com>
----
- arch/powerpc/sysdev/mpic.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 9c6e535..2ed0220 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -920,6 +920,18 @@ int mpic_set_irq_type(struct irq_data *d, unsigned int flow_type)
- 	return IRQ_SET_MASK_OK_NOCOPY;
- }
-
-+static int mpic_irq_set_wake(struct irq_data *d, unsigned int on)
-+{
-+	struct irq_desc *desc = container_of(d, struct irq_desc, irq_data);
-+
-+	if (on)
-+		desc->action->flags |= IRQF_NO_SUSPEND;
-+	else
-+		desc->action->flags &= ~IRQF_NO_SUSPEND;
-+
-+	return 0;
-+}
-+
- void mpic_set_vector(unsigned int virq, unsigned int vector)
- {
- 	struct mpic *mpic = mpic_from_irq(virq);
-@@ -957,6 +969,7 @@ static struct irq_chip mpic_irq_chip = {
- 	.irq_unmask	= mpic_unmask_irq,
- 	.irq_eoi	= mpic_end_irq,
- 	.irq_set_type	= mpic_set_irq_type,
-+	.irq_set_wake	= mpic_irq_set_wake,
- };
-
- #ifdef CONFIG_SMP
-@@ -971,6 +984,7 @@ static struct irq_chip mpic_tm_chip = {
- 	.irq_mask	= mpic_mask_tm,
- 	.irq_unmask	= mpic_unmask_tm,
- 	.irq_eoi	= mpic_end_irq,
-+	.irq_set_wake	= mpic_irq_set_wake,
- };
-
- #ifdef CONFIG_MPIC_U3_HT_IRQS
-@@ -981,6 +995,7 @@ static struct irq_chip mpic_irq_ht_chip = {
- 	.irq_unmask	= mpic_unmask_ht_irq,
- 	.irq_eoi	= mpic_end_ht_irq,
- 	.irq_set_type	= mpic_set_irq_type,
-+	.irq_set_wake	= mpic_irq_set_wake,
- };
- #endif /* CONFIG_MPIC_U3_HT_IRQS */
-
---
-1.7.5.1
+That sounds good to me.
