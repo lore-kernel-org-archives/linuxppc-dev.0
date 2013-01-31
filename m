@@ -1,20 +1,25 @@
-Return-Path: <tangchen@cn.fujitsu.com>
-Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
- by ozlabs.org (Postfix) with ESMTP id 55FB62C029B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 20:44:59 +1100 (EST)
-Message-ID: <510A3CE6.202@cn.fujitsu.com>
-Date: Thu, 31 Jan 2013 17:44:06 +0800
-From: Tang Chen <tangchen@cn.fujitsu.com>
-MIME-Version: 1.0
-To: Simon Jeons <simon.jeons@gmail.com>
+Return-Path: <simon.jeons@gmail.com>
+Received: from mail-ie0-x22f.google.com (mail-ie0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c03::22f])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id ADDBA2C0297
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 21:38:35 +1100 (EST)
+Received: by mail-ie0-f175.google.com with SMTP id c12so2112467ieb.20
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 02:38:32 -0800 (PST)
+Message-ID: <1359628705.2048.5.camel@kernel>
 Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
+From: Simon Jeons <simon.jeons@gmail.com>
+To: Tang Chen <tangchen@cn.fujitsu.com>
+Date: Thu, 31 Jan 2013 04:38:25 -0600
+In-Reply-To: <510A3CE6.202@cn.fujitsu.com>
 References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
  <1359463973.1624.15.camel@kernel> <5108F2B3.3090506@cn.fujitsu.com>
  <1359595344.1557.13.camel@kernel> <5109E59F.5080104@cn.fujitsu.com>
  <1359613162.1587.0.camel@kernel> <510A18FA.2010107@cn.fujitsu.com>
- <1359622123.1391.19.camel@kernel>
-In-Reply-To: <1359622123.1391.19.camel@kernel>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+ <1359622123.1391.19.camel@kernel> <510A3CE6.202@cn.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
  paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
  linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
@@ -33,59 +38,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Simon,
+Hi Tang,
+On Thu, 2013-01-31 at 17:44 +0800, Tang Chen wrote:
+> Hi Simon,
+> 
+> On 01/31/2013 04:48 PM, Simon Jeons wrote:
+> > Hi Tang,
+> > On Thu, 2013-01-31 at 15:10 +0800, Tang Chen wrote:
+> >
+> > 1. IIUC, there is a button on machine which supports hot-remove memory,
+> > then what's the difference between press button and echo to /sys?
+> 
+> No important difference, I think. Since I don't have the machine you are
+> saying, I cannot surely answer you. :)
+> AFAIK, pressing the button means trigger the hotplug from hardware, sysfs
+> is just another entrance. At last, they will run into the same code.
+> 
+> > 2. Since kernel memory is linear mapping(I mean direct mapping part),
+> > why can't put kernel direct mapping memory into one memory device, and
+> > other memory into the other devices?
+> 
+> We cannot do that because in that way, we will lose NUMA performance.
+> 
+> If you know NUMA, you will understand the following example:
+> 
+> node0:                    node1:
+>     cpu0~cpu15                cpu16~cpu31
+>     memory0~memory511         memory512~memory1023
+> 
+> cpu16~cpu31 access memory16~memory1023 much faster than memory0~memory511.
+> If we set direct mapping area in node0, and movable area in node1, then
+> the kernel code running on cpu16~cpu31 will have to access 
+> memory0~memory511.
+> This is a terrible performance down.
 
-On 01/31/2013 04:48 PM, Simon Jeons wrote:
-> Hi Tang,
-> On Thu, 2013-01-31 at 15:10 +0800, Tang Chen wrote:
->
-> 1. IIUC, there is a button on machine which supports hot-remove memory,
-> then what's the difference between press button and echo to /sys?
+So if config NUMA, kernel memory will not be linear mapping anymore? For
+example, 
 
-No important difference, I think. Since I don't have the machine you are
-saying, I cannot surely answer you. :)
-AFAIK, pressing the button means trigger the hotplug from hardware, sysfs
-is just another entrance. At last, they will run into the same code.
+Node 0  Node 1 
 
-> 2. Since kernel memory is linear mapping(I mean direct mapping part),
-> why can't put kernel direct mapping memory into one memory device, and
-> other memory into the other devices?
+0 ~ 10G 11G~14G
 
-We cannot do that because in that way, we will lose NUMA performance.
+kernel memory only at Node 0? Can part of kernel memory also at Node 1?
 
-If you know NUMA, you will understand the following example:
+How big is kernel direct mapping memory in x86_64? Is there max limit?
+It seems that only around 896MB on x86_32. 
 
-node0:                    node1:
-    cpu0~cpu15                cpu16~cpu31
-    memory0~memory511         memory512~memory1023
+> 
+> >As you know x86_64 don't need
+> > highmem, IIUC, all kernel memory will linear mapping in this case. Is my
+> > idea available? If is correct, x86_32 can't implement in the same way
+> > since highmem(kmap/kmap_atomic/vmalloc) can map any address, so it's
+> > hard to focus kernel memory on single memory device.
+> 
+> Sorry, I'm not quite familiar with x86_32 box.
+> 
+> > 3. In current implementation, if memory hotplug just need memory
+> > subsystem and ACPI codes support? Or also needs firmware take part in?
+> > Hope you can explain in details, thanks in advance. :)
+> 
+> We need firmware take part in, such as SRAT in ACPI BIOS, or the firmware
+> based memory migration mentioned by Liu Jiang.
 
-cpu16~cpu31 access memory16~memory1023 much faster than memory0~memory511.
-If we set direct mapping area in node0, and movable area in node1, then
-the kernel code running on cpu16~cpu31 will have to access 
-memory0~memory511.
-This is a terrible performance down.
+Is there any material about firmware based memory migration?
 
->As you know x86_64 don't need
-> highmem, IIUC, all kernel memory will linear mapping in this case. Is my
-> idea available? If is correct, x86_32 can't implement in the same way
-> since highmem(kmap/kmap_atomic/vmalloc) can map any address, so it's
-> hard to focus kernel memory on single memory device.
-
-Sorry, I'm not quite familiar with x86_32 box.
-
-> 3. In current implementation, if memory hotplug just need memory
-> subsystem and ACPI codes support? Or also needs firmware take part in?
-> Hope you can explain in details, thanks in advance. :)
-
-We need firmware take part in, such as SRAT in ACPI BIOS, or the firmware
-based memory migration mentioned by Liu Jiang.
-
-So far, I only know this. :)
-
-> 4. What's the status of memory hotplug? Apart from can't remove kernel
-> memory, other things are fully implementation?
-
-I think the main job is done for now. And there are still bugs to fix.
-And this functionality is not stable.
-
-Thanks. :)
+> 
+> So far, I only know this. :)
+> 
+> > 4. What's the status of memory hotplug? Apart from can't remove kernel
+> > memory, other things are fully implementation?
+> 
+> I think the main job is done for now. And there are still bugs to fix.
+> And this functionality is not stable.
+> 
+> Thanks. :)
