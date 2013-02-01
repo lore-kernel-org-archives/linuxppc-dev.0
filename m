@@ -1,30 +1,31 @@
 Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 871B02C0095
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 21:28:02 +1100 (EST)
+ (Client CN "e28smtp08.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 6674D2C038B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 21:28:05 +1100 (EST)
 Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Fri, 1 Feb 2013 15:55:42 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id C5E55394004C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 15:57:55 +0530 (IST)
+ Fri, 1 Feb 2013 15:55:24 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 98D51125804D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 15:58:29 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r11ARsMJ20971598
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Feb 2013 15:57:54 +0530
+ by d28relay04.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
+ r11ARucm26017974
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Feb 2013 15:57:56 +0530
 Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r11ARsg7022250
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Feb 2013 21:27:55 +1100
+ r11ARv3i022413
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Feb 2013 21:27:57 +1100
 From: Li Zhong <zhong@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 1/5] powerpc: Syscall hooks for context tracking subsystem
-Date: Fri,  1 Feb 2013 18:27:41 +0800
-Message-Id: <1359714465-6297-2-git-send-email-zhong@linux.vnet.ibm.com>
+Subject: [RFC PATCH 2/5] powerpc: Exception hooks for context tracking
+ subsystem
+Date: Fri,  1 Feb 2013 18:27:42 +0800
+Message-Id: <1359714465-6297-3-git-send-email-zhong@linux.vnet.ibm.com>
 In-Reply-To: <1359714465-6297-1-git-send-email-zhong@linux.vnet.ibm.com>
 References: <1359714465-6297-1-git-send-email-zhong@linux.vnet.ibm.com>
 Cc: Li Zhong <zhong@linux.vnet.ibm.com>, fweisbec@gmail.com, paulus@samba.org,
@@ -38,82 +39,418 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is the syscall slow path hooks for context tracking subsystem,
-corresponding to
-[PATCH] x86: Syscall hooks for userspace RCU extended QS
-  commit bf5a3c13b939813d28ce26c01425054c740d6731
+This is the exception hooks for context tracking subsystem, including
+data access, program check, single step, instruction breakpoint, machine check,
+alignment, fp unavailable, altivec assist, unknown exception, whose handlers
+might use RCU.
 
-TIF_MEMDIE is moved to the second 16-bits (with value 17), as it seems there
-is no asm code using it. TIF_NOHZ is added to _TIF_SYCALL_T_OR_A, so it is
-better for it to be in the same 16 bits with others in the group, so in the
-asm code, andi. with this group could work.
+This patch corresponds to
+[PATCH] x86: Exception hooks for userspace RCU extended QS
+  commit 6ba3c97a38803883c2eee489505796cb0a727122
 
 Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/thread_info.h |    7 +++++--
- arch/powerpc/kernel/ptrace.c           |    5 +++++
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/context_tracking.h |   20 +++++++
+ arch/powerpc/kernel/exceptions-64s.S        |    4 +-
+ arch/powerpc/kernel/traps.c                 |   79 ++++++++++++++++++++-------
+ arch/powerpc/mm/fault.c                     |   15 ++++-
+ arch/powerpc/mm/hash_utils_64.c             |   17 ++++++
+ 5 files changed, 112 insertions(+), 23 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/context_tracking.h
 
-diff --git a/arch/powerpc/include/asm/thread_info.h b/arch/powerpc/include/asm/thread_info.h
-index 406b7b9..414a261 100644
---- a/arch/powerpc/include/asm/thread_info.h
-+++ b/arch/powerpc/include/asm/thread_info.h
-@@ -97,7 +97,7 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_PERFMON_CTXSW	6	/* perfmon needs ctxsw calls */
- #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
- #define TIF_SINGLESTEP		8	/* singlestepping active */
--#define TIF_MEMDIE		9	/* is terminating due to OOM killer */
-+#define TIF_NOHZ		9	/* in adaptive nohz mode */
- #define TIF_SECCOMP		10	/* secure computing */
- #define TIF_RESTOREALL		11	/* Restore all regs (implies NOERROR) */
- #define TIF_NOERROR		12	/* Force successful syscall return */
-@@ -106,6 +106,7 @@ static inline struct thread_info *current_thread_info(void)
- #define TIF_SYSCALL_TRACEPOINT	15	/* syscall tracepoint instrumentation */
- #define TIF_EMULATE_STACK_STORE	16	/* Is an instruction emulation
- 						for stack store? */
-+#define TIF_MEMDIE		17	/* is terminating due to OOM killer */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -124,8 +125,10 @@ static inline struct thread_info *current_thread_info(void)
- #define _TIF_UPROBE		(1<<TIF_UPROBE)
- #define _TIF_SYSCALL_TRACEPOINT	(1<<TIF_SYSCALL_TRACEPOINT)
- #define _TIF_EMULATE_STACK_STORE	(1<<TIF_EMULATE_STACK_STORE)
-+#define _TIF_NOHZ		(1<<TIF_NOHZ)
- #define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE | _TIF_SYSCALL_AUDIT | \
--				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT)
-+				 _TIF_SECCOMP | _TIF_SYSCALL_TRACEPOINT | \
-+				 _TIF_NOHZ)
- 
- #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
- 				 _TIF_NOTIFY_RESUME | _TIF_UPROBE)
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index c497000..62238dd 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -32,6 +32,7 @@
- #include <trace/syscall.h>
- #include <linux/hw_breakpoint.h>
- #include <linux/perf_event.h>
+diff --git a/arch/powerpc/include/asm/context_tracking.h b/arch/powerpc/include/asm/context_tracking.h
+new file mode 100644
+index 0000000..3adccd8
+--- /dev/null
++++ b/arch/powerpc/include/asm/context_tracking.h
+@@ -0,0 +1,20 @@
++#ifndef _ASM_POWERPC_CONTEXT_TRACKING_H
++#define _ASM_POWERPC_CONTEXT_TRACKING_H
++
 +#include <linux/context_tracking.h>
- 
- #include <asm/uaccess.h>
- #include <asm/page.h>
-@@ -1745,6 +1746,8 @@ long do_syscall_trace_enter(struct pt_regs *regs)
- {
- 	long ret = 0;
- 
++#include <asm/ptrace.h>
++
++static inline void exception_enter(struct pt_regs *regs)
++{
 +	user_exit();
++}
 +
- 	secure_computing_strict(regs->gpr[0]);
++static inline void exception_exit(struct pt_regs *regs)
++{
++#ifdef CONFIG_CONTEXT_TRACKING
++	if (user_mode(regs))
++		user_enter();
++#endif
++}
++
++#endif
+diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+index 4665e82..b877cf2 100644
+--- a/arch/powerpc/kernel/exceptions-64s.S
++++ b/arch/powerpc/kernel/exceptions-64s.S
+@@ -1184,15 +1184,17 @@ END_MMU_FTR_SECTION_IFCLR(MMU_FTR_SLB)
+ 	rlwimi	r4,r0,32-13,30,30	/* becomes _PAGE_USER access bit */
+ 	ori	r4,r4,1			/* add _PAGE_PRESENT */
+ 	rlwimi	r4,r5,22+2,31-2,31-2	/* Set _PAGE_EXEC if trap is 0x400 */
++	addi	r6,r1,STACK_FRAME_OVERHEAD
  
- 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
-@@ -1789,4 +1792,6 @@ void do_syscall_trace_leave(struct pt_regs *regs)
- 	step = test_thread_flag(TIF_SINGLESTEP);
- 	if (step || test_thread_flag(TIF_SYSCALL_TRACE))
- 		tracehook_report_syscall_exit(regs, step);
+ 	/*
+ 	 * r3 contains the faulting address
+ 	 * r4 contains the required access permissions
+ 	 * r5 contains the trap number
++	 * r6 contains the address of pt_regs
+ 	 *
+ 	 * at return r3 = 0 for success, 1 for page fault, negative for error
+ 	 */
+-	bl	.hash_page		/* build HPTE if possible */
++	bl	.hash_page_ct		/* build HPTE if possible */
+ 	cmpdi	r3,0			/* see if hash_page succeeded */
+ 
+ 	/* Success */
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 3251840..d7c0414 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -59,6 +59,7 @@
+ #include <asm/fadump.h>
+ #include <asm/switch_to.h>
+ #include <asm/debug.h>
++#include <asm/context_tracking.h>
+ 
+ #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC)
+ int (*__debugger)(struct pt_regs *regs) __read_mostly;
+@@ -660,6 +661,8 @@ void machine_check_exception(struct pt_regs *regs)
+ {
+ 	int recover = 0;
+ 
++	exception_enter(regs);
 +
-+	user_enter();
+ 	__get_cpu_var(irq_stat).mce_exceptions++;
+ 
+ 	/* See if any machine dependent calls. In theory, we would want
+@@ -674,7 +677,7 @@ void machine_check_exception(struct pt_regs *regs)
+ 		recover = cur_cpu_spec->machine_check(regs);
+ 
+ 	if (recover > 0)
+-		return;
++		goto exit;
+ 
+ #if defined(CONFIG_8xx) && defined(CONFIG_PCI)
+ 	/* the qspan pci read routines can cause machine checks -- Cort
+@@ -684,20 +687,23 @@ void machine_check_exception(struct pt_regs *regs)
+ 	 * -- BenH
+ 	 */
+ 	bad_page_fault(regs, regs->dar, SIGBUS);
+-	return;
++	goto exit;
+ #endif
+ 
+ 	if (debugger_fault_handler(regs))
+-		return;
++		goto exit;
+ 
+ 	if (check_io_access(regs))
+-		return;
++		goto exit;
+ 
+ 	die("Machine check", regs, SIGBUS);
+ 
+ 	/* Must die if the interrupt is not recoverable */
+ 	if (!(regs->msr & MSR_RI))
+ 		panic("Unrecoverable Machine check");
++
++exit:
++	exception_exit(regs);
  }
+ 
+ void SMIException(struct pt_regs *regs)
+@@ -707,20 +713,29 @@ void SMIException(struct pt_regs *regs)
+ 
+ void unknown_exception(struct pt_regs *regs)
+ {
++	exception_enter(regs);
++
+ 	printk("Bad trap at PC: %lx, SR: %lx, vector=%lx\n",
+ 	       regs->nip, regs->msr, regs->trap);
+ 
+ 	_exception(SIGTRAP, regs, 0, 0);
++
++	exception_exit(regs);
+ }
+ 
+ void instruction_breakpoint_exception(struct pt_regs *regs)
+ {
++	exception_enter(regs);
++
+ 	if (notify_die(DIE_IABR_MATCH, "iabr_match", regs, 5,
+ 					5, SIGTRAP) == NOTIFY_STOP)
+-		return;
++		goto exit;
+ 	if (debugger_iabr_match(regs))
+-		return;
++		goto exit;
+ 	_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
++
++exit:
++	exception_exit(regs);
+ }
+ 
+ void RunModeException(struct pt_regs *regs)
+@@ -730,15 +745,20 @@ void RunModeException(struct pt_regs *regs)
+ 
+ void __kprobes single_step_exception(struct pt_regs *regs)
+ {
++	exception_enter(regs);
++
+ 	clear_single_step(regs);
+ 
+ 	if (notify_die(DIE_SSTEP, "single_step", regs, 5,
+ 					5, SIGTRAP) == NOTIFY_STOP)
+-		return;
++		goto exit;
+ 	if (debugger_sstep(regs))
+-		return;
++		goto exit;
+ 
+ 	_exception(SIGTRAP, regs, TRAP_TRACE, regs->nip);
++
++exit:
++	exception_exit(regs);
+ }
+ 
+ /*
+@@ -993,32 +1013,34 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 	unsigned int reason = get_reason(regs);
+ 	extern int do_mathemu(struct pt_regs *regs);
+ 
++	exception_enter(regs);
++
+ 	/* We can now get here via a FP Unavailable exception if the core
+ 	 * has no FPU, in that case the reason flags will be 0 */
+ 
+ 	if (reason & REASON_FP) {
+ 		/* IEEE FP exception */
+ 		parse_fpe(regs);
+-		return;
++		goto exit;
+ 	}
+ 	if (reason & REASON_TRAP) {
+ 		/* Debugger is first in line to stop recursive faults in
+ 		 * rcu_lock, notify_die, or atomic_notifier_call_chain */
+ 		if (debugger_bpt(regs))
+-			return;
++			goto exit;
+ 
+ 		/* trap exception */
+ 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
+ 				== NOTIFY_STOP)
+-			return;
++			goto exit;
+ 
+ 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
+ 		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
+ 			regs->nip += 4;
+-			return;
++			goto exit;
+ 		}
+ 		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
+-		return;
++		goto exit;
+ 	}
+ 
+ 	/* We restore the interrupt state now */
+@@ -1036,16 +1058,16 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 	switch (do_mathemu(regs)) {
+ 	case 0:
+ 		emulate_single_step(regs);
+-		return;
++		goto exit;
+ 	case 1: {
+ 			int code = 0;
+ 			code = __parse_fpscr(current->thread.fpscr.val);
+ 			_exception(SIGFPE, regs, code, regs->nip);
+-			return;
++			goto exit;
+ 		}
+ 	case -EFAULT:
+ 		_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
+-		return;
++		goto exit;
+ 	}
+ 	/* fall through on any other errors */
+ #endif /* CONFIG_MATH_EMULATION */
+@@ -1056,10 +1078,10 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 		case 0:
+ 			regs->nip += 4;
+ 			emulate_single_step(regs);
+-			return;
++			goto exit;
+ 		case -EFAULT:
+ 			_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
+-			return;
++			goto exit;
+ 		}
+ 	}
+ 
+@@ -1067,12 +1089,17 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 		_exception(SIGILL, regs, ILL_PRVOPC, regs->nip);
+ 	else
+ 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
++
++exit:
++	exception_exit(regs);
+ }
+ 
+ void alignment_exception(struct pt_regs *regs)
+ {
+ 	int sig, code, fixed = 0;
+ 
++	exception_enter(regs);
++
+ 	/* We restore the interrupt state now */
+ 	if (!arch_irq_disabled_regs(regs))
+ 		local_irq_enable();
+@@ -1084,7 +1111,7 @@ void alignment_exception(struct pt_regs *regs)
+ 	if (fixed == 1) {
+ 		regs->nip += 4;	/* skip over emulated instruction */
+ 		emulate_single_step(regs);
+-		return;
++		goto exit;
+ 	}
+ 
+ 	/* Operand address was bad */
+@@ -1099,6 +1126,9 @@ void alignment_exception(struct pt_regs *regs)
+ 		_exception(sig, regs, code, regs->dar);
+ 	else
+ 		bad_page_fault(regs, regs->dar, sig);
++
++exit:
++	exception_exit(regs);
+ }
+ 
+ void StackOverflow(struct pt_regs *regs)
+@@ -1127,23 +1157,32 @@ void trace_syscall(struct pt_regs *regs)
+ 
+ void kernel_fp_unavailable_exception(struct pt_regs *regs)
+ {
++	exception_enter(regs);
++
+ 	printk(KERN_EMERG "Unrecoverable FP Unavailable Exception "
+ 			  "%lx at %lx\n", regs->trap, regs->nip);
+ 	die("Unrecoverable FP Unavailable Exception", regs, SIGABRT);
++
++	exception_exit(regs);
+ }
+ 
+ void altivec_unavailable_exception(struct pt_regs *regs)
+ {
++	exception_enter(regs);
++
+ 	if (user_mode(regs)) {
+ 		/* A user program has executed an altivec instruction,
+ 		   but this kernel doesn't support altivec. */
+ 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
+-		return;
++		goto exit;
+ 	}
+ 
+ 	printk(KERN_EMERG "Unrecoverable VMX/Altivec Unavailable Exception "
+ 			"%lx at %lx\n", regs->trap, regs->nip);
+ 	die("Unrecoverable VMX/Altivec Unavailable Exception", regs, SIGABRT);
++
++exit:
++	exception_exit(regs);
+ }
+ 
+ void vsx_unavailable_exception(struct pt_regs *regs)
+diff --git a/arch/powerpc/mm/fault.c b/arch/powerpc/mm/fault.c
+index 3a8489a..b1b9542 100644
+--- a/arch/powerpc/mm/fault.c
++++ b/arch/powerpc/mm/fault.c
+@@ -42,6 +42,7 @@
+ #include <asm/tlbflush.h>
+ #include <asm/siginfo.h>
+ #include <asm/debug.h>
++#include <asm/context_tracking.h>
+ #include <mm/mmu_decl.h>
+ 
+ #include "icswx.h"
+@@ -193,8 +194,8 @@ static int mm_fault_error(struct pt_regs *regs, unsigned long addr, int fault)
+  * The return value is 0 if the fault was handled, or the signal
+  * number if this is a kernel fault that can't be handled here.
+  */
+-int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
+-			    unsigned long error_code)
++static int __kprobes __do_page_fault(struct pt_regs *regs,
++				unsigned long address, unsigned long error_code)
+ {
+ 	struct vm_area_struct * vma;
+ 	struct mm_struct *mm = current->mm;
+@@ -475,6 +476,16 @@ bad_area_nosemaphore:
+ 
+ }
+ 
++int __kprobes do_page_fault(struct pt_regs *regs, unsigned long address,
++			    unsigned long error_code)
++{
++	int ret;
++	exception_enter(regs);
++	ret = __do_page_fault(regs, address, error_code);
++	exception_exit(regs);
++	return ret;
++}
++
+ /*
+  * bad_page_fault is called when we have a bad access from the kernel.
+  * It is called from the DSI and ISI handlers in head.S and from some
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 3a292be..447e5a7 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -55,6 +55,7 @@
+ #include <asm/code-patching.h>
+ #include <asm/fadump.h>
+ #include <asm/firmware.h>
++#include <asm/context_tracking.h>
+ 
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
+@@ -1083,6 +1084,18 @@ int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ }
+ EXPORT_SYMBOL_GPL(hash_page);
+ 
++int hash_page_ct(unsigned long ea, unsigned long access,
++		 unsigned long trap, struct pt_regs *regs)
++{
++	int ret;
++
++	exception_enter(regs);
++	ret = hash_page(ea, access, trap);
++	exception_exit(regs);
++
++	return ret;
++}
++
+ void hash_preload(struct mm_struct *mm, unsigned long ea,
+ 		  unsigned long access, unsigned long trap)
+ {
+@@ -1194,6 +1207,8 @@ void flush_hash_range(unsigned long number, int local)
+  */
+ void low_hash_fault(struct pt_regs *regs, unsigned long address, int rc)
+ {
++	exception_enter(regs);
++
+ 	if (user_mode(regs)) {
+ #ifdef CONFIG_PPC_SUBPAGE_PROT
+ 		if (rc == -2)
+@@ -1203,6 +1218,8 @@ void low_hash_fault(struct pt_regs *regs, unsigned long address, int rc)
+ 			_exception(SIGBUS, regs, BUS_ADRERR, address);
+ 	} else
+ 		bad_page_fault(regs, address, SIGBUS);
++
++	exception_exit(regs);
+ }
+ 
+ #ifdef CONFIG_DEBUG_PAGEALLOC
 -- 
 1.7.9.5
