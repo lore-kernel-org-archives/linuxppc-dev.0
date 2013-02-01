@@ -1,20 +1,31 @@
-Return-Path: <B29408@freescale.com>
-Received: from tx2outboundpool.messaging.microsoft.com
- (tx2ehsobe003.messaging.microsoft.com [65.55.88.13])
- (using TLSv1 with cipher AES128-SHA (128/128 bits))
- (Client CN "mail.global.frontbridge.com",
- Issuer "Microsoft Secure Server Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 3D7522C0086
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 20:13:17 +1100 (EST)
-From: Jianhua Xie <jianhua.xie@freescale.com>
-To: <claudiu.manoil@freescale.com>, <davem@davemloft.net>
-Subject: [PATCH 2/2] gianfar: Add a parameter to support allocation skb
- GFP_KERNEL and GFP_ATOMIC
-Date: Fri, 1 Feb 2013 17:12:49 +0800
-Message-ID: <1359709969-18381-1-git-send-email-jianhua.xie@freescale.com>
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-ee0-f43.google.com (mail-ee0-f43.google.com [74.125.83.43])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+ (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 7ADEE2C02A5
+ for <linuxppc-dev@ozlabs.org>; Fri,  1 Feb 2013 21:18:37 +1100 (EST)
+Received: by mail-ee0-f43.google.com with SMTP id c50so2020381eek.2
+ for <linuxppc-dev@ozlabs.org>; Fri, 01 Feb 2013 02:18:33 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Fri, 1 Feb 2013 11:18:29 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Arnaldo Carvalho de Melo <acme@infradead.org>
+Subject: Re: [GIT PULL 00/25] perf/core improvements and fixes
+Message-ID: <20130201101829.GC23061@gmail.com>
+References: <1359653128-10433-1-git-send-email-acme@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Jianhua Xie <jianhua.xie@freescale.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1359653128-10433-1-git-send-email-acme@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Robert Richter <robert.richter@amd.com>, Andi Kleen <ak@linux.intel.com>,
+ Peter Zijlstra <peterz@infradead.org>,
+ Frederic Weisbecker <fweisbec@gmail.com>, Namhyung Kim <namhyung@gmail.com>,
+ Anton Blanchard <anton@au1.ibm.com>, linux-kernel@vger.kernel.org,
+ Stephane Eranian <eranian@google.com>, Pekka Enberg <penberg@kernel.org>,
+ linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ Mike Galbraith <efault@gmx.de>, acme@ghostprotocols.net,
+ David Ahern <dsahern@gmail.com>, Namhyung Kim <namhyung@kernel.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,68 +35,187 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-While allocation skb in IRQ/SOFTIRQ, such as processing each frame
-in the rx ring, alloc skb should be ATOMIC based, should not sleep.
 
-When allocation skb is not in IRQ/SOFTIRQ, such as allocation skb
-when initializing a net driver, starting up the NIC from stopped
-status. In this case, it is not necessary to alloc memory base on
-GFP_ATOMIC, should use GFP_KERNEL.
+* Arnaldo Carvalho de Melo <acme@infradead.org> wrote:
 
-The second method also avoid kernel crash and reporting -ENOMEM
-when free low memory is near vm.min_free_kbytes as below:
+> Hi Ingo,
+> 
+> 	Please consider pulling,
+> 
+> - Arnaldo
+> 
+> The following changes since commit 152fefa921535665f95840c08062844ab2f5593e:
+> 
+>   Merge tag 'perf-core-for-mingo' of git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux into perf/core (2013-01-31 10:20:14 +0100)
+> 
+> are available in the git repository at:
+> 
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/acme/linux tags/perf-core-for-mingo
+> 
+> for you to fetch changes up to 2ac3634a7e1c8eedc961030c87c5c36ebd5bbf8e:
+> 
+>   perf: Document the ABI of perf sysfs entries (2013-01-31 13:07:51 -0300)
+> 
+> ----------------------------------------------------------------
+> perf/core improvements and fixes:
+> 
+> . Make some POWER7 events available in sysfs, equivalent to
+>   what was done on x86, from Sukadev Bhattiprolu.
+> 
+> . Add event group view, from Namyung Kim:
+> 
+>   To use it, 'perf record' should group events when recording. And then perf
+>   report parses the saved group relation from file header and prints them
+>   together if --group option is provided.  You can use 'perf evlist' command to
+>   see event group information:
+> 
+>     $ perf record -e '{ref-cycles,cycles}' noploop 1
+>     [ perf record: Woken up 2 times to write data ]
+>     [ perf record: Captured and wrote 0.385 MB perf.data (~16807 samples) ]
+> 
+>     $ perf evlist --group
+>     {ref-cycles,cycles}
+> 
+>   With this example, default perf report will show you each event
+>   separately like this:
+> 
+>     $ perf report
+>     ...
+>     # group: {ref-cycles,cycles}
+>     # ========
+>     # Samples: 3K of event 'ref-cycles'
+>     # Event count (approx.): 3153797218
+>     #
+>     # Overhead  Command      Shared Object                      Symbol
+>     # ........  .......  .................  ..........................
+>         99.84%  noploop  noploop            [.] main
+>          0.07%  noploop  ld-2.15.so         [.] strcmp
+>          0.03%  noploop  [kernel.kallsyms]  [k] timerqueue_del
+>          0.03%  noploop  [kernel.kallsyms]  [k] sched_clock_cpu
+>          0.02%  noploop  [kernel.kallsyms]  [k] account_user_time
+>          0.01%  noploop  [kernel.kallsyms]  [k] __alloc_pages_nodemask
+>          0.00%  noploop  [kernel.kallsyms]  [k] native_write_msr_safe
+> 
+>     # Samples: 3K of event 'cycles'
+>     # Event count (approx.): 3722310525
+>     #
+>     # Overhead  Command      Shared Object                     Symbol
+>     # ........  .......  .................  .........................
+>         99.76%  noploop  noploop            [.] main
+>          0.11%  noploop  [kernel.kallsyms]  [k] _raw_spin_lock
+>          0.06%  noploop  [kernel.kallsyms]  [k] find_get_page
+>          0.03%  noploop  [kernel.kallsyms]  [k] sched_clock_cpu
+>          0.02%  noploop  [kernel.kallsyms]  [k] rcu_check_callbacks
+>          0.02%  noploop  [kernel.kallsyms]  [k] __current_kernel_time
+>          0.00%  noploop  [kernel.kallsyms]  [k] native_write_msr_safe
+> 
+>   In this case the event group information will be shown in the end of
+>   header area.  So you can use --group option to enable event group view.
+> 
+>     $ perf report --group
+>     ...
+>     # group: {ref-cycles,cycles}
+>     # ========
+>     # Samples: 7K of event 'anon group { ref-cycles, cycles }'
+>     # Event count (approx.): 6876107743
+>     #
+>     #         Overhead  Command      Shared Object                      Symbol
+>     # ................  .......  .................  ..........................
+>         99.84%  99.76%  noploop  noploop            [.] main
+>          0.07%   0.00%  noploop  ld-2.15.so         [.] strcmp
+>          0.03%   0.00%  noploop  [kernel.kallsyms]  [k] timerqueue_del
+>          0.03%   0.03%  noploop  [kernel.kallsyms]  [k] sched_clock_cpu
+>          0.02%   0.00%  noploop  [kernel.kallsyms]  [k] account_user_time
+>          0.01%   0.00%  noploop  [kernel.kallsyms]  [k] __alloc_pages_nodemask
+>          0.00%   0.00%  noploop  [kernel.kallsyms]  [k] native_write_msr_safe
+>          0.00%   0.11%  noploop  [kernel.kallsyms]  [k] _raw_spin_lock
+>          0.00%   0.06%  noploop  [kernel.kallsyms]  [k] find_get_page
+>          0.00%   0.02%  noploop  [kernel.kallsyms]  [k] rcu_check_callbacks
+>          0.00%   0.02%  noploop  [kernel.kallsyms]  [k] __current_kernel_time
+> 
+>   As you can see the Overhead column now contains both of ref-cycles and
+>   cycles and header line shows group information also - 'anon group {
+>   ref-cycles, cycles }'.  The output is sorted by period of group leader
+>   first.
+> 
+>   If perf.data file doesn't contain group information, this --group
+>   option does nothing.  So if you want enable event group view by
+>   default you can set it in ~/.perfconfig file:
+> 
+>     $ cat ~/.perfconfig
+>     [report]
+>     group = true
+> 
+>   It can be overridden with command line if you want:
+> 
+>     $ perf report --no-group
+> 
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> 
+> ----------------------------------------------------------------
+> Arnaldo Carvalho de Melo (2):
+>       perf top: Stop using exit()
+>       perf top: Delete maps on exit
+> 
+> Namhyung Kim (18):
+>       perf tools: Keep group information
+>       perf tests: Add group test conditions
+>       perf header: Add HEADER_GROUP_DESC feature
+>       perf report: Make another loop for linking group hists
+>       perf hists: Resort hist entries using group members for output
+>       perf ui/hist: Consolidate hpp helpers
+>       perf hists browser: Convert hpp helpers to a function
+>       perf gtk/browser: Convert hpp helpers to a function
+>       perf ui/hist: Add support for event group view
+>       perf hists browser: Move coloring logic to hpp functions
+>       perf hists browser: Add suppport for event group view
+>       perf gtk/browser: Add support for event group view
+>       perf gtk/browser: Trim column header string when event group enabled
+>       perf report: Bypass non-leader events when event group is enabled
+>       perf report: Show group description when event group is enabled
+>       perf report: Add --group option
+>       perf report: Add report.group config option
+>       perf evlist: Add --group option
+> 
+> Sukadev Bhattiprolu (5):
+>       perf/Power7: Use macros to identify perf events
+>       perf: Make EVENT_ATTR global
+>       perf/POWER7: Make generic event translations available in sysfs
+>       perf/POWER7: Make some POWER7 events available in sysfs
+>       perf: Document the ABI of perf sysfs entries
+> 
+>  .../testing/sysfs-bus-event_source-devices-events  |  62 +++++
+>  arch/powerpc/include/asm/perf_event_server.h       |  26 ++
+>  arch/powerpc/perf/core-book3s.c                    |  12 +
+>  arch/powerpc/perf/power7-pmu.c                     |  80 +++++-
+>  arch/x86/kernel/cpu/perf_event.c                   |  13 +-
+>  include/linux/perf_event.h                         |  11 +
+>  tools/perf/Documentation/perf-evlist.txt           |   4 +
+>  tools/perf/Documentation/perf-report.txt           |   3 +
+>  tools/perf/builtin-evlist.c                        |   7 +
+>  tools/perf/builtin-record.c                        |   3 +
+>  tools/perf/builtin-report.c                        |  47 +++-
+>  tools/perf/builtin-top.c                           |  62 +++--
+>  tools/perf/tests/parse-events.c                    |  28 ++
+>  tools/perf/ui/browsers/hists.c                     | 217 ++++++++++++---
+>  tools/perf/ui/gtk/hists.c                          | 130 +++++++--
+>  tools/perf/ui/hist.c                               | 306 ++++++++++-----------
+>  tools/perf/ui/stdio/hist.c                         |   2 +
+>  tools/perf/util/evlist.c                           |   7 +-
+>  tools/perf/util/evlist.h                           |   1 +
+>  tools/perf/util/evsel.c                            |  49 +++-
+>  tools/perf/util/evsel.h                            |  16 ++
+>  tools/perf/util/header.c                           | 164 +++++++++++
+>  tools/perf/util/header.h                           |   2 +
+>  tools/perf/util/hist.c                             |  59 +++-
+>  tools/perf/util/parse-events.c                     |   1 +
+>  tools/perf/util/parse-events.h                     |   1 +
+>  tools/perf/util/parse-events.y                     |  10 +
+>  tools/perf/util/symbol.h                           |   3 +-
+>  28 files changed, 1059 insertions(+), 267 deletions(-)
+>  create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-events
 
-Signed-off-by: Jianhua Xie <jianhua.xie@freescale.com>
----
- drivers/net/ethernet/freescale/gianfar.c |   11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+Pulled, thanks a lot Arnaldo!
 
-diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
-index 94d36ac..559a01c 100644
---- a/drivers/net/ethernet/freescale/gianfar.c
-+++ b/drivers/net/ethernet/freescale/gianfar.c
-@@ -110,7 +110,7 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev);
- static void gfar_reset_task(struct work_struct *work);
- static void gfar_timeout(struct net_device *dev);
- static int gfar_close(struct net_device *dev);
--static struct sk_buff *gfar_alloc_skb(struct net_device *dev);
-+static struct sk_buff *gfar_alloc_skb(struct net_device *dev, gfp_t gfp_mask);
- static void gfar_new_rxbdp(struct gfar_priv_rx_q *rx_queue, struct rxbd8 *bdp,
- 			   struct sk_buff *skb);
- static int gfar_set_mac_address(struct net_device *dev);
-@@ -207,7 +207,7 @@ static int gfar_init_bds(struct net_device *ndev)
- 				gfar_init_rxbdp(rx_queue, rxbdp,
- 						rxbdp->bufPtr);
- 			} else {
--				skb = gfar_alloc_skb(ndev);
-+				skb = gfar_alloc_skb(ndev, GFP_KERNEL);
- 				if (!skb) {
- 					netdev_err(ndev, "Can't allocate RX buffers\n");
- 					return -ENOMEM;
-@@ -2598,12 +2598,13 @@ static void gfar_new_rxbdp(struct gfar_priv_rx_q *rx_queue, struct rxbd8 *bdp,
- 	gfar_init_rxbdp(rx_queue, bdp, buf);
- }
- 
--static struct sk_buff *gfar_alloc_skb(struct net_device *dev)
-+static struct sk_buff *gfar_alloc_skb(struct net_device *dev, gfp_t gfp_mask)
- {
- 	struct gfar_private *priv = netdev_priv(dev);
- 	struct sk_buff *skb;
- 
--	skb = netdev_alloc_skb(dev, priv->rx_buffer_size + RXBUF_ALIGNMENT);
-+	skb = __netdev_alloc_skb(dev, priv->rx_buffer_size + RXBUF_ALIGNMENT,
-+				gfp_mask);
- 	if (!skb)
- 		return NULL;
- 
-@@ -2749,7 +2750,7 @@ int gfar_clean_rx_ring(struct gfar_priv_rx_q *rx_queue, int rx_work_limit)
- 		rmb();
- 
- 		/* Add another skb for the future */
--		newskb = gfar_alloc_skb(dev);
-+		newskb = gfar_alloc_skb(dev, GFP_ATOMIC);
- 
- 		skb = rx_queue->rx_skbuff[rx_queue->skb_currx];
- 
--- 
-1.7.9.5
+	Ingo
