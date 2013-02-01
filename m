@@ -1,36 +1,35 @@
 Return-Path: <simon.jeons@gmail.com>
-Received: from mail-da0-f44.google.com (mail-da0-f44.google.com
- [209.85.210.44])
+Received: from mail-ia0-x22e.google.com (mail-ia0-x22e.google.com
+ [IPv6:2607:f8b0:4001:c02::22e])
  (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 0C91A2C008E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 14:06:33 +1100 (EST)
-Received: by mail-da0-f44.google.com with SMTP id z20so1548781dae.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 19:06:31 -0800 (PST)
-Message-ID: <1359687985.1303.15.camel@kernel>
+ by ozlabs.org (Postfix) with ESMTPS id 381CB2C008E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 14:33:34 +1100 (EST)
+Received: by mail-ia0-f174.google.com with SMTP id o25so4813242iad.33
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jan 2013 19:33:30 -0800 (PST)
+Message-ID: <1359682576.3574.1.camel@kernel>
 Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
 From: Simon Jeons <simon.jeons@gmail.com>
-To: Tang Chen <tangchen@cn.fujitsu.com>
-Date: Thu, 31 Jan 2013 21:06:25 -0600
-In-Reply-To: <510B2B8A.7040407@cn.fujitsu.com>
+To: Jianguo Wu <wujianguo@huawei.com>
+Date: Thu, 31 Jan 2013 19:36:16 -0600
+In-Reply-To: <510B1B4B.5080207@huawei.com>
 References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
  <1359463973.1624.15.camel@kernel> <5108F2B3.3090506@cn.fujitsu.com>
  <1359595344.1557.13.camel@kernel> <5109E59F.5080104@cn.fujitsu.com>
  <1359613162.1587.0.camel@kernel> <510A18FA.2010107@cn.fujitsu.com>
  <1359622123.1391.19.camel@kernel> <510A3CE6.202@cn.fujitsu.com>
  <1359628705.2048.5.camel@kernel> <510B1B4B.5080207@huawei.com>
- <1359682576.3574.1.camel@kernel> <510B20F9.10408@cn.fujitsu.com>
- <1359685040.1303.6.camel@kernel> <510B2B8A.7040407@cn.fujitsu.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-mm@kvack.org, paulus@samba.org,
+ hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
  linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
  isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
  kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
  wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
- Jianguo Wu <wujianguo@huawei.com>, yinghai@kernel.org, laijs@cn.fujitsu.com,
- linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
+ yinghai@kernel.org, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+ minchan.kim@gmail.com, akpm@linux-foundation.org,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,65 +40,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Tang,
-On Fri, 2013-02-01 at 10:42 +0800, Tang Chen wrote:
-
-I confuse!
-
-> Hi Simon,
+On Fri, 2013-02-01 at 09:32 +0800, Jianguo Wu wrote:
+> On 2013/1/31 18:38, Simon Jeons wrote:
 > 
-> On 02/01/2013 10:17 AM, Simon Jeons wrote:
-> >> For example:
+> > Hi Tang,
+> > On Thu, 2013-01-31 at 17:44 +0800, Tang Chen wrote:
+> >> Hi Simon,
 > >>
-> >>                                          64TB, what ever
-> >>      xxxTB, what ever
-> >> logic address space:     |_____kernel_______|_________user_________________|
-> >>                                          \  \  /  /
-> >>                                           \  /\  /
-> >> physical address space:              |___\/__\/_____________|  4GB or
-> >> 8GB, what ever
-> >>                                             *****
-> >
-> > How much address space user process can have on x86_64? Also 8GB?
-> 
-> Usually, we don't say that.
-> 
-> 8GB is your physical memory, right ?
-> But kernel space and user space is the logic conception in OS. They are 
-> in logic
-> address space.
-> 
-> So both the kernel space and the user space can use all the physical memory.
-> But if the page is already in use by either of them, the other one 
-> cannot use it.
-> For example, some pages are direct mapped to kernel, and is in use by 
-> kernel, the
-> user space cannot map it.
-
-How can distinguish map and use? I mean how can confirm memory is used
-by kernel instead of map? 
-
-> 
-> >
+> >> On 01/31/2013 04:48 PM, Simon Jeons wrote:
+> >>> Hi Tang,
+> >>> On Thu, 2013-01-31 at 15:10 +0800, Tang Chen wrote:
+> >>>
+> >>> 1. IIUC, there is a button on machine which supports hot-remove memory,
+> >>> then what's the difference between press button and echo to /sys?
 > >>
-> >> The ***** part physical is mapped to user space in the process' own
-> >> pagetable.
-> >> It is also direct mapped in kernel's pagetable. So the kernel can also
-> >> access it. :)
-> >
-> > But how to protect user process not modify kernel memory?
+> >> No important difference, I think. Since I don't have the machine you are
+> >> saying, I cannot surely answer you. :)
+> >> AFAIK, pressing the button means trigger the hotplug from hardware, sysfs
+> >> is just another entrance. At last, they will run into the same code.
+> >>
+> >>> 2. Since kernel memory is linear mapping(I mean direct mapping part),
+> >>> why can't put kernel direct mapping memory into one memory device, and
+> >>> other memory into the other devices?
+> >>
+> >> We cannot do that because in that way, we will lose NUMA performance.
+> >>
+> >> If you know NUMA, you will understand the following example:
+> >>
+> >> node0:                    node1:
+> >>     cpu0~cpu15                cpu16~cpu31
+> >>     memory0~memory511         memory512~memory1023
+> >>
+> >> cpu16~cpu31 access memory16~memory1023 much faster than memory0~memory511.
+> >> If we set direct mapping area in node0, and movable area in node1, then
+> >> the kernel code running on cpu16~cpu31 will have to access 
+> >> memory0~memory511.
+> >> This is a terrible performance down.
+> > 
+> > So if config NUMA, kernel memory will not be linear mapping anymore? For
+> > example, 
+> > 
+> > Node 0  Node 1 
+> > 
+> > 0 ~ 10G 11G~14G
+> > 
+> > kernel memory only at Node 0? Can part of kernel memory also at Node 1?
+> > 
+> > How big is kernel direct mapping memory in x86_64? Is there max limit?
 > 
-> This is the job of CPU. On intel cpus, user space code is running in 
-> level 3, and
-> kernel space code is running in level 0. So the code in level 3 cannot 
-> access the data
-> segment in level 0.
+> 
+> Max kernel direct mapping memory in x86_64 is 64TB.
 
-1) If user process and kenel map to same physical memory, user process
-will get SIGSEGV during #PF if access to this memory, but If user proces
-s will map to the same memory which kernel map? Why? It can't access it.
-2) If two user processes map to same physical memory, what will happen
-if one process access the memory?
+For example, I have 8G memory, all of them will be direct mapping for
+kernel? then userspace memory allocated from where?
 
 > 
-> Thanks. :)
+> > It seems that only around 896MB on x86_32. 
+> > 
+> >>
+> >>> As you know x86_64 don't need
+> >>> highmem, IIUC, all kernel memory will linear mapping in this case. Is my
+> >>> idea available? If is correct, x86_32 can't implement in the same way
+> >>> since highmem(kmap/kmap_atomic/vmalloc) can map any address, so it's
+> >>> hard to focus kernel memory on single memory device.
+> >>
+> >> Sorry, I'm not quite familiar with x86_32 box.
+> >>
+> >>> 3. In current implementation, if memory hotplug just need memory
+> >>> subsystem and ACPI codes support? Or also needs firmware take part in?
+> >>> Hope you can explain in details, thanks in advance. :)
+> >>
+> >> We need firmware take part in, such as SRAT in ACPI BIOS, or the firmware
+> >> based memory migration mentioned by Liu Jiang.
+> > 
+> > Is there any material about firmware based memory migration?
+> > 
+> >>
+> >> So far, I only know this. :)
+> >>
+> >>> 4. What's the status of memory hotplug? Apart from can't remove kernel
+> >>> memory, other things are fully implementation?
+> >>
+> >> I think the main job is done for now. And there are still bugs to fix.
+> >> And this functionality is not stable.
+> >>
+> >> Thanks. :)
+> > 
+> > 
+> > --
+> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> > the body to majordomo@kvack.org.  For more info on Linux MM,
+> > see: http://www.linux-mm.org/ .
+> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> > 
+> > .
+> > 
+> 
+> 
+> 
