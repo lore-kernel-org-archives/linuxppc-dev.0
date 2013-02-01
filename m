@@ -1,25 +1,31 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id 6934A2C008D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 07:48:43 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Toshi Kani <toshi.kani@hp.com>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
- framework
-Date: Thu, 31 Jan 2013 21:54:51 +0100
-Message-ID: <9860755.q4y3PrCFZx@vostro.rjw.lan>
-In-Reply-To: <1359601065.15120.156.camel@misato.fc.hp.com>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <20130130045830.GH30002@kroah.com>
- <1359601065.15120.156.camel@misato.fc.hp.com>
+Return-Path: <wujianguo@huawei.com>
+Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
+ by ozlabs.org (Postfix) with ESMTP id 230622C0291
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 12:35:14 +1100 (EST)
+Message-ID: <510B1B4B.5080207@huawei.com>
+Date: Fri, 1 Feb 2013 09:32:59 +0800
+From: Jianguo Wu <wujianguo@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
- linux-acpi@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+To: Simon Jeons <simon.jeons@gmail.com>
+Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
+References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1359463973.1624.15.camel@kernel> <5108F2B3.3090506@cn.fujitsu.com>
+ <1359595344.1557.13.camel@kernel> <5109E59F.5080104@cn.fujitsu.com>
+ <1359613162.1587.0.camel@kernel> <510A18FA.2010107@cn.fujitsu.com>
+ <1359622123.1391.19.camel@kernel> <510A3CE6.202@cn.fujitsu.com>
+ <1359628705.2048.5.camel@kernel>
+In-Reply-To: <1359628705.2048.5.camel@kernel>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org,
+ Tang Chen <tangchen@cn.fujitsu.com>, linux-mm@kvack.org, paulus@samba.org,
+ hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
+ wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
+ yinghai@kernel.org, laijs@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+ minchan.kim@gmail.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,102 +35,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday, January 30, 2013 07:57:45 PM Toshi Kani wrote:
-> On Tue, 2013-01-29 at 23:58 -0500, Greg KH wrote:
-> > On Thu, Jan 10, 2013 at 04:40:19PM -0700, Toshi Kani wrote:
-> > > +/*
-> > > + * Hot-plug device information
-> > > + */
-> > 
-> > Again, stop it with the "generic" hotplug term here, and everywhere
-> > else.  You are doing a very _specific_ type of hotplug devices, so spell
-> > it out.  We've worked hard to hotplug _everything_ in Linux, you are
-> > going to confuse a lot of people with this type of terms.
-> 
-> Agreed.  I will clarify in all places.
-> 
-> > > +union shp_dev_info {
-> > > +	struct shp_cpu {
-> > > +		u32		cpu_id;
-> > > +	} cpu;
-> > 
-> > What is this?  Why not point to the system device for the cpu?
-> 
-> This info is used to on-line a new CPU and create its system/cpu device.
-> In other word, a system/cpu device is created as a result of CPU
-> hotplug.
-> 
-> > > +	struct shp_memory {
-> > > +		int		node;
-> > > +		u64		start_addr;
-> > > +		u64		length;
-> > > +	} mem;
-> > 
-> > Same here, why not point to the system device?
-> 
-> Same as above.
-> 
-> > > +	struct shp_hostbridge {
-> > > +	} hb;
-> > > +
-> > > +	struct shp_node {
-> > > +	} node;
-> > 
-> > What happened here with these?  Empty structures?  Huh?
-> 
-> They are place holders for now.  PCI bridge hot-plug and node hot-plug
-> are still very much work in progress, so I have not integrated them into
-> this framework yet.
-> 
-> > > +};
-> > > +
-> > > +struct shp_device {
-> > > +	struct list_head	list;
-> > > +	struct device		*device;
-> > 
-> > No, make it a "real" device, embed the device into it.
-> 
-> This device pointer is used to send KOBJ_ONLINE/OFFLINE event during CPU
-> online/offline operation in order to maintain the current behavior.  CPU
-> online/offline operation only changes the state of CPU, so its
-> system/cpu device continues to be present before and after an operation.
-> (Whereas, CPU hot-add/delete operation creates or removes a system/cpu
-> device.)  So, this "*device" needs to be a pointer to reference an
-> existing device that is to be on-lined/off-lined.
-> 
-> > But, again, I'm going to ask why you aren't using the existing cpu /
-> > memory / bridge / node devices that we have in the kernel.  Please use
-> > them, or give me a _really_ good reason why they will not work.
-> 
-> We cannot use the existing system devices or ACPI devices here.  During
-> hot-plug, ACPI handler sets this shp_device info, so that cpu and memory
-> handlers (drivers/cpu.c and mm/memory_hotplug.c) can obtain their target
-> device information in a platform-neutral way.  During hot-add, we first
-> creates an ACPI device node (i.e. device under /sys/bus/acpi/devices),
-> but platform-neutral modules cannot use them as they are ACPI-specific.
+On 2013/1/31 18:38, Simon Jeons wrote:
 
-But suppose we're smart and have ACPI scan handlers that will create
-"physical" device nodes for those devices during the ACPI namespace scan.
-Then, the platform-neutral nodes will be able to bind to those "physical"
-nodes.  Moreover, it should be possible to get a hierarchy of device objects
-this way that will reflect all of the dependencies we need to take into
-account during hot-add and hot-remove operations.  That may not be what we
-have today, but I don't see any *fundamental* obstacles preventing us from
-using this approach.
-
-This is already done for PCI host bridges and platform devices and I don't
-see why we can't do that for the other types of devices too.
-
-The only missing piece I see is a way to handle the "eject" problem, i.e.
-when we try do eject a device at the top of a subtree and need to tear down
-the entire subtree below it, but if that's going to lead to a system crash,
-for example, we want to cancel the eject.  It seems to me that we'll need some
-help from the driver core here.
-
-Thanks,
-Rafael
+> Hi Tang,
+> On Thu, 2013-01-31 at 17:44 +0800, Tang Chen wrote:
+>> Hi Simon,
+>>
+>> On 01/31/2013 04:48 PM, Simon Jeons wrote:
+>>> Hi Tang,
+>>> On Thu, 2013-01-31 at 15:10 +0800, Tang Chen wrote:
+>>>
+>>> 1. IIUC, there is a button on machine which supports hot-remove memory,
+>>> then what's the difference between press button and echo to /sys?
+>>
+>> No important difference, I think. Since I don't have the machine you are
+>> saying, I cannot surely answer you. :)
+>> AFAIK, pressing the button means trigger the hotplug from hardware, sysfs
+>> is just another entrance. At last, they will run into the same code.
+>>
+>>> 2. Since kernel memory is linear mapping(I mean direct mapping part),
+>>> why can't put kernel direct mapping memory into one memory device, and
+>>> other memory into the other devices?
+>>
+>> We cannot do that because in that way, we will lose NUMA performance.
+>>
+>> If you know NUMA, you will understand the following example:
+>>
+>> node0:                    node1:
+>>     cpu0~cpu15                cpu16~cpu31
+>>     memory0~memory511         memory512~memory1023
+>>
+>> cpu16~cpu31 access memory16~memory1023 much faster than memory0~memory511.
+>> If we set direct mapping area in node0, and movable area in node1, then
+>> the kernel code running on cpu16~cpu31 will have to access 
+>> memory0~memory511.
+>> This is a terrible performance down.
+> 
+> So if config NUMA, kernel memory will not be linear mapping anymore? For
+> example, 
+> 
+> Node 0  Node 1 
+> 
+> 0 ~ 10G 11G~14G
+> 
+> kernel memory only at Node 0? Can part of kernel memory also at Node 1?
+> 
+> How big is kernel direct mapping memory in x86_64? Is there max limit?
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Max kernel direct mapping memory in x86_64 is 64TB.
+
+> It seems that only around 896MB on x86_32. 
+> 
+>>
+>>> As you know x86_64 don't need
+>>> highmem, IIUC, all kernel memory will linear mapping in this case. Is my
+>>> idea available? If is correct, x86_32 can't implement in the same way
+>>> since highmem(kmap/kmap_atomic/vmalloc) can map any address, so it's
+>>> hard to focus kernel memory on single memory device.
+>>
+>> Sorry, I'm not quite familiar with x86_32 box.
+>>
+>>> 3. In current implementation, if memory hotplug just need memory
+>>> subsystem and ACPI codes support? Or also needs firmware take part in?
+>>> Hope you can explain in details, thanks in advance. :)
+>>
+>> We need firmware take part in, such as SRAT in ACPI BIOS, or the firmware
+>> based memory migration mentioned by Liu Jiang.
+> 
+> Is there any material about firmware based memory migration?
+> 
+>>
+>> So far, I only know this. :)
+>>
+>>> 4. What's the status of memory hotplug? Apart from can't remove kernel
+>>> memory, other things are fully implementation?
+>>
+>> I think the main job is done for now. And there are still bugs to fix.
+>> And this functionality is not stable.
+>>
+>> Thanks. :)
+> 
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 
+> .
+> 
