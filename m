@@ -1,29 +1,31 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g4t0016.houston.hp.com (g4t0016.houston.hp.com [15.201.24.19])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 7A7BE2C0086
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 12:42:27 +1100 (EST)
-Message-ID: <1359682338.15120.209.camel@misato.fc.hp.com>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device
- hotplug framework
-From: Toshi Kani <toshi.kani@hp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Thu, 31 Jan 2013 18:32:18 -0700
-In-Reply-To: <9860755.q4y3PrCFZx@vostro.rjw.lan>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <20130130045830.GH30002@kroah.com>
- <1359601065.15120.156.camel@misato.fc.hp.com>
- <9860755.q4y3PrCFZx@vostro.rjw.lan>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-s390@vger.kernel.org, jiang.liu@huawei.com, wency@cn.fujitsu.com,
- linux-acpi@vger.kernel.org, Greg KH <gregkh@linuxfoundation.org>,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, yinghai@kernel.org,
- srivatsa.bhat@linux.vnet.ibm.com, guohanjun@huawei.com, bhelgaas@google.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+Return-Path: <tangchen@cn.fujitsu.com>
+Received: from song.cn.fujitsu.com (unknown [222.73.24.84])
+ by ozlabs.org (Postfix) with ESMTP id 0C3252C0079
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 12:58:04 +1100 (EST)
+Message-ID: <510B20F9.10408@cn.fujitsu.com>
+Date: Fri, 01 Feb 2013 09:57:13 +0800
+From: Tang Chen <tangchen@cn.fujitsu.com>
+MIME-Version: 1.0
+To: Simon Jeons <simon.jeons@gmail.com>
+Subject: Re: [PATCH v6 00/15] memory-hotplug: hot-remove physical memory
+References: <1357723959-5416-1-git-send-email-tangchen@cn.fujitsu.com>
+ <1359463973.1624.15.camel@kernel> <5108F2B3.3090506@cn.fujitsu.com>
+ <1359595344.1557.13.camel@kernel> <5109E59F.5080104@cn.fujitsu.com>
+ <1359613162.1587.0.camel@kernel> <510A18FA.2010107@cn.fujitsu.com>
+ <1359622123.1391.19.camel@kernel> <510A3CE6.202@cn.fujitsu.com>
+ <1359628705.2048.5.camel@kernel> <510B1B4B.5080207@huawei.com>
+ <1359682576.3574.1.camel@kernel>
+In-Reply-To: <1359682576.3574.1.camel@kernel>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-ia64@vger.kernel.org, linux-sh@vger.kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, hpa@zytor.com, sparclinux@vger.kernel.org, cl@linux.com,
+ linux-s390@vger.kernel.org, x86@kernel.org, linux-acpi@vger.kernel.org,
+ isimatu.yasuaki@jp.fujitsu.com, linfeng@cn.fujitsu.com, mgorman@suse.de,
+ kosaki.motohiro@jp.fujitsu.com, rientjes@google.com, len.brown@intel.com,
+ wency@cn.fujitsu.com, cmetcalf@tilera.com, glommer@parallels.com,
+ Jianguo Wu <wujianguo@huawei.com>, yinghai@kernel.org, laijs@cn.fujitsu.com,
+ linux-kernel@vger.kernel.org, minchan.kim@gmail.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,102 +35,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2013-01-31 at 21:54 +0100, Rafael J. Wysocki wrote:
-> On Wednesday, January 30, 2013 07:57:45 PM Toshi Kani wrote:
-> > On Tue, 2013-01-29 at 23:58 -0500, Greg KH wrote:
-> > > On Thu, Jan 10, 2013 at 04:40:19PM -0700, Toshi Kani wrote:
- :
-> > > > +};
-> > > > +
-> > > > +struct shp_device {
-> > > > +	struct list_head	list;
-> > > > +	struct device		*device;
-> > > 
-> > > No, make it a "real" device, embed the device into it.
-> > 
-> > This device pointer is used to send KOBJ_ONLINE/OFFLINE event during CPU
-> > online/offline operation in order to maintain the current behavior.  CPU
-> > online/offline operation only changes the state of CPU, so its
-> > system/cpu device continues to be present before and after an operation.
-> > (Whereas, CPU hot-add/delete operation creates or removes a system/cpu
-> > device.)  So, this "*device" needs to be a pointer to reference an
-> > existing device that is to be on-lined/off-lined.
-> > 
-> > > But, again, I'm going to ask why you aren't using the existing cpu /
-> > > memory / bridge / node devices that we have in the kernel.  Please use
-> > > them, or give me a _really_ good reason why they will not work.
-> > 
-> > We cannot use the existing system devices or ACPI devices here.  During
-> > hot-plug, ACPI handler sets this shp_device info, so that cpu and memory
-> > handlers (drivers/cpu.c and mm/memory_hotplug.c) can obtain their target
-> > device information in a platform-neutral way.  During hot-add, we first
-> > creates an ACPI device node (i.e. device under /sys/bus/acpi/devices),
-> > but platform-neutral modules cannot use them as they are ACPI-specific.
-> 
-> But suppose we're smart and have ACPI scan handlers that will create
-> "physical" device nodes for those devices during the ACPI namespace scan.
-> Then, the platform-neutral nodes will be able to bind to those "physical"
-> nodes.  Moreover, it should be possible to get a hierarchy of device objects
-> this way that will reflect all of the dependencies we need to take into
-> account during hot-add and hot-remove operations.  That may not be what we
-> have today, but I don't see any *fundamental* obstacles preventing us from
-> using this approach.
+On 02/01/2013 09:36 AM, Simon Jeons wrote:
+> On Fri, 2013-02-01 at 09:32 +0800, Jianguo Wu wrote:
+>>>
+>>> So if config NUMA, kernel memory will not be linear mapping anymore? For
+>>> example,
+>>>
+>>> Node 0  Node 1
+>>>
+>>> 0 ~ 10G 11G~14G
 
-I misstated in my previous email.  system/cpu device is actually created
-by ACPI driver during ACPI scan in case of hot-add.  This is done by 
-acpi_processor_hotadd_init(), which I consider as a hack but can be
-done.  system/memory device is created in add_memory() by the mm module.
+It has nothing to do with linear mapping, I think.
 
-> This is already done for PCI host bridges and platform devices and I don't
-> see why we can't do that for the other types of devices too.
-> 
-> The only missing piece I see is a way to handle the "eject" problem, i.e.
-> when we try do eject a device at the top of a subtree and need to tear down
-> the entire subtree below it, but if that's going to lead to a system crash,
-> for example, we want to cancel the eject.  It seems to me that we'll need some
-> help from the driver core here.
+>>>
+>>> kernel memory only at Node 0? Can part of kernel memory also at Node 1?
 
-There are three different approaches suggested for system device
-hot-plug:
- A. Proceed within system device bus scan.
- B. Proceed within ACPI bus scan.
- C. Proceed with a sequence (as a mini-boot).
+Please refer to find_zone_movable_pfns_for_nodes().
+The kernel is not only on node0. It uses all the online nodes evenly. :)
 
-Option A uses system devices as tokens, option B uses acpi devices as
-tokens, and option C uses resource tables as tokens, for their handlers.
+>>>
+>>> How big is kernel direct mapping memory in x86_64? Is there max limit?
+>>
+>>
+>> Max kernel direct mapping memory in x86_64 is 64TB.
+>
+> For example, I have 8G memory, all of them will be direct mapping for
+> kernel? then userspace memory allocated from where?
 
-Here is summary of key questions & answers so far.  I hope this
-clarifies why I am suggesting option 3.
+I think you misunderstood what Wu tried to say. :)
 
-1. What are the system devices?
-System devices provide system-wide core computing resources, which are
-essential to compose a computer system.  System devices are not
-connected to any particular standard buses.
+The kernel mapped that large space, it doesn't mean it is using that 
+large space.
+The mapping is to make kernel be able to access all the memory, not for 
+the kernel
+to use only. User space can also use the memory, but each process has 
+its own mapping.
 
-2. Why are the system devices special?
-The system devices are initialized during early boot-time, by multiple
-subsystems, from the boot-up sequence, in pre-defined order.  They
-provide low-level services to enable other subsystems to come up.
+For example:
 
-3. Why can't initialize the system devices from the driver structure at
-boot?
-The driver structure is initialized at the end of the boot sequence and
-requires the low-level services from the system devices initialized
-beforehand.
+                                        64TB, what ever 
+    xxxTB, what ever
+logic address space:     |_____kernel_______|_________user_________________|
+                                        \  \  /  /
+                                         \  /\  /
+physical address space:              |___\/__\/_____________|  4GB or 
+8GB, what ever
+                                           *****
 
-4. Why do we need a new common framework?
-Sysfs CPU and memory on-lining/off-lining are performed within the CPU
-and memory modules.  They are common code and do not depend on ACPI.
-Therefore, a new common framework is necessary to integrate both
-on-lining/off-lining operation and hot-plugging operation of system
-devices into a single framework.
+The ***** part physical is mapped to user space in the process' own 
+pagetable.
+It is also direct mapped in kernel's pagetable. So the kernel can also 
+access it. :)
 
-5. Why can't do everything with ACPI bus scan?
-Software dependency among system devices may not be dictated by the ACPI
-hierarchy.  For instance, memory should be initialized before CPUs (i.e.
-a new cpu may need its local memory), but such ordering cannot be
-guaranteed by the ACPI hierarchy.  Also, as described in 4,
-online/offline operations are independent from ACPI.  
+>
+>>
+>>> It seems that only around 896MB on x86_32.
+>>>
+>>>>
+>>>> We need firmware take part in, such as SRAT in ACPI BIOS, or the firmware
+>>>> based memory migration mentioned by Liu Jiang.
+>>>
+>>> Is there any material about firmware based memory migration?
 
-Thanks,
--Toshi
+No, I don't have any because this is a functionality of machine from HUAWEI.
+I think you can ask Liu Jiang or Wu Jianguo to share some with you. :)
+
+Thanks. :)
