@@ -1,34 +1,18 @@
-Return-Path: <zhong@linux.vnet.ibm.com>
-Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "e28smtp06.in.ibm.com", Issuer "GeoTrust SSL CA" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E90E92C0095
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 21:28:09 +1100 (EST)
-Received: from /spool/local
- by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <zhong@linux.vnet.ibm.com>;
- Fri, 1 Feb 2013 15:55:51 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id BAF53394004E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 15:58:05 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay05.in.ibm.com (8.13.8/8.13.8/NCO v10.0) with ESMTP id
- r11AS4L018350104
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Feb 2013 15:58:04 +0530
-Received: from d28av03.in.ibm.com (loopback [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.13.1/NCO v10.0 AVout) with ESMTP id
- r11AS4T9023035
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 Feb 2013 21:28:05 +1100
-From: Li Zhong <zhong@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 5/5] powerpc: select HAVE_CONTEXT_TRACKING for pSeries
-Date: Fri,  1 Feb 2013 18:27:45 +0800
-Message-Id: <1359714465-6297-6-git-send-email-zhong@linux.vnet.ibm.com>
-In-Reply-To: <1359714465-6297-1-git-send-email-zhong@linux.vnet.ibm.com>
-References: <1359714465-6297-1-git-send-email-zhong@linux.vnet.ibm.com>
-Cc: Li Zhong <zhong@linux.vnet.ibm.com>, fweisbec@gmail.com, paulus@samba.org,
- paulmck@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <Thomas.Waldecker@tqs.de>
+Received: from mail.tqs.de (mail.tqs.de [82.210.228.1])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (Client CN "IronPort Appliance Demo Certificate",
+ Issuer "IronPort Appliance Demo Certificate" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id BFC372C0095
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Feb 2013 23:17:16 +1100 (EST)
+From: Thomas Waldecker <Thomas.Waldecker@tqs.de>
+To: "Linux PPC dev mailing list (linuxppc-dev@lists.ozlabs.org)"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Why is the e500v2 core  not using cpuidle?
+Date: Fri, 1 Feb 2013 12:06:05 +0000
+Message-ID: <B88C075EE1324644BA0452D5EFDD58281395211D@TQ-MAIL.tq-net.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,24 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Start context tracking support from pSeries.
+Hi,
 
-Signed-off-by: Li Zhong <zhong@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/pseries/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+As part of my masterthesis I was just looking around the kernel=20
+sources for cpuidle and figured out that the only CPU in the PowerPC=20
+architecture using the cpuidle framework is the pseries.
 
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index 837cf49..a9570fe 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -17,6 +17,7 @@ config PPC_PSERIES
- 	select PPC_NATIVE
- 	select PPC_PCI_CHOICE if EXPERT
- 	select ZLIB_DEFLATE
-+	select HAVE_CONTEXT_TRACKING
- 	default y
- 
- config PPC_SPLPAR
--- 
-1.7.9.5
+I assume the e500v2 core is using the idle modes=20
+in arch/powerpc/kernel/idle_e500.S
+
+Why is there no support for the cpuidle framework?
+
+How can I debug the e500 idle modes?=20
+Are there any statistics?
+
+I already ran PowerTOP on a QorIQ P2020 but it's almost useless=20
+because the information is missing.
+
+Kind regards,
+Thomas Waldecker
