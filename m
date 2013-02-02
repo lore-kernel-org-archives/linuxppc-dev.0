@@ -1,18 +1,24 @@
-Return-Path: <stef.van.os@Prodrive.nl>
-Received: from mail.prodrive.nl (mail.prodrive.nl [212.61.153.67])
- by ozlabs.org (Postfix) with ESMTP id 957F42C0095
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2013 06:25:20 +1100 (EST)
-Message-ID: <510D6819.7050002@prodrive.nl>
-Date: Sat, 2 Feb 2013 20:25:13 +0100
-From: Stef van Os <stef.van.os@prodrive.nl>
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id BC5BA2C007B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2013 07:09:27 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
+ framework
+Date: Sat, 02 Feb 2013 21:15:37 +0100
+Message-ID: <1810611.i6Sc4oLaux@vostro.rjw.lan>
+In-Reply-To: <20130202145801.GB1434@kroah.com>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <1987042.JQv02Zsfg5@vostro.rjw.lan> <20130202145801.GB1434@kroah.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/1] powerpc/85xx: Board support for ppa8548
-References: <1359765063.23561.14@snotra>
-In-Reply-To: <1359765063.23561.14@snotra>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- timur.tabi@calxeda.com
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
+ jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
+ guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,213 +28,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thanks for the comment!
+On Saturday, February 02, 2013 03:58:01 PM Greg KH wrote:
+> On Fri, Feb 01, 2013 at 11:12:59PM +0100, Rafael J. Wysocki wrote:
+> > On Friday, February 01, 2013 08:23:12 AM Greg KH wrote:
+> > > On Thu, Jan 31, 2013 at 09:54:51PM +0100, Rafael J. Wysocki wrote:
+> > > > > > But, again, I'm going to ask why you aren't using the existing cpu /
+> > > > > > memory / bridge / node devices that we have in the kernel.  Please use
+> > > > > > them, or give me a _really_ good reason why they will not work.
+> > > > > 
+> > > > > We cannot use the existing system devices or ACPI devices here.  During
+> > > > > hot-plug, ACPI handler sets this shp_device info, so that cpu and memory
+> > > > > handlers (drivers/cpu.c and mm/memory_hotplug.c) can obtain their target
+> > > > > device information in a platform-neutral way.  During hot-add, we first
+> > > > > creates an ACPI device node (i.e. device under /sys/bus/acpi/devices),
+> > > > > but platform-neutral modules cannot use them as they are ACPI-specific.
+> > > > 
+> > > > But suppose we're smart and have ACPI scan handlers that will create
+> > > > "physical" device nodes for those devices during the ACPI namespace scan.
+> > > > Then, the platform-neutral nodes will be able to bind to those "physical"
+> > > > nodes.  Moreover, it should be possible to get a hierarchy of device objects
+> > > > this way that will reflect all of the dependencies we need to take into
+> > > > account during hot-add and hot-remove operations.  That may not be what we
+> > > > have today, but I don't see any *fundamental* obstacles preventing us from
+> > > > using this approach.
+> > > 
+> > > I would _much_ rather see that be the solution here as I think it is the
+> > > proper one.
+> > > 
+> > > > This is already done for PCI host bridges and platform devices and I don't
+> > > > see why we can't do that for the other types of devices too.
+> > > 
+> > > I agree.
+> > > 
+> > > > The only missing piece I see is a way to handle the "eject" problem, i.e.
+> > > > when we try do eject a device at the top of a subtree and need to tear down
+> > > > the entire subtree below it, but if that's going to lead to a system crash,
+> > > > for example, we want to cancel the eject.  It seems to me that we'll need some
+> > > > help from the driver core here.
+> > > 
+> > > I say do what we always have done here, if the user asked us to tear
+> > > something down, let it happen as they are the ones that know best :)
+> > > 
+> > > Seriously, I guess this gets back to the "fail disconnect" idea that the
+> > > ACPI developers keep harping on.  I thought we already resolved this
+> > > properly by having them implement it in their bus code, no reason the
+> > > same thing couldn't happen here, right?
+> > 
+> > Not really. :-)  We haven't ever resolved that particular issue I'm afraid.
+> 
+> Ah, I didn't realize that.
+> 
+> > > I don't think the core needs to do anything special, but if so, I'll be glad
+> > > to review it.
+> > 
+> > OK, so this is the use case.  We have "eject" defined for something like
+> > a container with a number of CPU cores, PCI host bridge, and a memory
+> > controller under it.  And a few pretty much arbitrary I/O devices as a bonus.
+> > 
+> > Now, there's a button on the system case labeled as "Eject" and if that button
+> > is pressed, we're supposed to _try_ to eject all of those things at once.  We
+> > are allowed to fail that request, though, if that's problematic for some
+> > reason, but we're supposed to let the BIOS know about that.
+> > 
+> > Do you seriously think that if that button is pressed, we should just proceed
+> > with removing all that stuff no matter what?  That'd be kind of like Russian
+> > roulette for whoever pressed that button, because s/he could only press it and
+> > wait for the system to either crash or not.  Or maybe to crash a bit later
+> > because of some delayed stuff that would hit one of those devices that had just
+> > gone.  Surely not a situation any admin of a high-availability system would
+> > like to be in. :-)
+> > 
+> > Quite frankly, I have no idea how that can be addressed in a single bus type,
+> > let alone ACPI (which is not even a proper bus type, just something pretending
+> > to be one).
+> 
+> You don't have it as a single bus type, you have a controller somewhere,
+> off of the bus being destroyed, that handles sending remove events to
+> the device and tearing everything down.  PCI does this from the very
+> beginning.
 
-On 02/02/2013 01:31 AM, Scott Wood wrote:
-> On 02/01/2013 09:36:53 AM, Stef van Os wrote:
->> +    memory {
->> +        device_type = "memory";
->> +        reg = <0 0 0x0 0x40000000>;
->> +    };
->
-> You have a "filled in by U-Boot" comment elsewhere in the file, but 
-> you aren't letting U-Boot fill in the memory size?
->
-The U-Boot used in this board currently does not call the 
-fdt_fixup_memory function. Would have been better, but changing it now 
-requires production image changes and requalification.
->> +    board_lbc: lbc: localbus@fe0005000 {
->> +        reg = <0xf 0xe0005000 0 0x1000>;
->> +        ranges = <0x0 0x0 0xf 0xff800000 0x00800000>;
->> +    };
->> +
->> +    board_soc: soc: soc8548@fe0000000 {
->> +        ranges = <0 0xf 0xe0000000 0x100000>;
->> +    };
->
-> I know some existing dts files do this, but there's no need for two 
-> labels one one node.
-True, fixed in v2 of patch.
->
->> +    rio: rapidio@fe00c0000 {
->> +        reg = <0xf 0xe00c0000 0x0 0x11000>;
->> +        port1 {
->> +            ranges = <0x0 0x0 0x0 0x80000000 0x0 0x40000000>;
->> +        };
->> +    };
->> +};
->> +
->> +&lbc {
->> +    #address-cells = <2>;
->> +    #size-cells = <1>;
->> +    compatible = "fsl,mpc8548-lbc", "fsl,pq3-localbus", "simple-bus";
->> +    interrupts = <19 2 0 0>;
->> +};
->> +
->> +&rio {
->> +    compatible = "fsl,srio";
->> +    interrupts = <48 2 0 0>;
->> +    #address-cells = <2>;
->> +    #size-cells = <2>;
->> +    fsl,srio-rmu-handle = <&rmu>;
->> +    ranges;
->> +
->> +    port1 {
->> +        #address-cells = <2>;
->> +        #size-cells = <2>;
->> +        cell-index = <1>;
->> +    };
->> +};
->> +
->> +&soc {
->> +    #address-cells = <1>;
->> +    #size-cells = <1>;
->> +    device_type = "soc";
->> +    compatible = "fsl,mpc8548-immr", "simple-bus";
->> +    bus-frequency = <0>;        // Filled out by uboot.
->> +
->> +    ecm-law@0 {
->> +        compatible = "fsl,ecm-law";
->> +        reg = <0x0 0x1000>;
->> +        fsl,num-laws = <10>;
->> +    };
->> +
->> +    ecm@1000 {
->> +        compatible = "fsl,mpc8548-ecm", "fsl,ecm";
->> +        reg = <0x1000 0x1000>;
->> +        interrupts = <17 2 0 0>;
->> +    };
->> +
->> +    memory-controller@2000 {
->> +        compatible = "fsl,mpc8548-memory-controller";
->> +        reg = <0x2000 0x1000>;
->> +        interrupts = <18 2 0 0>;
->> +    };
->> +
->> +/include/ "fsl/pq3-i2c-0.dtsi"
->> +/include/ "fsl/pq3-i2c-1.dtsi"
->> +/include/ "fsl/pq3-duart-0.dtsi"
->> +
->> +    L2: l2-cache-controller@20000 {
->> +        compatible = "fsl,mpc8548-l2-cache-controller";
->> +        reg = <0x20000 0x1000>;
->> +        cache-line-size = <32>;    // 32 bytes
->> +        cache-size = <0x80000>; // L2, 512K
->> +        interrupts = <16 2 0 0>;
->> +    };
->> +
->> +/include/ "fsl/pq3-dma-0.dtsi"
->> +/include/ "fsl/pq3-etsec1-0.dtsi"
->> +/include/ "fsl/pq3-etsec1-1.dtsi"
->> +/include/ "fsl/pq3-etsec1-2.dtsi"
->> +/include/ "fsl/pq3-etsec1-3.dtsi"
->> +
->> +/include/ "fsl/pq3-sec2.1-0.dtsi"
->> +/include/ "fsl/pq3-mpic.dtsi"
->> +/include/ "fsl/pq3-rmu-0.dtsi"
->> +
->> +    global-utilities@e0000 {
->> +        compatible = "fsl,mpc8548-guts";
->> +        reg = <0xe0000 0x1000>;
->> +        fsl,has-rstcr;
->> +    };
->> +};
->
-> I guess the reason you're not using fsl/mpc8548si-post.dtsi is that 
-> you don't want PCI.  Maybe PCI and srio should be moved out of that 
-> file, or ifdeffed if 85xx ever ends up using the preprocessor for its 
-> device trees.
->
-I went with timur's solution, patch v2 uses mpc8548si-post.dtsi and 
-mpc8548si-pre.dtsi again, disabling everything that is not on the board.
->> diff --git a/arch/powerpc/platforms/85xx/ppa8548.c 
->> b/arch/powerpc/platforms/85xx/ppa8548.c
->> new file mode 100644
->> index 0000000..80a9307
->> --- /dev/null
->> +++ b/arch/powerpc/platforms/85xx/ppa8548.c
->> @@ -0,0 +1,119 @@
->> +/*
->> + * ppa8548 setup and early boot code.
->> + *
->> + * Copyright 2009 Prodrive B.V..
->> + *
->> + * By Stef van Os (see MAINTAINERS for contact information)
->> + *
->> + * Based on the SBC8548 support - Copyright 2007 Wind River Systems 
->> Inc.
->> + * Based on the MPC8548CDS support - Copyright 2005 Freescale Inc.
->> + *
->> + * This program is free software; you can redistribute  it and/or 
->> modify it
->> + * under  the terms of  the GNU General  Public License as published 
->> by the
->> + * Free Software Foundation;  either version 2 of the  License, or 
->> (at your
->> + * option) any later version.
->> + */
->> +
->> +#include <linux/stddef.h>
->> +#include <linux/kernel.h>
->> +#include <linux/init.h>
->> +#include <linux/errno.h>
->> +#include <linux/reboot.h>
->> +#include <linux/kdev_t.h>
->> +#include <linux/major.h>
->> +#include <linux/console.h>
->> +#include <linux/delay.h>
->> +#include <linux/seq_file.h>
->> +#include <linux/initrd.h>
->> +#include <linux/module.h>
->> +#include <linux/interrupt.h>
->> +#include <linux/fsl_devices.h>
->> +#include <linux/of_platform.h>
->> +
->> +#include <asm/pgtable.h>
->> +#include <asm/page.h>
->> +#include <asm/atomic.h>
->> +#include <asm/time.h>
->> +#include <asm/io.h>
->> +#include <asm/machdep.h>
->> +#include <asm/ipic.h>
->> +#include <asm/irq.h>
->> +#include <mm/mmu_decl.h>
->> +#include <asm/prom.h>
->> +#include <asm/udbg.h>
->> +#include <asm/mpic.h>
->> +
->> +#include <sysdev/fsl_soc.h>
->
-> I doubt you need all of these.
->
-> E.g. asm/ipic.h is for 83xx and 512x chips.  Some others are for 
-> things that haven't been done by board files for years (e.g. kdev_t.h).
-Fixed in v2, 10 includes left, instead of 25+...
->
->> +static void ppa8548_show_cpuinfo(struct seq_file *m)
->> +{
->> +    uint pvid, svid, phid1;
->> +
->> +    pvid = mfspr(SPRN_PVR);
->> +    svid = mfspr(SPRN_SVR);
->> +
->> +    seq_printf(m, "Vendor\t\t: Prodrive B.V.\n");
->> +    seq_printf(m, "Machine\t\t: ppa8548\n");
->> +    seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
->> +    seq_printf(m, "SVR\t\t: 0x%x\n", svid);
->> +
->> +    /* Display cpu Pll setting */
->> +    phid1 = mfspr(SPRN_HID1);
->> +    seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
->> +}
->
-> PVR and ppc_md.name are already shown by the generic /proc/cpuinfo code.
->
-> -Scott
-Fixed, removed PVR and Machine. SVR is still shown, because it is not in 
-generic cpuinfo code.
+Yes, but those are just remove events and we can only see how destructive they
+were after the removal.  The point is to be able to figure out whether or not
+we *want* to do the removal in the first place.
 
-Will do a test run of the changes and send out v2 later this weekend.
+Say you have a computing node which signals a hardware problem in a processor
+package (the container with CPU cores, memory, PCI host bridge etc.).  You
+may want to eject that package, but you don't want to kill the system this
+way.  So if the eject is doable, it is very much desirable to do it, but if it
+is not doable, you'd rather shut the box down and do the replacement afterward.
+That may be costly, however (maybe weeks of computations), so it should be
+avoided if possible, but not at the expense of crashing the box if the eject
+doesn't work out.
 
-Regards,
-Stef
+> I know it's more complicated with these types of devices, and I think we
+> are getting closer to the correct solution, I just don't want to ever
+> see duplicate devices in the driver model for the same physical device.
+
+Do you mean two things based on struct device for the same hardware component?
+That's been happening already pretty much forever for every PCI device known
+to the ACPI layer, for PNP and many others.  However, those ACPI things are (or
+rather should be, but we're going to clean that up) only for convenience (to be
+able to see the namespace structure and related things in sysfs).  So the stuff
+under /sys/devices/LNXSYSTM\:00/ is not "real".  In my view it shouldn't even
+be under /sys/devices/ (/sys/firmware/acpi/ seems to be a better place for it),
+but that may be difficult to change without breaking user space (maybe we can
+just symlink it from /sys/devices/ or something).  And the ACPI bus type
+shouldn't even exist in my opinion.
+
+There's much confusion in there and much work to clean that up, I agree, but
+that's kind of separate from the hotplug thing.
+
+Thanks,
+Rafael
+
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
