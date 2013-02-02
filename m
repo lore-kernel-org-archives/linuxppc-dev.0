@@ -1,39 +1,24 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ve0-f173.google.com (mail-ve0-f173.google.com
- [209.85.128.173])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (Client CN "smtp.gmail.com", Issuer "Google Internet Authority" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id E90D62C0095
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2013 08:51:00 +1100 (EST)
-Received: by mail-ve0-f173.google.com with SMTP id oz10so3850166veb.32
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Feb 2013 13:50:58 -0800 (PST)
+Return-Path: <rjw@sisk.pl>
+Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
+ by ozlabs.org (Postfix) with ESMTP id E0E0A2C0091
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2013 09:12:11 +1100 (EST)
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: [PATCH?] Move ACPI device nodes under /sys/firmware/acpi (was: Re:
+ [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug framework)
+Date: Sat, 02 Feb 2013 23:18:20 +0100
+Message-ID: <2806030.VWUMy6F7lm@vostro.rjw.lan>
+In-Reply-To: <1810611.i6Sc4oLaux@vostro.rjw.lan>
+References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
+ <20130202145801.GB1434@kroah.com> <1810611.i6Sc4oLaux@vostro.rjw.lan>
 MIME-Version: 1.0
-In-Reply-To: <1359314629-18651-1-git-send-email-yinghai@kernel.org>
-References: <CAE9FiQXHG01NjnYNDbC-KEpbcvY-q4pBe97CxTOGS7W4vZQBYQ@mail.gmail.com>
- <1359314629-18651-1-git-send-email-yinghai@kernel.org>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Sat, 2 Feb 2013 14:50:36 -0700
-Message-ID: <CAErSpo6r_LNEtYB3j5ELb8NdHu0a6_YOVj8S32CmByGFUpSsbg@mail.gmail.com>
-Subject: Re: [PATCH v3 00/22] PCI: Iterate pci host bridge instead of pci root
- bus
-To: Yinghai Lu <yinghai@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linux-ia64@vger.kernel.org, Mauro Carvalho Chehab <mchehab@redhat.com>,
- David Airlie <airlied@linux.ie>, linux-pci@vger.kernel.org,
- dri-devel@lists.freedesktop.org, David Howells <dhowells@redhat.com>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- linux-am33-list@redhat.com, Russell King <linux@arm.linux.org.uk>,
- x86@kernel.org, linux-altix@sgi.com, Doug Thompson <dougthompson@xmission.com>,
- Matt Turner <mattst88@gmail.com>, linux-edac@vger.kernel.org,
- Fenghua Yu <fenghua.yu@intel.com>, Jiang Liu <jiang.liu@huawei.com>,
- microblaze-uclinux@itee.uq.edu.au, "Rafael J. Wysocki" <rjw@sisk.pl>,
- Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
- Taku Izumi <izumi.taku@jp.fujitsu.com>, linux-arm-kernel@lists.infradead.org,
- Richard Henderson <rth@twiddle.net>, Michal Simek <monstr@monstr.eu>,
- Tony Luck <tony.luck@intel.com>, Toshi Kani <toshi.kani@hp.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-alpha@vger.kernel.org,
- Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
+ jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
+ yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
+ guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
+ linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,51 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Jan 27, 2013 at 12:23 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> Now we have pci_root_buses list, and there is lots of iteration with
-> list_of_each of it, that is not safe after we add pci root bus hotplug
-> support after booting stage.
->
-> Add pci_get_next_host_bridge and use bus_find_device in driver core to
-> iterate host bridge and the same time get root bus.
->
-> We replace searching root bus with searching host_bridge,
-> as host_bridge->bus is the root bus.
-> After those replacing, we even could kill pci_root_buses list.
+On Saturday, February 02, 2013 09:15:37 PM Rafael J. Wysocki wrote:
+> On Saturday, February 02, 2013 03:58:01 PM Greg KH wrote:
+[...]
+> 
+> > I know it's more complicated with these types of devices, and I think we
+> > are getting closer to the correct solution, I just don't want to ever
+> > see duplicate devices in the driver model for the same physical device.
+> 
+> Do you mean two things based on struct device for the same hardware component?
+> That's been happening already pretty much forever for every PCI device known
+> to the ACPI layer, for PNP and many others.  However, those ACPI things are (or
+> rather should be, but we're going to clean that up) only for convenience (to be
+> able to see the namespace structure and related things in sysfs).  So the stuff
+> under /sys/devices/LNXSYSTM\:00/ is not "real".  In my view it shouldn't even
+> be under /sys/devices/ (/sys/firmware/acpi/ seems to be a better place for it),
+> but that may be difficult to change without breaking user space (maybe we can
+> just symlink it from /sys/devices/ or something).  And the ACPI bus type
+> shouldn't even exist in my opinion.
 
-These are the problems I think you're fixing:
+Well, well.
 
-1) pci_find_next_bus() is not safe because even though it holds
-pci_bus_sem while walking the pci_root_buses list, it doesn't hold a
-reference on the bus it returns.  The bus could be removed while the
-caller is using it.
+In fact, the appended patch moves the whole ACPI device nodes tree under
+/sys/firmware/acpi/ and I'm not seeing any negative consequences of that on my
+test box (events work and so on).  User space is quite new on it, though, and
+the patch is hackish.
 
-2) "list_for_each_entry(bus, &pci_root_buses, node)" is not safe
-because hotplug might modify the pci_root_buses list.  Replacing that
-with for_each_pci_host_bridge() solves that problem by using
-bus_find_device(), which is built on klists, which are designed for
-that problem.
+Still ...
 
-3) pci_find_next_bus() claims to iterate through all known PCI buses,
-but in fact only iterates through root buses.
 
-So far, so good.  Those are problems we need to fix.
+---
+Prototype, no sign-off
+---
+ drivers/acpi/scan.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Your solution is to introduce for_each_pci_host_bridge() as an
-iterator through the known host bridges.  There are two scenarios
-where we use something like this:
+Index: linux-pm/drivers/acpi/scan.c
+===================================================================
+--- linux-pm.orig/drivers/acpi/scan.c
++++ linux-pm/drivers/acpi/scan.c
+@@ -1443,6 +1443,8 @@ void acpi_init_device_object(struct acpi
+ 	device->flags.match_driver = false;
+ 	device_initialize(&device->dev);
+ 	dev_set_uevent_suppress(&device->dev, true);
++	if (handle == ACPI_ROOT_OBJECT)
++		device->dev.kobj.parent = acpi_kobj;
+ }
+ 
+ void acpi_device_add_finalize(struct acpi_device *device)
 
-1) We want to perform an operation on every known host bridge.
 
-2) We want to initialize something for every host bridge.
 
-In my opinion, the only instance of scenario 1) is bus_rescan_store(),
-where we want to rescan all PCI host bridges.
-
-In every other case, we're doing some kind of initialization of all
-the host bridges.  For these cases, for_each_pci_host_bridge() is the
-wrong solution because it doesn't work for hot-added bridges.  I think
-these cases should be changed to use pcibios_root_bridge_prepare() or
-something something else called in the host bridge add path.
-
-Bjorn
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
