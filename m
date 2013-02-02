@@ -1,38 +1,22 @@
-Return-Path: <toshi.kani@hp.com>
-Received: from g6t0184.atlanta.hp.com (g6t0184.atlanta.hp.com [15.193.32.61])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (Client CN "smtp.hp.com",
- Issuer "VeriSign Class 3 Secure Server CA - G3" (not verified))
- by ozlabs.org (Postfix) with ESMTPS id 8E9C52C008E
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Feb 2013 10:23:01 +1100 (EST)
-Message-ID: <1359760370.23410.4.camel@misato.fc.hp.com>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device
- hotplug framework
-From: Toshi Kani <toshi.kani@hp.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Date: Fri, 01 Feb 2013 16:12:50 -0700
-In-Reply-To: <2370118.yuaZBuKn6n@vostro.rjw.lan>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <20130201073010.GC1180@kroah.com>
- <1359751210.15120.278.camel@misato.fc.hp.com>
- <2370118.yuaZBuKn6n@vostro.rjw.lan>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- "jiang.liu@huawei.com" <jiang.liu@huawei.com>,
- "wency@cn.fujitsu.com" <wency@cn.fujitsu.com>,
- "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
- Greg KH <gregkh@linuxfoundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "isimatu.yasuaki@jp.fujitsu.com" <isimatu.yasuaki@jp.fujitsu.com>,
- "yinghai@kernel.org" <yinghai@kernel.org>,
- "srivatsa.bhat@linux.vnet.ibm.com" <srivatsa.bhat@linux.vnet.ibm.com>,
- "guohanjun@huawei.com" <guohanjun@huawei.com>,
- "bhelgaas@google.com" <bhelgaas@google.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "lenb@kernel.org" <lenb@kernel.org>
+Return-Path: <B07421@freescale.com>
+Received: from db3outboundpool.messaging.microsoft.com
+ (db3ehsobe002.messaging.microsoft.com [213.199.154.140])
+ (using TLSv1 with cipher AES128-SHA (128/128 bits))
+ (Client CN "mail.global.frontbridge.com",
+ Issuer "Microsoft Secure Server Authority" (not verified))
+ by ozlabs.org (Postfix) with ESMTPS id 2B1032C0094
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Feb 2013 11:47:23 +1100 (EST)
+Date: Fri, 1 Feb 2013 18:31:03 -0600
+From: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/1] powerpc/85xx: Board support for ppa8548
+To: Stef van Os <stef.van.os@prodrive.nl>
+In-Reply-To: <1359733013-722-1-git-send-email-stef.van.os@prodrive.nl> (from
+ stef.van.os@prodrive.nl on Fri Feb  1 09:36:53 2013)
+Message-ID: <1359765063.23561.14@snotra>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; delsp=Yes; format=Flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Stef van Os <stef.van.os@prodrive.nl>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,144 +26,198 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2013-02-01 at 23:21 +0100, Rafael J. Wysocki wrote:
-> On Friday, February 01, 2013 01:40:10 PM Toshi Kani wrote:
-> > On Fri, 2013-02-01 at 07:30 +0000, Greg KH wrote:
-> > > On Thu, Jan 31, 2013 at 06:32:18PM -0700, Toshi Kani wrote:
-> > >  > This is already done for PCI host bridges and platform devices and I don't
-> > > > > see why we can't do that for the other types of devices too.
-> > > > > 
-> > > > > The only missing piece I see is a way to handle the "eject" problem, i.e.
-> > > > > when we try do eject a device at the top of a subtree and need to tear down
-> > > > > the entire subtree below it, but if that's going to lead to a system crash,
-> > > > > for example, we want to cancel the eject.  It seems to me that we'll need some
-> > > > > help from the driver core here.
-> > > > 
-> > > > There are three different approaches suggested for system device
-> > > > hot-plug:
-> > > >  A. Proceed within system device bus scan.
-> > > >  B. Proceed within ACPI bus scan.
-> > > >  C. Proceed with a sequence (as a mini-boot).
-> > > > 
-> > > > Option A uses system devices as tokens, option B uses acpi devices as
-> > > > tokens, and option C uses resource tables as tokens, for their handlers.
-> > > > 
-> > > > Here is summary of key questions & answers so far.  I hope this
-> > > > clarifies why I am suggesting option 3.
-> > > > 
-> > > > 1. What are the system devices?
-> > > > System devices provide system-wide core computing resources, which are
-> > > > essential to compose a computer system.  System devices are not
-> > > > connected to any particular standard buses.
-> > > 
-> > > Not a problem, lots of devices are not connected to any "particular
-> > > standard busses".  All this means is that system devices are connected
-> > > to the "system" bus, nothing more.
-> > 
-> > Can you give me a few examples of other devices that support hotplug and
-> > are not connected to any particular buses?  I will investigate them to
-> > see how they are managed to support hotplug.
-> > 
-> > > > 2. Why are the system devices special?
-> > > > The system devices are initialized during early boot-time, by multiple
-> > > > subsystems, from the boot-up sequence, in pre-defined order.  They
-> > > > provide low-level services to enable other subsystems to come up.
-> > > 
-> > > Sorry, no, that doesn't mean they are special, nothing here is unique
-> > > for the point of view of the driver model from any other device or bus.
-> > 
-> > I think system devices are unique in a sense that they are initialized
-> > before drivers run.
-> > 
-> > > > 3. Why can't initialize the system devices from the driver structure at
-> > > > boot?
-> > > > The driver structure is initialized at the end of the boot sequence and
-> > > > requires the low-level services from the system devices initialized
-> > > > beforehand.
-> > > 
-> > > Wait, what "driver structure"?  
-> > 
-> > Sorry it was not clear.  cpu_dev_init() and memory_dev_init() are called
-> > from driver_init() at the end of the boot sequence, and initialize
-> > system/cpu and system/memory devices.  I assume they are the system bus
-> > you are referring with option A.
-> > 
-> > > If you need to initialize the driver
-> > > core earlier, then do so.  Or, even better, just wait until enough of
-> > > the system has come up and then go initialize all of the devices you
-> > > have found so far as part of your boot process.
-> > 
-> > They are pseudo drivers that provide sysfs entry points of cpu and
-> > memory.  They do not actually initialize cpu and memory.  I do not think
-> > initializing cpu and memory fits into the driver model either, since
-> > drivers should run after cpu and memory are initialized.
-> > 
-> > > None of the above things you have stated seem to have anything to do
-> > > with your proposed patch, so I don't understand why you have mentioned
-> > > them...
-> > 
-> > You suggested option A before, which uses system bus scan to initialize
-> > all system devices at boot time as well as hot-plug.  I tried to say
-> > that this option would not be doable.
-> > 
-> > > > 4. Why do we need a new common framework?
-> > > > Sysfs CPU and memory on-lining/off-lining are performed within the CPU
-> > > > and memory modules.  They are common code and do not depend on ACPI.
-> > > > Therefore, a new common framework is necessary to integrate both
-> > > > on-lining/off-lining operation and hot-plugging operation of system
-> > > > devices into a single framework.
-> > > 
-> > > {sigh}
-> > > 
-> > > Removing and adding devices and handling hotplug operations is what the
-> > > driver core was written for, almost 10 years ago.  To somehow think that
-> > > your devices are "special" just because they don't use ACPI is odd,
-> > > because the driver core itself has nothing to do with ACPI.  Don't get
-> > > the current mix of x86 system code tied into ACPI confused with an
-> > > driver core issues here please.
-> > 
-> > CPU online/offline operation is performed within the CPU module.  Memory
-> > online/offline operation is performed within the memory module.  CPU and
-> > memory hotplug operations are performed within ACPI.  While they deal
-> > with the same set of devices, they operate independently and are not
-> > managed under a same framework.
-> > 
-> > I agree with you that not using ACPI is perfectly fine.  My point is
-> > that ACPI framework won't be able to manage operations that do not use
-> > ACPI.
-> > 
-> > > > 5. Why can't do everything with ACPI bus scan?
-> > > > Software dependency among system devices may not be dictated by the ACPI
-> > > > hierarchy.  For instance, memory should be initialized before CPUs (i.e.
-> > > > a new cpu may need its local memory), but such ordering cannot be
-> > > > guaranteed by the ACPI hierarchy.  Also, as described in 4,
-> > > > online/offline operations are independent from ACPI.  
-> > > 
-> > > That's fine, the driver core is independant from ACPI.  I don't care how
-> > > you do the scaning of your devices, but I do care about you creating new
-> > > driver core pieces that duplicate the existing functionality of what we
-> > > have today.
-> > >
-> > > In short, I like Rafael's proposal better, and I fail to see how
-> > > anything you have stated here would matter in how this is implemented. :)
-> > 
-> > Doing everything within ACPI means we can only manage ACPI hotplug
-> > operations, not online/offline operations.  But I understand that you
-> > concern about adding a new framework with option C.  It is good to know
-> > that you are fine with option B. :)  So, I will step back, and think
-> > about what we can do within ACPI.
-> 
-> Not much, because ACPI only knows about a subset of devices that may be
-> involved in that, and a limited one for that matter.  For one example,
-> anything connected through PCI and not having a corresponding ACPI object (i.e.
-> pretty much every add-in card in existence) will be unknown to ACPI.  And
-> say one of these things is a SATA controller with a number of disks under it
-> and so on.  ACPI won't even know that it exists.  Moreover, PCI won't know
-> that those disks exist.  Etc.
+On 02/01/2013 09:36:53 AM, Stef van Os wrote:
+> +	memory {
+> +		device_type =3D "memory";
+> +		reg =3D <0 0 0x0 0x40000000>;
+> +	};
 
-Agreed.  Thanks for bringing I/Os into the picture.  I did not mention
-them since they have not supported in this patchset, but we certainly
-need to consider them into the design.
+You have a "filled in by U-Boot" comment elsewhere in the file, but you =20
+aren't letting U-Boot fill in the memory size?
 
-Thanks,
--Toshi
+> +	board_lbc: lbc: localbus@fe0005000 {
+> +		reg =3D <0xf 0xe0005000 0 0x1000>;
+> +		ranges =3D <0x0 0x0 0xf 0xff800000 0x00800000>;
+> +	};
+> +
+> +	board_soc: soc: soc8548@fe0000000 {
+> +		ranges =3D <0 0xf 0xe0000000 0x100000>;
+> +	};
+
+I know some existing dts files do this, but there's no need for two =20
+labels one one node.
+
+> +	rio: rapidio@fe00c0000 {
+> +		reg =3D <0xf 0xe00c0000 0x0 0x11000>;
+> +		port1 {
+> +			ranges =3D <0x0 0x0 0x0 0x80000000 0x0 =20
+> 0x40000000>;
+> +		};
+> +	};
+> +};
+> +
+> +&lbc {
+> +	#address-cells =3D <2>;
+> +	#size-cells =3D <1>;
+> +	compatible =3D "fsl,mpc8548-lbc", "fsl,pq3-localbus", =20
+> "simple-bus";
+> +	interrupts =3D <19 2 0 0>;
+> +};
+> +
+> +&rio {
+> +	compatible =3D "fsl,srio";
+> +	interrupts =3D <48 2 0 0>;
+> +	#address-cells =3D <2>;
+> +	#size-cells =3D <2>;
+> +	fsl,srio-rmu-handle =3D <&rmu>;
+> +	ranges;
+> +
+> +	port1 {
+> +		#address-cells =3D <2>;
+> +		#size-cells =3D <2>;
+> +		cell-index =3D <1>;
+> +	};
+> +};
+> +
+> +&soc {
+> +	#address-cells =3D <1>;
+> +	#size-cells =3D <1>;
+> +	device_type =3D "soc";
+> +	compatible =3D "fsl,mpc8548-immr", "simple-bus";
+> +	bus-frequency =3D <0>;		// Filled out by uboot.
+> +
+> +	ecm-law@0 {
+> +		compatible =3D "fsl,ecm-law";
+> +		reg =3D <0x0 0x1000>;
+> +		fsl,num-laws =3D <10>;
+> +	};
+> +
+> +	ecm@1000 {
+> +		compatible =3D "fsl,mpc8548-ecm", "fsl,ecm";
+> +		reg =3D <0x1000 0x1000>;
+> +		interrupts =3D <17 2 0 0>;
+> +	};
+> +
+> +	memory-controller@2000 {
+> +		compatible =3D "fsl,mpc8548-memory-controller";
+> +		reg =3D <0x2000 0x1000>;
+> +		interrupts =3D <18 2 0 0>;
+> +	};
+> +
+> +/include/ "fsl/pq3-i2c-0.dtsi"
+> +/include/ "fsl/pq3-i2c-1.dtsi"
+> +/include/ "fsl/pq3-duart-0.dtsi"
+> +
+> +	L2: l2-cache-controller@20000 {
+> +		compatible =3D "fsl,mpc8548-l2-cache-controller";
+> +		reg =3D <0x20000 0x1000>;
+> +		cache-line-size =3D <32>;	// 32 bytes
+> +		cache-size =3D <0x80000>; // L2, 512K
+> +		interrupts =3D <16 2 0 0>;
+> +	};
+> +
+> +/include/ "fsl/pq3-dma-0.dtsi"
+> +/include/ "fsl/pq3-etsec1-0.dtsi"
+> +/include/ "fsl/pq3-etsec1-1.dtsi"
+> +/include/ "fsl/pq3-etsec1-2.dtsi"
+> +/include/ "fsl/pq3-etsec1-3.dtsi"
+> +
+> +/include/ "fsl/pq3-sec2.1-0.dtsi"
+> +/include/ "fsl/pq3-mpic.dtsi"
+> +/include/ "fsl/pq3-rmu-0.dtsi"
+> +
+> +	global-utilities@e0000 {
+> +		compatible =3D "fsl,mpc8548-guts";
+> +		reg =3D <0xe0000 0x1000>;
+> +		fsl,has-rstcr;
+> +	};
+> +};
+
+I guess the reason you're not using fsl/mpc8548si-post.dtsi is that you =20
+don't want PCI.  Maybe PCI and srio should be moved out of that file, =20
+or ifdeffed if 85xx ever ends up using the preprocessor for its device =20
+trees.
+
+> diff --git a/arch/powerpc/platforms/85xx/ppa8548.c =20
+> b/arch/powerpc/platforms/85xx/ppa8548.c
+> new file mode 100644
+> index 0000000..80a9307
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/85xx/ppa8548.c
+> @@ -0,0 +1,119 @@
+> +/*
+> + * ppa8548 setup and early boot code.
+> + *
+> + * Copyright 2009 Prodrive B.V..
+> + *
+> + * By Stef van Os (see MAINTAINERS for contact information)
+> + *
+> + * Based on the SBC8548 support - Copyright 2007 Wind River Systems =20
+> Inc.
+> + * Based on the MPC8548CDS support - Copyright 2005 Freescale Inc.
+> + *
+> + * This program is free software; you can redistribute  it and/or =20
+> modify it
+> + * under  the terms of  the GNU General  Public License as published =20
+> by the
+> + * Free Software Foundation;  either version 2 of the  License, or =20
+> (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/stddef.h>
+> +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/errno.h>
+> +#include <linux/reboot.h>
+> +#include <linux/kdev_t.h>
+> +#include <linux/major.h>
+> +#include <linux/console.h>
+> +#include <linux/delay.h>
+> +#include <linux/seq_file.h>
+> +#include <linux/initrd.h>
+> +#include <linux/module.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/fsl_devices.h>
+> +#include <linux/of_platform.h>
+> +
+> +#include <asm/pgtable.h>
+> +#include <asm/page.h>
+> +#include <asm/atomic.h>
+> +#include <asm/time.h>
+> +#include <asm/io.h>
+> +#include <asm/machdep.h>
+> +#include <asm/ipic.h>
+> +#include <asm/irq.h>
+> +#include <mm/mmu_decl.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <asm/mpic.h>
+> +
+> +#include <sysdev/fsl_soc.h>
+
+I doubt you need all of these.
+
+E.g. asm/ipic.h is for 83xx and 512x chips.  Some others are for things =20
+that haven't been done by board files for years (e.g. kdev_t.h).
+
+> +static void ppa8548_show_cpuinfo(struct seq_file *m)
+> +{
+> +	uint pvid, svid, phid1;
+> +
+> +	pvid =3D mfspr(SPRN_PVR);
+> +	svid =3D mfspr(SPRN_SVR);
+> +
+> +	seq_printf(m, "Vendor\t\t: Prodrive B.V.\n");
+> +	seq_printf(m, "Machine\t\t: ppa8548\n");
+> +	seq_printf(m, "PVR\t\t: 0x%x\n", pvid);
+> +	seq_printf(m, "SVR\t\t: 0x%x\n", svid);
+> +
+> +	/* Display cpu Pll setting */
+> +	phid1 =3D mfspr(SPRN_HID1);
+> +	seq_printf(m, "PLL setting\t: 0x%x\n", ((phid1 >> 24) & 0x3f));
+> +}
+
+PVR and ppc_md.name are already shown by the generic /proc/cpuinfo code.
+
+-Scott=
