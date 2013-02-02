@@ -1,24 +1,30 @@
-Return-Path: <rjw@sisk.pl>
-Received: from hydra.sisk.pl (hydra.sisk.pl [212.160.235.94])
- by ozlabs.org (Postfix) with ESMTP id BC5BA2C007B
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2013 07:09:27 +1100 (EST)
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [RFC PATCH v2 01/12] Add sys_hotplug.h for system device hotplug
- framework
-Date: Sat, 02 Feb 2013 21:15:37 +0100
-Message-ID: <1810611.i6Sc4oLaux@vostro.rjw.lan>
-In-Reply-To: <20130202145801.GB1434@kroah.com>
-References: <1357861230-29549-1-git-send-email-toshi.kani@hp.com>
- <1987042.JQv02Zsfg5@vostro.rjw.lan> <20130202145801.GB1434@kroah.com>
+Return-Path: <timur.tabi@calxeda.com>
+Received: from smtp151.iad.emailsrvr.com (smtp151.iad.emailsrvr.com
+ [207.97.245.151])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (Client did not present a certificate)
+ by ozlabs.org (Postfix) with ESMTPS id 3A65B2C0090
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 Feb 2013 07:24:13 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+ by smtp55.relay.iad1a.emailsrvr.com (SMTP Server) with ESMTP id CF3062E056B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Feb 2013 15:24:09 -0500 (EST)
+Received: by smtp55.relay.iad1a.emailsrvr.com (Authenticated sender:
+ timur.tabi-AT-calxeda.com) with ESMTPSA id 8443D2E0572
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Feb 2013 15:24:09 -0500 (EST)
+Received: by mail-lb0-f169.google.com with SMTP id m4so5645485lbo.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 02 Feb 2013 12:24:08 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linux-s390@vger.kernel.org, Toshi Kani <toshi.kani@hp.com>,
- jiang.liu@huawei.com, wency@cn.fujitsu.com, linux-acpi@vger.kernel.org,
- yinghai@kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- isimatu.yasuaki@jp.fujitsu.com, srivatsa.bhat@linux.vnet.ibm.com,
- guohanjun@huawei.com, bhelgaas@google.com, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, lenb@kernel.org
+In-Reply-To: <510D6819.7050002@prodrive.nl>
+References: <1359765063.23561.14@snotra>
+	<510D6819.7050002@prodrive.nl>
+Date: Sat, 2 Feb 2013 14:24:08 -0600
+Message-ID: <CAOZdJXWMyRBMPA1YVDMGNBNgzc_GLLoQWUt7uFw8wx1X-jFEDw@mail.gmail.com>
+Subject: Re: [PATCH 1/1] powerpc/85xx: Board support for ppa8548
+From: Timur Tabi <timur.tabi@calxeda.com>
+To: Stef van Os <stef.van.os@prodrive.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,120 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday, February 02, 2013 03:58:01 PM Greg KH wrote:
-> On Fri, Feb 01, 2013 at 11:12:59PM +0100, Rafael J. Wysocki wrote:
-> > On Friday, February 01, 2013 08:23:12 AM Greg KH wrote:
-> > > On Thu, Jan 31, 2013 at 09:54:51PM +0100, Rafael J. Wysocki wrote:
-> > > > > > But, again, I'm going to ask why you aren't using the existing cpu /
-> > > > > > memory / bridge / node devices that we have in the kernel.  Please use
-> > > > > > them, or give me a _really_ good reason why they will not work.
-> > > > > 
-> > > > > We cannot use the existing system devices or ACPI devices here.  During
-> > > > > hot-plug, ACPI handler sets this shp_device info, so that cpu and memory
-> > > > > handlers (drivers/cpu.c and mm/memory_hotplug.c) can obtain their target
-> > > > > device information in a platform-neutral way.  During hot-add, we first
-> > > > > creates an ACPI device node (i.e. device under /sys/bus/acpi/devices),
-> > > > > but platform-neutral modules cannot use them as they are ACPI-specific.
-> > > > 
-> > > > But suppose we're smart and have ACPI scan handlers that will create
-> > > > "physical" device nodes for those devices during the ACPI namespace scan.
-> > > > Then, the platform-neutral nodes will be able to bind to those "physical"
-> > > > nodes.  Moreover, it should be possible to get a hierarchy of device objects
-> > > > this way that will reflect all of the dependencies we need to take into
-> > > > account during hot-add and hot-remove operations.  That may not be what we
-> > > > have today, but I don't see any *fundamental* obstacles preventing us from
-> > > > using this approach.
-> > > 
-> > > I would _much_ rather see that be the solution here as I think it is the
-> > > proper one.
-> > > 
-> > > > This is already done for PCI host bridges and platform devices and I don't
-> > > > see why we can't do that for the other types of devices too.
-> > > 
-> > > I agree.
-> > > 
-> > > > The only missing piece I see is a way to handle the "eject" problem, i.e.
-> > > > when we try do eject a device at the top of a subtree and need to tear down
-> > > > the entire subtree below it, but if that's going to lead to a system crash,
-> > > > for example, we want to cancel the eject.  It seems to me that we'll need some
-> > > > help from the driver core here.
-> > > 
-> > > I say do what we always have done here, if the user asked us to tear
-> > > something down, let it happen as they are the ones that know best :)
-> > > 
-> > > Seriously, I guess this gets back to the "fail disconnect" idea that the
-> > > ACPI developers keep harping on.  I thought we already resolved this
-> > > properly by having them implement it in their bus code, no reason the
-> > > same thing couldn't happen here, right?
-> > 
-> > Not really. :-)  We haven't ever resolved that particular issue I'm afraid.
-> 
-> Ah, I didn't realize that.
-> 
-> > > I don't think the core needs to do anything special, but if so, I'll be glad
-> > > to review it.
-> > 
-> > OK, so this is the use case.  We have "eject" defined for something like
-> > a container with a number of CPU cores, PCI host bridge, and a memory
-> > controller under it.  And a few pretty much arbitrary I/O devices as a bonus.
-> > 
-> > Now, there's a button on the system case labeled as "Eject" and if that button
-> > is pressed, we're supposed to _try_ to eject all of those things at once.  We
-> > are allowed to fail that request, though, if that's problematic for some
-> > reason, but we're supposed to let the BIOS know about that.
-> > 
-> > Do you seriously think that if that button is pressed, we should just proceed
-> > with removing all that stuff no matter what?  That'd be kind of like Russian
-> > roulette for whoever pressed that button, because s/he could only press it and
-> > wait for the system to either crash or not.  Or maybe to crash a bit later
-> > because of some delayed stuff that would hit one of those devices that had just
-> > gone.  Surely not a situation any admin of a high-availability system would
-> > like to be in. :-)
-> > 
-> > Quite frankly, I have no idea how that can be addressed in a single bus type,
-> > let alone ACPI (which is not even a proper bus type, just something pretending
-> > to be one).
-> 
-> You don't have it as a single bus type, you have a controller somewhere,
-> off of the bus being destroyed, that handles sending remove events to
-> the device and tearing everything down.  PCI does this from the very
-> beginning.
+On Sat, Feb 2, 2013 at 1:25 PM, Stef van Os <stef.van.os@prodrive.nl> wrote:
 
-Yes, but those are just remove events and we can only see how destructive they
-were after the removal.  The point is to be able to figure out whether or not
-we *want* to do the removal in the first place.
+>> I guess the reason you're not using fsl/mpc8548si-post.dtsi is that you
+>> don't want PCI.  Maybe PCI and srio should be moved out of that file, or
+>> ifdeffed if 85xx ever ends up using the preprocessor for its device trees.
+>>
+> I went with timur's solution, patch v2 uses mpc8548si-post.dtsi and
+> mpc8548si-pre.dtsi again, disabling everything that is not on the board.
 
-Say you have a computing node which signals a hardware problem in a processor
-package (the container with CPU cores, memory, PCI host bridge etc.).  You
-may want to eject that package, but you don't want to kill the system this
-way.  So if the eject is doable, it is very much desirable to do it, but if it
-is not doable, you'd rather shut the box down and do the replacement afterward.
-That may be costly, however (maybe weeks of computations), so it should be
-avoided if possible, but not at the expense of crashing the box if the eject
-doesn't work out.
-
-> I know it's more complicated with these types of devices, and I think we
-> are getting closer to the correct solution, I just don't want to ever
-> see duplicate devices in the driver model for the same physical device.
-
-Do you mean two things based on struct device for the same hardware component?
-That's been happening already pretty much forever for every PCI device known
-to the ACPI layer, for PNP and many others.  However, those ACPI things are (or
-rather should be, but we're going to clean that up) only for convenience (to be
-able to see the namespace structure and related things in sysfs).  So the stuff
-under /sys/devices/LNXSYSTM\:00/ is not "real".  In my view it shouldn't even
-be under /sys/devices/ (/sys/firmware/acpi/ seems to be a better place for it),
-but that may be difficult to change without breaking user space (maybe we can
-just symlink it from /sys/devices/ or something).  And the ACPI bus type
-shouldn't even exist in my opinion.
-
-There's much confusion in there and much work to clean that up, I agree, but
-that's kind of separate from the hotplug thing.
-
-Thanks,
-Rafael
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+FYI, someone posted some patches for dtc a couple months ago that
+added an option to strip out disabled nodes when compiling the dts,
+but those patches were rejected.  In your case, those patches could
+significantly reduce the size of the compiled dtb.
